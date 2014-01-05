@@ -1513,7 +1513,7 @@ int list_config_sections(AL_CONST char ***names)
  *  Frees the entries list returned by list_config_entires or
  *  list_config_sections again.
  */
-void free_config_entries(AL_CONST char ***names)
+void free_config_entries(char ***names)
 {
     _AL_FREE(*names);
     *names = NULL;

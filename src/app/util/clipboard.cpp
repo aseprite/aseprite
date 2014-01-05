@@ -42,15 +42,7 @@
 #include "app/undoers/image_area.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/palette.h"
-#include "raster/quantization.h"
-#include "raster/rotate.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "raster/raster.h"
 #include "ui/ui.h"
 #include "undo/undo_history.h"
 
@@ -225,8 +217,8 @@ bool clipboard::get_image_size(gfx::Size& size)
   return get_win32_clipboard_bitmap_size(size);
 #else
   if (clipboard_image != NULL) {
-    size.w = clipboard_image->w;
-    size.h = clipboard_image->h;
+    size.w = clipboard_image->getWidth();
+    size.h = clipboard_image->getHeight();
     return true;
   }
   else

@@ -29,7 +29,7 @@
 namespace raster {
 
 Stock::Stock(PixelFormat format)
-  : GfxObj(GFXOBJ_STOCK)
+  : Object(OBJECT_STOCK)
   , m_format(format)
 {
   // Image with index=0 is always NULL.
@@ -37,7 +37,7 @@ Stock::Stock(PixelFormat format)
 }
 
 Stock::Stock(const Stock& stock)
-  : GfxObj(stock)
+  : Object(stock)
   , m_format(stock.getPixelFormat())
 {
   try {

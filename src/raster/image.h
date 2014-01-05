@@ -19,85 +19,86 @@
 #ifndef RASTER_IMAGE_H_INCLUDED
 #define RASTER_IMAGE_H_INCLUDED
 
+#include "base/compiler_specific.h"
 #include "gfx/rect.h"
+#include "gfx/size.h"
 #include "raster/blend.h"
-#include "raster/gfxobj.h"
+#include "raster/color.h"
+#include "raster/image_buffer.h"
+#include "raster/object.h"
 #include "raster/pixel_format.h"
-
-#include <allegro/color.h>
-
-struct BITMAP;
 
 namespace raster {
 
+  template<typename ImageTraits> class ImageBits;
   class Palette;
   class Pen;
   class RgbMap;
 
-  enum ResizeMethod {
-    RESIZE_METHOD_NEAREST_NEIGHBOR,
-    RESIZE_METHOD_BILINEAR,
-  };
-
-  class Image : public GfxObj {
+  class Image : public Object {
   public:
-    int w, h;
-    uint8_t* dat;                 // Pixmap data.
-    uint8_t** line;               // Start of each scanline.
-    uint32_t mask_color;          // Skipped color in merge process.
+    enum LockType {
+      ReadLock,                 // Read-only lock
+      WriteLock,                // Write-only lock
+      ReadWriteLock             // Read and write
+    };
 
-    static Image* create(PixelFormat format, int w, int h);
-    static Image* createCopy(const Image* image);
+    static Image* create(PixelFormat format, int width, int height,
+                         const ImageBufferPtr& buffer = ImageBufferPtr());
+    static Image* createCopy(const Image* image,
+                             const ImageBufferPtr& buffer = ImageBufferPtr());
 
-    Image(PixelFormat format, int w, int h);
     virtual ~Image();
 
     PixelFormat getPixelFormat() const { return m_format; }
+    int getWidth() const { return m_width; }
+    int getHeight() const { return m_height; }
+    gfx::Size getSize() const { return gfx::Size(m_width, m_height); }
+    gfx::Rect getBounds() const { return gfx::Rect(0, 0, m_width, m_height); }
+    color_t getMaskColor() const { return m_maskColor; }
+    void setMaskColor(color_t c) { m_maskColor = c; }
 
-    int getMemSize() const;
+    int getMemSize() const OVERRIDE;
+    int getRowStrideSize() const;
+    int getRowStrideSize(int pixels_per_row) const;
 
-    virtual int getpixel(int x, int y) const = 0;
-    virtual void putpixel(int x, int y, int color) = 0;
-    virtual void clear(int color) = 0;
+    template<typename ImageTraits>
+    ImageBits<ImageTraits> lockBits(LockType lockType, const gfx::Rect& bounds) {
+      return ImageBits<ImageTraits>(this, bounds);
+    }
+
+    template<typename ImageTraits>
+    ImageBits<ImageTraits> lockBits(LockType lockType, const gfx::Rect& bounds) const {
+      return ImageBits<ImageTraits>(const_cast<Image*>(this), bounds);
+    }
+
+    template<typename ImageTraits>
+    void unlockBits(ImageBits<ImageTraits>& imageBits) {
+      // Do nothing
+    }
+
+    // Warning: These functions doesn't have (and shouldn't have)
+    // bounds checks. Use the primitives defined in raster/primitives.h
+    // in case that you need bounds check.
+    virtual uint8_t* getPixelAddress(int x, int y) const = 0;
+    virtual color_t getPixel(int x, int y) const = 0;
+    virtual void putPixel(int x, int y, color_t color) = 0;
+    virtual void clear(color_t color) = 0;
     virtual void copy(const Image* src, int x, int y) = 0;
     virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode) = 0;
-    virtual void hline(int x1, int y, int x2, int color) = 0;
-    virtual void rectfill(int x1, int y1, int x2, int y2, int color) = 0;
-    virtual void rectblend(int x1, int y1, int x2, int y2, int color, int opacity) = 0;
-    virtual void to_allegro(BITMAP* bmp, int x, int y, const Palette* palette) const = 0;
+    virtual void drawHLine(int x1, int y, int x2, color_t color) = 0;
+    virtual void fillRect(int x1, int y1, int x2, int y2, color_t color) = 0;
+    virtual void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) = 0;
+
+  protected:
+    Image(PixelFormat format, int width, int height);
 
   private:
     PixelFormat m_format;
+    int m_width;
+    int m_height;
+    color_t m_maskColor;  // Skipped color in merge process.
   };
-
-  int image_getpixel(const Image* image, int x, int y);
-  void image_putpixel(Image* image, int x, int y, int color);
-  void image_putpen(Image* image, Pen* pen, int x, int y, int fg_color, int bg_color);
-
-  void image_clear(Image* image, int color);
-
-  void image_copy(Image* dst, const Image* src, int x, int y);
-  void image_merge(Image* dst, const Image* src, int x, int y, int opacity,
-                   int blend_mode);
-
-  Image* image_crop(const Image* image, int x, int y, int w, int h, int bgcolor);
-  void image_rotate(const Image* src, Image* dst, int angle);
-
-  void image_hline(Image* image, int x1, int y, int x2, int color);
-  void image_vline(Image* image, int x, int y1, int y2, int color);
-  void image_rect(Image* image, int x1, int y1, int x2, int y2, int color);
-  void image_rectfill(Image* image, int x1, int y1, int x2, int y2, int color);
-  void image_rectblend(Image* image, int x1, int y1, int x2, int y2, int color, int opacity);
-  void image_line(Image* image, int x1, int y1, int x2, int y2, int color);
-  void image_ellipse(Image* image, int x1, int y1, int x2, int y2, int color);
-  void image_ellipsefill(Image* image, int x1, int y1, int x2, int y2, int color);
-
-  void image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette);
-
-  void image_fixup_transparent_colors(Image* image);
-  void image_resize(const Image* src, Image* dst, ResizeMethod method, const Palette* palette, const RgbMap* rgbmap);
-  int image_count_diff(const Image* i1, const Image* i2);
-  bool image_shrink_rect(Image *image, gfx::Rect& bounds, int refpixel);
 
 } // namespace raster
 
@@ -107,25 +108,15 @@ namespace raster {
 
 namespace raster {
 
-  inline int pixelformat_line_size(PixelFormat pixelFormat, int width)
+  inline int calculate_rowstride_bytes(PixelFormat pixelFormat, int pixels_per_row)
   {
     switch (pixelFormat) {
-      case IMAGE_RGB:       return RgbTraits::scanline_size(width);
-      case IMAGE_GRAYSCALE: return GrayscaleTraits::scanline_size(width);
-      case IMAGE_INDEXED:   return IndexedTraits::scanline_size(width);
-      case IMAGE_BITMAP:    return BitmapTraits::scanline_size(width);
+      case IMAGE_RGB:       return RgbTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_GRAYSCALE: return GrayscaleTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_INDEXED:   return IndexedTraits::getRowStrideBytes(pixels_per_row);
+      case IMAGE_BITMAP:    return BitmapTraits::getRowStrideBytes(pixels_per_row);
     }
     return 0;
-  }
-
-  inline int image_line_size(const Image* image, int width)
-  {
-    return pixelformat_line_size(image->getPixelFormat(), width);
-  }
-
-  inline void* image_address(Image* image, int x, int y)
-  {
-    return ((void *)(image->line[y] + image_line_size(image, x)));
   }
 
 } // namespace raster

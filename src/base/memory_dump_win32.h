@@ -12,13 +12,15 @@
 #include <dbghelp.h>
 #endif
 
-static std::string memoryDumpFile;
+#include "base/string.h"
+
+static std::wstring memoryDumpFile;
 
 class base::MemoryDump::MemoryDumpImpl
 {
 public:
   MemoryDumpImpl() {
-    memoryDumpFile = "memory.dmp";
+    memoryDumpFile = L"memory.dmp";
     ::SetUnhandledExceptionFilter(MemoryDumpImpl::unhandledException);
   }
 
@@ -27,7 +29,7 @@ public:
   }
 
   void setFileName(const std::string& fileName) {
-    memoryDumpFile = fileName;
+    memoryDumpFile = base::from_utf8(fileName);
   }
 
   static LONG WINAPI unhandledException(_EXCEPTION_POINTERS* exceptionPointers) {

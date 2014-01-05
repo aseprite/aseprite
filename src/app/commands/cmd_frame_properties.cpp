@@ -20,12 +20,15 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "base/convert_to.h"
 #include "raster/sprite.h"
@@ -48,11 +51,11 @@ protected:
 private:
   enum Target {
     ALL_FRAMES = -1,
-    CURRENT_FRAME = 0,
+    CURRENT_RANGE = 0,
     SPECIFIC_FRAME = 1
   };
 
-  // Frame to be shown. It can be ALL_FRAMES, CURRENT_FRAME, or a
+  // Frame to be shown. It can be ALL_FRAMES, CURRENT_RANGE, or a
   // number indicating a specific frame (1 is the first frame).
   Target m_target;
   FrameNumber m_frame;
@@ -72,7 +75,7 @@ void FramePropertiesCommand::onLoadParams(Params* params)
     m_target = ALL_FRAMES;
   }
   else if (frame == "current") {
-    m_target = CURRENT_FRAME;
+    m_target = CURRENT_RANGE;
   }
   else {
     m_target = SPECIFIC_FRAME;
@@ -95,48 +98,51 @@ void FramePropertiesCommand::onExecute(Context* context)
   Widget* frlen = app::find_widget<Widget>(window, "frlen");
   Widget* ok = app::find_widget<Widget>(window, "ok");
 
-  FrameNumber sprite_frame(0);
+  FrameNumber firstFrame(0);
+  FrameNumber lastFrame(0);
+
   switch (m_target) {
 
     case ALL_FRAMES:
+      lastFrame = sprite->getLastFrame();
       break;
 
-    case CURRENT_FRAME:
-      sprite_frame = reader.frame();
+    case CURRENT_RANGE: {
+      // TODO the range of selected frames should be in the DocumentLocation.
+      Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (range.enabled()) {
+        firstFrame = range.frameBegin();
+        lastFrame = range.frameEnd();
+      }
+      else {
+        firstFrame = lastFrame = reader.frame();
+      }
       break;
+    }
 
     case SPECIFIC_FRAME:
-      sprite_frame = m_frame;
+      firstFrame = lastFrame = m_frame;
       break;
   }
 
-  if (m_target == ALL_FRAMES)
-    frame->setText("All");
+  if (firstFrame != lastFrame)
+    frame->setTextf("%d-%d", (int)firstFrame+1, (int)lastFrame+1);
   else
-    frame->setTextf("%d", (int)sprite_frame+1);
+    frame->setTextf("%d", (int)firstFrame+1);
 
-  frlen->setTextf("%d", sprite->getFrameDuration(reader.frame()));
+  frlen->setTextf("%d", sprite->getFrameDuration(firstFrame));
 
   window->openWindowInForeground();
   if (window->getKiller() == ok) {
-    int num = strtol(frlen->getText(), NULL, 10);
+    int num = frlen->getTextInt();
 
-    if (m_target == ALL_FRAMES) {
-      if (Alert::show("Warning"
-                      "<<Do you want to change the duration of all frames?"
-                      "||&Yes||&No") == 1) {
-        ContextWriter writer(reader);
-        UndoTransaction undoTransaction(writer.context(), "Constant Frame-Rate");
-        writer.document()->getApi().setConstantFrameRate(writer.sprite(), num);
-        undoTransaction.commit();
-      }
-    }
-    else {
-      ContextWriter writer(reader);
-      UndoTransaction undoTransaction(writer.context(), "Frame Duration");
-      writer.document()->getApi().setFrameDuration(writer.sprite(), sprite_frame, num);
-      undoTransaction.commit();
-    }
+    ContextWriter writer(reader);
+    UndoTransaction undoTransaction(writer.context(), "Frame Duration");
+    if (firstFrame != lastFrame)
+      writer.document()->getApi().setFrameRangeDuration(writer.sprite(), firstFrame, lastFrame, num);
+    else
+      writer.document()->getApi().setFrameDuration(writer.sprite(), firstFrame, num);
+    undoTransaction.commit();
   }
 }
 

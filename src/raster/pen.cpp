@@ -20,9 +20,11 @@
 #include "config.h"
 #endif
 
-#include "raster/algo.h"
 #include "raster/pen.h"
+
+#include "raster/algo.h"
 #include "raster/image.h"
+#include "raster/primitives.h"
 
 #include <cmath>
 
@@ -93,7 +95,7 @@ void Pen::clean_pen()
 
 static void algo_hline(int x1, int y, int x2, void *data)
 {
-  image_hline(reinterpret_cast<Image*>(data), x1, y, x2, 1);
+  draw_hline(reinterpret_cast<Image*>(data), x1, y, x2, BitmapTraits::max_value);
 }
 
 // Regenerates the pen bitmap and its rectangle's region.
@@ -110,20 +112,20 @@ void Pen::regenerate_pen()
   m_image = Image::create(IMAGE_BITMAP, size, size);
 
   if (size == 1) {
-    image_clear(m_image, 1);
+    clear_image(m_image, BitmapTraits::max_value);
   }
   else {
-    image_clear(m_image, 0);
+    clear_image(m_image, BitmapTraits::min_value);
 
     switch (m_type) {
 
       case PEN_TYPE_CIRCLE:
-        image_ellipsefill(m_image, 0, 0, size-1, size-1, 1);
+        fill_ellipse(m_image, 0, 0, size-1, size-1, BitmapTraits::max_value);
         break;
 
       case PEN_TYPE_SQUARE:
         if (m_angle == 0 || size <= 2) {
-          image_clear(m_image, 1);
+          clear_image(m_image, BitmapTraits::max_value);
         }
         else {
           double a = PI * m_angle / 180;
@@ -153,22 +155,22 @@ void Pen::regenerate_pen()
         int x2 = x1 + d*cos(a);
         int y2 = y1 - d*sin(a);
 
-        image_line(m_image, x1, y1, x2, y2, 1);
+        draw_line(m_image, x1, y1, x2, y2, BitmapTraits::max_value);
         break;
       }
     }
   }
 
-  m_scanline.resize(m_image->h);
-  for (int y=0; y<m_image->h; y++) {
+  m_scanline.resize(m_image->getHeight());
+  for (int y=0; y<m_image->getHeight(); y++) {
     m_scanline[y].state = false;
 
-    for (int x=0; x<m_image->w; x++) {
-      if (image_getpixel(m_image, x, y)) {
+    for (int x=0; x<m_image->getWidth(); x++) {
+      if (get_pixel(m_image, x, y)) {
         m_scanline[y].x1 = x;
 
-        for (; x<m_image->w; x++)
-          if (!image_getpixel(m_image, x, y))
+        for (; x<m_image->getWidth(); x++)
+          if (!get_pixel(m_image, x, y))
             break;
 
         m_scanline[y].x2 = x-1;
@@ -178,8 +180,8 @@ void Pen::regenerate_pen()
     }
   }
 
-  m_bounds = gfx::Rect(-m_image->w/2, -m_image->h/2,
-                       m_image->w, m_image->h);
+  m_bounds = gfx::Rect(-m_image->getWidth()/2, -m_image->getHeight()/2,
+                       m_image->getWidth(), m_image->getHeight());
 }
 
 } // namespace raster

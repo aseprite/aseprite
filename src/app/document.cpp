@@ -100,7 +100,7 @@ Document* Document::createBasicDocument(PixelFormat format, int width, int heigh
     base::UniquePtr<Image> image(Image::create(format, width, height));
 
     // Clear the image with mask color.
-    image_clear(image, 0);
+    clear_image(image, 0);
 
     // Add image in the sprite's stock.
     indexInStock = sprite->getStock()->addImage(image);
@@ -189,12 +189,7 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
-const char* Document::getFilename() const
-{
-  return m_filename.c_str();
-}
-
-void Document::setFilename(const char* filename)
+  void Document::setFilename(const base::string& filename)
 {
   m_filename = filename;
 }
@@ -291,12 +286,12 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
 
   if (!m_extraImage ||
       m_extraImage->getPixelFormat() != getSprite()->getPixelFormat() ||
-      m_extraImage->w != w ||
-      m_extraImage->h != h) {
+      m_extraImage->getWidth() != w ||
+      m_extraImage->getHeight() != h) {
     delete m_extraImage;                // image
     m_extraImage = Image::create(getSprite()->getPixelFormat(), w, h);
-    image_clear(m_extraImage,
-                m_extraImage->mask_color = 0);
+    m_extraImage->setMaskColor(0);
+    clear_image(m_extraImage, m_extraImage->getMaskColor());
   }
 }
 

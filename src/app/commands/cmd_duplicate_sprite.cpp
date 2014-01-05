@@ -28,10 +28,10 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/ui_context.h"
+#include "base/path.h"
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <cstdio>
 
 namespace app {
@@ -65,7 +65,6 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   Widget* src_name, *dst_name, *flatten;
   const ContextReader reader(context);
   const Document* document = reader.document();
-  char buf[1024];
 
   /* load the window widget */
   base::UniquePtr<Window> window(app::load_widget<Window>("duplicate_sprite.xml", "duplicate_sprite"));
@@ -74,10 +73,9 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   dst_name = window->findChild("dst_name");
   flatten = window->findChild("flatten");
 
-  src_name->setText(get_filename(document->getFilename()));
-
-  std::sprintf(buf, "%s Copy", document->getFilename());
-  dst_name->setText(buf);
+  base::string fn = document->getFilename();
+  src_name->setText(base::get_file_name(fn));
+  dst_name->setText(base::get_file_title(fn) + " Copy." + base::get_file_extension(fn));
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
     flatten->setSelected(true);
@@ -95,7 +93,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
     else
       docCopy = document->duplicate(DuplicateExactCopy);
 
-    docCopy->setFilename(dst_name->getText());
+    docCopy->setFilename(dst_name->getText().c_str());
 
     context->addDocument(docCopy);
   }

@@ -29,7 +29,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui/widget.h"
@@ -44,27 +43,27 @@
 #define SCR2EDIT_X(xpos)                                        \
   (m_x1 +                                                       \
    ((m_x2 - m_x1 + 1)                                           \
-    * ((xpos) - rc->x1 - border_width.l)                        \
-    / (jrect_w(rc) - border_width.l - border_width.r)))
+    * ((xpos) - getBounds().x - border_width.l)                 \
+    / (getBounds().w - border_width.l - border_width.r)))
 
 #define SCR2EDIT_Y(ypos)                                        \
   (m_y1 +                                                       \
    ((m_y2 - m_y1 + 1)                                           \
-    * ((jrect_h(rc) - border_width.t - border_width.b)          \
-       - ((ypos) - rc->y1 - border_width.t))                    \
-    / (jrect_h(rc) - border_width.t - border_width.b)))
+    * ((getBounds().h - border_width.t - border_width.b)        \
+       - ((ypos) - getBounds().y - border_width.t))             \
+    / (getBounds().h - border_width.t - border_width.b)))
 
 #define EDIT2SCR_X(xpos)                                        \
-  (rc->x1 + border_width.l                                      \
-   + ((jrect_w(rc) - border_width.l - border_width.r)           \
+  (getBounds().x + border_width.l                               \
+   + ((getBounds().w - border_width.l - border_width.r)         \
       * ((xpos) - m_x1)                                         \
       / (m_x2 - m_x1 + 1)))
 
-#define EDIT2SCR_Y(ypos)                                        \
-  (rc->y1                                                       \
-   + (jrect_h(rc) - border_width.t - border_width.b)            \
-   - ((jrect_h(rc) - border_width.t - border_width.b)           \
-      * ((ypos) - m_y1)                                         \
+#define EDIT2SCR_Y(ypos)                                          \
+  (getBounds().y                                                  \
+   + (getBounds().h - border_width.t - border_width.b)            \
+   - ((getBounds().h - border_width.t - border_width.b)           \
+      * ((ypos) - m_y1)                                           \
       / (m_y2 - m_y1 + 1)))
 
 namespace app {
@@ -146,7 +145,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       BITMAP *bmp;
       int x, y, u;
 
-      bmp = create_bitmap(jrect_w(rc), jrect_h(rc));
+      bmp = create_bitmap(getBounds().w, getBounds().h);
       clear_to_color(bmp, makecol (0, 0, 0));
 
       // Draw border
@@ -165,14 +164,14 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
       // Draw curve
       for (x=border_width.l;
-           x<jrect_w(rc)-border_width.r; x++) {
-        u = SCR2EDIT_X(rc->x1+x);
+           x<getBounds().w-border_width.r; x++) {
+        u = SCR2EDIT_X(getBounds().x+x);
         u = MID(m_x1, u, m_x2);
 
         y = values[u - m_x1];
         y = MID(m_y1, y, m_y2);
 
-        putpixel(bmp, x, EDIT2SCR_Y(y)-rc->y1,
+        putpixel(bmp, x, EDIT2SCR_Y(y)-getBounds().y,
                  makecol(255, 255, 255));
       }
 
@@ -180,8 +179,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       for (ColorCurve::iterator it = m_curve->begin(), end = m_curve->end(); it != end; ++it) {
         const gfx::Point& point = *it;
 
-        x = EDIT2SCR_X(point.x) - rc->x1;
-        y = EDIT2SCR_Y(point.y) - rc->y1;
+        x = EDIT2SCR_X(point.x) - getBounds().x;
+        y = EDIT2SCR_Y(point.y) - getBounds().y;
 
         rect(bmp, x-2, y-2, x+2, y+2,
              m_editPoint == &point ? makecol(255, 255, 0):
@@ -189,7 +188,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       }
 
       // Blit to screen
-      blit(bmp, ji_screen, 0, 0, rc->x1, rc->y1, bmp->w, bmp->h);
+      blit(bmp, ji_screen, 0, 0, getBounds().x, getBounds().y, bmp->w, bmp->h);
       destroy_bitmap(bmp);
       return true;
     }

@@ -37,7 +37,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -215,7 +214,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       Palette* palette = get_current_palette();
       int bordercolor = makecol(255, 255, 255);
 
-      bmp = create_bitmap(jrect_w(this->rc), jrect_h(this->rc));
+      bmp = create_bitmap(getBounds().w, getBounds().h);
       clear_to_color(bmp, makecol(0 , 0, 0));
 
       y = this->border_width.t;
@@ -233,9 +232,9 @@ bool PaletteView::onProcessMessage(Message* msg)
           else
             color = makecol_depth
               (bitmap_color_depth(ji_screen),
-               _rgba_getr(palette->getEntry(c)),
-               _rgba_getg(palette->getEntry(c)),
-               _rgba_getb(palette->getEntry(c)));
+               rgba_getr(palette->getEntry(c)),
+               rgba_getg(palette->getEntry(c)),
+               rgba_getb(palette->getEntry(c)));
 
           rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
 
@@ -260,7 +259,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       }
 
       blit(bmp, ji_screen,
-           0, 0, this->rc->x1, this->rc->y1, bmp->w, bmp->h);
+           0, 0, getBounds().x, getBounds().y, bmp->w, bmp->h);
       destroy_bitmap(bmp);
       return true;
     }

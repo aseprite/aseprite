@@ -64,7 +64,11 @@ bool IntEntry::onProcessMessage(Message* msg)
     // text is automatically selected.
     case kMouseEnterMessage:
       requestFocus();
-      selectText(0, -1);
+      break;
+
+    // Reset value if it's out of bounds when focus is lost
+    case kFocusLeaveMessage:
+      setValue(MID(m_min, getValue(), m_max));
       break;
 
     case kMouseDownMessage:
@@ -105,7 +109,7 @@ void IntEntry::openPopup()
   if (rc.x+rc.w > JI_SCREEN_W)
     rc.x = rc.x - rc.w + getBounds().w;
 
-  m_popupWindow = new PopupWindow(NULL, false);
+  m_popupWindow = new PopupWindow("", false);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   m_popupWindow->setBgColor(rgba(0, 0, 0, 0));

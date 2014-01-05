@@ -15,7 +15,6 @@
 #include "ui/draw.h"
 #include "ui/font.h"
 #include "ui/intern.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 
@@ -67,33 +66,28 @@ void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
   }
 }
 
-void jdraw_rect(const JRect r, ui::Color color)
+void jdraw_rect(const Rect& rc, ui::Color color)
 {
-  rect(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, to_system(color));
+  rect(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_system(color));
 }
 
-void jdraw_rectfill(const JRect r, ui::Color color)
+void jdraw_rectfill(const Rect& rc, ui::Color color)
 {
-  rectfill(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, to_system(color));
+  rectfill(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_system(color));
 }
 
-void jdraw_rectfill(const Rect& r, ui::Color color)
+void jdraw_rectedge(const Rect& rc, ui::Color c1, ui::Color c2)
 {
-  rectfill(ji_screen, r.x, r.y, r.x+r.w-1, r.y+r.h-1, to_system(color));
+  jrectedge(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, c1, c2);
 }
 
-void jdraw_rectedge(const JRect r, ui::Color c1, ui::Color c2)
-{
-  jrectedge(ji_screen, r->x1, r->y1, r->x2-1, r->y2-1, c1, c2);
-}
-
-void jdraw_rectexclude(const JRect rc, const JRect exclude, ui::Color color)
+void jdraw_rectexclude(const Rect& rc, const Rect& exclude, ui::Color color)
 {
   jrectexclude(ji_screen,
-               rc->x1, rc->y1,
-               rc->x2-1, rc->y2-1,
-               exclude->x1, exclude->y1,
-               exclude->x2-1, exclude->y2-1, color);
+               rc.x, rc.y,
+               rc.x+rc.w-1, rc.y+rc.h-1,
+               exclude.x, exclude.y,
+               exclude.x+exclude.w-1, exclude.y+exclude.h-1, color);
 }
 
 void jdraw_char(FONT* f, int chr, int x, int y, ui::Color fg, ui::Color bg, bool fill_bg)

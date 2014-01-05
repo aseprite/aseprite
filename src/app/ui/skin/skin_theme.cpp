@@ -29,9 +29,14 @@
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
+#include "app/ui/skin/style_sheet.h"
+#include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/shared_ptr.h"
+#include "css/sheet.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -143,8 +148,7 @@ SkinTheme::SkinTheme()
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet_bmp = NULL;
-  for (int c=0; c<PARTS; ++c)
-    m_part[c] = NULL;
+  m_part.resize(PARTS, NULL);
 
   sheet_mapping["radio_normal"] = PART_RADIO_NORMAL;
   sheet_mapping["radio_selected"] = PART_RADIO_SELECTED;
@@ -346,8 +350,8 @@ SkinTheme::~SkinTheme()
   for (size_t c=0; c<m_cursors.size(); ++c)
     delete m_cursors[c];
 
-  for (int c=0; c<PARTS; ++c)
-    destroy_bitmap(m_part[c]);
+  m_part.clear();
+  m_parts_by_id.clear();
 
   for (std::map<std::string, BITMAP*>::iterator
          it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
@@ -362,7 +366,7 @@ SkinTheme::~SkinTheme()
     destroy_font(m_minifont);
 }
 
-// Call ji_regen_theme after this
+// Call Theme::regenerate() after this.
 void SkinTheme::reload_skin()
 {
   if (m_sheet_bmp) {
@@ -377,7 +381,7 @@ void SkinTheme::reload_skin()
     rf.findInDataDir(sheet_filename.c_str());
 
     while (const char* path = rf.next()) {
-      if (exists(path)) {
+      if (base::file_exists(path)) {
         int old_color_conv = _color_conv;
         set_color_conversion(COLORCONV_NONE);
 
@@ -415,153 +419,241 @@ void SkinTheme::onRegenerate()
 {
   scrollbar_size = 12 * jguiscale();
 
+  m_part.clear();
+  m_part.resize(PARTS, NULL);
+
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
   ResourceFinder rf;
   rf.findInDataDir(xml_filename.c_str());
 
-  while (const char* path = rf.next()) {
-    if (!exists(path))
-      continue;
+  const char* path;
+  while ((path = rf.next()) &&
+         !base::file_exists(path)) {
+  }
+  if (!path)                    // not found
+    return;
 
-    TiXmlDocument doc;
-    if (!doc.LoadFile(path))
-      throw XmlException(&doc);
+  XmlDocumentRef doc = open_xml(path);
+  TiXmlHandle handle(doc);
 
-    TiXmlHandle handle(&doc);
+  // Load colors
+  {
+    TiXmlElement* xmlColor = handle
+      .FirstChild("skin")
+      .FirstChild("colors")
+      .FirstChild("color").ToElement();
+    while (xmlColor) {
+      std::string id = xmlColor->Attribute("id");
+      uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
+      ui::Color color = ui::rgba((value & 0xff0000) >> 16,
+                                 (value & 0xff00) >> 8,
+                                 (value & 0xff));
 
-    // Load colors
-    {
-      TiXmlElement* xmlColor = handle
-        .FirstChild("skin")
-        .FirstChild("colors")
-        .FirstChild("color").ToElement();
-      while (xmlColor) {
-        std::string id = xmlColor->Attribute("id");
-        uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
+      PRINTF("Loading color '%s'...\n", id.c_str());
 
-        std::map<std::string, ThemeColor::Type>::iterator it =
-          color_mapping.find(id);
-        if (it != color_mapping.end()) {
-          m_colors[it->second] = ui::rgba((value & 0xff0000) >> 16,
-                                          (value & 0xff00) >> 8,
-                                          (value & 0xff));
-        }
+      m_colors_by_id[id] = color;
 
-        xmlColor = xmlColor->NextSiblingElement();
+      std::map<std::string, ThemeColor::Type>::iterator it = color_mapping.find(id);
+      if (it != color_mapping.end()) {
+        m_colors[it->second] = color;
       }
+
+      xmlColor = xmlColor->NextSiblingElement();
     }
+  }
 
-    // Load cursors
-    {
-      TiXmlElement* xmlCursor = handle
-        .FirstChild("skin")
-        .FirstChild("cursors")
-        .FirstChild("cursor").ToElement();
-      while (xmlCursor) {
-        std::string id = xmlCursor->Attribute("id");
-        int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
-        int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
-        int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
-        int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
-        int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
-        int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
-        int c;
+  // Load cursors
+  {
+    TiXmlElement* xmlCursor = handle
+      .FirstChild("skin")
+      .FirstChild("cursors")
+      .FirstChild("cursor").ToElement();
+    while (xmlCursor) {
+      std::string id = xmlCursor->Attribute("id");
+      int x = strtol(xmlCursor->Attribute("x"), NULL, 10);
+      int y = strtol(xmlCursor->Attribute("y"), NULL, 10);
+      int w = strtol(xmlCursor->Attribute("w"), NULL, 10);
+      int h = strtol(xmlCursor->Attribute("h"), NULL, 10);
+      int focusx = strtol(xmlCursor->Attribute("focusx"), NULL, 10);
+      int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
+      int c;
 
-        for (c=0; c<kCursorTypes; ++c) {
-          if (id != cursor_names[c])
-            continue;
+      PRINTF("Loading cursor '%s'...\n", id.c_str());
 
-          delete m_cursors[c];
-          m_cursors[c] = NULL;
+      for (c=0; c<kCursorTypes; ++c) {
+        if (id != cursor_names[c])
+          continue;
 
-          BITMAP* bmp = cropPartFromSheet(NULL, x, y, w, h);
-          she::Surface* surface =
-            she::Instance()->createSurfaceFromNativeHandle(reinterpret_cast<void*>(bmp));
+        delete m_cursors[c];
+        m_cursors[c] = NULL;
 
-          m_cursors[c] = new Cursor(surface, gfx::Point(focusx*jguiscale(),
-                                                        focusy*jguiscale()));
-          break;
-        }
+        BITMAP* bmp = cropPartFromSheet(NULL, x, y, w, h);
+        she::Surface* surface =
+          she::Instance()->createSurfaceFromNativeHandle(reinterpret_cast<void*>(bmp));
 
-        if (c == kCursorTypes) {
-          throw base::Exception("Unknown cursor specified in '%s':\n"
-                                "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
-        }
-
-        xmlCursor = xmlCursor->NextSiblingElement();
+        m_cursors[c] = new Cursor(surface, gfx::Point(focusx*jguiscale(),
+                                                      focusy*jguiscale()));
+        break;
       }
-    }
 
-    // Load tool icons
-    {
-      TiXmlElement* xmlIcon = handle
-        .FirstChild("skin")
-        .FirstChild("tools")
-        .FirstChild("tool").ToElement();
-      while (xmlIcon) {
-        // Get the tool-icon rectangle
-        const char* tool_id = xmlIcon->Attribute("id");
-        int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
-        int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
-        int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
-        int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
-
-        // Crop the tool-icon from the sheet
-        m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
-
-        xmlIcon = xmlIcon->NextSiblingElement();
+      if (c == kCursorTypes) {
+        throw base::Exception("Unknown cursor specified in '%s':\n"
+                              "<cursor id='%s' ... />\n", xml_filename.c_str(), id.c_str());
       }
+
+      xmlCursor = xmlCursor->NextSiblingElement();
     }
+  }
 
-    // Load parts
-    {
-      TiXmlElement* xmlPart = handle
-        .FirstChild("skin")
-        .FirstChild("parts")
-        .FirstChild("part").ToElement();
-      while (xmlPart) {
-        // Get the tool-icon rectangle
-        const char* part_id = xmlPart->Attribute("id");
-        int x = strtol(xmlPart->Attribute("x"), NULL, 10);
-        int y = strtol(xmlPart->Attribute("y"), NULL, 10);
-        int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
-        int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
-        std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
-        if (it == sheet_mapping.end()) {
-          throw base::Exception("Unknown part specified in '%s':\n"
-                                "<part id='%s' ... />\n", xml_filename.c_str(), part_id);
-        }
+  // Load tool icons
+  {
+    TiXmlElement* xmlIcon = handle
+      .FirstChild("skin")
+      .FirstChild("tools")
+      .FirstChild("tool").ToElement();
+    while (xmlIcon) {
+      // Get the tool-icon rectangle
+      const char* tool_id = xmlIcon->Attribute("id");
+      int x = strtol(xmlIcon->Attribute("x"), NULL, 10);
+      int y = strtol(xmlIcon->Attribute("y"), NULL, 10);
+      int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
+      int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
 
+      PRINTF("Loading tool icon '%s'...\n", tool_id);
+
+      // Crop the tool-icon from the sheet
+      m_toolicon[tool_id] = cropPartFromSheet(m_toolicon[tool_id], x, y, w, h);
+
+      xmlIcon = xmlIcon->NextSiblingElement();
+    }
+  }
+
+  // Load parts
+  {
+    TiXmlElement* xmlPart = handle
+      .FirstChild("skin")
+      .FirstChild("parts")
+      .FirstChild("part").ToElement();
+    while (xmlPart) {
+      // Get the tool-icon rectangle
+      const char* part_id = xmlPart->Attribute("id");
+      int x = strtol(xmlPart->Attribute("x"), NULL, 10);
+      int y = strtol(xmlPart->Attribute("y"), NULL, 10);
+      int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
+      int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
+
+      PRINTF("Loading part '%s'...\n", part_id);
+
+      SkinPartPtr part = m_parts_by_id[part_id];
+      if (part == NULL)
+        part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
+
+      if (w > 0 && h > 0) {
+        part->setBitmap(0, cropPartFromSheet(part->getBitmap(0), x, y, w, h));
+      }
+      else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
+        int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
+        int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
+        int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
+        int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
+        int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
+        int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
+
+        part->setBitmap(0, cropPartFromSheet(part->getBitmap(0), x, y, w1, h1)); // NW
+        part->setBitmap(1, cropPartFromSheet(part->getBitmap(1), x+w1, y, w2, h1)); // N
+        part->setBitmap(2, cropPartFromSheet(part->getBitmap(2), x+w1+w2, y, w3, h1)); // NE
+        part->setBitmap(3, cropPartFromSheet(part->getBitmap(3), x+w1+w2, y+h1, w3, h2)); // E
+        part->setBitmap(4, cropPartFromSheet(part->getBitmap(4), x+w1+w2, y+h1+h2, w3, h3)); // SE
+        part->setBitmap(5, cropPartFromSheet(part->getBitmap(5), x+w1, y+h1+h2, w2, h3)); // S
+        part->setBitmap(6, cropPartFromSheet(part->getBitmap(6), x, y+h1+h2, w1, h3)); // SW
+        part->setBitmap(7, cropPartFromSheet(part->getBitmap(7), x, y+h1, w1, h2)); // W
+      }
+
+      // Prepare the m_part vector (which is used for backward
+      // compatibility for widgets that doesn't use SkinStyle).
+      std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
+      if (it != sheet_mapping.end()) {
         int c = it->second;
-
-        if (w > 0 && h > 0) {
-          // Crop the part from the sheet
-          m_part[c] = cropPartFromSheet(m_part[c], x, y, w, h);
-        }
-        else if (xmlPart->Attribute("w1")) { // 3x3-1 part (NW, N, NE, E, SE, S, SW, W)
-          int w1 = strtol(xmlPart->Attribute("w1"), NULL, 10);
-          int w2 = strtol(xmlPart->Attribute("w2"), NULL, 10);
-          int w3 = strtol(xmlPart->Attribute("w3"), NULL, 10);
-          int h1 = strtol(xmlPart->Attribute("h1"), NULL, 10);
-          int h2 = strtol(xmlPart->Attribute("h2"), NULL, 10);
-          int h3 = strtol(xmlPart->Attribute("h3"), NULL, 10);
-
-          m_part[c  ] = cropPartFromSheet(m_part[c  ], x, y, w1, h1); // NW
-          m_part[c+1] = cropPartFromSheet(m_part[c+1], x+w1, y, w2, h1); // N
-          m_part[c+2] = cropPartFromSheet(m_part[c+2], x+w1+w2, y, w3, h1); // NE
-          m_part[c+3] = cropPartFromSheet(m_part[c+3], x+w1+w2, y+h1, w3, h2); // E
-          m_part[c+4] = cropPartFromSheet(m_part[c+4], x+w1+w2, y+h1+h2, w3, h3); // SE
-          m_part[c+5] = cropPartFromSheet(m_part[c+5], x+w1, y+h1+h2, w2, h3); // S
-          m_part[c+6] = cropPartFromSheet(m_part[c+6], x, y+h1+h2, w1, h3); // SW
-          m_part[c+7] = cropPartFromSheet(m_part[c+7], x, y+h1, w1, h2); // W
-        }
-
-        xmlPart = xmlPart->NextSiblingElement();
+        for (size_t i=0; i<part->size(); ++i)
+          m_part[c+i] = part->getBitmap(i);
       }
-    }
 
-    break;
+      xmlPart = xmlPart->NextSiblingElement();
+    }
+  }
+
+  // Load styles
+  {
+    TiXmlElement* xmlStyle = handle
+      .FirstChild("skin")
+      .FirstChild("stylesheet")
+      .FirstChild("style").ToElement();
+    while (xmlStyle) {
+      const char* style_id = xmlStyle->Attribute("id");
+      const char* base_id = xmlStyle->Attribute("base");
+      const css::Style* base = NULL;
+
+      if (base_id)
+        base = m_stylesheet.sheet().getStyle(base_id);
+
+      css::Style* style = new css::Style(style_id, base);
+      m_stylesheet.sheet().addStyle(style);
+
+      TiXmlElement* xmlRule = xmlStyle->FirstChildElement();
+      while (xmlRule) {
+        const std::string ruleName = xmlRule->Value();
+
+        PRINTF("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
+
+        // TODO This code design to read styles could be improved.
+
+        const char* part_id = xmlRule->Attribute("part");
+        const char* color_id = xmlRule->Attribute("color");
+
+        // Style align
+        int align = 0;
+        const char* halign = xmlRule->Attribute("align");
+        const char* valign = xmlRule->Attribute("valign");
+        if (halign) {
+          if (strcmp(halign, "left") == 0) align |= JI_LEFT;
+          else if (strcmp(halign, "right") == 0) align |= JI_RIGHT;
+          else if (strcmp(halign, "center") == 0) align |= JI_CENTER;
+        }
+        if (valign) {
+          if (strcmp(valign, "top") == 0) align |= JI_TOP;
+          else if (strcmp(valign, "bottom") == 0) align |= JI_BOTTOM;
+          else if (strcmp(valign, "middle") == 0) align |= JI_MIDDLE;
+        }
+
+        if (ruleName == "background") {
+          if (color_id) (*style)[StyleSheet::backgroundColorRule()] = css::Value(color_id);
+          if (part_id) (*style)[StyleSheet::backgroundPartRule()] = css::Value(part_id);
+        }
+        else if (ruleName == "icon") {
+          if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);
+          if (part_id) (*style)[StyleSheet::iconPartRule()] = css::Value(part_id);
+        }
+        else if (ruleName == "text") {
+          if (color_id) (*style)[StyleSheet::textColorRule()] = css::Value(color_id);
+          if (align) (*style)[StyleSheet::textAlignRule()] = css::Value(align);
+
+          const char* padding_left = xmlRule->Attribute("padding-left");
+          const char* padding_top = xmlRule->Attribute("padding-top");
+          const char* padding_right = xmlRule->Attribute("padding-right");
+          const char* padding_bottom = xmlRule->Attribute("padding-bottom");
+
+          if (padding_left) (*style)[StyleSheet::paddingLeftRule()] = css::Value(strtol(padding_left, NULL, 10));
+          if (padding_top) (*style)[StyleSheet::paddingTopRule()] = css::Value(strtol(padding_top, NULL, 10));
+          if (padding_right) (*style)[StyleSheet::paddingRightRule()] = css::Value(strtol(padding_right, NULL, 10));
+          if (padding_bottom) (*style)[StyleSheet::paddingBottomRule()] = css::Value(strtol(padding_bottom, NULL, 10));
+        }
+
+        xmlRule = xmlRule->NextSiblingElement();
+      }
+
+      xmlStyle = xmlStyle->NextSiblingElement();
+    }
   }
 }
 
@@ -813,8 +905,8 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
     rect.w = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->w;
     rect.h = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->h;
 
-    rect.offset(window->rc->x2 - 3*jguiscale() - rect.w,
-                window->rc->y1 + 3*jguiscale());
+    rect.offset(window->getBounds().x2() - 3*jguiscale() - rect.w,
+                window->getBounds().y + 3*jguiscale());
 
     widget->setBounds(rect);
   }
@@ -841,7 +933,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
+  gfx::Rect box, text, icon;
   ui::Color fg, bg;
   int part_nw;
 
@@ -852,7 +944,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
 
   // Tool buttons are smaller
   LookType look = NormalLook;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     look = skinPropery->getLook();
 
@@ -904,13 +996,12 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // Paint the icon
   if (iconInterface) {
     if (widget->isSelected())
-      jrect_displace(&icon,
-                     get_button_selected_offset(),
-                     get_button_selected_offset());
+      icon.offset(get_button_selected_offset(),
+                  get_button_selected_offset());
 
     paintIcon(widget, ev.getGraphics(), iconInterface,
-              icon.x1-widget->rc->x1,
-              icon.y1-widget->rc->y1);
+              icon.x-widget->getBounds().x,
+              icon.y-widget->getBounds().y);
   }
 }
 
@@ -918,7 +1009,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 {
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
+  gfx::Rect box, text, icon;
   ui::Color bg;
 
   jwidget_get_texticon_info(widget, &box, &text, &icon,
@@ -928,35 +1019,35 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 
   // Check box look
   LookType look = NormalLook;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     look = skinPropery->getLook();
 
   // Background
-  jdraw_rectfill(widget->rc, bg = BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), bg = BGCOLOR);
 
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::CheckHotFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::CheckHotFace));
     else if (widget->hasFocus())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::CheckFocusFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::CheckFocusFace));
   }
 
   // Text
-  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, &text, 0);
+  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
-    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
+    paintIcon(widget, ev.getGraphics(), iconInterface, icon.x-widget->getBounds().x, icon.y-widget->getBounds().y);
 
   // draw focus
   if (look != WithoutBordersLook && widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
-                   widget->rc->x1,
-                   widget->rc->y1,
-                   widget->rc->x2-1,
-                   widget->rc->y2-1, PART_CHECK_FOCUS_NW, ui::ColorNone);
+                   widget->getBounds().x,
+                   widget->getBounds().y,
+                   widget->getBounds().x2()-1,
+                   widget->getBounds().y2()-1, PART_CHECK_FOCUS_NW, ui::ColorNone);
   }
 }
 
@@ -983,16 +1074,16 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   // Main pos
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   bool isMiniLook = false;
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
@@ -1005,8 +1096,8 @@ void SkinTheme::paintEntry(PaintEvent& ev)
                  bg);
 
   // Draw the text
-  x = widget->rc->x1 + widget->border_width.l;
-  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
+  x = widget->getBounds().x + widget->border_width.l;
+  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
@@ -1040,7 +1131,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     }
 
     w = CHARACTER_LENGTH(widget->getFont(), ch);
-    if (x+w > widget->rc->x2-3)
+    if (x+w > widget->getBounds().x2()-3)
       return;
 
     caret_x = x;
@@ -1069,10 +1160,9 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   Label* widget = static_cast<Label*>(ev.getSource());
-  struct jrect text;
   ui::Color bg = BGCOLOR;
   ui::Color fg = widget->getTextColor();
-  Rect rc = widget->getClientBounds();
+  Rect text, rc = widget->getClientBounds();
 
   g->fillRect(bg, rc);
   rc.shrink(widget->getBorder());
@@ -1081,7 +1171,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 
   g->drawString(widget->getText(), fg, bg, false,
                 // TODO "text" coordinates are absolute and we are drawing on client area
-                Point(text.x1, text.y1) - Point(widget->rc->x1, widget->rc->y1));
+                Point(text.x, text.y) - widget->getOrigin());
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1089,14 +1179,17 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   ui::Color bg = BGCOLOR;
 
-  jdraw_rectfill(widget->rc, bg);
-  drawTextStringDeprecated(NULL, getColor(ThemeColor::LinkText), bg, false, widget, widget->rc, 0);
+  jdraw_rectfill(widget->getBounds(), bg);
+  drawTextStringDeprecated(NULL, getColor(ThemeColor::LinkText), bg, false, widget,
+                           widget->getBounds(), 0);
 
   if (widget->hasMouseOver()) {
     int w = jwidget_get_text_length(widget);
 
     hline(ji_screen,
-          widget->rc->x1, widget->rc->y2-1, widget->rc->x1+w-1,
+          widget->getBounds().x,
+          widget->getBounds().y2()-1,
+          widget->getBounds().x+w-1,
           to_system(getColor(ThemeColor::LinkText)));
   }
 }
@@ -1129,26 +1222,26 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
     bg = getColor(ThemeColor::ListItemNormalFace);
   }
 
-  x = widget->rc->x1+widget->border_width.l;
-  y = widget->rc->y1+widget->border_width.t;
+  x = widget->getBounds().x+widget->border_width.l;
+  y = widget->getBounds().y+widget->border_width.t;
 
   if (widget->hasText()) {
     // Text
-    jdraw_text(ji_screen, widget->getFont(), widget->getText(), x, y,
+    jdraw_text(ji_screen, widget->getFont(), widget->getText().c_str(), x, y,
                fg, bg, true, jguiscale());
 
     // Background
     jrectexclude
       (ji_screen,
-       widget->rc->x1, widget->rc->y1,
-       widget->rc->x2-1, widget->rc->y2-1,
+       widget->getBounds().x, widget->getBounds().y,
+       widget->getBounds().x2()-1, widget->getBounds().y2()-1,
        x, y,
        x+jwidget_get_text_length(widget)-1,
        y+jwidget_get_text_height(widget)-1, bg);
   }
   // Background
   else {
-    jdraw_rectfill(widget->rc, bg);
+    jdraw_rectfill(widget->getBounds(), bg);
   }
 }
 
@@ -1195,10 +1288,10 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   }
 
   /* widget position */
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   /* background */
   rectfill(ji_screen, x1, y1, x2, y2, to_system(bg));
@@ -1208,8 +1301,8 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
     BITMAP* icon = m_part[widget->isEnabled() ? PART_CHECK_SELECTED:
                                                 PART_CHECK_DISABLED];
 
-    int x = widget->rc->x1+4-icon->w/2;
-    int y = (widget->rc->y1+widget->rc->y2)/2-icon->h/2;
+    int x = widget->getBounds().x+4-icon->w/2;
+    int y = widget->getBounds().y+widget->getBounds().h/2-icon->h/2;
 
     set_alpha_blender();
     draw_trans_sprite(ji_screen, icon, x, y);
@@ -1236,23 +1329,23 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       if (widget->isEnabled()) {
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c,
-                (widget->rc->y1+widget->rc->y2)/2-c,
-                (widget->rc->y1+widget->rc->y2)/2+c, to_system(fg));
+                widget->getBounds().x2()-3*scale-c,
+                widget->getBounds().y+widget->getBounds().h/2-c,
+                widget->getBounds().y+widget->getBounds().h/2+c, to_system(fg));
       }
       // Disabled
       else {
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c+1,
-                (widget->rc->y1+widget->rc->y2)/2-c+1,
-                (widget->rc->y1+widget->rc->y2)/2+c+1,
+                widget->getBounds().x2()-3*scale-c+1,
+                widget->getBounds().y+widget->getBounds().h/2-c+1,
+                widget->getBounds().y+widget->getBounds().h/2+c+1,
                 to_system(getColor(ThemeColor::Background)));
         for (c=0; c<3*scale; c++)
           vline(ji_screen,
-                widget->rc->x2-3*scale-c,
-                (widget->rc->y1+widget->rc->y2)/2-c,
-                (widget->rc->y1+widget->rc->y2)/2+c,
+                widget->getBounds().x2()-3*scale-c,
+                widget->getBounds().y+widget->getBounds().h/2-c,
+                widget->getBounds().y+widget->getBounds().h/2+c,
                 to_system(getColor(ThemeColor::Disabled)));
       }
     }
@@ -1285,9 +1378,9 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   IButtonIcon* iconInterface = widget->getIconInterface();
-  struct jrect box, text, icon;
   ui::Color bg = BGCOLOR;
 
+  gfx::Rect box, text, icon;
   jwidget_get_texticon_info(widget, &box, &text, &icon,
                             iconInterface ? iconInterface->getIconAlign(): 0,
                             iconInterface ? iconInterface->getWidth() : 0,
@@ -1299,25 +1392,22 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::RadioHotFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::RadioHotFace));
     else if (widget->hasFocus())
-      jdraw_rectfill(widget->rc, bg = getColor(ThemeColor::RadioFocusFace));
+      jdraw_rectfill(widget->getBounds(), bg = getColor(ThemeColor::RadioFocusFace));
   }
 
   // Text
-  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, &text, 0);
+  drawTextStringDeprecated(NULL, ColorNone, bg, false, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
-    paintIcon(widget, g, iconInterface, icon.x1-widget->rc->x1, icon.y1-widget->rc->y1);
+    paintIcon(widget, g, iconInterface, icon.x-widget->getBounds().x, icon.y-widget->getBounds().y);
 
   // draw focus
   if (widget->hasFocus()) {
     draw_bounds_nw(ji_screen,
-                   widget->rc->x1,
-                   widget->rc->y1,
-                   widget->rc->x2-1,
-                   widget->rc->y2-1, PART_RADIO_FOCUS_NW, ui::ColorNone);
+                   widget->getBounds(), PART_RADIO_FOCUS_NW, ui::ColorNone);
   }
 }
 
@@ -1328,28 +1418,28 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   int x1, y1, x2, y2;
 
   // position
-  x1 = widget->rc->x1 + widget->border_width.l/2;
-  y1 = widget->rc->y1 + widget->border_width.t/2;
-  x2 = widget->rc->x2 - 1 - widget->border_width.r/2;
-  y2 = widget->rc->y2 - 1 - widget->border_width.b/2;
+  x1 = widget->getBounds().x + widget->border_width.l/2;
+  y1 = widget->getBounds().y + widget->border_width.t/2;
+  x2 = widget->getBounds().x2() - 1 - widget->border_width.r/2;
+  y2 = widget->getBounds().y2() - 1 - widget->border_width.b/2;
 
   // background
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   if (widget->getAlign() & JI_HORIZONTAL) {
     draw_part_as_hline(ji_screen,
-                       widget->rc->x1,
-                       widget->rc->y1,
-                       widget->rc->x2-1,
-                       widget->rc->y2-1, PART_SEPARATOR_HORZ);
+                       widget->getBounds().x,
+                       widget->getBounds().y,
+                       widget->getBounds().x2()-1,
+                       widget->getBounds().y2()-1, PART_SEPARATOR_HORZ);
   }
 
   if (widget->getAlign() & JI_VERTICAL) {
     draw_part_as_vline(ji_screen,
-                       widget->rc->x1,
-                       widget->rc->y1,
-                       widget->rc->x2-1,
-                       widget->rc->y2-1, PART_SEPARATOR_VERT);
+                       widget->getBounds().x,
+                       widget->getBounds().y,
+                       widget->getBounds().x2()-1,
+                       widget->getBounds().y2()-1, PART_SEPARATOR_VERT);
   }
 
   // text
@@ -1387,7 +1477,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   // Outside borders
   ui::Color bgcolor = widget->getBgColor();
   if (!is_transparent(bgcolor))
-    jdraw_rectfill(widget->rc, bgcolor);
+    jdraw_rectfill(widget->getBounds(), bgcolor);
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
@@ -1407,12 +1497,13 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   // customized background (e.g. RGB sliders)
   ISliderBgPainter* bgPainter = NULL;
 
-  SharedPtr<SkinProperty> skinPropery = widget->getProperty(SkinProperty::SkinPropertyName);
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  if (SkinSliderProperty* sliderProperty = dynamic_cast<SkinSliderProperty*>(skinPropery.get()))
-    bgPainter = sliderProperty->getBgPainter();
+  SkinSliderPropertyPtr skinSliderPropery = widget->getProperty(SkinSliderProperty::Name);
+  if (skinSliderPropery != NULL)
+    bgPainter = skinSliderPropery->getBgPainter();
 
   // Draw customized background
   if (bgPainter) {
@@ -1495,7 +1586,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   Entry* widget = static_cast<Entry*>(ev.getSource());
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const char *text = widget->getText();
+  const char *text = widget->getText().c_str();
   int c, ch, x, y, w;
   int x1, y1, x2, y2;
   int caret_x;
@@ -1503,13 +1594,13 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   widget->getEntryThemeInfo(&scroll, &caret, &state, &selbeg, &selend);
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   // Main pos
-  x1 = widget->rc->x1;
-  y1 = widget->rc->y1;
-  x2 = widget->rc->x2-1;
-  y2 = widget->rc->y2-1;
+  x1 = widget->getBounds().x;
+  y1 = widget->getBounds().y;
+  x2 = widget->getBounds().x2()-1;
+  y2 = widget->getBounds().y2()-1;
 
   ui::Color fg, bg = getColor(ThemeColor::Background);
 
@@ -1518,18 +1609,18 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
                  widget->hasFocus() ? PART_SUNKEN2_FOCUSED_NW:
                                       PART_SUNKEN2_NORMAL_NW, bg);
 
-  /* draw the text */
-  x = widget->rc->x1 + widget->border_width.l;
-  y = (widget->rc->y1+widget->rc->y2)/2 - jwidget_get_text_height(widget)/2;
+  // Draw the text
+  x = widget->getBounds().x + widget->border_width.l;
+  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
 
-    /* normal text */
+    // Normal text
     bg = ColorNone;
     fg = getColor(ThemeColor::Text);
 
-    /* selected */
+    // Selected
     if ((c >= selbeg) && (c <= selend)) {
       if (widget->hasFocus())
         bg = getColor(ThemeColor::Selected);
@@ -1545,7 +1636,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
     }
 
     w = CHARACTER_LENGTH(widget->getFont(), ch);
-    if (x+w > widget->rc->x2-3)
+    if (x+w > widget->getBounds().x2()-3)
       return;
 
     caret_x = x;
@@ -1625,7 +1716,7 @@ void SkinTheme::paintView(PaintEvent& ev)
   View* widget = static_cast<View*>(ev.getSource());
 
   // Outside borders
-  jdraw_rectfill(widget->rc, BGCOLOR);
+  jdraw_rectfill(widget->getBounds(), BGCOLOR);
 
   draw_bounds_nw(g, widget->getClientBounds(),
                  widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
@@ -1808,15 +1899,15 @@ ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
                                                 getColor(ThemeColor::Face)));
 }
 
-void SkinTheme::drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::Color bg_color,
-                                         bool fill_bg, Widget* widget, const JRect rect,
+void SkinTheme::drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::Color bg_color,
+                                         bool fill_bg, Widget* widget, const Rect& rect,
                                          int selected_offset)
 {
   if (t || widget->hasText()) {
     int x, y, w, h;
 
     if (!t) {
-      t = widget->getText();
+      t = widget->getText().c_str();
       w = jwidget_get_text_length(widget);
       h = jwidget_get_text_height(widget);
     }
@@ -1828,20 +1919,20 @@ void SkinTheme::drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::
     /* horizontally text alignment */
 
     if (widget->getAlign() & JI_RIGHT)
-      x = rect->x2 - w;
+      x = rect.x2() - w;
     else if (widget->getAlign() & JI_CENTER)
-      x = (rect->x1+rect->x2)/2 - w/2;
+      x = rect.x + rect.w/2 - w/2;
     else
-      x = rect->x1;
+      x = rect.x;
 
     /* vertically text alignment */
 
     if (widget->getAlign() & JI_BOTTOM)
-      y = rect->y2 - h;
+      y = rect.y2() - h;
     else if (widget->getAlign() & JI_MIDDLE)
-      y = (rect->y1+rect->y2)/2 - h/2;
+      y = rect.y + rect.h/2 - h/2;
     else
-      y = rect->y1;
+      y = rect.y;
 
     if (widget->isSelected()) {
       x += selected_offset;
@@ -1887,7 +1978,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     g->setFont(widget->getFont());
 
     if (!t)
-      t = widget->getText();
+      t = widget->getText().c_str();
 
     textrc.setSize(g->measureString(t));
 
@@ -2026,57 +2117,86 @@ void SkinTheme::draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2
 void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
                                      int nw, int n, int ne, int e, int se, int s, int sw, int w)
 {
+  draw_bounds_template(g, rc,
+                       m_part[nw],
+                       m_part[n],
+                       m_part[ne],
+                       m_part[e],
+                       m_part[se],
+                       m_part[s],
+                       m_part[sw],
+                       m_part[w]);
+}
+
+void SkinTheme::draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart)
+{
+  draw_bounds_template(g, rc,
+                       skinPart->getBitmap(0),
+                       skinPart->getBitmap(1),
+                       skinPart->getBitmap(2),
+                       skinPart->getBitmap(3),
+                       skinPart->getBitmap(4),
+                       skinPart->getBitmap(5),
+                       skinPart->getBitmap(6),
+                       skinPart->getBitmap(7));
+}
+
+void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
+                                     BITMAP* nw, BITMAP* n, BITMAP* ne,
+                                     BITMAP* e, BITMAP* se, BITMAP* s,
+                                     BITMAP* sw, BITMAP* w)
+{
   int x, y;
 
   // Top
 
-  g->drawAlphaBitmap(m_part[nw], rc.x, rc.y);
+  g->drawAlphaBitmap(nw, rc.x, rc.y);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[nw]->w, rc.y,
-                                                      rc.w-m_part[nw]->w-m_part[ne]->w, rc.h))) {
-    for (x = rc.x+m_part[nw]->w;
-         x < rc.x+rc.w-m_part[ne]->w;
-         x += m_part[n]->w) {
-      g->drawAlphaBitmap(m_part[n], x, rc.y);
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+nw->w, rc.y,
+                                                 rc.w-nw->w-ne->w, rc.h))) {
+    for (x = rc.x+nw->w;
+         x < rc.x+rc.w-ne->w;
+         x += n->w) {
+      g->drawAlphaBitmap(n, x, rc.y);
     }
   }
 
-  g->drawAlphaBitmap(m_part[ne], rc.x+rc.w-m_part[ne]->w, rc.y);
+  g->drawAlphaBitmap(ne, rc.x+rc.w-ne->w, rc.y);
 
   // Bottom
 
-  g->drawAlphaBitmap(m_part[sw], rc.x, rc.y+rc.h-m_part[sw]->h);
+  g->drawAlphaBitmap(sw, rc.x, rc.y+rc.h-sw->h);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+m_part[sw]->w, rc.y,
-                                                      rc.w-m_part[sw]->w-m_part[se]->w, rc.h))) {
-    for (x = rc.x+m_part[sw]->w;
-         x < rc.x+rc.w-m_part[se]->w;
-         x += m_part[s]->w) {
-      g->drawAlphaBitmap(m_part[s], x, rc.y+rc.h-m_part[s]->h);
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+sw->w, rc.y,
+                                                 rc.w-sw->w-se->w, rc.h))) {
+    for (x = rc.x+sw->w;
+         x < rc.x+rc.w-se->w;
+         x += s->w) {
+      g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
     }
   }
 
-  g->drawAlphaBitmap(m_part[se], rc.x+rc.w-m_part[se]->w, rc.y+rc.h-m_part[se]->h);
+  g->drawAlphaBitmap(se, rc.x+rc.w-se->w, rc.y+rc.h-se->h);
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+m_part[nw]->h,
-                                                      rc.w, rc.h-m_part[nw]->h-m_part[sw]->h))) {
+  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+nw->h,
+                                                 rc.w, rc.h-nw->h-sw->h))) {
     // Left
-    for (y = rc.y+m_part[nw]->h;
-         y < rc.y+rc.h-m_part[sw]->h;
-         y += m_part[w]->h) {
-      g->drawAlphaBitmap(m_part[w], rc.x, y);
+    for (y = rc.y+nw->h;
+         y < rc.y+rc.h-sw->h;
+         y += w->h) {
+      g->drawAlphaBitmap(w, rc.x, y);
     }
 
     // Right
-    for (y = rc.y+m_part[ne]->h;
-         y < rc.y+rc.h-m_part[se]->h;
-         y += m_part[e]->h) {
-      g->drawAlphaBitmap(m_part[e], rc.x+rc.w-m_part[e]->w, y);
+    for (y = rc.y+ne->h;
+         y < rc.y+rc.h-se->h;
+         y += e->h) {
+      g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
     }
   }
 }
 
-void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8])
+void SkinTheme::draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8])
 {
   int nw = parts[0];
   int n  = parts[1];
@@ -2088,9 +2208,9 @@ void SkinTheme::draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, i
   int w  = parts[7];
 
   set_alpha_blender();
-  draw_bounds_template(bmp, x1, y1, x2, y2,
-                       nw, n, ne, e,
-                       se, s, sw, w);
+  draw_bounds_template(g, rc,
+    nw, n, ne, e,
+    se, s, sw, w);
 }
 
 void SkinTheme::draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg)
@@ -2123,6 +2243,24 @@ void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, ui::Color bg
                                            m_part[nw+1]->h,
                                            m_part[nw+3]->w,
                                            m_part[nw+5]->h)));
+  }
+}
+
+void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg)
+{
+  draw_bounds_template(g, rc, skinPart);
+
+  // Center
+  if (!is_transparent(bg)) {
+    gfx::Rect inside = rc;
+    inside.shrink(Border(
+        skinPart->getBitmap(7)->w,
+        skinPart->getBitmap(1)->h,
+        skinPart->getBitmap(3)->w,
+        skinPart->getBitmap(5)->h));
+
+    if (IntersectClip clip = IntersectClip(g, inside))
+      g->fillRect(bg, inside);
   }
 }
 
@@ -2237,6 +2375,23 @@ void SkinTheme::drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, flo
   if (1+u < w-2)
     rectfill(bmp, x1+u+1, y1+1, x2-1, y2-1,
              ui::to_system(getColor(ThemeColor::Background)));
+}
+
+void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, float progress)
+{
+  g->drawRect(getColor(ThemeColor::Text), rc0);
+
+  gfx::Rect rc = rc0;
+  rc.shrink(1);
+
+  int u = (int)((float)rc.w*progress);
+  u = MID(0, u, rc.w);
+
+  if (u > 0)
+    g->fillRect(getColor(ThemeColor::Selected), gfx::Rect(rc.x, rc.y, u, rc.h));
+
+  if (1+u < rc.w)
+    g->fillRect(getColor(ThemeColor::Background), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
 }
 
 void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)

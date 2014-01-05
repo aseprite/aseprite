@@ -16,29 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_FILE_HANDLE_FORMAT_H_INCLUDED
-#define APP_FILE_HANDLE_FORMAT_H_INCLUDED
+#ifndef RASTER_CONVERSION_ALLEG_H_INCLUDED
+#define RASTER_CONVERSION_ALLEG_H_INCLUDED
 
-#include "base/exception.h"
-#include "base/unique_ptr.h"
+#include <allegro/color.h>
 
-#include <cstdio>
-#include <string>
+struct BITMAP;
 
-class FileHandle
-{
-public:
-  FileHandle(const char* fileName, const char* mode)
-    : m_handle(std::fopen(fileName, mode), std::fclose)
-  {
-    if (!m_handle)
-      throw base::Exception(std::string("Cannot open ") + fileName);
-  }
+namespace raster {
+  class Image;
+  class Palette;
 
-  operator std::FILE*() { return m_handle; }
+  void convert_image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette);
+  void convert_palette_to_allegro(const Palette* palette, RGB* rgb);
+  void convert_palette_from_allegro(const RGB* rgb, Palette* palette);
 
-private:
-  base::UniquePtr<std::FILE, int(*)(std::FILE*)> m_handle;
-};
+} // namespace raster
 
 #endif

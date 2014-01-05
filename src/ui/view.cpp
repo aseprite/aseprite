@@ -12,7 +12,6 @@
 #include "ui/intern.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -84,9 +83,9 @@ Size View::getScrollableSize()
 void View::setScrollableSize(const Size& sz)
 {
 #define CHECK(w, h, l, t, r, b)                                 \
-  ((sz.w > jrect_##w(m_viewport.rc)                             \
-                    - m_viewport.border_width.l                 \
-                    - m_viewport.border_width.r) &&             \
+  ((sz.w > (m_viewport.getBounds().w                            \
+            - m_viewport.border_width.l                         \
+            - m_viewport.border_width.r)) &&                    \
    (BAR_SIZE < pos.w) && (BAR_SIZE < pos.h))
 
   m_scrollbar_h.setSize(sz.w);
@@ -153,8 +152,8 @@ void View::setScrollableSize(const Size& sz)
 
 Size View::getVisibleSize()
 {
-  return Size(jrect_w(m_viewport.rc) - m_viewport.border_width.l - m_viewport.border_width.r,
-              jrect_h(m_viewport.rc) - m_viewport.border_width.t - m_viewport.border_width.b);
+  return Size(m_viewport.getBounds().w - m_viewport.border_width.l - m_viewport.border_width.r,
+              m_viewport.getBounds().h - m_viewport.border_width.t - m_viewport.border_width.b);
 }
 
 Point View::getViewScroll()
@@ -261,15 +260,6 @@ void View::onPreferredSize(PreferredSizeEvent& ev)
 void View::onPaint(PaintEvent& ev)
 {
   getTheme()->paintView(ev);
-}
-
-// static
-void View::displaceWidgets(Widget* widget, int x, int y)
-{
-  jrect_displace(widget->rc, x, y);
-
-  UI_FOREACH_WIDGET(widget->getChildren(), it)
-    displaceWidgets(*it, x, y);
 }
 
 } // namespace ui

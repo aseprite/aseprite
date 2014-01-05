@@ -21,7 +21,10 @@
 #endif
 
 #include "raster/dirty.h"
+
 #include "raster/image.h"
+#include "raster/primitives.h"
+#include "raster/primitives_fast.h"
 
 #include <algorithm>
 
@@ -56,28 +59,58 @@ Dirty::Dirty(const Dirty& src)
   }
 }
 
-Dirty::Dirty(Image* image, Image* image_diff)
-  : m_format(image->getPixelFormat())
-  , m_x1(0), m_y1(0)
-  , m_x2(image->w-1), m_y2(image->h-1)
+template<typename ImageTraits>
+inline bool shrink_row(const Image* image, const Image* image_diff, int& x1, int y, int& x2)
 {
-  int x, y, x1, x2;
+  for (; x1<=x2; ++x1) {
+    if (get_pixel_fast<ImageTraits>(image, x1, y) !=
+        get_pixel_fast<ImageTraits>(image_diff, x1, y))
+      break;
+  }
 
-  for (y=0; y<image->h; y++) {
-    x1 = -1;
-    for (x=0; x<image->w; x++) {
-      if (image_getpixel(image, x, y) != image_getpixel(image_diff, x, y)) {
-        x1 = x;
+  if (x1 > x2)
+    return false;
+
+  for (; x2>x1; x2--) {
+    if (get_pixel_fast<ImageTraits>(image, x2, y) !=
+        get_pixel_fast<ImageTraits>(image_diff, x2, y))
+      break;
+  }
+
+  return true;
+}
+
+Dirty::Dirty(Image* image, Image* image_diff, const gfx::Rect& bounds)
+  : m_format(image->getPixelFormat())
+  , m_x1(bounds.x), m_y1(bounds.y)
+  , m_x2(bounds.x2()-1), m_y2(bounds.y2()-1)
+{
+  int y, x1, x2;
+
+  for (y=m_y1; y<=m_y2; y++) {
+    x1 = m_x1;
+    x2 = m_x2;
+
+    bool res;
+    switch (image->getPixelFormat()) {
+      case IMAGE_RGB:
+        res = shrink_row<RgbTraits>(image, image_diff, x1, y, x2);
         break;
-      }
+
+      case IMAGE_GRAYSCALE:
+        res = shrink_row<GrayscaleTraits>(image, image_diff, x1, y, x2);
+        break;
+
+      case IMAGE_INDEXED:
+        res = shrink_row<IndexedTraits>(image, image_diff, x1, y, x2);
+        break;
+
+      default:
+        ASSERT(false && "Not implemented for bitmaps");
+        return;
     }
-    if (x1 < 0)
+    if (!res)
       continue;
-
-    for (x2=image->w-1; x2>x1; x2--) {
-      if (image_getpixel(image, x2, y) != image_getpixel(image_diff, x2, y))
-        break;
-    }
 
     Col* col = new Col(x1, x2-x1+1);
     col->data.resize(getLineSize(col->w));
@@ -137,7 +170,7 @@ void Dirty::saveImagePixels(Image* image)
     for (; col_it != col_end; ++col_it) {
       Col* col = *col_it;
 
-      uint8_t* address = (uint8_t*)image_address(image, col->x, row->y);
+      uint8_t* address = (uint8_t*)image->getPixelAddress(col->x, row->y);
       std::copy(address, address+getLineSize(col->w), col->data.begin());
     }
   }
@@ -155,7 +188,7 @@ void Dirty::swapImagePixels(Image* image)
     for (; col_it != col_end; ++col_it) {
       Col* col = *col_it;
 
-      uint8_t* address = (uint8_t*)image_address(image, col->x, row->y);
+      uint8_t* address = (uint8_t*)image->getPixelAddress(col->x, row->y);
       std::swap_ranges(address, address+getLineSize(col->w), col->data.begin());
     }
   }

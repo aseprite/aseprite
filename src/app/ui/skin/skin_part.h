@@ -16,31 +16,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
+#ifndef APP_UI_SKIN_SKIN_PART_H_INCLUDED
+#define APP_UI_SKIN_SKIN_PART_H_INCLUDED
+
+#include <vector>
+#include "base/shared_ptr.h"
+
+struct BITMAP;
+
+namespace app {
+  namespace skin {
+
+    class SkinPart {
+    public:
+      typedef std::vector<BITMAP*> Bitmaps;
+
+      SkinPart();
+      ~SkinPart();
+
+      size_t size() const { return m_bitmaps.size(); }
+
+      void clear();
+      void setBitmap(size_t index, BITMAP* bitmap);
+      BITMAP* getBitmap(size_t index) const {
+        return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
+      }
+
+    private:
+      Bitmaps m_bitmaps;
+    };
+
+    typedef SharedPtr<SkinPart> SkinPartPtr;
+
+  } // namespace skin
+} // namespace app
+
 #endif
-
-#include "raster/gfxobj.h"
-
-namespace raster {
-  
-GfxObj::GfxObj(GfxObjType type)
-{
-  m_type = type;
-}
-
-GfxObj::GfxObj(const GfxObj& gfxobj)
-{
-  m_type = gfxobj.m_type;
-}
-
-GfxObj::~GfxObj()
-{
-}
-
-int GfxObj::getMemSize() const
-{
-  return sizeof(GfxObj);
-}
-
-} // namespace raster

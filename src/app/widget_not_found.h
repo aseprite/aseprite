@@ -26,9 +26,9 @@ namespace app {
 
   class WidgetNotFound : public std::runtime_error {
   public:
-    WidgetNotFound(const char* widgetId)
-      : std::runtime_error(std::string("A data file is corrupted.\nPlease reinstall the program\n\n"
-                                       "Details: Widget not found: ") + widgetId) { }
+    WidgetNotFound(const std::string& widgetId)
+      : std::runtime_error("A data file is corrupted.\nPlease reinstall the program\n\n"
+                           "Details: Widget not found: " + widgetId) { }
   };
 
 } // namespace app

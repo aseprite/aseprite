@@ -12,7 +12,6 @@
 
 #include "base/memory.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/widget.h"
 
 #include <allegro/keyboard.h>
@@ -67,10 +66,10 @@ void Message::broadcastToChildren(Widget* widget)
   addRecipient(widget);
 }
 
-KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int ascii, int repeat)
+KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int unicodeChar, int repeat)
   : Message(type)
   , m_scancode(scancode)
-  , m_ascii(ascii)
+  , m_unicodeChar(unicodeChar)
   , m_repeat(repeat)
   , m_propagate_to_children(false)
   , m_propagate_to_parent(true)

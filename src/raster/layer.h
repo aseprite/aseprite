@@ -21,7 +21,7 @@
 
 #include "raster/blend.h"
 #include "raster/frame_number.h"
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 
 #include <string>
 
@@ -44,9 +44,9 @@ namespace raster {
     LAYER_IS_BACKGROUND = 0x0008,
   };
 
-  class Layer : public GfxObj {
+  class Layer : public Object {
   protected:
-    Layer(GfxObjType type, Sprite* sprite);
+    Layer(ObjectType type, Sprite* sprite);
 
   public:
     virtual ~Layer();
@@ -64,8 +64,8 @@ namespace raster {
     Layer* getPrevious() const;
     Layer* getNext() const;
 
-    bool isImage() const { return getType() == GFXOBJ_LAYER_IMAGE; }
-    bool isFolder() const { return getType() == GFXOBJ_LAYER_FOLDER; }
+    bool isImage() const { return type() == OBJECT_LAYER_IMAGE; }
+    bool isFolder() const { return type() == OBJECT_LAYER_FOLDER; }
     bool isBackground() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
     bool isMoveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
     bool isReadable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }

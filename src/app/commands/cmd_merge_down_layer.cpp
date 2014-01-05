@@ -36,6 +36,7 @@
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -146,22 +147,22 @@ void MergeDownLayerCommand::onExecute(Context* context)
         else {
           x1 = MIN(src_cel->getX(), dst_cel->getX());
           y1 = MIN(src_cel->getY(), dst_cel->getY());
-          x2 = MAX(src_cel->getX()+src_image->w-1, dst_cel->getX()+dst_image->w-1);
-          y2 = MAX(src_cel->getY()+src_image->h-1, dst_cel->getY()+dst_image->h-1);
+          x2 = MAX(src_cel->getX()+src_image->getWidth()-1, dst_cel->getX()+dst_image->getWidth()-1);
+          y2 = MAX(src_cel->getY()+src_image->getHeight()-1, dst_cel->getY()+dst_image->getHeight()-1);
           bgcolor = 0;
         }
 
-        new_image = image_crop(dst_image,
-                               x1-dst_cel->getX(),
-                               y1-dst_cel->getY(),
-                               x2-x1+1, y2-y1+1, bgcolor);
+        new_image = raster::crop_image(dst_image,
+                                       x1-dst_cel->getX(),
+                                       y1-dst_cel->getY(),
+                                       x2-x1+1, y2-y1+1, bgcolor);
 
         // Merge src_image in new_image
-        image_merge(new_image, src_image,
-                    src_cel->getX()-x1,
-                    src_cel->getY()-y1,
-                    src_cel->getOpacity(),
-                    static_cast<LayerImage*>(src_layer)->getBlendMode());
+        raster::composite_image(new_image, src_image,
+                                src_cel->getX()-x1,
+                                src_cel->getY()-y1,
+                                src_cel->getOpacity(),
+                                static_cast<LayerImage*>(src_layer)->getBlendMode());
 
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::SetCelPosition(undo.getObjects(), dst_cel));

@@ -24,12 +24,12 @@
 #include "app/console.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "base/compiler_specific.h"
+#include "base/file_handle.h"
 #include "base/memory.h"
 #include "raster/raster.h"
 #include "ui/ui.h"
@@ -41,6 +41,8 @@
 #include "jpeglib.h"
 
 namespace app {
+
+using namespace base;
 
 class JpegFormat : public FileFormat {
   // Data for JPEG files
@@ -110,9 +112,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   JDIMENSION buffer_height;
   int c;
 
-  FileHandle file(fop->filename.c_str(), "rb");
-  if (!file)
-    return false;
+  FileHandle file(open_file_with_exception(fop->filename, "rb"));
 
   // Initialize the JPEG decompression object with error handling.
   jerr.fop = fop;
@@ -187,7 +187,7 @@ bool JpegFormat::onLoad(FileOp* fop)
 
     num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
 
-    /* RGB */
+    // RGB
     if (image->getPixelFormat() == IMAGE_RGB) {
       uint8_t* src_address;
       uint32_t* dst_address;
@@ -195,17 +195,17 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = ((uint32_t**)image->line)[cinfo.output_scanline-1+y];
+        dst_address = (uint32_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
 
-        for (x=0; x<image->w; x++) {
+        for (x=0; x<image->getWidth(); x++) {
           r = *(src_address++);
           g = *(src_address++);
           b = *(src_address++);
-          *(dst_address++) = _rgba(r, g, b, 255);
+          *(dst_address++) = rgba(r, g, b, 255);
         }
       }
     }
-    /* Grayscale */
+    // Grayscale
     else {
       uint8_t* src_address;
       uint16_t* dst_address;
@@ -213,10 +213,10 @@ bool JpegFormat::onLoad(FileOp* fop)
 
       for (y=0; y<(int)num_scanlines; y++) {
         src_address = ((uint8_t**)buffer)[y];
-        dst_address = ((uint16_t**)image->line)[cinfo.output_scanline-1+y];
+        dst_address = (uint16_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
 
-        for (x=0; x<image->w; x++)
-          *(dst_address++) = _graya(*(src_address++), 255);
+        for (x=0; x<image->getWidth(); x++)
+          *(dst_address++) = graya(*(src_address++), 255);
       }
     }
 
@@ -247,11 +247,7 @@ bool JpegFormat::onSave(FileOp* fop)
   int c;
 
   // Open the file for write in it.
-  FileHandle file(fop->filename.c_str(), "wb");
-  if (!file) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle file(open_file_with_exception(fop->filename, "wb"));
 
   // Allocate and initialize JPEG compression object.
   jerr.fop = fop;
@@ -262,8 +258,8 @@ bool JpegFormat::onSave(FileOp* fop)
   jpeg_stdio_dest(&cinfo, file);
 
   // SET parameters for compression.
-  cinfo.image_width = image->w;
-  cinfo.image_height = image->h;
+  cinfo.image_width = image->getWidth();
+  cinfo.image_height = image->getHeight();
 
   if (image->getPixelFormat() == IMAGE_GRAYSCALE) {
     cinfo.input_components = 1;
@@ -312,13 +308,14 @@ bool JpegFormat::onSave(FileOp* fop)
       uint8_t* dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((uint32_t**)image->line)[cinfo.next_scanline+y];
+        src_address = (uint32_t*)image->getPixelAddress(0, cinfo.next_scanline+y);
         dst_address = ((uint8_t**)buffer)[y];
-        for (x=0; x<image->w; x++) {
+
+        for (x=0; x<image->getWidth(); ++x) {
           c = *(src_address++);
-          *(dst_address++) = _rgba_getr(c);
-          *(dst_address++) = _rgba_getg(c);
-          *(dst_address++) = _rgba_getb(c);
+          *(dst_address++) = rgba_getr(c);
+          *(dst_address++) = rgba_getg(c);
+          *(dst_address++) = rgba_getb(c);
         }
       }
     }
@@ -328,10 +325,10 @@ bool JpegFormat::onSave(FileOp* fop)
       uint8_t* dst_address;
       int x, y;
       for (y=0; y<(int)buffer_height; y++) {
-        src_address = ((uint16_t**)image->line)[cinfo.next_scanline+y];
+        src_address = (uint16_t*)image->getPixelAddress(0, cinfo.next_scanline+y);
         dst_address = ((uint8_t**)buffer)[y];
-        for (x=0; x<image->w; x++)
-          *(dst_address++) = _graya_getv(*(src_address++));
+        for (x=0; x<image->getWidth(); ++x)
+          *(dst_address++) = graya_getv(*(src_address++));
       }
     }
     jpeg_write_scanlines(&cinfo, buffer, buffer_height);
@@ -367,7 +364,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
       return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
-    base::UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
+    UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));
     ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
     ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
 
@@ -385,7 +382,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 
     return jpeg_options;
   }
-  catch (base::Exception& e) {
+  catch (std::exception& e) {
     Console::showException(e);
     return SharedPtr<JpegOptions>(0);
   }

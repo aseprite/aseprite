@@ -1,7 +1,10 @@
 # Very high priority (next release?)
 
+* Remove Image::getPixelAddress(), it shouldn't be public and almost
+  everywhere we should use iterators for images. Also get/put_pixel_fast
+  and ImageImpl::address() are dangerous.
 * Warning icon when selecting RGB/HSB color in indexed image.
-* Warning message when we open a file that is already opened file
+* Warning message when we open a file that is already opened
   (show an option to create a second view, or maybe this should
   be forbidden).
 * Paste in place doesn't work as expected sometimes (copy something
@@ -28,8 +31,6 @@
 * Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions.
-* Move src/app/dialogs/aniedit,filesel to src/app/ui
-  (remove app/dialogs/ directory).
 * Merge everything related to configuration/settings in one class
   (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.
@@ -56,7 +57,6 @@
   then cloned, and finally filled with params.
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
-* Replace JRect & jrect with gfx::Rect.
 * editors_ -> MultiEditors class widget
 * convert all widgets to classes:
   * match UI library design with Vaca library.
@@ -79,8 +79,8 @@
   * complete palette operations, and palette editor (it needs a slider
     or something to move between palette changes)
   * drag & drop colors.
-* if there is activated the Tools Configuration dialog box, the
-  Shift+G and Shift+S should update it
+* if the Tools Configuration dialog box is activated, Shift+G and
+  Shift+S keys should update it.
 * add two DrawClick2:
   * DrawClick2FreeHand
   * DrawClick2Shape

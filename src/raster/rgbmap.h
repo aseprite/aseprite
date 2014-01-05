@@ -20,13 +20,13 @@
 #define RASTER_RGBMAP_H_INCLUDED
 
 #include "base/disable_copying.h"
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 
 namespace raster {
 
   class Palette;
 
-  class RgbMap : public GfxObj {
+  class RgbMap : public Object {
   public:
     RgbMap();
     virtual ~RgbMap();

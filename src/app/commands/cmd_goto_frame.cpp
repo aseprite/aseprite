@@ -158,7 +158,7 @@ protected:
       if (window->getKiller() != ok)
         return editor->getFrame();
 
-      m_frame = strtol(frame->getText(), NULL, 10);
+      m_frame = frame->getTextInt();
     }
 
     return MID(FrameNumber(0), FrameNumber(m_frame-1), editor->getSprite()->getLastFrame());

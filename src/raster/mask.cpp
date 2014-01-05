@@ -24,6 +24,7 @@
 
 #include "base/memory.h"
 #include "raster/image.h"
+#include "raster/image_bits.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -31,22 +32,22 @@
 namespace raster {
 
 Mask::Mask()
-  : GfxObj(GFXOBJ_MASK)
+  : Object(OBJECT_MASK)
 {
   initialize();
 }
 
 Mask::Mask(const Mask& mask)
-  : GfxObj(mask)
+  : Object(mask)
 {
   initialize();
   copyFrom(&mask);
 }
 
 Mask::Mask(int x, int y, Image* bitmap)
-  : GfxObj(GFXOBJ_MASK)
+  : Object(OBJECT_MASK)
   , m_freeze_count(0)
-  , m_bounds(x, y, bitmap->w, bitmap->h)
+  , m_bounds(x, y, bitmap->getWidth(), bitmap->getHeight())
   , m_bitmap(bitmap)
 {
 }
@@ -95,16 +96,12 @@ bool Mask::isRectangular() const
   if (!m_bitmap)
     return false;
 
-  for (int y=0; y<m_bitmap->h; ++y) {
-    uint8_t* address = ((uint8_t**)m_bitmap->line)[y];
-    div_t d = div(0, 8);
+  LockImageBits<BitmapTraits> bits(m_bitmap);
+  LockImageBits<BitmapTraits>::iterator it = bits.begin(), end = bits.end();
 
-    for (int x=0; x<m_bitmap->w; ++x) {
-      if (((*address) & (1 << d.rem)) == 0)
-        return false;
-
-      _image_bitmap_next_bit(d, address);
-    }
+  for (; it != end; ++it) {
+    if (*it == 0)
+      return false;
   }
 
   return true;
@@ -120,7 +117,7 @@ void Mask::copyFrom(const Mask* sourceMask)
     add(sourceMask->getBounds());
 
     // And copy the "mask" bitmap
-    image_copy(m_bitmap, sourceMask->m_bitmap, 0, 0);
+    copy_image(m_bitmap, sourceMask->m_bitmap, 0, 0);
   }
 }
 
@@ -141,18 +138,11 @@ void Mask::clear()
 void Mask::invert()
 {
   if (m_bitmap) {
-    uint8_t* address;
-    int u, v;
-    div_t d;
+    LockImageBits<BitmapTraits> bits(m_bitmap);
+    LockImageBits<BitmapTraits>::iterator it = bits.begin(), end = bits.end();
 
-    for (v=0; v<m_bounds.h; v++) {
-      d.quot = d.rem = 0;
-      address = ((uint8_t**)m_bitmap->line)[v];
-      for (u=0; u<m_bounds.w; u++) {
-        *address ^= (1<<d.rem);
-        _image_bitmap_next_bit(d, address);
-      }
-    }
+    for (; it != end; ++it)
+      *it = (*it ? 0: 1);
 
     shrink();
   }
@@ -165,7 +155,7 @@ void Mask::replace(int x, int y, int w, int h)
   delete m_bitmap;
   m_bitmap = Image::create(IMAGE_BITMAP, w, h);
 
-  image_clear(m_bitmap, 1);
+  clear_image(m_bitmap, 1);
 }
 
 void Mask::replace(const gfx::Rect& bounds)
@@ -178,9 +168,9 @@ void Mask::add(int x, int y, int w, int h)
   if (m_freeze_count == 0)
     reserve(x, y, w, h);
 
-  image_rectfill(m_bitmap,
-                 x-m_bounds.x, y-m_bounds.y,
-                 x-m_bounds.x+w-1, y-m_bounds.y+h-1, 1);
+  fill_rect(m_bitmap,
+            x-m_bounds.x, y-m_bounds.y,
+            x-m_bounds.x+w-1, y-m_bounds.y+h-1, 1);
 }
 
 void Mask::add(const gfx::Rect& bounds)
@@ -191,13 +181,18 @@ void Mask::add(const gfx::Rect& bounds)
 void Mask::subtract(int x, int y, int w, int h)
 {
   if (m_bitmap) {
-    image_rectfill(m_bitmap,
-                   x-m_bounds.x,
-                   y-m_bounds.y,
-                   x-m_bounds.x+w-1,
-                   y-m_bounds.y+h-1, 0);
+    fill_rect(m_bitmap,
+              x-m_bounds.x,
+              y-m_bounds.y,
+              x-m_bounds.x+w-1,
+              y-m_bounds.y+h-1, 0);
     shrink();
   }
+}
+
+void Mask::subtract(const gfx::Rect& bounds)
+{
+  subtract(bounds.x, bounds.y, bounds.w, bounds.h);
 }
 
 void Mask::intersect(int x, int y, int w, int h)
@@ -213,7 +208,7 @@ void Mask::intersect(int x, int y, int w, int h)
     m_bounds.w = x2 - m_bounds.x + 1;
     m_bounds.h = y2 - m_bounds.y + 1;
 
-    Image* image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
+    Image* image = crop_image(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
     delete m_bitmap;
     m_bitmap = image;
 
@@ -221,106 +216,102 @@ void Mask::intersect(int x, int y, int w, int h)
   }
 }
 
+void Mask::intersect(const gfx::Rect& bounds)
+{
+  subtract(bounds.x, bounds.y, bounds.w, bounds.h);
+}
+
 void Mask::byColor(const Image *src, int color, int fuzziness)
 {
-  replace(0, 0, src->w, src->h);
+  replace(0, 0, src->getWidth(), src->getHeight());
 
   Image* dst = m_bitmap;
 
   switch (src->getPixelFormat()) {
 
     case IMAGE_RGB: {
-      uint32_t* src_address;
-      uint8_t* dst_address;
+      const LockImageBits<RgbTraits> srcBits(src);
+      LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
+      LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
       int src_r, src_g, src_b, src_a;
       int dst_r, dst_g, dst_b, dst_a;
-      int u, v, c;
-      div_t d;
+      color_t c;
 
-      dst_r = _rgba_getr(color);
-      dst_g = _rgba_getg(color);
-      dst_b = _rgba_getb(color);
-      dst_a = _rgba_geta(color);
+      dst_r = rgba_getr(color);
+      dst_g = rgba_getg(color);
+      dst_b = rgba_getb(color);
+      dst_a = rgba_geta(color);
 
-      for (v=0; v<src->h; v++) {
-        src_address = ((uint32_t**)src->line)[v];
-        dst_address = ((uint8_t**)dst->line)[v];
+      for (; src_it != src_end; ++src_it, ++dst_it) {
+        ASSERT(dst_it != dst_end);
+        c = *src_it;
 
-        d = div (0, 8);
+        src_r = rgba_getr(c);
+        src_g = rgba_getg(c);
+        src_b = rgba_getb(c);
+        src_a = rgba_geta(c);
 
-        for (u=0; u<src->w; u++) {
-          c = *(src_address++);
-
-          src_r = _rgba_getr(c);
-          src_g = _rgba_getg(c);
-          src_b = _rgba_getb(c);
-          src_a = _rgba_geta(c);
-
-          if (!((src_r >= dst_r-fuzziness) && (src_r <= dst_r+fuzziness) &&
-                (src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
-                (src_b >= dst_b-fuzziness) && (src_b <= dst_b+fuzziness) &&
-                (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-            (*dst_address) ^= (1 << d.rem);
-
-          _image_bitmap_next_bit(d, dst_address);
-        }
+        if (!((src_r >= dst_r-fuzziness) && (src_r <= dst_r+fuzziness) &&
+              (src_g >= dst_g-fuzziness) && (src_g <= dst_g+fuzziness) &&
+              (src_b >= dst_b-fuzziness) && (src_b <= dst_b+fuzziness) &&
+              (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
+          *dst_it = 0;
       }
-    } break;
+      ASSERT(dst_it == dst_end);
+      break;
+    }
 
     case IMAGE_GRAYSCALE: {
-      uint16_t* src_address;
-      uint8_t* dst_address;
+      const LockImageBits<GrayscaleTraits> srcBits(src);
+      LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
+      LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
       int src_k, src_a;
       int dst_k, dst_a;
-      int u, v, c;
-      div_t d;
+      color_t c;
 
-      dst_k = _graya_getv(color);
-      dst_a = _graya_geta(color);
+      dst_k = graya_getv(color);
+      dst_a = graya_geta(color);
 
-      for (v=0; v<src->h; v++) {
-        src_address = ((uint16_t**)src->line)[v];
-        dst_address = ((uint8_t**)dst->line)[v];
+      for (; src_it != src_end; ++src_it, ++dst_it) {
+        ASSERT(dst_it != dst_end);
+        c = *src_it;
 
-        d = div (0, 8);
+        src_k = graya_getv(c);
+        src_a = graya_geta(c);
 
-        for (u=0; u<src->w; u++) {
-          c = *(src_address++);
-
-          src_k = _graya_getv(c);
-          src_a = _graya_geta(c);
-
-          if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
-                (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
-            (*dst_address) ^= (1 << d.rem);
-
-          _image_bitmap_next_bit(d, dst_address);
-        }
+        if (!((src_k >= dst_k-fuzziness) && (src_k <= dst_k+fuzziness) &&
+              (src_a >= dst_a-fuzziness) && (src_a <= dst_a+fuzziness)))
+          *dst_it = 0;
       }
-    } break;
+      ASSERT(dst_it == dst_end);
+      break;
+    }
 
     case IMAGE_INDEXED: {
-      uint8_t* src_address;
-      uint8_t* dst_address;
-      int u, v, c;
-      div_t d;
+      const LockImageBits<IndexedTraits> srcBits(src);
+      LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
+      LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+      color_t c, min, max;
 
-      for (v=0; v<src->h; v++) {
-        src_address = ((uint8_t**)src->line)[v];
-        dst_address = ((uint8_t**)dst->line)[v];
+      for (; src_it != src_end; ++src_it, ++dst_it) {
+        ASSERT(dst_it != dst_end);
+        c = *src_it;
 
-        d = div (0, 8);
+        if (color > fuzziness)
+          min = color-fuzziness;
+        else
+          min = 0;
+        max = color + fuzziness;
 
-        for (u=0; u<src->w; u++) {
-          c = *(src_address++);
-
-          if (!((c >= color-fuzziness) && (c <= color+fuzziness)))
-            (*dst_address) ^= (1 << d.rem);
-
-          _image_bitmap_next_bit(d, dst_address);
-        }
+        if (!((c >= min) && (c <= max)))
+          *dst_it = 0;
       }
-    } break;
+      ASSERT(dst_it == dst_end);
+      break;
+    }
   }
 
   shrink();
@@ -367,20 +358,20 @@ void Mask::crop(const Image *image)
 
   /* left */
   ADVANCE(x1, x2, y2, <=, ++,
-          image_getpixel(image, x1, c=beg_y1),
-          image_getpixel(image, x1, c));
+          get_pixel(image, x1, c=beg_y1),
+          get_pixel(image, x1, c));
   /* right */
   ADVANCE(x2, x1, y2, >=, --,
-          image_getpixel(image, x2, c=beg_y1),
-          image_getpixel(image, x2, c));
+          get_pixel(image, x2, c=beg_y1),
+          get_pixel(image, x2, c));
   /* top */
   ADVANCE(y1, y2, x2, <=, ++,
-          image_getpixel(image, c=beg_x1, y1),
-          image_getpixel(image, c, y1));
+          get_pixel(image, c=beg_x1, y1),
+          get_pixel(image, c, y1));
   /* bottom */
   ADVANCE(y2, y1, x2, >=, --,
-          image_getpixel(image, c=beg_x1, y2),
-          image_getpixel(image, c, y2));
+          get_pixel(image, c=beg_x1, y2),
+          get_pixel(image, c, y2));
 
   if (done_count < 4)
     intersect(x1, y1, x2, y2);
@@ -400,7 +391,7 @@ void Mask::reserve(int x, int y, int w, int h)
     m_bounds.w = w;
     m_bounds.h = h;
     m_bitmap = Image::create(IMAGE_BITMAP, w, h);
-    image_clear(m_bitmap, 0);
+    clear_image(m_bitmap, 0);
   }
   else {
     int x1 = m_bounds.x;
@@ -421,7 +412,7 @@ void Mask::reserve(int x, int y, int w, int h)
       m_bounds.w = new_mask_w;
       m_bounds.h = new_mask_h;
 
-      Image* image = image_crop(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
+      Image* image = crop_image(m_bitmap, m_bounds.x-x1, m_bounds.y-y1, m_bounds.w, m_bounds.h, 0);
       delete m_bitmap;      // image
       m_bitmap = image;
     }
@@ -439,7 +430,7 @@ void Mask::shrink()
   {                                                                     \
     for (u = u_begin; u u_op u_final; u u_add) {                        \
       for (v = v_begin; v v_op v_final; v v_add) {                      \
-        if (m_bitmap->getpixel(U, V))                                   \
+        if (m_bitmap->getPixel(U, V))                                   \
           break;                                                        \
       }                                                                 \
       if (v == v_final)                                                 \
@@ -481,7 +472,7 @@ void Mask::shrink()
     m_bounds.w = x2 - x1 + 1;
     m_bounds.h = y2 - y1 + 1;
 
-    Image* image = image_crop(m_bitmap, m_bounds.x-u, m_bounds.y-v, m_bounds.w, m_bounds.h, 0);
+    Image* image = crop_image(m_bitmap, m_bounds.x-u, m_bounds.y-v, m_bounds.w, m_bounds.h, 0);
     delete m_bitmap;
     m_bitmap = image;
   }

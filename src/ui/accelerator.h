@@ -17,7 +17,7 @@ namespace ui {
   class Accelerator
   {
   public:
-    void addKey(KeyModifiers modifiers, KeyScancode scancode, int ascii);
+    void addKey(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
 
     // Adds keys from strings like "<Ctrl+Q> <ESC>"
     void addKeysFromString(const char* string);
@@ -25,14 +25,14 @@ namespace ui {
     bool isEmpty() const { return m_combos.empty(); }
     std::string toString();
 
-    bool check(KeyModifiers modifiers, KeyScancode scancode, int ascii);
+    bool check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
     bool checkFromAllegroKeyArray();
 
   private:
     struct KeyCombo {
       KeyModifiers modifiers;
       KeyScancode scancode;
-      int ascii;
+      int unicodeChar;
 
       std::string toString();
     };

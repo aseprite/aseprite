@@ -25,30 +25,30 @@
 
 namespace raster {
 
-BLEND_COLOR _rgba_blenders[] =
+BLEND_COLOR rgba_blenders[] =
 {
-  _rgba_blend_normal,
-  _rgba_blend_copy,
+  rgba_blend_normal,
+  rgba_blend_copy,
 };
 
-BLEND_COLOR _graya_blenders[] =
+BLEND_COLOR graya_blenders[] =
 {
-  _graya_blend_normal,
-  _graya_blend_copy,
+  graya_blend_normal,
+  graya_blend_copy,
 };
 
 /**********************************************************************/
 /* RGB blenders                                                       */
 /**********************************************************************/
 
-int _rgba_blend_normal(int back, int front, int opacity)
+int rgba_blend_normal(int back, int front, int opacity)
 {
   register int t;
 
   if ((back & 0xff000000) == 0) {
     return
       (front & 0xffffff) |
-      (INT_MULT(_rgba_geta(front), opacity, t) << _rgba_a_shift);
+      (INT_MULT(rgba_geta(front), opacity, t) << rgba_a_shift);
   }
   else if ((front & 0xff000000) == 0) {
     return back;
@@ -58,15 +58,15 @@ int _rgba_blend_normal(int back, int front, int opacity)
     int F_r, F_g, F_b, F_a;
     int D_r, D_g, D_b, D_a;
 
-    B_r = _rgba_getr(back);
-    B_g = _rgba_getg(back);
-    B_b = _rgba_getb(back);
-    B_a = _rgba_geta(back);
+    B_r = rgba_getr(back);
+    B_g = rgba_getg(back);
+    B_b = rgba_getb(back);
+    B_a = rgba_geta(back);
 
-    F_r = _rgba_getr(front);
-    F_g = _rgba_getg(front);
-    F_b = _rgba_getb(front);
-    F_a = _rgba_geta(front);
+    F_r = rgba_getr(front);
+    F_g = rgba_getg(front);
+    F_b = rgba_getb(front);
+    F_a = rgba_geta(front);
     F_a = INT_MULT(F_a, opacity, t);
 
     D_a = B_a + F_a - INT_MULT(B_a, F_a, t);
@@ -74,44 +74,44 @@ int _rgba_blend_normal(int back, int front, int opacity)
     D_g = B_g + (F_g-B_g) * F_a / D_a;
     D_b = B_b + (F_b-B_b) * F_a / D_a;
 
-    return _rgba(D_r, D_g, D_b, D_a);
+    return rgba(D_r, D_g, D_b, D_a);
   }
 }
 
-int _rgba_blend_copy(int back, int front, int opacity)
+int rgba_blend_copy(int back, int front, int opacity)
 {
   return front;
 }
 
-int _rgba_blend_forpath(int back, int front, int opacity)
+int rgba_blend_forpath(int back, int front, int opacity)
 {
   int F_r, F_g, F_b, F_a;
   register int t;
 
-  F_r = _rgba_getr(front);
-  F_g = _rgba_getg(front);
-  F_b = _rgba_getb(front);
-  F_a = _rgba_geta(front);
+  F_r = rgba_getr(front);
+  F_g = rgba_getg(front);
+  F_b = rgba_getb(front);
+  F_a = rgba_geta(front);
   F_a = INT_MULT(F_a, opacity, t);
 
-  return _rgba(F_r, F_g, F_b, F_a);
+  return rgba(F_r, F_g, F_b, F_a);
 }
 
-int _rgba_blend_merge(int back, int front, int opacity)
+int rgba_blend_merge(int back, int front, int opacity)
 {
   int B_r, B_g, B_b, B_a;
   int F_r, F_g, F_b, F_a;
   int D_r, D_g, D_b, D_a;
 
-  B_r = _rgba_getr(back);
-  B_g = _rgba_getg(back);
-  B_b = _rgba_getb(back);
-  B_a = _rgba_geta(back);
+  B_r = rgba_getr(back);
+  B_g = rgba_getg(back);
+  B_b = rgba_getb(back);
+  B_a = rgba_geta(back);
 
-  F_r = _rgba_getr(front);
-  F_g = _rgba_getg(front);
-  F_b = _rgba_getb(front);
-  F_a = _rgba_geta(front);
+  F_r = rgba_getr(front);
+  F_g = rgba_getg(front);
+  F_b = rgba_getb(front);
+  F_a = rgba_geta(front);
 
   if (B_a == 0) {
     D_r = F_r;
@@ -130,21 +130,21 @@ int _rgba_blend_merge(int back, int front, int opacity)
   }
   D_a = B_a + (F_a-B_a) * opacity / 255;
 
-  return _rgba(D_r, D_g, D_b, D_a);
+  return rgba(D_r, D_g, D_b, D_a);
 }
 
 /**********************************************************************/
 /* Grayscale blenders                                                 */
 /**********************************************************************/
 
-int _graya_blend_normal(int back, int front, int opacity)
+int graya_blend_normal(int back, int front, int opacity)
 {
   register int t;
 
   if ((back & 0xff00) == 0) {
     return
       (front & 0xff) |
-      (INT_MULT(_graya_geta (front), opacity, t) << _graya_a_shift);
+      (INT_MULT(graya_geta (front), opacity, t) << graya_a_shift);
   }
   else if ((front & 0xff00) == 0) {
     return back;
@@ -154,48 +154,48 @@ int _graya_blend_normal(int back, int front, int opacity)
     int F_g, F_a;
     int D_g, D_a;
 
-    B_g = _graya_getv(back);
-    B_a = _graya_geta(back);
+    B_g = graya_getv(back);
+    B_a = graya_geta(back);
 
-    F_g = _graya_getv(front);
-    F_a = _graya_geta(front);
+    F_g = graya_getv(front);
+    F_a = graya_geta(front);
     F_a = INT_MULT(F_a, opacity, t);
 
     D_a = B_a + F_a - INT_MULT(B_a, F_a, t);
     D_g = B_g + (F_g-B_g) * F_a / D_a;
 
-    return _graya(D_g, D_a);
+    return graya(D_g, D_a);
   }
 }
 
-int _graya_blend_copy(int back, int front, int opacity)
+int graya_blend_copy(int back, int front, int opacity)
 {
   return front;
 }
 
-int _graya_blend_forpath(int back, int front, int opacity)
+int graya_blend_forpath(int back, int front, int opacity)
 {
   int F_k, F_a;
   register int t;
 
-  F_k = _graya_getv(front);
-  F_a = _graya_geta(front);
+  F_k = graya_getv(front);
+  F_a = graya_geta(front);
   F_a = INT_MULT(F_a, opacity, t);
 
-  return _graya(F_k, F_a);
+  return graya(F_k, F_a);
 }
 
-int _graya_blend_merge(int back, int front, int opacity)
+int graya_blend_merge(int back, int front, int opacity)
 {
   int B_k, B_a;
   int F_k, F_a;
   int D_k, D_a;
 
-  B_k = _graya_getv(back);
-  B_a = _graya_geta(back);
+  B_k = graya_getv(back);
+  B_a = graya_geta(back);
 
-  F_k = _graya_getv(front);
-  F_a = _graya_geta(front);
+  F_k = graya_getv(front);
+  F_a = graya_geta(front);
 
   if (B_a == 0) {
     D_k = F_k;
@@ -208,7 +208,7 @@ int _graya_blend_merge(int back, int front, int opacity)
   }
   D_a = B_a + (F_a-B_a) * opacity / 255;
 
-  return _graya(D_k, D_a);
+  return graya(D_k, D_a);
 }
 
 } // namespace raster

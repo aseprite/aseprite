@@ -44,17 +44,17 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = SrcTraits::get_blender(blend_mode);
-    m_mask_color = src->mask_color;
+    m_mask_color = src->getMaskColor();
   }
-  inline void operator()(typename DstTraits::address_t& scanline_address,
-                         typename DstTraits::address_t& dst_address,
-                         typename SrcTraits::address_t& src_address,
+  inline void operator()(typename DstTraits::pixel_t& scanline,
+                         const typename DstTraits::pixel_t& dst,
+                         const typename SrcTraits::pixel_t& src,
                          int opacity)
   {
-    if (*src_address != m_mask_color)
-      *scanline_address = (*m_blend_color)(*dst_address, *src_address, opacity);
+    if (src != m_mask_color)
+      scanline = (*m_blend_color)(dst, src, opacity);
     else
-      *scanline_address = *dst_address;
+      scanline = dst;
   }
 };
 
@@ -67,19 +67,19 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = RgbTraits::get_blender(blend_mode);
-    m_mask_color = src->mask_color;
+    m_mask_color = src->getMaskColor();
   }
-  inline void operator()(RgbTraits::address_t& scanline_address,
-                         RgbTraits::address_t& dst_address,
-                         GrayscaleTraits::address_t& src_address,
+  inline void operator()(RgbTraits::pixel_t& scanline,
+                         const RgbTraits::pixel_t& dst,
+                         const GrayscaleTraits::pixel_t& src,
                          int opacity)
   {
-    if (*src_address != m_mask_color) {
-      int v = _graya_getv(*src_address);
-      *scanline_address = (*m_blend_color)(*dst_address, _rgba(v, v, v, _graya_geta(*src_address)), opacity);
+    if (src != m_mask_color) {
+      int v = graya_getv(src);
+      scanline = (*m_blend_color)(dst, rgba(v, v, v, graya_geta(src)), opacity);
     }
     else
-      *scanline_address = *dst_address;
+      scanline = dst;
   }
 };
 
@@ -93,23 +93,23 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_mode = blend_mode;
-    m_mask_color = src->mask_color;
+    m_mask_color = src->getMaskColor();
     m_pal = pal;
   }
-  inline void operator()(RgbTraits::address_t& scanline_address,
-                         RgbTraits::address_t& dst_address,
-                         IndexedTraits::address_t& src_address,
+  inline void operator()(RgbTraits::pixel_t& scanline,
+                         const RgbTraits::pixel_t& dst,
+                         const IndexedTraits::pixel_t& src,
                          int opacity)
   {
     if (m_blend_mode == BLEND_MODE_COPY) {
-      *scanline_address = m_pal->getEntry(*src_address);
+      scanline = m_pal->getEntry(src);
     }
     else {
-      if (*src_address != m_mask_color) {
-        *scanline_address = _rgba_blend_normal(*dst_address, m_pal->getEntry(*src_address), opacity);
+      if (src != m_mask_color) {
+        scanline = rgba_blend_normal(dst, m_pal->getEntry(src), opacity);
       }
       else
-        *scanline_address = *dst_address;
+        scanline = dst;
     }
   }
 };
@@ -120,9 +120,6 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
                                int blend_mode, int zoom)
 {
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
-  typename SrcTraits::address_t src_address;
-  typename DstTraits::address_t dst_address, dst_address_end;
-  typename DstTraits::address_t scanline, scanline_address;
   int src_x, src_y, src_w, src_h;
   int dst_x, dst_y, dst_w, dst_h;
   int box_x, box_y, box_w, box_h;
@@ -134,13 +131,13 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
   src_x = 0;
   src_y = 0;
-  src_w = src->w;
-  src_h = src->h;
+  src_w = src->getWidth();
+  src_h = src->getHeight();
 
   dst_x = x;
   dst_y = y;
-  dst_w = src->w<<zoom;
-  dst_h = src->h<<zoom;
+  dst_w = src->getWidth()<<zoom;
+  dst_h = src->getHeight()<<zoom;
 
   // clipping...
   if (dst_x < 0) {
@@ -163,120 +160,118 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
   else
     first_box_h = 0;
 
-  if (dst_x+dst_w > dst->w) {
-    src_w -= (dst_x+dst_w-dst->w) >> zoom;
-    dst_w = dst->w - dst_x;
+  if (dst_x+dst_w > dst->getWidth()) {
+    src_w -= (dst_x+dst_w-dst->getWidth()) >> zoom;
+    dst_w = dst->getWidth() - dst_x;
   }
 
-  if (dst_y+dst_h > dst->h) {
-    src_h -= (dst_y+dst_h-dst->h) >> zoom;
-    dst_h = dst->h - dst_y;
+  if (dst_y+dst_h > dst->getHeight()) {
+    src_h -= (dst_y+dst_h-dst->getHeight()) >> zoom;
+    dst_h = dst->getHeight() - dst_y;
   }
 
-  if ((src_w <= 0) || (src_h <= 0) || (dst_w <= 0) || (dst_h <= 0))
+  if ((src_w <= 0) || (src_h <= 0) ||
+      (dst_w <= 0) || (dst_h <= 0))
     return;
 
   bottom = dst_y+dst_h-1;
 
   // the scanline variable is used to blend src/dst pixels one time for each pixel
-  scanline = new typename DstTraits::pixel_t[src_w];
+  typedef std::vector<typename DstTraits::pixel_t> Scanline;
+  Scanline scanline(src_w);
+  typename Scanline::iterator scanline_it;
+  typename Scanline::iterator scanline_end = scanline.end();
 
-  // for each line to draw of the source image...
-  for (y=0; y<src_h; y++) {
-    ASSERT(src_x >= 0 && src_x < src->w);
-    ASSERT(dst_x >= 0 && dst_x < dst->w);
+  // Lock all necessary bits
+  const LockImageBits<SrcTraits> srcBits(src, gfx::Rect(src_x, src_y, src_w, src_h));
+  LockImageBits<DstTraits> dstBits(dst, gfx::Rect(dst_x, dst_y, dst_w, dst_h));
+  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+  typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
 
-    // get addresses to each line (beginning of 'src', 'dst', etc.)
-    src_address = image_address_fast<SrcTraits>(src, src_x, src_y);
-    dst_address = image_address_fast<DstTraits>(dst, dst_x, dst_y);
-    dst_address_end = dst_address + dst_w;
-    scanline_address = scanline;
+  // For each line to draw of the source image...
+  for (y=0; y<src_h; ++y) {
+    dst_it = dstBits.begin_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
+    dst_end = dstBits.end_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
 
-    // read 'src' and 'dst' and blend them, put the result in `scanline'
-    for (x=0; x<src_w; x++) {
-      ASSERT(scanline_address >= scanline);
-      ASSERT(scanline_address <  scanline + src_w);
+    // Read 'src' and 'dst' and blend them, put the result in `scanline'
+    scanline_it = scanline.begin();
+    for (x=0; x<src_w; ++x) {
+      ASSERT(src_it >= srcBits.begin() && src_it < src_end);
+      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
+      ASSERT(scanline_it >= scanline.begin() && scanline_it < scanline_end);
 
-      ASSERT(src_address >= image_address_fast<SrcTraits>(src, src_x, src_y));
-      ASSERT(src_address <= image_address_fast<SrcTraits>(src, src_x+src_w-1, src_y));
-      ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-      ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-      ASSERT(dst_address <  dst_address_end);
+      blender(*scanline_it, *dst_it, *src_it, opacity);
 
-      blender(scanline_address, dst_address, src_address, opacity);
+      ++src_it;
 
-      src_address++;
+      int delta;
       if ((x == 0) && (first_box_w > 0))
-        dst_address += first_box_w;
+        delta = first_box_w;
       else
-        dst_address += box_w;
-      scanline_address++;
+        delta = box_w;
 
-      if (dst_address >= dst_address_end)
-        break;
+      while (dst_it != dst_end && delta-- > 0)
+        ++dst_it;
+
+      ++scanline_it;
     }
 
-    // get the 'height' of the line to be painted in 'dst'
+    // Get the 'height' of the line to be painted in 'dst'
     if ((y == 0) && (first_box_h > 0))
       line_h = first_box_h;
     else
       line_h = box_h;
 
-    // draw the line in `dst'
-    for (box_y=0; box_y<line_h; box_y++) {
-      dst_address = image_address_fast<DstTraits>(dst, dst_x, dst_y);
-      dst_address_end = dst_address + dst_w;
-      scanline_address = scanline;
+    // Draw the line in 'dst'
+    for (box_y=0; box_y<line_h; ++box_y) {
+      dst_it = dstBits.begin_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
+      dst_end = dstBits.end_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
+      scanline_it = scanline.begin();
 
       x = 0;
 
       // first pixel
       if (first_box_w > 0) {
-        for (box_x=0; box_x<first_box_w; box_x++) {
-          ASSERT(scanline_address >= scanline);
-          ASSERT(scanline_address <  scanline + src_w);
-          ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-          ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-          ASSERT(dst_address <  dst_address_end);
+        for (box_x=0; box_x<first_box_w; ++box_x) {
+          ASSERT(scanline_it != scanline_end);
+          ASSERT(dst_it != dst_end);
 
-          (*dst_address++) = (*scanline_address);
+          *dst_it = *scanline_it;
 
-          if (dst_address >= dst_address_end)
+          ++dst_it;
+          if (dst_it == dst_end)
             goto done_with_line;
         }
 
-        scanline_address++;
-        x++;
+        ++scanline_it;
+        ++x;
       }
 
       // the rest of the line
-      for (; x<src_w; x++) {
-        for (box_x=0; box_x<box_w; box_x++) {
-          ASSERT(dst_address >= image_address_fast<DstTraits>(dst, dst_x, dst_y));
-          ASSERT(dst_address <= image_address_fast<DstTraits>(dst, dst_x+dst_w-1, dst_y));
-          ASSERT(dst_address <  dst_address_end);
+      for (; x<src_w; ++x) {
+        for (box_x=0; box_x<box_w; ++box_x) {
+          ASSERT(dst_it !=  dst_end);
 
-          (*dst_address++) = (*scanline_address);
+          *dst_it = *scanline_it;
 
-          if (dst_address >= dst_address_end)
+          ++dst_it;
+          if (dst_it == dst_end)
             goto done_with_line;
         }
 
-        scanline_address++;
+        ++scanline_it;
       }
 
 done_with_line:;
-
       if (++dst_y > bottom)
         goto done_with_blit;
     }
 
     // go to the next line in the source image
-    src_y++;
+    ++src_y;
   }
 
 done_with_blit:;
-  delete[] scanline;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -420,7 +415,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   if (need_checked_bg && draw_tiled_bg)
     renderCheckedBackground(image, source_x, source_y, zoom);
   else
-    image_clear(image, bg_color);
+    clear_image(image, bg_color);
 
   // Onion-skin feature: draw the previous frame
   IDocumentSettings* docSettings = UIContext::instance()
@@ -525,10 +520,10 @@ void RenderEngine::renderCheckedBackground(Image* image,
 
   // Draw checked background (tile by tile)
   int u_start = u;
-  for (y=y_start-tile_h; y<image->h+tile_h; y+=tile_h) {
-    for (x=x_start-tile_w; x<image->w+tile_w; x+=tile_w) {
-      image_rectfill(image, x, y, x+tile_w-1, y+tile_h-1,
-                     (((u+v))&1)? c1: c2);
+  for (y=y_start-tile_h; y<image->getHeight()+tile_h; y+=tile_h) {
+    for (x=x_start-tile_w; x<image->getWidth()+tile_w; x+=tile_w) {
+      fill_rect(image, x, y, x+tile_w-1, y+tile_h-1,
+                (((u+v))&1)? c1: c2);
       ++u;
     }
     u = u_start;
@@ -577,9 +572,9 @@ void RenderEngine::renderLayer(const Layer* layer,
   if (!layer->isReadable())
     return;
 
-  switch (layer->getType()) {
+  switch (layer->type()) {
 
-    case GFXOBJ_LAYER_IMAGE: {
+    case OBJECT_LAYER_IMAGE: {
       if ((!render_background  &&  layer->isBackground()) ||
           (!render_transparent && !layer->isBackground()))
         break;
@@ -608,7 +603,7 @@ void RenderEngine::renderLayer(const Layer* layer,
           output_opacity = MID(0, cel->getOpacity(), 255);
           output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-          src_image->mask_color = m_sprite->getTransparentColor();
+          src_image->setMaskColor(m_sprite->getTransparentColor());
 
           (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
                          (cel->getX() << zoom) - source_x,
@@ -620,7 +615,7 @@ void RenderEngine::renderLayer(const Layer* layer,
       break;
     }
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 

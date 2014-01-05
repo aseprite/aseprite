@@ -38,7 +38,7 @@ static void draw_path(Path* path, Image *image, int color, double brush_size, in
 //////////////////////////////////////////////////////////////////////
 
 Path::Path(const char* name)
-  : GfxObj(GFXOBJ_PATH)
+  : Object(OBJECT_PATH)
   , name(name)
 {
   this->join = PATH_JOIN_ROUND;
@@ -52,7 +52,7 @@ Path::Path(const char* name)
 }
 
 Path::Path(const Path& path)
- : GfxObj(path)
+ : Object(path)
  , name(path.name)
 {
   this->join = path.join;
@@ -237,7 +237,7 @@ static void blend_rgb_hline(Image *image, int x1, int y, int x2, int rgb, int a)
   int x;
 
   for (x=x1; x<=x2; x++) {
-    *address = _rgba_blend_normal (*address, rgb, a);
+    *address = rgba_blend_normal (*address, rgb, a);
     address++;
   }
 }
@@ -248,7 +248,7 @@ static void blend_grayscale_hline(Image *image, int x1, int y, int x2, int k, in
   int x;
 
   for (x=x1; x<=x2; x++) {
-    *address = _graya_blend_normal(*address, k, a);
+    *address = graya_blend_normal(*address, k, a);
     address++;
   }
 }
@@ -353,7 +353,7 @@ static void art_image_svp_aa (const ArtSVP *svp,
       data.hline = blend_indexed_hline;
       break;
 
-    /* TODO make something for IMAGE_BITMAP */
+    // TODO make something for IMAGE_BITMAP
     default:
       return;
   }

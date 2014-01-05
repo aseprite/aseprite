@@ -20,44 +20,27 @@
 #include "config.h"
 #endif
 
-#include "ui/ui.h"
+#include "raster/object.h"
 
-#include "app/commands/command.h"
-#include "app/context.h"
-#include "app/dialogs/aniedit.h"
+namespace raster {
+  
+Object::Object(ObjectType type)
+{
+  m_type = type;
+}
 
-namespace app {
+Object::Object(const Object& object)
+{
+  m_type = object.m_type;
+}
 
-class FilmEditorCommand : public Command {
-public:
-  FilmEditorCommand();
-  Command* clone() { return new FilmEditorCommand(*this); }
-
-protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
-};
-
-FilmEditorCommand::FilmEditorCommand()
-  : Command("FilmEditor",
-            "Animation Editor",
-            CmdUIOnlyFlag)
+Object::~Object()
 {
 }
 
-bool FilmEditorCommand::onEnabled(Context* context)
+int Object::getMemSize() const
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  return sizeof(Object);
 }
 
-void FilmEditorCommand::onExecute(Context* context)
-{
-  switch_between_animation_and_sprite_editor(context);
-}
-
-Command* CommandFactory::createFilmEditorCommand()
-{
-  return new FilmEditorCommand;
-}
-
-} // namespace app
+} // namespace raster

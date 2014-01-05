@@ -47,7 +47,7 @@ public:
       doPointshapePoint(points[0].x, points[0].y, loop);
     }
     else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); c+=2) {
+      for (size_t c=0; c+1<points.size(); ++c) {
         int x1 = points[c].x;
         int y1 = points[c].y;
         int x2 = points[c+1].x;
@@ -92,7 +92,7 @@ public:
       doPointshapePoint(points[0].x, points[0].y, loop);
     }
     else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); c+=2) {
+      for (size_t c=0; c+1<points.size(); ++c) {
         int x1 = points[c].x;
         int y1 = points[c].y;
         int x2 = points[c+1].x;
@@ -120,7 +120,7 @@ public:
       return;
     }
 
-    for (size_t c=0; c+1<points.size(); c+=2) {
+    for (size_t c=0; c+1<points.size(); ++c) {
       int x1 = points[c].x;
       int y1 = points[c].y;
       int x2 = points[c+1].x;
@@ -148,7 +148,7 @@ public:
       doPointshapePoint(points[0].x, points[0].y, loop);
     }
     else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); c+=2) {
+      for (size_t c=0; c+1<points.size(); ++c) {
         int x1 = points[c].x;
         int y1 = points[c].y;
         int x2 = points[c+1].x;
@@ -169,7 +169,7 @@ public:
       return;
     }
 
-    for (size_t c=0; c+1<points.size(); c+=2) {
+    for (size_t c=0; c+1<points.size(); ++c) {
       int x1 = points[c].x;
       int y1 = points[c].y;
       int x2 = points[c+1].x;

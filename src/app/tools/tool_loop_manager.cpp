@@ -32,6 +32,7 @@
 #include "app/util/render.h"
 #include "gfx/region.h"
 #include "raster/image.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 
 namespace app {
@@ -61,7 +62,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   m_points.clear();
 
   // Prepare the image where we will draw on
-  image_copy(m_toolLoop->getDstImage(),
+  copy_image(m_toolLoop->getDstImage(),
              m_toolLoop->getSrcImage(), 0, 0);
 
   // Prepare the ink
@@ -168,14 +169,14 @@ void ToolLoopManager::doLoopStep(bool last_step)
     case TracePolicyLast:
       // Copy source to destination (reset the previous trace). Useful
       // for tools like Line and Ellipse tools (we kept the last trace only).
-      image_clear(m_toolLoop->getDstImage(), 0);
-      image_copy(m_toolLoop->getDstImage(), m_toolLoop->getSrcImage(), 0, 0);
+      clear_image(m_toolLoop->getDstImage(), 0);
+      copy_image(m_toolLoop->getDstImage(), m_toolLoop->getSrcImage(), 0, 0);
       break;
 
     case TracePolicyOverlap:
       // Copy destination to source (yes, destination to source). In
       // this way each new trace overlaps the previous one.
-      image_copy(m_toolLoop->getSrcImage(), m_toolLoop->getDstImage(), 0, 0);
+      copy_image(m_toolLoop->getSrcImage(), m_toolLoop->getDstImage(), 0, 0);
       break;
   }
 

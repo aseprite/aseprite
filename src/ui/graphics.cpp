@@ -8,15 +8,16 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
+#include "ui/graphics.h"
 
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "ui/draw.h"
 #include "ui/font.h"
-#include "ui/graphics.h"
 #include "ui/theme.h"
+
+#include <allegro.h>
 
 namespace ui {
 
@@ -74,6 +75,15 @@ void Graphics::drawVLine(ui::Color color, int x, int y, int h)
         m_dx+x,
         m_dy+y,
         m_dy+y+h-1, to_system(color));
+}
+
+void Graphics::drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b)
+{
+  line(m_bmp,
+    m_dx+a.x,
+    m_dy+a.y,
+    m_dx+b.x,
+    m_dy+b.y, to_system(color));
 }
 
 void Graphics::drawRect(ui::Color color, const gfx::Rect& rc)
@@ -144,13 +154,21 @@ gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 
 gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
 {
+  gfx::Point pt(0, rc.y);
+
+  if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
+    gfx::Size preSize = drawStringAlgorithm(str, ColorNone, ColorNone, rc, 0, false);
+    if (align & JI_MIDDLE)
+      pt.y = rc.y + rc.h/2 - preSize.h/2;
+    else if (align & JI_BOTTOM)
+      pt.y = rc.y + rc.h - preSize.h;
+  }
+
   gfx::Size calculatedSize(0, 0);
   size_t beg, end, new_word_beg, old_end;
   std::string line;
-  gfx::Point pt;
 
   // Draw line-by-line
-  pt.y = rc.y;
   for (beg=end=0; end != std::string::npos; ) {
     pt.x = rc.x;
 
@@ -208,19 +226,19 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
       ji_font_set_aa_mode(m_currentFont, to_system(bg));
       textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
 
-      jrectexclude(m_bmp,
-                   m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
-                   m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
+      if (!is_transparent(bg))
+        jrectexclude(m_bmp,
+          m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
+          m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
     }
 
     pt.y += lineSize.h;
+    calculatedSize.h += lineSize.h;
     beg = end+1;
   }
 
-  calculatedSize.h += pt.y;
-
   // Fill bottom area
-  if (draw) {
+  if (draw && !is_transparent(bg)) {
     if (pt.y < rc.y+rc.h)
       fillRect(bg, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
   }

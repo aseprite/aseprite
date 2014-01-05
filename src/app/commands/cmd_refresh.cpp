@@ -72,7 +72,7 @@ void RefreshCommand::onExecute(Context* context)
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
   {
     PROCESS_MEMORY_COUNTERS pmc;
-    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+    if (::GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
       StatusBar::instance()
         ->showTip(1000,
                   "Current memory: %.16g KB (%lu)\n"

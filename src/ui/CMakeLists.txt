@@ -37,7 +37,6 @@ add_library(ui-lib
   popup_window.cpp
   preferred_size_event.cpp
   property.cpp
-  rect.cpp
   register_message.cpp
   resize_event.cpp
   scroll_bar.cpp

@@ -40,8 +40,6 @@
 #include "raster/mask.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace gfx;
@@ -73,7 +71,6 @@ private:
   CheckBox* m_tiledY;
   CheckBox* m_pixelGrid;
   CheckBox* m_snapToGrid;
-  CheckBox* m_onionSkin;
   CheckBox* m_viewGrid;
   ISettings* m_settings;
   IDocumentSettings* m_docSettings;
@@ -85,7 +82,6 @@ private:
   void onPixelGridClick();
   void onSetGridClick();
   void onSnapToGridClick();
-  void onOnionSkinClick();
 };
 
 ConfigureTools::ConfigureTools()
@@ -123,7 +119,6 @@ void ConfigureTools::onExecute(Context* context)
     m_viewGrid = app::find_widget<CheckBox>(window, "view_grid");
     m_pixelGrid = app::find_widget<CheckBox>(window, "pixel_grid");
     set_grid = app::find_widget<Button>(window, "set_grid");
-    m_onionSkin = app::find_widget<CheckBox>(window, "onionskin");
   }
   catch (...) {
     delete window;
@@ -144,7 +139,6 @@ void ConfigureTools::onExecute(Context* context)
   if (m_docSettings->getSnapToGrid()) m_snapToGrid->setSelected(true);
   if (m_docSettings->getGridVisible()) m_viewGrid->setSelected(true);
   if (m_docSettings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
-  if (m_docSettings->getUseOnionskin()) m_onionSkin->setSelected(true);
 
   if (first_time) {
     // Slots
@@ -156,7 +150,6 @@ void ConfigureTools::onExecute(Context* context)
     m_pixelGrid->Click.connect(Bind<void>(&ConfigureTools::onPixelGridClick, this));
     set_grid->Click.connect(Bind<void>(&ConfigureTools::onSetGridClick, this));
     m_snapToGrid->Click.connect(Bind<void>(&ConfigureTools::onSnapToGridClick, this));
-    m_onionSkin->Click.connect(Bind<void>(&ConfigureTools::onOnionSkinClick, this));
 
     App::instance()->Exit.connect(&on_exit_delete_this_widget);
   }
@@ -238,11 +231,6 @@ void ConfigureTools::onSetGridClick()
   catch (LockedDocumentException& e) {
     Console::showException(e);
   }
-}
-
-void ConfigureTools::onOnionSkinClick()
-{
-  m_docSettings->setUseOnionskin(m_onionSkin->isSelected());
 }
 
 Command* CommandFactory::createConfigureToolsCommand()

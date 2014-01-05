@@ -36,7 +36,7 @@ using namespace ui;
 class DeveloperConsole : public Window {
 public:
   DeveloperConsole()
-    : Window(false, "Developer Console")
+    : Window(WithTitleBar, "Developer Console")
     , m_vbox(JI_VERTICAL)
   {
     m_vbox.addChild(&m_docs);
@@ -53,7 +53,7 @@ public:
     for (Documents::const_iterator
            it = context->getDocuments().begin(),
            end = context->getDocuments().end(); it != end; ++it) {
-      m_docs.addItem((*it)->getFilename());
+      m_docs.addItem((*it)->getFilename().c_str());
     }
     m_docs.addItem("---------");
   }

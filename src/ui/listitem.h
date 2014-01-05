@@ -15,7 +15,7 @@ namespace ui {
   class ListItem : public Widget
   {
   public:
-    ListItem(const char* text);
+    ListItem(const base::string& text);
 
   protected:
     void onPaint(PaintEvent& ev) OVERRIDE;

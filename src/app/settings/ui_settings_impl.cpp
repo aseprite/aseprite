@@ -30,9 +30,7 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
-#include "app/ui/main_window.h"
-#include "app/ui/workspace.h"
-#include "app/ui_context.h"
+#include "base/observable.h"
 #include "ui/manager.h"
 
 #include <algorithm>
@@ -44,6 +42,8 @@ namespace app {
 using namespace gfx;
 using namespace raster;
 using namespace filters;
+
+namespace {
 
 class UIDocumentSettingsImpl : public IDocumentSettings {
 public:
@@ -142,6 +142,29 @@ private:
   app::Color m_pixelGridColor;
 };
 
+class UISelectionSettingsImpl
+    : public ISelectionSettings
+    , public base::Observable<SelectionSettingsObserver> {
+public:
+  UISelectionSettingsImpl();
+  ~UISelectionSettingsImpl();
+
+  app::Color getMoveTransparentColor();
+  RotationAlgorithm getRotationAlgorithm();
+
+  void setMoveTransparentColor(app::Color color);
+  void setRotationAlgorithm(RotationAlgorithm algorithm);
+
+  void addObserver(SelectionSettingsObserver* observer);
+  void removeObserver(SelectionSettingsObserver* observer);
+
+private:
+  app::Color m_moveTransparentColor;
+  RotationAlgorithm m_rotationAlgorithm;
+};
+
+} // anonymous namespace
+
 //////////////////////////////////////////////////////////////////////
 // UISettingsImpl
 
@@ -149,6 +172,7 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
+  , m_selectionSettings(new UISelectionSettingsImpl)
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -230,6 +254,7 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 void UISettingsImpl::setColorSwatches(app::ColorSwatches* colorSwatches)
 {
   m_colorSwatches = colorSwatches;
+  notifyObservers<app::ColorSwatches*>(&GlobalSettingsObserver::onSetColorSwatches, colorSwatches);
 }
 
 IDocumentSettings* UISettingsImpl::getDocumentSettings(const Document* document)
@@ -258,6 +283,19 @@ void UISettingsImpl::removeColorSwatches(app::ColorSwatches* colorSwatches)
 
   if (it != m_colorSwatchesStore.end())
     m_colorSwatchesStore.erase(it);
+}
+
+void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
+  base::Observable<GlobalSettingsObserver>::addObserver(observer);
+}
+
+void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
+  base::Observable<GlobalSettingsObserver>::addObserver(observer);
+}
+
+ISelectionSettings* UISettingsImpl::selection()
+{
+  return m_selectionSettings;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -383,32 +421,40 @@ int UIDocumentSettingsImpl::getOnionskinOpacityStep()
 void UIDocumentSettingsImpl::setUseOnionskin(bool state)
 {
   m_use_onionskin = state;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinPrevFrames(int frames)
 {
   m_prev_frames_onionskin = frames;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinNextFrames(int frames)
 {
   m_next_frames_onionskin = frames;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinOpacityBase(int base)
 {
   m_onionskin_opacity_base = base;
+  redrawDocumentViews();
 }
 
 void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
+  redrawDocumentViews();
 }
 
 //////////////////////////////////////////////////////////////////////
 // Tools & pen settings
 
-class UIPenSettingsImpl : public IPenSettings {
+class UIPenSettingsImpl
+  : public IPenSettings
+  , public base::Observable<PenSettingsObserver> {
+private:
   PenType m_type;
   int m_size;
   int m_angle;
@@ -434,6 +480,7 @@ public:
   void setType(PenType type)
   {
     m_type = MID(PEN_TYPE_FIRST, type, PEN_TYPE_LAST);
+    notifyObservers<PenType>(&PenSettingsObserver::onSetPenType, m_type);
   }
 
   void setSize(int size)
@@ -448,6 +495,7 @@ public:
     // Trigger PenSizeAfterChange signal
     if (m_fireSignals)
       App::instance()->PenSizeAfterChange();
+    notifyObservers<int>(&PenSettingsObserver::onSetPenSize, m_size);
   }
 
   void setAngle(int angle)
@@ -468,9 +516,18 @@ public:
     m_fireSignals = state;
   }
 
+  void addObserver(PenSettingsObserver* observer) OVERRIDE{
+    base::Observable<PenSettingsObserver>::addObserver(observer);
+  }
+
+  void removeObserver(PenSettingsObserver* observer) OVERRIDE{
+    base::Observable<PenSettingsObserver>::addObserver(observer);
+  }
 };
 
-class UIToolSettingsImpl : public IToolSettings {
+class UIToolSettingsImpl
+  : public IToolSettings
+  , base::Observable<ToolSettingsObserver> {
   tools::Tool* m_tool;
   UIPenSettingsImpl m_pen;
   int m_opacity;
@@ -550,6 +607,14 @@ public:
   void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
   void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
 
+  void addObserver(ToolSettingsObserver* observer) OVERRIDE {
+    base::Observable<ToolSettingsObserver>::addObserver(observer);
+  }
+
+  void removeObserver(ToolSettingsObserver* observer) OVERRIDE{
+    base::Observable<ToolSettingsObserver>::removeObserver(observer);
+  }
+
 private:
   std::string getCfgSection() const {
     return std::string("Tool:") + m_tool->getId();
@@ -573,4 +638,58 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
   }
 }
 
+//////////////////////////////////////////////////////////////////////
+// Selection Settings
+
+namespace {
+
+UISelectionSettingsImpl::UISelectionSettingsImpl() :
+  m_moveTransparentColor(app::Color::fromMask()),
+  m_rotationAlgorithm(kFastRotationAlgorithm)
+{
+  m_rotationAlgorithm = (RotationAlgorithm)get_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
+  m_rotationAlgorithm = MID(
+    kFirstRotationAlgorithm,
+    m_rotationAlgorithm,
+    kLastRotationAlgorithm);
+}
+
+UISelectionSettingsImpl::~UISelectionSettingsImpl()
+{
+}
+
+app::Color UISelectionSettingsImpl::getMoveTransparentColor()
+{
+  return m_moveTransparentColor;
+}
+
+RotationAlgorithm UISelectionSettingsImpl::getRotationAlgorithm()
+{
+  return m_rotationAlgorithm;
+}
+
+void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)
+{
+  m_moveTransparentColor = color;
+  notifyObservers(&SelectionSettingsObserver::onSetMoveTransparentColor, color);
+}
+
+void UISelectionSettingsImpl::setRotationAlgorithm(RotationAlgorithm algorithm)
+{
+  m_rotationAlgorithm = algorithm;
+  set_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
+  notifyObservers(&SelectionSettingsObserver::onSetRotationAlgorithm, algorithm);
+}
+
+void UISelectionSettingsImpl::addObserver(SelectionSettingsObserver* observer)
+{
+  base::Observable<SelectionSettingsObserver>::addObserver(observer);
+}
+
+void UISelectionSettingsImpl::removeObserver(SelectionSettingsObserver* observer)
+{
+  base::Observable<SelectionSettingsObserver>::removeObserver(observer);
+}
+
+} // anonymous namespace
 } // namespace app

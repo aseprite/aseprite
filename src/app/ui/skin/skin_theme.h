@@ -19,10 +19,13 @@
 #ifndef APP_UI_SKIN_SKIN_THEME_H_INCLUDED
 #define APP_UI_SKIN_SKIN_THEME_H_INCLUDED
 
-#include "gfx/fwd.h"
+#include "app/ui/skin/skin_part.h"
 #include "app/ui/skin/skin_parts.h"
+#include "app/ui/skin/style_sheet.h"
+#include "base/compiler_specific.h"
+#include "gfx/fwd.h"
 #include "ui/color.h"
-#include "ui/rect.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
@@ -162,9 +165,10 @@ namespace app {
       gfx::Size get_part_size(int part_i) const;
 
       // helper functions to draw bounds/hlines with sheet parts
-      void draw_bounds_array(BITMAP* bmp, int x1, int y1, int x2, int y2, int parts[8]);
+      void draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8]);
       void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, ui::Color bg = ui::ColorNone);
+      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2);
       void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
       void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
@@ -177,20 +181,38 @@ namespace app {
       }
 
       void drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, float progress);
+      void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, float progress);
+
+      Style* getStyle(const std::string& id) {
+        return m_stylesheet.getStyle(id);
+      }
+
+      SkinPartPtr getPartById(const std::string& id) {
+        return m_parts_by_id[id];
+      }
+
+      ui::Color getColorById(const std::string& id) {
+        return m_colors_by_id[id];
+      }
 
     protected:
-      void onRegenerate();
+      void onRegenerate() OVERRIDE;
 
     private:
       void draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
+      void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);
+      void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
+                                BITMAP* nw, BITMAP* n, BITMAP* ne,
+                                BITMAP* e, BITMAP* se, BITMAP* s,
+                                BITMAP* sw, BITMAP* w);
 
       BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
       ui::Color getWidgetBgColor(ui::Widget* widget);
-      void drawTextStringDeprecated(const char *t, ui::Color fg_color, ui::Color bg_color,
-                                    bool fill_bg, ui::Widget* widget, const ui::JRect rect,
+      void drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::Color bg_color,
+                                    bool fill_bg, ui::Widget* widget, const gfx::Rect& rect,
                                     int selected_offset);
       void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
                           bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
@@ -203,12 +225,27 @@ namespace app {
 
       std::string m_selected_skin;
       BITMAP* m_sheet_bmp;
-      BITMAP* m_part[PARTS];
+      std::vector<BITMAP*> m_part;
+      std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, BITMAP*> m_toolicon;
+      std::map<std::string, ui::Color> m_colors_by_id;
       std::vector<ui::Cursor*> m_cursors;
       std::vector<ui::Color> m_colors;
+      StyleSheet m_stylesheet;
       FONT* m_minifont;
     };
+
+    inline Style* get_style(const std::string& id) {
+      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getStyle(id);
+    }
+
+    inline SkinPartPtr get_part_by_id(const std::string& id) {
+      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getPartById(id);
+    }
+
+    inline ui::Color get_color_by_id(const std::string& id) {
+      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getColorById(id);
+    }
 
   } // namespace skin
 } // namespace app

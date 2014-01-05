@@ -31,7 +31,7 @@ namespace app {
     const char* first();
     const char* next();
 
-    void addPath(std::string path);
+    void addPath(const std::string& path);
 
     void findInBinDir(const char* filename);
     void findInDataDir(const char* filename);

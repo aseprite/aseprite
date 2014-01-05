@@ -78,10 +78,10 @@ bool ScrollBar::onProcessMessage(Message* msg)
         mousePos.x:
         mousePos.y;
 
-      x1 = this->rc->x1;
-      y1 = this->rc->y1;
-      x2 = this->rc->x2-1;
-      y2 = this->rc->y2-1;
+      x1 = getBounds().x;
+      y1 = getBounds().y;
+      x2 = getBounds().x2()-1;
+      y2 = getBounds().y2()-1;
 
       u1 = x1 + this->border_width.l;
       v1 = y1 + this->border_width.t;
@@ -97,12 +97,12 @@ bool ScrollBar::onProcessMessage(Message* msg)
         }
         // left
         else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
-          scroll.x -= jrect_w(view->getViewport()->rc)/2;
+          scroll.x -= view->getViewport()->getBounds().w/2;
           ret = true;
         }
         // right
         else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
-          scroll.x += jrect_w(view->getViewport()->rc)/2;
+          scroll.x += view->getViewport()->getBounds().w/2;
           ret = true;
         }
       }
@@ -113,12 +113,12 @@ bool ScrollBar::onProcessMessage(Message* msg)
         }
         // left
         else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
-          scroll.y -= jrect_h(view->getViewport()->rc)/2;
+          scroll.y -= view->getViewport()->getBounds().h/2;
           ret = true;
         }
         // right
         else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
-          scroll.y += jrect_h(view->getViewport()->rc)/2;
+          scroll.y += view->getViewport()->getBounds().h/2;
           ret = true;
         }
       }
@@ -193,12 +193,12 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   int border_width;
 
   if (this->getAlign() & JI_HORIZONTAL) {
-    bar_size = jrect_w(this->rc);
+    bar_size = getBounds().w;
     viewport_size = view->getVisibleSize().w;
     border_width = this->border_width.t + this->border_width.b;
   }
   else {
-    bar_size = jrect_h(this->rc);
+    bar_size = getBounds().h;
     viewport_size = view->getVisibleSize().h;
     border_width = this->border_width.l + this->border_width.r;
   }

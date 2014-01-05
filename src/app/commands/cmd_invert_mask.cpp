@@ -29,6 +29,7 @@
 #include "base/unique_ptr.h"
 #include "raster/image.h"
 #include "raster/mask.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 
 namespace app {
@@ -89,19 +90,19 @@ void InvertMaskCommand::onExecute(Context* context)
 
     /* remove in the new mask the current sprite marked region */
     const gfx::Rect& maskBounds = document->getMask()->getBounds();
-    image_rectfill(mask->getBitmap(),
-                   maskBounds.x, maskBounds.y,
-                   maskBounds.x + maskBounds.w-1,
-                   maskBounds.y + maskBounds.h-1, 0);
+    raster::fill_rect(mask->getBitmap(),
+                      maskBounds.x, maskBounds.y,
+                      maskBounds.x + maskBounds.w-1,
+                      maskBounds.y + maskBounds.h-1, 0);
 
     // Invert the current mask in the sprite
     document->getMask()->invert();
     if (document->getMask()->getBitmap()) {
       // Copy the inverted region in the new mask
-      image_copy(mask->getBitmap(),
-                 document->getMask()->getBitmap(),
-                 document->getMask()->getBounds().x,
-                 document->getMask()->getBounds().y);
+      raster::copy_image(mask->getBitmap(),
+                         document->getMask()->getBitmap(),
+                         document->getMask()->getBounds().x,
+                         document->getMask()->getBounds().y);
     }
 
     // We need only need the area inside the sprite

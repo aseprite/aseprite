@@ -23,7 +23,7 @@
 #include "app/ini_file.h"
 
 #include "app/resource_finder.h"
-#include "ui/rect.h"
+#include "base/fs.h"
 
 #include <allegro/config.h>
 #include <allegro/file.h>
@@ -33,19 +33,19 @@ namespace app {
 
 using namespace gfx;
 
-static char config_filename[512];
+static std::string config_filename;
 
 ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
   rf.findConfigurationFile();
 
-  config_filename[0] = 0;
+  config_filename.clear();
 
   // Search the configuration file from first to last path
   while (const char* path = rf.next()) {
-    if (exists(path)) {
-      ustrcpy(config_filename, path);
+    if (base::file_exists(path)) {
+      config_filename = path;
       break;
     }
   }
@@ -53,9 +53,9 @@ ConfigModule::ConfigModule()
   // If the file wasn't found, we will create configuration file
   // in the first path
   if (config_filename[0] == 0 && rf.first())
-    ustrcpy(config_filename, rf.first());
+    config_filename = rf.first();
 
-  override_config_file(config_filename);
+  override_config_file(config_filename.c_str());
 }
 
 ConfigModule::~ConfigModule()

@@ -62,7 +62,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Layer* layer = reader.layer();
 
-  base::UniquePtr<Window> window(new Window(false, "Layer Properties"));
+  base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "Layer Properties"));
   Box* box1 = new Box(JI_VERTICAL);
   Box* box2 = new Box(JI_HORIZONTAL);
   Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);

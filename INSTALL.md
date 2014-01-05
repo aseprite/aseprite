@@ -1,16 +1,20 @@
 # What platforms are supported?
 
-You should be able to compile ASEPRITE successfully on the following
+You should be able to compile Aseprite successfully on the following
 platforms:
 
 * Windows + MSVC 2008 Express + DirectX SDK
 * Linux + GCC
 * Mac OS X
 
-# How can I compile ASEPRITE?
+# How can I compile Aseprite?
 
-The new build system for ASEPRITE is [CMake](http://www.cmake.org/).
-The following are the steps to compile ASEPRITE (in this case we have
+The new build system for Aseprite is [CMake](http://www.cmake.org/).
+You will not need any extra library because the repository already
+contains the source code of all dependencies, even a modified version
+of the Allegro library is included in master branch.
+
+The following are the steps to compile Aseprite (in this case we have
 the source code in a directory called `aseprite-source`):
 
 1. Make a build directory to leave all the files that are result of
@@ -19,7 +23,7 @@ the source code in a directory called `aseprite-source`):
         C:\...\>cd aseprite-source
         C:\...\aseprite-source>mkdir build
 
-   In this way, if you want to start with a fresh copy of ASEPRITE
+   In this way, if you want to start with a fresh copy of Aseprite
    source code, you can remove the `build` directory and start again.
 
 2. Enter in the new directory and execute cmake giving to it
@@ -55,13 +59,24 @@ the source code in a directory called `aseprite-source`):
    commands, you have to compile the project executing make, nmake,
    opening the solution, etc.
 
-4. When the project is compiled, you can copy `build/src/aseprite.exe`
-   file to `aseprite-source` and execute it. If you have used a Visual
-   Studio project, you can copy the whole `data/` directory to
-   `build/src/RelWithDebInfo/` so you can run/debug the program from
-   Visual Studio IDE.
+4. When the project is compiled, you can copy the resulting executable
+   file (e.g. `build/src/aseprite.exe`) to `aseprite-source` and
+   execute it. If you have used a Visual Studio project, you can copy
+   the whole `data/` directory to `build/src/RelWithDebInfo/` so you
+   can run/debug the program from Visual Studio IDE. On Linux, you can
+   copy the `data/` directory in `~/.aseprite/` directory.
 
-# How to profile ASEPRITE?
+# How to use installed third party libraries?
+
+If you don't want to use the embedded code of third party libraries
+(i.e. to use your installed versions), you can disable static linking
+configuring each `USE_SHARED_` option.
+
+After running `cmake -G`, you edit `build/CMakeCache.txt` file, and
+enable the `USE_SHARED_` flag (set its value to `ON`) of the library
+that you want to be linked dynamically.
+
+# How to profile Aseprite?
 
 You must compile with `Profile` configuration. For example on Linux:
 

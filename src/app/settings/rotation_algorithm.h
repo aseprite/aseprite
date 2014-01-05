@@ -16,23 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UTIL_THMBNAIL_H_INCLUDED
-#define APP_UTIL_THMBNAIL_H_INCLUDED
-
-struct BITMAP;
-
-namespace raster {
-  class Cel;
-  class Layer;
-  class Sprite;
-}
+#ifndef APP_SETTINGS_ROTATION_ALGORITHM_H_INCLUDED
+#define APP_SETTINGS_ROTATION_ALGORITHM_H_INCLUDED
 
 namespace app {
-  using namespace raster;
 
-  void destroy_thumbnails();
-  BITMAP* generate_thumbnail(const Layer* layer, const Cel* cel, const Sprite* sprite);
-  
+  enum RotationAlgorithm {
+    kFastRotationAlgorithm,
+    kRotSpriteRotationAlgorithm,
+
+    kFirstRotationAlgorithm = kFastRotationAlgorithm,
+    kLastRotationAlgorithm = kRotSpriteRotationAlgorithm
+  };
+
 } // namespace app
 
 #endif

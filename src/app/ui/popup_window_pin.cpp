@@ -38,7 +38,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-PopupWindowPin::PopupWindowPin(const char* text, bool close_on_buttonpressed)
+PopupWindowPin::PopupWindowPin(const base::string& text, bool close_on_buttonpressed)
   : PopupWindow(text, close_on_buttonpressed)
   , m_pin("")
 {
@@ -89,9 +89,9 @@ void PopupWindowPin::onHitTest(HitTestEvent& ev)
 
   if (m_pin.isSelected() &&
       ev.getHit() == HitTestClient) {
-    if (ev.getPoint().x <= rc->x1+2)
+    if (ev.getPoint().x <= getBounds().x+2)
       ev.setHit(HitTestBorderW);
-    else if (ev.getPoint().x >= rc->x2-3)
+    else if (ev.getPoint().x >= getBounds().x2()-3)
       ev.setHit(HitTestBorderE);
     else
       ev.setHit(HitTestCaption);

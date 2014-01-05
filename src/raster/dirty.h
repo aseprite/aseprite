@@ -54,9 +54,10 @@ namespace raster {
       Row(int y) : y(y) { }
     };
 
+public:
     Dirty(PixelFormat format, int x1, int y1, int x2, int y2);
     Dirty(const Dirty& src);
-    Dirty(Image* image1, Image* image2);
+    Dirty(Image* image1, Image* image2, const gfx::Rect& bounds);
     ~Dirty();
 
     int getMemSize() const;
@@ -71,7 +72,7 @@ namespace raster {
     const Row& getRow(int i) const { return *m_rows[i]; }
 
     inline int getLineSize(int width) const {
-      return pixelformat_line_size(m_format, width);
+      return calculate_rowstride_bytes(m_format, width);
     }
 
     void saveImagePixels(Image* image);

@@ -39,7 +39,6 @@ namespace ui {
 }
 
 namespace app {
-  class ColorButton;
   class StatusBar;
 
   namespace tools {
@@ -61,15 +60,6 @@ namespace app {
     double m_pos;
   };
 
-  class StatusBarObserver {
-  public:
-    virtual ~StatusBarObserver() { }
-    virtual void dispose() = 0;
-    virtual void onChangeTransparentColor(const app::Color& color) = 0;
-  };
-
-  typedef base::Observers<StatusBarObserver> StatusBarObservers;
-
   class StatusBar : public ui::Widget {
     static StatusBar* m_instance;
   public:
@@ -78,20 +68,12 @@ namespace app {
     StatusBar();
     ~StatusBar();
 
-    void addObserver(StatusBarObserver* observer);
-    void removeObserver(StatusBarObserver* observer);
-
     void clearText();
 
     bool setStatusText(int msecs, const char *format, ...);
     void showTip(int msecs, const char *format, ...);
     void showColor(int msecs, const char* text, const Color& color, int alpha);
     void showTool(int msecs, tools::Tool* tool);
-
-    void showMovePixelsOptions();
-    void hideMovePixelsOptions();
-
-    Color getTransparentColor();
 
     // Methods to add and remove progress bars
     Progress* addProgress();
@@ -104,13 +86,14 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
   private:
     void onCurrentToolChange();
-    void onTransparentColorChange();
     void updateFromLayer();
     void updateCurrentFrame();
     void newFrame();
+    void updateSubwidgetsVisibility();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
@@ -144,18 +127,9 @@ namespace app {
     ui::Widget* m_notificationsBox;
     ui::LinkLabel* m_linkLabel;
 
-    // Box with move-pixels commands (when the user drag-and-drop selected pixels using the editor)
-    ui::Box* m_movePixelsBox;
-    ui::Widget* m_transparentLabel;
-    ColorButton* m_transparentColor;
-
     // Tip window
     class CustomizedTipWindow;
     CustomizedTipWindow* m_tipwindow;
-
-    raster::LayerIndex m_hot_layer;
-
-    StatusBarObservers m_observers;
   };
 
 } // namespace app

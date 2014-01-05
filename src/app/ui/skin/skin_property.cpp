@@ -22,13 +22,15 @@
 
 #include "app/ui/skin/skin_property.h"
 
+#include "ui/widget.h"
+
 namespace app {
 namespace skin {
 
-const char* SkinProperty::SkinPropertyName = "SkinProperty";
+const char* SkinProperty::Name = "SkinProperty";
 
 SkinProperty::SkinProperty()
-  : Property(SkinPropertyName)
+  : Property(Name)
 {
   m_look = NormalLook;
   m_upperLeft = 0;
@@ -39,6 +41,19 @@ SkinProperty::SkinProperty()
 
 SkinProperty::~SkinProperty()
 {
+}
+
+SkinPropertyPtr get_skin_property(ui::Widget* widget)
+{
+  SkinPropertyPtr skinProp;
+
+  skinProp = widget->getProperty(SkinProperty::Name);
+  if (skinProp == NULL) {
+    skinProp.reset(new SkinProperty);
+    widget->setProperty(skinProp);
+  }
+
+  return skinProp;
 }
 
 } // namespace skin

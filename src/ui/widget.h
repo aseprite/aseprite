@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/string.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -17,7 +18,6 @@
 #include "ui/base.h"
 #include "ui/color.h"
 #include "ui/component.h"
-#include "ui/rect.h"
 #include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 
@@ -46,7 +46,9 @@ namespace ui {
   int jwidget_get_text_length(const Widget* widget);
   int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
-                                 JRect box, JRect text, JRect icon,
+                                 gfx::Rect* box,
+                                 gfx::Rect* text,
+                                 gfx::Rect* icon,
                                  int icon_align, int icon_w, int icon_h);
 
   void jwidget_noborders(Widget* widget);
@@ -61,7 +63,6 @@ namespace ui {
   public:
     WidgetType type;              // widget's type
 
-    JRect rc;                     /* position rectangle */
     struct {
       int l, t, r, b;
     } border_width;               /* border separation with the parent */
@@ -96,7 +97,7 @@ namespace ui {
 
     WidgetType getType() const { return this->type; }
 
-    const std::string& getId() const { return m_id; }
+    const base::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
 
     int getAlign() const { return m_align; }
@@ -104,15 +105,15 @@ namespace ui {
 
     // Text property.
 
-    bool hasText() const { return flags & JI_NOTEXT ? false: true; }
+    bool hasText() const { return (flags & JI_HASTEXT) == JI_HASTEXT; }
 
-    const char* getText() const { return m_text.c_str(); }
+    const base::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
     size_t getTextSize() const { return m_text.size(); }
-    void setText(const char* text);
+    void setText(const base::string& text);
     void setTextf(const char* text, ...);
-    void setTextQuiet(const char* text);
+    void setTextQuiet(const base::string& text);
 
     // ===============================================================
     // COMMON PROPERTIES
@@ -247,12 +248,12 @@ namespace ui {
     // POSITION & GEOMETRY
     // ===============================================================
 
-    gfx::Rect getBounds() const {
-      return gfx::Rect(rc->x1, rc->y1, jrect_w(rc), jrect_h(rc));
-    }
+    gfx::Rect getBounds() const { return m_bounds; }
+    gfx::Point getOrigin() const { return m_bounds.getOrigin(); }
+    gfx::Size getSize() const { return m_bounds.getSize(); }
 
     gfx::Rect getClientBounds() const {
-      return gfx::Rect(0, 0, jrect_w(rc), jrect_h(rc));
+      return gfx::Rect(0, 0, m_bounds.w, m_bounds.h);
     }
 
     gfx::Rect getChildrenBounds() const;
@@ -332,6 +333,7 @@ namespace ui {
     bool isScancodeMnemonic(int scancode) const;
 
   protected:
+    void offsetWidgets(int dx, int dy);
 
     // ===============================================================
     // MESSAGE PROCESSING
@@ -359,13 +361,14 @@ namespace ui {
     virtual void onSetText();
 
   private:
-    std::string m_id;             // Widget's id
+    base::string m_id;            // Widget's id
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
-    std::string m_text;           // Widget text
+    base::string m_text;          // Widget text
     struct FONT *m_font;          // Text font type
     ui::Color m_bgColor;          // Background color
-    gfx::Region m_updateRegion;;  // Region to be redrawed.
+    gfx::Rect m_bounds;
+    gfx::Region m_updateRegion;   // Region to be redrawed.
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_preferredSize;

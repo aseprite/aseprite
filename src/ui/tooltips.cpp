@@ -43,7 +43,7 @@ TooltipManager::~TooltipManager()
   manager->removeMessageFilterFor(this);
 }
 
-void TooltipManager::addTooltipFor(Widget* widget, const char* text, int arrowAlign)
+void TooltipManager::addTooltipFor(Widget* widget, const base::string& text, int arrowAlign)
 {
   m_tips[widget] = TipInfo(text, arrowAlign);
 }
@@ -99,8 +99,8 @@ void TooltipManager::onTick()
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
     m_tipWindow->remapWindow();
 
-    w = jrect_w(m_tipWindow->rc);
-    h = jrect_h(m_tipWindow->rc);
+    w = m_tipWindow->getBounds().w;
+    h = m_tipWindow->getBounds().h;
 
     switch (m_target.tipInfo.arrowAlign) {
       case JI_TOP | JI_LEFT:
@@ -152,7 +152,7 @@ void TooltipManager::onTick()
 // TipWindow
 
 TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
-  : Window(false, text)
+  : Window(WithTitleBar, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_filtering = false;

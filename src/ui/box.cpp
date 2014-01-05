@@ -14,7 +14,6 @@
 #include "ui/box.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 
@@ -97,14 +96,14 @@ void Box::onResize(ResizeEvent& ev)
   {                                                                     \
     if (nvis_children > 0) {                                            \
       if (getAlign() & JI_HOMOGENEOUS) {                                \
-        width = (jrect_##w(this->rc)                                    \
+        width = (getBounds().w                                          \
                  - this->border_width.l                                 \
                  - this->border_width.r                                 \
                  - this->child_spacing * (nvis_children - 1));          \
         extra = width / nvis_children;                                  \
       }                                                                 \
       else if (nexpand_children > 0) {                                  \
-        width = jrect_##w(this->rc) - reqSize.w;                        \
+        width = getBounds().w - reqSize.w;                              \
         extra = width / nexpand_children;                               \
       }                                                                 \
       else {                                                            \
@@ -112,9 +111,9 @@ void Box::onResize(ResizeEvent& ev)
         extra = 0;                                                      \
       }                                                                 \
                                                                         \
-      x = this->rc->x##1 + this->border_width.l;                        \
-      y = this->rc->y##1 + this->border_width.t;                        \
-      h = MAX(1, jrect_##h(this->rc)                                    \
+      x = getBounds().x + this->border_width.l;                         \
+      y = getBounds().y + this->border_width.t;                         \
+      h = MAX(1, getBounds().h                                          \
                  - this->border_width.t                                 \
                  - this->border_width.b);                               \
                                                                         \

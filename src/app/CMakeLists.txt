@@ -33,7 +33,6 @@ add_library(app-library
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp
-  commands/cmd_film_editor.cpp
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
   commands/cmd_frame_properties.cpp
@@ -47,6 +46,7 @@ add_library(app-library
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
   commands/cmd_load_mask.cpp
+  commands/cmd_load_palette.cpp
   commands/cmd_mask_all.cpp
   commands/cmd_mask_by_color.cpp
   commands/cmd_merge_down_layer.cpp
@@ -71,11 +71,13 @@ add_library(app-library
   commands/cmd_rotate_canvas.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
+  commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
+  commands/cmd_timeline.cpp
   commands/cmd_undo.cpp
   commands/command.cpp
   commands/commands.cpp
@@ -96,10 +98,9 @@ add_library(app-library
   context_flags.cpp
   context_observer_list.cpp
   data_recovery.cpp
-  dialogs/aniedit.cpp
-  dialogs/maskcol.cpp
   document.cpp
   document_api.cpp
+  document_exporter.cpp
   document_location.cpp
   document_undo.cpp
   documents.cpp
@@ -176,11 +177,15 @@ add_library(app-library
   ui/palette_view.cpp
   ui/popup_window_pin.cpp
   ui/skin/button_icon_impl.cpp
+  ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
   ui/skin/skin_theme.cpp
+  ui/skin/style.cpp
+  ui/skin/style_sheet.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
+  ui/timeline.cpp
   ui/toolbar.cpp
   ui/workspace.cpp
   ui/workspace_part.cpp
@@ -227,7 +232,7 @@ add_library(app-library
   util/msk_file.cpp
   util/pic_file.cpp
   util/render.cpp
-  util/thmbnail.cpp
   webserver.cpp
   widget_loader.cpp
+  xml_document.cpp
   xml_exception.cpp)

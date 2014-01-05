@@ -86,6 +86,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
+  gfx::Rect m_dirtyBounds;
   tools::ShadeTable8* m_shadeTable;
 
 public:
@@ -175,7 +176,7 @@ public:
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
-        m_expandCelCanvas.commit();
+        m_expandCelCanvas.commit(m_dirtyBounds);
       }
       // Selection ink
       else if (getInk()->isSelection()) {
@@ -247,6 +248,7 @@ public:
 
   void updateDirtyArea() OVERRIDE
   {
+    m_dirtyBounds = m_dirtyBounds.createUnion(m_dirtyArea.getBounds());
     m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
   }
 
@@ -358,15 +360,26 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
   }
 
   // Create the new tool loop
-  return
-    new ToolLoopImpl(editor,
-                     context,
-                     current_tool,
-                     editor->getDocument(),
-                     msg->left() ? tools::ToolLoop::Left:
-                                   tools::ToolLoop::Right,
-                     msg->left() ? fg: bg,
-                     msg->left() ? bg: fg);
+  try
+  {
+    return new ToolLoopImpl(editor,
+                            context,
+                            current_tool,
+                            editor->getDocument(),
+                            msg->left() ? tools::ToolLoop::Left:
+                                          tools::ToolLoop::Right,
+                            msg->left() ? fg: bg,
+                            msg->left() ? bg: fg);
+  }
+  catch (const std::exception& ex)
+  {
+    Alert::show(PACKAGE
+                "<<Error drawing ink:"
+                "<<%s"
+                "||&Close",
+                ex.what());
+    return NULL;
+  }
 }
 
 } // namespace app

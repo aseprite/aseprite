@@ -1,6 +1,6 @@
 // The floodfill routine.
 // By Shawn Hargreaves.
-// Adapted to ASEPRITE by David Capello
+// Adapted to Aseprite by David Capello
 //
 // This source file is distributed under a Allegro license, please
 // read allegro4-LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 
 #include "raster/algo.h"
 #include "raster/image.h"
+#include "raster/primitives.h"
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -38,19 +39,19 @@ static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_LINE(c)            (((FLOODED_LINE *)_scratch_mem) + c)
 
-static inline bool color_equal_32(uint32_t c1, uint32_t c2, int tolerance)
+static inline bool color_equal_32(color_t c1, color_t c2, int tolerance)
 {
   if (tolerance == 0)
-    return (c1 == c2) || (_rgba_geta(c1) == 0 && _rgba_geta(c2) == 0);
+    return (c1 == c2) || (rgba_geta(c1) == 0 && rgba_geta(c2) == 0);
   else {
-    int r1 = _rgba_getr(c1);
-    int g1 = _rgba_getg(c1);
-    int b1 = _rgba_getb(c1);
-    int a1 = _rgba_geta(c1);
-    int r2 = _rgba_getr(c2);
-    int g2 = _rgba_getg(c2);
-    int b2 = _rgba_getb(c2);
-    int a2 = _rgba_geta(c2);
+    int r1 = rgba_getr(c1);
+    int g1 = rgba_getg(c1);
+    int b1 = rgba_getb(c1);
+    int a1 = rgba_geta(c1);
+    int r2 = rgba_getr(c2);
+    int g2 = rgba_getg(c2);
+    int b2 = rgba_getb(c2);
+    int a2 = rgba_geta(c2);
 
     if (a1 == 0 && a2 == 0)
       return true;
@@ -62,15 +63,15 @@ static inline bool color_equal_32(uint32_t c1, uint32_t c2, int tolerance)
   }
 }
 
-static inline bool color_equal_16(uint16_t c1, uint16_t c2, int tolerance)
+static inline bool color_equal_16(color_t c1, color_t c2, int tolerance)
 {
   if (tolerance == 0)
-    return (c1 == c2) || (_graya_geta(c1) == 0 && _graya_geta(c2) == 0);
+    return (c1 == c2) || (graya_geta(c1) == 0 && graya_geta(c2) == 0);
   else {
-    int k1 = _graya_getv(c1);
-    int a1 = _graya_geta(c1);
-    int k2 = _graya_getv(c2);
-    int a2 = _graya_geta(c2);
+    int k1 = graya_getv(c1);
+    int a1 = graya_geta(c1);
+    int k2 = graya_getv(c2);
+    int a2 = graya_geta(c2);
 
     if (a1 == 0 && a2 == 0)
       return true;
@@ -80,12 +81,12 @@ static inline bool color_equal_16(uint16_t c1, uint16_t c2, int tolerance)
   }
 }
 
-static inline bool color_equal_8(uint8_t c1, uint8_t c2, int tolerance)
+static inline bool color_equal_8(color_t c1, color_t c2, int tolerance)
 {
   if (tolerance == 0)
     return (c1 == c2);
   else
-    return ABS(c1-c2) <= tolerance;
+    return ABS((int)c1 - (int)c2) <= tolerance;
 }
 
 
@@ -95,8 +96,8 @@ static inline bool color_equal_8(uint8_t c1, uint8_t c2, int tolerance)
  *  to the list of drawn segments. Returns the first x coordinate after
  *  the part of the line which it has dealt with.
  */
-static int flooder (Image *image, int x, int y,
-                    int src_color, int tolerance, void *data, AlgoHLine proc)
+static int flooder(Image *image, int x, int y,
+                   color_t src_color, int tolerance, void *data, AlgoHLine proc)
 {
   FLOODED_LINE *p;
   int left = 0, right = 0;
@@ -106,20 +107,20 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_RGB:
       {
-        uint32_t* address = ((uint32_t**)image->line)[y];
+        uint32_t* address = reinterpret_cast<uint32_t*>(image->getPixelAddress(0, y));
 
-        /* check start pixel */
+        // Check start pixel
         if (!color_equal_32((int)*(address+x), src_color, tolerance))
           return x+1;
 
-        /* work left from starting point */
+        // Work left from starting point
         for (left=x-1; left>=0; left--) {
           if (!color_equal_32((int)*(address+left), src_color, tolerance))
             break;
         }
 
-        /* work right from starting point */
-        for (right=x+1; right<image->w; right++) {
+        // Work right from starting point
+        for (right=x+1; right<image->getWidth(); right++) {
           if (!color_equal_32((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -128,20 +129,20 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_GRAYSCALE:
       {
-        uint16_t* address = ((uint16_t**)image->line)[y];
+        uint16_t* address = reinterpret_cast<uint16_t*>(image->getPixelAddress(0, y));
 
-        /* check start pixel */
+        // Check start pixel
         if (!color_equal_16((int)*(address+x), src_color, tolerance))
           return x+1;
 
-        /* work left from starting point */
+        // Work left from starting point
         for (left=x-1; left>=0; left--) {
           if (!color_equal_16((int)*(address+left), src_color, tolerance))
             break;
         }
 
-        /* work right from starting point */
-        for (right=x+1; right<image->w; right++) {
+        // Work right from starting point
+        for (right=x+1; right<image->getWidth(); right++) {
           if (!color_equal_16((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -150,20 +151,20 @@ static int flooder (Image *image, int x, int y,
 
     case IMAGE_INDEXED:
       {
-        uint8_t* address = ((uint8_t**)image->line)[y];
+        uint8_t* address = image->getPixelAddress(0, y);
 
-        /* check start pixel */
+        // Check start pixel
         if (!color_equal_8((int)*(address+x), src_color, tolerance))
           return x+1;
 
-        /* work left from starting point */
+        // Work left from starting point
         for (left=x-1; left>=0; left--) {
           if (!color_equal_8((int)*(address+left), src_color, tolerance))
             break;
         }
 
-        /* work right from starting point */
-        for (right=x+1; right<image->w; right++) {
+        // Work right from starting point
+        for (right=x+1; right<image->getWidth(); right++) {
           if (!color_equal_8((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -171,19 +172,19 @@ static int flooder (Image *image, int x, int y,
       break;
 
     default:
-      /* check start pixel */
-      if (image_getpixel(image, x, y) != src_color)
+      // Check start pixel
+      if (get_pixel(image, x, y) != src_color)
         return x+1;
 
-      /* work left from starting point */
+      // Work left from starting point
       for (left=x-1; left>=0; left--) {
-        if (image_getpixel(image, left, y) != src_color)
+        if (get_pixel(image, left, y) != src_color)
           break;
       }
 
-      /* work right from starting point */
-      for (right=x+1; right<image->w; right++) {
-        if (image_getpixel(image, right, y) != src_color)
+      // Work right from starting point
+      for (right=x+1; right<image->getWidth(); right++) {
+        if (get_pixel(image, right, y) != src_color)
           break;
       }
       break;
@@ -219,7 +220,7 @@ static int flooder (Image *image, int x, int y,
   if (y > 0)
     p->flags |= FLOOD_TODO_ABOVE;
 
-  if (y+1 < image->h)
+  if (y+1 < image->getHeight())
     p->flags |= FLOOD_TODO_BELOW;
 
   return right+2;
@@ -270,21 +271,20 @@ static int check_flood_line(Image* image, int y, int left, int right,
  */
 void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoHLine proc)
 {
-  int src_color;
   int c, done;
   FLOODED_LINE *p;
 
   /* make sure we have a valid starting point */
-  if ((x < 0) || (x >= image->w) ||
-      (y < 0) || (y >= image->h))
+  if ((x < 0) || (x >= image->getWidth()) ||
+      (y < 0) || (y >= image->getHeight()))
     return;
 
   /* what color to replace? */
-  src_color = image_getpixel (image, x, y);
+  color_t src_color = get_pixel(image, x, y);
 
   /* set up the list of flooded segments */
-  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->h);
-  flood_count = image->h;
+  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->getHeight());
+  flood_count = image->getHeight();
   p = (FLOODED_LINE*)_scratch_mem;
   for (c=0; c<flood_count; c++) {
     p[c].flags = 0;
@@ -323,7 +323,7 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
                              src_color, tolerance, data, proc)) {
           done = false;
           /* special case shortcut for going backwards */
-          if ((c < image->h) && (c > 0))
+          if ((c < image->getHeight()) && (c > 0))
             c -= 2;
         }
       }

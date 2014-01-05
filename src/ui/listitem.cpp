@@ -20,7 +20,7 @@ namespace ui {
 
 using namespace gfx;
 
-ListItem::ListItem(const char* text)
+ListItem::ListItem(const base::string& text)
   : Widget(kListItemWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);

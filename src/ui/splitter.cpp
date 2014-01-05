@@ -33,11 +33,6 @@ Splitter::Splitter(Type type, int align)
   initTheme();
 }
 
-double Splitter::getPosition() const
-{
-  return m_pos;
-}
-
 void Splitter::setPosition(double pos)
 {
   if (m_type == ByPercentage)
@@ -69,16 +64,16 @@ bool Splitter::onProcessMessage(Message* msg)
             ++bar;
 
             if (this->getAlign() & JI_HORIZONTAL) {
-              x1 = c1->rc->x2;
-              y1 = this->rc->y1;
-              x2 = c2->rc->x1;
-              y2 = this->rc->y2;
+              x1 = c1->getBounds().x2();
+              y1 = getBounds().y;
+              x2 = c2->getBounds().x;
+              y2 = getBounds().y2();
             }
             else {
-              x1 = this->rc->x1;
-              y1 = c1->rc->y2;
-              x2 = this->rc->x2;
-              y2 = c2->rc->y1;
+              x1 = getBounds().x;
+              y1 = c1->getBounds().y2();
+              x2 = getBounds().x2();
+              y2 = c2->getBounds().y;
             }
 
             if ((mousePos.x >= x1) && (mousePos.x < x2) &&
@@ -104,22 +99,22 @@ bool Splitter::onProcessMessage(Message* msg)
         if (getAlign() & JI_HORIZONTAL) {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (mousePos.x-this->rc->x1) / jrect_w(this->rc);
+              m_pos = 100.0 * (mousePos.x - getBounds().x) / getBounds().w;
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = mousePos.x-this->rc->x1;
+              m_pos = mousePos.x - getBounds().x;
               break;
           }
         }
         else {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (mousePos.y-this->rc->y1) / jrect_h(this->rc);
+              m_pos = 100.0 * (mousePos.y-getBounds().y) / getBounds().h;
               m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
-              m_pos = (mousePos.y-this->rc->y1);
+              m_pos = (mousePos.y-getBounds().y);
               break;
           }
         }
@@ -149,16 +144,16 @@ bool Splitter::onProcessMessage(Message* msg)
             c2 = *(it+1);
 
             if (this->getAlign() & JI_HORIZONTAL) {
-              x1 = c1->rc->x2;
-              y1 = this->rc->y1;
-              x2 = c2->rc->x1;
-              y2 = this->rc->y2;
+              x1 = c1->getBounds().x2();
+              y1 = getBounds().y;
+              x2 = c2->getBounds().x;
+              y2 = getBounds().y2();
             }
             else {
-              x1 = this->rc->x1;
-              y1 = c1->rc->y2;
-              x2 = this->rc->x2;
-              y2 = c2->rc->y1;
+              x1 = getBounds().x;
+              y1 = c1->getBounds().y2();
+              x2 = getBounds().x2();
+              y2 = c2->getBounds().y;
             }
 
             if ((mousePos.x >= x1) && (mousePos.x < x2) &&

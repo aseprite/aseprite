@@ -156,7 +156,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Move cel X,Y coordinates
   if (clickedInk->isCelMovement()) {
     if ((layer) &&
-        (layer->getType() == GFXOBJ_LAYER_IMAGE)) {
+        (layer->type() == OBJECT_LAYER_IMAGE)) {
       // TODO you can move the `Background' with tiled mode
       if (layer->isBackground()) {
         Alert::show(PACKAGE
@@ -458,8 +458,8 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     int alpha = 255;
     switch (format) {
-      case IMAGE_RGB: alpha = _rgba_geta(pixel); break;
-      case IMAGE_GRAYSCALE: alpha = _graya_geta(pixel); break;
+      case IMAGE_RGB: alpha = rgba_geta(pixel); break;
+      case IMAGE_GRAYSCALE: alpha = graya_geta(pixel); break;
     }
 
     char buf[256];
@@ -472,12 +472,13 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (editor->getDocument()->isMaskVisible() ? 
        editor->getDocument()->getMask(): NULL);
 
-    StatusBar::instance()->setStatusText
-      (0, "Pos %d %d, Size %d %d, Frame %d",
-       x, y,
-       (mask ? mask->getBounds().w: sprite->getWidth()),
-       (mask ? mask->getBounds().h: sprite->getHeight()),
-       editor->getFrame()+1);
+    StatusBar::instance()->setStatusText(0,
+      "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
+      x, y,
+      (mask ? mask->getBounds().w: sprite->getWidth()),
+      (mask ? mask->getBounds().h: sprite->getHeight()),
+      editor->getFrame()+1,
+      sprite->getFrameDuration(editor->getFrame()));
   }
 
   return true;
@@ -490,27 +491,34 @@ gfx::Transformation StandbyState::getTransformation(Editor* editor)
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
-  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-  Document* document = editor->getDocument();
-  base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
-  int x = document->getMask()->getBounds().x;
-  int y = document->getMask()->getBounds().y;
-  int opacity = 255;
-  Sprite* sprite = editor->getSprite();
-  Layer* layer = editor->getLayer();
-  PixelsMovement* pixelsMovement =
-    new PixelsMovement(UIContext::instance(),
-                       document, sprite, layer,
-                       tmpImage, x, y, opacity,
-                       "Transformation");
+  try {
+    EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
+    Document* document = editor->getDocument();
+    base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
+    int x = document->getMask()->getBounds().x;
+    int y = document->getMask()->getBounds().y;
+    int opacity = 255;
+    Sprite* sprite = editor->getSprite();
+    Layer* layer = editor->getLayer();
+    PixelsMovementPtr pixelsMovement(
+      new PixelsMovement(UIContext::instance(),
+        document, sprite, layer,
+        tmpImage, x, y, opacity,
+        "Transformation"));
 
-  // If the Ctrl key is pressed start dragging a copy of the selection
-  if (customization && customization->isCopySelectionKeyPressed())
-    pixelsMovement->copyMask();
-  else
-    pixelsMovement->cutMask();
+    // If the Ctrl key is pressed start dragging a copy of the selection
+    if (customization && customization->isCopySelectionKeyPressed())
+      pixelsMovement->copyMask();
+    else
+      pixelsMovement->cutMask();
 
-  editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
+    editor->setState(EditorStatePtr(new MovingPixelsState(editor, msg, pixelsMovement, handle)));
+  }
+  catch (const LockedDocumentException&) {
+    // Other editor is locking the document.
+
+    // TODO steal the PixelsMovement of the other editor and use it for this one.
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

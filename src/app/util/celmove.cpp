@@ -40,6 +40,7 @@
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
@@ -111,7 +112,7 @@ void move_cel(ContextWriter& writer)
       if (!src_layer->isBackground() &&
           dst_layer->isBackground()) {
         Image* src_image = sprite->getStock()->getImage(src_cel->getImage());
-        Image* dst_image = image_crop(src_image,
+        Image* dst_image = crop_image(src_image,
                                       -src_cel->getX(),
                                       -src_cel->getY(),
                                       sprite->getWidth(),
@@ -124,8 +125,8 @@ void move_cel(ContextWriter& writer)
           undo.pushUndoer(new undoers::SetCelOpacity(undo.getObjects(), src_cel));
         }
 
-        image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
-        image_merge(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
+        clear_image(dst_image, app_get_color_to_clear_layer(dst_layer));
+        composite_image(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
 
         src_cel->setPosition(0, 0);
         src_cel->setOpacity(255);
@@ -180,14 +181,14 @@ void copy_cel(ContextWriter& writer)
     // background layer, we have to clear the background of the image.
     if (!src_layer->isBackground() &&
         dst_layer->isBackground()) {
-      dst_image = image_crop(src_image,
+      dst_image = crop_image(src_image,
                              -src_cel->getX(),
                              -src_cel->getY(),
                              sprite->getWidth(),
                              sprite->getHeight(), 0);
 
-      image_clear(dst_image, app_get_color_to_clear_layer(dst_layer));
-      image_merge(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
+      clear_image(dst_image, app_get_color_to_clear_layer(dst_layer));
+      composite_image(dst_image, src_image, src_cel->getX(), src_cel->getY(), 255, BLEND_MODE_NORMAL);
 
       dst_cel_x = 0;
       dst_cel_y = 0;

@@ -23,6 +23,7 @@
 #include "app/gui_xml.h"
 
 #include "app/resource_finder.h"
+#include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/fs.h"
 
@@ -54,9 +55,9 @@ GuiXml::GuiXml()
 
     PRINTF(" - \"%s\" found\n", path);
 
-    // Try to load the XML file
-    if (!m_doc.LoadFile(path))
-      throw XmlException(&m_doc);
+    // Load the XML file. As we've already checked "path" existence,
+    // in a case of exception we should show the error and stop.
+    m_doc = app::open_xml(path);
 
     // Done, we load the file successfully.
     return;
@@ -65,14 +66,9 @@ GuiXml::GuiXml()
   throw base::Exception("gui.xml was not found");
 }
 
-TiXmlDocument& GuiXml::doc()
+base::string GuiXml::version()
 {
-  return m_doc;
-}
-
-std::string GuiXml::version()
-{
-  TiXmlHandle handle(&m_doc);
+  TiXmlHandle handle(m_doc);
   TiXmlElement* xmlKey = handle.FirstChild("gui").ToElement();
 
   if (xmlKey && xmlKey->Attribute("version")) {

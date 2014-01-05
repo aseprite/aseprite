@@ -38,7 +38,6 @@
 #include "ui/button.h"
 #include "ui/close_event.h"
 #include "ui/message.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 
 namespace app {
@@ -87,9 +86,9 @@ protected:
     rect.w = playSize.w;
     rect.h = playSize.h;
 
-    rect.offset(window->rc->x2 - 3*jguiscale()
+    rect.offset(window->getBounds().x2() - 3*jguiscale()
                 - playSize.w - 1*jguiscale() - closeSize.w,
-                window->rc->y1 + 3*jguiscale());
+                window->getBounds().y + 3*jguiscale());
 
     setBounds(rect);
   }
@@ -111,7 +110,7 @@ private:
 };
 
 MiniEditorWindow::MiniEditorWindow()
-  : Window(false, "Mini-Editor")
+  : Window(WithTitleBar, "Mini-Editor")
   , m_docView(NULL)
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
@@ -123,8 +122,8 @@ MiniEditorWindow::MiniEditorWindow()
   // Default bounds
   int width = JI_SCREEN_W/4;
   int height = JI_SCREEN_H/4;
-  setBounds(gfx::Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
-                      JI_SCREEN_H - height - jrect_h(StatusBar::instance()->rc),
+  setBounds(gfx::Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
+                      JI_SCREEN_H - height - StatusBar::instance()->getBounds().h,
                       width, height));
 
   load_window_pos(this, "MiniEditor");

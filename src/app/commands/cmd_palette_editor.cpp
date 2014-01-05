@@ -48,6 +48,8 @@
 #include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
@@ -59,9 +61,8 @@
 #include "ui/graphics.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
 namespace app {
@@ -88,8 +89,6 @@ protected:
   void onMoreOptionsClick(Event& ev);
   void onCopyColorsClick(Event& ev);
   void onPasteColorsClick(Event& ev);
-  void onLoadPaletteClick(Event& ev);
-  void onSavePaletteClick(Event& ev);
   void onRampClick(Event& ev);
   void onQuantizeClick(Event& ev);
 
@@ -114,8 +113,6 @@ private:
   HsvSliders m_hsvSliders;
   Button m_copyButton;
   Button m_pasteButton;
-  Button m_loadButton;
-  Button m_saveButton;
   Button m_rampButton;
   Button m_quantizeButton;
 
@@ -216,10 +213,10 @@ void PaletteEditorCommand::onExecute(Context* context)
       // Default bounds
       g_window->remapWindow();
 
-      int width = MAX(jrect_w(g_window->rc), JI_SCREEN_W/2);
-      g_window->setBounds(Rect(JI_SCREEN_W - width - jrect_w(ToolBar::instance()->rc),
-                               JI_SCREEN_H - jrect_h(g_window->rc) - jrect_h(StatusBar::instance()->rc),
-                              width, jrect_h(g_window->rc)));
+      int width = MAX(g_window->getBounds().w, JI_SCREEN_W/2);
+      g_window->setBounds(Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
+                               JI_SCREEN_H - g_window->getBounds().h - StatusBar::instance()->getBounds().h,
+                               width, g_window->getBounds().h));
 
       // Load window configuration
       load_window_pos(g_window, "PaletteEditor");
@@ -246,7 +243,7 @@ void PaletteEditorCommand::onExecute(Context* context)
 // Based on ColorSelector class.
 
 PaletteEntryEditor::PaletteEntryEditor()
-  : Window(false, "Palette Editor (F4)")
+  : Window(WithTitleBar, "Palette Editor (F4)")
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_bottomBox(JI_HORIZONTAL)
@@ -256,8 +253,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_moreOptions("+")
   , m_copyButton("Copy")
   , m_pasteButton("Paste")
-  , m_loadButton("Load")
-  , m_saveButton("Save")
   , m_rampButton("Ramp")
   , m_quantizeButton("Quantize")
   , m_disableHexUpdate(false)
@@ -275,8 +270,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   setup_mini_look(&m_moreOptions);
   setup_mini_look(&m_copyButton);
   setup_mini_look(&m_pasteButton);
-  setup_mini_look(&m_loadButton);
-  setup_mini_look(&m_saveButton);
   setup_mini_look(&m_rampButton);
   setup_mini_look(&m_quantizeButton);
 
@@ -294,13 +287,6 @@ PaletteEntryEditor::PaletteEntryEditor()
     box->child_spacing = 0;
     box->addChild(&m_copyButton);
     box->addChild(&m_pasteButton);
-    m_bottomBox.addChild(box);
-  }
-  {
-    Box* box = new Box(JI_HORIZONTAL);
-    box->child_spacing = 0;
-    box->addChild(&m_loadButton);
-    box->addChild(&m_saveButton);
     m_bottomBox.addChild(box);
   }
   m_bottomBox.addChild(&m_rampButton);
@@ -321,8 +307,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
   m_copyButton.Click.connect(&PaletteEntryEditor::onCopyColorsClick, this);
   m_pasteButton.Click.connect(&PaletteEntryEditor::onPasteColorsClick, this);
-  m_loadButton.Click.connect(&PaletteEntryEditor::onLoadPaletteClick, this);
-  m_saveButton.Click.connect(&PaletteEntryEditor::onSavePaletteClick, this);
   m_rampButton.Click.connect(&PaletteEntryEditor::onRampClick, this);
   m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeClick, this);
 
@@ -497,8 +481,7 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     reqSize.h += 4;
 
     // Remove the space occupied by the "More options" panel
-    moveWindow(gfx::Rect(rc->x1, rc->y1,
-                         jrect_w(rc), jrect_h(rc) - reqSize.h));
+    moveWindow(gfx::Rect(getOrigin(), getSize() - gfx::Size(0, reqSize.h)));
   }
   else {
     set_config_bool("PaletteEditor", "ShowMoreOptions", true);
@@ -508,9 +491,8 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
     reqSize = getPreferredSize();
 
     // Add space for the "more_options" panel
-    if (jrect_h(rc) < reqSize.h) {
-      gfx::Rect rect(rc->x1, rc->y1,
-                     jrect_w(rc), reqSize.h);
+    if (getBounds().h < reqSize.h) {
+      gfx::Rect rect(getOrigin(), gfx::Size(getBounds().w, reqSize.h));
 
       // Show the expanded area inside the screen
       if (rect.y2() > JI_SCREEN_H)
@@ -575,47 +557,6 @@ void PaletteEntryEditor::onPasteColorsClick(Event& ev)
   onPalChange();
 }
 
-void PaletteEntryEditor::onLoadPaletteClick(Event& ev)
-{
-  Palette *palette;
-  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
-  if (!filename.empty()) {
-    palette = Palette::load(filename.c_str());
-    if (!palette) {
-      Alert::show("Error<<Loading palette file||&Close");
-    }
-    else {
-      setNewPalette(palette, "Load Palette");
-      delete palette;
-    }
-  }
-}
-
-void PaletteEntryEditor::onSavePaletteClick(Event& ev)
-{
-  base::string filename;
-  int ret;
-
- again:
-  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
-  if (!filename.empty()) {
-    if (exists(filename.c_str())) {
-      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        get_filename(filename.c_str()));
-
-      if (ret == 2)
-        goto again;
-      else if (ret != 1)
-        return;
-    }
-
-    Palette* palette = get_current_palette();
-    if (!palette->save(filename.c_str())) {
-      Alert::show("Error<<Saving palette file||&Close");
-    }
-  }
-}
-
 void PaletteEntryEditor::onRampClick(Event& ev)
 {
   PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
@@ -665,9 +606,9 @@ void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
-  uint32_t new_pal_color = _rgba(color.getRed(),
-                                 color.getGreen(),
-                                 color.getBlue(), 255);
+  color_t new_pal_color = raster::rgba(color.getRed(),
+                                       color.getGreen(),
+                                       color.getBlue(), 255);
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -694,9 +635,9 @@ void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSl
     if (entries[c]) {
       // Get the current RGB values of the palette entry
       src_color = palette->getEntry(c);
-      r = _rgba_getr(src_color);
-      g = _rgba_getg(src_color);
-      b = _rgba_getb(src_color);
+      r = rgba_getr(src_color);
+      g = rgba_getg(src_color);
+      b = rgba_getb(src_color);
 
       switch (color.getType()) {
 
@@ -761,7 +702,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSl
           break;
       }
 
-      palette->setEntry(c, _rgba(r, g, b, 255));
+      palette->setEntry(c, raster::rgba(r, g, b, 255));
     }
   }
 }

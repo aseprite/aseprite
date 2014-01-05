@@ -28,6 +28,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/undo_transaction.h"
 #include "raster/layer.h"
@@ -121,6 +122,8 @@ void NewLayerCommand::onExecute(Context* context)
 
   StatusBar::instance()->invalidate();
   StatusBar::instance()->showTip(1000, "Layer `%s' created", name.c_str());
+
+  App::instance()->getMainWindow()->popTimeline();
 }
 
 static std::string get_unique_layer_name(Sprite* sprite)

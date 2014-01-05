@@ -22,6 +22,7 @@
 
 #include "app/util/expand_cel_canvas.h"
 
+#include "app/app.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_location.h"
@@ -35,8 +36,32 @@
 #include "raster/cel.h"
 #include "raster/dirty.h"
 #include "raster/layer.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+
+namespace {
+
+static raster::ImageBufferPtr src_buffer;
+static raster::ImageBufferPtr dst_buffer;
+
+static void destroy_buffers()
+{
+  src_buffer.reset(NULL);
+  dst_buffer.reset(NULL);
+}
+
+static void create_buffers()
+{
+  if (!src_buffer) {
+    app::App::instance()->Exit.connect(&destroy_buffers);
+
+    src_buffer.reset(new raster::ImageBuffer(1));
+    dst_buffer.reset(new raster::ImageBuffer(1));
+  }
+}
+
+}
 
 namespace app {
 
@@ -48,6 +73,8 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   , m_committed(false)
   , m_undo(undo)
 {
+  create_buffers();
+
   DocumentLocation location = context->getActiveLocation();
   m_document = location.document();
   m_sprite = location.sprite();
@@ -62,8 +89,9 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   // If there is no Cel
   if (m_cel == NULL) {
     // Create the image
-    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(), m_sprite->getHeight());
-    image_clear(m_celImage, m_sprite->getTransparentColor());
+    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(),
+                               m_sprite->getHeight());
+    clear_image(m_celImage, m_sprite->getTransparentColor());
 
     // Create the cel
     m_cel = new Cel(location.frame(), 0);
@@ -81,8 +109,8 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   if (tiledMode == TILED_NONE) { // Non-tiled
     x1 = MIN(m_cel->getX(), 0);
     y1 = MIN(m_cel->getY(), 0);
-    x2 = MAX(m_cel->getX()+m_celImage->w, m_sprite->getWidth());
-    y2 = MAX(m_cel->getY()+m_celImage->h, m_sprite->getHeight());
+    x2 = MAX(m_cel->getX()+m_celImage->getWidth(), m_sprite->getWidth());
+    y2 = MAX(m_cel->getY()+m_celImage->getHeight(), m_sprite->getHeight());
   }
   else {                        // Tiled
     x1 = 0;
@@ -92,12 +120,13 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   }
 
   // create two copies of the image region which we'll modify with the tool
-  m_srcImage = image_crop(m_celImage,
-                          x1-m_cel->getX(),
-                          y1-m_cel->getY(), x2-x1, y2-y1,
-                          m_sprite->getTransparentColor());
+  m_srcImage = crop_image(m_celImage,
+    x1-m_cel->getX(),
+    y1-m_cel->getY(), x2-x1, y2-y1,
+    m_sprite->getTransparentColor(),
+    src_buffer);
 
-  m_dstImage = Image::createCopy(m_srcImage);
+  m_dstImage = Image::createCopy(m_srcImage, dst_buffer);
 
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
@@ -118,7 +147,7 @@ ExpandCelCanvas::~ExpandCelCanvas()
   delete m_dstImage;
 }
 
-void ExpandCelCanvas::commit()
+void ExpandCelCanvas::commit(const gfx::Rect& bounds)
 {
   ASSERT(!m_closed);
   ASSERT(!m_committed);
@@ -127,14 +156,14 @@ void ExpandCelCanvas::commit()
   // with only the differences between both images.
   if (m_cel->getX() == m_originalCelX &&
       m_cel->getY() == m_originalCelY &&
-      m_celImage->w == m_dstImage->w &&
-      m_celImage->h == m_dstImage->h) {
+      m_celImage->getWidth() == m_dstImage->getWidth() &&
+      m_celImage->getHeight() == m_dstImage->getHeight()) {
     // Was m_celImage created in the start of the tool-loop?.
     if (m_celCreated) {
       // We can keep the m_celImage
 
       // We copy the destination image to the m_celImage
-      image_copy(m_celImage, m_dstImage, 0, 0);
+      copy_image(m_celImage, m_dstImage, 0, 0);
 
       // Add the m_celImage in the images stock of the sprite.
       m_cel->setImage(m_sprite->getStock()->addImage(m_celImage));
@@ -159,7 +188,13 @@ void ExpandCelCanvas::commit()
     else {
       // Add to the undo history the differences between m_celImage and m_dstImage
       if (m_undo.isEnabled()) {
-        base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage));
+        gfx::Rect dirtyBounds;
+        if (bounds.isEmpty())
+          dirtyBounds = m_celImage->getBounds();
+        else
+          dirtyBounds = m_celImage->getBounds().createIntersect(bounds);
+
+        base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage, dirtyBounds));
 
         dirty->saveImagePixels(m_celImage);
         if (dirty != NULL)
@@ -167,7 +202,7 @@ void ExpandCelCanvas::commit()
       }
 
       // Copy the destination to the cel image.
-      image_copy(m_celImage, m_dstImage, 0, 0);
+      copy_image(m_celImage, m_dstImage, 0, 0);
     }
   }
   // If the size of both images are different, we have to

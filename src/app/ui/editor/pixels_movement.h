@@ -19,11 +19,14 @@
 #ifndef APP_UI_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 #define APP_UI_EDITOR_PIXELS_MOVEMENT_H_INCLUDED
 
-#include "app/ui/editor/handle_type.h"
 #include "app/context_access.h"
+#include "app/settings/settings_observers.h"
+#include "app/ui/editor/handle_type.h"
+#include "app/undo_transaction.h"
+#include "base/compiler_specific.h"
+#include "base/shared_ptr.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_type.h"
-#include "app/undo_transaction.h"
 
 namespace raster {
   class Image;
@@ -38,7 +41,7 @@ namespace app {
   // feedback, drag, and drop the specified image in the constructor
   // (which generally would be the selected region or the clipboard
   // content).
-  class PixelsMovement {
+  class PixelsMovement : public SelectionSettingsObserver {
   public:
     enum MoveModifier {
       NormalMovement = 1,
@@ -94,9 +97,16 @@ namespace app {
 
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
+  protected:
+    void onSetRotationAlgorithm(RotationAlgorithm algorithm) OVERRIDE;
+
   private:
     void redrawExtraImage();
     void redrawCurrentMask();
+    void drawParallelogram(raster::Image* dst, raster::Image* src,
+      const gfx::Transformation::Corners& corners,
+      const gfx::Point& leftTop);
+    void updateDocumentMask();
 
     const ContextReader m_reader;
     Document* m_document;
@@ -120,6 +130,8 @@ namespace app {
     a = static_cast<PixelsMovement::MoveModifier>(a | b);
     return a;
   }
+
+  typedef SharedPtr<PixelsMovement> PixelsMovementPtr;
   
 } // namespace app
 

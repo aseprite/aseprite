@@ -37,6 +37,7 @@
 #include "raster/image.h"
 #include "raster/mask.h"
 #include "raster/rotate.h"
+#include "raster/rotsprite.h"
 #include "raster/sprite.h"
 
 namespace app {
@@ -61,22 +62,26 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_handle(NoHandle)
   , m_originalImage(Image::createCopy(moveThis))
 {
-  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->w, moveThis->h));
+  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->getWidth(), moveThis->getHeight()));
   m_currentData = m_initialData;
 
   ContextWriter writer(m_reader);
   m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
 
   Image* extraImage = m_document->getExtraCelImage();
-  image_clear(extraImage, extraImage->mask_color);
-  image_copy(extraImage, moveThis, initialX, initialY);
+  clear_image(extraImage, extraImage->getMaskColor());
+  copy_image(extraImage, moveThis, initialX, initialY);
 
   m_initialMask = new Mask(*m_document->getMask());
   m_currentMask = new Mask(*m_document->getMask());
+
+  UIContext::instance()->getSettings()->selection()->addObserver(this);
 }
 
 PixelsMovement::~PixelsMovement()
 {
+  UIContext::instance()->getSettings()->selection()->removeObserver(this);
+
   delete m_originalImage;
   delete m_initialMask;
   delete m_currentMask;
@@ -87,8 +92,8 @@ void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
   // Flip the image.
   raster::algorithm::flip_image(m_originalImage,
                                 gfx::Rect(gfx::Point(0, 0),
-                                          gfx::Size(m_originalImage->w,
-                                                    m_originalImage->h)),
+                                          gfx::Size(m_originalImage->getWidth(),
+                                                    m_originalImage->getHeight())),
                                 flipType);
 
   // Flip the mask.
@@ -394,12 +399,6 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
   }
 
   redrawExtraImage();
-  redrawCurrentMask();
-
-  if (m_firstDrop)
-    m_document->getApi().copyToCurrentMask(m_currentMask);
-  else
-    m_document->setMask(m_currentMask);
 
   m_document->setTransformation(m_currentData);
 
@@ -439,12 +438,8 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
   base::UniquePtr<Image> image(Image::create(m_sprite->getPixelFormat(), width, height));
-  image_clear(image, image->mask_color);
-  image_parallelogram(image, m_originalImage,
-                      corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
-                      corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
-                      corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
-                      corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+  clear_image(image, image->getMaskColor());
+  drawParallelogram(image, m_originalImage, corners, leftTop);
 
   origin = leftTop;
 
@@ -466,10 +461,10 @@ void PixelsMovement::stampImage()
       ExpandCelCanvas expandCelCanvas(writer.context(), TILED_NONE,
                                       m_undoTransaction);
 
-      image_merge(expandCelCanvas.getDestCanvas(), image,
-                  -expandCelCanvas.getCel()->getX(),
-                  -expandCelCanvas.getCel()->getY(),
-                  cel->getOpacity(), BLEND_MODE_NORMAL);
+      composite_image(expandCelCanvas.getDestCanvas(), image,
+                      -expandCelCanvas.getCel()->getX(),
+                      -expandCelCanvas.getCel()->getY(),
+                      cel->getOpacity(), BLEND_MODE_NORMAL);
 
       expandCelCanvas.commit();
     }
@@ -513,7 +508,9 @@ void PixelsMovement::dropImageTemporarily()
       m_currentData.displacePivotTo(gfx::Point(newPivot.x, newPivot.y));
     }
 
-    m_document->generateMaskBoundaries(m_currentMask);
+    redrawCurrentMask();
+    updateDocumentMask();
+
     update_screen_for_document(m_document);
   }
 }
@@ -562,7 +559,7 @@ gfx::Rect PixelsMovement::getImageBounds()
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
 
-  return gfx::Rect(cel->getX(), cel->getY(), image->w, image->h);
+  return gfx::Rect(cel->getX(), cel->getY(), image->getWidth(), image->getHeight());
 }
 
 gfx::Size PixelsMovement::getInitialImageSize() const
@@ -578,7 +575,7 @@ void PixelsMovement::setMaskColor(uint32_t mask_color)
 
     ASSERT(extraImage != NULL);
 
-    extraImage->mask_color = mask_color;
+    extraImage->setMaskColor(mask_color);
     redrawExtraImage();
     update_screen_for_document(m_document);
   }
@@ -592,12 +589,8 @@ void PixelsMovement::redrawExtraImage()
 
   // Transform the extra-cel which is the chunk of pixels that the user is moving.
   Image* extraImage = m_document->getExtraCelImage();
-  image_clear(extraImage, extraImage->mask_color);
-  image_parallelogram(extraImage, m_originalImage,
-                      corners.leftTop().x, corners.leftTop().y,
-                      corners.rightTop().x, corners.rightTop().y,
-                      corners.rightBottom().x, corners.rightBottom().y,
-                      corners.leftBottom().x, corners.leftBottom().y);
+  clear_image(extraImage, extraImage->getMaskColor());
+  drawParallelogram(extraImage, m_originalImage, corners, gfx::Point(0, 0));
 }
 
 void PixelsMovement::redrawCurrentMask()
@@ -609,14 +602,57 @@ void PixelsMovement::redrawCurrentMask()
 
   m_currentMask->replace(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
   m_currentMask->freeze();
-  image_clear(m_currentMask->getBitmap(), 0);
-  image_parallelogram(m_currentMask->getBitmap(),
-                      m_initialMask->getBitmap(),
-                      corners.leftTop().x, corners.leftTop().y,
-                      corners.rightTop().x, corners.rightTop().y,
-                      corners.rightBottom().x, corners.rightBottom().y,
-                      corners.leftBottom().x, corners.leftBottom().y);
+  clear_image(m_currentMask->getBitmap(), 0);
+  drawParallelogram(m_currentMask->getBitmap(), m_initialMask->getBitmap(),
+    corners, gfx::Point(0, 0));
+
   m_currentMask->unfreeze();
+}
+
+void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
+  const gfx::Transformation::Corners& corners,
+  const gfx::Point& leftTop)
+{
+  switch (UIContext::instance()->getSettings()->selection()->getRotationAlgorithm()) {
+
+    case kFastRotationAlgorithm:
+      image_parallelogram(dst, src,
+        corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
+        corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
+        corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
+        corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+      break;
+
+    case kRotSpriteRotationAlgorithm:
+      image_rotsprite(dst, src,
+        corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
+        corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
+        corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
+        corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+      break;
+
+  }
+}
+
+void PixelsMovement::onSetRotationAlgorithm(RotationAlgorithm algorithm)
+{
+  redrawExtraImage();
+  redrawCurrentMask();
+  updateDocumentMask();
+
+  update_screen_for_document(m_document);
+}
+
+void PixelsMovement::updateDocumentMask()
+{
+  if (m_firstDrop) {
+    m_firstDrop = false;
+    m_document->getApi().copyToCurrentMask(m_currentMask);
+  }
+  else
+    m_document->setMask(m_currentMask);
+
+  m_document->generateMaskBoundaries(m_currentMask);
 }
 
 } // namespace app

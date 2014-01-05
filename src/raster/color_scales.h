@@ -16,15 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_DIALOGS_MASKCOL_H_INCLUDED
-#define APP_DIALOGS_MASKCOL_H_INCLUDED
+#ifndef RASTER_COLOR_SCALES_H_INCLUDED
+#define RASTER_COLOR_SCALES_H_INCLUDED
 
-namespace app {
+#include "raster/frame_number.h"
+#include "raster/object.h"
 
-  class Context;
+#include <vector>
 
-  void dialogs_mask_color(Context* context);
+namespace raster {
 
-} // namespace app
+  int scale_5bits_to_8bits(int channel5bits);
+  int scale_6bits_to_8bits(int channel6bits);
+
+} // namespace raster
 
 #endif

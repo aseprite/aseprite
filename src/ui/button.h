@@ -36,7 +36,7 @@ namespace ui {
   class ButtonBase : public Widget
   {
   public:
-    ButtonBase(const char* text,
+    ButtonBase(const base::string& text,
                WidgetType type,
                WidgetType behaviorType,
                WidgetType drawType);
@@ -80,21 +80,21 @@ namespace ui {
   class Button : public ButtonBase
   {
   public:
-    Button(const char* text);
+    Button(const base::string& text);
   };
 
   // Check boxes
   class CheckBox : public ButtonBase
   {
   public:
-    CheckBox(const char* text, WidgetType drawType = kCheckWidget);
+    CheckBox(const base::string& text, WidgetType drawType = kCheckWidget);
   };
 
   // Radio buttons
   class RadioButton : public ButtonBase
   {
   public:
-    RadioButton(const char* text, int radioGroup, WidgetType drawType = kRadioWidget);
+    RadioButton(const base::string& text, int radioGroup, WidgetType drawType = kRadioWidget);
 
     int getRadioGroup() const;
     void setRadioGroup(int radioGroup);

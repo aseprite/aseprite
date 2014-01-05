@@ -12,7 +12,6 @@
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/rect.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 #include "ui/window.h"
@@ -25,7 +24,7 @@
 
 namespace ui {
 
-ButtonBase::ButtonBase(const char* text,
+ButtonBase::ButtonBase(const base::string& text,
                        WidgetType type,
                        WidgetType behaviorType,
                        WidgetType drawType)
@@ -275,15 +274,14 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
 void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
-  struct jrect box, text, icon;
-
-  jwidget_get_texticon_info(this, &box, &text, &icon,
+  gfx::Rect box;
+  jwidget_get_texticon_info(this, &box, NULL, NULL,
                             m_iconInterface ? m_iconInterface->getIconAlign(): 0,
                             m_iconInterface ? m_iconInterface->getWidth(): 0,
                             m_iconInterface ? m_iconInterface->getHeight(): 0);
 
-  ev.setPreferredSize(this->border_width.l + jrect_w(&box) + this->border_width.r,
-                      this->border_width.t + jrect_h(&box) + this->border_width.b);
+  ev.setPreferredSize(border_width.l + box.w + border_width.r,
+                      border_width.t + box.h + border_width.b);
 }
 
 void ButtonBase::onPaint(PaintEvent& ev)
@@ -309,7 +307,7 @@ void ButtonBase::generateButtonSelectSignal()
 // Button class
 // ======================================================================
 
-Button::Button(const char *text)
+Button::Button(const base::string& text)
   : ButtonBase(text, kButtonWidget, kButtonWidget, kButtonWidget)
 {
   setAlign(JI_CENTER | JI_MIDDLE);
@@ -319,7 +317,7 @@ Button::Button(const char *text)
 // CheckBox class
 // ======================================================================
 
-CheckBox::CheckBox(const char *text, WidgetType drawType)
+CheckBox::CheckBox(const base::string& text, WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
@@ -329,7 +327,7 @@ CheckBox::CheckBox(const char *text, WidgetType drawType)
 // RadioButton class
 // ======================================================================
 
-RadioButton::RadioButton(const char *text, int radioGroup, WidgetType drawType)
+RadioButton::RadioButton(const base::string& text, int radioGroup, WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);

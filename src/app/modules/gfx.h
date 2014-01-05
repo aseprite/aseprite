@@ -23,25 +23,18 @@
 #include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/color.h"
+#include "ui/graphics.h"
 
 struct FONT;
 struct BITMAP;
 
 namespace app {
-  struct RectTracker;
-
   using namespace raster;
 
   void dotted_mode(int offset);
 
-  RectTracker* rect_tracker_new(BITMAP* bmp, int x1, int y1, int x2, int y2);
-  void rect_tracker_free(RectTracker* tracker);
-
-  void rectgrid(BITMAP* bmp, int x1, int y1, int x2, int y2, int w, int h);
-
   void draw_emptyset_symbol(BITMAP* bmp, const gfx::Rect& rc, ui::Color color);
-  void draw_color(BITMAP* bmp, const gfx::Rect& rc, PixelFormat pixelFormat, const app::Color& color);
-  void draw_color_button(BITMAP* bmp,
+  void draw_color_button(ui::Graphics* g,
                          const gfx::Rect& rc,
                          bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
                          bool outer_se, bool outer_s, bool outer_sw, bool outer_w,

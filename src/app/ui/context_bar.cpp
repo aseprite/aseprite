@@ -20,24 +20,31 @@
 #include "config.h"
 #endif
 
+#include "app/ui/context_bar.h"
+
 #include "app/app.h"
 #include "app/modules/gui.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/settings.h"
+#include "app/settings/settings_observers.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
-#include "app/ui/context_bar.h"
+#include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
+#include "base/bind.h"
 #include "base/unique_ptr.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/pen.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
 #include "ui/label.h"
+#include "ui/listitem.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
@@ -74,16 +81,20 @@ public:
   }
 
   void setPenSettings(IPenSettings* penSettings) {
+    base::UniquePtr<Palette> palette(new Palette(FrameNumber(0), 2));
+    palette->setEntry(0, raster::rgba(0, 0, 0, 0));
+    palette->setEntry(1, raster::rgba(0, 0, 0, 255));
+
     base::UniquePtr<Pen> pen(new Pen(m_penType = penSettings->getType(),
-                               std::min(10, penSettings->getSize()),
-                               penSettings->getAngle()));
+                                     std::min(10, penSettings->getSize()),
+                                     penSettings->getAngle()));
     Image* image = pen->get_image();
 
     if (m_bitmap)
       destroy_bitmap(m_bitmap);
-    m_bitmap = create_bitmap_ex(32, image->w, image->h);
+    m_bitmap = create_bitmap_ex(32, image->getWidth(), image->getHeight());
     clear(m_bitmap);
-    image_to_allegro(image, m_bitmap, 0, 0, NULL);
+    convert_image_to_allegro(image, m_bitmap, 0, 0, palette);
 
     invalidate();
   }
@@ -139,7 +150,7 @@ private:
     Rect rc = getBounds();
     rc.y += rc.h;
     rc.w *= 3;
-    m_popupWindow = new PopupWindow(NULL, false);
+    m_popupWindow = new PopupWindow("", false);
     m_popupWindow->setAutoRemap(false);
     m_popupWindow->setBounds(rc);
 
@@ -207,7 +218,7 @@ public:
   BrushAngleField(BrushTypeField* brushType)
     : IntEntry(0, 180)
     , m_brushType(brushType) {
-    setSuffix("\xB0");
+    setSuffix("\xc2\xb0");
   }
 
 protected:
@@ -329,6 +340,53 @@ protected:
   }
 };
 
+
+class ContextBar::TransparentColorField : public ColorButton
+{
+public:
+  TransparentColorField() : ColorButton(app::Color::fromMask(), IMAGE_RGB) {
+    Change.connect(Bind<void>(&TransparentColorField::onChange, this));
+  }
+
+protected:
+  void onChange() {
+    UIContext::instance()->settings()->selection()->setMoveTransparentColor(getColor());
+  }
+};
+
+class ContextBar::RotAlgorithmField : public ComboBox
+{
+public:
+  RotAlgorithmField() {
+    addItem(new Item("Fast", kFastRotationAlgorithm));
+    addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
+
+    setSelectedItemIndex((int)
+      UIContext::instance()->settings()->selection()
+      ->getRotationAlgorithm());
+  }
+
+protected:
+  void onChange() OVERRIDE {
+    UIContext::instance()->settings()->selection()
+      ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
+  }
+
+private:
+  class Item : public ListItem {
+  public:
+    Item(const std::string& text, RotationAlgorithm algo) :
+      ListItem(text),
+      m_algo(algo) {
+    }
+
+    RotationAlgorithm algo() const { return m_algo; }
+
+  private:
+    RotationAlgorithm m_algo;
+  };
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -359,6 +417,12 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
+  addChild(m_selectionOptionsBox = new HBox());
+  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
+  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+  m_selectionOptionsBox->addChild(new Label("Algorithm:"));
+  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
+
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
@@ -368,6 +432,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
@@ -444,6 +509,9 @@ void ContextBar::onCurrentToolChange()
   bool hasSprayOptions = (currentTool->getPointShape(0)->isSpray() ||
                           currentTool->getPointShape(1)->isSpray());
 
+  bool hasSelectOptions = (currentTool->getInk(0)->isSelection() ||
+                           currentTool->getInk(1)->isSelection());
+
   // Show/Hide fields
   m_brushLabel->setVisible(hasOpacity);
   m_brushType->setVisible(hasOpacity);
@@ -456,6 +524,7 @@ void ContextBar::onCurrentToolChange()
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
+  m_selectionOptionsBox->setVisible(hasSelectOptions);
 
   layout();
 }

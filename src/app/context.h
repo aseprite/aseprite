@@ -50,7 +50,11 @@ namespace app {
     virtual bool isExecutingMacro() const  { return false; }
     virtual bool isExecutingScript() const { return false; }
 
-    ISettings* getSettings() { return m_settings; }
+    // TODO Refactor codebase to use ISettings::settings() instead
+    ISettings* getSettings() {
+      return settings();
+    }
+    ISettings* settings() { return m_settings; }
 
     const Documents& getDocuments() const;
 

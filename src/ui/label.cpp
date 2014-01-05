@@ -15,7 +15,7 @@
 
 namespace ui {
 
-Label::Label(const char *text)
+Label::Label(const base::string& text)
   : Widget(kLabelWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
@@ -37,7 +37,7 @@ void Label::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Size sz(0, 0);
 
-  if (this->hasText()) {
+  if (hasText()) {
     sz.w = jwidget_get_text_length(this);
     sz.h = jwidget_get_text_height(this);
   }

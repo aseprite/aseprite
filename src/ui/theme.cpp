@@ -17,7 +17,6 @@
 #include "ui/font.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -100,8 +99,8 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
                  int* w, int* h, Color bg, Color fg)
 {
   View* view = View::getView(widget);
-  char *text = (char*)widget->getText(); // TODO warning: removing const modifier
-  char *beg, *end;
+  char* text = const_cast<char*>(widget->getText().c_str());
+  char* beg, *end;
   int x1, y1, x2, y2;
   int x, y, chr, len;
   gfx::Point scroll;
@@ -120,10 +119,10 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
     scroll = view->getViewScroll();
   }
   else {
-    x1 = widget->rc->x1 + widget->border_width.l;
-    y1 = widget->rc->y1 + widget->border_width.t;
-    viewport_w = jrect_w(widget->rc) - widget->border_width.l - widget->border_width.r;
-    viewport_h = jrect_h(widget->rc) - widget->border_width.t - widget->border_width.b;
+    x1 = widget->getBounds().x + widget->border_width.l;
+    y1 = widget->getBounds().y + widget->border_width.t;
+    viewport_w = widget->getBounds().w - widget->border_width.l - widget->border_width.r;
+    viewport_h = widget->getBounds().h - widget->border_width.t - widget->border_width.b;
     scroll.x = scroll.y = 0;
   }
   x2 = x1+viewport_w-1;
@@ -133,7 +132,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
 
   /* without word-wrap */
   if (!(widget->getAlign() & JI_WORDWRAP)) {
-    width = jrect_w(widget->rc);
+    width = widget->getBounds().w;
   }
   /* with word-wrap */
   else {
@@ -164,7 +163,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
   for (beg=end=text; end; ) {
     x = x1 - scroll.x;
 
-    /* without word-wrap */
+    // Without word-wrap
     if (!(widget->getAlign() & JI_WORDWRAP)) {
       end = ustrchr(beg, '\n');
       if (end) {
@@ -172,7 +171,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
         *end = 0;
       }
     }
-    /* with word-wrap */
+    // With word-wrap
     else {
       old_end = NULL;
       for (beg_end=beg;;) {
@@ -182,7 +181,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
           *end = 0;
         }
 
-        /* to here we can print */
+        // To here we can print
         if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
           if (end)
             *end = chr;
@@ -192,16 +191,16 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
           *end = 0;
           break;
         }
-        /* we can print one word more */
+        // We can print one word more
         else if (end) {
-          /* force break */
+          // Force break
           if (chr == '\n')
             break;
 
           *end = chr;
           beg_end = end+1;
         }
-        /* we are in the end of text */
+        // We are in the end of text
         else
           break;
 

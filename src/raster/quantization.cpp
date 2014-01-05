@@ -20,21 +20,24 @@
 #include "config.h"
 #endif
 
-#include <algorithm>
-#include <limits>
-#include <vector>
+#include "raster/quantization.h"
 
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/blend.h"
 #include "raster/color_histogram.h"
 #include "raster/image.h"
+#include "raster/image_bits.h"
 #include "raster/images_collector.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
-#include "raster/quantization.h"
+#include "raster/primitives.h"
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
+
+#include <algorithm>
+#include <limits>
+#include <vector>
 
 namespace raster {
 namespace quantization {
@@ -62,7 +65,7 @@ Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
 
   // Add a flat image with the current sprite's frame rendered
   flat_image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
-  image_clear(flat_image, 0);
+  clear_image(flat_image, 0);
   sprite->render(flat_image, 0, 0, frameNumber);
 
   // Create an array of images
@@ -88,13 +91,6 @@ Image* convert_pixel_format(const Image* image,
                             const Palette* palette,
                             bool has_background_layer)
 {
-  uint32_t* rgb_address;
-  uint16_t* gray_address;
-  uint8_t* idx_address;
-  uint32_t c;
-  int i, r, g, b, size;
-  Image *new_image;
-
   // no convertion
   if (image->getPixelFormat() == pixelFormat)
     return NULL;
@@ -105,132 +101,158 @@ Image* convert_pixel_format(const Image* image,
     return ordered_dithering(image, 0, 0, rgbmap, palette);
   }
 
-  new_image = Image::create(pixelFormat, image->w, image->h);
-  if (!new_image)
-    return NULL;
-
-  size = image->w*image->h;
+  Image* new_image = Image::create(pixelFormat, image->getWidth(), image->getHeight());
+  color_t c;
+  int r, g, b;
 
   switch (image->getPixelFormat()) {
 
-    case IMAGE_RGB:
-      rgb_address = (uint32_t*)image->dat;
+    case IMAGE_RGB: {
+      const LockImageBits<RgbTraits> srcBits(image);
+      LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->getPixelFormat()) {
 
         // RGB -> Grayscale
-        case IMAGE_GRAYSCALE:
-          gray_address = (uint16_t*)new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *rgb_address;
+        case IMAGE_GRAYSCALE: {
+          LockImageBits<GrayscaleTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<GrayscaleTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
 
-            g = 255 * Hsv(Rgb(_rgba_getr(c),
-                              _rgba_getg(c),
-                              _rgba_getb(c))).valueInt() / 100;
-            *gray_address = _graya(g, _rgba_geta(c));
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
 
-            rgb_address++;
-            gray_address++;
+            g = 255 * Hsv(Rgb(rgba_getr(c),
+                              rgba_getg(c),
+                              rgba_getb(c))).valueInt() / 100;
+
+            *dst_it = graya(g, rgba_geta(c));
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
 
         // RGB -> Indexed
-        case IMAGE_INDEXED:
-          idx_address = new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *rgb_address;
-            r = _rgba_getr(c);
-            g = _rgba_getg(c);
-            b = _rgba_getb(c);
-            if (_rgba_geta(c) == 0)
-              *idx_address = 0;
+        case IMAGE_INDEXED: {
+          LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
+
+            r = rgba_getr(c);
+            g = rgba_getg(c);
+            b = rgba_getb(c);
+            if (rgba_geta(c) == 0)
+              *dst_it = 0;
             else
-              *idx_address = rgbmap->mapColor(r, g, b);
-            rgb_address++;
-            idx_address++;
+              *dst_it = rgbmap->mapColor(r, g, b);
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
       }
       break;
+    }
 
-    case IMAGE_GRAYSCALE:
-      gray_address = (uint16_t*)image->dat;
+    case IMAGE_GRAYSCALE: {
+      const LockImageBits<GrayscaleTraits> srcBits(image);
+      LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->getPixelFormat()) {
 
         // Grayscale -> RGB
-        case IMAGE_RGB:
-          rgb_address = (uint32_t*)new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *gray_address;
-            g = _graya_getv(c);
-            *rgb_address = _rgba(g, g, g, _graya_geta(c));
-            gray_address++;
-            rgb_address++;
+        case IMAGE_RGB: {
+          LockImageBits<RgbTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<RgbTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
+
+            g = graya_getv(c);
+
+            *dst_it = rgba(g, g, g, graya_geta(c));
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
 
         // Grayscale -> Indexed
-        case IMAGE_INDEXED:
-          idx_address = new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *gray_address;
-            if (_graya_geta(c) == 0)
-              *idx_address = 0;
+        case IMAGE_INDEXED: {
+          LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
+
+            if (graya_geta(c) == 0)
+              *dst_it = 0;
             else
-              *idx_address = _graya_getv(c);
-            gray_address++;
-            idx_address++;
+              *dst_it = graya_getv(c);
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
       }
       break;
+    }
 
-    case IMAGE_INDEXED:
-      idx_address = image->dat;
+    case IMAGE_INDEXED: {
+      const LockImageBits<IndexedTraits> srcBits(image);
+      LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->getPixelFormat()) {
 
         // Indexed -> RGB
-        case IMAGE_RGB:
-          rgb_address = (uint32_t*)new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *idx_address;
+        case IMAGE_RGB: {
+          LockImageBits<RgbTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<RgbTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
 
             if (c == 0 && !has_background_layer)
-              *rgb_address = 0;
+              *dst_it = 0;
             else
-              *rgb_address = _rgba(_rgba_getr(palette->getEntry(c)),
-                                   _rgba_getg(palette->getEntry(c)),
-                                   _rgba_getb(palette->getEntry(c)), 255);
-            idx_address++;
-            rgb_address++;
+              *dst_it = rgba(rgba_getr(palette->getEntry(c)),
+                             rgba_getg(palette->getEntry(c)),
+                             rgba_getb(palette->getEntry(c)), 255);
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
 
         // Indexed -> Grayscale
-        case IMAGE_GRAYSCALE:
-          gray_address = (uint16_t*)new_image->dat;
-          for (i=0; i<size; i++) {
-            c = *idx_address;
+        case IMAGE_GRAYSCALE: {
+          LockImageBits<GrayscaleTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<GrayscaleTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
 
             if (c == 0 && !has_background_layer)
-              *gray_address = 0;
+              *dst_it = 0;
             else {
-              r = _rgba_getr(palette->getEntry(c));
-              g = _rgba_getg(palette->getEntry(c));
-              b = _rgba_getb(palette->getEntry(c));
+              r = rgba_getr(palette->getEntry(c));
+              g = rgba_getg(palette->getEntry(c));
+              b = rgba_getb(palette->getEntry(c));
 
               g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
-              *gray_address = _graya(g, 255);
+              *dst_it = graya(g, 255);
             }
-            idx_address++;
-            gray_address++;
           }
+          ASSERT(dst_it == dst_end);
           break;
+        }
 
       }
       break;
+    }
   }
 
   return new_image;
@@ -278,27 +300,36 @@ static Image* ordered_dithering(const Image* src_image,
   int nr, ng, nb;
   int r, g, b, a;
   int nearestcm;
-  int c, x, y;
+  int x, y;
+  color_t c;
 
-  dst_image = Image::create(IMAGE_INDEXED, src_image->w, src_image->h);
+  dst_image = Image::create(IMAGE_INDEXED, src_image->getWidth(), src_image->getHeight());
   if (!dst_image)
     return NULL;
 
-  for (y=0; y<src_image->h; y++) {
-    for (x=0; x<src_image->w; x++) {
-      c = image_getpixel_fast<RgbTraits>(src_image, x, y);
+  const LockImageBits<RgbTraits> src_bits(src_image);
+  LockImageBits<IndexedTraits> dst_bits(dst_image);
+  LockImageBits<RgbTraits>::const_iterator src_it = src_bits.begin();
+  LockImageBits<IndexedTraits>::iterator dst_it = dst_bits.begin();
 
-      r = _rgba_getr(c);
-      g = _rgba_getg(c);
-      b = _rgba_getb(c);
-      a = _rgba_geta(c);
+  for (y=0; y<src_image->getHeight(); ++y) {
+    for (x=0; x<src_image->getWidth(); ++x, ++src_it, ++dst_it) {
+      ASSERT(src_it != src_bits.end());
+      ASSERT(dst_it != dst_bits.end());
+
+      c = *src_it;
+
+      r = rgba_getr(c);
+      g = rgba_getg(c);
+      b = rgba_getb(c);
+      a = rgba_geta(c);
 
       if (a != 0) {
         nearestcm = rgbmap->mapColor(r, g, b);
         /* rgb values for nearest color */
-        nr = _rgba_getr(palette->getEntry(nearestcm));
-        ng = _rgba_getg(palette->getEntry(nearestcm));
-        nb = _rgba_getb(palette->getEntry(nearestcm));
+        nr = rgba_getr(palette->getEntry(nearestcm));
+        ng = rgba_getg(palette->getEntry(nearestcm));
+        nb = rgba_getb(palette->getEntry(nearestcm));
         /* Color as far from rgb as nrngnb but in the other direction */
         oppr = MID(0, 2*r - nr, 255);
         oppg = MID(0, 2*g - ng, 255);
@@ -314,9 +345,9 @@ static Image* ordered_dithering(const Image* src_image,
            case the r-nr distance can actually be less than the nr-oppr
            distance. */
         if (oppnrcm != nearestcm) {
-          oppr = _rgba_getr(palette->getEntry(oppnrcm));
-          oppg = _rgba_getg(palette->getEntry(oppnrcm));
-          oppb = _rgba_getb(palette->getEntry(oppnrcm));
+          oppr = rgba_getr(palette->getEntry(oppnrcm));
+          oppg = rgba_getg(palette->getEntry(oppnrcm));
+          oppb = rgba_getb(palette->getEntry(oppnrcm));
 
           dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
           if (dither_const != 0) {
@@ -331,7 +362,7 @@ static Image* ordered_dithering(const Image* src_image,
       else
         nearestcm = 0;
 
-      image_putpixel_fast<IndexedTraits>(dst_image, x, y, nearestcm);
+      *dst_it = nearestcm;
     }
   }
 
@@ -346,7 +377,6 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
 {
   quantization::ColorHistogram<5, 6, 5> histogram;
   uint32_t color;
-  RgbTraits::address_t address;
 
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
@@ -356,19 +386,15 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
 
   for (int i=0; i<(int)images.size(); ++i) {
     const Image* image = images[i];
+    const LockImageBits<RgbTraits> bits(image);
+    LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
 
-    for (int y=0; y<image->h; ++y) {
-      address = image_address_fast<RgbTraits>(image, 0, y);
+    for (; it != end; ++it) {
+      color = *it;
 
-      for (int x=0; x<image->w; ++x) {
-        color = *address;
-
-        if (_rgba_geta(color) > 0) {
-          color |= _rgba(0, 0, 0, 255);
-          histogram.addSamples(color, 1);
-        }
-
-        ++address;
+      if (rgba_geta(color) > 0) {
+        color |= rgba(0, 0, 0, 255);
+        histogram.addSamples(color, 1);
       }
     }
   }

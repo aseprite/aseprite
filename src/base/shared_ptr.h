@@ -60,7 +60,8 @@ public:
 
   ~SharedPtrRefCounterImpl()
   {
-    m_deleter(m_ptr);
+    if (m_ptr)
+      m_deleter(m_ptr);
   }
 
 private:
@@ -89,7 +90,8 @@ public:
       m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
     }
     catch (...) {
-      DefaultSharedPtrDeleter<T>()(ptr);
+      if (ptr)
+        DefaultSharedPtrDeleter<T>()(ptr);
       throw;
     }
     m_ptr = ptr;
@@ -104,7 +106,8 @@ public:
       m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
     }
     catch (...) {
-      deleter(ptr);
+      if (ptr)
+        deleter(ptr);
       throw;
     }
     m_ptr = ptr;
@@ -146,7 +149,8 @@ public:
           m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
         }
         catch (...) {
-          DefaultSharedPtrDeleter<T>()(ptr);
+          if (ptr)
+            DefaultSharedPtrDeleter<T>()(ptr);
           throw;
         }
         m_ptr = ptr;
@@ -168,7 +172,8 @@ public:
           m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
         }
         catch (...) {
-          deleter(ptr);
+          if (ptr)
+            deleter(ptr);
           throw;
         }
         m_ptr = ptr;

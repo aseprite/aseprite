@@ -9,6 +9,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdexcept>
+#include <vector>
+
+#if __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
+#include "base/path.h"
+
+#define MAXPATHLEN 1024
 
 namespace base {
 
@@ -40,6 +49,26 @@ void remove_directory(const string& path)
     // TODO add errno into the exception
     throw std::runtime_error("Error removing directory");
   }
+}
+
+string get_app_path()
+{
+  std::vector<char> path(MAXPATHLEN);
+
+#if __APPLE__
+
+  uint32_t size = path.size();
+  while (_NSGetExecutablePath(&path[0], &size) == -1)
+    path.resize(size);
+
+#else
+
+  if (readlink("/proc/self/exe", &path[0], path.size()) > 0)
+    return std::string(&path[0]);
+
+#endif
+
+  return std::string();
 }
 
 string get_temp_path()

@@ -27,12 +27,14 @@ namespace ui {
 }
 
 namespace app {
+
   class ColorBar;
   class ContextBar;
   class MainMenuBar;
   class MiniEditorWindow;
   class StatusBar;
   class Tabs;
+  class Timeline;
   class Workspace;
 
   class MainWindow : public ui::Window
@@ -44,6 +46,7 @@ namespace app {
     MainMenuBar* getMenuBar() { return m_menuBar; }
     ContextBar* getContextBar() { return m_contextBar; }
     Tabs* getTabsBar() { return m_tabsBar; }
+    Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }
     MiniEditorWindow* getMiniEditor() { return m_miniEditor; }
 
@@ -51,6 +54,10 @@ namespace app {
 
     bool isAdvancedMode() const { return m_advancedMode; }
     void setAdvancedMode(bool advanced);
+
+    bool getTimelineVisibility() const;
+    void setTimelineVisibility(bool visible);
+    void popTimeline();
 
     // TabsDelegate implementation.
     void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons);
@@ -66,10 +73,13 @@ namespace app {
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
     ui::Splitter* m_colorBarSplitter;
+    ui::Splitter* m_timelineSplitter;
     ui::Widget* m_toolBar;
     Tabs* m_tabsBar;
     double m_lastSplitterPos;
+    double m_lastTimelineSplitterPos;
     bool m_advancedMode;
+    Timeline* m_timeline;
     Workspace* m_workspace;
     MiniEditorWindow* m_miniEditor;
   };

@@ -20,6 +20,7 @@
 #define APP_COLOR_UTILS_H_INCLUDED
 
 #include "app/color.h"
+#include "raster/color.h"
 #include "raster/pixel_format.h"
 #include "ui/color.h"
 
@@ -35,11 +36,11 @@ namespace app {
 
     ui::Color color_for_ui(const app::Color& color);
     int color_for_allegro(const app::Color& color, int depth);
-    int color_for_image(const app::Color& color, raster::PixelFormat format);
-    int color_for_layer(const app::Color& color, raster::Layer* layer);
+    raster::color_t color_for_image(const app::Color& color, raster::PixelFormat format);
+    raster::color_t color_for_layer(const app::Color& color, raster::Layer* layer);
 
-    int fixup_color_for_layer(raster::Layer* layer, int color);
-    int fixup_color_for_background(raster::PixelFormat format, int color);
+    raster::color_t fixup_color_for_layer(raster::Layer* layer, raster::color_t color);
+    raster::color_t fixup_color_for_background(raster::PixelFormat format, raster::color_t color);
 
   } // namespace color_utils
 } // namespace app

@@ -46,17 +46,15 @@ Image* NewImageFromMask(const DocumentLocation& location)
 {
   const Sprite* srcSprite = location.sprite();
   const Mask* srcMask = location.document()->getMask();
-  const Image* srcBitmap = srcMask->getBitmap();
+  const Image* srcMaskBitmap = srcMask->getBitmap();
   const gfx::Rect& srcBounds = srcMask->getBounds();
-  const uint8_t* address;
   int x, y, u, v, getx, gety;
   Image *dst;
   const Image *src = location.image(&x, &y);
-  div_t d;
 
   ASSERT(srcSprite);
   ASSERT(srcMask);
-  ASSERT(srcBitmap);
+  ASSERT(srcMaskBitmap);
   ASSERT(src);
 
   dst = Image::create(srcSprite->getPixelFormat(), srcBounds.w, srcBounds.h);
@@ -64,24 +62,24 @@ Image* NewImageFromMask(const DocumentLocation& location)
     return NULL;
 
   // Clear the new image
-  image_clear(dst, 0);
+  clear_image(dst, 0);
 
   // Copy the masked zones
-  for (v=0; v<srcBounds.h; v++) {
-    d = div(0, 8);
-    address = ((const uint8_t**)srcBitmap->line)[v]+d.quot;
+  const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
+  LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
 
-    for (u=0; u<srcBounds.w; u++) {
-      if ((*address & (1<<d.rem))) {
+  for (v=0; v<srcBounds.h; ++v) {
+    for (u=0; u<srcBounds.w; ++u, ++mask_it) {
+      ASSERT(mask_it != maskBits.end());
+
+      if (*mask_it) {
         getx = u+srcBounds.x-x;
         gety = v+srcBounds.y-y;
 
-        if ((getx >= 0) && (getx < src->w) &&
-            (gety >= 0) && (gety < src->h))
-          dst->putpixel(u, v, src->getpixel(getx, gety));
+        if ((getx >= 0) && (getx < src->getWidth()) &&
+            (gety >= 0) && (gety < src->getHeight()))
+          dst->putPixel(u, v, src->getPixel(getx, gety));
       }
-
-      _image_bitmap_next_bit(d, address);
     }
   }
 

@@ -43,6 +43,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -57,7 +58,7 @@ class ImportSpriteSheetWindow : public Window,
                                 public SelectBoxDelegate {
 public:
   ImportSpriteSheetWindow(Context* context)
-    : Window(false, "Import Sprite Sheet")
+    : Window(WithTitleBar, "Import Sprite Sheet")
     , m_context(context)
     , m_document(NULL)
     , m_grid(4, false)
@@ -138,7 +139,8 @@ protected:
 
     menu->addChild(item);
 
-    menu->showPopup(m_selectFile.rc->x1, m_selectFile.rc->y2);
+    const gfx::Rect& bounds = m_selectFile.getBounds();
+    menu->showPopup(bounds.x, bounds.y+bounds.h);
   }
 
   void onUseCurrentSprite()
@@ -168,7 +170,7 @@ protected:
           base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
-          image_clear(resultImage, 0);
+          raster::clear_image(resultImage, 0);
 
           // Render the portion of sheet.
           sprite->render(resultImage, -x, -y, currentFrame);

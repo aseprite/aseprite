@@ -10,7 +10,6 @@
             <check text="x" id="tiled_x" />
             <check text="y" id="tiled_y" />
         </box>
-        <check text="Onionskin" id="onionskin" />
         <separator text="Grid:" horizontal="true" left="true" />
         <check text="Snap to Grid" id="snap_to_grid" />
         <check text="View Grid" id="view_grid" />

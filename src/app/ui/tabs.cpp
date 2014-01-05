@@ -278,7 +278,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseWheelMessage: {
-      int dx = (jmouse_z(1) - jmouse_z(0)) * jrect_w(this->rc)/6;
+      int dx = (jmouse_z(1) - jmouse_z(0)) * getBounds().w/6;
       // setScrollX(m_scrollX+dx);
 
       m_begScrollX = m_scrollX;
@@ -460,7 +460,7 @@ void Tabs::selectTabInternal(Tab* tab)
 void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected)
 {
   // Is the tab outside the bounds of the widget?
-  if (box.x >= this->rc->x2 || box.x2() <= this->rc->x1)
+  if (box.x >= getBounds().x2() || box.x2() <= getBounds().x)
     return;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -491,12 +491,12 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
   }
 
   if (selected) {
-    theme->draw_bounds_nw(g, gfx::Rect(box.x, box.y2(), box.w, this->rc->y2-box.y2()),
+    theme->draw_bounds_nw(g, gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
                           PART_TAB_BOTTOM_SELECTED_NW,
                           theme->getColor(ThemeColor::TabSelectedFace));
   }
   else {
-    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, this->rc->y2-box.y2()),
+    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
                               PART_TAB_BOTTOM_NORMAL);
   }
 
@@ -539,7 +539,7 @@ int Tabs::getMaxScrollX()
     x += tab->width;
   }
 
-  x -= jrect_w(this->rc);
+  x -= getBounds().w;
 
   if (x < 0)
     return 0;
@@ -560,8 +560,8 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
       if (x - m_scrollX < 0) {
         setScrollX(x);
       }
-      else if (x + tab->width - m_scrollX > jrect_w(this->rc) - extra_x) {
-        setScrollX(x + tab->width - jrect_w(this->rc) + extra_x);
+      else if (x + tab->width - m_scrollX > getBounds().w - extra_x) {
+        setScrollX(x + tab->width - getBounds().w + extra_x);
       }
       break;
     }

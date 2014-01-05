@@ -47,7 +47,7 @@ namespace app {
 
 #ifdef NEED_LOG                 // log file info
 static std::string log_filename;
-static FILE *log_fileptr = NULL;
+static FILE* log_fileptr = NULL;
 #endif
 
 static LoggerModule* logger_instance = NULL;

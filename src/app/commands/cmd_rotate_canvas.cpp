@@ -94,14 +94,18 @@ protected:
       switch (m_angle) {
         case 180:
           api.setCelPosition(m_sprite, cel,
-                             m_sprite->getWidth() - cel->getX() - image->w,
-                             m_sprite->getHeight() - cel->getY() - image->h);
+                             m_sprite->getWidth() - cel->getX() - image->getWidth(),
+                             m_sprite->getHeight() - cel->getY() - image->getHeight());
           break;
         case 90:
-          api.setCelPosition(m_sprite, cel, m_sprite->getHeight() - cel->getY() - image->h, cel->getX());
+          api.setCelPosition(m_sprite, cel,
+                             m_sprite->getHeight() - cel->getY() - image->getHeight(),
+                             cel->getX());
           break;
         case -90:
-          api.setCelPosition(m_sprite, cel, cel->getY(), m_sprite->getWidth() - cel->getX() - image->w);
+          api.setCelPosition(m_sprite, cel,
+                             cel->getY(),
+                             m_sprite->getWidth() - cel->getX() - image->getWidth());
           break;
       }
     }
@@ -114,9 +118,9 @@ protected:
 
       // rotate the image
       Image* new_image = Image::create(image->getPixelFormat(),
-                                       m_angle == 180 ? image->w: image->h,
-                                       m_angle == 180 ? image->h: image->w);
-      image_rotate(image, new_image, m_angle);
+                                       m_angle == 180 ? image->getWidth(): image->getHeight(),
+                                       m_angle == 180 ? image->getHeight(): image->getWidth());
+      raster::rotate_image(image, new_image, m_angle);
 
       api.replaceStockImage(m_sprite, i, new_image);
 
@@ -153,7 +157,7 @@ protected:
       new_mask->replace(x, y,
                         m_angle == 180 ? origBounds.w: origBounds.h,
                         m_angle == 180 ? origBounds.h: origBounds.w);
-      image_rotate(origMask->getBitmap(), new_mask->getBitmap(), m_angle);
+      raster::rotate_image(origMask->getBitmap(), new_mask->getBitmap(), m_angle);
 
       // Copy new mask
       api.copyToCurrentMask(new_mask);

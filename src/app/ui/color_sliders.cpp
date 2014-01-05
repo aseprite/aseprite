@@ -128,7 +128,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   m_entry.push_back(entry);
   m_channel.push_back(channel);
 
-  slider->setProperty(PropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
+  slider->setProperty(SkinSliderPropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
   slider->setDoubleBuffered(true);
 
   slider->Change.connect(Bind<void>(&ColorSliders::onSliderChange, this, m_slider.size()-1));
@@ -201,7 +201,7 @@ void ColorSliders::updateSlidersBgColor(const app::Color& color)
 
 void ColorSliders::updateSliderBgColor(Slider* slider, const app::Color& color)
 {
-  SharedPtr<SkinSliderProperty> sliderProperty(slider->getProperty("SkinProperty"));
+  SkinSliderPropertyPtr sliderProperty(slider->getProperty(SkinSliderProperty::Name));
 
   static_cast<ColorSliderBgPainter*>(sliderProperty->getBgPainter())->setColor(color);
 

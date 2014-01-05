@@ -21,20 +21,21 @@
 #endif
 
 #include "app/app.h"
+#include "app/document.h"
+#include "app/modules/editors.h"
+#include "app/settings/ui_settings_impl.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/mini_editor.h"
 #include "app/ui/tabs.h"
+#include "app/ui/timeline.h"
 #include "app/ui/workspace.h"
+#include "app/ui_context.h"
 #include "base/mutex.h"
 #include "base/path.h"
-#include "app/document.h"
-#include "app/modules/editors.h"
 #include "raster/sprite.h"
-#include "app/settings/ui_settings_impl.h"
-#include "app/ui_context.h"
 #include "undo/undo_history.h"
 
 #include <allegro/file.h>
@@ -82,6 +83,7 @@ void UIContext::setActiveView(DocumentView* docView)
     current_editor->requestFocus();
 
   App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(current_editor);
+  App::instance()->getMainWindow()->getTimeline()->updateUsingEditor(current_editor);
 
   // Change the image-type of color bar.
   ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());
@@ -131,6 +133,10 @@ void UIContext::onAddDocument(Document* document)
 {
   // base method
   Context::onAddDocument(document);
+
+  // We don't create views in batch mode.
+  if (!App::instance()->isGui())
+    return;
 
   // Add a new view for this document
   DocumentView* view = new DocumentView(document, DocumentView::Normal);

@@ -23,6 +23,7 @@
 #include "app/app.h"
 #include "app/modules/palettes.h"
 #include "raster/blend.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
@@ -46,10 +47,10 @@ static Palette* ase_current_palette = NULL;
 int init_module_palette()
 {
   ase_default_palette = new Palette(FrameNumber(0), 256);
-  ase_default_palette->fromAllegro(default_palette);
+  convert_palette_from_allegro(default_palette, ase_default_palette);
 
   ase_current_palette = new Palette(FrameNumber(0), 256);
-  ase_current_palette->fromAllegro(black_palette);
+  convert_palette_from_allegro(black_palette, ase_current_palette);
 
   return 0;
 }
@@ -94,7 +95,7 @@ bool set_current_palette(const Palette *_palette, bool forced)
 
     // Change system color palette
     PALETTE allegPal;
-    palette->toAllegro(allegPal);
+    convert_palette_to_allegro(palette, allegPal);
     set_palette(allegPal);
 
     // Call slots in signals
@@ -125,12 +126,12 @@ void set_current_color(int index, int r, int g, int b)
 
   c = ase_current_palette->getEntry(index);
 
-  if (_rgba_getr(c) != r ||
-      _rgba_getg(c) != g ||
-      _rgba_getb(c) != b) {
+  if (rgba_getr(c) != r ||
+      rgba_getg(c) != g ||
+      rgba_getb(c) != b) {
     RGB rgb;
 
-    ase_current_palette->setEntry(index, _rgba(r, g, b, 255));
+    ase_current_palette->setEntry(index, rgba(r, g, b, 255));
 
     rgb.r = r>>2;
     rgb.g = g>>2;

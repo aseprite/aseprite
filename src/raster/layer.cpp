@@ -25,6 +25,7 @@
 #include "raster/blend.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 
@@ -33,10 +34,10 @@
 
 namespace raster {
 
-Layer::Layer(GfxObjType type, Sprite* sprite)
-  : GfxObj(type)
+Layer::Layer(ObjectType type, Sprite* sprite)
+  : Object(type)
 {
-  ASSERT(type == GFXOBJ_LAYER_IMAGE || type == GFXOBJ_LAYER_FOLDER);
+  ASSERT(type == OBJECT_LAYER_IMAGE || type == OBJECT_LAYER_FOLDER);
 
   setName("Layer");
 
@@ -92,7 +93,7 @@ Layer* Layer::getNext() const
 // LayerImage class
 
 LayerImage::LayerImage(Sprite* sprite)
-  : Layer(GFXOBJ_LAYER_IMAGE, sprite)
+  : Layer(OBJECT_LAYER_IMAGE, sprite)
 {
 }
 
@@ -215,7 +216,7 @@ void LayerImage::configureAsBackground()
 // LayerFolder class
 
 LayerFolder::LayerFolder(Sprite* sprite)
-  : Layer(GFXOBJ_LAYER_FOLDER, sprite)
+  : Layer(OBJECT_LAYER_FOLDER, sprite)
 {
   setName("Layer Set");
 }
@@ -304,9 +305,9 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
   if (!layer->isReadable())
     return;
 
-  switch (layer->getType()) {
+  switch (layer->type()) {
 
-    case GFXOBJ_LAYER_IMAGE: {
+    case OBJECT_LAYER_IMAGE: {
       const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
       Image* src_image;
 
@@ -317,18 +318,18 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
         src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
         ASSERT(src_image != NULL);
 
-        src_image->mask_color = layer->getSprite()->getTransparentColor();
+        src_image->setMaskColor(layer->getSprite()->getTransparentColor());
 
-        image_merge(image, src_image,
-                    cel->getX() + x,
-                    cel->getY() + y,
-                    MID (0, cel->getOpacity(), 255),
-                    static_cast<const LayerImage*>(layer)->getBlendMode());
+        composite_image(image, src_image,
+                        cel->getX() + x,
+                        cel->getY() + y,
+                        MID (0, cel->getOpacity(), 255),
+                        static_cast<const LayerImage*>(layer)->getBlendMode());
       }
       break;
     }
 
-    case GFXOBJ_LAYER_FOLDER: {
+    case OBJECT_LAYER_FOLDER: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 

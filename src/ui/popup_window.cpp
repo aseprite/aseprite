@@ -21,8 +21,8 @@ namespace ui {
 
 using namespace gfx;
 
-PopupWindow::PopupWindow(const char* text, bool close_on_buttonpressed)
-  : Window(false, text)
+PopupWindow::PopupWindow(const base::string& text, bool close_on_buttonpressed)
+  : Window(WithTitleBar, text)
 {
   m_close_on_buttonpressed = close_on_buttonpressed;
   m_filtering = false;

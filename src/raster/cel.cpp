@@ -25,7 +25,7 @@
 namespace raster {
 
 Cel::Cel(FrameNumber frame, int image)
-  : GfxObj(GFXOBJ_CEL)
+  : Object(OBJECT_CEL)
   , m_frame(frame)
   , m_image(image)
 {
@@ -35,7 +35,7 @@ Cel::Cel(FrameNumber frame, int image)
 }
 
 Cel::Cel(const Cel& cel)
-  : GfxObj(cel)
+  : Object(cel)
   , m_frame(cel.m_frame)
   , m_image(cel.m_image)
 {

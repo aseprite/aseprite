@@ -29,6 +29,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/data_recovery.h"
+#include "app/document_exporter.h"
 #include "app/document_location.h"
 #include "app/document_observer.h"
 #include "app/drop_files.h"
@@ -112,6 +113,7 @@ App::App(int argc, const char* argv[])
   , m_legacy(NULL)
   , m_isGui(false)
   , m_isShell(false)
+  , m_exporter(NULL)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -124,6 +126,14 @@ App::App(int argc, const char* argv[])
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
   m_files = options.files();
 
+  if (options.hasExporterParams()) {
+    m_exporter.reset(new DocumentExporter);
+
+    m_exporter->setDataFilename(options.data());
+    m_exporter->setTextureFilename(options.sheet());
+    m_exporter->setScale(options.scale());
+  }
+
   // Register well-known image file types.
   FileFormatsManager::instance().registerAllFormats();
 
@@ -134,13 +144,16 @@ App::App(int argc, const char* argv[])
   RenderEngine::loadConfig();
 
   // Default palette.
-  if (!options.paletteFileName().empty()) {
-    const char* palFile = options.paletteFileName().c_str();
-    PRINTF("Loading custom palette file: %s\n", palFile);
+  base::string palFile(!options.paletteFileName().empty() ?
+                       options.paletteFileName():
+                       base::string(get_config_string("GfxMode", "Palette", "")));
 
-    base::UniquePtr<Palette> pal(Palette::load(palFile));
+  if (!palFile.empty()) {
+    PRINTF("Loading custom palette file: %s\n", palFile.c_str());
+
+    base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
     if (pal.get() == NULL)
-      throw base::Exception("Error loading default palette from: %s", palFile);
+	  throw base::Exception("Error loading default palette from: %s", palFile.c_str());
 
     set_default_palette(pal.get());
   }
@@ -170,6 +183,10 @@ int App::run()
 
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
+
+    // 2013-11-19 - JRM - Force setting active view to NULL, workaround for setting 
+    // window title to proper devault value. (Issue #285)
+    UIContext::instance()->setActiveView(NULL);
   }
 
   // Set background mode for non-GUI modes
@@ -179,6 +196,7 @@ int App::run()
   PRINTF("Processing options...\n");
 
   {
+    UIContext* context = UIContext::instance();
     Console console;
     for (FileList::iterator
            it  = m_files.begin(),
@@ -192,15 +210,27 @@ int App::run()
       }
       else {
         // Mount and select the sprite
-        UIContext* context = UIContext::instance();
         context->addDocument(document);
 
-        if (isGui()) {
-          // Recent file
+        // Add the given file in the argument as a "recent file" only
+        // if we are running in GUI mode. If the program is executed
+        // in batch mode this is not desirable.
+        if (isGui())
           getRecentFiles()->addRecentFile(it->c_str());
-        }
+
+        // Add the document to the exporter.
+        if (m_exporter != NULL)
+          m_exporter->addDocument(document);
       }
     }
+  }
+
+  // Export
+  if (m_exporter != NULL) {
+    PRINTF("Exporting sheet...\n");
+
+    m_exporter->exportSheet();
+    m_exporter.reset(NULL);
   }
 
   // Run the GUI

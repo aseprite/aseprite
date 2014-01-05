@@ -33,6 +33,7 @@
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
+#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
@@ -81,7 +82,6 @@ void PlayAnimationCommand::onExecute(Context* context)
   IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
   bool onionskin_state = docSettings->getUseOnionskin();
   Palette *oldpal, *newpal;
-  PALETTE rgbpal;
 
   if (sprite->getTotalFrames() < 2)
     return;
@@ -113,7 +113,8 @@ void PlayAnimationCommand::onExecute(Context* context)
 
     newpal = sprite->getPalette(current_editor->getFrame());
     if (oldpal != newpal) {
-      newpal->toAllegro(rgbpal);
+      PALETTE rgbpal;
+      raster::convert_palette_to_allegro(newpal, rgbpal);
       set_palette(rgbpal);
       oldpal = newpal;
     }

@@ -24,10 +24,10 @@
 
 #include "app/commands/filters/convolution_matrix_stock.h"
 
-#include "base/unique_ptr.h"
-#include "filters/convolution_matrix.h"
 #include "app/resource_finder.h"
 #include "app/util/filetoks.h"
+#include "base/file_handle.h"
+#include "filters/convolution_matrix.h"
 
 namespace app {
 
@@ -50,13 +50,6 @@ SharedPtr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
   return SharedPtr<ConvolutionMatrix>(0);
 }
 
-namespace {
-  class FileDestroyer {
-  public:
-    static void destroy(FILE* ptr) { fclose(ptr); }
-  };
-}
-
 void ConvolutionMatrixStock::reloadStock()
 {
 #define READ_TOK() {                                    \
@@ -75,7 +68,6 @@ void ConvolutionMatrixStock::reloadStock()
   char *s, buf[256], leavings[4096];
   int i, c, x, y, w, h, div, bias;
   SharedPtr<ConvolutionMatrix> matrix;
-  base::UniquePtr<FILE, int(*)(FILE*)> f;
   std::string name;
 
   cleanStock();
@@ -86,7 +78,7 @@ void ConvolutionMatrixStock::reloadStock()
 
     while (const char* path = rf.next()) {
       // Open matrices stock file
-      f.reset(fopen(path, "r"), fclose);
+      base::FileHandle f = base::open_file(path, "r");
       if (!f)
         continue;
 

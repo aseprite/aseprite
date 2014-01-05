@@ -16,15 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_DIALOGS_ANIEDIT_H_INCLUDED
-#define APP_DIALOGS_ANIEDIT_H_INCLUDED
+#ifndef APP_XML_DOCUMENT_H_INCLUDED
+#define APP_XML_DOCUMENT_H_INCLUDED
+
+#include "base/exception.h"
+#include "base/shared_ptr.h"
+#include "base/string.h"
+
+#include "tinyxml.h"
 
 namespace app {
-  class Context;
 
-  bool animation_editor_is_movingcel();
+  typedef SharedPtr<TiXmlDocument> XmlDocumentRef;
 
-  void switch_between_animation_and_sprite_editor(Context* context);
+  XmlDocumentRef open_xml(const base::string& filename);
 
 } // namespace app
 

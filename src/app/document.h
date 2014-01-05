@@ -19,16 +19,15 @@
 #ifndef APP_DOCUMENT_H_INCLUDED
 #define APP_DOCUMENT_H_INCLUDED
 
-#include "base/disable_copying.h"
-#include "base/shared_ptr.h"
-#include "base/unique_ptr.h"
 #include "app/document_id.h"
-#include "gfx/transformation.h"
+#include "base/disable_copying.h"
 #include "base/observable.h"
+#include "base/shared_ptr.h"
+#include "base/string.h"
+#include "base/unique_ptr.h"
+#include "gfx/transformation.h"
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
-
-#include <string>
 
 namespace base {
   class mutex;
@@ -110,8 +109,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // File related properties
 
-    const char* getFilename() const;
-    void setFilename(const char* filename);
+    const base::string& getFilename() const { return m_filename; }
+    void setFilename(const base::string& filename);
 
     bool isModified() const;
     bool isAssociatedToFile() const;
@@ -201,7 +200,7 @@ namespace app {
     base::UniquePtr<DocumentUndo> m_undo;
 
     // Document's file name (from where it was loaded, where it is saved).
-    std::string m_filename;
+    base::string m_filename;
 
     // True if this sprite is associated to a file in the file-system.
     bool m_associated_to_file;

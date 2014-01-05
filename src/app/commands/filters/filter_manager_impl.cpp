@@ -37,7 +37,6 @@
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/manager.h"
-#include "ui/rect.h"
 #include "ui/view.h"
 #include "ui/widget.h"
 
@@ -64,7 +63,6 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   m_offset_x = 0;
   m_offset_y = 0;
   m_mask = NULL;
-  m_mask_address = NULL;
   m_targetOrig = TARGET_ALL_CHANNELS;
   m_target = TARGET_ALL_CHANNELS;
 
@@ -119,7 +117,8 @@ void FilterManagerImpl::beginForPreview()
   else {
     m_preview_mask.reset(new Mask());
     m_preview_mask->replace(m_offset_x, m_offset_y,
-                            m_src->w, m_src->h);
+                            m_src->getWidth(),
+                            m_src->getHeight());
   }
 
   m_row = 0;
@@ -161,15 +160,24 @@ void FilterManagerImpl::beginForPreview()
   }
 }
 
+void FilterManagerImpl::end()
+{
+  m_maskBits.unlock();
+}
+
 bool FilterManagerImpl::applyStep()
 {
   if ((m_row >= 0) && (m_row < m_h)) {
     if ((m_mask) && (m_mask->getBitmap())) {
-      m_d = div(m_x-m_mask->getBounds().x+m_offset_x, 8);
-      m_mask_address = ((uint8_t**)m_mask->getBitmap()->line)[m_row+m_y-m_mask->getBounds().y+m_offset_y]+m_d.quot;
+      int x = m_x - m_mask->getBounds().x + m_offset_x;
+      int y = m_row + m_y - m_mask->getBounds().y + m_offset_y;
+
+      m_maskBits = m_mask->getBitmap()
+        ->lockBits<BitmapTraits>(Image::ReadLock,
+                                 gfx::Rect(x, y, m_w - x, m_h - y));
+
+      m_maskIterator = m_maskBits.begin();
     }
-    else
-      m_mask_address = NULL;
 
     switch (m_location.sprite()->getPixelFormat()) {
       case IMAGE_RGB:       m_filter->applyToRgba(this); break;
@@ -208,7 +216,7 @@ void FilterManagerImpl::apply()
       undo.pushUndoer(new undoers::ImageArea(undo.getObjects(), m_src, m_x, m_y, m_w, m_h));
 
     // Copy "dst" to "src"
-    image_copy(m_src, m_dst, 0, 0);
+    copy_image(m_src, m_dst, 0, 0);
 
     undo.commit();
   }
@@ -275,34 +283,23 @@ void FilterManagerImpl::flush()
 
 const void* FilterManagerImpl::getSourceAddress()
 {
-  switch (m_location.sprite()->getPixelFormat()) {
-    case IMAGE_RGB:       return ((uint32_t**)m_src->line)[m_row+m_y]+m_x;
-    case IMAGE_GRAYSCALE: return ((uint16_t**)m_src->line)[m_row+m_y]+m_x;
-    case IMAGE_INDEXED:   return ((uint8_t**)m_src->line)[m_row+m_y]+m_x;
-  }
-  return NULL;
+  return m_src->getPixelAddress(m_x, m_row+m_y);
 }
 
 void* FilterManagerImpl::getDestinationAddress()
 {
-  switch (m_location.sprite()->getPixelFormat()) {
-    case IMAGE_RGB:       return ((uint32_t**)m_dst->line)[m_row+m_y]+m_x;
-    case IMAGE_GRAYSCALE: return ((uint16_t**)m_dst->line)[m_row+m_y]+m_x;
-    case IMAGE_INDEXED:   return ((uint8_t**)m_dst->line)[m_row+m_y]+m_x;
-  }
-  return NULL;
+  return m_dst->getPixelAddress(m_x, m_row+m_y);
 }
 
 bool FilterManagerImpl::skipPixel()
 {
   bool skip = false;
 
-  if (m_mask_address) {
-    if (!((*m_mask_address) & (1<<m_d.rem)))
+  if ((m_mask) && (m_mask->getBitmap())) {
+    if (!*m_maskIterator)
       skip = true;
 
-    // Move to the next pixel in the mask.
-    _image_bitmap_next_bit(m_d, m_mask_address);
+    ++m_maskIterator;
   }
 
   return skip;
@@ -327,11 +324,10 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
     throw InvalidAreaException();
 
   m_src = image;
-  m_dst.reset(image_crop(image, 0, 0, image->w, image->h, 0));
+  m_dst.reset(crop_image(image, 0, 0, image->getWidth(), image->getHeight(), 0));
   m_row = -1;
   m_mask = NULL;
   m_preview_mask.reset(NULL);
-  m_mask_address = NULL;
 
   m_target = m_targetOrig;
 
@@ -366,17 +362,17 @@ bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)
       y = 0;
     }
 
-    if (x+w-1 >= image->w-1)
-      w = image->w-x;
+    if (x+w-1 >= image->getWidth()-1)
+      w = image->getWidth()-x;
 
-    if (y+h-1 >= image->h-1)
-      h = image->h-y;
+    if (y+h-1 >= image->getHeight()-1)
+      h = image->getHeight()-y;
   }
   else {
     x = 0;
     y = 0;
-    w = image->w;
-    h = image->h;
+    w = image->getWidth();
+    h = image->getHeight();
   }
 
   if ((w < 1) || (h < 1)) {

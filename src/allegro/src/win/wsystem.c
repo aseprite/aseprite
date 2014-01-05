@@ -25,6 +25,7 @@
 #include "allegro.h"
 #include "allegro/internal/aintern.h"
 #include "allegro/platform/aintwin.h"
+#include "utf8.h"
 
 #ifndef ALLEGRO_WINDOWS
 #error something is wrong with the makefile
@@ -235,10 +236,10 @@ static void sys_directx_exit(void)
  */
 static void sys_directx_get_executable_name(char *output, int size)
 {
-   char *temp = _AL_MALLOC_ATOMIC(size);
+   wchar_t* temp = _AL_MALLOC_ATOMIC(size);
 
    if (GetModuleFileName(allegro_inst, temp, size))
-      do_uconvert(temp, U_ASCII, output, U_CURRENT, size);
+      do_uconvert((char*)temp, U_UNICODE, output, U_CURRENT, size);
    else
       usetc(output, 0);
 
@@ -254,7 +255,7 @@ static void sys_directx_set_window_title(AL_CONST char *name)
 {
    HWND allegro_wnd = win_get_window();
 
-   do_uconvert(name, U_CURRENT, wnd_title, U_ASCII, WND_TITLE_SIZE);
+   do_uconvert(name, U_CURRENT, (char*)wnd_title, U_UNICODE, WND_TITLE_SIZE);
    SetWindowText(allegro_wnd, wnd_title);
 }
 
@@ -320,8 +321,8 @@ static void sys_directx_message(AL_CONST char *msg)
       msg += uwidth(msg);
 
    MessageBoxW(allegro_wnd,
-               (unsigned short *)uconvert(msg, U_CURRENT, tmp1, U_UNICODE, ALLEGRO_MESSAGE_SIZE),
-               (unsigned short *)uconvert(wnd_title, U_ASCII, tmp2, U_UNICODE, sizeof(tmp2)),
+               (wchar_t*)uconvert(msg, U_CURRENT, tmp1, U_UNICODE, ALLEGRO_MESSAGE_SIZE),
+               (wchar_t*)uconvert((char*)wnd_title, U_CURRENT, tmp2, U_UNICODE, sizeof(tmp2)),
                MB_OK);
 
    _AL_FREE(tmp1);
@@ -334,7 +335,7 @@ static void sys_directx_message(AL_CONST char *msg)
  */
 static void sys_directx_assert(AL_CONST char *msg)
 {
-   OutputDebugString(msg);  /* thread safe */
+   OutputDebugStringA(msg);  /* thread safe */
    DebugBreak();
 }
 
@@ -447,7 +448,7 @@ static void sys_directx_yield_timeslice(void)
  */
 static int sys_directx_trace_handler(AL_CONST char *msg)
 {
-   OutputDebugString(msg);  /* thread safe */
+   OutputDebugStringA(msg);  /* thread safe */
    return 0;
 }
 
@@ -458,25 +459,26 @@ static int sys_directx_trace_handler(AL_CONST char *msg)
  *  which makes it look as if the application can still have a normal
  *  main() function.
  */
-int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
+int _WinMain(void* _main, void* hInst, void* hPrev, char* Cmd, int nShow)
 {
-   int (*mainfunc) (int argc, char *argv[]) = (int (*)(int, char *[]))_main;
-   char *argbuf;
-   char *cmdline;
-   char **argv;
+   int (*mainfunc)(int argc, char *argv[]) = (int (*)(int, char *[]))_main;
+   wchar_t* argbuf;
+   wchar_t* cmdline;
+   wchar_t* arg_w;
+   char** argv;
    int argc;
    int argc_max;
-   int i, q;
+   int i, j, q;
 
    /* can't use parameter because it doesn't include the executable name */
    cmdline = GetCommandLine();
-   i = strlen(cmdline) + 1;
+   i = sizeof(wchar_t) * (wcslen(cmdline) + 1);
    argbuf = _AL_MALLOC(i);
    memcpy(argbuf, cmdline, i);
 
    argc = 0;
    argc_max = 64;
-   argv = _AL_MALLOC(sizeof(char *) * argc_max);
+   argv = _AL_MALLOC(sizeof(char*) * argc_max);
    if (!argv) {
       _AL_FREE(argbuf);
       return 1;
@@ -486,11 +488,11 @@ int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
 
    /* parse commandline into argc/argv format */
    while (argbuf[i]) {
-      while ((argbuf[i]) && (uisspace(argbuf[i])))
+      while ((argbuf[i]) && (iswspace(argbuf[i])))
          i++;
 
       if (argbuf[i]) {
-         if ((argbuf[i] == '\'') || (argbuf[i] == '"')) {
+         if ((argbuf[i] == L'\'') || (argbuf[i] == L'"')) {
             q = argbuf[i++];
             if (!argbuf[i])
                break;
@@ -498,7 +500,8 @@ int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
          else
             q = 0;
 
-         argv[argc++] = &argbuf[i];
+         arg_w = argbuf+i;
+         ++argc;
 
          if (argc >= argc_max) {
             argc_max += 64;
@@ -509,23 +512,28 @@ int _WinMain(void *_main, void *hInst, void *hPrev, char *Cmd, int nShow)
             }
          }
 
-         while ((argbuf[i]) && ((q) ? (argbuf[i] != q) : (!uisspace(argbuf[i]))))
+         while ((argbuf[i]) && ((q) ? (argbuf[i] != q) : (!iswspace(argbuf[i]))))
             i++;
 
          if (argbuf[i]) {
             argbuf[i] = 0;
             i++;
          }
+
+         argv[argc-1] = convert_widechar_to_utf8(arg_w);
       }
    }
 
    argv[argc] = NULL;
 
+   _AL_FREE(argbuf);
+
    /* call the application entry point */
    i = mainfunc(argc, argv);
 
+   for (j=0; j<argc; ++j)
+     _AL_FREE(argv[j]);
    _AL_FREE(argv);
-   _AL_FREE(argbuf);
 
    return i;
 }
@@ -539,9 +547,9 @@ char *win_err_str(long err)
 {
    static char msg[256];
 
-   FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
-                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                 (LPTSTR)&msg, 0, NULL);
+   FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPSTR)&msg[0], 0, NULL);
 
    return msg;
 }
@@ -561,5 +569,5 @@ void thread_safe_trace(char *msg,...)
    vsprintf(buf, msg, ap);
    va_end(ap);
 
-   OutputDebugString(buf);  /* thread safe */
+   OutputDebugStringA(buf);  /* thread safe */
 }

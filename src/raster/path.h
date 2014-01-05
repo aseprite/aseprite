@@ -21,7 +21,7 @@
 
 #error This file is deprecated
 
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 #include <string>
 
 namespace raster {
@@ -43,7 +43,7 @@ namespace raster {
     PATH_CAP_SQUARE,
   };
 
-  class Path : public GfxObj {
+  class Path : public Object {
   public:
     std::string name;
     int join, cap;

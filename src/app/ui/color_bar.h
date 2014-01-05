@@ -71,7 +71,7 @@ namespace app {
     public:
       ScrollableView();
     protected:
-      bool onProcessMessage(ui::Message* msg) OVERRIDE;
+      void onPaint(ui::PaintEvent& ev) OVERRIDE;
     };
 
     ui::CheckBox m_paletteButton;

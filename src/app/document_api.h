@@ -32,6 +32,7 @@ namespace raster {
   class LayerFolder;
   class LayerImage;
   class Mask;
+  class Palette;
   class Sprite;
 }
 
@@ -68,7 +69,7 @@ namespace app {
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
     void setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs);
-    void setConstantFrameRate(Sprite* sprite, int msecs);
+    void setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs);
     void moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame);
 
     // Cels API
@@ -107,6 +108,9 @@ namespace app {
     void setMaskPosition(int x, int y);
     void deselectMask();
 
+    // Palette API
+    void setPalette(Sprite* sprite, FrameNumber frame, Palette* newPalette);
+
   private:
     undo::ObjectsContainer* getObjects() const;
     void addFrameForLayer(Layer* layer, FrameNumber frame);
@@ -114,6 +118,7 @@ namespace app {
     void copyPreviousFrame(Layer* layer, FrameNumber frame);
     void moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
     void configureLayerAsBackground(LayerImage* layer);
+    bool undoEnabled();
 
     Document* m_document;
     undo::UndoersCollector* m_undoers;

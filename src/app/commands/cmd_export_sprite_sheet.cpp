@@ -38,6 +38,7 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
+#include "raster/primitives.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
 #include "ui/ui.h"
@@ -54,7 +55,7 @@ class ExportSpriteSheetWindow : public Window {
 
 public:
   ExportSpriteSheetWindow(Context* context)
-    : Window(false, "Export Sprite Sheet")
+    : Window(WithTitleBar, "Export Sprite Sheet")
     , m_context(context)
     , m_document(context->getActiveDocument())
     , m_grid(4, false)
@@ -117,7 +118,7 @@ protected:
     m_columns.setVisible(state);
 
     gfx::Size reqSize = getPreferredSize();
-    moveWindow(gfx::Rect(rc->x1, rc->y1, reqSize.w, reqSize.h));
+    moveWindow(gfx::Rect(getOrigin(), reqSize));
 
     invalidate();
   }
@@ -146,7 +147,7 @@ protected:
     int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
     base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
     base::UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
-    image_clear(resultImage, 0);
+    raster::clear_image(resultImage, 0);
 
     int column = 0, row = 0;
     for (FrameNumber frame(0); frame<nframes; ++frame) {

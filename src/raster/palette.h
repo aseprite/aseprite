@@ -19,10 +19,10 @@
 #ifndef RASTER_PALETTE_H_INCLUDED
 #define RASTER_PALETTE_H_INCLUDED
 
+#include "raster/color.h"
 #include "raster/frame_number.h"
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 
-#include <allegro/color.h>
 #include <vector>
 
 namespace raster {
@@ -45,7 +45,7 @@ namespace raster {
 
     void addChain(SortPalette* chain);
 
-    bool operator()(uint32_t c1, uint32_t c2);
+    bool operator()(color_t c1, color_t c2);
 
   private:
     Channel m_channel;
@@ -53,7 +53,7 @@ namespace raster {
     SortPalette* m_chain;
   };
 
-  class Palette : public GfxObj {
+  class Palette : public Object {
   public:
     enum { MaxColors = 256 };
 
@@ -71,12 +71,12 @@ namespace raster {
     FrameNumber getFrame() const { return m_frame; }
     void setFrame(FrameNumber frame);
 
-    uint32_t getEntry(int i) const {
+    color_t getEntry(int i) const {
       ASSERT(i >= 0 && i < size());
       return m_colors[i];
     }
 
-    void setEntry(int i, uint32_t color);
+    void setEntry(int i, color_t color);
 
     void copyColorsTo(Palette* dst) const;
 
@@ -91,9 +91,6 @@ namespace raster {
     void makeRectRamp(int from, int to, int columns);
     void sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping);
 
-    void toAllegro(RGB* rgb) const;
-    void fromAllegro(const RGB* rgb);
-
     static Palette* load(const char *filename);
     bool save(const char *filename) const;
 
@@ -101,7 +98,7 @@ namespace raster {
 
   private:
     FrameNumber m_frame;
-    std::vector<uint32_t> m_colors;
+    std::vector<color_t> m_colors;
     int m_modifications;
   };
 

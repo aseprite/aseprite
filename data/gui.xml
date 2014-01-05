@@ -74,7 +74,9 @@
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
-      <key command="FilmEditor" shortcut="Tab" />
+      <key command="Timeline" shortcut="Tab">
+        <param name="switch" value="true" />
+      </key>
       <key command="PaletteEditor" shortcut="F4">
         <param name="switch" value="true" />
       </key>
@@ -342,6 +344,14 @@
           <param name="frame" value="all" />
         </item>
       </menu>
+      <menu text="&amp;Palette">
+        <item command="PaletteEditor" text="&amp;Palette Editor">
+          <param name="switch" value="true" />
+        </item>
+        <separator />
+        <item command="LoadPalette" text="&amp;Load Palette" />
+        <item command="SavePalette" text="&amp;Save Palette" />
+      </menu>
       <menu text="Selec&amp;t">
         <item command="MaskAll" text="&amp;All" />
         <item command="DeselectMask" text="&amp;Deselect" />
@@ -362,8 +372,7 @@
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
         <separator />
-        <item command="FilmEditor" text="&amp;Animation Editor" />
-        <item command="PaletteEditor" text="&amp;Palette Editor">
+        <item command="Timeline" text="&amp;Timeline">
           <param name="switch" value="true" />
         </item>
         <item command="Preview" text="Previe&amp;w" />
@@ -433,7 +442,7 @@
     <menu id="cel_popup">
       <item command="CelProperties" text="&amp;Properties..." />
       <separator />
-      <item command="Clear" text="&amp;Clear" />
+      <item command="RemoveCel" text="&amp;Clear" />
     </menu>
 
     <menu id="cel_movement_popup">

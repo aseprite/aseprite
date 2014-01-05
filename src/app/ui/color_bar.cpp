@@ -24,17 +24,18 @@
 #include <cstring>
 
 #include "app/color.h"
-#include "app/ui/color_bar.h"
-#include "app/ui/status_bar.h"
-#include "base/bind.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
-#include "raster/image.h"
+#include "app/ui/color_bar.h"
 #include "app/ui/skin/skin_theme.h"
-#include "ui/message.h"
+#include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "base/bind.h"
+#include "raster/image.h"
+#include "ui/graphics.h"
+#include "ui/paint_event.h"
 
 namespace app {
 
@@ -55,24 +56,15 @@ ColorBar::ScrollableView::ScrollableView()
   jwidget_set_border(this, l, t, r, b);
 }
 
-bool ColorBar::ScrollableView::onProcessMessage(Message* msg)
+void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
 {
-  switch (msg->type()) {
-
-    case kPaintMessage:
-      {
-        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-        theme->draw_bounds_nw(ji_screen,
-                              rc->x1, rc->y1,
-                              rc->x2-1, rc->y2-1,
-                              hasFocus() ? PART_EDITOR_SELECTED_NW:
-                                           PART_EDITOR_NORMAL_NW,
-                              ColorNone);
-      }
-      return true;
-
-  }
-  return View::onProcessMessage(msg);
+  ui::Graphics* g = ev.getGraphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  theme->draw_bounds_nw(g,
+    getClientBounds(),
+    hasFocus() ? PART_EDITOR_SELECTED_NW:
+    PART_EDITOR_NORMAL_NW,
+    ColorNone);
 }
 
 //////////////////////////////////////////////////////////////////////

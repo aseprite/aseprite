@@ -38,7 +38,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
                            WithChannels withChannels,
                            WithTiled withTiled,
                            TiledMode tiledMode)
-  : Window(false, title)
+  : Window(WithTitleBar, title)
   , m_cfgSection(cfgSection)
   , m_filterMgr(filterMgr)
   , m_hbox(JI_HORIZONTAL)

@@ -25,9 +25,9 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -90,7 +90,7 @@ struct BITMAPINFOHEADER {
 
 bool IcoFormat::onLoad(FileOp* fop)
 {
-  FileHandle f(fop->filename.c_str(), "rb");
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   // Read the icon header
   ICONDIR header;
@@ -143,7 +143,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   int image_index = sprite->getStock()->addImage(image);
   Cel* cel = new Cel(FrameNumber(0), image_index);
   layer->addCel(cel);
-  image_clear(image, 0);
+  clear_image(image, 0);
 
   // Go to the entry start in the file
   fseek(f, entry.image_offset, SEEK_SET);
@@ -172,7 +172,7 @@ bool IcoFormat::onLoad(FileOp* fop)
       int r = fgetc(f);
       fgetc(f);
 
-      pal->setEntry(i, _rgba(r, g, b, 255));
+      pal->setEntry(i, rgba(r, g, b, 255));
     }
 
     sprite->setPalette(pal, true);
@@ -181,24 +181,24 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read XOR MASK
   int x, y, c, r, g, b;
-  for (y=image->h-1; y>=0; --y) {
-    for (x=0; x<image->w; ++x) {
+  for (y=image->getHeight()-1; y>=0; --y) {
+    for (x=0; x<image->getWidth(); ++x) {
       switch (entry.bpp) {
 
         case 8:
           c = fgetc(f);
           ASSERT(c >= 0 && c < numcolors);
           if (c >= 0 && c < numcolors)
-            image_putpixel(image, x, y, c);
+            put_pixel(image, x, y, c);
           else
-            image_putpixel(image, x, y, 0);
+            put_pixel(image, x, y, 0);
           break;
 
         case 24:
           b = fgetc(f);
           g = fgetc(f);
           r = fgetc(f);
-          image_putpixel(image, x, y, _rgba(r, g, b, 255));
+          put_pixel(image, x, y, rgba(r, g, b, 255));
           break;
       }
     }
@@ -212,13 +212,13 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // AND mask
   int m, v;
-  for (y=image->h-1; y>=0; --y) {
-    for (x=0; x<(image->w+7)/8; ++x) {
+  for (y=image->getHeight()-1; y>=0; --y) {
+    for (x=0; x<(image->getWidth()+7)/8; ++x) {
       m = fgetc(f);
       v = 128;
       for (b=0; b<8; b++) {
         if ((m & v) == v)
-          image_putpixel(image, x*8+b, y, 0); // TODO mask color
+          put_pixel(image, x*8+b, y, 0); // TODO mask color
         v >>= 1;
       }
     }
@@ -242,7 +242,7 @@ bool IcoFormat::onSave(FileOp* fop)
   int c, x, y, b, m, v;
   FrameNumber n, num = sprite->getTotalFrames();
 
-  FileHandle f(fop->filename.c_str(), "wb");
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs
 
@@ -279,21 +279,21 @@ bool IcoFormat::onSave(FileOp* fop)
                                        sprite->getHeight()));
 
   for (n=FrameNumber(0); n<num; ++n) {
-    image_clear(image, 0);
+    clear_image(image, 0);
     layer_render(sprite->getFolder(), image, 0, 0, n);
 
     bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
-    bw = (((image->w * bpp / 8) + 3) / 4) * 4;
-    bitsw = ((((image->w + 7) / 8) + 3) / 4) * 4;
-    size = image->h * (bw + bitsw) + 40;
+    bw = (((image->getWidth() * bpp / 8) + 3) / 4) * 4;
+    bitsw = ((((image->getWidth() + 7) / 8) + 3) / 4) * 4;
+    size = image->getHeight() * (bw + bitsw) + 40;
 
     if (bpp == 8)
       size += 256 * 4;
 
     // BITMAPINFOHEADER
     fputl(40, f);                  // size
-    fputl(image->w, f);            // width
-    fputl(image->h * 2, f);        // XOR height + AND height
+    fputl(image->getWidth(), f);   // width
+    fputl(image->getHeight() * 2, f); // XOR height + AND height
     fputw(1, f);                   // planes
     fputw(bpp, f);                 // bitcount
     fputl(0, f);                   // unused for ico
@@ -310,34 +310,34 @@ bool IcoFormat::onSave(FileOp* fop)
       fputl(0, f);  // color 0 is black, so the XOR mask works
 
       for (i=1; i<256; i++) {
-        fputc(_rgba_getb(pal->getEntry(i)), f);
-        fputc(_rgba_getg(pal->getEntry(i)), f);
-        fputc(_rgba_getr(pal->getEntry(i)), f);
+        fputc(rgba_getb(pal->getEntry(i)), f);
+        fputc(rgba_getg(pal->getEntry(i)), f);
+        fputc(rgba_getr(pal->getEntry(i)), f);
         fputc(0, f);
       }
     }
 
     // XOR MASK
-    for (y=image->h-1; y>=0; --y) {
-      for (x=0; x<image->w; ++x) {
+    for (y=image->getHeight()-1; y>=0; --y) {
+      for (x=0; x<image->getWidth(); ++x) {
         switch (image->getPixelFormat()) {
 
           case IMAGE_RGB:
-            c = image_getpixel(image, x, y);
-            fputc(_rgba_getb(c), f);
-            fputc(_rgba_getg(c), f);
-            fputc(_rgba_getr(c), f);
+            c = get_pixel(image, x, y);
+            fputc(rgba_getb(c), f);
+            fputc(rgba_getg(c), f);
+            fputc(rgba_getr(c), f);
             break;
 
           case IMAGE_GRAYSCALE:
-            c = image_getpixel(image, x, y);
-            fputc(_graya_getv(c), f);
-            fputc(_graya_getv(c), f);
-            fputc(_graya_getv(c), f);
+            c = get_pixel(image, x, y);
+            fputc(graya_getv(c), f);
+            fputc(graya_getv(c), f);
+            fputc(graya_getv(c), f);
             break;
 
           case IMAGE_INDEXED:
-            c = image_getpixel(image, x, y);
+            c = get_pixel(image, x, y);
             fputc(c, f);
             break;
         }
@@ -351,23 +351,23 @@ bool IcoFormat::onSave(FileOp* fop)
     }
 
     // AND MASK
-    for (y=image->h-1; y>=0; --y) {
-      for (x=0; x<(image->w+7)/8; ++x) {
+    for (y=image->getHeight()-1; y>=0; --y) {
+      for (x=0; x<(image->getWidth()+7)/8; ++x) {
         m = 0;
         v = 128;
 
         for (b=0; b<8; b++) {
-          c = image_getpixel(image, x*8+b, y);
+          c = get_pixel(image, x*8+b, y);
 
           switch (image->getPixelFormat()) {
 
             case IMAGE_RGB:
-              if (_rgba_geta(c) == 0)
+              if (rgba_geta(c) == 0)
                 m |= v;
               break;
 
             case IMAGE_GRAYSCALE:
-              if (_graya_geta(c) == 0)
+              if (graya_geta(c) == 0)
                 m |= v;
               break;
 

@@ -70,8 +70,8 @@ AppMenus::AppMenus()
 
 void AppMenus::reload()
 {
-  TiXmlDocument& doc(GuiXml::instance()->doc());
-  TiXmlHandle handle(&doc);
+  XmlDocumentRef doc(GuiXml::instance()->doc());
+  TiXmlHandle handle(doc);
   const char* path = GuiXml::instance()->filename();
 
   /**************************************************/
@@ -304,7 +304,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0)
-    return new Separator(NULL, JI_HORIZONTAL);
+    return new Separator("", JI_HORIZONTAL);
 
   const char* command_name = elem->Attribute("command");
   Command* command =
@@ -361,7 +361,7 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory).", NULL, NULL));
   subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get", NULL, NULL));
   subMenu->addChild(new AppMenuItem("the latest commands available.", NULL, NULL));
-  subMenu->addChild(new Separator(NULL, JI_HORIZONTAL));
+  subMenu->addChild(new Separator("", JI_HORIZONTAL));
   subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version", NULL, NULL));
   subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element.", NULL, NULL));
   menuitem->setSubmenu(subMenu);

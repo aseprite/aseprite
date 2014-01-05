@@ -20,9 +20,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/dialogs/aniedit.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/util/celmove.h"
 #include "ui/base.h"
 
@@ -47,7 +49,7 @@ MoveCelCommand::MoveCelCommand()
 
 bool MoveCelCommand::onEnabled(Context* context)
 {
-  return animation_editor_is_movingcel();
+  return App::instance()->getMainWindow()->getTimeline()->isMovingCel();
 }
 
 void MoveCelCommand::onExecute(Context* context)

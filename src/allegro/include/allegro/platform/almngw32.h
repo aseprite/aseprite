@@ -29,7 +29,9 @@
 /* a static auto config */
 /* older mingw's don't seem to have inttypes.h */
 /* #define ALLEGRO_HAVE_INTTYPES_H */
+#ifndef ALLEGRO_HAVE_STDINT_H
 #define ALLEGRO_HAVE_STDINT_H   1
+#endif
 
 
 /* describe this platform */

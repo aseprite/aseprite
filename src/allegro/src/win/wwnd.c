@@ -40,7 +40,7 @@
 
 /* general */
 static HWND allegro_wnd = NULL;
-char wnd_title[WND_TITLE_SIZE];  /* ASCII string */
+wchar_t wnd_title[WND_TITLE_SIZE];  /* Unicode string title */
 int wnd_x = 0;
 int wnd_y = 0;
 int wnd_width = 0;
@@ -66,7 +66,7 @@ static BOOL sizing = FALSE;
 void (*user_resize_proc)(RESIZE_DISPLAY_EVENT *ev) = NULL;
 
 /* window thread internals */
-#define ALLEGRO_WND_CLASS "ASEWindowClass"
+#define ALLEGRO_WND_CLASS L"AsepriteWindowClass"
 static HANDLE wnd_thread = NULL;
 static int old_style = 0;
 
@@ -432,7 +432,7 @@ static HWND create_directx_window(void)
       wnd_class.cbClsExtra = 0;
       wnd_class.cbWndExtra = 0;
       wnd_class.hInstance = allegro_inst;
-      wnd_class.hIcon = LoadIcon(allegro_inst, "allegro_icon");
+      wnd_class.hIcon = LoadIcon(allegro_inst, L"allegro_icon");
       if (!wnd_class.hIcon)
          wnd_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
       wnd_class.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -450,7 +450,7 @@ static HWND create_directx_window(void)
       if (ugetat(fname, -1) == '.')
          usetat(fname, -1, 0);
 
-      do_uconvert(get_filename(fname), U_CURRENT, wnd_title, U_ASCII, WND_TITLE_SIZE);
+      do_uconvert(get_filename(fname), U_CURRENT, (char*)wnd_title, U_UNICODE, WND_TITLE_SIZE);
 
       first = 0;
    }
@@ -515,8 +515,8 @@ int init_directx_window(void)
    DWORD threadId;
 
    /* setup globals */
-   msg_call_proc = RegisterWindowMessage("Allegro call proc");
-   msg_suicide = RegisterWindowMessage("Allegro window suicide");
+   msg_call_proc = RegisterWindowMessage(L"Allegro call proc");
+   msg_suicide = RegisterWindowMessage(L"Allegro window suicide");
 
    /* create window thread */
    events[0] = CreateEvent(NULL, FALSE, FALSE, NULL);        /* acknowledges that thread is up */
@@ -601,7 +601,7 @@ int adjust_window(int w, int h)
    }
    else {
       /* try to get the height of the window's title bar */
-      user32_handle = GetModuleHandle("user32");
+      user32_handle = GetModuleHandle(L"user32");
       if (user32_handle) {
          get_title_bar_info
             = (func)GetProcAddress(user32_handle, "GetTitleBarInfo");

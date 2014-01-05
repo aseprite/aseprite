@@ -19,7 +19,7 @@
 #ifndef RASTER_STOCK_H_INCLUDED
 #define RASTER_STOCK_H_INCLUDED
 
-#include "raster/gfxobj.h"
+#include "raster/object.h"
 #include "raster/pixel_format.h"
 
 #include <vector>
@@ -30,7 +30,7 @@ namespace raster {
 
   typedef std::vector<Image*> ImagesList;
 
-  class Stock : public GfxObj {
+  class Stock : public Object {
   public:
     Stock(PixelFormat format);
     Stock(const Stock& stock);

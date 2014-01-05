@@ -24,9 +24,9 @@
 
 #include "app/file/file.h"
 #include "app/file/file_format.h"
-#include "app/file/file_handle.h"
 #include "app/file/format_options.h"
 #include "base/cfile.h"
+#include "base/file_handle.h"
 #include "raster/raster.h"
 
 #include <allegro/color.h>
@@ -242,7 +242,7 @@ static void read_1bit_line(int length, FILE *f, Image *image, int line)
       }
     }
     pix = b[j];
-    image_putpixel(image, i, line, pix);
+    put_pixel(image, i, line, pix);
   }
 }
 
@@ -270,7 +270,7 @@ static void read_4bit_line(int length, FILE *f, Image *image, int line)
       }
     }
     pix = b[j];
-    image_putpixel(image, i, line, pix);
+    put_pixel(image, i, line, pix);
   }
 }
 
@@ -294,7 +294,7 @@ static void read_8bit_line(int length, FILE *f, Image *image, int line)
       }
     }
     pix = b[j];
-    image_putpixel(image, i, line, pix);
+    put_pixel(image, i, line, pix);
   }
 }
 
@@ -309,10 +309,10 @@ static void read_16bit_line(int length, FILE *f, Image *image, int line)
     g = (word >> 5) & 0x1f;
     b = (word) & 0x1f;
 
-    image_putpixel(image, i, line,
-                   _rgba(_rgb_scale_5[r],
-                         _rgb_scale_5[g],
-                         _rgb_scale_5[b], 255));
+    put_pixel(image, i, line,
+              rgba(scale_5bits_to_8bits(r),
+                   scale_5bits_to_8bits(g),
+                   scale_5bits_to_8bits(b), 255));
   }
 
   i = (2*i) % 4;
@@ -329,7 +329,7 @@ static void read_24bit_line(int length, FILE *f, Image *image, int line)
     b = fgetc(f);
     g = fgetc(f);
     r = fgetc(f);
-    image_putpixel(image, i, line, _rgba(r, g, b, 255));
+    put_pixel(image, i, line, rgba(r, g, b, 255));
   }
 
   i = (3*i) % 4;
@@ -347,7 +347,7 @@ static void read_32bit_line(int length, FILE *f, Image *image, int line)
     g = fgetc(f);
     r = fgetc(f);
     fgetc(f);
-    image_putpixel(image, i, line, _rgba(r, g, b, 255));
+    put_pixel(image, i, line, rgba(r, g, b, 255));
   }
 }
 
@@ -408,7 +408,7 @@ static void read_rle8_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINF
 
       if (count > 0) {                    /* repeat pixel count times */
         for (j=0;j<count;j++) {
-          image_putpixel(image, pos, line, val);
+          put_pixel(image, pos, line, val);
           pos++;
         }
       }
@@ -433,7 +433,7 @@ static void read_rle8_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINF
           default:                      /* read in absolute mode */
             for (j=0; j<val; j++) {
               val0 = fgetc(f);
-              image_putpixel(image, pos, line, val0);
+              put_pixel(image, pos, line, val0);
               pos++;
             }
 
@@ -487,7 +487,7 @@ static void read_rle4_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINF
         b[1] = val & 15;
         b[0] = (val >> 4) & 15;
         for (j=0; j<count; j++) {
-          image_putpixel(image, pos, line, b[j%2]);
+          put_pixel(image, pos, line, b[j%2]);
           pos++;
         }
       }
@@ -520,7 +520,7 @@ static void read_rle4_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINF
                   val0 = val0 >> 4;
                 }
               }
-              image_putpixel(image, pos, line, b[j%4]);
+              put_pixel(image, pos, line, b[j%4]);
               pos++;
             }
             break;
@@ -548,15 +548,17 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
     mask >>= 1;                                 \
   }                                             \
   if ((c##mask >> c##shift) == 0x1f)            \
-    c##scale = _rgb_scale_5;                    \
+    c##scale = scale_5bits_to_8bits;            \
   else if ((c##mask >> c##shift) == 0x3f)       \
-    c##scale = _rgb_scale_6;                    \
+    c##scale = scale_6bits_to_8bits;            \
   else                                          \
     c##scale = NULL;
 
   unsigned long buffer, mask, rshift, gshift, bshift;
   int i, j, k, line, height, dir, r, g, b;
-  int *rscale, *gscale, *bscale;
+  int (*rscale)(int);
+  int (*gscale)(int);
+  int (*bscale)(int);
   int bits_per_pixel;
   int bytes_per_pixel;
 
@@ -586,11 +588,11 @@ static int read_bitfields_image(FILE *f, Image *image, BITMAPINFOHEADER *infohea
       g = (buffer & gmask) >> gshift;
       b = (buffer & bmask) >> bshift;
 
-      r = rscale ? rscale[r]: r;
-      g = gscale ? gscale[g]: g;
-      b = bscale ? bscale[b]: b;
+      r = rscale ? rscale(r): r;
+      g = gscale ? gscale(g): g;
+      b = bscale ? bscale(b): b;
 
-      image_putpixel_fast<RgbTraits>(image, j, line, _rgba(r, g, b, 255));
+      put_pixel_fast<RgbTraits>(image, j, line, rgba(r, g, b, 255));
     }
 
     j = (bytes_per_pixel*j) % 4;
@@ -611,9 +613,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   PixelFormat pixelFormat;
   int format;
 
-  FileHandle f(fop->filename.c_str(), "rb");
-  if (!f)
-    return false;
+  FileHandle f(open_file_with_exception(fop->filename, "rb"));
 
   if (read_bmfileheader(f, &fileheader) != 0)
     return false;
@@ -667,9 +667,9 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
 
   if (pixelFormat == IMAGE_RGB)
-    image_clear(image, _rgba(0, 0, 0, 255));
+    clear_image(image, rgba(0, 0, 0, 255));
   else
-    image_clear(image, 0);
+    clear_image(image, 0);
 
   switch (infoheader.biCompression) {
 
@@ -725,25 +725,21 @@ bool BmpFormat::onSave(FileOp *fop)
   int bfSize;
   int biSizeImage;
   int bpp = (image->getPixelFormat() == IMAGE_RGB) ? 24 : 8;
-  int filler = 3 - ((image->w*(bpp/8)-1) & 3);
+  int filler = 3 - ((image->getWidth()*(bpp/8)-1) & 3);
   int c, i, j, r, g, b;
 
   if (bpp == 8) {
-    biSizeImage = (image->w + filler) * image->h;
+    biSizeImage = (image->getWidth() + filler) * image->getHeight();
     bfSize = (54                      /* header */
               + 256*4                 /* palette */
               + biSizeImage);         /* image data */
   }
   else {
-    biSizeImage = (image->w*3 + filler) * image->h;
+    biSizeImage = (image->getWidth()*3 + filler) * image->getHeight();
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  FileHandle f(fop->filename.c_str(), "wb");
-  if (!f) {
-    fop_error(fop, "Error creating file.\n");
-    return false;
-  }
+  FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   /* file_header */
   fputw(0x4D42, f);              /* bfType ("BM") */
@@ -758,8 +754,8 @@ bool BmpFormat::onSave(FileOp *fop)
 
   /* info_header */
   fputl(40, f);                  /* biSize */
-  fputl(image->w, f);            /* biWidth */
-  fputl(image->h, f);            /* biHeight */
+  fputl(image->getWidth(), f);   /* biWidth */
+  fputl(image->getHeight(), f);  /* biHeight */
   fputw(1, f);                   /* biPlanes */
   fputw(bpp, f);                 /* biBitCount */
   fputl(0, f);                   /* biCompression */
@@ -786,26 +782,26 @@ bool BmpFormat::onSave(FileOp *fop)
   }
 
   /* image data */
-  for (i=image->h-1; i>=0; i--) {
-    for (j=0; j<image->w; j++) {
+  for (i=image->getHeight()-1; i>=0; i--) {
+    for (j=0; j<image->getWidth(); j++) {
       if (bpp == 8) {
         if (image->getPixelFormat() == IMAGE_INDEXED)
-          fputc(image_getpixel_fast<IndexedTraits>(image, j, i), f);
+          fputc(get_pixel_fast<IndexedTraits>(image, j, i), f);
         else if (image->getPixelFormat() == IMAGE_GRAYSCALE)
-          fputc(_graya_getv(image_getpixel_fast<GrayscaleTraits>(image, j, i)), f);
+          fputc(graya_getv(get_pixel_fast<GrayscaleTraits>(image, j, i)), f);
       }
       else {
-        c = image_getpixel_fast<RgbTraits>(image, j, i);
-        fputc(_rgba_getb(c), f);
-        fputc(_rgba_getg(c), f);
-        fputc(_rgba_getr(c), f);
+        c = get_pixel_fast<RgbTraits>(image, j, i);
+        fputc(rgba_getb(c), f);
+        fputc(rgba_getg(c), f);
+        fputc(rgba_getr(c), f);
       }
     }
 
     for (j=0; j<filler; j++)
       fputc(0, f);
 
-    fop_progress(fop, (float)(image->h-i) / (float)image->h);
+    fop_progress(fop, (float)(image->getHeight()-i) / (float)image->getHeight());
   }
 
   if (ferror(f)) {

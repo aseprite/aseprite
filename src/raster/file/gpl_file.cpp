@@ -60,7 +60,7 @@ Palette* load_gpl_file(const char *filename)
     std::istringstream lineIn(line);
     lineIn >> r >> g >> b;
     if (lineIn.good()) {
-      pal->setEntry(entryCounter, _rgba(r, g, b, 255));
+      pal->setEntry(entryCounter, rgba(r, g, b, 255));
       ++entryCounter;
       if (entryCounter >= Palette::MaxColors)
         break;
@@ -80,9 +80,9 @@ bool save_gpl_file(const Palette *pal, const char *filename)
 
   for (int i=0; i<pal->size(); ++i) {
     uint32_t col = pal->getEntry(i);
-    f << std::setfill(' ') << std::setw(3) << ((int)_rgba_getr(col)) << " "
-      << std::setfill(' ') << std::setw(3) << ((int)_rgba_getg(col)) << " "
-      << std::setfill(' ') << std::setw(3) << ((int)_rgba_getb(col)) << "\tUntitled\n";
+    f << std::setfill(' ') << std::setw(3) << ((int)rgba_getr(col)) << " "
+      << std::setfill(' ') << std::setw(3) << ((int)rgba_getg(col)) << " "
+      << std::setfill(' ') << std::setw(3) << ((int)rgba_getb(col)) << "\tUntitled\n";
   }
 
   return true;

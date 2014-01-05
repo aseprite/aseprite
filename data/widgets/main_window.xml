@@ -11,7 +11,12 @@
 	<box noborders="true" vertical="true" id="colorbar" />
 	<vbox noborders="true" expansive="true">
 	  <vbox noborders="true" id="contextbar" />
-	  <hbox noborders="true" id="workspace" expansive="true" />
+	  <splitter id="timelinesplitter"
+		    vertical="true" expansive="true"
+		    by="percetage" position="100">
+	    <hbox noborders="true" id="workspace" expansive="true" />
+	    <vbox noborders="true" id="timeline" expansive="true" />
+	  </splitter>
 	</vbox>
       </splitter>
       <box noborders="true" vertical="true" id="toolbar" />

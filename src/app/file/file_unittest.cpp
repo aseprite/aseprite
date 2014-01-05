@@ -55,7 +55,7 @@ TEST(File, SeveralSizes)
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
           for (int x=0; x<w; x++) {
-            image_putpixel_fast<IndexedTraits>(image, x, y, c);
+            put_pixel_fast<IndexedTraits>(image, x, y, c);
             if ((std::rand()&4) == 0)
               c = std::rand()%256;
           }
@@ -77,7 +77,7 @@ TEST(File, SeveralSizes)
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
           for (int x=0; x<w; x++) {
-            ASSERT_EQ(c, image_getpixel_fast<IndexedTraits>(image, x, y));
+            ASSERT_EQ(c, get_pixel_fast<IndexedTraits>(image, x, y));
             if ((std::rand()&4) == 0)
               c = std::rand()%256;
           }

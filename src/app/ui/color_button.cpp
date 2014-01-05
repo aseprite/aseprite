@@ -165,25 +165,27 @@ bool ColorButton::onProcessMessage(Message* msg)
 
 void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 {
-  struct jrect box;
-
+  gfx::Rect box;
   jwidget_get_texticon_info(this, &box, NULL, NULL, 0, 0, 0);
+  box.w = 64;
 
-  box.x2 = box.x1+64;
-
-  ev.setPreferredSize(jrect_w(&box) + border_width.l + border_width.r,
-                      jrect_h(&box) + border_width.t + border_width.b);
+  ev.setPreferredSize(box.w + border_width.l + border_width.r,
+                      box.h + border_width.t + border_width.b);
 }
 
-void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
+void ColorButton::onPaint(PaintEvent& ev)
 {
-  struct jrect box, text, icon;
-  jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
+  Graphics* g = ev.getGraphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+  gfx::Rect rc = getClientBounds();
+  gfx::Rect text;
+  jwidget_get_texticon_info(this, NULL, &text, NULL, 0, 0, 0);
 
   ui::Color bg = getBgColor();
   if (is_transparent(bg))
-    bg = static_cast<SkinTheme*>(getTheme())->getColor(ThemeColor::Face);
-  jdraw_rectfill(this->rc, bg);
+    bg = theme->getColor(ThemeColor::Face);
+  g->fillRect(bg, rc);
 
   app::Color color;
 
@@ -197,28 +199,26 @@ void ColorButton::onPaint(PaintEvent& ev) // TODO use "ev.getGraphics()"
   else
     color = m_color;
 
-  draw_color_button
-    (ji_screen,
-     this->getBounds(),
-     true, true, true, true,
-     true, true, true, true,
-     m_pixelFormat,
-     color,
-     this->hasMouseOver(), false);
+  draw_color_button(g, rc,
+    true, true, true, true,
+    true, true, true, true,
+    m_pixelFormat,
+    color,
+    hasMouseOver(), false);
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,
-                                                  app::Color::ShortHumanReadableString);
+    app::Color::ShortHumanReadableString);
 
   setTextQuiet(str.c_str());
-  jwidget_get_texticon_info(this, &box, &text, &icon, 0, 0, 0);
+  jwidget_get_texticon_info(this, NULL, &text, NULL, 0, 0, 0);
 
   ui::Color textcolor = ui::rgba(255, 255, 255);
   if (color.isValid())
     textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
-  jdraw_text(ji_screen, getFont(), getText(), text.x1, text.y1,
-             textcolor, ColorNone, false, jguiscale());
+  g->drawString(getText(), textcolor, ColorNone, false,
+    text.getOrigin() - getBounds().getOrigin());
 }
 
 void ColorButton::onClick(Event& ev)
@@ -249,11 +249,11 @@ void ColorButton::openSelectorDialog()
   m_window->setColor(m_color, ColorSelector::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, this->rc->x1, JI_SCREEN_W-jrect_w(m_window->rc));
-  if (this->rc->y2 <= JI_SCREEN_H-jrect_h(m_window->rc))
-    y = MAX(0, this->rc->y2);
+  x = MID(0, getBounds().x, JI_SCREEN_W-m_window->getBounds().w);
+  if (getBounds().y2() <= JI_SCREEN_H-m_window->getBounds().h)
+    y = MAX(0, getBounds().y2());
   else
-    y = MAX(0, this->rc->y1-jrect_h(m_window->rc));
+    y = MAX(0, getBounds().y-m_window->getBounds().h);
 
   m_window->positionWindow(x, y);
 

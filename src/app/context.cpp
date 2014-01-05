@@ -151,12 +151,12 @@ void Context::removeObserver(ContextObserver* observer)
 
 void Context::onAddDocument(Document* document)
 {
-  // do nothing
+  m_observers.notifyAddDocument(this, document);
 }
 
 void Context::onRemoveDocument(Document* document)
 {
-  // do nothing
+  m_observers.notifyRemoveDocument(this, document);
 }
 
 } // namespace app

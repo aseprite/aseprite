@@ -31,7 +31,6 @@
 #include "raster/sprite.h"
 #include "app/settings/settings.h"
 #include "ui/message.h"
-#include "ui/rect.h"
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui/widget.h"

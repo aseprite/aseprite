@@ -28,6 +28,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/modules/gui.h"
+#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/ui/editor/editor.h"
@@ -54,7 +55,7 @@ namespace app {
 
 using namespace ui;
 
-MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovement* pixelsMovement, HandleType handle)
+MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
   : m_currentEditor(editor)
   , m_discarded(false)
 {
@@ -62,6 +63,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // sharing the extra cel between the drawing cursor preview and the
   // pixels movement/transformation preview.
   //ASSERT(!editor->getCurrentEditorTool()->getInk(0)->isSelection());
+
+  UIContext* context = UIContext::instance();
 
   EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
   m_pixelsMovement = pixelsMovement;
@@ -75,19 +78,15 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   }
 
   // Setup mask color
-  setTransparentColor(StatusBar::instance()->getTransparentColor());
+  setTransparentColor(context->settings()->selection()->getMoveTransparentColor());
 
   // Add this class as:
   // - observer of the UI context: so we know if the user wants to
   //   execute other command, so we can drop pixels.
-  // - observer of the status bar to know if the user has changed the
-  //   transparent color.
-  UIContext::instance()->addObserver(this);
-  StatusBar::instance()->addObserver(this);
-
-  // Show controls to modify the "pixels movement" options (e.g. the
-  // transparent color).
-  StatusBar::instance()->showMovePixelsOptions();
+  // - observer of SelectionSettings to be informed of changes to Transparent Color
+  //   changes from Context Bar.
+  context->addObserver(this);
+  context->settings()->selection()->addObserver(this);
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
@@ -99,9 +98,9 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
 MovingPixelsState::~MovingPixelsState()
 {
   UIContext::instance()->removeObserver(this);
-  StatusBar::instance()->removeObserver(this);
+  UIContext::instance()->settings()->selection()->removeObserver(this);
 
-  delete m_pixelsMovement;
+  m_pixelsMovement.reset(NULL);
 
   m_currentEditor->getManager()->removeMessageFilter(kKeyDownMessage, m_currentEditor);
   m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
@@ -123,12 +122,10 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 
     editor->getDocument()->resetTransformation();
 
-    delete m_pixelsMovement;
-    m_pixelsMovement = NULL;
+    m_pixelsMovement.reset(NULL);
 
     editor->releaseMouse();
 
-    StatusBar::instance()->hideMovePixelsOptions();
     return DiscardState;
   }
   else {
@@ -375,7 +372,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   StatusBar::instance()->setStatusText
-    (100, "Pos %d %d, Size %d %d, Orig: %3d %3d (%.02f%% %.02f%%), Angle %.1f",
+    (100, "Moving Pixels - Pos %d %d, Size %d %d, Orig: %3d %3d (%.02f%% %.02f%%), Angle %.1f",
      transform.bounds().x, transform.bounds().y,
      transform.bounds().w, transform.bounds().h,
      imageSize.w, imageSize.h,
@@ -393,14 +390,9 @@ void MovingPixelsState::onCommandBeforeExecution(Context* context)
     dropPixels(m_currentEditor);
 }
 
-void MovingPixelsState::dispose()
+void MovingPixelsState::onSetMoveTransparentColor(app::Color newColor)
 {
-  // Never called as MovingPixelsState is removed automatically as
-  // StatusBar's observer.
-}
-
-void MovingPixelsState::onChangeTransparentColor(const app::Color& color)
-{
+  app::Color color = UIContext::instance()->settings()->selection()->getMoveTransparentColor();
   setTransparentColor(color);
 }
 
