@@ -22,6 +22,7 @@
 
 #include "raster/algorithm/resize_image.h"
 
+#include "gfx/point.h"
 #include "raster/image.h"
 #include "raster/image_bits.h"
 #include "raster/palette.h"
