@@ -87,7 +87,7 @@ TEST(ResizeImage, NearestNeighborInterp)
   // Pre-rendered test image for comparison
   Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
 
-  algorithm::resize_image(src, dst, algorithm::ResizeMethod::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL);
+  algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL);
 
   ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
 }
@@ -101,7 +101,7 @@ TEST(ResizeImage, BilinearInterpRGBType)
   // Pre-rendered test image for comparison
   Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_bilinear, 9, 9);
 
-  algorithm::resize_image(src, dst, algorithm::ResizeMethod::RESIZE_METHOD_BILINEAR, NULL, NULL);
+  algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_BILINEAR, NULL, NULL);
 
   ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
 }
