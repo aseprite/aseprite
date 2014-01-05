@@ -56,13 +56,13 @@ namespace css {
     return styleState;
   }
 
-  inline StatefulStyle operator+(StatefulStyle& styleState, const State& state) {
+  inline StatefulStyle operator+(const StatefulStyle& styleState, const State& state) {
     StatefulStyle styleState2 = styleState;
     styleState2 += state;
     return styleState2;
   }
 
-  inline StatefulStyle operator+(StatefulStyle& styleState, const States& states) {
+  inline StatefulStyle operator+(const StatefulStyle& styleState, const States& states) {
     StatefulStyle styleState2 = styleState;
     styleState2 += states;
     return styleState2;
