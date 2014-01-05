@@ -92,6 +92,7 @@ TEST(ResizeImage, NearestNeighborInterp)
   ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
 }
 
+#if 0                           // TODO complete this test
 TEST(ResizeImage, BilinearInterpRGBType)
 {
   Image* src = create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3);
@@ -104,6 +105,8 @@ TEST(ResizeImage, BilinearInterpRGBType)
 
   ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
 }
+#endif
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
