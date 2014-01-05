@@ -9,8 +9,9 @@
 #endif
 
 #include "base/string.h"
-#include <vector>
+#include <cassert>
 #include <cctype>
+#include <vector>
 
 #ifdef WIN32
 #include <windows.h>
@@ -79,7 +80,88 @@ std::wstring from_utf8(const string& src)
   return std::wstring(&buf[0]);
 }
 
-#endif  // WIN32
+#else
+
+// Based on Allegro Unicode code (allegro/src/unicode.c)
+static size_t insert_utf8_char(string* result, wchar_t chr)
+{
+  int size, bits, b, i;
+
+  if (chr < 128) {
+    if (result)
+      result->push_back(chr);
+    return 1;
+  }
+
+  bits = 7;
+  while (chr >= (1<<bits))
+    bits++;
+
+  size = 2;
+  b = 11;
+
+  while (b < bits) {
+    size++;
+    b += 5;
+  }
+
+  if (result) {
+    b -= (7-size);
+    int firstbyte = chr>>b;
+    for (i=0; i<size; i++)
+      firstbyte |= (0x80>>i);
+
+    result->push_back(firstbyte);
+
+    for (i=1; i<size; i++) {
+      b -= 6;
+      result->push_back(0x80 | ((chr>>b)&0x3F));
+    }
+  }
+
+  return size;
+}
+
+string to_utf8(const std::wstring& src)
+{
+  std::wstring::const_iterator it, begin = src.begin();
+  std::wstring::const_iterator end = src.end();
+
+  // Get required size to reserve a string so string::push_back()
+  // doesn't need to reallocate its data.
+  size_t required_size = 0;
+  for (it = begin; it != end; ++it)
+    required_size += insert_utf8_char(NULL, *it);
+  if (!required_size)
+    return "";
+
+  string result;
+  result.reserve(++required_size);
+  for (it = begin; it != end; ++it)
+    insert_utf8_char(&result, *it);
+  return result;
+}
+
+std::wstring from_utf8(const string& src)
+{
+  int required_size = utf8_length(src);
+  std::vector<wchar_t> buf(++required_size);
+  std::vector<wchar_t>::iterator buf_it = buf.begin();
+  std::vector<wchar_t>::iterator buf_end = buf.end();
+  utf8_const_iterator it(src.begin());
+  utf8_const_iterator end(src.end());
+
+  while (it != end) {
+    assert(buf_it != buf_end);
+    *buf_it = *it;
+    ++buf_it;
+    ++it;
+  }
+
+  return std::wstring(&buf[0]);
+}
+
+#endif
 
 int utf8_length(const string& utf8string)
 {

@@ -14,6 +14,20 @@ using namespace base;
 
 bool all(int) { return true; }
 
+TEST(String, Utf8Conversion)
+{
+  std::string a = "\xE6\xBC\xA2\xE5\xAD\x97"; // 漢字
+  ASSERT_EQ(6, a.size());
+
+  std::wstring b = from_utf8(a);
+  ASSERT_EQ(2, b.size());
+  ASSERT_EQ(0x6f22, b[0]);
+  ASSERT_EQ(0x5b57, b[1]);
+
+  std::string c = to_utf8(b);
+  ASSERT_EQ(a, c);
+}
+
 TEST(String, Utf8Iterator)
 {
   string a = "Hello";

@@ -35,6 +35,7 @@ namespace base {
       : m_internal(it) {
     }
 
+    // Based on Allegro Unicode code (allegro/src/unicode.c)
     utf8_iteratorT& operator++() {
       int c = *m_internal;
       ++m_internal;
