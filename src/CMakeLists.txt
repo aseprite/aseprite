@@ -8,6 +8,9 @@ if(MSVC)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
   endif()
+
+  # Add support for Windows XP
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01")
 endif(MSVC)
 
 # Libraries in this directory
