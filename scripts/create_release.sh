@@ -55,8 +55,10 @@ fi
 if [ ! -f aseprite.exe ] ; then
     cd build
     ninja aseprite
-    cp src/aseprite.exe ..
-    cd ..
+    cd src
+    aseprite-sign aseprite.exe
+    cp aseprite.exe ../..
+    cd ../..
 fi
 
 # ---------------
