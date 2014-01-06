@@ -1,11 +1,7 @@
 #! /bin/sh
 
-if [ ! -d aseprite ] ; then
-    echo "You've to execute this file in the parent directory"
-    echo "of your aseprite repository. Also, your aseprite clone"
-    echo "should be in a directory called aseprite/"
-    exit 1
-fi
+echo -n "Where is Aseprite source code? "
+read srcdir
 
 echo -n "What version to release (e.g. 0.9.1-beta) ? "
 read version
@@ -17,7 +13,7 @@ destdir=aseprite-release-$version
 # --------------------------
 
 if [ ! -d $destdir ] ; then
-    git clone --depth=1 aseprite $destdir
+    git clone --depth=1 $srcdir $destdir
 fi
 
 # ----------------------------
@@ -25,7 +21,7 @@ fi
 # ----------------------------
 
 if [ ! -f $destdir/docs ] ; then
-    cp aseprite/docs/quickref.pdf $destdir/docs
+    cp $srcdir/docs/quickref.pdf $destdir/docs
 fi
 
 # --------------
