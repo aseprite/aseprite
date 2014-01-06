@@ -43,7 +43,7 @@ if [ ! -d build ] ; then
         -D "CMAKE_BUILD_TYPE:STRING=RelWithDebInfo" \
         -D "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
         -D "CMAKE_C_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
-        -G "NMake Makefiles" \
+        -G "Ninja" \
         ..
     cd ..
 fi
@@ -54,9 +54,11 @@ fi
 
 if [ ! -f aseprite.exe ] ; then
     cd build
-    nmake
-    cp src/aseprite.exe ..
-    cd ..
+    ninja aseprite
+    cd src
+    aseprite-sign aseprite.exe
+    cp aseprite.exe ../..
+    cd ../..
 fi
 
 # ---------------
