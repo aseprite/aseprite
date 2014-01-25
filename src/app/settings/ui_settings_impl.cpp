@@ -150,9 +150,11 @@ public:
   UISelectionSettingsImpl();
   ~UISelectionSettingsImpl();
 
+  SelectionMode getSelectionMode();
   app::Color getMoveTransparentColor();
   RotationAlgorithm getRotationAlgorithm();
 
+  void setSelectionMode(SelectionMode mode);
   void setMoveTransparentColor(app::Color color);
   void setRotationAlgorithm(RotationAlgorithm algorithm);
 
@@ -160,6 +162,7 @@ public:
   void removeObserver(SelectionSettingsObserver* observer);
 
 private:
+  SelectionMode m_selectionMode;
   app::Color m_moveTransparentColor;
   RotationAlgorithm m_rotationAlgorithm;
 };
@@ -674,9 +677,16 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
 namespace {
 
 UISelectionSettingsImpl::UISelectionSettingsImpl() :
+  m_selectionMode(kDefaultSelectionMode),
   m_moveTransparentColor(app::Color::fromMask()),
   m_rotationAlgorithm(kFastRotationAlgorithm)
 {
+  m_selectionMode = (SelectionMode)get_config_int("Tools", "SelectionMode", m_selectionMode);
+  m_selectionMode = MID(
+    kFirstSelectionMode,
+    m_selectionMode,
+    kLastSelectionMode);
+
   m_rotationAlgorithm = (RotationAlgorithm)get_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
   m_rotationAlgorithm = MID(
     kFirstRotationAlgorithm,
@@ -688,6 +698,11 @@ UISelectionSettingsImpl::~UISelectionSettingsImpl()
 {
 }
 
+SelectionMode UISelectionSettingsImpl::getSelectionMode()
+{
+  return m_selectionMode;
+}
+
 app::Color UISelectionSettingsImpl::getMoveTransparentColor()
 {
   return m_moveTransparentColor;
@@ -696,6 +711,12 @@ app::Color UISelectionSettingsImpl::getMoveTransparentColor()
 RotationAlgorithm UISelectionSettingsImpl::getRotationAlgorithm()
 {
   return m_rotationAlgorithm;
+}
+
+void UISelectionSettingsImpl::setSelectionMode(SelectionMode mode)
+{
+  m_selectionMode = mode;
+  notifyObservers(&SelectionSettingsObserver::onSetSelectionMode, mode);
 }
 
 void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)

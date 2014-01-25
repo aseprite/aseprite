@@ -275,13 +275,20 @@ public:
     if (m_modify_selection) {
       Point offset = loop->getOffset();
 
-      if (loop->getMouseButton() == ToolLoop::Left)
-        loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
-      else if (loop->getMouseButton() == ToolLoop::Right)
-        loop->getMask()->subtract(x1-offset.x, y-offset.y, x2-x1+1, 1);
+      switch (loop->getSelectionMode()) {
+        case kDefaultSelectionMode:
+        case kAddSelectionMode:
+          loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
+          break;
+        case kSubtractSelectionMode:
+          loop->getMask()->subtract(x1-offset.x, y-offset.y, x2-x1+1, 1);
+          break;
+      }
     }
-    else
+    // TODO show the selection-preview with a XOR color or something like that
+    else {
       draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
+    }
   }
 
   void setFinalStep(ToolLoop* loop, bool state)

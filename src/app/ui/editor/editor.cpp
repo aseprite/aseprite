@@ -1098,6 +1098,7 @@ bool Editor::isInsideSelection()
   int x, y;
   screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
   return
+    (UIContext::instance()->settings()->selection()->getSelectionMode() != kSubtractSelectionMode) &&
     m_document != NULL &&
     m_document->isMaskVisible() &&
     m_document->getMask()->containsPoint(x, y);

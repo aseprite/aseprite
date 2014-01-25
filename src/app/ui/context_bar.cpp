@@ -25,6 +25,7 @@
 #include "app/app.h"
 #include "app/modules/gui.h"
 #include "app/settings/ink_type.h"
+#include "app/settings/selection_mode.h"
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
 #include "app/tools/controller.h"
@@ -407,6 +408,32 @@ public:
   }
 };
 
+class ContextBar::SelectionModeField : public ButtonSet
+{
+public:
+  SelectionModeField() : ButtonSet(3, 1, 0,
+    PART_SELECTION_REPLACE,
+    PART_SELECTION_ADD,
+    PART_SELECTION_SUBTRACT) {
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager)
+  {
+    tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_CENTER | JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_CENTER | JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_CENTER | JI_BOTTOM);
+  }
+
+protected:
+  void onItemChange() OVERRIDE {
+    ButtonSet::onItemChange();
+
+    int item = getSelectedItem();
+    UIContext::instance()->settings()->selection()
+      ->setSelectionMode((SelectionMode)item);
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -414,6 +441,13 @@ ContextBar::ContextBar()
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
+
+  addChild(m_selectionOptionsBox = new HBox());
+  m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
+  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
+  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+  m_selectionOptionsBox->addChild(new Label("Rotation Algorithm:"));
+  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   addChild(m_brushLabel = new Label("Brush:"));
   addChild(m_brushType = new BrushTypeField());
@@ -437,12 +471,6 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
-  addChild(m_selectionOptionsBox = new HBox());
-  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
-  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
-  m_selectionOptionsBox->addChild(new Label("Rotation Algorithm:"));
-  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
-
   addChild(m_freehandBox = new HBox());
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
@@ -457,6 +485,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_CENTER | JI_BOTTOM);
+  m_selectionMode->setupTooltips(tooltipManager);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);

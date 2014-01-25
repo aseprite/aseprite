@@ -83,6 +83,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   tools::Ink* m_ink;
   int m_primary_color;
   int m_secondary_color;
+  SelectionMode m_selectionMode;
   UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
@@ -112,6 +113,7 @@ public:
     , m_ink(getInkFromType())
     , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
+    , m_selectionMode(m_settings->selection()->getSelectionMode())
     , m_undoTransaction(m_context,
                         m_tool->getText().c_str(),
                         ((getInk()->isSelection() ||
@@ -133,6 +135,11 @@ public:
         m_filled = m_toolSettings->getFilled();
         break;
     }
+
+    // Right-click subtract selection always.
+    if (m_button == 1)
+      m_selectionMode = kSubtractSelectionMode;
+
     m_previewFilled = m_toolSettings->getPreviewFilled();
 
     m_sprayWidth = m_toolSettings->getSprayWidth();
@@ -149,7 +156,9 @@ public:
     m_useMask = m_document->isMaskVisible();
 
     // Selection ink
-    if (getInk()->isSelection() && !m_document->isMaskVisible()) {
+    if (getInk()->isSelection() &&
+        (!m_document->isMaskVisible() ||
+          m_selectionMode == kDefaultSelectionMode)) {
       Mask emptyMask;
       m_document->setMask(&emptyMask);
     }
@@ -214,6 +223,7 @@ public:
   void setSecondaryColor(int color) OVERRIDE { m_secondary_color = color; }
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
+  SelectionMode getSelectionMode() OVERRIDE { return m_selectionMode; }
   ISettings* getSettings() OVERRIDE { return m_settings; }
   IDocumentSettings* getDocumentSettings() OVERRIDE { return m_docSettings; }
   bool getFilled() OVERRIDE { return m_filled; }

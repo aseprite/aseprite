@@ -50,6 +50,7 @@ namespace app {
     class InkOpacityField;
     class SprayWidthField;
     class SpraySpeedField;
+    class SelectionModeField;
     class TransparentColorField;
     class RotAlgorithmField;
     class FreehandAlgorithmField;
@@ -70,6 +71,7 @@ namespace app {
     SprayWidthField* m_sprayWidth;
     SpraySpeedField* m_spraySpeed;
     ui::Box* m_selectionOptionsBox;
+    SelectionModeField* m_selectionMode;
     TransparentColorField* m_transparentColor;
     RotAlgorithmField* m_rotAlgo;
   };

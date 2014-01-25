@@ -23,6 +23,7 @@
 #include "app/settings/freehand_algorithm.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
+#include "app/settings/selection_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
@@ -129,9 +130,11 @@ namespace app {
     virtual ~ISelectionSettings() {}
 
     // Mask color used during a move operation
+    virtual SelectionMode getSelectionMode() = 0;
     virtual app::Color getMoveTransparentColor() = 0;
     virtual RotationAlgorithm getRotationAlgorithm() = 0;
 
+    virtual void setSelectionMode(SelectionMode mode) = 0;
     virtual void setMoveTransparentColor(app::Color color) = 0;
     virtual void setRotationAlgorithm(RotationAlgorithm algorithm) = 0;
 

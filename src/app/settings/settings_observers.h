@@ -23,6 +23,7 @@
 #include "app/settings/freehand_algorithm.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
+#include "app/settings/selection_mode.h"
 #include "raster/pen_type.h"
 
 namespace app {
@@ -59,6 +60,7 @@ namespace app {
   public:
     virtual ~SelectionSettingsObserver() {}
 
+    virtual void onSetSelectionMode(SelectionMode mode) {}
     virtual void onSetMoveTransparentColor(app::Color newColor) {}
     virtual void onSetRotationAlgorithm(RotationAlgorithm algorithm) {}
   };

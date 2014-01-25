@@ -136,6 +136,11 @@ void ButtonSet::setSelectedItem(int index)
   }
 }
 
+Widget* ButtonSet::getButtonAt(int index)
+{
+  return m_items[index];
+}
+
 ButtonSet::Item* ButtonSet::findSelectedItem() const
 {
   for (Items::const_iterator it=m_items.begin(), end=m_items.end();

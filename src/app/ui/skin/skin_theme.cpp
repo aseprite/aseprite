@@ -268,6 +268,12 @@ SkinTheme::SkinTheme()
   sheet_mapping["layer_editable_selected"] = PART_LAYER_EDITABLE_SELECTED;
   sheet_mapping["layer_locked"] = PART_LAYER_LOCKED;
   sheet_mapping["layer_locked_selected"] = PART_LAYER_LOCKED_SELECTED;
+  sheet_mapping["selection_replace"] = PART_SELECTION_REPLACE;
+  sheet_mapping["selection_replace_selected"] = PART_SELECTION_REPLACE_SELECTED;
+  sheet_mapping["selection_add"] = PART_SELECTION_ADD;
+  sheet_mapping["selection_add_selected"] = PART_SELECTION_ADD_SELECTED;
+  sheet_mapping["selection_subtract"] = PART_SELECTION_SUBTRACT;
+  sheet_mapping["selection_subtract_selected"] = PART_SELECTION_SUBTRACT_SELECTED;
   sheet_mapping["unpinned"] = PART_UNPINNED;
   sheet_mapping["pinned"] = PART_PINNED;
   sheet_mapping["drop_down_button_left_normal"] = PART_DROP_DOWN_BUTTON_LEFT_NORMAL_NW;
