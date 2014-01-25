@@ -432,9 +432,6 @@ ContextBar::ContextBar()
   // addChild(new InkShadeField());
   // addChild(new InkSelectionField());
 
-  addChild(m_freehandBox = new HBox());
-  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
-
   addChild(m_sprayBox = new HBox());
   m_sprayBox->addChild(new Label("Spray:"));
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
@@ -443,8 +440,11 @@ ContextBar::ContextBar()
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
-  m_selectionOptionsBox->addChild(new Label("Algorithm:"));
+  m_selectionOptionsBox->addChild(new Label("Rotation Algorithm:"));
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
+
+  addChild(m_freehandBox = new HBox());
+  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
@@ -456,6 +456,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_CENTER | JI_BOTTOM);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
