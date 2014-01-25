@@ -67,6 +67,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
+  m_toolLoop->getIntertwine()->prepareIntertwine();
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)

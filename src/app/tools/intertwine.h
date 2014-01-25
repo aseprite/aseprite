@@ -33,6 +33,7 @@ namespace app {
 
       virtual ~Intertwine() { }
       virtual bool snapByAngle() { return false; }
+      virtual void prepareIntertwine() { }
       virtual void joinPoints(ToolLoop* loop, const Points& points) = 0;
       virtual void fillPoints(ToolLoop* loop, const Points& points) = 0;
 

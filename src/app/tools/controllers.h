@@ -31,6 +31,10 @@ using namespace gfx;
 // Controls clicks for tools like pencil
 class FreehandController : public Controller {
 public:
+  bool isFreehand()
+  {
+    return true;
+  }
   void pressButton(Points& points, const Point& point)
   {
     points.push_back(point);

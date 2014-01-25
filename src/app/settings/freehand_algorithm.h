@@ -16,29 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_SETTINGS_INK_TYPE_H_INCLUDED
-#define APP_SETTINGS_INK_TYPE_H_INCLUDED
+#ifndef APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
+#define APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
 
 namespace app {
-  
-  // If you change this enumeration, you should update the
-  // ContextBar::InkTypeField() UI widget. Also, remember that these
-  // indexes are loaded/saved from/to the user configuration file, so
-  // you shouldn't change them.
-  enum InkType {
-    kDefaultInk,
-    kOpaqueInk,
-    kPutAlphaInk,
-    kMergeInk,
-    kShadingInk,
-    kReplaceInk,
-    kEraseInk,
-    kSelectionInk,
-    kBlurInk,
-    kJumbleInk,
-    kMaxInks
+
+  enum FreehandAlgorithm {
+    kDefaultFreehandAlgorithm,
+    kPixelPerfectFreehandAlgorithm,
   };
 
 } // namespace app
 
-#endif // APP_SETTINGS_INK_TYPE_H_INCLUDED
+#endif // APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED

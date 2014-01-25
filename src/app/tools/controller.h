@@ -35,7 +35,9 @@ namespace app {
       typedef std::vector<gfx::Point> Points;
 
       virtual ~Controller() { }
+
       virtual bool canSnapToGrid() { return true; }
+      virtual bool isFreehand() { return false; }
 
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called

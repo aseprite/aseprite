@@ -27,9 +27,11 @@
 #include "app/settings/ink_type.h"
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
@@ -387,6 +389,24 @@ private:
   };
 };
 
+class ContextBar::FreehandAlgorithmField : public CheckBox
+{
+public:
+  FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
+  }
+
+  void onClick(Event& ev) OVERRIDE {
+    CheckBox::onClick(ev);
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setFreehandAlgorithm(isSelected() ?
+        kPixelPerfectFreehandAlgorithm:
+        kDefaultFreehandAlgorithm);
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
 {
@@ -411,6 +431,9 @@ ContextBar::ContextBar()
   // addChild(new InkChannelTargetField());
   // addChild(new InkShadeField());
   // addChild(new InkSelectionField());
+
+  addChild(m_freehandBox = new HBox());
+  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   addChild(m_sprayBox = new HBox());
   m_sprayBox->addChild(new Label("Spray:"));
@@ -488,6 +511,8 @@ void ContextBar::onCurrentToolChange()
   m_inkType->setInkType(toolSettings->getInkType());
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
+  m_freehandAlgo->setSelected(toolSettings->getFreehandAlgorithm() == kPixelPerfectFreehandAlgorithm);
+
   m_sprayWidth->setValue(toolSettings->getSprayWidth());
   m_spraySpeed->setValue(toolSettings->getSpraySpeed());
 
@@ -512,6 +537,10 @@ void ContextBar::onCurrentToolChange()
   bool hasSelectOptions = (currentTool->getInk(0)->isSelection() ||
                            currentTool->getInk(1)->isSelection());
 
+  bool isFreehand =
+    (currentTool->getController(0)->isFreehand() ||
+     currentTool->getController(1)->isFreehand());
+
   // Show/Hide fields
   m_brushLabel->setVisible(hasOpacity);
   m_brushType->setVisible(hasOpacity);
@@ -521,6 +550,7 @@ void ContextBar::onCurrentToolChange()
   m_inkLabel->setVisible(hasInk);
   m_inkType->setVisible(hasInk);
   m_inkOpacity->setVisible(hasOpacity);
+  m_freehandBox->setVisible(isFreehand);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);

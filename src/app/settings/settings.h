@@ -20,6 +20,7 @@
 #define APP_SETTINGS_SETTINGS_H_INCLUDED
 
 #include "app/color.h"
+#include "app/settings/freehand_algorithm.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "gfx/point.h"
@@ -91,6 +92,7 @@ namespace app {
     virtual int getSprayWidth() = 0;
     virtual int getSpraySpeed() = 0;
     virtual InkType getInkType() = 0;
+    virtual FreehandAlgorithm getFreehandAlgorithm() = 0;
 
     virtual void setOpacity(int opacity) = 0;
     virtual void setTolerance(int tolerance) = 0;
@@ -99,6 +101,7 @@ namespace app {
     virtual void setSprayWidth(int width) = 0;
     virtual void setSpraySpeed(int speed) = 0;
     virtual void setInkType(InkType inkType) = 0;
+    virtual void setFreehandAlgorithm(FreehandAlgorithm algorithm) = 0;
 
     virtual void addObserver(ToolSettingsObserver* observer) = 0;
     virtual void removeObserver(ToolSettingsObserver* observer) = 0;

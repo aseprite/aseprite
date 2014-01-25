@@ -52,6 +52,7 @@ namespace app {
     class SpraySpeedField;
     class TransparentColorField;
     class RotAlgorithmField;
+    class FreehandAlgorithmField;
 
     ui::Label* m_brushLabel;
     BrushTypeField* m_brushType;
@@ -63,6 +64,8 @@ namespace app {
     InkTypeField* m_inkType;
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;
+    ui::Box* m_freehandBox;
+    FreehandAlgorithmField* m_freehandAlgo;
     ui::Box* m_sprayBox;
     SprayWidthField* m_sprayWidth;
     SpraySpeedField* m_spraySpeed;

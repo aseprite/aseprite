@@ -20,6 +20,7 @@
 #define APP_SETTINGS_SETTINGS_OBSERVERS_H_INCLUDED
 
 #include "app/color.h"
+#include "app/settings/freehand_algorithm.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "raster/pen_type.h"
@@ -51,6 +52,7 @@ namespace app {
     virtual void onSetSprayWidth(int newSprayWidth) {}
     virtual void onSetSpraySpeed(int newSpraySpeed) {}
     virtual void onSetInkType(InkType newInkType) {}
+    virtual void onSetFreehandAlgorithm(FreehandAlgorithm algorithm) {}
   };
 
   class SelectionSettingsObserver {

@@ -220,5 +220,80 @@ public:
   }
 };
 
+class IntertwineAsPixelPerfect : public Intertwine {
+  struct PPData {
+    Points& pts;
+    ToolLoop* loop;
+    PPData(Points& pts, ToolLoop* loop) : pts(pts), loop(loop) { }
+  };
+
+  static void pixelPerfectLine(int x, int y, PPData* data)
+  {
+    gfx::Point newPoint(x, y);
+
+    if (data->pts.empty()
+      || data->pts[data->pts.size()-1] != newPoint) {
+      data->pts.push_back(newPoint);
+    }
+  }
+
+  Points m_pts;
+
+public:
+  void prepareIntertwine() OVERRIDE {
+    m_pts.clear();
+  }
+
+  void joinPoints(ToolLoop* loop, const Points& points) OVERRIDE {
+    if (points.size() == 0)
+      return;
+    else if (m_pts.empty() && points.size() == 1) {
+      m_pts = points;
+    }
+    else {
+      PPData data(m_pts, loop);
+
+      for (size_t c=0; c+1<points.size(); ++c) {
+        int x1 = points[c].x;
+        int y1 = points[c].y;
+        int x2 = points[c+1].x;
+        int y2 = points[c+1].y;
+
+        algo_line(x1, y1, x2, y2,
+          (void*)&data,
+          (AlgoPixel)&IntertwineAsPixelPerfect::pixelPerfectLine);
+      }
+    }
+
+    for (size_t c=0; c<m_pts.size(); ++c) {
+      // We ignore a pixel that is between other two pixels in the
+      // corner of a L-like shape.
+      if (c > 0 && c+1 < m_pts.size()
+        && (m_pts[c-1].x == m_pts[c].x || m_pts[c-1].y == m_pts[c].y)
+        && (m_pts[c+1].x == m_pts[c].x || m_pts[c+1].y == m_pts[c].y)
+        && m_pts[c-1].x != m_pts[c+1].x
+        && m_pts[c-1].y != m_pts[c+1].y) {
+        ++c;
+      }
+
+      doPointshapePoint(m_pts[c].x, m_pts[c].y, loop);
+    }
+  }
+
+  void fillPoints(ToolLoop* loop, const Points& points)
+  {
+    if (points.size() < 3) {
+      joinPoints(loop, points);
+      return;
+    }
+
+    // Contour
+    joinPoints(loop, points);
+
+    // Fill content
+    algo_polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+  }
+};
+
 } // namespace tools
 } // namespace app

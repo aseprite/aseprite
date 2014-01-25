@@ -26,6 +26,7 @@
 #include "app/color_swatches.h"
 #include "app/ini_file.h"
 #include "app/settings/document_settings.h"
+#include "app/tools/controller.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -537,6 +538,7 @@ class UIToolSettingsImpl
   int m_spray_width;
   int m_spray_speed;
   InkType m_inkType;
+  FreehandAlgorithm m_freehandAlgorithm;
 
 public:
 
@@ -554,6 +556,7 @@ public:
     m_spray_width = 16;
     m_spray_speed = 32;
     m_inkType = (InkType)get_config_int(cfg_section.c_str(), "InkType", (int)kDefaultInk);
+    m_freehandAlgorithm = kDefaultFreehandAlgorithm;
 
     m_pen.enableSignals(false);
     m_pen.setType((PenType)get_config_int(cfg_section.c_str(), "PenType", (int)PEN_TYPE_CIRCLE));
@@ -565,6 +568,12 @@ public:
         m_tool->getPointShape(1)->isSpray()) {
       m_spray_width = get_config_int(cfg_section.c_str(), "SprayWidth", m_spray_width);
       m_spray_speed = get_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
+    }
+
+    if (m_tool->getController(0)->isFreehand() ||
+        m_tool->getController(1)->isFreehand()) {
+      m_freehandAlgorithm = (FreehandAlgorithm)get_config_int(cfg_section.c_str(), "FreehandAlgorithm", (int)kDefaultFreehandAlgorithm);
+      setFreehandAlgorithm(m_freehandAlgorithm);
     }
   }
 
@@ -586,6 +595,11 @@ public:
       set_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
     }
 
+    if (m_tool->getController(0)->isFreehand() ||
+        m_tool->getController(1)->isFreehand()) {
+      set_config_int(cfg_section.c_str(), "FreehandAlgorithm", m_freehandAlgorithm);
+    }
+
     set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
   }
 
@@ -598,6 +612,7 @@ public:
   int getSprayWidth() OVERRIDE { return m_spray_width; }
   int getSpraySpeed() OVERRIDE { return m_spray_speed; }
   InkType getInkType() OVERRIDE { return m_inkType; }
+  FreehandAlgorithm getFreehandAlgorithm() OVERRIDE { return m_freehandAlgorithm; }
 
   void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
   void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
@@ -606,6 +621,21 @@ public:
   void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }
   void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
   void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
+  void setFreehandAlgorithm(FreehandAlgorithm algorithm) OVERRIDE {
+    m_freehandAlgorithm = algorithm;
+
+    tools::ToolBox* toolBox = App::instance()->getToolBox();
+    for (int i=0; i<2; ++i) {
+      if (algorithm == kPixelPerfectFreehandAlgorithm) {
+        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
+        m_tool->setTracePolicy(i, tools::TracePolicyLast);
+      }
+      else {
+        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
+        m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+      }
+    }
+  }
 
   void addObserver(ToolSettingsObserver* observer) OVERRIDE {
     base::Observable<ToolSettingsObserver>::addObserver(observer);

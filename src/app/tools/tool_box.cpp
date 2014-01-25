@@ -69,6 +69,13 @@ const char* WellKnownInks::Move = "move";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 
+const char* WellKnownIntertwiners::None = "none";
+const char* WellKnownIntertwiners::AsLines = "as_lines";
+const char* WellKnownIntertwiners::AsRectangles = "as_rectangles";
+const char* WellKnownIntertwiners::AsEllipses = "as_ellipses";
+const char* WellKnownIntertwiners::AsBezier = "as_bezier";
+const char* WellKnownIntertwiners::AsPixelPerfect = "as_pixel_perfect";
+
 ToolBox::ToolBox()
 {
   PRINTF("Toolbox module: installing\n");
@@ -102,11 +109,12 @@ ToolBox::ToolBox()
   m_pointshapers["floodfill"]            = new FloodFillPointShape();
   m_pointshapers["spray"]                = new SprayPointShape();
 
-  m_intertwiners["none"]                 = new IntertwineNone();
-  m_intertwiners["as_lines"]             = new IntertwineAsLines();
-  m_intertwiners["as_rectangles"]        = new IntertwineAsRectangles();
-  m_intertwiners["as_ellipses"]          = new IntertwineAsEllipses();
-  m_intertwiners["as_bezier"]            = new IntertwineAsBezier();
+  m_intertwiners[WellKnownIntertwiners::None] = new IntertwineNone();
+  m_intertwiners[WellKnownIntertwiners::AsLines] = new IntertwineAsLines();
+  m_intertwiners[WellKnownIntertwiners::AsRectangles] = new IntertwineAsRectangles();
+  m_intertwiners[WellKnownIntertwiners::AsEllipses] = new IntertwineAsEllipses();
+  m_intertwiners[WellKnownIntertwiners::AsBezier] = new IntertwineAsBezier();
+  m_intertwiners[WellKnownIntertwiners::AsPixelPerfect] = new IntertwineAsPixelPerfect();
 
   loadTools();
 
@@ -152,9 +160,14 @@ Ink* ToolBox::getInkById(const std::string& id)
   return m_inks[id];
 }
 
+Intertwine* ToolBox::getIntertwinerById(const std::string& id)
+{
+  return m_intertwiners[id];
+}
+
 void ToolBox::loadTools()
 {
-  PRINTF("Loading ASEPRITE tools\n");
+  PRINTF("Loading Aseprite tools\n");
 
   XmlDocumentRef doc(GuiXml::instance()->doc());
   TiXmlHandle handle(doc);
