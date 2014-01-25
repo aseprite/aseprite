@@ -290,7 +290,7 @@ void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
 }
 
 void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
-  base::Observable<GlobalSettingsObserver>::addObserver(observer);
+  base::Observable<GlobalSettingsObserver>::removeObserver(observer);
 }
 
 ISelectionSettings* UISettingsImpl::selection()
@@ -521,7 +521,7 @@ public:
   }
 
   void removeObserver(PenSettingsObserver* observer) OVERRIDE{
-    base::Observable<PenSettingsObserver>::addObserver(observer);
+    base::Observable<PenSettingsObserver>::removeObserver(observer);
   }
 };
 
