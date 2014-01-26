@@ -129,11 +129,8 @@ ColorBar::ColorBar(int align)
   m_paletteView.setBgColor(((SkinTheme*)getTheme())->getColor(ThemeColor::TabSelectedFace));
 
   // Change labels foreground color
-  setup_mini_look(&m_paletteButton);
-  m_paletteButton.setFont(((SkinTheme*)getTheme())->getMiniFont());
+  setup_mini_font(setup_mini_look(&m_paletteButton));
   m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
-
-  setDoubleBuffered(true);
 
   onColorButtonChange(getFgColor());
 }

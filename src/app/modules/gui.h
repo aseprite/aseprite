@@ -59,8 +59,9 @@ namespace app {
   void load_window_pos(ui::Widget* window, const char *section);
   void save_window_pos(ui::Widget* window, const char *section);
 
-  void setup_mini_look(ui::Widget* widget);
-  void setup_look(ui::Widget* widget, skin::LookType lookType);
+  ui::Widget* setup_mini_font(ui::Widget* widget);
+  ui::Widget* setup_mini_look(ui::Widget* widget);
+  ui::Widget* setup_look(ui::Widget* widget, skin::LookType lookType);
   void setup_bevels(ui::Widget* widget, int b1, int b2, int b3, int b4);
 
   void set_gfxicon_to_button(ui::ButtonBase* button,

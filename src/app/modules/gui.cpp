@@ -397,15 +397,22 @@ void save_window_pos(Widget* window, const char *section)
   set_config_rect(section, "WindowPos", window->getBounds());
 }
 
-void setup_mini_look(Widget* widget)
+Widget* setup_mini_font(Widget* widget)
 {
-  setup_look(widget, MiniLook);
+  widget->setFont(((SkinTheme*)widget->getTheme())->getMiniFont());
+  return widget;
 }
 
-void setup_look(Widget* widget, LookType lookType)
+Widget* setup_mini_look(Widget* widget)
+{
+  return setup_look(widget, MiniLook);
+}
+
+Widget* setup_look(Widget* widget, LookType lookType)
 {
   SkinPropertyPtr skinProp = get_skin_property(widget);
   skinProp->setLook(lookType);
+  return widget;
 }
 
 void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
