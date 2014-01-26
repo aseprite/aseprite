@@ -71,10 +71,17 @@ void Workspace::removeView(WorkspaceView* view)
   ASSERT(it != m_views.end());
   m_views.erase(it);
 
-  m_activePart->removeView(view);
-  if (m_activePart->getViewCount() == 0 &&
-      m_activePart->getParent() != this) {
-    m_activePart = destroyPart(m_activePart);
+  WorkspacePart* part = getPartByView(view);
+  ASSERT(part != NULL);
+
+  part->removeView(view);
+  if (part->getViewCount() == 0 &&
+      part->getParent() != this) {
+    bool activePartRemoved = (m_activePart == part);
+    WorkspacePart* otherPart = destroyPart(part);
+
+    if (activePartRemoved)
+      m_activePart = otherPart;
   }
 
   App::instance()->getMainWindow()->getTabsBar()->removeTab(dynamic_cast<TabView*>(view));
@@ -173,29 +180,18 @@ WorkspacePart* Workspace::destroyPart(WorkspacePart* part)
 
 void Workspace::makeUnique(WorkspaceView* view)
 {
-  std::vector<WorkspacePart*> parts;
-  std::queue<Widget*> remaining;
-  remaining.push(getFirstChild());
-  while (!remaining.empty()) {
-    Widget* widget = remaining.front();
-    remaining.pop();
+  WorkspaceParts parts;
+  enumAllParts(parts);
 
-    WorkspacePart* part = dynamic_cast<WorkspacePart*>(widget);
-    if (part && part->getParent() != this) {
-      while (part->getActiveView()) {
+  for (WorkspaceParts::iterator it=parts.begin(), end=parts.end(); it != end; ++it) {
+    WorkspacePart* part = *it;
+    if (part->getParent() != this) {
+      while (part->getActiveView())
         part->removeView(part->getActiveView());
-      }
-      parts.push_back(part);
-    }
-    else {
-      UI_FOREACH_WIDGET(widget->getChildren(), it) {
-        remaining.push(*it);
-      }
     }
   }
 
-  for (std::vector<WorkspacePart*>::iterator
-         it = parts.begin(), end = parts.end(); it != end; ++it) {
+  for (WorkspaceParts::iterator it=parts.begin(), end=parts.end(); it != end; ++it) {
     WorkspacePart* part = *it;
     if (part->getParent() != this)
       destroyPart(part);
@@ -205,13 +201,47 @@ void Workspace::makeUnique(WorkspaceView* view)
   ASSERT(uniquePart != NULL);
   m_activePart = uniquePart;
 
-  for (WorkspaceViews::iterator it = m_views.begin(), end = m_views.end(); it != end; ++it) {
+  for (WorkspaceViews::iterator it=m_views.begin(), end=m_views.end(); it != end; ++it) {
     WorkspaceView* v = *it;
     if (!v->getContentWidget()->getParent())
       uniquePart->addView(v);
   }
 
   setActiveView(view);
+}
+
+WorkspacePart* Workspace::getPartByView(WorkspaceView* view)
+{
+  WorkspaceParts parts;
+  enumAllParts(parts);
+
+  for (WorkspaceParts::iterator it=parts.begin(), end=parts.end(); it != end; ++it) {
+    WorkspacePart* part = *it;
+    if (part->hasView(view))
+      return part;
+  }
+
+  return NULL;
+}
+
+void Workspace::enumAllParts(WorkspaceParts& parts)
+{
+  std::queue<Widget*> remaining;
+  remaining.push(getFirstChild());
+  while (!remaining.empty()) {
+    Widget* widget = remaining.front();
+    remaining.pop();
+
+    WorkspacePart* part = dynamic_cast<WorkspacePart*>(widget);
+    if (part) {
+      parts.push_back(part);
+    }
+    else {
+      UI_FOREACH_WIDGET(widget->getChildren(), it) {
+        remaining.push(*it);
+      }
+    }
+  }
 }
 
 } // namespace app

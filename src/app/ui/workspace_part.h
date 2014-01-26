@@ -38,6 +38,8 @@ namespace app {
     WorkspaceView* getActiveView() { return m_activeView; }
     void setActiveView(WorkspaceView* view);
 
+    bool hasView(WorkspaceView* view);
+
   private:
     WorkspaceView* m_activeView;
     WorkspaceViews m_views;
