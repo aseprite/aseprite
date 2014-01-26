@@ -221,8 +221,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
   sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
   sheet_mapping["colorbar_border_hotfg"] = PART_COLORBAR_BORDER_HOTFG_NW;
-  sheet_mapping["scrollbar_bg"] = PART_SCROLLBAR_BG_NW;
-  sheet_mapping["scrollbar_thumb"] = PART_SCROLLBAR_THUMB_NW;
   sheet_mapping["tooltip"] = PART_TOOLTIP_NW;
   sheet_mapping["tooltip_arrow"] = PART_TOOLTIP_ARROW_NW;
   sheet_mapping["ani_first"] = PART_ANI_FIRST;
@@ -1721,8 +1719,7 @@ void SkinTheme::paintView(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   View* widget = static_cast<View*>(ev.getSource());
 
-  // Outside borders
-  jdraw_rectfill(widget->getBounds(), BGCOLOR);
+  g->fillRect(BGCOLOR, widget->getClientBounds());
 
   draw_bounds_nw(g, widget->getClientBounds(),
                  widget->hasFocus() ? PART_SUNKEN_FOCUSED_NW:
@@ -1736,13 +1733,19 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   int pos, len;
 
+  bool isMiniLook = false;
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
+  if (skinPropery != NULL)
+    isMiniLook = (skinPropery->getLook() == MiniLook);
+
+  skin::Style* bgStyle = get_style(isMiniLook ? "mini_scrollbar": "scrollbar");
+  skin::Style* thumbStyle = get_style(isMiniLook ? "mini_scrollbar_thumb": "scrollbar_thumb");
+
   widget->getScrollBarThemeInfo(&pos, &len);
 
   gfx::Rect rc = widget->getClientBounds();
 
-  draw_bounds_nw(g, rc,
-                 PART_SCROLLBAR_BG_NW,
-                 getColor(ThemeColor::ScrollBarBgFace));
+  bgStyle->paint(g, rc, NULL, Style::State());
 
   // Horizontal bar
   if (widget->getAlign() & JI_HORIZONTAL) {
@@ -1755,9 +1758,7 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
     rc.h = len;
   }
 
-  draw_bounds_nw(g, rc,
-                 PART_SCROLLBAR_THUMB_NW,
-                 getColor(ThemeColor::ScrollBarThumbFace));
+  thumbStyle->paint(g, rc, NULL, Style::State());
 }
 
 void SkinTheme::paintViewViewport(PaintEvent& ev)

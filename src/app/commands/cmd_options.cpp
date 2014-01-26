@@ -70,6 +70,7 @@ void OptionsCommand::onExecute(Context* context)
   base::UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
   Widget* check_autotimeline = app::find_widget<Widget>(window, "autotimeline");
+  Widget* show_scrollbars = app::find_widget<Widget>(window, "show_scrollbars");
   Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
   Widget* draw_click2 = app::find_widget<Widget>(window, "draw_click2");
   Widget* cursor_color_box = app::find_widget<Widget>(window, "cursor_color_box");
@@ -90,7 +91,8 @@ void OptionsCommand::onExecute(Context* context)
   cursor_color_box->addChild(cursor_color);
 
   // Get global settings for documents
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(NULL);
+  ISettings* settings = context->settings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(NULL);
 
   // Grid color
   ColorButton* grid_color = new ColorButton(docSettings->getGridColor(), IMAGE_RGB);
@@ -114,6 +116,9 @@ void OptionsCommand::onExecute(Context* context)
 
   if (get_config_bool("Options", "AutoShowTimeline", true))
     check_autotimeline->setSelected(true);
+
+  if (settings->getShowSpriteEditorScrollbars())
+    show_scrollbars->setSelected(true);
 
   // Checked background size
   m_checked_bg->addItem("16x16");
@@ -157,6 +162,8 @@ void OptionsCommand::onExecute(Context* context)
     set_config_bool("Options", "AutoShowTimeline", check_autotimeline->isSelected());
     set_config_bool("Options", "MoveClick2", move_click2->isSelected());
     set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
+
+    settings->setShowSpriteEditorScrollbars(show_scrollbars->isSelected());
 
     RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItemIndex());
     RenderEngine::setCheckedBgZoom(m_checked_bg_zoom->isSelected());

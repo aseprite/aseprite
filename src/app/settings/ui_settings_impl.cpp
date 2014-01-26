@@ -177,6 +177,7 @@ UISettingsImpl::UISettingsImpl()
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
+  , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -206,6 +207,11 @@ UISettingsImpl::~UISettingsImpl()
 //////////////////////////////////////////////////////////////////////
 // General settings
 
+bool UISettingsImpl::getShowSpriteEditorScrollbars()
+{
+  return m_showSpriteEditorScrollbars;
+}
+
 app::Color UISettingsImpl::getFgColor()
 {
   return ColorBar::instance()->getFgColor();
@@ -227,6 +233,13 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
+}
+
+void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
+{
+  m_showSpriteEditorScrollbars = state;
+
+  notifyObservers<bool>(&GlobalSettingsObserver::onSetShowSpriteEditorScrollbars, state);
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)

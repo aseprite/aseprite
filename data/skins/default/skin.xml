@@ -213,6 +213,8 @@
     <part id="colorbar_border_hotfg"            x="32" y="224" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_bg"                     x="64" y="144" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="scrollbar_thumb"                  x="64" y="160" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
+    <part id="mini_scrollbar_bg"                x="64" y="176" w1="3" w2="2" w3="3" h1="3" h2="2" h3="3" />
+    <part id="mini_scrollbar_thumb"             x="64" y="192" w1="3" w2="2" w3="3" h1="3" h2="2" h3="3" />
     <part id="tooltip"                          x="112" y="64" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="tooltip_arrow"                    x="128" y="64" w1="5" w2="6" w3="5" h1="5" h2="5" h3="6" />
     <part id="ani_first"                        x="144" y="192" w="8" h="8" />
@@ -311,6 +313,22 @@
   </parts>
 
   <stylesheet>
+
+    <!-- scrollbar -->
+    <style id="scrollbar">
+      <background color="scrollbar_bg_face" part="scrollbar_bg" />
+    </style>
+    <style id="scrollbar_thumb">
+      <background color="scrollbar_thumb_face" part="scrollbar_thumb" />
+    </style>
+
+    <!-- mini_scrollbar -->
+    <style id="mini_scrollbar">
+      <background part="mini_scrollbar_bg" />
+    </style>
+    <style id="mini_scrollbar_thumb">
+      <background part="mini_scrollbar_thumb" />
+    </style>
 
     <!-- timeline -->
     <style id="timeline">

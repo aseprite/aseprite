@@ -11,6 +11,7 @@
       <separator text="Editor:" horizontal="true" />
       <check text="Smooth auto-scroll" id="smooth" />
       <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
+      <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />
       <check text="2 Click Movement" id="move_click2" disabled="true" />
       <check text="2 Click Drawing" id="draw_click2" disabled="true" />
       <grid columns="2">

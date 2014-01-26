@@ -137,7 +137,6 @@ DocumentView::DocumentView(Document* document, Type type)
 
   m_view->attachToView(m_editor);
   m_view->setExpansive(true);
-  m_view->hideScrollBars();
 
   m_editor->setDocumentView(this);
   m_document->addObserver(this);

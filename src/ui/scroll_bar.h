@@ -12,10 +12,12 @@
 
 namespace ui {
 
-  class ScrollBar : public Widget
-  {
+  class ScrollBar : public Widget {
   public:
     ScrollBar(int align);
+
+    int getBarWidth() const { return m_barWidth; }
+    void setBarWidth(int barWidth) { m_barWidth = barWidth; }
 
     int getPos() const { return m_pos; }
     void setPos(int pos);
@@ -34,6 +36,7 @@ namespace ui {
   private:
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);
 
+    int m_barWidth;
     int m_pos;
     int m_size;
 

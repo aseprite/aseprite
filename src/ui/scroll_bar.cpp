@@ -27,6 +27,7 @@ ScrollBar::ScrollBar(int align)
   : Widget(kViewScrollbarWidget)
   , m_pos(0)
   , m_size(0)
+  , m_barWidth(getTheme()->scrollbar_size)
 {
   setAlign(align);
   initTheme();
@@ -34,8 +35,7 @@ ScrollBar::ScrollBar(int align)
 
 void ScrollBar::setPos(int pos)
 {
-  if (m_pos != pos)
-  {
+  if (m_pos != pos) {
     m_pos = pos;
     invalidate();
   }
@@ -43,8 +43,7 @@ void ScrollBar::setPos(int pos)
 
 void ScrollBar::setSize(int size)
 {
-  if (m_size != size)
-  {
+  if (m_size != size) {
     m_size = size;
     invalidate();
   }
