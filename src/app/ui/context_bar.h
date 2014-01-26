@@ -55,13 +55,11 @@ namespace app {
     class RotAlgorithmField;
     class FreehandAlgorithmField;
 
-    ui::Label* m_brushLabel;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;
     ui::Label* m_toleranceLabel;
     ToleranceField* m_tolerance;
-    ui::Label* m_inkLabel;
     InkTypeField* m_inkType;
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;

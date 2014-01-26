@@ -265,7 +265,7 @@ class ContextBar::InkTypeField : public ComboBox
 public:
   InkTypeField() {
     // The same order as in InkType
-    addItem("Default");
+    addItem("Default Ink");
     addItem("Opaque");
     addItem("Put Alpha");
     addItem("Merge");
@@ -361,7 +361,7 @@ class ContextBar::RotAlgorithmField : public ComboBox
 {
 public:
   RotAlgorithmField() {
-    addItem(new Item("Fast", kFastRotationAlgorithm));
+    addItem(new Item("Fast Rotation", kFastRotationAlgorithm));
     addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
 
     setSelectedItemIndex((int)
@@ -394,6 +394,7 @@ class ContextBar::FreehandAlgorithmField : public CheckBox
 {
 public:
   FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
+    setup_mini_font(this);
   }
 
   void onClick(Event& ev) OVERRIDE {
@@ -419,9 +420,9 @@ public:
 
   void setupTooltips(TooltipManager* tooltipManager)
   {
-    tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_CENTER | JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_CENTER | JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_CENTER | JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_BOTTOM);
   }
 
 protected:
@@ -444,12 +445,9 @@ ContextBar::ContextBar()
 
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
-  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
-  m_selectionOptionsBox->addChild(new Label("Rotation Algorithm:"));
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
-  addChild(m_brushLabel = new Label("Brush:"));
   addChild(m_brushType = new BrushTypeField());
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
@@ -457,7 +455,6 @@ ContextBar::ContextBar()
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
 
-  addChild(m_inkLabel = new Label("Ink:"));
   addChild(m_inkType = new InkTypeField());
 
   addChild(m_opacityLabel = new Label("Opacity:"));
@@ -467,24 +464,28 @@ ContextBar::ContextBar()
   // addChild(new InkSelectionField());
 
   addChild(m_sprayBox = new HBox());
-  m_sprayBox->addChild(new Label("Spray:"));
+  m_sprayBox->addChild(setup_mini_font(new Label("Spray:")));
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
   addChild(m_freehandBox = new HBox());
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
+  setup_mini_font(m_toleranceLabel);
+  setup_mini_font(m_opacityLabel);
+
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
-  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_CENTER | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_BOTTOM);
   m_selectionMode->setupTooltips(tooltipManager);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
@@ -572,12 +573,10 @@ void ContextBar::onCurrentToolChange()
      currentTool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushLabel->setVisible(hasOpacity);
   m_brushType->setVisible(hasOpacity);
   m_brushSize->setVisible(hasOpacity);
   m_brushAngle->setVisible(hasOpacity);
   m_opacityLabel->setVisible(hasOpacity);
-  m_inkLabel->setVisible(hasInk);
   m_inkType->setVisible(hasInk);
   m_inkOpacity->setVisible(hasOpacity);
   m_freehandBox->setVisible(isFreehand);
