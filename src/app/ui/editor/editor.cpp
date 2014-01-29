@@ -40,11 +40,13 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
@@ -860,8 +862,12 @@ void Editor::editor_update_quicktool()
 
     // If the tool has changed, we must to update the status bar because
     // the new tool can display something different in the status bar (e.g. Eyedropper)
-    if (old_quicktool != m_quicktool)
+    if (old_quicktool != m_quicktool) {
       updateStatusBar();
+
+      App::instance()->getMainWindow()->getContextBar()
+        ->updateFromTool(getCurrentEditorTool());
+    }
   }
 }
 

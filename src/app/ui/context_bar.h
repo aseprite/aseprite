@@ -19,6 +19,7 @@
 #ifndef APP_UI_CONTEXT_BAR_H_INCLUDED
 #define APP_UI_CONTEXT_BAR_H_INCLUDED
 
+#include "app/settings/settings_observers.h"
 #include "base/compiler_specific.h"
 #include "ui/box.h"
 
@@ -27,15 +28,27 @@ namespace ui {
   class Label;
 }
 
+namespace tools {
+  class Tool;
+}
+
 namespace app {
 
-  class ContextBar : public ui::Box {
+  class IToolSettings;
+
+  class ContextBar : public ui::Box,
+                     public ToolSettingsObserver {
   public:
     ContextBar();
     ~ContextBar();
 
+    void updateFromTool(tools::Tool* tool);
+
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
+
+    // ToolSettingsObserver impl
+    void onSetOpacity(int newOpacity) OVERRIDE;
 
   private:
     void onPenSizeChange();
@@ -54,7 +67,9 @@ namespace app {
     class TransparentColorField;
     class RotAlgorithmField;
     class FreehandAlgorithmField;
+    class GrabAlphaField;
 
+    IToolSettings* m_toolSettings;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;
@@ -63,6 +78,7 @@ namespace app {
     InkTypeField* m_inkType;
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;
+    GrabAlphaField* m_grabAlpha;
     ui::Box* m_freehandBox;
     FreehandAlgorithmField* m_freehandAlgo;
     ui::Box* m_sprayBox;

@@ -23,10 +23,12 @@
 #include "app/ui/editor/standby_state.h"
 
 #include "app/app.h"
+#include "app/color_picker.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/document_location.h"
 #include "app/ini_file.h"
+#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/ui/color_bar.h"
@@ -452,20 +454,17 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (current_tool->getInk(0)->isEyedropper()) {
-    PixelFormat format = sprite->getPixelFormat();
-    uint32_t pixel = sprite->getPixel(x, y, editor->getFrame());
-    app::Color color = app::Color::fromImage(format, pixel);
-
-    int alpha = 255;
-    switch (format) {
-      case IMAGE_RGB: alpha = rgba_geta(pixel); break;
-      case IMAGE_GRAYSCALE: alpha = graya_geta(pixel); break;
-    }
+    bool grabAlpha = UIContext::instance()->settings()->getGrabAlpha();
+    ColorPicker picker;
+    picker.pickColor(editor->getDocumentLocation(), x, y,
+      grabAlpha ?
+      ColorPicker::FromActiveLayer:
+      ColorPicker::FromComposition);
 
     char buf[256];
     usprintf(buf, "- Pos %d %d", x, y);
 
-    StatusBar::instance()->showColor(0, buf, color, alpha);
+    StatusBar::instance()->showColor(0, buf, picker.color(), picker.alpha());
   }
   else {
     Mask* mask =

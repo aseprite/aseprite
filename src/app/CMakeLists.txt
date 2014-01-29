@@ -8,6 +8,7 @@ add_library(app-library
   backup.cpp
   check_update.cpp
   color.cpp
+  color_picker.cpp
   color_swatches.cpp
   color_utils.cpp
   commands/cmd_about.cpp

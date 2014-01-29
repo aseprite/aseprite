@@ -27,6 +27,7 @@
 #include "app/ini_file.h"
 #include "app/settings/document_settings.h"
 #include "app/tools/controller.h"
+#include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -178,6 +179,7 @@ UISettingsImpl::UISettingsImpl()
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
+  , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -188,6 +190,9 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
+  set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
+  set_config_bool("Options", "GrabAlpha", m_grabAlpha);
+
   delete m_globalDocumentSettings;
 
   // Delete all tool settings.
@@ -210,6 +215,11 @@ UISettingsImpl::~UISettingsImpl()
 bool UISettingsImpl::getShowSpriteEditorScrollbars()
 {
   return m_showSpriteEditorScrollbars;
+}
+
+bool UISettingsImpl::getGrabAlpha()
+{
+  return m_grabAlpha;
 }
 
 app::Color UISettingsImpl::getFgColor()
@@ -240,6 +250,13 @@ void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
   m_showSpriteEditorScrollbars = state;
 
   notifyObservers<bool>(&GlobalSettingsObserver::onSetShowSpriteEditorScrollbars, state);
+}
+
+void UISettingsImpl::setGrabAlpha(bool state)
+{
+  m_grabAlpha = state;
+
+  notifyObservers<bool>(&GlobalSettingsObserver::onSetGrabAlpha, state);
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
@@ -604,6 +621,7 @@ public:
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
     set_config_int(cfg_section.c_str(), "InkType", m_inkType);
+    set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
 
     if (m_tool->getPointShape(0)->isSpray() ||
         m_tool->getPointShape(1)->isSpray()) {
@@ -615,8 +633,6 @@ public:
         m_tool->getController(1)->isFreehand()) {
       set_config_int(cfg_section.c_str(), "FreehandAlgorithm", m_freehandAlgorithm);
     }
-
-    set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
   }
 
   IPenSettings* getPen() { return &m_pen; }

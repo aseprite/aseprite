@@ -40,12 +40,14 @@ namespace app {
 
     // ISettings implementation
     bool getShowSpriteEditorScrollbars() OVERRIDE;
+    bool getGrabAlpha() OVERRIDE;
     app::Color getFgColor() OVERRIDE;
     app::Color getBgColor() OVERRIDE;
     tools::Tool* getCurrentTool() OVERRIDE;
     app::ColorSwatches* getColorSwatches() OVERRIDE;
 
     void setShowSpriteEditorScrollbars(bool state) OVERRIDE;
+    void setGrabAlpha(bool state) OVERRIDE;
     void setFgColor(const app::Color& color) OVERRIDE;
     void setBgColor(const app::Color& color) OVERRIDE;
     void setCurrentTool(tools::Tool* tool) OVERRIDE;
@@ -73,6 +75,7 @@ namespace app {
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     ISelectionSettings* m_selectionSettings;
     bool m_showSpriteEditorScrollbars;
+    bool m_grabAlpha;
   };
 
 } // namespace app
