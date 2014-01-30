@@ -94,6 +94,8 @@ void FileList::setCurrentFolder(IFileItem* folder)
 
   invalidate();
   View::getView(this)->updateView();
+
+  requestFocus();
 }
 
 void FileList::goUp()
