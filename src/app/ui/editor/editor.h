@@ -243,6 +243,8 @@ namespace app {
     // editors.cpp are finally replaced with a fully funtional Workspace
     // widget.
     DocumentView* m_docView;
+
+    gfx::Point m_oldPos;
   };
 
   ui::WidgetType editor_type();

@@ -672,37 +672,30 @@ void Editor::flashCurrentLayer()
 gfx::Point Editor::controlInfiniteScroll(MouseMessage* msg)
 {
   View* view = View::getView(this);
-  Rect vp = view->getViewportBounds();
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point mousePos = msg->position();
 
-  if (jmouse_control_infinite_scroll(vp)) {
-    int old_x = msg->position().x;
-    int old_y = msg->position().y;
-    int new_x = jmouse_x(0);
-    int new_y = jmouse_y(0);
-
-    // Smooth scroll movement
-    if (get_config_bool("Options", "MoveSmooth", TRUE)) {
-      jmouse_set_position(MID(vp.x+1, old_x, vp.x+vp.w-2),
-                          MID(vp.y+1, old_y, vp.y+vp.h-2));
-    }
-    // This is better for high resolutions: scroll movement by big steps
-    else {
-      jmouse_set_position((old_x != new_x) ? (old_x + (vp.x+vp.w/2))/2: new_x,
-                          (old_y != new_y) ? (old_y + (vp.y+vp.h/2))/2: new_y);
+  gfx::Point delta = ui::get_delta_outside_box(vp, mousePos);
+  if (delta != gfx::Point(0, 0)) {
+    // Scrolling-by-steps (non-smooth), this is better for high
+    // resolutions: scroll movement by big steps.
+    if (!get_config_bool("Options", "MoveSmooth", true)) {
+      gfx::Point newPos = mousePos;
+      if (delta.x != 0) newPos.x = (mousePos.x-delta.x+(vp.x+vp.w/2))/2;
+      if (delta.y != 0) newPos.y = (mousePos.y-delta.y+(vp.y+vp.h/2))/2;
+      delta = mousePos - newPos;
     }
 
-    // Get new positions.
-    new_x = jmouse_x(0);
-    new_y = jmouse_y(0);
+    mousePos.x -= delta.x;
+    mousePos.y -= delta.y;
+    ui::set_mouse_position(mousePos);
 
-    Point scroll = view->getViewScroll();
-    setEditorScroll(scroll.x+old_x-new_x,
-                    scroll.y+old_y-new_y, true);
-
-    return gfx::Point(new_x, new_y);
+    gfx::Point scroll = view->getViewScroll();
+    scroll += delta;
+    setEditorScroll(scroll.x, scroll.y, true);
   }
 
-  return msg->position();
+  return mousePos;
 }
 
 tools::Tool* Editor::getCurrentEditorTool()
@@ -972,6 +965,8 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       if (m_sprite) {
+        m_oldPos = static_cast<MouseMessage*>(msg)->position();
+
         EditorStatePtr holdState(m_state);
         return m_state->onMouseDown(this, static_cast<MouseMessage*>(msg));
       }
@@ -1144,7 +1139,7 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
     setEditorScroll(x, y, use_refresh_region);
 
     if (centerMouse)
-      jmouse_set_position(mx, my);
+      ui::set_mouse_position(gfx::Point(mx, my));
 
     // Notify observers
     m_observers.notifyScrollChanged(this);

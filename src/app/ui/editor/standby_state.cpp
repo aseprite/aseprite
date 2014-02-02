@@ -126,8 +126,10 @@ bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 
   // Start scroll loop
   if (msg->middle() || clickedInk->isScrollMovement()) { // TODO msg->middle() should be customizable
-    editor->setState(EditorStatePtr(new ScrollingState()));
-    editor->captureMouse();
+    EditorStatePtr newState(new ScrollingState());
+    editor->setState(newState);
+
+    newState->onMouseDown(editor, msg);
     return true;
   }
   else

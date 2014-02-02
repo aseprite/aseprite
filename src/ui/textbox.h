@@ -22,6 +22,9 @@ namespace ui {
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onSetText() OVERRIDE;
+
+  private:
+    gfx::Point m_oldPos;
   };
 
 } // namespace ui

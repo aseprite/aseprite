@@ -45,6 +45,9 @@ ScrollingState::~ScrollingState()
 
 bool ScrollingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
+  m_oldPos = msg->position();
+
+  editor->captureMouse();
   return true;
 }
 
@@ -58,20 +61,15 @@ bool ScrollingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   View* view = View::getView(editor);
-  gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
 
-  editor->setEditorScroll(scroll.x+jmouse_x(1)-jmouse_x(0),
-                          scroll.y+jmouse_y(1)-jmouse_y(0), true);
+  gfx::Point newPos = msg->position();
 
-  jmouse_control_infinite_scroll(vp);
+  scroll += m_oldPos - newPos;
+  editor->setEditorScroll(scroll.x, scroll.y, true);
 
-  int x, y;
-  editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
-  StatusBar::instance()->setStatusText
-    (0, "Pos %3d %3d (Size %3d %3d)", x, y,
-     editor->getSprite()->getWidth(),
-     editor->getSprite()->getHeight());
+  gfx::Rect vp = view->getViewportBounds();
+  m_oldPos = ui::control_infinite_scroll(editor, vp, newPos);
 
   return true;
 }
