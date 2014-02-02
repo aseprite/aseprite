@@ -34,7 +34,7 @@ ColorPicker::ColorPicker()
 {
 }
 
-void ColorPicker::pickColor(DocumentLocation& location, int x, int y, Mode mode)
+void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode mode)
 {
   m_alpha = 255;
   m_color = app::Color::fromMask();

@@ -30,7 +30,7 @@ namespace app {
 
     ColorPicker();
 
-    void pickColor(DocumentLocation& location, int x, int y, Mode mode);
+    void pickColor(const DocumentLocation& location, int x, int y, Mode mode);
 
     app::Color color() const { return m_color; }
     int alpha() const { return m_alpha; }
