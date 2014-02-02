@@ -86,7 +86,7 @@ bool TextBox::onProcessMessage(Message* msg)
               break;
 
             default:
-              return false;
+              return Widget::onProcessMessage(msg);
           }
         }
         return true;
