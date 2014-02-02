@@ -129,7 +129,7 @@ private:
   Editor* m_editor;
 };
 
-Editor::Editor(Document* document)
+Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
@@ -141,6 +141,7 @@ Editor::Editor(Document* document)
   , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
+  , m_flags(flags)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
@@ -500,6 +501,9 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  */
 void Editor::drawMask()
 {
+  if ((m_flags & kShowMaskFlag) == 0)
+    return;
+
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   Point scroll = view->getViewScroll();
@@ -555,6 +559,9 @@ void Editor::drawMask()
 
 void Editor::drawMaskSafe()
 {
+  if ((m_flags & kShowMaskFlag) == 0)
+    return;
+
   if (isVisible() &&
       m_document &&
       m_document->getBoundariesSegments()) {
@@ -590,6 +597,9 @@ void Editor::drawMaskSafe()
 
 void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
 {
+  if ((m_flags & kShowGridFlag) == 0)
+    return;
+
   // Copy the grid bounds
   Rect grid(gridBounds);
   if (grid.w < 1 || grid.h < 1)
