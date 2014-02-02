@@ -184,6 +184,7 @@ add_library(app-library
   ui/skin/skin_theme.cpp
   ui/skin/style.cpp
   ui/skin/style_sheet.cpp
+  ui/start_view.cpp
   ui/status_bar.cpp
   ui/tabs.cpp
   ui/timeline.cpp

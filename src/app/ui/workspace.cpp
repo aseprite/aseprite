@@ -110,6 +110,13 @@ void Workspace::setActiveView(WorkspaceView* view)
 
 void Workspace::splitView(WorkspaceView* view, int orientation)
 {
+  // Try to clone the workspace view.
+  WorkspaceView* newView = view->cloneWorkspaceView();
+  if (newView == NULL)
+    return;
+
+  // Get the part where the view-to-clone is located because we need
+  // to split this part.
   WorkspacePart* viewPart =
     static_cast<WorkspacePart*>(view->getContentWidget()->getParent());
 
@@ -130,9 +137,8 @@ void Workspace::splitView(WorkspaceView* view, int orientation)
   // The new part is the active one.
   m_activePart = newPart;
 
-  // Clone the workspace view, and add it to the active part (newPart)
+  // Add the cloned view to the active part (newPart)
   // using Workspace::addView().
-  WorkspaceView* newView = view->cloneWorkspaceView();
   addView(newView);
   setActiveView(newView);
 

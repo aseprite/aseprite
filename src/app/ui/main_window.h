@@ -32,6 +32,7 @@ namespace app {
   class ContextBar;
   class MainMenuBar;
   class MiniEditorWindow;
+  class StartView;
   class StatusBar;
   class Tabs;
   class Timeline;
@@ -50,6 +51,7 @@ namespace app {
     Workspace* getWorkspace() { return m_workspace; }
     MiniEditorWindow* getMiniEditor() { return m_miniEditor; }
 
+    void start();
     void reloadMenus();
 
     bool isAdvancedMode() const { return m_advancedMode; }
@@ -64,6 +66,7 @@ namespace app {
     void mouseOverTab(Tabs* tabs, TabView* tabView);
 
   protected:
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onSaveLayout(ui::SaveLayoutEvent& ev) OVERRIDE;
     void onActiveViewChange();
 
@@ -82,6 +85,7 @@ namespace app {
     Timeline* m_timeline;
     Workspace* m_workspace;
     MiniEditorWindow* m_miniEditor;
+    StartView* m_startView;
   };
 
 }
