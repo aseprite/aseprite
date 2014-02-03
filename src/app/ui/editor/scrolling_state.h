@@ -21,6 +21,7 @@
 
 #include "app/ui/editor/editor_state.h"
 #include "base/compiler_specific.h"
+#include "gfx/point.h"
 
 namespace app {
 
@@ -37,6 +38,9 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+
+  private:
+    gfx::Point m_oldPos;
   };
 
 } // namespace app

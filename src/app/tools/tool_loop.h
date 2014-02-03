@@ -19,6 +19,7 @@
 #ifndef APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
 
+#include "app/settings/selection_mode.h"
 #include "app/tools/trace_policy.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
@@ -121,6 +122,9 @@ namespace app {
 
       // Returns the tolerance to be used by the ink (Ink).
       virtual int getTolerance() = 0;
+
+      // Returns the selection mode (if the ink is of selection type).
+      virtual SelectionMode getSelectionMode() = 0;
 
       // Returns the current settings. Used to know current
       // foreground/background color (certain tools needs to know the

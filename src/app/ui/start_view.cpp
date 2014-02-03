@@ -16,37 +16,50 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_BUTTON_SET_H_INCLUDED
-#define APP_UI_BUTTON_SET_H_INCLUDED
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include "base/signal.h"
-#include "ui/box.h"
+#include "app/ui/start_view.h"
+
+#include "app/ui/skin/skin_theme.h"
+#include "ui/label.h"
+#include "ui/textbox.h"
+#include "ui/view.h"
 
 namespace app {
 
-  class ButtonSet : public ui::Box {
-    class Item;
-    typedef std::vector<Item*> Items;
+using namespace ui;
+using namespace skin;
 
-  public:
-    ButtonSet(int w, int h, int firstSelected, ...);
+StartView::StartView()
+  : Box(JI_VERTICAL)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  setBgColor(theme->getColor(ThemeColor::Workspace));
 
-    int getSelectedItem() const;
-    void setSelectedItem(int index);
+  child_spacing = 8 * jguiscale();
 
-    ui::Widget* getButtonAt(int index);
+  addChild(new Label("Welcome to " PACKAGE " v" VERSION));
+}
 
-    Signal0<void> ItemChange;
+StartView::~StartView()
+{
+}
 
-  protected:
-    virtual void onItemChange();
+std::string StartView::getTabText()
+{
+  return "Start";
+}
 
-  private:
-    Item* findSelectedItem() const;
+WorkspaceView* StartView::cloneWorkspaceView()
+{
+  return NULL;                  // This view cannot be cloned
+}
 
-    Items m_items;
-  };
+void StartView::onClonedFrom(WorkspaceView* from)
+{
+  ASSERT(false);                // Never called
+}
 
 } // namespace app
-
-#endif

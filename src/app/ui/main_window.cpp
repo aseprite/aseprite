@@ -28,6 +28,7 @@
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
+#include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/document_view.h"
@@ -35,12 +36,14 @@
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/mini_editor.h"
+#include "app/ui/start_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
 #include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
+#include "ui/message.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -54,6 +57,7 @@ MainWindow::MainWindow()
   , m_lastSplitterPos(0.0)
   , m_lastTimelineSplitterPos(75.0)
   , m_advancedMode(false)
+  , m_startView(NULL)
 {
   setId("main_window");
 
@@ -88,6 +92,7 @@ MainWindow::MainWindow()
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
   m_contextBar->setExpansive(true);
+  m_contextBar->setVisible(false);
   m_statusBar->setExpansive(true);
   m_colorBar->setExpansive(true);
   m_toolBar->setExpansive(true);
@@ -116,6 +121,10 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+  if (m_startView) {
+    m_workspace->removeView(m_startView);
+    delete m_startView;
+  }
   delete m_contextBar;
   delete m_miniEditor;
 
@@ -190,6 +199,19 @@ void MainWindow::popTimeline()
     setTimelineVisibility(true);
 }
 
+bool MainWindow::onProcessMessage(ui::Message* msg)
+{
+#if 0                           // TODO Enable start view
+  if (msg->type() == kOpenMessage) {
+    m_startView = new StartView;
+    m_workspace->addView(m_startView);
+    m_tabsBar->selectTab(m_startView);
+  }
+#endif
+
+  return Window::onProcessMessage(msg);
+}
+
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 {
   Window::onSaveLayout(ev);
@@ -205,10 +227,19 @@ void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView()))
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView())) {
     UIContext::instance()->setActiveView(docView);
-  else
+
+    m_contextBar->updateFromTool(UIContext::instance()
+      ->getSettings()->getCurrentTool());
+    m_contextBar->setVisible(true);
+  }
+  else {
     UIContext::instance()->setActiveView(NULL);
+
+    m_contextBar->setVisible(false);
+  }
+  layout();
 }
 
 void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons)
@@ -216,8 +247,13 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
   if (!tabView)
     return;
 
-  DocumentView* docView = static_cast<DocumentView*>(tabView);
-  Document* document = docView->getDocument();
+  WorkspaceView* workspaceView = dynamic_cast<WorkspaceView*>(tabView);
+  if (m_workspace->getActiveView() != workspaceView)
+    m_workspace->setActiveView(workspaceView);
+
+  DocumentView* docView = dynamic_cast<DocumentView*>(workspaceView);
+  if (!docView)
+    return;
 
   UIContext* context = UIContext::instance();
   context->setActiveView(docView);
@@ -242,8 +278,7 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
 void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
-  if (tabView) {
-    DocumentView* docView = static_cast<DocumentView*>(tabView);
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->getDocument();
     m_statusBar->setStatusText(250, "%s",
                                document->getFilename().c_str());

@@ -20,8 +20,10 @@
 #define APP_SETTINGS_SETTINGS_H_INCLUDED
 
 #include "app/color.h"
+#include "app/settings/freehand_algorithm.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
+#include "app/settings/selection_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/pen_type.h"
@@ -49,12 +51,15 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
-
+    virtual bool getShowSpriteEditorScrollbars() = 0;
+    virtual bool getGrabAlpha() = 0;
     virtual app::Color getFgColor() = 0;
     virtual app::Color getBgColor() = 0;
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
+    virtual void setShowSpriteEditorScrollbars(bool state) = 0;
+    virtual void setGrabAlpha(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;
     virtual void setBgColor(const app::Color& color) = 0;
     virtual void setCurrentTool(tools::Tool* tool) = 0;
@@ -91,6 +96,7 @@ namespace app {
     virtual int getSprayWidth() = 0;
     virtual int getSpraySpeed() = 0;
     virtual InkType getInkType() = 0;
+    virtual FreehandAlgorithm getFreehandAlgorithm() = 0;
 
     virtual void setOpacity(int opacity) = 0;
     virtual void setTolerance(int tolerance) = 0;
@@ -99,6 +105,7 @@ namespace app {
     virtual void setSprayWidth(int width) = 0;
     virtual void setSpraySpeed(int speed) = 0;
     virtual void setInkType(InkType inkType) = 0;
+    virtual void setFreehandAlgorithm(FreehandAlgorithm algorithm) = 0;
 
     virtual void addObserver(ToolSettingsObserver* observer) = 0;
     virtual void removeObserver(ToolSettingsObserver* observer) = 0;
@@ -126,9 +133,11 @@ namespace app {
     virtual ~ISelectionSettings() {}
 
     // Mask color used during a move operation
+    virtual SelectionMode getSelectionMode() = 0;
     virtual app::Color getMoveTransparentColor() = 0;
     virtual RotationAlgorithm getRotationAlgorithm() = 0;
 
+    virtual void setSelectionMode(SelectionMode mode) = 0;
     virtual void setMoveTransparentColor(app::Color color) = 0;
     virtual void setRotationAlgorithm(RotationAlgorithm algorithm) = 0;
 

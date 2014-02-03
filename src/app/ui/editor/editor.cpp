@@ -40,11 +40,13 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
@@ -127,7 +129,7 @@ private:
   Editor* m_editor;
 };
 
-Editor::Editor(Document* document)
+Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
   , m_state(new StandbyState())
   , m_decorator(NULL)
@@ -139,6 +141,7 @@ Editor::Editor(Document* document)
   , m_mask_timer(100, this)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
+  , m_flags(flags)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
@@ -498,6 +501,9 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  */
 void Editor::drawMask()
 {
+  if ((m_flags & kShowMaskFlag) == 0)
+    return;
+
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   Point scroll = view->getViewScroll();
@@ -553,6 +559,9 @@ void Editor::drawMask()
 
 void Editor::drawMaskSafe()
 {
+  if ((m_flags & kShowMaskFlag) == 0)
+    return;
+
   if (isVisible() &&
       m_document &&
       m_document->getBoundariesSegments()) {
@@ -588,6 +597,9 @@ void Editor::drawMaskSafe()
 
 void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
 {
+  if ((m_flags & kShowGridFlag) == 0)
+    return;
+
   // Copy the grid bounds
   Rect grid(gridBounds);
   if (grid.w < 1 || grid.h < 1)
@@ -670,37 +682,30 @@ void Editor::flashCurrentLayer()
 gfx::Point Editor::controlInfiniteScroll(MouseMessage* msg)
 {
   View* view = View::getView(this);
-  Rect vp = view->getViewportBounds();
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Point mousePos = msg->position();
 
-  if (jmouse_control_infinite_scroll(vp)) {
-    int old_x = msg->position().x;
-    int old_y = msg->position().y;
-    int new_x = jmouse_x(0);
-    int new_y = jmouse_y(0);
-
-    // Smooth scroll movement
-    if (get_config_bool("Options", "MoveSmooth", TRUE)) {
-      jmouse_set_position(MID(vp.x+1, old_x, vp.x+vp.w-2),
-                          MID(vp.y+1, old_y, vp.y+vp.h-2));
-    }
-    // This is better for high resolutions: scroll movement by big steps
-    else {
-      jmouse_set_position((old_x != new_x) ? (old_x + (vp.x+vp.w/2))/2: new_x,
-                          (old_y != new_y) ? (old_y + (vp.y+vp.h/2))/2: new_y);
+  gfx::Point delta = ui::get_delta_outside_box(vp, mousePos);
+  if (delta != gfx::Point(0, 0)) {
+    // Scrolling-by-steps (non-smooth), this is better for high
+    // resolutions: scroll movement by big steps.
+    if (!get_config_bool("Options", "MoveSmooth", true)) {
+      gfx::Point newPos = mousePos;
+      if (delta.x != 0) newPos.x = (mousePos.x-delta.x+(vp.x+vp.w/2))/2;
+      if (delta.y != 0) newPos.y = (mousePos.y-delta.y+(vp.y+vp.h/2))/2;
+      delta = mousePos - newPos;
     }
 
-    // Get new positions.
-    new_x = jmouse_x(0);
-    new_y = jmouse_y(0);
+    mousePos.x -= delta.x;
+    mousePos.y -= delta.y;
+    ui::set_mouse_position(mousePos);
 
-    Point scroll = view->getViewScroll();
-    setEditorScroll(scroll.x+old_x-new_x,
-                    scroll.y+old_y-new_y, true);
-
-    return gfx::Point(new_x, new_y);
+    gfx::Point scroll = view->getViewScroll();
+    scroll += delta;
+    setEditorScroll(scroll.x, scroll.y, true);
   }
 
-  return msg->position();
+  return mousePos;
 }
 
 tools::Tool* Editor::getCurrentEditorTool()
@@ -860,8 +865,12 @@ void Editor::editor_update_quicktool()
 
     // If the tool has changed, we must to update the status bar because
     // the new tool can display something different in the status bar (e.g. Eyedropper)
-    if (old_quicktool != m_quicktool)
+    if (old_quicktool != m_quicktool) {
       updateStatusBar();
+
+      App::instance()->getMainWindow()->getContextBar()
+        ->updateFromTool(getCurrentEditorTool());
+    }
   }
 }
 
@@ -966,6 +975,8 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       if (m_sprite) {
+        m_oldPos = static_cast<MouseMessage*>(msg)->position();
+
         EditorStatePtr holdState(m_state);
         return m_state->onMouseDown(this, static_cast<MouseMessage*>(msg));
       }
@@ -1098,6 +1109,7 @@ bool Editor::isInsideSelection()
   int x, y;
   screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
   return
+    (UIContext::instance()->settings()->selection()->getSelectionMode() != kSubtractSelectionMode) &&
     m_document != NULL &&
     m_document->isMaskVisible() &&
     m_document->getMask()->containsPoint(x, y);
@@ -1137,7 +1149,7 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
     setEditorScroll(x, y, use_refresh_region);
 
     if (centerMouse)
-      jmouse_set_position(mx, my);
+      ui::set_mouse_position(gfx::Point(mx, my));
 
     // Notify observers
     m_observers.notifyScrollChanged(this);

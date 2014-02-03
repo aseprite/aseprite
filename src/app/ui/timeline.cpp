@@ -282,6 +282,7 @@ bool Timeline::onProcessMessage(Message* msg)
       m_clk_frame = m_hot_frame;
 
       captureMouse();
+      m_oldPos = static_cast<MouseMessage*>(msg)->position();
 
       switch (m_hot_part) {
         case A_PART_SEPARATOR:
@@ -410,13 +411,15 @@ bool Timeline::onProcessMessage(Message* msg)
       if (hasCapture()) {
         switch (m_state) {
 
-          case STATE_SCROLLING:
+          case STATE_SCROLLING: {
+            gfx::Point absMousePos = static_cast<MouseMessage*>(msg)->position();
             setScroll(
-              m_scroll_x+jmouse_x(1)-jmouse_x(0),
-              m_scroll_y+jmouse_y(1)-jmouse_y(0));
+              m_scroll_x + m_oldPos.x - absMousePos.x,
+              m_scroll_y + m_oldPos.y - absMousePos.y);
 
-            jmouse_control_infinite_scroll(getBounds());
+            m_oldPos = ui::control_infinite_scroll(this, getBounds(), absMousePos);
             return true;
+          }
 
           case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
             ISettings* m_settings = UIContext::instance()->getSettings();

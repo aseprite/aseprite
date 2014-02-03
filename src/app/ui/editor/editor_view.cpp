@@ -22,9 +22,12 @@
 
 #include "app/ui/editor/editor_view.h"
 
-#include "app/ui/editor/editor.h"
 #include "app/modules/editors.h"
+#include "app/modules/gui.h"
+#include "app/settings/settings.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui_context.h"
 #include "ui/message.h"
 #include "ui/resize_event.h"
 
@@ -46,7 +49,14 @@ EditorView::EditorView(EditorView::Type type)
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
   jwidget_set_border(this, l, t, r, b);
-  hideScrollBars();
+  setupScrollbars();
+
+  UIContext::instance()->settings()->addObserver(this);
+}
+
+EditorView::~EditorView()
+{
+  UIContext::instance()->settings()->removeObserver(this);
 }
 
 bool EditorView::onProcessMessage(Message* msg)
@@ -92,6 +102,28 @@ void EditorView::onResize(ResizeEvent& ev)
 
   setBoundsQuietly(ev.getBounds());
   updateView();
+}
+
+void EditorView::onSetShowSpriteEditorScrollbars(bool state)
+{
+  setupScrollbars();
+}
+
+void EditorView::setupScrollbars()
+{
+  if (m_type == AlwaysSelected ||
+      !UIContext::instance()->settings()->getShowSpriteEditorScrollbars())
+    hideScrollBars();
+  else {
+    // TODO hardcoded scroll bar width should be get from skin.xml file
+    getHorizontalBar()->setBarWidth(6*jguiscale());
+    getVerticalBar()->setBarWidth(6*jguiscale());
+
+    setup_mini_look(getHorizontalBar());
+    setup_mini_look(getVerticalBar());
+
+    showScrollBars();
+  }
 }
 
 } // namespace app

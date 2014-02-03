@@ -49,7 +49,11 @@ namespace app {
     Signal0<void> ActiveViewChanged;
 
   private:
+    typedef std::vector<WorkspacePart*> WorkspaceParts;
+
     WorkspacePart* destroyPart(WorkspacePart* part);
+    WorkspacePart* getPartByView(WorkspaceView* view);
+    void enumAllParts(WorkspaceParts& parts);
 
     // All views of all parts.
     WorkspaceViews m_views;

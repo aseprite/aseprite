@@ -41,4 +41,4 @@ namespace app {
 
 } // namespace app
 
-#endif // SETTINGS_INK_TYPE_H_INCLUDED
+#endif // APP_SETTINGS_INK_TYPE_H_INCLUDED

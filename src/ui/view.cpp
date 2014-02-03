@@ -18,7 +18,8 @@
 #include "ui/view.h"
 #include "ui/widget.h"
 
-#define BAR_SIZE getTheme()->scrollbar_size
+#define HBAR_SIZE (m_scrollbar_h.getBarWidth())
+#define VBAR_SIZE (m_scrollbar_v.getBarWidth())
 
 namespace ui {
 
@@ -70,7 +71,12 @@ void View::makeVisibleAllScrollableArea()
 void View::hideScrollBars()
 {
   m_hasBars = false;
+  updateView();
+}
 
+void View::showScrollBars()
+{
+  m_hasBars = true;
   updateView();
 }
 
@@ -86,7 +92,7 @@ void View::setScrollableSize(const Size& sz)
   ((sz.w > (m_viewport.getBounds().w                            \
             - m_viewport.border_width.l                         \
             - m_viewport.border_width.r)) &&                    \
-   (BAR_SIZE < pos.w) && (BAR_SIZE < pos.h))
+   (VBAR_SIZE < pos.w) && (HBAR_SIZE < pos.h))
 
   m_scrollbar_h.setSize(sz.w);
   m_scrollbar_v.setSize(sz.h);
@@ -99,45 +105,45 @@ void View::setScrollableSize(const Size& sz)
 
   if (m_hasBars) {
     if (CHECK(w, h, l, t, r, b)) {
-      pos.h -= BAR_SIZE;
+      pos.h -= HBAR_SIZE;
       addChild(&m_scrollbar_h);
 
       if (CHECK(h, w, t, l, b, r)) {
-        pos.w -= BAR_SIZE;
+        pos.w -= VBAR_SIZE;
         if (CHECK(w, h, l, t, r, b))
           addChild(&m_scrollbar_v);
         else {
-          pos.w += BAR_SIZE;
-          pos.h += BAR_SIZE;
+          pos.w += VBAR_SIZE;
+          pos.h += HBAR_SIZE;
           removeChild(&m_scrollbar_h);
         }
       }
     }
     else if (CHECK(h, w, t, l, b, r)) {
-      pos.w -= BAR_SIZE;
+      pos.w -= VBAR_SIZE;
       addChild(&m_scrollbar_v);
 
       if (CHECK(w, h, l, t, r, b)) {
-        pos.h -= BAR_SIZE;
+        pos.h -= HBAR_SIZE;
         if (CHECK(h, w, t, l, b, r))
           addChild(&m_scrollbar_h);
         else {
-          pos.w += BAR_SIZE;
-          pos.h += BAR_SIZE;
+          pos.w += VBAR_SIZE;
+          pos.h += HBAR_SIZE;
           removeChild(&m_scrollbar_v);
         }
       }
     }
 
     if (hasChild(&m_scrollbar_h)) {
-      m_scrollbar_h.setBounds(gfx::Rect(pos.x, pos.y2(), pos.w, BAR_SIZE));
+      m_scrollbar_h.setBounds(gfx::Rect(pos.x, pos.y2(), pos.w, HBAR_SIZE));
       m_scrollbar_h.setVisible(true);
     }
     else
       m_scrollbar_h.setVisible(false);
 
     if (hasChild(&m_scrollbar_v)) {
-      m_scrollbar_v.setBounds(gfx::Rect(pos.x2(), pos.y, BAR_SIZE, pos.h));
+      m_scrollbar_v.setBounds(gfx::Rect(pos.x2(), pos.y, VBAR_SIZE, pos.h));
       m_scrollbar_v.setVisible(true);
     }
     else

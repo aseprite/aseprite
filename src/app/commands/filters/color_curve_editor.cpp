@@ -74,7 +74,6 @@ using namespace filters;
 enum {
   STATUS_STANDBY,
   STATUS_MOVING_POINT,
-  STATUS_SCROLLING,
   STATUS_SCALING,
 };
 
@@ -194,18 +193,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
     }
 
     case kMouseDownMessage:
-      // Change scroll
-      if (msg->shiftPressed()) {
-        m_status = STATUS_SCROLLING;
-        jmouse_set_cursor(kScrollCursor);
-      }
-      /* scaling */
-/*       else if (msg->ctrlPressed()) { */
-/*      m_status = STATUS_SCALING; */
-/*      jmouse_set_cursor(kScrollCursor); */
-/*       } */
       // Show manual-entry dialog
-      else if (static_cast<MouseMessage*>(msg)->right()) {
+      if (static_cast<MouseMessage*>(msg)->right()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         m_editPoint = getClosestPoint(SCR2EDIT_X(mousePos.x),
                                       SCR2EDIT_Y(mousePos.y),
@@ -242,20 +231,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       if (hasCapture()) {
         switch (m_status) {
 
-          case STATUS_SCROLLING: {
-            View* view = View::getView(this);
-            gfx::Rect vp = view->getViewportBounds();
-            gfx::Point scroll = view->getViewScroll();
-
-            scroll.x += jmouse_x(1)-jmouse_x(0);
-            scroll.y += jmouse_y(1)-jmouse_y(0);
-
-            view->setViewScroll(scroll);
-
-            jmouse_control_infinite_scroll(vp);
-            break;
-          }
-
           case STATUS_MOVING_POINT:
             if (m_editPoint) {
               gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
@@ -274,13 +249,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
         return true;
       }
-#if 0                           // TODO
-      // If the mouse move above a curve_editor, the focus change to
-      // this widget immediately
-      else if (!jwidget_has_focus(this)) {
-        jmanager_set_focus(this);
-      }
-#endif
       break;
 
     case kMouseUpMessage:
@@ -288,14 +256,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
         releaseMouse();
 
         switch (m_status) {
-
-          case STATUS_SCROLLING:
-            jmouse_set_cursor(kArrowCursor);
-            break;
-
-/*        case STATUS_SCALING: */
-/*          jmouse_set_cursor(kArrowCursor); */
-/*          break; */
 
           case STATUS_MOVING_POINT:
             jmouse_set_cursor(kArrowCursor);

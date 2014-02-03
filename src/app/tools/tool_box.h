@@ -53,6 +53,15 @@ namespace app {
       extern const char* Jumble;
     };
 
+    namespace WellKnownIntertwiners {
+      extern const char* None;
+      extern const char* AsLines;
+      extern const char* AsRectangles;
+      extern const char* AsEllipses;
+      extern const char* AsBezier;
+      extern const char* AsPixelPerfect;
+    };
+
     typedef std::list<Tool*> ToolList;
     typedef ToolList::iterator ToolIterator;
     typedef ToolList::const_iterator ToolConstIterator;
@@ -75,6 +84,7 @@ namespace app {
 
       Tool* getToolById(const std::string& id);
       Ink* getInkById(const std::string& id);
+      Intertwine* getIntertwinerById(const std::string& id);
       int getGroupsCount() const { return m_groups.size(); }
 
     private:

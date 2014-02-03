@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_BUTTON_SET_H_INCLUDED
-#define APP_UI_BUTTON_SET_H_INCLUDED
+#ifndef APP_COLOR_PICKER_H_INCLUDED
+#define APP_COLOR_PICKER_H_INCLUDED
 
-#include "base/signal.h"
-#include "ui/box.h"
+#include "app/color.h"
 
 namespace app {
+  class DocumentLocation;
 
-  class ButtonSet : public ui::Box {
-    class Item;
-    typedef std::vector<Item*> Items;
-
+  class ColorPicker {
   public:
-    ButtonSet(int w, int h, int firstSelected, ...);
+    enum Mode { FromComposition, FromActiveLayer };
 
-    int getSelectedItem() const;
-    void setSelectedItem(int index);
+    ColorPicker();
 
-    ui::Widget* getButtonAt(int index);
+    void pickColor(const DocumentLocation& location, int x, int y, Mode mode);
 
-    Signal0<void> ItemChange;
-
-  protected:
-    virtual void onItemChange();
+    app::Color color() const { return m_color; }
+    int alpha() const { return m_alpha; }
 
   private:
-    Item* findSelectedItem() const;
-
-    Items m_items;
+    app::Color m_color;
+    int m_alpha;
   };
 
 } // namespace app

@@ -130,14 +130,14 @@ DocumentView::DocumentView(Document* document, Type type)
   , m_document(document)
   , m_view(new EditorView(type == Normal ? EditorView::CurrentEditorMode:
                                            EditorView::AlwaysSelected))
-  , m_editor(type == Normal ? new AppEditor(document):
-                              new Editor(document))
+  , m_editor(type == Normal ?
+    new AppEditor(document):
+    new Editor(document, Editor::kNoneFlag)) // Don't show grid/mask in mini preview
 {
   addChild(m_view);
 
   m_view->attachToView(m_editor);
   m_view->setExpansive(true);
-  m_view->hideScrollBars();
 
   m_editor->setDocumentView(this);
   m_document->addObserver(this);

@@ -87,4 +87,9 @@ void WorkspacePart::setActiveView(WorkspaceView* view)
   layout();
 }
 
+bool WorkspacePart::hasView(WorkspaceView* view)
+{
+  return (std::find(m_views.begin(), m_views.end(), view) != m_views.end());
+}
+
 } // namespace app

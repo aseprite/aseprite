@@ -26,6 +26,8 @@
 #include "app/color_swatches.h"
 #include "app/ini_file.h"
 #include "app/settings/document_settings.h"
+#include "app/tools/controller.h"
+#include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -149,9 +151,11 @@ public:
   UISelectionSettingsImpl();
   ~UISelectionSettingsImpl();
 
+  SelectionMode getSelectionMode();
   app::Color getMoveTransparentColor();
   RotationAlgorithm getRotationAlgorithm();
 
+  void setSelectionMode(SelectionMode mode);
   void setMoveTransparentColor(app::Color color);
   void setRotationAlgorithm(RotationAlgorithm algorithm);
 
@@ -159,6 +163,7 @@ public:
   void removeObserver(SelectionSettingsObserver* observer);
 
 private:
+  SelectionMode m_selectionMode;
   app::Color m_moveTransparentColor;
   RotationAlgorithm m_rotationAlgorithm;
 };
@@ -173,6 +178,8 @@ UISettingsImpl::UISettingsImpl()
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
+  , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
+  , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -183,6 +190,9 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
+  set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
+  set_config_bool("Options", "GrabAlpha", m_grabAlpha);
+
   delete m_globalDocumentSettings;
 
   // Delete all tool settings.
@@ -201,6 +211,16 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
+
+bool UISettingsImpl::getShowSpriteEditorScrollbars()
+{
+  return m_showSpriteEditorScrollbars;
+}
+
+bool UISettingsImpl::getGrabAlpha()
+{
+  return m_grabAlpha;
+}
 
 app::Color UISettingsImpl::getFgColor()
 {
@@ -223,6 +243,20 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
+}
+
+void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
+{
+  m_showSpriteEditorScrollbars = state;
+
+  notifyObservers<bool>(&GlobalSettingsObserver::onSetShowSpriteEditorScrollbars, state);
+}
+
+void UISettingsImpl::setGrabAlpha(bool state)
+{
+  m_grabAlpha = state;
+
+  notifyObservers<bool>(&GlobalSettingsObserver::onSetGrabAlpha, state);
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
@@ -290,7 +324,7 @@ void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
 }
 
 void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
-  base::Observable<GlobalSettingsObserver>::addObserver(observer);
+  base::Observable<GlobalSettingsObserver>::removeObserver(observer);
 }
 
 ISelectionSettings* UISettingsImpl::selection()
@@ -521,7 +555,7 @@ public:
   }
 
   void removeObserver(PenSettingsObserver* observer) OVERRIDE{
-    base::Observable<PenSettingsObserver>::addObserver(observer);
+    base::Observable<PenSettingsObserver>::removeObserver(observer);
   }
 };
 
@@ -537,6 +571,7 @@ class UIToolSettingsImpl
   int m_spray_width;
   int m_spray_speed;
   InkType m_inkType;
+  FreehandAlgorithm m_freehandAlgorithm;
 
 public:
 
@@ -554,6 +589,7 @@ public:
     m_spray_width = 16;
     m_spray_speed = 32;
     m_inkType = (InkType)get_config_int(cfg_section.c_str(), "InkType", (int)kDefaultInk);
+    m_freehandAlgorithm = kDefaultFreehandAlgorithm;
 
     m_pen.enableSignals(false);
     m_pen.setType((PenType)get_config_int(cfg_section.c_str(), "PenType", (int)PEN_TYPE_CIRCLE));
@@ -565,6 +601,12 @@ public:
         m_tool->getPointShape(1)->isSpray()) {
       m_spray_width = get_config_int(cfg_section.c_str(), "SprayWidth", m_spray_width);
       m_spray_speed = get_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
+    }
+
+    if (m_tool->getController(0)->isFreehand() ||
+        m_tool->getController(1)->isFreehand()) {
+      m_freehandAlgorithm = (FreehandAlgorithm)get_config_int(cfg_section.c_str(), "FreehandAlgorithm", (int)kDefaultFreehandAlgorithm);
+      setFreehandAlgorithm(m_freehandAlgorithm);
     }
   }
 
@@ -579,6 +621,7 @@ public:
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
     set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
     set_config_int(cfg_section.c_str(), "InkType", m_inkType);
+    set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
 
     if (m_tool->getPointShape(0)->isSpray() ||
         m_tool->getPointShape(1)->isSpray()) {
@@ -586,7 +629,10 @@ public:
       set_config_int(cfg_section.c_str(), "SpraySpeed", m_spray_speed);
     }
 
-    set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
+    if (m_tool->getController(0)->isFreehand() ||
+        m_tool->getController(1)->isFreehand()) {
+      set_config_int(cfg_section.c_str(), "FreehandAlgorithm", m_freehandAlgorithm);
+    }
   }
 
   IPenSettings* getPen() { return &m_pen; }
@@ -598,6 +644,7 @@ public:
   int getSprayWidth() OVERRIDE { return m_spray_width; }
   int getSpraySpeed() OVERRIDE { return m_spray_speed; }
   InkType getInkType() OVERRIDE { return m_inkType; }
+  FreehandAlgorithm getFreehandAlgorithm() OVERRIDE { return m_freehandAlgorithm; }
 
   void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
   void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
@@ -606,6 +653,21 @@ public:
   void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }
   void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
   void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
+  void setFreehandAlgorithm(FreehandAlgorithm algorithm) OVERRIDE {
+    m_freehandAlgorithm = algorithm;
+
+    tools::ToolBox* toolBox = App::instance()->getToolBox();
+    for (int i=0; i<2; ++i) {
+      if (algorithm == kPixelPerfectFreehandAlgorithm) {
+        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
+        m_tool->setTracePolicy(i, tools::TracePolicyLast);
+      }
+      else {
+        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
+        m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+      }
+    }
+  }
 
   void addObserver(ToolSettingsObserver* observer) OVERRIDE {
     base::Observable<ToolSettingsObserver>::addObserver(observer);
@@ -644,9 +706,16 @@ IToolSettings* UISettingsImpl::getToolSettings(tools::Tool* tool)
 namespace {
 
 UISelectionSettingsImpl::UISelectionSettingsImpl() :
+  m_selectionMode(kDefaultSelectionMode),
   m_moveTransparentColor(app::Color::fromMask()),
   m_rotationAlgorithm(kFastRotationAlgorithm)
 {
+  m_selectionMode = (SelectionMode)get_config_int("Tools", "SelectionMode", m_selectionMode);
+  m_selectionMode = MID(
+    kFirstSelectionMode,
+    m_selectionMode,
+    kLastSelectionMode);
+
   m_rotationAlgorithm = (RotationAlgorithm)get_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
   m_rotationAlgorithm = MID(
     kFirstRotationAlgorithm,
@@ -658,6 +727,11 @@ UISelectionSettingsImpl::~UISelectionSettingsImpl()
 {
 }
 
+SelectionMode UISelectionSettingsImpl::getSelectionMode()
+{
+  return m_selectionMode;
+}
+
 app::Color UISelectionSettingsImpl::getMoveTransparentColor()
 {
   return m_moveTransparentColor;
@@ -666,6 +740,12 @@ app::Color UISelectionSettingsImpl::getMoveTransparentColor()
 RotationAlgorithm UISelectionSettingsImpl::getRotationAlgorithm()
 {
   return m_rotationAlgorithm;
+}
+
+void UISelectionSettingsImpl::setSelectionMode(SelectionMode mode)
+{
+  m_selectionMode = mode;
+  notifyObservers(&SelectionSettingsObserver::onSetSelectionMode, mode);
 }
 
 void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)

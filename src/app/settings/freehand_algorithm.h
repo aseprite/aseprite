@@ -16,37 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_BUTTON_SET_H_INCLUDED
-#define APP_UI_BUTTON_SET_H_INCLUDED
-
-#include "base/signal.h"
-#include "ui/box.h"
+#ifndef APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
+#define APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
 
 namespace app {
 
-  class ButtonSet : public ui::Box {
-    class Item;
-    typedef std::vector<Item*> Items;
-
-  public:
-    ButtonSet(int w, int h, int firstSelected, ...);
-
-    int getSelectedItem() const;
-    void setSelectedItem(int index);
-
-    ui::Widget* getButtonAt(int index);
-
-    Signal0<void> ItemChange;
-
-  protected:
-    virtual void onItemChange();
-
-  private:
-    Item* findSelectedItem() const;
-
-    Items m_items;
+  enum FreehandAlgorithm {
+    kDefaultFreehandAlgorithm,
+    kPixelPerfectFreehandAlgorithm,
   };
 
 } // namespace app
 
-#endif
+#endif // APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED

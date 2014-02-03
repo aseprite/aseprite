@@ -25,11 +25,14 @@
 #include "app/app.h"
 #include "app/modules/gui.h"
 #include "app/settings/ink_type.h"
+#include "app/settings/selection_mode.h"
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
@@ -262,7 +265,7 @@ class ContextBar::InkTypeField : public ComboBox
 public:
   InkTypeField() {
     // The same order as in InkType
-    addItem("Default");
+    addItem("Default Ink");
     addItem("Opaque");
     addItem("Put Alpha");
     addItem("Merge");
@@ -358,7 +361,7 @@ class ContextBar::RotAlgorithmField : public ComboBox
 {
 public:
   RotAlgorithmField() {
-    addItem(new Item("Fast", kFastRotationAlgorithm));
+    addItem(new Item("Fast Rotation", kFastRotationAlgorithm));
     addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
 
     setSelectedItemIndex((int)
@@ -387,15 +390,80 @@ private:
   };
 };
 
+class ContextBar::FreehandAlgorithmField : public CheckBox
+{
+public:
+  FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
+    setup_mini_font(this);
+  }
+
+  void onClick(Event& ev) OVERRIDE {
+    CheckBox::onClick(ev);
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setFreehandAlgorithm(isSelected() ?
+        kPixelPerfectFreehandAlgorithm:
+        kDefaultFreehandAlgorithm);
+  }
+};
+
+class ContextBar::SelectionModeField : public ButtonSet
+{
+public:
+  SelectionModeField() : ButtonSet(3, 1, 0,
+    PART_SELECTION_REPLACE,
+    PART_SELECTION_ADD,
+    PART_SELECTION_SUBTRACT) {
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager)
+  {
+    tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_BOTTOM);
+  }
+
+protected:
+  void onItemChange() OVERRIDE {
+    ButtonSet::onItemChange();
+
+    int item = getSelectedItem();
+    UIContext::instance()->settings()->selection()
+      ->setSelectionMode((SelectionMode)item);
+  }
+};
+
+class ContextBar::GrabAlphaField : public CheckBox
+{
+public:
+  GrabAlphaField() : CheckBox("Grab Alpha") {
+    setup_mini_font(this);
+  }
+
+protected:
+  void onClick(Event& ev) OVERRIDE {
+    CheckBox::onClick(ev);
+
+    UIContext::instance()->settings()->setGrabAlpha(isSelected());
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
+  , m_toolSettings(NULL)
 {
   border_width.b = 2*jguiscale();
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
 
-  addChild(m_brushLabel = new Label("Brush:"));
+  addChild(m_selectionOptionsBox = new HBox());
+  m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
+  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
+
   addChild(m_brushType = new BrushTypeField());
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
@@ -403,36 +471,46 @@ ContextBar::ContextBar()
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
 
-  addChild(m_inkLabel = new Label("Ink:"));
   addChild(m_inkType = new InkTypeField());
 
   addChild(m_opacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
+
+  addChild(m_grabAlpha = new GrabAlphaField());
+
   // addChild(new InkChannelTargetField());
   // addChild(new InkShadeField());
   // addChild(new InkSelectionField());
 
   addChild(m_sprayBox = new HBox());
-  m_sprayBox->addChild(new Label("Spray:"));
+  m_sprayBox->addChild(setup_mini_font(new Label("Spray:")));
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
-  addChild(m_selectionOptionsBox = new HBox());
-  m_selectionOptionsBox->addChild(new Label("Transparent Color:"));
-  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
-  m_selectionOptionsBox->addChild(new Label("Algorithm:"));
-  m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
+  addChild(m_freehandBox = new HBox());
+  m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
+
+  setup_mini_font(m_toleranceLabel);
+  setup_mini_font(m_opacityLabel);
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
-  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_CENTER | JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM | JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_grabAlpha,
+    "When checked the tool picks the color from the active layer, and its alpha\n"
+    "component is used to setup the opacity level of all drawing tools.\n\n"
+    "When unchecked -the default behavior- the color is picked\n"
+    "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
+  m_selectionMode->setupTooltips(tooltipManager);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
@@ -443,11 +521,23 @@ ContextBar::ContextBar()
 
 ContextBar::~ContextBar()
 {
+  if (m_toolSettings)
+    m_toolSettings->removeObserver(this);
 }
 
 bool ContextBar::onProcessMessage(Message* msg)
 {
   return Box::onProcessMessage(msg);
+}
+
+void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ev.setPreferredSize(gfx::Size(0, 18*jguiscale())); // TODO calculate height
+}
+
+void ContextBar::onSetOpacity(int newOpacity)
+{
+  m_inkOpacity->setTextf("%d", newOpacity);
 }
 
 void ContextBar::onPenSizeChange()
@@ -475,9 +565,19 @@ void ContextBar::onPenAngleChange()
 void ContextBar::onCurrentToolChange()
 {
   ISettings* settings = UIContext::instance()->getSettings();
-  Tool* currentTool = settings->getCurrentTool();
-  IToolSettings* toolSettings = settings->getToolSettings(currentTool);
+  updateFromTool(settings->getCurrentTool());
+}
+
+void ContextBar::updateFromTool(tools::Tool* tool)
+{
+  ISettings* settings = UIContext::instance()->getSettings();
+  IToolSettings* toolSettings = settings->getToolSettings(tool);
   IPenSettings* penSettings = toolSettings->getPen();
+
+  if (m_toolSettings)
+    m_toolSettings->removeObserver(this);
+  m_toolSettings = toolSettings;
+  m_toolSettings->addObserver(this);
 
   m_brushType->setPenSettings(penSettings);
   m_brushSize->setTextf("%d", penSettings->getSize());
@@ -488,39 +588,51 @@ void ContextBar::onCurrentToolChange()
   m_inkType->setInkType(toolSettings->getInkType());
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
+  m_grabAlpha->setSelected(settings->getGrabAlpha());
+  m_freehandAlgo->setSelected(toolSettings->getFreehandAlgorithm() == kPixelPerfectFreehandAlgorithm);
+
   m_sprayWidth->setValue(toolSettings->getSprayWidth());
   m_spraySpeed->setValue(toolSettings->getSpraySpeed());
 
   // True if the current tool needs opacity options
-  bool hasOpacity = (currentTool->getInk(0)->isPaint() ||
-                     currentTool->getInk(0)->isEffect() ||
-                     currentTool->getInk(1)->isPaint() ||
-                     currentTool->getInk(1)->isEffect());
+  bool hasOpacity = (tool->getInk(0)->isPaint() ||
+                     tool->getInk(0)->isEffect() ||
+                     tool->getInk(1)->isPaint() ||
+                     tool->getInk(1)->isEffect());
+
+  // True if the current tool is eyedropper.
+  bool isEyedropper =
+    (tool->getInk(0)->isEyedropper() ||
+     tool->getInk(1)->isEyedropper());
 
   // True if it makes sense to change the ink property for the current
   // tool.
   bool hasInk = hasOpacity;
 
   // True if the current tool needs tolerance options
-  bool hasTolerance = (currentTool->getPointShape(0)->isFloodFill() ||
-                       currentTool->getPointShape(1)->isFloodFill());
+  bool hasTolerance = (tool->getPointShape(0)->isFloodFill() ||
+                       tool->getPointShape(1)->isFloodFill());
 
   // True if the current tool needs spray options
-  bool hasSprayOptions = (currentTool->getPointShape(0)->isSpray() ||
-                          currentTool->getPointShape(1)->isSpray());
+  bool hasSprayOptions = (tool->getPointShape(0)->isSpray() ||
+                          tool->getPointShape(1)->isSpray());
 
-  bool hasSelectOptions = (currentTool->getInk(0)->isSelection() ||
-                           currentTool->getInk(1)->isSelection());
+  bool hasSelectOptions = (tool->getInk(0)->isSelection() ||
+                           tool->getInk(1)->isSelection());
+
+  bool isFreehand =
+    (tool->getController(0)->isFreehand() ||
+     tool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushLabel->setVisible(hasOpacity);
   m_brushType->setVisible(hasOpacity);
   m_brushSize->setVisible(hasOpacity);
   m_brushAngle->setVisible(hasOpacity);
   m_opacityLabel->setVisible(hasOpacity);
-  m_inkLabel->setVisible(hasInk);
   m_inkType->setVisible(hasInk);
   m_inkOpacity->setVisible(hasOpacity);
+  m_grabAlpha->setVisible(isEyedropper);
+  m_freehandBox->setVisible(isFreehand && hasOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);

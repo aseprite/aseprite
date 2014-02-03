@@ -148,8 +148,14 @@ void Tabs::removeTab(TabView* tabView)
   if (!tab)
     return;
 
-  if (m_hot == tab) m_hot = NULL;
-  if (m_selected == tab) m_selected = NULL;
+  if (m_hot == tab)
+    m_hot = NULL;
+
+  if (m_selected == tab) {
+    selectNextTab();
+    if (m_selected == tab)
+      m_selected = NULL;
+  }
 
   TabsListIterator it =
     std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);

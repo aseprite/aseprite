@@ -7,7 +7,7 @@
 #ifndef UI_SYSTEM_H_INCLUDED
 #define UI_SYSTEM_H_INCLUDED
 
-#include "gfx/rect.h"
+#include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
@@ -20,6 +20,8 @@ struct BITMAP;
 namespace she { class Display; }
 
 namespace ui {
+
+  class Widget;
 
   // Screen related
 
@@ -53,7 +55,9 @@ namespace ui {
   bool jmouse_is_shown();
 
   bool jmouse_poll();
-  void jmouse_set_position(int x, int y);
+
+  gfx::Point get_mouse_position();
+  void set_mouse_position(const gfx::Point& newPos);
 
   void jmouse_capture();
   void jmouse_release();
@@ -63,7 +67,8 @@ namespace ui {
   int jmouse_y(int antique);
   int jmouse_z(int antique);
 
-  bool jmouse_control_infinite_scroll(const gfx::Rect& rect);
+  gfx::Point get_delta_outside_box(const gfx::Rect& rect, const gfx::Point& mousePoint);
+  gfx::Point control_infinite_scroll(Widget* widget, const gfx::Rect& rect, const gfx::Point& mousePoint);
 
 } // namespace ui
 

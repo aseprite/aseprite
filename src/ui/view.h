@@ -22,9 +22,12 @@ public:
   View();
 
   bool hasScrollBars();
+  ScrollBar* getHorizontalBar() { return &m_scrollbar_h; }
+  ScrollBar* getVerticalBar() { return &m_scrollbar_v; }
 
   void attachToView(Widget* viewableWidget);
   void hideScrollBars();
+  void showScrollBars();
   void makeVisibleAllScrollableArea();
 
   // Returns the maximum viewable size requested by the attached

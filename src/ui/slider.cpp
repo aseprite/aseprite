@@ -121,20 +121,25 @@ bool Slider::onProcessMessage(Message* msg)
 
         // For left click
         if (slider_press_left) {
-          int x = jmouse_x(0);
+          int x = mousePos.x;
 
           if (x < rc.x-1)
             x = rc.x-1;
           else if (x > rc.x2())
             x = rc.x2();
 
-          if (x != jmouse_x(0))
-            jmouse_set_position(x, jmouse_y(0));
+          if (x != mousePos.x)
+            ui::set_mouse_position(gfx::Point(x, mousePos.y));
         }
         // For right click
-        else if (jmouse_control_infinite_scroll(getBounds() - getBorder())) {
-          slider_press_x = jmouse_x(0);
-          slider_press_value = m_value;
+        else {
+          gfx::Point newPoint =
+            ui::control_infinite_scroll(this, getBounds() - getBorder(), mousePos);
+
+          if (newPoint != mousePos) {
+            slider_press_x = newPoint.x;
+            slider_press_value = m_value;
+          }
         }
 
         return true;

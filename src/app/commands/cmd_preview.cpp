@@ -109,7 +109,7 @@ void PreviewCommand::onExecute(Context* context)
   int old_mouse_y = jmouse_y(0);
 
   jmouse_set_cursor(kNoCursor);
-  jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
+  ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
 
   int pos_x = - scroll.x + vp.x + editor->getOffsetX();
   int pos_y = - scroll.y + vp.y + editor->getOffsetY();
@@ -131,7 +131,7 @@ void PreviewCommand::onExecute(Context* context)
     if (jmouse_poll()) {
       delta_x += (jmouse_x(0) - JI_SCREEN_W/2);
       delta_y += (jmouse_y(0) - JI_SCREEN_H/2);
-      jmouse_set_position(JI_SCREEN_W/2, JI_SCREEN_H/2);
+      ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
       jmouse_poll();
 
       redraw = true;
@@ -241,7 +241,7 @@ void PreviewCommand::onExecute(Context* context)
   } while (jmouse_b(0) != kButtonNone);
   clear_keybuf();
 
-  jmouse_set_position(old_mouse_x, old_mouse_y);
+  ui::set_mouse_position(gfx::Point(old_mouse_x, old_mouse_y));
   jmouse_set_cursor(kArrowCursor);
 
   ui::Manager::getDefault()->invalidate();

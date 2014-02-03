@@ -20,18 +20,23 @@
 #include "config.h"
 #endif
 
-#include <allegro/unicode.h>
-
-#include "ui/ui.h"
-
 #include "app/app.h"
+#include "app/color.h"
+#include "app/color_picker.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/document_location.h"
 #include "app/modules/editors.h"
+#include "app/settings/settings.h"
+#include "app/tools/tool.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui_context.h"
 #include "raster/image.h"
 #include "raster/sprite.h"
+#include "ui/manager.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -84,17 +89,27 @@ void EyedropperCommand::onExecute(Context* context)
   int x, y;
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
 
-  // get the color from the image
-  app::Color color = app::Color::fromImage(sprite->getPixelFormat(),
-                                           sprite->getPixel(x, y, frame));
+  // Check if we've to grab alpha channel or the merged color.
+  ISettings* settings = UIContext::instance()->settings();
+  bool grabAlpha = settings->getGrabAlpha();
 
-  // TODO replace the color in the "context", not directly from the color-bar
+  ColorPicker picker;
+  picker.pickColor(editor->getDocumentLocation(), x, y,
+    grabAlpha ?
+    ColorPicker::FromActiveLayer:
+    ColorPicker::FromComposition);
 
-  // set the color of the color-bar
+  if (grabAlpha) {
+    tools::ToolBox* toolBox = App::instance()->getToolBox();
+    for (tools::ToolIterator it=toolBox->begin(), end=toolBox->end(); it!=end; ++it) {
+      settings->getToolSettings(*it)->setOpacity(picker.alpha());
+    }
+  }
+
   if (m_background)
-    ColorBar::instance()->setBgColor(color);
+    settings->setBgColor(picker.color());
   else
-    ColorBar::instance()->setFgColor(color);
+    settings->setFgColor(picker.color());
 }
 
 Command* CommandFactory::createEyedropperCommand()

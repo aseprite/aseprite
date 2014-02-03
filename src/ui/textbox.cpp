@@ -86,7 +86,7 @@ bool TextBox::onProcessMessage(Message* msg)
               break;
 
             default:
-              return false;
+              return Widget::onProcessMessage(msg);
           }
         }
         return true;
@@ -97,6 +97,7 @@ bool TextBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         captureMouse();
+        m_oldPos = static_cast<MouseMessage*>(msg)->position();
         jmouse_set_cursor(kScrollCursor);
         return true;
       }
@@ -108,13 +109,12 @@ bool TextBox::onProcessMessage(Message* msg)
       if (view && hasCapture()) {
         gfx::Rect vp = view->getViewportBounds();
         gfx::Point scroll = view->getViewScroll();
+        gfx::Point newPos = static_cast<MouseMessage*>(msg)->position();
 
-        scroll.x += jmouse_x(1) - jmouse_x(0);
-        scroll.y += jmouse_y(1) - jmouse_y(0);
-
+        scroll += m_oldPos - newPos;
         view->setViewScroll(scroll);
 
-        jmouse_control_infinite_scroll(vp);
+        m_oldPos = ui::control_infinite_scroll(this, vp, newPos);
       }
       break;
     }

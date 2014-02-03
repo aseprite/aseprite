@@ -59,7 +59,14 @@ namespace app {
 
   class Editor : public ui::Widget {
   public:
-    Editor(Document* document);
+    enum EditorFlags {
+      kNoneFlag = 0,
+      kShowGridFlag = 1,
+      kShowMaskFlag = 2,
+      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag,
+    };
+
+    Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
     DocumentView* getDocumentView() { return m_docView; }
@@ -243,6 +250,10 @@ namespace app {
     // editors.cpp are finally replaced with a fully funtional Workspace
     // widget.
     DocumentView* m_docView;
+
+    gfx::Point m_oldPos;
+
+    EditorFlags m_flags;
   };
 
   ui::WidgetType editor_type();

@@ -20,20 +20,28 @@
 #define APP_UI_EDITOR_VIEW_H_INCLUDED
 
 #include "ui/view.h"
+#include "app/settings/settings_observers.h"
 
 namespace app {
 
-  class EditorView : public ui::View {
+  class EditorView : public ui::View,
+                     public GlobalSettingsObserver {
   public:
     enum Type { CurrentEditorMode, AlwaysSelected };
 
     EditorView(Type type);
+    ~EditorView();
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
 
+    // GlobalSettingsObserver impl
+    void onSetShowSpriteEditorScrollbars(bool state) OVERRIDE;
+
   private:
+    void setupScrollbars();
+
     Type m_type;
   };
 

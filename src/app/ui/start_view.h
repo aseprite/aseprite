@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_BUTTON_SET_H_INCLUDED
-#define APP_UI_BUTTON_SET_H_INCLUDED
+#ifndef APP_UI_START_VIEW_H_INCLUDED
+#define APP_UI_START_VIEW_H_INCLUDED
 
-#include "base/signal.h"
+#include "app/ui/tabs.h"
+#include "app/ui/workspace_view.h"
+#include "base/compiler_specific.h"
 #include "ui/box.h"
 
+namespace ui {
+  class View;
+}
+
 namespace app {
-
-  class ButtonSet : public ui::Box {
-    class Item;
-    typedef std::vector<Item*> Items;
-
+  class StartView : public ui::Box
+                  , public TabView
+                  , public WorkspaceView {
   public:
-    ButtonSet(int w, int h, int firstSelected, ...);
+    StartView();
+    ~StartView();
 
-    int getSelectedItem() const;
-    void setSelectedItem(int index);
+    // TabView implementation
+    std::string getTabText() OVERRIDE;
 
-    ui::Widget* getButtonAt(int index);
-
-    Signal0<void> ItemChange;
-
-  protected:
-    virtual void onItemChange();
-
-  private:
-    Item* findSelectedItem() const;
-
-    Items m_items;
+    // WorkspaceView implementation
+    ui::Widget* getContentWidget() OVERRIDE { return this; }
+    WorkspaceView* cloneWorkspaceView() OVERRIDE;
+    void onClonedFrom(WorkspaceView* from) OVERRIDE;
   };
 
 } // namespace app

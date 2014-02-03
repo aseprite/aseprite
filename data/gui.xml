@@ -465,7 +465,7 @@
             intertwine="as_rectangles"
             tracepolicy="last">
         <tooltip>*
-        Left-button: add to current selection.&#10;*
+        Left-button: replace/add to current selection.&#10;*
         Right-button: remove from current selection.
         </tooltip>
       </tool>
@@ -479,8 +479,8 @@
             intertwine="as_ellipses"
             tracepolicy="last">
         <tooltip>*
-        Left-button: add to current selection.&#10;*
-        Right-button: remove from current selection.
+        Left-button: Replace/add to current selection.&#10;*
+        Right-button: Remove from current selection.
         </tooltip>
       </tool>
 
@@ -493,8 +493,8 @@
             intertwine="as_lines"
             tracepolicy="accumulative">
         <tooltip>*
-        Left-button: add to current selection.&#10;*
-        Right-button: remove from current selection.
+        Left-button: Replace/add to current selection.&#10;*
+        Right-button: Remove from current selection.
         </tooltip>
       </tool>
 
@@ -507,8 +507,8 @@
             intertwine="as_lines"
             tracepolicy="last">
         <tooltip>*
-        Left-button: add to current selection.&#10;*
-        Right-button: remove from current selection.
+        Left-button: Replace/add to current selection.&#10;*
+        Right-button: Remove from current selection.
         </tooltip>
       </tool>
 
@@ -520,8 +520,8 @@
             pointshape="floodfill"
             tracepolicy="accumulative">
         <tooltip>*
-        Left-button: add to current selection.&#10;*
-        Right-button: remove from current selection.
+        Left-button: Replace/add to current selection.&#10;*
+        Right-button: Remove from current selection.
         </tooltip>
       </tool>
     </group>
