@@ -28,6 +28,7 @@
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
+#include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/document_view.h"
@@ -229,6 +230,8 @@ void MainWindow::onActiveViewChange()
   if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView())) {
     UIContext::instance()->setActiveView(docView);
 
+    m_contextBar->updateFromTool(UIContext::instance()
+      ->getSettings()->getCurrentTool());
     m_contextBar->setVisible(true);
   }
   else {
