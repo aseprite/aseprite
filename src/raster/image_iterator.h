@@ -80,6 +80,7 @@ namespace raster {
 #endif
     {
       ASSERT(bounds.contains(gfx::Point(x, y)));
+      ASSERT(image->getBounds().contains(bounds));
     }
 
     ImageIteratorT& operator=(const ImageIteratorT& other) {

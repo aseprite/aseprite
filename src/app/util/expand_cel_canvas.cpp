@@ -221,17 +221,16 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
       }
 
       m_undo.pushUndoer(new undoers::ReplaceImage(m_undo.getObjects(),
-                                                  m_sprite->getStock(), m_cel->getImage()));
+          m_sprite->getStock(), m_cel->getImage()));
     }
 
-    // Replace the image in the stock.
-    m_sprite->getStock()->replaceImage(m_cel->getImage(), m_dstImage);
+    // Replace the image in the stock. We need to create a copy of
+    // image because m_dstImage's ImageBuffer cannot be shared.
+    m_sprite->getStock()->replaceImage(m_cel->getImage(),
+      Image::createCopy(m_dstImage));
 
     // Destroy the old cel image.
     delete m_celImage;
-
-    // Now the m_dstImage is used, so we haven't to destroy it.
-    m_dstImage = NULL;
   }
 
   m_committed = true;

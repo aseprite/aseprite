@@ -1234,7 +1234,8 @@ bool Widget::onProcessMessage(Message* msg)
       if (static_cast<KeyMessage*>(msg)->propagateToChildren()) {
         // Broadcast the message to the children.
         UI_FOREACH_WIDGET(getChildren(), it)
-          (*it)->sendMessage(msg);
+          if ((*it)->sendMessage(msg))
+            return true;
       }
 
       // Propagate the message to the parent.

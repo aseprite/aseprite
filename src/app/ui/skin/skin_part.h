@@ -37,7 +37,10 @@ namespace app {
       size_t size() const { return m_bitmaps.size(); }
 
       void clear();
+
+      // It doesn't destroy the previous bitmap in the given "index".
       void setBitmap(size_t index, BITMAP* bitmap);
+
       BITMAP* getBitmap(size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
       }
