@@ -46,6 +46,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
     // ToolSettingsObserver impl
     void onSetOpacity(int newOpacity) OVERRIDE;

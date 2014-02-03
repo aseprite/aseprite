@@ -530,6 +530,11 @@ bool ContextBar::onProcessMessage(Message* msg)
   return Box::onProcessMessage(msg);
 }
 
+void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
+{
+  ev.setPreferredSize(gfx::Size(0, 18*jguiscale())); // TODO calculate height
+}
+
 void ContextBar::onSetOpacity(int newOpacity)
 {
   m_inkOpacity->setTextf("%d", newOpacity);
