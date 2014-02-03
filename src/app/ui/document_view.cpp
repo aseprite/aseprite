@@ -271,4 +271,9 @@ void DocumentView::onTotalFramesChanged(DocumentEvent& ev)
   }
 }
 
+void DocumentView::onLayerRestacked(DocumentEvent& ev)
+{
+  m_editor->invalidate();
+}
+
 } // namespace app

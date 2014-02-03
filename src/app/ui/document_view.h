@@ -68,6 +68,7 @@ namespace app {
     void onAddFrame(DocumentEvent& ev) OVERRIDE;
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
     void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
+    void onLayerRestacked(DocumentEvent& ev) OVERRIDE;
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
