@@ -91,6 +91,7 @@ MainWindow::MainWindow()
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
   m_contextBar->setExpansive(true);
+  m_contextBar->setVisible(false);
   m_statusBar->setExpansive(true);
   m_colorBar->setExpansive(true);
   m_toolBar->setExpansive(true);
