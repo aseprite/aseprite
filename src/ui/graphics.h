@@ -18,6 +18,10 @@
 struct BITMAP;
 struct FONT;
 
+namespace gfx {
+  class Region;
+}
+
 namespace ui {
 
   // Class to render a widget in the screen.
@@ -37,6 +41,7 @@ namespace ui {
 
     void drawRect(ui::Color color, const gfx::Rect& rc);
     void fillRect(ui::Color color, const gfx::Rect& rc);
+    void fillRegion(ui::Color color, const gfx::Region& rgn);
 
     void drawBitmap(BITMAP* sprite, int x, int y);
     void drawAlphaBitmap(BITMAP* sprite, int x, int y);
