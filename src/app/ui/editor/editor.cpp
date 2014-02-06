@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-// #define DRAWSPRITE_DOUBLEBUFFERED
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -165,10 +163,18 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   m_fgColorChangeSlot =
     ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
+
+  UIContext::instance()->getSettings()
+    ->getDocumentSettings(m_document)
+    ->addObserver(this);
 }
 
 Editor::~Editor()
 {
+  UIContext::instance()->getSettings()
+    ->getDocumentSettings(m_document)
+    ->removeObserver(this);
+
   setCustomizationDelegate(NULL);
 
   m_mask_timer.stop();
@@ -327,89 +333,54 @@ void Editor::updateEditor()
   View::getView(this)->updateView();
 }
 
-void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
+void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy)
 {
-  View* view = View::getView(this);
-  Rect vp = view->getViewportBounds();
-  int source_x, source_y, dest_x, dest_y, width, height;
-
-  // Get scroll
-
-  Point scroll = view->getViewScroll();
-
   // Output information
+  int source_x = rc.x << m_zoom;
+  int source_y = rc.y << m_zoom;
+  int dest_x   = dx + m_offset_x + source_x;
+  int dest_y   = dy + m_offset_y + source_y;
+  int width    = rc.w << m_zoom;
+  int height   = rc.h << m_zoom;
 
-  source_x = rc.x << m_zoom;
-  source_y = rc.y << m_zoom;
-  dest_x   = vp.x - scroll.x + m_offset_x + source_x;
-  dest_y   = vp.y - scroll.y + m_offset_y + source_y;
-  width    = rc.w << m_zoom;
-  height   = rc.h << m_zoom;
-
-  // Clip from viewport
-
-  if (dest_x < vp.x) {
-    source_x += vp.x - dest_x;
-    width -= vp.x - dest_x;
-    dest_x = vp.x;
+  // Clip from graphics/screen
+  const gfx::Rect& clip = g->getClipBounds();
+  if (dest_x < clip.x) {
+    source_x += clip.x - dest_x;
+    width -= clip.x - dest_x;
+    dest_x = clip.x;
   }
-
-  if (dest_y < vp.y) {
-    source_y += vp.y - dest_y;
-    height -= vp.y - dest_y;
-    dest_y = vp.y;
+  if (dest_y < clip.y) {
+    source_y += clip.y - dest_y;
+    height -= clip.y - dest_y;
+    dest_y = clip.y;
   }
-
-  if (dest_x+width-1 > vp.x + vp.w-1)
-    width = vp.x + vp.w - dest_x;
-
-  if (dest_y+height-1 > vp.y + vp.h-1)
-    height = vp.y + vp.h - dest_y;
-
-  // Clip from screen
-
-  if (dest_x < ji_screen->cl) {
-    source_x += ji_screen->cl - dest_x;
-    width -= ji_screen->cl - dest_x;
-    dest_x = ji_screen->cl;
+  if (dest_x+width > clip.x+clip.w) {
+    width = clip.x+clip.w-dest_x;
   }
-
-  if (dest_y < ji_screen->ct) {
-    source_y += ji_screen->ct - dest_y;
-    height -= ji_screen->ct - dest_y;
-    dest_y = ji_screen->ct;
+  if (dest_y+height > clip.y+clip.h) {
+    height = clip.y+clip.h-dest_y;
   }
-
-  if (dest_x+width-1 >= ji_screen->cr)
-    width = ji_screen->cr-dest_x;
-
-  if (dest_y+height-1 >= ji_screen->cb)
-    height = ji_screen->cb-dest_y;
 
   // Clip from sprite
-
   if (source_x < 0) {
     width += source_x;
     dest_x -= source_x;
     source_x = 0;
   }
-
   if (source_y < 0) {
     height += source_y;
     dest_y -= source_y;
     source_y = 0;
   }
-
   if (source_x+width > (m_sprite->getWidth() << m_zoom)) {
     width = (m_sprite->getWidth() << m_zoom) - source_x;
   }
-
   if (source_y+height > (m_sprite->getHeight() << m_zoom)) {
     height = (m_sprite->getHeight() << m_zoom) - source_y;
   }
 
   // Draw the sprite
-
   if ((width > 0) && (height > 0)) {
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
@@ -426,23 +397,14 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
         m_decorator->preRenderDecorator(&preRender);
       }
 
-#ifdef DRAWSPRITE_DOUBLEBUFFERED
-      BITMAP *bmp = create_bitmap(width, height);
+      SharedPtr<BITMAP> tmp(create_bitmap(width, height), destroy_bitmap);
+      convert_image_to_allegro(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
 
-      image_to_allegro(rendered, bmp, 0, 0, m_sprite->getPalette(m_frame));
-      blit(bmp, ji_screen, 0, 0, dest_x, dest_y, width, height);
-
-      destroy_bitmap(bmp);
-#else
-      acquire_bitmap(ji_screen);
-      convert_image_to_allegro(rendered, ji_screen, dest_x, dest_y,
-                               m_sprite->getPalette(m_frame));
-      release_bitmap(ji_screen);
-#endif
+      g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
     }
   }
 
-  // Draw grids
+  // Document settings
   IDocumentSettings* docSettings =
       UIContext::instance()->getSettings()->getDocumentSettings(m_document);
 
@@ -467,6 +429,72 @@ void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
     EditorPostRenderImpl postRender(this);
     m_decorator->postRenderDecorator(&postRender);
   }
+}
+
+void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
+{
+  gfx::Rect client = getClientBounds();
+  gfx::Rect spriteRect(
+    client.x + m_offset_x,
+    client.y + m_offset_y,
+    (m_sprite->getWidth() << m_zoom),
+    (m_sprite->getHeight() << m_zoom));
+  gfx::Rect enclosingRect = spriteRect;
+
+  // Draw the main sprite at the center.
+  drawOneSpriteUnclippedRect(g, rc, 0, 0);
+
+  gfx::Region outside(client);
+  outside.createSubtraction(outside, gfx::Region(spriteRect));
+
+  // Document settings
+  IDocumentSettings* docSettings =
+      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
+
+  if (docSettings->getTiledMode() & filters::TILED_X_AXIS) {
+    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
+    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, 0);
+
+    enclosingRect = gfx::Rect(spriteRect.x-spriteRect.w, spriteRect.y, spriteRect.w*3, spriteRect.h);
+    outside.createSubtraction(outside, gfx::Region(enclosingRect));
+  }
+
+  if (docSettings->getTiledMode() & filters::TILED_Y_AXIS) {
+    drawOneSpriteUnclippedRect(g, rc, 0, -spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, 0, +spriteRect.h);
+
+    enclosingRect = gfx::Rect(spriteRect.x, spriteRect.y-spriteRect.h, spriteRect.w, spriteRect.h*3);
+    outside.createSubtraction(outside, gfx::Region(enclosingRect));
+  }
+
+  if (docSettings->getTiledMode() == filters::TILED_BOTH) {
+    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, -spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, -spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, +spriteRect.h);
+    drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, +spriteRect.h);
+
+    enclosingRect = gfx::Rect(
+      spriteRect.x-spriteRect.w,
+      spriteRect.y-spriteRect.h, spriteRect.w*3, spriteRect.h*3);
+    outside.createSubtraction(outside, gfx::Region(enclosingRect));
+  }
+
+  // Fill the outside (parts of the editor that aren't covered by the
+  // sprite).
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+
+  // Draw the borders that enclose the sprite.
+  enclosingRect.enlarge(1);
+  g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
+  g->drawHLine(
+    theme->getColor(ThemeColor::EditorSpriteBottomBorder),
+    enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+}
+
+void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
+{
+  drawSpriteUnclippedRect(getGraphics(getClientBounds()), rc);
 }
 
 void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
@@ -881,72 +909,6 @@ bool Editor::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kPaintMessage: {
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-
-      int old_cursor_thick = m_cursor_thick;
-      if (m_cursor_thick)
-        editor_clean_cursor();
-
-      // Editor without sprite
-      if (!m_sprite) {
-        View* view = View::getView(this);
-        Rect vp = view->getViewportBounds();
-
-        jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
-        draw_emptyset_symbol(ji_screen, vp, ui::rgba(64, 64, 64));
-      }
-      // Editor with sprite
-      else {
-        try {
-          // Lock the sprite to read/render it.
-          DocumentReader documentReader(m_document);
-          int x1, y1, x2, y2;
-
-          // Draw the background outside of sprite's bounds
-          x1 = getBounds().x + m_offset_x;
-          y1 = getBounds().y + m_offset_y;
-          x2 = x1 + (m_sprite->getWidth() << m_zoom) - 1;
-          y2 = y1 + (m_sprite->getHeight() << m_zoom) - 1;
-
-          jdraw_rectexclude(getBounds(),
-                            gfx::Rect(gfx::Point(x1-1, y1-1),
-                                      gfx::Point(x2+1, y2+2)),
-                            theme->getColor(ThemeColor::EditorFace));
-
-          // Draw the sprite in the editor
-          drawSpriteUnclippedRect(gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
-
-          // Draw the sprite boundary
-          rect(ji_screen, x1-1, y1-1, x2+1, y2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBorder)));
-          hline(ji_screen, x1-1, y2+2, x2+1, to_system(theme->getColor(ThemeColor::EditorSpriteBottomBorder)));
-
-          // Draw the mask boundaries
-          if (m_document->getBoundariesSegments()) {
-            drawMask();
-            m_mask_timer.start();
-          }
-          else {
-            m_mask_timer.stop();
-          }
-
-          // Draw the cursor again
-          if (old_cursor_thick != 0) {
-            editor_draw_cursor(jmouse_x(0), jmouse_y(0));
-          }
-        }
-        catch (const LockedDocumentException&) {
-          // The sprite is locked to be read, so we can draw an opaque
-          // background only.
-
-          View* view = View::getView(this);
-          Rect vp = view->getViewportBounds();
-          jdraw_rectfill(vp, theme->getColor(ThemeColor::EditorFace));
-        }
-      }
-      return true;
-    }
-
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_mask_timer) {
         if (isVisible() && m_sprite) {
@@ -1068,6 +1030,51 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
     sz.h = 4;
   }
   ev.setPreferredSize(sz);
+}
+
+void Editor::onPaint(ui::PaintEvent& ev)
+{
+  Graphics* g = ev.getGraphics();
+  gfx::Rect rc = getClientBounds();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+
+  int old_cursor_thick = m_cursor_thick;
+  if (m_cursor_thick)
+    editor_clean_cursor();
+
+  // Editor without sprite
+  if (!m_sprite) {
+    g->fillRect(theme->getColor(ThemeColor::EditorFace), rc);
+  }
+  // Editor with sprite
+  else {
+    try {
+      // Lock the sprite to read/render it.
+      DocumentReader documentReader(m_document);
+
+      // Draw the sprite in the editor
+      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
+
+      // Draw the mask boundaries
+      if (m_document->getBoundariesSegments()) {
+        drawMask();
+        m_mask_timer.start();
+      }
+      else {
+        m_mask_timer.stop();
+      }
+
+      // Draw the cursor again
+      if (old_cursor_thick != 0) {
+        editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+      }
+    }
+    catch (const LockedDocumentException&) {
+      // The sprite is locked to be read, so we can draw an opaque
+      // background only.
+      g->fillRect(theme->getColor(ThemeColor::EditorFace), rc);
+    }
+  }
 }
 
 // When the current tool is changed
@@ -1209,6 +1216,26 @@ void Editor::pasteImage(const Image* image, int x, int y)
   pixelsMovement->maskImage(image, x, y);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
+}
+
+void Editor::onSetTiledMode(filters::TiledMode mode)
+{
+  invalidate();
+}
+
+void Editor::onSetGridVisible(bool state)
+{
+  invalidate();
+}
+
+void Editor::onSetGridBounds(const gfx::Rect& rect)
+{
+  invalidate();
+}
+
+void Editor::onSetGridColor(const app::Color& color)
+{
+  invalidate();
 }
 
 } // namespace app

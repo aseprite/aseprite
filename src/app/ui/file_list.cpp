@@ -237,10 +237,6 @@ bool FileList::onProcessMessage(Message* msg)
              x-1, y-1, x+thumbnail->w, y+thumbnail->h,
              makecol(0, 0, 0));
       }
-
-      // is the current folder empty?
-      if (m_list.empty())
-        draw_emptyset_symbol(ji_screen, vp, ui::rgba(194, 194, 194));
       return true;
     }
 

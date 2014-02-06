@@ -25,6 +25,7 @@
 #include "gfx/rect.h"
 
 namespace app {
+  class DocumentSettingsObserver;
 
   enum SnapBehavior {
     NormalSnap = 0,
@@ -75,6 +76,9 @@ namespace app {
     virtual void setOnionskinNextFrames(int frames) = 0;
     virtual void setOnionskinOpacityBase(int base) = 0;
     virtual void setOnionskinOpacityStep(int step) = 0;
+
+    virtual void addObserver(DocumentSettingsObserver* observer) = 0;
+    virtual void removeObserver(DocumentSettingsObserver* observer) = 0;
   };
 
 } // namespace app

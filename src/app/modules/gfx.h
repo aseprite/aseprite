@@ -33,7 +33,6 @@ namespace app {
 
   void dotted_mode(int offset);
 
-  void draw_emptyset_symbol(BITMAP* bmp, const gfx::Rect& rc, ui::Color color);
   void draw_color_button(ui::Graphics* g,
                          const gfx::Rect& rc,
                          bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,

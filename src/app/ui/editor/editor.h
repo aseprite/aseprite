@@ -21,6 +21,7 @@
 
 #include "app/color.h"
 #include "app/document.h"
+#include "app/settings/settings_observers.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
@@ -43,6 +44,7 @@ namespace gfx {
   class Region;
 }
 namespace ui {
+  class Graphics;
   class View;
 }
 
@@ -57,7 +59,8 @@ namespace app {
     class Tool;
   }
 
-  class Editor : public ui::Widget {
+  class Editor : public ui::Widget,
+                 public DocumentSettingsObserver {
   public:
     enum EditorFlags {
       kNoneFlag = 0,
@@ -175,8 +178,14 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onCurrentToolChange();
     void onFgColorChange();
+
+    void onSetTiledMode(filters::TiledMode mode);
+    void onSetGridVisible(bool state);
+    void onSetGridBounds(const gfx::Rect& rect);
+    void onSetGridColor(const app::Color& color);
 
   private:
     void setStateInternal(const EditorStatePtr& newState);
@@ -197,6 +206,8 @@ namespace app {
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this
     // routine.
+    void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
+    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
     void drawSpriteUnclippedRect(const gfx::Rect& rc);
 
     // Stack of states. The top element in the stack is the current state (m_state).

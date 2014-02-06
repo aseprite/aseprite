@@ -47,7 +47,8 @@ using namespace filters;
 
 namespace {
 
-class UIDocumentSettingsImpl : public IDocumentSettings {
+class UIDocumentSettingsImpl : public IDocumentSettings,
+                               public base::Observable<DocumentSettingsObserver> {
 public:
   UIDocumentSettingsImpl()
     : m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
@@ -123,6 +124,9 @@ public:
   virtual void setOnionskinNextFrames(int frames) OVERRIDE;
   virtual void setOnionskinOpacityBase(int base) OVERRIDE;
   virtual void setOnionskinOpacityStep(int step) OVERRIDE;
+
+  virtual void addObserver(DocumentSettingsObserver* observer) OVERRIDE;
+  virtual void removeObserver(DocumentSettingsObserver* observer) OVERRIDE;
 
 private:
   void redrawDocumentViews() {
@@ -343,6 +347,7 @@ TiledMode UIDocumentSettingsImpl::getTiledMode()
 void UIDocumentSettingsImpl::setTiledMode(TiledMode mode)
 {
   m_tiledMode = mode;
+  notifyObservers<TiledMode>(&DocumentSettingsObserver::onSetTiledMode, mode);
 }
 
 bool UIDocumentSettingsImpl::getSnapToGrid()
@@ -368,24 +373,25 @@ app::Color UIDocumentSettingsImpl::getGridColor()
 void UIDocumentSettingsImpl::setSnapToGrid(bool state)
 {
   m_snapToGrid = state;
+  notifyObservers<bool>(&DocumentSettingsObserver::onSetSnapToGrid, state);
 }
 
 void UIDocumentSettingsImpl::setGridVisible(bool state)
 {
   m_gridVisible = state;
-  redrawDocumentViews();
+  notifyObservers<bool>(&DocumentSettingsObserver::onSetGridVisible, state);
 }
 
 void UIDocumentSettingsImpl::setGridBounds(const Rect& rect)
 {
   m_gridBounds = rect;
-  redrawDocumentViews();
+  notifyObservers<const Rect&>(&DocumentSettingsObserver::onSetGridBounds, rect);
 }
 
 void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
-  redrawDocumentViews();
+  notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, color);
 }
 
 void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
@@ -480,6 +486,16 @@ void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
   redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::addObserver(DocumentSettingsObserver* observer)
+{
+  base::Observable<DocumentSettingsObserver>::addObserver(observer);
+}
+
+void UIDocumentSettingsImpl::removeObserver(DocumentSettingsObserver* observer)
+{
+  base::Observable<DocumentSettingsObserver>::removeObserver(observer);
 }
 
 //////////////////////////////////////////////////////////////////////
