@@ -505,18 +505,27 @@ bool Timeline::onProcessMessage(Message* msg)
           else
             hot_part = A_PART_LAYER;
         }
-        else {
+        else if (hot_layer >= 0 && hot_layer < (int)m_layers.size() &&
+                 hot_frame >= FrameNumber(0) && hot_frame <= m_sprite->getLastFrame()) {
           hot_part = A_PART_CEL;
         }
+        else
+          hot_part = A_PART_NOTHING;
+      }
+
+      if (hasCapture()) {
+        hot_layer = MID(0, hot_layer, (int)m_layers.size()-1);
+        hot_frame = MID(FrameNumber(0), hot_frame, m_sprite->getLastFrame());
+      }
+      else {
+        if (hot_layer >= (int)m_layers.size()) hot_layer = -1;
+        if (hot_frame > m_sprite->getLastFrame()) hot_frame = FrameNumber(-1);
       }
 
       // Set the new 'hot' thing.
       hotThis(hot_part, hot_layer, hot_frame);
 
       if (hasCapture()) {
-        hot_layer = MID(0, hot_layer, (int)m_layers.size()-1);
-        hot_frame = MID(FrameNumber(0), hot_frame, m_sprite->getLastFrame());
-
         switch (m_state) {
           case STATE_SELECTING_LAYERS: {
             if (m_layer != m_layers[hot_layer]) {
@@ -696,13 +705,16 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           case A_PART_CEL: {
             if (m_state == STATE_MOVING_CEL) {
-              set_frame_to_handle
-                (// Source cel.
-                 m_layers[m_clk_layer],
-                 m_clk_frame,
-                 // Destination cel.
-                 m_layers[m_hot_layer],
-                 m_hot_frame);
+              Layer* src_layer = m_layers[m_clk_layer];
+              Layer* dst_layer = m_layers[m_hot_layer];
+              FrameNumber src_frame = m_clk_frame;
+              FrameNumber dst_frame = m_hot_frame;
+
+              if (src_layer == dst_layer &&
+                  src_frame == dst_frame)
+                break;
+
+              set_frame_to_handle(src_layer, src_frame, dst_layer, dst_frame);
             }
 
             // Show the cel pop-up menu.
