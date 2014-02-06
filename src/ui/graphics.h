@@ -7,6 +7,7 @@
 #ifndef UI_GRAPHICS_H_INCLUDED
 #define UI_GRAPHICS_H_INCLUDED
 
+#include "base/shared_ptr.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -97,6 +98,8 @@ namespace ui {
     gfx::Rect m_oldClip;
     bool m_notEmpty;
   };
+
+  typedef SharedPtr<Graphics> GraphicsPtr;
 
 } // namespace ui
 
