@@ -270,7 +270,7 @@ void UISettingsImpl::setFgColor(const app::Color& color)
 
 void UISettingsImpl::setBgColor(const app::Color& color)
 {
-  ColorBar::instance()->setFgColor(color);
+  ColorBar::instance()->setBgColor(color);
 }
 
 void UISettingsImpl::setCurrentTool(tools::Tool* tool)
