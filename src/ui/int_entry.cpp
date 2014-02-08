@@ -80,8 +80,10 @@ bool IntEntry::onProcessMessage(Message* msg)
         int oldValue = getValue();
         int newValue = oldValue + jmouse_z(0) - jmouse_z(1);
         newValue = MID(m_min, newValue, m_max);
-        if (newValue != oldValue)
+        if (newValue != oldValue) {
           setValue(newValue);
+          selectAllText();
+        }
         return true;
       }
       break;
@@ -139,6 +141,7 @@ void IntEntry::closePopup()
 void IntEntry::onChangeSlider()
 {
   setValue(m_slider->getValue());
+  selectAllText();
 }
 
 } // namespace ui

@@ -32,6 +32,7 @@ namespace ui {
 
     void setCaretPos(int pos);
     void selectText(int from, int to);
+    void selectAllText();
     void deselectText();
 
     void setSuffix(const std::string& suffix);

@@ -144,6 +144,11 @@ void Entry::selectText(int from, int to)
   invalidate();
 }
 
+void Entry::selectAllText()
+{
+  selectText(0, -1);
+}
+
 void Entry::deselectText()
 {
   m_select = -1;
