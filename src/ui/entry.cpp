@@ -420,6 +420,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   base::utf8_const_iterator utf8_begin = base::utf8_const_iterator(getText().begin());
   base::utf8_const_iterator utf8_end = base::utf8_const_iterator(getText().end());
   int c, x, w, mx, caret = m_caret;
+  int textlen = base::utf8_length(getText());
 
   mx = mousemsg->position().x;
   mx = MID(getBounds().x+this->border_width.l,
@@ -428,7 +429,11 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   x = getBounds().x + this->border_width.l;
 
-  base::utf8_const_iterator utf8_it = utf8_begin + m_scroll;
+  base::utf8_const_iterator utf8_it =
+    (m_scroll < textlen ?
+      utf8_begin + m_scroll:
+      utf8_end);
+
   for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
     w = CHARACTER_LENGTH(getFont(), *utf8_it);
     if (x+w >= getBounds().x2()-this->border_width.r)
