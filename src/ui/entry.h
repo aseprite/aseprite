@@ -77,6 +77,7 @@ namespace ui {
     void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
+    int getAvailableTextLength();
 
     size_t m_maxsize;
     int m_caret;

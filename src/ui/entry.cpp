@@ -309,7 +309,7 @@ bool Entry::onProcessMessage(Message* msg)
         }
         // Forward scroll
         else if (mousePos.x >= getBounds().x2()) {
-          if (m_scroll < textlen) {
+          if (m_scroll < textlen - getAvailableTextLength()) {
             m_scroll++;
             x = getBounds().x + this->border_width.l;
             for (c=m_scroll; utf8_begin != utf8_end; ++c) {
@@ -680,6 +680,11 @@ void Entry::backwardWord()
 
   if (m_caret < 0)
     m_caret = 0;
+}
+
+int Entry::getAvailableTextLength()
+{
+  return getClientChildrenBounds().w / ji_font_char_len(getFont(), 'w');
 }
 
 } // namespace ui
