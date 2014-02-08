@@ -90,7 +90,7 @@ bool Slider::onProcessMessage(Message* msg)
 
       setupSliderCursor();
 
-      // Continue to kMouseMoveMessage...
+      // Fall through
 
     case kMouseMoveMessage:
       if (hasCapture()) {
@@ -158,17 +158,6 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
     case kMouseLeaveMessage:
-/*       if (jwidget_is_enabled(widget) && */
-/*        jwidget_has_capture(widget)) { */
-/*      /\* swap the select status *\/ */
-/*      if (jwidget_is_selected(widget)) */
-/*        jwidget_deselect(widget); */
-/*      else */
-/*        jwidget_select(widget); */
-
-/*      /\* TODO switch slider signal *\/ */
-/*       } */
-
       // TODO theme stuff
       if (isEnabled())
         invalidate();
