@@ -195,7 +195,6 @@ void Timeline::updateUsingEditor(Editor* editor)
   m_state = STATE_STANDBY;
   m_hot_part = A_PART_NOTHING;
   m_clk_part = A_PART_NOTHING;
-  m_space_pressed = false;
 
   setFocusStop(true);
   regenerateLayers();
@@ -256,21 +255,13 @@ bool Timeline::onProcessMessage(Message* msg)
     case kTimerMessage:
       break;
 
-    case kMouseEnterMessage:
-      if (key[KEY_SPACE]) m_space_pressed = true;
-      break;
-
-    case kMouseLeaveMessage:
-      if (m_space_pressed) m_space_pressed = false;
-      break;
-
     case kMouseDownMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
       if (!m_document)
         break;
 
-      if (mouseMsg->middle() || m_space_pressed) {
+      if (mouseMsg->middle() || key[KEY_SPACE]) {
         captureMouse();
         m_state = STATE_SCROLLING;
         return true;
@@ -798,6 +789,16 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       break;
 
+    case kKeyDownMessage:
+      switch (static_cast<KeyMessage*>(msg)->scancode()) {
+
+        case kKeySpace: {
+          setCursor(jmouse_x(0), jmouse_y(0));
+          return true;
+        }
+      }
+      break;
+
     case kKeyUpMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
@@ -806,16 +807,13 @@ bool Timeline::onProcessMessage(Message* msg)
           invalidate();
           break;
 
-        case kKeySpace:
-          if (m_space_pressed) {
-            // We have to clear all the KEY_SPACE in buffer.
-            clear_keybuf();
+        case kKeySpace: {
+          // We have to clear all the KEY_SPACE in buffer.
+          clear_keybuf();
 
-            m_space_pressed = false;
-            setCursor(jmouse_x(0), jmouse_y(0));
-            return true;
-          }
-          break;
+          setCursor(jmouse_x(0), jmouse_y(0));
+          return true;
+        }
       }
       break;
 
@@ -1035,8 +1033,7 @@ void Timeline::setCursor(int x, int y)
 //int my = y - getBounds().y;
 
   // Scrolling.
-  if (m_state == STATE_SCROLLING ||
-      m_space_pressed) {
+  if (m_state == STATE_SCROLLING || key[KEY_SPACE]) {
     jmouse_set_cursor(kScrollCursor);
   }
   // Moving a frame.
