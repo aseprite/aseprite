@@ -208,6 +208,7 @@ namespace ui {
 
     Widget* pick(const gfx::Point& pt);
     bool hasChild(Widget* child);
+    bool hasAncestor(Widget* ancestor);
     Widget* findChild(const char* id);
 
     // Returns a widget in the same window that is located "sibling".

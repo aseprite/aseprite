@@ -427,6 +427,15 @@ bool Widget::hasChild(Widget* child)
   return std::find(m_children.begin(), m_children.end(), child) != m_children.end();
 }
 
+bool Widget::hasAncestor(Widget* ancestor)
+{
+  for (Widget* widget=m_parent; widget; widget=widget->m_parent) {
+    if (widget == ancestor)
+      return true;
+  }
+  return false;
+}
+
 Widget* Widget::findChild(const char* id)
 {
   Widget* child;

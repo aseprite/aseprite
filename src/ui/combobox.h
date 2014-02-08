@@ -22,10 +22,12 @@ namespace ui {
   class ListItem;
   class Window;
 
+  class ComboBoxEntry;
   class ComboBoxListBox;
 
   class ComboBox : public Widget
   {
+    friend class ComboBoxEntry;
     friend class ComboBoxListBox;
 
   public:
@@ -91,7 +93,7 @@ namespace ui {
   private:
     void onButtonClick(Event& ev);
 
-    Entry* m_entry;
+    ComboBoxEntry* m_entry;
     Button* m_button;
     Window* m_window;
     ComboBoxListBox* m_listbox;
