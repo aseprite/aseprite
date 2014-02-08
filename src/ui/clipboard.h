@@ -18,4 +18,4 @@ namespace ui {
   } // namespace clipboard
 } // namespace ui
 
-#endif // ASE_JINETE_JCLIPBOARD_H
+#endif
