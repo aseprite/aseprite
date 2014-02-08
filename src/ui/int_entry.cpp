@@ -12,6 +12,7 @@
 
 #include "gfx/rect.h"
 #include "gfx/region.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/popup_window.h"
 #include "ui/slider.h"
@@ -73,6 +74,21 @@ bool IntEntry::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       openPopup();
+      break;
+
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        Widget* pick = getManager()->pick(mouseMsg->position());
+        if (pick == m_slider) {
+          releaseMouse();
+
+          MouseMessage mouseMsg(kMouseDownMessage,
+            mouseMsg->buttons(),
+            mouseMsg->position());
+          m_slider->sendMessage(&mouseMsg);
+        }
+      }
       break;
 
     case kMouseWheelMessage:
