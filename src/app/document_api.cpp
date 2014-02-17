@@ -990,9 +990,8 @@ void DocumentApi::clearMask(Layer* layer, Cel* cel, int bgcolor)
   }
 }
 
-void DocumentApi::flipImage(Image* image,
-                                const gfx::Rect& bounds,
-                                raster::algorithm::FlipType flipType)
+void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
+  raster::algorithm::FlipType flipType)
 {
   // Insert the undo operation.
   if (undoEnabled()) {

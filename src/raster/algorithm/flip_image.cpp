@@ -50,18 +50,14 @@ void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
       break;
 
     case FlipVertical: {
-      int section_size = image->getRowStrideSize(bounds.w);
-      std::vector<uint8_t> tmpline(section_size);
-
       int v = bounds.y+bounds.h-1;
       for (int y=bounds.y; y<bounds.y+bounds.h/2; ++y, --v) {
-        uint8_t* address1 = image->getPixelAddress(bounds.x, y);
-        uint8_t* address2 = image->getPixelAddress(bounds.x, v);
-
-        // Swap lines.
-        std::copy(address1, address1+section_size, tmpline.begin());
-        std::copy(address2, address2+section_size, address1);
-        std::copy(tmpline.begin(), tmpline.end(), address2);
+        for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
+          uint32_t c1 = get_pixel(image, x, y);
+          uint32_t c2 = get_pixel(image, x, v);
+          put_pixel(image, x, y, c2);
+          put_pixel(image, x, v, c1);
+        }
       }
       break;
     }
@@ -75,7 +71,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
   switch (flipType) {
 
     case FlipHorizontal: {
-      base::UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), mask->getBounds().w, 1));
+      base::UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), bounds.w, 1));
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
@@ -93,8 +89,8 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
       break;
     }
 
-    case FlipVertical:{
-      base::UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, mask->getBounds().h));
+    case FlipVertical: {
+      base::UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, bounds.h));
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.
