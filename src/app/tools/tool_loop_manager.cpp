@@ -98,7 +98,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
   m_toolLoop->setSpeed(Point(0, 0));
   m_oldPoint = spritePoint;
-  snapToGrid(true, spritePoint);
+  snapToGrid(spritePoint);
 
   m_toolLoop->getController()->pressButton(m_points, spritePoint);
 
@@ -115,7 +115,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
     return false;
 
   Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
-  snapToGrid(true, spritePoint);
+  snapToGrid(spritePoint);
 
   bool res = m_toolLoop->getController()->releaseButton(m_points, spritePoint);
 
@@ -138,7 +138,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
   // Calculate the speed (new sprite point - old sprite point)
   m_toolLoop->setSpeed(spritePoint - m_oldPoint);
   m_oldPoint = spritePoint;
-  snapToGrid(true, spritePoint);
+  snapToGrid(spritePoint);
 
   m_toolLoop->getController()->movement(m_toolLoop, m_points, spritePoint);
 
@@ -201,19 +201,14 @@ void ToolLoopManager::doLoopStep(bool last_step)
     m_toolLoop->updateDirtyArea();
 }
 
-// Applies the grid settings to the specified sprite point, if
-// "flexible" is true this function will try to snap the point
-// to one of the four corners of each grid-tile, if "flexible"
-// is false, only the origin of each grid-tile will be used
-// to snap the point
-void ToolLoopManager::snapToGrid(bool flexible, Point& point)
+// Applies the grid settings to the specified sprite point.
+void ToolLoopManager::snapToGrid(Point& point)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
       !m_toolLoop->getDocumentSettings()->getSnapToGrid())
     return;
 
-  m_toolLoop->getDocumentSettings()
-    ->snapToGrid(point, (flexible ? SnapInRightBottom: NormalSnap));
+  m_toolLoop->getDocumentSettings()->snapToGrid(point);
 }
 
 void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Region& dirty_area)

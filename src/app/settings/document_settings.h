@@ -27,11 +27,6 @@
 namespace app {
   class DocumentSettingsObserver;
 
-  enum SnapBehavior {
-    NormalSnap = 0,
-    SnapInRightBottom = 1
-  };
-
   class IDocumentSettings {
   public:
     virtual ~IDocumentSettings() { }
@@ -53,7 +48,7 @@ namespace app {
     virtual void setGridBounds(const gfx::Rect& rect) = 0;
     virtual void setGridColor(const app::Color& color) = 0;
 
-    virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const = 0;
+    virtual void snapToGrid(gfx::Point& point) const = 0;
 
     // Pixel grid
 

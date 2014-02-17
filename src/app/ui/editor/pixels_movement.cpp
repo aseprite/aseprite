@@ -221,7 +221,7 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
         // Snap the x1,y1 point to the grid.
         gfx::Point gridOffset(x1, y1);
         UIContext::instance()->getSettings()
-          ->getDocumentSettings(m_document)->snapToGrid(gridOffset, NormalSnap);
+          ->getDocumentSettings(m_document)->snapToGrid(gridOffset);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).

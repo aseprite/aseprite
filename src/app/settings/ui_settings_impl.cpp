@@ -101,7 +101,7 @@ public:
   virtual void setGridBounds(const gfx::Rect& rect) OVERRIDE;
   virtual void setGridColor(const app::Color& color) OVERRIDE;
 
-  virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
+  virtual void snapToGrid(gfx::Point& point) const OVERRIDE;
 
   // Pixel grid
 
@@ -394,21 +394,20 @@ void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
   notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, color);
 }
 
-void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
+void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point) const
 {
   register int w = m_gridBounds.w;
   register int h = m_gridBounds.h;
-  int adjust = (snapBehavior & SnapInRightBottom ? 1: 0);
   div_t d, dx, dy;
 
   dx = div(m_gridBounds.x, w);
   dy = div(m_gridBounds.y, h);
 
   d = div(point.x-dx.rem, w);
-  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w-adjust: 0);
+  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w: 0);
 
   d = div(point.y-dy.rem, h);
-  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-adjust: 0);
+  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h: 0);
 }
 
 bool UIDocumentSettingsImpl::getPixelGridVisible()
