@@ -45,4 +45,24 @@ FileHandle open_file_with_exception(const string& filename, const string& mode)
   return f;
 }
 
+int open_file_descriptor_with_exception(const string& filename, const string& mode)
+{
+  int flags = 0;
+  if (mode.find('r') != string::npos) flags |= _O_RDONLY;
+  if (mode.find('w') != string::npos) flags |= _O_WRONLY | _O_TRUNC;
+  if (mode.find('b') != string::npos) flags |= _O_BINARY;
+
+  int fd;
+#ifdef WIN32
+  fd = _wopen(from_utf8(filename).c_str(), flags);
+#else
+  fd = open(filename.c_str(), flags);
+#endif
+
+  if (fd == -1)
+    throw runtime_error("Cannot open " + filename);
+
+  return fd;
+}
+
 }

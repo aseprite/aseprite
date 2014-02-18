@@ -19,6 +19,7 @@ namespace base {
   FILE* open_file_raw(const string& filename, const string& mode);
   FileHandle open_file(const string& filename, const string& mode);
   FileHandle open_file_with_exception(const string& filename, const string& mode);
+  int open_file_descriptor_with_exception(const string& filename, const string& mode);
 
 }
 
