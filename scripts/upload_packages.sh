@@ -5,7 +5,7 @@ if [ ! -f upload_packages.sh ]; then
     exit 1
 fi
 
-version=$(cat ../config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
+version=$(cat ../src/config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
 python=c:/Python27/python.exe
 
 echo "Uploading $version..."
