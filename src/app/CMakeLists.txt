@@ -141,6 +141,7 @@ add_library(app-library
   shell.cpp
   thumbnail_generator.cpp
   tools/intertwine.cpp
+  tools/pick_ink.cpp
   tools/point_shape.cpp
   tools/shade_table.cpp
   tools/tool_box.cpp
