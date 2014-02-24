@@ -16,6 +16,8 @@
 
 #ifdef WIN32
 #include <windows.h>
+#else
+#include <fcntl.h>
 #endif
 
 using namespace std;
@@ -48,9 +50,9 @@ FileHandle open_file_with_exception(const string& filename, const string& mode)
 int open_file_descriptor_with_exception(const string& filename, const string& mode)
 {
   int flags = 0;
-  if (mode.find('r') != string::npos) flags |= _O_RDONLY;
-  if (mode.find('w') != string::npos) flags |= _O_WRONLY | _O_TRUNC;
-  if (mode.find('b') != string::npos) flags |= _O_BINARY;
+  if (mode.find('r') != string::npos) flags |= O_RDONLY;
+  if (mode.find('w') != string::npos) flags |= O_WRONLY | O_TRUNC;
+  if (mode.find('b') != string::npos) flags |= O_BINARY;
 
   int fd;
 #ifdef WIN32
