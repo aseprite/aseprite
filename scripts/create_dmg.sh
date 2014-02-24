@@ -2,7 +2,7 @@
 
 dir="`pwd`"
 version=$(cat ../config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
-distdir=ASEPRITE_$version
+distdir=Aseprite-$version
 
 if [ ! -f create_dmg.sh ]; then
     echo You must run create_dmg.sh from scripts/ directory

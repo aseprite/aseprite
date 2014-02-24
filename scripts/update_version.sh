@@ -19,8 +19,8 @@ while [ $commas -lt 3 ] ; do
     commas=$(grep -o "," <<< "$version_win32" | wc -l)
 done
 
-sed -e "s/define VERSION.*/define VERSION \"$version\"/" < ../config.h > tmp
-mv tmp ../config.h
+sed -e "s/define VERSION.*/define VERSION \"$version\"/" < ../src/config.h > tmp
+mv tmp ../src/config.h
 
 sed -e "s/gui version=\".*/gui version=\"$version\">/" < ../data/gui.xml > tmp
 mv tmp ../data/gui.xml

@@ -1,7 +1,7 @@
 #! /bin/sh
 
 dir="`pwd`"
-version=$(cat ../config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
+version=$(cat ../src/config.h | grep VERSION | sed -e 's/.*\"\(.*\)\"/\1/g')
 distdir=aseprite-$version
 zip="zip -9"
 zip_recursive_flag="-r"
