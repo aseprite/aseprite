@@ -30,6 +30,7 @@
 #include "app/ini_file.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
+#include "app/tools/pick_ink.h"
 #include "app/tools/tool.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/drawing_state.h"
@@ -226,9 +227,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isEyedropper()) {
     Command* eyedropper_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
+    bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
 
     Params params;
-    params.set("target", msg->right() ? "background": "foreground");
+    params.set("target", fg ? "foreground": "background");
 
     UIContext::instance()->executeCommand(eyedropper_cmd, &params);
     return true;

@@ -7,6 +7,7 @@
 #ifndef UI_GRAPHICS_H_INCLUDED
 #define UI_GRAPHICS_H_INCLUDED
 
+#include "base/shared_ptr.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -16,6 +17,10 @@
 
 struct BITMAP;
 struct FONT;
+
+namespace gfx {
+  class Region;
+}
 
 namespace ui {
 
@@ -36,6 +41,7 @@ namespace ui {
 
     void drawRect(ui::Color color, const gfx::Rect& rc);
     void fillRect(ui::Color color, const gfx::Rect& rc);
+    void fillRegion(ui::Color color, const gfx::Region& rgn);
 
     void drawBitmap(BITMAP* sprite, int x, int y);
     void drawAlphaBitmap(BITMAP* sprite, int x, int y);
@@ -97,6 +103,8 @@ namespace ui {
     gfx::Rect m_oldClip;
     bool m_notEmpty;
   };
+
+  typedef SharedPtr<Graphics> GraphicsPtr;
 
 } // namespace ui
 

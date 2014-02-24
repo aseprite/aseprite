@@ -16,6 +16,8 @@
 
 #ifdef WIN32
 #include <windows.h>
+#else
+#include <fcntl.h>
 #endif
 
 using namespace std;
@@ -43,6 +45,26 @@ FileHandle open_file_with_exception(const string& filename, const string& mode)
   if (!f)
     throw runtime_error("Cannot open " + filename);
   return f;
+}
+
+int open_file_descriptor_with_exception(const string& filename, const string& mode)
+{
+  int flags = 0;
+  if (mode.find('r') != string::npos) flags |= O_RDONLY;
+  if (mode.find('w') != string::npos) flags |= O_WRONLY | O_TRUNC;
+  if (mode.find('b') != string::npos) flags |= O_BINARY;
+
+  int fd;
+#ifdef WIN32
+  fd = _wopen(from_utf8(filename).c_str(), flags);
+#else
+  fd = open(filename.c_str(), flags);
+#endif
+
+  if (fd == -1)
+    throw runtime_error("Cannot open " + filename);
+
+  return fd;
 }
 
 }

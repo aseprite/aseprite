@@ -216,6 +216,8 @@ int init_module_gui()
 
 void exit_module_gui()
 {
+  save_gui_config();
+
   // destroy shortcuts
   ASSERT(shortcuts != NULL);
   for (std::vector<Shortcut*>::iterator

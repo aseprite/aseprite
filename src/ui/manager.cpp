@@ -657,7 +657,8 @@ void Manager::setMouse(Widget* widget)
       else
         it = widget_parents.begin();
 
-      Message* msg = new Message(kMouseEnterMessage);
+      Message* msg = newMouseMessage(kMouseEnterMessage, NULL,
+                                     currentMouseButtons(0));
 
       for (; it != widget_parents.end(); ++it) {
         (*it)->flags |= JI_HASMOUSE;

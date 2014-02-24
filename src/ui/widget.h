@@ -18,6 +18,7 @@
 #include "ui/base.h"
 #include "ui/color.h"
 #include "ui/component.h"
+#include "ui/graphics.h"
 #include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 
@@ -207,6 +208,7 @@ namespace ui {
 
     Widget* pick(const gfx::Point& pt);
     bool hasChild(Widget* child);
+    bool hasAncestor(Widget* ancestor);
     Widget* findChild(const char* id);
 
     // Returns a widget in the same window that is located "sibling".
@@ -280,6 +282,13 @@ namespace ui {
     void getRegion(gfx::Region& region);
     void getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags);
 
+    gfx::Point toClient(const gfx::Point& pt) const {
+      return pt - m_bounds.getOrigin();
+    }
+    gfx::Rect toClient(const gfx::Rect& rc) const {
+      return gfx::Rect(rc).offset(-m_bounds.x, -m_bounds.y);
+    }
+
     // ===============================================================
     // REFRESH ISSUES
     // ===============================================================
@@ -294,6 +303,8 @@ namespace ui {
     void flushRedraw();
 
     void scrollRegion(const gfx::Region& region, int dx, int dy);
+
+    GraphicsPtr getGraphics(const gfx::Rect& clip);
 
     // ===============================================================
     // GUI MANAGER

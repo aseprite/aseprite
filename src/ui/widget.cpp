@@ -427,6 +427,15 @@ bool Widget::hasChild(Widget* child)
   return std::find(m_children.begin(), m_children.end(), child) != m_children.end();
 }
 
+bool Widget::hasAncestor(Widget* ancestor)
+{
+  for (Widget* widget=m_parent; widget; widget=widget->m_parent) {
+    if (widget == ancestor)
+      return true;
+  }
+  return false;
+}
+
 Widget* Widget::findChild(const char* id)
 {
   Widget* child;
@@ -990,6 +999,45 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
   }
 }
 
+class DeleteGraphicsAndBitmap {
+public:
+  DeleteGraphicsAndBitmap(const gfx::Rect& clip, BITMAP* bmp)
+    : m_pt(clip.getOrigin()), m_bmp(bmp) {
+  }
+
+  void operator()(Graphics* graphics) {
+    blit(m_bmp, ji_screen, 0, 0, m_pt.x, m_pt.y, m_bmp->w, m_bmp->h);
+    destroy_bitmap(m_bmp);
+    delete graphics;
+  }
+
+private:
+  gfx::Point m_pt;
+  BITMAP* m_bmp;
+};
+
+GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
+{
+  GraphicsPtr graphics;
+
+  if (m_doubleBuffered && ji_screen == screen) {
+    BITMAP* bmp = create_bitmap_ex(
+      bitmap_color_depth(ji_screen), clip.w, clip.h);
+
+    graphics.reset(new Graphics(bmp, -clip.x, -clip.y),
+      DeleteGraphicsAndBitmap(clip, bmp));
+
+  }
+  // Paint directly on ji_screen (in this case "ji_screen" can be
+  // the screen or a memory bitmap).
+  else {
+    graphics.reset(new Graphics(ji_screen, getBounds().x, getBounds().y));
+  }
+
+  graphics->setFont(getFont());
+  return graphics;
+}
+
 // ===============================================================
 // GUI MANAGER
 // ===============================================================
@@ -1187,47 +1235,16 @@ bool Widget::onProcessMessage(Message* msg)
         (*it)->sendMessage(msg);
       break;
 
-    case kPaintMessage:
-      // With double-buffering we create a temporary bitmap to draw
-      // the widget on it and then we blit the final result to the
-      // real screen. Anyway, if ji_screen is not the real hardware
-      // screen, we already are painting off-screen using ji_screen,
-      // so we don't need the temporary bitmap.
-      if (m_doubleBuffered && ji_screen == screen) {
-        const PaintMessage* ptmsg = static_cast<const PaintMessage*>(msg);
+    case kPaintMessage: {
+      const PaintMessage* ptmsg = static_cast<const PaintMessage*>(msg);
+      ASSERT(ptmsg->rect().w > 0);
+      ASSERT(ptmsg->rect().h > 0);
 
-        ASSERT(ptmsg->rect().w > 0);
-        ASSERT(ptmsg->rect().h > 0);
-
-        BITMAP* bmp = create_bitmap_ex(bitmap_color_depth(ji_screen),
-                                       ptmsg->rect().w,
-                                       ptmsg->rect().h);
-
-        Graphics graphics(bmp,
-                          getBounds().x - ptmsg->rect().x,
-                          getBounds().y - ptmsg->rect().y);
-        graphics.setFont(getFont());
-
-        PaintEvent ev(this, &graphics);
-        onPaint(ev); // Fire onPaint event
-
-        // Blit the temporary bitmap to the real screen
-        if (ev.isPainted())
-          blit(bmp, ji_screen, 0, 0, ptmsg->rect().x, ptmsg->rect().y, bmp->w, bmp->h);
-
-        destroy_bitmap(bmp);
-        return ev.isPainted();
-      }
-      // Paint directly on ji_screen (in this case "ji_screen" can be
-      // the screen or a memory bitmap).
-      else {
-        Graphics graphics(ji_screen, getBounds().x, getBounds().y);
-        graphics.setFont(getFont());
-
-        PaintEvent ev(this, &graphics);
-        onPaint(ev); // Fire onPaint event
-        return ev.isPainted();
-      }
+      GraphicsPtr graphics = getGraphics(toClient(ptmsg->rect()));
+      PaintEvent ev(this, graphics);
+      onPaint(ev); // Fire onPaint event
+      return ev.isPainted();
+    }
 
     case kKeyDownMessage:
     case kKeyUpMessage:

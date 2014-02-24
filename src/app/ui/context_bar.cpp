@@ -266,8 +266,11 @@ public:
   InkTypeField() {
     // The same order as in InkType
     addItem("Default Ink");
+#if 0
     addItem("Opaque");
+#endif
     addItem("Put Alpha");
+#if 0
     addItem("Merge");
     addItem("Shading");
     addItem("Replace");
@@ -275,6 +278,7 @@ public:
     addItem("Selection");
     addItem("Blur");
     addItem("Jumble");
+#endif
   }
 
   void setInkType(InkType inkType) {

@@ -97,7 +97,7 @@ namespace app {
       typedef std::vector<gfx::Point> Points;
 
       void doLoopStep(bool last_step);
-      void snapToGrid(bool flexible, gfx::Point& point);
+      void snapToGrid(gfx::Point& point);
 
       static void calculateDirtyArea(ToolLoop* loop,
                                      const Points& points,

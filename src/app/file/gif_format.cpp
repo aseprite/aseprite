@@ -20,19 +20,22 @@
 #include "config.h"
 #endif
 
-#include "base/unique_ptr.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "app/modules/gui.h"
+#include "app/util/autocrop.h"
+#include "base/file_handle.h"
+#include "base/unique_ptr.h"
 #include "raster/raster.h"
 #include "ui/alert.h"
-#include "app/util/autocrop.h"
 
 #include <gif_lib.h>
 
 namespace app {
+
+using namespace base;
 
 enum DisposalMethod {
   DISPOSAL_METHOD_NONE,
@@ -100,8 +103,10 @@ static int interlaced_jumps[] = { 8, 8, 4, 2 };
 
 bool GifFormat::onLoad(FileOp* fop)
 {
-  base::UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file(DGifOpenFileName(fop->filename.c_str()),
-                                                        DGifCloseFile);
+  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file
+    (DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb")),
+      DGifCloseFile);
+
   if (!gif_file) {
     fop_error(fop, "Error loading GIF header.\n");
     return false;
@@ -113,8 +118,8 @@ bool GifFormat::onLoad(FileOp* fop)
   data->sprite_w = gif_file->SWidth;
   data->sprite_h = gif_file->SHeight;
 
-  base::UniquePtr<Palette> current_palette(new Palette(FrameNumber(0), 256));
-  base::UniquePtr<Palette> previous_palette(new Palette(FrameNumber(0), 256));
+  UniquePtr<Palette> current_palette(new Palette(FrameNumber(0), 256));
+  UniquePtr<Palette> previous_palette(new Palette(FrameNumber(0), 256));
 
   // If the GIF image has a global palette, it has a valid
   // background color (so the GIF is not transparent).
@@ -141,13 +146,13 @@ bool GifFormat::onLoad(FileOp* fop)
   int frame_delay = -1;
   do {
     if (DGifGetRecordType(gif_file, &record_type) == GIF_ERROR)
-      throw base::Exception("Invalid GIF record in file.\n");
+      throw Exception("Invalid GIF record in file.\n");
 
     switch (record_type) {
 
       case IMAGE_DESC_RECORD_TYPE: {
         if (DGifGetImageDesc(gif_file) == GIF_ERROR)
-          throw base::Exception("Invalid GIF image descriptor.\n");
+          throw Exception("Invalid GIF image descriptor.\n");
 
         // These are the bounds of the image to read.
         int frame_x = gif_file->Image.Left;
@@ -158,7 +163,7 @@ bool GifFormat::onLoad(FileOp* fop)
         if (frame_x < 0 || frame_y < 0 ||
             frame_x + frame_w > data->sprite_w ||
             frame_y + frame_h > data->sprite_h)
-          throw base::Exception("Image %d is out of sprite bounds.\n", (int)frame_num);
+          throw Exception("Image %d is out of sprite bounds.\n", (int)frame_num);
 
         // Add a new frames.
         if (frame_num >= FrameNumber(data->frames.size()))
@@ -191,7 +196,7 @@ bool GifFormat::onLoad(FileOp* fop)
         }
 
         // Create a temporary image to load frame pixels.
-        base::UniquePtr<Image> frame_image(Image::create(IMAGE_INDEXED, frame_w, frame_h));
+        UniquePtr<Image> frame_image(Image::create(IMAGE_INDEXED, frame_w, frame_h));
         IndexedTraits::address_t addr;
 
         if (gif_file->Image.Interlace) {
@@ -200,14 +205,14 @@ bool GifFormat::onLoad(FileOp* fop)
             for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
               addr = frame_image->getPixelAddress(0, y);
               if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-                throw base::Exception("Invalid interlaced image data.");
+                throw Exception("Invalid interlaced image data.");
             }
         }
         else {
           for (int y = 0; y < frame_h; ++y) {
             addr = frame_image->getPixelAddress(0, y);
             if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-              throw base::Exception("Invalid image data (%d).\n", GifLastError());
+              throw Exception("Invalid image data (%d).\n", GifLastError());
           }
         }
 
@@ -231,7 +236,7 @@ bool GifFormat::onLoad(FileOp* fop)
         int ext_code;
 
         if (DGifGetExtension(gif_file, &ext_code, &extension) == GIF_ERROR)
-          throw base::Exception("Invalid GIF extension record.\n");
+          throw Exception("Invalid GIF extension record.\n");
 
         if (ext_code == GRAPHICS_EXT_FUNC_CODE) {
           if (extension[0] >= 4) {
@@ -246,7 +251,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
         while (extension != NULL) {
           if (DGifGetExtensionNext(gif_file, &extension) == GIF_ERROR)
-            throw base::Exception("Invalid GIF extension record.\n");
+            throw Exception("Invalid GIF extension record.\n");
         }
         break;
       }
@@ -334,7 +339,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
   }
 
   // Create the sprite with the GIF dimension
-  base::UniquePtr<Sprite> sprite(new Sprite(pixelFormat, data->sprite_w, data->sprite_h, 256));
+  UniquePtr<Sprite> sprite(new Sprite(pixelFormat, data->sprite_w, data->sprite_h, 256));
 
   // Create the main layer
   LayerImage* layer = new LayerImage(sprite);
@@ -350,8 +355,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
   // The previous image is used to support the special disposal method
   // of GIF frames DISPOSAL_METHOD_RESTORE_PREVIOUS (number 3 in
   // Graphics Extension)
-  base::UniquePtr<Image> current_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
-  base::UniquePtr<Image> previous_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> current_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
+  UniquePtr<Image> previous_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
 
   // Clear both images with the transparent color (alpha = 0).
   uint32_t bgcolor = (pixelFormat == IMAGE_RGB ? rgba(0, 0, 0, 0):
@@ -484,10 +489,12 @@ void GifFormat::onDestroyData(FileOp* fop)
 
 bool GifFormat::onSave(FileOp* fop)
 {
-  base::UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file(EGifOpenFileName(fop->filename.c_str(), 0),
-                                                        EGifCloseFile);
+  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file
+    (EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb")),
+      EGifCloseFile);
+
   if (!gif_file)
-    throw base::Exception("Error creating GIF file.\n");
+    throw Exception("Error creating GIF file.\n");
 
   Sprite* sprite = fop->document->getSprite();
   int sprite_w = sprite->getWidth();
@@ -510,11 +517,11 @@ bool GifFormat::onSave(FileOp* fop)
   if (EGifPutScreenDesc(gif_file, sprite_w, sprite_h,
                         color_map->BitsPerPixel,
                         background_color, color_map) == GIF_ERROR)
-    throw base::Exception("Error writing GIF header.\n");
+    throw Exception("Error writing GIF header.\n");
 
-  base::UniquePtr<Image> buffer_image;
-  base::UniquePtr<Image> current_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
-  base::UniquePtr<Image> previous_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> buffer_image;
+  UniquePtr<Image> current_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
+  UniquePtr<Image> previous_image(Image::create(IMAGE_INDEXED, sprite_w, sprite_h));
   int frame_x, frame_y, frame_w, frame_h;
   int u1, v1, u2, v2;
   int i1, j1, i2, j2;
@@ -597,16 +604,16 @@ bool GifFormat::onSave(FileOp* fop)
 
       memcpy(extension_bytes, "NETSCAPE2.0", 11);
       if (EGifPutExtensionFirst(gif_file, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
       extension_bytes[0] = 1;
       extension_bytes[1] = (loop & 0xff);
       extension_bytes[2] = (loop >> 8) & 0xff;
       if (EGifPutExtensionNext(gif_file, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
       if (EGifPutExtensionLast(gif_file, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
     }
 
     // Write graphics extension record (to save the duration of the
@@ -624,7 +631,7 @@ bool GifFormat::onSave(FileOp* fop)
       extension_bytes[3] = (transparent_index >= 0 ? transparent_index: 0);
 
       if (EGifPutExtension(gif_file, GRAPHICS_EXT_FUNC_CODE, 4, extension_bytes) == GIF_ERROR)
-        throw base::Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
     }
 
     // Image color map
@@ -644,7 +651,7 @@ bool GifFormat::onSave(FileOp* fop)
                          frame_x, frame_y,
                          frame_w, frame_h, interlace ? 1: 0,
                          image_color_map) == GIF_ERROR)
-      throw base::Exception("Error writing GIF frame %d.\n", (int)frame_num);
+      throw Exception("Error writing GIF frame %d.\n", (int)frame_num);
 
     // Write the image data (pixels).
     if (interlace) {
@@ -655,7 +662,7 @@ bool GifFormat::onSave(FileOp* fop)
             (IndexedTraits::address_t)current_image->getPixelAddress(frame_x, frame_y + y);
 
           if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-            throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
+            throw Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
         }
     }
     else {
@@ -665,7 +672,7 @@ bool GifFormat::onSave(FileOp* fop)
           (IndexedTraits::address_t)current_image->getPixelAddress(frame_x, frame_y + y);
 
         if (EGifPutLine(gif_file, addr, frame_w) == GIF_ERROR)
-          throw base::Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
+          throw Exception("Error writing GIF image scanlines for frame %d.\n", (int)frame_num);
       }
     }
 

@@ -411,8 +411,33 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
       if (m_comboBox->isEditable()) {
         getManager()->setFocus(this);
       }
-      else
+      else {
+        captureMouse();
         return true;
+      }
+      break;
+
+    case kMouseUpMessage:
+      if (hasCapture())
+        releaseMouse();
+      break;
+
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        Widget* pick = getManager()->pick(mouseMsg->position());
+        Widget* listbox = m_comboBox->m_listbox;
+
+        if (pick != NULL && (pick == listbox || pick->hasAncestor(listbox))) {
+          releaseMouse();
+
+          MouseMessage mouseMsg2(kMouseDownMessage,
+            mouseMsg->buttons(),
+            mouseMsg->position());
+          pick->sendMessage(&mouseMsg2);
+          return true;
+        }
+      }
       break;
 
   }

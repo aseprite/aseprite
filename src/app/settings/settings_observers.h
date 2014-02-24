@@ -24,9 +24,12 @@
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "app/settings/selection_mode.h"
+#include "filters/tiled_mode.h"
+#include "gfx/fwd.h"
 #include "raster/pen_type.h"
 
 namespace app {
+  class Color;
 
   namespace tools {
     class Tool;
@@ -75,6 +78,17 @@ namespace app {
     virtual void onSetBgColor(app::Color newColor) {}
     virtual void onSetCurrentTool(tools::Tool* newTool) {}
     virtual void onSetColorSwatches(ColorSwatches* swaches) {}
+  };
+
+  class DocumentSettingsObserver {
+  public:
+    virtual ~DocumentSettingsObserver() { }
+
+    virtual void onSetTiledMode(filters::TiledMode mode) { }
+    virtual void onSetSnapToGrid(bool state) { }
+    virtual void onSetGridVisible(bool state) { }
+    virtual void onSetGridBounds(const gfx::Rect& rect) { }
+    virtual void onSetGridColor(const app::Color& color) { }
   };
 
 } // namespace app

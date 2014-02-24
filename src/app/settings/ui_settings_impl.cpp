@@ -47,7 +47,8 @@ using namespace filters;
 
 namespace {
 
-class UIDocumentSettingsImpl : public IDocumentSettings {
+class UIDocumentSettingsImpl : public IDocumentSettings,
+                               public base::Observable<DocumentSettingsObserver> {
 public:
   UIDocumentSettingsImpl()
     : m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
@@ -100,7 +101,7 @@ public:
   virtual void setGridBounds(const gfx::Rect& rect) OVERRIDE;
   virtual void setGridColor(const app::Color& color) OVERRIDE;
 
-  virtual void snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const OVERRIDE;
+  virtual void snapToGrid(gfx::Point& point) const OVERRIDE;
 
   // Pixel grid
 
@@ -123,6 +124,9 @@ public:
   virtual void setOnionskinNextFrames(int frames) OVERRIDE;
   virtual void setOnionskinOpacityBase(int base) OVERRIDE;
   virtual void setOnionskinOpacityStep(int step) OVERRIDE;
+
+  virtual void addObserver(DocumentSettingsObserver* observer) OVERRIDE;
+  virtual void removeObserver(DocumentSettingsObserver* observer) OVERRIDE;
 
 private:
   void redrawDocumentViews() {
@@ -266,7 +270,7 @@ void UISettingsImpl::setFgColor(const app::Color& color)
 
 void UISettingsImpl::setBgColor(const app::Color& color)
 {
-  ColorBar::instance()->setFgColor(color);
+  ColorBar::instance()->setBgColor(color);
 }
 
 void UISettingsImpl::setCurrentTool(tools::Tool* tool)
@@ -343,6 +347,7 @@ TiledMode UIDocumentSettingsImpl::getTiledMode()
 void UIDocumentSettingsImpl::setTiledMode(TiledMode mode)
 {
   m_tiledMode = mode;
+  notifyObservers<TiledMode>(&DocumentSettingsObserver::onSetTiledMode, mode);
 }
 
 bool UIDocumentSettingsImpl::getSnapToGrid()
@@ -368,41 +373,41 @@ app::Color UIDocumentSettingsImpl::getGridColor()
 void UIDocumentSettingsImpl::setSnapToGrid(bool state)
 {
   m_snapToGrid = state;
+  notifyObservers<bool>(&DocumentSettingsObserver::onSetSnapToGrid, state);
 }
 
 void UIDocumentSettingsImpl::setGridVisible(bool state)
 {
   m_gridVisible = state;
-  redrawDocumentViews();
+  notifyObservers<bool>(&DocumentSettingsObserver::onSetGridVisible, state);
 }
 
 void UIDocumentSettingsImpl::setGridBounds(const Rect& rect)
 {
   m_gridBounds = rect;
-  redrawDocumentViews();
+  notifyObservers<const Rect&>(&DocumentSettingsObserver::onSetGridBounds, rect);
 }
 
 void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
-  redrawDocumentViews();
+  notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, color);
 }
 
-void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point, SnapBehavior snapBehavior) const
+void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point) const
 {
   register int w = m_gridBounds.w;
   register int h = m_gridBounds.h;
-  int adjust = (snapBehavior & SnapInRightBottom ? 1: 0);
   div_t d, dx, dy;
 
   dx = div(m_gridBounds.x, w);
   dy = div(m_gridBounds.y, h);
 
   d = div(point.x-dx.rem, w);
-  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w-adjust: 0);
+  point.x = dx.rem + d.quot*w + ((d.rem > w/2)? w: 0);
 
   d = div(point.y-dy.rem, h);
-  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h-adjust: 0);
+  point.y = dy.rem + d.quot*h + ((d.rem > h/2)? h: 0);
 }
 
 bool UIDocumentSettingsImpl::getPixelGridVisible()
@@ -480,6 +485,16 @@ void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
   redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::addObserver(DocumentSettingsObserver* observer)
+{
+  base::Observable<DocumentSettingsObserver>::addObserver(observer);
+}
+
+void UIDocumentSettingsImpl::removeObserver(DocumentSettingsObserver* observer)
+{
+  base::Observable<DocumentSettingsObserver>::removeObserver(observer);
 }
 
 //////////////////////////////////////////////////////////////////////

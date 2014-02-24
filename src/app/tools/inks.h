@@ -24,6 +24,7 @@
 #include "app/document.h"
 #include "app/document_undo.h"
 #include "app/settings/settings.h"
+#include "app/tools/pick_ink.h"
 #include "app/undoers/set_mask.h"
 #include "raster/mask.h"
 
@@ -108,31 +109,6 @@ public:
   {
     (*m_proc)(x1, y, x2, loop);
   }
-};
-
-
-class PickInk : public Ink {
-public:
-  enum Target { Fg, Bg };
-
-private:
-  Target m_target;
-
-public:
-  PickInk(Target target) : m_target(target) { }
-
-  bool isEyedropper() const { return true; }
-
-  void prepareInk(ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
 };
 
 

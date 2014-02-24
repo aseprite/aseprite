@@ -16,30 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_MODULES_GFX_H_INCLUDED
-#define APP_MODULES_GFX_H_INCLUDED
+#ifndef APP_TOOLS_PICK_INK_H_INCLUDED
+#define APP_TOOLS_PICK_INK_H_INCLUDED
 
-#include "app/color.h"
-#include "gfx/rect.h"
-#include "ui/base.h"
-#include "ui/color.h"
-#include "ui/graphics.h"
-
-struct FONT;
-struct BITMAP;
+#include "app/tools/ink.h"
+#include "base/compiler_specific.h"
 
 namespace app {
-  using namespace raster;
+  namespace tools {
 
-  void dotted_mode(int offset);
+    class PickInk : public Ink {
+    public:
+      enum Target { Fg, Bg };
 
-  void draw_color_button(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
-                         bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                         PixelFormat pixelFormat, const app::Color& color,
-                         bool hot, bool drag);
+    public:
+      PickInk(Target target);
 
+      Target target() const { return m_target; }
+
+      bool isEyedropper() const OVERRIDE;
+      void prepareInk(ToolLoop* loop) OVERRIDE;
+      void inkHline(int x1, int y, int x2, ToolLoop* loop) OVERRIDE;
+
+    private:
+      Target m_target;
+    };
+
+  } // namespace tools
 } // namespace app
 
-#endif
+#endif  // APP_TOOLS_PICK_INK_H_INCLUDED

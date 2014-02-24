@@ -32,6 +32,7 @@ namespace ui {
 
     void setCaretPos(int pos);
     void selectText(int from, int to);
+    void selectAllText();
     void deselectText();
 
     void setSuffix(const std::string& suffix);
@@ -77,6 +78,7 @@ namespace ui {
     void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
+    int getAvailableTextLength();
 
     size_t m_maxsize;
     int m_caret;

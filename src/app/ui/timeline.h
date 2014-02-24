@@ -203,8 +203,6 @@ namespace app {
     int m_clk_part;
     int m_clk_layer;
     FrameNumber m_clk_frame;
-    // Keys
-    bool m_space_pressed;
     // Old mouse position (for scrolling).
     gfx::Point m_oldPos;
   };

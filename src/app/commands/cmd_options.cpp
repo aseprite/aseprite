@@ -27,6 +27,7 @@
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
+#include "app/modules/gui.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
@@ -71,8 +72,6 @@ void OptionsCommand::onExecute(Context* context)
   Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
   Widget* check_autotimeline = app::find_widget<Widget>(window, "autotimeline");
   Widget* show_scrollbars = app::find_widget<Widget>(window, "show_scrollbars");
-  Widget* move_click2 = app::find_widget<Widget>(window, "move_click2");
-  Widget* draw_click2 = app::find_widget<Widget>(window, "draw_click2");
   Widget* cursor_color_box = app::find_widget<Widget>(window, "cursor_color_box");
   Widget* grid_color_box = app::find_widget<Widget>(window, "grid_color_box");
   Widget* pixel_grid_color_box = app::find_widget<Widget>(window, "pixel_grid_color_box");
@@ -83,6 +82,7 @@ void OptionsCommand::onExecute(Context* context)
   Button* checked_bg_reset = app::find_widget<Button>(window, "checked_bg_reset");
   Widget* undo_size_limit = app::find_widget<Widget>(window, "undo_size_limit");
   Widget* undo_goto_modified = app::find_widget<Widget>(window, "undo_goto_modified");
+  ComboBox* screen_scale = app::find_widget<ComboBox>(window, "screen_scale");
   Widget* button_ok = app::find_widget<Widget>(window, "button_ok");
 
   // Cursor color
@@ -105,12 +105,6 @@ void OptionsCommand::onExecute(Context* context)
   pixel_grid_color_box->addChild(pixel_grid_color);
 
   // Others
-  if (get_config_bool("Options", "MoveClick2", false))
-    move_click2->setSelected(true);
-
-  if (get_config_bool("Options", "DrawClick2", false))
-    draw_click2->setSelected(true);
-
   if (get_config_bool("Options", "MoveSmooth", true))
     check_smooth->setSelected(true);
 
@@ -119,6 +113,13 @@ void OptionsCommand::onExecute(Context* context)
 
   if (settings->getShowSpriteEditorScrollbars())
     show_scrollbars->setSelected(true);
+
+  // Checked background size
+  screen_scale->addItem("1:1");
+  screen_scale->addItem("2:1");
+  screen_scale->addItem("3:1");
+  screen_scale->addItem("4:1");
+  screen_scale->setSelectedItemIndex(get_screen_scaling()-1);
 
   // Checked background size
   m_checked_bg->addItem("16x16");
@@ -160,8 +161,6 @@ void OptionsCommand::onExecute(Context* context)
 
     set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
     set_config_bool("Options", "AutoShowTimeline", check_autotimeline->isSelected());
-    set_config_bool("Options", "MoveClick2", move_click2->isSelected());
-    set_config_bool("Options", "DrawClick2", draw_click2->isSelected());
 
     settings->setShowSpriteEditorScrollbars(show_scrollbars->isSelected());
 
@@ -174,6 +173,15 @@ void OptionsCommand::onExecute(Context* context)
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
     set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
     set_config_bool("Options", "UndoGotoModified", undo_goto_modified->isSelected());
+
+    int new_screen_scaling = screen_scale->getSelectedItemIndex()+1;
+    if (new_screen_scaling != get_screen_scaling()) {
+      set_screen_scaling(new_screen_scaling);
+
+      ui::Alert::show(PACKAGE
+        "<<You must restart the program to see your changes to 'Screen Scale' setting."
+        "||&OK");
+    }
 
     // Save configuration
     flush_config_file();

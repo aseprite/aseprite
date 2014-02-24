@@ -12,6 +12,7 @@
 
 #include "gfx/rect.h"
 #include "gfx/region.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/popup_window.h"
 #include "ui/slider.h"
@@ -75,13 +76,30 @@ bool IntEntry::onProcessMessage(Message* msg)
       openPopup();
       break;
 
+    case kMouseMoveMessage:
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        Widget* pick = getManager()->pick(mouseMsg->position());
+        if (pick == m_slider) {
+          releaseMouse();
+
+          MouseMessage mouseMsg2(kMouseDownMessage,
+            mouseMsg->buttons(),
+            mouseMsg->position());
+          m_slider->sendMessage(&mouseMsg2);
+        }
+      }
+      break;
+
     case kMouseWheelMessage:
       if (isEnabled()) {
         int oldValue = getValue();
         int newValue = oldValue + jmouse_z(0) - jmouse_z(1);
         newValue = MID(m_min, newValue, m_max);
-        if (newValue != oldValue)
+        if (newValue != oldValue) {
           setValue(newValue);
+          selectAllText();
+        }
         return true;
       }
       break;
@@ -139,6 +157,7 @@ void IntEntry::closePopup()
 void IntEntry::onChangeSlider()
 {
   setValue(m_slider->getValue());
+  selectAllText();
 }
 
 } // namespace ui

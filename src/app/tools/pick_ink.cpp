@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,30 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_MODULES_GFX_H_INCLUDED
-#define APP_MODULES_GFX_H_INCLUDED
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include "app/color.h"
-#include "gfx/rect.h"
-#include "ui/base.h"
-#include "ui/color.h"
-#include "ui/graphics.h"
-
-struct FONT;
-struct BITMAP;
+#include "app/tools/pick_ink.h"
 
 namespace app {
-  using namespace raster;
+namespace tools {
 
-  void dotted_mode(int offset);
+PickInk::PickInk(Target target) : m_target(target)
+{
+}
 
-  void draw_color_button(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
-                         bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                         PixelFormat pixelFormat, const app::Color& color,
-                         bool hot, bool drag);
+bool PickInk::isEyedropper() const
+{
+  return true;
+}
 
+void PickInk::prepareInk(ToolLoop* loop)
+{
+  // Do nothing
+}
+
+void PickInk::inkHline(int x1, int y, int x2, ToolLoop* loop)
+{
+  // Do nothing
+}
+
+} // namespace tools
 } // namespace app
-
-#endif

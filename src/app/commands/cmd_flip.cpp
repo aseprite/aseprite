@@ -96,22 +96,20 @@ void FlipCommand::onExecute(Context* context)
       // whole image.
       if (document->isMaskVisible()) {
         mask = document->getMask();
-        gfx::Rect maskBounds = mask->getBounds();
-
-        // Adjust the mask depending on the cel position.
-        maskBounds.offset(-x, -y);
 
         // Intersect the full area of the image with the mask's
         // bounds, so we don't request to flip an area outside the
         // image's bounds.
-        bounds = bounds.createIntersect(maskBounds);
+        bounds = bounds.createIntersect(gfx::Rect(mask->getBounds()).offset(-x, -y));
 
         // If the mask isn't a rectangular area, we've to flip the mask too.
         if (mask->getBitmap() != NULL && !mask->isRectangular()) {
           int bgcolor = app_get_color_to_clear_layer(writer.layer());
 
           // Flip the portion of image specified by the mask.
+          mask->offsetOrigin(-x, -y);
           api.flipImageWithMask(image, mask, m_flipType, bgcolor);
+          mask->offsetOrigin(x, y);
           alreadyFlipped = true;
 
           // Flip the mask.
@@ -121,8 +119,7 @@ void FlipCommand::onExecute(Context* context)
             base::UniquePtr<Mask> newMask(new Mask(*mask));
             newMask->freeze();
             raster::algorithm::flip_image(newMask->getBitmap(),
-                                          maskBitmap->getBounds(),
-                                          m_flipType);
+              maskBitmap->getBounds(), m_flipType);
             newMask->unfreeze();
 
             // Change the current mask and generate the new boundaries.

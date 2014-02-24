@@ -195,18 +195,6 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
   }
 }
 
-void draw_emptyset_symbol(BITMAP* bmp, const Rect& rc, ui::Color color)
-{
-  Point center = rc.getCenter();
-  int size = MIN(rc.w, rc.h) - 8;
-  size = MID(4, size, 64);
-
-  circle(bmp, center.x, center.y, size*4/10, ui::to_system(color));
-  line(bmp,
-       center.x-size/2, center.y+size/2,
-       center.x+size/2, center.y-size/2, ui::to_system(color));
-}
-
 static void draw_color(ui::Graphics* g, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
 {
   if (rc.w < 1 || rc.h < 1)

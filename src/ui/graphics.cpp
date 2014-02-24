@@ -104,6 +104,12 @@ void Graphics::fillRect(ui::Color color, const gfx::Rect& rc)
            m_dy+rc.y+rc.h-1, to_system(color));
 }
 
+void Graphics::fillRegion(ui::Color color, const gfx::Region& rgn)
+{
+  for (gfx::Region::iterator it=rgn.begin(), end=rgn.end(); it!=end; ++it)
+    fillRect(color, *it);
+}
+
 void Graphics::drawBitmap(BITMAP* sprite, int x, int y)
 {
   draw_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
