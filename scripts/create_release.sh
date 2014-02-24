@@ -43,6 +43,7 @@ if [ ! -d build ] ; then
         -D "CMAKE_BUILD_TYPE:STRING=RelWithDebInfo" \
         -D "CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
         -D "CMAKE_C_FLAGS_RELWITHDEBINFO:STRING = /Zi /MT /O2 /Ob1 /D NDEBUG" \
+        -D "CMAKE_EXE_LINKER_FLAGS:STRING = /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01" \
         -G "Ninja" \
         ..
     cd ..
