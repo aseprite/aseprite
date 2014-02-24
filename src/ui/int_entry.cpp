@@ -83,10 +83,10 @@ bool IntEntry::onProcessMessage(Message* msg)
         if (pick == m_slider) {
           releaseMouse();
 
-          MouseMessage mouseMsg(kMouseDownMessage,
+          MouseMessage mouseMsg2(kMouseDownMessage,
             mouseMsg->buttons(),
             mouseMsg->position());
-          m_slider->sendMessage(&mouseMsg);
+          m_slider->sendMessage(&mouseMsg2);
         }
       }
       break;

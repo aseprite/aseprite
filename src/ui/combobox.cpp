@@ -431,10 +431,10 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
         if (pick != NULL && (pick == listbox || pick->hasAncestor(listbox))) {
           releaseMouse();
 
-          MouseMessage mouseMsg(kMouseDownMessage,
+          MouseMessage mouseMsg2(kMouseDownMessage,
             mouseMsg->buttons(),
             mouseMsg->position());
-          pick->sendMessage(&mouseMsg);
+          pick->sendMessage(&mouseMsg2);
           return true;
         }
       }
