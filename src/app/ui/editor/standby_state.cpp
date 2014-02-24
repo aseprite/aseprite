@@ -227,7 +227,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isEyedropper()) {
     Command* eyedropper_cmd =
       CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
-    bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Target::Fg);
+    bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
 
     Params params;
     params.set("target", fg ? "foreground": "background");
