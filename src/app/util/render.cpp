@@ -319,7 +319,7 @@ bool RenderEngine::getCheckedBgZoom()
 void RenderEngine::setCheckedBgZoom(bool state)
 {
   checked_bg_zoom = state;
-  set_config_int("Options", "CheckedBgZoom", state);
+  set_config_bool("Options", "CheckedBgZoom", state);
 }
 
 // static
