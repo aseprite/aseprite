@@ -42,6 +42,32 @@ void make_directory(const string& path)
   }
 }
 
+void delete_file(const string& path)
+{
+  int result = unlink(path.c_str());
+  if (result != 0)
+    // TODO add errno into the exception
+    throw std::runtime_error("Error deleting file");
+}
+
+bool has_readonly_attr(const string& path)
+{
+  struct stat sts;
+  return (stat(path.c_str(), &sts) == 0 && ((sts.st_mode & S_IWUSR) == 0));
+}
+
+void remove_readonly_attr(const string& path)
+{
+  struct stat sts;
+  int result = stat(path.c_str(), &sts);
+  if (result == 0) {
+    result = chmod(path.c_str(), sts.st_mode | S_IWUSR);
+    if (result != 0)
+      // TODO add errno into the exception
+      throw std::runtime_error("Error removing read-only attribute");
+  }
+}
+
 void remove_directory(const string& path)
 {
   int result = rmdir(path.c_str());

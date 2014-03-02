@@ -101,6 +101,22 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
 
 //////////////////////////////////////////////////////////////////////
 
+static bool confirm_readonly(const base::string& filename)
+{
+  if (!base::has_readonly_attr(filename))
+    return true;
+
+  int ret = ui::Alert::show("Warning<<The file is read-only, do you really want to overwrite it?<<%s||&Yes||&No",
+    base::get_file_name(filename).c_str());
+
+  if (ret == 1) {
+    base::remove_readonly_attr(filename);
+    return true;
+  }
+  else
+    return false;
+}
+
 static void save_as_dialog(const ContextReader& reader, const char* dlg_title, bool mark_as_saved)
 {
   const Document* document = reader.document();
@@ -119,17 +135,26 @@ static void save_as_dialog(const ContextReader& reader, const char* dlg_title, b
 
     filename = newfilename;
 
-    if (base::file_exists(filename.c_str())) {
-      // Ask if the user wants overwrite the existent file?
-      ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                            base::get_file_name(filename).c_str());
+    // Ask if the user wants overwrite the existent file.
+    if (base::file_exists(filename)) {
+      ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+        base::get_file_name(filename).c_str());
+
+      // Check for read-only attribute.
+      if (ret == 1) {
+        if (!confirm_readonly(filename))
+          ret = 2;              // Select file again.
+        else
+          break;
+      }
     }
     else
       break;
 
     // "yes": we must continue with the operation...
-    if (ret == 1)
+    if (ret == 1) {
       break;
+    }
     // "cancel" or <esc> per example: we back doing nothing
     else if (ret != 2)
       return;
@@ -187,6 +212,9 @@ void SaveFileCommand::onExecute(Context* context)
   if (document->isAssociatedToFile()) {
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
+
+    if (!confirm_readonly(documentWriter->getFilename()))
+      return;
 
     save_document_in_background(documentWriter, true);
     update_screen_for_document(documentWriter);

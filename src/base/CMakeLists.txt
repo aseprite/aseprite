@@ -15,7 +15,7 @@ if(HAVE_SCHED_YIELD)
   add_definitions(-DHAVE_SCHED_YIELD)
 endif()
 
-add_library(base-lib
+set(BASE_SOURCES
   cfile.cpp
   chrono.cpp
   convert_to.cpp
@@ -40,3 +40,10 @@ add_library(base-lib
   thread.cpp
   trim_string.cpp
   version.cpp)
+
+if(WIN32)
+  set(BASE_SOURCES ${BASE_SOURCES}
+    win32_exception.cpp)
+endif()
+
+add_library(base-lib ${BASE_SOURCES})
