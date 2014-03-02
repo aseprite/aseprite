@@ -19,18 +19,11 @@
 #ifndef RASTER_IMAGE_ITERATOR_H_INCLUDED
 #define RASTER_IMAGE_ITERATOR_H_INCLUDED
 
-#ifndef NDEBUG
-#define RASTER_DEBUG_ITERATORS
-#endif
-
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/color.h"
 #include "raster/image.h"
 #include "raster/image_traits.h"
-
-#ifdef RASTER_DEBUG_ITERATORS
-#include "gfx/point.h"
-#endif
 
 #include <cstdlib>
 #include <iterator>
@@ -57,66 +50,53 @@ namespace raster {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
+      m_image(other.m_image),
       m_ptr(other.m_ptr),
       m_x(other.m_x),
-      m_width(other.m_width),
-      m_nextRow(other.m_nextRow)
-#ifdef RASTER_DEBUG_ITERATORS
-      , m_image(other.m_image)
-      , m_X0(other.m_X0), m_X(other.m_X), m_Y(other.m_Y)
-#endif
+      m_y(other.m_y),
+      m_xbegin(other.m_xbegin),
+      m_xend(other.m_xend)
     {
     }
 
     ImageIteratorT(const Image* image, const gfx::Rect& bounds, int x, int y) :
+      m_image(const_cast<Image*>(image)),
       m_ptr((pointer)image->getPixelAddress(x, y)),
-      m_x(x - bounds.x),
-      m_width(bounds.w),
-      m_nextRow(image->getWidth() - bounds.w)
-#ifdef RASTER_DEBUG_ITERATORS
-      , m_image(const_cast<Image*>(image))
-      , m_X0(bounds.x)
-      , m_X(x), m_Y(y)
-#endif
+      m_x(x),
+      m_y(y),
+      m_xbegin(bounds.x),
+      m_xend(bounds.x + bounds.w)
     {
       ASSERT(bounds.contains(gfx::Point(x, y)));
       ASSERT(image->getBounds().contains(bounds));
     }
 
     ImageIteratorT& operator=(const ImageIteratorT& other) {
+      m_image = other.m_image;
       m_ptr = other.m_ptr;
       m_x = other.m_x;
-      m_width = other.m_width;
-      m_nextRow = other.m_nextRow;
-#ifdef RASTER_DEBUG_ITERATORS
-      m_image = other.m_image;
-      m_X0 = other.m_X0;
-      m_X = other.m_X;
-      m_Y = other.m_Y;
-#endif
+      m_y = other.m_y;
+      m_xbegin = other.m_xbegin;
+      m_xend = other.m_xend;
       return *this;
     }
 
     bool operator==(const ImageIteratorT& other) const {
-#ifdef RASTER_DEBUG_ITERATORS
       if (m_ptr == other.m_ptr) {
-        ASSERT(m_X == other.m_X && m_Y == other.m_Y);
+        ASSERT(m_x == other.m_x && m_y == other.m_y);
       }
       else {
-        ASSERT(m_X != other.m_X || m_Y != other.m_Y);
+        ASSERT(m_x != other.m_x || m_y != other.m_y);
       }
-#endif
       return m_ptr == other.m_ptr;
     }
     bool operator!=(const ImageIteratorT& other) const {
-#ifdef RASTER_DEBUG_ITERATORS
       if (m_ptr != other.m_ptr) {
-        ASSERT(m_X != other.m_X || m_Y != other.m_Y);
+        ASSERT(m_x != other.m_x || m_y != other.m_y);
       }
       else {
-        ASSERT(m_X == other.m_X && m_Y == other.m_Y);
+        ASSERT(m_x == other.m_x && m_y == other.m_y);
       }
-#endif
       return m_ptr != other.m_ptr;
     }
     bool operator<(const ImageIteratorT& other) const { return m_ptr < other.m_ptr; }
@@ -125,37 +105,18 @@ namespace raster {
     bool operator>=(const ImageIteratorT& other) const { return m_ptr >= other.m_ptr; }
 
     ImageIteratorT& operator++() {
-#ifdef RASTER_DEBUG_ITERATORS
-      ASSERT(m_image->getBounds().contains(gfx::Point(m_X, m_Y)));
-#endif
+      ASSERT(m_image->getBounds().contains(gfx::Point(m_x, m_y)));
 
       ++m_ptr;
       ++m_x;
 
-#ifdef RASTER_DEBUG_ITERATORS
-      ++m_X;
-#endif
+      if (m_x == m_xend) {
+        m_x = m_xbegin;
+        ++m_y;
 
-      if (m_x == m_width) {
-        m_ptr += m_nextRow;
-        m_x = 0;
-
-#ifdef RASTER_DEBUG_ITERATORS
-        m_X = m_X0;
-        ++m_Y;
-
-        if (m_Y < m_image->getHeight()) {
-          pointer expected_ptr = (pointer)m_image->getPixelAddress(m_X, m_Y);
-          ASSERT(expected_ptr == m_ptr);
-        }
-#endif
+        if (m_y < m_image->getHeight())
+          m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
       }
-#ifdef RASTER_DEBUG_ITERATORS
-      else {
-        pointer expected_ptr = (pointer)m_image->getPixelAddress(m_X, m_Y);
-        ASSERT(expected_ptr == m_ptr);
-      }
-#endif
 
       return *this;
     }
@@ -175,15 +136,11 @@ namespace raster {
     reference operator*() { return *m_ptr; }
 
   private:
-    pointer m_ptr;
-    int m_bit;
-    int m_x;
-    int m_width;
-    int m_nextRow;
-#ifdef RASTER_DEBUG_ITERATORS // Data used for debugging purposes.
     Image* m_image;
-    int m_X0, m_X, m_Y;
-#endif
+    pointer m_ptr;
+    int m_x, m_y;
+    int m_xbegin;
+    int m_xend;
   };
 
   template<typename ImageTraits>
@@ -329,121 +286,80 @@ namespace raster {
     }
 
     ImageIteratorT(const ImageIteratorT& other) :
+      m_image(other.m_image),
       m_ptr(other.m_ptr),
       m_x(other.m_x),
+      m_y(other.m_y),
       m_subPixel(other.m_subPixel),
-      m_subPixel0(other.m_subPixel0),
-      m_width(other.m_width),
-      m_nextRow(other.m_nextRow)
-#ifdef RASTER_DEBUG_ITERATORS
-      , m_image(other.m_image)
-      , m_X0(other.m_X0), m_X(other.m_X), m_Y(other.m_Y)
-#endif
+      m_xbegin(other.m_xbegin),
+      m_xend(other.m_xend)
     {
     }
 
     ImageIteratorT(const Image* image, const gfx::Rect& bounds, int x, int y) :
+      m_image(const_cast<Image*>(image)),
       m_ptr((pointer)image->getPixelAddress(x, y)),
-      m_x(x - bounds.x),
+      m_x(x),
+      m_y(y),
       m_subPixel(x % 8),
-      m_subPixel0(bounds.x % 8),
-      m_width(bounds.w),
-      m_nextRow(// Bytes on the right of this row to jump to the beginning of the next one
-                BitmapTraits::getRowStrideBytes((pixels_per_byte*BitmapTraits::getRowStrideBytes(image->getWidth()))
-                                                - (bounds.x+bounds.w))
-                // Bytes on the left of the next row to go to bounds.x byte
-                + bounds.x/pixels_per_byte)
-
-#ifdef RASTER_DEBUG_ITERATORS
-      , m_image(const_cast<Image*>(image))
-      , m_X0(bounds.x)
-      , m_X(x), m_Y(y)
-#endif
+      m_xbegin(bounds.x),
+      m_xend(bounds.x + bounds.w)
     {
       ASSERT(bounds.contains(gfx::Point(x, y)));
     }
 
     ImageIteratorT& operator=(const ImageIteratorT& other) {
+      m_image = other.m_image;
       m_ptr = other.m_ptr;
       m_x = other.m_x;
+      m_y = other.m_y;
       m_subPixel = other.m_subPixel;
-      m_subPixel0 = other.m_subPixel0;
-      m_width = other.m_width;
-      m_nextRow = other.m_nextRow;
-#ifdef RASTER_DEBUG_ITERATORS
-      m_image = other.m_image;
-      m_X0 = other.m_X0;
-      m_X = other.m_X;
-      m_Y = other.m_Y;
-#endif
+      m_xbegin = other.m_xbegin;
+      m_xend = other.m_xend;
       return *this;
     }
 
     bool operator==(const ImageIteratorT& other) const {
-#ifdef RASTER_DEBUG_ITERATORS
       if (m_ptr == other.m_ptr &&
           m_subPixel == other.m_subPixel) {
-        ASSERT(m_X == other.m_X && m_Y == other.m_Y);
+        ASSERT(m_x == other.m_x && m_y == other.m_y);
       }
       else {
-        ASSERT(m_X != other.m_X || m_Y != other.m_Y);
+        ASSERT(m_x != other.m_x || m_y != other.m_y);
       }
-#endif
       return m_ptr == other.m_ptr;
     }
     bool operator!=(const ImageIteratorT& other) const {
-#ifdef RASTER_DEBUG_ITERATORS
       if (m_ptr != other.m_ptr ||
           m_subPixel != other.m_subPixel) {
-        ASSERT(m_X != other.m_X || m_Y != other.m_Y);
+        ASSERT(m_x != other.m_x || m_y != other.m_y);
       }
       else {
-        ASSERT(m_X == other.m_X && m_Y == other.m_Y);
+        ASSERT(m_x == other.m_x && m_y == other.m_y);
       }
-#endif
       return m_ptr != other.m_ptr;
     }
 
     ImageIteratorT& operator++() {
-#ifdef RASTER_DEBUG_ITERATORS
-      ASSERT(m_image->getBounds().contains(gfx::Point(m_X, m_Y)));
-#endif
+      ASSERT(m_image->getBounds().contains(gfx::Point(m_x, m_y)));
 
       ++m_x;
       ++m_subPixel;
 
-      if (m_subPixel == 8) {
+      if (m_x == m_xend) {
+        m_x = m_xbegin;
+        m_subPixel = m_x % 8;
+        ++m_y;
+
+        if (m_y < m_image->getHeight())
+          m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
+        else
+          ++m_ptr;
+      }
+      else if (m_subPixel == 8) {
         m_subPixel = 0;
         ++m_ptr;
       }
-
-#ifdef RASTER_DEBUG_ITERATORS
-      ++m_X;
-#endif
-
-      if (m_x == m_width) {
-        m_ptr += m_nextRow;
-        m_x = 0;
-        m_subPixel = m_subPixel0;
-
-#ifdef RASTER_DEBUG_ITERATORS
-        m_X = m_X0;
-        ++m_Y;
-
-        if (m_Y < m_image->getHeight()) {
-          pointer expected_ptr = (pointer)m_image->getPixelAddress(m_X, m_Y);
-          ASSERT(expected_ptr == m_ptr);
-          ASSERT(m_subPixel == m_X % 8);
-        }
-#endif
-      }
-#ifdef RASTER_DEBUG_ITERATORS
-      else {
-        pointer expected_ptr = (pointer)m_image->getPixelAddress(m_X, m_Y);
-        ASSERT(expected_ptr == m_ptr);
-        ASSERT(m_subPixel == m_X % 8);
-      }
-#endif
 
       return *this;
     }
@@ -471,15 +387,13 @@ namespace raster {
     }
 
   private:
-    pointer m_ptr;
-    int m_x, m_subPixel, m_subPixel0;
-    int m_width;
-    int m_nextRow;
-    mutable BitPixelAccess m_access;
-#ifdef RASTER_DEBUG_ITERATORS // Data used for debugging purposes.
     Image* m_image;
-    int m_X0, m_X, m_Y;
-#endif
+    pointer m_ptr;
+    int m_x, m_y;
+    int m_subPixel;
+    int m_xbegin;
+    int m_xend;
+    mutable BitPixelAccess m_access;
   };
 
   template<>
