@@ -23,6 +23,7 @@
 #include "app/color_picker.h"
 
 #include "app/document_location.h"
+#include "gfx/point.h"
 #include "raster/image.h"
 #include "raster/primitives.h"
 #include "raster/sprite.h"
@@ -48,8 +49,10 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
   else {                        // Pick from the current layer
     int u, v;
     raster::Image* image = location.image(&u, &v, NULL);
-    if (image) {
-      raster::color_t imageColor = get_pixel(image, x-u, y-v);
+    gfx::Point pt(x-u, y-v);
+
+    if (image && image->getBounds().contains(pt)) {
+      raster::color_t imageColor = get_pixel(image, pt.x, pt.y);
 
       switch (image->getPixelFormat()) {
         case IMAGE_RGB:
