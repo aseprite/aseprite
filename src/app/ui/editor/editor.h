@@ -117,9 +117,6 @@ namespace app {
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
 
-    void drawMask();
-    void drawMaskSafe();
-
     void flashCurrentLayer();
 
     void screenToEditor(int xin, int yin, int* xout, int* yout);
@@ -195,7 +192,9 @@ namespace app {
     void editor_clean_cursor(bool refresh = true);
     bool editor_cursor_is_subpixel();
 
-    void drawGrid(const gfx::Rect& gridBounds, const app::Color& color);
+    void drawMaskSafe();
+    void drawMask(ui::Graphics* g);
+    void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds, const app::Color& color);
 
     void editor_setcursor();
 
