@@ -289,10 +289,16 @@ protected:
   void onChange() OVERRIDE {
     ComboBox::onChange();
 
+    InkType inkType = kDefaultInk;
+
+    switch (getSelectedItemIndex()) {
+      case 0: inkType = kDefaultInk; break;
+      case 1: inkType = kPutAlphaInk; break;
+    }
+
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setInkType((InkType)getSelectedItemIndex());
+    settings->getToolSettings(currentTool)->setInkType(inkType);
   }
 
   void onCloseListBox() OVERRIDE {
