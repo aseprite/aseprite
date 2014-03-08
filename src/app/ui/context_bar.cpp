@@ -294,6 +294,10 @@ protected:
     settings->getToolSettings(currentTool)
       ->setInkType((InkType)getSelectedItemIndex());
   }
+
+  void onCloseListBox() OVERRIDE {
+    releaseFocus();
+  }
 };
 
 class ContextBar::InkOpacityField : public IntEntry
@@ -379,6 +383,10 @@ protected:
       ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
   }
 
+  void onCloseListBox() OVERRIDE {
+    releaseFocus();
+  }
+
 private:
   class Item : public ListItem {
   public:
@@ -410,6 +418,9 @@ public:
       ->setFreehandAlgorithm(isSelected() ?
         kPixelPerfectFreehandAlgorithm:
         kDefaultFreehandAlgorithm);
+
+    releaseFocus(
+);
   }
 };
 
@@ -451,6 +462,8 @@ protected:
     CheckBox::onClick(ev);
 
     UIContext::instance()->settings()->setGrabAlpha(isSelected());
+
+    releaseFocus();
   }
 };
 

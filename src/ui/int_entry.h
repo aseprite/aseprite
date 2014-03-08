@@ -11,11 +11,11 @@
 
 namespace ui {
 
+  class CloseEvent;
   class PopupWindow;
   class Slider;
 
-  class IntEntry : public Entry
-  {
+  class IntEntry : public Entry {
   public:
     IntEntry(int min, int max);
     ~IntEntry();
@@ -34,6 +34,7 @@ namespace ui {
     void openPopup();
     void closePopup();
     void onChangeSlider();
+    void onPopupClose(CloseEvent& ev);
 
     int m_min;
     int m_max;

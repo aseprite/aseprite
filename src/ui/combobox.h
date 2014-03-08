@@ -83,12 +83,14 @@ namespace ui {
 
     // Signals
     Signal0<void> Change;
+    Signal0<void> CloseListBox;
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChange();
+    virtual void onCloseListBox();
 
   private:
     void onButtonClick(Event& ev);

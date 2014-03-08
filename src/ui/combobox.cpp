@@ -542,6 +542,8 @@ void ComboBox::closeListBox()
 
     getManager()->removeMessageFilter(kMouseDownMessage, this);
     getManager()->setFocus(m_entry);
+
+    onCloseListBox();
   }
 }
 
@@ -569,6 +571,11 @@ gfx::Rect ComboBox::getListBoxPos() const
 void ComboBox::onChange()
 {
   Change();
+}
+
+void ComboBox::onCloseListBox()
+{
+  CloseListBox();
 }
 
 } // namespace ui
