@@ -282,7 +282,14 @@ public:
   }
 
   void setInkType(InkType inkType) {
-    setSelectedItemIndex((int)inkType);
+    int index = 0;
+
+    switch (inkType) {
+      case kDefaultInk: index = 0; break;
+      case kPutAlphaInk: index = 1; break;
+    }
+
+    setSelectedItemIndex(index);
   }
 
 protected:
