@@ -17,6 +17,7 @@ namespace base {
     TempDir(const string& appName);
     ~TempDir();
 
+    void remove();
     void attach(const string& path);
     const string& path() const { return m_path; }
 

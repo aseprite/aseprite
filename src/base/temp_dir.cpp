@@ -37,14 +37,25 @@ TempDir::TempDir(const string& appName)
 
 TempDir::~TempDir()
 {
-  if (!m_path.empty())
-    remove_directory(m_path);
+  remove();
+}
+
+void TempDir::remove()
+{
+  if (!m_path.empty()) {
+    try {
+      remove_directory(m_path);
+    }
+    catch (const std::exception&) {
+      // Ignore exceptions if the directory cannot be removed.
+    }
+    m_path.clear();
+  }
 }
 
 void TempDir::attach(const string& path)
 {
-  if (!m_path.empty())
-    remove_directory(m_path);
+  remove();
 
   ASSERT(directory_exists(path));
   m_path = path;
