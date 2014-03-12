@@ -25,6 +25,7 @@
 #include "base/shared_ptr.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
+#include "doc/document.h"
 #include "gfx/transformation.h"
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
@@ -86,8 +87,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Main properties
 
-    DocumentId getId() const { return m_id; }
-    void setId(DocumentId id) { m_id = id; }
+    DocumentId getId() const { return m_document.id(); }
+    void setId(DocumentId id) { m_document.setId(id); }
 
     const Sprite* getSprite() const { return m_sprite; }
     const DocumentUndo* getUndo() const { return m_undo; }
@@ -109,7 +110,7 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // File related properties
 
-    const base::string& getFilename() const { return m_filename; }
+    const base::string& getFilename() const { return m_document.filename(); }
     void setFilename(const base::string& filename);
 
     bool isModified() const;
@@ -190,17 +191,13 @@ namespace app {
     void unlock();
 
   private:
-    // Unique identifier for this document (it is assigned by Documents class).
-    DocumentId m_id;
+    doc::Document m_document;
 
     // The main sprite.
     base::UniquePtr<Sprite> m_sprite;
 
     // Undo and redo information about the document.
     base::UniquePtr<DocumentUndo> m_undo;
-
-    // Document's file name (from where it was loaded, where it is saved).
-    base::string m_filename;
 
     // True if this sprite is associated to a file in the file-system.
     bool m_associated_to_file;

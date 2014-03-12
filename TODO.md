@@ -37,6 +37,7 @@
 
 # WIP
 
+* New model layer (src/doc/)
 * Start view (src/app/ui/start_view.cpp)
 * Data recovery (src/app/data_recovery.cpp)
 * Projects (src/app/project.cpp)

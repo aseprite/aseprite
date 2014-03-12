@@ -1,7 +1,7 @@
 # Aseprite
 # Copyright (C) 2001-2013  David Capello
 
-add_library(app-library
+add_library(app-lib
   app.cpp
   app_menus.cpp
   app_options.cpp

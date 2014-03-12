@@ -49,10 +49,8 @@ using namespace base;
 using namespace raster;
 
 Document::Document(Sprite* sprite)
-  : m_id(WithoutDocumentId)
-  , m_sprite(sprite)
+  : m_sprite(sprite)
   , m_undo(new DocumentUndo)
-  , m_filename("Sprite")
   , m_associated_to_file(false)
   , m_mutex(new mutex)
   , m_write_lock(false)
@@ -66,6 +64,8 @@ Document::Document(Sprite* sprite)
   , m_mask(new Mask())
   , m_maskVisible(true)
 {
+  m_document.setFilename("Sprite");
+
   // Boundary stuff
   m_bound.nseg = 0;
   m_bound.seg = NULL;
@@ -189,9 +189,9 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
-  void Document::setFilename(const base::string& filename)
+void Document::setFilename(const base::string& filename)
 {
-  m_filename = filename;
+  m_document.setFilename(filename);
 }
 
 bool Document::isModified() const
