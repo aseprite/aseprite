@@ -594,18 +594,18 @@ void Editor::drawMaskSafe()
 
     Region region;
     getDrawableRegion(region, kCutTopWindows);
+    region.offset(-getBounds().getOrigin());
 
     if (thick)
       editor_clean_cursor();
     else
       jmouse_hide();
 
-    gfx::Point offset = -getBounds().getOrigin();
     GraphicsPtr g = getGraphics(getClientBounds());
 
     for (Region::const_iterator it=region.begin(), end=region.end();
          it != end; ++it) {
-      IntersectClip clip(g, gfx::Rect(*it).offset(offset));
+      IntersectClip clip(g, gfx::Rect(*it));
       if (clip)
         drawMask(g);
     }
