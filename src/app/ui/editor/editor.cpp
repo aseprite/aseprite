@@ -28,6 +28,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/document_location.h"
+#include "app/console.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -385,9 +386,15 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
     // Generate the rendered image
-    base::UniquePtr<Image> rendered
-      (renderEngine.renderSprite(source_x, source_y, width, height,
-                                 m_frame, m_zoom, true));
+    base::UniquePtr<Image> rendered(NULL);
+    try {
+      rendered.reset(renderEngine.renderSprite(
+          source_x, source_y, width, height,
+          m_frame, m_zoom, true));
+    }
+    catch (const std::exception& e) {
+      Console::showException(e);
+    }
 
     if (rendered) {
       // Pre-render decorator.
