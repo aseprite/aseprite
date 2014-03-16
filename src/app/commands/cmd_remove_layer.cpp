@@ -56,9 +56,7 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 {
   ContextWriter writer(context);
   Sprite* sprite(writer.sprite());
-  return
-    sprite &&
-    sprite->countLayers() > 1;
+  return sprite;
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
