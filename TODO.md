@@ -1,5 +1,7 @@
 # Very high priority (next release?)
 
+* The paste-in-place doesn't work!
+* Fix animation playback (the duration is not used correctly)
 * Remove Image::getPixelAddress(), it shouldn't be public and almost
   everywhere we should use iterators for images. Also get/put_pixel_fast
   and ImageImpl::address() are dangerous.
@@ -37,7 +39,8 @@
 
 # WIP
 
-* New model layer (src/doc/)
+* New document object model layer (src/doc/)
+* New image file formats layer (src/iff/)
 * Start view (src/app/ui/start_view.cpp)
 * Data recovery (src/app/data_recovery.cpp)
 * Projects (src/app/project.cpp)
