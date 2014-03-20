@@ -105,7 +105,6 @@ add_library(app-lib
   document_location.cpp
   document_undo.cpp
   documents.cpp
-  drop_files.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp

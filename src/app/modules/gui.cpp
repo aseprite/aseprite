@@ -25,7 +25,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
-#include "app/drop_files.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -741,11 +740,30 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
 
+    case kDropFilesMessage:
+      {
+        // If the main window is not the current foreground one. We
+        // discard the drop-files event.
+        if (getForegroundWindow() != App::instance()->getMainWindow())
+          break;
+
+        const DropFilesMessage::Files& files = static_cast<DropFilesMessage*>(msg)->files();
+
+        // Open all files
+        Command* cmd_open_file =
+          CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+        Params params;
+
+        for (DropFilesMessage::Files::const_iterator
+               it = files.begin(); it != files.end(); ++it) {
+          params.set("filename", it->c_str());
+          UIContext::instance()->executeCommand(cmd_open_file, &params);
+        }
+      }
+      break;
+
     case kQueueProcessingMessage:
       gui_feedback();
-
-      // Open dropped files
-      check_for_dropped_files();
       break;
 
     case kKeyDownMessage: {

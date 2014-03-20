@@ -16,6 +16,9 @@
 #include "ui/mouse_buttons.h"
 #include "ui/widgets_list.h"
 
+#include <string>
+#include <vector>
+
 namespace ui {
 
   class Timer;
@@ -126,6 +129,21 @@ namespace ui {
   private:
     int m_count;                    // Accumulated calls
     Timer* m_timer;                 // Timer handle
+  };
+
+  class DropFilesMessage : public Message
+  {
+  public:
+    typedef std::vector<std::string> Files;
+
+    DropFilesMessage(const Files& files)
+      : Message(kDropFilesMessage), m_files(files) {
+    }
+
+    const Files& files() const { return m_files; }
+
+  private:
+    Files m_files;
   };
 
 } // namespace ui

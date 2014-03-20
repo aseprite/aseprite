@@ -460,9 +460,17 @@ bool Manager::generateMessages()
     if (sheEvent.type() == she::Event::None)
       break;
 
-    // TODO
-    // switch (sheEvent.type()) {
-    // }
+    switch (sheEvent.type()) {
+
+      case she::Event::DropFiles:
+        {
+          Message* msg = new DropFilesMessage(sheEvent.files());
+          msg->addRecipient(this);
+          enqueueMessage(msg);
+        }
+        break;
+
+    }
   }
 
   // Generate messages for timers

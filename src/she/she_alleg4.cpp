@@ -10,6 +10,9 @@
 
 #include "she.h"
 
+#include "base/compiler_specific.h"
+#include "base/string.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
@@ -163,19 +166,48 @@ private:
 #if WIN32
 namespace {
 
-Display* g_display = NULL;
+Display* unique_display = NULL;
 wndproc_t base_wndproc = NULL;
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-  // TODO
-  // switch (msg) {
-  // }
+  switch (msg) {
+
+    case WM_DROPFILES:
+      {
+        HDROP hdrop = (HDROP)(wparam);
+        Event::Files files;
+
+        int count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+        for (int index=0; index<count; ++index) {
+          int length = DragQueryFile(hdrop, index, NULL, 0);
+          if (length > 0) {
+            std::vector<TCHAR> str(length+1);
+            DragQueryFile(hdrop, index, &str[0], str.size());
+            files.push_back(base::to_utf8(&str[0]));
+          }
+        }
+
+        DragFinish(hdrop);
+
+        Event ev;
+        ev.setType(Event::DropFiles);
+        ev.setFiles(files);
+        static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())
+          ->queueEvent(ev);
+      }
+      break;
+
+  }
   return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
 }
 
 void subclass_hwnd(HWND hwnd)
 {
+  // Add the WS_EX_ACCEPTFILES
+  SetWindowLong(hwnd, GWL_EXSTYLE,
+    GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+
   base_wndproc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
 }
 
@@ -193,6 +225,8 @@ public:
   Alleg4Display(int width, int height, int scale)
     : m_surface(NULL)
     , m_scale(0) {
+    unique_display = this;
+
     if (install_mouse() < 0) throw DisplayCreationException(allegro_error);
     if (install_keyboard() < 0) throw DisplayCreationException(allegro_error);
 
@@ -240,29 +274,31 @@ public:
 
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+
+    unique_display = NULL;
   }
 
-  void dispose() {
+  void dispose() OVERRIDE {
     delete this;
   }
 
-  int width() const {
+  int width() const OVERRIDE {
     return SCREEN_W;
   }
 
-  int height() const {
+  int height() const OVERRIDE {
     return SCREEN_H;
   }
 
-  int originalWidth() const {
+  int originalWidth() const OVERRIDE {
     return original_width > 0 ? original_width: width();
   }
 
-  int originalHeight() const {
+  int originalHeight() const OVERRIDE {
     return original_height > 0 ? original_height: height();
   }
 
-  void setScale(int scale) {
+  void setScale(int scale) OVERRIDE {
     ASSERT(scale >= 1);
 
     if (m_scale == scale)
@@ -276,11 +312,11 @@ public:
     m_surface = newSurface;
   }
 
-  NotDisposableSurface* getSurface() {
+  NotDisposableSurface* getSurface() OVERRIDE {
     return static_cast<NotDisposableSurface*>(m_surface);
   }
 
-  bool flip() {
+  bool flip() OVERRIDE {
 #ifdef ALLEGRO4_WITH_RESIZE_PATCH
     if (display_flags & DISPLAY_FLAG_WINDOW_RESIZE) {
       display_flags ^= DISPLAY_FLAG_WINDOW_RESIZE;
@@ -307,13 +343,13 @@ public:
     return true;
   }
 
-  void maximize() {
+  void maximize() OVERRIDE {
 #ifdef WIN32
     ::ShowWindow(win_get_window(), SW_MAXIMIZE);
 #endif
   }
 
-  bool isMaximized() const {
+  bool isMaximized() const OVERRIDE {
 #ifdef WIN32
     return (::GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
 #else
@@ -321,11 +357,11 @@ public:
 #endif
   }
 
-  EventQueue* getEventQueue() {
+  EventQueue* getEventQueue() OVERRIDE {
     return m_queue;
   }
 
-  void* nativeHandle() {
+  void* nativeHandle() OVERRIDE {
 #ifdef WIN32
     return reinterpret_cast<void*>(win_get_window());
 #else

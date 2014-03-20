@@ -32,7 +32,6 @@
 #include "app/document_exporter.h"
 #include "app/document_location.h"
 #include "app/document_observer.h"
-#include "app/drop_files.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
@@ -235,9 +234,6 @@ int App::run()
 
   // Run the GUI
   if (isGui()) {
-    // Support to drop files from Windows explorer
-    install_drop_files();
-
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate;
@@ -252,9 +248,6 @@ int App::run()
 
     // Run the GUI main message loop
     gui_run();
-
-    // Uninstall support to drop files
-    uninstall_drop_files();
 
     // Destroy all documents in the UIContext.
     const Documents& docs = m_modules->m_ui_context.getDocuments();
