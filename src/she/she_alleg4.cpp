@@ -12,12 +12,21 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#ifdef ALLEGRO_WINDOWS
+
+#ifdef WIN32
   #include <winalleg.h>
+
+  #if defined STRICT || defined __GNUC__
+    typedef WNDPROC wndproc_t;
+  #else
+    typedef FARPROC wndproc_t;
+  #endif
 #endif
+
 #include "loadpng.h"
 
 #include <cassert>
+#include <vector>
 
 #define DISPLAY_FLAG_FULL_REFRESH     1
 #define DISPLAY_FLAG_WINDOW_RESIZE    2
@@ -125,6 +134,60 @@ private:
   DestroyFlag m_destroy;
 };
 
+class Alleg4EventQueue : public EventQueue {
+public:
+  Alleg4EventQueue() {
+  }
+
+  void dispose() {
+    delete this;
+  }
+
+  void getEvent(Event& event) {
+    if (m_events.size() > 0) {
+      event = m_events[0];
+      m_events.erase(m_events.begin());
+    }
+    else
+      event.setType(Event::None);
+  }
+
+  void queueEvent(const Event& event) {
+    m_events.push_back(event);
+  }
+
+private:
+  std::vector<Event> m_events;
+};
+
+#if WIN32
+namespace {
+
+Display* g_display = NULL;
+wndproc_t base_wndproc = NULL;
+
+static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  // TODO
+  // switch (msg) {
+  // }
+  return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
+}
+
+void subclass_hwnd(HWND hwnd)
+{
+  base_wndproc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
+}
+
+void unsubclass_hwnd(HWND hwnd)
+{
+  SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)base_wndproc);
+  base_wndproc = NULL;
+}
+  
+}
+#endif
+
 class Alleg4Display : public Display {
 public:
   Alleg4Display(int width, int height, int scale)
@@ -150,6 +213,8 @@ public:
 
     setScale(scale);
 
+    m_queue = new Alleg4EventQueue();
+
     // Add a hook to display-switch so when the user returns to the
     // screen it's completelly refreshed/redrawn.
     LOCK_VARIABLE(display_flags);
@@ -160,9 +225,19 @@ public:
     // Setup the handler for window-resize events
     set_resize_callback(resize_callback);
 #endif
+
+#if WIN32
+    subclass_hwnd((HWND)nativeHandle());
+#endif WIN32
   }
 
   ~Alleg4Display() {
+    delete m_queue;
+
+#if WIN32
+    unsubclass_hwnd((HWND)nativeHandle());
+#endif WIN32
+
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
   }
@@ -246,6 +321,10 @@ public:
 #endif
   }
 
+  EventQueue* getEventQueue() {
+    return m_queue;
+  }
+
   void* nativeHandle() {
 #ifdef WIN32
     return reinterpret_cast<void*>(win_get_window());
@@ -257,16 +336,7 @@ public:
 private:
   Surface* m_surface;
   int m_scale;
-};
-
-class Alleg4EventLoop : public EventLoop {
-public:
-  Alleg4EventLoop() {
-  }
-
-  void dispose() {
-    delete this;
-  }
+  Alleg4EventQueue* m_queue;
 };
 
 class Alleg4System : public System {
@@ -305,10 +375,6 @@ public:
   Surface* createSurfaceFromNativeHandle(void* nativeHandle) {
     return new Alleg4Surface(reinterpret_cast<BITMAP*>(nativeHandle),
                              Alleg4Surface::AutoDestroy);
-  }
-
-  EventLoop* createEventLoop() {
-    return new Alleg4EventLoop();
   }
 
 };

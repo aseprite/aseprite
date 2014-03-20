@@ -9,8 +9,9 @@
 
 namespace she {
 
-  class Surface;
+  class EventQueue;
   class NotDisposableSurface;
+  class Surface;
 
   // A display or window to show graphics.
   class Display {
@@ -42,6 +43,8 @@ namespace she {
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;
+
+    virtual EventQueue* getEventQueue() = 0;
 
     // Returns the HWND on Windows.
     virtual void* nativeHandle() = 0;

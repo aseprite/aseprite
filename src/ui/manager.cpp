@@ -13,6 +13,9 @@
 
 #include "ui/manager.h"
 
+#include "she/display.h"
+#include "she/event.h"
+#include "she/event_queue.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -106,6 +109,8 @@ static void allegro_window_close_hook()
 
 Manager::Manager()
   : Widget(kManagerWidget)
+  , m_display(NULL)
+  , m_eventQueue(NULL)
 {
   if (!m_defaultManager) {
     // Hook the window close message
@@ -171,6 +176,12 @@ Manager::~Manager()
     ASSERT(new_windows.empty());
     mouse_widgets_list.clear();
   }
+}
+
+void Manager::setDisplay(she::Display* display)
+{
+  m_display = display;
+  m_eventQueue = m_display->getEventQueue();
 }
 
 void Manager::run()
@@ -440,6 +451,18 @@ bool Manager::generateMessages()
         enqueueMessage(msg);
       }
     }
+  }
+
+  // Events from "she" layer.
+  she::Event sheEvent;
+  for (;;) {
+    m_eventQueue->getEvent(sheEvent);
+    if (sheEvent.type() == she::Event::None)
+      break;
+
+    // TODO
+    // switch (sheEvent.type()) {
+    // }
   }
 
   // Generate messages for timers

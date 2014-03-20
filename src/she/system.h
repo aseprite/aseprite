@@ -30,7 +30,6 @@ namespace she {
     virtual Display* createDisplay(int width, int height, int scale) = 0;
     virtual Surface* createSurface(int width, int height) = 0;
     virtual Surface* createSurfaceFromNativeHandle(void* nativeHandle) = 0;
-    virtual EventLoop* createEventLoop() = 0;
   };
 
   System* CreateSystem();

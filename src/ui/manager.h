@@ -12,7 +12,10 @@
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
-namespace she { class Display; }
+namespace she {
+  class Display;
+  class EventQueue;
+}
 
 namespace ui {
 
@@ -31,7 +34,7 @@ namespace ui {
     ~Manager();
 
     she::Display* getDisplay() { return m_display; }
-    void setDisplay(she::Display* display) { m_display = display; }
+    void setDisplay(she::Display* display);
 
     void run();
 
@@ -99,6 +102,7 @@ namespace ui {
 
     WidgetsList m_garbage;
     she::Display* m_display;
+    she::EventQueue* m_eventQueue;
   };
 
 } // namespace ui
