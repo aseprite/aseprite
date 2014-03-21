@@ -105,7 +105,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
   int x, y, chr, len;
   gfx::Point scroll;
   int viewport_w, viewport_h;
-  int textheight = jwidget_get_text_height(widget);
+  int textheight = widget->getTextHeight();
   FONT *font = widget->getFont();
   char *beg_end, *old_end;
   int width;

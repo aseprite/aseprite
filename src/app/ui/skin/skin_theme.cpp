@@ -826,9 +826,9 @@ void SkinTheme::initWidget(Widget* widget)
 
       if (widget->hasText()) {
         if (widget->getAlign() & JI_TOP)
-          widget->border_width.t = jwidget_get_text_height(widget);
+          widget->border_width.t = widget->getTextHeight();
         else if (widget->getAlign() & JI_BOTTOM)
-          widget->border_width.b = jwidget_get_text_height(widget);
+          widget->border_width.b = widget->getTextHeight();
       }
       break;
 
@@ -837,7 +837,7 @@ void SkinTheme::initWidget(Widget* widget)
               m_part[PART_SLIDER_EMPTY_N]->h,
               m_part[PART_SLIDER_EMPTY_E]->w-1*scale,
               m_part[PART_SLIDER_EMPTY_S]->h-1*scale);
-      widget->child_spacing = jwidget_get_text_height(widget);
+      widget->child_spacing = widget->getTextHeight();
       widget->setAlign(JI_CENTER | JI_MIDDLE);
       break;
 
@@ -868,7 +868,7 @@ void SkinTheme::initWidget(Widget* widget)
       if (!static_cast<Window*>(widget)->isDesktop()) {
         if (widget->hasText()) {
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
-          widget->border_width.t += jwidget_get_text_height(widget);
+          widget->border_width.t += widget->getTextHeight();
 
           if (!(widget->flags & JI_INITIALIZED)) {
             Button* button = new WindowCloseButton();
@@ -1065,7 +1065,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
   std::string textString = widget->getText() + widget->getSuffix();
-  int suffixIndex = widget->getTextSize();
+  int suffixIndex = widget->getTextLength();
   const char* text = textString.c_str();
   int c, ch, x, y, w;
   int x1, y1, x2, y2;
@@ -1097,7 +1097,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
   // Draw the text
   x = widget->getBounds().x + widget->border_width.l;
-  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
+  y = widget->getBounds().y + widget->getBounds().h/2 - widget->getTextHeight()/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
@@ -1184,7 +1184,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
                            widget->getBounds(), 0);
 
   if (widget->hasMouseOver()) {
-    int w = jwidget_get_text_length(widget);
+    int w = widget->getTextWidth();
 
     hline(ji_screen,
           widget->getBounds().x,
@@ -1236,8 +1236,8 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
        widget->getBounds().x, widget->getBounds().y,
        widget->getBounds().x2()-1, widget->getBounds().y2()-1,
        x, y,
-       x+jwidget_get_text_length(widget)-1,
-       y+jwidget_get_text_height(widget)-1, bg);
+       x+widget->getTextWidth()-1,
+       y+widget->getTextHeight()-1, bg);
   }
   // Background
   else {
@@ -1444,7 +1444,7 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
 
   // text
   if (widget->hasText()) {
-    int h = jwidget_get_text_height(widget);
+    int h = widget->getTextHeight();
     Rect r(Point(x1+h/2, y1-h/2),
            Point(x2+1-h, y2+1+h));
 
@@ -1611,7 +1611,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 
   // Draw the text
   x = widget->getBounds().x + widget->border_width.l;
-  y = widget->getBounds().y + widget->getBounds().h/2 - jwidget_get_text_height(widget)/2;
+  y = widget->getBounds().y + widget->getBounds().h/2 - widget->getTextHeight()/2;
 
   for (c=scroll; ugetat(text, c); c++) {
     ch = password ? '*': ugetat(text, c);
@@ -1778,7 +1778,7 @@ void SkinTheme::paintWindow(PaintEvent& ev)
       get_style("window")->paint(g, pos, NULL, Style::State());
       get_style("window_title")->paint(g,
         gfx::Rect(cpos.x, pos.y+5*jguiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
-          jwidget_get_text_height(window)),
+          window->getTextHeight()),
         window->getText().c_str(), Style::State());
     }
     // menubox
@@ -1904,13 +1904,12 @@ void SkinTheme::drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::
 
     if (!t) {
       t = widget->getText().c_str();
-      w = jwidget_get_text_length(widget);
-      h = jwidget_get_text_height(widget);
+      w = widget->getTextWidth();
     }
     else {
       w = ji_font_text_len(widget->getFont(), t);
-      h = text_height(widget->getFont());
     }
+    h = widget->getTextHeight();
 
     /* horizontally text alignment */
 
@@ -2034,7 +2033,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
 
 void SkinTheme::draw_entry_caret(Entry* widget, int x, int y)
 {
-  int h = jwidget_get_text_height(widget);
+  int h = widget->getTextHeight();
 
   vline(ji_screen, x,   y-1, y+h, to_system(getColor(ThemeColor::Text)));
   vline(ji_screen, x+1, y-1, y+h, to_system(getColor(ThemeColor::Text)));

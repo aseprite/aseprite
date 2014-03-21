@@ -461,7 +461,7 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
     }
 
     if (hasText())
-      maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
+      maxSize.w = MAX(maxSize.w, getTextWidth());
 
     ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,
                         this->border_width.t + maxSize.h + this->border_width.b);

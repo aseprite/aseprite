@@ -411,8 +411,8 @@ void Entry::onSetText()
 {
   Widget::onSetText();
 
-  if (m_caret >= 0 && (size_t)m_caret > getTextSize())
-    m_caret = (int)getTextSize();
+  if (m_caret >= 0 && (size_t)m_caret > getTextLength())
+    m_caret = (int)getTextLength();
 }
 
 void Entry::onEntryChange()

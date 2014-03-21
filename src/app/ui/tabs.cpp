@@ -431,7 +431,7 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
-  ev.setPreferredSize(gfx::Size(0, // 4 + jwidget_get_text_height(widget) + 5,
+  ev.setPreferredSize(gfx::Size(0, // 4 + widget->getTextHeight() + 5,
                                 theme->get_part(PART_TAB_FILLER)->h +
                                 theme->get_part(PART_TAB_BOTTOM_NORMAL)->h));
 }

@@ -119,7 +119,7 @@ bool FileList::onProcessMessage(Message* msg)
       SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
       View* view = View::getView(this);
       gfx::Rect vp = view->getViewportBounds();
-      int th = jwidget_get_text_height(this);
+      int th = getTextHeight();
       int x, y = getBounds().y;
       int evenRow = 0;
       ui::Color bgcolor;
@@ -246,7 +246,7 @@ bool FileList::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        int th = jwidget_get_text_height(this);
+        int th = getTextHeight();
         int y = getBounds().y;
         IFileItem* old_selected = m_selected;
         m_selected = NULL;
@@ -321,7 +321,7 @@ bool FileList::onProcessMessage(Message* msg)
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (2+jwidget_get_text_height(this)+2);
+            select += sgn * vp.h / (2+getTextHeight()+2);
             break;
           }
           case kKeyLeft:
@@ -397,7 +397,7 @@ bool FileList::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(this)+2);
+        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+getTextHeight()+2);
         view->setViewScroll(scroll);
       }
       break;
@@ -484,7 +484,7 @@ gfx::Size FileList::getFileItemSize(IFileItem* fi) const
   len += ji_font_text_len(getFont(), fi->getDisplayName().c_str());
 
   return gfx::Size(2+len+2,
-                   2+jwidget_get_text_height(this)+2);
+    2+getTextHeight()+2);
 }
 
 void FileList::makeSelectedFileitemVisible()
@@ -492,7 +492,7 @@ void FileList::makeSelectedFileitemVisible()
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  int th = jwidget_get_text_height(this);
+  int th = getTextHeight();
   int y = getBounds().y;
 
   // rows

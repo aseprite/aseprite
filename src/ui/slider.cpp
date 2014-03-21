@@ -224,7 +224,7 @@ void Slider::onPreferredSize(PreferredSizeEvent& ev)
   max_w = ji_font_text_len(this->getFont(), buf);
 
   w = MAX(min_w, max_w);
-  h = jwidget_get_text_height(this);
+  h = getTextHeight();
 
   w += this->border_width.l + this->border_width.r;
   h += this->border_width.t + this->border_width.b;

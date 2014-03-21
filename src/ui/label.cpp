@@ -37,10 +37,8 @@ void Label::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Size sz(0, 0);
 
-  if (hasText()) {
-    sz.w = jwidget_get_text_length(this);
-    sz.h = jwidget_get_text_height(this);
-  }
+  if (hasText())
+    sz = getTextSize();
 
   sz.w += this->border_width.l + this->border_width.r;
   sz.h += this->border_width.t + this->border_width.b;

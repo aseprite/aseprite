@@ -473,7 +473,7 @@ void StatusBar::onResize(ResizeEvent& ev)
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 {
-  int s = 4*jguiscale() + jwidget_get_text_height(this) + 4*jguiscale();
+  int s = 4*jguiscale() + getTextHeight() + 4*jguiscale();
   ev.setPreferredSize(Size(s, s));
 }
 
@@ -535,7 +535,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   }
 
   // Status bar text
-  if (getTextSize() > 0) {
+  if (getTextLength() > 0) {
     g->drawString(getText(), text_color, ColorNone, false,
       gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
 

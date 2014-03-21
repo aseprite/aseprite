@@ -44,8 +44,6 @@ namespace ui {
 
   // Position and geometry
 
-  int jwidget_get_text_length(const Widget* widget);
-  int jwidget_get_text_height(const Widget* widget);
   void jwidget_get_texticon_info(Widget* widget,
                                  gfx::Rect* box,
                                  gfx::Rect* text,
@@ -111,10 +109,17 @@ namespace ui {
     const base::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
-    size_t getTextSize() const { return m_text.size(); }
+    size_t getTextLength() const { return m_text.size(); }
     void setText(const base::string& text);
     void setTextf(const char* text, ...);
     void setTextQuiet(const base::string& text);
+
+    int getTextWidth() const;
+    int getTextHeight() const;
+
+    gfx::Size getTextSize() const {
+      return gfx::Size(getTextWidth(), getTextHeight());
+    }
 
     // ===============================================================
     // COMMON PROPERTIES

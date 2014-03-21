@@ -713,20 +713,18 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   }
 }
 
-int jwidget_get_text_length(const Widget* widget)
+int Widget::getTextWidth() const
 {
 #if 1
-  return ji_font_text_len(widget->getFont(), widget->getText().c_str());
+  return ji_font_text_len(getFont(), getText().c_str());
 #else  /* use cached text size */
-  return widget->text_size_pix;
+  return text_size_pix;
 #endif
 }
 
-int jwidget_get_text_height(const Widget* widget)
+int Widget::getTextHeight() const
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  return text_height(widget->getFont());
+  return text_height(getFont());
 }
 
 void jwidget_get_texticon_info(Widget* widget,
@@ -752,8 +750,8 @@ void jwidget_get_texticon_info(Widget* widget,
 
   // Size of the text
   if (widget->hasText()) {
-    text_w = jwidget_get_text_length(widget);
-    text_h = jwidget_get_text_height(widget);
+    text_w = widget->getTextWidth();
+    text_h = widget->getTextHeight();
   }
   else {
     text_w = text_h = 0;

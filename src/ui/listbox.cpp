@@ -185,7 +185,7 @@ bool ListBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(this)*3;
+        scroll.y += (jmouse_z(1) - jmouse_z(0)) * getTextHeight()*3;
         view->setViewScroll(scroll);
       }
       break;
@@ -214,7 +214,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select -= vp.h / jwidget_get_text_height(this);
+              select -= vp.h / getTextHeight();
             }
             else
               select = 0;
@@ -222,7 +222,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select += vp.h / jwidget_get_text_height(this);
+              select += vp.h / getTextHeight();
             }
             else
               select = bottom;

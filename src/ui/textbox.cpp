@@ -41,7 +41,7 @@ bool TextBox::onProcessMessage(Message* msg)
         if (view) {
           gfx::Rect vp = view->getViewportBounds();
           gfx::Point scroll = view->getViewScroll();
-          int textheight = jwidget_get_text_height(this);
+          int textheight = getTextHeight();
 
           switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
@@ -134,7 +134,7 @@ bool TextBox::onProcessMessage(Message* msg)
       if (view) {
         gfx::Point scroll = view->getViewScroll();
 
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(this)*3;
+        scroll.y += (jmouse_z(1) - jmouse_z(0)) * getTextHeight()*3;
 
         view->setViewScroll(scroll);
       }

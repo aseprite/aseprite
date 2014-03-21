@@ -877,13 +877,13 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
   if (hasText()) {
     size.w =
       + this->border_width.l
-      + jwidget_get_text_length(this)
+      + getTextWidth()
       + ((bar) ? this->child_spacing/4: this->child_spacing)
       + this->border_width.r;
 
     size.h =
       + this->border_width.t
-      + jwidget_get_text_height(this)
+      + getTextHeight()
       + this->border_width.b;
 
     if (m_accel && !m_accel->isEmpty()) {

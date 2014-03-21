@@ -47,10 +47,8 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
   int w = 0, h = 0;
   Size maxSize;
 
-  if (hasText()) {
-    maxSize.w = jwidget_get_text_length(this);
-    maxSize.h = jwidget_get_text_height(this);
-  }
+  if (hasText())
+    maxSize = getTextSize();
   else
     maxSize.w = maxSize.h = 0;
 
