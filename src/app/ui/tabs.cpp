@@ -361,7 +361,7 @@ void Tabs::onPaint(PaintEvent& ev)
                 2*jguiscale(),
                 theme->get_part(PART_TAB_FILLER)->h);
 
-  g->fillRect(theme->getColor(ThemeColor::WindowFace), g->getClipBounds());
+  g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
 
   theme->draw_part_as_hline(g, box, PART_TAB_FILLER);
   theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);

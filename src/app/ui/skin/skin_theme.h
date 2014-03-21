@@ -51,7 +51,6 @@ namespace app {
         HotFace,
         Selected,
         Background,
-        Desktop,
         TextBoxText,
         TextBoxFace,
         EntrySuffix,
@@ -72,9 +71,6 @@ namespace app {
         MenuItemHotFace,
         MenuItemHighlightText,
         MenuItemHighlightFace,
-        WindowFace,
-        WindowTitlebarText,
-        WindowTitlebarFace,
         EditorFace,
         EditorSpriteBorder,
         EditorSpriteBottomBorder,
@@ -107,6 +103,8 @@ namespace app {
         MaxColors
       };
     } 
+
+    extern const char* kWindowFaceColorId;
 
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).

@@ -63,6 +63,8 @@ static std::map<std::string, ThemeColor::Type> color_mapping;
 
 const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
 
+const char* kWindowFaceColorId = "window_face";
+
 // Controls the "X" button in a window to close it.
 class WindowCloseButton : public Button {
 public:
@@ -168,8 +170,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["sunken2_focused"] = PART_SUNKEN2_FOCUSED_NW;
   sheet_mapping["sunken_mini_normal"] = PART_SUNKEN_MINI_NORMAL_NW;
   sheet_mapping["sunken_mini_focused"] = PART_SUNKEN_MINI_FOCUSED_NW;
-  sheet_mapping["window"] = PART_WINDOW_NW;
-  sheet_mapping["menu"] = PART_MENU_NW;
   sheet_mapping["window_close_button_normal"] = PART_WINDOW_CLOSE_BUTTON_NORMAL;
   sheet_mapping["window_close_button_hot"] = PART_WINDOW_CLOSE_BUTTON_HOT;
   sheet_mapping["window_close_button_selected"] = PART_WINDOW_CLOSE_BUTTON_SELECTED;
@@ -291,7 +291,6 @@ SkinTheme::SkinTheme()
   color_mapping["hot_face"] = ThemeColor::HotFace;
   color_mapping["selected"] = ThemeColor::Selected;
   color_mapping["background"] = ThemeColor::Background;
-  color_mapping["desktop"] = ThemeColor::Desktop;
   color_mapping["textbox_text"] = ThemeColor::TextBoxText;
   color_mapping["textbox_face"] = ThemeColor::TextBoxFace;
   color_mapping["entry_suffix"] = ThemeColor::EntrySuffix;
@@ -312,9 +311,6 @@ SkinTheme::SkinTheme()
   color_mapping["menuitem_hot_face"] = ThemeColor::MenuItemHotFace;
   color_mapping["menuitem_highlight_text"] = ThemeColor::MenuItemHighlightText;
   color_mapping["menuitem_highlight_face"] = ThemeColor::MenuItemHighlightFace;
-  color_mapping["window_face"] = ThemeColor::WindowFace;
-  color_mapping["window_titlebar_text"] = ThemeColor::WindowTitlebarText;
-  color_mapping["window_titlebar_face"] = ThemeColor::WindowTitlebarFace;
   color_mapping["editor_face"] = ThemeColor::EditorFace;
   color_mapping["editor_sprite_border"] = ThemeColor::EditorSpriteBorder;
   color_mapping["editor_sprite_bottom_border"] = ThemeColor::EditorSpriteBottomBorder;
@@ -886,8 +882,8 @@ void SkinTheme::initWidget(Widget* widget)
       else {
         BORDER(0);
       }
-      widget->child_spacing = 4 * scale;
-      widget->setBgColor(getColor(ThemeColor::WindowFace));
+      widget->child_spacing = 4 * scale; // TODO this hard-coded 4 should be configurable in skin.xml
+      widget->setBgColor(getColorById(kWindowFaceColorId));
       break;
 
     default:
@@ -1779,27 +1775,20 @@ void SkinTheme::paintWindow(PaintEvent& ev)
   if (!window->isDesktop()) {
     // window frame
     if (window->hasText()) {
-      draw_bounds_nw(g, pos, PART_WINDOW_NW,
-                     getColor(ThemeColor::WindowFace));
-
-      pos.h = cpos.y - pos.y;
-
-      // titlebar
-      g->setFont(window->getFont());
-      g->drawString(window->getText(), ThemeColor::Background, ColorNone,
-                    false,
-                    gfx::Point(cpos.x,
-                               pos.y + pos.h/2 - text_height(window->getFont())/2));
+      get_style("window")->paint(g, pos, NULL, Style::State());
+      get_style("window_title")->paint(g,
+        gfx::Rect(cpos.x, pos.y+5*jguiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
+          jwidget_get_text_height(window)),
+        window->getText().c_str(), Style::State());
     }
     // menubox
     else {
-      draw_bounds_nw(g, pos, PART_MENU_NW,
-                     getColor(ThemeColor::WindowFace));
+      get_style("menubox")->paint(g, pos, NULL, Style::State());
     }
   }
   // desktop
   else {
-    g->fillRect(ThemeColor::Desktop, pos);
+    get_style("desktop")->paint(g, pos, NULL, Style::State());
   }
 }
 

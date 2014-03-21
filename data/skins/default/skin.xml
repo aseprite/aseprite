@@ -314,6 +314,24 @@
 
   <stylesheet>
 
+    <!-- window -->
+    <style id="window">
+      <background color="window_face" part="window" />
+    </style>
+
+    <style id="window_title">
+      <background color="window_titlebar_face" />
+      <text color="window_titlebar_text" align="left" valign="middle" />
+    </style>
+
+    <style id="menubox">
+      <background color="window_face" part="menu" />
+    </style>
+
+    <style id="desktop">
+      <background color="desktop" />
+    </style>
+
     <!-- scrollbar -->
     <style id="scrollbar">
       <background color="scrollbar_bg_face" part="scrollbar_bg" />
