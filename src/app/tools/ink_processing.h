@@ -166,7 +166,7 @@ void PutAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
 
 template<>
 void PutAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
-  // Do nothing, as indexed images doesn't have alpha channel.
+  *m_dstAddress = m_color;
 }
 
 //////////////////////////////////////////////////////////////////////
