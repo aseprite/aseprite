@@ -56,7 +56,7 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 {
   ContextWriter writer(context);
   Sprite* sprite(writer.sprite());
-  return sprite;
+  return (sprite != NULL);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)
