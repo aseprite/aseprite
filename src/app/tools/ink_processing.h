@@ -448,16 +448,23 @@ public:
     m_palette = get_current_palette();
     m_rgbmap = loop->getRgbMap();
     m_color1 = loop->getPrimaryColor();
-    m_color2 = m_palette->getEntry(loop->getSecondaryColor());
+    m_color2 = loop->getSecondaryColor();
     m_opacity = loop->getOpacity();
+    if (m_opacity < 255)
+      m_color2 = m_palette->getEntry(m_color2);
   }
 
   void processPixel(int x, int y) {
     if (*m_srcAddress == m_color1) {
-      color_t c = rgba_blend_normal(m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
-      *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
-                                         rgba_getg(c),
-                                         rgba_getb(c));
+      if (m_opacity == 255)
+        *m_dstAddress = m_color2;
+      else {
+        color_t c = rgba_blend_normal(
+          m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
+
+        *m_dstAddress = m_rgbmap->mapColor(
+          rgba_getr(c), rgba_getg(c), rgba_getb(c));
+      }
     }
   }
 
