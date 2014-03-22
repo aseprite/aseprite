@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,12 @@ namespace app {
   class MainWindow : public ui::Window
                    , public TabsDelegate {
   public:
+    enum Mode {
+      NormalMode,
+      ContextBarAndTimelineMode,
+      EditorOnlyMode
+    };
+
     MainWindow();
     ~MainWindow();
 
@@ -54,8 +60,8 @@ namespace app {
     void start();
     void reloadMenus();
 
-    bool isAdvancedMode() const { return m_advancedMode; }
-    void setAdvancedMode(bool advanced);
+    Mode getMode() const { return m_mode; }
+    void setMode(Mode mode);
 
     bool getTimelineVisibility() const;
     void setTimelineVisibility(bool visible);
@@ -81,7 +87,7 @@ namespace app {
     Tabs* m_tabsBar;
     double m_lastSplitterPos;
     double m_lastTimelineSplitterPos;
-    bool m_advancedMode;
+    Mode m_mode;
     Timeline* m_timeline;
     Workspace* m_workspace;
     MiniEditorWindow* m_miniEditor;

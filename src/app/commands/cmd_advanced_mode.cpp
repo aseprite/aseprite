@@ -55,10 +55,24 @@ void AdvancedModeCommand::onExecute(Context* context)
 {
   // Switch advanced mode.
   MainWindow* mainWindow = App::instance()->getMainWindow();
-  bool advancedMode = !mainWindow->isAdvancedMode();
-  mainWindow->setAdvancedMode(advancedMode);
+  MainWindow::Mode oldMode = mainWindow->getMode();
+  MainWindow::Mode newMode = oldMode;
 
-  if (advancedMode &&
+  switch (oldMode) {
+    case MainWindow::NormalMode:
+      newMode = MainWindow::ContextBarAndTimelineMode;
+      break;
+    case MainWindow::ContextBarAndTimelineMode:
+      newMode = MainWindow::EditorOnlyMode;
+      break;
+    case MainWindow::EditorOnlyMode:
+      newMode = MainWindow::NormalMode;
+      break;
+  }
+
+  mainWindow->setMode(newMode);
+
+  if (oldMode == MainWindow::NormalMode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
     Accelerator* accel = get_accel_to_execute_command(short_name());
     if (accel != NULL) {
