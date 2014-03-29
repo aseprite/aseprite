@@ -85,7 +85,7 @@ ComboBox::ComboBox()
   m_entry = new ComboBoxEntry(this);
   m_button = new ComboBoxButton();
   m_window = NULL;
-  m_selected = 0;
+  m_selected = -1;
   m_editable = false;
   m_clickopen = true;
   m_casesensitive = true;
@@ -290,12 +290,16 @@ int ComboBox::getSelectedItemIndex() const
 
 void ComboBox::setSelectedItemIndex(int itemIndex)
 {
-  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
+  if (itemIndex >= 0 &&
+      (size_t)itemIndex < m_items.size() &&
+      m_selected != itemIndex) {
     m_selected = itemIndex;
 
     ListItems::iterator it = m_items.begin() + itemIndex;
     ListItem* item = *it;
     m_entry->setText(item->getText());
+
+    onChange();
   }
 }
 
@@ -481,10 +485,8 @@ void ComboBoxListBox::onChangeSelectedItem()
   ListBox::onChangeSelectedItem();
 
   int index = getSelectedIndex();
-  if (isValidItem(index)) {
+  if (isValidItem(index))
     m_comboBox->setSelectedItemIndex(index);
-    m_comboBox->onChange();
-  }
 }
 
 // When the mouse is clicked we switch the visibility-status of the list-box
@@ -525,6 +527,8 @@ void ComboBox::openListBox()
 
     m_window->openWindow();
     getManager()->setFocus(m_listbox);
+
+    onOpenListBox();
   }
 }
 
@@ -568,6 +572,11 @@ gfx::Rect ComboBox::getListBoxPos() const
 void ComboBox::onChange()
 {
   Change();
+}
+
+void ComboBox::onOpenListBox()
+{
+  OpenListBox();
 }
 
 void ComboBox::onCloseListBox()

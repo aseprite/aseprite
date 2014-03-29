@@ -83,6 +83,7 @@ namespace ui {
 
     // Signals
     Signal0<void> Change;
+    Signal0<void> OpenListBox;
     Signal0<void> CloseListBox;
 
   protected:
@@ -90,6 +91,7 @@ namespace ui {
     void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChange();
+    virtual void onOpenListBox();
     virtual void onCloseListBox();
 
   private:

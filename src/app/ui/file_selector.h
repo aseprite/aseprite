@@ -51,7 +51,7 @@ namespace app {
     void onGoBack();
     void onGoForward();
     void onGoUp();
-    void onLocationChange();
+    void onLocationCloseListBox();
     void onFileTypeChange();
     void onFileListFileSelected();
     void onFileListFileAccepted();

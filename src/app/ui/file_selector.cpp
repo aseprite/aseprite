@@ -191,6 +191,7 @@ public:
 
 FileSelector::FileSelector()
   : Window(WithTitleBar, "")
+  , m_navigationLocked(false)
 {
   app::WidgetLoader loader;
   loader.addWidgetType("filenameentry", new CustomFileNameEntryCreator);
@@ -239,7 +240,7 @@ FileSelector::FileSelector()
   m_goBack->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
   m_goForward->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
   m_goUp->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
-  m_location->Change.connect(Bind<void>(&FileSelector::onLocationChange, this));
+  m_location->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
   m_fileType->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
@@ -610,7 +611,7 @@ void FileSelector::onGoUp()
 }
 
 // Hook for the 'location' combo-box
-void FileSelector::onLocationChange()
+void FileSelector::onLocationCloseListBox()
 {
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
