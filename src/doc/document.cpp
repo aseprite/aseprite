@@ -1,8 +1,8 @@
 // Aseprite Document Library
 // Copyright (c) 2014 David Capello
 //
-// This source file is distributed under the terms of the MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

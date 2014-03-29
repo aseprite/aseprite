@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_SCROLL_BAR_H_INCLUDED
 #define UI_SCROLL_BAR_H_INCLUDED
