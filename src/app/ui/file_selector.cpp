@@ -664,6 +664,7 @@ void FileSelector::onFileListFileSelected()
     base::string filename = base::get_file_name(fileitem->getFileName());
 
     m_fileName->setText(filename.c_str());
+    m_fileName->selectText(0, -1);
     selectFileTypeFromFileName();
   }
 }
