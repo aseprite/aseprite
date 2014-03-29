@@ -10,6 +10,8 @@
 
 #include "doc/document.h"
 
+#include "doc/export_data.h"
+
 namespace doc {
 
 Document::Document()
@@ -19,6 +21,11 @@ Document::Document()
 void Document::setFilename(const std::string& filename)
 {
   m_filename = filename;
+}
+
+void Document::setExportData(const ExportDataPtr& data)
+{
+  m_exportData = data;
 }
 
 } // namespace doc

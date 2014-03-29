@@ -99,6 +99,17 @@ namespace app {
     void addSprite(Sprite* sprite);
 
     //////////////////////////////////////////////////////////////////////
+    // Export data
+
+    doc::ExportDataPtr exportData() const {
+      return m_document.exportData();
+    }
+
+    void setExportData(const doc::ExportDataPtr& data) {
+      return m_document.setExportData(data);
+    }
+
+    //////////////////////////////////////////////////////////////////////
     // Notifications
 
     void notifyGeneralUpdate();

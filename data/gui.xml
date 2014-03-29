@@ -14,6 +14,7 @@
       <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" />
       <key command="CloseFile" shortcut="Ctrl+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
+      <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" shortcut="Alt+F4" />
@@ -229,6 +230,7 @@
         <separator />
         <item command="ImportSpriteSheet" text="&amp;Import Sprite Sheet" />
         <item command="ExportSpriteSheet" text="&amp;Export Sprite Sheet" />
+        <item command="RepeatLastExport" text="Repeat &amp;Last Export" />
         <separator />
         <item command="Exit" text="E&amp;xit" />
       </menu>
