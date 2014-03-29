@@ -218,7 +218,7 @@ void DocumentView::onAddLayer(DocumentEvent& ev)
   }
 }
 
-void DocumentView::onRemoveLayer(DocumentEvent& ev)
+void DocumentView::onBeforeRemoveLayer(DocumentEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();

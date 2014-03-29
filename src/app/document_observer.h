@@ -41,7 +41,8 @@ namespace app {
 
     virtual void onRemoveSprite(DocumentEvent& ev) { }
 
-    virtual void onRemoveLayer(DocumentEvent& ev) { }
+    virtual void onBeforeRemoveLayer(DocumentEvent& ev) { }
+    virtual void onAfterRemoveLayer(DocumentEvent& ev) { }
 
     // Called when a frame is removed. It's called after the frame was
     // removed, and the sprite's total number of frames is modified.

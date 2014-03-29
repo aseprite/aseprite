@@ -114,7 +114,7 @@ namespace app {
 
     // DocumentObserver impl.
     void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
+    void onAfterRemoveLayer(DocumentEvent& ev) OVERRIDE;
     void onAddFrame(DocumentEvent& ev) OVERRIDE;
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
 

@@ -180,6 +180,8 @@ void Timeline::updateUsingEditor(Editor* editor)
   DocumentView* view = m_editor->getDocumentView();
   view->getDocumentLocation(&location);
 
+  location.document()->addObserver(this);
+
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
   if (m_document == location.document() &&
@@ -859,72 +861,82 @@ void Timeline::onPreferredSize(PreferredSizeEvent& ev)
 void Timeline::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
+  bool noDoc = (m_document == NULL);
+  if (noDoc)
+    goto paintNoDoc;
 
-  if (!m_document) {
-    drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
-    return;
-  }
+  try {
+    // Lock the sprite to read/render it.
+    const DocumentReader documentReader(m_document);
+    
+    int layer, first_layer, last_layer;
+    FrameNumber frame, first_frame, last_frame;
 
-  int layer, first_layer, last_layer;
-  FrameNumber frame, first_frame, last_frame;
+    getDrawableLayers(g, &first_layer, &last_layer);
+    getDrawableFrames(g, &first_frame, &last_frame);
 
-  getDrawableLayers(g, &first_layer, &last_layer);
-  getDrawableFrames(g, &first_frame, &last_frame);
+    // Draw the header for layers.
+    drawHeader(g);
 
-  // Draw the header for layers.
-  drawHeader(g);
+    // Draw the header for each visible frame.
+    {
+      IntersectClip clip(g, getFrameHeadersBounds());
+      if (clip) {
+        for (frame=first_frame; frame<=last_frame; ++frame)
+          drawHeaderFrame(g, frame);
 
-  // Draw the header for each visible frame.
-  {
-    IntersectClip clip(g, getFrameHeadersBounds());
-    if (clip) {
-      for (frame=first_frame; frame<=last_frame; ++frame)
-        drawHeaderFrame(g, frame);
-
-      // Draw onionskin indicators.
-      gfx::Rect bounds = getOnionskinFramesBounds();
-      if (!bounds.isEmpty()) {
-        drawPart(g, bounds,
-          NULL, m_timelineOnionskinRangeStyle,
-          false, false, false);
+        // Draw onionskin indicators.
+        gfx::Rect bounds = getOnionskinFramesBounds();
+        if (!bounds.isEmpty()) {
+          drawPart(g, bounds,
+            NULL, m_timelineOnionskinRangeStyle,
+            false, false, false);
+        }
       }
     }
+
+    // Draw each visible layer.
+    for (layer=first_layer; layer<=last_layer; layer++) {
+      {
+        IntersectClip clip(g, getLayerHeadersBounds());
+        if (clip)
+          drawLayer(g, layer);
+      }
+
+      // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+      CelIterator it, end;
+      Layer* layerPtr = m_layers[layer];
+      if (layerPtr->isImage()) {
+        it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
+        end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
+        for (; it != end && (*it)->getFrame() < first_frame; ++it)
+          ;
+      }
+
+      IntersectClip clip(g, getCelsBounds());
+      if (!clip)
+        continue;
+
+      // Draw every visible cel for each layer.
+      for (frame=first_frame; frame<=last_frame; ++frame) {
+        Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+
+        drawCel(g, layer, frame, cel);
+
+        if (cel)
+          ++it;               // Go to next cel
+      }
+    }
+
+    drawPaddings(g);
+  }
+  catch (const LockedDocumentException&) {
+    noDoc = true;
   }
 
-  // Draw each visible layer.
-  for (layer=first_layer; layer<=last_layer; layer++) {
-    {
-      IntersectClip clip(g, getLayerHeadersBounds());
-      if (clip)
-        drawLayer(g, layer);
-    }
-
-    // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-    CelIterator it, end;
-    Layer* layerPtr = m_layers[layer];
-    if (layerPtr->isImage()) {
-      it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
-      end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-      for (; it != end && (*it)->getFrame() < first_frame; ++it)
-        ;
-    }
-
-    IntersectClip clip(g, getCelsBounds());
-    if (!clip)
-      continue;
-
-    // Draw every visible cel for each layer.
-    for (frame=first_frame; frame<=last_frame; ++frame) {
-      Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
-
-      drawCel(g, layer, frame, cel);
-
-      if (cel)
-        ++it;               // Go to next cel
-    }
-  }
-
-  drawPaddings(g);
+paintNoDoc:;
+  if (noDoc)
+    drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
 }
 
 void Timeline::onCommandAfterExecution(Context* context)
@@ -954,7 +966,7 @@ void Timeline::onAddLayer(DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onRemoveLayer(DocumentEvent& ev)
+void Timeline::onAfterRemoveLayer(DocumentEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();

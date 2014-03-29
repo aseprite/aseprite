@@ -632,7 +632,7 @@ void DocumentApi::removeLayer(Layer* layer)
   DocumentEvent ev(m_document);
   ev.sprite(layer->getSprite());
   ev.layer(layer);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveLayer, ev);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
 
   // Add undoers.
   if (undoEnabled())
@@ -640,6 +640,9 @@ void DocumentApi::removeLayer(Layer* layer)
 
   // Do the action.
   layer->getParent()->removeLayer(layer);
+
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
+
   delete layer;
 }
 

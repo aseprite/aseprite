@@ -64,7 +64,7 @@ namespace app {
     void onSpritePixelsModified(DocumentEvent& ev) OVERRIDE;
     void onLayerMergedDown(DocumentEvent& ev) OVERRIDE;
     void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
+    void onBeforeRemoveLayer(DocumentEvent& ev) OVERRIDE;
     void onAddFrame(DocumentEvent& ev) OVERRIDE;
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
     void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
