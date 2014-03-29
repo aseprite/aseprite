@@ -16,7 +16,6 @@
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
-      <key command="Exit" shortcut="Ctrl+Q" />
       <key command="Exit" shortcut="Alt+F4" />
       <key command="Cancel" shortcut="Esc" />
       <!-- Edit -->
