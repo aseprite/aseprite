@@ -186,7 +186,6 @@ void clipboard::paste()
 #endif
 
   Sprite* sprite = editor->getDocument()->getSprite();
-
   if (clipboard_image == NULL)
     return;
 
@@ -196,11 +195,10 @@ void clipboard::paste()
     src_image = clipboard_image;
   else {
     RgbMap* rgbmap = sprite->getRgbMap(editor->getFrame());
-    src_image = quantization::convert_pixel_format(clipboard_image,
-                                                   sprite->getPixelFormat(), DITHERING_NONE,
-                                                   rgbmap,
-                                                   sprite->getPalette(editor->getFrame()),
-                                                   false);
+    src_image = quantization::convert_pixel_format(
+      clipboard_image, sprite->getPixelFormat(),
+      DITHERING_NONE, rgbmap, clipboard_palette,
+      false);
   }
 
   // Change to MovingPixelsState
