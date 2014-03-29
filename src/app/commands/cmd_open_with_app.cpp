@@ -32,7 +32,7 @@ namespace app {
 class OpenWithAppCommand : public Command {
 public:
   OpenWithAppCommand();
-  Command* clone() { return new OpenWithAppCommand(*this); }
+  Command* clone() const OVERRIDE { return new OpenWithAppCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) OVERRIDE;

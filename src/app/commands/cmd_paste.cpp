@@ -23,6 +23,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/util/clipboard.h"
+#include "base/compiler_specific.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 
@@ -31,7 +32,7 @@ namespace app {
 class PasteCommand : public Command {
 public:
   PasteCommand();
-  Command* clone() { return new PasteCommand(*this); }
+  Command* clone() const OVERRIDE { return new PasteCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

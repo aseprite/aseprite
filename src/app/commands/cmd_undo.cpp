@@ -40,7 +40,7 @@ public:
   enum Type { Undo, Redo };
 
   UndoCommand(Type type);
-  Command* clone() { return new UndoCommand(*this); }
+  Command* clone() const OVERRIDE { return new UndoCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

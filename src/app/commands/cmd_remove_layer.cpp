@@ -38,7 +38,7 @@ namespace app {
 class RemoveLayerCommand : public Command {
 public:
   RemoveLayerCommand();
-  Command* clone() { return new RemoveLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new RemoveLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

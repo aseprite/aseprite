@@ -46,7 +46,7 @@ namespace app {
 class MergeDownLayerCommand : public Command {
 public:
   MergeDownLayerCommand();
-  Command* clone() { return new MergeDownLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new MergeDownLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

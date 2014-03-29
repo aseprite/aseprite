@@ -43,7 +43,7 @@ namespace app {
 class PlayAnimationCommand : public Command {
 public:
   PlayAnimationCommand();
-  Command* clone() { return new PlayAnimationCommand(*this); }
+  Command* clone() const OVERRIDE { return new PlayAnimationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

@@ -48,7 +48,7 @@ namespace app {
 class OpenFileCommand : public Command {
 public:
   OpenFileCommand();
-  Command* clone() { return new OpenFileCommand(*this); }
+  Command* clone() const OVERRIDE { return new OpenFileCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

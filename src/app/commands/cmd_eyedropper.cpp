@@ -50,7 +50,7 @@ class EyedropperCommand : public Command {
 
 public:
   EyedropperCommand();
-  Command* clone() const { return new EyedropperCommand(*this); }
+  Command* clone() const OVERRIDE { return new EyedropperCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

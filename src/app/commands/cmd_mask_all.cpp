@@ -33,7 +33,7 @@ namespace app {
 class MaskAllCommand : public Command {
 public:
   MaskAllCommand();
-  Command* clone() { return new MaskAllCommand(*this); }
+  Command* clone() const OVERRIDE { return new MaskAllCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

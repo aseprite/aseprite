@@ -38,7 +38,7 @@ using namespace ui;
 class AdvancedModeCommand : public Command {
 public:
   AdvancedModeCommand();
-  Command* clone() const { return new AdvancedModeCommand(*this); }
+  Command* clone() const OVERRIDE { return new AdvancedModeCommand(*this); }
 
 protected:
   void onExecute(Context* context);

@@ -34,7 +34,7 @@ namespace app {
 class TimelineCommand : public Command {
 public:
   TimelineCommand();
-  Command* clone() { return new TimelineCommand(*this); }
+  Command* clone() const OVERRIDE { return new TimelineCommand(*this); }
 
 protected:
   void onLoadParams(Params* params) OVERRIDE;

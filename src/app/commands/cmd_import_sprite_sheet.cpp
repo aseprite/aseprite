@@ -348,7 +348,7 @@ private:
 class ImportSpriteSheetCommand : public Command {
 public:
   ImportSpriteSheetCommand();
-  Command* clone() { return new ImportSpriteSheetCommand(*this); }
+  Command* clone() const OVERRIDE { return new ImportSpriteSheetCommand(*this); }
 
 protected:
   virtual void onExecute(Context* context) OVERRIDE;

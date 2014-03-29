@@ -60,7 +60,7 @@ static void on_exit_delete_this_widget()
 class ConfigureTools : public Command {
 public:
   ConfigureTools();
-  Command* clone() const { return new ConfigureTools(*this); }
+  Command* clone() const OVERRIDE { return new ConfigureTools(*this); }
 
 protected:
   void onExecute(Context* context);

@@ -37,7 +37,7 @@ namespace app {
 class RemoveCelCommand : public Command {
 public:
   RemoveCelCommand();
-  Command* clone() { return new RemoveCelCommand(*this); }
+  Command* clone() const OVERRIDE { return new RemoveCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

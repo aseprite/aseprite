@@ -32,7 +32,7 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
-  Command* clone() const { return new LaunchCommand(*this); }
+  Command* clone() const OVERRIDE { return new LaunchCommand(*this); }
 
 protected:
   void onLoadParams(Params* params) OVERRIDE;

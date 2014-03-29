@@ -32,7 +32,7 @@ namespace app {
 class OpenInFolderCommand : public Command {
 public:
   OpenInFolderCommand();
-  Command* clone() { return new OpenInFolderCommand(*this); }
+  Command* clone() const OVERRIDE { return new OpenInFolderCommand(*this); }
 
 protected:
   bool onEnabled(Context* context) OVERRIDE;

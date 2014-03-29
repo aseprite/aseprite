@@ -34,7 +34,7 @@ namespace app {
 class CopyCommand : public Command {
 public:
   CopyCommand();
-  Command* clone() const { return new CopyCommand(*this); }
+  Command* clone() const OVERRIDE { return new CopyCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

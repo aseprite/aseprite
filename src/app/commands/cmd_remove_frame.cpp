@@ -36,7 +36,7 @@ namespace app {
 class RemoveFrameCommand : public Command {
 public:
   RemoveFrameCommand();
-  Command* clone() { return new RemoveFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new RemoveFrameCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

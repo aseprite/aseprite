@@ -36,7 +36,7 @@ using namespace ui;
 class SavePaletteCommand : public Command {
 public:
   SavePaletteCommand();
-  Command* clone() { return new SavePaletteCommand(*this); }
+  Command* clone() const OVERRIDE { return new SavePaletteCommand(*this); }
 
 protected:
   void onExecute(Context* context) OVERRIDE;

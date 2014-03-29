@@ -24,13 +24,14 @@
 
 #include "app/commands/commands.h"
 #include "app/context.h"
+#include "base/compiler_specific.h"
 
 namespace app {
 
 class CancelCommand : public Command {
 public:
   CancelCommand();
-  Command* clone() { return new CancelCommand(*this); }
+  Command* clone() const OVERRIDE { return new CancelCommand(*this); }
 
 protected:
   void onExecute(Context* context);

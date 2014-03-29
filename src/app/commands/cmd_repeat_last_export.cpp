@@ -33,7 +33,7 @@ namespace app {
 class RepeatLastExportCommand : public Command {
 public:
   RepeatLastExportCommand();
-  Command* clone() { return new RepeatLastExportCommand(*this); }
+  Command* clone() const OVERRIDE { return new RepeatLastExportCommand(*this); }
 
 protected:
   virtual bool onEnabled(Context* context) OVERRIDE;

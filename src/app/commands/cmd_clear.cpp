@@ -40,7 +40,7 @@ namespace app {
 class ClearCommand : public Command {
 public:
   ClearCommand();
-  Command* clone() const { return new ClearCommand(*this); }
+  Command* clone() const OVERRIDE { return new ClearCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

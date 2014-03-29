@@ -32,7 +32,7 @@ namespace app {
 class ExitCommand : public Command {
 public:
   ExitCommand();
-  Command* clone() { return new ExitCommand(*this); }
+  Command* clone() const OVERRIDE { return new ExitCommand(*this); }
 
 protected:
   void onExecute(Context* context);

@@ -121,7 +121,7 @@ private:
 class ReplaceColorCommand : public Command {
 public:
   ReplaceColorCommand();
-  Command* clone() const { return new ReplaceColorCommand(*this); }
+  Command* clone() const OVERRIDE { return new ReplaceColorCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

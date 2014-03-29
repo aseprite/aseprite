@@ -40,7 +40,7 @@ using namespace ui;
 class LoadPaletteCommand : public Command {
 public:
   LoadPaletteCommand();
-  Command* clone() { return new LoadPaletteCommand(*this); }
+  Command* clone() const OVERRIDE { return new LoadPaletteCommand(*this); }
 
 protected:
   void onExecute(Context* context) OVERRIDE;
