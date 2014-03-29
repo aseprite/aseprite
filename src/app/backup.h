@@ -18,6 +18,7 @@
 
 #ifndef APP_BACKUP_H_INCLUDED
 #define APP_BACKUP_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include "base/string.h"

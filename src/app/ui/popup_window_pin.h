@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_POPUP_FRAME_PIN_H_INCLUDED
 #define APP_UI_POPUP_FRAME_PIN_H_INCLUDED
+#pragma once
 
 #include "ui/button.h"
 #include "ui/popup_window.h"

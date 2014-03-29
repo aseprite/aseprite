@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 #define APP_COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/timer.h"

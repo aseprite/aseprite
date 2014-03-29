@@ -6,6 +6,7 @@
 
 #ifndef UI_THEME_H_INCLUDED
 #define UI_THEME_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 #include "ui/cursor_type.h"

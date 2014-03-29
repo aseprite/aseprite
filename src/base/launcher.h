@@ -6,6 +6,7 @@
 
 #ifndef BASE_LAUNCHER_H_INCLUDED
 #define BASE_LAUNCHER_H_INCLUDED
+#pragma once
 
 #include <string>
 

@@ -6,6 +6,7 @@
 
 #ifndef BASE_SYSTEM_CONSOLE_H_INCLUDED
 #define BASE_SYSTEM_CONSOLE_H_INCLUDED
+#pragma once
 
 namespace base {
 

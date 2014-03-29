@@ -18,6 +18,7 @@
 
 #ifndef APP_LOG_H_INCLUDED
 #define APP_LOG_H_INCLUDED
+#pragma once
 
 namespace app {
 

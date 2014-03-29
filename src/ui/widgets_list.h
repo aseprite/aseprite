@@ -6,6 +6,7 @@
 
 #ifndef UI_WIDGETS_LIST_H_INCLUDED
 #define UI_WIDGETS_LIST_H_INCLUDED
+#pragma once
 
 #include <vector>
 

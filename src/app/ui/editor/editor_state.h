@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_EDITOR_STATE_H_INCLUDED
 #define APP_UI_EDITOR_EDITOR_STATE_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"

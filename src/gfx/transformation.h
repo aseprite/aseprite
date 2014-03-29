@@ -6,6 +6,7 @@
 
 #ifndef TRANSFORMATION_H_INCLUDED
 #define TRANSFORMATION_H_INCLUDED
+#pragma once
 
 #include "gfx/point.h"
 #include "gfx/rect.h"

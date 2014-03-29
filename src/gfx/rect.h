@@ -6,6 +6,7 @@
 
 #ifndef GFX_RECT_H_INCLUDED
 #define GFX_RECT_H_INCLUDED
+#pragma once
 
 namespace gfx {
 

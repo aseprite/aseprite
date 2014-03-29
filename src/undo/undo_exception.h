@@ -6,6 +6,7 @@
 
 #ifndef UNDO_UNDO_EXCEPTION_H_INCLUDED
 #define UNDO_UNDO_EXCEPTION_H_INCLUDED
+#pragma once
 
 #include <stdexcept>
 

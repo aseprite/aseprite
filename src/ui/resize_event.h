@@ -6,6 +6,7 @@
 
 #ifndef UI_RESIZE_EVENT_H_INCLUDED
 #define UI_RESIZE_EVENT_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "ui/event.h"

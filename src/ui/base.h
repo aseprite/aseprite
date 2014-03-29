@@ -6,6 +6,7 @@
 
 #ifndef UI_BASE_H_INCLUDED
 #define UI_BASE_H_INCLUDED
+#pragma once
 
 // Get the system's definition of NULL
 #include <stddef.h>

@@ -6,6 +6,7 @@
 
 #ifndef UI_HIT_TEST_EVENT_H_INCLUDED
 #define UI_HIT_TEST_EVENT_H_INCLUDED
+#pragma once
 
 #include "ui/event.h"
 

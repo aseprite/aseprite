@@ -6,6 +6,7 @@
 
 #ifndef SHE_SYSTEM_H_INCLUDED
 #define SHE_SYSTEM_H_INCLUDED
+#pragma once
 
 #include "she/capabilities.h"
 #include <stdexcept>

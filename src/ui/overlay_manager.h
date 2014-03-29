@@ -6,6 +6,7 @@
 
 #ifndef UI_OVERLAY_MANAGER_H_INCLUDED
 #define UI_OVERLAY_MANAGER_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 #include <vector>

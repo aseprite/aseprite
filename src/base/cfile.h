@@ -6,6 +6,7 @@
 
 #ifndef BASE_CFILE_H_INCLUDED
 #define BASE_CFILE_H_INCLUDED
+#pragma once
 
 #include <cstdio>
 

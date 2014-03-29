@@ -6,6 +6,7 @@
 
 #ifndef CSS_STATE_H_INCLUDED
 #define CSS_STATE_H_INCLUDED
+#pragma once
 
 #include <string>
 #include <vector>

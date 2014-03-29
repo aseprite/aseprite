@@ -6,6 +6,7 @@
 
 #ifndef DOC_OBJECT_H_INCLUDED
 #define DOC_OBJECT_H_INCLUDED
+#pragma once
 
 #include "doc/object_id.h"
 

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_ROTATE_H_INCLUDED
 #define RASTER_ROTATE_H_INCLUDED
+#pragma once
 
 namespace raster {
 

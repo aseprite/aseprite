@@ -18,6 +18,7 @@
 
 #ifndef RASTER_IMAGE_BITS_H_INCLUDED
 #define RASTER_IMAGE_BITS_H_INCLUDED
+#pragma once
 
 #include "raster/image.h"
 #include "raster/image_iterator.h"

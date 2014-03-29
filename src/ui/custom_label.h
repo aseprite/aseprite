@@ -6,6 +6,7 @@
 
 #ifndef UI_CUSTOM_LABEL_H_INCLUDED
 #define UI_CUSTOM_LABEL_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/label.h"

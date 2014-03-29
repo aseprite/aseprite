@@ -6,6 +6,7 @@
 
 #ifndef UI_ALERT_H_INCLUDED
 #define UI_ALERT_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 #include "ui/window.h"

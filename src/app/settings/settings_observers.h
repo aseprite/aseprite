@@ -18,6 +18,7 @@
 
 #ifndef APP_SETTINGS_SETTINGS_OBSERVERS_H_INCLUDED
 #define APP_SETTINGS_SETTINGS_OBSERVERS_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "app/settings/freehand_algorithm.h"

@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 #define APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
+#pragma once
 
 #include "app/context_observer.h"
 #include "app/settings/settings_observers.h"

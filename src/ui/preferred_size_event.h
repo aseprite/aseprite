@@ -6,6 +6,7 @@
 
 #ifndef UI_PREFERRED_SIZE_EVENT_H_INCLUDED
 #define UI_PREFERRED_SIZE_EVENT_H_INCLUDED
+#pragma once
 
 #include "gfx/size.h"
 #include "ui/event.h"

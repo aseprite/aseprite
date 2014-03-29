@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_CMD_FLIP_H_INCLUDED
 #define APP_COMMANDS_CMD_FLIP_H_INCLUDED
+#pragma once
 
 #include "app/commands/command.h"
 #include "base/compiler_specific.h"

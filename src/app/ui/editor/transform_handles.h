@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_TRANSFORM_HANDLES_H_INCLUDED
 #define APP_UI_EDITOR_TRANSFORM_HANDLES_H_INCLUDED
+#pragma once
 
 #include "app/ui/editor/handle_type.h"
 #include "gfx/point.h"

@@ -6,6 +6,7 @@
 
 #ifndef UI_DRAW_H_INCLUDED
 #define UI_DRAW_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "gfx/region.h"

@@ -6,6 +6,7 @@
 
 #ifndef DOC_DOCUMENT_H_INCLUDED
 #define DOC_DOCUMENT_H_INCLUDED
+#pragma once
 
 #include <string>
 

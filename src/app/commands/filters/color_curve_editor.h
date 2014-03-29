@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 #define APP_COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"

@@ -6,6 +6,7 @@
 
 #ifndef UNDO_OBJECTS_CONTAINER_H_INCLUDED
 #define UNDO_OBJECTS_CONTAINER_H_INCLUDED
+#pragma once
 
 #include "undo/object_id.h"
 

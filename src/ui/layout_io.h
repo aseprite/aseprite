@@ -6,6 +6,7 @@
 
 #ifndef UI_LAYOUT_IO_H_INCLUDED
 #define UI_LAYOUT_IO_H_INCLUDED
+#pragma once
 
 #include <string>
 

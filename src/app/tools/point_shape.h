@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_TOOL_POINT_SHAPE_INCLUDED
 #define APP_TOOLS_TOOL_POINT_SHAPE_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 

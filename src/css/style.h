@@ -6,6 +6,7 @@
 
 #ifndef CSS_STYLE_H_INCLUDED
 #define CSS_STYLE_H_INCLUDED
+#pragma once
 
 #include <map>
 #include <string>

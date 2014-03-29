@@ -6,6 +6,7 @@
 
 #ifndef UI_PAINT_EVENT_H_INCLUDED
 #define UI_PAINT_EVENT_H_INCLUDED
+#pragma once
 
 #include "ui/event.h"
 

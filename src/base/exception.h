@@ -6,6 +6,7 @@
 
 #ifndef BASE_EXCEPTION_H_INCLUDED
 #define BASE_EXCEPTION_H_INCLUDED
+#pragma once
 
 #include <exception>
 #include <string>

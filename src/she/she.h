@@ -6,6 +6,7 @@
 
 #ifndef SHE_H_INCLUDED
 #define SHE_H_INCLUDED
+#pragma once
 
 #include "she/display.h"
 #include "she/event.h"

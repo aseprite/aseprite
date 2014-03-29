@@ -18,6 +18,7 @@
 
 #ifndef APP_INI_FILE_H_INCLUDED
 #define APP_INI_FILE_H_INCLUDED
+#pragma once
 
 #include <allegro/config.h>
 #include "gfx/rect.h"

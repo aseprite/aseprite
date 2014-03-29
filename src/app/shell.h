@@ -18,6 +18,7 @@
 
 #ifndef APP_SHELL_H_INCLUDED
 #define APP_SHELL_H_INCLUDED
+#pragma once
 
 namespace scripting {
   class Engine;

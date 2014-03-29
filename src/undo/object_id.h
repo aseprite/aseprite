@@ -6,6 +6,7 @@
 
 #ifndef UNDO_OBJECT_ID_H_INCLUDED
 #define UNDO_OBJECT_ID_H_INCLUDED
+#pragma once
 
 namespace undo {
 

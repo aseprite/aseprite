@@ -6,6 +6,7 @@
 
 #ifndef BASE_MEMORY_DUMP_WIN32_H_INCLUDED
 #define BASE_MEMORY_DUMP_WIN32_H_INCLUDED
+#pragma once
 
 #ifdef WIN32
 #include <windows.h>

@@ -6,6 +6,7 @@
 
 #ifndef UI_ACCELERATOR_H_INCLUDED
 #define UI_ACCELERATOR_H_INCLUDED
+#pragma once
 
 #include <string>
 #include <vector>

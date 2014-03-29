@@ -6,6 +6,7 @@
 
 #ifndef BASE_SHA1_H_INCLUDED
 #define BASE_SHA1_H_INCLUDED
+#pragma once
 
 #include <vector>
 #include <string>

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_LAYER_INDEX_H_INCLUDED
 #define RASTER_LAYER_INDEX_H_INCLUDED
+#pragma once
 
 namespace raster {
 

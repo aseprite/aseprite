@@ -18,6 +18,7 @@
 
 #ifndef APP_THUMBNAIL_GENERATOR_H_INCLUDED
 #define APP_THUMBNAIL_GENERATOR_H_INCLUDED
+#pragma once
 
 #include "base/mutex.h"
 #include "base/unique_ptr.h"

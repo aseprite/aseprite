@@ -6,6 +6,7 @@
 
 #ifndef BASE_CLAMP_H_INCLUDED
 #define BASE_CLAMP_H_INCLUDED
+#pragma once
 
 namespace base {
 

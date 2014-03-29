@@ -18,6 +18,7 @@
 
 #ifndef RASTER_MEDIAN_CUT_H_INCLUDED
 #define RASTER_MEDIAN_CUT_H_INCLUDED
+#pragma once
 
 #include <list>
 #include <queue>

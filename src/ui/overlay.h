@@ -6,6 +6,7 @@
 
 #ifndef UI_OVERLAY_H_INCLUDED
 #define UI_OVERLAY_H_INCLUDED
+#pragma once
 
 #include "gfx/fwd.h"
 #include "gfx/point.h"

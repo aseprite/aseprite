@@ -6,6 +6,7 @@
 
 #ifndef UI_PROPERTY_H_INCLUDED
 #define UI_PROPERTY_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 #include "base/disable_copying.h"

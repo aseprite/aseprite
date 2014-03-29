@@ -18,6 +18,7 @@
 
 #ifndef APP_MODULES_GUI_H_INCLUDED
 #define APP_MODULES_GUI_H_INCLUDED
+#pragma once
 
 #include "app/ui/skin/skin_property.h"
 #include "base/exception.h"

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_COLOR_SCALES_H_INCLUDED
 #define RASTER_COLOR_SCALES_H_INCLUDED
+#pragma once
 
 #include "raster/frame_number.h"
 #include "raster/object.h"

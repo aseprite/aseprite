@@ -6,6 +6,7 @@
 
 #ifndef UNDO_UNDOERS_STACK_H_INCLUDED
 #define UNDO_UNDOERS_STACK_H_INCLUDED
+#pragma once
 
 #include "undo/undoers_collector.h"
 

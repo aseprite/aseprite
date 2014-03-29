@@ -6,6 +6,7 @@
 
 #ifndef UI_GRAPHICS_H_INCLUDED
 #define UI_GRAPHICS_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 #include "gfx/point.h"

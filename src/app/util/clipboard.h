@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_CLIPBOARD_H_INCLUDED
 #define APP_UTIL_CLIPBOARD_H_INCLUDED
+#pragma once
 
 #include "gfx/point.h"
 #include "gfx/size.h"

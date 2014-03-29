@@ -18,6 +18,7 @@
 
 #ifndef APP_FIND_WIDGET_H_INCLUDED
 #define APP_FIND_WIDGET_H_INCLUDED
+#pragma once
 
 #include "app/widget_not_found.h"
 #include "ui/widget.h"

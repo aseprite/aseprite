@@ -18,6 +18,7 @@
 
 #ifndef RASTER_DIRTY_H_INCLUDED
 #define RASTER_DIRTY_H_INCLUDED
+#pragma once
 
 #include "raster/image.h"
 

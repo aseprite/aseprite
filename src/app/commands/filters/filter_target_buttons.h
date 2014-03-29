@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_FILTER_TARGET_BUTTONS_H_INCLUDED
 #define APP_COMMANDS_FILTERS_FILTER_TARGET_BUTTONS_H_INCLUDED
+#pragma once
 
 #include "base/signal.h"
 #include "filters/target.h"

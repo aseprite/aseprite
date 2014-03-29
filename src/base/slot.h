@@ -6,6 +6,7 @@
 
 #ifndef BASE_SLOT_H_INCLUDED
 #define BASE_SLOT_H_INCLUDED
+#pragma once
 
 // Slot0 - Base class for delegates of zero arguments.
 template<typename R>

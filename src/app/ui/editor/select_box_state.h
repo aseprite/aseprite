@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_SELECT_BOX_STATE_H_INCLUDED
 #define APP_UI_EDITOR_SELECT_BOX_STATE_H_INCLUDED
+#pragma once
 
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"

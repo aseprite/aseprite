@@ -18,6 +18,7 @@
 
 #ifndef APP_JOB_H_INCLUDED
 #define APP_JOB_H_INCLUDED
+#pragma once
 
 #include "base/unique_ptr.h"
 #include "ui/alert.h"

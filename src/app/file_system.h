@@ -18,6 +18,7 @@
 
 #ifndef APP_FILE_SYSTEM_H_INCLUDED
 #define APP_FILE_SYSTEM_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 

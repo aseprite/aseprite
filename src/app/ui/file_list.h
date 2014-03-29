@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_FILE_LIST_H_INCLUDED
 #define APP_UI_FILE_LIST_H_INCLUDED
+#pragma once
 
 #include "app/file_system.h"
 #include "base/compiler_specific.h"

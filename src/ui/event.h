@@ -6,6 +6,7 @@
 
 #ifndef UI_EVENT_H_INCLUDED
 #define UI_EVENT_H_INCLUDED
+#pragma once
 
 namespace ui {
 

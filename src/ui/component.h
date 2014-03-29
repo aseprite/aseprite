@@ -6,6 +6,7 @@
 
 #ifndef UI_COMPONENT_H_INCLUDED
 #define UI_COMPONENT_H_INCLUDED
+#pragma once
 
 #include <map>
 

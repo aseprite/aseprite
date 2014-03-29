@@ -6,6 +6,7 @@
 
 #ifndef BASE_MUTEX_PTHREAD_H_INCLUDED
 #define BASE_MUTEX_PTHREAD_H_INCLUDED
+#pragma once
 
 #include <pthread.h>
 #include <errno.h>

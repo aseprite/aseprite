@@ -18,6 +18,7 @@
 
 #ifndef RASTER_PIXEL_FORMAT_H_INCLUDED
 #define RASTER_PIXEL_FORMAT_H_INCLUDED
+#pragma once
 
 namespace raster {
 

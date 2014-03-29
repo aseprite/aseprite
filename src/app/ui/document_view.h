@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_DOCUMENT_VIEW_H_INCLUDED
 #define APP_UI_DOCUMENT_VIEW_H_INCLUDED
+#pragma once
 
 #include "app/document_observer.h"
 #include "app/ui/tabs.h"

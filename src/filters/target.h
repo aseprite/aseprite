@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_TARGET_H_INCLUDED
 #define FILTERS_TARGET_H_INCLUDED
+#pragma once
 
 #define TARGET_RED_CHANNEL              1
 #define TARGET_GREEN_CHANNEL            2

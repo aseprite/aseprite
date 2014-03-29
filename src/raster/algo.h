@@ -18,6 +18,7 @@
 
 #ifndef RASTER_ALGO_H_INCLUDED
 #define RASTER_ALGO_H_INCLUDED
+#pragma once
 
 namespace raster {
 

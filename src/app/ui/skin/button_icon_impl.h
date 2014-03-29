@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_SKIN_BUTTON_ICON_IMPL_H_INCLUDED
 #define APP_UI_SKIN_BUTTON_ICON_IMPL_H_INCLUDED
+#pragma once
 
 #include "ui/button.h"
 

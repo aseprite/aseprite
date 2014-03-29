@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 #define APP_UI_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
+#pragma once
 
 namespace ui {
   class MouseMessage;

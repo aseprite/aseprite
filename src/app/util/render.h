@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_RENDER_H_INCLUDED
 #define APP_UTIL_RENDER_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "raster/frame_number.h"

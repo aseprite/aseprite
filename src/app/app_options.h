@@ -18,6 +18,7 @@
 
 #ifndef APP_APP_OPTIONS_H_INCLUDED
 #define APP_APP_OPTIONS_H_INCLUDED
+#pragma once
 
 #include <stdexcept>
 #include <string>

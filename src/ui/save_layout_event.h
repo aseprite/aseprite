@@ -6,6 +6,7 @@
 
 #ifndef UI_SAVE_LAYOUT_EVENT_H_INCLUDED
 #define UI_SAVE_LAYOUT_EVENT_H_INCLUDED
+#pragma once
 
 #include "ui/event.h"
 #include <iosfwd>

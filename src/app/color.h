@@ -18,6 +18,7 @@
 
 #ifndef APP_COLOR_H_INCLUDED
 #define APP_COLOR_H_INCLUDED
+#pragma once
 
 #include "raster/color.h"
 #include "raster/pixel_format.h"

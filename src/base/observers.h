@@ -6,6 +6,7 @@
 
 #ifndef BASE_OBSERVERS_H_INCLUDED
 #define BASE_OBSERVERS_H_INCLUDED
+#pragma once
 
 #include <algorithm>
 #include <vector>

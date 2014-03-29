@@ -6,6 +6,7 @@
 
 #ifndef UI_LISTBOX_H_INCLUDED
 #define UI_LISTBOX_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"

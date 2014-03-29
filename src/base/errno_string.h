@@ -6,6 +6,7 @@
 
 #ifndef BASE_ERRNO_STRING_H_INCLUDED
 #define BASE_ERRNO_STRING_H_INCLUDED
+#pragma once
 
 #include <string>
 

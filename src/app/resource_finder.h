@@ -18,6 +18,7 @@
 
 #ifndef APP_RESOURCE_FINDER_H_INCLUDED
 #define APP_RESOURCE_FINDER_H_INCLUDED
+#pragma once
 
 #include <string>
 #include <vector>

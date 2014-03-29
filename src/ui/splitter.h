@@ -6,6 +6,7 @@
 
 #ifndef UI_SPLITTER_H_INCLUDED
 #define UI_SPLITTER_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/widget.h"

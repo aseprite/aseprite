@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_MAIN_WINDOW_H_INCLUDED
 #define APP_UI_MAIN_WINDOW_H_INCLUDED
+#pragma once
 
 #include "app/ui/tabs.h"
 #include "ui/window.h"

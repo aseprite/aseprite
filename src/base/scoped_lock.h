@@ -6,6 +6,7 @@
 
 #ifndef BASE_SCOPED_LOCK_H_INCLUDED
 #define BASE_SCOPED_LOCK_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 

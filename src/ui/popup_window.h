@@ -6,6 +6,7 @@
 
 #ifndef UI_POPUP_WINDOW_H_INCLUDED
 #define UI_POPUP_WINDOW_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/window.h"

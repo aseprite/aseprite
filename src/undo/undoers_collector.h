@@ -6,6 +6,7 @@
 
 #ifndef UNDO_UNDOERS_COLLECTOR_H_INCLUDED
 #define UNDO_UNDOERS_COLLECTOR_H_INCLUDED
+#pragma once
 
 namespace undo {
 

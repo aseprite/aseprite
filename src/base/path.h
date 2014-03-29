@@ -6,6 +6,7 @@
 
 #ifndef BASE_PATH_H_INCLUDED
 #define BASE_PATH_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 

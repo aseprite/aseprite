@@ -18,6 +18,7 @@
 
 #ifndef RASTER_IMAGE_H_INCLUDED
 #define RASTER_IMAGE_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "gfx/rect.h"

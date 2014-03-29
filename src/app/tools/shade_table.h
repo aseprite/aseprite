@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_SHADE_TABLE_H_INCLUDED
 #define APP_TOOLS_SHADE_TABLE_H_INCLUDED
+#pragma once
 
 #include "app/tools/shading_mode.h"
 #include <vector>

@@ -6,6 +6,7 @@
 
 #ifndef BASE_COMPILER_SPECIFIC_H_INCLUDED
 #define BASE_COMPILER_SPECIFIC_H_INCLUDED
+#pragma once
 
 #ifdef _MSC_VER
   #define OVERRIDE override

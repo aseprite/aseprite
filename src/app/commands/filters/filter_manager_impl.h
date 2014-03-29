@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 #define APP_COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
+#pragma once
 
 #include "app/document_location.h"
 #include "base/exception.h"

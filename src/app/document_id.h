@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_ID_H_INCLUDED
 #define APP_DOCUMENT_ID_H_INCLUDED
+#pragma once
 
 #include "doc/object_id.h"
 

@@ -6,6 +6,7 @@
 
 #ifndef BASE_REMOVE_FROM_CONTAINER_H_INCLUDED
 #define BASE_REMOVE_FROM_CONTAINER_H_INCLUDED
+#pragma once
 
 namespace base {
 

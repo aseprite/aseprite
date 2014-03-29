@@ -18,6 +18,7 @@
 
 #ifndef RASTER_STOCK_H_INCLUDED
 #define RASTER_STOCK_H_INCLUDED
+#pragma once
 
 #include "raster/object.h"
 #include "raster/pixel_format.h"

@@ -6,6 +6,7 @@
 
 #ifndef SHE_CAPABILITIES_H_INCLUDED
 #define SHE_CAPABILITIES_H_INCLUDED
+#pragma once
 
 namespace she {
 

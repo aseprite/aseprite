@@ -6,6 +6,7 @@
 
 #ifndef BASE_MUTEX_H_INCLUDED
 #define BASE_MUTEX_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 

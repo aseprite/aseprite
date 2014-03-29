@@ -6,6 +6,7 @@
 
 #ifndef CSS_RULE_H_INCLUDED
 #define CSS_RULE_H_INCLUDED
+#pragma once
 
 #include "css/map.h"
 

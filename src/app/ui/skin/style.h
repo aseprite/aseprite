@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_SKIN_STYLE_H_INCLUDED
 #define APP_UI_SKIN_STYLE_H_INCLUDED
+#pragma once
 
 #include "app/ui/skin/skin_part.h"
 #include "base/compiler_specific.h"

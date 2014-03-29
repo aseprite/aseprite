@@ -18,6 +18,7 @@
 
 #ifndef APP_MODULES_H_INCLUDED
 #define APP_MODULES_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 

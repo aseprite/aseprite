@@ -6,6 +6,7 @@
 
 #ifndef UNDO_UNDO_HISTORY_H_INCLUDED
 #define UNDO_UNDO_HISTORY_H_INCLUDED
+#pragma once
 
 #include "undo/modification.h"
 #include "undo/undoers_collector.h"

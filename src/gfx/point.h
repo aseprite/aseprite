@@ -6,6 +6,7 @@
 
 #ifndef GFX_POINT_H_INCLUDED
 #define GFX_POINT_H_INCLUDED
+#pragma once
 
 namespace gfx {
 

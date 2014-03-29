@@ -6,6 +6,7 @@
 
 #ifndef UI_INTERN_H_INCLUDED
 #define UI_INTERN_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 #include "ui/color.h"

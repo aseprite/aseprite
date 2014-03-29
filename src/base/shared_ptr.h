@@ -6,6 +6,7 @@
 
 #ifndef BASE_SHARED_PTR_H_INCLUDED
 #define BASE_SHARED_PTR_H_INCLUDED
+#pragma once
 
 // This class counts references for a SharedPtr.
 class SharedPtrRefCounterBase

@@ -6,6 +6,7 @@
 
 #ifndef UI_REGISTER_MESSAGE_H_INCLUDED
 #define UI_REGISTER_MESSAGE_H_INCLUDED
+#pragma once
 
 #include "ui/message_type.h"
 

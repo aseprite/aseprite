@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
+#pragma once
 
 #include "app/settings/selection_mode.h"
 #include "app/tools/trace_policy.h"

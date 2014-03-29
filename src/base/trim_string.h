@@ -6,6 +6,7 @@
 
 #ifndef BASE_TRIM_STRING_H_INCLUDED
 #define BASE_TRIM_STRING_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 

@@ -6,6 +6,7 @@
 
 #ifndef UI_INT_ENTRY_H_INCLUDED
 #define UI_INT_ENTRY_H_INCLUDED
+#pragma once
 
 #include "ui/entry.h"
 

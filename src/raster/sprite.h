@@ -18,6 +18,7 @@
 
 #ifndef RASTER_SPRITE_H_INCLUDED
 #define RASTER_SPRITE_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include "raster/frame_number.h"

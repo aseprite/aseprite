@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_TRACE_POLICY_H_INCLUDED
 #define APP_TOOLS_TRACE_POLICY_H_INCLUDED
+#pragma once
 
 namespace app {
   namespace tools {

@@ -6,6 +6,7 @@
 
 #ifndef UI_MANAGER_H_INCLUDED
 #define UI_MANAGER_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/message_type.h"

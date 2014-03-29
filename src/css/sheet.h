@@ -6,6 +6,7 @@
 
 #ifndef CSS_SHEET_H_INCLUDED
 #define CSS_SHEET_H_INCLUDED
+#pragma once
 
 #include "css/rule.h"
 #include "css/style.h"

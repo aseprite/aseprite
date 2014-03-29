@@ -18,6 +18,7 @@
 
 #ifndef UPDATER_USER_AGENT_H_INCLUDED
 #define UPDATER_USER_AGENT_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 

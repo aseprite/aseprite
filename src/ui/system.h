@@ -6,6 +6,7 @@
 
 #ifndef UI_SYSTEM_H_INCLUDED
 #define UI_SYSTEM_H_INCLUDED
+#pragma once
 
 #include "gfx/fwd.h"
 #include "ui/base.h"

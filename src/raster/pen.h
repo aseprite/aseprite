@@ -18,6 +18,7 @@
 
 #ifndef RASTER_PEN_H_INCLUDED
 #define RASTER_PEN_H_INCLUDED
+#pragma once
 
 #include "gfx/point.h"
 #include "gfx/rect.h"

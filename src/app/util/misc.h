@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_MISC_H_INCLUDED
 #define APP_UTIL_MISC_H_INCLUDED
+#pragma once
 
 namespace raster {
   class Image;

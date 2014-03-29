@@ -18,6 +18,7 @@
 
 #ifndef APP_UNDOERS_CLOSE_GROUP_H_INCLUDED
 #define APP_UNDOERS_CLOSE_GROUP_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "raster/sprite_position.h"

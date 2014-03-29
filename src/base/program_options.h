@@ -6,6 +6,7 @@
 
 #ifndef BASE_PROGRAM_OPTIONS_H_INCLUDED
 #define BASE_PROGRAM_OPTIONS_H_INCLUDED
+#pragma once
 
 #include <string>
 #include <vector>

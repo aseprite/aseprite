@@ -6,6 +6,7 @@
 
 #ifndef BASE_CONVERT_TO_H_INCLUDED
 #define BASE_CONVERT_TO_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 

@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_COLOR_CURVE_H_INCLUDED
 #define FILTERS_COLOR_CURVE_H_INCLUDED
+#pragma once
 
 #include <vector>
 

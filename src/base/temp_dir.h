@@ -6,6 +6,7 @@
 
 #ifndef BASE_TEMP_DIR_H_INCLUDED
 #define BASE_TEMP_DIR_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 

@@ -6,6 +6,7 @@
 
 #ifndef BASE_MEMORY_DUMP_NONE_H_INCLUDED
 #define BASE_MEMORY_DUMP_NONE_H_INCLUDED
+#pragma once
 
 class base::MemoryDump::MemoryDumpImpl
 {

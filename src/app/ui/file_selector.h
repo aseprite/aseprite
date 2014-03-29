@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_FILE_SELECTOR_H_INCLUDED
 #define APP_UI_FILE_SELECTOR_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 #include "base/unique_ptr.h"

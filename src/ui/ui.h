@@ -6,6 +6,7 @@
 
 #ifndef UI_UI_H_INCLUDED
 #define UI_UI_H_INCLUDED
+#pragma once
 
 #include "ui/accelerator.h"
 #include "ui/alert.h"

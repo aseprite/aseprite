@@ -6,6 +6,7 @@
 
 #ifndef GFX_REGION_H_INCLUDED
 #define GFX_REGION_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include <vector>

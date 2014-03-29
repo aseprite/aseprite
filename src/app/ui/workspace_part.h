@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_WORKSPACE_PART_H_INCLUDED
 #define APP_UI_WORKSPACE_PART_H_INCLUDED
+#pragma once
 
 #include "app/ui/workspace_views.h"
 #include "ui/box.h"

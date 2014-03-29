@@ -6,6 +6,7 @@
 
 #ifndef BASE_DISABLE_COPYING_H_INCLUDED
 #define BASE_DISABLE_COPYING_H_INCLUDED
+#pragma once
 
 #define DISABLE_COPYING(ClassName)              \
   private:                                      \

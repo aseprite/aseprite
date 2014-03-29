@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_HEX_COLOR_ENTRY_H_INCLUDED
 #define APP_UI_HEX_COLOR_ENTRY_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "base/signal.h"

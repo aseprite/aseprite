@@ -18,6 +18,7 @@
 
 #ifndef APP_XML_DOCUMENT_H_INCLUDED
 #define APP_XML_DOCUMENT_H_INCLUDED
+#pragma once
 
 #include "base/exception.h"
 #include "base/shared_ptr.h"

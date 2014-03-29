@@ -6,6 +6,7 @@
 
 #ifndef SHE_LOCKED_SURFACE_H_INCLUDED
 #define SHE_LOCKED_SURFACE_H_INCLUDED
+#pragma once
 
 namespace she {
 

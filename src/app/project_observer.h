@@ -18,6 +18,7 @@
 
 #ifndef APP_PROJECT_OBSERVER_H_INCLUDED
 #define APP_PROJECT_OBSERVER_H_INCLUDED
+#pragma once
 
 #include "app/project_event.h"
 

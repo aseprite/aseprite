@@ -6,6 +6,7 @@
 
 #ifndef GFX_FWD_H_INCLUDED
 #define GFX_FWD_H_INCLUDED
+#pragma once
 
 namespace gfx {
 

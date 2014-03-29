@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
+#pragma once
 
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"

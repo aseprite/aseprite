@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_WORKSPACE_VIEW_H_INCLUDED
 #define APP_UI_WORKSPACE_VIEW_H_INCLUDED
+#pragma once
 
 namespace ui {
   class Widget;

@@ -6,6 +6,7 @@
 
 #ifndef CSS_COMPOUND_STYLE_H_INCLUDED
 #define CSS_COMPOUND_STYLE_H_INCLUDED
+#pragma once
 
 #include "css/query.h"
 #include "css/rule.h"

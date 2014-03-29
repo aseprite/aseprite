@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_H_INCLUDED
 #define APP_DOCUMENT_H_INCLUDED
+#pragma once
 
 #include "app/document_id.h"
 #include "base/disable_copying.h"

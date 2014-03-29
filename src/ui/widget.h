@@ -6,6 +6,7 @@
 
 #ifndef UI_WIDGET_H_INCLUDED
 #define UI_WIDGET_H_INCLUDED
+#pragma once
 
 #include <string>
 

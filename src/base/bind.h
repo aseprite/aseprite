@@ -6,6 +6,7 @@
 
 #ifndef BASE_BIND_H_INCLUDED
 #define BASE_BIND_H_INCLUDED
+#pragma once
 
 // BindAdapter0_fun
 template<typename R, typename F>

@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_FILTER_BG_H_INCLUDED
 #define APP_COMMANDS_FILTERS_FILTER_BG_H_INCLUDED
+#pragma once
 
 namespace app {
 

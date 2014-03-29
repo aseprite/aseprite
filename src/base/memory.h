@@ -6,6 +6,7 @@
 
 #ifndef BASE_MEMORY_H_INCLUDED
 #define BASE_MEMORY_H_INCLUDED
+#pragma once
 
 void* base_malloc (size_t bytes);
 void* base_malloc0(size_t bytes);

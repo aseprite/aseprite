@@ -6,6 +6,7 @@
 
 #ifndef SHE_DISPLAY_H_INCLUDED
 #define SHE_DISPLAY_H_INCLUDED
+#pragma once
 
 namespace she {
 

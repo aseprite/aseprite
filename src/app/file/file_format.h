@@ -18,6 +18,7 @@
 
 #ifndef APP_FILE_FILE_FORMAT_H_INCLUDED
 #define APP_FILE_FILE_FORMAT_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 

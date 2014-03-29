@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_SKIN_SKIN_PARTS_H_INCLUDED
 #define APP_UI_SKIN_SKIN_PARTS_H_INCLUDED
+#pragma once
 
 namespace app {
   namespace skin {

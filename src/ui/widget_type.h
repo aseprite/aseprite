@@ -6,6 +6,7 @@
 
 #ifndef UI_WIDGET_TYPE_H_INCLUDED
 #define UI_WIDGET_TYPE_H_INCLUDED
+#pragma once
 
 namespace ui {
 

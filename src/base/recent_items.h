@@ -6,6 +6,7 @@
 
 #ifndef BASE_RECENT_ITEMS_H_INCLUDED
 #define BASE_RECENT_ITEMS_H_INCLUDED
+#pragma once
 
 #include <list>
 #include <algorithm>

@@ -6,6 +6,7 @@
 
 #ifndef UI_INIT_THEME_EVENT_H_INCLUDED
 #define UI_INIT_THEME_EVENT_H_INCLUDED
+#pragma once
 
 #include "ui/event.h"
 

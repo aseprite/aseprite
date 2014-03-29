@@ -6,6 +6,7 @@
 
 #ifndef DOC_EXPORT_DATA_H_INCLUDED
 #define DOC_EXPORT_DATA_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 #include "gfx/rect.h"

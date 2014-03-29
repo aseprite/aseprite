@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_API_H_INCLUDED
 #define APP_DOCUMENT_API_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "raster/algorithm/flip_type.h"

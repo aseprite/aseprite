@@ -6,6 +6,7 @@
 
 #ifndef UI_FONT_H_INCLUDED
 #define UI_FONT_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 

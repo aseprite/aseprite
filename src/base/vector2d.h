@@ -6,6 +6,7 @@
 
 #ifndef BASE_VECTOR2D_H_INCLUDED
 #define BASE_VECTOR2D_H_INCLUDED
+#pragma once
 
 #include <cmath>
 

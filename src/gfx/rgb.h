@@ -6,6 +6,7 @@
 
 #ifndef GFX_RGB_H_INCLUDED
 #define GFX_RGB_H_INCLUDED
+#pragma once
 
 #include <cassert>
 

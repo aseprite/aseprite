@@ -6,6 +6,7 @@
 
 #ifndef UI_CURSOR_H_INCLUDED
 #define UI_CURSOR_H_INCLUDED
+#pragma once
 
 #include "gfx/point.h"
 

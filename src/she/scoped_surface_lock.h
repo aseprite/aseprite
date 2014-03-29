@@ -6,6 +6,7 @@
 
 #ifndef SHE_SCOPED_SURFACE_LOCK_H_INCLUDED
 #define SHE_SCOPED_SURFACE_LOCK_H_INCLUDED
+#pragma once
 
 #include "she/surface.h"
 #include "she/locked_surface.h"

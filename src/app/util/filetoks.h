@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_FILETOKS_H_INCLUDED
 #define APP_UTIL_FILETOKS_H_INCLUDED
+#pragma once
 
 #include <stdio.h>
 

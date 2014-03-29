@@ -6,6 +6,7 @@
 
 #ifndef GFX_HSV_H_INCLUDED
 #define GFX_HSV_H_INCLUDED
+#pragma once
 
 #include <cassert>
 

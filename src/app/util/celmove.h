@@ -18,6 +18,7 @@
 
 #ifndef APP_UTIL_CELMOVE_H_INCLUDED
 #define APP_UTIL_CELMOVE_H_INCLUDED
+#pragma once
 
 #include "raster/frame_number.h"
 

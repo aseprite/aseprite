@@ -6,6 +6,7 @@
 
 #ifndef BASE_THREAD_H_INCLUDED
 #define BASE_THREAD_H_INCLUDED
+#pragma once
 
 namespace base {                // Based on C++0x threads lib
 

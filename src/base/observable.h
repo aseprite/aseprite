@@ -6,6 +6,7 @@
 
 #ifndef BASE_OBSERVABLE_H_INCLUDED
 #define BASE_OBSERVABLE_H_INCLUDED
+#pragma once
 
 #include "base/observers.h"
 

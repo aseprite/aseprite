@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_OBSERVER_H_INCLUDED
 #define APP_DOCUMENT_OBSERVER_H_INCLUDED
+#pragma once
 
 #include "raster/frame_number.h"
 
