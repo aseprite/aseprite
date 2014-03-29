@@ -145,7 +145,7 @@ protected:
 
         // Is the pattern (left_part) in the child_name's beginning?
         if (it2 == left_part.end()) {
-          setText(child_name.c_str());
+          setText(left_part + child_name.substr(left_part.size()));
           selectText(child_name.size(), left_part.size());
           clear_keybuf();
           return true;
