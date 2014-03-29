@@ -91,10 +91,6 @@ private:
 // Variables used only to maintain the history of navigation.
 static FileItemList* navigation_history = NULL; // Set of FileItems navigated
 static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
-static bool navigation_locked = false;  // If true the navigation_history isn't
-                                        // modified if the current folder changes
-                                        // (used when the back/forward buttons
-                                        // are pushed)
 
 // Slot for App::Exit signal
 static void on_exit_delete_navigation_history()
@@ -585,9 +581,9 @@ void FileSelector::onGoBack()
     if (navigation_position.getIterator() != navigation_history->begin()) {
       navigation_position.setIterator(navigation_position.getIterator()-1);
 
-      navigation_locked = true;
+      m_navigationLocked = true;
       m_fileList->setCurrentFolder(*navigation_position.getIterator());
-      navigation_locked = false;
+      m_navigationLocked = false;
     }
   }
 }
@@ -601,9 +597,9 @@ void FileSelector::onGoForward()
     if (navigation_position.getIterator() != navigation_history->end()-1) {
       navigation_position.setIterator(navigation_position.getIterator()+1);
 
-      navigation_locked = true;
+      m_navigationLocked = true;
       m_fileList->setCurrentFolder(*navigation_position.getIterator());
-      navigation_locked = false;
+      m_navigationLocked = false;
     }
   }
 }
@@ -676,7 +672,7 @@ void FileSelector::onFileListFileAccepted()
 
 void FileSelector::onFileListCurrentFolderChanged()
 {
-  if (!navigation_locked)
+  if (!m_navigationLocked)
     addInNavigationHistory(m_fileList->getCurrentFolder());
 
   updateLocation();

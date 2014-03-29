@@ -64,6 +64,12 @@ namespace app {
     ui::ComboBox* m_fileType;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
+
+    // If true the navigation_history isn't
+    // modified if the current folder changes
+    // (used when the back/forward buttons
+    // are pushed)
+    bool m_navigationLocked;
   };
 
 } // namespace app
