@@ -454,14 +454,9 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kMouseUpMessage: {
-      int index = m_comboBox->getSelectedItemIndex();
-      if (isValidItem(index))
-        m_comboBox->onChange();
-
+    case kMouseUpMessage:
       m_comboBox->closeListBox();
       return true;
-    }
 
     case kKeyDownMessage:
       if (hasFocus()) {
@@ -486,8 +481,10 @@ void ComboBoxListBox::onChangeSelectedItem()
   ListBox::onChangeSelectedItem();
 
   int index = getSelectedIndex();
-  if (isValidItem(index))
+  if (isValidItem(index)) {
     m_comboBox->setSelectedItemIndex(index);
+    m_comboBox->onChange();
+  }
 }
 
 // When the mouse is clicked we switch the visibility-status of the list-box
