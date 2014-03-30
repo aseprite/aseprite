@@ -102,6 +102,7 @@ static const char* kTimelinePaddingTr = "timeline_padding_tr";
 static const char* kTimelinePaddingBl = "timeline_padding_bl";
 static const char* kTimelinePaddingBr = "timeline_padding_br";
 static const char* kTimelineSelectedCelStyle = "timeline_selected_cel";
+static const char* kTimelineRangeOutlineStyle = "timeline_range_outline";
 
 static const char* kTimelineActiveColor = "timeline_active";
 
@@ -118,7 +119,8 @@ enum {
   A_PART_LAYER_EYE_ICON,
   A_PART_LAYER_PADLOCK_ICON,
   A_PART_LAYER_TEXT,
-  A_PART_CEL
+  A_PART_CEL,
+  A_PART_RANGE_OUTLINE
 };
 
 Timeline::Timeline()
@@ -143,6 +145,7 @@ Timeline::Timeline()
   , m_timelinePaddingBlStyle(get_style(kTimelinePaddingBl))
   , m_timelinePaddingBrStyle(get_style(kTimelinePaddingBr))
   , m_timelineSelectedCelStyle(get_style(kTimelineSelectedCelStyle))
+  , m_timelineRangeOutlineStyle(get_style(kTimelineRangeOutlineStyle))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -312,7 +315,7 @@ bool Timeline::onProcessMessage(Message* msg)
               m_state = STATE_MOVING_FRAME;
             else {
               m_state = STATE_SELECTING_FRAMES;
-              m_range.startRange(getLayerIndex(m_layer), m_clk_frame);
+              m_range.startRange(getLayerIndex(m_layer), m_clk_frame, Range::Frames);
             }
           }
           break;
@@ -349,7 +352,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
 
             if (startRange)
-              m_range.startRange(m_clk_layer, m_frame);
+              m_range.startRange(m_clk_layer, m_frame, Range::Layers);
           }
           break;
         }
@@ -382,7 +385,7 @@ bool Timeline::onProcessMessage(Message* msg)
           else {
             m_state = STATE_SELECTING_CELS;
             if (selectCel)
-              m_range.startRange(m_clk_layer, m_clk_frame);
+              m_range.startRange(m_clk_layer, m_clk_frame, Range::Cels);
             invalidate();
           }
           break;
@@ -521,6 +524,12 @@ bool Timeline::onProcessMessage(Message* msg)
       else {
         if (hot_layer >= (int)m_layers.size()) hot_layer = -1;
         if (hot_frame > m_sprite->getLastFrame()) hot_frame = FrameNumber(-1);
+
+        gfx::Rect outline = getPartBounds(A_PART_RANGE_OUTLINE);
+        if (outline.contains(mousePos) &&
+            !gfx::Rect(outline).shrink(4*jguiscale()).contains(mousePos)) {
+          hot_part = A_PART_RANGE_OUTLINE;
+        }
       }
 
       // Set the new 'hot' thing.
@@ -669,7 +678,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
                   regenerateLayers();
 
-                  m_range.startRange(getLayerIndex(firstLayer), m_frame);
+                  m_range.startRange(getLayerIndex(firstLayer), m_frame, m_range.type());
                   m_range.endRange(getLayerIndex(lastLayer), m_frame);
                 }
                 catch (LockedDocumentException& e) {
@@ -747,11 +756,6 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
         }
-
-        // Disable range if we selected only one cel.
-        if (m_range.layerBegin() == m_range.layerEnd() &&
-            m_range.frameBegin() == m_range.frameEnd())
-          m_range.disableRange();
 
         // Clean the clicked-part & redraw the hot-part.
         cleanClk();
@@ -942,6 +946,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
+    drawRangeOutline(g);
   }
   catch (const LockedDocumentException&) {
     noDoc = true;
@@ -1098,6 +1103,9 @@ void Timeline::setCursor(int x, int y)
   else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_RIGHT
     || m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT) {
     jmouse_set_cursor(kSizeRCursor);
+  }
+  else if (m_hot_part == A_PART_RANGE_OUTLINE) {
+    jmouse_set_cursor(kMoveCursor);
   }
   else {
     jmouse_set_cursor(kArrowCursor);
@@ -1270,6 +1278,17 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 }
 
+void Timeline::drawRangeOutline(ui::Graphics* g)
+{
+  gfx::Rect bounds = getPartBounds(A_PART_RANGE_OUTLINE);
+
+  Style::State state;
+  if (m_range.enabled()) state += Style::active();
+  if (m_hot_part == A_PART_RANGE_OUTLINE) state += Style::hover();
+
+  m_timelineRangeOutlineStyle->paint(g, bounds, NULL, state);
+}
+
 void Timeline::drawPaddings(ui::Graphics* g)
 {
   gfx::Rect client = getClientBounds();
@@ -1423,6 +1442,24 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
                          HDRSIZE + LAYSIZE*layer - m_scroll_y,
                          FRMSIZE,
                          LAYSIZE);
+      }
+      break;
+
+    case A_PART_RANGE_OUTLINE:
+      switch (m_range.type()) {
+        case Range::None: break; // Return empty rectangle
+        case Range::Cels:
+          return
+            getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
+              getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd())).enlarge(2*jguiscale());
+        case Range::Frames:
+          return
+            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
+              getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
+        case Range::Layers:
+          return
+            getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
+              getPartBounds(A_PART_LAYER, m_range.layerEnd()));
       }
       break;
   }
@@ -1658,28 +1695,28 @@ bool Timeline::isFrameActive(FrameNumber frame) const
     return m_range.inRange(frame);
 }
 
-void Timeline::Range::startRange(int layer, FrameNumber frame)
+void Timeline::Range::startRange(int layer, FrameNumber frame, Type type)
 {
-  m_enabled = true;
+  m_type = type;
   m_layerBegin = m_layerEnd = layer;
   m_frameBegin = m_frameEnd = frame;
 }
 
 void Timeline::Range::endRange(int layer, FrameNumber frame)
 {
-  ASSERT(m_enabled);
+  ASSERT(enabled());
   m_layerEnd = layer;
   m_frameEnd = frame;
 }
 
 void Timeline::Range::disableRange()
 {
-  m_enabled = false;
+  m_type = None;
 }
 
 bool Timeline::Range::inRange(int layer) const
 {
-  if (m_enabled)
+  if (enabled())
     return (layer >= layerBegin() && layer <= layerEnd());
   else
     return false;
@@ -1687,7 +1724,7 @@ bool Timeline::Range::inRange(int layer) const
 
 bool Timeline::Range::inRange(FrameNumber frame) const
 {
-  if (m_enabled)
+  if (enabled())
     return (frame >= frameBegin() && frame <= frameEnd());
   else
     return false;

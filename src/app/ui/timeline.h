@@ -67,9 +67,12 @@ namespace app {
     };
 
     struct Range {
-      Range() : m_enabled(false) { }
+      enum Type { None, Cels, Frames, Layers };
 
-      bool enabled() const { return m_enabled; }
+      Range() : m_type(None) { }
+
+      Type type() const { return m_type; }
+      bool enabled() const { return m_type != None; }
       int layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
       int layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
       FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
@@ -79,12 +82,12 @@ namespace app {
       bool inRange(FrameNumber frame) const;
       bool inRange(int layer, FrameNumber frame) const;
 
-      void startRange(int layer, FrameNumber frame);
+      void startRange(int layer, FrameNumber frame, Type type);
       void endRange(int layer, FrameNumber frame);
       void disableRange();
 
     private:
-      bool m_enabled;
+      Type m_type;
       int m_layerBegin;
       int m_layerEnd;
       FrameNumber m_frameBegin;
@@ -142,6 +145,7 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
     void drawLayer(ui::Graphics* g, int layer_index);
     void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
     gfx::Rect getLayerHeadersBounds() const;
@@ -182,6 +186,7 @@ namespace app {
     skin::Style* m_timelinePaddingBlStyle;
     skin::Style* m_timelinePaddingBrStyle;
     skin::Style* m_timelineSelectedCelStyle;
+    skin::Style* m_timelineRangeOutlineStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;

@@ -492,6 +492,16 @@
       <background color="timeline_normal" part="timeline_padding_br" />
     </style>
 
+    <!-- timeline_range_outline -->
+    <style id="timeline_range_outline">
+    </style>
+    <style id="timeline_range_outline:active">
+      <background part="colorbar_border_hotfg" />
+    </style>
+    <style id="timeline_range_outline:hover">
+      <background part="colorbar_border_fg" />
+    </style>
+
   </stylesheet>
 
 </skin>
