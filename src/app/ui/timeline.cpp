@@ -165,6 +165,14 @@ Timeline::~Timeline()
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
+  // As a sprite editor was selected, it looks like the user wants to
+  // execute commands targetting the editor instead of the
+  // timeline. Here we disable the selected range, so commands like
+  // Clear, Copy, Cut, etc. don't target the Timeline and they are
+  // sent to the active sprite editor.
+  m_range.disableRange();
+  invalidate();
+
   detachDocument();
 
   // We always update the editor. In this way the timeline keeps in
@@ -739,6 +747,11 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
         }
+
+        // Disable range if we selected only one cel.
+        if (m_range.layerBegin() == m_range.layerEnd() &&
+            m_range.frameBegin() == m_range.frameEnd())
+          m_range.disableRange();
 
         // Clean the clicked-part & redraw the hot-part.
         cleanClk();
