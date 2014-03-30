@@ -9,7 +9,6 @@
 #endif
 
 #include "ui/base.h"
-#include "ui/clipboard.h"
 #include "ui/overlay_manager.h"
 #include "ui/theme.h"
 
@@ -38,9 +37,6 @@ GuiSystem::~GuiSystem()
 
   // finish theme
   CurrentTheme::set(NULL);
-
-  // destroy clipboard
-  clipboard::set_text(NULL);
 
   // shutdown system
   _ji_widgets_exit();

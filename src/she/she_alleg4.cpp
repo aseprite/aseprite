@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013  David Capello
+// Copyright (C) 2012-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,12 @@
   #else
     typedef FARPROC wndproc_t;
   #endif
+#endif
+
+#ifdef WIN32
+  #include "she/clipboard_win.h"
+#else
+  #include "she/clipboard_simple.h"
 #endif
 
 #include "loadpng.h"
@@ -411,6 +417,10 @@ public:
   Surface* createSurfaceFromNativeHandle(void* nativeHandle) {
     return new Alleg4Surface(reinterpret_cast<BITMAP*>(nativeHandle),
                              Alleg4Surface::AutoDestroy);
+  }
+
+  Clipboard* createClipboard() {
+    return new ClipboardImpl();
   }
 
 };

@@ -10,22 +10,27 @@
 
 #include "ui/clipboard.h"
 
-#ifdef WIN32
-#include "ui/clipboard_win.h"
-#else
-#include "ui/clipboard_none.h"
-#endif
+#include "she/clipboard.h"
+#include "ui/manager.h"
+
+#include <string>
 
 static std::string clipboard_text;
 
+namespace ui {
+namespace clipboard {
+
 const char* ui::clipboard::get_text()
 {
-  get_system_clipboard_text(clipboard_text);
+  clipboard_text = Manager::getDefault()->getClipboard()->getText();
   return clipboard_text.c_str();
 }
 
 void ui::clipboard::set_text(const char* text)
 {
   clipboard_text = text ? text: "";
-  set_system_clipboard_text(clipboard_text);
+  Manager::getDefault()->getClipboard()->setText(clipboard_text);
 }
+
+} // namespace clipboard
+} // namespace ui

@@ -110,6 +110,7 @@ static void allegro_window_close_hook()
 Manager::Manager()
   : Widget(kManagerWidget)
   , m_display(NULL)
+  , m_clipboard(NULL)
   , m_eventQueue(NULL)
 {
   if (!m_defaultManager) {
@@ -182,6 +183,11 @@ void Manager::setDisplay(she::Display* display)
 {
   m_display = display;
   m_eventQueue = m_display->getEventQueue();
+}
+
+void Manager::setClipboard(she::Clipboard* clipboard)
+{
+  m_clipboard = clipboard;
 }
 
 void Manager::run()

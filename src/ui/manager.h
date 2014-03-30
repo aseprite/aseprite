@@ -14,6 +14,7 @@
 #include "ui/widget.h"
 
 namespace she {
+  class Clipboard;
   class Display;
   class EventQueue;
 }
@@ -35,7 +36,10 @@ namespace ui {
     ~Manager();
 
     she::Display* getDisplay() { return m_display; }
+    she::Clipboard* getClipboard() { return m_clipboard; }
+
     void setDisplay(she::Display* display);
+    void setClipboard(she::Clipboard* clipboard);
 
     void run();
 
@@ -103,6 +107,7 @@ namespace ui {
 
     WidgetsList m_garbage;
     she::Display* m_display;
+    she::Clipboard* m_clipboard;
     she::EventQueue* m_eventQueue;
   };
 
