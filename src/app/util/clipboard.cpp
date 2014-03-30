@@ -185,19 +185,27 @@ void clipboard::paste()
   }
 #endif
 
-  Sprite* sprite = editor->getDocument()->getSprite();
+  Sprite* dst_sprite = editor->getDocument()->getSprite();
   if (clipboard_image == NULL)
     return;
 
+  Palette* dst_palette = dst_sprite->getPalette(editor->getFrame());
+
   // Source image (clipboard or a converted copy to the destination 'imgtype')
   Image* src_image;
-  if (clipboard_image->getPixelFormat() == sprite->getPixelFormat())
+  if (clipboard_image->getPixelFormat() == dst_sprite->getPixelFormat() &&
+      // Indexed images can be copied directly only if both images
+      // have the same palette.
+      (clipboard_image->getPixelFormat() != IMAGE_INDEXED ||
+       clipboard_palette->countDiff(dst_palette, NULL, NULL) == 0)) {
     src_image = clipboard_image;
+  }
   else {
-    RgbMap* rgbmap = sprite->getRgbMap(editor->getFrame());
+    RgbMap* dst_rgbmap = dst_sprite->getRgbMap(editor->getFrame());
+
     src_image = quantization::convert_pixel_format(
-      clipboard_image, sprite->getPixelFormat(),
-      DITHERING_NONE, rgbmap, clipboard_palette,
+      clipboard_image, dst_sprite->getPixelFormat(),
+      DITHERING_NONE, dst_rgbmap, clipboard_palette,
       false);
   }
 
