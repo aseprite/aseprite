@@ -1178,8 +1178,12 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
   // Draw the header for the layers.
   char buf[256];
   std::sprintf(buf, "%d", (frame+1)%100); // Draw only the first two digits.
+
+  FONT* oldFont = g->getFont();
+  g->setFont(((SkinTheme*)getTheme())->getMiniFont());
   drawPart(g, bounds, buf, m_timelineBoxStyle,
     is_active, is_hover, is_clicked);
+  g->setFont(oldFont);
 }
 
 void Timeline::drawLayer(ui::Graphics* g, int layer_index)
