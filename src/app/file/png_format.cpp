@@ -53,8 +53,10 @@ class PngFormat : public FileFormat {
       FILE_SUPPORT_SEQUENCES;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreatePngFormat()
@@ -327,6 +329,7 @@ bool PngFormat::onLoad(FileOp* fop)
   return true;
 }
 
+#ifdef ENABLE_SAVE
 bool PngFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
@@ -543,5 +546,6 @@ bool PngFormat::onSave(FileOp* fop)
   /* all right */
   return true;
 }
+#endif
 
 } // namespace app

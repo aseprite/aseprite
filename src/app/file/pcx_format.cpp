@@ -48,8 +48,10 @@ class PcxFormat : public FileFormat {
       FILE_SUPPORT_SEQUENCES;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreatePcxFormat()
@@ -186,6 +188,7 @@ bool PcxFormat::onLoad(FileOp* fop)
   }
 }
 
+#ifdef ENABLE_SAVE
 bool PcxFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
@@ -304,5 +307,6 @@ bool PcxFormat::onSave(FileOp* fop)
     return true;
   }
 }
+#endif
 
 } // namespace app

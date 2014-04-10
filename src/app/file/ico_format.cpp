@@ -48,8 +48,10 @@ class IcoFormat : public FileFormat {
       FILE_SUPPORT_INDEXED;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreateIcoFormat()
@@ -234,6 +236,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   return true;
 }
 
+#ifdef ENABLE_SAVE
 bool IcoFormat::onSave(FileOp* fop)
 {
   Sprite* sprite = fop->document->getSprite();
@@ -393,5 +396,6 @@ bool IcoFormat::onSave(FileOp* fop)
 
   return true;
 }
+#endif
 
 } // namespace app

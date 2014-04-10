@@ -42,6 +42,7 @@ option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(ENABLE_WEBSERVER   "Enable support to run a webserver (for HTML5 gamedev)" off)
+option(ENABLE_TRIAL_MODE  "Compile the trial version" off)
 option(FULLSCREEN_PLATFORM "Enable fullscreen by default" off)
 
 ######################################################################

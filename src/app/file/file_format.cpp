@@ -51,11 +51,13 @@ bool FileFormat::load(FileOp* fop)
   return onLoad(fop);
 }
 
+#ifdef ENABLE_SAVE
 bool FileFormat::save(FileOp* fop)
 {
   ASSERT(support(FILE_SUPPORT_SAVE));
   return onSave(fop);
 }
+#endif
 
 bool FileFormat::postLoad(FileOp* fop)
 {

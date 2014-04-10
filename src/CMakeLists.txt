@@ -124,6 +124,13 @@ if(ENABLE_WEBSERVER)
   add_subdirectory(webserver)
 endif()
 
+# Full-version or trial-mode?
+if(NOT ENABLE_TRIAL_MODE)
+  add_definitions(-DENABLE_SAVE)
+else()
+  add_definitions(-DENABLE_TRIAL_MODE)
+endif()
+
 if(USE_SHARED_ALLEGRO4)
   # Find the shared Allegro 4 library
   find_library(LIBALLEGRO4_LIBRARY alleg)

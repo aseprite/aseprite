@@ -90,7 +90,9 @@ class GifFormat : public FileFormat {
   bool onLoad(FileOp* fop);
   bool onPostLoad(FileOp* fop) OVERRIDE;
   void onDestroyData(FileOp* fop) OVERRIDE;
-  bool onSave(FileOp* fop);
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreateGifFormat()
@@ -487,6 +489,7 @@ void GifFormat::onDestroyData(FileOp* fop)
   }
 }
 
+#ifdef ENABLE_SAVE
 bool GifFormat::onSave(FileOp* fop)
 {
   UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file
@@ -681,5 +684,6 @@ bool GifFormat::onSave(FileOp* fop)
 
   return true;
 }
+#endif
 
 } // namespace app
