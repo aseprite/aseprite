@@ -1,7 +1,24 @@
-# Very high priority (next release?)
+# Before release
 
-* The paste-in-place doesn't work!
-* Fix animation playback (the duration is not used correctly)
+* timeline: move a layer to the same place -> crash
+* timeline: select all layers and remove -> crash
+* timeline: move cel with right click -> crash
+* fix animation playback (the duration is not used correctly)
+
+# Tasks
+
+* Paste in place doesn't work as expected sometimes (copy something
+  from one frame, paste in other frame).
+  - Paste does not paste in the correct position if the cel is moved.
+
+* onion-skin-bug.ase: See frame 2 with onion skin, there is a bug
+* add drag-and-drop of colors.
+* add Mac OS X:
+  - hide OS cursor
+  - Ctrl key should be Cmd key
+  - Use OS menu (the same for Windows?)
+* update copyright year of source files (automate this in with a script)
+
 * Remove Image::getPixelAddress(), it shouldn't be public and almost
   everywhere we should use iterators for images. Also get/put_pixel_fast
   and ImageImpl::address() are dangerous.
@@ -9,15 +26,11 @@
 * Warning message when we open a file that is already opened
   (show an option to create a second view, or maybe this should
   be forbidden).
-* Paste in place doesn't work as expected sometimes (copy something
-  from one frame, paste in other frame).
-* After moving a frame, all thumbnails are shown incorrectly.
 * New sprite with palette of the clipboard
 * Ctrl+Shift selection should copy and snap axis
 * "Duplicate sprite" should copy the "Background" layer as Background.
 * Fix problem applyToTarget() can throw (it's called from other thread)
 * After flatten show the background if it is hidden.
-* Paste does not paste in the correct position if the cel is moved.
 * Alpha when pasting.
 * Shade drawing mode.
 * Improve status bar indicators (show origin of selection in floating state).
@@ -33,24 +46,12 @@
 * Add "Remap" button to palette editor after a palette entry is modified:
   This button should apply a color curve to the whole sprite to remap
   old indexes to the new positions.
-* Merge everything related to configuration/settings in one class
-  (allow configuration per document). Use cfg.cpp and settings/ dir.
-* Refactor src/file/ in several layers.
-
-# WIP
-
-* New document object model layer (src/doc/)
-* New image file formats layer (src/iff/)
-* Start view (src/app/ui/start_view.cpp)
-* Data recovery (src/app/data_recovery.cpp)
-* Projects (src/app/project.cpp)
-* Scriting support (src/scripting/engine.cpp)
 
 # Refactoring
 
-* Split UndoTransaction class into:
-  * DocumentTransaction class, and
-  * DocumentOperations namespace or something like that.
+* Merge everything related to configuration/settings in one class
+  (allow configuration per document). Use cfg.cpp and settings/ dir.
+* Refactor src/file/ in several layers.
 * Use streams instead of FILEs.
 * Destroy modules/gui.h.
 * Convert update_screen_for_document in an event from contexts or
@@ -72,7 +73,7 @@
 * all functions to handle an object should be converted to member functions:
   * e.g. jwidget_set_text -> Widget::setText
 
-# High priority work
+# Old issues
 
 * Ctrl+T should transform the current cel
 * fix bilinear: when getpixel have alpha = 0 get a neighbor color.
@@ -90,21 +91,17 @@
   * DrawClick2FreeHand
   * DrawClick2Shape
 * see the new Allegro's load_font
-* finish ICO files support.
+* review ICO files support.
 * add "size" to GUI font (for TTF fonts);
 * layer movement between sets in animation-editor;
   * add all the "set" stuff again;
 * fix algo_ellipsefill;
 * view_tiled() should support animation playback (partial support:
   with left and right keys).
-
-# Wish-list
-
 * dacap wish-list:
   * added starred file-items in the file-selector.
   * tweening of cels (translate, scale, rotate)
   * tweening of polygons
-  * selection of frames (to modify several frames at the same time)
 * manuq wish-list:
   * layer-with-constant-cel
 * Mateusz Czaplinski ideas:
@@ -112,12 +109,6 @@
     position from the starting point of movement;
   * make drawing the 'marching-ants-rectangle' a prioritaire thing to
     draw (when move it).
-
-# Low priority stuff
-
-* add unit-tests for "raster" and file formats.
-* test routines: load/save_pic_file, load/save_msk_file,
-  load/save_col_file.
 * fix the fli reader (both Allegro and Gfli): when a frame hasn't
   chunks means that it's looks like the last frame;
 * talk with Elias Pschernig, his "do_ellipse_diameter" (algo_ellipse)
