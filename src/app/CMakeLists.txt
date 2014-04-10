@@ -227,7 +227,6 @@ add_library(app-lib
   undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp
-  util/celmove.cpp
   util/clipboard.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp

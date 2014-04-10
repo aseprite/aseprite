@@ -26,7 +26,7 @@
 
 namespace raster {
   class Cel;
-  class Layer;
+  class LayerImage;
 }
 
 namespace app {
@@ -36,13 +36,14 @@ namespace app {
 
     class SetCelFrame : public UndoerBase {
     public:
-      SetCelFrame(ObjectsContainer* objects, Cel* cel);
+      SetCelFrame(ObjectsContainer* objects, LayerImage* layer, Cel* cel);
 
       void dispose() OVERRIDE;
       size_t getMemSize() const OVERRIDE { return sizeof(*this); }
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) OVERRIDE;
 
     private:
+      ObjectId m_layerId;
       ObjectId m_celId;
       FrameNumber m_frame;
     };

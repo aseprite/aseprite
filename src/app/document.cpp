@@ -360,8 +360,6 @@ void Document::resetTransformation()
 
 void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
 {
-  DocumentUndo* undo = destDoc->getUndo();
-
   // Copy the layer name
   destLayer0->setName(sourceLayer0->getName());
 
@@ -385,12 +383,6 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
 
       Image* newImage = Image::createCopy(sourceImage);
       newCel->setImage(destLayer->getSprite()->getStock()->addImage(newImage));
-
-      if (undo->isEnabled()) {
-        undo->pushUndoer(new undoers::AddImage(undo->getObjects(),
-            destLayer->getSprite()->getStock(),
-            newCel->getImage()));
-      }
 
       destLayer->addCel(newCel);
       newCel.release();
@@ -422,9 +414,14 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       ASSERT(destChild != NULL);
 
       // Add the new layer in the sprite.
-      destDoc->getApi().addLayer(destLayer,
-                                 destChild.release(),
-                                 destLayer->getLastLayer());
+
+      Layer* newLayer = destChild.release();
+      Layer* afterThis = destLayer->getLastLayer();
+
+      destLayer->addLayer(newLayer);
+      destChild.release();
+
+      destLayer->stackLayer(newLayer, afterThis);
     }
   }
   else  {
@@ -461,14 +458,8 @@ Document* Document::duplicate(DuplicateType type) const
   switch (type) {
 
     case DuplicateExactCopy:
-      // Disable the undo
-      documentCopy->getUndo()->setEnabled(false);
-
       // Copy the layer folder
       copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
-
-      // Re-enable the undo
-      documentCopy->getUndo()->setEnabled(true);
       break;
 
     case DuplicateWithFlattenLayers:

@@ -25,7 +25,6 @@
 #include "app/context_access.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/util/celmove.h"
 #include "ui/base.h"
 
 namespace app {
@@ -54,8 +53,7 @@ bool MoveCelCommand::onEnabled(Context* context)
 
 void MoveCelCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
-  move_cel(writer);
+  App::instance()->getMainWindow()->getTimeline()->dropRange(Timeline::kMove);
 }
 
 Command* CommandFactory::createMoveCelCommand()

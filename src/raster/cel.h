@@ -39,6 +39,9 @@ namespace raster {
     int getY() const { return m_y; }
     int getOpacity() const { return m_opacity; }
 
+    // You should change the frame only if the cel isn't member of a
+    // layer.  If the cel is already in a layer, you should use
+    // LayerImage::moveCel() member function.
     void setFrame(FrameNumber frame) { m_frame = frame; }
     void setImage(int image) { m_image = image; }
     void setPosition(int x, int y) { m_x = x; m_y = y; }

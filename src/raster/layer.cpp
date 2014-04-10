@@ -174,6 +174,13 @@ void LayerImage::removeCel(Cel *cel)
   m_cels.erase(it);
 }
 
+void LayerImage::moveCel(Cel* cel, FrameNumber frame)
+{
+  removeCel(cel);
+  cel->setFrame(frame);
+  addCel(cel);
+}
+
 const Cel* LayerImage::getCel(FrameNumber frame) const
 {
   CelConstIterator it = getCelBegin();

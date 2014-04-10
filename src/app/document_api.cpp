@@ -43,6 +43,7 @@
 #include "app/undoers/remove_palette.h"
 #include "app/undoers/replace_image.h"
 #include "app/undoers/set_cel_frame.h"
+#include "app/undoers/set_cel_opacity.h"
 #include "app/undoers/set_cel_position.h"
 #include "app/undoers/set_frame_duration.h"
 #include "app/undoers/set_layer_flags.h"
@@ -70,8 +71,6 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-
-
 
 namespace app {
 
@@ -101,7 +100,7 @@ void DocumentApi::setSpriteSize(Sprite* sprite, int w, int h)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteSizeChanged, ev);
 }
 
-void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, int bgcolor)
+void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor)
 {
   setSpriteSize(sprite, bounds.w, bounds.h);
   displaceLayers(sprite->getFolder(), -bounds.x, -bounds.y);
@@ -115,7 +114,7 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, int bgcolo
                     m_document->getMask()->getBounds().y-bounds.y);
 }
 
-void DocumentApi::trimSprite(Sprite* sprite, int bgcolor)
+void DocumentApi::trimSprite(Sprite* sprite, color_t bgcolor)
 {
   gfx::Rect bounds;
 
@@ -210,15 +209,20 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
 
 void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
 {
-  // Move cels, and create copies of the cels in the given "newFrame".
-  addFrameForLayer(sprite->getFolder(), newFrame);
+  copyFrame(sprite, newFrame.previous(), newFrame);
+}
 
+void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
+{
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
   if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddFrame(getObjects(), m_document, sprite, newFrame));
 
   sprite->addFrame(newFrame);
+
+  // Move cels, and create copies of the cels in the given "newFrame".
+  copyFrameForLayer(sprite->getFolder(), fromFrame, newFrame);
 
   // Notify observers about the new frame.
   DocumentEvent ev(m_document);
@@ -227,7 +231,7 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
 }
 
-void DocumentApi::addFrameForLayer(Layer* layer, FrameNumber frame)
+void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -236,58 +240,33 @@ void DocumentApi::addFrameForLayer(Layer* layer, FrameNumber frame)
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE:
+    case OBJECT_LAYER_IMAGE: {
+      LayerImage* imglayer = static_cast<LayerImage*>(layer);
+
       // Displace all cels in '>=frame' to the next frame.
       for (FrameNumber c=sprite->getLastFrame(); c>=frame; --c) {
-        Cel* cel = static_cast<LayerImage*>(layer)->getCel(c);
+        Cel* cel = imglayer->getCel(c);
         if (cel)
-          setCelFramePosition(sprite, cel, cel->getFrame().next());
+          setCelFramePosition(imglayer, cel, cel->getFrame().next());
       }
 
-      copyPreviousFrame(layer, frame);
+      if (fromFrame >= frame)
+        fromFrame = fromFrame.next();
+
+      copyCel(sprite, imglayer, imglayer, fromFrame, frame, 0);
       break;
+    }
 
     case OBJECT_LAYER_FOLDER: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
-        addFrameForLayer(*it, frame);
+        copyFrameForLayer(*it, fromFrame, frame);
       break;
     }
 
   }
-}
-
-void DocumentApi::copyPreviousFrame(Layer* layer, FrameNumber frame)
-{
-  ASSERT(layer);
-  ASSERT(frame >= 0);
-
-  Sprite* sprite = layer->getSprite();
-
-  // create a copy of the previous cel
-  Cel* src_cel = static_cast<LayerImage*>(layer)->getCel(frame.previous());
-  Image* src_image = src_cel ? sprite->getStock()->getImage(src_cel->getImage()):
-                               NULL;
-
-  // nothing to copy, it will be a transparent cel
-  if (!src_image)
-    return;
-
-  // copy the image
-  Image* dst_image = Image::createCopy(src_image);
-  int image_index = addImageInStock(sprite, dst_image);
-
-  // create the new cel
-  Cel* dst_cel = new Cel(frame, image_index);
-  if (src_cel) {                // copy the data from the previous cel
-    dst_cel->setPosition(src_cel->getX(), src_cel->getY());
-    dst_cel->setOpacity(src_cel->getOpacity());
-  }
-
-  // add the cel in the layer
-  addCel(static_cast<LayerImage*>(layer), dst_cel);
 }
 
 void DocumentApi::removeFrame(Sprite* sprite, FrameNumber frame)
@@ -325,14 +304,16 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE:
-      if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-        removeCel(static_cast<LayerImage*>(layer), cel);
+    case OBJECT_LAYER_IMAGE: {
+      LayerImage* imglayer = static_cast<LayerImage*>(layer);
+      if (Cel* cel = imglayer->getCel(frame))
+        removeCel(imglayer, cel);
 
       for (++frame; frame<sprite->getTotalFrames(); ++frame)
-        if (Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame))
-          setCelFramePosition(sprite, cel, cel->getFrame().previous());
+        if (Cel* cel = imglayer->getCel(frame))
+          setCelFramePosition(imglayer, cel, cel->getFrame().previous());
       break;
+    }
 
     case OBJECT_LAYER_FOLDER: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
@@ -398,7 +379,7 @@ void DocumentApi::setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameN
   sprite->setFrameRangeDuration(from, to, msecs);
 }
 
-void DocumentApi::moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame)
+void DocumentApi::moveFrame(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame)
 {
   if (frame != beforeFrame &&
       frame >= 0 &&
@@ -424,47 +405,53 @@ void DocumentApi::moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber
     }
 
     // change the cels of position...
-    moveFrameBeforeLayer(sprite->getFolder(), frame, beforeFrame);
+    moveFrameLayer(sprite->getFolder(), frame, beforeFrame);
   }
 }
 
-void DocumentApi::moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame)
+void DocumentApi::moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame)
 {
   ASSERT(layer);
 
   switch (layer->type()) {
 
     case OBJECT_LAYER_IMAGE: {
-      CelIterator it = ((LayerImage*)layer)->getCelBegin();
-      CelIterator end = ((LayerImage*)layer)->getCelEnd();
+      LayerImage* imglayer = static_cast<LayerImage*>(layer);
+
+      CelList cels;
+      imglayer->getCels(cels);
+
+      CelIterator it = cels.begin();
+      CelIterator end = cels.end();
 
       for (; it != end; ++it) {
         Cel* cel = *it;
-        FrameNumber newFrame = cel->getFrame();
+        FrameNumber celFrame = cel->getFrame();
+        FrameNumber newFrame = celFrame;
 
         // moving the frame to the future
         if (frame < beforeFrame) {
-          if (cel->getFrame() == frame) {
+          if (celFrame == frame) {
             newFrame = beforeFrame.previous();
           }
-          else if (cel->getFrame() > frame &&
-                   cel->getFrame() < beforeFrame) {
+          else if (celFrame > frame &&
+                   celFrame < beforeFrame) {
             --newFrame;
           }
         }
         // moving the frame to the past
         else if (beforeFrame < frame) {
-          if (cel->getFrame() == frame) {
+          if (celFrame == frame) {
             newFrame = beforeFrame;
           }
-          else if (cel->getFrame() >= beforeFrame &&
-                   cel->getFrame() < frame) {
+          else if (celFrame >= beforeFrame &&
+                   celFrame < frame) {
             ++newFrame;
           }
         }
 
-        if (cel->getFrame() != newFrame)
-          setCelFramePosition(layer->getSprite(), cel, newFrame);
+        if (celFrame != newFrame)
+          setCelFramePosition(imglayer, cel, newFrame);
       }
       break;
     }
@@ -474,7 +461,7 @@ void DocumentApi::moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNum
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
       for (; it != end; ++it)
-        moveFrameBeforeLayer(*it, frame, beforeFrame);
+        moveFrameLayer(*it, frame, beforeFrame);
       break;
     }
 
@@ -511,8 +498,8 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
   ev.cel(cel);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
 
-  // find if the image that use the cel to remove, is used by
-  // another cels
+  // Find if the image that use the cel to remove, is used by another
+  // cels.
   bool used = false;
   for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
     Cel* it = layer->getCel(frame);
@@ -522,8 +509,8 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
     }
   }
 
-  // if the image is only used by this cel,
-  // we can remove the image from the stock
+  // If the image is only used by this cel, we can remove the image
+  // from the stock.
   if (!used)
     removeImageFromStock(sprite, cel->getImage());
 
@@ -531,25 +518,26 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
     m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(),
         layer, cel));
 
-  // remove the cel from the layer
+  // Remove the cel from the layer.
   layer->removeCel(cel);
 
   // and here we destroy the cel
   delete cel;
 }
 
-void DocumentApi::setCelFramePosition(Sprite* sprite, Cel* cel, FrameNumber frame)
+void DocumentApi::setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber frame)
 {
   ASSERT(cel);
   ASSERT(frame >= 0);
 
   if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::SetCelFrame(getObjects(), cel));
+    m_undoers->pushUndoer(new undoers::SetCelFrame(getObjects(), layer, cel));
 
-  cel->setFrame(frame);
+  layer->moveCel(cel, frame);
 
   DocumentEvent ev(m_document);
-  ev.sprite(sprite);
+  ev.sprite(layer->getSprite());
+  ev.layer(layer);
   ev.cel(cel);
   ev.frame(frame);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelFrameChanged, ev);
@@ -570,7 +558,7 @@ void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelPositionChanged, ev);
 }
 
-void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, int bgcolor)
+void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor)
 {
   Image* cel_image = sprite->getStock()->getImage(cel->getImage());
   ASSERT(cel_image);
@@ -583,6 +571,142 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, 
 
   // update the cel's position
   setCelPosition(sprite, cel, x, y);
+}
+
+void DocumentApi::moveCel(Sprite* sprite,
+  LayerImage* srcLayer, LayerImage* dstLayer,
+  FrameNumber srcFrame, FrameNumber dstFrame,
+  color_t bgcolor)
+{
+  ASSERT(srcLayer != NULL);
+  ASSERT(dstLayer != NULL);
+  ASSERT(srcFrame >= 0 && srcFrame < sprite->getTotalFrames());
+  ASSERT(dstFrame >= 0 && dstFrame < sprite->getTotalFrames());
+
+  if (srcLayer->isBackground()) {
+    copyCel(sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor);
+    return;
+  }
+
+  Cel* srcCel = srcLayer->getCel(srcFrame);
+  Cel* dstCel = dstLayer->getCel(dstFrame);
+
+  // Remove the dstCel (if it exists) because it must be replaced with
+  // srcCel.
+  if ((dstCel != NULL) && (!dstLayer->isBackground() || srcCel != NULL))
+    removeCel(dstLayer, dstCel);
+
+  if (srcCel != NULL) {
+    // Move the cel in the same layer.
+    if (srcLayer == dstLayer) {
+      setCelFramePosition(srcLayer, srcCel, dstFrame);
+    }
+    // Move the cel between different layers.
+    else {
+      if (undoEnabled())
+        m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(), srcLayer, srcCel));
+      srcLayer->removeCel(srcCel);
+
+      srcCel->setFrame(dstFrame);
+
+      // If we are moving a cel from a transparent layer to the
+      // background layer, we have to clear the background of the
+      // image.
+      if (!srcLayer->isBackground() &&
+          dstLayer->isBackground()) {
+        Image* srcImage = sprite->getStock()->getImage(srcCel->getImage());
+        Image* dstImage = crop_image(srcImage,
+          -srcCel->getX(),
+          -srcCel->getY(),
+          sprite->getWidth(),
+          sprite->getHeight(), 0);
+
+        if (undoEnabled()) {
+          m_undoers->pushUndoer(new undoers::ReplaceImage(getObjects(),
+              sprite->getStock(), srcCel->getImage()));
+          m_undoers->pushUndoer(new undoers::SetCelPosition(getObjects(), srcCel));
+          m_undoers->pushUndoer(new undoers::SetCelOpacity(getObjects(), srcCel));
+        }
+
+        clear_image(dstImage, bgcolor);
+        composite_image(dstImage, srcImage, srcCel->getX(), srcCel->getY(), 255, BLEND_MODE_NORMAL);
+
+        srcCel->setPosition(0, 0);
+        srcCel->setOpacity(255);
+
+        sprite->getStock()->replaceImage(srcCel->getImage(), dstImage);
+        delete srcImage;
+      }
+
+      addCel(dstLayer, srcCel);
+    }
+  }
+
+  m_document->notifyCelMoved(srcLayer, srcFrame, dstLayer, dstFrame);
+}
+
+void DocumentApi::copyCel(Sprite* sprite,
+  LayerImage* srcLayer, LayerImage* dstLayer,
+  FrameNumber srcFrame, FrameNumber dstFrame,
+  color_t bgcolor)
+{
+  ASSERT(srcLayer != NULL);
+  ASSERT(dstLayer != NULL);
+  ASSERT(srcFrame >= 0 && srcFrame < sprite->getTotalFrames());
+  ASSERT(dstFrame >= 0 && dstFrame < sprite->getTotalFrames());
+
+  Cel* srcCel = srcLayer->getCel(srcFrame);
+  Cel* dstCel = dstLayer->getCel(dstFrame);
+
+  // Remove the 'dstCel' (if it exists) because it must be replaced
+  // with 'srcCel'
+  if ((dstCel != NULL) && (!dstLayer->isBackground() || srcCel != NULL))
+    removeCel(dstLayer, dstCel);
+
+  // Move the cel in the same layer.
+  if (srcCel != NULL) {
+    Image *srcImage = sprite->getStock()->getImage(srcCel->getImage());
+    Image *dstImage;
+    int dstCel_x;
+    int dstCel_y;
+    int dstCel_opacity;
+
+    // If we are moving a cel from a transparent layer to the
+    // background layer, we have to clear the background of the image.
+    if (!srcLayer->isBackground() &&
+        dstLayer->isBackground()) {
+      dstImage = crop_image(srcImage,
+                             -srcCel->getX(),
+                             -srcCel->getY(),
+                             sprite->getWidth(),
+                             sprite->getHeight(), 0);
+
+      clear_image(dstImage, bgcolor);
+      composite_image(dstImage, srcImage, srcCel->getX(), srcCel->getY(), 255, BLEND_MODE_NORMAL);
+
+      dstCel_x = 0;
+      dstCel_y = 0;
+      dstCel_opacity = 255;
+    }
+    else {
+      dstImage = Image::createCopy(srcImage);
+      dstCel_x = srcCel->getX();
+      dstCel_y = srcCel->getY();
+      dstCel_opacity = srcCel->getOpacity();
+    }
+
+    // Add the image in the stock
+    int image_index = addImageInStock(sprite, dstImage);
+    
+    // Create the new cel
+    dstCel = new Cel(dstFrame, image_index);
+    dstCel->setPosition(dstCel_x, dstCel_y);
+    dstCel->setOpacity(dstCel_opacity);
+
+    addCel(dstLayer, dstCel);
+  }
+
+  m_document->notifyCelCopied(srcLayer, srcFrame, dstLayer, dstFrame);
 }
 
 LayerImage* DocumentApi::newLayer(Sprite* sprite)
@@ -672,13 +796,13 @@ void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
 }
 
-void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor)
+void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor)
 {
   if (!layer->isImage())
     return;
 
   if (!layer->isBackground())
-    bgcolor = 0;
+    bgcolor = 0;                // TODO use proper mask color
 
   Sprite* sprite = layer->getSprite();
   CelIterator it = ((LayerImage*)layer)->getCelBegin();
@@ -713,7 +837,7 @@ void DocumentApi::displaceLayers(Layer* layer, int dx, int dy)
   }
 }
 
-void DocumentApi::backgroundFromLayer(LayerImage* layer, int bgcolor)
+void DocumentApi::backgroundFromLayer(LayerImage* layer, color_t bgcolor)
 {
   ASSERT(layer);
   ASSERT(layer->isImage());
@@ -806,7 +930,7 @@ void DocumentApi::layerFromBackground(Layer* layer)
   layer->setName("Layer 0");
 }
 
-void DocumentApi::flattenLayers(Sprite* sprite, int bgcolor)
+void DocumentApi::flattenLayers(Sprite* sprite, color_t bgcolor)
 {
   Image* cel_image;
   Cel* cel;
@@ -873,6 +997,20 @@ void DocumentApi::flattenLayers(Sprite* sprite, int bgcolor)
       removeLayer(*it);
 }
 
+void DocumentApi::duplicateLayer(Layer* sourceLayer, Layer* afterLayer)
+{
+  base::UniquePtr<LayerImage> newLayerPtr(new LayerImage(sourceLayer->getSprite()));
+
+  m_document->copyLayerContent(sourceLayer, m_document, newLayerPtr);
+
+  newLayerPtr->setName(newLayerPtr->getName() + " Copy");
+
+  addLayer(sourceLayer->getParent(), newLayerPtr, afterLayer);
+
+  // Release the pointer as it is owned by the sprite now.
+  newLayerPtr.release();
+}
+
 // Adds a new image in the stock. Returns the image index in the
 // stock.
 int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
@@ -930,7 +1068,7 @@ Image* DocumentApi::getCelImage(Sprite* sprite, Cel* cel)
 }
 
 // Clears the mask region in the current sprite with the specified background color.
-void DocumentApi::clearMask(Layer* layer, Cel* cel, int bgcolor)
+void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
 {
   Image* image = getCelImage(layer->getSprite(), cel);
   if (!image)
@@ -1007,7 +1145,7 @@ void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
   raster::algorithm::flip_image(image, bounds, flipType);
 }
 
-void DocumentApi::flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, int bgcolor)
+void DocumentApi::flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor)
 {
   base::UniquePtr<Image> flippedImage((Image::createCopy(image)));
 

@@ -310,6 +310,8 @@
     <part id="timeline_padding_tr"              x="288" y="12" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_bl"              x="276" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_br"              x="288" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
+    <part id="timeline_drop_layer_deco"         x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
+    <part id="timeline_drop_frame_deco"         x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
   </parts>
 
   <stylesheet>
@@ -500,6 +502,16 @@
     </style>
     <style id="timeline_range_outline:hover">
       <background part="colorbar_border_fg" />
+    </style>
+
+    <!-- timeline_drop_layer_deco -->
+    <style id="timeline_drop_layer_deco">
+      <background part="timeline_drop_layer_deco" />
+    </style>
+
+    <!-- timeline_drop_frame_deco -->
+    <style id="timeline_drop_frame_deco">
+      <background part="timeline_drop_frame_deco" />
     </style>
 
   </stylesheet>

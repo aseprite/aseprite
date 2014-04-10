@@ -38,6 +38,8 @@ namespace raster {
     FrameNumber& operator--() { --m_value; return *this; }
     FrameNumber operator++(int) { FrameNumber old(*this); ++m_value; return old; }
     FrameNumber operator--(int) { FrameNumber old(*this); --m_value; return old; }
+    FrameNumber& operator+=(const FrameNumber& o) { m_value += o.m_value; return *this; }
+    FrameNumber& operator-=(const FrameNumber& o) { m_value -= o.m_value; return *this; }
     bool operator<(const FrameNumber& o) const { return m_value < o.m_value; }
     bool operator>(const FrameNumber& o) const { return m_value > o.m_value; }
     bool operator<=(const FrameNumber& o) const { return m_value <= o.m_value; }

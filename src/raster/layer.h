@@ -107,6 +107,7 @@ namespace raster {
 
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
+    void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
 
