@@ -13,13 +13,13 @@
 
 void base::trim_string(const base::string& input, base::string& output)
 {
-  size_t i, j;
+  int i, j;
 
-  for (i=0; i<input.size(); ++i)
+  for (i=0; i<(int)input.size(); ++i)
     if (!std::isspace(input.at(i)))
       break;
 
-  for (j=input.size()-1; j>i; --j)
+  for (j=(int)input.size()-1; j>i; --j)
     if (!std::isspace(input.at(j)))
       break;
 
