@@ -218,8 +218,8 @@ function(find_unittests dir dependencies)
   endif()
 
   # See if the test is linked with "she" library.
-  string(REGEX MATCH "she" link_with_she ${ARGV})
-  if (link_with_she STREQUAL "she")
+  list(FIND dependencies she link_with_she)
+  if(link_with_she)
     set(extra_definitions -DLINKED_WITH_SHE)
   endif()
 
