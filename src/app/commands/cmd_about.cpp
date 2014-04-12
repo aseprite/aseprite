@@ -58,7 +58,7 @@ void AboutCommand::onExecute(Context* context)
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
   Label* author2_desc = new Label("| Skin and Graphics");
-  Label* author3 = new LinkLabel("http://code.google.com/p/aseprite/people/list", "Contributors");
+  Label* author3 = new LinkLabel(WEBSITE_CONTRIBUTORS, "Contributors");
   Box* bottom_box1 = new Box(JI_HORIZONTAL);
   Box* bottom_box2 = new Box(JI_HORIZONTAL);
   Box* bottom_box3 = new Box(JI_HORIZONTAL);

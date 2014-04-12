@@ -381,22 +381,27 @@
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
       <menu text="&amp;Help">
-        <item command="Launch" text="README">
+        <item command="Launch" text="Readme">
           <param name="type" value="url" />
           <param name="path" value="https://github.com/dacap/aseprite#readme" />
         </item>
+        <separator />
         <item command="Launch" text="Quick &amp;Reference">
           <param name="type" value="docs" />
-          <param name="path" value="quickref.pdf" />
+          <param name="path" value="http://www.aseprite.org/quickref/" />
         </item>
-        <item command="Launch" text="Wiki">
+        <item command="Launch" text="Documentation">
           <param name="type" value="url" />
-          <param name="path" value="http://code.google.com/p/aseprite/wiki/Home" />
+          <param name="path" value="http://www.aseprite.org/docs/" />
+        </item>
+        <item command="Launch" text="Tutorial">
+          <param name="type" value="url" />
+          <param name="path" value="http://www.aseprite.org/tutorial/" />
         </item>
         <separator />
         <item command="Launch" text="Release Notes">
           <param name="type" value="url" />
-          <param name="path" value="http://code.google.com/p/aseprite/wiki/ReleaseNotes" />
+          <param name="path" value="http://www.aseprite.org/release-notes/" />
         </item>
         <item command="Launch" text="Twitter">
           <param name="type" value="url" />
