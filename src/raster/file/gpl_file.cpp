@@ -30,6 +30,7 @@
 #include <sstream>
 #include <string>
 #include <iomanip>
+#include <cctype>
 
 namespace raster {
 namespace file {
@@ -56,8 +57,13 @@ Palette* load_gpl_file(const char *filename)
     if (line.empty() || line[0] == '#')
       continue;
 
+    // Remove properties (TODO add these properties in the palette)
+    if (!std::isdigit(line[0]))
+      continue;
+
     int r, g, b;
     std::istringstream lineIn(line);
+    // TODO add support to read the color name
     lineIn >> r >> g >> b;
     if (lineIn.good()) {
       pal->setEntry(entryCounter, rgba(r, g, b, 255));
