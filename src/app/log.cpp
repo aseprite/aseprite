@@ -59,8 +59,9 @@ LoggerModule::LoggerModule(bool verbose)
 
 #ifdef NEED_LOG
   ResourceFinder rf;
-  rf.findInBinDir("aseprite.log");
-  log_filename = rf.first();
+  rf.includeBinDir("aseprite.log");
+  if (rf.first())
+    log_filename = rf.filename();
 #endif
 }
 

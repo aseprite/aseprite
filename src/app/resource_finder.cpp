@@ -31,23 +31,40 @@ namespace app {
 
 ResourceFinder::ResourceFinder()
 {
+  m_current = -1;
+}
+
+const std::string& ResourceFinder::filename() const
+{
+  // Throw an exception if we are out of bounds
+  return m_paths.at(m_current);
+}
+
+bool ResourceFinder::first()
+{
   m_current = 0;
+  return (m_current < (int)m_paths.size());
 }
 
-const char* ResourceFinder::first()
+bool ResourceFinder::next()
 {
-  if (!m_paths.empty())
-    return m_paths[0].c_str();
-  else
-    return NULL;
+  ++m_current;
+  return (m_current < (int)m_paths.size());
 }
 
-const char* ResourceFinder::next()
+bool ResourceFinder::findFirst()
 {
-  if (m_current == (int)m_paths.size())
-    return NULL;
+  while (next()) {
+    PRINTF("Loading resource from \"%s\"...\n", filename().c_str());
 
-  return m_paths[m_current++].c_str();
+    if (base::file_exists(filename())) {
+      PRINTF("- OK\n");
+      return true;
+    }
+  }
+
+  PRINTF("- Resource not found.\n");
+  return false;
 }
 
 void ResourceFinder::addPath(const std::string& path)
@@ -55,12 +72,12 @@ void ResourceFinder::addPath(const std::string& path)
   m_paths.push_back(path);
 }
 
-void ResourceFinder::findInBinDir(const char* filename)
+void ResourceFinder::includeBinDir(const char* filename)
 {
   addPath(base::join_path(base::get_file_path(base::get_app_path()), filename));
 }
 
-void ResourceFinder::findInDataDir(const char* filename)
+void ResourceFinder::includeDataDir(const char* filename)
 {
   char buf[4096];
 
@@ -68,27 +85,27 @@ void ResourceFinder::findInDataDir(const char* filename)
 
   // $HOME/.aseprite/filename
   sprintf(buf, ".aseprite/%s", filename);
-  findInHomeDir(buf);
+  includeHomeDir(buf);
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
   // $BINDIR/../share/aseprite/data/filename
   sprintf(buf, "../share/aseprite/data/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
   #ifdef ALLEGRO_MACOSX
     // $BINDIR/aseprite.app/Contents/Resources/data/filename
     sprintf(buf, "aseprite.app/Contents/Resources/data/%s", filename);
-    findInBinDir(buf);
+    includeBinDir(buf);
   #endif
 
 #elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
 #else
 
@@ -99,7 +116,7 @@ void ResourceFinder::findInDataDir(const char* filename)
 }
 
 
-void ResourceFinder::findInDocsDir(const char* filename)
+void ResourceFinder::includeDocsDir(const char* filename)
 {
   char buf[4096];
 
@@ -107,23 +124,23 @@ void ResourceFinder::findInDocsDir(const char* filename)
 
   // $BINDIR/docs/filename
   sprintf(buf, "docs/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
   // $BINDIR/../share/aseprite/docs/filename
   sprintf(buf, "../share/aseprite/docs/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
   #ifdef ALLEGRO_MACOSX
     // $BINDIR/aseprite.app/Contents/Resources/docs/filename
     sprintf(buf, "aseprite.app/Contents/Resources/docs/%s", filename);
-    findInBinDir(buf);
+    includeBinDir(buf);
   #endif
 
 #elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   // $BINDIR/docs/filename
   sprintf(buf, "docs/%s", filename);
-  findInBinDir(buf);
+  includeBinDir(buf);
 
 #else
 
@@ -133,7 +150,7 @@ void ResourceFinder::findInDocsDir(const char* filename)
 #endif
 }
 
-void ResourceFinder::findInHomeDir(const char* filename)
+void ResourceFinder::includeHomeDir(const char* filename)
 {
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
@@ -153,7 +170,7 @@ void ResourceFinder::findInHomeDir(const char* filename)
 #elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
   // $PREFIX/data/filename
-  findInDataDir(filename);
+  includeDataDir(filename);
 
 #else
 
@@ -163,17 +180,17 @@ void ResourceFinder::findInHomeDir(const char* filename)
 #endif
 }
 
-void ResourceFinder::findConfigurationFile()
+void ResourceFinder::includeConfFile()
 {
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
 
   // $HOME/.asepriterc
-  findInHomeDir(".asepriterc");
+  includeHomeDir(".asepriterc");
 
 #endif
 
   // $BINDIR/aseprite.ini
-  findInBinDir("aseprite.ini");
+  includeBinDir("aseprite.ini");
 }
-  
+
 } // namespace app

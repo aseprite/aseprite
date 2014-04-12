@@ -39,11 +39,11 @@ WebServer::WebServer()
   : m_webServer(NULL)
 {
   ResourceFinder rf;
-  rf.findInDataDir("www");
+  rf.includeDataDir("www");
 
-  while (const char* path = rf.next()) {
-    if (base::directory_exists(path)) {
-      m_wwwpath = path;
+  while (rf.next()) {
+    if (base::directory_exists(rf.filename())) {
+      m_wwwpath = rf.filename();
       break;
     }
   }

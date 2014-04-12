@@ -376,25 +376,21 @@ void SkinTheme::reload_skin()
 
   // Load the skin sheet
   std::string sheet_filename("skins/" + m_selected_skin + "/sheet.png");
-  {
-    ResourceFinder rf;
-    rf.findInDataDir(sheet_filename.c_str());
 
-    while (const char* path = rf.next()) {
-      if (base::file_exists(path)) {
-        int old_color_conv = _color_conv;
-        set_color_conversion(COLORCONV_NONE);
+  ResourceFinder rf;
+  rf.includeDataDir(sheet_filename.c_str());
+  if (!rf.findFirst())
+    throw base::Exception("File %s not found", sheet_filename.c_str());
 
-        PALETTE pal;
-        m_sheet_bmp = load_png(path, pal);
+  int old_color_conv = _color_conv;
+  set_color_conversion(COLORCONV_NONE);
 
-        set_color_conversion(old_color_conv);
-        break;
-      }
-    }
-  }
+  PALETTE pal;
+  m_sheet_bmp = load_png(rf.filename().c_str(), pal);
   if (!m_sheet_bmp)
     throw base::Exception("Error loading %s file", sheet_filename.c_str());
+
+  set_color_conversion(old_color_conv);
 }
 
 void SkinTheme::reload_fonts()
@@ -425,16 +421,11 @@ void SkinTheme::onRegenerate()
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
   ResourceFinder rf;
-  rf.findInDataDir(xml_filename.c_str());
-
-  const char* path;
-  while ((path = rf.next()) &&
-         !base::file_exists(path)) {
-  }
-  if (!path)                    // not found
+  rf.includeDataDir(xml_filename.c_str());
+  if (!rf.findFirst())
     return;
 
-  XmlDocumentRef doc = open_xml(path);
+  XmlDocumentRef doc = open_xml(rf.filename());
   TiXmlHandle handle(doc);
 
   // Load colors
@@ -2411,22 +2402,23 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
 
 FONT* SkinTheme::loadFont(const char* userFont, const std::string& path)
 {
-  // Directories
   ResourceFinder rf;
 
+  // Directories to find the font
   const char* user_font = get_config_string("Options", userFont, "");
   if (user_font && *user_font)
     rf.addPath(user_font);
 
-  rf.findInDataDir(path.c_str());
+  rf.includeDataDir(path.c_str());
 
   // Try to load the font
-  while (const char* path = rf.next()) {
-    FONT* font = ji_font_load(path);
-    if (font) {
-      if (ji_font_is_scalable(font))
-        ji_font_set_size(font, 8*jguiscale());
-      return font;
+  while (rf.next()) {
+    FONT* f = ji_font_load(rf.filename().c_str());
+    if (f) {
+      if (ji_font_is_scalable(f))
+        ji_font_set_size(f, 8*jguiscale());
+
+      return f;
     }
   }
 
