@@ -84,6 +84,8 @@ namespace app {
 
     // Window displayed to show a tool-group
     ui::PopupWindow* m_popupWindow;
+    class ToolStrip;
+    ToolStrip* m_currentStrip;
 
     // Tool-tip window
     ui::TipWindow* m_tipWindow;

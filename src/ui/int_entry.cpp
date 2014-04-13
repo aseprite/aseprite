@@ -137,7 +137,7 @@ void IntEntry::openPopup()
   if (rc.x+rc.w > JI_SCREEN_W)
     rc.x = rc.x - rc.w + getBounds().w;
 
-  m_popupWindow = new PopupWindow("", false);
+  m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   m_popupWindow->setBgColor(rgba(0, 0, 0, 0));

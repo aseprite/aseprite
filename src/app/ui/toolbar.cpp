@@ -53,10 +53,12 @@ using namespace tools;
 
 // Class to show a group of tools (horizontally)
 // This widget is inside the ToolBar::m_popupWindow
-class ToolStrip : public Widget {
+class ToolBar::ToolStrip : public Widget {
 public:
   ToolStrip(ToolGroup* group, ToolBar* toolbar);
   ~ToolStrip();
+
+  ToolGroup* toolGroup() { return m_group; }
 
   void saveOverlappedArea(const Rect& bounds);
 
@@ -106,6 +108,7 @@ ToolBar::ToolBar()
   m_hotIndex = NoneIndex;
   m_openOnHot = false;
   m_popupWindow = NULL;
+  m_currentStrip = NULL;
   m_tipWindow = NULL;
   m_tipOpened = false;
 
@@ -148,8 +151,7 @@ bool ToolBar::onProcessMessage(Message* msg)
         toolrc = getToolGroupBounds(c);
         if (mouseMsg->position().y >= toolrc.y &&
             mouseMsg->position().y < toolrc.y+toolrc.h) {
-          UIContext::instance()->getSettings()->setCurrentTool(tool);
-          invalidate();
+          selectTool(tool);
 
           openPopupWindow(c, tool_group);
 
@@ -203,6 +205,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
           if ((m_openOnHot) && (m_hotTool != new_hot_tool))
             openPopupWindow(c, tool_group);
+
           break;
         }
       }
@@ -227,14 +230,14 @@ bool ToolBar::onProcessMessage(Message* msg)
 
         invalidate();
 
-        if (m_hotIndex != NoneIndex)
+        if (m_hotIndex != NoneIndex && !hasCapture())
           openTipWindow(m_hotIndex, m_hotTool);
         else
           closeTipWindow();
 
         if (m_hotTool) {
           if (hasCapture())
-            UIContext::instance()->getSettings()->setCurrentTool(m_hotTool);
+            selectTool(m_hotTool);
           else
             StatusBar::instance()->showTool(0, m_hotTool);
         }
@@ -401,8 +404,12 @@ int ToolBar::getToolGroupIndex(ToolGroup* group)
 
 void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 {
-  // Close the current popup window
   if (m_popupWindow) {
+    // If we've already open the given group, do nothing.
+    if (m_currentStrip && m_currentStrip->toolGroup() == tool_group)
+      return;
+      
+    // Close the current popup window
     m_popupWindow->closeWindow(NULL);
     delete m_popupWindow;
     m_popupWindow = NULL;
@@ -424,10 +431,11 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     return;
 
   // In case this tool contains more than just one tool, show the popup window
-  m_popupWindow = new PopupWindow("", false);
+  m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickOutsideHotRegion);
   m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
+  m_currentStrip = toolstrip;
   m_popupWindow->addChild(toolstrip);
 
   Rect rc = getToolGroupBounds(group_index);
@@ -595,6 +603,10 @@ void ToolBar::selectTool(Tool* tool)
   m_selectedInGroup[tool->getGroup()] = tool;
 
   UIContext::instance()->getSettings()->setCurrentTool(tool);
+
+  if (m_currentStrip)
+    m_currentStrip->invalidate();
+
   invalidate();
 }
 
@@ -607,6 +619,8 @@ void ToolBar::onClosePopup()
 
   m_openOnHot = false;
   m_hotTool = NULL;
+  m_currentStrip = NULL;
+
   invalidate();
 }
 
@@ -614,7 +628,7 @@ void ToolBar::onClosePopup()
 // ToolStrip
 //////////////////////////////////////////////////////////////////////
 
-ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
+ToolBar::ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   : Widget(kGenericWidget)
 {
   m_group = group;
@@ -625,13 +639,13 @@ ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   setDoubleBuffered(true);
 }
 
-ToolStrip::~ToolStrip()
+ToolBar::ToolStrip::~ToolStrip()
 {
   if (m_overlapped)
     destroy_bitmap(m_overlapped);
 }
 
-void ToolStrip::saveOverlappedArea(const Rect& bounds)
+void ToolBar::ToolStrip::saveOverlappedArea(const Rect& bounds)
 {
   if (m_overlapped)
     destroy_bitmap(m_overlapped);
@@ -643,7 +657,7 @@ void ToolStrip::saveOverlappedArea(const Rect& bounds)
        bounds.w, bounds.h);
 }
 
-bool ToolStrip::onProcessMessage(Message* msg)
+bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
@@ -676,7 +690,7 @@ bool ToolStrip::onProcessMessage(Message* msg)
         invalidate();
 
         // Show the tooltip for the hot tool
-        if (m_hotTool)
+        if (m_hotTool && !hasCapture())
           m_toolbar->openTipWindow(m_group, m_hotTool);
         else
           m_toolbar->closeTipWindow();
@@ -686,10 +700,8 @@ bool ToolStrip::onProcessMessage(Message* msg)
       }
 
       if (hasCapture()) {
-        if (m_hotTool) {
+        if (m_hotTool)
           m_toolbar->selectTool(m_hotTool);
-          invalidate();
-        }
 
         Widget* pick = getManager()->pick(mouseMsg->position());
         if (ToolBar* bar = dynamic_cast<ToolBar*>(pick)) {
@@ -707,15 +719,17 @@ bool ToolStrip::onProcessMessage(Message* msg)
     }
 
     case kMouseUpMessage:
-      if (hasCapture())
+      if (hasCapture()) {
+        releaseMouse();
         closeWindow();
+      }
       break;
 
   }
   return Widget::onProcessMessage(msg);
 }
 
-void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
+void ToolBar::ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
 {
   ToolBox* toolbox = App::instance()->getToolBox();
   int c = 0;
@@ -731,7 +745,7 @@ void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(iconsize.w * c, iconsize.h));
 }
 
-void ToolStrip::onPaint(PaintEvent& ev)
+void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
@@ -778,7 +792,7 @@ void ToolStrip::onPaint(PaintEvent& ev)
   }
 }
 
-Rect ToolStrip::getToolBounds(int index)
+Rect ToolBar::ToolStrip::getToolBounds(int index)
 {
   const Rect& bounds(getBounds());
   Size iconsize = getToolIconSize(this);

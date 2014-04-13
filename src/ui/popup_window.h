@@ -16,7 +16,13 @@ namespace ui {
   class PopupWindow : public Window
   {
   public:
-    PopupWindow(const base::string& text, bool close_on_buttonpressed);
+    enum ClickBehavior {
+      kDoNothingOnClick,
+      kCloseOnClickInOtherWindow,
+      kCloseOnClickOutsideHotRegion
+    };
+
+    PopupWindow(const base::string& text, ClickBehavior clickBehavior);
     ~PopupWindow();
 
     void setHotRegion(const gfx::Region& region);
@@ -34,7 +40,7 @@ namespace ui {
     void startFilteringMessages();
     void stopFilteringMessages();
 
-    bool m_close_on_buttonpressed;
+    ClickBehavior m_clickBehavior;
     gfx::Region m_hotRegion;
     bool m_filtering;
   };
