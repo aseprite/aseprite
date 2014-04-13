@@ -65,6 +65,7 @@ public:
 protected:
   bool onProcessMessage(Message* msg) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+  void onPaint(PaintEvent& ev) OVERRIDE;
 
 private:
   Rect getToolBounds(int index);
@@ -130,97 +131,6 @@ bool ToolBar::isToolVisible(Tool* tool)
 bool ToolBar::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
-    case kPaintMessage: {
-      const gfx::Rect& drawRect = static_cast<PaintMessage*>(msg)->rect();
-      BITMAP *doublebuffer = create_bitmap(drawRect.w, drawRect.h);
-      SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-      ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
-      ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
-      ToolBox* toolbox = App::instance()->getToolBox();
-      ToolGroupList::iterator it = toolbox->begin_group();
-      int groups = toolbox->getGroupsCount();
-      Rect toolrc;
-
-      clear_to_color(doublebuffer, to_system(theme->getColor(ThemeColor::TabSelectedFace)));
-
-      for (int c=0; c<groups; ++c, ++it) {
-        ToolGroup* tool_group = *it;
-        Tool* tool = m_selected_in_group[tool_group];
-        ui::Color face;
-        int nw;
-
-        if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
-            m_hot_index == c) {
-          nw = PART_TOOLBUTTON_HOT_NW;
-          face = hotFace;
-        }
-        else {
-          nw = c >= 0 && c < groups-1 ? PART_TOOLBUTTON_NORMAL_NW:
-                                        PART_TOOLBUTTON_LAST_NW;
-          face = normalFace;
-        }
-
-        toolrc = getToolGroupBounds(c);
-        toolrc.offset(-drawRect.x, -drawRect.y);
-        theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
-
-        // Draw the tool icon
-        BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
-        if (icon) {
-          set_alpha_blender();
-          draw_trans_sprite(doublebuffer, icon,
-                            toolrc.x+toolrc.w/2-icon->w/2,
-                            toolrc.y+toolrc.h/2-icon->h/2);
-        }
-      }
-
-      // Draw button to show tool configuration
-      toolrc = getToolGroupBounds(ConfigureToolIndex);
-      toolrc.offset(-drawRect.x, -drawRect.y);
-      bool isHot = (m_hot_index == ConfigureToolIndex);
-      theme->draw_bounds_nw(doublebuffer,
-                            toolrc,
-                            isHot ? PART_TOOLBUTTON_HOT_NW:
-                                    PART_TOOLBUTTON_LAST_NW,
-                            isHot ? hotFace: normalFace);
-
-      BITMAP* icon = theme->get_toolicon("configuration");
-      if (icon) {
-        set_alpha_blender();
-        draw_trans_sprite(doublebuffer, icon,
-                          toolrc.x+toolrc.w/2-icon->w/2,
-                          toolrc.y+toolrc.h/2-icon->h/2);
-      }
-
-      // Draw button to show/hide mini editor
-      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
-      toolrc.offset(-drawRect.x, -drawRect.y);
-      isHot = (m_hot_index == MiniEditorVisibilityIndex ||
-               App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
-      theme->draw_bounds_nw(doublebuffer,
-                            toolrc,
-                            isHot ? PART_TOOLBUTTON_HOT_NW:
-                                    PART_TOOLBUTTON_LAST_NW,
-                            isHot ? hotFace: normalFace);
-
-      icon = theme->get_toolicon("minieditor");
-      if (icon) {
-        set_alpha_blender();
-        draw_trans_sprite(doublebuffer, icon,
-                          toolrc.x+toolrc.w/2-icon->w/2,
-                          toolrc.y+toolrc.h/2-icon->h/2);
-      }
-
-      // Blit result to screen
-      blit(doublebuffer, ji_screen, 0, 0,
-           drawRect.x,
-           drawRect.y,
-           doublebuffer->w,
-           doublebuffer->h);
-      destroy_bitmap(doublebuffer);
-      return true;
-    }
 
     case kMouseDownMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -357,6 +267,86 @@ void ToolBar::onPreferredSize(PreferredSizeEvent& ev)
   iconsize.w += this->border_width.l + this->border_width.r;
   iconsize.h += this->border_width.t + this->border_width.b;
   ev.setPreferredSize(iconsize);
+}
+
+void ToolBar::onPaint(ui::PaintEvent& ev)
+{
+  gfx::Rect bounds = getClientBounds();
+  Graphics* g = ev.getGraphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
+  ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
+  ToolBox* toolbox = App::instance()->getToolBox();
+  ToolGroupList::iterator it = toolbox->begin_group();
+  int groups = toolbox->getGroupsCount();
+  Rect toolrc;
+
+  g->fillRect(theme->getColor(ThemeColor::TabSelectedFace), bounds);
+
+  for (int c=0; c<groups; ++c, ++it) {
+    ToolGroup* tool_group = *it;
+    Tool* tool = m_selected_in_group[tool_group];
+    ui::Color face;
+    int nw;
+
+    if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
+      m_hot_index == c) {
+      nw = PART_TOOLBUTTON_HOT_NW;
+      face = hotFace;
+    }
+    else {
+      nw = c >= 0 && c < groups-1 ? PART_TOOLBUTTON_NORMAL_NW:
+                                    PART_TOOLBUTTON_LAST_NW;
+      face = normalFace;
+    }
+
+    toolrc = getToolGroupBounds(c);
+    toolrc.offset(-getBounds().x, -getBounds().y);
+    theme->draw_bounds_nw(g, toolrc, nw, face);
+
+    // Draw the tool icon
+    BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+    if (icon) {
+      g->drawAlphaBitmap(icon,
+        toolrc.x+toolrc.w/2-icon->w/2,
+        toolrc.y+toolrc.h/2-icon->h/2);
+    }
+  }
+
+  // Draw button to show tool configuration
+  toolrc = getToolGroupBounds(ConfigureToolIndex);
+  toolrc.offset(-getBounds().x, -getBounds().y);
+  bool isHot = (m_hot_index == ConfigureToolIndex);
+  theme->draw_bounds_nw(g,
+    toolrc,
+    isHot ? PART_TOOLBUTTON_HOT_NW:
+    PART_TOOLBUTTON_LAST_NW,
+    isHot ? hotFace: normalFace);
+
+  BITMAP* icon = theme->get_toolicon("configuration");
+  if (icon) {
+    g->drawAlphaBitmap(icon,
+      toolrc.x+toolrc.w/2-icon->w/2,
+      toolrc.y+toolrc.h/2-icon->h/2);
+  }
+
+  // Draw button to show/hide mini editor
+  toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+  toolrc.offset(-getBounds().x, -getBounds().y);
+  isHot = (m_hot_index == MiniEditorVisibilityIndex ||
+    App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
+  theme->draw_bounds_nw(g,
+    toolrc,
+    isHot ? PART_TOOLBUTTON_HOT_NW:
+    PART_TOOLBUTTON_LAST_NW,
+    isHot ? hotFace: normalFace);
+
+  icon = theme->get_toolicon("minieditor");
+  if (icon) {
+    g->drawAlphaBitmap(icon,
+      toolrc.x+toolrc.w/2-icon->w/2,
+      toolrc.y+toolrc.h/2-icon->h/2);
+  }
 }
 
 int ToolBar::getToolGroupIndex(ToolGroup* group)
@@ -595,6 +585,8 @@ ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   m_hot_tool = NULL;
   m_toolbar = toolbar;
   m_overlapped = NULL;
+
+  setDoubleBuffered(true);
 }
 
 ToolStrip::~ToolStrip()
@@ -618,61 +610,6 @@ void ToolStrip::saveOverlappedArea(const Rect& bounds)
 bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
-
-    case kPaintMessage: {
-      gfx::Rect paintarea = static_cast<PaintMessage*>(msg)->rect();
-      BITMAP *doublebuffer = create_bitmap(paintarea.w, paintarea.h);
-      SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-      ToolBox* toolbox = App::instance()->getToolBox();
-      Rect toolrc;
-      int index = 0;
-
-      // Get the chunk of screen where we will draw
-      blit(m_overlapped, doublebuffer,
-           getBounds().x - paintarea.x,
-           getBounds().y - paintarea.y, 0, 0,
-           doublebuffer->w,
-           doublebuffer->h);
-
-      for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-        Tool* tool = *it;
-        if (tool->getGroup() == m_group) {
-          ui::Color face;
-          int nw;
-
-          if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
-              m_hot_tool == tool) {
-            nw = PART_TOOLBUTTON_HOT_NW;
-            face = theme->getColor(ThemeColor::ButtonHotFace);
-          }
-          else {
-            nw = PART_TOOLBUTTON_LAST_NW;
-            face = theme->getColor(ThemeColor::ButtonNormalFace);
-          }
-
-          toolrc = getToolBounds(index++);
-          toolrc.offset(-paintarea.x, -paintarea.y);
-          theme->draw_bounds_nw(doublebuffer, toolrc, nw, face);
-
-          // Draw the tool icon
-          BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
-          if (icon) {
-            set_alpha_blender();
-            draw_trans_sprite(doublebuffer, icon,
-                              toolrc.x+toolrc.w/2-icon->w/2,
-                              toolrc.y+toolrc.h/2-icon->h/2);
-          }
-        }
-      }
-
-      blit(doublebuffer, ji_screen, 0, 0,
-           paintarea.x,
-           paintarea.y,
-           doublebuffer->w,
-           doublebuffer->h);
-      destroy_bitmap(doublebuffer);
-      return true;
-    }
 
     case kMouseMoveMessage: {
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
@@ -734,6 +671,53 @@ void ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
 
   Size iconsize = getToolIconSize(this);
   ev.setPreferredSize(Size(iconsize.w * c, iconsize.h));
+}
+
+void ToolStrip::onPaint(PaintEvent& ev)
+{
+  Graphics* g = ev.getGraphics();
+  gfx::Rect bounds = getClientBounds();
+  gfx::Rect clip = g->getClipBounds();
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  ToolBox* toolbox = App::instance()->getToolBox();
+  Rect toolrc;
+  int index = 0;
+
+  // Get the chunk of screen where we will draw
+  g->blit(m_overlapped, // TODO replace this trick drawing the overlapped widgets in the Graphics before
+    bounds.x - clip.x,
+    bounds.y - clip.y,
+    0, 0, clip.w, clip.h);
+
+  for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
+    Tool* tool = *it;
+    if (tool->getGroup() == m_group) {
+      ui::Color face;
+      int nw;
+
+      if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
+        m_hot_tool == tool) {
+        nw = PART_TOOLBUTTON_HOT_NW;
+        face = theme->getColor(ThemeColor::ButtonHotFace);
+      }
+      else {
+        nw = PART_TOOLBUTTON_LAST_NW;
+        face = theme->getColor(ThemeColor::ButtonNormalFace);
+      }
+
+      toolrc = getToolBounds(index++);
+      toolrc.offset(-getBounds().x, -getBounds().y);
+      theme->draw_bounds_nw(g, toolrc, nw, face);
+
+      // Draw the tool icon
+      BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+      if (icon) {
+        g->drawAlphaBitmap(icon,
+          toolrc.x+toolrc.w/2-icon->w/2,
+          toolrc.y+toolrc.h/2-icon->h/2);
+      }
+    }
+  }
 }
 
 Rect ToolStrip::getToolBounds(int index)

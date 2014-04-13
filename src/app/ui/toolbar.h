@@ -60,6 +60,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
   private:
     int getToolGroupIndex(tools::ToolGroup* group);
