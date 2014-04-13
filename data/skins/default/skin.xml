@@ -74,6 +74,8 @@
     <color id="timeline_clicked" value="#536069" />
     <color id="timeline_clicked_text" value="#ffffff" />
     <color id="timeline_padding" value="#7d929e" />
+    <color id="status_bar_text" value="#2e3234" />
+    <color id="status_bar_face" value="#7d929e" />
   </colors>
 
   <cursors>

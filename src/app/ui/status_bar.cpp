@@ -66,6 +66,9 @@ enum AniAction {
   ACTION_LAST,
 };
 
+static const char* kStatusBarText = "status_bar_text";
+static const char* kStatusBarFace = "status_bar_face";
+
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const char* text)
@@ -153,6 +156,9 @@ StatusBar::StatusBar()
   m_instance = this;
 
   setDoubleBuffered(true);
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  setBgColor(theme->getColorById(kStatusBarFace));
 
 #define BUTTON_NEW(name, text, action)                                  \
   {                                                                     \
@@ -480,12 +486,11 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 void StatusBar::onPaint(ui::PaintEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color text_color = theme->getColor(ThemeColor::Text);
-  ui::Color face_color = theme->getColor(ThemeColor::Face);
+  ui::Color textColor = theme->getColorById(kStatusBarText);
   Rect rc = getClientBounds();
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(face_color, rc);
+  g->fillRect(getBgColor(), rc);
 
   rc.shrink(Border(2, 1, 2, 2)*jguiscale());
 
@@ -518,7 +523,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       str += buf;
     }
 
-    g->drawString(str, text_color, ColorNone, false,
+    g->drawString(str, textColor, ColorNone, false,
       gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
 
     x += ji_font_text_len(getFont(), str.c_str()) + 4*jguiscale();
@@ -536,7 +541,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
 
   // Status bar text
   if (getTextLength() > 0) {
-    g->drawString(getText(), text_color, ColorNone, false,
+    g->drawString(getText(), textColor, ColorNone, false,
       gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
 
     x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
