@@ -141,8 +141,6 @@ bool ToolBar::onProcessMessage(Message* msg)
       int groups = toolbox->getGroupsCount();
       Rect toolrc;
 
-      closeTipWindow();
-
       ToolGroupList::iterator it = toolbox->begin_group();
       for (int c=0; c<groups; ++c, ++it) {
         ToolGroup* tool_group = *it;

@@ -157,9 +157,9 @@ TipWindow::TipWindow(const char *text)
   m_arrowAlign = 0;
 
   setSizeable(false);
-  setMoveable(false);
   setWantFocus(false);
   setAlign(JI_LEFT | JI_TOP);
+  makeFixed();
 
   removeDecorativeWidgets();
 
