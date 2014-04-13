@@ -71,7 +71,7 @@ private:
   Rect getToolBounds(int index);
 
   ToolGroup* m_group;
-  Tool* m_hot_tool;
+  Tool* m_hotTool;
   ToolBar* m_toolbar;
   BITMAP* m_overlapped;
 };
@@ -102,9 +102,9 @@ ToolBar::ToolBar()
   this->border_width.r = 1*jguiscale();
   this->border_width.b = 0;
 
-  m_hot_tool = NULL;
-  m_hot_index = NoneIndex;
-  m_open_on_hot = false;
+  m_hotTool = NULL;
+  m_hotIndex = NoneIndex;
+  m_openOnHot = false;
   m_popupWindow = NULL;
   m_tipWindow = NULL;
   m_tipOpened = false;
@@ -112,8 +112,8 @@ ToolBar::ToolBar()
   ToolBox* toolbox = App::instance()->getToolBox();
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
-    if (m_selected_in_group.find(tool->getGroup()) == m_selected_in_group.end())
-      m_selected_in_group[tool->getGroup()] = tool;
+    if (m_selectedInGroup.find(tool->getGroup()) == m_selectedInGroup.end())
+      m_selectedInGroup[tool->getGroup()] = tool;
   }
 }
 
@@ -125,7 +125,7 @@ ToolBar::~ToolBar()
 
 bool ToolBar::isToolVisible(Tool* tool)
 {
-  return (m_selected_in_group[tool->getGroup()] == tool);
+  return (m_selectedInGroup[tool->getGroup()] == tool);
 }
 
 bool ToolBar::onProcessMessage(Message* msg)
@@ -141,10 +141,9 @@ bool ToolBar::onProcessMessage(Message* msg)
       closeTipWindow();
 
       ToolGroupList::iterator it = toolbox->begin_group();
-
       for (int c=0; c<groups; ++c, ++it) {
         ToolGroup* tool_group = *it;
-        Tool* tool = m_selected_in_group[tool_group];
+        Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
         if (mouseMsg->position().y >= toolrc.y &&
@@ -153,6 +152,11 @@ bool ToolBar::onProcessMessage(Message* msg)
           invalidate();
 
           openPopupWindow(c, tool_group);
+
+          // We capture the mouse so the user can continue navigating
+          // the ToolBar to open other groups while he is pressing the
+          // mouse button.
+          captureMouse();
         }
       }
 
@@ -189,7 +193,7 @@ bool ToolBar::onProcessMessage(Message* msg)
 
       for (int c=0; c<groups; ++c, ++it) {
         ToolGroup* tool_group = *it;
-        Tool* tool = m_selected_in_group[tool_group];
+        Tool* tool = m_selectedInGroup[tool_group];
 
         toolrc = getToolGroupBounds(c);
         if (mouseMsg->position().y >= toolrc.y &&
@@ -197,7 +201,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           new_hot_tool = tool;
           new_hot_index = c;
 
-          if ((m_open_on_hot) && (m_hot_tool != new_hot_tool))
+          if ((m_openOnHot) && (m_hotTool != new_hot_tool))
             openPopupWindow(c, tool_group);
           break;
         }
@@ -216,31 +220,63 @@ bool ToolBar::onProcessMessage(Message* msg)
       }
 
       // hot button changed
-      if (new_hot_tool != m_hot_tool ||
-          new_hot_index != m_hot_index) {
-        m_hot_tool = new_hot_tool;
-        m_hot_index = new_hot_index;
+      if (new_hot_tool != m_hotTool ||
+          new_hot_index != m_hotIndex) {
+        m_hotTool = new_hot_tool;
+        m_hotIndex = new_hot_index;
+
         invalidate();
 
-        if (m_hot_index != NoneIndex)
-          openTipWindow(m_hot_index, m_hot_tool);
+        if (m_hotIndex != NoneIndex)
+          openTipWindow(m_hotIndex, m_hotTool);
         else
           closeTipWindow();
 
-        if (m_hot_tool)
-          StatusBar::instance()->showTool(0, m_hot_tool);
+        if (m_hotTool) {
+          if (hasCapture())
+            UIContext::instance()->getSettings()->setCurrentTool(m_hotTool);
+          else
+            StatusBar::instance()->showTool(0, m_hotTool);
+        }
+      }
+
+      // We can change the current tool if the user is dragging the
+      // mouse over the ToolBar.
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        Widget* pick = getManager()->pick(mouseMsg->position());
+        if (ToolStrip* strip = dynamic_cast<ToolStrip*>(pick)) {
+          releaseMouse();
+
+          MouseMessage* mouseMsg2 = new MouseMessage(
+            kMouseDownMessage,
+            mouseMsg->buttons(),
+            mouseMsg->position());
+          mouseMsg2->addRecipient(strip);
+          getManager()->enqueueMessage(mouseMsg2);
+        }
       }
       break;
     }
 
+    case kMouseUpMessage:
+      if (!hasCapture())
+        break;
+
+      releaseMouse();
+      // fallthrough
+
     case kMouseLeaveMessage:
+      if (hasCapture())
+        break;
+
       closeTipWindow();
 
       if (!m_popupWindow)
         m_tipOpened = false;
 
-      m_hot_tool = NULL;
-      m_hot_index = NoneIndex;
+      m_hotTool = NULL;
+      m_hotIndex = NoneIndex;
       invalidate();
 
       StatusBar::instance()->clearText();
@@ -285,12 +321,12 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 
   for (int c=0; c<groups; ++c, ++it) {
     ToolGroup* tool_group = *it;
-    Tool* tool = m_selected_in_group[tool_group];
+    Tool* tool = m_selectedInGroup[tool_group];
     ui::Color face;
     int nw;
 
     if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
-      m_hot_index == c) {
+      m_hotIndex == c) {
       nw = PART_TOOLBUTTON_HOT_NW;
       face = hotFace;
     }
@@ -316,7 +352,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   // Draw button to show tool configuration
   toolrc = getToolGroupBounds(ConfigureToolIndex);
   toolrc.offset(-getBounds().x, -getBounds().y);
-  bool isHot = (m_hot_index == ConfigureToolIndex);
+  bool isHot = (m_hotIndex == ConfigureToolIndex);
   theme->draw_bounds_nw(g,
     toolrc,
     isHot ? PART_TOOLBUTTON_HOT_NW:
@@ -333,7 +369,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   // Draw button to show/hide mini editor
   toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
   toolrc.offset(-getBounds().x, -getBounds().y);
-  isHot = (m_hot_index == MiniEditorVisibilityIndex ||
+  isHot = (m_hotIndex == MiniEditorVisibilityIndex ||
     App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
   theme->draw_bounds_nw(g,
     toolrc,
@@ -383,11 +419,11 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     if (tool->getGroup() == tool_group)
       ++count;
   }
+  m_openOnHot = true;
   if (count <= 1)
     return;
 
   // In case this tool contains more than just one tool, show the popup window
-  m_open_on_hot = true;
   m_popupWindow = new PopupWindow("", false);
   m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
 
@@ -556,7 +592,7 @@ void ToolBar::selectTool(Tool* tool)
 {
   ASSERT(tool != NULL);
 
-  m_selected_in_group[tool->getGroup()] = tool;
+  m_selectedInGroup[tool->getGroup()] = tool;
 
   UIContext::instance()->getSettings()->setCurrentTool(tool);
   invalidate();
@@ -569,8 +605,8 @@ void ToolBar::onClosePopup()
   if (!hasMouse())
     m_tipOpened = false;
 
-  m_open_on_hot = false;
-  m_hot_tool = NULL;
+  m_openOnHot = false;
+  m_hotTool = NULL;
   invalidate();
 }
 
@@ -582,7 +618,7 @@ ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   : Widget(kGenericWidget)
 {
   m_group = group;
-  m_hot_tool = NULL;
+  m_hotTool = NULL;
   m_toolbar = toolbar;
   m_overlapped = NULL;
 
@@ -611,8 +647,13 @@ bool ToolStrip::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
+    case kMouseDownMessage:
+      captureMouse();
+      // fallthrough
+
     case kMouseMoveMessage: {
-      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      gfx::Point mousePos = mouseMsg->position();
       ToolBox* toolbox = App::instance()->getToolBox();
       Tool* hot_tool = NULL;
       Rect toolrc;
@@ -630,27 +671,44 @@ bool ToolStrip::onProcessMessage(Message* msg)
       }
 
       // Hot button changed
-      if (m_hot_tool != hot_tool) {
-        m_hot_tool = hot_tool;
+      if (m_hotTool != hot_tool) {
+        m_hotTool = hot_tool;
         invalidate();
 
         // Show the tooltip for the hot tool
-        if (m_hot_tool)
-          m_toolbar->openTipWindow(m_group, m_hot_tool);
+        if (m_hotTool)
+          m_toolbar->openTipWindow(m_group, m_hotTool);
         else
           m_toolbar->closeTipWindow();
 
-        if (m_hot_tool)
-          StatusBar::instance()->showTool(0, m_hot_tool);
+        if (m_hotTool)
+          StatusBar::instance()->showTool(0, m_hotTool);
+      }
+
+      if (hasCapture()) {
+        if (m_hotTool) {
+          m_toolbar->selectTool(m_hotTool);
+          invalidate();
+        }
+
+        Widget* pick = getManager()->pick(mouseMsg->position());
+        if (ToolBar* bar = dynamic_cast<ToolBar*>(pick)) {
+          releaseMouse();
+
+          MouseMessage* mouseMsg2 = new MouseMessage(
+            kMouseDownMessage,
+            mouseMsg->buttons(),
+            mouseMsg->position());
+          mouseMsg2->addRecipient(bar);
+          getManager()->enqueueMessage(mouseMsg2);
+        }
       }
       break;
     }
 
-    case kMouseDownMessage:
-      if (m_hot_tool) {
-        m_toolbar->selectTool(m_hot_tool);
+    case kMouseUpMessage:
+      if (hasCapture())
         closeWindow();
-      }
       break;
 
   }
@@ -696,7 +754,7 @@ void ToolStrip::onPaint(PaintEvent& ev)
       int nw;
 
       if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
-        m_hot_tool == tool) {
+        m_hotTool == tool) {
         nw = PART_TOOLBUTTON_HOT_NW;
         face = theme->getColor(ThemeColor::ButtonHotFace);
       }

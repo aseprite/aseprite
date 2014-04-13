@@ -71,16 +71,16 @@ namespace app {
     void onClosePopup();
 
     // What tool is selected for each tool-group
-    std::map<const tools::ToolGroup*, tools::Tool*> m_selected_in_group;
+    std::map<const tools::ToolGroup*, tools::Tool*> m_selectedInGroup;
 
     // Index of the tool group or special button highlighted.
-    int m_hot_index;
+    int m_hotIndex;
 
     // What tool has the mouse above
-    tools::Tool* m_hot_tool;
+    tools::Tool* m_hotTool;
 
     // True if the popup-window must be opened when a tool-button is hot
-    bool m_open_on_hot;
+    bool m_openOnHot;
 
     // Window displayed to show a tool-group
     ui::PopupWindow* m_popupWindow;
