@@ -1061,6 +1061,7 @@ void Manager::pumpQueue()
           "kCloseAppMessage",
           "kPaintMessage",
           "kTimerMessage",
+          "kDropFilesMessage",
           "kWinMoveMessage",
           "kQueueProcessingMessage",
 
@@ -1079,11 +1080,11 @@ void Manager::pumpQueue()
           "kMouseWheelMessage",
         };
         const char *string =
-          (msg->type >= kOpenMessage &&
-           msg->type <= kMouseWheelMessage) ? msg_name[msg->type]:
-                                              "Unknown";
+          (msg->type() >= kOpenMessage &&
+           msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
+                                                "Unknown";
 
-        printf("Event #%d: %s (%d)\n", msg->type, string, widget->id);
+        printf("Event #%d: %s (%d)\n", msg->type(), string, widget->getId());
         fflush(stdout);
       }
 #endif
