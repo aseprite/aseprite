@@ -4,23 +4,23 @@
   <vbox noborders="true" id="main_box">
     <hbox noborders="true" id="menubar" />
     <hbox noborders="true" id="tabsbar" />
-    <hbox noborders="true" expansive="true">
-      <splitter id="colorbarsplitter"
+    <splitter id="colorbarsplitter"
 		horizontal="true" expansive="true"
 		by="pixel" position="52">
 	<vbox noborders="true" id="colorbar" />
 	<vbox noborders="true" expansive="true">
 	  <vbox noborders="true" id="contextbar" />
-	  <splitter id="timelinesplitter"
-		    vertical="true" expansive="true"
-		    by="percetage" position="100">
-	    <hbox noborders="true" id="workspace" expansive="true" />
-	    <vbox noborders="true" id="timeline" expansive="true" />
-	  </splitter>
+	  <hbox noborders="true" expansive="true">
+	    <splitter id="timelinesplitter"
+		      vertical="true" expansive="true"
+		      by="percetage" position="100">
+	      <hbox noborders="true" id="workspace" expansive="true" />
+	      <vbox noborders="true" id="timeline" expansive="true" />
+	    </splitter>
+	    <vbox noborders="true" id="toolbar" />
+	  </hbox>
 	</vbox>
-      </splitter>
-      <vbox noborders="true" id="toolbar" />
-    </hbox>
+    </splitter>
     <hbox noborders="true" id="statusbar" />
   </vbox>
 </gui>
