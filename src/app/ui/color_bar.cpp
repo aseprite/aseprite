@@ -82,8 +82,8 @@ ColorBar::ColorBar(int align)
 {
   m_instance = this;
 
-  setBorder(gfx::Border(1*jguiscale()));
-  child_spacing = 1*jguiscale();
+  setBorder(gfx::Border(2*jguiscale(), 0, 0, 0));
+  child_spacing = 2*jguiscale();
 
   m_paletteView.setBoxSize(6*jguiscale());
   m_paletteView.setColumns(4);
@@ -104,12 +104,6 @@ ColorBar::ColorBar(int align)
   addChild(&m_scrollableView);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
-
-  this->border_width.l = 2*jguiscale();
-  this->border_width.t = 2*jguiscale();
-  this->border_width.r = 0;
-  this->border_width.b = 2*jguiscale();
-  this->child_spacing = 2*jguiscale();
 
   m_paletteView.IndexChange.connect(&ColorBar::onPaletteIndexChange, this);
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
