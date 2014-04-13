@@ -28,7 +28,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
-#include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/resize_event.h"
 
 #include <allegro.h>
@@ -59,41 +59,32 @@ EditorView::~EditorView()
   UIContext::instance()->settings()->removeObserver(this);
 }
 
-bool EditorView::onProcessMessage(Message* msg)
+void EditorView::onPaint(PaintEvent& ev)
 {
-  switch (msg->type()) {
+  Graphics* g = ev.getGraphics();
+  Widget* viewport = getViewport();
+  Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  bool selected = false;
 
-    case kPaintMessage:
-      {
-        Widget* viewport = getViewport();
-        Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
-        SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-        bool selected = false;
+  switch (m_type) {
 
-        switch (m_type) {
+    // Only show the view selected if it is the current editor
+    case CurrentEditorMode:
+      selected = (child == current_editor);
+      break;
 
-          // Only show the view selected if it is the current editor
-          case CurrentEditorMode:
-            selected = (child == current_editor);
-            break;
-
-          // Always show selected
-          case AlwaysSelected:
-            selected = true;
-            break;
-
-        }
-
-        theme->draw_bounds_nw(ji_screen, getBounds(),
-                              selected ? PART_EDITOR_SELECTED_NW:
-                                         PART_EDITOR_NORMAL_NW,
-                              ColorNone);
-      }
-      return true;
+      // Always show selected
+    case AlwaysSelected:
+      selected = true;
+      break;
 
   }
 
-  return View::onProcessMessage(msg);
+  theme->draw_bounds_nw(g, getClientBounds(),
+    selected ? PART_EDITOR_SELECTED_NW:
+    PART_EDITOR_NORMAL_NW,
+    ColorNone);
 }
 
 void EditorView::onResize(ResizeEvent& ev)

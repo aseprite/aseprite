@@ -34,7 +34,7 @@ namespace app {
     ~EditorView();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
 
     // GlobalSettingsObserver impl
