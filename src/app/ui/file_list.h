@@ -50,6 +50,7 @@ namespace app {
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    virtual void onPaint(ui::PaintEvent& ev) OVERRIDE;
     virtual void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
     virtual void onFileSelected();
     virtual void onFileAccepted();
