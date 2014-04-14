@@ -480,7 +480,7 @@ void Widget::removeChild(Widget* child)
   // Free from manager
   Manager* manager = getManager();
   if (manager)
-    manager->freeWidget(this);
+    manager->freeWidget(child);
 
   child->m_parent = NULL;
 }
