@@ -109,6 +109,10 @@ namespace ui {
     she::Display* m_display;
     she::Clipboard* m_clipboard;
     she::EventQueue* m_eventQueue;
+
+    // This member is used to make freeWidget() a no-op when we
+    // restack a window if the user clicks on it.
+    Widget* m_lockedWindow;
   };
 
 } // namespace ui

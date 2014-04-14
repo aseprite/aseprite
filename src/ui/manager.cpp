@@ -13,6 +13,7 @@
 
 #include "ui/manager.h"
 
+#include "base/scoped_value.h"
 #include "she/display.h"
 #include "she/event.h"
 #include "she/event_queue.h"
@@ -112,6 +113,7 @@ Manager::Manager()
   , m_display(NULL)
   , m_clipboard(NULL)
   , m_eventQueue(NULL)
+  , m_lockedWindow(NULL)
 {
   if (!m_defaultManager) {
     // Hook the window close message
@@ -369,6 +371,8 @@ bool Manager::generateMessages()
           (!window->isForeground()) &&
           // If the window is not already the top window of the manager.
           (window != win_manager->getTopWindow())) {
+        base::ScopedValue<Widget*> scoped(m_lockedWindow, window, NULL);
+
         // Put it in the top of the list
         win_manager->removeChild(window);
 
@@ -768,16 +772,21 @@ void Manager::freeCapture()
 
 void Manager::freeWidget(Widget* widget)
 {
-  // Break any relationship with the GUI manager
+  if (widget->hasFocus() || (widget == focus_widget))
+    freeFocus();
 
+  // We shouldn't free widgets that are locked, it means, widgets that
+  // will be re-added soon (e.g. when the stack of windows is
+  // temporarily modified).
+  if (m_lockedWindow == widget)
+    return;
+
+  // Break any relationship with the GUI manager
   if (widget->hasCapture() || (widget == capture_widget))
     freeCapture();
 
   if (widget->hasMouse() || (widget == mouse_widget))
     freeMouse();
-
-  if (widget->hasFocus() || (widget == focus_widget))
-    freeFocus();
 }
 
 void Manager::removeMessage(Message* msg)
