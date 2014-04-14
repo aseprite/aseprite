@@ -20,7 +20,7 @@
 #include "ui/ui.h"
 
 #ifdef REPORT_EVENTS
-#include <cstdio>
+#include <iostream>
 #endif
 #include <allegro.h>
 #include <list>
@@ -1079,13 +1079,16 @@ void Manager::pumpQueue()
           "kSetCursorMessage",
           "kMouseWheelMessage",
         };
-        const char *string =
+        const char* string =
           (msg->type() >= kOpenMessage &&
            msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
                                                 "Unknown";
 
-        printf("Event #%d: %s (%d)\n", msg->type(), string, widget->getId());
-        fflush(stdout);
+        std::cout << "Event " << msg->type() << " (" << string << ") "
+                  << "for " << typeid(*widget).name();
+        if (!widget->getId().empty())
+          std::cout << " (" << widget->getId() << ")";
+        std::cout << std::endl;
       }
 #endif
 
@@ -1106,16 +1109,16 @@ void Manager::pumpQueue()
                       paintMsg->rect().y,
                       paintMsg->rect().x2()-1,
                       paintMsg->rect().y2()-1);
-#ifdef REPORT_EVENTS
-        printf(" - clip(%d, %d, %d, %d)\n",
-               paintMsg->rect().x,
-               paintMsg->rect().y,
-               paintMsg->rect().x2()-1,
-               paintMsg->rect().y2()-1);
-        fflush(stdout);
-#endif
-
         dirty_display_flag = true;
+
+#ifdef REPORT_EVENTS
+        std::cout << " - clip("
+                  << paintMsg->rect().x << ", "
+                  << paintMsg->rect().y << ", "
+                  << paintMsg->rect().w << ", "
+                  << paintMsg->rect().h << ")"
+                  << std::endl;
+#endif
       }
 
       // Call the message handler
