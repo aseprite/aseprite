@@ -223,15 +223,17 @@ bool ToolBar::onProcessMessage(Message* msg)
       // hot button changed
       if (new_hot_tool != m_hotTool ||
           new_hot_index != m_hotIndex) {
+
         m_hotTool = new_hot_tool;
         m_hotIndex = new_hot_index;
-
         invalidate();
 
-        if (m_hotIndex != NoneIndex && !hasCapture())
-          openTipWindow(m_hotIndex, m_hotTool);
-        else
-          closeTipWindow();
+        if (!m_currentStrip) {
+          if (m_hotIndex != NoneIndex && !hasCapture())
+            openTipWindow(m_hotIndex, m_hotTool);
+          else
+            closeTipWindow();
+        }
 
         if (m_hotTool) {
           if (hasCapture())
@@ -273,12 +275,13 @@ bool ToolBar::onProcessMessage(Message* msg)
 
       closeTipWindow();
 
-      if (!m_popupWindow)
+      if (!m_popupWindow || !m_popupWindow->isVisible()) {
         m_tipOpened = false;
 
-      m_hotTool = NULL;
-      m_hotIndex = NoneIndex;
-      invalidate();
+        m_hotTool = NULL;
+        m_hotIndex = NoneIndex;
+        invalidate();
+      }
 
       StatusBar::instance()->clearText();
       break;
@@ -617,6 +620,7 @@ void ToolBar::onClosePopup()
 
   m_openOnHot = false;
   m_hotTool = NULL;
+  m_hotIndex = NoneIndex;
   m_currentStrip = NULL;
 
   invalidate();
