@@ -26,7 +26,6 @@ PopupWindow::PopupWindow(const base::string& text, ClickBehavior clickBehavior)
   , m_clickBehavior(clickBehavior)
   , m_filtering(false)
 {
-
   setSizeable(false);
   setMoveable(false);
   setWantFocus(false);

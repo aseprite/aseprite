@@ -153,16 +153,9 @@ void TooltipManager::onTick()
 
 TipWindow::TipWindow(const char *text)
   : PopupWindow(text, kCloseOnClickInOtherWindow)
+  , m_arrowAlign(0)
 {
-  m_arrowAlign = 0;
-
-  setSizeable(false);
-  setWantFocus(false);
-  setAlign(JI_LEFT | JI_TOP);
   makeFixed();
-
-  removeDecorativeWidgets();
-
   initTheme();
 }
 
