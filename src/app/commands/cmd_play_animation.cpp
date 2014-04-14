@@ -24,6 +24,7 @@
 
 #include "ui/ui.h"
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
@@ -33,6 +34,8 @@
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/mini_editor.h"
 #include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
@@ -74,6 +77,8 @@ bool PlayAnimationCommand::onEnabled(Context* context)
 
 void PlayAnimationCommand::onExecute(Context* context)
 {
+  MiniEditorWindow* miniEditor = App::instance()->getMainWindow()->getMiniEditor();
+  bool visibleMiniEditor = (miniEditor ? miniEditor->isVisible(): false);
   ContextWriter writer(context);
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
@@ -85,6 +90,9 @@ void PlayAnimationCommand::onExecute(Context* context)
 
   if (sprite->getTotalFrames() < 2)
     return;
+
+  if (visibleMiniEditor)
+    miniEditor->closeWindow(NULL);
 
   // desactivate the onionskin
   docSettings->setUseOnionskin(false);
@@ -165,6 +173,9 @@ void PlayAnimationCommand::onExecute(Context* context)
   remove_int(speed_timer_callback);
 
   ui::jmouse_show();
+
+  if (visibleMiniEditor)
+    miniEditor->openWindow();
 }
 
 Command* CommandFactory::createPlayAnimationCommand()
