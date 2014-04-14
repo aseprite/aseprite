@@ -644,6 +644,19 @@ void Manager::setFocus(Widget* widget)
 
 void Manager::setMouse(Widget* widget)
 {
+#ifdef REPORT_EVENTS
+  std::cout << "Manager::setMouse ";
+  if (widget) {
+    std::cout << typeid(*widget).name();
+    if (!widget->getId().empty())
+      std::cout << " (" << widget->getId() << ")";
+  }
+  else {
+    std::cout << "null";
+  }
+  std::cout << std::endl;
+#endif
+
   if ((mouse_widget != widget) && (!capture_widget)) {
     WidgetsList widget_parents;
     Widget* common_parent = NULL;
