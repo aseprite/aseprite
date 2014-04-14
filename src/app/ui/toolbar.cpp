@@ -464,7 +464,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   }
 
   // Set hotregion of popup window
-  Region rgn(rc);
+  Region rgn(gfx::Rect(rc).enlarge(16*jguiscale()));
   rgn.createUnion(rgn, Region(getBounds()));
   m_popupWindow->setHotRegion(rgn);
 
