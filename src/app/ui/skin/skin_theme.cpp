@@ -2000,25 +2000,30 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     }
 
     // Text
-    if (!widget->isEnabled()) {
-      // TODO avoid this
-      if (fill_bg)              // Only to draw the background
-        g->drawString(t, ColorNone, bg_color, fill_bg, textrc.getOrigin());
+    Rect textWrap = textrc.createIntersect(
+      Rect(widget->getClientBounds()).shrink(widget->getBorder()));
 
-      // Draw white part
-      g->drawString(t, getColor(ThemeColor::Background), bg_color, fill_bg,
-                    textrc.getOrigin() + Point(jguiscale(), jguiscale()));
+    if (IntersectClip clip = IntersectClip(g, textWrap)) {
+      if (!widget->isEnabled()) {
+        // TODO avoid this
+        if (fill_bg)              // Only to draw the background
+          g->drawString(t, ColorNone, bg_color, fill_bg, textrc.getOrigin());
 
-      if (fill_bg)
-        fill_bg = false;
+        // Draw white part
+        g->drawString(t, getColor(ThemeColor::Background), bg_color, fill_bg,
+          textrc.getOrigin() + Point(jguiscale(), jguiscale()));
+
+        if (fill_bg)
+          fill_bg = false;
+      }
+
+      g->drawString(t,
+        (!widget->isEnabled() ?
+          getColor(ThemeColor::Disabled):
+          (ui::geta(fg_color) > 0 ? fg_color :
+            getColor(ThemeColor::Text))),
+        bg_color, fill_bg, textrc.getOrigin());
     }
-
-    g->drawString(t,
-                  (!widget->isEnabled() ?
-                   getColor(ThemeColor::Disabled):
-                   (ui::geta(fg_color) > 0 ? fg_color :
-                                             getColor(ThemeColor::Text))),
-                  bg_color, fill_bg, textrc.getOrigin());
   }
 }
 
