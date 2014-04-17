@@ -189,11 +189,16 @@ void ColorBar::onPaletteButtonClick()
 
 void ColorBar::onPaletteButtonDropDownClick()
 {
-  gfx::Rect bounds = m_paletteButton.getBounds();
+  if (!m_palettePopup.isVisible()) {
+    gfx::Rect bounds = m_paletteButton.getBounds();
 
-  m_palettePopup.showPopup(
-    gfx::Rect(bounds.x+bounds.w, bounds.y,
-      JI_SCREEN_W/2, JI_SCREEN_H/2));
+    m_palettePopup.showPopup(
+      gfx::Rect(bounds.x+bounds.w, bounds.y,
+        JI_SCREEN_W/2, JI_SCREEN_H/2));
+  }
+  else {
+    m_palettePopup.closeWindow(NULL);
+  }
 }
 
 void ColorBar::onPaletteIndexChange(int index)
