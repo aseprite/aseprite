@@ -210,8 +210,8 @@ StatusBar::StatusBar()
     jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
-    jwidget_noborders(box3);
+    box2->noBorderNoChildSpacing();
+    box3->noBorderNoChildSpacing();
     box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
@@ -237,7 +237,7 @@ StatusBar::StatusBar()
     Box* box2 = new Box(JI_VERTICAL);
 
     jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
+    box2->noBorderNoChildSpacing();
     box2->setExpansive(true);
 
     m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");

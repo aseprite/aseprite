@@ -502,7 +502,7 @@ void ComboBox::openListBox()
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
     m_window->setOnTop(true);
-    jwidget_noborders(m_window);
+    m_window->noBorderNoChildSpacing();
 
     Widget* viewport = view->getViewport();
     int size = getItemCount();

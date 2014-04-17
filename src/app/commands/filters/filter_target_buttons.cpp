@@ -62,8 +62,8 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 
   hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
-  jwidget_noborders(this);
-  jwidget_noborders(hbox);
+  this->noBorderNoChildSpacing();
+  hbox->noBorderNoChildSpacing();
 
   if (withChannels) {
     switch (imgtype) {

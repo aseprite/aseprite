@@ -34,7 +34,7 @@ PopupWindow::PopupWindow(const base::string& text, ClickBehavior clickBehavior)
   removeDecorativeWidgets();
 
   initTheme();
-  jwidget_noborders(this);
+  noBorderNoChildSpacing();
 }
 
 PopupWindow::~PopupWindow()

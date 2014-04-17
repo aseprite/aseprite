@@ -611,6 +611,15 @@ void Widget::setBorder(const Border& br)
   border_width.b = br.bottom();
 }
 
+void Widget::noBorderNoChildSpacing()
+{
+  border_width.l = 0;
+  border_width.t = 0;
+  border_width.r = 0;
+  border_width.b = 0;
+  child_spacing = 0;
+}
+
 void Widget::getRegion(gfx::Region& region)
 {
   if (this->type == kWindowWidget)
@@ -830,17 +839,6 @@ void jwidget_get_texticon_info(Widget* widget,
   SETRECT(box);
   SETRECT(text);
   SETRECT(icon);
-}
-
-void jwidget_noborders(Widget* widget)
-{
-  widget->border_width.l = 0;
-  widget->border_width.t = 0;
-  widget->border_width.r = 0;
-  widget->border_width.b = 0;
-  widget->child_spacing = 0;
-
-  widget->invalidate();
 }
 
 void jwidget_set_border(Widget* widget, int value)
