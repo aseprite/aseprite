@@ -6,7 +6,7 @@
     <hbox noborders="true" id="tabsbar" />
     <splitter id="colorbarsplitter"
 		horizontal="true" expansive="true"
-		by="pixel" position="52">
+		by="pixel">
 	<vbox noborders="true" id="colorbar" />
 	<vbox noborders="true" expansive="true">
 	  <vbox noborders="true" id="contextbar" />
