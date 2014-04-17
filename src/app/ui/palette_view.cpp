@@ -68,7 +68,7 @@ PaletteView::PaletteView(bool editable)
 
   m_editable = editable;
   m_columns = 16;
-  m_boxsize = 6;
+  m_boxsize = 6*jguiscale();
 
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();
