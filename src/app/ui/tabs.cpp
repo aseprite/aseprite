@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+//#define CLOSE_BUTTON_IN_EACH_TAB
+
 #include <algorithm>
 #include <allegro.h>
 #include <cmath>
@@ -654,7 +656,7 @@ void Tabs::calcTabWidth(Tab* tab)
 
   int border = 4*jguiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
   tab->width = (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
 #else
