@@ -430,7 +430,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget->setFocusMagnet(true);
 
     if (noborders)
-      jwidget_noborders(widget);
+      widget->noBorderNoChildSpacing();
 
     if (childspacing)
       widget->child_spacing = ustrtol(childspacing, NULL, 10);

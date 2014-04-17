@@ -183,7 +183,7 @@ StatusBar::StatusBar()
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
   // and upper-right pixels drawn in onPaint() event (see putpixels)
-  jwidget_set_border(this, 1*jguiscale(), 0, 1*jguiscale(), 0);
+  setBorder(gfx::Border(1*jguiscale(), 0, 1*jguiscale(), 0));
 
   // Construct the commands box
   {
@@ -209,9 +209,9 @@ StatusBar::StatusBar()
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
-    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
-    jwidget_noborders(box3);
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box2->noBorderNoChildSpacing();
+    box3->noBorderNoChildSpacing();
     box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
@@ -236,8 +236,8 @@ StatusBar::StatusBar()
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_VERTICAL);
 
-    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box2->noBorderNoChildSpacing();
     box2->setExpansive(true);
 
     m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");

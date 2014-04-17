@@ -191,8 +191,8 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   box4->setExpansive(true);
   box5->setExpansive(true);
-  jwidget_noborders(box4);
-  jwidget_noborders(box5);
+  box4->noBorderNoChildSpacing();
+  box5->noBorderNoChildSpacing();
 
   // Setup parent <-> children relationship
 

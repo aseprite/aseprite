@@ -22,9 +22,9 @@ namespace she {
     virtual void* nativeHandle() = 0;
   };
 
-  class NotDisposableSurface : public Surface {
+  class NonDisposableSurface : public Surface {
   public:
-    virtual ~NotDisposableSurface() { }
+    virtual ~NonDisposableSurface() { }
   private:
     virtual void dispose() = 0;
   };

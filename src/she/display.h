@@ -11,7 +11,7 @@
 namespace she {
 
   class EventQueue;
-  class NotDisposableSurface;
+  class NonDisposableSurface;
   class Surface;
 
   // A display or window to show graphics.
@@ -35,7 +35,7 @@ namespace she {
 
     // Returns the main surface to draw into this display.
     // You must not dispose this surface.
-    virtual NotDisposableSurface* getSurface() = 0;
+    virtual NonDisposableSurface* getSurface() = 0;
 
     // Flips all graphics in the surface to the real display.  Returns
     // false if the flip couldn't be done because the display was

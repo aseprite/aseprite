@@ -46,7 +46,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 {
 #define ADD(box, widget, hook)                                          \
   if (widget) {                                                         \
-    jwidget_set_border(widget, 2 * jguiscale());                        \
+    widget->setBorder(gfx::Border(2 * jguiscale()));                    \
     box->addChild(widget);                                              \
     widget->Click.connect(Bind<void>(&FilterTargetButtons::hook, this, widget)); \
   }
@@ -62,8 +62,8 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 
   hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
 
-  jwidget_noborders(this);
-  jwidget_noborders(hbox);
+  this->noBorderNoChildSpacing();
+  hbox->noBorderNoChildSpacing();
 
   if (withChannels) {
     switch (imgtype) {
