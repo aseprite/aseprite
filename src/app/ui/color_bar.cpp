@@ -93,14 +93,14 @@ ColorBar::ColorBar(int align)
   m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);
   m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
 
+  // TODO hardcoded scroll bar width should be get from skin.xml file
+  int scrollBarWidth = 6*jguiscale();
+  m_scrollableView.getHorizontalBar()->setBarWidth(scrollBarWidth);
+  m_scrollableView.getVerticalBar()->setBarWidth(scrollBarWidth);
+  setup_mini_look(m_scrollableView.getHorizontalBar());
+  setup_mini_look(m_scrollableView.getVerticalBar());
+
   m_scrollableView.attachToView(&m_paletteView);
-  int w = (m_scrollableView.getBorder().getSize().w +
-           m_scrollableView.getViewport()->getBorder().getSize().w +
-           m_paletteView.getPreferredSize().w +
-           getTheme()->scrollbar_size);
-
-  jwidget_set_min_size(&m_scrollableView, w, 0);
-
   m_scrollableView.setExpansive(true);
 
   addChild(&m_paletteButton);
