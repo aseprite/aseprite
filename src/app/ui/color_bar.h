@@ -22,17 +22,20 @@
 
 #include "app/color.h"
 #include "app/ui/color_button.h"
+#include "app/ui/drop_down_button.h"
+#include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
 #include "base/compiler_specific.h"
 #include "base/signal.h"
+#include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/view.h"
 
 namespace app {
-  class PaletteView;
   class ColorButton;
+  class PalettesLoader;
 
   class ColorBar : public ui::Box {
     static ColorBar* m_instance;
@@ -61,21 +64,22 @@ namespace app {
 
   protected:
     void onPaletteButtonClick();
+    void onPaletteButtonDropDownClick();
     void onPaletteIndexChange(int index);
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
 
   private:
-    class ScrollableView : public ui::View
-    {
+    class ScrollableView : public ui::View {
     public:
       ScrollableView();
     protected:
       void onPaint(ui::PaintEvent& ev) OVERRIDE;
     };
 
-    ui::CheckBox m_paletteButton;
+    DropDownButton m_paletteButton;
+    PalettePopup m_palettePopup;
     ScrollableView m_scrollableView;
     PaletteView m_paletteView;
     ColorButton m_fgColor;

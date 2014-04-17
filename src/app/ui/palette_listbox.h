@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,37 +16,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
-#define APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
+#ifndef APP_UI_PALETTE_LISTBOX_H_INCLUDED
+#define APP_UI_PALETTE_LISTBOX_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
-#include "ui/box.h"
-
-namespace ui {
-  class Button;
-  class Event;
-}
+#include "app/palettes_loader.h"
+#include "base/compiler_specific.h"
+#include "base/unique_ptr.h"
+#include "ui/listbox.h"
+#include "ui/timer.h"
 
 namespace app {
 
-  class DropDownButton : public ui::HBox {
+  class PaletteListBox : public ui::ListBox {
   public:
-    DropDownButton(const char* text);
+    PaletteListBox();
 
-    ui::Button* mainButton() { return m_button; }
-    ui::Button* dropDown() { return m_dropDown; }
+    raster::Palette* selectedPalette();
 
-    Signal0<void> Click;
-    Signal0<void> DropDownClick;
+    Signal1<void, raster::Palette*> PalChange;
 
   protected:
-    void onButtonClick(ui::Event& ev);
-    void onDropDownButtonClick(ui::Event& ev);
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onChangeSelectedItem() OVERRIDE;
+    void onTick();
+    void stop();
 
   private:
-    ui::Button* m_button;
-    ui::Button* m_dropDown;
+    base::UniquePtr<PalettesLoader> m_palettesLoader;
+    ui::Timer m_palettesTimer;
+
+    class LoadingItem;
+    LoadingItem* m_loadingItem;
   };
 
 } // namespace app

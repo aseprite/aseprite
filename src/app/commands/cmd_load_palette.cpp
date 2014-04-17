@@ -20,18 +20,15 @@
 #include "config.h"
 #endif
 
+#include "app/commands/cmd_set_palette.h"
 #include "app/commands/command.h"
-#include "app/context_access.h"
-#include "app/document_api.h"
+#include "app/commands/commands.h"
+#include "app/context.h"
 #include "app/file_selector.h"
-#include "app/ini_file.h"
-#include "app/modules/palettes.h"
-#include "app/undo_transaction.h"
 #include "base/compiler_specific.h"
 #include "base/unique_ptr.h"
 #include "raster/palette.h"
 #include "ui/alert.h"
-#include "ui/manager.h"
 
 namespace app {
 
@@ -55,30 +52,18 @@ LoadPaletteCommand::LoadPaletteCommand()
 
 void LoadPaletteCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
-
   base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
   if (!filename.empty()) {
     base::UniquePtr<raster::Palette> palette(raster::Palette::load(filename.c_str()));
     if (!palette) {
       Alert::show("Error<<Loading palette file||&Close");
     }
-    else if (writer.document()) {
-      UndoTransaction undoTransaction(writer.context(), "Load Palette");
-      writer.document()->getApi()
-        .setPalette(writer.sprite(), writer.frame(), palette);
-      undoTransaction.commit();
-    }
     else {
-      set_default_palette(palette);
-      set_config_string("GfxMode", "Palette", filename.c_str());
+      SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
+        CommandsModule::instance()->getCommandByName(CommandId::SetPalette));
+      cmd->setPalette(palette);
+      context->executeCommand(cmd);
     }
-
-    // Set the palette calling the hooks
-    set_current_palette(palette, false);
-
-    // Redraw the entire screen
-    ui::Manager::getDefault()->invalidate();
   }
 }
 

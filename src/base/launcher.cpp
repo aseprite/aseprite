@@ -8,8 +8,9 @@
 #include "config.h"
 #endif
 
-#include "base/launcher.h"
 #include "base/exception.h"
+#include "base/fs.h"
+#include "base/launcher.h"
 #include "base/string.h"
 
 #ifdef WIN32
@@ -90,10 +91,15 @@ bool open_file(const std::string& file)
 bool open_folder(const std::string& file)
 {
 #ifdef WIN32
-  int ret = win32_shell_execute(NULL,
-                                L"explorer",
-                                (L"/e,/select,\"" + base::from_utf8(file) + L"\"").c_str());
-
+  int ret;
+  if (base::directory_exists(file)) {
+    ret = win32_shell_execute(NULL, L"explorer",
+      (L"/n,/e,\"" + base::from_utf8(file) + L"\"").c_str());
+  }
+  else {
+    ret = win32_shell_execute(NULL, L"explorer",
+      (L"/e,/select,\"" + base::from_utf8(file) + L"\"").c_str());
+  }
   return (ret == 0);
 #else
   return false;

@@ -75,6 +75,7 @@ add_library(app-lib
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
+  commands/cmd_set_palette.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
@@ -134,6 +135,7 @@ add_library(app-lib
   modules/gui.cpp
   modules/palettes.cpp
   objects_container_impl.cpp
+  palettes_loader.cpp
   project.cpp
   recent_files.cpp
   resource_finder.cpp
@@ -176,6 +178,8 @@ add_library(app-lib
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_editor.cpp
+  ui/palette_listbox.cpp
+  ui/palette_popup.cpp
   ui/palette_view.cpp
   ui/popup_window_pin.cpp
   ui/skin/button_icon_impl.cpp
