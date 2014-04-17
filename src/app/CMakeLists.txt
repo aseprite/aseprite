@@ -75,6 +75,7 @@ add_library(app-lib
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
+  commands/cmd_set_palette.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
