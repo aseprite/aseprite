@@ -51,8 +51,6 @@ namespace ui {
                                  gfx::Rect* icon,
                                  int icon_align, int icon_w, int icon_h);
 
-  void jwidget_set_border(Widget* widget, int value);
-  void jwidget_set_border(Widget* widget, int l, int t, int r, int b);
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
 

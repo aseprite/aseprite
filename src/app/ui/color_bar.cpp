@@ -53,7 +53,7 @@ ColorBar::ScrollableView::ScrollableView()
   int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
-  jwidget_set_border(this, l, t, r, b);
+  setBorder(gfx::Border(l, t, r, b));
 }
 
 void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)

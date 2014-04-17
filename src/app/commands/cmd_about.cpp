@@ -91,11 +91,11 @@ void AboutCommand::onExecute(Context* context)
   box1->addChild(grid);
   window->addChild(box1);
 
-  jwidget_set_border(close_button,
-                     close_button->border_width.l + 16*jguiscale(),
-                     close_button->border_width.t,
-                     close_button->border_width.r + 16*jguiscale(),
-                     close_button->border_width.b);
+  close_button->setBorder(gfx::Border(
+      close_button->border_width.l + 16*jguiscale(),
+      close_button->border_width.t,
+      close_button->border_width.r + 16*jguiscale(),
+      close_button->border_width.b));
 
   close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));
 

@@ -841,30 +841,6 @@ void jwidget_get_texticon_info(Widget* widget,
   SETRECT(icon);
 }
 
-void jwidget_set_border(Widget* widget, int value)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->border_width.l = value;
-  widget->border_width.t = value;
-  widget->border_width.r = value;
-  widget->border_width.b = value;
-
-  widget->invalidate();
-}
-
-void jwidget_set_border(Widget* widget, int l, int t, int r, int b)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->border_width.l = l;
-  widget->border_width.t = t;
-  widget->border_width.r = r;
-  widget->border_width.b = b;
-
-  widget->invalidate();
-}
-
 void jwidget_set_min_size(Widget* widget, int w, int h)
 {
   ASSERT_VALID_WIDGET(widget);
