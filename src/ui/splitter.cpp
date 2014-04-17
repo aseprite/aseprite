@@ -290,6 +290,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
   ev.stream() >> m_pos;
+  m_pos *= jguiscale();
 
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
@@ -298,7 +299,7 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  ev.stream() << m_pos;
+  ev.stream() << m_pos / jguiscale();
 
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
