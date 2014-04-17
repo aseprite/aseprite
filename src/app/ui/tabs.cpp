@@ -358,10 +358,9 @@ void Tabs::onPaint(PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
-  gfx::Rect box(rect.x-m_scrollX,
-                rect.y,
-                2*jguiscale(),
-                theme->get_part(PART_TAB_FILLER)->h);
+  gfx::Rect box(rect.x-m_scrollX, rect.y,
+    2*jguiscale(),
+    m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->h);
 
   g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
 
@@ -432,10 +431,13 @@ void Tabs::onResize(ResizeEvent& ev)
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->h);
 
-  ev.setPreferredSize(gfx::Size(0, // 4 + widget->getTextHeight() + 5,
-                                theme->get_part(PART_TAB_FILLER)->h +
-                                theme->get_part(PART_TAB_BOTTOM_NORMAL)->h));
+  if (!m_list_of_tabs.empty()) {
+    reqsize.h += theme->get_part(PART_TAB_FILLER)->h;
+  }
+
+  ev.setPreferredSize(reqsize);
 }
 
 void Tabs::onInitTheme(InitThemeEvent& ev)
