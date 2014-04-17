@@ -167,6 +167,12 @@ void Widget::setFont(FONT* f)
   invalidate();
 }
 
+void Widget::setBgColor(ui::Color color)
+{
+  m_bgColor = color;
+  onSetBgColor();
+}
+
 void Widget::setTheme(Theme* theme)
 {
   m_theme = theme;
@@ -1380,6 +1386,11 @@ void Widget::onDeselect()
 }
 
 void Widget::onSetText()
+{
+  invalidate();
+}
+
+void Widget::onSetBgColor()
 {
   invalidate();
 }

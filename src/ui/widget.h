@@ -175,9 +175,7 @@ namespace ui {
     }
 
     // Sets the background color of the widget
-    void setBgColor(ui::Color bg_color) {
-      m_bgColor = bg_color;
-    }
+    void setBgColor(ui::Color color);
 
     Theme* getTheme() const { return m_theme; }
     void setTheme(Theme* theme);
@@ -376,6 +374,7 @@ namespace ui {
     virtual void onSelect();
     virtual void onDeselect();
     virtual void onSetText();
+    virtual void onSetBgColor();
 
   private:
     base::string m_id;            // Widget's id
