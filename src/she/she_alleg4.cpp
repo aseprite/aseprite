@@ -318,8 +318,8 @@ public:
     m_surface = newSurface;
   }
 
-  NotDisposableSurface* getSurface() OVERRIDE {
-    return static_cast<NotDisposableSurface*>(m_surface);
+  NonDisposableSurface* getSurface() OVERRIDE {
+    return static_cast<NonDisposableSurface*>(m_surface);
   }
 
   bool flip() OVERRIDE {
