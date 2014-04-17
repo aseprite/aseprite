@@ -305,7 +305,11 @@ bool Manager::generateMessages()
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
     MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
-    MouseButtons mouseButtons = currentMouseButtons(pressed ? 0: 1);
+
+    // The message will include which button was pressed or released.
+    // (This doesn't represent all buttons that are currently pushed.)
+    MouseButtons mouseButtons = (MouseButtons)
+      (currentMouseButtons(0) ^ currentMouseButtons(1));
 
     //////////////////////////////////////////////////////////////////////
     // Double Click
