@@ -51,8 +51,8 @@ public:
   Command* clone() const OVERRIDE { return new OpenFileCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) OVERRIDE;
+  void onExecute(Context* context) OVERRIDE;
 
 private:
   std::string m_filename;
