@@ -151,10 +151,12 @@ App::App(int argc, const char* argv[])
     PRINTF("Loading custom palette file: %s\n", palFile.c_str());
 
     base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
-    if (pal.get() == NULL)
-      throw base::Exception("Error loading default palette from: %s", palFile.c_str());
-
-    set_default_palette(pal.get());
+    if (pal.get() != NULL) {
+      set_default_palette(pal.get());
+    }
+    else {
+      PRINTF("Error loading custom palette file\n");
+    }
   }
 
   // Set system palette to the default one.
