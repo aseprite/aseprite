@@ -81,8 +81,8 @@ namespace raster {
       ASSERT(i >= 0 && i < size());
       return m_colors[i];
     }
-
     void setEntry(int i, color_t color);
+    void addEntry(color_t color);
 
     void copyColorsTo(Palette* dst) const;
 

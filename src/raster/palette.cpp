@@ -41,7 +41,7 @@ using namespace gfx;
 Palette::Palette(FrameNumber frame, int ncolors)
   : Object(OBJECT_PALETTE)
 {
-  ASSERT(ncolors >= 1 && ncolors <= MaxColors);
+  ASSERT(ncolors >= 0 && ncolors <= MaxColors);
 
   m_frame = frame;
   m_colors.resize(ncolors);
@@ -72,7 +72,7 @@ Palette* Palette::createGrayscale()
 
 void Palette::resize(int ncolors)
 {
-  ASSERT(ncolors >= 1 && ncolors <= MaxColors);
+  ASSERT(ncolors >= 0 && ncolors <= MaxColors);
 
   int old_size = m_colors.size();
   m_colors.resize(ncolors);
@@ -85,6 +85,12 @@ void Palette::resize(int ncolors)
   }
 
   ++m_modifications;
+}
+
+void Palette::addEntry(color_t color)
+{
+  resize(size()+1);
+  setEntry(size()-1, color);
 }
 
 void Palette::setFrame(FrameNumber frame)

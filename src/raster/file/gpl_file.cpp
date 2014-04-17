@@ -46,8 +46,7 @@ Palette* load_gpl_file(const char *filename)
   base::trim_string(line, line);
   if (line != "GIMP Palette") return NULL;
 
-  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
-  int entryCounter = 0;
+  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 0));
 
   while (std::getline(f, line)) {
     // Trim line.
@@ -66,12 +65,15 @@ Palette* load_gpl_file(const char *filename)
     // TODO add support to read the color name
     lineIn >> r >> g >> b;
     if (lineIn.good()) {
-      pal->setEntry(entryCounter, rgba(r, g, b, 255));
-      ++entryCounter;
-      if (entryCounter >= Palette::MaxColors)
+      pal->addEntry(rgba(r, g, b, 255));
+      if (pal->size() == Palette::MaxColors)
         break;
     }
   }
+
+  // TODO remove this when Aseprite supports palettes with less than 256 colors
+  if (pal->size() != Palette::MaxColors)
+      pal->resize(Palette::MaxColors);
 
   return pal.release();
 }
