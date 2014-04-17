@@ -12,8 +12,10 @@
 #include <allegro/gfx.h>
 
 #include "ui/draw.h"
+#include "ui/graphics.h"
 #include "ui/image_view.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -38,13 +40,18 @@ void ImageView::onPreferredSize(PreferredSizeEvent& ev)
 
 void ImageView::onPaint(PaintEvent& ev)
 {
+  Graphics* g = ev.getGraphics();
+  gfx::Rect bounds = getClientBounds();
   gfx::Rect icon;
   jwidget_get_texticon_info(this, NULL, NULL, &icon,
                             getAlign(), m_bmp->w, m_bmp->h);
 
-  jdraw_rectexclude(getBounds(), icon, getBgColor());
+  g->fillRect(getBgColor(), bounds);
 
-  blit(m_bmp, ji_screen, 0, 0, icon.x, icon.y, icon.w, icon.h);
+  icon.x -= getBounds().x;
+  icon.y -= getBounds().y;
+
+  g->blit(m_bmp, 0, 0, icon.x, icon.y, icon.w, icon.h);
 }
 
 } // namespace ui
