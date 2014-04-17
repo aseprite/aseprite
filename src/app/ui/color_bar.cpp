@@ -79,8 +79,8 @@ ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette")
   , m_paletteView(false)
-  , m_fgColor(app::Color::fromIndex(15), IMAGE_INDEXED)
-  , m_bgColor(app::Color::fromIndex(0), IMAGE_INDEXED)
+  , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
+  , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
 {
   m_instance = this;
