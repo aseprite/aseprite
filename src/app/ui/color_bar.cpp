@@ -89,7 +89,7 @@ ColorBar::ColorBar(int align)
   child_spacing = 2*jguiscale();
 
   m_paletteView.setBoxSize(6*jguiscale());
-  m_paletteView.setColumns(4);
+  m_paletteView.setColumns(8);
   m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);
   m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
 

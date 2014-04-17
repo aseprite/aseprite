@@ -113,6 +113,9 @@ MainWindow::MainWindow()
   if (box_workspace) box_workspace->addChild(m_workspace);
   if (box_timeline) box_timeline->addChild(m_timeline);
 
+  // Default layout of widgets
+  m_colorBarSplitter->setPosition(m_colorBar->getPreferredSize().w);
+
   // Prepare the window
   remapWindow();
 
