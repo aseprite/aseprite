@@ -41,6 +41,8 @@ DropDownButton::DropDownButton(const char* text)
   setup_look(m_button, LeftButtonLook);
   setup_look(m_dropDown, RightButtonLook);
 
+  m_button->setExpansive(true);
+  m_button->setAlign(JI_LEFT | JI_MIDDLE);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);
   m_dropDown->Click.connect(&DropDownButton::onDropDownButtonClick, this);
 
