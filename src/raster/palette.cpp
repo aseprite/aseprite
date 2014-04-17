@@ -426,6 +426,9 @@ Palette* Palette::load(const char *filename)
     pal = raster::file::load_gpl_file(filename);
   }
 
+  if (pal)
+    pal->setFilename(filename);
+
   return pal;
 }
 
