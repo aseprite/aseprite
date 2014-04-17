@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,37 +16,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
-#define APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
+#ifndef APP_UI_PALETTE_POPUP_H_INCLUDED
+#define APP_UI_PALETTE_POPUP_H_INCLUDED
 #pragma once
 
-#include "base/signal.h"
-#include "ui/box.h"
+#include "app/ui/palette_listbox.h"
+#include "base/compiler_specific.h"
+#include "ui/popup_window.h"
 
 namespace ui {
   class Button;
-  class Event;
+  class View;
 }
 
 namespace app {
 
-  class DropDownButton : public ui::HBox {
+  class PalettePopup : public ui::PopupWindow {
   public:
-    DropDownButton(const char* text);
+    PalettePopup();
 
-    ui::Button* mainButton() { return m_button; }
-    ui::Button* dropDown() { return m_dropDown; }
-
-    Signal0<void> Click;
-    Signal0<void> DropDownClick;
+    void showPopup(gfx::Rect& bounds);
 
   protected:
-    void onButtonClick(ui::Event& ev);
-    void onDropDownButtonClick(ui::Event& ev);
+    void onPalChange(raster::Palette* palette);
+    void onLoad();
+    void onOpenFolder();
 
   private:
-    ui::Button* m_button;
-    ui::Button* m_dropDown;
+    ui::View* m_view;
+    ui::Button* m_load;
+    PaletteListBox m_paletteListBox;
   };
 
 } // namespace app

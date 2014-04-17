@@ -34,8 +34,11 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "ui/graphics.h"
 #include "ui/paint_event.h"
+
+#include "ui/menu.h"
 
 namespace app {
 
@@ -74,7 +77,7 @@ ColorBar* ColorBar::m_instance = NULL;
 
 ColorBar::ColorBar(int align)
   : Box(align)
-  , m_paletteButton("Edit Palette", kButtonWidget)
+  , m_paletteButton("Edit Palette")
   , m_paletteView(false)
   , m_fgColor(app::Color::fromIndex(15), IMAGE_INDEXED)
   , m_bgColor(app::Color::fromIndex(0), IMAGE_INDEXED)
@@ -123,8 +126,9 @@ ColorBar::ColorBar(int align)
   m_paletteView.setBgColor(((SkinTheme*)getTheme())->getColor(ThemeColor::TabSelectedFace));
 
   // Change labels foreground color
-  setup_mini_font(setup_mini_look(&m_paletteButton));
+  setup_mini_font(m_paletteButton.mainButton());
   m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
+  m_paletteButton.DropDownClick.connect(Bind<void>(&ColorBar::onPaletteButtonDropDownClick, this));
 
   onColorButtonChange(getFgColor());
 }
@@ -181,6 +185,15 @@ void ColorBar::onPaletteButtonClick()
   params.set("switch", "true");
 
   UIContext::instance()->executeCommand(cmd_show_palette_editor, &params);
+}
+
+void ColorBar::onPaletteButtonDropDownClick()
+{
+  gfx::Rect bounds = m_paletteButton.getBounds();
+
+  m_palettePopup.showPopup(
+    gfx::Rect(bounds.x+bounds.w, bounds.y,
+      JI_SCREEN_W/2, JI_SCREEN_H/2));
 }
 
 void ColorBar::onPaletteIndexChange(int index)
