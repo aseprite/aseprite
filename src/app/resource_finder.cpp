@@ -57,7 +57,7 @@ bool ResourceFinder::findFirst()
   while (next()) {
     PRINTF("Loading resource from \"%s\"...\n", filename().c_str());
 
-    if (base::file_exists(filename())) {
+    if (base::is_file(filename())) {
       PRINTF("- OK\n");
       return true;
     }

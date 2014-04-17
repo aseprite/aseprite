@@ -142,7 +142,7 @@ protected:
 
         // Ask if the user wants overwrite the existent file.
         int ret = 0;
-        if (base::file_exists(filename)) {
+        if (base::is_file(filename)) {
           ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
             base::get_file_name(filename).c_str());
 

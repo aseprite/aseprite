@@ -28,7 +28,7 @@ TEST(FileHandle, Descriptors)
 
   // Delete the file if it exists.
   ASSERT_NO_THROW({
-      if (file_exists(fn))
+      if (is_file(fn))
         delete_file(fn);
     });
 

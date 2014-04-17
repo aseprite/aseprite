@@ -76,7 +76,7 @@ std::string PalettesLoader::palettesLocation()
   ResourceFinder rf;
   rf.includeDataDir("palettes");
   while (rf.next()) {
-    if (base::directory_exists(rf.filename())) {
+    if (base::is_directory(rf.filename())) {
       path = rf.filename();
       break;
     }

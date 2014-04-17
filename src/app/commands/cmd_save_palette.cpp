@@ -57,7 +57,7 @@ void SavePaletteCommand::onExecute(Context* context)
 again:
   filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
   if (!filename.empty()) {
-    if (base::file_exists(filename)) {
+    if (base::is_file(filename)) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
                         base::get_file_name(filename).c_str());
 

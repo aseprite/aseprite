@@ -21,13 +21,13 @@
 
 namespace base {
 
-bool file_exists(const string& path)
+bool is_file(const string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISREG(sts.st_mode)) ? true: false;
 }
 
-bool directory_exists(const string& path)
+bool is_directory(const string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISDIR(sts.st_mode)) ? true: false;

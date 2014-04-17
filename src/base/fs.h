@@ -12,8 +12,8 @@
 
 namespace base {
 
-  bool file_exists(const string& path);
-  bool directory_exists(const string& path);
+  bool is_file(const string& path);
+  bool is_directory(const string& path);
 
   void delete_file(const string& path);
 

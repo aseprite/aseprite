@@ -12,7 +12,7 @@
 
 namespace base {
 
-bool file_exists(const string& path)
+bool is_file(const string& path)
 {
   DWORD attr = ::GetFileAttributes(from_utf8(path).c_str());
 
@@ -22,7 +22,7 @@ bool file_exists(const string& path)
           !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool directory_exists(const string& path)
+bool is_directory(const string& path)
 {
   DWORD attr = ::GetFileAttributes(from_utf8(path).c_str());
 

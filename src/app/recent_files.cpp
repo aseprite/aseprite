@@ -43,7 +43,7 @@ RecentFiles::RecentFiles()
     sprintf(buf, "Filename%02d", c);
 
     const char* filename = get_config_string("RecentFiles", buf, NULL);
-    if (filename && *filename && base::file_exists(filename))
+    if (filename && *filename && base::is_file(filename))
       m_files.addItem(filename);
   }
 

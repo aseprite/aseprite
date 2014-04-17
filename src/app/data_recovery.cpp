@@ -41,7 +41,7 @@ DataRecovery::DataRecovery(Context* context)
   // Check if there is already data to recover
   const base::string existent_data_path = get_config_string("DataRecovery", "Path", "");
   if (!existent_data_path.empty() &&
-      base::directory_exists(existent_data_path)) {
+      base::is_directory(existent_data_path)) {
     // Load the backup data.
     m_tempDir = new base::TempDir();
     m_tempDir->attach(existent_data_path);

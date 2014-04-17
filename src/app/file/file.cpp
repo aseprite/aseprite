@@ -152,7 +152,7 @@ FileOp* fop_to_load_document(const char* filename, int flags)
   PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
   // Does file exist?
-  if (!base::file_exists(filename)) {
+  if (!base::is_file(filename)) {
     fop_error(fop, "File not found: \"%s\"\n", filename);
     goto done;
   }

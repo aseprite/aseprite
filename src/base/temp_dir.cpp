@@ -28,7 +28,7 @@ TempDir::TempDir(const string& appName)
     m_path = join_path(get_temp_path(),
                        appName + convert_to<string>(i));
 
-    if (!directory_exists(m_path)) {
+    if (!is_directory(m_path)) {
       make_directory(m_path);
       break;
     }
@@ -57,7 +57,7 @@ void TempDir::attach(const string& path)
 {
   remove();
 
-  ASSERT(directory_exists(path));
+  ASSERT(is_directory(path));
   m_path = path;
 }
 

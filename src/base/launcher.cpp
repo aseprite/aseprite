@@ -92,7 +92,7 @@ bool open_folder(const std::string& file)
 {
 #ifdef WIN32
   int ret;
-  if (base::directory_exists(file)) {
+  if (base::is_directory(file)) {
     ret = win32_shell_execute(NULL, L"explorer",
       (L"/n,/e,\"" + base::from_utf8(file) + L"\"").c_str());
   }
