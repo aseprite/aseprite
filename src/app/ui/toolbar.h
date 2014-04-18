@@ -21,6 +21,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/slot.h"
 #include "gfx/point.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -28,6 +29,7 @@
 #include <map>
 
 namespace ui {
+  class CloseEvent;
   class PopupWindow;
   class TipWindow;
 }
@@ -92,6 +94,8 @@ namespace app {
 
     ui::Timer m_tipTimer;
     bool m_tipOpened;
+
+    Slot1<void, ui::CloseEvent&>* m_closeSlot;
   };
 
 } // namespace app
