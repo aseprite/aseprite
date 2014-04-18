@@ -60,8 +60,6 @@ public:
 
   ToolGroup* toolGroup() { return m_group; }
 
-  void saveOverlappedArea(const Rect& bounds);
-
   Signal1<void, Tool*> ToolSelected;
 
 protected:
@@ -75,7 +73,6 @@ private:
   ToolGroup* m_group;
   Tool* m_hotTool;
   ToolBar* m_toolbar;
-  BITMAP* m_overlapped;
 };
 
 static Size getToolIconSize(Widget* widget)
@@ -460,18 +457,6 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.x -= w;
   rc.w = w;
 
-  // Redraw the overlapped area and save it to use it in the ToolStrip::onProcessMessage(kPaintMessage)
-  {
-    getManager()->invalidateRect(rc);
-
-    // Flush kPaintMessage messages and send them
-    getManager()->flushRedraw();
-    getManager()->dispatchMessages();
-
-    // Save the area
-    toolstrip->saveOverlappedArea(rc);
-  }
-
   // Set hotregion of popup window
   Region rgn(gfx::Rect(rc).enlarge(16*jguiscale()));
   rgn.createUnion(rgn, Region(getBounds()));
@@ -645,27 +630,12 @@ ToolBar::ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   m_group = group;
   m_hotTool = NULL;
   m_toolbar = toolbar;
-  m_overlapped = NULL;
 
   setDoubleBuffered(true);
 }
 
 ToolBar::ToolStrip::~ToolStrip()
 {
-  if (m_overlapped)
-    destroy_bitmap(m_overlapped);
-}
-
-void ToolBar::ToolStrip::saveOverlappedArea(const Rect& bounds)
-{
-  if (m_overlapped)
-    destroy_bitmap(m_overlapped);
-
-  m_overlapped = create_bitmap(bounds.w, bounds.h);
-
-  blit(ji_screen, m_overlapped,
-       bounds.x, bounds.y, 0, 0,
-       bounds.w, bounds.h);
 }
 
 bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
@@ -765,12 +735,6 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
   ToolBox* toolbox = App::instance()->getToolBox();
   Rect toolrc;
   int index = 0;
-
-  // Get the chunk of screen where we will draw
-  g->blit(m_overlapped, // TODO replace this trick drawing the overlapped widgets in the Graphics before
-    bounds.x - clip.x,
-    bounds.y - clip.y,
-    0, 0, clip.w, clip.h);
 
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
