@@ -92,14 +92,23 @@ namespace ui {
     virtual LayoutIO* onGetLayoutIO();
 
   private:
+    void generateMouseMessages();
+    void generateSetCursorMessage(const gfx::Point& mousePos);
+    void generateKeyMessages();
+    void generateMessagesFromSheEvents();
+    void handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, int delta);
+    void handleWindowZOrder();
+
     void pumpQueue();
-    void generateSetCursorMessage();
     static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(MessageType type, Widget* destination);
-    static Message* newMouseMessage(MessageType type, Widget* destination,
-                                    MouseButtons mouseButtons);
+    static Message* newMouseMessage(MessageType type,
+      Widget* widget, gfx::Point mousePos, MouseButtons buttons, int delta = 0);
     static MouseButtons currentMouseButtons(int antique);
     void broadcastKeyMsg(Message* msg);
 
@@ -113,6 +122,9 @@ namespace ui {
     // This member is used to make freeWidget() a no-op when we
     // restack a window if the user clicks on it.
     Widget* m_lockedWindow;
+
+    // Current pressed buttons.
+    MouseButtons m_mouseButtons;
   };
 
 } // namespace ui

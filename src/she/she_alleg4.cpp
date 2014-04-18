@@ -11,6 +11,7 @@
 #include "she.h"
 
 #include "base/compiler_specific.h"
+#include "base/concurrent_queue.h"
 #include "base/string.h"
 
 #include <allegro.h>
@@ -18,6 +19,9 @@
 
 #ifdef WIN32
   #include <winalleg.h>
+
+  #include <windowsx.h>
+  #include <commctrl.h>
 
   #if defined STRICT || defined __GNUC__
     typedef WNDPROC wndproc_t;
@@ -36,6 +40,7 @@
 
 #include <cassert>
 #include <vector>
+#include <list>
 
 #define DISPLAY_FLAG_FULL_REFRESH     1
 #define DISPLAY_FLAG_WINDOW_RESIZE    2
@@ -153,20 +158,19 @@ public:
   }
 
   void getEvent(Event& event) {
-    if (m_events.size() > 0) {
-      event = m_events[0];
-      m_events.erase(m_events.begin());
-    }
-    else
+    if (!m_events.try_pop(event))
       event.setType(Event::None);
   }
 
   void queueEvent(const Event& event) {
-    m_events.push_back(event);
+    m_events.push(event);
   }
 
 private:
-  std::vector<Event> m_events;
+  // We need a concurrent queue because events are generated in one
+  // thread (the thread created by Allegro 4 for the HWND), and
+  // consumed in the other thread (the main/program logic thread).
+  base::concurrent_queue<Event> m_events;
 };
 
 #if WIN32
@@ -174,35 +178,137 @@ namespace {
 
 Display* unique_display = NULL;
 wndproc_t base_wndproc = NULL;
+bool display_has_mouse = false;
+int display_scale;
+
+static void queue_event(Event& ev)
+{
+  static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
+}
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   switch (msg) {
 
-    case WM_DROPFILES:
-      {
-        HDROP hdrop = (HDROP)(wparam);
-        Event::Files files;
+    case WM_DROPFILES: {
+      HDROP hdrop = (HDROP)(wparam);
+      Event::Files files;
 
-        int count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
-        for (int index=0; index<count; ++index) {
-          int length = DragQueryFile(hdrop, index, NULL, 0);
-          if (length > 0) {
-            std::vector<TCHAR> str(length+1);
-            DragQueryFile(hdrop, index, &str[0], str.size());
-            files.push_back(base::to_utf8(&str[0]));
-          }
+      int count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+      for (int index=0; index<count; ++index) {
+        int length = DragQueryFile(hdrop, index, NULL, 0);
+        if (length > 0) {
+          std::vector<TCHAR> str(length+1);
+          DragQueryFile(hdrop, index, &str[0], str.size());
+          files.push_back(base::to_utf8(&str[0]));
         }
-
-        DragFinish(hdrop);
-
-        Event ev;
-        ev.setType(Event::DropFiles);
-        ev.setFiles(files);
-        static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())
-          ->queueEvent(ev);
       }
+
+      DragFinish(hdrop);
+
+      Event ev;
+      ev.setType(Event::DropFiles);
+      ev.setFiles(files);
+      queue_event(ev);
       break;
+    }
+
+    case WM_MOUSEMOVE: {
+      Event ev;
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+
+      if (!display_has_mouse) {
+        display_has_mouse = true;
+
+        ev.setType(Event::MouseEnter);
+        queue_event(ev);
+
+        // Track mouse to receive WM_MOUSELEAVE message.
+        TRACKMOUSEEVENT tme;
+        tme.cbSize = sizeof(TRACKMOUSEEVENT);
+        tme.dwFlags = TME_LEAVE;
+        tme.hwndTrack = hwnd;
+        _TrackMouseEvent(&tme);
+      }
+
+      ev.setType(Event::MouseMove);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_MOUSELEAVE: {
+      display_has_mouse = false;
+
+      Event ev;
+      ev.setType(Event::MouseLeave);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN: {
+      Event ev;
+      ev.setType(Event::MouseDown);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONDOWN ? Event::LeftButton:
+        msg == WM_RBUTTONDOWN ? Event::RightButton:
+        msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP: {
+      Event ev;
+      ev.setType(Event::MouseUp);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONUP ? Event::LeftButton:
+        msg == WM_RBUTTONUP ? Event::RightButton:
+        msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK: {
+      Event ev;
+      ev.setType(Event::MouseDoubleClick);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
+        msg == WM_RBUTTONDBLCLK ? Event::RightButton:
+        msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_MOUSEWHEEL: {
+      RECT rc;
+      ::GetWindowRect(hwnd, &rc);
+
+      Event ev;
+      ev.setType(Event::MouseWheel);
+      ev.setPosition((gfx::Point(
+            GET_X_LPARAM(lparam),
+            GET_Y_LPARAM(lparam)) - gfx::Point(rc.left, rc.top))
+        / display_scale);
+      ev.setDelta(((short)HIWORD(wparam)) / WHEEL_DELTA);
+      queue_event(ev);
+      break;
+    }
 
   }
   return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
@@ -306,6 +412,7 @@ public:
 
   void setScale(int scale) OVERRIDE {
     ASSERT(scale >= 1);
+    display_scale = scale;
 
     if (m_scale == scale)
       return;
@@ -403,7 +510,12 @@ public:
   }
 
   Capabilities capabilities() const {
-    return kCanResizeDisplayCapability;
+    return (Capabilities)
+      (kCanResizeDisplayCapability
+#ifdef WIN32
+        | kMouseEventsCapability
+#endif
+       );
   }
 
   Display* createDisplay(int width, int height, int scale) {

@@ -84,7 +84,7 @@ bool IntEntry::onProcessMessage(Message* msg)
 
           MouseMessage mouseMsg2(kMouseDownMessage,
             mouseMsg->buttons(),
-            mouseMsg->position());
+            mouseMsg->position(), 0);
           m_slider->sendMessage(&mouseMsg2);
         }
       }
@@ -93,7 +93,7 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kMouseWheelMessage:
       if (isEnabled()) {
         int oldValue = getValue();
-        int newValue = oldValue + jmouse_z(0) - jmouse_z(1);
+        int newValue = oldValue + static_cast<MouseMessage*>(msg)->wheelDelta();
         newValue = MID(m_min, newValue, m_max);
         if (newValue != oldValue) {
           setValue(newValue);

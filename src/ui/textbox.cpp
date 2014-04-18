@@ -134,7 +134,7 @@ bool TextBox::onProcessMessage(Message* msg)
       if (view) {
         gfx::Point scroll = view->getViewScroll();
 
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * getTextHeight()*3;
+        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
 
         view->setViewScroll(scroll);
       }

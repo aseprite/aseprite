@@ -739,7 +739,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = jmouse_z(1) - jmouse_z(0);
+        int dz = -static_cast<MouseMessage*>(msg)->wheelDelta();
         int dx = 0;
         int dy = 0;
 

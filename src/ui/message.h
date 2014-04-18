@@ -101,20 +101,22 @@ namespace ui {
   class MouseMessage : public Message
   {
   public:
-    MouseMessage(MessageType type, MouseButtons buttons, const gfx::Point& pos)
-      : Message(type), m_buttons(buttons), m_pos(pos) {
+    MouseMessage(MessageType type, MouseButtons buttons, const gfx::Point& pos, int delta)
+      : Message(type), m_buttons(buttons), m_pos(pos), m_delta(delta) {
     }
 
     MouseButtons buttons() const { return m_buttons; }
     bool left() const { return (m_buttons & kButtonLeft) == kButtonLeft; }
     bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
     bool middle() const { return (m_buttons & kButtonMiddle) == kButtonMiddle; }
+    int wheelDelta() const { return m_delta; }
 
     const gfx::Point& position() const { return m_pos; }
 
   private:
     MouseButtons m_buttons;     // Pressed buttons
     gfx::Point m_pos;           // Mouse position
+    int m_delta;                // Wheel axis variation
   };
 
   class TimerMessage : public Message

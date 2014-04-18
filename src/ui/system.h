@@ -57,6 +57,9 @@ namespace ui {
 
   bool jmouse_poll();
 
+  void _internal_set_mouse_position(const gfx::Point& newPos);
+  void _internal_set_mouse_buttons(MouseButtons buttons);
+
   gfx::Point get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);
 

@@ -191,7 +191,7 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (isEnabled()) {
-        int value = m_value + jmouse_z(0) - jmouse_z(1);
+        int value = m_value + static_cast<MouseMessage*>(msg)->wheelDelta();
 
         value = MID(m_min, value, m_max);
 

@@ -255,7 +255,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3 * m_boxsize;
+        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * 3 * m_boxsize;
         view->setViewScroll(scroll);
       }
       break;

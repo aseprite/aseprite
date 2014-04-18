@@ -215,6 +215,7 @@ if(WIN32)
     shlwapi
     psapi
     wininet
+    comctl32
     dbghelp
     )
 

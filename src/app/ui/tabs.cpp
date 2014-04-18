@@ -286,7 +286,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseWheelMessage: {
-      int dx = (jmouse_z(1) - jmouse_z(0)) * getBounds().w/6;
+      int dx = -static_cast<MouseMessage*>(msg)->wheelDelta() * getBounds().w/6;
       // setScrollX(m_scrollX+dx);
 
       m_begScrollX = m_scrollX;

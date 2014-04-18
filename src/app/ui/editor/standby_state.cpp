@@ -262,7 +262,7 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
-  int dz = jmouse_z(1) - jmouse_z(0);
+  int dz = -msg->wheelDelta();
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 

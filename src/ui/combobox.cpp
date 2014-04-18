@@ -436,8 +436,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
-            mouseMsg->buttons(),
-            mouseMsg->position());
+            mouseMsg->buttons(), mouseMsg->position(), 0);
           pick->sendMessage(&mouseMsg2);
           return true;
         }
