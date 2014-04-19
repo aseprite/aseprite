@@ -155,6 +155,8 @@ TipWindow::TipWindow(const char *text)
   : PopupWindow(text, kCloseOnClickInOtherWindow)
   , m_arrowAlign(0)
 {
+  setTransparent(true);
+
   makeFixed();
   initTheme();
 }

@@ -32,6 +32,10 @@ namespace ui {
     Graphics(BITMAP* bmp, int dx, int dy);
     ~Graphics();
 
+    BITMAP* getInternalBitmap() { return m_bmp; }
+    int getInternalDeltaX() { return m_dx; }
+    int getInternalDeltaY() { return m_dy; }
+
     gfx::Rect getClipBounds() const;
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);

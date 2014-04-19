@@ -913,7 +913,8 @@ void SkinTheme::paintBox(PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(BGCOLOR, g->getClipBounds());
+  if (!is_transparent(BGCOLOR))
+    g->fillRect(BGCOLOR, g->getClipBounds());
 }
 
 void SkinTheme::paintButton(PaintEvent& ev)
@@ -1039,7 +1040,8 @@ void SkinTheme::paintGrid(PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(BGCOLOR, g->getClipBounds());
+  if (!is_transparent(BGCOLOR))
+    g->fillRect(BGCOLOR, g->getClipBounds());
 }
 
 void SkinTheme::paintEntry(PaintEvent& ev)
@@ -1136,7 +1138,9 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   ui::Color fg = widget->getTextColor();
   Rect text, rc = widget->getClientBounds();
 
-  g->fillRect(bg, rc);
+  if (!is_transparent(bg))
+    g->fillRect(bg, rc);
+
   rc.shrink(widget->getBorder());
 
   widget->getTextIconInfo(NULL, &text);
@@ -1639,8 +1643,10 @@ void SkinTheme::paintView(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   View* widget = static_cast<View*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
+  ui::Color bg = BGCOLOR;
 
-  g->fillRect(BGCOLOR, bounds);
+  if (!is_transparent(bg))
+    g->fillRect(bg, bounds);
 
   draw_bounds_nw(g, bounds,
     (widget->hasFocus() ?
@@ -1687,8 +1693,10 @@ void SkinTheme::paintViewViewport(PaintEvent& ev)
 {
   Viewport* widget = static_cast<Viewport*>(ev.getSource());
   Graphics* g = ev.getGraphics();
+  ui::Color bg = BGCOLOR;
 
-  g->fillRect(BGCOLOR, widget->getClientBounds());
+  if (!is_transparent(bg))
+    g->fillRect(bg, widget->getClientBounds());
 }
 
 void SkinTheme::paintWindow(PaintEvent& ev)
@@ -1720,11 +1728,14 @@ void SkinTheme::paintWindow(PaintEvent& ev)
 
 void SkinTheme::paintPopupWindow(PaintEvent& ev)
 {
+  Widget* widget = static_cast<Widget*>(ev.getSource());
   Window* window = static_cast<Window*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   gfx::Rect pos = window->getClientBounds();
 
-  get_style("menubox")->paint(g, pos, NULL, Style::State());
+  if (!is_transparent(BGCOLOR))
+    get_style("menubox")->paint(g, pos, NULL, Style::State());
+
   pos.shrink(window->getBorder());
 
   g->drawString(window->getText(),
@@ -1814,8 +1825,12 @@ ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
   ui::Color c = widget->getBgColor();
   bool decorative = widget->isDecorative();
 
-  return (!is_transparent(c) ? c: (decorative ? getColor(ThemeColor::Selected):
-                                                getColor(ThemeColor::Face)));
+  if (!is_transparent(c) || widget->getType() == kWindowWidget)
+    return c;
+  else if (decorative)
+    return getColor(ThemeColor::Selected);
+  else
+    return getColor(ThemeColor::Face);
 }
 
 void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,

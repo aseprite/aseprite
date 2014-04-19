@@ -76,6 +76,7 @@ Widget::Widget(WidgetType type)
 
   m_preferredSize = NULL;
   m_doubleBuffered = false;
+  m_transparent = false;
 }
 
 Widget::~Widget()
@@ -655,6 +656,9 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
           it != windows_list.rend()) {
         // Subtract the rectangles
         for (++it; it != windows_list.rend(); ++it) {
+          if (!(*it)->isVisible())
+            continue;
+
           Region reg1;
           (*it)->getRegion(reg1);
           region.createSubtraction(region, reg1);
@@ -917,7 +921,79 @@ void Widget::flushRedraw()
   }
 }
 
-bool Widget::isDoubleBuffered()
+void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
+{
+  if (drawRegion.isEmpty())
+    return;
+
+  std::queue<Widget*> processing;
+  processing.push(this);
+
+  while (!processing.empty()) {
+    Widget* widget = processing.front();
+    processing.pop();
+
+    ASSERT_VALID_WIDGET(widget);
+
+    // If the widget is hidden
+    if (!widget->isVisible())
+      continue;
+
+    UI_FOREACH_WIDGET(widget->getChildren(), it) {
+      Widget* child = *it;
+      processing.push(child);
+    }
+
+    // Intersect drawRegion with widget's drawable region.
+    Region region;
+    widget->getDrawableRegion(region, kCutTopWindows);
+    region.createIntersection(region, drawRegion);
+
+    Graphics graphics2(graphics->getInternalBitmap(),
+      widget->getBounds().x,
+      widget->getBounds().y);
+    graphics2.setFont(widget->getFont());
+
+    for (Region::const_iterator
+           it = region.begin(),
+           end = region.end(); it != end; ++it) {
+      IntersectClip clip(&graphics2, Rect(*it).offset(
+          -widget->getBounds().x,
+          -widget->getBounds().y));
+      widget->paintEvent(&graphics2);
+    }
+  }
+}
+
+bool Widget::paintEvent(Graphics* graphics)
+{
+  // For transparent widgets we have to draw the parent first.
+  if (isTransparent()) {
+#if _DEBUG
+    // In debug mode we can fill the area with Red so we know if the
+    // we are drawing the parent correctly.
+    graphics->fillRect(ui::rgba(255, 0, 0), getClientBounds());
+#endif _DEBUG
+
+    this->flags |= JI_HIDDEN;
+
+    gfx::Region rgn(getParent()->getBounds());
+    rgn.createIntersection(rgn,
+      gfx::Region(
+        graphics->getClipBounds().offset(
+          graphics->getInternalDeltaX(),
+          graphics->getInternalDeltaY())));
+    getParent()->paint(graphics, rgn);
+
+    this->flags &= ~JI_HIDDEN;
+  }
+
+  PaintEvent ev(this, graphics);
+  onPaint(ev); // Fire onPaint event
+  return ev.isPainted();
+}
+
+bool Widget::isDoubleBuffered() const
 {
   return m_doubleBuffered;
 }
@@ -925,6 +1001,16 @@ bool Widget::isDoubleBuffered()
 void Widget::setDoubleBuffered(bool doubleBuffered)
 {
   m_doubleBuffered = doubleBuffered;
+}
+
+bool Widget::isTransparent() const
+{
+  return m_transparent;
+}
+
+void Widget::setTransparent(bool transparent)
+{
+  m_transparent = transparent;
 }
 
 void Widget::invalidate()
@@ -1217,9 +1303,7 @@ bool Widget::onProcessMessage(Message* msg)
       ASSERT(ptmsg->rect().h > 0);
 
       GraphicsPtr graphics = getGraphics(toClient(ptmsg->rect()));
-      PaintEvent ev(this, graphics);
-      onPaint(ev); // Fire onPaint event
-      return ev.isPainted();
+      return paintEvent(graphics);
     }
 
     case kKeyDownMessage:

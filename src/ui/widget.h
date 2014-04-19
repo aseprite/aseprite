@@ -296,8 +296,11 @@ namespace ui {
     // REFRESH ISSUES
     // ===============================================================
 
-    bool isDoubleBuffered();
+    bool isDoubleBuffered() const;
     void setDoubleBuffered(bool doubleBuffered);
+
+    bool isTransparent() const;
+    void setTransparent(bool transparent);
 
     void invalidate();
     void invalidateRect(const gfx::Rect& rect);
@@ -376,6 +379,9 @@ namespace ui {
     virtual void onSetBgColor();
 
   private:
+    void paint(Graphics* graphics, const gfx::Region& drawRegion);
+    bool paintEvent(Graphics* graphics);
+
     base::string m_id;            // Widget's id
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
@@ -387,7 +393,8 @@ namespace ui {
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_preferredSize;
-    bool m_doubleBuffered : 1;
+    bool m_doubleBuffered;
+    bool m_transparent;
   };
 
 } // namespace ui

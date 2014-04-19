@@ -462,6 +462,8 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rgn.createUnion(rgn, Region(getBounds()));
   m_popupWindow->setHotRegion(rgn);
 
+  m_popupWindow->setTransparent(true);
+  m_popupWindow->setBgColor(ui::ColorNone);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);
@@ -632,6 +634,7 @@ ToolBar::ToolStrip::ToolStrip(ToolGroup* group, ToolBar* toolbar)
   m_toolbar = toolbar;
 
   setDoubleBuffered(true);
+  setTransparent(true);
 }
 
 ToolBar::ToolStrip::~ToolStrip()
@@ -730,7 +733,6 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
-  gfx::Rect clip = g->getClipBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   ToolBox* toolbox = App::instance()->getToolBox();
   Rect toolrc;
