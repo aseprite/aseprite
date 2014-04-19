@@ -1724,10 +1724,7 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect pos = window->getClientBounds();
 
-  g->drawRect(getColor(ThemeColor::PopupWindowBorder), pos);
-  pos.shrink(1);
-
-  g->fillRect(window->getBgColor(), pos);
+  get_style("menubox")->paint(g, pos, NULL, Style::State());
   pos.shrink(window->getBorder());
 
   g->drawString(window->getText(),
