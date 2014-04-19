@@ -103,6 +103,7 @@
     <cursor id="rotate_bl"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
     <cursor id="rotate_br"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
     <cursor id="eyedropper"     x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
+    <cursor id="magnifier"      x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
   </cursors>
 
   <tools>
@@ -120,6 +121,7 @@
     <tool id="eyedropper"               x="160" y="32" w="16" h="16" />
     <tool id="hand"                     x="176" y="32" w="16" h="16" />
     <tool id="move"                     x="192" y="32" w="16" h="16" />
+    <tool id="zoom"                     x="208" y="32" w="16" h="16" />
 
     <tool id="paint_bucket"             x="144" y="48" w="16" h="16" />
 

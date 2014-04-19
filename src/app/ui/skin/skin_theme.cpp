@@ -135,7 +135,8 @@ static const char* cursor_names[kCursorTypes] = {
   "rotate_bl",                  // kRotateBLCursor
   "rotate_b",                   // kRotateBCursor
   "rotate_br",                  // kRotateBRCursor
-  "eyedropper"                  // kEyedropperCursor
+  "eyedropper",                 // kEyedropperCursor
+  "magnifier"                   // kMagnifierCursor
 };
 
 SkinTheme::SkinTheme()

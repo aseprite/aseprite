@@ -118,8 +118,9 @@ public:
                         m_tool->getText().c_str(),
                         ((getInk()->isSelection() ||
                           getInk()->isEyedropper() ||
-                          getInk()->isScrollMovement()) ? undo::DoesntModifyDocument:
-                                                          undo::ModifyDocument))
+                          getInk()->isScrollMovement() ||
+                          getInk()->isZoom()) ? undo::DoesntModifyDocument:
+                                                undo::ModifyDocument))
     , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
     , m_shadeTable(NULL)
   {

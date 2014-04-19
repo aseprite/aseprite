@@ -55,6 +55,7 @@ namespace app {
     // Returns true and changes to ScrollingState when "msg" says "the
     // user wants to scroll".
     bool checkForScroll(Editor* editor, ui::MouseMessage* msg);
+    bool checkForZoom(Editor* editor, ui::MouseMessage* msg);
 
     class Decorator : public EditorDecorator {
     public:

@@ -43,6 +43,7 @@
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
+#include "app/ui/editor/zooming_state.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/misc.h"
@@ -137,6 +138,24 @@ bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
     return false;
 }
 
+bool StandbyState::checkForZoom(Editor* editor, MouseMessage* msg)
+{
+  UIContext* context = UIContext::instance();
+  tools::Tool* currentTool = editor->getCurrentEditorTool();
+  tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
+
+  // Start scroll loop
+  if (clickedInk->isZoom()) {
+    EditorStatePtr newState(new ZoomingState());
+    editor->setState(newState);
+
+    newState->onMouseDown(editor, msg);
+    return true;
+  }
+  else
+    return false;
+}
+
 bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   if (editor->hasCapture())
@@ -155,7 +174,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   context->setActiveView(editor->getDocumentView());
 
   // Start scroll loop
-  if (checkForScroll(editor, msg))
+  if (checkForScroll(editor, msg) || checkForZoom(editor, msg))
     return true;
 
   // Move cel X,Y coordinates
@@ -407,6 +426,11 @@ bool StandbyState::onSetCursor(Editor* editor)
     else if (current_ink->isEyedropper()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kEyedropperCursor);
+      return true;
+    }
+    else if (current_ink->isZoom()) {
+      editor->hideDrawingCursor();
+      jmouse_set_cursor(kMagnifierCursor);
       return true;
     }
     else if (current_ink->isScrollMovement()) {

@@ -172,6 +172,7 @@ add_library(app-lib
   ui/editor/standby_state.cpp
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
+  ui/editor/zooming_state.cpp
   ui/file_list.cpp
   ui/file_selector.cpp
   ui/hex_color_entry.cpp

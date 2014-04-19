@@ -36,7 +36,8 @@ namespace ui {
     kRotateBCursor,
     kRotateBRCursor,
     kEyedropperCursor,
-    kLastCursorType = kEyedropperCursor,
+    kMagnifierCursor,
+    kLastCursorType = kMagnifierCursor,
     kCursorTypes
   };
 

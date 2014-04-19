@@ -52,6 +52,9 @@ namespace app {
       // Returns true if this ink moves the scroll only
       virtual bool isScrollMovement() const { return false; }
 
+      // Returns true if this ink is zoom
+      virtual bool isZoom() const { return false; }
+
       // Returns true if this ink moves cels
       virtual bool isCelMovement() const { return false; }
 

@@ -48,6 +48,7 @@ namespace app {
       extern const char* ReplaceBgWithFg;
       extern const char* PickFg;
       extern const char* PickBg;
+      extern const char* Zoom;
       extern const char* Scroll;
       extern const char* Move;
       extern const char* Blur;
