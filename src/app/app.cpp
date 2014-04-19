@@ -45,6 +45,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/recent_files.h"
+#include "app/resource_finder.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -76,6 +77,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -146,6 +148,14 @@ App::App(int argc, const char* argv[])
   base::string palFile(!options.paletteFileName().empty() ?
                        options.paletteFileName():
                        base::string(get_config_string("GfxMode", "Palette", "")));
+
+  if (palFile.empty()) {
+    // Try to use a default pixel art palette.
+    ResourceFinder rf;
+    rf.includeDataDir("palettes/db32.gpl");
+    if (rf.findFirst())
+      palFile = rf.filename();
+  }
 
   if (!palFile.empty()) {
     PRINTF("Loading custom palette file: %s\n", palFile.c_str());
