@@ -1120,13 +1120,25 @@ bool Editor::isInsideSelection()
     m_document->getMask()->containsPoint(x, y);
 }
 
-void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
+void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   int x, y;
-  bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", true);
+  bool centerMouse;
   int mx, my;
+
+  switch (zoomBehavior) {
+    case kCofiguredZoomBehavior:
+      centerMouse = get_config_bool("Editor", "CenterMouseInZoom", true);
+      break;
+    case kCenterOnZoom:
+      centerMouse = true;
+      break;
+    case kDontCenterOnZoom:
+      centerMouse = false;
+      break;
+  }
 
   hideDrawingCursor();
   screenToEditor(mouse_x, mouse_y, &x, &y);

@@ -70,6 +70,12 @@ namespace app {
       kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag,
     };
 
+    enum ZoomBehavior {
+      kCofiguredZoomBehavior,
+      kCenterOnZoom,
+      kDontCenterOnZoom,
+    };
+
     Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
@@ -157,7 +163,7 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
-    void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
+    void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior);
 
     bool processKeysToSetZoom(ui::KeyMessage* msg);
 

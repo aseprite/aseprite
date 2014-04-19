@@ -62,7 +62,8 @@ bool Editor::processKeysToSetZoom(KeyMessage* msg)
 
     // Change zoom
     if (zoom >= 0) {
-      setZoomAndCenterInMouse(zoom, jmouse_x(0), jmouse_y(0));
+      setZoomAndCenterInMouse(zoom, jmouse_x(0), jmouse_y(0),
+        Editor::kCofiguredZoomBehavior);
       return true;
     }
   }

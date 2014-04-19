@@ -356,7 +356,9 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       int zoom = MID(MIN_ZOOM, editor->getZoom()-dz, MAX_ZOOM);
       if (editor->getZoom() != zoom)
-        editor->setZoomAndCenterInMouse(zoom, mouseMsg->position().x, mouseMsg->position().y);
+        editor->setZoomAndCenterInMouse(zoom,
+          mouseMsg->position().x, mouseMsg->position().y,
+          Editor::kDontCenterOnZoom);
       break;
     }
 
