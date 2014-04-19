@@ -61,6 +61,7 @@ static std::map<std::string, ThemeColor::Type> color_mapping;
 const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
 
 const char* kWindowFaceColorId = "window_face";
+const char* kSeparatorLabelColorId = "separator_label";
 
 // Controls the "X" button in a window to close it.
 class WindowCloseButton : public Button {
@@ -1382,7 +1383,7 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
         bounds.y2() - widget->border_width.b/2 + h));
 
     drawTextString(g, NULL,
-      getColor(ThemeColor::Selected), BGCOLOR, false,
+      getColorById(kSeparatorLabelColorId), BGCOLOR, false,
       widget, r, 0);
   }
 }

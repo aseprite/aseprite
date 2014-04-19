@@ -8,7 +8,8 @@
     <color id="disabled" value="#968275" />
     <color id="face" value="#d3cbbe" />
     <color id="hot_face" value="#faf0e6" />
-    <color id="selected" value="#2c4c91" />
+    <color id="selected" value="#ff5555" />
+    <color id="separator_label" value="#2c4c91" />
     <color id="background" value="#ffffff" />
     <color id="desktop" value="#968275" />
     <color id="textbox_text" value="#000000" />
@@ -56,11 +57,11 @@
     <color id="tooltip_text" value="#000000" />
     <color id="tooltip_face" value="#ffff7d" />
     <color id="filelist_even_row_text" value="#000000" />
-    <color id="filelist_even_row_face" value="#f0f0f0" />
+    <color id="filelist_even_row_face" value="#ffffff" />
     <color id="filelist_odd_row_text" value="#000000" />
     <color id="filelist_odd_row_face" value="#ffffff" />
     <color id="filelist_selected_row_text" value="#ffffff" />
-    <color id="filelist_selected_row_face" value="#2c4c91" />
+    <color id="filelist_selected_row_face" value="#ff5555" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
     <color id="timeline_normal" value="#c6c6c6" />
