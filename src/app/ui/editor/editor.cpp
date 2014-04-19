@@ -1125,7 +1125,7 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   int x, y;
-  bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", false);
+  bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", true);
   int mx, my;
 
   hideDrawingCursor();
@@ -1152,9 +1152,6 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 
     updateEditor();
     setEditorScroll(x, y, use_refresh_region);
-
-    if (centerMouse)
-      ui::set_mouse_position(gfx::Point(mx, my));
 
     // Notify observers
     m_observers.notifyScrollChanged(this);
