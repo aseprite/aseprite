@@ -6,7 +6,7 @@
     <view id="view" expansive="true" />
     <hbox>
       <hbox expansive="true" />
-      <button id="load" text="Load" width="60" />
+      <button id="load" text="Load" width="80" />
       <button id="openfolder" text="Open Folder" width="60" />
     </hbox>
   </vbox>

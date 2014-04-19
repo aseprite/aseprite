@@ -62,6 +62,11 @@ void PalettePopup::showPopup(gfx::Rect& bounds)
   m_load->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
+  if (!UIContext::instance()->getActiveDocument())
+    m_load->setText("Set as Default");
+  else
+    m_load->setText("Load");
+
   moveWindow(bounds);
   openWindow();
 }
