@@ -45,12 +45,6 @@ namespace ui {
 
   // Position and geometry
 
-  void jwidget_get_texticon_info(Widget* widget,
-                                 gfx::Rect* box,
-                                 gfx::Rect* text,
-                                 gfx::Rect* icon,
-                                 int icon_align, int icon_w, int icon_h);
-
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
 
@@ -291,6 +285,12 @@ namespace ui {
     gfx::Rect toClient(const gfx::Rect& rc) const {
       return gfx::Rect(rc).offset(-m_bounds.x, -m_bounds.y);
     }
+
+    void getTextIconInfo(
+      gfx::Rect* box,
+      gfx::Rect* text = NULL,
+      gfx::Rect* icon = NULL,
+      int icon_align = 0, int icon_w = 0, int icon_h = 0);
 
     // ===============================================================
     // REFRESH ISSUES

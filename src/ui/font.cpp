@@ -576,7 +576,6 @@ int ji_font_char_len(FONT* f, int chr)
   return f->vtable->char_length(f, chr);
 }
 
-// see jdraw_text
 int ji_font_text_len(struct FONT* f, const char *s)
 {
   int in_pos = 0;
@@ -980,7 +979,6 @@ int ji_font_char_len(FONT* f, int chr)
   return f->vtable->char_length(f, chr);
 }
 
-// see jdraw_text
 int ji_font_text_len(struct FONT* f, const char* s)
 {
   int in_pos = 0;

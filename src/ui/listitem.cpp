@@ -23,6 +23,7 @@ using namespace gfx;
 ListItem::ListItem(const base::string& text)
   : Widget(kListItemWidget)
 {
+  setDoubleBuffered(true);
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);
   initTheme();

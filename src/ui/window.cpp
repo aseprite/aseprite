@@ -595,9 +595,9 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     set_clip_rect(ji_screen,
                   man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
 
-    ji_move_region(moveable_region,
-                   getBounds().x - old_pos.x,
-                   getBounds().y - old_pos.y);
+    ui::_move_region(moveable_region,
+      getBounds().x - old_pos.x,
+      getBounds().y - old_pos.y);
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
   }

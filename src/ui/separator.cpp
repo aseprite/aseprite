@@ -23,7 +23,9 @@ Separator::Separator(const base::string& text, int align)
  : Widget(kSeparatorWidget)
 {
   setAlign(align);
-  setText(text);
+  if (!text.empty())
+    setText(text);
+
   initTheme();
 }
 

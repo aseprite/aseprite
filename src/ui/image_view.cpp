@@ -31,8 +31,8 @@ ImageView::ImageView(BITMAP* bmp, int align)
 void ImageView::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
-  jwidget_get_texticon_info(this, &box, NULL, NULL,
-                            getAlign(), m_bmp->w, m_bmp->h);
+  getTextIconInfo(&box, NULL, NULL,
+    getAlign(), m_bmp->w, m_bmp->h);
 
   ev.setPreferredSize(gfx::Size(border_width.l + box.w + border_width.r,
                                 border_width.t + box.h + border_width.b));
@@ -43,14 +43,9 @@ void ImageView::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
   gfx::Rect icon;
-  jwidget_get_texticon_info(this, NULL, NULL, &icon,
-                            getAlign(), m_bmp->w, m_bmp->h);
+  getTextIconInfo(NULL, NULL, &icon, getAlign(), m_bmp->w, m_bmp->h);
 
   g->fillRect(getBgColor(), bounds);
-
-  icon.x -= getBounds().x;
-  icon.y -= getBounds().y;
-
   g->blit(m_bmp, 0, 0, icon.x, icon.y, icon.w, icon.h);
 }
 

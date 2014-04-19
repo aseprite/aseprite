@@ -16,6 +16,7 @@ struct BITMAP;
 
 namespace ui {
 
+  class Graphics;
   class Widget;
   class Window;
 
@@ -29,7 +30,7 @@ namespace ui {
 
   // theme.cpp
 
-  void drawTextBox(BITMAP* bmp, Widget* textbox,
+  void drawTextBox(Graphics* g, Widget* textbox,
                    int* w, int* h, ui::Color bg, ui::Color fg);
 
   // fontbmp.c

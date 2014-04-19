@@ -742,11 +742,11 @@ int Widget::getTextHeight() const
   return text_height(getFont());
 }
 
-void jwidget_get_texticon_info(Widget* widget,
-                               gfx::Rect* box,
-                               gfx::Rect* text,
-                               gfx::Rect* icon,
-                               int icon_align, int icon_w, int icon_h)
+void Widget::getTextIconInfo(
+  gfx::Rect* box,
+  gfx::Rect* text,
+  gfx::Rect* icon,
+  int icon_align, int icon_w, int icon_h)
 {
 #define SETRECT(r)                              \
   if (r) {                                      \
@@ -756,17 +756,16 @@ void jwidget_get_texticon_info(Widget* widget,
     r->h = r##_h;                               \
   }
 
+  gfx::Rect bounds = getClientBounds();
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
   int text_x, text_y, text_w, text_h;
-
-  ASSERT_VALID_WIDGET(widget);
 
   text_x = text_y = 0;
 
   // Size of the text
-  if (widget->hasText()) {
-    text_w = widget->getTextWidth();
-    text_h = widget->getTextHeight();
+  if (hasText()) {
+    text_w = getTextWidth();
+    text_h = getTextHeight();
   }
   else {
     text_w = text_h = 0;
@@ -781,32 +780,32 @@ void jwidget_get_texticon_info(Widget* widget,
     /* with the icon in the top or bottom */
     else {
       box_w = MAX(icon_w, text_w);
-      box_h = icon_h + (widget->hasText() ? widget->child_spacing: 0) + text_h;
+      box_h = icon_h + (hasText() ? child_spacing: 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
-    box_w = icon_w + (widget->hasText() ? widget->child_spacing: 0) + text_w;
+    box_w = icon_w + (hasText() ? child_spacing: 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
-  if (widget->getAlign() & JI_RIGHT)
-    box_x = widget->getBounds().x2() - box_w - widget->border_width.r;
-  else if (widget->getAlign() & JI_CENTER)
-    box_x = (widget->getBounds().x+widget->getBounds().x2())/2 - box_w/2;
+  if (getAlign() & JI_RIGHT)
+    box_x = bounds.x2() - box_w - border_width.r;
+  else if (getAlign() & JI_CENTER)
+    box_x = (bounds.x+bounds.x2())/2 - box_w/2;
   else
-    box_x = widget->getBounds().x + widget->border_width.l;
+    box_x = bounds.x + border_width.l;
 
-  if (widget->getAlign() & JI_BOTTOM)
-    box_y = widget->getBounds().y2() - box_h - widget->border_width.b;
-  else if (widget->getAlign() & JI_MIDDLE)
-    box_y = (widget->getBounds().y+widget->getBounds().y2())/2 - box_h/2;
+  if (getAlign() & JI_BOTTOM)
+    box_y = bounds.y2() - box_h - border_width.b;
+  else if (getAlign() & JI_MIDDLE)
+    box_y = (bounds.y+bounds.y2())/2 - box_h/2;
   else
-    box_y = widget->getBounds().y + widget->border_width.t;
+    box_y = bounds.y + border_width.t;
 
   // With text
-  if (widget->hasText()) {
+  if (hasText()) {
     // Text/icon X position
     if (icon_align & JI_RIGHT) {
       text_x = box_x;
@@ -962,7 +961,7 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
 
     // Move screen pixels
     jmouse_hide();
-    ji_move_region(reg2, dx, dy);
+    ui::_move_region(reg2, dx, dy);
     jmouse_show();
 
     reg2.offset(dx, dy);
@@ -1004,7 +1003,6 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 
     graphics.reset(new Graphics(bmp, -clip.x, -clip.y),
       DeleteGraphicsAndBitmap(clip, bmp));
-
   }
   // Paint directly on ji_screen (in this case "ji_screen" can be
   // the screen or a memory bitmap).

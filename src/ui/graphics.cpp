@@ -18,6 +18,7 @@
 #include "ui/theme.h"
 
 #include <allegro.h>
+#include <allegro/internal/aintern.h>
 
 namespace ui {
 
@@ -110,6 +111,18 @@ void Graphics::fillRegion(ui::Color color, const gfx::Region& rgn)
     fillRect(color, *it);
 }
 
+void Graphics::fillAreaBetweenRects(ui::Color color,
+  const gfx::Rect& outer, const gfx::Rect& inner)
+{
+  if (!outer.intersects(inner))
+    fillRect(color, inner);
+  else {
+    gfx::Region rgn(outer);
+    rgn.createSubtraction(rgn, gfx::Region(inner));
+    fillRegion(color, rgn);
+  }
+}
+
 void Graphics::drawBitmap(BITMAP* sprite, int x, int y)
 {
   draw_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
@@ -131,15 +144,20 @@ void Graphics::setFont(FONT* font)
   m_currentFont = font;
 }
 
-FONT* Graphics::getFont()
+void Graphics::drawChar(int chr, Color fg, Color bg, int x, int y)
 {
-  return m_currentFont;
+    // to_system(is_transparent(bg) ? getColor(ThemeColor::Background): bg));
+  ji_font_set_aa_mode(getFont(), bg);
+  getFont()->vtable->render_char(getFont(), chr,
+    to_system(fg),
+    to_system(bg),
+    m_bmp, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
 {
-  jdraw_text(m_bmp, m_currentFont, str.c_str(), m_dx+pt.x, m_dy+pt.y,
-             fg, bg, fillbg, 1 * jguiscale());
+  _draw_text(m_bmp, m_currentFont, str.c_str(), m_dx+pt.x, m_dy+pt.y,
+    fg, bg, fillbg, 1 * jguiscale());
 }
 
 void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align)
@@ -147,10 +165,18 @@ void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx:
   drawStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
+gfx::Size Graphics::measureChar(int chr)
+{
+  return gfx::Size(
+    getFont()->vtable->char_length(getFont(), chr),
+    text_height(getFont()));
+}
+
 gfx::Size Graphics::measureString(const std::string& str)
 {
-  return gfx::Size(ji_font_text_len(m_currentFont, str.c_str()),
-                   text_height(m_currentFont));
+  return gfx::Size(
+    ji_font_text_len(getFont(), str.c_str()),
+    text_height(getFont()));
 }
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
@@ -233,9 +259,9 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
       textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
 
       if (!is_transparent(bg))
-        jrectexclude(m_bmp,
-          m_dx+rc.x, m_dy+pt.y, m_dx+rc.x+rc.w-1, m_dy+pt.y+lineSize.h-1,
-          m_dx+xout, m_dy+pt.y, m_dx+xout+lineSize.w-1, m_dy+pt.y+lineSize.h-1, bg);
+        fillAreaBetweenRects(bg,
+          gfx::Rect(rc.x, pt.y, rc.w, lineSize.h),
+          gfx::Rect(xout, pt.y, lineSize.w, lineSize.h));
     }
 
     pt.y += lineSize.h;

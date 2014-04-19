@@ -43,6 +43,8 @@ namespace ui {
     void drawRect(ui::Color color, const gfx::Rect& rc);
     void fillRect(ui::Color color, const gfx::Rect& rc);
     void fillRegion(ui::Color color, const gfx::Region& rgn);
+    void fillAreaBetweenRects(ui::Color color,
+      const gfx::Rect& outer, const gfx::Rect& inner);
 
     void drawBitmap(BITMAP* sprite, int x, int y);
     void drawAlphaBitmap(BITMAP* sprite, int x, int y);
@@ -54,11 +56,15 @@ namespace ui {
     // ======================================================================
 
     void setFont(FONT* font);
-    FONT* getFont();
+    FONT* getFont() {
+      return m_currentFont;
+    }
 
+    void drawChar(int chr, Color fg, Color bg, int x, int y);
     void drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
     void drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
 
+    gfx::Size measureChar(int chr);
     gfx::Size measureString(const std::string& str);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 

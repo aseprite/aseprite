@@ -275,10 +275,10 @@ bool ButtonBase::onProcessMessage(Message* msg)
 void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
-  jwidget_get_texticon_info(this, &box, NULL, NULL,
-                            m_iconInterface ? m_iconInterface->getIconAlign(): 0,
-                            m_iconInterface ? m_iconInterface->getWidth(): 0,
-                            m_iconInterface ? m_iconInterface->getHeight(): 0);
+  getTextIconInfo(&box, NULL, NULL,
+    m_iconInterface ? m_iconInterface->getIconAlign(): 0,
+    m_iconInterface ? m_iconInterface->getWidth(): 0,
+    m_iconInterface ? m_iconInterface->getHeight(): 0);
 
   ev.setPreferredSize(border_width.l + box.w + border_width.r,
                       border_width.t + box.h + border_width.b);

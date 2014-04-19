@@ -163,23 +163,13 @@ namespace app {
       BITMAP* get_toolicon(const char* tool_id) const;
       gfx::Size get_part_size(int part_i) const;
 
-      // helper functions to draw bounds/hlines with sheet parts
+      // Helper functions to draw bounds/hlines with sheet parts
       void draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8]);
-      void draw_bounds_nw(BITMAP* bmp, int x1, int y1, int x2, int y2, int nw, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg = ui::ColorNone);
       void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2);
-      void draw_part_as_hline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
-      void draw_part_as_vline(BITMAP* bmp, int x1, int y1, int x2, int y2, int part);
       void draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part);
       void draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part);
-
-      // Wrapper to use the new "Rect" class (x, y, w, h)
-      void draw_bounds_nw(BITMAP* bmp, const gfx::Rect& rc, int nw, ui::Color bg) {
-        draw_bounds_nw(bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, nw, bg);
-      }
-
-      void drawProgressBar(BITMAP* bmp, int x1, int y1, int x2, int y2, float progress);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, float progress);
 
       Style* getStyle(const std::string& id) {
@@ -198,8 +188,6 @@ namespace app {
       void onRegenerate() OVERRIDE;
 
     private:
-      void draw_bounds_template(BITMAP* bmp, int x1, int y1, int x2, int y2,
-                                int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);
@@ -210,13 +198,10 @@ namespace app {
 
       BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
       ui::Color getWidgetBgColor(ui::Widget* widget);
-      void drawTextStringDeprecated(const char* t, ui::Color fg_color, ui::Color bg_color,
-                                    bool fill_bg, ui::Widget* widget, const gfx::Rect& rect,
-                                    int selected_offset);
       void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
                           bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
                           int selected_offset);
-      void draw_entry_caret(ui::Entry* widget, int x, int y);
+      void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
