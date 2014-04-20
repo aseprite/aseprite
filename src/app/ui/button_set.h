@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_BUTTON_SET_H_INCLUDED
 #define APP_UI_BUTTON_SET_H_INCLUDED
+#pragma once
 
 #include "base/signal.h"
 #include "ui/box.h"

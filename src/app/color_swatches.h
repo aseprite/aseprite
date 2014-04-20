@@ -18,6 +18,7 @@
 
 #ifndef APP_COLOR_SWATCHES_H_INCLUDED
 #define APP_COLOR_SWATCHES_H_INCLUDED
+#pragma once
 
 #include <vector>
 

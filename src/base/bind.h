@@ -1,11 +1,12 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef BASE_BIND_H_INCLUDED
 #define BASE_BIND_H_INCLUDED
+#pragma once
 
 // BindAdapter0_fun
 template<typename R, typename F>

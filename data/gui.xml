@@ -14,9 +14,9 @@
       <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" />
       <key command="CloseFile" shortcut="Ctrl+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
+      <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
-      <key command="Exit" shortcut="Ctrl+Q" />
       <key command="Exit" shortcut="Alt+F4" />
       <key command="Cancel" shortcut="Esc" />
       <!-- Edit -->
@@ -230,6 +230,7 @@
         <separator />
         <item command="ImportSpriteSheet" text="&amp;Import Sprite Sheet" />
         <item command="ExportSpriteSheet" text="&amp;Export Sprite Sheet" />
+        <item command="RepeatLastExport" text="Repeat &amp;Last Export" />
         <separator />
         <item command="Exit" text="E&amp;xit" />
       </menu>
@@ -380,22 +381,27 @@
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
       <menu text="&amp;Help">
-        <item command="Launch" text="README">
+        <item command="Launch" text="Readme">
           <param name="type" value="url" />
           <param name="path" value="https://github.com/dacap/aseprite#readme" />
         </item>
+        <separator />
         <item command="Launch" text="Quick &amp;Reference">
           <param name="type" value="docs" />
-          <param name="path" value="quickref.pdf" />
+          <param name="path" value="http://www.aseprite.org/quickref/" />
         </item>
-        <item command="Launch" text="Wiki">
+        <item command="Launch" text="Documentation">
           <param name="type" value="url" />
-          <param name="path" value="http://code.google.com/p/aseprite/wiki/Home" />
+          <param name="path" value="http://www.aseprite.org/docs/" />
+        </item>
+        <item command="Launch" text="Tutorial">
+          <param name="type" value="url" />
+          <param name="path" value="http://www.aseprite.org/tutorial/" />
         </item>
         <separator />
         <item command="Launch" text="Release Notes">
           <param name="type" value="url" />
-          <param name="path" value="http://code.google.com/p/aseprite/wiki/ReleaseNotes" />
+          <param name="path" value="http://www.aseprite.org/release-notes/" />
         </item>
         <item command="Launch" text="Twitter">
           <param name="type" value="url" />
@@ -544,7 +550,7 @@
             />
     </group>
 
-    <group id="helpers" text="Helpers">
+    <group id="helpers_tools" text="Helpers Tools">
       <tool id="eraser"
             text="Eraser Tool"
             ink_left="eraser"
@@ -566,6 +572,14 @@
             ink_right="pick_bg"
             controller="freehand"
             pointshape="pixel"
+            />
+    </group>
+
+    <group id="view_tools" text="View Tools">
+      <tool id="zoom"
+            text="Zoom Tool"
+            ink="zoom"
+            controller="freehand"
             />
       <tool id="hand"
             text="Hand Tool"

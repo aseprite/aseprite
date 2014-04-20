@@ -149,7 +149,7 @@ class CanvasSizeCommand : public Command {
 
 public:
   CanvasSizeCommand();
-  Command* clone() const { return new CanvasSizeCommand(*this); }
+  Command* clone() const OVERRIDE { return new CanvasSizeCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

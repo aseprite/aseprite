@@ -23,6 +23,7 @@
 #include "app/undoers/set_cel_frame.h"
 
 #include "raster/cel.h"
+#include "raster/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -31,8 +32,9 @@ namespace undoers {
 
 using namespace undo;
 
-SetCelFrame::SetCelFrame(ObjectsContainer* objects, Cel* cel)
-  : m_celId(objects->addObject(cel))
+SetCelFrame::SetCelFrame(ObjectsContainer* objects, LayerImage* layer, Cel* cel)
+  : m_layerId(objects->addObject(layer))
+  , m_celId(objects->addObject(cel))
   , m_frame(cel->getFrame())
 {
 }
@@ -44,12 +46,13 @@ void SetCelFrame::dispose()
 
 void SetCelFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
+  LayerImage* layer = objects->getObjectT<LayerImage>(m_layerId);
   Cel* cel = objects->getObjectT<Cel>(m_celId);
 
   // Push another SetCelFrame as redoer
-  redoers->pushUndoer(new SetCelFrame(objects, cel));
+  redoers->pushUndoer(new SetCelFrame(objects, layer, cel));
 
-  cel->setFrame(m_frame);
+  layer->moveCel(cel, m_frame);
 }
 
 } // namespace undoers

@@ -18,6 +18,7 @@
 
 #ifndef APP_CONTEXT_H_INCLUDED
 #define APP_CONTEXT_H_INCLUDED
+#pragma once
 
 #include "app/context_flags.h"
 #include "app/context_observer.h"

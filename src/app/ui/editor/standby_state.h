@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
 #define APP_UI_EDITOR_STANDBY_STATE_H_INCLUDED
+#pragma once
 
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/editor_state.h"
@@ -54,6 +55,7 @@ namespace app {
     // Returns true and changes to ScrollingState when "msg" says "the
     // user wants to scroll".
     bool checkForScroll(Editor* editor, ui::MouseMessage* msg);
+    bool checkForZoom(Editor* editor, ui::MouseMessage* msg);
 
     class Decorator : public EditorDecorator {
     public:

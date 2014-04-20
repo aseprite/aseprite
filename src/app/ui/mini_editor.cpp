@@ -183,37 +183,26 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
   Document* document = editor->getDocument();
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
 
-  // Show the mini editor if it wasn't created yet and the user
-  // zoomed in, or if the mini-editor was created and the zoom of
-  // both editors is not the same.
-  if (document &&
-      document->getSprite() &&
-      ((!isVisible() && editor->getZoom() > 0) ||
-       (isVisible() && (!miniEditor || miniEditor->getZoom() != editor->getZoom())))) {
-    if (!isVisible())
-      openWindow();
+  if (!isVisible())
+    openWindow();
 
-    gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
-    gfx::Point pt = visibleBounds.getCenter();
+  gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
+  gfx::Point pt = visibleBounds.getCenter();
 
-    // Set the same location as in the given editor.
-    if (!miniEditor || miniEditor->getDocument() != document) {
-      delete m_docView;
-      m_docView = new DocumentView(document, DocumentView::Mini); // MiniEditorDocumentView(document, this);
-      addChild(m_docView);
+  // Set the same location as in the given editor.
+  if (!miniEditor || miniEditor->getDocument() != document) {
+    delete m_docView;
+    m_docView = new DocumentView(document, DocumentView::Mini); // MiniEditorDocumentView(document, this);
+    addChild(m_docView);
 
-      miniEditor = m_docView->getEditor();
-      miniEditor->setZoom(0);
-      miniEditor->setState(EditorStatePtr(new EditorState));
-      layout();
-    }
-
-    miniEditor->centerInSpritePoint(pt.x, pt.y);
-    miniEditor->setFrame(editor->getFrame());
+    miniEditor = m_docView->getEditor();
+    miniEditor->setZoom(0);
+    miniEditor->setState(EditorStatePtr(new EditorState));
+    layout();
   }
-  else {
-    hideWindow();
-  }
+
+  miniEditor->centerInSpritePoint(pt.x, pt.y);
+  miniEditor->setFrame(editor->getFrame());
 }
 
 void MiniEditorWindow::hideWindow()

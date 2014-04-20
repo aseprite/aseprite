@@ -18,6 +18,7 @@
 
 #ifndef APP_SETTINGS_SELECTION_MODE_H_INCLUDED
 #define APP_SETTINGS_SELECTION_MODE_H_INCLUDED
+#pragma once
 
 namespace app {
 

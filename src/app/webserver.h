@@ -18,6 +18,7 @@
 
 #ifndef APP_WEBSERVER_H_INCLUDED
 #define APP_WEBSERVER_H_INCLUDED
+#pragma once
 
 #ifdef ENABLE_WEBSERVER
 

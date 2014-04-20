@@ -63,12 +63,13 @@ namespace {
     }
   };
 
-  bool get_memory_dump_filename(std::string& filename)
+  bool getMemoryDumpFilename(std::string& filename)
   {
 #ifdef WIN32
     app::ResourceFinder rf;
-    rf.findInBinDir("aseprite-memory.dmp");
-    filename = rf.first();
+    rf.includeBinDir("aseprite-memory.dmp");
+    if (rf.first())
+      filename = rf.filename();
     return true;
 #else
     return false;
@@ -97,7 +98,7 @@ int app_main(int argc, char* argv[])
     // Change the name of the memory dump file
     {
       std::string filename;
-      if (get_memory_dump_filename(filename))
+      if (getMemoryDumpFilename(filename))
         memoryDump.setFileName(filename);
     }
 

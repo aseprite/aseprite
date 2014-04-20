@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_MAIN_MENU_BAR_H_INCLUDED
 #define APP_UI_MAIN_MENU_BAR_H_INCLUDED
+#pragma once
 
 #include "ui/menu.h"
 

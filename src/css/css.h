@@ -1,11 +1,12 @@
 // Aseprite CSS Library
 // Copyright (C) 2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef CSS_CSS_H_INCLUDED
 #define CSS_CSS_H_INCLUDED
+#pragma once
 
 #include "css/compound_style.h"
 #include "css/query.h"

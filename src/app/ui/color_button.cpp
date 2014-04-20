@@ -166,7 +166,7 @@ bool ColorButton::onProcessMessage(Message* msg)
 void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
-  jwidget_get_texticon_info(this, &box, NULL, NULL, 0, 0, 0);
+  getTextIconInfo(&box);
   box.w = 64;
 
   ev.setPreferredSize(box.w + border_width.l + border_width.r,
@@ -177,10 +177,7 @@ void ColorButton::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-
   gfx::Rect rc = getClientBounds();
-  gfx::Rect text;
-  jwidget_get_texticon_info(this, NULL, &text, NULL, 0, 0, 0);
 
   ui::Color bg = getBgColor();
   if (is_transparent(bg))
@@ -211,14 +208,14 @@ void ColorButton::onPaint(PaintEvent& ev)
     app::Color::ShortHumanReadableString);
 
   setTextQuiet(str.c_str());
-  jwidget_get_texticon_info(this, NULL, &text, NULL, 0, 0, 0);
 
   ui::Color textcolor = ui::rgba(255, 255, 255);
   if (color.isValid())
     textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
-  g->drawString(getText(), textcolor, ColorNone, false,
-    text.getOrigin() - getBounds().getOrigin());
+  gfx::Rect text;
+  getTextIconInfo(NULL, &text);
+  g->drawString(getText(), textcolor, ColorNone, false, text.getOrigin());
 }
 
 void ColorButton::onClick(Event& ev)

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_FILE_COL_FILE_H_INCLUDED
 #define RASTER_FILE_COL_FILE_H_INCLUDED
+#pragma once
 
 namespace raster {
 

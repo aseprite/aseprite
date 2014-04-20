@@ -18,8 +18,10 @@
 
 #ifndef APP_COMMANDS_CMD_FLIP_H_INCLUDED
 #define APP_COMMANDS_CMD_FLIP_H_INCLUDED
+#pragma once
 
 #include "app/commands/command.h"
+#include "base/compiler_specific.h"
 #include "raster/algorithm/flip_type.h"
 
 namespace app {
@@ -27,7 +29,7 @@ namespace app {
   class FlipCommand : public Command {
   public:
     FlipCommand();
-    Command* clone() const { return new FlipCommand(*this); }
+    Command* clone() const OVERRIDE { return new FlipCommand(*this); }
 
     raster::algorithm::FlipType getFlipType() const { return m_flipType; }
 

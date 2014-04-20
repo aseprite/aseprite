@@ -43,27 +43,13 @@ GuiXml::GuiXml()
   PRINTF("Loading gui.xml file...");
 
   ResourceFinder rf;
-  rf.findInDataDir("gui.xml");
+  rf.includeDataDir("gui.xml");
+  if (!rf.findFirst())
+    throw base::Exception("gui.xml was not found");
 
-  while (const char* path = rf.next()) {
-    PRINTF("Trying to load GUI definitions from \"%s\"...\n", path);
-
-    // If the file does not exist, just ignore this location (it was
-    // suggested by the ResourceFinder class).
-    if (!base::file_exists(path))
-      continue;
-
-    PRINTF(" - \"%s\" found\n", path);
-
-    // Load the XML file. As we've already checked "path" existence,
-    // in a case of exception we should show the error and stop.
-    m_doc = app::open_xml(path);
-
-    // Done, we load the file successfully.
-    return;
-  }
-
-  throw base::Exception("gui.xml was not found");
+  // Load the XML file. As we've already checked "path" existence,
+  // in a case of exception we should show the error and stop.
+  m_doc = app::open_xml(rf.filename());
 }
 
 base::string GuiXml::version()

@@ -22,8 +22,8 @@
 
 #include "app/documents.h"
 
-#include "base/mutex.h"
 #include "app/document.h"
+#include "base/mutex.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
 
@@ -44,7 +44,7 @@ Documents::~Documents()
 void Documents::addDocument(Document* document)
 {
   ASSERT(document != NULL);
-  ASSERT(document->getId() == WithoutDocumentId);
+  ASSERT(document->getId() == doc::NullId);
 
   m_documents.insert(begin(), document);
 

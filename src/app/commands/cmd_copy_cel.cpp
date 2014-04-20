@@ -25,7 +25,6 @@
 #include "app/context_access.h"
 #include "app/ui/timeline.h"
 #include "app/ui/main_window.h"
-#include "app/util/celmove.h"
 #include "ui/base.h"
 
 namespace app {
@@ -33,7 +32,7 @@ namespace app {
 class CopyCelCommand : public Command {
 public:
   CopyCelCommand();
-  Command* clone() const { return new CopyCelCommand(*this); }
+  Command* clone() const OVERRIDE { return new CopyCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -54,8 +53,7 @@ bool CopyCelCommand::onEnabled(Context* context)
 
 void CopyCelCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
-  copy_cel(writer);
+  App::instance()->getMainWindow()->getTimeline()->dropRange(Timeline::kCopy);
 }
 
 Command* CommandFactory::createCopyCelCommand()

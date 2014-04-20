@@ -35,6 +35,8 @@
 #define PACKAGE                 "Aseprite"
 #define VERSION                 "0.9.6-dev"
 #define WEBSITE                 "http://www.aseprite.org/"
+#define WEBSITE_DOWNLOAD        WEBSITE "download/"
+#define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
 #define COPYRIGHT               "Copyright (C) 2001-2014 David Capello"
 
 #define PRINTF                  verbose_printf

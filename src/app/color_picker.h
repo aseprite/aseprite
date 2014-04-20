@@ -18,6 +18,7 @@
 
 #ifndef APP_COLOR_PICKER_H_INCLUDED
 #define APP_COLOR_PICKER_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 

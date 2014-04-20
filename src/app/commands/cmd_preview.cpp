@@ -55,7 +55,7 @@ using namespace filters;
 class PreviewCommand : public Command {
 public:
   PreviewCommand();
-  Command* clone() { return new PreviewCommand(*this); }
+  Command* clone() const OVERRIDE { return new PreviewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

@@ -91,13 +91,10 @@ Image* convert_pixel_format(const Image* image,
                             const Palette* palette,
                             bool has_background_layer)
 {
-  // no convertion
-  if (image->getPixelFormat() == pixelFormat)
-    return NULL;
   // RGB -> Indexed with ordered dithering
-  else if (image->getPixelFormat() == IMAGE_RGB &&
-           pixelFormat == IMAGE_INDEXED &&
-           ditheringMethod == DITHERING_ORDERED) {
+  if (image->getPixelFormat() == IMAGE_RGB &&
+      pixelFormat == IMAGE_INDEXED &&
+      ditheringMethod == DITHERING_ORDERED) {
     return ordered_dithering(image, 0, 0, rgbmap, palette);
   }
 
@@ -112,6 +109,11 @@ Image* convert_pixel_format(const Image* image,
       LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
       switch (new_image->getPixelFormat()) {
+
+        // RGB -> RGB
+        case IMAGE_RGB:
+          new_image->copy(image, 0, 0);
+          break;
 
         // RGB -> Grayscale
         case IMAGE_GRAYSCALE: {
@@ -144,6 +146,7 @@ Image* convert_pixel_format(const Image* image,
             r = rgba_getr(c);
             g = rgba_getg(c);
             b = rgba_getb(c);
+
             if (rgba_geta(c) == 0)
               *dst_it = 0;
             else
@@ -178,6 +181,11 @@ Image* convert_pixel_format(const Image* image,
           ASSERT(dst_it == dst_end);
           break;
         }
+
+        // Grayscale -> Grayscale
+        case IMAGE_GRAYSCALE:
+          new_image->copy(image, 0, 0);
+          break;
 
         // Grayscale -> Indexed
         case IMAGE_INDEXED: {
@@ -244,6 +252,30 @@ Image* convert_pixel_format(const Image* image,
 
               g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
               *dst_it = graya(g, 255);
+            }
+          }
+          ASSERT(dst_it == dst_end);
+          break;
+        }
+
+        // Indexed -> Indexed
+        case IMAGE_INDEXED: {
+          LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
+          LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+          color_t dstMaskColor = new_image->getMaskColor();
+
+          for (; src_it != src_end; ++src_it, ++dst_it) {
+            ASSERT(dst_it != dst_end);
+            c = *src_it;
+
+            if (c == image->getMaskColor())
+              *dst_it = dstMaskColor;
+            else {
+              r = rgba_getr(palette->getEntry(c));
+              g = rgba_getg(palette->getEntry(c));
+              b = rgba_getb(palette->getEntry(c));
+
+              *dst_it = rgbmap->mapColor(r, g, b);
             }
           }
           ASSERT(dst_it == dst_end);

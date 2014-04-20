@@ -41,7 +41,7 @@ namespace app {
 class DuplicateLayerCommand : public Command {
 public:
   DuplicateLayerCommand();
-  Command* clone() const { return new DuplicateLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new DuplicateLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -66,33 +66,14 @@ void DuplicateLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document = writer.document();
-  Sprite* sprite = writer.sprite();
-  UndoTransaction undo(writer.context(), "Layer Duplication");
-  LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
+  DocumentApi api = document->getApi();
 
-  // Create a new layer
-  base::UniquePtr<LayerImage> newLayerPtr(new LayerImage(sprite));
-
-  // Disable undo because the layer content is added as a whole with
-  // AddLayer() undoer.
-  document->getUndo()->setEnabled(false);
-
-  // Copy the layer content (cels + images)
-  document->copyLayerContent(sourceLayer, document, newLayerPtr);
-
-  // Restore enabled status.
-  document->getUndo()->setEnabled(undo.isEnabled());
-
-  // Copy the layer name
-  newLayerPtr->setName(newLayerPtr->getName() + " Copy");
-
-  // Add the new layer in the sprite.
-  document->getApi().addLayer(sourceLayer->getParent(), newLayerPtr, sourceLayer);
-
-  // Release the pointer as it is owned by the sprite now
-  Layer* newLayer = newLayerPtr.release();
-
-  undo.commit();
+  {
+    UndoTransaction undo(writer.context(), "Layer Duplication");
+    LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
+    api.duplicateLayer(sourceLayer, sourceLayer);
+    undo.commit();
+  }
 
   update_screen_for_document(document);
 }

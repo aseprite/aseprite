@@ -4,8 +4,8 @@
 // Optimized by Sven Sandberg.
 // To C++ templates by David Capello
 //
-// This source file is distributed under a Allegro license, please
-// read allegro4-LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

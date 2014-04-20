@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_DRAWING_STATE_H_INCLUDED
 #define APP_UI_EDITOR_DRAWING_STATE_H_INCLUDED
+#pragma once
 
 #include "app/ui/editor/standby_state.h"
 #include "base/compiler_specific.h"

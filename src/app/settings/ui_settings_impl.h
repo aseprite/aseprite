@@ -18,6 +18,7 @@
 
 #ifndef APP_SETTINGS_UI_SETTINGS_H_INCLUDED
 #define APP_SETTINGS_UI_SETTINGS_H_INCLUDED
+#pragma once
 
 #include <map>
 #include <string>

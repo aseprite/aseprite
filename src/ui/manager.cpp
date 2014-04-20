@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 // #define REPORT_EVENTS
 // #define LIMIT_DISPATCH_TIME
@@ -13,11 +13,16 @@
 
 #include "ui/manager.h"
 
+#include "base/scoped_value.h"
+#include "she/display.h"
+#include "she/event.h"
+#include "she/event_queue.h"
+#include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
 #ifdef REPORT_EVENTS
-#include <cstdio>
+#include <iostream>
 #endif
 #include <allegro.h>
 #include <list>
@@ -60,6 +65,8 @@ struct Filter
 
 typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
+
+static bool mouse_events_from_she;
 
 static int double_click_level;
 static MouseButtons double_click_buttons;
@@ -106,6 +113,11 @@ static void allegro_window_close_hook()
 
 Manager::Manager()
   : Widget(kManagerWidget)
+  , m_display(NULL)
+  , m_clipboard(NULL)
+  , m_eventQueue(NULL)
+  , m_lockedWindow(NULL)
+  , m_mouseButtons(kButtonNone)
 {
   if (!m_defaultManager) {
     // Hook the window close message
@@ -137,8 +149,13 @@ Manager::Manager()
   setVisible(true);
 
   // Default manager is the first one (and is always visible).
-  if (!m_defaultManager)
+  if (!m_defaultManager) {
     m_defaultManager = this;
+
+    mouse_events_from_she =
+      ((she::Instance()->capabilities() & she::kMouseEventsCapability)
+        == she::kMouseEventsCapability);
+  }
 }
 
 Manager::~Manager()
@@ -173,6 +190,17 @@ Manager::~Manager()
   }
 }
 
+void Manager::setDisplay(she::Display* display)
+{
+  m_display = display;
+  m_eventQueue = m_display->getEventQueue();
+}
+
+void Manager::setClipboard(she::Clipboard* clipboard)
+{
+  m_clipboard = clipboard;
+}
+
 void Manager::run()
 {
   MessageLoop loop(this);
@@ -183,10 +211,6 @@ void Manager::run()
 
 bool Manager::generateMessages()
 {
-  Widget* widget;
-  Widget* window;
-  int c;
-
   // Poll keyboard
   poll_keyboard();
 
@@ -204,7 +228,7 @@ bool Manager::generateMessages()
   // New windows to show?
   if (!new_windows.empty()) {
     UI_FOREACH_WIDGET(new_windows, it) {
-      window = *it;
+      Widget* window = *it;
 
       // Relayout
       window->layout();
@@ -227,56 +251,46 @@ bool Manager::generateMessages()
     new_windows.clear();
   }
 
+  if (!mouse_events_from_she)
+    generateMouseMessages();
+
+  // Generate Close message when the user press close button on the system window.
+  if (want_close_stage == STAGE_WANT_CLOSE) {
+    want_close_stage = STAGE_NORMAL;
+
+    Message* msg = new Message(kCloseAppMessage);
+    msg->broadcastToChildren(this);
+    enqueueMessage(msg);
+  }
+
+  generateKeyMessages();
+  generateMessagesFromSheEvents();
+
+  // Generate messages for timers
+  Timer::pollTimers();
+
+  // Generate redraw events.
+  flushRedraw();
+
+  if (!msg_queue.empty())
+    return true;
+  else
+    return false;
+}
+
+void Manager::generateMouseMessages()
+{
   // Update mouse status
   bool mousemove = jmouse_poll();
-  if (mousemove || !mouse_widget) {
-    // Get the list of widgets to send mouse messages.
-    mouse_widgets_list.clear();
-    broadcastMouseMessage(mouse_widgets_list);
 
-    // Get the widget under the mouse
-    widget = NULL;
+  gfx::Point mousePos(gfx::Point(jmouse_x(0), jmouse_y(0)));
 
-    UI_FOREACH_WIDGET(mouse_widgets_list, it) {
-      widget = (*it)->pick(gfx::Point(jmouse_x(0), jmouse_y(0)));
-      if (widget)
-        break;
-    }
-
-    // Fixup "mouse" flag
-    if (widget != mouse_widget) {
-      if (!widget)
-        freeMouse();
-      else
-        setMouse(widget);
-    }
-
-    // Mouse movement
-    if (mousemove) {
-      Widget* dst;
-
-      // Reset double click status
-      double_click_level = DOUBLE_CLICK_NONE;
-
-      if (capture_widget)
-        dst = capture_widget;
-      else
-        dst = mouse_widget;
-
-      // Send the mouse movement message
-      enqueueMessage(newMouseMessage(kMouseMoveMessage, dst,
-                                     currentMouseButtons(0)));
-      generateSetCursorMessage();
-    }
-  }
+  if (mousemove || !mouse_widget)
+    handleMouseMove(mousePos, currentMouseButtons(0));
 
   // Mouse wheel
-  if (jmouse_z(0) != jmouse_z(1)) {
-    enqueueMessage(newMouseMessage(kMouseWheelMessage,
-                                   capture_widget ? capture_widget:
-                                                    mouse_widget,
-                                   currentMouseButtons(0)));
-  }
+  if (jmouse_z(0) != jmouse_z(1))
+    handleMouseWheel(mousePos, currentMouseButtons(0), jmouse_z(0) - jmouse_z(1));
 
   // Mouse clicks
   if (jmouse_b(0) != jmouse_b(1)) {
@@ -286,7 +300,11 @@ bool Manager::generateMessages()
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
     MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
-    MouseButtons mouseButtons = currentMouseButtons(pressed ? 0: 1);
+
+    // The message will include which button was pressed or released.
+    // (This doesn't represent all buttons that are currently pushed.)
+    MouseButtons mouseButtons = (MouseButtons)
+      (currentMouseButtons(0) ^ currentMouseButtons(1));
 
     //////////////////////////////////////////////////////////////////////
     // Double Click
@@ -336,61 +354,34 @@ bool Manager::generateMessages()
       }
     }
 
-    // Handle Z order: Send the window to top (only when you click in
-    // a window that aren't the desktop).
-    if (msgType == kMouseDownMessage && !capture_widget && mouse_widget) {
-      // The clicked window
-      Window* window = mouse_widget->getRoot();
-      Manager* win_manager = (window ? window->getManager(): NULL);
-
-      if ((window) &&
-          // We cannot change Z-order of desktop windows
-          (!window->isDesktop()) &&
-          // We cannot change Z order of foreground windows because a
-          // foreground window can launch other background windows
-          // which should be kept on top of the foreground one.
-          (!window->isForeground()) &&
-          // If the window is not already the top window of the manager.
-          (window != win_manager->getTopWindow())) {
-        // Put it in the top of the list
-        win_manager->removeChild(window);
-
-        if (window->isOnTop())
-          win_manager->insertChild(0, window);
-        else {
-          int pos = (int)win_manager->getChildren().size();
-          UI_FOREACH_WIDGET_BACKWARD(win_manager->getChildren(), it) {
-            if (static_cast<Window*>(*it)->isOnTop())
-              break;
-
-            --pos;
-          }
-          win_manager->insertChild(pos, window);
-        }
-
-        window->invalidate();
-      }
-
-      // Put the focus
-      setFocus(mouse_widget);
+    switch (msgType) {
+      case kMouseDownMessage:
+        handleMouseDown(mousePos, mouseButtons);
+        break;
+      case kMouseUpMessage:
+        handleMouseUp(mousePos, mouseButtons);
+        break;
+      case kDoubleClickMessage:
+        handleMouseDoubleClick(mousePos, mouseButtons);
+        break;
     }
-
-    enqueueMessage(newMouseMessage(msgType,
-                                   capture_widget ? capture_widget:
-                                                    mouse_widget,
-                                   mouseButtons));
   }
+}
 
-  // Generate Close message when the user press close button on the system window.
-  if (want_close_stage == STAGE_WANT_CLOSE) {
-    want_close_stage = STAGE_NORMAL;
+void Manager::generateSetCursorMessage(const gfx::Point& mousePos)
+{
+  Widget* dst = (capture_widget ? capture_widget: mouse_widget);
+  if (dst)
+    enqueueMessage(newMouseMessage(kSetCursorMessage, dst,
+        mousePos, currentMouseButtons(0)));
+  else
+    jmouse_set_cursor(kArrowCursor);
+}
 
-    Message* msg = new Message(kCloseAppMessage);
-    msg->broadcastToChildren(this);
-    enqueueMessage(msg);
-  }
-
+void Manager::generateKeyMessages()
+{
   // Generate kKeyDownMessage messages.
+  int c;
   while (keypressed()) {
     int scancode;
     int unicode_char = ureadkey(&scancode);
@@ -410,7 +401,7 @@ bool Manager::generateMessages()
     enqueueMessage(msg);
   }
 
-  for (c=0; c<KEY_MAX; c++) {
+  for (int c=0; c<KEY_MAX; c++) {
     if (old_readed_key[c] != key[c]) {
       KeyScancode scancode = static_cast<ui::KeyScancode>(c);
 
@@ -441,24 +432,202 @@ bool Manager::generateMessages()
       }
     }
   }
+}
 
-  // Generate messages for timers
-  Timer::pollTimers();
+static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
+{
+  switch (sheEvent.button()) {
+    case she::Event::LeftButton:   return kButtonLeft; break;
+    case she::Event::RightButton:  return kButtonRight; break;
+    case she::Event::MiddleButton: return kButtonMiddle; break;
+    default: return kButtonNone;
+  }
+}
 
-  // Generate redraw events.
-  flushRedraw();
+void Manager::generateMessagesFromSheEvents()
+{
+  // Events from "she" layer.
+  she::Event sheEvent;
+  for (;;) {
+    m_eventQueue->getEvent(sheEvent);
+    if (sheEvent.type() == she::Event::None)
+      break;
 
-  if (!msg_queue.empty())
-    return true;
-  else
-    return false;
+    switch (sheEvent.type()) {
+
+      case she::Event::DropFiles: {
+        Message* msg = new DropFilesMessage(sheEvent.files());
+        msg->addRecipient(this);
+        enqueueMessage(msg);
+        break;
+      }
+
+      case she::Event::MouseMove: {
+        if (!mouse_events_from_she)
+          continue;
+
+        _internal_set_mouse_position(sheEvent.position());
+
+        handleMouseMove(sheEvent.position(), m_mouseButtons);
+        break;
+      }
+
+      case she::Event::MouseDown: {
+        if (!mouse_events_from_she)
+          continue;
+
+        MouseButtons pressedButton = mouse_buttons_from_she_to_ui(sheEvent);
+        m_mouseButtons = (MouseButtons)((int)m_mouseButtons | (int)pressedButton);
+        _internal_set_mouse_buttons(m_mouseButtons);
+
+        handleMouseDown(sheEvent.position(), pressedButton);
+        break;
+      }
+
+      case she::Event::MouseUp: {
+        if (!mouse_events_from_she)
+          continue;
+
+        MouseButtons releasedButton = mouse_buttons_from_she_to_ui(sheEvent);
+        m_mouseButtons = (MouseButtons)((int)m_mouseButtons & ~(int)releasedButton);
+        _internal_set_mouse_buttons(m_mouseButtons);
+
+        handleMouseUp(sheEvent.position(), releasedButton);
+        break;
+      }
+
+      case she::Event::MouseDoubleClick: {
+        if (!mouse_events_from_she)
+          continue;
+
+        MouseButtons clickedButton = mouse_buttons_from_she_to_ui(sheEvent);
+        handleMouseUp(sheEvent.position(), clickedButton);
+        break;
+      }
+
+      case she::Event::MouseWheel: {
+        if (!mouse_events_from_she)
+          continue;
+
+        handleMouseWheel(sheEvent.position(), m_mouseButtons, sheEvent.delta());
+        break;
+      }
+    }
+  }
+}
+
+void Manager::handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButtons)
+{
+  // Get the list of widgets to send mouse messages.
+  mouse_widgets_list.clear();
+  broadcastMouseMessage(mouse_widgets_list);
+
+  // Get the widget under the mouse
+  Widget* widget = NULL;
+  UI_FOREACH_WIDGET(mouse_widgets_list, it) {
+    widget = (*it)->pick(mousePos);
+    if (widget)
+      break;
+  }
+
+  // Fixup "mouse" flag
+  if (widget != mouse_widget) {
+    if (!widget)
+      freeMouse();
+    else
+      setMouse(widget);
+  }
+
+  // Reset double click status
+  double_click_level = DOUBLE_CLICK_NONE;
+
+  // Send the mouse movement message
+  Widget* dst = (capture_widget ? capture_widget: mouse_widget);
+  enqueueMessage(newMouseMessage(kMouseMoveMessage, dst, mousePos, mouseButtons));
+
+  generateSetCursorMessage(mousePos);
+}
+
+void Manager::handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons)
+{
+  handleWindowZOrder();
+
+  enqueueMessage(newMouseMessage(kMouseDownMessage,
+      (capture_widget ? capture_widget: mouse_widget),
+      mousePos, mouseButtons));
+}
+
+void Manager::handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButtons)
+{
+  enqueueMessage(newMouseMessage(kMouseUpMessage,
+      (capture_widget ? capture_widget: mouse_widget),
+      mousePos, mouseButtons));
+}
+
+void Manager::handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons)
+{
+  enqueueMessage(newMouseMessage(kDoubleClickMessage,
+      (capture_widget ? capture_widget: mouse_widget),
+      mousePos, mouseButtons));
+}
+
+void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, int delta)
+{
+  enqueueMessage(newMouseMessage(kMouseWheelMessage,
+      (capture_widget ? capture_widget: mouse_widget),
+      mousePos, mouseButtons, delta));
+}
+
+// Handles Z order: Send the window to top (only when you click in a
+// window that aren't the desktop).
+void Manager::handleWindowZOrder()
+{
+  if (capture_widget || !mouse_widget)
+    return;
+
+  // The clicked window
+  Window* window = mouse_widget->getRoot();
+  Manager* win_manager = (window ? window->getManager(): NULL);
+
+  if ((window) &&
+    // We cannot change Z-order of desktop windows
+    (!window->isDesktop()) &&
+    // We cannot change Z order of foreground windows because a
+    // foreground window can launch other background windows
+    // which should be kept on top of the foreground one.
+    (!window->isForeground()) &&
+    // If the window is not already the top window of the manager.
+    (window != win_manager->getTopWindow())) {
+    base::ScopedValue<Widget*> scoped(m_lockedWindow, window, NULL);
+
+    // Put it in the top of the list
+    win_manager->removeChild(window);
+
+    if (window->isOnTop())
+      win_manager->insertChild(0, window);
+    else {
+      int pos = (int)win_manager->getChildren().size();
+      UI_FOREACH_WIDGET_BACKWARD(win_manager->getChildren(), it) {
+        if (static_cast<Window*>(*it)->isOnTop())
+          break;
+
+        --pos;
+      }
+      win_manager->insertChild(pos, window);
+    }
+
+    window->invalidate();
+  }
+
+  // Put the focus
+  setFocus(mouse_widget);
 }
 
 void Manager::dispatchMessages()
 {
   // Add the "Queue Processing" message for the manager.
   enqueueMessage(newMouseMessage(kQueueProcessingMessage, this,
-                                 currentMouseButtons(0)));
+      gfx::Point(jmouse_x(0), jmouse_y(0)), currentMouseButtons(0)));
 
   pumpQueue();
 }
@@ -607,6 +776,19 @@ void Manager::setFocus(Widget* widget)
 
 void Manager::setMouse(Widget* widget)
 {
+#ifdef REPORT_EVENTS
+  std::cout << "Manager::setMouse ";
+  if (widget) {
+    std::cout << typeid(*widget).name();
+    if (!widget->getId().empty())
+      std::cout << " (" << widget->getId() << ")";
+  }
+  else {
+    std::cout << "null";
+  }
+  std::cout << std::endl;
+#endif
+
   if ((mouse_widget != widget) && (!capture_widget)) {
     WidgetsList widget_parents;
     Widget* common_parent = NULL;
@@ -658,7 +840,7 @@ void Manager::setMouse(Widget* widget)
         it = widget_parents.begin();
 
       Message* msg = newMouseMessage(kMouseEnterMessage, NULL,
-                                     currentMouseButtons(0));
+        gfx::Point(jmouse_x(0), jmouse_y(0)), currentMouseButtons(0));
 
       for (; it != widget_parents.end(); ++it) {
         (*it)->flags |= JI_HASMOUSE;
@@ -666,7 +848,7 @@ void Manager::setMouse(Widget* widget)
       }
 
       enqueueMessage(msg);
-      generateSetCursorMessage();
+      generateSetCursorMessage(gfx::Point(jmouse_x(0), jmouse_y(0)));
     }
   }
 }
@@ -718,16 +900,21 @@ void Manager::freeCapture()
 
 void Manager::freeWidget(Widget* widget)
 {
-  // Break any relationship with the GUI manager
+  if (widget->hasFocus() || (widget == focus_widget))
+    freeFocus();
 
+  // We shouldn't free widgets that are locked, it means, widgets that
+  // will be re-added soon (e.g. when the stack of windows is
+  // temporarily modified).
+  if (m_lockedWindow == widget)
+    return;
+
+  // Break any relationship with the GUI manager
   if (widget->hasCapture() || (widget == capture_widget))
     freeCapture();
 
   if (widget->hasMouse() || (widget == mouse_widget))
     freeMouse();
-
-  if (widget->hasFocus() || (widget == focus_widget))
-    freeFocus();
 }
 
 void Manager::removeMessage(Message* msg)
@@ -1024,6 +1211,7 @@ void Manager::pumpQueue()
           "kCloseAppMessage",
           "kPaintMessage",
           "kTimerMessage",
+          "kDropFilesMessage",
           "kWinMoveMessage",
           "kQueueProcessingMessage",
 
@@ -1041,13 +1229,16 @@ void Manager::pumpQueue()
           "kSetCursorMessage",
           "kMouseWheelMessage",
         };
-        const char *string =
-          (msg->type >= kOpenMessage &&
-           msg->type <= kMouseWheelMessage) ? msg_name[msg->type]:
-                                              "Unknown";
+        const char* string =
+          (msg->type() >= kOpenMessage &&
+           msg->type() <= kMouseWheelMessage) ? msg_name[msg->type()]:
+                                                "Unknown";
 
-        printf("Event #%d: %s (%d)\n", msg->type, string, widget->id);
-        fflush(stdout);
+        std::cout << "Event " << msg->type() << " (" << string << ") "
+                  << "for " << typeid(*widget).name();
+        if (!widget->getId().empty())
+          std::cout << " (" << widget->getId() << ")";
+        std::cout << std::endl;
       }
 #endif
 
@@ -1068,16 +1259,16 @@ void Manager::pumpQueue()
                       paintMsg->rect().y,
                       paintMsg->rect().x2()-1,
                       paintMsg->rect().y2()-1);
-#ifdef REPORT_EVENTS
-        printf(" - clip(%d, %d, %d, %d)\n",
-               paintMsg->rect().x,
-               paintMsg->rect().y,
-               paintMsg->rect().x2()-1,
-               paintMsg->rect().y2()-1);
-        fflush(stdout);
-#endif
-
         dirty_display_flag = true;
+
+#ifdef REPORT_EVENTS
+        std::cout << " - clip("
+                  << paintMsg->rect().x << ", "
+                  << paintMsg->rect().y << ", "
+                  << paintMsg->rect().w << ", "
+                  << paintMsg->rect().h << ")"
+                  << std::endl;
+#endif
       }
 
       // Call the message handler
@@ -1158,22 +1349,6 @@ void Manager::collectGarbage()
  **********************************************************************/
 
 // static
-void Manager::generateSetCursorMessage()
-{
-  Widget* dst;
-  if (capture_widget)
-    dst = capture_widget;
-  else
-    dst = mouse_widget;
-
-  if (dst)
-    enqueueMessage(newMouseMessage(kSetCursorMessage, dst,
-                                   currentMouseButtons(0)));
-  else
-    jmouse_set_cursor(kArrowCursor);
-}
-
-// static
 void Manager::removeWidgetFromRecipients(Widget* widget, Message* msg)
 {
   msg->removeRecipient(widget);
@@ -1209,13 +1384,10 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(MessageType type, Widget* widget,
-                                  MouseButtons buttons)
+Message* Manager::newMouseMessage(MessageType type,
+  Widget* widget, gfx::Point mousePos, MouseButtons buttons, int delta)
 {
-  Message* msg =
-    new MouseMessage(type, buttons,
-                     gfx::Point(jmouse_x(0),
-                                jmouse_y(0)));
+  Message* msg = new MouseMessage(type, buttons, mousePos, delta);
 
   if (widget != NULL)
     msg->addRecipient(widget);

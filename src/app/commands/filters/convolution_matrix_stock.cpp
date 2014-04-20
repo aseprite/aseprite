@@ -74,11 +74,11 @@ void ConvolutionMatrixStock::reloadStock()
 
   for (i=0; names[i]; i++) {
     ResourceFinder rf;
-    rf.findInDataDir(names[i]);
+    rf.includeDataDir(names[i]);
 
-    while (const char* path = rf.next()) {
+    while (rf.next()) {
       // Open matrices stock file
-      base::FileHandle f = base::open_file(path, "r");
+      base::FileHandle f = base::open_file(rf.filename(), "r");
       if (!f)
         continue;
 

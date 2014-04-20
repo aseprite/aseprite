@@ -39,11 +39,11 @@ WebServer::WebServer()
   : m_webServer(NULL)
 {
   ResourceFinder rf;
-  rf.findInDataDir("www");
+  rf.includeDataDir("www");
 
-  while (const char* path = rf.next()) {
-    if (base::directory_exists(path)) {
-      m_wwwpath = path;
+  while (rf.next()) {
+    if (base::is_directory(rf.filename())) {
+      m_wwwpath = rf.filename();
       break;
     }
   }
@@ -78,7 +78,7 @@ void WebServer::onProcessRequest(webserver::IRequest* request,
       uri = "/index.html";
 
     std::string fn = base::join_path(m_wwwpath, uri);
-    if (base::file_exists(fn)) {
+    if (base::is_file(fn)) {
       response->sendFile(fn.c_str());
     }
     else {

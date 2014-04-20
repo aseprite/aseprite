@@ -18,6 +18,7 @@
 
 #ifndef APP_FILE_FILE_FORMATS_MANAGER_H_INCLUDED
 #define APP_FILE_FILE_FORMATS_MANAGER_H_INCLUDED
+#pragma once
 
 #include <vector>
 

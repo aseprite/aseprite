@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -25,9 +25,6 @@
 namespace ui {
 
 static Theme* current_theme = NULL;
-
-static void draw_text(BITMAP *bmp, FONT *f, const char* text, int x, int y,
-                      Color fg_color, Color bg_color, bool fill_bg);
 
 Theme::Theme()
 {
@@ -95,8 +92,8 @@ BITMAP* ji_apply_guiscale(BITMAP* original)
     return original;
 }
 
-void drawTextBox(BITMAP* bmp, Widget* widget,
-                 int* w, int* h, Color bg, Color fg)
+void drawTextBox(Graphics* g, Widget* widget,
+  int* w, int* h, Color bg, Color fg)
 {
   View* view = View::getView(widget);
   char* text = const_cast<char*>(widget->getText().c_str());
@@ -105,13 +102,15 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
   int x, y, chr, len;
   gfx::Point scroll;
   int viewport_w, viewport_h;
-  int textheight = jwidget_get_text_height(widget);
+  int textheight = widget->getTextHeight();
   FONT *font = widget->getFont();
   char *beg_end, *old_end;
   int width;
 
   if (view) {
-    gfx::Rect vp = view->getViewportBounds();
+    gfx::Rect vp = view->getViewportBounds()
+      .offset(-view->getViewport()->getBounds().getOrigin());
+
     x1 = vp.x;
     y1 = vp.y;
     viewport_w = vp.w;
@@ -119,22 +118,22 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
     scroll = view->getViewScroll();
   }
   else {
-    x1 = widget->getBounds().x + widget->border_width.l;
-    y1 = widget->getBounds().y + widget->border_width.t;
-    viewport_w = widget->getBounds().w - widget->border_width.l - widget->border_width.r;
-    viewport_h = widget->getBounds().h - widget->border_width.t - widget->border_width.b;
+    x1 = widget->getClientBounds().x + widget->border_width.l;
+    y1 = widget->getClientBounds().y + widget->border_width.t;
+    viewport_w = widget->getClientBounds().w - widget->border_width.l - widget->border_width.r;
+    viewport_h = widget->getClientBounds().h - widget->border_width.t - widget->border_width.b;
     scroll.x = scroll.y = 0;
   }
-  x2 = x1+viewport_w-1;
-  y2 = y1+viewport_h-1;
+  x2 = x1 + viewport_w;
+  y2 = y1 + viewport_h;
 
   chr = 0;
 
-  /* without word-wrap */
+  // Without word-wrap
   if (!(widget->getAlign() & JI_WORDWRAP)) {
-    width = widget->getBounds().w;
+    width = widget->getClientBounds().w;
   }
-  /* with word-wrap */
+  // With word-wrap
   else {
     if (w) {
       width = *w;
@@ -158,7 +157,7 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
     }
   }
 
-  /* draw line-by-line */
+  // Draw line-by-line
   y = y1 - scroll.y;
   for (beg=end=text; end; ) {
     x = x1 - scroll.x;
@@ -210,25 +209,23 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
 
     len = text_length(font, beg);
 
-    /* render the text in the "bmp" */
-    if (bmp) {
+    // Render the text
+    if (g) {
       int xout;
 
       if (widget->getAlign() & JI_CENTER)
         xout = x + width/2 - len/2;
       else if (widget->getAlign() & JI_RIGHT)
         xout = x + width - len;
-      else                      /* left */
+      else                      // Left align
         xout = x;
 
-      draw_text(bmp, font, beg, xout, y, fg, bg, true);
-
-      jrectexclude(bmp,
-                   x1, y, x2, y+textheight-1,
-                   xout, y, xout+len-1, y+textheight-1, bg);
+      g->drawString(beg, fg, bg, true, gfx::Point(xout, y));
+      g->fillAreaBetweenRects(bg,
+        gfx::Rect(x1, y, x2 - x1, textheight),
+        gfx::Rect(xout, y, len, textheight));
     }
 
-    /* width */
     if (w)
       *w = MAX(*w, len);
 
@@ -240,26 +237,15 @@ void drawTextBox(BITMAP* bmp, Widget* widget,
     }
   }
 
-  /* height */
   if (h)
-    *h = (y-y1+scroll.y);
+    *h = (y - y1 + scroll.y);
 
   if (w) *w += widget->border_width.l + widget->border_width.r;
   if (h) *h += widget->border_width.t + widget->border_width.b;
 
   // Fill bottom area
-  if (bmp) {
-    if (y <= y2)
-      rectfill(bmp, x1, y, x2, y2, to_system(bg));
-  }
-}
-
-static void draw_text(BITMAP *bmp, FONT *f, const char *text, int x, int y,
-                      Color fg_color, Color bg_color, bool fill_bg)
-{
-  // TODO Optional anti-aliased textout
-  ji_font_set_aa_mode(f, to_system(bg_color));
-  textout_ex(bmp, f, text, x, y, to_system(fg_color), (fill_bg ? to_system(bg_color): -1));
+  if (g && y < y2)
+    g->fillRect(bg, gfx::Rect(x1, y, x2 - x1, y2 - y));
 }
 
 } // namespace ui

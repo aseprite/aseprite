@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_EVENT_H_INCLUDED
 #define APP_DOCUMENT_EVENT_H_INCLUDED
+#pragma once
 
 #include "gfx/region.h"
 #include "raster/frame_number.h"

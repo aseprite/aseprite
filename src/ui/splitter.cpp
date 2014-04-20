@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -290,6 +290,8 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
   ev.stream() >> m_pos;
+  if (m_type == ByPixel)
+    m_pos *= jguiscale();
 
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
@@ -298,7 +300,8 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  ev.stream() << m_pos;
+  double pos = (m_type == ByPixel ? m_pos / jguiscale(): m_pos);
+  ev.stream() << pos;
 
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)

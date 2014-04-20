@@ -29,6 +29,10 @@ static void update_dirty_lines(BITMAP *bmp)
    RECT rect;
    int i;
 
+   ASSERT(_al_wd_dirty_lines != NULL);
+   if (_al_wd_dirty_lines == NULL)
+     return;
+
    /* The width is always the full bitmap width, because we have no
     * mechanism for measuring the X range of the update.
     */
@@ -73,7 +77,10 @@ void gfx_directx_unwrite_bank(BITMAP *bmp)
 
 uintptr_t gfx_directx_write_bank_win(BITMAP *bmp, int line)
 {
-   _al_wd_dirty_lines[bmp->y_ofs+line] = 1;
+   ASSERT(_al_wd_dirty_lines != NULL);
+
+   if (_al_wd_dirty_lines != NULL)
+      _al_wd_dirty_lines[bmp->y_ofs+line] = 1;
 
    if (!(bmp->id & BMP_ID_LOCKED))
       gfx_directx_autolock(bmp);

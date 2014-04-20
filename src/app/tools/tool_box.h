@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_TOOL_BOX_H_INCLUDED
 #define APP_TOOLS_TOOL_BOX_H_INCLUDED
+#pragma once
 
 #include <list>
 #include <map>
@@ -47,6 +48,7 @@ namespace app {
       extern const char* ReplaceBgWithFg;
       extern const char* PickFg;
       extern const char* PickBg;
+      extern const char* Zoom;
       extern const char* Scroll;
       extern const char* Move;
       extern const char* Blur;

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_PATH_H_INCLUDED
 #define RASTER_PATH_H_INCLUDED
+#pragma once
 
 #error This file is deprecated
 

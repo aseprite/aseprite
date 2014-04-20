@@ -1,21 +1,22 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_INT_ENTRY_H_INCLUDED
 #define UI_INT_ENTRY_H_INCLUDED
+#pragma once
 
 #include "ui/entry.h"
 
 namespace ui {
 
+  class CloseEvent;
   class PopupWindow;
   class Slider;
 
-  class IntEntry : public Entry
-  {
+  class IntEntry : public Entry {
   public:
     IntEntry(int min, int max);
     ~IntEntry();
@@ -34,6 +35,7 @@ namespace ui {
     void openPopup();
     void closePopup();
     void onChangeSlider();
+    void onPopupClose(CloseEvent& ev);
 
     int m_min;
     int m_max;

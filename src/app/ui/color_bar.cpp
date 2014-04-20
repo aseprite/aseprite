@@ -34,8 +34,11 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "ui/graphics.h"
 #include "ui/paint_event.h"
+
+#include "ui/menu.h"
 
 namespace app {
 
@@ -53,7 +56,7 @@ ColorBar::ScrollableView::ScrollableView()
   int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
-  jwidget_set_border(this, l, t, r, b);
+  setBorder(gfx::Border(l, t, r, b));
 }
 
 void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
@@ -74,42 +77,36 @@ ColorBar* ColorBar::m_instance = NULL;
 
 ColorBar::ColorBar(int align)
   : Box(align)
-  , m_paletteButton("Edit Palette", kButtonWidget)
+  , m_paletteButton("Edit Palette")
   , m_paletteView(false)
-  , m_fgColor(app::Color::fromIndex(15), IMAGE_INDEXED)
-  , m_bgColor(app::Color::fromIndex(0), IMAGE_INDEXED)
+  , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
+  , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
 {
   m_instance = this;
 
-  setBorder(gfx::Border(1*jguiscale()));
-  child_spacing = 1*jguiscale();
+  setBorder(gfx::Border(2*jguiscale(), 0, 0, 0));
+  child_spacing = 2*jguiscale();
 
   m_paletteView.setBoxSize(6*jguiscale());
-  m_paletteView.setColumns(4);
+  m_paletteView.setColumns(8);
   m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);
   m_bgColor.setPreferredSize(0, m_bgColor.getPreferredSize().h);
 
+  // TODO hardcoded scroll bar width should be get from skin.xml file
+  int scrollBarWidth = 6*jguiscale();
+  m_scrollableView.getHorizontalBar()->setBarWidth(scrollBarWidth);
+  m_scrollableView.getVerticalBar()->setBarWidth(scrollBarWidth);
+  setup_mini_look(m_scrollableView.getHorizontalBar());
+  setup_mini_look(m_scrollableView.getVerticalBar());
+
   m_scrollableView.attachToView(&m_paletteView);
-  int w = (m_scrollableView.getBorder().getSize().w +
-           m_scrollableView.getViewport()->getBorder().getSize().w +
-           m_paletteView.getPreferredSize().w +
-           getTheme()->scrollbar_size);
-
-  jwidget_set_min_size(&m_scrollableView, w, 0);
-
   m_scrollableView.setExpansive(true);
 
   addChild(&m_paletteButton);
   addChild(&m_scrollableView);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
-
-  this->border_width.l = 2*jguiscale();
-  this->border_width.t = 2*jguiscale();
-  this->border_width.r = 0;
-  this->border_width.b = 2*jguiscale();
-  this->child_spacing = 2*jguiscale();
 
   m_paletteView.IndexChange.connect(&ColorBar::onPaletteIndexChange, this);
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
@@ -129,8 +126,9 @@ ColorBar::ColorBar(int align)
   m_paletteView.setBgColor(((SkinTheme*)getTheme())->getColor(ThemeColor::TabSelectedFace));
 
   // Change labels foreground color
-  setup_mini_font(setup_mini_look(&m_paletteButton));
+  setup_mini_font(m_paletteButton.mainButton());
   m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
+  m_paletteButton.DropDownClick.connect(Bind<void>(&ColorBar::onPaletteButtonDropDownClick, this));
 
   onColorButtonChange(getFgColor());
 }
@@ -187,6 +185,20 @@ void ColorBar::onPaletteButtonClick()
   params.set("switch", "true");
 
   UIContext::instance()->executeCommand(cmd_show_palette_editor, &params);
+}
+
+void ColorBar::onPaletteButtonDropDownClick()
+{
+  if (!m_palettePopup.isVisible()) {
+    gfx::Rect bounds = m_paletteButton.getBounds();
+
+    m_palettePopup.showPopup(
+      gfx::Rect(bounds.x+bounds.w, bounds.y,
+        JI_SCREEN_W/2, JI_SCREEN_H/2));
+  }
+  else {
+    m_palettePopup.closeWindow(NULL);
+  }
 }
 
 void ColorBar::onPaletteIndexChange(int index)

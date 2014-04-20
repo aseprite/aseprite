@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_FILE_SELECTOR_H_INCLUDED
 #define APP_UI_FILE_SELECTOR_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 #include "base/unique_ptr.h"
@@ -51,7 +52,7 @@ namespace app {
     void onGoBack();
     void onGoForward();
     void onGoUp();
-    void onLocationChange();
+    void onLocationCloseListBox();
     void onFileTypeChange();
     void onFileListFileSelected();
     void onFileListFileAccepted();
@@ -64,6 +65,12 @@ namespace app {
     ui::ComboBox* m_fileType;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
+
+    // If true the navigation_history isn't
+    // modified if the current folder changes
+    // (used when the back/forward buttons
+    // are pushed)
+    bool m_navigationLocked;
   };
 
 } // namespace app

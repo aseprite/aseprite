@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_INTERN_H_INCLUDED
 #define UI_INTERN_H_INCLUDED
+#pragma once
 
 #include "ui/base.h"
 #include "ui/color.h"
@@ -15,6 +16,7 @@ struct BITMAP;
 
 namespace ui {
 
+  class Graphics;
   class Widget;
   class Window;
 
@@ -28,7 +30,7 @@ namespace ui {
 
   // theme.cpp
 
-  void drawTextBox(BITMAP* bmp, Widget* textbox,
+  void drawTextBox(Graphics* g, Widget* textbox,
                    int* w, int* h, ui::Color bg, ui::Color fg);
 
   // fontbmp.c

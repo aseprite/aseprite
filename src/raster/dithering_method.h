@@ -18,6 +18,7 @@
 
 #ifndef RASTER_DITHERING_METHOD_H_INCLUDED
 #define RASTER_DITHERING_METHOD_H_INCLUDED
+#pragma once
 
 namespace raster {
 

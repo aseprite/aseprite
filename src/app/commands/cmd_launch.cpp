@@ -32,7 +32,7 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
-  Command* clone() const { return new LaunchCommand(*this); }
+  Command* clone() const OVERRIDE { return new LaunchCommand(*this); }
 
 protected:
   void onLoadParams(Params* params) OVERRIDE;
@@ -76,15 +76,9 @@ void LaunchCommand::onExecute(Context* context)
     case FileInDocs:
       {
         ResourceFinder rf;
-        rf.findInDocsDir(m_path.c_str());
-
-        while (const char* path = rf.next()) {
-          if (!base::file_exists(path))
-            continue;
-
-          launcher::open_file(path);
-          break;
-        }
+        rf.includeDocsDir(m_path.c_str());
+        if (rf.findFirst())
+          launcher::open_file(rf.filename());
       }
       break;
 

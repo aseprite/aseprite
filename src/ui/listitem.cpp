@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -23,6 +23,7 @@ using namespace gfx;
 ListItem::ListItem(const base::string& text)
   : Widget(kListItemWidget)
 {
+  setDoubleBuffered(true);
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);
   initTheme();
@@ -47,10 +48,8 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
   int w = 0, h = 0;
   Size maxSize;
 
-  if (hasText()) {
-    maxSize.w = jwidget_get_text_length(this);
-    maxSize.h = jwidget_get_text_height(this);
-  }
+  if (hasText())
+    maxSize = getTextSize();
   else
     maxSize.w = maxSize.h = 0;
 

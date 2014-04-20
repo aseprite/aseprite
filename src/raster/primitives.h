@@ -18,6 +18,7 @@
 
 #ifndef RASTER_PRIMITIVES_H_INCLUDED
 #define RASTER_PRIMITIVES_H_INCLUDED
+#pragma once
 
 #include "raster/color.h"
 #include "raster/image_buffer.h"

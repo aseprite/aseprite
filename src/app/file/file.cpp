@@ -152,7 +152,7 @@ FileOp* fop_to_load_document(const char* filename, int flags)
   PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
   // Does file exist?
-  if (!base::file_exists(filename)) {
+  if (!base::is_file(filename)) {
     fop_error(fop, "File not found: \"%s\"\n", filename);
     goto done;
   }
@@ -546,6 +546,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
   else if (fop->type == FileOpSave &&
            fop->format != NULL &&
            fop->format->support(FILE_SUPPORT_SAVE)) {
+#ifdef ENABLE_SAVE
     // Save a sequence
     if (fop->is_sequence()) {
       ASSERT(fop->format->support(FILE_SUPPORT_SEQUENCES));
@@ -596,6 +597,11 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         fop_error(fop, "Error saving the sprite in the file \"%s\"\n",
                   fop->filename.c_str());
     }
+#else
+    fop_error(fop,
+      "Save operation is not supported in trial version.\n"
+      "Go to " WEBSITE_DOWNLOAD " and get the full-version.");
+#endif
   }
 
   // Progress = 100%

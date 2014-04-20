@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,39 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_DROP_FILES_H_INCLUDED
-#define APP_DROP_FILES_H_INCLUDED
+#ifndef APP_UI_PALETTE_LISTBOX_H_INCLUDED
+#define APP_UI_PALETTE_LISTBOX_H_INCLUDED
+#pragma once
+
+#include "app/palettes_loader.h"
+#include "base/compiler_specific.h"
+#include "base/unique_ptr.h"
+#include "ui/listbox.h"
+#include "ui/timer.h"
 
 namespace app {
 
-  void install_drop_files();
-  void uninstall_drop_files();
+  class PaletteListBox : public ui::ListBox {
+  public:
+    PaletteListBox();
 
-  void check_for_dropped_files();
+    raster::Palette* selectedPalette();
+
+    Signal1<void, raster::Palette*> PalChange;
+
+  protected:
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onChangeSelectedItem() OVERRIDE;
+    void onTick();
+    void stop();
+
+  private:
+    base::UniquePtr<PalettesLoader> m_palettesLoader;
+    ui::Timer m_palettesTimer;
+
+    class LoadingItem;
+    LoadingItem* m_loadingItem;
+  };
 
 } // namespace app
 

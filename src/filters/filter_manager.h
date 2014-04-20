@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_FILTER_MANAGER_H_INCLUDED
 #define FILTERS_FILTER_MANAGER_H_INCLUDED
+#pragma once
 
 #include "filters/target.h"
 

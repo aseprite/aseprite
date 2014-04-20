@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_COLOR_SELECTOR_H_INCLUDED
 #define APP_UI_COLOR_SELECTOR_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "app/ui/color_sliders.h"

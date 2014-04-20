@@ -18,6 +18,7 @@
 
 #ifndef APP_GFXMODE_H_INCLUDED
 #define APP_GFXMODE_H_INCLUDED
+#pragma once
 
 namespace app {
 

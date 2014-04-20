@@ -45,7 +45,7 @@ using namespace ui;
 class CelPropertiesCommand : public Command {
 public:
   CelPropertiesCommand();
-  Command* clone() const { return new CelPropertiesCommand(*this); }
+  Command* clone() const OVERRIDE { return new CelPropertiesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

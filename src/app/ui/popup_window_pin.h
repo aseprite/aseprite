@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_POPUP_FRAME_PIN_H_INCLUDED
 #define APP_UI_POPUP_FRAME_PIN_H_INCLUDED
+#pragma once
 
 #include "ui/button.h"
 #include "ui/popup_window.h"
@@ -26,7 +27,7 @@ namespace app {
 
   class PopupWindowPin : public ui::PopupWindow {
   public:
-    PopupWindowPin(const base::string& text, bool close_on_buttonpressed);
+    PopupWindowPin(const base::string& text, ClickBehavior clickBehavior);
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;

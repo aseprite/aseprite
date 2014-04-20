@@ -18,6 +18,7 @@
 
 #ifndef APP_TOOLS_INTERTWINE_H_INCLUDED
 #define APP_TOOLS_INTERTWINE_H_INCLUDED
+#pragma once
 
 #include "gfx/point.h"
 

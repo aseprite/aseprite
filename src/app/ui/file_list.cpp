@@ -44,6 +44,7 @@ FileList::FileList()
   , m_monitoringTimer(50, this)
 {
   setFocusStop(true);
+  setDoubleBuffered(true);
 
   m_currentFolder = FileSystemModule::instance()->getRootFileItem();
   m_req_valid = false;
@@ -115,138 +116,13 @@ bool FileList::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kPaintMessage: {
-      SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-      View* view = View::getView(this);
-      gfx::Rect vp = view->getViewportBounds();
-      int th = jwidget_get_text_height(this);
-      int x, y = getBounds().y;
-      int evenRow = 0;
-      ui::Color bgcolor;
-      ui::Color fgcolor;
-      BITMAP *thumbnail = NULL;
-      int thumbnail_y = 0;
-
-      // rows
-      for (FileItemList::iterator
-             it=m_list.begin(), end=m_list.end(); it!=end; ++it) {
-        IFileItem* fi = *it;
-        gfx::Size itemSize = getFileItemSize(fi);
-
-        if (fi == m_selected) {
-          fgcolor = theme->getColor(ThemeColor::FileListSelectedRowText);
-          bgcolor = theme->getColor(ThemeColor::FileListSelectedRowFace);
-        }
-        else {
-          bgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowFace):
-                              theme->getColor(ThemeColor::FileListOddRowFace);
-
-          if (fi->isFolder() && !fi->isBrowsable())
-            fgcolor = theme->getColor(ThemeColor::FileListDisabledRowText);
-          else
-            fgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowText):
-                                theme->getColor(ThemeColor::FileListOddRowText);
-        }
-
-        x = getBounds().x+2;
-
-        if (fi->isFolder()) {
-          int icon_w = ji_font_text_len(getFont(), "[+]");
-          int icon_h = ji_font_get_size(getFont());
-
-          jdraw_text(ji_screen, getFont(),
-                     "[+]", x, y+2,
-                     fgcolor, bgcolor, true, jguiscale());
-
-          // background for the icon
-          jrectexclude(ji_screen,
-                       /* rectangle to fill */
-                       getBounds().x, y,
-                       x+icon_w+2-1, y+2+th+2-1,
-                       /* exclude where is the icon located */
-                       x, y+2,
-                       x+icon_w-1,
-                       y+2+icon_h-1,
-                       /* fill with the background color */
-                       bgcolor);
-
-          x += icon_w+2;
-        }
-        else {
-          // background for the left side of the item
-          rectfill(ji_screen,
-                   getBounds().x, y,
-                   x-1, y+2+th+2-1,
-                   to_system(bgcolor));
-        }
-
-        // item name
-        jdraw_text(ji_screen, getFont(),
-                   fi->getDisplayName().c_str(), x, y+2,
-                   fgcolor, bgcolor, true, jguiscale());
-
-        // background for the item name
-        jrectexclude(ji_screen,
-                     /* rectangle to fill */
-                     x, y,
-                     getBounds().x2()-1, y+2+th+2-1,
-                     /* exclude where is the text located */
-                     x, y+2,
-                     x+ji_font_text_len(getFont(),
-                                        fi->getDisplayName().c_str())-1,
-                     y+2+ji_font_get_size(getFont())-1,
-                     /* fill with the background color */
-                     bgcolor);
-
-        // draw progress bars
-        double progress;
-        ThumbnailGenerator::WorkerStatus workerStatus =
-          ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
-        if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
-          theme->drawProgressBar(ji_screen,
-                                 getBounds().x2()-2-64, y+itemSize.h/2-3,
-                                 getBounds().x2()-2, y+itemSize.h/2+3,
-                                 progress);
-        }
-
-        // Thumbnail position
-        if (fi == m_selected) {
-          thumbnail = fi->getThumbnail();
-          if (thumbnail)
-            thumbnail_y = y + itemSize.h/2;
-        }
-
-        y += itemSize.h;
-        evenRow ^= 1;
-      }
-
-      if (y < getBounds().y2()-1)
-        rectfill(ji_screen,
-                 getBounds().x, y,
-                 getBounds().x2()-1, getBounds().y2()-1,
-                 to_system(theme->getColor(ThemeColor::Background)));
-
-      // Draw the thumbnail
-      if (thumbnail) {
-        x = vp.x+vp.w-2-thumbnail->w;
-        y = thumbnail_y-thumbnail->h/2;
-        y = MID(vp.y+2, y, vp.y+vp.h-3-thumbnail->h);
-
-        blit(thumbnail, ji_screen, 0, 0, x, y, thumbnail->w, thumbnail->h);
-        rect(ji_screen,
-             x-1, y-1, x+thumbnail->w, y+thumbnail->h,
-             makecol(0, 0, 0));
-      }
-      return true;
-    }
-
     case kMouseDownMessage:
       captureMouse();
 
     case kMouseMoveMessage:
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        int th = jwidget_get_text_height(this);
+        int th = getTextHeight();
         int y = getBounds().y;
         IFileItem* old_selected = m_selected;
         m_selected = NULL;
@@ -321,7 +197,7 @@ bool FileList::onProcessMessage(Message* msg)
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (2+jwidget_get_text_height(this)+2);
+            select += sgn * vp.h / (2+getTextHeight()+2);
             break;
           }
           case kKeyLeft:
@@ -397,7 +273,7 @@ bool FileList::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3*(2+jwidget_get_text_height(this)+2);
+        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(2+getTextHeight()+2);
         view->setViewScroll(scroll);
       }
       break;
@@ -419,6 +295,104 @@ bool FileList::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void FileList::onPaint(ui::PaintEvent& ev)
+{
+  Graphics* g = ev.getGraphics();
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  View* view = View::getView(this);
+  gfx::Rect vp = view->getViewportBounds();
+  gfx::Rect bounds = getClientBounds();
+  int th = getTextHeight();
+  int x, y = bounds.y;
+  int evenRow = 0;
+  ui::Color bgcolor;
+  ui::Color fgcolor;
+  BITMAP* thumbnail = NULL;
+  int thumbnail_y = 0;
+
+  g->fillRect(theme->getColor(ThemeColor::Background), bounds);
+
+  // rows
+  for (FileItemList::iterator
+         it=m_list.begin(), end=m_list.end(); it!=end; ++it) {
+    IFileItem* fi = *it;
+    gfx::Size itemSize = getFileItemSize(fi);
+
+    if (fi == m_selected) {
+      fgcolor = theme->getColor(ThemeColor::FileListSelectedRowText);
+      bgcolor = theme->getColor(ThemeColor::FileListSelectedRowFace);
+    }
+    else {
+      bgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowFace):
+                          theme->getColor(ThemeColor::FileListOddRowFace);
+
+      if (fi->isFolder() && !fi->isBrowsable())
+        fgcolor = theme->getColor(ThemeColor::FileListDisabledRowText);
+      else
+        fgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowText):
+                            theme->getColor(ThemeColor::FileListOddRowText);
+    }
+
+    x = bounds.x+2;
+
+    // Item background
+    g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
+
+    if (fi->isFolder()) {
+      int icon_w = ji_font_text_len(getFont(), "[+]");
+      int icon_h = ji_font_get_size(getFont());
+
+      g->drawString("[+]", fgcolor, bgcolor, true,
+        gfx::Point(x, y+2));
+
+      x += icon_w+2;
+    }
+
+    // item name
+    g->drawString(
+      fi->getDisplayName().c_str(),
+      fgcolor, bgcolor, true, gfx::Point(x, y+2));
+
+    // draw progress bars
+    double progress;
+    ThumbnailGenerator::WorkerStatus workerStatus =
+      ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
+    if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
+      int barw = 64*jguiscale();
+
+      theme->paintProgressBar(g,
+        gfx::Rect(
+          bounds.x2()-2*jguiscale()-barw,
+          y+itemSize.h/2-3*jguiscale(),
+          barw, 6*jguiscale()),
+        progress);
+    }
+
+    // Thumbnail position
+    if (fi == m_selected) {
+      thumbnail = fi->getThumbnail();
+      if (thumbnail)
+        thumbnail_y = y + itemSize.h/2;
+    }
+
+    y += itemSize.h;
+    evenRow ^= 1;
+  }
+
+  // Draw the thumbnail
+  if (thumbnail) {
+    x = vp.x+vp.w-2*jguiscale()-thumbnail->w;
+    y = thumbnail_y-thumbnail->h/2+getBounds().y;
+    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->h);
+    x -= getBounds().x;
+    y -= getBounds().y;
+
+    g->blit(thumbnail, 0, 0, x, y, thumbnail->w, thumbnail->h);
+    g->drawRect(ui::rgba(0, 0, 0),
+      gfx::Rect(x-1, y-1, thumbnail->w+1, thumbnail->h+1));
+  }
 }
 
 void FileList::onPreferredSize(PreferredSizeEvent& ev)
@@ -484,7 +458,7 @@ gfx::Size FileList::getFileItemSize(IFileItem* fi) const
   len += ji_font_text_len(getFont(), fi->getDisplayName().c_str());
 
   return gfx::Size(2+len+2,
-                   2+jwidget_get_text_height(this)+2);
+    2+getTextHeight()+2);
 }
 
 void FileList::makeSelectedFileitemVisible()
@@ -492,7 +466,7 @@ void FileList::makeSelectedFileitemVisible()
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  int th = jwidget_get_text_height(this);
+  int th = getTextHeight();
   int y = getBounds().y;
 
   // rows

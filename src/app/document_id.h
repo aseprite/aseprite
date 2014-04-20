@@ -18,9 +18,14 @@
 
 #ifndef APP_DOCUMENT_ID_H_INCLUDED
 #define APP_DOCUMENT_ID_H_INCLUDED
+#pragma once
 
-typedef uint32_t DocumentId;
+#include "doc/object_id.h"
 
-const DocumentId WithoutDocumentId = 0;
+namespace app {
+
+  typedef doc::ObjectId DocumentId;
+
+}
 
 #endif

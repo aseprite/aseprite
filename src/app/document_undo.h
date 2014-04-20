@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_UNDO_H_INCLUDED
 #define APP_DOCUMENT_UNDO_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/disable_copying.h"

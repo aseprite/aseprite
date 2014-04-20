@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_COMBOBOX_H_INCLUDED
 #define UI_COMBOBOX_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
@@ -83,12 +84,16 @@ namespace ui {
 
     // Signals
     Signal0<void> Change;
+    Signal0<void> OpenListBox;
+    Signal0<void> CloseListBox;
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
     void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     virtual void onChange();
+    virtual void onOpenListBox();
+    virtual void onCloseListBox();
 
   private:
     void onButtonClick(Event& ev);

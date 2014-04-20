@@ -44,7 +44,7 @@ using namespace ui;
 class NewLayerCommand : public Command {
 public:
   NewLayerCommand();
-  Command* clone() { return new NewLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new NewLayerCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

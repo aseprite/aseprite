@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -411,8 +411,8 @@ void Entry::onSetText()
 {
   Widget::onSetText();
 
-  if (m_caret >= 0 && (size_t)m_caret > getTextSize())
-    m_caret = (int)getTextSize();
+  if (m_caret >= 0 && (size_t)m_caret > getTextLength())
+    m_caret = (int)getTextLength();
 }
 
 void Entry::onEntryChange()

@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
 #define FILTERS_NEIGHBORING_PIXELS_H_INCLUDED
+#pragma once
 
 #include "filters/tiled_mode.h"
 #include "raster/image.h"

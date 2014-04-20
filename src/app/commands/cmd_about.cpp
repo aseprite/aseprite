@@ -32,7 +32,7 @@ using namespace ui;
 class AboutCommand : public Command {
 public:
   AboutCommand();
-  Command* clone() const { return new AboutCommand(*this); }
+  Command* clone() const OVERRIDE { return new AboutCommand(*this); }
 
 protected:
   void onExecute(Context* context);
@@ -58,7 +58,7 @@ void AboutCommand::onExecute(Context* context)
   Label* author1_desc = new Label("| Programming");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
   Label* author2_desc = new Label("| Skin and Graphics");
-  Label* author3 = new LinkLabel("http://code.google.com/p/aseprite/people/list", "Contributors");
+  Label* author3 = new LinkLabel(WEBSITE_CONTRIBUTORS, "Contributors");
   Box* bottom_box1 = new Box(JI_HORIZONTAL);
   Box* bottom_box2 = new Box(JI_HORIZONTAL);
   Box* bottom_box3 = new Box(JI_HORIZONTAL);
@@ -91,11 +91,11 @@ void AboutCommand::onExecute(Context* context)
   box1->addChild(grid);
   window->addChild(box1);
 
-  jwidget_set_border(close_button,
-                     close_button->border_width.l + 16*jguiscale(),
-                     close_button->border_width.t,
-                     close_button->border_width.r + 16*jguiscale(),
-                     close_button->border_width.b);
+  close_button->setBorder(gfx::Border(
+      close_button->border_width.l + 16*jguiscale(),
+      close_button->border_width.t,
+      close_button->border_width.r + 16*jguiscale(),
+      close_button->border_width.b));
 
   close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));
 

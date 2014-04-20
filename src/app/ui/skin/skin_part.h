@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_SKIN_SKIN_PART_H_INCLUDED
 #define APP_UI_SKIN_SKIN_PART_H_INCLUDED
+#pragma once
 
 #include <vector>
 #include "base/shared_ptr.h"

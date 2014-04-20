@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_COMMAND_FACTORY_H_INCLUDED
 #define APP_COMMANDS_COMMAND_FACTORY_H_INCLUDED
+#pragma once
 
 namespace app {
   class Command;

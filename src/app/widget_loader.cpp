@@ -72,28 +72,18 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
 {
   Widget* widget;
   std::string buf;
-  bool found = false;
 
   ResourceFinder rf;
-
   rf.addPath(fileName);
 
   buf = "widgets/";
   buf += fileName;
-  rf.findInDataDir(buf.c_str());
+  rf.includeDataDir(buf.c_str());
 
-  while (const char* path = rf.next()) {
-    if (base::file_exists(path)) {
-      buf = path;
-      found = true;
-      break;
-    }
-  }
-
-  if (!found)
+  if (!rf.findFirst())
     throw WidgetNotFound(widgetId);
 
-  widget = loadWidgetFromXmlFile(buf, widgetId);
+  widget = loadWidgetFromXmlFile(rf.filename(), widgetId);
   if (!widget)
     throw WidgetNotFound(widgetId);
 
@@ -440,7 +430,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget->setFocusMagnet(true);
 
     if (noborders)
-      jwidget_noborders(widget);
+      widget->noBorderNoChildSpacing();
 
     if (childspacing)
       widget->child_spacing = ustrtol(childspacing, NULL, 10);

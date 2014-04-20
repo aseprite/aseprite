@@ -18,6 +18,7 @@
 
 #ifndef APP_UNDO_TRANSACTION_H_INCLUDED
 #define APP_UNDO_TRANSACTION_H_INCLUDED
+#pragma once
 
 #include "undo/modification.h"
 

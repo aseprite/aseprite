@@ -18,6 +18,7 @@
 
 #ifndef APP_FLATTEN_H_INCLUDED
 #define APP_FLATTEN_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "raster/frame_number.h"

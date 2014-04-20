@@ -38,22 +38,18 @@ static std::string config_filename;
 ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
-  rf.findConfigurationFile();
+  rf.includeConfFile();
 
   config_filename.clear();
 
   // Search the configuration file from first to last path
-  while (const char* path = rf.next()) {
-    if (base::file_exists(path)) {
-      config_filename = path;
-      break;
-    }
-  }
+  if (rf.findFirst())
+    config_filename = rf.filename();
 
   // If the file wasn't found, we will create configuration file
   // in the first path
   if (config_filename[0] == 0 && rf.first())
-    config_filename = rf.first();
+    config_filename = rf.filename();
 
   override_config_file(config_filename.c_str());
 }

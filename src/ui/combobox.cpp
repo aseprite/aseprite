@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -85,7 +85,7 @@ ComboBox::ComboBox()
   m_entry = new ComboBoxEntry(this);
   m_button = new ComboBoxButton();
   m_window = NULL;
-  m_selected = 0;
+  m_selected = -1;
   m_editable = false;
   m_clickopen = true;
   m_casesensitive = true;
@@ -290,12 +290,16 @@ int ComboBox::getSelectedItemIndex() const
 
 void ComboBox::setSelectedItemIndex(int itemIndex)
 {
-  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
+  if (itemIndex >= 0 &&
+      (size_t)itemIndex < m_items.size() &&
+      m_selected != itemIndex) {
     m_selected = itemIndex;
 
     ListItems::iterator it = m_items.begin() + itemIndex;
     ListItem* item = *it;
     m_entry->setText(item->getText());
+
+    onChange();
   }
 }
 
@@ -432,8 +436,7 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
-            mouseMsg->buttons(),
-            mouseMsg->position());
+            mouseMsg->buttons(), mouseMsg->position(), 0);
           pick->sendMessage(&mouseMsg2);
           return true;
         }
@@ -454,14 +457,9 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kMouseUpMessage: {
-      int index = m_comboBox->getSelectedItemIndex();
-      if (isValidItem(index))
-        m_comboBox->onChange();
-
+    case kMouseUpMessage:
       m_comboBox->closeListBox();
       return true;
-    }
 
     case kKeyDownMessage:
       if (hasFocus()) {
@@ -503,7 +501,7 @@ void ComboBox::openListBox()
     View* view = new View();
     m_listbox = new ComboBoxListBox(this);
     m_window->setOnTop(true);
-    jwidget_noborders(m_window);
+    m_window->noBorderNoChildSpacing();
 
     Widget* viewport = view->getViewport();
     int size = getItemCount();
@@ -511,7 +509,7 @@ void ComboBox::openListBox()
       (viewport,
        m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
        +viewport->border_width.t
-       +(2*jguiscale()+jwidget_get_text_height(m_listbox))*MID(1, size, 16)+
+       +(2*jguiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
        +viewport->border_width.b);
 
     m_window->addChild(view);
@@ -528,6 +526,8 @@ void ComboBox::openListBox()
 
     m_window->openWindow();
     getManager()->setFocus(m_listbox);
+
+    onOpenListBox();
   }
 }
 
@@ -542,6 +542,8 @@ void ComboBox::closeListBox()
 
     getManager()->removeMessageFilter(kMouseDownMessage, this);
     getManager()->setFocus(m_entry);
+
+    onCloseListBox();
   }
 }
 
@@ -569,6 +571,16 @@ gfx::Rect ComboBox::getListBoxPos() const
 void ComboBox::onChange()
 {
   Change();
+}
+
+void ComboBox::onOpenListBox()
+{
+  OpenListBox();
+}
+
+void ComboBox::onCloseListBox()
+{
+  CloseListBox();
 }
 
 } // namespace ui

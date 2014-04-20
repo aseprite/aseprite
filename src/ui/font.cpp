@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 /* Based on code of AllegroFont, Copyright (c) 2001, 2002 Javier Gonzalez */
 
@@ -576,7 +576,6 @@ int ji_font_char_len(FONT* f, int chr)
   return f->vtable->char_length(f, chr);
 }
 
-// see jdraw_text
 int ji_font_text_len(struct FONT* f, const char *s)
 {
   int in_pos = 0;
@@ -980,7 +979,6 @@ int ji_font_char_len(FONT* f, int chr)
   return f->vtable->char_length(f, chr);
 }
 
-// see jdraw_text
 int ji_font_text_len(struct FONT* f, const char* s)
 {
   int in_pos = 0;

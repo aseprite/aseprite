@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_VIEW_H_INCLUDED
 #define APP_UI_EDITOR_VIEW_H_INCLUDED
+#pragma once
 
 #include "ui/view.h"
 #include "app/settings/settings_observers.h"
@@ -33,7 +34,7 @@ namespace app {
     ~EditorView();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
 
     // GlobalSettingsObserver impl

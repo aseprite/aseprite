@@ -38,8 +38,8 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-PopupWindowPin::PopupWindowPin(const base::string& text, bool close_on_buttonpressed)
-  : PopupWindow(text, close_on_buttonpressed)
+PopupWindowPin::PopupWindowPin(const base::string& text, ClickBehavior clickBehavior)
+  : PopupWindow(text, clickBehavior)
   , m_pin("")
 {
   // Configure the micro check-box look without borders, only the "pin" icon is shown.

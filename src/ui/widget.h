@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_WIDGET_H_INCLUDED
 #define UI_WIDGET_H_INCLUDED
+#pragma once
 
 #include <string>
 
@@ -44,17 +45,6 @@ namespace ui {
 
   // Position and geometry
 
-  int jwidget_get_text_length(const Widget* widget);
-  int jwidget_get_text_height(const Widget* widget);
-  void jwidget_get_texticon_info(Widget* widget,
-                                 gfx::Rect* box,
-                                 gfx::Rect* text,
-                                 gfx::Rect* icon,
-                                 int icon_align, int icon_w, int icon_h);
-
-  void jwidget_noborders(Widget* widget);
-  void jwidget_set_border(Widget* widget, int value);
-  void jwidget_set_border(Widget* widget, int l, int t, int r, int b);
   void jwidget_set_min_size(Widget* widget, int w, int h);
   void jwidget_set_max_size(Widget* widget, int w, int h);
 
@@ -111,10 +101,17 @@ namespace ui {
     const base::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
-    size_t getTextSize() const { return m_text.size(); }
+    size_t getTextLength() const { return m_text.size(); }
     void setText(const base::string& text);
     void setTextf(const char* text, ...);
     void setTextQuiet(const base::string& text);
+
+    int getTextWidth() const;
+    int getTextHeight() const;
+
+    gfx::Size getTextSize() const {
+      return gfx::Size(getTextWidth(), getTextHeight());
+    }
 
     // ===============================================================
     // COMMON PROPERTIES
@@ -169,9 +166,7 @@ namespace ui {
     }
 
     // Sets the background color of the widget
-    void setBgColor(ui::Color bg_color) {
-      m_bgColor = bg_color;
-    }
+    void setBgColor(ui::Color color);
 
     Theme* getTheme() const { return m_theme; }
     void setTheme(Theme* theme);
@@ -273,6 +268,8 @@ namespace ui {
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
 
+    void noBorderNoChildSpacing();
+
     // Flags for getDrawableRegion()
     enum DrawableRegionFlags {
       kCutTopWindows = 1, // Cut areas where are windows on top.
@@ -289,12 +286,21 @@ namespace ui {
       return gfx::Rect(rc).offset(-m_bounds.x, -m_bounds.y);
     }
 
+    void getTextIconInfo(
+      gfx::Rect* box,
+      gfx::Rect* text = NULL,
+      gfx::Rect* icon = NULL,
+      int icon_align = 0, int icon_w = 0, int icon_h = 0);
+
     // ===============================================================
     // REFRESH ISSUES
     // ===============================================================
 
-    bool isDoubleBuffered();
+    bool isDoubleBuffered() const;
     void setDoubleBuffered(bool doubleBuffered);
+
+    bool isTransparent() const;
+    void setTransparent(bool transparent);
 
     void invalidate();
     void invalidateRect(const gfx::Rect& rect);
@@ -370,8 +376,12 @@ namespace ui {
     virtual void onSelect();
     virtual void onDeselect();
     virtual void onSetText();
+    virtual void onSetBgColor();
 
   private:
+    void paint(Graphics* graphics, const gfx::Region& drawRegion);
+    bool paintEvent(Graphics* graphics);
+
     base::string m_id;            // Widget's id
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
@@ -383,7 +393,8 @@ namespace ui {
     WidgetsList m_children;       // Sub-widgets
     Widget* m_parent;             // Who is the parent?
     gfx::Size* m_preferredSize;
-    bool m_doubleBuffered : 1;
+    bool m_doubleBuffered;
+    bool m_transparent;
   };
 
 } // namespace ui

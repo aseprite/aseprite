@@ -38,7 +38,7 @@ namespace app {
 class RemoveLayerCommand : public Command {
 public:
   RemoveLayerCommand();
-  Command* clone() { return new RemoveLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new RemoveLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -56,9 +56,7 @@ bool RemoveLayerCommand::onEnabled(Context* context)
 {
   ContextWriter writer(context);
   Sprite* sprite(writer.sprite());
-  return
-    sprite &&
-    sprite->countLayers() > 1;
+  return (sprite != NULL);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)

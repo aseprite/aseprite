@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -191,7 +191,7 @@ bool Slider::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (isEnabled()) {
-        int value = m_value + jmouse_z(0) - jmouse_z(1);
+        int value = m_value + static_cast<MouseMessage*>(msg)->wheelDelta();
 
         value = MID(m_min, value, m_max);
 
@@ -224,7 +224,7 @@ void Slider::onPreferredSize(PreferredSizeEvent& ev)
   max_w = ji_font_text_len(this->getFont(), buf);
 
   w = MAX(min_w, max_w);
-  h = jwidget_get_text_height(this);
+  h = getTextHeight();
 
   w += this->border_width.l + this->border_width.r;
   h += this->border_width.t + this->border_width.b;

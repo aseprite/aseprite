@@ -18,6 +18,7 @@
 
 #ifndef SCRIPTING_ENGINE_H_INCLUDED
 #define SCRIPTING_ENGINE_H_INCLUDED
+#pragma once
 
 #include <string>
 

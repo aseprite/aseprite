@@ -18,6 +18,7 @@
 
 #ifndef RASTER_RASTER_H_INCLUDED
 #define RASTER_RASTER_H_INCLUDED
+#pragma once
 
 #include "raster/algo.h"
 #include "raster/blend.h"

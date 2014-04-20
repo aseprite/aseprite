@@ -1,8 +1,8 @@
 // SHE library
-// Copyright (C) 2012-2013  David Capello
+// Copyright (C) 2012-2014  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -10,14 +10,37 @@
 
 #include "she.h"
 
+#include "base/compiler_specific.h"
+#include "base/concurrent_queue.h"
+#include "base/string.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#ifdef ALLEGRO_WINDOWS
+
+#ifdef WIN32
   #include <winalleg.h>
+
+  #include <windowsx.h>
+  #include <commctrl.h>
+
+  #if defined STRICT || defined __GNUC__
+    typedef WNDPROC wndproc_t;
+  #else
+    typedef FARPROC wndproc_t;
+  #endif
 #endif
+
+#ifdef WIN32
+  #include "she/clipboard_win.h"
+#else
+  #include "she/clipboard_simple.h"
+#endif
+
 #include "loadpng.h"
 
 #include <cassert>
+#include <vector>
+#include <list>
 
 #define DISPLAY_FLAG_FULL_REFRESH     1
 #define DISPLAY_FLAG_WINDOW_RESIZE    2
@@ -125,11 +148,199 @@ private:
   DestroyFlag m_destroy;
 };
 
+class Alleg4EventQueue : public EventQueue {
+public:
+  Alleg4EventQueue() {
+  }
+
+  void dispose() {
+    delete this;
+  }
+
+  void getEvent(Event& event) {
+    if (!m_events.try_pop(event))
+      event.setType(Event::None);
+  }
+
+  void queueEvent(const Event& event) {
+    m_events.push(event);
+  }
+
+private:
+  // We need a concurrent queue because events are generated in one
+  // thread (the thread created by Allegro 4 for the HWND), and
+  // consumed in the other thread (the main/program logic thread).
+  base::concurrent_queue<Event> m_events;
+};
+
+namespace {
+
+Display* unique_display = NULL;
+int display_scale;
+
+#if WIN32
+
+wndproc_t base_wndproc = NULL;
+bool display_has_mouse = false;
+
+static void queue_event(Event& ev)
+{
+  static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
+}
+
+static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  switch (msg) {
+
+    case WM_DROPFILES: {
+      HDROP hdrop = (HDROP)(wparam);
+      Event::Files files;
+
+      int count = DragQueryFile(hdrop, 0xFFFFFFFF, NULL, 0);
+      for (int index=0; index<count; ++index) {
+        int length = DragQueryFile(hdrop, index, NULL, 0);
+        if (length > 0) {
+          std::vector<TCHAR> str(length+1);
+          DragQueryFile(hdrop, index, &str[0], str.size());
+          files.push_back(base::to_utf8(&str[0]));
+        }
+      }
+
+      DragFinish(hdrop);
+
+      Event ev;
+      ev.setType(Event::DropFiles);
+      ev.setFiles(files);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_MOUSEMOVE: {
+      Event ev;
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+
+      if (!display_has_mouse) {
+        display_has_mouse = true;
+
+        ev.setType(Event::MouseEnter);
+        queue_event(ev);
+
+        // Track mouse to receive WM_MOUSELEAVE message.
+        TRACKMOUSEEVENT tme;
+        tme.cbSize = sizeof(TRACKMOUSEEVENT);
+        tme.dwFlags = TME_LEAVE;
+        tme.hwndTrack = hwnd;
+        _TrackMouseEvent(&tme);
+      }
+
+      ev.setType(Event::MouseMove);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_MOUSELEAVE: {
+      display_has_mouse = false;
+
+      Event ev;
+      ev.setType(Event::MouseLeave);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN: {
+      Event ev;
+      ev.setType(Event::MouseDown);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONDOWN ? Event::LeftButton:
+        msg == WM_RBUTTONDOWN ? Event::RightButton:
+        msg == WM_MBUTTONDOWN ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP: {
+      Event ev;
+      ev.setType(Event::MouseUp);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONUP ? Event::LeftButton:
+        msg == WM_RBUTTONUP ? Event::RightButton:
+        msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK: {
+      Event ev;
+      ev.setType(Event::MouseDoubleClick);
+      ev.setPosition(gfx::Point(
+          GET_X_LPARAM(lparam) / display_scale,
+          GET_Y_LPARAM(lparam) / display_scale));
+      ev.setButton(
+        msg == WM_LBUTTONDBLCLK ? Event::LeftButton:
+        msg == WM_RBUTTONDBLCLK ? Event::RightButton:
+        msg == WM_MBUTTONDBLCLK ? Event::MiddleButton: Event::NoneButton);
+      queue_event(ev);
+      break;
+    }
+
+    case WM_MOUSEWHEEL: {
+      RECT rc;
+      ::GetWindowRect(hwnd, &rc);
+
+      Event ev;
+      ev.setType(Event::MouseWheel);
+      ev.setPosition((gfx::Point(
+            GET_X_LPARAM(lparam),
+            GET_Y_LPARAM(lparam)) - gfx::Point(rc.left, rc.top))
+        / display_scale);
+      ev.setDelta(((short)HIWORD(wparam)) / WHEEL_DELTA);
+      queue_event(ev);
+      break;
+    }
+
+  }
+  return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
+}
+
+void subclass_hwnd(HWND hwnd)
+{
+  // Add the WS_EX_ACCEPTFILES
+  SetWindowLong(hwnd, GWL_EXSTYLE,
+    GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+
+  base_wndproc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
+}
+
+void unsubclass_hwnd(HWND hwnd)
+{
+  SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)base_wndproc);
+  base_wndproc = NULL;
+}
+  
+#endif
+} // anonymous namespace
+
 class Alleg4Display : public Display {
 public:
   Alleg4Display(int width, int height, int scale)
     : m_surface(NULL)
     , m_scale(0) {
+    unique_display = this;
+
     if (install_mouse() < 0) throw DisplayCreationException(allegro_error);
     if (install_keyboard() < 0) throw DisplayCreationException(allegro_error);
 
@@ -150,6 +361,8 @@ public:
 
     setScale(scale);
 
+    m_queue = new Alleg4EventQueue();
+
     // Add a hook to display-switch so when the user returns to the
     // screen it's completelly refreshed/redrawn.
     LOCK_VARIABLE(display_flags);
@@ -160,35 +373,48 @@ public:
     // Setup the handler for window-resize events
     set_resize_callback(resize_callback);
 #endif
+
+#if WIN32
+    subclass_hwnd((HWND)nativeHandle());
+#endif
   }
 
   ~Alleg4Display() {
+    delete m_queue;
+
+#if WIN32
+    unsubclass_hwnd((HWND)nativeHandle());
+#endif
+
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
+
+    unique_display = NULL;
   }
 
-  void dispose() {
+  void dispose() OVERRIDE {
     delete this;
   }
 
-  int width() const {
+  int width() const OVERRIDE {
     return SCREEN_W;
   }
 
-  int height() const {
+  int height() const OVERRIDE {
     return SCREEN_H;
   }
 
-  int originalWidth() const {
+  int originalWidth() const OVERRIDE {
     return original_width > 0 ? original_width: width();
   }
 
-  int originalHeight() const {
+  int originalHeight() const OVERRIDE {
     return original_height > 0 ? original_height: height();
   }
 
-  void setScale(int scale) {
+  void setScale(int scale) OVERRIDE {
     ASSERT(scale >= 1);
+    display_scale = scale;
 
     if (m_scale == scale)
       return;
@@ -201,11 +427,11 @@ public:
     m_surface = newSurface;
   }
 
-  NotDisposableSurface* getSurface() {
-    return static_cast<NotDisposableSurface*>(m_surface);
+  NonDisposableSurface* getSurface() OVERRIDE {
+    return static_cast<NonDisposableSurface*>(m_surface);
   }
 
-  bool flip() {
+  bool flip() OVERRIDE {
 #ifdef ALLEGRO4_WITH_RESIZE_PATCH
     if (display_flags & DISPLAY_FLAG_WINDOW_RESIZE) {
       display_flags ^= DISPLAY_FLAG_WINDOW_RESIZE;
@@ -232,13 +458,13 @@ public:
     return true;
   }
 
-  void maximize() {
+  void maximize() OVERRIDE {
 #ifdef WIN32
     ::ShowWindow(win_get_window(), SW_MAXIMIZE);
 #endif
   }
 
-  bool isMaximized() const {
+  bool isMaximized() const OVERRIDE {
 #ifdef WIN32
     return (::GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
 #else
@@ -246,7 +472,11 @@ public:
 #endif
   }
 
-  void* nativeHandle() {
+  EventQueue* getEventQueue() OVERRIDE {
+    return m_queue;
+  }
+
+  void* nativeHandle() OVERRIDE {
 #ifdef WIN32
     return reinterpret_cast<void*>(win_get_window());
 #else
@@ -257,16 +487,7 @@ public:
 private:
   Surface* m_surface;
   int m_scale;
-};
-
-class Alleg4EventLoop : public EventLoop {
-public:
-  Alleg4EventLoop() {
-  }
-
-  void dispose() {
-    delete this;
-  }
+  Alleg4EventQueue* m_queue;
 };
 
 class Alleg4System : public System {
@@ -291,7 +512,12 @@ public:
   }
 
   Capabilities capabilities() const {
-    return kCanResizeDisplayCapability;
+    return (Capabilities)
+      (kCanResizeDisplayCapability
+#ifdef WIN32
+        | kMouseEventsCapability
+#endif
+       );
   }
 
   Display* createDisplay(int width, int height, int scale) {
@@ -307,8 +533,8 @@ public:
                              Alleg4Surface::AutoDestroy);
   }
 
-  EventLoop* createEventLoop() {
-    return new Alleg4EventLoop();
+  Clipboard* createClipboard() {
+    return new ClipboardImpl();
   }
 
 };

@@ -89,7 +89,7 @@ private:
 class ColorCurveCommand : public Command {
 public:
   ColorCurveCommand();
-  Command* clone() const { return new ColorCurveCommand(*this); }
+  Command* clone() const OVERRIDE { return new ColorCurveCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

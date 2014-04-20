@@ -18,6 +18,7 @@
 
 #ifndef RASTER_ALGORITHM_RESIZE_IMAGE_H_INCLUDED
 #define RASTER_ALGORITHM_RESIZE_IMAGE_H_INCLUDED
+#pragma once
 
 #include "gfx/fwd.h"
 

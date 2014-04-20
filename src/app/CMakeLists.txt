@@ -1,7 +1,7 @@
 # Aseprite
 # Copyright (C) 2001-2013  David Capello
 
-add_library(app-library
+add_library(app-lib
   app.cpp
   app_menus.cpp
   app_options.cpp
@@ -68,12 +68,14 @@ add_library(app-library
   commands/cmd_remove_cel.cpp
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_layer.cpp
+  commands/cmd_repeat_last_export.cpp
   commands/cmd_reselect_mask.cpp
   commands/cmd_rotate_canvas.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp
   commands/cmd_scroll.cpp
+  commands/cmd_set_palette.cpp
   commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
@@ -105,7 +107,6 @@ add_library(app-library
   document_location.cpp
   document_undo.cpp
   documents.cpp
-  drop_files.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp
@@ -134,6 +135,7 @@ add_library(app-library
   modules/gui.cpp
   modules/palettes.cpp
   objects_container_impl.cpp
+  palettes_loader.cpp
   project.cpp
   recent_files.cpp
   resource_finder.cpp
@@ -170,12 +172,15 @@ add_library(app-library
   ui/editor/standby_state.cpp
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
+  ui/editor/zooming_state.cpp
   ui/file_list.cpp
   ui/file_selector.cpp
   ui/hex_color_entry.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_editor.cpp
+  ui/palette_listbox.cpp
+  ui/palette_popup.cpp
   ui/palette_view.cpp
   ui/popup_window_pin.cpp
   ui/skin/button_icon_impl.cpp
@@ -227,7 +232,6 @@ add_library(app-library
   undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp
-  util/celmove.cpp
   util/clipboard.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp

@@ -1,26 +1,26 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2014 by David Capello -->
 <gui>
-  <box noborders="true" vertical="true" id="main_box">
-    <box noborders="true" horizontal="true" id="menubar" />
-    <box noborders="true" horizontal="true" id="tabsbar" />
-    <box noborders="true" horizontal="true" expansive="true">
-      <splitter id="colorbarsplitter"
+  <vbox noborders="true" id="main_box">
+    <hbox noborders="true" id="menubar" />
+    <hbox noborders="true" id="tabsbar" />
+    <splitter id="colorbarsplitter"
 		horizontal="true" expansive="true"
-		by="pixel" position="52">
-	<box noborders="true" vertical="true" id="colorbar" />
+		by="pixel">
+	<vbox noborders="true" id="colorbar" />
 	<vbox noborders="true" expansive="true">
 	  <vbox noborders="true" id="contextbar" />
-	  <splitter id="timelinesplitter"
-		    vertical="true" expansive="true"
-		    by="percetage" position="100">
-	    <hbox noborders="true" id="workspace" expansive="true" />
-	    <vbox noborders="true" id="timeline" expansive="true" />
-	  </splitter>
+	  <hbox noborders="true" expansive="true">
+	    <splitter id="timelinesplitter"
+		      vertical="true" expansive="true"
+		      by="percetage" position="100">
+	      <hbox noborders="true" id="workspace" expansive="true" />
+	      <vbox noborders="true" id="timeline" expansive="true" />
+	    </splitter>
+	    <vbox noborders="true" id="toolbar" />
+	  </hbox>
 	</vbox>
-      </splitter>
-      <box noborders="true" vertical="true" id="toolbar" />
-    </box>
-    <box noborders="true" horizontal="true" id="statusbar" />
-  </box>
+    </splitter>
+    <hbox noborders="true" id="statusbar" />
+  </vbox>
 </gui>

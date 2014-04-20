@@ -18,6 +18,7 @@
 
 #ifndef RASTER_ROTSPRITE_H_INCLUDED
 #define RASTER_ROTSPRITE_H_INCLUDED
+#pragma once
 
 namespace raster {
   class Image;

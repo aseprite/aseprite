@@ -18,6 +18,7 @@
 
 #ifndef APP_XML_EXCEPTION_H_INCLUDED
 #define APP_XML_EXCEPTION_H_INCLUDED
+#pragma once
 
 #include "base/exception.h"
 

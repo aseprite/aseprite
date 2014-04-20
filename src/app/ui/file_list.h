@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_FILE_LIST_H_INCLUDED
 #define APP_UI_FILE_LIST_H_INCLUDED
+#pragma once
 
 #include "app/file_system.h"
 #include "base/compiler_specific.h"
@@ -49,6 +50,7 @@ namespace app {
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    virtual void onPaint(ui::PaintEvent& ev) OVERRIDE;
     virtual void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
     virtual void onFileSelected();
     virtual void onFileAccepted();

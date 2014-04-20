@@ -18,6 +18,7 @@
 
 #ifndef RASTER_BLEND_H_INCLUDED
 #define RASTER_BLEND_H_INCLUDED
+#pragma once
 
 #define INT_MULT(a, b, t)                               \
   ((t) = (a) * (b) + 0x80, ((((t) >> 8) + (t)) >> 8))

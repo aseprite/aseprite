@@ -18,6 +18,7 @@
 
 #ifndef APP_DOCUMENT_EXPORTER_H_INCLUDED
 #define APP_DOCUMENT_EXPORTER_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include "gfx/fwd.h"

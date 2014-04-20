@@ -18,6 +18,7 @@
 
 #ifndef RASTER_CEL_IO_H_INCLUDED
 #define RASTER_CEL_IO_H_INCLUDED
+#pragma once
 
 #include <iosfwd>
 

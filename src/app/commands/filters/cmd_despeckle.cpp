@@ -94,7 +94,7 @@ class DespeckleCommand : public Command
 {
 public:
   DespeckleCommand();
-  Command* clone() const { return new DespeckleCommand(*this); }
+  Command* clone() const OVERRIDE { return new DespeckleCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_FILTERS_FILTER_WINDOW_H_INCLUDED
 #define APP_COMMANDS_FILTERS_FILTER_WINDOW_H_INCLUDED
+#pragma once
 
 #include "app/commands/filters/filter_preview.h"
 #include "app/commands/filters/filter_target_buttons.h"

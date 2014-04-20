@@ -91,10 +91,6 @@ private:
 // Variables used only to maintain the history of navigation.
 static FileItemList* navigation_history = NULL; // Set of FileItems navigated
 static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
-static bool navigation_locked = false;  // If true the navigation_history isn't
-                                        // modified if the current folder changes
-                                        // (used when the back/forward buttons
-                                        // are pushed)
 
 // Slot for App::Exit signal
 static void on_exit_delete_navigation_history()
@@ -145,7 +141,7 @@ protected:
 
         // Is the pattern (left_part) in the child_name's beginning?
         if (it2 == left_part.end()) {
-          setText(child_name.c_str());
+          setText(left_part + child_name.substr(left_part.size()));
           selectText(child_name.size(), left_part.size());
           clear_keybuf();
           return true;
@@ -195,6 +191,7 @@ public:
 
 FileSelector::FileSelector()
   : Window(WithTitleBar, "")
+  , m_navigationLocked(false)
 {
   app::WidgetLoader loader;
   loader.addWidgetType("filenameentry", new CustomFileNameEntryCreator);
@@ -243,7 +240,7 @@ FileSelector::FileSelector()
   m_goBack->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
   m_goForward->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
   m_goUp->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
-  m_location->Change.connect(Bind<void>(&FileSelector::onLocationChange, this));
+  m_location->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
   m_fileType->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
@@ -585,9 +582,9 @@ void FileSelector::onGoBack()
     if (navigation_position.getIterator() != navigation_history->begin()) {
       navigation_position.setIterator(navigation_position.getIterator()-1);
 
-      navigation_locked = true;
+      m_navigationLocked = true;
       m_fileList->setCurrentFolder(*navigation_position.getIterator());
-      navigation_locked = false;
+      m_navigationLocked = false;
     }
   }
 }
@@ -601,9 +598,9 @@ void FileSelector::onGoForward()
     if (navigation_position.getIterator() != navigation_history->end()-1) {
       navigation_position.setIterator(navigation_position.getIterator()+1);
 
-      navigation_locked = true;
+      m_navigationLocked = true;
       m_fileList->setCurrentFolder(*navigation_position.getIterator());
-      navigation_locked = false;
+      m_navigationLocked = false;
     }
   }
 }
@@ -614,7 +611,7 @@ void FileSelector::onGoUp()
 }
 
 // Hook for the 'location' combo-box
-void FileSelector::onLocationChange()
+void FileSelector::onLocationCloseListBox()
 {
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
@@ -664,6 +661,7 @@ void FileSelector::onFileListFileSelected()
     base::string filename = base::get_file_name(fileitem->getFileName());
 
     m_fileName->setText(filename.c_str());
+    m_fileName->selectText(0, -1);
     selectFileTypeFromFileName();
   }
 }
@@ -675,7 +673,7 @@ void FileSelector::onFileListFileAccepted()
 
 void FileSelector::onFileListCurrentFolderChanged()
 {
-  if (!navigation_locked)
+  if (!m_navigationLocked)
     addInNavigationHistory(m_fileList->getCurrentFolder());
 
   updateLocation();

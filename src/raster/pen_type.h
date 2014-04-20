@@ -18,6 +18,7 @@
 
 #ifndef RASTER_PEN_TYPE_H_INCLUDED
 #define RASTER_PEN_TYPE_H_INCLUDED
+#pragma once
 
 namespace raster {
 

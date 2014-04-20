@@ -162,7 +162,7 @@ protected:
 class SpriteSizeCommand : public Command {
 public:
   SpriteSizeCommand();
-  Command* clone() { return new SpriteSizeCommand(*this); }
+  Command* clone() const OVERRIDE { return new SpriteSizeCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

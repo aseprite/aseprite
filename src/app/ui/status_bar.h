@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_STATUS_BAR_H_INCLUDED
 #define APP_UI_STATUS_BAR_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "base/compiler_specific.h"

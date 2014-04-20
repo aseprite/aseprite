@@ -60,7 +60,7 @@ private:
 class InvertColorCommand : public Command {
 public:
   InvertColorCommand();
-  Command* clone() const { return new InvertColorCommand(*this); }
+  Command* clone() const OVERRIDE { return new InvertColorCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -185,7 +185,7 @@ bool ListBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1) - jmouse_z(0)) * jwidget_get_text_height(this)*3;
+        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
         view->setViewScroll(scroll);
       }
       break;
@@ -214,7 +214,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageUp:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select -= vp.h / jwidget_get_text_height(this);
+              select -= vp.h / getTextHeight();
             }
             else
               select = 0;
@@ -222,7 +222,7 @@ bool ListBox::onProcessMessage(Message* msg)
           case kKeyPageDown:
             if (view) {
               gfx::Rect vp = view->getViewportBounds();
-              select += vp.h / jwidget_get_text_height(this);
+              select += vp.h / getTextHeight();
             }
             else
               select = bottom;

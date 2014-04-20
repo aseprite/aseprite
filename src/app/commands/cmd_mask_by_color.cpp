@@ -54,7 +54,7 @@ using namespace ui;
 class MaskByColorCommand : public Command {
 public:
   MaskByColorCommand();
-  Command* clone() { return new MaskByColorCommand(*this); }
+  Command* clone() const OVERRIDE { return new MaskByColorCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

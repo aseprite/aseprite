@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -22,7 +22,7 @@
 #include "ui/widget.h"
 
 #include <allegro.h>
-#if defined(ALLEGRO_WINDOWS)
+#if defined(WIN32)
   #include <winalleg.h>
 #elif defined(ALLEGRO_UNIX)
   #include <xalleg.h>
@@ -46,6 +46,7 @@ volatile int ji_clock = 0;
 
 static CursorType mouse_cursor_type = kNoCursor;
 static Cursor* mouse_cursor = NULL;
+static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
 
 /* Mouse information (button and position).  */
@@ -125,6 +126,7 @@ void SetDisplay(she::Display* display)
   CursorType cursor = jmouse_get_cursor();
 
   jmouse_set_cursor(kNoCursor);
+  mouse_display = display;
   ji_screen = (display ? reinterpret_cast<BITMAP*>(display->getSurface()->nativeHandle()): NULL);
   ji_screen_w = (ji_screen ? ji_screen->w: 0);
   ji_screen_h = (ji_screen ? ji_screen->h: 0);
@@ -240,6 +242,21 @@ bool jmouse_poll()
     return false;
 }
 
+void _internal_set_mouse_position(const gfx::Point& newPos)
+{
+  moved = true;
+  m_x[1] = m_x[0];
+  m_y[1] = m_y[0];
+  m_x[0] = newPos.x;
+  m_y[0] = newPos.y;
+}
+
+void _internal_set_mouse_buttons(MouseButtons buttons)
+{
+  m_b[1] = m_b[0];
+  m_b[0] = buttons;
+}
+
 gfx::Point get_mouse_position()
 {
   return gfx::Point(jmouse_x(0), jmouse_y(0));
@@ -345,8 +362,8 @@ static void update_mouse_position()
   m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
 
   if (is_windowed_mode()) {
-#ifdef ALLEGRO_WINDOWS
-    // This help us (in windows) to get mouse feedback when we capture
+#ifdef WIN32
+    // This help us (on Windows) to get mouse feedback when we capture
     // the mouse but we are outside the window.
     POINT pt;
     RECT rc;

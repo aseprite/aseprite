@@ -18,6 +18,7 @@
 
 #ifndef RASTER_MASK_H_INCLUDED
 #define RASTER_MASK_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "raster/image.h"

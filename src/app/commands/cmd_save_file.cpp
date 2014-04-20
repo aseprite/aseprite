@@ -22,6 +22,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/file/file.h"
@@ -101,78 +102,120 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
 
 //////////////////////////////////////////////////////////////////////
 
-static void save_as_dialog(const ContextReader& reader, const char* dlg_title, bool mark_as_saved)
-{
-  const Document* document = reader.document();
-  char exts[4096];
-  base::string filename;
-  base::string newfilename;
-  int ret;
-
-  filename = document->getFilename();
-  get_writable_extensions(exts, sizeof(exts));
-
-  for (;;) {
-    newfilename = app::show_file_selector(dlg_title, filename, exts);
-    if (newfilename.empty())
-      return;
-
-    filename = newfilename;
-
-    if (base::file_exists(filename.c_str())) {
-      // Ask if the user wants overwrite the existent file?
-      ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                            base::get_file_name(filename).c_str());
-    }
-    else
-      break;
-
-    // "yes": we must continue with the operation...
-    if (ret == 1)
-      break;
-    // "cancel" or <esc> per example: we back doing nothing
-    else if (ret != 2)
-      return;
-
-    // "no": we must back to select other file-name
-  }
-
-  {
-    ContextWriter writer(reader);
-    Document* documentWriter = writer.document();
-
-    // Change the document file name
-    documentWriter->setFilename(filename.c_str());
-
-    // Save the document
-    save_document_in_background(documentWriter, mark_as_saved);
-
-    update_screen_for_document(documentWriter);
-  }
-}
-
-class SaveFileCommand : public Command {
+class SaveFileBaseCommand : public Command {
 public:
-  SaveFileCommand();
-  Command* clone() { return new SaveFileCommand(*this); }
+  SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
+    : Command(short_name, friendly_name, flags) {
+  }
 
 protected:
-  bool onEnabled(Context* context);
+  void onLoadParams(Params* params) OVERRIDE {
+    m_filename = params->get("filename");
+  }
+
+  // Returns true if there is a current sprite to save.
+  // [main thread]
+  bool onEnabled(Context* context) OVERRIDE {
+    return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  }
+
+  void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
+  {
+    const Document* document = reader.document();
+    base::string filename;
+
+    if (!m_filename.empty()) {
+      filename = m_filename;
+    }
+    else {
+      filename = document->getFilename();
+
+      char exts[4096];
+      get_writable_extensions(exts, sizeof(exts));
+
+      for (;;) {
+        base::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
+        if (newfilename.empty())
+          return;
+
+        filename = newfilename;
+
+        // Ask if the user wants overwrite the existent file.
+        int ret = 0;
+        if (base::is_file(filename)) {
+          ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+            base::get_file_name(filename).c_str());
+
+          // Check for read-only attribute.
+          if (ret == 1) {
+            if (!confirmReadonly(filename))
+              ret = 2;              // Select file again.
+            else
+              break;
+          }
+        }
+        else
+          break;
+
+        // "yes": we must continue with the operation...
+        if (ret == 1) {
+          break;
+        }
+        // "cancel" or <esc> per example: we back doing nothing
+        else if (ret != 2)
+          return;
+
+        // "no": we must back to select other file-name
+      }
+    }
+
+    {
+      ContextWriter writer(reader);
+      Document* documentWriter = writer.document();
+
+      // Change the document file name
+      documentWriter->setFilename(filename.c_str());
+      m_selectedFilename = filename;
+
+      // Save the document
+      save_document_in_background(documentWriter, markAsSaved);
+
+      update_screen_for_document(documentWriter);
+    }
+  }
+
+  static bool confirmReadonly(const std::string& filename)
+  {
+    if (!base::has_readonly_attr(filename))
+      return true;
+
+    int ret = ui::Alert::show("Warning<<The file is read-only, do you really want to overwrite it?<<%s||&Yes||&No",
+      base::get_file_name(filename).c_str());
+
+    if (ret == 1) {
+      base::remove_readonly_attr(filename);
+      return true;
+    }
+    else
+      return false;
+  }
+
+  std::string m_filename;
+  std::string m_selectedFilename;
+};
+
+class SaveFileCommand : public SaveFileBaseCommand {
+public:
+  SaveFileCommand();
+  Command* clone() const OVERRIDE { return new SaveFileCommand(*this); }
+
+protected:
   void onExecute(Context* context);
 };
 
 SaveFileCommand::SaveFileCommand()
-  : Command("SaveFile",
-            "Save File",
-            CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFile", "Save File", CmdRecordableFlag)
 {
-}
-
-// Returns true if there is a current sprite to save.
-// [main thread]
-bool SaveFileCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 // Saves the active document in a file.
@@ -188,6 +231,9 @@ void SaveFileCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
 
+    if (!confirmReadonly(documentWriter->getFilename()))
+      return;
+
     save_document_in_background(documentWriter, true);
     update_screen_for_document(documentWriter);
   }
@@ -195,58 +241,42 @@ void SaveFileCommand::onExecute(Context* context)
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
-    save_as_dialog(reader, "Save File", true);
+    saveAsDialog(reader, "Save File", true);
   }
 }
 
-class SaveFileAsCommand : public Command {
+class SaveFileAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileAsCommand();
-  Command* clone() { return new SaveFileAsCommand(*this); }
+  Command* clone() const OVERRIDE { return new SaveFileAsCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
-  : Command("SaveFileAs",
-            "Save File As",
-            CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFileAs", "Save File As", CmdRecordableFlag)
 {
-}
-
-bool SaveFileAsCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
-  save_as_dialog(reader, "Save As", true);
+  saveAsDialog(reader, "Save As", true);
 }
 
-class SaveFileCopyAsCommand : public Command {
+class SaveFileCopyAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileCopyAsCommand();
-  Command* clone() { return new SaveFileCopyAsCommand(*this); }
+  Command* clone() const OVERRIDE { return new SaveFileCopyAsCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()
-  : Command("SaveFileCopyAs",
-            "Save File Copy As",
-            CmdRecordableFlag)
+  : SaveFileBaseCommand("SaveFileCopyAs", "Save File Copy As", CmdRecordableFlag)
 {
-}
-
-bool SaveFileCopyAsCommand::onEnabled(Context* context)
-{
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
@@ -256,7 +286,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   base::string old_filename = document->getFilename();
 
   // show "Save As" dialog
-  save_as_dialog(reader, "Save Copy As", false);
+  saveAsDialog(reader, "Save Copy As", false);
 
   // Restore the file name.
   {

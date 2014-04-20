@@ -18,6 +18,7 @@
 
 #ifndef APP_MODULES_EDITORS_H_INCLUDED
 #define APP_MODULES_EDITORS_H_INCLUDED
+#pragma once
 
 namespace app {
 

@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -21,12 +21,11 @@ namespace ui {
 
 using namespace gfx;
 
-PopupWindow::PopupWindow(const base::string& text, bool close_on_buttonpressed)
+PopupWindow::PopupWindow(const base::string& text, ClickBehavior clickBehavior)
   : Window(WithTitleBar, text)
+  , m_clickBehavior(clickBehavior)
+  , m_filtering(false)
 {
-  m_close_on_buttonpressed = close_on_buttonpressed;
-  m_filtering = false;
-
   setSizeable(false);
   setMoveable(false);
   setWantFocus(false);
@@ -35,7 +34,7 @@ PopupWindow::PopupWindow(const base::string& text, bool close_on_buttonpressed)
   removeDecorativeWidgets();
 
   initTheme();
-  jwidget_noborders(this);
+  noBorderNoChildSpacing();
 }
 
 PopupWindow::~PopupWindow()
@@ -99,19 +98,28 @@ bool PopupWindow::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      // If the user click outside the window, we have to close the
-      // tooltip window.
       if (m_filtering) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = pick(mousePos);
-        if (!picked || picked->getRoot() != this) {
-          closeWindow(NULL);
+
+        switch (m_clickBehavior) {
+
+          // If the user click outside the window, we have to close
+          // the tooltip window.
+          case kCloseOnClickInOtherWindow: {
+            Widget* picked = pick(mousePos);
+            if (!picked || picked->getRoot() != this) {
+              closeWindow(NULL);
+            }
+            break;
+          }
+
+          case kCloseOnClickOutsideHotRegion:
+            if (!m_hotRegion.contains(mousePos)) {
+              closeWindow(NULL);
+            }
+            break;
         }
       }
-
-      // This is used when the user click inside a small text tooltip.
-      if (m_close_on_buttonpressed)
-        closeWindow(NULL);
       break;
 
     case kMouseMoveMessage:

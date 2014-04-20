@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_TILED_MODE_H_INCLUDED
 #define FILTERS_TILED_MODE_H_INCLUDED
+#pragma once
 
 namespace filters {
 

@@ -18,6 +18,7 @@
 
 #ifndef APP_CHECK_UPDATE_H_INCLUDED
 #define APP_CHECK_UPDATE_H_INCLUDED
+#pragma once
 
 #ifdef ENABLE_UPDATER
 

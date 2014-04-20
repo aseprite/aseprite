@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -90,7 +90,7 @@ bool TooltipManager::onProcessMessage(Message* msg)
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
-    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str(), true));
+    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str()));
     gfx::Rect bounds = m_target.widget->getBounds();
     int x = jmouse_x(0)+12*jguiscale();
     int y = jmouse_y(0)+12*jguiscale();
@@ -151,43 +151,18 @@ void TooltipManager::onTick()
 
 // TipWindow
 
-TipWindow::TipWindow(const char *text, bool close_on_buttonpressed)
-  : Window(WithTitleBar, text)
+TipWindow::TipWindow(const char *text)
+  : PopupWindow(text, kCloseOnClickInOtherWindow)
+  , m_arrowAlign(0)
 {
-  m_close_on_buttonpressed = close_on_buttonpressed;
-  m_filtering = false;
-  m_arrowAlign = 0;
+  setTransparent(true);
 
-  setSizeable(false);
-  setMoveable(false);
-  setWantFocus(false);
-  setAlign(JI_LEFT | JI_TOP);
-
-  removeDecorativeWidgets();
-
+  makeFixed();
   initTheme();
 }
 
 TipWindow::~TipWindow()
 {
-  if (m_filtering) {
-    m_filtering = false;
-    getManager()->removeMessageFilter(kMouseMoveMessage, this);
-    getManager()->removeMessageFilter(kMouseDownMessage, this);
-    getManager()->removeMessageFilter(kKeyDownMessage, this);
-  }
-}
-
-void TipWindow::setHotRegion(const Region& region)
-{
-  if (!m_filtering) {
-    m_filtering = true;
-    getManager()->addMessageFilter(kMouseMoveMessage, this);
-    getManager()->addMessageFilter(kMouseDownMessage, this);
-    getManager()->addMessageFilter(kKeyDownMessage, this);
-  }
-
-  m_hotRegion = region;
 }
 
 int TipWindow::getArrowAlign() const
@@ -204,54 +179,14 @@ bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kCloseMessage:
-      if (m_filtering) {
-        m_filtering = false;
-        getManager()->removeMessageFilter(kMouseMoveMessage, this);
-        getManager()->removeMessageFilter(kMouseDownMessage, this);
-        getManager()->removeMessageFilter(kKeyDownMessage, this);
-      }
-      break;
-
-    case kMouseLeaveMessage:
-      if (m_hotRegion.isEmpty())
-        closeWindow(NULL);
-      break;
-
     case kKeyDownMessage:
-      if (m_filtering && static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
+      if (static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
         closeWindow(NULL);
-      break;
-
-    case kMouseDownMessage:
-      // If the user click outside the window, we have to close the
-      // tooltip window.
-      if (m_filtering) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        Widget* picked = pick(mousePos);
-        if (!picked || picked->getRoot() != this) {
-          this->closeWindow(NULL);
-        }
-      }
-
-      // This is used when the user click inside a small text tooltip.
-      if (m_close_on_buttonpressed)
-        closeWindow(NULL);
-      break;
-
-    case kMouseMoveMessage:
-      if (!m_hotRegion.isEmpty() &&
-          getManager()->getCapture() == NULL) {
-        // If the mouse is outside the hot-region we have to close the window
-        if (!m_hotRegion.contains(static_cast<MouseMessage*>(msg)->position())) {
-          closeWindow(NULL);
-        }
-      }
       break;
 
   }
 
-  return Window::onProcessMessage(msg);
+  return PopupWindow::onProcessMessage(msg);
 }
 
 void TipWindow::onPreferredSize(PreferredSizeEvent& ev)

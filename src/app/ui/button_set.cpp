@@ -70,12 +70,12 @@ ButtonSet::ButtonSet(int w, int h, int firstSelected, ...)
 
   va_start(ap, firstSelected);
 
-  jwidget_noborders(this);
+  this->noBorderNoChildSpacing();
 
   for (y=0; y<h; y++) {
     if (w > 1) {
       hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-      jwidget_noborders(hbox);
+      hbox->noBorderNoChildSpacing();
     }
 
     for (x=0; x<w; x++) {

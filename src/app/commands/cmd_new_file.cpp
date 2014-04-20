@@ -55,7 +55,7 @@ namespace app {
 class NewFileCommand : public Command {
 public:
   NewFileCommand();
-  Command* clone() { return new NewFileCommand(*this); }
+  Command* clone() const OVERRIDE { return new NewFileCommand(*this); }
 
 protected:
   void onExecute(Context* context);

@@ -34,7 +34,7 @@ namespace app {
 class LayerFromBackgroundCommand : public Command {
 public:
   LayerFromBackgroundCommand();
-  Command* clone() { return new LayerFromBackgroundCommand(*this); }
+  Command* clone() const OVERRIDE { return new LayerFromBackgroundCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

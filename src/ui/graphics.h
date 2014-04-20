@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_GRAPHICS_H_INCLUDED
 #define UI_GRAPHICS_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 #include "gfx/point.h"
@@ -31,6 +32,10 @@ namespace ui {
     Graphics(BITMAP* bmp, int dx, int dy);
     ~Graphics();
 
+    BITMAP* getInternalBitmap() { return m_bmp; }
+    int getInternalDeltaX() { return m_dx; }
+    int getInternalDeltaY() { return m_dy; }
+
     gfx::Rect getClipBounds() const;
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);
@@ -42,6 +47,8 @@ namespace ui {
     void drawRect(ui::Color color, const gfx::Rect& rc);
     void fillRect(ui::Color color, const gfx::Rect& rc);
     void fillRegion(ui::Color color, const gfx::Region& rgn);
+    void fillAreaBetweenRects(ui::Color color,
+      const gfx::Rect& outer, const gfx::Rect& inner);
 
     void drawBitmap(BITMAP* sprite, int x, int y);
     void drawAlphaBitmap(BITMAP* sprite, int x, int y);
@@ -53,11 +60,15 @@ namespace ui {
     // ======================================================================
 
     void setFont(FONT* font);
-    FONT* getFont();
+    FONT* getFont() {
+      return m_currentFont;
+    }
 
+    void drawChar(int chr, Color fg, Color bg, int x, int y);
     void drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
     void drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
 
+    gfx::Size measureChar(int chr);
     gfx::Size measureString(const std::string& str);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 

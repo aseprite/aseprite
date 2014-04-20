@@ -64,6 +64,7 @@ const char* WellKnownInks::ReplaceFgWithBg = "replace_fg_with_bg";
 const char* WellKnownInks::ReplaceBgWithFg = "replace_bg_with_fg";
 const char* WellKnownInks::PickFg = "pick_fg";
 const char* WellKnownInks::PickBg = "pick_bg";
+const char* WellKnownInks::Zoom = "zoom";
 const char* WellKnownInks::Scroll = "scroll";
 const char* WellKnownInks::Move = "move";
 const char* WellKnownInks::Blur = "blur";
@@ -92,6 +93,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::ReplaceBgWithFg] = new EraserInk(EraserInk::ReplaceBgWithFg);
   m_inks[WellKnownInks::PickFg]          = new PickInk(PickInk::Fg);
   m_inks[WellKnownInks::PickBg]          = new PickInk(PickInk::Bg);
+  m_inks[WellKnownInks::Zoom]          = new ZoomInk();
   m_inks[WellKnownInks::Scroll]          = new ScrollInk();
   m_inks[WellKnownInks::Move]            = new MoveInk();
   m_inks[WellKnownInks::Blur]            = new BlurInk();

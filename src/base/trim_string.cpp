@@ -1,8 +1,8 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -13,13 +13,13 @@
 
 void base::trim_string(const base::string& input, base::string& output)
 {
-  size_t i, j;
+  int i, j;
 
-  for (i=0; i<input.size(); ++i)
+  for (i=0; i<(int)input.size(); ++i)
     if (!std::isspace(input.at(i)))
       break;
 
-  for (j=input.size()-1; j>i; --j)
+  for (j=(int)input.size()-1; j>i; --j)
     if (!std::isspace(input.at(j)))
       break;
 

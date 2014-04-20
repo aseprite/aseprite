@@ -21,6 +21,11 @@
 
 
 
+#define PREFIX_I                "al-keyboard INFO: "
+#define PREFIX_W                "al-keyboard WARNING: "
+#define PREFIX_E                "al-keyboard ERROR: "
+
+
 KEYBOARD_DRIVER *keyboard_driver = NULL;     /* the active driver */
 
 int _keyboard_installed = FALSE;
@@ -493,8 +498,10 @@ void _handle_key_release(int scancode)
    }
 
    ASSERT(scancode < KEY_MAX);
-   if (scancode >= KEY_MAX)
-     return;
+   if (scancode >= KEY_MAX) {
+      TRACE(PREFIX_I "Scancode out of range %d\n", scancode);
+      return;
+   }
 
    if ((keyboard_driver->poll) || (!keyboard_polled)) {
       /* process immediately */

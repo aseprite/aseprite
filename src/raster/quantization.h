@@ -18,6 +18,7 @@
 
 #ifndef RASTER_QUANTIZATION_H_INCLUDED
 #define RASTER_QUANTIZATION_H_INCLUDED
+#pragma once
 
 #include "raster/dithering_method.h"
 #include "raster/frame_number.h"

@@ -66,6 +66,9 @@ enum AniAction {
   ACTION_LAST,
 };
 
+static const char* kStatusBarText = "status_bar_text";
+static const char* kStatusBarFace = "status_bar_face";
+
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const char* text)
@@ -154,6 +157,9 @@ StatusBar::StatusBar()
 
   setDoubleBuffered(true);
 
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  setBgColor(theme->getColorById(kStatusBarFace));
+
 #define BUTTON_NEW(name, text, action)                                  \
   {                                                                     \
     (name) = new Button(text);                                          \
@@ -177,7 +183,7 @@ StatusBar::StatusBar()
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
   // and upper-right pixels drawn in onPaint() event (see putpixels)
-  jwidget_set_border(this, 1*jguiscale(), 0, 1*jguiscale(), 0);
+  setBorder(gfx::Border(1*jguiscale(), 0, 1*jguiscale(), 0));
 
   // Construct the commands box
   {
@@ -203,9 +209,9 @@ StatusBar::StatusBar()
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
 
-    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
-    jwidget_noborders(box3);
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box2->noBorderNoChildSpacing();
+    box3->noBorderNoChildSpacing();
     box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
@@ -230,8 +236,8 @@ StatusBar::StatusBar()
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_VERTICAL);
 
-    jwidget_set_border(box1, 2*jguiscale(), 1*jguiscale(), 2*jguiscale(), 2*jguiscale());
-    jwidget_noborders(box2);
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box2->noBorderNoChildSpacing();
     box2->setExpansive(true);
 
     m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");
@@ -473,19 +479,18 @@ void StatusBar::onResize(ResizeEvent& ev)
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 {
-  int s = 4*jguiscale() + jwidget_get_text_height(this) + 4*jguiscale();
+  int s = 4*jguiscale() + getTextHeight() + 4*jguiscale();
   ev.setPreferredSize(Size(s, s));
 }
 
 void StatusBar::onPaint(ui::PaintEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color text_color = theme->getColor(ThemeColor::Text);
-  ui::Color face_color = theme->getColor(ThemeColor::Face);
+  ui::Color textColor = theme->getColorById(kStatusBarText);
   Rect rc = getClientBounds();
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(face_color, rc);
+  g->fillRect(getBgColor(), rc);
 
   rc.shrink(Border(2, 1, 2, 2)*jguiscale());
 
@@ -518,7 +523,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       str += buf;
     }
 
-    g->drawString(str, text_color, ColorNone, false,
+    g->drawString(str, textColor, ColorNone, false,
       gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
 
     x += ji_font_text_len(getFont(), str.c_str()) + 4*jguiscale();
@@ -535,8 +540,8 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   }
 
   // Status bar text
-  if (getTextSize() > 0) {
-    g->drawString(getText(), text_color, ColorNone, false,
+  if (getTextLength() > 0) {
+    g->drawString(getText(), textColor, ColorNone, false,
       gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
 
     x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();

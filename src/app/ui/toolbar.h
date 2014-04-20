@@ -18,8 +18,10 @@
 
 #ifndef APP_UI_TOOLBAR_H_INCLUDED
 #define APP_UI_TOOLBAR_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
+#include "base/slot.h"
 #include "gfx/point.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -27,6 +29,7 @@
 #include <map>
 
 namespace ui {
+  class CloseEvent;
   class PopupWindow;
   class TipWindow;
 }
@@ -59,6 +62,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
   private:
     int getToolGroupIndex(tools::ToolGroup* group);
@@ -69,25 +73,29 @@ namespace app {
     void onClosePopup();
 
     // What tool is selected for each tool-group
-    std::map<const tools::ToolGroup*, tools::Tool*> m_selected_in_group;
+    std::map<const tools::ToolGroup*, tools::Tool*> m_selectedInGroup;
 
     // Index of the tool group or special button highlighted.
-    int m_hot_index;
+    int m_hotIndex;
 
     // What tool has the mouse above
-    tools::Tool* m_hot_tool;
+    tools::Tool* m_hotTool;
 
     // True if the popup-window must be opened when a tool-button is hot
-    bool m_open_on_hot;
+    bool m_openOnHot;
 
     // Window displayed to show a tool-group
     ui::PopupWindow* m_popupWindow;
+    class ToolStrip;
+    ToolStrip* m_currentStrip;
 
     // Tool-tip window
     ui::TipWindow* m_tipWindow;
 
     ui::Timer m_tipTimer;
     bool m_tipOpened;
+
+    Slot1<void, ui::CloseEvent&>* m_closeSlot;
   };
 
 } // namespace app

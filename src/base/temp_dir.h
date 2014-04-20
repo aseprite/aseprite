@@ -1,11 +1,12 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef BASE_TEMP_DIR_H_INCLUDED
 #define BASE_TEMP_DIR_H_INCLUDED
+#pragma once
 
 #include "base/string.h"
 
@@ -17,6 +18,7 @@ namespace base {
     TempDir(const string& appName);
     ~TempDir();
 
+    void remove();
     void attach(const string& path);
     const string& path() const { return m_path; }
 

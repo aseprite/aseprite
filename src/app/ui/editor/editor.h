@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_EDITOR_H_INCLUDED
 #define APP_UI_EDITOR_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "app/document.h"
@@ -69,6 +70,12 @@ namespace app {
       kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag,
     };
 
+    enum ZoomBehavior {
+      kCofiguredZoomBehavior,
+      kCenterOnZoom,
+      kDontCenterOnZoom,
+    };
+
     Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
@@ -117,9 +124,6 @@ namespace app {
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
 
-    void drawMask();
-    void drawMaskSafe();
-
     void flashCurrentLayer();
 
     void screenToEditor(int xin, int yin, int* xout, int* yout);
@@ -159,7 +163,7 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
-    void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y);
+    void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior);
 
     bool processKeysToSetZoom(ui::KeyMessage* msg);
 
@@ -195,7 +199,9 @@ namespace app {
     void editor_clean_cursor(bool refresh = true);
     bool editor_cursor_is_subpixel();
 
-    void drawGrid(const gfx::Rect& gridBounds, const app::Color& color);
+    void drawMaskSafe();
+    void drawMask(ui::Graphics* g);
+    void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds, const app::Color& color);
 
     void editor_setcursor();
 

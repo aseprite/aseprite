@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -27,79 +27,8 @@ namespace ui {
 
 using namespace gfx;
 
-void jrectedge(BITMAP *bmp, int x1, int y1, int x2, int y2,
-               ui::Color c1, ui::Color c2)
-{
-  hline(bmp, x1,   y1,   x2-1, to_system(c1));
-  hline(bmp, x1+1, y2,   x2,   to_system(c2));
-  vline(bmp, x1,   y1+1, y2,   to_system(c1));
-  vline(bmp, x2,   y1,   y2-1, to_system(c2));
-}
-
-void jrectexclude(BITMAP *bmp, int x1, int y1, int x2, int y2,
-                  int ex1, int ey1, int ex2, int ey2, ui::Color color)
-{
-  if ((ex1 > x2) || (ex2 < x1) ||
-      (ey1 > y2) || (ey2 < y1))
-    rectfill(bmp, x1, y1, x2, y2, to_system(color));
-  else {
-    int my1, my2;
-
-    my1 = MAX(y1, ey1);
-    my2 = MIN(y2, ey2);
-
-    // top
-    if (y1 < ey1)
-      rectfill(bmp, x1, y1, x2, ey1-1, to_system(color));
-
-    // left
-    if (x1 < ex1)
-      rectfill(bmp, x1, my1, ex1-1, my2, to_system(color));
-
-    // right
-    if (x2 > ex2)
-      rectfill(bmp, ex2+1, my1, x2, my2, to_system(color));
-
-    // bottom
-    if (y2 > ey2)
-      rectfill(bmp, x1, ey2+1, x2, y2, to_system(color));
-  }
-}
-
-void jdraw_rect(const Rect& rc, ui::Color color)
-{
-  rect(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_system(color));
-}
-
-void jdraw_rectfill(const Rect& rc, ui::Color color)
-{
-  rectfill(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_system(color));
-}
-
-void jdraw_rectedge(const Rect& rc, ui::Color c1, ui::Color c2)
-{
-  jrectedge(ji_screen, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, c1, c2);
-}
-
-void jdraw_rectexclude(const Rect& rc, const Rect& exclude, ui::Color color)
-{
-  jrectexclude(ji_screen,
-               rc.x, rc.y,
-               rc.x+rc.w-1, rc.y+rc.h-1,
-               exclude.x, exclude.y,
-               exclude.x+exclude.w-1, exclude.y+exclude.h-1, color);
-}
-
-void jdraw_char(FONT* f, int chr, int x, int y, ui::Color fg, ui::Color bg, bool fill_bg)
-{
-  SETUP_ANTIALISING(f, bg, fill_bg);
-
-  f->vtable->render_char(f, chr, to_system(fg),
-                         fill_bg ? to_system(bg): -1, ji_screen, x, y);
-}
-
-void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
-                ui::Color fg_color, ui::Color bg_color, bool fill_bg, int underline_height)
+void _draw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
+  ui::Color fg_color, ui::Color bg_color, bool fill_bg, int underline_height)
 {
   // original code from allegro/src/guiproc.c
   char tmp[1024];
@@ -149,7 +78,7 @@ void jdraw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
   }
 }
 
-void ji_move_region(const Region& region, int dx, int dy)
+void _move_region(const Region& region, int dx, int dy)
 {
   size_t nrects = region.size();
 

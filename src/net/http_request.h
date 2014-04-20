@@ -18,6 +18,7 @@
 
 #ifndef NET_HTTP_REQUEST_H_INCLUDED
 #define NET_HTTP_REQUEST_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 

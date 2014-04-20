@@ -18,6 +18,7 @@
 
 #ifndef APP_LAUNCHER_H_INCLUDED
 #define APP_LAUNCHER_H_INCLUDED
+#pragma once
 
 #include <string>
 

@@ -18,6 +18,7 @@
 
 #ifndef RASTER_SPRITE_POSITION_H_INCLUDED
 #define RASTER_SPRITE_POSITION_H_INCLUDED
+#pragma once
 
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"

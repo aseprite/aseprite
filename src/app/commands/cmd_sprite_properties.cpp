@@ -44,7 +44,7 @@ using namespace ui;
 class SpritePropertiesCommand : public Command {
 public:
   SpritePropertiesCommand();
-  Command* clone() { return new SpritePropertiesCommand(*this); }
+  Command* clone() const OVERRIDE { return new SpritePropertiesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

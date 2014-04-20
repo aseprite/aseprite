@@ -8,7 +8,8 @@
     <color id="disabled" value="#968275" />
     <color id="face" value="#d3cbbe" />
     <color id="hot_face" value="#faf0e6" />
-    <color id="selected" value="#2c4c91" />
+    <color id="selected" value="#ff5555" />
+    <color id="separator_label" value="#2c4c91" />
     <color id="background" value="#ffffff" />
     <color id="desktop" value="#968275" />
     <color id="textbox_text" value="#000000" />
@@ -56,11 +57,11 @@
     <color id="tooltip_text" value="#000000" />
     <color id="tooltip_face" value="#ffff7d" />
     <color id="filelist_even_row_text" value="#000000" />
-    <color id="filelist_even_row_face" value="#f0f0f0" />
+    <color id="filelist_even_row_face" value="#ffffff" />
     <color id="filelist_odd_row_text" value="#000000" />
     <color id="filelist_odd_row_face" value="#ffffff" />
     <color id="filelist_selected_row_text" value="#ffffff" />
-    <color id="filelist_selected_row_face" value="#2c4c91" />
+    <color id="filelist_selected_row_face" value="#ff5555" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
     <color id="timeline_normal" value="#c6c6c6" />
@@ -74,6 +75,8 @@
     <color id="timeline_clicked" value="#536069" />
     <color id="timeline_clicked_text" value="#ffffff" />
     <color id="timeline_padding" value="#7d929e" />
+    <color id="status_bar_text" value="#2e3234" />
+    <color id="status_bar_face" value="#7d929e" />
   </colors>
 
   <cursors>
@@ -100,6 +103,7 @@
     <cursor id="rotate_bl"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
     <cursor id="rotate_br"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
     <cursor id="eyedropper"     x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
+    <cursor id="magnifier"      x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
   </cursors>
 
   <tools>
@@ -117,6 +121,7 @@
     <tool id="eyedropper"               x="160" y="32" w="16" h="16" />
     <tool id="hand"                     x="176" y="32" w="16" h="16" />
     <tool id="move"                     x="192" y="32" w="16" h="16" />
+    <tool id="zoom"                     x="208" y="32" w="16" h="16" />
 
     <tool id="paint_bucket"             x="144" y="48" w="16" h="16" />
 
@@ -310,9 +315,29 @@
     <part id="timeline_padding_tr"              x="288" y="12" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_bl"              x="276" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_padding_br"              x="288" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
+    <part id="timeline_drop_layer_deco"         x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
+    <part id="timeline_drop_frame_deco"         x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
   </parts>
 
   <stylesheet>
+
+    <!-- window -->
+    <style id="window">
+      <background color="window_face" part="window" />
+    </style>
+
+    <style id="window_title">
+      <background color="window_titlebar_face" />
+      <text color="window_titlebar_text" align="left" valign="middle" />
+    </style>
+
+    <style id="menubox">
+      <background color="window_face" part="menu" />
+    </style>
+
+    <style id="desktop">
+      <background color="desktop" />
+    </style>
 
     <!-- scrollbar -->
     <style id="scrollbar">
@@ -472,6 +497,26 @@
     </style>
     <style id="timeline_padding_br">
       <background color="timeline_normal" part="timeline_padding_br" />
+    </style>
+
+    <!-- timeline_range_outline -->
+    <style id="timeline_range_outline">
+    </style>
+    <style id="timeline_range_outline:active">
+      <background part="colorbar_border_hotfg" />
+    </style>
+    <style id="timeline_range_outline:hover">
+      <background part="colorbar_border_fg" />
+    </style>
+
+    <!-- timeline_drop_layer_deco -->
+    <style id="timeline_drop_layer_deco">
+      <background part="timeline_drop_layer_deco" />
+    </style>
+
+    <!-- timeline_drop_frame_deco -->
+    <style id="timeline_drop_frame_deco">
+      <background part="timeline_drop_frame_deco" />
     </style>
 
   </stylesheet>

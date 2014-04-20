@@ -43,7 +43,7 @@ namespace app {
 class NewFrameCommand : public Command {
 public:
   NewFrameCommand();
-  Command* clone() { return new NewFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new NewFrameCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

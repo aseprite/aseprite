@@ -18,6 +18,7 @@
 
 #ifndef APP_CONTEXT_FLAGS_H_INCLUDED
 #define APP_CONTEXT_FLAGS_H_INCLUDED
+#pragma once
 
 namespace app {
 

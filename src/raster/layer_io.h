@@ -18,6 +18,7 @@
 
 #ifndef RASTER_LAYER_IO_H_INCLUDED
 #define RASTER_LAYER_IO_H_INCLUDED
+#pragma once
 
 #include "base/exception.h"
 

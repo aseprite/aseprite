@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_TIMELINE_H_INCLUDED
 #define APP_UI_TIMELINE_H_INCLUDED
+#pragma once
 
 #include "app/context_observer.h"
 #include "app/document_observer.h"
@@ -32,6 +33,7 @@
 namespace raster {
   class Cel;
   class Layer;
+  class LayerImage;
   class Sprite;
 }
 
@@ -58,37 +60,52 @@ namespace app {
       STATE_SELECTING_FRAMES,
       STATE_SELECTING_CELS,
       STATE_MOVING_SEPARATOR,
-      STATE_MOVING_LAYER,
-      STATE_MOVING_CEL,
-      STATE_MOVING_FRAME,
+      STATE_MOVING_RANGE,
       STATE_MOVING_ONIONSKIN_RANGE_LEFT,
       STATE_MOVING_ONIONSKIN_RANGE_RIGHT
     };
 
     struct Range {
-      Range() : m_enabled(false) { }
+      enum Type { kNone, kCels, kFrames, kLayers };
 
-      bool enabled() const { return m_enabled; }
+      Range() : m_type(kNone) { }
+
+      Type type() const { return m_type; }
+      bool enabled() const { return m_type != kNone; }
       int layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
       int layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
       FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
       FrameNumber frameEnd() const { return MAX(m_frameBegin, m_frameEnd); }
 
+      int layers() const { return layerEnd() - layerBegin() + 1; }
+      FrameNumber frames() const { return (frameEnd() - frameBegin()).next(); }
+      void setLayers(int layers);
+      void setFrames(FrameNumber frames);
+      void displace(int layerDelta, FrameNumber frameDelta);
+
       bool inRange(int layer) const;
       bool inRange(FrameNumber frame) const;
       bool inRange(int layer, FrameNumber frame) const;
 
-      void startRange(int layer, FrameNumber frame);
+      void startRange(int layer, FrameNumber frame, Type type);
       void endRange(int layer, FrameNumber frame);
       void disableRange();
 
+      bool operator==(const Range& o) const {
+        return m_type == o.m_type &&
+          layerBegin() == o.layerBegin() && layerEnd() == o.layerEnd() &&
+          frameBegin() == o.frameBegin() && frameEnd() == o.frameEnd();
+      }
+
     private:
-      bool m_enabled;
+      Type m_type;
       int m_layerBegin;
       int m_layerEnd;
       FrameNumber m_frameBegin;
       FrameNumber m_frameEnd;
     };
+
+    enum DropOp { kMove, kCopy };
 
     Timeline();
     ~Timeline();
@@ -107,6 +124,10 @@ namespace app {
 
     Range range() const { return m_range; }
 
+    // Drag-and-drop operations. These actions are used by commands
+    // called from popup menus.
+    void dropRange(DropOp op);
+
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
@@ -114,7 +135,7 @@ namespace app {
 
     // DocumentObserver impl.
     void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onRemoveLayer(DocumentEvent& ev) OVERRIDE;
+    void onAfterRemoveLayer(DocumentEvent& ev) OVERRIDE;
     void onAddFrame(DocumentEvent& ev) OVERRIDE;
     void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
 
@@ -141,6 +162,7 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
     void drawLayer(ui::Graphics* g, int layer_index);
     void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
     gfx::Rect getLayerHeadersBounds() const;
@@ -160,6 +182,11 @@ namespace app {
     bool isLayerActive(int layer_index) const;
     bool isFrameActive(FrameNumber frame) const;
     void updateStatusBar();
+    Range getDropRange() const;
+
+    void dropCels(DropOp op, const Range& drop);
+    void dropFrames(DropOp op, const Range& drop);
+    void dropLayers(DropOp op, const Range& drop);
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -181,6 +208,9 @@ namespace app {
     skin::Style* m_timelinePaddingBlStyle;
     skin::Style* m_timelinePaddingBrStyle;
     skin::Style* m_timelineSelectedCelStyle;
+    skin::Style* m_timelineRangeOutlineStyle;
+    skin::Style* m_timelineDropLayerDecoStyle;
+    skin::Style* m_timelineDropFrameDecoStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
@@ -203,7 +233,7 @@ namespace app {
     int m_clk_part;
     int m_clk_layer;
     FrameNumber m_clk_frame;
-    // Old mouse position (for scrolling).
+    // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
   };
 

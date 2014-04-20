@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -23,7 +23,9 @@ Separator::Separator(const base::string& text, int align)
  : Widget(kSeparatorWidget)
 {
   setAlign(align);
-  setText(text);
+  if (!text.empty())
+    setText(text);
+
   initTheme();
 }
 
@@ -44,7 +46,7 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   if (hasText())
-    maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
+    maxSize.w = MAX(maxSize.w, getTextWidth());
 
   int w = this->border_width.l + maxSize.w + this->border_width.r;
   int h = this->border_width.t + maxSize.h + this->border_width.b;

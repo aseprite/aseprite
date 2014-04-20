@@ -42,7 +42,7 @@ namespace app {
 using namespace ui;
 
 ColorSelector::ColorSelector()
-  : PopupWindowPin("Color Selector", false)
+  : PopupWindowPin("Color Selector", PopupWindow::kCloseOnClickInOtherWindow)
   , m_color(app::Color::fromMask())
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)

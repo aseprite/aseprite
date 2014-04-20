@@ -1,18 +1,23 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_MANAGER_H_INCLUDED
 #define UI_MANAGER_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
-namespace she { class Display; }
+namespace she {
+  class Clipboard;
+  class Display;
+  class EventQueue;
+}
 
 namespace ui {
 
@@ -31,7 +36,10 @@ namespace ui {
     ~Manager();
 
     she::Display* getDisplay() { return m_display; }
-    void setDisplay(she::Display* display) { m_display = display; }
+    she::Clipboard* getClipboard() { return m_clipboard; }
+
+    void setDisplay(she::Display* display);
+    void setClipboard(she::Clipboard* clipboard);
 
     void run();
 
@@ -84,14 +92,23 @@ namespace ui {
     virtual LayoutIO* onGetLayoutIO();
 
   private:
+    void generateMouseMessages();
+    void generateSetCursorMessage(const gfx::Point& mousePos);
+    void generateKeyMessages();
+    void generateMessagesFromSheEvents();
+    void handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons);
+    void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, int delta);
+    void handleWindowZOrder();
+
     void pumpQueue();
-    void generateSetCursorMessage();
     static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(MessageType type, Widget* destination);
-    static Message* newMouseMessage(MessageType type, Widget* destination,
-                                    MouseButtons mouseButtons);
+    static Message* newMouseMessage(MessageType type,
+      Widget* widget, gfx::Point mousePos, MouseButtons buttons, int delta = 0);
     static MouseButtons currentMouseButtons(int antique);
     void broadcastKeyMsg(Message* msg);
 
@@ -99,6 +116,15 @@ namespace ui {
 
     WidgetsList m_garbage;
     she::Display* m_display;
+    she::Clipboard* m_clipboard;
+    she::EventQueue* m_eventQueue;
+
+    // This member is used to make freeWidget() a no-op when we
+    // restack a window if the user clicks on it.
+    Widget* m_lockedWindow;
+
+    // Current pressed buttons.
+    MouseButtons m_mouseButtons;
   };
 
 } // namespace ui

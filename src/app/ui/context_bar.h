@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_CONTEXT_BAR_H_INCLUDED
 #define APP_UI_CONTEXT_BAR_H_INCLUDED
+#pragma once
 
 #include "app/settings/settings_observers.h"
 #include "base/compiler_specific.h"

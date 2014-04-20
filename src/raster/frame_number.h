@@ -18,6 +18,7 @@
 
 #ifndef RASTER_FRAME_NUMBER_H_INCLUDED
 #define RASTER_FRAME_NUMBER_H_INCLUDED
+#pragma once
 
 namespace raster {
 
@@ -37,6 +38,8 @@ namespace raster {
     FrameNumber& operator--() { --m_value; return *this; }
     FrameNumber operator++(int) { FrameNumber old(*this); ++m_value; return old; }
     FrameNumber operator--(int) { FrameNumber old(*this); --m_value; return old; }
+    FrameNumber& operator+=(const FrameNumber& o) { m_value += o.m_value; return *this; }
+    FrameNumber& operator-=(const FrameNumber& o) { m_value -= o.m_value; return *this; }
     bool operator<(const FrameNumber& o) const { return m_value < o.m_value; }
     bool operator>(const FrameNumber& o) const { return m_value > o.m_value; }
     bool operator<=(const FrameNumber& o) const { return m_value <= o.m_value; }

@@ -18,12 +18,14 @@
 
 #ifndef RASTER_PALETTE_H_INCLUDED
 #define RASTER_PALETTE_H_INCLUDED
+#pragma once
 
 #include "raster/color.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"
 
 #include <vector>
+#include <string>
 
 namespace raster {
 
@@ -66,6 +68,11 @@ namespace raster {
     int size() const { return m_colors.size(); }
     void resize(int ncolors);
 
+    std::string getFilename() const { return m_filename; }
+    void setFilename(const std::string& filename) {
+      m_filename = filename;
+    }
+
     int getModifications() const { return m_modifications; }
 
     FrameNumber getFrame() const { return m_frame; }
@@ -75,8 +82,8 @@ namespace raster {
       ASSERT(i >= 0 && i < size());
       return m_colors[i];
     }
-
     void setEntry(int i, color_t color);
+    void addEntry(color_t color);
 
     void copyColorsTo(Palette* dst) const;
 
@@ -100,6 +107,7 @@ namespace raster {
     FrameNumber m_frame;
     std::vector<color_t> m_colors;
     int m_modifications;
+    std::string m_filename; // If the palette is associated with a file.
   };
 
 } // namespace raster

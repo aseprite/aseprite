@@ -150,21 +150,24 @@ protected:
 
 private:
   void openPopup() {
+    Border border = Border(2, 2, 2, 3)*jguiscale();
     Rect rc = getBounds();
     rc.y += rc.h;
     rc.w *= 3;
-    m_popupWindow = new PopupWindow("", false);
+    m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
     m_popupWindow->setAutoRemap(false);
-    m_popupWindow->setBounds(rc);
+    m_popupWindow->setBorder(border);
+    m_popupWindow->setBounds(rc + border);
 
-    Region rgn(rc.createUnion(getBounds()));
+    Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
     m_brushType = new ButtonSet(3, 1, m_penType,
-                                PART_BRUSH_CIRCLE,
-                                PART_BRUSH_SQUARE,
-                                PART_BRUSH_LINE);
-
+      PART_BRUSH_CIRCLE,
+      PART_BRUSH_SQUARE,
+      PART_BRUSH_LINE);
     m_brushType->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
+    m_brushType->setTransparent(true);
+    m_brushType->setBgColor(ui::ColorNone);
 
     m_popupWindow->addChild(m_brushType);
     m_popupWindow->openWindow();
@@ -282,17 +285,34 @@ public:
   }
 
   void setInkType(InkType inkType) {
-    setSelectedItemIndex((int)inkType);
+    int index = 0;
+
+    switch (inkType) {
+      case kDefaultInk: index = 0; break;
+      case kPutAlphaInk: index = 1; break;
+    }
+
+    setSelectedItemIndex(index);
   }
 
 protected:
   void onChange() OVERRIDE {
     ComboBox::onChange();
 
+    InkType inkType = kDefaultInk;
+
+    switch (getSelectedItemIndex()) {
+      case 0: inkType = kDefaultInk; break;
+      case 1: inkType = kPutAlphaInk; break;
+    }
+
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setInkType((InkType)getSelectedItemIndex());
+    settings->getToolSettings(currentTool)->setInkType(inkType);
+  }
+
+  void onCloseListBox() OVERRIDE {
+    releaseFocus();
   }
 };
 
@@ -379,6 +399,10 @@ protected:
       ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
   }
 
+  void onCloseListBox() OVERRIDE {
+    releaseFocus();
+  }
+
 private:
   class Item : public ListItem {
   public:
@@ -410,6 +434,9 @@ public:
       ->setFreehandAlgorithm(isSelected() ?
         kPixelPerfectFreehandAlgorithm:
         kDefaultFreehandAlgorithm);
+
+    releaseFocus(
+);
   }
 };
 
@@ -451,6 +478,8 @@ protected:
     CheckBox::onClick(ev);
 
     UIContext::instance()->settings()->setGrabAlpha(isSelected());
+
+    releaseFocus();
   }
 };
 

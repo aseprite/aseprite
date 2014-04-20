@@ -146,7 +146,7 @@ static PaletteEntryEditor* g_window = NULL;
 class PaletteEditorCommand : public Command {
 public:
   PaletteEditorCommand();
-  Command* clone() { return new PaletteEditorCommand(*this); }
+  Command* clone() const OVERRIDE { return new PaletteEditorCommand(*this); }
 
 protected:
   void onLoadParams(Params* params) OVERRIDE;

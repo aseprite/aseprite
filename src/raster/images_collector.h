@@ -18,6 +18,7 @@
 
 #ifndef RASTER_IMAGES_REF_H_INCLUDED
 #define RASTER_IMAGES_REF_H_INCLUDED
+#pragma once
 
 #include "raster/frame_number.h"
 

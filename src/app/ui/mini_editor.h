@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_MINI_EDITOR_VIEW_H_INCLUDED
 #define APP_UI_MINI_EDITOR_VIEW_H_INCLUDED
+#pragma once
 
 #include "app/ui/document_view.h"
 #include "ui/timer.h"

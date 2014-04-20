@@ -54,7 +54,7 @@ $1/docs/licenses/*.txt                                               \
 $1/data/widgets/*.xml"
 
   bin_files="                                                        \
-$1/data/palettes/*.col                                               \
+$1/data/palettes/*.gpl                                               \
 $1/data/icons/ase*.ico                                               \
 $1/data/icons/ase*.png                                               \
 $1/data/skins/*/*.png                                                \

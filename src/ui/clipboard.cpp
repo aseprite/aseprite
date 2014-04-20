@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -10,22 +10,27 @@
 
 #include "ui/clipboard.h"
 
-#ifdef WIN32
-#include "ui/clipboard_win.h"
-#else
-#include "ui/clipboard_none.h"
-#endif
+#include "she/clipboard.h"
+#include "ui/manager.h"
+
+#include <string>
 
 static std::string clipboard_text;
 
-const char* ui::clipboard::get_text()
+namespace ui {
+namespace clipboard {
+
+const char* get_text()
 {
-  get_system_clipboard_text(clipboard_text);
+  clipboard_text = Manager::getDefault()->getClipboard()->getText();
   return clipboard_text.c_str();
 }
 
-void ui::clipboard::set_text(const char* text)
+void set_text(const char* text)
 {
   clipboard_text = text ? text: "";
-  set_system_clipboard_text(clipboard_text);
+  Manager::getDefault()->getClipboard()->setText(clipboard_text);
 }
+
+} // namespace clipboard
+} // namespace ui

@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+//#define CLOSE_BUTTON_IN_EACH_TAB
+
 #include <algorithm>
 #include <allegro.h>
 #include <cmath>
@@ -284,7 +286,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseWheelMessage: {
-      int dx = (jmouse_z(1) - jmouse_z(0)) * getBounds().w/6;
+      int dx = -static_cast<MouseMessage*>(msg)->wheelDelta() * getBounds().w/6;
       // setScrollX(m_scrollX+dx);
 
       m_begScrollX = m_scrollX;
@@ -356,12 +358,11 @@ void Tabs::onPaint(PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
-  gfx::Rect box(rect.x-m_scrollX,
-                rect.y,
-                2*jguiscale(),
-                theme->get_part(PART_TAB_FILLER)->h);
+  gfx::Rect box(rect.x-m_scrollX, rect.y,
+    2*jguiscale(),
+    m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->h);
 
-  g->fillRect(theme->getColor(ThemeColor::WindowFace), g->getClipBounds());
+  g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
 
   theme->draw_part_as_hline(g, box, PART_TAB_FILLER);
   theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
@@ -430,10 +431,13 @@ void Tabs::onResize(ResizeEvent& ev)
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->h);
 
-  ev.setPreferredSize(gfx::Size(0, // 4 + jwidget_get_text_height(widget) + 5,
-                                theme->get_part(PART_TAB_FILLER)->h +
-                                theme->get_part(PART_TAB_BOTTOM_NORMAL)->h));
+  if (!m_list_of_tabs.empty()) {
+    reqsize.h += theme->get_part(PART_TAB_FILLER)->h;
+  }
+
+  ev.setPreferredSize(reqsize);
 }
 
 void Tabs::onInitTheme(InitThemeEvent& ev)
@@ -654,7 +658,7 @@ void Tabs::calcTabWidth(Tab* tab)
 
   int border = 4*jguiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
-  SkinTheme* theme = static_cast<SkinTheme*>(this->theme);
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
   tab->width = (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
 #else

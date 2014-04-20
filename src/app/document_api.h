@@ -18,9 +18,11 @@
 
 #ifndef APP_DOCUMENT_API_H_INCLUDED
 #define APP_DOCUMENT_API_H_INCLUDED
+#pragma once
 
 #include "gfx/rect.h"
 #include "raster/algorithm/flip_type.h"
+#include "raster/color.h"
 #include "raster/dithering_method.h"
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
@@ -60,24 +62,30 @@ namespace app {
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
-    void cropSprite(Sprite* sprite, const gfx::Rect& bounds, int bgcolor);
-    void trimSprite(Sprite* sprite, int bgcolor);
+    void cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor);
+    void trimSprite(Sprite* sprite, color_t bgcolor);
     void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method);
 
     // Frames API
     void addFrame(Sprite* sprite, FrameNumber newFrame);
+    void copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame);
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
     void setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs);
     void setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs);
-    void moveFrameBefore(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame);
+    void moveFrame(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame);
 
     // Cels API
     void addCel(LayerImage* layer, Cel* cel);
     void removeCel(LayerImage* layer, Cel* cel);
-    void setCelFramePosition(Sprite* sprite, Cel* cel, FrameNumber frame);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
-    void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, int bgcolor);
+    void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
+    void moveCel(Sprite* sprite,
+      LayerImage* srcLayer, LayerImage* dstLayer,
+      FrameNumber srcFrame, FrameNumber dstFrame, color_t bgcolor);
+    void copyCel(Sprite* sprite,
+      LayerImage* srcLayer, LayerImage* dstLayer,
+      FrameNumber srcFrame, FrameNumber dstFrame, color_t bgcolor);
 
     // Layers API
     LayerImage* newLayer(Sprite* sprite);
@@ -85,11 +93,12 @@ namespace app {
     void addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
-    void cropLayer(Layer* layer, int x, int y, int w, int h, int bgcolor);
+    void cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor);
     void displaceLayers(Layer* layer, int dx, int dy);
-    void backgroundFromLayer(LayerImage* layer, int bgcolor);
+    void backgroundFromLayer(LayerImage* layer, color_t bgcolor);
     void layerFromBackground(Layer* layer);
-    void flattenLayers(Sprite* sprite, int bgcolor);
+    void flattenLayers(Sprite* sprite, color_t bgcolor);
+    void duplicateLayer(Layer* sourceLayer, Layer* afterLayer);
 
     // Images stock API
     int addImageInStock(Sprite* sprite, Image* image);
@@ -98,9 +107,9 @@ namespace app {
 
     // Image API
     Image* getCelImage(Sprite* sprite, Cel* cel);
-    void clearMask(Layer* layer, Cel* cel, int bgcolor);
+    void clearMask(Layer* layer, Cel* cel, color_t bgcolor);
     void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
-    void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, int bgcolor);
+    void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor);
     void pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity);
 
     // Mask API
@@ -113,10 +122,10 @@ namespace app {
 
   private:
     undo::ObjectsContainer* getObjects() const;
-    void addFrameForLayer(Layer* layer, FrameNumber frame);
+    void setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber frame);
+    void copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame);
     void removeFrameOfLayer(Layer* layer, FrameNumber frame);
-    void copyPreviousFrame(Layer* layer, FrameNumber frame);
-    void moveFrameBeforeLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
+    void moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);
     void configureLayerAsBackground(LayerImage* layer);
     bool undoEnabled();
 

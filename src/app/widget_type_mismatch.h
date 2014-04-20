@@ -18,6 +18,7 @@
 
 #ifndef APP_WIDGET_TYPE_MISMATCH_H_INCLUDED
 #define APP_WIDGET_TYPE_MISMATCH_H_INCLUDED
+#pragma once
 
 #include <string>
 #include <stdexcept>

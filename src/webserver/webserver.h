@@ -18,6 +18,7 @@
 
 #ifndef WEBSERVER_WEBSERVER_H_INCLUDED
 #define WEBSERVER_WEBSERVER_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include <string>

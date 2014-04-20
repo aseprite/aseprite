@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_MESSAGE_H_INCLUDED
 #define UI_MESSAGE_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "gfx/point.h"
@@ -15,6 +16,9 @@
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widgets_list.h"
+
+#include <string>
+#include <vector>
 
 namespace ui {
 
@@ -97,20 +101,22 @@ namespace ui {
   class MouseMessage : public Message
   {
   public:
-    MouseMessage(MessageType type, MouseButtons buttons, const gfx::Point& pos)
-      : Message(type), m_buttons(buttons), m_pos(pos) {
+    MouseMessage(MessageType type, MouseButtons buttons, const gfx::Point& pos, int delta)
+      : Message(type), m_buttons(buttons), m_pos(pos), m_delta(delta) {
     }
 
     MouseButtons buttons() const { return m_buttons; }
     bool left() const { return (m_buttons & kButtonLeft) == kButtonLeft; }
     bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
     bool middle() const { return (m_buttons & kButtonMiddle) == kButtonMiddle; }
+    int wheelDelta() const { return m_delta; }
 
     const gfx::Point& position() const { return m_pos; }
 
   private:
     MouseButtons m_buttons;     // Pressed buttons
     gfx::Point m_pos;           // Mouse position
+    int m_delta;                // Wheel axis variation
   };
 
   class TimerMessage : public Message
@@ -126,6 +132,21 @@ namespace ui {
   private:
     int m_count;                    // Accumulated calls
     Timer* m_timer;                 // Timer handle
+  };
+
+  class DropFilesMessage : public Message
+  {
+  public:
+    typedef std::vector<std::string> Files;
+
+    DropFilesMessage(const Files& files)
+      : Message(kDropFilesMessage), m_files(files) {
+    }
+
+    const Files& files() const { return m_files; }
+
+  private:
+    Files m_files;
   };
 
 } // namespace ui

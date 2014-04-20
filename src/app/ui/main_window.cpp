@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ MainWindow::MainWindow()
   : Window(DesktopWindow)
   , m_lastSplitterPos(0.0)
   , m_lastTimelineSplitterPos(75.0)
-  , m_advancedMode(false)
+  , m_mode(NormalMode)
   , m_startView(NULL)
 {
   setId("main_window");
@@ -113,6 +113,9 @@ MainWindow::MainWindow()
   if (box_workspace) box_workspace->addChild(m_workspace);
   if (box_timeline) box_timeline->addChild(m_timeline);
 
+  // Default layout of widgets
+  m_colorBarSplitter->setPosition(m_colorBar->getPreferredSize().w);
+
   // Prepare the window
   remapWindow();
 
@@ -146,27 +149,35 @@ void MainWindow::reloadMenus()
   invalidate();
 }
 
-void MainWindow::setAdvancedMode(bool advanced)
+void MainWindow::setMode(Mode mode)
 {
   // Check if we already are in the given mode.
-  if (m_advancedMode == advanced)
+  if (m_mode == mode)
     return;
 
-  m_advancedMode = advanced;
-
-  if (m_advancedMode) {
+  if (mode == NormalMode) {
+    if (m_colorBarSplitter->getPosition() == 0.0)
+      m_colorBarSplitter->setPosition(m_lastSplitterPos);
+  }
+  // If current mode is "normal", we save the splitter position of the
+  // color bar in "m_lastSplitterPos" before we hide it.
+  else if (m_mode == NormalMode) {
     m_lastSplitterPos = m_colorBarSplitter->getPosition();
     m_colorBarSplitter->setPosition(0.0);
   }
-  else if (m_colorBarSplitter->getPosition() == 0.0)
-    m_colorBarSplitter->setPosition(m_lastSplitterPos);
 
-  m_menuBar->setVisible(!advanced);
-  m_tabsBar->setVisible(!advanced);
-  m_toolBar->setVisible(!advanced);
-  m_statusBar->setVisible(!advanced);
-  m_contextBar->setVisible(!advanced);
+  m_menuBar->setVisible(mode == NormalMode);
+  m_tabsBar->setVisible(mode == NormalMode);
+  m_toolBar->setVisible(mode == NormalMode);
+  m_statusBar->setVisible(mode == NormalMode);
+  m_contextBar->setVisible(
+    mode == NormalMode ||
+    mode == ContextBarAndTimelineMode);
+  setTimelineVisibility(
+    mode == NormalMode ||
+    mode == ContextBarAndTimelineMode);
 
+  m_mode = mode;
   layout();
 }
 
@@ -232,12 +243,15 @@ void MainWindow::onActiveViewChange()
 
     m_contextBar->updateFromTool(UIContext::instance()
       ->getSettings()->getCurrentTool());
-    m_contextBar->setVisible(true);
+
+    if (m_mode != EditorOnlyMode)
+      m_contextBar->setVisible(true);
   }
   else {
     UIContext::instance()->setActiveView(NULL);
 
-    m_contextBar->setVisible(false);
+    if (m_mode != EditorOnlyMode)
+      m_contextBar->setVisible(false);
   }
   layout();
 }

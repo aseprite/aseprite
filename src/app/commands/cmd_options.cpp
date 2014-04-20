@@ -44,7 +44,7 @@ using namespace ui;
 class OptionsCommand : public Command {
 public:
   OptionsCommand();
-  Command* clone() { return new OptionsCommand(*this); }
+  Command* clone() const OVERRIDE { return new OptionsCommand(*this); }
 
 protected:
   void onExecute(Context* context);

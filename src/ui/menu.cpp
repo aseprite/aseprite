@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -877,13 +877,13 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
   if (hasText()) {
     size.w =
       + this->border_width.l
-      + jwidget_get_text_length(this)
+      + getTextWidth()
       + ((bar) ? this->child_spacing/4: this->child_spacing)
       + this->border_width.r;
 
     size.h =
       + this->border_width.t
-      + jwidget_get_text_height(this)
+      + getTextHeight()
       + this->border_width.b;
 
     if (m_accel && !m_accel->isEmpty()) {

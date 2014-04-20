@@ -52,7 +52,7 @@ public:
   {
   }
 
-  Command* clone() const { return new CloseFileCommand(*this); }
+  Command* clone() const OVERRIDE { return new CloseFileCommand(*this); }
 
 protected:
 
@@ -99,7 +99,7 @@ public:
   {
   }
 
-  Command* clone() const { return new CloseAllFilesCommand(*this); }
+  Command* clone() const OVERRIDE { return new CloseAllFilesCommand(*this); }
 
 protected:
 

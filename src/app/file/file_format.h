@@ -18,6 +18,7 @@
 
 #ifndef APP_FILE_FILE_FORMAT_H_INCLUDED
 #define APP_FILE_FILE_FORMAT_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 
@@ -53,7 +54,9 @@ namespace app {
     const char* name() const;       // File format name
     const char* extensions() const; // Extensions (e.g. "jpeg,jpg")
     bool load(FileOp* fop);
+#ifdef ENABLE_SAVE
     bool save(FileOp* fop);
+#endif
 
     // Does post-load operation which require user intervention.
     // Returns false cancelled the operation.
@@ -80,7 +83,9 @@ namespace app {
 
     virtual bool onLoad(FileOp* fop) = 0;
     virtual bool onPostLoad(FileOp* fop) { return true; }
+#ifdef ENABLE_SAVE
     virtual bool onSave(FileOp* fop) = 0;
+#endif
     virtual void onDestroyData(FileOp* fop) { }
 
     virtual SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {

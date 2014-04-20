@@ -18,6 +18,7 @@
 
 #ifndef APP_UNDOERS_SET_CEL_OPACITY_H_INCLUDED
 #define APP_UNDOERS_SET_CEL_OPACITY_H_INCLUDED
+#pragma once
 
 #include "app/undoers/undoer_base.h"
 #include "undo/object_id.h"

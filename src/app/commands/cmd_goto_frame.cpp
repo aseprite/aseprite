@@ -62,7 +62,7 @@ public:
   GotoFirstFrameCommand()
     : GotoCommand("GotoFirstFrame",
                   "Goto First Frame") { }
-  Command* clone() { return new GotoFirstFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoFirstFrameCommand(*this); }
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
@@ -79,7 +79,7 @@ public:
   GotoPreviousFrameCommand()
     : GotoCommand("GotoPreviousFrame",
                   "Goto Previous Frame") { }
-  Command* clone() { return new GotoPreviousFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoPreviousFrameCommand(*this); }
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
@@ -100,7 +100,7 @@ class GotoNextFrameCommand : public GotoCommand
 public:
   GotoNextFrameCommand() : GotoCommand("GotoNextFrame",
                                        "Goto Next Frame") { }
-  Command* clone() { return new GotoNextFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoNextFrameCommand(*this); }
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
@@ -119,7 +119,7 @@ class GotoLastFrameCommand : public GotoCommand
 public:
   GotoLastFrameCommand() : GotoCommand("GotoLastFrame",
                                        "Goto Last Frame") { }
-  Command* clone() { return new GotoLastFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoLastFrameCommand(*this); }
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
@@ -136,7 +136,7 @@ public:
   GotoFrameCommand() : GotoCommand("GotoFrame",
                                    "Goto Frame")
                      , m_frame(0) { }
-  Command* clone() { return new GotoFrameCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoFrameCommand(*this); }
 
 protected:
   void onLoadParams(Params* params) OVERRIDE

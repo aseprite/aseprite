@@ -1,11 +1,12 @@
 // Aseprite Undo Library
 // Copyright (C) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UNDO_UNDO_HISTORY_H_INCLUDED
 #define UNDO_UNDO_HISTORY_H_INCLUDED
+#pragma once
 
 #include "undo/modification.h"
 #include "undo/undoers_collector.h"

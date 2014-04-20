@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
 #define APP_UI_DROP_DOWN_BUTTON_H_INCLUDED
+#pragma once
 
 #include "base/signal.h"
 #include "ui/box.h"
@@ -32,6 +33,9 @@ namespace app {
   class DropDownButton : public ui::HBox {
   public:
     DropDownButton(const char* text);
+
+    ui::Button* mainButton() { return m_button; }
+    ui::Button* dropDown() { return m_dropDown; }
 
     Signal0<void> Click;
     Signal0<void> DropDownClick;

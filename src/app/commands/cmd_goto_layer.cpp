@@ -32,10 +32,25 @@
 
 namespace app {
 
-class GotoPreviousLayerCommand : public Command {
+class GotoCommand : public Command {
+public:
+  GotoCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
+    : Command(short_name, friendly_name, flags) {
+  }
+
+protected:
+  void updateStatusBar(DocumentLocation& location) {
+    if (location.layer() != NULL)
+      StatusBar::instance()
+        ->setStatusText(1000, "Layer `%s' selected",
+          location.layer()->getName().c_str());
+  }
+};
+
+class GotoPreviousLayerCommand : public GotoCommand {
 public:
   GotoPreviousLayerCommand();
-  Command* clone() { return new GotoPreviousLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoPreviousLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -43,9 +58,9 @@ protected:
 };
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
-  : Command("GotoPreviousLayer",
-            "Goto Previous Layer",
-            CmdUIOnlyFlag)
+ : GotoCommand("GotoPreviousLayer",
+               "Goto Previous Layer",
+               CmdUIOnlyFlag)
 {
 }
 
@@ -71,15 +86,13 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
   current_editor->setLayer(location.layer());
   current_editor->flashCurrentLayer();
 
-  StatusBar::instance()
-    ->setStatusText(1000, "Layer `%s' selected",
-                    location.layer()->getName().c_str());
+  updateStatusBar(location);
 }
 
-class GotoNextLayerCommand : public Command {
+class GotoNextLayerCommand : public GotoCommand {
 public:
   GotoNextLayerCommand();
-  Command* clone() { return new GotoNextLayerCommand(*this); }
+  Command* clone() const OVERRIDE { return new GotoNextLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -87,9 +100,9 @@ protected:
 };
 
 GotoNextLayerCommand::GotoNextLayerCommand()
-  : Command("GotoNextLayer",
-            "Goto Next Layer",
-            CmdUIOnlyFlag)
+  : GotoCommand("GotoNextLayer",
+                "Goto Next Layer",
+                CmdUIOnlyFlag)
 {
 }
 
@@ -115,9 +128,7 @@ void GotoNextLayerCommand::onExecute(Context* context)
   current_editor->setLayer(location.layer());
   current_editor->flashCurrentLayer();
 
-  StatusBar::instance()
-    ->setStatusText(1000, "Layer `%s' selected",
-                    location.layer()->getName().c_str());
+  updateStatusBar(location);
 }
 
 Command* CommandFactory::createGotoPreviousLayerCommand()

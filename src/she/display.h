@@ -1,16 +1,18 @@
 // SHE library
 // Copyright (C) 2012-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef SHE_DISPLAY_H_INCLUDED
 #define SHE_DISPLAY_H_INCLUDED
+#pragma once
 
 namespace she {
 
+  class EventQueue;
+  class NonDisposableSurface;
   class Surface;
-  class NotDisposableSurface;
 
   // A display or window to show graphics.
   class Display {
@@ -33,7 +35,7 @@ namespace she {
 
     // Returns the main surface to draw into this display.
     // You must not dispose this surface.
-    virtual NotDisposableSurface* getSurface() = 0;
+    virtual NonDisposableSurface* getSurface() = 0;
 
     // Flips all graphics in the surface to the real display.  Returns
     // false if the flip couldn't be done because the display was
@@ -42,6 +44,8 @@ namespace she {
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;
+
+    virtual EventQueue* getEventQueue() = 0;
 
     // Returns the HWND on Windows.
     virtual void* nativeHandle() = 0;

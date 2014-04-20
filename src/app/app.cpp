@@ -32,7 +32,6 @@
 #include "app/document_exporter.h"
 #include "app/document_location.h"
 #include "app/document_observer.h"
-#include "app/drop_files.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
@@ -46,6 +45,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/recent_files.h"
+#include "app/resource_finder.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -77,6 +77,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -148,14 +149,24 @@ App::App(int argc, const char* argv[])
                        options.paletteFileName():
                        base::string(get_config_string("GfxMode", "Palette", "")));
 
+  if (palFile.empty()) {
+    // Try to use a default pixel art palette.
+    ResourceFinder rf;
+    rf.includeDataDir("palettes/db32.gpl");
+    if (rf.findFirst())
+      palFile = rf.filename();
+  }
+
   if (!palFile.empty()) {
     PRINTF("Loading custom palette file: %s\n", palFile.c_str());
 
     base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
-    if (pal.get() == NULL)
-	  throw base::Exception("Error loading default palette from: %s", palFile.c_str());
-
-    set_default_palette(pal.get());
+    if (pal.get() != NULL) {
+      set_default_palette(pal.get());
+    }
+    else {
+      PRINTF("Error loading custom palette file\n");
+    }
   }
 
   // Set system palette to the default one.
@@ -235,9 +246,6 @@ int App::run()
 
   // Run the GUI
   if (isGui()) {
-    // Support to drop files from Windows explorer
-    install_drop_files();
-
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
     app::CheckUpdateThreadLauncher checkUpdate;
@@ -252,9 +260,6 @@ int App::run()
 
     // Run the GUI main message loop
     gui_run();
-
-    // Uninstall support to drop files
-    uninstall_drop_files();
 
     // Destroy all documents in the UIContext.
     const Documents& docs = m_modules->m_ui_context.getDocuments();

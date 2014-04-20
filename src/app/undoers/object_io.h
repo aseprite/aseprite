@@ -18,6 +18,7 @@
 
 #ifndef APP_UNDOERS_OBJECT_IO_H_INCLUDED
 #define APP_UNDOERS_OBJECT_IO_H_INCLUDED
+#pragma once
 
 #include "base/serialization.h"
 #include "base/unique_ptr.h"

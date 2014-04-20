@@ -4,15 +4,19 @@
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
 
-#ifndef SHE_EVENT_LOOP_H_INCLUDED
-#define SHE_EVENT_LOOP_H_INCLUDED
+#ifndef SHE_EVENT_QUEUE_H_INCLUDED
+#define SHE_EVENT_QUEUE_H_INCLUDED
+#pragma once
 
 namespace she {
 
-  class EventLoop {
+  class Event;
+
+  class EventQueue {
   public:
-    virtual ~EventLoop() { }
+    virtual ~EventQueue() { }
     virtual void dispose() = 0;
+    virtual void getEvent(Event& ev) = 0;
   };
 
 } // namespace she

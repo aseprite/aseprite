@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -61,20 +61,19 @@ bool IntEntry::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    // When the mouse enter in this entry, it got the focus and the
-    // text is automatically selected.
-    case kMouseEnterMessage:
-      requestFocus();
-      break;
-
     // Reset value if it's out of bounds when focus is lost
     case kFocusLeaveMessage:
       setValue(MID(m_min, getValue(), m_max));
+      deselectText();
       break;
 
     case kMouseDownMessage:
+      requestFocus();
+      captureMouse();
+
       openPopup();
-      break;
+      selectAllText();
+      return true;
 
     case kMouseMoveMessage:
       if (hasCapture()) {
@@ -85,7 +84,7 @@ bool IntEntry::onProcessMessage(Message* msg)
 
           MouseMessage mouseMsg2(kMouseDownMessage,
             mouseMsg->buttons(),
-            mouseMsg->position());
+            mouseMsg->position(), 0);
           m_slider->sendMessage(&mouseMsg2);
         }
       }
@@ -94,13 +93,24 @@ bool IntEntry::onProcessMessage(Message* msg)
     case kMouseWheelMessage:
       if (isEnabled()) {
         int oldValue = getValue();
-        int newValue = oldValue + jmouse_z(0) - jmouse_z(1);
+        int newValue = oldValue + static_cast<MouseMessage*>(msg)->wheelDelta();
         newValue = MID(m_min, newValue, m_max);
         if (newValue != oldValue) {
           setValue(newValue);
           selectAllText();
         }
         return true;
+      }
+      break;
+
+    case kKeyDownMessage:
+      if (hasFocus() && !isReadOnly()) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        int chr = keymsg->unicodeChar();
+        if (chr < '0' || chr > '9') {
+          // By-pass Entry::onProcessMessage()
+          return Widget::onProcessMessage(msg);
+        }
       }
       break;
   }
@@ -127,10 +137,12 @@ void IntEntry::openPopup()
   if (rc.x+rc.w > JI_SCREEN_W)
     rc.x = rc.x - rc.w + getBounds().w;
 
-  m_popupWindow = new PopupWindow("", false);
+  m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
+  m_popupWindow->setTransparent(true);
+  m_popupWindow->setBgColor(ui::ColorNone);
   m_popupWindow->setBounds(rc);
-  m_popupWindow->setBgColor(rgba(0, 0, 0, 0));
+  m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 
   Region rgn(rc.createUnion(getBounds()));
   rgn.createUnion(rgn, Region(getBounds()));
@@ -138,6 +150,7 @@ void IntEntry::openPopup()
 
   m_slider = new Slider(m_min, m_max, getValue());
   m_slider->setFocusStop(false); // In this way the IntEntry doesn't lost the focus
+  m_slider->setTransparent(true);
   m_slider->Change.connect(&IntEntry::onChangeSlider, this);
   m_popupWindow->addChild(m_slider);
 
@@ -158,6 +171,12 @@ void IntEntry::onChangeSlider()
 {
   setValue(m_slider->getValue());
   selectAllText();
+}
+
+void IntEntry::onPopupClose(CloseEvent& ev)
+{
+  deselectText();
+  releaseFocus();
 }
 
 } // namespace ui

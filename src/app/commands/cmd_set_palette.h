@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UTIL_CELMOVE_H_INCLUDED
-#define APP_UTIL_CELMOVE_H_INCLUDED
+#ifndef APP_COMMANDS_CMD_SET_PALETTE_H_INCLUDED
+#define APP_COMMANDS_CMD_SET_PALETTE_H_INCLUDED
+#pragma once
 
-#include "raster/frame_number.h"
+#include "app/commands/command.h"
+#include "base/compiler_specific.h"
 
 namespace raster {
-  class Cel;
-  class Layer;
-  class Sprite;
+  class Palette;
 }
 
 namespace app {
-  class ContextWriter;
-  using namespace raster;
 
-  void set_frame_to_handle(Layer* src_layer, FrameNumber src_frame,
-                           Layer* dst_layer, FrameNumber dst_frame);
+  class SetPaletteCommand : public Command {
+  public:
+    SetPaletteCommand();
+    Command* clone() const OVERRIDE { return new SetPaletteCommand(*this); }
 
-  void move_cel(ContextWriter& writer);
-  void copy_cel(ContextWriter& writer);
+    void setPalette(raster::Palette* palette) { m_palette = palette; }
+
+  protected:
+    virtual void onExecute(Context* context) OVERRIDE;
+
+  private:
+    raster::Palette* m_palette;
+  };
 
 } // namespace app
 

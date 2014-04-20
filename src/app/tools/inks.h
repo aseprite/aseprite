@@ -130,6 +130,24 @@ public:
 };
 
 
+class ZoomInk : public Ink {
+public:
+
+  bool isZoom() const { return true; }
+
+  void prepareInk(ToolLoop* loop)
+  {
+    // Do nothing
+  }
+
+  void inkHline(int x1, int y, int x2, ToolLoop* loop)
+  {
+    // Do nothing
+  }
+
+};
+
+
 class MoveInk : public Ink {
 public:
   bool isCelMovement() const { return true; }

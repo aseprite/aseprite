@@ -50,8 +50,10 @@ class TgaFormat : public FileFormat {
       FILE_SUPPORT_SEQUENCES;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreateTgaFormat()
@@ -195,11 +197,9 @@ static void rle_tga_read16(uint32_t* address, int w, FILE *f)
   } while (c < w);
 }
 
-/* load_tga:
- *  Loads a 256 color or 24 bit uncompressed TGA file, returning a bitmap
- *  structure and storing the palette data in the specified palette (this
- *  should be an array of at least 256 RGB structures).
- */
+// Loads a 256 color or 24 bit uncompressed TGA file, returning a bitmap
+// structure and storing the palette data in the specified palette (this
+// should be an array of at least 256 RGB structures).
 bool TgaFormat::onLoad(FileOp* fop)
 {
   unsigned char image_id[256], image_palette[256][3], rgb[4];
@@ -389,10 +389,9 @@ bool TgaFormat::onLoad(FileOp* fop)
   }
 }
 
-/* save_tga:
- *  Writes a bitmap into a TGA file, using the specified palette (this
- *  should be an array of at least 256 RGB structures).
- */
+#ifdef ENABLE_SAVE
+// Writes a bitmap into a TGA file, using the specified palette (this
+// should be an array of at least 256 RGB structures).
 bool TgaFormat::onSave(FileOp* fop)
 {
   Image *image = fop->seq.image;
@@ -474,5 +473,6 @@ bool TgaFormat::onSave(FileOp* fop)
     return true;
   }
 }
+#endif
 
 } // namespace app

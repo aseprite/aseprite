@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 /* #define REPORT_SIGNALS */
 
@@ -76,6 +76,7 @@ Widget::Widget(WidgetType type)
 
   m_preferredSize = NULL;
   m_doubleBuffered = false;
+  m_transparent = false;
 }
 
 Widget::~Widget()
@@ -165,6 +166,12 @@ void Widget::setFont(FONT* f)
 {
   m_font = f;
   invalidate();
+}
+
+void Widget::setBgColor(ui::Color color)
+{
+  m_bgColor = color;
+  onSetBgColor();
 }
 
 void Widget::setTheme(Theme* theme)
@@ -480,7 +487,7 @@ void Widget::removeChild(Widget* child)
   // Free from manager
   Manager* manager = getManager();
   if (manager)
-    manager->freeWidget(this);
+    manager->freeWidget(child);
 
   child->m_parent = NULL;
 }
@@ -611,6 +618,15 @@ void Widget::setBorder(const Border& br)
   border_width.b = br.bottom();
 }
 
+void Widget::noBorderNoChildSpacing()
+{
+  border_width.l = 0;
+  border_width.t = 0;
+  border_width.r = 0;
+  border_width.b = 0;
+  child_spacing = 0;
+}
+
 void Widget::getRegion(gfx::Region& region)
 {
   if (this->type == kWindowWidget)
@@ -640,6 +656,9 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
           it != windows_list.rend()) {
         // Subtract the rectangles
         for (++it; it != windows_list.rend(); ++it) {
+          if (!(*it)->isVisible())
+            continue;
+
           Region reg1;
           (*it)->getRegion(reg1);
           region.createSubtraction(region, reg1);
@@ -713,27 +732,25 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   }
 }
 
-int jwidget_get_text_length(const Widget* widget)
+int Widget::getTextWidth() const
 {
 #if 1
-  return ji_font_text_len(widget->getFont(), widget->getText().c_str());
+  return ji_font_text_len(getFont(), getText().c_str());
 #else  /* use cached text size */
-  return widget->text_size_pix;
+  return text_size_pix;
 #endif
 }
 
-int jwidget_get_text_height(const Widget* widget)
+int Widget::getTextHeight() const
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  return text_height(widget->getFont());
+  return text_height(getFont());
 }
 
-void jwidget_get_texticon_info(Widget* widget,
-                               gfx::Rect* box,
-                               gfx::Rect* text,
-                               gfx::Rect* icon,
-                               int icon_align, int icon_w, int icon_h)
+void Widget::getTextIconInfo(
+  gfx::Rect* box,
+  gfx::Rect* text,
+  gfx::Rect* icon,
+  int icon_align, int icon_w, int icon_h)
 {
 #define SETRECT(r)                              \
   if (r) {                                      \
@@ -743,17 +760,16 @@ void jwidget_get_texticon_info(Widget* widget,
     r->h = r##_h;                               \
   }
 
+  gfx::Rect bounds = getClientBounds();
   int box_x, box_y, box_w, box_h, icon_x, icon_y;
   int text_x, text_y, text_w, text_h;
-
-  ASSERT_VALID_WIDGET(widget);
 
   text_x = text_y = 0;
 
   // Size of the text
-  if (widget->hasText()) {
-    text_w = jwidget_get_text_length(widget);
-    text_h = jwidget_get_text_height(widget);
+  if (hasText()) {
+    text_w = getTextWidth();
+    text_h = getTextHeight();
   }
   else {
     text_w = text_h = 0;
@@ -768,32 +784,32 @@ void jwidget_get_texticon_info(Widget* widget,
     /* with the icon in the top or bottom */
     else {
       box_w = MAX(icon_w, text_w);
-      box_h = icon_h + (widget->hasText() ? widget->child_spacing: 0) + text_h;
+      box_h = icon_h + (hasText() ? child_spacing: 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
-    box_w = icon_w + (widget->hasText() ? widget->child_spacing: 0) + text_w;
+    box_w = icon_w + (hasText() ? child_spacing: 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
-  if (widget->getAlign() & JI_RIGHT)
-    box_x = widget->getBounds().x2() - box_w - widget->border_width.r;
-  else if (widget->getAlign() & JI_CENTER)
-    box_x = (widget->getBounds().x+widget->getBounds().x2())/2 - box_w/2;
+  if (getAlign() & JI_RIGHT)
+    box_x = bounds.x2() - box_w - border_width.r;
+  else if (getAlign() & JI_CENTER)
+    box_x = (bounds.x+bounds.x2())/2 - box_w/2;
   else
-    box_x = widget->getBounds().x + widget->border_width.l;
+    box_x = bounds.x + border_width.l;
 
-  if (widget->getAlign() & JI_BOTTOM)
-    box_y = widget->getBounds().y2() - box_h - widget->border_width.b;
-  else if (widget->getAlign() & JI_MIDDLE)
-    box_y = (widget->getBounds().y+widget->getBounds().y2())/2 - box_h/2;
+  if (getAlign() & JI_BOTTOM)
+    box_y = bounds.y2() - box_h - border_width.b;
+  else if (getAlign() & JI_MIDDLE)
+    box_y = (bounds.y+bounds.y2())/2 - box_h/2;
   else
-    box_y = widget->getBounds().y + widget->border_width.t;
+    box_y = bounds.y + border_width.t;
 
   // With text
-  if (widget->hasText()) {
+  if (hasText()) {
     // Text/icon X position
     if (icon_align & JI_RIGHT) {
       text_x = box_x;
@@ -832,41 +848,6 @@ void jwidget_get_texticon_info(Widget* widget,
   SETRECT(box);
   SETRECT(text);
   SETRECT(icon);
-}
-
-void jwidget_noborders(Widget* widget)
-{
-  widget->border_width.l = 0;
-  widget->border_width.t = 0;
-  widget->border_width.r = 0;
-  widget->border_width.b = 0;
-  widget->child_spacing = 0;
-
-  widget->invalidate();
-}
-
-void jwidget_set_border(Widget* widget, int value)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->border_width.l = value;
-  widget->border_width.t = value;
-  widget->border_width.r = value;
-  widget->border_width.b = value;
-
-  widget->invalidate();
-}
-
-void jwidget_set_border(Widget* widget, int l, int t, int r, int b)
-{
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->border_width.l = l;
-  widget->border_width.t = t;
-  widget->border_width.r = r;
-  widget->border_width.b = b;
-
-  widget->invalidate();
 }
 
 void jwidget_set_min_size(Widget* widget, int w, int h)
@@ -940,7 +921,79 @@ void Widget::flushRedraw()
   }
 }
 
-bool Widget::isDoubleBuffered()
+void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
+{
+  if (drawRegion.isEmpty())
+    return;
+
+  std::queue<Widget*> processing;
+  processing.push(this);
+
+  while (!processing.empty()) {
+    Widget* widget = processing.front();
+    processing.pop();
+
+    ASSERT_VALID_WIDGET(widget);
+
+    // If the widget is hidden
+    if (!widget->isVisible())
+      continue;
+
+    UI_FOREACH_WIDGET(widget->getChildren(), it) {
+      Widget* child = *it;
+      processing.push(child);
+    }
+
+    // Intersect drawRegion with widget's drawable region.
+    Region region;
+    widget->getDrawableRegion(region, kCutTopWindows);
+    region.createIntersection(region, drawRegion);
+
+    Graphics graphics2(graphics->getInternalBitmap(),
+      widget->getBounds().x,
+      widget->getBounds().y);
+    graphics2.setFont(widget->getFont());
+
+    for (Region::const_iterator
+           it = region.begin(),
+           end = region.end(); it != end; ++it) {
+      IntersectClip clip(&graphics2, Rect(*it).offset(
+          -widget->getBounds().x,
+          -widget->getBounds().y));
+      widget->paintEvent(&graphics2);
+    }
+  }
+}
+
+bool Widget::paintEvent(Graphics* graphics)
+{
+  // For transparent widgets we have to draw the parent first.
+  if (isTransparent()) {
+#if _DEBUG
+    // In debug mode we can fill the area with Red so we know if the
+    // we are drawing the parent correctly.
+    graphics->fillRect(ui::rgba(255, 0, 0), getClientBounds());
+#endif
+
+    this->flags |= JI_HIDDEN;
+
+    gfx::Region rgn(getParent()->getBounds());
+    rgn.createIntersection(rgn,
+      gfx::Region(
+        graphics->getClipBounds().offset(
+          graphics->getInternalDeltaX(),
+          graphics->getInternalDeltaY())));
+    getParent()->paint(graphics, rgn);
+
+    this->flags &= ~JI_HIDDEN;
+  }
+
+  PaintEvent ev(this, graphics);
+  onPaint(ev); // Fire onPaint event
+  return ev.isPainted();
+}
+
+bool Widget::isDoubleBuffered() const
 {
   return m_doubleBuffered;
 }
@@ -948,6 +1001,16 @@ bool Widget::isDoubleBuffered()
 void Widget::setDoubleBuffered(bool doubleBuffered)
 {
   m_doubleBuffered = doubleBuffered;
+}
+
+bool Widget::isTransparent() const
+{
+  return m_transparent;
+}
+
+void Widget::setTransparent(bool transparent)
+{
+  m_transparent = transparent;
 }
 
 void Widget::invalidate()
@@ -984,7 +1047,7 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
 
     // Move screen pixels
     jmouse_hide();
-    ji_move_region(reg2, dx, dy);
+    ui::_move_region(reg2, dx, dy);
     jmouse_show();
 
     reg2.offset(dx, dy);
@@ -1026,7 +1089,6 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 
     graphics.reset(new Graphics(bmp, -clip.x, -clip.y),
       DeleteGraphicsAndBitmap(clip, bmp));
-
   }
   // Paint directly on ji_screen (in this case "ji_screen" can be
   // the screen or a memory bitmap).
@@ -1241,9 +1303,7 @@ bool Widget::onProcessMessage(Message* msg)
       ASSERT(ptmsg->rect().h > 0);
 
       GraphicsPtr graphics = getGraphics(toClient(ptmsg->rect()));
-      PaintEvent ev(this, graphics);
-      onPaint(ev); // Fire onPaint event
-      return ev.isPainted();
+      return paintEvent(graphics);
     }
 
     case kKeyDownMessage:
@@ -1382,6 +1442,11 @@ void Widget::onDeselect()
 }
 
 void Widget::onSetText()
+{
+  invalidate();
+}
+
+void Widget::onSetBgColor()
 {
   invalidate();
 }

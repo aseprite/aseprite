@@ -18,6 +18,7 @@
 
 #ifndef APP_LOAD_WIDGET_H_INCLUDED
 #define APP_LOAD_WIDGET_H_INCLUDED
+#pragma once
 
 #include "app/widget_loader.h"
 #include "base/unique_ptr.h"

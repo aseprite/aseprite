@@ -41,7 +41,7 @@ using namespace ui;
 class FramePropertiesCommand : public Command {
 public:
   FramePropertiesCommand();
-  Command* clone() { return new FramePropertiesCommand(*this); }
+  Command* clone() const OVERRIDE { return new FramePropertiesCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

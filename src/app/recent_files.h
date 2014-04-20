@@ -18,6 +18,7 @@
 
 #ifndef APP_RECENT_FILES_H_INCLUDED
 #define APP_RECENT_FILES_H_INCLUDED
+#pragma once
 
 #include "base/recent_items.h"
 #include "base/string.h"

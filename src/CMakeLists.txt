@@ -14,8 +14,8 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries app-library css-lib raster-lib scripting-lib
-  undo-lib filters-lib ui-lib she gfx-lib base-lib)
+set(aseprite_libraries app-lib css-lib doc-lib raster-lib
+  scripting-lib undo-lib filters-lib ui-lib she gfx-lib base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
@@ -124,6 +124,13 @@ if(ENABLE_WEBSERVER)
   add_subdirectory(webserver)
 endif()
 
+# Full-version or trial-mode?
+if(NOT ENABLE_TRIAL_MODE)
+  add_definitions(-DENABLE_SAVE)
+else()
+  add_definitions(-DENABLE_TRIAL_MODE)
+endif()
+
 if(USE_SHARED_ALLEGRO4)
   # Find the shared Allegro 4 library
   find_library(LIBALLEGRO4_LIBRARY alleg)
@@ -150,6 +157,7 @@ endif()
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+add_subdirectory(doc)
 add_subdirectory(filters)
 add_subdirectory(gfx)
 add_subdirectory(css)
@@ -210,8 +218,8 @@ function(find_unittests dir dependencies)
   endif()
 
   # See if the test is linked with "she" library.
-  string(REGEX MATCH "she" link_with_she ${ARGV})
-  if (link_with_she STREQUAL "she")
+  list(FIND dependencies she link_with_she)
+  if(link_with_she)
     set(extra_definitions -DLINKED_WITH_SHE)
   endif()
 

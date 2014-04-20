@@ -18,6 +18,7 @@
 
 #ifndef UPDATER_CHECK_UPDATE_H_INCLUDED
 #define UPDATER_CHECK_UPDATE_H_INCLUDED
+#pragma once
 
 #include "base/disable_copying.h"
 #include "base/version.h"

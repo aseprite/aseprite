@@ -1,11 +1,12 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef BASE_OBSERVERS_H_INCLUDED
 #define BASE_OBSERVERS_H_INCLUDED
+#pragma once
 
 #include <algorithm>
 #include <vector>
@@ -39,6 +40,7 @@ public:
   // collection and will be destroyed calling the T::dispose() member
   // function.
   void addObserver(observer_type* observer) {
+    ASSERT(std::find(m_observers.begin(), m_observers.end(), observer) == m_observers.end() && "You've tried to add an observer that already is in the collection");
     m_observers.push_back(observer);
   }
 
@@ -48,6 +50,9 @@ public:
     iterator it = std::find(m_observers.begin(), m_observers.end(), observer);
     if (it != end())
       m_observers.erase(it);
+    else {
+      ASSERT(false && "You've tried to remove an observer that isn't in the collection");
+    }
   }
 
   void notifyObservers(void (observer_type::*method)()) {

@@ -1,8 +1,8 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #define REDRAW_MOVEMENT
 
@@ -461,7 +461,7 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
     }
 
     if (hasText())
-      maxSize.w = MAX(maxSize.w, jwidget_get_text_length(this));
+      maxSize.w = MAX(maxSize.w, getTextWidth());
 
     ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,
                         this->border_width.t + maxSize.h + this->border_width.b);
@@ -595,9 +595,9 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     set_clip_rect(ji_screen,
                   man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
 
-    ji_move_region(moveable_region,
-                   getBounds().x - old_pos.x,
-                   getBounds().y - old_pos.y);
+    ui::_move_region(moveable_region,
+      getBounds().x - old_pos.x,
+      getBounds().y - old_pos.y);
     set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
     jmouse_show();
   }

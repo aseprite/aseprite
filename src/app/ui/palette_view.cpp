@@ -26,16 +26,18 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/status_bar.h"
 #include "gfx/point.h"
-#include "app/modules/gui.h"
-#include "app/modules/palettes.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -61,11 +63,12 @@ PaletteView::PaletteView(bool editable)
   , m_selectedEntries(Palette::MaxColors, false)
   , m_isUpdatingColumns(false)
 {
+  setFocusStop(true);
+  setDoubleBuffered(true);
+
   m_editable = editable;
   m_columns = 16;
-  m_boxsize = 6;
-
-  this->setFocusStop(true);
+  m_boxsize = 6*jguiscale();
 
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();
@@ -204,66 +207,6 @@ bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kPaintMessage: {
-      div_t d = div(Palette::MaxColors, m_columns);
-      int cols = m_columns;
-      int rows = d.quot + ((d.rem)? 1: 0);
-      int x, y, u, v;
-      int c, color;
-      BITMAP *bmp;
-      Palette* palette = get_current_palette();
-      int bordercolor = makecol(255, 255, 255);
-
-      bmp = create_bitmap(getBounds().w, getBounds().h);
-      clear_to_color(bmp, makecol(0 , 0, 0));
-
-      y = this->border_width.t;
-      c = 0;
-
-      for (v=0; v<rows; v++) {
-        x = this->border_width.l;
-
-        for (u=0; u<cols; u++) {
-          if (c >= palette->size())
-            break;
-
-          if (bitmap_color_depth(ji_screen) == 8)
-            color = c;
-          else
-            color = makecol_depth
-              (bitmap_color_depth(ji_screen),
-               rgba_getr(palette->getEntry(c)),
-               rgba_getg(palette->getEntry(c)),
-               rgba_getb(palette->getEntry(c)));
-
-          rectfill(bmp, x, y, x+m_boxsize-1, y+m_boxsize-1, color);
-
-          if (m_selectedEntries[c]) {
-            const int max = Palette::MaxColors;
-            bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
-            bool bottom = (c < max-m_columns         && c+m_columns < max ? m_selectedEntries[c+m_columns]: false);
-            bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
-            bool right  = ((c%m_columns)<m_columns-1 && c+1         < max ? m_selectedEntries[c+1]: false);
-
-            if (!top) hline(bmp, x-1, y-1, x+m_boxsize, bordercolor);
-            if (!bottom) hline(bmp, x-1, y+m_boxsize, x+m_boxsize, bordercolor);
-            if (!left) vline(bmp, x-1, y-1, y+m_boxsize, bordercolor);
-            if (!right) vline(bmp, x+m_boxsize, y-1, y+m_boxsize, bordercolor);
-          }
-
-          x += m_boxsize+this->child_spacing;
-          c++;
-        }
-
-        y += m_boxsize+this->child_spacing;
-      }
-
-      blit(bmp, ji_screen,
-           0, 0, getBounds().x, getBounds().y, bmp->w, bmp->h);
-      destroy_bitmap(bmp);
-      return true;
-    }
-
     case kMouseDownMessage:
       captureMouse();
       /* continue... */
@@ -312,7 +255,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += (jmouse_z(1)-jmouse_z(0)) * 3 * m_boxsize;
+        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * 3 * m_boxsize;
         view->setViewScroll(scroll);
       }
       break;
@@ -325,6 +268,58 @@ bool PaletteView::onProcessMessage(Message* msg)
   }
 
   return Widget::onProcessMessage(msg);
+}
+
+void PaletteView::onPaint(ui::PaintEvent& ev)
+{
+  ui::Graphics* g = ev.getGraphics();
+  gfx::Rect bounds = getClientBounds();
+  div_t d = div(Palette::MaxColors, m_columns);
+  int cols = m_columns;
+  int rows = d.quot + ((d.rem)? 1: 0);
+  int x, y, u, v;
+  int c, color;
+  Palette* palette = get_current_palette();
+  int bordercolor = makecol(255, 255, 255);
+
+  g->fillRect(ui::rgba(0 , 0, 0), bounds);
+
+  y = bounds.y + this->border_width.t;
+  c = 0;
+
+  for (v=0; v<rows; v++) {
+    x = bounds.x + this->border_width.l;
+
+    for (u=0; u<cols; u++) {
+      if (c >= palette->size())
+        break;
+
+      color = ui::rgba(
+        rgba_getr(palette->getEntry(c)),
+        rgba_getg(palette->getEntry(c)),
+        rgba_getb(palette->getEntry(c)));
+
+      g->fillRect(color, gfx::Rect(x, y, m_boxsize, m_boxsize));
+
+      if (m_selectedEntries[c]) {
+        const int max = Palette::MaxColors;
+        bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
+        bool bottom = (c < max-m_columns         && c+m_columns < max ? m_selectedEntries[c+m_columns]: false);
+        bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
+        bool right  = ((c%m_columns)<m_columns-1 && c+1         < max ? m_selectedEntries[c+1]: false);
+
+        if (!top   ) g->drawHLine(bordercolor, x-1, y-1, m_boxsize+2);
+        if (!bottom) g->drawHLine(bordercolor, x-1, y+m_boxsize, m_boxsize+2);
+        if (!left  ) g->drawVLine(bordercolor, x-1, y-1, m_boxsize+2);
+        if (!right ) g->drawVLine(bordercolor, x+m_boxsize, y-1, m_boxsize+2);
+      }
+
+      x += m_boxsize+this->child_spacing;
+      c++;
+    }
+
+    y += m_boxsize+this->child_spacing;
+  }
 }
 
 void PaletteView::onResize(ui::ResizeEvent& ev)

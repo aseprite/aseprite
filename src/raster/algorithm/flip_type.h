@@ -18,6 +18,7 @@
 
 #ifndef RASTER_ALGORITHM_FLIP_TYPE_H_INCLUDED
 #define RASTER_ALGORITHM_FLIP_TYPE_H_INCLUDED
+#pragma once
 
 namespace raster {
   namespace algorithm {

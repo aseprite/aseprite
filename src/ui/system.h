@@ -1,11 +1,12 @@
 // Aseprite UI Library
 // Copyright (C) 2001-2013  David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef UI_SYSTEM_H_INCLUDED
 #define UI_SYSTEM_H_INCLUDED
+#pragma once
 
 #include "gfx/fwd.h"
 #include "ui/base.h"
@@ -55,6 +56,9 @@ namespace ui {
   bool jmouse_is_shown();
 
   bool jmouse_poll();
+
+  void _internal_set_mouse_position(const gfx::Point& newPos);
+  void _internal_set_mouse_buttons(MouseButtons buttons);
 
   gfx::Point get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);

@@ -18,6 +18,7 @@
 
 #ifndef APP_UNDOERS_IMAGE_AREA_H_INCLUDED
 #define APP_UNDOERS_IMAGE_AREA_H_INCLUDED
+#pragma once
 
 #include "app/undoers/undoer_base.h"
 #include "undo/object_id.h"

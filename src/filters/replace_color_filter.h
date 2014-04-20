@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_REPLACE_COLOR_FILTER_H_INCLUDED
 #define FILTERS_REPLACE_COLOR_FILTER_H_INCLUDED
+#pragma once
 
 #include "filters/filter.h"
 

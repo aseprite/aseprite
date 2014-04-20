@@ -18,6 +18,7 @@
 
 #ifndef FILTERS_CONVOLUTION_MATRIX_H_INCLUDED
 #define FILTERS_CONVOLUTION_MATRIX_H_INCLUDED
+#pragma once
 
 #include "filters/target.h"
 

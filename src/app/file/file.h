@@ -18,6 +18,7 @@
 
 #ifndef APP_FILE_FILE_H_INCLUDED
 #define APP_FILE_FILE_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 #include "raster/frame_number.h"

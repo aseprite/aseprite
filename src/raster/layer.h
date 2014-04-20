@@ -18,6 +18,7 @@
 
 #ifndef RASTER_LAYER_H_INCLUDED
 #define RASTER_LAYER_H_INCLUDED
+#pragma once
 
 #include "raster/blend.h"
 #include "raster/frame_number.h"
@@ -106,6 +107,7 @@ namespace raster {
 
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
+    void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
 

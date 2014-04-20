@@ -18,6 +18,7 @@
 
 #ifndef RASTER_COLOR_H_INCLUDED
 #define RASTER_COLOR_H_INCLUDED
+#pragma once
 
 namespace raster {
 

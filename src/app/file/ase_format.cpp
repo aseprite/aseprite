@@ -126,8 +126,10 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_PALETTES;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreateAseFormat()
@@ -283,6 +285,7 @@ bool AseFormat::onLoad(FileOp *fop)
   }
 }
 
+#ifdef ENABLE_SAVE
 bool AseFormat::onSave(FileOp *fop)
 {
   Sprite* sprite = fop->document->getSprite();
@@ -342,6 +345,7 @@ bool AseFormat::onSave(FileOp *fop)
     return true;
   }
 }
+#endif
 
 static bool ase_file_read_header(FILE *f, ASE_Header *header)
 {

@@ -18,6 +18,7 @@
 
 #ifndef APP_SETTINGS_DOCUMENT_SETTINGS_H_INCLUDED
 #define APP_SETTINGS_DOCUMENT_SETTINGS_H_INCLUDED
+#pragma once
 
 #include "app/color.h"
 #include "filters/tiled_mode.h"

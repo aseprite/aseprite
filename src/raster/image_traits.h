@@ -18,6 +18,7 @@
 
 #ifndef RASTER_IMAGE_TRAITS_H_INCLUDED
 #define RASTER_IMAGE_TRAITS_H_INCLUDED
+#pragma once
 
 #include "raster/pixel_format.h"
 

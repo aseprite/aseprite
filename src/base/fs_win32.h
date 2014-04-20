@@ -1,17 +1,18 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-#include <windows.h>
 #include <stdexcept>
+#include <windows.h>
 
 #include "base/string.h"
+#include "base/win32_exception.h"
 
 namespace base {
 
-bool file_exists(const string& path)
+bool is_file(const string& path)
 {
   DWORD attr = ::GetFileAttributes(from_utf8(path).c_str());
 
@@ -21,7 +22,7 @@ bool file_exists(const string& path)
           !(attr & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool directory_exists(const string& path)
+bool is_directory(const string& path)
 {
   DWORD attr = ::GetFileAttributes(from_utf8(path).c_str());
 
@@ -29,22 +30,41 @@ bool directory_exists(const string& path)
           ((attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY));
 }
 
+void delete_file(const string& path)
+{
+  BOOL result = ::DeleteFile(from_utf8(path).c_str());
+  if (result == 0)
+    throw Win32Exception("Error deleting file");
+}
+
+bool has_readonly_attr(const string& path)
+{
+  std::wstring fn = from_utf8(path);
+  DWORD attr = ::GetFileAttributes(fn.c_str());
+  return ((attr & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY);
+}
+
+void remove_readonly_attr(const string& path)
+{
+  std::wstring fn = from_utf8(path);
+  DWORD attr = ::GetFileAttributes(fn.c_str());
+  if ((attr & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY)
+    ::SetFileAttributes(fn.c_str(), attr & ~FILE_ATTRIBUTE_READONLY);
+}
+
 void make_directory(const string& path)
 {
   BOOL result = ::CreateDirectory(from_utf8(path).c_str(), NULL);
-  if (result == 0) {
-    // TODO add GetLastError() value into the exception
-    throw std::runtime_error("Error creating directory");
-  }
+  if (result == 0)
+    throw Win32Exception("Error creating directory");
 }
+
 
 void remove_directory(const string& path)
 {
   BOOL result = ::RemoveDirectory(from_utf8(path).c_str());
-  if (result == 0) {
-    // TODO add GetLastError() value into the exception
-    throw std::runtime_error("Error removing directory");
-  }
+  if (result == 0)
+    throw Win32Exception("Error removing directory");
 }
 
 string get_app_path()

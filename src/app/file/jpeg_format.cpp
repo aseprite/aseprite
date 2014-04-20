@@ -63,8 +63,10 @@ class JpegFormat : public FileFormat {
       FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 
   SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) OVERRIDE;
 };
@@ -236,6 +238,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   return true;
 }
 
+#ifdef ENABLE_SAVE
 bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
@@ -350,6 +353,7 @@ bool JpegFormat::onSave(FileOp* fop)
   // All fine.
   return true;
 }
+#endif
 
 // Shows the JPEG configuration dialog.
 SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)

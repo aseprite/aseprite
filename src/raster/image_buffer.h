@@ -18,6 +18,7 @@
 
 #ifndef RASTER_IMAGE_BUFFER_H_INCLUDED
 #define RASTER_IMAGE_BUFFER_H_INCLUDED
+#pragma once
 
 #include "base/shared_ptr.h"
 

@@ -18,6 +18,7 @@
 
 #ifndef APP_COMMANDS_COMMAND_H_INCLUDED
 #define APP_COMMANDS_COMMAND_H_INCLUDED
+#pragma once
 
 #include "app/commands/command_factory.h"
 

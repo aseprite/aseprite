@@ -18,6 +18,7 @@
 
 #ifndef RASTER_CONVERSION_ALLEG_H_INCLUDED
 #define RASTER_CONVERSION_ALLEG_H_INCLUDED
+#pragma once
 
 #include <allegro/color.h>
 

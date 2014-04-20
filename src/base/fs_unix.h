@@ -1,8 +1,8 @@
 // Aseprite Base Library
 // Copyright (c) 2001-2013 David Capello
 //
-// This source file is distributed under MIT license,
-// please read LICENSE.txt for more information.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,13 +21,13 @@
 
 namespace base {
 
-bool file_exists(const string& path)
+bool is_file(const string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISREG(sts.st_mode)) ? true: false;
 }
 
-bool directory_exists(const string& path)
+bool is_directory(const string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISDIR(sts.st_mode)) ? true: false;
@@ -39,6 +39,32 @@ void make_directory(const string& path)
   if (result < 0) {
     // TODO add errno into the exception
     throw std::runtime_error("Error creating directory");
+  }
+}
+
+void delete_file(const string& path)
+{
+  int result = unlink(path.c_str());
+  if (result != 0)
+    // TODO add errno into the exception
+    throw std::runtime_error("Error deleting file");
+}
+
+bool has_readonly_attr(const string& path)
+{
+  struct stat sts;
+  return (stat(path.c_str(), &sts) == 0 && ((sts.st_mode & S_IWUSR) == 0));
+}
+
+void remove_readonly_attr(const string& path)
+{
+  struct stat sts;
+  int result = stat(path.c_str(), &sts);
+  if (result == 0) {
+    result = chmod(path.c_str(), sts.st_mode | S_IWUSR);
+    if (result != 0)
+      // TODO add errno into the exception
+      throw std::runtime_error("Error removing read-only attribute");
   }
 }
 

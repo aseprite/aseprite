@@ -50,8 +50,10 @@ class FliFormat : public FileFormat {
       FILE_SUPPORT_PALETTES;
   }
 
-  bool onLoad(FileOp* fop);
-  bool onSave(FileOp* fop);
+  bool onLoad(FileOp* fop) OVERRIDE;
+#ifdef ENABLE_SAVE
+  bool onSave(FileOp* fop) OVERRIDE;
+#endif
 };
 
 FileFormat* CreateFliFormat()
@@ -179,6 +181,7 @@ bool FliFormat::onLoad(FileOp* fop)
   return true;
 }
 
+#ifdef ENABLE_SAVE
 bool FliFormat::onSave(FileOp* fop)
 {
   Sprite* sprite = fop->document->getSprite();
@@ -261,6 +264,7 @@ bool FliFormat::onSave(FileOp* fop)
 
   return true;
 }
+#endif
 
 static int get_time_precision(Sprite *sprite)
 {

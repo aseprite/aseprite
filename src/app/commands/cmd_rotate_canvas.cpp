@@ -45,7 +45,7 @@ class RotateCanvasCommand : public Command {
 
 public:
   RotateCanvasCommand();
-  Command* clone() { return new RotateCanvasCommand(*this); }
+  Command* clone() const OVERRIDE { return new RotateCanvasCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

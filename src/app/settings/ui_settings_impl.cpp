@@ -606,6 +606,10 @@ public:
     m_inkType = (InkType)get_config_int(cfg_section.c_str(), "InkType", (int)kDefaultInk);
     m_freehandAlgorithm = kDefaultFreehandAlgorithm;
 
+    // Reset invalid configurations for inks.
+    if (m_inkType != kDefaultInk && m_inkType != kPutAlphaInk)
+      m_inkType = kDefaultInk;
+
     m_pen.enableSignals(false);
     m_pen.setType((PenType)get_config_int(cfg_section.c_str(), "PenType", (int)PEN_TYPE_CIRCLE));
     m_pen.setSize(get_config_int(cfg_section.c_str(), "PenSize", m_tool->getDefaultPenSize()));

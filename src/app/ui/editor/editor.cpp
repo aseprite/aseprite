@@ -28,6 +28,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/document_location.h"
+#include "app/console.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -385,9 +386,15 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
     // Generate the rendered image
-    base::UniquePtr<Image> rendered
-      (renderEngine.renderSprite(source_x, source_y, width, height,
-                                 m_frame, m_zoom, true));
+    base::UniquePtr<Image> rendered(NULL);
+    try {
+      rendered.reset(renderEngine.renderSprite(
+          source_x, source_y, width, height,
+          m_frame, m_zoom, true));
+    }
+    catch (const std::exception& e) {
+      Console::showException(e);
+    }
 
     if (rendered) {
       // Pre-render decorator.
@@ -402,32 +409,6 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
 
       g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
     }
-  }
-
-  // Document settings
-  IDocumentSettings* docSettings =
-      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
-
-  // Draw the pixel grid
-  if (docSettings->getPixelGridVisible()) {
-    if (m_zoom > 1)
-      this->drawGrid(Rect(0, 0, 1, 1),
-                     docSettings->getPixelGridColor());
-  }
-
-  // Draw the grid
-  if (docSettings->getGridVisible())
-    this->drawGrid(docSettings->getGridBounds(),
-                   docSettings->getGridColor());
-
-  // Draw the mask
-  if (m_document->getBoundariesSegments())
-    this->drawMask();
-
-  // Post-render decorator.
-  if (m_decorator) {
-    EditorPostRenderImpl postRender(this);
-    m_decorator->postRenderDecorator(&postRender);
   }
 }
 
@@ -484,12 +465,32 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
 
+  // Draw the pixel grid
+  if (docSettings->getPixelGridVisible()) {
+    if (m_zoom > 1)
+      drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
+  }
+
+  // Draw the grid
+  if (docSettings->getGridVisible())
+    drawGrid(g, enclosingRect, docSettings->getGridBounds(), docSettings->getGridColor());
+
   // Draw the borders that enclose the sprite.
   enclosingRect.enlarge(1);
   g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
   g->drawHLine(
     theme->getColor(ThemeColor::EditorSpriteBottomBorder),
     enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+
+  // Draw the mask
+  if (m_document->getBoundariesSegments())
+    drawMask(g);
+
+  // Post-render decorator.
+  if (m_decorator) {
+    EditorPostRenderImpl postRender(this);
+    m_decorator->postRenderDecorator(&postRender);
+  }
 }
 
 void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
@@ -527,59 +528,55 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  * regenerate boundaries, use the sprite_generate_mask_boundaries()
  * routine.
  */
-void Editor::drawMask()
+void Editor::drawMask(Graphics* g)
 {
   if ((m_flags & kShowMaskFlag) == 0)
     return;
 
-  View* view = View::getView(this);
-  Rect vp = view->getViewportBounds();
-  Point scroll = view->getViewScroll();
   int x1, y1, x2, y2;
-  int c, x, y;
-
-  dotted_mode(m_offset_count);
-
-  x = vp.x - scroll.x + m_offset_x;
-  y = vp.y - scroll.y + m_offset_y;
+  int x = m_offset_x;
+  int y = m_offset_y;
 
   int nseg = m_document->getBoundariesSegmentsCount();
   const BoundSeg* seg = m_document->getBoundariesSegments();
 
-  for (c=0; c<nseg; ++c, ++seg) {
-    x1 = seg->x1<<m_zoom;
-    y1 = seg->y1<<m_zoom;
-    x2 = seg->x2<<m_zoom;
-    y2 = seg->y2<<m_zoom;
+  dotted_mode(m_offset_count);
+
+  for (int c=0; c<nseg; ++c, ++seg) {
+    x1 = seg->x1 << m_zoom;
+    y1 = seg->y1 << m_zoom;
+    x2 = seg->x2 << m_zoom;
+    y2 = seg->y2 << m_zoom;
 
 #if 1                           // Bounds inside mask
     if (!seg->open)
 #else                           // Bounds outside mask
     if (seg->open)
 #endif
-      {
-        if (x1 == x2) {
-          x1--;
-          x2--;
-          y2--;
-        }
-        else {
-          y1--;
-          y2--;
-          x2--;
-        }
+    {
+      if (x1 == x2) {
+        x1--;
+        x2--;
+        y2--;
       }
-    else
-      {
-        if (x1 == x2) {
-          y2--;
-        }
-        else {
-          x2--;
-        }
+      else {
+        y1--;
+        y2--;
+        x2--;
       }
+    }
+    else {
+      if (x1 == x2) {
+        y2--;
+      }
+      else {
+        x2--;
+      }
+    }
 
-    line(ji_screen, x+x1, y+y1, x+x2, y+y2, 0);
+    // The color doesn't matter, we are using dotted_mode()
+    // TODO send dotted_mode() to ui::Graphics domain.
+    g->drawLine(0, gfx::Point(x+x1, y+y1), gfx::Point(x+x2, y+y2));
   }
 
   dotted_mode(-1);
@@ -597,33 +594,31 @@ void Editor::drawMaskSafe()
 
     Region region;
     getDrawableRegion(region, kCutTopWindows);
-
-    acquire_bitmap(ji_screen);
+    region.offset(-getBounds().getOrigin());
 
     if (thick)
       editor_clean_cursor();
     else
       jmouse_hide();
 
+    GraphicsPtr g = getGraphics(getClientBounds());
+
     for (Region::const_iterator it=region.begin(), end=region.end();
          it != end; ++it) {
-      const Rect& rc = *it;
-      set_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
-      drawMask();
+      IntersectClip clip(g, gfx::Rect(*it));
+      if (clip)
+        drawMask(g);
     }
-    set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
 
     // Draw the cursor
     if (thick)
       editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
     else
       jmouse_show();
-
-    release_bitmap(ji_screen);
   }
 }
 
-void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
+void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gridBounds, const app::Color& color)
 {
   if ((m_flags & kShowGridFlag) == 0)
     return;
@@ -646,28 +641,31 @@ void Editor::drawGrid(const Rect& gridBounds, const app::Color& color)
   // Convert the "grid" rectangle to screen coordinates
   editorToScreen(grid, &grid);
 
-  // Get the grid's color
-  int grid_color = color_utils::color_for_allegro(color, bitmap_color_depth(ji_screen));
+  // Adjust for client area
+  gfx::Rect bounds = getBounds();
+  grid.offset(-bounds.getOrigin());
 
-  // Get the position of the sprite in the screen.
-  Rect spriteRect;
-  editorToScreen(Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()), &spriteRect);
+  while (grid.x-grid.w >= spriteBounds.x) grid.x -= grid.w;
+  while (grid.y-grid.h >= spriteBounds.y) grid.y -= grid.h;
+
+  // Get the grid's color
+  ui::Color grid_color = color_utils::color_for_ui(color);
 
   // Draw horizontal lines
-  int x1 = spriteRect.x;
+  int x1 = spriteBounds.x;
   int y1 = grid.y;
-  int x2 = spriteRect.x+spriteRect.w;
-  int y2 = spriteRect.y+spriteRect.h;
+  int x2 = spriteBounds.x + spriteBounds.w;
+  int y2 = spriteBounds.y + spriteBounds.h;
 
   for (int c=y1; c<=y2; c+=grid.h)
-    hline(ji_screen, x1, c, x2, grid_color);
+    g->drawHLine(grid_color, x1, c, spriteBounds.w);
 
   // Draw vertical lines
   x1 = grid.x;
-  y1 = spriteRect.y;
+  y1 = spriteBounds.y;
 
   for (int c=x1; c<=x2; c+=grid.w)
-    vline(ji_screen, c, y1, y2, grid_color);
+    g->drawVLine(grid_color, c, y1, spriteBounds.h);
 }
 
 void Editor::flashCurrentLayer()
@@ -1057,7 +1055,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the mask boundaries
       if (m_document->getBoundariesSegments()) {
-        drawMask();
+        drawMask(g);
         m_mask_timer.start();
       }
       else {
@@ -1122,13 +1120,25 @@ bool Editor::isInsideSelection()
     m_document->getMask()->containsPoint(x, y);
 }
 
-void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
+void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   int x, y;
-  bool centerMouse = get_config_bool("Editor", "CenterMouseInZoom", false);
+  bool centerMouse;
   int mx, my;
+
+  switch (zoomBehavior) {
+    case kCofiguredZoomBehavior:
+      centerMouse = get_config_bool("Editor", "CenterMouseInZoom", true);
+      break;
+    case kCenterOnZoom:
+      centerMouse = true;
+      break;
+    case kDontCenterOnZoom:
+      centerMouse = false;
+      break;
+  }
 
   hideDrawingCursor();
   screenToEditor(mouse_x, mouse_y, &x, &y);
@@ -1154,9 +1164,6 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y)
 
     updateEditor();
     setEditorScroll(x, y, use_refresh_region);
-
-    if (centerMouse)
-      ui::set_mouse_position(gfx::Point(mx, my));
 
     // Notify observers
     m_observers.notifyScrollChanged(this);

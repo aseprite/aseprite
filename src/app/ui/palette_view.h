@@ -18,6 +18,7 @@
 
 #ifndef APP_UI_PALETTE_VIEW_H_INCLUDED
 #define APP_UI_PALETTE_VIEW_H_INCLUDED
+#pragma once
 
 #include "base/compiler_specific.h"
 #include "base/signal.h"
@@ -53,6 +54,7 @@ namespace app {
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
 
