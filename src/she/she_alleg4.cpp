@@ -173,13 +173,15 @@ private:
   base::concurrent_queue<Event> m_events;
 };
 
-#if WIN32
 namespace {
 
 Display* unique_display = NULL;
+int display_scale;
+
+#if WIN32
+
 wndproc_t base_wndproc = NULL;
 bool display_has_mouse = false;
-int display_scale;
 
 static void queue_event(Event& ev)
 {
@@ -329,8 +331,8 @@ void unsubclass_hwnd(HWND hwnd)
   base_wndproc = NULL;
 }
   
-}
 #endif
+} // anonymous namespace
 
 class Alleg4Display : public Display {
 public:
