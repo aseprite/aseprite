@@ -1732,7 +1732,7 @@ void Timeline::dropCels(DropOp op, const Range& drop)
     dstFrameStep = FrameNumber(-1);
   }
 
-  DocumentApi& api = m_document->getApi();
+  DocumentApi api = m_document->getApi();
 
   for (int srcLayerIdx = srcLayerBegin,
            dstLayerIdx = dstLayerBegin; srcLayerIdx != srcLayerEnd; ) {

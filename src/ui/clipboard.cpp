@@ -20,13 +20,13 @@ static std::string clipboard_text;
 namespace ui {
 namespace clipboard {
 
-const char* ui::clipboard::get_text()
+const char* get_text()
 {
   clipboard_text = Manager::getDefault()->getClipboard()->getText();
   return clipboard_text.c_str();
 }
 
-void ui::clipboard::set_text(const char* text)
+void set_text(const char* text)
 {
   clipboard_text = text ? text: "";
   Manager::getDefault()->getClipboard()->setText(clipboard_text);
