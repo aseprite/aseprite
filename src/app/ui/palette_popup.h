@@ -35,7 +35,7 @@ namespace app {
   public:
     PalettePopup();
 
-    void showPopup(gfx::Rect& bounds);
+    void showPopup(const gfx::Rect& bounds);
 
   protected:
     void onPalChange(raster::Palette* palette);

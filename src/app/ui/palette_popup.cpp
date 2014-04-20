@@ -57,7 +57,7 @@ PalettePopup::PalettePopup()
   m_paletteListBox.PalChange.connect(&PalettePopup::onPalChange, this);
 }
 
-void PalettePopup::showPopup(gfx::Rect& bounds)
+void PalettePopup::showPopup(const gfx::Rect& bounds)
 {
   m_load->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
