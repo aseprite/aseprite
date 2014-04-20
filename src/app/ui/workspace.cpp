@@ -238,6 +238,8 @@ void Workspace::enumAllParts(WorkspaceParts& parts)
     Widget* widget = remaining.front();
     remaining.pop();
 
+    ASSERT(widget != NULL);
+
     WorkspacePart* part = dynamic_cast<WorkspacePart*>(widget);
     if (part) {
       parts.push_back(part);

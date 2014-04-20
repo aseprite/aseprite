@@ -1125,7 +1125,7 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   int x, y;
-  bool centerMouse;
+  bool centerMouse = false;
   int mx, my;
 
   switch (zoomBehavior) {

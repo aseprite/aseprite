@@ -201,7 +201,7 @@ void DocumentExporter::captureSamples(Samples& samples)
           (sprite->getTotalFrames() < 10)? 1:
           (sprite->getTotalFrames() < 100)? 2:
           (sprite->getTotalFrames() < 1000)? 3: 4;
-        std::sprintf(&buf[0], "%0*d", frameNumWidth, frame);
+        std::sprintf(&buf[0], "%0*d", frameNumWidth, (int)frame);
 
         base::string path = base::get_file_path(filename);
         base::string title = base::get_file_title(filename);
