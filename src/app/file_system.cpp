@@ -204,10 +204,14 @@ FileSystemModule::FileSystemModule()
 
 #ifdef USE_PIDLS
   /* get the IMalloc interface */
-  SHGetMalloc(&shl_imalloc);
+  HRESULT hr = SHGetMalloc(&shl_imalloc);
+  if (hr != S_OK)
+    throw new std::runtime_error("Error initializing file system. Report this problem. (SHGetMalloc failed.)");
 
   /* get desktop IShellFolder interface */
-  SHGetDesktopFolder(&shl_idesktop);
+  hr = SHGetDesktopFolder(&shl_idesktop);
+  if (hr != S_OK)
+    throw new std::runtime_error("Error initializing file system. Report this problem. (SHGetDesktopFolder failed.)");
 #endif
 
   // first version of the file system
@@ -321,7 +325,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
 
 #ifdef USE_PIDLS
   {
-    ULONG cbEaten;
+    ULONG cbEaten = 0UL;
     LPITEMIDLIST fullpidl = NULL;
     SFGAOF attrib = SFGAO_FOLDER;
 
@@ -443,24 +447,27 @@ const FileItemList& FileItem::getChildren()
 #ifdef USE_PIDLS
     {
       IShellFolder* pFolder = NULL;
+      HRESULT hr;
 
       if (this == rootitem)
         pFolder = shl_idesktop;
-      else
-        shl_idesktop->BindToObject(this->fullpidl,
-                                   NULL,
-                                   IID_IShellFolder,
-                                   (LPVOID *)&pFolder);
+      else {
+        hr = shl_idesktop->BindToObject(this->fullpidl,
+          NULL, IID_IShellFolder, (LPVOID *)&pFolder);
+
+        if (hr != S_OK)
+          pFolder = NULL;
+      }
 
       if (pFolder != NULL) {
         IEnumIDList *pEnum = NULL;
         ULONG c, fetched;
 
         /* get the interface to enumerate subitems */
-        pFolder->EnumObjects(win_get_window(),
-                             SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &pEnum);
+        hr = pFolder->EnumObjects(win_get_window(),
+          SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &pEnum);
 
-        if (pEnum != NULL) {
+        if (hr == S_OK && pEnum != NULL) {
           LPITEMIDLIST itempidl[256];
           SFGAOF attribs[256];
 
@@ -534,7 +541,9 @@ const FileItemList& FileItem::getChildren()
     for (it=this->children.begin();
          it!=this->children.end(); ) {
       child = static_cast<FileItem*>(*it);
-      if (child->removed) {
+      ASSERT(child != NULL);
+
+      if (child && child->removed) {
         it = this->children.erase(it);
 
         fileitems_map->erase(fileitems_map->find(child->keyname));
@@ -709,15 +718,16 @@ static void update_by_pidl(FileItem* fileitem)
   STRRET strret;
   WCHAR pszName[MAX_PATH];
   IShellFolder *pFolder = NULL;
+  HRESULT hr;
 
   if (fileitem == rootitem)
     pFolder = shl_idesktop;
   else {
     ASSERT(fileitem->parent);
-    shl_idesktop->BindToObject(fileitem->parent->fullpidl,
-                               NULL,
-                               IID_IShellFolder,
-                               (LPVOID *)&pFolder);
+    hr = shl_idesktop->BindToObject(fileitem->parent->fullpidl,
+      NULL, IID_IShellFolder, (LPVOID *)&pFolder);
+    if (hr != S_OK)
+      pFolder = NULL;
   }
 
   /****************************************/
@@ -894,7 +904,8 @@ static base::string get_key_for_pidl(LPITEMIDLIST pidl)
     if (shl_idesktop->GetDisplayNameOf(pidl,
                                        SHGDN_INFOLDER | SHGDN_FORPARSING,
                                        &strret) == S_OK) {
-      StrRetToBuf(&strret, pidl, pszName, MAX_PATH);
+      if (StrRetToBuf(&strret, pidl, pszName, MAX_PATH) != S_OK)
+        pszName[0] = 0;
 
       //PRINTF("FS: + %s\n", pszName);
 
