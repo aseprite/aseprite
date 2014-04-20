@@ -15,14 +15,14 @@
 namespace {
 
   struct is_separator {
-    const base::string* separators;
+    const std::string* separators;
 
-    is_separator(const base::string* seps) : separators(seps) {
+    is_separator(const std::string* seps) : separators(seps) {
     }
 
-    bool operator()(base::string::value_type chr)
+    bool operator()(std::string::value_type chr)
     {
-      for (base::string::const_iterator
+      for (std::string::const_iterator
              it = separators->begin(),
              end = separators->end(); it != end; ++it) {
         if (chr == *it)
@@ -34,9 +34,9 @@ namespace {
 
 }
 
-void base::split_string(const base::string& string,
-                        std::vector<base::string>& parts,
-                        const base::string& separators)
+void base::split_string(const std::string& string,
+                        std::vector<std::string>& parts,
+                        const std::string& separators)
 {
   size_t elements = 1 + std::count_if(string.begin(), string.end(), is_separator(&separators));
   parts.reserve(elements);
@@ -44,7 +44,7 @@ void base::split_string(const base::string& string,
   size_t beg = 0, end;
   while (true) {
     end = string.find_first_of(separators, beg);
-    if (end != base::string::npos) {
+    if (end != std::string::npos) {
       parts.push_back(string.substr(beg, end - beg));
       beg = end+1;
     }

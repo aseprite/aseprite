@@ -67,7 +67,7 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 void SpritePropertiesCommand::onExecute(Context* context)
 {
   Widget* name, *type, *size, *frames, *ok, *box_transparent;
-  base::string imgtype_text;
+  std::string imgtype_text;
   char buf[256];
   ColorButton* color_button = NULL;
 

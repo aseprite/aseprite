@@ -8,22 +8,22 @@
 #define BASE_TEMP_DIR_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 
 namespace base {
 
   class TempDir {
   public:
     TempDir();
-    TempDir(const string& appName);
+    TempDir(const std::string& appName);
     ~TempDir();
 
     void remove();
-    void attach(const string& path);
-    const string& path() const { return m_path; }
+    void attach(const std::string& path);
+    const std::string& path() const { return m_path; }
 
   private:
-    string m_path;
+    std::string m_path;
   };
 
 }

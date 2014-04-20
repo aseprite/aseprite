@@ -145,9 +145,9 @@ App::App(int argc, const char* argv[])
   RenderEngine::loadConfig();
 
   // Default palette.
-  base::string palFile(!options.paletteFileName().empty() ?
-                       options.paletteFileName():
-                       base::string(get_config_string("GfxMode", "Palette", "")));
+  std::string palFile(!options.paletteFileName().empty() ?
+    options.paletteFileName():
+    std::string(get_config_string("GfxMode", "Palette", "")));
 
   if (palFile.empty()) {
     // Try to use a default pixel art palette.

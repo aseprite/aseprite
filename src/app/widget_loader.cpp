@@ -90,8 +90,8 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
   return widget;
 }
 
-Widget* WidgetLoader::loadWidgetFromXmlFile(const base::string& xmlFilename,
-                                            const base::string& widgetId)
+Widget* WidgetLoader::loadWidgetFromXmlFile(const std::string& xmlFilename,
+                                            const std::string& widgetId)
 {
   Widget* widget = NULL;
   m_tooltipManager = NULL;

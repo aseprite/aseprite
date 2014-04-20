@@ -73,7 +73,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   dst_name = window->findChild("dst_name");
   flatten = window->findChild("flatten");
 
-  base::string fn = document->getFilename();
+  std::string fn = document->getFilename();
   src_name->setText(base::get_file_name(fn));
   dst_name->setText(base::get_file_title(fn) + " Copy." + base::get_file_extension(fn));
 

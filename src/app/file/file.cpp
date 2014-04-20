@@ -147,7 +147,7 @@ FileOp* fop_to_load_document(const char* filename, int flags)
     return NULL;
 
   // Get the extension of the filename (in lower case)
-  base::string extension = base::string_to_lower(base::get_file_extension(filename));
+  std::string extension = base::string_to_lower(base::get_file_extension(filename));
 
   PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
@@ -244,7 +244,7 @@ FileOp* fop_to_save_document(Document* document)
   fop->document = document;
 
   // Get the extension of the filename (in lower case)
-  base::string extension = base::string_to_lower(base::get_file_extension(fop->document->getFilename()));
+  std::string extension = base::string_to_lower(base::get_file_extension(fop->document->getFilename()));
 
   PRINTF("Saving document \"%s\" (%s)\n", 
 		 fop->document->getFilename().c_str(), extension.c_str());
@@ -258,7 +258,7 @@ FileOp* fop_to_save_document(Document* document)
   }
 
   // Warnings
-  base::string warnings;
+  std::string warnings;
   fatal = false;
 
   /* check image type support */

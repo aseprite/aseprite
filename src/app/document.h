@@ -24,12 +24,13 @@
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
-#include "base/string.h"
 #include "base/unique_ptr.h"
 #include "doc/document.h"
 #include "gfx/transformation.h"
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
+
+#include <string>
 
 namespace base {
   class mutex;
@@ -122,8 +123,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // File related properties
 
-    const base::string& getFilename() const { return m_document.filename(); }
-    void setFilename(const base::string& filename);
+    const std::string& getFilename() const { return m_document.filename(); }
+    void setFilename(const std::string& filename);
 
     bool isModified() const;
     bool isAssociatedToFile() const;

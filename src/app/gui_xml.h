@@ -21,7 +21,8 @@
 #pragma once
 
 #include "app/xml_document.h"
-#include "base/string.h"
+
+#include <string>
 
 namespace app {
 
@@ -43,7 +44,7 @@ namespace app {
       return m_doc->Value();
     }
 
-    base::string version();
+    std::string version();
 
   private:
     GuiXml();

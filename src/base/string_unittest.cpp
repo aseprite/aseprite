@@ -30,7 +30,7 @@ TEST(String, Utf8Conversion)
 
 TEST(String, Utf8Iterator)
 {
-  string a = "Hello";
+  std::string a = "Hello";
   int value = std::count_if(utf8_iterator(a.begin()),
                             utf8_iterator(a.end()), all);
   ASSERT_EQ(5, value);
@@ -40,7 +40,7 @@ TEST(String, Utf8Iterator)
   ASSERT_EQ('l', *(utf8_iterator(a.begin())+3));
   ASSERT_EQ('o', *(utf8_iterator(a.begin())+4));
 
-  string b = "Copyright \xC2\xA9";
+  std::string b = "Copyright \xC2\xA9";
   value = std::count_if(utf8_iterator(b.begin()),
                         utf8_iterator(b.end()), all);
   ASSERT_EQ(11, value);
@@ -49,7 +49,7 @@ TEST(String, Utf8Iterator)
   ASSERT_EQ(0xA9, *(utf8_iterator(b.begin())+10));
   ASSERT_TRUE((utf8_iterator(b.begin())+11) == utf8_iterator(b.end()));
 
-  string c = "\xf0\x90\x8d\x86\xe6\x97\xa5\xd1\x88";
+  std::string c = "\xf0\x90\x8d\x86\xe6\x97\xa5\xd1\x88";
   value = std::count_if(utf8_iterator(c.begin()),
                         utf8_iterator(c.end()), all);
   ASSERT_EQ(3, value);
@@ -58,7 +58,7 @@ TEST(String, Utf8Iterator)
   ASSERT_EQ(0x448, *(utf8_iterator(c.begin())+2));
   ASSERT_TRUE((utf8_iterator(c.begin())+3) == utf8_iterator(c.end()));
 
-  string d = "\xf0\xa4\xad\xa2";
+  std::string d = "\xf0\xa4\xad\xa2";
   value = std::count_if(utf8_iterator(d.begin()),
                         utf8_iterator(d.end()), all);
   ASSERT_EQ(1, value);

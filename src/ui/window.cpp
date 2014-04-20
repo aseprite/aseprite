@@ -33,7 +33,7 @@ enum {
 static gfx::Point clickedMousePos;
 static gfx::Rect* clickedWindowPos = NULL;
 
-Window::Window(Type type, const base::string& text)
+Window::Window(Type type, const std::string& text)
   : Widget(kWindowWidget)
 {
   m_killer = NULL;

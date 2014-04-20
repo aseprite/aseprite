@@ -105,9 +105,9 @@ namespace app {
 // a position in the file-system
 class FileItem : public IFileItem {
 public:
-  base::string keyname;
-  base::string filename;
-  base::string displayname;
+  std::string keyname;
+  std::string filename;
+  std::string displayname;
   FileItem* parent;
   FileItemList children;
   unsigned int version;
@@ -138,22 +138,22 @@ public:
   bool isFolder() const;
   bool isBrowsable() const;
 
-  base::string getKeyName() const;
-  base::string getFileName() const;
-  base::string getDisplayName() const;
+  std::string getKeyName() const;
+  std::string getFileName() const;
+  std::string getDisplayName() const;
 
   IFileItem* getParent() const;
   const FileItemList& getChildren();
 
-  bool hasExtension(const base::string& csv_extensions);
+  bool hasExtension(const std::string& csv_extensions);
 
   BITMAP* getThumbnail();
   void setThumbnail(BITMAP* thumbnail);
 
 };
 
-typedef std::map<base::string, FileItem*> FileItemMap;
-typedef std::map<base::string, BITMAP*> ThumbnailMap;
+typedef std::map<std::string, FileItem*> FileItemMap;
+typedef std::map<std::string, BITMAP*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
@@ -180,15 +180,15 @@ static unsigned int current_file_system_version = 0;
   static LPITEMIDLIST clone_pidl(LPITEMIDLIST pidl);
   static LPITEMIDLIST remove_last_pidl(LPITEMIDLIST pidl);
   static void free_pidl(LPITEMIDLIST pidl);
-  static base::string get_key_for_pidl(LPITEMIDLIST pidl);
+  static std::string get_key_for_pidl(LPITEMIDLIST pidl);
 
   static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST pidl, bool create_if_not);
   static void put_fileitem(FileItem* fileitem);
 #else
-  static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_not);
+  static FileItem* get_fileitem_by_path(const std::string& path, bool create_if_not);
   static void for_each_child_callback(const char *filename, int attrib, int param);
-  static base::string remove_backslash_if_needed(const base::string& filename);
-  static base::string get_key_for_filename(const base::string& filename);
+  static std::string remove_backslash_if_needed(const std::string& filename);
+  static std::string get_key_for_filename(const std::string& filename);
   static void put_fileitem(FileItem* fileitem);
 #endif
 
@@ -317,7 +317,7 @@ IFileItem* FileSystemModule::getRootFileItem()
   return fileitem;
 }
 
-IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
+IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
 {
   IFileItem* fileitem = NULL;
 
@@ -348,7 +348,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
   }
 #else
   {
-    base::string buf = remove_backslash_if_needed(path);
+    std::string buf = remove_backslash_if_needed(path);
     fileitem = get_fileitem_by_path(buf, true);
   }
 #endif
@@ -358,11 +358,11 @@ IFileItem* FileSystemModule::getFileItemFromPath(const base::string& path)
   return fileitem;
 }
 
-bool FileSystemModule::dirExists(const base::string& path)
+bool FileSystemModule::dirExists(const std::string& path)
 {
   struct al_ffblk info;
   int ret;
-  base::string path2 = base::join_path(path, "*.*");
+  std::string path2 = base::join_path(path, "*.*");
 
   ret = al_findfirst(path2.c_str(), &info, FA_ALL);
   al_findclose(&info);
@@ -393,21 +393,21 @@ bool FileItem::isBrowsable() const
 #endif
 }
 
-base::string FileItem::getKeyName() const
+std::string FileItem::getKeyName() const
 {
   ASSERT(this->keyname != NOTINITIALIZED);
 
   return this->keyname;
 }
 
-base::string FileItem::getFileName() const
+std::string FileItem::getFileName() const
 {
   ASSERT(this->filename != NOTINITIALIZED);
 
   return this->filename;
 }
 
-base::string FileItem::getDisplayName() const
+std::string FileItem::getDisplayName() const
 {
   ASSERT(this->displayname != NOTINITIALIZED);
 
@@ -560,7 +560,7 @@ const FileItemList& FileItem::getChildren()
   return this->children;
 }
 
-bool FileItem::hasExtension(const base::string& csv_extensions)
+bool FileItem::hasExtension(const std::string& csv_extensions)
 {
   ASSERT(this->filename != NOTINITIALIZED);
 
@@ -873,7 +873,7 @@ static void free_pidl(LPITEMIDLIST pidl)
   shl_imalloc->Free(pidl);
 }
 
-static base::string get_key_for_pidl(LPITEMIDLIST pidl)
+static std::string get_key_for_pidl(LPITEMIDLIST pidl)
 {
 #if 0
   char *key = base_malloc(get_pidl_size(pidl)+1);
@@ -995,7 +995,7 @@ static void put_fileitem(FileItem* fileitem)
 // Allegro for_each_file: Portable
 //////////////////////////////////////////////////////////////////////
 
-static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_not)
+static FileItem* get_fileitem_by_path(const std::string& path, bool create_if_not)
 {
   if (path.empty())
     return rootitem;
@@ -1024,7 +1024,7 @@ static FileItem* get_fileitem_by_path(const base::string& path, bool create_if_n
 
   // get the parent
   {
-    base::string parent_path = remove_backslash_if_needed(base::join_path(base::get_file_path(path), ""));
+    std::string parent_path = remove_backslash_if_needed(base::join_path(base::get_file_path(path), ""));
     fileitem->parent = get_fileitem_by_path(parent_path, true);
   }
 
@@ -1066,7 +1066,7 @@ static void for_each_child_callback(const char *filename, int attrib, int param)
   fileitem->insertChildSorted(child);
 }
 
-static base::string remove_backslash_if_needed(const base::string& filename)
+static std::string remove_backslash_if_needed(const std::string& filename)
 {
   if (!filename.empty() && base::is_path_separator(*(filename.end()-1))) {
     int len = filename.size();
@@ -1085,9 +1085,9 @@ static base::string remove_backslash_if_needed(const base::string& filename)
   return filename;
 }
 
-static base::string get_key_for_filename(const base::string& filename)
+static std::string get_key_for_filename(const std::string& filename)
 {
-  base::string buf(filename);
+  std::string buf(filename);
 
 #if !defined CASE_SENSITIVE
   buf.tolower();

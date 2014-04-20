@@ -39,7 +39,7 @@ DataRecovery::DataRecovery(Context* context)
   , m_context(context)
 {
   // Check if there is already data to recover
-  const base::string existent_data_path = get_config_string("DataRecovery", "Path", "");
+  const std::string existent_data_path = get_config_string("DataRecovery", "Path", "");
   if (!existent_data_path.empty() &&
       base::is_directory(existent_data_path)) {
     // Load the backup data.

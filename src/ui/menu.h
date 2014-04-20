@@ -96,7 +96,7 @@ namespace ui {
   class MenuItem : public Widget
   {
   public:
-    MenuItem(const base::string& text);
+    MenuItem(const std::string& text);
     ~MenuItem();
 
     Menu* getSubmenu();

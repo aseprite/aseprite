@@ -21,19 +21,19 @@
 
 namespace base {
 
-bool is_file(const string& path)
+bool is_file(const std::string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISREG(sts.st_mode)) ? true: false;
 }
 
-bool is_directory(const string& path)
+bool is_directory(const std::string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && S_ISDIR(sts.st_mode)) ? true: false;
 }
 
-void make_directory(const string& path)
+void make_directory(const std::string& path)
 {
   int result = mkdir(path.c_str(), 0777);
   if (result < 0) {
@@ -42,7 +42,7 @@ void make_directory(const string& path)
   }
 }
 
-void delete_file(const string& path)
+void delete_file(const std::string& path)
 {
   int result = unlink(path.c_str());
   if (result != 0)
@@ -50,13 +50,13 @@ void delete_file(const string& path)
     throw std::runtime_error("Error deleting file");
 }
 
-bool has_readonly_attr(const string& path)
+bool has_readonly_attr(const std::string& path)
 {
   struct stat sts;
   return (stat(path.c_str(), &sts) == 0 && ((sts.st_mode & S_IWUSR) == 0));
 }
 
-void remove_readonly_attr(const string& path)
+void remove_readonly_attr(const std::string& path)
 {
   struct stat sts;
   int result = stat(path.c_str(), &sts);
@@ -68,7 +68,7 @@ void remove_readonly_attr(const string& path)
   }
 }
 
-void remove_directory(const string& path)
+void remove_directory(const std::string& path)
 {
   int result = rmdir(path.c_str());
   if (result != 0) {
@@ -77,7 +77,7 @@ void remove_directory(const string& path)
   }
 }
 
-string get_app_path()
+std::string get_app_path()
 {
   std::vector<char> path(MAXPATHLEN);
 
@@ -97,7 +97,7 @@ string get_app_path()
   return std::string();
 }
 
-string get_temp_path()
+std::string get_temp_path()
 {
   char* tmpdir = getenv("TMPDIR");
   if (tmpdir)

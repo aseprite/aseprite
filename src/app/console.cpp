@@ -138,7 +138,7 @@ void Console::printf(const char* format, ...)
 
     const std::string& text = wid_textbox->getText();
 
-    base::string final;
+    std::string final;
     if (!text.empty())
       final += text;
     final += buf;

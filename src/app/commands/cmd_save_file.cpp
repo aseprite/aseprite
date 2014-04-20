@@ -122,7 +122,7 @@ protected:
   void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
   {
     const Document* document = reader.document();
-    base::string filename;
+    std::string filename;
 
     if (!m_filename.empty()) {
       filename = m_filename;
@@ -134,7 +134,7 @@ protected:
       get_writable_extensions(exts, sizeof(exts));
 
       for (;;) {
-        base::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
+        std::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
         if (newfilename.empty())
           return;
 
@@ -283,7 +283,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  base::string old_filename = document->getFilename();
+  std::string old_filename = document->getFilename();
 
   // show "Save As" dialog
   saveAsDialog(reader, "Save Copy As", false);

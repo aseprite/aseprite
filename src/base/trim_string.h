@@ -8,11 +8,11 @@
 #define BASE_TRIM_STRING_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 
 namespace base {
 
-  void trim_string(const base::string& input, base::string& output);
+  void trim_string(const std::string& input, std::string& output);
 
 }
 

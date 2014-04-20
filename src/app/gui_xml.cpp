@@ -52,7 +52,7 @@ GuiXml::GuiXml()
   m_doc = app::open_xml(rf.filename());
 }
 
-base::string GuiXml::version()
+std::string GuiXml::version()
 {
   TiXmlHandle handle(m_doc);
   TiXmlElement* xmlKey = handle.FirstChild("gui").ToElement();

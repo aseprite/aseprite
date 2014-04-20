@@ -21,13 +21,14 @@
 #pragma once
 
 #include "base/recent_items.h"
-#include "base/string.h"
+
+#include <string>
 
 namespace app {
   
   class RecentFiles {
   public:
-    typedef base::RecentItems<base::string> List;
+    typedef base::RecentItems<std::string> List;
     typedef List::iterator iterator;
     typedef List::const_iterator const_iterator;
 

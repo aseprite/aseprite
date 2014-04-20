@@ -11,7 +11,7 @@
 #include "base/trim_string.h"
 #include <cctype>
 
-void base::trim_string(const base::string& input, base::string& output)
+void base::trim_string(const std::string& input, std::string& output)
 {
   int i, j;
 

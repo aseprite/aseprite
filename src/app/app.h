@@ -26,6 +26,7 @@
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
 
+#include <string>
 #include <vector>
 
 namespace ui {
@@ -80,7 +81,7 @@ namespace app {
     Signal0<void> CurrentToolChange;
 
   private:
-    typedef std::vector<base::string> FileList;
+    typedef std::vector<std::string> FileList;
     class Modules;
 
     static App* m_instance;

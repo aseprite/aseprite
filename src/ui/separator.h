@@ -16,7 +16,7 @@ namespace ui {
   class Separator : public Widget
   {
   public:
-    Separator(const base::string& text, int align);
+    Separator(const std::string& text, int align);
 
   protected:
     void onPaint(PaintEvent& ev) OVERRIDE;

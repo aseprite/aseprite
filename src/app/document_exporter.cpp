@@ -194,7 +194,7 @@ void DocumentExporter::captureSamples(Samples& samples)
     
     for (FrameNumber frame=FrameNumber(0);
          frame<sprite->getTotalFrames(); ++frame) {
-      base::string filename = document->getFilename();
+      std::string filename = document->getFilename();
 
       if (sprite->getTotalFrames() > FrameNumber(1)) {
         int frameNumWidth =
@@ -203,9 +203,9 @@ void DocumentExporter::captureSamples(Samples& samples)
           (sprite->getTotalFrames() < 1000)? 3: 4;
         std::sprintf(&buf[0], "%0*d", frameNumWidth, (int)frame);
 
-        base::string path = base::get_file_path(filename);
-        base::string title = base::get_file_title(filename);
-        base::string ext = base::get_file_extension(filename);
+        std::string path = base::get_file_path(filename);
+        std::string title = base::get_file_title(filename);
+        std::string ext = base::get_file_extension(filename);
         filename = base::join_path(path, title + &buf[0] + "." + ext);
       }
 

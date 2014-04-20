@@ -8,23 +8,23 @@
 #define UI_PROPERTY_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
 
+#include <string>
+
 namespace ui {
 
-  class Property
-  {
-    base::string m_name;
-
+  class Property {
   public:
-    Property(const base::string& name);
+    Property(const std::string& name);
     virtual ~Property();
 
-    base::string getName() const;
+    std::string getName() const;
 
   private:
+    std::string m_name;
+
     DISABLE_COPYING(Property);
   };
 

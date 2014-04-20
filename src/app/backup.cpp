@@ -24,7 +24,7 @@
 
 namespace app {
 
-Backup::Backup(const base::string& path)
+Backup::Backup(const std::string& path)
   : m_path(path)
 {
 }

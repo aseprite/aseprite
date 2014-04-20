@@ -64,7 +64,7 @@ RecentFiles::RecentFiles()
     const_iterator it = files_begin();
     const_iterator end = files_end();
     for (; it != end; ++it) {
-      base::string path = base::get_file_path(*it);
+      std::string path = base::get_file_path(*it);
 
       // Check if the path was not already included in the list
       if (included.find(path) == included.end()) {

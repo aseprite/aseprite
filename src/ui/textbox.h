@@ -16,7 +16,7 @@ namespace ui {
   class TextBox : public Widget
   {
   public:
-    TextBox(const base::string& text, int align);
+    TextBox(const std::string& text, int align);
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;

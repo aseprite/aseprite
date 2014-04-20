@@ -126,7 +126,7 @@ double Widget::getTextDouble() const
   return strtod(m_text.c_str(), NULL);
 }
 
-void Widget::setText(const base::string& text)
+void Widget::setText(const std::string& text)
 {
   setTextQuiet(text);
   onSetText();
@@ -151,7 +151,7 @@ void Widget::setTextf(const char *format, ...)
   setText(buf);
 }
 
-void Widget::setTextQuiet(const base::string& text)
+void Widget::setTextQuiet(const std::string& text)
 {
   m_text = text;
   flags |= JI_HASTEXT;

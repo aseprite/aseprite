@@ -20,13 +20,13 @@
 #define APP_FILE_SELECTOR_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 
 namespace app {
 
-  base::string show_file_selector(const base::string& title,
-                                  const base::string& initialPath,
-                                  const base::string& showExtensions);
+  std::string show_file_selector(const std::string& title,
+    const std::string& initialPath,
+    const std::string& showExtensions);
 
 } // namespace app
 

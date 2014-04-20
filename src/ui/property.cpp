@@ -8,7 +8,7 @@
 
 namespace ui {
 
-Property::Property(const base::string& name)
+Property::Property(const std::string& name)
   : m_name(name)
 {
 }
@@ -17,7 +17,7 @@ Property::~Property()
 {
 }
 
-base::string Property::getName() const
+std::string Property::getName() const
 {
   return m_name;
 }

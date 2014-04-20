@@ -23,9 +23,10 @@
 #include "app/file_system.h"
 #include "base/compiler_specific.h"
 #include "base/signal.h"
-#include "base/string.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
+
+#include <string>
 
 namespace app {
 
@@ -71,7 +72,7 @@ namespace app {
     bool m_req_valid;
     int m_req_w, m_req_h;
     IFileItem* m_selected;
-    base::string m_exts;
+    std::string m_exts;
 
     // Incremental-search
     std::string m_isearch;

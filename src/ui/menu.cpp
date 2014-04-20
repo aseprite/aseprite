@@ -165,7 +165,7 @@ MenuBar::MenuBar()
   createBase();
 }
 
-MenuItem::MenuItem(const base::string& text)
+MenuItem::MenuItem(const std::string& text)
   : Widget(kMenuItemWidget)
 {
   m_accel = NULL;

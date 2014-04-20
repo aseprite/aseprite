@@ -8,7 +8,7 @@
 #define BASE_CONVERT_TO_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 
 namespace base {
 
@@ -25,14 +25,14 @@ namespace base {
     // TODO Use a static_assert(false)
   }
 
-  template<> int convert_to(const base::string& from);
-  template<> base::string convert_to(const int& from);
+  template<> int convert_to(const std::string& from);
+  template<> std::string convert_to(const int& from);
 
-  template<> Sha1 convert_to(const base::string& from);
-  template<> base::string convert_to(const Sha1& from);
+  template<> Sha1 convert_to(const std::string& from);
+  template<> std::string convert_to(const Sha1& from);
 
-  template<> Version convert_to(const base::string& from);
-  template<> base::string convert_to(const Version& from);
+  template<> Version convert_to(const std::string& from);
+  template<> std::string convert_to(const Version& from);
 
 }
 

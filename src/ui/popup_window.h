@@ -22,7 +22,7 @@ namespace ui {
       kCloseOnClickOutsideHotRegion
     };
 
-    PopupWindow(const base::string& text, ClickBehavior clickBehavior);
+    PopupWindow(const std::string& text, ClickBehavior clickBehavior);
     ~PopupWindow();
 
     void setHotRegion(const gfx::Region& region);

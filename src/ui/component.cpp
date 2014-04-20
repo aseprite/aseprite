@@ -22,7 +22,7 @@ Component::~Component()
 {
 }
 
-PropertyPtr Component::getProperty(const base::string& name)
+PropertyPtr Component::getProperty(const std::string& name)
 {
   Properties::iterator it = m_properties.find(name);
   if (it != m_properties.end())
@@ -36,13 +36,13 @@ void Component::setProperty(PropertyPtr property)
   m_properties[property->getName()] = property;
 }
 
-bool Component::hasProperty(const base::string& name)
+bool Component::hasProperty(const std::string& name)
 {
   Properties::iterator it = m_properties.find(name);
   return it != m_properties.end();
 }
 
-void Component::removeProperty(const base::string& name)
+void Component::removeProperty(const std::string& name)
 {
   Properties::iterator it = m_properties.find(name);
   if (it != m_properties.end())

@@ -24,9 +24,9 @@
 
 namespace app {
 
-base::string show_file_selector(const base::string& title,
-                                const base::string& initialPath,
-                                const base::string& showExtensions)
+std::string show_file_selector(const std::string& title,
+  const std::string& initialPath,
+  const std::string& showExtensions)
 {
   FileSelector fileSelector;
   return fileSelector.show(title, initialPath, showExtensions);

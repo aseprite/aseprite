@@ -25,7 +25,7 @@ namespace ui {
     TooltipManager();
     ~TooltipManager();
 
-    void addTooltipFor(Widget* widget, const base::string& text, int arrowAlign = 0);
+    void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;
@@ -38,7 +38,7 @@ namespace ui {
       int arrowAlign;
 
       TipInfo() { }
-      TipInfo(const base::string& text, int arrowAlign)
+      TipInfo(const std::string& text, int arrowAlign)
         : text(text), arrowAlign(arrowAlign) {
       }
     };

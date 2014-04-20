@@ -19,21 +19,21 @@
 
 namespace base {
 
-string string_to_lower(const string& original)
+std::string string_to_lower(const std::string& original)
 {
-  string result(original);
+  std::string result(original);
 
-  for (string::iterator it=result.begin(); it!=result.end(); ++it)
+  for (std::string::iterator it=result.begin(); it!=result.end(); ++it)
     *it = std::tolower(*it);
 
   return result;
 }
 
-string string_to_upper(const string& original)
+std::string string_to_upper(const std::string& original)
 {
-  string result(original);
+  std::string result(original);
 
-  for (string::iterator it=result.begin(); it!=result.end(); ++it)
+  for (std::string::iterator it=result.begin(); it!=result.end(); ++it)
     *it = std::toupper(*it);
 
   return result;
@@ -41,7 +41,7 @@ string string_to_upper(const string& original)
 
 #ifdef WIN32
 
-string to_utf8(const std::wstring& src)
+std::string to_utf8(const std::wstring& src)
 {
   int required_size =
     ::WideCharToMultiByte(CP_UTF8, 0,
@@ -49,7 +49,7 @@ string to_utf8(const std::wstring& src)
                           NULL, 0, NULL, NULL);
 
   if (required_size == 0)
-    return string();
+    return std::string();
 
   std::vector<char> buf(++required_size);
 
@@ -58,10 +58,10 @@ string to_utf8(const std::wstring& src)
                         &buf[0], required_size,
                         NULL, NULL);
 
-  return base::string(&buf[0]);
+  return std::string(&buf[0]);
 }
 
-std::wstring from_utf8(const string& src)
+std::wstring from_utf8(const std::string& src)
 {
   int required_size =
     MultiByteToWideChar(CP_UTF8, 0,
@@ -83,7 +83,7 @@ std::wstring from_utf8(const string& src)
 #else
 
 // Based on Allegro Unicode code (allegro/src/unicode.c)
-static size_t insert_utf8_char(string* result, wchar_t chr)
+static size_t insert_utf8_char(std::string* result, wchar_t chr)
 {
   int size, bits, b, i;
 
@@ -122,7 +122,7 @@ static size_t insert_utf8_char(string* result, wchar_t chr)
   return size;
 }
 
-string to_utf8(const std::wstring& src)
+std::string to_utf8(const std::wstring& src)
 {
   std::wstring::const_iterator it, begin = src.begin();
   std::wstring::const_iterator end = src.end();
@@ -135,14 +135,14 @@ string to_utf8(const std::wstring& src)
   if (!required_size)
     return "";
 
-  string result;
+  std::string result;
   result.reserve(++required_size);
   for (it = begin; it != end; ++it)
     insert_utf8_char(&result, *it);
   return result;
 }
 
-std::wstring from_utf8(const string& src)
+std::wstring from_utf8(const std::string& src)
 {
   int required_size = utf8_length(src);
   std::vector<wchar_t> buf(++required_size);
@@ -163,7 +163,7 @@ std::wstring from_utf8(const string& src)
 
 #endif
 
-int utf8_length(const string& utf8string)
+int utf8_length(const std::string& utf8string)
 {
   utf8_const_iterator it(utf8string.begin());
   utf8_const_iterator end(utf8string.end());

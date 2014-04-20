@@ -20,7 +20,7 @@ namespace ui {
 
 using namespace gfx;
 
-ListItem::ListItem(const base::string& text)
+ListItem::ListItem(const std::string& text)
   : Widget(kListItemWidget)
 {
   setDoubleBuffered(true);

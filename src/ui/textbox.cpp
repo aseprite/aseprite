@@ -22,7 +22,7 @@
 
 namespace ui {
 
-TextBox::TextBox(const base::string& text, int align)
+TextBox::TextBox(const std::string& text, int align)
  : Widget(kTextBoxWidget)
 {
   setFocusStop(true);

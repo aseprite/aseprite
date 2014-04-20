@@ -163,7 +163,7 @@ int ComboBox::addItem(ListItem* item)
   return m_items.size()-1;
 }
 
-int ComboBox::addItem(const base::string& text)
+int ComboBox::addItem(const std::string& text)
 {
   return addItem(new ListItem(text));
 }
@@ -178,7 +178,7 @@ void ComboBox::insertItem(int itemIndex, ListItem* item)
     setSelectedItemIndex(0);
 }
 
-void ComboBox::insertItem(int itemIndex, const base::string& text)
+void ComboBox::insertItem(int itemIndex, const std::string& text)
 {
   insertItem(itemIndex, new ListItem(text));
 }
@@ -228,7 +228,7 @@ ListItem* ComboBox::getItem(int itemIndex)
     return NULL;
 }
 
-const base::string& ComboBox::getItemText(int itemIndex) const
+const std::string& ComboBox::getItemText(int itemIndex) const
 {
   if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
     ListItem* item = m_items[itemIndex];
@@ -241,7 +241,7 @@ const base::string& ComboBox::getItemText(int itemIndex) const
   }
 }
 
-void ComboBox::setItemText(int itemIndex, const base::string& text)
+void ComboBox::setItemText(int itemIndex, const std::string& text)
 {
   ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
 
@@ -249,7 +249,7 @@ void ComboBox::setItemText(int itemIndex, const base::string& text)
   item->setText(text);
 }
 
-int ComboBox::findItemIndex(const base::string& text)
+int ComboBox::findItemIndex(const std::string& text)
 {
   int itemIndex = 0;
 

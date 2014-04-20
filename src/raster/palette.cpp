@@ -23,6 +23,7 @@
 #include "raster/palette.h"
 
 #include "base/path.h"
+#include "base/string.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/conversion_alleg.h"
@@ -406,7 +407,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 
 Palette* Palette::load(const char *filename)
 {
-  base::string ext = base::string_to_lower(base::get_file_extension(filename));
+  std::string ext = base::string_to_lower(base::get_file_extension(filename));
   Palette* pal = NULL;
 
   if (ext == "png" ||
@@ -440,7 +441,7 @@ Palette* Palette::load(const char *filename)
 
 bool Palette::save(const char *filename) const
 {
-  base::string ext = base::string_to_lower(base::get_file_extension(filename));
+  std::string ext = base::string_to_lower(base::get_file_extension(filename));
   bool success = false;
 
   if (ext == "png" ||

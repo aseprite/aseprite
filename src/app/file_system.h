@@ -20,8 +20,7 @@
 #define APP_FILE_SYSTEM_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
-
+#include <string>
 #include <vector>
 
 struct BITMAP;
@@ -49,9 +48,9 @@ namespace app {
 
     // Returns the FileItem through the specified "path".
     // Warning: You have to call path.fix_separators() before.
-    IFileItem* getFileItemFromPath(const base::string& path);
+    IFileItem* getFileItemFromPath(const std::string& path);
 
-    bool dirExists(const base::string& path);
+    bool dirExists(const std::string& path);
 
   };
 
@@ -62,14 +61,14 @@ namespace app {
     virtual bool isFolder() const = 0;
     virtual bool isBrowsable() const = 0;
 
-    virtual base::string getKeyName() const = 0;
-    virtual base::string getFileName() const = 0;
-    virtual base::string getDisplayName() const = 0;
+    virtual std::string getKeyName() const = 0;
+    virtual std::string getFileName() const = 0;
+    virtual std::string getDisplayName() const = 0;
 
     virtual IFileItem* getParent() const = 0;
     virtual const FileItemList& getChildren() = 0;
 
-    virtual bool hasExtension(const base::string& csv_extensions) = 0;
+    virtual bool hasExtension(const std::string& csv_extensions) = 0;
 
     virtual BITMAP* getThumbnail() = 0;
     virtual void setThumbnail(BITMAP* thumbnail) = 0;

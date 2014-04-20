@@ -89,7 +89,7 @@ TEST(Path, GetFileTitle)
 
 TEST(Path, JoinPath)
 {
-  base::string sep;
+  std::string sep;
   sep.push_back(path_separator);
 
   EXPECT_EQ("",                         join_path("", ""));

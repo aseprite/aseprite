@@ -38,7 +38,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-PopupWindowPin::PopupWindowPin(const base::string& text, ClickBehavior clickBehavior)
+PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehavior)
   : PopupWindow(text, clickBehavior)
   , m_pin("")
 {

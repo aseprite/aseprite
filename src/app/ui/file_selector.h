@@ -20,9 +20,10 @@
 #define APP_UI_FILE_SELECTOR_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
 #include "base/unique_ptr.h"
 #include "ui/window.h"
+
+#include <string>
 
 namespace ui {
   class Button;
@@ -40,9 +41,9 @@ namespace app {
     FileSelector();
 
     // Shows the dialog to select a file in the program.
-    base::string show(const base::string& title,
-                      const base::string& initialPath,
-                      const base::string& showExtensions);
+    std::string show(const std::string& title,
+      const std::string& initialPath,
+      const std::string& showExtensions);
 
   private:
     void updateLocation();
