@@ -25,6 +25,7 @@
 #include "raster/object.h"
 
 #include <vector>
+#include <string>
 
 namespace raster {
 

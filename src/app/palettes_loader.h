@@ -24,6 +24,8 @@
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 
+#include <string>
+
 namespace raster {
   class Palette;
 }
