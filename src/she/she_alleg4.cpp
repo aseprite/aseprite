@@ -374,7 +374,7 @@ public:
 
 #if WIN32
     subclass_hwnd((HWND)nativeHandle());
-#endif WIN32
+#endif
   }
 
   ~Alleg4Display() {
@@ -382,7 +382,7 @@ public:
 
 #if WIN32
     unsubclass_hwnd((HWND)nativeHandle());
-#endif WIN32
+#endif
 
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);

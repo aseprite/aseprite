@@ -973,7 +973,7 @@ bool Widget::paintEvent(Graphics* graphics)
     // In debug mode we can fill the area with Red so we know if the
     // we are drawing the parent correctly.
     graphics->fillRect(ui::rgba(255, 0, 0), getClientBounds());
-#endif _DEBUG
+#endif
 
     this->flags |= JI_HIDDEN;
 
