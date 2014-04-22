@@ -850,20 +850,16 @@ void Widget::getTextIconInfo(
   SETRECT(icon);
 }
 
-void jwidget_set_min_size(Widget* widget, int w, int h)
+void Widget::setMinSize(const gfx::Size& sz)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->min_w = w;
-  widget->min_h = h;
+  min_w = sz.w;
+  min_h = sz.h;
 }
 
-void jwidget_set_max_size(Widget* widget, int w, int h)
+void Widget::setMaxSize(const gfx::Size& sz)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->max_w = w;
-  widget->max_h = h;
+  max_w = sz.w;
+  max_h = sz.h;
 }
 
 void Widget::flushRedraw()

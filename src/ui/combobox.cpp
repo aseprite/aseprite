@@ -505,12 +505,12 @@ void ComboBox::openListBox()
 
     Widget* viewport = view->getViewport();
     int size = getItemCount();
-    jwidget_set_min_size
-      (viewport,
-       m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
-       +viewport->border_width.t
-       +(2*jguiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
-       +viewport->border_width.b);
+    viewport->setMinSize
+      (gfx::Size(
+        m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
+        +viewport->border_width.t
+        +(2*jguiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
+        +viewport->border_width.b));
 
     m_window->addChild(view);
     view->attachToView(m_listbox);

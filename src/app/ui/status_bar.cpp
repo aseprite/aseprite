@@ -207,7 +207,7 @@ StatusBar::StatusBar()
     ICON_NEW(m_b_last, PART_ANI_LAST, ACTION_LAST);
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
-    jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
+    m_slider->setMinSize(gfx::Size(JI_SCREEN_W/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
     box2->noBorderNoChildSpacing();

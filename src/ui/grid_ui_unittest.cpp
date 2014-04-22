@@ -30,8 +30,8 @@ TEST(JGrid, Simple2x1Grid)
   Widget* w1 = new Widget(kGenericWidget);
   Widget* w2 = new Widget(kGenericWidget);
 
-  jwidget_set_min_size(w1, 10, 10);
-  jwidget_set_min_size(w2, 10, 10);
+  w1->setMinSize(gfx::Size(10, 10));
+  w2->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
   grid->addChildInCell(w2, 1, 1, 0);
@@ -69,8 +69,8 @@ TEST(JGrid, Expand2ndWidget)
   Widget* w1 = new Widget(kGenericWidget);
   Widget* w2 = new Widget(kGenericWidget);
 
-  jwidget_set_min_size(w1, 20, 20);
-  jwidget_set_min_size(w2, 10, 10);
+  w1->setMinSize(gfx::Size(20, 20));
+  w2->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
   grid->addChildInCell(w2, 1, 1, JI_HORIZONTAL | JI_TOP);
@@ -102,8 +102,8 @@ TEST(JGrid, SameWidth2x1Grid)
   Widget* w1 = new Widget(kGenericWidget);
   Widget* w2 = new Widget(kGenericWidget);
 
-  jwidget_set_min_size(w1, 20, 20);
-  jwidget_set_min_size(w2, 10, 10);
+  w1->setMinSize(gfx::Size(20, 20));
+  w2->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
   grid->addChildInCell(w2, 1, 1, 0);
@@ -166,10 +166,10 @@ TEST(JGrid, Intrincate3x3Grid)
   Widget* w3 = new Widget(kGenericWidget);
   Widget* w4 = new Widget(kGenericWidget);
 
-  jwidget_set_min_size(w1, 10, 10);
-  jwidget_set_min_size(w2, 10, 10);
-  jwidget_set_min_size(w3, 10, 10);
-  jwidget_set_min_size(w4, 10, 10);
+  w1->setMinSize(gfx::Size(10, 10));
+  w2->setMinSize(gfx::Size(10, 10));
+  w3->setMinSize(gfx::Size(10, 10));
+  w4->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
   grid->addChildInCell(w2, 2, 1, JI_HORIZONTAL);

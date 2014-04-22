@@ -74,7 +74,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
   button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
 
-  jwidget_set_min_size(entry_name, 128, 0);
+  entry_name->setMinSize(gfx::Size(128, 0));
   entry_name->setExpansive(true);
 
   box2->addChild(label_name);

@@ -25,7 +25,6 @@
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
 
 struct FONT;
-struct BITMAP;
 
 namespace ui {
 
@@ -39,15 +38,6 @@ namespace ui {
   class SaveLayoutEvent;
   class Theme;
   class Window;
-
-  WidgetType register_widget_type();
-
-  // Position and geometry
-
-  void jwidget_set_min_size(Widget* widget, int w, int h);
-  void jwidget_set_max_size(Widget* widget, int w, int h);
-
-  //////////////////////////////////////////////////////////////////////
 
   class Widget : public Component {
   public:
@@ -264,6 +254,9 @@ namespace ui {
     // generating recursive onResize() events.
     void setBoundsQuietly(const gfx::Rect& rc);
 
+    void setMinSize(const gfx::Size& sz);
+    void setMaxSize(const gfx::Size& sz);
+
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
 
@@ -395,6 +388,8 @@ namespace ui {
     bool m_doubleBuffered;
     bool m_transparent;
   };
+
+  WidgetType register_widget_type();
 
 } // namespace ui
 

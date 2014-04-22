@@ -60,7 +60,7 @@ public:
   {
     m_view.attachToView(&m_editor);
     m_view.setExpansive(true);
-    jwidget_set_min_size(&m_view, 128, 64);
+    m_view.setMinSize(gfx::Size(128, 64));
 
     getContainer()->addChild(&m_view);
 

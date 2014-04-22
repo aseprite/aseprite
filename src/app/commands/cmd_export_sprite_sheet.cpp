@@ -92,7 +92,7 @@ public:
       hbox1->addChild(hbox2);
       hbox2->addChild(&m_export);
       hbox2->addChild(&m_cancel);
-      jwidget_set_min_size(&m_export, 60, 0);
+      m_export.setMinSize(gfx::Size(60, 0));
       m_grid.addChildInCell(hbox1, 4, 1, 0);
     }
 
