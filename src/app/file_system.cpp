@@ -206,12 +206,12 @@ FileSystemModule::FileSystemModule()
   /* get the IMalloc interface */
   HRESULT hr = SHGetMalloc(&shl_imalloc);
   if (hr != S_OK)
-    throw new std::runtime_error("Error initializing file system. Report this problem. (SHGetMalloc failed.)");
+    throw std::runtime_error("Error initializing file system. Report this problem. (SHGetMalloc failed.)");
 
   /* get desktop IShellFolder interface */
   hr = SHGetDesktopFolder(&shl_idesktop);
   if (hr != S_OK)
-    throw new std::runtime_error("Error initializing file system. Report this problem. (SHGetDesktopFolder failed.)");
+    throw std::runtime_error("Error initializing file system. Report this problem. (SHGetDesktopFolder failed.)");
 #endif
 
   // first version of the file system
