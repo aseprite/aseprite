@@ -266,7 +266,7 @@ protected:
 class ContextBar::InkTypeField : public ComboBox
 {
 public:
-  InkTypeField() {
+  InkTypeField() : m_lock(false) {
     // The same order as in InkType
     addItem("Default Ink");
 #if 0
@@ -292,12 +292,17 @@ public:
       case kPutAlphaInk: index = 1; break;
     }
 
+    m_lock = true;
     setSelectedItemIndex(index);
+    m_lock = false;
   }
 
 protected:
   void onChange() OVERRIDE {
     ComboBox::onChange();
+
+    if (m_lock)
+      return;
 
     InkType inkType = kDefaultInk;
 
@@ -314,6 +319,8 @@ protected:
   void onCloseListBox() OVERRIDE {
     releaseFocus();
   }
+
+  bool m_lock;
 };
 
 class ContextBar::InkOpacityField : public IntEntry
