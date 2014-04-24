@@ -32,6 +32,7 @@
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
+#include "ui/view.h"
 
 namespace app {
 
@@ -196,6 +197,10 @@ void PaletteListBox::onTick()
   base::UniquePtr<PaletteListItem> item(new PaletteListItem(palette, name));
   insertChild(getItemsCount()-1, item);
   layout();
+
+  View* view = View::getView(this);
+  if (view)
+    view->updateView();
 
   palette.release();
   item.release();
