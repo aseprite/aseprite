@@ -253,7 +253,10 @@ std::string FileSelector::show(const std::string& title,
 {
   std::string result;
 
-  FileSystemModule::instance()->refresh();
+  FileSystemModule* fs = FileSystemModule::instance();
+  LockFS lock(fs);
+
+  fs->refresh();
 
   if (!navigation_history) {
     navigation_history = new FileItemList();
@@ -268,12 +271,12 @@ std::string FileSelector::show(const std::string& title,
   if (base::get_file_path(initialPath).empty()) {
     // Get the saved `path' in the configuration file.
     std::string path = get_config_string("FileSelect", "CurrentDirectory", "");
-    start_folder = FileSystemModule::instance()->getFileItemFromPath(path);
+    start_folder = fs->getFileItemFromPath(path);
 
     // Is the folder find?
     if (!start_folder) {
       // If the `path' doesn't exist.
-      if (path.empty() || (!FileSystemModule::instance()->dirExists(path))) {
+      if (path.empty() || (!fs->dirExists(path))) {
         // We can get the current path from the system.
 #ifdef HAVE_DRIVES
         int drive = _al_getdrive();
@@ -295,7 +298,7 @@ std::string FileSelector::show(const std::string& title,
   start_folder_path = base::fix_path_separators(start_folder_path);
 
   if (!start_folder)
-    start_folder = FileSystemModule::instance()->getFileItemFromPath(start_folder_path);
+    start_folder = fs->getFileItemFromPath(start_folder_path);
 
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
@@ -417,7 +420,7 @@ again:
         buf = base::fix_path_separators(buf);
 
         // we can check if 'buf' is a folder, so we have to enter in it
-        enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
+        enter_folder = fs->getFileItemFromPath(buf);
       }
     }
     else {

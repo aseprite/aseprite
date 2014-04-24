@@ -95,7 +95,10 @@ void PalettesLoader::threadLoadPalettes()
   if (path.empty())
     return;
 
-  IFileItem* item = FileSystemModule::instance()->getFileItemFromPath(path);
+  FileSystemModule* fs = FileSystemModule::instance();
+  LockFS lock(fs);
+
+  IFileItem* item = fs->getFileItemFromPath(path);
   if (!item)
     return;
 

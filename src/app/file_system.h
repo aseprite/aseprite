@@ -20,6 +20,8 @@
 #define APP_FILE_SYSTEM_H_INCLUDED
 #pragma once
 
+#include "base/mutex.h"
+
 #include <string>
 #include <vector>
 
@@ -52,6 +54,23 @@ namespace app {
 
     bool dirExists(const std::string& path);
 
+    void lock() { m_mutex.lock(); }
+    void unlock() { m_mutex.unlock(); }
+
+  private:
+    base::mutex m_mutex;
+  };
+
+  class LockFS {
+  public:
+    LockFS(FileSystemModule* fs) : m_fs(fs) {
+      m_fs->lock();
+    }
+    ~LockFS() {
+      m_fs->unlock();
+    }
+  private:
+    FileSystemModule* m_fs;
   };
 
   class IFileItem {
