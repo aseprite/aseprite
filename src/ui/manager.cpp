@@ -462,6 +462,23 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
+      case she::Event::MouseEnter: {
+        if (!mouse_events_from_she)
+          continue;
+
+        jmouse_set_cursor(kArrowCursor);
+        break;
+      }
+
+      case she::Event::MouseLeave: {
+        if (!mouse_events_from_she)
+          continue;
+
+        jmouse_set_cursor(kNoCursor);
+        setMouse(NULL);
+        break;
+      }
+
       case she::Event::MouseMove: {
         if (!mouse_events_from_she)
           continue;

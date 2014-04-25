@@ -242,11 +242,26 @@ bool jmouse_poll()
     return false;
 }
 
+void _internal_no_mouse_position()
+{
+  moved = true;
+  m_x[1] = -1;
+  m_y[1] = -1;
+  m_x[0] = -1;
+  m_y[0] = -1;
+}
+
 void _internal_set_mouse_position(const gfx::Point& newPos)
 {
   moved = true;
-  m_x[1] = m_x[0];
-  m_y[1] = m_y[0];
+  if (m_x[0] >= 0) {
+    m_x[1] = m_x[0];
+    m_y[1] = m_y[0];
+  }
+  else {
+    m_x[1] = newPos.x;
+    m_y[1] = newPos.y;
+  }
   m_x[0] = newPos.x;
   m_y[0] = newPos.y;
 }
