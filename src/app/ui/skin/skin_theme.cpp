@@ -1236,7 +1236,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       fg = getColor(ThemeColor::MenuItemHighlightText);
       bg = getColor(ThemeColor::MenuItemHighlightFace);
     }
-    else if (widget->hasMouseOver()) {
+    else if (widget->hasMouse()) {
       fg = getColor(ThemeColor::MenuItemHotText);
       bg = getColor(ThemeColor::MenuItemHotFace);
     }
