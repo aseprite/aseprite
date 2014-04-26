@@ -156,8 +156,6 @@ static void save_gui_config();
 
 static bool button_with_icon_msg_proc(Widget* widget, Message* msg);
 
-static void on_palette_change_signal();
-
 // Initializes GUI.
 int init_module_gui()
 {
@@ -212,9 +210,6 @@ int init_module_gui()
 
   // Set graphics options for next time
   save_gui_config();
-
-  // Hook for palette change to regenerate the theme
-  App::instance()->PaletteChange.connect(&on_palette_change_signal);
 
   return 0;
 }
@@ -898,13 +893,6 @@ void CustomizedGuiManager::saveLayout(Widget* widget, const std::string& str)
   std::string widgetId = widget->getId();
 
   set_config_string(("layout:"+rootId).c_str(), widgetId.c_str(), str.c_str());
-}
-
-// Slot for App::PaletteChange to regenerate graphics when the App palette is changed
-static void on_palette_change_signal()
-{
-  // Regenerate the theme
-  CurrentTheme::get()->regenerate();
 }
 
 } // namespace app
