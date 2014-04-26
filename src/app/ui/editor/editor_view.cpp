@@ -107,9 +107,8 @@ void EditorView::setupScrollbars()
       !UIContext::instance()->settings()->getShowSpriteEditorScrollbars())
     hideScrollBars();
   else {
-    // TODO hardcoded scroll bar width should be get from skin.xml file
-    getHorizontalBar()->setBarWidth(6*jguiscale());
-    getVerticalBar()->setBarWidth(6*jguiscale());
+    getHorizontalBar()->setBarWidth(kEditorViewScrollbarWidth*jguiscale());
+    getVerticalBar()->setBarWidth(kEditorViewScrollbarWidth*jguiscale());
 
     setup_mini_look(getHorizontalBar());
     setup_mini_look(getVerticalBar());

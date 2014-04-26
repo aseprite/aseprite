@@ -22,18 +22,19 @@
 
 #include "app/ui/mini_editor.h"
 
-#include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
-#include "app/ui/toolbar.h"
-#include "base/bind.h"
 #include "app/document.h"
-#include "gfx/rect.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "raster/sprite.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/status_bar.h"
+#include "app/ui/toolbar.h"
+#include "base/bind.h"
+#include "gfx/rect.h"
+#include "raster/sprite.h"
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"
@@ -119,15 +120,6 @@ MiniEditorWindow::MiniEditorWindow()
   setAutoRemap(false);
   setWantFocus(false);
 
-  // Default bounds
-  int width = JI_SCREEN_W/4;
-  int height = JI_SCREEN_H/4;
-  setBounds(gfx::Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
-                      JI_SCREEN_H - height - StatusBar::instance()->getBounds().h,
-                      width, height));
-
-  load_window_pos(this, "MiniEditor");
-
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
   m_playButton->Click.connect(Bind<void>(&MiniEditorWindow::onPlayClicked, this));
@@ -139,7 +131,6 @@ MiniEditorWindow::MiniEditorWindow()
 MiniEditorWindow::~MiniEditorWindow()
 {
   set_config_bool("MiniEditor", "Enabled", m_isEnabled);
-  save_window_pos(this, "MiniEditor");
 }
 
 void MiniEditorWindow::setMiniEditorEnabled(bool state)
@@ -147,6 +138,35 @@ void MiniEditorWindow::setMiniEditorEnabled(bool state)
   m_isEnabled = state;
 
   updateUsingEditor(current_editor);
+}
+
+bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case kOpenMessage:
+      {
+        // Default bounds
+        int width = JI_SCREEN_W/4;
+        int height = JI_SCREEN_H/4;
+        int extra = 2*kEditorViewScrollbarWidth*jguiscale();
+        setBounds(
+          gfx::Rect(
+            JI_SCREEN_W - width - ToolBar::instance()->getBounds().w - extra,
+            JI_SCREEN_H - height - StatusBar::instance()->getBounds().h - extra,
+            width, height));
+
+        load_window_pos(this, "MiniEditor");
+      }
+      break;
+
+    case kCloseMessage:
+      save_window_pos(this, "MiniEditor");
+      break;
+
+  }
+
+  return Window::onProcessMessage(msg);
 }
 
 void MiniEditorWindow::onClose(ui::CloseEvent& ev)

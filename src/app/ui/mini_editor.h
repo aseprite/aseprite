@@ -38,6 +38,7 @@ namespace app {
     void updateUsingEditor(Editor* editor);
 
   protected:
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onClose(ui::CloseEvent& ev) OVERRIDE;
 
   private:
