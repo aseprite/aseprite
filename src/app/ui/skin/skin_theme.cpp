@@ -842,6 +842,7 @@ void SkinTheme::initWidget(Widget* widget)
               m_part[PART_SUNKEN_NORMAL_E]->w-1*scale,
               m_part[PART_SUNKEN_NORMAL_S]->h-1*scale);
       widget->child_spacing = 0;
+      widget->setBgColor(getColorById(kWindowFaceColorId));
       break;
 
     case kViewScrollbarWidget:
@@ -1654,7 +1655,7 @@ void SkinTheme::paintView(PaintEvent& ev)
     (widget->hasFocus() ?
       PART_SUNKEN_FOCUSED_NW:
       PART_SUNKEN_NORMAL_NW),
-    getColor(ThemeColor::Background));
+    BGCOLOR);
 }
 
 void SkinTheme::paintViewScrollbar(PaintEvent& ev)
