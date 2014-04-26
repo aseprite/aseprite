@@ -1885,7 +1885,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     Rect textWrap = textrc.createIntersect(
       // TODO add ui::Widget::getPadding() property
       // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
-      widget->getClientBounds());
+      widget->getClientBounds()).inflate(0, 1*jguiscale());
 
     if (IntersectClip clip = IntersectClip(g, textWrap)) {
       if (!widget->isEnabled()) {
