@@ -49,6 +49,7 @@ EditorView::EditorView(EditorView::Type type)
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
   setBorder(gfx::Border(l, t, r, b));
+  setBgColor(ui::rgba(0, 0, 0));
   setupScrollbars();
 
   UIContext::instance()->settings()->addObserver(this);
@@ -84,7 +85,7 @@ void EditorView::onPaint(PaintEvent& ev)
   theme->draw_bounds_nw(g, getClientBounds(),
     selected ? PART_EDITOR_SELECTED_NW:
     PART_EDITOR_NORMAL_NW,
-    ColorNone);
+    getBgColor());
 }
 
 void EditorView::onResize(ResizeEvent& ev)
