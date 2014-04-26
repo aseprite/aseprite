@@ -27,6 +27,8 @@ public:
   ScrollBar* getVerticalBar() { return &m_scrollbar_v; }
 
   void attachToView(Widget* viewableWidget);
+  Widget* attachedWidget();
+
   void hideScrollBars();
   void showScrollBars();
   void makeVisibleAllScrollableArea();

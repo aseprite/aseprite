@@ -49,6 +49,11 @@ void View::attachToView(Widget* viewable_widget)
   m_viewport.addChild(viewable_widget);
 }
 
+Widget* View::attachedWidget()
+{
+  return UI_FIRST_WIDGET(m_viewport.getChildren());
+}
+
 void View::makeVisibleAllScrollableArea()
 {
   Size reqSize = m_viewport.calculateNeededSize();
