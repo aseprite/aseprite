@@ -190,7 +190,20 @@ void MiniEditorWindow::onClose(ui::CloseEvent& ev)
 
 void MiniEditorWindow::onPlayClicked()
 {
-  resetTimer();
+  if (m_playButton->isPlaying()) {
+    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
+    if (miniEditor && miniEditor->getDocument() != NULL)
+      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+    else
+      m_nextFrameTime = -1;
+
+    m_curFrameTick = ji_clock;
+
+    m_playTimer.start();
+  }
+  else {
+    m_playTimer.stop();
+  }
 }
 
 void MiniEditorWindow::updateUsingEditor(Editor* editor)
@@ -234,22 +247,6 @@ void MiniEditorWindow::hideWindow()
     closeWindow(NULL);
 }
 
-void MiniEditorWindow::resetTimer()
-{
-  if (m_playButton->isPlaying()) {
-    m_playTimer.start();
-
-    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
-    if (miniEditor && miniEditor->getDocument() != NULL)
-      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
-    else
-      m_nextFrameTime = -1;
-  }
-  else {
-    m_playTimer.stop();
-  }
-}
-
 void MiniEditorWindow::onPlaybackTick()
 {
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
@@ -257,15 +254,18 @@ void MiniEditorWindow::onPlaybackTick()
     return;
 
   if (m_nextFrameTime >= 0) {
-    m_nextFrameTime -= 10;      // onPlaybackTick()
-    if (m_nextFrameTime <= 0) {
+    m_nextFrameTime -= (ji_clock - m_curFrameTick);
+
+    while (m_nextFrameTime <= 0) {
       FrameNumber frame = miniEditor->getFrame().next();
       if (frame > miniEditor->getSprite()->getLastFrame())
         frame = FrameNumber(0);
       miniEditor->setFrame(frame);
 
-      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+      m_nextFrameTime += miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
     }
+
+    m_curFrameTick = ji_clock;
   }
   invalidate();
 }
