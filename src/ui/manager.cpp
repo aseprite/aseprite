@@ -1128,15 +1128,38 @@ void Manager::onResize(ResizeEvent& ev)
   gfx::Rect new_pos = ev.getBounds();
   setBoundsQuietly(new_pos);
 
-  // Offset for all windows
   int dx = new_pos.x - old_pos.x;
   int dy = new_pos.y - old_pos.y;
+  int dw = new_pos.w - old_pos.w;
+  int dh = new_pos.h - old_pos.h;
 
   UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-    gfx::Rect cpos = child->getBounds();
+    Window* window = static_cast<Window*>(*it);
+    if (window->isDesktop()) {
+      window->setBounds(new_pos);
+      break;
+    }
+
+    gfx::Rect cpos = window->getBounds();
+    int cx = cpos.x+cpos.w/2;
+    int cy = cpos.y+cpos.h/2;
+
+    if (cx > old_pos.x+old_pos.w*3/5) {
+      cpos.x += dw;
+    }
+    else if (cx > old_pos.x+old_pos.w*2/5) {
+      cpos.x += dw / 2;
+    }
+
+    if (cy > old_pos.y+old_pos.h*3/5) {
+      cpos.y += dh;
+    }
+    else if (cy > old_pos.y+old_pos.h*2/5) {
+      cpos.y += dh / 2;
+    }
+
     cpos.offset(dx, dy);
-    child->setBounds(cpos);
+    window->setBounds(cpos);
   }
 }
 
