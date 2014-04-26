@@ -44,7 +44,6 @@ namespace app {
     void onPlayClicked();
     void onPlaybackTick();
     void hideWindow();
-    void resetTimer();
 
     bool m_isEnabled;
     DocumentView* m_docView;
@@ -54,6 +53,7 @@ namespace app {
     // Number of milliseconds to go to the next frame if m_playTimer
     // is activated.
     int m_nextFrameTime;
+    int m_curFrameTick;
   };
 
 } // namespace app
