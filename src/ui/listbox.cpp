@@ -28,6 +28,7 @@ ListBox::ListBox()
   : Widget(kListBoxWidget)
 {
   setFocusStop(true);
+  setDoubleClickeable(true);
   initTheme();
 }
 

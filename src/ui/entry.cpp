@@ -61,7 +61,8 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   setText(buf);
 
-  this->setFocusStop(true);
+  setFocusStop(true);
+  setDoubleClickeable(true);
   initTheme();
 }
 

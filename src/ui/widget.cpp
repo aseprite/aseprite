@@ -277,6 +277,14 @@ void Widget::setFocusMagnet(bool state)
     this->flags &= ~JI_FOCUSMAGNET;
 }
 
+void Widget::setDoubleClickeable(bool state)
+{
+  if (state)
+    this->flags |= JI_DOUBLECLICKABLE;
+  else
+    this->flags &= ~JI_DOUBLECLICKABLE;
+}
+
 bool Widget::isVisible() const
 {
   const Widget* widget = this;
@@ -328,6 +336,11 @@ bool Widget::isFocusStop() const
 bool Widget::isFocusMagnet() const
 {
   return (this->flags & JI_FOCUSMAGNET) ? true: false;
+}
+
+bool Widget::isDoubleClickeable() const
+{
+  return (this->flags & JI_DOUBLECLICKABLE) ? true: false;
 }
 
 // ===============================================================

@@ -10,3 +10,5 @@ Changes:
 * Added resize support for Windows, X11, and Mac OS X ports.
 * Removed code and functions that are not used (Allegro GUI,
   audio, MIDI, joystick, etc.).
+* The HWND class has CS_DBLCLKS enabled (so UI code can detect
+  double-clicks from Windows messages).

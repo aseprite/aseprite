@@ -139,6 +139,10 @@ namespace ui {
     void setFocusMagnet(bool state);
     bool isFocusMagnet() const;
 
+    // True if this widget wants double-clicks.
+    void setDoubleClickeable(bool state);
+    bool isDoubleClickeable() const;
+
     // ===============================================================
     // LOOK & FEEL
     // ===============================================================

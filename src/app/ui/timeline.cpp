@@ -161,6 +161,7 @@ Timeline::Timeline()
   m_context->addObserver(this);
 
   setDoubleBuffered(true);
+  setDoubleClickeable(true);
 }
 
 Timeline::~Timeline()

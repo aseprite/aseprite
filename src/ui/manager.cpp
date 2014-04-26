@@ -300,10 +300,11 @@ void Manager::generateMouseMessages()
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
     MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
+    MouseButtons mouseButtons = (pressed ? currentMouseButtons(0): currentMouseButtons(1));
 
     // The message will include which button was pressed or released.
     // (This doesn't represent all buttons that are currently pushed.)
-    MouseButtons mouseButtons = (MouseButtons)
+    MouseButtons mouseButtonsDelta = (MouseButtons)
       (currentMouseButtons(0) ^ currentMouseButtons(1));
 
     //////////////////////////////////////////////////////////////////////
@@ -341,28 +342,22 @@ void Manager::generateMouseMessages()
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
           double_click_level = DOUBLE_CLICK_NONE;
         }
-        else if (double_click_buttons == mouseButtons) {
-          if (double_click_level == DOUBLE_CLICK_DOWN) {
-            double_click_level = DOUBLE_CLICK_UP;
-            double_click_ticks = current_ticks;
-          }
-        }
-        // Press other button, back to NONE
-        else {
-          double_click_level = DOUBLE_CLICK_NONE;
+        else if (double_click_level == DOUBLE_CLICK_DOWN) {
+          double_click_level = DOUBLE_CLICK_UP;
+          double_click_ticks = current_ticks;
         }
       }
     }
 
     switch (msgType) {
       case kMouseDownMessage:
-        handleMouseDown(mousePos, mouseButtons);
+        handleMouseDown(mousePos, mouseButtonsDelta);
         break;
       case kMouseUpMessage:
-        handleMouseUp(mousePos, mouseButtons);
+        handleMouseUp(mousePos, mouseButtonsDelta);
         break;
       case kDoubleClickMessage:
-        handleMouseDoubleClick(mousePos, mouseButtons);
+        handleMouseDoubleClick(mousePos, mouseButtonsDelta);
         break;
     }
   }
@@ -518,7 +513,7 @@ void Manager::generateMessagesFromSheEvents()
           continue;
 
         MouseButtons clickedButton = mouse_buttons_from_she_to_ui(sheEvent);
-        handleMouseUp(sheEvent.position(), clickedButton);
+        handleMouseDoubleClick(sheEvent.position(), clickedButton);
         break;
       }
 
@@ -583,9 +578,14 @@ void Manager::handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButton
 
 void Manager::handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons)
 {
-  enqueueMessage(newMouseMessage(kDoubleClickMessage,
-      (capture_widget ? capture_widget: mouse_widget),
-      mousePos, mouseButtons));
+  Widget* dst = (capture_widget ? capture_widget: mouse_widget);
+  if (dst && dst->isDoubleClickeable()) {
+    enqueueMessage(newMouseMessage(kDoubleClickMessage,
+        dst, mousePos, mouseButtons));
+  }
+  else {
+    handleMouseDown(mousePos, mouseButtons);
+  }
 }
 
 void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, int delta)
