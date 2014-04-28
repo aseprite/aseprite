@@ -169,6 +169,10 @@ namespace app {
 
     void pasteImage(const Image* image, int x, int y);
 
+    // Used by EditorView to notify changes in the view's scroll
+    // position.
+    void notifyScrollChanged();
+
     // in cursor.cpp
 
     static int get_raw_cursor_color();

@@ -63,8 +63,7 @@ EditorView::~EditorView()
 void EditorView::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
-  Widget* viewport = getViewport();
-  Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
+  Widget* child = attachedWidget();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool selected = false;
 
@@ -94,6 +93,16 @@ void EditorView::onResize(ResizeEvent& ev)
 
   setBoundsQuietly(ev.getBounds());
   updateView();
+}
+
+void EditorView::onScrollChange()
+{
+  View::onScrollChange();
+
+  Editor* editor = static_cast<Editor*>(attachedWidget());
+  ASSERT(editor != NULL);
+  if (editor)
+    editor->notifyScrollChanged();
 }
 
 void EditorView::onSetShowSpriteEditorScrollbars(bool state)

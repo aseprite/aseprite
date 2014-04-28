@@ -39,6 +39,7 @@ namespace app {
   protected:
     void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
+    void onScrollChange() OVERRIDE;
 
     // GlobalSettingsObserver impl
     void onSetShowSpriteEditorScrollbars(bool state) OVERRIDE;
