@@ -291,7 +291,7 @@ void Manager::generateMouseMessages()
   // Mouse wheel
   if (jmouse_z(0) != jmouse_z(1))
     handleMouseWheel(mousePos, currentMouseButtons(0),
-      gfx::Point(0, jmouse_z(0) - jmouse_z(1)));
+      gfx::Point(0, jmouse_z(1) - jmouse_z(0)));
 
   // Mouse clicks
   if (jmouse_b(0) != jmouse_b(1)) {
