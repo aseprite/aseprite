@@ -1218,8 +1218,17 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 void Timeline::drawPaddings(ui::Graphics* g)
 {
   gfx::Rect client = getClientBounds();
-  gfx::Rect lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
-  gfx::Rect lastFrame = getPartBounds(A_PART_CEL, 0, --FrameNumber(m_sprite->getTotalFrames()));
+  gfx::Rect lastLayer;
+  gfx::Rect lastFrame;
+
+  if (!m_layers.empty()) {
+    lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
+    lastFrame = getPartBounds(A_PART_CEL, 0, m_sprite->getLastFrame());
+  }
+  else {
+    lastLayer = getPartBounds(A_PART_HEADER_LAYER);
+    lastFrame = getPartBounds(A_PART_HEADER_FRAME, 0, m_sprite->getLastFrame());
+  }
 
   drawPart(g,
     gfx::Rect(lastFrame.x+lastFrame.w, client.y,
