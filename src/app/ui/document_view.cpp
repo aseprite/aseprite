@@ -64,7 +64,8 @@ public:
   }
 
   void onScrollChanged(Editor* editor) OVERRIDE {
-    App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
+    if (current_editor == this)
+      App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
   void onStateChanged(Editor* editor) OVERRIDE {

@@ -188,6 +188,8 @@ void View::setViewScroll(const Point& pt)
   m_scrollbar_v.setPos(newScroll.y);
 
   m_viewport.layout();
+
+  onScrollChange();
 }
 
 void View::updateView()
@@ -271,6 +273,11 @@ void View::onPreferredSize(PreferredSizeEvent& ev)
 void View::onPaint(PaintEvent& ev)
 {
   getTheme()->paintView(ev);
+}
+
+void View::onScrollChange()
+{
+  // Do nothing
 }
 
 } // namespace ui

@@ -59,6 +59,8 @@ protected:
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
 
+  virtual void onScrollChange();
+
 private:
   bool m_hasBars;
   Viewport m_viewport;

@@ -324,9 +324,6 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 
   if (thick)
     editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
-
-  // Notify observers
-  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateEditor()
@@ -869,9 +866,6 @@ void Editor::centerInSpritePoint(int x, int y)
 
   showDrawingCursor();
   invalidate();
-
-  // Notify observers
-  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateStatusBar()
@@ -1164,9 +1158,6 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
 
     updateEditor();
     setEditorScroll(x, y, use_refresh_region);
-
-    // Notify observers
-    m_observers.notifyScrollChanged(this);
   }
   showDrawingCursor();
 }
@@ -1223,6 +1214,11 @@ void Editor::pasteImage(const Image* image, int x, int y)
   pixelsMovement->maskImage(image, x, y);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
+}
+
+void Editor::notifyScrollChanged()
+{
+  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::onSetTiledMode(filters::TiledMode mode)
