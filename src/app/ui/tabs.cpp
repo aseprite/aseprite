@@ -286,14 +286,15 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseWheelMessage: {
-      int dx = -static_cast<MouseMessage*>(msg)->wheelDelta() * getBounds().w/6;
-      // setScrollX(m_scrollX+dx);
+      int dz =
+        (static_cast<MouseMessage*>(msg)->wheelDelta().x -
+         static_cast<MouseMessage*>(msg)->wheelDelta().y) * getBounds().w/6;
 
       m_begScrollX = m_scrollX;
       if (m_ani != ANI_SMOOTH_SCROLL)
-        m_endScrollX = m_scrollX + dx;
+        m_endScrollX = m_scrollX + dz;
       else
-        m_endScrollX += dx;
+        m_endScrollX += dz;
 
       // Limit endScrollX position (to improve animation ending to the correct position)
       {

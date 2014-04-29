@@ -28,6 +28,10 @@
   #else
     typedef FARPROC wndproc_t;
   #endif
+
+  #ifndef WM_MOUSEHWHEEL
+    #define WM_MOUSEHWHEEL 0x020E
+  #endif
 #endif
 
 #ifdef WIN32
@@ -297,7 +301,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       break;
     }
 
-    case WM_MOUSEWHEEL: {
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL: {
       RECT rc;
       ::GetWindowRect(hwnd, &rc);
 
@@ -307,7 +312,66 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             GET_X_LPARAM(lparam),
             GET_Y_LPARAM(lparam)) - gfx::Point(rc.left, rc.top))
         / display_scale);
-      ev.setDelta(((short)HIWORD(wparam)) / WHEEL_DELTA);
+
+      int z = ((short)HIWORD(wparam)) / WHEEL_DELTA;
+      gfx::Point delta(
+        (msg == WM_MOUSEHWHEEL ? z: 0),
+        (msg == WM_MOUSEWHEEL ? -z: 0));
+      ev.setWheelDelta(delta);
+
+      //PRINTF("WHEEL: %d %d\n", delta.x, delta.y);
+
+      queue_event(ev);
+      break;
+    }
+
+    case WM_HSCROLL:
+    case WM_VSCROLL: {
+      RECT rc;
+      ::GetWindowRect(hwnd, &rc);
+
+      POINT pos;
+      ::GetCursorPos(&pos);
+
+      Event ev;
+      ev.setType(Event::MouseWheel);
+      ev.setPosition((gfx::Point(pos.x, pos.y) - gfx::Point(rc.left, rc.top))
+        / display_scale);
+
+      int bar = (msg == WM_HSCROLL ? SB_HORZ: SB_VERT);
+      int z = GetScrollPos(hwnd, bar);
+
+      switch (LOWORD(wparam)) {
+        case SB_LEFT:
+        case SB_LINELEFT:
+          --z;
+          break;
+        case SB_PAGELEFT:
+          z -= 2;
+          break;
+        case SB_RIGHT:
+        case SB_LINERIGHT:
+          ++z;
+          break;
+        case SB_PAGERIGHT:
+          z += 2;
+          break;
+        case SB_THUMBPOSITION:
+        case SB_THUMBTRACK:
+        case SB_ENDSCROLL:
+          // Do nothing
+          break;
+      }
+
+      gfx::Point delta(
+        (msg == WM_HSCROLL ? (z-50): 0),
+        (msg == WM_VSCROLL ? (z-50): 0));
+      ev.setWheelDelta(delta);
+
+      //PRINTF("SCROLL: %d %d\n", delta.x, delta.y);
+
+      SetScrollPos(hwnd, bar, 50, FALSE);
+
       queue_event(ev);
       break;
     }
@@ -318,9 +382,17 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 void subclass_hwnd(HWND hwnd)
 {
-  // Add the WS_EX_ACCEPTFILES
-  SetWindowLong(hwnd, GWL_EXSTYLE,
-    GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+  SetWindowLong(hwnd, GWL_STYLE, GetWindowLong(hwnd, GWL_STYLE) | WS_HSCROLL | WS_VSCROLL);
+  SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) | WS_EX_ACCEPTFILES);
+
+  SCROLLINFO si;
+  si.cbSize = sizeof(SCROLLINFO);
+  si.fMask = SIF_POS | SIF_RANGE;
+  si.nMin = 0;
+  si.nPos = 50;
+  si.nMax = 100;
+  SetScrollInfo(hwnd, SB_HORZ, &si, FALSE);
+  SetScrollInfo(hwnd, SB_VERT, &si, FALSE);
 
   base_wndproc = (wndproc_t)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)wndproc);
 }

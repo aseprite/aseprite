@@ -268,14 +268,6 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-bool MovingPixelsState::onMouseWheel(Editor* editor, MouseMessage* msg)
-{
-  ASSERT(m_pixelsMovement != NULL);
-
-  // Use StandbyState implementation
-  return StandbyState::onMouseWheel(editor, msg);
-}
-
 bool MovingPixelsState::onSetCursor(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
