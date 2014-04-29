@@ -740,9 +740,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = -static_cast<MouseMessage*>(msg)->wheelDelta();
+        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y;
         int dx = 0;
         int dy = 0;
+
+        dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
         if (msg->ctrlPressed())
           dx = dz * FRMSIZE;
