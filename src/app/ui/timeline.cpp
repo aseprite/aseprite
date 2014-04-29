@@ -1000,6 +1000,9 @@ void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_la
   *first_layer = MID(0, *first_layer, (int)m_layers.size()-1);
   *last_layer = *first_layer + (getClientBounds().h - HDRSIZE) / LAYSIZE;
   *last_layer = MID(0, *last_layer, (int)m_layers.size()-1);
+
+  if (m_layers.empty())
+    *last_layer = -1;
 }
 
 void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
