@@ -1,9 +1,8 @@
-# Before release
+# Hard to reproduce bugs
 
-* timeline: move a layer to the same place -> crash
-* timeline: select all layers and remove -> crash
-* timeline: move cel with right click -> crash
-* fix animation playback (the duration is not used correctly)
+* toolbar crashes
+* click desktop bug
+* fix trace when we touch borders
 
 # Tasks
 
