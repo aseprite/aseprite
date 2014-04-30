@@ -115,7 +115,7 @@ void Graphics::fillAreaBetweenRects(ui::Color color,
   const gfx::Rect& outer, const gfx::Rect& inner)
 {
   if (!outer.intersects(inner))
-    fillRect(color, inner);
+    fillRect(color, outer);
   else {
     gfx::Region rgn(outer);
     rgn.createSubtraction(rgn, gfx::Region(inner));
