@@ -277,14 +277,6 @@ void Widget::setFocusMagnet(bool state)
     this->flags &= ~JI_FOCUSMAGNET;
 }
 
-void Widget::setDoubleClickeable(bool state)
-{
-  if (state)
-    this->flags |= JI_DOUBLECLICKABLE;
-  else
-    this->flags &= ~JI_DOUBLECLICKABLE;
-}
-
 bool Widget::isVisible() const
 {
   const Widget* widget = this;
@@ -336,11 +328,6 @@ bool Widget::isFocusStop() const
 bool Widget::isFocusMagnet() const
 {
   return (this->flags & JI_FOCUSMAGNET) ? true: false;
-}
-
-bool Widget::isDoubleClickeable() const
-{
-  return (this->flags & JI_DOUBLECLICKABLE) ? true: false;
 }
 
 // ===============================================================
@@ -1330,9 +1317,21 @@ bool Widget::onProcessMessage(Message* msg)
       else
         break;
 
+    case kDoubleClickMessage:
+      // Convert double clicks into mouse down
+      if (kMouseDownMessage) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        MouseMessage mouseMsg2(kMouseDownMessage,
+          mouseMsg->buttons(),
+          mouseMsg->position(),
+          mouseMsg->wheelDelta());
+
+        sendMessage(&mouseMsg2);
+      }
+      break;
+
     case kMouseDownMessage:
     case kMouseUpMessage:
-    case kDoubleClickMessage:
     case kMouseMoveMessage:
     case kMouseWheelMessage:
       // Propagate the message to the parent.

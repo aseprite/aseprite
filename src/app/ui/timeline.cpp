@@ -163,7 +163,6 @@ Timeline::Timeline()
   m_context->addObserver(this);
 
   setDoubleBuffered(true);
-  setDoubleClickeable(true);
 }
 
 Timeline::~Timeline()
@@ -705,7 +704,7 @@ bool Timeline::onProcessMessage(Message* msg)
             ->getCommandByName(CommandId::LayerProperties);
 
           UIContext::instance()->executeCommand(command);
-          break;
+          return true;
         }
 
         case A_PART_HEADER_FRAME: {
@@ -715,7 +714,7 @@ bool Timeline::onProcessMessage(Message* msg)
           params.set("frame", "current");
 
           UIContext::instance()->executeCommand(command, &params);
-          break;
+          return true;
         }
 
         case A_PART_CEL: {
@@ -723,7 +722,7 @@ bool Timeline::onProcessMessage(Message* msg)
             ->getCommandByName(CommandId::CelProperties);
 
           UIContext::instance()->executeCommand(command);
-          break;
+          return true;
         }
 
       }

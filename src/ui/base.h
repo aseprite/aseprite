@@ -58,7 +58,6 @@ namespace ui {
 #define JI_INITIALIZED  0x0400 // The widget was already initialized by a theme.
 #define JI_DIRTY        0x0800 // The widget (or one child) is dirty (update_region != empty).
 #define JI_HASTEXT      0x1000 // The widget has text (at least setText() was called one time).
-#define JI_DOUBLECLICKABLE 0x2000 // The widget accepts double-clicks
 
   class GuiSystem {
   public:
