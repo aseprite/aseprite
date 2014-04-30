@@ -580,12 +580,9 @@ void Manager::handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButton
 void Manager::handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons)
 {
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
-  if (dst && dst->isDoubleClickeable()) {
+  if (dst) {
     enqueueMessage(newMouseMessage(kDoubleClickMessage,
         dst, mousePos, mouseButtons));
-  }
-  else {
-    handleMouseDown(mousePos, mouseButtons);
   }
 }
 

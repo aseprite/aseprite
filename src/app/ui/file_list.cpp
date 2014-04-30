@@ -45,7 +45,6 @@ FileList::FileList()
 {
   setFocusStop(true);
   setDoubleBuffered(true);
-  setDoubleClickeable(true);
 
   m_currentFolder = FileSystemModule::instance()->getRootFileItem();
   m_req_valid = false;

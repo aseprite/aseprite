@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -151,6 +151,10 @@ namespace app {
     void onLayerChanged(Editor* editor) OVERRIDE;
 
   private:
+    bool allLayersVisible();
+    bool allLayersInvisible();
+    bool allLayersLocked();
+    bool allLayersUnlocked();
     void detachDocument();
     void setCursor(int x, int y);
     void getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer);

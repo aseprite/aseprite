@@ -62,7 +62,6 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   setText(buf);
 
   setFocusStop(true);
-  setDoubleClickeable(true);
   initTheme();
 }
 
