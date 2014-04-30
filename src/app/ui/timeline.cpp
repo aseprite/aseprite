@@ -584,6 +584,9 @@ bool Timeline::onProcessMessage(Message* msg)
             bool newReadableState = !allLayersVisible();
             for (size_t i=0; i<m_layers.size(); i++)
               m_layers[i]->setReadable(newReadableState);
+
+            // Redraw all views.
+            m_document->notifyGeneralUpdate();
             break;
           }
 
