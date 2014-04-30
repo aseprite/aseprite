@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,6 +111,8 @@ static const char* kTimelineActiveColor = "timeline_active";
 enum {
   A_PART_NOTHING,
   A_PART_SEPARATOR,
+  A_PART_HEADER_EYE,
+  A_PART_HEADER_PADLOCK,
   A_PART_HEADER_GEAR,
   A_PART_HEADER_ONIONSKIN,
   A_PART_HEADER_ONIONSKIN_RANGE_LEFT,
@@ -458,7 +460,11 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       // Is the mouse on the headers?
       else if (mousePos.y < HDRSIZE) {
-        if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
+        if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
+          hot_part = A_PART_HEADER_EYE;
+        else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
+          hot_part = A_PART_HEADER_PADLOCK;
+        else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
           hot_part = A_PART_HEADER_GEAR;
         else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
           hot_part = A_PART_HEADER_ONIONSKIN;
@@ -568,15 +574,31 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         switch (m_hot_part) {
+
           case A_PART_NOTHING:
-            // Do nothing.
-            break;
           case A_PART_SEPARATOR:
+          case A_PART_HEADER_LAYER:
             // Do nothing.
             break;
+
+          case A_PART_HEADER_EYE: {
+            bool newReadableState = !allLayersVisible();
+            for (size_t i=0; i<m_layers.size(); i++)
+              m_layers[i]->setReadable(newReadableState);
+            break;
+          }
+
+          case A_PART_HEADER_PADLOCK: {
+            bool newWritableState = !allLayersUnlocked();
+            for (size_t i=0; i<m_layers.size(); i++)
+              m_layers[i]->setWritable(newWritableState);
+            break;
+          }
+
           case A_PART_HEADER_GEAR:
-            // Do nothing.
+            // TODO show timeline/onionskin configuration
             break;
+
           case A_PART_HEADER_ONIONSKIN: {
             ISettings* m_settings = UIContext::instance()->getSettings();
             IDocumentSettings* docSettings =
@@ -585,9 +607,6 @@ bool Timeline::onProcessMessage(Message* msg)
               docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
             break;
           }
-          case A_PART_HEADER_LAYER:
-            // Do nothing.
-            break;
           case A_PART_HEADER_FRAME:
             // Show the frame pop-up menu.
             if (mouseMsg->right()) {
@@ -1034,6 +1053,22 @@ void Timeline::drawHeader(ui::Graphics* g)
 {
   ISettings* m_settings = UIContext::instance()->getSettings();
   IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  bool allInvisible = allLayersInvisible();
+  bool allLocked = allLayersLocked();
+
+  drawPart(g, getPartBounds(A_PART_HEADER_EYE),
+    NULL,
+    allInvisible ? m_timelineClosedEyeStyle: m_timelineOpenEyeStyle,
+    m_clk_part == A_PART_HEADER_EYE,
+    m_hot_part == A_PART_HEADER_EYE,
+    m_clk_part == A_PART_HEADER_EYE);
+
+  drawPart(g, getPartBounds(A_PART_HEADER_PADLOCK),
+    NULL,
+    allLocked ? m_timelineClosedPadlockStyle: m_timelineOpenPadlockStyle,
+    m_clk_part == A_PART_HEADER_PADLOCK,
+    m_hot_part == A_PART_HEADER_PADLOCK,
+    m_clk_part == A_PART_HEADER_PADLOCK);
 
   drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
     NULL, m_timelineGearStyle,
@@ -1309,18 +1344,20 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
                        m_separator_x + m_separator_w,
                        bounds.h);
 
+    case A_PART_HEADER_EYE:
+      return gfx::Rect(FRMSIZE*0, 0, FRMSIZE, HDRSIZE);
+
+    case A_PART_HEADER_PADLOCK:
+      return gfx::Rect(FRMSIZE*1, 0, FRMSIZE, HDRSIZE);
+
     case A_PART_HEADER_GEAR:
-      return gfx::Rect(0, 0,
-                       FRMSIZE,
-                       HDRSIZE);
+      return gfx::Rect(FRMSIZE*2, 0, FRMSIZE, HDRSIZE);
 
     case A_PART_HEADER_ONIONSKIN:
-      return gfx::Rect(FRMSIZE, 0,
-                       FRMSIZE,
-                       HDRSIZE);
+      return gfx::Rect(FRMSIZE*3, 0, FRMSIZE, HDRSIZE);
 
     case A_PART_HEADER_LAYER:
-      return gfx::Rect(FRMSIZE*2, 0,
+      return gfx::Rect(FRMSIZE*4, 0,
                        m_separator_x - FRMSIZE*2,
                        HDRSIZE);
 
@@ -1610,6 +1647,42 @@ void Timeline::setScroll(int x, int y)
   m_scroll_y = MID(0, y, max_scroll_y);
 
   invalidate();
+}
+
+bool Timeline::allLayersVisible()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (!m_layers[i]->isReadable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersInvisible()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (m_layers[i]->isReadable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersLocked()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (m_layers[i]->isWritable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersUnlocked()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (!m_layers[i]->isWritable())
+      return false;
+
+  return true;
 }
 
 int Timeline::getLayerIndex(const Layer* layer) const
