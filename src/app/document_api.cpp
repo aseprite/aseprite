@@ -551,6 +551,21 @@ void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelPositionChanged, ev);
 }
 
+void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
+{
+  ASSERT(cel);
+
+  if (undoEnabled())
+    m_undoers->pushUndoer(new undoers::SetCelOpacity(getObjects(), cel));
+
+  cel->setOpacity(newOpacity);
+
+  DocumentEvent ev(m_document);
+  ev.sprite(sprite);
+  ev.cel(cel);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelOpacityChanged, ev);
+}
+
 void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor)
 {
   Image* cel_image = sprite->getStock()->getImage(cel->getImage());

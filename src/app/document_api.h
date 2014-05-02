@@ -79,6 +79,7 @@ namespace app {
     void addCel(LayerImage* layer, Cel* cel);
     void removeCel(LayerImage* layer, Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
+    void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
     void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
     void moveCel(Sprite* sprite,
       LayerImage* srcLayer, LayerImage* dstLayer,
