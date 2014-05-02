@@ -167,7 +167,7 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box);
-  box.w = 64;
+  box.w = 64*jguiscale();
 
   ev.setPreferredSize(box.w + border_width.l + border_width.r,
                       box.h + border_width.t + border_width.b);
