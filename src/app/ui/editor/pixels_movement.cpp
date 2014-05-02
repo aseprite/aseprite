@@ -569,16 +569,14 @@ gfx::Size PixelsMovement::getInitialImageSize() const
 
 void PixelsMovement::setMaskColor(uint32_t mask_color)
 {
-  {
-    ContextWriter writer(m_reader);
-    Image* extraImage = m_document->getExtraCelImage();
+  ContextWriter writer(m_reader);
+  Image* extraImage = m_document->getExtraCelImage();
 
-    ASSERT(extraImage != NULL);
+  ASSERT(extraImage != NULL);
 
-    extraImage->setMaskColor(mask_color);
-    redrawExtraImage();
-    update_screen_for_document(m_document);
-  }
+  extraImage->setMaskColor(mask_color);
+  redrawExtraImage();
+  update_screen_for_document(m_document);
 }
 
 

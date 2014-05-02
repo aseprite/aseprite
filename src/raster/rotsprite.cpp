@@ -168,7 +168,7 @@ void image_rotsprite(Image* bmp, Image* spr,
                      int x1, int y1, int x2, int y2,
                      int x3, int y3, int x4, int y4)
 {
-  static ImageBufferPtr buf1, buf2, buf3;
+  static ImageBufferPtr buf1, buf2, buf3; // TODO non-thread safe
 
   if (!buf1) buf1.reset(new ImageBuffer(1));
   if (!buf2) buf2.reset(new ImageBuffer(1));
@@ -179,12 +179,18 @@ void image_rotsprite(Image* bmp, Image* spr,
   base::UniquePtr<Image> tmp_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf2));
   base::UniquePtr<Image> spr_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf3));
 
-  bmp_copy->clear(0);
-  spr_copy->clear(0);
+  color_t maskColor = bmp->getMaskColor();
+
+  bmp_copy->setMaskColor(maskColor);
+  tmp_copy->setMaskColor(maskColor);
+  spr_copy->setMaskColor(maskColor);
+
+  bmp_copy->clear(maskColor);
+  spr_copy->clear(maskColor);
   spr_copy->copy(spr, 0, 0);
 
   for (int i=0; i<3; ++i) {
-    tmp_copy->clear(0);
+    tmp_copy->clear(maskColor);
     image_scale2x(tmp_copy, spr_copy, spr->getWidth()*(1<<i), spr->getHeight()*(1<<i));
     spr_copy->copy(tmp_copy, 0, 0);
   }
