@@ -371,9 +371,10 @@ bool Timeline::onProcessMessage(Message* msg)
           // Change the scroll to show the new selected cel.
           showCel(m_clk_layer, m_frame);
 
-          m_state = STATE_SELECTING_CELS;
-          if (selectCel)
+          if (selectCel) {
+            m_state = STATE_SELECTING_CELS;
             m_range.startRange(m_clk_layer, m_clk_frame, Range::kCels);
+          }
           invalidate();
           break;
         }
