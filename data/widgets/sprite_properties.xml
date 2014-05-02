@@ -19,7 +19,8 @@
         <label text="" id="frames" />
 
         <label text="Transparent Color:" />
-        <box horizontal="true" id="box_transparent" tooltip="Palette entry used as transparent color in each layer (only for indexed images)." />
+        <box horizontal="true" id="box_transparent"
+             tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
       </grid>
     </box>
     <separator horizontal="true" />
