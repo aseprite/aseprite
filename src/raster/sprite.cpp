@@ -347,9 +347,22 @@ Stock* Sprite::getStock() const
   return m_stock;
 }
 
-void Sprite::getCels(CelList& cels)
+void Sprite::getCels(CelList& cels) const
 {
   getFolder()->getCels(cels);
+}
+
+size_t Sprite::getImageRefs(int imageIndex) const
+{
+  CelList cels;
+  getCels(cels);
+
+  size_t refs = 0;
+  for (CelList::iterator it=cels.begin(), end=cels.end(); it != end; ++it)
+    if ((*it)->getImage() == imageIndex)
+      ++refs;
+
+  return refs;
 }
 
 void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping)

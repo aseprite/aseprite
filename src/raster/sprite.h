@@ -120,7 +120,10 @@ namespace raster {
 
     Stock* getStock() const;
 
-    void getCels(CelList& cels);
+    void getCels(CelList& cels) const;
+
+    // Returns the how many cels are referencing the given imageIndex.
+    size_t getImageRefs(int imageIndex) const;
 
     void remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping);
 

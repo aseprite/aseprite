@@ -498,20 +498,13 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
   ev.cel(cel);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
 
-  // Find if the image that use the cel to remove, is used by another
-  // cels.
-  bool used = false;
-  for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
-    Cel* it = layer->getCel(frame);
-    if (it && it != cel && it->getImage() == cel->getImage()) {
-      used = true;
-      break;
-    }
-  }
+  // Find if the image that use this cel we are going to remove, is
+  // used by other cels.
+  size_t refs = sprite->getImageRefs(cel->getImage());
 
   // If the image is only used by this cel, we can remove the image
   // from the stock.
-  if (!used)
+  if (refs == 1)
     removeImageFromStock(sprite, cel->getImage());
 
   if (undoEnabled())
@@ -583,16 +576,17 @@ void DocumentApi::moveCel(Sprite* sprite,
   ASSERT(srcFrame >= 0 && srcFrame < sprite->getTotalFrames());
   ASSERT(dstFrame >= 0 && dstFrame < sprite->getTotalFrames());
 
+  // Background to any other layer, we use copyCel() instead.
   if (srcLayer->isBackground()) {
     copyCel(sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor);
     return;
   }
-
-  Cel* srcCel = srcLayer->getCel(srcFrame);
-  Cel* dstCel = dstLayer->getCel(dstFrame);
+  // In this we copy from a transparent layer to another layer...
 
   // Remove the dstCel (if it exists) because it must be replaced with
   // srcCel.
+  Cel* srcCel = srcLayer->getCel(srcFrame);
+  Cel* dstCel = dstLayer->getCel(dstFrame);
   if ((dstCel != NULL) && (!dstLayer->isBackground() || srcCel != NULL))
     removeCel(dstLayer, dstCel);
 
@@ -603,17 +597,14 @@ void DocumentApi::moveCel(Sprite* sprite,
     }
     // Move the cel between different layers.
     else {
-      if (undoEnabled())
-        m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(), srcLayer, srcCel));
-      srcLayer->removeCel(srcCel);
-
-      srcCel->setFrame(dstFrame);
+      Cel* newCel = new Cel(*srcCel);
+      newCel->setFrame(dstFrame);
 
       // If we are moving a cel from a transparent layer to the
       // background layer, we have to clear the background of the
       // image.
-      if (!srcLayer->isBackground() &&
-          dstLayer->isBackground()) {
+      ASSERT(!srcLayer->isBackground());
+      if (dstLayer->isBackground()) {
         Image* srcImage = sprite->getStock()->getImage(srcCel->getImage());
         Image* dstImage = crop_image(srcImage,
           -srcCel->getX(),
@@ -621,24 +612,17 @@ void DocumentApi::moveCel(Sprite* sprite,
           sprite->getWidth(),
           sprite->getHeight(), 0);
 
-        if (undoEnabled()) {
-          m_undoers->pushUndoer(new undoers::ReplaceImage(getObjects(),
-              sprite->getStock(), srcCel->getImage()));
-          m_undoers->pushUndoer(new undoers::SetCelPosition(getObjects(), srcCel));
-          m_undoers->pushUndoer(new undoers::SetCelOpacity(getObjects(), srcCel));
-        }
-
         clear_image(dstImage, bgcolor);
         composite_image(dstImage, srcImage, srcCel->getX(), srcCel->getY(), 255, BLEND_MODE_NORMAL);
 
-        srcCel->setPosition(0, 0);
-        srcCel->setOpacity(255);
-
-        sprite->getStock()->replaceImage(srcCel->getImage(), dstImage);
-        delete srcImage;
+        newCel->setPosition(0, 0);
+        newCel->setOpacity(255);
+        newCel->setImage(addImageInStock(sprite, dstImage));
       }
 
-      addCel(dstLayer, srcCel);
+      // Add and the remove, so the Stock's image is reused.
+      addCel(dstLayer, newCel);
+      removeCel(srcLayer, srcCel);
     }
   }
 

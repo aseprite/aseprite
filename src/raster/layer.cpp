@@ -137,10 +137,10 @@ void LayerImage::destroyAllCels()
   m_cels.clear();
 }
 
-void LayerImage::getCels(CelList& cels)
+void LayerImage::getCels(CelList& cels) const
 {
-  CelIterator it = getCelBegin();
-  CelIterator end = getCelEnd();
+  CelConstIterator it = getCelBegin();
+  CelConstIterator end = getCelEnd();
 
   for (; it != end; ++it)
     cels.push_back(*it);
@@ -259,10 +259,10 @@ int LayerFolder::getMemSize() const
   return size;
 }
 
-void LayerFolder::getCels(CelList& cels)
+void LayerFolder::getCels(CelList& cels) const
 {
-  LayerIterator it = getLayerBegin();
-  LayerIterator end = getLayerEnd();
+  LayerConstIterator it = getLayerBegin();
+  LayerConstIterator end = getLayerEnd();
 
   for (; it != end; ++it)
     (*it)->getCels(cels);
