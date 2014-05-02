@@ -2,33 +2,29 @@
 <!-- Copyright (C) 2001-2013 by David Capello -->
 <gui>
 <window text="Sprite Properties" id="sprite_properties">
-  <box vertical="true">
-    <box horizontal="true">
-      <grid columns="2" expansive="true">
+  <vbox>
+    <grid columns="2">
+      <label text="File name:" />
+      <entry text="" id="name" maxsize="256" minwidth="64" readonly="true" cell_align="horizontal" />
 
-        <label text="File name:" />
-        <entry text="" id="name" maxsize="256" minwidth="64" readonly="true" cell_align="horizontal" />
+      <label text="Type:" />
+      <label text="" id="type" />
 
-        <label text="Type:" />
-        <label text="" id="type" />
+      <label text="Size:" />
+      <label text="" id="size" />
 
-        <label text="Size:" />
-        <label text="" id="size" />
+      <label text="Frames:" />
+      <label text="" id="frames" />
 
-        <label text="Frames:" />
-        <label text="" id="frames" />
-
-        <label text="Transparent Color:" />
-        <box horizontal="true" id="box_transparent"
-             tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
-      </grid>
-    </box>
+      <label text="Transparent Color:" />
+      <hbox id="box_transparent" tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
+    </grid>
     <separator horizontal="true" />
-    <box horizontal="true">
-      <box horizontal="true" expansive="true" />
+    <hbox>
+      <boxfiller />
       <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
       <button text="&amp;Cancel" closewindow="true" id="cancel" width="60" />
-    </box>
-  </box>
+    </hbox>
+  </vbox>
 </window>
 </gui>
