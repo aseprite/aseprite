@@ -278,7 +278,7 @@ public:
 template<class Traits, class Delegate>
 static void ase_parallelogram_map(
   Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
-  int sub_pixel_accuracy, Delegate& delegate = Delegate())
+  int sub_pixel_accuracy, Delegate delegate = Delegate())
 {
   /* Index in xs[] and ys[] to topmost point. */
   int top_index;
