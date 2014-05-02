@@ -23,10 +23,12 @@
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/document_api.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
+#include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
 #include "raster/image.h"
@@ -148,8 +150,11 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // property in the sprite.
       int index = color_button->getColor().getIndex();
       if (index != sprite->getTransparentColor()) {
-        // TODO Add undo handling
-        sprite->setTransparentColor(color_button->getColor().getIndex());
+        UndoTransaction undoTransaction(writer.context(), "Set Transparent Color");
+        DocumentApi api = writer.document()->getApi();
+        api.setSpriteTransparentColor(sprite, index);
+        undoTransaction.commit();
+
         update_screen_for_document(writer.document());
       }
     }

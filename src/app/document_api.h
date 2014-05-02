@@ -62,6 +62,7 @@ namespace app {
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
+    void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor);
     void trimSprite(Sprite* sprite, color_t bgcolor);
     void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method);

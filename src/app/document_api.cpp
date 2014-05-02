@@ -55,6 +55,7 @@
 #include "app/undoers/set_palette_colors.h"
 #include "app/undoers/set_sprite_pixel_format.h"
 #include "app/undoers/set_sprite_size.h"
+#include "app/undoers/set_sprite_transparent_color.h"
 #include "app/undoers/set_stock_pixel_format.h"
 #include "app/undoers/set_total_frames.h"
 #include "base/unique_ptr.h"
@@ -98,6 +99,18 @@ void DocumentApi::setSpriteSize(Sprite* sprite, int w, int h)
   DocumentEvent ev(m_document);
   ev.sprite(sprite);
   m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteSizeChanged, ev);
+}
+
+void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
+{
+  if (undoEnabled())
+    m_undoers->pushUndoer(new undoers::SetSpriteTransparentColor(getObjects(), sprite));
+
+  sprite->setTransparentColor(maskColor);
+
+  DocumentEvent ev(m_document);
+  ev.sprite(sprite);
+  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteTransparentColorChanged, ev);
 }
 
 void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor)
