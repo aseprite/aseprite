@@ -239,7 +239,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
 
-      widget = new Entry(ustrtol(maxsize, NULL, 10),
+      widget = new Entry(strtol(maxsize, NULL, 10),
                          text ? TRANSLATE_ATTR(text): "");
 
       if (readonly)
@@ -257,7 +257,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
     if (columns != NULL) {
-      widget = new Grid(ustrtol(columns, NULL, 10),
+      widget = new Grid(strtol(columns, NULL, 10),
                         same_width_columns);
     }
   }
@@ -314,7 +314,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const char *looklike = elem->Attribute("looklike");
 
     text = (text ? TRANSLATE_ATTR(text): "");
-    int radio_group = (group ? ustrtol(group, NULL, 10): 1);
+    int radio_group = (group ? strtol(group, NULL, 10): 1);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
       widget = new RadioButton(text, radio_group, kButtonWidget);
@@ -357,8 +357,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
-    int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
-    int max_value = max != NULL ? ustrtol(max, NULL, 10): 0;
+    int min_value = min != NULL ? strtol(min, NULL, 10): 0;
+    int max_value = max != NULL ? strtol(max, NULL, 10): 0;
 
     widget = new Slider(min_value, max_value, min_value);
   }
@@ -476,8 +476,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
           const char* cell_hspan = childElem->Attribute("cell_hspan");
           const char* cell_vspan = childElem->Attribute("cell_vspan");
           const char* cell_align = childElem->Attribute("cell_align");
-          int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
-          int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
+          int hspan = cell_hspan ? strtol(cell_hspan, NULL, 10): 1;
+          int vspan = cell_vspan ? strtol(cell_vspan, NULL, 10): 1;
           int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
           Grid* grid = dynamic_cast<Grid*>(widget);
           ASSERT(grid != NULL);
