@@ -204,6 +204,7 @@ void RotateCanvasCommand::onExecute(Context* context)
   {
     RotateCanvasJob job(reader, m_angle);
     job.startJob();
+    job.waitJob();
   }
   reader.document()->generateMaskBoundaries();
   update_screen_for_document(reader.document());

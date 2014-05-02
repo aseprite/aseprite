@@ -41,6 +41,8 @@ namespace app {
     // monitoring the progress with onMonitorTick() event.
     void startJob();
 
+    void waitJob();
+
     // The onJob() can use this function to report progress of the
     // background job being done. 1.0 is completed.
     void jobProgress(double f);

@@ -210,6 +210,11 @@ void Document::markAsSaved()
   m_associated_to_file = true;
 }
 
+void Document::impossibleToBackToSavedState()
+{
+  m_undo->impossibleToBackToSavedState();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 

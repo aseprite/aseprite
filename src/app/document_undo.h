@@ -55,6 +55,7 @@ namespace app {
 
     bool isSavedState() const;
     void markSavedState();
+    void impossibleToBackToSavedState();
 
     // UndoHistoryDelegate implementation.
     undo::ObjectsContainer* getObjects() const OVERRIDE { return m_objects; }

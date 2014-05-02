@@ -321,25 +321,25 @@ bool AseFormat::onSave(FileOp* fop)
     // Frame duration
     frame_header.duration = sprite->getFrameDuration(frame);
 
-    /* the sprite is indexed and the palette changes? (or is the first frame) */
+    // The sprite is indexed and the palette changes? (or is the first frame)
     if (sprite->getPixelFormat() == IMAGE_INDEXED &&
         (frame == 0 ||
          sprite->getPalette(frame.previous())->countDiff(sprite->getPalette(frame), NULL, NULL) > 0)) {
-      /* write the color chunk */
+      // Write the color chunk
       ase_file_write_color2_chunk(f, &frame_header, sprite->getPalette(frame));
     }
 
-    /* write extra chunks in the first frame */
+    // Write extra chunks in the first frame
     if (frame == 0) {
       LayerIterator it = sprite->getFolder()->getLayerBegin();
       LayerIterator end = sprite->getFolder()->getLayerEnd();
 
-      /* write layer chunks */
+      // Write layer chunks
       for (; it != end; ++it)
         ase_file_write_layers(f, &frame_header, *it);
     }
 
-    /* write cel chunks */
+    // Write cel chunks
     ase_file_write_cels(f, &frame_header, sprite, sprite->getFolder(), frame);
 
     // Write the frame header
@@ -348,6 +348,9 @@ bool AseFormat::onSave(FileOp* fop)
     // Progress
     if (sprite->getTotalFrames() > 1)
       fop_progress(fop, (float)(frame.next()) / (float)(sprite->getTotalFrames()));
+
+    if (fop_is_stop(fop))
+      break;
   }
 
   // Write the missing field (filesize) of the header.

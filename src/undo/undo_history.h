@@ -48,6 +48,7 @@ namespace undo {
 
     bool isSavedState() const;
     void markSavedState();
+    void impossibleToBackToSavedState();
 
     ObjectsContainer* getObjects() const { return m_delegate->getObjects(); }
 

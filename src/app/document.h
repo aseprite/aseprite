@@ -130,6 +130,12 @@ namespace app {
     bool isAssociatedToFile() const;
     void markAsSaved();
 
+    // You can use this to indicate that we've destroyed (or we cannot
+    // trust) the file associated with the document (e.g. when we
+    // cancel a Save operation in the middle). So it's impossible to
+    // back to the saved state using the UndoHistory.
+    void impossibleToBackToSavedState();
+
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
 

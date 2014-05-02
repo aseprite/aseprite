@@ -74,6 +74,11 @@ void DocumentUndo::markSavedState()
   return m_undoHistory->markSavedState();
 }
 
+void DocumentUndo::impossibleToBackToSavedState()
+{
+  m_undoHistory->impossibleToBackToSavedState();
+}
+
 void DocumentUndo::pushUndoer(undo::Undoer* undoer)
 {
   return m_undoHistory->pushUndoer(undoer);

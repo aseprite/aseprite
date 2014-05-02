@@ -53,7 +53,12 @@ public:
 
   void showProgressWindow() {
     startJob();
-    fop_stop(m_fop);
+
+    if (isCanceled()) {
+      fop_stop(m_fop);
+    }
+
+    waitJob();
   }
 
 private:
@@ -88,6 +93,10 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   if (fop->has_error()) {
     Console console;
     console.printf(fop->error.c_str());
+  }
+  // If the job was cancelled, mark the document as modified.
+  else if (fop_is_stop(fop)) {
+    document->impossibleToBackToSavedState();
   }
   else {
     App::instance()->getRecentFiles()->addRecentFile(document->getFilename().c_str());
