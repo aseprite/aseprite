@@ -18,7 +18,9 @@
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" shortcut="Alt+F4" />
-      <key command="Cancel" shortcut="Esc" />
+      <key command="Cancel" shortcut="Esc">
+        <param name="type" value="all" />
+      </key>
       <!-- Edit -->
       <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
       <key command="Redo" shortcut="Ctrl+Y" />
@@ -454,6 +456,10 @@
     <menu id="cel_movement_popup">
       <item command="MoveCel" text="&amp;Move" />
       <item command="CopyCel" text="&amp;Copy" />
+      <separator />
+      <item command="Cancel" text="Cancel">
+        <param name="type" value="noop" />
+      </item>
     </menu>
   </menus>
 
