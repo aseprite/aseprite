@@ -23,11 +23,11 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/document_api.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/undo_transaction.h"
-#include "app/undoers/set_cel_opacity.h"
 #include "base/mem_utils.h"
 #include "raster/cel.h"
 #include "raster/image.h"
@@ -129,21 +129,20 @@ void CelPropertiesCommand::onExecute(Context* context)
   if (window->getKiller() == button_ok) {
     ContextWriter writer(reader);
     Document* document_writer = writer.document();
+    Sprite* sprite_writer = writer.sprite();
     Cel* cel_writer = writer.cel();
 
-    int new_opacity = slider_opacity->getValue();
+    int newOpacity = slider_opacity->getValue();
 
     // The opacity was changed?
     if (cel_writer != NULL &&
-        cel_writer->getOpacity() != new_opacity) {
-      UndoTransaction undo(writer.context(), "Cel Opacity Change", undo::ModifyDocument);
-      if (undo.isEnabled()) {
-        undo.pushUndoer(new undoers::SetCelOpacity(undo.getObjects(), cel_writer));
+        cel_writer->getOpacity() != newOpacity) {
+      DocumentApi api = document_writer->getApi();
+      {
+        UndoTransaction undo(writer.context(), "Cel Opacity Change", undo::ModifyDocument);
+        api.setCelOpacity(sprite_writer, cel_writer, newOpacity);
         undo.commit();
       }
-
-      // Change cel opacity.
-      cel_writer->setOpacity(new_opacity);
 
       update_screen_for_document(document_writer);
     }
