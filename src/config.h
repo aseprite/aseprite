@@ -33,7 +33,7 @@
 
 // General information
 #define PACKAGE                 "Aseprite"
-#define VERSION                 "0.9.6-dev"
+#define VERSION                 "1.0.0-dev"
 #define WEBSITE                 "http://www.aseprite.org/"
 #define WEBSITE_DOWNLOAD        WEBSITE "download/"
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
