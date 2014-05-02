@@ -459,17 +459,18 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       // Is the mouse on the headers?
       else if (mousePos.y < HDRSIZE) {
-        if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
-          hot_part = A_PART_HEADER_EYE;
-        else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
-          hot_part = A_PART_HEADER_PADLOCK;
-        else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
-          hot_part = A_PART_HEADER_GEAR;
-        else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
-          hot_part = A_PART_HEADER_ONIONSKIN;
-        else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
-          hot_part = A_PART_HEADER_LAYER;
-        // Is on a frame header?
+        if (mousePos.x < m_separator_x) {
+          if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
+            hot_part = A_PART_HEADER_EYE;
+          else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
+            hot_part = A_PART_HEADER_PADLOCK;
+          else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
+            hot_part = A_PART_HEADER_GEAR;
+          else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
+            hot_part = A_PART_HEADER_ONIONSKIN;
+          else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
+            hot_part = A_PART_HEADER_LAYER;
+        }
         else {
           hot_part = A_PART_HEADER_FRAME;
           hot_frame = FrameNumber((mousePos.x
@@ -1360,7 +1361,7 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
 
     case A_PART_HEADER_LAYER:
       return gfx::Rect(FRMSIZE*4, 0,
-                       m_separator_x - FRMSIZE*2,
+                       m_separator_x - FRMSIZE*4,
                        HDRSIZE);
 
     case A_PART_HEADER_FRAME:
