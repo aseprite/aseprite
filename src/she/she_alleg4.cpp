@@ -179,6 +179,7 @@ private:
 
 namespace {
 
+base::mutex unique_display_mutex;
 Display* unique_display = NULL;
 int display_scale;
 
@@ -189,7 +190,9 @@ bool display_has_mouse = false;
 
 static void queue_event(Event& ev)
 {
-  static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
+  base::scoped_lock hold(unique_display_mutex);
+  if (unique_display)
+    static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
 }
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -452,16 +455,21 @@ public:
   }
 
   ~Alleg4Display() {
-    delete m_queue;
+    // Put "unique_display" to null so queue_event() doesn't use
+    // "m_queue" anymore.
+    {
+      base::scoped_lock hold(unique_display_mutex);
+      unique_display = NULL;
+    }
 
 #if WIN32
     unsubclass_hwnd((HWND)nativeHandle());
 #endif
 
+    delete m_queue;
+
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-
-    unique_display = NULL;
   }
 
   void dispose() OVERRIDE {
