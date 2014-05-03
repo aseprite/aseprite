@@ -93,6 +93,10 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   if (fop->has_error()) {
     Console console;
     console.printf(fop->error.c_str());
+
+    // We don't know if the file was saved correctly or not. So mark
+    // it as it should be saved again.
+    document->impossibleToBackToSavedState();
   }
   // If the job was cancelled, mark the document as modified.
   else if (fop_is_stop(fop)) {
