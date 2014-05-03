@@ -284,6 +284,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (mouseMsg->middle() || key[KEY_SPACE]) {
         captureMouse();
         m_state = STATE_SCROLLING;
+        m_oldPos = static_cast<MouseMessage*>(msg)->position();
         return true;
       }
 
