@@ -390,20 +390,20 @@
         <separator />
         <item command="Launch" text="Quick &amp;Reference">
           <param name="type" value="docs" />
-          <param name="path" value="http://www.aseprite.org/quickref/" />
+          <param name="path" value="http://aseprite.org/quickref/" />
         </item>
         <item command="Launch" text="Documentation">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/docs/" />
+          <param name="path" value="http://aseprite.org/docs/" />
         </item>
         <item command="Launch" text="Tutorial">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/tutorial/" />
+          <param name="path" value="http://aseprite.org/tutorial/" />
         </item>
         <separator />
         <item command="Launch" text="Release Notes">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/release-notes/" />
+          <param name="path" value="http://aseprite.org/release-notes/" />
         </item>
         <item command="Launch" text="Twitter">
           <param name="type" value="url" />
@@ -412,7 +412,7 @@
         <separator />
         <item command="Launch" text="&amp;Donate">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/donate/" />
+          <param name="path" value="http://aseprite.org/donate/" />
         </item>
         <item command="About" text="&amp;About" />
       </menu>
