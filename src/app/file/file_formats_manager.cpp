@@ -38,11 +38,21 @@ extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateTgaFormat();
 
+static FileFormatsManager* singleton = NULL;
+
 // static
 FileFormatsManager& FileFormatsManager::instance()
 {
-  static FileFormatsManager instance;
-  return instance;
+  if (!singleton)
+    singleton = new FileFormatsManager();
+  return *singleton;
+}
+
+// static
+void FileFormatsManager::destroyInstance()
+{
+  delete singleton;
+  singleton = NULL;
 }
 
 FileFormatsManager::~FileFormatsManager()

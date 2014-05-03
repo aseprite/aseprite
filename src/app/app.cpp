@@ -294,6 +294,9 @@ App::~App()
     // Remove Aseprite handlers
     PRINTF("ASE: Uninstalling\n");
 
+    // Delete file formats.
+    FileFormatsManager::destroyInstance();
+
     // Fire App Exit signal.
     App::instance()->Exit();
 
