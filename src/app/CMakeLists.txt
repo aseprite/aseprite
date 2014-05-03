@@ -18,8 +18,8 @@ add_library(app-lib
   commands/cmd_canvas_size.cpp
   commands/cmd_cel_properties.cpp
   commands/cmd_change_color.cpp
-  commands/cmd_change_image_type.cpp
   commands/cmd_change_pen.cpp
+  commands/cmd_change_pixel_format.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp
   commands/cmd_configure_tools.cpp
