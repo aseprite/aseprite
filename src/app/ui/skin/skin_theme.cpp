@@ -586,10 +586,10 @@ void SkinTheme::onRegenerate()
       const css::Style* base = NULL;
 
       if (base_id)
-        base = m_stylesheet.sheet().getStyle(base_id);
+        base = m_stylesheet.getCssStyle(base_id);
 
       css::Style* style = new css::Style(style_id, base);
-      m_stylesheet.sheet().addStyle(style);
+      m_stylesheet.addCssStyle(style);
 
       TiXmlElement* xmlRule = xmlStyle->FirstChildElement();
       while (xmlRule) {

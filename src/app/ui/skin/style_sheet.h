@@ -32,6 +32,7 @@ class TiXmlElement;
 
 namespace css {
   class Sheet;
+  class Style;
   class Value;
 }
 
@@ -56,7 +57,8 @@ namespace app {
       static css::Rule& paddingRightRule() { return m_paddingRightRule; }
       static css::Rule& paddingBottomRule() { return m_paddingBottomRule; }
 
-      css::Sheet& sheet() { return *m_sheet; }
+      void addCssStyle(css::Style* style);
+      const css::Style* getCssStyle(const std::string& id);
 
       Style* getStyle(const std::string& id);
 
@@ -65,8 +67,6 @@ namespace app {
 
     private:
       typedef std::map<std::string, Style*> StyleMap;
-
-      void destroyAllStyles();
 
       static css::Rule m_backgroundColorRule;
       static css::Rule m_backgroundPartRule;
@@ -80,6 +80,7 @@ namespace app {
       static css::Rule m_paddingBottomRule;
 
       css::Sheet* m_sheet;
+      std::vector<css::Style*> m_cssStyles;
       StyleMap m_styles;
     };
 

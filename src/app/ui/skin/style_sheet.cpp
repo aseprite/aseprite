@@ -60,15 +60,28 @@ StyleSheet::StyleSheet()
 
 StyleSheet::~StyleSheet()
 {
-  destroyAllStyles();
-  delete m_sheet;
-}
-
-void StyleSheet::destroyAllStyles()
-{
+  // Destroy skin::Styles
   for (StyleMap::iterator it = m_styles.begin(), end = m_styles.end();
        it != end; ++it)
     delete it->second;
+
+  // Destroy css::Styles
+  for (std::vector<css::Style*>::iterator it = m_cssStyles.begin(), end = m_cssStyles.end();
+       it != end; ++it)
+    delete *it;
+
+  delete m_sheet;
+}
+
+void StyleSheet::addCssStyle(css::Style* style)
+{
+  m_sheet->addStyle(style);
+  m_cssStyles.push_back(style);
+}
+
+const css::Style* StyleSheet::getCssStyle(const std::string& id)
+{
+  return m_sheet->getStyle(id);
 }
 
 Style* StyleSheet::getStyle(const std::string& id)
