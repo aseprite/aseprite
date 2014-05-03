@@ -1909,6 +1909,10 @@ void Timeline::dropFrames(DropOp op, const Range& drop)
 
 void Timeline::dropLayers(DropOp op, const Range& drop)
 {
+  ASSERT(m_clk_layer >= 0 && m_clk_layer < m_layers.size());
+  if (m_clk_layer < 0)
+    return;
+
   if (m_layers[m_clk_layer]->isBackground()) {
     Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
     return;
