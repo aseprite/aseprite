@@ -349,16 +349,17 @@ SkinTheme::~SkinTheme()
   for (size_t c=0; c<m_cursors.size(); ++c)
     delete m_cursors[c];
 
-  m_part.clear();
-  m_parts_by_id.clear();
-
   for (std::map<std::string, BITMAP*>::iterator
          it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
     destroy_bitmap(it->second);
   }
 
   destroy_bitmap(m_sheet_bmp);
+
+  m_part.clear();
+  m_parts_by_id.clear();
   sheet_mapping.clear();
+  color_mapping.clear();
 
   // Destroy the minifont
   if (m_minifont && m_minifont != font)
