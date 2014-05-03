@@ -46,7 +46,6 @@
 namespace app {
 
 #ifdef NEED_LOG                 // log file info
-static std::string log_filename;
 static FILE* log_fileptr = NULL;
 #endif
 
@@ -56,13 +55,6 @@ LoggerModule::LoggerModule(bool verbose)
   : m_verbose(verbose)
 {
   logger_instance = this;
-
-#ifdef NEED_LOG
-  ResourceFinder rf;
-  rf.includeBinDir("aseprite.log");
-  if (rf.first())
-    log_filename = rf.filename();
-#endif
 }
 
 LoggerModule::~LoggerModule()
@@ -98,9 +90,16 @@ void verbose_printf(const char* format, ...)
     return;
 
 #ifdef NEED_LOG
-  if (!log_fileptr)
-    if (log_filename.size() > 0)
-      log_fileptr = fopen(log_filename.c_str(), "w");
+  if (!log_fileptr) {
+    std::string filename;
+    ResourceFinder rf;
+    rf.includeBinDir("aseprite.log");
+    if (rf.first())
+      filename = rf.filename();
+
+    if (filename.size() > 0)
+      log_fileptr = fopen(filename.c_str(), "w");
+  }
 
   if (log_fileptr)
 #endif

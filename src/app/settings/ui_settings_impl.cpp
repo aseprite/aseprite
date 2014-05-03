@@ -197,8 +197,6 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
 
-  delete m_globalDocumentSettings;
-
   // Delete all tool settings.
   for (std::map<std::string, IToolSettings*>::iterator
          it = m_toolSettings.begin(), end = m_toolSettings.end(); it != end; ++it) {
