@@ -379,6 +379,21 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       break;
     }
 
+    case WM_NCCALCSIZE: {
+      if (wparam) {
+        // Scrollbars must be enabled and visible to get trackpad
+        // events of old drivers. So we cannot use ShowScrollBar() to
+        // hide them. This is a simple (maybe not so elegant)
+        // solution: Expand the client area to we overlap the
+        // scrollbars. In this way they are not visible, but we still
+        // get their messages.
+        NCCALCSIZE_PARAMS* cs = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
+        cs->rgrc[0].right += GetSystemMetrics(SM_CYVSCROLL);
+        cs->rgrc[0].bottom += GetSystemMetrics(SM_CYHSCROLL);
+      }
+      break;
+    }
+
   }
   return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
 }
@@ -390,10 +405,11 @@ void subclass_hwnd(HWND hwnd)
 
   SCROLLINFO si;
   si.cbSize = sizeof(SCROLLINFO);
-  si.fMask = SIF_POS | SIF_RANGE;
+  si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
   si.nMin = 0;
   si.nPos = 50;
   si.nMax = 100;
+  si.nPage = 10;
   SetScrollInfo(hwnd, SB_HORZ, &si, FALSE);
   SetScrollInfo(hwnd, SB_VERT, &si, FALSE);
 
