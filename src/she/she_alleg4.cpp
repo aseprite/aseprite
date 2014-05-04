@@ -572,6 +572,12 @@ public:
     return m_queue;
   }
 
+  void setMousePosition(const gfx::Point& position) OVERRIDE {
+    position_mouse(
+      m_scale * position.x,
+      m_scale * position.y);
+  }
+
   void* nativeHandle() OVERRIDE {
 #ifdef WIN32
     return reinterpret_cast<void*>(win_get_window());

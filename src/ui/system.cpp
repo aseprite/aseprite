@@ -62,7 +62,7 @@ static int mouse_scares = 0;
 /* Local routines.  */
 
 static void clock_inc();
-static void update_mouse_position();
+static void update_mouse_position(const gfx::Point& pt);
 
 static void clock_inc()
 {
@@ -226,11 +226,11 @@ bool jmouse_poll()
   m_b[0] = mouse_b;
   m_z[0] = mouse_z;
 
-  update_mouse_position();
+  update_mouse_position(gfx::Point((int)mouse_x, (int)mouse_y));
 
   if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
     poll_mouse();
-    update_mouse_position();
+    update_mouse_position(gfx::Point((int)mouse_x, (int)mouse_y));
     moved = true;
   }
 
@@ -281,11 +281,10 @@ void set_mouse_position(const gfx::Point& newPos)
 {
   moved = true;
 
-  position_mouse(
-    SCREEN_W * newPos.x / JI_SCREEN_W,
-    SCREEN_H * newPos.y / JI_SCREEN_H);
+  if (mouse_display)
+    mouse_display->setMousePosition(newPos);
 
-  update_mouse_position();
+  update_mouse_position(newPos);
 
   m_x[1] = m_x[0];
   m_y[1] = m_y[0];
@@ -371,10 +370,10 @@ gfx::Point control_infinite_scroll(Widget* widget, const gfx::Rect& rect, const 
   return newPoint;
 }
 
-static void update_mouse_position()
+static void update_mouse_position(const gfx::Point& pt)
 {
-  m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
-  m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
+  m_x[0] = pt.x;
+  m_y[0] = pt.y;
 
   if (is_windowed_mode()) {
 #ifdef WIN32
