@@ -84,6 +84,10 @@ namespace app {
     // True if the popup-window must be opened when a tool-button is hot
     bool m_openOnHot;
 
+    // True if the last MouseDown opened the popup. This is used to
+    // close the popup with a second MouseUp event.
+    bool m_openedRecently;
+
     // Window displayed to show a tool-group
     ui::PopupWindow* m_popupWindow;
     class ToolStrip;
