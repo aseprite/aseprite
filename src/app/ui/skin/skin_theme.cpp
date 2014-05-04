@@ -1391,21 +1391,6 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   }
 }
 
-static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
-{
-  int u1 = MAX(x1, bitmap->cl);
-  int v1 = MAX(y1, bitmap->ct);
-  int u2 = MIN(x2, bitmap->cr-1);
-  int v2 = MIN(y2, bitmap->cb-1);
-
-  if (u1 > u2 || v1 > v2)
-    return false;
-  else
-    set_clip_rect(bitmap, u1, v1, u2, v2);
-
-  return true;
-}
-
 void SkinTheme::paintSlider(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();

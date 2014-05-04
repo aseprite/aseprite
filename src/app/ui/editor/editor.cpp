@@ -500,21 +500,19 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region region;
   getDrawableRegion(region, kCutTopWindows);
 
-  int cx1, cy1, cx2, cy2;
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+  Graphics g(ji_screen, 0, 0);
 
   for (Region::const_iterator
          it=region.begin(), end=region.end(); it != end; ++it) {
     const Rect& rc = *it;
 
-    add_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
-
-    for (Region::const_iterator
-           it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
-      drawSpriteUnclippedRect(*it2);
+    IntersectClip clip(&g, rc);
+    if (clip) {
+      for (Region::const_iterator
+             it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
+        drawSpriteUnclippedRect(*it2);
+      }
     }
-
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
 }
 

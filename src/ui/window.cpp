@@ -13,6 +13,7 @@
 #include <allegro.h>
 
 #include "gfx/size.h"
+#include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
 #include "ui/ui.h"
@@ -591,14 +592,16 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     window_refresh_region.createUnion(window_refresh_region, reg1);
 
     // Move the window's graphics
+    Graphics g(ji_screen, 0, 0);
     jmouse_hide();
-    set_clip_rect(ji_screen,
-                  man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
-
-    ui::_move_region(moveable_region,
-      getBounds().x - old_pos.x,
-      getBounds().y - old_pos.y);
-    set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+    {
+      IntersectClip clip(&g, man_pos);
+      if (clip) {
+        ui::_move_region(moveable_region,
+          getBounds().x - old_pos.x,
+          getBounds().y - old_pos.y);
+      }
+    }
     jmouse_show();
   }
 
