@@ -16,14 +16,6 @@ if [ ! -d $destdir ] ; then
     git clone --depth=1 $srcdir $destdir
 fi
 
-# ----------------------------
-# Copy the quick reference PDF
-# ----------------------------
-
-if [ ! -f $destdir/docs ] ; then
-    cp $srcdir/docs/quickref.pdf $destdir/docs
-fi
-
 # --------------
 # Update version
 # --------------
