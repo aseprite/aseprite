@@ -209,6 +209,13 @@ bool jmouse_is_shown()
   return mouse_scares == 0;
 }
 
+static gfx::Point allegro_mouse_point()
+{
+  return gfx::Point(
+    (int)JI_SCREEN_W * mouse_x / SCREEN_W,
+    (int)JI_SCREEN_W * mouse_y / SCREEN_W);
+}
+
 /**
  * Updates the mouse information (position, wheel and buttons).
  *
@@ -226,11 +233,11 @@ bool jmouse_poll()
   m_b[0] = mouse_b;
   m_z[0] = mouse_z;
 
-  update_mouse_position(gfx::Point((int)mouse_x, (int)mouse_y));
+  update_mouse_position(allegro_mouse_point());
 
   if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
     poll_mouse();
-    update_mouse_position(gfx::Point((int)mouse_x, (int)mouse_y));
+    update_mouse_position(allegro_mouse_point());
     moved = true;
   }
 
