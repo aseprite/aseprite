@@ -1035,27 +1035,26 @@ void Widget::invalidateRegion(const Region& region)
 
 void Widget::scrollRegion(const Region& region, int dx, int dy)
 {
-  if (dx != 0 || dy != 0) {
-    Region reg2 = region;
-    reg2.offset(dx, dy);
-    reg2.createIntersection(reg2, region);
-    reg2.offset(-dx, -dy);
+  if (dx == 0 && dy == 0)
+    return;
 
-    // Move screen pixels
-    jmouse_hide();
-    ui::_move_region(reg2, dx, dy);
-    jmouse_show();
+  Region reg2 = region;
+  reg2.offset(dx, dy);
+  reg2.createIntersection(reg2, region);
+  reg2.offset(-dx, -dy);
 
-    reg2.offset(dx, dy);
+  // Move screen pixels
+  ui::_move_region(reg2, dx, dy);
 
-    m_updateRegion.createUnion(m_updateRegion, region);
-    m_updateRegion.createSubtraction(m_updateRegion, reg2);
+  reg2.offset(dx, dy);
 
-    mark_dirty_flag(this);
+  m_updateRegion.createUnion(m_updateRegion, region);
+  m_updateRegion.createSubtraction(m_updateRegion, reg2);
 
-    // Generate the kPaintMessage messages for the widget's m_updateRegion
-    flushRedraw();
-  }
+  mark_dirty_flag(this);
+
+  // Generate the kPaintMessage messages for the widget's m_updateRegion
+  flushRedraw();
 }
 
 class DeleteGraphicsAndBitmap {
