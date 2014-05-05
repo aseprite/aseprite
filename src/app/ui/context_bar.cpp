@@ -273,6 +273,7 @@ public:
     addItem("Opaque");
 #endif
     addItem("Put Alpha");
+    addItem("Lock Alpha");
 #if 0
     addItem("Merge");
     addItem("Shading");
@@ -290,6 +291,7 @@ public:
     switch (inkType) {
       case kDefaultInk: index = 0; break;
       case kPutAlphaInk: index = 1; break;
+      case kLockAlphaInk: index = 2; break;
     }
 
     m_lock = true;
@@ -309,6 +311,7 @@ protected:
     switch (getSelectedItemIndex()) {
       case 0: inkType = kDefaultInk; break;
       case 1: inkType = kPutAlphaInk; break;
+      case 2: inkType = kLockAlphaInk; break;
     }
 
     ISettings* settings = UIContext::instance()->getSettings();

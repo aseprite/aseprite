@@ -131,7 +131,7 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
-// Putalpha Ink
+// PutAlpha Ink
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
@@ -166,6 +166,50 @@ void PutAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
 
 template<>
 void PutAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+  *m_dstAddress = m_color;
+}
+
+//////////////////////////////////////////////////////////////////////
+// LockAlpha Ink
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class LockAlphaInkProcessing : public DoubleInkProcessing<LockAlphaInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  LockAlphaInkProcessing(ToolLoop* loop) {
+    m_color = loop->getPrimaryColor();
+    m_opacity = loop->getOpacity();
+  }
+
+  void processPixel(int x, int y) {
+    // Do nothing
+  }
+
+private:
+  color_t m_color;
+  int m_opacity;
+};
+
+template<>
+void LockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  color_t result = rgba_blend_normal(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = rgba(
+    rgba_getr(result),
+    rgba_getg(result),
+    rgba_getb(result),
+    rgba_geta(*m_srcAddress));
+}
+
+template<>
+void LockAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  color_t result = graya_blend_normal(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = graya(
+    graya_getv(result),
+    graya_geta(*m_srcAddress));
+}
+
+template<>
+void LockAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   *m_dstAddress = m_color;
 }
 
@@ -609,6 +653,7 @@ private:
 enum {
   INK_OPAQUE,
   INK_PUTALPHA,
+  INK_LOCKALPHA,
   INK_TRANSPARENT,
   INK_BLUR,
   INK_REPLACE,
@@ -634,6 +679,7 @@ AlgoHLine ink_processing[][3] =
 
   DEFINE_INK(OpaqueInkProcessing),
   DEFINE_INK(PutAlphaInkProcessing),
+  DEFINE_INK(LockAlphaInkProcessing),
   DEFINE_INK(TransparentInkProcessing),
   DEFINE_INK(BlurInkProcessing),
   DEFINE_INK(ReplaceInkProcessing),

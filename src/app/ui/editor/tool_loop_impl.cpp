@@ -297,6 +297,9 @@ private:
       case kPutAlphaInk:
         id = WellKnownInks::PaintPutAlpha;
         break;
+      case kLockAlphaInk:
+        id = WellKnownInks::PaintLockAlpha;
+        break;
       case kMergeInk:
         id = WellKnownInks::Paint;
         break;

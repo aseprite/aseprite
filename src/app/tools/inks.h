@@ -35,7 +35,7 @@ namespace tools {
 // (or foreground/background colors)
 class PaintInk : public Ink {
 public:
-  enum Type { Merge, WithFg, WithBg, Opaque, PutAlpha };
+  enum Type { Merge, WithFg, WithBg, Opaque, PutAlpha, LockAlpha };
 
 private:
   AlgoHLine m_proc;
@@ -75,6 +75,9 @@ public:
         break;
       case PutAlpha:
         m_proc = ink_processing[INK_PUTALPHA][depth];
+        break;
+      case LockAlpha:
+        m_proc = ink_processing[INK_LOCKALPHA][depth];
         break;
       default:
         m_proc = (loop->getOpacity() == 255 ?

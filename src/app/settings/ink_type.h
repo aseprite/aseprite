@@ -30,6 +30,7 @@ namespace app {
     kDefaultInk,
     kOpaqueInk,
     kPutAlphaInk,
+    kLockAlphaInk,
     kMergeInk,
     kShadingInk,
     kReplaceInk,

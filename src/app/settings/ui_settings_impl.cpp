@@ -605,7 +605,9 @@ public:
     m_freehandAlgorithm = kDefaultFreehandAlgorithm;
 
     // Reset invalid configurations for inks.
-    if (m_inkType != kDefaultInk && m_inkType != kPutAlphaInk)
+    if (m_inkType != kDefaultInk &&
+        m_inkType != kPutAlphaInk &&
+        m_inkType != kLockAlphaInk)
       m_inkType = kDefaultInk;
 
     m_pen.enableSignals(false);
