@@ -131,13 +131,13 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
-// PutAlpha Ink
+// SetAlpha Ink
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-class PutAlphaInkProcessing : public SimpleInkProcessing<PutAlphaInkProcessing<ImageTraits>, ImageTraits> {
+class SetAlphaInkProcessing : public SimpleInkProcessing<SetAlphaInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  PutAlphaInkProcessing(ToolLoop* loop) {
+  SetAlphaInkProcessing(ToolLoop* loop) {
     m_color = loop->getPrimaryColor();
     m_opacity = loop->getOpacity();
   }
@@ -152,7 +152,7 @@ private:
 };
 
 template<>
-void PutAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
+void SetAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
   *m_dstAddress = rgba(rgba_getr(m_color),
                        rgba_getg(m_color),
                        rgba_getb(m_color),
@@ -160,12 +160,12 @@ void PutAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
 }
 
 template<>
-void PutAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+void SetAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
   *m_dstAddress = graya(graya_getv(m_color), m_opacity);
 }
 
 template<>
-void PutAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+void SetAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   *m_dstAddress = m_color;
 }
 
@@ -652,7 +652,7 @@ private:
 
 enum {
   INK_OPAQUE,
-  INK_PUTALPHA,
+  INK_SETALPHA,
   INK_LOCKALPHA,
   INK_TRANSPARENT,
   INK_BLUR,
@@ -678,7 +678,7 @@ AlgoHLine ink_processing[][3] =
     ink_processing_algo<name<IndexedTraits> > }
 
   DEFINE_INK(OpaqueInkProcessing),
-  DEFINE_INK(PutAlphaInkProcessing),
+  DEFINE_INK(SetAlphaInkProcessing),
   DEFINE_INK(LockAlphaInkProcessing),
   DEFINE_INK(TransparentInkProcessing),
   DEFINE_INK(BlurInkProcessing),

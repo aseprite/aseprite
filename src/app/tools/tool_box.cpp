@@ -57,7 +57,7 @@ const char* WellKnownInks::Paint = "paint";
 const char* WellKnownInks::PaintFg = "paint_fg";
 const char* WellKnownInks::PaintBg = "paint_bg";
 const char* WellKnownInks::PaintOpaque = "paint_opaque";
-const char* WellKnownInks::PaintPutAlpha = "paint_put_alpha";
+const char* WellKnownInks::PaintSetAlpha = "paint_set_alpha";
 const char* WellKnownInks::PaintLockAlpha = "paint_lock_alpha";
 const char* WellKnownInks::Shading = "shading";
 const char* WellKnownInks::Eraser = "eraser";
@@ -87,7 +87,7 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::PaintFg]         = new PaintInk(PaintInk::WithFg);
   m_inks[WellKnownInks::PaintBg]         = new PaintInk(PaintInk::WithBg);
   m_inks[WellKnownInks::PaintOpaque]     = new PaintInk(PaintInk::Opaque);
-  m_inks[WellKnownInks::PaintPutAlpha]   = new PaintInk(PaintInk::PutAlpha);
+  m_inks[WellKnownInks::PaintSetAlpha]   = new PaintInk(PaintInk::SetAlpha);
   m_inks[WellKnownInks::PaintLockAlpha]  = new PaintInk(PaintInk::LockAlpha);
   m_inks[WellKnownInks::Shading]         = new ShadingInk();
   m_inks[WellKnownInks::Eraser]          = new EraserInk(EraserInk::Eraser);

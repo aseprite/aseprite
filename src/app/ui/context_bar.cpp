@@ -272,7 +272,7 @@ public:
 #if 0
     addItem("Opaque");
 #endif
-    addItem("Put Alpha");
+    addItem("Set Alpha");
     addItem("Lock Alpha");
 #if 0
     addItem("Merge");
@@ -290,7 +290,7 @@ public:
 
     switch (inkType) {
       case kDefaultInk: index = 0; break;
-      case kPutAlphaInk: index = 1; break;
+      case kSetAlphaInk: index = 1; break;
       case kLockAlphaInk: index = 2; break;
     }
 
@@ -310,7 +310,7 @@ protected:
 
     switch (getSelectedItemIndex()) {
       case 0: inkType = kDefaultInk; break;
-      case 1: inkType = kPutAlphaInk; break;
+      case 1: inkType = kSetAlphaInk; break;
       case 2: inkType = kLockAlphaInk; break;
     }
 

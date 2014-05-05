@@ -606,7 +606,7 @@ public:
 
     // Reset invalid configurations for inks.
     if (m_inkType != kDefaultInk &&
-        m_inkType != kPutAlphaInk &&
+        m_inkType != kSetAlphaInk &&
         m_inkType != kLockAlphaInk)
       m_inkType = kDefaultInk;
 
