@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/shared_ptr.h"
+#include "base/disable_copying.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
@@ -113,6 +114,8 @@ namespace ui {
     Graphics* m_graphics;
     gfx::Rect m_oldClip;
     bool m_notEmpty;
+
+    DISABLE_COPYING(IntersectClip);
   };
 
   typedef SharedPtr<Graphics> GraphicsPtr;

@@ -1490,16 +1490,22 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
     widget->setTextQuiet(buf);
 
-    if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y, x-rc.x, rc.h))) {
-      drawTextString(g, NULL,
-                     getColor(ThemeColor::SliderFullText),
-                     getColor(ThemeColor::SliderFullFace), false, widget, rc, 0);
+    {
+      IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
+      if (clip) {
+        drawTextString(g, NULL,
+          getColor(ThemeColor::SliderFullText),
+          getColor(ThemeColor::SliderFullFace), false, widget, rc, 0);
+      }
     }
 
-    if (IntersectClip clip = IntersectClip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h))) {
-      drawTextString(g, NULL,
-                     getColor(ThemeColor::SliderEmptyText),
-                     getColor(ThemeColor::SliderEmptyFace), false, widget, rc, 0);
+    {
+      IntersectClip clip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h));
+      if (clip) {
+        drawTextString(g, NULL,
+          getColor(ThemeColor::SliderEmptyText),
+          getColor(ThemeColor::SliderEmptyFace), false, widget, rc, 0);
+      }
     }
 
     widget->setTextQuiet(old_text.c_str());
@@ -1873,7 +1879,8 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
       // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
       widget->getClientBounds()).inflate(0, 1*jguiscale());
 
-    if (IntersectClip clip = IntersectClip(g, textWrap)) {
+    IntersectClip clip(g, textWrap);
+    if (clip) {
       if (!widget->isEnabled()) {
         // TODO avoid this
         if (fill_bg)              // Only to draw the background
@@ -1952,13 +1959,15 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   // Top
 
   g->drawAlphaBitmap(nw, rc.x, rc.y);
-
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+nw->w, rc.y,
-                                                 rc.w-nw->w-ne->w, rc.h))) {
-    for (x = rc.x+nw->w;
-         x < rc.x+rc.w-ne->w;
-         x += n->w) {
-      g->drawAlphaBitmap(n, x, rc.y);
+  {
+    IntersectClip clip(g, Rect(rc.x+nw->w, rc.y,
+        rc.w-nw->w-ne->w, rc.h));
+    if (clip) {
+      for (x = rc.x+nw->w;
+           x < rc.x+rc.w-ne->w;
+           x += n->w) {
+        g->drawAlphaBitmap(n, x, rc.y);
+      }
     }
   }
 
@@ -1967,32 +1976,36 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   // Bottom
 
   g->drawAlphaBitmap(sw, rc.x, rc.y+rc.h-sw->h);
-
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+sw->w, rc.y,
-                                                 rc.w-sw->w-se->w, rc.h))) {
-    for (x = rc.x+sw->w;
-         x < rc.x+rc.w-se->w;
-         x += s->w) {
-      g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
+  {
+    IntersectClip clip(g, Rect(rc.x+sw->w, rc.y,
+        rc.w-sw->w-se->w, rc.h));
+    if (clip) {
+      for (x = rc.x+sw->w;
+           x < rc.x+rc.w-se->w;
+           x += s->w) {
+        g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
+      }
     }
   }
 
   g->drawAlphaBitmap(se, rc.x+rc.w-se->w, rc.y+rc.h-se->h);
+  {
+    IntersectClip clip(g, Rect(rc.x, rc.y+nw->h,
+        rc.w, rc.h-nw->h-sw->h));
+    if (clip) {
+      // Left
+      for (y = rc.y+nw->h;
+           y < rc.y+rc.h-sw->h;
+           y += w->h) {
+        g->drawAlphaBitmap(w, rc.x, y);
+      }
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+nw->h,
-                                                 rc.w, rc.h-nw->h-sw->h))) {
-    // Left
-    for (y = rc.y+nw->h;
-         y < rc.y+rc.h-sw->h;
-         y += w->h) {
-      g->drawAlphaBitmap(w, rc.x, y);
-    }
-
-    // Right
-    for (y = rc.y+ne->h;
-         y < rc.y+rc.h-se->h;
-         y += e->h) {
-      g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
+      // Right
+      for (y = rc.y+ne->h;
+           y < rc.y+rc.h-se->h;
+           y += e->h) {
+        g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
+      }
     }
   }
 }
@@ -2042,7 +2055,8 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
         skinPart->getBitmap(3)->w,
         skinPart->getBitmap(5)->h));
 
-    if (IntersectClip clip = IntersectClip(g, inside))
+    IntersectClip clip(g, inside);
+    if (clip)
       g->fillRect(bg, inside);
   }
 }
@@ -2050,14 +2064,17 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
 void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2)
 {
   Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
-
-  if (IntersectClip clip = IntersectClip(g, rc2))
-    draw_bounds_nw(g, rc, nw1, bg1);
+  {
+    IntersectClip clip(g, rc2);
+    if (clip)
+      draw_bounds_nw(g, rc, nw1, bg1);
+  }
 
   rc2.x += rc2.w;
   rc2.w = rc.w - rc2.w;
 
-  if (IntersectClip clip = IntersectClip(g, rc2))
+  IntersectClip clip(g, rc2);
+  if (clip)
     draw_bounds_nw(g, rc, nw2, bg2);
 }
 
@@ -2073,7 +2090,8 @@ void SkinTheme::draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int par
 
   if (x < rc.x2()) {
     Rect rc2(x, rc.y, rc.w-(x-rc.x), m_part[part]->h);
-    if (IntersectClip clip = IntersectClip(g, rc2))
+    IntersectClip clip(g, rc2);
+    if (clip)
       g->drawAlphaBitmap(m_part[part], x, rc.y);
   }
 }
@@ -2090,7 +2108,8 @@ void SkinTheme::draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int par
 
   if (y < rc.y2()) {
     Rect rc2(rc.x, y, m_part[part]->w, rc.h-(y-rc.y));
-    if (IntersectClip clip = IntersectClip(g, rc2))
+    IntersectClip clip(g, rc2);
+    if (clip)
       g->drawAlphaBitmap(m_part[part], rc.x, y);
   }
 }
