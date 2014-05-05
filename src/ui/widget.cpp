@@ -602,6 +602,7 @@ void Widget::setBounds(const Rect& rc)
 
 void Widget::setBoundsQuietly(const gfx::Rect& rc)
 {
+  m_updateRegion.offset(rc.x - m_bounds.x, rc.y - m_bounds.y);
   m_bounds = rc;
 }
 
@@ -1460,6 +1461,7 @@ void Widget::onSetBgColor()
 
 void Widget::offsetWidgets(int dx, int dy)
 {
+  m_updateRegion.offset(dx, dy);
   m_bounds.offset(dx, dy);
 
   UI_FOREACH_WIDGET(m_children, it)
