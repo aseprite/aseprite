@@ -5,6 +5,7 @@
 // Read LICENSE.txt for more information.
 
 // #define REPORT_EVENTS
+// #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
 
 #ifdef HAVE_CONFIG_H
@@ -20,6 +21,10 @@
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+
+#ifdef DEBUG_PAINT_EVENTS
+#include "base/thread.h"
+#endif
 
 #ifdef REPORT_EVENTS
 #include <iostream>
@@ -1307,6 +1312,16 @@ void Manager::pumpQueue()
                   << paintMsg->rect().w << ", "
                   << paintMsg->rect().h << ")"
                   << std::endl;
+#endif
+
+#ifdef DEBUG_PAINT_EVENTS
+        rectfill(screen,
+          SCREEN_W*paintMsg->rect().x/JI_SCREEN_W,
+          SCREEN_H*paintMsg->rect().y/JI_SCREEN_H,
+          SCREEN_W*(paintMsg->rect().x+paintMsg->rect().w)/JI_SCREEN_W-1,
+          SCREEN_H*(paintMsg->rect().y+paintMsg->rect().h)/JI_SCREEN_H-1,
+          makecol(0, 0, 255));
+        base::this_thread::sleep_for(0.002);
 #endif
       }
 
