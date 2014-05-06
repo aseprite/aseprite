@@ -2,7 +2,6 @@
 
 * toolbar crashes
 * click desktop bug
-* fix trace when we touch borders
 
 # Tasks
 
