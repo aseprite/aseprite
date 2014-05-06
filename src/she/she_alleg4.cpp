@@ -394,6 +394,19 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       break;
     }
 
+    case WM_NCHITTEST: {
+      LRESULT result = ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
+
+      // We ignore scrollbars so if the mouse is above them, we return
+      // as it's in the client area. (Remember that we have scroll
+      // bars are enabled and visible to receive trackpad messages
+      // only.)
+      if (result == HTHSCROLL || result == HTVSCROLL)
+        result = HTCLIENT;
+
+      return result;
+    }
+
   }
   return ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
 }
