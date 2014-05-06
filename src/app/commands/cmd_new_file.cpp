@@ -76,7 +76,7 @@ NewFileCommand::NewFileCommand()
 void NewFileCommand::onExecute(Context* context)
 {
   PixelFormat format;
-  int w, h, bg, ncolors;
+  int w, h, bg, ncolors = raster::Palette::MaxColors;
   char buf[1024];
   app::Color bg_table[] = {
     app::Color::fromMask(),
@@ -93,7 +93,7 @@ void NewFileCommand::onExecute(Context* context)
   Widget* radio1 = app::find_widget<Widget>(window, "radio1");
   Widget* radio2 = app::find_widget<Widget>(window, "radio2");
   Widget* radio3 = app::find_widget<Widget>(window, "radio3");
-  Widget* colors = app::find_widget<Widget>(window, "colors");
+  // Widget* colors = app::find_widget<Widget>(window, "colors");
   ListBox* bg_box = app::find_widget<ListBox>(window, "bg_box");
   Widget* ok = app::find_widget<Widget>(window, "ok_button");
 
@@ -106,7 +106,7 @@ void NewFileCommand::onExecute(Context* context)
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
   bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
-  ncolors = get_config_int("NewSprite", "Colors", 256);
+  // ncolors = get_config_int("NewSprite", "Colors", 256);
 
   // If the clipboard contains an image, we can show the size of the
   // clipboard as default image size.
@@ -118,7 +118,7 @@ void NewFileCommand::onExecute(Context* context)
 
   width->setTextf("%d", MAX(1, w));
   height->setTextf("%d", MAX(1, h));
-  colors->setTextf("%d", MID(2, ncolors, 256));
+  // colors->setTextf("%d", MID(2, ncolors, 256));
 
   // Select image-type
   switch (format) {
@@ -143,7 +143,7 @@ void NewFileCommand::onExecute(Context* context)
 
     w = width->getTextInt();
     h = height->getTextInt();
-    ncolors = colors->getTextInt();
+    // ncolors = colors->getTextInt();
     bg = bg_box->getSelectedIndex();
 
     w = MID(1, w, 65535);
@@ -190,7 +190,8 @@ void NewFileCommand::onExecute(Context* context)
           layerImage->configureAsBackground();
 
           Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
-          raster::clear_image(image, color_utils::color_for_image(color, format));
+          raster::clear_image(image,
+            color_utils::color_for_image(color, format, -1));
         }
       }
 
