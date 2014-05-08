@@ -69,9 +69,10 @@ namespace app {
     // Main function used by sprite-editors to render the sprite
 
     Image* renderSprite(int source_x, int source_y,
-                        int width, int height,
-                        FrameNumber frame, int zoom,
-                        bool draw_tiled_bg);
+      int width, int height,
+      FrameNumber frame, int zoom,
+      bool draw_tiled_bg,
+      bool enable_onionskin);
 
     //////////////////////////////////////////////////////////////////////
     // Extra functions

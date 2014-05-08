@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -376,9 +376,10 @@ void RenderEngine::setPreviewImage(const Layer* layer, Image* image)
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
 Image* RenderEngine::renderSprite(int source_x, int source_y,
-                                  int width, int height,
-                                  FrameNumber frame, int zoom,
-                                  bool draw_tiled_bg)
+  int width, int height,
+  FrameNumber frame, int zoom,
+  bool draw_tiled_bg,
+  bool enable_onionskin)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = m_sprite->getBackgroundLayer();
@@ -421,7 +422,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   IDocumentSettings* docSettings = UIContext::instance()
     ->getSettings()->getDocumentSettings(m_document);
 
-  if (docSettings->getUseOnionskin()) {
+  if (enable_onionskin & docSettings->getUseOnionskin()) {
     // Draw background layer of the current frame with opacity=255
     global_opacity = 255;
     renderLayer(m_sprite->getFolder(), image,

@@ -387,7 +387,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     try {
       rendered.reset(renderEngine.renderSprite(
           source_x, source_y, width, height,
-          m_frame, m_zoom, true));
+          m_frame, m_zoom, true,
+          ((m_flags & kShowOnionskin) == kShowOnionskin)));
     }
     catch (const std::exception& e) {
       Console::showException(e);

@@ -67,7 +67,8 @@ namespace app {
       kNoneFlag = 0,
       kShowGridFlag = 1,
       kShowMaskFlag = 2,
-      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag,
+      kShowOnionskin = 4,
+      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag | kShowOnionskin,
     };
 
     enum ZoomBehavior {
