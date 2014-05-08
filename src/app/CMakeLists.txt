@@ -56,6 +56,7 @@ add_library(app-lib
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_new_layer_set.cpp
+  commands/cmd_onionskin.cpp
   commands/cmd_open_file.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp

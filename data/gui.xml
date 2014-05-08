@@ -76,6 +76,7 @@
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
+      <key command="ShowOnionSkin" shortcut="F3" />
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>
@@ -374,6 +375,8 @@
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
+        <separator />
+        <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />
         <separator />
         <item command="Timeline" text="&amp;Timeline">
           <param name="switch" value="true" />
