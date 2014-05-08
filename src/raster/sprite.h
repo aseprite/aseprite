@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "raster/color.h"
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"
 #include "raster/object.h"
@@ -69,8 +70,8 @@ namespace raster {
     // alpha channel in the render.
     bool needAlpha() const;
 
-    uint32_t getTransparentColor() const { return m_transparentColor; }
-    void setTransparentColor(uint32_t color);
+    color_t getTransparentColor() const { return m_transparentColor; }
+    void setTransparentColor(color_t color);
 
     int getMemSize() const;
 
@@ -153,7 +154,7 @@ namespace raster {
     RgbMap* m_rgbMap;
 
     // Transparent color used in indexed images
-    uint32_t m_transparentColor;
+    color_t m_transparentColor;
 
     // Disable default constructor and copying
     Sprite();

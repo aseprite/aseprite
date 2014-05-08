@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -179,7 +179,7 @@ void image_rotsprite(Image* bmp, Image* spr,
   base::UniquePtr<Image> tmp_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf2));
   base::UniquePtr<Image> spr_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf3));
 
-  color_t maskColor = bmp->getMaskColor();
+  color_t maskColor = spr->getMaskColor();
 
   bmp_copy->setMaskColor(maskColor);
   tmp_copy->setMaskColor(maskColor);

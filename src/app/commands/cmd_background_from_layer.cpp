@@ -68,16 +68,22 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
 
-  // each frame of the layer to be converted as `Background' must be
-  // cleared using the selected background color in the color-bar
-  int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getPixelFormat());
-  bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
+  raster::color_t bgcolor =
+    color_utils::color_for_target(
+      context->getSettings()->getBgColor(),
+      ColorTarget(
+        ColorTarget::BackgroundLayer,
+        sprite->getPixelFormat(),
+        sprite->getTransparentColor()));
 
   {
     UndoTransaction undo_transaction(writer.context(), "Background from Layer");
-    document->getApi().backgroundFromLayer(static_cast<LayerImage*>(writer.layer()), bgcolor);
+    document->getApi().backgroundFromLayer(
+      static_cast<LayerImage*>(writer.layer()),
+      bgcolor);
     undo_transaction.commit();
   }
+
   update_screen_for_document(document);
 }
 

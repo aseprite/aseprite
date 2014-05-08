@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,8 @@ Image* Image::create(PixelFormat format, int width, int height,
 Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
-  return crop_image(image, 0, 0, image->getWidth(), image->getHeight(), 0, buffer);
+  return crop_image(image, 0, 0, image->getWidth(), image->getHeight(),
+    image->getMaskColor(), buffer);
 }
 
 } // namespace raster

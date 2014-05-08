@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -489,7 +489,7 @@ static void bestfit_init()
   }
 }
 
-int Palette::findBestfit(int r, int g, int b) const
+int Palette::findBestfit(int r, int g, int b, int mask_index) const
 {
 #ifdef __GNUC__
   register int bestfit asm("%eax");
@@ -512,7 +512,7 @@ int Palette::findBestfit(int r, int g, int b) const
   g >>= 3;
   b >>= 3;
 
-  i = 1;
+  i = 0;
   while (i < size()) {
     color_t rgb = m_colors[i];
 
@@ -521,7 +521,7 @@ int Palette::findBestfit(int r, int g, int b) const
       coldiff += (col_diff + 128) [ ((rgba_getr(rgb)>>3) - r) & 0x7F ];
       if (coldiff < lowest) {
         coldiff += (col_diff + 256) [ ((rgba_getb(rgb)>>3) - b) & 0x7F ];
-        if (coldiff < lowest) {
+        if (coldiff < lowest && i != mask_index) {
           bestfit = i;
           if (coldiff == 0)
             return bestfit;

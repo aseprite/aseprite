@@ -295,8 +295,6 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
       m_extraImage->getHeight() != h) {
     delete m_extraImage;                // image
     m_extraImage = Image::create(getSprite()->getPixelFormat(), w, h);
-    m_extraImage->setMaskColor(0);
-    clear_image(m_extraImage, m_extraImage->getMaskColor());
   }
 }
 

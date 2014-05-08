@@ -62,7 +62,8 @@ Image* NewImageFromMask(const DocumentLocation& location)
     return NULL;
 
   // Clear the new image
-  clear_image(dst, 0);
+  dst->setMaskColor(src->getMaskColor());
+  clear_image(dst, dst->getMaskColor());
 
   // Copy the masked zones
   const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));

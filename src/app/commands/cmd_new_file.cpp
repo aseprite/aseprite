@@ -191,7 +191,11 @@ void NewFileCommand::onExecute(Context* context)
 
           Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
           raster::clear_image(image,
-            color_utils::color_for_image(color, format, -1));
+            color_utils::color_for_target(color,
+              ColorTarget(
+                ColorTarget::BackgroundLayer,
+                sprite->getPixelFormat(),
+                sprite->getTransparentColor())));
         }
       }
 

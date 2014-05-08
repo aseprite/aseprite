@@ -263,15 +263,20 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     ->getSettings()
     ->getCurrentTool();
 
-  // Setup the cursor type depending the current tool
+  // Setup the cursor type depending of several factors (current tool,
+  // foreground color, and layer transparency).
+  color_t pen_color = get_pen_color(m_sprite, m_layer);
+  color_t mask_color = m_sprite->getTransparentColor();
+
   if (current_tool->getInk(0)->isSelection()) {
     cursor_type = CURSOR_CROSS_ONE;
   }
-  else if (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
-           current_tool->getInk(0)->isEffect() ||
-           // or when the FG color is mask and we are not in the background layer
-           (UIContext::instance()->getSettings()->getFgColor().getType() == app::Color::MaskType &&
-            (m_layer != NULL && !m_layer->isBackground()))) {
+  else if (
+    // Use cursor bounds for inks that are effects (eraser, blur, etc.)
+    (current_tool->getInk(0)->isEffect()) ||
+    // or when the pen color is transparent and we are not in the background layer
+    (m_layer && !m_layer->isBackground() &&
+     pen_color == mask_color)) {
     cursor_type = CURSOR_BOUNDS;
   }
   else {
@@ -288,8 +293,6 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
       ->getSettings()
       ->getToolSettings(current_tool);
 
-    color_t pen_color = get_pen_color(m_sprite, m_layer);
-    uint32_t new_mask_color;
     Pen* pen = editor_get_current_pen();
     gfx::Rect penBounds = pen->getBounds();
 
@@ -300,18 +303,11 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
-    if (m_sprite->getPixelFormat() == IMAGE_INDEXED && pen_color == 0) {
-      new_mask_color = 1;
-    }
-    else {
-      new_mask_color = 0;
-    }
+    if (pen_color == mask_color)
+      mask_color = (mask_color == 0 ? 1: 0);
 
     Image* extraImage = m_document->getExtraCelImage();
-    if (extraImage->getMaskColor() != new_mask_color) {
-      extraImage->setMaskColor(new_mask_color);
-      clear_image(extraImage, new_mask_color);
-    }
+    extraImage->setMaskColor(mask_color);
     put_pen(extraImage, pen, -penBounds.x, -penBounds.y,
             pen_color, extraImage->getMaskColor());
 
@@ -324,7 +320,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
     }
   }
 
-  /* save area and draw the cursor */
+  // Save area and draw the cursor
   if (refresh) {
     acquire_bitmap(ji_screen);
     ji_screen->clip = false;
@@ -337,7 +333,7 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   // cursor thickness
   m_cursor_thick = 1; // get_thickness_for_cursor();
 
-  /* cursor in the editor (model) */
+  // cursor in the editor (model)
   m_cursor_editor_x = x;
   m_cursor_editor_y = y;
 

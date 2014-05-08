@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,7 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_adjustPivot(false)
   , m_handle(NoHandle)
   , m_originalImage(Image::createCopy(moveThis))
+  , m_maskColor(m_sprite->getTransparentColor())
 {
   m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->getWidth(), moveThis->getHeight()));
   m_currentData = m_initialData;
@@ -68,9 +69,7 @@ PixelsMovement::PixelsMovement(Context* context,
   ContextWriter writer(m_reader);
   m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
 
-  Image* extraImage = m_document->getExtraCelImage();
-  clear_image(extraImage, extraImage->getMaskColor());
-  copy_image(extraImage, moveThis, initialX, initialY);
+  redrawExtraImage();
 
   m_initialMask = new Mask(*m_document->getMask());
   m_currentMask = new Mask(*m_document->getMask());
@@ -438,8 +437,8 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
   base::UniquePtr<Image> image(Image::create(m_sprite->getPixelFormat(), width, height));
-  clear_image(image, image->getMaskColor());
-  drawParallelogram(image, m_originalImage, corners, leftTop);
+
+  drawImage(image, leftTop);
 
   origin = leftTop;
 
@@ -567,28 +566,21 @@ gfx::Size PixelsMovement::getInitialImageSize() const
   return m_initialData.bounds().getSize();
 }
 
-void PixelsMovement::setMaskColor(uint32_t mask_color)
+void PixelsMovement::setMaskColor(color_t mask_color)
 {
   ContextWriter writer(m_reader);
-  Image* extraImage = m_document->getExtraCelImage();
 
-  ASSERT(extraImage != NULL);
+  m_maskColor = mask_color;
 
-  extraImage->setMaskColor(mask_color);
   redrawExtraImage();
   update_screen_for_document(m_document);
 }
 
-
 void PixelsMovement::redrawExtraImage()
 {
-  gfx::Transformation::Corners corners;
-  m_currentData.transformBox(corners);
-
-  // Transform the extra-cel which is the chunk of pixels that the user is moving.
-  Image* extraImage = m_document->getExtraCelImage();
-  clear_image(extraImage, extraImage->getMaskColor());
-  drawParallelogram(extraImage, m_originalImage, corners, gfx::Point(0, 0));
+  // Draw the transformed pixels in the extra-cel which is the chunk
+  // of pixels that the user is moving.
+  drawImage(m_document->getExtraCelImage(), gfx::Point(0, 0));
 }
 
 void PixelsMovement::redrawCurrentMask()
@@ -605,6 +597,18 @@ void PixelsMovement::redrawCurrentMask()
     corners, gfx::Point(0, 0));
 
   m_currentMask->unfreeze();
+}
+
+void PixelsMovement::drawImage(raster::Image* dst, const gfx::Point& pt)
+{
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+
+  dst->setMaskColor(m_sprite->getTransparentColor());
+  clear_image(dst, dst->getMaskColor());
+
+  m_originalImage->setMaskColor(m_maskColor);
+  drawParallelogram(dst, m_originalImage, corners, pt);
 }
 
 void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,

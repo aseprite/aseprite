@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/color_target.h"
 #include "raster/color.h"
 #include "raster/pixel_format.h"
 #include "ui/color.h"
@@ -39,9 +40,7 @@ namespace app {
     int color_for_allegro(const app::Color& color, int depth);
     raster::color_t color_for_image(const app::Color& color, raster::PixelFormat format);
     raster::color_t color_for_layer(const app::Color& color, raster::Layer* layer);
-
-    raster::color_t fixup_color_for_layer(raster::Layer* layer, raster::color_t color);
-    raster::color_t fixup_color_for_background(raster::PixelFormat format, raster::color_t color);
+    raster::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);
 
   } // namespace color_utils
 } // namespace app

@@ -694,7 +694,7 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
       break;
 
     case IMAGE_INDEXED: {
-      IndexedDelegate delegate(bmp->getMaskColor());
+      IndexedDelegate delegate(sprite->getMaskColor());
       ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
     }

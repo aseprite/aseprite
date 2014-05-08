@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,7 @@ namespace raster {
     static Palette* load(const char *filename);
     bool save(const char *filename) const;
 
-    int findBestfit(int r, int g, int b) const;
+    int findBestfit(int r, int g, int b, int mask_index = 0) const;
 
   private:
     FrameNumber m_frame;
