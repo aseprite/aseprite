@@ -1,0 +1,20 @@
+GIMP Palette
+#
+# ZX Spectrum
+#
+  0   0   0	Black
+  0   0 192	Basic Blue
+192   0   0	Basic Red
+192   0 192	Basic Magenta
+  0 192   0	Basic Green
+  0 192 192	Basic Cyan
+192 192   0	Basic Yellow
+192 192 192	Basic White
+  0   0   0	Black
+  0   0 255	Bright Blue
+255   0   0	Bright Red
+255   0 255	Bright Magenta
+  0 255   0	Bright Green
+  0 255 255	Bright Cyan
+255 255   0	Bright Yellow
+255 255 255	Bright White
