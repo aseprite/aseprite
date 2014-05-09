@@ -20,10 +20,14 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/documents.h"
+#include "app/ui/devconsole_view.h"
+#include "app/ui/main_window.h"
+#include "app/ui/workspace.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
@@ -33,36 +37,6 @@ namespace app {
 
 using namespace ui;
 
-class DeveloperConsole : public Window {
-public:
-  DeveloperConsole()
-    : Window(WithTitleBar, "Developer Console")
-    , m_vbox(JI_VERTICAL)
-  {
-    m_vbox.addChild(&m_docs);
-    addChild(&m_vbox);
-
-    remapWindow();
-    centerWindow();
-  }
-
-  void updateDocuments(Context* context)
-  {
-    m_docs.removeAllItems();
-    m_docs.addItem("Documents");
-    for (Documents::const_iterator
-           it = context->getDocuments().begin(),
-           end = context->getDocuments().end(); it != end; ++it) {
-      m_docs.addItem((*it)->getFilename().c_str());
-    }
-    m_docs.addItem("---------");
-  }
-
-private:
-  Box m_vbox;
-  ComboBox m_docs;
-};
-
 class DeveloperConsoleCommand : public Command {
 public:
   DeveloperConsoleCommand();
@@ -71,7 +45,7 @@ public:
 protected:
   void onExecute(Context* context);
 
-  DeveloperConsole* m_devConsole;
+  DevConsoleView* m_devConsole;
 };
 
 DeveloperConsoleCommand::DeveloperConsoleCommand()
@@ -84,21 +58,19 @@ DeveloperConsoleCommand::DeveloperConsoleCommand()
 
 DeveloperConsoleCommand::~DeveloperConsoleCommand()
 {
-  // delete m_devConsole;
+  delete m_devConsole;
 }
 
 void DeveloperConsoleCommand::onExecute(Context* context)
 {
   if (!m_devConsole) {
-    m_devConsole = new DeveloperConsole();
-  }
-  else if (m_devConsole->isVisible()) {
-    m_devConsole->closeWindow(NULL);
-    return;
+    m_devConsole = new DevConsoleView();
+
+    App::instance()->getMainWindow()->getWorkspace()->addView(m_devConsole);
   }
 
-  m_devConsole->updateDocuments(context);
-  m_devConsole->openWindow();
+  App::instance()->getMainWindow()->getTabsBar()->selectTab(m_devConsole);
+  App::instance()->getMainWindow()->getWorkspace()->setActiveView(m_devConsole);
 }
 
 Command* CommandFactory::createDeveloperConsoleCommand()

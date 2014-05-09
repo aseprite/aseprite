@@ -156,6 +156,7 @@ add_library(app-lib
   ui/color_selector.cpp
   ui/color_sliders.cpp
   ui/context_bar.cpp
+  ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
   ui/editor/cursor.cpp

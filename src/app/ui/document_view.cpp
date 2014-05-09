@@ -171,6 +171,11 @@ WorkspaceView* DocumentView::cloneWorkspaceView()
   return new DocumentView(m_document, Normal);
 }
 
+void DocumentView::onWorkspaceViewSelected()
+{
+  // Do nothing
+}
+
 void DocumentView::onClonedFrom(WorkspaceView* from)
 {
   Editor* newEditor = getEditor();

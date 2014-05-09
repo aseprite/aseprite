@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,41 +16,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_DOCUMENT_VIEW_H_INCLUDED
-#define APP_UI_DOCUMENT_VIEW_H_INCLUDED
+#ifndef APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
+#define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
 #pragma once
 
-#include "app/document_observer.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "base/compiler_specific.h"
 #include "ui/box.h"
-
-namespace ui {
-  class View;
-}
+#include "ui/label.h"
+#include "ui/textbox.h"
+#include "ui/view.h"
 
 namespace app {
-  class Document;
-  class DocumentLocation;
-  class Editor;
-
-  class DocumentView : public ui::Box
-                     , public TabView
-                     , public DocumentObserver
-                     , public WorkspaceView {
+  class DevConsoleView : public ui::Box
+                       , public TabView
+                       , public WorkspaceView {
   public:
-    enum Type {
-      Normal,
-      Mini
-    };
-
-    DocumentView(Document* document, Type type);
-    ~DocumentView();
-
-    Document* getDocument() const { return m_document; }
-    void getDocumentLocation(DocumentLocation* location) const;
-    Editor* getEditor() { return m_editor; }
+    DevConsoleView();
+    ~DevConsoleView();
 
     // TabView implementation
     std::string getTabText() OVERRIDE;
@@ -61,24 +45,18 @@ namespace app {
     void onWorkspaceViewSelected() OVERRIDE;
     void onClonedFrom(WorkspaceView* from) OVERRIDE;
 
-    // DocumentObserver implementation
-    void onGeneralUpdate(DocumentEvent& ev) OVERRIDE;
-    void onSpritePixelsModified(DocumentEvent& ev) OVERRIDE;
-    void onLayerMergedDown(DocumentEvent& ev) OVERRIDE;
-    void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onBeforeRemoveLayer(DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
-    void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
-    void onLayerRestacked(DocumentEvent& ev) OVERRIDE;
-
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    void onExecuteCommand(const std::string& cmd);
 
   private:
-    Document* m_document;
-    ui::View* m_view;
-    Editor* m_editor;
+    class CommmandEntry;
+
+    ui::View m_view;
+    ui::TextBox m_textBox;
+    ui::HBox m_bottomBox;
+    ui::Label m_label;
+    CommmandEntry* m_entry;
   };
 
 } // namespace app
