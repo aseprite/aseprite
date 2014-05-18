@@ -8,6 +8,10 @@
 #define BASE_OBSERVERS_H_INCLUDED
 #pragma once
 
+#if _DEBUG
+#include "base/scoped_value.h"
+#endif
+
 #include <algorithm>
 #include <vector>
 
@@ -30,7 +34,11 @@ public:
   bool empty() const { return m_observers.empty(); }
   size_t size() const { return m_observers.size(); }
 
-  Observers() { }
+  Observers() {
+#if _DEBUG
+    m_notifyingObservers = false;
+#endif
+  }
 
   ~Observers() {
     ASSERT(m_observers.empty());
@@ -40,6 +48,9 @@ public:
   // collection and will be destroyed calling the T::dispose() member
   // function.
   void addObserver(observer_type* observer) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+#endif
     ASSERT(std::find(m_observers.begin(), m_observers.end(), observer) == m_observers.end() && "You've tried to add an observer that already is in the collection");
     m_observers.push_back(observer);
   }
@@ -47,6 +58,9 @@ public:
   // Removes the observer from the collection. After calling this
   // function you own the observer so you have to dispose it.
   void removeObserver(observer_type* observer) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+#endif
     iterator it = std::find(m_observers.begin(), m_observers.end(), observer);
     if (it != end())
       m_observers.erase(it);
@@ -56,6 +70,10 @@ public:
   }
 
   void notifyObservers(void (observer_type::*method)()) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+    ScopedValue<bool> scopedValue(m_notifyingObservers, true, false);
+#endif
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
@@ -65,6 +83,10 @@ public:
 
   template<typename A1>
   void notifyObservers(void (observer_type::*method)(A1), A1 a1) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+    ScopedValue<bool> scopedValue(m_notifyingObservers, true, false);
+#endif
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
@@ -74,6 +96,10 @@ public:
 
   template<typename A1, typename A2>
   void notifyObservers(void (observer_type::*method)(A1, A2), A1 a1, A2 a2) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+    ScopedValue<bool> scopedValue(m_notifyingObservers, true, false);
+#endif
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
@@ -83,6 +109,10 @@ public:
 
   template<typename A1, typename A2, typename A3>
   void notifyObservers(void (observer_type::*method)(A1, A2, A3), A1 a1, A2 a2, A3 a3) {
+#if _DEBUG
+    ASSERT(!m_notifyingObservers);
+    ScopedValue<bool> scopedValue(m_notifyingObservers, true, false);
+#endif
     for (iterator
            it = this->begin(),
            end = this->end(); it != end; ++it) {
@@ -92,6 +122,9 @@ public:
 
 private:
   list_type m_observers;
+#if _DEBUG
+  bool m_notifyingObservers;
+#endif
 };
 
 } // namespace base
