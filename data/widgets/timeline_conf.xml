@@ -1,0 +1,29 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2014 by David Capello -->
+<gui>
+<vbox id="mainbox">
+  <grid columns="2">
+    <separator cell_hspan="2" text="Onion Skin:" left="true" horizontal="true" />
+    <hbox cell_hspan="2">
+      <radio group="1" text="Merge Frames" id="merge" />
+      <radio group="1" text="Red/Blue Tint" id="tint" />
+      <button id="reset_onionskin" text="Reset" width="60" />
+    </hbox>
+
+    <label text="Opacity:" />
+    <slider min="0" max="255" id="opacity" cell_align="horizontal" width="128" />
+
+    <label text="Opacity Step:" />
+    <slider min="0" max="255" id="opacity_step" cell_align="horizontal" width="128" />
+
+    <separator cell_hspan="2" text="Loop:" left="true" horizontal="true" />
+    <button id="loop_section" text="Set Loop Section" />
+    <button id="reset_loop_section" text="Reset Loop Section" />
+    <hbox cell_hspan="2">
+      <radio group="2" text="Normal" id="normal" />
+      <radio group="2" text="Reverse" id="reverse" />
+      <radio group="2" text="Ping-pong" id="pingpong" />
+    </hbox>
+  </grid>
+</vbox>
+</gui>

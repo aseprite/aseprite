@@ -28,6 +28,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/handle_anidir.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -87,6 +88,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
   bool onionskin_state = docSettings->getUseOnionskin();
   Palette *oldpal, *newpal;
+  bool pingPongForward = true;
 
   if (sprite->getTotalFrames() < 2)
     return;
@@ -141,10 +143,12 @@ void PlayAnimationCommand::onExecute(Context* context)
     } while (!done && (speed_timer <= 0));
 
     if (!done) {
-      FrameNumber frame = current_editor->getFrame().next();
-      if (frame > sprite->getLastFrame())
-        frame = FrameNumber(0);
-      current_editor->setFrame(frame);
+      current_editor->setFrame(
+        calculate_next_frame(
+          sprite,
+          current_editor->getFrame(),
+          docSettings,
+          pingPongForward));
 
       speed_timer--;
     }

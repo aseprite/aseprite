@@ -44,6 +44,7 @@ namespace ui {
 namespace app {
   using namespace raster;
 
+  class ConfigureTimelinePopup;
   class Context;
   class Document;
   class Editor;
@@ -166,6 +167,7 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
     void drawLayer(ui::Graphics* g, int layer_index);
     void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawLoopRange(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
@@ -215,6 +217,7 @@ namespace app {
     skin::Style* m_timelineRangeOutlineStyle;
     skin::Style* m_timelineDropLayerDecoStyle;
     skin::Style* m_timelineDropFrameDecoStyle;
+    skin::Style* m_timelineLoopRangeStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;
@@ -239,6 +242,8 @@ namespace app {
     FrameNumber m_clk_frame;
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
+    // Configure timeline
+    ConfigureTimelinePopup* m_confPopup;
   };
 
 } // namespace app

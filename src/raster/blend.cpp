@@ -29,11 +29,17 @@ BLEND_COLOR rgba_blenders[] =
 {
   rgba_blend_normal,
   rgba_blend_copy,
+  rgba_blend_merge,
+  rgba_blend_red_tint,
+  rgba_blend_blue_tint,
 };
 
 BLEND_COLOR graya_blenders[] =
 {
   graya_blend_normal,
+  graya_blend_copy,
+  graya_blend_copy,
+  graya_blend_copy,
   graya_blend_copy,
 };
 
@@ -131,6 +137,63 @@ int rgba_blend_merge(int back, int front, int opacity)
   D_a = B_a + (F_a-B_a) * opacity / 255;
 
   return rgba(D_r, D_g, D_b, D_a);
+}
+
+// Part of this code comes from pixman library
+// Copyright (C) 2000 Keith Packard, member of The XFree86 Project, Inc.
+//               2005 Lars Knoll & Zack Rusin, Trolltech
+
+#define ONE_HALF 0x80
+#define G_SHIFT 8
+#define DIV_ONE_UN8(x) \
+    (((x) + ONE_HALF + (((x) + ONE_HALF) >> G_SHIFT)) >> G_SHIFT)
+
+static inline uint32_t
+blend_overlay(uint32_t d, uint32_t ad, uint32_t s, uint32_t as)
+{
+  uint32_t r;
+
+  if (2 * d < ad)
+    r = 2 * s * d;
+  else
+    r = as * ad - 2 * (ad - d) * (as - s);
+
+  return DIV_ONE_UN8(r);
+}
+
+int rgba_blend_color_tint(int back, int front, int opacity, int color)
+{
+  int F_r, F_g, F_b, F_a;
+  int B_r, B_g, B_b, B_a;
+
+  B_r = rgba_getr(front);
+  B_g = rgba_getg(front);
+  B_b = rgba_getb(front);
+  B_a = rgba_geta(front);
+
+  F_r = rgba_getr(color);
+  F_g = rgba_getg(color);
+  F_b = rgba_getb(color);
+  F_a = rgba_geta(color);
+
+  F_r = blend_overlay(B_r, B_a, F_r, F_a);
+  F_g = blend_overlay(B_g, B_a, F_g, F_a);
+  F_b = blend_overlay(B_b, B_a, F_b, F_a);
+
+  F_a = (B_a * (~B_a) + F_a * (~F_a)) / 255;
+  F_a += DIV_ONE_UN8(F_a * B_a);
+
+  return rgba_blend_normal(back, rgba(F_r, F_g, F_b, F_a), opacity);
+}
+
+int rgba_blend_red_tint(int back, int front, int opacity)
+{
+  return rgba_blend_color_tint(back, front, opacity, rgba(255, 0, 0, 128));
+}
+
+int rgba_blend_blue_tint(int back, int front, int opacity)
+{
+  return rgba_blend_color_tint(back, front, opacity, rgba(0, 0, 255, 128));
 }
 
 /**********************************************************************/

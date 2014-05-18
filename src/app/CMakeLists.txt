@@ -126,6 +126,7 @@ add_library(app-lib
   flatten.cpp
   gfxmode.cpp
   gui_xml.cpp
+  handle_anidir.cpp
   ini_file.cpp
   job.cpp
   launcher.cpp
@@ -155,6 +156,7 @@ add_library(app-lib
   ui/color_button.cpp
   ui/color_selector.cpp
   ui/color_sliders.cpp
+  ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
   ui/devconsole_view.cpp
   ui/document_view.cpp

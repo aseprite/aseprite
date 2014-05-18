@@ -55,6 +55,8 @@ namespace app {
     // is activated.
     int m_nextFrameTime;
     int m_curFrameTick;
+
+    bool m_pingPongForward;
   };
 
 } // namespace app

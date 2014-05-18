@@ -23,15 +23,19 @@
 #include "app/ui/mini_editor.h"
 
 #include "app/document.h"
+#include "app/handle_anidir.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/settings/document_settings.h"
+#include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "gfx/rect.h"
 #include "raster/sprite.h"
@@ -115,6 +119,7 @@ MiniEditorWindow::MiniEditorWindow()
   , m_docView(NULL)
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
+  , m_pingPongForward(true)
 {
   child_spacing = 0;
   setAutoRemap(false);
@@ -198,6 +203,7 @@ void MiniEditorWindow::onPlayClicked()
       m_nextFrameTime = -1;
 
     m_curFrameTick = ji_clock;
+    m_pingPongForward = true;
 
     m_playTimer.start();
   }
@@ -253,20 +259,34 @@ void MiniEditorWindow::onPlaybackTick()
   if (!miniEditor)
     return;
 
+  Document* document = miniEditor->getDocument();
+  Sprite* sprite = miniEditor->getSprite();
+  if (!document || !sprite)
+    return;
+
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(document);
+  if (!docSettings)
+    return;
+
   if (m_nextFrameTime >= 0) {
     m_nextFrameTime -= (ji_clock - m_curFrameTick);
 
     while (m_nextFrameTime <= 0) {
-      FrameNumber frame = miniEditor->getFrame().next();
-      if (frame > miniEditor->getSprite()->getLastFrame())
-        frame = FrameNumber(0);
+      FrameNumber frame = calculate_next_frame(
+        sprite,
+        miniEditor->getFrame(),
+        docSettings,
+        m_pingPongForward);
+
       miniEditor->setFrame(frame);
 
-      m_nextFrameTime += miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+      m_nextFrameTime += miniEditor->getSprite()->getFrameDuration(frame);
     }
 
     m_curFrameTick = ji_clock;
   }
+
   invalidate();
 }
 

@@ -85,13 +85,15 @@ namespace app {
                             int x, int y, int zoom);
 
   private:
-    void renderLayer(const Layer* layer,
-                     Image* image,
-                     int source_x, int source_y,
-                     FrameNumber frame, int zoom,
-                     void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-                     bool render_background,
-                     bool render_transparent);
+    void renderLayer(
+      const Layer* layer,
+      Image* image,
+      int source_x, int source_y,
+      FrameNumber frame, int zoom,
+      void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+      bool render_background,
+      bool render_transparent,
+      int blend_mode);
 
     const Document* m_document;
     const Sprite* m_sprite;

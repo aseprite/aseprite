@@ -317,6 +317,7 @@
     <part id="timeline_padding_br"              x="288" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_drop_layer_deco"         x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
     <part id="timeline_drop_frame_deco"         x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
+    <part id="timeline_loop_range"              x="240" y="132" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
   </parts>
 
   <stylesheet>
@@ -517,6 +518,11 @@
     <!-- timeline_drop_frame_deco -->
     <style id="timeline_drop_frame_deco">
       <background part="timeline_drop_frame_deco" />
+    </style>
+
+    <!-- timeline_loop_range -->
+    <style id="timeline_loop_range">
+      <background part="timeline_loop_range" />
     </style>
 
   </stylesheet>

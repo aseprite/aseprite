@@ -38,6 +38,7 @@
 #include "app/modules/gui.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
+#include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -105,6 +106,7 @@ static const char* kTimelineSelectedCelStyle = "timeline_selected_cel";
 static const char* kTimelineRangeOutlineStyle = "timeline_range_outline";
 static const char* kTimelineDropLayerDecoStyle = "timeline_drop_layer_deco";
 static const char* kTimelineDropFrameDecoStyle = "timeline_drop_frame_deco";
+static const char* kTimelineLoopRangeStyle = "timeline_loop_range";
 
 static const char* kTimelineActiveColor = "timeline_active";
 
@@ -152,6 +154,7 @@ Timeline::Timeline()
   , m_timelineRangeOutlineStyle(get_style(kTimelineRangeOutlineStyle))
   , m_timelineDropLayerDecoStyle(get_style(kTimelineDropLayerDecoStyle))
   , m_timelineDropFrameDecoStyle(get_style(kTimelineDropFrameDecoStyle))
+  , m_timelineLoopRangeStyle(get_style(kTimelineLoopRangeStyle))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -159,6 +162,7 @@ Timeline::Timeline()
   , m_scroll_y(0)
   , m_separator_x(100 * jguiscale())
   , m_separator_w(1)
+  , m_confPopup(NULL)
 {
   m_context->addObserver(this);
 
@@ -170,6 +174,8 @@ Timeline::~Timeline()
   detachDocument();
 
   m_context->removeObserver(this);
+
+  delete m_confPopup;
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -300,15 +306,15 @@ bool Timeline::onProcessMessage(Message* msg)
           m_state = STATE_MOVING_SEPARATOR;
           break;
         case A_PART_HEADER_ONIONSKIN_RANGE_LEFT: {
-          ISettings* m_settings = UIContext::instance()->getSettings();
-          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          ISettings* settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
           m_origFrames = docSettings->getOnionskinPrevFrames();
           break;
         }
         case A_PART_HEADER_ONIONSKIN_RANGE_RIGHT: {
-          ISettings* m_settings = UIContext::instance()->getSettings();
-          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          ISettings* settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_RIGHT;
           m_origFrames = docSettings->getOnionskinNextFrames();
           break;
@@ -418,8 +424,8 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames + (m_clk_frame - hot_frame);
             docSettings->setOnionskinPrevFrames(MAX(0, newValue));
             invalidate();
@@ -427,8 +433,8 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_RIGHT:
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames - (m_clk_frame - hot_frame);
             docSettings->setOnionskinNextFrames(MAX(0, newValue));
             invalidate();
@@ -600,14 +606,34 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
-          case A_PART_HEADER_GEAR:
-            // TODO show timeline/onionskin configuration
+          case A_PART_HEADER_GEAR: {
+            gfx::Rect gearBounds =
+              getPartBounds(A_PART_HEADER_GEAR).offset(getBounds().getOrigin());
+
+            if (!m_confPopup) {
+              ConfigureTimelinePopup* popup =
+                new ConfigureTimelinePopup();
+
+              popup->remapWindow();
+              m_confPopup = popup;
+            }
+
+            if (!m_confPopup->isVisible()) {
+              m_confPopup->moveWindow(gfx::Rect(
+                  gearBounds.x,
+                  gearBounds.y-m_confPopup->getBounds().h,
+                  m_confPopup->getBounds().w,
+                  m_confPopup->getBounds().h));
+              m_confPopup->openWindow();
+            }
+            else
+              m_confPopup->closeWindow(NULL);
             break;
+          }
 
           case A_PART_HEADER_ONIONSKIN: {
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings =
-              m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             if (docSettings)
               docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
             break;
@@ -873,6 +899,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
+    drawLoopRange(g);
     drawRangeOutline(g);
   }
   catch (const LockedDocumentException&) {
@@ -1056,8 +1083,8 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
-  ISettings* m_settings = UIContext::instance()->getSettings();
-  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
 
@@ -1207,6 +1234,29 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 }
 
+void Timeline::drawLoopRange(ui::Graphics* g)
+{
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
+  if (!docSettings->getLoopAnimation())
+    return;
+
+  FrameNumber begin, end;
+  docSettings->getLoopRange(&begin, &end);
+  if (begin > end)
+    return;
+
+  gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, 0, begin);
+  gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, 0, end);
+  gfx::Rect bounds = bounds1.createUnion(bounds2);
+
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
+  
+  drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+}
+
 void Timeline::drawRangeOutline(ui::Graphics* g)
 {
   gfx::Rect clipBounds;
@@ -1310,8 +1360,8 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
 
 gfx::Rect Timeline::getOnionskinFramesBounds() const
 {
-  ISettings* m_settings = UIContext::instance()->getSettings();
-  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   if (docSettings->getUseOnionskin()) {
     FrameNumber firstFrame = m_frame.previous(docSettings->getOnionskinPrevFrames());
     FrameNumber lastFrame = m_frame.next(docSettings->getOnionskinNextFrames());
@@ -1509,8 +1559,8 @@ void Timeline::updateStatusBar()
   switch (m_hot_part) {
 
     case A_PART_HEADER_ONIONSKIN: {
-      ISettings* m_settings = UIContext::instance()->getSettings();
-      IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+      ISettings* settings = UIContext::instance()->getSettings();
+      IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
       if (docSettings) {
         StatusBar::instance()->setStatusText(0, "Onionskin is %s",
           docSettings->getUseOnionskin() ? "enabled": "disabled");

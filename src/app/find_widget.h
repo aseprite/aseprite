@@ -34,6 +34,32 @@ namespace app {
     return child;
   }
 
+  class finder {
+  public:
+    finder(ui::Widget* parent) : m_parent(parent) {
+    }
+
+    finder& operator>>(const char* id) {
+      m_lastId = id;
+      return *this;
+    }
+
+    finder& operator>>(const std::string& id) {
+      m_lastId = id;
+      return *this;
+    }
+
+    template<typename T>
+    finder& operator>>(T*& child) {
+      child = app::find_widget<T>(m_parent, m_lastId.c_str());
+      return *this;
+    }
+
+  private:
+    ui::Widget* m_parent;
+    std::string m_lastId;
+  };
+
 } // namespace app
 
 #endif
