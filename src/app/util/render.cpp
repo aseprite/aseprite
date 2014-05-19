@@ -447,7 +447,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
 
         int blend_mode = -1;
         if (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_Merge)
-          blend_mode = BLEND_MODE_MERGE;
+          blend_mode = BLEND_MODE_NORMAL;
         else if (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_RedBlueTint)
           blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
