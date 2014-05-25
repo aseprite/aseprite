@@ -73,6 +73,8 @@
 // Space between icons and other information in the layer.
 #define ICONSEP         (2*jguiscale())
 
+#define OUTLINE_WIDTH   (2*jguiscale()) // TODO theme specific
+
 // Space between the icon-bitmap and the edge of the surrounding button.
 #define ICONBORDER      0
 
@@ -638,6 +640,7 @@ bool Timeline::onProcessMessage(Message* msg)
               docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
             break;
           }
+
           case A_PART_HEADER_FRAME:
             // Show the frame pop-up menu.
             if (mouseMsg->right()) {
@@ -650,6 +653,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
+
           case A_PART_LAYER_TEXT:
             // Show the layer pop-up menu.
             if (mouseMsg->right()) {
@@ -662,6 +666,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
+
           case A_PART_LAYER_EYE_ICON:
             // Hide/show layer.
             if (m_hot_layer == m_clk_layer &&
@@ -675,6 +680,7 @@ bool Timeline::onProcessMessage(Message* msg)
               m_document->notifyGeneralUpdate();
             }
             break;
+
           case A_PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot_layer == m_clk_layer &&
@@ -685,6 +691,7 @@ bool Timeline::onProcessMessage(Message* msg)
               layer->setWritable(!layer->isWritable());
             }
             break;
+
           case A_PART_CEL: {
             // Show the cel pop-up menu.
             if (mouseMsg->right()) {
@@ -701,6 +708,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
           }
+
         }
 
         if (mouseMsg->left() && m_state == STATE_MOVING_RANGE) {
@@ -1265,7 +1273,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
     case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
     case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
   }
-  IntersectClip clip(g, clipBounds);
+  IntersectClip clip(g, clipBounds.enlarge(OUTLINE_WIDTH));
   if (!clip)
     return;
 
@@ -1283,15 +1291,14 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
       bounds =
         getPartBounds(A_PART_CEL, drop.layerBegin(), drop.frameBegin()).createUnion(
           getPartBounds(A_PART_CEL, drop.layerEnd(), drop.frameEnd()))
-        // TODO theme specific
-        .enlarge(2*jguiscale());
+        .enlarge(OUTLINE_WIDTH);
 
       m_timelineRangeOutlineStyle->paint(g, bounds, NULL, Style::active());
       break;
 
     case Range::kFrames:
       bounds = getPartBounds(A_PART_HEADER_FRAME, 0, drop.frameBegin());
-      bounds.w = 5 * jguiscale(); // TODO get height from the skin info
+      bounds.w = 5 * jguiscale(); // TODO get width from the skin info
       bounds.x -= bounds.w/2;
 
       m_timelineDropFrameDecoStyle->paint(g, bounds, NULL, Style::State());
@@ -1387,7 +1394,7 @@ gfx::Rect Timeline::getCelsBounds() const
 
 gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
 {
-  const gfx::Rect bounds = getBounds();
+  const gfx::Rect bounds = getClientBounds();
 
   switch (part) {
 
@@ -1474,25 +1481,29 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
       }
       break;
 
-    case A_PART_RANGE_OUTLINE:
+    case A_PART_RANGE_OUTLINE: {
+      gfx::Rect rc;
       switch (m_range.type()) {
         case Range::kNone: break; // Return empty rectangle
         case Range::kCels:
-          return
-            getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
-              getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd()));
-          // TODO theme specific
-          //.enlarge(2*jguiscale());
+          rc = getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
+            getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd()));
+          break;
         case Range::kFrames:
-          return
-            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
-              getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
+          rc = getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
+            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
+          break;
         case Range::kLayers:
-          return
-            getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
+          rc = getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
               getPartBounds(A_PART_LAYER, m_range.layerEnd()));
+          break;
       }
-      break;
+      int s = OUTLINE_WIDTH;
+      rc.enlarge(s);
+      if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
+      if (rc.y < bounds.y) rc.offset(0, s).inflate(0, -s);
+      return rc;
+    }
   }
 
   return gfx::Rect();
