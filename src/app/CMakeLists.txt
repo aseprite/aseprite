@@ -183,6 +183,7 @@ add_library(app-lib
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_editor.cpp
+  ui/notifications.cpp
   ui/palette_listbox.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp

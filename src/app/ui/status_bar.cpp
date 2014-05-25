@@ -371,14 +371,6 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   }
 }
 
-void StatusBar::showNotification(const char* text, const char* link)
-{
-  m_linkLabel->setText(text);
-  m_linkLabel->setUrl(link);
-  layout();
-  invalidate();
-}
-
 //////////////////////////////////////////////////////////////////////
 // Progress bars stuff
 

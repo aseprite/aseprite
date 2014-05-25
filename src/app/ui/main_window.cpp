@@ -36,6 +36,9 @@
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/mini_editor.h"
+#include "app/ui/notifications.h"
+#include "app/ui/skin/skin_property.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/start_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
@@ -77,6 +80,7 @@ MainWindow::MainWindow()
   Widget* box_timeline = findChild("timeline");
 
   m_menuBar = new MainMenuBar();
+  m_notifications = new Notifications();
   m_contextBar = new ContextBar();
   m_statusBar = new StatusBar();
   m_colorBar = new ColorBar(box_colorbar->getAlign());
@@ -99,12 +103,16 @@ MainWindow::MainWindow()
   m_tabsBar->setExpansive(true);
   m_timeline->setExpansive(true);
   m_workspace->setExpansive(true);
+  m_notifications->setVisible(false);
 
   // Setup the menus
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
   // Add the widgets in the boxes
-  if (box_menubar) box_menubar->addChild(m_menuBar);
+  if (box_menubar) {
+    box_menubar->addChild(m_menuBar);
+    box_menubar->addChild(m_notifications);
+  }
   if (box_contextbar) box_contextbar->addChild(m_contextBar);
   if (box_colorbar) box_colorbar->addChild(m_colorBar);
   if (box_toolbar) box_toolbar->addChild(m_toolBar);
@@ -147,6 +155,13 @@ void MainWindow::reloadMenus()
 
   layout();
   invalidate();
+}
+
+void MainWindow::showNotification(const char* text, const char* url)
+{
+  m_notifications->addLink(text, url);
+  m_notifications->setVisible(true);
+  m_notifications->getParent()->layout();
 }
 
 void MainWindow::setMode(Mode mode)

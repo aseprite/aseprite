@@ -331,6 +331,11 @@ RecentFiles* App::getRecentFiles() const
   return &m_modules->m_recent_files;
 }
 
+void App::showNotification(const char* text, const char* url)
+{
+  m_mainWindow->showNotification(text, url);
+}
+
 // Updates palette and redraw the screen.
 void app_refresh_screen()
 {

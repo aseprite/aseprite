@@ -33,6 +33,7 @@ namespace app {
   class ContextBar;
   class MainMenuBar;
   class MiniEditorWindow;
+  class Notifications;
   class StartView;
   class StatusBar;
   class Tabs;
@@ -60,6 +61,7 @@ namespace app {
 
     void start();
     void reloadMenus();
+    void showNotification(const char* text, const char* url);
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);
@@ -93,6 +95,7 @@ namespace app {
     Workspace* m_workspace;
     MiniEditorWindow* m_miniEditor;
     StartView* m_startView;
+    Notifications* m_notifications;
   };
 
 }

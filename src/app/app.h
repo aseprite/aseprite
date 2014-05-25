@@ -71,6 +71,8 @@ namespace app {
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
 
+    void showNotification(const char* text, const char* url);
+
     // App Signals
     Signal0<void> Exit;
     Signal0<void> PaletteChange;
