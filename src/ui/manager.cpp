@@ -480,7 +480,7 @@ void Manager::generateMessagesFromSheEvents()
         jmouse_set_cursor(kNoCursor);
         setMouse(NULL);
 
-        _internal_set_mouse_position(gfx::Point(-1, -1));
+        _internal_no_mouse_position();
         break;
       }
 
@@ -541,9 +541,9 @@ void Manager::generateMessagesFromSheEvents()
   }
 
   if (lastMouseMoveEvent.type() != she::Event::None) {
-    _internal_set_mouse_position(sheEvent.position());
+    _internal_set_mouse_position(lastMouseMoveEvent.position());
 
-    handleMouseMove(sheEvent.position(), m_mouseButtons);
+    handleMouseMove(lastMouseMoveEvent.position(), m_mouseButtons);
   }
 }
 

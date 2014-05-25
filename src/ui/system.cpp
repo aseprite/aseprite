@@ -71,14 +71,17 @@ static void clock_inc()
 
 END_OF_STATIC_FUNCTION(clock_inc);
 
-static void set_mouse_cursor(Cursor* cursor)
+static void update_mouse_overlay(Cursor* cursor)
 {
   mouse_cursor = cursor;
 
-  if (mouse_cursor) {
+  if (mouse_cursor && mouse_scares == 0) {
     if (!mouse_cursor_overlay) {
-      mouse_cursor_overlay = new Overlay(mouse_cursor->getSurface(),
-                                         gfx::Point(), Overlay::MouseZOrder);
+      mouse_cursor_overlay = new Overlay(
+        mouse_cursor->getSurface(),
+        gfx::Point(m_x[0], m_y[0]),
+        Overlay::MouseZOrder);
+
       OverlayManager::instance()->addOverlay(mouse_cursor_overlay);
     }
     else {
@@ -92,6 +95,18 @@ static void set_mouse_cursor(Cursor* cursor)
     delete mouse_cursor_overlay;
     mouse_cursor_overlay = NULL;
   }
+}
+
+static void update_mouse_cursor()
+{
+  show_mouse(NULL);
+
+  if (mouse_cursor_type == kNoCursor)
+    update_mouse_overlay(NULL);
+  else
+    update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
+
+  dirty_display_flag = true;
 }
 
 int _ji_system_init()
@@ -116,7 +131,7 @@ int _ji_system_init()
 void _ji_system_exit()
 {
   SetDisplay(NULL);
-  set_mouse_cursor(NULL);
+  update_mouse_overlay(NULL);
 
   remove_int(clock_inc);
 }
@@ -170,19 +185,8 @@ void jmouse_set_cursor(CursorType type)
   if (mouse_cursor_type == type)
     return;
 
-  Theme* theme = CurrentTheme::get();
   mouse_cursor_type = type;
-
-  if (type == kNoCursor) {
-    show_mouse(NULL);
-    set_mouse_cursor(NULL);
-  }
-  else {
-    show_mouse(NULL);
-    set_mouse_cursor(theme->getCursor(type));
-  }
-
-  dirty_display_flag = true;
+  update_mouse_cursor();
 }
 
 void jmouse_hide()
@@ -195,6 +199,9 @@ void jmouse_show()
 {
   ASSERT(mouse_scares > 0);
   mouse_scares--;
+
+  if (mouse_scares == 0)
+    update_mouse_cursor();
 }
 
 bool jmouse_is_hidden()
@@ -252,10 +259,7 @@ bool jmouse_poll()
 void _internal_no_mouse_position()
 {
   moved = true;
-  m_x[1] = -1;
-  m_y[1] = -1;
-  m_x[0] = -1;
-  m_y[0] = -1;
+  update_mouse_overlay(NULL);
 }
 
 void _internal_set_mouse_position(const gfx::Point& newPos)
