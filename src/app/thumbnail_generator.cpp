@@ -26,6 +26,7 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
+#include "app/util/render.h"
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -79,10 +80,12 @@ private:
         m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
 
         // Render the 'sprite' in one plain 'image'
-        base::UniquePtr<Image> image(Image::create(sprite->getPixelFormat(),
-                                             sprite->getWidth(),
-                                             sprite->getHeight()));
-        sprite->render(image, 0, 0, FrameNumber(0));
+        RenderEngine renderEngine(m_fop->document,
+          sprite, NULL, FrameNumber(0));
+
+        base::UniquePtr<Image> image(renderEngine.renderSprite(
+            0, 0, sprite->getWidth(), sprite->getHeight(),
+            FrameNumber(0), 0, true, false));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->getWidth() / MAX(image->getWidth(), image->getHeight());
