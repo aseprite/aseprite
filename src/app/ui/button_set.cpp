@@ -129,11 +129,11 @@ int ButtonSet::getSelectedItem() const
 void ButtonSet::setSelectedItem(int index)
 {
   Item* sel = findSelectedItem();
+  if (sel && sel->getIndex() == index)
+    return;
 
-  if (!sel || sel->getIndex() != index) {
-    sel->setSelected(false);
-    m_items[index]->setSelected(true);
-  }
+  sel->setSelected(false);
+  m_items[index]->setSelected(true);
 }
 
 Widget* ButtonSet::getButtonAt(int index)
