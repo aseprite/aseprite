@@ -530,13 +530,15 @@ void PixelsMovement::dropImage()
   m_document->destroyExtraCel();
 }
 
-void PixelsMovement::discardImage()
+void PixelsMovement::discardImage(bool commit)
 {
   m_isDragging = false;
 
   // Deselect the mask (here we don't stamp the image).
   m_document->getApi().deselectMask();
-  m_undoTransaction.commit();
+
+  if (commit)
+    m_undoTransaction.commit();
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).

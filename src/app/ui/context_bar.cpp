@@ -476,6 +476,32 @@ protected:
   }
 };
 
+class ContextBar::DropPixelsField : public ButtonSet
+{
+public:
+  DropPixelsField() : ButtonSet(2, 1, -1,
+    PART_DROP_PIXELS_OK,
+    PART_DROP_PIXELS_CANCEL) {
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    tooltipManager->addTooltipFor(getButtonAt(0), "Drop pixels here", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(1), "Cancel drag and drop", JI_BOTTOM);
+  }
+
+  Signal1<void, ContextBarObserver::DropAction> DropPixels;
+
+protected:
+  void onItemChange() OVERRIDE {
+    ButtonSet::onItemChange();
+
+    switch (getSelectedItem()) {
+      case 0: DropPixels(ContextBarObserver::DropPixels); break;
+      case 1: DropPixels(ContextBarObserver::CancelDrag); break;
+    }
+  }
+};
+
 class ContextBar::GrabAlphaField : public CheckBox
 {
 public:
@@ -503,6 +529,7 @@ ContextBar::ContextBar()
   setBgColor(theme->getColor(ThemeColor::Workspace));
 
   addChild(m_selectionOptionsBox = new HBox());
+  m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
@@ -554,10 +581,12 @@ ContextBar::ContextBar()
     "When unchecked -the default behavior- the color is picked\n"
     "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
   m_selectionMode->setupTooltips(tooltipManager);
+  m_dropPixels->setupTooltips(tooltipManager);
 
   App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
   App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
+  m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
   onCurrentToolChange();
 }
@@ -609,6 +638,11 @@ void ContextBar::onCurrentToolChange()
 {
   ISettings* settings = UIContext::instance()->getSettings();
   updateFromTool(settings->getCurrentTool());
+}
+
+void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
+{
+  notifyObservers(&ContextBarObserver::onDropPixels, action);
 }
 
 void ContextBar::updateFromTool(tools::Tool* tool)
@@ -680,7 +714,22 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_tolerance->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
+  m_selectionMode->setVisible(true);
+  m_dropPixels->setVisible(false);
 
+  layout();
+}
+
+void ContextBar::updateForMovingPixels()
+{
+  tools::Tool* tool = App::instance()->getToolBox()->getToolById(
+    tools::WellKnownTools::RectangularMarquee);
+  if (tool)
+    updateFromTool(tool);
+
+  m_dropPixels->deselectItems();
+  m_dropPixels->setVisible(true);
+  m_selectionMode->setVisible(false);
   layout();
 }
 

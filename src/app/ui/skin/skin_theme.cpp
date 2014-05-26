@@ -283,6 +283,10 @@ SkinTheme::SkinTheme()
   sheet_mapping["drop_down_button_right_selected"] = PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW;
   sheet_mapping["transformation_handle"] = PART_TRANSFORMATION_HANDLE;
   sheet_mapping["pivot_handle"] = PART_PIVOT_HANDLE;
+  sheet_mapping["drop_pixels_ok"] = PART_DROP_PIXELS_OK;
+  sheet_mapping["drop_pixels_ok_selected"] = PART_DROP_PIXELS_OK_SELECTED;
+  sheet_mapping["drop_pixels_cancel"] = PART_DROP_PIXELS_CANCEL;
+  sheet_mapping["drop_pixels_cancel_selected"] = PART_DROP_PIXELS_CANCEL_SELECTED;
 
   color_mapping["text"] = ThemeColor::Text;
   color_mapping["disabled"] = ThemeColor::Disabled;

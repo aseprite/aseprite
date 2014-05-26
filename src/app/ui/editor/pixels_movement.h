@@ -82,7 +82,7 @@ namespace app {
 
     void dropImageTemporarily();
     void dropImage();
-    void discardImage();
+    void discardImage(bool commit = true);
     bool isDragging() const;
 
     gfx::Rect getImageBounds();

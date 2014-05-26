@@ -323,6 +323,10 @@
     <part id="timeline_loop_range"              x="240" y="132" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
     <part id="flag_normal"                      x="0" y="240" w="16" h="10" />
     <part id="flag_highlight"                   x="16" y="240" w="16" h="10" />
+    <part id="drop_pixels_ok"                   x="176" y="176" w="7" h="8" />
+    <part id="drop_pixels_ok_selected"          x="176" y="184" w="7" h="8" />
+    <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
+    <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
   </parts>
 
   <stylesheet>

@@ -22,7 +22,7 @@
 
 #include "app/context_observer.h"
 #include "app/settings/settings_observers.h"
-#include "app/ui/context_bar.h"
+#include "app/ui/context_bar_observer.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
@@ -39,7 +39,8 @@ namespace app {
   class MovingPixelsState
     : public StandbyState
     , ContextObserver
-    , SelectionSettingsObserver {
+    , SelectionSettingsObserver
+    , ContextBarObserver {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
@@ -61,8 +62,10 @@ namespace app {
     // SettingsObserver
     virtual void onSetMoveTransparentColor(app::Color newColor) OVERRIDE;
 
-    virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
+    // ContextBarObserver
+    virtual void onDropPixels(ContextBarObserver::DropAction action) OVERRIDE;
 
+    virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
 
   private:
     void setTransparentColor(const app::Color& color);
