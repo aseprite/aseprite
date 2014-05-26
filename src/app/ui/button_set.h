@@ -34,6 +34,7 @@ namespace app {
 
     int getSelectedItem() const;
     void setSelectedItem(int index);
+    void deselectItems();
 
     ui::Widget* getButtonAt(int index);
 

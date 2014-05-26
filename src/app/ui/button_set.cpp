@@ -136,6 +136,13 @@ void ButtonSet::setSelectedItem(int index)
   m_items[index]->setSelected(true);
 }
 
+void ButtonSet::deselectItems()
+{
+  Item* sel = findSelectedItem();
+  if (sel)
+    sel->setSelected(false);
+}
+
 Widget* ButtonSet::getButtonAt(int index)
 {
   return m_items[index];
