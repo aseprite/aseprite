@@ -1,7 +1,15 @@
+# Next release
+
+* ColorSelector: change color type when a tab is pressed
+* canvas dialog should show width and height and expansion point
+* double click or right click a range outline in timeline should open popups or properties
+
 # Hard to reproduce bugs
 
-* toolbar crashes
-* click desktop bug
+* does lock alpha work correctly?
+* does onscrollchange notification calls onscrollchange notification?
+* random clicks on toolbar crashes the program
+* click Desktop item in file selector crashes the program
 
 # Tasks
 
