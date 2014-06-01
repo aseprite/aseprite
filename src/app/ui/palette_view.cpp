@@ -73,6 +73,13 @@ PaletteView::PaletteView(bool editable)
   this->border_width.l = this->border_width.r = 1 * jguiscale();
   this->border_width.t = this->border_width.b = 1 * jguiscale();
   this->child_spacing = 1 * jguiscale();
+
+  m_slot = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
+}
+
+PaletteView::~PaletteView()
+{
+  App::instance()->PaletteChange.disconnect(m_slot);
 }
 
 void PaletteView::setColumns(int columns)
@@ -389,6 +396,11 @@ void PaletteView::update_scroll(int color)
     scroll.y = y-vp.h+m_boxsize+2;
 
   view->setViewScroll(scroll);
+}
+
+void PaletteView::onAppPaletteChange()
+{
+  invalidate();
 }
 
 } // namespace app
