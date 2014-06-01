@@ -67,6 +67,7 @@ namespace app {
     void layerIndex(LayerIndex layerIndex);
     Palette* palette();
     Image* image(int* x = NULL, int* y = NULL, int* opacity = NULL) const;
+    Palette* palette() const;
 
   private:
     Document* m_document;
