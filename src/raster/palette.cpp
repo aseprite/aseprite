@@ -472,6 +472,15 @@ bool Palette::save(const char *filename) const
   return success;
 }
 
+int Palette::findExactMatch(int r, int g, int b) const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i)
+    if (getEntry(i) == rgba(r, g, b, 255))
+      return i;
+
+  return -1;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Based on Allegro's bestfit_color
 

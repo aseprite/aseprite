@@ -101,6 +101,7 @@ namespace raster {
     static Palette* load(const char *filename);
     bool save(const char *filename) const;
 
+    int findExactMatch(int r, int g, int b) const;
     int findBestfit(int r, int g, int b, int mask_index = 0) const;
 
   private:
