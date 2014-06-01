@@ -174,7 +174,8 @@ void NewFileCommand::onExecute(Context* context)
                                       (format == IMAGE_INDEXED ? ncolors: 256)));
       Sprite* sprite(document->getSprite());
 
-      get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
+      if (sprite->getPixelFormat() != IMAGE_GRAYSCALE)
+        get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
 
       usprintf(buf, "Sprite-%04d", ++_sprite_counter);
       document->setFilename(buf);
