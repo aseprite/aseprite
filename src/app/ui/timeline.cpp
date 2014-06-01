@@ -1971,7 +1971,7 @@ void Timeline::dropFrames(DropOp op, const Range& drop)
 
 void Timeline::dropLayers(DropOp op, const Range& drop)
 {
-  ASSERT(m_clk_layer >= 0 && m_clk_layer < m_layers.size());
+  ASSERT(m_clk_layer >= 0 && m_clk_layer < (int)m_layers.size());
   if (m_clk_layer < 0)
     return;
 
