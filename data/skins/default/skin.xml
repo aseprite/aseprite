@@ -327,6 +327,7 @@
     <part id="drop_pixels_ok_selected"          x="176" y="184" w="7" h="8" />
     <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
     <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
+    <part id="warning_box"                      x="112" y="80" w="9" h="10" />
   </parts>
 
   <stylesheet>
@@ -543,6 +544,15 @@
     </style>
     <style id="flag:clicked">
       <background part="flag_highlight" color="flag_clicked" />
+    </style>
+
+    <!-- warning_box -->
+    <style id="warning_box">
+      <background color="face" />
+      <icon part="warning_box" align="center" valign="middle" />
+    </style>
+    <style id="warning_box:hover">
+      <background color="hot_face" />
     </style>
 
   </stylesheet>

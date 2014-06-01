@@ -35,11 +35,8 @@ namespace app {
   void dotted_mode(int offset);
 
   void draw_color_button(ui::Graphics* g,
-                         const gfx::Rect& rc,
-                         bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
-                         bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                         PixelFormat pixelFormat, const app::Color& color,
-                         bool hot, bool drag);
+    const gfx::Rect& rc, const app::Color& color,
+    bool hot, bool drag);
 
 } // namespace app
 

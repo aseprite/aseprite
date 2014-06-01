@@ -165,6 +165,23 @@ void Rules::paint(ui::Graphics* g,
   if (m_text) m_text->paint(g, bounds, text);
 }
 
+gfx::Size Rules::preferredSize(const char* text)
+{
+  gfx::Size sz(0, 0);
+  if (m_icon) {
+    sz.w += m_icon->getPart()->getBitmap(0)->w;
+    sz.h = m_icon->getPart()->getBitmap(0)->h;
+  }
+  if (m_text && text) {
+    ui::ScreenGraphics g;
+    gfx::Size textSize = g.measureString(text);
+    //if (sz.w > 0) sz.w += 2;    // TODO text separation
+    sz.w += textSize.w;
+    sz.h = MAX(sz.h, textSize.h);
+  }
+  return sz;
+}
+
 Style::Style(css::Sheet& sheet, const std::string& id)
   : m_id(id)
   , m_compoundStyle(sheet.compoundStyle(id))
@@ -179,10 +196,7 @@ Style::~Style()
   }
 }
 
-void Style::paint(ui::Graphics* g,
-  const gfx::Rect& bounds,
-  const char* text,
-  const State& state)
+Rules* Style::getRulesFromState(const State& state)
 {
   Rules* rules = NULL;
 
@@ -195,7 +209,22 @@ void Style::paint(ui::Graphics* g,
     m_rules[state] = rules;
   }
 
-  rules->paint(g, bounds, text);
+  return rules;
+}
+
+void Style::paint(ui::Graphics* g,
+  const gfx::Rect& bounds,
+  const char* text,
+  const State& state)
+{
+  getRulesFromState(state)->paint(g, bounds, text);
+}
+
+gfx::Size Style::preferredSize(
+  const char* text,
+  const State& state)
+{
+  return getRulesFromState(state)->preferredSize(text);
 }
 
 } // namespace skin

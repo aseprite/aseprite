@@ -29,6 +29,7 @@
 #include "ui/button.h"
 #include "ui/grid.h"
 #include "ui/label.h"
+#include "ui/tooltips.h"
 #include "ui/view.h"
 
 namespace app {
@@ -54,6 +55,7 @@ namespace app {
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
     void onColorTypeButtonClick(ui::Event& ev);
+    void onFixWarningClick(ui::Event& ev);
     void onPaletteChange();
 
   private:
@@ -61,6 +63,9 @@ namespace app {
     void setColorWithSignal(const app::Color& color);
     void findBestfitIndex(const app::Color& color);
 
+    class WarningIcon;
+
+    ui::TooltipManager m_tooltips;
     ui::Box m_vbox;
     ui::Box m_topBox;
     app::Color m_color;
@@ -76,6 +81,7 @@ namespace app {
     HsvSliders m_hsvSliders;
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
+    WarningIcon* m_warningIcon;
     Signal0<void>::SlotType* m_onPaletteChangeSlot;
 
     // This variable is used to avoid updating the m_hexColorEntry text

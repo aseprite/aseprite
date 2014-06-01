@@ -195,13 +195,12 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
   }
 }
 
-static void draw_color(ui::Graphics* g, const Rect& rc, PixelFormat pixelFormat, const app::Color& color)
+static void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
 {
   if (rc.w < 1 || rc.h < 1)
     return;
 
   app::Color::Type type = color.getType();
-  BITMAP* graph;
 
   if (type == app::Color::MaskType) {
     rectgrid(g, rc, gfx::Size(rc.w/4, rc.h/2));
@@ -222,59 +221,12 @@ static void draw_color(ui::Graphics* g, const Rect& rc, PixelFormat pixelFormat,
     return;
   }
 
-  switch (pixelFormat) {
-
-    case IMAGE_INDEXED:
-      g->fillRect(
-        color_utils::color_for_ui(
-          app::Color::fromIndex(
-            color_utils::color_for_image(color, pixelFormat))),
-        rc);
-      break;
-
-    case IMAGE_RGB:
-      graph = create_bitmap_ex(32, rc.w, rc.h);
-      if (!graph)
-        return;
-
-      {
-        raster::color_t rgb_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        app::Color color2 = app::Color::fromRgb(rgba_getr(rgb_bitmap_color),
-                                                rgba_getg(rgb_bitmap_color),
-                                                rgba_getb(rgb_bitmap_color));
-        rectfill(graph, 0, 0, rc.w-1, rc.h-1,
-                 color_utils::color_for_allegro(color2, 32));
-      }
-
-      g->blit(graph, 0, 0, rc.x, rc.y, rc.w, rc.h);
-
-      destroy_bitmap(graph);
-      break;
-
-    case IMAGE_GRAYSCALE:
-      graph = create_bitmap_ex(32, rc.w, rc.h);
-      if (!graph)
-        return;
-
-      {
-        int gray_bitmap_color = color_utils::color_for_image(color, pixelFormat);
-        app::Color color2 = app::Color::fromGray(graya_getv(gray_bitmap_color));
-        rectfill(graph, 0, 0, rc.w-1, rc.h-1,
-                 color_utils::color_for_allegro(color2, 32));
-      }
-
-      g->blit(graph, 0, 0, rc.x, rc.y, rc.w, rc.h);
-
-      destroy_bitmap(graph);
-      break;
-  }
+  g->fillRect(color_utils::color_for_ui(color), rc);
 }
 
 void draw_color_button(ui::Graphics* g,
-                       const Rect& rc,
-                       bool outer_nw, bool outer_n, bool outer_ne, bool outer_e,
-                       bool outer_se, bool outer_s, bool outer_sw, bool outer_w,
-                       PixelFormat pixelFormat, const app::Color& color, bool hot, bool drag)
+  const Rect& rc, const app::Color& color,
+  bool hot, bool drag)
 {
   SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
   int scale = ui::jguiscale();
@@ -283,20 +235,20 @@ void draw_color_button(ui::Graphics* g,
   draw_color(g,
     Rect(rc.x+1*scale,
       rc.y+1*scale,
-      rc.w-((outer_e) ? 2*scale: 1*scale),
-      rc.h-((outer_s) ? 2*scale: 1*scale)), pixelFormat, color);
+      rc.w-2*scale,
+      rc.h-2*scale), color);
 
   // Draw opaque border
   {
     int parts[8] = {
-      outer_nw ? PART_COLORBAR_0_NW: PART_COLORBAR_3_NW,
-      outer_n  ? PART_COLORBAR_0_N : PART_COLORBAR_2_N,
-      outer_ne ? PART_COLORBAR_1_NE: (outer_e ? PART_COLORBAR_3_NE: PART_COLORBAR_2_NE),
-      outer_e  ? PART_COLORBAR_1_E : PART_COLORBAR_0_E,
-      outer_se ? PART_COLORBAR_3_SE: (outer_s ? PART_COLORBAR_2_SE: (outer_e ? PART_COLORBAR_1_SE: PART_COLORBAR_0_SE)),
-      outer_s  ? PART_COLORBAR_2_S : PART_COLORBAR_0_S,
-      outer_sw ? PART_COLORBAR_2_SW: (outer_s ? PART_COLORBAR_3_SW: PART_COLORBAR_1_SW),
-      outer_w  ? PART_COLORBAR_0_W : PART_COLORBAR_1_W,
+      PART_COLORBAR_0_NW,
+      PART_COLORBAR_0_N,
+      PART_COLORBAR_1_NE,
+      PART_COLORBAR_1_E,
+      PART_COLORBAR_3_SE,
+      PART_COLORBAR_2_S,
+      PART_COLORBAR_2_SW,
+      PART_COLORBAR_0_W
     };
     theme->draw_bounds_array(g, rc, parts);
   }
@@ -304,7 +256,7 @@ void draw_color_button(ui::Graphics* g,
   // Draw hot
   if (hot) {
     theme->draw_bounds_nw(g,
-      gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - (outer_s ? 1*scale: 0)),
+      gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - 1*scale),
       PART_COLORBAR_BORDER_HOTFG_NW);
   }
 }

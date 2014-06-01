@@ -601,14 +601,10 @@ int Color::getIndex() const
       return 0;
 
     case Color::RgbType:
-      PRINTF("Getting `index' from a RGB color\n"); // TODO
-      ASSERT(false);
-      break;
+      return get_current_palette()->findBestfit(getRed(), getGreen(), getBlue());
 
     case Color::HsvType:
-      PRINTF("Getting `index' from a HSV color\n"); // TODO
-      ASSERT(false);
-      break;
+      return get_current_palette()->findBestfit(getRed(), getGreen(), getBlue());
 
     case Color::GrayType:
       return m_value.gray;

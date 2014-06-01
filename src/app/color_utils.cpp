@@ -168,10 +168,7 @@ raster::color_t color_utils::color_for_image(const app::Color& color, PixelForma
       c = graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
-      if (color.getType() == app::Color::IndexType)
-        c = color.getIndex();
-      else
-        c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
+      c = color.getIndex();
       break;
   }
 

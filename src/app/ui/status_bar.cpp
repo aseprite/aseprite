@@ -499,10 +499,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
 
     // Draw color
     draw_color_button(g, gfx::Rect(x, rc.y, 32*jguiscale(), rc.h),
-      true, true, true, true,
-      true, true, true, true,
-      app_get_current_pixel_format(), m_color,
-      false, false);
+      m_color, false, false);
 
     x += (32+4)*jguiscale();
 
