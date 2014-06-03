@@ -1,19 +1,18 @@
+/****************************************************************************
+
+gif_lib_private.h - internal giflib routines and structures
+
+****************************************************************************/
+
 #ifndef _GIF_LIB_PRIVATE_H
 #define _GIF_LIB_PRIVATE_H
 
 #include "gif_lib.h"
 #include "gif_hash.h"
 
-#define PROGRAM_NAME "GIFLIB"
-
-#ifdef SYSV
-#define VersionStr "Gif library module,\t\tEric S. Raymond\n\
-                    (C) Copyright 1997 Eric S. Raymond\n"
-#else
-#define VersionStr PROGRAM_NAME "    IBMPC " GIF_LIB_VERSION \
-                    "    Eric S. Raymond,    " __DATE__ ",   " \
-                    __TIME__ "\n" "(C) Copyright 1997 Eric S. Raymond\n"
-#endif /* SYSV */
+#define EXTENSION_INTRODUCER      0x21
+#define DESCRIPTOR_INTRODUCER     0x2c
+#define TERMINATOR_INTRODUCER     0x3b
 
 #define LZ_MAX_CODE         4095    /* Biggest code possible in 12 bits. */
 #define LZ_BITS             12
@@ -52,8 +51,9 @@ typedef struct GifFilePrivateType {
     GifByteType Suffix[LZ_MAX_CODE + 1];    /* So we can trace the codes. */
     GifPrefixType Prefix[LZ_MAX_CODE + 1];
     GifHashTableType *HashTable;
+    bool gif89;
 } GifFilePrivateType;
 
-extern int _GifError;
-
 #endif /* _GIF_LIB_PRIVATE_H */
+
+/* end */

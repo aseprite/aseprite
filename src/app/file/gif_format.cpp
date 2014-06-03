@@ -103,11 +103,36 @@ FileFormat* CreateGifFormat()
 static int interlaced_offset[] = { 0, 4, 2, 1 };
 static int interlaced_jumps[] = { 8, 8, 4, 2 };
 
+struct GifFilePtr {
+public:
+  typedef int (*CloseFunc)(GifFileType*, int*);
+
+  GifFilePtr(GifFileType* ptr, CloseFunc closeFunc) :
+    m_ptr(ptr), m_closeFunc(closeFunc) {
+  }
+
+  ~GifFilePtr() {
+    int errCode;
+    m_closeFunc(m_ptr, &errCode);
+  }
+
+  operator GifFileType*() {
+    return m_ptr;
+  }
+
+  GifFileType* operator->() {
+    return m_ptr;
+  }
+
+private:
+  GifFileType* m_ptr;
+  CloseFunc m_closeFunc;
+};
+
 bool GifFormat::onLoad(FileOp* fop)
 {
-  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file
-    (DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb")),
-      DGifCloseFile);
+  int errCode;
+  GifFilePtr gif_file(DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb"), &errCode), &DGifCloseFile);
 
   if (!gif_file) {
     fop_error(fop, "Error loading GIF header.\n");
@@ -131,9 +156,10 @@ bool GifFormat::onLoad(FileOp* fop)
     // Setup the first palette using the global color map.
     ColorMapObject* colormap = gif_file->SColorMap;
     for (int i=0; i<colormap->ColorCount; ++i) {
-      current_palette->setEntry(i, rgba(colormap->Colors[i].Red,
-                                         colormap->Colors[i].Green,
-                                         colormap->Colors[i].Blue, 255));
+      current_palette->setEntry(i,
+        rgba(colormap->Colors[i].Red,
+          colormap->Colors[i].Green,
+          colormap->Colors[i].Blue, 255));
     }
   }
   else {
@@ -214,7 +240,7 @@ bool GifFormat::onLoad(FileOp* fop)
           for (int y = 0; y < frame_h; ++y) {
             addr = frame_image->getPixelAddress(0, y);
             if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-              throw Exception("Invalid image data (%d).\n", GifLastError());
+              throw Exception("Invalid image data (%d).\n", gif_file->Error);
           }
         }
 
@@ -492,9 +518,8 @@ void GifFormat::onDestroyData(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool GifFormat::onSave(FileOp* fop)
 {
-  UniquePtr<GifFileType, int(*)(GifFileType*)> gif_file
-    (EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb")),
-      EGifCloseFile);
+  int errCode;
+  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb"), &errCode), &EGifCloseFile);
 
   if (!gif_file)
     throw Exception("Error creating GIF file.\n");
@@ -510,7 +535,7 @@ bool GifFormat::onSave(FileOp* fop)
 
   Palette* current_palette = sprite->getPalette(FrameNumber(0));
   Palette* previous_palette = current_palette;
-  ColorMapObject* color_map = MakeMapObject(current_palette->size(), NULL);
+  ColorMapObject* color_map = GifMakeMapObject(current_palette->size(), NULL);
   for (int i = 0; i < current_palette->size(); ++i) {
     color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
     color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));
@@ -605,17 +630,20 @@ bool GifFormat::onSave(FileOp* fop)
     if (frame_num == 0 && loop >= 0) {
       unsigned char extension_bytes[11];
 
+      if (EGifPutExtensionLeader(gif_file, APPLICATION_EXT_FUNC_CODE) == GIF_ERROR)
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+
       memcpy(extension_bytes, "NETSCAPE2.0", 11);
-      if (EGifPutExtensionFirst(gif_file, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
+      if (EGifPutExtensionBlock(gif_file, 11, extension_bytes) == GIF_ERROR)
         throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
       extension_bytes[0] = 1;
       extension_bytes[1] = (loop & 0xff);
       extension_bytes[2] = (loop >> 8) & 0xff;
-      if (EGifPutExtensionNext(gif_file, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
+      if (EGifPutExtensionBlock(gif_file, 3, extension_bytes) == GIF_ERROR)
         throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
 
-      if (EGifPutExtensionLast(gif_file, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
+      if (EGifPutExtensionTrailer(gif_file) == GIF_ERROR)
         throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
     }
 
@@ -640,7 +668,7 @@ bool GifFormat::onSave(FileOp* fop)
     // Image color map
     ColorMapObject* image_color_map = NULL;
     if (current_palette != previous_palette) {
-      image_color_map = MakeMapObject(current_palette->size(), NULL);
+      image_color_map = GifMakeMapObject(current_palette->size(), NULL);
       for (int i = 0; i < current_palette->size(); ++i) {
         image_color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
         image_color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));

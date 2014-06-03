@@ -1,26 +1,15 @@
 /*****************************************************************************
- *   "Gif-Lib" - Yet another gif library.
- *
- * Written by:  Gershon Elber            IBM PC Ver 0.1,    Jun. 1989
- ******************************************************************************
- * Module to quatize high resolution image into lower one. You may want to
- * peek into the following article this code is based on:
- * "Color Image Quantization for frame buffer Display", by Paul Heckbert
- * SIGGRAPH 1982 page 297-307.
- ******************************************************************************
- * History:
- * 5 Jan 90 - Version 1.0 by Gershon Elber.
- *****************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+ quantize.c - quantize a high resolution image into lower one
 
-#ifdef __MSDOS__
-#include <dos.h>
-#include <alloc.h>
-#include <graphics.h>
-#endif /* __MSDOS__ */
+ Based on: "Color Image Quantization for frame buffer Display", by
+ Paul Heckbert SIGGRAPH 1982 page 297-307.
+
+ This doesn't really belong in the core library, was undocumented,
+ and was removed in 4.2.  Then it turned out some client apps were
+ actually using it, so it was restored in 5.0.
+
+******************************************************************************/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,18 +18,9 @@
 
 #define ABS(x)    ((x) > 0 ? (x) : (-(x)))
 
-/* The colors are stripped to 5 bits per primary color if non MSDOS system
- * or to 4 (not enough memory...) if MSDOS as first step.
- */
-#ifdef __MSDOS__
-#define COLOR_ARRAY_SIZE 4096
-#define BITS_PER_PRIM_COLOR 4
-#define MAX_PRIM_COLOR      0x0f
-#else
 #define COLOR_ARRAY_SIZE 32768
 #define BITS_PER_PRIM_COLOR 5
 #define MAX_PRIM_COLOR      0x1f
-#endif /* __MSDOS__ */
 
 static int SortRGBAxis;
 
@@ -61,22 +41,22 @@ typedef struct NewColorMapType {
 static int SubdivColorMap(NewColorMapType * NewColorSubdiv,
                           unsigned int ColorMapSize,
                           unsigned int *NewColorMapSize);
-static int SortCmpRtn(const VoidPtr Entry1, const VoidPtr Entry2);
+static int SortCmpRtn(const void *Entry1, const void *Entry2);
 
 /******************************************************************************
- * Quantize high resolution image into lower one. Input image consists of a
- * 2D array for each of the RGB colors with size Width by Height. There is no
- * Color map for the input. Output is a quantized image with 2D array of
- * indexes into the output color map.
- *   Note input image can be 24 bits at the most (8 for red/green/blue) and
- * the output has 256 colors at the most (256 entries in the color map.).
- * ColorMapSize specifies size of color map up to 256 and will be updated to
- * real size before returning.
- *   Also non of the parameter are allocated by this routine.
- *   This function returns GIF_OK if succesfull, GIF_ERROR otherwise.
- ******************************************************************************/
+ Quantize high resolution image into lower one. Input image consists of a
+ 2D array for each of the RGB colors with size Width by Height. There is no
+ Color map for the input. Output is a quantized image with 2D array of
+ indexes into the output color map.
+   Note input image can be 24 bits at the most (8 for red/green/blue) and
+ the output has 256 colors at the most (256 entries in the color map.).
+ ColorMapSize specifies size of color map up to 256 and will be updated to
+ real size before returning.
+   Also non of the parameter are allocated by this routine.
+   This function returns GIF_OK if successful, GIF_ERROR otherwise.
+******************************************************************************/
 int
-QuantizeBuffer(unsigned int Width,
+GifQuantizeBuffer(unsigned int Width,
                unsigned int Height,
                int *ColorMapSize,
                GifByteType * RedInput,
@@ -95,7 +75,6 @@ QuantizeBuffer(unsigned int Width,
     ColorArrayEntries = (QuantizedColorType *)malloc(
                            sizeof(QuantizedColorType) * COLOR_ARRAY_SIZE);
     if (ColorArrayEntries == NULL) {
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
         return GIF_ERROR;
     }
 
@@ -173,10 +152,7 @@ QuantizeBuffer(unsigned int Width,
             OutputColorMap[i].Red = (Red << (8 - BITS_PER_PRIM_COLOR)) / j;
             OutputColorMap[i].Green = (Green << (8 - BITS_PER_PRIM_COLOR)) / j;
             OutputColorMap[i].Blue = (Blue << (8 - BITS_PER_PRIM_COLOR)) / j;
-        } else
-            fprintf(stderr,
-                    "\n%s: Null entry in quantized color map - that's weird.\n",
-                    PROGRAM_NAME);
+        }
     }
 
     /* Finally scan the input buffer again and put the mapped index in the
@@ -212,11 +188,11 @@ QuantizeBuffer(unsigned int Width,
 }
 
 /******************************************************************************
- * Routine to subdivide the RGB space recursively using median cut in each
- * axes alternatingly until ColorMapSize different cubes exists.
- * The biggest cube in one dimension is subdivide unless it has only one entry.
- * Returns GIF_ERROR if failed, otherwise GIF_OK.
- ******************************************************************************/
+ Routine to subdivide the RGB space recursively using median cut in each
+ axes alternatingly until ColorMapSize different cubes exists.
+ The biggest cube in one dimension is subdivide unless it has only one entry.
+ Returns GIF_ERROR if failed, otherwise GIF_OK.
+*******************************************************************************/
 static int
 SubdivColorMap(NewColorMapType * NewColorSubdiv,
                unsigned int ColorMapSize,
@@ -249,7 +225,7 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
         /* Sort all elements in that entry along the given axis and split at
          * the median.  */
         SortArray = (QuantizedColorType **)malloc(
-                      sizeof(QuantizedColorType *) *
+                      sizeof(QuantizedColorType *) * 
                       NewColorSubdiv[Index].NumEntries);
         if (SortArray == NULL)
             return GIF_ERROR;
@@ -258,6 +234,17 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
              j++, QuantizedColor = QuantizedColor->Pnext)
             SortArray[j] = QuantizedColor;
 
+	/*
+	 * Because qsort isn't stable, this can produce differing 
+	 * results for the order of tuples depending on platform
+	 * details of how qsort() is implemented.
+	 *
+	 * We mitigate this problem by sorting on all three axes rather
+	 * than only the one specied by SortRGBAxis; that way the instability
+	 * can only become an issue if there are multiple color indices
+	 * referring to identical RGB tuples.  Older versions of this 
+	 * sorted on only the one axis.
+	 */
         qsort(SortArray, NewColorSubdiv[Index].NumEntries,
               sizeof(QuantizedColorType *), SortCmpRtn);
 
@@ -272,8 +259,8 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
         Sum = NewColorSubdiv[Index].Count / 2 - QuantizedColor->Count;
         NumEntries = 1;
         Count = QuantizedColor->Count;
-        while ((Sum -= QuantizedColor->Pnext->Count) >= 0 &&
-               QuantizedColor->Pnext != NULL &&
+        while (QuantizedColor->Pnext != NULL &&
+	       (Sum -= QuantizedColor->Pnext->Count) >= 0 &&
                QuantizedColor->Pnext->Pnext != NULL) {
             QuantizedColor = QuantizedColor->Pnext;
             NumEntries++;
@@ -285,6 +272,7 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
          * they need to be rescaled.
          */
         MaxColor = QuantizedColor->RGB[SortRGBAxis]; /* Max. of first half */
+	/* coverity[var_deref_op] */
         MinColor = QuantizedColor->Pnext->RGB[SortRGBAxis]; /* of second */
         MaxColor <<= (8 - BITS_PER_PRIM_COLOR);
         MinColor <<= (8 - BITS_PER_PRIM_COLOR);
@@ -319,12 +307,24 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
 }
 
 /****************************************************************************
- * Routine called by qsort to compare to entries.
- ****************************************************************************/
-static int
-SortCmpRtn(const VoidPtr Entry1,
-           const VoidPtr Entry2) {
+ Routine called by qsort to compare two entries.
+*****************************************************************************/
 
-    return (*((QuantizedColorType **) Entry1))->RGB[SortRGBAxis] -
-       (*((QuantizedColorType **) Entry2))->RGB[SortRGBAxis];
+static int
+SortCmpRtn(const void *Entry1,
+           const void *Entry2) {
+	   QuantizedColorType *entry1 = (*((QuantizedColorType **) Entry1));
+	   QuantizedColorType *entry2 = (*((QuantizedColorType **) Entry2));
+
+	   /* sort on all axes of the color space! */
+	   int hash1 = entry1->RGB[SortRGBAxis] * 256 * 256
+	   			+ entry1->RGB[(SortRGBAxis+1) % 3] * 256
+				+ entry1->RGB[(SortRGBAxis+2) % 3];
+	   int hash2 = entry2->RGB[SortRGBAxis] * 256 * 256
+	   			+ entry2->RGB[(SortRGBAxis+1) % 3] * 256
+				+ entry2->RGB[(SortRGBAxis+2) % 3];
+
+    return hash1 - hash2;
 }
+
+/* end */
