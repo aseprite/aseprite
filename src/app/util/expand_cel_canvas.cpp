@@ -198,7 +198,8 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
         if (bounds.isEmpty())
           dirtyBounds = m_celImage->getBounds();
         else
-          dirtyBounds = m_celImage->getBounds().createIntersect(bounds);
+          dirtyBounds = m_celImage->getBounds().createIntersect(
+            gfx::Rect(bounds).offset(-m_originalCelX, -m_originalCelY));
 
         base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage, dirtyBounds));
 
