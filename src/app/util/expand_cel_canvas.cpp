@@ -104,25 +104,31 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   m_originalCelY = m_cel->getY();
 
   // Region to draw
-  int x1, y1, x2, y2;
+  gfx::Rect celBounds(
+    m_cel->getX(),
+    m_cel->getY(),
+    m_celImage->getWidth(),
+    m_celImage->getHeight());
+
+  gfx::Rect spriteBounds(0, 0,
+    m_sprite->getWidth(),
+    m_sprite->getHeight());
+
+  gfx::Rect bounds;
 
   if (tiledMode == TILED_NONE) { // Non-tiled
-    x1 = MIN(m_cel->getX(), 0);
-    y1 = MIN(m_cel->getY(), 0);
-    x2 = MAX(m_cel->getX()+m_celImage->getWidth(), m_sprite->getWidth());
-    y2 = MAX(m_cel->getY()+m_celImage->getHeight(), m_sprite->getHeight());
+    bounds = celBounds.createUnion(spriteBounds);
   }
   else {                        // Tiled
-    x1 = 0;
-    y1 = 0;
-    x2 = m_sprite->getWidth();
-    y2 = m_sprite->getHeight();
+    bounds = spriteBounds;
   }
 
   // create two copies of the image region which we'll modify with the tool
   m_srcImage = crop_image(m_celImage,
-    x1-m_cel->getX(),
-    y1-m_cel->getY(), x2-x1, y2-y1,
+    bounds.x - celBounds.x,
+    bounds.y - celBounds.y,
+    bounds.w,
+    bounds.h,
     m_sprite->getTransparentColor(),
     src_buffer);
 
@@ -131,7 +137,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   // We have to adjust the cel position to match the m_dstImage
   // position (the new m_dstImage will be used in RenderEngine to
   // draw this cel).
-  m_cel->setPosition(x1, y1);
+  m_cel->setPosition(bounds.x, bounds.y);
 }
 
 ExpandCelCanvas::~ExpandCelCanvas()
@@ -211,13 +217,11 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
     if (m_undo.isEnabled()) {
       if (m_cel->getX() != m_originalCelX ||
           m_cel->getY() != m_originalCelY) {
-        int x = m_cel->getX();
-        int y = m_cel->getY();
+        int newX = m_cel->getX();
+        int newY = m_cel->getY();
         m_cel->setPosition(m_originalCelX, m_originalCelY);
-
         m_undo.pushUndoer(new undoers::SetCelPosition(m_undo.getObjects(), m_cel));
-
-        m_cel->setPosition(x, y);
+        m_cel->setPosition(newX, newY);
       }
 
       m_undo.pushUndoer(new undoers::ReplaceImage(m_undo.getObjects(),
