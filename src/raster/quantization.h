@@ -44,7 +44,7 @@ namespace raster {
                                 DitheringMethod ditheringMethod,
                                 const RgbMap* rgbmap,
                                 const Palette* palette,
-                                bool has_background_layer);
+                                bool is_background_layer);
 
   } // namespace quantization
 } // namespace raster

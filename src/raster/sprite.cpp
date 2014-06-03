@@ -135,15 +135,20 @@ bool Sprite::needAlpha() const
 void Sprite::setTransparentColor(color_t color)
 {
   m_transparentColor = color;
+
+  for (int i=0; i<m_stock->size(); i++) {
+    Image* image = m_stock->getImage(i);
+    if (image != NULL)
+      image->setMaskColor(color);
+  }
 }
 
 int Sprite::getMemSize() const
 {
-  Image *image;
-  int i, size = 0;
+  int size = 0;
 
-  for (i=0; i<m_stock->size(); i++) {
-    image = m_stock->getImage(i);
+  for (int i=0; i<m_stock->size(); i++) {
+    Image* image = m_stock->getImage(i);
     if (image != NULL)
       size += image->getRowStrideSize() * image->getHeight();
   }

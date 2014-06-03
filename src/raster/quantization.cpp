@@ -89,7 +89,7 @@ Image* convert_pixel_format(const Image* image,
                             DitheringMethod ditheringMethod,
                             const RgbMap* rgbmap,
                             const Palette* palette,
-                            bool has_background_layer)
+                            bool is_background_layer)
 {
   // RGB -> Indexed with ordered dithering
   if (image->getPixelFormat() == IMAGE_RGB &&
@@ -223,7 +223,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (c == 0 && !has_background_layer)
+            if (!is_background_layer && c == image->getMaskColor())
               *dst_it = 0;
             else
               *dst_it = rgba(rgba_getr(palette->getEntry(c)),
@@ -243,7 +243,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (c == 0 && !has_background_layer)
+            if (!is_background_layer && c == image->getMaskColor())
               *dst_it = 0;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -268,7 +268,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (c == image->getMaskColor())
+            if (!is_background_layer && c == image->getMaskColor())
               *dst_it = dstMaskColor;
             else {
               r = rgba_getr(palette->getEntry(c));

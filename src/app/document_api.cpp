@@ -173,15 +173,30 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
   // Use the rgbmap for the specified sprite
   const RgbMap* rgbmap = sprite->getRgbMap(frame);
 
+  // Get the list of cels from the background layer (if it
+  // exists). This list will be used to check if each image belong to
+  // the background layer.
+  CelList bgCels;
+  if (sprite->getBackgroundLayer() != NULL)
+    sprite->getBackgroundLayer()->getCels(bgCels);
+
   for (c=0; c<sprite->getStock()->size(); c++) {
     old_image = sprite->getStock()->getImage(c);
     if (!old_image)
       continue;
 
+    bool is_image_from_background = false;
+    for (CelList::iterator it=bgCels.begin(), end=bgCels.end(); it != end; ++it) {
+      if ((*it)->getImage() == c) {
+        is_image_from_background = true;
+        break;
+      }
+    }
+
     new_image = quantization::convert_pixel_format
       (old_image, newFormat, dithering_method, rgbmap,
        sprite->getPalette(frame),
-       sprite->getBackgroundLayer() != NULL);
+       is_image_from_background);
 
     replaceStockImage(sprite, c, new_image);
   }
