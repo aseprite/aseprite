@@ -92,6 +92,10 @@ if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
+  add_definitions(-DCUSTOM_WEBSITE_URL="${CUSTOM_WEBSITE_URL}")
+endif()
+
 if(ENABLE_UPDATER)
   if(USE_SHARED_CURL)
     find_library(LIBCURL_LIBRARY NAMES curl)

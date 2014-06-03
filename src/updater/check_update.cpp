@@ -33,8 +33,6 @@
 #include <iostream>
 #include <sstream>
 
-#define UPDATE_URL      WEBSITE "update/?xml=1"
-
 namespace updater {
 
 CheckUpdateResponse::CheckUpdateResponse()
