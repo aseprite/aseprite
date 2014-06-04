@@ -628,23 +628,36 @@ bool GifFormat::onSave(FileOp* fop)
 
     // Specify loop extension.
     if (frame_num == 0 && loop >= 0) {
-      unsigned char extension_bytes[11];
-
       if (EGifPutExtensionLeader(gif_file, APPLICATION_EXT_FUNC_CODE) == GIF_ERROR)
-        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record (header section).");
 
+      unsigned char extension_bytes[11];
       memcpy(extension_bytes, "NETSCAPE2.0", 11);
       if (EGifPutExtensionBlock(gif_file, 11, extension_bytes) == GIF_ERROR)
-        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record (first block).");
 
       extension_bytes[0] = 1;
       extension_bytes[1] = (loop & 0xff);
       extension_bytes[2] = (loop >> 8) & 0xff;
       if (EGifPutExtensionBlock(gif_file, 3, extension_bytes) == GIF_ERROR)
-        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record (second block).");
 
       if (EGifPutExtensionTrailer(gif_file) == GIF_ERROR)
-        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+        throw Exception("Error writing GIF graphics extension record (trailer section).");
+    }
+
+    // Add Aseprite block (at this moment, it's empty).
+    if (frame_num == 0) {
+      if (EGifPutExtensionLeader(gif_file, APPLICATION_EXT_FUNC_CODE) == GIF_ERROR)
+        throw Exception("Error writing GIF comment (header section).");
+
+      unsigned char extension_bytes[11];
+      memcpy(extension_bytes, "ASEPRITE1.0", 11);
+      if (EGifPutExtensionBlock(gif_file, sizeof(extension_bytes), extension_bytes) == GIF_ERROR)
+        throw Exception("Error writing GIF comment (first block).");
+
+      if (EGifPutExtensionTrailer(gif_file) == GIF_ERROR)
+        throw Exception("Error writing GIF comment (trailer section).");
     }
 
     // Write graphics extension record (to save the duration of the
