@@ -61,7 +61,7 @@ Entry::Entry(size_t maxsize, const char *format, ...)
   /* widget->align = JI_LEFT | JI_MIDDLE; */
   setText(buf);
 
-  this->setFocusStop(true);
+  setFocusStop(true);
   initTheme();
 }
 
@@ -390,7 +390,8 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
   int w =
     + border_width.l
     + ji_font_char_len(getFont(), 'w') * MIN(m_maxsize, 6)
-    + 2 + border_width.r;
+    + 2*jguiscale()
+    + border_width.r;
 
   w = MIN(w, JI_SCREEN_W/2);
 
@@ -581,7 +582,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int unicodeChar, bool shift_pressed)
       const char* clipboard_str;
 
       if ((clipboard_str = clipboard::get_text())) {
-        base::string clipboard(clipboard_str);
+        std::string clipboard(clipboard_str);
 
         // delete the entire selection
         if (selbeg >= 0) {
@@ -629,7 +630,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int unicodeChar, bool shift_pressed)
       break;
   }
 
-  base::string newText = base::to_utf8(text);
+  std::string newText = base::to_utf8(text);
   if (newText != getText()) {
     setText(newText.c_str());
     onEntryChange();

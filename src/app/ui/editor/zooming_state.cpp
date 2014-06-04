@@ -73,11 +73,6 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool ZoomingState::onMouseWheel(Editor* editor, MouseMessage* msg)
-{
-  return false;
-}
-
 bool ZoomingState::onSetCursor(Editor* editor)
 {
   editor->hideDrawingCursor();

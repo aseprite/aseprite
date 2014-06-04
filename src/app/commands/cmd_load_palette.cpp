@@ -52,7 +52,7 @@ LoadPaletteCommand::LoadPaletteCommand()
 
 void LoadPaletteCommand::onExecute(Context* context)
 {
-  base::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
+  std::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
   if (!filename.empty()) {
     base::UniquePtr<raster::Palette> palette(raster::Palette::load(filename.c_str()));
     if (!palette) {

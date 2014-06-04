@@ -67,7 +67,8 @@ namespace app {
       kNoneFlag = 0,
       kShowGridFlag = 1,
       kShowMaskFlag = 2,
-      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag,
+      kShowOnionskin = 4,
+      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag | kShowOnionskin,
     };
 
     enum ZoomBehavior {
@@ -168,6 +169,10 @@ namespace app {
     bool processKeysToSetZoom(ui::KeyMessage* msg);
 
     void pasteImage(const Image* image, int x, int y);
+
+    // Used by EditorView to notify changes in the view's scroll
+    // position.
+    void notifyScrollChanged();
 
     // in cursor.cpp
 

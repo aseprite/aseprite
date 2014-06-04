@@ -84,4 +84,9 @@ Image* DocumentLocation::image(int* x, int* y, int* opacity) const
   return image;
 }
 
+Palette* DocumentLocation::palette() const
+{
+  return (m_sprite ? m_sprite->getPalette(m_frame): NULL);
+}
+
 } // namespace app

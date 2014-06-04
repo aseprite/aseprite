@@ -43,12 +43,10 @@ add_definitions(-DWINDOWS32=1)
 endif()
 
 add_library(giflib
-  lib/dev2gif.c
   lib/dgif_lib.c
   lib/egif_lib.c
   lib/gif_err.c
   lib/gif_font.c
   lib/gif_hash.c
   lib/gifalloc.c
-  lib/qprintf.c
   lib/quantize.c)

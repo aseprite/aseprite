@@ -13,20 +13,18 @@
 
 namespace base {
 
-  typedef std::string string;
+  std::string string_to_lower(const std::string& original);
+  std::string string_to_upper(const std::string& original);
 
-  string string_to_lower(const string& original);
-  string string_to_upper(const string& original);
+  std::string to_utf8(const std::wstring& widestring);
+  std::wstring from_utf8(const std::string& utf8string);
 
-  string to_utf8(const std::wstring& widestring);
-  std::wstring from_utf8(const string& utf8string);
-
-  int utf8_length(const string& utf8string);
+  int utf8_length(const std::string& utf8string);
 
   template<typename SubIterator>
   class utf8_iteratorT : public std::iterator<std::forward_iterator_tag,
-                                              string::value_type,
-                                              string::difference_type,
+                                              std::string::value_type,
+                                              std::string::difference_type,
                                               typename SubIterator::pointer,
                                               typename SubIterator::reference> {
   public:
@@ -118,23 +116,23 @@ namespace base {
     SubIterator m_internal;
   };
 
-  class utf8_iterator : public utf8_iteratorT<string::iterator> {
+  class utf8_iterator : public utf8_iteratorT<std::string::iterator> {
   public:
-    utf8_iterator(const utf8_iteratorT<string::iterator>& it)
-      : utf8_iteratorT<string::iterator>(it) {
+    utf8_iterator(const utf8_iteratorT<std::string::iterator>& it)
+      : utf8_iteratorT<std::string::iterator>(it) {
     }
-    explicit utf8_iterator(const string::iterator& it)
-      : utf8_iteratorT<string::iterator>(it) {
+    explicit utf8_iterator(const std::string::iterator& it)
+      : utf8_iteratorT<std::string::iterator>(it) {
     }
   };
 
-  class utf8_const_iterator : public utf8_iteratorT<string::const_iterator> {
+  class utf8_const_iterator : public utf8_iteratorT<std::string::const_iterator> {
   public:
-    utf8_const_iterator(const utf8_iteratorT<string::const_iterator>& it)
-      : utf8_iteratorT<string::const_iterator>(it) {
+    utf8_const_iterator(const utf8_iteratorT<std::string::const_iterator>& it)
+      : utf8_iteratorT<std::string::const_iterator>(it) {
     }
-    explicit utf8_const_iterator(const string::const_iterator& it)
-      : utf8_iteratorT<string::const_iterator>(it) {
+    explicit utf8_const_iterator(const std::string::const_iterator& it)
+      : utf8_iteratorT<std::string::const_iterator>(it) {
     }
   };
 

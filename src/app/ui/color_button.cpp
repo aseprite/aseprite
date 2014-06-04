@@ -167,7 +167,7 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box);
-  box.w = 64;
+  box.w = 64*jguiscale();
 
   ev.setPreferredSize(box.w + border_width.l + border_width.r,
                       box.h + border_width.t + border_width.b);
@@ -197,11 +197,7 @@ void ColorButton::onPaint(PaintEvent& ev)
     color = m_color;
 
   draw_color_button(g, rc,
-    true, true, true, true,
-    true, true, true, true,
-    m_pixelFormat,
-    color,
-    hasMouseOver(), false);
+    color, hasMouseOver(), false);
 
   // Draw text
   std::string str = m_color.toHumanReadableString(m_pixelFormat,

@@ -145,9 +145,9 @@ App::App(int argc, const char* argv[])
   RenderEngine::loadConfig();
 
   // Default palette.
-  base::string palFile(!options.paletteFileName().empty() ?
-                       options.paletteFileName():
-                       base::string(get_config_string("GfxMode", "Palette", "")));
+  std::string palFile(!options.paletteFileName().empty() ?
+    options.paletteFileName():
+    std::string(get_config_string("GfxMode", "Palette", "")));
 
   if (palFile.empty()) {
     // Try to use a default pixel art palette.
@@ -294,6 +294,9 @@ App::~App()
     // Remove Aseprite handlers
     PRINTF("ASE: Uninstalling\n");
 
+    // Delete file formats.
+    FileFormatsManager::destroyInstance();
+
     // Fire App Exit signal.
     App::instance()->Exit();
 
@@ -326,6 +329,11 @@ RecentFiles* App::getRecentFiles() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_recent_files;
+}
+
+void App::showNotification(const char* text, const char* url)
+{
+  m_mainWindow->showNotification(text, url);
 }
 
 // Updates palette and redraw the screen.
@@ -374,12 +382,15 @@ void app_default_statusbar_message()
 
 int app_get_color_to_clear_layer(Layer* layer)
 {
-  /* all transparent layers are cleared with the mask color */
-  app::Color color = app::Color::fromMask();
+  ASSERT(layer != NULL);
 
-  /* the `Background' is erased with the `Background Color' */
-  if (layer != NULL && layer->isBackground())
+  app::Color color;
+
+  // The `Background' is erased with the `Background Color'
+  if (layer->isBackground())
     color = ColorBar::instance()->getBgColor();
+  else // All transparent layers are cleared with the mask color
+    color = app::Color::fromMask();
 
   return color_utils::color_for_layer(color, layer);
 }

@@ -8,11 +8,11 @@
 #define UI_COMPONENT_H_INCLUDED
 #pragma once
 
-#include <map>
-
 #include "base/disable_copying.h"
-#include "base/string.h"
 #include "ui/property.h"
+
+#include <map>
+#include <string>
 
 namespace ui {
 
@@ -22,16 +22,16 @@ namespace ui {
   class Component
   {
   public:
-    typedef std::map<base::string, PropertyPtr> Properties;
+    typedef std::map<std::string, PropertyPtr> Properties;
 
     Component();
     virtual ~Component();
 
-    PropertyPtr getProperty(const base::string& name);
+    PropertyPtr getProperty(const std::string& name);
     void setProperty(PropertyPtr property);
 
-    bool hasProperty(const base::string& name);
-    void removeProperty(const base::string& name);
+    bool hasProperty(const std::string& name);
+    void removeProperty(const std::string& name);
 
     const Properties& getProperties() const;
 

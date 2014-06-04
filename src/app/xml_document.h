@@ -22,15 +22,16 @@
 
 #include "base/exception.h"
 #include "base/shared_ptr.h"
-#include "base/string.h"
 
 #include "tinyxml.h"
+
+#include <string>
 
 namespace app {
 
   typedef SharedPtr<TiXmlDocument> XmlDocumentRef;
 
-  XmlDocumentRef open_xml(const base::string& filename);
+  XmlDocumentRef open_xml(const std::string& filename);
 
 } // namespace app
 

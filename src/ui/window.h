@@ -23,7 +23,7 @@ namespace ui {
   public:
     enum Type { DesktopWindow, WithTitleBar, WithoutTitleBar };
 
-    explicit Window(Type type, const base::string& text = "");
+    explicit Window(Type type, const std::string& text = "");
     ~Window();
 
     Widget* getKiller();

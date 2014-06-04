@@ -80,9 +80,6 @@ namespace app {
     Progress* addProgress();
     void removeProgress(Progress* progress);
 
-    // Method to show notifications (each notification can contain a link).
-    void showNotification(const char* text, const char* link);
-
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;

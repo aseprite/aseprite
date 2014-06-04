@@ -37,7 +37,7 @@ namespace ui {
   class ButtonBase : public Widget
   {
   public:
-    ButtonBase(const base::string& text,
+    ButtonBase(const std::string& text,
                WidgetType type,
                WidgetType behaviorType,
                WidgetType drawType);
@@ -81,21 +81,21 @@ namespace ui {
   class Button : public ButtonBase
   {
   public:
-    Button(const base::string& text);
+    Button(const std::string& text);
   };
 
   // Check boxes
   class CheckBox : public ButtonBase
   {
   public:
-    CheckBox(const base::string& text, WidgetType drawType = kCheckWidget);
+    CheckBox(const std::string& text, WidgetType drawType = kCheckWidget);
   };
 
   // Radio buttons
   class RadioButton : public ButtonBase
   {
   public:
-    RadioButton(const base::string& text, int radioGroup, WidgetType drawType = kRadioWidget);
+    RadioButton(const std::string& text, int radioGroup, WidgetType drawType = kRadioWidget);
 
     int getRadioGroup() const;
     void setRadioGroup(int radioGroup);

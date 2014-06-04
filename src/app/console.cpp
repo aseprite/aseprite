@@ -68,7 +68,7 @@ Console::Console()
 
     view->attachToView(textbox);
 
-    jwidget_set_min_size(button, 60, 0);
+    button->setMinSize(gfx::Size(60, 0));
 
     grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
     grid->addChildInCell(button, 1, 1, JI_CENTER);
@@ -138,7 +138,7 @@ void Console::printf(const char* format, ...)
 
     const std::string& text = wid_textbox->getText();
 
-    base::string final;
+    std::string final;
     if (!text.empty())
       final += text;
     final += buf;

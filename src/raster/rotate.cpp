@@ -63,12 +63,19 @@ static color_t grayscale_blender(color_t back, color_t front) {
   return graya_blenders[BLEND_MODE_NORMAL](back, front, 255);
 }
 
-static color_t if_blender(color_t back, color_t front) {
-  if (front != 0)
-    return front;
-  else
-    return back;
-}
+class if_blender {
+public:
+  if_blender(color_t mask) : m_mask(mask) {
+  }
+  color_t operator()(color_t back, color_t front) {
+    if (front != m_mask)
+      return front;
+    else
+      return back;
+  }
+private:
+  color_t m_mask;
+};
 
 void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 {
@@ -86,11 +93,11 @@ void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
         break;
 
       case IMAGE_INDEXED:
-        image_scale_tpl<IndexedTraits>(dst, src, x, y, w, h, if_blender);
+        image_scale_tpl<IndexedTraits>(dst, src, x, y, w, h, if_blender(src->getMaskColor()));
         break;
 
       case IMAGE_BITMAP:
-        image_scale_tpl<BitmapTraits>(dst, src, x, y, w, h, if_blender);
+        image_scale_tpl<BitmapTraits>(dst, src, x, y, w, h, if_blender(0));
         break;
     }
   }
@@ -138,15 +145,16 @@ void image_parallelogram (Image *bmp, Image *sprite,
 
 template<class Traits, class Delegate>
 static void draw_scanline(Image *bmp, Image *spr,
-                          fixed l_bmp_x, int bmp_y_i,
-                          fixed r_bmp_x,
-                          fixed l_spr_x, fixed l_spr_y,
-                          fixed spr_dx, fixed spr_dy)
+  fixed l_bmp_x, int bmp_y_i,
+  fixed r_bmp_x,
+  fixed l_spr_x, fixed l_spr_y,
+  fixed spr_dx, fixed spr_dy,
+  Delegate& delegate)
 {
   r_bmp_x >>= 16;
   l_bmp_x >>= 16;
 
-  Delegate delegate(bmp, gfx::Rect(l_bmp_x, bmp_y_i, r_bmp_x - l_bmp_x + 1, 1));
+  delegate.lockBits(bmp, gfx::Rect(l_bmp_x, bmp_y_i, r_bmp_x - l_bmp_x + 1, 1));
 
   for (int x=(int)l_bmp_x; x<=(int)r_bmp_x; ++x) {
     delegate.feedLine(spr, l_spr_x>>16, l_spr_y>>16);
@@ -154,30 +162,34 @@ static void draw_scanline(Image *bmp, Image *spr,
     l_spr_x += spr_dx;
     l_spr_y += spr_dy;
   }
+
+  delegate.unlockBits();
 }
 
 template<class Traits>
 class GenericDelegate {
 public:
-  GenericDelegate(Image* bmp, const gfx::Rect& bounds) :
-    m_bits(bmp, Image::ReadWriteLock, bounds),
-    m_it(m_bits.begin()),
-    m_end(m_bits.end()) {
+  void lockBits(Image* bmp, const gfx::Rect& bounds) {
+    m_bits = bmp->lockBits<Traits>(Image::ReadWriteLock, bounds);
+    m_it = m_bits.begin();
+    m_end = m_bits.end();
+  }
+
+  void unlockBits() {
+    m_bits.unlock();
   }
 
 private:
-  LockImageBits<Traits> m_bits;
+  ImageBits<Traits> m_bits;
 
 protected:
   typename LockImageBits<Traits>::iterator m_it, m_end;
 };
 
 class RgbDelegate : public GenericDelegate<RgbTraits> {
-  BLEND_COLOR m_blender;
 public:
-  RgbDelegate(Image* bmp, const gfx::Rect& bounds) :
-    GenericDelegate<RgbTraits>(bmp, bounds),
-    m_blender(rgba_blenders[BLEND_MODE_NORMAL]) {
+  RgbDelegate() {
+    m_blender = rgba_blenders[BLEND_MODE_NORMAL];
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
@@ -186,14 +198,15 @@ public:
     *m_it = m_blender(*m_it, spr->getPixel(spr_x, spr_y), 255);
     ++m_it;
   }
+
+private:
+  BLEND_COLOR m_blender;
 };
 
 class GrayscaleDelegate : public GenericDelegate<GrayscaleTraits> {
-  BLEND_COLOR m_blender;
 public:
-  GrayscaleDelegate(Image* bmp, const gfx::Rect& bounds) :
-    GenericDelegate<GrayscaleTraits>(bmp, bounds),
-    m_blender(graya_blenders[BLEND_MODE_NORMAL]) {
+  GrayscaleDelegate() {
+    m_blender = graya_blenders[BLEND_MODE_NORMAL];
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
@@ -202,30 +215,32 @@ public:
     *m_it = m_blender(*m_it, spr->getPixel(spr_x, spr_y), 255);
     ++m_it;
   }
+
+private:
+  BLEND_COLOR m_blender;
 };
 
 class IndexedDelegate : public GenericDelegate<IndexedTraits> {
 public:
-  IndexedDelegate(Image* bmp, const gfx::Rect& bounds) :
-    GenericDelegate<IndexedTraits>(bmp, bounds) {
+  IndexedDelegate(color_t mask_color) :
+    m_mask_color(mask_color) {
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
     register int c = spr->getPixel(spr_x, spr_y);
-    if (c != 0)                 // TODO
+    if (c != m_mask_color)
       *m_it = c;
     ++m_it;
   }
+
+private:
+  color_t m_mask_color;
 };
 
 class BitmapDelegate : public GenericDelegate<BitmapTraits> {
 public:
-  BitmapDelegate(Image* bmp, const gfx::Rect& bounds) :
-    GenericDelegate<BitmapTraits>(bmp, bounds) {
-  }
-
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
@@ -261,8 +276,9 @@ public:
  *  anti-aliased blending.
  */
 template<class Traits, class Delegate>
-static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
-                                  int sub_pixel_accuracy)
+static void ase_parallelogram_map(
+  Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
+  int sub_pixel_accuracy, Delegate delegate = Delegate())
 {
   /* Index in xs[] and ys[] to topmost point. */
   int top_index;
@@ -634,9 +650,9 @@ static void ase_parallelogram_map(Image *bmp, Image *spr, fixed xs[4], fixed ys[
         }
       }
       draw_scanline<Traits, Delegate>(bmp, spr,
-                                      l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
-                                      l_spr_x_rounded, l_spr_y_rounded,
-                                      spr_dx, spr_dy);
+        l_bmp_x_rounded, bmp_y_i, r_bmp_x_rounded,
+        l_spr_x_rounded, l_spr_y_rounded,
+        spr_dx, spr_dy, delegate);
 
     }
     /* I'm not going to apoligize for this label and its gotos: to get
@@ -677,9 +693,11 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
       ase_parallelogram_map<GrayscaleTraits, GrayscaleDelegate>(bmp, sprite, xs, ys, false);
       break;
 
-    case IMAGE_INDEXED:
-      ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false);
+    case IMAGE_INDEXED: {
+      IndexedDelegate delegate(sprite->getMaskColor());
+      ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
+    }
 
     case IMAGE_BITMAP:
       ase_parallelogram_map<BitmapTraits, BitmapDelegate>(bmp, sprite, xs, ys, false);

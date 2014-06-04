@@ -71,7 +71,7 @@ void UndoHistory::clearRedo()
   // that state again, so we have to put a value in m_diffSaved
   // impossible to be equal to m_diffCount.
   if (m_diffCount < m_diffSaved)
-    m_diffSaved = -1;
+    impossibleToBackToSavedState();
 }
 
 Undoer* UndoHistory::getNextUndoer()
@@ -98,6 +98,11 @@ bool UndoHistory::isSavedState() const
 void UndoHistory::markSavedState()
 {
   m_diffSaved = m_diffCount;
+}
+
+void UndoHistory::impossibleToBackToSavedState()
+{
+  m_diffSaved = -1;
 }
 
 void UndoHistory::runUndo(Direction direction)

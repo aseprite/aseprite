@@ -119,7 +119,7 @@ protected:
       }
 
       // String to be autocompleted
-      base::string left_part = getText();
+      std::string left_part = getText();
       if (left_part.empty())
         return false;
 
@@ -128,9 +128,9 @@ protected:
       for (FileItemList::const_iterator
              it=children.begin(); it!=children.end(); ++it) {
         IFileItem* child = *it;
-        base::string child_name = child->getDisplayName();
+        std::string child_name = child->getDisplayName();
 
-        base::string::iterator it1, it2;
+        std::string::iterator it1, it2;
 
         for (it1 = child_name.begin(), it2 = left_part.begin();
              it1!=child_name.end() && it2!=left_part.end();
@@ -247,13 +247,16 @@ FileSelector::FileSelector()
   m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
 }
 
-base::string FileSelector::show(const base::string& title,
-                                const base::string& initialPath,
-                                const base::string& showExtensions)
+std::string FileSelector::show(const std::string& title,
+  const std::string& initialPath,
+  const std::string& showExtensions)
 {
-  base::string result;
+  std::string result;
 
-  FileSystemModule::instance()->refresh();
+  FileSystemModule* fs = FileSystemModule::instance();
+  LockFS lock(fs);
+
+  fs->refresh();
 
   if (!navigation_history) {
     navigation_history = new FileItemList();
@@ -261,19 +264,19 @@ base::string FileSelector::show(const base::string& title,
   }
 
   // we have to find where the user should begin to browse files (start_folder)
-  base::string start_folder_path;
+  std::string start_folder_path;
   IFileItem* start_folder = NULL;
 
   // If initialPath doesn't contain a path.
   if (base::get_file_path(initialPath).empty()) {
     // Get the saved `path' in the configuration file.
-    base::string path = get_config_string("FileSelect", "CurrentDirectory", "");
-    start_folder = FileSystemModule::instance()->getFileItemFromPath(path);
+    std::string path = get_config_string("FileSelect", "CurrentDirectory", "");
+    start_folder = fs->getFileItemFromPath(path);
 
     // Is the folder find?
     if (!start_folder) {
       // If the `path' doesn't exist.
-      if (path.empty() || (!FileSystemModule::instance()->dirExists(path))) {
+      if (path.empty() || (!fs->dirExists(path))) {
         // We can get the current path from the system.
 #ifdef HAVE_DRIVES
         int drive = _al_getdrive();
@@ -295,11 +298,11 @@ base::string FileSelector::show(const base::string& title,
   start_folder_path = base::fix_path_separators(start_folder_path);
 
   if (!start_folder)
-    start_folder = FileSystemModule::instance()->getFileItemFromPath(start_folder_path);
+    start_folder = fs->getFileItemFromPath(start_folder_path);
 
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
-  jwidget_set_min_size(this, JI_SCREEN_W*9/10, JI_SCREEN_H*9/10);
+  setMinSize(gfx::Size(JI_SCREEN_W*9/10, JI_SCREEN_H*9/10));
   remapWindow();
   centerWindow();
 
@@ -318,8 +321,8 @@ base::string FileSelector::show(const base::string& title,
   // fill file-type combo-box
   m_fileType->removeAllItems();
 
-  std::vector<base::string> tokens;
-  std::vector<base::string>::iterator tok;
+  std::vector<std::string> tokens;
+  std::vector<std::string>::iterator tok;
 
   base::split_string(showExtensions, tokens, ",");
   for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
@@ -348,8 +351,8 @@ again:
     IFileItem* folder = m_fileList->getCurrentFolder();
     ASSERT(folder);
 
-    base::string fn = m_fileName->getText();
-    base::string buf;
+    std::string fn = m_fileName->getText();
+    std::string buf;
     IFileItem* enter_folder = NULL;
 
     // up a level?
@@ -362,7 +365,7 @@ again:
       // check if the user specified in "fn" a item of "fileview"
       const FileItemList& children = m_fileList->getFileList();
 
-      base::string fn2 = fn;
+      std::string fn2 = fn;
 #ifdef WIN32
       fn2 = base::string_to_lower(fn2);
 #endif
@@ -370,7 +373,7 @@ again:
       for (FileItemList::const_iterator
              it=children.begin(); it!=children.end(); ++it) {
         IFileItem* child = *it;
-        base::string child_name = child->getDisplayName();
+        std::string child_name = child->getDisplayName();
 
 #ifdef WIN32
         child_name = base::string_to_lower(child_name);
@@ -387,7 +390,7 @@ again:
         if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
 #ifdef WIN32
           // get the drive of the current folder
-          base::string drive = folder->getFileName();
+          std::string drive = folder->getFileName();
           if (drive.size() >= 2 && drive[1] == ':') {
             buf += drive[0];
             buf += ':';
@@ -401,7 +404,7 @@ again:
         }
 #ifdef WIN32
         // does the file-name entry have colon?
-        else if (fn.find(':') != base::string::npos) { // absolute path on Windows
+        else if (fn.find(':') != std::string::npos) { // absolute path on Windows
           if (fn.size() == 2 && fn[1] == ':') {
             buf = base::join_path(fn, "");
           }
@@ -417,7 +420,7 @@ again:
         buf = base::fix_path_separators(buf);
 
         // we can check if 'buf' is a folder, so we have to enter in it
-        enter_folder = FileSystemModule::instance()->getFileItemFromPath(buf);
+        enter_folder = fs->getFileItemFromPath(buf);
       }
     }
     else {
@@ -453,7 +456,7 @@ again:
     result = buf;
 
     // save the path in the configuration file
-    base::string lastpath = folder->getKeyName();
+    std::string lastpath = folder->getKeyName();
     set_config_string("FileSelect", "CurrentDirectory",
                       lastpath.c_str());
   }
@@ -486,7 +489,7 @@ void FileSelector::updateLocation()
     fileItem = *it;
 
     // Indentation
-    base::string buf;
+    std::string buf;
     for (int c=0; c<level; ++c)
       buf += "  ";
 
@@ -565,7 +568,7 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 
 void FileSelector::selectFileTypeFromFileName()
 {
-  base::string ext = base::get_file_extension(m_fileName->getText());
+  std::string ext = base::get_file_extension(m_fileName->getText());
 
   if (!ext.empty()) {
     ext = base::string_to_lower(ext);
@@ -625,7 +628,7 @@ void FileSelector::onLocationCloseListBox()
       dynamic_cast<CustomFolderNameItem*>(m_location->getSelectedItem());
 
     if (comboFolderItem != NULL) {
-      base::string path = comboFolderItem->getText();
+      std::string path = comboFolderItem->getText();
       fileItem = FileSystemModule::instance()->getFileItemFromPath(path);
     }
   }
@@ -658,7 +661,7 @@ void FileSelector::onFileListFileSelected()
   IFileItem* fileitem = m_fileList->getSelectedFileItem();
 
   if (!fileitem->isFolder()) {
-    base::string filename = base::get_file_name(fileitem->getFileName());
+    std::string filename = base::get_file_name(fileitem->getFileName());
 
     m_fileName->setText(filename.c_str());
     m_fileName->selectText(0, -1);

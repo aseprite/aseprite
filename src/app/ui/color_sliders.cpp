@@ -54,7 +54,7 @@ namespace {
     }
 
     void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
-      ui::Color color;
+      ui::Color color = ui::ColorNone;
       for (int x=0; x < rc.w; ++x) {
         switch (m_channel) {
           case ColorSliders::Red:

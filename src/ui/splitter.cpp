@@ -290,6 +290,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 {
   ev.stream() >> m_pos;
+  if (m_pos < 0) m_pos = 0;
   if (m_type == ByPixel)
     m_pos *= jguiscale();
 

@@ -60,11 +60,7 @@ NewFrameCommand::NewFrameCommand()
 bool NewFrameCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite |
-                             ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
-                             ContextFlags::ActiveLayerIsImage);
+                             ContextFlags::HasActiveSprite);
 }
 
 void NewFrameCommand::onExecute(Context* context)

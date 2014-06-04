@@ -24,8 +24,8 @@
 
 #include "app/check_update.h"
 
+#include "app/app.h"
 #include "app/ini_file.h"
-#include "app/ui/status_bar.h"
 #include "base/bind.h"
 
 #include <ctime>
@@ -169,7 +169,7 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
 
     case updater::CheckUpdateResponse::Critical:
     case updater::CheckUpdateResponse::Major:
-      StatusBar::instance()->showNotification("New Version!", m_response.getUrl().c_str());
+      App::instance()->showNotification("New Version Available!", m_response.getUrl().c_str());
       break;
   }
 

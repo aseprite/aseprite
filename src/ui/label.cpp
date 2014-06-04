@@ -15,7 +15,7 @@
 
 namespace ui {
 
-Label::Label(const base::string& text)
+Label::Label(const std::string& text)
   : Widget(kLabelWidget)
 {
   setAlign(JI_LEFT | JI_MIDDLE);

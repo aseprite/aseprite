@@ -84,6 +84,9 @@ void WorkspacePart::setActiveView(WorkspaceView* view)
     newContent->requestFocus();
   }
 
+  if (m_activeView)
+    m_activeView->onWorkspaceViewSelected();
+
   layout();
 }
 

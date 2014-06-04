@@ -132,7 +132,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
       }
       // With destination
       else {
-        int x1, y1, x2, y2, bgcolor;
+        int x1, y1, x2, y2;
         Image *new_image;
 
         // Merge down in the background layer
@@ -141,7 +141,6 @@ void MergeDownLayerCommand::onExecute(Context* context)
           y1 = 0;
           x2 = sprite->getWidth();
           y2 = sprite->getHeight();
-          bgcolor = app_get_color_to_clear_layer(dst_layer);
         }
         // Merge down in a transparent layer
         else {
@@ -149,8 +148,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
           y1 = MIN(src_cel->getY(), dst_cel->getY());
           x2 = MAX(src_cel->getX()+src_image->getWidth()-1, dst_cel->getX()+dst_image->getWidth()-1);
           y2 = MAX(src_cel->getY()+src_image->getHeight()-1, dst_cel->getY()+dst_image->getHeight()-1);
-          bgcolor = 0;
         }
+
+        raster::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
 
         new_image = raster::crop_image(dst_image,
                                        x1-dst_cel->getX(),

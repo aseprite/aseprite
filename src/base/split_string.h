@@ -8,14 +8,14 @@
 #define BASE_SPLIT_STRING_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 #include <vector>
 
 namespace base {
 
-  void split_string(const base::string& string,
-                    std::vector<base::string>& parts,
-                    const base::string& separators);
+  void split_string(const std::string& string,
+                    std::vector<std::string>& parts,
+                    const std::string& separators);
 
 }
 

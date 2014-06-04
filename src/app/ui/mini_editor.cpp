@@ -22,18 +22,23 @@
 
 #include "app/ui/mini_editor.h"
 
-#include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
-#include "app/ui/toolbar.h"
-#include "base/bind.h"
 #include "app/document.h"
-#include "gfx/rect.h"
+#include "app/handle_anidir.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "raster/sprite.h"
+#include "app/settings/document_settings.h"
+#include "app/settings/settings.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/status_bar.h"
+#include "app/ui/toolbar.h"
+#include "app/ui_context.h"
+#include "base/bind.h"
+#include "gfx/rect.h"
+#include "raster/sprite.h"
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"
@@ -114,19 +119,11 @@ MiniEditorWindow::MiniEditorWindow()
   , m_docView(NULL)
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
+  , m_pingPongForward(true)
 {
   child_spacing = 0;
   setAutoRemap(false);
   setWantFocus(false);
-
-  // Default bounds
-  int width = JI_SCREEN_W/4;
-  int height = JI_SCREEN_H/4;
-  setBounds(gfx::Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
-                      JI_SCREEN_H - height - StatusBar::instance()->getBounds().h,
-                      width, height));
-
-  load_window_pos(this, "MiniEditor");
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
@@ -139,7 +136,6 @@ MiniEditorWindow::MiniEditorWindow()
 MiniEditorWindow::~MiniEditorWindow()
 {
   set_config_bool("MiniEditor", "Enabled", m_isEnabled);
-  save_window_pos(this, "MiniEditor");
 }
 
 void MiniEditorWindow::setMiniEditorEnabled(bool state)
@@ -147,6 +143,35 @@ void MiniEditorWindow::setMiniEditorEnabled(bool state)
   m_isEnabled = state;
 
   updateUsingEditor(current_editor);
+}
+
+bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case kOpenMessage:
+      {
+        // Default bounds
+        int width = JI_SCREEN_W/4;
+        int height = JI_SCREEN_H/4;
+        int extra = 2*kEditorViewScrollbarWidth*jguiscale();
+        setBounds(
+          gfx::Rect(
+            JI_SCREEN_W - width - ToolBar::instance()->getBounds().w - extra,
+            JI_SCREEN_H - height - StatusBar::instance()->getBounds().h - extra,
+            width, height));
+
+        load_window_pos(this, "MiniEditor");
+      }
+      break;
+
+    case kCloseMessage:
+      save_window_pos(this, "MiniEditor");
+      break;
+
+  }
+
+  return Window::onProcessMessage(msg);
 }
 
 void MiniEditorWindow::onClose(ui::CloseEvent& ev)
@@ -170,7 +195,21 @@ void MiniEditorWindow::onClose(ui::CloseEvent& ev)
 
 void MiniEditorWindow::onPlayClicked()
 {
-  resetTimer();
+  if (m_playButton->isPlaying()) {
+    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
+    if (miniEditor && miniEditor->getDocument() != NULL)
+      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+    else
+      m_nextFrameTime = -1;
+
+    m_curFrameTick = ji_clock;
+    m_pingPongForward = true;
+
+    m_playTimer.start();
+  }
+  else {
+    m_playTimer.stop();
+  }
 }
 
 void MiniEditorWindow::updateUsingEditor(Editor* editor)
@@ -214,39 +253,40 @@ void MiniEditorWindow::hideWindow()
     closeWindow(NULL);
 }
 
-void MiniEditorWindow::resetTimer()
-{
-  if (m_playButton->isPlaying()) {
-    m_playTimer.start();
-
-    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
-    if (miniEditor && miniEditor->getDocument() != NULL)
-      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
-    else
-      m_nextFrameTime = -1;
-  }
-  else {
-    m_playTimer.stop();
-  }
-}
-
 void MiniEditorWindow::onPlaybackTick()
 {
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
   if (!miniEditor)
     return;
 
+  Document* document = miniEditor->getDocument();
+  Sprite* sprite = miniEditor->getSprite();
+  if (!document || !sprite)
+    return;
+
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(document);
+  if (!docSettings)
+    return;
+
   if (m_nextFrameTime >= 0) {
-    m_nextFrameTime -= 10;      // onPlaybackTick()
-    if (m_nextFrameTime <= 0) {
-      FrameNumber frame = miniEditor->getFrame().next();
-      if (frame > miniEditor->getSprite()->getLastFrame())
-        frame = FrameNumber(0);
+    m_nextFrameTime -= (ji_clock - m_curFrameTick);
+
+    while (m_nextFrameTime <= 0) {
+      FrameNumber frame = calculate_next_frame(
+        sprite,
+        miniEditor->getFrame(),
+        docSettings,
+        m_pingPongForward);
+
       miniEditor->setFrame(frame);
 
-      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+      m_nextFrameTime += miniEditor->getSprite()->getFrameDuration(frame);
     }
+
+    m_curFrameTick = ji_clock;
   }
+
   invalidate();
 }
 

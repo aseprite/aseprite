@@ -21,14 +21,15 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/string.h"
+
+#include <string>
 
 namespace app {
 
   // A class to record/restore backup information.
   class Backup {
   public:
-    Backup(const base::string& path);
+    Backup(const std::string& path);
     ~Backup();
 
     // Returns true if there are items that can be restored.
@@ -37,7 +38,7 @@ namespace app {
   private:
     DISABLE_COPYING(Backup);
 
-    base::string m_path;
+    std::string m_path;
   };
 
 } // namespace app

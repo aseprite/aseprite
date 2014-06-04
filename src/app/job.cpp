@@ -54,23 +54,11 @@ Job::Job(const char* job_name)
 
 Job::~Job()
 {
+  ASSERT(!m_timer->isRunning());
+  ASSERT(m_thread == NULL);
+
   if (m_alert_window != NULL)
     m_alert_window->closeWindow(NULL);
-
-  // The job was canceled by the user?
-  {
-    base::scoped_lock hold(*m_mutex);
-    if (!m_done_flag)
-      m_canceled_flag = true;
-  }
-
-  if (m_timer->isRunning())
-    m_timer->stop();
-
-  if (m_thread) {
-    m_thread->join();
-    delete m_thread;
-  }
 
   if (m_progress)
     delete m_progress;
@@ -83,6 +71,25 @@ void Job::startJob()
 {
   m_thread = new base::thread(&Job::thread_proc, this);
   m_alert_window->openWindowInForeground();
+
+  // The job was canceled by the user?
+  {
+    base::scoped_lock hold(*m_mutex);
+    if (!m_done_flag)
+      m_canceled_flag = true;
+  }
+}
+
+void Job::waitJob()
+{
+  if (m_timer->isRunning())
+    m_timer->stop();
+
+  if (m_thread) {
+    m_thread->join();
+    delete m_thread;
+    m_thread = NULL;
+  }
 }
 
 void Job::jobProgress(double f)

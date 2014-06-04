@@ -64,7 +64,8 @@ public:
   }
 
   void onScrollChanged(Editor* editor) OVERRIDE {
-    App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
+    if (current_editor == this)
+      App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
   void onStateChanged(Editor* editor) OVERRIDE {
@@ -168,6 +169,11 @@ std::string DocumentView::getTabText()
 WorkspaceView* DocumentView::cloneWorkspaceView()
 {
   return new DocumentView(m_document, Normal);
+}
+
+void DocumentView::onWorkspaceViewSelected()
+{
+  // Do nothing
 }
 
 void DocumentView::onClonedFrom(WorkspaceView* from)

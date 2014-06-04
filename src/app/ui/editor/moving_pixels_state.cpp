@@ -31,11 +31,13 @@
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/editor/transform_handles.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -93,10 +95,18 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // PlayAnimation command.
   m_currentEditor->getManager()->addMessageFilter(kKeyDownMessage, m_currentEditor);
   m_currentEditor->getManager()->addMessageFilter(kKeyUpMessage, m_currentEditor);
+
+  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  contextBar->updateForMovingPixels();
+  contextBar->addObserver(this);
 }
 
 MovingPixelsState::~MovingPixelsState()
 {
+  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  contextBar->removeObserver(this);
+  contextBar->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
+
   UIContext::instance()->removeObserver(this);
   UIContext::instance()->settings()->selection()->removeObserver(this);
 
@@ -104,6 +114,8 @@ MovingPixelsState::~MovingPixelsState()
 
   m_currentEditor->getManager()->removeMessageFilter(kKeyDownMessage, m_currentEditor);
   m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
+
+  m_currentEditor->getDocument()->generateMaskBoundaries();
 }
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
@@ -268,14 +280,6 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-bool MovingPixelsState::onMouseWheel(Editor* editor, MouseMessage* msg)
-{
-  ASSERT(m_pixelsMovement != NULL);
-
-  // Use StandbyState implementation
-  return StandbyState::onMouseWheel(editor, msg);
-}
-
 bool MovingPixelsState::onSetCursor(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
@@ -396,15 +400,32 @@ void MovingPixelsState::onSetMoveTransparentColor(app::Color newColor)
   setTransparentColor(color);
 }
 
+void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
+{
+  switch (action) {
+
+    case ContextBarObserver::DropPixels:
+      dropPixels(m_currentEditor);
+      break;
+
+    case ContextBarObserver::CancelDrag:
+      m_pixelsMovement->discardImage(false);
+      m_discarded = true;
+
+      // Quit from MovingPixelsState, back to standby.
+      m_currentEditor->backToPreviousState();
+      break;
+  }
+}
+
 void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  Sprite* sprite = m_currentEditor->getSprite();
-  ASSERT(sprite != NULL);
+  Layer* layer = m_currentEditor->getLayer();
+  ASSERT(layer != NULL);
 
-  PixelFormat format = sprite->getPixelFormat();
-  m_pixelsMovement->setMaskColor(color_utils::color_for_image(color, format));
+  m_pixelsMovement->setMaskColor(color_utils::color_for_layer(color, layer));
 }
 
 void MovingPixelsState::dropPixels(Editor* editor)

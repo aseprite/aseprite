@@ -53,7 +53,12 @@ public:
 
   void showProgressWindow() {
     startJob();
-    fop_stop(m_fop);
+
+    if (isCanceled()) {
+      fop_stop(m_fop);
+    }
+
+    waitJob();
   }
 
 private:
@@ -88,6 +93,14 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
   if (fop->has_error()) {
     Console console;
     console.printf(fop->error.c_str());
+
+    // We don't know if the file was saved correctly or not. So mark
+    // it as it should be saved again.
+    document->impossibleToBackToSavedState();
+  }
+  // If the job was cancelled, mark the document as modified.
+  else if (fop_is_stop(fop)) {
+    document->impossibleToBackToSavedState();
   }
   else {
     App::instance()->getRecentFiles()->addRecentFile(document->getFilename().c_str());
@@ -122,7 +135,7 @@ protected:
   void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
   {
     const Document* document = reader.document();
-    base::string filename;
+    std::string filename;
 
     if (!m_filename.empty()) {
       filename = m_filename;
@@ -134,7 +147,7 @@ protected:
       get_writable_extensions(exts, sizeof(exts));
 
       for (;;) {
-        base::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
+        std::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
         if (newfilename.empty())
           return;
 
@@ -283,7 +296,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  base::string old_filename = document->getFilename();
+  std::string old_filename = document->getFilename();
 
   // show "Save As" dialog
   saveAsDialog(reader, "Save Copy As", false);

@@ -58,6 +58,7 @@ namespace app {
     // WorkspaceView implementation
     ui::Widget* getContentWidget() OVERRIDE { return this; }
     WorkspaceView* cloneWorkspaceView() OVERRIDE;
+    void onWorkspaceViewSelected() OVERRIDE;
     void onClonedFrom(WorkspaceView* from) OVERRIDE;
 
     // DocumentObserver implementation

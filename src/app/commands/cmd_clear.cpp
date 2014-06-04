@@ -66,7 +66,7 @@ void ClearCommand::onExecute(Context* context)
 {
   // Clear of several frames is handled with RemoveCel command.
   Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
-  if (range.enabled()) {
+  if (range.enabled() && (range.layers() > 1 || range.frames() > 1)) {
     Command* subCommand = CommandsModule::instance()
       ->getCommandByName(CommandId::RemoveCel);
     context->executeCommand(subCommand);

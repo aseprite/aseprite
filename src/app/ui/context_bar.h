@@ -21,7 +21,9 @@
 #pragma once
 
 #include "app/settings/settings_observers.h"
+#include "app/ui/context_bar_observer.h"
 #include "base/compiler_specific.h"
+#include "base/observable.h"
 #include "ui/box.h"
 
 namespace ui {
@@ -38,12 +40,14 @@ namespace app {
   class IToolSettings;
 
   class ContextBar : public ui::Box,
-                     public ToolSettingsObserver {
+                     public ToolSettingsObserver,
+                     public base::Observable<ContextBarObserver> {
   public:
     ContextBar();
     ~ContextBar();
 
     void updateFromTool(tools::Tool* tool);
+    void updateForMovingPixels();
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;
@@ -56,6 +60,7 @@ namespace app {
     void onPenSizeChange();
     void onPenAngleChange();
     void onCurrentToolChange();
+    void onDropPixels(ContextBarObserver::DropAction action);
 
     class BrushTypeField;
     class BrushAngleField;
@@ -70,6 +75,7 @@ namespace app {
     class RotAlgorithmField;
     class FreehandAlgorithmField;
     class GrabAlphaField;
+    class DropPixelsField;
 
     IToolSettings* m_toolSettings;
     BrushTypeField* m_brushType;
@@ -90,6 +96,7 @@ namespace app {
     SelectionModeField* m_selectionMode;
     TransparentColorField* m_transparentColor;
     RotAlgorithmField* m_rotAlgo;
+    DropPixelsField* m_dropPixels;
   };
 
 } // namespace app

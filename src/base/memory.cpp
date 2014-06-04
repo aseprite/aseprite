@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -58,48 +58,14 @@ char* base_strdup(const char* string)
 #define BACKTRACE_LEVELS 16
 
 #ifdef _MSC_VER
+  #include <windows.h>
+  #include <dbghelp.h>
 
-#include <windows.h>
-#include <dbghelp.h>
-
-// This is an implementation of the __builtin_return_address GCC
-// extension for the MSVC compiler.
-//
-// Author: Unknown
-// Modified by David Capello to return NULL when the callstack
-// is not as high as the specified "level".
-//
-__declspec (naked) void* __builtin_return_address(int level)
-{
-   __asm
-   {
-       push ebx
-
-       mov eax, ebp
-       mov ebx, DWORD PTR[esp+8]
-__next:
-       test ebx, ebx
-       je  __break
-       dec ebx
-       mov eax, DWORD PTR[eax]
-       cmp eax, 0xffff
-       jbe __outofstack
-       jmp __next
-__outofstack:
-       mov eax, 0
-       jmp __done
-__break:
-       mov eax, DWORD PTR[eax+4]
-__done:
-       pop ebx
-       ret
-   }
-}
-
+  typedef USHORT (WINAPI* RtlCaptureStackBackTraceType)(ULONG, ULONG, PVOID*, PULONG);
+  static RtlCaptureStackBackTraceType pRtlCaptureStackBackTrace;
 #endif
 
-struct slot_t
-{
+struct slot_t {
   void* backtrace[BACKTRACE_LEVELS];
   void* ptr;
   size_t size;
@@ -112,6 +78,13 @@ static base::mutex* mutex = NULL;
 
 void base_memleak_init()
 {
+#ifdef _MSC_VER
+  pRtlCaptureStackBackTrace =
+    (RtlCaptureStackBackTraceType)(::GetProcAddress(
+        ::LoadLibrary(L"kernel32.dll"),
+        "RtlCaptureStackBackTrace"));
+#endif
+
   assert(!memleak_status);
 
   headslot = NULL;
@@ -131,29 +104,24 @@ void base_memleak_exit()
   if (f != NULL) {
 #ifdef _MSC_VER
     struct SYMBOL_INFO_EX {
-      SYMBOL_INFO header;
+      IMAGEHLP_SYMBOL64 header;
       char filename[MAX_SYM_NAME];
     } si;
     si.header.SizeOfStruct = sizeof(SYMBOL_INFO_EX);
+    si.header.MaxNameLength = MAX_SYM_NAME;
 
-    IMAGEHLP_LINE line;
-    line.SizeOfStruct = sizeof(IMAGEHLP_LINE);
+    IMAGEHLP_LINE64 line;
+    line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
+
+    ::SymSetOptions(SYMOPT_UNDNAME | SYMOPT_DEFERRED_LOADS);
 
     HANDLE hproc = ::GetCurrentProcess();
-    if (!::SymInitialize(hproc, NULL, false))
+    if (!::SymInitialize(hproc, NULL, TRUE))
       fprintf(f, "Error initializing SymInitialize()\nGetLastError = %d\n", ::GetLastError());
 
     char filename[MAX_PATH];
-    ::GetModuleFileName(NULL, filename, sizeof(filename));
-    ::SymLoadModule(hproc, NULL, filename, NULL, 0, 0);
-
-    char path[MAX_PATH];
-    strcpy(path, filename);
-    if (strrchr(path, '\\'))
-      *strrchr(path, '\\') = 0;
-    else
-      *path = 0;
-    ::SymSetSearchPath(hproc, path);
+    ::GetModuleFileNameA(NULL, filename, sizeof(filename) / sizeof(filename[0]));
+    ::SymLoadModule64(hproc, NULL, filename, NULL, 0, 0);
 #endif
 
     // Memory leaks
@@ -164,10 +132,10 @@ void base_memleak_exit()
 #ifdef _MSC_VER
         DWORD displacement;
 
-        if (::SymGetLineFromAddr(hproc, (DWORD)it->backtrace[c], &displacement, &line)) {
+        if (::SymGetLineFromAddr64(hproc, (DWORD)it->backtrace[c], &displacement, &line)) {
           si.header.Name[0] = 0;
 
-          ::SymFromAddr(hproc, (DWORD)it->backtrace[c], NULL, &si.header);
+          ::SymGetSymFromAddr64(hproc, (DWORD)it->backtrace[c], NULL, &si.header);
 
           fprintf(f, "%p : %s(%lu) [%s]\n",
                   it->backtrace[c],
@@ -205,15 +173,21 @@ static void addslot(void* ptr, size_t size)
   p->backtrace[1] = __builtin_return_address(3);
   p->backtrace[2] = __builtin_return_address(2);
   p->backtrace[3] = __builtin_return_address(1);
+#elif defined(_MSC_VER)
+  {
+    for (int c=0; c<BACKTRACE_LEVELS; ++c)
+      p->backtrace[c] = 0;
+
+    pRtlCaptureStackBackTrace(0, BACKTRACE_LEVELS, p->backtrace, NULL);
+  }
 #else
-  for (int c=0; c<BACKTRACE_LEVELS; ++c)
-    p->backtrace[c] = __builtin_return_address(BACKTRACE_LEVELS-c);
+  #error Not supported
 #endif
 
   p->ptr = ptr;
   p->size = size;
 
-  scoped_lock lock(*mutex);
+  base::scoped_lock lock(*mutex);
   p->next = headslot;
   headslot = p;
 }
@@ -227,7 +201,7 @@ static void delslot(void* ptr)
 
   assert(ptr != NULL);
 
-  scoped_lock lock(*mutex);
+  base::scoped_lock lock(*mutex);
 
   for (it=headslot; it!=NULL; prev=it, it=it->next) {
     if (it->ptr == ptr) {

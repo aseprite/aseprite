@@ -32,6 +32,7 @@ namespace app {
 
     virtual ui::Widget* getContentWidget() = 0;
     virtual WorkspaceView* cloneWorkspaceView() = 0;
+    virtual void onWorkspaceViewSelected() = 0;
 
     // Called after the view is added in the correct position inside
     // the workspace. It can be used to copy/clone scroll position

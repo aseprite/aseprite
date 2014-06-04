@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -132,18 +132,23 @@ bool Sprite::needAlpha() const
   return false;
 }
 
-void Sprite::setTransparentColor(uint32_t color)
+void Sprite::setTransparentColor(color_t color)
 {
   m_transparentColor = color;
+
+  for (int i=0; i<m_stock->size(); i++) {
+    Image* image = m_stock->getImage(i);
+    if (image != NULL)
+      image->setMaskColor(color);
+  }
 }
 
 int Sprite::getMemSize() const
 {
-  Image *image;
-  int i, size = 0;
+  int size = 0;
 
-  for (i=0; i<m_stock->size(); i++) {
-    image = m_stock->getImage(i);
+  for (int i=0; i<m_stock->size(); i++) {
+    Image* image = m_stock->getImage(i);
     if (image != NULL)
       size += image->getRowStrideSize() * image->getHeight();
   }
@@ -347,9 +352,22 @@ Stock* Sprite::getStock() const
   return m_stock;
 }
 
-void Sprite::getCels(CelList& cels)
+void Sprite::getCels(CelList& cels) const
 {
   getFolder()->getCels(cels);
+}
+
+size_t Sprite::getImageRefs(int imageIndex) const
+{
+  CelList cels;
+  getCels(cels);
+
+  size_t refs = 0;
+  for (CelList::iterator it=cels.begin(), end=cels.end(); it != end; ++it)
+    if ((*it)->getImage() == imageIndex)
+      ++refs;
+
+  return refs;
 }
 
 void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping)

@@ -1,79 +1,38 @@
 /******************************************************************************
- *   "Gif-Lib" - Yet another gif library.
- *
- * Written by:  Gershon Elber                Ver 1.1, Aug. 1990
- ******************************************************************************
- * The kernel of the GIF Encoding process can be found here.
- ******************************************************************************
- * History:
- * 14 Jun 89 - Version 1.0 by Gershon Elber.
- *  3 Sep 90 - Version 1.1 by Gershon Elber (Support for Gif89, Unique names).
- * 26 Jun 96 - Version 3.0 by Eric S. Raymond (Full GIF89 support)
- *****************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+egif_lib.c - GIF encoding
 
-/* Find a thirty-two bit int type */
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
+The functions here and in dgif_lib.c are partitioned carefully so that
+if you only require one of read and write capability, only one of these
+two modules will be linked.  Preserve this property!
+
+*****************************************************************************/
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
-#ifdef HAVE_STDINT_H
 #include <stdint.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef HAVE_INTTYPES_H
-#include <inttypes.h>
-#endif
-
-#ifdef __MSDOS__
-#include <io.h>
-#include <alloc.h>
-#include <sys\stat.h>
-#else
-#include <sys/types.h>
-#include <sys/stat.h>
-#ifdef R6000
-
-/* FIXME: What is sys/mode.h?  Can we substitute a check for this file rather
- * than a check based on machine type?
- */
-#include <sys/mode.h>
-#endif
-#endif /* __MSDOS__ */
-
-#ifdef HAVE_IO_H
-#include <io.h>
-#endif
-
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif /* HAVE_FCNTL_H */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif /* HAVE_UNISTD_H */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <fcntl.h>
+
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <sys/types.h>
+#endif /* _WIN32 */
+#include <sys/stat.h>
+
 #include "gif_lib.h"
 #include "gif_lib_private.h"
 
-/* #define DEBUG_NO_PREFIX                  Dump only compressed data. */
-
 /* Masks given codes to BitsPerPixel, to make sure all codes are in range: */
-static GifPixelType CodeMask[] = {
+/*@+charint@*/
+static const GifPixelType CodeMask[] = {
     0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff
 };
-
-static char GifVersionPrefix[GIF_STAMP_LEN + 1] = GIF87_STAMP;
-
-#define WRITE(_gif,_buf,_len)   \
-  (((GifFilePrivateType*)_gif->Private)->Write ?    \
-   ((GifFilePrivateType*)_gif->Private)->Write(_gif,_buf,_len) :    \
-   fwrite(_buf, 1, _len, ((GifFilePrivateType*)_gif->Private)->File))
+/*@-charint@*/
 
 static int EGifPutWord(int Word, GifFileType * GifFile);
 static int EGifSetupCompress(GifFileType * GifFile);
@@ -83,58 +42,57 @@ static int EGifCompressOutput(GifFileType * GifFile, int Code);
 static int EGifBufferedOutput(GifFileType * GifFile, GifByteType * Buf,
                               int c);
 
+/* extract bytes from an unsigned word */
+#define LOBYTE(x)	((x) & 0xff)
+#define HIBYTE(x)	(((x) >> 8) & 0xff)
+
 /******************************************************************************
- * Open a new gif file for write, given by its name. If TestExistance then
- * if the file exists this routines fails (returns NULL).
- * Returns GifFileType pointer dynamically allocated which serves as the gif
- * info record. _GifError is cleared if succesfull.
- *****************************************************************************/
+ Open a new GIF file for write, specified by name. If TestExistance then
+ if the file exists this routines fails (returns NULL).
+ Returns a dynamically allocated GifFileType pointer which serves as the GIF
+ info record. The Error member is cleared if successful.
+******************************************************************************/
 GifFileType *
-EGifOpenFileName(const char *FileName,
-                 int TestExistance) {
+EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
+{
 
     int FileHandle;
     GifFileType *GifFile;
 
-    if (TestExistance)
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_EXCL
-#if defined(__MSDOS__) || defined(WINDOWS32) || defined(_OPEN_BINARY)
-                          | O_BINARY
-#endif /* __MSDOS__ */
-                          , S_IREAD | S_IWRITE);
+    if (TestExistence)
+        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_EXCL, 
+			  S_IREAD | S_IWRITE);
     else
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_TRUNC
-#if defined(__MSDOS__) || defined(WINDOWS32) || defined(_OPEN_BINARY)
-                          | O_BINARY
-#endif /* __MSDOS__ */
-                          , S_IREAD | S_IWRITE);
+        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_TRUNC, 
+			  S_IREAD | S_IWRITE);
 
     if (FileHandle == -1) {
-        _GifError = E_GIF_ERR_OPEN_FAILED;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_OPEN_FAILED;
         return NULL;
     }
-    GifFile = EGifOpenFileHandle(FileHandle);
+    GifFile = EGifOpenFileHandle(FileHandle, Error);
     if (GifFile == (GifFileType *) NULL)
-        close(FileHandle);
+        (void)close(FileHandle);
     return GifFile;
 }
 
 /******************************************************************************
- * Update a new gif file, given its file handle, which must be opened for
- * write in binary mode.
- * Returns GifFileType pointer dynamically allocated which serves as the gif
- * info record. _GifError is cleared if succesfull.
- *****************************************************************************/
+ Update a new GIF file, given its file handle, which must be opened for
+ write in binary mode.
+ Returns dynamically allocated a GifFileType pointer which serves as the GIF
+ info record.
+ Only fails on a memory allocation error.
+******************************************************************************/
 GifFileType *
-EGifOpenFileHandle(int FileHandle) {
-
+EGifOpenFileHandle(const int FileHandle, int *Error)
+{
     GifFileType *GifFile;
     GifFilePrivateType *Private;
     FILE *f;
 
     GifFile = (GifFileType *) malloc(sizeof(GifFileType));
     if (GifFile == NULL) {
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
 
@@ -143,54 +101,51 @@ EGifOpenFileHandle(int FileHandle) {
     Private = (GifFilePrivateType *)malloc(sizeof(GifFilePrivateType));
     if (Private == NULL) {
         free(GifFile);
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
     if ((Private->HashTable = _InitHashTable()) == NULL) {
         free(GifFile);
         free(Private);
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
 
-#if defined(__MSDOS__) || defined(WINDOWS32) || defined(_OPEN_BINARY)
-    setmode(FileHandle, O_BINARY);    /* Make sure it is in binary mode. */
-#endif /* __MSDOS__ */
+#ifdef _WIN32
+    _setmode(FileHandle, O_BINARY);    /* Make sure it is in binary mode. */
+#endif /* _WIN32 */
 
     f = fdopen(FileHandle, "wb");    /* Make it into a stream: */
 
-#if defined (__MSDOS__) || defined(WINDOWS32)
-    setvbuf(f, NULL, _IOFBF, GIF_FILE_BUFFER_SIZE);    /* And inc. stream
-                                                        * buffer. */
-#endif /* __MSDOS__ */
-
-    GifFile->Private = (VoidPtr)Private;
+    GifFile->Private = (void *)Private;
     Private->FileHandle = FileHandle;
     Private->File = f;
     Private->FileState = FILE_STATE_WRITE;
 
     Private->Write = (OutputFunc) 0;    /* No user write routine (MRB) */
-    GifFile->UserData = (VoidPtr) 0;    /* No user write handle (MRB) */
+    GifFile->UserData = (void *)NULL;    /* No user write handle (MRB) */
 
-    _GifError = 0;
+    GifFile->Error = 0;
 
     return GifFile;
 }
 
 /******************************************************************************
- * Output constructor that takes user supplied output function.
- * Basically just a copy of EGifOpenFileHandle. (MRB)
- *****************************************************************************/
+ Output constructor that takes user supplied output function.
+ Basically just a copy of EGifOpenFileHandle. (MRB)
+******************************************************************************/
 GifFileType *
-EGifOpen(void *userData,
-         OutputFunc writeFunc) {
-
+EGifOpen(void *userData, OutputFunc writeFunc, int *Error)
+{
     GifFileType *GifFile;
     GifFilePrivateType *Private;
 
     GifFile = (GifFileType *)malloc(sizeof(GifFileType));
     if (GifFile == NULL) {
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
 
@@ -199,7 +154,8 @@ EGifOpen(void *userData,
     Private = (GifFilePrivateType *)malloc(sizeof(GifFilePrivateType));
     if (Private == NULL) {
         free(GifFile);
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
 
@@ -207,11 +163,12 @@ EGifOpen(void *userData,
     if (Private->HashTable == NULL) {
         free (GifFile);
         free (Private);
-        _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+        if (Error != NULL)
+	    *Error = E_GIF_ERR_NOT_ENOUGH_MEM;
         return NULL;
     }
 
-    GifFile->Private = (VoidPtr) Private;
+    GifFile->Private = (void *)Private;
     Private->FileHandle = 0;
     Private->File = (FILE *) 0;
     Private->FileState = FILE_STATE_WRITE;
@@ -219,66 +176,128 @@ EGifOpen(void *userData,
     Private->Write = writeFunc;    /* User write routine (MRB) */
     GifFile->UserData = userData;    /* User write handle (MRB) */
 
-    _GifError = 0;
+    Private->gif89 = false;	/* initially, write GIF87 */
+
+    GifFile->Error = 0;
 
     return GifFile;
 }
 
 /******************************************************************************
- * Routine to set current GIF version. All files open for write will be
- * using this version until next call to this routine. Version consists of
- * 3 characters as "87a" or "89a". No test is made to validate the version.
- *****************************************************************************/
-void
-EGifSetGifVersion(const char *Version) {
-    strncpy(GifVersionPrefix + GIF_VERSION_POS, Version, 3);
+ Routine to compute the GIF version that will be written on output.
+******************************************************************************/
+const char *
+EGifGetGifVersion(GifFileType *GifFile)
+{
+    GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
+    int i, j;
+
+    /* 
+     * Bulletproofing - always write GIF89 if we need to.
+     * Note, we don't clear the gif89 flag here because
+     * users of the sequential API might have called EGifSetGifVersion()
+     * in order to set that flag.
+     */
+    for (i = 0; i < GifFile->ImageCount; i++) {
+        for (j = 0; j < GifFile->SavedImages[i].ExtensionBlockCount; j++) {
+            int function =
+               GifFile->SavedImages[i].ExtensionBlocks[j].Function;
+
+            if (function == COMMENT_EXT_FUNC_CODE
+                || function == GRAPHICS_EXT_FUNC_CODE
+                || function == PLAINTEXT_EXT_FUNC_CODE
+                || function == APPLICATION_EXT_FUNC_CODE)
+                Private->gif89 = true;
+        }
+    }
+    for (i = 0; i < GifFile->ExtensionBlockCount; i++) {
+	int function = GifFile->ExtensionBlocks[i].Function;
+
+	if (function == COMMENT_EXT_FUNC_CODE
+	    || function == GRAPHICS_EXT_FUNC_CODE
+	    || function == PLAINTEXT_EXT_FUNC_CODE
+	    || function == APPLICATION_EXT_FUNC_CODE)
+	    Private->gif89 = true;
+    }
+ 
+    if (Private->gif89)
+	return GIF89_STAMP;
+    else
+	return GIF87_STAMP;
 }
 
 /******************************************************************************
- * This routine should be called before any other EGif calls, immediately
- * follows the GIF file openning.
- *****************************************************************************/
-int
-EGifPutScreenDesc(GifFileType * GifFile,
-                  int Width,
-                  int Height,
-                  int ColorRes,
-                  int BackGround,
-                  const ColorMapObject * ColorMap) {
+ Set the GIF version. In the extremely unlikely event that there is ever
+ another version, replace the bool argument with an enum in which the 
+ GIF87 value is 0 (numerically the same as bool false) and the GIF89 value
+ is 1 (numerically the same as bool true).  That way we'll even preserve
+ object-file compatibility!
+******************************************************************************/
+void EGifSetGifVersion(GifFileType *GifFile, const bool gif89)
+{
+    GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
 
-    int i;
+    Private->gif89 = gif89;
+}
+
+/******************************************************************************
+ All writes to the GIF should go through this.
+******************************************************************************/
+static int InternalWrite(GifFileType *GifFileOut, 
+		   const unsigned char *buf, size_t len)
+{
+    GifFilePrivateType *Private = (GifFilePrivateType*)GifFileOut->Private;
+    if (Private->Write)
+	return Private->Write(GifFileOut,buf,len);
+    else
+	return fwrite(buf, 1, len, Private->File);
+}
+
+/******************************************************************************
+ This routine should be called before any other EGif calls, immediately
+ following the GIF file opening.
+******************************************************************************/
+int
+EGifPutScreenDesc(GifFileType *GifFile,
+                  const int Width,
+                  const int Height,
+                  const int ColorRes,
+                  const int BackGround,
+                  const ColorMapObject *ColorMap)
+{
     GifByteType Buf[3];
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
+    const char *write_version;
 
     if (Private->FileState & FILE_STATE_SCREEN) {
         /* If already has screen descriptor - something is wrong! */
-        _GifError = E_GIF_ERR_HAS_SCRN_DSCR;
+        GifFile->Error = E_GIF_ERR_HAS_SCRN_DSCR;
         return GIF_ERROR;
     }
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
-/* First write the version prefix into the file. */
-#ifndef DEBUG_NO_PREFIX
-    if (WRITE(GifFile, (unsigned char *)GifVersionPrefix,
-              strlen(GifVersionPrefix)) != strlen(GifVersionPrefix)) {
-        _GifError = E_GIF_ERR_WRITE_FAILED;
+    write_version = EGifGetGifVersion(GifFile);
+
+    /* First write the version prefix into the file. */
+    if (InternalWrite(GifFile, (unsigned char *)write_version,
+              strlen(write_version)) != strlen(write_version)) {
+        GifFile->Error = E_GIF_ERR_WRITE_FAILED;
         return GIF_ERROR;
     }
-#endif /* DEBUG_NO_PREFIX */
 
     GifFile->SWidth = Width;
     GifFile->SHeight = Height;
     GifFile->SColorResolution = ColorRes;
     GifFile->SBackGroundColor = BackGround;
     if (ColorMap) {
-        GifFile->SColorMap = MakeMapObject(ColorMap->ColorCount,
+        GifFile->SColorMap = GifMakeMapObject(ColorMap->ColorCount,
                                            ColorMap->Colors);
         if (GifFile->SColorMap == NULL) {
-            _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+            GifFile->Error = E_GIF_ERR_NOT_ENOUGH_MEM;
             return GIF_ERROR;
         }
     } else
@@ -288,8 +307,8 @@ EGifPutScreenDesc(GifFileType * GifFile,
      * Put the logical screen descriptor into the file:
      */
     /* Logical Screen Descriptor: Dimensions */
-    EGifPutWord(Width, GifFile);
-    EGifPutWord(Height, GifFile);
+    (void)EGifPutWord(Width, GifFile);
+    (void)EGifPutWord(Height, GifFile);
 
     /* Logical Screen Descriptor: Packed Fields */
     /* Note: We have actual size of the color table default to the largest
@@ -300,26 +319,26 @@ EGifPutScreenDesc(GifFileType * GifFile,
              ((ColorRes - 1) << 4) | /* Bits allocated to each primary color */
         (ColorMap ? ColorMap->BitsPerPixel - 1 : 0x07 ); /* Actual size of the
                                                             color table. */
+    if (ColorMap != NULL && ColorMap->SortFlag)
+	Buf[0] |= 0x08;
     Buf[1] = BackGround;    /* Index into the ColorTable for background color */
-    Buf[2] = 0;             /* Pixel Aspect Ratio */
-#ifndef DEBUG_NO_PREFIX
-    WRITE(GifFile, Buf, 3);
-#endif /* DEBUG_NO_PREFIX */
+    Buf[2] = GifFile->AspectByte;     /* Pixel Aspect Ratio */
+    InternalWrite(GifFile, Buf, 3);
 
     /* If we have Global color map - dump it also: */
-#ifndef DEBUG_NO_PREFIX
-    if (ColorMap != NULL)
+    if (ColorMap != NULL) {
+	int i;
         for (i = 0; i < ColorMap->ColorCount; i++) {
             /* Put the ColorMap out also: */
             Buf[0] = ColorMap->Colors[i].Red;
             Buf[1] = ColorMap->Colors[i].Green;
             Buf[2] = ColorMap->Colors[i].Blue;
-            if (WRITE(GifFile, Buf, 3) != 3) {
-                _GifError = E_GIF_ERR_WRITE_FAILED;
+            if (InternalWrite(GifFile, Buf, 3) != 3) {
+                GifFile->Error = E_GIF_ERR_WRITE_FAILED;
                 return GIF_ERROR;
             }
         }
-#endif /* DEBUG_NO_PREFIX */
+    }
 
     /* Mark this file as has screen descriptor, and no pixel written yet: */
     Private->FileState |= FILE_STATE_SCREEN;
@@ -328,35 +347,30 @@ EGifPutScreenDesc(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * This routine should be called before any attempt to dump an image - any
- * call to any of the pixel dump routines.
- *****************************************************************************/
+ This routine should be called before any attempt to dump an image - any
+ call to any of the pixel dump routines.
+******************************************************************************/
 int
-EGifPutImageDesc(GifFileType * GifFile,
-                 int Left,
-                 int Top,
-                 int Width,
-                 int Height,
-                 int Interlace,
-                 const ColorMapObject * ColorMap) {
-
-    int i;
+EGifPutImageDesc(GifFileType *GifFile,
+                 const int Left,
+                 const int Top,
+                 const int Width,
+                 const int Height,
+                 const bool Interlace,
+                 const ColorMapObject *ColorMap)
+{
     GifByteType Buf[3];
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (Private->FileState & FILE_STATE_IMAGE &&
-#if defined(__MSDOS__) || defined(WINDOWS32) || defined(__GNUC__)
         Private->PixelCount > 0xffff0000UL) {
-#else
-        Private->PixelCount > 0xffff0000) {
-#endif /* __MSDOS__ */
         /* If already has active image descriptor - something is wrong! */
-        _GifError = E_GIF_ERR_HAS_IMAG_DSCR;
+        GifFile->Error = E_GIF_ERR_HAS_IMAG_DSCR;
         return GIF_ERROR;
     }
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
     GifFile->Image.Left = Left;
@@ -365,10 +379,14 @@ EGifPutImageDesc(GifFileType * GifFile,
     GifFile->Image.Height = Height;
     GifFile->Image.Interlace = Interlace;
     if (ColorMap) {
-        GifFile->Image.ColorMap = MakeMapObject(ColorMap->ColorCount,
+	if (GifFile->Image.ColorMap != NULL) {
+	    GifFreeMapObject(GifFile->Image.ColorMap);
+	    GifFile->Image.ColorMap = NULL;
+	}
+        GifFile->Image.ColorMap = GifMakeMapObject(ColorMap->ColorCount,
                                                 ColorMap->Colors);
         if (GifFile->Image.ColorMap == NULL) {
-            _GifError = E_GIF_ERR_NOT_ENOUGH_MEM;
+            GifFile->Error = E_GIF_ERR_NOT_ENOUGH_MEM;
             return GIF_ERROR;
         }
     } else {
@@ -376,37 +394,33 @@ EGifPutImageDesc(GifFileType * GifFile,
     }
 
     /* Put the image descriptor into the file: */
-    Buf[0] = ',';    /* Image seperator character. */
-#ifndef DEBUG_NO_PREFIX
-    WRITE(GifFile, Buf, 1);
-#endif /* DEBUG_NO_PREFIX */
-    EGifPutWord(Left, GifFile);
-    EGifPutWord(Top, GifFile);
-    EGifPutWord(Width, GifFile);
-    EGifPutWord(Height, GifFile);
+    Buf[0] = DESCRIPTOR_INTRODUCER;    /* Image separator character. */
+    InternalWrite(GifFile, Buf, 1);
+    (void)EGifPutWord(Left, GifFile);
+    (void)EGifPutWord(Top, GifFile);
+    (void)EGifPutWord(Width, GifFile);
+    (void)EGifPutWord(Height, GifFile);
     Buf[0] = (ColorMap ? 0x80 : 0x00) |
        (Interlace ? 0x40 : 0x00) |
        (ColorMap ? ColorMap->BitsPerPixel - 1 : 0);
-#ifndef DEBUG_NO_PREFIX
-    WRITE(GifFile, Buf, 1);
-#endif /* DEBUG_NO_PREFIX */
+    InternalWrite(GifFile, Buf, 1);
 
     /* If we have Global color map - dump it also: */
-#ifndef DEBUG_NO_PREFIX
-    if (ColorMap != NULL)
+    if (ColorMap != NULL) {
+	int i;
         for (i = 0; i < ColorMap->ColorCount; i++) {
             /* Put the ColorMap out also: */
             Buf[0] = ColorMap->Colors[i].Red;
             Buf[1] = ColorMap->Colors[i].Green;
             Buf[2] = ColorMap->Colors[i].Blue;
-            if (WRITE(GifFile, Buf, 3) != 3) {
-                _GifError = E_GIF_ERR_WRITE_FAILED;
+            if (InternalWrite(GifFile, Buf, 3) != 3) {
+                GifFile->Error = E_GIF_ERR_WRITE_FAILED;
                 return GIF_ERROR;
             }
         }
-#endif /* DEBUG_NO_PREFIX */
+    }
     if (GifFile->SColorMap == NULL && GifFile->Image.ColorMap == NULL) {
-        _GifError = E_GIF_ERR_NO_COLOR_MAP;
+        GifFile->Error = E_GIF_ERR_NO_COLOR_MAP;
         return GIF_ERROR;
     }
 
@@ -414,33 +428,32 @@ EGifPutImageDesc(GifFileType * GifFile,
     Private->FileState |= FILE_STATE_IMAGE;
     Private->PixelCount = (long)Width *(long)Height;
 
-    EGifSetupCompress(GifFile);    /* Reset compress algorithm parameters. */
+    /* Reset compress algorithm parameters. */
+    (void)EGifSetupCompress(GifFile);
 
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put one full scanned line (Line) of length LineLen into GIF file.
- *****************************************************************************/
+ Put one full scanned line (Line) of length LineLen into GIF file.
+******************************************************************************/
 int
-EGifPutLine(GifFileType * GifFile,
-            GifPixelType * Line,
-            int LineLen) {
-
+EGifPutLine(GifFileType * GifFile, GifPixelType *Line, int LineLen)
+{
     int i;
     GifPixelType Mask;
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
     if (!LineLen)
         LineLen = GifFile->Image.Width;
     if (Private->PixelCount < (unsigned)LineLen) {
-        _GifError = E_GIF_ERR_DATA_TOO_BIG;
+        GifFile->Error = E_GIF_ERR_DATA_TOO_BIG;
         return GIF_ERROR;
     }
     Private->PixelCount -= LineLen;
@@ -455,22 +468,21 @@ EGifPutLine(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * Put one pixel (Pixel) into GIF file.
- *****************************************************************************/
+ Put one pixel (Pixel) into GIF file.
+******************************************************************************/
 int
-EGifPutPixel(GifFileType * GifFile,
-             GifPixelType Pixel) {
-
+EGifPutPixel(GifFileType *GifFile, GifPixelType Pixel)
+{
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
     if (Private->PixelCount == 0) {
-        _GifError = E_GIF_ERR_DATA_TOO_BIG;
+        GifFile->Error = E_GIF_ERR_DATA_TOO_BIG;
         return GIF_ERROR;
     }
     --Private->PixelCount;
@@ -483,13 +495,12 @@ EGifPutPixel(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * Put a comment into GIF file using the GIF89 comment extension block.
- *****************************************************************************/
+ Put a comment into GIF file using the GIF89 comment extension block.
+******************************************************************************/
 int
-EGifPutComment(GifFileType * GifFile,
-               const char *Comment) {
-
-    unsigned int length = strlen(Comment);
+EGifPutComment(GifFileType *GifFile, const char *Comment)
+{
+    unsigned int length;
     char *buf;
 
     length = strlen(Comment);
@@ -498,16 +509,14 @@ EGifPutComment(GifFileType * GifFile,
                                 length, Comment);
     } else {
         buf = (char *)Comment;
-        if (EGifPutExtensionFirst(GifFile, COMMENT_EXT_FUNC_CODE, 255, buf)
+        if (EGifPutExtensionLeader(GifFile, COMMENT_EXT_FUNC_CODE)
                 == GIF_ERROR) {
             return GIF_ERROR;
         }
-        length -= 255;
-        buf = buf + 255;
 
         /* Break the comment into 255 byte sub blocks */
         while (length > 255) {
-            if (EGifPutExtensionNext(GifFile, 0, 255, buf) == GIF_ERROR) {
+            if (EGifPutExtensionBlock(GifFile, 255, buf) == GIF_ERROR) {
                 return GIF_ERROR;
             }
             buf = buf + 255;
@@ -515,170 +524,196 @@ EGifPutComment(GifFileType * GifFile,
         }
         /* Output any partial block and the clear code. */
         if (length > 0) {
-            if (EGifPutExtensionLast(GifFile, 0, length, buf) == GIF_ERROR) {
+            if (EGifPutExtensionBlock(GifFile, length, buf) == GIF_ERROR) {
                 return GIF_ERROR;
             }
-        } else {
-            if (EGifPutExtensionLast(GifFile, 0, 0, NULL) == GIF_ERROR) {
-                return GIF_ERROR;
-            }
+        }
+	if (EGifPutExtensionTrailer(GifFile) == GIF_ERROR) {
+	    return GIF_ERROR;
         }
     }
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put a first extension block (see GIF manual) into gif file.  Here more
- * extensions can be dumped using EGifPutExtensionNext until
- * EGifPutExtensionLast is invoked.
- *****************************************************************************/
+ Begin an extension block (see GIF manual).  More
+ extensions can be dumped using EGifPutExtensionBlock until
+ EGifPutExtensionTrailer is invoked.
+******************************************************************************/
 int
-EGifPutExtensionFirst(GifFileType * GifFile,
-                      int ExtCode,
-                      int ExtLen,
-                      const VoidPtr Extension) {
-
+EGifPutExtensionLeader(GifFileType *GifFile, const int ExtCode)
+{
     GifByteType Buf[3];
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
-    if (ExtCode == 0) {
-        WRITE(GifFile, (GifByteType *)&ExtLen, 1);
-    } else {
-        Buf[0] = '!';
-        Buf[1] = ExtCode;
-        Buf[2] = ExtLen;
-        WRITE(GifFile, Buf, 3);
-    }
-
-    WRITE(GifFile, Extension, ExtLen);
+    Buf[0] = EXTENSION_INTRODUCER;
+    Buf[1] = ExtCode;
+    InternalWrite(GifFile, Buf, 2);
 
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put a middle extension block (see GIF manual) into gif file.
- *****************************************************************************/
+ Put extension block data (see GIF manual) into a GIF file.
+******************************************************************************/
 int
-EGifPutExtensionNext(GifFileType * GifFile,
-                     int ExtCode,
-                     int ExtLen,
-                     const VoidPtr Extension) {
-
+EGifPutExtensionBlock(GifFileType *GifFile, 
+		     const int ExtLen,
+		     const void *Extension)
+{
     GifByteType Buf;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
     Buf = ExtLen;
-    WRITE(GifFile, &Buf, 1);
-    WRITE(GifFile, Extension, ExtLen);
+    InternalWrite(GifFile, &Buf, 1);
+    InternalWrite(GifFile, Extension, ExtLen);
 
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put a last extension block (see GIF manual) into gif file.
- *****************************************************************************/
+ Put a terminating block (see GIF manual) into a GIF file.
+******************************************************************************/
 int
-EGifPutExtensionLast(GifFileType * GifFile,
-                     int ExtCode,
-                     int ExtLen,
-                     const VoidPtr Extension) {
+EGifPutExtensionTrailer(GifFileType *GifFile) {
 
     GifByteType Buf;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
-    }
-
-    /* If we are given an extension sub-block output it now. */
-    if (ExtLen > 0) {
-        Buf = ExtLen;
-        WRITE(GifFile, &Buf, 1);
-        WRITE(GifFile, Extension, ExtLen);
     }
 
     /* Write the block terminator */
     Buf = 0;
-    WRITE(GifFile, &Buf, 1);
+    InternalWrite(GifFile, &Buf, 1);
 
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put an extension block (see GIF manual) into gif file.
- * Warning: This function is only useful for Extension blocks that have at
- * most one subblock.  Extensions with more than one subblock need to use the
- * EGifPutExtension{First,Next,Last} functions instead.
- *****************************************************************************/
+ Put an extension block (see GIF manual) into a GIF file.
+ Warning: This function is only useful for Extension blocks that have at
+ most one subblock.  Extensions with more than one subblock need to use the
+ EGifPutExtension{Leader,Block,Trailer} functions instead.
+******************************************************************************/
 int
-EGifPutExtension(GifFileType * GifFile,
-                 int ExtCode,
-                 int ExtLen,
-                 const VoidPtr Extension) {
+EGifPutExtension(GifFileType *GifFile,
+                 const int ExtCode,
+                 const int ExtLen,
+                 const void *Extension) {
 
     GifByteType Buf[3];
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
     if (ExtCode == 0)
-        WRITE(GifFile, (GifByteType *)&ExtLen, 1);
+        InternalWrite(GifFile, (GifByteType *)&ExtLen, 1);
     else {
-        Buf[0] = '!';       /* Extension Introducer 0x21 */
+        Buf[0] = EXTENSION_INTRODUCER;
         Buf[1] = ExtCode;   /* Extension Label */
         Buf[2] = ExtLen;    /* Extension length */
-        WRITE(GifFile, Buf, 3);
+        InternalWrite(GifFile, Buf, 3);
     }
-    WRITE(GifFile, Extension, ExtLen);
+    InternalWrite(GifFile, Extension, ExtLen);
     Buf[0] = 0;
-    WRITE(GifFile, Buf, 1);
+    InternalWrite(GifFile, Buf, 1);
 
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put the image code in compressed form. This routine can be called if the
- * information needed to be piped out as is. Obviously this is much faster
- * than decoding and encoding again. This routine should be followed by calls
- * to EGifPutCodeNext, until NULL block is given.
- * The block should NOT be freed by the user (not dynamically allocated).
- *****************************************************************************/
-int
-EGifPutCode(GifFileType * GifFile,
-            int CodeSize,
-            const GifByteType * CodeBlock) {
+ Render a Graphics Control Block as raw extension data
+******************************************************************************/
 
+size_t EGifGCBToExtension(const GraphicsControlBlock *GCB,
+		       GifByteType *GifExtension)
+{
+    GifExtension[0] = 0;
+    GifExtension[0] |= (GCB->TransparentColor == NO_TRANSPARENT_COLOR) ? 0x00 : 0x01;
+    GifExtension[0] |= GCB->UserInputFlag ? 0x02 : 0x00;
+    GifExtension[0] |= ((GCB->DisposalMode & 0x07) << 2);
+    GifExtension[1] = LOBYTE(GCB->DelayTime);
+    GifExtension[2] = HIBYTE(GCB->DelayTime);
+    GifExtension[3] = (char)GCB->TransparentColor;
+    return 4;
+}
+
+/******************************************************************************
+ Replace the Graphics Control Block for a saved image, if it exists.
+******************************************************************************/
+
+int EGifGCBToSavedExtension(const GraphicsControlBlock *GCB, 
+			    GifFileType *GifFile, int ImageIndex)
+{
+    int i;
+    size_t Len;
+    GifByteType buf[sizeof(GraphicsControlBlock)]; /* a bit dodgy... */
+
+    if (ImageIndex < 0 || ImageIndex > GifFile->ImageCount - 1)
+	return GIF_ERROR;
+
+    for (i = 0; i < GifFile->SavedImages[ImageIndex].ExtensionBlockCount; i++) {
+	ExtensionBlock *ep = &GifFile->SavedImages[ImageIndex].ExtensionBlocks[i];
+	if (ep->Function == GRAPHICS_EXT_FUNC_CODE) {
+	    EGifGCBToExtension(GCB, ep->Bytes);
+	    return GIF_OK;
+	}
+    }
+
+    Len = EGifGCBToExtension(GCB, (GifByteType *)buf);
+    if (GifAddExtensionBlock(&GifFile->SavedImages[ImageIndex].ExtensionBlockCount,
+			     &GifFile->SavedImages[ImageIndex].ExtensionBlocks,
+			     GRAPHICS_EXT_FUNC_CODE,
+			     Len,
+			     (unsigned char *)buf) == GIF_ERROR)
+	return (GIF_ERROR);
+
+    return (GIF_OK);
+}
+
+/******************************************************************************
+ Put the image code in compressed form. This routine can be called if the
+ information needed to be piped out as is. Obviously this is much faster
+ than decoding and encoding again. This routine should be followed by calls
+ to EGifPutCodeNext, until NULL block is given.
+ The block should NOT be freed by the user (not dynamically allocated).
+******************************************************************************/
+int
+EGifPutCode(GifFileType *GifFile, int CodeSize, const GifByteType *CodeBlock)
+{
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+        GifFile->Error = E_GIF_ERR_NOT_WRITEABLE;
         return GIF_ERROR;
     }
 
     /* No need to dump code size as Compression set up does any for us: */
-    /*
+    /* 
      * Buf = CodeSize;
-     * if (WRITE(GifFile, &Buf, 1) != 1) {
-     *      _GifError = E_GIF_ERR_WRITE_FAILED;
+     * if (InternalWrite(GifFile, &Buf, 1) != 1) {
+     *      GifFile->Error = E_GIF_ERR_WRITE_FAILED;
      *      return GIF_ERROR;
      * }
      */
@@ -687,27 +722,26 @@ EGifPutCode(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * Continue to put the image code in compressed form. This routine should be
- * called with blocks of code as read via DGifGetCode/DGifGetCodeNext. If
- * given buffer pointer is NULL, empty block is written to mark end of code.
- *****************************************************************************/
+ Continue to put the image code in compressed form. This routine should be
+ called with blocks of code as read via DGifGetCode/DGifGetCodeNext. If
+ given buffer pointer is NULL, empty block is written to mark end of code.
+******************************************************************************/
 int
-EGifPutCodeNext(GifFileType * GifFile,
-                const GifByteType * CodeBlock) {
-
+EGifPutCodeNext(GifFileType *GifFile, const GifByteType *CodeBlock)
+{
     GifByteType Buf;
     GifFilePrivateType *Private = (GifFilePrivateType *)GifFile->Private;
 
     if (CodeBlock != NULL) {
-        if (WRITE(GifFile, CodeBlock, CodeBlock[0] + 1)
+        if (InternalWrite(GifFile, CodeBlock, CodeBlock[0] + 1)
                != (unsigned)(CodeBlock[0] + 1)) {
-            _GifError = E_GIF_ERR_WRITE_FAILED;
+            GifFile->Error = E_GIF_ERR_WRITE_FAILED;
             return GIF_ERROR;
         }
     } else {
         Buf = 0;
-        if (WRITE(GifFile, &Buf, 1) != 1) {
-            _GifError = E_GIF_ERR_WRITE_FAILED;
+        if (InternalWrite(GifFile, &Buf, 1) != 1) {
+            GifFile->Error = E_GIF_ERR_WRITE_FAILED;
             return GIF_ERROR;
         }
         Private->PixelCount = 0;    /* And local info. indicate image read. */
@@ -717,11 +751,11 @@ EGifPutCodeNext(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * This routine should be called last, to close GIF file.
- *****************************************************************************/
+ This routine should be called last, to close the GIF file.
+******************************************************************************/
 int
-EGifCloseFile(GifFileType * GifFile) {
-
+EGifCloseFile(GifFileType *GifFile, int *ErrorCode)
+{
     GifByteType Buf;
     GifFilePrivateType *Private;
     FILE *File;
@@ -730,67 +764,71 @@ EGifCloseFile(GifFileType * GifFile) {
         return GIF_ERROR;
 
     Private = (GifFilePrivateType *) GifFile->Private;
+    if (Private == NULL)
+	return GIF_ERROR;
     if (!IS_WRITEABLE(Private)) {
         /* This file was NOT open for writing: */
-        _GifError = E_GIF_ERR_NOT_WRITEABLE;
+	if (ErrorCode != NULL)
+	    *ErrorCode = E_GIF_ERR_NOT_WRITEABLE;
+	free(GifFile);
         return GIF_ERROR;
     }
 
     File = Private->File;
 
-    Buf = ';';
-    WRITE(GifFile, &Buf, 1);
+    Buf = TERMINATOR_INTRODUCER;
+    InternalWrite(GifFile, &Buf, 1);
 
     if (GifFile->Image.ColorMap) {
-        FreeMapObject(GifFile->Image.ColorMap);
+        GifFreeMapObject(GifFile->Image.ColorMap);
         GifFile->Image.ColorMap = NULL;
     }
     if (GifFile->SColorMap) {
-        FreeMapObject(GifFile->SColorMap);
+        GifFreeMapObject(GifFile->SColorMap);
         GifFile->SColorMap = NULL;
     }
     if (Private) {
         if (Private->HashTable) {
             free((char *) Private->HashTable);
         }
-            free((char *) Private);
+	free((char *) Private);
     }
-    free(GifFile);
 
     if (File && fclose(File) != 0) {
-        _GifError = E_GIF_ERR_CLOSE_FAILED;
+	if (ErrorCode != NULL)
+	    *ErrorCode = E_GIF_ERR_CLOSE_FAILED;
+	free(GifFile);
         return GIF_ERROR;
     }
+
+    free(GifFile);
+    if (ErrorCode != NULL)
+	*ErrorCode = E_GIF_SUCCEEDED;
     return GIF_OK;
 }
 
 /******************************************************************************
- * Put 2 bytes (word) into the given file:
- *****************************************************************************/
+ Put 2 bytes (a word) into the given file in little-endian order:
+******************************************************************************/
 static int
-EGifPutWord(int Word,
-            GifFileType * GifFile) {
-
+EGifPutWord(int Word, GifFileType *GifFile)
+{
     unsigned char c[2];
 
-    c[0] = Word & 0xff;
-    c[1] = (Word >> 8) & 0xff;
-#ifndef DEBUG_NO_PREFIX
-    if (WRITE(GifFile, c, 2) == 2)
+    c[0] = LOBYTE(Word);
+    c[1] = HIBYTE(Word);
+    if (InternalWrite(GifFile, c, 2) == 2)
         return GIF_OK;
     else
         return GIF_ERROR;
-#else
-    return GIF_OK;
-#endif /* DEBUG_NO_PREFIX */
 }
 
 /******************************************************************************
- * Setup the LZ compression for this image:
- *****************************************************************************/
+ Setup the LZ compression for this image:
+******************************************************************************/
 static int
-EGifSetupCompress(GifFileType * GifFile) {
-
+EGifSetupCompress(GifFileType *GifFile)
+{
     int BitsPerPixel;
     GifByteType Buf;
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
@@ -801,12 +839,12 @@ EGifSetupCompress(GifFileType * GifFile) {
     else if (GifFile->SColorMap)
         BitsPerPixel = GifFile->SColorMap->BitsPerPixel;
     else {
-        _GifError = E_GIF_ERR_NO_COLOR_MAP;
+        GifFile->Error = E_GIF_ERR_NO_COLOR_MAP;
         return GIF_ERROR;
     }
 
     Buf = BitsPerPixel = (BitsPerPixel < 2 ? 2 : BitsPerPixel);
-    WRITE(GifFile, &Buf, 1);    /* Write the Code size to file. */
+    InternalWrite(GifFile, &Buf, 1);    /* Write the Code size to file. */
 
     Private->Buf[0] = 0;    /* Nothing was output yet. */
     Private->BitsPerPixel = BitsPerPixel;
@@ -823,23 +861,23 @@ EGifSetupCompress(GifFileType * GifFile) {
     _ClearHashTable(Private->HashTable);
 
     if (EGifCompressOutput(GifFile, Private->ClearCode) == GIF_ERROR) {
-        _GifError = E_GIF_ERR_DISK_IS_FULL;
+        GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
         return GIF_ERROR;
     }
     return GIF_OK;
 }
 
 /******************************************************************************
- * The LZ compression routine:
- * This version compresses the given buffer Line of length LineLen.
- * This routine can be called a few times (one per scan line, for example), in
- * order to complete the whole image.
+ The LZ compression routine:
+ This version compresses the given buffer Line of length LineLen.
+ This routine can be called a few times (one per scan line, for example), in
+ order to complete the whole image.
 ******************************************************************************/
 static int
-EGifCompressLine(GifFileType * GifFile,
-                 GifPixelType * Line,
-                 int LineLen) {
-
+EGifCompressLine(GifFileType *GifFile,
+                 GifPixelType *Line,
+                 const int LineLen)
+{
     int i = 0, CrntCode, NewCode;
     unsigned long NewKey;
     GifPixelType Pixel;
@@ -855,10 +893,10 @@ EGifCompressLine(GifFileType * GifFile,
 
     while (i < LineLen) {   /* Decode LineLen items. */
         Pixel = Line[i++];  /* Get next pixel from stream. */
-        /* Form a new unique key to search hash table for the code combines
+        /* Form a new unique key to search hash table for the code combines 
          * CrntCode as Prefix string with Pixel as postfix char.
          */
-        NewKey = (((UINT32) CrntCode) << 8) + Pixel;
+        NewKey = (((uint32_t) CrntCode) << 8) + Pixel;
         if ((NewCode = _ExistsHashTable(HashTable, NewKey)) >= 0) {
             /* This Key is already there, or the string is old one, so
              * simple take new code as our CrntCode:
@@ -869,7 +907,7 @@ EGifCompressLine(GifFileType * GifFile,
              * CrntCode equal to Pixel.
              */
             if (EGifCompressOutput(GifFile, CrntCode) == GIF_ERROR) {
-                _GifError = E_GIF_ERR_DISK_IS_FULL;
+                GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
                 return GIF_ERROR;
             }
             CrntCode = Pixel;
@@ -881,7 +919,7 @@ EGifCompressLine(GifFileType * GifFile,
                 /* Time to do some clearance: */
                 if (EGifCompressOutput(GifFile, Private->ClearCode)
                         == GIF_ERROR) {
-                    _GifError = E_GIF_ERR_DISK_IS_FULL;
+                    GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
                     return GIF_ERROR;
                 }
                 Private->RunningCode = Private->EOFCode + 1;
@@ -902,15 +940,15 @@ EGifCompressLine(GifFileType * GifFile,
     if (Private->PixelCount == 0) {
         /* We are done - output last Code and flush output buffers: */
         if (EGifCompressOutput(GifFile, CrntCode) == GIF_ERROR) {
-            _GifError = E_GIF_ERR_DISK_IS_FULL;
+            GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
             return GIF_ERROR;
         }
         if (EGifCompressOutput(GifFile, Private->EOFCode) == GIF_ERROR) {
-            _GifError = E_GIF_ERR_DISK_IS_FULL;
+            GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
             return GIF_ERROR;
         }
         if (EGifCompressOutput(GifFile, FLUSH_OUTPUT) == GIF_ERROR) {
-            _GifError = E_GIF_ERR_DISK_IS_FULL;
+            GifFile->Error = E_GIF_ERR_DISK_IS_FULL;
             return GIF_ERROR;
         }
     }
@@ -919,15 +957,15 @@ EGifCompressLine(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * The LZ compression output routine:
- * This routine is responsible for the compression of the bit stream into
- * 8 bits (bytes) packets.
- * Returns GIF_OK if written succesfully.
- *****************************************************************************/
+ The LZ compression output routine:
+ This routine is responsible for the compression of the bit stream into
+ 8 bits (bytes) packets.
+ Returns GIF_OK if written successfully.
+******************************************************************************/
 static int
-EGifCompressOutput(GifFileType * GifFile,
-                   int Code) {
-
+EGifCompressOutput(GifFileType *GifFile,
+                   const int Code)
+{
     GifFilePrivateType *Private = (GifFilePrivateType *) GifFile->Private;
     int retval = GIF_OK;
 
@@ -967,34 +1005,34 @@ EGifCompressOutput(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * This routines buffers the given characters until 255 characters are ready
- * to be output. If Code is equal to -1 the buffer is flushed (EOF).
- * The buffer is Dumped with first byte as its size, as GIF format requires.
- * Returns GIF_OK if written succesfully.
- *****************************************************************************/
+ This routines buffers the given characters until 255 characters are ready
+ to be output. If Code is equal to -1 the buffer is flushed (EOF).
+ The buffer is Dumped with first byte as its size, as GIF format requires.
+ Returns GIF_OK if written successfully.
+******************************************************************************/
 static int
-EGifBufferedOutput(GifFileType * GifFile,
-                   GifByteType * Buf,
-                   int c) {
-
+EGifBufferedOutput(GifFileType *GifFile,
+                   GifByteType *Buf,
+                   int c)
+{
     if (c == FLUSH_OUTPUT) {
         /* Flush everything out. */
         if (Buf[0] != 0
-            && WRITE(GifFile, Buf, Buf[0] + 1) != (unsigned)(Buf[0] + 1)) {
-            _GifError = E_GIF_ERR_WRITE_FAILED;
+            && InternalWrite(GifFile, Buf, Buf[0] + 1) != (unsigned)(Buf[0] + 1)) {
+            GifFile->Error = E_GIF_ERR_WRITE_FAILED;
             return GIF_ERROR;
         }
         /* Mark end of compressed data, by an empty block (see GIF doc): */
         Buf[0] = 0;
-        if (WRITE(GifFile, Buf, 1) != 1) {
-            _GifError = E_GIF_ERR_WRITE_FAILED;
+        if (InternalWrite(GifFile, Buf, 1) != 1) {
+            GifFile->Error = E_GIF_ERR_WRITE_FAILED;
             return GIF_ERROR;
         }
     } else {
         if (Buf[0] == 255) {
             /* Dump out this buffer - it is full: */
-            if (WRITE(GifFile, Buf, Buf[0] + 1) != (unsigned)(Buf[0] + 1)) {
-                _GifError = E_GIF_ERR_WRITE_FAILED;
+            if (InternalWrite(GifFile, Buf, Buf[0] + 1) != (unsigned)(Buf[0] + 1)) {
+                GifFile->Error = E_GIF_ERR_WRITE_FAILED;
                 return GIF_ERROR;
             }
             Buf[0] = 0;
@@ -1006,86 +1044,62 @@ EGifBufferedOutput(GifFileType * GifFile,
 }
 
 /******************************************************************************
- * This routine writes to disk an in-core representation of a GIF previously
- * created by DGifSlurp().
- *****************************************************************************/
+ This routine writes to disk an in-core representation of a GIF previously
+ created by DGifSlurp().
+******************************************************************************/
+
+static int
+EGifWriteExtensions(GifFileType *GifFileOut, 
+			       ExtensionBlock *ExtensionBlocks, 
+			       int ExtensionBlockCount) 
+{
+    if (ExtensionBlocks) {
+        ExtensionBlock *ep;
+	int j;
+
+	for (j = 0; j < ExtensionBlockCount; j++) {
+	    ep = &ExtensionBlocks[j];
+	    if (ep->Function != CONTINUE_EXT_FUNC_CODE)
+		if (EGifPutExtensionLeader(GifFileOut, ep->Function) == GIF_ERROR)
+		    return (GIF_ERROR);
+	    if (EGifPutExtensionBlock(GifFileOut, ep->ByteCount, ep->Bytes) == GIF_ERROR)
+		return (GIF_ERROR);
+	    if (j == ExtensionBlockCount - 1 || (ep+1)->Function != CONTINUE_EXT_FUNC_CODE)
+		if (EGifPutExtensionTrailer(GifFileOut) == GIF_ERROR)
+		    return (GIF_ERROR);
+	}
+    }
+
+    return (GIF_OK);
+}
+
 int
-EGifSpew(GifFileType * GifFileOut) {
+EGifSpew(GifFileType *GifFileOut) 
+{
+    int i, j; 
 
-    int i, j, gif89 = FALSE;
-    int bOff;   /* Block Offset for adding sub blocks in Extensions */
-    char SavedStamp[GIF_STAMP_LEN + 1];
-
-    for (i = 0; i < GifFileOut->ImageCount; i++) {
-        for (j = 0; j < GifFileOut->SavedImages[i].ExtensionBlockCount; j++) {
-            int function =
-               GifFileOut->SavedImages[i].ExtensionBlocks[j].Function;
-
-            if (function == COMMENT_EXT_FUNC_CODE
-                || function == GRAPHICS_EXT_FUNC_CODE
-                || function == PLAINTEXT_EXT_FUNC_CODE
-                || function == APPLICATION_EXT_FUNC_CODE)
-                gif89 = TRUE;
-        }
-    }
-
-    strncpy(SavedStamp, GifVersionPrefix, GIF_STAMP_LEN);
-    if (gif89) {
-        strncpy(GifVersionPrefix, GIF89_STAMP, GIF_STAMP_LEN);
-    } else {
-        strncpy(GifVersionPrefix, GIF87_STAMP, GIF_STAMP_LEN);
-    }
     if (EGifPutScreenDesc(GifFileOut,
                           GifFileOut->SWidth,
                           GifFileOut->SHeight,
                           GifFileOut->SColorResolution,
                           GifFileOut->SBackGroundColor,
                           GifFileOut->SColorMap) == GIF_ERROR) {
-        strncpy(GifVersionPrefix, SavedStamp, GIF_STAMP_LEN);
         return (GIF_ERROR);
     }
-    strncpy(GifVersionPrefix, SavedStamp, GIF_STAMP_LEN);
 
     for (i = 0; i < GifFileOut->ImageCount; i++) {
         SavedImage *sp = &GifFileOut->SavedImages[i];
         int SavedHeight = sp->ImageDesc.Height;
         int SavedWidth = sp->ImageDesc.Width;
-        ExtensionBlock *ep;
 
         /* this allows us to delete images by nuking their rasters */
         if (sp->RasterBits == NULL)
             continue;
 
-        if (sp->ExtensionBlocks) {
-            for (j = 0; j < sp->ExtensionBlockCount; j++) {
-                ep = &sp->ExtensionBlocks[j];
-                if (j == sp->ExtensionBlockCount - 1 || (ep+1)->Function != 0) {
-                    /*** FIXME: Must check whether outputting
-                     * <ExtLen><Extension> is ever valid or if we should just
-                     * drop anything with a 0 for the Function.  (And whether
-                     * we should drop here or in EGifPutExtension)
-                     */
-                    if (EGifPutExtension(GifFileOut,
-                                         (ep->Function != 0) ? ep->Function : '\0',
-                                         ep->ByteCount,
-                                         ep->Bytes) == GIF_ERROR) {
-                        return (GIF_ERROR);
-                    }
-                } else {
-                    EGifPutExtensionFirst(GifFileOut, ep->Function, ep->ByteCount, ep->Bytes);
-                    for (bOff = j+1; bOff < sp->ExtensionBlockCount; bOff++) {
-                        ep = &sp->ExtensionBlocks[bOff];
-                        if (ep->Function != 0) {
-                            break;
-                        }
-                        EGifPutExtensionNext(GifFileOut, 0,
-                                ep->ByteCount, ep->Bytes);
-                    }
-                    EGifPutExtensionLast(GifFileOut, 0, 0, NULL);
-                    j = bOff-1;
-                }
-            }
-        }
+	if (EGifWriteExtensions(GifFileOut, 
+				sp->ExtensionBlocks,
+				sp->ExtensionBlockCount) == GIF_ERROR)
+	    return (GIF_ERROR);
 
         if (EGifPutImageDesc(GifFileOut,
                              sp->ImageDesc.Left,
@@ -1096,16 +1110,43 @@ EGifSpew(GifFileType * GifFileOut) {
                              sp->ImageDesc.ColorMap) == GIF_ERROR)
             return (GIF_ERROR);
 
-        for (j = 0; j < SavedHeight; j++) {
-            if (EGifPutLine(GifFileOut,
-                            sp->RasterBits + j * SavedWidth,
-                            SavedWidth) == GIF_ERROR)
-                return (GIF_ERROR);
-        }
+	if (sp->ImageDesc.Interlace) {
+	     /* 
+	      * The way an interlaced image should be written - 
+	      * offsets and jumps...
+	      */
+	    int InterlacedOffset[] = { 0, 4, 2, 1 };
+	    int InterlacedJumps[] = { 8, 8, 4, 2 };
+	    int k;
+	    /* Need to perform 4 passes on the images: */
+	    for (k = 0; k < 4; k++)
+		for (j = InterlacedOffset[k]; 
+		     j < SavedHeight;
+		     j += InterlacedJumps[k]) {
+		    if (EGifPutLine(GifFileOut, 
+				    sp->RasterBits + j * SavedWidth, 
+				    SavedWidth)	== GIF_ERROR)
+			return (GIF_ERROR);
+		}
+	} else {
+	    for (j = 0; j < SavedHeight; j++) {
+		if (EGifPutLine(GifFileOut,
+				sp->RasterBits + j * SavedWidth,
+				SavedWidth) == GIF_ERROR)
+		    return (GIF_ERROR);
+	    }
+	}
     }
 
-    if (EGifCloseFile(GifFileOut) == GIF_ERROR)
+    if (EGifWriteExtensions(GifFileOut,
+			    GifFileOut->ExtensionBlocks,
+			    GifFileOut->ExtensionBlockCount) == GIF_ERROR)
+	return (GIF_ERROR);
+
+    if (EGifCloseFile(GifFileOut, NULL) == GIF_ERROR)
         return (GIF_ERROR);
 
     return (GIF_OK);
 }
+
+/* end */

@@ -189,7 +189,7 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
 }
 
-void Document::setFilename(const base::string& filename)
+void Document::setFilename(const std::string& filename)
 {
   m_document.setFilename(filename);
 }
@@ -208,6 +208,11 @@ void Document::markAsSaved()
 {
   m_undo->markSavedState();
   m_associated_to_file = true;
+}
+
+void Document::impossibleToBackToSavedState()
+{
+  m_undo->impossibleToBackToSavedState();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -290,8 +295,6 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
       m_extraImage->getHeight() != h) {
     delete m_extraImage;                // image
     m_extraImage = Image::create(getSprite()->getPixelFormat(), w, h);
-    m_extraImage->setMaskColor(0);
-    clear_image(m_extraImage, m_extraImage->getMaskColor());
   }
 }
 

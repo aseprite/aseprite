@@ -427,7 +427,7 @@ static HWND create_directx_window(void)
 
    if (first) {
       /* setup the window class */
-      wnd_class.style = CS_HREDRAW | CS_VREDRAW;
+      wnd_class.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
       wnd_class.lpfnWndProc = directx_wnd_proc;
       wnd_class.cbClsExtra = 0;
       wnd_class.cbWndExtra = 0;

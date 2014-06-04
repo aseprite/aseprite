@@ -324,9 +324,6 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
 
   if (thick)
     editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
-
-  // Notify observers
-  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateEditor()
@@ -390,7 +387,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     try {
       rendered.reset(renderEngine.renderSprite(
           source_x, source_y, width, height,
-          m_frame, m_zoom, true));
+          m_frame, m_zoom, true,
+          ((m_flags & kShowOnionskin) == kShowOnionskin)));
     }
     catch (const std::exception& e) {
       Console::showException(e);
@@ -503,21 +501,19 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region region;
   getDrawableRegion(region, kCutTopWindows);
 
-  int cx1, cy1, cx2, cy2;
-  get_clip_rect(ji_screen, &cx1, &cy1, &cx2, &cy2);
+  Graphics g(ji_screen, 0, 0);
 
   for (Region::const_iterator
          it=region.begin(), end=region.end(); it != end; ++it) {
     const Rect& rc = *it;
 
-    add_clip_rect(ji_screen, rc.x, rc.y, rc.x2()-1, rc.y2()-1);
-
-    for (Region::const_iterator
-           it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
-      drawSpriteUnclippedRect(*it2);
+    IntersectClip clip(&g, rc);
+    if (clip) {
+      for (Region::const_iterator
+             it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
+        drawSpriteUnclippedRect(*it2);
+      }
     }
-
-    set_clip_rect(ji_screen, cx1, cy1, cx2, cy2);
   }
 }
 
@@ -869,9 +865,6 @@ void Editor::centerInSpritePoint(int x, int y)
 
   showDrawingCursor();
   invalidate();
-
-  // Notify observers
-  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::updateStatusBar()
@@ -1125,7 +1118,7 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   int x, y;
-  bool centerMouse;
+  bool centerMouse = false;
   int mx, my;
 
   switch (zoomBehavior) {
@@ -1164,9 +1157,6 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
 
     updateEditor();
     setEditorScroll(x, y, use_refresh_region);
-
-    // Notify observers
-    m_observers.notifyScrollChanged(this);
   }
   showDrawingCursor();
 }
@@ -1223,6 +1213,11 @@ void Editor::pasteImage(const Image* image, int x, int y)
   pixelsMovement->maskImage(image, x, y);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
+}
+
+void Editor::notifyScrollChanged()
+{
+  m_observers.notifyScrollChanged(this);
 }
 
 void Editor::onSetTiledMode(filters::TiledMode mode)

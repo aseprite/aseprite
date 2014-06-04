@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -168,10 +168,7 @@ raster::color_t color_utils::color_for_image(const app::Color& color, PixelForma
       c = graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
-      if (color.getType() == app::Color::IndexType)
-        c = color.getIndex();
-      else
-        c = get_current_palette()->findBestfit(color.getRed(), color.getGreen(), color.getBlue());
+      c = color.getIndex();
       break;
   }
 
@@ -180,44 +177,40 @@ raster::color_t color_utils::color_for_image(const app::Color& color, PixelForma
 
 raster::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
 {
-  raster::color_t pixel_color;
-
-  if (color.getType() == app::Color::MaskType) {
-    pixel_color = layer->getSprite()->getTransparentColor();
-  }
-  else {
-    PixelFormat format = layer->getSprite()->getPixelFormat();
-    pixel_color = color_for_image(color, format);
-  }
-
-  return fixup_color_for_layer(layer, pixel_color);
+  return color_for_target(color, ColorTarget(layer));
 }
 
-raster::color_t color_utils::fixup_color_for_layer(Layer *layer, raster::color_t color)
+raster::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
 {
-  if (layer->isBackground())
-    return fixup_color_for_background(layer->getSprite()->getPixelFormat(), color);
-  else
-    return color;
-}
+  if (color.getType() == app::Color::MaskType)
+    return colorTarget.maskColor();
 
-raster::color_t color_utils::fixup_color_for_background(PixelFormat format, raster::color_t color)
-{
-  switch (format) {
+  raster::color_t c = -1;
+
+  switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:
-      if (rgba_geta(color) < 255) {
-        return rgba(rgba_getr(color),
-                    rgba_getg(color),
-                    rgba_getb(color), 255);
-      }
+      c = rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      if (graya_geta(color) < 255) {
-        return graya(graya_getv(color), 255);
+      c = graya(color.getGray(), 255);
+      break;
+    case IMAGE_INDEXED:
+      if (color.getType() == app::Color::IndexType) {
+        c = color.getIndex();
+      }
+      else {
+        c = get_current_palette()->findBestfit(
+          color.getRed(),
+          color.getGreen(),
+          color.getBlue(),
+          colorTarget.isTransparent() ?
+            colorTarget.maskColor(): // Don't return the mask color
+            -1);                     // Return any color, we are in a background layer.
       }
       break;
   }
-  return color;
+
+  return c;
 }
 
 } // namespace app

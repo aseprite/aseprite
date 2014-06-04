@@ -33,14 +33,12 @@ namespace app {
 
 using namespace gfx;
 
-static std::string config_filename;
-
 ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
   rf.includeConfFile();
 
-  config_filename.clear();
+  std::string config_filename;
 
   // Search the configuration file from first to last path
   if (rf.findFirst())

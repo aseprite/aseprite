@@ -51,6 +51,10 @@ namespace app {
       return m_location.image(x, y, opacity); 
     }
 
+    Palette* palette() const {
+      return m_location.palette();
+    }
+
   protected:
     ContextAccess(const Context* context)
       : m_context(context)

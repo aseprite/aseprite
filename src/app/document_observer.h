@@ -52,6 +52,7 @@ namespace app {
     virtual void onRemoveCel(DocumentEvent& ev) { }
 
     virtual void onSpriteSizeChanged(DocumentEvent& ev) { }
+    virtual void onSpriteTransparentColorChanged(DocumentEvent& ev) { }
 
     virtual void onLayerRestacked(DocumentEvent& ev) { }
     virtual void onLayerMergedDown(DocumentEvent& ev) { }

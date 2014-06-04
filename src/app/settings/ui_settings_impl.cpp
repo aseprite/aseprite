@@ -39,6 +39,10 @@
 #include <allegro/color.h>
 #include <string>
 
+#define DEFAULT_ONIONSKIN_TYPE         Onionskin_Merge
+#define DEFAULT_ONIONSKIN_OPACITY_BASE 68
+#define DEFAULT_ONIONSKIN_OPACITY_STEP 28
+
 namespace app {
 
 using namespace gfx;
@@ -54,17 +58,23 @@ public:
     : m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
     , m_use_onionskin(get_config_bool("Onionskin", "Enabled", false))
     , m_prev_frames_onionskin(get_config_int("Onionskin", "PrevFrames", 1))
-    , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 0))
-    , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", 128))
-    , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", 32))
+    , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 1))
+    , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", DEFAULT_ONIONSKIN_OPACITY_BASE))
+    , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", DEFAULT_ONIONSKIN_OPACITY_STEP))
+    , m_onionskinType((OnionskinType)get_config_int("Onionskin", "Type", (int)DEFAULT_ONIONSKIN_TYPE))
     , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
     , m_gridVisible(get_config_bool("Grid", "Visible", false))
     , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
     , m_gridColor(get_config_color("Grid", "Color", app::Color::fromRgb(0, 0, 255)))
     , m_pixelGridColor(get_config_color("PixelGrid", "Color", app::Color::fromRgb(200, 200, 200)))
     , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
+    , m_isLoop(false)
+    , m_loopBegin(0)
+    , m_loopEnd(-1)
+    , m_aniDir(AniDir_Normal)
   {
     m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
+    m_onionskinType = (OnionskinType)MID(0, (int)m_onionskinType, (int)Onionskin_Last);
   }
 
   ~UIDocumentSettingsImpl()
@@ -82,6 +92,7 @@ public:
     set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
     set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
     set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
+    set_config_int("Onionskin", "Type", m_onionskinType);
   }
 
   // Tiled mode
@@ -118,12 +129,25 @@ public:
   virtual int getOnionskinNextFrames() OVERRIDE;
   virtual int getOnionskinOpacityBase() OVERRIDE;
   virtual int getOnionskinOpacityStep() OVERRIDE;
+  virtual OnionskinType getOnionskinType() OVERRIDE;
 
   virtual void setUseOnionskin(bool state) OVERRIDE;
   virtual void setOnionskinPrevFrames(int frames) OVERRIDE;
   virtual void setOnionskinNextFrames(int frames) OVERRIDE;
   virtual void setOnionskinOpacityBase(int base) OVERRIDE;
   virtual void setOnionskinOpacityStep(int step) OVERRIDE;
+  virtual void setOnionskinType(OnionskinType type) OVERRIDE;
+  virtual void setDefaultOnionskinSettings() OVERRIDE;
+
+  // Animation
+
+  virtual bool getLoopAnimation() OVERRIDE;
+  virtual void getLoopRange(raster::FrameNumber* begin, raster::FrameNumber* end) OVERRIDE;
+  virtual AniDir getAnimationDirection() OVERRIDE;
+
+  virtual void setLoopAnimation(bool state) OVERRIDE;
+  virtual void setLoopRange(raster::FrameNumber begin, raster::FrameNumber end) OVERRIDE;
+  virtual void setAnimationDirection(AniDir dir) OVERRIDE;
 
   virtual void addObserver(DocumentSettingsObserver* observer) OVERRIDE;
   virtual void removeObserver(DocumentSettingsObserver* observer) OVERRIDE;
@@ -140,12 +164,18 @@ private:
   int m_next_frames_onionskin;
   int m_onionskin_opacity_base;
   int m_onionskin_opacity_step;
+  OnionskinType m_onionskinType;
   bool m_snapToGrid;
   bool m_gridVisible;
   gfx::Rect m_gridBounds;
   app::Color m_gridColor;
   bool m_pixelGridVisible;
   app::Color m_pixelGridColor;
+  bool m_isLoop;
+  raster::FrameNumber m_loopBegin;
+  raster::FrameNumber m_loopEnd;
+  AniDir m_aniDir;
+
 };
 
 class UISelectionSettingsImpl
@@ -196,8 +226,6 @@ UISettingsImpl::~UISettingsImpl()
 {
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
-
-  delete m_globalDocumentSettings;
 
   // Delete all tool settings.
   for (std::map<std::string, IToolSettings*>::iterator
@@ -457,6 +485,11 @@ int UIDocumentSettingsImpl::getOnionskinOpacityStep()
   return m_onionskin_opacity_step;
 }
 
+IDocumentSettings::OnionskinType UIDocumentSettingsImpl::getOnionskinType()
+{
+  return m_onionskinType;
+}
+
 void UIDocumentSettingsImpl::setUseOnionskin(bool state)
 {
   m_use_onionskin = state;
@@ -485,6 +518,54 @@ void UIDocumentSettingsImpl::setOnionskinOpacityStep(int step)
 {
   m_onionskin_opacity_step = step;
   redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::setOnionskinType(OnionskinType type)
+{
+  m_onionskinType = type;
+  redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::setDefaultOnionskinSettings()
+{
+  m_onionskinType = DEFAULT_ONIONSKIN_TYPE;
+  m_onionskin_opacity_base = DEFAULT_ONIONSKIN_OPACITY_BASE;
+  m_onionskin_opacity_step = DEFAULT_ONIONSKIN_OPACITY_STEP;
+  redrawDocumentViews();
+}
+
+bool UIDocumentSettingsImpl::getLoopAnimation()
+{
+  return m_isLoop;
+}
+
+void UIDocumentSettingsImpl::getLoopRange(raster::FrameNumber* begin, raster::FrameNumber* end)
+{
+  *begin = m_loopBegin;
+  *end = m_loopEnd;
+}
+
+IDocumentSettings::AniDir UIDocumentSettingsImpl::getAnimationDirection()
+{
+  return m_aniDir;
+}
+
+void UIDocumentSettingsImpl::setLoopAnimation(bool state)
+{
+  m_isLoop = state;
+  redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::setLoopRange(raster::FrameNumber begin, raster::FrameNumber end)
+{
+  m_loopBegin = begin;
+  m_loopEnd = end;
+  redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::setAnimationDirection(AniDir dir)
+{
+  m_aniDir = dir;
 }
 
 void UIDocumentSettingsImpl::addObserver(DocumentSettingsObserver* observer)
@@ -607,7 +688,9 @@ public:
     m_freehandAlgorithm = kDefaultFreehandAlgorithm;
 
     // Reset invalid configurations for inks.
-    if (m_inkType != kDefaultInk && m_inkType != kPutAlphaInk)
+    if (m_inkType != kDefaultInk &&
+        m_inkType != kSetAlphaInk &&
+        m_inkType != kLockAlphaInk)
       m_inkType = kDefaultInk;
 
     m_pen.enableSignals(false);

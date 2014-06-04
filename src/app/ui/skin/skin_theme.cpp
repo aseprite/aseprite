@@ -283,6 +283,10 @@ SkinTheme::SkinTheme()
   sheet_mapping["drop_down_button_right_selected"] = PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW;
   sheet_mapping["transformation_handle"] = PART_TRANSFORMATION_HANDLE;
   sheet_mapping["pivot_handle"] = PART_PIVOT_HANDLE;
+  sheet_mapping["drop_pixels_ok"] = PART_DROP_PIXELS_OK;
+  sheet_mapping["drop_pixels_ok_selected"] = PART_DROP_PIXELS_OK_SELECTED;
+  sheet_mapping["drop_pixels_cancel"] = PART_DROP_PIXELS_CANCEL;
+  sheet_mapping["drop_pixels_cancel_selected"] = PART_DROP_PIXELS_CANCEL_SELECTED;
 
   color_mapping["text"] = ThemeColor::Text;
   color_mapping["disabled"] = ThemeColor::Disabled;
@@ -349,16 +353,17 @@ SkinTheme::~SkinTheme()
   for (size_t c=0; c<m_cursors.size(); ++c)
     delete m_cursors[c];
 
-  m_part.clear();
-  m_parts_by_id.clear();
-
   for (std::map<std::string, BITMAP*>::iterator
          it = m_toolicon.begin(); it != m_toolicon.end(); ++it) {
     destroy_bitmap(it->second);
   }
 
   destroy_bitmap(m_sheet_bmp);
+
+  m_part.clear();
+  m_parts_by_id.clear();
   sheet_mapping.clear();
+  color_mapping.clear();
 
   // Destroy the minifont
   if (m_minifont && m_minifont != font)
@@ -585,10 +590,10 @@ void SkinTheme::onRegenerate()
       const css::Style* base = NULL;
 
       if (base_id)
-        base = m_stylesheet.sheet().getStyle(base_id);
+        base = m_stylesheet.getCssStyle(base_id);
 
       css::Style* style = new css::Style(style_id, base);
-      m_stylesheet.sheet().addStyle(style);
+      m_stylesheet.addCssStyle(style);
 
       TiXmlElement* xmlRule = xmlStyle->FirstChildElement();
       while (xmlRule) {
@@ -842,6 +847,7 @@ void SkinTheme::initWidget(Widget* widget)
               m_part[PART_SUNKEN_NORMAL_E]->w-1*scale,
               m_part[PART_SUNKEN_NORMAL_S]->h-1*scale);
       widget->child_spacing = 0;
+      widget->setBgColor(getColorById(kWindowFaceColorId));
       break;
 
     case kViewScrollbarWidget:
@@ -1236,7 +1242,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       fg = getColor(ThemeColor::MenuItemHighlightText);
       bg = getColor(ThemeColor::MenuItemHighlightFace);
     }
-    else if (widget->hasMouseOver()) {
+    else if (widget->hasMouse()) {
       fg = getColor(ThemeColor::MenuItemHotText);
       bg = getColor(ThemeColor::MenuItemHotFace);
     }
@@ -1389,21 +1395,6 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   }
 }
 
-static bool my_add_clip_rect(BITMAP *bitmap, int x1, int y1, int x2, int y2)
-{
-  int u1 = MAX(x1, bitmap->cl);
-  int v1 = MAX(y1, bitmap->ct);
-  int u2 = MIN(x2, bitmap->cr-1);
-  int v2 = MIN(y2, bitmap->cb-1);
-
-  if (u1 > u2 || v1 > v2)
-    return false;
-  else
-    set_clip_rect(bitmap, u1, v1, u2, v2);
-
-  return true;
-}
-
 void SkinTheme::paintSlider(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
@@ -1503,16 +1494,22 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
     widget->setTextQuiet(buf);
 
-    if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y, x-rc.x, rc.h))) {
-      drawTextString(g, NULL,
-                     getColor(ThemeColor::SliderFullText),
-                     getColor(ThemeColor::SliderFullFace), false, widget, rc, 0);
+    {
+      IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
+      if (clip) {
+        drawTextString(g, NULL,
+          getColor(ThemeColor::SliderFullText),
+          getColor(ThemeColor::SliderFullFace), false, widget, rc, 0);
+      }
     }
 
-    if (IntersectClip clip = IntersectClip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h))) {
-      drawTextString(g, NULL,
-                     getColor(ThemeColor::SliderEmptyText),
-                     getColor(ThemeColor::SliderEmptyFace), false, widget, rc, 0);
+    {
+      IntersectClip clip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h));
+      if (clip) {
+        drawTextString(g, NULL,
+          getColor(ThemeColor::SliderEmptyText),
+          getColor(ThemeColor::SliderEmptyFace), false, widget, rc, 0);
+      }
     }
 
     widget->setTextQuiet(old_text.c_str());
@@ -1654,7 +1651,7 @@ void SkinTheme::paintView(PaintEvent& ev)
     (widget->hasFocus() ?
       PART_SUNKEN_FOCUSED_NW:
       PART_SUNKEN_NORMAL_NW),
-    getColor(ThemeColor::Background));
+    BGCOLOR);
 }
 
 void SkinTheme::paintViewScrollbar(PaintEvent& ev)
@@ -1884,9 +1881,10 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     Rect textWrap = textrc.createIntersect(
       // TODO add ui::Widget::getPadding() property
       // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
-      widget->getClientBounds());
+      widget->getClientBounds()).inflate(0, 1*jguiscale());
 
-    if (IntersectClip clip = IntersectClip(g, textWrap)) {
+    IntersectClip clip(g, textWrap);
+    if (clip) {
       if (!widget->isEnabled()) {
         // TODO avoid this
         if (fill_bg)              // Only to draw the background
@@ -1965,13 +1963,15 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   // Top
 
   g->drawAlphaBitmap(nw, rc.x, rc.y);
-
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+nw->w, rc.y,
-                                                 rc.w-nw->w-ne->w, rc.h))) {
-    for (x = rc.x+nw->w;
-         x < rc.x+rc.w-ne->w;
-         x += n->w) {
-      g->drawAlphaBitmap(n, x, rc.y);
+  {
+    IntersectClip clip(g, Rect(rc.x+nw->w, rc.y,
+        rc.w-nw->w-ne->w, rc.h));
+    if (clip) {
+      for (x = rc.x+nw->w;
+           x < rc.x+rc.w-ne->w;
+           x += n->w) {
+        g->drawAlphaBitmap(n, x, rc.y);
+      }
     }
   }
 
@@ -1980,32 +1980,36 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   // Bottom
 
   g->drawAlphaBitmap(sw, rc.x, rc.y+rc.h-sw->h);
-
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x+sw->w, rc.y,
-                                                 rc.w-sw->w-se->w, rc.h))) {
-    for (x = rc.x+sw->w;
-         x < rc.x+rc.w-se->w;
-         x += s->w) {
-      g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
+  {
+    IntersectClip clip(g, Rect(rc.x+sw->w, rc.y,
+        rc.w-sw->w-se->w, rc.h));
+    if (clip) {
+      for (x = rc.x+sw->w;
+           x < rc.x+rc.w-se->w;
+           x += s->w) {
+        g->drawAlphaBitmap(s, x, rc.y+rc.h-s->h);
+      }
     }
   }
 
   g->drawAlphaBitmap(se, rc.x+rc.w-se->w, rc.y+rc.h-se->h);
+  {
+    IntersectClip clip(g, Rect(rc.x, rc.y+nw->h,
+        rc.w, rc.h-nw->h-sw->h));
+    if (clip) {
+      // Left
+      for (y = rc.y+nw->h;
+           y < rc.y+rc.h-sw->h;
+           y += w->h) {
+        g->drawAlphaBitmap(w, rc.x, y);
+      }
 
-  if (IntersectClip clip = IntersectClip(g, Rect(rc.x, rc.y+nw->h,
-                                                 rc.w, rc.h-nw->h-sw->h))) {
-    // Left
-    for (y = rc.y+nw->h;
-         y < rc.y+rc.h-sw->h;
-         y += w->h) {
-      g->drawAlphaBitmap(w, rc.x, y);
-    }
-
-    // Right
-    for (y = rc.y+ne->h;
-         y < rc.y+rc.h-se->h;
-         y += e->h) {
-      g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
+      // Right
+      for (y = rc.y+ne->h;
+           y < rc.y+rc.h-se->h;
+           y += e->h) {
+        g->drawAlphaBitmap(e, rc.x+rc.w-e->w, y);
+      }
     }
   }
 }
@@ -2055,7 +2059,8 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
         skinPart->getBitmap(3)->w,
         skinPart->getBitmap(5)->h));
 
-    if (IntersectClip clip = IntersectClip(g, inside))
+    IntersectClip clip(g, inside);
+    if (clip)
       g->fillRect(bg, inside);
   }
 }
@@ -2063,14 +2068,17 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
 void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2)
 {
   Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
-
-  if (IntersectClip clip = IntersectClip(g, rc2))
-    draw_bounds_nw(g, rc, nw1, bg1);
+  {
+    IntersectClip clip(g, rc2);
+    if (clip)
+      draw_bounds_nw(g, rc, nw1, bg1);
+  }
 
   rc2.x += rc2.w;
   rc2.w = rc.w - rc2.w;
 
-  if (IntersectClip clip = IntersectClip(g, rc2))
+  IntersectClip clip(g, rc2);
+  if (clip)
     draw_bounds_nw(g, rc, nw2, bg2);
 }
 
@@ -2086,7 +2094,8 @@ void SkinTheme::draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int par
 
   if (x < rc.x2()) {
     Rect rc2(x, rc.y, rc.w-(x-rc.x), m_part[part]->h);
-    if (IntersectClip clip = IntersectClip(g, rc2))
+    IntersectClip clip(g, rc2);
+    if (clip)
       g->drawAlphaBitmap(m_part[part], x, rc.y);
   }
 }
@@ -2103,7 +2112,8 @@ void SkinTheme::draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int par
 
   if (y < rc.y2()) {
     Rect rc2(rc.x, y, m_part[part]->w, rc.h-(y-rc.y));
-    if (IntersectClip clip = IntersectClip(g, rc2))
+    IntersectClip clip(g, rc2);
+    if (clip)
       g->drawAlphaBitmap(m_part[part], rc.x, y);
   }
 }

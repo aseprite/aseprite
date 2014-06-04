@@ -126,7 +126,7 @@ double Widget::getTextDouble() const
   return strtod(m_text.c_str(), NULL);
 }
 
-void Widget::setText(const base::string& text)
+void Widget::setText(const std::string& text)
 {
   setTextQuiet(text);
   onSetText();
@@ -151,7 +151,7 @@ void Widget::setTextf(const char *format, ...)
   setText(buf);
 }
 
-void Widget::setTextQuiet(const base::string& text)
+void Widget::setTextQuiet(const std::string& text)
 {
   m_text = text;
   flags |= JI_HASTEXT;
@@ -602,6 +602,7 @@ void Widget::setBounds(const Rect& rc)
 
 void Widget::setBoundsQuietly(const gfx::Rect& rc)
 {
+  m_updateRegion.offset(rc.x - m_bounds.x, rc.y - m_bounds.y);
   m_bounds = rc;
 }
 
@@ -850,20 +851,16 @@ void Widget::getTextIconInfo(
   SETRECT(icon);
 }
 
-void jwidget_set_min_size(Widget* widget, int w, int h)
+void Widget::setMinSize(const gfx::Size& sz)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->min_w = w;
-  widget->min_h = h;
+  min_w = sz.w;
+  min_h = sz.h;
 }
 
-void jwidget_set_max_size(Widget* widget, int w, int h)
+void Widget::setMaxSize(const gfx::Size& sz)
 {
-  ASSERT_VALID_WIDGET(widget);
-
-  widget->max_w = w;
-  widget->max_h = h;
+  max_w = sz.w;
+  max_h = sz.h;
 }
 
 void Widget::flushRedraw()
@@ -1039,27 +1036,26 @@ void Widget::invalidateRegion(const Region& region)
 
 void Widget::scrollRegion(const Region& region, int dx, int dy)
 {
-  if (dx != 0 || dy != 0) {
-    Region reg2 = region;
-    reg2.offset(dx, dy);
-    reg2.createIntersection(reg2, region);
-    reg2.offset(-dx, -dy);
+  if (dx == 0 && dy == 0)
+    return;
 
-    // Move screen pixels
-    jmouse_hide();
-    ui::_move_region(reg2, dx, dy);
-    jmouse_show();
+  Region reg2 = region;
+  reg2.offset(dx, dy);
+  reg2.createIntersection(reg2, region);
+  reg2.offset(-dx, -dy);
 
-    reg2.offset(dx, dy);
+  // Move screen pixels
+  ui::_move_region(reg2, dx, dy);
 
-    m_updateRegion.createUnion(m_updateRegion, region);
-    m_updateRegion.createSubtraction(m_updateRegion, reg2);
+  reg2.offset(dx, dy);
 
-    mark_dirty_flag(this);
+  m_updateRegion.createUnion(m_updateRegion, region);
+  m_updateRegion.createSubtraction(m_updateRegion, reg2);
 
-    // Generate the kPaintMessage messages for the widget's m_updateRegion
-    flushRedraw();
-  }
+  mark_dirty_flag(this);
+
+  // Generate the kPaintMessage messages for the widget's m_updateRegion
+  flushRedraw();
 }
 
 class DeleteGraphicsAndBitmap {
@@ -1321,9 +1317,21 @@ bool Widget::onProcessMessage(Message* msg)
       else
         break;
 
+    case kDoubleClickMessage:
+      // Convert double clicks into mouse down
+      if (kMouseDownMessage) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        MouseMessage mouseMsg2(kMouseDownMessage,
+          mouseMsg->buttons(),
+          mouseMsg->position(),
+          mouseMsg->wheelDelta());
+
+        sendMessage(&mouseMsg2);
+      }
+      break;
+
     case kMouseDownMessage:
     case kMouseUpMessage:
-    case kDoubleClickMessage:
     case kMouseMoveMessage:
     case kMouseWheelMessage:
       // Propagate the message to the parent.
@@ -1453,6 +1461,7 @@ void Widget::onSetBgColor()
 
 void Widget::offsetWidgets(int dx, int dy)
 {
+  m_updateRegion.offset(dx, dy);
   m_bounds.offset(dx, dy);
 
   UI_FOREACH_WIDGET(m_children, it)

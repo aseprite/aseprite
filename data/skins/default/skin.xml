@@ -77,6 +77,9 @@
     <color id="timeline_padding" value="#7d929e" />
     <color id="status_bar_text" value="#2e3234" />
     <color id="status_bar_face" value="#7d929e" />
+    <color id="flag_normal" value="#d3cbbe" />
+    <color id="flag_active" value="#ff0000" />
+    <color id="flag_clicked" value="#7d929e" />
   </colors>
 
   <cursors>
@@ -317,6 +320,14 @@
     <part id="timeline_padding_br"              x="288" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_drop_layer_deco"         x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
     <part id="timeline_drop_frame_deco"         x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
+    <part id="timeline_loop_range"              x="240" y="132" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
+    <part id="flag_normal"                      x="0" y="240" w="16" h="10" />
+    <part id="flag_highlight"                   x="16" y="240" w="16" h="10" />
+    <part id="drop_pixels_ok"                   x="176" y="176" w="7" h="8" />
+    <part id="drop_pixels_ok_selected"          x="176" y="184" w="7" h="8" />
+    <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
+    <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
+    <part id="warning_box"                      x="112" y="80" w="9" h="10" />
   </parts>
 
   <stylesheet>
@@ -517,6 +528,31 @@
     <!-- timeline_drop_frame_deco -->
     <style id="timeline_drop_frame_deco">
       <background part="timeline_drop_frame_deco" />
+    </style>
+
+    <!-- timeline_loop_range -->
+    <style id="timeline_loop_range">
+      <background part="timeline_loop_range" />
+    </style>
+
+    <!-- flag -->
+    <style id="flag">
+      <background part="flag_normal" color="flag_normal" />
+    </style>
+    <style id="flag:active">
+      <background part="flag_highlight" color="flag_active" />
+    </style>
+    <style id="flag:clicked">
+      <background part="flag_highlight" color="flag_clicked" />
+    </style>
+
+    <!-- warning_box -->
+    <style id="warning_box">
+      <background color="face" />
+      <icon part="warning_box" align="center" valign="middle" />
+    </style>
+    <style id="warning_box:hover">
+      <background color="hot_face" />
     </style>
 
   </stylesheet>

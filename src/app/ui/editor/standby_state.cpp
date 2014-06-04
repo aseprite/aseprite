@@ -281,13 +281,16 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 {
-  int dz = -msg->wheelDelta();
+  int dz = msg->wheelDelta().x + msg->wheelDelta().y;
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
   // Without modifiers
   if (msg->keyModifiers() == kKeyNoneModifier) {
-    wheelAction = WHEEL_ZOOM;
+    if (msg->wheelDelta().x != 0)
+      wheelAction = WHEEL_HSCROLL;
+    else
+      wheelAction = WHEEL_ZOOM;
   }
   else {
 #if 1                           // TODO make it configurable
@@ -318,7 +321,6 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
       break;
 
     case WHEEL_FG:
-      // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
         if (ColorBar::instance()->getFgColor().getType() == app::Color::IndexType) {
@@ -330,7 +332,6 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
       break;
 
     case WHEEL_BG:
-      // if (m_state == EDITOR_STATE_STANDBY)
       {
         int newIndex = 0;
         if (ColorBar::instance()->getBgColor().getType() == app::Color::IndexType) {
@@ -342,7 +343,6 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
       break;
 
     case WHEEL_FRAME:
-      // if (m_state == EDITOR_STATE_STANDBY)
       {
         Command* command = CommandsModule::instance()->getCommandByName
           ((dz < 0) ? CommandId::GotoNextFrame:

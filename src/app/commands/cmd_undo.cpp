@@ -27,6 +27,7 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "base/thread.h"
@@ -117,6 +118,7 @@ void UndoCommand::onExecute(Context* context)
   document->destroyExtraCel(); // Regenerate extras
 
   update_screen_for_document(document);
+  set_current_palette(writer.palette(), false);
 }
 
 Command* CommandFactory::createUndoCommand()

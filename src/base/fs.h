@@ -8,23 +8,23 @@
 #define BASE_FS_H_INCLUDED
 #pragma once
 
-#include "base/string.h"
+#include <string>
 
 namespace base {
 
-  bool is_file(const string& path);
-  bool is_directory(const string& path);
+  bool is_file(const std::string& path);
+  bool is_directory(const std::string& path);
 
-  void delete_file(const string& path);
+  void delete_file(const std::string& path);
 
-  bool has_readonly_attr(const string& path);
-  void remove_readonly_attr(const string& path);
+  bool has_readonly_attr(const std::string& path);
+  void remove_readonly_attr(const std::string& path);
 
-  void make_directory(const string& path);
-  void remove_directory(const string& path);
+  void make_directory(const std::string& path);
+  void remove_directory(const std::string& path);
 
-  string get_app_path();
-  string get_temp_path();
+  std::string get_app_path();
+  std::string get_temp_path();
 
 }
 

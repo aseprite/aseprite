@@ -38,13 +38,13 @@ namespace app {
     void updateUsingEditor(Editor* editor);
 
   protected:
+    bool onProcessMessage(ui::Message* msg) OVERRIDE;
     void onClose(ui::CloseEvent& ev) OVERRIDE;
 
   private:
     void onPlayClicked();
     void onPlaybackTick();
     void hideWindow();
-    void resetTimer();
 
     bool m_isEnabled;
     DocumentView* m_docView;
@@ -54,6 +54,9 @@ namespace app {
     // Number of milliseconds to go to the next frame if m_playTimer
     // is activated.
     int m_nextFrameTime;
+    int m_curFrameTick;
+
+    bool m_pingPongForward;
   };
 
 } // namespace app

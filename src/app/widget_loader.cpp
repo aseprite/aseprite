@@ -90,8 +90,8 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
   return widget;
 }
 
-Widget* WidgetLoader::loadWidgetFromXmlFile(const base::string& xmlFilename,
-                                            const base::string& widgetId)
+Widget* WidgetLoader::loadWidgetFromXmlFile(const std::string& xmlFilename,
+                                            const std::string& widgetId)
 {
   Widget* widget = NULL;
   m_tooltipManager = NULL;
@@ -239,7 +239,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
 
-      widget = new Entry(ustrtol(maxsize, NULL, 10),
+      widget = new Entry(strtol(maxsize, NULL, 10),
                          text ? TRANSLATE_ATTR(text): "");
 
       if (readonly)
@@ -257,7 +257,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
 
     if (columns != NULL) {
-      widget = new Grid(ustrtol(columns, NULL, 10),
+      widget = new Grid(strtol(columns, NULL, 10),
                         same_width_columns);
     }
   }
@@ -314,7 +314,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const char *looklike = elem->Attribute("looklike");
 
     text = (text ? TRANSLATE_ATTR(text): "");
-    int radio_group = (group ? ustrtol(group, NULL, 10): 1);
+    int radio_group = (group ? strtol(group, NULL, 10): 1);
 
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
       widget = new RadioButton(text, radio_group, kButtonWidget);
@@ -357,8 +357,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
-    int min_value = min != NULL ? ustrtol(min, NULL, 10): 0;
-    int max_value = max != NULL ? ustrtol(max, NULL, 10): 0;
+    int min_value = min != NULL ? strtol(min, NULL, 10): 0;
+    int max_value = max != NULL ? strtol(max, NULL, 10): 0;
 
     widget = new Slider(min_value, max_value, min_value);
   }
@@ -406,6 +406,15 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     const char* maxheight = elem->Attribute("maxheight");
     const char* childspacing = elem->Attribute("childspacing");
 
+    if (width) {
+      if (!minwidth) minwidth = width;
+      if (!maxwidth) maxwidth = width;
+    }
+    if (height) {
+      if (!minheight) minheight = height;
+      if (!maxheight) maxheight = height;
+    }
+
     if (id != NULL)
       widget->setId(id);
 
@@ -433,20 +442,20 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget->noBorderNoChildSpacing();
 
     if (childspacing)
-      widget->child_spacing = ustrtol(childspacing, NULL, 10);
+      widget->child_spacing = strtol(childspacing, NULL, 10);
 
-    if (width || minwidth ||
-        height || minheight) {
-      int w = (width || minwidth) ? ustrtol(width ? width: minwidth, NULL, 10): 0;
-      int h = (height || minheight) ? ustrtol(height ? height: minheight, NULL, 10): 0;
-      jwidget_set_min_size(widget, w*jguiscale(), h*jguiscale());
+    gfx::Size reqSize = widget->getPreferredSize();
+
+    if (minwidth || minheight) {
+      int w = (minwidth ? jguiscale()*strtol(minwidth, NULL, 10): reqSize.w);
+      int h = (minheight ? jguiscale()*strtol(minheight, NULL, 10): reqSize.h);
+      widget->setMinSize(gfx::Size(w, h));
     }
 
-    if (width || maxwidth ||
-        height || maxheight) {
-      int w = (width || maxwidth) ? strtol(width ? width: maxwidth, NULL, 10): INT_MAX;
-      int h = (height || maxheight) ? strtol(height ? height: maxheight, NULL, 10): INT_MAX;
-      jwidget_set_max_size(widget, w*jguiscale(), h*jguiscale());
+    if (maxwidth || maxheight) {
+      int w = (maxwidth ? jguiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
+      int h = (maxheight ? jguiscale()*strtol(maxheight, NULL, 10): INT_MAX);
+      widget->setMaxSize(gfx::Size(w, h));
     }
 
     if (!root)
@@ -467,8 +476,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
           const char* cell_hspan = childElem->Attribute("cell_hspan");
           const char* cell_vspan = childElem->Attribute("cell_vspan");
           const char* cell_align = childElem->Attribute("cell_align");
-          int hspan = cell_hspan ? ustrtol(cell_hspan, NULL, 10): 1;
-          int vspan = cell_vspan ? ustrtol(cell_vspan, NULL, 10): 1;
+          int hspan = cell_hspan ? strtol(cell_hspan, NULL, 10): 1;
+          int vspan = cell_vspan ? strtol(cell_vspan, NULL, 10): 1;
           int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
           Grid* grid = dynamic_cast<Grid*>(widget);
           ASSERT(grid != NULL);

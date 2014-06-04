@@ -8,6 +8,8 @@
 #define SHE_DISPLAY_H_INCLUDED
 #pragma once
 
+#include "gfx/point.h"
+
 namespace she {
 
   class EventQueue;
@@ -46,6 +48,8 @@ namespace she {
     virtual bool isMaximized() const = 0;
 
     virtual EventQueue* getEventQueue() = 0;
+
+    virtual void setMousePosition(const gfx::Point& position) = 0;
 
     // Returns the HWND on Windows.
     virtual void* nativeHandle() = 0;

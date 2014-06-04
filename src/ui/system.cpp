@@ -62,7 +62,7 @@ static int mouse_scares = 0;
 /* Local routines.  */
 
 static void clock_inc();
-static void update_mouse_position();
+static void update_mouse_position(const gfx::Point& pt);
 
 static void clock_inc()
 {
@@ -71,14 +71,17 @@ static void clock_inc()
 
 END_OF_STATIC_FUNCTION(clock_inc);
 
-static void set_mouse_cursor(Cursor* cursor)
+static void update_mouse_overlay(Cursor* cursor)
 {
   mouse_cursor = cursor;
 
-  if (mouse_cursor) {
+  if (mouse_cursor && mouse_scares == 0) {
     if (!mouse_cursor_overlay) {
-      mouse_cursor_overlay = new Overlay(mouse_cursor->getSurface(),
-                                         gfx::Point(), Overlay::MouseZOrder);
+      mouse_cursor_overlay = new Overlay(
+        mouse_cursor->getSurface(),
+        gfx::Point(m_x[0], m_y[0]),
+        Overlay::MouseZOrder);
+
       OverlayManager::instance()->addOverlay(mouse_cursor_overlay);
     }
     else {
@@ -92,6 +95,18 @@ static void set_mouse_cursor(Cursor* cursor)
     delete mouse_cursor_overlay;
     mouse_cursor_overlay = NULL;
   }
+}
+
+static void update_mouse_cursor()
+{
+  show_mouse(NULL);
+
+  if (mouse_cursor_type == kNoCursor)
+    update_mouse_overlay(NULL);
+  else
+    update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
+
+  dirty_display_flag = true;
 }
 
 int _ji_system_init()
@@ -116,7 +131,7 @@ int _ji_system_init()
 void _ji_system_exit()
 {
   SetDisplay(NULL);
-  set_mouse_cursor(NULL);
+  update_mouse_overlay(NULL);
 
   remove_int(clock_inc);
 }
@@ -170,19 +185,8 @@ void jmouse_set_cursor(CursorType type)
   if (mouse_cursor_type == type)
     return;
 
-  Theme* theme = CurrentTheme::get();
   mouse_cursor_type = type;
-
-  if (type == kNoCursor) {
-    show_mouse(NULL);
-    set_mouse_cursor(NULL);
-  }
-  else {
-    show_mouse(NULL);
-    set_mouse_cursor(theme->getCursor(type));
-  }
-
-  dirty_display_flag = true;
+  update_mouse_cursor();
 }
 
 void jmouse_hide()
@@ -195,6 +199,9 @@ void jmouse_show()
 {
   ASSERT(mouse_scares > 0);
   mouse_scares--;
+
+  if (mouse_scares == 0)
+    update_mouse_cursor();
 }
 
 bool jmouse_is_hidden()
@@ -207,6 +214,13 @@ bool jmouse_is_shown()
 {
   ASSERT(mouse_scares >= 0);
   return mouse_scares == 0;
+}
+
+static gfx::Point allegro_mouse_point()
+{
+  return gfx::Point(
+    (int)JI_SCREEN_W * mouse_x / SCREEN_W,
+    (int)JI_SCREEN_W * mouse_y / SCREEN_W);
 }
 
 /**
@@ -226,11 +240,11 @@ bool jmouse_poll()
   m_b[0] = mouse_b;
   m_z[0] = mouse_z;
 
-  update_mouse_position();
+  update_mouse_position(allegro_mouse_point());
 
   if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
     poll_mouse();
-    update_mouse_position();
+    update_mouse_position(allegro_mouse_point());
     moved = true;
   }
 
@@ -242,11 +256,23 @@ bool jmouse_poll()
     return false;
 }
 
+void _internal_no_mouse_position()
+{
+  moved = true;
+  update_mouse_overlay(NULL);
+}
+
 void _internal_set_mouse_position(const gfx::Point& newPos)
 {
   moved = true;
-  m_x[1] = m_x[0];
-  m_y[1] = m_y[0];
+  if (m_x[0] >= 0) {
+    m_x[1] = m_x[0];
+    m_y[1] = m_y[0];
+  }
+  else {
+    m_x[1] = newPos.x;
+    m_y[1] = newPos.y;
+  }
   m_x[0] = newPos.x;
   m_y[0] = newPos.y;
 }
@@ -266,11 +292,10 @@ void set_mouse_position(const gfx::Point& newPos)
 {
   moved = true;
 
-  position_mouse(
-    SCREEN_W * newPos.x / JI_SCREEN_W,
-    SCREEN_H * newPos.y / JI_SCREEN_H);
+  if (mouse_display)
+    mouse_display->setMousePosition(newPos);
 
-  update_mouse_position();
+  update_mouse_position(newPos);
 
   m_x[1] = m_x[0];
   m_y[1] = m_y[0];
@@ -356,10 +381,10 @@ gfx::Point control_infinite_scroll(Widget* widget, const gfx::Rect& rect, const 
   return newPoint;
 }
 
-static void update_mouse_position()
+static void update_mouse_position(const gfx::Point& pt)
 {
-  m_x[0] = JI_SCREEN_W * mouse_x / SCREEN_W;
-  m_y[0] = JI_SCREEN_H * mouse_y / SCREEN_H;
+  m_x[0] = pt.x;
+  m_y[0] = pt.y;
 
   if (is_windowed_mode()) {
 #ifdef WIN32

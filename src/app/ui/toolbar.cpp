@@ -94,6 +94,7 @@ ToolBar::ToolBar()
   : Widget(kGenericWidget)
   , m_tipTimer(300, this)
   , m_closeSlot(NULL)
+  , m_openedRecently(false)
 {
   m_instance = this;
 
@@ -199,9 +200,9 @@ bool ToolBar::onProcessMessage(Message* msg)
           new_hot_tool = tool;
           new_hot_index = c;
 
-          if ((m_openOnHot) && (m_hotTool != new_hot_tool))
+          if ((m_openOnHot) && (m_hotTool != new_hot_tool) && hasCapture()) {
             openPopupWindow(c, tool_group);
-
+          }
           break;
         }
       }
@@ -252,7 +253,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->buttons(),
-            mouseMsg->position(), 0);
+            mouseMsg->position());
           mouseMsg2->addRecipient(strip);
           getManager()->enqueueMessage(mouseMsg2);
         }
@@ -263,6 +264,12 @@ bool ToolBar::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (!hasCapture())
         break;
+
+      if (!m_openedRecently) {
+        if (m_popupWindow && m_popupWindow->isVisible())
+          m_popupWindow->closeWindow(this);
+      }
+      m_openedRecently = false;
 
       releaseMouse();
       // fallthrough
@@ -440,6 +447,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   // In case this tool contains more than just one tool, show the popup window
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickOutsideHotRegion);
   m_closeSlot = m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_openedRecently = true;
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);
   m_currentStrip = toolstrip;
@@ -586,10 +594,6 @@ void ToolBar::closeTipWindow()
     m_tipWindow->closeWindow(NULL);
     delete m_tipWindow;
     m_tipWindow = NULL;
-
-    // Flush kPaintMessage messages and send them
-    getManager()->flushRedraw();
-    getManager()->dispatchMessages();
   }
 }
 
@@ -694,7 +698,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->buttons(),
-            mouseMsg->position(), 0);
+            mouseMsg->position());
           mouseMsg2->addRecipient(bar);
           getManager()->enqueueMessage(mouseMsg2);
         }

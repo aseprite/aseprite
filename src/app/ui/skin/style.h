@@ -94,6 +94,8 @@ namespace app {
       void setAlign(int align) { m_align = align; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
 
+      SkinPartPtr getPart() { return m_part; }
+
     protected:
       void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) OVERRIDE;
 
@@ -110,6 +112,8 @@ namespace app {
       void paint(ui::Graphics* g,
         const gfx::Rect& bounds,
         const char* text);
+
+      gfx::Size preferredSize(const char* text);
 
     private:
       BackgroundRule* m_background;
@@ -135,10 +139,16 @@ namespace app {
         const char* text,
         const State& state);
 
+      gfx::Size preferredSize(
+        const char* text,
+        const State& state);
+
       const std::string& id() const { return m_id; }
 
     private:
       typedef std::map<State, Rules*> RulesMap;
+
+      Rules* getRulesFromState(const State& state);
 
       std::string m_id;
       css::CompoundStyle m_compoundStyle;

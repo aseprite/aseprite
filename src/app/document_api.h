@@ -62,6 +62,7 @@ namespace app {
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
+    void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor);
     void trimSprite(Sprite* sprite, color_t bgcolor);
     void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method);
@@ -79,6 +80,7 @@ namespace app {
     void addCel(LayerImage* layer, Cel* cel);
     void removeCel(LayerImage* layer, Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
+    void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
     void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
     void moveCel(Sprite* sprite,
       LayerImage* srcLayer, LayerImage* dstLayer,

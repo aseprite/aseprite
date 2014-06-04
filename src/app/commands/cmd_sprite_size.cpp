@@ -243,6 +243,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     {
       SpriteSizeJob job(reader, new_width, new_height, resize_method);
       job.startJob();
+      job.waitJob();
     }
 
     ContextWriter writer(reader);

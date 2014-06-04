@@ -13,6 +13,7 @@
 #include <allegro.h>
 
 #include "gfx/size.h"
+#include "ui/graphics.h"
 #include "ui/intern.h"
 #include "ui/preferred_size_event.h"
 #include "ui/ui.h"
@@ -33,7 +34,7 @@ enum {
 static gfx::Point clickedMousePos;
 static gfx::Rect* clickedWindowPos = NULL;
 
-Window::Window(Type type, const base::string& text)
+Window::Window(Type type, const std::string& text)
   : Widget(kWindowWidget)
 {
   m_killer = NULL;
@@ -521,16 +522,14 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
 #define FLAGS (DrawableRegionFlags)(kCutTopWindows | kUseChildArea)
 
   Manager* manager = getManager();
-  Region old_drawable_region;
-  Region new_drawable_region;
-  Region manager_refresh_region; // A region to refresh the manager later
-  Region window_refresh_region;  // A new region to refresh the window later
   Message* msg;
 
   manager->dispatchMessages();
 
   // Get the window's current position
   Rect old_pos = getBounds();
+  int dx = rect.x - old_pos.x;
+  int dy = rect.y - old_pos.y;
 
   // Get the manager's current position
   Rect man_pos = manager->getBounds();
@@ -541,69 +540,67 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
   manager->enqueueMessage(msg);
 
   // Get the region & the drawable region of the window
-  getDrawableRegion(old_drawable_region, FLAGS);
+  Region oldDrawableRegion;
+  getDrawableRegion(oldDrawableRegion, FLAGS);
 
   // If the size of the window changes...
-  if (old_pos.w != rect.w ||
-      old_pos.h != rect.h) {
+  if (old_pos.w != rect.w || old_pos.h != rect.h) {
     // We have to change the position of all children.
     windowSetPosition(rect);
   }
   else {
     // We can just displace all the widgets by a delta (new_position -
     // old_position)...
-    offsetWidgets(rect.x - old_pos.x,
-                  rect.y - old_pos.y);
+    offsetWidgets(dx, dy);
   }
 
   // Get the new drawable region of the window (it's new because we
   // moved the window to "rect")
-  getDrawableRegion(new_drawable_region, FLAGS);
+  Region newDrawableRegion;
+  getDrawableRegion(newDrawableRegion, FLAGS);
 
-  // First of all, we have to refresh the manager in the old window's
-  // drawable region, but we have to substract the new window's
+  // First of all, we have to find the manager region to invalidate,
+  // it's the old window drawable region without the new window
   // drawable region.
-  manager_refresh_region.createSubtraction(old_drawable_region,
-                                           new_drawable_region);
+  Region invalidManagerRegion;
+  invalidManagerRegion.createSubtraction(
+    oldDrawableRegion,
+    newDrawableRegion);
 
-  // In second place, we have to setup the window's refresh region...
+  // In second place, we have to setup the window invalid region...
 
   // If "use_blit" isn't activated, we have to redraw the whole window
   // (sending kPaintMessage messages) in the new drawable region
   if (!use_blit) {
-    window_refresh_region = new_drawable_region;
+    invalidateRegion(newDrawableRegion);
   }
   // If "use_blit" is activated, we can move the old drawable to the
-  // new position (to redraw as little as possible)
+  // new position (to redraw as little as possible).
   else {
     Region reg1;
-    Region moveable_region;
+    reg1 = newDrawableRegion;
+    reg1.offset(-dx, -dy);
 
-    // Add a region to draw areas which were outside of the screen
-    reg1 = new_drawable_region;
-    reg1.offset(old_pos.x - getBounds().x,
-                old_pos.y - getBounds().y);
-    moveable_region.createIntersection(old_drawable_region, reg1);
-
-    reg1.createSubtraction(reg1, moveable_region);
-    reg1.offset(getBounds().x - old_pos.x,
-                getBounds().y - old_pos.y);
-    window_refresh_region.createUnion(window_refresh_region, reg1);
+    Region moveableRegion;
+    moveableRegion.createIntersection(oldDrawableRegion, reg1);
 
     // Move the window's graphics
+    Graphics g(ji_screen, 0, 0);
     jmouse_hide();
-    set_clip_rect(ji_screen,
-                  man_pos.x, man_pos.y, man_pos.x2()-1, man_pos.y2()-1);
-
-    ui::_move_region(moveable_region,
-      getBounds().x - old_pos.x,
-      getBounds().y - old_pos.y);
-    set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
+    {
+      IntersectClip clip(&g, man_pos);
+      if (clip) {
+        ui::_move_region(moveableRegion, dx, dy);
+      }
+    }
     jmouse_show();
+
+    reg1.createSubtraction(reg1, moveableRegion);
+    reg1.offset(dx, dy);
+    invalidateRegion(reg1);
   }
 
-  manager->invalidateDisplayRegion(manager_refresh_region);
-  invalidateRegion(window_refresh_region);
+  manager->invalidateDisplayRegion(invalidManagerRegion);
 }
 
 } // namespace ui

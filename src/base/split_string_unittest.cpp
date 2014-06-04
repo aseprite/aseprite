@@ -13,7 +13,7 @@
 
 TEST(SplitString, Empty)
 {
-  std::vector<base::string> result;
+  std::vector<std::string> result;
   base::split_string("", result, ",");
   ASSERT_EQ(1, result.size());
   EXPECT_EQ("", result[0]);
@@ -21,7 +21,7 @@ TEST(SplitString, Empty)
 
 TEST(SplitString, NoSeparator)
 {
-  std::vector<base::string> result;
+  std::vector<std::string> result;
   base::split_string("Hello,World", result, "");
   ASSERT_EQ(1, result.size());
   EXPECT_EQ("Hello,World", result[0]);
@@ -29,7 +29,7 @@ TEST(SplitString, NoSeparator)
 
 TEST(SplitString, OneSeparator)
 {
-  std::vector<base::string> result;
+  std::vector<std::string> result;
   base::split_string("Hello,World", result, ",");
   ASSERT_EQ(2, result.size());
   EXPECT_EQ("Hello", result[0]);
@@ -38,7 +38,7 @@ TEST(SplitString, OneSeparator)
 
 TEST(SplitString, MultipleSeparators)
 {
-  std::vector<base::string> result;
+  std::vector<std::string> result;
   base::split_string("Hello,World", result, ",r");
   ASSERT_EQ(3, result.size());
   EXPECT_EQ("Hello", result[0]);

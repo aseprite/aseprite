@@ -31,7 +31,7 @@ namespace app {
 
 using namespace base;
 
-XmlDocumentRef open_xml(const string& filename)
+XmlDocumentRef open_xml(const std::string& filename)
 {
   FileHandle file(open_file(filename, "rb"));
   if (!file)

@@ -22,11 +22,11 @@ TempDir::TempDir()
 {
 }
 
-TempDir::TempDir(const string& appName)
+TempDir::TempDir(const std::string& appName)
 {
   for (int i=(std::rand()%0xffff); ; ++i) {
     m_path = join_path(get_temp_path(),
-                       appName + convert_to<string>(i));
+                       appName + convert_to<std::string>(i));
 
     if (!is_directory(m_path)) {
       make_directory(m_path);
@@ -53,7 +53,7 @@ void TempDir::remove()
   }
 }
 
-void TempDir::attach(const string& path)
+void TempDir::attach(const std::string& path)
 {
   remove();
 

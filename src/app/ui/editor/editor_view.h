@@ -25,6 +25,9 @@
 
 namespace app {
 
+  // TODO hardcoded scroll bar width should be get from skin.xml file
+  const int kEditorViewScrollbarWidth = 6;
+
   class EditorView : public ui::View,
                      public GlobalSettingsObserver {
   public:
@@ -36,6 +39,7 @@ namespace app {
   protected:
     void onPaint(ui::PaintEvent& ev) OVERRIDE;
     void onResize(ui::ResizeEvent& ev) OVERRIDE;
+    void onScrollChange() OVERRIDE;
 
     // GlobalSettingsObserver impl
     void onSetShowSpriteEditorScrollbars(bool state) OVERRIDE;

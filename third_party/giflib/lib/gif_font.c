@@ -1,32 +1,24 @@
 /*****************************************************************************
- *   "Gif-Lib" - Yet another gif library.
- *
- * Written by:  Gershon Elber            IBM PC Ver 0.1,    Jun. 1989
- *****************************************************************************
- * Utility font handling and simple drawing for the GIF library
- *****************************************************************************
- * History:
- * 17 Jun 89 - Version 1.0 by Gershon Elber.
- * 25 Sep 92 - Draw functions added by Eric S. Raymond
- ****************************************************************************/
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+ 
+gif_font.c - utility font handling and simple drawing for the GIF library
+ 
+****************************************************************************/
 
 #include <string.h>
+
 #include "gif_lib.h"
 
 /*****************************************************************************
- * Ascii 8 by 8 regular font - only first 128 characters are supported.
- ****************************************************************************/
+ Ascii 8 by 8 regular font - only first 128 characters are supported.
+*****************************************************************************/
 
 /*
  * Each array entry holds the bits for 8 horizontal scan lines, topmost
  * first.  The most significant bit of each constant is the leftmost bit of
  * the scan line.
  */
-unsigned char AsciiTable[][GIF_FONT_WIDTH] = {
+/*@+charint@*/
+const unsigned char GifAsciiTable8x8[][GIF_FONT_WIDTH] = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /* Ascii 0 */
     {0x3c, 0x42, 0xa5, 0x81, 0xbd, 0x42, 0x3c, 0x00},    /* Ascii 1 */
     {0x3c, 0x7e, 0xdb, 0xff, 0xc3, 0x7e, 0x3c, 0x00},    /* Ascii 2 */
@@ -156,14 +148,14 @@ unsigned char AsciiTable[][GIF_FONT_WIDTH] = {
     {0x00, 0x00, 0x70, 0x9a, 0x0e, 0x00, 0x00, 0x00},    /* ~ */
     {0x00, 0x00, 0x18, 0x3c, 0x66, 0xff, 0x00, 0x00}    /* Ascii 127 */
 };
+/*@=charint@*/
 
 void
-DrawText(SavedImage * Image,
-         const int x,
-         const int y,
-         const char *legend,
-         const int color) {
-
+GifDrawText8x8(SavedImage *Image, 
+	    const int x, const int y,
+	    const char *legend,
+	    const int color)
+{
     int i, j;
     int base;
     const char *cp;
@@ -173,7 +165,7 @@ DrawText(SavedImage * Image,
 
         for (cp = legend; *cp; cp++)
             for (j = 0; j < GIF_FONT_WIDTH; j++) {
-                if (AsciiTable[(short)(*cp)][i] & (1 << (GIF_FONT_WIDTH - j)))
+                if (GifAsciiTable8x8[(short)(*cp)][i] & (1 << (GIF_FONT_WIDTH - j)))
                     Image->RasterBits[base] = color;
                 base++;
             }
@@ -181,13 +173,11 @@ DrawText(SavedImage * Image,
 }
 
 void
-DrawBox(SavedImage * Image,
-        const int x,
-        const int y,
-        const int w,
-        const int d,
-        const int color) {
-
+GifDrawBox(SavedImage *Image,
+	   const int x, const int y,
+	   const int w, const int d,
+	   const int color)
+{
     int j, base = Image->ImageDesc.Width * y + x;
 
     for (j = 0; j < w; j++)
@@ -200,29 +190,25 @@ DrawBox(SavedImage * Image,
 }
 
 void
-DrawRectangle(SavedImage * Image,
-              const int x,
-              const int y,
-              const int w,
-              const int d,
-              const int color) {
-
+GifDrawRectangle(SavedImage *Image,
+              const int x, const int y,
+              const int w, const int d,
+              const int color)
+{
     unsigned char *bp = Image->RasterBits + Image->ImageDesc.Width * y + x;
     int i;
 
     for (i = 0; i < d; i++)
-        memset(bp + (i * Image->ImageDesc.Width), color, w);
+        memset(bp + (i * Image->ImageDesc.Width), color, (size_t)w);
 }
 
 void
-DrawBoxedText(SavedImage * Image,
-              const int x,
-              const int y,
+GifDrawBoxedText8x8(SavedImage *Image,
+              const int x, const int y,
               const char *legend,
               const int border,
-              const int bg,
-              const int fg) {
-
+              const int bg, const int fg)
+{
     int i, j = 0, LineCount = 0, TextWidth = 0;
     const char *cp;
 
@@ -240,7 +226,7 @@ DrawBoxedText(SavedImage * Image,
         TextWidth = j;
 
     /* fill the box */
-    DrawRectangle(Image, x + 1, y + 1,
+    GifDrawRectangle(Image, x + 1, y + 1,
                   border + TextWidth * GIF_FONT_WIDTH + border - 1,
                   border + LineCount * GIF_FONT_HEIGHT + border - 1, bg);
 
@@ -253,12 +239,14 @@ DrawBoxedText(SavedImage * Image,
         if (cp[0] == '\t')
             leadspace = (TextWidth - strlen(++cp)) / 2;
 
-        DrawText(Image, x + border + (leadspace * GIF_FONT_WIDTH),
+        GifDrawText8x8(Image, x + border + (leadspace * GIF_FONT_WIDTH),
                  y + border + (GIF_FONT_HEIGHT * i++), cp, fg);
         cp = strtok((char *)NULL, "\r\n");
     } while (cp);
 
     /* outline the box */
-    DrawBox(Image, x, y, border + TextWidth * GIF_FONT_WIDTH + border,
+    GifDrawBox(Image, x, y, border + TextWidth * GIF_FONT_WIDTH + border,
             border + LineCount * GIF_FONT_HEIGHT + border, fg);
 }
+
+/* end */

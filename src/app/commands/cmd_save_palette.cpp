@@ -51,7 +51,7 @@ SavePaletteCommand::SavePaletteCommand()
 
 void SavePaletteCommand::onExecute(Context* context)
 {
-  base::string filename;
+  std::string filename;
   int ret;
 
 again:

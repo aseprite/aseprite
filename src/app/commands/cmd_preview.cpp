@@ -140,10 +140,13 @@ void PreviewCommand::onExecute(Context* context)
     // Render sprite and leave the result in 'render' variable
     if (render == NULL) {
       RenderEngine renderEngine(document, sprite,
-                                editor->getLayer(),
-                                editor->getFrame());
-      render.reset(renderEngine.renderSprite(0, 0, sprite->getWidth(), sprite->getHeight(),
-                                             editor->getFrame(), 0, false));
+        editor->getLayer(),
+        editor->getFrame());
+
+      render.reset(
+        renderEngine.renderSprite(
+          0, 0, sprite->getWidth(), sprite->getHeight(),
+          editor->getFrame(), 0, false, false));
     }
 
     // Redraw the screen

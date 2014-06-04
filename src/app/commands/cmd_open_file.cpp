@@ -69,7 +69,11 @@ public:
 
   void showProgressWindow() {
     startJob();
-    fop_stop(m_fop);
+
+    if (isCanceled())
+      fop_stop(m_fop);
+
+    waitJob();
   }
 
 private:

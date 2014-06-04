@@ -23,6 +23,7 @@
 #include "app/commands/command.h"
 
 #include "app/commands/commands.h"
+#include "app/commands/params.h"
 #include "app/context.h"
 #include "base/compiler_specific.h"
 
@@ -30,26 +31,52 @@ namespace app {
 
 class CancelCommand : public Command {
 public:
+  enum Type {
+    NoOp,
+    All,
+  };
+
   CancelCommand();
   Command* clone() const OVERRIDE { return new CancelCommand(*this); }
 
 protected:
+  void onLoadParams(Params* params);
   void onExecute(Context* context);
+
+private:
+  Type m_type;
 };
 
 CancelCommand::CancelCommand()
   : Command("Cancel",
             "Cancel",
             CmdUIOnlyFlag)
+  , m_type(NoOp)
 {
+}
+
+void CancelCommand::onLoadParams(Params* params)
+{
+  std::string type = params->get("type");
+  if (type == "noop") m_type = NoOp;
+  else if (type == "all") m_type = All;
 }
 
 void CancelCommand::onExecute(Context* context)
 {
-  if (context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                          ContextFlags::HasVisibleMask)) {
-    Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
-    context->executeCommand(cmd);
+  switch (m_type) {
+
+    case NoOp:
+      // Do nothing.
+      break;
+
+    case All:
+      if (context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+          ContextFlags::HasVisibleMask)) {
+        Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+        context->executeCommand(cmd);
+      }
+      break;
   }
 }
 

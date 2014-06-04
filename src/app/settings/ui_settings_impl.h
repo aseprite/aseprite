@@ -28,6 +28,7 @@
 #include "app/settings/settings_observers.h"
 #include "base/compiler_specific.h"
 #include "base/observable.h"
+#include "base/unique_ptr.h"
 
 namespace app {
 
@@ -70,11 +71,11 @@ namespace app {
 
   private:
     tools::Tool* m_currentTool;
-    IDocumentSettings* m_globalDocumentSettings;
+    base::UniquePtr<IDocumentSettings> m_globalDocumentSettings;
     std::map<std::string, IToolSettings*> m_toolSettings;
     app::ColorSwatches* m_colorSwatches;
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
-    ISelectionSettings* m_selectionSettings;
+    base::UniquePtr<ISelectionSettings> m_selectionSettings;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
   };

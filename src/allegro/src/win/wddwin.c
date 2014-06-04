@@ -205,7 +205,7 @@ static void paint_win(RECT *rect)
    /* we may have lost the DirectDraw surfaces
     * (e.g after the monitor has gone to low power)
     */
-   if (IDirectDrawSurface2_IsLost(gfx_directx_primary_surface->id))
+   if (IDirectDrawSurface2_IsLost(gfx_directx_primary_surface->id) == DDERR_SURFACELOST)
       switch_in_win();
 
    /* clip the rectangle */

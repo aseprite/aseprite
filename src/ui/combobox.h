@@ -49,9 +49,9 @@ namespace ui {
     bool isCaseSensitive();
 
     int addItem(ListItem* item);
-    int addItem(const base::string& text);
+    int addItem(const std::string& text);
     void insertItem(int itemIndex, ListItem* item);
-    void insertItem(int itemIndex, const base::string& text);
+    void insertItem(int itemIndex, const std::string& text);
 
     // Removes the given item (you must delete it).
     void removeItem(ListItem* item);
@@ -64,9 +64,9 @@ namespace ui {
     int getItemCount() const;
 
     ListItem* getItem(int itemIndex);
-    const base::string& getItemText(int itemIndex) const;
-    void setItemText(int itemIndex, const base::string& text);
-    int findItemIndex(const base::string& text);
+    const std::string& getItemText(int itemIndex) const;
+    void setItemText(int itemIndex, const std::string& text);
+    int findItemIndex(const std::string& text);
 
     ListItem* getSelectedItem() const;
     void setSelectedItem(ListItem* item);

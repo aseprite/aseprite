@@ -212,8 +212,12 @@ void CanvasSizeCommand::onExecute(Context* context)
     Sprite* sprite = writer.sprite();
     UndoTransaction undoTransaction(writer.context(), "Canvas Size");
     DocumentApi api = document->getApi();
-    int bgcolor = color_utils::color_for_image(context->getSettings()->getBgColor(), sprite->getPixelFormat());
-    bgcolor = color_utils::fixup_color_for_background(sprite->getPixelFormat(), bgcolor);
+    raster::color_t bgcolor = color_utils::color_for_target(
+      context->getSettings()->getBgColor(),
+      ColorTarget(
+        ColorTarget::BackgroundLayer,
+        sprite->getPixelFormat(),
+        sprite->getTransparentColor()));
 
     api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
     undoTransaction.commit();

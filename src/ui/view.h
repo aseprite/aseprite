@@ -27,6 +27,8 @@ public:
   ScrollBar* getVerticalBar() { return &m_scrollbar_v; }
 
   void attachToView(Widget* viewableWidget);
+  Widget* attachedWidget();
+
   void hideScrollBars();
   void showScrollBars();
   void makeVisibleAllScrollableArea();
@@ -56,6 +58,8 @@ protected:
   void onResize(ResizeEvent& ev) OVERRIDE;
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
   void onPaint(PaintEvent& ev) OVERRIDE;
+
+  virtual void onScrollChange();
 
 private:
   bool m_hasBars;

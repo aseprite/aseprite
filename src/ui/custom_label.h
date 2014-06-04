@@ -16,7 +16,7 @@ namespace ui {
   class CustomLabel : public Label
   {
   public:
-    CustomLabel(const base::string& text);
+    CustomLabel(const std::string& text);
 
   protected:
     bool onProcessMessage(Message* msg) OVERRIDE;

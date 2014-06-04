@@ -20,6 +20,7 @@
 #define RASTER_LAYER_H_INCLUDED
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "raster/blend.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"
@@ -80,7 +81,7 @@ namespace raster {
     uint32_t getFlags() const { return m_flags; }
     void setFlags(uint32_t flags) { m_flags = flags; }
 
-    virtual void getCels(CelList& cels) = 0;
+    virtual void getCels(CelList& cels) const = 0;
 
   private:
     std::string m_name;           // layer name
@@ -111,7 +112,7 @@ namespace raster {
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
 
-    void getCels(CelList& cels);
+    void getCels(CelList& cels) const OVERRIDE;
 
     void configureAsBackground();
 
@@ -152,7 +153,7 @@ namespace raster {
     Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
     Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
 
-    void getCels(CelList& cels);
+    void getCels(CelList& cels) const OVERRIDE;
 
   private:
     void destroyAllLayers();

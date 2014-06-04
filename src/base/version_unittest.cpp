@@ -13,7 +13,7 @@ using namespace base;
 
 std::ostream& operator<<(std::ostream& os, const Version& ver)
 {
-  return os << convert_to<string>(ver);
+  return os << convert_to<std::string>(ver);
 }
 
 TEST(Version, Ctor)
@@ -50,21 +50,21 @@ TEST(Version, Ctor)
 
 TEST(Version, StringToVersion)
 {
-  EXPECT_EQ(Version(), convert_to<Version>(string("")));
-  EXPECT_EQ(Version(1), convert_to<Version>(string("1")));
-  EXPECT_EQ(Version(1, 2), convert_to<Version>(string("1.2")));
-  EXPECT_EQ(Version(1, 2, 3), convert_to<Version>(string("1.2.3")));
-  EXPECT_EQ(Version(1, 2, 3, 4), convert_to<Version>(string("1.2.3.4")));
+  EXPECT_EQ(Version(), convert_to<Version>(std::string("")));
+  EXPECT_EQ(Version(1), convert_to<Version>(std::string("1")));
+  EXPECT_EQ(Version(1, 2), convert_to<Version>(std::string("1.2")));
+  EXPECT_EQ(Version(1, 2, 3), convert_to<Version>(std::string("1.2.3")));
+  EXPECT_EQ(Version(1, 2, 3, 4), convert_to<Version>(std::string("1.2.3.4")));
 }
 
 TEST(Version, VersionToString)
 {
-  EXPECT_EQ("", convert_to<string>(Version()));
-  EXPECT_EQ("0", convert_to<string>(Version(0)));
-  EXPECT_EQ("1", convert_to<string>(Version(1)));
-  EXPECT_EQ("1.0", convert_to<string>(Version(1, 0)));
-  EXPECT_EQ("0.0", convert_to<string>(Version(0, 0)));
-  EXPECT_EQ("1.0.2", convert_to<string>(Version(1, 0, 2)));
+  EXPECT_EQ("", convert_to<std::string>(Version()));
+  EXPECT_EQ("0", convert_to<std::string>(Version(0)));
+  EXPECT_EQ("1", convert_to<std::string>(Version(1)));
+  EXPECT_EQ("1.0", convert_to<std::string>(Version(1, 0)));
+  EXPECT_EQ("0.0", convert_to<std::string>(Version(0, 0)));
+  EXPECT_EQ("1.0.2", convert_to<std::string>(Version(1, 0, 2)));
 }
 
 TEST(Version, Equal)

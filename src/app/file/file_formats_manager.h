@@ -36,6 +36,7 @@ namespace app {
   public:
     // Returns a singleton of this class.
     static FileFormatsManager& instance();
+    static void destroyInstance();
 
     virtual ~FileFormatsManager();
 

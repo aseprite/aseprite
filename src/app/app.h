@@ -26,6 +26,7 @@
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
 
+#include <string>
 #include <vector>
 
 namespace ui {
@@ -70,6 +71,8 @@ namespace app {
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
 
+    void showNotification(const char* text, const char* url);
+
     // App Signals
     Signal0<void> Exit;
     Signal0<void> PaletteChange;
@@ -80,7 +83,7 @@ namespace app {
     Signal0<void> CurrentToolChange;
 
   private:
-    typedef std::vector<base::string> FileList;
+    typedef std::vector<std::string> FileList;
     class Modules;
 
     static App* m_instance;

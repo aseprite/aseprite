@@ -18,8 +18,8 @@ add_library(app-lib
   commands/cmd_canvas_size.cpp
   commands/cmd_cel_properties.cpp
   commands/cmd_change_color.cpp
-  commands/cmd_change_image_type.cpp
   commands/cmd_change_pen.cpp
+  commands/cmd_change_pixel_format.cpp
   commands/cmd_clear.cpp
   commands/cmd_close_file.cpp
   commands/cmd_configure_tools.cpp
@@ -56,6 +56,7 @@ add_library(app-lib
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_new_layer_set.cpp
+  commands/cmd_onionskin.cpp
   commands/cmd_open_file.cpp
   commands/cmd_open_in_folder.cpp
   commands/cmd_open_with_app.cpp
@@ -125,6 +126,7 @@ add_library(app-lib
   flatten.cpp
   gfxmode.cpp
   gui_xml.cpp
+  handle_anidir.cpp
   ini_file.cpp
   job.cpp
   launcher.cpp
@@ -154,7 +156,9 @@ add_library(app-lib
   ui/color_button.cpp
   ui/color_selector.cpp
   ui/color_sliders.cpp
+  ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
+  ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
   ui/editor/cursor.cpp
@@ -179,6 +183,7 @@ add_library(app-lib
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_editor.cpp
+  ui/notifications.cpp
   ui/palette_listbox.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp
@@ -228,6 +233,7 @@ add_library(app-lib
   undoers/set_palette_colors.cpp
   undoers/set_sprite_pixel_format.cpp
   undoers/set_sprite_size.cpp
+  undoers/set_sprite_transparent_color.cpp
   undoers/set_stock_pixel_format.cpp
   undoers/set_total_frames.cpp
   util/autocrop.cpp

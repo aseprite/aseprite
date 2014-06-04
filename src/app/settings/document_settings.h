@@ -24,6 +24,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "raster/frame_number.h"
 
 namespace app {
   class DocumentSettingsObserver;
@@ -61,17 +62,44 @@ namespace app {
 
     // Onionskin settings
 
+    enum OnionskinType {
+      Onionskin_Merge,
+      Onionskin_RedBlueTint,
+      Onionskin_Last = Onionskin_RedBlueTint
+    };
+
     virtual bool getUseOnionskin() = 0;
     virtual int getOnionskinPrevFrames() = 0;
     virtual int getOnionskinNextFrames() = 0;
     virtual int getOnionskinOpacityBase() = 0;
     virtual int getOnionskinOpacityStep() = 0;
+    virtual OnionskinType getOnionskinType() = 0;
 
     virtual void setUseOnionskin(bool state) = 0;
     virtual void setOnionskinPrevFrames(int frames) = 0;
     virtual void setOnionskinNextFrames(int frames) = 0;
     virtual void setOnionskinOpacityBase(int base) = 0;
     virtual void setOnionskinOpacityStep(int step) = 0;
+    virtual void setOnionskinType(OnionskinType type) = 0;
+    virtual void setDefaultOnionskinSettings() = 0;
+
+    // Animation
+
+    enum AniDir {
+      AniDir_Normal,
+      AniDir_Reverse,
+      AniDir_PingPong
+    };
+
+    virtual bool getLoopAnimation() = 0;
+    virtual void getLoopRange(raster::FrameNumber* begin, raster::FrameNumber* end) = 0;
+    virtual AniDir getAnimationDirection() = 0;
+
+    virtual void setLoopAnimation(bool state) = 0;
+    virtual void setLoopRange(raster::FrameNumber begin, raster::FrameNumber end) = 0;
+    virtual void setAnimationDirection(AniDir dir) = 0;
+
+    // Observable
 
     virtual void addObserver(DocumentSettingsObserver* observer) = 0;
     virtual void removeObserver(DocumentSettingsObserver* observer) = 0;

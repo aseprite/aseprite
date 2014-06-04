@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ASE menus, tools and keyboard shortcuts -->
-<gui version="0.9.6-dev">
+<gui version="1.0.0-dev">
   <!-- Keyboard shortcuts -->
   <keyboard>
 
@@ -18,7 +18,9 @@
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" shortcut="Alt+F4" />
-      <key command="Cancel" shortcut="Esc" />
+      <key command="Cancel" shortcut="Esc">
+        <param name="type" value="all" />
+      </key>
       <!-- Edit -->
       <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
       <key command="Redo" shortcut="Ctrl+Y" />
@@ -74,6 +76,7 @@
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
+      <key command="ShowOnionSkin" shortcut="F3" />
       <key command="Timeline" shortcut="Tab">
         <param name="switch" value="true" />
       </key>
@@ -373,6 +376,8 @@
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
         <separator />
+        <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />
+        <separator />
         <item command="Timeline" text="&amp;Timeline">
           <param name="switch" value="true" />
         </item>
@@ -387,21 +392,21 @@
         </item>
         <separator />
         <item command="Launch" text="Quick &amp;Reference">
-          <param name="type" value="docs" />
-          <param name="path" value="http://www.aseprite.org/quickref/" />
+          <param name="type" value="url" />
+          <param name="path" value="/quickref/" />
         </item>
         <item command="Launch" text="Documentation">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/docs/" />
+          <param name="path" value="/docs/" />
         </item>
         <item command="Launch" text="Tutorial">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/tutorial/" />
+          <param name="path" value="/tutorial/" />
         </item>
         <separator />
         <item command="Launch" text="Release Notes">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/release-notes/" />
+          <param name="path" value="/release-notes/" />
         </item>
         <item command="Launch" text="Twitter">
           <param name="type" value="url" />
@@ -410,7 +415,7 @@
         <separator />
         <item command="Launch" text="&amp;Donate">
           <param name="type" value="url" />
-          <param name="path" value="http://www.aseprite.org/donate/" />
+          <param name="path" value="/donate/" />
         </item>
         <item command="About" text="&amp;About" />
       </menu>
@@ -454,6 +459,10 @@
     <menu id="cel_movement_popup">
       <item command="MoveCel" text="&amp;Move" />
       <item command="CopyCel" text="&amp;Copy" />
+      <separator />
+      <item command="Cancel" text="Cancel">
+        <param name="type" value="noop" />
+      </item>
     </menu>
   </menus>
 

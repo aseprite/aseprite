@@ -21,7 +21,7 @@ namespace ui {
 
 using namespace gfx;
 
-PopupWindow::PopupWindow(const base::string& text, ClickBehavior clickBehavior)
+PopupWindow::PopupWindow(const std::string& text, ClickBehavior clickBehavior)
   : Window(WithTitleBar, text)
   , m_clickBehavior(clickBehavior)
   , m_filtering(false)

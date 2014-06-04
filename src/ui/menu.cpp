@@ -165,7 +165,7 @@ MenuBar::MenuBar()
   createBase();
 }
 
-MenuItem::MenuItem(const base::string& text)
+MenuItem::MenuItem(const std::string& text)
   : Widget(kMenuItemWidget)
 {
   m_accel = NULL;
@@ -346,7 +346,7 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
   UI_FOREACH_WIDGET_WITH_END(getChildren(), it, end) {
     reqSize = (*it)->getPreferredSize();
 
-    if (this->getParent()->type == kMenuBarWidget) {
+    if (getParent() && getParent()->type == kMenuBarWidget) {
       size.w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
       size.h = MAX(size.h, reqSize.h);
     }
@@ -872,13 +872,15 @@ void MenuItem::onClick()
 void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size size(0, 0);
-  int bar = (this->getParent()->getParent()->type == kMenuBarWidget);
+  bool bar = (getParent() &&
+    getParent()->getParent() &&
+    getParent()->getParent()->type == kMenuBarWidget);
 
   if (hasText()) {
     size.w =
       + this->border_width.l
       + getTextWidth()
-      + ((bar) ? this->child_spacing/4: this->child_spacing)
+      + (bar ? this->child_spacing/4: this->child_spacing)
       + this->border_width.r;
 
     size.h =

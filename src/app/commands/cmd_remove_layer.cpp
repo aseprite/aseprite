@@ -54,9 +54,11 @@ RemoveLayerCommand::RemoveLayerCommand()
 
 bool RemoveLayerCommand::onEnabled(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite(writer.sprite());
-  return (sprite != NULL);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                             ContextFlags::HasActiveSprite |
+                             ContextFlags::HasActiveLayer |
+                             ContextFlags::ActiveLayerIsReadable |
+                             ContextFlags::ActiveLayerIsWritable);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)

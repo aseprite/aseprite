@@ -24,7 +24,7 @@
 
 namespace ui {
 
-ButtonBase::ButtonBase(const base::string& text,
+ButtonBase::ButtonBase(const std::string& text,
                        WidgetType type,
                        WidgetType behaviorType,
                        WidgetType drawType)
@@ -307,7 +307,7 @@ void ButtonBase::generateButtonSelectSignal()
 // Button class
 // ======================================================================
 
-Button::Button(const base::string& text)
+Button::Button(const std::string& text)
   : ButtonBase(text, kButtonWidget, kButtonWidget, kButtonWidget)
 {
   setAlign(JI_CENTER | JI_MIDDLE);
@@ -317,7 +317,7 @@ Button::Button(const base::string& text)
 // CheckBox class
 // ======================================================================
 
-CheckBox::CheckBox(const base::string& text, WidgetType drawType)
+CheckBox::CheckBox(const std::string& text, WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);
@@ -327,7 +327,7 @@ CheckBox::CheckBox(const base::string& text, WidgetType drawType)
 // RadioButton class
 // ======================================================================
 
-RadioButton::RadioButton(const base::string& text, int radioGroup, WidgetType drawType)
+RadioButton::RadioButton(const std::string& text, int radioGroup, WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
   setAlign(JI_LEFT | JI_MIDDLE);

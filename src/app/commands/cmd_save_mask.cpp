@@ -58,7 +58,7 @@ void SaveMaskCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  base::string filename = "default.msk";
+  std::string filename = "default.msk";
   int ret;
 
   for (;;) {

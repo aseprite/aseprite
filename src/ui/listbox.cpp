@@ -185,7 +185,7 @@ bool ListBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
         view->setViewScroll(scroll);
       }
       break;

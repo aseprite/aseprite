@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,7 @@
 #include "app/modules/gui.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
+#include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -72,6 +73,8 @@
 // Space between icons and other information in the layer.
 #define ICONSEP         (2*jguiscale())
 
+#define OUTLINE_WIDTH   (2*jguiscale()) // TODO theme specific
+
 // Space between the icon-bitmap and the edge of the surrounding button.
 #define ICONBORDER      0
 
@@ -105,12 +108,15 @@ static const char* kTimelineSelectedCelStyle = "timeline_selected_cel";
 static const char* kTimelineRangeOutlineStyle = "timeline_range_outline";
 static const char* kTimelineDropLayerDecoStyle = "timeline_drop_layer_deco";
 static const char* kTimelineDropFrameDecoStyle = "timeline_drop_frame_deco";
+static const char* kTimelineLoopRangeStyle = "timeline_loop_range";
 
 static const char* kTimelineActiveColor = "timeline_active";
 
 enum {
   A_PART_NOTHING,
   A_PART_SEPARATOR,
+  A_PART_HEADER_EYE,
+  A_PART_HEADER_PADLOCK,
   A_PART_HEADER_GEAR,
   A_PART_HEADER_ONIONSKIN,
   A_PART_HEADER_ONIONSKIN_RANGE_LEFT,
@@ -150,6 +156,7 @@ Timeline::Timeline()
   , m_timelineRangeOutlineStyle(get_style(kTimelineRangeOutlineStyle))
   , m_timelineDropLayerDecoStyle(get_style(kTimelineDropLayerDecoStyle))
   , m_timelineDropFrameDecoStyle(get_style(kTimelineDropFrameDecoStyle))
+  , m_timelineLoopRangeStyle(get_style(kTimelineLoopRangeStyle))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -157,6 +164,7 @@ Timeline::Timeline()
   , m_scroll_y(0)
   , m_separator_x(100 * jguiscale())
   , m_separator_w(1)
+  , m_confPopup(NULL)
 {
   m_context->addObserver(this);
 
@@ -168,6 +176,8 @@ Timeline::~Timeline()
   detachDocument();
 
   m_context->removeObserver(this);
+
+  delete m_confPopup;
 }
 
 void Timeline::updateUsingEditor(Editor* editor)
@@ -282,6 +292,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (mouseMsg->middle() || key[KEY_SPACE]) {
         captureMouse();
         m_state = STATE_SCROLLING;
+        m_oldPos = static_cast<MouseMessage*>(msg)->position();
         return true;
       }
 
@@ -297,15 +308,15 @@ bool Timeline::onProcessMessage(Message* msg)
           m_state = STATE_MOVING_SEPARATOR;
           break;
         case A_PART_HEADER_ONIONSKIN_RANGE_LEFT: {
-          ISettings* m_settings = UIContext::instance()->getSettings();
-          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          ISettings* settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
           m_origFrames = docSettings->getOnionskinPrevFrames();
           break;
         }
         case A_PART_HEADER_ONIONSKIN_RANGE_RIGHT: {
-          ISettings* m_settings = UIContext::instance()->getSettings();
-          IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+          ISettings* settings = UIContext::instance()->getSettings();
+          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_RIGHT;
           m_origFrames = docSettings->getOnionskinNextFrames();
           break;
@@ -369,9 +380,10 @@ bool Timeline::onProcessMessage(Message* msg)
           // Change the scroll to show the new selected cel.
           showCel(m_clk_layer, m_frame);
 
-          m_state = STATE_SELECTING_CELS;
-          if (selectCel)
+          if (selectCel) {
+            m_state = STATE_SELECTING_CELS;
             m_range.startRange(m_clk_layer, m_clk_frame, Range::kCels);
+          }
           invalidate();
           break;
         }
@@ -414,8 +426,8 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames + (m_clk_frame - hot_frame);
             docSettings->setOnionskinPrevFrames(MAX(0, newValue));
             invalidate();
@@ -423,8 +435,8 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_RIGHT:
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames - (m_clk_frame - hot_frame);
             docSettings->setOnionskinNextFrames(MAX(0, newValue));
             invalidate();
@@ -457,13 +469,18 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       // Is the mouse on the headers?
       else if (mousePos.y < HDRSIZE) {
-        if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
-          hot_part = A_PART_HEADER_GEAR;
-        else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
-          hot_part = A_PART_HEADER_ONIONSKIN;
-        else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
-          hot_part = A_PART_HEADER_LAYER;
-        // Is on a frame header?
+        if (mousePos.x < m_separator_x) {
+          if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
+            hot_part = A_PART_HEADER_EYE;
+          else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
+            hot_part = A_PART_HEADER_PADLOCK;
+          else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
+            hot_part = A_PART_HEADER_GEAR;
+          else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
+            hot_part = A_PART_HEADER_ONIONSKIN;
+          else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
+            hot_part = A_PART_HEADER_LAYER;
+        }
         else {
           hot_part = A_PART_HEADER_FRAME;
           hot_frame = FrameNumber((mousePos.x
@@ -567,26 +584,63 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         switch (m_hot_part) {
+
           case A_PART_NOTHING:
-            // Do nothing.
-            break;
           case A_PART_SEPARATOR:
+          case A_PART_HEADER_LAYER:
             // Do nothing.
             break;
-          case A_PART_HEADER_GEAR:
-            // Do nothing.
+
+          case A_PART_HEADER_EYE: {
+            bool newReadableState = !allLayersVisible();
+            for (size_t i=0; i<m_layers.size(); i++)
+              m_layers[i]->setReadable(newReadableState);
+
+            // Redraw all views.
+            m_document->notifyGeneralUpdate();
             break;
+          }
+
+          case A_PART_HEADER_PADLOCK: {
+            bool newWritableState = !allLayersUnlocked();
+            for (size_t i=0; i<m_layers.size(); i++)
+              m_layers[i]->setWritable(newWritableState);
+            break;
+          }
+
+          case A_PART_HEADER_GEAR: {
+            gfx::Rect gearBounds =
+              getPartBounds(A_PART_HEADER_GEAR).offset(getBounds().getOrigin());
+
+            if (!m_confPopup) {
+              ConfigureTimelinePopup* popup =
+                new ConfigureTimelinePopup();
+
+              popup->remapWindow();
+              m_confPopup = popup;
+            }
+
+            if (!m_confPopup->isVisible()) {
+              m_confPopup->moveWindow(gfx::Rect(
+                  gearBounds.x,
+                  gearBounds.y-m_confPopup->getBounds().h,
+                  m_confPopup->getBounds().w,
+                  m_confPopup->getBounds().h));
+              m_confPopup->openWindow();
+            }
+            else
+              m_confPopup->closeWindow(NULL);
+            break;
+          }
+
           case A_PART_HEADER_ONIONSKIN: {
-            ISettings* m_settings = UIContext::instance()->getSettings();
-            IDocumentSettings* docSettings =
-              m_settings->getDocumentSettings(m_document);
+            ISettings* settings = UIContext::instance()->getSettings();
+            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             if (docSettings)
               docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
             break;
           }
-          case A_PART_HEADER_LAYER:
-            // Do nothing.
-            break;
+
           case A_PART_HEADER_FRAME:
             // Show the frame pop-up menu.
             if (mouseMsg->right()) {
@@ -599,6 +653,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
+
           case A_PART_LAYER_TEXT:
             // Show the layer pop-up menu.
             if (mouseMsg->right()) {
@@ -611,6 +666,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
+
           case A_PART_LAYER_EYE_ICON:
             // Hide/show layer.
             if (m_hot_layer == m_clk_layer &&
@@ -624,6 +680,7 @@ bool Timeline::onProcessMessage(Message* msg)
               m_document->notifyGeneralUpdate();
             }
             break;
+
           case A_PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
             if (m_hot_layer == m_clk_layer &&
@@ -634,6 +691,7 @@ bool Timeline::onProcessMessage(Message* msg)
               layer->setWritable(!layer->isWritable());
             }
             break;
+
           case A_PART_CEL: {
             // Show the cel pop-up menu.
             if (mouseMsg->right()) {
@@ -650,6 +708,7 @@ bool Timeline::onProcessMessage(Message* msg)
             }
             break;
           }
+
         }
 
         if (mouseMsg->left() && m_state == STATE_MOVING_RANGE) {
@@ -685,7 +744,7 @@ bool Timeline::onProcessMessage(Message* msg)
             ->getCommandByName(CommandId::LayerProperties);
 
           UIContext::instance()->executeCommand(command);
-          break;
+          return true;
         }
 
         case A_PART_HEADER_FRAME: {
@@ -695,7 +754,7 @@ bool Timeline::onProcessMessage(Message* msg)
           params.set("frame", "current");
 
           UIContext::instance()->executeCommand(command, &params);
-          break;
+          return true;
         }
 
         case A_PART_CEL: {
@@ -703,7 +762,7 @@ bool Timeline::onProcessMessage(Message* msg)
             ->getCommandByName(CommandId::CelProperties);
 
           UIContext::instance()->executeCommand(command);
-          break;
+          return true;
         }
 
       }
@@ -739,9 +798,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage:
       if (m_document) {
-        int dz = -static_cast<MouseMessage*>(msg)->wheelDelta();
+        int dz = static_cast<MouseMessage*>(msg)->wheelDelta().y;
         int dx = 0;
         int dy = 0;
+
+        dx += static_cast<MouseMessage*>(msg)->wheelDelta().x;
 
         if (msg->ctrlPressed())
           dx = dz * FRMSIZE;
@@ -846,6 +907,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     drawPaddings(g);
+    drawLoopRange(g);
     drawRangeOutline(g);
   }
   catch (const LockedDocumentException&) {
@@ -999,6 +1061,9 @@ void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_la
   *first_layer = MID(0, *first_layer, (int)m_layers.size()-1);
   *last_layer = *first_layer + (getClientBounds().h - HDRSIZE) / LAYSIZE;
   *last_layer = MID(0, *last_layer, (int)m_layers.size()-1);
+
+  if (m_layers.empty())
+    *last_layer = -1;
 }
 
 void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
@@ -1026,8 +1091,24 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
-  ISettings* m_settings = UIContext::instance()->getSettings();
-  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
+  bool allInvisible = allLayersInvisible();
+  bool allLocked = allLayersLocked();
+
+  drawPart(g, getPartBounds(A_PART_HEADER_EYE),
+    NULL,
+    allInvisible ? m_timelineClosedEyeStyle: m_timelineOpenEyeStyle,
+    m_clk_part == A_PART_HEADER_EYE,
+    m_hot_part == A_PART_HEADER_EYE,
+    m_clk_part == A_PART_HEADER_EYE);
+
+  drawPart(g, getPartBounds(A_PART_HEADER_PADLOCK),
+    NULL,
+    allLocked ? m_timelineClosedPadlockStyle: m_timelineOpenPadlockStyle,
+    m_clk_part == A_PART_HEADER_PADLOCK,
+    m_hot_part == A_PART_HEADER_PADLOCK,
+    m_clk_part == A_PART_HEADER_PADLOCK);
 
   drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
     NULL, m_timelineGearStyle,
@@ -1161,6 +1242,29 @@ void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel*
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 }
 
+void Timeline::drawLoopRange(ui::Graphics* g)
+{
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
+  if (!docSettings->getLoopAnimation())
+    return;
+
+  FrameNumber begin, end;
+  docSettings->getLoopRange(&begin, &end);
+  if (begin > end)
+    return;
+
+  gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, 0, begin);
+  gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, 0, end);
+  gfx::Rect bounds = bounds1.createUnion(bounds2);
+
+  IntersectClip clip(g, bounds);
+  if (!clip)
+    return;
+  
+  drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+}
+
 void Timeline::drawRangeOutline(ui::Graphics* g)
 {
   gfx::Rect clipBounds;
@@ -1169,7 +1273,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
     case Range::kFrames: clipBounds = getFrameHeadersBounds(); break;
     case Range::kLayers: clipBounds = getLayerHeadersBounds(); break;
   }
-  IntersectClip clip(g, clipBounds);
+  IntersectClip clip(g, clipBounds.enlarge(OUTLINE_WIDTH));
   if (!clip)
     return;
 
@@ -1187,15 +1291,14 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
       bounds =
         getPartBounds(A_PART_CEL, drop.layerBegin(), drop.frameBegin()).createUnion(
           getPartBounds(A_PART_CEL, drop.layerEnd(), drop.frameEnd()))
-        // TODO theme specific
-        .enlarge(2*jguiscale());
+        .enlarge(OUTLINE_WIDTH);
 
       m_timelineRangeOutlineStyle->paint(g, bounds, NULL, Style::active());
       break;
 
     case Range::kFrames:
       bounds = getPartBounds(A_PART_HEADER_FRAME, 0, drop.frameBegin());
-      bounds.w = 5 * jguiscale(); // TODO get height from the skin info
+      bounds.w = 5 * jguiscale(); // TODO get width from the skin info
       bounds.x -= bounds.w/2;
 
       m_timelineDropFrameDecoStyle->paint(g, bounds, NULL, Style::State());
@@ -1214,8 +1317,17 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 void Timeline::drawPaddings(ui::Graphics* g)
 {
   gfx::Rect client = getClientBounds();
-  gfx::Rect lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
-  gfx::Rect lastFrame = getPartBounds(A_PART_CEL, 0, --FrameNumber(m_sprite->getTotalFrames()));
+  gfx::Rect lastLayer;
+  gfx::Rect lastFrame;
+
+  if (!m_layers.empty()) {
+    lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
+    lastFrame = getPartBounds(A_PART_CEL, 0, m_sprite->getLastFrame());
+  }
+  else {
+    lastLayer = getPartBounds(A_PART_HEADER_LAYER);
+    lastFrame = getPartBounds(A_PART_HEADER_FRAME, 0, m_sprite->getLastFrame());
+  }
 
   drawPart(g,
     gfx::Rect(lastFrame.x+lastFrame.w, client.y,
@@ -1255,8 +1367,8 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
 
 gfx::Rect Timeline::getOnionskinFramesBounds() const
 {
-  ISettings* m_settings = UIContext::instance()->getSettings();
-  IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+  ISettings* settings = UIContext::instance()->getSettings();
+  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   if (docSettings->getUseOnionskin()) {
     FrameNumber firstFrame = m_frame.previous(docSettings->getOnionskinPrevFrames());
     FrameNumber lastFrame = m_frame.next(docSettings->getOnionskinNextFrames());
@@ -1282,7 +1394,7 @@ gfx::Rect Timeline::getCelsBounds() const
 
 gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
 {
-  const gfx::Rect bounds = getBounds();
+  const gfx::Rect bounds = getClientBounds();
 
   switch (part) {
 
@@ -1294,19 +1406,21 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
                        m_separator_x + m_separator_w,
                        bounds.h);
 
+    case A_PART_HEADER_EYE:
+      return gfx::Rect(FRMSIZE*0, 0, FRMSIZE, HDRSIZE);
+
+    case A_PART_HEADER_PADLOCK:
+      return gfx::Rect(FRMSIZE*1, 0, FRMSIZE, HDRSIZE);
+
     case A_PART_HEADER_GEAR:
-      return gfx::Rect(0, 0,
-                       FRMSIZE,
-                       HDRSIZE);
+      return gfx::Rect(FRMSIZE*2, 0, FRMSIZE, HDRSIZE);
 
     case A_PART_HEADER_ONIONSKIN:
-      return gfx::Rect(FRMSIZE, 0,
-                       FRMSIZE,
-                       HDRSIZE);
+      return gfx::Rect(FRMSIZE*3, 0, FRMSIZE, HDRSIZE);
 
     case A_PART_HEADER_LAYER:
-      return gfx::Rect(FRMSIZE*2, 0,
-                       m_separator_x - FRMSIZE*2,
+      return gfx::Rect(FRMSIZE*4, 0,
+                       m_separator_x - FRMSIZE*4,
                        HDRSIZE);
 
     case A_PART_HEADER_FRAME:
@@ -1367,25 +1481,29 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
       }
       break;
 
-    case A_PART_RANGE_OUTLINE:
+    case A_PART_RANGE_OUTLINE: {
+      gfx::Rect rc;
       switch (m_range.type()) {
         case Range::kNone: break; // Return empty rectangle
         case Range::kCels:
-          return
-            getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
-              getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd()));
-          // TODO theme specific
-          //.enlarge(2*jguiscale());
+          rc = getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
+            getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd()));
+          break;
         case Range::kFrames:
-          return
-            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
-              getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
+          rc = getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
+            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
+          break;
         case Range::kLayers:
-          return
-            getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
+          rc = getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
               getPartBounds(A_PART_LAYER, m_range.layerEnd()));
+          break;
       }
-      break;
+      int s = OUTLINE_WIDTH;
+      rc.enlarge(s);
+      if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
+      if (rc.y < bounds.y) rc.offset(0, s).inflate(0, -s);
+      return rc;
+    }
   }
 
   return gfx::Rect();
@@ -1452,8 +1570,8 @@ void Timeline::updateStatusBar()
   switch (m_hot_part) {
 
     case A_PART_HEADER_ONIONSKIN: {
-      ISettings* m_settings = UIContext::instance()->getSettings();
-      IDocumentSettings* docSettings = m_settings->getDocumentSettings(m_document);
+      ISettings* settings = UIContext::instance()->getSettings();
+      IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
       if (docSettings) {
         StatusBar::instance()->setStatusText(0, "Onionskin is %s",
           docSettings->getUseOnionskin() ? "enabled": "disabled");
@@ -1595,6 +1713,42 @@ void Timeline::setScroll(int x, int y)
   m_scroll_y = MID(0, y, max_scroll_y);
 
   invalidate();
+}
+
+bool Timeline::allLayersVisible()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (!m_layers[i]->isReadable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersInvisible()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (m_layers[i]->isReadable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersLocked()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (m_layers[i]->isWritable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersUnlocked()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (!m_layers[i]->isWritable())
+      return false;
+
+  return true;
 }
 
 int Timeline::getLayerIndex(const Layer* layer) const
@@ -1817,6 +1971,10 @@ void Timeline::dropFrames(DropOp op, const Range& drop)
 
 void Timeline::dropLayers(DropOp op, const Range& drop)
 {
+  ASSERT(m_clk_layer >= 0 && m_clk_layer < (int)m_layers.size());
+  if (m_clk_layer < 0)
+    return;
+
   if (m_layers[m_clk_layer]->isBackground()) {
     Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
     return;

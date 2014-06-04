@@ -5,6 +5,7 @@
 // Read LICENSE.txt for more information.
 
 // #define REPORT_EVENTS
+// #define DEBUG_PAINT_EVENTS
 // #define LIMIT_DISPATCH_TIME
 
 #ifdef HAVE_CONFIG_H
@@ -20,6 +21,10 @@
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+
+#ifdef DEBUG_PAINT_EVENTS
+#include "base/thread.h"
+#endif
 
 #ifdef REPORT_EVENTS
 #include <iostream>
@@ -290,7 +295,8 @@ void Manager::generateMouseMessages()
 
   // Mouse wheel
   if (jmouse_z(0) != jmouse_z(1))
-    handleMouseWheel(mousePos, currentMouseButtons(0), jmouse_z(0) - jmouse_z(1));
+    handleMouseWheel(mousePos, currentMouseButtons(0),
+      gfx::Point(0, jmouse_z(1) - jmouse_z(0)));
 
   // Mouse clicks
   if (jmouse_b(0) != jmouse_b(1)) {
@@ -300,10 +306,11 @@ void Manager::generateMouseMessages()
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
       ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
     MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
+    MouseButtons mouseButtons = (pressed ? currentMouseButtons(0): currentMouseButtons(1));
 
     // The message will include which button was pressed or released.
     // (This doesn't represent all buttons that are currently pushed.)
-    MouseButtons mouseButtons = (MouseButtons)
+    MouseButtons mouseButtonsDelta = (MouseButtons)
       (currentMouseButtons(0) ^ currentMouseButtons(1));
 
     //////////////////////////////////////////////////////////////////////
@@ -341,28 +348,22 @@ void Manager::generateMouseMessages()
         if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
           double_click_level = DOUBLE_CLICK_NONE;
         }
-        else if (double_click_buttons == mouseButtons) {
-          if (double_click_level == DOUBLE_CLICK_DOWN) {
-            double_click_level = DOUBLE_CLICK_UP;
-            double_click_ticks = current_ticks;
-          }
-        }
-        // Press other button, back to NONE
-        else {
-          double_click_level = DOUBLE_CLICK_NONE;
+        else if (double_click_level == DOUBLE_CLICK_DOWN) {
+          double_click_level = DOUBLE_CLICK_UP;
+          double_click_ticks = current_ticks;
         }
       }
     }
 
     switch (msgType) {
       case kMouseDownMessage:
-        handleMouseDown(mousePos, mouseButtons);
+        handleMouseDown(mousePos, mouseButtonsDelta);
         break;
       case kMouseUpMessage:
-        handleMouseUp(mousePos, mouseButtons);
+        handleMouseUp(mousePos, mouseButtonsDelta);
         break;
       case kDoubleClickMessage:
-        handleMouseDoubleClick(mousePos, mouseButtons);
+        handleMouseDoubleClick(mousePos, mouseButtonsDelta);
         break;
     }
   }
@@ -446,6 +447,8 @@ static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
 
 void Manager::generateMessagesFromSheEvents()
 {
+  she::Event lastMouseMoveEvent;
+
   // Events from "she" layer.
   she::Event sheEvent;
   for (;;) {
@@ -462,13 +465,35 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
+      case she::Event::MouseEnter: {
+        if (!mouse_events_from_she)
+          continue;
+
+        jmouse_set_cursor(kArrowCursor);
+        break;
+      }
+
+      case she::Event::MouseLeave: {
+        if (!mouse_events_from_she)
+          continue;
+
+        jmouse_set_cursor(kNoCursor);
+        setMouse(NULL);
+
+        _internal_no_mouse_position();
+        break;
+      }
+
       case she::Event::MouseMove: {
         if (!mouse_events_from_she)
           continue;
 
-        _internal_set_mouse_position(sheEvent.position());
-
-        handleMouseMove(sheEvent.position(), m_mouseButtons);
+        // TODO Currently we cannot handleMouseMove() for each
+        // she::Event::MouseMove as the UI library is not prepared yet
+        // to process more than one kMouseMoveMessage message for
+        // loop-cycle. The main problem are the functions to control
+        // scroll (Window::moveWindow() and Widget::scrollRegion()).
+        lastMouseMoveEvent = sheEvent;
         break;
       }
 
@@ -501,7 +526,7 @@ void Manager::generateMessagesFromSheEvents()
           continue;
 
         MouseButtons clickedButton = mouse_buttons_from_she_to_ui(sheEvent);
-        handleMouseUp(sheEvent.position(), clickedButton);
+        handleMouseDoubleClick(sheEvent.position(), clickedButton);
         break;
       }
 
@@ -509,10 +534,16 @@ void Manager::generateMessagesFromSheEvents()
         if (!mouse_events_from_she)
           continue;
 
-        handleMouseWheel(sheEvent.position(), m_mouseButtons, sheEvent.delta());
+        handleMouseWheel(sheEvent.position(), m_mouseButtons, sheEvent.wheelDelta());
         break;
       }
     }
+  }
+
+  if (lastMouseMoveEvent.type() != she::Event::None) {
+    _internal_set_mouse_position(lastMouseMoveEvent.position());
+
+    handleMouseMove(lastMouseMoveEvent.position(), m_mouseButtons);
   }
 }
 
@@ -566,16 +597,19 @@ void Manager::handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButton
 
 void Manager::handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons)
 {
-  enqueueMessage(newMouseMessage(kDoubleClickMessage,
-      (capture_widget ? capture_widget: mouse_widget),
-      mousePos, mouseButtons));
+  Widget* dst = (capture_widget ? capture_widget: mouse_widget);
+  if (dst) {
+    enqueueMessage(newMouseMessage(kDoubleClickMessage,
+        dst, mousePos, mouseButtons));
+  }
 }
 
-void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, int delta)
+void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, const gfx::Point& wheelDelta)
 {
-  enqueueMessage(newMouseMessage(kMouseWheelMessage,
+  enqueueMessage(newMouseMessage(
+      kMouseWheelMessage,
       (capture_widget ? capture_widget: mouse_widget),
-      mousePos, mouseButtons, delta));
+      mousePos, mouseButtons, wheelDelta));
 }
 
 // Handles Z order: Send the window to top (only when you click in a
@@ -1111,15 +1145,38 @@ void Manager::onResize(ResizeEvent& ev)
   gfx::Rect new_pos = ev.getBounds();
   setBoundsQuietly(new_pos);
 
-  // Offset for all windows
   int dx = new_pos.x - old_pos.x;
   int dy = new_pos.y - old_pos.y;
+  int dw = new_pos.w - old_pos.w;
+  int dh = new_pos.h - old_pos.h;
 
   UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-    gfx::Rect cpos = child->getBounds();
+    Window* window = static_cast<Window*>(*it);
+    if (window->isDesktop()) {
+      window->setBounds(new_pos);
+      break;
+    }
+
+    gfx::Rect cpos = window->getBounds();
+    int cx = cpos.x+cpos.w/2;
+    int cy = cpos.y+cpos.h/2;
+
+    if (cx > old_pos.x+old_pos.w*3/5) {
+      cpos.x += dw;
+    }
+    else if (cx > old_pos.x+old_pos.w*2/5) {
+      cpos.x += dw / 2;
+    }
+
+    if (cy > old_pos.y+old_pos.h*3/5) {
+      cpos.y += dh;
+    }
+    else if (cy > old_pos.y+old_pos.h*2/5) {
+      cpos.y += dh / 2;
+    }
+
     cpos.offset(dx, dy);
-    child->setBounds(cpos);
+    window->setBounds(cpos);
   }
 }
 
@@ -1269,6 +1326,16 @@ void Manager::pumpQueue()
                   << paintMsg->rect().h << ")"
                   << std::endl;
 #endif
+
+#ifdef DEBUG_PAINT_EVENTS
+        rectfill(screen,
+          SCREEN_W*paintMsg->rect().x/JI_SCREEN_W,
+          SCREEN_H*paintMsg->rect().y/JI_SCREEN_H,
+          SCREEN_W*(paintMsg->rect().x+paintMsg->rect().w)/JI_SCREEN_W-1,
+          SCREEN_H*(paintMsg->rect().y+paintMsg->rect().h)/JI_SCREEN_H-1,
+          makecol(0, 0, 255));
+        base::this_thread::sleep_for(0.002);
+#endif
       }
 
       // Call the message handler
@@ -1385,9 +1452,10 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 
 // static
 Message* Manager::newMouseMessage(MessageType type,
-  Widget* widget, gfx::Point mousePos, MouseButtons buttons, int delta)
+  Widget* widget, const gfx::Point& mousePos,
+  MouseButtons buttons, const gfx::Point& wheelDelta)
 {
-  Message* msg = new MouseMessage(type, buttons, mousePos, delta);
+  Message* msg = new MouseMessage(type, buttons, mousePos, wheelDelta);
 
   if (widget != NULL)
     msg->addRecipient(widget);

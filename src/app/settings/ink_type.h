@@ -29,7 +29,8 @@ namespace app {
   enum InkType {
     kDefaultInk,
     kOpaqueInk,
-    kPutAlphaInk,
+    kSetAlphaInk,
+    kLockAlphaInk,
     kMergeInk,
     kShadingInk,
     kReplaceInk,

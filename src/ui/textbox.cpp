@@ -22,7 +22,7 @@
 
 namespace ui {
 
-TextBox::TextBox(const base::string& text, int align)
+TextBox::TextBox(const std::string& text, int align)
  : Widget(kTextBoxWidget)
 {
   setFocusStop(true);
@@ -134,7 +134,7 @@ bool TextBox::onProcessMessage(Message* msg)
       if (view) {
         gfx::Point scroll = view->getViewScroll();
 
-        scroll.y += -static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * getTextHeight()*3;
 
         view->setViewScroll(scroll);
       }

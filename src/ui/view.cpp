@@ -49,6 +49,11 @@ void View::attachToView(Widget* viewable_widget)
   m_viewport.addChild(viewable_widget);
 }
 
+Widget* View::attachedWidget()
+{
+  return UI_FIRST_WIDGET(m_viewport.getChildren());
+}
+
 void View::makeVisibleAllScrollableArea()
 {
   Size reqSize = m_viewport.calculateNeededSize();
@@ -183,6 +188,8 @@ void View::setViewScroll(const Point& pt)
   m_scrollbar_v.setPos(newScroll.y);
 
   m_viewport.layout();
+
+  onScrollChange();
 }
 
 void View::updateView()
@@ -266,6 +273,11 @@ void View::onPreferredSize(PreferredSizeEvent& ev)
 void View::onPaint(PaintEvent& ev)
 {
   getTheme()->paintView(ev);
+}
+
+void View::onScrollChange()
+{
+  // Do nothing
 }
 
 } // namespace ui

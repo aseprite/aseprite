@@ -16,19 +16,19 @@
 
 namespace base {
 
-template<> int convert_to(const string& from)
+template<> int convert_to(const std::string& from)
 {
   return std::strtol(from.c_str(), NULL, 10);
 }
 
-template<> string convert_to(const int& from)
+template<> std::string convert_to(const int& from)
 {
   char buf[32];
   std::sprintf(buf, "%d", from);
   return buf;
 }
 
-template<> Sha1 convert_to(const string& from)
+template<> Sha1 convert_to(const std::string& from)
 {
   std::vector<uint8_t> digest(Sha1::HashSize);
 
@@ -42,10 +42,10 @@ template<> Sha1 convert_to(const string& from)
   return Sha1(digest);
 }
 
-template<> string convert_to(const Sha1& from)
+template<> std::string convert_to(const Sha1& from)
 {
   char buf[3];
-  string res;
+  std::string res;
   res.reserve(2*Sha1::HashSize);
 
   for(int c=0; c<Sha1::HashSize; ++c) {
@@ -56,14 +56,14 @@ template<> string convert_to(const Sha1& from)
   return res;
 }
 
-template<> Version convert_to(const string& from)
+template<> Version convert_to(const std::string& from)
 {
   Version result;
   int i = 0;
   int j = 0;
-  while (j != string::npos) {
+  while (j != std::string::npos) {
     j = from.find('.', i);
-    string digitString = from.substr(i, j - i);
+    std::string digitString = from.substr(i, j - i);
     int digit = convert_to<int>(digitString);
     result.addDigit(digit);
     i = j+1;
@@ -71,13 +71,13 @@ template<> Version convert_to(const string& from)
   return result;
 }
 
-template<> string convert_to(const Version& from)
+template<> std::string convert_to(const Version& from)
 {
-  string result;
+  std::string result;
   result.reserve(3*from.size());
 
   for (size_t i=0; i<from.size(); ++i) {
-    result += convert_to<string>(from[i]);
+    result += convert_to<std::string>(from[i]);
     if (i < from.size()-1)
       result += ".";
   }

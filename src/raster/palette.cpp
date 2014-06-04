@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "raster/palette.h"
 
 #include "base/path.h"
+#include "base/string.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/conversion_alleg.h"
@@ -406,7 +407,7 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 
 Palette* Palette::load(const char *filename)
 {
-  base::string ext = base::string_to_lower(base::get_file_extension(filename));
+  std::string ext = base::string_to_lower(base::get_file_extension(filename));
   Palette* pal = NULL;
 
   if (ext == "png" ||
@@ -440,7 +441,7 @@ Palette* Palette::load(const char *filename)
 
 bool Palette::save(const char *filename) const
 {
-  base::string ext = base::string_to_lower(base::get_file_extension(filename));
+  std::string ext = base::string_to_lower(base::get_file_extension(filename));
   bool success = false;
 
   if (ext == "png" ||
@@ -471,6 +472,15 @@ bool Palette::save(const char *filename) const
   return success;
 }
 
+int Palette::findExactMatch(int r, int g, int b) const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i)
+    if (getEntry(i) == rgba(r, g, b, 255))
+      return i;
+
+  return -1;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Based on Allegro's bestfit_color
 
@@ -488,7 +498,7 @@ static void bestfit_init()
   }
 }
 
-int Palette::findBestfit(int r, int g, int b) const
+int Palette::findBestfit(int r, int g, int b, int mask_index) const
 {
 #ifdef __GNUC__
   register int bestfit asm("%eax");
@@ -511,7 +521,7 @@ int Palette::findBestfit(int r, int g, int b) const
   g >>= 3;
   b >>= 3;
 
-  i = 1;
+  i = 0;
   while (i < size()) {
     color_t rgb = m_colors[i];
 
@@ -520,7 +530,7 @@ int Palette::findBestfit(int r, int g, int b) const
       coldiff += (col_diff + 128) [ ((rgba_getr(rgb)>>3) - r) & 0x7F ];
       if (coldiff < lowest) {
         coldiff += (col_diff + 256) [ ((rgba_getb(rgb)>>3) - b) & 0x7F ];
-        if (coldiff < lowest) {
+        if (coldiff < lowest && i != mask_index) {
           bestfit = i;
           if (coldiff == 0)
             return bestfit;

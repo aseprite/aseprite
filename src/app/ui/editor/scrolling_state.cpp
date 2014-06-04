@@ -74,11 +74,6 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool ScrollingState::onMouseWheel(Editor* editor, MouseMessage* msg)
-{
-  return false;
-}
-
 bool ScrollingState::onSetCursor(Editor* editor)
 {
   editor->hideDrawingCursor();

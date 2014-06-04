@@ -207,7 +207,7 @@ StatusBar::StatusBar()
     ICON_NEW(m_b_last, PART_ANI_LAST, ACTION_LAST);
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
-    jwidget_set_min_size(m_slider, JI_SCREEN_W/5, 0);
+    m_slider->setMinSize(gfx::Size(JI_SCREEN_W/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
     box2->noBorderNoChildSpacing();
@@ -371,14 +371,6 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   }
 }
 
-void StatusBar::showNotification(const char* text, const char* link)
-{
-  m_linkLabel->setText(text);
-  m_linkLabel->setUrl(link);
-  layout();
-  invalidate();
-}
-
 //////////////////////////////////////////////////////////////////////
 // Progress bars stuff
 
@@ -507,10 +499,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
 
     // Draw color
     draw_color_button(g, gfx::Rect(x, rc.y, 32*jguiscale(), rc.h),
-      true, true, true, true,
-      true, true, true, true,
-      app_get_current_pixel_format(), m_color,
-      false, false);
+      m_color, false, false);
 
     x += (32+4)*jguiscale();
 

@@ -294,8 +294,11 @@ private:
       case kOpaqueInk:
         id = WellKnownInks::PaintOpaque;
         break;
-      case kPutAlphaInk:
-        id = WellKnownInks::PaintPutAlpha;
+      case kSetAlphaInk:
+        id = WellKnownInks::PaintSetAlpha;
+        break;
+      case kLockAlphaInk:
+        id = WellKnownInks::PaintLockAlpha;
         break;
       case kMergeInk:
         id = WellKnownInks::Paint;

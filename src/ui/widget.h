@@ -8,9 +8,6 @@
 #define UI_WIDGET_H_INCLUDED
 #pragma once
 
-#include <string>
-
-#include "base/string.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -23,10 +20,11 @@
 #include "ui/widget_type.h"
 #include "ui/widgets_list.h"
 
+#include <string>
+
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
 
 struct FONT;
-struct BITMAP;
 
 namespace ui {
 
@@ -40,15 +38,6 @@ namespace ui {
   class SaveLayoutEvent;
   class Theme;
   class Window;
-
-  WidgetType register_widget_type();
-
-  // Position and geometry
-
-  void jwidget_set_min_size(Widget* widget, int w, int h);
-  void jwidget_set_max_size(Widget* widget, int w, int h);
-
-  //////////////////////////////////////////////////////////////////////
 
   class Widget : public Component {
   public:
@@ -88,7 +77,7 @@ namespace ui {
 
     WidgetType getType() const { return this->type; }
 
-    const base::string& getId() const { return m_id; }
+    const std::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
 
     int getAlign() const { return m_align; }
@@ -98,13 +87,13 @@ namespace ui {
 
     bool hasText() const { return (flags & JI_HASTEXT) == JI_HASTEXT; }
 
-    const base::string& getText() const { return m_text; }
+    const std::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
     size_t getTextLength() const { return m_text.size(); }
-    void setText(const base::string& text);
+    void setText(const std::string& text);
     void setTextf(const char* text, ...);
-    void setTextQuiet(const base::string& text);
+    void setTextQuiet(const std::string& text);
 
     int getTextWidth() const;
     int getTextHeight() const;
@@ -265,6 +254,9 @@ namespace ui {
     // generating recursive onResize() events.
     void setBoundsQuietly(const gfx::Rect& rc);
 
+    void setMinSize(const gfx::Size& sz);
+    void setMaxSize(const gfx::Size& sz);
+
     gfx::Border getBorder() const;
     void setBorder(const gfx::Border& border);
 
@@ -382,10 +374,10 @@ namespace ui {
     void paint(Graphics* graphics, const gfx::Region& drawRegion);
     bool paintEvent(Graphics* graphics);
 
-    base::string m_id;            // Widget's id
+    std::string m_id;            // Widget's id
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
-    base::string m_text;          // Widget text
+    std::string m_text;          // Widget text
     struct FONT *m_font;          // Text font type
     ui::Color m_bgColor;          // Background color
     gfx::Rect m_bounds;
@@ -396,6 +388,8 @@ namespace ui {
     bool m_doubleBuffered;
     bool m_transparent;
   };
+
+  WidgetType register_widget_type();
 
 } // namespace ui
 

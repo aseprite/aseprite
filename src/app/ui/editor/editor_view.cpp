@@ -49,6 +49,7 @@ EditorView::EditorView(EditorView::Type type)
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
 
   setBorder(gfx::Border(l, t, r, b));
+  setBgColor(ui::rgba(0, 0, 0));
   setupScrollbars();
 
   UIContext::instance()->settings()->addObserver(this);
@@ -62,8 +63,7 @@ EditorView::~EditorView()
 void EditorView::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
-  Widget* viewport = getViewport();
-  Widget* child = UI_FIRST_WIDGET(viewport->getChildren());
+  Widget* child = attachedWidget();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool selected = false;
 
@@ -84,7 +84,7 @@ void EditorView::onPaint(PaintEvent& ev)
   theme->draw_bounds_nw(g, getClientBounds(),
     selected ? PART_EDITOR_SELECTED_NW:
     PART_EDITOR_NORMAL_NW,
-    ColorNone);
+    getBgColor());
 }
 
 void EditorView::onResize(ResizeEvent& ev)
@@ -93,6 +93,16 @@ void EditorView::onResize(ResizeEvent& ev)
 
   setBoundsQuietly(ev.getBounds());
   updateView();
+}
+
+void EditorView::onScrollChange()
+{
+  View::onScrollChange();
+
+  Editor* editor = static_cast<Editor*>(attachedWidget());
+  ASSERT(editor != NULL);
+  if (editor)
+    editor->notifyScrollChanged();
 }
 
 void EditorView::onSetShowSpriteEditorScrollbars(bool state)
@@ -106,9 +116,8 @@ void EditorView::setupScrollbars()
       !UIContext::instance()->settings()->getShowSpriteEditorScrollbars())
     hideScrollBars();
   else {
-    // TODO hardcoded scroll bar width should be get from skin.xml file
-    getHorizontalBar()->setBarWidth(6*jguiscale());
-    getVerticalBar()->setBarWidth(6*jguiscale());
+    getHorizontalBar()->setBarWidth(kEditorViewScrollbarWidth*jguiscale());
+    getVerticalBar()->setBarWidth(kEditorViewScrollbarWidth*jguiscale());
 
     setup_mini_look(getHorizontalBar());
     setup_mini_look(getVerticalBar());

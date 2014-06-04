@@ -15,11 +15,11 @@
       <separator text="Color Mode:" left="true" horizontal="true" />
       <box vertical="true" homogeneous="true" childspacing="0">
         <box horizontal="true">
-          <radio id="radio3" text="&amp;Indexed with " group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
-          <entry id="colors" maxsize="8" tooltip="Maximum number of colors&#10;(only for Indexed images)&#10;&#10;This field cannot be modified in this beta version." disabled="true" />
-          <label text="Colors" />
+          <radio id="radio3" text="&amp;Indexed color" group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
+          <!-- <entry id="colors" maxsize="8" tooltip="Maximum number of colors&#10;(only for Indexed images)&#10;&#10;This field cannot be modified in this beta version." disabled="true" /> -->
+          <!-- <label text="Colors" /> -->
         </box>
-        <radio id="radio1" text="&amp;RGB Color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
+        <radio id="radio1" text="&amp;RGB color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
         <radio id="radio2" text="&amp;Grayscale" group="1" tooltip="Value and Alpha&#10;(16 bits per pixel)" />
       </box>
 

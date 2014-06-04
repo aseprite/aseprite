@@ -101,7 +101,7 @@ void NewLayerCommand::onExecute(Context* context)
     base::UniquePtr<Window> window(app::load_widget<Window>("new_layer.xml", "new_layer"));
     Widget* name_widget = app::find_widget<Widget>(window, "name");
     name_widget->setText(name.c_str());
-    jwidget_set_min_size(name_widget, 128, 0);
+    name_widget->setMinSize(gfx::Size(128, 0));
 
     window->openWindowInForeground();
 

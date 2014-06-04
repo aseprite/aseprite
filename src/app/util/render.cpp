@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -376,9 +376,10 @@ void RenderEngine::setPreviewImage(const Layer* layer, Image* image)
    zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
  */
 Image* RenderEngine::renderSprite(int source_x, int source_y,
-                                  int width, int height,
-                                  FrameNumber frame, int zoom,
-                                  bool draw_tiled_bg)
+  int width, int height,
+  FrameNumber frame, int zoom,
+  bool draw_tiled_bg,
+  bool enable_onionskin)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = m_sprite->getBackgroundLayer();
@@ -417,50 +418,44 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   else
     clear_image(image, bg_color);
 
-  // Onion-skin feature: draw the previous frame
+  // Draw the current frame.
+  global_opacity = 255;
+  renderLayer(m_sprite->getFolder(), image,
+    source_x, source_y, frame, zoom, zoomed_func, true, true, -1);
+
+  // Onion-skin feature: Draw previous/next frames with different
+  // opacity (<255) (it is the onion-skinning)
   IDocumentSettings* docSettings = UIContext::instance()
     ->getSettings()->getDocumentSettings(m_document);
 
-  if (docSettings->getUseOnionskin()) {
-    // Draw background layer of the current frame with opacity=255
-    global_opacity = 255;
-    renderLayer(m_sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func,
-                true, false);
+  if (enable_onionskin & docSettings->getUseOnionskin()) {
+    int prevs = docSettings->getOnionskinPrevFrames();
+    int nexts = docSettings->getOnionskinNextFrames();
+    int opacity_base = docSettings->getOnionskinOpacityBase();
+    int opacity_step = docSettings->getOnionskinOpacityStep();
 
-    // Draw transparent layers of the previous/next frames with different opacity (<255) (it is the onion-skinning)
-    {
-      int prevs = docSettings->getOnionskinPrevFrames();
-      int nexts = docSettings->getOnionskinNextFrames();
-      int opacity_base = docSettings->getOnionskinOpacityBase();
-      int opacity_step = docSettings->getOnionskinOpacityStep();
+    for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
+      if (f == frame || f < 0 || f > m_sprite->getLastFrame())
+        continue;
+      else if (f < frame)
+        global_opacity = opacity_base - opacity_step * ((frame - f)-1);
+      else
+        global_opacity = opacity_base - opacity_step * ((f - frame)-1);
 
-      for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
-        if (f == frame || f < 0 || f > m_sprite->getLastFrame())
-          continue;
-        else if (f < frame)
-          global_opacity = opacity_base - opacity_step * ((frame - f)-1);
-        else
-          global_opacity = opacity_base - opacity_step * ((f - frame)-1);
+      if (global_opacity > 0) {
+        global_opacity = MID(0, global_opacity, 255);
 
-        if (global_opacity > 0)
-          renderLayer(m_sprite->getFolder(), image,
-                      source_x, source_y, f, zoom, zoomed_func,
-                      false, true);
+        int blend_mode = -1;
+        if (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_Merge)
+          blend_mode = BLEND_MODE_NORMAL;
+        else if (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_RedBlueTint)
+          blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
+
+        renderLayer(m_sprite->getFolder(), image,
+          source_x, source_y, f, zoom, zoomed_func,
+          true, true, blend_mode);
       }
     }
-
-    // Draw transparent layers of the current frame with opacity=255
-    global_opacity = 255;
-    renderLayer(m_sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func,
-                false, true);
-  }
-  // Onion-skin is disabled: just draw the current frame
-  else {
-    renderLayer(m_sprite->getFolder(), image,
-                source_x, source_y, frame, zoom, zoomed_func,
-                true, true);
   }
 
   return image;
@@ -560,13 +555,15 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
   (*zoomed_func)(rgb_image, src_image, pal, x, y, 255, BLEND_MODE_NORMAL, zoom);
 }
 
-void RenderEngine::renderLayer(const Layer* layer,
-                               Image *image,
-                               int source_x, int source_y,
-                               FrameNumber frame, int zoom,
-                               void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
-                               bool render_background,
-                               bool render_transparent)
+void RenderEngine::renderLayer(
+  const Layer* layer,
+  Image *image,
+  int source_x, int source_y,
+  FrameNumber frame, int zoom,
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+  bool render_background,
+  bool render_transparent,
+  int blend_mode)
 {
   // we can't read from this layer
   if (!layer->isReadable())
@@ -606,10 +603,13 @@ void RenderEngine::renderLayer(const Layer* layer,
           src_image->setMaskColor(m_sprite->getTransparentColor());
 
           (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
-                         (cel->getX() << zoom) - source_x,
-                         (cel->getY() << zoom) - source_y,
-                         output_opacity,
-                         static_cast<const LayerImage*>(layer)->getBlendMode(), zoom);
+            (cel->getX() << zoom) - source_x,
+            (cel->getY() << zoom) - source_y,
+            output_opacity,
+            blend_mode < 0 ?
+              static_cast<const LayerImage*>(layer)->getBlendMode():
+              blend_mode,
+            zoom);
         }
       }
       break;
@@ -621,10 +621,11 @@ void RenderEngine::renderLayer(const Layer* layer,
 
       for (; it != end; ++it) {
         renderLayer(*it, image,
-                    source_x, source_y,
-                    frame, zoom, zoomed_func,
-                    render_background,
-                    render_transparent);
+          source_x, source_y,
+          frame, zoom, zoomed_func,
+          render_background,
+          render_transparent,
+          blend_mode);
       }
       break;
     }

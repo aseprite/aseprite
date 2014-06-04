@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,13 +82,13 @@ namespace app {
 
     void dropImageTemporarily();
     void dropImage();
-    void discardImage();
+    void discardImage(bool commit = true);
     bool isDragging() const;
 
     gfx::Rect getImageBounds();
     gfx::Size getInitialImageSize() const;
 
-    void setMaskColor(uint32_t mask_color);
+    void setMaskColor(color_t mask_color);
 
     // Flips the image and mask in the given direction in "flipType".
     // Flip Horizontally/Vertically commands are replaced calling this
@@ -104,6 +104,7 @@ namespace app {
   private:
     void redrawExtraImage();
     void redrawCurrentMask();
+    void drawImage(raster::Image* dst, const gfx::Point& pt);
     void drawParallelogram(raster::Image* dst, raster::Image* src,
       const gfx::Transformation::Corners& corners,
       const gfx::Point& leftTop);
@@ -124,6 +125,7 @@ namespace app {
     gfx::Transformation m_currentData;
     Mask* m_initialMask;
     Mask* m_currentMask;
+    color_t m_maskColor;
   };
 
   inline PixelsMovement::MoveModifier& operator|=(PixelsMovement::MoveModifier& a,
