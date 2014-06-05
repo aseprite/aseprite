@@ -6,6 +6,9 @@
 
 # Hard to reproduce bugs
 
+* sometimes, when the background layer is in a strange state:
+  * two layers, hide background, the extra cel/brush preview isn't visible in the mini-editor
+  * timeline: can move background
 * does lock alpha work correctly?
 * does onscrollchange notification calls onscrollchange notification?
 * random clicks on toolbar crashes the program
