@@ -6,6 +6,7 @@
 
 # Hard to reproduce bugs
 
+* add PRINTFs to observers, there is something wrong with save as
 * sometimes, when the background layer is in a strange state:
   * two layers, hide background, the extra cel/brush preview isn't visible in the mini-editor
   * timeline: can move background
