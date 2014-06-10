@@ -20,6 +20,7 @@
 #define RASTER_STOCK_H_INCLUDED
 #pragma once
 
+#include "base/disable_copying.h"
 #include "raster/object.h"
 #include "raster/pixel_format.h"
 
@@ -28,17 +29,16 @@
 namespace raster {
 
   class Image;
+  class Sprite;
 
   typedef std::vector<Image*> ImagesList;
 
   class Stock : public Object {
   public:
-    Stock(PixelFormat format);
-    Stock(const Stock& stock);
+    Stock(Sprite* sprite, PixelFormat format);
     virtual ~Stock();
 
-    PixelFormat getPixelFormat() const;
-    void setPixelFormat(PixelFormat format);
+    Sprite* getSprite() const;
 
     // Returns the number of image in the stock.
     int size() const {
@@ -66,9 +66,15 @@ namespace raster {
     //
     void replaceImage(int index, Image* image);
 
-    //private: TODO uncomment this line
+  private:
+    void fixupImage(Image* image);
+
     PixelFormat m_format; // Type of images (all images in the stock must be of this type).
     ImagesList m_image;   // The images-array where the images are.
+    Sprite* m_sprite;
+
+    Stock();
+    DISABLE_COPYING(Stock);
   };
 
 } // namespace raster

@@ -325,7 +325,7 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
         src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
         ASSERT(src_image != NULL);
 
-        src_image->setMaskColor(layer->getSprite()->getTransparentColor());
+        ASSERT(src_image->getMaskColor() == layer->getSprite()->getTransparentColor());
 
         composite_image(image, src_image,
                         cel->getX() + x,
