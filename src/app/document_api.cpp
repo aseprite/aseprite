@@ -56,7 +56,6 @@
 #include "app/undoers/set_sprite_pixel_format.h"
 #include "app/undoers/set_sprite_size.h"
 #include "app/undoers/set_sprite_transparent_color.h"
-#include "app/undoers/set_stock_pixel_format.h"
 #include "app/undoers/set_total_frames.h"
 #include "base/unique_ptr.h"
 #include "raster/algorithm/flip_image.h"
@@ -160,12 +159,6 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
 
   if (sprite->getPixelFormat() == newFormat)
     return;
-
-  // Change pixel format of the stock of images.
-  if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::SetStockPixelFormat(getObjects(), sprite->getStock()));
-
-  sprite->getStock()->setPixelFormat(newFormat);
 
   // TODO Review this, why we use the palette in frame 0?
   FrameNumber frame(0);

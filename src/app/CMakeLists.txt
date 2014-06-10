@@ -234,7 +234,6 @@ add_library(app-lib
   undoers/set_sprite_pixel_format.cpp
   undoers/set_sprite_size.cpp
   undoers/set_sprite_transparent_color.cpp
-  undoers/set_stock_pixel_format.cpp
   undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp

@@ -50,7 +50,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
-  m_stock = new Stock(format);
+  m_stock = new Stock(this, format);
   m_folder = new LayerFolder(this);
 
   // Generate palette
@@ -136,6 +136,7 @@ void Sprite::setTransparentColor(color_t color)
 {
   m_transparentColor = color;
 
+  // Change the mask color of all images.
   for (int i=0; i<m_stock->size(); i++) {
     Image* image = m_stock->getImage(i);
     if (image != NULL)

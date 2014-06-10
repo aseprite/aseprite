@@ -600,7 +600,7 @@ void RenderEngine::renderLayer(
           output_opacity = MID(0, cel->getOpacity(), 255);
           output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-          src_image->setMaskColor(m_sprite->getTransparentColor());
+          ASSERT(src_image->getMaskColor() == m_sprite->getTransparentColor());
 
           (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
             (cel->getX() << zoom) - source_x,

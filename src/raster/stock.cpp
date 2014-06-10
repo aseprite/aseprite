@@ -23,42 +23,19 @@
 #include "raster/stock.h"
 
 #include "raster/image.h"
+#include "raster/sprite.h"
 
 #include <cstring>
 
 namespace raster {
 
-Stock::Stock(PixelFormat format)
+Stock::Stock(Sprite* sprite, PixelFormat format)
   : Object(OBJECT_STOCK)
+  , m_sprite(sprite)
   , m_format(format)
 {
   // Image with index=0 is always NULL.
   m_image.push_back(NULL);
-}
-
-Stock::Stock(const Stock& stock)
-  : Object(stock)
-  , m_format(stock.getPixelFormat())
-{
-  try {
-    for (int i=0; i<stock.size(); ++i) {
-      if (!stock.getImage(i))
-        addImage(NULL);
-      else {
-        Image* image_copy = Image::createCopy(stock.getImage(i));
-        addImage(image_copy);
-      }
-    }
-  }
-  catch (...) {
-    for (int i=0; i<size(); ++i) {
-      if (getImage(i))
-        delete getImage(i);
-    }
-    throw;
-  }
-
-  ASSERT(size() == stock.size());
 }
 
 Stock::~Stock()
@@ -69,14 +46,9 @@ Stock::~Stock()
   }
 }
 
-PixelFormat Stock::getPixelFormat() const
+Sprite* Stock::getSprite() const
 {
-  return m_format;
-}
-
-void Stock::setPixelFormat(PixelFormat pixelFormat)
-{
-  m_format = pixelFormat;
+  return m_sprite;
 }
 
 Image* Stock::getImage(int index) const
@@ -97,6 +69,8 @@ int Stock::addImage(Image* image)
     throw;
   }
   m_image[i] = image;
+
+  fixupImage(image);
   return i;
 }
 
@@ -115,6 +89,15 @@ void Stock::replaceImage(int index, Image* image)
 {
   ASSERT((index > 0) && (index < size()));
   m_image[index] = image;
+
+  fixupImage(image);
+}
+
+void Stock::fixupImage(Image* image)
+{
+  // Change the mask color of the added image to the sprite mask color.
+  if (image)
+    image->setMaskColor(m_sprite->getTransparentColor());
 }
 
 } // namespace raster

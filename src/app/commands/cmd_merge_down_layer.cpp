@@ -86,24 +86,25 @@ void MergeDownLayerCommand::onExecute(Context* context)
   UndoTransaction undo(writer.context(), "Merge Down Layer", undo::ModifyDocument);
   Layer* src_layer = writer.layer();
   Layer* dst_layer = src_layer->getPrevious();
-  Cel *src_cel, *dst_cel;
-  Image *src_image;
-  base::UniquePtr<Image> dst_image;
   int index;
 
   for (FrameNumber frpos(0); frpos<sprite->getTotalFrames(); ++frpos) {
     // Get frames
-    src_cel = static_cast<LayerImage*>(src_layer)->getCel(frpos);
-    dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(frpos);
+    Cel* src_cel = static_cast<LayerImage*>(src_layer)->getCel(frpos);
+    Cel* dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(frpos);
 
     // Get images
+    Image* src_image;
     if (src_cel != NULL)
       src_image = sprite->getStock()->getImage(src_cel->getImage());
     else
       src_image = NULL;
 
+    Image* dst_image;
     if (dst_cel != NULL)
-      dst_image.reset(sprite->getStock()->getImage(dst_cel->getImage()));
+      dst_image = sprite->getStock()->getImage(dst_cel->getImage());
+    else
+      dst_image = NULL;
 
     // With source image?
     if (src_image != NULL) {
@@ -112,10 +113,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
         // Copy this cel to the destination layer...
 
         // Creating a copy of the image
-        dst_image.reset(Image::createCopy(src_image));
+        dst_image = Image::createCopy(src_image);
 
         // Adding it in the stock of images
-        index = sprite->getStock()->addImage(dst_image.release());
+        index = sprite->getStock()->addImage(dst_image);
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::AddImage(
               undo.getObjects(), sprite->getStock(), index));
@@ -133,7 +134,6 @@ void MergeDownLayerCommand::onExecute(Context* context)
       // With destination
       else {
         int x1, y1, x2, y2;
-        Image *new_image;
 
         // Merge down in the background layer
         if (dst_layer->isBackground()) {
@@ -152,10 +152,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         raster::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
 
-        new_image = raster::crop_image(dst_image,
-                                       x1-dst_cel->getX(),
-                                       y1-dst_cel->getY(),
-                                       x2-x1+1, y2-y1+1, bgcolor);
+        Image* new_image = raster::crop_image(dst_image,
+          x1-dst_cel->getX(),
+          y1-dst_cel->getY(),
+          x2-x1+1, y2-y1+1, bgcolor);
 
         // Merge src_image in new_image
         raster::composite_image(new_image, src_image,
@@ -174,6 +174,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
               sprite->getStock(), dst_cel->getImage()));
 
         sprite->getStock()->replaceImage(dst_cel->getImage(), new_image);
+        delete dst_image;
       }
     }
   }
