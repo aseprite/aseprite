@@ -91,7 +91,10 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
     // Create the image
     m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(),
                                m_sprite->getHeight());
-    clear_image(m_celImage, m_sprite->getTransparentColor());
+
+    color_t bg = m_sprite->getTransparentColor();
+    m_celImage->setMaskColor(bg);
+    clear_image(m_celImage, bg);
 
     // Create the cel
     m_cel = new Cel(location.frame(), 0);
