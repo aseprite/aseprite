@@ -27,7 +27,7 @@
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
 #include "base/compiler_specific.h"
-#include "base/signal.h"
+#include "base/connection.h"
 #include "gfx/fwd.h"
 #include "raster/frame_number.h"
 #include "ui/base.h"
@@ -260,9 +260,8 @@ namespace app {
     // signal (because the editor can be destroyed and the application
     // still continue running and generating CurrentToolChange
     // signals).
-    Slot0<void>* m_currentToolChangeSlot;
-
-    Slot1<void, const app::Color&>* m_fgColorChangeSlot;
+    ScopedConnection m_currentToolChangeConn;
+    ScopedConnection m_fgColorChangeConn;
 
     EditorObservers m_observers;
 

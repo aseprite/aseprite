@@ -73,7 +73,6 @@ using namespace ui;
 class PaletteEntryEditor : public Window {
 public:
   PaletteEntryEditor();
-  ~PaletteEntryEditor();
 
   void setColor(const app::Color& color);
 
@@ -134,7 +133,7 @@ private:
   // PaletteEntryEditor instance.
   bool m_selfPalChange;
 
-  Signal0<void>::SlotType* m_palChangeSlot;
+  ScopedConnection m_palChangeConn;
 
   // Internal-clipboard to copy & paste colors between palettes. It's
   // used in onCopy/PasteColorsClick.
@@ -327,15 +326,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   App::instance()->Exit.connect(&PaletteEntryEditor::onExit, this);
 
   // Hook for palette change to redraw the palette editor frame
-  m_palChangeSlot =
+  m_palChangeConn =
     App::instance()->PaletteChange.connect(&PaletteEntryEditor::onPalChange, this);
 
   initTheme();
-}
-
-PaletteEntryEditor::~PaletteEntryEditor()
-{
-  App::instance()->PaletteChange.disconnect(m_palChangeSlot);
 }
 
 void PaletteEntryEditor::setColor(const app::Color& color)

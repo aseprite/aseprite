@@ -93,7 +93,6 @@ ToolBar* ToolBar::m_instance = NULL;
 ToolBar::ToolBar()
   : Widget(kGenericWidget)
   , m_tipTimer(300, this)
-  , m_closeSlot(NULL)
   , m_openedRecently(false)
 {
   m_instance = this;
@@ -415,11 +414,8 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
     if (m_currentStrip && m_currentStrip->toolGroup() == tool_group)
       return;
 
-    if (m_closeSlot) {
-      m_popupWindow->Close.disconnect(m_closeSlot);
-      delete m_closeSlot;
-      m_closeSlot = NULL;
-    }
+    if (m_closeConn)
+      m_closeConn.disconnect();
 
     onClosePopup();
       
@@ -446,7 +442,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
 
   // In case this tool contains more than just one tool, show the popup window
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickOutsideHotRegion);
-  m_closeSlot = m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
+  m_closeConn = m_popupWindow->Close.connect(Bind<void, ToolBar, ToolBar>(&ToolBar::onClosePopup, this));
   m_openedRecently = true;
 
   ToolStrip* toolstrip = new ToolStrip(tool_group, this);

@@ -154,7 +154,7 @@ ColorSelector::ColorSelector()
   selectColorType(app::Color::RgbType);
   setPreferredSize(gfx::Size(300*jguiscale(), getPreferredSize().h));
 
-  m_onPaletteChangeSlot =
+  m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);
 
   m_tooltips.addTooltipFor(m_warningIcon, "This color isn't in the palette\nPress here to add it.", JI_BOTTOM);
@@ -164,9 +164,6 @@ ColorSelector::ColorSelector()
 
 ColorSelector::~ColorSelector()
 {
-  App::instance()->PaletteChange.disconnect(m_onPaletteChangeSlot);
-  delete m_onPaletteChangeSlot;
-
   getPin()->getParent()->removeChild(getPin());
 }
 

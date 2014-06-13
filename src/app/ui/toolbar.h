@@ -21,7 +21,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "base/slot.h"
+#include "base/connection.h"
 #include "gfx/point.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -99,7 +99,7 @@ namespace app {
     ui::Timer m_tipTimer;
     bool m_tipOpened;
 
-    Slot1<void, ui::CloseEvent&>* m_closeSlot;
+    Connection m_closeConn;
   };
 
 } // namespace app

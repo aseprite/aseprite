@@ -18,6 +18,7 @@ endif()
 set(BASE_SOURCES
   cfile.cpp
   chrono.cpp
+  connection.cpp
   convert_to.cpp
   errno_string.cpp
   exception.cpp

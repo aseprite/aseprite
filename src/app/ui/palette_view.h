@@ -21,8 +21,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/connection.h"
 #include "base/signal.h"
-#include "base/slot.h"
 #include "ui/widget.h"
 
 #include <allegro/color.h>
@@ -35,7 +35,6 @@ namespace app {
     typedef std::vector<bool> SelectedEntries;
 
     PaletteView(bool editable);
-    ~PaletteView();
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
@@ -72,7 +71,7 @@ namespace app {
     int m_rangeAnchor;
     SelectedEntries m_selectedEntries;
     bool m_isUpdatingColumns;
-    Slot0<void>* m_slot;
+    ScopedConnection m_conn;
   };
 
   ui::WidgetType palette_view_type();
