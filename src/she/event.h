@@ -40,7 +40,7 @@ namespace she {
 
     Event() : m_type(None) { }
 
-    int type() const { return m_type; }
+    Type type() const { return m_type; }
     const Files& files() const { return m_files; }
     gfx::Point position() const { return m_position; }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
