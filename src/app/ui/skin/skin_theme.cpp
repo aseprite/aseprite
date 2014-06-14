@@ -1220,6 +1220,7 @@ void SkinTheme::paintMenu(PaintEvent& ev)
 
 void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 {
+  int scale = jguiscale();
   Graphics* g = ev.getGraphics();
   MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
@@ -1260,7 +1261,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
     BITMAP* icon = m_part[widget->isEnabled() ? PART_CHECK_SELECTED:
                                                 PART_CHECK_DISABLED];
 
-    int x = bounds.x+4-icon->w/2;
+    int x = bounds.x+4*scale-icon->w/2;
     int y = bounds.y+bounds.h/2-icon->h/2;
     g->drawAlphaBitmap(icon, x, y);
   }
@@ -1280,8 +1281,6 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   if (!bar) {
     // Draw the arrown (to indicate which this menu has a sub-menu)
     if (widget->getSubmenu()) {
-      int scale = jguiscale();
-
       // Enabled
       if (widget->isEnabled()) {
         for (c=0; c<3*scale; c++)
