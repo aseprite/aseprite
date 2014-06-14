@@ -16,51 +16,51 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_PEN_H_INCLUDED
-#define RASTER_PEN_H_INCLUDED
+#ifndef RASTER_BRUSH_H_INCLUDED
+#define RASTER_BRUSH_H_INCLUDED
 #pragma once
 
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "raster/pen_type.h"
+#include "raster/brush_type.h"
 #include <vector>
 
 namespace raster {
 
   class Image;
 
-  struct PenScanline {
+  struct BrushScanline {
     int state, x1, x2;
   };
 
-  class Pen {
+  class Brush {
   public:
-    Pen();
-    Pen(PenType type, int size, int angle);
-    Pen(const Pen& pen);
-    ~Pen();
+    Brush();
+    Brush(BrushType type, int size, int angle);
+    Brush(const Brush& brush);
+    ~Brush();
 
-    PenType get_type() const { return m_type; }
+    BrushType get_type() const { return m_type; }
     int get_size() const { return m_size; }
     int get_angle() const { return m_angle; }
     Image* get_image() { return m_image; }
-    const std::vector<PenScanline>& get_scanline() const { return m_scanline; }
+    const std::vector<BrushScanline>& get_scanline() const { return m_scanline; }
 
     const gfx::Rect& getBounds() const { return m_bounds; }
 
-    void set_type(PenType type);
+    void set_type(BrushType type);
     void set_size(int size);
     void set_angle(int angle);
 
   private:
-    void clean_pen();
-    void regenerate_pen();
+    void clean();
+    void regenerate();
 
-    PenType m_type;                       // Type of pen
+    BrushType m_type;                       // Type of brush
     int m_size;                           // Size (diameter)
     int m_angle;                          // Angle in degrees 0-360
-    Image* m_image;                       // Image of the pen
-    std::vector<PenScanline> m_scanline;
+    Image* m_image;                       // Image of the brush
+    std::vector<BrushScanline> m_scanline;
     gfx::Rect m_bounds;
   };
 

@@ -304,16 +304,16 @@ void UISettingsImpl::setBgColor(const app::Color& color)
 void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 {
   if (m_currentTool != tool) {
-    // Fire signals (maybe the new selected tool has a different pen size)
-    App::instance()->PenSizeBeforeChange();
-    App::instance()->PenAngleBeforeChange();
+    // Fire signals (maybe the new selected tool has a different brush size)
+    App::instance()->BrushSizeBeforeChange();
+    App::instance()->BrushAngleBeforeChange();
 
     // Change the tool
     m_currentTool = tool;
 
     App::instance()->CurrentToolChange(); // Fire CurrentToolChange signal
-    App::instance()->PenSizeAfterChange(); // Fire PenSizeAfterChange signal
-    App::instance()->PenAngleAfterChange(); // Fire PenAngleAfterChange signal
+    App::instance()->BrushSizeAfterChange(); // Fire BrushSizeAfterChange signal
+    App::instance()->BrushAngleAfterChange(); // Fire BrushAngleAfterChange signal
   }
 }
 
@@ -579,66 +579,66 @@ void UIDocumentSettingsImpl::removeObserver(DocumentSettingsObserver* observer)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Tools & pen settings
+// Tools & brush settings
 
-class UIPenSettingsImpl
-  : public IPenSettings
-  , public base::Observable<PenSettingsObserver> {
+class UIBrushSettingsImpl
+  : public IBrushSettings
+  , public base::Observable<BrushSettingsObserver> {
 private:
-  PenType m_type;
+  BrushType m_type;
   int m_size;
   int m_angle;
   bool m_fireSignals;
 
 public:
-  UIPenSettingsImpl()
+  UIBrushSettingsImpl()
   {
-    m_type = PEN_TYPE_FIRST;
+    m_type = kFirstBrushType;
     m_size = 1;
     m_angle = 0;
     m_fireSignals = true;
   }
 
-  ~UIPenSettingsImpl()
+  ~UIBrushSettingsImpl()
   {
   }
 
-  PenType getType() { return m_type; }
+  BrushType getType() { return m_type; }
   int getSize() { return m_size; }
   int getAngle() { return m_angle; }
 
-  void setType(PenType type)
+  void setType(BrushType type)
   {
-    m_type = MID(PEN_TYPE_FIRST, type, PEN_TYPE_LAST);
-    notifyObservers<PenType>(&PenSettingsObserver::onSetPenType, m_type);
+    m_type = MID(kFirstBrushType, type, kLastBrushType);
+    notifyObservers<BrushType>(&BrushSettingsObserver::onSetBrushType, m_type);
   }
 
   void setSize(int size)
   {
-    // Trigger PenSizeBeforeChange signal
+    // Trigger BrushSizeBeforeChange signal
     if (m_fireSignals)
-      App::instance()->PenSizeBeforeChange();
+      App::instance()->BrushSizeBeforeChange();
 
-    // Change the size of the pencil
+    // Change the size of the brushcil
     m_size = MID(1, size, 32);
 
-    // Trigger PenSizeAfterChange signal
+    // Trigger BrushSizeAfterChange signal
     if (m_fireSignals)
-      App::instance()->PenSizeAfterChange();
-    notifyObservers<int>(&PenSettingsObserver::onSetPenSize, m_size);
+      App::instance()->BrushSizeAfterChange();
+    notifyObservers<int>(&BrushSettingsObserver::onSetBrushSize, m_size);
   }
 
   void setAngle(int angle)
   {
-    // Trigger PenAngleBeforeChange signal
+    // Trigger BrushAngleBeforeChange signal
     if (m_fireSignals)
-      App::instance()->PenAngleBeforeChange();
+      App::instance()->BrushAngleBeforeChange();
 
     m_angle = MID(0, angle, 360);
 
-    // Trigger PenAngleAfterChange signal
+    // Trigger BrushAngleAfterChange signal
     if (m_fireSignals)
-      App::instance()->PenAngleAfterChange();
+      App::instance()->BrushAngleAfterChange();
   }
 
   void enableSignals(bool state)
@@ -646,12 +646,12 @@ public:
     m_fireSignals = state;
   }
 
-  void addObserver(PenSettingsObserver* observer) OVERRIDE{
-    base::Observable<PenSettingsObserver>::addObserver(observer);
+  void addObserver(BrushSettingsObserver* observer) OVERRIDE{
+    base::Observable<BrushSettingsObserver>::addObserver(observer);
   }
 
-  void removeObserver(PenSettingsObserver* observer) OVERRIDE{
-    base::Observable<PenSettingsObserver>::removeObserver(observer);
+  void removeObserver(BrushSettingsObserver* observer) OVERRIDE{
+    base::Observable<BrushSettingsObserver>::removeObserver(observer);
   }
 };
 
@@ -659,7 +659,7 @@ class UIToolSettingsImpl
   : public IToolSettings
   , base::Observable<ToolSettingsObserver> {
   tools::Tool* m_tool;
-  UIPenSettingsImpl m_pen;
+  UIBrushSettingsImpl m_brush;
   int m_opacity;
   int m_tolerance;
   bool m_filled;
@@ -693,11 +693,11 @@ public:
         m_inkType != kLockAlphaInk)
       m_inkType = kDefaultInk;
 
-    m_pen.enableSignals(false);
-    m_pen.setType((PenType)get_config_int(cfg_section.c_str(), "PenType", (int)PEN_TYPE_CIRCLE));
-    m_pen.setSize(get_config_int(cfg_section.c_str(), "PenSize", m_tool->getDefaultPenSize()));
-    m_pen.setAngle(get_config_int(cfg_section.c_str(), "PenAngle", 0));
-    m_pen.enableSignals(true);
+    m_brush.enableSignals(false);
+    m_brush.setType((BrushType)get_config_int(cfg_section.c_str(), "BrushType", (int)kCircleBrushType));
+    m_brush.setSize(get_config_int(cfg_section.c_str(), "BrushSize", m_tool->getDefaultBrushSize()));
+    m_brush.setAngle(get_config_int(cfg_section.c_str(), "BrushAngle", 0));
+    m_brush.enableSignals(true);
 
     if (m_tool->getPointShape(0)->isSpray() ||
         m_tool->getPointShape(1)->isSpray()) {
@@ -718,10 +718,10 @@ public:
 
     set_config_int(cfg_section.c_str(), "Opacity", m_opacity);
     set_config_int(cfg_section.c_str(), "Tolerance", m_tolerance);
-    set_config_int(cfg_section.c_str(), "PenType", m_pen.getType());
-    set_config_int(cfg_section.c_str(), "PenSize", m_pen.getSize());
-    set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
-    set_config_int(cfg_section.c_str(), "PenAngle", m_pen.getAngle());
+    set_config_int(cfg_section.c_str(), "BrushType", m_brush.getType());
+    set_config_int(cfg_section.c_str(), "BrushSize", m_brush.getSize());
+    set_config_int(cfg_section.c_str(), "BrushAngle", m_brush.getAngle());
+    set_config_int(cfg_section.c_str(), "BrushAngle", m_brush.getAngle());
     set_config_int(cfg_section.c_str(), "InkType", m_inkType);
     set_config_bool(cfg_section.c_str(), "PreviewFilled", m_previewFilled);
 
@@ -737,7 +737,7 @@ public:
     }
   }
 
-  IPenSettings* getPen() { return &m_pen; }
+  IBrushSettings* getBrush() { return &m_brush; }
 
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }

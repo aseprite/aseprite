@@ -41,9 +41,9 @@ namespace app {
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
-    // Drawing state doesn't require the pen-preview because we are
+    // Drawing state doesn't require the brush-preview because we are
     // already drawing (viewing the real trace).
-    virtual bool requirePenPreview() OVERRIDE { return false; }
+    virtual bool requireBrushPreview() OVERRIDE { return false; }
 
   private:
     void destroyLoop();

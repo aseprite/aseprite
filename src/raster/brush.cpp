@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include "raster/pen.h"
+#include "raster/brush.h"
 
 #include "raster/algo.h"
 #include "raster/image.h"
@@ -30,60 +30,60 @@
 
 namespace raster {
 
-Pen::Pen()
+Brush::Brush()
 {
-  m_type = PEN_TYPE_CIRCLE;
+  m_type = kCircleBrushType;
   m_size = 1;
   m_angle = 0;
   m_image = NULL;
 
-  regenerate_pen();
+  regenerate();
 }
 
-Pen::Pen(PenType type, int size, int angle)
+Brush::Brush(BrushType type, int size, int angle)
 {
   m_type = type;
   m_size = size;
   m_angle = angle;
   m_image = NULL;
 
-  regenerate_pen();
+  regenerate();
 }
 
-Pen::Pen(const Pen& pen)
+Brush::Brush(const Brush& brush)
 {
-  m_type = pen.m_type;
-  m_size = pen.m_size;
-  m_angle = pen.m_angle;
+  m_type = brush.m_type;
+  m_size = brush.m_size;
+  m_angle = brush.m_angle;
 
-  regenerate_pen();
+  regenerate();
 }
 
-Pen::~Pen()
+Brush::~Brush()
 {
-  clean_pen();
+  clean();
 }
 
-void Pen::set_type(PenType type)
+void Brush::set_type(BrushType type)
 {
   m_type = type;
-  regenerate_pen();
+  regenerate();
 }
 
-void Pen::set_size(int size)
+void Brush::set_size(int size)
 {
   m_size = size;
-  regenerate_pen();
+  regenerate();
 }
 
-void Pen::set_angle(int angle)
+void Brush::set_angle(int angle)
 {
   m_angle = angle;
-  regenerate_pen();
+  regenerate();
 }
 
-// Cleans the pen's data (image and region).
-void Pen::clean_pen()
+// Cleans the brush's data (image and region).
+void Brush::clean()
 {
   if (m_image) {
     delete m_image;
@@ -98,15 +98,15 @@ static void algo_hline(int x1, int y, int x2, void *data)
   draw_hline(reinterpret_cast<Image*>(data), x1, y, x2, BitmapTraits::max_value);
 }
 
-// Regenerates the pen bitmap and its rectangle's region.
-void Pen::regenerate_pen()
+// Regenerates the brush bitmap and its rectangle's region.
+void Brush::regenerate()
 {
-  clean_pen();
+  clean();
 
   ASSERT(m_size > 0);
 
   int size = m_size;
-  if (m_type == PEN_TYPE_SQUARE && m_angle != 0 && m_size > 2)
+  if (m_type == kSquareBrushType && m_angle != 0 && m_size > 2)
     size = std::sqrt((double)2*m_size*m_size)+2;
 
   m_image = Image::create(IMAGE_BITMAP, size, size);
@@ -119,11 +119,11 @@ void Pen::regenerate_pen()
 
     switch (m_type) {
 
-      case PEN_TYPE_CIRCLE:
+      case kCircleBrushType:
         fill_ellipse(m_image, 0, 0, size-1, size-1, BitmapTraits::max_value);
         break;
 
-      case PEN_TYPE_SQUARE:
+      case kSquareBrushType:
         if (m_angle == 0 || size <= 2) {
           clear_image(m_image, BitmapTraits::max_value);
         }
@@ -146,7 +146,7 @@ void Pen::regenerate_pen()
         }
         break;
 
-      case PEN_TYPE_LINE: {
+      case kLineBrushType: {
         double a = PI * m_angle / 180;
         float r = m_size/2;
         float d = m_size;
@@ -180,8 +180,9 @@ void Pen::regenerate_pen()
     }
   }
 
-  m_bounds = gfx::Rect(-m_image->getWidth()/2, -m_image->getHeight()/2,
-                       m_image->getWidth(), m_image->getHeight());
+  m_bounds = gfx::Rect(
+    -m_image->getWidth()/2, -m_image->getHeight()/2,
+    m_image->getWidth(), m_image->getHeight());
 }
 
 } // namespace raster

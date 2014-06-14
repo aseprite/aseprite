@@ -40,10 +40,10 @@
 #include "app/ui/status_bar.h"
 #include "app/undo_transaction.h"
 #include "app/util/expand_cel_canvas.h"
+#include "raster/brush.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
-#include "raster/pen.h"
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
@@ -58,7 +58,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   Editor* m_editor;
   Context* m_context;
   tools::Tool* m_tool;
-  Pen* m_pen;
+  Brush* m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -146,13 +146,14 @@ public:
     m_sprayWidth = m_toolSettings->getSprayWidth();
     m_spraySpeed = m_toolSettings->getSpraySpeed();
 
-    // Create the pen
-    IPenSettings* pen_settings = m_toolSettings->getPen();
-    ASSERT(pen_settings != NULL);
+    // Create the brush
+    IBrushSettings* brush_settings = m_toolSettings->getBrush();
+    ASSERT(brush_settings != NULL);
 
-    m_pen = new Pen(pen_settings->getType(),
-                    pen_settings->getSize(),
-                    pen_settings->getAngle());
+    m_brush = new Brush(
+      brush_settings->getType(),
+      brush_settings->getSize(),
+      brush_settings->getAngle());
 
     m_useMask = m_document->isMaskVisible();
 
@@ -201,13 +202,13 @@ public:
       m_expandCelCanvas.rollback();
     }
 
-    delete m_pen;
+    delete m_brush;
     delete m_shadeTable;
   }
 
   // IToolLoop interface
   tools::Tool* getTool() OVERRIDE { return m_tool; }
-  Pen* getPen() OVERRIDE { return m_pen; }
+  Brush* getBrush() OVERRIDE { return m_brush; }
   Document* getDocument() OVERRIDE { return m_document; }
   Sprite* getSprite() OVERRIDE { return m_sprite; }
   Layer* getLayer() OVERRIDE { return m_layer; }

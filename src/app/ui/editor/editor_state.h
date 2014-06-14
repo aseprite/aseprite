@@ -99,9 +99,9 @@ namespace app {
     // Called when a key is released.
     virtual bool onUpdateStatusBar(Editor* editor) { return false; }
 
-    // Returns true if the this state requires the pen-preview as
+    // Returns true if the this state requires the brush-preview as
     // drawing cursor.
-    virtual bool requirePenPreview() { return false; }
+    virtual bool requireBrushPreview() { return false; }
 
   private:
     DISABLE_COPYING(EditorState);

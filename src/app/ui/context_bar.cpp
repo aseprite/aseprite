@@ -39,10 +39,10 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
+#include "raster/brush.h"
 #include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "raster/pen.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
@@ -69,7 +69,7 @@ public:
   BrushTypeField()
     : Button("")
     , m_popupWindow(NULL)
-    , m_brushType(NULL) {
+    , m_brushTypeButton(NULL) {
     setup_mini_look(this);
     setIconInterface(this);
 
@@ -83,15 +83,18 @@ public:
     destroy_bitmap(m_bitmap);
   }
 
-  void setPenSettings(IPenSettings* penSettings) {
+  void setBrushSettings(IBrushSettings* brushSettings) {
     base::UniquePtr<Palette> palette(new Palette(FrameNumber(0), 2));
     palette->setEntry(0, raster::rgba(0, 0, 0, 0));
     palette->setEntry(1, raster::rgba(0, 0, 0, 255));
 
-    base::UniquePtr<Pen> pen(new Pen(m_penType = penSettings->getType(),
-                                     std::min(10, penSettings->getSize()),
-                                     penSettings->getAngle()));
-    Image* image = pen->get_image();
+    base::UniquePtr<Brush> brush(
+      new Brush(
+        m_brushType = brushSettings->getType(),
+        std::min(10, brushSettings->getSize()),
+        brushSettings->getAngle()));
+
+    Image* image = brush->get_image();
 
     if (m_bitmap)
       destroy_bitmap(m_bitmap);
@@ -161,15 +164,15 @@ private:
 
     Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
-    m_brushType = new ButtonSet(3, 1, m_penType,
+    m_brushTypeButton = new ButtonSet(3, 1, m_brushType,
       PART_BRUSH_CIRCLE,
       PART_BRUSH_SQUARE,
       PART_BRUSH_LINE);
-    m_brushType->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
-    m_brushType->setTransparent(true);
-    m_brushType->setBgColor(ui::ColorNone);
+    m_brushTypeButton->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
+    m_brushTypeButton->setTransparent(true);
+    m_brushTypeButton->setBgColor(ui::ColorNone);
 
-    m_popupWindow->addChild(m_brushType);
+    m_popupWindow->addChild(m_brushTypeButton);
     m_popupWindow->openWindow();
   }
 
@@ -178,25 +181,25 @@ private:
       m_popupWindow->closeWindow(NULL);
       delete m_popupWindow;
       m_popupWindow = NULL;
-      m_brushType = NULL;
+      m_brushTypeButton = NULL;
     }
   }
 
   void onBrushTypeChange() {
-    m_penType = (PenType)m_brushType->getSelectedItem();
+    m_brushType = (BrushType)m_brushTypeButton->getSelectedItem();
 
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
-    IPenSettings* penSettings = settings->getToolSettings(currentTool)->getPen();
-    penSettings->setType(m_penType);
+    IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
+    brushSettings->setType(m_brushType);
 
-    setPenSettings(penSettings);
+    setBrushSettings(brushSettings);
   }
 
   BITMAP* m_bitmap;
-  PenType m_penType;
+  BrushType m_brushType;
   PopupWindow* m_popupWindow;
-  ButtonSet* m_brushType;
+  ButtonSet* m_brushTypeButton;
 };
 
 class ContextBar::BrushSizeField : public IntEntry
@@ -213,7 +216,7 @@ private:
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
-      ->getPen()
+      ->getBrush()
       ->setSize(getValue());
   }
 };
@@ -234,12 +237,12 @@ protected:
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
-      ->getPen()
+      ->getBrush()
       ->setAngle(getValue());
 
     IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-    IPenSettings* penSettings = toolSettings->getPen();
-    m_brushType->setPenSettings(penSettings);
+    IBrushSettings* brushSettings = toolSettings->getBrush();
+    m_brushType->setBrushSettings(brushSettings);
   }
 
 private:
@@ -595,8 +598,8 @@ ContextBar::ContextBar()
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
 
-  App::instance()->PenSizeAfterChange.connect(&ContextBar::onPenSizeChange, this);
-  App::instance()->PenAngleAfterChange.connect(&ContextBar::onPenAngleChange, this);
+  App::instance()->BrushSizeAfterChange.connect(&ContextBar::onBrushSizeChange, this);
+  App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -624,26 +627,26 @@ void ContextBar::onSetOpacity(int newOpacity)
   m_inkOpacity->setTextf("%d", newOpacity);
 }
 
-void ContextBar::onPenSizeChange()
+void ContextBar::onBrushSizeChange()
 {
   ISettings* settings = UIContext::instance()->getSettings();
   Tool* currentTool = settings->getCurrentTool();
   IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-  IPenSettings* penSettings = toolSettings->getPen();
+  IBrushSettings* brushSettings = toolSettings->getBrush();
 
-  m_brushType->setPenSettings(penSettings);
-  m_brushSize->setTextf("%d", penSettings->getSize());
+  m_brushType->setBrushSettings(brushSettings);
+  m_brushSize->setTextf("%d", brushSettings->getSize());
 }
 
-void ContextBar::onPenAngleChange()
+void ContextBar::onBrushAngleChange()
 {
   ISettings* settings = UIContext::instance()->getSettings();
   Tool* currentTool = settings->getCurrentTool();
   IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-  IPenSettings* penSettings = toolSettings->getPen();
+  IBrushSettings* brushSettings = toolSettings->getBrush();
 
-  m_brushType->setPenSettings(penSettings);
-  m_brushAngle->setTextf("%d", penSettings->getAngle());
+  m_brushType->setBrushSettings(brushSettings);
+  m_brushAngle->setTextf("%d", brushSettings->getAngle());
 }
 
 void ContextBar::onCurrentToolChange()
@@ -661,16 +664,16 @@ void ContextBar::updateFromTool(tools::Tool* tool)
 {
   ISettings* settings = UIContext::instance()->getSettings();
   IToolSettings* toolSettings = settings->getToolSettings(tool);
-  IPenSettings* penSettings = toolSettings->getPen();
+  IBrushSettings* brushSettings = toolSettings->getBrush();
 
   if (m_toolSettings)
     m_toolSettings->removeObserver(this);
   m_toolSettings = toolSettings;
   m_toolSettings->addObserver(this);
 
-  m_brushType->setPenSettings(penSettings);
-  m_brushSize->setTextf("%d", penSettings->getSize());
-  m_brushAngle->setTextf("%d", penSettings->getAngle());
+  m_brushType->setBrushSettings(brushSettings);
+  m_brushSize->setTextf("%d", brushSettings->getSize());
+  m_brushAngle->setTextf("%d", brushSettings->getAngle());
 
   m_tolerance->setTextf("%d", toolSettings->getTolerance());
 

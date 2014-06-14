@@ -16,19 +16,19 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef RASTER_PEN_TYPE_H_INCLUDED
-#define RASTER_PEN_TYPE_H_INCLUDED
+#ifndef RASTER_BRUSH_TYPE_H_INCLUDED
+#define RASTER_BRUSH_TYPE_H_INCLUDED
 #pragma once
 
 namespace raster {
 
-  enum PenType {
-    PEN_TYPE_CIRCLE   = 0,
-    PEN_TYPE_SQUARE   = 1,
-    PEN_TYPE_LINE     = 2,
+  enum BrushType {
+    kCircleBrushType = 0,
+    kSquareBrushType = 1,
+    kLineBrushType = 2,
 
-    PEN_TYPE_FIRST    = PEN_TYPE_CIRCLE,
-    PEN_TYPE_LAST     = PEN_TYPE_LINE,
+    kFirstBrushType = kCircleBrushType,
+    kLastBrushType = kLineBrushType,
   };
 
 } // namespace raster

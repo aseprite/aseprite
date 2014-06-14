@@ -63,7 +63,7 @@ namespace app {
 
     // Returns false as it overrides default standby state behavior &
     // look. This state uses normal arrow cursors.
-    virtual bool requirePenPreview() OVERRIDE { return false; }
+    virtual bool requireBrushPreview() OVERRIDE { return false; }
 
     // EditorDecorator overrides
     virtual void preRenderDecorator(EditorPreRender* render) OVERRIDE;

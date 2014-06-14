@@ -31,9 +31,9 @@
 #include "app/tools/tool_loop.h"
 #include "base/exception.h"
 #include "raster/algo.h"
+#include "raster/brush.h"
 #include "raster/image.h"
 #include "raster/mask.h"
-#include "raster/pen.h"
 
 #include <algorithm>
 #include <allegro/file.h>
@@ -109,7 +109,7 @@ ToolBox::ToolBox()
 
   m_pointshapers["none"]                 = new NonePointShape();
   m_pointshapers["pixel"]                = new PixelPointShape();
-  m_pointshapers["pen"]                  = new PenPointShape();
+  m_pointshapers["brush"]                = new BrushPointShape();
   m_pointshapers["floodfill"]            = new FloodFillPointShape();
   m_pointshapers["spray"]                = new SprayPointShape();
 
@@ -196,10 +196,10 @@ void ToolBox::loadTools()
       const char* tool_id = xmlTool->Attribute("id");
       const char* tool_text = xmlTool->Attribute("text");
       const char* tool_tips = xmlTool->FirstChild("tooltip") ? ((TiXmlElement*)xmlTool->FirstChild("tooltip"))->GetText(): "";
-      const char* default_pen_size = xmlTool->Attribute("default_pen_size");
+      const char* default_brush_size = xmlTool->Attribute("default_brush_size");
 
       Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
-                            default_pen_size ? strtol(default_pen_size, NULL, 10): 1);
+        default_brush_size ? strtol(default_brush_size, NULL, 10): 1);
 
       PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
 

@@ -210,9 +210,10 @@ namespace app {
 
     void editor_setcursor();
 
-    void for_each_pixel_of_pen(int screen_x, int screen_y,
-                               int sprite_x, int sprite_y, int color,
-                               void (*pixel)(BITMAP *bmp, int x, int y, int color));
+    void forEachBrushPixel(
+      int screen_x, int screen_y,
+      int sprite_x, int sprite_y, int color,
+      void (*pixel)(BITMAP *bmp, int x, int y, int color));
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this

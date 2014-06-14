@@ -31,7 +31,7 @@
 
 namespace app {
 
-class ChangePenCommand : public Command {
+class ChangeBrushCommand : public Command {
   enum Change {
     None,
     IncrementSize,
@@ -43,22 +43,22 @@ class ChangePenCommand : public Command {
   Change m_change;
 
 public:
-  ChangePenCommand();
+  ChangeBrushCommand();
 
 protected:
   void onLoadParams(Params* params);
   void onExecute(Context* context);
 };
 
-ChangePenCommand::ChangePenCommand()
-  : Command("ChangePen",
-            "Change Pen",
+ChangeBrushCommand::ChangeBrushCommand()
+  : Command("ChangeBrush",
+            "Change Brush",
             CmdUIOnlyFlag)
 {
   m_change = None;
 }
 
-void ChangePenCommand::onLoadParams(Params* params)
+void ChangeBrushCommand::onLoadParams(Params* params)
 {
   std::string change = params->get("change");
   if (change == "increment-size") m_change = IncrementSize;
@@ -67,38 +67,38 @@ void ChangePenCommand::onLoadParams(Params* params)
   else if (change == "decrement-angle") m_change = DecrementAngle;
 }
 
-void ChangePenCommand::onExecute(Context* context)
+void ChangeBrushCommand::onExecute(Context* context)
 {
   tools::Tool* current_tool = context->getSettings()->getCurrentTool();
   IToolSettings* tool_settings = context->getSettings()->getToolSettings(current_tool);
-  IPenSettings* pen = tool_settings->getPen();
+  IBrushSettings* brush = tool_settings->getBrush();
 
   switch (m_change) {
     case None:
       // Do nothing
       break;
     case IncrementSize:
-      if (pen->getSize() < 32)
-        pen->setSize(pen->getSize()+1);
+      if (brush->getSize() < 32)
+        brush->setSize(brush->getSize()+1);
       break;
     case DecrementSize:
-      if (pen->getSize() > 1)
-        pen->setSize(pen->getSize()-1);
+      if (brush->getSize() > 1)
+        brush->setSize(brush->getSize()-1);
       break;
     case IncrementAngle:
-      if (pen->getAngle() < 180)
-        pen->setAngle(pen->getAngle()+1);
+      if (brush->getAngle() < 180)
+        brush->setAngle(brush->getAngle()+1);
       break;
     case DecrementAngle:
-      if (pen->getAngle() > 0)
-        pen->setAngle(pen->getAngle()-1);
+      if (brush->getAngle() > 0)
+        brush->setAngle(brush->getAngle()-1);
       break;
   }
 }
 
-Command* CommandFactory::createChangePenCommand()
+Command* CommandFactory::createChangeBrushCommand()
 {
-  return new ChangePenCommand;
+  return new ChangeBrushCommand;
 }
 
 } // namespace app

@@ -43,16 +43,16 @@ public:
   }
 };
 
-class PenPointShape : public PointShape {
+class BrushPointShape : public PointShape {
 public:
   void transformPoint(ToolLoop* loop, int x, int y)
   {
-    Pen* pen = loop->getPen();
-    std::vector<PenScanline>::const_iterator scanline = pen->get_scanline().begin();
-    register int v, h = pen->getBounds().h;
+    Brush* brush = loop->getBrush();
+    std::vector<BrushScanline>::const_iterator scanline = brush->get_scanline().begin();
+    register int v, h = brush->getBounds().h;
 
-    x += pen->getBounds().x;
-    y += pen->getBounds().y;
+    x += brush->getBounds().x;
+    y += brush->getBounds().y;
 
     for (v=0; v<h; ++v) {
       if (scanline->state)
@@ -62,8 +62,8 @@ public:
   }
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
-    Pen* pen = loop->getPen();
-    area = pen->getBounds();
+    Brush* brush = loop->getBrush();
+    area = brush->getBounds();
     area.x += x;
     area.y += y;
   }
@@ -84,7 +84,7 @@ public:
 };
 
 class SprayPointShape : public PointShape {
-  PenPointShape m_subPointShape;
+  BrushPointShape m_subPointShape;
 
 public:
 

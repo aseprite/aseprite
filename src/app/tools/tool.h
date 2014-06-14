@@ -42,12 +42,12 @@ namespace app {
            const std::string& id,
            const std::string& text,
            const std::string& tips,
-           int default_pen_size)
+           int default_brush_size)
         : m_group(group)
         , m_id(id)
         , m_text(text)
         , m_tips(tips)
-        , m_default_pen_size(default_pen_size)
+        , m_default_brush_size(default_brush_size)
       { }
 
       virtual ~Tool()
@@ -57,7 +57,7 @@ namespace app {
       const std::string& getId() const { return m_id; }
       const std::string& getText() const { return m_text; }
       const std::string& getTips() const { return m_tips; }
-      int getDefaultPenSize() const { return m_default_pen_size; }
+      int getDefaultBrushSize() const { return m_default_brush_size; }
 
       Fill getFill(int button) { return m_button[button].m_fill; }
       Ink* getInk(int button) { return m_button[button].m_ink; }
@@ -78,7 +78,7 @@ namespace app {
       std::string m_id;
       std::string m_text;
       std::string m_tips;
-      int m_default_pen_size;
+      int m_default_brush_size;
 
       struct {
         Fill m_fill;

@@ -57,8 +57,8 @@ namespace app {
     void onSetOpacity(int newOpacity) OVERRIDE;
 
   private:
-    void onPenSizeChange();
-    void onPenAngleChange();
+    void onBrushSizeChange();
+    void onBrushAngleChange();
     void onCurrentToolChange();
     void onDropPixels(ContextBarObserver::DropAction action);
 

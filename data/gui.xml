@@ -113,17 +113,17 @@
         <param name="change" value="increment-index" />
       </key>
 
-      <!-- Modify pen size with +/- signs -->
-      <key command="ChangePen" shortcut="+">
+      <!-- Modify brush size with +/- signs -->
+      <key command="ChangeBrush" shortcut="+">
         <param name="change" value="increment-size" />
       </key>
-      <key command="ChangePen" shortcut="-">
+      <key command="ChangeBrush" shortcut="-">
         <param name="change" value="decrement-size" />
       </key>
-      <key command="ChangePen" shortcut="Plus Pad">
+      <key command="ChangeBrush" shortcut="Plus Pad">
         <param name="change" value="increment-size" />
       </key>
-      <key command="ChangePen" shortcut="Minus Pad">
+      <key command="ChangeBrush" shortcut="Minus Pad">
         <param name="change" value="decrement-size" />
       </key>
 
@@ -546,7 +546,7 @@
             text="Pencil Tool"
             ink="paint"
             controller="freehand"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="accumulative"
             />
@@ -565,10 +565,10 @@
             ink_left="eraser"
             ink_right="replace_fg_with_bg"
             controller="freehand"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="accumulative"
-            default_pen_size="8">
+            default_brush_size="8">
         <tooltip>*
         Left-button: Erase with the background color in `Background' layer&#10;
         or transparent color in any other layer.&#10;*
@@ -617,7 +617,7 @@
             text="Line Tool"
             ink="paint"
             controller="two_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="last"
             />
@@ -625,7 +625,7 @@
             text="Curve Tool"
             ink="paint"
             controller="four_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_bezier"
             tracepolicy="last"
             />
@@ -637,7 +637,7 @@
             fill="optional"
             ink="paint"
             controller="two_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_rectangles"
             tracepolicy="last"
             />
@@ -646,7 +646,7 @@
             fill="always"
             ink="paint"
             controller="two_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_rectangles"
             tracepolicy="last"
             />
@@ -655,7 +655,7 @@
             fill="optional"
             ink="paint"
             controller="two_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_ellipses"
             tracepolicy="last"
             />
@@ -664,7 +664,7 @@
             fill="always"
             ink="paint"
             controller="two_points"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_ellipses"
             tracepolicy="last"
             />
@@ -676,7 +676,7 @@
             fill="always"
             ink="paint"
             controller="freehand"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="accumulative"
             />
@@ -685,7 +685,7 @@
             fill="always"
             ink="paint"
             controller="point_by_point"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="last"
             />
@@ -696,19 +696,19 @@
             text="Blur Tool"
             ink="blur"
             controller="freehand"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="overlap"
-            default_pen_size="16"
+            default_brush_size="16"
             />
       <tool id="jumble"
             text="Jumble Tool"
             ink="jumble"
             controller="freehand"
-            pointshape="pen"
+            pointshape="brush"
             intertwine="as_lines"
             tracepolicy="overlap"
-            default_pen_size="16"
+            default_brush_size="16"
             />
     </group>
 
