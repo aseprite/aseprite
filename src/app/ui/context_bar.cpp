@@ -395,16 +395,23 @@ class ContextBar::RotAlgorithmField : public ComboBox
 {
 public:
   RotAlgorithmField() {
+    // We use "m_lockChange" variable to avoid setting the rotation
+    // algorithm when we call ComboBox::addItem() (because the first
+    // addItem() generates an onChange() event).
+    m_lockChange = true;
     addItem(new Item("Fast Rotation", kFastRotationAlgorithm));
     addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
+    m_lockChange = false;
 
-    setSelectedItemIndex((int)
-      UIContext::instance()->settings()->selection()
-      ->getRotationAlgorithm());
+    setSelectedItemIndex((int)UIContext::instance()->settings()
+      ->selection()->getRotationAlgorithm());
   }
 
 protected:
   void onChange() OVERRIDE {
+    if (m_lockChange)
+      return;
+
     UIContext::instance()->settings()->selection()
       ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
   }
@@ -426,6 +433,8 @@ private:
   private:
     RotationAlgorithm m_algo;
   };
+
+  bool m_lockChange;
 };
 
 class ContextBar::FreehandAlgorithmField : public CheckBox
@@ -457,6 +466,9 @@ public:
     PART_SELECTION_REPLACE,
     PART_SELECTION_ADD,
     PART_SELECTION_SUBTRACT) {
+    setSelectedItem(
+      (int)UIContext::instance()->settings()
+      ->selection()->getSelectionMode());
   }
 
   void setupTooltips(TooltipManager* tooltipManager)

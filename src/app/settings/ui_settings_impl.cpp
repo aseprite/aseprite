@@ -183,7 +183,7 @@ class UISelectionSettingsImpl
     , public base::Observable<SelectionSettingsObserver> {
 public:
   UISelectionSettingsImpl();
-  ~UISelectionSettingsImpl();
+  virtual ~UISelectionSettingsImpl();
 
   SelectionMode getSelectionMode();
   app::Color getMoveTransparentColor();
@@ -827,6 +827,8 @@ UISelectionSettingsImpl::UISelectionSettingsImpl() :
 
 UISelectionSettingsImpl::~UISelectionSettingsImpl()
 {
+  set_config_int("Tools", "SelectionMode", (int)m_selectionMode);
+  set_config_int("Tools", "RotAlgorithm", (int)m_rotationAlgorithm);
 }
 
 SelectionMode UISelectionSettingsImpl::getSelectionMode()
@@ -859,7 +861,6 @@ void UISelectionSettingsImpl::setMoveTransparentColor(app::Color color)
 void UISelectionSettingsImpl::setRotationAlgorithm(RotationAlgorithm algorithm)
 {
   m_rotationAlgorithm = algorithm;
-  set_config_int("Tools", "RotAlgorithm", m_rotationAlgorithm);
   notifyObservers(&SelectionSettingsObserver::onSetRotationAlgorithm, algorithm);
 }
 
