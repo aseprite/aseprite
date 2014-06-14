@@ -35,11 +35,7 @@ namespace app {
     // Returns the current possible path. You cannot call this
     // function if you haven't call first() or next() before.
     const std::string& filename() const;
-
-    // Goes to the first option in the list of possible paths.
-    // Returns true if there is (at least) one option available
-    // (m_paths.size() != 0).
-    bool first();
+    const std::string& defaultFilename() const;
 
     // Goes to next possible path.
     bool next();
@@ -64,6 +60,7 @@ namespace app {
     // Members
     std::vector<std::string> m_paths;
     int m_current;
+    std::string m_default;
   };
 
 } // namespace app

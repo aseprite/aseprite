@@ -94,8 +94,7 @@ void verbose_printf(const char* format, ...)
     std::string filename;
     ResourceFinder rf;
     rf.includeBinDir("aseprite.log");
-    if (rf.first())
-      filename = rf.filename();
+    filename = rf.defaultFilename();
 
     if (filename.size() > 0)
       log_fileptr = fopen(filename.c_str(), "w");

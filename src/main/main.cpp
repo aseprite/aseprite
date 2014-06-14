@@ -68,8 +68,7 @@ namespace {
 #ifdef WIN32
     app::ResourceFinder rf;
     rf.includeBinDir("aseprite-memory.dmp");
-    if (rf.first())
-      filename = rf.filename();
+    filename = rf.defaultFilename();
     return true;
 #else
     return false;
