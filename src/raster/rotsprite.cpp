@@ -185,7 +185,7 @@ void image_rotsprite(Image* bmp, Image* spr,
   tmp_copy->setMaskColor(maskColor);
   spr_copy->setMaskColor(maskColor);
 
-  bmp_copy->clear(maskColor);
+  bmp_copy->clear(bmp->getMaskColor());
   spr_copy->clear(maskColor);
   spr_copy->copy(spr, 0, 0);
 
@@ -198,7 +198,6 @@ void image_rotsprite(Image* bmp, Image* spr,
   image_parallelogram(bmp_copy, spr_copy,
     x1*scale, y1*scale, x2*scale, y2*scale,
     x3*scale, y3*scale, x4*scale, y4*scale);
-
   image_scale(bmp, bmp_copy, 0, 0, bmp->getWidth(), bmp->getHeight());
 }
 
