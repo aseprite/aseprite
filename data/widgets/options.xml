@@ -70,7 +70,8 @@
     <separator horizontal="true" />
 
     <box horizontal="true">
-      <box horizontal="true" expansive="true" />
+      <link id="locate_file" text="Locate File" />
+      <boxfiller />
       <box horizontal="true" homogeneous="true">
         <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" width="60" />
         <button text="&amp;Cancel" closewindow="true" />

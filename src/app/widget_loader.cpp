@@ -278,6 +278,23 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                         (bottom ? JI_BOTTOM: JI_MIDDLE)));
     }
   }
+  /* link */
+  else if (elem_name == "link") {
+    const char* text = elem->Attribute("text");
+    const char* url = elem->Attribute("url");
+
+    widget = new LinkLabel(url ? url: "", text ? TRANSLATE_ATTR(text): "");
+    if (widget) {
+      bool center = bool_attr_is_true(elem, "center");
+      bool right  = bool_attr_is_true(elem, "right");
+      bool top    = bool_attr_is_true(elem, "top");
+      bool bottom = bool_attr_is_true(elem, "bottom");
+
+      widget->setAlign(
+        (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
+        (top    ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    }
+  }
   /* listbox */
   else if (elem_name == "listbox") {
     widget = new ListBox();

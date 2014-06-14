@@ -33,6 +33,8 @@ namespace app {
 
 using namespace gfx;
 
+static std::string g_configFilename;
+
 ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
@@ -50,12 +52,18 @@ ConfigModule::ConfigModule()
     config_filename = rf.filename();
 
   override_config_file(config_filename.c_str());
+  g_configFilename = config_filename;
 }
 
 ConfigModule::~ConfigModule()
 {
   //override_config_file(NULL);
   flush_config_file();
+}
+
+std::string get_config_file()
+{
+  return g_configFilename;
 }
 
 bool get_config_bool(const char *section, const char *name, bool value)
