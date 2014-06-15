@@ -27,7 +27,7 @@
 #include "app/settings/selection_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "raster/pen_type.h"
+#include "raster/brush_type.h"
 
 namespace app {
 
@@ -35,8 +35,8 @@ namespace app {
   class Document;
   class IColorSwatchesStore;
   class IDocumentSettings;
-  class IPenSettings;
-  class PenSettingsObserver;
+  class IBrushSettings;
+  class BrushSettingsObserver;
   class IToolSettings;
   class ToolSettingsObserver;
   class ISelectionSettings;
@@ -88,7 +88,7 @@ namespace app {
   public:
     virtual ~IToolSettings() { }
 
-    virtual IPenSettings* getPen() = 0;
+    virtual IBrushSettings* getBrush() = 0;
 
     virtual int getOpacity() = 0;
     virtual int getTolerance() = 0;
@@ -112,21 +112,21 @@ namespace app {
     virtual void removeObserver(ToolSettingsObserver* observer) = 0;
   };
 
-  // Settings for a tool's pen
-  class IPenSettings {
+  // Settings for a tool's brush
+  class IBrushSettings {
   public:
-    virtual ~IPenSettings() { }
+    virtual ~IBrushSettings() { }
 
-    virtual raster::PenType getType() = 0;
+    virtual raster::BrushType getType() = 0;
     virtual int getSize() = 0;
     virtual int getAngle() = 0;
 
-    virtual void setType(PenType type) = 0;
+    virtual void setType(BrushType type) = 0;
     virtual void setSize(int size) = 0;
     virtual void setAngle(int angle) = 0;
 
-    virtual void addObserver(PenSettingsObserver* observer) = 0;
-    virtual void removeObserver(PenSettingsObserver* observer) = 0;
+    virtual void addObserver(BrushSettingsObserver* observer) = 0;
+    virtual void removeObserver(BrushSettingsObserver* observer) = 0;
   };
 
   class ISelectionSettings {

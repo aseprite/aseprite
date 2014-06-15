@@ -24,9 +24,9 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
+#include "raster/brush.h"
 #include "raster/image_impl.h"
 #include "raster/palette.h"
-#include "raster/pen.h"
 #include "raster/primitives.h"
 #include "raster/rgbmap.h"
 

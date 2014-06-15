@@ -29,10 +29,16 @@ namespace raster {
   //////////////////////////////////////////////////////////////////////
   // RGBA
 
-  const int rgba_r_shift = 0;
-  const int rgba_g_shift = 8;
-  const int rgba_b_shift = 16;
-  const int rgba_a_shift = 24;
+  const uint32_t rgba_r_shift = 0;
+  const uint32_t rgba_g_shift = 8;
+  const uint32_t rgba_b_shift = 16;
+  const uint32_t rgba_a_shift = 24;
+
+  const uint32_t rgba_r_mask = 0x000000ff;
+  const uint32_t rgba_g_mask = 0x0000ff00;
+  const uint32_t rgba_b_mask = 0x00ff0000;
+  const uint32_t rgba_rgb_mask = 0x00ffffff;
+  const uint32_t rgba_a_mask = 0xff000000;
 
   inline uint8_t rgba_getr(uint32_t c) {
     return (c >> rgba_r_shift) & 0xff;
@@ -60,8 +66,11 @@ namespace raster {
   //////////////////////////////////////////////////////////////////////
   // Grayscale
 
-  const int graya_v_shift = 0;
-  const int graya_a_shift = 8;
+  const uint16_t graya_v_shift = 0;
+  const uint16_t graya_a_shift = 8;
+
+  const uint16_t graya_v_mask = 0x00ff;
+  const uint16_t graya_a_mask = 0xff00;
 
   inline uint8_t graya_getv(uint16_t c) {
     return (c >> graya_v_shift) & 0xff;

@@ -24,6 +24,7 @@
 
 #include "app/resource_finder.h"
 #include "base/fs.h"
+#include "base/path.h"
 
 #include <allegro/config.h>
 #include <allegro/file.h>
@@ -32,6 +33,8 @@
 namespace app {
 
 using namespace gfx;
+
+static std::string g_configFilename;
 
 ConfigModule::ConfigModule()
 {
@@ -46,16 +49,27 @@ ConfigModule::ConfigModule()
 
   // If the file wasn't found, we will create configuration file
   // in the first path
-  if (config_filename[0] == 0 && rf.first())
-    config_filename = rf.filename();
+  if (config_filename[0] == 0) {
+    config_filename = rf.defaultFilename();
+
+    std::string dir = base::get_file_path(config_filename);
+    if (!base::is_directory(dir))
+      base::make_directory(dir);
+  }
 
   override_config_file(config_filename.c_str());
+  g_configFilename = config_filename;
 }
 
 ConfigModule::~ConfigModule()
 {
   //override_config_file(NULL);
   flush_config_file();
+}
+
+std::string get_config_file()
+{
+  return g_configFilename;
 }
 
 bool get_config_bool(const char *section, const char *name, bool value)

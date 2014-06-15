@@ -159,10 +159,10 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   this->setFocusStop(true);
 
-  m_currentToolChangeSlot =
+  m_currentToolChangeConn =
     App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
 
-  m_fgColorChangeSlot =
+  m_fgColorChangeConn =
     ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 
   UIContext::instance()->getSettings()
@@ -179,14 +179,6 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_mask_timer.stop();
-
-  // Remove this editor as observer of CurrentToolChange signal.
-  App::instance()->CurrentToolChange.disconnect(m_currentToolChangeSlot);
-  delete m_currentToolChangeSlot;
-
-  // Remove this editor as observer of FgColorChange
-  ColorBar::instance()->FgColorChange.disconnect(m_fgColorChangeSlot);
-  delete m_fgColorChangeSlot;
 }
 
 WidgetType editor_type()

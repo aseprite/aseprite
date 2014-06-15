@@ -771,6 +771,16 @@ bool Timeline::onProcessMessage(Message* msg)
     case kKeyDownMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
+        case kKeyEsc:
+          if (m_state == STATE_STANDBY) {
+            m_range.disableRange();
+            invalidate();
+          }
+          else {
+            m_state = STATE_STANDBY;
+          }
+          break;
+
         case kKeySpace: {
           setCursor(jmouse_x(0), jmouse_y(0));
           return true;
@@ -780,11 +790,6 @@ bool Timeline::onProcessMessage(Message* msg)
 
     case kKeyUpMessage:
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
-
-        case kKeyEsc:
-          m_range.disableRange();
-          invalidate();
-          break;
 
         case kKeySpace: {
           // We have to clear all the KEY_SPACE in buffer.
@@ -1794,6 +1799,9 @@ void Timeline::dropRange(DropOp op)
       if (op == Timeline::kMove && drop.layerBegin() == m_range.layerBegin())
         return;
       break;
+    default:
+      ASSERT(false && "You shouldn't call dropRange() if the range is disabled");
+      return;
   }
 
   const char* undoLabel = NULL;

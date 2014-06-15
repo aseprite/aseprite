@@ -24,10 +24,10 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
+#include "raster/brush.h"
 #include "raster/image.h"
 #include "raster/image_impl.h"
 #include "raster/palette.h"
-#include "raster/pen.h"
 #include "raster/rgbmap.h"
 
 #include <stdexcept>
@@ -48,22 +48,22 @@ void put_pixel(Image* image, int x, int y, color_t color)
     image->putPixel(x, y, color);
 }
 
-void put_pen(Image* image, Pen* pen, int x, int y, color_t fg, color_t bg)
+void draw_brush(Image* image, Brush* brush, int x, int y, color_t fg, color_t bg)
 {
-  Image* pen_image = pen->get_image();
-  const gfx::Rect& penBounds = pen->getBounds();
+  Image* brush_image = brush->get_image();
+  const gfx::Rect& brushBounds = brush->getBounds();
 
-  x += penBounds.x;
-  y += penBounds.y;
+  x += brushBounds.x;
+  y += brushBounds.y;
 
   if (fg == bg) {
-    fill_rect(image, x, y, x+penBounds.w-1, y+penBounds.h-1, bg);
+    fill_rect(image, x, y, x+brushBounds.w-1, y+brushBounds.h-1, bg);
   }
   else {
     int u, v;
-    for (v=0; v<penBounds.h; v++) {
-      for (u=0; u<penBounds.w; u++) {
-        if (get_pixel(pen_image, u, v))
+    for (v=0; v<brushBounds.h; v++) {
+      for (u=0; u<brushBounds.w; u++) {
+        if (get_pixel(brush_image, u, v))
           put_pixel(image, x+u, y+v, fg);
         else
           put_pixel(image, x+u, y+v, bg);

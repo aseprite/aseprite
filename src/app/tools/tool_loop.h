@@ -33,7 +33,7 @@ namespace raster {
   class Image;
   class Layer;
   class Mask;
-  class Pen;
+  class Brush;
   class RgbMap;
   class Sprite;
 }
@@ -70,8 +70,8 @@ namespace app {
       // Returns the tool to use to draw or use
       virtual Tool* getTool() = 0;
 
-      // Returns the pen which will be used with the tool
-      virtual Pen* getPen() = 0;
+      // Returns the brush which will be used with the tool
+      virtual Brush* getBrush() = 0;
 
       // Returns the document to which belongs the sprite.
       virtual Document* getDocument() = 0;

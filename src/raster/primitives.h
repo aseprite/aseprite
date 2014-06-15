@@ -24,13 +24,13 @@
 #include "raster/image_buffer.h"
 
 namespace raster {
+  class Brush;
   class Image;
   class Palette;
-  class Pen;
 
   color_t get_pixel(const Image* image, int x, int y);
   void put_pixel(Image* image, int x, int y, color_t c);
-  void put_pen(Image* image, Pen* pen, int x, int y, color_t fg, color_t bg);
+  void draw_brush(Image* image, Brush* brush, int x, int y, color_t fg, color_t bg);
 
   void clear_image(Image* image, color_t bg);
 

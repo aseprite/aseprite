@@ -24,7 +24,9 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/color_picker.h"
 #include "app/color_utils.h"
+#include "app/document_location.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
@@ -131,15 +133,15 @@ bool ColorButton::onProcessMessage(Message* msg)
           // Pick a color from a editor
           else if (picked->type == editor_type()) {
             Editor* editor = static_cast<Editor*>(picked);
-            Sprite* sprite = editor->getSprite();
-            int x, y, imgcolor;
-
-            if (sprite) {
-              x = mousePos.x;
-              y = mousePos.y;
+            DocumentLocation location = editor->getDocumentLocation();
+            if (location.sprite()) {
+              int x = mousePos.x;
+              int y = mousePos.y;
               editor->screenToEditor(x, y, &x, &y);
-              imgcolor = sprite->getPixel(x, y, editor->getFrame());
-              color = app::Color::fromImage(sprite->getPixelFormat(), imgcolor);
+
+              ColorPicker picker;
+              picker.pickColor(location, x, y, ColorPicker::FromComposition);
+              color = picker.color();
             }
           }
         }

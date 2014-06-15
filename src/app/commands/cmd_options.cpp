@@ -25,6 +25,7 @@
 #include "app/context.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
+#include "app/launcher.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -51,6 +52,7 @@ protected:
 
 private:
   void onResetCheckedBg();
+  void onLocateConfigFile();
 
   ComboBox* m_checked_bg;
   Widget* m_checked_bg_zoom;
@@ -83,6 +85,7 @@ void OptionsCommand::onExecute(Context* context)
   Widget* undo_size_limit = app::find_widget<Widget>(window, "undo_size_limit");
   Widget* undo_goto_modified = app::find_widget<Widget>(window, "undo_goto_modified");
   ComboBox* screen_scale = app::find_widget<ComboBox>(window, "screen_scale");
+  LinkLabel* locate_file = app::find_widget<LinkLabel>(window, "locate_file");
   Widget* button_ok = app::find_widget<Widget>(window, "button_ok");
 
   // Cursor color
@@ -142,6 +145,9 @@ void OptionsCommand::onExecute(Context* context)
   // Reset button
   checked_bg_reset->Click.connect(Bind<void>(&OptionsCommand::onResetCheckedBg, this));
 
+  // Locate config file
+  locate_file->Click.connect(Bind<void>(&OptionsCommand::onLocateConfigFile, this));
+
   // Undo limit
   undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
@@ -195,6 +201,11 @@ void OptionsCommand::onResetCheckedBg()
   m_checked_bg_zoom->setSelected(true);
   m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
   m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
+}
+
+void OptionsCommand::onLocateConfigFile()
+{
+  app::launcher::open_folder(app::get_config_file());
 }
 
 Command* CommandFactory::createOptionsCommand()

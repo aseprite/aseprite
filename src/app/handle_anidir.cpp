@@ -39,8 +39,8 @@ raster::FrameNumber calculate_next_frame(
   if (docSettings->getLoopAnimation()) {
     FrameNumber loopBegin, loopEnd;
     docSettings->getLoopRange(&loopBegin, &loopEnd);
-    if (loopBegin < first) loopBegin = first;
-    if (loopEnd > last) loopEnd = last;
+    loopBegin = MID(first, loopBegin, last);
+    loopEnd = MID(first, loopEnd, last);
 
     first = loopBegin;
     last = loopEnd;

@@ -45,9 +45,9 @@ namespace app {
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
 
-    // Returns true as the standby state is the only one which shows the
-    // pen-preview.
-    virtual bool requirePenPreview() OVERRIDE { return true; }
+    // Returns true as the standby state is the only one which shows
+    // the brush-preview.
+    virtual bool requireBrushPreview() OVERRIDE { return true; }
 
     virtual gfx::Transformation getTransformation(Editor* editor);
 

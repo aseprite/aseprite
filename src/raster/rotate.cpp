@@ -188,36 +188,46 @@ protected:
 
 class RgbDelegate : public GenericDelegate<RgbTraits> {
 public:
-  RgbDelegate() {
+  RgbDelegate(color_t mask_color) {
     m_blender = rgba_blenders[BLEND_MODE_NORMAL];
+    m_mask_color = mask_color;
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    *m_it = m_blender(*m_it, spr->getPixel(spr_x, spr_y), 255);
+    register int c = spr->getPixel(spr_x, spr_y);
+    if ((rgba_geta(m_mask_color) == 0) || ((c & rgba_rgb_mask) != (m_mask_color & rgba_rgb_mask)))
+      *m_it = m_blender(*m_it, c, 255);
+
     ++m_it;
   }
 
 private:
   BLEND_COLOR m_blender;
+  color_t m_mask_color;
 };
 
 class GrayscaleDelegate : public GenericDelegate<GrayscaleTraits> {
 public:
-  GrayscaleDelegate() {
+  GrayscaleDelegate(color_t mask_color) {
     m_blender = graya_blenders[BLEND_MODE_NORMAL];
+    m_mask_color = mask_color;
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    *m_it = m_blender(*m_it, spr->getPixel(spr_x, spr_y), 255);
+    register int c = spr->getPixel(spr_x, spr_y);
+    if ((graya_geta(m_mask_color) == 0) || ((c & graya_v_mask) != (m_mask_color & graya_v_mask)))
+      *m_it = m_blender(*m_it, c, 255);
+
     ++m_it;
   }
 
 private:
   BLEND_COLOR m_blender;
+  color_t m_mask_color;
 };
 
 class IndexedDelegate : public GenericDelegate<IndexedTraits> {
@@ -278,7 +288,7 @@ public:
 template<class Traits, class Delegate>
 static void ase_parallelogram_map(
   Image *bmp, Image *spr, fixed xs[4], fixed ys[4],
-  int sub_pixel_accuracy, Delegate delegate = Delegate())
+  int sub_pixel_accuracy, Delegate delegate)
 {
   /* Index in xs[] and ys[] to topmost point. */
   int top_index;
@@ -685,13 +695,17 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
 {
   switch (bmp->getPixelFormat()) {
 
-    case IMAGE_RGB:
-      ase_parallelogram_map<RgbTraits, RgbDelegate>(bmp, sprite, xs, ys, false);
+    case IMAGE_RGB: {
+      RgbDelegate delegate(sprite->getMaskColor());
+      ase_parallelogram_map<RgbTraits, RgbDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
+    }
 
-    case IMAGE_GRAYSCALE:
-      ase_parallelogram_map<GrayscaleTraits, GrayscaleDelegate>(bmp, sprite, xs, ys, false);
+    case IMAGE_GRAYSCALE: {
+      GrayscaleDelegate delegate(sprite->getMaskColor());
+      ase_parallelogram_map<GrayscaleTraits, GrayscaleDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
+    }
 
     case IMAGE_INDEXED: {
       IndexedDelegate delegate(sprite->getMaskColor());
@@ -699,9 +713,11 @@ static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
       break;
     }
 
-    case IMAGE_BITMAP:
-      ase_parallelogram_map<BitmapTraits, BitmapDelegate>(bmp, sprite, xs, ys, false);
+    case IMAGE_BITMAP: {
+      BitmapDelegate delegate;
+      ase_parallelogram_map<BitmapTraits, BitmapDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
+    }
   }
 }
 

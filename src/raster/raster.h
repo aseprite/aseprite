@@ -22,6 +22,7 @@
 
 #include "raster/algo.h"
 #include "raster/blend.h"
+#include "raster/brush.h"
 #include "raster/cel.h"
 #include "raster/color.h"
 #include "raster/color_scales.h"
@@ -33,7 +34,6 @@
 #include "raster/mask.h"
 #include "raster/object.h"
 #include "raster/palette.h"
-#include "raster/pen.h"
 #include "raster/pixel_format.h"
 #include "raster/primitives.h"
 #include "raster/primitives_fast.h"

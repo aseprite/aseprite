@@ -76,10 +76,10 @@ namespace app {
     // App Signals
     Signal0<void> Exit;
     Signal0<void> PaletteChange;
-    Signal0<void> PenSizeBeforeChange;
-    Signal0<void> PenSizeAfterChange;
-    Signal0<void> PenAngleBeforeChange;
-    Signal0<void> PenAngleAfterChange;
+    Signal0<void> BrushSizeBeforeChange;
+    Signal0<void> BrushSizeAfterChange;
+    Signal0<void> BrushAngleBeforeChange;
+    Signal0<void> BrushAngleAfterChange;
     Signal0<void> CurrentToolChange;
 
   private:

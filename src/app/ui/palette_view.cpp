@@ -74,12 +74,7 @@ PaletteView::PaletteView(bool editable)
   this->border_width.t = this->border_width.b = 1 * jguiscale();
   this->child_spacing = 1 * jguiscale();
 
-  m_slot = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
-}
-
-PaletteView::~PaletteView()
-{
-  App::instance()->PaletteChange.disconnect(m_slot);
+  m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
 }
 
 void PaletteView::setColumns(int columns)

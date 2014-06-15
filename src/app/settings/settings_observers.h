@@ -27,7 +27,7 @@
 #include "app/settings/selection_mode.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
-#include "raster/pen_type.h"
+#include "raster/brush_type.h"
 
 namespace app {
   class Color;
@@ -37,13 +37,13 @@ namespace app {
   }
   class ColorSwatches;
 
-  class PenSettingsObserver {
+  class BrushSettingsObserver {
   public:
-    virtual ~PenSettingsObserver() {}
+    virtual ~BrushSettingsObserver() {}
 
-    virtual void onSetPenSize(int newSize) {}
-    virtual void onSetPenType(raster::PenType newType) {}
-    virtual void onSetPenAngle(int newAngle) {}
+    virtual void onSetBrushSize(int newSize) {}
+    virtual void onSetBrushType(raster::BrushType newType) {}
+    virtual void onSetBrushAngle(int newAngle) {}
   };
 
   class ToolSettingsObserver {

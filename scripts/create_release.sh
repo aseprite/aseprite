@@ -19,7 +19,7 @@ if [ "$platform" == "win" ]; then
     generator=ninja
 elif [ "$platform" == "mac" ]; then
     exefile=aseprite
-    generator=make
+    generator="make -j4"
 fi
 
 # --------------------------

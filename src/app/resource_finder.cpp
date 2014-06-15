@@ -26,6 +26,7 @@
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "base/string.h"
 
 namespace app {
 
@@ -40,10 +41,14 @@ const std::string& ResourceFinder::filename() const
   return m_paths.at(m_current);
 }
 
-bool ResourceFinder::first()
+const std::string& ResourceFinder::defaultFilename() const
 {
-  m_current = 0;
-  return (m_current < (int)m_paths.size());
+  if (m_default.empty()) {
+    // The first path is the default one if nobody specified it.
+    if (!m_paths.empty())
+      return m_paths[0];
+  }
+  return m_default;
 }
 
 bool ResourceFinder::next()
@@ -169,6 +174,15 @@ void ResourceFinder::includeHomeDir(const char* filename)
 
 #elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
 
+  // %AppData%/Aseprite/filename
+  wchar_t* env = _wgetenv(L"AppData");
+  if (env) {
+    std::string path = base::join_path(base::to_utf8(env), "Aseprite");
+    path = base::join_path(path, filename);
+    addPath(path);
+    m_default = path;
+  }
+
   // $PREFIX/data/filename
   includeDataDir(filename);
 
@@ -187,10 +201,15 @@ void ResourceFinder::includeConfFile()
   // $HOME/.asepriterc
   includeHomeDir(".asepriterc");
 
-#endif
+#elif defined ALLEGRO_WINDOWS
 
   // $BINDIR/aseprite.ini
   includeBinDir("aseprite.ini");
+
+  // %AppData%/Aseprite/aseprite.ini
+  includeHomeDir("aseprite.ini");
+
+#endif
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2013  David Capello
+# Copyright (C) 2001-2014  David Capello
 
 add_library(raster-lib
   algo.cpp
@@ -9,6 +9,7 @@ add_library(raster-lib
   algorithm/resize_image.cpp
   algorithm/shrink_bounds.cpp
   blend.cpp
+  brush.cpp
   cel.cpp
   cel_io.cpp
   color_scales.cpp
@@ -27,7 +28,6 @@ add_library(raster-lib
   object.cpp
   palette.cpp
   palette_io.cpp
-  pen.cpp
   primitives.cpp
   quantization.cpp
   rgbmap.cpp

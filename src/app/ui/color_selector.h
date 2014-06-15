@@ -25,6 +25,7 @@
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/popup_window_pin.h"
+#include "base/connection.h"
 #include "base/signal.h"
 #include "ui/button.h"
 #include "ui/grid.h"
@@ -82,7 +83,7 @@ namespace app {
     GraySlider m_graySlider;
     ui::Label m_maskLabel;
     WarningIcon* m_warningIcon;
-    Signal0<void>::SlotType* m_onPaletteChangeSlot;
+    ScopedConnection m_onPaletteChangeConn;
 
     // This variable is used to avoid updating the m_hexColorEntry text
     // when the color change is generated from a
