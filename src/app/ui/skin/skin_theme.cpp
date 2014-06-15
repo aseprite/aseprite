@@ -287,6 +287,12 @@ SkinTheme::SkinTheme()
   sheet_mapping["drop_pixels_ok_selected"] = PART_DROP_PIXELS_OK_SELECTED;
   sheet_mapping["drop_pixels_cancel"] = PART_DROP_PIXELS_CANCEL;
   sheet_mapping["drop_pixels_cancel_selected"] = PART_DROP_PIXELS_CANCEL_SELECTED;
+  sheet_mapping["freehand_algo_default"] = PART_FREEHAND_ALGO_DEFAULT;
+  sheet_mapping["freehand_algo_default_selected"] = PART_FREEHAND_ALGO_DEFAULT_SELECTED;
+  sheet_mapping["freehand_algo_pixel_perfect"] = PART_FREEHAND_ALGO_PIXEL_PERFECT;
+  sheet_mapping["freehand_algo_pixel_perfect_selected"] = PART_FREEHAND_ALGO_PIXEL_PERFECT_SELECTED;
+  sheet_mapping["freehand_algo_dots"] = PART_FREEHAND_ALGO_DOTS;
+  sheet_mapping["freehand_algo_dots_selected"] = PART_FREEHAND_ALGO_DOTS_SELECTED;
 
   color_mapping["text"] = ThemeColor::Text;
   color_mapping["disabled"] = ThemeColor::Disabled;

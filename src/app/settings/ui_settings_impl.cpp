@@ -760,13 +760,19 @@ public:
 
     tools::ToolBox* toolBox = App::instance()->getToolBox();
     for (int i=0; i<2; ++i) {
-      if (algorithm == kPixelPerfectFreehandAlgorithm) {
-        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
-        m_tool->setTracePolicy(i, tools::TracePolicyLast);
-      }
-      else {
-        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
-        m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+      switch (algorithm) {
+        case kDefaultFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
+          m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+          break;
+        case kPixelPerfectFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
+          m_tool->setTracePolicy(i, tools::TracePolicyLast);
+          break;
+        case kDotsFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::None));
+          m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+          break;
       }
     }
   }

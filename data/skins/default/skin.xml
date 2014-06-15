@@ -328,6 +328,12 @@
     <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
     <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
     <part id="warning_box"                      x="112" y="80" w="9" h="10" />
+    <part id="freehand_algo_default"            x="144" y="208" w="8" h="8" />
+    <part id="freehand_algo_default_selected"   x="152" y="208" w="8" h="8" />
+    <part id="freehand_algo_pixel_perfect"      x="160" y="208" w="8" h="8" />
+    <part id="freehand_algo_pixel_perfect_selected" x="168" y="208" w="8" h="8" />
+    <part id="freehand_algo_dots"               x="176" y="208" w="8" h="8" />
+    <part id="freehand_algo_dots_selected"      x="184" y="208" w="8" h="8" />
   </parts>
 
   <stylesheet>

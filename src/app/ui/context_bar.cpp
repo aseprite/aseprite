@@ -440,26 +440,144 @@ private:
   bool m_lockChange;
 };
 
-class ContextBar::FreehandAlgorithmField : public CheckBox
+class ContextBar::FreehandAlgorithmField : public Button
+                                         , public IButtonIcon
 {
 public:
-  FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
-    setup_mini_font(this);
+  FreehandAlgorithmField()
+    : Button("")
+    , m_popupWindow(NULL)
+    , m_tooltipManager(NULL) {
+    setup_mini_look(this);
+    setIconInterface(this);
   }
 
+  ~FreehandAlgorithmField() {
+    closePopup();
+    setIconInterface(NULL);
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    m_tooltipManager = tooltipManager;
+  }
+
+  void setFreehandAlgorithm(FreehandAlgorithm algo) {
+    int part = PART_FREEHAND_ALGO_DEFAULT;
+    m_freehandAlgo = algo;
+    switch (m_freehandAlgo) {
+      case kDefaultFreehandAlgorithm:
+        part = PART_FREEHAND_ALGO_DEFAULT;
+        break;
+      case kPixelPerfectFreehandAlgorithm:
+        part = PART_FREEHAND_ALGO_PIXEL_PERFECT;
+        break;
+      case kDotsFreehandAlgorithm:
+        part = PART_FREEHAND_ALGO_DOTS;
+        break;
+    }
+    m_bitmap = static_cast<SkinTheme*>(getTheme())->get_part(part);
+    invalidate();
+  }
+
+  // IButtonIcon implementation
+  void destroy() OVERRIDE {
+    // Do nothing, BrushTypeField is added as a widget in the
+    // ContextBar, so it will be destroyed together with the
+    // ContextBar.
+  }
+
+  int getWidth() OVERRIDE {
+    return m_bitmap->w;
+  }
+
+  int getHeight() OVERRIDE {
+    return m_bitmap->h;
+  }
+
+  BITMAP* getNormalIcon() OVERRIDE {
+    return m_bitmap;
+  }
+
+  BITMAP* getSelectedIcon() OVERRIDE {
+    return m_bitmap;
+  }
+
+  BITMAP* getDisabledIcon() OVERRIDE {
+    return m_bitmap;
+  }
+
+  int getIconAlign() OVERRIDE {
+    return JI_CENTER | JI_MIDDLE;
+  }
+
+protected:
   void onClick(Event& ev) OVERRIDE {
-    CheckBox::onClick(ev);
+    Button::onClick(ev);
+
+    if (!m_popupWindow || !m_popupWindow->isVisible())
+      openPopup();
+    else
+      closePopup();
+  }
+
+  void onPreferredSize(PreferredSizeEvent& ev) {
+    ev.setPreferredSize(Size(16*jguiscale(),
+                             16*jguiscale()));
+  }
+
+private:
+  void openPopup() {
+    Border border = Border(2, 2, 2, 3)*jguiscale();
+    Rect rc = getBounds();
+    rc.y += rc.h;
+    rc.w *= 3;
+    m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
+    m_popupWindow->setAutoRemap(false);
+    m_popupWindow->setBorder(border);
+    m_popupWindow->setBounds(rc + border);
+
+    Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
+    m_popupWindow->setHotRegion(rgn);
+    m_freehandAlgoButton = new ButtonSet(3, 1, m_freehandAlgo,
+      PART_FREEHAND_ALGO_DEFAULT,
+      PART_FREEHAND_ALGO_PIXEL_PERFECT,
+      PART_FREEHAND_ALGO_DOTS);
+    m_freehandAlgoButton->ItemChange.connect(&FreehandAlgorithmField::onFreehandAlgoChange, this);
+    m_freehandAlgoButton->setTransparent(true);
+    m_freehandAlgoButton->setBgColor(ui::ColorNone);
+
+    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(0), "Normal trace", JI_TOP);
+    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(1), "Pixel-perfect trace", JI_TOP);
+    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(2), "Dots", JI_TOP);
+
+    m_popupWindow->addChild(m_freehandAlgoButton);
+    m_popupWindow->openWindow();
+  }
+
+  void closePopup() {
+    if (m_popupWindow) {
+      m_popupWindow->closeWindow(NULL);
+      delete m_popupWindow;
+      m_popupWindow = NULL;
+      m_freehandAlgoButton = NULL;
+    }
+  }
+
+  void onFreehandAlgoChange() {
+    setFreehandAlgorithm(
+      (FreehandAlgorithm)m_freehandAlgoButton->getSelectedItem());
 
     ISettings* settings = UIContext::instance()->getSettings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
-      ->setFreehandAlgorithm(isSelected() ?
-        kPixelPerfectFreehandAlgorithm:
-        kDefaultFreehandAlgorithm);
-
-    releaseFocus(
-);
+      ->setFreehandAlgorithm(m_freehandAlgo);
   }
+
+  BITMAP* m_bitmap;
+  FreehandAlgorithm m_freehandAlgo;
+  PopupWindow* m_popupWindow;
+  ButtonSet* m_freehandAlgoButton;
+  TooltipManager* m_tooltipManager;
 };
 
 class ContextBar::SelectionModeField : public ButtonSet
@@ -474,8 +592,7 @@ public:
       ->selection()->getSelectionMode());
   }
 
-  void setupTooltips(TooltipManager* tooltipManager)
-  {
+  void setupTooltips(TooltipManager* tooltipManager) {
     tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_BOTTOM);
     tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_BOTTOM);
     tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_BOTTOM);
@@ -572,11 +689,14 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
+  Label* freehandLabel;
   addChild(m_freehandBox = new HBox());
+  m_freehandBox->addChild(freehandLabel = new Label("Freehand:"));
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   setup_mini_font(m_toleranceLabel);
   setup_mini_font(m_opacityLabel);
+  setup_mini_font(freehandLabel);
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
@@ -597,6 +717,7 @@ ContextBar::ContextBar()
     "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
+  m_freehandAlgo->setupTooltips(tooltipManager);
 
   App::instance()->BrushSizeAfterChange.connect(&ContextBar::onBrushSizeChange, this);
   App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
@@ -681,7 +802,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
   m_grabAlpha->setSelected(settings->getGrabAlpha());
-  m_freehandAlgo->setSelected(toolSettings->getFreehandAlgorithm() == kPixelPerfectFreehandAlgorithm);
+  m_freehandAlgo->setFreehandAlgorithm(toolSettings->getFreehandAlgorithm());
 
   m_sprayWidth->setValue(toolSettings->getSprayWidth());
   m_spraySpeed->setValue(toolSettings->getSpraySpeed());
