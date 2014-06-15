@@ -1,6 +1,5 @@
 # Next release
 
-* ColorSelector: change color type when a tab is pressed
 * canvas dialog should show width and height and expansion point
 * double click or right click a range outline in timeline should open popups or properties
 
