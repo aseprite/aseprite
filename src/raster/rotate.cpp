@@ -190,14 +190,14 @@ class RgbDelegate : public GenericDelegate<RgbTraits> {
 public:
   RgbDelegate(color_t mask_color) {
     m_blender = rgba_blenders[BLEND_MODE_NORMAL];
-    m_mask_color = mask_color & rgba_rgb_mask;
+    m_mask_color = mask_color;
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
     register int c = spr->getPixel(spr_x, spr_y);
-    if ((c & rgba_rgb_mask) != m_mask_color)
+    if ((rgba_geta(m_mask_color) == 0) || ((c & rgba_rgb_mask) != (m_mask_color & rgba_rgb_mask)))
       *m_it = m_blender(*m_it, c, 255);
 
     ++m_it;
@@ -212,14 +212,14 @@ class GrayscaleDelegate : public GenericDelegate<GrayscaleTraits> {
 public:
   GrayscaleDelegate(color_t mask_color) {
     m_blender = graya_blenders[BLEND_MODE_NORMAL];
-    m_mask_color = mask_color & graya_v_mask;
+    m_mask_color = mask_color;
   }
 
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
     register int c = spr->getPixel(spr_x, spr_y);
-    if ((c & graya_v_mask) != m_mask_color)
+    if ((graya_geta(m_mask_color) == 0) || ((c & graya_v_mask) != (m_mask_color & graya_v_mask)))
       *m_it = m_blender(*m_it, c, 255);
 
     ++m_it;
