@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,36 +16,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_PALETTE_POPUP_H_INCLUDED
-#define APP_UI_PALETTE_POPUP_H_INCLUDED
+#ifndef APP_RES_RESOURCE_H_INCLUDED
+#define APP_RES_RESOURCE_H_INCLUDED
 #pragma once
-
-#include "app/ui/palettes_listbox.h"
-#include "base/compiler_specific.h"
-#include "ui/popup_window.h"
-
-namespace ui {
-  class Button;
-  class View;
-}
 
 namespace app {
 
-  class PalettePopup : public ui::PopupWindow {
+  class Resource {
   public:
-    PalettePopup();
-
-    void showPopup(const gfx::Rect& bounds);
-
-  protected:
-    void onPalChange(raster::Palette* palette);
-    void onLoad();
-    void onOpenFolder();
-
-  private:
-    ui::View* m_view;
-    ui::Button* m_load;
-    PalettesListBox m_paletteListBox;
+    virtual ~Resource() { }
+    virtual const std::string& name() const = 0;
   };
 
 } // namespace app
