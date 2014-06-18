@@ -667,7 +667,13 @@ System* Instance()
 
 void error_message(const char* msg)
 {
+#ifdef WIN32
+  std::wstring wmsg = base::from_utf8(msg);
+  std::wstring title = base::from_utf8(PACKAGE);
+  ::MessageBoxW(NULL, wmsg.c_str(), title.c_str(), MB_OK | MB_ICONERROR);
+#else
   allegro_message(msg);
+#endif
 }
 
 } // namespace she
