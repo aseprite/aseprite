@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,9 @@
 #include "base/exception.h"
 #include "base/memory.h"
 #include "base/memory_dump.h"
-#include "she/she.h"
+#include "she/error.h"
+#include "she/scoped_handle.h"
+#include "she/system.h"
 #include "ui/base.h"
 
 #include <cstdlib>
@@ -51,16 +53,12 @@ namespace {
 
   class MemLeak {
   public:
-    MemLeak() {
 #ifdef MEMLEAK
-      base_memleak_init();
+    MemLeak() { base_memleak_init(); }
+    ~MemLeak() { base_memleak_exit(); }
+#else
+    MemLeak() { }
 #endif
-    }
-    ~MemLeak() {
-#ifdef MEMLEAK
-      base_memleak_exit();
-#endif
-    }
   };
 
   bool getMemoryDumpFilename(std::string& filename)
@@ -77,7 +75,7 @@ namespace {
 
 }
 
-// ASEPRITE entry point. (Called from she library.)
+// Aseprite entry point. (Called from she library.)
 int app_main(int argc, char* argv[])
 {
   // Initialize the random seed.
@@ -105,9 +103,7 @@ int app_main(int argc, char* argv[])
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';
-#ifdef WIN32
-    ::MessageBoxA(NULL, e.what(), PACKAGE, MB_OK | MB_ICONERROR);
-#endif
+    she::error_message(e.what());
     return 1;
   }
 }
