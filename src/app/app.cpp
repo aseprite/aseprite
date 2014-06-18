@@ -66,6 +66,7 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "scripting/engine.h"
+#include "she/error.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -77,7 +78,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -313,7 +313,7 @@ App::~App()
     m_instance = NULL;
   }
   catch (...) {
-    allegro_message("Error closing ASE.\n(uncaught exception)");
+    she::error_message("Error closing ASE.\n(uncaught exception)");
 
     // no re-throw
   }

@@ -665,7 +665,12 @@ System* Instance()
   return g_instance;
 }
 
+void error_message(const char* msg)
+{
+  allegro_message(msg);
 }
+
+} // namespace she
 
 // It must be defined by the user program code.
 extern int app_main(int argc, char* argv[]);

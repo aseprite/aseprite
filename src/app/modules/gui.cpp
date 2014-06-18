@@ -49,6 +49,7 @@
 #include "raster/sprite.h"
 #include "she/clipboard.h"
 #include "she/display.h"
+#include "she/error.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
@@ -188,7 +189,7 @@ int init_module_gui()
   }
 
   if (!main_display) {
-    allegro_message("Unable to create a user-interface display.\n");
+    she::error_message("Unable to create a user-interface display.\n");
     return -1;
   }
 

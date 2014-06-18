@@ -27,6 +27,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/main_window.h"
+#include "she/error.h"
 #include "ui/manager.h"
 #include "ui/window.h"
 
@@ -107,7 +108,7 @@ bool CurrentGfxModeGuard::tryGfxMode(const GfxMode& newMode)
     if (!m_oldMode.setGfxMode()) {
       // Oh no! more errors!, we can't restore the old graphics mode!
       set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
-      allegro_message("FATAL ERROR: Unable to restore the old graphics mode!\n");
+      she::error_message("FATAL ERROR: Unable to restore the old graphics mode!\n");
       exit(1);
     }
     // Only print a message of the old error
