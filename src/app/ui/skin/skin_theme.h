@@ -33,12 +33,14 @@
 #include <map>
 #include <string>
 
-#include <allegro/color.h>
-
 namespace ui {
   class Entry;
   class Graphics;
   class IButtonIcon;
+}
+
+namespace she {
+  class Surface;
 }
 
 namespace app {
@@ -120,7 +122,7 @@ namespace app {
         return m_colors[k];
       }
 
-      FONT* getMiniFont() const { return m_minifont; }
+      she::Font* getMiniFont() const { return m_minifont; }
 
       void reload_skin();
       void reload_fonts();
@@ -159,8 +161,8 @@ namespace app {
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
-      BITMAP* get_part(int part_i) const { return m_part[part_i]; }
-      BITMAP* get_toolicon(const char* tool_id) const;
+      she::Surface* get_part(int part_i) const { return m_part[part_i]; }
+      she::Surface* get_toolicon(const char* tool_id) const;
       gfx::Size get_part_size(int part_i) const;
 
       // Helper functions to draw bounds/hlines with sheet parts
@@ -192,11 +194,11 @@ namespace app {
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
-                                BITMAP* nw, BITMAP* n, BITMAP* ne,
-                                BITMAP* e, BITMAP* se, BITMAP* s,
-                                BITMAP* sw, BITMAP* w);
+        she::Surface* nw, she::Surface* n, she::Surface* ne,
+        she::Surface* e, she::Surface* se, she::Surface* s,
+        she::Surface* sw, she::Surface* w);
 
-      BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
+      she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       ui::Color getWidgetBgColor(ui::Widget* widget);
       void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
                           bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
@@ -205,18 +207,18 @@ namespace app {
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
-      static FONT* loadFont(const char* userFont, const std::string& path);
+      static she::Font* loadFont(const char* userFont, const std::string& path);
 
       std::string m_selected_skin;
-      BITMAP* m_sheet_bmp;
-      std::vector<BITMAP*> m_part;
+      she::Surface* m_sheet;
+      std::vector<she::Surface*> m_part;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
-      std::map<std::string, BITMAP*> m_toolicon;
+      std::map<std::string, she::Surface*> m_toolicon;
       std::map<std::string, ui::Color> m_colors_by_id;
       std::vector<ui::Cursor*> m_cursors;
       std::vector<ui::Color> m_colors;
       StyleSheet m_stylesheet;
-      FONT* m_minifont;
+      she::Font* m_minifont;
     };
 
     inline Style* get_style(const std::string& id) {

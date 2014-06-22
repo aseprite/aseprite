@@ -24,10 +24,9 @@
 
 #include "app/ui/skin/skin_theme.h"
 #include "css/sheet.h"
+#include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/theme.h"
-
-#include <allegro.h>
 
 namespace app {
 namespace skin {
@@ -56,7 +55,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       if (!ui::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
-      g->drawAlphaBitmap(m_part->getBitmap(0), bounds.x, bounds.y);
+      g->drawRgbaSurface(m_part->getBitmap(0), bounds.x, bounds.y);
     }
     else if (m_part->size() == 8) {
       theme->draw_bounds_nw(g, bounds, m_part, m_color);
@@ -72,7 +71,7 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
 
   if (text) {
-    g->drawString(text,
+    g->drawAlignedUIString(text,
       (ui::is_transparent(m_color) ?
         theme->getColor(ThemeColor::Text):
         m_color),
@@ -83,24 +82,24 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
 
 void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text)
 {
-  BITMAP* bmp = m_part->getBitmap(0);
+  she::Surface* bmp = m_part->getBitmap(0);
   int x, y;
 
   if (m_align & JI_RIGHT)
-    x = bounds.x2() - bmp->w;
+    x = bounds.x2() - bmp->width();
   else if (m_align & JI_CENTER)
-    x = bounds.x + bounds.w/2 - bmp->w/2;
+    x = bounds.x + bounds.w/2 - bmp->width()/2;
   else
     x = bounds.x;
 
   if (m_align & JI_BOTTOM)
-    y = bounds.y2() - bmp->h;
+    y = bounds.y2() - bmp->height();
   else if (m_align & JI_MIDDLE)
-    y = bounds.y + bounds.h/2 - bmp->h/2;
+    y = bounds.y + bounds.h/2 - bmp->height()/2;
   else
     y = bounds.y;
 
-  g->drawAlphaBitmap(bmp, x, y);
+  g->drawRgbaSurface(bmp, x, y);
 }
 
 Rules::Rules(const css::Query& query) :
@@ -169,12 +168,12 @@ gfx::Size Rules::preferredSize(const char* text)
 {
   gfx::Size sz(0, 0);
   if (m_icon) {
-    sz.w += m_icon->getPart()->getBitmap(0)->w;
-    sz.h = m_icon->getPart()->getBitmap(0)->h;
+    sz.w += m_icon->getPart()->getBitmap(0)->width();
+    sz.h = m_icon->getPart()->getBitmap(0)->height();
   }
   if (m_text && text) {
     ui::ScreenGraphics g;
-    gfx::Size textSize = g.measureString(text);
+    gfx::Size textSize = g.measureUIString(text);
     //if (sz.w > 0) sz.w += 2;    // TODO text separation
     sz.w += textSize.w;
     sz.h = MAX(sz.h, textSize.h);

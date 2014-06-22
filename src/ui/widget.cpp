@@ -11,6 +11,7 @@
 #endif
 
 #include "base/memory.h"
+#include "she/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -61,7 +62,7 @@ Widget::Widget(WidgetType type)
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
-  this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
+  this->m_font = (this->m_theme ? this->m_theme->default_font: NULL);
   this->m_bgColor = ui::ColorNone;
 
   this->theme_data[0] = NULL;
@@ -157,14 +158,14 @@ void Widget::setTextQuiet(const std::string& text)
   flags |= JI_HASTEXT;
 }
 
-FONT *Widget::getFont() const
+she::Font* Widget::getFont() const
 {
   return m_font;
 }
 
-void Widget::setFont(FONT* f)
+void Widget::setFont(she::Font* font)
 {
-  m_font = f;
+  m_font = font;
   invalidate();
 }
 
@@ -735,16 +736,12 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 
 int Widget::getTextWidth() const
 {
-#if 1
-  return ji_font_text_len(getFont(), getText().c_str());
-#else  /* use cached text size */
-  return text_size_pix;
-#endif
+  return Graphics::measureUIStringLength(getText().c_str(), getFont());
 }
 
 int Widget::getTextHeight() const
 {
-  return text_height(getFont());
+  return getFont()->height();
 }
 
 void Widget::getTextIconInfo(

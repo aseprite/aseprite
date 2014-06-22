@@ -15,8 +15,6 @@ add_library(ui-lib
   draw.cpp
   entry.cpp
   event.cpp
-  font.cpp
-  fontbmp.cpp
   graphics.cpp
   grid.cpp
   image_view.cpp

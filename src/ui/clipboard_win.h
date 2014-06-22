@@ -7,8 +7,7 @@
 #include "base/string.h"
 
 #include <algorithm>
-#include <allegro.h>
-#include <winalleg.h>
+#include <windows.h>
 
 #pragma warning(disable:4996)   // To void MSVC warning about std::copy() with unsafe arguments
 

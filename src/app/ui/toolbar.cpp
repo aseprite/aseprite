@@ -39,9 +39,9 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gfx/size.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <string>
 
 namespace app {
@@ -78,9 +78,9 @@ private:
 static Size getToolIconSize(Widget* widget)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  BITMAP* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->get_toolicon("configuration");
   if (icon)
-    return Size(icon->w, icon->h);
+    return Size(icon->width(), icon->height());
   else
     return Size(16, 16) * jguiscale();
 }
@@ -349,11 +349,11 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     theme->draw_bounds_nw(g, toolrc, nw, face);
 
     // Draw the tool icon
-    BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+    she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
     if (icon) {
-      g->drawAlphaBitmap(icon,
-        toolrc.x+toolrc.w/2-icon->w/2,
-        toolrc.y+toolrc.h/2-icon->h/2);
+      g->drawRgbaSurface(icon,
+        toolrc.x+toolrc.w/2-icon->width()/2,
+        toolrc.y+toolrc.h/2-icon->height()/2);
     }
   }
 
@@ -367,11 +367,11 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     PART_TOOLBUTTON_LAST_NW,
     isHot ? hotFace: normalFace);
 
-  BITMAP* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->get_toolicon("configuration");
   if (icon) {
-    g->drawAlphaBitmap(icon,
-      toolrc.x+toolrc.w/2-icon->w/2,
-      toolrc.y+toolrc.h/2-icon->h/2);
+    g->drawRgbaSurface(icon,
+      toolrc.x+toolrc.w/2-icon->width()/2,
+      toolrc.y+toolrc.h/2-icon->height()/2);
   }
 
   // Draw button to show/hide mini editor
@@ -387,9 +387,9 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 
   icon = theme->get_toolicon("minieditor");
   if (icon) {
-    g->drawAlphaBitmap(icon,
-      toolrc.x+toolrc.w/2-icon->w/2,
-      toolrc.y+toolrc.h/2-icon->h/2);
+    g->drawRgbaSurface(icon,
+      toolrc.x+toolrc.w/2-icon->width()/2,
+      toolrc.y+toolrc.h/2-icon->height()/2);
   }
 }
 
@@ -759,11 +759,11 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       theme->draw_bounds_nw(g, toolrc, nw, face);
 
       // Draw the tool icon
-      BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+      she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
       if (icon) {
-        g->drawAlphaBitmap(icon,
-          toolrc.x+toolrc.w/2-icon->w/2,
-          toolrc.y+toolrc.h/2-icon->h/2);
+        g->drawRgbaSurface(icon,
+          toolrc.x+toolrc.w/2-icon->width()/2,
+          toolrc.y+toolrc.h/2-icon->height()/2);
       }
     }
   }

@@ -11,8 +11,9 @@
 #include "ui/base.h"
 #include "ui/color.h"
 
-struct FONT;
-struct BITMAP;
+namespace she {
+  class Font;
+}
 
 namespace ui {
 
@@ -25,17 +26,13 @@ namespace ui {
   void addWidget(Widget* widget);
   void removeWidget(Widget* widget);
 
-  void setFontOfAllWidgets(FONT* f);
+  void setFontOfAllWidgets(she::Font* font);
   void reinitThemeForAllWidgets();
 
   // theme.cpp
 
   void drawTextBox(Graphics* g, Widget* textbox,
                    int* w, int* h, ui::Color bg, ui::Color fg);
-
-  // fontbmp.c
-
-  struct FONT* bitmapToFont(BITMAP* bmp);
 
 } // namespace ui
 

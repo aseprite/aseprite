@@ -12,10 +12,13 @@
 #include "ui/cursor_type.h"
 
 struct BITMAP;
-struct FONT;
 
 namespace gfx {
   class Region;
+}
+
+namespace she {
+  class Font;
 }
 
 namespace ui {
@@ -28,7 +31,7 @@ namespace ui {
   {
   public:
     const char* name;
-    struct FONT* default_font;
+    she::Font* default_font;
     int scrollbar_size;
     int guiscale;
 
@@ -77,8 +80,6 @@ namespace ui {
     void set(Theme* theme);
     Theme* get();
   }
-
-  BITMAP* ji_apply_guiscale(BITMAP* original);
 
   // This value is a factor to multiply every screen size/coordinate.
   // Every icon/graphics/font should be scaled to this factor.

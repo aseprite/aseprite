@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
@@ -213,7 +211,7 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   gfx::Rect text;
   getTextIconInfo(NULL, &text);
-  g->drawString(getText(), textcolor, ColorNone, false, text.getOrigin());
+  g->drawUIString(getText(), textcolor, ColorNone, false, text.getOrigin());
 }
 
 void ColorButton::onClick(Event& ev)

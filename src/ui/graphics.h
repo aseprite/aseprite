@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,17 +18,20 @@
 #include <string>
 
 struct BITMAP;
-struct FONT;
 
 namespace gfx {
   class Region;
 }
 
+namespace she {
+  class Font;
+  class Surface;
+}
+
 namespace ui {
 
   // Class to render a widget in the screen.
-  class Graphics
-  {
+  class Graphics {
   public:
     Graphics(BITMAP* bmp, int dx, int dy);
     ~Graphics();
@@ -51,8 +54,8 @@ namespace ui {
     void fillAreaBetweenRects(ui::Color color,
       const gfx::Rect& outer, const gfx::Rect& inner);
 
-    void drawBitmap(BITMAP* sprite, int x, int y);
-    void drawAlphaBitmap(BITMAP* sprite, int x, int y);
+    void drawSurface(she::Surface* surface, int x, int y);
+    void drawRgbaSurface(she::Surface* surface, int x, int y);
 
     void blit(BITMAP* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
@@ -60,32 +63,31 @@ namespace ui {
     // FONT & TEXT
     // ======================================================================
 
-    void setFont(FONT* font);
-    FONT* getFont() {
-      return m_currentFont;
-    }
+    void setFont(she::Font* font);
+    she::Font* getFont() { return m_font; }
 
     void drawChar(int chr, Color fg, Color bg, int x, int y);
     void drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
-    void drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
+    void drawUIString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
+    void drawAlignedUIString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
 
     gfx::Size measureChar(int chr);
-    gfx::Size measureString(const std::string& str);
+    gfx::Size measureUIString(const std::string& str);
+    static int measureUIStringLength(const std::string& str, she::Font* font);
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   private:
-    gfx::Size drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw);
+    gfx::Size doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw);
 
     BITMAP* m_bmp;
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;
-    FONT* m_currentFont;
+    she::Font* m_font;
   };
 
   // Class to draw directly in the screen.
-  class ScreenGraphics : public Graphics
-  {
+  class ScreenGraphics : public Graphics {
   public:
     ScreenGraphics();
     virtual ~ScreenGraphics();
@@ -93,8 +95,7 @@ namespace ui {
 
   // Class to temporary set the Graphics' clip region to a sub-rectangle
   // (in the life-time of the IntersectClip instance).
-  class IntersectClip
-  {
+  class IntersectClip {
   public:
     IntersectClip(Graphics* g, const gfx::Rect& rc)
       : m_graphics(g)

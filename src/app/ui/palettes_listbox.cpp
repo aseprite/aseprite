@@ -83,7 +83,7 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
   // g->drawString(getText(), fgcolor, ui::ColorNone, false,
   //   gfx::Point(
   //     bounds.x + jguiscale()*2,
-  //     bounds.y + bounds.h/2 - g->measureString(getText()).h/2));
+  //     bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
 }
 
 void PalettesListBox::onResourcePreferredSize(Resource* resource, gfx::Size& size)

@@ -23,8 +23,7 @@
 #include "app/ui/skin/button_icon_impl.h"
 
 #include "app/ui/skin/skin_theme.h"
-
-#include <allegro.h>
+#include "she/surface.h"
 
 namespace app {
 
@@ -51,25 +50,25 @@ void ButtonIconImpl::destroy()
 
 int ButtonIconImpl::getWidth()
 {
-  return m_theme->get_part(m_normalIcon)->w;
+  return m_theme->get_part(m_normalIcon)->width();
 }
 
 int ButtonIconImpl::getHeight()
 {
-  return m_theme->get_part(m_normalIcon)->h;
+  return m_theme->get_part(m_normalIcon)->height();
 }
 
-BITMAP* ButtonIconImpl::getNormalIcon()
+she::Surface* ButtonIconImpl::getNormalIcon()
 {
   return m_theme->get_part(m_normalIcon);
 }
 
-BITMAP* ButtonIconImpl::getSelectedIcon()
+she::Surface* ButtonIconImpl::getSelectedIcon()
 {
   return m_theme->get_part(m_selectedIcon);
 }
 
-BITMAP* ButtonIconImpl::getDisabledIcon()
+she::Surface* ButtonIconImpl::getDisabledIcon()
 {
   return m_theme->get_part(m_disabledIcon);
 }

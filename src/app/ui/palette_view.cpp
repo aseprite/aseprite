@@ -20,10 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/modules/gui.h"
@@ -43,6 +39,9 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+
+#include <cstdlib>
+#include <cstring>
 
 namespace app {
 

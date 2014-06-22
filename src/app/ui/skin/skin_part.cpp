@@ -22,7 +22,7 @@
 
 #include "app/ui/skin/skin_part.h"
 
-#include <allegro.h>
+#include "she/surface.h"
 
 namespace app {
 namespace skin {
@@ -42,12 +42,12 @@ void SkinPart::clear()
        it != end; ++it) {
     ASSERT(*it != NULL);
 
-    destroy_bitmap(*it);
+    (*it)->dispose();
     *it = NULL;
   }
 }
 
-void SkinPart::setBitmap(size_t index, BITMAP* bitmap)
+void SkinPart::setBitmap(size_t index, she::Surface* bitmap)
 {
   if (index >= m_bitmaps.size())
     m_bitmaps.resize(index+1, NULL);

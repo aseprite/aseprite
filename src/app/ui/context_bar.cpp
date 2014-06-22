@@ -43,6 +43,9 @@
 #include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/button.h"
 #include "ui/combobox.h"
 #include "ui/int_entry.h"
@@ -53,8 +56,6 @@
 #include "ui/theme.h"
 #include "ui/tooltips.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace app::skin;
@@ -63,8 +64,7 @@ using namespace ui;
 using namespace tools;
 
 class ContextBar::BrushTypeField : public Button
-                                 , public IButtonIcon
-{
+                                 , public IButtonIcon {
 public:
   BrushTypeField()
     : Button("")
@@ -73,14 +73,16 @@ public:
     setup_mini_look(this);
     setIconInterface(this);
 
-    m_bitmap = create_bitmap_ex(32, 8, 8);
-    clear(m_bitmap);
+    m_bitmap = she::instance()->createRgbaSurface(8, 8);
+    she::ScopedSurfaceLock lock(m_bitmap);
+    lock->clear();
   }
 
   ~BrushTypeField() {
     closePopup();
     setIconInterface(NULL);
-    destroy_bitmap(m_bitmap);
+
+    m_bitmap->dispose();
   }
 
   void setBrushSettings(IBrushSettings* brushSettings) {
@@ -97,10 +99,16 @@ public:
     Image* image = brush->get_image();
 
     if (m_bitmap)
-      destroy_bitmap(m_bitmap);
-    m_bitmap = create_bitmap_ex(32, image->getWidth(), image->getHeight());
-    clear(m_bitmap);
-    convert_image_to_allegro(image, m_bitmap, 0, 0, palette);
+      m_bitmap->dispose();
+
+    m_bitmap = she::instance()->createRgbaSurface(image->getWidth(), image->getHeight());
+    {
+      she::ScopedSurfaceLock lock(m_bitmap);
+      lock->clear();
+      convert_image_to_allegro(image,
+        reinterpret_cast<BITMAP*>(m_bitmap->nativeHandle()),
+        0, 0, palette);
+    }
 
     invalidate();
   }
@@ -113,22 +121,22 @@ public:
   }
 
   int getWidth() OVERRIDE {
-    return m_bitmap->w;
+    return m_bitmap->width();
   }
 
   int getHeight() OVERRIDE {
-    return m_bitmap->h;
+    return m_bitmap->height();
   }
 
-  BITMAP* getNormalIcon() OVERRIDE {
+  she::Surface* getNormalIcon() OVERRIDE {
     return m_bitmap;
   }
 
-  BITMAP* getSelectedIcon() OVERRIDE {
+  she::Surface* getSelectedIcon() OVERRIDE {
     return m_bitmap;
   }
 
-  BITMAP* getDisabledIcon() OVERRIDE {
+  she::Surface* getDisabledIcon() OVERRIDE {
     return m_bitmap;
   }
 
@@ -196,7 +204,7 @@ private:
     setBrushSettings(brushSettings);
   }
 
-  BITMAP* m_bitmap;
+  she::Surface* m_bitmap;
   BrushType m_brushType;
   PopupWindow* m_popupWindow;
   ButtonSet* m_brushTypeButton;
@@ -487,22 +495,22 @@ public:
   }
 
   int getWidth() OVERRIDE {
-    return m_bitmap->w;
+    return m_bitmap->width();
   }
 
   int getHeight() OVERRIDE {
-    return m_bitmap->h;
+    return m_bitmap->height();
   }
 
-  BITMAP* getNormalIcon() OVERRIDE {
+  she::Surface* getNormalIcon() OVERRIDE {
     return m_bitmap;
   }
 
-  BITMAP* getSelectedIcon() OVERRIDE {
+  she::Surface* getSelectedIcon() OVERRIDE {
     return m_bitmap;
   }
 
-  BITMAP* getDisabledIcon() OVERRIDE {
+  she::Surface* getDisabledIcon() OVERRIDE {
     return m_bitmap;
   }
 
@@ -573,7 +581,7 @@ private:
       ->setFreehandAlgorithm(m_freehandAlgo);
   }
 
-  BITMAP* m_bitmap;
+  she::Surface* m_bitmap;
   FreehandAlgorithm m_freehandAlgo;
   PopupWindow* m_popupWindow;
   ButtonSet* m_freehandAlgoButton;

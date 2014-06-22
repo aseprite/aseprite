@@ -87,7 +87,7 @@ int app_main(int argc, char* argv[])
 
   try {
     base::MemoryDump memoryDump;
-    she::ScopedHandle<she::System> system(she::CreateSystem());
+    she::ScopedHandle<she::System> system(she::create_system());
     MemLeak memleak;
     ui::GuiSystem guiSystem;
     app::App app(argc, const_cast<const char**>(argv));

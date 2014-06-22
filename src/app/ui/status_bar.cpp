@@ -42,11 +42,12 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "she/font.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 #include "undo/undo_history.h"
 
 #include <algorithm>
-#include <allegro.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -491,10 +492,10 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   // Color
   if (m_state == SHOW_COLOR) {
     // Draw eyedropper icon
-    BITMAP* icon = theme->get_toolicon("eyedropper");
+    she::Surface* icon = theme->get_toolicon("eyedropper");
     if (icon) {
-      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
-      x += icon->w + 4*jguiscale();
+      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
+      x += icon->width() + 4*jguiscale();
     }
 
     // Draw color
@@ -507,33 +508,33 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
     if (m_alpha < 255) {
-      char buf[512];
-      usprintf(buf, ", Alpha %d", m_alpha);
+      char buf[256];
+      sprintf(buf, ", Alpha %d", m_alpha);
       str += buf;
     }
 
     g->drawString(str, textColor, ColorNone, false,
-      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+      gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += ji_font_text_len(getFont(), str.c_str()) + 4*jguiscale();
+    x += getFont()->textLength(str.c_str()) + 4*jguiscale();
   }
 
   // Show tool
   if (m_state == SHOW_TOOL) {
     // Draw eyedropper icon
-    BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
+    she::Surface* icon = theme->get_toolicon(m_tool->getId().c_str());
     if (icon) {
-      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
-      x += icon->w + 4*jguiscale();
+      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
+      x += icon->width() + 4*jguiscale();
     }
   }
 
   // Status bar text
   if (getTextLength() > 0) {
     g->drawString(getText(), textColor, ColorNone, false,
-      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+      gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
+    x += getFont()->textLength(getText().c_str()) + 4*jguiscale();
   }
 
   // Draw progress bar

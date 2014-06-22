@@ -24,7 +24,9 @@
 
 #define ASSERT_VALID_WIDGET(widget) ASSERT((widget) != NULL)
 
-struct FONT;
+namespace she {
+  class Font;
+}
 
 namespace ui {
 
@@ -143,8 +145,8 @@ namespace ui {
     // LOOK & FEEL
     // ===============================================================
 
-    FONT* getFont() const;
-    void setFont(FONT* font);
+    she::Font* getFont() const;
+    void setFont(she::Font* font);
 
     // Gets the background color of the widget.
     ui::Color getBgColor() const {
@@ -378,7 +380,7 @@ namespace ui {
     Theme* m_theme;               // Widget's theme
     int m_align;                  // Widget alignment
     std::string m_text;          // Widget text
-    struct FONT *m_font;          // Text font type
+    she::Font* m_font;           // Text font type
     ui::Color m_bgColor;          // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.

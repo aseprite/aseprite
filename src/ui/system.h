@@ -34,7 +34,7 @@ namespace ui {
   // so a flip to the real screen is needed.
   extern bool dirty_display_flag;
 
-  void SetDisplay(she::Display* display);
+  void set_display(she::Display* display);
 
   // Timer related
 

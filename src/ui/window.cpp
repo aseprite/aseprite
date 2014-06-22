@@ -10,8 +10,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"

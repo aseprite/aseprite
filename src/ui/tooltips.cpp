@@ -8,9 +8,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <string>
-
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
@@ -18,6 +15,8 @@
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/ui.h"
+
+#include <string>
 
 static const int kTooltipDelayMsecs = 300;
 

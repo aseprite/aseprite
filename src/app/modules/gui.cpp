@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -169,13 +169,13 @@ int init_module_gui()
   load_gui_config(w, h, maximized);
 
   try {
-    main_display = she::Instance()->createDisplay(w, h, screen_scaling);
+    main_display = she::instance()->createDisplay(w, h, screen_scaling);
   }
   catch (const she::DisplayCreationException&) {
     for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
       try {
         main_display =
-          she::Instance()->createDisplay(try_resolutions[c].width,
+          she::instance()->createDisplay(try_resolutions[c].width,
                                          try_resolutions[c].height,
                                          try_resolutions[c].scale);
 
@@ -193,7 +193,7 @@ int init_module_gui()
     return -1;
   }
 
-  main_clipboard = she::Instance()->createClipboard();
+  main_clipboard = she::instance()->createClipboard();
 
   // Create the default-manager
   manager = new CustomizedGuiManager();
@@ -334,7 +334,7 @@ void gui_setup_screen(bool reload_font)
   bool reinit = false;
 
   main_display->setScale(screen_scaling);
-  ui::SetDisplay(main_display);
+  ui::set_display(main_display);
 
   // Update guiscale factor
   int old_guiscale = jguiscale();

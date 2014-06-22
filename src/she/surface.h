@@ -19,6 +19,7 @@ namespace she {
     virtual int width() const = 0;
     virtual int height() const = 0;
     virtual LockedSurface* lock() = 0;
+    virtual void applyScale(int scaleFactor) = 0;
     virtual void* nativeHandle() = 0;
   };
 

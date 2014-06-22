@@ -13,8 +13,16 @@
 #include "config.h"
 #endif
 
+#include "she/alleg4/alleg4_font.h"
+
+#include "she/alleg4/alleg4_surface.h"
+#include "she/display.h"
+#include "she/system.h"
+
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
+
+namespace {
 
 /* state information for the bitmap font importer */
 static BITMAP *import_bmp = NULL;
@@ -170,9 +178,7 @@ static int bitmap_font_count(BITMAP* bmp)
   return num;
 }
 
-namespace ui {
-
-FONT* bitmapToFont(BITMAP* bmp)
+FONT* bitmap_to_font(BITMAP* bmp)
 {
   FONT *f;
   int begin = ' ';
@@ -245,4 +251,32 @@ FONT* bitmapToFont(BITMAP* bmp)
   return f;
 }
 
-} // namespace ui
+}
+
+namespace she {
+
+Font* load_bitmap_font(const char* filename, int scale)
+{
+  FONT* allegFont = NULL;
+  int old_color_conv = _color_conv;
+
+  set_color_conversion(COLORCONV_NONE);
+  PALETTE junk;
+  BITMAP* bmp = load_bitmap(filename, junk);
+  set_color_conversion(old_color_conv);
+
+  if (bmp) {
+    Alleg4Surface sur(bmp, Alleg4Surface::DestroyHandle);
+    if (scale > 1)
+      sur.applyScale(scale);
+    
+    allegFont = bitmap_to_font(reinterpret_cast<BITMAP*>(sur.nativeHandle()));
+  }
+
+  if (allegFont)
+    return new Alleg4Font(allegFont, Alleg4Font::DeleteAndDestroy);
+  else
+    return NULL;
+}
+
+} // namespace she

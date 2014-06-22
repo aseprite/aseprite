@@ -51,8 +51,6 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace ui;

@@ -13,8 +13,9 @@
 
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "she/font.h"
+#include "she/system.h"
 #include "ui/draw.h"
-#include "ui/font.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -29,15 +30,15 @@ static Theme* current_theme = NULL;
 Theme::Theme()
 {
   this->name = "Theme";
-  this->default_font = font;    // Default Allegro font
+  this->default_font = she::instance()->defaultFont();
   this->scrollbar_size = 0;
   this->guiscale = 1;
 }
 
 Theme::~Theme()
 {
-  if (default_font && default_font != font)
-    destroy_font(default_font);
+  if (default_font)
+    default_font->dispose();
 
   if (current_theme == this)
     CurrentTheme::set(NULL);
@@ -73,25 +74,6 @@ Theme* CurrentTheme::get()
   return current_theme;
 }
 
-BITMAP* ji_apply_guiscale(BITMAP* original)
-{
-  int scale = jguiscale();
-  if (scale > 1) {
-    BITMAP* scaled = create_bitmap_ex(bitmap_color_depth(original),
-                                      original->w*scale,
-                                      original->h*scale);
-
-    for (int y=0; y<scaled->h; ++y)
-      for (int x=0; x<scaled->w; ++x)
-        putpixel(scaled, x, y, getpixel(original, x/scale, y/scale));
-
-    destroy_bitmap(original);
-    return scaled;
-  }
-  else
-    return original;
-}
-
 void drawTextBox(Graphics* g, Widget* widget,
   int* w, int* h, Color bg, Color fg)
 {
@@ -103,7 +85,7 @@ void drawTextBox(Graphics* g, Widget* widget,
   gfx::Point scroll;
   int viewport_w, viewport_h;
   int textheight = widget->getTextHeight();
-  FONT *font = widget->getFont();
+  she::Font* font = widget->getFont();
   char *beg_end, *old_end;
   int width;
 
@@ -181,7 +163,7 @@ void drawTextBox(Graphics* g, Widget* widget,
         }
 
         // To here we can print
-        if ((old_end) && (x+text_length(font, beg) > x1-scroll.x+width)) {
+        if ((old_end) && (x+font->textLength(beg) > x1-scroll.x+width)) {
           if (end)
             *end = chr;
 
@@ -207,7 +189,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       }
     }
 
-    len = text_length(font, beg);
+    len = font->textLength(beg);
 
     // Render the text
     if (g) {
@@ -220,7 +202,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawString(beg, fg, bg, true, gfx::Point(xout, y));
+      g->drawUIString(beg, fg, bg, true, gfx::Point(xout, y));
       g->fillAreaBetweenRects(bg,
         gfx::Rect(x1, y, x2 - x1, textheight),
         gfx::Rect(xout, y, len, textheight));

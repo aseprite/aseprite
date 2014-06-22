@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
 #include <vector>
 
 #include "app/app.h"

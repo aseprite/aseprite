@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,11 +10,14 @@
 
 #include "ui/graphics.h"
 
+#include "base/string.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gfx/region.h"
 #include "gfx/size.h"
-#include "ui/draw.h"
-#include "ui/font.h"
+#include "she/font.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/theme.h"
 
 #include <allegro.h>
@@ -123,13 +126,16 @@ void Graphics::fillAreaBetweenRects(ui::Color color,
   }
 }
 
-void Graphics::drawBitmap(BITMAP* sprite, int x, int y)
+void Graphics::drawSurface(she::Surface* surface, int x, int y)
 {
+  BITMAP* sprite = reinterpret_cast<BITMAP*>(surface->nativeHandle());
   draw_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
 }
 
-void Graphics::drawAlphaBitmap(BITMAP* sprite, int x, int y)
+void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
 {
+  BITMAP* sprite = reinterpret_cast<BITMAP*>(surface->nativeHandle());
+
   set_alpha_blender();
   draw_trans_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
 }
@@ -139,57 +145,121 @@ void Graphics::blit(BITMAP* src, int srcx, int srcy, int dstx, int dsty, int w, 
   ::blit(src, m_bmp, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
-void Graphics::setFont(FONT* font)
+void Graphics::setFont(she::Font* font)
 {
-  m_currentFont = font;
+  m_font = font;
 }
 
 void Graphics::drawChar(int chr, Color fg, Color bg, int x, int y)
 {
-    // to_system(is_transparent(bg) ? getColor(ThemeColor::Background): bg));
-  ji_font_set_aa_mode(getFont(), bg);
-  getFont()->vtable->render_char(getFont(), chr,
-    to_system(fg),
-    to_system(bg),
-    m_bmp, m_dx+x, m_dy+y);
+  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
+
+  font->vtable->render_char(font, chr,
+      to_system(fg),
+      to_system(bg),
+      m_bmp, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
 {
-  _draw_text(m_bmp, m_currentFont, str.c_str(), m_dx+pt.x, m_dy+pt.y,
-    fg, bg, fillbg, 1 * jguiscale());
+  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
+  base::utf8_const_iterator it(str.begin()), end(str.end());
+  int length = 0;
+  int x = m_dx+pt.x;
+  int y = m_dy+pt.y;
+  int sysfg = to_system(fg);
+  int sysbg = (fillbg ? to_system(bg): -1);
+
+  while (it != end) {
+    font->vtable->render_char(font, *it, sysfg, sysbg, m_bmp, x, y);
+    x += m_font->charWidth(*it);
+    ++it;
+  }
 }
 
-void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align)
+void Graphics::drawUIString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
 {
-  drawStringAlgorithm(str, fg, bg, rc, align, true);
+  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
+  base::utf8_const_iterator it(str.begin()), end(str.end());
+  int length = 0;
+  int x = m_dx+pt.x;
+  int y = m_dy+pt.y;
+  int sysfg = to_system(fg);
+  int sysbg = (fillbg ? to_system(bg): -1);
+  int underscored_x;
+  int underscored_w = -1;
+
+  while (it != end) {
+    if (*it == '&') {
+      ++it;
+      if (it != end && *it != '&') {
+        underscored_x = x;
+        underscored_w = m_font->charWidth(*it);
+      }
+    }
+
+    font->vtable->render_char(font, *it, sysfg, sysbg, m_bmp, x, y);
+
+    x += m_font->charWidth(*it);
+    ++it;
+  }
+
+  if (underscored_w > 0) {
+    y += m_font->height();
+    rectfill(m_bmp, underscored_x, y,
+      underscored_x+underscored_w-1,
+      y+jguiscale()-1, sysfg);
+  }
+}
+
+void Graphics::drawAlignedUIString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align)
+{
+  doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
 
 gfx::Size Graphics::measureChar(int chr)
 {
   return gfx::Size(
-    getFont()->vtable->char_length(getFont(), chr),
-    text_height(getFont()));
+    m_font->charWidth(chr),
+    m_font->height());
 }
 
-gfx::Size Graphics::measureString(const std::string& str)
+gfx::Size Graphics::measureUIString(const std::string& str)
 {
   return gfx::Size(
-    ji_font_text_len(getFont(), str.c_str()),
-    text_height(getFont()));
+    Graphics::measureUIStringLength(str, m_font),
+    m_font->height());
+}
+
+// static
+int Graphics::measureUIStringLength(const std::string& str, she::Font* font)
+{
+  base::utf8_const_iterator it(str.begin()), end(str.end());
+  int length = 0;
+
+  while (it != end) {
+    if (*it == '&')
+      ++it;
+
+    length += font->charWidth(*it);
+    ++it;
+  }
+
+  return length;
 }
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 {
-  return drawStringAlgorithm(str, ColorNone, ColorNone, gfx::Rect(0, 0, maxWidth, 0), align, false);
+  return doUIStringAlgorithm(str, ColorNone, ColorNone, gfx::Rect(0, 0, maxWidth, 0), align, false);
 }
 
-gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
+gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
 {
+  FONT* font = reinterpret_cast<FONT*>(getFont()->nativeHandle());
   gfx::Point pt(0, rc.y);
 
   if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
-    gfx::Size preSize = drawStringAlgorithm(str, ColorNone, ColorNone, rc, 0, false);
+    gfx::Size preSize = doUIStringAlgorithm(str, ColorNone, ColorNone, rc, 0, false);
     if (align & JI_MIDDLE)
       pt.y = rc.y + rc.h/2 - preSize.h/2;
     else if (align & JI_BOTTOM)
@@ -217,7 +287,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
         // If we have already a word to print (old_end != npos), and
         // we are out of the available width (rc.w) using the new "end",
         if ((old_end != std::string::npos) &&
-            (pt.x+measureString(str.substr(beg, end-beg)).w > rc.w)) {
+            (pt.x+measureUIString(str.substr(beg, end-beg)).w > rc.w)) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
@@ -242,7 +312,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
     // Get the entire line to be painted
     line = str.substr(beg, end-beg);
 
-    gfx::Size lineSize = measureString(line);
+    gfx::Size lineSize = measureUIString(line);
     calculatedSize.w = MAX(calculatedSize.w, lineSize.w);
 
     // Render the text
@@ -255,8 +325,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
       else
         xout = pt.x;
 
-      ji_font_set_aa_mode(m_currentFont, to_system(bg));
-      textout_ex(m_bmp, m_currentFont, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
+      textout_ex(m_bmp, font, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
 
       if (!is_transparent(bg))
         fillAreaBetweenRects(bg,
@@ -284,7 +353,7 @@ gfx::Size Graphics::drawStringAlgorithm(const std::string& str, Color fg, Color 
 ScreenGraphics::ScreenGraphics()
   : Graphics(screen, 0, 0)
 {
-  setFont(font);                // Allegro default font
+  setFont(CurrentTheme::get()->default_font);
 }
 
 ScreenGraphics::~ScreenGraphics()

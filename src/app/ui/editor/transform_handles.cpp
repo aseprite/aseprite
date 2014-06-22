@@ -24,6 +24,7 @@
 
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "she/surface.h"
 
 #include <allegro.h>
 
@@ -73,7 +74,7 @@ TransformHandles::~TransformHandles()
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  BITMAP* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
+  she::Surface* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
   fixed angle = ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
@@ -84,7 +85,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   for (size_t c=0; c<corners.size(); ++c)
     editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
 
-  int handle_rs[2] = { gfx->w*2, gfx->w*3 };
+  int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
   for (int i=0; i<2; ++i) {
     int handle_r = handle_rs[i];
     for (size_t c=0; c<HANDLES; ++c) {
@@ -107,7 +108,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
 
 void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& transform)
 {
-  BITMAP* bmp = ji_screen;
+  ScreenGraphics g;
   fixed angle = ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
@@ -118,6 +119,7 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   for (size_t c=0; c<corners.size(); ++c)
     editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
 
+  // TODO DO NOT COMMIT
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
   // -----------------------------------------------
   {
@@ -128,19 +130,19 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
     y2 = y1 + transform.bounds().h;
     editor->editorToScreen(x1, y1, &x1, &y1);
     editor->editorToScreen(x2, y2, &x2, &y2);
-    rect(bmp, x1, y1, x2, y2, makecol(255, 0, 0));
+    g.drawRect(ui::rgba(255, 0, 0), gfx::Rect(x1, y1, x2-x1+1, y2-y1+1));
 
     x1 = transform.pivot().x;
     y1 = transform.pivot().y;
     editor->editorToScreen(x1, y1, &x1, &y1);
-    circle(bmp, x1, y1, 4, makecol(255, 0, 0));
+    g.drawRect(ui::rgba(255, 0, 0), gfx::Rect(x1-2, y1-2, 5, 5));
   }
   // -----------------------------------------------
 #endif
 
   // Draw corner handle
   for (size_t c=0; c<HANDLES; ++c) {
-    drawHandle(bmp,
+    drawHandle(&g,
                (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
                (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
                angle + handles_info[c].angle);
@@ -150,13 +152,9 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   if (angle != 0) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
     SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-    BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
+    she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
 
-#if ALLEGRO_VERSION == 4 && ALLEGRO_SUB_VERSION >= 4
-    draw_sprite_ex(bmp, gfx, pivotBounds.x, pivotBounds.y, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
-#else
-    draw_trans_sprite(bmp, gfx, pivotBounds.x, pivotBounds.y);
-#endif
+    g.drawRgbaSurface(part, pivotBounds.x, pivotBounds.y);
   }
 }
 
@@ -175,23 +173,23 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
 
   // Invalidate each corner handle.
   for (size_t c=0; c<HANDLES; ++c) {
-    BITMAP* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
+    she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
     int u = (x[handles_info[c].i1]+x[handles_info[c].i2])/2;
     int v = (y[handles_info[c].i1]+y[handles_info[c].i2])/2;
 
-    adjustHandle(u, v, gfx->w, gfx->h, angle + handles_info[c].angle);
+    adjustHandle(u, v, part->width(), part->height(), angle + handles_info[c].angle);
 
-    editor->invalidateRect(gfx::Rect(u, v, gfx->w, gfx->h));
+    editor->invalidateRect(gfx::Rect(u, v, part->width(), part->height()));
   }
 
   // Invalidate area where the pivot is.
   if (angle != 0) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
-    BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
+    she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
 
-    editor->invalidateRect(gfx::Rect(pivotBounds.x,
-                                     pivotBounds.y,
-                                     gfx->w, gfx->h));
+    editor->invalidateRect(
+      gfx::Rect(pivotBounds.x, pivotBounds.y,
+        part->width(), part->height()));
   }
 }
 
@@ -200,7 +198,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const gfx::Transformation::Corners& corners)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  BITMAP* gfx = theme->get_part(PART_PIVOT_HANDLE);
+  she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
   int pvx, pvy;
 
   editor->editorToScreen(transform.pivot().x, transform.pivot().y, &pvx, &pvy);
@@ -208,13 +206,16 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
   pvx += (1 << editor->getZoom()) / 2;
   pvy += (1 << editor->getZoom()) / 2;
 
-  return gfx::Rect(pvx-gfx->w/2, pvy-gfx->h/2, gfx->w, gfx->h);
+  return gfx::Rect(
+    pvx-part->width()/2,
+    pvy-part->height()/2,
+    part->width(),
+    part->height());
 }
 
 bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixed angle)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  BITMAP* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
 
   adjustHandle(x, y, gfx_w, gfx_h, angle);
 
@@ -222,18 +223,14 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
           pt.y >= y && pt.y < y+gfx_h);
 }
 
-void TransformHandles::drawHandle(BITMAP* bmp, int x, int y, fixed angle)
+void TransformHandles::drawHandle(Graphics* g, int x, int y, fixed angle)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  BITMAP* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
+  she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
 
-  adjustHandle(x, y, gfx->w, gfx->h, angle);
+  adjustHandle(x, y, part->width(), part->height(), angle);
 
-#if ALLEGRO_VERSION == 4 && ALLEGRO_SUB_VERSION >= 4
-  draw_sprite_ex(bmp, gfx, x, y, DRAW_SPRITE_TRANS, DRAW_SPRITE_NO_FLIP);
-#else
-  draw_trans_sprite(bmp, gfx, x, y);
-#endif
+  g->drawRgbaSurface(part, x, y);
 }
 
 void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, fixed angle)

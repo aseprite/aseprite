@@ -65,7 +65,7 @@ namespace app {
         else
           part = m_partNormal;
 
-        g->drawAlphaBitmap(theme->get_part(part), bounds.x, bounds.y);
+        g->drawRgbaSurface(theme->get_part(part), bounds.x, bounds.y);
       }
 
     private:
