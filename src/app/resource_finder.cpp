@@ -20,13 +20,12 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <cstdio>
-
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/string.h"
+
+#include <cstdio>
 
 namespace app {
 
