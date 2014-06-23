@@ -74,6 +74,7 @@ public:
       >> "undo_size_limit" >> m_undo_size_limit
       >> "undo_goto_modified" >> m_undo_goto_modified
       >> "screen_scale" >> m_screen_scale
+      >> "wheel_zoom" >> m_wheel_zoom
       >> "locate_file" >> m_locate_file
       >> "button_ok" >> m_button_ok;
 
@@ -104,6 +105,9 @@ public:
     m_screen_scale->addItem("3:1");
     m_screen_scale->addItem("4:1");
     m_screen_scale->setSelectedItemIndex(get_screen_scaling()-1);
+
+    // Zoom with Scroll Wheel
+    m_wheel_zoom->setSelected(m_settings->getZoomWithScrollWheel());
 
     // Checked background size
     m_checked_bg->addItem("16x16");
@@ -149,6 +153,7 @@ public:
     set_config_bool("Options", "AutoShowTimeline", m_check_autotimeline->isSelected());
 
     m_settings->setShowSpriteEditorScrollbars(m_show_scrollbars->isSelected());
+    m_settings->setZoomWithScrollWheel(m_wheel_zoom->isSelected());
 
     RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItemIndex());
     RenderEngine::setCheckedBgZoom(m_checked_bg_zoom->isSelected());
@@ -213,6 +218,7 @@ private:
   Widget* m_undo_size_limit;
   Widget* m_undo_goto_modified;
   ComboBox* m_screen_scale;
+  CheckBox* m_wheel_zoom;
   LinkLabel* m_locate_file;
   ColorButton* m_checked_bg_color1;
   ColorButton* m_checked_bg_color2;

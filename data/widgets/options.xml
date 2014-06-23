@@ -19,6 +19,7 @@
             <label text="Screen Scale:" />
             <combobox id="screen_scale" expansive="true" />
           </grid>
+          <check text="Zoom with Scroll Wheel" id="wheel_zoom" />
         </vbox>
 
         <!-- Editor -->

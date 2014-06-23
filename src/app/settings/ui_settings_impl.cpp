@@ -212,6 +212,7 @@ UISettingsImpl::UISettingsImpl()
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
+  , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
 {
@@ -224,6 +225,7 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
+  set_config_bool("Options", "ZoomWithMouseWheel", m_zoomWithScrollWheel);
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
 
@@ -243,6 +245,11 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
+
+bool UISettingsImpl::getZoomWithScrollWheel()
+{
+  return m_zoomWithScrollWheel;
+}
 
 bool UISettingsImpl::getShowSpriteEditorScrollbars()
 {
@@ -275,6 +282,11 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
+}
+
+void UISettingsImpl::setZoomWithScrollWheel(bool state)
+{
+  m_zoomWithScrollWheel = state;
 }
 
 void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)

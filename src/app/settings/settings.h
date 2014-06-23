@@ -52,6 +52,7 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
+    virtual bool getZoomWithScrollWheel() = 0;
     virtual bool getShowSpriteEditorScrollbars() = 0;
     virtual bool getGrabAlpha() = 0;
     virtual app::Color getFgColor() = 0;
@@ -59,6 +60,7 @@ namespace app {
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
+    virtual void setZoomWithScrollWheel(bool state) = 0;
     virtual void setShowSpriteEditorScrollbars(bool state) = 0;
     virtual void setGrabAlpha(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;
