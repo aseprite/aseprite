@@ -44,6 +44,7 @@
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
 #include "ui/paint_event.h"
+#include "ui/panel.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/property.h"

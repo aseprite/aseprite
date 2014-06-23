@@ -4,8 +4,6 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#define REDRAW_MOVEMENT
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -18,10 +18,19 @@ namespace ui {
   public:
     ListItem(const std::string& text);
 
+    const std::string& getValue() { return m_value; }
+
+    void setValue(const std::string& value) {
+      m_value = value;
+    }
+
   protected:
     void onPaint(PaintEvent& ev) OVERRIDE;
     void onResize(ResizeEvent& ev) OVERRIDE;
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+
+  private:
+    std::string m_value;
   };
 
 } // namespace ui

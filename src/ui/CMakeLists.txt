@@ -32,6 +32,7 @@ add_library(ui-lib
   overlay.cpp
   overlay_manager.cpp
   paint_event.cpp
+  panel.cpp
   popup_window.cpp
   preferred_size_event.cpp
   property.cpp
