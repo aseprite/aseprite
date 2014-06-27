@@ -661,8 +661,6 @@ void SkinTheme::onRegenerate()
 
 she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
 {
-  int colordepth = 32;
-
   if (sur && (sur->width() != bounds.w ||
               sur->height() != bounds.h)) {
     sur->dispose();
@@ -670,7 +668,7 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
   }
 
   if (!sur)
-    sur = she::instance()->createSurface(bounds.w, bounds.h);
+    sur = she::instance()->createRgbaSurface(bounds.w, bounds.h);
 
   {
     she::ScopedSurfaceLock src(m_sheet);
