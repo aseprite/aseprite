@@ -26,6 +26,7 @@
 #include "app/thumbnail_generator.h"
 #include "app/ui/skin/skin_theme.h"
 #include "she/font.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -310,7 +311,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
   int evenRow = 0;
   ui::Color bgcolor;
   ui::Color fgcolor;
-  BITMAP* thumbnail = NULL;
+  she::Surface* thumbnail = NULL;
   int thumbnail_y = 0;
 
   g->fillRect(theme->getColor(ThemeColor::Background), bounds);
@@ -344,19 +345,20 @@ void FileList::onPaint(ui::PaintEvent& ev)
     if (fi->isFolder()) {
       int icon_w = getFont()->textLength("[+]");
 
-      g->drawUIString("[+]", fgcolor, bgcolor, true, gfx::Point(x, y+2*jguiscale()));
+      g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
       x += icon_w+2*jguiscale();
     }
 
     // item name
     g->drawString(
       fi->getDisplayName().c_str(),
-      fgcolor, bgcolor, true, gfx::Point(x, y+2*jguiscale()));
+      fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
 
     // draw progress bars
     double progress;
     ThumbnailGenerator::WorkerStatus workerStatus =
       ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
+
     if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
       int barw = 64*jguiscale();
 
@@ -381,15 +383,15 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // Draw the thumbnail
   if (thumbnail) {
-    x = vp.x+vp.w-2*jguiscale()-thumbnail->w;
-    y = thumbnail_y-thumbnail->h/2+getBounds().y;
-    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->h);
+    x = vp.x+vp.w - 2*jguiscale() - thumbnail->width();
+    y = thumbnail_y - thumbnail->height()/2 + getBounds().y;
+    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->height());
     x -= getBounds().x;
     y -= getBounds().y;
 
-    g->blit(thumbnail, 0, 0, x, y, thumbnail->w, thumbnail->h);
+    g->blit(thumbnail, 0, 0, x, y, thumbnail->width(), thumbnail->height());
     g->drawRect(ui::rgba(0, 0, 0),
-      gfx::Rect(x-1, y-1, thumbnail->w+1, thumbnail->h+1));
+      gfx::Rect(x-1, y-1, thumbnail->width()+1, thumbnail->height()+1));
   }
 }
 

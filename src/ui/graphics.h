@@ -17,8 +17,6 @@
 
 #include <string>
 
-struct BITMAP;
-
 namespace gfx {
   class Region;
 }
@@ -33,10 +31,10 @@ namespace ui {
   // Class to render a widget in the screen.
   class Graphics {
   public:
-    Graphics(BITMAP* bmp, int dx, int dy);
+    Graphics(she::Surface* surface, int dx, int dy);
     ~Graphics();
 
-    BITMAP* getInternalBitmap() { return m_bmp; }
+    she::Surface* getInternalSurface() { return m_surface; }
     int getInternalDeltaX() { return m_dx; }
     int getInternalDeltaY() { return m_dy; }
 
@@ -57,7 +55,7 @@ namespace ui {
     void drawSurface(she::Surface* surface, int x, int y);
     void drawRgbaSurface(she::Surface* surface, int x, int y);
 
-    void blit(BITMAP* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
+    void blit(she::Surface* src, int srcx, int srcy, int dstx, int dsty, int w, int h);
 
     // ======================================================================
     // FONT & TEXT
@@ -67,8 +65,8 @@ namespace ui {
     she::Font* getFont() { return m_font; }
 
     void drawChar(int chr, Color fg, Color bg, int x, int y);
-    void drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
-    void drawUIString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt);
+    void drawString(const std::string& str, Color fg, Color bg, const gfx::Point& pt);
+    void drawUIString(const std::string& str, Color fg, Color bg, const gfx::Point& pt);
     void drawAlignedUIString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
 
     gfx::Size measureChar(int chr);
@@ -79,7 +77,7 @@ namespace ui {
   private:
     gfx::Size doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw);
 
-    BITMAP* m_bmp;
+    she::Surface* m_surface;
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;

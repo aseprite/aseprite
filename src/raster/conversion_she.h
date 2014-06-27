@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,25 +16,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_MODULES_GFX_H_INCLUDED
-#define APP_MODULES_GFX_H_INCLUDED
+#ifndef RASTER_CONVERSION_SHE_H_INCLUDED
+#define RASTER_CONVERSION_SHE_H_INCLUDED
 #pragma once
 
-#include "app/color.h"
-#include "gfx/rect.h"
-#include "ui/base.h"
-#include "ui/color.h"
-#include "ui/graphics.h"
+namespace she {
+  class Surface;
+}
 
-namespace app {
-  using namespace raster;
+namespace raster {
+  class Image;
+  class Palette;
 
-  void dotted_mode(int offset);
+  void convert_image_to_surface(const Image* image, she::Surface* surface, int x, int y, const Palette* palette);
 
-  void draw_color_button(ui::Graphics* g,
-    const gfx::Rect& rc, const app::Color& color,
-    bool hot, bool drag);
-
-} // namespace app
+} // namespace raster
 
 #endif

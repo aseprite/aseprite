@@ -11,8 +11,6 @@
 #include "ui/base.h"
 #include "ui/cursor_type.h"
 
-struct BITMAP;
-
 namespace gfx {
   class Region;
 }

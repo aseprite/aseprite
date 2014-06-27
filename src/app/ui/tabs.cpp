@@ -497,7 +497,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
                                        PART_TAB_NORMAL_NW,
                           face_color);
 
-    g->drawString(tab->text, text_color, face_color, false,
+    g->drawString(tab->text, text_color, ColorNone,
       gfx::Point(
         box.x + 4*jguiscale(),
         box.y + box.h/2 - getFont()->height()/2+1 + y_delta));

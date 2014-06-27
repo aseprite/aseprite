@@ -29,6 +29,7 @@
 
 #include "base/path.h"
 #include "base/string.h"
+#include "she/surface.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -147,13 +148,13 @@ public:
 
   bool hasExtension(const std::string& csv_extensions);
 
-  BITMAP* getThumbnail();
-  void setThumbnail(BITMAP* thumbnail);
+  she::Surface* getThumbnail();
+  void setThumbnail(she::Surface* thumbnail);
 
 };
 
 typedef std::map<std::string, FileItem*> FileItemMap;
-typedef std::map<std::string, BITMAP*> ThumbnailMap;
+typedef std::map<std::string, she::Surface*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
@@ -237,7 +238,7 @@ FileSystemModule::~FileSystemModule()
 
   for (ThumbnailMap::iterator
          it=thumbnail_map->begin(); it!=thumbnail_map->end(); ++it) {
-    destroy_bitmap(it->second);
+    it->second->dispose();
   }
   thumbnail_map->clear();
 
@@ -567,7 +568,7 @@ bool FileItem::hasExtension(const std::string& csv_extensions)
   return base::has_file_extension(this->filename, csv_extensions);
 }
 
-BITMAP* FileItem::getThumbnail()
+she::Surface* FileItem::getThumbnail()
 {
   ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end())
@@ -576,12 +577,12 @@ BITMAP* FileItem::getThumbnail()
     return NULL;
 }
 
-void FileItem::setThumbnail(BITMAP* thumbnail)
+void FileItem::setThumbnail(she::Surface* thumbnail)
 {
   // destroy the current thumbnail of the file (if exists)
   ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end()) {
-    destroy_bitmap(it->second);
+    it->second->dispose();
     thumbnail_map->erase(it);
   }
 

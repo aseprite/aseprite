@@ -37,6 +37,8 @@
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
+struct BITMAP;
+
 namespace raster {
   class Sprite;
   class Layer;
@@ -213,7 +215,7 @@ namespace app {
     void forEachBrushPixel(
       int screen_x, int screen_y,
       int sprite_x, int sprite_y, int color,
-      void (*pixel)(BITMAP *bmp, int x, int y, int color));
+      void (*pixel)(BITMAP* bmp, int x, int y, int color));
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this

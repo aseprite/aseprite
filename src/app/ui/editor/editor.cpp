@@ -27,8 +27,8 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document_location.h"
 #include "app/console.h"
+#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -55,12 +55,14 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/raster.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/ui.h"
 
 #include <allegro.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace app {
 
@@ -394,10 +396,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
         m_decorator->preRenderDecorator(&preRender);
       }
 
-      SharedPtr<BITMAP> tmp(create_bitmap(width, height), destroy_bitmap);
-      convert_image_to_allegro(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
-
+      she::Surface* tmp(she::instance()->createRgbaSurface(width, height));
+      convert_image_to_surface(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
       g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
+      tmp->dispose();
     }
   }
 }
@@ -493,7 +495,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region region;
   getDrawableRegion(region, kCutTopWindows);
 
-  Graphics g(ji_screen, 0, 0);
+  ScreenGraphics g;
 
   for (Region::const_iterator
          it=region.begin(), end=region.end(); it != end; ++it) {

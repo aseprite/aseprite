@@ -202,7 +202,7 @@ void drawTextBox(Graphics* g, Widget* widget,
       else                      // Left align
         xout = x;
 
-      g->drawUIString(beg, fg, bg, true, gfx::Point(xout, y));
+      g->drawUIString(beg, fg, bg, gfx::Point(xout, y));
       g->fillAreaBetweenRects(bg,
         gfx::Rect(x1, y, x2 - x1, textheight),
         gfx::Rect(xout, y, len, textheight));

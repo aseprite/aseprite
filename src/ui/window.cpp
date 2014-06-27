@@ -581,7 +581,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     moveableRegion.createIntersection(oldDrawableRegion, reg1);
 
     // Move the window's graphics
-    Graphics g(ji_screen, 0, 0);
+    ScreenGraphics g;
     jmouse_hide();
     {
       IntersectClip clip(&g, man_pos);

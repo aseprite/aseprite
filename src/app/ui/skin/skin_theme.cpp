@@ -1002,7 +1002,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   draw_bounds_nw(g, widget->getClientBounds(), part_nw, bg);
 
   // text
-  drawTextString(g, NULL, fg, bg, false, widget,
+  drawTextString(g, NULL, fg, ColorNone, widget,
                  widget->getClientChildrenBounds(), get_button_selected_offset());
 
   // Paint the icon
@@ -1047,7 +1047,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   }
 
   // Text
-  drawTextString(g, NULL, ColorNone, bg, false, widget, text, 0);
+  drawTextString(g, NULL, ColorNone, ColorNone, widget, text, 0);
 
   // Paint the icon
   if (iconInterface)
@@ -1167,7 +1167,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   rc.shrink(widget->getBorder());
 
   widget->getTextIconInfo(NULL, &text);
-  g->drawUIString(widget->getText(), fg, bg, false, text.getOrigin());
+  g->drawUIString(widget->getText(), fg, ColorNone, text.getOrigin());
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
@@ -1179,7 +1179,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   ui::Color bg = BGCOLOR;
 
   g->fillRect(bg, bounds);
-  drawTextString(g, NULL, fg, bg, false, widget, bounds, 0);
+  drawTextString(g, NULL, fg, ColorNone, widget, bounds, 0);
 
   // Underline style
   if (widget->hasMouseOver()) {
@@ -1221,7 +1221,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
 
   if (widget->hasText()) {
     bounds.shrink(widget->getBorder());
-    drawTextString(g, NULL, fg, bg, true, widget, bounds, 0);
+    drawTextString(g, NULL, fg, bg, widget, bounds, 0);
   }
 }
 
@@ -1292,7 +1292,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   Rect pos = bounds;
   if (!bar)
     pos.offset(widget->child_spacing/2, 0);
-  drawTextString(g, NULL, fg, bg, false, widget, pos, 0);
+  drawTextString(g, NULL, fg, ColorNone, widget, pos, 0);
 
   // For menu-box
   if (!bar) {
@@ -1328,7 +1328,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       std::string buf = widget->getAccel()->toString();
 
       widget->setAlign(JI_RIGHT | JI_MIDDLE);
-      drawTextString(g, buf.c_str(), fg, bg, false, widget, pos, 0);
+      drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
       widget->setAlign(old_align);
     }
   }
@@ -1368,7 +1368,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   }
 
   // Text
-  drawTextString(g, NULL, ColorNone, bg, false, widget, text, 0);
+  drawTextString(g, NULL, ColorNone, ColorNone, widget, text, 0);
 
   // Icon
   if (iconInterface)
@@ -1406,7 +1406,7 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
         bounds.y2() - widget->border_width.b/2 + h));
 
     drawTextString(g, NULL,
-      getColorById(kSeparatorLabelColorId), BGCOLOR, false,
+      getColorById(kSeparatorLabelColorId), BGCOLOR,
       widget, r, 0);
   }
 }
@@ -1517,8 +1517,8 @@ void SkinTheme::paintSlider(PaintEvent& ev)
       IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
       if (clip) {
         drawTextString(g, NULL,
-          getColor(ThemeColor::SliderFullText),
-          getColor(ThemeColor::SliderFullFace), false, widget, rc, 0);
+          getColor(ThemeColor::SliderFullText), ColorNone,
+          widget, rc, 0);
       }
     }
 
@@ -1527,7 +1527,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
       if (clip) {
         drawTextString(g, NULL,
           getColor(ThemeColor::SliderEmptyText),
-          getColor(ThemeColor::SliderEmptyFace), false, widget, rc, 0);
+          ColorNone, widget, rc, 0);
       }
     }
 
@@ -1857,7 +1857,7 @@ ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
 }
 
 void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
-                               bool fill_bg, Widget* widget, const Rect& rc,
+                               Widget* widget, const Rect& rc,
                                int selected_offset)
 {
   if (t || widget->hasText()) {
@@ -1910,16 +1910,11 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
     IntersectClip clip(g, textWrap);
     if (clip) {
       if (!widget->isEnabled()) {
-        // TODO avoid this
-        if (fill_bg)              // Only to draw the background
-          g->drawUIString(t, ColorNone, bg_color, fill_bg, textrc.getOrigin());
-
         // Draw white part
-        g->drawUIString(t, getColor(ThemeColor::Background), bg_color, fill_bg,
+        g->drawUIString(t,
+          getColor(ThemeColor::Background),
+          ui::ColorNone,
           textrc.getOrigin() + Point(jguiscale(), jguiscale()));
-
-        if (fill_bg)
-          fill_bg = false;
       }
 
       g->drawUIString(t,
@@ -1927,7 +1922,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
           getColor(ThemeColor::Disabled):
           (ui::geta(fg_color) > 0 ? fg_color :
             getColor(ThemeColor::Text))),
-        bg_color, fill_bg, textrc.getOrigin());
+        bg_color, textrc.getOrigin());
     }
   }
 }

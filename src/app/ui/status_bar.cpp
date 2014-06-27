@@ -513,7 +513,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       str += buf;
     }
 
-    g->drawString(str, textColor, ColorNone, false,
+    g->drawString(str, textColor, ColorNone,
       gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
     x += getFont()->textLength(str.c_str()) + 4*jguiscale();
@@ -531,7 +531,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
 
   // Status bar text
   if (getTextLength() > 0) {
-    g->drawString(getText(), textColor, ColorNone, false,
+    g->drawString(getText(), textColor, ColorNone,
       gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
     x += getFont()->textLength(getText().c_str()) + 4*jguiscale();

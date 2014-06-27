@@ -15,18 +15,25 @@
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
+#include "she/display.h"
 #include "she/font.h"
+#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/theme.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
+namespace {
+
+  inline she::Color to_she(ui::Color color) {
+    return (she::Color)color;
+  }
+
+}
 
 namespace ui {
 
-Graphics::Graphics(BITMAP* bmp, int dx, int dy)
-  : m_bmp(bmp)
+Graphics::Graphics(she::Surface* surface, int dx, int dy)
+  : m_surface(surface)
   , m_dx(dx)
   , m_dy(dy)
 {
@@ -38,74 +45,49 @@ Graphics::~Graphics()
 
 gfx::Rect Graphics::getClipBounds() const
 {
-  return gfx::Rect(m_bmp->cl-m_dx,
-                   m_bmp->ct-m_dy,
-                   m_bmp->cr-m_bmp->cl,
-                   m_bmp->cb-m_bmp->ct);
+  return m_surface->getClipBounds().offset(-m_dx, -m_dy);
 }
 
 void Graphics::setClipBounds(const gfx::Rect& rc)
 {
-  set_clip_rect(m_bmp,
-                m_dx+rc.x,
-                m_dy+rc.y,
-                m_dx+rc.x+rc.w-1,
-                m_dy+rc.y+rc.h-1);
+  m_surface->setClipBounds(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
 bool Graphics::intersectClipRect(const gfx::Rect& rc)
 {
-  add_clip_rect(m_bmp,
-                m_dx+rc.x,
-                m_dy+rc.y,
-                m_dx+rc.x+rc.w-1,
-                m_dy+rc.y+rc.h-1);
-
-  return (m_bmp->cl < m_bmp->cr &&
-          m_bmp->ct < m_bmp->cb);
+  return m_surface->intersectClipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
 void Graphics::drawHLine(ui::Color color, int x, int y, int w)
 {
-  hline(m_bmp,
-        m_dx+x,
-        m_dy+y,
-        m_dx+x+w-1, to_system(color));
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawHLine(to_she(color), m_dx+x, m_dy+y, w);
 }
 
 void Graphics::drawVLine(ui::Color color, int x, int y, int h)
 {
-  vline(m_bmp,
-        m_dx+x,
-        m_dy+y,
-        m_dy+y+h-1, to_system(color));
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawVLine(to_she(color), m_dx+x, m_dy+y, h);
 }
 
 void Graphics::drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b)
 {
-  line(m_bmp,
-    m_dx+a.x,
-    m_dy+a.y,
-    m_dx+b.x,
-    m_dy+b.y, to_system(color));
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawLine(to_she(color),
+    gfx::Point(m_dx+a.x, m_dy+a.y),
+    gfx::Point(m_dx+b.x, m_dy+b.y));
 }
 
 void Graphics::drawRect(ui::Color color, const gfx::Rect& rc)
 {
-  rect(m_bmp,
-       m_dx+rc.x,
-       m_dy+rc.y,
-       m_dx+rc.x+rc.w-1,
-       m_dy+rc.y+rc.h-1, to_system(color));
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawRect(to_she(color), gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
 void Graphics::fillRect(ui::Color color, const gfx::Rect& rc)
 {
-  rectfill(m_bmp,
-           m_dx+rc.x,
-           m_dy+rc.y,
-           m_dx+rc.x+rc.w-1,
-           m_dy+rc.y+rc.h-1, to_system(color));
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->fillRect(to_she(color), gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
 void Graphics::fillRegion(ui::Color color, const gfx::Region& rgn)
@@ -128,21 +110,23 @@ void Graphics::fillAreaBetweenRects(ui::Color color,
 
 void Graphics::drawSurface(she::Surface* surface, int x, int y)
 {
-  BITMAP* sprite = reinterpret_cast<BITMAP*>(surface->nativeHandle());
-  draw_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
+  she::ScopedSurfaceLock src(surface);
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawSurface(src, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
 {
-  BITMAP* sprite = reinterpret_cast<BITMAP*>(surface->nativeHandle());
-
-  set_alpha_blender();
-  draw_trans_sprite(m_bmp, sprite, m_dx+x, m_dy+y);
+  she::ScopedSurfaceLock src(surface);
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawRgbaSurface(src, m_dx+x, m_dy+y);
 }
 
-void Graphics::blit(BITMAP* src, int srcx, int srcy, int dstx, int dsty, int w, int h)
+void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
-  ::blit(src, m_bmp, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
+  she::ScopedSurfaceLock src(srcSurface);
+  she::ScopedSurfaceLock dst(m_surface);
+  src->blitTo(dst, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
 }
 
 void Graphics::setFont(she::Font* font)
@@ -152,40 +136,23 @@ void Graphics::setFont(she::Font* font)
 
 void Graphics::drawChar(int chr, Color fg, Color bg, int x, int y)
 {
-  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
-
-  font->vtable->render_char(font, chr,
-      to_system(fg),
-      to_system(bg),
-      m_bmp, m_dx+x, m_dy+y);
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawChar(m_font, to_she(fg), to_she(bg), m_dx+x, m_dy+y, chr);
 }
 
-void Graphics::drawString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
+void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx::Point& pt)
 {
-  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawString(m_font, to_she(fg), to_she(bg), m_dx+pt.x, m_dy+pt.y, str);
+}
+
+void Graphics::drawUIString(const std::string& str, Color fg, Color bg, const gfx::Point& pt)
+{
+  she::ScopedSurfaceLock dst(m_surface);
   base::utf8_const_iterator it(str.begin()), end(str.end());
   int length = 0;
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
-  int sysfg = to_system(fg);
-  int sysbg = (fillbg ? to_system(bg): -1);
-
-  while (it != end) {
-    font->vtable->render_char(font, *it, sysfg, sysbg, m_bmp, x, y);
-    x += m_font->charWidth(*it);
-    ++it;
-  }
-}
-
-void Graphics::drawUIString(const std::string& str, Color fg, Color bg, bool fillbg, const gfx::Point& pt)
-{
-  FONT* font = reinterpret_cast<FONT*>(m_font->nativeHandle());
-  base::utf8_const_iterator it(str.begin()), end(str.end());
-  int length = 0;
-  int x = m_dx+pt.x;
-  int y = m_dy+pt.y;
-  int sysfg = to_system(fg);
-  int sysbg = (fillbg ? to_system(bg): -1);
   int underscored_x;
   int underscored_w = -1;
 
@@ -197,18 +164,15 @@ void Graphics::drawUIString(const std::string& str, Color fg, Color bg, bool fil
         underscored_w = m_font->charWidth(*it);
       }
     }
-
-    font->vtable->render_char(font, *it, sysfg, sysbg, m_bmp, x, y);
-
+    dst->drawChar(m_font, to_she(fg), to_she(bg), x, y, *it);
     x += m_font->charWidth(*it);
     ++it;
   }
 
   if (underscored_w > 0) {
     y += m_font->height();
-    rectfill(m_bmp, underscored_x, y,
-      underscored_x+underscored_w-1,
-      y+jguiscale()-1, sysfg);
+    dst->fillRect(to_she(fg),
+      gfx::Rect(underscored_x, y, underscored_w, jguiscale()));
   }
 }
 
@@ -255,7 +219,6 @@ gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 
 gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
 {
-  FONT* font = reinterpret_cast<FONT*>(getFont()->nativeHandle());
   gfx::Point pt(0, rc.y);
 
   if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
@@ -287,7 +250,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
         // If we have already a word to print (old_end != npos), and
         // we are out of the available width (rc.w) using the new "end",
         if ((old_end != std::string::npos) &&
-            (pt.x+measureUIString(str.substr(beg, end-beg)).w > rc.w)) {
+            (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
@@ -312,7 +275,9 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
     // Get the entire line to be painted
     line = str.substr(beg, end-beg);
 
-    gfx::Size lineSize = measureUIString(line);
+    gfx::Size lineSize(
+      m_font->textLength(line.c_str()),
+      m_font->height());
     calculatedSize.w = MAX(calculatedSize.w, lineSize.w);
 
     // Render the text
@@ -325,7 +290,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
       else
         xout = pt.x;
 
-      textout_ex(m_bmp, font, line.c_str(), m_dx+xout, m_dy+pt.y, to_system(fg), to_system(bg));
+      drawString(line, fg, bg, gfx::Point(xout, pt.y));
 
       if (!is_transparent(bg))
         fillAreaBetweenRects(bg,
@@ -351,7 +316,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
 // ScreenGraphics
 
 ScreenGraphics::ScreenGraphics()
-  : Graphics(screen, 0, 0)
+  : Graphics(she::instance()->defaultDisplay()->getSurface(), 0, 0)
 {
   setFont(CurrentTheme::get()->default_font);
 }

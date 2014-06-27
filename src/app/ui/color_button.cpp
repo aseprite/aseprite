@@ -211,7 +211,7 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   gfx::Rect text;
   getTextIconInfo(NULL, &text);
-  g->drawUIString(getText(), textcolor, ColorNone, false, text.getOrigin());
+  g->drawUIString(getText(), textcolor, ColorNone, text.getOrigin());
 }
 
 void ColorButton::onClick(Event& ev)

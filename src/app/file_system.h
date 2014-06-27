@@ -25,7 +25,9 @@
 #include <string>
 #include <vector>
 
-struct BITMAP;
+namespace she {
+  class Surface;
+}
 
 namespace app {
 
@@ -89,8 +91,8 @@ namespace app {
 
     virtual bool hasExtension(const std::string& csv_extensions) = 0;
 
-    virtual BITMAP* getThumbnail() = 0;
-    virtual void setThumbnail(BITMAP* thumbnail) = 0;
+    virtual she::Surface* getThumbnail() = 0;
+    virtual void setThumbnail(she::Surface* thumbnail) = 0;
   };
 
 } // namespace app

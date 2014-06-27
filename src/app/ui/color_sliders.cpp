@@ -83,7 +83,6 @@ namespace {
 
   private:
     ColorSliders::Channel m_channel;
-    BITMAP* m_cachedBg;
     app::Color m_color;
   };
 

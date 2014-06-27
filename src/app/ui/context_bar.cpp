@@ -40,7 +40,7 @@
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "raster/brush.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "she/scoped_surface_lock.h"
@@ -102,13 +102,7 @@ public:
       m_bitmap->dispose();
 
     m_bitmap = she::instance()->createRgbaSurface(image->getWidth(), image->getHeight());
-    {
-      she::ScopedSurfaceLock lock(m_bitmap);
-      lock->clear();
-      convert_image_to_allegro(image,
-        reinterpret_cast<BITMAP*>(m_bitmap->nativeHandle()),
-        0, 0, palette);
-    }
+    convert_image_to_surface(image, m_bitmap, 0, 0, palette);
 
     invalidate();
   }

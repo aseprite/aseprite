@@ -90,7 +90,7 @@ protected:
     //   box.x += box.w;
     // }
 
-    g->drawString(getText(), fgcolor, ui::ColorNone, false,
+    g->drawString(getText(), fgcolor, ui::ColorNone,
       gfx::Point(
         bounds.x + jguiscale()*2,
         bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));

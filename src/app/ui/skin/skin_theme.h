@@ -201,7 +201,7 @@ namespace app {
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       ui::Color getWidgetBgColor(ui::Widget* widget);
       void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
-                          bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
+                          ui::Widget* widget, const gfx::Rect& rc,
                           int selected_offset);
       void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 

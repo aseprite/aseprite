@@ -8,16 +8,9 @@
 #define UI_DRAW_H_INCLUDED
 #pragma once
 
-#include "gfx/rect.h"
 #include "gfx/region.h"
-#include "ui/base.h"
-#include "ui/color.h"
 
-struct BITMAP;
-
-// TODO all these functions are deprecated and must be replaced by Graphics methods.
-
-namespace ui {
+namespace ui { // TODO all these functions are deprecated and must be replaced by Graphics methods.
 
   void _move_region(const gfx::Region& region, int dx, int dy);
 

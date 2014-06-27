@@ -11,7 +11,11 @@
 #endif
 
 #include "base/memory.h"
+#include "she/display.h"
 #include "she/font.h"
+#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -943,7 +947,8 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
     widget->getDrawableRegion(region, kCutTopWindows);
     region.createIntersection(region, drawRegion);
 
-    Graphics graphics2(graphics->getInternalBitmap(),
+    Graphics graphics2(
+      graphics->getInternalSurface(),
       widget->getBounds().x,
       widget->getBounds().y);
     graphics2.setFont(widget->getFont());
@@ -1055,38 +1060,45 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
   flushRedraw();
 }
 
-class DeleteGraphicsAndBitmap {
+class DeleteGraphicsAndSurface {
 public:
-  DeleteGraphicsAndBitmap(const gfx::Rect& clip, BITMAP* bmp)
-    : m_pt(clip.getOrigin()), m_bmp(bmp) {
+  DeleteGraphicsAndSurface(const gfx::Rect& clip, she::Surface* surface)
+    : m_pt(clip.getOrigin()), m_surface(surface) {
   }
 
   void operator()(Graphics* graphics) {
-    blit(m_bmp, ji_screen, 0, 0, m_pt.x, m_pt.y, m_bmp->w, m_bmp->h);
-    destroy_bitmap(m_bmp);
+    {
+      she::ScopedSurfaceLock src(m_surface);
+      she::ScopedSurfaceLock dst(she::instance()->defaultDisplay()->getSurface());
+      src->blitTo(dst, 0, 0, m_pt.x, m_pt.y,
+        m_surface->width(), m_surface->height());
+    }
+    m_surface->dispose();
     delete graphics;
   }
 
 private:
   gfx::Point m_pt;
-  BITMAP* m_bmp;
+  she::Surface* m_surface;
 };
 
 GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
+  she::Surface* surface;
+  she::Surface* defaultSurface = she::instance()->defaultDisplay()->getSurface();
 
-  if (m_doubleBuffered && ji_screen == screen) {
-    BITMAP* bmp = create_bitmap_ex(
-      bitmap_color_depth(ji_screen), clip.w, clip.h);
-
-    graphics.reset(new Graphics(bmp, -clip.x, -clip.y),
-      DeleteGraphicsAndBitmap(clip, bmp));
+  // In case of double-buffering, we need to create the temporary
+  // buffer only if the default surface is the screen.
+  if (m_doubleBuffered && defaultSurface->isDirectToScreen()) {
+    surface = she::instance()->createSurface(clip.w, clip.h);
+    graphics.reset(new Graphics(surface, -clip.x, -clip.y),
+      DeleteGraphicsAndSurface(clip, surface));
   }
-  // Paint directly on ji_screen (in this case "ji_screen" can be
-  // the screen or a memory bitmap).
+  // In other case, we can draw directly onto the screen.
   else {
-    graphics.reset(new Graphics(ji_screen, getBounds().x, getBounds().y));
+    surface = defaultSurface;
+    graphics.reset(new Graphics(surface, getBounds().x, getBounds().y));
   }
 
   graphics->setFont(getFont());

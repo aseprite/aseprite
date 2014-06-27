@@ -1,16 +1,14 @@
-// Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// SHE library
+// Copyright (C) 2012-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef UI_COLOR_H_INCLUDED
-#define UI_COLOR_H_INCLUDED
+#ifndef SHE_COLOR_H_INCLUDED
+#define SHE_COLOR_H_INCLUDED
 #pragma once
 
-#include "she/color.h"
-
-namespace ui {
+namespace she {
 
   typedef uint32_t Color;
   typedef uint8_t ColorComponent;
@@ -41,8 +39,6 @@ namespace ui {
 
   inline bool is_transparent(Color c) { return geta(c) == 0; }
 
-  int to_system(Color color);
-  
-} // namespace ui
+} // namespace she
 
-#endif  // UI_COLOR_H_INCLUDED
+#endif  // SHE_COLOR_H_INCLUDED

@@ -30,14 +30,13 @@
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/primitives.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
-
-#include <allegro.h>
+#include "she/system.h"
 
 #define MAX_THUMBNAIL_SIZE              128
 
@@ -72,11 +71,11 @@ private:
       // Post load
       fop_post_load(m_fop);
 
-      // Convert the loaded document into the Allegro bitmap "m_thumbnail".
+      // Convert the loaded document into the she::Surface.
       const Sprite* sprite = (m_fop->document && m_fop->document->getSprite()) ? m_fop->document->getSprite():
                                                                                  NULL;
       if (!fop_is_stop(m_fop) && sprite) {
-        // The palette to convert the Image to a BITMAP
+        // The palette to convert the Image
         m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
 
         // Render the 'sprite' in one plain 'image'
@@ -107,9 +106,13 @@ private:
 
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
-        BITMAP* bmp = create_bitmap_ex(16, m_thumbnail->getWidth(), m_thumbnail->getHeight());
-        convert_image_to_allegro(m_thumbnail, bmp, 0, 0, m_palette);
-        m_fileitem->setThumbnail(bmp);
+        she::Surface* thumbnail = she::instance()->createRgbaSurface(
+          m_thumbnail->getWidth(),
+          m_thumbnail->getHeight());
+
+        convert_image_to_surface(m_thumbnail, thumbnail, 0, 0, m_palette);
+
+        m_fileitem->setThumbnail(thumbnail);
       }
     }
     catch (const std::exception& e) {
