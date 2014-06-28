@@ -125,6 +125,7 @@
     <tool id="hand"                     x="176" y="32" w="16" h="16" />
     <tool id="move"                     x="192" y="32" w="16" h="16" />
     <tool id="zoom"                     x="208" y="32" w="16" h="16" />
+    <tool id="slice"                    x="224" y="32" w="16" h="16" />
 
     <tool id="paint_bucket"             x="144" y="48" w="16" h="16" />
 

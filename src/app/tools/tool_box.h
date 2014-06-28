@@ -52,6 +52,7 @@ namespace app {
       extern const char* Zoom;
       extern const char* Scroll;
       extern const char* Move;
+      extern const char* Slice;
       extern const char* Blur;
       extern const char* Jumble;
     };

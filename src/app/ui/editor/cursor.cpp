@@ -269,7 +269,8 @@ void Editor::editor_draw_cursor(int x, int y, bool refresh)
   color_t brush_color = get_brush_color(m_sprite, m_layer);
   color_t mask_color = m_sprite->getTransparentColor();
 
-  if (current_tool->getInk(0)->isSelection()) {
+  if (current_tool->getInk(0)->isSelection() ||
+      current_tool->getInk(0)->isSlice()) {
     cursor_type = CURSOR_CROSS_ONE;
   }
   else if (

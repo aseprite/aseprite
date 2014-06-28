@@ -443,6 +443,11 @@ bool StandbyState::onSetCursor(Editor* editor)
       jmouse_set_cursor(kMoveCursor);
       return true;
     }
+    else if (current_ink->isSlice()) {
+      jmouse_set_cursor(kNoCursor);
+      editor->showDrawingCursor();
+      return true;
+    }
   }
 
   // Draw

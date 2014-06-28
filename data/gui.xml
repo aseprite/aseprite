@@ -166,6 +166,7 @@
       <key tool="hand" shortcut="H" />
       <key tool="move" shortcut="V" />
       <key tool="zoom" shortcut="Z" />
+      <!-- key tool="slice" shortcut="K" /-->
 
       <key tool="paint_bucket" shortcut="G" />
 
@@ -600,6 +601,15 @@
             ink="move"
             controller="freehand"
             />
+      <!-- tool id="slice"
+            text="Slice Tool"
+            fill="always"
+            ink="slice"
+            controller="two_points"
+            pointshape="pixel"
+            intertwine="as_rectangles"
+            tracepolicy="last"
+            /-->
     </group>
 
     <group id="paint_bucket" text="Paint Bucket Tool">
