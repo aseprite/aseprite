@@ -27,6 +27,7 @@
 
 #include "app/file_system.h"
 
+#include "base/fs.h"
 #include "base/path.h"
 #include "base/string.h"
 #include "she/surface.h"
@@ -55,6 +56,7 @@
 #endif
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX || defined ALLEGRO_MINGW32
   #include <sys/unistd.h>
+
 #endif
 
 #if defined USE_PIDLS
@@ -145,6 +147,7 @@ public:
 
   IFileItem* getParent() const;
   const FileItemList& getChildren();
+  void createDirectory(const std::string& dirname);
 
   bool hasExtension(const std::string& csv_extensions);
 
@@ -559,6 +562,14 @@ const FileItemList& FileItem::getChildren()
   }
 
   return this->children;
+}
+
+void FileItem::createDirectory(const std::string& dirname)
+{
+  base::make_directory(base::join_path(filename, dirname));
+
+  // Invalidate the children list.
+  this->version = 0;
 }
 
 bool FileItem::hasExtension(const std::string& csv_extensions)

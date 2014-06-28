@@ -202,6 +202,8 @@
     <part id="combobox_arrow_right"             x="99" y="196" w="9" h="9" />
     <part id="combobox_arrow_right_selected"    x="115" y="196" w="9" h="9" />
     <part id="combobox_arrow_right_disabled"    x="131" y="196" w="9" h="9" />
+    <part id="newfolder"                        x="99" y="211" w="9" h="9" />
+    <part id="newfolder_selected"               x="115" y="211" w="9" h="9" />
     <part id="toolbutton_normal"                x="96" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_hot"                   x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_last"                  x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />

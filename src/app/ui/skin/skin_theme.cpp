@@ -204,6 +204,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["combobox_arrow_right"] = PART_COMBOBOX_ARROW_RIGHT;
   sheet_mapping["combobox_arrow_right_selected"] = PART_COMBOBOX_ARROW_RIGHT_SELECTED;
   sheet_mapping["combobox_arrow_right_disabled"] = PART_COMBOBOX_ARROW_RIGHT_DISABLED;
+  sheet_mapping["newfolder"] = PART_NEWFOLDER;
+  sheet_mapping["newfolder_selected"] = PART_NEWFOLDER_SELECTED;
   sheet_mapping["toolbutton_normal"] = PART_TOOLBUTTON_NORMAL_NW;
   sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
   sheet_mapping["toolbutton_last"] = PART_TOOLBUTTON_LAST_NW;

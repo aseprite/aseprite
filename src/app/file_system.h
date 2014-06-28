@@ -88,6 +88,7 @@ namespace app {
 
     virtual IFileItem* getParent() const = 0;
     virtual const FileItemList& getChildren() = 0;
+    virtual void createDirectory(const std::string& dirname) = 0;
 
     virtual bool hasExtension(const std::string& csv_extensions) = 0;
 
