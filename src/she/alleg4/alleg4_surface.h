@@ -20,15 +20,15 @@
 
 namespace she {
 
-  inline int to_allegro(Color color) {
-    if (is_transparent(color))
+  inline int to_allegro(int color_depth, gfx::Color color) {
+    if (gfx::is_transparent(color))
       return -1;
     else
-      return makecol(getr(color), getg(color), getb(color));
+      return makecol_depth(color_depth, gfx::getr(color), gfx::getg(color), gfx::getb(color));
   }
 
-  inline Color from_allegro(int color_depth, int color) {
-    return she::rgba(
+  inline gfx::Color from_allegro(int color_depth, int color) {
+    return gfx::rgba(
       getr_depth(color_depth, color),
       getg_depth(color_depth, color),
       getb_depth(color_depth, color));
@@ -219,34 +219,34 @@ namespace she {
       }
     }
 
-    she::Color getPixel(int x, int y) OVERRIDE {
+    gfx::Color getPixel(int x, int y) OVERRIDE {
       return from_allegro(
         bitmap_color_depth(m_bmp),
         getpixel(m_bmp, x, y));
     }
 
-    void putPixel(she::Color color, int x, int y) OVERRIDE {
-      putpixel(m_bmp, x, y, to_allegro(color));
+    void putPixel(gfx::Color color, int x, int y) OVERRIDE {
+      putpixel(m_bmp, x, y, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawHLine(she::Color color, int x, int y, int w) OVERRIDE {
-      hline(m_bmp, x, y, x+w-1, to_allegro(color));
+    void drawHLine(gfx::Color color, int x, int y, int w) OVERRIDE {
+      hline(m_bmp, x, y, x+w-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawVLine(she::Color color, int x, int y, int h) OVERRIDE {
-      vline(m_bmp, x, y, y+h-1, to_allegro(color));
+    void drawVLine(gfx::Color color, int x, int y, int h) OVERRIDE {
+      vline(m_bmp, x, y, y+h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawLine(she::Color color, const gfx::Point& a, const gfx::Point& b) OVERRIDE {
-      line(m_bmp, a.x, a.y, b.x, b.y, to_allegro(color));
+    void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) OVERRIDE {
+      line(m_bmp, a.x, a.y, b.x, b.y, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawRect(she::Color color, const gfx::Rect& rc) OVERRIDE {
-      rect(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(color));
+    void drawRect(gfx::Color color, const gfx::Rect& rc) OVERRIDE {
+      rect(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void fillRect(she::Color color, const gfx::Rect& rc) OVERRIDE {
-      rectfill(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(color));
+    void fillRect(gfx::Color color, const gfx::Rect& rc) OVERRIDE {
+      rectfill(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
     void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const OVERRIDE {
@@ -270,21 +270,21 @@ namespace she {
       draw_trans_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
     }
 
-    void drawChar(Font* sheFont, she::Color fg, she::Color bg, int x, int y, int chr) OVERRIDE {
+    void drawChar(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, int chr) OVERRIDE {
       FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
 
       allegFont->vtable->render_char(allegFont, chr,
-        to_allegro(fg),
-        to_allegro(bg),
+        to_allegro(bitmap_color_depth(m_bmp), fg),
+        to_allegro(bitmap_color_depth(m_bmp), bg),
         m_bmp, x, y);
     }
 
-    void drawString(Font* sheFont, she::Color fg, she::Color bg, int x, int y, const std::string& str) OVERRIDE {
+    void drawString(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) OVERRIDE {
       FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
       base::utf8_const_iterator it(str.begin()), end(str.end());
       int length = 0;
-      int sysfg = to_allegro(fg);
-      int sysbg = to_allegro(bg);
+      int sysfg = to_allegro(bitmap_color_depth(m_bmp), fg);
+      int sysbg = to_allegro(bitmap_color_depth(m_bmp), bg);
 
       while (it != end) {
         allegFont->vtable->render_char(allegFont, *it, sysfg, sysbg, m_bmp, x, y);

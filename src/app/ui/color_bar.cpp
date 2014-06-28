@@ -67,7 +67,7 @@ void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
     getClientBounds(),
     hasFocus() ? PART_EDITOR_SELECTED_NW:
     PART_EDITOR_NORMAL_NW,
-    ColorNone);
+    gfx::ColorNone);
 }
 
 //////////////////////////////////////////////////////////////////////

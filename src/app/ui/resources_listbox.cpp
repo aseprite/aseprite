@@ -63,7 +63,7 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Graphics* g = ev.getGraphics();
     gfx::Rect bounds = getClientBounds();
-    ui::Color bgcolor, fgcolor;
+    gfx::Color bgcolor, fgcolor;
 
     if (isSelected()) {
       bgcolor = theme->getColor(ThemeColor::ListItemSelectedFace);
@@ -82,7 +82,7 @@ protected:
     // for (int i=0; i<m_palette->size(); ++i) {
     //   raster::color_t c = m_resource->getEntry(i);
 
-    //   g->fillRect(ui::rgba(
+    //   g->fillRect(gfx::rgba(
     //       raster::rgba_getr(c),
     //       raster::rgba_getg(c),
     //       raster::rgba_getb(c)), box);
@@ -90,7 +90,7 @@ protected:
     //   box.x += box.w;
     // }
 
-    g->drawString(getText(), fgcolor, ui::ColorNone,
+    g->drawString(getText(), fgcolor, gfx::ColorNone,
       gfx::Point(
         bounds.x + jguiscale()*2,
         bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));

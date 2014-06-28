@@ -1,14 +1,14 @@
-// SHE library
-// Copyright (C) 2012-2014  David Capello
+// Aseprite Gfx Library
+// Copyright (C) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef SHE_COLOR_H_INCLUDED
-#define SHE_COLOR_H_INCLUDED
+#ifndef GFX_COLOR_H_INCLUDED
+#define GFX_COLOR_H_INCLUDED
 #pragma once
 
-namespace she {
+namespace gfx {
 
   typedef uint32_t Color;
   typedef uint8_t ColorComponent;
@@ -39,6 +39,6 @@ namespace she {
 
   inline bool is_transparent(Color c) { return geta(c) == 0; }
 
-} // namespace she
+} // namespace gfx
 
-#endif  // SHE_COLOR_H_INCLUDED
+#endif  // GFX_COLOR_H_INCLUDED

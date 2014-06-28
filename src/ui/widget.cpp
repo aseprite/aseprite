@@ -66,7 +66,7 @@ Widget::Widget(WidgetType type)
 
   this->m_align = 0;
   this->m_font = (this->m_theme ? this->m_theme->default_font: NULL);
-  this->m_bgColor = ui::ColorNone;
+  this->m_bgColor = gfx::ColorNone;
 
   this->theme_data[0] = NULL;
   this->theme_data[1] = NULL;
@@ -171,7 +171,7 @@ void Widget::setFont(she::Font* font)
   invalidate();
 }
 
-void Widget::setBgColor(ui::Color color)
+void Widget::setBgColor(gfx::Color color)
 {
   m_bgColor = color;
   onSetBgColor();
@@ -969,7 +969,7 @@ bool Widget::paintEvent(Graphics* graphics)
 #if _DEBUG
     // In debug mode we can fill the area with Red so we know if the
     // we are drawing the parent correctly.
-    graphics->fillRect(ui::rgba(255, 0, 0), getClientBounds());
+    graphics->fillRect(gfx::rgba(255, 0, 0), getClientBounds());
 #endif
 
     this->flags |= JI_HIDDEN;

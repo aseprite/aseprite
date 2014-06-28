@@ -8,12 +8,12 @@
 #define UI_GRAPHICS_H_INCLUDED
 #pragma once
 
-#include "base/shared_ptr.h"
 #include "base/disable_copying.h"
+#include "base/shared_ptr.h"
+#include "gfx/color.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "ui/color.h"
 
 #include <string>
 
@@ -45,17 +45,17 @@ namespace ui {
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);
 
-    ui::Color getPixel(int x, int y);
-    void putPixel(ui::Color color, int x, int y);
+    gfx::Color getPixel(int x, int y);
+    void putPixel(gfx::Color color, int x, int y);
 
-    void drawHLine(ui::Color color, int x, int y, int w);
-    void drawVLine(ui::Color color, int x, int y, int h);
-    void drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b);
+    void drawHLine(gfx::Color color, int x, int y, int w);
+    void drawVLine(gfx::Color color, int x, int y, int h);
+    void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b);
 
-    void drawRect(ui::Color color, const gfx::Rect& rc);
-    void fillRect(ui::Color color, const gfx::Rect& rc);
-    void fillRegion(ui::Color color, const gfx::Region& rgn);
-    void fillAreaBetweenRects(ui::Color color,
+    void drawRect(gfx::Color color, const gfx::Rect& rc);
+    void fillRect(gfx::Color color, const gfx::Rect& rc);
+    void fillRegion(gfx::Color color, const gfx::Region& rgn);
+    void fillAreaBetweenRects(gfx::Color color,
       const gfx::Rect& outer, const gfx::Rect& inner);
 
     void drawSurface(she::Surface* surface, int x, int y);
@@ -70,10 +70,10 @@ namespace ui {
     void setFont(she::Font* font);
     she::Font* getFont() { return m_font; }
 
-    void drawChar(int chr, Color fg, Color bg, int x, int y);
-    void drawString(const std::string& str, Color fg, Color bg, const gfx::Point& pt);
-    void drawUIString(const std::string& str, Color fg, Color bg, const gfx::Point& pt);
-    void drawAlignedUIString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align);
+    void drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y);
+    void drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
+    void drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
+    void drawAlignedUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align);
 
     gfx::Size measureChar(int chr);
     gfx::Size measureUIString(const std::string& str);
@@ -81,7 +81,7 @@ namespace ui {
     gfx::Size fitString(const std::string& str, int maxWidth, int align);
 
   private:
-    gfx::Size doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw);
+    gfx::Size doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw);
 
     she::Surface* m_surface;
     int m_dx;

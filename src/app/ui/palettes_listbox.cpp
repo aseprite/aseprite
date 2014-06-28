@@ -72,7 +72,7 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
   for (int i=0; i<palette->size(); ++i) {
     raster::color_t c = palette->getEntry(i);
 
-    g->fillRect(ui::rgba(
+    g->fillRect(gfx::rgba(
         raster::rgba_getr(c),
         raster::rgba_getg(c),
         raster::rgba_getb(c)), box);
@@ -80,7 +80,7 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
     box.x += box.w;
   }
 
-  // g->drawString(getText(), fgcolor, ui::ColorNone, false,
+  // g->drawString(getText(), fgcolor, gfx::ColorNone, false,
   //   gfx::Point(
   //     bounds.x + jguiscale()*2,
   //     bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));

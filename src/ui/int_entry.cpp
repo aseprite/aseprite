@@ -142,7 +142,7 @@ void IntEntry::openPopup()
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setTransparent(true);
-  m_popupWindow->setBgColor(ui::ColorNone);
+  m_popupWindow->setBgColor(gfx::ColorNone);
   m_popupWindow->setBounds(rc);
   m_popupWindow->Close.connect(&IntEntry::onPopupClose, this);
 

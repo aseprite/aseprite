@@ -9,7 +9,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "ui/color.h"
+#include "gfx/color.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -19,15 +19,15 @@ namespace ui {
   public:
     Label(const std::string& text);
 
-    Color getTextColor() const;
-    void setTextColor(Color color);
+    gfx::Color getTextColor() const;
+    void setTextColor(gfx::Color color);
 
   protected:
     void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
     void onPaint(PaintEvent& ev) OVERRIDE;
 
   private:
-    Color m_textColor;
+    gfx::Color m_textColor;
   };
 
 } // namespace ui

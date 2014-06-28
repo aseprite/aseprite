@@ -8,8 +8,8 @@
 #define UI_INTERN_H_INCLUDED
 #pragma once
 
+#include "gfx/color.h"
 #include "ui/base.h"
-#include "ui/color.h"
 
 namespace she {
   class Font;
@@ -32,7 +32,7 @@ namespace ui {
   // theme.cpp
 
   void drawTextBox(Graphics* g, Widget* textbox,
-                   int* w, int* h, ui::Color bg, ui::Color fg);
+                   int* w, int* h, gfx::Color bg, gfx::Color fg);
 
 } // namespace ui
 

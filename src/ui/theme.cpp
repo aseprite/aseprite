@@ -72,7 +72,7 @@ Theme* CurrentTheme::get()
 }
 
 void drawTextBox(Graphics* g, Widget* widget,
-  int* w, int* h, Color bg, Color fg)
+  int* w, int* h, gfx::Color bg, gfx::Color fg)
 {
   View* view = View::getView(widget);
   char* text = const_cast<char*>(widget->getText().c_str());

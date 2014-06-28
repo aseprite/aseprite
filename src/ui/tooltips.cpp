@@ -229,7 +229,7 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
   this->border_width.b = 7 * jguiscale();
 
   // Setup the background color.
-  setBgColor(ui::rgba(255, 255, 200));
+  setBgColor(gfx::rgba(255, 255, 200));
 }
 
 void TipWindow::onPaint(PaintEvent& ev)

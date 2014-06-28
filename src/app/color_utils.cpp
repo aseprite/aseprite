@@ -32,8 +32,6 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 
-using namespace gfx;
-
 // Internal functions
 namespace {
 
@@ -56,43 +54,45 @@ int get_mask_for_bitmap(int depth)
 
 namespace app {
 
-ui::Color color_utils::blackandwhite(ui::Color color)
+gfx::Color color_utils::blackandwhite(gfx::Color color)
 {
-  if ((ui::getr(color)*30+ui::getg(color)*59+ui::getb(color)*11)/100 < 128)
-    return ui::rgba(0, 0, 0);
+  if ((gfx::getr(color)*30+gfx::getg(color)*59+gfx::getb(color)*11)/100 < 128)
+    return gfx::rgba(0, 0, 0);
   else
-    return ui::rgba(255, 255, 255);
+    return gfx::rgba(255, 255, 255);
 }
 
-ui::Color color_utils::blackandwhite_neg(ui::Color color)
+gfx::Color color_utils::blackandwhite_neg(gfx::Color color)
 {
-  if ((ui::getr(color)*30+ui::getg(color)*59+ui::getb(color)*11)/100 < 128)
-    return ui::rgba(255, 255, 255);
+  if ((gfx::getr(color)*30+gfx::getg(color)*59+gfx::getb(color)*11)/100 < 128)
+    return gfx::rgba(255, 255, 255);
   else
-    return ui::rgba(0, 0, 0);
+    return gfx::rgba(0, 0, 0);
 }
 
-ui::Color color_utils::color_for_ui(const app::Color& color)
+gfx::Color color_utils::color_for_ui(const app::Color& color)
 {
-  ui::Color c = ui::ColorNone;
+  gfx::Color c = gfx::ColorNone;
 
   switch (color.getType()) {
 
     case app::Color::MaskType:
-      c = ui::ColorNone;
+      c = gfx::ColorNone;
       break;
 
     case app::Color::RgbType:
     case app::Color::HsvType:
-      c = ui::rgba(color.getRed(),
-                   color.getGreen(),
-                   color.getBlue(), 255);
+      c = gfx::rgba(
+        color.getRed(),
+        color.getGreen(),
+        color.getBlue(), 255);
       break;
 
     case app::Color::GrayType:
-      c = ui::rgba(color.getGray(),
-                   color.getGray(),
-                   color.getGray(), 255);
+      c = gfx::rgba(
+        color.getGray(),
+        color.getGray(),
+        color.getGray(), 255);
       break;
 
     case app::Color::IndexType: {
@@ -100,9 +100,10 @@ ui::Color color_utils::color_for_ui(const app::Color& color)
       ASSERT(i >= 0 && i < (int)get_current_palette()->size());
 
       uint32_t _c = get_current_palette()->getEntry(i);
-      c = ui::rgba(rgba_getr(_c),
-                   rgba_getg(_c),
-                   rgba_getb(_c), 255);
+      c = gfx::rgba(
+        rgba_getr(_c),
+        rgba_getg(_c),
+        rgba_getb(_c), 255);
       break;
     }
 
@@ -120,10 +121,10 @@ raster::color_t color_utils::color_for_image(const app::Color& color, PixelForma
 
   switch (format) {
     case IMAGE_RGB:
-      c = rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      c = raster::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = graya(color.getGray(), 255);
+      c = raster::graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
       c = color.getIndex();
@@ -147,10 +148,10 @@ raster::color_t color_utils::color_for_target(const app::Color& color, const Col
 
   switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:
-      c = rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      c = raster::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = graya(color.getGray(), 255);
+      c = raster::graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
       if (color.getType() == app::Color::IndexType) {

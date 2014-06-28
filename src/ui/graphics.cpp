@@ -22,18 +22,6 @@
 #include "she/system.h"
 #include "ui/theme.h"
 
-namespace {
-
-  inline she::Color to_she(ui::Color color) {
-    return (she::Color)color;
-  }
-
-  inline ui::Color from_she(she::Color color) {
-    return (ui::Color)color;
-  }
-
-}
-
 namespace ui {
 
 Graphics::Graphics(she::Surface* surface, int dx, int dy)
@@ -72,57 +60,57 @@ bool Graphics::intersectClipRect(const gfx::Rect& rc)
   return m_surface->intersectClipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
-ui::Color Graphics::getPixel(int x, int y)
+gfx::Color Graphics::getPixel(int x, int y)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  return from_she(dst->getPixel(m_dx+x, m_dy+y));
+  return dst->getPixel(m_dx+x, m_dy+y);
 }
 
-void Graphics::putPixel(ui::Color color, int x, int y)
+void Graphics::putPixel(gfx::Color color, int x, int y)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->putPixel(to_she(color), m_dx+x, m_dy+y);
+  dst->putPixel(color, m_dx+x, m_dy+y);
 }
 
-void Graphics::drawHLine(ui::Color color, int x, int y, int w)
+void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawHLine(to_she(color), m_dx+x, m_dy+y, w);
+  dst->drawHLine(color, m_dx+x, m_dy+y, w);
 }
 
-void Graphics::drawVLine(ui::Color color, int x, int y, int h)
+void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawVLine(to_she(color), m_dx+x, m_dy+y, h);
+  dst->drawVLine(color, m_dx+x, m_dy+y, h);
 }
 
-void Graphics::drawLine(ui::Color color, const gfx::Point& a, const gfx::Point& b)
+void Graphics::drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawLine(to_she(color),
+  dst->drawLine(color,
     gfx::Point(m_dx+a.x, m_dy+a.y),
     gfx::Point(m_dx+b.x, m_dy+b.y));
 }
 
-void Graphics::drawRect(ui::Color color, const gfx::Rect& rc)
+void Graphics::drawRect(gfx::Color color, const gfx::Rect& rc)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawRect(to_she(color), gfx::Rect(rc).offset(m_dx, m_dy));
+  dst->drawRect(color, gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
-void Graphics::fillRect(ui::Color color, const gfx::Rect& rc)
+void Graphics::fillRect(gfx::Color color, const gfx::Rect& rc)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->fillRect(to_she(color), gfx::Rect(rc).offset(m_dx, m_dy));
+  dst->fillRect(color, gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
-void Graphics::fillRegion(ui::Color color, const gfx::Region& rgn)
+void Graphics::fillRegion(gfx::Color color, const gfx::Region& rgn)
 {
   for (gfx::Region::iterator it=rgn.begin(), end=rgn.end(); it!=end; ++it)
     fillRect(color, *it);
 }
 
-void Graphics::fillAreaBetweenRects(ui::Color color,
+void Graphics::fillAreaBetweenRects(gfx::Color color,
   const gfx::Rect& outer, const gfx::Rect& inner)
 {
   if (!outer.intersects(inner))
@@ -160,19 +148,19 @@ void Graphics::setFont(she::Font* font)
   m_font = font;
 }
 
-void Graphics::drawChar(int chr, Color fg, Color bg, int x, int y)
+void Graphics::drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawChar(m_font, to_she(fg), to_she(bg), m_dx+x, m_dy+y, chr);
+  dst->drawChar(m_font, fg, bg, m_dx+x, m_dy+y, chr);
 }
 
-void Graphics::drawString(const std::string& str, Color fg, Color bg, const gfx::Point& pt)
+void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
 {
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawString(m_font, to_she(fg), to_she(bg), m_dx+pt.x, m_dy+pt.y, str);
+  dst->drawString(m_font, fg, bg, m_dx+pt.x, m_dy+pt.y, str);
 }
 
-void Graphics::drawUIString(const std::string& str, Color fg, Color bg, const gfx::Point& pt)
+void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
 {
   she::ScopedSurfaceLock dst(m_surface);
   base::utf8_const_iterator it(str.begin()), end(str.end());
@@ -190,19 +178,19 @@ void Graphics::drawUIString(const std::string& str, Color fg, Color bg, const gf
         underscored_w = m_font->charWidth(*it);
       }
     }
-    dst->drawChar(m_font, to_she(fg), to_she(bg), x, y, *it);
+    dst->drawChar(m_font, fg, bg, x, y, *it);
     x += m_font->charWidth(*it);
     ++it;
   }
 
   if (underscored_w > 0) {
     y += m_font->height();
-    dst->fillRect(to_she(fg),
+    dst->fillRect(fg,
       gfx::Rect(underscored_x, y, underscored_w, jguiscale()));
   }
 }
 
-void Graphics::drawAlignedUIString(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align)
+void Graphics::drawAlignedUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align)
 {
   doUIStringAlgorithm(str, fg, bg, rc, align, true);
 }
@@ -240,15 +228,15 @@ int Graphics::measureUIStringLength(const std::string& str, she::Font* font)
 
 gfx::Size Graphics::fitString(const std::string& str, int maxWidth, int align)
 {
-  return doUIStringAlgorithm(str, ColorNone, ColorNone, gfx::Rect(0, 0, maxWidth, 0), align, false);
+  return doUIStringAlgorithm(str, gfx::ColorNone, gfx::ColorNone, gfx::Rect(0, 0, maxWidth, 0), align, false);
 }
 
-gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color bg, const gfx::Rect& rc, int align, bool draw)
+gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw)
 {
   gfx::Point pt(0, rc.y);
 
   if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
-    gfx::Size preSize = doUIStringAlgorithm(str, ColorNone, ColorNone, rc, 0, false);
+    gfx::Size preSize = doUIStringAlgorithm(str, gfx::ColorNone, gfx::ColorNone, rc, 0, false);
     if (align & JI_MIDDLE)
       pt.y = rc.y + rc.h/2 - preSize.h/2;
     else if (align & JI_BOTTOM)
@@ -318,7 +306,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
 
       drawString(line, fg, bg, gfx::Point(xout, pt.y));
 
-      if (!is_transparent(bg))
+      if (!gfx::is_transparent(bg))
         fillAreaBetweenRects(bg,
           gfx::Rect(rc.x, pt.y, rc.w, lineSize.h),
           gfx::Rect(xout, pt.y, lineSize.w, lineSize.h));
@@ -330,7 +318,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, Color fg, Color 
   }
 
   // Fill bottom area
-  if (draw && !is_transparent(bg)) {
+  if (draw && !gfx::is_transparent(bg)) {
     if (pt.y < rc.y+rc.h)
       fillRect(bg, gfx::Rect(rc.x, pt.y, rc.w, rc.y+rc.h-pt.y));
   }

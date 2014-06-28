@@ -7,7 +7,6 @@ add_library(ui-lib
   box.cpp
   button.cpp
   clipboard.cpp
-  color.cpp
   combobox.cpp
   component.cpp
   cursor.cpp

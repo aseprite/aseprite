@@ -65,7 +65,7 @@ namespace app {
   class Editor : public ui::Widget,
                  public DocumentSettingsObserver {
   public:
-    typedef void (*PixelDelegate)(ui::Graphics* g, int x, int y, ui::Color color);
+    typedef void (*PixelDelegate)(ui::Graphics* g, int x, int y, gfx::Color color);
 
     enum EditorFlags {
       kNoneFlag = 0,
@@ -216,7 +216,7 @@ namespace app {
       ui::Graphics* g,
       int screen_x, int screen_y,
       int sprite_x, int sprite_y,
-      ui::Color color,
+      gfx::Color color,
       PixelDelegate pixelDelegate);
 
     // Draws the specified portion of sprite in the editor.  Warning:

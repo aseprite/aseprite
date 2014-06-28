@@ -448,9 +448,10 @@ void SkinTheme::onRegenerate()
     while (xmlColor) {
       std::string id = xmlColor->Attribute("id");
       uint32_t value = strtol(xmlColor->Attribute("value")+1, NULL, 16);
-      ui::Color color = ui::rgba((value & 0xff0000) >> 16,
-                                 (value & 0xff00) >> 8,
-                                 (value & 0xff));
+      gfx::Color color = gfx::rgba(
+        (value & 0xff0000) >> 16,
+        (value & 0xff00) >> 8,
+        (value & 0xff));
 
       PRINTF("Loading color '%s'...\n", id.c_str());
 
@@ -944,7 +945,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   IButtonIcon* iconInterface = widget->getIconInterface();
   gfx::Rect box, text, icon;
-  ui::Color fg, bg;
+  gfx::Color fg, bg;
   int part_nw;
 
   widget->getTextIconInfo(&box, &text, &icon,
@@ -1020,7 +1021,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   gfx::Rect bounds = widget->getClientBounds();
   IButtonIcon* iconInterface = widget->getIconInterface();
   gfx::Rect box, text, icon;
-  ui::Color bg;
+  gfx::Color bg;
 
   widget->getTextIconInfo(&box, &text, &icon,
     iconInterface ? iconInterface->getIconAlign(): 0,
@@ -1053,7 +1054,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 
   // draw focus
   if (look != WithoutBordersLook && widget->hasFocus())
-    draw_bounds_nw(g, bounds, PART_CHECK_FOCUS_NW, ui::ColorNone);
+    draw_bounds_nw(g, bounds, PART_CHECK_FOCUS_NW, gfx::ColorNone);
 }
 
 void SkinTheme::paintGrid(PaintEvent& ev)
@@ -1088,7 +1089,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  ui::Color bg = getColor(ThemeColor::Background);
+  gfx::Color bg = getColor(ThemeColor::Background);
   draw_bounds_nw(g, bounds,
     (widget->hasFocus() ?
       (isMiniLook ? PART_SUNKEN_MINI_FOCUSED_NW: PART_SUNKEN_FOCUSED_NW):
@@ -1104,7 +1105,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
     // Normal text
     bg = ColorNone;
-    ui::Color fg = getColor(ThemeColor::Text);
+    gfx::Color fg = getColor(ThemeColor::Text);
 
     // Selected
     if ((c >= selbeg) && (c <= selend)) {
@@ -1155,8 +1156,8 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   Label* widget = static_cast<Label*>(ev.getSource());
-  ui::Color bg = BGCOLOR;
-  ui::Color fg = widget->getTextColor();
+  gfx::Color bg = BGCOLOR;
+  gfx::Color fg = widget->getTextColor();
   Rect text, rc = widget->getClientBounds();
 
   if (!is_transparent(bg))
@@ -1173,8 +1174,8 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
-  ui::Color fg = getColor(ThemeColor::LinkText);
-  ui::Color bg = BGCOLOR;
+  gfx::Color fg = getColor(ThemeColor::LinkText);
+  gfx::Color bg = BGCOLOR;
 
   g->fillRect(bg, bounds);
   drawTextString(g, NULL, fg, ColorNone, widget, bounds, 0);
@@ -1200,7 +1201,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
   Graphics* g = ev.getGraphics();
-  ui::Color fg, bg;
+  gfx::Color fg, bg;
 
   if (!widget->isEnabled()) {
     bg = getColor(ThemeColor::Face);
@@ -1237,7 +1238,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
-  ui::Color fg, bg;
+  gfx::Color fg, bg;
   int c, bar;
 
   // TODO ASSERT?
@@ -1346,7 +1347,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
   IButtonIcon* iconInterface = widget->getIconInterface();
-  ui::Color bg = BGCOLOR;
+  gfx::Color bg = BGCOLOR;
 
   gfx::Rect box, text, icon;
   widget->getTextIconInfo(&box, &text, &icon,
@@ -1374,7 +1375,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
 
   // Focus
   if (widget->hasFocus())
-    draw_bounds_nw(g, bounds, PART_RADIO_FOCUS_NW, ui::ColorNone);
+    draw_bounds_nw(g, bounds, PART_RADIO_FOCUS_NW, gfx::ColorNone);
 }
 
 void SkinTheme::paintSeparator(ui::PaintEvent& ev)
@@ -1417,7 +1418,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   int min, max, value;
 
   // Outside borders
-  ui::Color bgcolor = widget->getBgColor();
+  gfx::Color bgcolor = widget->getBgColor();
   if (!is_transparent(bgcolor))
     g->fillRect(bgcolor, bounds);
 
@@ -1467,7 +1468,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
         3 * jguiscale(),
         1 * jguiscale()));
 
-    draw_bounds_nw(g, rc, nw, ui::ColorNone);
+    draw_bounds_nw(g, rc, nw, gfx::ColorNone);
 
     // Draw background (using the customized ISliderBgPainter implementation)
     rc.shrink(Border(1, 1, 1, 2) * jguiscale());
@@ -1549,7 +1550,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   // Outside borders
   g->fillRect(BGCOLOR, bounds);
 
-  ui::Color fg, bg = getColor(ThemeColor::Background);
+  gfx::Color fg, bg = getColor(ThemeColor::Background);
 
   draw_bounds_nw(g, bounds,
     widget->hasFocus() ?
@@ -1609,7 +1610,7 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   IButtonIcon* iconInterface = widget->getIconInterface();
   int part_nw;
-  ui::Color bg;
+  gfx::Color bg;
 
   if (widget->isSelected()) {
     bg = getColor(ThemeColor::ButtonSelectedFace);
@@ -1659,7 +1660,7 @@ void SkinTheme::paintView(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   View* widget = static_cast<View*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
-  ui::Color bg = BGCOLOR;
+  gfx::Color bg = BGCOLOR;
 
   if (!is_transparent(bg))
     g->fillRect(bg, bounds);
@@ -1709,7 +1710,7 @@ void SkinTheme::paintViewViewport(PaintEvent& ev)
 {
   Viewport* widget = static_cast<Viewport*>(ev.getSource());
   Graphics* g = ev.getGraphics();
-  ui::Color bg = BGCOLOR;
+  gfx::Color bg = BGCOLOR;
 
   if (!is_transparent(bg))
     g->fillRect(bg, widget->getClientBounds());
@@ -1782,8 +1783,8 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   Rect rc = widget->getClientBounds();
-  ui::Color fg = getColor(ThemeColor::TooltipText);
-  ui::Color bg = getColor(ThemeColor::TooltipFace);
+  gfx::Color fg = getColor(ThemeColor::TooltipText);
+  gfx::Color bg = getColor(ThemeColor::TooltipFace);
 
   int nw = PART_TOOLTIP_NW;
   int n  = PART_TOOLTIP_N;
@@ -1841,9 +1842,9 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   g->drawAlignedUIString(widget->getText(), fg, bg, rc, widget->getAlign());
 }
 
-ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
+gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
 {
-  ui::Color c = widget->getBgColor();
+  gfx::Color c = widget->getBgColor();
   bool decorative = widget->isDecorative();
 
   if (!is_transparent(c) || widget->getType() == kWindowWidget)
@@ -1854,7 +1855,7 @@ ui::Color SkinTheme::getWidgetBgColor(Widget* widget)
     return getColor(ThemeColor::Face);
 }
 
-void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
+void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
                                Widget* widget, const Rect& rc,
                                int selected_offset)
 {
@@ -1911,14 +1912,14 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
         // Draw white part
         g->drawUIString(t,
           getColor(ThemeColor::Background),
-          ui::ColorNone,
+          gfx::ColorNone,
           textrc.getOrigin() + Point(jguiscale(), jguiscale()));
       }
 
       g->drawUIString(t,
         (!widget->isEnabled() ?
           getColor(ThemeColor::Disabled):
-          (ui::geta(fg_color) > 0 ? fg_color :
+          (gfx::geta(fg_color) > 0 ? fg_color :
             getColor(ThemeColor::Text))),
         bg_color, textrc.getOrigin());
     }
@@ -1927,7 +1928,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, ui::Color fg_color, u
 
 void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
-  ui::Color color = getColor(ThemeColor::Text);
+  gfx::Color color = getColor(ThemeColor::Text);
   int h = widget->getTextHeight();
 
   for (int u=x; u<x+2*jguiscale(); ++u)
@@ -2047,7 +2048,7 @@ void SkinTheme::draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int part
     se, s, sw, w);
 }
 
-void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, ui::Color bg)
+void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, gfx::Color bg)
 {
   draw_bounds_template(g, rc,
                        nw+0, nw+1, nw+2, nw+3,
@@ -2064,7 +2065,7 @@ void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, ui::Color bg
   }
 }
 
-void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg)
+void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, gfx::Color bg)
 {
   draw_bounds_template(g, rc, skinPart);
 
@@ -2083,7 +2084,7 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
   }
 }
 
-void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2)
+void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, gfx::Color bg1, gfx::Color bg2)
 {
   Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
   {

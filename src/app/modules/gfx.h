@@ -21,9 +21,9 @@
 #pragma once
 
 #include "app/color.h"
+#include "gfx/color.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
-#include "ui/color.h"
 #include "ui/graphics.h"
 
 namespace app {

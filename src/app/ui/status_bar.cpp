@@ -479,7 +479,7 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 void StatusBar::onPaint(ui::PaintEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color textColor = theme->getColorById(kStatusBarText);
+  gfx::Color textColor = theme->getColorById(kStatusBarText);
   Rect rc = getClientBounds();
   Graphics* g = ev.getGraphics();
 

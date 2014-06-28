@@ -476,8 +476,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
     return;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color text_color;
-  ui::Color face_color;
+  gfx::Color text_color;
+  gfx::Color face_color;
 
   // Selected
   if (selected) {
@@ -497,7 +497,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
                                        PART_TAB_NORMAL_NW,
                           face_color);
 
-    g->drawString(tab->text, text_color, ColorNone,
+    g->drawString(tab->text, text_color, gfx::ColorNone,
       gfx::Point(
         box.x + 4*jguiscale(),
         box.y + box.h/2 - getFont()->height()/2+1 + y_delta));

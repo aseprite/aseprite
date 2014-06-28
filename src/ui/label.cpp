@@ -23,12 +23,12 @@ Label::Label(const std::string& text)
   initTheme();
 }
 
-Color Label::getTextColor() const
+gfx::Color Label::getTextColor() const
 {
   return m_textColor;
 }
 
-void Label::setTextColor(Color color)
+void Label::setTextColor(gfx::Color color)
 {
   m_textColor = color;
 }

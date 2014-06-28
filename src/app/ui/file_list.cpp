@@ -309,8 +309,8 @@ void FileList::onPaint(ui::PaintEvent& ev)
   int th = getTextHeight();
   int x, y = bounds.y;
   int evenRow = 0;
-  ui::Color bgcolor;
-  ui::Color fgcolor;
+  gfx::Color bgcolor;
+  gfx::Color fgcolor;
   she::Surface* thumbnail = NULL;
   int thumbnail_y = 0;
 
@@ -390,7 +390,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
     y -= getBounds().y;
 
     g->blit(thumbnail, 0, 0, x, y, thumbnail->width(), thumbnail->height());
-    g->drawRect(ui::rgba(0, 0, 0),
+    g->drawRect(gfx::rgba(0, 0, 0),
       gfx::Rect(x-1, y-1, thumbnail->width()+1, thumbnail->height()+1));
   }
 }

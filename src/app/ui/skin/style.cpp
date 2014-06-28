@@ -52,7 +52,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
 
   if (m_part != NULL && m_part->size() > 0) {
     if (m_part->size() == 1) {
-      if (!ui::is_transparent(m_color))
+      if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
       g->drawRgbaSurface(m_part->getBitmap(0), bounds.x, bounds.y);
@@ -61,7 +61,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       theme->draw_bounds_nw(g, bounds, m_part, m_color);
     }
   }
-  else if (!ui::is_transparent(m_color)) {
+  else if (!gfx::is_transparent(m_color)) {
     g->fillRect(m_color, bounds);
   }
 }
@@ -72,10 +72,10 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
 
   if (text) {
     g->drawAlignedUIString(text,
-      (ui::is_transparent(m_color) ?
+      (gfx::is_transparent(m_color) ?
         theme->getColor(ThemeColor::Text):
         m_color),
-      ui::ColorNone,
+      gfx::ColorNone,
       gfx::Rect(bounds).shrink(m_padding), m_align);
   }
 }

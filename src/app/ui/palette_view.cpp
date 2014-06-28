@@ -283,7 +283,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   Palette* palette = get_current_palette();
   int bordercolor = makecol(255, 255, 255);
 
-  g->fillRect(ui::rgba(0 , 0, 0), bounds);
+  g->fillRect(gfx::rgba(0 , 0, 0), bounds);
 
   y = bounds.y + this->border_width.t;
   c = 0;
@@ -295,7 +295,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       if (c >= palette->size())
         break;
 
-      color = ui::rgba(
+      color = gfx::rgba(
         rgba_getr(palette->getEntry(c)),
         rgba_getg(palette->getEntry(c)),
         rgba_getb(palette->getEntry(c)));

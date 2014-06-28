@@ -77,7 +77,7 @@ enum {
 static int cursor_type = CURSOR_THINCROSS;
 static int cursor_negative;
 
-static ui::Color saved_pixel[MAX_SAVED];
+static gfx::Color saved_pixel[MAX_SAVED];
 static int saved_pixel_n;
 
 // These clipping regions are shared between all editors, so we cannot
@@ -87,13 +87,13 @@ static gfx::Region old_clipping_region;
 
 static void generate_cursor_boundaries();
 
-static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, int x, int y, ui::Color color, Editor::PixelDelegate pixel);
-static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor, int x, int y, ui::Color color, int thickness, Editor::PixelDelegate pixel);
-static void trace_brush_bounds(ui::Graphics* g, Editor* editor, int x, int y, ui::Color color, Editor::PixelDelegate pixel);
+static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, int x, int y, gfx::Color color, Editor::PixelDelegate pixel);
+static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor, int x, int y, gfx::Color color, int thickness, Editor::PixelDelegate pixel);
+static void trace_brush_bounds(ui::Graphics* g, Editor* editor, int x, int y, gfx::Color color, Editor::PixelDelegate pixel);
 
-static void savepixel(ui::Graphics* g, int x, int y, ui::Color color);
-static void drawpixel(ui::Graphics* g, int x, int y, ui::Color color);
-static void clearpixel(ui::Graphics* g, int x, int y, ui::Color color);
+static void savepixel(ui::Graphics* g, int x, int y, gfx::Color color);
+static void drawpixel(ui::Graphics* g, int x, int y, gfx::Color color);
+static void clearpixel(ui::Graphics* g, int x, int y, gfx::Color color);
 
 static color_t get_brush_color(Sprite* sprite, Layer* layer);
 
@@ -102,7 +102,7 @@ static color_t get_brush_color(Sprite* sprite, Layer* layer);
 //////////////////////////////////////////////////////////////////////
 
 static app::Color cursor_color;
-static ui::Color ui_cursor_color;
+static gfx::Color ui_cursor_color;
 static bool is_cursor_mask;
 
 static void update_cursor_color()
@@ -338,7 +338,7 @@ void Editor::moveBrushPreview(int x, int y, bool refresh)
       ScreenGraphics g;
       SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
 
-      forEachBrushPixel(&g, old_screen_x, old_screen_y, old_x, old_y, ui::ColorNone, clearpixel);
+      forEachBrushPixel(&g, old_screen_x, old_screen_y, old_x, old_y, gfx::ColorNone, clearpixel);
     }
 
     if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
@@ -387,7 +387,7 @@ void Editor::clearBrushPreview(bool refresh)
     ScreenGraphics g;
     SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
 
-    forEachBrushPixel(&g, m_cursor_screen_x, m_cursor_screen_y, x, y, ui::ColorNone, clearpixel);
+    forEachBrushPixel(&g, m_cursor_screen_x, m_cursor_screen_y, x, y, gfx::ColorNone, clearpixel);
   }
 
   // Clean pixel/brush preview
@@ -469,7 +469,7 @@ void Editor::forEachBrushPixel(
   ui::Graphics* g,
   int screen_x, int screen_y,
   int sprite_x, int sprite_y,
-  ui::Color color,
+  gfx::Color color,
   Editor::PixelDelegate pixelDelegate)
 {
   saved_pixel_n = 0;
@@ -492,7 +492,7 @@ void Editor::forEachBrushPixel(
 // New Thin Cross
 
 static void trace_thincross_pixels(ui::Graphics* g, Editor* editor,
-  int x, int y, ui::Color color, Editor::PixelDelegate pixelDelegate)
+  int x, int y, gfx::Color color, Editor::PixelDelegate pixelDelegate)
 {
   static int cursor_cross[7*7] = {
     0, 0, 0, 1, 0, 0, 0,
@@ -520,7 +520,7 @@ static void trace_thincross_pixels(ui::Graphics* g, Editor* editor,
 // Old Thick Cross
 
 static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor,
-  int x, int y, ui::Color color, int thickness, Editor::PixelDelegate pixelDelegate)
+  int x, int y, gfx::Color color, int thickness, Editor::PixelDelegate pixelDelegate)
 {
   static int cursor_cross[6*6] = {
     0, 0, 1, 1, 0, 0,
@@ -557,7 +557,7 @@ static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor,
 
 struct Data {
   ui::Graphics* g;
-  ui::Color color;
+  gfx::Color color;
   Editor::PixelDelegate pixelDelegate;
 };
 
@@ -568,7 +568,7 @@ static void algo_line_proxy(int x, int y, void* _data)
 }
 
 static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
-  int x, int y, ui::Color color, Editor::PixelDelegate pixelDelegate)
+  int x, int y, gfx::Color color, Editor::PixelDelegate pixelDelegate)
 {
   Data data = { g, color, pixelDelegate };
   int c, x1, y1, x2, y2;
@@ -613,22 +613,22 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
 //////////////////////////////////////////////////////////////////////
 // Helpers
 
-static void savepixel(ui::Graphics* g, int x, int y, ui::Color color)
+static void savepixel(ui::Graphics* g, int x, int y, gfx::Color color)
 {
   if (saved_pixel_n < MAX_SAVED && clipping_region.contains(gfx::Point(x, y)))
     saved_pixel[saved_pixel_n++] = g->getPixel(x, y);
 }
 
-static void drawpixel(ui::Graphics* graphics, int x, int y, ui::Color color)
+static void drawpixel(ui::Graphics* graphics, int x, int y, gfx::Color color)
 {
   if (saved_pixel_n < MAX_SAVED && clipping_region.contains(gfx::Point(x, y))) {
     if (cursor_negative) {
       int c = saved_pixel[saved_pixel_n++];
-      int r = getr(c);
-      int g = getg(c);
-      int b = getb(c);
+      int r = gfx::getr(c);
+      int g = gfx::getg(c);
+      int b = gfx::getb(c);
 
-      graphics->putPixel(color_utils::blackandwhite_neg(ui::rgba(r, g, b)), x, y);
+      graphics->putPixel(color_utils::blackandwhite_neg(gfx::rgba(r, g, b)), x, y);
     }
     else {
       graphics->putPixel(color, x, y);
@@ -636,7 +636,7 @@ static void drawpixel(ui::Graphics* graphics, int x, int y, ui::Color color)
   }
 }
 
-static void clearpixel(ui::Graphics* g, int x, int y, ui::Color color)
+static void clearpixel(ui::Graphics* g, int x, int y, gfx::Color color)
 {
   if (saved_pixel_n < MAX_SAVED) {
     if (clipping_region.contains(gfx::Point(x, y)))

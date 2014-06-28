@@ -639,7 +639,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   while (grid.y-grid.h >= spriteBounds.y) grid.y -= grid.h;
 
   // Get the grid's color
-  ui::Color grid_color = color_utils::color_for_ui(color);
+  gfx::Color grid_color = color_utils::color_for_ui(color);
 
   // Draw horizontal lines
   int x1 = spriteBounds.x;

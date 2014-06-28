@@ -9,12 +9,12 @@
 #pragma once
 
 #include "gfx/border.h"
+#include "gfx/color.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "gfx/size.h"
 #include "ui/base.h"
-#include "ui/color.h"
 #include "ui/component.h"
 #include "ui/graphics.h"
 #include "ui/widget_type.h"
@@ -149,15 +149,15 @@ namespace ui {
     void setFont(she::Font* font);
 
     // Gets the background color of the widget.
-    ui::Color getBgColor() const {
-      if (ui::geta(m_bgColor) == 0 && m_parent)
+    gfx::Color getBgColor() const {
+      if (gfx::geta(m_bgColor) == 0 && m_parent)
         return m_parent->getBgColor();
       else
         return m_bgColor;
     }
 
     // Sets the background color of the widget
-    void setBgColor(ui::Color color);
+    void setBgColor(gfx::Color color);
 
     Theme* getTheme() const { return m_theme; }
     void setTheme(Theme* theme);
@@ -375,11 +375,11 @@ namespace ui {
     bool paintEvent(Graphics* graphics);
 
     std::string m_id;            // Widget's id
-    Theme* m_theme;               // Widget's theme
-    int m_align;                  // Widget alignment
+    Theme* m_theme;              // Widget's theme
+    int m_align;                 // Widget alignment
     std::string m_text;          // Widget text
     she::Font* m_font;           // Text font type
-    ui::Color m_bgColor;          // Background color
+    gfx::Color m_bgColor;        // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.
     WidgetsList m_children;       // Sub-widgets

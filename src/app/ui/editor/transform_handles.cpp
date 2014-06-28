@@ -130,12 +130,12 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
     y2 = y1 + transform.bounds().h;
     editor->editorToScreen(x1, y1, &x1, &y1);
     editor->editorToScreen(x2, y2, &x2, &y2);
-    g.drawRect(ui::rgba(255, 0, 0), gfx::Rect(x1, y1, x2-x1+1, y2-y1+1));
+    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(x1, y1, x2-x1+1, y2-y1+1));
 
     x1 = transform.pivot().x;
     y1 = transform.pivot().y;
     editor->editorToScreen(x1, y1, &x1, &y1);
-    g.drawRect(ui::rgba(255, 0, 0), gfx::Rect(x1-2, y1-2, 5, 5));
+    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(x1-2, y1-2, 5, 5));
   }
   // -----------------------------------------------
 #endif

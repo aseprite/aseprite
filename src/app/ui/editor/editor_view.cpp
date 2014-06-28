@@ -48,7 +48,7 @@ EditorView::EditorView(EditorView::Type type)
   int b = theme->get_part(PART_EDITOR_SELECTED_S)->height();
 
   setBorder(gfx::Border(l, t, r, b));
-  setBgColor(ui::rgba(0, 0, 0));
+  setBgColor(gfx::rgba(0, 0, 0));
   setupScrollbars();
 
   UIContext::instance()->settings()->addObserver(this);

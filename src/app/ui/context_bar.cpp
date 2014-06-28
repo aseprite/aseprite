@@ -172,7 +172,7 @@ private:
       PART_BRUSH_LINE);
     m_brushTypeButton->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
     m_brushTypeButton->setTransparent(true);
-    m_brushTypeButton->setBgColor(ui::ColorNone);
+    m_brushTypeButton->setBgColor(gfx::ColorNone);
 
     m_popupWindow->addChild(m_brushTypeButton);
     m_popupWindow->openWindow();
@@ -546,7 +546,7 @@ private:
       PART_FREEHAND_ALGO_DOTS);
     m_freehandAlgoButton->ItemChange.connect(&FreehandAlgorithmField::onFreehandAlgoChange, this);
     m_freehandAlgoButton->setTransparent(true);
-    m_freehandAlgoButton->setBgColor(ui::ColorNone);
+    m_freehandAlgoButton->setBgColor(gfx::ColorNone);
 
     m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(0), "Normal trace", JI_TOP);
     m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(1), "Pixel-perfect trace", JI_TOP);
