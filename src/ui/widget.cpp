@@ -1271,23 +1271,6 @@ int Widget::getMnemonicChar() const
   return 0;
 }
 
-bool Widget::isScancodeMnemonic(int scancode) const
-{
-  int ascii = 0;
-  if (scancode >= KEY_0 && scancode <= KEY_9)
-    ascii = '0' + (scancode - KEY_0);
-  else if (scancode >= KEY_A && scancode <= KEY_Z)
-    ascii = 'a' + (scancode - KEY_A);
-  else
-    return false;
-
-  int mnemonic = getMnemonicChar();
-  return (mnemonic > 0 && mnemonic == ascii);
-}
-
-/**********************************************************************/
-/* widget message procedure */
-
 bool Widget::onProcessMessage(Message* msg)
 {
   ASSERT(msg != NULL);

@@ -341,8 +341,6 @@ namespace ui {
     // (the underscored character, i.e. the letter after & symbol).
     int getMnemonicChar() const;
 
-    bool isScancodeMnemonic(int scancode) const;
-
   protected:
     void offsetWidgets(int dx, int dy);
 

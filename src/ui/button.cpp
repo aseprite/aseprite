@@ -102,6 +102,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
 
       // If the button is enabled.
       if (isEnabled()) {
+        bool mnemonicPressed =
+          (msg->altPressed() &&
+           getMnemonicChar() &&
+           getMnemonicChar() == tolower(keymsg->unicodeChar()));
+
         // For kButtonWidget
         if (m_behaviorType == kButtonWidget) {
           // Has focus and press enter/space
@@ -113,8 +118,9 @@ bool ButtonBase::onProcessMessage(Message* msg)
               return true;
             }
           }
+
           // Check if the user pressed mnemonic.
-          if ((msg->altPressed()) && (isScancodeMnemonic(scancode))) {
+          if (mnemonicPressed) {
             setSelected(true);
             return true;
           }
@@ -136,14 +142,10 @@ bool ButtonBase::onProcessMessage(Message* msg)
         else {
           /* if the widget has the focus and the user press space or
              if the user press Alt+the underscored letter of the button */
-          if ((hasFocus() &&
-               (scancode == kKeySpace)) ||
-              ((msg->altPressed()) &&
-               (isScancodeMnemonic(scancode)))) {
+          if ((hasFocus() && (scancode == kKeySpace)) || mnemonicPressed) {
             if (m_behaviorType == kCheckWidget) {
               // Swap the select status
               setSelected(!isSelected());
-
               invalidate();
             }
             else if (m_behaviorType == kRadioWidget) {
