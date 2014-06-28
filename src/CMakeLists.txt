@@ -210,10 +210,10 @@ if(EXISTS ../docs/quickref.pdf)
 endif()
 
 ######################################################################
-# Unit tests
+# Tests
 
-function(find_unittests dir dependencies)
-  file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_unittest.cpp)
+function(find_tests dir dependencies)
+  file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_tests.cpp)
   list(REMOVE_AT ARGV 0)
 
   if(NOT USE_SHARED_GTEST)
@@ -247,8 +247,8 @@ function(find_unittests dir dependencies)
 
     set(local_runs ${local_runs} run_${testname})
 
-    string(REGEX MATCH "_ui_unittest" test_requires_ui ${testname})
-    if (NOT test_requires_ui STREQUAL "_ui_unittest")
+    string(REGEX MATCH "_ui_tests" test_requires_ui ${testname})
+    if (NOT test_requires_ui STREQUAL "_ui_tests")
       set(local_non_ui_runs ${local_non_ui_runs} run_${testname})
     endif()
   endforeach()
@@ -256,15 +256,15 @@ function(find_unittests dir dependencies)
   set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
-find_unittests(base base-lib ${sys_libs})
-find_unittests(gfx gfx-lib base-lib ${sys_libs})
-find_unittests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(file ${all_libs})
-find_unittests(app ${all_libs})
-find_unittests(. ${all_libs})
+find_tests(base base-lib ${sys_libs})
+find_tests(gfx gfx-lib base-lib ${sys_libs})
+find_tests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(file ${all_libs})
+find_tests(app ${all_libs})
+find_tests(. ${all_libs})
 
 # To run tests
-add_custom_target(run_all_unittests DEPENDS ${all_runs})
-add_custom_target(run_non_ui_unittests DEPENDS ${non_ui_runs})
+add_custom_target(run_all_tests DEPENDS ${all_runs})
+add_custom_target(run_non_ui_tests DEPENDS ${non_ui_runs})
