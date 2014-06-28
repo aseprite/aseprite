@@ -19,7 +19,6 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <cctype>
 #include <climits>
 #include <cstdarg>
@@ -139,21 +138,20 @@ void Widget::setText(const std::string& text)
 
 void Widget::setTextf(const char *format, ...)
 {
-  char buf[4096];
-
   // formatted string
   if (format) {
     va_list ap;
     va_start(ap, format);
+    char buf[4096];
     vsprintf(buf, format, ap);
     va_end(ap);
+
+    setText(buf);
   }
   // empty string
   else {
-    ustrcpy(buf, empty_string);
+    setText("");
   }
-
-  setText(buf);
 }
 
 void Widget::setTextQuiet(const std::string& text)

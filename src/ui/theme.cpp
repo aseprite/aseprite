@@ -8,9 +8,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "she/font.h"
@@ -146,7 +143,7 @@ void drawTextBox(Graphics* g, Widget* widget,
 
     // Without word-wrap
     if (!(widget->getAlign() & JI_WORDWRAP)) {
-      end = ustrchr(beg, '\n');
+      end = strchr(beg, '\n');
       if (end) {
         chr = *end;
         *end = 0;
@@ -156,7 +153,7 @@ void drawTextBox(Graphics* g, Widget* widget,
     else {
       old_end = NULL;
       for (beg_end=beg;;) {
-        end = ustrpbrk(beg_end, " \n");
+        end = strpbrk(beg_end, " \n");
         if (end) {
           chr = *end;
           *end = 0;
