@@ -27,6 +27,13 @@ namespace she {
       return makecol(getr(color), getg(color), getb(color));
   }
 
+  inline Color from_allegro(int color_depth, int color) {
+    return she::rgba(
+      getr_depth(color_depth, color),
+      getg_depth(color_depth, color),
+      getb_depth(color_depth, color));
+  }
+
   class Alleg4Surface : public Surface
                       , public LockedSurface {
   public:
@@ -210,6 +217,16 @@ namespace she {
           formatData->alphaMask  = 255 << _rgb_a_shift_32;
           break;
       }
+    }
+
+    she::Color getPixel(int x, int y) OVERRIDE {
+      return from_allegro(
+        bitmap_color_depth(m_bmp),
+        getpixel(m_bmp, x, y));
+    }
+
+    void putPixel(she::Color color, int x, int y) OVERRIDE {
+      putpixel(m_bmp, x, y, to_allegro(color));
     }
 
     void drawHLine(she::Color color, int x, int y, int w) OVERRIDE {

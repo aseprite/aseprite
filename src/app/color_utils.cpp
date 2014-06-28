@@ -111,48 +111,6 @@ ui::Color color_utils::color_for_ui(const app::Color& color)
   return c;
 }
 
-int color_utils::color_for_allegro(const app::Color& color, int depth)
-{
-  int c = -1;
-
-  switch (color.getType()) {
-
-    case app::Color::MaskType:
-      c = get_mask_for_bitmap(depth);
-      break;
-
-    case app::Color::RgbType:
-    case app::Color::HsvType:
-      c = makeacol_depth(depth,
-                         color.getRed(),
-                         color.getGreen(),
-                         color.getBlue(), 255);
-      break;
-
-    case app::Color::GrayType:
-      c = color.getGray();
-      if (depth != 8)
-        c = makeacol_depth(depth, c, c, c, 255);
-      break;
-
-    case app::Color::IndexType:
-      c = color.getIndex();
-      if (depth != 8) {
-        ASSERT(c >= 0 && c < (int)get_current_palette()->size());
-
-        uint32_t _c = get_current_palette()->getEntry(c);
-        c = makeacol_depth(depth,
-                           rgba_getr(_c),
-                           rgba_getg(_c),
-                           rgba_getb(_c), 255);
-      }
-      break;
-
-  }
-
-  return c;
-}
-
 raster::color_t color_utils::color_for_image(const app::Color& color, PixelFormat format)
 {
   if (color.getType() == app::Color::MaskType)

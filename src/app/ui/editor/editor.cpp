@@ -299,7 +299,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   int thick = m_cursor_thick;
 
   if (thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   if (use_refresh_region) {
     getDrawableRegion(region, kCutTopWindows);
@@ -317,7 +317,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   }
 
   if (thick)
-    editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+    drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
 }
 
 void Editor::updateEditor()
@@ -587,7 +587,7 @@ void Editor::drawMaskSafe()
     region.offset(-getBounds().getOrigin());
 
     if (thick)
-      editor_clean_cursor();
+      clearBrushPreview();
     else
       jmouse_hide();
 
@@ -602,7 +602,7 @@ void Editor::drawMaskSafe()
 
     // Draw the cursor
     if (thick)
-      editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+      drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
     else
       jmouse_show();
   }
@@ -776,7 +776,7 @@ void Editor::showDrawingCursor()
 
   if (!m_cursor_thick && canDraw()) {
     jmouse_hide();
-    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+    drawBrushPreview(jmouse_x(0), jmouse_y(0));
     jmouse_show();
   }
 }
@@ -785,7 +785,7 @@ void Editor::hideDrawingCursor()
 {
   if (m_cursor_thick) {
     jmouse_hide();
-    editor_clean_cursor();
+    clearBrushPreview();
     jmouse_show();
   }
 }
@@ -803,7 +803,7 @@ void Editor::moveDrawingCursor()
     // when the mouse moves only).
     if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
       jmouse_hide();
-      editor_move_cursor(x, y);
+      moveBrushPreview(x, y);
       jmouse_show();
     }
   }
@@ -1025,7 +1025,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
   int old_cursor_thick = m_cursor_thick;
   if (m_cursor_thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   // Editor without sprite
   if (!m_sprite) {
@@ -1051,7 +1051,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the cursor again
       if (old_cursor_thick != 0) {
-        editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+        drawBrushPreview(jmouse_x(0), jmouse_y(0));
       }
     }
     catch (const LockedDocumentException&) {

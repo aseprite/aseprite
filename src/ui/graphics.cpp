@@ -28,6 +28,10 @@ namespace {
     return (she::Color)color;
   }
 
+  inline ui::Color from_she(she::Color color) {
+    return (ui::Color)color;
+  }
+
 }
 
 namespace ui {
@@ -43,6 +47,16 @@ Graphics::~Graphics()
 {
 }
 
+int Graphics::width() const
+{
+  return m_surface->width();
+}
+
+int Graphics::height() const
+{
+  return m_surface->height();
+}
+
 gfx::Rect Graphics::getClipBounds() const
 {
   return m_surface->getClipBounds().offset(-m_dx, -m_dy);
@@ -56,6 +70,18 @@ void Graphics::setClipBounds(const gfx::Rect& rc)
 bool Graphics::intersectClipRect(const gfx::Rect& rc)
 {
   return m_surface->intersectClipRect(gfx::Rect(rc).offset(m_dx, m_dy));
+}
+
+ui::Color Graphics::getPixel(int x, int y)
+{
+  she::ScopedSurfaceLock dst(m_surface);
+  return from_she(dst->getPixel(m_dx+x, m_dy+y));
+}
+
+void Graphics::putPixel(ui::Color color, int x, int y)
+{
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->putPixel(to_she(color), m_dx+x, m_dy+y);
 }
 
 void Graphics::drawHLine(ui::Color color, int x, int y, int w)

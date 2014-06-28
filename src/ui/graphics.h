@@ -34,6 +34,9 @@ namespace ui {
     Graphics(she::Surface* surface, int dx, int dy);
     ~Graphics();
 
+    int width() const;
+    int height() const;
+
     she::Surface* getInternalSurface() { return m_surface; }
     int getInternalDeltaX() { return m_dx; }
     int getInternalDeltaY() { return m_dy; }
@@ -41,6 +44,9 @@ namespace ui {
     gfx::Rect getClipBounds() const;
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);
+
+    ui::Color getPixel(int x, int y);
+    void putPixel(ui::Color color, int x, int y);
 
     void drawHLine(ui::Color color, int x, int y, int w);
     void drawVLine(ui::Color color, int x, int y, int h);
@@ -89,6 +95,29 @@ namespace ui {
   public:
     ScreenGraphics();
     virtual ~ScreenGraphics();
+  };
+
+  // Class to temporary set the Graphics' clip region (in the
+  // life-time of the SetClip instance).
+  class SetClip {
+  public:
+    SetClip(Graphics* g, const gfx::Rect& rc)
+      : m_graphics(g)
+      , m_oldClip(g->getClipBounds())
+    {
+      m_graphics->setClipBounds(rc);
+    }
+
+    ~SetClip()
+    {
+      m_graphics->setClipBounds(m_oldClip);
+    }
+
+  private:
+    Graphics* m_graphics;
+    gfx::Rect m_oldClip;
+
+    DISABLE_COPYING(SetClip);
   };
 
   // Class to temporary set the Graphics' clip region to a sub-rectangle

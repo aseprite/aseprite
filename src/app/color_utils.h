@@ -37,7 +37,6 @@ namespace app {
     ui::Color blackandwhite_neg(ui::Color color);
 
     ui::Color color_for_ui(const app::Color& color);
-    int color_for_allegro(const app::Color& color, int depth);
     raster::color_t color_for_image(const app::Color& color, raster::PixelFormat format);
     raster::color_t color_for_layer(const app::Color& color, raster::Layer* layer);
     raster::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);

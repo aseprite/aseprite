@@ -27,6 +27,9 @@ namespace she {
     virtual uint8_t* getData(int x, int y) = 0;
     virtual void getFormat(SurfaceFormatData* formatData) = 0;
 
+    virtual she::Color getPixel(int x, int y) = 0;
+    virtual void putPixel(she::Color color, int x, int y) = 0;
+
     virtual void drawHLine(she::Color color, int x, int y, int w) = 0;
     virtual void drawVLine(she::Color color, int x, int y, int h) = 0;
     virtual void drawLine(she::Color color, const gfx::Point& a, const gfx::Point& b) = 0;
