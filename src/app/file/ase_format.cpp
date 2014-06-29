@@ -1018,12 +1018,12 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
   layer = sprite->indexToLayer(layer_index);
   if (!layer) {
     fop_error(fop, "Frame %d didn't found layer with index %d\n",
-              (int)frame, layer_index);
+      (int)frame, (int)layer_index);
     return NULL;
   }
   if (!layer->isImage()) {
     fop_error(fop, "Invalid .ase file (frame %d in layer %d which does not contain images\n",
-              (int)frame, layer_index);
+      (int)frame, (int)layer_index);
     return NULL;
   }
 
