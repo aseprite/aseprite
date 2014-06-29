@@ -33,6 +33,8 @@
 #include "she/surface_format.h"
 #include "she/scoped_surface_lock.h"
 
+#include <stdexcept>
+
 namespace raster {
 
 namespace {
