@@ -223,7 +223,10 @@ void osx_event_handler()
                      mx = point.x;
                      my = frame.size.height - point.y;
                      buttons = 0;
-                     _mouse_on = TRUE;
+                     if (!_mouse_on) {
+                       _mouse_on = TRUE;
+                       [NSCursor performSelectorOnMainThread: @selector(hide) withObject: nil waitUntilDone: NO];
+                     }
                   }
                }
                if (osx_window)
@@ -292,8 +295,11 @@ void osx_event_handler()
                   mx = point.x;
                   my = frame.size.height - point.y;
                   buttons = 0;
-                  _mouse_on = TRUE;
                   gotmouseevent = YES;
+                  if (!_mouse_on) {
+                    _mouse_on = TRUE;
+                    [NSCursor performSelectorOnMainThread: @selector(hide) withObject: nil waitUntilDone: NO];
+                  }
                }
             }
             [NSApp sendEvent: event];
@@ -302,8 +308,11 @@ void osx_event_handler()
          case NSMouseExited:
             if ([event trackingNumber] == osx_mouse_tracking_rect) {
                if (_mouse_installed) {
-                  _mouse_on = FALSE;
                   gotmouseevent = YES;
+                  if (_mouse_on) {
+                    _mouse_on = FALSE;
+                    [NSCursor performSelectorOnMainThread: @selector(unhide) withObject: nil waitUntilDone: NO];
+                  }
                }
             }
             [NSApp sendEvent: event];
