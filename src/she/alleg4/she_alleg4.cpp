@@ -323,11 +323,13 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       LRESULT result = ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
 
       // We ignore scrollbars so if the mouse is above them, we return
-      // as it's in the client area. (Remember that we have scroll
-      // bars are enabled and visible to receive trackpad messages
-      // only.)
-      if (result == HTHSCROLL || result == HTVSCROLL)
-        result = HTCLIENT;
+      // as it's in the window resize area. (Remember that we have
+      // scroll bars are enabled and visible to receive trackpad
+      // messages only.)
+      if (result == HTHSCROLL)
+        result = HTBOTTOM;
+      else if (result == HTVSCROLL)
+        result = HTRIGHT;
 
       return result;
     }
