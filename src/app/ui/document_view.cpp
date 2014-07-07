@@ -23,6 +23,10 @@
 #include "app/ui/document_view.h"
 
 #include "app/app.h"
+#include "app/document_event.h"
+#include "app/modules/editors.h"
+#include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
@@ -30,9 +34,6 @@
 #include "app/ui/mini_editor.h"
 #include "app/ui/workspace.h"
 #include "base/path.h"
-#include "app/document_event.h"
-#include "app/modules/editors.h"
-#include "app/modules/gui.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "ui/accelerator.h"
@@ -74,6 +75,8 @@ public:
 
   void onFrameChanged(Editor* editor) OVERRIDE {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
+
+    set_current_palette(editor->getSprite()->getPalette(editor->getFrame()), true);
   }
 
   void onLayerChanged(Editor* editor) OVERRIDE {
