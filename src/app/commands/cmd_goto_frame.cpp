@@ -54,10 +54,7 @@ protected:
   virtual FrameNumber onGetFrame(Editor* editor) = 0;
 };
 
-
-
-class GotoFirstFrameCommand : public GotoCommand
-{
+class GotoFirstFrameCommand : public GotoCommand {
 public:
   GotoFirstFrameCommand()
     : GotoCommand("GotoFirstFrame",
@@ -70,11 +67,7 @@ protected:
   }
 };
 
-
-
-class GotoPreviousFrameCommand : public GotoCommand
-
-{
+class GotoPreviousFrameCommand : public GotoCommand {
 public:
   GotoPreviousFrameCommand()
     : GotoCommand("GotoPreviousFrame",
@@ -92,11 +85,7 @@ protected:
   }
 };
 
-
-
-class GotoNextFrameCommand : public GotoCommand
-
-{
+class GotoNextFrameCommand : public GotoCommand {
 public:
   GotoNextFrameCommand() : GotoCommand("GotoNextFrame",
                                        "Goto Next Frame") { }
@@ -112,10 +101,7 @@ protected:
   }
 };
 
-
-
-class GotoLastFrameCommand : public GotoCommand
-{
+class GotoLastFrameCommand : public GotoCommand {
 public:
   GotoLastFrameCommand() : GotoCommand("GotoLastFrame",
                                        "Goto Last Frame") { }
@@ -127,11 +113,7 @@ protected:
   }
 };
 
-
-
-class GotoFrameCommand : public GotoCommand
-
-{
+class GotoFrameCommand : public GotoCommand {
 public:
   GotoFrameCommand() : GotoCommand("GotoFrame",
                                    "Goto Frame")
