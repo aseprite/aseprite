@@ -261,7 +261,7 @@ find_tests(gfx gfx-lib base-lib ${sys_libs})
 find_tests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(file ${all_libs})
+find_tests(app/file ${all_libs})
 find_tests(app ${all_libs})
 find_tests(. ${all_libs})
 

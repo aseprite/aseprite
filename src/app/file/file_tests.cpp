@@ -29,11 +29,11 @@
 #include <cstdlib>
 #include <vector>
 
-using namespace app::file;
+using namespace app;
 
 TEST(File, SeveralSizes)
 {
-  she::ScopedHandle<she::System> system(she::CreateSystem());
+  she::ScopedHandle<she::System> system(she::create_system());
   // Register all possible image formats.
   FileFormatsManager::instance().registerAllFormats();
   std::vector<char> fn(256);
