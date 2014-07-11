@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
 #include <vector>
 
 #include "app/app.h"
@@ -240,10 +239,10 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
 {
   try {
     Palette* newPalette = get_current_palette(); // System current pal
-    color_t newColor = rgba(
+    color_t newColor = raster::rgba(
       m_color.getRed(),
       m_color.getGreen(),
-      m_color.getBlue());
+      m_color.getBlue(), 255);
     int index = newPalette->findExactMatch(
       m_color.getRed(),
       m_color.getGreen(),

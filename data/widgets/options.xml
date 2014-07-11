@@ -1,82 +1,88 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2014 by David Capello -->
 <gui>
-<window text="Options" id="options">
-  <box vertical="true">
-    <box horizontal="true">
-      <box vertical="true">
+  <vbox id="main_box">
+    <hbox>
+      <view maxsize="true">
+        <listbox id="section_listbox">
+          <listitem text="General" value="section_general" />
+          <listitem text="Editor" value="section_editor" />
+          <listitem text="Grid &amp;&amp; Background" value="section_grid" />
+          <listitem text="Undo" value="section_undo" />
+        </listbox>
+      </view>
 
-      <!-- Screen -->
+      <panel id="panel">
+        <vbox id="section_general">
+          <separator text="General" horizontal="true" />
+          <grid columns="2">
+            <label text="Screen Scale:" />
+            <combobox id="screen_scale" expansive="true" />
+          </grid>
+          <check text="Zoom with Scroll Wheel" id="wheel_zoom" />
+          <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
+        </vbox>
 
-      <separator text="Screen:" horizontal="true" />
-      <grid columns="2">
-        <label text="Screen Scale:" />
-        <combobox id="screen_scale" expansive="true" />
-      </grid>
+        <!-- Editor -->
+        <vbox id="section_editor">
+          <separator text="Editor" horizontal="true" />
+          <check text="Smooth auto-scroll" id="smooth" />
+          <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />
+          <grid columns="2">
+            <label text="Cursor:" />
+            <box id="cursor_color_box" /><!-- custom widget -->
+          </grid>
+        </vbox>
 
-      <!-- Editor -->
+        <!-- Grid & background -->
+        <vbox id="section_grid">
+          <separator text="Grid" horizontal="true" />
+          <grid columns="2">
+            <label text="Grid Color:" />
+            <box id="grid_color_box" /><!-- custom widget -->
 
-      <separator text="Editor:" horizontal="true" />
-      <check text="Smooth auto-scroll" id="smooth" />
-      <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
-      <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />
-      <grid columns="2">
-        <label text="Cursor:" />
-        <box id="cursor_color_box" /><!-- custom widget -->
+            <label text="Pixel Grid:" />
+            <box id="pixel_grid_color_box" /><!-- custom widget -->
+          </grid>
 
-        <label text="Grid Color:" />
-        <box id="grid_color_box" /><!-- custom widget -->
+          <separator text="Checked Background" horizontal="true" />
+          <box horizontal="true">
+            <label text="Size:" />
+            <combobox id="checked_bg_size" expansive="true" />
+          </box>
+          <check text="Apply Zoom" id="checked_bg_zoom" />
+          <grid columns="2">
+            <label text="Color 1" />
+            <box horizontal="true" id="checked_bg_color1_box" />
+            <label text="Color 2" />
+            <box horizontal="true" id="checked_bg_color2_box" />
+          </grid>
+          <button id="checked_bg_reset" text="Reset" />
+        </vbox>
 
-        <label text="Pixel Grid:" />
-        <box id="pixel_grid_color_box" /><!-- custom widget -->
-      </grid>
+        <!-- Undo -->
+        <vbox id="section_undo">
+          <separator text="Undo" horizontal="true" />
+          <box horizontal="true">
+            <label text="Undo Limit:" />
+            <entry id="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used&#10;for undo information per sprite.&#10;Specified in megabytes." />
+            <label text="MB" />
+          </box>
 
-      <!-- Undo -->
-
-      <separator text="Undo:" horizontal="true" />
-      <box horizontal="true">
-        <label text="Undo Limit:" />
-        <entry id="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used&#10;for undo information per sprite.&#10;Specified in megabytes." />
-        <label text="MB" />
-      </box>
-
-      <box horizontal="true">
-        <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
-      </box>
-
-      </box>
-      <separator vertical="true" />
-      <box vertical="true">
-
-      <!-- Checked Background -->
-
-      <separator text="Checked Background:" horizontal="true" />
-      <box horizontal="true">
-        <label text="Size:" />
-        <combobox id="checked_bg_size" expansive="true" />
-      </box>
-      <check text="Apply Zoom" id="checked_bg_zoom" />
-      <grid columns="2">
-        <label text="Color 1" />
-        <box horizontal="true" id="checked_bg_color1_box" />
-        <label text="Color 2" />
-        <box horizontal="true" id="checked_bg_color2_box" />
-      </grid>
-      <button id="checked_bg_reset" text="Reset" />
-
-      </box>
-    </box>
-
+          <box horizontal="true">
+            <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
+          </box>
+        </vbox>
+      </panel>
+    </hbox>
     <separator horizontal="true" />
-
-    <box horizontal="true">
+    <hbox>
       <link id="locate_file" text="Locate File" />
       <boxfiller />
-      <box horizontal="true" homogeneous="true">
+      <hbox homogeneous="true">
         <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" width="60" />
         <button text="&amp;Cancel" closewindow="true" />
-      </box>
-    </box>
-  </box>
-</window>
+      </hbox>
+    </hbox>
+  </vbox>
 </gui>

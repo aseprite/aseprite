@@ -8,11 +8,12 @@
 #include "config.h"
 #endif
 
-#include "ui/font.h"
+#include "ui/slider.h"
+
+#include "she/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
-#include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
@@ -216,17 +217,15 @@ not_used:;
 
 void Slider::onPreferredSize(PreferredSizeEvent& ev)
 {
-  int w, h, min_w, max_w;
   char buf[256];
-
   std::sprintf(buf, "%d", m_min);
-  min_w = ji_font_text_len(this->getFont(), buf);
+  int min_w = getFont()->textLength(buf);
 
   std::sprintf(buf, "%d", m_max);
-  max_w = ji_font_text_len(this->getFont(), buf);
+  int max_w = getFont()->textLength(buf);
 
-  w = MAX(min_w, max_w);
-  h = getTextHeight();
+  int w = MAX(min_w, max_w);
+  int h = getTextHeight();
 
   w += this->border_width.l + this->border_width.r;
   h += this->border_width.t + this->border_width.b;

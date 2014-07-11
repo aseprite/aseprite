@@ -135,34 +135,27 @@ public:
 
 class ZoomInk : public Ink {
 public:
-
   bool isZoom() const { return true; }
-
-  void prepareInk(ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
 };
 
 
 class MoveInk : public Ink {
 public:
   bool isCelMovement() const { return true; }
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
+};
 
-  void prepareInk(ToolLoop* loop)
-  {
-    // Do nothing
-  }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
-    // Do nothing
+class SliceInk : public Ink {
+public:
+  bool isSlice() const { return true; }
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) {
+    // TODO show the selection-preview with a XOR color or something like that
+    draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
   }
 };
 

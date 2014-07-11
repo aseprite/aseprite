@@ -158,7 +158,7 @@ Manager::Manager()
     m_defaultManager = this;
 
     mouse_events_from_she =
-      ((she::Instance()->capabilities() & she::kMouseEventsCapability)
+      ((she::instance()->capabilities() & she::kMouseEventsCapability)
         == she::kMouseEventsCapability);
   }
 }

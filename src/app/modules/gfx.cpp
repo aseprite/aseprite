@@ -23,25 +23,25 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "ui/color.h"
+#include "gfx/color.h"
 #include "ui/intern.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
 #include "app/app.h"
 #include "app/color_utils.h"
-#include "app/ui/editor/editor.h"
 #include "app/console.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/skin/skin_theme.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/palette.h"
-#include "app/ui/skin/skin_theme.h"
 
 namespace app {
 
@@ -171,8 +171,8 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
     return;
 
   int x, y, u, v;
-  ui::Color c1 = ui::rgba(128, 128, 128);
-  ui::Color c2 = ui::rgba(192, 192, 192);
+  gfx::Color c1 = gfx::rgba(128, 128, 128);
+  gfx::Color c2 = gfx::rgba(192, 192, 192);
 
   u = 0;
   v = 0;
@@ -213,8 +213,8 @@ static void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
       g->fillRect(color_utils::color_for_ui(color), rc);
     }
     else {
-      g->fillRect(ui::rgba(0, 0, 0), rc);
-      g->drawLine(ui::rgba(255, 255, 255),
+      g->fillRect(gfx::rgba(0, 0, 0), rc);
+      g->drawLine(gfx::rgba(255, 255, 255),
         gfx::Point(rc.x+rc.w-2, rc.y+1),
         gfx::Point(rc.x+1, rc.y+rc.h-2));
     }

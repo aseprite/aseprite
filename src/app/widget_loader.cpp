@@ -132,6 +132,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   if (it != m_typeCreators.end()) {
     widget = it->second->createWidgetFromXml(elem);
   }
+  // Oneof
+  else if (elem_name == "panel") {
+    widget = new Panel();
+  }
   // Boxes
   else if (elem_name == "box") {
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
@@ -301,9 +305,14 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   }
   /* listitem */
   else if (elem_name == "listitem") {
-    const char *text = elem->Attribute("text");
+    const char* text = elem->Attribute("text");
+    const char* value = elem->Attribute("value");
 
-    widget = new ListItem(text ? TRANSLATE_ATTR(text): "");
+    ListItem* listitem = new ListItem(text ? TRANSLATE_ATTR(text): "");
+    if (value) {
+      listitem->setValue(value);
+    }
+    widget = listitem;
   }
   /* splitter */
   else if (elem_name == "splitter") {

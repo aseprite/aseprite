@@ -39,9 +39,9 @@ namespace app {
       void destroy();
       int getWidth();
       int getHeight();
-      BITMAP* getNormalIcon();
-      BITMAP* getSelectedIcon();
-      BITMAP* getDisabledIcon();
+      she::Surface* getNormalIcon();
+      she::Surface* getSelectedIcon();
+      she::Surface* getDisabledIcon();
       int getIconAlign();
 
     public:

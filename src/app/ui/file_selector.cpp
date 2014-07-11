@@ -23,9 +23,11 @@
 #include "app/ui/file_selector.h"
 
 #include "app/app.h"
+#include "app/console.h"
 #include "app/file/file.h"
 #include "app/find_widget.h"
 #include "app/ini_file.h"
+#include "app/load_widget.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/recent_files.h"
@@ -35,6 +37,7 @@
 #include "base/bind.h"
 #include "base/path.h"
 #include "base/split_string.h"
+#include "base/unique_ptr.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -200,17 +203,21 @@ FileSelector::FileSelector()
   Box* box = loader.loadWidgetT<Box>("file_selector.xml", "main");
   addChild(box);
 
-  View* view = app::find_widget<View>(this, "fileview_container");
-  m_goBack = app::find_widget<Button>(this, "goback");
-  m_goForward = app::find_widget<Button>(this, "goforward");
-  m_goUp = app::find_widget<Button>(this, "goup");
-  m_location = app::find_widget<ComboBox>(this, "location");
-  m_fileType = app::find_widget<ComboBox>(this, "filetype");
-  m_fileName = app::find_widget<CustomFileNameEntry>(this, "filename");
+  View* view;
+  app::finder(this)
+    >> "fileview_container" >> view
+    >> "goback" >> m_goBack
+    >> "goforward" >> m_goForward
+    >> "goup" >> m_goUp
+    >> "newfolder" >> m_newFolder
+    >> "location" >> m_location
+    >> "filetype" >> m_fileType
+    >> "filename" >> m_fileName;
 
   m_goBack->setFocusStop(false);
   m_goForward->setFocusStop(false);
   m_goUp->setFocusStop(false);
+  m_newFolder->setFocusStop(false);
 
   set_gfxicon_to_button(m_goBack,
                         PART_COMBOBOX_ARROW_LEFT,
@@ -227,10 +234,16 @@ FileSelector::FileSelector()
                         PART_COMBOBOX_ARROW_UP_SELECTED,
                         PART_COMBOBOX_ARROW_UP_DISABLED,
                         JI_CENTER | JI_MIDDLE);
+  set_gfxicon_to_button(m_newFolder,
+                        PART_NEWFOLDER,
+                        PART_NEWFOLDER_SELECTED,
+                        PART_NEWFOLDER,
+                        JI_CENTER | JI_MIDDLE);
 
   setup_mini_look(m_goBack);
   setup_mini_look(m_goForward);
   setup_mini_look(m_goUp);
+  setup_mini_look(m_newFolder);
 
   m_fileList = new FileList();
   m_fileList->setId("fileview");
@@ -240,6 +253,7 @@ FileSelector::FileSelector()
   m_goBack->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
   m_goForward->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
   m_goUp->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
+  m_newFolder->Click.connect(Bind<void>(&FileSelector::onNewFolder, this));
   m_location->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
   m_fileType->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
@@ -611,6 +625,42 @@ void FileSelector::onGoForward()
 void FileSelector::onGoUp()
 {
   m_fileList->goUp();
+}
+
+void FileSelector::onNewFolder()
+{
+  base::UniquePtr<Window> window(load_widget<Window>("file_selector.xml", "newfolder_dialog"));
+  Button* ok;
+  Entry* name;
+
+  app::finder(window)
+    >> "ok" >> ok
+    >> "name" >> name;
+
+  window->openWindowInForeground();
+  if (window->getKiller() == ok) {
+    IFileItem* currentFolder = m_fileList->getCurrentFolder();
+    if (currentFolder) {
+      std::string dirname = name->getText();
+
+      // Create the new directory
+      try {
+        currentFolder->createDirectory(dirname);
+
+        // Enter in the new folder
+        for (FileItemList::const_iterator it=currentFolder->getChildren().begin(),
+               end=currentFolder->getChildren().end(); it != end; ++it) {
+          if ((*it)->getDisplayName() == dirname) {
+            m_fileList->setCurrentFolder(*it);
+            break;
+          }
+        }
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
+    }
+  }
 }
 
 // Hook for the 'location' combo-box

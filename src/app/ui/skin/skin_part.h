@@ -23,14 +23,16 @@
 #include <vector>
 #include "base/shared_ptr.h"
 
-struct BITMAP;
+namespace she {
+  class Surface;
+}
 
 namespace app {
   namespace skin {
 
     class SkinPart {
     public:
-      typedef std::vector<BITMAP*> Bitmaps;
+      typedef std::vector<she::Surface*> Bitmaps;
 
       SkinPart();
       ~SkinPart();
@@ -40,9 +42,9 @@ namespace app {
       void clear();
 
       // It doesn't destroy the previous bitmap in the given "index".
-      void setBitmap(size_t index, BITMAP* bitmap);
+      void setBitmap(size_t index, she::Surface* bitmap);
 
-      BITMAP* getBitmap(size_t index) const {
+      she::Surface* getBitmap(size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
       }
 

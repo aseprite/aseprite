@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,78 +20,63 @@
 #include "config.h"
 #endif
 
-#include "app/palettes_loader.h"
+#include "app/res/resources_loader.h"
 
 #include "app/file_system.h"
+#include "app/res/resources_loader_delegate.h"
 #include "app/resource_finder.h"
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/scoped_value.h"
-#include "raster/palette.h"
 
 namespace app {
 
-PalettesLoader::PalettesLoader()
-  : m_done(false)
+ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
+  : m_delegate(delegate)
+  , m_done(false)
   , m_cancel(false)
-  , m_thread(Bind<void>(&PalettesLoader::threadLoadPalettes, this))
+  , m_thread(Bind<void>(&ResourcesLoader::threadLoadResources, this))
 {
-  PRINTF("PalettesLoader::PalettesLoader()\n");
+  PRINTF("ResourcesLoader::ResourcesLoader()\n");
 }
 
-PalettesLoader::~PalettesLoader()
+ResourcesLoader::~ResourcesLoader()
 {
   m_thread.join();
 
-  PRINTF("PalettesLoader::~PalettesLoader()\n");
+  PRINTF("ResourcesLoader::~ResourcesLoader()\n");
 }
 
-void PalettesLoader::cancel()
+void ResourcesLoader::cancel()
 {
   m_cancel = true;
 }
 
-bool PalettesLoader::done()
+bool ResourcesLoader::done()
 {
   return m_done;
 }
 
-bool PalettesLoader::next(base::UniquePtr<raster::Palette>& palette, std::string& name)
+bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
 {
-  Item item;
-  if (m_queue.try_pop(item)) {
-    palette.reset(item.palette);
-    name = item.name;
+  Resource* rawResource;
+  if (m_queue.try_pop(rawResource)) {
+    resource.reset(rawResource);
     return true;
   }
   else
     return false;
 }
 
-// static
-std::string PalettesLoader::palettesLocation()
+void ResourcesLoader::threadLoadResources()
 {
-  std::string path;
-  ResourceFinder rf;
-  rf.includeDataDir("palettes");
-  while (rf.next()) {
-    if (base::is_directory(rf.filename())) {
-      path = rf.filename();
-      break;
-    }
-  }
-  return base::fix_path_separators(path);
-}
-
-void PalettesLoader::threadLoadPalettes()
-{
-  PRINTF("threadLoadPalettes()\n");
+  PRINTF("threadLoadResources()\n");
 
   base::ScopedValue<bool> scoped(m_done, false, true);
 
-  std::string path = palettesLocation();
-  PRINTF("Loading palettes from %s...\n", path.c_str());
+  std::string path = m_delegate->resourcesLocation();
+  PRINTF("Loading resources from %s...\n", path.c_str());
   if (path.empty())
     return;
 
@@ -108,12 +93,9 @@ void PalettesLoader::threadLoadPalettes()
     if (m_cancel)
       break;
 
-    raster::Palette* palette =
-      raster::Palette::load((*it)->getFileName().c_str());
-    
-    if (palette) {
-      m_queue.push(Item(palette, base::get_file_title((*it)->getFileName())));
-    }
+    Resource* resource = m_delegate->loadResource((*it)->getFileName());
+    if (resource)
+      m_queue.push(resource);
   }
 }
 

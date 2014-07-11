@@ -113,13 +113,13 @@ SkinPartPtr StyleSheet::convertPart(const css::Value& value)
 }
 
 // static
-ui::Color StyleSheet::convertColor(const css::Value& value)
+gfx::Color StyleSheet::convertColor(const css::Value& value)
 {
-  ui::Color color = ui::ColorNone;
+  gfx::Color color = gfx::ColorNone;
   if (value.type() == css::Value::String) {
     const std::string& color_id = value.string();
     color = get_color_by_id(color_id);
-    if (color == ui::ColorNone)
+    if (color == gfx::ColorNone)
       throw base::Exception("Unknown color '%s'\n", color_id.c_str());
   }
   return color;

@@ -185,6 +185,7 @@ protected:
     {
       ContextWriter writer(reader);
       Document* documentWriter = writer.document();
+      std::string oldFilename = documentWriter->getFilename();
 
       // Change the document file name
       documentWriter->setFilename(filename.c_str());
@@ -192,6 +193,9 @@ protected:
 
       // Save the document
       save_document_in_background(documentWriter, markAsSaved);
+
+      if (documentWriter->isModified())
+        documentWriter->setFilename(oldFilename);
 
       update_screen_for_document(documentWriter);
     }

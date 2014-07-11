@@ -1,14 +1,14 @@
-// Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Aseprite Gfx Library
+// Copyright (C) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef UI_COLOR_H_INCLUDED
-#define UI_COLOR_H_INCLUDED
+#ifndef GFX_COLOR_H_INCLUDED
+#define GFX_COLOR_H_INCLUDED
 #pragma once
 
-namespace ui {
+namespace gfx {
 
   typedef uint32_t Color;
   typedef uint8_t ColorComponent;
@@ -39,8 +39,6 @@ namespace ui {
 
   inline bool is_transparent(Color c) { return geta(c) == 0; }
 
-  int to_system(Color color);
-  
-} // namespace ui
+} // namespace gfx
 
-#endif  // UI_COLOR_H_INCLUDED
+#endif  // GFX_COLOR_H_INCLUDED

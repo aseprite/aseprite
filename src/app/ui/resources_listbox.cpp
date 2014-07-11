@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,12 @@
 #include "config.h"
 #endif
 
-#include "app/ui/palette_listbox.h"
+#include "app/ui/resources_listbox.h"
 
-#include "app/modules/palettes.h"
-#include "app/palettes_loader.h"
+#include "app/res/resource.h"
+#include "app/res/resources_loader.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "raster/palette.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
@@ -39,14 +38,14 @@ namespace app {
 using namespace ui;
 using namespace skin;
 
-class PaletteListItem : public ListItem {
+class ResourceListItem : public ListItem {
 public:
-  PaletteListItem(raster::Palette* palette, const std::string& name)
-    : ListItem(name), m_palette(palette) {
+  ResourceListItem(Resource* resource)
+    : ListItem(resource->name()), m_resource(resource) {
   }
 
-  raster::Palette* palette() const {
-    return m_palette;
+  Resource* resource() const {
+    return m_resource;
   }
 
 protected:
@@ -64,7 +63,7 @@ protected:
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Graphics* g = ev.getGraphics();
     gfx::Rect bounds = getClientBounds();
-    ui::Color bgcolor, fgcolor;
+    gfx::Color bgcolor, fgcolor;
 
     if (isSelected()) {
       bgcolor = theme->getColor(ThemeColor::ListItemSelectedFace);
@@ -77,37 +76,37 @@ protected:
 
     g->fillRect(bgcolor, bounds);
 
-    gfx::Rect box(
-      bounds.x, bounds.y+bounds.h-6*jguiscale(),
-      4*jguiscale(), 4*jguiscale());
+    static_cast<ResourcesListBox*>(getParent())->
+      paintResource(g, bounds, m_resource);
+      
+    // for (int i=0; i<m_palette->size(); ++i) {
+    //   raster::color_t c = m_resource->getEntry(i);
 
-    for (int i=0; i<m_palette->size(); ++i) {
-      raster::color_t c = m_palette->getEntry(i);
+    //   g->fillRect(gfx::rgba(
+    //       raster::rgba_getr(c),
+    //       raster::rgba_getg(c),
+    //       raster::rgba_getb(c)), box);
 
-      g->fillRect(ui::rgba(
-          raster::rgba_getr(c),
-          raster::rgba_getg(c),
-          raster::rgba_getb(c)), box);
+    //   box.x += box.w;
+    // }
 
-      box.x += box.w;
-    }
-
-    g->drawString(getText(), fgcolor, ui::ColorNone, false,
+    g->drawString(getText(), fgcolor, gfx::ColorNone,
       gfx::Point(
         bounds.x + jguiscale()*2,
-        bounds.y + bounds.h/2 - g->measureString(getText()).h/2));
+        bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE {
     ev.setPreferredSize(
-      gfx::Size(0, (2+16+2)*jguiscale()));
+      static_cast<ResourcesListBox*>(getParent())->
+        preferredResourceSize(m_resource));
   }
 
 private:
-  base::UniquePtr<raster::Palette> m_palette;
+  base::UniquePtr<Resource> m_resource;
 };
 
-class PaletteListBox::LoadingItem : public ListItem {
+class ResourcesListBox::LoadingItem : public ListItem {
 public:
   LoadingItem()
     : ListItem("Loading")
@@ -131,30 +130,40 @@ private:
   int m_state;
 };
 
-PaletteListBox::PaletteListBox()
-  : m_palettesTimer(100)
+ResourcesListBox::ResourcesListBox(ResourcesLoader* resourcesLoader)
+  : m_resourcesLoader(resourcesLoader)
+  , m_resourcesTimer(100)
   , m_loadingItem(NULL)
 {
-  m_palettesTimer.Tick.connect(Bind<void>(&PaletteListBox::onTick, this));
+  m_resourcesTimer.Tick.connect(Bind<void>(&ResourcesListBox::onTick, this));
 }
 
-raster::Palette* PaletteListBox::selectedPalette()
+Resource* ResourcesListBox::selectedResource()
 {
-  if (PaletteListItem* item = dynamic_cast<PaletteListItem*>(getSelectedChild()))
-    return item->palette();
+  if (ResourceListItem* listItem = dynamic_cast<ResourceListItem*>(getSelectedChild()))
+    return listItem->resource();
   else
     return NULL;
 }
 
-bool PaletteListBox::onProcessMessage(ui::Message* msg)
+void ResourcesListBox::paintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
+{
+  onPaintResource(g, bounds, resource);
+}
+
+gfx::Size ResourcesListBox::preferredResourceSize(Resource* resource)
+{
+  gfx::Size pref(0, 0);
+  onResourcePreferredSize(resource, pref);
+  return pref;
+}
+
+bool ResourcesListBox::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
 
     case kOpenMessage: {
-      if (m_palettesLoader == NULL) {
-        m_palettesLoader.reset(new PalettesLoader());
-        m_palettesTimer.start();
-      }
+      m_resourcesTimer.start();
       break;
     }
 
@@ -162,16 +171,26 @@ bool PaletteListBox::onProcessMessage(ui::Message* msg)
   return ListBox::onProcessMessage(msg);
 }
 
-void PaletteListBox::onChangeSelectedItem()
+void ResourcesListBox::onChangeSelectedItem()
 {
-  raster::Palette* palette = selectedPalette();
-  if (palette)
-    PalChange(palette);
+  Resource* resource = selectedResource();
+  if (resource)
+    onResourceChange(resource);
 }
 
-void PaletteListBox::onTick()
+void ResourcesListBox::onResourceChange(Resource* resource)
 {
-  if (m_palettesLoader == NULL) {
+  // Do nothing
+}
+
+void ResourcesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
+{
+  // Do nothing
+}
+
+void ResourcesListBox::onTick()
+{
+  if (m_resourcesLoader == NULL) {
     stop();
     return;
   }
@@ -182,11 +201,11 @@ void PaletteListBox::onTick()
   }
   m_loadingItem->makeProgress();
     
-  base::UniquePtr<raster::Palette> palette;
+  base::UniquePtr<Resource> resource;
   std::string name;
 
-  if (!m_palettesLoader->next(palette, name)) {
-    if (m_palettesLoader->isDone()) {
+  if (!m_resourcesLoader->next(resource)) {
+    if (m_resourcesLoader->isDone()) {
       stop();
 
       PRINTF("Done\n");
@@ -194,19 +213,19 @@ void PaletteListBox::onTick()
     return;
   }
 
-  base::UniquePtr<PaletteListItem> item(new PaletteListItem(palette, name));
-  insertChild(getItemsCount()-1, item);
+  base::UniquePtr<ResourceListItem> listItem(new ResourceListItem(resource));
+  insertChild(getItemsCount()-1, listItem);
   layout();
 
   View* view = View::getView(this);
   if (view)
     view->updateView();
 
-  palette.release();
-  item.release();
+  resource.release();
+  listItem.release();
 }
 
-void PaletteListBox::stop()
+void ResourcesListBox::stop()
 {
   if (m_loadingItem) {
     removeChild(m_loadingItem);
@@ -216,7 +235,7 @@ void PaletteListBox::stop()
     invalidate();
   }
 
-  m_palettesTimer.stop();
+  m_resourcesTimer.stop();
 }
 
 } // namespace app

@@ -53,6 +53,7 @@ namespace app {
     void onGoBack();
     void onGoForward();
     void onGoUp();
+    void onNewFolder();
     void onLocationCloseListBox();
     void onFileTypeChange();
     void onFileListFileSelected();
@@ -62,6 +63,7 @@ namespace app {
     ui::Button* m_goBack;
     ui::Button* m_goForward;
     ui::Button* m_goUp;
+    ui::Button* m_newFolder;
     ui::ComboBox* m_location;
     ui::ComboBox* m_fileType;
     CustomFileNameEntry* m_fileName;

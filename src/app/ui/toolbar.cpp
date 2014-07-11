@@ -39,9 +39,9 @@
 #include "base/compiler_specific.h"
 #include "base/signal.h"
 #include "gfx/size.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <string>
 
 namespace app {
@@ -78,9 +78,9 @@ private:
 static Size getToolIconSize(Widget* widget)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  BITMAP* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->get_toolicon("configuration");
   if (icon)
-    return Size(icon->w, icon->h);
+    return Size(icon->width(), icon->height());
   else
     return Size(16, 16) * jguiscale();
 }
@@ -318,8 +318,8 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = getClientBounds();
   Graphics* g = ev.getGraphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
-  ui::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
+  gfx::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
+  gfx::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
   ToolBox* toolbox = App::instance()->getToolBox();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
@@ -330,7 +330,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   for (int c=0; c<groups; ++c, ++it) {
     ToolGroup* tool_group = *it;
     Tool* tool = m_selectedInGroup[tool_group];
-    ui::Color face;
+    gfx::Color face;
     int nw;
 
     if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
@@ -349,11 +349,11 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     theme->draw_bounds_nw(g, toolrc, nw, face);
 
     // Draw the tool icon
-    BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+    she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
     if (icon) {
-      g->drawAlphaBitmap(icon,
-        toolrc.x+toolrc.w/2-icon->w/2,
-        toolrc.y+toolrc.h/2-icon->h/2);
+      g->drawRgbaSurface(icon,
+        toolrc.x+toolrc.w/2-icon->width()/2,
+        toolrc.y+toolrc.h/2-icon->height()/2);
     }
   }
 
@@ -367,11 +367,11 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     PART_TOOLBUTTON_LAST_NW,
     isHot ? hotFace: normalFace);
 
-  BITMAP* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->get_toolicon("configuration");
   if (icon) {
-    g->drawAlphaBitmap(icon,
-      toolrc.x+toolrc.w/2-icon->w/2,
-      toolrc.y+toolrc.h/2-icon->h/2);
+    g->drawRgbaSurface(icon,
+      toolrc.x+toolrc.w/2-icon->width()/2,
+      toolrc.y+toolrc.h/2-icon->height()/2);
   }
 
   // Draw button to show/hide mini editor
@@ -387,9 +387,9 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
 
   icon = theme->get_toolicon("minieditor");
   if (icon) {
-    g->drawAlphaBitmap(icon,
-      toolrc.x+toolrc.w/2-icon->w/2,
-      toolrc.y+toolrc.h/2-icon->h/2);
+    g->drawRgbaSurface(icon,
+      toolrc.x+toolrc.w/2-icon->width()/2,
+      toolrc.y+toolrc.h/2-icon->height()/2);
   }
 }
 
@@ -467,7 +467,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   m_popupWindow->setHotRegion(rgn);
 
   m_popupWindow->setTransparent(true);
-  m_popupWindow->setBgColor(ui::ColorNone);
+  m_popupWindow->setBgColor(gfx::ColorNone);
   m_popupWindow->setAutoRemap(false);
   m_popupWindow->setBounds(rc);
   toolstrip->setBounds(rc);
@@ -741,7 +741,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (tool->getGroup() == m_group) {
-      ui::Color face;
+      gfx::Color face;
       int nw;
 
       if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
@@ -759,11 +759,11 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       theme->draw_bounds_nw(g, toolrc, nw, face);
 
       // Draw the tool icon
-      BITMAP* icon = theme->get_toolicon(tool->getId().c_str());
+      she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
       if (icon) {
-        g->drawAlphaBitmap(icon,
-          toolrc.x+toolrc.w/2-icon->w/2,
-          toolrc.y+toolrc.h/2-icon->h/2);
+        g->drawRgbaSurface(icon,
+          toolrc.x+toolrc.w/2-icon->width()/2,
+          toolrc.y+toolrc.h/2-icon->height()/2);
       }
     }
   }

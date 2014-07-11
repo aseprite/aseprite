@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013  David Capello
+// Copyright (C) 2012-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,7 @@ namespace she {
   class EventQueue;
   class NonDisposableSurface;
   class Surface;
+  class Font;
 
   // A display or window to show graphics.
   class Display {
@@ -34,6 +35,7 @@ namespace she {
     // The available surface size will be (Display::width() / scale,
     //                                     Display::height() / scale)
     virtual void setScale(int scale) = 0;
+    virtual int scale() const = 0;
 
     // Returns the main surface to draw into this display.
     // You must not dispose this surface.

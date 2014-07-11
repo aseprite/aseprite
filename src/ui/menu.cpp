@@ -8,7 +8,10 @@
 #include "config.h"
 #endif
 
+#include "ui/menu.h"
+
 #include "gfx/size.h"
+#include "she/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -889,7 +892,7 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
       + this->border_width.b;
 
     if (m_accel && !m_accel->isEmpty()) {
-      size.w += ji_font_text_len(this->getFont(), m_accel->toString().c_str());
+      size.w += Graphics::measureUIStringLength(m_accel->toString().c_str(), getFont());
     }
   }
 

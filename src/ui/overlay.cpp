@@ -61,7 +61,7 @@ void Overlay::drawOverlay(she::LockedSurface* screen)
     return;
 
   she::ScopedSurfaceLock lockedSurface(m_surface);
-  screen->drawAlphaSurface(lockedSurface, m_pos.x, m_pos.y);
+  screen->drawRgbaSurface(lockedSurface, m_pos.x, m_pos.y);
 }
 
 void Overlay::moveOverlay(const gfx::Point& newPos)
@@ -75,7 +75,7 @@ void Overlay::captureOverlappedArea(she::LockedSurface* screen)
     return;
 
   if (!m_overlap)
-    m_overlap = she::Instance()->createSurface(m_surface->width(), m_surface->height());
+    m_overlap = she::instance()->createSurface(m_surface->width(), m_surface->height());
 
   she::ScopedSurfaceLock lock(m_overlap);
   screen->blitTo(lock, m_pos.x, m_pos.y, 0, 0,

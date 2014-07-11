@@ -20,10 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/modules/gui.h"
@@ -43,6 +39,9 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+
+#include <cstdlib>
+#include <cstring>
 
 namespace app {
 
@@ -284,7 +283,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   Palette* palette = get_current_palette();
   int bordercolor = makecol(255, 255, 255);
 
-  g->fillRect(ui::rgba(0 , 0, 0), bounds);
+  g->fillRect(gfx::rgba(0 , 0, 0), bounds);
 
   y = bounds.y + this->border_width.t;
   c = 0;
@@ -296,7 +295,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       if (c >= palette->size())
         break;
 
-      color = ui::rgba(
+      color = gfx::rgba(
         rgba_getr(palette->getEntry(c)),
         rgba_getg(palette->getEntry(c)),
         rgba_getb(palette->getEntry(c)));

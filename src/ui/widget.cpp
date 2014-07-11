@@ -11,10 +11,14 @@
 #endif
 
 #include "base/memory.h"
+#include "she/display.h"
+#include "she/font.h"
+#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <cctype>
 #include <climits>
 #include <cstdarg>
@@ -61,8 +65,8 @@ Widget::Widget(WidgetType type)
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
-  this->m_font = this->m_theme ? this->m_theme->default_font: NULL;
-  this->m_bgColor = ui::ColorNone;
+  this->m_font = (this->m_theme ? this->m_theme->default_font: NULL);
+  this->m_bgColor = gfx::ColorNone;
 
   this->theme_data[0] = NULL;
   this->theme_data[1] = NULL;
@@ -134,21 +138,20 @@ void Widget::setText(const std::string& text)
 
 void Widget::setTextf(const char *format, ...)
 {
-  char buf[4096];
-
   // formatted string
   if (format) {
     va_list ap;
     va_start(ap, format);
+    char buf[4096];
     vsprintf(buf, format, ap);
     va_end(ap);
+
+    setText(buf);
   }
   // empty string
   else {
-    ustrcpy(buf, empty_string);
+    setText("");
   }
-
-  setText(buf);
 }
 
 void Widget::setTextQuiet(const std::string& text)
@@ -157,18 +160,18 @@ void Widget::setTextQuiet(const std::string& text)
   flags |= JI_HASTEXT;
 }
 
-FONT *Widget::getFont() const
+she::Font* Widget::getFont() const
 {
   return m_font;
 }
 
-void Widget::setFont(FONT* f)
+void Widget::setFont(she::Font* font)
 {
-  m_font = f;
+  m_font = font;
   invalidate();
 }
 
-void Widget::setBgColor(ui::Color color)
+void Widget::setBgColor(gfx::Color color)
 {
   m_bgColor = color;
   onSetBgColor();
@@ -735,16 +738,12 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
 
 int Widget::getTextWidth() const
 {
-#if 1
-  return ji_font_text_len(getFont(), getText().c_str());
-#else  /* use cached text size */
-  return text_size_pix;
-#endif
+  return Graphics::measureUIStringLength(getText().c_str(), getFont());
 }
 
 int Widget::getTextHeight() const
 {
-  return text_height(getFont());
+  return getFont()->height();
 }
 
 void Widget::getTextIconInfo(
@@ -946,7 +945,8 @@ void Widget::paint(Graphics* graphics, const gfx::Region& drawRegion)
     widget->getDrawableRegion(region, kCutTopWindows);
     region.createIntersection(region, drawRegion);
 
-    Graphics graphics2(graphics->getInternalBitmap(),
+    Graphics graphics2(
+      graphics->getInternalSurface(),
       widget->getBounds().x,
       widget->getBounds().y);
     graphics2.setFont(widget->getFont());
@@ -969,7 +969,7 @@ bool Widget::paintEvent(Graphics* graphics)
 #if _DEBUG
     // In debug mode we can fill the area with Red so we know if the
     // we are drawing the parent correctly.
-    graphics->fillRect(ui::rgba(255, 0, 0), getClientBounds());
+    graphics->fillRect(gfx::rgba(255, 0, 0), getClientBounds());
 #endif
 
     this->flags |= JI_HIDDEN;
@@ -1058,38 +1058,45 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
   flushRedraw();
 }
 
-class DeleteGraphicsAndBitmap {
+class DeleteGraphicsAndSurface {
 public:
-  DeleteGraphicsAndBitmap(const gfx::Rect& clip, BITMAP* bmp)
-    : m_pt(clip.getOrigin()), m_bmp(bmp) {
+  DeleteGraphicsAndSurface(const gfx::Rect& clip, she::Surface* surface)
+    : m_pt(clip.getOrigin()), m_surface(surface) {
   }
 
   void operator()(Graphics* graphics) {
-    blit(m_bmp, ji_screen, 0, 0, m_pt.x, m_pt.y, m_bmp->w, m_bmp->h);
-    destroy_bitmap(m_bmp);
+    {
+      she::ScopedSurfaceLock src(m_surface);
+      she::ScopedSurfaceLock dst(she::instance()->defaultDisplay()->getSurface());
+      src->blitTo(dst, 0, 0, m_pt.x, m_pt.y,
+        m_surface->width(), m_surface->height());
+    }
+    m_surface->dispose();
     delete graphics;
   }
 
 private:
   gfx::Point m_pt;
-  BITMAP* m_bmp;
+  she::Surface* m_surface;
 };
 
 GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 {
   GraphicsPtr graphics;
+  she::Surface* surface;
+  she::Surface* defaultSurface = she::instance()->defaultDisplay()->getSurface();
 
-  if (m_doubleBuffered && ji_screen == screen) {
-    BITMAP* bmp = create_bitmap_ex(
-      bitmap_color_depth(ji_screen), clip.w, clip.h);
-
-    graphics.reset(new Graphics(bmp, -clip.x, -clip.y),
-      DeleteGraphicsAndBitmap(clip, bmp));
+  // In case of double-buffering, we need to create the temporary
+  // buffer only if the default surface is the screen.
+  if (m_doubleBuffered && defaultSurface->isDirectToScreen()) {
+    surface = she::instance()->createSurface(clip.w, clip.h);
+    graphics.reset(new Graphics(surface, -clip.x, -clip.y),
+      DeleteGraphicsAndSurface(clip, surface));
   }
-  // Paint directly on ji_screen (in this case "ji_screen" can be
-  // the screen or a memory bitmap).
+  // In other case, we can draw directly onto the screen.
   else {
-    graphics.reset(new Graphics(ji_screen, getBounds().x, getBounds().y));
+    surface = defaultSurface;
+    graphics.reset(new Graphics(surface, getBounds().x, getBounds().y));
   }
 
   graphics->setFont(getFont());
@@ -1261,23 +1268,6 @@ int Widget::getMnemonicChar() const
   }
   return 0;
 }
-
-bool Widget::isScancodeMnemonic(int scancode) const
-{
-  int ascii = 0;
-  if (scancode >= KEY_0 && scancode <= KEY_9)
-    ascii = '0' + (scancode - KEY_0);
-  else if (scancode >= KEY_A && scancode <= KEY_Z)
-    ascii = 'a' + (scancode - KEY_A);
-  else
-    return false;
-
-  int mnemonic = getMnemonicChar();
-  return (mnemonic > 0 && mnemonic == ascii);
-}
-
-/**********************************************************************/
-/* widget message procedure */
 
 bool Widget::onProcessMessage(Message* msg)
 {

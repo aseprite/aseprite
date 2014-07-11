@@ -130,13 +130,13 @@ int _ji_system_init()
 
 void _ji_system_exit()
 {
-  SetDisplay(NULL);
+  set_display(NULL);
   update_mouse_overlay(NULL);
 
   remove_int(clock_inc);
 }
 
-void SetDisplay(she::Display* display)
+void set_display(she::Display* display)
 {
   CursorType cursor = jmouse_get_cursor();
 

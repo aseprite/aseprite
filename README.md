@@ -80,7 +80,6 @@ Aseprite uses libraries or parts of the original source code
 of the following projects created by third-parties:
 
 * [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/dacap/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
-* [AllegroFont](http://chernsha.sitesled.com/)  - [FTL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/FTL.txt)
 * [curl](http://curl.haxx.se/) - [curl license](https://github.com/dacap/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
 * [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/FTL.txt)
 * [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)

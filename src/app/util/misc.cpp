@@ -20,9 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <string.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/document_location.h"

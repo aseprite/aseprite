@@ -8,75 +8,18 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <vector>
-
 #include "ui/draw.h"
-#include "ui/font.h"
+
 #include "ui/intern.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 
-/* TODO optional anti-aliased textout */
-#define SETUP_ANTIALISING(f, bg, fill_bg)                               \
-  ji_font_set_aa_mode(f, fill_bg ||                                     \
-                         bitmap_color_depth(ji_screen) == 8 ? to_system(bg): -1)
+#include <allegro.h>
+#include <vector>
 
 namespace ui {
 
 using namespace gfx;
-
-void _draw_text(BITMAP* bmp, FONT* font, const char *s, int x, int y,
-  ui::Color fg_color, ui::Color bg_color, bool fill_bg, int underline_height)
-{
-  // original code from allegro/src/guiproc.c
-  char tmp[1024];
-  int hline_pos = -1;
-  int len = 0;
-  int in_pos = 0;
-  int out_pos = 0;
-  int c;
-
-  while (((c = ugetc(s+in_pos)) != 0) && (out_pos<(int)(sizeof(tmp)-ucwidth(0)))) {
-    if (c == '&') {
-      in_pos += uwidth(s+in_pos);
-      c = ugetc(s+in_pos);
-      if (c == '&') {
-        out_pos += usetc(tmp+out_pos, '&');
-        in_pos += uwidth(s+in_pos);
-        len++;
-      }
-      else
-        hline_pos = len;
-    }
-    else {
-      out_pos += usetc(tmp+out_pos, c);
-      in_pos += uwidth(s+in_pos);
-      len++;
-    }
-  }
-
-  usetc(tmp+out_pos, 0);
-
-  SETUP_ANTIALISING(font, bg_color, fill_bg);
-
-  textout_ex(bmp, font, tmp, x, y, to_system(fg_color), (fill_bg ? to_system(bg_color): -1));
-
-  if (hline_pos >= 0) {
-    c = ugetat(tmp, hline_pos);
-    usetat(tmp, hline_pos, 0);
-    hline_pos = text_length(font, tmp);
-    c = usetc(tmp, c);
-    usetc(tmp+c, 0);
-    c = text_length(font, tmp);
-
-    rectfill(bmp, x+hline_pos,
-             y+text_height(font),
-             x+hline_pos+c-1,
-             y+text_height(font)+underline_height-1, to_system(fg_color));
-  }
-}
 
 void _move_region(const Region& region, int dx, int dy)
 {

@@ -4,13 +4,9 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#define REDRAW_MOVEMENT
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#include <allegro.h>
 
 #include "gfx/size.h"
 #include "ui/graphics.h"
@@ -585,7 +581,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     moveableRegion.createIntersection(oldDrawableRegion, reg1);
 
     // Move the window's graphics
-    Graphics g(ji_screen, 0, 0);
+    ScreenGraphics g;
     jmouse_hide();
     {
       IntersectClip clip(&g, man_pos);

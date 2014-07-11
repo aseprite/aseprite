@@ -42,145 +42,131 @@ namespace app {
 
 using namespace ui;
 
-class OptionsCommand : public Command {
+class OptionsWindow : public Window {
 public:
-  OptionsCommand();
-  Command* clone() const OVERRIDE { return new OptionsCommand(*this); }
+  OptionsWindow(Context* context)
+    : Window(Window::WithTitleBar, "Options")
+    , m_settings(context->settings())
+    , m_docSettings(m_settings->getDocumentSettings(NULL))
+    , m_checked_bg_color1(new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB))
+    , m_checked_bg_color2(new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB))
+    , m_pixelGridColor(new ColorButton(m_docSettings->getPixelGridColor(), IMAGE_RGB))
+    , m_gridColor(new ColorButton(m_docSettings->getGridColor(), IMAGE_RGB))
+    , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
+  {
+    addChild(app::load_widget<Box>("options.xml", "main_box"));
 
-protected:
-  void onExecute(Context* context);
+    // Load the this widget
+    app::finder(this)
+      >> "section_listbox" >> m_section_listbox
+      >> "panel" >> m_panel
+      >> "smooth" >> m_check_smooth
+      >> "autotimeline" >> m_check_autotimeline
+      >> "show_scrollbars" >> m_show_scrollbars
+      >> "cursor_color_box" >> m_cursor_color_box
+      >> "grid_color_box" >> m_grid_color_box
+      >> "pixel_grid_color_box" >> m_pixel_grid_color_box
+      >> "checked_bg_size" >> m_checked_bg
+      >> "checked_bg_zoom" >> m_checked_bg_zoom
+      >> "checked_bg_color1_box" >> m_checked_bg_color1_box
+      >> "checked_bg_color2_box" >> m_checked_bg_color2_box
+      >> "checked_bg_reset" >> m_checked_bg_reset
+      >> "undo_size_limit" >> m_undo_size_limit
+      >> "undo_goto_modified" >> m_undo_goto_modified
+      >> "screen_scale" >> m_screen_scale
+      >> "wheel_zoom" >> m_wheel_zoom
+      >> "locate_file" >> m_locate_file
+      >> "button_ok" >> m_button_ok;
 
-private:
-  void onResetCheckedBg();
-  void onLocateConfigFile();
+    m_section_listbox->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
+    m_cursor_color_box->addChild(m_cursorColor);
 
-  ComboBox* m_checked_bg;
-  Widget* m_checked_bg_zoom;
-  ColorButton* m_checked_bg_color1;
-  ColorButton* m_checked_bg_color2;
-};
+    // Grid color
+    m_gridColor->setId("grid_color");
+    m_grid_color_box->addChild(m_gridColor);
 
-OptionsCommand::OptionsCommand()
-  : Command("Options",
-            "Options",
-            CmdUIOnlyFlag)
-{
-}
+    // Pixel grid color
+    m_pixelGridColor->setId("pixel_grid_color");
+    m_pixel_grid_color_box->addChild(m_pixelGridColor);
 
-void OptionsCommand::onExecute(Context* context)
-{
-  // Load the window widget
-  base::UniquePtr<Window> window(app::load_widget<Window>("options.xml", "options"));
-  Widget* check_smooth = app::find_widget<Widget>(window, "smooth");
-  Widget* check_autotimeline = app::find_widget<Widget>(window, "autotimeline");
-  Widget* show_scrollbars = app::find_widget<Widget>(window, "show_scrollbars");
-  Widget* cursor_color_box = app::find_widget<Widget>(window, "cursor_color_box");
-  Widget* grid_color_box = app::find_widget<Widget>(window, "grid_color_box");
-  Widget* pixel_grid_color_box = app::find_widget<Widget>(window, "pixel_grid_color_box");
-  m_checked_bg = app::find_widget<ComboBox>(window, "checked_bg_size");
-  m_checked_bg_zoom = app::find_widget<Widget>(window, "checked_bg_zoom");
-  Widget* checked_bg_color1_box = app::find_widget<Widget>(window, "checked_bg_color1_box");
-  Widget* checked_bg_color2_box = app::find_widget<Widget>(window, "checked_bg_color2_box");
-  Button* checked_bg_reset = app::find_widget<Button>(window, "checked_bg_reset");
-  Widget* undo_size_limit = app::find_widget<Widget>(window, "undo_size_limit");
-  Widget* undo_goto_modified = app::find_widget<Widget>(window, "undo_goto_modified");
-  ComboBox* screen_scale = app::find_widget<ComboBox>(window, "screen_scale");
-  LinkLabel* locate_file = app::find_widget<LinkLabel>(window, "locate_file");
-  Widget* button_ok = app::find_widget<Widget>(window, "button_ok");
+    // Others
+    if (get_config_bool("Options", "MoveSmooth", true))
+      m_check_smooth->setSelected(true);
 
-  // Cursor color
-  ColorButton* cursor_color = new ColorButton(Editor::get_cursor_color(), IMAGE_RGB);
-  cursor_color->setId("cursor_color");
-  cursor_color_box->addChild(cursor_color);
+    if (get_config_bool("Options", "AutoShowTimeline", true))
+      m_check_autotimeline->setSelected(true);
 
-  // Get global settings for documents
-  ISettings* settings = context->settings();
-  IDocumentSettings* docSettings = settings->getDocumentSettings(NULL);
+    if (m_settings->getShowSpriteEditorScrollbars())
+      m_show_scrollbars->setSelected(true);
 
-  // Grid color
-  ColorButton* grid_color = new ColorButton(docSettings->getGridColor(), IMAGE_RGB);
-  grid_color->setId("grid_color");
-  grid_color_box->addChild(grid_color);
+    // Checked background size
+    m_screen_scale->addItem("1:1");
+    m_screen_scale->addItem("2:1");
+    m_screen_scale->addItem("3:1");
+    m_screen_scale->addItem("4:1");
+    m_screen_scale->setSelectedItemIndex(get_screen_scaling()-1);
 
-  // Pixel grid color
-  ColorButton* pixel_grid_color = new ColorButton(docSettings->getPixelGridColor(), IMAGE_RGB);
-  pixel_grid_color->setId("pixel_grid_color");
-  pixel_grid_color_box->addChild(pixel_grid_color);
+    // Zoom with Scroll Wheel
+    m_wheel_zoom->setSelected(m_settings->getZoomWithScrollWheel());
 
-  // Others
-  if (get_config_bool("Options", "MoveSmooth", true))
-    check_smooth->setSelected(true);
+    // Checked background size
+    m_checked_bg->addItem("16x16");
+    m_checked_bg->addItem("8x8");
+    m_checked_bg->addItem("4x4");
+    m_checked_bg->addItem("2x2");
+    m_checked_bg->setSelectedItemIndex((int)RenderEngine::getCheckedBgType());
 
-  if (get_config_bool("Options", "AutoShowTimeline", true))
-    check_autotimeline->setSelected(true);
+    // Zoom checked background
+    if (RenderEngine::getCheckedBgZoom())
+      m_checked_bg_zoom->setSelected(true);
 
-  if (settings->getShowSpriteEditorScrollbars())
-    show_scrollbars->setSelected(true);
+    // Checked background colors
+    m_checked_bg_color1_box->addChild(m_checked_bg_color1);
+    m_checked_bg_color2_box->addChild(m_checked_bg_color2);
 
-  // Checked background size
-  screen_scale->addItem("1:1");
-  screen_scale->addItem("2:1");
-  screen_scale->addItem("3:1");
-  screen_scale->addItem("4:1");
-  screen_scale->setSelectedItemIndex(get_screen_scaling()-1);
+    // Reset button
+    m_checked_bg_reset->Click.connect(Bind<void>(&OptionsWindow::onResetCheckedBg, this));
 
-  // Checked background size
-  m_checked_bg->addItem("16x16");
-  m_checked_bg->addItem("8x8");
-  m_checked_bg->addItem("4x4");
-  m_checked_bg->addItem("2x2");
-  m_checked_bg->setSelectedItemIndex((int)RenderEngine::getCheckedBgType());
+    // Locate config file
+    m_locate_file->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
 
-  // Zoom checked background
-  if (RenderEngine::getCheckedBgZoom())
-    m_checked_bg_zoom->setSelected(true);
+    // Undo limit
+    m_undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
 
-  // Checked background colors
-  m_checked_bg_color1 = new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB);
-  m_checked_bg_color2 = new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB);
+    // Goto modified frame/layer on undo/redo
+    if (get_config_bool("Options", "UndoGotoModified", true))
+      m_undo_goto_modified->setSelected(true);
 
-  checked_bg_color1_box->addChild(m_checked_bg_color1);
-  checked_bg_color2_box->addChild(m_checked_bg_color2);
+    m_section_listbox->selectIndex(0);
+  }
 
-  // Reset button
-  checked_bg_reset->Click.connect(Bind<void>(&OptionsCommand::onResetCheckedBg, this));
+  bool ok() {
+    return (getKiller() == m_button_ok);
+  }
 
-  // Locate config file
-  locate_file->Click.connect(Bind<void>(&OptionsCommand::onLocateConfigFile, this));
+  void saveConfig() {
+    Editor::set_cursor_color(m_cursorColor->getColor());
+    m_docSettings->setGridColor(m_gridColor->getColor());
+    m_docSettings->setPixelGridColor(m_pixelGridColor->getColor());
 
-  // Undo limit
-  undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
+    set_config_bool("Options", "MoveSmooth", m_check_smooth->isSelected());
+    set_config_bool("Options", "AutoShowTimeline", m_check_autotimeline->isSelected());
 
-  // Goto modified frame/layer on undo/redo
-  if (get_config_bool("Options", "UndoGotoModified", true))
-    undo_goto_modified->setSelected(true);
-
-  // Show the window and wait the user to close it
-  window->openWindowInForeground();
-
-  if (window->getKiller() == button_ok) {
-    int undo_size_limit_value;
-
-    Editor::set_cursor_color(cursor_color->getColor());
-    docSettings->setGridColor(grid_color->getColor());
-    docSettings->setPixelGridColor(pixel_grid_color->getColor());
-
-    set_config_bool("Options", "MoveSmooth", check_smooth->isSelected());
-    set_config_bool("Options", "AutoShowTimeline", check_autotimeline->isSelected());
-
-    settings->setShowSpriteEditorScrollbars(show_scrollbars->isSelected());
+    m_settings->setShowSpriteEditorScrollbars(m_show_scrollbars->isSelected());
+    m_settings->setZoomWithScrollWheel(m_wheel_zoom->isSelected());
 
     RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)m_checked_bg->getSelectedItemIndex());
     RenderEngine::setCheckedBgZoom(m_checked_bg_zoom->isSelected());
     RenderEngine::setCheckedBgColor1(m_checked_bg_color1->getColor());
     RenderEngine::setCheckedBgColor2(m_checked_bg_color2->getColor());
 
-    undo_size_limit_value = undo_size_limit->getTextInt();
+    int undo_size_limit_value;
+    undo_size_limit_value = m_undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
     set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
-    set_config_bool("Options", "UndoGotoModified", undo_goto_modified->isSelected());
+    set_config_bool("Options", "UndoGotoModified", m_undo_goto_modified->isSelected());
 
-    int new_screen_scaling = screen_scale->getSelectedItemIndex()+1;
+    int new_screen_scaling = m_screen_scale->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {
       set_screen_scaling(new_screen_scaling);
 
@@ -192,20 +178,78 @@ void OptionsCommand::onExecute(Context* context)
     // Save configuration
     flush_config_file();
   }
+
+private:
+  void onChangeSection() {
+    ListItem* item = m_section_listbox->getSelectedChild();
+    if (!item)
+      return;
+
+    m_panel->showChild(findChild(item->getValue().c_str()));
+  }
+
+  void onResetCheckedBg() {
+    // Default values
+    m_checked_bg->setSelectedItemIndex((int)RenderEngine::CHECKED_BG_16X16);
+    m_checked_bg_zoom->setSelected(true);
+    m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
+    m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
+  }
+
+  void onLocateConfigFile() {
+    app::launcher::open_folder(app::get_config_file());
+  }
+
+  ISettings* m_settings;
+  IDocumentSettings* m_docSettings;
+  ListBox* m_section_listbox;
+  Panel* m_panel;
+  Widget* m_check_smooth;
+  Widget* m_check_autotimeline;
+  Widget* m_show_scrollbars;
+  Widget* m_cursor_color_box;
+  Widget* m_grid_color_box;
+  Widget* m_pixel_grid_color_box;
+  ComboBox* m_checked_bg;
+  Widget* m_checked_bg_zoom;
+  Widget* m_checked_bg_color1_box;
+  Widget* m_checked_bg_color2_box;
+  Button* m_checked_bg_reset;
+  Widget* m_undo_size_limit;
+  Widget* m_undo_goto_modified;
+  ComboBox* m_screen_scale;
+  CheckBox* m_wheel_zoom;
+  LinkLabel* m_locate_file;
+  ColorButton* m_checked_bg_color1;
+  ColorButton* m_checked_bg_color2;
+  ColorButton* m_pixelGridColor;
+  ColorButton* m_gridColor;
+  ColorButton* m_cursorColor;
+  Button* m_button_ok;
+};
+
+class OptionsCommand : public Command {
+public:
+  OptionsCommand();
+  Command* clone() const OVERRIDE { return new OptionsCommand(*this); }
+
+protected:
+  void onExecute(Context* context);
+};
+
+OptionsCommand::OptionsCommand()
+  : Command("Options",
+            "Options",
+            CmdUIOnlyFlag)
+{
 }
 
-void OptionsCommand::onResetCheckedBg()
+void OptionsCommand::onExecute(Context* context)
 {
-  // Default values
-  m_checked_bg->setSelectedItemIndex((int)RenderEngine::CHECKED_BG_16X16);
-  m_checked_bg_zoom->setSelected(true);
-  m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
-  m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
-}
-
-void OptionsCommand::onLocateConfigFile()
-{
-  app::launcher::open_folder(app::get_config_file());
+  OptionsWindow window(context);
+  window.openWindowInForeground();
+  if (window.ok()) 
+    window.saveConfig();
 }
 
 Command* CommandFactory::createOptionsCommand()

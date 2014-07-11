@@ -26,7 +26,7 @@ because they don't depend on any other component.
   * [doc](doc/) (base, gfx): Document model library (business layer, replacement of `raster` library).
   * [net](net/) (base): Networking library to send HTTP requests.
   * [raster](raster/) (base, gfx): Library to handle graphics entities like sprites, images, frames.
-  * [she](she/) (allegro): A (Work In Progress) wrapper for Allegro library.
+  * [she](she/) (base, gfx, allegro): A wrapper for the Allegro library.
   * [webserver](webserver/) (base): HTTP web server (based on [mongoose](https://github.com/valenok/mongoose))
 
 ## Level 2

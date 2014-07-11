@@ -25,6 +25,8 @@
 #include "app/modules/gfx.h"
 #include "app/thumbnail_generator.h"
 #include "app/ui/skin/skin_theme.h"
+#include "she/font.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 
 #include <algorithm>
@@ -135,9 +137,9 @@ bool FileList::onProcessMessage(Message* msg)
           gfx::Size itemSize = getFileItemSize(fi);
 
           if (((mouseMsg->position().y >= y) &&
-               (mouseMsg->position().y < y+2+th+2)) ||
+               (mouseMsg->position().y < y+th+4*jguiscale())) ||
               (it == m_list.begin() && mouseMsg->position().y < y) ||
-              (it == m_list.end()-1 && mouseMsg->position().y >= y+2+th+2)) {
+              (it == m_list.end()-1 && mouseMsg->position().y >= y+th+4*jguiscale())) {
             m_selected = fi;
             makeSelectedFileitemVisible();
             break;
@@ -197,7 +199,7 @@ bool FileList::onProcessMessage(Message* msg)
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (2+getTextHeight()+2);
+            select += sgn * vp.h / (getTextHeight()+4*jguiscale());
             break;
           }
           case kKeyLeft:
@@ -273,7 +275,7 @@ bool FileList::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(2+getTextHeight()+2);
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(getTextHeight()+4*jguiscale());
         view->setViewScroll(scroll);
       }
       break;
@@ -307,9 +309,9 @@ void FileList::onPaint(ui::PaintEvent& ev)
   int th = getTextHeight();
   int x, y = bounds.y;
   int evenRow = 0;
-  ui::Color bgcolor;
-  ui::Color fgcolor;
-  BITMAP* thumbnail = NULL;
+  gfx::Color bgcolor;
+  gfx::Color fgcolor;
+  she::Surface* thumbnail = NULL;
   int thumbnail_y = 0;
 
   g->fillRect(theme->getColor(ThemeColor::Background), bounds);
@@ -335,30 +337,28 @@ void FileList::onPaint(ui::PaintEvent& ev)
                             theme->getColor(ThemeColor::FileListOddRowText);
     }
 
-    x = bounds.x+2;
+    x = bounds.x+2*jguiscale();
 
     // Item background
     g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
 
     if (fi->isFolder()) {
-      int icon_w = ji_font_text_len(getFont(), "[+]");
-      int icon_h = ji_font_get_size(getFont());
+      int icon_w = getFont()->textLength("[+]");
 
-      g->drawString("[+]", fgcolor, bgcolor, true,
-        gfx::Point(x, y+2));
-
-      x += icon_w+2;
+      g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
+      x += icon_w+2*jguiscale();
     }
 
     // item name
     g->drawString(
       fi->getDisplayName().c_str(),
-      fgcolor, bgcolor, true, gfx::Point(x, y+2));
+      fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
 
     // draw progress bars
     double progress;
     ThumbnailGenerator::WorkerStatus workerStatus =
       ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
+
     if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
       int barw = 64*jguiscale();
 
@@ -383,15 +383,15 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // Draw the thumbnail
   if (thumbnail) {
-    x = vp.x+vp.w-2*jguiscale()-thumbnail->w;
-    y = thumbnail_y-thumbnail->h/2+getBounds().y;
-    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->h);
+    x = vp.x+vp.w - 2*jguiscale() - thumbnail->width();
+    y = thumbnail_y - thumbnail->height()/2 + getBounds().y;
+    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->height());
     x -= getBounds().x;
     y -= getBounds().y;
 
-    g->blit(thumbnail, 0, 0, x, y, thumbnail->w, thumbnail->h);
-    g->drawRect(ui::rgba(0, 0, 0),
-      gfx::Rect(x-1, y-1, thumbnail->w+1, thumbnail->h+1));
+    g->blit(thumbnail, 0, 0, x, y, thumbnail->width(), thumbnail->height());
+    g->drawRect(gfx::rgba(0, 0, 0),
+      gfx::Rect(x-1, y-1, thumbnail->width()+1, thumbnail->height()+1));
   }
 }
 
@@ -451,14 +451,12 @@ gfx::Size FileList::getFileItemSize(IFileItem* fi) const
 {
   int len = 0;
 
-  if (fi->isFolder()) {
-    len += ji_font_text_len(getFont(), "[+]")+2;
-  }
+  if (fi->isFolder())
+    len += getFont()->textLength("[+]") + 2*jguiscale();
 
-  len += ji_font_text_len(getFont(), fi->getDisplayName().c_str());
+  len += getFont()->textLength(fi->getDisplayName().c_str());
 
-  return gfx::Size(2+len+2,
-    2+getTextHeight()+2);
+  return gfx::Size(len+4*jguiscale(), getTextHeight()+4*jguiscale());
 }
 
 void FileList::makeSelectedFileitemVisible()
@@ -479,8 +477,8 @@ void FileList::makeSelectedFileitemVisible()
     if (fi == m_selected) {
       if (y < vp.y)
         scroll.y = y - getBounds().y;
-      else if (y > vp.y + vp.h - (2+th+2))
-        scroll.y = y - getBounds().y - vp.h + (2+th+2);
+      else if (y > vp.y + vp.h - (th+4*jguiscale()))
+        scroll.y = y - getBounds().y - vp.h + (th+4*jguiscale());
 
       view->setViewScroll(scroll);
       break;

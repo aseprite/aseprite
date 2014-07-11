@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,17 @@
 
 //#define CLOSE_BUTTON_IN_EACH_TAB
 
-#include <algorithm>
-#include <allegro.h>
-#include <cmath>
-
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/tabs.h"
+#include "she/font.h"
+#include "she/surface.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+
+#include <algorithm>
+#include <cmath>
 
 #define ARROW_W         (12*jguiscale())
 
@@ -361,7 +362,7 @@ void Tabs::onPaint(PaintEvent& ev)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y,
     2*jguiscale(),
-    m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->h);
+    m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
 
   g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
 
@@ -432,10 +433,10 @@ void Tabs::onResize(ResizeEvent& ev)
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->h);
+  gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->height());
 
   if (!m_list_of_tabs.empty()) {
-    reqsize.h += theme->get_part(PART_TAB_FILLER)->h;
+    reqsize.h += theme->get_part(PART_TAB_FILLER)->height();
   }
 
   ev.setPreferredSize(reqsize);
@@ -475,8 +476,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
     return;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color text_color;
-  ui::Color face_color;
+  gfx::Color text_color;
+  gfx::Color face_color;
 
   // Selected
   if (selected) {
@@ -496,26 +497,29 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
                                        PART_TAB_NORMAL_NW,
                           face_color);
 
-    g->drawString(tab->text, text_color, face_color, false,
-                  gfx::Point(box.x + 4*jguiscale(),
-                             box.y + box.h/2 - text_height(this->getFont())/2+1 + y_delta));
+    g->drawString(tab->text, text_color, gfx::ColorNone,
+      gfx::Point(
+        box.x + 4*jguiscale(),
+        box.y + box.h/2 - getFont()->height()/2+1 + y_delta));
   }
 
   if (selected) {
-    theme->draw_bounds_nw(g, gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
-                          PART_TAB_BOTTOM_SELECTED_NW,
-                          theme->getColor(ThemeColor::TabSelectedFace));
+    theme->draw_bounds_nw(g,
+      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
+      PART_TAB_BOTTOM_SELECTED_NW,
+      theme->getColor(ThemeColor::TabSelectedFace));
   }
   else {
-    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
-                              PART_TAB_BOTTOM_NORMAL);
+    theme->draw_part_as_hline(g,
+      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
+      PART_TAB_BOTTOM_NORMAL);
   }
 
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
-  BITMAP* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
-  g->drawAlphaBitmap(close_icon,
-                     box.x2() - 4*jguiscale() - close_icon->w,
-                     box.y + box.h/2 - close_icon->h/2+1 * jguiscale());
+  she::Surface* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+  g->drawRgbaSurface(close_icon,
+    box.x2() - 4*jguiscale() - close_icon->width(),
+    box.y + box.h/2 - close_icon->height()/2+1 * jguiscale());
 #endif
 }
 
@@ -660,10 +664,10 @@ void Tabs::calcTabWidth(Tab* tab)
   int border = 4*jguiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->w;
-  tab->width = (border + text_length(getFont(), tab->text.c_str()) + border + close_icon_w + border);
+  int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->width();
+  tab->width = (border + getFont()->textLength(tab->text.c_str()) + border + close_icon_w + border);
 #else
-  tab->width = (border + text_length(getFont(), tab->text.c_str()) + border);
+  tab->width = (border + getFont()->textLength(tab->text.c_str()) + border);
 #endif
 }
 

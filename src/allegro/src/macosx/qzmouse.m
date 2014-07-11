@@ -178,6 +178,9 @@ static int osx_mouse_init(void)
    osx_emulate_mouse_buttons = (max_buttons == 1) ? TRUE : FALSE;
    _unix_unlock_mutex(osx_event_mutex);
 
+   _mouse_on = TRUE;
+   [NSCursor performSelectorOnMainThread: @selector(hide) withObject: nil waitUntilDone: NO];
+
    return max_buttons;
 }
 
@@ -344,7 +347,6 @@ int osx_mouse_show(BITMAP *bmp, int x, int y)
       return -1;
 
    osx_change_cursor(requested_cursor);
-
    return 0;
 }
 

@@ -30,7 +30,6 @@
 #include "gfx/size.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <vector>
 
 namespace app {

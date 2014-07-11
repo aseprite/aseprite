@@ -285,33 +285,31 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
-  // Without modifiers
-  if (msg->keyModifiers() == kKeyNoneModifier) {
-    if (msg->wheelDelta().x != 0)
+  // Alt+mouse wheel changes the fg/bg colors
+  if (msg->altPressed()) {
+    if (msg->shiftPressed())
+      wheelAction = WHEEL_BG;
+    else
+      wheelAction = WHEEL_FG;
+  }
+  // Normal behavior: mouse wheel zooms
+  else if (UIContext::instance()->settings()->getZoomWithScrollWheel()) {
+    if (msg->ctrlPressed())
+      wheelAction = WHEEL_FRAME;
+    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_ZOOM;
   }
+  // For laptops, it's convenient to that Ctrl+wheel zoom (because
+  // it's the "pinch" gesture).
   else {
-#if 1                           // TODO make it configurable
-    if (msg->altPressed()) {
-      if (msg->shiftPressed())
-        wheelAction = WHEEL_BG;
-      else
-        wheelAction = WHEEL_FG;
-    }
-    else if (msg->ctrlPressed()) {
-      wheelAction = WHEEL_FRAME;
-    }
-#else
     if (msg->ctrlPressed())
+      wheelAction = WHEEL_ZOOM;
+    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_VSCROLL;
-
-    if (msg->shiftPressed())
-      scrollBigSteps = true;
-#endif
   }
 
   switch (wheelAction) {
@@ -443,6 +441,11 @@ bool StandbyState::onSetCursor(Editor* editor)
     else if (current_ink->isCelMovement()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kMoveCursor);
+      return true;
+    }
+    else if (current_ink->isSlice()) {
+      jmouse_set_cursor(kNoCursor);
+      editor->showDrawingCursor();
       return true;
     }
   }

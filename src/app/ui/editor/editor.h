@@ -37,6 +37,8 @@
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
+struct BITMAP;
+
 namespace raster {
   class Sprite;
   class Layer;
@@ -63,6 +65,8 @@ namespace app {
   class Editor : public ui::Widget,
                  public DocumentSettingsObserver {
   public:
+    typedef void (*PixelDelegate)(ui::Graphics* g, int x, int y, gfx::Color color);
+
     enum EditorFlags {
       kNoneFlag = 0,
       kShowGridFlag = 1,
@@ -176,8 +180,6 @@ namespace app {
 
     // in cursor.cpp
 
-    static int get_raw_cursor_color();
-    static bool is_cursor_mask();
     static app::Color get_cursor_color();
     static void set_cursor_color(const app::Color& color);
 
@@ -199,10 +201,10 @@ namespace app {
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void editor_update_quicktool();
-    void editor_draw_cursor(int x, int y, bool refresh = true);
-    void editor_move_cursor(int x, int y, bool refresh = true);
-    void editor_clean_cursor(bool refresh = true);
-    bool editor_cursor_is_subpixel();
+    void drawBrushPreview(int x, int y, bool refresh = true);
+    void moveBrushPreview(int x, int y, bool refresh = true);
+    void clearBrushPreview(bool refresh = true);
+    bool doesBrushPreviewNeedSubpixel();
 
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
@@ -211,9 +213,11 @@ namespace app {
     void editor_setcursor();
 
     void forEachBrushPixel(
+      ui::Graphics* g,
       int screen_x, int screen_y,
-      int sprite_x, int sprite_y, int color,
-      void (*pixel)(BITMAP *bmp, int x, int y, int color));
+      int sprite_x, int sprite_y,
+      gfx::Color color,
+      PixelDelegate pixelDelegate);
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this

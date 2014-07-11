@@ -27,8 +27,8 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document_location.h"
 #include "app/console.h"
+#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -55,12 +55,14 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/raster.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/ui.h"
 
 #include <allegro.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace app {
 
@@ -297,7 +299,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   int thick = m_cursor_thick;
 
   if (thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   if (use_refresh_region) {
     getDrawableRegion(region, kCutTopWindows);
@@ -315,7 +317,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   }
 
   if (thick)
-    editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+    drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
 }
 
 void Editor::updateEditor()
@@ -394,10 +396,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
         m_decorator->preRenderDecorator(&preRender);
       }
 
-      SharedPtr<BITMAP> tmp(create_bitmap(width, height), destroy_bitmap);
-      convert_image_to_allegro(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
-
+      she::Surface* tmp(she::instance()->createRgbaSurface(width, height));
+      convert_image_to_surface(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
       g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
+      tmp->dispose();
     }
   }
 }
@@ -493,7 +495,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region region;
   getDrawableRegion(region, kCutTopWindows);
 
-  Graphics g(ji_screen, 0, 0);
+  ScreenGraphics g;
 
   for (Region::const_iterator
          it=region.begin(), end=region.end(); it != end; ++it) {
@@ -585,7 +587,7 @@ void Editor::drawMaskSafe()
     region.offset(-getBounds().getOrigin());
 
     if (thick)
-      editor_clean_cursor();
+      clearBrushPreview();
     else
       jmouse_hide();
 
@@ -600,7 +602,7 @@ void Editor::drawMaskSafe()
 
     // Draw the cursor
     if (thick)
-      editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+      drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
     else
       jmouse_show();
   }
@@ -637,7 +639,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   while (grid.y-grid.h >= spriteBounds.y) grid.y -= grid.h;
 
   // Get the grid's color
-  ui::Color grid_color = color_utils::color_for_ui(color);
+  gfx::Color grid_color = color_utils::color_for_ui(color);
 
   // Draw horizontal lines
   int x1 = spriteBounds.x;
@@ -774,7 +776,7 @@ void Editor::showDrawingCursor()
 
   if (!m_cursor_thick && canDraw()) {
     jmouse_hide();
-    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+    drawBrushPreview(jmouse_x(0), jmouse_y(0));
     jmouse_show();
   }
 }
@@ -783,7 +785,7 @@ void Editor::hideDrawingCursor()
 {
   if (m_cursor_thick) {
     jmouse_hide();
-    editor_clean_cursor();
+    clearBrushPreview();
     jmouse_show();
   }
 }
@@ -801,7 +803,7 @@ void Editor::moveDrawingCursor()
     // when the mouse moves only).
     if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
       jmouse_hide();
-      editor_move_cursor(x, y);
+      moveBrushPreview(x, y);
       jmouse_show();
     }
   }
@@ -1023,7 +1025,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
   int old_cursor_thick = m_cursor_thick;
   if (m_cursor_thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   // Editor without sprite
   if (!m_sprite) {
@@ -1049,7 +1051,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the cursor again
       if (old_cursor_thick != 0) {
-        editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+        drawBrushPreview(jmouse_x(0), jmouse_y(0));
       }
     }
     catch (const LockedDocumentException&) {

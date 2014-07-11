@@ -68,6 +68,7 @@ const char* WellKnownInks::PickBg = "pick_bg";
 const char* WellKnownInks::Zoom = "zoom";
 const char* WellKnownInks::Scroll = "scroll";
 const char* WellKnownInks::Move = "move";
+const char* WellKnownInks::Slice = "slice";
 const char* WellKnownInks::Blur = "blur";
 const char* WellKnownInks::Jumble = "jumble";
 
@@ -95,9 +96,10 @@ ToolBox::ToolBox()
   m_inks[WellKnownInks::ReplaceBgWithFg] = new EraserInk(EraserInk::ReplaceBgWithFg);
   m_inks[WellKnownInks::PickFg]          = new PickInk(PickInk::Fg);
   m_inks[WellKnownInks::PickBg]          = new PickInk(PickInk::Bg);
-  m_inks[WellKnownInks::Zoom]          = new ZoomInk();
+  m_inks[WellKnownInks::Zoom]            = new ZoomInk();
   m_inks[WellKnownInks::Scroll]          = new ScrollInk();
   m_inks[WellKnownInks::Move]            = new MoveInk();
+  m_inks[WellKnownInks::Slice]           = new SliceInk();
   m_inks[WellKnownInks::Blur]            = new BlurInk();
   m_inks[WellKnownInks::Jumble]          = new JumbleInk();
 

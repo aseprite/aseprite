@@ -25,6 +25,7 @@ namespace app {
   enum FreehandAlgorithm {
     kDefaultFreehandAlgorithm,
     kPixelPerfectFreehandAlgorithm,
+    kDotsFreehandAlgorithm,
   };
 
 } // namespace app

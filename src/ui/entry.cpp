@@ -11,8 +11,8 @@
 #include "ui/entry.h"
 
 #include "base/string.h"
+#include "she/font.h"
 #include "ui/clipboard.h"
-#include "ui/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
@@ -20,12 +20,9 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
 #include <cstdarg>
 #include <cstdio>
-
-#define CHARACTER_LENGTH(f, c) ((f)->vtable->char_length((f), (c)))
+#include <cctype>
 
 namespace ui {
 
@@ -120,7 +117,7 @@ void Entry::setCaretPos(int pos)
     for (c=++m_scroll; ; c++) {
       int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
-      x += CHARACTER_LENGTH(getFont(), ch);
+      x += getFont()->charWidth(ch);
 
       if (x >= getBounds().x2()-this->border_width.r)
         break;
@@ -320,7 +317,7 @@ bool Entry::onProcessMessage(Message* msg)
             for (c=m_scroll; utf8_begin != utf8_end; ++c) {
               int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
-              x += CHARACTER_LENGTH(getFont(), ch);
+              x += getFont()->charWidth(ch);
               if (x > getBounds().x2()-this->border_width.r) {
                 c--;
                 break;
@@ -389,7 +386,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w =
     + border_width.l
-    + ji_font_char_len(getFont(), 'w') * MIN(m_maxsize, 6)
+    + getFont()->charWidth('w') * MIN(m_maxsize, 6)
     + 2*jguiscale()
     + border_width.r;
 
@@ -397,7 +394,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
 
   int h =
     + border_width.t
-    + text_height(getFont())
+    + getFont()->height()
     + border_width.b;
 
   ev.setPreferredSize(w, h);
@@ -441,7 +438,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
       utf8_end);
 
   for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
-    w = CHARACTER_LENGTH(getFont(), *utf8_it);
+    w = getFont()->charWidth(*utf8_it);
     if (x+w >= getBounds().x2()-this->border_width.r)
       break;
     if ((mx >= x) && (mx < x+w)) {
@@ -641,7 +638,7 @@ void Entry::executeCmd(EntryCmd::Type cmd, int unicodeChar, bool shift_pressed)
 }
 
 #define IS_WORD_CHAR(ch)                                \
-  (!((!ch) || (uisspace(ch)) ||                         \
+  (!((!ch) || (std::isspace(ch)) ||                     \
     ((ch) == '/') || ((ch) == OTHER_PATH_SEPARATOR)))
 
 void Entry::forwardWord()
@@ -690,7 +687,7 @@ void Entry::backwardWord()
 
 int Entry::getAvailableTextLength()
 {
-  return getClientChildrenBounds().w / ji_font_char_len(getFont(), 'w');
+  return getClientChildrenBounds().w / getFont()->charWidth('w');
 }
 
 } // namespace ui

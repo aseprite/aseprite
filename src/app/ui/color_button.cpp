@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
@@ -181,8 +179,8 @@ void ColorButton::onPaint(PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   gfx::Rect rc = getClientBounds();
 
-  ui::Color bg = getBgColor();
-  if (is_transparent(bg))
+  gfx::Color bg = getBgColor();
+  if (gfx::is_transparent(bg))
     bg = theme->getColor(ThemeColor::Face);
   g->fillRect(bg, rc);
 
@@ -207,13 +205,13 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   setTextQuiet(str.c_str());
 
-  ui::Color textcolor = ui::rgba(255, 255, 255);
+  gfx::Color textcolor = gfx::rgba(255, 255, 255);
   if (color.isValid())
-    textcolor = color_utils::blackandwhite_neg(ui::rgba(color.getRed(), color.getGreen(), color.getBlue()));
+    textcolor = color_utils::blackandwhite_neg(gfx::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
   gfx::Rect text;
   getTextIconInfo(NULL, &text);
-  g->drawString(getText(), textcolor, ColorNone, false, text.getOrigin());
+  g->drawUIString(getText(), textcolor, gfx::ColorNone, text.getOrigin());
 }
 
 void ColorButton::onClick(Event& ev)

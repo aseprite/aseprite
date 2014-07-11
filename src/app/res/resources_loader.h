@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,50 +16,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_PALETTES_LOADER_H_INCLUDED
-#define APP_PALETTES_LOADER_H_INCLUDED
+#ifndef APP_RES_RESOURCES_LOADER_H_INCLUDED
+#define APP_RES_RESOURCES_LOADER_H_INCLUDED
 #pragma once
 
 #include "base/concurrent_queue.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 
-#include <string>
-
-namespace raster {
-  class Palette;
-}
-
 namespace app {
 
-  class PalettesLoader {
+  class Resource;
+  class ResourcesLoaderDelegate;
+
+  class ResourcesLoader {
   public:
-    PalettesLoader();
-    ~PalettesLoader();
+    ResourcesLoader(ResourcesLoaderDelegate* delegate);
+    ~ResourcesLoader();
 
     void cancel();
     bool done();
     bool isDone() const { return m_done; }
 
-    bool next(base::UniquePtr<raster::Palette>& palette, std::string& name);
-
-    static std::string palettesLocation();
+    bool next(base::UniquePtr<Resource>& resource);
 
   private:
-    void threadLoadPalettes();
+    void threadLoadResources();
 
-    struct Item {
-      raster::Palette* palette;
-      std::string name;
-      Item() : palette(NULL) {
-      }
-      Item(raster::Palette* palette, const std::string& name)
-        : palette(palette), name(name) {
-      }
-    };
+    typedef base::concurrent_queue<Resource*> Queue;
 
-    typedef base::concurrent_queue<Item> Queue;
-
+    ResourcesLoaderDelegate* m_delegate;
     bool m_done;
     bool m_cancel;
     Queue m_queue;

@@ -41,6 +41,7 @@ namespace app {
     ~UISettingsImpl();
 
     // ISettings implementation
+    bool getZoomWithScrollWheel() OVERRIDE;
     bool getShowSpriteEditorScrollbars() OVERRIDE;
     bool getGrabAlpha() OVERRIDE;
     app::Color getFgColor() OVERRIDE;
@@ -48,6 +49,7 @@ namespace app {
     tools::Tool* getCurrentTool() OVERRIDE;
     app::ColorSwatches* getColorSwatches() OVERRIDE;
 
+    void setZoomWithScrollWheel(bool state) OVERRIDE;
     void setShowSpriteEditorScrollbars(bool state) OVERRIDE;
     void setGrabAlpha(bool state) OVERRIDE;
     void setFgColor(const app::Color& color) OVERRIDE;
@@ -76,6 +78,7 @@ namespace app {
     app::ColorSwatches* m_colorSwatches;
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
+    bool m_zoomWithScrollWheel;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
   };

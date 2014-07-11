@@ -47,8 +47,6 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace ui;
@@ -119,6 +117,7 @@ public:
                         ((getInk()->isSelection() ||
                           getInk()->isEyedropper() ||
                           getInk()->isScrollMovement() ||
+                          getInk()->isSlice() ||
                           getInk()->isZoom()) ? undo::DoesntModifyDocument:
                                                 undo::ModifyDocument))
     , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
