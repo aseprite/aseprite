@@ -24,6 +24,7 @@ because they don't depend on any other component.
 
   * [cfg](cfg/) (base, allegro): Library to handle configuration/settings/user preferences.
   * [doc](doc/) (base, gfx): Document model library (business layer, replacement of `raster` library).
+  * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [net](net/) (base): Networking library to send HTTP requests.
   * [raster](raster/) (base, gfx): Library to handle graphics entities like sprites, images, frames.
   * [she](she/) (base, gfx, allegro): A wrapper for the Allegro library.

@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2013  David Capello
+# Copyright (C) 2001-2014  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -19,6 +19,9 @@ set(aseprite_libraries app-lib css-lib doc-lib raster-lib
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
+
+# Directory where generated files by "gen" utility will stay.
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Third-party libraries
 
@@ -161,10 +164,11 @@ endif()
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)
+add_subdirectory(gen)
 add_subdirectory(gfx)
-add_subdirectory(css)
 add_subdirectory(raster)
 add_subdirectory(scripting)
 add_subdirectory(she)
@@ -208,6 +212,29 @@ if(EXISTS ../docs/quickref.pdf)
   install(FILES ../docs/quickref.pdf
     DESTINATION share/aseprite/docs/quickref.pdf)
 endif()
+
+######################################################################
+# Generate source files from widget XML files
+
+file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
+foreach(widget_file ${widget_files})
+  get_filename_component(widget_name ${widget_file} NAME_WE)
+  set(target_name generated_${widget_name})
+  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
+
+  add_custom_command(
+    OUTPUT ${output_fn}
+    COMMAND gen/gen --input ${widget_file} --widgetid ${widget_name} > ${output_fn}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    MAIN_DEPENDENCY ${widget_file}
+    DEPENDS gen)
+
+  add_custom_target(${target_name} DEPENDS ${output_fn})
+
+  set_source_files_properties(${target_name} PROPERTIES GENERATED TRUE)
+
+  add_dependencies(app-lib ${target_name})
+endforeach()
 
 ######################################################################
 # Tests

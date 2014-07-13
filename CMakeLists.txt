@@ -1,15 +1,18 @@
-# ASEPRITE
-# Copyright (C) 2001-2013  David Capello
+# Aseprite
+# Copyright (C) 2001-2014  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
 # CMake setup
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-# CMP0003: Libraries linked via full path no longer produce linker search paths.
-#if(COMMAND cmake_policy)
-#    cmake_policy(SET CMP0003 NEW)
-#endif(COMMAND cmake_policy)
+if(COMMAND cmake_policy)
+  # CMP0003: Libraries linked via full path no longer produce linker search paths.
+  #cmake_policy(SET CMP0003 NEW)
+
+  # CMP0046: Old behavior to silently ignore non-existent dependencies.
+  cmake_policy(SET CMP0046 OLD)
+endif(COMMAND cmake_policy)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
