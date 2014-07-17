@@ -442,6 +442,8 @@ private:
   bool m_lockChange;
 };
 
+#if 0 // TODO for v1.1 to avoid changing the UI
+
 class ContextBar::FreehandAlgorithmField : public Button
                                          , public IButtonIcon
 {
@@ -582,6 +584,51 @@ private:
   TooltipManager* m_tooltipManager;
 };
 
+#else
+
+class ContextBar::FreehandAlgorithmField : public CheckBox
+{
+public:
+  FreehandAlgorithmField() : CheckBox("Pixel-perfect") {
+    setup_mini_font(this);
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    // Do nothing
+  }
+
+  void setFreehandAlgorithm(FreehandAlgorithm algo) {
+    switch (algo) {
+      case kDefaultFreehandAlgorithm:
+        setSelected(false);
+        break;
+      case kPixelPerfectFreehandAlgorithm:
+        setSelected(true);
+        break;
+      case kDotsFreehandAlgorithm:
+        // Not available
+        break;
+    }
+  }
+
+protected:
+
+  void onClick(Event& ev) OVERRIDE {
+    CheckBox::onClick(ev);
+
+    ISettings* settings = UIContext::instance()->getSettings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setFreehandAlgorithm(isSelected() ?
+        kPixelPerfectFreehandAlgorithm:
+        kDefaultFreehandAlgorithm);
+
+    releaseFocus();
+  }
+};
+
+#endif
+
 class ContextBar::SelectionModeField : public ButtonSet
 {
 public:
@@ -691,14 +738,16 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
-  Label* freehandLabel;
   addChild(m_freehandBox = new HBox());
+#if 0                           // TODO for v1.1
+  Label* freehandLabel;
   m_freehandBox->addChild(freehandLabel = new Label("Freehand:"));
+  setup_mini_font(freehandLabel);
+#endif
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   setup_mini_font(m_toleranceLabel);
   setup_mini_font(m_opacityLabel);
-  setup_mini_font(freehandLabel);
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
