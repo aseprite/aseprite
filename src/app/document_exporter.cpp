@@ -25,6 +25,7 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/file/file.h"
+#include "app/ui_context.h"
 #include "base/compiler_specific.h"
 #include "base/path.h"
 #include "base/unique_ptr.h"
@@ -178,7 +179,7 @@ void DocumentExporter::exportSheet()
   // Save the image files.
   if (!m_textureFilename.empty()) {
     textureDocument->setFilename(m_textureFilename.c_str());
-    save_document(textureDocument.get());
+    save_document(UIContext::instance(), textureDocument.get());
   }
 }
 

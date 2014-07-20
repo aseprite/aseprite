@@ -46,9 +46,9 @@ Palette::Palette(FrameNumber frame, int ncolors)
 
   m_frame = frame;
   m_colors.resize(ncolors);
-  m_modifications = 0;
 
-  std::fill(m_colors.begin(), m_colors.end(), rgba(0, 0, 0, 255));
+  makeBlack();
+  m_modifications = 0;
 }
 
 Palette::Palette(const Palette& palette)

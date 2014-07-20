@@ -22,85 +22,52 @@
 
 #include "raster/rgbmap.h"
 
-#include "raster/conversion_alleg.h"
+#include "raster/color_scales.h"
 #include "raster/palette.h"
-
-#include <allegro.h>
 
 namespace raster {
 
-class RgbMapImpl {
-public:
-  RgbMapImpl() {
-    m_allegMap = new RGB_MAP;
-    m_palette = NULL;
-    m_modifications = 0;
-  }
-
-  ~RgbMapImpl() {
-    delete m_allegMap;
-  }
-
-  bool match(const Palette* palette) const {
-    return (m_palette == palette &&
-            m_modifications == palette->getModifications());
-  }
-
-  void regenerate(const Palette* palette) {
-    m_palette = palette;
-    m_modifications = palette->getModifications();
-
-    PALETTE allegPal;
-    convert_palette_to_allegro(palette, allegPal);
-    create_rgb_table(m_allegMap, allegPal, NULL);
-
-    for (int r=0; r<32; ++r)
-      for (int g=0; g<32; ++g)
-        for (int b=0; b<32; ++b) {
-          if (m_allegMap->data[r][g][b] >= palette->size())
-            m_allegMap->data[r][g][b] = palette->findBestfit(_rgb_scale_5[r],
-                                                             _rgb_scale_5[g],
-                                                             _rgb_scale_5[b]);
-        }
-  }
-
-  int mapColor(int r, int g, int b) const {
-    ASSERT(r >= 0 && r < 256);
-    ASSERT(g >= 0 && g < 256);
-    ASSERT(b >= 0 && b < 256);
-    return m_allegMap->data[r>>3][g>>3][b>>3];
-  }
-
-private:
-  RGB_MAP* m_allegMap;
-  const Palette* m_palette;
-  int m_modifications;
-};
+#define MAPSIZE 32*32*32
 
 RgbMap::RgbMap()
   : Object(OBJECT_RGBMAP)
+  , m_map(MAPSIZE)
+  , m_palette(NULL)
+  , m_modifications(0)
 {
-  m_impl = new RgbMapImpl;
-}
-
-RgbMap::~RgbMap()
-{
-  delete m_impl;
 }
 
 bool RgbMap::match(const Palette* palette) const
 {
-  return m_impl->match(palette);
+  return (m_palette == palette &&
+    m_modifications == palette->getModifications());
 }
 
-void RgbMap::regenerate(const Palette* palette)
+void RgbMap::regenerate(const Palette* palette, int mask_index)
 {
-  m_impl->regenerate(palette);
+  m_palette = palette;
+  m_modifications = palette->getModifications();
+
+  int i = 0;
+  for (int r=0; r<32; ++r) {
+    for (int g=0; g<32; ++g) {
+      for (int b=0; b<32; ++b) {
+        m_map[i++] =
+          palette->findBestfit(
+            scale_5bits_to_8bits(r),
+            scale_5bits_to_8bits(g),
+            scale_5bits_to_8bits(b), mask_index);
+      }
+    }
+  }
 }
 
 int RgbMap::mapColor(int r, int g, int b) const
 {
-  return m_impl->mapColor(r, g, b);
+  ASSERT(r >= 0 && r < 256);
+  ASSERT(g >= 0 && g < 256);
+  ASSERT(b >= 0 && b < 256);
+  return m_map[((r>>3) << 10) + ((g>>3) << 5) + (b>>3)];
 }
 
 } // namespace raster

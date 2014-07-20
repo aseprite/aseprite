@@ -126,7 +126,7 @@ void OpenFileCommand::onExecute(Context* context)
   }
 
   if (!m_filename.empty()) {
-    base::UniquePtr<FileOp> fop(fop_to_load_document(m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
+    base::UniquePtr<FileOp> fop(fop_to_load_document(context, m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
     bool unrecent = false;
 
     if (fop) {

@@ -23,6 +23,8 @@
 #include "base/disable_copying.h"
 #include "raster/object.h"
 
+#include <vector>
+
 namespace raster {
 
   class Palette;
@@ -30,15 +32,16 @@ namespace raster {
   class RgbMap : public Object {
   public:
     RgbMap();
-    virtual ~RgbMap();
 
     bool match(const Palette* palette) const;
-    void regenerate(const Palette* palette);
+    void regenerate(const Palette* palette, int mask_index);
 
     int mapColor(int r, int g, int b) const;
 
   private:
-    class RgbMapImpl* m_impl;
+    std::vector<uint8_t> m_map;
+    const Palette* m_palette;
+    int m_modifications;
 
     DISABLE_COPYING(RgbMap);
   };

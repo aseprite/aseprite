@@ -45,17 +45,22 @@ namespace quantization {
 using namespace gfx;
 
 // Converts a RGB image to indexed with ordered dithering method.
-static Image* ordered_dithering(const Image* src_image,
-                                int offsetx, int offsety,
-                                const RgbMap* rgbmap,
-                                const Palette* palette);
+static Image* ordered_dithering(
+  const Image* src_image,
+  Image* dst_image,
+  int offsetx, int offsety,
+  const RgbMap* rgbmap,
+  const Palette* palette);
 
-static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer);
-
-Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
+Palette* create_palette_from_rgb(
+  const Sprite* sprite,
+  FrameNumber frameNumber,
+  Palette* palette)
 {
+  if (!palette)
+    palette = new Palette(FrameNumber(0), 256);
+
   bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
-  Palette* palette = new Palette(FrameNumber(0), 256);
   Image* flat_image;
 
   ImagesCollector images(sprite->getFolder(), // All layers
@@ -78,27 +83,31 @@ Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
   image_array[c++] = flat_image; // The 'flat_image'
 
   // Generate an optimized palette for all images
-  create_palette_from_bitmaps(image_array, palette, has_background_layer);
+  create_palette_from_images(image_array, palette, has_background_layer);
 
   delete flat_image;
   return palette;
 }
 
-Image* convert_pixel_format(const Image* image,
-                            PixelFormat pixelFormat,
-                            DitheringMethod ditheringMethod,
-                            const RgbMap* rgbmap,
-                            const Palette* palette,
-                            bool is_background_layer)
+Image* convert_pixel_format(
+  const Image* image,
+  Image* new_image,
+  PixelFormat pixelFormat,
+  DitheringMethod ditheringMethod,
+  const RgbMap* rgbmap,
+  const Palette* palette,
+  bool is_background)
 {
+  if (!new_image)
+    new_image = Image::create(pixelFormat, image->getWidth(), image->getHeight());
+
   // RGB -> Indexed with ordered dithering
   if (image->getPixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringMethod == DITHERING_ORDERED) {
-    return ordered_dithering(image, 0, 0, rgbmap, palette);
+    return ordered_dithering(image, new_image, 0, 0, rgbmap, palette);
   }
 
-  Image* new_image = Image::create(pixelFormat, image->getWidth(), image->getHeight());
   color_t c;
   int r, g, b;
 
@@ -223,7 +232,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->getMaskColor())
               *dst_it = 0;
             else
               *dst_it = rgba(rgba_getr(palette->getEntry(c)),
@@ -243,7 +252,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->getMaskColor())
               *dst_it = 0;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -268,7 +277,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->getMaskColor())
               *dst_it = dstMaskColor;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -321,23 +330,20 @@ static int pattern[8][8] = {
                                  4 * ((g1)-(g2)) * ((g1)-(g2)) +        \
                                  2 * ((b1)-(b2)) * ((b1)-(b2)))
 
-static Image* ordered_dithering(const Image* src_image,
-                                int offsetx, int offsety,
-                                const RgbMap* rgbmap,
-                                const Palette* palette)
+static Image* ordered_dithering(
+  const Image* src_image,
+  Image* dst_image,
+  int offsetx, int offsety,
+  const RgbMap* rgbmap,
+  const Palette* palette)
 {
   int oppr, oppg, oppb, oppnrcm;
-  Image *dst_image;
   int dither_const;
   int nr, ng, nb;
   int r, g, b, a;
   int nearestcm;
   int x, y;
   color_t c;
-
-  dst_image = Image::create(IMAGE_INDEXED, src_image->getWidth(), src_image->getHeight());
-  if (!dst_image)
-    return NULL;
 
   const LockImageBits<RgbTraits> src_bits(src_image);
   LockImageBits<IndexedTraits> dst_bits(dst_image);
@@ -405,7 +411,7 @@ static Image* ordered_dithering(const Image* src_image,
 // Creation of optimized palette for RGB images
 // by David Capello
 
-static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
 {
   quantization::ColorHistogram<5, 6, 5> histogram;
   uint32_t color;
@@ -418,16 +424,45 @@ static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palet
 
   for (int i=0; i<(int)images.size(); ++i) {
     const Image* image = images[i];
-    const LockImageBits<RgbTraits> bits(image);
-    LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
 
-    for (; it != end; ++it) {
-      color = *it;
+    switch (image->getPixelFormat()) {
 
-      if (rgba_geta(color) > 0) {
-        color |= rgba(0, 0, 0, 255);
-        histogram.addSamples(color, 1);
-      }
+      case IMAGE_RGB:
+        {
+          const LockImageBits<RgbTraits> bits(image);
+          LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+          for (; it != end; ++it) {
+            color = *it;
+
+            if (rgba_geta(color) > 0) {
+              color |= rgba(0, 0, 0, 255);
+              histogram.addSamples(color, 1);
+            }
+          }
+        }
+        break;
+
+      case IMAGE_GRAYSCALE:
+        {
+          const LockImageBits<RgbTraits> bits(image);
+          LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+          for (; it != end; ++it) {
+            color = *it;
+
+            if (graya_geta(color) > 0) {
+              color = graya_getv(color);
+              histogram.addSamples(rgba(color, color, color, 255), 1);
+            }
+          }
+        }
+        break;
+
+      case IMAGE_INDEXED:
+        ASSERT(false);
+        break;
+
     }
   }
 

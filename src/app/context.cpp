@@ -32,6 +32,11 @@
 
 namespace app {
 
+Context::Context()
+  : m_settings(NULL)
+{
+}
+
 Context::Context(ISettings* settings)
   : m_settings(settings)
 {
@@ -157,6 +162,11 @@ void Context::onAddDocument(Document* document)
 void Context::onRemoveDocument(Document* document)
 {
   m_observers.notifyRemoveDocument(this, document);
+}
+
+void Context::onGetActiveLocation(DocumentLocation* location) const
+{
+  // Without active location
 }
 
 } // namespace app

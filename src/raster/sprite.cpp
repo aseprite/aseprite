@@ -278,13 +278,16 @@ void Sprite::deletePalette(Palette* pal)
 
 RgbMap* Sprite::getRgbMap(FrameNumber frame)
 {
+  int mask_color = (getBackgroundLayer() ? -1: getTransparentColor());
+
   if (m_rgbMap == NULL) {
     m_rgbMap = new RgbMap();
-    m_rgbMap->regenerate(getPalette(frame));
+    m_rgbMap->regenerate(getPalette(frame), mask_color);
   }
   else if (!m_rgbMap->match(getPalette(frame))) {
-    m_rgbMap->regenerate(getPalette(frame));
+    m_rgbMap->regenerate(getPalette(frame), mask_color);
   }
+
   return m_rgbMap;
 }
 

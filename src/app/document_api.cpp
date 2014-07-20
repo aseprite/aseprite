@@ -187,7 +187,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
     }
 
     new_image = quantization::convert_pixel_format
-      (old_image, newFormat, dithering_method, rgbmap,
+      (old_image, NULL, newFormat, dithering_method, rgbmap,
        sprite->getPalette(frame),
        is_image_from_background);
 

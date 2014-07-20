@@ -140,6 +140,7 @@ namespace app {
     // Loaded options from file
 
     void setFormatOptions(const SharedPtr<FormatOptions>& format_options);
+    SharedPtr<FormatOptions> getFormatOptions() { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries

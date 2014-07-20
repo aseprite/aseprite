@@ -81,9 +81,9 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(Document* document, bool mark_as_saved)
+static void save_document_in_background(Context* context, Document* document, bool mark_as_saved)
 {
-  base::UniquePtr<FileOp> fop(fop_to_save_document(document));
+  base::UniquePtr<FileOp> fop(fop_to_save_document(context, document));
   if (!fop)
     return;
 
@@ -192,7 +192,7 @@ protected:
       m_selectedFilename = filename;
 
       // Save the document
-      save_document_in_background(documentWriter, markAsSaved);
+      save_document_in_background(writer.context(), documentWriter, markAsSaved);
 
       if (documentWriter->isModified())
         documentWriter->setFilename(oldFilename);
@@ -251,7 +251,7 @@ void SaveFileCommand::onExecute(Context* context)
     if (!confirmReadonly(documentWriter->getFilename()))
       return;
 
-    save_document_in_background(documentWriter, true);
+    save_document_in_background(context, documentWriter, true);
     update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the

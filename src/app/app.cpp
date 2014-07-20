@@ -214,7 +214,7 @@ int App::run()
            end = m_files.end();
          it != end; ++it) {
       // Load the sprite
-      Document* document = load_document(it->c_str());
+      Document* document = load_document(context, it->c_str());
       if (!document) {
         if (!isGui())
           console.printf("Error loading file \"%s\"\n", it->c_str());

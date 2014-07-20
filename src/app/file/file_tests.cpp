@@ -19,6 +19,7 @@
 #include "tests/test.h"
 
 #include "app/app.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
@@ -37,6 +38,7 @@ TEST(File, SeveralSizes)
   // Register all possible image formats.
   FileFormatsManager::instance().registerAllFormats();
   std::vector<char> fn(256);
+  app::Context context;
 
   for (int w=10; w<=10+503*2; w+=503) {
     for (int h=10; h<=10+503*2; h+=503) {
@@ -61,11 +63,11 @@ TEST(File, SeveralSizes)
           }
         }
 
-        save_document(doc);
+        save_document(&context, doc);
       }
 
       {
-        base::UniquePtr<Document> doc(load_document(&fn[0]));
+        base::UniquePtr<Document> doc(load_document(&context, &fn[0]));
         ASSERT_EQ(w, doc->getSprite()->getWidth());
         ASSERT_EQ(h, doc->getSprite()->getHeight());
 

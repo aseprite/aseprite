@@ -22,8 +22,8 @@
 
 #include "app/file/file.h"
 
-#include "app/app.h"
 #include "app/console.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
@@ -48,7 +48,7 @@ namespace app {
 
 using namespace base;
 
-static FileOp* fop_new(FileOpType type);
+static FileOp* fop_new(FileOpType type, Context* context);
 static void fop_prepare_for_sequence(FileOp* fop);
 
 static FileFormat* get_fileformat(const char* extension);
@@ -90,12 +90,12 @@ void get_writable_extensions(char* buf, int size)
   }
 }
 
-Document* load_document(const char* filename)
+Document* load_document(Context* context, const char* filename)
 {
   Document* document;
 
   /* TODO add a option to configure what to do with the sequence */
-  FileOp *fop = fop_to_load_document(filename, FILE_LOAD_SEQUENCE_NONE);
+  FileOp *fop = fop_to_load_document(context, filename, FILE_LOAD_SEQUENCE_NONE);
   if (!fop)
     return NULL;
 
@@ -116,10 +116,10 @@ Document* load_document(const char* filename)
   return document;
 }
 
-int save_document(Document* document)
+int save_document(Context* context, Document* document)
 {
   int ret;
-  FileOp* fop = fop_to_save_document(document);
+  FileOp* fop = fop_to_save_document(context, document);
   if (!fop)
     return -1;
 
@@ -138,11 +138,11 @@ int save_document(Document* document)
   return ret;
 }
 
-FileOp* fop_to_load_document(const char* filename, int flags)
+FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
 {
   FileOp *fop;
 
-  fop = fop_new(FileOpLoad);
+  fop = fop_new(FileOpLoad, context);
   if (!fop)
     return NULL;
 
@@ -199,8 +199,7 @@ FileOp* fop_to_load_document(const char* filename, int flags)
       }
 
       /* TODO add a better dialog to edit file-names */
-      if ((flags & FILE_LOAD_SEQUENCE_ASK) &&
-          App::instance()->isGui()) {
+      if ((flags & FILE_LOAD_SEQUENCE_ASK) && context->isUiAvailable()) {
         /* really want load all files? */
         if ((fop->seq.filename_list.size() > 1) &&
             (ui::Alert::show("Notice"
@@ -231,12 +230,12 @@ done:;
   return fop;
 }
 
-FileOp* fop_to_save_document(Document* document)
+FileOp* fop_to_save_document(Context* context, Document* document)
 {
   FileOp *fop;
   bool fatal;
 
-  fop = fop_new(FileOpSave);
+  fop = fop_new(FileOpSave, context);
   if (!fop)
     return NULL;
 
@@ -323,7 +322,7 @@ FileOp* fop_to_save_document(Document* document)
   // Show the confirmation alert
   if (!warnings.empty()) {
     // Interative
-    if (App::instance()->isGui()) {
+    if (context->isUiAvailable()) {
       int ret;
 
       if (fatal)
@@ -663,8 +662,9 @@ void fop_post_load(FileOp* fop)
         fop->document->getSprite()->getPalettes().size() <= 1 &&
         fop->document->getSprite()->getPalette(FrameNumber(0))->isBlack()) {
       SharedPtr<Palette> palette
-        (quantization::create_palette_from_rgb(fop->document->getSprite(),
-                                               FrameNumber(0)));
+        (quantization::create_palette_from_rgb(
+          fop->document->getSprite(),
+          FrameNumber(0), NULL));
 
       fop->document->getSprite()->resetPalettes();
       fop->document->getSprite()->setPalette(palette, false);
@@ -802,13 +802,14 @@ bool fop_is_stop(FileOp *fop)
   return stop;
 }
 
-static FileOp* fop_new(FileOpType type)
+static FileOp* fop_new(FileOpType type, Context* context)
 {
   FileOp* fop = new FileOp;
 
   fop->type = type;
   fop->format = NULL;
   fop->format_data = NULL;
+  fop->context = context;
   fop->document = NULL;
 
   fop->mutex = new base::mutex();

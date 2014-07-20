@@ -22,6 +22,8 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/context.h"
+#include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
@@ -358,14 +360,20 @@ bool JpegFormat::onSave(FileOp* fop)
 // Shows the JPEG configuration dialog.
 SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
-  SharedPtr<JpegOptions> jpeg_options(new JpegOptions());
+  SharedPtr<JpegOptions> jpeg_options;
+  if (fop->document->getFormatOptions() != NULL)
+    jpeg_options = SharedPtr<JpegOptions>(fop->document->getFormatOptions());
+
+  if (!jpeg_options)
+    jpeg_options.reset(new JpegOptions);
+
+  // Non-interactive mode
+  if (!fop->context->isUiAvailable())
+    return jpeg_options;
+
   try {
     // Configuration parameters
     jpeg_options->quality = get_config_float("JPEG", "Quality", 1.0f);
-
-    // Interactive mode
-    if (!App::instance()->isGui())
-      return jpeg_options;
 
     // Load the window to ask to the user the JPEG options he wants.
     UniquePtr<ui::Window> window(app::load_widget<ui::Window>("jpeg_options.xml", "jpeg_options"));

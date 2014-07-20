@@ -23,6 +23,7 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
@@ -190,9 +191,12 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
       getWorkerStatus(fileitem, progress) != WithoutWorker)
     return;
 
-  FileOp* fop = fop_to_load_document(fileitem->getFileName().c_str(),
-                                     FILE_LOAD_SEQUENCE_NONE |
-                                     FILE_LOAD_ONE_FRAME);
+  Context tmpContext;
+  FileOp* fop = fop_to_load_document(&tmpContext,
+    fileitem->getFileName().c_str(),
+    FILE_LOAD_SEQUENCE_NONE |
+    FILE_LOAD_ONE_FRAME);
+
   if (!fop)
     return;
 

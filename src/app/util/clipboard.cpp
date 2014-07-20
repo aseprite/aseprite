@@ -204,7 +204,7 @@ void clipboard::paste()
     RgbMap* dst_rgbmap = dst_sprite->getRgbMap(editor->getFrame());
 
     src_image = quantization::convert_pixel_format(
-      clipboard_image, dst_sprite->getPixelFormat(),
+      clipboard_image, NULL, dst_sprite->getPixelFormat(),
       DITHERING_NONE, dst_rgbmap, clipboard_palette,
       false);
   }

@@ -587,7 +587,8 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    palette = quantization::create_palette_from_rgb(sprite, reader.frame());
+    palette = quantization::create_palette_from_rgb(
+      sprite, reader.frame(), NULL);
   }
 
   setNewPalette(palette, "Quantize Palette");

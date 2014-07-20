@@ -44,6 +44,9 @@ namespace app {
 
   class Context {
   public:
+    Context();
+    // The "settings" are deleted automatically in the ~Context destructor
+    Context(ISettings* settings);
     virtual ~Context();
 
     virtual bool isUiAvailable() const     { return false; }
@@ -76,19 +79,11 @@ namespace app {
     void removeObserver(ContextObserver* observer);
 
   protected:
-
-    // The "settings" are deleted automatically in the ~Context destructor
-    Context(ISettings* settings);
-
     virtual void onAddDocument(Document* document);
     virtual void onRemoveDocument(Document* document);
-    virtual void onGetActiveLocation(DocumentLocation* location) const = 0;
+    virtual void onGetActiveLocation(DocumentLocation* location) const;
 
   private:
-
-    // Without default constructor
-    Context();
-
     // List of all documents.
     Documents m_documents;
 
