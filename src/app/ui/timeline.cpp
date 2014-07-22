@@ -244,7 +244,7 @@ void Timeline::detachDocument()
 
 bool Timeline::isMovingCel() const
 {
-  return (m_state == Timeline::STATE_MOVING_RANGE &&
+  return (m_state == STATE_MOVING_RANGE &&
           m_range.type() == Range::kCels);
 }
 
@@ -539,9 +539,11 @@ bool Timeline::onProcessMessage(Message* msg)
 
       // Set the new 'hot' thing.
       hotThis(hot_part, hot_layer, hot_frame);
+      updateDropRange(mousePos);
 
       if (hasCapture()) {
         switch (m_state) {
+
           case STATE_SELECTING_LAYERS: {
             if (m_layer != m_layers[hot_layer]) {
               m_range.endRange(hot_layer, m_frame);
@@ -566,7 +568,8 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
         }
       }
-      updateStatusBar();
+
+      updateStatusBar(msg);
       return true;
     }
 
@@ -712,7 +715,7 @@ bool Timeline::onProcessMessage(Message* msg)
         }
 
         if (mouseMsg->left() && m_state == STATE_MOVING_RANGE) {
-          dropRange(mouseMsg->ctrlPressed() ?
+          dropRange(isCopyKeyPressed(mouseMsg) ?
             Timeline::kCopy:
             Timeline::kMove);
         }
@@ -731,7 +734,7 @@ bool Timeline::onProcessMessage(Message* msg)
                   mouseMsg->position().y);
 
         releaseMouse();
-        updateStatusBar();
+        updateStatusBar(msg);
         return true;
       }
       break;
@@ -914,6 +917,13 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     drawPaddings(g);
     drawLoopRange(g);
     drawRangeOutline(g);
+
+#if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
+    {
+      g->drawRect(gfx::rgba(255, 255, 0), getRangeBounds(m_range));
+      g->drawRect(gfx::rgba(255, 0, 0), getRangeBounds(m_dropRange));
+    }
+#endif
   }
   catch (const LockedDocumentException&) {
     noDoc = true;
@@ -1288,33 +1298,48 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   gfx::Rect bounds = getPartBounds(A_PART_RANGE_OUTLINE);
   m_timelineRangeOutlineStyle->paint(g, bounds, NULL, state);
 
-  Range drop = getDropRange();
+  Range drop = m_dropRange;
+  gfx::Rect dropBounds = getRangeBounds(drop);
+
   switch (drop.type()) {
 
-    case Range::kCels:
-      bounds =
-        getPartBounds(A_PART_CEL, drop.layerBegin(), drop.frameBegin()).createUnion(
-          getPartBounds(A_PART_CEL, drop.layerEnd(), drop.frameEnd()))
-        .enlarge(OUTLINE_WIDTH);
-
-      m_timelineRangeOutlineStyle->paint(g, bounds, NULL, Style::active());
+    case Range::kCels: {
+      gfx::Rect dropBounds = getRangeBounds(drop).enlarge(OUTLINE_WIDTH);
+      m_timelineRangeOutlineStyle->paint(g, dropBounds, NULL, Style::active());
       break;
+    }
 
-    case Range::kFrames:
-      bounds = getPartBounds(A_PART_HEADER_FRAME, 0, drop.frameBegin());
-      bounds.w = 5 * jguiscale(); // TODO get width from the skin info
-      bounds.x -= bounds.w/2;
+    case Range::kFrames: {
+      int w = 5 * jguiscale(); // TODO get width from the skin info
 
-      m_timelineDropFrameDecoStyle->paint(g, bounds, NULL, Style::State());
+      if (m_dropTarget.hhit == DropTarget::Before)
+        dropBounds.x -= w/2;
+      else if (drop == m_range)
+        dropBounds.x = dropBounds.x + getRangeBounds(m_range).w - w/2;
+      else
+        dropBounds.x = dropBounds.x + dropBounds.w - w/2;
+
+      dropBounds.w = w;
+
+      m_timelineDropFrameDecoStyle->paint(g, dropBounds, NULL, Style::State());
       break;
+    }
 
-    case Range::kLayers:
-      bounds = getPartBounds(A_PART_LAYER, drop.layerBegin());
-      bounds.h = 5 * jguiscale(); // TODO get height from the skin info
-      bounds.y -= bounds.h/2;
+    case Range::kLayers: {
+      int h = 5 * jguiscale(); // TODO get height from the skin info
 
-      m_timelineDropLayerDecoStyle->paint(g, bounds, NULL, Style::State());
+      if (m_dropTarget.vhit == DropTarget::Top)
+        dropBounds.y -= h/2;
+      else if (drop == m_range)
+        dropBounds.y = dropBounds.y + getRangeBounds(m_range).h - h/2;
+      else
+        dropBounds.y = dropBounds.y + dropBounds.h - h/2;
+
+      dropBounds.h = h;
+
+      m_timelineDropLayerDecoStyle->paint(g, dropBounds, NULL, Style::State());
       break;
+    }
   }
 }
 
@@ -1486,22 +1511,7 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
       break;
 
     case A_PART_RANGE_OUTLINE: {
-      gfx::Rect rc;
-      switch (m_range.type()) {
-        case Range::kNone: break; // Return empty rectangle
-        case Range::kCels:
-          rc = getPartBounds(A_PART_CEL, m_range.layerBegin(), m_range.frameBegin()).createUnion(
-            getPartBounds(A_PART_CEL, m_range.layerEnd(), m_range.frameEnd()));
-          break;
-        case Range::kFrames:
-          rc = getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameBegin()).createUnion(
-            getPartBounds(A_PART_HEADER_FRAME, 0, m_range.frameEnd()));
-          break;
-        case Range::kLayers:
-          rc = getPartBounds(A_PART_LAYER, m_range.layerBegin()).createUnion(
-              getPartBounds(A_PART_LAYER, m_range.layerEnd()));
-          break;
-      }
+      gfx::Rect rc = getRangeBounds(m_range);
       int s = OUTLINE_WIDTH;
       rc.enlarge(s);
       if (rc.x < bounds.x) rc.offset(s, 0).inflate(-s, 0);
@@ -1511,6 +1521,27 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
   }
 
   return gfx::Rect();
+}
+
+gfx::Rect Timeline::getRangeBounds(const Range& range) const
+{
+  gfx::Rect rc;
+  switch (range.type()) {
+    case Range::kNone: break; // Return empty rectangle
+    case Range::kCels:
+      rc = getPartBounds(A_PART_CEL, range.layerBegin(), range.frameBegin()).createUnion(
+        getPartBounds(A_PART_CEL, range.layerEnd(), range.frameEnd()));
+      break;
+    case Range::kFrames:
+      rc = getPartBounds(A_PART_HEADER_FRAME, 0, range.frameBegin()).createUnion(
+        getPartBounds(A_PART_HEADER_FRAME, 0, range.frameEnd()));
+      break;
+    case Range::kLayers:
+      rc = getPartBounds(A_PART_LAYER, range.layerBegin()).createUnion(
+        getPartBounds(A_PART_LAYER, range.layerEnd()));
+      break;
+  }
+  return rc;
 }
 
 void Timeline::invalidatePart(int part, int layer, FrameNumber frame)
@@ -1561,92 +1592,129 @@ void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
     m_hot_part = hot_part;
     m_hot_layer = hot_layer;
     m_hot_frame = hot_frame;
-
-    updateStatusBar();
   }
 }
 
-void Timeline::updateStatusBar()
+void Timeline::updateStatusBar(ui::Message* msg)
 {
-  Layer* layer = ((m_hot_layer >= 0
-      && m_hot_layer < (int)m_layers.size()) ? m_layers[m_hot_layer]: NULL);
+  StatusBar* sb = StatusBar::instance();
 
-  switch (m_hot_part) {
+  if (m_state == STATE_MOVING_RANGE) {
+    const char* verb = isCopyKeyPressed(msg) ? "Copy": "Move";
 
-    case A_PART_HEADER_ONIONSKIN: {
-      ISettings* settings = UIContext::instance()->getSettings();
-      IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
-      if (docSettings) {
-        StatusBar::instance()->setStatusText(0, "Onionskin is %s",
-          docSettings->getUseOnionskin() ? "enabled": "disabled");
+    switch (m_range.type()) {
+
+      case Range::kCels:
+        sb->setStatusText(0, "%s cels", verb);
+        break;
+
+      case Range::kFrames:
+        if (m_hot_frame >= FrameNumber(0) && m_hot_frame <= m_sprite->getLastFrame()) {
+          if (m_dropTarget.hhit == DropTarget::Before) {
+            sb->setStatusText(0, "%s before frame %d", verb, (int)m_dropRange.frameBegin().next());
+            return;
+          }
+          else if (m_dropTarget.hhit == DropTarget::After) {
+            sb->setStatusText(0, "%s after frame %d", verb, (int)m_dropRange.frameEnd().next());
+            return;
+          }
+        }
+        break;
+
+      case Range::kLayers: {
+        int layerIdx = -1;
+        if (m_dropTarget.vhit == DropTarget::Bottom)
+          layerIdx = m_dropRange.layerEnd();
+        else if (m_dropTarget.vhit == DropTarget::Top)
+          layerIdx = m_dropRange.layerBegin();
+
+        Layer* layer = ((layerIdx >= 0 && layerIdx < (int)m_layers.size()) ? m_layers[layerIdx]: NULL);
+        if (layer) {
+          if (m_dropTarget.vhit == DropTarget::Bottom) {
+            sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->getName().c_str());
+            return;
+          }
+          else if (m_dropTarget.vhit == DropTarget::Top) {
+            sb->setStatusText(0, "%s at top of layer %s", verb, layer->getName().c_str());
+            return;
+          }
+        }
+        break;
       }
-      else {
-        StatusBar::instance()->clearText();
-      }
-      break;
+
     }
-
-    case A_PART_LAYER_TEXT:
-      if (layer != NULL) {
-        StatusBar::instance()->setStatusText(0, "Layer '%s' [%s%s]",
-          layer->getName().c_str(),
-          layer->isReadable() ? "visible": "hidden",
-          layer->isWritable() ? "": " locked");
-      }
-      else {
-        StatusBar::instance()->clearText();
-      }
-      break;
-
-    case A_PART_LAYER_EYE_ICON:
-      if (layer != NULL) {
-        StatusBar::instance()->setStatusText(0, "Layer '%s' is %s",
-          layer->getName().c_str(),
-          layer->isReadable() ? "visible": "hidden");
-      }
-      else {
-        StatusBar::instance()->clearText();
-      }
-      break;
-
-    case A_PART_LAYER_PADLOCK_ICON:
-      if (layer != NULL) {
-        StatusBar::instance()->setStatusText(0, "Layer '%s' is %s",
-          layer->getName().c_str(),
-          layer->isWritable() ? "unlocked (modifiable)": "locked (read-only)");
-      }
-      else {
-        StatusBar::instance()->clearText();
-      }
-      break;
-
-    case A_PART_HEADER_FRAME:
-      if (m_hot_frame >= FrameNumber(0)
-        && m_hot_frame <= m_sprite->getLastFrame()) {
-        StatusBar::instance()->setStatusText(0,
-          "Frame %d [%d msecs]",
-          (int)m_hot_frame+1,
-          m_sprite->getFrameDuration(m_hot_frame));
-      }
-      break;
-
-    case A_PART_CEL:
-      if (layer) {
-        Cel* cel = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(m_hot_frame): NULL);
-        StatusBar::instance()->setStatusText(0,
-          "%s at frame %d",
-          cel ? "Cel": "Empty cel",
-          (int)m_hot_frame+1);
-      }
-      else {
-        StatusBar::instance()->clearText();
-      }
-      break;
-
-    default:
-      StatusBar::instance()->clearText();
-      break;
   }
+  else {
+    Layer* layer =
+      ((m_hot_layer >= 0 &&
+        m_hot_layer < (int)m_layers.size()) ? m_layers[m_hot_layer]: NULL);
+
+    switch (m_hot_part) {
+
+      case A_PART_HEADER_ONIONSKIN: {
+        ISettings* settings = UIContext::instance()->getSettings();
+        IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
+        if (docSettings) {
+          sb->setStatusText(0, "Onionskin is %s",
+            docSettings->getUseOnionskin() ? "enabled": "disabled");
+          return;
+        }
+        break;
+      }
+
+      case A_PART_LAYER_TEXT:
+        if (layer != NULL) {
+          sb->setStatusText(0, "Layer '%s' [%s%s]",
+            layer->getName().c_str(),
+            layer->isReadable() ? "visible": "hidden",
+            layer->isWritable() ? "": " locked");
+          return;
+        }
+        break;
+
+      case A_PART_LAYER_EYE_ICON:
+        if (layer != NULL) {
+          sb->setStatusText(0, "Layer '%s' is %s",
+            layer->getName().c_str(),
+            layer->isReadable() ? "visible": "hidden");
+          return;
+        }
+        break;
+
+      case A_PART_LAYER_PADLOCK_ICON:
+        if (layer != NULL) {
+          sb->setStatusText(0, "Layer '%s' is %s",
+            layer->getName().c_str(),
+            layer->isWritable() ? "unlocked (modifiable)": "locked (read-only)");
+          return;
+        }
+        break;
+
+      case A_PART_HEADER_FRAME:
+        if (m_hot_frame >= FrameNumber(0) &&
+          m_hot_frame <= m_sprite->getLastFrame()) {
+          sb->setStatusText(0,
+            "Frame %d [%d msecs]",
+            (int)m_hot_frame+1,
+            m_sprite->getFrameDuration(m_hot_frame));
+          return;
+        }
+        break;
+
+      case A_PART_CEL:
+        if (layer) {
+          Cel* cel = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(m_hot_frame): NULL);
+          StatusBar::instance()->setStatusText(0,
+            "%s at frame %d",
+            cel ? "Cel": "Empty cel",
+            (int)m_hot_frame+1);
+          return;
+        }
+        break;
+    }
+  }
+
+  sb->clearText();
 }
 
 void Timeline::centerCel(int layer, FrameNumber frame)
@@ -1782,26 +1850,12 @@ bool Timeline::isFrameActive(FrameNumber frame) const
 
 void Timeline::dropRange(DropOp op)
 {
+  Range drop = m_dropRange;
+
   // "Do nothing" cases. The user drops in the same place. (We don't
   // even add the undo information.)
-  Range drop = getDropRange();
-  switch (drop.type()) {
-    case Range::kCels:
-      if (drop == m_range)
-        return;
-      break;
-    case Range::kFrames:
-      if (op == Timeline::kMove && drop.frameBegin() == m_range.frameBegin())
-        return;
-      break;
-    case Range::kLayers:
-      if (op == Timeline::kMove && drop.layerBegin() == m_range.layerBegin())
-        return;
-      break;
-    default:
-      ASSERT(false && "You shouldn't call dropRange() if the range is disabled");
-      return;
-  }
+  if (!doesDropModifySprite(drop, op))
+    return;
 
   const char* undoLabel = NULL;
   switch (op) {
@@ -1939,7 +1993,7 @@ void Timeline::dropFrames(DropOp op, const Range& drop)
         srcFrameBegin = m_range.frameEnd();
         srcFrameStep = FrameNumber(-1);
         srcFrameEnd = m_range.frameBegin().previous();
-        dstFrameBegin = drop.frameEnd();
+        dstFrameBegin = drop.frameBegin();
         dstFrameStep = FrameNumber(-1);
       }
       break;
@@ -2009,11 +2063,42 @@ void Timeline::dropLayers(DropOp op, const Range& drop)
   }
 }
 
-Timeline::Range Timeline::getDropRange() const
+bool Timeline::doesDropModifySprite(const Range& drop, DropOp op) const
 {
-  Range drop;
-  if (m_state != STATE_MOVING_RANGE)
-    return drop;
+  switch (drop.type()) {
+    case Range::kCels:
+      if (drop == m_range)
+        return false;
+      break;
+    case Range::kFrames:
+      if (op == Timeline::kMove && drop.frameBegin() == m_range.frameBegin())
+        return false;
+      break;
+    case Range::kLayers:
+      if (op == Timeline::kMove && drop.layerBegin() == m_range.layerBegin())
+        return false;
+      break;
+    default:
+      ASSERT(false && "You shouldn't call dropRange() if the range is disabled");
+      return false;
+  }
+  return true;
+}
+
+void Timeline::updateDropRange(const gfx::Point& pt)
+{
+  DropTarget::HHit oldHHit = m_dropTarget.hhit;
+  DropTarget::VHit oldVHit = m_dropTarget.vhit;
+  m_dropTarget.hhit = DropTarget::HNone;
+  m_dropTarget.vhit = DropTarget::VNone;
+
+  if (m_state != STATE_MOVING_RANGE) {
+    m_dropRange.disableRange();
+    return;
+  }
+
+  bool insideOrigFrames = false;
+  bool insideOrigLayers = false;
 
   switch (m_range.type()) {
 
@@ -2028,8 +2113,8 @@ Timeline::Range Timeline::getDropRange() const
       frame = dx+m_range.frameBegin();
       frame = MID(FrameNumber(0), frame, m_sprite->getTotalFrames() - m_range.frames());
 
-      drop.startRange(layerIdx, frame, m_range.type());
-      drop.endRange(
+      m_dropRange.startRange(layerIdx, frame, m_range.type());
+      m_dropRange.endRange(
         layerIdx+m_range.layers()-1,
         (frame+m_range.frames()).previous());
       break;
@@ -2037,27 +2122,55 @@ Timeline::Range Timeline::getDropRange() const
 
     case Range::kFrames: {
       FrameNumber frame = m_hot_frame;
-      if (frame > m_range.frameBegin() && frame <= m_range.frameEnd())
+      FrameNumber frameEnd = frame;
+
+      if (frame >= m_range.frameBegin() && frame <= m_range.frameEnd()) {
         frame = m_range.frameBegin();
+        frameEnd = (frame + m_range.frames()).previous();
+      }
 
       int layerIdx = getLayerIndex(m_layer);
-      drop.startRange(layerIdx, frame, m_range.type());
-      drop.endRange(layerIdx, frame);
+      m_dropRange.startRange(layerIdx, frame, m_range.type());
+      m_dropRange.endRange(layerIdx, frameEnd);
       break;
     }
 
     case Range::kLayers: {
       int layer = m_hot_layer;
-      if (layer > m_range.layerBegin() && layer <= m_range.layerEnd())
-        layer = m_range.layerBegin();
+      int layerEnd = layer;
 
-      drop.startRange(layer, m_frame, m_range.type());
-      drop.endRange(layer, m_frame);
+      if (layer >= m_range.layerBegin() && layer <= m_range.layerEnd()) {
+        layer = m_range.layerBegin();
+        layerEnd = layer + m_range.layers() - 1;
+      }
+
+      m_dropRange.startRange(layer, m_frame, m_range.type());
+      m_dropRange.endRange(layerEnd, m_frame);
       break;
     }
   }
 
-  return drop;
+  gfx::Rect bounds = getRangeBounds(m_dropRange);
+
+  if (pt.x < bounds.x + bounds.w/2)
+    m_dropTarget.hhit = DropTarget::Before;
+  else
+    m_dropTarget.hhit = DropTarget::After;
+
+  if (pt.y < bounds.y + bounds.h/2)
+    m_dropTarget.vhit = DropTarget::Top;
+  else
+    m_dropTarget.vhit = DropTarget::Bottom;
+
+  if (oldHHit != m_dropTarget.hhit ||
+      oldVHit != m_dropTarget.vhit) {
+    invalidate();
+  }
+}
+
+bool Timeline::isCopyKeyPressed(ui::Message* msg)
+{
+  return msg->ctrlPressed();
 }
 
 void Timeline::Range::startRange(int layer, FrameNumber frame, Type type)

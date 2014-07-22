@@ -152,6 +152,23 @@ namespace app {
     void onLayerChanged(Editor* editor) OVERRIDE;
 
   private:
+    struct DropTarget {
+      enum HHit { HNone, Before, After };
+      enum VHit { VNone, Bottom, Top };
+
+      DropTarget() {
+        hhit = HNone;
+        vhit = VNone;
+      }
+
+      HHit hhit;
+      VHit vhit;
+      Layer* layer;
+      int layer_index;
+      FrameNumber frame;
+      int xpos, ypos;
+    };
+
     bool allLayersVisible();
     bool allLayersInvisible();
     bool allLayersLocked();
@@ -176,6 +193,7 @@ namespace app {
     gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
     gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
+    gfx::Rect getRangeBounds(const Range& range) const;
     void invalidatePart(int part, int layer, FrameNumber frame);
     void regenerateLayers();
     void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
@@ -187,12 +205,15 @@ namespace app {
     int getLayerIndex(const Layer* layer) const;
     bool isLayerActive(int layer_index) const;
     bool isFrameActive(FrameNumber frame) const;
-    void updateStatusBar();
-    Range getDropRange() const;
+    void updateStatusBar(ui::Message* msg);
+    bool doesDropModifySprite(const Range& drop, DropOp op) const;
+    void updateDropRange(const gfx::Point& pt);
 
     void dropCels(DropOp op, const Range& drop);
     void dropFrames(DropOp op, const Range& drop);
     void dropLayers(DropOp op, const Range& drop);
+
+    bool isCopyKeyPressed(ui::Message* msg);
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -225,6 +246,7 @@ namespace app {
     Layer* m_layer;
     FrameNumber m_frame;
     Range m_range;
+    Range m_dropRange;
     State m_state;
     std::vector<Layer*> m_layers;
     int m_scroll_x;
@@ -236,6 +258,7 @@ namespace app {
     int m_hot_part;
     int m_hot_layer;
     FrameNumber m_hot_frame;
+    DropTarget m_dropTarget;
     // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     int m_clk_part;
     int m_clk_layer;
