@@ -24,6 +24,8 @@ namespace raster {
 
   class LayerIndex {
   public:
+    static const LayerIndex NoLayer;
+
     LayerIndex() : m_value(0) { }
     explicit LayerIndex(int value) : m_value(value) { }
 
@@ -38,6 +40,8 @@ namespace raster {
     LayerIndex& operator--() { --m_value; return *this; }
     LayerIndex operator++(int) { LayerIndex old(*this); ++m_value; return old; }
     LayerIndex operator--(int) { LayerIndex old(*this); --m_value; return old; }
+    LayerIndex& operator+=(const LayerIndex& o) { m_value += o.m_value; return *this; }
+    LayerIndex& operator-=(const LayerIndex& o) { m_value -= o.m_value; return *this; }
     bool operator<(const LayerIndex& o) const { return m_value < o.m_value; }
     bool operator>(const LayerIndex& o) const { return m_value > o.m_value; }
     bool operator<=(const LayerIndex& o) const { return m_value <= o.m_value; }

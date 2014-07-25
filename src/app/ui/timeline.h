@@ -26,6 +26,8 @@
 #include "app/ui/skin/style.h"
 #include "base/compiler_specific.h"
 #include "raster/frame_number.h"
+#include "raster/layer_index.h"
+#include "raster/sprite.h"
 #include "ui/widget.h"
 
 #include <vector>
@@ -73,8 +75,8 @@ namespace app {
 
       Type type() const { return m_type; }
       bool enabled() const { return m_type != kNone; }
-      int layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
-      int layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
+      LayerIndex layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
+      LayerIndex layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
       FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
       FrameNumber frameEnd() const { return MAX(m_frameBegin, m_frameEnd); }
 
@@ -82,14 +84,14 @@ namespace app {
       FrameNumber frames() const { return (frameEnd() - frameBegin()).next(); }
       void setLayers(int layers);
       void setFrames(FrameNumber frames);
-      void displace(int layerDelta, FrameNumber frameDelta);
+      void displace(int layerDelta, int frameDelta);
 
-      bool inRange(int layer) const;
+      bool inRange(LayerIndex layer) const;
       bool inRange(FrameNumber frame) const;
-      bool inRange(int layer, FrameNumber frame) const;
+      bool inRange(LayerIndex layer, FrameNumber frame) const;
 
-      void startRange(int layer, FrameNumber frame, Type type);
-      void endRange(int layer, FrameNumber frame);
+      void startRange(LayerIndex layer, FrameNumber frame, Type type);
+      void endRange(LayerIndex layer, FrameNumber frame);
       void disableRange();
 
       bool operator==(const Range& o) const {
@@ -100,8 +102,8 @@ namespace app {
 
     private:
       Type m_type;
-      int m_layerBegin;
-      int m_layerEnd;
+      LayerIndex m_layerBegin;
+      LayerIndex m_layerEnd;
       FrameNumber m_frameBegin;
       FrameNumber m_frameEnd;
     };
@@ -164,7 +166,7 @@ namespace app {
       HHit hhit;
       VHit vhit;
       Layer* layer;
-      int layer_index;
+      LayerIndex layerIdx;
       FrameNumber frame;
       int xpos, ypos;
     };
@@ -175,35 +177,35 @@ namespace app {
     bool allLayersUnlocked();
     void detachDocument();
     void setCursor(int x, int y);
-    void getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer);
+    void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
     void getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
       const char* text, skin::Style* style,
       bool is_active = false, bool is_hover = false, bool is_clicked = false);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
-    void drawLayer(ui::Graphics* g, int layer_index);
-    void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
+    void drawCel(ui::Graphics* g, LayerIndex layerIdx, FrameNumber frame, Cel* cel);
     void drawLoopRange(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
+    bool drawPart(ui::Graphics* g, int part, LayerIndex layer, FrameNumber frame);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
     gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
-    gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
+    gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), FrameNumber frame = FrameNumber(0)) const;
     gfx::Rect getRangeBounds(const Range& range) const;
-    void invalidatePart(int part, int layer, FrameNumber frame);
+    void invalidatePart(int part, LayerIndex layer, FrameNumber frame);
     void regenerateLayers();
-    void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
-    void centerCel(int layer, FrameNumber frame);
-    void showCel(int layer, FrameNumber frame);
+    void hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hotFrame);
+    void centerCel(LayerIndex layer, FrameNumber frame);
+    void showCel(LayerIndex layer, FrameNumber frame);
     void showCurrentCel();
     void cleanClk();
     void setScroll(int x, int y);
-    int getLayerIndex(const Layer* layer) const;
-    bool isLayerActive(int layer_index) const;
+    LayerIndex getLayerIndex(const Layer* layer) const;
+    bool isLayerActive(LayerIndex layerIdx) const;
     bool isFrameActive(FrameNumber frame) const;
     void updateStatusBar(ui::Message* msg);
     bool doesDropModifySprite(const Range& drop, DropOp op) const;
@@ -214,6 +216,18 @@ namespace app {
     void dropLayers(DropOp op, const Range& drop);
 
     bool isCopyKeyPressed(ui::Message* msg);
+
+    // The layer of the bottom (e.g. Background layer)
+    LayerIndex firstLayer() const { return LayerIndex(0); }
+
+    // The layer of the top.
+    LayerIndex lastLayer() const { return LayerIndex(m_layers.size()-1); }
+
+    FrameNumber firstFrame() const { return FrameNumber(0); }
+    FrameNumber lastFrame() const { return m_sprite->getLastFrame(); }
+
+    bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
+    bool validFrame(FrameNumber frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -256,12 +270,12 @@ namespace app {
     int m_origFrames;
     // The 'hot' part is where the mouse is on top of
     int m_hot_part;
-    int m_hot_layer;
+    LayerIndex m_hot_layer;
     FrameNumber m_hot_frame;
     DropTarget m_dropTarget;
     // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     int m_clk_part;
-    int m_clk_layer;
+    LayerIndex m_clk_layer;
     FrameNumber m_clk_frame;
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;

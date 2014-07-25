@@ -72,10 +72,7 @@ void RemoveCelCommand::onExecute(Context* context)
     if (range.enabled()) {
       Sprite* sprite = writer.sprite();
 
-      // TODO indexes in timeline are inverted!! fix that for a future release
-      for (LayerIndex layerIdx = sprite->countLayers() - LayerIndex(range.layerBegin()+1),
-             end = sprite->countLayers() - LayerIndex(range.layerEnd()+2);
-           layerIdx != end; --layerIdx) {
+      for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
         Layer* layer = sprite->indexToLayer(layerIdx);
         if (!layer->isImage())
           continue;

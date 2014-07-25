@@ -23,6 +23,7 @@ add_library(raster-lib
   image_io.cpp
   images_collector.cpp
   layer.cpp
+  layer_index.cpp
   layer_io.cpp
   mask.cpp
   mask_io.cpp

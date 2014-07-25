@@ -75,10 +75,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     if (range.enabled()) {
       Sprite* sprite = writer.sprite();
 
-      // TODO indexes in timeline are inverted!! fix that for a future release
-      for (LayerIndex layer = sprite->countLayers() - LayerIndex(range.layerBegin()+1),
-             end = sprite->countLayers() - LayerIndex(range.layerEnd()+2);
-           layer != end; --layer) {
+      for (LayerIndex layer = range.layerEnd(); layer >= range.layerBegin(); --layer) {
         document->getApi().removeLayer(sprite->indexToLayer(layer));
       }
     }

@@ -265,7 +265,7 @@ void Timeline::setFrame(FrameNumber frame)
   // ASSERT(frame >= 0 && frame < m_sprite->getTotalFrames());
 
   if (frame < 0)
-    frame = FrameNumber(0);
+    frame = firstFrame();
   else if (frame >= m_sprite->getTotalFrames())
     frame = FrameNumber(m_sprite->getTotalFrames()-1);
 
@@ -335,7 +335,7 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_LAYER_TEXT: {
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = m_sprite;
-          int old_layer = getLayerIndex(m_layer);
+          LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk_layer));
           FrameNumber frame = m_frame;
 
@@ -363,7 +363,7 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_CEL: {
           const DocumentReader document(const_cast<Document*>(m_document));
           const Sprite* sprite = document->getSprite();
-          int old_layer = getLayerIndex(m_layer);
+          LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk_layer)
             || !isFrameActive(m_clk_frame));
@@ -402,7 +402,7 @@ bool Timeline::onProcessMessage(Message* msg)
         break;
 
       int hot_part = A_PART_NOTHING;
-      int hot_layer = -1;
+      LayerIndex hot_layer = LayerIndex::NoLayer;
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position()
         - getBounds().getOrigin();
 
@@ -454,6 +454,25 @@ bool Timeline::onProcessMessage(Message* msg)
         }
       }
 
+      hot_layer = lastLayer() - LayerIndex(
+        (mousePos.y
+          - HDRSIZE
+          + m_scroll_y) / LAYSIZE);
+
+      hot_frame = FrameNumber((mousePos.x
+          - m_separator_x
+          - m_separator_w
+          + m_scroll_x) / FRMSIZE);
+
+      if (hasCapture()) {
+        hot_layer = MID(firstLayer(), hot_layer, lastLayer());
+        hot_frame = MID(firstFrame(), hot_frame, lastFrame());
+      }
+      else {
+        if (hot_layer > lastLayer()) hot_layer = LayerIndex::NoLayer;
+        if (hot_frame > lastFrame()) hot_frame = FrameNumber(-1);
+      }
+
       // Is the mouse over onionskin handles?
       gfx::Rect bounds = getOnionskinFramesBounds();
       if (!bounds.isEmpty() && gfx::Rect(bounds.x, bounds.y, 3, bounds.h).contains(mousePos)) {
@@ -464,7 +483,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       // Is the mouse on the separator.
       else if (mousePos.x > m_separator_x-4
-        && mousePos.x < m_separator_x+4)  {
+            && mousePos.x < m_separator_x+4)  {
         hot_part = A_PART_SEPARATOR;
       }
       // Is the mouse on the headers?
@@ -483,26 +502,9 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         else {
           hot_part = A_PART_HEADER_FRAME;
-          hot_frame = FrameNumber((mousePos.x
-              - m_separator_x
-              - m_separator_w
-              + m_scroll_x) / FRMSIZE);
         }
       }
       else {
-        hot_layer = (mousePos.y
-                     - HDRSIZE
-                     + m_scroll_y) / LAYSIZE;
-
-        if (hot_layer >= (int)m_layers.size()) {
-          if (hasCapture())
-            hot_layer = m_layers.size()-1;
-          else
-            hot_layer = -1;
-        }
-        else if (hasCapture() && hot_layer < 0)
-          hot_layer = 0;
-
         // Is the mouse on a layer's label?
         if (mousePos.x < m_separator_x) {
           if (getPartBounds(A_PART_LAYER_EYE_ICON, hot_layer).contains(mousePos))
@@ -514,25 +516,17 @@ bool Timeline::onProcessMessage(Message* msg)
           else
             hot_part = A_PART_LAYER;
         }
-        else if (hot_layer >= 0 && hot_layer < (int)m_layers.size() &&
-                 hot_frame >= FrameNumber(0) && hot_frame <= m_sprite->getLastFrame()) {
+        else if (validLayer(hot_layer) && validFrame(hot_frame)) {
           hot_part = A_PART_CEL;
         }
         else
           hot_part = A_PART_NOTHING;
       }
 
-      if (hasCapture()) {
-        hot_layer = MID(0, hot_layer, (int)m_layers.size()-1);
-        hot_frame = MID(FrameNumber(0), hot_frame, m_sprite->getLastFrame());
-      }
-      else {
-        if (hot_layer >= (int)m_layers.size()) hot_layer = -1;
-        if (hot_frame > m_sprite->getLastFrame()) hot_frame = FrameNumber(-1);
-
+      if (!hasCapture()) {
         gfx::Rect outline = getPartBounds(A_PART_RANGE_OUTLINE);
         if (outline.contains(mousePos) &&
-            !gfx::Rect(outline).shrink(4*jguiscale()).contains(mousePos)) {
+            !gfx::Rect(outline).shrink(2*OUTLINE_WIDTH).contains(mousePos)) {
           hot_part = A_PART_RANGE_OUTLINE;
         }
       }
@@ -672,9 +666,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case A_PART_LAYER_EYE_ICON:
             // Hide/show layer.
-            if (m_hot_layer == m_clk_layer &&
-                m_hot_layer >= 0 &&
-                m_hot_layer < (int)m_layers.size()) {
+            if (m_hot_layer == m_clk_layer && validLayer(m_hot_layer)) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
               layer->setReadable(!layer->isReadable());
@@ -686,9 +678,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case A_PART_LAYER_PADLOCK_ICON:
             // Lock/unlock layer.
-            if (m_hot_layer == m_clk_layer &&
-                m_hot_layer >= 0 &&
-                m_hot_layer < (int)m_layers.size()) {
+            if (m_hot_layer == m_clk_layer && validLayer(m_hot_layer)) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
               layer->setWritable(!layer->isWritable());
@@ -714,7 +704,9 @@ bool Timeline::onProcessMessage(Message* msg)
 
         }
 
-        if (mouseMsg->left() && m_state == STATE_MOVING_RANGE) {
+        if (mouseMsg->left() &&
+            m_state == STATE_MOVING_RANGE &&
+            m_dropRange.type() != Range::kNone) {
           dropRange(isCopyKeyPressed(mouseMsg) ?
             Timeline::kCopy:
             Timeline::kMove);
@@ -856,7 +848,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     // Lock the sprite to read/render it.
     const DocumentReader documentReader(m_document);
     
-    int layer, first_layer, last_layer;
+    LayerIndex layer, first_layer, last_layer;
     FrameNumber frame, first_frame, last_frame;
 
     getDrawableLayers(g, &first_layer, &last_layer);
@@ -883,7 +875,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     // Draw each visible layer.
-    for (layer=first_layer; layer<=last_layer; layer++) {
+    for (layer=last_layer; layer>=first_layer; --layer) {
       {
         IntersectClip clip(g, getLayerHeadersBounds());
         if (clip)
@@ -1070,15 +1062,20 @@ void Timeline::setCursor(int x, int y)
   }
 }
 
-void Timeline::getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer)
+void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer)
 {
-  *first_layer = m_scroll_y / LAYSIZE;
-  *first_layer = MID(0, *first_layer, (int)m_layers.size()-1);
-  *last_layer = *first_layer + (getClientBounds().h - HDRSIZE) / LAYSIZE;
-  *last_layer = MID(0, *last_layer, (int)m_layers.size()-1);
+  int hpx = (getClientBounds().h - HDRSIZE);
+  LayerIndex i = lastLayer() - LayerIndex((m_scroll_y+hpx) / LAYSIZE);
+  i = MID(firstLayer(), i, lastLayer());
 
-  if (m_layers.empty())
-    *last_layer = -1;
+  LayerIndex j = i + LayerIndex(hpx / LAYSIZE);
+  if (!m_layers.empty())
+    j = MID(firstLayer(), j, lastLayer());
+  else
+    j = LayerIndex::NoLayer;
+
+  *first_layer = i;
+  *last_layer = j;
 }
 
 void Timeline::getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame)
@@ -1147,7 +1144,7 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
   bool is_active = isFrameActive(frame);
   bool is_hover = (m_hot_part == A_PART_HEADER_FRAME && m_hot_frame == frame);
   bool is_clicked = (m_clk_part == A_PART_HEADER_FRAME && m_clk_frame == frame);
-  gfx::Rect bounds = getPartBounds(A_PART_HEADER_FRAME, 0, frame);
+  gfx::Rect bounds = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), frame);
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
@@ -1162,19 +1159,19 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, FrameNumber frame)
   g->setFont(oldFont);
 }
 
-void Timeline::drawLayer(ui::Graphics* g, int layer_index)
+void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 {
-  Layer* layer = m_layers[layer_index];
-  bool is_active = isLayerActive(layer_index);
-  bool hotlayer = (m_hot_layer == layer_index);
-  bool clklayer = (m_clk_layer == layer_index);
-  gfx::Rect bounds = getPartBounds(A_PART_LAYER, layer_index, FrameNumber(0));
+  Layer* layer = m_layers[layerIdx];
+  bool is_active = isLayerActive(layerIdx);
+  bool hotlayer = (m_hot_layer == layerIdx);
+  bool clklayer = (m_clk_layer == layerIdx);
+  gfx::Rect bounds = getPartBounds(A_PART_LAYER, layerIdx, firstFrame());
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
 
   // Draw the eye (readable flag).
-  bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layer_index);
+  bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layerIdx);
   drawPart(g, bounds, NULL,
     layer->isReadable() ? m_timelineOpenEyeStyle: m_timelineClosedEyeStyle,
     is_active,
@@ -1182,7 +1179,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layer_index)
     (clklayer && m_clk_part == A_PART_LAYER_EYE_ICON));
 
   // Draw the padlock (writable flag).
-  bounds = getPartBounds(A_PART_LAYER_PADLOCK_ICON, layer_index);
+  bounds = getPartBounds(A_PART_LAYER_PADLOCK_ICON, layerIdx);
   drawPart(g, bounds, NULL,
     layer->isWritable() ? m_timelineOpenPadlockStyle: m_timelineClosedPadlockStyle,
     is_active,
@@ -1190,7 +1187,7 @@ void Timeline::drawLayer(ui::Graphics* g, int layer_index)
     (clklayer && m_clk_part == A_PART_LAYER_PADLOCK_ICON));
 
   // Draw the layer's name.
-  bounds = getPartBounds(A_PART_LAYER_TEXT, layer_index);
+  bounds = getPartBounds(A_PART_LAYER_TEXT, layerIdx);
   drawPart(g, bounds, layer->getName().c_str(), m_timelineLayerStyle,
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_TEXT),
@@ -1206,21 +1203,21 @@ void Timeline::drawLayer(ui::Graphics* g, int layer_index)
   }
 }
 
-void Timeline::drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel)
+void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame, Cel* cel)
 {
-  Layer* layer = m_layers[layer_index];
+  Layer* layer = m_layers[layerIndex];
   Image* image = (cel ? m_sprite->getStock()->getImage(cel->getImage()): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
-    m_hot_layer == layer_index &&
+    m_hot_layer == layerIndex &&
     m_hot_frame == frame);
-  bool is_active = (isLayerActive(layer_index) || isFrameActive(frame));
+  bool is_active = (isLayerActive(layerIndex) || isFrameActive(frame));
   bool is_empty = (image == NULL);
-  gfx::Rect bounds = getPartBounds(A_PART_CEL, layer_index, frame);
+  gfx::Rect bounds = getPartBounds(A_PART_CEL, layerIndex, frame);
   IntersectClip clip(g, bounds);
   if (!clip)
     return;
 
-  if (layer_index == getLayerIndex(m_layer) && frame == m_frame)
+  if (layerIndex == getLayerIndex(m_layer) && frame == m_frame)
     drawPart(g, bounds, NULL, m_timelineSelectedCelStyle, false, false, true);
   else
     drawPart(g, bounds, NULL, m_timelineBoxStyle, is_active, is_hover);
@@ -1268,8 +1265,8 @@ void Timeline::drawLoopRange(ui::Graphics* g)
   if (begin > end)
     return;
 
-  gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, 0, begin);
-  gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, 0, end);
+  gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), begin);
+  gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), end);
   gfx::Rect bounds = bounds1.createUnion(bounds2);
 
   IntersectClip clip(g, bounds);
@@ -1346,33 +1343,33 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 void Timeline::drawPaddings(ui::Graphics* g)
 {
   gfx::Rect client = getClientBounds();
-  gfx::Rect lastLayer;
+  gfx::Rect bottomLayer;
   gfx::Rect lastFrame;
 
   if (!m_layers.empty()) {
-    lastLayer = getPartBounds(A_PART_LAYER, m_layers.size()-1);
-    lastFrame = getPartBounds(A_PART_CEL, 0, m_sprite->getLastFrame());
+    bottomLayer = getPartBounds(A_PART_LAYER, firstLayer());
+    lastFrame = getPartBounds(A_PART_CEL, firstLayer(), this->lastFrame());
   }
   else {
-    lastLayer = getPartBounds(A_PART_HEADER_LAYER);
-    lastFrame = getPartBounds(A_PART_HEADER_FRAME, 0, m_sprite->getLastFrame());
+    bottomLayer = getPartBounds(A_PART_HEADER_LAYER);
+    lastFrame = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), this->lastFrame());
   }
 
   drawPart(g,
     gfx::Rect(lastFrame.x+lastFrame.w, client.y,
       client.w - (lastFrame.x+lastFrame.w),
-      lastLayer.y+lastLayer.h),
+      bottomLayer.y+bottomLayer.h),
     NULL, m_timelinePaddingTrStyle);
 
   drawPart(g,
-    gfx::Rect(client.x, lastLayer.y+lastLayer.h,
-      lastFrame.x+lastFrame.w - client.x, client.h - (lastLayer.y+lastLayer.h)),
+    gfx::Rect(client.x, bottomLayer.y+bottomLayer.h,
+      lastFrame.x+lastFrame.w - client.x, client.h - (bottomLayer.y+bottomLayer.h)),
     NULL, m_timelinePaddingBlStyle);
 
   drawPart(g,
-    gfx::Rect(lastFrame.x+lastFrame.w, lastLayer.y+lastLayer.h,
+    gfx::Rect(lastFrame.x+lastFrame.w, bottomLayer.y+bottomLayer.h,
       client.w - (lastFrame.x+lastFrame.w),
-      client.h - (lastLayer.y+lastLayer.h)),
+      client.h - (bottomLayer.y+bottomLayer.h)),
     NULL, m_timelinePaddingBrStyle);
 }
 
@@ -1402,11 +1399,14 @@ gfx::Rect Timeline::getOnionskinFramesBounds() const
     FrameNumber firstFrame = m_frame.previous(docSettings->getOnionskinPrevFrames());
     FrameNumber lastFrame = m_frame.next(docSettings->getOnionskinNextFrames());
 
-    if (firstFrame < 0) firstFrame = FrameNumber(0);
-    if (lastFrame > m_sprite->getLastFrame()) lastFrame = m_sprite->getLastFrame();
+    if (firstFrame < this->firstFrame())
+      firstFrame = this->firstFrame();
 
-    return getPartBounds(A_PART_HEADER_FRAME, 0, firstFrame)
-      .createUnion(getPartBounds(A_PART_HEADER_FRAME, 0, lastFrame));
+    if (lastFrame > this->lastFrame())
+      lastFrame = this->lastFrame();
+
+    return getPartBounds(A_PART_HEADER_FRAME, firstLayer(), firstFrame)
+      .createUnion(getPartBounds(A_PART_HEADER_FRAME, firstLayer(), lastFrame));
   }
   return gfx::Rect();
 }
@@ -1421,7 +1421,7 @@ gfx::Rect Timeline::getCelsBounds() const
   return rc;
 }
 
-gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
+gfx::Rect Timeline::getPartBounds(int part, LayerIndex layer, FrameNumber frame) const
 {
   const gfx::Rect bounds = getClientBounds();
 
@@ -1432,8 +1432,7 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
 
     case A_PART_SEPARATOR:
       return gfx::Rect(m_separator_x, 0,
-                       m_separator_x + m_separator_w,
-                       bounds.h);
+        m_separator_x + m_separator_w, bounds.h);
 
     case A_PART_HEADER_EYE:
       return gfx::Rect(FRMSIZE*0, 0, FRMSIZE, HDRSIZE);
@@ -1449,64 +1448,56 @@ gfx::Rect Timeline::getPartBounds(int part, int layer, FrameNumber frame) const
 
     case A_PART_HEADER_LAYER:
       return gfx::Rect(FRMSIZE*4, 0,
-                       m_separator_x - FRMSIZE*4,
-                       HDRSIZE);
+        m_separator_x - FRMSIZE*4, HDRSIZE);
 
     case A_PART_HEADER_FRAME:
-      if (frame >= 0 && frame < m_sprite->getTotalFrames()) {
+      if (validFrame(frame)) {
         return gfx::Rect(m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
-                         0,
-                         FRMSIZE,
-                         HDRSIZE);
+          0, FRMSIZE, HDRSIZE);
       }
       break;
 
     case A_PART_LAYER:
-      if (layer >= 0 && layer < (int)m_layers.size()) {
+      if (validLayer(layer)) {
         return gfx::Rect(0,
-                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
-                         m_separator_x,
-                         LAYSIZE);
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          m_separator_x, LAYSIZE);
       }
       break;
 
     case A_PART_LAYER_EYE_ICON:
-      if (layer >= 0 && layer < (int)m_layers.size()) {
+      if (validLayer(layer)) {
         return gfx::Rect(0,
-                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
-                         FRMSIZE,
-                         LAYSIZE);
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          FRMSIZE, LAYSIZE);
       }
       break;
 
     case A_PART_LAYER_PADLOCK_ICON:
-      if (layer >= 0 && layer < (int)m_layers.size()) {
+      if (validLayer(layer)) {
         return gfx::Rect(FRMSIZE,
-                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
-                         FRMSIZE,
-                         LAYSIZE);
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          FRMSIZE, LAYSIZE);
       }
       break;
 
     case A_PART_LAYER_TEXT:
-      if (layer >= 0 && layer < (int)m_layers.size()) {
+      if (validLayer(layer)) {
         int x = FRMSIZE*2;
         return gfx::Rect(x,
-                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
-                         m_separator_x - x,
-                         LAYSIZE);
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          m_separator_x - x, LAYSIZE);
       }
       break;
 
     case A_PART_CEL:
-      if (layer >= 0 && layer < (int)m_layers.size() &&
-          frame >= 0 && frame < m_sprite->getTotalFrames()) {
+      if (validLayer(layer) && validFrame(frame)) {
         Cel* cel = (m_layers[layer]->isImage() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
 
-        return gfx::Rect(m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
-                         HDRSIZE + LAYSIZE*layer - m_scroll_y,
-                         FRMSIZE,
-                         LAYSIZE);
+        return gfx::Rect(
+          m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          FRMSIZE, LAYSIZE);
       }
       break;
 
@@ -1533,8 +1524,8 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
         getPartBounds(A_PART_CEL, range.layerEnd(), range.frameEnd()));
       break;
     case Range::kFrames:
-      rc = getPartBounds(A_PART_HEADER_FRAME, 0, range.frameBegin()).createUnion(
-        getPartBounds(A_PART_HEADER_FRAME, 0, range.frameEnd()));
+      rc = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), range.frameBegin()).createUnion(
+        getPartBounds(A_PART_HEADER_FRAME, firstLayer(), range.frameEnd()));
       break;
     case Range::kLayers:
       rc = getPartBounds(A_PART_LAYER, range.layerBegin()).createUnion(
@@ -1544,7 +1535,7 @@ gfx::Rect Timeline::getRangeBounds(const Range& range) const
   return rc;
 }
 
-void Timeline::invalidatePart(int part, int layer, FrameNumber frame)
+void Timeline::invalidatePart(int part, LayerIndex layer, FrameNumber frame)
 {
   invalidateRect(getPartBounds(part, layer, frame).offset(getOrigin()));
 }
@@ -1563,10 +1554,10 @@ void Timeline::regenerateLayers()
   }
 
   for (size_t c=0; c<nlayers; c++)
-    m_layers[c] = m_sprite->indexToLayer(LayerIndex(nlayers-c-1));
+    m_layers[c] = m_sprite->indexToLayer(LayerIndex(c));
 }
 
-void Timeline::hotThis(int hot_part, int hot_layer, FrameNumber hot_frame)
+void Timeline::hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hot_frame)
 {
   // If the part, layer or frame change.
   if (hot_part != m_hot_part ||
@@ -1609,7 +1600,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         break;
 
       case Range::kFrames:
-        if (m_hot_frame >= FrameNumber(0) && m_hot_frame <= m_sprite->getLastFrame()) {
+        if (validFrame(m_hot_frame)) {
           if (m_dropTarget.hhit == DropTarget::Before) {
             sb->setStatusText(0, "%s before frame %d", verb, (int)m_dropRange.frameBegin().next());
             return;
@@ -1645,9 +1636,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
     }
   }
   else {
-    Layer* layer =
-      ((m_hot_layer >= 0 &&
-        m_hot_layer < (int)m_layers.size()) ? m_layers[m_hot_layer]: NULL);
+    Layer* layer = (validLayer(m_hot_layer) ? m_layers[m_hot_layer]: NULL);
 
     switch (m_hot_part) {
 
@@ -1691,8 +1680,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         break;
 
       case A_PART_HEADER_FRAME:
-        if (m_hot_frame >= FrameNumber(0) &&
-          m_hot_frame <= m_sprite->getLastFrame()) {
+        if (validFrame(m_hot_frame)) {
           sb->setStatusText(0,
             "Frame %d [%d msecs]",
             (int)m_hot_frame+1,
@@ -1717,23 +1705,23 @@ void Timeline::updateStatusBar(ui::Message* msg)
   sb->clearText();
 }
 
-void Timeline::centerCel(int layer, FrameNumber frame)
+void Timeline::centerCel(LayerIndex layer, FrameNumber frame)
 {
   int target_x = (getBounds().x + m_separator_x + m_separator_w + getBounds().x2())/2 - FRMSIZE/2;
   int target_y = (getBounds().y + HDRSIZE + getBounds().y2())/2 - LAYSIZE/2;
   int scroll_x = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
-  int scroll_y = getBounds().y + HDRSIZE + LAYSIZE*layer - target_y;
+  int scroll_y = getBounds().y + HDRSIZE + LAYSIZE*(lastLayer() - layer) - target_y;
 
   setScroll(scroll_x, scroll_y);
 }
 
-void Timeline::showCel(int layer, FrameNumber frame)
+void Timeline::showCel(LayerIndex layer, FrameNumber frame)
 {
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
 
   x1 = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - m_scroll_x;
-  y1 = getBounds().y + HDRSIZE + LAYSIZE*layer - m_scroll_y;
+  y1 = getBounds().y + HDRSIZE + LAYSIZE*(lastLayer() - layer) - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
@@ -1761,8 +1749,8 @@ void Timeline::showCel(int layer, FrameNumber frame)
 
 void Timeline::showCurrentCel()
 {
-  int layer = getLayerIndex(m_layer);
-  if (layer >= 0)
+  LayerIndex layer = getLayerIndex(m_layer);
+  if (layer >= firstLayer())
     showCel(layer, m_frame);
 }
 
@@ -1823,21 +1811,23 @@ bool Timeline::allLayersUnlocked()
   return true;
 }
 
-int Timeline::getLayerIndex(const Layer* layer) const
+LayerIndex Timeline::getLayerIndex(const Layer* layer) const
 {
-  for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i] == layer)
-      return i;
+  for (int i=0; i<(int)m_layers.size(); i++)
+    if (m_layers[i] == layer) {
+      ASSERT(m_sprite->layerToIndex(layer) == LayerIndex(i));
+      return LayerIndex(i);
+    }
 
-  return -1;
+  return LayerIndex::NoLayer;
 }
 
-bool Timeline::isLayerActive(int layer_index) const
+bool Timeline::isLayerActive(LayerIndex layerIndex) const
 {
-  if (layer_index == getLayerIndex(m_layer))
+  if (layerIndex == getLayerIndex(m_layer))
     return true;
   else
-    return m_range.inRange(layer_index);
+    return m_range.inRange(layerIndex);
 }
 
 bool Timeline::isFrameActive(FrameNumber frame) const
@@ -1848,6 +1838,7 @@ bool Timeline::isFrameActive(FrameNumber frame) const
     return m_range.inRange(frame);
 }
 
+// TODO This must be re-implemented
 void Timeline::dropRange(DropOp op)
 {
   Range drop = m_dropRange;
@@ -1885,14 +1876,14 @@ void Timeline::dropRange(DropOp op)
 
     case Range::kFrames:
       if (op == Timeline::kMove && m_range.frameBegin() < drop.frameBegin()) {
-        drop.displace(0, FrameNumber(-m_range.frames()));
+        drop.displace(firstLayer(), -m_range.frames());
       }
       drop.setFrames(m_range.frames());
       break;
 
     case Range::kLayers:
       if (op == Timeline::kMove && m_range.layerBegin() < drop.layerBegin()) {
-        drop.displace(-m_range.layers(), FrameNumber(0));
+        drop.displace(-m_range.layers(), 0);
       }
       drop.setLayers(m_range.layers());
       break;
@@ -1907,10 +1898,10 @@ void Timeline::dropRange(DropOp op)
 
 void Timeline::dropCels(DropOp op, const Range& drop)
 {
-  ASSERT(drop.layerBegin() >= 0 && drop.layerBegin() < (int)m_layers.size());
-  ASSERT(drop.layerEnd() >= 0 && drop.layerEnd() < (int)m_layers.size());
-  ASSERT(drop.frameBegin() >= FrameNumber(0) && drop.frameBegin() < m_sprite->getTotalFrames());
-  ASSERT(drop.frameEnd() >= FrameNumber(0) && drop.frameEnd() < m_sprite->getTotalFrames());
+  ASSERT(validLayer(drop.layerBegin()));
+  ASSERT(validLayer(drop.layerEnd()));
+  ASSERT(validFrame(drop.frameBegin()));
+  ASSERT(validFrame(drop.frameEnd()));
 
   int srcLayerBegin, srcLayerStep, srcLayerEnd;
   int dstLayerBegin, dstLayerStep;
@@ -2011,7 +2002,7 @@ void Timeline::dropFrames(DropOp op, const Range& drop)
         srcFrameStep = FrameNumber(-1);
         srcFrameEnd = m_range.frameBegin().previous();
         dstFrameBegin = drop.frameBegin();
-        dstFrameStep = FrameNumber(0);
+        dstFrameStep = firstFrame();
       }
       break;
   }
@@ -2043,6 +2034,7 @@ void Timeline::dropLayers(DropOp op, const Range& drop)
 
   Layer* firstLayer = m_layers[m_range.layerBegin()];
   Layer* lastLayer = m_layers[m_range.layerEnd()];
+
   std::vector<Layer*> layers = m_layers;
 
   switch (op) {
@@ -2104,18 +2096,19 @@ void Timeline::updateDropRange(const gfx::Point& pt)
 
     case Range::kCels: {
       FrameNumber dx = m_hot_frame - m_clk_frame;
-      int dy = m_hot_layer - m_clk_layer;
-      int layerIdx;
+      LayerIndex dy = m_hot_layer - m_clk_layer;
+      LayerIndex layerIdx;
       FrameNumber frame;
 
       layerIdx = dy+m_range.layerBegin();
-      layerIdx = MID(0, layerIdx, (int)m_layers.size() - m_range.layers());
+      layerIdx = MID(firstLayer(), layerIdx, LayerIndex(m_layers.size() - m_range.layers()));
+
       frame = dx+m_range.frameBegin();
-      frame = MID(FrameNumber(0), frame, m_sprite->getTotalFrames() - m_range.frames());
+      frame = MID(firstFrame(), frame, m_sprite->getTotalFrames() - m_range.frames());
 
       m_dropRange.startRange(layerIdx, frame, m_range.type());
       m_dropRange.endRange(
-        layerIdx+m_range.layers()-1,
+        layerIdx+LayerIndex(m_range.layers()-1),
         (frame+m_range.frames()).previous());
       break;
     }
@@ -2129,19 +2122,19 @@ void Timeline::updateDropRange(const gfx::Point& pt)
         frameEnd = (frame + m_range.frames()).previous();
       }
 
-      int layerIdx = getLayerIndex(m_layer);
+      LayerIndex layerIdx = getLayerIndex(m_layer);
       m_dropRange.startRange(layerIdx, frame, m_range.type());
       m_dropRange.endRange(layerIdx, frameEnd);
       break;
     }
 
     case Range::kLayers: {
-      int layer = m_hot_layer;
-      int layerEnd = layer;
+      LayerIndex layer = m_hot_layer;
+      LayerIndex layerEnd = layer;
 
       if (layer >= m_range.layerBegin() && layer <= m_range.layerEnd()) {
         layer = m_range.layerBegin();
-        layerEnd = layer + m_range.layers() - 1;
+        layerEnd = layer + LayerIndex(m_range.layers() - 1);
       }
 
       m_dropRange.startRange(layer, m_frame, m_range.type());
@@ -2173,14 +2166,14 @@ bool Timeline::isCopyKeyPressed(ui::Message* msg)
   return msg->ctrlPressed();
 }
 
-void Timeline::Range::startRange(int layer, FrameNumber frame, Type type)
+void Timeline::Range::startRange(LayerIndex layer, FrameNumber frame, Type type)
 {
   m_type = type;
   m_layerBegin = m_layerEnd = layer;
   m_frameBegin = m_frameEnd = frame;
 }
 
-void Timeline::Range::endRange(int layer, FrameNumber frame)
+void Timeline::Range::endRange(LayerIndex layer, FrameNumber frame)
 {
   ASSERT(enabled());
   m_layerEnd = layer;
@@ -2192,7 +2185,7 @@ void Timeline::Range::disableRange()
   m_type = kNone;
 }
 
-bool Timeline::Range::inRange(int layer) const
+bool Timeline::Range::inRange(LayerIndex layer) const
 {
   if (enabled())
     return (layer >= layerBegin() && layer <= layerEnd());
@@ -2208,15 +2201,15 @@ bool Timeline::Range::inRange(FrameNumber frame) const
     return false;
 }
 
-bool Timeline::Range::inRange(int layer, FrameNumber frame) const
+bool Timeline::Range::inRange(LayerIndex layer, FrameNumber frame) const
 {
   return inRange(layer) && inRange(frame);
 }
 
 void Timeline::Range::setLayers(int layers)
 {
-  if (m_layerBegin <= m_layerEnd) m_layerEnd = m_layerBegin + layers - 1;
-  else m_layerBegin = m_layerEnd + layers - 1;
+  if (m_layerBegin <= m_layerEnd) m_layerEnd = m_layerBegin + LayerIndex(layers - 1);
+  else m_layerBegin = m_layerEnd + LayerIndex(layers - 1);
 }
 
 void Timeline::Range::setFrames(FrameNumber frames)
@@ -2225,12 +2218,12 @@ void Timeline::Range::setFrames(FrameNumber frames)
   else m_frameBegin = (m_frameEnd + frames).previous();
 }
 
-void Timeline::Range::displace(int layerDelta, FrameNumber frameDelta)
+void Timeline::Range::displace(int layerDelta, int frameDelta)
 {
-  m_layerBegin += layerDelta;
-  m_layerEnd += layerDelta;
-  m_frameBegin += frameDelta;
-  m_frameEnd += frameDelta;
+  m_layerBegin += LayerIndex(layerDelta);
+  m_layerEnd   += LayerIndex(layerDelta);
+  m_frameBegin += FrameNumber(frameDelta);
+  m_frameEnd   += FrameNumber(frameDelta);
 }
 
 } // namespace app
