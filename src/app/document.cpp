@@ -75,6 +75,13 @@ Document::Document(Sprite* sprite)
 
 Document::~Document()
 {
+  // We cannot be in a context at this moment. If we were in a
+  // context, doc::~Document() would remove the document from the
+  // context and it would generate onRemoveDocument() notifications,
+  // which could result in serious problems for observers expecting a
+  // fully created app::Document.
+  ASSERT(context() == NULL);
+
   if (m_bound.seg)
     base_free(m_bound.seg);
 
