@@ -232,10 +232,10 @@ bool PngFormat::onLoad(FileOp* fop)
 
     // Set the transparent color to the first transparent entry found
     if (mask_entry >= 0)
-      fop->document->getSprite()->setTransparentColor(mask_entry);
+      fop->document->sprite()->setTransparentColor(mask_entry);
   }
 
-  mask_entry = fop->document->getSprite()->getTransparentColor();
+  mask_entry = fop->document->sprite()->getTransparentColor();
 
   /* Allocate the memory to hold the image using the fields of info_ptr. */
 
@@ -388,12 +388,12 @@ bool PngFormat::onSave(FileOp* fop)
 
   switch (image->getPixelFormat()) {
     case IMAGE_RGB:
-      color_type = fop->document->getSprite()->needAlpha() ?
+      color_type = fop->document->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_RGB_ALPHA:
         PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = fop->document->getSprite()->needAlpha() ?
+      color_type = fop->document->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_GRAY_ALPHA:
         PNG_COLOR_TYPE_GRAY;
       break;
@@ -426,8 +426,8 @@ bool PngFormat::onSave(FileOp* fop)
     // If the sprite does not have a background layer, we include the
     // alpha information of palette entries to indicate which is the
     // transparent color.
-    if (fop->document->getSprite()->getBackgroundLayer() == NULL) {
-      int mask_entry = fop->document->getSprite()->getTransparentColor();
+    if (fop->document->sprite()->getBackgroundLayer() == NULL) {
+      int mask_entry = fop->document->sprite()->getTransparentColor();
       int num_trans = mask_entry+1;
       png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
 

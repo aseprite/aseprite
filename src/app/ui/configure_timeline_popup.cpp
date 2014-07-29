@@ -80,11 +80,11 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
 IDocumentSettings* ConfigureTimelinePopup::docSettings()
 {
   Context* context = UIContext::instance();
-  Document* document = context->getActiveDocument();
+  Document* document = context->activeDocument();
   if (!document)
     return NULL;
 
-  return context->getSettings()->getDocumentSettings(document);
+  return context->settings()->getDocumentSettings(document);
 }
 
 void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()

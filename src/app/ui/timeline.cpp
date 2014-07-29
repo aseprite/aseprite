@@ -31,7 +31,6 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/document_api.h"
-#include "app/document_event.h"
 #include "app/document_undo.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -47,6 +46,7 @@
 #include "app/undo_transaction.h"
 #include "base/compiler_specific.h"
 #include "base/memory.h"
+#include "doc/document_event.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/raster.h"
@@ -166,7 +166,8 @@ Timeline::Timeline()
   , m_separator_w(1)
   , m_confPopup(NULL)
 {
-  m_context->addObserver(this);
+  m_ctxConn = m_context->AfterCommandExecution.connect(&Timeline::onAfterCommandExecution, this);
+  m_context->documents().addObserver(this);
 
   setDoubleBuffered(true);
 }
@@ -174,9 +175,7 @@ Timeline::Timeline()
 Timeline::~Timeline()
 {
   detachDocument();
-
-  m_context->removeObserver(this);
-
+  m_context->documents().removeObserver(this);
   delete m_confPopup;
 }
 
@@ -308,14 +307,14 @@ bool Timeline::onProcessMessage(Message* msg)
           m_state = STATE_MOVING_SEPARATOR;
           break;
         case A_PART_HEADER_ONIONSKIN_RANGE_LEFT: {
-          ISettings* settings = UIContext::instance()->getSettings();
+          ISettings* settings = UIContext::instance()->settings();
           IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
           m_origFrames = docSettings->getOnionskinPrevFrames();
           break;
         }
         case A_PART_HEADER_ONIONSKIN_RANGE_RIGHT: {
-          ISettings* settings = UIContext::instance()->getSettings();
+          ISettings* settings = UIContext::instance()->settings();
           IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_RIGHT;
           m_origFrames = docSettings->getOnionskinNextFrames();
@@ -362,7 +361,7 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         case A_PART_CEL: {
           const DocumentReader document(const_cast<Document*>(m_document));
-          const Sprite* sprite = document->getSprite();
+          const Sprite* sprite = document->sprite();
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk_layer)
@@ -426,7 +425,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
-            ISettings* settings = UIContext::instance()->getSettings();
+            ISettings* settings = UIContext::instance()->settings();
             IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames + (m_clk_frame - hot_frame);
             docSettings->setOnionskinPrevFrames(MAX(0, newValue));
@@ -435,7 +434,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_RIGHT:
-            ISettings* settings = UIContext::instance()->getSettings();
+            ISettings* settings = UIContext::instance()->settings();
             IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames - (m_clk_frame - hot_frame);
             docSettings->setOnionskinNextFrames(MAX(0, newValue));
@@ -631,7 +630,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case A_PART_HEADER_ONIONSKIN: {
-            ISettings* settings = UIContext::instance()->getSettings();
+            ISettings* settings = UIContext::instance()->settings();
             IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             if (docSettings)
               docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
@@ -926,7 +925,7 @@ paintNoDoc:;
     drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
 }
 
-void Timeline::onCommandAfterExecution(Context* context)
+void Timeline::onAfterCommandExecution()
 {
   if (!m_document)
     return;
@@ -936,13 +935,13 @@ void Timeline::onCommandAfterExecution(Context* context)
   invalidate();
 }
 
-void Timeline::onRemoveDocument(Context* context, Document* document)
+void Timeline::onRemoveDocument(doc::Document* document)
 {
   if (document == m_document)
     detachDocument();
 }
 
-void Timeline::onAddLayer(DocumentEvent& ev)
+void Timeline::onAddLayer(doc::DocumentEvent& ev)
 {
   ASSERT(ev.layer() != NULL);
 
@@ -953,7 +952,7 @@ void Timeline::onAddLayer(DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onAfterRemoveLayer(DocumentEvent& ev)
+void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -980,7 +979,7 @@ void Timeline::onAfterRemoveLayer(DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onAddFrame(DocumentEvent& ev)
+void Timeline::onAddFrame(doc::DocumentEvent& ev)
 {
   setFrame(ev.frame());
 
@@ -988,7 +987,7 @@ void Timeline::onAddFrame(DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onRemoveFrame(DocumentEvent& ev)
+void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -1103,7 +1102,7 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
@@ -1255,7 +1254,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame
 
 void Timeline::drawLoopRange(ui::Graphics* g)
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   if (!docSettings->getLoopAnimation())
     return;
@@ -1393,7 +1392,7 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
 
 gfx::Rect Timeline::getOnionskinFramesBounds() const
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   if (docSettings->getUseOnionskin()) {
     FrameNumber firstFrame = m_frame.previous(docSettings->getOnionskinPrevFrames());
@@ -1641,7 +1640,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
     switch (m_hot_part) {
 
       case A_PART_HEADER_ONIONSKIN: {
-        ISettings* settings = UIContext::instance()->getSettings();
+        ISettings* settings = UIContext::instance()->settings();
         IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
         if (docSettings) {
           sb->setStatusText(0, "Onionskin is %s",

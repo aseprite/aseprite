@@ -56,7 +56,7 @@ bool OpenInFolderCommand::onEnabled(Context* context)
 
 void OpenInFolderCommand::onExecute(Context* context)
 {
-  launcher::open_folder(context->getActiveDocument()->getFilename());
+  launcher::open_folder(context->activeDocument()->filename());
 }
 
 Command* CommandFactory::createOpenInFolderCommand()

@@ -33,7 +33,7 @@
 
 namespace app {
 
-DataRecovery::DataRecovery(Context* context)
+DataRecovery::DataRecovery(doc::Context* context)
   : m_tempDir(NULL)
   , m_backup(NULL)
   , m_context(context)
@@ -57,10 +57,12 @@ DataRecovery::DataRecovery(Context* context)
   }
 
   m_context->addObserver(this);
+  m_context->documents().addObserver(this);
 }
 
 DataRecovery::~DataRecovery()
 {
+  m_context->documents().removeObserver(this);
   m_context->removeObserver(this);
 
   delete m_backup;
@@ -71,12 +73,12 @@ DataRecovery::~DataRecovery()
   }
 }
 
-void DataRecovery::onAddDocument(Context* context, Document* document)
+void DataRecovery::onAddDocument(doc::Document* document)
 {
   document->addObserver(this);
 }
 
-void DataRecovery::onRemoveDocument(Context* context, Document* document)
+void DataRecovery::onRemoveDocument(doc::Document* document)
 {
   document->removeObserver(this);
 }

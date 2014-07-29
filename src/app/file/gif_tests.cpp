@@ -23,6 +23,7 @@
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file/gif_options.h"
+#include "app/test_context.h"
 #include "raster/raster.h"
 #include "she/scoped_handle.h"
 #include "she/system.h"
@@ -38,7 +39,7 @@ public:
   }
 
 protected:
-  app::Context m_context;
+  app::TestContext m_ctx;
   she::ScopedHandle<she::System> m_system;
 };
 
@@ -47,8 +48,8 @@ TEST_F(GifFormat, Dimensions)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_INDEXED, 31, 29, 14));
-    Sprite* sprite = doc->getSprite();
+    doc::Document* doc = m_ctx.documents().add(31, 29, doc::ColorMode_INDEXED, 14);
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
     sprite->setTransparentColor(3);
 
@@ -56,14 +57,14 @@ TEST_F(GifFormat, Dimensions)
     ASSERT_NE((LayerImage*)NULL, layer);
 
     Image* image = sprite->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
-    clear_image(image, doc->getSprite()->getTransparentColor());
+    clear_image(image, doc->sprite()->getTransparentColor());
 
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    Document* doc = load_document(&m_ctx, fn);
+    Sprite* sprite = doc->sprite();
 
     EXPECT_EQ(31, sprite->getWidth());
     EXPECT_EQ(29, sprite->getHeight());
@@ -79,8 +80,8 @@ TEST_F(GifFormat, OpaqueIndexed)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_INDEXED, 2, 2, 4));
-    Sprite* sprite = doc->getSprite();
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_INDEXED, 4);
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
     Palette* pal = sprite->getPalette(FrameNumber(0));
@@ -99,12 +100,12 @@ TEST_F(GifFormat, OpaqueIndexed)
     image->putPixel(1, 0, 2);
     image->putPixel(1, 1, 3);
 
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    Document* doc = load_document(&m_ctx, fn);
+    Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);
@@ -130,8 +131,8 @@ TEST_F(GifFormat, TransparentIndexed)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_INDEXED, 2, 2, 4));
-    Sprite* sprite = doc->getSprite();
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_INDEXED, 4);
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
     Palette* pal = sprite->getPalette(FrameNumber(0));
@@ -149,12 +150,12 @@ TEST_F(GifFormat, TransparentIndexed)
     image->putPixel(1, 0, 2);
     image->putPixel(1, 1, 3);
 
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    Document* doc = load_document(&m_ctx, fn);
+    Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);
@@ -180,8 +181,8 @@ TEST_F(GifFormat, TransparentRgbQuantization)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_RGB, 2, 2, 256));
-    Sprite* sprite = doc->getSprite();
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256);
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
@@ -193,12 +194,12 @@ TEST_F(GifFormat, TransparentRgbQuantization)
     image->putPixel(1, 0, rgb(0, 255, 0));
     image->putPixel(1, 1, rgb(0, 0, 255));
 
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    Document* doc = load_document(&m_ctx, fn);
+    Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);
@@ -218,8 +219,8 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_RGB, 2, 2, 256));
-    Sprite* sprite = doc->getSprite();
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256);
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
@@ -233,12 +234,12 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
     image->putPixel(1, 0, rgb(0, 255, 0));
     image->putPixel(1, 1, rgb(0, 0, 255));
 
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    Document* doc = load_document(&m_ctx, fn);
+    Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);
@@ -260,8 +261,8 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
   const char* fn = "test.gif";
 
   {
-    DocumentPtr doc(Document::createBasicDocument(IMAGE_RGB, 2, 2, 256));
-    Sprite* sprite = doc->getSprite();
+    Document* doc(static_cast<Document*>(m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256)));
+    Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
     LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
@@ -286,12 +287,12 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
 
     // Do not modify palettes
     doc->setFormatOptions(SharedPtr<FormatOptions>(new GifOptions(GifOptions::NoQuantize)));
-    save_document(&m_context, doc);
+    save_document(&m_ctx, doc);
   }
 
   {
-    DocumentPtr doc(load_document(&m_context, fn));
-    Sprite* sprite = doc->getSprite();
+    DocumentPtr doc(load_document(&m_ctx, fn));
+    Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->getFolder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);

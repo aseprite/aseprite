@@ -89,10 +89,10 @@ void Workspace::removeView(WorkspaceView* view)
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
 
-WorkspaceView* Workspace::getActiveView()
+WorkspaceView* Workspace::activeView()
 {
   ASSERT(m_activePart != NULL);
-  return m_activePart->getActiveView();
+  return m_activePart->activeView();
 }
 
 void Workspace::setActiveView(WorkspaceView* view)
@@ -192,8 +192,8 @@ void Workspace::makeUnique(WorkspaceView* view)
   for (WorkspaceParts::iterator it=parts.begin(), end=parts.end(); it != end; ++it) {
     WorkspacePart* part = *it;
     if (part->getParent() != this) {
-      while (part->getActiveView())
-        part->removeView(part->getActiveView());
+      while (part->activeView())
+        part->removeView(part->activeView());
     }
   }
 

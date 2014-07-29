@@ -368,7 +368,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     jpeg_options.reset(new JpegOptions);
 
   // Non-interactive mode
-  if (!fop->context->isUiAvailable())
+  if (!fop->context || !fop->context->isUiAvailable())
     return jpeg_options;
 
   try {

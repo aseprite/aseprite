@@ -46,14 +46,14 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     return docSettings->getUseOnionskin();
   }
 
   void onExecute(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     docSettings->setUseOnionskin(docSettings->getUseOnionskin() ? false: true);
   }

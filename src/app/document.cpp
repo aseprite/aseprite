@@ -23,8 +23,6 @@
 #include "app/document.h"
 
 #include "app/document_api.h"
-#include "app/document_event.h"
-#include "app/document_observer.h"
 #include "app/document_undo.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
@@ -36,6 +34,8 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "doc/document_event.h"
+#include "doc/document_observer.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -49,8 +49,7 @@ using namespace base;
 using namespace raster;
 
 Document::Document(Sprite* sprite)
-  : m_sprite(sprite)
-  , m_undo(new DocumentUndo)
+  : m_undo(new DocumentUndo)
   , m_associated_to_file(false)
   , m_mutex(new mutex)
   , m_write_lock(false)
@@ -64,19 +63,18 @@ Document::Document(Sprite* sprite)
   , m_mask(new Mask())
   , m_maskVisible(true)
 {
-  m_document.setFilename("Sprite");
+  setFilename("Sprite");
 
   // Boundary stuff
   m_bound.nseg = 0;
   m_bound.seg = NULL;
+
+  if (sprite)
+    sprites().add(sprite);
 }
 
 Document::~Document()
 {
-  DocumentEvent ev(this);
-  ev.sprite(m_sprite);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveSprite, ev);
-
   if (m_bound.seg)
     base_free(m_bound.seg);
 
@@ -88,110 +86,49 @@ DocumentApi Document::getApi(undo::UndoersCollector* undoers)
   return DocumentApi(this, undoers ? undoers: m_undo->getDefaultUndoersCollector());
 }
 
-Document* Document::createBasicDocument(PixelFormat format, int width, int height, int ncolors)
-{
-  // Create the sprite.
-  base::UniquePtr<Sprite> sprite(new Sprite(format, width, height, ncolors));
-  sprite->setTotalFrames(FrameNumber(1));
-
-  // Create the main image.
-  int indexInStock;
-  {
-    base::UniquePtr<Image> image(Image::create(format, width, height));
-
-    // Clear the image with mask color.
-    clear_image(image, 0);
-
-    // Add image in the sprite's stock.
-    indexInStock = sprite->getStock()->addImage(image);
-    image.release();            // Release the image because it is in the sprite's stock.
-  }
-
-  // Create the first transparent layer.
-  {
-    base::UniquePtr<LayerImage> layer(new LayerImage(sprite));
-    layer->setName("Layer 1");
-
-    // Create the cel.
-    {
-      base::UniquePtr<Cel> cel(new Cel(FrameNumber(0), indexInStock));
-      cel->setPosition(0, 0);
-
-      // Add the cel in the layer.
-      layer->addCel(cel);
-      cel.release();            // Release the cel because it is in the layer
-    }
-
-    // Add the layer in the sprite.
-    sprite->getFolder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
-  }
-
-  // Create the document with the new sprite.
-  base::UniquePtr<Document> document(new Document(sprite));
-  sprite.release();             // Release the sprite because it is in the document.
-
-  document->setFilename("Sprite");
-  return document.release();    // Release the document (it does not throw) returning the raw pointer
-}
-
-void Document::addSprite(Sprite* sprite)
-{
-  ASSERT(m_sprite == NULL);     // TODO add support for more sprites in the future (e.g. for .ico files)
-  m_sprite.reset(sprite);
-
-  DocumentEvent ev(this);
-  ev.sprite(m_sprite);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onAddSprite, ev);
-}
-
 void Document::notifyGeneralUpdate()
 {
-  DocumentEvent ev(this);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onGeneralUpdate, ev);
+  doc::DocumentEvent ev(this);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onGeneralUpdate, ev);
 }
 
 void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region)
 {
-  DocumentEvent ev(this);
+  doc::DocumentEvent ev(this);
   ev.sprite(sprite);
   ev.region(region);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onSpritePixelsModified, ev);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpritePixelsModified, ev);
 }
 
 void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 {
-  DocumentEvent ev(this);
+  doc::DocumentEvent ev(this);
   ev.sprite(srcLayer->getSprite());
   ev.layer(srcLayer);
   ev.targetLayer(targetLayer);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerMergedDown, ev);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onLayerMergedDown, ev);
 }
 
 void Document::notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
 {
-  DocumentEvent ev(this);
+  doc::DocumentEvent ev(this);
   ev.sprite(fromLayer->getSprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelMoved, ev);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelMoved, ev);
 }
 
 void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame)
 {
-  DocumentEvent ev(this);
+  doc::DocumentEvent ev(this);
   ev.sprite(fromLayer->getSprite());
   ev.layer(fromLayer);
   ev.frame(fromFrame);
   ev.targetLayer(toLayer);
   ev.targetFrame(toFrame);
-  notifyObservers<DocumentEvent&>(&DocumentObserver::onCelCopied, ev);
-}
-
-void Document::setFilename(const std::string& filename)
-{
-  m_document.setFilename(filename);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelCopied, ev);
 }
 
 bool Document::isModified() const
@@ -281,7 +218,7 @@ void Document::destroyExtraCel()
 
 void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
 {
-  ASSERT(getSprite() != NULL);
+  ASSERT(sprite() != NULL);
 
   if (!m_extraCel)
     m_extraCel = new Cel(FrameNumber(0), 0); // Ignored fields for this cell (frame, and image index)
@@ -290,11 +227,11 @@ void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
   m_extraCel->setOpacity(opacity);
 
   if (!m_extraImage ||
-      m_extraImage->getPixelFormat() != getSprite()->getPixelFormat() ||
+      m_extraImage->getPixelFormat() != sprite()->getPixelFormat() ||
       m_extraImage->getWidth() != w ||
       m_extraImage->getHeight() != h) {
     delete m_extraImage;                // image
-    m_extraImage = Image::create(getSprite()->getPixelFormat(), w, h);
+    m_extraImage = Image::create(sprite()->getPixelFormat(), w, h);
   }
 }
 
@@ -434,11 +371,13 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
 
 Document* Document::duplicate(DuplicateType type) const
 {
-  const Sprite* sourceSprite = getSprite();
-  base::UniquePtr<Sprite> spriteCopyPtr(new Sprite(sourceSprite->getPixelFormat(),
-                                             sourceSprite->getWidth(),
-                                             sourceSprite->getHeight(),
-                                             sourceSprite->getPalette(FrameNumber(0))->size()));
+  const Sprite* sourceSprite = sprite();
+  base::UniquePtr<Sprite> spriteCopyPtr(new Sprite(
+      sourceSprite->getPixelFormat(),
+      sourceSprite->getWidth(),
+      sourceSprite->getHeight(),
+      sourceSprite->getPalette(FrameNumber(0))->size()));
+
   base::UniquePtr<Document> documentCopy(new Document(spriteCopyPtr));
   Sprite* spriteCopy = spriteCopyPtr.release();
 
@@ -462,7 +401,7 @@ Document* Document::duplicate(DuplicateType type) const
 
     case DuplicateExactCopy:
       // Copy the layer folder
-      copyLayerContent(getSprite()->getFolder(), documentCopy, spriteCopy->getFolder());
+      copyLayerContent(sprite()->getFolder(), documentCopy, spriteCopy->getFolder());
       break;
 
     case DuplicateWithFlattenLayers:

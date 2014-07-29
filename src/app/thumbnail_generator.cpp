@@ -23,7 +23,6 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
-#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
@@ -73,8 +72,9 @@ private:
       fop_post_load(m_fop);
 
       // Convert the loaded document into the she::Surface.
-      const Sprite* sprite = (m_fop->document && m_fop->document->getSprite()) ? m_fop->document->getSprite():
-                                                                                 NULL;
+      const Sprite* sprite = (m_fop->document && m_fop->document->sprite()) ?
+        m_fop->document->sprite(): NULL;
+
       if (!fop_is_stop(m_fop) && sprite) {
         // The palette to convert the Image
         m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
@@ -103,6 +103,7 @@ private:
         image_scale(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
       }
 
+      // Close file
       delete m_fop->document;
 
       // Set the thumbnail of the file-item.
@@ -191,8 +192,7 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
       getWorkerStatus(fileitem, progress) != WithoutWorker)
     return;
 
-  Context tmpContext;
-  FileOp* fop = fop_to_load_document(&tmpContext,
+  FileOp* fop = fop_to_load_document(NULL,
     fileitem->getFileName().c_str(),
     FILE_LOAD_SEQUENCE_NONE |
     FILE_LOAD_ONE_FRAME);

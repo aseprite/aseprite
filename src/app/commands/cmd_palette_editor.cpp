@@ -229,8 +229,8 @@ void PaletteEditorCommand::onExecute(Context* context)
   // Show the specified target color
   {
     app::Color color =
-      (m_background ? context->getSettings()->getBgColor():
-                      context->getSettings()->getFgColor());
+      (m_background ? context->settings()->getBgColor():
+                      context->settings()->getFgColor());
 
     g_window->setColor(color);
   }
@@ -733,8 +733,8 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 {
-  if (UIContext::instance()->getActiveDocument() &&
-      UIContext::instance()->getActiveDocument()->getSprite()) {
+  if (UIContext::instance()->activeDocument() &&
+      UIContext::instance()->activeDocument()->sprite()) {
     try {
       ContextWriter writer(UIContext::instance());
       Document* document(writer.document());

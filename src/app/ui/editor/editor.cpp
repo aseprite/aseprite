@@ -135,7 +135,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_state(new StandbyState())
   , m_decorator(NULL)
   , m_document(document)
-  , m_sprite(m_document->getSprite())
+  , m_sprite(m_document->sprite())
   , m_layer(m_sprite->getFolder()->getFirstLayer())
   , m_frame(FrameNumber(0))
   , m_zoom(0)
@@ -167,14 +167,14 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_fgColorChangeConn =
     ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 
-  UIContext::instance()->getSettings()
+  UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->addObserver(this);
 }
 
 Editor::~Editor()
 {
-  UIContext::instance()->getSettings()
+  UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->removeObserver(this);
 
@@ -422,7 +422,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
 
   // Document settings
   IDocumentSettings* docSettings =
-      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
+      UIContext::instance()->settings()->getDocumentSettings(m_document);
 
   if (docSettings->getTiledMode() & filters::TILED_X_AXIS) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
@@ -730,7 +730,7 @@ tools::Tool* Editor::getCurrentEditorTool()
     return m_quicktool;
   else {
     UIContext* context = UIContext::instance();
-    return context->getSettings()->getCurrentTool();
+    return context->settings()->getCurrentTool();
   }
 }
 
@@ -871,7 +871,7 @@ void Editor::editor_update_quicktool()
 {
   if (m_customizationDelegate) {
     UIContext* context = UIContext::instance();
-    tools::Tool* current_tool = context->getSettings()->getCurrentTool();
+    tools::Tool* current_tool = context->settings()->getCurrentTool();
     tools::Tool* old_quicktool = m_quicktool;
 
     m_quicktool = m_customizationDelegate->getQuickTool(current_tool);

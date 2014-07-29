@@ -160,11 +160,11 @@ static Brush* editor_get_current_brush()
 {
   // Create the current brush from settings
   tools::Tool* current_tool = UIContext::instance()
-    ->getSettings()
+    ->settings()
     ->getCurrentTool();
 
   IBrushSettings* brush_settings = UIContext::instance()
-    ->getSettings()
+    ->settings()
     ->getToolSettings(current_tool)
     ->getBrush();
 
@@ -236,7 +236,7 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
 
   // Get the current tool
   tools::Tool* current_tool = UIContext::instance()
-    ->getSettings()
+    ->settings()
     ->getCurrentTool();
 
   // Setup the cursor type debrushding of several factors (current tool,
@@ -267,7 +267,7 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
   // Draw pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
     IToolSettings* tool_settings = UIContext::instance()
-      ->getSettings()
+      ->settings()
       ->getToolSettings(current_tool);
 
     Brush* brush = editor_get_current_brush();
@@ -427,13 +427,13 @@ bool Editor::doesBrushPreviewNeedSubpixel()
 static void generate_cursor_boundaries()
 {
   tools::Tool* current_tool = UIContext::instance()
-    ->getSettings()
+    ->settings()
     ->getCurrentTool();
 
   IBrushSettings* brush_settings = NULL;
   if (current_tool)
     brush_settings = UIContext::instance()
-      ->getSettings()
+      ->settings()
       ->getToolSettings(current_tool)
       ->getBrush();
 
@@ -649,7 +649,7 @@ static void clearpixel(ui::Graphics* g, int x, int y, gfx::Color color)
 
 static color_t get_brush_color(Sprite* sprite, Layer* layer)
 {
-  app::Color c = UIContext::instance()->getSettings()->getFgColor();
+  app::Color c = UIContext::instance()->settings()->getFgColor();
   ASSERT(sprite != NULL);
 
   // Avoid using invalid colors

@@ -23,7 +23,6 @@
 #include "app/ui/document_view.h"
 
 #include "app/app.h"
-#include "app/document_event.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -34,6 +33,7 @@
 #include "app/ui/mini_editor.h"
 #include "app/ui/workspace.h"
 #include "base/path.h"
+#include "doc/document_event.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 #include "ui/accelerator.h"
@@ -160,7 +160,7 @@ void DocumentView::getDocumentLocation(DocumentLocation* location) const
 
 std::string DocumentView::getTabText()
 {
-  std::string str = base::get_file_name(m_document->getFilename());
+  std::string str = m_document->name();
 
   // Add an asterisk if the document is modified.
   if (m_document->isModified())
@@ -202,24 +202,24 @@ bool DocumentView::onProcessMessage(Message* msg)
   return Box::onProcessMessage(msg);
 }
 
-void DocumentView::onGeneralUpdate(DocumentEvent& ev)
+void DocumentView::onGeneralUpdate(doc::DocumentEvent& ev)
 {
   if (m_editor->isVisible())
     m_editor->updateEditor();
 }
 
-void DocumentView::onSpritePixelsModified(DocumentEvent& ev)
+void DocumentView::onSpritePixelsModified(doc::DocumentEvent& ev)
 {
   if (m_editor->isVisible())
     m_editor->drawSpriteClipped(ev.region());
 }
 
-void DocumentView::onLayerMergedDown(DocumentEvent& ev)
+void DocumentView::onLayerMergedDown(doc::DocumentEvent& ev)
 {
   m_editor->setLayer(ev.targetLayer());
 }
 
-void DocumentView::onAddLayer(DocumentEvent& ev)
+void DocumentView::onAddLayer(doc::DocumentEvent& ev)
 {
   if (current_editor == m_editor) {
     ASSERT(ev.layer() != NULL);
@@ -227,7 +227,7 @@ void DocumentView::onAddLayer(DocumentEvent& ev)
   }
 }
 
-void DocumentView::onBeforeRemoveLayer(DocumentEvent& ev)
+void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
 {
   Sprite* sprite = ev.sprite();
   Layer* layer = ev.layer();
@@ -250,7 +250,7 @@ void DocumentView::onBeforeRemoveLayer(DocumentEvent& ev)
   }
 }
 
-void DocumentView::onAddFrame(DocumentEvent& ev)
+void DocumentView::onAddFrame(doc::DocumentEvent& ev)
 {
   if (current_editor == m_editor)
     m_editor->setFrame(ev.frame());
@@ -258,7 +258,7 @@ void DocumentView::onAddFrame(DocumentEvent& ev)
     m_editor->setFrame(m_editor->getFrame().next());
 }
 
-void DocumentView::onRemoveFrame(DocumentEvent& ev)
+void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
@@ -273,14 +273,14 @@ void DocumentView::onRemoveFrame(DocumentEvent& ev)
   }
 }
 
-void DocumentView::onTotalFramesChanged(DocumentEvent& ev)
+void DocumentView::onTotalFramesChanged(doc::DocumentEvent& ev)
 {
   if (m_editor->getFrame() >= m_editor->getSprite()->getTotalFrames()) {
     m_editor->setFrame(m_editor->getSprite()->getLastFrame());
   }
 }
 
-void DocumentView::onLayerRestacked(DocumentEvent& ev)
+void DocumentView::onLayerRestacked(doc::DocumentEvent& ev)
 {
   m_editor->invalidate();
 }

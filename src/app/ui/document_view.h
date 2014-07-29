@@ -20,10 +20,10 @@
 #define APP_UI_DOCUMENT_VIEW_H_INCLUDED
 #pragma once
 
-#include "app/document_observer.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "base/compiler_specific.h"
+#include "doc/document_observer.h"
 #include "ui/box.h"
 
 namespace ui {
@@ -37,7 +37,7 @@ namespace app {
 
   class DocumentView : public ui::Box
                      , public TabView
-                     , public DocumentObserver
+                     , public doc::DocumentObserver
                      , public WorkspaceView {
   public:
     enum Type {
@@ -62,15 +62,15 @@ namespace app {
     void onClonedFrom(WorkspaceView* from) OVERRIDE;
 
     // DocumentObserver implementation
-    void onGeneralUpdate(DocumentEvent& ev) OVERRIDE;
-    void onSpritePixelsModified(DocumentEvent& ev) OVERRIDE;
-    void onLayerMergedDown(DocumentEvent& ev) OVERRIDE;
-    void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onBeforeRemoveLayer(DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
-    void onTotalFramesChanged(DocumentEvent& ev) OVERRIDE;
-    void onLayerRestacked(DocumentEvent& ev) OVERRIDE;
+    void onGeneralUpdate(doc::DocumentEvent& ev) OVERRIDE;
+    void onSpritePixelsModified(doc::DocumentEvent& ev) OVERRIDE;
+    void onLayerMergedDown(doc::DocumentEvent& ev) OVERRIDE;
+    void onAddLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onBeforeRemoveLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onAddFrame(doc::DocumentEvent& ev) OVERRIDE;
+    void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
+    void onTotalFramesChanged(doc::DocumentEvent& ev) OVERRIDE;
+    void onLayerRestacked(doc::DocumentEvent& ev) OVERRIDE;
 
   protected:
     bool onProcessMessage(ui::Message* msg) OVERRIDE;

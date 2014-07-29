@@ -47,11 +47,11 @@ ExitCommand::ExitCommand()
 
 void ExitCommand::onExecute(Context* context)
 {
-  const Documents& docs = context->getDocuments();
+  const doc::Documents& docs = context->documents();
   bool modifiedFiles = false;
 
-  for (Documents::const_iterator it=docs.begin(), end=docs.end(); it!=end; ++it) {
-    const Document* document = *it;
+  for (doc::Documents::const_iterator it=docs.begin(), end=docs.end(); it!=end; ++it) {
+    const Document* document = static_cast<Document*>(*it);
     if (document->isModified()) {
       modifiedFiles = true;
       break;

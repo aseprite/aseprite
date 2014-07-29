@@ -143,7 +143,7 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
 
   ReplaceColorFilterWrapper filter(location.layer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));

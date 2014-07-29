@@ -104,7 +104,7 @@ public:
     , m_layer(editor->getLayer())
     , m_frame(editor->getFrame())
     , m_canceled(false)
-    , m_settings(m_context->getSettings())
+    , m_settings(m_context->settings())
     , m_docSettings(m_settings->getDocumentSettings(m_document))
     , m_toolSettings(m_settings->getToolSettings(m_tool))
     , m_button(button)
@@ -225,7 +225,7 @@ public:
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
   SelectionMode getSelectionMode() OVERRIDE { return m_selectionMode; }
-  ISettings* getSettings() OVERRIDE { return m_settings; }
+  ISettings* settings() OVERRIDE { return m_settings; }
   IDocumentSettings* getDocumentSettings() OVERRIDE { return m_docSettings; }
   bool getFilled() OVERRIDE { return m_filled; }
   bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
@@ -333,7 +333,7 @@ private:
 
 tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage* msg)
 {
-  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
+  tools::Tool* current_tool = context->settings()->getCurrentTool();
   if (!current_tool)
     return NULL;
 

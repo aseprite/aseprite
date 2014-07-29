@@ -264,7 +264,7 @@ void MiniEditorWindow::onPlaybackTick()
   if (!document || !sprite)
     return;
 
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IDocumentSettings* docSettings = settings->getDocumentSettings(document);
   if (!docSettings)
     return;

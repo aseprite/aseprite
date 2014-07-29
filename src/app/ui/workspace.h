@@ -41,7 +41,7 @@ namespace app {
     void addView(WorkspaceView* view);
     void removeView(WorkspaceView* view);
 
-    WorkspaceView* getActiveView();
+    WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
 
     void splitView(WorkspaceView* view, int orientation);

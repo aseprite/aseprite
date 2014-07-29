@@ -31,7 +31,6 @@
 #include "app/data_recovery.h"
 #include "app/document_exporter.h"
 #include "app/document_location.h"
-#include "app/document_observer.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
@@ -61,6 +60,7 @@
 #include "app/webserver.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
+#include "doc/document_observer.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
@@ -220,9 +220,6 @@ int App::run()
           console.printf("Error loading file \"%s\"\n", it->c_str());
       }
       else {
-        // Mount and select the sprite
-        context->addDocument(document);
-
         // Add the given file in the argument as a "recent file" only
         // if we are running in GUI mode. If the program is executed
         // in batch mode this is not desirable.
@@ -262,9 +259,9 @@ int App::run()
     gui_run();
 
     // Destroy all documents in the UIContext.
-    const Documents& docs = m_modules->m_ui_context.getDocuments();
+    const doc::Documents& docs = m_modules->m_ui_context.documents();
     while (!docs.empty())
-      m_modules->m_ui_context.removeDocument(docs.back());
+      delete docs.back();
 
     // Destroy the window.
     m_mainWindow.reset(NULL);
@@ -344,7 +341,7 @@ void app_refresh_screen()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
 
   if (Palette* pal = location.palette())
     set_current_palette(pal, false);
@@ -365,9 +362,9 @@ PixelFormat app_get_current_pixel_format()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  Document* document = context->getActiveDocument();
+  Document* document = context->activeDocument();
   if (document != NULL)
-    return document->getSprite()->getPixelFormat();
+    return document->sprite()->getPixelFormat();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else

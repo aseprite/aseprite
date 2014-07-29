@@ -75,7 +75,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
 {
   create_buffers();
 
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
   m_document = location.document();
   m_sprite = location.sprite();
   m_layer = location.layer();

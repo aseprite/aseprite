@@ -20,22 +20,29 @@
 #define APP_DATA_RECOVERY_H_INCLUDED
 #pragma once
 
-#include "app/context_observer.h"
-#include "app/document_observer.h"
-#include "app/documents.h"
 #include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/slot.h"
+#include "doc/context_observer.h"
+#include "doc/document_observer.h"
+#include "doc/documents_observer.h"
 
-namespace base { class TempDir; }
+namespace base {
+  class TempDir;
+}
+
+namespace doc {
+  class Context;
+}
 
 namespace app {
   class Backup;
 
-  class DataRecovery : public ContextObserver
-                     , public DocumentObserver {
+  class DataRecovery : public doc::ContextObserver
+                     , public doc::DocumentsObserver
+                     , public doc::DocumentObserver {
   public:
-    DataRecovery(Context* context);
+    DataRecovery(doc::Context* context);
     ~DataRecovery();
 
     // Returns a backup if there are data to be restored from a
@@ -44,12 +51,12 @@ namespace app {
     Backup* getBackup() { return m_backup; }
 
   private:
-    void onAddDocument(Context* context, Document* document) OVERRIDE;
-    void onRemoveDocument(Context* context, Document* document) OVERRIDE;
+    virtual void onAddDocument(doc::Document* document) OVERRIDE;
+    virtual void onRemoveDocument(doc::Document* document) OVERRIDE;
 
     base::TempDir* m_tempDir;
     Backup* m_backup;
-    Context* m_context;
+    doc::Context* m_context;
 
     DISABLE_COPYING(DataRecovery);
   };

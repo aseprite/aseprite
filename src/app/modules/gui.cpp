@@ -791,7 +791,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           switch (shortcut->type) {
 
             case Shortcut_ChangeTool: {
-              tools::Tool* current_tool = UIContext::instance()->getSettings()->getCurrentTool();
+              tools::Tool* current_tool = UIContext::instance()->settings()->getCurrentTool();
               tools::Tool* select_this_tool = shortcut->tool;
               tools::ToolBox* toolbox = App::instance()->getToolBox();
               std::vector<tools::Tool*> possibles;

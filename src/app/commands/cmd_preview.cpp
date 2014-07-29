@@ -93,7 +93,7 @@ void PreviewCommand::onExecute(Context* context)
   View* view = View::getView(editor);
   int u, v, x, y;
   int index_bg_color = -1;
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(document);
   filters::TiledMode tiled = docSettings->getTiledMode();
 
   // Free mouse

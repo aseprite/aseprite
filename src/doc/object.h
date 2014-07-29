@@ -15,6 +15,7 @@ namespace doc {
   class Object {
   public:
     Object();
+    virtual ~Object();
 
     const ObjectId id() const { return m_id; }
 

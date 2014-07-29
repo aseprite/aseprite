@@ -266,7 +266,7 @@ StatusBar::~StatusBar()
 void StatusBar::onCurrentToolChange()
 {
   if (isVisible()) {
-    tools::Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
+    tools::Tool* currentTool = UIContext::instance()->settings()->getCurrentTool();
     if (currentTool) {
       showTool(500, currentTool);
       setTextf("%s Selected", currentTool->getText().c_str());
@@ -431,7 +431,7 @@ bool StatusBar::onProcessMessage(Message* msg)
     case kMouseEnterMessage: {
       updateSubwidgetsVisibility();
 
-      const Document* document = UIContext::instance()->getActiveDocument();
+      const Document* document = UIContext::instance()->activeDocument();
       if (document != NULL)
         updateCurrentFrame();
       break;
@@ -630,7 +630,7 @@ void StatusBar::updateFromLayer()
 
 void StatusBar::updateCurrentFrame()
 {
-  DocumentLocation location = UIContext::instance()->getActiveLocation();
+  DocumentLocation location = UIContext::instance()->activeLocation();
   if (location.sprite())
     m_currentFrame->setTextf("%d", location.frame()+1);
 }
@@ -644,7 +644,7 @@ void StatusBar::newFrame()
 
 void StatusBar::updateSubwidgetsVisibility()
 {
-  const Document* document = UIContext::instance()->getActiveDocument();
+  const Document* document = UIContext::instance()->activeDocument();
   bool commandsVisible = (document != NULL && hasMouse());
   bool notificationsVisible = (document == NULL);
 

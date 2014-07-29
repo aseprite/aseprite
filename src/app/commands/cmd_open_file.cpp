@@ -147,10 +147,8 @@ void OpenFileCommand::onExecute(Context* context)
 
         Document* document = fop->document;
         if (document) {
-          UIContext* context = UIContext::instance();
-
           App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
-          context->addDocument(document);
+          document->setContext(context);
         }
         else if (!fop_is_stop(fop))
           unrecent = true;

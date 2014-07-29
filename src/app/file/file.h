@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,12 +37,17 @@ namespace base {
   class mutex;
 }
 
+namespace doc {
+  class Document;
+}
+
 namespace raster {
   class Cel;
   class Image;
   class Layer;
   class LayerImage;
   class Palette;
+  class Sprite;
 }
 
 namespace app {
@@ -112,6 +117,7 @@ namespace app {
       return !this->seq.filename_list.empty();
     }
 
+    void createDocument(Sprite* spr);
   };
 
   // Available extensions for each load/save operation.
@@ -121,8 +127,8 @@ namespace app {
 
   // High-level routines to load/save documents.
 
-  Document* load_document(Context* context, const char* filename);
-  int save_document(Context* context, Document* document);
+  app::Document* load_document(Context* context, const char* filename);
+  int save_document(Context* context, doc::Document* document);
 
   // Low-level routines to load/save documents.
 

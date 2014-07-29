@@ -47,8 +47,8 @@ MakeUniqueEditorCommand::MakeUniqueEditorCommand()
 void MakeUniqueEditorCommand::onExecute(Context* context)
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  if (workspace->getActiveView() != NULL)
-    workspace->makeUnique(workspace->getActiveView());
+  if (workspace->activeView() != NULL)
+    workspace->makeUnique(workspace->activeView());
 }
 
 class SplitEditorHorizontallyCommand : public Command {
@@ -70,8 +70,8 @@ SplitEditorHorizontallyCommand::SplitEditorHorizontallyCommand()
 void SplitEditorHorizontallyCommand::onExecute(Context* context)
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  if (workspace->getActiveView() != NULL)
-    workspace->splitView(workspace->getActiveView(), JI_HORIZONTAL);
+  if (workspace->activeView() != NULL)
+    workspace->splitView(workspace->activeView(), JI_HORIZONTAL);
 }
 
 class SplitEditorVerticallyCommand : public Command {
@@ -93,8 +93,8 @@ SplitEditorVerticallyCommand::SplitEditorVerticallyCommand()
 void SplitEditorVerticallyCommand::onExecute(Context* context)
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  if (workspace->getActiveView() != NULL)
-    workspace->splitView(workspace->getActiveView(), JI_VERTICAL);
+  if (workspace->activeView() != NULL)
+    workspace->splitView(workspace->activeView(), JI_VERTICAL);
 }
 
 Command* CommandFactory::createMakeUniqueEditorCommand()

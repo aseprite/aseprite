@@ -190,7 +190,7 @@ private:
   void onBrushTypeChange() {
     m_brushType = (BrushType)m_brushTypeButton->getSelectedItem();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     brushSettings->setType(m_brushType);
@@ -215,7 +215,7 @@ private:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->getBrush()
@@ -236,7 +236,7 @@ protected:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->getBrush()
@@ -261,7 +261,7 @@ protected:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setTolerance(getValue());
@@ -319,7 +319,7 @@ protected:
       case 2: inkType = kLockAlphaInk; break;
     }
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)->setInkType(inkType);
   }
@@ -341,7 +341,7 @@ protected:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setOpacity(getValue());
@@ -358,7 +358,7 @@ protected:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setSprayWidth(getValue());
@@ -375,7 +375,7 @@ protected:
   void onValueChange() OVERRIDE {
     IntEntry::onValueChange();
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setSpraySpeed(getValue());
@@ -571,7 +571,7 @@ private:
     setFreehandAlgorithm(
       (FreehandAlgorithm)m_freehandAlgoButton->getSelectedItem());
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setFreehandAlgorithm(m_freehandAlgo);
@@ -616,7 +616,7 @@ protected:
   void onClick(Event& ev) OVERRIDE {
     CheckBox::onClick(ev);
 
-    ISettings* settings = UIContext::instance()->getSettings();
+    ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setFreehandAlgorithm(isSelected() ?
@@ -801,7 +801,7 @@ void ContextBar::onSetOpacity(int newOpacity)
 
 void ContextBar::onBrushSizeChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   Tool* currentTool = settings->getCurrentTool();
   IToolSettings* toolSettings = settings->getToolSettings(currentTool);
   IBrushSettings* brushSettings = toolSettings->getBrush();
@@ -812,7 +812,7 @@ void ContextBar::onBrushSizeChange()
 
 void ContextBar::onBrushAngleChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   Tool* currentTool = settings->getCurrentTool();
   IToolSettings* toolSettings = settings->getToolSettings(currentTool);
   IBrushSettings* brushSettings = toolSettings->getBrush();
@@ -823,7 +823,7 @@ void ContextBar::onBrushAngleChange()
 
 void ContextBar::onCurrentToolChange()
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   updateFromTool(settings->getCurrentTool());
 }
 
@@ -834,7 +834,7 @@ void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 
 void ContextBar::updateFromTool(tools::Tool* tool)
 {
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IToolSettings* toolSettings = settings->getToolSettings(tool);
   IBrushSettings* brushSettings = toolSettings->getBrush();
 

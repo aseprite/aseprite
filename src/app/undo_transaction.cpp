@@ -39,7 +39,7 @@ UndoTransaction::UndoTransaction(Context* context, const char* label, undo::Modi
 {
   ASSERT(label != NULL);
 
-  DocumentLocation location = m_context->getActiveLocation();
+  DocumentLocation location = m_context->activeLocation();
 
   m_document = location.document();
   m_sprite = location.sprite();
@@ -83,7 +83,7 @@ void UndoTransaction::closeUndoGroup()
   ASSERT(!m_closed);
 
   if (isEnabled()) {
-    DocumentLocation location = m_context->getActiveLocation();
+    DocumentLocation location = m_context->activeLocation();
     SpritePosition position(m_sprite->layerToIndex(location.layer()),
                             location.frame());
 

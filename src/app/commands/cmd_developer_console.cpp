@@ -24,7 +24,6 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/document.h"
-#include "app/documents.h"
 #include "app/ui/devconsole_view.h"
 #include "app/ui/main_window.h"
 #include "app/ui/workspace.h"

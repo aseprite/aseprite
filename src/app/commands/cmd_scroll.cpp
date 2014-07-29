@@ -96,7 +96,7 @@ bool ScrollCommand::onEnabled(Context* context)
 
 void ScrollCommand::onExecute(Context* context)
 {
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();

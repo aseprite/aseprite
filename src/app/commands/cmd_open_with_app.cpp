@@ -56,7 +56,7 @@ bool OpenWithAppCommand::onEnabled(Context* context)
 
 void OpenWithAppCommand::onExecute(Context* context)
 {
-  launcher::open_file(context->getActiveDocument()->getFilename());
+  launcher::open_file(context->activeDocument()->filename());
 }
 
 Command* CommandFactory::createOpenWithAppCommand()

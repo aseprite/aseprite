@@ -253,11 +253,11 @@ void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->getActiveView())) {
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->activeView())) {
     UIContext::instance()->setActiveView(docView);
 
     m_contextBar->updateFromTool(UIContext::instance()
-      ->getSettings()->getCurrentTool());
+      ->settings()->getCurrentTool());
 
     if (m_mode != EditorOnlyMode)
       m_contextBar->setVisible(true);
@@ -277,7 +277,7 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
     return;
 
   WorkspaceView* workspaceView = dynamic_cast<WorkspaceView*>(tabView);
-  if (m_workspace->getActiveView() != workspaceView)
+  if (m_workspace->activeView() != workspaceView)
     m_workspace->setActiveView(workspaceView);
 
   DocumentView* docView = dynamic_cast<DocumentView*>(workspaceView);
@@ -310,7 +310,7 @@ void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->getDocument();
     m_statusBar->setStatusText(250, "%s",
-                               document->getFilename().c_str());
+      document->filename().c_str());
   }
   else {
     m_statusBar->clearText();

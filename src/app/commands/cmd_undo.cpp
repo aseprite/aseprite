@@ -74,7 +74,7 @@ void UndoCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   DocumentUndo* undo = document->getUndo();
-  Sprite* sprite = document->getSprite();
+  Sprite* sprite = document->sprite();
 
   if (get_config_bool("Options", "UndoGotoModified", true)) {
     SpritePosition spritePosition;

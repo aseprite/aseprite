@@ -23,8 +23,6 @@
 #include "app/document_api.h"
 
 #include "app/document.h"
-#include "app/document_event.h"
-#include "app/document_observer.h"
 #include "app/document_undo.h"
 #include "app/undoers/add_cel.h"
 #include "app/undoers/add_frame.h"
@@ -58,6 +56,8 @@
 #include "app/undoers/set_sprite_transparent_color.h"
 #include "app/undoers/set_total_frames.h"
 #include "base/unique_ptr.h"
+#include "doc/document_event.h"
+#include "doc/document_observer.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/algorithm/shrink_bounds.h"
 #include "raster/blend.h"
@@ -71,6 +71,7 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
+
 
 namespace app {
 
@@ -95,9 +96,9 @@ void DocumentApi::setSpriteSize(Sprite* sprite, int w, int h)
 
   sprite->setSize(w, h);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteSizeChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpriteSizeChanged, ev);
 }
 
 void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
@@ -107,9 +108,9 @@ void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
 
   sprite->setTransparentColor(maskColor);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onSpriteTransparentColorChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpriteTransparentColorChanged, ev);
 }
 
 void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor)
@@ -246,10 +247,10 @@ void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber n
   copyFrameForLayer(sprite->getFolder(), fromFrame, newFrame);
 
   // Notify observers about the new frame.
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.frame(newFrame);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddFrame, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
 }
 
 void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame)
@@ -308,10 +309,10 @@ void DocumentApi::removeFrame(Sprite* sprite, FrameNumber frame)
   sprite->removeFrame(frame);
 
   // Notify observers.
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.frame(frame);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onRemoveFrame, ev);
 }
 
 // Does the hard part of removing a frame: Removes all cels located in
@@ -360,10 +361,10 @@ void DocumentApi::setTotalFrames(Sprite* sprite, FrameNumber frames)
   sprite->setTotalFrames(frames);
 
   // Notify observers.
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.frame(frames);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onTotalFramesChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onTotalFramesChanged, ev);
 }
 
 void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
@@ -377,10 +378,10 @@ void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
   sprite->setFrameDuration(frame, msecs);
 
   // Notify observers.
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.frame(frame);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onFrameDurationChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onFrameDurationChanged, ev);
 }
 
 void DocumentApi::setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs)
@@ -499,11 +500,11 @@ void DocumentApi::addCel(LayerImage* layer, Cel* cel)
 
   layer->addCel(cel);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(layer->getSprite());
   ev.layer(layer);
   ev.cel(cel);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddCel, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddCel, ev);
 }
 
 void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
@@ -513,11 +514,11 @@ void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
 
   Sprite* sprite = layer->getSprite();
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.layer(layer);
   ev.cel(cel);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveCel, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onRemoveCel, ev);
 
   // Find if the image that use this cel we are going to remove, is
   // used by other cels.
@@ -549,12 +550,12 @@ void DocumentApi::setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber f
 
   layer->moveCel(cel, frame);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(layer->getSprite());
   ev.layer(layer);
   ev.cel(cel);
   ev.frame(frame);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelFrameChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelFrameChanged, ev);
 }
 
 void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
@@ -566,10 +567,10 @@ void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
 
   cel->setPosition(x, y);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.cel(cel);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelPositionChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelPositionChanged, ev);
 }
 
 void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
@@ -581,10 +582,10 @@ void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
 
   cel->setOpacity(newOpacity);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
   ev.cel(cel);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelOpacityChanged, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelOpacityChanged, ev);
 }
 
 void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor)
@@ -761,10 +762,10 @@ void DocumentApi::addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThi
   folder->stackLayer(newLayer, afterThis);
 
   // Notify observers.
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(folder->getSprite());
   ev.layer(newLayer);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAddLayer, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddLayer, ev);
 }
 
 void DocumentApi::removeLayer(Layer* layer)
@@ -773,10 +774,10 @@ void DocumentApi::removeLayer(Layer* layer)
 
   // Notify observers that a layer will be removed (e.g. an Editor can
   // select another layer if the removed layer is the active one).
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(layer->getSprite());
   ev.layer(layer);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onBeforeRemoveLayer, ev);
 
   // Add undoers.
   if (undoEnabled())
@@ -785,7 +786,7 @@ void DocumentApi::removeLayer(Layer* layer)
   // Do the action.
   layer->getParent()->removeLayer(layer);
 
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAfterRemoveLayer, ev);
 
   delete layer;
 }
@@ -810,10 +811,10 @@ void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
 
   layer->getParent()->stackLayer(layer, afterThis);
 
-  DocumentEvent ev(m_document);
+  doc::DocumentEvent ev(m_document);
   ev.sprite(layer->getSprite());
   ev.layer(layer);
-  m_document->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerRestacked, ev);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onLayerRestacked, ev);
 }
 
 void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor)

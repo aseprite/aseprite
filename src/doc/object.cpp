@@ -12,8 +12,14 @@
 
 namespace doc {
 
+static ObjectId newId = 0;
+
 Object::Object()
-  : m_id(doc::NullId)
+  : m_id(++newId)
+{
+}
+
+Object::~Object()
 {
 }
 

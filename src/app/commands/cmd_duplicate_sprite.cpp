@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,9 +73,10 @@ void DuplicateSpriteCommand::onExecute(Context* context)
   dst_name = window->findChild("dst_name");
   flatten = window->findChild("flatten");
 
-  std::string fn = document->getFilename();
+  std::string fn = document->filename();
+  std::string ext = base::get_file_extension(fn);
   src_name->setText(base::get_file_name(fn));
-  dst_name->setText(base::get_file_title(fn) + " Copy." + base::get_file_extension(fn));
+  dst_name->setText(base::get_file_title(fn) + " Copy" + (!ext.empty() ? "." + ext: ""));
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
     flatten->setSelected(true);
@@ -94,8 +95,7 @@ void DuplicateSpriteCommand::onExecute(Context* context)
       docCopy = document->duplicate(DuplicateExactCopy);
 
     docCopy->setFilename(dst_name->getText().c_str());
-
-    context->addDocument(docCopy);
+    docCopy->setContext(context);
   }
 }
 

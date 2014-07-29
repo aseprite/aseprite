@@ -213,7 +213,7 @@ void CanvasSizeCommand::onExecute(Context* context)
     UndoTransaction undoTransaction(writer.context(), "Canvas Size");
     DocumentApi api = document->getApi();
     raster::color_t bgcolor = color_utils::color_for_target(
-      context->getSettings()->getBgColor(),
+      context->settings()->getBgColor(),
       ColorTarget(
         ColorTarget::BackgroundLayer,
         sprite->getPixelFormat(),

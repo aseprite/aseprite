@@ -95,7 +95,7 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::onExecute(Context* context)
 {
-  m_settings = UIContext::instance()->getSettings();
+  m_settings = UIContext::instance()->settings();
   m_docSettings = m_settings->getDocumentSettings(NULL);
 
   Button* set_grid;

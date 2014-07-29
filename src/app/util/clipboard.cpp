@@ -109,7 +109,7 @@ static bool copy_from_document(const DocumentLocation& location)
   clipboard_x = document->getMask()->getBounds().x;
   clipboard_y = document->getMask()->getBounds().y;
 
-  const Palette* pal = document->getSprite()->getPalette(location.frame());
+  const Palette* pal = document->sprite()->getPalette(location.frame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -185,7 +185,7 @@ void clipboard::paste()
   }
 #endif
 
-  Sprite* dst_sprite = editor->getDocument()->getSprite();
+  Sprite* dst_sprite = editor->getDocument()->sprite();
   if (clipboard_image == NULL)
     return;
 

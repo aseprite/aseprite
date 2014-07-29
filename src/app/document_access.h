@@ -217,7 +217,7 @@ namespace app {
     {
       ASSERT(m_document != NULL);
 
-      m_context->removeDocument(m_document);
+      m_document->close();
       unlockWriter();
 
       delete m_document;

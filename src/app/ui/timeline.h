@@ -20,11 +20,12 @@
 #define APP_UI_TIMELINE_H_INCLUDED
 #pragma once
 
-#include "app/context_observer.h"
-#include "app/document_observer.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
 #include "base/compiler_specific.h"
+#include "base/connection.h"
+#include "doc/document_observer.h"
+#include "doc/documents_observer.h"
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"
 #include "raster/sprite.h"
@@ -52,9 +53,9 @@ namespace app {
   class Editor;
 
   class Timeline : public ui::Widget
-                 , public ContextObserver
-                 , public DocumentObserver
-                 , public EditorObserver {
+                 , public doc::DocumentsObserver
+                 , public doc::DocumentObserver
+                 , public app::EditorObserver {
   public:
     enum State {
       STATE_STANDBY,
@@ -137,14 +138,16 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
     // DocumentObserver impl.
-    void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onAfterRemoveLayer(DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
+    void onAddLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onAfterRemoveLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onAddFrame(doc::DocumentEvent& ev) OVERRIDE;
+    void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
 
-    // ContextObserver impl.
-    void onCommandAfterExecution(Context* context) OVERRIDE;
-    void onRemoveDocument(Context* context, Document* document) OVERRIDE;
+    // app::Context slots.
+    void onAfterCommandExecution();
+
+    // DocumentsObserver impl.
+    void onRemoveDocument(doc::Document* document) OVERRIDE;
 
     // EditorObserver impl.
     void dispose() OVERRIDE { }
@@ -281,6 +284,7 @@ namespace app {
     gfx::Point m_oldPos;
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
+    ScopedConnection m_ctxConn;
   };
 
 } // namespace app

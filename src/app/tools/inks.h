@@ -58,8 +58,8 @@ public:
       case WithBg:
         {
           int color = color_utils::color_for_layer(m_type == WithFg ?
-                                                   loop->getSettings()->getFgColor():
-                                                   loop->getSettings()->getBgColor(),
+                                                   loop->settings()->getFgColor():
+                                                   loop->settings()->getBgColor(),
                                                    loop->getLayer());
           loop->setPrimaryColor(color);
           loop->setSecondaryColor(color);
@@ -189,18 +189,18 @@ public:
       case ReplaceFgWithBg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
                                                              loop->getLayer()));
         break;
 
       case ReplaceBgWithFg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
                                                              loop->getLayer()));
         break;
     }

@@ -38,7 +38,7 @@ TEST(File, SeveralSizes)
   // Register all possible image formats.
   FileFormatsManager::instance().registerAllFormats();
   std::vector<char> fn(256);
-  app::Context context;
+  app::Context ctx;
 
   for (int w=10; w<=10+503*2; w+=503) {
     for (int h=10; h<=10+503*2; h+=503) {
@@ -46,13 +46,13 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        base::UniquePtr<Document> doc(Document::createBasicDocument(IMAGE_INDEXED, w, h, 256));
+        base::UniquePtr<Document> doc(ctx.documents().add(w, h, doc::ColorMode_INDEXED, 256));
         doc->setFilename(&fn[0]);
 
         // Random pixels
-        LayerImage* layer = dynamic_cast<LayerImage*>(doc->getSprite()->getFolder()->getFirstLayer());
+        LayerImage* layer = dynamic_cast<LayerImage*>(doc->sprite()->getFolder()->getFirstLayer());
         ASSERT_TRUE(layer != NULL);
-        Image* image = doc->getSprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
+        Image* image = doc->sprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
@@ -63,18 +63,18 @@ TEST(File, SeveralSizes)
           }
         }
 
-        save_document(&context, doc);
+        save_document(&ctx, doc);
       }
 
       {
-        base::UniquePtr<Document> doc(load_document(&context, &fn[0]));
-        ASSERT_EQ(w, doc->getSprite()->getWidth());
-        ASSERT_EQ(h, doc->getSprite()->getHeight());
+        base::UniquePtr<Document> doc(load_document(&ctx, &fn[0]));
+        ASSERT_EQ(w, doc->sprite()->getWidth());
+        ASSERT_EQ(h, doc->sprite()->getHeight());
 
         // Same random pixels (see the seed)
-        LayerImage* layer = dynamic_cast<LayerImage*>(doc->getSprite()->getFolder()->getFirstLayer());
+        LayerImage* layer = dynamic_cast<LayerImage*>(doc->sprite()->getFolder()->getFirstLayer());
         ASSERT_TRUE(layer != NULL);
-        Image* image = doc->getSprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
+        Image* image = doc->sprite()->getStock()->getImage(layer->getCel(FrameNumber(0))->getImage());
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {

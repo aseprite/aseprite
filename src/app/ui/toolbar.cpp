@@ -333,7 +333,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     gfx::Color face;
     int nw;
 
-    if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
+    if (UIContext::instance()->settings()->getCurrentTool() == tool ||
       m_hotIndex == c) {
       nw = PART_TOOLBUTTON_HOT_NW;
       face = hotFace;
@@ -599,7 +599,7 @@ void ToolBar::selectTool(Tool* tool)
 
   m_selectedInGroup[tool->getGroup()] = tool;
 
-  UIContext::instance()->getSettings()->setCurrentTool(tool);
+  UIContext::instance()->settings()->setCurrentTool(tool);
 
   if (m_currentStrip)
     m_currentStrip->invalidate();
@@ -744,7 +744,7 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       gfx::Color face;
       int nw;
 
-      if (UIContext::instance()->getSettings()->getCurrentTool() == tool ||
+      if (UIContext::instance()->settings()->getCurrentTool() == tool ||
         m_hotTool == tool) {
         nw = PART_TOOLBUTTON_HOT_NW;
         face = theme->getColor(ThemeColor::ButtonHotFace);

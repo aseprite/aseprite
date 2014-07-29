@@ -188,8 +188,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     setColumns(window->columns());
   }
 
-  Document* document(context->getActiveDocument());
-  Sprite* sprite = document->getSprite();
+  Document* document(context->activeDocument());
+  Sprite* sprite = document->sprite();
   FrameNumber nframes = sprite->getTotalFrames();
   int columns;
 

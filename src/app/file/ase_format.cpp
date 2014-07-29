@@ -164,13 +164,9 @@ bool AseFormat::onLoad(FileOp* fop)
   }
 
   // Create the new sprite
-  Sprite* sprite = new Sprite(header.depth == 32 ? IMAGE_RGB:
-                              header.depth == 16 ? IMAGE_GRAYSCALE: IMAGE_INDEXED,
-                              header.width, header.height, header.ncolors);
-  if (!sprite) {
-    fop_error(fop, "Error creating sprite with file spec\n");
-    return false;
-  }
+  UniquePtr<Sprite> sprite(new Sprite(header.depth == 32 ? IMAGE_RGB:
+      header.depth == 16 ? IMAGE_GRAYSCALE: IMAGE_INDEXED,
+      header.width, header.height, header.ncolors));
 
   // Set frames and speed
   sprite->setTotalFrames(FrameNumber(header.frames));
@@ -290,7 +286,8 @@ bool AseFormat::onLoad(FileOp* fop)
       break;
   }
 
-  fop->document = new Document(sprite);
+  fop->createDocument(sprite);
+  sprite.release();
 
   if (ferror(f)) {
     fop_error(fop, "Error reading file.\n");
@@ -304,7 +301,7 @@ bool AseFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool AseFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   // Write the header

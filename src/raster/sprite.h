@@ -55,6 +55,8 @@ namespace raster {
     Sprite(PixelFormat format, int width, int height, int ncolors);
     virtual ~Sprite();
 
+    static Sprite* createBasicSprite(PixelFormat format, int width, int height, int ncolors);
+
     ////////////////////////////////////////
     // Main properties
 

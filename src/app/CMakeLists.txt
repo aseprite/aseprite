@@ -100,14 +100,12 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
-  context_observer_list.cpp
   data_recovery.cpp
   document.cpp
   document_api.cpp
   document_exporter.cpp
   document_location.cpp
   document_undo.cpp
-  documents.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp

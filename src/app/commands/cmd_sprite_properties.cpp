@@ -107,7 +107,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
 
     // Filename
-    name->setText(document->getFilename());
+    name->setText(document->filename());
 
     // Color mode
     type->setText(imgtype_text.c_str());

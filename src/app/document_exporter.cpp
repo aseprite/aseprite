@@ -166,7 +166,7 @@ void DocumentExporter::exportSheet()
   base::UniquePtr<Document> textureDocument(
     createEmptyTexture(samples));
 
-  Sprite* texture = textureDocument->getSprite();
+  Sprite* texture = textureDocument->sprite();
   Image* textureImage = texture->getStock()->getImage(
     static_cast<LayerImage*>(texture->getFolder()->getFirstLayer())
       ->getCel(FrameNumber(0))->getImage());
@@ -191,11 +191,11 @@ void DocumentExporter::captureSamples(Samples& samples)
          it = m_documents.begin(),
          end = m_documents.end(); it != end; ++it) {
     Document* document = *it;
-    Sprite* sprite = document->getSprite();
+    Sprite* sprite = document->sprite();
     
     for (FrameNumber frame=FrameNumber(0);
          frame<sprite->getTotalFrames(); ++frame) {
-      std::string filename = document->getFilename();
+      std::string filename = document->filename();
 
       if (sprite->getTotalFrames() > FrameNumber(1)) {
         int frameNumWidth =
@@ -246,11 +246,14 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
     fullTextureBounds = fullTextureBounds.createUnion(it->inTextureBounds());
   }
 
-  base::UniquePtr<Document> document(Document::createBasicDocument(pixelFormat,
-      fullTextureBounds.w, fullTextureBounds.h, maxColors));
+  base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(
+      pixelFormat, fullTextureBounds.w, fullTextureBounds.h, maxColors));
 
   if (palette != NULL)
-    document->getSprite()->setPalette(palette, false);
+    sprite->setPalette(palette, false);
+
+  base::UniquePtr<Document> document(new Document(sprite));
+  sprite.release();
 
   return document.release();
 }

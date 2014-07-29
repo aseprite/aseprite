@@ -169,21 +169,15 @@ void NewFileCommand::onExecute(Context* context)
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
       ASSERT(w > 0 && h > 0);
 
-      base::UniquePtr<Document> document(
-        Document::createBasicDocument(format, w, h,
-                                      (format == IMAGE_INDEXED ? ncolors: 256)));
-      Sprite* sprite(document->getSprite());
+      base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h,
+          (format == IMAGE_INDEXED ? ncolors: 256)));
 
       if (sprite->getPixelFormat() != IMAGE_GRAYSCALE)
         get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
 
-      usprintf(buf, "Sprite-%04d", ++_sprite_counter);
-      document->setFilename(buf);
-
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
       if (color.getType() != app::Color::MaskType) {
-        Sprite* sprite = document->getSprite();
         Layer* layer = sprite->getFolder()->getFirstLayer();
 
         if (layer && layer->isImage()) {
@@ -201,7 +195,12 @@ void NewFileCommand::onExecute(Context* context)
       }
 
       // Show the sprite to the user
-      context->addDocument(document.release());
+      base::UniquePtr<Document> doc(new Document(sprite));
+      sprite.release();
+      usprintf(buf, "Sprite-%04d", ++_sprite_counter);
+      doc->setFilename(buf);
+      doc->setContext(context);
+      doc.release();
     }
   }
 }

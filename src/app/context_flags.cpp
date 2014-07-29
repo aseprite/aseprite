@@ -39,7 +39,7 @@ ContextFlags::ContextFlags()
 
 void ContextFlags::update(Context* context)
 {
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
   Document* document = location.document();
 
   m_flags = 0;

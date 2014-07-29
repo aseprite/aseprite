@@ -103,13 +103,13 @@ static void save_document_in_background(Context* context, Document* document, bo
     document->impossibleToBackToSavedState();
   }
   else {
-    App::instance()->getRecentFiles()->addRecentFile(document->getFilename().c_str());
+    App::instance()->getRecentFiles()->addRecentFile(document->filename().c_str());
     if (mark_as_saved)
       document->markAsSaved();
 
     StatusBar::instance()
       ->setStatusText(2000, "File %s, saved.",
-                      base::get_file_name(document->getFilename()).c_str());
+        document->name().c_str());
   }
 }
 
@@ -141,7 +141,7 @@ protected:
       filename = m_filename;
     }
     else {
-      filename = document->getFilename();
+      filename = document->filename();
 
       char exts[4096];
       get_writable_extensions(exts, sizeof(exts));
@@ -185,7 +185,7 @@ protected:
     {
       ContextWriter writer(reader);
       Document* documentWriter = writer.document();
-      std::string oldFilename = documentWriter->getFilename();
+      std::string oldFilename = documentWriter->filename();
 
       // Change the document file name
       documentWriter->setFilename(filename.c_str());
@@ -248,7 +248,7 @@ void SaveFileCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
 
-    if (!confirmReadonly(documentWriter->getFilename()))
+    if (!confirmReadonly(documentWriter->filename()))
       return;
 
     save_document_in_background(context, documentWriter, true);
@@ -300,7 +300,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  std::string old_filename = document->getFilename();
+  std::string old_filename = document->filename();
 
   // show "Save As" dialog
   saveAsDialog(reader, "Save Copy As", false);

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,33 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_DOCUMENT_ID_H_INCLUDED
-#define APP_DOCUMENT_ID_H_INCLUDED
+#ifndef APP_TEST_CONTEXT_H_INCLUDED
+#define APP_TEST_CONTEXT_H_INCLUDED
 #pragma once
 
-#include "doc/object_id.h"
+#include "app/document_location.h"
+#include "raster/layer.h"
 
 namespace app {
 
-  typedef doc::ObjectId DocumentId;
+  class TestContext : public app::Context {
+  public:
+    TestContext() : app::Context(NULL) {
+    }
 
-}
+  protected:
+    void onGetActiveLocation(DocumentLocation* location) const OVERRIDE {
+      Document* doc = activeDocument();
+      if (!doc)
+        return;
+
+      location->document(doc);
+      location->sprite(doc->sprite());
+      location->layer(doc->sprite()->getFolder()->getFirstLayer());
+      location->frame(FrameNumber(0));
+    }
+  };
+
+} // namespace app
 
 #endif

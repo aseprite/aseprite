@@ -312,7 +312,7 @@ bool GifFormat::onLoad(FileOp* fop)
       break;
   } while (record_type != TERMINATE_RECORD_TYPE);
 
-  fop->document = new Document(NULL);
+  fop->createDocument(NULL);    // The sprite is set in onPostLoad()
   return true;
 }
 
@@ -371,7 +371,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
                       "<<" PACKAGE " cannot handle this kind of GIF correctly in Indexed format."
                       "<<What would you like to do?"
                       "||Convert to &RGBA||Keep &Indexed||&Cancel",
-                      fop->document->getFilename().c_str());
+                      fop->document->name().c_str());
 
     if (result == 1)
       pixelFormat = IMAGE_RGB;
@@ -507,7 +507,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       copy_image(previous_image, current_image, 0, 0);
   }
 
-  fop->document->addSprite(sprite);
+  fop->document->sprites().add(sprite);
   sprite.release();             // Now the sprite is owned by fop->document
 
   return true;
@@ -539,7 +539,7 @@ bool GifFormat::onSave(FileOp* fop)
     throw Exception("Error creating GIF file.\n");
 
   SharedPtr<GifOptions> gif_options = fop->seq.format_options;
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   int sprite_w = sprite->getWidth();
   int sprite_h = sprite->getHeight();
   PixelFormat sprite_format = sprite->getPixelFormat();
@@ -785,7 +785,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     gif_options.reset(new GifOptions);
 
   // Non-interactive mode
-  if (!fop->context->isUiAvailable())
+  if (!fop->context || !fop->context->isUiAvailable())
     return gif_options;
 
   try {
@@ -797,7 +797,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     // Load the window to ask to the user the GIF options he wants.
 
     app::gen::GifOptions win;
-    win.rgbOptions()->setVisible(fop->document->getSprite()->getPixelFormat() != IMAGE_INDEXED);
+    win.rgbOptions()->setVisible(fop->document->sprite()->getPixelFormat() != IMAGE_INDEXED);
 
     switch (gif_options->quantize()) {
       case GifOptions::NoQuantize: win.noQuantize()->setSelected(true); break;

@@ -50,7 +50,7 @@ using namespace ui;
   
 FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   : m_context(context)
-  , m_location(context->getActiveLocation())
+  , m_location(context->activeLocation())
   , m_filter(filter)
   , m_progressDelegate(NULL)
   , m_dst(NULL)

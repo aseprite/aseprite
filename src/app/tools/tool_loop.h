@@ -131,7 +131,7 @@ namespace app {
       // foreground/background color (certain tools needs to know the
       // exact foreground/background color, they cannot used the
       // primary/secondary).
-      virtual ISettings* getSettings() = 0;
+      virtual ISettings* settings() = 0;
 
       // Returns the document settings (tiled mode, grid bounds, etc.).
       // It's used to know the preferred "tiled" mode of the document.

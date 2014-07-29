@@ -74,12 +74,12 @@ PixelsMovement::PixelsMovement(Context* context,
   m_initialMask = new Mask(*m_document->getMask());
   m_currentMask = new Mask(*m_document->getMask());
 
-  UIContext::instance()->getSettings()->selection()->addObserver(this);
+  UIContext::instance()->settings()->selection()->addObserver(this);
 }
 
 PixelsMovement::~PixelsMovement()
 {
-  UIContext::instance()->getSettings()->selection()->removeObserver(this);
+  UIContext::instance()->settings()->selection()->removeObserver(this);
 
   delete m_originalImage;
   delete m_initialMask;
@@ -219,7 +219,7 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Point gridOffset(x1, y1);
-        UIContext::instance()->getSettings()
+        UIContext::instance()->settings()
           ->getDocumentSettings(m_document)->snapToGrid(gridOffset);
 
         // Now we calculate the difference from x1,y1 point and we can
@@ -617,7 +617,7 @@ void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
-  switch (UIContext::instance()->getSettings()->selection()->getRotationAlgorithm()) {
+  switch (UIContext::instance()->settings()->selection()->getRotationAlgorithm()) {
 
     case kFastRotationAlgorithm:
       image_parallelogram(dst, src,

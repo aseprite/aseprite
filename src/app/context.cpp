@@ -44,53 +44,26 @@ Context::Context(ISettings* settings)
 
 Context::~Context()
 {
-  // The context must be empty at this point.
-  ASSERT(m_documents.empty());
-
   delete m_settings;
+  m_settings = NULL;
 }
 
-const Documents& Context::getDocuments() const
-{
-  return m_documents;
-}
-
-void Context::addDocument(Document* document)
+void Context::sendDocumentToTop(doc::Document* document)
 {
   ASSERT(document != NULL);
 
-  m_documents.addDocument(document);
-
-  // Generate onAddDocument event
-  onAddDocument(document);
+  documents().move(document, 0);
 }
 
-void Context::removeDocument(Document* document)
-{
-  ASSERT(document != NULL);
-
-  // Remove the item from the documents list.
-  m_documents.removeDocument(document);
-
-  // generate onRemoveDocument event
-  onRemoveDocument(document);
-}
-
-void Context::sendDocumentToTop(Document* document)
-{
-  ASSERT(document != NULL);
-
-  m_documents.moveDocument(document, 0);
-}
-
-Document* Context::getActiveDocument() const
+app::Document* Context::activeDocument() const
 {
   DocumentLocation location;
   onGetActiveLocation(&location);
+  ASSERT(location.document() == doc::Context::activeDocument());
   return location.document();
 }
 
-DocumentLocation Context::getActiveLocation() const
+DocumentLocation Context::activeLocation() const
 {
   DocumentLocation location;
   onGetActiveLocation(&location);
@@ -104,7 +77,7 @@ void Context::executeCommand(Command* command, Params* params)
   ASSERT(command != NULL);
 
   PRINTF("Executing '%s' command.\n", command->short_name());
-  m_observers.notifyCommandBeforeExecution(this);
+  BeforeCommandExecution();
 
   try {
     m_flags.update(this);
@@ -115,7 +88,7 @@ void Context::executeCommand(Command* command, Params* params)
     if (command->isEnabled(this)) {
       command->execute(this);
 
-      m_observers.notifyCommandAfterExecution(this);
+      AfterCommandExecution();
     }
   }
   catch (base::Exception& e) {
@@ -144,24 +117,9 @@ void Context::executeCommand(Command* command, Params* params)
 #endif
 }
 
-void Context::addObserver(ContextObserver* observer)
+void Context::onCreateDocument(doc::CreateDocumentArgs* args)
 {
-  m_observers.addObserver(observer);
-}
-
-void Context::removeObserver(ContextObserver* observer)
-{
-  m_observers.removeObserver(observer);
-}
-
-void Context::onAddDocument(Document* document)
-{
-  m_observers.notifyAddDocument(this, document);
-}
-
-void Context::onRemoveDocument(Document* document)
-{
-  m_observers.notifyRemoveDocument(this, document);
+  args->setDocument(new app::Document(NULL));
 }
 
 void Context::onGetActiveLocation(DocumentLocation* location) const

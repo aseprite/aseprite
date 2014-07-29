@@ -114,7 +114,7 @@ protected:
 
   void onSelectFile()
   {
-    Document* oldActiveDocument = m_context->getActiveDocument();
+    Document* oldActiveDocument = m_context->activeDocument();
     Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
     Params params;
     params.set("filename", "");
@@ -122,7 +122,7 @@ protected:
     openFile->execute(m_context);
 
     // The user have selected another document.
-    if (oldActiveDocument != m_context->getActiveDocument()) {
+    if (oldActiveDocument != m_context->activeDocument()) {
       selectActiveDocument();
       m_fileOpened = true;
     }
@@ -161,8 +161,8 @@ protected:
     std::vector<Image*> animation;
 
     try {
-      Sprite* sprite = m_document->getSprite();
-      FrameNumber currentFrame = m_context->getActiveLocation().frame();
+      Sprite* sprite = m_document->sprite();
+      FrameNumber currentFrame = m_context->activeLocation().frame();
 
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
@@ -293,7 +293,7 @@ private:
   void selectActiveDocument()
   {
     Document* oldDocument = m_document;
-    m_document = m_context->getActiveDocument();
+    m_document = m_context->activeDocument();
 
     // If the user already have selected a file, we have to destroy
     // that file in order to select the new one.

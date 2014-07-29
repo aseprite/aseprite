@@ -1,46 +1,30 @@
-/* Aseprite
- * Copyright (C) 2001-2013  David Capello
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+// Aseprite Document Library
+// Copyright (c) 2001-2014 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-#ifndef APP_DOCUMENT_OBSERVER_H_INCLUDED
-#define APP_DOCUMENT_OBSERVER_H_INCLUDED
+#ifndef DOC_DOCUMENT_OBSERVER_H_INCLUDED
+#define DOC_DOCUMENT_OBSERVER_H_INCLUDED
 #pragma once
 
-#include "raster/frame_number.h"
-
-namespace app {
+namespace doc {
+  class Document;
   class DocumentEvent;
 
-  // Observer of document events. The default implementation does
-  // nothing in each handler, so you can override the required events.
   class DocumentObserver {
   public:
     virtual ~DocumentObserver() { }
+
+    virtual void onFileNameChanged(Document* doc) { }
 
     // General update. If an observer receives this event, it's because
     // anything in the document could be changed.
     virtual void onGeneralUpdate(DocumentEvent& ev) { }
 
-    virtual void onAddSprite(DocumentEvent& ev) { }
     virtual void onAddLayer(DocumentEvent& ev) { }
     virtual void onAddFrame(DocumentEvent& ev) { }
     virtual void onAddCel(DocumentEvent& ev) { }
-
-    virtual void onRemoveSprite(DocumentEvent& ev) { }
 
     virtual void onBeforeRemoveLayer(DocumentEvent& ev) { }
     virtual void onAfterRemoveLayer(DocumentEvent& ev) { }
@@ -71,10 +55,10 @@ namespace app {
     // When the number of total frames available is modified.
     virtual void onTotalFramesChanged(DocumentEvent& ev) { }
 
-    // Called to destroy the observer. (Here you could call "delete this".)
+    // Called to destroy the observable. (Here you could call "delete this".)
     virtual void dispose() { }
   };
 
-} // namespace app
+} // namespace doc
 
 #endif

@@ -20,8 +20,9 @@
 #define APP_UI_CONTEXT_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
 #include "app/context.h"
+#include "base/compiler_specific.h"
+#include "doc/documents_observer.h"
 
 namespace app {
   class DocumentView;
@@ -29,7 +30,7 @@ namespace app {
 
   typedef std::vector<DocumentView*> DocumentViews;
 
-  class UIContext : public Context {
+  class UIContext : public app::Context {
   public:
     static UIContext* instance() { return m_instance; }
 
@@ -38,22 +39,22 @@ namespace app {
 
     virtual bool isUiAvailable() const { return true; }
 
-    DocumentView* getActiveView() const;
+    DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);
 
     // Returns the number of views that the given document has.
     size_t countViewsOf(Document* document) const;
 
     // Returns the current editor. It can be null.
-    Editor* getActiveEditor();
+    Editor* activeEditor();
 
     // Returns the active editor for the given document, or creates a
     // new one if it's necessary.
     Editor* getEditorFor(Document* document);
 
   protected:
-    virtual void onAddDocument(Document* document) OVERRIDE;
-    virtual void onRemoveDocument(Document* document) OVERRIDE;
+    virtual void onAddDocument(doc::Document* doc) OVERRIDE;
+    virtual void onRemoveDocument(doc::Document* doc) OVERRIDE;
     virtual void onGetActiveLocation(DocumentLocation* location) const OVERRIDE;
 
   private:

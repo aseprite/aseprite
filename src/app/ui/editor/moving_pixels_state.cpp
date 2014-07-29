@@ -80,12 +80,13 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Setup mask color
   setTransparentColor(context->settings()->selection()->getMoveTransparentColor());
 
-  // Add this class as:
-  // - observer of the UI context: so we know if the user wants to
-  //   execute other command, so we can drop pixels.
-  // - observer of SelectionSettings to be informed of changes to Transparent Color
-  //   changes from Context Bar.
-  context->addObserver(this);
+  // Hook BeforeCommandExecution signal so we know if the user wants
+  // to execute other command, so we can drop pixels.
+  m_ctxConn =
+    context->BeforeCommandExecution.connect(&MovingPixelsState::onBeforeCommandExecution, this);
+
+  // Observe SelectionSettings to be informed of changes to
+  // Transparent Color from Context Bar.
   context->settings()->selection()->addObserver(this);
 
   // Add the current editor as filter for key message of the manager
@@ -105,7 +106,7 @@ MovingPixelsState::~MovingPixelsState()
   contextBar->removeObserver(this);
   contextBar->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
 
-  UIContext::instance()->removeObserver(this);
+  m_ctxConn.disconnect();
   UIContext::instance()->settings()->selection()->removeObserver(this);
 
   m_pixelsMovement.reset(NULL);
@@ -324,7 +325,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
           gfx::Point origin;
           base::UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
           clipboard::copy_image(floatingImage.get(),
-                                document->getSprite()->getPalette(editor->getFrame()),
+                                document->sprite()->getPalette(editor->getFrame()),
                                 origin);
         }
 
@@ -386,7 +387,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 }
 
 // Before executing any command, we drop the pixels (go back to standby).
-void MovingPixelsState::onCommandBeforeExecution(Context* context)
+void MovingPixelsState::onBeforeCommandExecution()
 {
   if (m_pixelsMovement)
     dropPixels(m_currentEditor);

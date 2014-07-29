@@ -105,6 +105,48 @@ Sprite::~Sprite()
   delete m_rgbMap;
 }
 
+// static
+Sprite* Sprite::createBasicSprite(raster::PixelFormat format, int width, int height, int ncolors)
+{
+  // Create the sprite.
+  base::UniquePtr<raster::Sprite> sprite(new raster::Sprite(format, width, height, ncolors));
+  sprite->setTotalFrames(raster::FrameNumber(1));
+
+  // Create the main image.
+  int indexInStock;
+  {
+    base::UniquePtr<raster::Image> image(raster::Image::create(format, width, height));
+
+    // Clear the image with mask color.
+    raster::clear_image(image, 0);
+
+    // Add image in the sprite's stock.
+    indexInStock = sprite->getStock()->addImage(image);
+    image.release();            // Release the image because it is in the sprite's stock.
+  }
+
+  // Create the first transparent layer.
+  {
+    base::UniquePtr<raster::LayerImage> layer(new raster::LayerImage(sprite));
+    layer->setName("Layer 1");
+
+    // Create the cel.
+    {
+      base::UniquePtr<raster::Cel> cel(new raster::Cel(raster::FrameNumber(0), indexInStock));
+      cel->setPosition(0, 0);
+
+      // Add the cel in the layer.
+      layer->addCel(cel);
+      cel.release();            // Release the cel because it is in the layer
+    }
+
+    // Add the layer in the sprite.
+    sprite->getFolder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
+  }
+
+  return sprite.release();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Main properties
 

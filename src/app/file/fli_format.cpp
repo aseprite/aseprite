@@ -177,14 +177,14 @@ bool FliFormat::onLoad(FileOp* fop)
   // Update number of frames
   sprite->setTotalFrames(frpos_out.next());
 
-  fop->document = new Document(sprite);
+  fop->createDocument(sprite);
   return true;
 }
 
 #ifdef ENABLE_SAVE
 bool FliFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;

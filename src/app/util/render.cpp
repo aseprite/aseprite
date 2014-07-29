@@ -426,7 +426,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255) (it is the onion-skinning)
   IDocumentSettings* docSettings = UIContext::instance()
-    ->getSettings()->getDocumentSettings(m_document);
+    ->settings()->getDocumentSettings(m_document);
 
   if (enable_onionskin & docSettings->getUseOnionskin()) {
     int prevs = docSettings->getOnionskinPrevFrames();

@@ -232,14 +232,14 @@ bool IcoFormat::onLoad(FileOp* fop)
     }
   }
 
-  fop->document = new Document(sprite);
+  fop->createDocument(sprite);
   return true;
 }
 
 #ifdef ENABLE_SAVE
 bool IcoFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   int bpp, bw, bitsw;
   int size, offset, i;
   int c, x, y, b, m, v;

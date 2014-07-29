@@ -85,7 +85,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   int msecs;
   bool done = false;
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(document);
   bool onionskin_state = docSettings->getUseOnionskin();
   Palette *oldpal, *newpal;
   bool pingPongForward = true;
