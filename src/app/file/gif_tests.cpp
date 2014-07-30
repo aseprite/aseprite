@@ -30,8 +30,6 @@
 
 using namespace app;
 
-typedef base::UniquePtr<Document> DocumentPtr;
-
 class GifFormat : public ::testing::Test {
 public:
   GifFormat() : m_system(she::create_system()) {
@@ -60,6 +58,9 @@ TEST_F(GifFormat, Dimensions)
     clear_image(image, doc->sprite()->transparentColor());
 
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
@@ -72,6 +73,9 @@ TEST_F(GifFormat, Dimensions)
     // TODO instead of 256, this should be 16 as Gif files contains
     // palettes that are power of two.
     EXPECT_EQ(256, sprite->getPalette(FrameNumber(0))->size());
+
+    doc->close();
+    delete doc;
   }
 }
 
@@ -101,6 +105,9 @@ TEST_F(GifFormat, OpaqueIndexed)
     image->putPixel(1, 1, 3);
 
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
@@ -123,6 +130,9 @@ TEST_F(GifFormat, OpaqueIndexed)
     EXPECT_EQ(1, image->getPixel(0, 1));
     EXPECT_EQ(2, image->getPixel(1, 0));
     EXPECT_EQ(3, image->getPixel(1, 1));
+
+    doc->close();
+    delete doc;
   }
 }
 
@@ -151,6 +161,9 @@ TEST_F(GifFormat, TransparentIndexed)
     image->putPixel(1, 1, 3);
 
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
@@ -173,6 +186,9 @@ TEST_F(GifFormat, TransparentIndexed)
     EXPECT_EQ(1, image->getPixel(0, 1));
     EXPECT_EQ(2, image->getPixel(1, 0));
     EXPECT_EQ(3, image->getPixel(1, 1));
+
+    doc->close();
+    delete doc;
   }
 }
 
@@ -195,6 +211,9 @@ TEST_F(GifFormat, TransparentRgbQuantization)
     image->putPixel(1, 1, rgb(0, 0, 255));
 
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
@@ -211,6 +230,9 @@ TEST_F(GifFormat, TransparentRgbQuantization)
     EXPECT_EQ(rgb(255, 0, 0), pal->getEntry(image->getPixel(0, 1)));
     EXPECT_EQ(rgb(0, 255, 0), pal->getEntry(image->getPixel(1, 0)));
     EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(image->getPixel(1, 1)));
+
+    doc->close();
+    delete doc;
   }
 }
 
@@ -235,6 +257,9 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
     image->putPixel(1, 1, rgb(0, 0, 255));
 
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
@@ -253,6 +278,9 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
     EXPECT_EQ(rgb(255, 0, 0), pal->getEntry(image->getPixel(0, 1)));
     EXPECT_EQ(rgb(0, 255, 0), pal->getEntry(image->getPixel(1, 0)));
     EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(image->getPixel(1, 1)));
+
+    doc->close();
+    delete doc;
   }
 }
 
@@ -288,10 +316,13 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
     // Do not modify palettes
     doc->setFormatOptions(SharedPtr<FormatOptions>(new GifOptions(GifOptions::NoQuantize)));
     save_document(&m_ctx, doc);
+
+    doc->close();
+    delete doc;
   }
 
   {
-    DocumentPtr doc(load_document(&m_ctx, fn));
+    Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
@@ -309,5 +340,8 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
 
     EXPECT_EQ(rgba(255, 255, 255, 255), pal->getEntry(0));
     EXPECT_EQ(rgba(255, 0, 0, 255), pal->getEntry(1));
+
+    doc->close();
+    delete doc;
   }
 }

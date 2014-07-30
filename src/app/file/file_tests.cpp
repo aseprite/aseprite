@@ -46,7 +46,7 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        base::UniquePtr<Document> doc(ctx.documents().add(w, h, doc::ColorMode_INDEXED, 256));
+        doc::Document* doc = ctx.documents().add(w, h, doc::ColorMode_INDEXED, 256);
         doc->setFilename(&fn[0]);
 
         // Random pixels
@@ -64,10 +64,12 @@ TEST(File, SeveralSizes)
         }
 
         save_document(&ctx, doc);
+        doc->close();
+        delete doc;
       }
 
       {
-        base::UniquePtr<Document> doc(load_document(&ctx, &fn[0]));
+        Document* doc = load_document(&ctx, &fn[0]);
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
 
@@ -84,6 +86,9 @@ TEST(File, SeveralSizes)
               c = std::rand()%256;
           }
         }
+
+        doc->close();
+        delete doc;
       }
     }
   }
