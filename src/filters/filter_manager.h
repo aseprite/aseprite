@@ -76,10 +76,10 @@ namespace filters {
     virtual const raster::Image* getSourceImage() = 0;
 
     // Returns the first X coordinate of the row to apply the filter.
-    virtual int getX() = 0;
+    virtual int x() = 0;
 
     // Returns the Y coordinate of the row.
-    virtual int getY() = 0;
+    virtual int y() = 0;
 
   };
 

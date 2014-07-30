@@ -42,17 +42,17 @@ void Document::setContext(Context* ctx)
 
 int Document::width() const
 {
-  return sprite()->getWidth();
+  return sprite()->width();
 }
 
 int Document::height() const
 {
-  return sprite()->getHeight();
+  return sprite()->height();
 }
 
 ColorMode Document::colorMode() const
 {
-  return (ColorMode)sprite()->getPixelFormat();
+  return (ColorMode)sprite()->pixelFormat();
 }
 
 std::string Document::name() const

@@ -20,12 +20,15 @@
 #define RASTER_CEL_H_INCLUDED
 #pragma once
 
+#include "gfx/fwd.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"
 
 namespace raster {
 
+  class Image;
   class LayerImage;
+  class Sprite;
 
   class Cel : public Object {
   public:
@@ -33,11 +36,16 @@ namespace raster {
     Cel(const Cel& cel);
     virtual ~Cel();
 
-    FrameNumber getFrame() const { return m_frame; }
-    int getImage() const { return m_image; }
-    int getX() const { return m_x; }
-    int getY() const { return m_y; }
-    int getOpacity() const { return m_opacity; }
+    FrameNumber frame() const { return m_frame; }
+    int imageIndex() const { return m_image; }
+    int x() const { return m_x; }
+    int y() const { return m_y; }
+    int opacity() const { return m_opacity; }
+
+    LayerImage* layer() const { return m_layer; }
+    Image* image() const;
+    Sprite* sprite() const;
+    gfx::Rect bounds() const;
 
     // You should change the frame only if the cel isn't member of a
     // layer.  If the cel is already in a layer, you should use
@@ -51,7 +59,12 @@ namespace raster {
       return sizeof(Cel);
     }
 
+    void setParentLayer(LayerImage* layer) {
+      m_layer = layer;
+    }
+
   private:
+    LayerImage* m_layer;
     FrameNumber m_frame;          // Frame position
     int m_image;                  // Image index of stock
     int m_x, m_y;                 // X/Y screen position

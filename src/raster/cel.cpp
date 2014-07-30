@@ -22,10 +22,17 @@
 
 #include "raster/cel.h"
 
+#include "gfx/rect.h"
+#include "raster/image.h"
+#include "raster/layer.h"
+#include "raster/sprite.h"
+#include "raster/stock.h"
+
 namespace raster {
 
 Cel::Cel(FrameNumber frame, int image)
   : Object(OBJECT_CEL)
+  , m_layer(NULL)
   , m_frame(frame)
   , m_image(image)
 {
@@ -36,6 +43,7 @@ Cel::Cel(FrameNumber frame, int image)
 
 Cel::Cel(const Cel& cel)
   : Object(cel)
+  , m_layer(NULL)
   , m_frame(cel.m_frame)
   , m_image(cel.m_image)
 {
@@ -46,6 +54,47 @@ Cel::Cel(const Cel& cel)
 
 Cel::~Cel()
 {
+}
+
+Image* Cel::image() const
+{
+  ASSERT(m_layer != NULL);
+  ASSERT(m_image >= 0);
+  ASSERT(m_image < m_layer->sprite()->stock()->size());
+
+  if (m_layer) {
+    Stock* stock = m_layer->sprite()->stock();
+
+    ASSERT(stock);
+    ASSERT(m_image >= 0 && m_image < stock->size());
+
+    if (m_image >= 0 && m_image < stock->size()) {
+      Image* image = stock->getImage(m_image);
+      ASSERT((m_image == 0 && !image) || (m_image != 0 && image));
+      return image;
+    }
+  }
+
+  return NULL;
+}
+
+Sprite* Cel::sprite() const
+{
+  ASSERT(m_layer);
+  if (m_layer)
+    return m_layer->sprite();
+  else
+    return NULL;
+}
+
+gfx::Rect Cel::bounds() const
+{
+  Image* image = this->image();
+  ASSERT(image);
+  if (image)
+    return gfx::Rect(m_x, m_y, image->width(), image->height());
+  else
+    return gfx::Rect();
 }
 
 } // namespace raster

@@ -43,18 +43,18 @@ using namespace base::serialization::little_endian;
 
 void write_mask(std::ostream& os, Mask* mask)
 {
-  const gfx::Rect& bounds = mask->getBounds();
+  const gfx::Rect& bounds = mask->bounds();
 
   write16(os, bounds.x);                        // Xpos
   write16(os, bounds.y);                        // Ypos
-  write16(os, mask->getBitmap() ? bounds.w: 0); // Width
-  write16(os, mask->getBitmap() ? bounds.h: 0); // Height
+  write16(os, mask->bitmap() ? bounds.w: 0);    // Width
+  write16(os, mask->bitmap() ? bounds.h: 0);    // Height
 
-  if (mask->getBitmap()) {
+  if (mask->bitmap()) {
     int size = BitmapTraits::getRowStrideBytes(bounds.w);
 
     for (int c=0; c<bounds.h; c++)
-      os.write((char*)mask->getBitmap()->getPixelAddress(0, c), size);
+      os.write((char*)mask->bitmap()->getPixelAddress(0, c), size);
   }
 }
 
@@ -71,8 +71,8 @@ Mask* read_mask(std::istream& is)
     int size = BitmapTraits::getRowStrideBytes(w);
 
     mask->add(x, y, w, h);
-    for (int c=0; c<mask->getBounds().h; c++)
-      is.read((char*)mask->getBitmap()->getPixelAddress(0, c), size);
+    for (int c=0; c<mask->bounds().h; c++)
+      is.read((char*)mask->bitmap()->getPixelAddress(0, c), size);
   }
 
   return mask.release();

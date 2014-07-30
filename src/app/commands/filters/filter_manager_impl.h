@@ -82,7 +82,7 @@ namespace app {
 
     void setProgressDelegate(IProgressDelegate* progressDelegate);
 
-    PixelFormat getPixelFormat() const;
+    PixelFormat pixelFormat() const;
 
     void setTarget(Target target);
 
@@ -92,10 +92,10 @@ namespace app {
     bool applyStep();
     void applyToTarget();
 
-    Document* getDocument() { return m_location.document(); }
-    Sprite* getSprite() { return m_location.sprite(); }
-    Layer* getLayer() { return m_location.layer(); }
-    Image* getDestinationImage() const { return m_dst; }
+    Document* document() { return m_location.document(); }
+    Sprite* sprite() { return m_location.sprite(); }
+    Layer* layer() { return m_location.layer(); }
+    Image* destinationImage() const { return m_dst; }
 
     // Updates the current editor to show the progress of the preview.
     void flush();
@@ -108,8 +108,8 @@ namespace app {
     FilterIndexedData* getIndexedData() { return this; }
     bool skipPixel();
     const Image* getSourceImage() { return m_src; }
-    int getX() { return m_x; }
-    int getY() { return m_y+m_row; }
+    int x() { return m_x; }
+    int y() { return m_y+m_row; }
 
     // FilterIndexedData implementation
     Palette* getPalette();

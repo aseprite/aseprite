@@ -116,13 +116,13 @@ void ScrollCommand::onExecute(Context* context)
       pixels = gridBounds.h;
       break;
     case ZoomedPixel:
-      pixels = 1 << current_editor->getZoom();
+      pixels = 1 << current_editor->zoom();
       break;
     case ZoomedTileWidth:
-      pixels = gridBounds.w << current_editor->getZoom();
+      pixels = gridBounds.w << current_editor->zoom();
       break;
     case ZoomedTileHeight:
-      pixels = gridBounds.h << current_editor->getZoom();
+      pixels = gridBounds.h << current_editor->zoom();
       break;
     case ViewportWidth:
       pixels = vp.h;

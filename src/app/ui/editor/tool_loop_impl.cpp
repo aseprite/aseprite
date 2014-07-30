@@ -100,9 +100,9 @@ public:
     , m_context(context)
     , m_tool(tool)
     , m_document(document)
-    , m_sprite(editor->getSprite())
-    , m_layer(editor->getLayer())
-    , m_frame(editor->getFrame())
+    , m_sprite(editor->sprite())
+    , m_layer(editor->layer())
+    , m_frame(editor->frame())
     , m_canceled(false)
     , m_settings(m_context->settings())
     , m_docSettings(m_settings->getDocumentSettings(m_document))
@@ -164,12 +164,12 @@ public:
       m_document->setMask(&emptyMask);
     }
 
-    int x1 = m_expandCelCanvas.getCel()->getX();
-    int y1 = m_expandCelCanvas.getCel()->getY();
+    int x1 = m_expandCelCanvas.getCel()->x();
+    int y1 = m_expandCelCanvas.getCel()->y();
 
-    m_mask = m_document->getMask();
-    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->getBounds().x-x1,
-                                                    m_mask->getBounds().y-y1):
+    m_mask = m_document->mask();
+    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-x1,
+                                                    m_mask->bounds().y-y1):
                                          gfx::Point(0, 0));
 
     m_opacity = m_toolSettings->getOpacity();
@@ -209,7 +209,7 @@ public:
   tools::Tool* getTool() OVERRIDE { return m_tool; }
   Brush* getBrush() OVERRIDE { return m_brush; }
   Document* getDocument() OVERRIDE { return m_document; }
-  Sprite* getSprite() OVERRIDE { return m_sprite; }
+  Sprite* sprite() OVERRIDE { return m_sprite; }
   Layer* getLayer() OVERRIDE { return m_layer; }
   Image* getSrcImage() OVERRIDE { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() OVERRIDE { return m_expandCelCanvas.getDestCanvas(); }
@@ -337,7 +337,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
   if (!current_tool)
     return NULL;
 
-  Layer* layer = editor->getLayer();
+  Layer* layer = editor->layer();
   if (!layer) {
     Alert::show(PACKAGE "<<The current sprite does not have any layer.||&Close");
     return NULL;
@@ -379,7 +379,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
     return new ToolLoopImpl(editor,
                             context,
                             current_tool,
-                            editor->getDocument(),
+                            editor->document(),
                             msg->left() ? tools::ToolLoop::Left:
                                           tools::ToolLoop::Right,
                             msg->left() ? fg: bg,

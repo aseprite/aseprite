@@ -135,7 +135,7 @@ namespace app {
     // Returns the current mask, it can be empty. The mask could be not
     // empty but hidden to the user if the setMaskVisible(false) was
     // used called before.
-    Mask* getMask() const;
+    Mask* mask() const { return m_mask; }
 
     // Sets the current mask. The new mask will be visible by default,
     // so you don't need to call setMaskVisible(true).

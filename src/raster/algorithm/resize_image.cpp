@@ -38,8 +38,8 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
     // TODO optimize this
     case RESIZE_METHOD_NEAREST_NEIGHBOR: 
     {
-      int o_width = src->getWidth(), o_height = src->getHeight();
-      int n_width = dst->getWidth(), n_height = dst->getHeight();
+      int o_width = src->width(), o_height = src->height();
+      int n_width = dst->width(), n_height = dst->height();
       double x_ratio = o_width / (double)n_width;
       double y_ratio = o_height / (double)n_height;
       double px, py;
@@ -65,27 +65,27 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
       int x, y;
 
       u = v = 0.0;
-      du = (src->getWidth()-1) * 1.0 / (dst->getWidth()-1);
-      dv = (src->getHeight()-1) * 1.0 / (dst->getHeight()-1);
-      for (y=0; y<dst->getHeight(); ++y) {
-        for (x=0; x<dst->getWidth(); ++x) {
+      du = (src->width()-1) * 1.0 / (dst->width()-1);
+      dv = (src->height()-1) * 1.0 / (dst->height()-1);
+      for (y=0; y<dst->height(); ++y) {
+        for (x=0; x<dst->width(); ++x) {
           u_floor = floor(u);
           v_floor = floor(v);
 
-          if (u_floor > src->getWidth()-1) {
-            u_floor = src->getWidth()-1;
-            u_floor2 = src->getWidth()-1;
+          if (u_floor > src->width()-1) {
+            u_floor = src->width()-1;
+            u_floor2 = src->width()-1;
           }
-          else if (u_floor == src->getWidth()-1)
+          else if (u_floor == src->width()-1)
             u_floor2 = u_floor;
           else
             u_floor2 = u_floor+1;
 
-          if (v_floor > src->getHeight()-1) {
-            v_floor = src->getHeight()-1;
-            v_floor2 = src->getHeight()-1;
+          if (v_floor > src->height()-1) {
+            v_floor = src->height()-1;
+            v_floor2 = src->height()-1;
           }
-          else if (v_floor == src->getHeight()-1)
+          else if (v_floor == src->height()-1)
             v_floor2 = v_floor;
           else
             v_floor2 = v_floor+1;
@@ -102,7 +102,7 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
           double u2 = 1 - u1;
           double v2 = 1 - v1;
 
-          switch (dst->getPixelFormat()) {
+          switch (dst->pixelFormat()) {
             case IMAGE_RGB: {
               int r = ((rgba_getr(color[0])*u2 + rgba_getr(color[1])*u1)*v2 +
                        (rgba_getr(color[2])*u2 + rgba_getr(color[3])*u1)*v1);
@@ -153,15 +153,15 @@ void fixup_image_transparent_colors(Image* image)
 {
   int x, y;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB: {
       int r, g, b, count;
       LockImageBits<RgbTraits> bits(image);
       LockImageBits<RgbTraits>::iterator it = bits.begin();
 
-      for (y=0; y<image->getHeight(); ++y) {
-        for (x=0; x<image->getWidth(); ++x, ++it) {
+      for (y=0; y<image->height(); ++y) {
+        for (x=0; x<image->width(); ++x, ++it) {
           uint32_t c = *it;
 
           // if this is a completelly-transparent pixel...
@@ -169,7 +169,7 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             r = g = b = 0;
 
-            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->getBounds());
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->bounds());
             LockImageBits<RgbTraits>::iterator it2 = bits.begin_area(area);
             LockImageBits<RgbTraits>::iterator end2 = bits.end_area(area);
 
@@ -200,8 +200,8 @@ void fixup_image_transparent_colors(Image* image)
       LockImageBits<GrayscaleTraits> bits(image);
       LockImageBits<GrayscaleTraits>::iterator it = bits.begin();
 
-      for (y=0; y<image->getHeight(); ++y) {
-        for (x=0; x<image->getWidth(); ++x, ++it) {
+      for (y=0; y<image->height(); ++y) {
+        for (x=0; x<image->width(); ++x, ++it) {
           uint16_t c = *it;
 
           // If this is a completelly-transparent pixel...
@@ -209,7 +209,7 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             k = 0;
 
-            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->getBounds());
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->bounds());
             LockImageBits<GrayscaleTraits>::iterator it2 = bits.begin_area(area);
             LockImageBits<GrayscaleTraits>::iterator end2 = bits.end_area(area);
 

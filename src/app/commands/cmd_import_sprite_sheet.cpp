@@ -134,7 +134,7 @@ protected:
     MenuItem* item = new MenuItem("Use Current Sprite");
     item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
 
-    if (m_editor || !current_editor || current_editor->getDocument() == NULL)
+    if (m_editor || !current_editor || current_editor->document() == NULL)
       item->setEnabled(false);
 
     menu->addChild(item);
@@ -165,9 +165,9 @@ protected:
       FrameNumber currentFrame = m_context->activeLocation().frame();
 
       // As first step, we cut each tile and add them into "animation" list.
-      for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
-        for (int x=m_rect.x; x<sprite->getWidth(); x += m_rect.w) {
-          base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), m_rect.w, m_rect.h));
+      for (int y=m_rect.y; y<sprite->height(); y += m_rect.h) {
+        for (int x=m_rect.x; x<sprite->width(); x += m_rect.w) {
+          base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
           raster::clear_image(resultImage, 0);
@@ -213,7 +213,7 @@ protected:
       }
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->getLayersList();
+      LayerList layers = sprite->folder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {

@@ -47,7 +47,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   , m_okButton("&OK")
   , m_cancelButton("&Cancel")
   , m_preview(filterMgr)
-  , m_targetButton(filterMgr->getPixelFormat(), (withChannels == WithChannelsSelector))
+  , m_targetButton(filterMgr->pixelFormat(), (withChannels == WithChannelsSelector))
   , m_showPreview("&Preview")
   , m_tiledCheck(withTiled == WithTiledCheckBox ? new CheckBox("&Tiled") : NULL)
 {
@@ -120,7 +120,7 @@ bool FilterWindow::doModal()
   }
 
   // Always update editors
-  update_screen_for_document(m_filterMgr->getDocument());
+  update_screen_for_document(m_filterMgr->document());
 
   return result;
 }

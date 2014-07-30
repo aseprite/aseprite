@@ -141,7 +141,7 @@ static void on_palette_change_update_cursor_color()
 static void on_brush_before_change()
 {
   if (current_editor != NULL) {
-    brush_size_thick = current_editor->getCursorThick();
+    brush_size_thick = current_editor->cursorThick();
     if (brush_size_thick)
       current_editor->hideDrawingCursor();
   }
@@ -151,7 +151,7 @@ static void on_brush_after_change()
 {
   if (current_editor != NULL) {
     // Show drawing cursor
-    if (current_editor->getSprite() && brush_size_thick > 0)
+    if (current_editor->sprite() && brush_size_thick > 0)
       current_editor->showDrawingCursor();
   }
 }
@@ -171,9 +171,9 @@ static Brush* editor_get_current_brush()
   ASSERT(brush_settings != NULL);
 
   if (!current_brush ||
-      current_brush->get_type() != brush_settings->getType() ||
-      current_brush->get_size() != brush_settings->getSize() ||
-      current_brush->get_angle() != brush_settings->getAngle()) {
+      current_brush->type() != brush_settings->getType() ||
+      current_brush->size() != brush_settings->getSize() ||
+      current_brush->angle() != brush_settings->getAngle()) {
     delete current_brush;
     current_brush = new Brush(
       brush_settings->getType(),
@@ -242,7 +242,7 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
   // Setup the cursor type debrushding of several factors (current tool,
   // foreground color, and layer transparency).
   color_t brush_color = get_brush_color(m_sprite, m_layer);
-  color_t mask_color = m_sprite->getTransparentColor();
+  color_t mask_color = m_sprite->transparentColor();
 
   if (current_tool->getInk(0)->isSelection() ||
       current_tool->getInk(0)->isSlice()) {
@@ -271,7 +271,7 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
       ->getToolSettings(current_tool);
 
     Brush* brush = editor_get_current_brush();
-    gfx::Rect brushBounds = brush->getBounds();
+    gfx::Rect brushBounds = brush->bounds();
 
     // Create the extra cel to show the brush preview
     m_document->prepareExtraCel(x+brushBounds.x, y+brushBounds.y,
@@ -286,7 +286,7 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
     Image* extraImage = m_document->getExtraCelImage();
     extraImage->setMaskColor(mask_color);
     draw_brush(extraImage, brush, -brushBounds.x, -brushBounds.y,
-      brush_color, extraImage->getMaskColor());
+      brush_color, extraImage->maskColor());
 
     if (refresh) {
       m_document->notifySpritePixelsModified
@@ -343,7 +343,7 @@ void Editor::moveBrushPreview(int x, int y, bool refresh)
 
     if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
       Brush* brush = editor_get_current_brush();
-      gfx::Rect brushBounds = brush->getBounds();
+      gfx::Rect brushBounds = brush->bounds();
       gfx::Rect rc1(old_x+brushBounds.x, old_y+brushBounds.y, brushBounds.w, brushBounds.h);
       gfx::Rect rc2(new_x+brushBounds.x, new_y+brushBounds.y, brushBounds.w, brushBounds.h);
       m_document->notifySpritePixelsModified
@@ -393,7 +393,7 @@ void Editor::clearBrushPreview(bool refresh)
   // Clean pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
     Brush* brush = editor_get_current_brush();
-    gfx::Rect brushBounds = brush->getBounds();
+    gfx::Rect brushBounds = brush->bounds();
 
     m_document->prepareExtraCel(x+brushBounds.x, y+brushBounds.y,
                                 brushBounds.w, brushBounds.h,
@@ -458,7 +458,7 @@ static void generate_cursor_boundaries()
     else
       brush = new Brush();
 
-    cursor_bound.seg = find_mask_boundary(brush->get_image(),
+    cursor_bound.seg = find_mask_boundary(brush->image(),
                                           &cursor_bound.nseg,
                                           IgnoreBounds, 0, 0, 0, 0);
     delete brush;
@@ -531,7 +531,7 @@ static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor,
     0, 0, 1, 1, 0, 0,
   };
   int u, v, xout, yout;
-  int zoom = editor->getZoom();
+  int zoom = editor->zoom();
 
   for (v=0; v<6; v++) {
     for (u=0; u<6; u++) {
@@ -659,7 +659,7 @@ static color_t get_brush_color(Sprite* sprite, Layer* layer)
   if (layer != NULL)
     return color_utils::color_for_layer(c, layer);
   else
-    return color_utils::color_for_image(c, sprite->getPixelFormat());
+    return color_utils::color_for_image(c, sprite->pixelFormat());
 }
 
 } // namespace app

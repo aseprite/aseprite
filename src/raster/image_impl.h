@@ -47,12 +47,12 @@ namespace raster {
     }
 
     inline address_t getLineAddress(int y) {
-      ASSERT(y >= 0 && y < getHeight());
+      ASSERT(y >= 0 && y < height());
       return m_rows[y];
     }
 
     inline const_address_t getLineAddress(int y) const {
-      ASSERT(y >= 0 && y < getHeight());
+      ASSERT(y >= 0 && y < height());
       return m_rows[y];
     }
 
@@ -86,22 +86,22 @@ namespace raster {
     }
 
     uint8_t* getPixelAddress(int x, int y) const OVERRIDE {
-      ASSERT(x >= 0 && x < getWidth());
-      ASSERT(y >= 0 && y < getHeight());
+      ASSERT(x >= 0 && x < width());
+      ASSERT(y >= 0 && y < height());
 
       return (uint8_t*)address(x, y);
     }
 
     color_t getPixel(int x, int y) const OVERRIDE {
-      ASSERT(x >= 0 && x < getWidth());
-      ASSERT(y >= 0 && y < getHeight());
+      ASSERT(x >= 0 && x < width());
+      ASSERT(y >= 0 && y < height());
 
       return *address(x, y);
     }
 
     void putPixel(int x, int y, color_t color) OVERRIDE {
-      ASSERT(x >= 0 && x < getWidth());
-      ASSERT(y >= 0 && y < getHeight());
+      ASSERT(x >= 0 && x < width());
+      ASSERT(y >= 0 && y < height());
 
       *address(x, y) = color;
     }
@@ -131,11 +131,11 @@ namespace raster {
 
       xbeg = x;
       ybeg = y;
-      xend = x+src->getWidth()-1;
-      yend = y+src->getHeight()-1;
+      xend = x+src->width()-1;
+      yend = y+src->height()-1;
 
-      if ((xend < 0) || (xbeg >= dst->getWidth()) ||
-          (yend < 0) || (ybeg >= dst->getHeight()))
+      if ((xend < 0) || (xbeg >= dst->width()) ||
+          (yend < 0) || (ybeg >= dst->height()))
         return;
 
       if (xbeg < 0) {
@@ -148,11 +148,11 @@ namespace raster {
         ybeg = 0;
       }
 
-      if (xend >= dst->getWidth())
-        xend = dst->getWidth()-1;
+      if (xend >= dst->width())
+        xend = dst->width()-1;
 
-      if (yend >= dst->getHeight())
-        yend = dst->getHeight()-1;
+      if (yend >= dst->height())
+        yend = dst->height()-1;
 
       // Copy process
 
@@ -174,7 +174,7 @@ namespace raster {
       address_t dst_address;
       int xbeg, xend, xsrc, xdst;
       int ybeg, yend, ysrc, ydst;
-      register uint32_t mask_color = src->getMaskColor();
+      register uint32_t mask_color = src->maskColor();
 
       // nothing to do
       if (!opacity)
@@ -187,11 +187,11 @@ namespace raster {
 
       xbeg = x;
       ybeg = y;
-      xend = x+src->getWidth()-1;
-      yend = y+src->getHeight()-1;
+      xend = x+src->width()-1;
+      yend = y+src->height()-1;
 
-      if ((xend < 0) || (xbeg >= dst->getWidth()) ||
-          (yend < 0) || (ybeg >= dst->getHeight()))
+      if ((xend < 0) || (xbeg >= dst->width()) ||
+          (yend < 0) || (ybeg >= dst->height()))
         return;
 
       if (xbeg < 0) {
@@ -204,11 +204,11 @@ namespace raster {
         ybeg = 0;
       }
 
-      if (xend >= dst->getWidth())
-        xend = dst->getWidth()-1;
+      if (xend >= dst->width())
+        xend = dst->width()-1;
 
-      if (yend >= dst->getHeight())
-        yend = dst->getHeight()-1;
+      if (yend >= dst->height())
+        yend = dst->height()-1;
 
       // Merge process
 
@@ -250,19 +250,19 @@ namespace raster {
 
   template<>
   inline void ImageImpl<IndexedTraits>::clear(color_t color) {
-    memset(m_bits, color, getWidth()*getHeight());
+    memset(m_bits, color, width()*height());
   }
 
   template<>
   inline void ImageImpl<BitmapTraits>::clear(color_t color) {
     memset(m_bits, (color ? 0xff: 0x00),
-           BitmapTraits::getRowStrideBytes(getWidth()) * getHeight());
+           BitmapTraits::getRowStrideBytes(width()) * height());
   }
 
   template<>
   inline color_t ImageImpl<BitmapTraits>::getPixel(int x, int y) const {
-    ASSERT(x >= 0 && x < getWidth());
-    ASSERT(y >= 0 && y < getHeight());
+    ASSERT(x >= 0 && x < width());
+    ASSERT(y >= 0 && y < height());
 
     div_t d = div(x, 8);
     return ((*(m_rows[y] + d.quot)) & (1<<d.rem)) ? 1: 0;
@@ -270,8 +270,8 @@ namespace raster {
 
   template<>
   inline void ImageImpl<BitmapTraits>::putPixel(int x, int y, color_t color) {
-    ASSERT(x >= 0 && x < getWidth());
-    ASSERT(y >= 0 && y < getHeight());
+    ASSERT(x >= 0 && x < width());
+    ASSERT(y >= 0 && y < height());
 
     div_t d = div(x, 8);
     if (color)
@@ -309,11 +309,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->getWidth()-1;
-    yend = y+src->getHeight()-1;
+    xend = x+src->width()-1;
+    yend = y+src->height()-1;
 
-    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
-        (yend < 0) || (ybeg >= dst->getHeight()))
+    if ((xend < 0) || (xbeg >= dst->width()) ||
+        (yend < 0) || (ybeg >= dst->height()))
       return;
 
     if (xbeg < 0) {
@@ -326,11 +326,11 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->getWidth())
-      xend = dst->getWidth()-1;
+    if (xend >= dst->width())
+      xend = dst->width()-1;
 
-    if (yend >= dst->getHeight())
-      yend = dst->getHeight()-1;
+    if (yend >= dst->height())
+      yend = dst->height()-1;
 
     // merge process
 
@@ -350,7 +350,7 @@ namespace raster {
     }
     // with mask
     else {
-      register int mask_color = src->getMaskColor();
+      register int mask_color = src->maskColor();
 
       for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
         src_address = src->getPixelAddress(xsrc, ysrc);
@@ -380,11 +380,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->getWidth()-1;
-    yend = y+src->getHeight()-1;
+    xend = x+src->width()-1;
+    yend = y+src->height()-1;
 
-    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
-        (yend < 0) || (ybeg >= dst->getHeight()))
+    if ((xend < 0) || (xbeg >= dst->width()) ||
+        (yend < 0) || (ybeg >= dst->height()))
       return;
 
     if (xbeg < 0) {
@@ -397,11 +397,11 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->getWidth())
-      xend = dst->getWidth()-1;
+    if (xend >= dst->width())
+      xend = dst->width()-1;
 
-    if (yend >= dst->getHeight())
-      yend = dst->getHeight()-1;
+    if (yend >= dst->height())
+      yend = dst->height()-1;
 
     // copy process
 
@@ -432,11 +432,11 @@ namespace raster {
 
     xbeg = x;
     ybeg = y;
-    xend = x+src->getWidth()-1;
-    yend = y+src->getHeight()-1;
+    xend = x+src->width()-1;
+    yend = y+src->height()-1;
 
-    if ((xend < 0) || (xbeg >= dst->getWidth()) ||
-        (yend < 0) || (ybeg >= dst->getHeight()))
+    if ((xend < 0) || (xbeg >= dst->width()) ||
+        (yend < 0) || (ybeg >= dst->height()))
       return;
 
     if (xbeg < 0) {
@@ -449,11 +449,11 @@ namespace raster {
       ybeg = 0;
     }
 
-    if (xend >= dst->getWidth())
-      xend = dst->getWidth()-1;
+    if (xend >= dst->width())
+      xend = dst->width()-1;
 
-    if (yend >= dst->getHeight())
-      yend = dst->getHeight()-1;
+    if (yend >= dst->height())
+      yend = dst->height()-1;
 
     // merge process
 

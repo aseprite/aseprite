@@ -66,12 +66,12 @@ void flip_image(Image* image, const gfx::Rect& bounds, FlipType flipType)
 
 void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int bgcolor)
 {
-  gfx::Rect bounds = mask->getBounds();
+  gfx::Rect bounds = mask->bounds();
 
   switch (flipType) {
 
     case FlipHorizontal: {
-      base::UniquePtr<Image> originalRow(Image::create(image->getPixelFormat(), bounds.w, 1));
+      base::UniquePtr<Image> originalRow(Image::create(image->pixelFormat(), bounds.w, 1));
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
@@ -90,7 +90,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
     }
 
     case FlipVertical: {
-      base::UniquePtr<Image> originalCol(Image::create(image->getPixelFormat(), 1, bounds.h));
+      base::UniquePtr<Image> originalCol(Image::create(image->pixelFormat(), 1, bounds.h));
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.

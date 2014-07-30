@@ -108,7 +108,6 @@ namespace app {
     void replaceStockImage(Sprite* sprite, int imageIndex, Image* newImage);
 
     // Image API
-    Image* getCelImage(Sprite* sprite, Cel* cel);
     void clearMask(Layer* layer, Cel* cel, color_t bgcolor);
     void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
     void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor);

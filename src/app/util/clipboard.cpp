@@ -106,8 +106,8 @@ static bool copy_from_document(const DocumentLocation& location)
   if (!image)
     return false;
 
-  clipboard_x = document->getMask()->getBounds().x;
-  clipboard_y = document->getMask()->getBounds().y;
+  clipboard_x = document->mask()->bounds().x;
+  clipboard_y = document->mask()->bounds().y;
 
   const Palette* pal = document->sprite()->getPalette(location.frame());
   set_clipboard(image, pal ? new Palette(*pal): NULL, true);
@@ -185,26 +185,26 @@ void clipboard::paste()
   }
 #endif
 
-  Sprite* dst_sprite = editor->getDocument()->sprite();
+  Sprite* dst_sprite = editor->document()->sprite();
   if (clipboard_image == NULL)
     return;
 
-  Palette* dst_palette = dst_sprite->getPalette(editor->getFrame());
+  Palette* dst_palette = dst_sprite->getPalette(editor->frame());
 
   // Source image (clipboard or a converted copy to the destination 'imgtype')
   Image* src_image;
-  if (clipboard_image->getPixelFormat() == dst_sprite->getPixelFormat() &&
+  if (clipboard_image->pixelFormat() == dst_sprite->pixelFormat() &&
       // Indexed images can be copied directly only if both images
       // have the same palette.
-      (clipboard_image->getPixelFormat() != IMAGE_INDEXED ||
+      (clipboard_image->pixelFormat() != IMAGE_INDEXED ||
        clipboard_palette->countDiff(dst_palette, NULL, NULL) == 0)) {
     src_image = clipboard_image;
   }
   else {
-    RgbMap* dst_rgbmap = dst_sprite->getRgbMap(editor->getFrame());
+    RgbMap* dst_rgbmap = dst_sprite->getRgbMap(editor->frame());
 
     src_image = quantization::convert_pixel_format(
-      clipboard_image, NULL, dst_sprite->getPixelFormat(),
+      clipboard_image, NULL, dst_sprite->pixelFormat(),
       DITHERING_NONE, dst_rgbmap, clipboard_palette,
       false);
   }
@@ -223,8 +223,8 @@ bool clipboard::get_image_size(gfx::Size& size)
   return get_win32_clipboard_bitmap_size(size);
 #else
   if (clipboard_image != NULL) {
-    size.w = clipboard_image->getWidth();
-    size.h = clipboard_image->getHeight();
+    size.w = clipboard_image->width();
+    size.h = clipboard_image->height();
     return true;
   }
   else

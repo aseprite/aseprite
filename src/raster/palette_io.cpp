@@ -42,8 +42,8 @@ using namespace base::serialization::little_endian;
 
 void write_palette(std::ostream& os, Palette* palette)
 {
-  write16(os, palette->getFrame()); // Frame
-  write16(os, palette->size());     // Number of colors
+  write16(os, palette->frame()); // Frame
+  write16(os, palette->size());  // Number of colors
 
   for (int c=0; c<palette->size(); c++) {
     uint32_t color = palette->getEntry(c);

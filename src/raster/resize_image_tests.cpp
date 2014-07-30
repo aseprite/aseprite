@@ -70,8 +70,8 @@ Image* create_image_from_data(PixelFormat format, color_t* data, int width, int 
 // Simple pixel to pixel image comparison
 bool compare_images(Image* a, Image* b)
 {
-  for (int y = 0; y < a->getHeight(); y++) {
-    for (int x = 0; x < a->getWidth(); x++) {
+  for (int y = 0; y < a->height(); y++) {
+    for (int x = 0; x < a->width(); x++) {
       if (!(a->getPixel(x, y) == b->getPixel(x, y)))
         return false;
     }

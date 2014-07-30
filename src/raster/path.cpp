@@ -336,7 +336,7 @@ static void art_image_svp_aa (const ArtSVP *svp,
 {
   ArtBitmapSVPData data;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
       data.shift = 2;

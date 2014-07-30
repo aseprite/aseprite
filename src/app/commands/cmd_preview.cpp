@@ -81,15 +81,15 @@ void PreviewCommand::onExecute(Context* context)
   Editor* editor = current_editor;
 
   // Cancel operation if current editor does not have a sprite
-  if (!editor || !editor->getSprite())
+  if (!editor || !editor->sprite())
     return;
 
   // Do not use DocumentWriter (do not lock the document) because we
   // will call other sub-commands (e.g. previous frame, next frame,
   // etc.).
-  Document* document = editor->getDocument();
-  Sprite* sprite = editor->getSprite();
-  const Palette* pal = sprite->getPalette(editor->getFrame());
+  Document* document = editor->document();
+  Sprite* sprite = editor->sprite();
+  const Palette* pal = sprite->getPalette(editor->frame());
   View* view = View::getView(editor);
   int u, v, x, y;
   int index_bg_color = -1;
@@ -111,14 +111,14 @@ void PreviewCommand::onExecute(Context* context)
   jmouse_set_cursor(kNoCursor);
   ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
 
-  int pos_x = - scroll.x + vp.x + editor->getOffsetX();
-  int pos_y = - scroll.y + vp.y + editor->getOffsetY();
+  int pos_x = - scroll.x + vp.x + editor->offsetX();
+  int pos_y = - scroll.y + vp.y + editor->offsetY();
   int delta_x = 0;
   int delta_y = 0;
 
-  int zoom = editor->getZoom();
-  int w = sprite->getWidth() << zoom;
-  int h = sprite->getHeight() << zoom;
+  int zoom = editor->zoom();
+  int w = sprite->width() << zoom;
+  int h = sprite->height() << zoom;
 
   bool redraw = true;
 
@@ -140,13 +140,13 @@ void PreviewCommand::onExecute(Context* context)
     // Render sprite and leave the result in 'render' variable
     if (render == NULL) {
       RenderEngine renderEngine(document, sprite,
-        editor->getLayer(),
-        editor->getFrame());
+        editor->layer(),
+        editor->frame());
 
       render.reset(
         renderEngine.renderSprite(
-          0, 0, sprite->getWidth(), sprite->getHeight(),
-          editor->getFrame(), 0, false, false));
+          0, 0, sprite->width(), sprite->height(),
+          editor->frame(), 0, false, false));
     }
 
     // Redraw the screen

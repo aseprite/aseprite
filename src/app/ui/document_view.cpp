@@ -76,7 +76,7 @@ public:
   void onFrameChanged(Editor* editor) OVERRIDE {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
 
-    set_current_palette(editor->getSprite()->getPalette(editor->getFrame()), true);
+    set_current_palette(editor->sprite()->getPalette(editor->frame()), true);
   }
 
   void onLayerChanged(Editor* editor) OVERRIDE {
@@ -184,9 +184,9 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
   Editor* newEditor = getEditor();
   Editor* srcEditor = static_cast<DocumentView*>(from)->getEditor();
 
-  newEditor->setLayer(srcEditor->getLayer());
-  newEditor->setFrame(srcEditor->getFrame());
-  newEditor->setZoom(srcEditor->getZoom());
+  newEditor->setLayer(srcEditor->layer());
+  newEditor->setFrame(srcEditor->frame());
+  newEditor->setZoom(srcEditor->zoom());
 
   View::getView(newEditor)
     ->setViewScroll(View::getView(srcEditor)->getViewScroll());
@@ -233,8 +233,8 @@ void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
   Layer* layer = ev.layer();
 
   // If the layer that was removed is the selected one
-  if (layer == m_editor->getLayer()) {
-    LayerFolder* parent = layer->getParent();
+  if (layer == m_editor->layer()) {
+    LayerFolder* parent = layer->parent();
     Layer* layer_select = NULL;
 
     // Select previous layer, or next layer, or the parent (if it is
@@ -243,7 +243,7 @@ void DocumentView::onBeforeRemoveLayer(doc::DocumentEvent& ev)
       layer_select = layer->getPrevious();
     else if (layer->getNext())
       layer_select = layer->getNext();
-    else if (parent != sprite->getFolder())
+    else if (parent != sprite->folder())
       layer_select = parent;
 
     m_editor->setLayer(layer_select);
@@ -254,29 +254,29 @@ void DocumentView::onAddFrame(doc::DocumentEvent& ev)
 {
   if (current_editor == m_editor)
     m_editor->setFrame(ev.frame());
-  else if (m_editor->getFrame() > ev.frame())
-    m_editor->setFrame(m_editor->getFrame().next());
+  else if (m_editor->frame() > ev.frame())
+    m_editor->setFrame(m_editor->frame().next());
 }
 
 void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
 {
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
-  if (m_editor->getFrame() > ev.frame()) {
-    m_editor->setFrame(m_editor->getFrame().previous());
+  if (m_editor->frame() > ev.frame()) {
+    m_editor->setFrame(m_editor->frame().previous());
   }
   // If the editor was in the previous "last frame" (current value of
-  // getTotalFrames()), we've to adjust it to the new last frame
-  // (getLastFrame())
-  else if (m_editor->getFrame() >= m_editor->getSprite()->getTotalFrames()) {
-    m_editor->setFrame(m_editor->getSprite()->getLastFrame());
+  // totalFrames()), we've to adjust it to the new last frame
+  // (lastFrame())
+  else if (m_editor->frame() >= m_editor->sprite()->totalFrames()) {
+    m_editor->setFrame(m_editor->sprite()->lastFrame());
   }
 }
 
 void DocumentView::onTotalFramesChanged(doc::DocumentEvent& ev)
 {
-  if (m_editor->getFrame() >= m_editor->getSprite()->getTotalFrames()) {
-    m_editor->setFrame(m_editor->getSprite()->getLastFrame());
+  if (m_editor->frame() >= m_editor->sprite()->totalFrames()) {
+    m_editor->setFrame(m_editor->sprite()->lastFrame());
   }
 }
 

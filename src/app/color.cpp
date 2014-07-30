@@ -115,8 +115,8 @@ Color Color::fromImage(PixelFormat pixelFormat, color_t c)
 // static
 Color Color::fromImageGetPixel(Image *image, int x, int y)
 {
-  if ((x >= 0) && (y >= 0) && (x < image->getWidth()) && (y < image->getHeight()))
-    return Color::fromImage(image->getPixelFormat(), raster::get_pixel(image, x, y));
+  if ((x >= 0) && (y >= 0) && (x < image->width()) && (y < image->height()))
+    return Color::fromImage(image->pixelFormat(), raster::get_pixel(image, x, y));
   else
     return Color::fromMask();
 }

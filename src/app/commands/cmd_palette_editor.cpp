@@ -582,7 +582,7 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    if (sprite->getPixelFormat() != IMAGE_RGB) {
+    if (sprite->pixelFormat() != IMAGE_RGB) {
       Alert::show("Error<<You can use this command only for RGB sprites||&OK");
       return;
     }

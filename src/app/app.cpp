@@ -379,7 +379,7 @@ PixelFormat app_get_current_pixel_format()
 
   Document* document = context->activeDocument();
   if (document != NULL)
-    return document->sprite()->getPixelFormat();
+    return document->sprite()->pixelFormat();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else

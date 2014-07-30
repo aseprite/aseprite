@@ -28,16 +28,16 @@ namespace raster {
 
   template<class Traits>
   inline typename Traits::pixel_t get_pixel_fast(const Image* image, int x, int y) {
-    ASSERT(x >= 0 && x < image->getWidth());
-    ASSERT(y >= 0 && y < image->getHeight());
+    ASSERT(x >= 0 && x < image->width());
+    ASSERT(y >= 0 && y < image->height());
 
     return *(((ImageImpl<Traits>*)image)->address(x, y));
   }
 
   template<class Traits>
   inline void put_pixel_fast(Image* image, int x, int y, typename Traits::pixel_t color) {
-    ASSERT(x >= 0 && x < image->getWidth());
-    ASSERT(y >= 0 && y < image->getHeight());
+    ASSERT(x >= 0 && x < image->width());
+    ASSERT(y >= 0 && y < image->height());
 
     *(((ImageImpl<Traits>*)image)->address(x, y)) = color;
   }
@@ -47,16 +47,16 @@ namespace raster {
 
   template<>
   inline BitmapTraits::pixel_t get_pixel_fast<BitmapTraits>(const Image* image, int x, int y) {
-    ASSERT(x >= 0 && x < image->getWidth());
-    ASSERT(y >= 0 && y < image->getHeight());
+    ASSERT(x >= 0 && x < image->width());
+    ASSERT(y >= 0 && y < image->height());
 
     return (*image->getPixelAddress(x, y)) & (1 << (x % 8)) ? 1: 0;
   }
 
   template<>
   inline void put_pixel_fast<BitmapTraits>(Image* image, int x, int y, BitmapTraits::pixel_t color) {
-    ASSERT(x >= 0 && x < image->getWidth());
-    ASSERT(y >= 0 && y < image->getHeight());
+    ASSERT(x >= 0 && x < image->width());
+    ASSERT(y >= 0 && y < image->height());
 
     if (color)
       *image->getPixelAddress(x, y) |= (1 << (x % 8));

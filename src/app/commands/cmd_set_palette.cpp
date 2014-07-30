@@ -62,7 +62,7 @@ void SetPaletteCommand::onExecute(Context* context)
   // Set default palette
   else {
     set_default_palette(m_palette);
-    set_config_string("GfxMode", "Palette", m_palette->getFilename().c_str());
+    set_config_string("GfxMode", "Palette", m_palette->filename().c_str());
   }
 
   // Set the palette calling the hooks

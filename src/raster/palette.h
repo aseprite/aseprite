@@ -68,14 +68,14 @@ namespace raster {
     int size() const { return m_colors.size(); }
     void resize(int ncolors);
 
-    std::string getFilename() const { return m_filename; }
+    std::string filename() const { return m_filename; }
     void setFilename(const std::string& filename) {
       m_filename = filename;
     }
 
     int getModifications() const { return m_modifications; }
 
-    FrameNumber getFrame() const { return m_frame; }
+    FrameNumber frame() const { return m_frame; }
     void setFrame(FrameNumber frame);
 
     color_t getEntry(int i) const {

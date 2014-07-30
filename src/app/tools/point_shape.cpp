@@ -41,13 +41,13 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 
   // Tiled in Y axis
   if (tiledMode & TILED_Y_AXIS) {
-    size = loop->getDstImage()->getHeight();      // size = image height
+    size = loop->getDstImage()->height();      // size = image height
     if (y < 0)
       y = size - (-(y+1) % size) - 1;
     else
       y = y % size;
   }
-  else if (y < 0 || y >= loop->getDstImage()->getHeight())
+  else if (y < 0 || y >= loop->getDstImage()->height())
       return;
 
   // Tiled in X axis
@@ -55,7 +55,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (x1 > x2)
       return;
 
-    size = loop->getDstImage()->getWidth();      // size = image width
+    size = loop->getDstImage()->width();      // size = image width
     w = x2-x1+1;
     if (w >= size)
       loop->getInk()->inkHline(0, y, size-1, loop);
@@ -79,8 +79,8 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
     if (x1 < 0)
       x1 = 0;
 
-    if (x2 >= loop->getDstImage()->getWidth())
-      x2 = loop->getDstImage()->getWidth()-1;
+    if (x2 >= loop->getDstImage()->width())
+      x2 = loop->getDstImage()->width()-1;
 
     if (x2-x1+1 < 1)
       return;

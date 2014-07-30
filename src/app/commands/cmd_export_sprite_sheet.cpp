@@ -190,7 +190,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   Document* document(context->activeDocument());
   Sprite* sprite = document->sprite();
-  FrameNumber nframes = sprite->getTotalFrames();
+  FrameNumber nframes = sprite->totalFrames();
   int columns;
 
   switch (m_type) {
@@ -207,10 +207,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   columns = MID(1, columns, nframes);
 
-  int sheet_w = sprite->getWidth()*columns;
-  int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
-  base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
-  base::UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
+  int sheet_w = sprite->width()*columns;
+  int sheet_h = sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
+  base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
+  base::UniquePtr<Image> tempImage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
   raster::clear_image(resultImage, 0);
 
   int column = 0, row = 0;
@@ -219,7 +219,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // destination clipping bounds in Sprite::render() function.
     tempImage->clear(0);
     sprite->render(tempImage, 0, 0, frame);
-    resultImage->copy(tempImage, column*sprite->getWidth(), row*sprite->getHeight());
+    resultImage->copy(tempImage, column*sprite->width(), row*sprite->height());
 
     if (++column >= columns) {
       column = 0;
@@ -229,7 +229,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   // Store the frame in the current editor so we can restore it
   // after change and restore the setTotalFrames() number.
-  FrameNumber oldSelectedFrame = (current_editor ? current_editor->getFrame():
+  FrameNumber oldSelectedFrame = (current_editor ? current_editor->frame():
     FrameNumber(0));
 
   {
@@ -254,7 +254,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     resultCel.release();
 
     // Copy the list of layers (because we will modify it in the iteration).
-    LayerList layers = sprite->getFolder()->getLayersList();
+    LayerList layers = sprite->folder()->getLayersList();
 
     // Remove all other layers
     for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {

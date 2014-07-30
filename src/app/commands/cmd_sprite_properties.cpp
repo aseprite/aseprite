@@ -89,7 +89,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     const Sprite* sprite(reader.sprite());
 
     // Update widgets values
-    switch (sprite->getPixelFormat()) {
+    switch (sprite->pixelFormat()) {
       case IMAGE_RGB:
         imgtype_text = "RGB";
         break;
@@ -114,17 +114,17 @@ void SpritePropertiesCommand::onExecute(Context* context)
 
     // Sprite size (width and height)
     usprintf(buf, "%dx%d (%s)",
-             sprite->getWidth(),
-             sprite->getHeight(),
+             sprite->width(),
+             sprite->height(),
              base::get_pretty_memory_size(sprite->getMemSize()).c_str());
 
     size->setText(buf);
 
     // How many frames
-    frames->setTextf("%d", (int)sprite->getTotalFrames());
+    frames->setTextf("%d", (int)sprite->totalFrames());
 
-    if (sprite->getPixelFormat() == IMAGE_INDEXED) {
-      color_button = new ColorButton(app::Color::fromIndex(sprite->getTransparentColor()),
+    if (sprite->pixelFormat() == IMAGE_INDEXED) {
+      color_button = new ColorButton(app::Color::fromIndex(sprite->transparentColor()),
                                      IMAGE_INDEXED);
 
       box_transparent->addChild(color_button);
@@ -149,7 +149,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // If the transparent color index has changed, we update the
       // property in the sprite.
       int index = color_button->getColor().getIndex();
-      if (index != sprite->getTransparentColor()) {
+      if (index != sprite->transparentColor()) {
         UndoTransaction undoTransaction(writer.context(), "Set Transparent Color");
         DocumentApi api = writer.document()->getApi();
         api.setSpriteTransparentColor(sprite, index);

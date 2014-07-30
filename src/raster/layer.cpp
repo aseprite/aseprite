@@ -112,7 +112,7 @@ int LayerImage::getMemSize() const
     const Cel* cel = *it;
     size += cel->getMemSize();
 
-    const Image* image = getSprite()->getStock()->getImage(cel->getImage());
+    const Image* image = cel->image();
     size += image->getMemSize();
   }
 
@@ -126,11 +126,11 @@ void LayerImage::destroyAllCels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    Image* image = getSprite()->getStock()->getImage(cel->getImage());
+    Image* image = cel->image();
 
     ASSERT(image != NULL);
 
-    getSprite()->getStock()->removeImage(image);
+    sprite()->stock()->removeImage(image);
     delete image;
     delete cel;
   }
@@ -152,11 +152,13 @@ void LayerImage::addCel(Cel *cel)
   CelIterator end = getCelEnd();
 
   for (; it != end; ++it) {
-    if ((*it)->getFrame() > cel->getFrame())
+    if ((*it)->frame() > cel->frame())
       break;
   }
 
   m_cels.insert(it, cel);
+
+  cel->setParentLayer(this);
 }
 
 /**
@@ -188,7 +190,7 @@ const Cel* LayerImage::getCel(FrameNumber frame) const
 
   for (; it != end; ++it) {
     const Cel* cel = *it;
-    if (cel->getFrame() == frame)
+    if (cel->frame() == frame)
       return cel;
   }
 
@@ -209,14 +211,14 @@ Cel* LayerImage::getCel(FrameNumber frame)
  */
 void LayerImage::configureAsBackground()
 {
-  ASSERT(getSprite() != NULL);
-  ASSERT(getSprite()->getBackgroundLayer() == NULL);
+  ASSERT(sprite() != NULL);
+  ASSERT(sprite()->backgroundLayer() == NULL);
 
   setMoveable(false);
   setBackground(true);
   setName("Background");
 
-  getSprite()->getFolder()->stackLayer(this, NULL);
+  sprite()->folder()->stackLayer(this, NULL);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -319,19 +321,19 @@ void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber fr
       Image* src_image;
 
       if (cel) {
-        ASSERT((cel->getImage() >= 0) &&
-               (cel->getImage() < layer->getSprite()->getStock()->size()));
+        ASSERT((cel->imageIndex() >= 0) &&
+               (cel->imageIndex() < layer->sprite()->stock()->size()));
 
-        src_image = layer->getSprite()->getStock()->getImage(cel->getImage());
+        src_image = cel->image();
         ASSERT(src_image != NULL);
 
-        ASSERT(src_image->getMaskColor() == layer->getSprite()->getTransparentColor());
+        ASSERT(src_image->maskColor() == layer->sprite()->transparentColor());
 
         composite_image(image, src_image,
-                        cel->getX() + x,
-                        cel->getY() + y,
-                        MID (0, cel->getOpacity(), 255),
-                        static_cast<const LayerImage*>(layer)->getBlendMode());
+          cel->x() + x,
+          cel->y() + y,
+          MID(0, cel->opacity(), 255),
+          static_cast<const LayerImage*>(layer)->getBlendMode());
       }
       break;
     }

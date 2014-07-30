@@ -136,7 +136,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_decorator(NULL)
   , m_document(document)
   , m_sprite(m_document->sprite())
-  , m_layer(m_sprite->getFolder()->getFirstLayer())
+  , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(FrameNumber(0))
   , m_zoom(0)
   , m_mask_timer(100, this)
@@ -286,8 +286,8 @@ void Editor::setDefaultScroll()
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
 
-  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->getWidth()/2),
-                  m_offset_y - vp.h/2 + (m_sprite->getHeight()/2), false);
+  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->width()/2),
+                  m_offset_y - vp.h/2 + (m_sprite->height()/2), false);
 }
 
 // Sets the scroll position of the editor
@@ -365,11 +365,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     dest_y -= source_y;
     source_y = 0;
   }
-  if (source_x+width > (m_sprite->getWidth() << m_zoom)) {
-    width = (m_sprite->getWidth() << m_zoom) - source_x;
+  if (source_x+width > (m_sprite->width() << m_zoom)) {
+    width = (m_sprite->width() << m_zoom) - source_x;
   }
-  if (source_y+height > (m_sprite->getHeight() << m_zoom)) {
-    height = (m_sprite->getHeight() << m_zoom) - source_y;
+  if (source_y+height > (m_sprite->height() << m_zoom)) {
+    height = (m_sprite->height() << m_zoom) - source_y;
   }
 
   // Draw the sprite
@@ -410,8 +410,8 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   gfx::Rect spriteRect(
     client.x + m_offset_x,
     client.y + m_offset_y,
-    (m_sprite->getWidth() << m_zoom),
-    (m_sprite->getHeight() << m_zoom));
+    (m_sprite->width() << m_zoom),
+    (m_sprite->height() << m_zoom));
   gfx::Rect enclosingRect = spriteRect;
 
   // Draw the main sprite at the center.
@@ -667,15 +667,15 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = m_sprite->getCurrentImage(&x, &y);
   if (src_image) {
-    m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), 255);
+    m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), 255);
     Image* flash_image = m_document->getExtraCelImage();
     int u, v;
 
     clear_image(flash_image, flash_image->mask_color);
-    for (v=0; v<flash_image->getHeight(); ++v) {
-      for (u=0; u<flash_image->getWidth(); ++u) {
-        if (u-x >= 0 && u-x < src_image->getWidth() &&
-            v-y >= 0 && v-y < src_image->getHeight()) {
+    for (v=0; v<flash_image->height(); ++v) {
+      for (u=0; u<flash_image->width(); ++u) {
+        if (u-x >= 0 && u-x < src_image->width() &&
+            v-y >= 0 && v-y < src_image->height()) {
           uint32_t color = get_pixel(src_image, u-x, v-y);
           if (color != src_image->mask_color) {
             Color ccc = Color::fromRgb(255, 255, 255);
@@ -686,11 +686,11 @@ void Editor::flashCurrentLayer()
       }
     }
 
-    drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
     gui_flip_screen();
 
     clear_image(flash_image, flash_image->mask_color);
-    drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
   }
 #endif
 }
@@ -1004,11 +1004,11 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
     View* view = View::getView(this);
     Rect vp = view->getViewportBounds();
 
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
 
-    sz.w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
-    sz.h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
+    sz.w = (m_sprite->width() << m_zoom) + m_offset_x*2;
+    sz.h = (m_sprite->height() << m_zoom) + m_offset_y*2;
   }
   else {
     sz.w = 4;
@@ -1038,7 +1038,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       DocumentReader documentReader(m_document);
 
       // Draw the sprite in the editor
-      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
+      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
 
       // Draw the mask boundaries
       if (m_document->getBoundariesSegments()) {
@@ -1104,7 +1104,7 @@ bool Editor::isInsideSelection()
     (UIContext::instance()->settings()->selection()->getSelectionMode() != kSubtractSelectionMode) &&
     m_document != NULL &&
     m_document->isMaskVisible() &&
-    m_document->getMask()->containsPoint(x, y);
+    m_document->mask()->containsPoint(x, y);
 }
 
 void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior)
@@ -1169,32 +1169,32 @@ void Editor::pasteImage(const Image* image, int x, int y)
     ToolBar::instance()->selectTool(defaultSelectionTool);
   }
 
-  Document* document = getDocument();
+  Document* document = this->document();
   int opacity = 255;
-  Sprite* sprite = getSprite();
-  Layer* layer = getLayer();
+  Sprite* sprite = this->sprite();
+  Layer* layer = this->layer();
 
   // Check bounds where the image will be pasted.
   {
     // First we limit the image inside the sprite's bounds.
-    x = MID(0, x, sprite->getWidth() - image->getWidth());
-    y = MID(0, y, sprite->getHeight() - image->getHeight());
+    x = MID(0, x, sprite->width() - image->width());
+    y = MID(0, y, sprite->height() - image->height());
 
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds();
-    x = MID(visibleBounds.x-image->getWidth(), x, visibleBounds.x+visibleBounds.w-1);
-    y = MID(visibleBounds.y-image->getHeight(), y, visibleBounds.y+visibleBounds.h-1);
+    x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
+    y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
 
     // If the visible part of the pasted image will not fit in the
     // visible bounds of the editor, we put the image in the center of
     // the visible bounds.
-    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->getWidth(), image->getHeight()));
-    if (((visibleBounds.w >= image->getWidth() && visiblePasted.w < image->getWidth()/2) ||
-         (visibleBounds.w <  image->getWidth() && visiblePasted.w < visibleBounds.w/2)) ||
-        ((visibleBounds.h >= image->getHeight() && visiblePasted.h < image->getWidth()/2) ||
-         (visibleBounds.h <  image->getHeight() && visiblePasted.h < visibleBounds.h/2))) {
-      x = visibleBounds.x + visibleBounds.w/2 - image->getWidth()/2;
-      y = visibleBounds.y + visibleBounds.h/2 - image->getHeight()/2;
+    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->width(), image->height()));
+    if (((visibleBounds.w >= image->width() && visiblePasted.w < image->width()/2) ||
+         (visibleBounds.w <  image->width() && visiblePasted.w < visibleBounds.w/2)) ||
+        ((visibleBounds.h >= image->height() && visiblePasted.h < image->width()/2) ||
+         (visibleBounds.h <  image->height() && visiblePasted.h < visibleBounds.h/2))) {
+      x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
+      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
   }
 

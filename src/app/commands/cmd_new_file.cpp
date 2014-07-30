@@ -172,25 +172,25 @@ void NewFileCommand::onExecute(Context* context)
       base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h,
           (format == IMAGE_INDEXED ? ncolors: 256)));
 
-      if (sprite->getPixelFormat() != IMAGE_GRAYSCALE)
+      if (sprite->pixelFormat() != IMAGE_GRAYSCALE)
         get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
 
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
       if (color.getType() != app::Color::MaskType) {
-        Layer* layer = sprite->getFolder()->getFirstLayer();
+        Layer* layer = sprite->folder()->getFirstLayer();
 
         if (layer && layer->isImage()) {
           LayerImage* layerImage = static_cast<LayerImage*>(layer);
           layerImage->configureAsBackground();
 
-          Image* image = sprite->getStock()->getImage(layerImage->getCel(FrameNumber(0))->getImage());
+          Image* image = layerImage->getCel(FrameNumber(0))->image();
           raster::clear_image(image,
             color_utils::color_for_target(color,
               ColorTarget(
                 ColorTarget::BackgroundLayer,
-                sprite->getPixelFormat(),
-                sprite->getTransparentColor())));
+                sprite->pixelFormat(),
+                sprite->transparentColor())));
         }
       }
 

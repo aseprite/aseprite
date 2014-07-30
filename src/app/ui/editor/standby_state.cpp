@@ -352,8 +352,8 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 
     case WHEEL_ZOOM: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      int zoom = MID(MIN_ZOOM, editor->getZoom()-dz, MAX_ZOOM);
-      if (editor->getZoom() != zoom)
+      int zoom = MID(MIN_ZOOM, editor->zoom()-dz, MAX_ZOOM);
+      if (editor->zoom() != zoom)
         editor->setZoomAndCenterInMouse(zoom,
           mouseMsg->position().x, mouseMsg->position().y,
           Editor::kDontCenterOnZoom);
@@ -477,7 +477,7 @@ bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)
 bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Tool* current_tool = editor->getCurrentEditorTool();
-  const Sprite* sprite = editor->getSprite();
+  const Sprite* sprite = editor->sprite();
   int x, y;
 
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
@@ -501,16 +501,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   else {
     Mask* mask =
-      (editor->getDocument()->isMaskVisible() ? 
-       editor->getDocument()->getMask(): NULL);
+      (editor->document()->isMaskVisible() ? 
+       editor->document()->mask(): NULL);
 
     StatusBar::instance()->setStatusText(0,
       "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
       x, y,
-      (mask ? mask->getBounds().w: sprite->getWidth()),
-      (mask ? mask->getBounds().h: sprite->getHeight()),
-      editor->getFrame()+1,
-      sprite->getFrameDuration(editor->getFrame()));
+      (mask ? mask->bounds().w: sprite->width()),
+      (mask ? mask->bounds().h: sprite->height()),
+      editor->frame()+1,
+      sprite->getFrameDuration(editor->frame()));
   }
 
   return true;
@@ -518,20 +518,20 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
 gfx::Transformation StandbyState::getTransformation(Editor* editor)
 {
-  return editor->getDocument()->getTransformation();
+  return editor->document()->getTransformation();
 }
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   try {
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    Document* document = editor->getDocument();
+    Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
-    int x = document->getMask()->getBounds().x;
-    int y = document->getMask()->getBounds().y;
+    int x = document->mask()->bounds().x;
+    int y = document->mask()->bounds().y;
     int opacity = 255;
-    Sprite* sprite = editor->getSprite();
-    Layer* layer = editor->getLayer();
+    Sprite* sprite = editor->sprite();
+    Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
         document, sprite, layer,
@@ -577,7 +577,7 @@ TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
 
 bool StandbyState::Decorator::onSetCursor(Editor* editor)
 {
-  if (!editor->getDocument()->isMaskVisible())
+  if (!editor->document()->isMaskVisible())
     return false;
 
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
@@ -652,8 +652,8 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   Editor* editor = render->getEditor();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
-  if (editor->getDocument()->isMaskVisible() &&
-      !editor->getDocument()->getMask()->isFrozen()) {
+  if (editor->document()->isMaskVisible() &&
+      !editor->document()->mask()->isFrozen()) {
     // And draw only when the user has a selection tool as active tool.
     tools::Tool* currentTool = editor->getCurrentEditorTool();
 

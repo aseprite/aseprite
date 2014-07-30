@@ -254,24 +254,24 @@ void Timeline::setLayer(Layer* layer)
   m_layer = layer;
   invalidate();
 
-  if (m_editor->getLayer() != layer)
+  if (m_editor->layer() != layer)
     m_editor->setLayer(m_layer);
 }
 
 void Timeline::setFrame(FrameNumber frame)
 {
   ASSERT(m_editor != NULL);
-  // ASSERT(frame >= 0 && frame < m_sprite->getTotalFrames());
+  // ASSERT(frame >= 0 && frame < m_sprite->totalFrames());
 
   if (frame < 0)
     frame = firstFrame();
-  else if (frame >= m_sprite->getTotalFrames())
-    frame = FrameNumber(m_sprite->getTotalFrames()-1);
+  else if (frame >= m_sprite->totalFrames())
+    frame = FrameNumber(m_sprite->totalFrames()-1);
 
   m_frame = frame;
   invalidate();
 
-  if (m_editor->getFrame() != frame)
+  if (m_editor->frame() != frame)
     m_editor->setFrame(m_frame);
 }
 
@@ -887,7 +887,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       if (layerPtr->isImage()) {
         it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
         end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-        for (; it != end && (*it)->getFrame() < first_frame; ++it)
+        for (; it != end && (*it)->frame() < first_frame; ++it)
           ;
       }
 
@@ -897,7 +897,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
       // Draw every visible cel for each layer.
       for (frame=first_frame; frame<=last_frame; ++frame) {
-        Cel* cel = (layerPtr->isImage() && it != end && (*it)->getFrame() == frame ? *it: NULL);
+        Cel* cel = (layerPtr->isImage() && it != end && (*it)->frame() == frame ? *it: NULL);
         drawCel(g, layer, frame, cel);
 
         if (cel)
@@ -959,7 +959,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
 
   // If the layer that was removed is the selected one
   if (layer == getLayer()) {
-    LayerFolder* parent = layer->getParent();
+    LayerFolder* parent = layer->parent();
     Layer* layer_select = NULL;
 
     // Select previous layer, or next layer, or the parent (if it is
@@ -968,7 +968,7 @@ void Timeline::onAfterRemoveLayer(doc::DocumentEvent& ev)
       layer_select = layer->getPrevious();
     else if (layer->getNext())
       layer_select = layer->getNext();
-    else if (parent != sprite->getFolder())
+    else if (parent != sprite->folder())
       layer_select = parent;
 
     setLayer(layer_select);
@@ -995,10 +995,10 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
     setFrame(getFrame().previous());
   }
   // If the editor was in the previous "last frame" (current value of
-  // getTotalFrames()), we've to adjust it to the new last frame
-  // (getLastFrame())
-  else if (getFrame() >= getSprite()->getTotalFrames()) {
-    setFrame(getSprite()->getLastFrame());
+  // totalFrames()), we've to adjust it to the new last frame
+  // (lastFrame())
+  else if (getFrame() >= sprite()->totalFrames()) {
+    setFrame(sprite()->lastFrame());
   }
 
   showCurrentCel();
@@ -1007,7 +1007,7 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
 
 void Timeline::onFrameChanged(Editor* editor)
 {
-  setFrame(editor->getFrame());
+  setFrame(editor->frame());
 
   if (!hasCapture())
     m_range.disableRange();
@@ -1017,7 +1017,7 @@ void Timeline::onFrameChanged(Editor* editor)
 
 void Timeline::onLayerChanged(Editor* editor)
 {
-  setLayer(editor->getLayer());
+  setLayer(editor->layer());
 
   if (!hasCapture())
     m_range.disableRange();
@@ -1187,7 +1187,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 
   // Draw the layer's name.
   bounds = getPartBounds(A_PART_LAYER_TEXT, layerIdx);
-  drawPart(g, bounds, layer->getName().c_str(), m_timelineLayerStyle,
+  drawPart(g, bounds, layer->name().c_str(), m_timelineLayerStyle,
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_TEXT),
     (clklayer && m_clk_part == A_PART_LAYER_TEXT));
@@ -1205,7 +1205,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame, Cel* cel)
 {
   Layer* layer = m_layers[layerIndex];
-  Image* image = (cel ? m_sprite->getStock()->getImage(cel->getImage()): NULL);
+  Image* image = (cel ? cel->image(): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layerIndex &&
     m_hot_frame == frame);
@@ -1234,8 +1234,8 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame
       // think it's too much for just UI stuff.
     Cel* left = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.previous()): NULL);
     Cel* right = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.next()): NULL);
-    Image* leftImg = (left ? m_sprite->getStock()->getImage(left->getImage()): NULL);
-    Image* rightImg = (right ? m_sprite->getStock()->getImage(right->getImage()): NULL);
+    Image* leftImg = (left ? m_sprite->stock()->getImage(left->getImage()): NULL);
+    Image* rightImg = (right ? m_sprite->stock()->getImage(right->getImage()): NULL);
     bool fromLeft = (leftImg && count_diff_between_images(image, leftImg) == 0);
     bool fromRight = (rightImg && count_diff_between_images(image, rightImg) == 0);
 
@@ -1621,11 +1621,11 @@ void Timeline::updateStatusBar(ui::Message* msg)
         Layer* layer = ((layerIdx >= 0 && layerIdx < (int)m_layers.size()) ? m_layers[layerIdx]: NULL);
         if (layer) {
           if (m_dropTarget.vhit == DropTarget::Bottom) {
-            sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->getName().c_str());
+            sb->setStatusText(0, "%s at bottom of layer %s", verb, layer->name().c_str());
             return;
           }
           else if (m_dropTarget.vhit == DropTarget::Top) {
-            sb->setStatusText(0, "%s at top of layer %s", verb, layer->getName().c_str());
+            sb->setStatusText(0, "%s at top of layer %s", verb, layer->name().c_str());
             return;
           }
         }
@@ -1653,7 +1653,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case A_PART_LAYER_TEXT:
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' [%s%s]",
-            layer->getName().c_str(),
+            layer->name().c_str(),
             layer->isReadable() ? "visible": "hidden",
             layer->isWritable() ? "": " locked");
           return;
@@ -1663,7 +1663,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case A_PART_LAYER_EYE_ICON:
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
-            layer->getName().c_str(),
+            layer->name().c_str(),
             layer->isReadable() ? "visible": "hidden");
           return;
         }
@@ -1672,7 +1672,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case A_PART_LAYER_PADLOCK_ICON:
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
-            layer->getName().c_str(),
+            layer->name().c_str(),
             layer->isWritable() ? "unlocked (modifiable)": "locked (read-only)");
           return;
         }
@@ -1763,7 +1763,7 @@ void Timeline::cleanClk()
 
 void Timeline::setScroll(int x, int y)
 {
-  int max_scroll_x = m_sprite->getTotalFrames() * FRMSIZE - getBounds().w/2;
+  int max_scroll_x = m_sprite->totalFrames() * FRMSIZE - getBounds().w/2;
   int max_scroll_y = m_layers.size() * LAYSIZE - getBounds().h/2;
   max_scroll_x = MAX(0, max_scroll_x);
   max_scroll_y = MAX(0, max_scroll_y);
@@ -2103,7 +2103,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
       layerIdx = MID(firstLayer(), layerIdx, LayerIndex(m_layers.size() - m_range.layers()));
 
       frame = dx+m_range.frameBegin();
-      frame = MID(firstFrame(), frame, m_sprite->getTotalFrames() - m_range.frames());
+      frame = MID(firstFrame(), frame, m_sprite->totalFrames() - m_range.frames());
 
       m_dropRange.startRange(layerIdx, frame, m_range.type());
       m_dropRange.endRange(

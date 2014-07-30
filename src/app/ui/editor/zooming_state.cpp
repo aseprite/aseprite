@@ -53,7 +53,7 @@ bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  int zoom = editor->getZoom();
+  int zoom = editor->zoom();
 
   if (msg->left() && zoom < 5)
     ++zoom;

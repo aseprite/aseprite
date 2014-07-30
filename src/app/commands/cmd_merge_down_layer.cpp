@@ -88,7 +88,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   Layer* dst_layer = src_layer->getPrevious();
   int index;
 
-  for (FrameNumber frpos(0); frpos<sprite->getTotalFrames(); ++frpos) {
+  for (FrameNumber frpos(0); frpos<sprite->totalFrames(); ++frpos) {
     // Get frames
     Cel* src_cel = static_cast<LayerImage*>(src_layer)->getCel(frpos);
     Cel* dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(frpos);
@@ -96,13 +96,13 @@ void MergeDownLayerCommand::onExecute(Context* context)
     // Get images
     Image* src_image;
     if (src_cel != NULL)
-      src_image = sprite->getStock()->getImage(src_cel->getImage());
+      src_image = src_cel->image();
     else
       src_image = NULL;
 
     Image* dst_image;
     if (dst_cel != NULL)
-      dst_image = sprite->getStock()->getImage(dst_cel->getImage());
+      dst_image = dst_cel->image();
     else
       dst_image = NULL;
 
@@ -116,15 +116,15 @@ void MergeDownLayerCommand::onExecute(Context* context)
         dst_image = Image::createCopy(src_image);
 
         // Adding it in the stock of images
-        index = sprite->getStock()->addImage(dst_image);
+        index = sprite->stock()->addImage(dst_image);
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::AddImage(
-              undo.getObjects(), sprite->getStock(), index));
+              undo.getObjects(), sprite->stock(), index));
 
         // Creating a copy of the cell
         dst_cel = new Cel(frpos, index);
-        dst_cel->setPosition(src_cel->getX(), src_cel->getY());
-        dst_cel->setOpacity(src_cel->getOpacity());
+        dst_cel->setPosition(src_cel->x(), src_cel->y());
+        dst_cel->setOpacity(src_cel->opacity());
 
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::AddCel(undo.getObjects(), dst_layer, dst_cel));
@@ -139,29 +139,29 @@ void MergeDownLayerCommand::onExecute(Context* context)
         if (dst_layer->isBackground()) {
           x1 = 0;
           y1 = 0;
-          x2 = sprite->getWidth();
-          y2 = sprite->getHeight();
+          x2 = sprite->width();
+          y2 = sprite->height();
         }
         // Merge down in a transparent layer
         else {
-          x1 = MIN(src_cel->getX(), dst_cel->getX());
-          y1 = MIN(src_cel->getY(), dst_cel->getY());
-          x2 = MAX(src_cel->getX()+src_image->getWidth()-1, dst_cel->getX()+dst_image->getWidth()-1);
-          y2 = MAX(src_cel->getY()+src_image->getHeight()-1, dst_cel->getY()+dst_image->getHeight()-1);
+          x1 = MIN(src_cel->x(), dst_cel->x());
+          y1 = MIN(src_cel->y(), dst_cel->y());
+          x2 = MAX(src_cel->x()+src_image->width()-1, dst_cel->x()+dst_image->width()-1);
+          y2 = MAX(src_cel->y()+src_image->height()-1, dst_cel->y()+dst_image->height()-1);
         }
 
         raster::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
 
         Image* new_image = raster::crop_image(dst_image,
-          x1-dst_cel->getX(),
-          y1-dst_cel->getY(),
+          x1-dst_cel->x(),
+          y1-dst_cel->y(),
           x2-x1+1, y2-y1+1, bgcolor);
 
         // Merge src_image in new_image
         raster::composite_image(new_image, src_image,
-                                src_cel->getX()-x1,
-                                src_cel->getY()-y1,
-                                src_cel->getOpacity(),
+                                src_cel->x()-x1,
+                                src_cel->y()-y1,
+                                src_cel->opacity(),
                                 static_cast<LayerImage*>(src_layer)->getBlendMode());
 
         if (undo.isEnabled())
@@ -171,9 +171,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::ReplaceImage(undo.getObjects(),
-              sprite->getStock(), dst_cel->getImage()));
+              sprite->stock(), dst_cel->imageIndex()));
 
-        sprite->getStock()->replaceImage(dst_cel->getImage(), new_image);
+        sprite->stock()->replaceImage(dst_cel->imageIndex(), new_image);
         delete dst_image;
       }
     }

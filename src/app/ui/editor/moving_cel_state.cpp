@@ -42,15 +42,15 @@ using namespace ui;
 MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   : m_canceled(false)
 {
-  Document* document = editor->getDocument();
-  Sprite* sprite = editor->getSprite();
-  LayerImage* layer = static_cast<LayerImage*>(editor->getLayer());
+  Document* document = editor->document();
+  Sprite* sprite = editor->sprite();
+  LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 
-  m_cel = layer->getCel(editor->getFrame());
+  m_cel = layer->getCel(editor->frame());
   if (m_cel) {
-    m_celStartX = m_cel->getX();
-    m_celStartY = m_cel->getY();
+    m_celStartX = m_cel->x();
+    m_celStartY = m_cel->y();
   }
   else {
     m_celStartX = 0;
@@ -76,7 +76,7 @@ MovingCelState::~MovingCelState()
 
 bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  Document* document = editor->getDocument();
+  Document* document = editor->document();
 
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
@@ -98,8 +98,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
       // Move selection if it was visible
       if (m_maskVisible)
-        api.setMaskPosition(document->getMask()->getBounds().x + m_celNewX - m_celStartX,
-                            document->getMask()->getBounds().y + m_celNewY - m_celStartY);
+        api.setMaskPosition(document->mask()->bounds().x + m_celNewX - m_celStartX,
+                            document->mask()->bounds().y + m_celNewY - m_celStartY);
 
       undoTransaction.commit();
     }

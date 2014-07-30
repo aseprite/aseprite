@@ -73,8 +73,8 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
       context->settings()->getBgColor(),
       ColorTarget(
         ColorTarget::BackgroundLayer,
-        sprite->getPixelFormat(),
-        sprite->getTransparentColor()));
+        sprite->pixelFormat(),
+        sprite->transparentColor()));
 
   {
     UndoTransaction undo_transaction(writer.context(), "Background from Layer");

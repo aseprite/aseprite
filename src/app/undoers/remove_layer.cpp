@@ -94,12 +94,12 @@ private:
 
 RemoveLayer::RemoveLayer(ObjectsContainer* objects, Document* document, Layer* layer)
   : m_documentId(objects->addObject(document))
-  , m_folderId(objects->addObject(layer->getParent()))
+  , m_folderId(objects->addObject(layer->parent()))
 {
   Layer* after = layer->getPrevious();
   m_afterId = (after ? objects->addObject(after): 0);
 
-  LayerSubObjectsSerializerImpl serializer(objects, layer->getSprite());
+  LayerSubObjectsSerializerImpl serializer(objects, layer->sprite());
   write_object(objects, m_stream, layer, serializer);
 }
 
@@ -115,7 +115,7 @@ void RemoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   Layer* after = (m_afterId != 0 ? objects->getObjectT<Layer>(m_afterId): NULL);
 
   // Read the layer from the stream
-  LayerSubObjectsSerializerImpl serializer(objects, folder->getSprite());
+  LayerSubObjectsSerializerImpl serializer(objects, folder->sprite());
   Layer* layer = read_object<Layer>(objects, m_stream, serializer);
 
   document->getApi(redoers).addLayer(folder, layer, after);

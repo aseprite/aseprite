@@ -92,23 +92,23 @@ void CelPropertiesCommand::onExecute(Context* context)
 
   label_frame->setTextf("%d/%d",
                         (int)reader.frame()+1,
-                        (int)sprite->getTotalFrames());
+                        (int)sprite->totalFrames());
 
   if (cel != NULL) {
     // Position
-    label_pos->setTextf("%d, %d", cel->getX(), cel->getY());
+    label_pos->setTextf("%d, %d", cel->x(), cel->y());
 
     // Dimension (and memory size)
-    Image* image = sprite->getStock()->getImage(cel->getImage());
-    int memsize = image->getRowStrideSize() * image->getHeight();
+    Image* image = cel->image();
+    int memsize = image->getRowStrideSize() * image->height();
 
     label_size->setTextf("%dx%d (%s)",
-                         sprite->getStock()->getImage(cel->getImage())->getWidth(),
-                         sprite->getStock()->getImage(cel->getImage())->getHeight(),
-                         base::get_pretty_memory_size(memsize).c_str());
+      image->width(),
+      image->height(),
+      base::get_pretty_memory_size(memsize).c_str());
 
     // Opacity
-    slider_opacity->setValue(cel->getOpacity());
+    slider_opacity->setValue(cel->opacity());
     if (layer->isBackground()) {
       slider_opacity->setEnabled(false);
       tooltipManager->addTooltipFor(slider_opacity,
@@ -136,7 +136,7 @@ void CelPropertiesCommand::onExecute(Context* context)
 
     // The opacity was changed?
     if (cel_writer != NULL &&
-        cel_writer->getOpacity() != newOpacity) {
+        cel_writer->opacity() != newOpacity) {
       DocumentApi api = document_writer->getApi();
       {
         UndoTransaction undo(writer.context(), "Cel Opacity Change", undo::ModifyDocument);

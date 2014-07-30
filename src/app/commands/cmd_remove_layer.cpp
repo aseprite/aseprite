@@ -80,7 +80,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
     }
     else {
-      layer_name = layer->getName();
+      layer_name = layer->name();
       document->getApi().removeLayer(layer);
     }
 

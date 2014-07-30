@@ -141,7 +141,7 @@ void convert_image_to_allegro_templ(const Image* image, BITMAP* bmp, int _x, int
   const LockImageBits<ImageTraits> bits(image);
   typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin(), src_end = bits.end();
   int depth = bitmap_color_depth(bmp);
-  int x, y, w = image->getWidth(), h = image->getHeight();
+  int x, y, w = image->width(), h = image->height();
   unsigned long bmp_address;
 
   bmp_select(bmp);
@@ -278,7 +278,7 @@ void convert_image_to_allegro_templ(const Image* image, BITMAP* bmp, int _x, int
 
 void convert_image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette)
 {
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
     case IMAGE_RGB:       convert_image_to_allegro_templ<RgbTraits>(image, bmp, x, y, palette); break;
     case IMAGE_GRAYSCALE: convert_image_to_allegro_templ<GrayscaleTraits>(image, bmp, x, y, palette); break;
     case IMAGE_INDEXED:   convert_image_to_allegro_templ<IndexedTraits>(image, bmp, x, y, palette); break;

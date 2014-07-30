@@ -84,21 +84,21 @@ private:
           sprite, NULL, FrameNumber(0));
 
         base::UniquePtr<Image> image(renderEngine.renderSprite(
-            0, 0, sprite->getWidth(), sprite->getHeight(),
+            0, 0, sprite->width(), sprite->height(),
             FrameNumber(0), 0, true, false));
 
         // Calculate the thumbnail size
-        int thumb_w = MAX_THUMBNAIL_SIZE * image->getWidth() / MAX(image->getWidth(), image->getHeight());
-        int thumb_h = MAX_THUMBNAIL_SIZE * image->getHeight() / MAX(image->getWidth(), image->getHeight());
-        if (MAX(thumb_w, thumb_h) > MAX(image->getWidth(), image->getHeight())) {
-          thumb_w = image->getWidth();
-          thumb_h = image->getHeight();
+        int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());
+        int thumb_h = MAX_THUMBNAIL_SIZE * image->height() / MAX(image->width(), image->height());
+        if (MAX(thumb_w, thumb_h) > MAX(image->width(), image->height())) {
+          thumb_w = image->width();
+          thumb_h = image->height();
         }
         thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
         thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
         // Stretch the 'image'
-        m_thumbnail.reset(Image::create(image->getPixelFormat(), thumb_w, thumb_h));
+        m_thumbnail.reset(Image::create(image->pixelFormat(), thumb_w, thumb_h));
         clear_image(m_thumbnail, 0);
         image_scale(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
       }
@@ -109,8 +109,8 @@ private:
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
         she::Surface* thumbnail = she::instance()->createRgbaSurface(
-          m_thumbnail->getWidth(),
-          m_thumbnail->getHeight());
+          m_thumbnail->width(),
+          m_thumbnail->height());
 
         convert_image_to_surface(m_thumbnail, thumbnail, 0, 0, m_palette);
 

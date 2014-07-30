@@ -333,8 +333,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
            frame_end=data->frames.end(); frame_it != frame_end; ++frame_it) {
 
       // Convert the indexed image to RGB
-      for (int y=0; y<frame_it->image->getHeight(); ++y) {
-        for (int x=0; x<frame_it->image->getWidth(); ++x) {
+      for (int y=0; y<frame_it->image->height(); ++y) {
+        for (int x=0; x<frame_it->image->width(); ++x) {
           int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
 
           if (pixel_index >= 0 && pixel_index < 256) {
@@ -385,7 +385,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
   // Create the main layer
   LayerImage* layer = new LayerImage(sprite);
-  sprite->getFolder()->addLayer(layer);
+  sprite->folder()->addLayer(layer);
 
   if (pixelFormat == IMAGE_INDEXED) {
     if (data->bgcolor_index >= 0)
@@ -427,8 +427,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
     switch (pixelFormat) {
 
       case IMAGE_INDEXED:
-        for (int y = 0; y < frame_it->image->getHeight(); ++y)
-          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+        for (int y = 0; y < frame_it->image->height(); ++y)
+          for (int x = 0; x < frame_it->image->width(); ++x) {
             int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
               put_pixel_fast<IndexedTraits>(current_image,
@@ -440,8 +440,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
       case IMAGE_RGB:
         // Convert the indexed image to RGB
-        for (int y = 0; y < frame_it->image->getHeight(); ++y)
-          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+        for (int y = 0; y < frame_it->image->height(); ++y)
+          for (int x = 0; x < frame_it->image->width(); ++x) {
             int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
               put_pixel_fast<RgbTraits>(current_image,
@@ -460,7 +460,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       try {
         // Add the image in the sprite's stock and update the cel's
         // reference to the new stock's image.
-        cel->setImage(sprite->getStock()->addImage(cel_image));
+        cel->setImage(sprite->stock()->addImage(cel_image));
       }
       catch (...) {
         delete cel_image;
@@ -489,8 +489,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
         fill_rect(current_image,
                   frame_it->x,
                   frame_it->y,
-                  frame_it->x+frame_it->image->getWidth()-1,
-                  frame_it->y+frame_it->image->getHeight()-1,
+                  frame_it->x+frame_it->image->width()-1,
+                  frame_it->y+frame_it->image->height()-1,
                   bgcolor);
         break;
 
@@ -540,14 +540,14 @@ bool GifFormat::onSave(FileOp* fop)
 
   SharedPtr<GifOptions> gif_options = fop->seq.format_options;
   Sprite* sprite = fop->document->sprite();
-  int sprite_w = sprite->getWidth();
-  int sprite_h = sprite->getHeight();
-  PixelFormat sprite_format = sprite->getPixelFormat();
+  int sprite_w = sprite->width();
+  int sprite_h = sprite->height();
+  PixelFormat sprite_format = sprite->pixelFormat();
   bool interlaced = gif_options->interlaced();
   int loop = 0;
-  bool has_background = (sprite->getBackgroundLayer() ? true: false);
-  int background_color = (sprite_format == IMAGE_INDEXED ? sprite->getTransparentColor(): 0);
-  int transparent_index = (has_background ? -1: sprite->getTransparentColor());
+  bool has_background = (sprite->backgroundLayer() ? true: false);
+  int background_color = (sprite_format == IMAGE_INDEXED ? sprite->transparentColor(): 0);
+  int transparent_index = (has_background ? -1: sprite->transparentColor());
 
   Palette current_palette = *sprite->getPalette(FrameNumber(0));
   Palette previous_palette(current_palette);
@@ -610,11 +610,11 @@ bool GifFormat::onSave(FileOp* fop)
 
   ColorMapObject* image_color_map = NULL;
 
-  for (FrameNumber frame_num(0); frame_num<sprite->getTotalFrames(); ++frame_num) {
+  for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
     if (sprite_format != IMAGE_INDEXED) {
       clear_image(buffer_image, background_color);
-      layer_render(sprite->getFolder(), buffer_image, 0, 0, frame_num);
+      layer_render(sprite->folder(), buffer_image, 0, 0, frame_num);
 
       switch (gif_options->quantize()) {
         case GifOptions::NoQuantize:
@@ -646,14 +646,14 @@ bool GifFormat::onSave(FileOp* fop)
     // If the sprite is Indexed, we can render directly into "current_image".
     else {
       clear_image(current_image, background_color);
-      layer_render(sprite->getFolder(), current_image, 0, 0, frame_num);
+      layer_render(sprite->folder(), current_image, 0, 0, frame_num);
     }
 
     if (frame_num == 0) {
       frame_x = 0;
       frame_y = 0;
-      frame_w = sprite->getWidth();
-      frame_h = sprite->getHeight();
+      frame_w = sprite->width();
+      frame_h = sprite->height();
     }
     else {
       // Get the rectangle where start differences with the previous frame.
@@ -706,8 +706,8 @@ bool GifFormat::onSave(FileOp* fop)
     // frame and maybe the transparency index).
     {
       unsigned char extension_bytes[5];
-      int disposal_method = (sprite->getBackgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
-                                                            DISPOSAL_METHOD_RESTORE_BGCOLOR);
+      int disposal_method = (sprite->backgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
+                                                         DISPOSAL_METHOD_RESTORE_BGCOLOR);
       int frame_delay = sprite->getFrameDuration(frame_num) / 10;
 
       extension_bytes[0] = (((disposal_method & 7) << 2) |
@@ -797,7 +797,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     // Load the window to ask to the user the GIF options he wants.
 
     app::gen::GifOptions win;
-    win.rgbOptions()->setVisible(fop->document->sprite()->getPixelFormat() != IMAGE_INDEXED);
+    win.rgbOptions()->setVisible(fop->document->sprite()->pixelFormat() != IMAGE_INDEXED);
 
     switch (gif_options->quantize()) {
       case GifOptions::NoQuantize: win.noQuantize()->setSelected(true); break;

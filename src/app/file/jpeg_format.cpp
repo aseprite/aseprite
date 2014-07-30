@@ -179,7 +179,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   }
 
   // Generate a grayscale palette if is necessary.
-  if (image->getPixelFormat() == IMAGE_GRAYSCALE)
+  if (image->pixelFormat() == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
       fop_sequence_set_color(fop, c, c, c, c);
 
@@ -192,7 +192,7 @@ bool JpegFormat::onLoad(FileOp* fop)
     num_scanlines = jpeg_read_scanlines(&cinfo, buffer, buffer_height);
 
     // RGB
-    if (image->getPixelFormat() == IMAGE_RGB) {
+    if (image->pixelFormat() == IMAGE_RGB) {
       uint8_t* src_address;
       uint32_t* dst_address;
       int x, y, r, g, b;
@@ -201,7 +201,7 @@ bool JpegFormat::onLoad(FileOp* fop)
         src_address = ((uint8_t**)buffer)[y];
         dst_address = (uint32_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
 
-        for (x=0; x<image->getWidth(); x++) {
+        for (x=0; x<image->width(); x++) {
           r = *(src_address++);
           g = *(src_address++);
           b = *(src_address++);
@@ -219,7 +219,7 @@ bool JpegFormat::onLoad(FileOp* fop)
         src_address = ((uint8_t**)buffer)[y];
         dst_address = (uint16_t*)image->getPixelAddress(0, cinfo.output_scanline-1+y);
 
-        for (x=0; x<image->getWidth(); x++)
+        for (x=0; x<image->width(); x++)
           *(dst_address++) = graya(*(src_address++), 255);
       }
     }
@@ -263,10 +263,10 @@ bool JpegFormat::onSave(FileOp* fop)
   jpeg_stdio_dest(&cinfo, file);
 
   // SET parameters for compression.
-  cinfo.image_width = image->getWidth();
-  cinfo.image_height = image->getHeight();
+  cinfo.image_width = image->width();
+  cinfo.image_height = image->height();
 
-  if (image->getPixelFormat() == IMAGE_GRAYSCALE) {
+  if (image->pixelFormat() == IMAGE_GRAYSCALE) {
     cinfo.input_components = 1;
     cinfo.in_color_space = JCS_GRAYSCALE;
   }
@@ -308,7 +308,7 @@ bool JpegFormat::onSave(FileOp* fop)
   // Write each scan line.
   while (cinfo.next_scanline < cinfo.image_height) {
     // RGB
-    if (image->getPixelFormat() == IMAGE_RGB) {
+    if (image->pixelFormat() == IMAGE_RGB) {
       uint32_t* src_address;
       uint8_t* dst_address;
       int x, y;
@@ -316,7 +316,7 @@ bool JpegFormat::onSave(FileOp* fop)
         src_address = (uint32_t*)image->getPixelAddress(0, cinfo.next_scanline+y);
         dst_address = ((uint8_t**)buffer)[y];
 
-        for (x=0; x<image->getWidth(); ++x) {
+        for (x=0; x<image->width(); ++x) {
           c = *(src_address++);
           *(dst_address++) = rgba_getr(c);
           *(dst_address++) = rgba_getg(c);
@@ -332,7 +332,7 @@ bool JpegFormat::onSave(FileOp* fop)
       for (y=0; y<(int)buffer_height; y++) {
         src_address = (uint16_t*)image->getPixelAddress(0, cinfo.next_scanline+y);
         dst_address = ((uint8_t**)buffer)[y];
-        for (x=0; x<image->getWidth(); ++x)
+        for (x=0; x<image->width(); ++x)
           *(dst_address++) = graya_getv(*(src_address++));
       }
     }

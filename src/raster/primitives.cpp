@@ -36,7 +36,7 @@ namespace raster {
 
 color_t get_pixel(const Image* image, int x, int y)
 {
-  if ((x >= 0) && (y >= 0) && (x < image->getWidth()) && (y < image->getHeight()))
+  if ((x >= 0) && (y >= 0) && (x < image->width()) && (y < image->height()))
     return image->getPixel(x, y);
   else
     return -1;
@@ -44,14 +44,14 @@ color_t get_pixel(const Image* image, int x, int y)
 
 void put_pixel(Image* image, int x, int y, color_t color)
 {
-  if ((x >= 0) && (y >= 0) && (x < image->getWidth()) && (y < image->getHeight()))
+  if ((x >= 0) && (y >= 0) && (x < image->width()) && (y < image->height()))
     image->putPixel(x, y, color);
 }
 
 void draw_brush(Image* image, Brush* brush, int x, int y, color_t fg, color_t bg)
 {
-  Image* brush_image = brush->get_image();
-  const gfx::Rect& brushBounds = brush->getBounds();
+  Image* brush_image = brush->image();
+  const gfx::Rect& brushBounds = brush->bounds();
 
   x += brushBounds.x;
   y += brushBounds.y;
@@ -92,8 +92,8 @@ Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, co
   if (w < 1) throw std::invalid_argument("image_crop: Width is less than 1");
   if (h < 1) throw std::invalid_argument("image_crop: Height is less than 1");
 
-  Image* trim = Image::create(image->getPixelFormat(), w, h, buffer);
-  trim->setMaskColor(image->getMaskColor());
+  Image* trim = Image::create(image->pixelFormat(), w, h, buffer);
+  trim->setMaskColor(image->maskColor());
 
   clear_image(trim, bg);
   copy_image(trim, image, -x, -y);
@@ -108,31 +108,31 @@ void rotate_image(const Image* src, Image* dst, int angle)
   switch (angle) {
 
     case 180:
-      ASSERT(dst->getWidth() == src->getWidth());
-      ASSERT(dst->getHeight() == src->getHeight());
+      ASSERT(dst->width() == src->width());
+      ASSERT(dst->height() == src->height());
 
-      for (y=0; y<src->getHeight(); ++y)
-        for (x=0; x<src->getWidth(); ++x)
-          dst->putPixel(src->getWidth() - x - 1,
-                        src->getHeight() - y - 1, src->getPixel(x, y));
+      for (y=0; y<src->height(); ++y)
+        for (x=0; x<src->width(); ++x)
+          dst->putPixel(src->width() - x - 1,
+                        src->height() - y - 1, src->getPixel(x, y));
       break;
 
     case 90:
-      ASSERT(dst->getWidth() == src->getHeight());
-      ASSERT(dst->getHeight() == src->getWidth());
+      ASSERT(dst->width() == src->height());
+      ASSERT(dst->height() == src->width());
 
-      for (y=0; y<src->getHeight(); ++y)
-        for (x=0; x<src->getWidth(); ++x)
-          dst->putPixel(src->getHeight() - y - 1, x, src->getPixel(x, y));
+      for (y=0; y<src->height(); ++y)
+        for (x=0; x<src->width(); ++x)
+          dst->putPixel(src->height() - y - 1, x, src->getPixel(x, y));
       break;
 
     case -90:
-      ASSERT(dst->getWidth() == src->getHeight());
-      ASSERT(dst->getHeight() == src->getWidth());
+      ASSERT(dst->width() == src->height());
+      ASSERT(dst->height() == src->width());
 
-      for (y=0; y<src->getHeight(); ++y)
-        for (x=0; x<src->getWidth(); ++x)
-          dst->putPixel(y, src->getWidth() - x - 1, src->getPixel(x, y));
+      for (y=0; y<src->height(); ++y)
+        for (x=0; x<src->width(); ++x)
+          dst->putPixel(y, src->width() - x - 1, src->getPixel(x, y));
       break;
 
     // bad angle
@@ -151,11 +151,11 @@ void draw_hline(Image* image, int x1, int y, int x2, color_t color)
     x2 = t;
   }
 
-  if ((x2 < 0) || (x1 >= image->getWidth()) || (y < 0) || (y >= image->getHeight()))
+  if ((x2 < 0) || (x1 >= image->width()) || (y < 0) || (y >= image->height()))
     return;
 
   if (x1 < 0) x1 = 0;
-  if (x2 >= image->getWidth()) x2 = image->getWidth()-1;
+  if (x2 >= image->width()) x2 = image->width()-1;
 
   image->drawHLine(x1, y, x2, color);
 }
@@ -170,11 +170,11 @@ void draw_vline(Image* image, int x, int y1, int y2, color_t color)
     y2 = t;
   }
 
-  if ((y2 < 0) || (y1 >= image->getHeight()) || (x < 0) || (x >= image->getWidth()))
+  if ((y2 < 0) || (y1 >= image->height()) || (x < 0) || (x >= image->width()))
     return;
 
   if (y1 < 0) y1 = 0;
-  if (y2 >= image->getHeight()) y2 = image->getHeight()-1;
+  if (y2 >= image->height()) y2 = image->height()-1;
 
   for (t=y1; t<=y2; t++)
     image->putPixel(x, t, color);
@@ -196,7 +196,7 @@ void draw_rect(Image* image, int x1, int y1, int x2, int y2, color_t color)
     y2 = t;
   }
 
-  if ((x2 < 0) || (x1 >= image->getWidth()) || (y2 < 0) || (y1 >= image->getHeight()))
+  if ((x2 < 0) || (x1 >= image->width()) || (y2 < 0) || (y1 >= image->height()))
     return;
 
   draw_hline(image, x1, y1, x2, color);
@@ -223,13 +223,13 @@ void fill_rect(Image* image, int x1, int y1, int x2, int y2, color_t color)
     y2 = t;
   }
 
-  if ((x2 < 0) || (x1 >= image->getWidth()) || (y2 < 0) || (y1 >= image->getHeight()))
+  if ((x2 < 0) || (x1 >= image->width()) || (y2 < 0) || (y1 >= image->height()))
     return;
 
   if (x1 < 0) x1 = 0;
   if (y1 < 0) y1 = 0;
-  if (x2 >= image->getWidth()) x2 = image->getWidth()-1;
-  if (y2 >= image->getHeight()) y2 = image->getHeight()-1;
+  if (x2 >= image->width()) x2 = image->width()-1;
+  if (y2 >= image->height()) y2 = image->height()-1;
 
   image->fillRect(x1, y1, x2, y2, color);
 }
@@ -250,13 +250,13 @@ void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t color, int
     y2 = t;
   }
 
-  if ((x2 < 0) || (x1 >= image->getWidth()) || (y2 < 0) || (y1 >= image->getHeight()))
+  if ((x2 < 0) || (x1 >= image->width()) || (y2 < 0) || (y1 >= image->height()))
     return;
 
   if (x1 < 0) x1 = 0;
   if (y1 < 0) y1 = 0;
-  if (x2 >= image->getWidth()) x2 = image->getWidth()-1;
-  if (y2 >= image->getHeight()) y2 = image->getHeight()-1;
+  if (x2 >= image->width()) x2 = image->width()-1;
+  if (y2 >= image->height()) y2 = image->height()-1;
 
   image->blendRect(x1, y1, x2, y2, color, opacity);
 }
@@ -319,11 +319,12 @@ int count_diff_between_images_templ(const Image* i1, const Image* i2)
 
 int count_diff_between_images(const Image* i1, const Image* i2)
 {
-  if ((i1->getPixelFormat() != i2->getPixelFormat()) ||
-      (i1->getWidth() != i2->getWidth()) || (i1->getHeight() != i2->getHeight()))
+  if ((i1->pixelFormat() != i2->pixelFormat()) ||
+      (i1->width() != i2->width()) ||
+      (i1->height() != i2->height()))
     return -1;
 
-  switch (i1->getPixelFormat()) {
+  switch (i1->pixelFormat()) {
     case IMAGE_RGB:       return count_diff_between_images_templ<RgbTraits>(i1, i2);
     case IMAGE_GRAYSCALE: return count_diff_between_images_templ<GrayscaleTraits>(i1, i2);
     case IMAGE_INDEXED:   return count_diff_between_images_templ<IndexedTraits>(i1, i2);

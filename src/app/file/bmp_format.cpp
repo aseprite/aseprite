@@ -727,18 +727,18 @@ bool BmpFormat::onSave(FileOp *fop)
   Image *image = fop->seq.image;
   int bfSize;
   int biSizeImage;
-  int bpp = (image->getPixelFormat() == IMAGE_RGB) ? 24 : 8;
-  int filler = 3 - ((image->getWidth()*(bpp/8)-1) & 3);
+  int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : 8;
+  int filler = 3 - ((image->width()*(bpp/8)-1) & 3);
   int c, i, j, r, g, b;
 
   if (bpp == 8) {
-    biSizeImage = (image->getWidth() + filler) * image->getHeight();
+    biSizeImage = (image->width() + filler) * image->height();
     bfSize = (54                      /* header */
               + 256*4                 /* palette */
               + biSizeImage);         /* image data */
   }
   else {
-    biSizeImage = (image->getWidth()*3 + filler) * image->getHeight();
+    biSizeImage = (image->width()*3 + filler) * image->height();
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
@@ -757,8 +757,8 @@ bool BmpFormat::onSave(FileOp *fop)
 
   /* info_header */
   fputl(40, f);                  /* biSize */
-  fputl(image->getWidth(), f);   /* biWidth */
-  fputl(image->getHeight(), f);  /* biHeight */
+  fputl(image->width(), f);   /* biWidth */
+  fputl(image->height(), f);  /* biHeight */
   fputw(1, f);                   /* biPlanes */
   fputw(bpp, f);                 /* biBitCount */
   fputl(0, f);                   /* biCompression */
@@ -785,12 +785,12 @@ bool BmpFormat::onSave(FileOp *fop)
   }
 
   /* image data */
-  for (i=image->getHeight()-1; i>=0; i--) {
-    for (j=0; j<image->getWidth(); j++) {
+  for (i=image->height()-1; i>=0; i--) {
+    for (j=0; j<image->width(); j++) {
       if (bpp == 8) {
-        if (image->getPixelFormat() == IMAGE_INDEXED)
+        if (image->pixelFormat() == IMAGE_INDEXED)
           fputc(get_pixel_fast<IndexedTraits>(image, j, i), f);
-        else if (image->getPixelFormat() == IMAGE_GRAYSCALE)
+        else if (image->pixelFormat() == IMAGE_GRAYSCALE)
           fputc(graya_getv(get_pixel_fast<GrayscaleTraits>(image, j, i)), f);
       }
       else {
@@ -804,7 +804,7 @@ bool BmpFormat::onSave(FileOp *fop)
     for (j=0; j<filler; j++)
       fputc(0, f);
 
-    fop_progress(fop, (float)(image->getHeight()-i) / (float)image->getHeight());
+    fop_progress(fop, (float)(image->height()-i) / (float)image->height());
   }
 
   if (ferror(f)) {

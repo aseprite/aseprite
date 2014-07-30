@@ -52,7 +52,7 @@ void RemovePalette::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   base::UniquePtr<Palette> palette(raster::read_palette(m_stream));
 
   // Push an AddPalette as redoer
-  redoers->pushUndoer(new AddPalette(objects, sprite, palette->getFrame()));
+  redoers->pushUndoer(new AddPalette(objects, sprite, palette->frame()));
 
   sprite->setPalette(palette, true);
 

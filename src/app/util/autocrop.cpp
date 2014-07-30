@@ -51,20 +51,20 @@ bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
 
   *x1 = 0;
   *y1 = 0;
-  *x2 = image->getWidth()-1;
-  *y2 = image->getHeight()-1;
+  *x2 = image->width()-1;
+  *y2 = image->height()-1;
 
-  SHRINK_SIDE(0, <, image->getWidth(), ++,
-              0, <, image->getHeight(), ++, u, v, (*x1)++);
+  SHRINK_SIDE(0, <, image->width(), ++,
+              0, <, image->height(), ++, u, v, (*x1)++);
 
-  SHRINK_SIDE(0, <, image->getHeight(), ++,
-              0, <, image->getWidth(), ++, v, u, (*y1)++);
+  SHRINK_SIDE(0, <, image->height(), ++,
+              0, <, image->width(), ++, v, u, (*y1)++);
 
-  SHRINK_SIDE(image->getWidth()-1, >, 0, --,
-              0, <, image->getHeight(), ++, u, v, (*x2)--);
+  SHRINK_SIDE(image->width()-1, >, 0, --,
+              0, <, image->height(), ++, u, v, (*x2)--);
 
-  SHRINK_SIDE(image->getHeight()-1, >, 0, --,
-              0, <, image->getWidth(), ++, v, u, (*y2)--);
+  SHRINK_SIDE(image->height()-1, >, 0, --,
+              0, <, image->width(), ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
     return false;
@@ -96,20 +96,20 @@ bool get_shrink_rect2(int *x1, int *y1, int *x2, int *y2,
 
   *x1 = 0;
   *y1 = 0;
-  *x2 = image->getWidth()-1;
-  *y2 = image->getHeight()-1;
+  *x2 = image->width()-1;
+  *y2 = image->height()-1;
 
-  SHRINK_SIDE(0, <, image->getWidth(), ++,
-              0, <, image->getHeight(), ++, u, v, (*x1)++);
+  SHRINK_SIDE(0, <, image->width(), ++,
+              0, <, image->height(), ++, u, v, (*x1)++);
 
-  SHRINK_SIDE(0, <, image->getHeight(), ++,
-              0, <, image->getWidth(), ++, v, u, (*y1)++);
+  SHRINK_SIDE(0, <, image->height(), ++,
+              0, <, image->width(), ++, v, u, (*y1)++);
 
-  SHRINK_SIDE(image->getWidth()-1, >, 0, --,
-              0, <, image->getHeight(), ++, u, v, (*x2)--);
+  SHRINK_SIDE(image->width()-1, >, 0, --,
+              0, <, image->height(), ++, u, v, (*x2)--);
 
-  SHRINK_SIDE(image->getHeight()-1, >, 0, --,
-              0, <, image->getWidth(), ++, v, u, (*y2)--);
+  SHRINK_SIDE(image->height()-1, >, 0, --,
+              0, <, image->width(), ++, v, u, (*y2)--);
 
   if ((*x1 > *x2) || (*y1 > *y2))
     return false;

@@ -43,7 +43,7 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
   // Get the color from the image
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
-      location.sprite()->getPixelFormat(),
+      location.sprite()->pixelFormat(),
       location.sprite()->getPixel(x, y, location.frame()));
   }
   else {                        // Pick from the current layer
@@ -51,10 +51,10 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
     raster::Image* image = location.image(&u, &v, NULL);
     gfx::Point pt(x-u, y-v);
 
-    if (image && image->getBounds().contains(pt)) {
+    if (image && image->bounds().contains(pt)) {
       raster::color_t imageColor = get_pixel(image, pt.x, pt.y);
 
-      switch (image->getPixelFormat()) {
+      switch (image->pixelFormat()) {
         case IMAGE_RGB:
           m_alpha = raster::rgba_geta(imageColor);
           break;
@@ -63,7 +63,7 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
           break;
       }
 
-      m_color = app::Color::fromImage(image->getPixelFormat(), imageColor);
+      m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
     }
   }
 }

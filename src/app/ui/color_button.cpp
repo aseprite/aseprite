@@ -66,7 +66,7 @@ ColorButton::~ColorButton()
   delete m_window;       // widget, window
 }
 
-PixelFormat ColorButton::getPixelFormat() const
+PixelFormat ColorButton::pixelFormat() const
 {
   return m_pixelFormat;
 }

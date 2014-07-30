@@ -36,7 +36,7 @@ using namespace undo;
 SetTotalFrames::SetTotalFrames(ObjectsContainer* objects, Document* document, Sprite* sprite)
   : m_documentId(objects->addObject(document))
   , m_spriteId(objects->addObject(sprite))
-  , m_totalFrames(sprite->getTotalFrames())
+  , m_totalFrames(sprite->totalFrames())
 {
 }
 

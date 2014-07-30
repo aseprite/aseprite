@@ -203,8 +203,8 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 
   editor->editorToScreen(transform.pivot().x, transform.pivot().y, &pvx, &pvy);
 
-  pvx += (1 << editor->getZoom()) / 2;
-  pvy += (1 << editor->getZoom()) / 2;
+  pvx += (1 << editor->zoom()) / 2;
+  pvy += (1 << editor->zoom()) / 2;
 
   return gfx::Rect(
     pvx-part->width()/2,

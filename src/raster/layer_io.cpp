@@ -41,7 +41,7 @@ using namespace base::serialization::little_endian;
 
 void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer* layer)
 {
-  std::string name = layer->getName();
+  std::string name = layer->name();
 
   write16(os, name.size());                            // Name length
   if (!name.empty())
@@ -63,7 +63,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
         Cel* cel = *it;
         subObjects->write_cel(os, cel);
 
-        Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
+        Image* image = cel->image();
         ASSERT(image != NULL);
 
         subObjects->write_image(os, image);
@@ -120,7 +120,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
         // Read the cel's image
         Image* image = subObjects->read_image(is);
 
-        sprite->getStock()->replaceImage(cel->getImage(), image);
+        sprite->stock()->replaceImage(cel->imageIndex(), image);
       }
       break;
     }

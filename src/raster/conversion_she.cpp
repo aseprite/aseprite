@@ -89,8 +89,8 @@ void convert_image_to_surface_templ(const Image* image, she::LockedSurface* dst,
 {
   const LockImageBits<ImageTraits> bits(image);
   typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin(), src_end = bits.end();
-  int w = image->getWidth();
-  int h = image->getHeight();
+  int w = image->width();
+  int h = image->height();
 
   for (int v=0; v<h; ++v) {
     AddressType dst_address = AddressType(dst->getData(x, y));
@@ -137,7 +137,7 @@ void convert_image_to_surface(const Image* image, she::Surface* surface, int x, 
   she::SurfaceFormatData fd;
   dst->getFormat(&fd);
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
     case IMAGE_RGB: convert_image_to_surface_selector<RgbTraits>(image, dst, x, y, palette, &fd); break;
     case IMAGE_GRAYSCALE: convert_image_to_surface_selector<GrayscaleTraits>(image, dst, x, y, palette, &fd); break;
     case IMAGE_INDEXED: convert_image_to_surface_selector<IndexedTraits>(image, dst, x, y, palette, &fd); break;

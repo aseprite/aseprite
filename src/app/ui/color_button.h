@@ -34,7 +34,7 @@ namespace app {
     ColorButton(const app::Color& color, PixelFormat pixelFormat);
     ~ColorButton();
 
-    PixelFormat getPixelFormat() const;
+    PixelFormat pixelFormat() const;
     void setPixelFormat(PixelFormat pixelFormat);
 
     app::Color getColor() const;

@@ -64,19 +64,19 @@ Brush::~Brush()
   clean();
 }
 
-void Brush::set_type(BrushType type)
+void Brush::setType(BrushType type)
 {
   m_type = type;
   regenerate();
 }
 
-void Brush::set_size(int size)
+void Brush::setSize(int size)
 {
   m_size = size;
   regenerate();
 }
 
-void Brush::set_angle(int angle)
+void Brush::setAngle(int angle)
 {
   m_angle = angle;
   regenerate();
@@ -161,15 +161,15 @@ void Brush::regenerate()
     }
   }
 
-  m_scanline.resize(m_image->getHeight());
-  for (int y=0; y<m_image->getHeight(); y++) {
+  m_scanline.resize(m_image->height());
+  for (int y=0; y<m_image->height(); y++) {
     m_scanline[y].state = false;
 
-    for (int x=0; x<m_image->getWidth(); x++) {
+    for (int x=0; x<m_image->width(); x++) {
       if (get_pixel(m_image, x, y)) {
         m_scanline[y].x1 = x;
 
-        for (; x<m_image->getWidth(); x++)
+        for (; x<m_image->width(); x++)
           if (!get_pixel(m_image, x, y))
             break;
 
@@ -181,8 +181,8 @@ void Brush::regenerate()
   }
 
   m_bounds = gfx::Rect(
-    -m_image->getWidth()/2, -m_image->getHeight()/2,
-    m_image->getWidth(), m_image->getHeight());
+    -m_image->width()/2, -m_image->height()/2,
+    m_image->width(), m_image->height());
 }
 
 } // namespace raster

@@ -95,7 +95,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   }
 
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
   m_toolLoop->setSpeed(Point(0, 0));
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
@@ -114,7 +114,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
   snapToGrid(spritePoint);
 
   bool res = m_toolLoop->getController()->releaseButton(m_points, spritePoint);
@@ -134,7 +134,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
     return;
 
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.getX(), pointer.getY()));
+  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
   // Calculate the speed (new sprite point - old sprite point)
   m_toolLoop->setSpeed(spritePoint - m_oldPoint);
   m_oldPoint = spritePoint;
@@ -234,8 +234,8 @@ void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, R
   // Apply tiled mode
   TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
   if (tiledMode != TILED_NONE) {
-    int w = loop->getSprite()->getWidth();
-    int h = loop->getSprite()->getHeight();
+    int w = loop->sprite()->width();
+    int h = loop->sprite()->height();
     Region sprite_area(Rect(0, 0, w, h));
     Region outside;
     outside.createSubtraction(dirty_area, sprite_area);

@@ -93,7 +93,7 @@ void UndoCommand::onExecute(Context* context)
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
       current_editor->drawSpriteClipped
-        (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
+        (gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
       ui::dirty_display_flag = true;
       gui_feedback();

@@ -120,7 +120,7 @@ public:
     for (Samples::iterator it=samples.begin(), end=samples.end();
          it != end; ++it) {
       const Sprite* sprite = it->sprite();
-      gfx::Size size(sprite->getWidth(), sprite->getHeight());
+      gfx::Size size(sprite->width(), sprite->height());
 
       it->setOriginalSize(size);
       it->setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
@@ -167,9 +167,8 @@ void DocumentExporter::exportSheet()
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
-  Image* textureImage = texture->getStock()->getImage(
-    static_cast<LayerImage*>(texture->getFolder()->getFirstLayer())
-      ->getCel(FrameNumber(0))->getImage());
+  Image* textureImage = static_cast<LayerImage*>(texture->folder()->getFirstLayer())
+    ->getCel(FrameNumber(0))->image();
 
   renderTexture(samples, textureImage);
 
@@ -194,14 +193,14 @@ void DocumentExporter::captureSamples(Samples& samples)
     Sprite* sprite = document->sprite();
     
     for (FrameNumber frame=FrameNumber(0);
-         frame<sprite->getTotalFrames(); ++frame) {
+         frame<sprite->totalFrames(); ++frame) {
       std::string filename = document->filename();
 
-      if (sprite->getTotalFrames() > FrameNumber(1)) {
+      if (sprite->totalFrames() > FrameNumber(1)) {
         int frameNumWidth =
-          (sprite->getTotalFrames() < 10)? 1:
-          (sprite->getTotalFrames() < 100)? 2:
-          (sprite->getTotalFrames() < 1000)? 3: 4;
+          (sprite->totalFrames() < 10)? 1:
+          (sprite->totalFrames() < 100)? 2:
+          (sprite->totalFrames() < 1000)? 3: 4;
         std::sprintf(&buf[0], "%0*d", frameNumWidth, (int)frame);
 
         std::string path = base::get_file_path(filename);
@@ -229,7 +228,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
     // two or more palettes, or two of the sprites have different
     // palettes, we've to use RGB format.
     if (pixelFormat == IMAGE_INDEXED) {
-      if (it->sprite()->getPixelFormat() != IMAGE_INDEXED) {
+      if (it->sprite()->pixelFormat() != IMAGE_INDEXED) {
         pixelFormat = IMAGE_RGB;
       }
       else if (it->sprite()->getPalettes().size() > 1) {
@@ -267,9 +266,9 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
          end = samples.end(); it != end; ++it) {
     // Make the sprite compatible with the texture so the render()
     // works correctly.
-    if (it->sprite()->getPixelFormat() != textureImage->getPixelFormat()) {
+    if (it->sprite()->pixelFormat() != textureImage->pixelFormat()) {
       DocumentApi docApi(it->document(), NULL); // DocumentApi without undo
-      docApi.setPixelFormat(it->sprite(), textureImage->getPixelFormat(),
+      docApi.setPixelFormat(it->sprite(), textureImage->pixelFormat(),
         DITHERING_NONE);
     }
 
@@ -321,10 +320,10 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "  \"version\": \"" << VERSION << "\",\n";
   if (!m_textureFilename.empty())
     os << "  \"image\": \"" << m_textureFilename.c_str() << "\",\n";
-  os << "  \"format\": \"" << (textureImage->getPixelFormat() == IMAGE_RGB ? "RGBA8888": "I8") << "\",\n"
+  os << "  \"format\": \"" << (textureImage->pixelFormat() == IMAGE_RGB ? "RGBA8888": "I8") << "\",\n"
      << "  \"size\": { "
-     << "\"w\": " << textureImage->getWidth() << ", "
-     << "\"h\": " << textureImage->getHeight() << " },\n"
+     << "\"w\": " << textureImage->width() << ", "
+     << "\"h\": " << textureImage->height() << " },\n"
      << "  \"scale\": \"" << m_scale << "\"\n"
      << " }\n"
      << "}\n";

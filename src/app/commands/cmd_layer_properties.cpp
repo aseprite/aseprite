@@ -67,7 +67,7 @@ void LayerPropertiesCommand::onExecute(Context* context)
   Box* box2 = new Box(JI_HORIZONTAL);
   Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);
   Widget* label_name = new Label("Name:");
-  Entry* entry_name = new Entry(256, layer->getName().c_str());
+  Entry* entry_name = new Entry(256, layer->name().c_str());
   Button* button_ok = new Button("&OK");
   Button* button_cancel = new Button("&Cancel");
 

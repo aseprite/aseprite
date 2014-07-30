@@ -176,11 +176,11 @@ bool AseFormat::onLoad(FileOp* fop)
   sprite->setTransparentColor(header.transparent_index);
 
   // Prepare variables for layer chunks
-  Layer* last_layer = sprite->getFolder();
+  Layer* last_layer = sprite->folder();
   int current_level = -1;
 
   /* read frame by frame to end-of-file */
-  for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
+  for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
     /* start frame position */
     int frame_pos = ftell(f);
     fop_progress(fop, (float)frame_pos / (float)header.size);
@@ -212,7 +212,7 @@ bool AseFormat::onLoad(FileOp* fop)
           case ASE_FILE_CHUNK_FLI_COLOR2:
             /* fop_error(fop, "Color chunk\n"); */
 
-            if (sprite->getPixelFormat() == IMAGE_INDEXED) {
+            if (sprite->pixelFormat() == IMAGE_INDEXED) {
               Palette* prev_pal = sprite->getPalette(frame);
               Palette* pal =
                 chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
@@ -242,7 +242,7 @@ bool AseFormat::onLoad(FileOp* fop)
             /* fop_error(fop, "Cel chunk\n"); */
 
             ase_file_read_cel_chunk(f, sprite, frame,
-                                    sprite->getPixelFormat(), fop, &header,
+                                    sprite->pixelFormat(), fop, &header,
                                     chunk_pos+chunk_size);
             break;
           }
@@ -310,7 +310,7 @@ bool AseFormat::onSave(FileOp* fop)
   ase_file_write_header(f, &header);
 
   // Write frames
-  for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
+  for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
     // Prepare the frame header
     ASE_FrameHeader frame_header;
     ase_file_prepare_frame_header(f, &frame_header);
@@ -319,7 +319,7 @@ bool AseFormat::onSave(FileOp* fop)
     frame_header.duration = sprite->getFrameDuration(frame);
 
     // The sprite is indexed and the palette changes? (or is the first frame)
-    if (sprite->getPixelFormat() == IMAGE_INDEXED &&
+    if (sprite->pixelFormat() == IMAGE_INDEXED &&
         (frame == 0 ||
          sprite->getPalette(frame.previous())->countDiff(sprite->getPalette(frame), NULL, NULL) > 0)) {
       // Write the color chunk
@@ -328,8 +328,8 @@ bool AseFormat::onSave(FileOp* fop)
 
     // Write extra chunks in the first frame
     if (frame == 0) {
-      LayerIterator it = sprite->getFolder()->getLayerBegin();
-      LayerIterator end = sprite->getFolder()->getLayerEnd();
+      LayerIterator it = sprite->folder()->getLayerBegin();
+      LayerIterator end = sprite->folder()->getLayerEnd();
 
       // Write layer chunks
       for (; it != end; ++it)
@@ -337,14 +337,14 @@ bool AseFormat::onSave(FileOp* fop)
     }
 
     // Write cel chunks
-    ase_file_write_cels(f, &frame_header, sprite, sprite->getFolder(), frame);
+    ase_file_write_cels(f, &frame_header, sprite, sprite->folder(), frame);
 
     // Write the frame header
     ase_file_write_frame_header(f, &frame_header);
 
     // Progress
-    if (sprite->getTotalFrames() > 1)
-      fop_progress(fop, (float)(frame.next()) / (float)(sprite->getTotalFrames()));
+    if (sprite->totalFrames() > 1)
+      fop_progress(fop, (float)(frame.next()) / (float)(sprite->totalFrames()));
 
     if (fop_is_stop(fop))
       break;
@@ -398,17 +398,17 @@ static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* s
 
   header->size = 0;
   header->magic = ASE_FILE_MAGIC;
-  header->frames = sprite->getTotalFrames();
-  header->width = sprite->getWidth();
-  header->height = sprite->getHeight();
-  header->depth = (sprite->getPixelFormat() == IMAGE_RGB ? 32:
-                   sprite->getPixelFormat() == IMAGE_GRAYSCALE ? 16:
-                   sprite->getPixelFormat() == IMAGE_INDEXED ? 8: 0);
+  header->frames = sprite->totalFrames();
+  header->width = sprite->width();
+  header->height = sprite->height();
+  header->depth = (sprite->pixelFormat() == IMAGE_RGB ? 32:
+                   sprite->pixelFormat() == IMAGE_GRAYSCALE ? 16:
+                   sprite->pixelFormat() == IMAGE_INDEXED ? 8: 0);
   header->flags = 0;
   header->speed = sprite->getFrameDuration(FrameNumber(0));
   header->next = 0;
   header->frit = 0;
-  header->transparent_index = sprite->getTransparentColor();
+  header->transparent_index = sprite->transparentColor();
   header->ignore[0] = 0;
   header->ignore[1] = 0;
   header->ignore[2] = 0;
@@ -688,11 +688,11 @@ static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previou
 
     // child level...
     if (child_level == *current_level)
-      (*previous_layer)->getParent()->addLayer(layer);
+      (*previous_layer)->parent()->addLayer(layer);
     else if (child_level > *current_level)
       static_cast<LayerFolder*>(*previous_layer)->addLayer(layer);
     else if (child_level < *current_level)
-      (*previous_layer)->getParent()->getParent()->addLayer(layer);
+      (*previous_layer)->parent()->parent()->addLayer(layer);
 
     *previous_layer = layer;
     *current_level = child_level;
@@ -712,11 +712,11 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
 
   /* layer child level */
-  LayerFolder* parent = layer->getParent();
+  LayerFolder* parent = layer->parent();
   int child_level = -1;
   while (parent != NULL) {
     child_level++;
-    parent = parent->getParent();
+    parent = parent->parent();
   }
   fputw(child_level, f);
 
@@ -729,7 +729,7 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   ase_file_write_padding(f, 4);
 
   /* layer name */
-  ase_file_write_string(f, layer->getName());
+  ase_file_write_string(f, layer->name());
 
   /* fop_error(fop, "Layer name \"%s\" child level: %d\n", layer->name, child_level); */
 }
@@ -846,8 +846,8 @@ static void read_raw_image(FILE* f, Image* image, FileOp* fop, ASE_Header* heade
   PixelIO<ImageTraits> pixel_io;
   int x, y;
 
-  for (y=0; y<image->getHeight(); y++) {
-    for (x=0; x<image->getWidth(); x++)
+  for (y=0; y<image->height(); y++) {
+    for (x=0; x<image->width(); x++)
       put_pixel_fast<ImageTraits>(image, x, y, pixel_io.read_pixel(f));
 
     fop_progress(fop, (float)ftell(f) / (float)header->size);
@@ -860,8 +860,8 @@ static void write_raw_image(FILE* f, Image* image)
   PixelIO<ImageTraits> pixel_io;
   int x, y;
 
-  for (y=0; y<image->getHeight(); y++)
-    for (x=0; x<image->getWidth(); x++)
+  for (y=0; y<image->height(); y++)
+    for (x=0; x<image->width(); x++)
       pixel_io.write_pixel(f, get_pixel_fast<ImageTraits>(image, x, y));
 }
 
@@ -884,8 +884,8 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in inflateInit().", err);
 
-  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->getWidth()));
-  std::vector<uint8_t> uncompressed(image->getHeight() * ImageTraits::getRowStrideBytes(image->getWidth()));
+  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->width()));
+  std::vector<uint8_t> uncompressed(image->height() * ImageTraits::getRowStrideBytes(image->width()));
   std::vector<uint8_t> compressed(4096);
   int uncompressed_offset = 0;
 
@@ -930,13 +930,13 @@ static void read_compressed_image(FILE* f, Image* image, size_t chunk_end, FileO
   }
 
   uncompressed_offset = 0;
-  for (y=0; y<image->getHeight(); y++) {
+  for (y=0; y<image->height(); y++) {
     typename ImageTraits::address_t address =
       (typename ImageTraits::address_t)image->getPixelAddress(0, y);
 
-    pixel_io.read_scanline(address, image->getWidth(), &uncompressed[uncompressed_offset]);
+    pixel_io.read_scanline(address, image->width(), &uncompressed[uncompressed_offset]);
 
-    uncompressed_offset += ImageTraits::getRowStrideBytes(image->getWidth());
+    uncompressed_offset += ImageTraits::getRowStrideBytes(image->width());
   }
 
   err = inflateEnd(&zstream);
@@ -958,18 +958,18 @@ static void write_compressed_image(FILE* f, Image* image)
   if (err != Z_OK)
     throw base::Exception("ZLib error %d in deflateInit().", err);
 
-  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->getWidth()));
+  std::vector<uint8_t> scanline(ImageTraits::getRowStrideBytes(image->width()));
   std::vector<uint8_t> compressed(4096);
 
-  for (y=0; y<image->getHeight(); y++) {
+  for (y=0; y<image->height(); y++) {
     typename ImageTraits::address_t address =
       (typename ImageTraits::address_t)image->getPixelAddress(0, y);
 
-    pixel_io.write_scanline(address, image->getWidth(), &scanline[0]);
+    pixel_io.write_scanline(address, image->width(), &scanline[0]);
 
     zstream.next_in = (Bytef*)&scanline[0];
     zstream.avail_in = scanline.size();
-    int flush = (y == image->getHeight()-1 ? Z_FINISH: Z_NO_FLUSH);
+    int flush = (y == image->height()-1 ? Z_FINISH: Z_NO_FLUSH);
 
     do {
       zstream.next_out = (Bytef*)&compressed[0];
@@ -1040,7 +1040,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
         Image* image = Image::create(pixelFormat, w, h);
 
         // Read pixel data
-        switch (image->getPixelFormat()) {
+        switch (image->pixelFormat()) {
 
           case IMAGE_RGB:
             read_raw_image<RgbTraits>(f, image, fop, header);
@@ -1055,7 +1055,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
             break;
         }
 
-        cel->setImage(sprite->getStock()->addImage(image));
+        cel->setImage(sprite->stock()->addImage(image));
       }
       break;
     }
@@ -1067,8 +1067,8 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
 
       if (link) {
         // Create a copy of the linked cel (avoid using links cel)
-        Image* image = Image::createCopy(sprite->getStock()->getImage(link->getImage()));
-        cel->setImage(sprite->getStock()->addImage(image));
+        Image* image = Image::createCopy(link->image());
+        cel->setImage(sprite->stock()->addImage(image));
       }
       else {
         // Linked cel doesn't found
@@ -1087,7 +1087,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
 
         // Try to read pixel data
         try {
-          switch (image->getPixelFormat()) {
+          switch (image->pixelFormat()) {
 
             case IMAGE_RGB:
               read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
@@ -1108,7 +1108,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame,
           fop_error(fop, e.what());
         }
 
-        cel->setImage(sprite->getStock()->addImage(image));
+        cel->setImage(sprite->stock()->addImage(image));
       }
       break;
     }
@@ -1128,24 +1128,24 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel
   int cel_type = ASE_FILE_COMPRESSED_CEL;
 
   fputw(layer_index, f);
-  fputw(cel->getX(), f);
-  fputw(cel->getY(), f);
-  fputc(cel->getOpacity(), f);
+  fputw(cel->x(), f);
+  fputw(cel->y(), f);
+  fputc(cel->opacity(), f);
   fputw(cel_type, f);
   ase_file_write_padding(f, 7);
 
   switch (cel_type) {
 
     case ASE_FILE_RAW_CEL: {
-      Image* image = sprite->getStock()->getImage(cel->getImage());
+      Image* image = cel->image();
 
       if (image) {
         // Width and height
-        fputw(image->getWidth(), f);
-        fputw(image->getHeight(), f);
+        fputw(image->width(), f);
+        fputw(image->height(), f);
 
         // Pixel data
-        switch (image->getPixelFormat()) {
+        switch (image->pixelFormat()) {
 
           case IMAGE_RGB:
             write_raw_image<RgbTraits>(f, image);
@@ -1175,15 +1175,15 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {
-      Image* image = sprite->getStock()->getImage(cel->getImage());
+      Image* image = cel->image();
 
       if (image) {
         // Width and height
-        fputw(image->getWidth(), f);
-        fputw(image->getHeight(), f);
+        fputw(image->width(), f);
+        fputw(image->height(), f);
 
         // Pixel data
-        switch (image->getPixelFormat()) {
+        switch (image->pixelFormat()) {
 
           case IMAGE_RGB:
             write_compressed_image<RgbTraits>(f, image);
@@ -1230,7 +1230,7 @@ static Mask* ase_file_read_mask_chunk(FILE* f)
     for (u=0; u<(w+7)/8; u++) {
       byte = fgetc(f);
       for (c=0; c<8; c++)
-        put_pixel(mask->getBitmap(), u*8+c, v, byte & (1<<(7-c)));
+        put_pixel(mask->bitmap(), u*8+c, v, byte & (1<<(7-c)));
     }
 
   return mask;
@@ -1241,7 +1241,7 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_MASK);
 
   int c, u, v, byte;
-  const gfx::Rect& bounds(mask->getBounds());
+  const gfx::Rect& bounds(mask->bounds());
 
   fputw(bounds.x, f);
   fputw(bounds.y, f);
@@ -1250,14 +1250,14 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
   ase_file_write_padding(f, 8);
 
   // Name
-  ase_file_write_string(f, mask->getName().c_str());
+  ase_file_write_string(f, mask->name().c_str());
 
   // Bitmap
   for (v=0; v<bounds.h; v++)
     for (u=0; u<(bounds.w+7)/8; u++) {
       byte = 0;
       for (c=0; c<8; c++)
-        if (get_pixel(mask->getBitmap(), u*8+c, v))
+        if (get_pixel(mask->bitmap(), u*8+c, v))
           byte |= (1<<(7-c));
       fputc(byte, f);
     }

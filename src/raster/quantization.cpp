@@ -60,16 +60,16 @@ Palette* create_palette_from_rgb(
   if (!palette)
     palette = new Palette(FrameNumber(0), 256);
 
-  bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
+  bool has_background_layer = (sprite->backgroundLayer() != NULL);
   Image* flat_image;
 
-  ImagesCollector images(sprite->getFolder(), // All layers
+  ImagesCollector images(sprite->folder(), // All layers
                          frameNumber,         // Ignored, we'll use all frames
                          true,                // All frames,
                          false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
+  flat_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
   clear_image(flat_image, 0);
   sprite->render(flat_image, 0, 0, frameNumber);
 
@@ -99,10 +99,10 @@ Image* convert_pixel_format(
   bool is_background)
 {
   if (!new_image)
-    new_image = Image::create(pixelFormat, image->getWidth(), image->getHeight());
+    new_image = Image::create(pixelFormat, image->width(), image->height());
 
   // RGB -> Indexed with ordered dithering
-  if (image->getPixelFormat() == IMAGE_RGB &&
+  if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringMethod == DITHERING_ORDERED) {
     return ordered_dithering(image, new_image, 0, 0, rgbmap, palette);
@@ -111,13 +111,13 @@ Image* convert_pixel_format(
   color_t c;
   int r, g, b;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB: {
       const LockImageBits<RgbTraits> srcBits(image);
       LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // RGB -> RGB
         case IMAGE_RGB:
@@ -172,7 +172,7 @@ Image* convert_pixel_format(
       const LockImageBits<GrayscaleTraits> srcBits(image);
       LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // Grayscale -> RGB
         case IMAGE_RGB: {
@@ -221,7 +221,7 @@ Image* convert_pixel_format(
       const LockImageBits<IndexedTraits> srcBits(image);
       LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // Indexed -> RGB
         case IMAGE_RGB: {
@@ -232,7 +232,7 @@ Image* convert_pixel_format(
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else
               *dst_it = rgba(rgba_getr(palette->getEntry(c)),
@@ -252,7 +252,7 @@ Image* convert_pixel_format(
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -271,13 +271,13 @@ Image* convert_pixel_format(
         case IMAGE_INDEXED: {
           LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
           LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
-          color_t dstMaskColor = new_image->getMaskColor();
+          color_t dstMaskColor = new_image->maskColor();
 
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = dstMaskColor;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -350,8 +350,8 @@ static Image* ordered_dithering(
   LockImageBits<RgbTraits>::const_iterator src_it = src_bits.begin();
   LockImageBits<IndexedTraits>::iterator dst_it = dst_bits.begin();
 
-  for (y=0; y<src_image->getHeight(); ++y) {
-    for (x=0; x<src_image->getWidth(); ++x, ++src_it, ++dst_it) {
+  for (y=0; y<src_image->height(); ++y) {
+    for (x=0; x<src_image->width(); ++x, ++src_it, ++dst_it) {
       ASSERT(src_it != src_bits.end());
       ASSERT(dst_it != dst_bits.end());
 
@@ -425,7 +425,7 @@ void create_palette_from_images(const std::vector<Image*>& images, Palette* pale
   for (int i=0; i<(int)images.size(); ++i) {
     const Image* image = images[i];
 
-    switch (image->getPixelFormat()) {
+    switch (image->pixelFormat()) {
 
       case IMAGE_RGB:
         {

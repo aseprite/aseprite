@@ -77,7 +77,7 @@ namespace app {
       virtual Document* getDocument() = 0;
 
       // Returns the sprite where we will draw on
-      virtual Sprite* getSprite() = 0;
+      virtual Sprite* sprite() = 0;
 
       // Returns the layer that will be modified if the tool paints
       virtual Layer* getLayer() = 0;

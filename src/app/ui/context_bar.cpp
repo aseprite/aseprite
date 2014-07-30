@@ -96,12 +96,12 @@ public:
         std::min(10, brushSettings->getSize()),
         brushSettings->getAngle()));
 
-    Image* image = brush->get_image();
+    Image* image = brush->image();
 
     if (m_bitmap)
       m_bitmap->dispose();
 
-    m_bitmap = she::instance()->createRgbaSurface(image->getWidth(), image->getHeight());
+    m_bitmap = she::instance()->createRgbaSurface(image->width(), image->height());
     convert_image_to_surface(image, m_bitmap, 0, 0, palette);
 
     invalidate();

@@ -81,7 +81,7 @@ inline bool shrink_row(const Image* image, const Image* image_diff, int& x1, int
 }
 
 Dirty::Dirty(Image* image, Image* image_diff, const gfx::Rect& bounds)
-  : m_format(image->getPixelFormat())
+  : m_format(image->pixelFormat())
   , m_x1(bounds.x), m_y1(bounds.y)
   , m_x2(bounds.x2()-1), m_y2(bounds.y2()-1)
 {
@@ -92,7 +92,7 @@ Dirty::Dirty(Image* image, Image* image_diff, const gfx::Rect& bounds)
     x2 = m_x2;
 
     bool res;
-    switch (image->getPixelFormat()) {
+    switch (image->pixelFormat()) {
       case IMAGE_RGB:
         res = shrink_row<RgbTraits>(image, image_diff, x1, y, x2);
         break;

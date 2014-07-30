@@ -44,7 +44,7 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = SrcTraits::get_blender(blend_mode);
-    m_mask_color = src->getMaskColor();
+    m_mask_color = src->maskColor();
   }
   inline void operator()(typename DstTraits::pixel_t& scanline,
                          const typename DstTraits::pixel_t& dst,
@@ -67,7 +67,7 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_color = RgbTraits::get_blender(blend_mode);
-    m_mask_color = src->getMaskColor();
+    m_mask_color = src->maskColor();
   }
   inline void operator()(RgbTraits::pixel_t& scanline,
                          const RgbTraits::pixel_t& dst,
@@ -93,7 +93,7 @@ public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_mode = blend_mode;
-    m_mask_color = src->getMaskColor();
+    m_mask_color = src->maskColor();
     m_pal = pal;
   }
   inline void operator()(RgbTraits::pixel_t& scanline,
@@ -131,13 +131,13 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
   src_x = 0;
   src_y = 0;
-  src_w = src->getWidth();
-  src_h = src->getHeight();
+  src_w = src->width();
+  src_h = src->height();
 
   dst_x = x;
   dst_y = y;
-  dst_w = src->getWidth()<<zoom;
-  dst_h = src->getHeight()<<zoom;
+  dst_w = src->width()<<zoom;
+  dst_h = src->height()<<zoom;
 
   // clipping...
   if (dst_x < 0) {
@@ -160,14 +160,14 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
   else
     first_box_h = 0;
 
-  if (dst_x+dst_w > dst->getWidth()) {
-    src_w -= (dst_x+dst_w-dst->getWidth()) >> zoom;
-    dst_w = dst->getWidth() - dst_x;
+  if (dst_x+dst_w > dst->width()) {
+    src_w -= (dst_x+dst_w-dst->width()) >> zoom;
+    dst_w = dst->width() - dst_x;
   }
 
-  if (dst_y+dst_h > dst->getHeight()) {
-    src_h -= (dst_y+dst_h-dst->getHeight()) >> zoom;
-    dst_h = dst->getHeight() - dst_y;
+  if (dst_y+dst_h > dst->height()) {
+    src_h -= (dst_y+dst_h-dst->height()) >> zoom;
+    dst_h = dst->height() - dst_y;
   }
 
   if ((src_w <= 0) || (src_h <= 0) ||
@@ -382,12 +382,12 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   bool enable_onionskin)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
-  const LayerImage* background = m_sprite->getBackgroundLayer();
+  const LayerImage* background = m_sprite->backgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->isReadable(): true);
   uint32_t bg_color = 0;
   Image *image;
 
-  switch (m_sprite->getPixelFormat()) {
+  switch (m_sprite->pixelFormat()) {
 
     case IMAGE_RGB:
       zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
@@ -400,7 +400,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
     case IMAGE_INDEXED:
       zoomed_func = merge_zoomed_image<RgbTraits, IndexedTraits>;
       if (!need_checked_bg)
-        bg_color = m_sprite->getPalette(frame)->getEntry(m_sprite->getTransparentColor());
+        bg_color = m_sprite->getPalette(frame)->getEntry(m_sprite->transparentColor());
       break;
 
     default:
@@ -420,7 +420,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
 
   // Draw the current frame.
   global_opacity = 255;
-  renderLayer(m_sprite->getFolder(), image,
+  renderLayer(m_sprite->folder(), image,
     source_x, source_y, frame, zoom, zoomed_func, true, true, -1);
 
   // Onion-skin feature: Draw previous/next frames with different
@@ -435,7 +435,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
     int opacity_step = docSettings->getOnionskinOpacityStep();
 
     for (FrameNumber f=frame.previous(prevs); f <= frame.next(nexts); ++f) {
-      if (f == frame || f < 0 || f > m_sprite->getLastFrame())
+      if (f == frame || f < 0 || f > m_sprite->lastFrame())
         continue;
       else if (f < frame)
         global_opacity = opacity_base - opacity_step * ((frame - f)-1);
@@ -451,7 +451,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
         else if (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_RedBlueTint)
           blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
-        renderLayer(m_sprite->getFolder(), image,
+        renderLayer(m_sprite->folder(), image,
           source_x, source_y, f, zoom, zoomed_func,
           true, true, blend_mode);
       }
@@ -469,8 +469,8 @@ void RenderEngine::renderCheckedBackground(Image* image,
   int x, y, u, v;
   int tile_w = 16;
   int tile_h = 16;
-  int c1 = color_utils::color_for_image(checked_bg_color1, image->getPixelFormat());
-  int c2 = color_utils::color_for_image(checked_bg_color2, image->getPixelFormat());
+  int c1 = color_utils::color_for_image(checked_bg_color1, image->pixelFormat());
+  int c2 = color_utils::color_for_image(checked_bg_color2, image->pixelFormat());
 
   switch (checked_bg_type) {
 
@@ -515,8 +515,8 @@ void RenderEngine::renderCheckedBackground(Image* image,
 
   // Draw checked background (tile by tile)
   int u_start = u;
-  for (y=y_start-tile_h; y<image->getHeight()+tile_h; y+=tile_h) {
-    for (x=x_start-tile_w; x<image->getWidth()+tile_w; x+=tile_w) {
+  for (y=y_start-tile_h; y<image->height()+tile_h; y+=tile_h) {
+    for (x=x_start-tile_w; x<image->width()+tile_w; x+=tile_w) {
       fill_rect(image, x, y, x+tile_w-1, y+tile_h-1,
                 (((u+v))&1)? c1: c2);
       ++u;
@@ -532,9 +532,9 @@ void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
 
-  ASSERT(rgb_image->getPixelFormat() == IMAGE_RGB && "renderImage accepts RGB destination images only");
+  ASSERT(rgb_image->pixelFormat() == IMAGE_RGB && "renderImage accepts RGB destination images only");
 
-  switch (src_image->getPixelFormat()) {
+  switch (src_image->pixelFormat()) {
 
     case IMAGE_RGB:
       zoomed_func = merge_zoomed_image<RgbTraits, RgbTraits>;
@@ -587,24 +587,22 @@ void RenderEngine::renderLayer(
           src_image = rastering_image;
         }
         // If not, we use the original cel-image from the images' stock
-        else if ((cel->getImage() >= 0) &&
-                 (cel->getImage() < m_sprite->getStock()->size()))
-          src_image = m_sprite->getStock()->getImage(cel->getImage());
-        else
-          src_image = NULL;
+        else {
+          src_image = cel->image();
+        }
 
         if (src_image) {
           int output_opacity;
           register int t;
 
-          output_opacity = MID(0, cel->getOpacity(), 255);
+          output_opacity = MID(0, cel->opacity(), 255);
           output_opacity = INT_MULT(output_opacity, global_opacity, t);
 
-          ASSERT(src_image->getMaskColor() == m_sprite->getTransparentColor());
+          ASSERT(src_image->maskColor() == m_sprite->transparentColor());
 
           (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
-            (cel->getX() << zoom) - source_x,
-            (cel->getY() << zoom) - source_y,
+            (cel->x() << zoom) - source_x,
+            (cel->y() << zoom) - source_y,
             output_opacity,
             blend_mode < 0 ?
               static_cast<const LayerImage*>(layer)->getBlendMode():
@@ -636,13 +634,13 @@ void RenderEngine::renderLayer(
   if (layer == m_currentLayer &&
       m_document->getExtraCel() != NULL) {
     Cel* extraCel = m_document->getExtraCel();
-    if (extraCel->getOpacity() > 0) {
+    if (extraCel->opacity() > 0) {
       Image* extraImage = m_document->getExtraCelImage();
 
       (*zoomed_func)(image, extraImage, m_sprite->getPalette(frame),
-                     (extraCel->getX() << zoom) - source_x,
-                     (extraCel->getY() << zoom) - source_y,
-                     extraCel->getOpacity(), BLEND_MODE_NORMAL, zoom);
+                     (extraCel->x() << zoom) - source_x,
+                     (extraCel->y() << zoom) - source_y,
+                     extraCel->opacity(), BLEND_MODE_NORMAL, zoom);
     }
   }
 }

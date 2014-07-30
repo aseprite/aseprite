@@ -116,7 +116,7 @@ namespace app {
 
     void updateUsingEditor(Editor* editor);
 
-    Sprite* getSprite() { return m_sprite; }
+    Sprite* sprite() { return m_sprite; }
     Layer* getLayer() { return m_layer; }
     FrameNumber getFrame() { return m_frame; }
 
@@ -227,7 +227,7 @@ namespace app {
     LayerIndex lastLayer() const { return LayerIndex(m_layers.size()-1); }
 
     FrameNumber firstFrame() const { return FrameNumber(0); }
-    FrameNumber lastFrame() const { return m_sprite->getLastFrame(); }
+    FrameNumber lastFrame() const { return m_sprite->lastFrame(); }
 
     bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
     bool validFrame(FrameNumber frame) const { return frame >= firstFrame() && frame <= lastFrame(); }

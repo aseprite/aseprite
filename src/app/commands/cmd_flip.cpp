@@ -89,21 +89,21 @@ void FlipCommand::onExecute(Context* context)
       bool alreadyFlipped = false;
 
       // This variable will be the area to be flipped inside the image.
-      gfx::Rect bounds(image->getBounds());
+      gfx::Rect bounds(image->bounds());
 
       // If there is some portion of sprite selected, we flip the
       // selected region only. If the mask isn't visible, we flip the
       // whole image.
       if (document->isMaskVisible()) {
-        mask = document->getMask();
+        mask = document->mask();
 
         // Intersect the full area of the image with the mask's
         // bounds, so we don't request to flip an area outside the
         // image's bounds.
-        bounds = bounds.createIntersect(gfx::Rect(mask->getBounds()).offset(-x, -y));
+        bounds = bounds.createIntersect(gfx::Rect(mask->bounds()).offset(-x, -y));
 
         // If the mask isn't a rectangular area, we've to flip the mask too.
-        if (mask->getBitmap() != NULL && !mask->isRectangular()) {
+        if (mask->bitmap() && !mask->isRectangular()) {
           raster::color_t bgcolor = app_get_color_to_clear_layer(writer.layer());
 
           // Flip the portion of image specified by the mask.
@@ -113,13 +113,13 @@ void FlipCommand::onExecute(Context* context)
           alreadyFlipped = true;
 
           // Flip the mask.
-          Image* maskBitmap = mask->getBitmap();
-          if (maskBitmap != NULL) {
+          Image* maskBitmap = mask->bitmap();
+          if (maskBitmap) {
             // Create a flipped copy of the current mask.
             base::UniquePtr<Mask> newMask(new Mask(*mask));
             newMask->freeze();
-            raster::algorithm::flip_image(newMask->getBitmap(),
-              maskBitmap->getBounds(), m_flipType);
+            raster::algorithm::flip_image(newMask->bitmap(),
+              maskBitmap->bounds(), m_flipType);
             newMask->unfreeze();
 
             // Change the current mask and generate the new boundaries.
@@ -143,18 +143,18 @@ void FlipCommand::onExecute(Context* context)
       // for each cel...
       for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
         Cel* cel = *it;
-        Image* image = sprite->getStock()->getImage(cel->getImage());
+        Image* image = cel->image();
 
         api.setCelPosition
           (sprite, cel,
            (m_flipType == raster::algorithm::FlipHorizontal ?
-            sprite->getWidth() - image->getWidth() - cel->getX():
-            cel->getX()),
+            sprite->width() - image->width() - cel->x():
+            cel->x()),
            (m_flipType == raster::algorithm::FlipVertical ?
-            sprite->getHeight() - image->getHeight() - cel->getY():
-            cel->getY()));
+            sprite->height() - image->height() - cel->y():
+            cel->y()));
 
-        api.flipImage(image, image->getBounds(), m_flipType);
+        api.flipImage(image, image->bounds(), m_flipType);
       }
     }
 

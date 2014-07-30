@@ -76,12 +76,12 @@ public:
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
-    FrameNumber frame = editor->getFrame();
+    FrameNumber frame = editor->frame();
 
     if (frame > FrameNumber(0))
       return frame.previous();
     else
-      return editor->getSprite()->getLastFrame();
+      return editor->sprite()->lastFrame();
   }
 };
 
@@ -93,8 +93,8 @@ public:
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
-    FrameNumber frame = editor->getFrame();
-    if (frame < editor->getSprite()->getLastFrame())
+    FrameNumber frame = editor->frame();
+    if (frame < editor->sprite()->lastFrame())
       return frame.next();
     else
       return FrameNumber(0);
@@ -109,7 +109,7 @@ public:
 
 protected:
   FrameNumber onGetFrame(Editor* editor) OVERRIDE {
-    return editor->getSprite()->getLastFrame();
+    return editor->sprite()->lastFrame();
   }
 };
 
@@ -134,16 +134,16 @@ protected:
       Widget* frame = app::find_widget<Widget>(window, "frame");
       Widget* ok = app::find_widget<Widget>(window, "ok");
 
-      frame->setTextf("%d", editor->getFrame()+1);
+      frame->setTextf("%d", editor->frame()+1);
 
       window->openWindowInForeground();
       if (window->getKiller() != ok)
-        return editor->getFrame();
+        return editor->frame();
 
       m_frame = frame->getTextInt();
     }
 
-    return MID(FrameNumber(0), FrameNumber(m_frame-1), editor->getSprite()->getLastFrame());
+    return MID(FrameNumber(0), FrameNumber(m_frame-1), editor->sprite()->lastFrame());
   }
 
 private:

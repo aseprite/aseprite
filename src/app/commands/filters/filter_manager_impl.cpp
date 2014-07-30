@@ -82,9 +82,9 @@ void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
   m_progressDelegate = progressDelegate;
 }
 
-PixelFormat FilterManagerImpl::getPixelFormat() const
+PixelFormat FilterManagerImpl::pixelFormat() const
 {
-  return m_location.sprite()->getPixelFormat();
+  return m_location.sprite()->pixelFormat();
 }
 
 void FilterManagerImpl::setTarget(int target)
@@ -103,7 +103,7 @@ void FilterManagerImpl::begin()
   Document* document = m_location.document();
 
   m_row = 0;
-  m_mask = (document->isMaskVisible() ? document->getMask(): NULL);
+  m_mask = (document->isMaskVisible() ? document->mask(): NULL);
 
   updateMask(m_mask, m_src);
 }
@@ -113,12 +113,12 @@ void FilterManagerImpl::beginForPreview()
   Document* document = m_location.document();
 
   if (document->isMaskVisible())
-    m_preview_mask.reset(new Mask(*document->getMask()));
+    m_preview_mask.reset(new Mask(*document->mask()));
   else {
     m_preview_mask.reset(new Mask());
     m_preview_mask->replace(m_offset_x, m_offset_y,
-                            m_src->getWidth(),
-                            m_src->getHeight());
+                            m_src->width(),
+                            m_src->height());
   }
 
   m_row = 0;
@@ -136,8 +136,8 @@ void FilterManagerImpl::beginForPreview()
 
     if (x1 < 0) x1 = 0;
     if (y1 < 0) y1 = 0;
-    if (x2 >= sprite->getWidth()) x2 = sprite->getWidth()-1;
-    if (y2 >= sprite->getHeight()) y2 = sprite->getHeight()-1;
+    if (x2 >= sprite->width()) x2 = sprite->width()-1;
+    if (y2 >= sprite->height()) y2 = sprite->height()-1;
 
     x = x1;
     y = y1;
@@ -168,18 +168,18 @@ void FilterManagerImpl::end()
 bool FilterManagerImpl::applyStep()
 {
   if ((m_row >= 0) && (m_row < m_h)) {
-    if ((m_mask) && (m_mask->getBitmap())) {
-      int x = m_x - m_mask->getBounds().x + m_offset_x;
-      int y = m_row + m_y - m_mask->getBounds().y + m_offset_y;
+    if ((m_mask) && (m_mask->bitmap())) {
+      int x = m_x - m_mask->bounds().x + m_offset_x;
+      int y = m_row + m_y - m_mask->bounds().y + m_offset_y;
 
-      m_maskBits = m_mask->getBitmap()
+      m_maskBits = m_mask->bitmap()
         ->lockBits<BitmapTraits>(Image::ReadLock,
                                  gfx::Rect(x, y, m_w - x, m_h - y));
 
       m_maskIterator = m_maskBits.begin();
     }
 
-    switch (m_location.sprite()->getPixelFormat()) {
+    switch (m_location.sprite()->pixelFormat()) {
       case IMAGE_RGB:       m_filter->applyToRgba(this); break;
       case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
       case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
@@ -227,7 +227,7 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
-                          m_location.sprite()->getFolder():
+                          m_location.sprite()->folder():
                           m_location.layer()),
                          m_location.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
@@ -247,7 +247,7 @@ void FilterManagerImpl::applyToTarget()
   for (ImagesCollector::ItemsIterator it = images.begin();
        it != images.end() && !cancelled;
        ++it) {
-    applyToImage(it->layer(), it->image(), it->cel()->getX(), it->cel()->getY());
+    applyToImage(it->layer(), it->image(), it->cel()->x(), it->cel()->y());
 
     // Is there a delegate to know if the process was cancelled by the user?
     if (m_progressDelegate)
@@ -269,8 +269,8 @@ void FilterManagerImpl::flush()
     editor->editorToScreen(m_x+m_offset_x,
                            m_y+m_offset_y+m_row-1,
                            &rect.x, &rect.y);
-    rect.w = (m_w << editor->getZoom());
-    rect.h = (1 << editor->getZoom());
+    rect.w = (m_w << editor->zoom());
+    rect.h = (1 << editor->zoom());
 
     gfx::Region reg1(rect);
     gfx::Region reg2;
@@ -295,7 +295,7 @@ bool FilterManagerImpl::skipPixel()
 {
   bool skip = false;
 
-  if ((m_mask) && (m_mask->getBitmap())) {
+  if ((m_mask) && (m_mask->bitmap())) {
     if (!*m_maskIterator)
       skip = true;
 
@@ -320,11 +320,11 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   m_offset_x = offset_x;
   m_offset_y = offset_y;
 
-  if (!updateMask(m_location.document()->getMask(), image))
+  if (!updateMask(m_location.document()->mask(), image))
     throw InvalidAreaException();
 
   m_src = image;
-  m_dst.reset(crop_image(image, 0, 0, image->getWidth(), image->getHeight(), 0));
+  m_dst.reset(crop_image(image, 0, 0, image->width(), image->height(), 0));
   m_row = -1;
   m_mask = NULL;
   m_preview_mask.reset(NULL);
@@ -346,11 +346,11 @@ bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)
 {
   int x, y, w, h;
 
-  if ((mask) && (mask->getBitmap())) {
-    x = mask->getBounds().x - m_offset_x;
-    y = mask->getBounds().y - m_offset_y;
-    w = mask->getBounds().w;
-    h = mask->getBounds().h;
+  if ((mask) && (mask->bitmap())) {
+    x = mask->bounds().x - m_offset_x;
+    y = mask->bounds().y - m_offset_y;
+    w = mask->bounds().w;
+    h = mask->bounds().h;
 
     if (x < 0) {
       w += x;
@@ -362,17 +362,17 @@ bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)
       y = 0;
     }
 
-    if (x+w-1 >= image->getWidth()-1)
-      w = image->getWidth()-x;
+    if (x+w-1 >= image->width()-1)
+      w = image->width()-x;
 
-    if (y+h-1 >= image->getHeight()-1)
-      h = image->getHeight()-y;
+    if (y+h-1 >= image->height()-1)
+      h = image->height()-y;
   }
   else {
     x = 0;
     y = 0;
-    w = image->getWidth();
-    h = image->getHeight();
+    w = image->width();
+    h = image->height();
   }
 
   if ((w < 1) || (h < 1)) {

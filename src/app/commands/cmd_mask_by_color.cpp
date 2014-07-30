@@ -109,7 +109,7 @@ void MaskByColorCommand::onExecute(Context* context)
   m_buttonColor = new ColorButton
    (get_config_color("MaskColor", "Color",
                      ColorBar::instance()->getFgColor()),
-    sprite->getPixelFormat());
+    sprite->pixelFormat());
   label_tolerance = new Label("Tolerance:");
   m_sliderTolerance = new Slider(0, 255, get_config_int("MaskColor", "Tolerance", 0));
   m_checkPreview = new CheckBox("&Preview");
@@ -192,7 +192,7 @@ Mask* MaskByColorCommand::generateMask(const Sprite* sprite, const Image* image,
 {
   int color, tolerance;
 
-  color = color_utils::color_for_image(m_buttonColor->getColor(), sprite->getPixelFormat());
+  color = color_utils::color_for_image(m_buttonColor->getColor(), sprite->pixelFormat());
   tolerance = m_sliderTolerance->getValue();
 
   base::UniquePtr<Mask> mask(new Mask());

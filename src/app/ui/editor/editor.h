@@ -98,23 +98,24 @@ namespace app {
 
     // Gets/sets the current decorator. The decorator is not owned by
     // the Editor, so it must be deleted by the caller.
-    EditorDecorator* getDecorator() { return m_decorator; }
+    EditorDecorator* decorator() { return m_decorator; }
     void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
-    Document* getDocument() { return m_document; }
-    Sprite* getSprite() { return m_sprite; }
-    Layer* getLayer() { return m_layer; }
-    FrameNumber getFrame() { return m_frame; }
+    Document* document() { return m_document; }
+    Sprite* sprite() { return m_sprite; }
+    Layer* layer() { return m_layer; }
+    FrameNumber frame() { return m_frame; }
+
     void getDocumentLocation(DocumentLocation* location) const;
     DocumentLocation getDocumentLocation() const;
 
     void setLayer(const Layer* layer);
     void setFrame(FrameNumber frame);
 
-    int getZoom() const { return m_zoom; }
-    int getOffsetX() const { return m_offset_x; }
-    int getOffsetY() const { return m_offset_y; }
-    int getCursorThick() { return m_cursor_thick; }
+    int zoom() const { return m_zoom; }
+    int offsetX() const { return m_offset_x; }
+    int offsetY() const { return m_offset_y; }
+    int cursorThick() { return m_cursor_thick; }
 
     void setZoom(int zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }

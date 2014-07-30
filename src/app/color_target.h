@@ -43,8 +43,8 @@ namespace app {
 
     ColorTarget(raster::Layer* layer) :
       m_layerType(layer->isBackground() ? BackgroundLayer: TransparentLayer),
-      m_pixelFormat(layer->getSprite()->getPixelFormat()),
-      m_maskColor(layer->getSprite()->getTransparentColor()) {
+      m_pixelFormat(layer->sprite()->pixelFormat()),
+      m_maskColor(layer->sprite()->transparentColor()) {
     }
 
     bool isBackground() const { return m_layerType == BackgroundLayer; }

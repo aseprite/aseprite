@@ -121,7 +121,7 @@ Sprite* Sprite::createBasicSprite(raster::PixelFormat format, int width, int hei
     raster::clear_image(image, 0);
 
     // Add image in the sprite's stock.
-    indexInStock = sprite->getStock()->addImage(image);
+    indexInStock = sprite->stock()->addImage(image);
     image.release();            // Release the image because it is in the sprite's stock.
   }
 
@@ -141,7 +141,7 @@ Sprite* Sprite::createBasicSprite(raster::PixelFormat format, int width, int hei
     }
 
     // Add the layer in the sprite.
-    sprite->getFolder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
+    sprite->folder()->addLayer(layer.release()); // Release the layer because it's owned by the sprite
   }
 
   return sprite.release();
@@ -169,7 +169,7 @@ bool Sprite::needAlpha() const
   switch (m_format) {
     case IMAGE_RGB:
     case IMAGE_GRAYSCALE:
-      return (getBackgroundLayer() == NULL);
+      return (backgroundLayer() == NULL);
   }
   return false;
 }
@@ -193,7 +193,7 @@ int Sprite::getMemSize() const
   for (int i=0; i<m_stock->size(); i++) {
     Image* image = m_stock->getImage(i);
     if (image != NULL)
-      size += image->getRowStrideSize() * image->getHeight();
+      size += image->getRowStrideSize() * image->height();
   }
 
   return size;
@@ -202,15 +202,15 @@ int Sprite::getMemSize() const
 //////////////////////////////////////////////////////////////////////
 // Layers
 
-LayerFolder* Sprite::getFolder() const
+LayerFolder* Sprite::folder() const
 {
   return m_folder;
 }
 
-LayerImage* Sprite::getBackgroundLayer() const
+LayerImage* Sprite::backgroundLayer() const
 {
-  if (getFolder()->getLayersCount() > 0) {
-    Layer* bglayer = *getFolder()->getLayerBegin();
+  if (folder()->getLayersCount() > 0) {
+    Layer* bglayer = *folder()->getLayerBegin();
 
     if (bglayer->isBackground()) {
       ASSERT(bglayer->isImage());
@@ -222,19 +222,19 @@ LayerImage* Sprite::getBackgroundLayer() const
 
 LayerIndex Sprite::countLayers() const
 {
-  return LayerIndex(getFolder()->getLayersCount());
+  return LayerIndex(folder()->getLayersCount());
 }
 
 Layer* Sprite::indexToLayer(LayerIndex index) const
 {
   int index_count = -1;
-  return index2layer(getFolder(), index, &index_count);
+  return index2layer(folder(), index, &index_count);
 }
 
 LayerIndex Sprite::layerToIndex(const Layer* layer) const
 {
   int index_count = -1;
-  return layer2index(getFolder(), layer, &index_count);
+  return layer2index(folder(), layer, &index_count);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -250,11 +250,11 @@ Palette* Sprite::getPalette(FrameNumber frame) const
   PalettesList::const_iterator it = m_palettes.begin();
   for (; it != end; ++it) {
     Palette* pal = *it;
-    if (frame < pal->getFrame())
+    if (frame < pal->frame())
       break;
 
     found = pal;
-    if (frame == pal->getFrame())
+    if (frame == pal->frame())
       break;
   }
 
@@ -272,7 +272,7 @@ void Sprite::setPalette(const Palette* pal, bool truncate)
   ASSERT(pal != NULL);
 
   if (!truncate) {
-    Palette* sprite_pal = getPalette(pal->getFrame());
+    Palette* sprite_pal = getPalette(pal->frame());
     pal->copyColorsTo(sprite_pal);
   }
   else {
@@ -283,11 +283,11 @@ void Sprite::setPalette(const Palette* pal, bool truncate)
     for (; it != end; ++it) {
       other = *it;
 
-      if (pal->getFrame() == other->getFrame()) {
+      if (pal->frame() == other->frame()) {
         pal->copyColorsTo(other);
         return;
       }
-      else if (pal->getFrame() < other->getFrame())
+      else if (pal->frame() < other->frame())
         break;
     }
 
@@ -320,7 +320,7 @@ void Sprite::deletePalette(Palette* pal)
 
 RgbMap* Sprite::getRgbMap(FrameNumber frame)
 {
-  int mask_color = (getBackgroundLayer() ? -1: getTransparentColor());
+  int mask_color = (backgroundLayer() ? -1: transparentColor());
 
   if (m_rgbMap == NULL) {
     m_rgbMap = new RgbMap();
@@ -393,14 +393,14 @@ void Sprite::setDurationForAllFrames(int msecs)
 //////////////////////////////////////////////////////////////////////
 // Images
 
-Stock* Sprite::getStock() const
+Stock* Sprite::stock() const
 {
   return m_stock;
 }
 
 void Sprite::getCels(CelList& cels) const
 {
-  getFolder()->getCels(cels);
+  folder()->getCels(cels);
 }
 
 size_t Sprite::getImageRefs(int imageIndex) const
@@ -410,7 +410,7 @@ size_t Sprite::getImageRefs(int imageIndex) const
 
   size_t refs = 0;
   for (CelList::iterator it=cels.begin(), end=cels.end(); it != end; ++it)
-    if ((*it)->getImage() == imageIndex)
+    if ((*it)->imageIndex() == imageIndex)
       ++refs;
 
   return refs;
@@ -428,9 +428,9 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
     Cel* cel = *it;
 
     // Remap this Cel because is inside the specified range
-    if (cel->getFrame() >= frameFrom &&
-        cel->getFrame() <= frameTo) {
-      Image* image = getStock()->getImage(cel->getImage());
+    if (cel->frame() >= frameFrom &&
+        cel->frame() <= frameTo) {
+      Image* image = cel->image();
       LockImageBits<IndexedTraits> bits(image);
       LockImageBits<IndexedTraits>::iterator
         it = bits.begin(),
@@ -448,9 +448,9 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 void Sprite::render(Image* image, int x, int y, FrameNumber frame) const
 {
   fill_rect(image, x, y, x+m_width-1, y+m_height-1,
-            (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
+            (m_format == IMAGE_INDEXED ? transparentColor(): 0));
 
-  layer_render(getFolder(), image, x, y, frame);
+  layer_render(folder(), image, x, y, frame);
 }
 
 int Sprite::getPixel(int x, int y, FrameNumber frame) const
@@ -459,7 +459,7 @@ int Sprite::getPixel(int x, int y, FrameNumber frame) const
 
   if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
     base::UniquePtr<Image> image(Image::create(m_format, 1, 1));
-    clear_image(image, (m_format == IMAGE_INDEXED ? getTransparentColor(): 0));
+    clear_image(image, (m_format == IMAGE_INDEXED ? transparentColor(): 0));
     render(image, -x, -y, frame);
     color = get_pixel(image, 0, 0);
   }

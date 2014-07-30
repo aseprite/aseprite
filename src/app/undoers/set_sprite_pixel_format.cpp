@@ -33,7 +33,7 @@ using namespace undo;
 
 SetSpritePixelFormat::SetSpritePixelFormat(ObjectsContainer* objects, Sprite* sprite)
   : m_spriteId(objects->addObject(sprite))
-  , m_format(sprite->getPixelFormat())
+  , m_format(sprite->pixelFormat())
 {
 }
 

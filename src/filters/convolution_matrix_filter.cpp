@@ -155,9 +155,9 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   uint32_t color;
   GetPixelsDelegateRgba delegate;
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region
@@ -222,9 +222,9 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   uint16_t color;
   GetPixelsDelegateGrayscale delegate;
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region
@@ -277,9 +277,9 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   uint8_t color;
   GetPixelsDelegateIndexed delegate(pal);
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region

@@ -42,7 +42,7 @@ ImagesCollector::ImagesCollector(Layer* layer,
 
 void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 {
-  const Sprite* sprite = layer->getSprite();
+  const Sprite* sprite = layer->sprite();
 
   if (!layer->isReadable())
     return;
@@ -54,7 +54,7 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 
     case OBJECT_LAYER_IMAGE: {
       if (m_allFrames) {
-        for (FrameNumber frame(0); frame<sprite->getTotalFrames(); ++frame) {
+        for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
           Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
           if (cel != NULL)
             collectImage(layer, cel);
@@ -83,9 +83,7 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 
 void ImagesCollector::collectImage(Layer* layer, Cel* cel)
 {
-  Image* image = layer->getSprite()->getStock()->getImage(cel->getImage());
-
-  m_items.push_back(Item(layer, cel, image));
+  m_items.push_back(Item(layer, cel, cel->image()));
 }
 
 } // namespace raster

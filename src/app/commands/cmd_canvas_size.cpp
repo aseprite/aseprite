@@ -58,8 +58,8 @@ public:
     : Window(WithTitleBar, "Canvas Size")
     , m_editor(current_editor)
     , m_rect(-left, -top,
-             current_editor->getSprite()->getWidth() + left + right,
-             current_editor->getSprite()->getHeight() + top + bottom)
+             current_editor->sprite()->width() + left + right,
+             current_editor->sprite()->height() + top + bottom)
     , m_selectBoxState(new SelectBoxState(this, m_rect,
                                           SelectBoxState::PaintRulers |
                                           SelectBoxState::PaintDarkOutside))
@@ -105,8 +105,8 @@ protected:
 
     m_left->setTextf("%d", -m_rect.x);
     m_top->setTextf("%d", -m_rect.y);
-    m_right->setTextf("%d", (m_rect.x + m_rect.w) - current_editor->getSprite()->getWidth());
-    m_bottom->setTextf("%d", (m_rect.y + m_rect.h) - current_editor->getSprite()->getHeight());
+    m_right->setTextf("%d", (m_rect.x + m_rect.w) - current_editor->sprite()->width());
+    m_bottom->setTextf("%d", (m_rect.y + m_rect.h) - current_editor->sprite()->height());
   }
 
   void onEntriesChange()
@@ -115,8 +115,8 @@ protected:
     int top = getTop();
 
     m_rect = gfx::Rect(-left, -top,
-                       m_editor->getSprite()->getWidth() + left + getRight(),
-                       m_editor->getSprite()->getHeight() + top + getBottom());
+                       m_editor->sprite()->width() + left + getRight(),
+                       m_editor->sprite()->height() + top + getBottom());
 
     static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
 
@@ -200,8 +200,8 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   int x1 = -m_left;
   int y1 = -m_top;
-  int x2 = sprite->getWidth() + m_right;
-  int y2 = sprite->getHeight() + m_bottom;
+  int x2 = sprite->width() + m_right;
+  int y2 = sprite->height() + m_bottom;
 
   if (x2 <= x1) x2 = x1+1;
   if (y2 <= y1) y2 = y1+1;
@@ -216,8 +216,8 @@ void CanvasSizeCommand::onExecute(Context* context)
       context->settings()->getBgColor(),
       ColorTarget(
         ColorTarget::BackgroundLayer,
-        sprite->getPixelFormat(),
-        sprite->getTransparentColor()));
+        sprite->pixelFormat(),
+        sprite->transparentColor()));
 
     api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
     undoTransaction.commit();

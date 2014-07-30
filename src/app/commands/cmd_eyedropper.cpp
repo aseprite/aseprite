@@ -79,11 +79,11 @@ void EyedropperCommand::onExecute(Context* context)
     return;
 
   Editor* editor = static_cast<Editor*>(widget);
-  Sprite* sprite = editor->getSprite();
+  Sprite* sprite = editor->sprite();
   if (!sprite)
     return;
 
-  FrameNumber frame = editor->getFrame();
+  FrameNumber frame = editor->frame();
 
   // pixel position to get
   int x, y;

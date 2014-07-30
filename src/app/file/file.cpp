@@ -265,7 +265,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
   fatal = false;
 
   /* check image type support */
-  switch (fop->document->sprite()->getPixelFormat()) {
+  switch (fop->document->sprite()->pixelFormat()) {
 
     case IMAGE_RGB:
       if (!(fop->format->support(FILE_SUPPORT_RGB))) {
@@ -301,7 +301,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
   }
 
   // check frames support
-  if (fop->document->sprite()->getTotalFrames() > 1) {
+  if (fop->document->sprite()->totalFrames() > 1) {
     if (!fop->format->support(FILE_SUPPORT_FRAMES) &&
         !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       warnings += "<<- Frames";
@@ -309,7 +309,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
   }
 
   // layers support
-  if (fop->document->sprite()->getFolder()->getLayersCount() > 1) {
+  if (fop->document->sprite()->folder()->getLayersCount() > 1) {
     if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
       warnings += "<<- Layers";
     }
@@ -358,7 +358,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
     fop_prepare_for_sequence(fop);
 
     // To save one frame
-    if (fop->document->sprite()->getTotalFrames() == 1) {
+    if (fop->document->sprite()->totalFrames() == 1) {
       fop->seq.filename_list.push_back(fop->document->filename());
     }
     // To save more frames
@@ -370,12 +370,12 @@ FileOp* fop_to_save_document(Context* context, Document* document)
       if (start_from < 0) {
         start_from = 0;
         width =
-          (fop->document->sprite()->getTotalFrames() < 10)? 1:
-          (fop->document->sprite()->getTotalFrames() < 100)? 2:
-          (fop->document->sprite()->getTotalFrames() < 1000)? 3: 4;
+          (fop->document->sprite()->totalFrames() < 10)? 1:
+          (fop->document->sprite()->totalFrames() < 100)? 2:
+          (fop->document->sprite()->totalFrames() < 1000)? 3: 4;
       }
 
-      for (FrameNumber frame(0); frame<fop->document->sprite()->getTotalFrames(); ++frame) {
+      for (FrameNumber frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
         // Get the name for this frame
         char buf[4096];
         sprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
@@ -435,7 +435,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       do {                                                              \
         image_index = fop->document                                     \
           ->sprite()                                                    \
-          ->getStock()->addImage(fop->seq.image);                       \
+          ->stock()->addImage(fop->seq.image);                       \
                                                                         \
         fop->seq.last_cel->setImage(image_index);                       \
         fop->seq.layer->addCel(fop->seq.last_cel);                      \
@@ -557,15 +557,15 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       Sprite* sprite = fop->document->sprite();
 
       // Create a temporary bitmap
-      fop->seq.image = Image::create(sprite->getPixelFormat(),
-                                     sprite->getWidth(),
-                                     sprite->getHeight());
+      fop->seq.image = Image::create(sprite->pixelFormat(),
+                                     sprite->width(),
+                                     sprite->height());
       if (fop->seq.image != NULL) {
         fop->seq.progress_offset = 0.0f;
-        fop->seq.progress_fraction = 1.0f / (double)sprite->getTotalFrames();
+        fop->seq.progress_fraction = 1.0f / (double)sprite->totalFrames();
 
         // For each frame in the sprite.
-        for (FrameNumber frame(0); frame < sprite->getTotalFrames(); ++frame) {
+        for (FrameNumber frame(0); frame < sprite->totalFrames(); ++frame) {
           // Draw the "frame" in "fop->seq.image"
           sprite->render(fop->seq.image, 0, 0, frame);
 
@@ -670,7 +670,7 @@ void fop_post_load(FileOp* fop)
 
   if (fop->document->sprite() != NULL) {
     // Creates a suitable palette for RGB images
-    if (fop->document->sprite()->getPixelFormat() == IMAGE_RGB &&
+    if (fop->document->sprite()->pixelFormat() == IMAGE_RGB &&
         fop->document->sprite()->getPalettes().size() <= 1 &&
         fop->document->sprite()->getPalette(FrameNumber(0))->isBlack()) {
       SharedPtr<Palette> palette
@@ -717,7 +717,7 @@ Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)
       LayerImage* layer = new LayerImage(sprite);
 
       // Add the layer
-      sprite->getFolder()->addLayer(layer);
+      sprite->folder()->addLayer(layer);
 
       // Done
       fop->createDocument(sprite);
@@ -731,7 +731,7 @@ Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)
   else {
     sprite = fop->document->sprite();
 
-    if (sprite->getPixelFormat() != pixelFormat)
+    if (sprite->pixelFormat() != pixelFormat)
       return NULL;
   }
 

@@ -614,7 +614,7 @@ void StatusBar::updateFromLayer()
         reader.layer()->isImage() &&
         !reader.layer()->isBackground() &&
         (cel = reader.cel())) {
-      m_slider->setValue(MID(0, cel->getOpacity(), 255));
+      m_slider->setValue(MID(0, cel->opacity(), 255));
       m_slider->setEnabled(true);
     }
     else {

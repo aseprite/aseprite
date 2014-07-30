@@ -103,7 +103,7 @@ static int flooder(Image *image, int x, int y,
   int left = 0, right = 0;
   int c;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
       {
@@ -120,7 +120,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_32((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -142,7 +142,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_16((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -164,7 +164,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_8((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -183,7 +183,7 @@ static int flooder(Image *image, int x, int y,
       }
 
       // Work right from starting point
-      for (right=x+1; right<image->getWidth(); right++) {
+      for (right=x+1; right<image->width(); right++) {
         if (get_pixel(image, right, y) != src_color)
           break;
       }
@@ -220,7 +220,7 @@ static int flooder(Image *image, int x, int y,
   if (y > 0)
     p->flags |= FLOOD_TODO_ABOVE;
 
-  if (y+1 < image->getHeight())
+  if (y+1 < image->height())
     p->flags |= FLOOD_TODO_BELOW;
 
   return right+2;
@@ -275,16 +275,16 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
   FLOODED_LINE *p;
 
   /* make sure we have a valid starting point */
-  if ((x < 0) || (x >= image->getWidth()) ||
-      (y < 0) || (y >= image->getHeight()))
+  if ((x < 0) || (x >= image->width()) ||
+      (y < 0) || (y >= image->height()))
     return;
 
   /* what color to replace? */
   color_t src_color = get_pixel(image, x, y);
 
   /* set up the list of flooded segments */
-  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->getHeight());
-  flood_count = image->getHeight();
+  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->height());
+  flood_count = image->height();
   p = (FLOODED_LINE*)_scratch_mem;
   for (c=0; c<flood_count; c++) {
     p[c].flags = 0;
@@ -323,7 +323,7 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
                              src_color, tolerance, data, proc)) {
           done = false;
           /* special case shortcut for going backwards */
-          if ((c < image->getHeight()) && (c > 0))
+          if ((c < image->height()) && (c > 0))
             c -= 2;
         }
       }

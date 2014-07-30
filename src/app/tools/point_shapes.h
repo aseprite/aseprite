@@ -48,11 +48,11 @@ public:
   void transformPoint(ToolLoop* loop, int x, int y)
   {
     Brush* brush = loop->getBrush();
-    std::vector<BrushScanline>::const_iterator scanline = brush->get_scanline().begin();
-    register int v, h = brush->getBounds().h;
+    std::vector<BrushScanline>::const_iterator scanline = brush->scanline().begin();
+    register int v, h = brush->bounds().h;
 
-    x += brush->getBounds().x;
-    y += brush->getBounds().y;
+    x += brush->bounds().x;
+    y += brush->bounds().y;
 
     for (v=0; v<h; ++v) {
       if (scanline->state)
@@ -63,7 +63,7 @@ public:
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
     Brush* brush = loop->getBrush();
-    area = brush->getBounds();
+    area = brush->bounds();
     area.x += x;
     area.y += y;
   }

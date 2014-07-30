@@ -90,7 +90,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   Palette *oldpal, *newpal;
   bool pingPongForward = true;
 
-  if (sprite->getTotalFrames() < 2)
+  if (sprite->totalFrames() < 2)
     return;
 
   if (visibleMiniEditor)
@@ -101,7 +101,7 @@ void PlayAnimationCommand::onExecute(Context* context)
 
   ui::jmouse_hide();
 
-  FrameNumber oldFrame = current_editor->getFrame();
+  FrameNumber oldFrame = current_editor->frame();
 
   LOCK_VARIABLE(speed_timer);
   LOCK_FUNCTION(speed_timer_callback);
@@ -118,10 +118,10 @@ void PlayAnimationCommand::onExecute(Context* context)
   oldpal = NULL;
   speed_timer = 0;
   while (!done) {
-    msecs = sprite->getFrameDuration(current_editor->getFrame());
+    msecs = sprite->getFrameDuration(current_editor->frame());
     install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
 
-    newpal = sprite->getPalette(current_editor->getFrame());
+    newpal = sprite->getPalette(current_editor->frame());
     if (oldpal != newpal) {
       PALETTE rgbpal;
       raster::convert_palette_to_allegro(newpal, rgbpal);
@@ -130,7 +130,7 @@ void PlayAnimationCommand::onExecute(Context* context)
     }
 
     current_editor->drawSpriteClipped
-      (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
+      (gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
     ui::dirty_display_flag = true;
 
@@ -146,7 +146,7 @@ void PlayAnimationCommand::onExecute(Context* context)
       current_editor->setFrame(
         calculate_next_frame(
           sprite,
-          current_editor->getFrame(),
+          current_editor->frame(),
           docSettings,
           pingPongForward));
 
@@ -165,7 +165,7 @@ void PlayAnimationCommand::onExecute(Context* context)
   }
 
   // Refresh all
-  newpal = sprite->getPalette(current_editor->getFrame());
+  newpal = sprite->getPalette(current_editor->frame());
   set_current_palette(newpal, true);
   ui::Manager::getDefault()->invalidate();
   gui_feedback();
