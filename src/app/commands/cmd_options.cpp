@@ -131,10 +131,10 @@ public:
     m_locate_file->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
 
     // Undo limit
-    m_undo_size_limit->setTextf("%d", get_config_int("Options", "UndoSizeLimit", 8));
+    m_undo_size_limit->setTextf("%d", m_settings->undoSizeLimit());
 
     // Goto modified frame/layer on undo/redo
-    if (get_config_bool("Options", "UndoGotoModified", true))
+    if (m_settings->undoGotoModified())
       m_undo_goto_modified->setSelected(true);
 
     m_section_listbox->selectIndex(0);
@@ -163,8 +163,9 @@ public:
     int undo_size_limit_value;
     undo_size_limit_value = m_undo_size_limit->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
-    set_config_int("Options", "UndoSizeLimit", undo_size_limit_value);
-    set_config_bool("Options", "UndoGotoModified", m_undo_goto_modified->isSelected());
+
+    m_settings->setUndoSizeLimit(undo_size_limit_value);
+    m_settings->setUndoGotoModified(m_undo_goto_modified->isSelected());
 
     int new_screen_scaling = m_screen_scale->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {

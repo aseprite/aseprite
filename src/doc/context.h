@@ -18,12 +18,16 @@
 namespace doc {
   class Command;
   class Document;
+  class Settings;
 
   class Context : public base::Observable<ContextObserver>
                 , public DocumentsObserver {
   public:
     Context();
     virtual ~Context();
+
+    Settings* settings() const { return m_settings; }
+    void setSettings(Settings* settings);
 
     const Documents& documents() const { return m_docs; }
     Documents& documents() { return m_docs; }
@@ -36,6 +40,7 @@ namespace doc {
     virtual void onRemoveDocument(Document* doc) OVERRIDE;
 
   private:
+    Settings* m_settings;
     Documents m_docs;
     Document* m_activeDoc;
 

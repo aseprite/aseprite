@@ -505,4 +505,9 @@ void Document::unlock()
   }
 }
 
+void Document::onContextChanged()
+{
+  m_undo->setContext(context());
+}
+
 } // namespace app

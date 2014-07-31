@@ -28,6 +28,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "base/thread.h"
@@ -76,7 +77,7 @@ void UndoCommand::onExecute(Context* context)
   DocumentUndo* undo = document->getUndo();
   Sprite* sprite = document->sprite();
 
-  if (get_config_bool("Options", "UndoGotoModified", true)) {
+  if (context->settings()->undoGotoModified()) {
     SpritePosition spritePosition;
     SpritePosition currentPosition(writer.location()->layerIndex(),
                                    writer.location()->frame());

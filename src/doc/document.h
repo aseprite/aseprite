@@ -50,6 +50,9 @@ namespace doc {
 
     void close();
 
+  protected:
+    virtual void onContextChanged();
+
   private:
     void removeFromContext();
 

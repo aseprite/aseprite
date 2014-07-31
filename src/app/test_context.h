@@ -21,13 +21,21 @@
 #pragma once
 
 #include "app/document_location.h"
+#include "doc/settings.h"
 #include "raster/layer.h"
 
 namespace app {
 
-  class TestContext : public app::Context {
+  class TestContext : public app::Context,
+                      public doc::Settings {
   public:
     TestContext() : app::Context(NULL) {
+      setSettings(this);
+    }
+
+    // doc::Settings impl
+    size_t undoSizeLimit() const {
+      return 8;
     }
 
   protected:

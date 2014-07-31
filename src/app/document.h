@@ -20,6 +20,7 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
@@ -180,6 +181,9 @@ namespace app {
     void unlockToRead();
 
     void unlock();
+
+  protected:
+    virtual void onContextChanged() OVERRIDE;
 
   private:
     // Undo and redo information about the document.

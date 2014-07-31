@@ -40,6 +40,12 @@ namespace app {
     UISettingsImpl();
     ~UISettingsImpl();
 
+    // Undo settings
+    size_t undoSizeLimit() const OVERRIDE;
+    bool undoGotoModified() const OVERRIDE;
+    void setUndoSizeLimit(size_t size) OVERRIDE;
+    void setUndoGotoModified(bool state) OVERRIDE;
+
     // ISettings implementation
     bool getZoomWithScrollWheel() OVERRIDE;
     bool getShowSpriteEditorScrollbars() OVERRIDE;

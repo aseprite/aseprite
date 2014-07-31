@@ -26,6 +26,10 @@
 #include "raster/sprite_position.h"
 #include "undo/undo_history.h"
 
+namespace doc {
+  class Context;
+}
+
 namespace undo {
   class ObjectsContainer;
   class Undoer;
@@ -41,6 +45,8 @@ namespace app {
   class DocumentUndo : public undo::UndoHistoryDelegate {
   public:
     DocumentUndo();
+
+    void setContext(doc::Context* ctx);
 
     bool isEnabled() const { return m_enabled; }
     void setEnabled(bool state) { m_enabled = state; }
@@ -90,6 +96,7 @@ namespace app {
     base::UniquePtr<undo::UndoHistory> m_undoHistory;
 
     bool m_enabled;
+    doc::Context* m_ctx;
 
     DISABLE_COPYING(DocumentUndo);
   };

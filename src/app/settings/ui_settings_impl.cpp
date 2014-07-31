@@ -246,6 +246,26 @@ UISettingsImpl::~UISettingsImpl()
 //////////////////////////////////////////////////////////////////////
 // General settings
 
+size_t UISettingsImpl::undoSizeLimit() const
+{
+  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8));
+}
+
+bool UISettingsImpl::undoGotoModified() const
+{
+  return get_config_bool("Options", "UndoGotoModified", true);
+}
+
+void UISettingsImpl::setUndoSizeLimit(size_t size)
+{
+  set_config_int("Options", "UndoSizeLimit", size);
+}
+
+void UISettingsImpl::setUndoGotoModified(bool state)
+{
+  set_config_bool("Options", "UndoGotoModified", state);
+}
+
 bool UISettingsImpl::getZoomWithScrollWheel()
 {
   return m_zoomWithScrollWheel;

@@ -38,6 +38,8 @@ void Document::setContext(Context* ctx)
   m_ctx = ctx;
   if (ctx)
     ctx->documents().add(this);
+
+  onContextChanged();
 }
 
 int Document::width() const
@@ -76,11 +78,18 @@ void Document::close()
   removeFromContext();
 }
 
+void Document::onContextChanged()
+{
+  // Do nothing
+}
+
 void Document::removeFromContext()
 {
   if (m_ctx) {
     m_ctx->documents().remove(this);
     m_ctx = NULL;
+
+    onContextChanged();
   }
 }
 

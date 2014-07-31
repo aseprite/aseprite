@@ -15,7 +15,8 @@
 namespace doc {
 
 Context::Context()
-  : m_docs(this)
+  : m_settings(NULL)
+  , m_docs(this)
   , m_activeDoc(NULL)
 {
   m_docs.addObserver(this);
@@ -25,6 +26,11 @@ Context::~Context()
 {
   setActiveDocument(NULL);
   m_docs.removeObserver(this);
+}
+
+void Context::setSettings(Settings* settings)
+{
+  m_settings = settings;
 }
 
 Document* Context::activeDocument() const

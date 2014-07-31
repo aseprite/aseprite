@@ -40,6 +40,7 @@ Context::Context()
 Context::Context(ISettings* settings)
   : m_settings(settings)
 {
+  setSettings(settings);
 }
 
 Context::~Context()
