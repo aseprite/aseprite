@@ -266,7 +266,12 @@ bool Entry::onProcessMessage(Message* msg)
             }
             else {
               // Map common Windows shortcuts for Cut/Copy/Paste
-              if (msg->onlyCtrlPressed()) {
+#if defined ALLEGRO_MACOSX
+              if (msg->onlyCmdPressed())
+#else
+              if (msg->onlyCtrlPressed())
+#endif
+              {
                 switch (scancode) {
                   case kKeyX: cmd = EntryCmd::Cut; break;
                   case kKeyC: cmd = EntryCmd::Copy; break;

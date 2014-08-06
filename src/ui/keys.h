@@ -14,7 +14,8 @@ namespace ui {
     kKeyNoneModifier  = 0,
     kKeyShiftModifier = 1,
     kKeyCtrlModifier  = 2,
-    kKeyAltModifier   = 4
+    kKeyAltModifier   = 4,
+    kKeyCmdModifier   = 8
   };
 
   enum KeyScancode {

@@ -58,6 +58,9 @@ static void process_one_word(Accelerator* accel, char* word)
     else if (ustricmp (tok, "Ctrl") == 0) {
       modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
     }
+    else if (ustricmp (tok, "Cmd") == 0) {
+      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
+    }
 
     // Scancode
 
@@ -313,14 +316,10 @@ std::string Accelerator::KeyCombo::toString()
   ustrcpy(buf, "");
 
   // Shifts
-  if (this->modifiers & kKeyCtrlModifier)
-    ustrcat(buf, "Ctrl+");
-
-  if (this->modifiers & kKeyAltModifier)
-    ustrcat(buf, "Alt+");
-
-  if (this->modifiers & kKeyShiftModifier)
-    ustrcat(buf, "Shift+");
+  if (this->modifiers & kKeyCtrlModifier) ustrcat(buf, "Ctrl+");
+  if (this->modifiers & kKeyCmdModifier) ustrcat(buf, "Cmd+");
+  if (this->modifiers & kKeyAltModifier) ustrcat(buf, "Alt+");
+  if (this->modifiers & kKeyShiftModifier) ustrcat(buf, "Shift+");
 
   // Key
   if (this->unicodeChar)
@@ -440,6 +439,7 @@ bool Accelerator::checkFromAllegroKeyArray()
   if (key[KEY_LCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
   if (key[KEY_RCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
   if (key[KEY_ALT]     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
+  if (key[KEY_COMMAND ]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
 
   for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
        it != end; ++it) {

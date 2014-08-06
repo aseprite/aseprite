@@ -65,6 +65,7 @@ namespace app {
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
     void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Accelerator* accel);
+    const char* getShortcut(TiXmlElement* elem);
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
