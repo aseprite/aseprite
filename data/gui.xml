@@ -132,7 +132,7 @@
         <param name="change" value="decrement-size" />
       </key>
 
-      <!-- Scroll with cursor -->
+      <!-- Scroll with arrows -->
       <key command="Scroll" shortcut="Ctrl+Left" mac="Cmd+Left">
         <param name="direction" value="left" />
         <param name="units" value="zoomed-tile-width" />
