@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,11 +75,14 @@ public:
 
   void transformPoint(ToolLoop* loop, int x, int y)
   {
-    algo_floodfill(loop->getSrcImage(), x, y, loop->getTolerance(), loop, (AlgoHLine)doInkHline);
+    algo_floodfill(loop->getSrcImage(), x, y,
+      loop->getTolerance(), loop->getContiguous(),
+      loop, (AlgoHLine)doInkHline);
   }
+
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
-    area = Rect(0, 0, 9999, 9999);
+    area = Rect(0, 0, loop->sprite()->width(), loop->sprite()->height());
   }
 };
 

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -265,6 +265,30 @@ protected:
     Tool* currentTool = settings->getCurrentTool();
     settings->getToolSettings(currentTool)
       ->setTolerance(getValue());
+  }
+};
+
+class ContextBar::ContiguousField : public CheckBox
+{
+public:
+  ContiguousField() : CheckBox("Contiguous") {
+    setup_mini_font(this);
+  }
+
+  void setContiguous(bool state) {
+    setSelected(state);
+  }
+
+protected:
+  void onClick(Event& ev) OVERRIDE {
+    CheckBox::onClick(ev);
+
+    ISettings* settings = UIContext::instance()->settings();
+    Tool* currentTool = settings->getCurrentTool();
+    settings->getToolSettings(currentTool)
+      ->setContiguous(isSelected());
+
+    releaseFocus();
   }
 };
 
@@ -721,6 +745,7 @@ ContextBar::ContextBar()
 
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
+  addChild(m_contiguous = new ContiguousField());
 
   addChild(m_inkType = new InkTypeField());
 
@@ -848,6 +873,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_brushAngle->setTextf("%d", brushSettings->getAngle());
 
   m_tolerance->setTextf("%d", toolSettings->getTolerance());
+  m_contiguous->setSelected(toolSettings->getContiguous());
 
   m_inkType->setInkType(toolSettings->getInkType());
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
@@ -899,6 +925,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_freehandBox->setVisible(isFreehand && hasOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
+  m_contiguous->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);

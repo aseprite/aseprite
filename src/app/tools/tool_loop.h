@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,6 +123,10 @@ namespace app {
 
       // Returns the tolerance to be used by the ink (Ink).
       virtual int getTolerance() = 0;
+
+      // Returns true if the flood fill algorithm should take care
+      // contiguous pixels or not.
+      virtual bool getContiguous() = 0;
 
       // Returns the selection mode (if the ink is of selection type).
       virtual SelectionMode getSelectionMode() = 0;

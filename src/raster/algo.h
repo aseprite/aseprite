@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,9 @@ namespace raster {
                              double x2, double y2, double x3, double y3,
                              double in_x);
 
-  void algo_floodfill(Image* image, int x, int y, int tolerance, void* data, AlgoHLine proc);
+  void algo_floodfill(Image* image, int x, int y,
+    int tolerance, bool contiguous,
+    void* data, AlgoHLine proc);
 
   void algo_polygon(int vertices, const int* points, void* data, AlgoHLine proc);
 

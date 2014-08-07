@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -694,6 +694,7 @@ class UIToolSettingsImpl
   UIBrushSettingsImpl m_brush;
   int m_opacity;
   int m_tolerance;
+  bool m_contiguous;
   bool m_filled;
   bool m_previewFilled;
   int m_spray_width;
@@ -712,6 +713,7 @@ public:
     m_opacity = MID(0, m_opacity, 255);
     m_tolerance = get_config_int(cfg_section.c_str(), "Tolerance", 0);
     m_tolerance = MID(0, m_tolerance, 255);
+    m_contiguous = get_config_bool(cfg_section.c_str(), "Contiguous", true);
     m_filled = false;
     m_previewFilled = get_config_bool(cfg_section.c_str(), "PreviewFilled", false);
     m_spray_width = 16;
@@ -750,6 +752,7 @@ public:
 
     set_config_int(cfg_section.c_str(), "Opacity", m_opacity);
     set_config_int(cfg_section.c_str(), "Tolerance", m_tolerance);
+    set_config_bool(cfg_section.c_str(), "Contiguous", m_contiguous);
     set_config_int(cfg_section.c_str(), "BrushType", m_brush.getType());
     set_config_int(cfg_section.c_str(), "BrushSize", m_brush.getSize());
     set_config_int(cfg_section.c_str(), "BrushAngle", m_brush.getAngle());
@@ -773,6 +776,7 @@ public:
 
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
+  bool getContiguous() OVERRIDE { return m_contiguous; }
   bool getFilled() OVERRIDE { return m_filled; }
   bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
   int getSprayWidth() OVERRIDE { return m_spray_width; }
@@ -782,6 +786,7 @@ public:
 
   void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
   void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
+  void setContiguous(bool state) OVERRIDE { m_contiguous = state; }
   void setFilled(bool state) OVERRIDE { m_filled = state; }
   void setPreviewFilled(bool state) OVERRIDE { m_previewFilled = state; }
   void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }

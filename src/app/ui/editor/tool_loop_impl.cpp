@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   gfx::Point m_maskOrigin;
   int m_opacity;
   int m_tolerance;
+  bool m_contiguous;
   gfx::Point m_offset;
   gfx::Point m_speed;
   bool m_canceled;
@@ -174,6 +175,7 @@ public:
 
     m_opacity = m_toolSettings->getOpacity();
     m_tolerance = m_toolSettings->getTolerance();
+    m_contiguous = m_toolSettings->getContiguous();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -224,6 +226,7 @@ public:
   void setSecondaryColor(int color) OVERRIDE { m_secondary_color = color; }
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
+  bool getContiguous() OVERRIDE { return m_contiguous; }
   SelectionMode getSelectionMode() OVERRIDE { return m_selectionMode; }
   ISettings* settings() OVERRIDE { return m_settings; }
   IDocumentSettings* getDocumentSettings() OVERRIDE { return m_docSettings; }
