@@ -210,6 +210,10 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         msg == WM_RBUTTONUP ? Event::RightButton:
         msg == WM_MBUTTONUP ? Event::MiddleButton: Event::NoneButton);
       queue_event(ev);
+
+      // Avoid popup menu for scrollbars
+      if (msg == WM_RBUTTONUP)
+        return 0;
       break;
     }
 
