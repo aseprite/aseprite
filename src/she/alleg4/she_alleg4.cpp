@@ -325,15 +325,25 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_NCHITTEST: {
       LRESULT result = ::CallWindowProc(base_wndproc, hwnd, msg, wparam, lparam);
+      gfx::Point pt(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+
+      RECT rc;
+      ::GetClientRect(hwnd, &rc);
+      ::MapWindowPoints(hwnd, NULL, (POINT*)&rc, 2);
+      gfx::Rect area(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
+
+      //PRINTF("NCHITTEST: %d %d - %d %d %d %d - %s\n", pt.x, pt.y, area.x, area.y, area.w, area.h, area.contains(pt) ? "true": "false");
 
       // We ignore scrollbars so if the mouse is above them, we return
-      // as it's in the window resize area. (Remember that we have
-      // scroll bars are enabled and visible to receive trackpad
-      // messages only.)
-      if (result == HTHSCROLL)
-        result = HTBOTTOM;
-      else if (result == HTVSCROLL)
-        result = HTRIGHT;
+      // as it's in the window client or resize area. (Remember that
+      // we have scroll bars are enabled and visible to receive
+      // trackpad messages only.)
+      if (result == HTHSCROLL) {
+        result = (area.contains(pt) ? HTCLIENT: HTBOTTOM);
+      }
+      else if (result == HTVSCROLL) {
+        result = (area.contains(pt) ? HTCLIENT: HTRIGHT);
+      }
 
       return result;
     }
