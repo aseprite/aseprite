@@ -16,41 +16,26 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_TEST_CONTEXT_H_INCLUDED
-#define APP_TEST_CONTEXT_H_INCLUDED
+#ifndef APP_DOCUMENT_RANGE_OPS_H_INCLUDED
+#define APP_DOCUMENT_RANGE_OPS_H_INCLUDED
 #pragma once
 
-#include "app/context.h"
-#include "app/document_location.h"
-#include "doc/settings.h"
-#include "raster/layer.h"
+#include <vector>
 
 namespace app {
+  class Document;
+  class DocumentRange;
 
-  class TestContext : public app::Context,
-                      public doc::Settings {
-  public:
-    TestContext() : app::Context(NULL) {
-      setSettings(this);
-    }
-
-    // doc::Settings impl
-    size_t undoSizeLimit() const {
-      return 8;
-    }
-
-  protected:
-    void onGetActiveLocation(DocumentLocation* location) const OVERRIDE {
-      Document* doc = activeDocument();
-      if (!doc)
-        return;
-
-      location->document(doc);
-      location->sprite(doc->sprite());
-      location->layer(doc->sprite()->folder()->getFirstLayer());
-      location->frame(FrameNumber(0));
-    }
+  enum DocumentRangePlace {
+    kDocumentRangeBefore,
+    kDocumentRangeAfter,
   };
+
+  // These functions returns the new location of the "from" range or
+  // throws an std::runtime_error() in case that the operation cannot
+  // be done. (E.g. the background layer cannot be moved.)
+  DocumentRange move_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place);
+  DocumentRange copy_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place);
 
 } // namespace app
 

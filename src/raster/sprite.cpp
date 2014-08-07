@@ -227,6 +227,9 @@ LayerIndex Sprite::countLayers() const
 
 Layer* Sprite::indexToLayer(LayerIndex index) const
 {
+  if (index < LayerIndex(0))
+    return NULL;
+
   int index_count = -1;
   return index2layer(folder(), index, &index_count);
 }
@@ -235,6 +238,17 @@ LayerIndex Sprite::layerToIndex(const Layer* layer) const
 {
   int index_count = -1;
   return layer2index(folder(), layer, &index_count);
+}
+
+void Sprite::getLayersList(std::vector<Layer*>& layers) const
+{
+  // TODO support subfolders
+  LayerConstIterator it = m_folder->getLayerBegin();
+  LayerConstIterator end = m_folder->getLayerEnd();
+
+  for (; it != end; ++it) {
+    layers.push_back(*it);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

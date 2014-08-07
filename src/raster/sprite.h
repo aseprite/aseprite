@@ -88,6 +88,8 @@ namespace raster {
     Layer* indexToLayer(LayerIndex index) const;
     LayerIndex layerToIndex(const Layer* layer) const;
 
+    void getLayersList(std::vector<Layer*>& layers) const;
+
     ////////////////////////////////////////
     // Palettes
 

@@ -399,8 +399,12 @@ int app_get_color_to_clear_layer(Layer* layer)
   app::Color color;
 
   // The `Background' is erased with the `Background Color'
-  if (layer->isBackground())
-    color = ColorBar::instance()->getBgColor();
+  if (layer->isBackground()) {
+    if (ColorBar::instance())
+      color = ColorBar::instance()->getBgColor();
+    else
+      color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
+  }
   else // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
 

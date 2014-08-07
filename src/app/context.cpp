@@ -58,16 +58,14 @@ void Context::sendDocumentToTop(doc::Document* document)
 
 app::Document* Context::activeDocument() const
 {
-  DocumentLocation location;
-  onGetActiveLocation(&location);
-  ASSERT(location.document() == doc::Context::activeDocument());
-  return location.document();
+  return static_cast<app::Document*>(doc::Context::activeDocument());
 }
 
 DocumentLocation Context::activeLocation() const
 {
   DocumentLocation location;
   onGetActiveLocation(&location);
+  ASSERT(location.document() == doc::Context::activeDocument());
   return location;
 }
 

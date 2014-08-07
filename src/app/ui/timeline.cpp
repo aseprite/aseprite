@@ -31,6 +31,7 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/document_api.h"
+#include "app/document_range_ops.h"
 #include "app/document_undo.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -1614,9 +1615,9 @@ void Timeline::updateStatusBar(ui::Message* msg)
       case Range::kLayers: {
         int layerIdx = -1;
         if (m_dropTarget.vhit == DropTarget::Bottom)
-          layerIdx = m_dropRange.layerEnd();
-        else if (m_dropTarget.vhit == DropTarget::Top)
           layerIdx = m_dropRange.layerBegin();
+        else if (m_dropTarget.vhit == DropTarget::Top)
+          layerIdx = m_dropRange.layerEnd();
 
         Layer* layer = ((layerIdx >= 0 && layerIdx < (int)m_layers.size()) ? m_layers[layerIdx]: NULL);
         if (layer) {
@@ -1837,243 +1838,45 @@ bool Timeline::isFrameActive(FrameNumber frame) const
     return m_range.inRange(frame);
 }
 
-// TODO This must be re-implemented
 void Timeline::dropRange(DropOp op)
 {
-  Range drop = m_dropRange;
+  bool copy = (op == Timeline::kCopy);
+  Range newFromRange;
+  DocumentRangePlace place = kDocumentRangeAfter;
 
-  // "Do nothing" cases. The user drops in the same place. (We don't
-  // even add the undo information.)
-  if (!doesDropModifySprite(drop, op))
-    return;
-
-  const char* undoLabel = NULL;
-  switch (op) {
-    case Timeline::kMove: undoLabel = "Move Range"; break;
-    case Timeline::kCopy: undoLabel = "Copy Range"; break;
+  switch (m_range.type()) {
+    case Range::kFrames:
+      if (m_dropTarget.hhit == DropTarget::Before)
+        place = kDocumentRangeBefore;
+      break;
+    case Range::kLayers:
+      if (m_dropTarget.vhit == DropTarget::Bottom)
+        place = kDocumentRangeBefore;
+      break;
   }
 
-  const ContextReader reader(m_context);
-  ContextWriter writer(reader);
-  UndoTransaction undo(writer.context(), undoLabel, undo::ModifyDocument);
   int activeRelativeLayer = getLayerIndex(m_layer) - m_range.layerBegin();
   FrameNumber activeRelativeFrame = m_frame - m_range.frameBegin();
 
-  switch (drop.type()) {
-    case Range::kCels: dropCels(op, drop); break;
-    case Range::kFrames: dropFrames(op, drop); break;
-    case Range::kLayers: dropLayers(op, drop); break;
+  try {
+    if (copy)
+      newFromRange = copy_range(m_document, m_range, m_dropRange, place);
+    else
+      newFromRange = move_range(m_document, m_range, m_dropRange, place);
+
+    regenerateLayers();
+
+    m_range = newFromRange;
+    if (m_range.layerBegin() >= LayerIndex(0))
+      setLayer(m_layers[m_range.layerBegin() + activeRelativeLayer]);
+    if (m_range.frameBegin() >= FrameNumber(0))
+      setFrame(m_range.frameBegin() + activeRelativeFrame);
   }
-
-  undo.commit();
-
-  regenerateLayers();
-
-  // Adjust "drop" range so we can select the same selected range that
-  // the user had selected.
-  switch (drop.type()) {
-
-    case Range::kFrames:
-      if (op == Timeline::kMove && m_range.frameBegin() < drop.frameBegin()) {
-        drop.displace(firstLayer(), -m_range.frames());
-      }
-      drop.setFrames(m_range.frames());
-      break;
-
-    case Range::kLayers:
-      if (op == Timeline::kMove && m_range.layerBegin() < drop.layerBegin()) {
-        drop.displace(-m_range.layers(), 0);
-      }
-      drop.setLayers(m_range.layers());
-      break;
+  catch (const std::exception& e) {
+    ui::Alert::show("Problem<<%s||&OK", e.what());
   }
-
-  setLayer(m_layers[drop.layerBegin() + activeRelativeLayer]);
-  setFrame(drop.frameBegin() + activeRelativeFrame);
-  m_range = drop;
 
   invalidate();
-}
-
-void Timeline::dropCels(DropOp op, const Range& drop)
-{
-  ASSERT(validLayer(drop.layerBegin()));
-  ASSERT(validLayer(drop.layerEnd()));
-  ASSERT(validFrame(drop.frameBegin()));
-  ASSERT(validFrame(drop.frameEnd()));
-
-  int srcLayerBegin, srcLayerStep, srcLayerEnd;
-  int dstLayerBegin, dstLayerStep;
-  FrameNumber srcFrameBegin, srcFrameStep, srcFrameEnd;
-  FrameNumber dstFrameBegin, dstFrameStep;
-
-  if (drop.layerBegin() <= m_range.layerBegin()) {
-    srcLayerBegin = m_range.layerBegin();
-    srcLayerStep = 1;
-    srcLayerEnd = m_range.layerEnd()+1;
-    dstLayerBegin = drop.layerBegin();
-    dstLayerStep = 1;
-  }
-  else {
-    srcLayerBegin = m_range.layerEnd();
-    srcLayerStep = -1;
-    srcLayerEnd = m_range.layerBegin()-1;
-    dstLayerBegin = drop.layerEnd();
-    dstLayerStep = -1;
-  }
-
-  if (drop.frameBegin() <= m_range.frameBegin()) {
-    srcFrameBegin = m_range.frameBegin();
-    srcFrameStep = FrameNumber(1);
-    srcFrameEnd = m_range.frameEnd().next();
-    dstFrameBegin = drop.frameBegin();
-    dstFrameStep = FrameNumber(1);
-  }
-  else {
-    srcFrameBegin = m_range.frameEnd();
-    srcFrameStep = FrameNumber(-1);
-    srcFrameEnd = m_range.frameBegin().previous();
-    dstFrameBegin = drop.frameEnd();
-    dstFrameStep = FrameNumber(-1);
-  }
-
-  DocumentApi api = m_document->getApi();
-
-  for (int srcLayerIdx = srcLayerBegin,
-           dstLayerIdx = dstLayerBegin; srcLayerIdx != srcLayerEnd; ) {
-    for (FrameNumber srcFrame = srcFrameBegin,
-                     dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
-      LayerImage* srcLayer = static_cast<LayerImage*>(m_layers[srcLayerIdx]);
-      LayerImage* dstLayer = static_cast<LayerImage*>(m_layers[dstLayerIdx]);
-      color_t bgcolor = app_get_color_to_clear_layer(dstLayer);
-
-      switch (op) {
-        case Timeline::kMove: api.moveCel(m_sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor); break;
-        case Timeline::kCopy: api.copyCel(m_sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor); break;
-      }
-
-      srcFrame += srcFrameStep;
-      dstFrame += dstFrameStep;
-    }
-    srcLayerIdx += srcLayerStep;
-    dstLayerIdx += dstLayerStep;
-  }
-}
-
-void Timeline::dropFrames(DropOp op, const Range& drop)
-{
-  FrameNumber srcFrameBegin, srcFrameStep, srcFrameEnd;
-  FrameNumber dstFrameBegin, dstFrameStep;
-
-  // TODO Try to add the range with just one call to DocumentApi
-  // methods, to avoid generating a lot of SetCelFrame undoers (see
-  // DocumentApi::setCelFramePosition).
-
-  switch (op) {
-
-    case Timeline::kMove:
-      if (drop.frameBegin() <= m_range.frameBegin()) {
-        srcFrameBegin = m_range.frameBegin();
-        srcFrameStep = FrameNumber(1);
-        srcFrameEnd = m_range.frameEnd().next();
-        dstFrameBegin = drop.frameBegin();
-        dstFrameStep = FrameNumber(1);
-      }
-      else {
-        srcFrameBegin = m_range.frameEnd();
-        srcFrameStep = FrameNumber(-1);
-        srcFrameEnd = m_range.frameBegin().previous();
-        dstFrameBegin = drop.frameBegin();
-        dstFrameStep = FrameNumber(-1);
-      }
-      break;
-
-    case Timeline::kCopy:
-      if (drop.frameBegin() <= m_range.frameBegin()) {
-        srcFrameBegin = m_range.frameBegin();
-        srcFrameStep = FrameNumber(2);
-        srcFrameEnd = m_range.frameBegin().next(2*m_range.frames());
-        dstFrameBegin = drop.frameBegin();
-        dstFrameStep = FrameNumber(1);
-      }
-      else {
-        srcFrameBegin = m_range.frameEnd();
-        srcFrameStep = FrameNumber(-1);
-        srcFrameEnd = m_range.frameBegin().previous();
-        dstFrameBegin = drop.frameBegin();
-        dstFrameStep = firstFrame();
-      }
-      break;
-  }
-
-  DocumentApi api = m_document->getApi();
-
-  for (FrameNumber srcFrame = srcFrameBegin,
-                   dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
-    switch (op) {
-      case Timeline::kMove: api.moveFrame(m_sprite, srcFrame, dstFrame); break;
-      case Timeline::kCopy: api.copyFrame(m_sprite, srcFrame, dstFrame); break;
-    }
-      
-    srcFrame += srcFrameStep;
-    dstFrame += dstFrameStep;
-  }
-}
-
-void Timeline::dropLayers(DropOp op, const Range& drop)
-{
-  ASSERT(m_clk_layer >= 0 && m_clk_layer < (int)m_layers.size());
-  if (m_clk_layer < 0)
-    return;
-
-  if (m_layers[m_clk_layer]->isBackground()) {
-    Alert::show(PACKAGE "<<You can't move the `Background' layer.||&OK");
-    return;
-  }
-
-  Layer* firstLayer = m_layers[m_range.layerBegin()];
-  Layer* lastLayer = m_layers[m_range.layerEnd()];
-
-  std::vector<Layer*> layers = m_layers;
-
-  switch (op) {
-
-    case Timeline::kMove:
-      for (int i = m_range.layerBegin(); i <= m_range.layerEnd(); ++i) {
-        m_document->getApi().restackLayerAfter(
-          layers[i], layers[drop.layerBegin()]);
-      }
-      break;
-
-    case Timeline::kCopy:
-      for (int i = m_range.layerBegin(); i <= m_range.layerEnd(); ++i) {
-        m_document->getApi().duplicateLayer(
-          layers[i], layers[drop.layerBegin()]);
-      }
-      break;
-  }
-}
-
-bool Timeline::doesDropModifySprite(const Range& drop, DropOp op) const
-{
-  switch (drop.type()) {
-    case Range::kCels:
-      if (drop == m_range)
-        return false;
-      break;
-    case Range::kFrames:
-      if (op == Timeline::kMove && drop.frameBegin() == m_range.frameBegin())
-        return false;
-      break;
-    case Range::kLayers:
-      if (op == Timeline::kMove && drop.layerBegin() == m_range.layerBegin())
-        return false;
-      break;
-    default:
-      ASSERT(false && "You shouldn't call dropRange() if the range is disabled");
-      return false;
-  }
-  return true;
 }
 
 void Timeline::updateDropRange(const gfx::Point& pt)
@@ -2163,66 +1966,6 @@ void Timeline::updateDropRange(const gfx::Point& pt)
 bool Timeline::isCopyKeyPressed(ui::Message* msg)
 {
   return msg->ctrlPressed();
-}
-
-void Timeline::Range::startRange(LayerIndex layer, FrameNumber frame, Type type)
-{
-  m_type = type;
-  m_layerBegin = m_layerEnd = layer;
-  m_frameBegin = m_frameEnd = frame;
-}
-
-void Timeline::Range::endRange(LayerIndex layer, FrameNumber frame)
-{
-  ASSERT(enabled());
-  m_layerEnd = layer;
-  m_frameEnd = frame;
-}
-
-void Timeline::Range::disableRange()
-{
-  m_type = kNone;
-}
-
-bool Timeline::Range::inRange(LayerIndex layer) const
-{
-  if (enabled())
-    return (layer >= layerBegin() && layer <= layerEnd());
-  else
-    return false;
-}
-
-bool Timeline::Range::inRange(FrameNumber frame) const
-{
-  if (enabled())
-    return (frame >= frameBegin() && frame <= frameEnd());
-  else
-    return false;
-}
-
-bool Timeline::Range::inRange(LayerIndex layer, FrameNumber frame) const
-{
-  return inRange(layer) && inRange(frame);
-}
-
-void Timeline::Range::setLayers(int layers)
-{
-  if (m_layerBegin <= m_layerEnd) m_layerEnd = m_layerBegin + LayerIndex(layers - 1);
-  else m_layerBegin = m_layerEnd + LayerIndex(layers - 1);
-}
-
-void Timeline::Range::setFrames(FrameNumber frames)
-{
-  if (m_frameBegin <= m_frameEnd) m_frameEnd = (m_frameBegin + frames).previous();
-  else m_frameBegin = (m_frameEnd + frames).previous();
-}
-
-void Timeline::Range::displace(int layerDelta, int frameDelta)
-{
-  m_layerBegin += LayerIndex(layerDelta);
-  m_layerEnd   += LayerIndex(layerDelta);
-  m_frameBegin += FrameNumber(frameDelta);
-  m_frameEnd   += FrameNumber(frameDelta);
 }
 
 } // namespace app

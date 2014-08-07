@@ -20,6 +20,7 @@
 #define APP_UI_TIMELINE_H_INCLUDED
 #pragma once
 
+#include "app/document_range.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
 #include "base/compiler_specific.h"
@@ -57,6 +58,8 @@ namespace app {
                  , public doc::DocumentObserver
                  , public app::EditorObserver {
   public:
+    typedef DocumentRange Range;
+
     enum State {
       STATE_STANDBY,
       STATE_SCROLLING,
@@ -67,46 +70,6 @@ namespace app {
       STATE_MOVING_RANGE,
       STATE_MOVING_ONIONSKIN_RANGE_LEFT,
       STATE_MOVING_ONIONSKIN_RANGE_RIGHT
-    };
-
-    struct Range {
-      enum Type { kNone, kCels, kFrames, kLayers };
-
-      Range() : m_type(kNone) { }
-
-      Type type() const { return m_type; }
-      bool enabled() const { return m_type != kNone; }
-      LayerIndex layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
-      LayerIndex layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
-      FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
-      FrameNumber frameEnd() const { return MAX(m_frameBegin, m_frameEnd); }
-
-      int layers() const { return layerEnd() - layerBegin() + 1; }
-      FrameNumber frames() const { return (frameEnd() - frameBegin()).next(); }
-      void setLayers(int layers);
-      void setFrames(FrameNumber frames);
-      void displace(int layerDelta, int frameDelta);
-
-      bool inRange(LayerIndex layer) const;
-      bool inRange(FrameNumber frame) const;
-      bool inRange(LayerIndex layer, FrameNumber frame) const;
-
-      void startRange(LayerIndex layer, FrameNumber frame, Type type);
-      void endRange(LayerIndex layer, FrameNumber frame);
-      void disableRange();
-
-      bool operator==(const Range& o) const {
-        return m_type == o.m_type &&
-          layerBegin() == o.layerBegin() && layerEnd() == o.layerEnd() &&
-          frameBegin() == o.frameBegin() && frameEnd() == o.frameEnd();
-      }
-
-    private:
-      Type m_type;
-      LayerIndex m_layerBegin;
-      LayerIndex m_layerEnd;
-      FrameNumber m_frameBegin;
-      FrameNumber m_frameEnd;
     };
 
     enum DropOp { kMove, kCopy };
@@ -211,12 +174,7 @@ namespace app {
     bool isLayerActive(LayerIndex layerIdx) const;
     bool isFrameActive(FrameNumber frame) const;
     void updateStatusBar(ui::Message* msg);
-    bool doesDropModifySprite(const Range& drop, DropOp op) const;
     void updateDropRange(const gfx::Point& pt);
-
-    void dropCels(DropOp op, const Range& drop);
-    void dropFrames(DropOp op, const Range& drop);
-    void dropLayers(DropOp op, const Range& drop);
 
     bool isCopyKeyPressed(ui::Message* msg);
 

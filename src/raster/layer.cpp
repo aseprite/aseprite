@@ -287,6 +287,10 @@ void LayerFolder::removeLayer(Layer* layer)
 
 void LayerFolder::stackLayer(Layer* layer, Layer* after)
 {
+  ASSERT(layer != after);
+  if (layer == after)
+    return;
+
   LayerIterator it = std::find(m_layers.begin(), m_layers.end(), layer);
   ASSERT(it != m_layers.end());
   m_layers.erase(it);
@@ -299,14 +303,6 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
   }
   else
     m_layers.push_front(layer);
-
-  // TODO
-  // if (after) {
-  //   JLink before = jlist_find(m_layers, after)->next;
-  //   jlist_insert_before(m_layers, before, layer);
-  // }
-  // else
-  //   jlist_prepend(m_layers, layer);
 }
 
 void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber frame)

@@ -105,6 +105,8 @@ add_library(app-lib
   document_api.cpp
   document_exporter.cpp
   document_location.cpp
+  document_range.cpp
+  document_range_ops.cpp
   document_undo.cpp
   file/ase_format.cpp
   file/bmp_format.cpp

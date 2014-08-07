@@ -407,7 +407,7 @@ void DocumentApi::moveFrame(Sprite* sprite, FrameNumber frame, FrameNumber befor
       frame >= 0 &&
       frame <= sprite->lastFrame() &&
       beforeFrame >= 0 &&
-      beforeFrame <= sprite->lastFrame()) {
+      beforeFrame <= sprite->lastFrame().next()) {
     // Change the frame-lengths...
     int frlen_aux = sprite->getFrameDuration(frame);
 
@@ -817,6 +817,14 @@ void DocumentApi::restackLayerAfter(Layer* layer, Layer* afterThis)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onLayerRestacked, ev);
 }
 
+void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
+{
+  LayerIndex beforeThisIdx = layer->sprite()->layerToIndex(beforeThis);
+  LayerIndex afterThisIdx = beforeThisIdx.previous();
+
+  restackLayerAfter(layer, layer->sprite()->indexToLayer(afterThisIdx));
+}
+
 void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor)
 {
   if (!layer->isImage())
@@ -1016,7 +1024,7 @@ void DocumentApi::flattenLayers(Sprite* sprite, color_t bgcolor)
       removeLayer(*it);
 }
 
-void DocumentApi::duplicateLayer(Layer* sourceLayer, Layer* afterLayer)
+void DocumentApi::duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer)
 {
   base::UniquePtr<LayerImage> newLayerPtr(new LayerImage(sourceLayer->sprite()));
 
@@ -1028,6 +1036,14 @@ void DocumentApi::duplicateLayer(Layer* sourceLayer, Layer* afterLayer)
 
   // Release the pointer as it is owned by the sprite now.
   newLayerPtr.release();
+}
+
+void DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
+{
+  LayerIndex beforeThisIdx = sourceLayer->sprite()->layerToIndex(beforeLayer);
+  LayerIndex afterThisIdx = beforeThisIdx.previous();
+
+  duplicateLayerAfter(sourceLayer, sourceLayer->sprite()->indexToLayer(afterThisIdx));
 }
 
 // Adds a new image in the stock. Returns the image index in the
