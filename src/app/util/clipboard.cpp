@@ -57,6 +57,8 @@
   #include "app/util/clipboard_win32.h"
 #endif
 
+#include <stdexcept>
+
 namespace app {
 
 namespace { 
