@@ -297,7 +297,7 @@ static void replace_color(Image* image, int src_color, int tolerance, void *data
   int h = image->height();
 
   for (int y=0; y<h; ++y) {
-    address = reinterpret_cast<ImageTraits::address_t>(image->getPixelAddress(0, y));
+    address = reinterpret_cast<typename ImageTraits::address_t>(image->getPixelAddress(0, y));
 
     for (int x=0; x<w; ++x, ++address) {
       int right = -1;
