@@ -170,6 +170,8 @@ Editor::Editor(Document* document, EditorFlags flags)
   UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->addObserver(this);
+
+  m_state->onAfterChangeState(this);
 }
 
 Editor::~Editor()
@@ -1207,6 +1209,16 @@ void Editor::pasteImage(const Image* image, int x, int y)
   pixelsMovement->maskImage(image, x, y);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
+}
+
+void Editor::startSelectionTransformation(const gfx::Point& move)
+{
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
+    movingPixels->translate(move.x, move.y);
+  }
+  else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get())) {
+    standby->startSelectionTransformation(this, move);
+  }
 }
 
 void Editor::notifyScrollChanged()

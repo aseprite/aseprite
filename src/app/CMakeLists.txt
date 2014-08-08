@@ -52,6 +52,7 @@ add_library(app-lib
   commands/cmd_mask_by_color.cpp
   commands/cmd_merge_down_layer.cpp
   commands/cmd_move_cel.cpp
+  commands/cmd_move_mask.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp

@@ -153,6 +153,32 @@
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />
       </key>
+
+      <!-- Move selection with arrows -->
+      <key command="MoveMask" shortcut="Shift+Left">
+        <param name="target" value="content" />
+        <param name="direction" value="left" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Right">
+        <param name="target" value="content" />
+        <param name="direction" value="right" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Up">
+        <param name="target" value="content" />
+        <param name="direction" value="up" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Down">
+        <param name="target" value="content" />
+        <param name="direction" value="down" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

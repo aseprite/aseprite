@@ -175,6 +175,8 @@ namespace app {
 
     void pasteImage(const Image* image, int x, int y);
 
+    void startSelectionTransformation(const gfx::Point& move);
+
     // Used by EditorView to notify changes in the view's scroll
     // position.
     void notifyScrollChanged();

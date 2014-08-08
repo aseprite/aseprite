@@ -926,7 +926,7 @@ paintNoDoc:;
     drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
 }
 
-void Timeline::onAfterCommandExecution()
+void Timeline::onAfterCommandExecution(Command* command)
 {
   if (!m_document)
     return;

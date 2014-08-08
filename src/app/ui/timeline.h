@@ -48,6 +48,7 @@ namespace ui {
 namespace app {
   using namespace raster;
 
+  class Command;
   class ConfigureTimelinePopup;
   class Context;
   class Document;
@@ -107,7 +108,7 @@ namespace app {
     void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
 
     // app::Context slots.
-    void onAfterCommandExecution();
+    void onAfterCommandExecution(Command* command);
 
     // DocumentsObserver impl.
     void onRemoveDocument(doc::Document* document) OVERRIDE;

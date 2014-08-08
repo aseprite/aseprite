@@ -34,6 +34,7 @@ namespace raster {
 }
 
 namespace app {
+  class Command;
   class Editor;
 
   class MovingPixelsState
@@ -43,6 +44,8 @@ namespace app {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
+
+    void translate(int dx, int dy);
 
     // EditorState
     virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
@@ -65,7 +68,7 @@ namespace app {
 
   private:
     // ContextObserver
-    void onBeforeCommandExecution();
+    void onBeforeCommandExecution(Command* command);
 
     void setTransparentColor(const app::Color& color);
     void dropPixels(Editor* editor);

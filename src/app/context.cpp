@@ -76,7 +76,7 @@ void Context::executeCommand(Command* command, Params* params)
   ASSERT(command != NULL);
 
   PRINTF("Executing '%s' command.\n", command->short_name());
-  BeforeCommandExecution();
+  BeforeCommandExecution(command);
 
   try {
     m_flags.update(this);
@@ -87,7 +87,7 @@ void Context::executeCommand(Command* command, Params* params)
     if (command->isEnabled(this)) {
       command->execute(this);
 
-      AfterCommandExecution();
+      AfterCommandExecution(command);
     }
   }
   catch (base::Exception& e) {

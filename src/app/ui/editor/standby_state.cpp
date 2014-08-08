@@ -521,6 +521,14 @@ gfx::Transformation StandbyState::getTransformation(Editor* editor)
   return editor->document()->getTransformation();
 }
 
+void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point& move)
+{
+  transformSelection(editor, NULL, NoHandle);
+
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    movingPixels->translate(move.x, move.y);
+}
+
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   try {

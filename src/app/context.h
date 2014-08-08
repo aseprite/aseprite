@@ -65,8 +65,8 @@ namespace app {
 
     virtual void executeCommand(Command* command, Params* params = NULL);
 
-    Signal0<void> BeforeCommandExecution;
-    Signal0<void> AfterCommandExecution;
+    Signal1<void, Command*> BeforeCommandExecution;
+    Signal1<void, Command*> AfterCommandExecution;
 
   protected:
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) OVERRIDE;

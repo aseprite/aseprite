@@ -25,6 +25,7 @@
 #include "app/app.h"
 #include "app/color_utils.h"
 #include "app/commands/cmd_flip.h"
+#include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/modules/gui.h"
@@ -115,6 +116,16 @@ MovingPixelsState::~MovingPixelsState()
   m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
 
   m_currentEditor->document()->generateMaskBoundaries();
+}
+
+void MovingPixelsState::translate(int dx, int dy)
+{
+  if (m_pixelsMovement->isDragging())
+    m_pixelsMovement->dropImageTemporarily();
+
+  m_pixelsMovement->catchImageAgain(0, 0, MoveHandle);
+  m_pixelsMovement->moveImage(dx, dy, PixelsMovement::NormalMovement);
+  m_pixelsMovement->dropImageTemporarily();
 }
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
@@ -387,8 +398,14 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 }
 
 // Before executing any command, we drop the pixels (go back to standby).
-void MovingPixelsState::onBeforeCommandExecution()
+void MovingPixelsState::onBeforeCommandExecution(Command* command)
 {
+  // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
+  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
+    if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
+      return;
+  }
+
   if (m_pixelsMovement)
     dropPixels(m_currentEditor);
 }
