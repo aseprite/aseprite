@@ -26,6 +26,7 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/document_location.h"
+#include "app/document_range.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -33,9 +34,10 @@
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/undoers/add_image.h"
@@ -57,15 +59,46 @@
 
 namespace app {
 
+namespace { 
+
+  class ClipboardRange {
+  public:
+    ClipboardRange() : m_doc(NULL) {
+    }
+
+    bool valid() {
+      return m_doc != NULL;
+    }
+
+    void invalidate() {
+      m_doc = NULL;
+    }
+
+    void setRange(Document* doc, const DocumentRange& range) {
+      m_doc = doc;
+      m_range = range;
+    }
+
+    Document* document() const { return m_doc; }
+    DocumentRange range() const { return m_range; }
+
+  private:
+    Document* m_doc;
+    DocumentRange m_range;
+  };
+
+}
+
 using namespace raster;
 
-static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard);
+static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard);
 static bool copy_from_document(const DocumentLocation& location);
 
 static bool first_time = true;
 
 static Palette* clipboard_palette = NULL;
 static Image* clipboard_image = NULL;
+static ClipboardRange clipboard_range;
 static int clipboard_x = 0;
 static int clipboard_y = 0;
 
@@ -75,7 +108,7 @@ static void on_exit_delete_clipboard()
   delete clipboard_image;
 }
 
-static void set_clipboard(Image* image, Palette* palette, bool set_system_clipboard)
+static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard)
 {
   if (first_time) {
     first_time = false;
@@ -93,6 +126,8 @@ static void set_clipboard(Image* image, Palette* palette, bool set_system_clipbo
   if (set_system_clipboard)
     set_win32_clipboard_bitmap(image, palette);
 #endif
+
+  clipboard_range.invalidate();
 }
 
 static bool copy_from_document(const DocumentLocation& location)
@@ -110,17 +145,39 @@ static bool copy_from_document(const DocumentLocation& location)
   clipboard_y = document->mask()->bounds().y;
 
   const Palette* pal = document->sprite()->getPalette(location.frame());
-  set_clipboard(image, pal ? new Palette(*pal): NULL, true);
+  set_clipboard_image(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
 
-bool clipboard::can_paste()
+clipboard::ClipboardFormat clipboard::get_current_format()
 {
 #ifdef ALLEGRO_WINDOWS
   if (win32_clipboard_contains_bitmap())
-    return true;
+    return ClipboardImage;
 #endif
-  return clipboard_image != NULL;
+
+  if (clipboard_image != NULL)
+    return ClipboardImage;
+  else if (clipboard_range.valid())
+    return ClipboardDocumentRange;
+  else
+    return ClipboardNone;
+}
+
+void clipboard::get_document_range_info(Document** document, DocumentRange* range)
+{
+  if (clipboard_range.valid()) {
+    *document = clipboard_range.document();
+    *range = clipboard_range.range();
+  }
+  else {
+    *document = NULL;
+  }
+}
+
+void clipboard::clear_content()
+{
+  set_clipboard_image(NULL, NULL, true);
 }
 
 void clipboard::cut(ContextWriter& writer)
@@ -156,13 +213,29 @@ void clipboard::copy(const ContextReader& reader)
   if (!copy_from_document(*reader.location())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
+    return;
   }
+}
+
+void clipboard::copy_range(const ContextReader& reader, const DocumentRange& range)
+{
+  ASSERT(reader.document() != NULL);
+
+  ContextWriter writer(reader);
+
+  set_clipboard_image(NULL, NULL, true);
+  clipboard_range.setRange(writer.document(), range);
+
+  // TODO Replace this with a signal, because here the timeline
+  // depends on the clipboard and the clipboard of the timeline.
+  App::instance()->getMainWindow()
+    ->getTimeline()->activateClipboardRange();
 }
 
 void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
 {
-  set_clipboard(Image::createCopy(image),
-                pal ? new Palette(*pal): NULL, true);
+  set_clipboard_image(Image::createCopy(image),
+    pal ? new Palette(*pal): NULL, true);
 
   clipboard_x = point.x;
   clipboard_y = point.y;
@@ -174,46 +247,87 @@ void clipboard::paste()
   if (editor == NULL)
     return;
 
+  Document* dst_doc = editor->document();
+  Sprite* dst_spr = dst_doc->sprite();
+
+  switch (get_current_format()) {
+
+    case clipboard::ClipboardImage: {
 #ifdef ALLEGRO_WINDOWS
-  // Get the image from the clipboard.
-  {
-    Image* win32_image = NULL;
-    Palette* win32_palette = NULL;
-    get_win32_clipboard_bitmap(win32_image, win32_palette);
-    if (win32_image != NULL)
-      set_clipboard(win32_image, win32_palette, false);
-  }
+      // Get the image from the clipboard.
+      {
+        Image* win32_image = NULL;
+        Palette* win32_palette = NULL;
+        get_win32_clipboard_bitmap(win32_image, win32_palette);
+        if (win32_image != NULL)
+          set_clipboard_image(win32_image, win32_palette, false);
+      }
 #endif
 
-  Sprite* dst_sprite = editor->document()->sprite();
-  if (clipboard_image == NULL)
-    return;
+      if (clipboard_image == NULL)
+        return;
 
-  Palette* dst_palette = dst_sprite->getPalette(editor->frame());
+      Palette* dst_palette = dst_spr->getPalette(editor->frame());
 
-  // Source image (clipboard or a converted copy to the destination 'imgtype')
-  Image* src_image;
-  if (clipboard_image->pixelFormat() == dst_sprite->pixelFormat() &&
-      // Indexed images can be copied directly only if both images
-      // have the same palette.
-      (clipboard_image->pixelFormat() != IMAGE_INDEXED ||
-       clipboard_palette->countDiff(dst_palette, NULL, NULL) == 0)) {
-    src_image = clipboard_image;
+      // Source image (clipboard or a converted copy to the destination 'imgtype')
+      Image* src_image;
+      if (clipboard_image->pixelFormat() == dst_spr->pixelFormat() &&
+        // Indexed images can be copied directly only if both images
+        // have the same palette.
+        (clipboard_image->pixelFormat() != IMAGE_INDEXED ||
+          clipboard_palette->countDiff(dst_palette, NULL, NULL) == 0)) {
+        src_image = clipboard_image;
+      }
+      else {
+        RgbMap* dst_rgbmap = dst_spr->getRgbMap(editor->frame());
+
+        src_image = quantization::convert_pixel_format(
+          clipboard_image, NULL, dst_spr->pixelFormat(),
+          DITHERING_NONE, dst_rgbmap, clipboard_palette,
+          false);
+      }
+
+      // Change to MovingPixelsState
+      editor->pasteImage(src_image, clipboard_x, clipboard_y);
+
+      if (src_image != clipboard_image)
+        delete src_image;
+      break;
+    }
+
+    case clipboard::ClipboardDocumentRange: {
+      DocumentRange range = clipboard_range.range();
+      Document* src_doc = clipboard_range.document();
+
+      switch (range.type()) {
+
+        case DocumentRange::kLayers: {
+          if (src_doc->colorMode() != dst_doc->colorMode())
+            throw std::runtime_error("You cannot copy layers of document with different color modes");
+
+          UndoTransaction undoTransaction(UIContext::instance(), "Paste Layers");
+          std::vector<Layer*> src_layers;
+          src_doc->sprite()->getLayersList(src_layers);
+
+          for (LayerIndex i = range.layerBegin(); i <= range.layerEnd(); ++i) {
+            LayerImage* new_layer = new LayerImage(dst_spr);
+            dst_doc->getApi().addLayer(
+              dst_spr->folder(), new_layer,
+              dst_spr->folder()->getLastLayer());
+
+            src_doc->copyLayerContent(
+              src_layers[i], dst_doc, new_layer);
+          }
+
+          undoTransaction.commit();
+          editor->invalidate();
+          break;
+        }
+
+      }
+      break;
+    }
   }
-  else {
-    RgbMap* dst_rgbmap = dst_sprite->getRgbMap(editor->frame());
-
-    src_image = quantization::convert_pixel_format(
-      clipboard_image, NULL, dst_sprite->pixelFormat(),
-      DITHERING_NONE, dst_rgbmap, clipboard_palette,
-      false);
-  }
-
-  // Change to MovingPixelsState
-  editor->pasteImage(src_image, clipboard_x, clipboard_y);
-
-  if (src_image != clipboard_image)
-      delete src_image;
 }
 
 bool clipboard::get_image_size(gfx::Size& size)

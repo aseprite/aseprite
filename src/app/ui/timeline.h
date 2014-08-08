@@ -30,6 +30,7 @@
 #include "raster/frame_number.h"
 #include "raster/layer_index.h"
 #include "raster/sprite.h"
+#include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <vector>
@@ -91,6 +92,8 @@ namespace app {
     bool isMovingCel() const;
 
     Range range() const { return m_range; }
+
+    void activateClipboardRange();
 
     // Drag-and-drop operations. These actions are used by commands
     // called from popup menus.
@@ -157,6 +160,7 @@ namespace app {
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, LayerIndex layer, FrameNumber frame);
+    void drawClipboardRange(ui::Graphics* g);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
     gfx::Rect getOnionskinFramesBounds() const;
@@ -176,6 +180,7 @@ namespace app {
     bool isFrameActive(FrameNumber frame) const;
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
+    void clearClipboardRange();
 
     bool isCopyKeyPressed(ui::Message* msg);
 
@@ -244,6 +249,11 @@ namespace app {
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
     ScopedConnection m_ctxConn;
+
+    // Marching ants stuff to show the range in the clipboard.
+    // TODO merge this with the marching ants of the sprite editor (ui::Editor)
+    ui::Timer m_clipboard_timer;
+    int m_offset_count;
   };
 
 } // namespace app

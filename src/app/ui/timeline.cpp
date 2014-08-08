@@ -45,6 +45,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
+#include "app/util/clipboard.h"
 #include "base/compiler_specific.h"
 #include "base/memory.h"
 #include "doc/document_event.h"
@@ -166,6 +167,8 @@ Timeline::Timeline()
   , m_separator_x(100 * jguiscale())
   , m_separator_w(1)
   , m_confPopup(NULL)
+  , m_clipboard_timer(100, this)
+  , m_offset_count(0)
 {
   m_ctxConn = m_context->AfterCommandExecution.connect(&Timeline::onAfterCommandExecution, this);
   m_context->documents().addObserver(this);
@@ -175,6 +178,8 @@ Timeline::Timeline()
 
 Timeline::~Timeline()
 {
+  m_clipboard_timer.stop();
+
   detachDocument();
   m_context->documents().removeObserver(this);
   delete m_confPopup;
@@ -276,11 +281,37 @@ void Timeline::setFrame(FrameNumber frame)
     m_editor->setFrame(m_frame);
 }
 
+void Timeline::activateClipboardRange()
+{
+  m_clipboard_timer.start();
+  invalidate();
+}
+
 bool Timeline::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
     case kTimerMessage:
+      if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
+        Document* clipboard_document;
+        DocumentRange clipboard_range;
+        clipboard::get_document_range_info(
+          &clipboard_document,
+          &clipboard_range);
+
+        if (isVisible() && m_document && clipboard_document == m_document) {
+          // Set offset to make selection-movement effect
+          if (m_offset_count < 7)
+            m_offset_count++;
+          else
+            m_offset_count = 0;
+        }
+        else if (m_clipboard_timer.isRunning()) {
+          m_clipboard_timer.stop();
+        }
+
+        invalidate();
+      }
       break;
 
     case kMouseDownMessage: {
@@ -908,6 +939,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     drawPaddings(g);
     drawLoopRange(g);
+    drawClipboardRange(g);
     drawRangeOutline(g);
 
 #if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
@@ -985,6 +1017,7 @@ void Timeline::onAddFrame(doc::DocumentEvent& ev)
   setFrame(ev.frame());
 
   showCurrentCel();
+  clearClipboardRange();
   invalidate();
 }
 
@@ -1003,6 +1036,7 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   }
 
   showCurrentCel();
+  clearClipboardRange();
   invalidate();
 }
 
@@ -1014,6 +1048,8 @@ void Timeline::onFrameChanged(Editor* editor)
     m_range.disableRange();
 
   showCurrentCel();
+  clearClipboardRange();
+  invalidate();
 }
 
 void Timeline::onLayerChanged(Editor* editor)
@@ -1024,6 +1060,8 @@ void Timeline::onLayerChanged(Editor* editor)
     m_range.disableRange();
 
   showCurrentCel();
+  clearClipboardRange();
+  invalidate();
 }
 
 void Timeline::setCursor(int x, int y)
@@ -1099,6 +1137,25 @@ void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
   if (is_clicked) state += Style::clicked();
 
   style->paint(g, bounds, text, state);
+}
+
+void Timeline::drawClipboardRange(ui::Graphics* g)
+{
+  Document* clipboard_document;
+  DocumentRange clipboard_range;
+  clipboard::get_document_range_info(
+    &clipboard_document,
+    &clipboard_range);
+
+  if (!m_document || clipboard_document != m_document)
+    return;
+
+  if (!m_clipboard_timer.isRunning())
+    m_clipboard_timer.start();
+
+  dotted_mode(m_offset_count);
+  g->drawRect(0, getRangeBounds(clipboard_range));
+  dotted_mode(-1);
 }
 
 void Timeline::drawHeader(ui::Graphics* g)
@@ -1961,6 +2018,21 @@ void Timeline::updateDropRange(const gfx::Point& pt)
       oldVHit != m_dropTarget.vhit) {
     invalidate();
   }
+}
+
+void Timeline::clearClipboardRange()
+{
+  Document* clipboard_document;
+  DocumentRange clipboard_range;
+  clipboard::get_document_range_info(
+    &clipboard_document,
+    &clipboard_range);
+
+  if (!m_document || clipboard_document != m_document)
+    return;
+
+  clipboard::clear_content();
+  m_clipboard_timer.stop();
 }
 
 bool Timeline::isCopyKeyPressed(ui::Message* msg)

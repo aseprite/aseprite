@@ -315,6 +315,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
 
     for (; it != end; ++it) {
       const Cel* sourceCel = *it;
+      if (sourceCel->frame() > destLayer->sprite()->lastFrame())
+        break;
+
       base::UniquePtr<Cel> newCel(new Cel(*sourceCel));
 
       const Image* sourceImage = sourceCel->image();

@@ -62,6 +62,11 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
     return;
   }
 
+  if (!image) {
+    CloseClipboard();
+    return;
+  }
+
   // information to create the memory necessary for the bitmap
   int padding = 0;
   int scanline = 0;
