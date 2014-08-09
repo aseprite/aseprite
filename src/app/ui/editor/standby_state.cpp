@@ -660,14 +660,15 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   Editor* editor = render->getEditor();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
-  if (editor->document()->isMaskVisible() &&
+  if (editor->editorFlags() & Editor::kShowMaskFlag &&
+      editor->document()->isMaskVisible() &&
       !editor->document()->mask()->isFrozen()) {
     // And draw only when the user has a selection tool as active tool.
     tools::Tool* currentTool = editor->getCurrentEditorTool();
 
     if (currentTool->getInk(0)->isSelection())
       getTransformHandles(editor)->drawHandles(editor,
-                                               m_standbyState->getTransformation(editor));
+        m_standbyState->getTransformation(editor));
   }
 }
 

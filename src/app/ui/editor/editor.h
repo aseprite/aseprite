@@ -101,6 +101,8 @@ namespace app {
     EditorDecorator* decorator() { return m_decorator; }
     void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
+    EditorFlags editorFlags() const { return m_flags; }
+
     Document* document() { return m_document; }
     Sprite* sprite() { return m_sprite; }
     Layer* layer() { return m_layer; }
