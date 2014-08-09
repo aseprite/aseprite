@@ -20,7 +20,7 @@
 #define RASTER_LAYER_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "raster/blend.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"

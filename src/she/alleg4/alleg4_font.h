@@ -11,7 +11,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "she/font.h"
 
 namespace she {

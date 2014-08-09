@@ -20,7 +20,7 @@
 #define APP_UNDOERS_OPEN_GROUP_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "raster/sprite_position.h"
 #include "undo/object_id.h"
 #include "undo/undoer.h"

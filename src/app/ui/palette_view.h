@@ -20,7 +20,7 @@
 #define APP_UI_PALETTE_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "base/signal.h"
 #include "ui/widget.h"

@@ -11,7 +11,7 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/string.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

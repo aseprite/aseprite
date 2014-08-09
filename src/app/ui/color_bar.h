@@ -25,7 +25,7 @@
 #include "app/ui/drop_down_button.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"

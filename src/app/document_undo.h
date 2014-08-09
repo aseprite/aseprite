@@ -20,7 +20,7 @@
 #define APP_DOCUMENT_UNDO_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "raster/sprite_position.h"

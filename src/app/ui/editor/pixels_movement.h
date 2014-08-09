@@ -24,7 +24,7 @@
 #include "app/settings/settings_observers.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/undo_transaction.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/shared_ptr.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_type.h"

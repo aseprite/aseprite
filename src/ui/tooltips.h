@@ -8,7 +8,7 @@
 #define UI_TOOLTIPS_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "ui/base.h"
 #include "ui/popup_window.h"
 #include "ui/window.h"

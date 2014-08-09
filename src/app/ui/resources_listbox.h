@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/res/resources_loader.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/unique_ptr.h"
 #include "ui/listbox.h"
 #include "ui/timer.h"

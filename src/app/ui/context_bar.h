@@ -22,7 +22,7 @@
 
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/observable.h"
 #include "ui/box.h"
 

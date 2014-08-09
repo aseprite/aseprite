@@ -46,7 +46,7 @@
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/util/clipboard.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/memory.h"
 #include "doc/document_event.h"
 #include "gfx/point.h"

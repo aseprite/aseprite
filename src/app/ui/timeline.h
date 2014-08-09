@@ -23,7 +23,7 @@
 #include "app/document_range.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"

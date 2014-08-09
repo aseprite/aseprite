@@ -25,7 +25,7 @@
 #include "app/context.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 
 namespace app {
 

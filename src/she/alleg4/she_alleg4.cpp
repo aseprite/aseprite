@@ -10,7 +10,7 @@
 
 #include "she/she.h"
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/concurrent_queue.h"
 #include "base/string.h"
 #include "she/alleg4/alleg4_font.h"

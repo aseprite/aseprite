@@ -8,7 +8,7 @@
 #define UI_WINDOW_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "gfx/point.h"
 #include "ui/close_event.h"

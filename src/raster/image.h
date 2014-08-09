@@ -20,7 +20,7 @@
 #define RASTER_IMAGE_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "raster/blend.h"

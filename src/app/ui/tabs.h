@@ -20,7 +20,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"

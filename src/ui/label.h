@@ -8,7 +8,7 @@
 #define UI_LABEL_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/color.h"
 #include "ui/widget.h"
 

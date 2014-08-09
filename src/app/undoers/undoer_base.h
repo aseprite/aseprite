@@ -20,7 +20,7 @@
 #define APP_UNDOERS_UNDOER_BASE_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "undo/undoer.h"
 
 namespace app {

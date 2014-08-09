@@ -8,7 +8,7 @@
 #define DOC_CONTEXT_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "doc/context_observer.h"

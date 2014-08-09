@@ -8,7 +8,7 @@
 #define BASE_SIGNAL_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "base/disable_copying.h"
 #include "base/remove_from_container.h"

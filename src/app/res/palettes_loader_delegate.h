@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/res/resources_loader_delegate.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 
 namespace app {
 

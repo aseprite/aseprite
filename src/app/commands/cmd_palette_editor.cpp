@@ -47,7 +47,7 @@
 #include "app/undo_transaction.h"
 #include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "gfx/hsv.h"

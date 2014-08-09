@@ -8,7 +8,7 @@
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "ui/base.h"

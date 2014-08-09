@@ -26,7 +26,7 @@
 
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/observable.h"
 #include "base/unique_ptr.h"
 

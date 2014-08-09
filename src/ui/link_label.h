@@ -8,7 +8,7 @@
 #define UI_LINK_LABEL_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "ui/custom_label.h"
 

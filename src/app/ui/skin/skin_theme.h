@@ -23,7 +23,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/style_sheet.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "ui/manager.h"

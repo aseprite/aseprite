@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "raster/algorithm/flip_type.h"
 
 namespace app {

@@ -22,7 +22,7 @@
 
 #ifdef ENABLE_WEBSERVER
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "webserver/webserver.h"
 
 namespace app {
