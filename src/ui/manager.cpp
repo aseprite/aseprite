@@ -286,7 +286,7 @@ bool Manager::generateMessages()
 void Manager::generateMouseMessages()
 {
   // Update mouse status
-  bool mousemove = jmouse_poll();
+  bool mousemove = _internal_poll_mouse();
 
   gfx::Point mousePos(gfx::Point(jmouse_x(0), jmouse_y(0)));
 

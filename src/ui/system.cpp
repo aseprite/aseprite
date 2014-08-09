@@ -120,7 +120,7 @@ int _ji_system_init()
     return -1;
 
   if (screen)
-    jmouse_poll();
+    _internal_poll_mouse();
 
   moved = true;
   mouse_cursor_type = kNoCursor;
@@ -228,7 +228,7 @@ static gfx::Point allegro_mouse_point()
  *
  * @return Returns true if the mouse moved.
  */
-bool jmouse_poll()
+bool _internal_poll_mouse()
 {
   m_b[1] = m_b[0];
   m_x[1] = m_x[0];
