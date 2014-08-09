@@ -198,10 +198,8 @@ void PlayAnimationCommand::onExecute(Context* context)
   // Hide mini editor
   MiniEditorWindow* miniEditor = App::instance()->getMainWindow()->getMiniEditor();
   bool enabled = (miniEditor ? miniEditor->isMiniEditorEnabled(): false);
-  if (enabled) {
-    miniEditor->setVisible(false);
+  if (enabled)
     miniEditor->setMiniEditorEnabled(false);
-  }
 
   PlayAniWindow window(context, current_editor);
   window.openWindowInForeground();
