@@ -85,7 +85,8 @@ public:
 
     ui::set_mouse_position(m_first_mouse_pos);
 
-    setFocusStop(true);         // To receive keyboard messages
+    setFocusStop(true);
+    captureMouse();
   }
 
 protected:
@@ -93,6 +94,7 @@ protected:
     switch (msg->type()) {
 
       case kCloseMessage:
+        releaseMouse();
         ui::set_mouse_position(m_first_mouse_pos);
         break;
 
