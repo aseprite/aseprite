@@ -25,7 +25,6 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/blend.h"
-#include "raster/color_histogram.h"
 #include "raster/image.h"
 #include "raster/image_bits.h"
 #include "raster/images_collector.h"
@@ -411,63 +410,70 @@ static Image* ordered_dithering(
 // Creation of optimized palette for RGB images
 // by David Capello
 
-void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+void PaletteOptimizer::feedWithImage(Image* image)
 {
-  quantization::ColorHistogram<5, 6, 5> histogram;
   uint32_t color;
 
+  ASSERT(image);
+  switch (image->pixelFormat()) {
+
+    case IMAGE_RGB:
+      {
+        const LockImageBits<RgbTraits> bits(image);
+        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+        for (; it != end; ++it) {
+          color = *it;
+
+          if (rgba_geta(color) > 0) {
+            color |= rgba(0, 0, 0, 255);
+            m_histogram.addSamples(color, 1);
+          }
+        }
+      }
+      break;
+
+    case IMAGE_GRAYSCALE:
+      {
+        const LockImageBits<RgbTraits> bits(image);
+        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+        for (; it != end; ++it) {
+          color = *it;
+
+          if (graya_geta(color) > 0) {
+            color = graya_getv(color);
+            m_histogram.addSamples(rgba(color, color, color, 255), 1);
+          }
+        }
+      }
+      break;
+
+    case IMAGE_INDEXED:
+      ASSERT(false);
+      break;
+
+  }
+}
+
+void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
+{
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
   // will not be used later in the color conversion (from RGB to
   // Indexed).
   int first_usable_entry = (has_background_layer ? 0: 1);
-
-  for (int i=0; i<(int)images.size(); ++i) {
-    const Image* image = images[i];
-
-    switch (image->pixelFormat()) {
-
-      case IMAGE_RGB:
-        {
-          const LockImageBits<RgbTraits> bits(image);
-          LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
-
-          for (; it != end; ++it) {
-            color = *it;
-
-            if (rgba_geta(color) > 0) {
-              color |= rgba(0, 0, 0, 255);
-              histogram.addSamples(color, 1);
-            }
-          }
-        }
-        break;
-
-      case IMAGE_GRAYSCALE:
-        {
-          const LockImageBits<RgbTraits> bits(image);
-          LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
-
-          for (; it != end; ++it) {
-            color = *it;
-
-            if (graya_geta(color) > 0) {
-              color = graya_getv(color);
-              histogram.addSamples(rgba(color, color, color, 255), 1);
-            }
-          }
-        }
-        break;
-
-      case IMAGE_INDEXED:
-        ASSERT(false);
-        break;
-
-    }
-  }
-
-  int used_colors = histogram.createOptimizedPalette(palette, first_usable_entry, 255);
+  int used_colors = m_histogram.createOptimizedPalette(palette, first_usable_entry, 255);
   //palette->resize(first_usable_entry+used_colors);   // TODO
+}
+
+void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+{
+  PaletteOptimizer optimizer;
+  for (int i=0; i<(int)images.size(); ++i)
+    optimizer.feedWithImage(images[i]);
+
+  optimizer.calculate(palette, has_background_layer);
 }
 
 } // namespace quantization

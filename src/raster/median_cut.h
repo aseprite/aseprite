@@ -108,7 +108,7 @@ namespace quantization {
           }
 
       // No colors in the box? This should not be possible.
-      assert(count > 0 && "Box without histogram points, you must fill the histogram before using this function.");
+      ASSERT(count > 0 && "Box without histogram points, you must fill the histogram before using this function.");
       if (count == 0)
         return rgba(0, 0, 0, 255);
 

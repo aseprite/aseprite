@@ -20,6 +20,7 @@
 #define RASTER_QUANTIZATION_H_INCLUDED
 #pragma once
 
+#include "raster/color_histogram.h"
 #include "raster/dithering_method.h"
 #include "raster/frame_number.h"
 #include "raster/pixel_format.h"
@@ -35,6 +36,15 @@ namespace raster {
   class Stock;
 
   namespace quantization {
+
+    class PaletteOptimizer {
+    public:
+      void feedWithImage(Image* image);
+      void calculate(Palette* palette, bool has_background_layer);
+
+    private:
+      quantization::ColorHistogram<5, 6, 5> m_histogram;
+    };
 
     void create_palette_from_images(
       const std::vector<Image*>& images,

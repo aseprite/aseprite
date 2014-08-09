@@ -610,6 +610,23 @@ bool GifFormat::onSave(FileOp* fop)
 
   ColorMapObject* image_color_map = NULL;
 
+  // Check if the user wants one optimized palette for all frames.
+  if (sprite_format != IMAGE_INDEXED &&
+      gif_options->quantize() == GifOptions::QuantizeAll) {
+    // Feed the optimizer with all rendered frames.
+    raster::quantization::PaletteOptimizer optimizer;
+    for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
+      clear_image(buffer_image, background_color);
+      layer_render(sprite->folder(), buffer_image, 0, 0, frame_num);
+      optimizer.feedWithImage(buffer_image);
+    }
+
+    current_palette.makeBlack();
+    optimizer.calculate(&current_palette, has_background);
+
+    rgbmap.regenerate(&current_palette, transparent_index);
+  }
+
   for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
     if (sprite_format != IMAGE_INDEXED) {
@@ -619,20 +636,22 @@ bool GifFormat::onSave(FileOp* fop)
       switch (gif_options->quantize()) {
         case GifOptions::NoQuantize:
           sprite->getPalette(frame_num)->copyColorsTo(&current_palette);
+          rgbmap.regenerate(&current_palette, transparent_index);
           break;
         case GifOptions::QuantizeEach:
-        case GifOptions::QuantizeAll:
           {
             current_palette.makeBlack();
 
             std::vector<Image*> imgarray(1);
             imgarray[0] = buffer_image;
             raster::quantization::create_palette_from_images(imgarray, &current_palette, has_background);
+            rgbmap.regenerate(&current_palette, transparent_index);
           }
           break;
+        case GifOptions::QuantizeAll:
+          // Do nothing, we've already calculate the palette for all frames.
+          break;
       }
-
-      rgbmap.regenerate(&current_palette, transparent_index);
 
       quantization::convert_pixel_format(
         buffer_image,

@@ -8,9 +8,9 @@
       <check text="Enable Dithering" id="dither" />
 
       <separator text="Optimize Color Palette:" left="true" horizontal="true" />
-      <radio id="quantize_each" text="&amp;One palette for each frame" group="1" />
-      <radio id="quantize_all" text="&amp;One palette for all frames" group="1" />
-      <radio id="no_quantize" text="&amp;Don't modify palettes" group="1" />
+      <radio id="quantize_all" text="&amp;One color palette for all frames" group="1" />
+      <radio id="quantize_each" text="&amp;One color palette for each frame" group="1" />
+      <radio id="no_quantize" text="&amp;Don't modify color palette" group="1" />
     </vbox>
 
     <separator text="Optimize for Web:" left="true" horizontal="true" />
