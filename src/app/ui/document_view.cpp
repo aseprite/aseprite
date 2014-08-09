@@ -136,7 +136,7 @@ DocumentView::DocumentView(Document* document, Type type)
                                            EditorView::AlwaysSelected))
   , m_editor(type == Normal ?
     new AppEditor(document):
-    new Editor(document, Editor::kNoneFlag)) // Don't show grid/mask in mini preview
+    new Editor(document, Editor::kShowOutside)) // Don't show grid/mask in mini preview
 {
   addChild(m_view);
 

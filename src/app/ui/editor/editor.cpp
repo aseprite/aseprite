@@ -392,7 +392,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
 
     if (rendered) {
       // Pre-render decorator.
-      if (m_decorator) {
+      if ((m_flags & kShowDecorators) && m_decorator) {
         EditorPreRenderImpl preRender(this, rendered,
                                       Point(-source_x, -source_y), m_zoom);
         m_decorator->preRenderDecorator(&preRender);
@@ -457,39 +457,37 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   // Fill the outside (parts of the editor that aren't covered by the
   // sprite).
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+  if (m_flags & kShowOutside) {
+    g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+  }
 
   // Draw the pixel grid
-  if (docSettings->getPixelGridVisible()) {
-    if (m_zoom > 1)
-      drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
+  if ((m_zoom > 1) && docSettings->getPixelGridVisible()) {
+    drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
   }
 
   // Draw the grid
   if (docSettings->getGridVisible())
     drawGrid(g, enclosingRect, docSettings->getGridBounds(), docSettings->getGridColor());
 
-  // Draw the borders that enclose the sprite.
-  enclosingRect.enlarge(1);
-  g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
-  g->drawHLine(
-    theme->getColor(ThemeColor::EditorSpriteBottomBorder),
-    enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+  if (m_flags & kShowOutside) {
+    // Draw the borders that enclose the sprite.
+    enclosingRect.enlarge(1);
+    g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
+    g->drawHLine(
+      theme->getColor(ThemeColor::EditorSpriteBottomBorder),
+      enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+  }
 
   // Draw the mask
   if (m_document->getBoundariesSegments())
     drawMask(g);
 
   // Post-render decorator.
-  if (m_decorator) {
+  if ((m_flags & kShowDecorators) && m_decorator) {
     EditorPostRenderImpl postRender(this);
     m_decorator->postRenderDecorator(&postRender);
   }
-}
-
-void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
-{
-  drawSpriteUnclippedRect(getGraphics(getClientBounds()), rc);
 }
 
 void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
@@ -507,7 +505,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
     if (clip) {
       for (Region::const_iterator
              it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
-        drawSpriteUnclippedRect(*it2);
+        drawSpriteUnclippedRect(getGraphics(getClientBounds()), *it2);
       }
     }
   }
@@ -522,7 +520,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  */
 void Editor::drawMask(Graphics* g)
 {
-  if ((m_flags & kShowMaskFlag) == 0)
+  if ((m_flags & kShowMask) == 0)
     return;
 
   int x1, y1, x2, y2;
@@ -576,7 +574,7 @@ void Editor::drawMask(Graphics* g)
 
 void Editor::drawMaskSafe()
 {
-  if ((m_flags & kShowMaskFlag) == 0)
+  if ((m_flags & kShowMask) == 0)
     return;
 
   if (isVisible() &&
@@ -612,7 +610,7 @@ void Editor::drawMaskSafe()
 
 void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gridBounds, const app::Color& color)
 {
-  if ((m_flags & kShowGridFlag) == 0)
+  if ((m_flags & kShowGrid) == 0)
     return;
 
   // Copy the grid bounds

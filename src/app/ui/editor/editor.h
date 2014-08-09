@@ -69,10 +69,13 @@ namespace app {
 
     enum EditorFlags {
       kNoneFlag = 0,
-      kShowGridFlag = 1,
-      kShowMaskFlag = 2,
+      kShowGrid = 1,
+      kShowMask = 2,
       kShowOnionskin = 4,
-      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag | kShowOnionskin,
+      kShowOutside = 8,
+      kShowDecorators = 16,
+      kDefaultEditorFlags = (kShowGrid | kShowMask | 
+        kShowOnionskin | kShowOutside | kShowDecorators),
     };
 
     enum ZoomBehavior {
@@ -102,6 +105,7 @@ namespace app {
     void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
     EditorFlags editorFlags() const { return m_flags; }
+    void setEditorFlags(EditorFlags flags) { m_flags = flags; }
 
     Document* document() { return m_document; }
     Sprite* sprite() { return m_sprite; }
@@ -131,6 +135,7 @@ namespace app {
 
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
+    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
 
     void flashCurrentLayer();
 
@@ -228,8 +233,6 @@ namespace app {
     // You should setup the clip of the screen before calling this
     // routine.
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
-    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
-    void drawSpriteUnclippedRect(const gfx::Rect& rc);
 
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;
