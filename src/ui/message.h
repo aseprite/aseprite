@@ -82,9 +82,6 @@ namespace ui {
     bool m_propagate_to_parent : 1;
   };
 
-  // Deprecated
-  KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value);
-
   class PaintMessage : public Message
   {
   public:

@@ -1046,12 +1046,10 @@ void Manager::_openWindow(Window* window)
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
-  Message* msg;
-  gfx::Region reg1;
-
   if (!hasChild(window))
     return;
 
+  gfx::Region reg1;
   if (redraw_background)
     window->getRegion(reg1);
 
@@ -1085,7 +1083,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   window->setVisible(false);
 
   // Close message.
-  msg = new Message(kCloseMessage);
+  Message* msg = new Message(kCloseMessage);
   msg->addRecipient(window);
   enqueueMessage(msg);
 

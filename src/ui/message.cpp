@@ -77,11 +77,4 @@ KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int unicodeChar, 
 {
 }
 
-KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value)
-{
-  return new KeyMessage(type,
-                        static_cast<KeyScancode>((readkey_value >> 8) & 0xff),
-                        (readkey_value & 0xff), 0);
-}
-
 } // namespace ui
