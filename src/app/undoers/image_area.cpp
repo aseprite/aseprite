@@ -27,6 +27,8 @@
 #include "undo/undo_exception.h"
 #include "undo/undoers_collector.h"
 
+#include <algorithm>
+
 namespace app {
 namespace undoers {
 
@@ -42,8 +44,12 @@ ImageArea::ImageArea(ObjectsContainer* objects, Image* image, int x, int y, int 
   ASSERT(w >= 1 && h >= 1);
   ASSERT(x >= 0 && y >= 0 && x+w <= image->width() && y+h <= image->height());
 
-  for (int v=0; v<h; ++v)
-    memcpy(&m_data[m_lineSize*v], image->getPixelAddress(x, y+v), m_lineSize);
+  std::vector<uint8_t>::iterator it = m_data.begin();
+  for (int v=0; v<h; ++v) {
+    uint8_t* addr = image->getPixelAddress(x, y+v);
+    std::copy(addr, addr+m_lineSize, it);
+    it += m_lineSize;
+  }
 }
 
 void ImageArea::dispose()
@@ -62,8 +68,12 @@ void ImageArea::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   redoers->pushUndoer(new ImageArea(objects, image, m_x, m_y, m_w, m_h));
 
   // Restore the old image portion
-  for (int v=0; v<m_h; ++v)
-    memcpy(image->getPixelAddress(m_x, m_y+v), &m_data[m_lineSize*v], m_lineSize);
+  std::vector<uint8_t>::iterator it = m_data.begin();
+  for (int v=0; v<m_h; ++v) {
+    uint8_t* addr = image->getPixelAddress(m_x, m_y+v);
+    std::copy(it, it+m_lineSize, addr);
+    it += m_lineSize;
+  }
 }
 
 } // namespace undoers

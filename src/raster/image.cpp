@@ -57,7 +57,7 @@ int Image::getRowStrideSize() const
 
 int Image::getRowStrideSize(int pixels_per_row) const
 {
-  return calculate_rowstride_bytes(pixelFormat(), m_width);
+  return calculate_rowstride_bytes(pixelFormat(), pixels_per_row);
 }
 
 // static
