@@ -273,16 +273,22 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseDownMessage:
+    case kMouseUpMessage:
       if (m_hot != NULL) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
         if (m_selected != m_hot) {
           m_selected = m_hot;
           invalidate();
         }
 
-        if (m_selected && m_delegate)
-          m_delegate->clickTab(this,
-                               m_selected->view,
-                               static_cast<MouseMessage*>(msg)->buttons());
+        // Left button is processed in mouse down message, right
+        // button is processed in mouse up.
+        if (m_selected && m_delegate &&
+            ((mouseMsg->left() && msg->type() == kMouseDownMessage) ||
+             (!mouseMsg->left() && msg->type() == kMouseUpMessage))) {
+          m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
+        }
       }
       return true;
 

@@ -270,10 +270,6 @@ bool MenuItem::hasSubmenu() const
 
 void Menu::showPopup(int x, int y)
 {
-  do {
-    jmouse_poll();
-  } while (jmouse_b(0) != kButtonNone);
-
   // New window and new menu-box
   Window* window = new Window(Window::WithoutTitleBar);
   MenuBox* menubox = new MenuBox();
