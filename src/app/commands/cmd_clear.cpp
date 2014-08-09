@@ -78,6 +78,10 @@ void ClearCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document = writer.document();
   bool visibleMask = document->isMaskVisible();
+
+  if (!writer.cel())
+    return;
+
   {
     UndoTransaction undoTransaction(writer.context(), "Clear");
     DocumentApi api = document->getApi();

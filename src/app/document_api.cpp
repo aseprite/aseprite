@@ -1097,8 +1097,10 @@ void DocumentApi::replaceStockImage(Sprite* sprite, int imageIndex, Image* newIm
 // Clears the mask region in the current sprite with the specified background color.
 void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
 {
+  ASSERT(cel);
   ASSERT(layer == cel->layer());
-  Image* image = cel->image();
+
+  Image* image = (cel ? cel->image(): NULL);
   if (!image)
     return;
 
