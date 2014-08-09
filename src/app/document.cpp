@@ -403,7 +403,12 @@ Document* Document::duplicate(DuplicateType type) const
 
     case DuplicateExactCopy:
       // Copy the layer folder
-      copyLayerContent(sprite()->folder(), documentCopy, spriteCopy->folder());
+      copyLayerContent(sourceSprite->folder(), documentCopy, spriteCopy->folder());
+
+      if (sourceSprite->backgroundLayer() != NULL) {
+        ASSERT(spriteCopy->folder()->getFirstLayer());
+        static_cast<LayerImage*>(spriteCopy->folder()->getFirstLayer())->configureAsBackground();
+      }
       break;
 
     case DuplicateWithFlattenLayers:
