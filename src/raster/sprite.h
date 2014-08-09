@@ -71,6 +71,7 @@ namespace raster {
     // than 255. Only RGBA and Grayscale images without background needs
     // alpha channel in the render.
     bool needAlpha() const;
+    bool supportAlpha() const;
 
     color_t transparentColor() const { return m_transparentColor; }
     void setTransparentColor(color_t color);

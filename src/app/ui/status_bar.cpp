@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -432,8 +432,10 @@ bool StatusBar::onProcessMessage(Message* msg)
       updateSubwidgetsVisibility();
 
       const Document* document = UIContext::instance()->activeDocument();
-      if (document != NULL)
+      if (document != NULL) {
+        updateFromLayer();
         updateCurrentFrame();
+      }
       break;
     }
 
@@ -610,7 +612,9 @@ void StatusBar::updateFromLayer()
     const Cel* cel;
 
     // Opacity layer
-    if (reader.layer() &&
+    if (reader.sprite() &&
+        reader.sprite()->supportAlpha() &&
+        reader.layer() &&
         reader.layer()->isImage() &&
         !reader.layer()->isBackground() &&
         (cel = reader.cel())) {

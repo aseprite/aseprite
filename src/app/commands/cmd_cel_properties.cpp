@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,9 +112,16 @@ void CelPropertiesCommand::onExecute(Context* context)
     if (layer->isBackground()) {
       slider_opacity->setEnabled(false);
       tooltipManager->addTooltipFor(slider_opacity,
-                                    "The `Background' layer is opaque,\n"
-                                    "you can't change its opacity.",
-                                    JI_LEFT);
+        "The `Background' layer is opaque,\n"
+        "its opacity can't be changed.",
+        JI_LEFT);
+    }
+    else if (sprite->pixelFormat() == IMAGE_INDEXED) {
+      slider_opacity->setEnabled(false);
+      tooltipManager->addTooltipFor(slider_opacity,
+        "Cel opacity of Indexed images\n"
+        "cannot be changed.",
+        JI_LEFT);
     }
   }
   else {

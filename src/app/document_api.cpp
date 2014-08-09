@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,6 +193,17 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
        is_image_from_background);
 
     replaceStockImage(sprite, c, new_image);
+  }
+
+  // Set all cels opacity to 100% if we are converting to indexed.
+  if (newFormat == IMAGE_INDEXED) {
+    CelList cels;
+    sprite->getCels(cels);
+    for (CelIterator it = cels.begin(), end = cels.end(); it != end; ++it) {
+      Cel* cel = *it;
+      if (cel->opacity() < 255)
+        setCelOpacity(sprite, *it, 255);
+    }
   }
 
   // Change sprite's pixel format.
@@ -576,6 +587,7 @@ void DocumentApi::setCelPosition(Sprite* sprite, Cel* cel, int x, int y)
 void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
 {
   ASSERT(cel);
+  ASSERT(sprite->supportAlpha());
 
   if (undoEnabled())
     m_undoers->pushUndoer(new undoers::SetCelOpacity(getObjects(), cel));

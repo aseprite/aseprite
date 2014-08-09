@@ -174,6 +174,16 @@ bool Sprite::needAlpha() const
   return false;
 }
 
+bool Sprite::supportAlpha() const
+{
+  switch (m_format) {
+    case IMAGE_RGB:
+    case IMAGE_GRAYSCALE:
+      return true;
+  }
+  return false;
+}
+
 void Sprite::setTransparentColor(color_t color)
 {
   m_transparentColor = color;
