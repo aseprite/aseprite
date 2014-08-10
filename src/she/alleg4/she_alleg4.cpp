@@ -187,14 +187,16 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       break;
     }
 
-    case WM_MOUSELEAVE: {
-      display_has_mouse = false;
+    case WM_NCMOUSEMOVE:
+    case WM_MOUSELEAVE:
+      if (display_has_mouse) {
+        display_has_mouse = false;
 
-      Event ev;
-      ev.setType(Event::MouseLeave);
-      queue_event(ev);
+        Event ev;
+        ev.setType(Event::MouseLeave);
+        queue_event(ev);
+      }
       break;
-    }
 
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
