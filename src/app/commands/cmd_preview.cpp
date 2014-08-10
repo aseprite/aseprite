@@ -39,6 +39,9 @@
 #include "raster/palette.h"
 #include "raster/primitives.h"
 #include "raster/sprite.h"
+#include "she/scoped_handle.h"
+#include "she/surface.h"
+#include "she/system.h"
 
 #define PREVIEW_TILED           1
 #define PREVIEW_FIT_ON_SCREEN   2
@@ -59,7 +62,8 @@ public:
     , m_sprite(editor->sprite())
     , m_pal(m_sprite->getPalette(editor->frame()))
     , m_index_bg_color(-1)
-    , m_doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H)) {
+    , m_doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H))
+    , m_doublesur(she::instance()->createRgbaSurface(JI_SCREEN_W, JI_SCREEN_H)) {
     // Do not use DocumentWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -230,7 +234,9 @@ protected:
         break;
     }
 
-    raster::convert_image_to_surface(m_doublebuf, g->getInternalSurface(), 0, 0, m_pal);
+    raster::convert_image_to_surface(m_doublebuf, m_pal,
+      m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
+    g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
   }
 
 private:
@@ -247,6 +253,7 @@ private:
   int m_index_bg_color;
   base::UniquePtr<Image> m_render;
   base::UniquePtr<Image> m_doublebuf;
+  she::ScopedHandle<she::Surface> m_doublesur;
   filters::TiledMode m_tiled;
 };
 

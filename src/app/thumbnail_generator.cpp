@@ -112,7 +112,8 @@ private:
           m_thumbnail->width(),
           m_thumbnail->height());
 
-        convert_image_to_surface(m_thumbnail, thumbnail, 0, 0, m_palette);
+        convert_image_to_surface(m_thumbnail, m_palette, thumbnail,
+          0, 0, 0, 0, m_thumbnail->width(), m_thumbnail->height());
 
         m_fileitem->setThumbnail(thumbnail);
       }

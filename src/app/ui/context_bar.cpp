@@ -102,7 +102,8 @@ public:
       m_bitmap->dispose();
 
     m_bitmap = she::instance()->createRgbaSurface(image->width(), image->height());
-    convert_image_to_surface(image, m_bitmap, 0, 0, palette);
+    convert_image_to_surface(image, palette, m_bitmap,
+      0, 0, 0, 0, image->width(), image->height());
 
     invalidate();
   }

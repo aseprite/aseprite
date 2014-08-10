@@ -28,7 +28,9 @@ namespace raster {
   class Image;
   class Palette;
 
-  void convert_image_to_surface(const Image* image, she::Surface* surface, int x, int y, const Palette* palette);
+  void convert_image_to_surface(const Image* image, const Palette* palette,
+    she::Surface* surface,
+    int src_x, int src_y, int dst_x, int dst_y, int w, int h);
 
 } // namespace raster
 
