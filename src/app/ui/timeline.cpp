@@ -939,8 +939,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     drawPaddings(g);
     drawLoopRange(g);
-    drawClipboardRange(g);
     drawRangeOutline(g);
+    drawClipboardRange(g);
 
 #if 0 // Use this code to debug the calculated m_dropRange by updateDropRange()
     {
