@@ -103,6 +103,10 @@ public:
     m_selectFile.DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
     m_import.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
     m_cancel.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
+
+    remapWindow();
+    centerWindow();
+    load_window_pos(this, "ImportSpriteSheet");
   }
 
   ~ImportSpriteSheetWindow()
@@ -267,6 +271,16 @@ protected:
         m_editor->invalidate();
       }
     }
+  }
+
+  bool onProcessMessage(ui::Message* msg) OVERRIDE
+  {
+    switch (msg->type()) {
+      case kCloseMessage:
+        save_window_pos(this, "ImportSpriteSheet");
+        break;
+    }
+    return Window::onProcessMessage(msg);
   }
 
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
