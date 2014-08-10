@@ -166,9 +166,9 @@ bool Splitter::onProcessMessage(Message* msg)
 
         if (change_cursor) {
           if (getAlign() & JI_HORIZONTAL)
-            jmouse_set_cursor(kSizeLCursor);
+            jmouse_set_cursor(kSizeWECursor);
           else
-            jmouse_set_cursor(kSizeTCursor);
+            jmouse_set_cursor(kSizeNSCursor);
           return true;
         }
       }

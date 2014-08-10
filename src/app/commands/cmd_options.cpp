@@ -36,6 +36,7 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "raster/image.h"
+#include "she/system.h"
 #include "ui/ui.h"
 
 #include "generated_options.h"
@@ -72,6 +73,9 @@ public:
 
     if (get_config_bool("Options", "AutoShowTimeline", true))
       autotimeline()->setSelected(true);
+
+    if (m_settings->experimental()->useNativeCursor())
+      nativeCursor()->setSelected(true);
 
     if (m_settings->getShowSpriteEditorScrollbars())
       showScrollbars()->setSelected(true);
@@ -143,6 +147,9 @@ public:
 
     m_settings->setUndoSizeLimit(undo_size_limit_value);
     m_settings->setUndoGotoModified(undoGotoModified()->isSelected());
+
+    // Native cursor
+    m_settings->experimental()->setUseNativeCursor(nativeCursor()->isSelected());
 
     int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {

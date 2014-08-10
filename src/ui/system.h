@@ -46,6 +46,7 @@ namespace ui {
   // current mouse position.
   void UpdateCursorOverlay();
 
+  void set_use_native_cursors(bool state);
   CursorType jmouse_get_cursor();
   void jmouse_set_cursor(CursorType type);
 

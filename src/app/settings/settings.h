@@ -41,6 +41,7 @@ namespace app {
   class IToolSettings;
   class ToolSettingsObserver;
   class ISelectionSettings;
+  class IExperimentalSettings;
   class SelectionSettingsObserver;
   class GlobalSettingsObserver;
 
@@ -85,6 +86,8 @@ namespace app {
 
     // Specific configuration for the current selection
     virtual ISelectionSettings* selection() = 0;
+    
+    virtual IExperimentalSettings* experimental() = 0;
 
     virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
 
@@ -162,6 +165,13 @@ namespace app {
     virtual ~IColorSwatchesStore() { }
     virtual void addColorSwatches(app::ColorSwatches* colorSwatches) = 0;
     virtual void removeColorSwatches(app::ColorSwatches* colorSwatches) = 0;
+  };
+
+  class IExperimentalSettings {
+  public:
+    virtual ~IExperimentalSettings() { }
+    virtual bool useNativeCursor() const = 0;
+    virtual void setUseNativeCursor(bool state) = 0;
   };
 
 } // namespace app

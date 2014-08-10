@@ -551,6 +551,47 @@ public:
     return m_queue;
   }
 
+  bool setNativeMouseCursor(NativeCursor cursor) OVERRIDE {
+    int newCursor = MOUSE_CURSOR_NONE;
+
+    switch (cursor) {
+      case kNoCursor:
+        newCursor = MOUSE_CURSOR_NONE;
+        break;
+      case kArrowCursor:
+        newCursor = MOUSE_CURSOR_ARROW;
+        break;
+      case kIBeamCursor:
+        newCursor = MOUSE_CURSOR_EDIT;
+        break;
+      case kWaitCursor:
+        newCursor = MOUSE_CURSOR_BUSY;
+        break;
+      case kHelpCursor:
+        newCursor = MOUSE_CURSOR_QUESTION;
+        break;
+#ifdef ALLEGRO4_WITH_EXTRA_CURSORS
+      case kForbiddenCursor: newCursor = MOUSE_CURSOR_FORBIDDEN; break;
+      case kMoveCursor: newCursor = MOUSE_CURSOR_MOVE; break;
+      case kLinkCursor: newCursor = MOUSE_CURSOR_LINK; break;
+      case kSizeNSCursor: newCursor = MOUSE_CURSOR_SIZE_NS; break;
+      case kSizeWECursor: newCursor = MOUSE_CURSOR_SIZE_WE; break;
+      case kSizeNCursor: newCursor = MOUSE_CURSOR_SIZE_N; break;
+      case kSizeNECursor: newCursor = MOUSE_CURSOR_SIZE_NE; break;
+      case kSizeECursor: newCursor = MOUSE_CURSOR_SIZE_E; break;
+      case kSizeSECursor: newCursor = MOUSE_CURSOR_SIZE_SE; break; 
+      case kSizeSCursor: newCursor = MOUSE_CURSOR_SIZE_S; break;
+      case kSizeSWCursor: newCursor = MOUSE_CURSOR_SIZE_SW; break;
+      case kSizeWCursor: newCursor = MOUSE_CURSOR_SIZE_W; break;
+      case kSizeNWCursor: newCursor = MOUSE_CURSOR_SIZE_NW; break;
+#endif
+      default:
+        return false;
+    }
+
+    return (show_os_cursor(newCursor) == 0);
+  }
+
   void setMousePosition(const gfx::Point& position) OVERRIDE {
     position_mouse(
       m_scale * position.x,

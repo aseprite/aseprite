@@ -121,22 +121,28 @@ static const char* cursor_names[kCursorTypes] = {
   "hand",                       // kHandCursor
   "scroll",                     // kScrollCursor
   "move",                       // kMoveCursor
-  "size_tl",                    // kSizeTLCursor
-  "size_t",                     // kSizeTCursor
-  "size_tr",                    // kSizeTRCursor
-  "size_l",                     // kSizeLCursor
-  "size_r",                     // kSizeRCursor
-  "size_bl",                    // kSizeBLCursor
-  "size_b",                     // kSizeBCursor
-  "size_br",                    // kSizeBRCursor
-  "rotate_tl",                  // kRotateTLCursor
-  "rotate_t",                   // kRotateTCursor
-  "rotate_tr",                  // kRotateTRCursor
-  "rotate_l",                   // kRotateLCursor
-  "rotate_r",                   // kRotateRCursor
-  "rotate_bl",                  // kRotateBLCursor
-  "rotate_b",                   // kRotateBCursor
-  "rotate_br",                  // kRotateBRCursor
+
+  "size_ns",                    // kSizeNSCursor
+  "size_we",                    // kSizeWECursor
+
+  "size_n",                     // kSizeNCursor
+  "size_ne",                    // kSizeNECursor
+  "size_e",                     // kSizeECursor
+  "size_se",                    // kSizeSECursor
+  "size_s",                     // kSizeSCursor
+  "size_sw",                    // kSizeSWCursor
+  "size_w",                     // kSizeWCursor
+  "size_nw",                    // kSizeNWCursor
+
+  "rotate_n",                   // kRotateNCursor
+  "rotate_ne",                  // kRotateNECursor
+  "rotate_e",                   // kRotateECursor
+  "rotate_se",                  // kRotateSECursor
+  "rotate_s",                   // kRotateSCursor
+  "rotate_sw",                  // kRotateSWCursor
+  "rotate_w",                   // kRotateWCursor
+  "rotate_nw",                  // kRotateNWCursor
+
   "eyedropper",                 // kEyedropperCursor
   "magnifier"                   // kMagnifierCursor
 };

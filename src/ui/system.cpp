@@ -46,6 +46,8 @@ static CursorType mouse_cursor_type = kNoCursor;
 static Cursor* mouse_cursor = NULL;
 static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
+static bool use_native_mouse_cursor = false;
+static bool native_cursor_set = false; // If we displayed a native cursor
 
 /* Mouse information (button and position).  */
 
@@ -99,10 +101,71 @@ static void update_mouse_cursor()
 {
   show_mouse(NULL);
 
-  if (mouse_cursor_type == kNoCursor)
+  // Use native cursor when it's possible/available/configured to do so.
+
+  bool native_cursor_available = false;
+  if (use_native_mouse_cursor) {
+    she::NativeCursor nativeCursor = she::kNoCursor;
+
+    native_cursor_available = true;
+    switch (mouse_cursor_type) {
+      case ui::kNoCursor: break;
+      case ui::kArrowCursor:
+      case ui::kArrowPlusCursor:
+        nativeCursor = she::kArrowCursor;
+        break;
+      case ui::kForbiddenCursor:
+        nativeCursor = she::kForbiddenCursor;
+        break;
+      case ui::kHandCursor:
+        nativeCursor = she::kLinkCursor;
+        break;
+      case ui::kScrollCursor:
+      case ui::kMoveCursor:
+        nativeCursor = she::kMoveCursor;
+        break;
+      case ui::kSizeNSCursor: nativeCursor = she::kSizeNSCursor; break;
+      case ui::kSizeWECursor: nativeCursor = she::kSizeWECursor; break;
+      case ui::kSizeNCursor: nativeCursor = she::kSizeNCursor; break;
+      case ui::kSizeNECursor: nativeCursor = she::kSizeNECursor; break;
+      case ui::kSizeECursor: nativeCursor = she::kSizeECursor; break;
+      case ui::kSizeSECursor: nativeCursor = she::kSizeSECursor; break;
+      case ui::kSizeSCursor: nativeCursor = she::kSizeSCursor; break;
+      case ui::kSizeSWCursor: nativeCursor = she::kSizeSWCursor; break;
+      case ui::kSizeWCursor: nativeCursor = she::kSizeWCursor; break;
+      case ui::kSizeNWCursor: nativeCursor = she::kSizeNWCursor; break;
+      default:
+        native_cursor_available = false;
+        break;
+    }
+
+    if (native_cursor_available) {
+      native_cursor_available =
+        mouse_display->setNativeMouseCursor(nativeCursor);
+      native_cursor_set = (nativeCursor != she::kNoCursor);
+    }
+  }
+
+  // Hide native cursor if it is visible but the current cursor type
+  // is not supported natively.
+
+  if (!native_cursor_available && native_cursor_set) {
+    mouse_display->setNativeMouseCursor(she::kNoCursor);
+    native_cursor_set = false;
+  }
+
+  // Use a software cursor with the overlay.
+
+  if (!native_cursor_set) {
+    if (mouse_cursor_type == ui::kNoCursor)
+      update_mouse_overlay(NULL);
+    else
+      update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
+  }
+  else {
+    // Hide the overlay if we are using a native cursor.
     update_mouse_overlay(NULL);
-  else
-    update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
+  }
 
   dirty_display_flag = true;
 }
@@ -171,6 +234,11 @@ void UpdateCursorOverlay()
       dirty_display_flag = true;
     }
   }
+}
+
+void set_use_native_cursors(bool state)
+{
+  use_native_mouse_cursor = state;
 }
 
 CursorType jmouse_get_cursor()

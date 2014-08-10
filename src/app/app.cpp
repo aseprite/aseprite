@@ -45,6 +45,7 @@
 #include "app/modules/palettes.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/settings/settings.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -179,8 +180,13 @@ int App::run()
   if (isGui()) {
     PRINTF("GUI mode\n");
 
-    // Setup the GUI screen
+    // Setup the GUI cursor and redraw screen
+
+    ui::set_use_native_cursors(
+      UIContext::instance()->settings()->experimental()->useNativeCursor());
+
     jmouse_set_cursor(kArrowCursor);
+
     ui::Manager::getDefault()->invalidate();
 
     // Create the main window and show it.

@@ -380,43 +380,15 @@ bool Window::onProcessMessage(Message* msg)
         CursorType cursor = kArrowCursor;
 
         switch (ht) {
-
-          case HitTestCaption:
-            cursor = kArrowCursor;
-            break;
-
-          case HitTestBorderNW:
-            cursor = kSizeTLCursor;
-            break;
-
-          case HitTestBorderW:
-            cursor = kSizeLCursor;
-            break;
-
-          case HitTestBorderSW:
-            cursor = kSizeBLCursor;
-            break;
-
-          case HitTestBorderNE:
-            cursor = kSizeTRCursor;
-            break;
-
-          case HitTestBorderE:
-            cursor = kSizeRCursor;
-            break;
-
-          case HitTestBorderSE:
-            cursor = kSizeBRCursor;
-            break;
-
-          case HitTestBorderN:
-            cursor = kSizeTCursor;
-            break;
-
-          case HitTestBorderS:
-            cursor = kSizeBCursor;
-            break;
-
+          case HitTestCaption: cursor = kArrowCursor; break;
+          case HitTestBorderNW: cursor = kSizeNWCursor; break;
+          case HitTestBorderW: cursor = kSizeWCursor; break;
+          case HitTestBorderSW: cursor = kSizeSWCursor; break;
+          case HitTestBorderNE: cursor = kSizeNECursor; break;
+          case HitTestBorderE: cursor = kSizeECursor; break;
+          case HitTestBorderSE: cursor = kSizeSECursor; break;
+          case HitTestBorderN: cursor = kSizeNCursor; break;
+          case HitTestBorderS: cursor = kSizeSCursor; break;
         }
 
         jmouse_set_cursor(cursor);

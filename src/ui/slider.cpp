@@ -254,7 +254,7 @@ void Slider::setupSliderCursor()
     if (slider_press_left)
       jmouse_set_cursor(kArrowCursor);
     else
-      jmouse_set_cursor(kSizeLCursor);
+      jmouse_set_cursor(kSizeWECursor);
   }
   else
     jmouse_set_cursor(kArrowCursor);

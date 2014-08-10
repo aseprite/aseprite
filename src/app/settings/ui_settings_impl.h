@@ -34,6 +34,7 @@ namespace app {
 
   class UISettingsImpl
       : public ISettings
+      , public IExperimentalSettings
       , public IColorSwatchesStore
       , base::Observable<GlobalSettingsObserver> {
   public:
@@ -68,6 +69,12 @@ namespace app {
     IColorSwatchesStore* getColorSwatchesStore() OVERRIDE;
 
     ISelectionSettings* selection() OVERRIDE;
+    IExperimentalSettings* experimental() OVERRIDE;
+
+    // IExperimentalSettings implementation
+
+    bool useNativeCursor() const OVERRIDE;
+    void setUseNativeCursor(bool state) OVERRIDE;
 
     // IColorSwatchesStore implementation
 

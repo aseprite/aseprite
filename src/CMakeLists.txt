@@ -154,10 +154,12 @@ if(USE_SHARED_ALLEGRO4)
 
   include_directories(${LIBALLEGRO4_INCLUDE_DIR})
 else()
+  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
+  add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
+
   # Use patched version of Allegro 4 (with window resize support).
   add_subdirectory(allegro)
   set(libs3rdparty ${libs3rdparty} allegro)
-  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
 endif()
 
 ######################################################################

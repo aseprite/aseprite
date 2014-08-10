@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gfx/point.h"
+#include "she/native_cursor.h"
 
 namespace she {
 
@@ -51,6 +52,7 @@ namespace she {
 
     virtual EventQueue* getEventQueue() = 0;
 
+    virtual bool setNativeMouseCursor(NativeCursor cursor) = 0;
     virtual void setMousePosition(const gfx::Point& position) = 0;
     virtual void captureMouse() = 0;
     virtual void releaseMouse() = 0;

@@ -71,25 +71,25 @@ enum WHEEL_ACTION { WHEEL_NONE,
                     WHEEL_FRAME };
 
 static CursorType rotated_size_cursors[] = {
-  kSizeRCursor,
-  kSizeTRCursor,
-  kSizeTCursor,
-  kSizeTLCursor,
-  kSizeLCursor,
-  kSizeBLCursor,
-  kSizeBCursor,
-  kSizeBRCursor
+  kSizeECursor,
+  kSizeNECursor,
+  kSizeNCursor,
+  kSizeNWCursor,
+  kSizeWCursor,
+  kSizeSWCursor,
+  kSizeSCursor,
+  kSizeSECursor
 };
 
 static CursorType rotated_rotate_cursors[] = {
-  kRotateRCursor,
-  kRotateTRCursor,
-  kRotateTCursor,
-  kRotateTLCursor,
-  kRotateLCursor,
-  kRotateBLCursor,
-  kRotateBCursor,
-  kRotateBRCursor
+  kRotateECursor,
+  kRotateNECursor,
+  kRotateNCursor,
+  kRotateNWCursor,
+  kRotateWCursor,
+  kRotateSWCursor,
+  kRotateSCursor,
+  kRotateSECursor
 };
 
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
@@ -597,22 +597,22 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   CursorType newCursor = kArrowCursor;
 
   switch (handle) {
-    case ScaleNWHandle:         newCursor = kSizeTLCursor; break;
-    case ScaleNHandle:          newCursor = kSizeTCursor; break;
-    case ScaleNEHandle:         newCursor = kSizeTRCursor; break;
-    case ScaleWHandle:          newCursor = kSizeLCursor; break;
-    case ScaleEHandle:          newCursor = kSizeRCursor; break;
-    case ScaleSWHandle:         newCursor = kSizeBLCursor; break;
-    case ScaleSHandle:          newCursor = kSizeBCursor; break;
-    case ScaleSEHandle:         newCursor = kSizeBRCursor; break;
-    case RotateNWHandle:        newCursor = kRotateTLCursor; break;
-    case RotateNHandle:         newCursor = kRotateTCursor; break;
-    case RotateNEHandle:        newCursor = kRotateTRCursor; break;
-    case RotateWHandle:         newCursor = kRotateLCursor; break;
-    case RotateEHandle:         newCursor = kRotateRCursor; break;
-    case RotateSWHandle:        newCursor = kRotateBLCursor; break;
-    case RotateSHandle:         newCursor = kRotateBCursor; break;
-    case RotateSEHandle:        newCursor = kRotateBRCursor; break;
+    case ScaleNWHandle:         newCursor = kSizeNWCursor; break;
+    case ScaleNHandle:          newCursor = kSizeNCursor; break;
+    case ScaleNEHandle:         newCursor = kSizeNECursor; break;
+    case ScaleWHandle:          newCursor = kSizeWCursor; break;
+    case ScaleEHandle:          newCursor = kSizeECursor; break;
+    case ScaleSWHandle:         newCursor = kSizeSWCursor; break;
+    case ScaleSHandle:          newCursor = kSizeSCursor; break;
+    case ScaleSEHandle:         newCursor = kSizeSECursor; break;
+    case RotateNWHandle:        newCursor = kRotateNWCursor; break;
+    case RotateNHandle:         newCursor = kRotateNCursor; break;
+    case RotateNEHandle:        newCursor = kRotateNECursor; break;
+    case RotateWHandle:         newCursor = kRotateWCursor; break;
+    case RotateEHandle:         newCursor = kRotateECursor; break;
+    case RotateSWHandle:        newCursor = kRotateSWCursor; break;
+    case RotateSHandle:         newCursor = kRotateSCursor; break;
+    case RotateSEHandle:        newCursor = kRotateSECursor; break;
     case PivotHandle:           newCursor = kHandCursor; break;
     default:
       return false;
@@ -625,7 +625,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   angle >>= 16;
   angle /= 32;
 
-  if (newCursor >= kSizeTLCursor && newCursor <= kSizeBRCursor) {
+  if (newCursor >= kSizeNCursor && newCursor <= kSizeNWCursor) {
     size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)
@@ -634,7 +634,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
 
     newCursor = rotated_size_cursors[(c+angle) % num];
   }
-  else if (newCursor >= kRotateTLCursor && newCursor <= kRotateBRCursor) {
+  else if (newCursor >= kRotateNCursor && newCursor <= kRotateNWCursor) {
     size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)

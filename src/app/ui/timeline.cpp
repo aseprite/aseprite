@@ -1082,18 +1082,18 @@ void Timeline::setCursor(int x, int y)
   // Normal state.
   else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_LEFT
     || m_state == STATE_MOVING_ONIONSKIN_RANGE_LEFT) {
-    jmouse_set_cursor(kSizeLCursor);
+    jmouse_set_cursor(kSizeWCursor);
   }
   else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_RIGHT
     || m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT) {
-    jmouse_set_cursor(kSizeRCursor);
+    jmouse_set_cursor(kSizeECursor);
   }
   else if (m_hot_part == A_PART_RANGE_OUTLINE) {
     jmouse_set_cursor(kMoveCursor);
   }
   else if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
       // Is the mouse in the separator.
-    jmouse_set_cursor(kSizeLCursor);
+    jmouse_set_cursor(kSizeWECursor);
   }
   else {
     jmouse_set_cursor(kArrowCursor);

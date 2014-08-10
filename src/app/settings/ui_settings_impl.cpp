@@ -34,6 +34,7 @@
 #include "app/ui/color_bar.h"
 #include "base/observable.h"
 #include "ui/manager.h"
+#include "ui/system.h"
 
 #include <algorithm>
 #include <allegro/color.h>
@@ -394,6 +395,22 @@ void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
 ISelectionSettings* UISettingsImpl::selection()
 {
   return m_selectionSettings;
+}
+
+IExperimentalSettings* UISettingsImpl::experimental()
+{
+  return this;
+}
+
+bool UISettingsImpl::useNativeCursor() const
+{
+  return get_config_bool("Options", "NativeCursor", false);
+}
+
+void UISettingsImpl::setUseNativeCursor(bool state)
+{
+  set_config_bool("Options", "NativeCursor", state);
+  ui::set_use_native_cursors(state);
 }
 
 //////////////////////////////////////////////////////////////////////

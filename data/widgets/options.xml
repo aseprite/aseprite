@@ -10,6 +10,7 @@
           <listitem text="Editor" value="section_editor" />
           <listitem text="Grid &amp;&amp; Background" value="section_grid" />
           <listitem text="Undo" value="section_undo" />
+          <listitem text="Experimental" value="section_experimental" />
         </listbox>
       </view>
 
@@ -74,6 +75,13 @@
             <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
           </box>
         </vbox>
+
+        <!-- Experimental -->
+        <vbox id="section_experimental">
+          <separator text="User Interface" horizontal="true" />
+          <check id="native_cursor" text="Use native mouse cursor" />
+        </vbox>
+
       </panel>
     </hbox>
     <separator horizontal="true" />
