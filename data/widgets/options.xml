@@ -1,7 +1,8 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2014 by David Capello -->
 <gui>
-  <vbox id="main_box">
+  <window id="options" text="Options">
+  <vbox>
     <hbox>
       <view maxsize="true">
         <listbox id="section_listbox">
@@ -85,4 +86,5 @@
       </hbox>
     </hbox>
   </vbox>
+  </window>
 </gui>

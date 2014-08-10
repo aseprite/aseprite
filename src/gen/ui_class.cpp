@@ -74,7 +74,9 @@ static std::string convert_type(const std::string& name)
   if (name == "entry") return "ui::Entry";
   if (name == "hbox") return "ui::HBox";
   if (name == "label") return "ui::Label";
+  if (name == "link") return "ui::LinkLabel";
   if (name == "listbox") return "ui::ListBox";
+  if (name == "panel") return "ui::Panel";
   if (name == "radio") return "ui::RadioButton";
   if (name == "slider") return "ui::Slider";
   if (name == "vbox") return "ui::VBox";
