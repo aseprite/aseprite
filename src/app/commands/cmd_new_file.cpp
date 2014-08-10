@@ -45,6 +45,8 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
+#include "generated_new_sprite.h"
+
 #include <allegro/config.h>
 #include <allegro/unicode.h>
 
@@ -87,15 +89,7 @@ void NewFileCommand::onExecute(Context* context)
   };
 
   // Load the window widget
-  base::UniquePtr<Window> window(app::load_widget<Window>("new_sprite.xml", "new_sprite"));
-  Widget* width = app::find_widget<Widget>(window, "width");
-  Widget* height = app::find_widget<Widget>(window, "height");
-  Widget* radio1 = app::find_widget<Widget>(window, "radio1");
-  Widget* radio2 = app::find_widget<Widget>(window, "radio2");
-  Widget* radio3 = app::find_widget<Widget>(window, "radio3");
-  // Widget* colors = app::find_widget<Widget>(window, "colors");
-  ListBox* bg_box = app::find_widget<ListBox>(window, "bg_box");
-  Widget* ok = app::find_widget<Widget>(window, "ok_button");
+  app::gen::NewSprite window;
 
   // Default values: Indexed, 320x240, Background color
   format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_INDEXED));
@@ -116,35 +110,38 @@ void NewFileCommand::onExecute(Context* context)
     h = clipboardSize.h;
   }
 
-  width->setTextf("%d", MAX(1, w));
-  height->setTextf("%d", MAX(1, h));
+  window.width()->setTextf("%d", MAX(1, w));
+  window.height()->setTextf("%d", MAX(1, h));
   // colors->setTextf("%d", MID(2, ncolors, 256));
 
   // Select image-type
   switch (format) {
-    case IMAGE_RGB:       radio1->setSelected(true); break;
-    case IMAGE_GRAYSCALE: radio2->setSelected(true); break;
-    case IMAGE_INDEXED:   radio3->setSelected(true); break;
+    case IMAGE_RGB:       window.rgbMode()->setSelected(true); break;
+    case IMAGE_GRAYSCALE: window.grayscaleMode()->setSelected(true); break;
+    case IMAGE_INDEXED:   window.indexedMode()->setSelected(true); break;
   }
 
   // Select background color
-  bg_box->selectIndex(bg);
+  window.bgBox()->selectIndex(bg);
 
   // Open the window
-  window->openWindowInForeground();
+  window.openWindowInForeground();
 
-  if (window->getKiller() == ok) {
+  if (window.getKiller() == window.okButton()) {
     bool ok = false;
 
     // Get the options
-    if (radio1->isSelected())      format = IMAGE_RGB;
-    else if (radio2->isSelected()) format = IMAGE_GRAYSCALE;
-    else if (radio3->isSelected()) format = IMAGE_INDEXED;
+    if (window.rgbMode()->isSelected())
+      format = IMAGE_RGB;
+    else if (window.grayscaleMode()->isSelected())
+      format = IMAGE_GRAYSCALE;
+    else if (window.indexedMode()->isSelected())
+      format = IMAGE_INDEXED;
 
-    w = width->getTextInt();
-    h = height->getTextInt();
+    w = window.width()->getTextInt();
+    h = window.height()->getTextInt();
     // ncolors = colors->getTextInt();
-    bg = bg_box->getSelectedIndex();
+    bg = window.bgBox()->getSelectedIndex();
 
     w = MID(1, w, 65535);
     h = MID(1, h, 65535);
