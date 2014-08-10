@@ -34,6 +34,8 @@
   #ifndef WM_MOUSEHWHEEL
     #define WM_MOUSEHWHEEL 0x020E
   #endif
+#elif defined(ALLEGRO_UNIX)
+  #include <xalleg.h>
 #endif
 
 #ifdef WIN32
@@ -535,6 +537,33 @@ public:
     position_mouse(
       m_scale * position.x,
       m_scale * position.y);
+  }
+
+  void captureMouse() {
+#ifdef WIN32
+
+    SetCapture((HWND)nativeHandle());
+
+#elif defined(ALLEGRO_UNIX)
+
+    XGrabPointer(_xwin.display, _xwin.window, False,
+      PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
+      GrabModeAsync, GrabModeAsync,
+      None, None, CurrentTime);
+
+#endif
+  }
+
+  void releaseMouse() {
+#ifdef WIN32
+
+    ReleaseCapture();
+
+#elif defined(ALLEGRO_UNIX)
+
+    XUngrabPointer(_xwin.display, CurrentTime);
+
+#endif
   }
 
   void* nativeHandle() OVERRIDE {

@@ -891,6 +891,8 @@ void Manager::setCapture(Widget* widget)
 {
   widget->flags |= JI_HASCAPTURE;
   capture_widget = widget;
+
+  m_display->captureMouse();
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -929,6 +931,8 @@ void Manager::freeCapture()
   if (capture_widget) {
     capture_widget->flags &= ~JI_HASCAPTURE;
     capture_widget = NULL;
+
+    m_display->releaseMouse();
   }
 }
 

@@ -24,8 +24,6 @@
 #include <allegro.h>
 #if defined(WIN32)
   #include <winalleg.h>
-#elif defined(ALLEGRO_UNIX)
-  #include <xalleg.h>
 #endif
 
 namespace ui {
@@ -299,27 +297,6 @@ void set_mouse_position(const gfx::Point& newPos)
 
   m_x[1] = m_x[0];
   m_y[1] = m_y[0];
-}
-
-void jmouse_capture()
-{
-#if defined(ALLEGRO_UNIX)
-
-  XGrabPointer(_xwin.display, _xwin.window, False,
-               PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
-               GrabModeAsync, GrabModeAsync,
-               None, None, CurrentTime);
-
-#endif
-}
-
-void jmouse_release()
-{
-#if defined(ALLEGRO_UNIX)
-
-  XUngrabPointer(_xwin.display, CurrentTime);
-
-#endif
 }
 
 MouseButtons jmouse_b(int antique)

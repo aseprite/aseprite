@@ -64,9 +64,6 @@ namespace ui {
   gfx::Point get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);
 
-  void jmouse_capture();
-  void jmouse_release();
-
   MouseButtons jmouse_b(int antique);
   int jmouse_x(int antique);
   int jmouse_y(int antique);

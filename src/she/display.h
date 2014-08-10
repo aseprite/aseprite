@@ -52,6 +52,8 @@ namespace she {
     virtual EventQueue* getEventQueue() = 0;
 
     virtual void setMousePosition(const gfx::Point& position) = 0;
+    virtual void captureMouse() = 0;
+    virtual void releaseMouse() = 0;
 
     // Returns the HWND on Windows.
     virtual void* nativeHandle() = 0;

@@ -1224,7 +1224,6 @@ void Widget::captureMouse()
 {
   if (!getManager()->getCapture()) {
     getManager()->setCapture(this);
-    jmouse_capture();
   }
 }
 
@@ -1235,7 +1234,6 @@ void Widget::releaseMouse()
 {
   if (getManager()->getCapture() == this) {
     getManager()->freeCapture();
-    jmouse_release();
   }
 }
 
