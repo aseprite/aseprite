@@ -114,6 +114,7 @@ int display_scale;
 
 wndproc_t base_wndproc = NULL;
 bool display_has_mouse = false;
+bool capture_mouse = false;
 
 static void queue_event(Event& ev)
 {
@@ -150,6 +151,18 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     }
 
     case WM_MOUSEMOVE: {
+      // Adjust capture
+      if (capture_mouse) {
+        if (GetCapture() != hwnd)
+          SetCapture(hwnd);
+      }
+      else {
+        if (GetCapture() == hwnd)
+          ReleaseCapture();
+      }
+
+      //PRINTF("GetCapture=%p hwnd=%p\n", GetCapture(), hwnd);
+
       Event ev;
       ev.setPosition(gfx::Point(
           GET_X_LPARAM(lparam) / display_scale,
@@ -185,7 +198,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
-    case WM_MBUTTONDOWN: {
+    case WM_MBUTTONDOWN:
+    case WM_XBUTTONDOWN: {
       Event ev;
       ev.setType(Event::MouseDown);
       ev.setPosition(gfx::Point(
@@ -201,7 +215,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
-    case WM_MBUTTONUP: {
+    case WM_MBUTTONUP:
+    case WM_XBUTTONUP: {
       Event ev;
       ev.setType(Event::MouseUp);
       ev.setPosition(gfx::Point(
@@ -216,6 +231,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       // Avoid popup menu for scrollbars
       if (msg == WM_RBUTTONUP)
         return 0;
+
       break;
     }
 
@@ -542,7 +558,7 @@ public:
   void captureMouse() {
 #ifdef WIN32
 
-    SetCapture((HWND)nativeHandle());
+    capture_mouse = true;
 
 #elif defined(ALLEGRO_UNIX)
 
@@ -557,7 +573,7 @@ public:
   void releaseMouse() {
 #ifdef WIN32
 
-    ReleaseCapture();
+    capture_mouse = false;
 
 #elif defined(ALLEGRO_UNIX)
 

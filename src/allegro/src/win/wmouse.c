@@ -264,6 +264,8 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
 
    _exit_critical();
 
+#if 0 /* Aseprite: We handle mouse capture in the she and ui layers */
+
    /* If there is a mouse button pressed we capture the mouse, in any
       other cases we release it. */
    if (last_mouse_b) {
@@ -274,6 +276,8 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
      if (GetCapture() == hwnd)
        ReleaseCapture();
    }
+
+#endif
 
    _handle_mouse_input();
 }
