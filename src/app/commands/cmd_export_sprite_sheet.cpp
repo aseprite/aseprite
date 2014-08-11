@@ -138,7 +138,7 @@ public:
     sheetType()->addItem("Vertical Strip");
     sheetType()->addItem("Matrix");
     if (data)
-      sheetType()->setSelectedItemIndex((int)data->type());
+      sheetType()->setSelectedItemIndex((int)data->type()-1); // TODO harcoded -1
 
     exportAction()->addItem("Save Copy As...");
     exportAction()->addItem("Save As...");
