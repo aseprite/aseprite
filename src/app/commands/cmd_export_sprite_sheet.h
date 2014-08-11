@@ -22,6 +22,7 @@
 
 #include "app/commands/command.h"
 #include "base/override.h"
+#include "doc/export_data.h"
 
 #include <string>
 
@@ -39,10 +40,8 @@ namespace app {
     ExportAction action() const { return m_action; }
 
     void setUseUI(bool useUI) { m_useUI = useUI; }
-    void setType(SpriteSheetType type) { m_type = type; }
+    void setExportData(doc::ExportDataPtr data);
     void setAction(ExportAction action) { m_action = action; }
-    void setColumns(int columns) { m_columns = columns; }
-    void setFileName(const std::string& filename) { m_filename = filename; }
 
   protected:
     virtual bool onEnabled(Context* context) OVERRIDE;
@@ -53,6 +52,9 @@ namespace app {
     SpriteSheetType m_type;
     ExportAction m_action;
     int m_columns;
+    int m_width;
+    int m_height;
+    bool m_bestFit;
     std::string m_filename;
   };
 

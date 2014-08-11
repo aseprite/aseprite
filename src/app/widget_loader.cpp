@@ -218,6 +218,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "combobox") {
     if (!widget)
       widget = new ComboBox();
+
+    bool editable = bool_attr_is_true(elem, "editable");
+    if (editable)
+      ((ComboBox*)widget)->setEditable(true);
   }
   else if (elem_name == "entry") {
     const char* maxsize = elem->Attribute("maxsize");
