@@ -30,6 +30,8 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 
+#include "generated_layer_properties.h"
+
 namespace app {
 
 using namespace ui;
@@ -62,39 +64,15 @@ void LayerPropertiesCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Layer* layer = reader.layer();
 
-  base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "Layer Properties"));
-  Box* box1 = new Box(JI_VERTICAL);
-  Box* box2 = new Box(JI_HORIZONTAL);
-  Box* box3 = new Box(JI_HORIZONTAL + JI_HOMOGENEOUS);
-  Widget* label_name = new Label("Name:");
-  Entry* entry_name = new Entry(256, layer->name().c_str());
-  Button* button_ok = new Button("&OK");
-  Button* button_cancel = new Button("&Cancel");
+  app::gen::LayerProperties window;
+  window.name()->setText(layer->name().c_str());
+  window.name()->setMinSize(gfx::Size(128, 0));
+  window.name()->setExpansive(true);
+  window.openWindowInForeground();
 
-  button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
-
-  entry_name->setMinSize(gfx::Size(128, 0));
-  entry_name->setExpansive(true);
-
-  box2->addChild(label_name);
-  box2->addChild(entry_name);
-  box1->addChild(box2);
-  box3->addChild(button_ok);
-  box3->addChild(button_cancel);
-  box1->addChild(box3);
-  window->addChild(box1);
-
-  entry_name->setFocusMagnet(true);
-  button_ok->setFocusMagnet(true);
-
-  window->openWindowInForeground();
-
-  if (window->getKiller() == button_ok) {
+  if (window.getKiller() == window.ok()) {
     ContextWriter writer(reader);
-
-    writer.layer()->setName(entry_name->getText());
-
+    writer.layer()->setName(window.name()->getText());
     update_screen_for_document(writer.document());
   }
 }
