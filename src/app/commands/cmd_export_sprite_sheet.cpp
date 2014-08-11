@@ -295,6 +295,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   FrameNumber nframes = sprite->totalFrames();
   int columns;
+  int sheet_w = 0;
+  int sheet_h = 0;
 
   switch (m_type) {
     case HorizontalStrip:
@@ -305,12 +307,14 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       break;
     case Matrix:
       columns = m_columns;
+      if (m_width > 0) sheet_w = m_width;
+      if (m_height > 0) sheet_h = m_height;
       break;
   }
 
   columns = MID(1, columns, nframes);
-  int sheet_w = (m_width > 0 ? m_width : sprite->width()*columns);
-  int sheet_h = (m_height > 0 ? m_height : sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0)));
+  if (sheet_w == 0) sheet_w = sprite->width()*columns;
+  if (sheet_h == 0) sheet_h = sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
   columns = sheet_w / sprite->width();
 
   base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
