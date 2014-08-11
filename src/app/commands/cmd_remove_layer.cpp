@@ -31,6 +31,7 @@
 #include "app/undo_transaction.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "ui/alert.h"
 #include "ui/widget.h"
 
 namespace app {
@@ -66,6 +67,7 @@ void RemoveLayerCommand::onExecute(Context* context)
   std::string layer_name;
   ContextWriter writer(context);
   Document* document(writer.document());
+  Sprite* sprite(writer.sprite());
   Layer* layer(writer.layer());
   {
     UndoTransaction undoTransaction(writer.context(), "Remove Layer");
@@ -73,13 +75,21 @@ void RemoveLayerCommand::onExecute(Context* context)
     // TODO the range of selected layer should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
-      Sprite* sprite = writer.sprite();
+      if (range.layers() == sprite->countLayers()) {
+        ui::Alert::show("Error<<You cannot delete all layers.||&OK");
+        return;
+      }
 
       for (LayerIndex layer = range.layerEnd(); layer >= range.layerBegin(); --layer) {
         document->getApi().removeLayer(sprite->indexToLayer(layer));
       }
     }
     else {
+      if (sprite->countLayers() == 1) {
+        ui::Alert::show("Error<<You cannot delete the last layer.||&OK");
+        return;
+      }
+
       layer_name = layer->name();
       document->getApi().removeLayer(layer);
     }

@@ -57,7 +57,7 @@ namespace app {
   class NoImageException : public base::Exception {
   public:
     NoImageException() throw()
-    : base::Exception("There are not an active image to apply the effect.\n"
+    : base::Exception("There is not an active image to apply the effect.\n"
                       "Please select a layer/cel with an image and try again.") { }
   };
 
