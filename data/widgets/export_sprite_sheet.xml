@@ -1,0 +1,24 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2001-2014 by David Capello -->
+<gui>
+  <window id="export_sprite_sheet" text="Export Sprite Sheet">
+  <grid columns="4">
+    <label text="Sheet Type:" />
+    <combobox id="sheet_type" cell_hspan="3" />
+
+    <label id="columns_label" text="Columns:" />
+    <entry id="columns" text="4" maxsize="4" cell_hspan="3" />
+
+    <label text="Export Action:" />
+    <combobox id="export_action" cell_hspan="3" />
+
+    <hbox cell_hspan="4">
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button id="export_button" text="&amp;Export" minwidth="60" magnet="true" closewindow="true" />
+        <button text="&amp;Cancel" minwidth="60" closewindow="true" />
+      </hbox>
+    </hbox>
+  </grid>
+  </window>
+</gui>

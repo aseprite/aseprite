@@ -47,76 +47,48 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
+#include "generated_export_sprite_sheet.h"
+
 #include <limits>
 
 namespace app {
 
 using namespace ui;
 
-class ExportSpriteSheetWindow : public Window {
+class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
 public:
   typedef ExportSpriteSheetCommand::SpriteSheetType SpriteSheetType;
   typedef ExportSpriteSheetCommand::ExportAction ExportAction;
 
   ExportSpriteSheetWindow(Context* context)
-    : Window(WithTitleBar, "Export Sprite Sheet")
-    , m_grid(4, false)
-    , m_columnsLabel("Columns:")
-    , m_columns(4, "4")
-    , m_exportActionLabel("Export Action:")
-    , m_export("&Export")
-    , m_cancel("&Cancel")
-    , m_ok(false)
   {
-    m_sheetType.addItem("Horizontal Strip");
-    m_sheetType.addItem("Vertical Strip");
-    m_sheetType.addItem("Matrix");
+    sheetType()->addItem("Horizontal Strip");
+    sheetType()->addItem("Vertical Strip");
+    sheetType()->addItem("Matrix");
 
-    m_exportAction.addItem("Save Copy As...");
-    m_exportAction.addItem("Save As...");
-    m_exportAction.addItem("Save");
-    m_exportAction.addItem("Do Not Save");
+    exportAction()->addItem("Save Copy As...");
+    exportAction()->addItem("Save As...");
+    exportAction()->addItem("Save");
+    exportAction()->addItem("Do Not Save");
 
-    addChild(&m_grid);
-    m_grid.addChildInCell(new Label("Sheet Type:"), 1, 1, 0);
-    m_grid.addChildInCell(&m_sheetType, 3, 1, 0);
-    m_grid.addChildInCell(&m_columnsLabel, 1, 1, 0);
-    m_grid.addChildInCell(&m_columns, 3, 1, 0);
-    m_grid.addChildInCell(&m_exportActionLabel, 1, 1, 0);
-    m_grid.addChildInCell(&m_exportAction, 3, 1, 0);
-
-    {
-      Box* hbox1 = new Box(JI_HORIZONTAL);
-      Box* hbox2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-      hbox1->addChild(new BoxFiller);
-      hbox1->addChild(hbox2);
-      hbox2->addChild(&m_export);
-      hbox2->addChild(&m_cancel);
-      m_export.setMinSize(gfx::Size(60, 0));
-      m_grid.addChildInCell(hbox1, 4, 1, 0);
-    }
-
-    m_sheetType.Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    m_export.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
-    m_cancel.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onCancel, this));
-
+    sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
     onSheetTypeChange();
   }
 
-  bool ok() const {
-    return m_ok;
+  bool ok() {
+    return getKiller() == exportButton();
   }
 
-  SpriteSheetType spriteSheetType() const {
-    return (SpriteSheetType)m_sheetType.getSelectedItemIndex();
+  SpriteSheetType spriteSheetTypeValue() {
+    return (SpriteSheetType)sheetType()->getSelectedItemIndex();
   }
 
-  ExportAction exportAction() const {
-    return (ExportAction)m_exportAction.getSelectedItemIndex();
+  ExportAction exportActionValue() {
+    return (ExportAction)exportAction()->getSelectedItemIndex();
   }
 
-  int columns() const {
-    return m_columns.getTextInt();
+  int columnsValue() {
+    return columns()->getTextInt();
   }
 
 protected:
@@ -124,13 +96,13 @@ protected:
   void onSheetTypeChange()
   {
     bool state = false;
-    switch (m_sheetType.getSelectedItemIndex()) {
+    switch (sheetType()->getSelectedItemIndex()) {
       case ExportSpriteSheetCommand::Matrix:
         state = true;
         break;
     }
-    m_columnsLabel.setVisible(state);
-    m_columns.setVisible(state);
+    columnsLabel()->setVisible(state);
+    columns()->setVisible(state);
 
     gfx::Size reqSize = getPreferredSize();
     moveWindow(gfx::Rect(getOrigin(), reqSize));
@@ -138,27 +110,6 @@ protected:
     invalidate();
   }
 
-  void onExport()
-  {
-    m_ok = true;
-    closeWindow(NULL);
-  }
-
-  void onCancel()
-  {
-    closeWindow(NULL);
-  }
-
-private:
-  Grid m_grid;
-  ComboBox m_sheetType;
-  Label m_columnsLabel;
-  Entry m_columns;
-  Label m_exportActionLabel;
-  ComboBox m_exportAction;
-  Button m_export;
-  Button m_cancel;
-  bool m_ok;
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
@@ -177,15 +128,14 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
   if (m_useUI) {
-    base::UniquePtr<ExportSpriteSheetWindow> window(new ExportSpriteSheetWindow(context));
-    window->openWindowInForeground();
-
-    if (!window->ok())
+    ExportSpriteSheetWindow window(context);
+    window.openWindowInForeground();
+    if (!window.ok())
       return;
 
-    setType(window->spriteSheetType());
-    setAction(window->exportAction());
-    setColumns(window->columns());
+    setType(window.spriteSheetTypeValue());
+    setAction(window.exportActionValue());
+    setColumns(window.columnsValue());
   }
 
   Document* document(context->activeDocument());
