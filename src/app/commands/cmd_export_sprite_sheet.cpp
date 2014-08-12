@@ -84,10 +84,12 @@ namespace {
       ;
 
     int z = 0;
-    while (z++ < nframes*2) {
+    bool fully_contained = false;
+    while (!fully_contained) {  // TODO at this moment we're not
+                                // getting the best fit for less
+                                // freearea, just the first one.
       gfx::Region rgn(gfx::Rect(w, h));
       int contained_frames = 0;
-      bool fully_contained = false;
 
       for (int v=0; v+frameh <= h && !fully_contained; v+=frameh) {
         for (int u=0; u+framew <= w; u+=framew) {
@@ -115,7 +117,7 @@ namespace {
           result = fit;
       }
 
-      if (z & 1) w *= 2;
+      if ((++z) & 1) w *= 2;
       else h *= 2;
     }
 
