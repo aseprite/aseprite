@@ -111,8 +111,8 @@ namespace raster {
     void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
-
     void getCels(CelList& cels) const OVERRIDE;
+    Cel* getLastCel() const;
 
     void configureAsBackground();
 

@@ -311,6 +311,16 @@ void clipboard::paste()
           std::vector<Layer*> src_layers;
           src_doc->sprite()->getLayersList(src_layers);
 
+          // Expand frames of dst_doc if it's needed.
+          FrameNumber maxFrame(0);
+          for (LayerIndex i = range.layerBegin(); i <= range.layerEnd(); ++i) {
+            Cel* lastCel = static_cast<LayerImage*>(src_layers[i])->getLastCel();
+            if (maxFrame < lastCel->frame())
+              maxFrame = lastCel->frame();
+          }
+          if (dst_doc->sprite()->totalFrames() < maxFrame.next())
+            dst_doc->getApi().setTotalFrames(dst_spr, maxFrame.next());
+
           for (LayerIndex i = range.layerBegin(); i <= range.layerEnd(); ++i) {
             LayerImage* new_layer = new LayerImage(dst_spr);
             dst_doc->getApi().addLayer(

@@ -146,6 +146,14 @@ void LayerImage::getCels(CelList& cels) const
     cels.push_back(*it);
 }
 
+Cel* LayerImage::getLastCel() const
+{
+  if (!m_cels.empty())
+    return m_cels.back();
+  else
+    return NULL;
+}
+
 void LayerImage::addCel(Cel *cel)
 {
   CelIterator it = getCelBegin();
