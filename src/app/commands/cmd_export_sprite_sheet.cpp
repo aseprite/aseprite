@@ -161,8 +161,11 @@ public:
       columns()->setTextf("%d", data->columns());
       onColumnsChange();
 
-      if (data->width() > 0) fitWidth()->getEntryWidget()->setTextf("%d", data->width());
-      if (data->height() > 0) fitHeight()->getEntryWidget()->setTextf("%d", data->height());
+      if (data->width() > 0 || data->height() > 0) {
+        if (data->width() > 0) fitWidth()->getEntryWidget()->setTextf("%d", data->width());
+        if (data->height() > 0) fitHeight()->getEntryWidget()->setTextf("%d", data->height());
+        onSizeChange();
+      }
     }
     else {
       columns()->setText("4");
@@ -233,13 +236,19 @@ protected:
   }
 
   void onColumnsChange() {
-    fitWidth()->getEntryWidget()->setTextf("");
-    fitHeight()->getEntryWidget()->setTextf("");
+    int nframes = m_sprite->totalFrames();
+    int columns = columnsValue();
+    columns = MID(1, columns, nframes);
+    int sheet_w = m_sprite->width()*columns;
+    int sheet_h = m_sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
+
+    fitWidth()->getEntryWidget()->setTextf("%d", sheet_w);
+    fitHeight()->getEntryWidget()->setTextf("%d", sheet_h);
     bestFit()->setSelected(false);
   }
 
   void onSizeChange() {
-    columns()->setTextf("");
+    columns()->setTextf("%d", fitWidthValue() / m_sprite->width());
     bestFit()->setSelected(false);
   }
 
