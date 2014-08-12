@@ -12,8 +12,8 @@
 
     <label id="fit_width_label" text="Width:" />
     <combobox id="fit_width" text="" maxsize="5" editable="true" />
-    <label id="fit_height_label" text="Height:" editable="true" />
-    <combobox id="fit_height" text="" maxsize="5" />
+    <label id="fit_height_label" text="Height:" />
+    <combobox id="fit_height" text="" maxsize="5" editable="true" />
 
     <hbox id="best_fit_filler" />
     <check cell_hspan="3" id="best_fit" text="Best fit for texture" />
