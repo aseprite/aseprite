@@ -36,10 +36,11 @@
 namespace ui {
 
 #define ACCEPT_FOCUS(widget)                            \
-  (((widget)->flags & (JI_FOCUSSTOP |                   \
-                       JI_DISABLED |                    \
-                       JI_HIDDEN |                      \
-                       JI_DECORATIVE)) == JI_FOCUSSTOP)
+  ((((widget)->flags & (JI_FOCUSSTOP |                  \
+        JI_DISABLED |                                   \
+        JI_HIDDEN |                                     \
+        JI_DECORATIVE)) == JI_FOCUSSTOP) &&             \
+    ((widget)->isVisible()))
 
 #define DOUBLE_CLICK_TIMEOUT_MSECS   400
 
