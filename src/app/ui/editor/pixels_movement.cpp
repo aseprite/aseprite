@@ -615,7 +615,17 @@ void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
-  switch (UIContext::instance()->settings()->selection()->getRotationAlgorithm()) {
+  RotationAlgorithm rotAlgo = UIContext::instance()->settings()->selection()->getRotationAlgorithm();
+
+  // If the angle and the scale weren't modified, we should use the
+  // fast rotation algorithm, as it's pixel-perfect match with the
+  // original selection when just a translation is applied.
+  if (m_currentData.angle() == 0.0 &&
+      m_currentData.bounds().getSize() == src->size()) {
+    rotAlgo = kFastRotationAlgorithm;
+  }
+
+  switch (rotAlgo) {
 
     case kFastRotationAlgorithm:
       image_parallelogram(dst, src,
