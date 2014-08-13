@@ -91,6 +91,7 @@ bool open_file(const std::string& file)
 bool open_folder(const std::string& file)
 {
 #ifdef WIN32
+
   int ret;
   if (base::is_directory(file)) {
     ret = win32_shell_execute(NULL, L"explorer",
@@ -101,14 +102,22 @@ bool open_folder(const std::string& file)
       (L"/e,/select,\"" + base::from_utf8(file) + L"\"").c_str());
   }
   return (ret == 0);
+
+#elif __APPLE__
+
+  int ret = system(("open \"" + file + "\"").c_str());
+  return (ret == 0);
+
 #else
+
   return false;
+
 #endif
 }
 
 bool support_open_folder()
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
   return true;
 #else
   return false;
