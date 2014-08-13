@@ -22,11 +22,16 @@
 
 #include "app/ui/editor/drawing_state.h"
 
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
+#include "app/modules/gui.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui_context.h"
 #include "ui/message.h"
 #include "ui/system.h"
 
@@ -160,8 +165,14 @@ bool DrawingState::onSetCursor(Editor* editor)
 
 bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  if (editor->processKeysToSetZoom(msg))
-    return true;
+  Command* command = NULL;
+  Params* params = NULL;
+  if (get_command_from_key_message(msg, &command, &params)) {
+    // We accept zoom commands.
+    if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+      UIContext::instance()->executeCommand(command, params);
+    }
+  }
 
   // When we are drawing, we "eat" all pressed keys.
   return true;

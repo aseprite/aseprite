@@ -466,7 +466,7 @@ bool StandbyState::onSetCursor(Editor* editor)
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  return editor->processKeysToSetZoom(msg);
+  return false;
 }
 
 bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)

@@ -132,6 +132,20 @@
         <param name="change" value="decrement-size" />
       </key>
 
+      <!-- Zoom -->
+      <key command="Zoom" shortcut="1"><param name="percentage" value="100" /></key>
+      <key command="Zoom" shortcut="2"><param name="percentage" value="200" /></key>
+      <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
+      <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
+      <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
+      <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
+      <key command="Zoom" shortcut="Ctrl+Plus Pad" mac="Cmd+Plus Pad">
+        <param name="action" value="in" />
+      </key>
+      <key command="Zoom" shortcut="Ctrl+Minus Pad" mac="Cmd+Minus Pad">
+        <param name="action" value="out" />
+      </key>
+
       <!-- Scroll with arrows -->
       <key command="Scroll" shortcut="Ctrl+Left" mac="Cmd+Left">
         <param name="direction" value="left" />

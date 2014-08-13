@@ -326,10 +326,15 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
     Command* command = NULL;
     Params* params = NULL;
     if (get_command_from_key_message(msg, &command, &params)) {
+      // We accept zoom commands.
+      if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+        UIContext::instance()->executeCommand(command, params);
+        return true;
+      }
       // Intercept the "Cut" or "Copy" command to handle them locally
       // with the current m_pixelsMovement data.
-      if (strcmp(command->short_name(), CommandId::Cut) == 0 ||
-          strcmp(command->short_name(), CommandId::Copy) == 0) {
+      else if (strcmp(command->short_name(), CommandId::Cut) == 0 ||
+               strcmp(command->short_name(), CommandId::Copy) == 0) {
         // Copy the floating image to the clipboard.
         {
           Document* document = editor->document();
@@ -404,6 +409,9 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
   if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
       return;
+  }
+  else if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+    return;
   }
 
   if (m_pixelsMovement)

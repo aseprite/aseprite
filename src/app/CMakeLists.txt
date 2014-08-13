@@ -84,6 +84,7 @@ add_library(app-lib
   commands/cmd_switch_colors.cpp
   commands/cmd_timeline.cpp
   commands/cmd_undo.cpp
+  commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
   commands/filters/cmd_color_curve.cpp
@@ -169,7 +170,6 @@ add_library(app-lib
   ui/editor/editor_observers.cpp
   ui/editor/editor_states_history.cpp
   ui/editor/editor_view.cpp
-  ui/editor/keys.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
   ui/editor/pixels_movement.cpp

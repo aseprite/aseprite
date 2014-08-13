@@ -129,6 +129,7 @@ namespace app {
 
     void setDefaultScroll();
     void setEditorScroll(int x, int y, int use_refresh_region);
+    void setEditorZoom(int zoom);
 
     // Updates the Editor's view.
     void updateEditor();
@@ -177,8 +178,6 @@ namespace app {
     bool isInsideSelection();
 
     void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior);
-
-    bool processKeysToSetZoom(ui::KeyMessage* msg);
 
     void pasteImage(const Image* image, int x, int y);
 

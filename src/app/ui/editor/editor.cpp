@@ -322,6 +322,13 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
     drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
 }
 
+void Editor::setEditorZoom(int zoom)
+{
+  setZoomAndCenterInMouse(zoom,
+    jmouse_x(0), jmouse_y(0),
+    Editor::kCofiguredZoomBehavior);
+}
+
 void Editor::updateEditor()
 {
   View::getView(this)->updateView();
