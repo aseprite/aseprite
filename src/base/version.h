@@ -11,6 +11,14 @@
 #include <string>
 #include <vector>
 
+#ifdef major
+#undef major
+#endif
+
+#ifdef minor
+#undef minor
+#endif
+
 namespace base {
 
   class Version {
