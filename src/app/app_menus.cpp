@@ -108,7 +108,7 @@ void AppMenus::reload()
     .FirstChild("key").ToElement();
   while (xmlKey) {
     const char* command_name = xmlKey->Attribute("command");
-    const char* command_key = xmlKey->Attribute("shortcut");
+    const char* command_key = getShortcut(xmlKey);
 
     if (command_name && command_key) {
       Command* command = CommandsModule::instance()->getCommandByName(command_name);
@@ -157,7 +157,7 @@ void AppMenus::reload()
     .FirstChild("key").ToElement();
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
-    const char* tool_key = xmlKey->Attribute("shortcut");
+    const char* tool_key = getShortcut(xmlKey);
 
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
@@ -178,8 +178,7 @@ void AppMenus::reload()
     .FirstChild("key").ToElement();
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
-    const char* tool_key = xmlKey->Attribute("shortcut");
-
+    const char* tool_key = getShortcut(xmlKey);
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
@@ -199,7 +198,7 @@ void AppMenus::reload()
     .FirstChild("key").ToElement();
   while (xmlKey) {
     const char* tool_action = xmlKey->Attribute("action");
-    const char* tool_key = xmlKey->Attribute("shortcut");
+    const char* tool_key = getShortcut(xmlKey);
 
     if (tool_action && tool_key) {
       PRINTF(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
@@ -392,6 +391,24 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command,
         applyShortcutToMenuitemsWithCommand(submenu, command, params, accel);
     }
   }
+}
+
+const char* AppMenus::getShortcut(TiXmlElement* elem)
+{
+  const char* shortcut = NULL;
+
+#if defined ALLEGRO_WINDOWS
+  if (!shortcut) shortcut = elem->Attribute("win");
+#elif defined ALLEGRO_MACOSX
+  if (!shortcut) shortcut = elem->Attribute("mac");
+#elif defined ALLEGRO_UNIX
+  if (!shortcut) shortcut = elem->Attribute("linux");
+#endif
+
+  if (!shortcut)
+    shortcut = elem->Attribute("shortcut");
+
+  return shortcut;
 }
 
 } // namespace app

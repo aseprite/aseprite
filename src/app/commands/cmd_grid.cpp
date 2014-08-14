@@ -53,14 +53,14 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     return docSettings->getGridVisible();
   }
 
   void onExecute(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     docSettings->setGridVisible(docSettings->getGridVisible() ? false: true);
   }
@@ -80,14 +80,14 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     return docSettings->getSnapToGrid();
   }
 
   void onExecute(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
     char buf[512];
 
     docSettings->setSnapToGrid(docSettings->getSnapToGrid() ? false: true);
@@ -130,7 +130,7 @@ void GridSettingsCommand::onExecute(Context* context)
   Widget* grid_w = app::find_widget<Widget>(window, "grid_w");
   Widget* grid_h = app::find_widget<Widget>(window, "grid_h");
 
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
   Rect bounds = docSettings->getGridBounds();
 
   grid_x->setTextf("%d", bounds.x);

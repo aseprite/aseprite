@@ -33,8 +33,8 @@ using namespace undo;
 
 SetCelPosition::SetCelPosition(ObjectsContainer* objects, Cel* cel)
   : m_celId(objects->addObject(cel))
-  , m_x(cel->getX())
-  , m_y(cel->getY())
+  , m_x(cel->x())
+  , m_y(cel->y())
 {
 }
 

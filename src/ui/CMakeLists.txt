@@ -7,7 +7,6 @@ add_library(ui-lib
   box.cpp
   button.cpp
   clipboard.cpp
-  color.cpp
   combobox.cpp
   component.cpp
   cursor.cpp
@@ -15,8 +14,6 @@ add_library(ui-lib
   draw.cpp
   entry.cpp
   event.cpp
-  font.cpp
-  fontbmp.cpp
   graphics.cpp
   grid.cpp
   image_view.cpp
@@ -34,6 +31,7 @@ add_library(ui-lib
   overlay.cpp
   overlay_manager.cpp
   paint_event.cpp
+  panel.cpp
   popup_window.cpp
   preferred_size_event.cpp
   property.cpp

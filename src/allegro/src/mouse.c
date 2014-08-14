@@ -56,7 +56,7 @@ int _mouse_y = 0;
 int _mouse_z = 0;
 int _mouse_w = 0;
 int _mouse_b = 0;
-int _mouse_on = TRUE;
+int _mouse_on = FALSE;
 
 static int mon = TRUE;
 

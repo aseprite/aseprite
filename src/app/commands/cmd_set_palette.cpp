@@ -27,7 +27,7 @@
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"
 #include "app/undo_transaction.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/unique_ptr.h"
 #include "raster/palette.h"
 #include "ui/alert.h"
@@ -62,7 +62,7 @@ void SetPaletteCommand::onExecute(Context* context)
   // Set default palette
   else {
     set_default_palette(m_palette);
-    set_config_string("GfxMode", "Palette", m_palette->getFilename().c_str());
+    set_config_string("GfxMode", "Palette", m_palette->filename().c_str());
   }
 
   // Set the palette calling the hooks

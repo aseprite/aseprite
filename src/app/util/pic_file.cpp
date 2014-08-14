@@ -185,9 +185,9 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   int c, u, v, bpp, size, byte;
   PACKFILE* f;
 
-  if (image->getPixelFormat() == IMAGE_INDEXED)
+  if (image->pixelFormat() == IMAGE_INDEXED)
     bpp = 8;
-  else if (image->getPixelFormat() == IMAGE_BITMAP)
+  else if (image->pixelFormat() == IMAGE_BITMAP)
     bpp = 1;
   else
     return -1;
@@ -202,15 +202,15 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   size = 64;
   /* bit-per-pixel image data block */
   if (bpp == 1)
-    size += (4+2+((image->getWidth()+7)/8)*image->getHeight());
+    size += (4+2+((image->width()+7)/8)*image->height());
   /* color palette info + byte-per-pixel image data block */
   else
-    size += (4+2+2+256*3) + (4+2+image->getWidth()*image->getHeight());
+    size += (4+2+2+256*3) + (4+2+image->width()*image->height());
 
   pack_iputl(size, f);          /* file size */
   pack_iputw(0x9500, f);        /* magic number 9500h */
-  pack_iputw(image->getWidth(), f);      /* width */
-  pack_iputw(image->getHeight(), f);      /* height */
+  pack_iputw(image->width(), f);      /* width */
+  pack_iputw(image->height(), f);      /* height */
   pack_iputw(x, f);             /* X offset */
   pack_iputw(y, f);             /* Y offset */
   pack_iputl(0, f);             /* user ID, is 0 */
@@ -223,10 +223,10 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   /* 1 bpp */
   if (bpp == 1) {
     /* bit-per-data image data block */
-    pack_iputl((4+2+((image->getWidth()+7)/8)*image->getHeight()), f);    /* block size */
+    pack_iputl((4+2+((image->width()+7)/8)*image->height()), f);    /* block size */
     pack_iputw(2, f);                                  /* block type */
-    for (v=0; v<image->getHeight(); v++)                          /* image data */
-      for (u=0; u<(image->getWidth()+7)/8; u++) {
+    for (v=0; v<image->height(); v++)                          /* image data */
+      for (u=0; u<(image->width()+7)/8; u++) {
         byte = 0;
         for (c=0; c<8; c++)
           if (get_pixel(image, u*8+c, v))
@@ -247,10 +247,10 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
     }
 
     /* pixel-per-data image data block */
-    pack_iputl ((4+2+image->getWidth()*image->getHeight()), f); // Block size
+    pack_iputl ((4+2+image->width()*image->height()), f); // Block size
     pack_iputw (1, f);                   // Block type
-    for (v=0; v<image->getHeight(); v++) // Image data
-      for (u=0; u<image->getWidth(); u++)
+    for (v=0; v<image->height(); v++) // Image data
+      for (u=0; u<image->width(); u++)
         pack_putc(image->getPixel(u, v), f);
   }
 

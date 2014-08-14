@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "app/ui/color_bar.h"
 #include "base/observable.h"
 #include "ui/manager.h"
+#include "ui/system.h"
 
 #include <algorithm>
 #include <allegro/color.h>
@@ -212,6 +213,7 @@ UISettingsImpl::UISettingsImpl()
   , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
+  , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
 {
@@ -224,6 +226,7 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
+  set_config_bool("Options", "ZoomWithMouseWheel", m_zoomWithScrollWheel);
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
 
@@ -243,6 +246,31 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
+
+size_t UISettingsImpl::undoSizeLimit() const
+{
+  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8));
+}
+
+bool UISettingsImpl::undoGotoModified() const
+{
+  return get_config_bool("Options", "UndoGotoModified", true);
+}
+
+void UISettingsImpl::setUndoSizeLimit(size_t size)
+{
+  set_config_int("Options", "UndoSizeLimit", size);
+}
+
+void UISettingsImpl::setUndoGotoModified(bool state)
+{
+  set_config_bool("Options", "UndoGotoModified", state);
+}
+
+bool UISettingsImpl::getZoomWithScrollWheel()
+{
+  return m_zoomWithScrollWheel;
+}
 
 bool UISettingsImpl::getShowSpriteEditorScrollbars()
 {
@@ -275,6 +303,11 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
+}
+
+void UISettingsImpl::setZoomWithScrollWheel(bool state)
+{
+  m_zoomWithScrollWheel = state;
 }
 
 void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
@@ -362,6 +395,22 @@ void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
 ISelectionSettings* UISettingsImpl::selection()
 {
   return m_selectionSettings;
+}
+
+IExperimentalSettings* UISettingsImpl::experimental()
+{
+  return this;
+}
+
+bool UISettingsImpl::useNativeCursor() const
+{
+  return get_config_bool("Options", "NativeCursor", false);
+}
+
+void UISettingsImpl::setUseNativeCursor(bool state)
+{
+  set_config_bool("Options", "NativeCursor", state);
+  ui::set_use_native_cursors(state);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -662,6 +711,7 @@ class UIToolSettingsImpl
   UIBrushSettingsImpl m_brush;
   int m_opacity;
   int m_tolerance;
+  bool m_contiguous;
   bool m_filled;
   bool m_previewFilled;
   int m_spray_width;
@@ -680,6 +730,7 @@ public:
     m_opacity = MID(0, m_opacity, 255);
     m_tolerance = get_config_int(cfg_section.c_str(), "Tolerance", 0);
     m_tolerance = MID(0, m_tolerance, 255);
+    m_contiguous = get_config_bool(cfg_section.c_str(), "Contiguous", true);
     m_filled = false;
     m_previewFilled = get_config_bool(cfg_section.c_str(), "PreviewFilled", false);
     m_spray_width = 16;
@@ -718,6 +769,7 @@ public:
 
     set_config_int(cfg_section.c_str(), "Opacity", m_opacity);
     set_config_int(cfg_section.c_str(), "Tolerance", m_tolerance);
+    set_config_bool(cfg_section.c_str(), "Contiguous", m_contiguous);
     set_config_int(cfg_section.c_str(), "BrushType", m_brush.getType());
     set_config_int(cfg_section.c_str(), "BrushSize", m_brush.getSize());
     set_config_int(cfg_section.c_str(), "BrushAngle", m_brush.getAngle());
@@ -741,6 +793,7 @@ public:
 
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
+  bool getContiguous() OVERRIDE { return m_contiguous; }
   bool getFilled() OVERRIDE { return m_filled; }
   bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
   int getSprayWidth() OVERRIDE { return m_spray_width; }
@@ -750,6 +803,7 @@ public:
 
   void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
   void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
+  void setContiguous(bool state) OVERRIDE { m_contiguous = state; }
   void setFilled(bool state) OVERRIDE { m_filled = state; }
   void setPreviewFilled(bool state) OVERRIDE { m_previewFilled = state; }
   void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }
@@ -760,13 +814,19 @@ public:
 
     tools::ToolBox* toolBox = App::instance()->getToolBox();
     for (int i=0; i<2; ++i) {
-      if (algorithm == kPixelPerfectFreehandAlgorithm) {
-        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
-        m_tool->setTracePolicy(i, tools::TracePolicyLast);
-      }
-      else {
-        m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
-        m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+      switch (algorithm) {
+        case kDefaultFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines));
+          m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+          break;
+        case kPixelPerfectFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect));
+          m_tool->setTracePolicy(i, tools::TracePolicyLast);
+          break;
+        case kDotsFreehandAlgorithm:
+          m_tool->setIntertwine(i, toolBox->getIntertwinerById(tools::WellKnownIntertwiners::None));
+          m_tool->setTracePolicy(i, tools::TracePolicyAccumulate);
+          break;
       }
     }
   }

@@ -65,13 +65,13 @@ void CropSpriteCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
-  Mask* mask(document->getMask());
+  Mask* mask(document->mask());
   {
     UndoTransaction undoTransaction(writer.context(), "Sprite Crop");
     int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
-                                               sprite->getPixelFormat());
+                                               sprite->pixelFormat());
 
-    document->getApi().cropSprite(sprite, mask->getBounds(), bgcolor);
+    document->getApi().cropSprite(sprite, mask->bounds(), bgcolor);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();
@@ -108,7 +108,7 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   {
     int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
-                                               sprite->getPixelFormat());
+                                               sprite->pixelFormat());
 
     UndoTransaction undoTransaction(writer.context(), "Trim Sprite");
     document->getApi().trimSprite(sprite, bgcolor);

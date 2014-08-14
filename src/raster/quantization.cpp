@@ -25,7 +25,6 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/blend.h"
-#include "raster/color_histogram.h"
 #include "raster/image.h"
 #include "raster/image_bits.h"
 #include "raster/images_collector.h"
@@ -45,26 +44,31 @@ namespace quantization {
 using namespace gfx;
 
 // Converts a RGB image to indexed with ordered dithering method.
-static Image* ordered_dithering(const Image* src_image,
-                                int offsetx, int offsety,
-                                const RgbMap* rgbmap,
-                                const Palette* palette);
+static Image* ordered_dithering(
+  const Image* src_image,
+  Image* dst_image,
+  int offsetx, int offsety,
+  const RgbMap* rgbmap,
+  const Palette* palette);
 
-static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer);
-
-Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
+Palette* create_palette_from_rgb(
+  const Sprite* sprite,
+  FrameNumber frameNumber,
+  Palette* palette)
 {
-  bool has_background_layer = (sprite->getBackgroundLayer() != NULL);
-  Palette* palette = new Palette(FrameNumber(0), 256);
+  if (!palette)
+    palette = new Palette(FrameNumber(0), 256);
+
+  bool has_background_layer = (sprite->backgroundLayer() != NULL);
   Image* flat_image;
 
-  ImagesCollector images(sprite->getFolder(), // All layers
+  ImagesCollector images(sprite->folder(), // All layers
                          frameNumber,         // Ignored, we'll use all frames
                          true,                // All frames,
                          false); // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight());
+  flat_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
   clear_image(flat_image, 0);
   sprite->render(flat_image, 0, 0, frameNumber);
 
@@ -78,37 +82,41 @@ Palette* create_palette_from_rgb(const Sprite* sprite, FrameNumber frameNumber)
   image_array[c++] = flat_image; // The 'flat_image'
 
   // Generate an optimized palette for all images
-  create_palette_from_bitmaps(image_array, palette, has_background_layer);
+  create_palette_from_images(image_array, palette, has_background_layer);
 
   delete flat_image;
   return palette;
 }
 
-Image* convert_pixel_format(const Image* image,
-                            PixelFormat pixelFormat,
-                            DitheringMethod ditheringMethod,
-                            const RgbMap* rgbmap,
-                            const Palette* palette,
-                            bool is_background_layer)
+Image* convert_pixel_format(
+  const Image* image,
+  Image* new_image,
+  PixelFormat pixelFormat,
+  DitheringMethod ditheringMethod,
+  const RgbMap* rgbmap,
+  const Palette* palette,
+  bool is_background)
 {
+  if (!new_image)
+    new_image = Image::create(pixelFormat, image->width(), image->height());
+
   // RGB -> Indexed with ordered dithering
-  if (image->getPixelFormat() == IMAGE_RGB &&
+  if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringMethod == DITHERING_ORDERED) {
-    return ordered_dithering(image, 0, 0, rgbmap, palette);
+    return ordered_dithering(image, new_image, 0, 0, rgbmap, palette);
   }
 
-  Image* new_image = Image::create(pixelFormat, image->getWidth(), image->getHeight());
   color_t c;
   int r, g, b;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB: {
       const LockImageBits<RgbTraits> srcBits(image);
       LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // RGB -> RGB
         case IMAGE_RGB:
@@ -163,7 +171,7 @@ Image* convert_pixel_format(const Image* image,
       const LockImageBits<GrayscaleTraits> srcBits(image);
       LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // Grayscale -> RGB
         case IMAGE_RGB: {
@@ -212,7 +220,7 @@ Image* convert_pixel_format(const Image* image,
       const LockImageBits<IndexedTraits> srcBits(image);
       LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
 
-      switch (new_image->getPixelFormat()) {
+      switch (new_image->pixelFormat()) {
 
         // Indexed -> RGB
         case IMAGE_RGB: {
@@ -223,7 +231,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else
               *dst_it = rgba(rgba_getr(palette->getEntry(c)),
@@ -243,7 +251,7 @@ Image* convert_pixel_format(const Image* image,
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -262,13 +270,13 @@ Image* convert_pixel_format(const Image* image,
         case IMAGE_INDEXED: {
           LockImageBits<IndexedTraits> dstBits(new_image, Image::WriteLock);
           LockImageBits<IndexedTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
-          color_t dstMaskColor = new_image->getMaskColor();
+          color_t dstMaskColor = new_image->maskColor();
 
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
-            if (!is_background_layer && c == image->getMaskColor())
+            if (!is_background && c == image->maskColor())
               *dst_it = dstMaskColor;
             else {
               r = rgba_getr(palette->getEntry(c));
@@ -321,13 +329,14 @@ static int pattern[8][8] = {
                                  4 * ((g1)-(g2)) * ((g1)-(g2)) +        \
                                  2 * ((b1)-(b2)) * ((b1)-(b2)))
 
-static Image* ordered_dithering(const Image* src_image,
-                                int offsetx, int offsety,
-                                const RgbMap* rgbmap,
-                                const Palette* palette)
+static Image* ordered_dithering(
+  const Image* src_image,
+  Image* dst_image,
+  int offsetx, int offsety,
+  const RgbMap* rgbmap,
+  const Palette* palette)
 {
   int oppr, oppg, oppb, oppnrcm;
-  Image *dst_image;
   int dither_const;
   int nr, ng, nb;
   int r, g, b, a;
@@ -335,17 +344,13 @@ static Image* ordered_dithering(const Image* src_image,
   int x, y;
   color_t c;
 
-  dst_image = Image::create(IMAGE_INDEXED, src_image->getWidth(), src_image->getHeight());
-  if (!dst_image)
-    return NULL;
-
   const LockImageBits<RgbTraits> src_bits(src_image);
   LockImageBits<IndexedTraits> dst_bits(dst_image);
   LockImageBits<RgbTraits>::const_iterator src_it = src_bits.begin();
   LockImageBits<IndexedTraits>::iterator dst_it = dst_bits.begin();
 
-  for (y=0; y<src_image->getHeight(); ++y) {
-    for (x=0; x<src_image->getWidth(); ++x, ++src_it, ++dst_it) {
+  for (y=0; y<src_image->height(); ++y) {
+    for (x=0; x<src_image->width(); ++x, ++src_it, ++dst_it) {
       ASSERT(src_it != src_bits.end());
       ASSERT(dst_it != dst_bits.end());
 
@@ -405,34 +410,70 @@ static Image* ordered_dithering(const Image* src_image,
 // Creation of optimized palette for RGB images
 // by David Capello
 
-static void create_palette_from_bitmaps(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+void PaletteOptimizer::feedWithImage(Image* image)
 {
-  quantization::ColorHistogram<5, 6, 5> histogram;
   uint32_t color;
 
+  ASSERT(image);
+  switch (image->pixelFormat()) {
+
+    case IMAGE_RGB:
+      {
+        const LockImageBits<RgbTraits> bits(image);
+        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+        for (; it != end; ++it) {
+          color = *it;
+
+          if (rgba_geta(color) > 0) {
+            color |= rgba(0, 0, 0, 255);
+            m_histogram.addSamples(color, 1);
+          }
+        }
+      }
+      break;
+
+    case IMAGE_GRAYSCALE:
+      {
+        const LockImageBits<RgbTraits> bits(image);
+        LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
+
+        for (; it != end; ++it) {
+          color = *it;
+
+          if (graya_geta(color) > 0) {
+            color = graya_getv(color);
+            m_histogram.addSamples(rgba(color, color, color, 255), 1);
+          }
+        }
+      }
+      break;
+
+    case IMAGE_INDEXED:
+      ASSERT(false);
+      break;
+
+  }
+}
+
+void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
+{
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
   // will not be used later in the color conversion (from RGB to
   // Indexed).
   int first_usable_entry = (has_background_layer ? 0: 1);
-
-  for (int i=0; i<(int)images.size(); ++i) {
-    const Image* image = images[i];
-    const LockImageBits<RgbTraits> bits(image);
-    LockImageBits<RgbTraits>::const_iterator it = bits.begin(), end = bits.end();
-
-    for (; it != end; ++it) {
-      color = *it;
-
-      if (rgba_geta(color) > 0) {
-        color |= rgba(0, 0, 0, 255);
-        histogram.addSamples(color, 1);
-      }
-    }
-  }
-
-  int used_colors = histogram.createOptimizedPalette(palette, first_usable_entry, 255);
+  int used_colors = m_histogram.createOptimizedPalette(palette, first_usable_entry, 255);
   //palette->resize(first_usable_entry+used_colors);   // TODO
+}
+
+void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+{
+  PaletteOptimizer optimizer;
+  for (int i=0; i<(int)images.size(); ++i)
+    optimizer.feedWithImage(images[i]);
+
+  optimizer.calculate(palette, has_background_layer);
 }
 
 } // namespace quantization

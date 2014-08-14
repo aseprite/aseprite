@@ -30,14 +30,13 @@
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/primitives.h"
 #include "raster/rotate.h"
 #include "raster/sprite.h"
-
-#include <allegro.h>
+#include "she/system.h"
 
 #define MAX_THUMBNAIL_SIZE              128
 
@@ -72,11 +71,12 @@ private:
       // Post load
       fop_post_load(m_fop);
 
-      // Convert the loaded document into the Allegro bitmap "m_thumbnail".
-      const Sprite* sprite = (m_fop->document && m_fop->document->getSprite()) ? m_fop->document->getSprite():
-                                                                                 NULL;
+      // Convert the loaded document into the she::Surface.
+      const Sprite* sprite = (m_fop->document && m_fop->document->sprite()) ?
+        m_fop->document->sprite(): NULL;
+
       if (!fop_is_stop(m_fop) && sprite) {
-        // The palette to convert the Image to a BITMAP
+        // The palette to convert the Image
         m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
 
         // Render the 'sprite' in one plain 'image'
@@ -84,32 +84,38 @@ private:
           sprite, NULL, FrameNumber(0));
 
         base::UniquePtr<Image> image(renderEngine.renderSprite(
-            0, 0, sprite->getWidth(), sprite->getHeight(),
+            0, 0, sprite->width(), sprite->height(),
             FrameNumber(0), 0, true, false));
 
         // Calculate the thumbnail size
-        int thumb_w = MAX_THUMBNAIL_SIZE * image->getWidth() / MAX(image->getWidth(), image->getHeight());
-        int thumb_h = MAX_THUMBNAIL_SIZE * image->getHeight() / MAX(image->getWidth(), image->getHeight());
-        if (MAX(thumb_w, thumb_h) > MAX(image->getWidth(), image->getHeight())) {
-          thumb_w = image->getWidth();
-          thumb_h = image->getHeight();
+        int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());
+        int thumb_h = MAX_THUMBNAIL_SIZE * image->height() / MAX(image->width(), image->height());
+        if (MAX(thumb_w, thumb_h) > MAX(image->width(), image->height())) {
+          thumb_w = image->width();
+          thumb_h = image->height();
         }
         thumb_w = MID(1, thumb_w, MAX_THUMBNAIL_SIZE);
         thumb_h = MID(1, thumb_h, MAX_THUMBNAIL_SIZE);
 
         // Stretch the 'image'
-        m_thumbnail.reset(Image::create(image->getPixelFormat(), thumb_w, thumb_h));
+        m_thumbnail.reset(Image::create(image->pixelFormat(), thumb_w, thumb_h));
         clear_image(m_thumbnail, 0);
         image_scale(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
       }
 
+      // Close file
       delete m_fop->document;
 
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
-        BITMAP* bmp = create_bitmap_ex(16, m_thumbnail->getWidth(), m_thumbnail->getHeight());
-        convert_image_to_allegro(m_thumbnail, bmp, 0, 0, m_palette);
-        m_fileitem->setThumbnail(bmp);
+        she::Surface* thumbnail = she::instance()->createRgbaSurface(
+          m_thumbnail->width(),
+          m_thumbnail->height());
+
+        convert_image_to_surface(m_thumbnail, m_palette, thumbnail,
+          0, 0, 0, 0, m_thumbnail->width(), m_thumbnail->height());
+
+        m_fileitem->setThumbnail(thumbnail);
       }
     }
     catch (const std::exception& e) {
@@ -187,9 +193,11 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
       getWorkerStatus(fileitem, progress) != WithoutWorker)
     return;
 
-  FileOp* fop = fop_to_load_document(fileitem->getFileName().c_str(),
-                                     FILE_LOAD_SEQUENCE_NONE |
-                                     FILE_LOAD_ONE_FRAME);
+  FileOp* fop = fop_to_load_document(NULL,
+    fileitem->getFileName().c_str(),
+    FILE_LOAD_SEQUENCE_NONE |
+    FILE_LOAD_ONE_FRAME);
+
   if (!fop)
     return;
 

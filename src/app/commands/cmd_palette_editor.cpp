@@ -47,7 +47,7 @@
 #include "app/undo_transaction.h"
 #include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "gfx/hsv.h"
@@ -229,8 +229,8 @@ void PaletteEditorCommand::onExecute(Context* context)
   // Show the specified target color
   {
     app::Color color =
-      (m_background ? context->getSettings()->getBgColor():
-                      context->getSettings()->getFgColor());
+      (m_background ? context->settings()->getBgColor():
+                      context->settings()->getFgColor());
 
     g_window->setColor(color);
   }
@@ -582,12 +582,13 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    if (sprite->getPixelFormat() != IMAGE_RGB) {
+    if (sprite->pixelFormat() != IMAGE_RGB) {
       Alert::show("Error<<You can use this command only for RGB sprites||&OK");
       return;
     }
 
-    palette = quantization::create_palette_from_rgb(sprite, reader.frame());
+    palette = quantization::create_palette_from_rgb(
+      sprite, reader.frame(), NULL);
   }
 
   setNewPalette(palette, "Quantize Palette");
@@ -732,8 +733,8 @@ void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationNa
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
 {
-  if (UIContext::instance()->getActiveDocument() &&
-      UIContext::instance()->getActiveDocument()->getSprite()) {
+  if (UIContext::instance()->activeDocument() &&
+      UIContext::instance()->activeDocument()->sprite()) {
     try {
       ContextWriter writer(UIContext::instance());
       Document* document(writer.document());

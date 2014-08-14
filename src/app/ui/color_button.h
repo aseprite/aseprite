@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/color.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "raster/pixel_format.h"
 #include "ui/button.h"
@@ -34,7 +34,7 @@ namespace app {
     ColorButton(const app::Color& color, PixelFormat pixelFormat);
     ~ColorButton();
 
-    PixelFormat getPixelFormat() const;
+    PixelFormat pixelFormat() const;
     void setPixelFormat(PixelFormat pixelFormat);
 
     app::Color getColor() const;

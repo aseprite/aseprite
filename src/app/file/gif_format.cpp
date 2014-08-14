@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,23 @@
 #include "config.h"
 #endif
 
+#include "app/console.h"
+#include "app/context.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/file/gif_options.h"
+#include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/util/autocrop.h"
 #include "base/file_handle.h"
 #include "base/unique_ptr.h"
 #include "raster/raster.h"
 #include "ui/alert.h"
+#include "ui/button.h"
+
+#include "generated_gif_options.h"
 
 #include <gif_lib.h>
 
@@ -72,6 +79,7 @@ struct GifData
 };
 
 class GifFormat : public FileFormat {
+
   const char* onGetName() const { return "gif"; }
   const char* onGetExtensions() const { return "gif"; }
   int onGetFlags() const {
@@ -84,7 +92,8 @@ class GifFormat : public FileFormat {
       FILE_SUPPORT_GRAYA |
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_PALETTES;
+      FILE_SUPPORT_PALETTES |
+      FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
   bool onLoad(FileOp* fop);
@@ -93,6 +102,7 @@ class GifFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) OVERRIDE;
 #endif
+  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) OVERRIDE;
 };
 
 FileFormat* CreateGifFormat()
@@ -157,7 +167,8 @@ bool GifFormat::onLoad(FileOp* fop)
     ColorMapObject* colormap = gif_file->SColorMap;
     for (int i=0; i<colormap->ColorCount; ++i) {
       current_palette->setEntry(i,
-        rgba(colormap->Colors[i].Red,
+        rgba(
+          colormap->Colors[i].Red,
           colormap->Colors[i].Green,
           colormap->Colors[i].Blue, 255));
     }
@@ -208,9 +219,11 @@ bool GifFormat::onLoad(FileOp* fop)
         if (gif_file->Image.ColorMap) {
           ColorMapObject* colormap = gif_file->Image.ColorMap;
           for (int i=0; i<colormap->ColorCount; ++i) {
-            current_palette->setEntry(i, rgba(colormap->Colors[i].Red,
-                                               colormap->Colors[i].Green,
-                                               colormap->Colors[i].Blue, 255));
+            current_palette->setEntry(i,
+              rgba(
+                colormap->Colors[i].Red,
+                colormap->Colors[i].Green,
+                colormap->Colors[i].Blue, 255));
           }
         }
 
@@ -249,7 +262,7 @@ bool GifFormat::onLoad(FileOp* fop)
         data->frames[frame_num].disposal_method = disposal_method;
         data->frames[frame_num].mask_index = transparent_index;
 
-        PRINTF("Frame[%d] transparent index  = %d\n", (int)frame_num, transparent_index);
+        // PRINTF("Frame[%d] transparent index  = %d\n", (int)frame_num, transparent_index);
 
         ++frame_num;
 
@@ -272,8 +285,8 @@ bool GifFormat::onLoad(FileOp* fop)
             transparent_index = (extension[1] & 1) ? extension[4]: -1;
             frame_delay       = (extension[3] << 8) | extension[2];
 
-            TRACE("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
-                  disposal_method, transparent_index, frame_delay);
+            // PRINTF("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
+            //   disposal_method, transparent_index, frame_delay);
           }
         }
 
@@ -299,7 +312,7 @@ bool GifFormat::onLoad(FileOp* fop)
       break;
   } while (record_type != TERMINATE_RECORD_TYPE);
 
-  fop->document = new Document(NULL);
+  fop->createDocument(NULL);    // The sprite is set in onPostLoad()
   return true;
 }
 
@@ -320,8 +333,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
            frame_end=data->frames.end(); frame_it != frame_end; ++frame_it) {
 
       // Convert the indexed image to RGB
-      for (int y=0; y<frame_it->image->getHeight(); ++y) {
-        for (int x=0; x<frame_it->image->getWidth(); ++x) {
+      for (int y=0; y<frame_it->image->height(); ++y) {
+        for (int x=0; x<frame_it->image->width(); ++x) {
           int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
 
           if (pixel_index >= 0 && pixel_index < 256) {
@@ -355,10 +368,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
       ui::Alert::show("GIF Conversion"
                       "<<The selected file: %s"
                       "<<is a transparent GIF image which uses multiple background colors."
-                      "<<ASEPRITE cannot handle this kind of GIF correctly in Indexed format."
+                      "<<" PACKAGE " cannot handle this kind of GIF correctly in Indexed format."
                       "<<What would you like to do?"
                       "||Convert to &RGBA||Keep &Indexed||&Cancel",
-                      fop->document->getFilename().c_str());
+                      fop->document->name().c_str());
 
     if (result == 1)
       pixelFormat = IMAGE_RGB;
@@ -367,11 +380,12 @@ bool GifFormat::onPostLoad(FileOp* fop)
   }
 
   // Create the sprite with the GIF dimension
+  // TODO instead of 256 use the number of colors from the document
   UniquePtr<Sprite> sprite(new Sprite(pixelFormat, data->sprite_w, data->sprite_h, 256));
 
   // Create the main layer
   LayerImage* layer = new LayerImage(sprite);
-  sprite->getFolder()->addLayer(layer);
+  sprite->folder()->addLayer(layer);
 
   if (pixelFormat == IMAGE_INDEXED) {
     if (data->bgcolor_index >= 0)
@@ -413,8 +427,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
     switch (pixelFormat) {
 
       case IMAGE_INDEXED:
-        for (int y = 0; y < frame_it->image->getHeight(); ++y)
-          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+        for (int y = 0; y < frame_it->image->height(); ++y)
+          for (int x = 0; x < frame_it->image->width(); ++x) {
             int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
               put_pixel_fast<IndexedTraits>(current_image,
@@ -426,8 +440,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
       case IMAGE_RGB:
         // Convert the indexed image to RGB
-        for (int y = 0; y < frame_it->image->getHeight(); ++y)
-          for (int x = 0; x < frame_it->image->getWidth(); ++x) {
+        for (int y = 0; y < frame_it->image->height(); ++y)
+          for (int x = 0; x < frame_it->image->width(); ++x) {
             int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
             if (pixel_index != frame_it->mask_index)
               put_pixel_fast<RgbTraits>(current_image,
@@ -446,7 +460,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       try {
         // Add the image in the sprite's stock and update the cel's
         // reference to the new stock's image.
-        cel->setImage(sprite->getStock()->addImage(cel_image));
+        cel->setImage(sprite->stock()->addImage(cel_image));
       }
       catch (...) {
         delete cel_image;
@@ -475,8 +489,8 @@ bool GifFormat::onPostLoad(FileOp* fop)
         fill_rect(current_image,
                   frame_it->x,
                   frame_it->y,
-                  frame_it->x+frame_it->image->getWidth()-1,
-                  frame_it->y+frame_it->image->getHeight()-1,
+                  frame_it->x+frame_it->image->width()-1,
+                  frame_it->y+frame_it->image->height()-1,
                   bgcolor);
         break;
 
@@ -493,7 +507,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       copy_image(previous_image, current_image, 0, 0);
   }
 
-  fop->document->addSprite(sprite);
+  fop->document->sprites().add(sprite);
   sprite.release();             // Now the sprite is owned by fop->document
 
   return true;
@@ -524,26 +538,58 @@ bool GifFormat::onSave(FileOp* fop)
   if (!gif_file)
     throw Exception("Error creating GIF file.\n");
 
-  Sprite* sprite = fop->document->getSprite();
-  int sprite_w = sprite->getWidth();
-  int sprite_h = sprite->getHeight();
-  PixelFormat sprite_format = sprite->getPixelFormat();
-  bool interlace = false;
+  SharedPtr<GifOptions> gif_options = fop->seq.format_options;
+  Sprite* sprite = fop->document->sprite();
+  int sprite_w = sprite->width();
+  int sprite_h = sprite->height();
+  PixelFormat sprite_format = sprite->pixelFormat();
+  bool interlaced = gif_options->interlaced();
   int loop = 0;
-  int background_color = (sprite_format == IMAGE_INDEXED ? sprite->getTransparentColor(): 0);
-  int transparent_index = (sprite->getBackgroundLayer() ? -1: sprite->getTransparentColor());
+  bool has_background = (sprite->backgroundLayer() ? true: false);
+  int background_color = (sprite_format == IMAGE_INDEXED ? sprite->transparentColor(): 0);
+  int transparent_index = (has_background ? -1: sprite->transparentColor());
 
-  Palette* current_palette = sprite->getPalette(FrameNumber(0));
-  Palette* previous_palette = current_palette;
-  ColorMapObject* color_map = GifMakeMapObject(current_palette->size(), NULL);
-  for (int i = 0; i < current_palette->size(); ++i) {
-    color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
-    color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));
-    color_map->Colors[i].Blue  = rgba_getb(current_palette->getEntry(i));
+  Palette current_palette = *sprite->getPalette(FrameNumber(0));
+  Palette previous_palette(current_palette);
+  RgbMap rgbmap;
+
+  // The color map must be a power of two.
+  int color_map_size = current_palette.size();
+  for (int i = 30; i >= 0; --i) {
+    if (color_map_size & (1 << i)) {
+      color_map_size = (1 << (i + (color_map_size & (1 << (i - 1)) ? 1: 0)));
+      break;
+    }
   }
+  ASSERT(color_map_size > 0 && color_map_size <= 256);
 
-  if (EGifPutScreenDesc(gif_file, sprite_w, sprite_h,
-                        color_map->BitsPerPixel,
+  ColorMapObject* color_map = NULL;
+  int bpp;
+
+  // We use a global color map only if this is a transparent GIF
+  if (!has_background) {
+    color_map = GifMakeMapObject(color_map_size, NULL);
+    if (color_map == NULL)
+      throw std::bad_alloc();
+
+    int i;
+    for (i = 0; i < current_palette.size(); ++i) {
+      color_map->Colors[i].Red   = rgba_getr(current_palette.getEntry(i));
+      color_map->Colors[i].Green = rgba_getg(current_palette.getEntry(i));
+      color_map->Colors[i].Blue  = rgba_getb(current_palette.getEntry(i));
+    }
+    for (; i < color_map_size; ++i) {
+      color_map->Colors[i].Red   = 0;
+      color_map->Colors[i].Green = 0;
+      color_map->Colors[i].Blue  = 0;
+    }
+
+    bpp = color_map->BitsPerPixel;
+  }
+  else
+    bpp = 8;
+
+  if (EGifPutScreenDesc(gif_file, sprite_w, sprite_h, bpp,
                         background_color, color_map) == GIF_ERROR)
     throw Exception("Error writing GIF header.\n");
 
@@ -562,56 +608,71 @@ bool GifFormat::onSave(FileOp* fop)
   clear_image(current_image, background_color);
   clear_image(previous_image, background_color);
 
-  for (FrameNumber frame_num(0); frame_num<sprite->getTotalFrames(); ++frame_num) {
-    current_palette = sprite->getPalette(frame_num);
+  ColorMapObject* image_color_map = NULL;
 
+  // Check if the user wants one optimized palette for all frames.
+  if (sprite_format != IMAGE_INDEXED &&
+      gif_options->quantize() == GifOptions::QuantizeAll) {
+    // Feed the optimizer with all rendered frames.
+    raster::quantization::PaletteOptimizer optimizer;
+    for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
+      clear_image(buffer_image, background_color);
+      layer_render(sprite->folder(), buffer_image, 0, 0, frame_num);
+      optimizer.feedWithImage(buffer_image);
+    }
+
+    current_palette.makeBlack();
+    optimizer.calculate(&current_palette, has_background);
+
+    rgbmap.regenerate(&current_palette, transparent_index);
+  }
+
+  for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
     if (sprite_format != IMAGE_INDEXED) {
-      clear_image(buffer_image, 0);
-      layer_render(sprite->getFolder(), buffer_image, 0, 0, frame_num);
+      clear_image(buffer_image, background_color);
+      layer_render(sprite->folder(), buffer_image, 0, 0, frame_num);
 
-      switch (sprite_format) {
-
-        // Convert the RGB image to Indexed
-        case IMAGE_RGB:
-          for (int y = 0; y < sprite_h; ++y)
-            for (int x = 0; x < sprite_w; ++x) {
-              uint32_t pixel_value = get_pixel_fast<RgbTraits>(buffer_image, x, y);
-              put_pixel_fast<IndexedTraits>(current_image, x, y,
-                                            (rgba_geta(pixel_value) >= 128) ?
-                                            current_palette->findBestfit(rgba_getr(pixel_value),
-                                                                         rgba_getg(pixel_value),
-                                                                         rgba_getb(pixel_value)):
-                                            transparent_index);
-            }
+      switch (gif_options->quantize()) {
+        case GifOptions::NoQuantize:
+          sprite->getPalette(frame_num)->copyColorsTo(&current_palette);
+          rgbmap.regenerate(&current_palette, transparent_index);
           break;
+        case GifOptions::QuantizeEach:
+          {
+            current_palette.makeBlack();
 
-        // Convert the Grayscale image to Indexed
-        case IMAGE_GRAYSCALE:
-          for (int y = 0; y < sprite_h; ++y)
-            for (int x = 0; x < sprite_w; ++x) {
-              uint16_t pixel_value = get_pixel_fast<GrayscaleTraits>(buffer_image, x, y);
-              put_pixel_fast<IndexedTraits>(current_image, x, y,
-                                            (graya_geta(pixel_value) >= 128) ?
-                                            current_palette->findBestfit(graya_getv(pixel_value),
-                                                                         graya_getv(pixel_value),
-                                                                         graya_getv(pixel_value)):
-                                            transparent_index);
-            }
+            std::vector<Image*> imgarray(1);
+            imgarray[0] = buffer_image;
+            raster::quantization::create_palette_from_images(imgarray, &current_palette, has_background);
+            rgbmap.regenerate(&current_palette, transparent_index);
+          }
+          break;
+        case GifOptions::QuantizeAll:
+          // Do nothing, we've already calculate the palette for all frames.
           break;
       }
+
+      quantization::convert_pixel_format(
+        buffer_image,
+        current_image,
+        IMAGE_INDEXED,
+        gif_options->dithering(),
+        &rgbmap,
+        &current_palette,
+        has_background);
     }
     // If the sprite is Indexed, we can render directly into "current_image".
     else {
       clear_image(current_image, background_color);
-      layer_render(sprite->getFolder(), current_image, 0, 0, frame_num);
+      layer_render(sprite->folder(), current_image, 0, 0, frame_num);
     }
 
     if (frame_num == 0) {
       frame_x = 0;
       frame_y = 0;
-      frame_w = sprite->getWidth();
-      frame_h = sprite->getHeight();
+      frame_w = sprite->width();
+      frame_h = sprite->height();
     }
     else {
       // Get the rectangle where start differences with the previous frame.
@@ -664,8 +725,8 @@ bool GifFormat::onSave(FileOp* fop)
     // frame and maybe the transparency index).
     {
       unsigned char extension_bytes[5];
-      int disposal_method = (sprite->getBackgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
-                                                            DISPOSAL_METHOD_RESTORE_BGCOLOR);
+      int disposal_method = (sprite->backgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
+                                                         DISPOSAL_METHOD_RESTORE_BGCOLOR);
       int frame_delay = sprite->getFrameDuration(frame_num) / 10;
 
       extension_bytes[0] = (((disposal_method & 7) << 2) |
@@ -679,26 +740,32 @@ bool GifFormat::onSave(FileOp* fop)
     }
 
     // Image color map
-    ColorMapObject* image_color_map = NULL;
-    if (current_palette != previous_palette) {
-      image_color_map = GifMakeMapObject(current_palette->size(), NULL);
-      for (int i = 0; i < current_palette->size(); ++i) {
-        image_color_map->Colors[i].Red   = rgba_getr(current_palette->getEntry(i));
-        image_color_map->Colors[i].Green = rgba_getg(current_palette->getEntry(i));
-        image_color_map->Colors[i].Blue  = rgba_getb(current_palette->getEntry(i));
+    if ((!color_map && frame_num == 0) ||
+        (current_palette.countDiff(&previous_palette, NULL, NULL) > 0)) {
+      if (!image_color_map) {
+        image_color_map = GifMakeMapObject(current_palette.size(), NULL);
+        if (image_color_map == NULL)
+          throw std::bad_alloc();
       }
-      previous_palette = current_palette;
+
+      for (int i = 0; i < current_palette.size(); ++i) {
+        image_color_map->Colors[i].Red   = rgba_getr(current_palette.getEntry(i));
+        image_color_map->Colors[i].Green = rgba_getg(current_palette.getEntry(i));
+        image_color_map->Colors[i].Blue  = rgba_getb(current_palette.getEntry(i));
+      }
+
+      current_palette.copyColorsTo(&previous_palette);
     }
 
     // Write the image record.
     if (EGifPutImageDesc(gif_file,
                          frame_x, frame_y,
-                         frame_w, frame_h, interlace ? 1: 0,
+                         frame_w, frame_h, interlaced ? 1: 0,
                          image_color_map) == GIF_ERROR)
       throw Exception("Error writing GIF frame %d.\n", (int)frame_num);
 
     // Write the image data (pixels).
-    if (interlace) {
+    if (interlaced) {
       // Need to perform 4 passes on the images.
       for (int i=0; i<4; ++i)
         for (int y = interlaced_offset[i]; y < frame_h; y += interlaced_jumps[i]) {
@@ -711,7 +778,7 @@ bool GifFormat::onSave(FileOp* fop)
     }
     else {
       // Write all image scanlines (not interlaced in this case).
-      for (int y = 0; y < frame_h; ++y) {
+      for (int y=0; y<frame_h; ++y) {
         IndexedTraits::address_t addr =
           (IndexedTraits::address_t)current_image->getPixelAddress(frame_x, frame_y + y);
 
@@ -726,5 +793,70 @@ bool GifFormat::onSave(FileOp* fop)
   return true;
 }
 #endif
+
+SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
+{
+  SharedPtr<GifOptions> gif_options;
+  if (fop->document->getFormatOptions() != NULL)
+    gif_options = SharedPtr<GifOptions>(fop->document->getFormatOptions());
+
+  if (!gif_options)
+    gif_options.reset(new GifOptions);
+
+  // Non-interactive mode
+  if (!fop->context || !fop->context->isUiAvailable())
+    return gif_options;
+
+  try {
+    // Configuration parameters
+    gif_options->setQuantize((GifOptions::Quantize)get_config_int("GIF", "Quantize", (int)gif_options->quantize()));
+    gif_options->setInterlaced(get_config_bool("GIF", "Interlaced", gif_options->interlaced()));
+    gif_options->setDithering((raster::DitheringMethod)get_config_int("GIF", "Dither", (int)gif_options->dithering()));
+
+    // Load the window to ask to the user the GIF options he wants.
+
+    app::gen::GifOptions win;
+    win.rgbOptions()->setVisible(fop->document->sprite()->pixelFormat() != IMAGE_INDEXED);
+
+    switch (gif_options->quantize()) {
+      case GifOptions::NoQuantize: win.noQuantize()->setSelected(true); break;
+      case GifOptions::QuantizeEach: win.quantizeEach()->setSelected(true); break;
+      case GifOptions::QuantizeAll: win.quantizeAll()->setSelected(true); break;
+    }
+    win.interlaced()->setSelected(gif_options->interlaced());
+
+    win.dither()->setEnabled(true);
+    win.dither()->setSelected(gif_options->dithering() == raster::DITHERING_ORDERED);
+
+    win.openWindowInForeground();
+
+    if (win.getKiller() == win.ok()) {
+      if (win.quantizeAll()->isSelected())
+        gif_options->setQuantize(GifOptions::QuantizeAll);
+      else if (win.quantizeEach()->isSelected())
+        gif_options->setQuantize(GifOptions::QuantizeEach);
+      else if (win.noQuantize()->isSelected())
+        gif_options->setQuantize(GifOptions::NoQuantize);
+
+      gif_options->setInterlaced(win.interlaced()->isSelected());
+      gif_options->setDithering(win.dither()->isSelected() ?
+        raster::DITHERING_ORDERED:
+        raster::DITHERING_NONE);
+
+      set_config_int("GIF", "Quantize", gif_options->quantize());
+      set_config_bool("GIF", "Interlaced", gif_options->interlaced());
+      set_config_int("GIF", "Dither", gif_options->dithering());
+    }
+    else {
+      gif_options.reset(NULL);
+    }
+
+    return gif_options;
+  }
+  catch (std::exception& e) {
+    Console::showException(e);
+    return SharedPtr<GifOptions>(0);
+  }
+}
 
 } // namespace app

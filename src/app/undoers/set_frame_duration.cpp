@@ -35,7 +35,7 @@ SetFrameDuration::SetFrameDuration(ObjectsContainer* objects, Sprite* sprite, Fr
   : m_spriteId(objects->addObject(sprite))
   , m_frame(frame)
 {
-  ASSERT(frame >= 0 && frame < sprite->getTotalFrames());
+  ASSERT(frame >= 0 && frame < sprite->totalFrames());
 
   m_duration = sprite->getFrameDuration(frame);
 }

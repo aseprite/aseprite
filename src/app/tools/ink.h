@@ -58,6 +58,9 @@ namespace app {
       // Returns true if this ink moves cels
       virtual bool isCelMovement() const { return false; }
 
+      // Returns true if this ink is used to mark slices
+      virtual bool isSlice() const { return false; }
+
       // It is called when the tool-loop start (generally when the user
       // presses a mouse button over a sprite editor)
       virtual void prepareInk(ToolLoop* loop) { }

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/observable.h"
 #include "ui/box.h"
 
@@ -66,6 +66,7 @@ namespace app {
     class BrushAngleField;
     class BrushSizeField;
     class ToleranceField;
+    class ContiguousField;
     class InkTypeField;
     class InkOpacityField;
     class SprayWidthField;
@@ -83,6 +84,7 @@ namespace app {
     BrushSizeField* m_brushSize;
     ui::Label* m_toleranceLabel;
     ToleranceField* m_tolerance;
+    ContiguousField* m_contiguous;
     InkTypeField* m_inkType;
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;

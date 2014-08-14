@@ -69,7 +69,7 @@ namespace raster {
       m_xend(bounds.x + bounds.w)
     {
       ASSERT(bounds.contains(gfx::Point(x, y)));
-      ASSERT(image->getBounds().contains(bounds));
+      ASSERT(image->bounds().contains(bounds));
     }
 
     ImageIteratorT& operator=(const ImageIteratorT& other) {
@@ -106,7 +106,7 @@ namespace raster {
     bool operator>=(const ImageIteratorT& other) const { return m_ptr >= other.m_ptr; }
 
     ImageIteratorT& operator++() {
-      ASSERT(m_image->getBounds().contains(gfx::Point(m_x, m_y)));
+      ASSERT(m_image->bounds().contains(gfx::Point(m_x, m_y)));
 
       ++m_ptr;
       ++m_x;
@@ -115,7 +115,7 @@ namespace raster {
         m_x = m_xbegin;
         ++m_y;
 
-        if (m_y < m_image->getHeight())
+        if (m_y < m_image->height())
           m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
       }
 
@@ -342,7 +342,7 @@ namespace raster {
     }
 
     ImageIteratorT& operator++() {
-      ASSERT(m_image->getBounds().contains(gfx::Point(m_x, m_y)));
+      ASSERT(m_image->bounds().contains(gfx::Point(m_x, m_y)));
 
       ++m_x;
       ++m_subPixel;
@@ -352,7 +352,7 @@ namespace raster {
         m_subPixel = m_x % 8;
         ++m_y;
 
-        if (m_y < m_image->getHeight())
+        if (m_y < m_image->height())
           m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
         else
           ++m_ptr;

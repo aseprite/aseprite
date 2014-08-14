@@ -75,7 +75,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
 {
   create_buffers();
 
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
   m_document = location.document();
   m_sprite = location.sprite();
   m_layer = location.layer();
@@ -83,16 +83,17 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   if (m_layer->isImage()) {
     m_cel = static_cast<LayerImage*>(m_layer)->getCel(location.frame());
     if (m_cel)
-      m_celImage = m_sprite->getStock()->getImage(m_cel->getImage());
+      m_celImage = m_cel->image();
   }
 
   // If there is no Cel
   if (m_cel == NULL) {
     // Create the image
-    m_celImage = Image::create(m_sprite->getPixelFormat(), m_sprite->getWidth(),
-                               m_sprite->getHeight());
+    m_celImage = Image::create(m_sprite->pixelFormat(),
+      m_sprite->width(),
+      m_sprite->height());
 
-    color_t bg = m_sprite->getTransparentColor();
+    color_t bg = m_sprite->transparentColor();
     m_celImage->setMaskColor(bg);
     clear_image(m_celImage, bg);
 
@@ -103,19 +104,19 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
     m_celCreated = true;
   }
 
-  m_originalCelX = m_cel->getX();
-  m_originalCelY = m_cel->getY();
+  m_originalCelX = m_cel->x();
+  m_originalCelY = m_cel->y();
 
   // Region to draw
   gfx::Rect celBounds(
-    m_cel->getX(),
-    m_cel->getY(),
-    m_celImage->getWidth(),
-    m_celImage->getHeight());
+    m_cel->x(),
+    m_cel->y(),
+    m_celImage->width(),
+    m_celImage->height());
 
   gfx::Rect spriteBounds(0, 0,
-    m_sprite->getWidth(),
-    m_sprite->getHeight());
+    m_sprite->width(),
+    m_sprite->height());
 
   gfx::Rect bounds;
 
@@ -132,7 +133,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
     bounds.y - celBounds.y,
     bounds.w,
     bounds.h,
-    m_sprite->getTransparentColor(),
+    m_sprite->transparentColor(),
     src_buffer);
 
   m_dstImage = Image::createCopy(m_srcImage, dst_buffer);
@@ -163,10 +164,10 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
 
   // If the size of each image is the same, we can create an undo
   // with only the differences between both images.
-  if (m_cel->getX() == m_originalCelX &&
-      m_cel->getY() == m_originalCelY &&
-      m_celImage->getWidth() == m_dstImage->getWidth() &&
-      m_celImage->getHeight() == m_dstImage->getHeight()) {
+  if (m_cel->x() == m_originalCelX &&
+      m_cel->y() == m_originalCelY &&
+      m_celImage->width() == m_dstImage->width() &&
+      m_celImage->height() == m_dstImage->height()) {
     // Was m_celImage created in the start of the tool-loop?.
     if (m_celCreated) {
       // We can keep the m_celImage
@@ -175,7 +176,7 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
       copy_image(m_celImage, m_dstImage, 0, 0);
 
       // Add the m_celImage in the images stock of the sprite.
-      m_cel->setImage(m_sprite->getStock()->addImage(m_celImage));
+      m_cel->setImage(m_sprite->stock()->addImage(m_celImage));
 
       // Is the undo enabled?.
       if (m_undo.isEnabled()) {
@@ -185,9 +186,9 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
         // We create the undo information (for the new m_celImage
         // in the stock and the new cel in the layer)...
         m_undo.pushUndoer(new undoers::AddImage(m_undo.getObjects(),
-                                                m_sprite->getStock(), m_cel->getImage()));
+            m_sprite->stock(), m_cel->imageIndex()));
         m_undo.pushUndoer(new undoers::AddCel(m_undo.getObjects(),
-                                              m_layer, m_cel));
+            m_layer, m_cel));
 
         // And finally we add the cel again in the layer.
         static_cast<LayerImage*>(m_layer)->addCel(m_cel);
@@ -199,9 +200,9 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
       if (m_undo.isEnabled()) {
         gfx::Rect dirtyBounds;
         if (bounds.isEmpty())
-          dirtyBounds = m_celImage->getBounds();
+          dirtyBounds = m_celImage->bounds();
         else
-          dirtyBounds = m_celImage->getBounds().createIntersect(
+          dirtyBounds = m_celImage->bounds().createIntersect(
             gfx::Rect(bounds).offset(-m_originalCelX, -m_originalCelY));
 
         base::UniquePtr<Dirty> dirty(new Dirty(m_celImage, m_dstImage, dirtyBounds));
@@ -219,22 +220,22 @@ void ExpandCelCanvas::commit(const gfx::Rect& bounds)
   // replace the entire image.
   else {
     if (m_undo.isEnabled()) {
-      if (m_cel->getX() != m_originalCelX ||
-          m_cel->getY() != m_originalCelY) {
-        int newX = m_cel->getX();
-        int newY = m_cel->getY();
+      if (m_cel->x() != m_originalCelX ||
+          m_cel->y() != m_originalCelY) {
+        int newX = m_cel->x();
+        int newY = m_cel->y();
         m_cel->setPosition(m_originalCelX, m_originalCelY);
         m_undo.pushUndoer(new undoers::SetCelPosition(m_undo.getObjects(), m_cel));
         m_cel->setPosition(newX, newY);
       }
 
       m_undo.pushUndoer(new undoers::ReplaceImage(m_undo.getObjects(),
-          m_sprite->getStock(), m_cel->getImage()));
+          m_sprite->stock(), m_cel->imageIndex()));
     }
 
     // Replace the image in the stock. We need to create a copy of
     // image because m_dstImage's ImageBuffer cannot be shared.
-    m_sprite->getStock()->replaceImage(m_cel->getImage(),
+    m_sprite->stock()->replaceImage(m_cel->imageIndex(),
       Image::createCopy(m_dstImage));
 
     // Destroy the old cel image.

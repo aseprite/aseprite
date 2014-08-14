@@ -45,8 +45,8 @@ namespace raster {
     ImageBits(Image* image, const gfx::Rect& bounds) :
       m_image(image),
       m_bounds(bounds) {
-      ASSERT(bounds.x >= 0 && bounds.x+bounds.w <= image->getWidth() &&
-             bounds.y >= 0 && bounds.y+bounds.h <= image->getHeight());
+      ASSERT(bounds.x >= 0 && bounds.x+bounds.w <= image->width() &&
+             bounds.y >= 0 && bounds.y+bounds.h <= image->height());
     }
 
     ImageBits& operator=(const ImageBits& other) {
@@ -122,7 +122,7 @@ namespace raster {
     typedef typename Bits::const_iterator const_iterator;
 
     explicit LockImageBits(const Image* image)
-      : m_bits(image->lockBits<ImageTraits>(Image::ReadLock, image->getBounds())) {
+      : m_bits(image->lockBits<ImageTraits>(Image::ReadLock, image->bounds())) {
     }
 
     LockImageBits(const Image* image, const gfx::Rect& bounds)
@@ -130,7 +130,7 @@ namespace raster {
     }
 
     LockImageBits(Image* image, Image::LockType lockType)
-      : m_bits(image->lockBits<ImageTraits>(lockType, image->getBounds())) {
+      : m_bits(image->lockBits<ImageTraits>(lockType, image->bounds())) {
     }
 
     LockImageBits(Image* image, Image::LockType lockType, const gfx::Rect& bounds)

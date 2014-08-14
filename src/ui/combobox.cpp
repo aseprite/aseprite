@@ -8,11 +8,10 @@
 #include "config.h"
 #endif
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/size.h"
+#include "she/font.h"
 #include "ui/ui.h"
-
-#include <allegro.h>
 
 namespace ui {
 
@@ -365,7 +364,7 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
       2*jguiscale()+
-      text_length(getFont(), (*it)->getText().c_str())+
+      getFont()->textLength((*it)->getText().c_str())+
       10*jguiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);

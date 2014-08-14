@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,11 +42,12 @@
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
+#include "she/font.h"
+#include "she/surface.h"
 #include "ui/ui.h"
 #include "undo/undo_history.h"
 
 #include <algorithm>
-#include <allegro.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -265,7 +266,7 @@ StatusBar::~StatusBar()
 void StatusBar::onCurrentToolChange()
 {
   if (isVisible()) {
-    tools::Tool* currentTool = UIContext::instance()->getSettings()->getCurrentTool();
+    tools::Tool* currentTool = UIContext::instance()->settings()->getCurrentTool();
     if (currentTool) {
       showTool(500, currentTool);
       setTextf("%s Selected", currentTool->getText().c_str());
@@ -430,9 +431,11 @@ bool StatusBar::onProcessMessage(Message* msg)
     case kMouseEnterMessage: {
       updateSubwidgetsVisibility();
 
-      const Document* document = UIContext::instance()->getActiveDocument();
-      if (document != NULL)
+      const Document* document = UIContext::instance()->activeDocument();
+      if (document != NULL) {
+        updateFromLayer();
         updateCurrentFrame();
+      }
       break;
     }
 
@@ -478,7 +481,7 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 void StatusBar::onPaint(ui::PaintEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  ui::Color textColor = theme->getColorById(kStatusBarText);
+  gfx::Color textColor = theme->getColorById(kStatusBarText);
   Rect rc = getClientBounds();
   Graphics* g = ev.getGraphics();
 
@@ -491,10 +494,10 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   // Color
   if (m_state == SHOW_COLOR) {
     // Draw eyedropper icon
-    BITMAP* icon = theme->get_toolicon("eyedropper");
+    she::Surface* icon = theme->get_toolicon("eyedropper");
     if (icon) {
-      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
-      x += icon->w + 4*jguiscale();
+      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
+      x += icon->width() + 4*jguiscale();
     }
 
     // Draw color
@@ -507,33 +510,33 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
     if (m_alpha < 255) {
-      char buf[512];
-      usprintf(buf, ", Alpha %d", m_alpha);
+      char buf[256];
+      sprintf(buf, ", Alpha %d", m_alpha);
       str += buf;
     }
 
-    g->drawString(str, textColor, ColorNone, false,
-      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+    g->drawString(str, textColor, ColorNone,
+      gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += ji_font_text_len(getFont(), str.c_str()) + 4*jguiscale();
+    x += getFont()->textLength(str.c_str()) + 4*jguiscale();
   }
 
   // Show tool
   if (m_state == SHOW_TOOL) {
     // Draw eyedropper icon
-    BITMAP* icon = theme->get_toolicon(m_tool->getId().c_str());
+    she::Surface* icon = theme->get_toolicon(m_tool->getId().c_str());
     if (icon) {
-      g->drawAlphaBitmap(icon, x, rc.y + rc.h/2 - icon->h/2);
-      x += icon->w + 4*jguiscale();
+      g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
+      x += icon->width() + 4*jguiscale();
     }
   }
 
   // Status bar text
   if (getTextLength() > 0) {
-    g->drawString(getText(), textColor, ColorNone, false,
-      gfx::Point(x, rc.y + rc.h/2 - text_height(getFont())/2));
+    g->drawString(getText(), textColor, ColorNone,
+      gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += ji_font_text_len(getFont(), getText().c_str()) + 4*jguiscale();
+    x += getFont()->textLength(getText().c_str()) + 4*jguiscale();
   }
 
   // Draw progress bar
@@ -609,11 +612,13 @@ void StatusBar::updateFromLayer()
     const Cel* cel;
 
     // Opacity layer
-    if (reader.layer() &&
+    if (reader.sprite() &&
+        reader.sprite()->supportAlpha() &&
+        reader.layer() &&
         reader.layer()->isImage() &&
         !reader.layer()->isBackground() &&
         (cel = reader.cel())) {
-      m_slider->setValue(MID(0, cel->getOpacity(), 255));
+      m_slider->setValue(MID(0, cel->opacity(), 255));
       m_slider->setEnabled(true);
     }
     else {
@@ -629,7 +634,7 @@ void StatusBar::updateFromLayer()
 
 void StatusBar::updateCurrentFrame()
 {
-  DocumentLocation location = UIContext::instance()->getActiveLocation();
+  DocumentLocation location = UIContext::instance()->activeLocation();
   if (location.sprite())
     m_currentFrame->setTextf("%d", location.frame()+1);
 }
@@ -643,7 +648,7 @@ void StatusBar::newFrame()
 
 void StatusBar::updateSubwidgetsVisibility()
 {
-  const Document* document = UIContext::instance()->getActiveDocument();
+  const Document* document = UIContext::instance()->activeDocument();
   bool commandsVisible = (document != NULL && hasMouse());
   bool notificationsVisible = (document == NULL);
 

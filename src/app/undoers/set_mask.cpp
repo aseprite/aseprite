@@ -39,7 +39,7 @@ SetMask::SetMask(ObjectsContainer* objects, Document* document)
   , m_isMaskVisible(document->isMaskVisible())
 {
   if (m_isMaskVisible)
-    raster::write_mask(m_stream, document->getMask());
+    raster::write_mask(m_stream, document->mask());
 }
 
 void SetMask::dispose()

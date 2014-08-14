@@ -26,7 +26,7 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 
 namespace app {
 
@@ -64,26 +64,11 @@ void RepeatLastExportCommand::onExecute(Context* context)
     doc::ExportDataPtr data = document->exportData();
 
     if (data != NULL) {
+      if (data->type() == doc::ExportData::None)
+        return;                 // Do nothing case
+
       command->setUseUI(false);
-
-      ExportSpriteSheetCommand::SpriteSheetType type;
-      switch (data->type()) {
-        case doc::ExportData::None: return;
-        case doc::ExportData::HorizontalStrip:
-          type = ExportSpriteSheetCommand::HorizontalStrip;
-          break;
-        case doc::ExportData::VerticalStrip:
-          type = ExportSpriteSheetCommand::VerticalStrip;
-          break;
-        case doc::ExportData::Matrix:
-          type = ExportSpriteSheetCommand::Matrix;
-          break;
-      }
-
-      command->setType(type);
-      command->setAction(ExportSpriteSheetCommand::SaveCopyAs);
-      command->setColumns(data->columns());
-      command->setFileName(data->filename());
+      command->setExportData(data);
     }
   }
 

@@ -131,7 +131,7 @@ bool PcxFormat::onLoad(FileOp* fop)
 
       if (bpp == 8) {
         while (c--) {
-          if (x < image->getWidth())
+          if (x < image->width())
             put_pixel_fast<IndexedTraits>(image, x, y, ch);
 
           x++;
@@ -139,7 +139,7 @@ bool PcxFormat::onLoad(FileOp* fop)
       }
       else {
         while (c--) {
-          if (xx < image->getWidth())
+          if (xx < image->width())
             put_pixel_fast<RgbTraits>(image, xx, y,
                                       get_pixel_fast<RgbTraits>(image, xx, y) | ((ch & 0xff) << po));
 
@@ -201,7 +201,7 @@ bool PcxFormat::onSave(FileOp* fop)
 
   FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
-  if (image->getPixelFormat() == IMAGE_RGB) {
+  if (image->pixelFormat() == IMAGE_RGB) {
     depth = 24;
     planes = 3;
   }
@@ -216,8 +216,8 @@ bool PcxFormat::onSave(FileOp* fop)
   fputc(8, f);                       /* 8 bits per pixel */
   fputw(0, f);                       /* xmin */
   fputw(0, f);                       /* ymin */
-  fputw(image->getWidth()-1, f);     /* xmax */
-  fputw(image->getHeight()-1, f);    /* ymax */
+  fputw(image->width()-1, f);     /* xmax */
+  fputw(image->height()-1, f);    /* ymax */
   fputw(320, f);                     /* HDpi */
   fputw(200, f);                     /* VDpi */
 
@@ -230,36 +230,36 @@ bool PcxFormat::onSave(FileOp* fop)
 
   fputc(0, f);                      /* reserved */
   fputc(planes, f);                 /* one or three color planes */
-  fputw(image->getWidth(), f);      /* number of bytes per scanline */
+  fputw(image->width(), f);      /* number of bytes per scanline */
   fputw(1, f);                      /* color palette */
-  fputw(image->getWidth(), f);      /* hscreen size */
-  fputw(image->getHeight(), f);     /* vscreen size */
+  fputw(image->width(), f);      /* hscreen size */
+  fputw(image->height(), f);     /* vscreen size */
   for (c=0; c<54; c++)              /* filler */
     fputc(0, f);
 
-  for (y=0; y<image->getHeight(); y++) {           /* for each scanline... */
+  for (y=0; y<image->height(); y++) {           /* for each scanline... */
     runcount = 0;
     runchar = 0;
-    for (x=0; x<image->getWidth()*planes; x++) {  /* for each pixel... */
+    for (x=0; x<image->width()*planes; x++) {  /* for each pixel... */
       if (depth == 8) {
-        if (image->getPixelFormat() == IMAGE_INDEXED)
+        if (image->pixelFormat() == IMAGE_INDEXED)
           ch = get_pixel_fast<IndexedTraits>(image, x, y);
-        else if (image->getPixelFormat() == IMAGE_GRAYSCALE) {
+        else if (image->pixelFormat() == IMAGE_GRAYSCALE) {
           c = get_pixel_fast<GrayscaleTraits>(image, x, y);
           ch = graya_getv(c);
         }
       }
       else {
-        if (x < image->getWidth()) {
+        if (x < image->width()) {
           c = get_pixel_fast<RgbTraits>(image, x, y);
           ch = rgba_getr(c);
         }
-        else if (x<image->getWidth()*2) {
-          c = get_pixel_fast<RgbTraits>(image, x-image->getWidth(), y);
+        else if (x<image->width()*2) {
+          c = get_pixel_fast<RgbTraits>(image, x-image->width(), y);
           ch = rgba_getg(c);
         }
         else {
-          c = get_pixel_fast<RgbTraits>(image, x-image->getWidth()*2, y);
+          c = get_pixel_fast<RgbTraits>(image, x-image->width()*2, y);
           ch = rgba_getb(c);
         }
       }
@@ -285,7 +285,7 @@ bool PcxFormat::onSave(FileOp* fop)
 
     fputc(runchar, f);
 
-    fop_progress(fop, (float)(y+1) / (float)(image->getHeight()));
+    fop_progress(fop, (float)(y+1) / (float)(image->height()));
   }
 
   if (depth == 8) {                      /* 256 color palette */

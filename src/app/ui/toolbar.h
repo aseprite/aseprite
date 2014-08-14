@@ -20,7 +20,7 @@
 #define APP_UI_TOOLBAR_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "gfx/point.h"
 #include "ui/timer.h"

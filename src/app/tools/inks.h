@@ -58,8 +58,8 @@ public:
       case WithBg:
         {
           int color = color_utils::color_for_layer(m_type == WithFg ?
-                                                   loop->getSettings()->getFgColor():
-                                                   loop->getSettings()->getBgColor(),
+                                                   loop->settings()->getFgColor():
+                                                   loop->settings()->getBgColor(),
                                                    loop->getLayer());
           loop->setPrimaryColor(color);
           loop->setSecondaryColor(color);
@@ -67,7 +67,7 @@ public:
         break;
     }
 
-    int depth = MID(0, loop->getSprite()->getPixelFormat(), 2);
+    int depth = MID(0, loop->sprite()->pixelFormat(), 2);
 
     switch (m_type) {
       case Opaque:
@@ -105,7 +105,7 @@ public:
 
   void prepareInk(ToolLoop* loop)
   {
-    m_proc = ink_processing[INK_SHADING][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+    m_proc = ink_processing[INK_SHADING][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -135,34 +135,27 @@ public:
 
 class ZoomInk : public Ink {
 public:
-
   bool isZoom() const { return true; }
-
-  void prepareInk(ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
-    // Do nothing
-  }
-
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
 };
 
 
 class MoveInk : public Ink {
 public:
   bool isCelMovement() const { return true; }
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
+};
 
-  void prepareInk(ToolLoop* loop)
-  {
-    // Do nothing
-  }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
-    // Do nothing
+class SliceInk : public Ink {
+public:
+  bool isSlice() const { return true; }
+  void prepareInk(ToolLoop* loop) { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) {
+    // TODO show the selection-preview with a XOR color or something like that
+    draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
   }
 };
 
@@ -186,7 +179,7 @@ public:
     switch (m_type) {
 
       case Eraser:
-        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->sprite()->pixelFormat(), 2)];
 
         // TODO app_get_color_to_clear_layer should receive the context as parameter
         loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));
@@ -194,20 +187,20 @@ public:
         break;
 
       case ReplaceFgWithBg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
                                                              loop->getLayer()));
         break;
 
       case ReplaceBgWithFg:
-        m_proc = ink_processing[INK_REPLACE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+        m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->getSettings()->getBgColor(),
+        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
                                                            loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->getSettings()->getFgColor(),
+        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
                                                              loop->getLayer()));
         break;
     }
@@ -229,7 +222,7 @@ public:
 
   void prepareInk(ToolLoop* loop)
   {
-    m_proc = ink_processing[INK_BLUR][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+    m_proc = ink_processing[INK_BLUR][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -248,7 +241,7 @@ public:
 
   void prepareInk(ToolLoop* loop)
   {
-    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->getSprite()->getPixelFormat(), 2)];
+    m_proc = ink_processing[INK_JUMBLE][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
@@ -298,11 +291,11 @@ public:
         undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
 
       loop->getMask()->freeze();
-      loop->getMask()->reserve(0, 0, loop->getSprite()->getWidth(), loop->getSprite()->getHeight());
+      loop->getMask()->reserve(0, 0, loop->sprite()->width(), loop->sprite()->height());
     }
     else {
       loop->getMask()->unfreeze();
-      loop->getDocument()->setTransformation(Transformation(loop->getMask()->getBounds()));
+      loop->getDocument()->setTransformation(Transformation(loop->getMask()->bounds()));
       loop->getDocument()->setMaskVisible(true);
     }
   }

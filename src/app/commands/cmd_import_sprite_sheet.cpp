@@ -103,6 +103,10 @@ public:
     m_selectFile.DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
     m_import.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
     m_cancel.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
+
+    remapWindow();
+    centerWindow();
+    load_window_pos(this, "ImportSpriteSheet");
   }
 
   ~ImportSpriteSheetWindow()
@@ -114,7 +118,7 @@ protected:
 
   void onSelectFile()
   {
-    Document* oldActiveDocument = m_context->getActiveDocument();
+    Document* oldActiveDocument = m_context->activeDocument();
     Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
     Params params;
     params.set("filename", "");
@@ -122,7 +126,7 @@ protected:
     openFile->execute(m_context);
 
     // The user have selected another document.
-    if (oldActiveDocument != m_context->getActiveDocument()) {
+    if (oldActiveDocument != m_context->activeDocument()) {
       selectActiveDocument();
       m_fileOpened = true;
     }
@@ -134,7 +138,7 @@ protected:
     MenuItem* item = new MenuItem("Use Current Sprite");
     item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
 
-    if (m_editor || !current_editor || current_editor->getDocument() == NULL)
+    if (m_editor || !current_editor || current_editor->document() == NULL)
       item->setEnabled(false);
 
     menu->addChild(item);
@@ -161,13 +165,13 @@ protected:
     std::vector<Image*> animation;
 
     try {
-      Sprite* sprite = m_document->getSprite();
-      FrameNumber currentFrame = m_context->getActiveLocation().frame();
+      Sprite* sprite = m_document->sprite();
+      FrameNumber currentFrame = m_context->activeLocation().frame();
 
       // As first step, we cut each tile and add them into "animation" list.
-      for (int y=m_rect.y; y<sprite->getHeight(); y += m_rect.h) {
-        for (int x=m_rect.x; x<sprite->getWidth(); x += m_rect.w) {
-          base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), m_rect.w, m_rect.h));
+      for (int y=m_rect.y; y<sprite->height(); y += m_rect.h) {
+        for (int x=m_rect.x; x<sprite->width(); x += m_rect.w) {
+          base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
           raster::clear_image(resultImage, 0);
@@ -213,7 +217,7 @@ protected:
       }
 
       // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->getFolder()->getLayersList();
+      LayerList layers = sprite->folder()->getLayersList();
 
       // Remove all other layers
       for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
@@ -269,6 +273,16 @@ protected:
     }
   }
 
+  bool onProcessMessage(ui::Message* msg) OVERRIDE
+  {
+    switch (msg->type()) {
+      case kCloseMessage:
+        save_window_pos(this, "ImportSpriteSheet");
+        break;
+    }
+    return Window::onProcessMessage(msg);
+  }
+
   virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
   {
     Window::onBroadcastMouseMessage(targets);
@@ -293,7 +307,7 @@ private:
   void selectActiveDocument()
   {
     Document* oldDocument = m_document;
-    m_document = m_context->getActiveDocument();
+    m_document = m_context->activeDocument();
 
     // If the user already have selected a file, we have to destroy
     // that file in order to select the new one.

@@ -43,7 +43,7 @@ protected:
     if (location.layer() != NULL)
       StatusBar::instance()
         ->setStatusText(1000, "Layer `%s' selected",
-          location.layer()->getName().c_str());
+          location.layer()->name().c_str());
   }
 };
 

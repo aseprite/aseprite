@@ -20,9 +20,6 @@
 #include "config.h"
 #endif
 
-
-#include <allegro.h>
-
 #include "ui/ui.h"
 
 #include "app/app.h"
@@ -37,11 +34,14 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/util/render.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/primitives.h"
 #include "raster/sprite.h"
+#include "she/scoped_handle.h"
+#include "she/surface.h"
+#include "she/system.h"
 
 #define PREVIEW_TILED           1
 #define PREVIEW_FIT_ON_SCREEN   2
@@ -51,6 +51,211 @@ namespace app {
 using namespace ui;
 using namespace raster;
 using namespace filters;
+
+class PreviewWindow : public Window {
+public:
+  PreviewWindow(Context* context, Editor* editor)
+    : Window(DesktopWindow)
+    , m_context(context)
+    , m_editor(editor)
+    , m_doc(editor->document())
+    , m_sprite(editor->sprite())
+    , m_pal(m_sprite->getPalette(editor->frame()))
+    , m_index_bg_color(-1)
+    , m_doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H))
+    , m_doublesur(she::instance()->createRgbaSurface(JI_SCREEN_W, JI_SCREEN_H)) {
+    // Do not use DocumentWriter (do not lock the document) because we
+    // will call other sub-commands (e.g. previous frame, next frame,
+    // etc.).
+    View* view = View::getView(editor);
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(m_doc);
+    m_tiled = docSettings->getTiledMode();
+
+    // Free mouse
+    editor->getManager()->freeMouse();
+
+    // Clear extras (e.g. pen preview)
+    m_doc->destroyExtraCel();
+
+    gfx::Rect vp = view->getViewportBounds();
+    gfx::Point scroll = view->getViewScroll();
+
+    m_first_mouse_pos = m_old_pos = ui::get_mouse_position();
+    ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
+
+    m_pos.x = -scroll.x + vp.x + editor->offsetX();
+    m_pos.y = -scroll.y + vp.y + editor->offsetY();
+    m_zoom = editor->zoom();
+
+    ui::set_mouse_position(m_first_mouse_pos);
+
+    setFocusStop(true);
+    captureMouse();
+  }
+
+protected:
+  virtual bool onProcessMessage(Message* msg) OVERRIDE {
+    switch (msg->type()) {
+
+      case kCloseMessage:
+        releaseMouse();
+        ui::set_mouse_position(m_first_mouse_pos);
+        break;
+
+      case kMouseMoveMessage: {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        gfx::Point mousePos = mouseMsg->position();
+
+        gfx::Rect bounds = getBounds();
+        gfx::Border border;
+        if (bounds.w > 64*jguiscale()) {
+          border.left(32*jguiscale());
+          border.right(32*jguiscale());
+        }
+        if (bounds.h > 64*jguiscale()) {
+          border.top(32*jguiscale());
+          border.bottom(32*jguiscale());
+        }
+
+        m_delta += mousePos - m_old_pos;
+        mousePos = ui::control_infinite_scroll(this, bounds.shrink(border), mousePos);
+        m_old_pos = mousePos;
+
+        invalidate();
+        break;
+      }
+
+      case kMouseUpMessage: {
+        closeWindow(this);
+        break;
+      }
+
+      case kKeyDownMessage: {
+        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+        Command* command = NULL;
+        get_command_from_key_message(msg, &command, NULL);
+
+        // Change frame
+        if (command != NULL &&
+            (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+             strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+             strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+             strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
+          m_context->executeCommand(command);
+          invalidate();
+          m_render.reset(NULL); // Re-render
+        }
+#if 0
+        // Play the animation
+        else if (command != NULL &&
+                 strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
+          // TODO
+        }
+#endif
+        // Change background color
+        else if (keyMsg->scancode() == kKeyPlusPad ||
+                 keyMsg->unicodeChar() == '+') {
+          if (m_index_bg_color == -1 ||
+            m_index_bg_color < m_pal->size()-1) {
+            ++m_index_bg_color;
+
+            invalidate();
+          }
+        }
+        else if (keyMsg->scancode() == kKeyMinusPad ||
+                 keyMsg->unicodeChar() == '-') {
+          if (m_index_bg_color >= 0) {
+            --m_index_bg_color;     // can be -1 which is the checked background
+
+            invalidate();
+          }
+        }
+        else {
+          closeWindow(this);
+        }
+
+        return true;
+      }
+
+      case kSetCursorMessage:
+        jmouse_set_cursor(kNoCursor);
+        return true;
+    }
+
+    return Window::onProcessMessage(msg);
+  }
+
+  virtual void onPaint(PaintEvent& ev) OVERRIDE {
+    Graphics* g = ev.getGraphics();
+
+    // Render sprite and leave the result in 'render' variable
+    if (m_render == NULL) {
+      RenderEngine renderEngine(
+        m_doc, m_sprite,
+        m_editor->layer(),
+        m_editor->frame());
+
+      m_render.reset(
+        renderEngine.renderSprite(
+          0, 0, m_sprite->width(), m_sprite->height(),
+          m_editor->frame(), 0, false, false));
+    }
+
+    int x, y, w, h, u, v;
+    x = m_pos.x + ((m_delta.x >> m_zoom) << m_zoom);
+    y = m_pos.y + ((m_delta.y >> m_zoom) << m_zoom);
+    w = (m_sprite->width()<<m_zoom);
+    h = (m_sprite->height()<<m_zoom);
+
+    if (m_tiled & TILED_X_AXIS) x = SGN(x) * (ABS(x)%w);
+    if (m_tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
+
+    if (m_index_bg_color == -1)
+      RenderEngine::renderCheckedBackground(m_doublebuf, -m_pos.x, -m_pos.y, m_zoom);
+    else
+      raster::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
+
+    switch (m_tiled) {
+      case TILED_NONE:
+        RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, y, m_zoom);
+        break;
+      case TILED_X_AXIS:
+        for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+          RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, y, m_zoom);
+        break;
+      case TILED_Y_AXIS:
+        for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+          RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, v, m_zoom);
+        break;
+      case TILED_BOTH:
+        for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+          for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+            RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, v, m_zoom);
+        break;
+    }
+
+    raster::convert_image_to_surface(m_doublebuf, m_pal,
+      m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
+    g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
+  }
+
+private:
+  Context* m_context;
+  Editor* m_editor;
+  Document* m_doc;
+  Sprite* m_sprite;
+  const Palette* m_pal;
+  gfx::Point m_pos;
+  gfx::Point m_old_pos;
+  gfx::Point m_first_mouse_pos;
+  gfx::Point m_delta;
+  int m_zoom;
+  int m_index_bg_color;
+  base::UniquePtr<Image> m_render;
+  base::UniquePtr<Image> m_doublebuf;
+  she::ScopedHandle<she::Surface> m_doublesur;
+  filters::TiledMode m_tiled;
+};
 
 class PreviewCommand : public Command {
 public:
@@ -81,173 +286,11 @@ void PreviewCommand::onExecute(Context* context)
   Editor* editor = current_editor;
 
   // Cancel operation if current editor does not have a sprite
-  if (!editor || !editor->getSprite())
+  if (!editor || !editor->sprite())
     return;
 
-  // Do not use DocumentWriter (do not lock the document) because we
-  // will call other sub-commands (e.g. previous frame, next frame,
-  // etc.).
-  Document* document = editor->getDocument();
-  Sprite* sprite = editor->getSprite();
-  const Palette* pal = sprite->getPalette(editor->getFrame());
-  View* view = View::getView(editor);
-  int u, v, x, y;
-  int index_bg_color = -1;
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
-  filters::TiledMode tiled = docSettings->getTiledMode();
-
-  // Free mouse
-  editor->getManager()->freeMouse();
-
-  // Clear extras (e.g. pen preview)
-  document->destroyExtraCel();
-
-  gfx::Rect vp = view->getViewportBounds();
-  gfx::Point scroll = view->getViewScroll();
-
-  int old_mouse_x = jmouse_x(0);
-  int old_mouse_y = jmouse_y(0);
-
-  jmouse_set_cursor(kNoCursor);
-  ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
-
-  int pos_x = - scroll.x + vp.x + editor->getOffsetX();
-  int pos_y = - scroll.y + vp.y + editor->getOffsetY();
-  int delta_x = 0;
-  int delta_y = 0;
-
-  int zoom = editor->getZoom();
-  int w = sprite->getWidth() << zoom;
-  int h = sprite->getHeight() << zoom;
-
-  bool redraw = true;
-
-  // Render the sprite
-  base::UniquePtr<Image> render;
-  base::UniquePtr<Image> doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H));
-
-  do {
-    // Update scroll
-    if (jmouse_poll()) {
-      delta_x += (jmouse_x(0) - JI_SCREEN_W/2);
-      delta_y += (jmouse_y(0) - JI_SCREEN_H/2);
-      ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
-      jmouse_poll();
-
-      redraw = true;
-    }
-
-    // Render sprite and leave the result in 'render' variable
-    if (render == NULL) {
-      RenderEngine renderEngine(document, sprite,
-        editor->getLayer(),
-        editor->getFrame());
-
-      render.reset(
-        renderEngine.renderSprite(
-          0, 0, sprite->getWidth(), sprite->getHeight(),
-          editor->getFrame(), 0, false, false));
-    }
-
-    // Redraw the screen
-    if (redraw) {
-      redraw = false;
-      dirty_display_flag = true;
-
-      x = pos_x + ((delta_x >> zoom) << zoom);
-      y = pos_y + ((delta_y >> zoom) << zoom);
-
-      if (tiled & TILED_X_AXIS) x = SGN(x) * (ABS(x)%w);
-      if (tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
-
-      if (index_bg_color == -1)
-        RenderEngine::renderCheckedBackground(doublebuf, -pos_x, -pos_y, zoom);
-      else
-        raster::clear_image(doublebuf, pal->getEntry(index_bg_color));
-
-      switch (tiled) {
-        case TILED_NONE:
-          RenderEngine::renderImage(doublebuf, render, pal, x, y, zoom);
-          break;
-        case TILED_X_AXIS:
-          for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-            RenderEngine::renderImage(doublebuf, render, pal, u, y, zoom);
-          break;
-        case TILED_Y_AXIS:
-          for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-            RenderEngine::renderImage(doublebuf, render, pal, x, v, zoom);
-          break;
-        case TILED_BOTH:
-          for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-            for (u=x-w; u<JI_SCREEN_W+w; u+=w)
-              RenderEngine::renderImage(doublebuf, render, pal, u, v, zoom);
-          break;
-      }
-
-      raster::convert_image_to_allegro(doublebuf, ji_screen, 0, 0, pal);
-    }
-
-    // It is necessary in case ji_screen is double-bufferred
-    gui_feedback();
-
-    if (keypressed()) {
-      int readkey_value = readkey();
-      Message* msg = create_message_from_readkey_value(kKeyDownMessage, readkey_value);
-      Command* command = NULL;
-      get_command_from_key_message(msg, &command, NULL);
-      delete msg;
-
-      // Change frame
-      if (command != NULL &&
-          (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-           strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-           strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-           strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
-        // Execute the command
-        context->executeCommand(command);
-
-        // Redraw
-        redraw = true;
-
-        // Re-render
-        render.reset(NULL);
-      }
-      // Play the animation
-      else if (command != NULL &&
-               strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
-        // TODO
-      }
-      // Change background color
-      else if ((readkey_value>>8) == KEY_PLUS_PAD ||
-               (readkey_value&0xff) == '+') {
-        if (index_bg_color == -1 ||
-            index_bg_color < pal->size()-1) {
-          ++index_bg_color;
-          redraw = true;
-        }
-      }
-      else if ((readkey_value>>8) == KEY_MINUS_PAD ||
-               (readkey_value&0xff) == '-') {
-        if (index_bg_color >= 0) {
-          --index_bg_color;     // can be -1 which is the checked background
-          redraw = true;
-        }
-      }
-      else
-        break;
-    }
-  } while (jmouse_b(0) == kButtonNone);
-
-  do {
-    jmouse_poll();
-    gui_feedback();
-  } while (jmouse_b(0) != kButtonNone);
-  clear_keybuf();
-
-  ui::set_mouse_position(gfx::Point(old_mouse_x, old_mouse_y));
-  jmouse_set_cursor(kArrowCursor);
-
-  ui::Manager::getDefault()->invalidate();
+  PreviewWindow window(context, editor);
+  window.openWindowInForeground();
 }
 
 Command* CommandFactory::createPreviewCommand()

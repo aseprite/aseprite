@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "app/color_utils.h"
 #include "app/ui/color_sliders.h"
 #include "base/bind.h"
@@ -54,17 +52,17 @@ namespace {
     }
 
     void paint(Slider* slider, Graphics* g, const gfx::Rect& rc) {
-      ui::Color color = ui::ColorNone;
+      gfx::Color color = gfx::ColorNone;
       for (int x=0; x < rc.w; ++x) {
         switch (m_channel) {
           case ColorSliders::Red:
-            color = ui::rgba(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
+            color = gfx::rgba(255 * x / (rc.w-1), m_color.getGreen(), m_color.getBlue());
             break;
           case ColorSliders::Green:
-            color = ui::rgba(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
+            color = gfx::rgba(m_color.getRed(), 255 * x / (rc.w-1), m_color.getBlue());
             break;
           case ColorSliders::Blue:
-            color = ui::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
+            color = gfx::rgba(m_color.getRed(), m_color.getGreen(), 255 * x / (rc.w-1));
             break;
           case ColorSliders::Hue:
             color = color_utils::color_for_ui(app::Color::fromHsv(360 * x / (rc.w-1), m_color.getSaturation(), m_color.getValue()));
@@ -85,7 +83,6 @@ namespace {
 
   private:
     ColorSliders::Channel m_channel;
-    BITMAP* m_cachedBg;
     app::Color m_color;
   };
 

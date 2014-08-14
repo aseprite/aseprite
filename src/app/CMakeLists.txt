@@ -52,6 +52,7 @@ add_library(app-lib
   commands/cmd_mask_by_color.cpp
   commands/cmd_merge_down_layer.cpp
   commands/cmd_move_cel.cpp
+  commands/cmd_move_mask.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_layer.cpp
@@ -83,6 +84,7 @@ add_library(app-lib
   commands/cmd_switch_colors.cpp
   commands/cmd_timeline.cpp
   commands/cmd_undo.cpp
+  commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
   commands/filters/cmd_color_curve.cpp
@@ -100,14 +102,14 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
-  context_observer_list.cpp
   data_recovery.cpp
   document.cpp
   document_api.cpp
   document_exporter.cpp
   document_location.cpp
+  document_range.cpp
+  document_range_ops.cpp
   document_undo.cpp
-  documents.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp
@@ -137,9 +139,10 @@ add_library(app-lib
   modules/gui.cpp
   modules/palettes.cpp
   objects_container_impl.cpp
-  palettes_loader.cpp
   project.cpp
   recent_files.cpp
+  res/palettes_loader_delegate.cpp
+  res/resources_loader.cpp
   resource_finder.cpp
   settings/ui_settings_impl.cpp
   shell.cpp
@@ -167,7 +170,6 @@ add_library(app-lib
   ui/editor/editor_observers.cpp
   ui/editor/editor_states_history.cpp
   ui/editor/editor_view.cpp
-  ui/editor/keys.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
   ui/editor/pixels_movement.cpp
@@ -184,10 +186,11 @@ add_library(app-lib
   ui/main_window.cpp
   ui/mini_editor.cpp
   ui/notifications.cpp
-  ui/palette_listbox.cpp
+  ui/palettes_listbox.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp
   ui/popup_window_pin.cpp
+  ui/resources_listbox.cpp
   ui/skin/button_icon_impl.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp

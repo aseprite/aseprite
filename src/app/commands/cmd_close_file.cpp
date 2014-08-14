@@ -31,7 +31,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
-#include "base/path.h"
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
@@ -67,11 +66,11 @@ protected:
   {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
 
-    if (workspace->getActiveView() == NULL)
+    if (workspace->activeView() == NULL)
       return;
 
     if (DocumentView* docView =
-          dynamic_cast<DocumentView*>(workspace->getActiveView())) {
+          dynamic_cast<DocumentView*>(workspace->activeView())) {
       Document* document = docView->getDocument();
       if (static_cast<UIContext*>(context)->countViewsOf(document) == 1) {
         // If we have only one view for this document, close the file.
@@ -81,7 +80,7 @@ protected:
     }
 
     // Close the active view.
-    WorkspaceView* view = workspace->getActiveView();
+    WorkspaceView* view = workspace->activeView();
     workspace->removeView(view);
     delete view;
   }
@@ -105,13 +104,13 @@ protected:
 
   bool onEnabled(Context* context)
   {
-    return !context->getDocuments().empty();
+    return !context->documents().empty();
   }
 
   void onExecute(Context* context)
   {
     while (true) {
-      if (context->getActiveDocument() != NULL) {
+      if (context->activeDocument() != NULL) {
         if (!close_active_document(context))
           break;
       }
@@ -143,7 +142,7 @@ static bool close_active_document(Context* context)
       while (document->isModified()) {
         // ask what want to do the user with the changes in the sprite
         int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-                              base::get_file_name(document->getFilename()).c_str());
+          document->name().c_str());
 
         if (ret == 1) {
           // "save": save the changes
@@ -178,7 +177,7 @@ static bool close_active_document(Context* context)
     DocumentDestroyer document(context, closedDocument);
     StatusBar::instance()
       ->setStatusText(0, "Sprite '%s' closed.",
-                      base::get_file_name(document->getFilename()).c_str());
+        document->name().c_str());
     document.destroyDocument();
   }
 

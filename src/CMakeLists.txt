@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2013  David Capello
+# Copyright (C) 2001-2014  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -10,7 +10,11 @@ if(MSVC)
   endif()
 
   # Add support for Windows XP
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01")
+  if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X64")
+  else()
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01")
+  endif()
 endif(MSVC)
 
 # Libraries in this directory
@@ -19,6 +23,9 @@ set(aseprite_libraries app-lib css-lib doc-lib raster-lib
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
+
+# Directory where generated files by "gen" utility will stay.
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Third-party libraries
 
@@ -151,20 +158,23 @@ if(USE_SHARED_ALLEGRO4)
 
   include_directories(${LIBALLEGRO4_INCLUDE_DIR})
 else()
+  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
+  add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
+
   # Use patched version of Allegro 4 (with window resize support).
   add_subdirectory(allegro)
   set(libs3rdparty ${libs3rdparty} allegro)
-  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
 endif()
 
 ######################################################################
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)
+add_subdirectory(gen)
 add_subdirectory(gfx)
-add_subdirectory(css)
 add_subdirectory(raster)
 add_subdirectory(scripting)
 add_subdirectory(she)
@@ -210,10 +220,33 @@ if(EXISTS ../docs/quickref.pdf)
 endif()
 
 ######################################################################
-# Unit tests
+# Generate source files from widget XML files
 
-function(find_unittests dir dependencies)
-  file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_unittest.cpp)
+file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
+foreach(widget_file ${widget_files})
+  get_filename_component(widget_name ${widget_file} NAME_WE)
+  set(target_name generated_${widget_name})
+  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
+
+  add_custom_command(
+    OUTPUT ${output_fn}
+    COMMAND gen/gen --input ${widget_file} --widgetid ${widget_name} > ${output_fn}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    MAIN_DEPENDENCY ${widget_file}
+    DEPENDS gen)
+
+  add_custom_target(${target_name} DEPENDS ${output_fn})
+
+  set_source_files_properties(${target_name} PROPERTIES GENERATED TRUE)
+
+  add_dependencies(app-lib ${target_name})
+endforeach()
+
+######################################################################
+# Tests
+
+function(find_tests dir dependencies)
+  file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_tests.cpp)
   list(REMOVE_AT ARGV 0)
 
   if(NOT USE_SHARED_GTEST)
@@ -247,8 +280,8 @@ function(find_unittests dir dependencies)
 
     set(local_runs ${local_runs} run_${testname})
 
-    string(REGEX MATCH "_ui_unittest" test_requires_ui ${testname})
-    if (NOT test_requires_ui STREQUAL "_ui_unittest")
+    string(REGEX MATCH "_ui_tests" test_requires_ui ${testname})
+    if (NOT test_requires_ui STREQUAL "_ui_tests")
       set(local_non_ui_runs ${local_non_ui_runs} run_${testname})
     endif()
   endforeach()
@@ -256,15 +289,16 @@ function(find_unittests dir dependencies)
   set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
-find_unittests(base base-lib ${sys_libs})
-find_unittests(gfx gfx-lib base-lib ${sys_libs})
-find_unittests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_unittests(file ${all_libs})
-find_unittests(app ${all_libs})
-find_unittests(. ${all_libs})
+find_tests(base base-lib ${sys_libs})
+find_tests(gfx gfx-lib base-lib ${sys_libs})
+find_tests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(doc doc-lib raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(app/file ${all_libs})
+find_tests(app ${all_libs})
+find_tests(. ${all_libs})
 
 # To run tests
-add_custom_target(run_all_unittests DEPENDS ${all_runs})
-add_custom_target(run_non_ui_unittests DEPENDS ${non_ui_runs})
+add_custom_target(run_all_tests DEPENDS ${all_runs})
+add_custom_target(run_non_ui_tests DEPENDS ${non_ui_runs})

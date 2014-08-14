@@ -38,7 +38,7 @@ namespace raster {
     Stock(Sprite* sprite, PixelFormat format);
     virtual ~Stock();
 
-    Sprite* getSprite() const;
+    Sprite* sprite() const;
 
     // Returns the number of image in the stock.
     int size() const {

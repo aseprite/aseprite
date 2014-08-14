@@ -187,7 +187,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   // Create the filter and setup initial settings
   ConvolutionMatrixFilter filter;
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
   filter.setTiledMode(docSettings->getTiledMode());
   if (matrix != 0)
     filter.setMatrix(matrix);

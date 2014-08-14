@@ -28,6 +28,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "base/thread.h"
@@ -74,9 +75,9 @@ void UndoCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   DocumentUndo* undo = document->getUndo();
-  Sprite* sprite = document->getSprite();
+  Sprite* sprite = document->sprite();
 
-  if (get_config_bool("Options", "UndoGotoModified", true)) {
+  if (context->settings()->undoGotoModified()) {
     SpritePosition spritePosition;
     SpritePosition currentPosition(writer.location()->layerIndex(),
                                    writer.location()->frame());
@@ -92,8 +93,8 @@ void UndoCommand::onExecute(Context* context)
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.
-      current_editor->drawSpriteClipped
-        (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
+      current_editor->drawSpriteClipped(
+        gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
       ui::dirty_display_flag = true;
       gui_feedback();

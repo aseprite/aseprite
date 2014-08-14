@@ -52,11 +52,13 @@ public:
 
   void setFrom(const app::Color& from) {
     m_from = from;
-    ReplaceColorFilter::setFrom(color_utils::color_for_layer(from, m_layer));
+    if (m_layer)
+      ReplaceColorFilter::setFrom(color_utils::color_for_layer(from, m_layer));
   }
   void setTo(const app::Color& to) {
     m_to = to;
-    ReplaceColorFilter::setTo(color_utils::color_for_layer(to, m_layer));
+    if (m_layer)
+      ReplaceColorFilter::setTo(color_utils::color_for_layer(to, m_layer));
   }
 
   app::Color getFrom() const { return m_from; }
@@ -143,7 +145,7 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
 
   ReplaceColorFilterWrapper filter(location.layer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));

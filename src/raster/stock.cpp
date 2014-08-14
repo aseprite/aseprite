@@ -46,7 +46,7 @@ Stock::~Stock()
   }
 }
 
-Sprite* Stock::getSprite() const
+Sprite* Stock::sprite() const
 {
   return m_sprite;
 }
@@ -97,7 +97,7 @@ void Stock::fixupImage(Image* image)
 {
   // Change the mask color of the added image to the sprite mask color.
   if (image)
-    image->setMaskColor(m_sprite->getTransparentColor());
+    image->setMaskColor(m_sprite->transparentColor());
 }
 
 } // namespace raster

@@ -8,6 +8,7 @@
         <button text="" id="goforward" bevel="0 2 0 2" tooltip="Go forward one folder" />
       </box>
       <button text="" id="goup" tooltip="Up to parent folder&#10;(Backspace)" />
+      <button text="" id="newfolder" tooltip="New folder" />
       <combobox id="location" expansive="true" />
     </box>
     <view id="fileview_container" expansive="true"></view>
@@ -24,4 +25,20 @@
       </box>
     </box>
   </box>
+
+  <window text="New Folder" id="newfolder_dialog">
+    <vbox>
+      <hbox>
+        <label text="Folder Name:" />
+        <entry text="New Folder" id="name" maxsize="256" magnet="true" expansive="true" />
+      </hbox>
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
+          <button text="&amp;Cancel" closewindow="true" id="cancel" />
+        </hbox>
+      </hbox>
+    </vbox>
+  </window>
 </gui>

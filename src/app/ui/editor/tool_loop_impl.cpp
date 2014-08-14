@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,8 +47,6 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace ui;
@@ -76,6 +74,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   gfx::Point m_maskOrigin;
   int m_opacity;
   int m_tolerance;
+  bool m_contiguous;
   gfx::Point m_offset;
   gfx::Point m_speed;
   bool m_canceled;
@@ -102,11 +101,11 @@ public:
     , m_context(context)
     , m_tool(tool)
     , m_document(document)
-    , m_sprite(editor->getSprite())
-    , m_layer(editor->getLayer())
-    , m_frame(editor->getFrame())
+    , m_sprite(editor->sprite())
+    , m_layer(editor->layer())
+    , m_frame(editor->frame())
     , m_canceled(false)
-    , m_settings(m_context->getSettings())
+    , m_settings(m_context->settings())
     , m_docSettings(m_settings->getDocumentSettings(m_document))
     , m_toolSettings(m_settings->getToolSettings(m_tool))
     , m_button(button)
@@ -119,6 +118,7 @@ public:
                         ((getInk()->isSelection() ||
                           getInk()->isEyedropper() ||
                           getInk()->isScrollMovement() ||
+                          getInk()->isSlice() ||
                           getInk()->isZoom()) ? undo::DoesntModifyDocument:
                                                 undo::ModifyDocument))
     , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
@@ -165,16 +165,17 @@ public:
       m_document->setMask(&emptyMask);
     }
 
-    int x1 = m_expandCelCanvas.getCel()->getX();
-    int y1 = m_expandCelCanvas.getCel()->getY();
+    int x1 = m_expandCelCanvas.getCel()->x();
+    int y1 = m_expandCelCanvas.getCel()->y();
 
-    m_mask = m_document->getMask();
-    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->getBounds().x-x1,
-                                                    m_mask->getBounds().y-y1):
+    m_mask = m_document->mask();
+    m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-x1,
+                                                    m_mask->bounds().y-y1):
                                          gfx::Point(0, 0));
 
     m_opacity = m_toolSettings->getOpacity();
     m_tolerance = m_toolSettings->getTolerance();
+    m_contiguous = m_toolSettings->getContiguous();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -210,7 +211,7 @@ public:
   tools::Tool* getTool() OVERRIDE { return m_tool; }
   Brush* getBrush() OVERRIDE { return m_brush; }
   Document* getDocument() OVERRIDE { return m_document; }
-  Sprite* getSprite() OVERRIDE { return m_sprite; }
+  Sprite* sprite() OVERRIDE { return m_sprite; }
   Layer* getLayer() OVERRIDE { return m_layer; }
   Image* getSrcImage() OVERRIDE { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() OVERRIDE { return m_expandCelCanvas.getDestCanvas(); }
@@ -225,8 +226,9 @@ public:
   void setSecondaryColor(int color) OVERRIDE { m_secondary_color = color; }
   int getOpacity() OVERRIDE { return m_opacity; }
   int getTolerance() OVERRIDE { return m_tolerance; }
+  bool getContiguous() OVERRIDE { return m_contiguous; }
   SelectionMode getSelectionMode() OVERRIDE { return m_selectionMode; }
-  ISettings* getSettings() OVERRIDE { return m_settings; }
+  ISettings* settings() OVERRIDE { return m_settings; }
   IDocumentSettings* getDocumentSettings() OVERRIDE { return m_docSettings; }
   bool getFilled() OVERRIDE { return m_filled; }
   bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
@@ -334,11 +336,11 @@ private:
 
 tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage* msg)
 {
-  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
+  tools::Tool* current_tool = context->settings()->getCurrentTool();
   if (!current_tool)
     return NULL;
 
-  Layer* layer = editor->getLayer();
+  Layer* layer = editor->layer();
   if (!layer) {
     Alert::show(PACKAGE "<<The current sprite does not have any layer.||&Close");
     return NULL;
@@ -380,7 +382,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
     return new ToolLoopImpl(editor,
                             context,
                             current_tool,
-                            editor->getDocument(),
+                            editor->document(),
                             msg->left() ? tools::ToolLoop::Left:
                                           tools::ToolLoop::Right,
                             msg->left() ? fg: bg,

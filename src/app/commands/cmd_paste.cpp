@@ -23,7 +23,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/util/clipboard.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "raster/layer.h"
 #include "raster/sprite.h"
 
@@ -49,11 +49,13 @@ PasteCommand::PasteCommand()
 bool PasteCommand::onEnabled(Context* context)
 {
   return
-    clipboard::can_paste() &&
-    context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                        ContextFlags::ActiveLayerIsReadable |
-                        ContextFlags::ActiveLayerIsWritable |
-                        ContextFlags::ActiveLayerIsImage);
+    (clipboard::get_current_format() == clipboard::ClipboardImage &&
+      context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+        ContextFlags::ActiveLayerIsReadable |
+        ContextFlags::ActiveLayerIsWritable |
+        ContextFlags::ActiveLayerIsImage)) ||
+    (clipboard::get_current_format() == clipboard::ClipboardDocumentRange &&
+      context->checkFlags(ContextFlags::ActiveDocumentIsWritable));
 }
 
 void PasteCommand::onExecute(Context* context)

@@ -58,8 +58,8 @@ namespace app {
   protected:
     ContextAccess(const Context* context)
       : m_context(context)
-      , m_document(context->getActiveDocument())
-      , m_location(context->getActiveLocation())
+      , m_document(context->activeDocument())
+      , m_location(context->activeLocation())
     {
     }
 
@@ -67,7 +67,7 @@ namespace app {
     ContextAccess(const Context* context, const DocumentReaderT& documentReader)
       : m_context(context)
       , m_document(documentReader)
-      , m_location(context->getActiveLocation())
+      , m_location(context->activeLocation())
     {
     }
 

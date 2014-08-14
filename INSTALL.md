@@ -3,9 +3,9 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows + MSVC 2008 Express + DirectX SDK
+* Windows + MSVC 2012 + DirectX SDK
+* Mac OS X 10.8 Mountain Lion + Mac OS X 10.4 SDK universal
 * Linux + GCC
-* Mac OS X
 
 # How can I compile Aseprite?
 
@@ -81,3 +81,17 @@ that you want to be linked dynamically.
 You must compile with `Profile` configuration. For example on Linux:
 
     /.../aseprite-source/build$ cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Profile -DCOMPILER_GCC:BOOL=ON
+
+# How to compile Aseprite with Mac OS X?
+
+You need the old Mac OS X 10.4 SDK universal, which can be obtained
+from a Xcode 3.2 distribution. You can get it from Apple developer
+website (you need to be registered):
+
+  https://developer.apple.com/downloads/
+
+Install the MacOSX10.4.Universal.pkg and run cmake with the following
+parameters:
+
+    -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
+    -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk

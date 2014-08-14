@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ASE menus, tools and keyboard shortcuts -->
-<gui version="1.0.2-dev">
+<gui version="1.0.3-dev">
   <!-- Keyboard shortcuts -->
   <keyboard>
 
     <!-- Keyboard shortcuts for commands (menu options) -->
     <commands>
       <!-- File -->
-      <key command="NewFile" shortcut="Ctrl+N" />
-      <key command="OpenFile" shortcut="Ctrl+O" />
-      <key command="SaveFile" shortcut="Ctrl+S" />
-      <key command="SaveFileAs" shortcut="Ctrl+Shift+S" />
-      <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" />
-      <key command="CloseFile" shortcut="Ctrl+W" />
-      <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" />
-      <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" />
+      <key command="NewFile" shortcut="Ctrl+N" mac="Cmd+N" />
+      <key command="OpenFile" shortcut="Ctrl+O" mac="Cmd+O" />
+      <key command="SaveFile" shortcut="Ctrl+S" mac="Cmd+S" />
+      <key command="SaveFileAs" shortcut="Ctrl+Shift+S" mac="Cmd+Shift+S" />
+      <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
+      <key command="CloseFile" shortcut="Ctrl+W" mac="Cmd+W" />
+      <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" mac="Cmd+Shift+W" />
+      <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
       <key command="Exit" shortcut="Alt+F4" />
@@ -22,14 +22,19 @@
         <param name="type" value="all" />
       </key>
       <!-- Edit -->
-      <key command="Undo" shortcut="Ctrl+Z" /> <key command="Undo" shortcut="Ctrl+U" />
-      <key command="Redo" shortcut="Ctrl+Y" />
-      <key command="Redo" shortcut="Ctrl+R" />
-      <key command="Redo" shortcut="Ctrl+Shift+Z" />
-      <key command="Cut" shortcut="Ctrl+X" /> <key command="Cut" shortcut="Shift+Del" />
-      <key command="Copy" shortcut="Ctrl+C" /> <key command="Copy" shortcut="Ctrl+Ins" />
-      <key command="Paste" shortcut="Ctrl+V" /> <key command="Paste" shortcut="Shift+Ins" />
-      <key command="Clear" shortcut="Del" /> <key command="Clear" shortcut="Backspace" />
+      <key command="Undo" shortcut="Ctrl+Z" mac="Cmd+Z" />
+      <key command="Undo" shortcut="Ctrl+U" mac="Cmd+U" />
+      <key command="Redo" shortcut="Ctrl+Y" mac="Cmd+Y" />
+      <key command="Redo" shortcut="Ctrl+R" mac="Cmd+R" />
+      <key command="Redo" shortcut="Ctrl+Shift+Z" mac="Cmd+Shift+Z" />
+      <key command="Cut" shortcut="Ctrl+X" mac="Cmd+X" />
+      <key command="Cut" shortcut="Shift+Del" />
+      <key command="Copy" shortcut="Ctrl+C" mac="Cmd+C" />
+      <key command="Copy" shortcut="Ctrl+Ins" mac="Cmd+Ins" />
+      <key command="Paste" shortcut="Ctrl+V" mac="Cmd+V" />
+      <key command="Paste" shortcut="Shift+Ins" />
+      <key command="Clear" shortcut="Del" />
+      <key command="Clear" shortcut="Backspace" />
       <key command="Flip" shortcut="Shift+H">
         <param name="target" value="mask" />
         <param name="orientation" value="horizontal" />
@@ -39,14 +44,14 @@
         <param name="orientation" value="vertical" />
       </key>
       <key command="ReplaceColor" shortcut="Shift+R" />
-      <key command="InvertColor" shortcut="Ctrl+I" />
+      <key command="InvertColor" shortcut="Ctrl+I" mac="Cmd+I" />
       <key command="ConvolutionMatrix" shortcut="F9" />
-      <key command="ColorCurve" shortcut="Ctrl+M" />
+      <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
       <key command="ConfigureTools" shortcut="C" />
-      <key command="Options" shortcut="Ctrl+Shift+O" />
+      <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" />
       <!-- Sprite -->
-      <key command="SpriteProperties" shortcut="Ctrl+P" />
+      <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
       <key command="NewLayer" shortcut="Shift+N" />
@@ -64,15 +69,15 @@
       <key command="GotoFrame" shortcut="Alt+G" />
       <key command="PlayAnimation" shortcut="Enter" />
       <!-- Select -->
-      <key command="MaskAll" shortcut="Ctrl+A" />
-      <key command="DeselectMask" shortcut="Ctrl+D" />
-      <key command="ReselectMask" shortcut="Ctrl+Shift+D" />
-      <key command="InvertMask" shortcut="Ctrl+Shift+I" />
+      <key command="MaskAll" shortcut="Ctrl+A" mac="Cmd+A" />
+      <key command="DeselectMask" shortcut="Ctrl+D" mac="Cmd+D" />
+      <key command="ReselectMask" shortcut="Ctrl+Shift+D" mac="Cmd+Shift+D" />
+      <key command="InvertMask" shortcut="Ctrl+Shift+I" mac="Cmd+Shift+I" />
       <!-- View -->
       <key command="Refresh" shortcut="F5" />
-      <key command="MakeUniqueEditor" shortcut="Ctrl+1" />
-      <key command="SplitEditorVertically" shortcut="Ctrl+2" />
-      <key command="SplitEditorHorizontally" shortcut="Ctrl+3" />
+      <key command="MakeUniqueEditor" shortcut="Ctrl+1" mac="Cmd+1" />
+      <key command="SplitEditorVertically" shortcut="Ctrl+2" mac="Cmd+2" />
+      <key command="SplitEditorHorizontally" shortcut="Ctrl+3" mac="Cmd+3" />
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
@@ -84,8 +89,8 @@
         <param name="switch" value="true" />
       </key>
       <!-- Tabs -->
-      <key command="GotoNextTab" shortcut="Ctrl+Tab" />
-      <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" />
+      <key command="GotoNextTab" shortcut="Ctrl+Tab" mac="Cmd+Tab" />
+      <key command="GotoPreviousTab" shortcut="Ctrl+Shift+Tab" mac="Cmd+Shift+Tab" />
       <!-- Others -->
       <key command="SwitchColors" shortcut="X" />
       <key command="ChangeColor" shortcut="9">
@@ -105,11 +110,11 @@
         <param name="change" value="increment-index" />
       </key>
       <key command="ChangeColor" shortcut="Ctrl+9">
-        <param name="target" value="background" />
+        <param name="target" value="background" mac="Cmd+9" />
         <param name="change" value="decrement-index" />
       </key>
       <key command="ChangeColor" shortcut="Ctrl+0">
-        <param name="target" value="background" />
+        <param name="target" value="background" mac="Cmd+0" />
         <param name="change" value="increment-index" />
       </key>
 
@@ -127,25 +132,65 @@
         <param name="change" value="decrement-size" />
       </key>
 
-      <!-- Scroll with cursor -->
-      <key command="Scroll" shortcut="Ctrl+Left">
+      <!-- Zoom -->
+      <key command="Zoom" shortcut="1"><param name="percentage" value="100" /></key>
+      <key command="Zoom" shortcut="2"><param name="percentage" value="200" /></key>
+      <key command="Zoom" shortcut="3"><param name="percentage" value="400" /></key>
+      <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
+      <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
+      <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
+      <key command="Zoom" shortcut="Ctrl+Plus Pad" mac="Cmd+Plus Pad">
+        <param name="action" value="in" />
+      </key>
+      <key command="Zoom" shortcut="Ctrl+Minus Pad" mac="Cmd+Minus Pad">
+        <param name="action" value="out" />
+      </key>
+
+      <!-- Scroll with arrows -->
+      <key command="Scroll" shortcut="Ctrl+Left" mac="Cmd+Left">
         <param name="direction" value="left" />
         <param name="units" value="zoomed-tile-width" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Right">
+      <key command="Scroll" shortcut="Ctrl+Right" mac="Cmd+Right">
         <param name="direction" value="right" />
         <param name="units" value="zoomed-tile-width" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Up">
+      <key command="Scroll" shortcut="Ctrl+Up" mac="Cmd+Up">
         <param name="direction" value="up" />
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Down">
+      <key command="Scroll" shortcut="Ctrl+Down" mac="Cmd+Down">
         <param name="direction" value="down" />
         <param name="units" value="zoomed-tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+
+      <!-- Move selection with arrows -->
+      <key command="MoveMask" shortcut="Shift+Left">
+        <param name="target" value="content" />
+        <param name="direction" value="left" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Right">
+        <param name="target" value="content" />
+        <param name="direction" value="right" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Up">
+        <param name="target" value="content" />
+        <param name="direction" value="up" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Down">
+        <param name="target" value="content" />
+        <param name="direction" value="down" />
+        <param name="units" value="pixel" />
         <param name="quantity" value="1" />
       </key>
     </commands>
@@ -166,6 +211,7 @@
       <key tool="hand" shortcut="H" />
       <key tool="move" shortcut="V" />
       <key tool="zoom" shortcut="Z" />
+      <!-- key tool="slice" shortcut="K" /-->
 
       <key tool="paint_bucket" shortcut="G" />
 
@@ -600,6 +646,15 @@
             ink="move"
             controller="freehand"
             />
+      <!-- tool id="slice"
+            text="Slice Tool"
+            fill="always"
+            ink="slice"
+            controller="two_points"
+            pointshape="pixel"
+            intertwine="as_rectangles"
+            tracepolicy="last"
+            /-->
     </group>
 
     <group id="paint_bucket" text="Paint Bucket Tool">

@@ -225,20 +225,52 @@ static int mouse_winapi_select_system_cursor(int cursor)
 
    wc = NULL;
    switch(cursor) {
-      case MOUSE_CURSOR_ARROW:
-         wc = LoadCursor(NULL, IDC_ARROW);
-         break;
-      case MOUSE_CURSOR_BUSY:
-         wc = LoadCursor(NULL, IDC_WAIT);
-         break;
-      case MOUSE_CURSOR_QUESTION:
-         wc = LoadCursor(NULL, IDC_HELP);
-         break;
-      case MOUSE_CURSOR_EDIT:
-         wc = LoadCursor(NULL, IDC_IBEAM);
-         break;
-      default:
-         return 0;
+     case MOUSE_CURSOR_ARROW:
+       wc = LoadCursor(NULL, IDC_ARROW);
+       break;
+     case MOUSE_CURSOR_BUSY:
+       wc = LoadCursor(NULL, IDC_WAIT);
+       break;
+     case MOUSE_CURSOR_QUESTION:
+       wc = LoadCursor(NULL, IDC_HELP);
+       break;
+     case MOUSE_CURSOR_EDIT:
+       wc = LoadCursor(NULL, IDC_IBEAM);
+       break;
+#ifdef ALLEGRO4_WITH_EXTRA_CURSORS
+     case MOUSE_CURSOR_CROSS:
+       wc = LoadCursor(NULL, IDC_CROSS);
+       break;
+     case MOUSE_CURSOR_MOVE:
+       wc = LoadCursor(NULL, IDC_SIZEALL);
+       break;
+     case MOUSE_CURSOR_LINK:
+       wc = LoadCursor(NULL, IDC_HAND);
+       break;
+     case MOUSE_CURSOR_FORBIDDEN:
+       wc = LoadCursor(NULL, IDC_NO);
+       break;
+     case MOUSE_CURSOR_SIZE_N:
+     case MOUSE_CURSOR_SIZE_S:
+     case MOUSE_CURSOR_SIZE_NS:
+       wc = LoadCursor(NULL, IDC_SIZENS);
+       break;
+     case MOUSE_CURSOR_SIZE_E:
+     case MOUSE_CURSOR_SIZE_W:
+     case MOUSE_CURSOR_SIZE_WE:
+       wc = LoadCursor(NULL, IDC_SIZEWE);
+       break;
+     case MOUSE_CURSOR_SIZE_NW:
+     case MOUSE_CURSOR_SIZE_SE:
+       wc = LoadCursor(NULL, IDC_SIZENWSE);
+       break;
+     case MOUSE_CURSOR_SIZE_NE:
+     case MOUSE_CURSOR_SIZE_SW:
+       wc = LoadCursor(NULL, IDC_SIZENESW);
+       break;
+#endif
+     default:
+       return 0;
    }
 
    _win_hcursor = wc;
@@ -264,6 +296,8 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
 
    _exit_critical();
 
+#if 0 /* Aseprite: We handle mouse capture in the she and ui layers */
+
    /* If there is a mouse button pressed we capture the mouse, in any
       other cases we release it. */
    if (last_mouse_b) {
@@ -274,6 +308,8 @@ void _al_win_mouse_handle_button(HWND hwnd, int button, BOOL down, int x, int y,
      if (GetCapture() == hwnd)
        ReleaseCapture();
    }
+
+#endif
 
    _handle_mouse_input();
 }

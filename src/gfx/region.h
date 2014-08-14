@@ -56,7 +56,7 @@ namespace gfx {
       reference operator*() { m_rect = *m_ptr; return m_rect; }
     private:
       Box* m_ptr;
-      Rect m_rect;
+      mutable Rect m_rect;
       template<typename> friend class RegionIterator;
       friend class ::gfx::Region;
     };

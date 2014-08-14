@@ -10,6 +10,7 @@
 
 #include "she/clipboard.h"
 #include "she/display.h"
+#include "she/error.h"
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/locked_surface.h"

@@ -71,7 +71,7 @@ void DuplicateLayerCommand::onExecute(Context* context)
   {
     UndoTransaction undo(writer.context(), "Layer Duplication");
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
-    api.duplicateLayer(sourceLayer, sourceLayer);
+    api.duplicateLayerAfter(sourceLayer, sourceLayer);
     undo.commit();
   }
 

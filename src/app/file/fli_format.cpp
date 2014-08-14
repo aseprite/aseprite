@@ -105,7 +105,7 @@ bool FliFormat::onLoad(FileOp* fop)
   // Create the image
   Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
   LayerImage* layer = new LayerImage(sprite);
-  sprite->getFolder()->addLayer(layer);
+  sprite->folder()->addLayer(layer);
   layer->configureAsBackground();
 
   // Set frames and speed
@@ -114,7 +114,7 @@ bool FliFormat::onLoad(FileOp* fop)
 
   /* write frame by frame */
   for (frpos_in = frpos_out = FrameNumber(0);
-       frpos_in < sprite->getTotalFrames();
+       frpos_in < sprite->totalFrames();
        ++frpos_in) {
     /* read the frame */
     fli_read_frame(f, &fli_header,
@@ -134,7 +134,7 @@ bool FliFormat::onLoad(FileOp* fop)
 
       // Add the new frame
       Image* image = Image::createCopy(bmp);
-      index = sprite->getStock()->addImage(image);
+      index = sprite->stock()->addImage(image);
 
       Cel* cel = new Cel(frpos_out, index);
       layer->addCel(cel);
@@ -165,7 +165,7 @@ bool FliFormat::onLoad(FileOp* fop)
     memcpy(omap, cmap, 768);
 
     /* update progress */
-    fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->getTotalFrames()));
+    fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->totalFrames()));
     if (fop_is_stop(fop))
       break;
 
@@ -177,14 +177,14 @@ bool FliFormat::onLoad(FileOp* fop)
   // Update number of frames
   sprite->setTotalFrames(frpos_out.next());
 
-  fop->document = new Document(sprite);
+  fop->createDocument(sprite);
   return true;
 }
 
 #ifdef ENABLE_SAVE
 bool FliFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   unsigned char cmap[768];
   unsigned char omap[768];
   s_fli_header fli_header;
@@ -194,8 +194,8 @@ bool FliFormat::onSave(FileOp* fop)
   /* prepare fli header */
   fli_header.filesize = 0;
   fli_header.frames = 0;
-  fli_header.width = sprite->getWidth();
-  fli_header.height = sprite->getHeight();
+  fli_header.width = sprite->width();
+  fli_header.height = sprite->height();
 
   if ((fli_header.width == 320) && (fli_header.height == 200))
     fli_header.magic = HEADER_FLI;
@@ -217,12 +217,12 @@ bool FliFormat::onSave(FileOp* fop)
   fseek(f, 128, SEEK_SET);
 
   // Create the bitmaps
-  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
-  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->getWidth(), sprite->getHeight()));
+  base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
+  base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
 
   // Write frame by frame
   for (FrameNumber frpos(0);
-       frpos < sprite->getTotalFrames();
+       frpos < sprite->totalFrames();
        ++frpos) {
     /* get color map */
     pal = sprite->getPalette(frpos);
@@ -234,7 +234,7 @@ bool FliFormat::onSave(FileOp* fop)
 
     /* render the frame in the bitmap */
     clear_image(bmp, 0);
-    layer_render(sprite->getFolder(), bmp, 0, 0, frpos);
+    layer_render(sprite->folder(), bmp, 0, 0, frpos);
 
     /* how many times this frame should be written to get the same
        time that it has in the sprite */
@@ -256,7 +256,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     /* update progress */
-    fop_progress(fop, (float)(frpos.next()) / (float)(sprite->getTotalFrames()));
+    fop_progress(fop, (float)(frpos.next()) / (float)(sprite->totalFrames()));
   }
 
   // Write the header and close the file
@@ -270,7 +270,7 @@ static int get_time_precision(Sprite *sprite)
 {
   int precision = 1000;
 
-  for (FrameNumber c(0); c < sprite->getTotalFrames() && precision > 1; ++c) {
+  for (FrameNumber c(0); c < sprite->totalFrames() && precision > 1; ++c) {
     int len = sprite->getFrameDuration(c);
 
     while (len / precision == 0)

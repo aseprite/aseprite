@@ -26,7 +26,7 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "gfx/fwd.h"
 #include "raster/frame_number.h"
@@ -36,6 +36,8 @@
 
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
+
+struct BITMAP;
 
 namespace raster {
   class Sprite;
@@ -63,12 +65,17 @@ namespace app {
   class Editor : public ui::Widget,
                  public DocumentSettingsObserver {
   public:
+    typedef void (*PixelDelegate)(ui::Graphics* g, int x, int y, gfx::Color color);
+
     enum EditorFlags {
       kNoneFlag = 0,
-      kShowGridFlag = 1,
-      kShowMaskFlag = 2,
+      kShowGrid = 1,
+      kShowMask = 2,
       kShowOnionskin = 4,
-      kDefaultEditorFlags = kShowGridFlag | kShowMaskFlag | kShowOnionskin,
+      kShowOutside = 8,
+      kShowDecorators = 16,
+      kDefaultEditorFlags = (kShowGrid | kShowMask | 
+        kShowOnionskin | kShowOutside | kShowDecorators),
     };
 
     enum ZoomBehavior {
@@ -94,23 +101,27 @@ namespace app {
 
     // Gets/sets the current decorator. The decorator is not owned by
     // the Editor, so it must be deleted by the caller.
-    EditorDecorator* getDecorator() { return m_decorator; }
+    EditorDecorator* decorator() { return m_decorator; }
     void setDecorator(EditorDecorator* decorator) { m_decorator = decorator; }
 
-    Document* getDocument() { return m_document; }
-    Sprite* getSprite() { return m_sprite; }
-    Layer* getLayer() { return m_layer; }
-    FrameNumber getFrame() { return m_frame; }
+    EditorFlags editorFlags() const { return m_flags; }
+    void setEditorFlags(EditorFlags flags) { m_flags = flags; }
+
+    Document* document() { return m_document; }
+    Sprite* sprite() { return m_sprite; }
+    Layer* layer() { return m_layer; }
+    FrameNumber frame() { return m_frame; }
+
     void getDocumentLocation(DocumentLocation* location) const;
     DocumentLocation getDocumentLocation() const;
 
     void setLayer(const Layer* layer);
     void setFrame(FrameNumber frame);
 
-    int getZoom() const { return m_zoom; }
-    int getOffsetX() const { return m_offset_x; }
-    int getOffsetY() const { return m_offset_y; }
-    int getCursorThick() { return m_cursor_thick; }
+    int zoom() const { return m_zoom; }
+    int offsetX() const { return m_offset_x; }
+    int offsetY() const { return m_offset_y; }
+    int cursorThick() { return m_cursor_thick; }
 
     void setZoom(int zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }
@@ -118,12 +129,14 @@ namespace app {
 
     void setDefaultScroll();
     void setEditorScroll(int x, int y, int use_refresh_region);
+    void setEditorZoom(int zoom);
 
     // Updates the Editor's view.
     void updateEditor();
 
     // Draws the sprite taking care of the whole clipping region.
     void drawSpriteClipped(const gfx::Region& updateRegion);
+    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
 
     void flashCurrentLayer();
 
@@ -166,9 +179,9 @@ namespace app {
 
     void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior);
 
-    bool processKeysToSetZoom(ui::KeyMessage* msg);
-
     void pasteImage(const Image* image, int x, int y);
+
+    void startSelectionTransformation(const gfx::Point& move);
 
     // Used by EditorView to notify changes in the view's scroll
     // position.
@@ -176,8 +189,6 @@ namespace app {
 
     // in cursor.cpp
 
-    static int get_raw_cursor_color();
-    static bool is_cursor_mask();
     static app::Color get_cursor_color();
     static void set_cursor_color(const app::Color& color);
 
@@ -199,10 +210,10 @@ namespace app {
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void editor_update_quicktool();
-    void editor_draw_cursor(int x, int y, bool refresh = true);
-    void editor_move_cursor(int x, int y, bool refresh = true);
-    void editor_clean_cursor(bool refresh = true);
-    bool editor_cursor_is_subpixel();
+    void drawBrushPreview(int x, int y, bool refresh = true);
+    void moveBrushPreview(int x, int y, bool refresh = true);
+    void clearBrushPreview(bool refresh = true);
+    bool doesBrushPreviewNeedSubpixel();
 
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
@@ -211,16 +222,16 @@ namespace app {
     void editor_setcursor();
 
     void forEachBrushPixel(
+      ui::Graphics* g,
       int screen_x, int screen_y,
-      int sprite_x, int sprite_y, int color,
-      void (*pixel)(BITMAP *bmp, int x, int y, int color));
+      int sprite_x, int sprite_y,
+      gfx::Color color,
+      PixelDelegate pixelDelegate);
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this
     // routine.
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
-    void drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc);
-    void drawSpriteUnclippedRect(const gfx::Rect& rc);
 
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;

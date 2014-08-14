@@ -34,7 +34,6 @@
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "base/mutex.h"
-#include "base/path.h"
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
 
@@ -56,12 +55,17 @@ UIContext::~UIContext()
 {
   ASSERT(m_instance == this);
   m_instance = NULL;
+
+  // The context must be empty at this point. (It's to check if the UI
+  // is working correctly, i.e. closing all files when the user can
+  // take any action about it.)
+  ASSERT(documents().empty());
 }
 
-DocumentView* UIContext::getActiveView() const
+DocumentView* UIContext::activeView() const
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  WorkspaceView* view = workspace->getActiveView();
+  WorkspaceView* view = workspace->activeView();
   if (DocumentView* docView = dynamic_cast<DocumentView*>(view))
     return docView;
   else
@@ -70,10 +74,12 @@ DocumentView* UIContext::getActiveView() const
 
 void UIContext::setActiveView(DocumentView* docView)
 {
+  setActiveDocument(docView ? docView->getDocument(): NULL);
+
   if (docView != NULL) {
     App::instance()->getMainWindow()->getTabsBar()->selectTab(docView);
 
-    if (App::instance()->getMainWindow()->getWorkspace()->getActiveView() != docView)
+    if (App::instance()->getMainWindow()->getWorkspace()->activeView() != docView)
       App::instance()->getMainWindow()->getWorkspace()->setActiveView(docView);
   }
 
@@ -96,9 +102,10 @@ void UIContext::setActiveView(DocumentView* docView)
   std::string title;
   if (docView) {
     // Prepend the document's filename.
-    title += base::get_file_name(docView->getDocument()->getFilename());
+    title += docView->getDocument()->name();
     title += " - ";
   }
+
   title += defaultTitle;
   set_window_title(title.c_str());
 }
@@ -120,26 +127,25 @@ size_t UIContext::countViewsOf(Document* document) const
   return counter;
 }
 
-Editor* UIContext::getActiveEditor()
+Editor* UIContext::activeEditor()
 {
-  DocumentView* activeView = getActiveView();
-  if (activeView)
-    return activeView->getEditor();
+  DocumentView* view = activeView();
+  if (view)
+    return view->getEditor();
   else
     return NULL;
 }
 
-void UIContext::onAddDocument(Document* document)
+void UIContext::onAddDocument(doc::Document* doc)
 {
-  // base method
-  Context::onAddDocument(document);
+  Context::onAddDocument(doc);
 
   // We don't create views in batch mode.
   if (!App::instance()->isGui())
     return;
 
   // Add a new view for this document
-  DocumentView* view = new DocumentView(document, DocumentView::Normal);
+  DocumentView* view = new DocumentView(static_cast<app::Document*>(doc), DocumentView::Normal);
 
   // Add a tab with the new view for the document
   App::instance()->getMainWindow()->getWorkspace()->addView(view);
@@ -148,9 +154,9 @@ void UIContext::onAddDocument(Document* document)
   view->getEditor()->setDefaultScroll();
 }
 
-void UIContext::onRemoveDocument(Document* document)
+void UIContext::onRemoveDocument(doc::Document* doc)
 {
-  Context::onRemoveDocument(document);
+  Context::onRemoveDocument(doc);
 
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
   DocumentViews docViews;
@@ -159,7 +165,7 @@ void UIContext::onRemoveDocument(Document* document)
   for (Workspace::iterator it=workspace->begin(); it != workspace->end(); ++it) {
     WorkspaceView* view = *it;
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-      if (docView->getDocument() == document) {
+      if (docView->getDocument() == doc) {
         docViews.push_back(docView);
       }
     }
@@ -174,9 +180,9 @@ void UIContext::onRemoveDocument(Document* document)
 
 void UIContext::onGetActiveLocation(DocumentLocation* location) const
 {
-  DocumentView* activeView = getActiveView();
-  if (activeView)
-    activeView->getDocumentLocation(location);
+  DocumentView* view = activeView();
+  if (view)
+    view->getDocumentLocation(location);
 }
 
 } // namespace app

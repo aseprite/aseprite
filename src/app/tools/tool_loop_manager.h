@@ -60,8 +60,8 @@ namespace app {
         Pointer(int x, int y, Button button)
           : m_x(x), m_y(y), m_button(button) { }
 
-        int getX() const { return m_x; }
-        int getY() const { return m_y; }
+        int x() const { return m_x; }
+        int y() const { return m_y; }
         Button getButton() const { return m_button; }
 
       private:

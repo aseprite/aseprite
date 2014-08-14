@@ -33,8 +33,8 @@ using namespace undo;
 
 SetSpriteSize::SetSpriteSize(ObjectsContainer* objects, Sprite* sprite)
   : m_spriteId(objects->addObject(sprite))
-  , m_width(sprite->getWidth())
-  , m_height(sprite->getHeight())
+  , m_width(sprite->width())
+  , m_height(sprite->height())
 {
 }
 

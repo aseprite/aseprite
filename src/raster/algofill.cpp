@@ -1,6 +1,7 @@
 // The floodfill routine.
 // By Shawn Hargreaves.
 // Adapted to Aseprite by David Capello
+// Added non-contiguous mode by David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -89,6 +90,30 @@ static inline bool color_equal_8(color_t c1, color_t c2, int tolerance)
     return ABS((int)c1 - (int)c2) <= tolerance;
 }
 
+template<typename ImageTraits>
+static inline bool color_equal(color_t c1, color_t c2, int tolerance)
+{
+  // TODO static_assert(false)
+}
+
+template<>
+static inline bool color_equal<RgbTraits>(color_t c1, color_t c2, int tolerance)
+{
+  return color_equal_32(c1, c2, tolerance);
+}
+
+template<>
+static inline bool color_equal<GrayscaleTraits>(color_t c1, color_t c2, int tolerance)
+{
+  return color_equal_16(c1, c2, tolerance);
+}
+
+template<>
+static inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
+{
+  return color_equal_8(c1, c2, tolerance);
+}
+
 
 
 /* flooder:
@@ -103,7 +128,7 @@ static int flooder(Image *image, int x, int y,
   int left = 0, right = 0;
   int c;
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
       {
@@ -120,7 +145,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_32((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -142,7 +167,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_16((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -164,7 +189,7 @@ static int flooder(Image *image, int x, int y,
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->getWidth(); right++) {
+        for (right=x+1; right<image->width(); right++) {
           if (!color_equal_8((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -183,7 +208,7 @@ static int flooder(Image *image, int x, int y,
       }
 
       // Work right from starting point
-      for (right=x+1; right<image->getWidth(); right++) {
+      for (right=x+1; right<image->width(); right++) {
         if (get_pixel(image, right, y) != src_color)
           break;
       }
@@ -220,7 +245,7 @@ static int flooder(Image *image, int x, int y,
   if (y > 0)
     p->flags |= FLOOD_TODO_ABOVE;
 
-  if (y+1 < image->getHeight())
+  if (y+1 < image->height())
     p->flags |= FLOOD_TODO_BELOW;
 
   return right+2;
@@ -254,7 +279,7 @@ static int check_flood_line(Image* image, int y, int left, int right,
       c = p->next;
 
       if (!c) {
-        left = flooder (image, left, y, src_color, tolerance, data, proc);
+        left = flooder(image, left, y, src_color, tolerance, data, proc);
         ret = true;
         break;
       }
@@ -264,29 +289,62 @@ static int check_flood_line(Image* image, int y, int left, int right,
   return ret;
 }
 
+template<typename ImageTraits>
+static void replace_color(Image* image, int src_color, int tolerance, void *data, AlgoHLine proc)
+{
+  typename ImageTraits::address_t address;
+  int w = image->width();
+  int h = image->height();
 
+  for (int y=0; y<h; ++y) {
+    address = reinterpret_cast<typename ImageTraits::address_t>(image->getPixelAddress(0, y));
+
+    for (int x=0; x<w; ++x, ++address) {
+      int right = -1;
+
+      if (color_equal<ImageTraits>((int)(*address), src_color, tolerance)) {
+        ++address;
+        for (right=x+1; right<w; ++right, ++address) {
+          if (!color_equal<ImageTraits>((int)(*address), src_color, tolerance))
+            break;
+        }
+        (*proc)(x, y, right-1, data);
+        x = right;
+      }
+    }
+  }
+}
 
 /* floodfill:
  *  Fills an enclosed area (starting at point x, y) with the specified color.
  */
-void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoHLine proc)
+void algo_floodfill(Image* image, int x, int y,
+  int tolerance, bool contiguous,
+  void* data, AlgoHLine proc)
 {
-  int c, done;
-  FLOODED_LINE *p;
-
-  /* make sure we have a valid starting point */
-  if ((x < 0) || (x >= image->getWidth()) ||
-      (y < 0) || (y >= image->getHeight()))
+  // Make sure we have a valid starting point
+  if ((x < 0) || (x >= image->width()) ||
+      (y < 0) || (y >= image->height()))
     return;
 
-  /* what color to replace? */
+  // What color to replace?
   color_t src_color = get_pixel(image, x, y);
 
+  // Non-contiguous case, we replace colors in the whole image.
+  if (!contiguous) {
+    switch (image->pixelFormat()) {
+      case IMAGE_RGB: replace_color<RgbTraits>(image, src_color, tolerance, data, proc); break;
+      case IMAGE_GRAYSCALE: replace_color<GrayscaleTraits>(image, src_color, tolerance, data, proc); break;
+      case IMAGE_INDEXED: replace_color<IndexedTraits>(image, src_color, tolerance, data, proc); break;
+    }
+    return;
+  }
+
   /* set up the list of flooded segments */
-  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->getHeight());
-  flood_count = image->getHeight();
-  p = (FLOODED_LINE*)_scratch_mem;
-  for (c=0; c<flood_count; c++) {
+  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->height());
+  flood_count = image->height();
+  FLOODED_LINE* p = (FLOODED_LINE*)_scratch_mem;
+  for (int c=0; c<flood_count; c++) {
     p[c].flags = 0;
     p[c].lpos = SHRT_MAX;
     p[c].rpos = SHRT_MIN;
@@ -298,11 +356,12 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
   flooder(image, x, y, src_color, tolerance, data, proc);
 
   /* continue as long as there are some segments still to test */
+  bool done;
   do {
     done = true;
 
     /* for each line on the screen */
-    for (c=0; c<flood_count; c++) {
+    for (int c=0; c<flood_count; c++) {
 
       p = FLOOD_LINE(c);
 
@@ -323,7 +382,7 @@ void algo_floodfill(Image* image, int x, int y, int tolerance, void *data, AlgoH
                              src_color, tolerance, data, proc)) {
           done = false;
           /* special case shortcut for going backwards */
-          if ((c < image->getHeight()) && (c > 0))
+          if ((c < image->height()) && (c > 0))
             c -= 2;
         }
       }

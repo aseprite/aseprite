@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
+#include "generated_duplicate_sprite.h"
+
 #include <cstdio>
 
 namespace app {
@@ -62,40 +64,35 @@ bool DuplicateSpriteCommand::onEnabled(Context* context)
 
 void DuplicateSpriteCommand::onExecute(Context* context)
 {
-  Widget* src_name, *dst_name, *flatten;
   const ContextReader reader(context);
   const Document* document = reader.document();
 
-  /* load the window widget */
-  base::UniquePtr<Window> window(app::load_widget<Window>("duplicate_sprite.xml", "duplicate_sprite"));
-
-  src_name = window->findChild("src_name");
-  dst_name = window->findChild("dst_name");
-  flatten = window->findChild("flatten");
-
-  std::string fn = document->getFilename();
-  src_name->setText(base::get_file_name(fn));
-  dst_name->setText(base::get_file_title(fn) + " Copy." + base::get_file_extension(fn));
+  // Load the window widget
+  app::gen::DuplicateSprite window;
+  std::string fn = document->filename();
+  std::string ext = base::get_file_extension(fn);
+  window.srcName()->setText(base::get_file_name(fn));
+  window.dstName()->setText(base::get_file_title(fn) +
+    " Copy" + (!ext.empty() ? "." + ext: ""));
 
   if (get_config_bool("DuplicateSprite", "Flatten", false))
-    flatten->setSelected(true);
+    window.flatten()->setSelected(true);
 
   // Open the window
-  window->openWindowInForeground();
+  window.openWindowInForeground();
 
-  if (window->getKiller() == window->findChild("ok")) {
-    set_config_bool("DuplicateSprite", "Flatten", flatten->isSelected());
+  if (window.getKiller() == window.ok()) {
+    set_config_bool("DuplicateSprite", "Flatten", window.flatten()->isSelected());
 
     // Make a copy of the document
     Document* docCopy;
-    if (flatten->isSelected())
+    if (window.flatten()->isSelected())
       docCopy = document->duplicate(DuplicateWithFlattenLayers);
     else
       docCopy = document->duplicate(DuplicateExactCopy);
 
-    docCopy->setFilename(dst_name->getText().c_str());
-
-    context->addDocument(docCopy);
+    docCopy->setFilename(window.dstName()->getText().c_str());
+    docCopy->setContext(context);
   }
 }
 

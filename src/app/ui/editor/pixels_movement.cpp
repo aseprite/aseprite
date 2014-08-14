@@ -61,25 +61,25 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_adjustPivot(false)
   , m_handle(NoHandle)
   , m_originalImage(Image::createCopy(moveThis))
-  , m_maskColor(m_sprite->getTransparentColor())
+  , m_maskColor(m_sprite->transparentColor())
 {
-  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->getWidth(), moveThis->getHeight()));
+  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->width(), moveThis->height()));
   m_currentData = m_initialData;
 
   ContextWriter writer(m_reader);
-  m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), opacity);
+  m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), opacity);
 
   redrawExtraImage();
 
-  m_initialMask = new Mask(*m_document->getMask());
-  m_currentMask = new Mask(*m_document->getMask());
+  m_initialMask = new Mask(*m_document->mask());
+  m_currentMask = new Mask(*m_document->mask());
 
-  UIContext::instance()->getSettings()->selection()->addObserver(this);
+  UIContext::instance()->settings()->selection()->addObserver(this);
 }
 
 PixelsMovement::~PixelsMovement()
 {
-  UIContext::instance()->getSettings()->selection()->removeObserver(this);
+  UIContext::instance()->settings()->selection()->removeObserver(this);
 
   delete m_originalImage;
   delete m_initialMask;
@@ -91,16 +91,14 @@ void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
   // Flip the image.
   raster::algorithm::flip_image(m_originalImage,
                                 gfx::Rect(gfx::Point(0, 0),
-                                          gfx::Size(m_originalImage->getWidth(),
-                                                    m_originalImage->getHeight())),
+                                          gfx::Size(m_originalImage->width(),
+                                                    m_originalImage->height())),
                                 flipType);
 
   // Flip the mask.
-  raster::algorithm::flip_image(m_initialMask->getBitmap(),
-                                gfx::Rect(gfx::Point(0, 0),
-                                          gfx::Size(m_initialMask->getBounds().w,
-                                                    m_initialMask->getBounds().h)),
-                                flipType);
+  raster::algorithm::flip_image(m_initialMask->bitmap(),
+    gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().getSize()),
+    flipType);
 
   {
     ContextWriter writer(m_reader);
@@ -219,7 +217,7 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Point gridOffset(x1, y1);
-        UIContext::instance()->getSettings()
+        UIContext::instance()->settings()
           ->getDocumentSettings(m_document)->snapToGrid(gridOffset);
 
         // Now we calculate the difference from x1,y1 point and we can
@@ -436,7 +434,7 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
 
   int width = rightBottom.x - leftTop.x;
   int height = rightBottom.y - leftTop.y;
-  base::UniquePtr<Image> image(Image::create(m_sprite->getPixelFormat(), width, height));
+  base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), width, height));
 
   drawImage(image, leftTop);
 
@@ -461,9 +459,9 @@ void PixelsMovement::stampImage()
                                       m_undoTransaction);
 
       composite_image(expandCelCanvas.getDestCanvas(), image,
-                      -expandCelCanvas.getCel()->getX(),
-                      -expandCelCanvas.getCel()->getY(),
-                      cel->getOpacity(), BLEND_MODE_NORMAL);
+                      -expandCelCanvas.getCel()->x(),
+                      -expandCelCanvas.getCel()->y(),
+                      cel->opacity(), BLEND_MODE_NORMAL);
 
       expandCelCanvas.commit();
     }
@@ -560,7 +558,7 @@ gfx::Rect PixelsMovement::getImageBounds()
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
 
-  return gfx::Rect(cel->getX(), cel->getY(), image->getWidth(), image->getHeight());
+  return gfx::Rect(cel->x(), cel->y(), image->width(), image->height());
 }
 
 gfx::Size PixelsMovement::getInitialImageSize() const
@@ -592,10 +590,10 @@ void PixelsMovement::redrawCurrentMask()
 
   // Transform mask
 
-  m_currentMask->replace(0, 0, m_sprite->getWidth(), m_sprite->getHeight());
+  m_currentMask->replace(0, 0, m_sprite->width(), m_sprite->height());
   m_currentMask->freeze();
-  clear_image(m_currentMask->getBitmap(), 0);
-  drawParallelogram(m_currentMask->getBitmap(), m_initialMask->getBitmap(),
+  clear_image(m_currentMask->bitmap(), 0);
+  drawParallelogram(m_currentMask->bitmap(), m_initialMask->bitmap(),
     corners, gfx::Point(0, 0));
 
   m_currentMask->unfreeze();
@@ -606,8 +604,8 @@ void PixelsMovement::drawImage(raster::Image* dst, const gfx::Point& pt)
   gfx::Transformation::Corners corners;
   m_currentData.transformBox(corners);
 
-  dst->setMaskColor(m_sprite->getTransparentColor());
-  clear_image(dst, dst->getMaskColor());
+  dst->setMaskColor(m_sprite->transparentColor());
+  clear_image(dst, dst->maskColor());
 
   m_originalImage->setMaskColor(m_maskColor);
   drawParallelogram(dst, m_originalImage, corners, pt);
@@ -617,7 +615,17 @@ void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
-  switch (UIContext::instance()->getSettings()->selection()->getRotationAlgorithm()) {
+  RotationAlgorithm rotAlgo = UIContext::instance()->settings()->selection()->getRotationAlgorithm();
+
+  // If the angle and the scale weren't modified, we should use the
+  // fast rotation algorithm, as it's pixel-perfect match with the
+  // original selection when just a translation is applied.
+  if (m_currentData.angle() == 0.0 &&
+      m_currentData.bounds().getSize() == src->size()) {
+    rotAlgo = kFastRotationAlgorithm;
+  }
+
+  switch (rotAlgo) {
 
     case kFastRotationAlgorithm:
       image_parallelogram(dst, src,

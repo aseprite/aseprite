@@ -70,11 +70,11 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
 
   raster::color_t bgcolor =
     color_utils::color_for_target(
-      context->getSettings()->getBgColor(),
+      context->settings()->getBgColor(),
       ColorTarget(
         ColorTarget::BackgroundLayer,
-        sprite->getPixelFormat(),
-        sprite->getTransparentColor()));
+        sprite->pixelFormat(),
+        sprite->transparentColor()));
 
   {
     UndoTransaction undo_transaction(writer.context(), "Background from Layer");

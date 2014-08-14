@@ -55,22 +55,25 @@ namespace raster {
     Sprite(PixelFormat format, int width, int height, int ncolors);
     virtual ~Sprite();
 
+    static Sprite* createBasicSprite(PixelFormat format, int width, int height, int ncolors);
+
     ////////////////////////////////////////
     // Main properties
 
-    PixelFormat getPixelFormat() const { return m_format; }
+    PixelFormat pixelFormat() const { return m_format; }
     void setPixelFormat(PixelFormat format);
 
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
+    int width() const { return m_width; }
+    int height() const { return m_height; }
     void setSize(int width, int height);
 
     // Returns true if the rendered images will contain alpha values less
     // than 255. Only RGBA and Grayscale images without background needs
     // alpha channel in the render.
     bool needAlpha() const;
+    bool supportAlpha() const;
 
-    color_t getTransparentColor() const { return m_transparentColor; }
+    color_t transparentColor() const { return m_transparentColor; }
     void setTransparentColor(color_t color);
 
     int getMemSize() const;
@@ -78,13 +81,15 @@ namespace raster {
     ////////////////////////////////////////
     // Layers
 
-    LayerFolder* getFolder() const;
-    LayerImage* getBackgroundLayer() const;
+    LayerFolder* folder() const;
+    LayerImage* backgroundLayer() const;
 
     LayerIndex countLayers() const;
 
     Layer* indexToLayer(LayerIndex index) const;
     LayerIndex layerToIndex(const Layer* layer) const;
+
+    void getLayersList(std::vector<Layer*>& layers) const;
 
     ////////////////////////////////////////
     // Palettes
@@ -104,8 +109,8 @@ namespace raster {
     ////////////////////////////////////////
     // Frames
 
-    FrameNumber getTotalFrames() const { return m_frames; }
-    FrameNumber getLastFrame() const { return m_frames.previous(); }
+    FrameNumber totalFrames() const { return m_frames; }
+    FrameNumber lastFrame() const { return m_frames.previous(); }
 
     void addFrame(FrameNumber newFrame);
     void removeFrame(FrameNumber newFrame);
@@ -119,7 +124,7 @@ namespace raster {
     ////////////////////////////////////////
     // Images
 
-    Stock* getStock() const;
+    Stock* stock() const;
 
     void getCels(CelList& cels) const;
 

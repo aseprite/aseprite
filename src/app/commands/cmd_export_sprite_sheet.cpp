@@ -38,6 +38,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/undo_transaction.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/layer.h"
@@ -47,90 +48,186 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
+#include "generated_export_sprite_sheet.h"
+
 #include <limits>
 
 namespace app {
 
 using namespace ui;
 
-class ExportSpriteSheetWindow : public Window {
+namespace {
+
+  struct Fit {
+    int width;
+    int height;
+    int columns;
+    int freearea;
+
+    Fit(int width, int height, int columns, int freearea) :
+      width(width), height(height), columns(columns), freearea(freearea) {
+    }
+  };
+
+  // Calculate best size for the given sprite
+  // TODO this function was programmed in ten minutes, please optimize it
+  Fit best_fit(Sprite* sprite) {
+    int nframes = sprite->totalFrames();
+    int framew = sprite->width();
+    int frameh = sprite->height();
+    Fit result(framew*nframes, frameh, nframes, INT_MAX);
+    int w, h;
+
+    for (w=2; w < framew; w*=2)
+      ;
+    for (h=2; h < frameh; h*=2)
+      ;
+
+    int z = 0;
+    bool fully_contained = false;
+    while (!fully_contained) {  // TODO at this moment we're not
+                                // getting the best fit for less
+                                // freearea, just the first one.
+      gfx::Region rgn(gfx::Rect(w, h));
+      int contained_frames = 0;
+
+      for (int v=0; v+frameh <= h && !fully_contained; v+=frameh) {
+        for (int u=0; u+framew <= w; u+=framew) {
+          gfx::Rect framerc = gfx::Rect(u, v, framew, frameh);
+          rgn.createSubtraction(rgn, gfx::Region(framerc));
+
+          ++contained_frames;
+          if (nframes == contained_frames) {
+            fully_contained = true;
+            break;
+          }
+        }
+      }
+
+      if (fully_contained) {
+        // TODO convert this to a template function gfx::area()
+        int freearea = 0;
+        for (gfx::Region::iterator it=rgn.begin(), end=rgn.end();
+             it != end; ++it) {
+          freearea += (*it).w * (*it).h;
+        }
+
+        Fit fit(w, h, (w / framew), freearea);
+        if (fit.freearea < result.freearea)
+          result = fit;
+      }
+
+      if ((++z) & 1) w *= 2;
+      else h *= 2;
+    }
+
+    return result;
+  }
+
+}
+
+class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
 public:
   typedef ExportSpriteSheetCommand::SpriteSheetType SpriteSheetType;
   typedef ExportSpriteSheetCommand::ExportAction ExportAction;
 
-  ExportSpriteSheetWindow(Context* context)
-    : Window(WithTitleBar, "Export Sprite Sheet")
-    , m_grid(4, false)
-    , m_columnsLabel("Columns:")
-    , m_columns(4, "4")
-    , m_exportActionLabel("Export Action:")
-    , m_export("&Export")
-    , m_cancel("&Cancel")
-    , m_ok(false)
+  ExportSpriteSheetWindow(Document* doc, Sprite* sprite)
+    : m_sprite(sprite)
   {
-    m_sheetType.addItem("Horizontal Strip");
-    m_sheetType.addItem("Vertical Strip");
-    m_sheetType.addItem("Matrix");
+    doc::ExportDataPtr data = doc->exportData();
 
-    m_exportAction.addItem("Save Copy As...");
-    m_exportAction.addItem("Save As...");
-    m_exportAction.addItem("Save");
-    m_exportAction.addItem("Do Not Save");
+    sheetType()->addItem("Horizontal Strip");
+    sheetType()->addItem("Vertical Strip");
+    sheetType()->addItem("Matrix");
+    if (data)
+      sheetType()->setSelectedItemIndex((int)data->type()-1); // TODO harcoded -1
 
-    addChild(&m_grid);
-    m_grid.addChildInCell(new Label("Sheet Type:"), 1, 1, 0);
-    m_grid.addChildInCell(&m_sheetType, 3, 1, 0);
-    m_grid.addChildInCell(&m_columnsLabel, 1, 1, 0);
-    m_grid.addChildInCell(&m_columns, 3, 1, 0);
-    m_grid.addChildInCell(&m_exportActionLabel, 1, 1, 0);
-    m_grid.addChildInCell(&m_exportAction, 3, 1, 0);
+    exportAction()->addItem("Save Copy As...");
+    exportAction()->addItem("Save As...");
+    exportAction()->addItem("Save");
+    exportAction()->addItem("Do Not Save");
 
-    {
-      Box* hbox1 = new Box(JI_HORIZONTAL);
-      Box* hbox2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-      hbox1->addChild(new BoxFiller);
-      hbox1->addChild(hbox2);
-      hbox2->addChild(&m_export);
-      hbox2->addChild(&m_cancel);
-      m_export.setMinSize(gfx::Size(60, 0));
-      m_grid.addChildInCell(hbox1, 4, 1, 0);
+    for (int i=2; i<=8192; i*=2) {
+      std::string value = base::convert_to<std::string>(i);
+      if (i >= m_sprite->width()) fitWidth()->addItem(value);
+      if (i >= m_sprite->height()) fitHeight()->addItem(value);
     }
 
-    m_sheetType.Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    m_export.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
-    m_cancel.Click.connect(Bind<void>(&ExportSpriteSheetWindow::onCancel, this));
+    if (!data || data->bestFit()) {
+      bestFit()->setSelected(true);
+      onBestFit();
+    }
+    else if (data) {
+      columns()->setTextf("%d", data->columns());
+      onColumnsChange();
+
+      if (data->width() > 0 || data->height() > 0) {
+        if (data->width() > 0) fitWidth()->getEntryWidget()->setTextf("%d", data->width());
+        if (data->height() > 0) fitHeight()->getEntryWidget()->setTextf("%d", data->height());
+        onSizeChange();
+      }
+    }
+    else {
+      columns()->setText("4");
+      onColumnsChange();
+    }
+
+    sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
+    columns()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
+    fitWidth()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
+    fitHeight()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
+    bestFit()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onBestFit, this));
 
     onSheetTypeChange();
   }
 
-  bool ok() const {
-    return m_ok;
+  bool ok() {
+    return getKiller() == exportButton();
   }
 
-  SpriteSheetType spriteSheetType() const {
-    return (SpriteSheetType)m_sheetType.getSelectedItemIndex();
+  SpriteSheetType spriteSheetTypeValue() {
+    return (SpriteSheetType)sheetType()->getSelectedItemIndex();
   }
 
-  ExportAction exportAction() const {
-    return (ExportAction)m_exportAction.getSelectedItemIndex();
+  ExportAction exportActionValue() {
+    return (ExportAction)exportAction()->getSelectedItemIndex();
   }
 
-  int columns() const {
-    return m_columns.getTextInt();
+  int columnsValue() {
+    return columns()->getTextInt();
+  }
+
+  int fitWidthValue() {
+    return fitWidth()->getEntryWidget()->getTextInt();
+  }
+
+  int fitHeightValue() {
+    return fitHeight()->getEntryWidget()->getTextInt();
+  }
+
+  bool bestFitValue() {
+    return bestFit()->isSelected();
   }
 
 protected:
 
-  void onSheetTypeChange()
-  {
+  void onSheetTypeChange() {
+    bool col = false;
     bool state = false;
-    switch (m_sheetType.getSelectedItemIndex()) {
+    switch (sheetType()->getSelectedItemIndex()) {
       case ExportSpriteSheetCommand::Matrix:
         state = true;
         break;
     }
-    m_columnsLabel.setVisible(state);
-    m_columns.setVisible(state);
+
+    columnsLabel()->setVisible(state);
+    columns()->setVisible(state);
+    fitWidthLabel()->setVisible(state);
+    fitWidth()->setVisible(state);
+    fitHeightLabel()->setVisible(state);
+    fitHeight()->setVisible(state);
+    bestFitFiller()->setVisible(state);
+    bestFit()->setVisible(state);
 
     gfx::Size reqSize = getPreferredSize();
     moveWindow(gfx::Rect(getOrigin(), reqSize));
@@ -138,27 +235,35 @@ protected:
     invalidate();
   }
 
-  void onExport()
-  {
-    m_ok = true;
-    closeWindow(NULL);
+  void onColumnsChange() {
+    int nframes = m_sprite->totalFrames();
+    int columns = columnsValue();
+    columns = MID(1, columns, nframes);
+    int sheet_w = m_sprite->width()*columns;
+    int sheet_h = m_sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
+
+    fitWidth()->getEntryWidget()->setTextf("%d", sheet_w);
+    fitHeight()->getEntryWidget()->setTextf("%d", sheet_h);
+    bestFit()->setSelected(false);
   }
 
-  void onCancel()
-  {
-    closeWindow(NULL);
+  void onSizeChange() {
+    columns()->setTextf("%d", fitWidthValue() / m_sprite->width());
+    bestFit()->setSelected(false);
+  }
+
+  void onBestFit() {
+    if (!bestFit()->isSelected())
+      return;
+
+    Fit fit = best_fit(m_sprite);
+    columns()->setTextf("%d", fit.columns);
+    fitWidth()->getEntryWidget()->setTextf("%d", fit.width);
+    fitHeight()->getEntryWidget()->setTextf("%d", fit.height);
   }
 
 private:
-  Grid m_grid;
-  ComboBox m_sheetType;
-  Label m_columnsLabel;
-  Entry m_columns;
-  Label m_exportActionLabel;
-  ComboBox m_exportAction;
-  Button m_export;
-  Button m_cancel;
-  bool m_ok;
+  Sprite* m_sprite;
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
@@ -176,22 +281,33 @@ bool ExportSpriteSheetCommand::onEnabled(Context* context)
 
 void ExportSpriteSheetCommand::onExecute(Context* context)
 {
-  if (m_useUI) {
-    base::UniquePtr<ExportSpriteSheetWindow> window(new ExportSpriteSheetWindow(context));
-    window->openWindowInForeground();
+  Document* document(context->activeDocument());
+  Sprite* sprite = document->sprite();
 
-    if (!window->ok())
+  if (m_useUI) {
+    ExportSpriteSheetWindow window(document, sprite);
+    window.openWindowInForeground();
+    if (!window.ok())
       return;
 
-    setType(window->spriteSheetType());
-    setAction(window->exportAction());
-    setColumns(window->columns());
+    m_type = window.spriteSheetTypeValue();
+    m_action = window.exportActionValue();
+    m_columns = window.columnsValue();
+    m_width = window.fitWidthValue();
+    m_height= window.fitHeightValue();
+    m_bestFit = window.bestFitValue();
+  }
+  else if (m_bestFit) {
+    Fit fit = best_fit(sprite);
+    m_columns = fit.columns;
+    m_width = fit.width;
+    m_height = fit.height;
   }
 
-  Document* document(context->getActiveDocument());
-  Sprite* sprite = document->getSprite();
-  FrameNumber nframes = sprite->getTotalFrames();
+  FrameNumber nframes = sprite->totalFrames();
   int columns;
+  int sheet_w = 0;
+  int sheet_h = 0;
 
   switch (m_type) {
     case HorizontalStrip:
@@ -202,15 +318,18 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       break;
     case Matrix:
       columns = m_columns;
+      if (m_width > 0) sheet_w = m_width;
+      if (m_height > 0) sheet_h = m_height;
       break;
   }
 
   columns = MID(1, columns, nframes);
+  if (sheet_w == 0) sheet_w = sprite->width()*columns;
+  if (sheet_h == 0) sheet_h = sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
+  columns = sheet_w / sprite->width();
 
-  int sheet_w = sprite->getWidth()*columns;
-  int sheet_h = sprite->getHeight()*((nframes/columns)+((nframes%columns)>0?1:0));
-  base::UniquePtr<Image> resultImage(Image::create(sprite->getPixelFormat(), sheet_w, sheet_h));
-  base::UniquePtr<Image> tempImage(Image::create(sprite->getPixelFormat(), sprite->getWidth(), sprite->getHeight()));
+  base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
+  base::UniquePtr<Image> tempImage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
   raster::clear_image(resultImage, 0);
 
   int column = 0, row = 0;
@@ -219,7 +338,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // destination clipping bounds in Sprite::render() function.
     tempImage->clear(0);
     sprite->render(tempImage, 0, 0, frame);
-    resultImage->copy(tempImage, column*sprite->getWidth(), row*sprite->getHeight());
+    resultImage->copy(tempImage, column*sprite->width(), row*sprite->height());
 
     if (++column >= columns) {
       column = 0;
@@ -229,7 +348,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   // Store the frame in the current editor so we can restore it
   // after change and restore the setTotalFrames() number.
-  FrameNumber oldSelectedFrame = (current_editor ? current_editor->getFrame():
+  FrameNumber oldSelectedFrame = (current_editor ? current_editor->frame():
     FrameNumber(0));
 
   {
@@ -254,7 +373,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     resultCel.release();
 
     // Copy the list of layers (because we will modify it in the iteration).
-    LayerList layers = sprite->getFolder()->getLayersList();
+    LayerList layers = sprite->folder()->getLayersList();
 
     // Remove all other layers
     for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
@@ -347,6 +466,9 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     doc::ExportDataPtr data(new doc::ExportData);
     data->setType(type);
     data->setColumns(columns);
+    data->setWidth(m_width);
+    data->setHeight(m_height);
+    data->setBestFit(m_bestFit);
     data->setFilename(command->selectedFilename());
     document->setExportData(data);
   }
@@ -373,6 +495,31 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // Redraw the sprite.
     update_screen_for_document(document);
   }
+}
+
+void ExportSpriteSheetCommand::setExportData(doc::ExportDataPtr data)
+{
+  ExportSpriteSheetCommand::SpriteSheetType type;
+  switch (data->type()) {
+    case doc::ExportData::None: return;
+    case doc::ExportData::HorizontalStrip:
+      type = ExportSpriteSheetCommand::HorizontalStrip;
+      break;
+    case doc::ExportData::VerticalStrip:
+      type = ExportSpriteSheetCommand::VerticalStrip;
+      break;
+    case doc::ExportData::Matrix:
+      type = ExportSpriteSheetCommand::Matrix;
+      break;
+  }
+
+  m_type = type;
+  m_action = ExportSpriteSheetCommand::SaveCopyAs;
+  m_columns = data->columns();
+  m_width = data->width();
+  m_height = data->height();
+  m_bestFit = data->bestFit();
+  m_filename = data->filename();
 }
 
 Command* CommandFactory::createExportSpriteSheetCommand()

@@ -24,7 +24,7 @@
 #include "app/commands/params.h"
 #include "app/launcher.h"
 #include "app/resource_finder.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/fs.h"
 
 namespace app {

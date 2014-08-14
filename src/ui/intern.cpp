@@ -44,11 +44,12 @@ void removeWidget(Widget* widget)
     widgets->erase(it);
 }
 
-void setFontOfAllWidgets(FONT* f)
+void setFontOfAllWidgets(she::Font* font)
 {
-  for (std::list<Widget*>::iterator it=widgets->begin(), end=widgets->end();
+  for (std::list<Widget*>::iterator
+         it=widgets->begin(), end=widgets->end();
        it != end; ++it) {
-    (*it)->setFont(f);
+    (*it)->setFont(font);
   }
 }
 

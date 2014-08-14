@@ -397,28 +397,28 @@ bool TgaFormat::onSave(FileOp* fop)
   Image *image = fop->seq.image;
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
-  int depth = (image->getPixelFormat() == IMAGE_RGB) ? 32 : 8;
-  bool need_pal = (image->getPixelFormat() == IMAGE_INDEXED)? true: false;
+  int depth = (image->pixelFormat() == IMAGE_RGB) ? 32 : 8;
+  bool need_pal = (image->pixelFormat() == IMAGE_INDEXED)? true: false;
 
   FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
   fputc(0, f);                          /* id length (no id saved) */
   fputc((need_pal) ? 1 : 0, f);         /* palette type */
   /* image type */
-  fputc((image->getPixelFormat() == IMAGE_RGB      ) ? 2 :
-        (image->getPixelFormat() == IMAGE_GRAYSCALE) ? 3 :
-        (image->getPixelFormat() == IMAGE_INDEXED  ) ? 1 : 0, f);
+  fputc((image->pixelFormat() == IMAGE_RGB      ) ? 2 :
+        (image->pixelFormat() == IMAGE_GRAYSCALE) ? 3 :
+        (image->pixelFormat() == IMAGE_INDEXED  ) ? 1 : 0, f);
   fputw(0, f);                         /* first colour */
   fputw((need_pal) ? 256 : 0, f);      /* number of colours */
   fputc((need_pal) ? 24 : 0, f);       /* palette entry size */
   fputw(0, f);                         /* left */
   fputw(0, f);                         /* top */
-  fputw(image->getWidth(), f);                  /* width */
-  fputw(image->getHeight(), f);                  /* height */
+  fputw(image->width(), f);                  /* width */
+  fputw(image->height(), f);                  /* height */
   fputc(depth, f);                     /* bits per pixel */
 
   /* descriptor (bottom to top, 8-bit alpha) */
-  fputc(image->getPixelFormat() == IMAGE_RGB ? 8: 0, f);
+  fputc(image->pixelFormat() == IMAGE_RGB ? 8: 0, f);
 
   if (need_pal) {
     for (y=0; y<256; y++) {
@@ -430,11 +430,11 @@ bool TgaFormat::onSave(FileOp* fop)
     fwrite(image_palette, 1, 768, f);
   }
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
 
     case IMAGE_RGB:
-      for (y=image->getHeight()-1; y>=0; y--) {
-        for (x=0; x<image->getWidth(); x++) {
+      for (y=image->height()-1; y>=0; y--) {
+        for (x=0; x<image->width(); x++) {
           c = get_pixel(image, x, y);
           fputc(rgba_getb(c), f);
           fputc(rgba_getg(c), f);
@@ -442,25 +442,25 @@ bool TgaFormat::onSave(FileOp* fop)
           fputc(rgba_geta(c), f);
         }
 
-        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
+        fop_progress(fop, (float)(image->height()-y) / (float)(image->height()));
       }
       break;
 
     case IMAGE_GRAYSCALE:
-      for (y=image->getHeight()-1; y>=0; y--) {
-        for (x=0; x<image->getWidth(); x++)
+      for (y=image->height()-1; y>=0; y--) {
+        for (x=0; x<image->width(); x++)
           fputc(graya_getv(get_pixel(image, x, y)), f);
 
-        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
+        fop_progress(fop, (float)(image->height()-y) / (float)(image->height()));
       }
       break;
 
     case IMAGE_INDEXED:
-      for (y=image->getHeight()-1; y>=0; y--) {
-        for (x=0; x<image->getWidth(); x++)
+      for (y=image->height()-1; y>=0; y--) {
+        for (x=0; x<image->width(); x++)
           fputc(get_pixel(image, x, y), f);
 
-        fop_progress(fop, (float)(image->getHeight()-y) / (float)(image->getHeight()));
+        fop_progress(fop, (float)(image->height()-y) / (float)(image->height()));
       }
       break;
   }

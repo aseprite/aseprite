@@ -8,12 +8,11 @@
 #include "config.h"
 #endif
 
-#include <allegro/draw.h>
-#include <allegro/gfx.h>
+#include "ui/image_view.h"
 
+#include "she/surface.h"
 #include "ui/draw.h"
 #include "ui/graphics.h"
-#include "ui/image_view.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
@@ -22,8 +21,9 @@
 
 namespace ui {
 
-ImageView::ImageView(BITMAP* bmp, int align)
+ImageView::ImageView(she::Surface* sur, int align)
  : Widget(kImageViewWidget)
+ , m_sur(sur)
 {
   setAlign(align);
 }
@@ -32,10 +32,12 @@ void ImageView::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
   getTextIconInfo(&box, NULL, NULL,
-    getAlign(), m_bmp->w, m_bmp->h);
+    getAlign(), m_sur->width(), m_sur->height());
 
-  ev.setPreferredSize(gfx::Size(border_width.l + box.w + border_width.r,
-                                border_width.t + box.h + border_width.b));
+  ev.setPreferredSize(
+    gfx::Size(
+      border_width.l + box.w + border_width.r,
+      border_width.t + box.h + border_width.b));
 }
 
 void ImageView::onPaint(PaintEvent& ev)
@@ -43,10 +45,11 @@ void ImageView::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
   gfx::Rect icon;
-  getTextIconInfo(NULL, NULL, &icon, getAlign(), m_bmp->w, m_bmp->h);
+  getTextIconInfo(NULL, NULL, &icon, getAlign(),
+    m_sur->width(), m_sur->height());
 
   g->fillRect(getBgColor(), bounds);
-  g->blit(m_bmp, 0, 0, icon.x, icon.y, icon.w, icon.h);
+  g->drawRgbaSurface(m_sur, icon.x, icon.y);
 }
 
 } // namespace ui

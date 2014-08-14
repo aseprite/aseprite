@@ -33,7 +33,7 @@ using namespace undo;
 
 SetCelOpacity::SetCelOpacity(ObjectsContainer* objects, Cel* cel)
   : m_celId(objects->addObject(cel))
-  , m_opacity(cel->getOpacity())
+  , m_opacity(cel->opacity())
 {
 }
 

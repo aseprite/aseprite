@@ -23,9 +23,9 @@
 #include "app/ui/skin/skin_part.h"
 #include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/style_sheet.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
+#include "gfx/color.h"
 #include "gfx/fwd.h"
-#include "ui/color.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -33,12 +33,14 @@
 #include <map>
 #include <string>
 
-#include <allegro/color.h>
-
 namespace ui {
   class Entry;
   class Graphics;
   class IButtonIcon;
+}
+
+namespace she {
+  class Surface;
 }
 
 namespace app {
@@ -116,11 +118,11 @@ namespace app {
       SkinTheme();
       ~SkinTheme();
 
-      ui::Color getColor(ThemeColor::Type k) const {
+      gfx::Color getColor(ThemeColor::Type k) const {
         return m_colors[k];
       }
 
-      FONT* getMiniFont() const { return m_minifont; }
+      she::Font* getMiniFont() const { return m_minifont; }
 
       void reload_skin();
       void reload_fonts();
@@ -159,15 +161,15 @@ namespace app {
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
-      BITMAP* get_part(int part_i) const { return m_part[part_i]; }
-      BITMAP* get_toolicon(const char* tool_id) const;
+      she::Surface* get_part(int part_i) const { return m_part[part_i]; }
+      she::Surface* get_toolicon(const char* tool_id) const;
       gfx::Size get_part_size(int part_i) const;
 
       // Helper functions to draw bounds/hlines with sheet parts
       void draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8]);
-      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, ui::Color bg = ui::ColorNone);
-      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, ui::Color bg = ui::ColorNone);
-      void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, ui::Color bg1, ui::Color bg2);
+      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, gfx::Color bg = gfx::ColorNone);
+      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, gfx::Color bg = gfx::ColorNone);
+      void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, gfx::Color bg1, gfx::Color bg2);
       void draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part);
       void draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, float progress);
@@ -180,7 +182,7 @@ namespace app {
         return m_parts_by_id[id];
       }
 
-      ui::Color getColorById(const std::string& id) {
+      gfx::Color getColorById(const std::string& id) {
         return m_colors_by_id[id];
       }
 
@@ -192,31 +194,31 @@ namespace app {
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
-                                BITMAP* nw, BITMAP* n, BITMAP* ne,
-                                BITMAP* e, BITMAP* se, BITMAP* s,
-                                BITMAP* sw, BITMAP* w);
+        she::Surface* nw, she::Surface* n, she::Surface* ne,
+        she::Surface* e, she::Surface* se, she::Surface* s,
+        she::Surface* sw, she::Surface* w);
 
-      BITMAP* cropPartFromSheet(BITMAP* bmp, int x, int y, int w, int h);
-      ui::Color getWidgetBgColor(ui::Widget* widget);
-      void drawTextString(ui::Graphics* g, const char *t, ui::Color fg_color, ui::Color bg_color,
-                          bool fill_bg, ui::Widget* widget, const gfx::Rect& rc,
+      she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
+      gfx::Color getWidgetBgColor(ui::Widget* widget);
+      void drawTextString(ui::Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
+                          ui::Widget* widget, const gfx::Rect& rc,
                           int selected_offset);
       void drawEntryCaret(ui::Graphics* g, ui::Entry* widget, int x, int y);
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
-      static FONT* loadFont(const char* userFont, const std::string& path);
+      static she::Font* loadFont(const char* userFont, const std::string& path);
 
       std::string m_selected_skin;
-      BITMAP* m_sheet_bmp;
-      std::vector<BITMAP*> m_part;
+      she::Surface* m_sheet;
+      std::vector<she::Surface*> m_part;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
-      std::map<std::string, BITMAP*> m_toolicon;
-      std::map<std::string, ui::Color> m_colors_by_id;
+      std::map<std::string, she::Surface*> m_toolicon;
+      std::map<std::string, gfx::Color> m_colors_by_id;
       std::vector<ui::Cursor*> m_cursors;
-      std::vector<ui::Color> m_colors;
+      std::vector<gfx::Color> m_colors;
       StyleSheet m_stylesheet;
-      FONT* m_minifont;
+      she::Font* m_minifont;
     };
 
     inline Style* get_style(const std::string& id) {
@@ -227,7 +229,7 @@ namespace app {
       return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getPartById(id);
     }
 
-    inline ui::Color get_color_by_id(const std::string& id) {
+    inline gfx::Color get_color_by_id(const std::string& id) {
       return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getColorById(id);
     }
 

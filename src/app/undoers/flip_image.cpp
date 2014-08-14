@@ -42,13 +42,13 @@ FlipImage::FlipImage(ObjectsContainer* objects, Image* image,
                      const gfx::Rect& bounds,
                      raster::algorithm::FlipType flipType)
   : m_imageId(objects->addObject(image))
-  , m_format(image->getPixelFormat())
+  , m_format(image->pixelFormat())
   , m_x(bounds.x), m_y(bounds.y)
   , m_w(bounds.w), m_h(bounds.h)
   , m_flipType(flipType)
 {
   ASSERT(m_w >= 1 && m_h >= 1);
-  ASSERT(m_x >= 0 && m_y >= 0 && m_x+m_w <= image->getWidth() && m_y+m_h <= image->getHeight());
+  ASSERT(m_x >= 0 && m_y >= 0 && m_x+m_w <= image->width() && m_y+m_h <= image->height());
 }
 
 void FlipImage::dispose()
@@ -62,7 +62,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   raster::algorithm::FlipType flipType = static_cast<raster::algorithm::FlipType>(m_flipType);
   gfx::Rect bounds(gfx::Point(m_x, m_y), gfx::Size(m_w, m_h));
 
-  if (image->getPixelFormat() != m_format)
+  if (image->pixelFormat() != m_format)
     throw UndoException("Image type does not match");
 
   redoers->pushUndoer(new FlipImage(objects, image, bounds, flipType));

@@ -25,6 +25,7 @@
 #include "app/app.h"
 #include "app/color_utils.h"
 #include "app/commands/cmd_flip.h"
+#include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/modules/gui.h"
@@ -50,8 +51,6 @@
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
-
-#include <allegro.h>
 
 namespace app {
 
@@ -82,12 +81,13 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Setup mask color
   setTransparentColor(context->settings()->selection()->getMoveTransparentColor());
 
-  // Add this class as:
-  // - observer of the UI context: so we know if the user wants to
-  //   execute other command, so we can drop pixels.
-  // - observer of SelectionSettings to be informed of changes to Transparent Color
-  //   changes from Context Bar.
-  context->addObserver(this);
+  // Hook BeforeCommandExecution signal so we know if the user wants
+  // to execute other command, so we can drop pixels.
+  m_ctxConn =
+    context->BeforeCommandExecution.connect(&MovingPixelsState::onBeforeCommandExecution, this);
+
+  // Observe SelectionSettings to be informed of changes to
+  // Transparent Color from Context Bar.
   context->settings()->selection()->addObserver(this);
 
   // Add the current editor as filter for key message of the manager
@@ -107,7 +107,7 @@ MovingPixelsState::~MovingPixelsState()
   contextBar->removeObserver(this);
   contextBar->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
 
-  UIContext::instance()->removeObserver(this);
+  m_ctxConn.disconnect();
   UIContext::instance()->settings()->selection()->removeObserver(this);
 
   m_pixelsMovement.reset(NULL);
@@ -115,7 +115,17 @@ MovingPixelsState::~MovingPixelsState()
   m_currentEditor->getManager()->removeMessageFilter(kKeyDownMessage, m_currentEditor);
   m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
 
-  m_currentEditor->getDocument()->generateMaskBoundaries();
+  m_currentEditor->document()->generateMaskBoundaries();
+}
+
+void MovingPixelsState::translate(int dx, int dy)
+{
+  if (m_pixelsMovement->isDragging())
+    m_pixelsMovement->dropImageTemporarily();
+
+  m_pixelsMovement->catchImageAgain(0, 0, MoveHandle);
+  m_pixelsMovement->moveImage(dx, dy, PixelsMovement::NormalMovement);
+  m_pixelsMovement->dropImageTemporarily();
 }
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
@@ -132,7 +142,7 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
     if (!m_discarded)
       m_pixelsMovement->dropImage();
 
-    editor->getDocument()->resetTransformation();
+    editor->document()->resetTransformation();
 
     m_pixelsMovement.reset(NULL);
 
@@ -166,8 +176,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
-  Document* document = editor->getDocument();
+  Decorator* decorator = static_cast<Decorator*>(editor->decorator());
+  Document* document = editor->document();
 
   // Start scroll loop
   if (checkForScroll(editor, msg))
@@ -265,7 +275,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
       moveModifier |= PixelsMovement::LockAxisMovement;
 
     // Invalidate handles area.
-    Decorator* decorator = static_cast<Decorator*>(editor->getDecorator());
+    Decorator* decorator = static_cast<Decorator*>(editor->decorator());
     TransformHandles* transfHandles = decorator->getTransformHandles(editor);
     transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
 
@@ -316,17 +326,22 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
     Command* command = NULL;
     Params* params = NULL;
     if (get_command_from_key_message(msg, &command, &params)) {
+      // We accept zoom commands.
+      if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+        UIContext::instance()->executeCommand(command, params);
+        return true;
+      }
       // Intercept the "Cut" or "Copy" command to handle them locally
       // with the current m_pixelsMovement data.
-      if (strcmp(command->short_name(), CommandId::Cut) == 0 ||
-          strcmp(command->short_name(), CommandId::Copy) == 0) {
+      else if (strcmp(command->short_name(), CommandId::Cut) == 0 ||
+               strcmp(command->short_name(), CommandId::Copy) == 0) {
         // Copy the floating image to the clipboard.
         {
-          Document* document = editor->getDocument();
+          Document* document = editor->document();
           gfx::Point origin;
           base::UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
           clipboard::copy_image(floatingImage.get(),
-                                document->getSprite()->getPalette(editor->getFrame()),
+                                document->sprite()->getPalette(editor->frame()),
                                 origin);
         }
 
@@ -372,7 +387,7 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   ASSERT(m_pixelsMovement != NULL);
 
   const gfx::Transformation& transform(getTransformation(editor));
-  Document* document = editor->getDocument();
+  Document* document = editor->document();
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   StatusBar::instance()->setStatusText
@@ -388,8 +403,17 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 }
 
 // Before executing any command, we drop the pixels (go back to standby).
-void MovingPixelsState::onCommandBeforeExecution(Context* context)
+void MovingPixelsState::onBeforeCommandExecution(Command* command)
 {
+  // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
+  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
+    if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
+      return;
+  }
+  else if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+    return;
+  }
+
   if (m_pixelsMovement)
     dropPixels(m_currentEditor);
 }
@@ -422,7 +446,7 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  Layer* layer = m_currentEditor->getLayer();
+  Layer* layer = m_currentEditor->layer();
   ASSERT(layer != NULL);
 
   m_pixelsMovement->setMaskColor(color_utils::color_for_layer(color, layer));

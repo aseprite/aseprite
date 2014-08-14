@@ -20,7 +20,7 @@
 #define RASTER_IMAGE_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "raster/blend.h"
@@ -51,12 +51,12 @@ namespace raster {
 
     virtual ~Image();
 
-    PixelFormat getPixelFormat() const { return m_format; }
-    int getWidth() const { return m_width; }
-    int getHeight() const { return m_height; }
-    gfx::Size getSize() const { return gfx::Size(m_width, m_height); }
-    gfx::Rect getBounds() const { return gfx::Rect(0, 0, m_width, m_height); }
-    color_t getMaskColor() const { return m_maskColor; }
+    PixelFormat pixelFormat() const { return m_format; }
+    int width() const { return m_width; }
+    int height() const { return m_height; }
+    gfx::Size size() const { return gfx::Size(m_width, m_height); }
+    gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
+    color_t maskColor() const { return m_maskColor; }
     void setMaskColor(color_t c) { m_maskColor = c; }
 
     int getMemSize() const OVERRIDE;

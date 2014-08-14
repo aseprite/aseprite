@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#include <allegro.h>
 
 #include "ui/ui.h"
 
@@ -44,6 +42,126 @@
 
 namespace app {
 
+// TODO merge this with MiniEditor logic and create a new Editor state
+
+using namespace ui;
+
+class PlayAniWindow : public Window {
+public:
+  PlayAniWindow(Context* context, Editor* editor)
+    : Window(DesktopWindow)
+    , m_editor(editor)
+    , m_oldFrame(editor->frame())
+    , m_oldFlags(m_editor->editorFlags())
+    , m_doc(editor->document())
+    , m_docSettings(context->settings()->getDocumentSettings(m_doc))
+    , m_oldOnionskinState(m_docSettings->getUseOnionskin())
+    , m_playTimer(10)
+  {
+    m_editor->setEditorFlags(Editor::kNoneFlag);
+
+    // Desactivate the onionskin
+    m_docSettings->setUseOnionskin(false);
+
+    // Clear extras (e.g. pen preview)
+    m_doc->destroyExtraCel();
+
+    setFocusStop(true);         // To receive keyboard messages
+
+    m_curFrameTick = ji_clock;
+    m_pingPongForward = true;
+    m_nextFrameTime = editor->sprite()->getFrameDuration(editor->frame());
+
+    m_playTimer.Tick.connect(&PlayAniWindow::onPlaybackTick, this);
+    m_playTimer.start();
+  }
+
+protected:
+  void onPlaybackTick() {
+    if (m_nextFrameTime >= 0) {
+      m_nextFrameTime -= (ji_clock - m_curFrameTick);
+
+      while (m_nextFrameTime <= 0) {
+        FrameNumber frame = calculate_next_frame(
+          m_editor->sprite(),
+          m_editor->frame(),
+          m_docSettings,
+          m_pingPongForward);
+
+        m_editor->setFrame(frame);
+        m_nextFrameTime += m_editor->sprite()->getFrameDuration(frame);
+        invalidate();
+      }
+
+      m_curFrameTick = ji_clock;
+    }
+  }
+
+  virtual bool onProcessMessage(Message* msg) OVERRIDE {
+    switch (msg->type()) {
+
+      case kOpenMessage:
+        jmouse_set_cursor(kNoCursor);
+        break;
+
+      case kCloseMessage:
+        // Restore onionskin flag
+        m_docSettings->setUseOnionskin(m_oldOnionskinState);
+
+        // Restore editor
+        m_editor->setFrame(m_oldFrame);
+        m_editor->setEditorFlags(m_oldFlags);
+        break;
+
+      case kMouseUpMessage: {
+        closeWindow(this);
+        break;
+      }
+
+      case kKeyDownMessage: {
+        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+
+        closeWindow(this);
+
+        return true;
+      }
+
+      case kSetCursorMessage:
+        jmouse_set_cursor(kNoCursor);
+        return true;
+    }
+
+    return Window::onProcessMessage(msg);
+  }
+
+  virtual void onPaint(PaintEvent& ev) OVERRIDE {
+    Graphics* g = ev.getGraphics();
+    g->fillRect(gfx::rgba(0, 0, 0), getClientBounds());
+
+    Graphics subG(g->getInternalSurface(),
+      m_editor->getBounds().x + g->getInternalDeltaY(),
+      m_editor->getBounds().y + g->getInternalDeltaY());
+
+    m_editor->drawSpriteUnclippedRect(&subG,
+      gfx::Rect(0, 0,
+        m_editor->sprite()->width(),
+        m_editor->sprite()->height()));
+  }
+
+private:
+  Editor* m_editor;
+  FrameNumber m_oldFrame;
+  Editor::EditorFlags m_oldFlags;
+  Document* m_doc;
+  IDocumentSettings* m_docSettings;
+  bool m_oldOnionskinState;
+  bool m_pingPongForward;
+
+  int m_nextFrameTime;
+  int m_curFrameTick;
+  ui::Timer m_playTimer;
+};
+
 class PlayAnimationCommand : public Command {
 public:
   PlayAnimationCommand();
@@ -53,15 +171,6 @@ protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
-
-static int speed_timer;
-
-static void speed_timer_callback()
-{
-  speed_timer++;
-}
-
-END_OF_STATIC_FUNCTION(speed_timer_callback);
 
 PlayAnimationCommand::PlayAnimationCommand()
   : Command("PlayAnimation",
@@ -78,108 +187,25 @@ bool PlayAnimationCommand::onEnabled(Context* context)
 
 void PlayAnimationCommand::onExecute(Context* context)
 {
+  // Do not play one-frame images
+  {
+    ContextReader writer(context);
+    Sprite* sprite(writer.sprite());
+    if (!sprite || sprite->totalFrames() < 2)
+      return;
+  }
+
+  // Hide mini editor
   MiniEditorWindow* miniEditor = App::instance()->getMainWindow()->getMiniEditor();
-  bool visibleMiniEditor = (miniEditor ? miniEditor->isVisible(): false);
-  ContextWriter writer(context);
-  Document* document(writer.document());
-  Sprite* sprite(writer.sprite());
-  int msecs;
-  bool done = false;
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(document);
-  bool onionskin_state = docSettings->getUseOnionskin();
-  Palette *oldpal, *newpal;
-  bool pingPongForward = true;
+  bool enabled = (miniEditor ? miniEditor->isMiniEditorEnabled(): false);
+  if (enabled)
+    miniEditor->setMiniEditorEnabled(false);
 
-  if (sprite->getTotalFrames() < 2)
-    return;
+  PlayAniWindow window(context, current_editor);
+  window.openWindowInForeground();
 
-  if (visibleMiniEditor)
-    miniEditor->closeWindow(NULL);
-
-  // desactivate the onionskin
-  docSettings->setUseOnionskin(false);
-
-  ui::jmouse_hide();
-
-  FrameNumber oldFrame = current_editor->getFrame();
-
-  LOCK_VARIABLE(speed_timer);
-  LOCK_FUNCTION(speed_timer_callback);
-
-  clear_keybuf();
-
-  // Clear all the screen
-  clear_bitmap(ui::ji_screen);
-
-  // Clear extras (e.g. pen preview)
-  document->destroyExtraCel();
-
-  // Do animation
-  oldpal = NULL;
-  speed_timer = 0;
-  while (!done) {
-    msecs = sprite->getFrameDuration(current_editor->getFrame());
-    install_int_ex(speed_timer_callback, MSEC_TO_TIMER(msecs));
-
-    newpal = sprite->getPalette(current_editor->getFrame());
-    if (oldpal != newpal) {
-      PALETTE rgbpal;
-      raster::convert_palette_to_allegro(newpal, rgbpal);
-      set_palette(rgbpal);
-      oldpal = newpal;
-    }
-
-    current_editor->drawSpriteClipped
-      (gfx::Region(gfx::Rect(0, 0, sprite->getWidth(), sprite->getHeight())));
-
-    ui::dirty_display_flag = true;
-
-    do {
-      poll_mouse();
-      poll_keyboard();
-      if (keypressed() || mouse_b)
-        done = true;
-      gui_feedback();
-    } while (!done && (speed_timer <= 0));
-
-    if (!done) {
-      current_editor->setFrame(
-        calculate_next_frame(
-          sprite,
-          current_editor->getFrame(),
-          docSettings,
-          pingPongForward));
-
-      speed_timer--;
-    }
-    gui_feedback();
-  }
-
-  // Restore onionskin flag
-  docSettings->setUseOnionskin(onionskin_state);
-
-  // If right-click or ESC
-  if (mouse_b == 2 || (keypressed() && (readkey()>>8) == KEY_ESC)) {
-    // Return to the old frame position
-    current_editor->setFrame(oldFrame);
-  }
-
-  // Refresh all
-  newpal = sprite->getPalette(current_editor->getFrame());
-  set_current_palette(newpal, true);
-  ui::Manager::getDefault()->invalidate();
-  gui_feedback();
-
-  while (mouse_b)
-    poll_mouse();
-
-  clear_keybuf();
-  remove_int(speed_timer_callback);
-
-  ui::jmouse_show();
-
-  if (visibleMiniEditor)
-    miniEditor->openWindow();
+  if (enabled)
+    miniEditor->setMiniEditorEnabled(enabled);
 }
 
 Command* CommandFactory::createPlayAnimationCommand()

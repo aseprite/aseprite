@@ -86,27 +86,27 @@ void InvertMaskCommand::onExecute(Context* context)
     base::UniquePtr<Mask> mask(new Mask());
 
     /* select all the sprite area */
-    mask->replace(0, 0, sprite->getWidth(), sprite->getHeight());
+    mask->replace(0, 0, sprite->width(), sprite->height());
 
     /* remove in the new mask the current sprite marked region */
-    const gfx::Rect& maskBounds = document->getMask()->getBounds();
-    raster::fill_rect(mask->getBitmap(),
+    const gfx::Rect& maskBounds = document->mask()->bounds();
+    raster::fill_rect(mask->bitmap(),
                       maskBounds.x, maskBounds.y,
                       maskBounds.x + maskBounds.w-1,
                       maskBounds.y + maskBounds.h-1, 0);
 
     // Invert the current mask in the sprite
-    document->getMask()->invert();
-    if (document->getMask()->getBitmap()) {
+    document->mask()->invert();
+    if (document->mask()->bitmap()) {
       // Copy the inverted region in the new mask
-      raster::copy_image(mask->getBitmap(),
-                         document->getMask()->getBitmap(),
-                         document->getMask()->getBounds().x,
-                         document->getMask()->getBounds().y);
+      raster::copy_image(mask->bitmap(),
+                         document->mask()->bitmap(),
+                         document->mask()->bounds().x,
+                         document->mask()->bounds().y);
     }
 
     // We need only need the area inside the sprite
-    mask->intersect(0, 0, sprite->getWidth(), sprite->getHeight());
+    mask->intersect(0, 0, sprite->width(), sprite->height());
 
     // Set the new mask
     document->setMask(mask);

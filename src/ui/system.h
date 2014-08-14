@@ -34,7 +34,7 @@ namespace ui {
   // so a flip to the real screen is needed.
   extern bool dirty_display_flag;
 
-  void SetDisplay(she::Display* display);
+  void set_display(she::Display* display);
 
   // Timer related
 
@@ -46,6 +46,7 @@ namespace ui {
   // current mouse position.
   void UpdateCursorOverlay();
 
+  void set_use_native_cursors(bool state);
   CursorType jmouse_get_cursor();
   void jmouse_set_cursor(CursorType type);
 
@@ -55,7 +56,7 @@ namespace ui {
   bool jmouse_is_hidden();
   bool jmouse_is_shown();
 
-  bool jmouse_poll();
+  bool _internal_poll_mouse();
 
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
@@ -63,9 +64,6 @@ namespace ui {
 
   gfx::Point get_mouse_position();
   void set_mouse_position(const gfx::Point& newPos);
-
-  void jmouse_capture();
-  void jmouse_release();
 
   MouseButtons jmouse_b(int antique);
   int jmouse_x(int antique);

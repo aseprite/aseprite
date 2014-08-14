@@ -26,7 +26,7 @@
 
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/observable.h"
 #include "base/unique_ptr.h"
 
@@ -34,13 +34,21 @@ namespace app {
 
   class UISettingsImpl
       : public ISettings
+      , public IExperimentalSettings
       , public IColorSwatchesStore
       , base::Observable<GlobalSettingsObserver> {
   public:
     UISettingsImpl();
     ~UISettingsImpl();
 
+    // Undo settings
+    size_t undoSizeLimit() const OVERRIDE;
+    bool undoGotoModified() const OVERRIDE;
+    void setUndoSizeLimit(size_t size) OVERRIDE;
+    void setUndoGotoModified(bool state) OVERRIDE;
+
     // ISettings implementation
+    bool getZoomWithScrollWheel() OVERRIDE;
     bool getShowSpriteEditorScrollbars() OVERRIDE;
     bool getGrabAlpha() OVERRIDE;
     app::Color getFgColor() OVERRIDE;
@@ -48,6 +56,7 @@ namespace app {
     tools::Tool* getCurrentTool() OVERRIDE;
     app::ColorSwatches* getColorSwatches() OVERRIDE;
 
+    void setZoomWithScrollWheel(bool state) OVERRIDE;
     void setShowSpriteEditorScrollbars(bool state) OVERRIDE;
     void setGrabAlpha(bool state) OVERRIDE;
     void setFgColor(const app::Color& color) OVERRIDE;
@@ -60,6 +69,12 @@ namespace app {
     IColorSwatchesStore* getColorSwatchesStore() OVERRIDE;
 
     ISelectionSettings* selection() OVERRIDE;
+    IExperimentalSettings* experimental() OVERRIDE;
+
+    // IExperimentalSettings implementation
+
+    bool useNativeCursor() const OVERRIDE;
+    void setUseNativeCursor(bool state) OVERRIDE;
 
     // IColorSwatchesStore implementation
 
@@ -76,6 +91,7 @@ namespace app {
     app::ColorSwatches* m_colorSwatches;
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
+    bool m_zoomWithScrollWheel;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
   };

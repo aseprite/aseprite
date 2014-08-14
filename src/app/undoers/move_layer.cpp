@@ -32,7 +32,7 @@ namespace undoers {
 using namespace undo;
 
 MoveLayer::MoveLayer(ObjectsContainer* objects, Layer* layer)
-  : m_folderId(objects->addObject(layer->getParent()))
+  : m_folderId(objects->addObject(layer->parent()))
   , m_layerId(objects->addObject(layer))
 {
   Layer* after = layer->getPrevious();

@@ -136,9 +136,9 @@ void MedianFilter::applyToRgba(FilterManager* filterMgr)
   int color;
   int r, g, b, a;
   GetPixelsDelegateRgba delegate(m_channel);
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region
@@ -192,9 +192,9 @@ void MedianFilter::applyToGrayscale(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   int color, k, a;
   GetPixelsDelegateGrayscale delegate(m_channel);
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region
@@ -236,9 +236,9 @@ void MedianFilter::applyToIndexed(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   int color, r, g, b;
   GetPixelsDelegateIndexed delegate(pal, m_channel, target);
-  int x = filterMgr->getX();
+  int x = filterMgr->x();
   int x2 = x+filterMgr->getWidth();
-  int y = filterMgr->getY();
+  int y = filterMgr->y();
 
   for (; x<x2; ++x) {
     // Avoid the non-selected region

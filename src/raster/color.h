@@ -63,6 +63,10 @@ namespace raster {
             (a << rgba_a_shift));
   }
 
+  inline uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
+    return rgba(0, 0, 0, 255);
+  }
+
   //////////////////////////////////////////////////////////////////////
   // Grayscale
 
@@ -83,6 +87,10 @@ namespace raster {
   inline uint16_t graya(uint8_t v, uint8_t a) {
     return ((v << graya_v_shift) |
             (a << graya_a_shift));
+  }
+
+  inline uint16_t gray(uint8_t v) {
+    return graya(v, 255);
   }
 
 } // namespace raster

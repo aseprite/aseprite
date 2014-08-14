@@ -8,7 +8,7 @@
 #define BASE_SIGNAL_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/connection.h"
 #include "base/disable_copying.h"
 #include "base/remove_from_container.h"
@@ -31,10 +31,6 @@ public:
   typedef Slot0<R> SlotType;
   typedef std::vector<SlotType*> SlotList;
 
-protected:
-  SlotList m_slots;
-
-public:
   Signal0_base() { }
   ~Signal0_base() { }
 
@@ -57,6 +53,9 @@ public:
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 
+protected:
+  SlotList m_slots;
+
 private:
   DISABLE_COPYING(Signal0_base);
 };
@@ -65,15 +64,19 @@ private:
 template<typename R>
 class Signal0 : public Signal0_base<R> {
 public:
+  // GCC needs redefinitions
+  typedef Signal0_base<R> Base;
+  typedef Slot0<R> SlotType;
+  typedef typename Base::SlotList SlotList;
+
   Signal0() {
   }
 
   R operator()(R default_result = R()) {
     R result(default_result);
-    typename Signal0_base<R>::SlotList::iterator end = Signal0_base<R>::m_slots.end();
-    for (typename Signal0_base<R>::SlotList::iterator
-           it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
-      typename Signal0_base<R>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = (*slot)();
     }
     return result;
@@ -83,10 +86,9 @@ public:
   R operator()(R default_result, const Merger& m) {
     R result(default_result);
     Merger merger(m);
-    typename Signal0_base<R>::SlotList::iterator end = Signal0_base<R>::m_slots.end();
-    for (typename Signal0_base<R>::SlotList::iterator
-           it = Signal0_base<R>::m_slots.begin(); it != end; ++it) {
-      typename Signal0_base<R>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = merger(result, (*slot)());
     }
     return result;
@@ -98,12 +100,16 @@ public:
 template<>
 class Signal0<void> : public Signal0_base<void> {
 public:
+  // GCC needs redefinitions
+  typedef Signal0_base<void> Base;
+  typedef Slot0<void> SlotType;
+  typedef Base::SlotList SlotList;
+
   Signal0() { }
 
   void operator()() {
-    SlotList::iterator end = m_slots.end();
-    for (SlotList::iterator
-           it = m_slots.begin(); it != end; ++it) {
+    SlotList copy = Base::m_slots;
+    for (SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
       SlotType* slot = *it;
       (*slot)();
     }
@@ -120,10 +126,6 @@ public:
   typedef Slot1<R, A1> SlotType;
   typedef std::vector<SlotType*> SlotList;
 
-protected:
-  SlotList m_slots;
-
-public:
   Signal1_base() { }
   ~Signal1_base() { }
 
@@ -146,6 +148,9 @@ public:
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 
+protected:
+  SlotList m_slots;
+
 private:
   DISABLE_COPYING(Signal1_base);
 };
@@ -155,14 +160,18 @@ template<typename R, typename A1>
 class Signal1 : public Signal1_base<R, A1>
 {
 public:
+  // GCC needs redefinitions
+  typedef Signal1_base<R, A1> Base;
+  typedef Slot1<R, A1> SlotType;
+  typedef typename Base::SlotList SlotList;
+
   Signal1() { }
 
   R operator()(A1 a1, R default_result = R()) {
     R result(default_result);
-    typename Signal1_base<R, A1>::SlotList::iterator end = Signal1_base<R, A1>::m_slots.end();
-    for (typename Signal1_base<R, A1>::SlotList::iterator
-           it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
-      typename Signal1_base<R, A1>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = (*slot)(a1);
     }
     return result;
@@ -172,10 +181,9 @@ public:
   R operator()(A1 a1, R default_result, const Merger& m) {
     R result(default_result);
     Merger merger(m);
-    typename Signal1_base<R, A1>::SlotList::iterator end = Signal1_base<R, A1>::m_slots.end();
-    for (typename Signal1_base<R, A1>::SlotList::iterator
-           it = Signal1_base<R, A1>::m_slots.begin(); it != end; ++it) {
-      typename Signal1_base<R, A1>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = merger(result, (*slot)(a1));
     }
     return result;
@@ -188,13 +196,17 @@ template<typename A1>
 class Signal1<void, A1> : public Signal1_base<void, A1>
 {
 public:
+  // GCC needs redefinitions
+  typedef Signal1_base<void, A1> Base;
+  typedef Slot1<void, A1> SlotType;
+  typedef typename Base::SlotList SlotList;
+
   Signal1() { }
 
   void operator()(A1 a1) {
-    typename Signal1_base<void, A1>::SlotList::iterator end = Signal1_base<void, A1>::m_slots.end();
-    for (typename Signal1_base<void, A1>::SlotList::iterator
-           it = Signal1_base<void, A1>::m_slots.begin(); it != end; ++it) {
-      typename Signal1_base<void, A1>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       (*slot)(a1);
     }
   }
@@ -210,10 +222,6 @@ public:
   typedef Slot2<R, A1, A2> SlotType;
   typedef std::vector<SlotType*> SlotList;
 
-protected:
-  SlotList m_slots;
-
-public:
   Signal2_base() { }
   ~Signal2_base() { }
 
@@ -236,6 +244,9 @@ public:
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 
+protected:
+  SlotList m_slots;
+
 private:
   DISABLE_COPYING(Signal2_base);
 };
@@ -244,15 +255,19 @@ private:
 template<typename R, typename A1, typename A2>
 class Signal2 : public Signal2_base<R, A1, A2> {
 public:
+  // GCC needs redefinitions
+  typedef Signal2_base<R, A1, A2> Base;
+  typedef Slot2<R, A1, A2> SlotType;
+  typedef typename Base::SlotList SlotList;
+
   Signal2() {
   }
 
   R operator()(A1 a1, A2 a2, R default_result = R()) {
     R result(default_result);
-    typename Signal2_base<R, A1, A2>::SlotList::iterator end = Signal2_base<R, A1, A2>::m_slots.end();
-    for (typename Signal2_base<R, A1, A2>::SlotList::iterator
-           it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
-      typename Signal2_base<R, A1, A2>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = (*slot)(a1, a2);
     }
     return result;
@@ -262,10 +277,9 @@ public:
   R operator()(A1 a1, A2 a2, R default_result, const Merger& m) {
     R result(default_result);
     Merger merger(m);
-    typename Signal2_base<R, A1, A2>::SlotList::iterator end = Signal2_base<R, A1, A2>::m_slots.end();
-    for (typename Signal2_base<R, A1, A2>::SlotList::iterator
-           it = Signal2_base<R, A1, A2>::m_slots.begin(); it != end; ++it) {
-      typename Signal2_base<R, A1, A2>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       result = merger(result, (*slot)(a1, a2));
     }
     return result;
@@ -277,14 +291,18 @@ public:
 template<typename A1, typename A2>
 class Signal2<void, A1, A2> : public Signal2_base<void, A1, A2> {
 public:
+  // GCC needs redefinitions
+  typedef Signal2_base<void, A1, A2> Base;
+  typedef Slot2<void, A1, A2> SlotType;
+  typedef typename Base::SlotList SlotList;
+
   Signal2() {
   }
 
   void operator()(A1 a1, A2 a2) {
-    typename Signal2_base<void, A1, A2>::SlotList::iterator end = Signal2_base<void, A1, A2>::m_slots.end();
-    for (typename Signal2_base<void, A1, A2>::SlotList::iterator
-           it = Signal2_base<void, A1, A2>::m_slots.begin(); it != end; ++it) {
-      typename Signal2_base<void, A1, A2>::SlotType* slot = *it;
+    SlotList copy = Base::m_slots;
+    for (typename SlotList::iterator it = copy.begin(), end = copy.end(); it != end; ++it) {
+      SlotType* slot = *it;
       (*slot)(a1, a2);
     }
   }

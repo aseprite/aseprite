@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "app/settings/selection_mode.h"
+#include "doc/settings.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "raster/brush_type.h"
@@ -40,6 +41,7 @@ namespace app {
   class IToolSettings;
   class ToolSettingsObserver;
   class ISelectionSettings;
+  class IExperimentalSettings;
   class SelectionSettingsObserver;
   class GlobalSettingsObserver;
 
@@ -47,11 +49,18 @@ namespace app {
     class Tool;
   }
 
-  class ISettings {
+  class ISettings : public doc::Settings {
   public:
     virtual ~ISettings() { }
 
+    // Undo
+    virtual size_t undoSizeLimit() const = 0;
+    virtual bool undoGotoModified() const = 0;
+    virtual void setUndoSizeLimit(size_t size) = 0;
+    virtual void setUndoGotoModified(bool state) = 0;
+
     // General settings
+    virtual bool getZoomWithScrollWheel() = 0;
     virtual bool getShowSpriteEditorScrollbars() = 0;
     virtual bool getGrabAlpha() = 0;
     virtual app::Color getFgColor() = 0;
@@ -59,6 +68,7 @@ namespace app {
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
+    virtual void setZoomWithScrollWheel(bool state) = 0;
     virtual void setShowSpriteEditorScrollbars(bool state) = 0;
     virtual void setGrabAlpha(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;
@@ -76,6 +86,8 @@ namespace app {
 
     // Specific configuration for the current selection
     virtual ISelectionSettings* selection() = 0;
+    
+    virtual IExperimentalSettings* experimental() = 0;
 
     virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
 
@@ -92,6 +104,7 @@ namespace app {
 
     virtual int getOpacity() = 0;
     virtual int getTolerance() = 0;
+    virtual bool getContiguous() = 0;
     virtual bool getFilled() = 0;
     virtual bool getPreviewFilled() = 0;
     virtual int getSprayWidth() = 0;
@@ -101,6 +114,7 @@ namespace app {
 
     virtual void setOpacity(int opacity) = 0;
     virtual void setTolerance(int tolerance) = 0;
+    virtual void setContiguous(bool state) = 0;
     virtual void setFilled(bool state) = 0;
     virtual void setPreviewFilled(bool state) = 0;
     virtual void setSprayWidth(int width) = 0;
@@ -151,6 +165,13 @@ namespace app {
     virtual ~IColorSwatchesStore() { }
     virtual void addColorSwatches(app::ColorSwatches* colorSwatches) = 0;
     virtual void removeColorSwatches(app::ColorSwatches* colorSwatches) = 0;
+  };
+
+  class IExperimentalSettings {
+  public:
+    virtual ~IExperimentalSettings() { }
+    virtual bool useNativeCursor() const = 0;
+    virtual void setUseNativeCursor(bool state) = 0;
   };
 
 } // namespace app

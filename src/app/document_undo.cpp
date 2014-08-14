@@ -24,9 +24,10 @@
 
 #include "app/objects_container_impl.h"
 #include "app/undoers/close_group.h"
+#include "doc/context.h"
+#include "doc/settings.h"
 #include "undo/undo_history.h"
 
-#include <allegro/config.h>     // TODO remove this when get_config_int() is removed from here
 #include <cassert>
 #include <stdexcept>
 
@@ -36,7 +37,13 @@ DocumentUndo::DocumentUndo()
   : m_objects(new ObjectsContainerImpl)
   , m_undoHistory(new undo::UndoHistory(this))
   , m_enabled(true)
+  , m_ctx(NULL)
 {
+}
+
+void DocumentUndo::setContext(doc::Context* ctx)
+{
+  m_ctx = ctx;
 }
 
 bool DocumentUndo::canUndo() const
@@ -91,7 +98,9 @@ bool DocumentUndo::implantUndoerInLastGroup(undo::Undoer* undoer)
 
 size_t DocumentUndo::getUndoSizeLimit() const
 {
-  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8))*1024*1024;
+  ASSERT(m_ctx);
+  ASSERT(m_ctx->settings());
+  return m_ctx->settings()->undoSizeLimit() * 1024 * 1024;
 }
 
 const char* DocumentUndo::getNextUndoLabel() const

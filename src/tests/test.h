@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
 
   #ifdef TEST_GUI
     {
-      she::ScopedHandle<she::System> system(she::CreateSystem());
+      she::ScopedHandle<she::System> system(she::create_system());
       ui::GuiSystem guiSystem;
       base::UniquePtr<ui::Manager> manager(new ui::Manager());
   #endif

@@ -40,17 +40,17 @@ namespace raster {
     Brush(const Brush& brush);
     ~Brush();
 
-    BrushType get_type() const { return m_type; }
-    int get_size() const { return m_size; }
-    int get_angle() const { return m_angle; }
-    Image* get_image() { return m_image; }
-    const std::vector<BrushScanline>& get_scanline() const { return m_scanline; }
+    BrushType type() const { return m_type; }
+    int size() const { return m_size; }
+    int angle() const { return m_angle; }
+    Image* image() { return m_image; }
+    const std::vector<BrushScanline>& scanline() const { return m_scanline; }
 
-    const gfx::Rect& getBounds() const { return m_bounds; }
+    const gfx::Rect& bounds() const { return m_bounds; }
 
-    void set_type(BrushType type);
-    void set_size(int size);
-    void set_angle(int angle);
+    void setType(BrushType type);
+    void setSize(int size);
+    void setAngle(int angle);
 
   private:
     void clean();

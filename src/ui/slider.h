@@ -8,7 +8,7 @@
 #define UI_SLIDER_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "ui/widget.h"
 

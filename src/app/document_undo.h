@@ -20,11 +20,15 @@
 #define APP_DOCUMENT_UNDO_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "raster/sprite_position.h"
 #include "undo/undo_history.h"
+
+namespace doc {
+  class Context;
+}
 
 namespace undo {
   class ObjectsContainer;
@@ -41,6 +45,8 @@ namespace app {
   class DocumentUndo : public undo::UndoHistoryDelegate {
   public:
     DocumentUndo();
+
+    void setContext(doc::Context* ctx);
 
     bool isEnabled() const { return m_enabled; }
     void setEnabled(bool state) { m_enabled = state; }
@@ -90,6 +96,7 @@ namespace app {
     base::UniquePtr<undo::UndoHistory> m_undoHistory;
 
     bool m_enabled;
+    doc::Context* m_ctx;
 
     DISABLE_COPYING(DocumentUndo);
   };

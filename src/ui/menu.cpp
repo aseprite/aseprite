@@ -8,7 +8,10 @@
 #include "config.h"
 #endif
 
+#include "ui/menu.h"
+
 #include "gfx/size.h"
+#include "she/font.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -267,10 +270,6 @@ bool MenuItem::hasSubmenu() const
 
 void Menu::showPopup(int x, int y)
 {
-  do {
-    jmouse_poll();
-  } while (jmouse_b(0) != kButtonNone);
-
   // New window and new menu-box
   Window* window = new Window(Window::WithoutTitleBar);
   MenuBox* menubox = new MenuBox();
@@ -889,7 +888,7 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
       + this->border_width.b;
 
     if (m_accel && !m_accel->isEmpty()) {
-      size.w += ji_font_text_len(this->getFont(), m_accel->toString().c_str());
+      size.w += Graphics::measureUIStringLength(m_accel->toString().c_str(), getFont());
     }
   }
 

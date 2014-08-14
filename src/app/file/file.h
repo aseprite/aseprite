@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,15 +37,21 @@ namespace base {
   class mutex;
 }
 
+namespace doc {
+  class Document;
+}
+
 namespace raster {
   class Cel;
   class Image;
   class Layer;
   class LayerImage;
   class Palette;
+  class Sprite;
 }
 
 namespace app {
+  class Context;
   class Document;
   class FileFormat;
   class FormatOptions;
@@ -70,6 +76,7 @@ namespace app {
     FileOpType type;              // Operation type: 0=load, 1=save.
     FileFormat* format;
     void* format_data;            // Custom data for the FileFormat::onLoad/onSave operations.
+    Context* context;
     Document* document;           // Loaded document, or document to be saved.
     std::string filename;         // File-name to load/save.
 
@@ -110,6 +117,7 @@ namespace app {
       return !this->seq.filename_list.empty();
     }
 
+    void createDocument(Sprite* spr);
   };
 
   // Available extensions for each load/save operation.
@@ -119,13 +127,13 @@ namespace app {
 
   // High-level routines to load/save documents.
 
-  Document* load_document(const char* filename);
-  int save_document(Document* document);
+  app::Document* load_document(Context* context, const char* filename);
+  int save_document(Context* context, doc::Document* document);
 
   // Low-level routines to load/save documents.
 
-  FileOp* fop_to_load_document(const char* filename, int flags);
-  FileOp* fop_to_save_document(Document* document);
+  FileOp* fop_to_load_document(Context* context, const char* filename, int flags);
+  FileOp* fop_to_save_document(Context* context, Document* document);
   void fop_operate(FileOp* fop, IFileOpProgress* progress);
   void fop_done(FileOp* fop);
   void fop_stop(FileOp* fop);

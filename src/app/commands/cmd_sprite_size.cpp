@@ -59,8 +59,8 @@ class SpriteSizeJob : public Job {
   int m_new_height;
   ResizeMethod m_resize_method;
 
-  inline int scale_x(int x) const { return x * m_new_width / m_sprite->getWidth(); }
-  inline int scale_y(int y) const { return y * m_new_height / m_sprite->getHeight(); }
+  inline int scale_x(int x) const { return x * m_new_width / m_sprite->width(); }
+  inline int scale_y(int y) const { return y * m_new_height / m_sprite->height(); }
 
 public:
 
@@ -95,25 +95,25 @@ protected:
       Cel* cel = *it;
 
       // Change its location
-      api.setCelPosition(m_sprite, cel, scale_x(cel->getX()), scale_y(cel->getY()));
+      api.setCelPosition(m_sprite, cel, scale_x(cel->x()), scale_y(cel->y()));
 
       // Get cel's image
-      Image* image = m_sprite->getStock()->getImage(cel->getImage());
+      Image* image = cel->image();
       if (!image)
         continue;
 
       // Resize the image
-      int w = scale_x(image->getWidth());
-      int h = scale_y(image->getHeight());
-      Image* new_image = Image::create(image->getPixelFormat(), MAX(1, w), MAX(1, h));
+      int w = scale_x(image->width());
+      int h = scale_y(image->height());
+      Image* new_image = Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h));
 
       raster::algorithm::fixup_image_transparent_colors(image);
       raster::algorithm::resize_image(image, new_image,
                                       m_resize_method,
-                                      m_sprite->getPalette(cel->getFrame()),
-                                      m_sprite->getRgbMap(cel->getFrame()));
+                                      m_sprite->getPalette(cel->frame()),
+                                      m_sprite->getRgbMap(cel->frame()));
 
-      api.replaceStockImage(m_sprite, cel->getImage(), new_image);
+      api.replaceStockImage(m_sprite, cel->imageIndex(), new_image);
 
       jobProgress((float)progress / cels.size());
 
@@ -125,22 +125,22 @@ protected:
     // Resize mask
     if (m_document->isMaskVisible()) {
       base::UniquePtr<Image> old_bitmap
-        (crop_image(m_document->getMask()->getBitmap(), -1, -1,
-                    m_document->getMask()->getBitmap()->getWidth()+2,
-                    m_document->getMask()->getBitmap()->getHeight()+2, 0));
+        (crop_image(m_document->mask()->bitmap(), -1, -1,
+                    m_document->mask()->bitmap()->width()+2,
+                    m_document->mask()->bitmap()->height()+2, 0));
 
-      int w = scale_x(old_bitmap->getWidth());
-      int h = scale_y(old_bitmap->getHeight());
+      int w = scale_x(old_bitmap->width());
+      int h = scale_y(old_bitmap->height());
       base::UniquePtr<Mask> new_mask(new Mask);
-      new_mask->replace(scale_x(m_document->getMask()->getBounds().x-1),
-                        scale_y(m_document->getMask()->getBounds().y-1), MAX(1, w), MAX(1, h));
-      algorithm::resize_image(old_bitmap, new_mask->getBitmap(),
+      new_mask->replace(scale_x(m_document->mask()->bounds().x-1),
+                        scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h));
+      algorithm::resize_image(old_bitmap, new_mask->bitmap(),
                               m_resize_method,
                               m_sprite->getPalette(FrameNumber(0)), // Ignored
                               m_sprite->getRgbMap(FrameNumber(0))); // Ignored
 
       // Reshrink
-      new_mask->intersect(new_mask->getBounds());
+      new_mask->intersect(new_mask->bounds());
 
       // Copy new mask
       api.copyToCurrentMask(new_mask);
@@ -210,8 +210,8 @@ void SpriteSizeCommand::onExecute(Context* context)
   ComboBox* method = app::find_widget<ComboBox>(window, "method");
   Widget* ok = app::find_widget<Widget>(window, "ok");
 
-  m_widthPx->setTextf("%d", sprite->getWidth());
-  m_heightPx->setTextf("%d", sprite->getHeight());
+  m_widthPx->setTextf("%d", sprite->width());
+  m_heightPx->setTextf("%d", sprite->height());
 
   m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
   m_widthPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
@@ -263,13 +263,13 @@ void SpriteSizeCommand::onWidthPxChange()
   const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(reader.sprite());
   int width = m_widthPx->getTextInt();
-  double perc = 100.0 * width / sprite->getWidth();
+  double perc = 100.0 * width / sprite->width();
 
   m_widthPerc->setTextf(PERC_FORMAT, perc);
 
   if (m_lockRatio->isSelected()) {
     m_heightPerc->setTextf(PERC_FORMAT, perc);
-    m_heightPx->setTextf("%d", sprite->getHeight() * width / sprite->getWidth());
+    m_heightPx->setTextf("%d", sprite->height() * width / sprite->width());
   }
 }
 
@@ -278,13 +278,13 @@ void SpriteSizeCommand::onHeightPxChange()
   const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
   const Sprite* sprite(reader.sprite());
   int height = m_heightPx->getTextInt();
-  double perc = 100.0 * height / sprite->getHeight();
+  double perc = 100.0 * height / sprite->height();
 
   m_heightPerc->setTextf(PERC_FORMAT, perc);
 
   if (m_lockRatio->isSelected()) {
     m_widthPerc->setTextf(PERC_FORMAT, perc);
-    m_widthPx->setTextf("%d", sprite->getWidth() * height / sprite->getHeight());
+    m_widthPx->setTextf("%d", sprite->width() * height / sprite->height());
   }
 }
 
@@ -294,10 +294,10 @@ void SpriteSizeCommand::onWidthPercChange()
   const Sprite* sprite(reader.sprite());
   double width = m_widthPerc->getTextDouble();
 
-  m_widthPx->setTextf("%d", (int)(sprite->getWidth() * width / 100));
+  m_widthPx->setTextf("%d", (int)(sprite->width() * width / 100));
 
   if (m_lockRatio->isSelected()) {
-    m_heightPx->setTextf("%d", (int)(sprite->getHeight() * width / 100));
+    m_heightPx->setTextf("%d", (int)(sprite->height() * width / 100));
     m_heightPerc->setText(m_widthPerc->getText());
   }
 }
@@ -308,10 +308,10 @@ void SpriteSizeCommand::onHeightPercChange()
   const Sprite* sprite(reader.sprite());
   double height = m_heightPerc->getTextDouble();
 
-  m_heightPx->setTextf("%d", (int)(sprite->getHeight() * height / 100));
+  m_heightPx->setTextf("%d", (int)(sprite->height() * height / 100));
 
   if (m_lockRatio->isSelected()) {
-    m_widthPx->setTextf("%d", (int)(sprite->getWidth() * height / 100));
+    m_widthPx->setTextf("%d", (int)(sprite->width() * height / 100));
     m_widthPerc->setText(m_heightPerc->getText());
   }
 }

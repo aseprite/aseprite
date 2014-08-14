@@ -12,6 +12,8 @@
  *
  *      By Angelo Mottola.
  *
+ *      Some changes by to show/hide the native cursor by David Capello.
+ *
  *      See readme.txt for copyright information.
  */
 
@@ -19,6 +21,8 @@
 #include "allegro.h"
 #include "allegro/internal/aintern.h"
 #include "allegro/platform/aintosx.h"
+
+#include "qzmouse.h"
 
 #ifndef ALLEGRO_MACOSX
 #error Something is wrong with the makefile
@@ -58,6 +62,8 @@ int osx_mouse_warped = FALSE;
 int osx_skip_mouse_move = FALSE;
 NSTrackingRectTag osx_mouse_tracking_rect = -1;
 
+static int osx_using_native_cursor = FALSE;
+static int osx_native_mouse_visiblity = TRUE; // By default the OS cursor is visible
 
 static NSCursor *cursor = NULL, *current_cursor = NULL;
 static NSCursor *requested_cursor = NULL;
@@ -177,6 +183,9 @@ static int osx_mouse_init(void)
    _unix_lock_mutex(osx_event_mutex);
    osx_emulate_mouse_buttons = (max_buttons == 1) ? TRUE : FALSE;
    _unix_unlock_mutex(osx_event_mutex);
+
+   _mouse_on = TRUE;
+   osx_hide_native_mouse();
 
    return max_buttons;
 }
@@ -344,7 +353,6 @@ int osx_mouse_show(BITMAP *bmp, int x, int y)
       return -1;
 
    osx_change_cursor(requested_cursor);
-
    return 0;
 }
 
@@ -356,6 +364,9 @@ int osx_mouse_show(BITMAP *bmp, int x, int y)
 void osx_mouse_hide(void)
 {
    osx_change_cursor(osx_blank_cursor);
+
+   osx_using_native_cursor = FALSE;
+   osx_hide_native_mouse();
 }
 
 
@@ -386,17 +397,81 @@ void osx_enable_hardware_cursor(AL_CONST int mode)
 static int osx_select_system_cursor(AL_CONST int cursor)
 {
    switch (cursor) {
-   case MOUSE_CURSOR_ARROW:
-      requested_cursor = [NSCursor arrowCursor];
-      break;
-   case MOUSE_CURSOR_EDIT:
-      requested_cursor = [NSCursor IBeamCursor];
-      break;
-   default:
-      return 0;
+      case MOUSE_CURSOR_ARROW:
+      case MOUSE_CURSOR_BUSY:
+         requested_cursor = [NSCursor arrowCursor];
+         break;
+      case MOUSE_CURSOR_EDIT:
+         requested_cursor = [NSCursor IBeamCursor];
+         break;
+#ifdef ALLEGRO4_WITH_EXTRA_CURSORS
+      // case MOUSE_CURSOR_CROSS:
+      //    requested_cursor = [NSCursor crossCursor];
+      //    break;
+      case MOUSE_CURSOR_MOVE:
+         requested_cursor = [NSCursor openHandCursor];
+         break;
+      case MOUSE_CURSOR_LINK:
+         requested_cursor = [NSCursor pointingHandCursor];
+         break;
+      case MOUSE_CURSOR_FORBIDDEN:
+         requested_cursor = [NSCursor operationNotAllowedCursor];
+         break;
+      case MOUSE_CURSOR_SIZE_N:
+         requested_cursor = [NSCursor resizeUpCursor]; break;
+         break;
+      case MOUSE_CURSOR_SIZE_S:
+         requested_cursor = [NSCursor resizeDownCursor]; break;
+         break;
+      case MOUSE_CURSOR_SIZE_NS:
+         requested_cursor = [NSCursor resizeUpDownCursor]; break;
+         break;
+      case MOUSE_CURSOR_SIZE_W:
+         requested_cursor = [NSCursor resizeLeftCursor];
+         break;
+      case MOUSE_CURSOR_SIZE_E:
+         requested_cursor = [NSCursor resizeRightCursor];
+         break;
+      case MOUSE_CURSOR_SIZE_WE:
+         requested_cursor = [NSCursor resizeLeftRightCursor];
+         break;
+      case MOUSE_CURSOR_SIZE_NW:
+      case MOUSE_CURSOR_SIZE_SE:
+         requested_cursor = [NSCursor arrowCursor];
+         break;
+      case MOUSE_CURSOR_SIZE_NE:
+      case MOUSE_CURSOR_SIZE_SW:
+         requested_cursor = [NSCursor arrowCursor];
+         break;
+#endif
+      default:
+         osx_using_native_cursor = FALSE;
+         osx_hide_native_mouse();
+         return 0;
    }
    osx_change_cursor(requested_cursor);
+
+   osx_using_native_cursor = TRUE;
+   osx_show_native_mouse();
    return cursor;
+}
+
+
+
+void osx_hide_native_mouse()
+{
+   if (osx_native_mouse_visiblity) {
+      osx_native_mouse_visiblity = FALSE;
+      [NSCursor performSelectorOnMainThread: @selector(hide) withObject: nil waitUntilDone: NO];
+   }
+}
+
+void osx_show_native_mouse()
+{
+   if (!osx_native_mouse_visiblity) {
+      osx_native_mouse_visiblity = TRUE;
+      [NSCursor performSelectorOnMainThread: @selector(unhide) withObject: nil waitUntilDone: NO];
+   }
 }
 
 

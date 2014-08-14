@@ -77,8 +77,8 @@ void NewFrameCommand::onExecute(Context* context)
 
   StatusBar::instance()
     ->showTip(1000, "New frame %d/%d",
-              (int)context->getActiveLocation().frame()+1,
-              (int)sprite->getTotalFrames());
+              (int)context->activeLocation().frame()+1,
+              (int)sprite->totalFrames());
 
   App::instance()->getMainWindow()->popTimeline();
 }

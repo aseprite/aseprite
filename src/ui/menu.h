@@ -8,7 +8,7 @@
 #define UI_MENU_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "ui/register_message.h"

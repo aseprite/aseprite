@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,13 +56,11 @@ namespace app {
     void addWidgetType(const char* tagName, IWidgetTypeCreator* creator);
 
     // Loads the specified widget from an .xml file.
-    ui::Widget* loadWidget(const char* fileName, const char* widgetId);
+    ui::Widget* loadWidget(const char* fileName, const char* widgetId, ui::Widget* widget = NULL);
 
     template<class T>
-    T* loadWidgetT(const char* fileName, const char* widgetId) {
-      ui::Widget* widget = loadWidget(fileName, widgetId);
-
-      T* specificWidget = dynamic_cast<T*>(widget);
+    T* loadWidgetT(const char* fileName, const char* widgetId, T* widget = NULL) {
+      T* specificWidget = dynamic_cast<T*>(loadWidget(fileName, widgetId, widget));
       if (!specificWidget)
         throw WidgetTypeMismatch(widgetId);
 
@@ -70,9 +68,13 @@ namespace app {
     }
 
   private:
-    ui::Widget* loadWidgetFromXmlFile(const std::string& xmlFilename,
-                                      const std::string& widgetId);
-    ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root);
+    ui::Widget* loadWidgetFromXmlFile(
+      const std::string& xmlFilename,
+      const std::string& widgetId,
+      ui::Widget* widget);
+
+    ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget);
+    void fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget);
 
     typedef std::map<std::string, IWidgetTypeCreator*> TypeCreatorsMap;
 

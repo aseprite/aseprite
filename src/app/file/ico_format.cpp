@@ -138,11 +138,11 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Create the sprite with one background layer
   Sprite* sprite = new Sprite(pixelFormat, width, height, numcolors);
   LayerImage* layer = new LayerImage(sprite);
-  sprite->getFolder()->addLayer(layer);
+  sprite->folder()->addLayer(layer);
 
   // Create the first image/cel
   Image* image = Image::create(pixelFormat, width, height);
-  int image_index = sprite->getStock()->addImage(image);
+  int image_index = sprite->stock()->addImage(image);
   Cel* cel = new Cel(FrameNumber(0), image_index);
   layer->addCel(cel);
   clear_image(image, 0);
@@ -183,8 +183,8 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read XOR MASK
   int x, y, c, r, g, b;
-  for (y=image->getHeight()-1; y>=0; --y) {
-    for (x=0; x<image->getWidth(); ++x) {
+  for (y=image->height()-1; y>=0; --y) {
+    for (x=0; x<image->width(); ++x) {
       switch (entry.bpp) {
 
         case 8:
@@ -214,8 +214,8 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // AND mask
   int m, v;
-  for (y=image->getHeight()-1; y>=0; --y) {
-    for (x=0; x<(image->getWidth()+7)/8; ++x) {
+  for (y=image->height()-1; y>=0; --y) {
+    for (x=0; x<(image->width()+7)/8; ++x) {
       m = fgetc(f);
       v = 128;
       for (b=0; b<8; b++) {
@@ -232,18 +232,18 @@ bool IcoFormat::onLoad(FileOp* fop)
     }
   }
 
-  fop->document = new Document(sprite);
+  fop->createDocument(sprite);
   return true;
 }
 
 #ifdef ENABLE_SAVE
 bool IcoFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->getSprite();
+  Sprite* sprite = fop->document->sprite();
   int bpp, bw, bitsw;
   int size, offset, i;
   int c, x, y, b, m, v;
-  FrameNumber n, num = sprite->getTotalFrames();
+  FrameNumber n, num = sprite->totalFrames();
 
   FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
@@ -256,17 +256,17 @@ bool IcoFormat::onSave(FileOp* fop)
 
   // Entries
   for (n=FrameNumber(0); n<num; ++n) {
-    bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
-    bw = (((sprite->getWidth() * bpp / 8) + 3) / 4) * 4;
-    bitsw = ((((sprite->getWidth() + 7) / 8) + 3) / 4) * 4;
-    size = sprite->getHeight() * (bw + bitsw) + 40;
+    bpp = (sprite->pixelFormat() == IMAGE_INDEXED) ? 8 : 24;
+    bw = (((sprite->width() * bpp / 8) + 3) / 4) * 4;
+    bitsw = ((((sprite->width() + 7) / 8) + 3) / 4) * 4;
+    size = sprite->height() * (bw + bitsw) + 40;
 
     if (bpp == 8)
       size += 256 * 4;
 
     // ICONDIRENTRY
-    fputc(sprite->getWidth(), f);       // width
-    fputc(sprite->getHeight(), f);      // height
+    fputc(sprite->width(), f);       // width
+    fputc(sprite->height(), f);      // height
     fputc(0, f);                // color count
     fputc(0, f);                // reserved
     fputw(1, f);                // color planes
@@ -277,26 +277,27 @@ bool IcoFormat::onSave(FileOp* fop)
     offset += size;
   }
 
-  base::UniquePtr<Image> image(Image::create(sprite->getPixelFormat(),
-                                       sprite->getWidth(),
-                                       sprite->getHeight()));
+  base::UniquePtr<Image> image(Image::create(
+      sprite->pixelFormat(),
+      sprite->width(),
+      sprite->height()));
 
   for (n=FrameNumber(0); n<num; ++n) {
     clear_image(image, 0);
-    layer_render(sprite->getFolder(), image, 0, 0, n);
+    layer_render(sprite->folder(), image, 0, 0, n);
 
-    bpp = (sprite->getPixelFormat() == IMAGE_INDEXED) ? 8 : 24;
-    bw = (((image->getWidth() * bpp / 8) + 3) / 4) * 4;
-    bitsw = ((((image->getWidth() + 7) / 8) + 3) / 4) * 4;
-    size = image->getHeight() * (bw + bitsw) + 40;
+    bpp = (sprite->pixelFormat() == IMAGE_INDEXED) ? 8 : 24;
+    bw = (((image->width() * bpp / 8) + 3) / 4) * 4;
+    bitsw = ((((image->width() + 7) / 8) + 3) / 4) * 4;
+    size = image->height() * (bw + bitsw) + 40;
 
     if (bpp == 8)
       size += 256 * 4;
 
     // BITMAPINFOHEADER
     fputl(40, f);                  // size
-    fputl(image->getWidth(), f);   // width
-    fputl(image->getHeight() * 2, f); // XOR height + AND height
+    fputl(image->width(), f);   // width
+    fputl(image->height() * 2, f); // XOR height + AND height
     fputw(1, f);                   // planes
     fputw(bpp, f);                 // bitcount
     fputl(0, f);                   // unused for ico
@@ -321,9 +322,9 @@ bool IcoFormat::onSave(FileOp* fop)
     }
 
     // XOR MASK
-    for (y=image->getHeight()-1; y>=0; --y) {
-      for (x=0; x<image->getWidth(); ++x) {
-        switch (image->getPixelFormat()) {
+    for (y=image->height()-1; y>=0; --y) {
+      for (x=0; x<image->width(); ++x) {
+        switch (image->pixelFormat()) {
 
           case IMAGE_RGB:
             c = get_pixel(image, x, y);
@@ -354,15 +355,15 @@ bool IcoFormat::onSave(FileOp* fop)
     }
 
     // AND MASK
-    for (y=image->getHeight()-1; y>=0; --y) {
-      for (x=0; x<(image->getWidth()+7)/8; ++x) {
+    for (y=image->height()-1; y>=0; --y) {
+      for (x=0; x<(image->width()+7)/8; ++x) {
         m = 0;
         v = 128;
 
         for (b=0; b<8; b++) {
           c = get_pixel(image, x*8+b, y);
 
-          switch (image->getPixelFormat()) {
+          switch (image->pixelFormat()) {
 
             case IMAGE_RGB:
               if (rgba_geta(c) == 0)

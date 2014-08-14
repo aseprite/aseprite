@@ -8,34 +8,34 @@
 #define UI_BUTTON_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/signal.h"
 #include "ui/widget.h"
 
 #include <vector>
 
-struct BITMAP;
+namespace she {
+  class Surface;
+}
 
 namespace ui {
 
   class Event;
 
-  class IButtonIcon
-  {
+  class IButtonIcon {
   public:
     virtual ~IButtonIcon() { }
     virtual void destroy() = 0;
     virtual int getWidth() = 0;
     virtual int getHeight() = 0;
-    virtual BITMAP* getNormalIcon() = 0;
-    virtual BITMAP* getSelectedIcon() = 0;
-    virtual BITMAP* getDisabledIcon() = 0;
+    virtual she::Surface* getNormalIcon() = 0;
+    virtual she::Surface* getSelectedIcon() = 0;
+    virtual she::Surface* getDisabledIcon() = 0;
     virtual int getIconAlign() = 0;
   };
 
   // Generic button
-  class ButtonBase : public Widget
-  {
+  class ButtonBase : public Widget {
   public:
     ButtonBase(const std::string& text,
                WidgetType type,

@@ -8,7 +8,7 @@
 #define UI_MESSAGE_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "ui/base.h"
@@ -42,9 +42,11 @@ namespace ui {
     bool shiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
     bool ctrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
     bool altPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
-    bool onlyShiftPressed() const { return (m_modifiers & kKeyShiftModifier) == kKeyShiftModifier; }
-    bool onlyCtrlPressed() const { return (m_modifiers & kKeyCtrlModifier) == kKeyCtrlModifier; }
-    bool onlyAltPressed() const { return (m_modifiers & kKeyAltModifier) == kKeyAltModifier; }
+    bool cmdPressed() const { return (m_modifiers & kKeyCmdModifier) == kKeyCmdModifier; }
+    bool onlyShiftPressed() const { return m_modifiers == kKeyShiftModifier; }
+    bool onlyCtrlPressed() const { return m_modifiers == kKeyCtrlModifier; }
+    bool onlyAltPressed() const { return m_modifiers == kKeyAltModifier; }
+    bool onlyCmdPressed() const { return m_modifiers == kKeyCmdModifier; }
 
     void addRecipient(Widget* widget);
     void prependRecipient(Widget* widget);
@@ -79,9 +81,6 @@ namespace ui {
     bool m_propagate_to_children : 1;
     bool m_propagate_to_parent : 1;
   };
-
-  // Deprecated
-  KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value);
 
   class PaintMessage : public Message
   {

@@ -46,17 +46,17 @@ namespace filters {
     int addx, addy = 0;
     if (gety < 0) {
       if (tiledMode & TILED_Y_AXIS)
-        gety = sourceImage->getHeight() - (-(gety+1) % sourceImage->getHeight()) - 1;
+        gety = sourceImage->height() - (-(gety+1) % sourceImage->height()) - 1;
       else {
         addy = -gety;
         gety = 0;
       }
     }
-    else if (gety >= sourceImage->getHeight()) {
+    else if (gety >= sourceImage->height()) {
       if (tiledMode & TILED_Y_AXIS)
-        gety = gety % sourceImage->getHeight();
+        gety = gety % sourceImage->height();
       else
-        gety = sourceImage->getHeight()-1;
+        gety = sourceImage->height()-1;
     }
 
     for (dy=0; dy<height; ++dy) {
@@ -65,17 +65,17 @@ namespace filters {
       addx = 0;
       if (getx < 0) {
         if (tiledMode & TILED_X_AXIS)
-          getx = sourceImage->getWidth() - (-(getx+1) % sourceImage->getWidth()) - 1;
+          getx = sourceImage->width() - (-(getx+1) % sourceImage->width()) - 1;
         else {
           addx = -getx;
           getx = 0;
         }
       }
-      else if (getx >= sourceImage->getWidth()) {
+      else if (getx >= sourceImage->width()) {
         if (tiledMode & TILED_X_AXIS)
-          getx = getx % sourceImage->getWidth();
+          getx = getx % sourceImage->width();
         else
-          getx = sourceImage->getWidth()-1;
+          getx = sourceImage->width()-1;
       }
 
       typename Traits::const_address_t srcAddress =
@@ -86,7 +86,7 @@ namespace filters {
         delegate(*srcAddress);
 
         // Update X position to get pixel.
-        if (getx < sourceImage->getWidth()-1) {
+        if (getx < sourceImage->width()-1) {
           ++getx;
           if (addx == 0)
             ++srcAddress;
@@ -101,7 +101,7 @@ namespace filters {
       }
 
       // Update Y position to get pixel
-      if (gety < sourceImage->getHeight()-1) {
+      if (gety < sourceImage->height()-1) {
         if (addy == 0)
           ++gety;
         else

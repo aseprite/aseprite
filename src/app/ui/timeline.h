@@ -20,12 +20,17 @@
 #define APP_UI_TIMELINE_H_INCLUDED
 #pragma once
 
-#include "app/context_observer.h"
-#include "app/document_observer.h"
+#include "app/document_range.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
+#include "base/connection.h"
+#include "doc/document_observer.h"
+#include "doc/documents_observer.h"
 #include "raster/frame_number.h"
+#include "raster/layer_index.h"
+#include "raster/sprite.h"
+#include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <vector>
@@ -44,16 +49,19 @@ namespace ui {
 namespace app {
   using namespace raster;
 
+  class Command;
   class ConfigureTimelinePopup;
   class Context;
   class Document;
   class Editor;
 
   class Timeline : public ui::Widget
-                 , public ContextObserver
-                 , public DocumentObserver
-                 , public EditorObserver {
+                 , public doc::DocumentsObserver
+                 , public doc::DocumentObserver
+                 , public app::EditorObserver {
   public:
+    typedef DocumentRange Range;
+
     enum State {
       STATE_STANDBY,
       STATE_SCROLLING,
@@ -66,46 +74,6 @@ namespace app {
       STATE_MOVING_ONIONSKIN_RANGE_RIGHT
     };
 
-    struct Range {
-      enum Type { kNone, kCels, kFrames, kLayers };
-
-      Range() : m_type(kNone) { }
-
-      Type type() const { return m_type; }
-      bool enabled() const { return m_type != kNone; }
-      int layerBegin() const { return MIN(m_layerBegin, m_layerEnd); }
-      int layerEnd() const { return MAX(m_layerBegin, m_layerEnd); }
-      FrameNumber frameBegin() const { return MIN(m_frameBegin, m_frameEnd); }
-      FrameNumber frameEnd() const { return MAX(m_frameBegin, m_frameEnd); }
-
-      int layers() const { return layerEnd() - layerBegin() + 1; }
-      FrameNumber frames() const { return (frameEnd() - frameBegin()).next(); }
-      void setLayers(int layers);
-      void setFrames(FrameNumber frames);
-      void displace(int layerDelta, FrameNumber frameDelta);
-
-      bool inRange(int layer) const;
-      bool inRange(FrameNumber frame) const;
-      bool inRange(int layer, FrameNumber frame) const;
-
-      void startRange(int layer, FrameNumber frame, Type type);
-      void endRange(int layer, FrameNumber frame);
-      void disableRange();
-
-      bool operator==(const Range& o) const {
-        return m_type == o.m_type &&
-          layerBegin() == o.layerBegin() && layerEnd() == o.layerEnd() &&
-          frameBegin() == o.frameBegin() && frameEnd() == o.frameEnd();
-      }
-
-    private:
-      Type m_type;
-      int m_layerBegin;
-      int m_layerEnd;
-      FrameNumber m_frameBegin;
-      FrameNumber m_frameEnd;
-    };
-
     enum DropOp { kMove, kCopy };
 
     Timeline();
@@ -113,7 +81,7 @@ namespace app {
 
     void updateUsingEditor(Editor* editor);
 
-    Sprite* getSprite() { return m_sprite; }
+    Sprite* sprite() { return m_sprite; }
     Layer* getLayer() { return m_layer; }
     FrameNumber getFrame() { return m_frame; }
 
@@ -125,6 +93,8 @@ namespace app {
 
     Range range() const { return m_range; }
 
+    void activateClipboardRange();
+
     // Drag-and-drop operations. These actions are used by commands
     // called from popup menus.
     void dropRange(DropOp op);
@@ -135,14 +105,16 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) OVERRIDE;
 
     // DocumentObserver impl.
-    void onAddLayer(DocumentEvent& ev) OVERRIDE;
-    void onAfterRemoveLayer(DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(DocumentEvent& ev) OVERRIDE;
+    void onAddLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onAfterRemoveLayer(doc::DocumentEvent& ev) OVERRIDE;
+    void onAddFrame(doc::DocumentEvent& ev) OVERRIDE;
+    void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
 
-    // ContextObserver impl.
-    void onCommandAfterExecution(Context* context) OVERRIDE;
-    void onRemoveDocument(Context* context, Document* document) OVERRIDE;
+    // app::Context slots.
+    void onAfterCommandExecution(Command* command);
+
+    // DocumentsObserver impl.
+    void onRemoveDocument(doc::Document* document) OVERRIDE;
 
     // EditorObserver impl.
     void dispose() OVERRIDE { }
@@ -152,47 +124,77 @@ namespace app {
     void onLayerChanged(Editor* editor) OVERRIDE;
 
   private:
+    struct DropTarget {
+      enum HHit { HNone, Before, After };
+      enum VHit { VNone, Bottom, Top };
+
+      DropTarget() {
+        hhit = HNone;
+        vhit = VNone;
+      }
+
+      HHit hhit;
+      VHit vhit;
+      Layer* layer;
+      LayerIndex layerIdx;
+      FrameNumber frame;
+      int xpos, ypos;
+    };
+
     bool allLayersVisible();
     bool allLayersInvisible();
     bool allLayersLocked();
     bool allLayersUnlocked();
     void detachDocument();
     void setCursor(int x, int y);
-    void getDrawableLayers(ui::Graphics* g, int* first_layer, int* last_layer);
+    void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
     void getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
       const char* text, skin::Style* style,
       bool is_active = false, bool is_hover = false, bool is_clicked = false);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
-    void drawLayer(ui::Graphics* g, int layer_index);
-    void drawCel(ui::Graphics* g, int layer_index, FrameNumber frame, Cel* cel);
+    void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
+    void drawCel(ui::Graphics* g, LayerIndex layerIdx, FrameNumber frame, Cel* cel);
     void drawLoopRange(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, int layer, FrameNumber frame);
+    bool drawPart(ui::Graphics* g, int part, LayerIndex layer, FrameNumber frame);
+    void drawClipboardRange(ui::Graphics* g);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
     gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
-    gfx::Rect getPartBounds(int part, int layer = 0, FrameNumber frame = FrameNumber(0)) const;
-    void invalidatePart(int part, int layer, FrameNumber frame);
+    gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), FrameNumber frame = FrameNumber(0)) const;
+    gfx::Rect getRangeBounds(const Range& range) const;
+    void invalidatePart(int part, LayerIndex layer, FrameNumber frame);
     void regenerateLayers();
-    void hotThis(int hot_part, int hot_layer, FrameNumber hotFrame);
-    void centerCel(int layer, FrameNumber frame);
-    void showCel(int layer, FrameNumber frame);
+    void hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hotFrame);
+    void centerCel(LayerIndex layer, FrameNumber frame);
+    void showCel(LayerIndex layer, FrameNumber frame);
     void showCurrentCel();
     void cleanClk();
     void setScroll(int x, int y);
-    int getLayerIndex(const Layer* layer) const;
-    bool isLayerActive(int layer_index) const;
+    LayerIndex getLayerIndex(const Layer* layer) const;
+    bool isLayerActive(LayerIndex layerIdx) const;
     bool isFrameActive(FrameNumber frame) const;
-    void updateStatusBar();
-    Range getDropRange() const;
+    void updateStatusBar(ui::Message* msg);
+    void updateDropRange(const gfx::Point& pt);
+    void clearClipboardRange();
 
-    void dropCels(DropOp op, const Range& drop);
-    void dropFrames(DropOp op, const Range& drop);
-    void dropLayers(DropOp op, const Range& drop);
+    bool isCopyKeyPressed(ui::Message* msg);
+
+    // The layer of the bottom (e.g. Background layer)
+    LayerIndex firstLayer() const { return LayerIndex(0); }
+
+    // The layer of the top.
+    LayerIndex lastLayer() const { return LayerIndex(m_layers.size()-1); }
+
+    FrameNumber firstFrame() const { return FrameNumber(0); }
+    FrameNumber lastFrame() const { return m_sprite->lastFrame(); }
+
+    bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
+    bool validFrame(FrameNumber frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -225,6 +227,7 @@ namespace app {
     Layer* m_layer;
     FrameNumber m_frame;
     Range m_range;
+    Range m_dropRange;
     State m_state;
     std::vector<Layer*> m_layers;
     int m_scroll_x;
@@ -234,16 +237,23 @@ namespace app {
     int m_origFrames;
     // The 'hot' part is where the mouse is on top of
     int m_hot_part;
-    int m_hot_layer;
+    LayerIndex m_hot_layer;
     FrameNumber m_hot_frame;
+    DropTarget m_dropTarget;
     // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     int m_clk_part;
-    int m_clk_layer;
+    LayerIndex m_clk_layer;
     FrameNumber m_clk_frame;
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
     // Configure timeline
     ConfigureTimelinePopup* m_confPopup;
+    ScopedConnection m_ctxConn;
+
+    // Marching ants stuff to show the range in the clipboard.
+    // TODO merge this with the marching ants of the sprite editor (ui::Editor)
+    ui::Timer m_clipboard_timer;
+    int m_offset_count;
   };
 
 } // namespace app

@@ -20,14 +20,10 @@ void _ji_widgets_exit();
 int _ji_system_init();
 void _ji_system_exit();
 
-int _ji_font_init();
-void _ji_font_exit();
-
 GuiSystem::GuiSystem()
 {
   // initialize system
   _ji_system_init();
-  _ji_font_init();
   _ji_widgets_init();
 }
 
@@ -40,7 +36,6 @@ GuiSystem::~GuiSystem()
 
   // shutdown system
   _ji_widgets_exit();
-  _ji_font_exit();
   _ji_system_exit();
 }
 

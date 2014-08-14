@@ -72,7 +72,7 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
   // Adjust iterators
   itP = itA = itB = itC = itD = savedD = srcBits.begin();
   dstRow1_it += dst_w;
-  itD += src->getWidth();
+  itD += src->width();
 
   for (int y=0; y<src_h; ++y) {
     if (y == 1) itA = srcBits.begin();
@@ -156,7 +156,7 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
 
 static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
 {
-  switch (src->getPixelFormat()) {
+  switch (src->pixelFormat()) {
     case IMAGE_RGB:       image_scale2x_tpl<RgbTraits>(dst, src, src_w, src_h); break;
     case IMAGE_GRAYSCALE: image_scale2x_tpl<GrayscaleTraits>(dst, src, src_w, src_h); break;
     case IMAGE_INDEXED:   image_scale2x_tpl<IndexedTraits>(dst, src, src_w, src_h); break;
@@ -175,30 +175,30 @@ void image_rotsprite(Image* bmp, Image* spr,
   if (!buf3) buf3.reset(new ImageBuffer(1));
 
   int scale = 8;
-  base::UniquePtr<Image> bmp_copy(Image::create(bmp->getPixelFormat(), bmp->getWidth()*scale, bmp->getHeight()*scale, buf1));
-  base::UniquePtr<Image> tmp_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf2));
-  base::UniquePtr<Image> spr_copy(Image::create(spr->getPixelFormat(), spr->getWidth()*scale, spr->getHeight()*scale, buf3));
+  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), bmp->width()*scale, bmp->height()*scale, buf1));
+  base::UniquePtr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf2));
+  base::UniquePtr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf3));
 
-  color_t maskColor = spr->getMaskColor();
+  color_t maskColor = spr->maskColor();
 
   bmp_copy->setMaskColor(maskColor);
   tmp_copy->setMaskColor(maskColor);
   spr_copy->setMaskColor(maskColor);
 
-  bmp_copy->clear(bmp->getMaskColor());
+  bmp_copy->clear(bmp->maskColor());
   spr_copy->clear(maskColor);
   spr_copy->copy(spr, 0, 0);
 
   for (int i=0; i<3; ++i) {
     tmp_copy->clear(maskColor);
-    image_scale2x(tmp_copy, spr_copy, spr->getWidth()*(1<<i), spr->getHeight()*(1<<i));
+    image_scale2x(tmp_copy, spr_copy, spr->width()*(1<<i), spr->height()*(1<<i));
     spr_copy->copy(tmp_copy, 0, 0);
   }
 
   image_parallelogram(bmp_copy, spr_copy,
     x1*scale, y1*scale, x2*scale, y2*scale,
     x3*scale, y3*scale, x4*scale, y4*scale);
-  image_scale(bmp, bmp_copy, 0, 0, bmp->getWidth(), bmp->getHeight());
+  image_scale(bmp, bmp_copy, 0, 0, bmp->width(), bmp->height());
 }
 
 } // namespace raster

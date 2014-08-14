@@ -497,7 +497,10 @@ void _handle_key_release(int scancode)
       repeat_scan = -1;
    }
 
-   ASSERT(scancode < KEY_MAX);
+   /* This is quite common if we press the numpad dot/delete. In debug
+      mode this asserts crashes the whole program. */
+   /* ASSERT(scancode < KEY_MAX); */
+
    if (scancode >= KEY_MAX) {
       TRACE(PREFIX_I "Scancode out of range %d\n", scancode);
       return;

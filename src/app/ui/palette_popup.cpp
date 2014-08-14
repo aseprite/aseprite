@@ -26,8 +26,8 @@
 #include "app/commands/commands.h"
 #include "app/launcher.h"
 #include "app/load_widget.h"
-#include "app/palettes_loader.h"
-#include "app/ui/palette_listbox.h"
+#include "app/res/palettes_loader_delegate.h"
+#include "app/ui/palettes_listbox.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "ui/box.h"
@@ -62,7 +62,7 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
   m_load->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
-  if (!UIContext::instance()->getActiveDocument())
+  if (!UIContext::instance()->activeDocument())
     m_load->setText("Set as Default");
   else
     m_load->setText("Load");
@@ -91,7 +91,7 @@ void PalettePopup::onLoad()
 
 void PalettePopup::onOpenFolder()
 {
-  launcher::open_folder(PalettesLoader::palettesLocation());
+  launcher::open_folder(PalettesLoaderDelegate().resourcesLocation());
 }
 
 } // namespace app

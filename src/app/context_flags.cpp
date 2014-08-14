@@ -39,7 +39,7 @@ ContextFlags::ContextFlags()
 
 void ContextFlags::update(Context* context)
 {
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
   Document* document = location.document();
 
   m_flags = 0;
@@ -57,7 +57,7 @@ void ContextFlags::update(Context* context)
       if (sprite) {
         m_flags |= HasActiveSprite;
 
-        if (sprite->getBackgroundLayer())
+        if (sprite->backgroundLayer())
           m_flags |= HasBackgroundLayer;
 
         Layer* layer = location.layer();
@@ -80,7 +80,7 @@ void ContextFlags::update(Context* context)
             if (cel) {
               m_flags |= HasActiveCel;
 
-              if (sprite->getStock()->getImage(cel->getImage()))
+              if (cel->image())
                 m_flags |= HasActiveImage;
             }
           }

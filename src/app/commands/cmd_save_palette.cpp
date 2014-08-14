@@ -23,7 +23,7 @@
 #include "app/commands/command.h"
 #include "app/file_selector.h"
 #include "app/modules/palettes.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "raster/palette.h"

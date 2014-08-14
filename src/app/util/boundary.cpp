@@ -134,7 +134,7 @@ find_empty_segs (PixelRegion  *maskPR,
 
   *num_empty = 0;
 
-  if (scanline < 0 || scanline >= maskPR->getHeight())
+  if (scanline < 0 || scanline >= maskPR->height())
     {
       empty_segs[(*num_empty)++] = 0;
       empty_segs[(*num_empty)++] = G_MAXINT;
@@ -156,7 +156,7 @@ find_empty_segs (PixelRegion  *maskPR,
   else if (type == IgnoreBounds)
     {
       start = 0;
-      end = maskPR->getWidth();
+      end = maskPR->width();
       if (scanline < y1 || scanline >= y2)
         x2 = -1;
     }
@@ -254,9 +254,9 @@ allocate_vert_segs (PixelRegion *PR)
   gint i;
 
   /*  allocate and initialize the vert_segs array  */
-  vert_segs = g_renew (gint, vert_segs, PR->getWidth() + 1);
+  vert_segs = g_renew (gint, vert_segs, PR->width() + 1);
 
-  for (i = 0; i <= PR->getWidth(); i++)
+  for (i = 0; i <= PR->width(); i++)
     vert_segs[i] = -1;
 }
 
@@ -267,7 +267,7 @@ allocate_empty_segs (PixelRegion *PR)
   gint need_num_segs;
 
   /*  find the maximum possible number of empty segments given the current mask  */
-  need_num_segs = PR->getWidth() + 3;
+  need_num_segs = PR->width() + 3;
 
   if (need_num_segs > max_empty_segs)
     {
@@ -371,7 +371,7 @@ generate_boundary (PixelRegion  *PR,
   else if (type == IgnoreBounds)
     {
       start = 0;
-      end   = PR->getHeight();
+      end   = PR->height();
     }
 
   /*  Find the empty segments for the previous and current scanlines  */

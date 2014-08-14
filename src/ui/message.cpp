@@ -24,7 +24,8 @@ Message::Message(MessageType type)
   , m_used(false)
   , m_modifiers((KeyModifiers)((key[KEY_LSHIFT] || key[KEY_RSHIFT] ? kKeyShiftModifier: 0) |
                                (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? kKeyCtrlModifier: 0) |
-                               (key[KEY_ALT] ? kKeyAltModifier: 0)))
+                               (key[KEY_ALT] ? kKeyAltModifier: 0) |
+                               (key[KEY_COMMAND] ? kKeyCmdModifier: 0)))
 {
 }
 
@@ -74,13 +75,6 @@ KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int unicodeChar, 
   , m_propagate_to_children(false)
   , m_propagate_to_parent(true)
 {
-}
-
-KeyMessage* create_message_from_readkey_value(MessageType type, int readkey_value)
-{
-  return new KeyMessage(type,
-                        static_cast<KeyScancode>((readkey_value >> 8) & 0xff),
-                        (readkey_value & 0xff), 0);
 }
 
 } // namespace ui

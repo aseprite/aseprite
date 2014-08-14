@@ -32,16 +32,26 @@ namespace raster {
 namespace app {
   class ContextReader;
   class ContextWriter;
+  class DocumentRange;
 
   namespace clipboard {
     using namespace raster;
 
+    enum ClipboardFormat {
+      ClipboardNone,
+      ClipboardImage,
+      ClipboardDocumentRange,
+    };
+
     // TODO Horrible API: refactor it.
 
-    bool can_paste();
+    ClipboardFormat get_current_format();
+    void get_document_range_info(Document** document, DocumentRange* range);
 
+    void clear_content();
     void cut(ContextWriter& context);
     void copy(const ContextReader& context);
+    void copy_range(const ContextReader& context, const DocumentRange& range);
     void copy_image(Image* image, Palette* palette, const gfx::Point& point);
     void paste();
 

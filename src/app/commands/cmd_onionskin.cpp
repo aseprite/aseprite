@@ -25,7 +25,7 @@
 #include "app/context.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 
 namespace app {
 
@@ -46,14 +46,14 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     return docSettings->getUseOnionskin();
   }
 
   void onExecute(Context* context)
   {
-    IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
     docSettings->setUseOnionskin(docSettings->getUseOnionskin() ? false: true);
   }

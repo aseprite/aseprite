@@ -46,7 +46,7 @@ public:
     // Use mask
     if (loop->useMask()) {
       Point maskOrigin(loop->getMaskOrigin());
-      const Rect& maskBounds(loop->getMask()->getBounds());
+      const Rect& maskBounds(loop->getMask()->bounds());
 
       if ((y < maskOrigin.y) || (y >= maskOrigin.y+maskBounds.h))
         return;
@@ -57,7 +57,7 @@ public:
       if (x2 > maskOrigin.x+maskBounds.w-1)
         x2 = maskOrigin.x+maskBounds.w-1;
 
-      if (Image* bitmap = loop->getMask()->getBitmap()) {
+      if (Image* bitmap = loop->getMask()->bitmap()) {
         static_cast<Derived*>(this)->initIterators(loop, x1, y);
 
         for (x=x1; x<=x2; ++x) {
@@ -534,8 +534,8 @@ public:
     m_opacity(loop->getOpacity()),
     m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
     m_srcImage(loop->getSrcImage()),
-    m_srcImageWidth(m_srcImage->getWidth()),
-    m_srcImageHeight(m_srcImage->getHeight()) {
+    m_srcImageWidth(m_srcImage->width()),
+    m_srcImageHeight(m_srcImage->height()) {
   }
 
   void processPixel(int x, int y) {

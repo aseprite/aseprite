@@ -57,7 +57,7 @@ int Image::getRowStrideSize() const
 
 int Image::getRowStrideSize(int pixels_per_row) const
 {
-  return calculate_rowstride_bytes(getPixelFormat(), m_width);
+  return calculate_rowstride_bytes(pixelFormat(), pixels_per_row);
 }
 
 // static
@@ -77,8 +77,8 @@ Image* Image::create(PixelFormat format, int width, int height,
 Image* Image::createCopy(const Image* image, const ImageBufferPtr& buffer)
 {
   ASSERT(image);
-  return crop_image(image, 0, 0, image->getWidth(), image->getHeight(),
-    image->getMaskColor(), buffer);
+  return crop_image(image, 0, 0, image->width(), image->height(),
+    image->maskColor(), buffer);
 }
 
 } // namespace raster

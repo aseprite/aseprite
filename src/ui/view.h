@@ -8,7 +8,7 @@
 #define UI_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/scroll_bar.h"

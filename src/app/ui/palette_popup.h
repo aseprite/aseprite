@@ -20,8 +20,8 @@
 #define APP_UI_PALETTE_POPUP_H_INCLUDED
 #pragma once
 
-#include "app/ui/palette_listbox.h"
-#include "base/compiler_specific.h"
+#include "app/ui/palettes_listbox.h"
+#include "base/override.h"
 #include "ui/popup_window.h"
 
 namespace ui {
@@ -45,7 +45,7 @@ namespace app {
   private:
     ui::View* m_view;
     ui::Button* m_load;
-    PaletteListBox m_paletteListBox;
+    PalettesListBox m_paletteListBox;
   };
 
 } // namespace app

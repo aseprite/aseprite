@@ -81,9 +81,9 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(Document* document, bool mark_as_saved)
+static void save_document_in_background(Context* context, Document* document, bool mark_as_saved)
 {
-  base::UniquePtr<FileOp> fop(fop_to_save_document(document));
+  base::UniquePtr<FileOp> fop(fop_to_save_document(context, document));
   if (!fop)
     return;
 
@@ -103,13 +103,13 @@ static void save_document_in_background(Document* document, bool mark_as_saved)
     document->impossibleToBackToSavedState();
   }
   else {
-    App::instance()->getRecentFiles()->addRecentFile(document->getFilename().c_str());
+    App::instance()->getRecentFiles()->addRecentFile(document->filename().c_str());
     if (mark_as_saved)
       document->markAsSaved();
 
     StatusBar::instance()
       ->setStatusText(2000, "File %s, saved.",
-                      base::get_file_name(document->getFilename()).c_str());
+        document->name().c_str());
   }
 }
 
@@ -141,7 +141,7 @@ protected:
       filename = m_filename;
     }
     else {
-      filename = document->getFilename();
+      filename = document->filename();
 
       char exts[4096];
       get_writable_extensions(exts, sizeof(exts));
@@ -185,13 +185,17 @@ protected:
     {
       ContextWriter writer(reader);
       Document* documentWriter = writer.document();
+      std::string oldFilename = documentWriter->filename();
 
       // Change the document file name
       documentWriter->setFilename(filename.c_str());
       m_selectedFilename = filename;
 
       // Save the document
-      save_document_in_background(documentWriter, markAsSaved);
+      save_document_in_background(writer.context(), documentWriter, markAsSaved);
+
+      if (documentWriter->isModified())
+        documentWriter->setFilename(oldFilename);
 
       update_screen_for_document(documentWriter);
     }
@@ -244,10 +248,10 @@ void SaveFileCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
 
-    if (!confirmReadonly(documentWriter->getFilename()))
+    if (!confirmReadonly(documentWriter->filename()))
       return;
 
-    save_document_in_background(documentWriter, true);
+    save_document_in_background(context, documentWriter, true);
     update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the
@@ -296,7 +300,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Document* document(reader.document());
-  std::string old_filename = document->getFilename();
+  std::string old_filename = document->filename();
 
   // show "Save As" dialog
   saveAsDialog(reader, "Save Copy As", false);

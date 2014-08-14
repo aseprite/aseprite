@@ -28,10 +28,9 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
+#include "she/surface.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
-
-#include <allegro.h>
 
 namespace app {
 
@@ -43,13 +42,13 @@ EditorView::EditorView(EditorView::Type type)
   , m_type(type)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
-  int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
-  int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
-  int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
+  int l = theme->get_part(PART_EDITOR_SELECTED_W)->width();
+  int t = theme->get_part(PART_EDITOR_SELECTED_N)->height();
+  int r = theme->get_part(PART_EDITOR_SELECTED_E)->width();
+  int b = theme->get_part(PART_EDITOR_SELECTED_S)->height();
 
   setBorder(gfx::Border(l, t, r, b));
-  setBgColor(ui::rgba(0, 0, 0));
+  setBgColor(gfx::rgba(0, 0, 0));
   setupScrollbars();
 
   UIContext::instance()->settings()->addObserver(this);

@@ -104,7 +104,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   switch (m_target) {
 
     case ALL_FRAMES:
-      lastFrame = sprite->getLastFrame();
+      lastFrame = sprite->lastFrame();
       break;
 
     case CURRENT_RANGE: {

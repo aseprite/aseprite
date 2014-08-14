@@ -27,8 +27,10 @@
 
 #include "app/file_system.h"
 
+#include "base/fs.h"
 #include "base/path.h"
 #include "base/string.h"
+#include "she/surface.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -54,6 +56,7 @@
 #endif
 #if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX || defined ALLEGRO_MINGW32
   #include <sys/unistd.h>
+
 #endif
 
 #if defined USE_PIDLS
@@ -144,16 +147,17 @@ public:
 
   IFileItem* getParent() const;
   const FileItemList& getChildren();
+  void createDirectory(const std::string& dirname);
 
   bool hasExtension(const std::string& csv_extensions);
 
-  BITMAP* getThumbnail();
-  void setThumbnail(BITMAP* thumbnail);
+  she::Surface* getThumbnail();
+  void setThumbnail(she::Surface* thumbnail);
 
 };
 
 typedef std::map<std::string, FileItem*> FileItemMap;
-typedef std::map<std::string, BITMAP*> ThumbnailMap;
+typedef std::map<std::string, she::Surface*> ThumbnailMap;
 
 // the root of the file-system
 static FileItem* rootitem = NULL;
@@ -237,7 +241,7 @@ FileSystemModule::~FileSystemModule()
 
   for (ThumbnailMap::iterator
          it=thumbnail_map->begin(); it!=thumbnail_map->end(); ++it) {
-    destroy_bitmap(it->second);
+    it->second->dispose();
   }
   thumbnail_map->clear();
 
@@ -560,6 +564,14 @@ const FileItemList& FileItem::getChildren()
   return this->children;
 }
 
+void FileItem::createDirectory(const std::string& dirname)
+{
+  base::make_directory(base::join_path(filename, dirname));
+
+  // Invalidate the children list.
+  this->version = 0;
+}
+
 bool FileItem::hasExtension(const std::string& csv_extensions)
 {
   ASSERT(this->filename != NOTINITIALIZED);
@@ -567,7 +579,7 @@ bool FileItem::hasExtension(const std::string& csv_extensions)
   return base::has_file_extension(this->filename, csv_extensions);
 }
 
-BITMAP* FileItem::getThumbnail()
+she::Surface* FileItem::getThumbnail()
 {
   ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end())
@@ -576,12 +588,12 @@ BITMAP* FileItem::getThumbnail()
     return NULL;
 }
 
-void FileItem::setThumbnail(BITMAP* thumbnail)
+void FileItem::setThumbnail(she::Surface* thumbnail)
 {
   // destroy the current thumbnail of the file (if exists)
   ThumbnailMap::iterator it = thumbnail_map->find(this->filename);
   if (it != thumbnail_map->end()) {
-    destroy_bitmap(it->second);
+    it->second->dispose();
     thumbnail_map->erase(it);
   }
 

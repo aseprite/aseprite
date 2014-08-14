@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ namespace app {
       virtual Document* getDocument() = 0;
 
       // Returns the sprite where we will draw on
-      virtual Sprite* getSprite() = 0;
+      virtual Sprite* sprite() = 0;
 
       // Returns the layer that will be modified if the tool paints
       virtual Layer* getLayer() = 0;
@@ -124,6 +124,10 @@ namespace app {
       // Returns the tolerance to be used by the ink (Ink).
       virtual int getTolerance() = 0;
 
+      // Returns true if the flood fill algorithm should take care
+      // contiguous pixels or not.
+      virtual bool getContiguous() = 0;
+
       // Returns the selection mode (if the ink is of selection type).
       virtual SelectionMode getSelectionMode() = 0;
 
@@ -131,7 +135,7 @@ namespace app {
       // foreground/background color (certain tools needs to know the
       // exact foreground/background color, they cannot used the
       // primary/secondary).
-      virtual ISettings* getSettings() = 0;
+      virtual ISettings* settings() = 0;
 
       // Returns the document settings (tiled mode, grid bounds, etc.).
       // It's used to know the preferred "tiled" mode of the document.

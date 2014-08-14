@@ -1,16 +1,12 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#define REDRAW_MOVEMENT
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-
-#include <allegro.h>
 
 #include "gfx/size.h"
 #include "ui/graphics.h"
@@ -112,7 +108,12 @@ void Window::onHitTest(HitTestEvent& ev)
 {
   HitTest ht = HitTestNowhere;
 
-  if (!m_isMoveable) {
+  // If this window is not movable or we are not completely visible.
+  if (!m_isMoveable ||
+      // TODO check why this is necessary, there should be a bug in
+      // the manager where we are receiving mouse events and are not
+      // the top most window.
+      getManager()->pick(ev.getPoint()) != this) {
     ev.setHit(ht);
     return;
   }
@@ -384,43 +385,15 @@ bool Window::onProcessMessage(Message* msg)
         CursorType cursor = kArrowCursor;
 
         switch (ht) {
-
-          case HitTestCaption:
-            cursor = kArrowCursor;
-            break;
-
-          case HitTestBorderNW:
-            cursor = kSizeTLCursor;
-            break;
-
-          case HitTestBorderW:
-            cursor = kSizeLCursor;
-            break;
-
-          case HitTestBorderSW:
-            cursor = kSizeBLCursor;
-            break;
-
-          case HitTestBorderNE:
-            cursor = kSizeTRCursor;
-            break;
-
-          case HitTestBorderE:
-            cursor = kSizeRCursor;
-            break;
-
-          case HitTestBorderSE:
-            cursor = kSizeBRCursor;
-            break;
-
-          case HitTestBorderN:
-            cursor = kSizeTCursor;
-            break;
-
-          case HitTestBorderS:
-            cursor = kSizeBCursor;
-            break;
-
+          case HitTestCaption: cursor = kArrowCursor; break;
+          case HitTestBorderNW: cursor = kSizeNWCursor; break;
+          case HitTestBorderW: cursor = kSizeWCursor; break;
+          case HitTestBorderSW: cursor = kSizeSWCursor; break;
+          case HitTestBorderNE: cursor = kSizeNECursor; break;
+          case HitTestBorderE: cursor = kSizeECursor; break;
+          case HitTestBorderSE: cursor = kSizeSECursor; break;
+          case HitTestBorderN: cursor = kSizeNCursor; break;
+          case HitTestBorderS: cursor = kSizeSCursor; break;
         }
 
         jmouse_set_cursor(cursor);
@@ -585,7 +558,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     moveableRegion.createIntersection(oldDrawableRegion, reg1);
 
     // Move the window's graphics
-    Graphics g(ji_screen, 0, 0);
+    ScreenGraphics g;
     jmouse_hide();
     {
       IntersectClip clip(&g, man_pos);

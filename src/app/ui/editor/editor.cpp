@@ -27,8 +27,8 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document_location.h"
 #include "app/console.h"
+#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -55,12 +55,14 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/conversion_alleg.h"
+#include "raster/conversion_she.h"
 #include "raster/raster.h"
+#include "she/surface.h"
+#include "she/system.h"
 #include "ui/ui.h"
 
 #include <allegro.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace app {
 
@@ -133,8 +135,8 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_state(new StandbyState())
   , m_decorator(NULL)
   , m_document(document)
-  , m_sprite(m_document->getSprite())
-  , m_layer(m_sprite->getFolder()->getFirstLayer())
+  , m_sprite(m_document->sprite())
+  , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(FrameNumber(0))
   , m_zoom(0)
   , m_mask_timer(100, this)
@@ -165,14 +167,16 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_fgColorChangeConn =
     ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 
-  UIContext::instance()->getSettings()
+  UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->addObserver(this);
+
+  m_state->onAfterChangeState(this);
 }
 
 Editor::~Editor()
 {
-  UIContext::instance()->getSettings()
+  UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->removeObserver(this);
 
@@ -284,8 +288,8 @@ void Editor::setDefaultScroll()
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
 
-  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->getWidth()/2),
-                  m_offset_y - vp.h/2 + (m_sprite->getHeight()/2), false);
+  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->width()/2),
+                  m_offset_y - vp.h/2 + (m_sprite->height()/2), false);
 }
 
 // Sets the scroll position of the editor
@@ -297,7 +301,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   int thick = m_cursor_thick;
 
   if (thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   if (use_refresh_region) {
     getDrawableRegion(region, kCutTopWindows);
@@ -315,7 +319,14 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   }
 
   if (thick)
-    editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+    drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
+}
+
+void Editor::setEditorZoom(int zoom)
+{
+  setZoomAndCenterInMouse(zoom,
+    jmouse_x(0), jmouse_y(0),
+    Editor::kCofiguredZoomBehavior);
 }
 
 void Editor::updateEditor()
@@ -363,11 +374,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     dest_y -= source_y;
     source_y = 0;
   }
-  if (source_x+width > (m_sprite->getWidth() << m_zoom)) {
-    width = (m_sprite->getWidth() << m_zoom) - source_x;
+  if (source_x+width > (m_sprite->width() << m_zoom)) {
+    width = (m_sprite->width() << m_zoom) - source_x;
   }
-  if (source_y+height > (m_sprite->getHeight() << m_zoom)) {
-    height = (m_sprite->getHeight() << m_zoom) - source_y;
+  if (source_y+height > (m_sprite->height() << m_zoom)) {
+    height = (m_sprite->height() << m_zoom) - source_y;
   }
 
   // Draw the sprite
@@ -388,16 +399,17 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
 
     if (rendered) {
       // Pre-render decorator.
-      if (m_decorator) {
+      if ((m_flags & kShowDecorators) && m_decorator) {
         EditorPreRenderImpl preRender(this, rendered,
                                       Point(-source_x, -source_y), m_zoom);
         m_decorator->preRenderDecorator(&preRender);
       }
 
-      SharedPtr<BITMAP> tmp(create_bitmap(width, height), destroy_bitmap);
-      convert_image_to_allegro(rendered, tmp, 0, 0, m_sprite->getPalette(m_frame));
-
+      she::Surface* tmp(she::instance()->createRgbaSurface(width, height));
+      convert_image_to_surface(rendered, m_sprite->getPalette(m_frame),
+        tmp, 0, 0, 0, 0, width, height);
       g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
+      tmp->dispose();
     }
   }
 }
@@ -408,8 +420,8 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   gfx::Rect spriteRect(
     client.x + m_offset_x,
     client.y + m_offset_y,
-    (m_sprite->getWidth() << m_zoom),
-    (m_sprite->getHeight() << m_zoom));
+    (m_sprite->width() << m_zoom),
+    (m_sprite->height() << m_zoom));
   gfx::Rect enclosingRect = spriteRect;
 
   // Draw the main sprite at the center.
@@ -420,7 +432,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
 
   // Document settings
   IDocumentSettings* docSettings =
-      UIContext::instance()->getSettings()->getDocumentSettings(m_document);
+      UIContext::instance()->settings()->getDocumentSettings(m_document);
 
   if (docSettings->getTiledMode() & filters::TILED_X_AXIS) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
@@ -453,39 +465,37 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   // Fill the outside (parts of the editor that aren't covered by the
   // sprite).
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+  if (m_flags & kShowOutside) {
+    g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+  }
 
   // Draw the pixel grid
-  if (docSettings->getPixelGridVisible()) {
-    if (m_zoom > 1)
-      drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
+  if ((m_zoom > 1) && docSettings->getPixelGridVisible()) {
+    drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
   }
 
   // Draw the grid
   if (docSettings->getGridVisible())
     drawGrid(g, enclosingRect, docSettings->getGridBounds(), docSettings->getGridColor());
 
-  // Draw the borders that enclose the sprite.
-  enclosingRect.enlarge(1);
-  g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
-  g->drawHLine(
-    theme->getColor(ThemeColor::EditorSpriteBottomBorder),
-    enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+  if (m_flags & kShowOutside) {
+    // Draw the borders that enclose the sprite.
+    enclosingRect.enlarge(1);
+    g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
+    g->drawHLine(
+      theme->getColor(ThemeColor::EditorSpriteBottomBorder),
+      enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
+  }
 
   // Draw the mask
   if (m_document->getBoundariesSegments())
     drawMask(g);
 
   // Post-render decorator.
-  if (m_decorator) {
+  if ((m_flags & kShowDecorators) && m_decorator) {
     EditorPostRenderImpl postRender(this);
     m_decorator->postRenderDecorator(&postRender);
   }
-}
-
-void Editor::drawSpriteUnclippedRect(const gfx::Rect& rc)
-{
-  drawSpriteUnclippedRect(getGraphics(getClientBounds()), rc);
 }
 
 void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
@@ -493,7 +503,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
   Region region;
   getDrawableRegion(region, kCutTopWindows);
 
-  Graphics g(ji_screen, 0, 0);
+  ScreenGraphics g;
 
   for (Region::const_iterator
          it=region.begin(), end=region.end(); it != end; ++it) {
@@ -503,7 +513,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
     if (clip) {
       for (Region::const_iterator
              it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
-        drawSpriteUnclippedRect(*it2);
+        drawSpriteUnclippedRect(getGraphics(getClientBounds()), *it2);
       }
     }
   }
@@ -518,7 +528,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
  */
 void Editor::drawMask(Graphics* g)
 {
-  if ((m_flags & kShowMaskFlag) == 0)
+  if ((m_flags & kShowMask) == 0)
     return;
 
   int x1, y1, x2, y2;
@@ -572,7 +582,7 @@ void Editor::drawMask(Graphics* g)
 
 void Editor::drawMaskSafe()
 {
-  if ((m_flags & kShowMaskFlag) == 0)
+  if ((m_flags & kShowMask) == 0)
     return;
 
   if (isVisible() &&
@@ -585,7 +595,7 @@ void Editor::drawMaskSafe()
     region.offset(-getBounds().getOrigin());
 
     if (thick)
-      editor_clean_cursor();
+      clearBrushPreview();
     else
       jmouse_hide();
 
@@ -600,7 +610,7 @@ void Editor::drawMaskSafe()
 
     // Draw the cursor
     if (thick)
-      editor_draw_cursor(m_cursor_screen_x, m_cursor_screen_y);
+      drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
     else
       jmouse_show();
   }
@@ -608,7 +618,7 @@ void Editor::drawMaskSafe()
 
 void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gridBounds, const app::Color& color)
 {
-  if ((m_flags & kShowGridFlag) == 0)
+  if ((m_flags & kShowGrid) == 0)
     return;
 
   // Copy the grid bounds
@@ -637,7 +647,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   while (grid.y-grid.h >= spriteBounds.y) grid.y -= grid.h;
 
   // Get the grid's color
-  ui::Color grid_color = color_utils::color_for_ui(color);
+  gfx::Color grid_color = color_utils::color_for_ui(color);
 
   // Draw horizontal lines
   int x1 = spriteBounds.x;
@@ -665,15 +675,15 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = m_sprite->getCurrentImage(&x, &y);
   if (src_image) {
-    m_document->prepareExtraCel(0, 0, m_sprite->getWidth(), m_sprite->getHeight(), 255);
+    m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), 255);
     Image* flash_image = m_document->getExtraCelImage();
     int u, v;
 
     clear_image(flash_image, flash_image->mask_color);
-    for (v=0; v<flash_image->getHeight(); ++v) {
-      for (u=0; u<flash_image->getWidth(); ++u) {
-        if (u-x >= 0 && u-x < src_image->getWidth() &&
-            v-y >= 0 && v-y < src_image->getHeight()) {
+    for (v=0; v<flash_image->height(); ++v) {
+      for (u=0; u<flash_image->width(); ++u) {
+        if (u-x >= 0 && u-x < src_image->width() &&
+            v-y >= 0 && v-y < src_image->height()) {
           uint32_t color = get_pixel(src_image, u-x, v-y);
           if (color != src_image->mask_color) {
             Color ccc = Color::fromRgb(255, 255, 255);
@@ -684,11 +694,11 @@ void Editor::flashCurrentLayer()
       }
     }
 
-    drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
     gui_flip_screen();
 
     clear_image(flash_image, flash_image->mask_color);
-    drawSpriteSafe(0, 0, m_sprite->getWidth()-1, m_sprite->getHeight()-1);
+    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
   }
 #endif
 }
@@ -728,7 +738,7 @@ tools::Tool* Editor::getCurrentEditorTool()
     return m_quicktool;
   else {
     UIContext* context = UIContext::instance();
-    return context->getSettings()->getCurrentTool();
+    return context->settings()->getCurrentTool();
   }
 }
 
@@ -774,7 +784,7 @@ void Editor::showDrawingCursor()
 
   if (!m_cursor_thick && canDraw()) {
     jmouse_hide();
-    editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+    drawBrushPreview(jmouse_x(0), jmouse_y(0));
     jmouse_show();
   }
 }
@@ -783,7 +793,7 @@ void Editor::hideDrawingCursor()
 {
   if (m_cursor_thick) {
     jmouse_hide();
-    editor_clean_cursor();
+    clearBrushPreview();
     jmouse_show();
   }
 }
@@ -801,7 +811,7 @@ void Editor::moveDrawingCursor()
     // when the mouse moves only).
     if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
       jmouse_hide();
-      editor_move_cursor(x, y);
+      moveBrushPreview(x, y);
       jmouse_show();
     }
   }
@@ -869,7 +879,7 @@ void Editor::editor_update_quicktool()
 {
   if (m_customizationDelegate) {
     UIContext* context = UIContext::instance();
-    tools::Tool* current_tool = context->getSettings()->getCurrentTool();
+    tools::Tool* current_tool = context->settings()->getCurrentTool();
     tools::Tool* old_quicktool = m_quicktool;
 
     m_quicktool = m_customizationDelegate->getQuickTool(current_tool);
@@ -1002,11 +1012,11 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
     View* view = View::getView(this);
     Rect vp = view->getViewportBounds();
 
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->getWidth()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->getHeight()/2);
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
 
-    sz.w = (m_sprite->getWidth() << m_zoom) + m_offset_x*2;
-    sz.h = (m_sprite->getHeight() << m_zoom) + m_offset_y*2;
+    sz.w = (m_sprite->width() << m_zoom) + m_offset_x*2;
+    sz.h = (m_sprite->height() << m_zoom) + m_offset_y*2;
   }
   else {
     sz.w = 4;
@@ -1023,7 +1033,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
   int old_cursor_thick = m_cursor_thick;
   if (m_cursor_thick)
-    editor_clean_cursor();
+    clearBrushPreview();
 
   // Editor without sprite
   if (!m_sprite) {
@@ -1036,7 +1046,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       DocumentReader documentReader(m_document);
 
       // Draw the sprite in the editor
-      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->getWidth(), m_sprite->getHeight()));
+      drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
 
       // Draw the mask boundaries
       if (m_document->getBoundariesSegments()) {
@@ -1049,7 +1059,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the cursor again
       if (old_cursor_thick != 0) {
-        editor_draw_cursor(jmouse_x(0), jmouse_y(0));
+        drawBrushPreview(jmouse_x(0), jmouse_y(0));
       }
     }
     catch (const LockedDocumentException&) {
@@ -1102,7 +1112,7 @@ bool Editor::isInsideSelection()
     (UIContext::instance()->settings()->selection()->getSelectionMode() != kSubtractSelectionMode) &&
     m_document != NULL &&
     m_document->isMaskVisible() &&
-    m_document->getMask()->containsPoint(x, y);
+    m_document->mask()->containsPoint(x, y);
 }
 
 void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior)
@@ -1167,32 +1177,32 @@ void Editor::pasteImage(const Image* image, int x, int y)
     ToolBar::instance()->selectTool(defaultSelectionTool);
   }
 
-  Document* document = getDocument();
+  Document* document = this->document();
   int opacity = 255;
-  Sprite* sprite = getSprite();
-  Layer* layer = getLayer();
+  Sprite* sprite = this->sprite();
+  Layer* layer = this->layer();
 
   // Check bounds where the image will be pasted.
   {
     // First we limit the image inside the sprite's bounds.
-    x = MID(0, x, sprite->getWidth() - image->getWidth());
-    y = MID(0, y, sprite->getHeight() - image->getHeight());
+    x = MID(0, x, sprite->width() - image->width());
+    y = MID(0, y, sprite->height() - image->height());
 
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds();
-    x = MID(visibleBounds.x-image->getWidth(), x, visibleBounds.x+visibleBounds.w-1);
-    y = MID(visibleBounds.y-image->getHeight(), y, visibleBounds.y+visibleBounds.h-1);
+    x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
+    y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
 
     // If the visible part of the pasted image will not fit in the
     // visible bounds of the editor, we put the image in the center of
     // the visible bounds.
-    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->getWidth(), image->getHeight()));
-    if (((visibleBounds.w >= image->getWidth() && visiblePasted.w < image->getWidth()/2) ||
-         (visibleBounds.w <  image->getWidth() && visiblePasted.w < visibleBounds.w/2)) ||
-        ((visibleBounds.h >= image->getHeight() && visiblePasted.h < image->getWidth()/2) ||
-         (visibleBounds.h <  image->getHeight() && visiblePasted.h < visibleBounds.h/2))) {
-      x = visibleBounds.x + visibleBounds.w/2 - image->getWidth()/2;
-      y = visibleBounds.y + visibleBounds.h/2 - image->getHeight()/2;
+    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->width(), image->height()));
+    if (((visibleBounds.w >= image->width() && visiblePasted.w < image->width()/2) ||
+         (visibleBounds.w <  image->width() && visiblePasted.w < visibleBounds.w/2)) ||
+        ((visibleBounds.h >= image->height() && visiblePasted.h < image->width()/2) ||
+         (visibleBounds.h <  image->height() && visiblePasted.h < visibleBounds.h/2))) {
+      x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
+      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
   }
 
@@ -1205,6 +1215,16 @@ void Editor::pasteImage(const Image* image, int x, int y)
   pixelsMovement->maskImage(image, x, y);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
+}
+
+void Editor::startSelectionTransformation(const gfx::Point& move)
+{
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
+    movingPixels->translate(move.x, move.y);
+  }
+  else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get())) {
+    standby->startSelectionTransformation(this, move);
+  }
 }
 
 void Editor::notifyScrollChanged()

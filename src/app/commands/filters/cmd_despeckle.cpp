@@ -116,7 +116,7 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-  IDocumentSettings* docSettings = context->getSettings()->getDocumentSettings(context->getActiveDocument());
+  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
 
   MedianFilter filter;
   filter.setTiledMode(docSettings->getTiledMode());

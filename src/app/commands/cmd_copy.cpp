@@ -20,8 +20,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
 #include "raster/layer.h"
@@ -50,17 +53,23 @@ CopyCommand::CopyCommand()
 
 bool CopyCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
-                             ContextFlags::HasActiveImage |
-                             ContextFlags::HasVisibleMask);
+  return context->checkFlags(ContextFlags::HasActiveDocument);
 }
 
 void CopyCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
-  clipboard::copy(reader);
+
+  // Copy a range from the timeline.
+  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+  if (range.enabled()) {
+    clipboard::copy_range(reader, range);
+  }
+  else if (reader.location()->document() &&
+           reader.location()->document()->isMaskVisible() &&
+           reader.location()->image()) {
+    clipboard::copy(reader);
+  }
 }
 
 Command* CommandFactory::createCopyCommand()

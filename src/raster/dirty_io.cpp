@@ -49,7 +49,7 @@ using namespace base::serialization::little_endian;
 
 void write_dirty(std::ostream& os, Dirty* dirty)
 {
-  write8(os, dirty->getPixelFormat());
+  write8(os, dirty->pixelFormat());
   write16(os, dirty->x1());
   write16(os, dirty->y1());
   write16(os, dirty->x2());

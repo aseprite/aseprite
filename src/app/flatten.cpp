@@ -45,10 +45,10 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
     // Does this frame have cels to render?
     if (has_cels(srcLayer, frame)) {
       // Create a new image to render each frame.
-      base::UniquePtr<Image> imageWrap(Image::create(flatLayer->getSprite()->getPixelFormat(), bounds.w, bounds.h));
+      base::UniquePtr<Image> imageWrap(Image::create(flatLayer->sprite()->pixelFormat(), bounds.w, bounds.h));
 
       // Add the image into the sprite's stock too.
-      int imageIndex = flatLayer->getSprite()->getStock()->addImage(imageWrap);
+      int imageIndex = flatLayer->sprite()->stock()->addImage(imageWrap);
       Image* image = imageWrap.release();
 
       // Create the new cel for the output layer.

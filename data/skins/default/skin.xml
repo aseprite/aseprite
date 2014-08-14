@@ -89,22 +89,24 @@
     <cursor id="hand"           x="80" y="48" w="16" h="16"     focusx="5" focusy="3" />
     <cursor id="scroll"         x="80" y="64" w="16" h="16"     focusx="8" focusy="8" />
     <cursor id="move"           x="80" y="80" w="16" h="16"     focusx="0" focusy="0" />
-    <cursor id="size_tl"        x="80" y="96" w="16" h="16"     focusx="8" focusy="8" />
-    <cursor id="size_t"         x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_tr"        x="80" y="128" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_l"         x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_r"         x="80" y="160" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_bl"        x="80" y="176" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_b"         x="80" y="192" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="size_br"        x="80" y="208" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="rotate_tl"      x="240" y="160" w="16" h="16"    focusx="8" focusy="8" />
-    <cursor id="rotate_tr"      x="256" y="160" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_l"       x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_r"       x="256" y="176" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_t"       x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_b"       x="256" y="192" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_bl"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
-    <cursor id="rotate_br"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="size_ns"        x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_we"        x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_n"         x="80" y="112" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_ne"        x="80" y="128" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_e"         x="80" y="160" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_se"        x="80" y="208" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_s"         x="80" y="192" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_sw"        x="80" y="176" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_w"         x="80" y="144" w="16" h="16"    focusx="8" focusy="8" />
+    <cursor id="size_nw"        x="80" y="96" w="16" h="16"     focusx="8" focusy="8" />
+    <cursor id="rotate_n"       x="240" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_ne"      x="256" y="160" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_e"       x="256" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_se"      x="256" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_s"       x="256" y="192" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_sw"      x="240" y="208" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_w"       x="240" y="176" w="16" h="16"   focusx="8" focusy="8" />
+    <cursor id="rotate_nw"      x="240" y="160" w="16" h="16"    focusx="8" focusy="8" />
     <cursor id="eyedropper"     x="80" y="224" w="16" h="16"    focusx="0" focusy="15" />
     <cursor id="magnifier"      x="80" y="240" w="16" h="16"    focusx="5" focusy="5" />
   </cursors>
@@ -125,6 +127,7 @@
     <tool id="hand"                     x="176" y="32" w="16" h="16" />
     <tool id="move"                     x="192" y="32" w="16" h="16" />
     <tool id="zoom"                     x="208" y="32" w="16" h="16" />
+    <tool id="slice"                    x="224" y="32" w="16" h="16" />
 
     <tool id="paint_bucket"             x="144" y="48" w="16" h="16" />
 
@@ -201,6 +204,8 @@
     <part id="combobox_arrow_right"             x="99" y="196" w="9" h="9" />
     <part id="combobox_arrow_right_selected"    x="115" y="196" w="9" h="9" />
     <part id="combobox_arrow_right_disabled"    x="131" y="196" w="9" h="9" />
+    <part id="newfolder"                        x="99" y="211" w="9" h="9" />
+    <part id="newfolder_selected"               x="115" y="211" w="9" h="9" />
     <part id="toolbutton_normal"                x="96" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_hot"                   x="112" y="0" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_last"                  x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
@@ -328,6 +333,12 @@
     <part id="drop_pixels_cancel"               x="192" y="176" w="7" h="8" />
     <part id="drop_pixels_cancel_selected"      x="192" y="184" w="7" h="8" />
     <part id="warning_box"                      x="112" y="80" w="9" h="10" />
+    <part id="freehand_algo_default"            x="144" y="208" w="8" h="8" />
+    <part id="freehand_algo_default_selected"   x="152" y="208" w="8" h="8" />
+    <part id="freehand_algo_pixel_perfect"      x="160" y="208" w="8" h="8" />
+    <part id="freehand_algo_pixel_perfect_selected" x="168" y="208" w="8" h="8" />
+    <part id="freehand_algo_dots"               x="176" y="208" w="8" h="8" />
+    <part id="freehand_algo_dots_selected"      x="184" y="208" w="8" h="8" />
   </parts>
 
   <stylesheet>

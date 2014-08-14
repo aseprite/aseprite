@@ -56,7 +56,7 @@ bool RemoveFrameCommand::onEnabled(Context* context)
   Sprite* sprite(writer.sprite());
   return
     sprite &&
-    sprite->getTotalFrames() > 1;
+    sprite->totalFrames() > 1;
 }
 
 void RemoveFrameCommand::onExecute(Context* context)

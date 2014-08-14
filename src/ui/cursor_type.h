@@ -19,26 +19,33 @@ namespace ui {
     kHandCursor,
     kScrollCursor,
     kMoveCursor,
-    kSizeTLCursor,
-    kSizeTCursor,
-    kSizeTRCursor,
-    kSizeLCursor,
-    kSizeRCursor,
-    kSizeBLCursor,
-    kSizeBCursor,
-    kSizeBRCursor,
-    kRotateTLCursor,
-    kRotateTCursor,
-    kRotateTRCursor,
-    kRotateLCursor,
-    kRotateRCursor,
-    kRotateBLCursor,
-    kRotateBCursor,
-    kRotateBRCursor,
+
+    kSizeNSCursor,
+    kSizeWECursor,
+
+    kSizeNCursor,
+    kSizeNECursor,
+    kSizeECursor,
+    kSizeSECursor,
+    kSizeSCursor,
+    kSizeSWCursor,
+    kSizeWCursor,
+    kSizeNWCursor,
+
+    kRotateNCursor,
+    kRotateNECursor,
+    kRotateECursor,
+    kRotateSECursor,
+    kRotateSCursor,
+    kRotateSWCursor,
+    kRotateWCursor,
+    kRotateNWCursor,
+
     kEyedropperCursor,
     kMagnifierCursor,
+
     kLastCursorType = kMagnifierCursor,
-    kCursorTypes
+    kCursorTypes,
   };
 
 } // namespace ui

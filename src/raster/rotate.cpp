@@ -43,8 +43,8 @@ static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
 template<typename ImageTraits, typename BlendFunc>
 static void image_scale_tpl(Image* dst, const Image* src, int x, int y, int w, int h, BlendFunc blend)
 {
-  int src_w = src->getWidth();
-  int src_h = src->getHeight();
+  int src_w = src->width();
+  int src_h = src->height();
 
   for (int v=0; v<h; ++v) {
     for (int u=0; u<w; ++u) {
@@ -79,10 +79,10 @@ private:
 
 void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
 {
-  if (w == src->getWidth() && src->getHeight() == h)
+  if (w == src->width() && src->height() == h)
     composite_image(dst, src, x, y, 255, BLEND_MODE_NORMAL);
   else {
-    switch (dst->getPixelFormat()) {
+    switch (dst->pixelFormat()) {
 
       case IMAGE_RGB:
         image_scale_tpl<RgbTraits>(dst, src, x, y, w, h, rgba_blender);
@@ -93,7 +93,7 @@ void image_scale(Image *dst, Image *src, int x, int y, int w, int h)
         break;
 
       case IMAGE_INDEXED:
-        image_scale_tpl<IndexedTraits>(dst, src, x, y, w, h, if_blender(src->getMaskColor()));
+        image_scale_tpl<IndexedTraits>(dst, src, x, y, w, h, if_blender(src->maskColor()));
         break;
 
       case IMAGE_BITMAP:
@@ -108,12 +108,12 @@ void image_rotate(Image *dst, Image *src, int x, int y, int w, int h,
 {
   fixed xs[4], ys[4];
 
-  ase_rotate_scale_flip_coordinates(itofix(src->getWidth()), itofix (src->getHeight()),
+  ase_rotate_scale_flip_coordinates(itofix(src->width()), itofix (src->height()),
                                     itofix(x), itofix(y),
                                     itofix(cx), itofix(cy),
                                     ftofix(256 * angle / PI),
-                                    fixdiv(itofix(w), itofix(src->getWidth())),
-                                    fixdiv(itofix(h), itofix(src->getHeight())),
+                                    fixdiv(itofix(w), itofix(src->width())),
+                                    fixdiv(itofix(h), itofix(src->height())),
                                     false, false, xs, ys);
 
   ase_parallelogram_map_standard (dst, src, xs, ys);
@@ -363,11 +363,11 @@ static void ase_parallelogram_map(
       corner_spr_y[i] = 0;
     else
       /* Need `- 1' since otherwise it would be outside sprite. */
-      corner_spr_y[i] = (spr->getHeight() << 16) - 1;
+      corner_spr_y[i] = (spr->height() << 16) - 1;
     if ((index == 0) || (index == 3))
       corner_spr_x[i] = 0;
     else
-      corner_spr_x[i] = (spr->getWidth() << 16) - 1;
+      corner_spr_x[i] = (spr->width() << 16) - 1;
     index = (index + right_index) & 3;
   }
 
@@ -393,7 +393,7 @@ static void ase_parallelogram_map(
 
   /* Calculate left and right clipping. */
   clip_left = 0;
-  clip_right = (bmp->getWidth() << 16) - 1;
+  clip_right = (bmp->width() << 16) - 1;
 
   /* Quit if we're totally outside. */
   if ((left_bmp_x > clip_right) &&
@@ -411,8 +411,8 @@ static void ase_parallelogram_map(
   else
     clip_bottom_i = (bottom_bmp_y + 0x8000) >> 16;
 
-  if (clip_bottom_i > bmp->getHeight())
-    clip_bottom_i = bmp->getHeight();
+  if (clip_bottom_i > bmp->height())
+    clip_bottom_i = bmp->height();
 
   /* Calculate y coordinate of first scanline. */
   if (sub_pixel_accuracy)
@@ -473,10 +473,10 @@ static void ase_parallelogram_map(
      We'd better use double to get this as exact as possible, since any
      errors will be accumulated along the scanline.
   */
-  spr_dx = (fixed)((ys[3] - ys[0]) * 65536.0 * (65536.0 * spr->getWidth()) /
+  spr_dx = (fixed)((ys[3] - ys[0]) * 65536.0 * (65536.0 * spr->width()) /
                    ((xs[1] - xs[0]) * (double)(ys[3] - ys[0]) -
                     (xs[3] - xs[0]) * (double)(ys[1] - ys[0])));
-  spr_dy = (fixed)((ys[1] - ys[0]) * 65536.0 * (65536.0 * spr->getHeight()) /
+  spr_dy = (fixed)((ys[1] - ys[0]) * 65536.0 * (65536.0 * spr->height()) /
                    ((xs[3] - xs[0]) * (double)(ys[1] - ys[0]) -
                     (xs[1] - xs[0]) * (double)(ys[3] - ys[0])));
 
@@ -583,7 +583,7 @@ static void ase_parallelogram_map(
            Drawing a sprite with that routine took about 25% longer time
            though.
         */
-        if ((unsigned)(l_spr_x_rounded >> 16) >= (unsigned)spr->getWidth()) {
+        if ((unsigned)(l_spr_x_rounded >> 16) >= (unsigned)spr->width()) {
           if (((l_spr_x_rounded < 0) && (spr_dx <= 0)) ||
               ((l_spr_x_rounded > 0) && (spr_dx >= 0))) {
             /* This can happen. */
@@ -597,14 +597,14 @@ static void ase_parallelogram_map(
               if (l_bmp_x_rounded > r_bmp_x_rounded)
                 goto skip_draw;
             } while ((unsigned)(l_spr_x_rounded >> 16) >=
-                     (unsigned)spr->getWidth());
+                     (unsigned)spr->width());
 
           }
         }
         right_edge_test = l_spr_x_rounded +
           ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
           spr_dx;
-        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->getWidth()) {
+        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->width()) {
           if (((right_edge_test < 0) && (spr_dx <= 0)) ||
               ((right_edge_test > 0) && (spr_dx >= 0))) {
             /* This can happen. */
@@ -614,14 +614,14 @@ static void ase_parallelogram_map(
               if (l_bmp_x_rounded > r_bmp_x_rounded)
                 goto skip_draw;
             } while ((unsigned)(right_edge_test >> 16) >=
-                     (unsigned)spr->getWidth());
+                     (unsigned)spr->width());
           }
           else {
             /* I don't think this can happen, but I can't prove it. */
             goto skip_draw;
           }
         }
-        if ((unsigned)(l_spr_y_rounded >> 16) >= (unsigned)spr->getHeight()) {
+        if ((unsigned)(l_spr_y_rounded >> 16) >= (unsigned)spr->height()) {
           if (((l_spr_y_rounded < 0) && (spr_dy <= 0)) ||
               ((l_spr_y_rounded > 0) && (spr_dy >= 0))) {
             /* This can happen. */
@@ -635,13 +635,13 @@ static void ase_parallelogram_map(
               if (l_bmp_x_rounded > r_bmp_x_rounded)
                 goto skip_draw;
             } while (((unsigned)l_spr_y_rounded >> 16) >=
-                     (unsigned)spr->getHeight());
+                     (unsigned)spr->height());
           }
         }
         right_edge_test = l_spr_y_rounded +
           ((r_bmp_x_rounded - l_bmp_x_rounded) >> 16) *
           spr_dy;
-        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->getHeight()) {
+        if ((unsigned)(right_edge_test >> 16) >= (unsigned)spr->height()) {
           if (((right_edge_test < 0) && (spr_dy <= 0)) ||
               ((right_edge_test > 0) && (spr_dy >= 0))) {
             /* This can happen. */
@@ -651,7 +651,7 @@ static void ase_parallelogram_map(
               if (l_bmp_x_rounded > r_bmp_x_rounded)
                 goto skip_draw;
             } while ((unsigned)(right_edge_test >> 16) >=
-                     (unsigned)spr->getHeight());
+                     (unsigned)spr->height());
           }
           else {
             /* I don't think this can happen, but I can't prove it. */
@@ -693,22 +693,22 @@ static void ase_parallelogram_map(
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite,
                                            fixed xs[4], fixed ys[4])
 {
-  switch (bmp->getPixelFormat()) {
+  switch (bmp->pixelFormat()) {
 
     case IMAGE_RGB: {
-      RgbDelegate delegate(sprite->getMaskColor());
+      RgbDelegate delegate(sprite->maskColor());
       ase_parallelogram_map<RgbTraits, RgbDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
     }
 
     case IMAGE_GRAYSCALE: {
-      GrayscaleDelegate delegate(sprite->getMaskColor());
+      GrayscaleDelegate delegate(sprite->maskColor());
       ase_parallelogram_map<GrayscaleTraits, GrayscaleDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
     }
 
     case IMAGE_INDEXED: {
-      IndexedDelegate delegate(sprite->getMaskColor());
+      IndexedDelegate delegate(sprite->maskColor());
       ase_parallelogram_map<IndexedTraits, IndexedDelegate>(bmp, sprite, xs, ys, false, delegate);
       break;
     }

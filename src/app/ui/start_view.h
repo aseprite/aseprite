@@ -22,7 +22,7 @@
 
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "ui/box.h"
 
 namespace ui {

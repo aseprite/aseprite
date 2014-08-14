@@ -45,11 +45,11 @@ void write_cel(std::ostream& os, Cel* cel)
   // ObjectId cel_id = objects->addObject(cel);
   // write_raw_uint32(cel_id);
 
-  write16(os, cel->getFrame());
-  write16(os, cel->getImage());
-  write16(os, (int16_t)cel->getX());
-  write16(os, (int16_t)cel->getY());
-  write16(os, cel->getOpacity());
+  write16(os, cel->frame());
+  write16(os, cel->imageIndex());
+  write16(os, (int16_t)cel->x());
+  write16(os, (int16_t)cel->y());
+  write16(os, cel->opacity());
 
   // objects->removeObject(cel_id);
 }

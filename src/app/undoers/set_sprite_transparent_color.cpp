@@ -33,7 +33,7 @@ using namespace undo;
 
 SetSpriteTransparentColor::SetSpriteTransparentColor(ObjectsContainer* objects, Sprite* sprite)
   : m_spriteId(objects->addObject(sprite))
-  , m_maskColor(sprite->getTransparentColor())
+  , m_maskColor(sprite->transparentColor())
 {
 }
 

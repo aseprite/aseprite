@@ -95,7 +95,7 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::onExecute(Context* context)
 {
-  m_settings = UIContext::instance()->getSettings();
+  m_settings = UIContext::instance()->settings();
   m_docSettings = m_settings->getDocumentSettings(NULL);
 
   Button* set_grid;
@@ -217,9 +217,9 @@ void ConfigureTools::onSetGridClick()
     const Document* document = reader.document();
 
     if (document && document->isMaskVisible()) {
-      const Mask* mask(document->getMask());
+      const Mask* mask(document->mask());
 
-      m_docSettings->setGridBounds(mask->getBounds());
+      m_docSettings->setGridBounds(mask->bounds());
     }
     else {
       Command* grid_settings_cmd =

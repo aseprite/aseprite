@@ -232,10 +232,10 @@ bool PngFormat::onLoad(FileOp* fop)
 
     // Set the transparent color to the first transparent entry found
     if (mask_entry >= 0)
-      fop->document->getSprite()->setTransparentColor(mask_entry);
+      fop->document->sprite()->setTransparentColor(mask_entry);
   }
 
-  mask_entry = fop->document->getSprite()->getTransparentColor();
+  mask_entry = fop->document->sprite()->transparentColor();
 
   /* Allocate the memory to hold the image using the fields of info_ptr. */
 
@@ -383,17 +383,17 @@ bool PngFormat::onSave(FileOp* fop)
    * PNG_INTERLACE_ADAM7, and the compression_type and filter_type MUST
    * currently be PNG_COMPRESSION_TYPE_BASE and PNG_FILTER_TYPE_BASE. REQUIRED
    */
-  width = image->getWidth();
-  height = image->getHeight();
+  width = image->width();
+  height = image->height();
 
-  switch (image->getPixelFormat()) {
+  switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      color_type = fop->document->getSprite()->needAlpha() ?
+      color_type = fop->document->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_RGB_ALPHA:
         PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = fop->document->getSprite()->needAlpha() ?
+      color_type = fop->document->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_GRAY_ALPHA:
         PNG_COLOR_TYPE_GRAY;
       break;
@@ -405,7 +405,7 @@ bool PngFormat::onSave(FileOp* fop)
   png_set_IHDR(png_ptr, info_ptr, width, height, 8, color_type,
                PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-  if (image->getPixelFormat() == IMAGE_INDEXED) {
+  if (image->pixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
 
 #if PNG_MAX_PALETTE_LENGTH != 256
@@ -426,8 +426,8 @@ bool PngFormat::onSave(FileOp* fop)
     // If the sprite does not have a background layer, we include the
     // alpha information of palette entries to indicate which is the
     // transparent color.
-    if (fop->document->getSprite()->getBackgroundLayer() == NULL) {
-      int mask_entry = fop->document->getSprite()->getTransparentColor();
+    if (fop->document->sprite()->backgroundLayer() == NULL) {
+      int mask_entry = fop->document->sprite()->transparentColor();
       int num_trans = mask_entry+1;
       png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
 
@@ -535,7 +535,7 @@ bool PngFormat::onSave(FileOp* fop)
      libpng mallocs info_ptr->palette, libpng will free it).  If you
      allocated it with malloc() instead of png_malloc(), use free() instead
      of png_free(). */
-  if (image->getPixelFormat() == IMAGE_INDEXED) {
+  if (image->pixelFormat() == IMAGE_INDEXED) {
     png_free(png_ptr, palette);
     palette = NULL;
   }

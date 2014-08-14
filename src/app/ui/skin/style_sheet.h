@@ -23,7 +23,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "css/rule.h"
 #include "css/state.h"
-#include "ui/color.h"
+#include "gfx/color.h"
 
 #include <map>
 #include <string>
@@ -63,7 +63,7 @@ namespace app {
       Style* getStyle(const std::string& id);
 
       static SkinPartPtr convertPart(const css::Value& value);
-      static ui::Color convertColor(const css::Value& value);
+      static gfx::Color convertColor(const css::Value& value);
 
     private:
       typedef std::map<std::string, Style*> StyleMap;

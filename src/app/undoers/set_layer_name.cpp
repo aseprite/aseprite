@@ -33,7 +33,7 @@ using namespace undo;
 
 SetLayerName::SetLayerName(ObjectsContainer* objects, Layer* layer)
   : m_layerId(objects->addObject(layer))
-  , m_name(layer->getName())
+  , m_name(layer->name())
 {
 }
 

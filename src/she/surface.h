@@ -8,6 +8,8 @@
 #define SHE_SURFACE_H_INCLUDED
 #pragma once
 
+#include "gfx/fwd.h"
+
 namespace she {
 
   class LockedSurface;
@@ -18,7 +20,14 @@ namespace she {
     virtual void dispose() = 0;
     virtual int width() const = 0;
     virtual int height() const = 0;
+    virtual bool isDirectToScreen() const = 0;
+
+    virtual gfx::Rect getClipBounds() = 0;
+    virtual void setClipBounds(const gfx::Rect& rc) = 0;
+    virtual bool intersectClipRect(const gfx::Rect& rc) = 0;
+
     virtual LockedSurface* lock() = 0;
+    virtual void applyScale(int scaleFactor) = 0;
     virtual void* nativeHandle() = 0;
   };
 

@@ -85,7 +85,7 @@ void SaveMaskCommand::onExecute(Context* context)
     /* "no": we must back to select other file-name */
   }
 
-  if (save_msk_file(document->getMask(), filename.c_str()) != 0)
+  if (save_msk_file(document->mask(), filename.c_str()) != 0)
     ui::Alert::show("Error<<Error saving .msk file<<%s||&Close", filename.c_str());
 }
 

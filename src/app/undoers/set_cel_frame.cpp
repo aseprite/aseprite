@@ -35,7 +35,7 @@ using namespace undo;
 SetCelFrame::SetCelFrame(ObjectsContainer* objects, LayerImage* layer, Cel* cel)
   : m_layerId(objects->addObject(layer))
   , m_celId(objects->addObject(cel))
-  , m_frame(cel->getFrame())
+  , m_frame(cel->frame())
 {
 }
 

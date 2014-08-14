@@ -19,6 +19,7 @@
 #include "allegro.h"
 #include "allegro/internal/aintern.h"
 #include "allegro/platform/aintosx.h"
+#include "qzmouse.h"
 
 #ifndef ALLEGRO_MACOSX
    #error something is wrong with the makefile
@@ -223,7 +224,10 @@ void osx_event_handler()
                      mx = point.x;
                      my = frame.size.height - point.y;
                      buttons = 0;
-                     _mouse_on = TRUE;
+                     if (!_mouse_on) {
+                       _mouse_on = TRUE;
+                       osx_hide_native_mouse();
+                     }
                   }
                }
                if (osx_window)
@@ -292,8 +296,11 @@ void osx_event_handler()
                   mx = point.x;
                   my = frame.size.height - point.y;
                   buttons = 0;
-                  _mouse_on = TRUE;
                   gotmouseevent = YES;
+                  if (!_mouse_on) {
+                    _mouse_on = TRUE;
+                    osx_hide_native_mouse();
+                  }
                }
             }
             [NSApp sendEvent: event];
@@ -302,8 +309,11 @@ void osx_event_handler()
          case NSMouseExited:
             if ([event trackingNumber] == osx_mouse_tracking_rect) {
                if (_mouse_installed) {
-                  _mouse_on = FALSE;
                   gotmouseevent = YES;
+                  if (_mouse_on) {
+                    _mouse_on = FALSE;
+                    osx_show_native_mouse();
+                  }
                }
             }
             [NSApp sendEvent: event];

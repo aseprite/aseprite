@@ -71,25 +71,25 @@ enum WHEEL_ACTION { WHEEL_NONE,
                     WHEEL_FRAME };
 
 static CursorType rotated_size_cursors[] = {
-  kSizeRCursor,
-  kSizeTRCursor,
-  kSizeTCursor,
-  kSizeTLCursor,
-  kSizeLCursor,
-  kSizeBLCursor,
-  kSizeBCursor,
-  kSizeBRCursor
+  kSizeECursor,
+  kSizeNECursor,
+  kSizeNCursor,
+  kSizeNWCursor,
+  kSizeWCursor,
+  kSizeSWCursor,
+  kSizeSCursor,
+  kSizeSECursor
 };
 
 static CursorType rotated_rotate_cursors[] = {
-  kRotateRCursor,
-  kRotateTRCursor,
-  kRotateTCursor,
-  kRotateTLCursor,
-  kRotateLCursor,
-  kRotateBLCursor,
-  kRotateBCursor,
-  kRotateBRCursor
+  kRotateECursor,
+  kRotateNECursor,
+  kRotateNCursor,
+  kRotateNWCursor,
+  kRotateWCursor,
+  kRotateSWCursor,
+  kRotateSCursor,
+  kRotateSECursor
 };
 
 #pragma warning(disable:4355) // warning C4355: 'this' : used in base member initializer list
@@ -285,33 +285,31 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
   WHEEL_ACTION wheelAction = WHEEL_NONE;
   bool scrollBigSteps = false;
 
-  // Without modifiers
-  if (msg->keyModifiers() == kKeyNoneModifier) {
-    if (msg->wheelDelta().x != 0)
+  // Alt+mouse wheel changes the fg/bg colors
+  if (msg->altPressed()) {
+    if (msg->shiftPressed())
+      wheelAction = WHEEL_BG;
+    else
+      wheelAction = WHEEL_FG;
+  }
+  // Normal behavior: mouse wheel zooms
+  else if (UIContext::instance()->settings()->getZoomWithScrollWheel()) {
+    if (msg->ctrlPressed())
+      wheelAction = WHEEL_FRAME;
+    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_ZOOM;
   }
+  // For laptops, it's convenient to that Ctrl+wheel zoom (because
+  // it's the "pinch" gesture).
   else {
-#if 1                           // TODO make it configurable
-    if (msg->altPressed()) {
-      if (msg->shiftPressed())
-        wheelAction = WHEEL_BG;
-      else
-        wheelAction = WHEEL_FG;
-    }
-    else if (msg->ctrlPressed()) {
-      wheelAction = WHEEL_FRAME;
-    }
-#else
     if (msg->ctrlPressed())
+      wheelAction = WHEEL_ZOOM;
+    else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
       wheelAction = WHEEL_HSCROLL;
     else
       wheelAction = WHEEL_VSCROLL;
-
-    if (msg->shiftPressed())
-      scrollBigSteps = true;
-#endif
   }
 
   switch (wheelAction) {
@@ -354,8 +352,8 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 
     case WHEEL_ZOOM: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      int zoom = MID(MIN_ZOOM, editor->getZoom()-dz, MAX_ZOOM);
-      if (editor->getZoom() != zoom)
+      int zoom = MID(MIN_ZOOM, editor->zoom()-dz, MAX_ZOOM);
+      if (editor->zoom() != zoom)
         editor->setZoomAndCenterInMouse(zoom,
           mouseMsg->position().x, mouseMsg->position().y,
           Editor::kDontCenterOnZoom);
@@ -445,6 +443,11 @@ bool StandbyState::onSetCursor(Editor* editor)
       jmouse_set_cursor(kMoveCursor);
       return true;
     }
+    else if (current_ink->isSlice()) {
+      jmouse_set_cursor(kNoCursor);
+      editor->showDrawingCursor();
+      return true;
+    }
   }
 
   // Draw
@@ -463,7 +466,7 @@ bool StandbyState::onSetCursor(Editor* editor)
 
 bool StandbyState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  return editor->processKeysToSetZoom(msg);
+  return false;
 }
 
 bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)
@@ -474,7 +477,7 @@ bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)
 bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Tool* current_tool = editor->getCurrentEditorTool();
-  const Sprite* sprite = editor->getSprite();
+  const Sprite* sprite = editor->sprite();
   int x, y;
 
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
@@ -498,16 +501,16 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   else {
     Mask* mask =
-      (editor->getDocument()->isMaskVisible() ? 
-       editor->getDocument()->getMask(): NULL);
+      (editor->document()->isMaskVisible() ? 
+       editor->document()->mask(): NULL);
 
     StatusBar::instance()->setStatusText(0,
       "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
       x, y,
-      (mask ? mask->getBounds().w: sprite->getWidth()),
-      (mask ? mask->getBounds().h: sprite->getHeight()),
-      editor->getFrame()+1,
-      sprite->getFrameDuration(editor->getFrame()));
+      (mask ? mask->bounds().w: sprite->width()),
+      (mask ? mask->bounds().h: sprite->height()),
+      editor->frame()+1,
+      sprite->getFrameDuration(editor->frame()));
   }
 
   return true;
@@ -515,20 +518,28 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
 gfx::Transformation StandbyState::getTransformation(Editor* editor)
 {
-  return editor->getDocument()->getTransformation();
+  return editor->document()->getTransformation();
+}
+
+void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point& move)
+{
+  transformSelection(editor, NULL, NoHandle);
+
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+    movingPixels->translate(move.x, move.y);
 }
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   try {
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    Document* document = editor->getDocument();
+    Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
-    int x = document->getMask()->getBounds().x;
-    int y = document->getMask()->getBounds().y;
+    int x = document->mask()->bounds().x;
+    int y = document->mask()->bounds().y;
     int opacity = 255;
-    Sprite* sprite = editor->getSprite();
-    Layer* layer = editor->getLayer();
+    Sprite* sprite = editor->sprite();
+    Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
         document, sprite, layer,
@@ -574,7 +585,7 @@ TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
 
 bool StandbyState::Decorator::onSetCursor(Editor* editor)
 {
-  if (!editor->getDocument()->isMaskVisible())
+  if (!editor->document()->isMaskVisible())
     return false;
 
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
@@ -586,22 +597,22 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   CursorType newCursor = kArrowCursor;
 
   switch (handle) {
-    case ScaleNWHandle:         newCursor = kSizeTLCursor; break;
-    case ScaleNHandle:          newCursor = kSizeTCursor; break;
-    case ScaleNEHandle:         newCursor = kSizeTRCursor; break;
-    case ScaleWHandle:          newCursor = kSizeLCursor; break;
-    case ScaleEHandle:          newCursor = kSizeRCursor; break;
-    case ScaleSWHandle:         newCursor = kSizeBLCursor; break;
-    case ScaleSHandle:          newCursor = kSizeBCursor; break;
-    case ScaleSEHandle:         newCursor = kSizeBRCursor; break;
-    case RotateNWHandle:        newCursor = kRotateTLCursor; break;
-    case RotateNHandle:         newCursor = kRotateTCursor; break;
-    case RotateNEHandle:        newCursor = kRotateTRCursor; break;
-    case RotateWHandle:         newCursor = kRotateLCursor; break;
-    case RotateEHandle:         newCursor = kRotateRCursor; break;
-    case RotateSWHandle:        newCursor = kRotateBLCursor; break;
-    case RotateSHandle:         newCursor = kRotateBCursor; break;
-    case RotateSEHandle:        newCursor = kRotateBRCursor; break;
+    case ScaleNWHandle:         newCursor = kSizeNWCursor; break;
+    case ScaleNHandle:          newCursor = kSizeNCursor; break;
+    case ScaleNEHandle:         newCursor = kSizeNECursor; break;
+    case ScaleWHandle:          newCursor = kSizeWCursor; break;
+    case ScaleEHandle:          newCursor = kSizeECursor; break;
+    case ScaleSWHandle:         newCursor = kSizeSWCursor; break;
+    case ScaleSHandle:          newCursor = kSizeSCursor; break;
+    case ScaleSEHandle:         newCursor = kSizeSECursor; break;
+    case RotateNWHandle:        newCursor = kRotateNWCursor; break;
+    case RotateNHandle:         newCursor = kRotateNCursor; break;
+    case RotateNEHandle:        newCursor = kRotateNECursor; break;
+    case RotateWHandle:         newCursor = kRotateWCursor; break;
+    case RotateEHandle:         newCursor = kRotateECursor; break;
+    case RotateSWHandle:        newCursor = kRotateSWCursor; break;
+    case RotateSHandle:         newCursor = kRotateSCursor; break;
+    case RotateSEHandle:        newCursor = kRotateSECursor; break;
     case PivotHandle:           newCursor = kHandCursor; break;
     default:
       return false;
@@ -614,7 +625,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   angle >>= 16;
   angle /= 32;
 
-  if (newCursor >= kSizeTLCursor && newCursor <= kSizeBRCursor) {
+  if (newCursor >= kSizeNCursor && newCursor <= kSizeNWCursor) {
     size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)
@@ -623,7 +634,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
 
     newCursor = rotated_size_cursors[(c+angle) % num];
   }
-  else if (newCursor >= kRotateTLCursor && newCursor <= kRotateBRCursor) {
+  else if (newCursor >= kRotateNCursor && newCursor <= kRotateNWCursor) {
     size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
     size_t c;
     for (c=num-1; c>0; --c)
@@ -649,14 +660,15 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   Editor* editor = render->getEditor();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
-  if (editor->getDocument()->isMaskVisible() &&
-      !editor->getDocument()->getMask()->isFrozen()) {
+  if (editor->editorFlags() & Editor::kShowMask &&
+      editor->document()->isMaskVisible() &&
+      !editor->document()->mask()->isFrozen()) {
     // And draw only when the user has a selection tool as active tool.
     tools::Tool* currentTool = editor->getCurrentEditorTool();
 
     if (currentTool->getInk(0)->isSelection())
       getTransformHandles(editor)->drawHandles(editor,
-                                               m_standbyState->getTransformation(editor));
+        m_standbyState->getTransformation(editor));
   }
 }
 

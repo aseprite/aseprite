@@ -69,8 +69,8 @@ void ChangeBrushCommand::onLoadParams(Params* params)
 
 void ChangeBrushCommand::onExecute(Context* context)
 {
-  tools::Tool* current_tool = context->getSettings()->getCurrentTool();
-  IToolSettings* tool_settings = context->getSettings()->getToolSettings(current_tool);
+  tools::Tool* current_tool = context->settings()->getCurrentTool();
+  IToolSettings* tool_settings = context->settings()->getToolSettings(current_tool);
   IBrushSettings* brush = tool_settings->getBrush();
 
   switch (m_change) {

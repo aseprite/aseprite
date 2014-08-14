@@ -25,7 +25,7 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/launcher.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
 
 namespace app {
 
@@ -56,7 +56,7 @@ bool OpenInFolderCommand::onEnabled(Context* context)
 
 void OpenInFolderCommand::onExecute(Context* context)
 {
-  launcher::open_folder(context->getActiveDocument()->getFilename());
+  launcher::open_folder(context->activeDocument()->filename());
 }
 
 Command* CommandFactory::createOpenInFolderCommand()

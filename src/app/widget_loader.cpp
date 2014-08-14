@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,8 +42,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#define TRANSLATE_ATTR(a) a
-
 namespace app {
 
 using namespace ui;
@@ -68,9 +66,8 @@ void WidgetLoader::addWidgetType(const char* tagName, IWidgetTypeCreator* creato
   m_typeCreators[tagName] = creator;
 }
 
-Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
+Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId, ui::Widget* widget)
 {
-  Widget* widget;
   std::string buf;
 
   ResourceFinder rf;
@@ -83,17 +80,18 @@ Widget* WidgetLoader::loadWidget(const char* fileName, const char* widgetId)
   if (!rf.findFirst())
     throw WidgetNotFound(widgetId);
 
-  widget = loadWidgetFromXmlFile(rf.filename(), widgetId);
+  widget = loadWidgetFromXmlFile(rf.filename(), widgetId, widget);
   if (!widget)
     throw WidgetNotFound(widgetId);
 
   return widget;
 }
 
-Widget* WidgetLoader::loadWidgetFromXmlFile(const std::string& xmlFilename,
-                                            const std::string& widgetId)
+Widget* WidgetLoader::loadWidgetFromXmlFile(
+  const std::string& xmlFilename,
+  const std::string& widgetId,
+  ui::Widget* widget)
 {
-  Widget* widget = NULL;
   m_tooltipManager = NULL;
 
   XmlDocumentRef doc(open_xml(xmlFilename));
@@ -108,7 +106,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(const std::string& xmlFilename,
     const char* nodename = xmlElement->Attribute("id");
 
     if (nodename && nodename == widgetId) {
-      widget = convertXmlElementToWidget(xmlElement, NULL);
+      widget = convertXmlElementToWidget(xmlElement, NULL, widget);
       break;
     }
 
@@ -118,11 +116,9 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(const std::string& xmlFilename,
   return widget;
 }
 
-Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root)
+Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root, Widget* widget)
 {
   const std::string elem_name = elem->Value();
-  Widget* widget = NULL;
-  Widget* child;
 
   // TODO error handling: add a message if the widget is bad specified
 
@@ -130,117 +126,111 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   TypeCreatorsMap::iterator it = m_typeCreators.find(elem_name);
 
   if (it != m_typeCreators.end()) {
-    widget = it->second->createWidgetFromXml(elem);
+    if (!widget)
+      widget = it->second->createWidgetFromXml(elem);
   }
-  // Boxes
+  else if (elem_name == "panel") {
+    if (!widget)
+      widget = new Panel();
+  }
   else if (elem_name == "box") {
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
-    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
+    int align = (horizontal ? JI_HORIZONTAL: vertical ? JI_VERTICAL: 0);
 
-    widget = new Box((horizontal ? JI_HORIZONTAL:
-                      vertical ? JI_VERTICAL: 0) |
-                     (homogeneous ? JI_HOMOGENEOUS: 0));
+    if (!widget)
+      widget = new Box(align);
+    else
+      widget->setAlign(widget->getAlign() | align);
   }
   else if (elem_name == "vbox") {
-    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
-
-    widget = new VBox();
-    if (homogeneous)
-      widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+    if (!widget)
+      widget = new VBox();
   }
   else if (elem_name == "hbox") {
-    bool homogeneous = bool_attr_is_true(elem, "homogeneous");
-
-    widget = new HBox();
-    if (homogeneous)
-      widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+    if (!widget)
+      widget = new HBox();
   }
   else if (elem_name == "boxfiller") {
-    widget = new BoxFiller();
+    if (!widget)
+      widget = new BoxFiller();
   }
-  // Button
   else if (elem_name == "button") {
-    const char *text = elem->Attribute("text");
+    if (!widget)
+      widget = new Button("");
 
-    widget = new Button(text ? TRANSLATE_ATTR(text): "");
-    if (widget) {
-      bool left   = bool_attr_is_true(elem, "left");
-      bool right  = bool_attr_is_true(elem, "right");
-      bool top    = bool_attr_is_true(elem, "top");
-      bool bottom = bool_attr_is_true(elem, "bottom");
-      bool closewindow = bool_attr_is_true(elem, "closewindow");
-      const char *_bevel = elem->Attribute("bevel");
+    bool left   = bool_attr_is_true(elem, "left");
+    bool right  = bool_attr_is_true(elem, "right");
+    bool top    = bool_attr_is_true(elem, "top");
+    bool bottom = bool_attr_is_true(elem, "bottom");
+    bool closewindow = bool_attr_is_true(elem, "closewindow");
+    const char *_bevel = elem->Attribute("bevel");
 
-      widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
-                       (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
+      (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
 
-      if (_bevel != NULL) {
-        char* bevel = base_strdup(_bevel);
-        int c, b[4];
-        char *tok;
+    if (_bevel != NULL) {
+      char* bevel = base_strdup(_bevel);
+      int c, b[4];
+      char *tok;
 
-        for (c=0; c<4; ++c)
-          b[c] = 0;
+      for (c=0; c<4; ++c)
+        b[c] = 0;
 
-        for (tok=ustrtok(bevel, " "), c=0;
-             tok;
-             tok=ustrtok(NULL, " "), ++c) {
-          if (c < 4)
-            b[c] = ustrtol(tok, NULL, 10);
-        }
-        base_free(bevel);
-
-        setup_bevels(widget, b[0], b[1], b[2], b[3]);
+      for (tok=ustrtok(bevel, " "), c=0;
+           tok;
+           tok=ustrtok(NULL, " "), ++c) {
+        if (c < 4)
+          b[c] = ustrtol(tok, NULL, 10);
       }
+      base_free(bevel);
 
-      if (closewindow) {
-        static_cast<Button*>(widget)
-          ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
-      }
+      setup_bevels(widget, b[0], b[1], b[2], b[3]);
+    }
+
+    if (closewindow) {
+      static_cast<Button*>(widget)
+        ->Click.connect(Bind<void>(&Widget::closeWindow, widget));
     }
   }
-  // Check
   else if (elem_name == "check") {
-    const char *text = elem->Attribute("text");
     const char *looklike = elem->Attribute("looklike");
 
-    text = (text ? TRANSLATE_ATTR(text): "");
-
     if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new CheckBox(text, kButtonWidget);
+      if (!widget)
+        widget = new CheckBox("", kButtonWidget);
     }
     else {
-      widget = new CheckBox(text);
+      if (!widget)
+        widget = new CheckBox("");
     }
 
-    if (widget) {
-      bool center = bool_attr_is_true(elem, "center");
-      bool right  = bool_attr_is_true(elem, "right");
-      bool top    = bool_attr_is_true(elem, "top");
-      bool bottom = bool_attr_is_true(elem, "bottom");
+    bool center = bool_attr_is_true(elem, "center");
+    bool right  = bool_attr_is_true(elem, "right");
+    bool top    = bool_attr_is_true(elem, "top");
+    bool bottom = bool_attr_is_true(elem, "bottom");
 
-      widget->setAlign((center ? JI_CENTER:
-                        (right ? JI_RIGHT: JI_LEFT)) |
-                       (top    ? JI_TOP:
-                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
-    }
+    widget->setAlign((center ? JI_CENTER:
+        (right ? JI_RIGHT: JI_LEFT)) |
+      (top    ? JI_TOP:
+        (bottom ? JI_BOTTOM: JI_MIDDLE)));
   }
-  /* combobox */
   else if (elem_name == "combobox") {
-    widget = new ComboBox();
+    if (!widget)
+      widget = new ComboBox();
+
+    bool editable = bool_attr_is_true(elem, "editable");
+    if (editable)
+      ((ComboBox*)widget)->setEditable(true);
   }
-  /* entry */
   else if (elem_name == "entry") {
     const char* maxsize = elem->Attribute("maxsize");
-    const char* text = elem->Attribute("text");
     const char* suffix = elem->Attribute("suffix");
 
     if (maxsize != NULL) {
       bool readonly = bool_attr_is_true(elem, "readonly");
 
-      widget = new Entry(strtol(maxsize, NULL, 10),
-                         text ? TRANSLATE_ATTR(text): "");
+      widget = new Entry(strtol(maxsize, NULL, 10), "");
 
       if (readonly)
         ((Entry*)widget)->setReadOnly(true);
@@ -251,7 +241,6 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     else
       throw std::runtime_error("<entry> element found without 'maxsize' attribute");
   }
-  /* grid */
   else if (elem_name == "grid") {
     const char *columns = elem->Attribute("columns");
     bool same_width_columns = bool_attr_is_true(elem, "same_width_columns");
@@ -261,51 +250,60 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                         same_width_columns);
     }
   }
-  /* label */
   else if (elem_name == "label") {
-    const char *text = elem->Attribute("text");
+    if (!widget)
+      widget = new Label("");
 
-    widget = new Label(text ? TRANSLATE_ATTR(text): "");
-    if (widget) {
-      bool center = bool_attr_is_true(elem, "center");
-      bool right  = bool_attr_is_true(elem, "right");
-      bool top    = bool_attr_is_true(elem, "top");
-      bool bottom = bool_attr_is_true(elem, "bottom");
+    bool center = bool_attr_is_true(elem, "center");
+    bool right  = bool_attr_is_true(elem, "right");
+    bool top    = bool_attr_is_true(elem, "top");
+    bool bottom = bool_attr_is_true(elem, "bottom");
 
-      widget->setAlign((center ? JI_CENTER:
-                        (right ? JI_RIGHT: JI_LEFT)) |
-                       (top    ? JI_TOP:
-                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
-    }
+    widget->setAlign((center ? JI_CENTER:
+        (right ? JI_RIGHT: JI_LEFT)) |
+      (top    ? JI_TOP:
+        (bottom ? JI_BOTTOM: JI_MIDDLE)));
   }
-  /* link */
   else if (elem_name == "link") {
-    const char* text = elem->Attribute("text");
     const char* url = elem->Attribute("url");
 
-    widget = new LinkLabel(url ? url: "", text ? TRANSLATE_ATTR(text): "");
-    if (widget) {
-      bool center = bool_attr_is_true(elem, "center");
-      bool right  = bool_attr_is_true(elem, "right");
-      bool top    = bool_attr_is_true(elem, "top");
-      bool bottom = bool_attr_is_true(elem, "bottom");
-
-      widget->setAlign(
-        (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
-        (top    ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    if (!widget)
+      widget = new LinkLabel(url ? url: "", "");
+    else {
+      LinkLabel* link = dynamic_cast<LinkLabel*>(widget);
+      ASSERT(link != NULL);
+      if (link)
+        link->setUrl(url);
     }
-  }
-  /* listbox */
-  else if (elem_name == "listbox") {
-    widget = new ListBox();
-  }
-  /* listitem */
-  else if (elem_name == "listitem") {
-    const char *text = elem->Attribute("text");
 
-    widget = new ListItem(text ? TRANSLATE_ATTR(text): "");
+    bool center = bool_attr_is_true(elem, "center");
+    bool right  = bool_attr_is_true(elem, "right");
+    bool top    = bool_attr_is_true(elem, "top");
+    bool bottom = bool_attr_is_true(elem, "bottom");
+
+    widget->setAlign(
+      (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
+      (top    ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
   }
-  /* splitter */
+  else if (elem_name == "listbox") {
+    if (!widget)
+      widget = new ListBox();
+  }
+  else if (elem_name == "listitem") {
+    ListItem* listitem;
+    if (!widget) {
+      listitem = new ListItem("");
+      widget = listitem;
+    }
+    else {
+      listitem = dynamic_cast<ListItem*>(widget);
+      ASSERT(listitem != NULL);
+    }
+
+    const char* value = elem->Attribute("value");
+    if (value)
+      listitem->setValue(value);
+  }
   else if (elem_name == "splitter") {
     bool horizontal = bool_attr_is_true(elem, "horizontal");
     bool vertical = bool_attr_is_true(elem, "vertical");
@@ -324,53 +322,58 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     }
     widget = splitter;
   }
-  /* radio */
   else if (elem_name == "radio") {
-    const char* text = elem->Attribute("text");
     const char* group = elem->Attribute("group");
-    const char *looklike = elem->Attribute("looklike");
+    const char* looklike = elem->Attribute("looklike");
 
-    text = (text ? TRANSLATE_ATTR(text): "");
     int radio_group = (group ? strtol(group, NULL, 10): 1);
 
-    if (looklike != NULL && strcmp(looklike, "button") == 0) {
-      widget = new RadioButton(text, radio_group, kButtonWidget);
+    if (!widget) {
+      if (looklike != NULL && strcmp(looklike, "button") == 0) {
+        widget = new RadioButton("", radio_group, kButtonWidget);
+      }
+      else {
+        widget = new RadioButton("", radio_group);
+      }
     }
     else {
-      widget = new RadioButton(text, radio_group);
+      RadioButton* radio = dynamic_cast<RadioButton*>(widget);
+      ASSERT(radio != NULL);
+      if (radio)
+        radio->setRadioGroup(radio_group);
     }
 
-    if (widget) {
-      bool center = bool_attr_is_true(elem, "center");
-      bool right  = bool_attr_is_true(elem, "right");
-      bool top    = bool_attr_is_true(elem, "top");
-      bool bottom = bool_attr_is_true(elem, "bottom");
+    bool center = bool_attr_is_true(elem, "center");
+    bool right  = bool_attr_is_true(elem, "right");
+    bool top    = bool_attr_is_true(elem, "top");
+    bool bottom = bool_attr_is_true(elem, "bottom");
 
-      widget->setAlign((center ? JI_CENTER:
-                        (right ? JI_RIGHT: JI_LEFT)) |
-                       (top    ? JI_TOP:
-                        (bottom ? JI_BOTTOM: JI_MIDDLE)));
-    }
+    widget->setAlign(
+      (center ? JI_CENTER:
+        (right ? JI_RIGHT: JI_LEFT)) |
+      (top    ? JI_TOP:
+        (bottom ? JI_BOTTOM: JI_MIDDLE)));
   }
-  /* separator */
   else if (elem_name == "separator") {
-    const char *text = elem->Attribute("text");
     bool center      = bool_attr_is_true(elem, "center");
     bool right       = bool_attr_is_true(elem, "right");
     bool middle      = bool_attr_is_true(elem, "middle");
     bool bottom      = bool_attr_is_true(elem, "bottom");
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
+    int align =
+      (horizontal ? JI_HORIZONTAL: 0) |
+      (vertical ? JI_VERTICAL: 0) |
+      (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
+      (middle ? JI_MIDDLE: (bottom ? JI_BOTTOM: JI_TOP));
 
-    widget = new Separator(text ? TRANSLATE_ATTR(text): "",
-                           (horizontal ? JI_HORIZONTAL: 0) |
-                           (vertical ? JI_VERTICAL: 0) |
-                           (center ? JI_CENTER:
-                            (right ? JI_RIGHT: JI_LEFT)) |
-                           (middle ? JI_MIDDLE:
-                            (bottom ? JI_BOTTOM: JI_TOP)));
+    if (!widget) {
+      const char* text = elem->Attribute("text");
+      widget = new Separator(text ? text: "", align);
+    }
+    else
+      widget->setAlign(widget->getAlign() | align);
   }
-  /* slider */
   else if (elem_name == "slider") {
     const char *min = elem->Attribute("min");
     const char *max = elem->Attribute("max");
@@ -379,143 +382,162 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
     widget = new Slider(min_value, max_value, min_value);
   }
-  /* textbox */
   else if (elem_name == "textbox") {
     bool wordwrap = bool_attr_is_true(elem, "wordwrap");
 
-    widget = new TextBox(elem->GetText(), wordwrap ? JI_WORDWRAP: 0);
-  }
-  /* view */
-  else if (elem_name == "view") {
-    widget = new View();
-  }
-  /* window */
-  else if (elem_name == "window") {
-    const char *text = elem->Attribute("text");
-    bool desktop = bool_attr_is_true(elem, "desktop");
-
-    if (desktop)
-      widget = new Window(Window::DesktopWindow);
-    else if (text)
-      widget = new Window(Window::WithTitleBar, TRANSLATE_ATTR(text));
+    if (!widget)
+      widget = new TextBox(elem->GetText(), 0);
     else
-      widget = new Window(Window::WithoutTitleBar);
+      widget->setText(elem->GetText());
+
+    if (wordwrap)
+      widget->setAlign(widget->getAlign() | JI_WORDWRAP);
   }
-  /* colorpicker */
+  else if (elem_name == "view") {
+    if (!widget)
+      widget = new View();
+  }
+  else if (elem_name == "window") {
+    if (!widget) {
+      const char* text = elem->Attribute("text");
+      bool desktop = bool_attr_is_true(elem, "desktop");
+
+      if (desktop)
+        widget = new Window(Window::DesktopWindow);
+      else if (text)
+        widget = new Window(Window::WithTitleBar, text);
+      else
+        widget = new Window(Window::WithoutTitleBar);
+    }
+  }
   else if (elem_name == "colorpicker") {
-    widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
+    if (!widget)
+      widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
   }
 
   // Was the widget created?
-  if (widget) {
-    const char* id        = elem->Attribute("id");
-    const char* tooltip   = elem->Attribute("tooltip");
-    bool selected         = bool_attr_is_true(elem, "selected");
-    bool disabled         = bool_attr_is_true(elem, "disabled");
-    bool expansive        = bool_attr_is_true(elem, "expansive");
-    bool magnet           = bool_attr_is_true(elem, "magnet");
-    bool noborders        = bool_attr_is_true(elem, "noborders");
-    const char* width     = elem->Attribute("width");
-    const char* height    = elem->Attribute("height");
-    const char* minwidth  = elem->Attribute("minwidth");
-    const char* minheight = elem->Attribute("minheight");
-    const char* maxwidth  = elem->Attribute("maxwidth");
-    const char* maxheight = elem->Attribute("maxheight");
-    const char* childspacing = elem->Attribute("childspacing");
-
-    if (width) {
-      if (!minwidth) minwidth = width;
-      if (!maxwidth) maxwidth = width;
-    }
-    if (height) {
-      if (!minheight) minheight = height;
-      if (!maxheight) maxheight = height;
-    }
-
-    if (id != NULL)
-      widget->setId(id);
-
-    if (tooltip != NULL && root != NULL) {
-      if (!m_tooltipManager) {
-        m_tooltipManager = new ui::TooltipManager();
-        root->addChild(m_tooltipManager);
-      }
-      m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);
-    }
-
-    if (selected)
-      widget->setSelected(selected);
-
-    if (disabled)
-      widget->setEnabled(false);
-
-    if (expansive)
-      widget->setExpansive(true);
-
-    if (magnet)
-      widget->setFocusMagnet(true);
-
-    if (noborders)
-      widget->noBorderNoChildSpacing();
-
-    if (childspacing)
-      widget->child_spacing = strtol(childspacing, NULL, 10);
-
-    gfx::Size reqSize = widget->getPreferredSize();
-
-    if (minwidth || minheight) {
-      int w = (minwidth ? jguiscale()*strtol(minwidth, NULL, 10): reqSize.w);
-      int h = (minheight ? jguiscale()*strtol(minheight, NULL, 10): reqSize.h);
-      widget->setMinSize(gfx::Size(w, h));
-    }
-
-    if (maxwidth || maxheight) {
-      int w = (maxwidth ? jguiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
-      int h = (maxheight ? jguiscale()*strtol(maxheight, NULL, 10): INT_MAX);
-      widget->setMaxSize(gfx::Size(w, h));
-    }
-
-    if (!root)
-      root = widget;
-
-    // Children
-    const TiXmlElement* childElem = elem->FirstChildElement();
-    while (childElem) {
-      child = convertXmlElementToWidget(childElem, root);
-      if (child) {
-        // Attach the child in the view
-        if (widget->type == kViewWidget) {
-          static_cast<View*>(widget)->attachToView(child);
-          break;
-        }
-        // Add the child in the grid
-        else if (widget->type == kGridWidget) {
-          const char* cell_hspan = childElem->Attribute("cell_hspan");
-          const char* cell_vspan = childElem->Attribute("cell_vspan");
-          const char* cell_align = childElem->Attribute("cell_align");
-          int hspan = cell_hspan ? strtol(cell_hspan, NULL, 10): 1;
-          int vspan = cell_vspan ? strtol(cell_vspan, NULL, 10): 1;
-          int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
-          Grid* grid = dynamic_cast<Grid*>(widget);
-          ASSERT(grid != NULL);
-
-          grid->addChildInCell(child, hspan, vspan, align);
-        }
-        // Just add the child in any other kind of widget
-        else
-          widget->addChild(child);
-      }
-      childElem = childElem->NextSiblingElement();
-    }
-
-    if (widget->type == kViewWidget) {
-      bool maxsize = bool_attr_is_true(elem, "maxsize");
-      if (maxsize)
-        static_cast<View*>(widget)->makeVisibleAllScrollableArea();
-    }
-  }
+  if (widget)
+    fillWidgetWithXmlElementAttributes(elem, root, widget);
 
   return widget;
+}
+
+void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget)
+{
+  const char* id        = elem->Attribute("id");
+  const char* text      = elem->Attribute("text");
+  const char* tooltip   = elem->Attribute("tooltip");
+  bool selected         = bool_attr_is_true(elem, "selected");
+  bool disabled         = bool_attr_is_true(elem, "disabled");
+  bool expansive        = bool_attr_is_true(elem, "expansive");
+  bool homogeneous      = bool_attr_is_true(elem, "homogeneous");
+  bool magnet           = bool_attr_is_true(elem, "magnet");
+  bool noborders        = bool_attr_is_true(elem, "noborders");
+  const char* width     = elem->Attribute("width");
+  const char* height    = elem->Attribute("height");
+  const char* minwidth  = elem->Attribute("minwidth");
+  const char* minheight = elem->Attribute("minheight");
+  const char* maxwidth  = elem->Attribute("maxwidth");
+  const char* maxheight = elem->Attribute("maxheight");
+  const char* childspacing = elem->Attribute("childspacing");
+
+  if (width) {
+    if (!minwidth) minwidth = width;
+    if (!maxwidth) maxwidth = width;
+  }
+
+  if (height) {
+    if (!minheight) minheight = height;
+    if (!maxheight) maxheight = height;
+  }
+
+  if (id != NULL)
+    widget->setId(id);
+
+  if (text)
+    widget->setText(text);
+
+  if (tooltip != NULL && root != NULL) {
+    if (!m_tooltipManager) {
+      m_tooltipManager = new ui::TooltipManager();
+      root->addChild(m_tooltipManager);
+    }
+    m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);
+  }
+
+  if (selected)
+    widget->setSelected(selected);
+
+  if (disabled)
+    widget->setEnabled(false);
+
+  if (expansive)
+    widget->setExpansive(true);
+
+  if (homogeneous)
+    widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+
+  if (magnet)
+    widget->setFocusMagnet(true);
+
+  if (noborders)
+    widget->noBorderNoChildSpacing();
+
+  if (childspacing)
+    widget->child_spacing = strtol(childspacing, NULL, 10);
+
+  gfx::Size reqSize = widget->getPreferredSize();
+
+  if (minwidth || minheight) {
+    int w = (minwidth ? jguiscale()*strtol(minwidth, NULL, 10): reqSize.w);
+    int h = (minheight ? jguiscale()*strtol(minheight, NULL, 10): reqSize.h);
+    widget->setMinSize(gfx::Size(w, h));
+  }
+
+  if (maxwidth || maxheight) {
+    int w = (maxwidth ? jguiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
+    int h = (maxheight ? jguiscale()*strtol(maxheight, NULL, 10): INT_MAX);
+    widget->setMaxSize(gfx::Size(w, h));
+  }
+
+  if (!root)
+    root = widget;
+
+  // Children
+  const TiXmlElement* childElem = elem->FirstChildElement();
+  while (childElem) {
+    Widget* child = convertXmlElementToWidget(childElem, root, NULL);
+    if (child) {
+      // Attach the child in the view
+      if (widget->type == kViewWidget) {
+        static_cast<View*>(widget)->attachToView(child);
+        break;
+      }
+      // Add the child in the grid
+      else if (widget->type == kGridWidget) {
+        const char* cell_hspan = childElem->Attribute("cell_hspan");
+        const char* cell_vspan = childElem->Attribute("cell_vspan");
+        const char* cell_align = childElem->Attribute("cell_align");
+        int hspan = cell_hspan ? strtol(cell_hspan, NULL, 10): 1;
+        int vspan = cell_vspan ? strtol(cell_vspan, NULL, 10): 1;
+        int align = cell_align ? convert_align_value_to_flags(cell_align): 0;
+        Grid* grid = dynamic_cast<Grid*>(widget);
+        ASSERT(grid != NULL);
+
+        grid->addChildInCell(child, hspan, vspan, align);
+      }
+      // Just add the child in any other kind of widget
+      else
+        widget->addChild(child);
+    }
+    childElem = childElem->NextSiblingElement();
+  }
+
+  if (widget->type == kViewWidget) {
+    bool maxsize = bool_attr_is_true(elem, "maxsize");
+    if (maxsize)
+      static_cast<View*>(widget)->makeVisibleAllScrollableArea();
+  }
 }
 
 static int convert_align_value_to_flags(const char *value)

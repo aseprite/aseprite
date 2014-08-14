@@ -36,7 +36,7 @@ namespace app {
     void addView(WorkspaceView* view);
     void removeView(WorkspaceView* view);
 
-    WorkspaceView* getActiveView() { return m_activeView; }
+    WorkspaceView* activeView() { return m_activeView; }
     void setActiveView(WorkspaceView* view);
 
     bool hasView(WorkspaceView* view);

@@ -40,10 +40,10 @@ namespace raster {
     int getMemSize() const;
 
     void setName(const char *name);
-    const std::string& getName() const { return m_name; }
+    const std::string& name() const { return m_name; }
 
-    const Image* getBitmap() const { return m_bitmap; }
-    Image* getBitmap() { return m_bitmap; }
+    const Image* bitmap() const { return m_bitmap; }
+    Image* bitmap() { return m_bitmap; }
 
     // Returns true if the mask is completely empty (i.e. nothing
     // selected)
@@ -59,9 +59,7 @@ namespace raster {
               get_pixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
     }
 
-    const gfx::Rect& getBounds() const {
-      return m_bounds;
-    }
+    const gfx::Rect& bounds() const { return m_bounds; }
 
     void setOrigin(int x, int y) {
       m_bounds.x = x;

@@ -31,7 +31,6 @@
 #include "app/data_recovery.h"
 #include "app/document_exporter.h"
 #include "app/document_location.h"
-#include "app/document_observer.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file_system.h"
@@ -46,6 +45,7 @@
 #include "app/modules/palettes.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/settings/settings.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -61,11 +61,13 @@
 #include "app/webserver.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
+#include "doc/document_observer.h"
 #include "raster/image.h"
 #include "raster/layer.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "scripting/engine.h"
+#include "she/error.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -77,7 +79,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 
 #ifdef ALLEGRO_WINDOWS
   #include <winalleg.h>
@@ -179,8 +180,13 @@ int App::run()
   if (isGui()) {
     PRINTF("GUI mode\n");
 
-    // Setup the GUI screen
+    // Setup the GUI cursor and redraw screen
+
+    ui::set_use_native_cursors(
+      UIContext::instance()->settings()->experimental()->useNativeCursor());
+
     jmouse_set_cursor(kArrowCursor);
+
     ui::Manager::getDefault()->invalidate();
 
     // Create the main window and show it.
@@ -214,15 +220,12 @@ int App::run()
            end = m_files.end();
          it != end; ++it) {
       // Load the sprite
-      Document* document = load_document(it->c_str());
+      Document* document = load_document(context, it->c_str());
       if (!document) {
         if (!isGui())
           console.printf("Error loading file \"%s\"\n", it->c_str());
       }
       else {
-        // Mount and select the sprite
-        context->addDocument(document);
-
         // Add the given file in the argument as a "recent file" only
         // if we are running in GUI mode. If the program is executed
         // in batch mode this is not desirable.
@@ -262,9 +265,24 @@ int App::run()
     gui_run();
 
     // Destroy all documents in the UIContext.
-    const Documents& docs = m_modules->m_ui_context.getDocuments();
-    while (!docs.empty())
-      m_modules->m_ui_context.removeDocument(docs.back());
+    const doc::Documents& docs = m_modules->m_ui_context.documents();
+    while (!docs.empty()) {
+      doc::Document* doc = docs.back();
+
+      // First we close the document. In this way we receive recent
+      // notifications related to the document as an app::Document. If
+      // we delete the document directly, we destroy the app::Document
+      // too early, and then doc::~Document() call
+      // DocumentsObserver::onRemoveDocument(). In this way, observers
+      // could think that they have a fully created app::Document when
+      // in reality it's a doc::Document (in the middle of a
+      // destruction process).
+      //
+      // TODO: This problem is because we're extending doc::Document,
+      // in the future, we should remove app::Document.
+      doc->close();
+      delete doc;
+    }
 
     // Destroy the window.
     m_mainWindow.reset(NULL);
@@ -313,7 +331,7 @@ App::~App()
     m_instance = NULL;
   }
   catch (...) {
-    allegro_message("Error closing ASE.\n(uncaught exception)");
+    she::error_message("Error closing ASE.\n(uncaught exception)");
 
     // no re-throw
   }
@@ -344,7 +362,7 @@ void app_refresh_screen()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  DocumentLocation location = context->getActiveLocation();
+  DocumentLocation location = context->activeLocation();
 
   if (Palette* pal = location.palette())
     set_current_palette(pal, false);
@@ -365,9 +383,9 @@ PixelFormat app_get_current_pixel_format()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  Document* document = context->getActiveDocument();
+  Document* document = context->activeDocument();
   if (document != NULL)
-    return document->getSprite()->getPixelFormat();
+    return document->sprite()->pixelFormat();
   else if (screen != NULL && bitmap_color_depth(screen) == 8)
     return IMAGE_INDEXED;
   else
@@ -387,8 +405,12 @@ int app_get_color_to_clear_layer(Layer* layer)
   app::Color color;
 
   // The `Background' is erased with the `Background Color'
-  if (layer->isBackground())
-    color = ColorBar::instance()->getBgColor();
+  if (layer->isBackground()) {
+    if (ColorBar::instance())
+      color = ColorBar::instance()->getBgColor();
+    else
+      color = app::Color::fromRgb(0, 0, 0); // TODO get background color color from doc::Settings
+  }
   else // All transparent layers are cleared with the mask color
     color = app::Color::fromMask();
 

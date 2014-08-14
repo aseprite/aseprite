@@ -20,7 +20,7 @@
 #define RASTER_LAYER_H_INCLUDED
 #pragma once
 
-#include "base/compiler_specific.h"
+#include "base/override.h"
 #include "raster/blend.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"
@@ -55,11 +55,11 @@ namespace raster {
 
     int getMemSize() const;
 
-    std::string getName() const { return m_name; }
+    std::string name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
 
-    Sprite* getSprite() const { return m_sprite; }
-    LayerFolder* getParent() const { return m_parent; }
+    Sprite* sprite() const { return m_sprite; }
+    LayerFolder* parent() const { return m_parent; }
     void setParent(LayerFolder* folder) { m_parent = folder; }
 
     // Gets the previous sibling of this layer.
@@ -111,8 +111,8 @@ namespace raster {
     void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
-
     void getCels(CelList& cels) const OVERRIDE;
+    Cel* getLastCel() const;
 
     void configureAsBackground();
 

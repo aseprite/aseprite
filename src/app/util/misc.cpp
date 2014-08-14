@@ -20,9 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <string.h>
-
 #include "app/app.h"
 #include "app/color.h"
 #include "app/document_location.h"
@@ -45,9 +42,9 @@ using namespace raster;
 Image* NewImageFromMask(const DocumentLocation& location)
 {
   const Sprite* srcSprite = location.sprite();
-  const Mask* srcMask = location.document()->getMask();
-  const Image* srcMaskBitmap = srcMask->getBitmap();
-  const gfx::Rect& srcBounds = srcMask->getBounds();
+  const Mask* srcMask = location.document()->mask();
+  const Image* srcMaskBitmap = srcMask->bitmap();
+  const gfx::Rect& srcBounds = srcMask->bounds();
   int x, y, u, v, getx, gety;
   Image *dst;
   const Image *src = location.image(&x, &y);
@@ -57,13 +54,13 @@ Image* NewImageFromMask(const DocumentLocation& location)
   ASSERT(srcMaskBitmap);
   ASSERT(src);
 
-  dst = Image::create(srcSprite->getPixelFormat(), srcBounds.w, srcBounds.h);
+  dst = Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h);
   if (!dst)
     return NULL;
 
   // Clear the new image
-  dst->setMaskColor(src->getMaskColor());
-  clear_image(dst, dst->getMaskColor());
+  dst->setMaskColor(src->maskColor());
+  clear_image(dst, dst->maskColor());
 
   // Copy the masked zones
   const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
@@ -77,8 +74,8 @@ Image* NewImageFromMask(const DocumentLocation& location)
         getx = u+srcBounds.x-x;
         gety = v+srcBounds.y-y;
 
-        if ((getx >= 0) && (getx < src->getWidth()) &&
-            (gety >= 0) && (gety < src->getHeight()))
+        if ((getx >= 0) && (getx < src->width()) &&
+            (gety >= 0) && (gety < src->height()))
           dst->putPixel(u, v, src->getPixel(getx, gety));
       }
     }

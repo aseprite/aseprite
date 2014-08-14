@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,25 +20,25 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <cstring>
+#include "app/ui/color_bar.h"
 
 #include "app/color.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
-#include "app/ui/color_bar.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "raster/image.h"
 #include "raster/palette.h"
+#include "she/surface.h"
 #include "ui/graphics.h"
+#include "ui/menu.h"
 #include "ui/paint_event.h"
 
-#include "ui/menu.h"
+#include <cstring>
 
 namespace app {
 
@@ -51,10 +51,10 @@ using namespace ui;
 ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->get_part(PART_EDITOR_SELECTED_W)->w;
-  int t = theme->get_part(PART_EDITOR_SELECTED_N)->h;
-  int r = theme->get_part(PART_EDITOR_SELECTED_E)->w;
-  int b = theme->get_part(PART_EDITOR_SELECTED_S)->h;
+  int l = theme->get_part(PART_EDITOR_SELECTED_W)->width();
+  int t = theme->get_part(PART_EDITOR_SELECTED_N)->height();
+  int r = theme->get_part(PART_EDITOR_SELECTED_E)->width();
+  int b = theme->get_part(PART_EDITOR_SELECTED_S)->height();
 
   setBorder(gfx::Border(l, t, r, b));
 }
@@ -67,7 +67,7 @@ void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
     getClientBounds(),
     hasFocus() ? PART_EDITOR_SELECTED_NW:
     PART_EDITOR_NORMAL_NW,
-    ColorNone);
+    gfx::ColorNone);
 }
 
 //////////////////////////////////////////////////////////////////////

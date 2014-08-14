@@ -36,10 +36,11 @@
 namespace ui {
 
 #define ACCEPT_FOCUS(widget)                            \
-  (((widget)->flags & (JI_FOCUSSTOP |                   \
-                       JI_DISABLED |                    \
-                       JI_HIDDEN |                      \
-                       JI_DECORATIVE)) == JI_FOCUSSTOP)
+  ((((widget)->flags & (JI_FOCUSSTOP |                  \
+        JI_DISABLED |                                   \
+        JI_HIDDEN |                                     \
+        JI_DECORATIVE)) == JI_FOCUSSTOP) &&             \
+    ((widget)->isVisible()))
 
 #define DOUBLE_CLICK_TIMEOUT_MSECS   400
 
@@ -158,7 +159,7 @@ Manager::Manager()
     m_defaultManager = this;
 
     mouse_events_from_she =
-      ((she::Instance()->capabilities() & she::kMouseEventsCapability)
+      ((she::instance()->capabilities() & she::kMouseEventsCapability)
         == she::kMouseEventsCapability);
   }
 }
@@ -286,7 +287,7 @@ bool Manager::generateMessages()
 void Manager::generateMouseMessages()
 {
   // Update mouse status
-  bool mousemove = jmouse_poll();
+  bool mousemove = _internal_poll_mouse();
 
   gfx::Point mousePos(gfx::Point(jmouse_x(0), jmouse_y(0)));
 
@@ -891,6 +892,8 @@ void Manager::setCapture(Widget* widget)
 {
   widget->flags |= JI_HASCAPTURE;
   capture_widget = widget;
+
+  m_display->captureMouse();
 }
 
 // Sets the focus to the "magnetic" widget inside the window
@@ -929,6 +932,8 @@ void Manager::freeCapture()
   if (capture_widget) {
     capture_widget->flags &= ~JI_HASCAPTURE;
     capture_widget = NULL;
+
+    m_display->releaseMouse();
   }
 }
 
@@ -1046,12 +1051,10 @@ void Manager::_openWindow(Window* window)
 
 void Manager::_closeWindow(Window* window, bool redraw_background)
 {
-  Message* msg;
-  gfx::Region reg1;
-
   if (!hasChild(window))
     return;
 
+  gfx::Region reg1;
   if (redraw_background)
     window->getRegion(reg1);
 
@@ -1085,7 +1088,7 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   window->setVisible(false);
 
   // Close message.
-  msg = new Message(kCloseMessage);
+  Message* msg = new Message(kCloseMessage);
   msg->addRecipient(window);
   enqueueMessage(msg);
 

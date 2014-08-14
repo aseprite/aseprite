@@ -127,8 +127,8 @@ bool SelectBoxState::onSetCursor(Editor* editor)
 {
   if (m_movingRuler >= 0) {
     switch (m_rulers[m_movingRuler].getOrientation()) {
-      case Ruler::Horizontal: jmouse_set_cursor(kSizeTCursor); return true;
-      case Ruler::Vertical: jmouse_set_cursor(kSizeLCursor); return true;
+      case Ruler::Horizontal: jmouse_set_cursor(kSizeNSCursor); return true;
+      case Ruler::Vertical: jmouse_set_cursor(kSizeWECursor); return true;
     }
   }
 
@@ -139,10 +139,10 @@ bool SelectBoxState::onSetCursor(Editor* editor)
     if (touchRuler(editor, *it, x, y)) {
       switch (it->getOrientation()) {
         case Ruler::Horizontal:
-          jmouse_set_cursor(kSizeTCursor);
+          jmouse_set_cursor(kSizeNSCursor);
           return true;
         case Ruler::Vertical:
-          jmouse_set_cursor(kSizeLCursor);
+          jmouse_set_cursor(kSizeWECursor);
           return true;
       }
     }
@@ -159,9 +159,9 @@ void SelectBoxState::preRenderDecorator(EditorPreRender* render)
 
   gfx::Rect rc = getBoxBounds();
   Image* image = render->getImage();
-  Sprite* sprite = render->getEditor()->getSprite();
-  int sprite_w = sprite->getWidth();
-  int sprite_h = sprite->getHeight();
+  Sprite* sprite = render->getEditor()->sprite();
+  int sprite_w = sprite->width();
+  int sprite_h = sprite->height();
 
   // Top band
   if (rc.y > 0)
@@ -183,7 +183,7 @@ void SelectBoxState::preRenderDecorator(EditorPreRender* render)
 void SelectBoxState::postRenderDecorator(EditorPostRender* render)
 {
   Editor* editor = render->getEditor();
-  int zoom = editor->getZoom();
+  int zoom = editor->zoom();
   gfx::Rect vp = View::getView(editor)->getViewportBounds();
 
   vp.w += 1<<zoom;

@@ -20,7 +20,7 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
-#include "app/document_id.h"
+#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
@@ -54,7 +54,6 @@ namespace undo {
 
 namespace app {
   class DocumentApi;
-  class DocumentObserver;
   class DocumentUndo;
   class FormatOptions;
   struct BoundSeg;
@@ -68,17 +67,12 @@ namespace app {
 
   // An application document. It is the class used to contain one file
   // opened and being edited by the user (a sprite).
-  class Document : public base::Observable<DocumentObserver> {
+  class Document : public doc::Document {
   public:
-
     enum LockType {
       ReadLock,
       WriteLock
     };
-
-    // Creates a document with one sprite, with one transparent layer,
-    // and one frame.
-    static Document* createBasicDocument(PixelFormat format, int width, int height, int ncolors);
 
     Document(Sprite* sprite);
     ~Document();
@@ -89,27 +83,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Main properties
 
-    DocumentId getId() const { return m_document.id(); }
-    void setId(DocumentId id) { m_document.setId(id); }
-
-    const Sprite* getSprite() const { return m_sprite; }
     const DocumentUndo* getUndo() const { return m_undo; }
-
-    Sprite* getSprite() { return m_sprite; }
     DocumentUndo* getUndo() { return m_undo; }
-
-    void addSprite(Sprite* sprite);
-
-    //////////////////////////////////////////////////////////////////////
-    // Export data
-
-    doc::ExportDataPtr exportData() const {
-      return m_document.exportData();
-    }
-
-    void setExportData(const doc::ExportDataPtr& data) {
-      return m_document.setExportData(data);
-    }
 
     //////////////////////////////////////////////////////////////////////
     // Notifications
@@ -122,9 +97,6 @@ namespace app {
 
     //////////////////////////////////////////////////////////////////////
     // File related properties
-
-    const std::string& getFilename() const { return m_document.filename(); }
-    void setFilename(const std::string& filename);
 
     bool isModified() const;
     bool isAssociatedToFile() const;
@@ -140,6 +112,7 @@ namespace app {
     // Loaded options from file
 
     void setFormatOptions(const SharedPtr<FormatOptions>& format_options);
+    SharedPtr<FormatOptions> getFormatOptions() { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries
@@ -163,7 +136,7 @@ namespace app {
     // Returns the current mask, it can be empty. The mask could be not
     // empty but hidden to the user if the setMaskVisible(false) was
     // used called before.
-    Mask* getMask() const;
+    Mask* mask() const { return m_mask; }
 
     // Sets the current mask. The new mask will be visible by default,
     // so you don't need to call setMaskVisible(true).
@@ -209,12 +182,10 @@ namespace app {
 
     void unlock();
 
+  protected:
+    virtual void onContextChanged() OVERRIDE;
+
   private:
-    doc::Document m_document;
-
-    // The main sprite.
-    base::UniquePtr<Sprite> m_sprite;
-
     // Undo and redo information about the document.
     base::UniquePtr<DocumentUndo> m_undo;
 

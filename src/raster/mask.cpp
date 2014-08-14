@@ -47,7 +47,7 @@ Mask::Mask(const Mask& mask)
 Mask::Mask(int x, int y, Image* bitmap)
   : Object(OBJECT_MASK)
   , m_freeze_count(0)
-  , m_bounds(x, y, bitmap->getWidth(), bitmap->getHeight())
+  , m_bounds(x, y, bitmap->width(), bitmap->height())
   , m_bitmap(bitmap)
 {
 }
@@ -110,11 +110,11 @@ bool Mask::isRectangular() const
 void Mask::copyFrom(const Mask* sourceMask)
 {
   clear();
-  setName(sourceMask->getName().c_str());
+  setName(sourceMask->name().c_str());
 
-  if (sourceMask->getBitmap()) {
+  if (sourceMask->bitmap()) {
     // Add all the area of "mask"
-    add(sourceMask->getBounds());
+    add(sourceMask->bounds());
 
     // And copy the "mask" bitmap
     copy_image(m_bitmap, sourceMask->m_bitmap, 0, 0);
@@ -223,11 +223,11 @@ void Mask::intersect(const gfx::Rect& bounds)
 
 void Mask::byColor(const Image *src, int color, int fuzziness)
 {
-  replace(0, 0, src->getWidth(), src->getHeight());
+  replace(0, 0, src->width(), src->height());
 
   Image* dst = m_bitmap;
 
-  switch (src->getPixelFormat()) {
+  switch (src->pixelFormat()) {
 
     case IMAGE_RGB: {
       const LockImageBits<RgbTraits> srcBits(src);

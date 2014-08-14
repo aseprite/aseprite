@@ -70,14 +70,10 @@ Image* DocumentLocation::image(int* x, int* y, int* opacity) const
   
   if (m_sprite) {
     if (const Cel* cel = this->cel()) {
-      ASSERT((cel->getImage() >= 0) &&
-             (cel->getImage() < m_sprite->getStock()->size()));
-
-      image = m_sprite->getStock()->getImage(cel->getImage());
-
-      if (x) *x = cel->getX();
-      if (y) *y = cel->getY();
-      if (opacity) *opacity = MID(0, cel->getOpacity(), 255);
+      image = cel->image();
+      if (x) *x = cel->x();
+      if (y) *y = cel->y();
+      if (opacity) *opacity = MID(0, cel->opacity(), 255);
     }
   }
 

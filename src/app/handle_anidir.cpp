@@ -34,7 +34,7 @@ raster::FrameNumber calculate_next_frame(
   bool& pingPongForward)
 {
   FrameNumber first = FrameNumber(0);
-  FrameNumber last = sprite->getLastFrame();
+  FrameNumber last = sprite->lastFrame();
 
   if (docSettings->getLoopAnimation()) {
     FrameNumber loopBegin, loopEnd;

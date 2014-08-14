@@ -95,12 +95,14 @@ namespace app {
     void addLayer(LayerFolder* folder, Layer* newLayer, Layer* afterThis);
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
+    void restackLayerBefore(Layer* layer, Layer* beforeThis);
     void cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor);
     void displaceLayers(Layer* layer, int dx, int dy);
     void backgroundFromLayer(LayerImage* layer, color_t bgcolor);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite, color_t bgcolor);
-    void duplicateLayer(Layer* sourceLayer, Layer* afterLayer);
+    void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
+    void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
 
     // Images stock API
     int addImageInStock(Sprite* sprite, Image* image);
@@ -108,7 +110,6 @@ namespace app {
     void replaceStockImage(Sprite* sprite, int imageIndex, Image* newImage);
 
     // Image API
-    Image* getCelImage(Sprite* sprite, Cel* cel);
     void clearMask(Layer* layer, Cel* cel, color_t bgcolor);
     void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
     void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor);

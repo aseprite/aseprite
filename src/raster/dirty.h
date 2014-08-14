@@ -63,7 +63,7 @@ public:
 
     int getMemSize() const;
 
-    PixelFormat getPixelFormat() const { return m_format; }
+    PixelFormat pixelFormat() const { return m_format; }
     int x1() const { return m_x1; }
     int y1() const { return m_y1; }
     int x2() const { return m_x2; }

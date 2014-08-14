@@ -197,8 +197,8 @@ void MiniEditorWindow::onPlayClicked()
 {
   if (m_playButton->isPlaying()) {
     Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
-    if (miniEditor && miniEditor->getDocument() != NULL)
-      m_nextFrameTime = miniEditor->getSprite()->getFrameDuration(miniEditor->getFrame());
+    if (miniEditor && miniEditor->document() != NULL)
+      m_nextFrameTime = miniEditor->sprite()->getFrameDuration(miniEditor->frame());
     else
       m_nextFrameTime = -1;
 
@@ -219,7 +219,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
     return;
   }
 
-  Document* document = editor->getDocument();
+  Document* document = editor->document();
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
 
   if (!isVisible())
@@ -229,7 +229,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
   gfx::Point pt = visibleBounds.getCenter();
 
   // Set the same location as in the given editor.
-  if (!miniEditor || miniEditor->getDocument() != document) {
+  if (!miniEditor || miniEditor->document() != document) {
     delete m_docView;
     m_docView = new DocumentView(document, DocumentView::Mini); // MiniEditorDocumentView(document, this);
     addChild(m_docView);
@@ -241,7 +241,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
   }
 
   miniEditor->centerInSpritePoint(pt.x, pt.y);
-  miniEditor->setFrame(editor->getFrame());
+  miniEditor->setFrame(editor->frame());
 }
 
 void MiniEditorWindow::hideWindow()
@@ -259,12 +259,12 @@ void MiniEditorWindow::onPlaybackTick()
   if (!miniEditor)
     return;
 
-  Document* document = miniEditor->getDocument();
-  Sprite* sprite = miniEditor->getSprite();
+  Document* document = miniEditor->document();
+  Sprite* sprite = miniEditor->sprite();
   if (!document || !sprite)
     return;
 
-  ISettings* settings = UIContext::instance()->getSettings();
+  ISettings* settings = UIContext::instance()->settings();
   IDocumentSettings* docSettings = settings->getDocumentSettings(document);
   if (!docSettings)
     return;
@@ -275,13 +275,13 @@ void MiniEditorWindow::onPlaybackTick()
     while (m_nextFrameTime <= 0) {
       FrameNumber frame = calculate_next_frame(
         sprite,
-        miniEditor->getFrame(),
+        miniEditor->frame(),
         docSettings,
         m_pingPongForward);
 
       miniEditor->setFrame(frame);
 
-      m_nextFrameTime += miniEditor->getSprite()->getFrameDuration(frame);
+      m_nextFrameTime += miniEditor->sprite()->getFrameDuration(frame);
     }
 
     m_curFrameTick = ji_clock;

@@ -47,13 +47,13 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   bool shrink;
   int u, v;
 
-  bounds = image->getBounds();
+  bounds = image->bounds();
 
   // Shrink left side
   for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
-      if (!is_same_pixel(image->getPixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -68,7 +68,7 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (u=bounds.x+bounds.w-1; u>=bounds.x; --u) {
     shrink = true;
     for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
-      if (!is_same_pixel(image->getPixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -82,7 +82,7 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (v=bounds.y; v<bounds.y+bounds.h; ++v) {
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
-      if (!is_same_pixel(image->getPixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
         shrink = false;
         break;
       }
@@ -97,7 +97,7 @@ bool shrink_bounds(Image *image, gfx::Rect& bounds, color_t refpixel)
   for (v=bounds.y+bounds.h-1; v>=bounds.y; --v) {
     shrink = true;
     for (u=bounds.x; u<bounds.x+bounds.w; ++u) {
-      if (!is_same_pixel(image->getPixelFormat(), image->getPixel(u, v), refpixel)) {
+      if (!is_same_pixel(image->pixelFormat(), image->getPixel(u, v), refpixel)) {
         shrink = false;
         break;
       }

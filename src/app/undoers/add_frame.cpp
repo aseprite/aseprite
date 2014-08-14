@@ -23,9 +23,9 @@
 #include "app/undoers/add_frame.h"
 
 #include "app/document.h"
-#include "app/document_event.h"
-#include "app/document_observer.h"
 #include "app/undoers/remove_frame.h"
+#include "doc/document_event.h"
+#include "doc/document_observer.h"
 #include "raster/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
@@ -59,10 +59,10 @@ void AddFrame::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   sprite->removeFrame(m_frame);
 
   // Notify observers.
-  DocumentEvent ev(document);
+  doc::DocumentEvent ev(document);
   ev.sprite(sprite);
   ev.frame(m_frame);
-  document->notifyObservers<DocumentEvent&>(&DocumentObserver::onRemoveFrame, ev);
+  document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onRemoveFrame, ev);
 }
 
 } // namespace undoers

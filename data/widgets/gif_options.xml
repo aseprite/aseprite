@@ -1,0 +1,30 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2014 by David Capello -->
+<gui>
+<window text="GIF Options" id="gif_options">
+  <vbox>
+    <vbox id="rgb_options">
+      <separator text="RGBA to Indexed Conversion:" left="true" horizontal="true" />
+      <check text="Enable Dithering" id="dither" />
+
+      <separator text="Optimize Color Palette:" left="true" horizontal="true" />
+      <radio id="quantize_all" text="&amp;One color palette for all frames" group="1" />
+      <radio id="quantize_each" text="&amp;One color palette for each frame" group="1" />
+      <radio id="no_quantize" text="&amp;Don't modify color palette" group="1" />
+    </vbox>
+
+    <separator text="Optimize for Web:" left="true" horizontal="true" />
+    <check text="Interlaced" id="interlaced" />
+
+    <separator horizontal="true" />
+
+    <hbox>
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="&amp;Cancel" closewindow="true" />
+      </hbox>
+    </hbox>
+  </vbox>
+</window>
+</gui>

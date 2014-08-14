@@ -21,11 +21,10 @@
 #pragma once
 
 #include "app/context_flags.h"
-#include "app/context_observer.h"
-#include "app/context_observer_list.h"
-#include "app/documents.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
+#include "base/signal.h"
+#include "doc/context.h"
 
 #include <vector>
 
@@ -42,8 +41,11 @@ namespace app {
     : base::Exception("Cannot execute the command because its pre-conditions are false.") { }
   };
 
-  class Context {
+  class Context : public doc::Context {
   public:
+    Context();
+    // The "settings" are deleted automatically in the ~Context destructor
+    Context(ISettings* settings);
     virtual ~Context();
 
     virtual bool isUiAvailable() const     { return false; }
@@ -51,57 +53,33 @@ namespace app {
     virtual bool isExecutingMacro() const  { return false; }
     virtual bool isExecutingScript() const { return false; }
 
-    // TODO Refactor codebase to use ISettings::settings() instead
-    ISettings* getSettings() {
-      return settings();
-    }
     ISettings* settings() { return m_settings; }
-
-    const Documents& getDocuments() const;
 
     bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
     void updateFlags() { m_flags.update(this); }
 
-    // Appends the document to the context's documents' list.
-    void addDocument(Document* document);
-    void removeDocument(Document* document);
-    void sendDocumentToTop(Document* document);
+    void sendDocumentToTop(doc::Document* document);
 
-    Document* getActiveDocument() const;
-    DocumentLocation getActiveLocation() const;
+    app::Document* activeDocument() const;
+    DocumentLocation activeLocation() const;
 
     virtual void executeCommand(Command* command, Params* params = NULL);
 
-    void addObserver(ContextObserver* observer);
-    void removeObserver(ContextObserver* observer);
+    Signal1<void, Command*> BeforeCommandExecution;
+    Signal1<void, Command*> AfterCommandExecution;
 
   protected:
-
-    // The "settings" are deleted automatically in the ~Context destructor
-    Context(ISettings* settings);
-
-    virtual void onAddDocument(Document* document);
-    virtual void onRemoveDocument(Document* document);
-    virtual void onGetActiveLocation(DocumentLocation* location) const = 0;
+    virtual void onCreateDocument(doc::CreateDocumentArgs* args) OVERRIDE;
+    virtual void onGetActiveLocation(DocumentLocation* location) const;
 
   private:
-
-    // Without default constructor
-    Context();
-
-    // List of all documents.
-    Documents m_documents;
-
     // Settings in this context.
     ISettings* m_settings;
 
     // Last updated flags.
     ContextFlags m_flags;
 
-    ContextObserverList m_observers;
-
     DISABLE_COPYING(Context);
-
   };
 
 } // namespace app

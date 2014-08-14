@@ -20,30 +20,32 @@
 #define APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 #pragma once
 
-#include "app/context_observer.h"
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
-#include "base/compiler_specific.h"
+#include "base/override.h"
+#include "base/connection.h"
 
 namespace raster {
   class Image;
 }
 
 namespace app {
+  class Command;
   class Editor;
 
   class MovingPixelsState
     : public StandbyState
-    , ContextObserver
     , SelectionSettingsObserver
     , ContextBarObserver {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
+
+    void translate(int dx, int dy);
 
     // EditorState
     virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
@@ -55,9 +57,6 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
     virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
-
-    // ContextObserver
-    virtual void onCommandBeforeExecution(Context* context) OVERRIDE;
     
     // SettingsObserver
     virtual void onSetMoveTransparentColor(app::Color newColor) OVERRIDE;
@@ -68,6 +67,9 @@ namespace app {
     virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
 
   private:
+    // ContextObserver
+    void onBeforeCommandExecution(Command* command);
+
     void setTransparentColor(const app::Color& color);
     void dropPixels(Editor* editor);
 
@@ -78,6 +80,8 @@ namespace app {
     // True if the image was discarded (e.g. when a "Cut" command was
     // used to remove the dragged image).
     bool m_discarded;
+
+    Connection m_ctxConn;
   };
 
 } // namespace app
