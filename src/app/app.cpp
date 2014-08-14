@@ -215,22 +215,19 @@ int App::run()
   {
     UIContext* context = UIContext::instance();
     Console console;
-    for (FileList::iterator
-           it  = m_files.begin(),
-           end = m_files.end();
-         it != end; ++it) {
+    for (const std::string& filename : m_files) {
       // Load the sprite
-      Document* document = load_document(context, it->c_str());
+      Document* document = load_document(context, filename.c_str());
       if (!document) {
         if (!isGui())
-          console.printf("Error loading file \"%s\"\n", it->c_str());
+          console.printf("Error loading file \"%s\"\n", filename.c_str());
       }
       else {
         // Add the given file in the argument as a "recent file" only
         // if we are running in GUI mode. If the program is executed
         // in batch mode this is not desirable.
         if (isGui())
-          getRecentFiles()->addRecentFile(it->c_str());
+          getRecentFiles()->addRecentFile(filename.c_str());
 
         // Add the document to the exporter.
         if (m_exporter != NULL)

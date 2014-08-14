@@ -3,16 +3,20 @@
 
 add_definitions(-DHAVE_CONFIG_H)
 
+######################################################################
+# Compiler-specific flags
+
 if(MSVC)
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
   endif()
 
-  # Add support for Windows XP
   if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64 bits
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X64")
   else()
+    # Add support for Windows XP with 5.01 subsystem
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MACHINE:X86 /SUBSYSTEM:WINDOWS,5.01")
   endif()
 endif(MSVC)
@@ -164,6 +168,13 @@ else()
   # Use patched version of Allegro 4 (with window resize support).
   add_subdirectory(allegro)
   set(libs3rdparty ${libs3rdparty} allegro)
+endif()
+
+######################################################################
+# Add C++11 support only for our code (avoid Allegro)
+
+if(UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++11")
 endif()
 
 ######################################################################
