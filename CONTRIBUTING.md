@@ -19,17 +19,16 @@ The following sections explain some tips about each of these points.
 ## Documentation
 
 You can start seeing the
-[Wiki](https://code.google.com/p/aseprite/wiki/Home), and
-[contact us](http://groups.google.com/group/aseprite-discuss) about your changes,
-we'll give you editing permissions if they looks fine. Also you can
-make some comments in the Wiki itself.
+[documentation](http://www.aseprite.org/docs/), and
+[contact us](support@aseprite.org) if you want to help
+writting documentation or recording [tutorials](http://www.aseprite.org/tutorial/).
 
-If you are going to write a Wiki page about some topic, we recommend
-you to take screenshots or record a little GIF showing the steps.
+If you are going to write documentation, we recommend you to take
+screenshots or record a GIF animations to show steps:
 
 * As screen recording software, on Windows you can generate GIF files
-  using licecap: http://www.cockos.com/licecap/
-* You can upload the PNG/GIF files in http://imgur.com/ temporarily.
+  using [LICEcap](http://www.cockos.com/licecap/).
+* You can upload the PNG/GIF images to [Imgur](http://imgur.com/).
 
 ## Issues
 
@@ -41,11 +40,12 @@ are encouraged to create mockups for any issue you see and attach them.
 ## Hacking
 
 The first thing to keep in main if you want to modify the source code:
-checkout the **dev** branch. It is the branch that we use to develop
-new features and fix issues that are planned for the next big release.
+checkout the **master** branch. It is the branch that we use to
+develop new features and fix issues that are planned for the next big
+release.
 
 To start looking the source code, see how it is organized in
-[src/README.md](https://github.com/aseprite/aseprite/tree/dev/src/#aseprite-source-code)
+[src/README.md](https://github.com/aseprite/aseprite/tree/master/src/#aseprite-source-code)
 file.
 
 ## Get the Source Code
@@ -57,7 +57,7 @@ https://github.com/aseprite/aseprite
 
 You can clone it locally using the following command (read-only URL):
 
-    git clone -b dev git://github.com/aseprite/aseprite.git
+    git clone git://github.com/aseprite/aseprite.git
 
 On Windows you can use programs like
 [msysgit](http://msysgit.github.io/) to clone the repository.
@@ -73,19 +73,19 @@ You can fork the GitHub repository using the Fork button at
 
 The Pull Requests (PR) systems works in this way:
 
-1. You've to create a new branch from `dev`, e.g. `fix-8` to fix the issue 8.
+1. You've to create a new branch from `master`, e.g. `fix-8` to fix the issue 8.
 1. Start working on that new branch, and push that branch to your fork.
-1. Create a new PR to merge your `fix-8` branch to official `dev`.
-1. If the PR is accepted, your branch is merged into `dev`.
-1. You will need to pull changes from the official `dev` branch, and
-   merge them in your own `dev` branch. Finally you can discard your
+1. Create a new PR to merge your `fix-8` branch to official `master`.
+1. If the PR is accepted, your branch is merged into `master`.
+1. You will need to pull changes from the official `master` branch, and
+   merge them in your own `master` branch. Finally you can discard your
    own `fix-8` branch (because those changes should be already merged
-   into `dev` if the PR was accepted).
-1. Continue working from the new `dev` head.
+   into `master` if the PR was accepted).
+1. Continue working from the new `master` head.
 
-To keep in mind: **always** start working from the `dev` head, if you
+To keep in mind: **always** start working from the `master` head, if you
 want to fix three different issues, create three different branches
-from `dev` and then send three different PR. Do not chain all the
+from `master` and then send three different PR. Do not chain all the
 fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 
 ## Mailing List
@@ -99,4 +99,4 @@ to avoid programming in something that is already done or which
 someone else is working on.
 
 And always remember to look the
-[Roadmap](https://code.google.com/p/aseprite/wiki/Roadmap).
+[Roadmap](http://www.aseprite.org/roadmap/).

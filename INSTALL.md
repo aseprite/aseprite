@@ -4,15 +4,17 @@ You should be able to compile Aseprite successfully on the following
 platforms:
 
 * Windows + MSVC 2012 + DirectX SDK
-* Mac OS X 10.8 Mountain Lion + Mac OS X 10.4 SDK universal
-* Linux + GCC
+* Mac OS X 10.8 Mountain Lion + Xcode 5.1.1 + Mac OS X 10.4 SDK universal
+* Linux + gcc with some C++11 support, this port is not compiled
+  regularly so you can expect some errors in the master branch.
 
 # How can I compile Aseprite?
 
-The new build system for Aseprite is [CMake](http://www.cmake.org/).
-You will not need any extra library because the repository already
-contains the source code of all dependencies, even a modified version
-of the Allegro library is included in master branch.
+Aseprite uses the latest version of [CMake](http://www.cmake.org/)
+(3.0) as its build system. You will not need any extra library
+because the repository already contains the source code of all
+dependencies, even a modified version of the Allegro library is
+included in master branch.
 
 The following are the steps to compile Aseprite (in this case we have
 the source code in a directory called `aseprite-source`):
@@ -66,6 +68,20 @@ the source code in a directory called `aseprite-source`):
    can run/debug the program from Visual Studio IDE. On Linux, you can
    copy the `data/` directory in `~/.aseprite/` directory.
 
+## Mac OS X details
+
+You need the old Mac OS X 10.4 SDK universal, which can be obtained
+from a Xcode 3.2 distribution. You can get it from Apple developer
+website (you need to be registered):
+
+  https://developer.apple.com/downloads/
+
+Install the MacOSX10.4.Universal.pkg and run cmake with the following
+parameters:
+
+    -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
+    -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
+
 # How to use installed third party libraries?
 
 If you don't want to use the embedded code of third party libraries
@@ -81,17 +97,3 @@ that you want to be linked dynamically.
 You must compile with `Profile` configuration. For example on Linux:
 
     /.../aseprite-source/build$ cmake .. -G "Unix Makefiles" -DCMAKE_BUILD_TYPE:STRING=Profile -DCOMPILER_GCC:BOOL=ON
-
-# How to compile Aseprite with Mac OS X?
-
-You need the old Mac OS X 10.4 SDK universal, which can be obtained
-from a Xcode 3.2 distribution. You can get it from Apple developer
-website (you need to be registered):
-
-  https://developer.apple.com/downloads/
-
-Install the MacOSX10.4.Universal.pkg and run cmake with the following
-parameters:
-
-    -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
-    -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
