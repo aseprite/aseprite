@@ -473,8 +473,8 @@ void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 
 void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point) const
 {
-  register int w = m_gridBounds.w;
-  register int h = m_gridBounds.h;
+  int w = m_gridBounds.w;
+  int h = m_gridBounds.h;
   div_t d, dx, dy;
 
   dx = div(m_gridBounds.x, w);

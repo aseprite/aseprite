@@ -49,7 +49,7 @@ BLEND_COLOR graya_blenders[] =
 
 int rgba_blend_normal(int back, int front, int opacity)
 {
-  register int t;
+  int t;
 
   if ((back & 0xff000000) == 0) {
     return
@@ -91,9 +91,8 @@ int rgba_blend_copy(int back, int front, int opacity)
 
 int rgba_blend_forpath(int back, int front, int opacity)
 {
-  int F_r, F_g, F_b, F_a;
-  register int t;
-
+  int t, F_r, F_g, F_b, F_a;
+  
   F_r = rgba_getr(front);
   F_g = rgba_getg(front);
   F_b = rgba_getb(front);
@@ -202,7 +201,7 @@ int rgba_blend_blue_tint(int back, int front, int opacity)
 
 int graya_blend_normal(int back, int front, int opacity)
 {
-  register int t;
+  int t;
 
   if ((back & 0xff00) == 0) {
     return
@@ -238,8 +237,7 @@ int graya_blend_copy(int back, int front, int opacity)
 
 int graya_blend_forpath(int back, int front, int opacity)
 {
-  int F_k, F_a;
-  register int t;
+  int t, F_k, F_a;
 
   F_k = graya_getv(front);
   F_a = graya_geta(front);

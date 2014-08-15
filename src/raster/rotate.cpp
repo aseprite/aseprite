@@ -196,7 +196,7 @@ public:
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    register int c = spr->getPixel(spr_x, spr_y);
+    int c = spr->getPixel(spr_x, spr_y);
     if ((rgba_geta(m_mask_color) == 0) || ((c & rgba_rgb_mask) != (m_mask_color & rgba_rgb_mask)))
       *m_it = m_blender(*m_it, c, 255);
 
@@ -218,7 +218,7 @@ public:
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    register int c = spr->getPixel(spr_x, spr_y);
+    int c = spr->getPixel(spr_x, spr_y);
     if ((graya_geta(m_mask_color) == 0) || ((c & graya_v_mask) != (m_mask_color & graya_v_mask)))
       *m_it = m_blender(*m_it, c, 255);
 
@@ -239,7 +239,7 @@ public:
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    register int c = spr->getPixel(spr_x, spr_y);
+    int c = spr->getPixel(spr_x, spr_y);
     if (c != m_mask_color)
       *m_it = c;
     ++m_it;
@@ -254,7 +254,7 @@ public:
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    register int c = spr->getPixel(spr_x, spr_y);
+    int c = spr->getPixel(spr_x, spr_y);
     if (c != 0)                 // TODO
       *m_it = c;
     ++m_it;

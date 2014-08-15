@@ -49,7 +49,7 @@ public:
   {
     Brush* brush = loop->getBrush();
     std::vector<BrushScanline>::const_iterator scanline = brush->scanline().begin();
-    register int v, h = brush->bounds().h;
+    int v, h = brush->bounds().h;
 
     x += brush->bounds().x;
     y += brush->bounds().y;

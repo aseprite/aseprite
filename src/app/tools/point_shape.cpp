@@ -35,9 +35,8 @@ using namespace filters;
   
 void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 {
-  register TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
-  register int w, size; // width or height
-  register int x;
+  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
+  int x, w, size; // width or height
 
   // Tiled in Y axis
   if (tiledMode & TILED_Y_AXIS) {

@@ -117,7 +117,7 @@ void Palette::copyColorsTo(Palette* dst) const
 
 int Palette::countDiff(const Palette* other, int* from, int* to) const
 {
-  register int c, diff = 0;
+  int c, diff = 0;
   int min = MIN(this->m_colors.size(), other->m_colors.size());
   int max = MAX(this->m_colors.size(), other->m_colors.size());
 
@@ -488,7 +488,7 @@ static unsigned int col_diff[3*128];
 
 static void bestfit_init()
 {
-  register int i, k;
+  int i, k;
 
   for (i=1; i<64; i++) {
     k = i * i;

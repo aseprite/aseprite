@@ -248,9 +248,9 @@ bool PngFormat::onLoad(FileOp* fop)
 
       /* RGB_ALPHA */
       if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        register uint8_t* src_address = row_pointer;
-        register uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-        register unsigned int x, r, g, b, a;
+        uint8_t* src_address = row_pointer;
+        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+        unsigned int x, r, g, b, a;
 
         for (x=0; x<width; x++) {
           r = *(src_address++);
@@ -262,9 +262,9 @@ bool PngFormat::onLoad(FileOp* fop)
       }
       /* RGB */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        register uint8_t* src_address = row_pointer;
-        register uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-        register unsigned int x, r, g, b;
+        uint8_t* src_address = row_pointer;
+        uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
+        unsigned int x, r, g, b;
 
         for (x=0; x<width; x++) {
           r = *(src_address++);
@@ -275,9 +275,9 @@ bool PngFormat::onLoad(FileOp* fop)
       }
       /* GRAY_ALPHA */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        register uint8_t* src_address = row_pointer;
-        register uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-        register unsigned int x, k, a;
+        uint8_t* src_address = row_pointer;
+        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+        unsigned int x, k, a;
 
         for (x=0; x<width; x++) {
           k = *(src_address++);
@@ -287,9 +287,9 @@ bool PngFormat::onLoad(FileOp* fop)
       }
       /* GRAY */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        register uint8_t* src_address = row_pointer;
-        register uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-        register unsigned int x, k;
+        uint8_t* src_address = row_pointer;
+        uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
+        unsigned int x, k;
 
         for (x=0; x<width; x++) {
           k = *(src_address++);
@@ -298,9 +298,9 @@ bool PngFormat::onLoad(FileOp* fop)
       }
       /* PALETTE */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
-        register uint8_t* src_address = row_pointer;
-        register uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
-        register unsigned int x, c;
+        uint8_t* src_address = row_pointer;
+        uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
+        unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
@@ -458,9 +458,9 @@ bool PngFormat::onSave(FileOp* fop)
     for (y = 0; y < height; y++) {
       /* RGB_ALPHA */
       if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
-        register uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        register uint8_t* dst_address = row_pointer;
-        register unsigned int x, c;
+        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
+        uint8_t* dst_address = row_pointer;
+        unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
@@ -472,9 +472,9 @@ bool PngFormat::onSave(FileOp* fop)
       }
       /* RGB */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
-        register uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
-        register uint8_t* dst_address = row_pointer;
-        register unsigned int x, c;
+        uint32_t* src_address = (uint32_t*)image->getPixelAddress(0, y);
+        uint8_t* dst_address = row_pointer;
+        unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
@@ -485,9 +485,9 @@ bool PngFormat::onSave(FileOp* fop)
       }
       /* GRAY_ALPHA */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
-        register uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        register uint8_t* dst_address = row_pointer;
-        register unsigned int x, c;
+        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
+        uint8_t* dst_address = row_pointer;
+        unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
@@ -497,9 +497,9 @@ bool PngFormat::onSave(FileOp* fop)
       }
       /* GRAY */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
-        register uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
-        register uint8_t* dst_address = row_pointer;
-        register unsigned int x, c;
+        uint16_t* src_address = (uint16_t*)image->getPixelAddress(0, y);
+        uint8_t* dst_address = row_pointer;
+        unsigned int x, c;
 
         for (x=0; x<width; x++) {
           c = *(src_address++);
@@ -508,9 +508,9 @@ bool PngFormat::onSave(FileOp* fop)
       }
       /* PALETTE */
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
-        register uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
-        register uint8_t* dst_address = row_pointer;
-        register unsigned int x;
+        uint8_t* src_address = (uint8_t*)image->getPixelAddress(0, y);
+        uint8_t* dst_address = row_pointer;
+        unsigned int x;
 
         for (x=0; x<width; x++)
           *(dst_address++) = *(src_address++);

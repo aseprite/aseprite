@@ -66,7 +66,7 @@ public:
   RectT(const PointT<T>& point1, const PointT<T>& point2) {
     PointT<T> leftTop = point1;
     PointT<T> rightBottom = point2;
-    register T t;
+    T t;
 
     if (leftTop.x > rightBottom.x) {
       t = leftTop.x;

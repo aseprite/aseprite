@@ -592,8 +592,7 @@ void RenderEngine::renderLayer(
         }
 
         if (src_image) {
-          int output_opacity;
-          register int t;
+          int t, output_opacity;
 
           output_opacity = MID(0, cel->opacity(), 255);
           output_opacity = INT_MULT(output_opacity, global_opacity, t);

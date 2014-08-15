@@ -174,7 +174,7 @@ namespace raster {
       address_t dst_address;
       int xbeg, xend, xsrc, xdst;
       int ybeg, yend, ysrc, ydst;
-      register uint32_t mask_color = src->maskColor();
+      uint32_t mask_color = src->maskColor();
 
       // nothing to do
       if (!opacity)
@@ -350,7 +350,7 @@ namespace raster {
     }
     // with mask
     else {
-      register int mask_color = src->maskColor();
+      int mask_color = src->maskColor();
 
       for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
         src_address = src->getPixelAddress(xsrc, ysrc);

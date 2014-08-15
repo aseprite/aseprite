@@ -117,7 +117,7 @@ void set_black_palette()
 // Changes a color of the current system palette
 void set_current_color(int index, int r, int g, int b)
 {
-  register int c;
+  int c;
 
   ASSERT(index >= 0 && index <= 255);
   ASSERT(r >= 0 && r <= 255);
