@@ -20,7 +20,9 @@
 
 using namespace base;
 
+#ifdef _MSC_VER
 #pragma warning (disable: 4996)
+#endif
 
 TEST(FileHandle, Descriptors)
 {

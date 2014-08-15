@@ -11,7 +11,9 @@
 #include "base/string.h"
 #include "she/clipboard.h"
 
+#ifdef _MSC_VER
 #pragma warning(disable:4996)   // To void MSVC warning about std::copy() with unsafe arguments
+#endif
 
 namespace she {
 

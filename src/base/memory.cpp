@@ -17,7 +17,9 @@
 #include "base/scoped_lock.h"
 
 // It is used so MSVC doesn't complain about deprecated POSIX names.
+#ifdef _MSC_VER
 #pragma warning(disable:4996)
+#endif
 
 using namespace std;
 

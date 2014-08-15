@@ -47,7 +47,9 @@ namespace app {
 using namespace ui;
 
 // Disable warning about usage of "this" in initializer list.
+#ifdef _MSC_VER
 #pragma warning(disable:4355)
+#endif
 
 // Window used to show canvas parameters.
 class CanvasSizeWindow : public Window
