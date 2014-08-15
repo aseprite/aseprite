@@ -69,7 +69,7 @@ namespace app {
     Signal1<void, Command*> AfterCommandExecution;
 
   protected:
-    virtual void onCreateDocument(doc::CreateDocumentArgs* args) OVERRIDE;
+    virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;
     virtual void onGetActiveLocation(DocumentLocation* location) const;
 
   private:

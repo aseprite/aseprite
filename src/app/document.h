@@ -20,7 +20,6 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
@@ -183,7 +182,7 @@ namespace app {
     void unlock();
 
   protected:
-    virtual void onContextChanged() OVERRIDE;
+    virtual void onContextChanged() override;
 
   private:
     // Undo and redo information about the document.

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/override.h"
 #include "raster/algorithm/flip_type.h"
 
 namespace app {
@@ -29,7 +28,7 @@ namespace app {
   class FlipCommand : public Command {
   public:
     FlipCommand();
-    Command* clone() const OVERRIDE { return new FlipCommand(*this); }
+    Command* clone() const override { return new FlipCommand(*this); }
 
     raster::algorithm::FlipType getFlipType() const { return m_flipType; }
 

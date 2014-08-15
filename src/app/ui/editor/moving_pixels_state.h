@@ -26,7 +26,6 @@
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/status_bar.h"
-#include "base/override.h"
 #include "base/connection.h"
 
 namespace raster {
@@ -48,23 +47,23 @@ namespace app {
     void translate(int dx, int dy);
 
     // EditorState
-    virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) OVERRIDE;
-    virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onSetCursor(Editor* editor) OVERRIDE;
-    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+    virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) override;
+    virtual void onCurrentToolChange(Editor* editor) override;
+    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onSetCursor(Editor* editor) override;
+    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onUpdateStatusBar(Editor* editor) override;
     
     // SettingsObserver
-    virtual void onSetMoveTransparentColor(app::Color newColor) OVERRIDE;
+    virtual void onSetMoveTransparentColor(app::Color newColor) override;
 
     // ContextBarObserver
-    virtual void onDropPixels(ContextBarObserver::DropAction action) OVERRIDE;
+    virtual void onDropPixels(ContextBarObserver::DropAction action) override;
 
-    virtual gfx::Transformation getTransformation(Editor* editor) OVERRIDE;
+    virtual gfx::Transformation getTransformation(Editor* editor) override;
 
   private:
     // ContextObserver

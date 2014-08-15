@@ -43,7 +43,7 @@ using namespace ui;
 class DuplicateSpriteCommand : public Command {
 public:
   DuplicateSpriteCommand();
-  Command* clone() const OVERRIDE { return new DuplicateSpriteCommand(*this); }
+  Command* clone() const override { return new DuplicateSpriteCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

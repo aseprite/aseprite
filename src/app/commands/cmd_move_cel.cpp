@@ -32,7 +32,7 @@ namespace app {
 class MoveCelCommand : public Command {
 public:
   MoveCelCommand();
-  Command* clone() const OVERRIDE { return new MoveCelCommand(*this); }
+  Command* clone() const override { return new MoveCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

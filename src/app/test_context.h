@@ -40,7 +40,7 @@ namespace app {
     }
 
   protected:
-    void onGetActiveLocation(DocumentLocation* location) const OVERRIDE {
+    void onGetActiveLocation(DocumentLocation* location) const override {
       Document* doc = activeDocument();
       if (!doc)
         return;

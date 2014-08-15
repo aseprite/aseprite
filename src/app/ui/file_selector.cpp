@@ -112,7 +112,7 @@ public:
   }
 
 protected:
-  virtual bool onProcessMessage(Message* msg) OVERRIDE {
+  virtual bool onProcessMessage(Message* msg) override {
     if (msg->type() == kKeyUpMessage &&
         static_cast<KeyMessage*>(msg)->unicodeChar() >= 32) {
       // Check if all keys are released
@@ -162,8 +162,8 @@ private:
 class CustomFileNameEntryCreator : public app::WidgetLoader::IWidgetTypeCreator {
 public:
   ~CustomFileNameEntryCreator() { }
-  void dispose() OVERRIDE { delete this; }
-  Widget* createWidgetFromXml(const TiXmlElement* xmlElem) OVERRIDE {
+  void dispose() override { delete this; }
+  Widget* createWidgetFromXml(const TiXmlElement* xmlElem) override {
     return new CustomFileNameEntry();
   }
 };

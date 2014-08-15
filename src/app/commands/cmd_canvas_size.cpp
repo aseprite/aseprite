@@ -99,7 +99,7 @@ public:
 
 protected:
   // SelectBoxDelegate impleentation
-  virtual void onChangeRectangle(const gfx::Rect& rect) OVERRIDE
+  virtual void onChangeRectangle(const gfx::Rect& rect) override
   {
     m_rect = rect;
 
@@ -124,7 +124,7 @@ protected:
     m_editor->invalidate();
   }
 
-  virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
+  virtual void onBroadcastMouseMessage(WidgetsList& targets) override
   {
     Window::onBroadcastMouseMessage(targets);
 
@@ -149,7 +149,7 @@ class CanvasSizeCommand : public Command {
 
 public:
   CanvasSizeCommand();
-  Command* clone() const OVERRIDE { return new CanvasSizeCommand(*this); }
+  Command* clone() const override { return new CanvasSizeCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

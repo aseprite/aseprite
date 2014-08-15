@@ -30,7 +30,6 @@
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
-#include "base/override.h"
 #include "base/file_handle.h"
 #include "base/memory.h"
 #include "raster/raster.h"
@@ -65,12 +64,12 @@ class JpegFormat : public FileFormat {
       FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
-  bool onLoad(FileOp* fop) OVERRIDE;
+  bool onLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
-  bool onSave(FileOp* fop) OVERRIDE;
+  bool onSave(FileOp* fop) override;
 #endif
 
-  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) OVERRIDE;
+  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateJpegFormat()

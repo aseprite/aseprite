@@ -25,7 +25,6 @@
 #include "app/context.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
-#include "base/override.h"
 
 namespace app {
 
@@ -41,7 +40,7 @@ public:
   {
   }
 
-  Command* clone() const OVERRIDE { return new ShowOnionSkinCommand(*this); }
+  Command* clone() const override { return new ShowOnionSkinCommand(*this); }
 
 protected:
   bool onChecked(Context* context)

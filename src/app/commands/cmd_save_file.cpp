@@ -64,7 +64,7 @@ public:
 private:
 
   // Thread to do the hard work: save the file to the disk.
-  virtual void onJob() OVERRIDE {
+  virtual void onJob() override {
     try {
       fop_operate(m_fop, this);
     }
@@ -74,7 +74,7 @@ private:
     fop_done(m_fop);
   }
 
-  virtual void ackFileOpProgress(double progress) OVERRIDE {
+  virtual void ackFileOpProgress(double progress) override {
     jobProgress(progress);
   }
 
@@ -122,13 +122,13 @@ public:
   }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE {
+  void onLoadParams(Params* params) override {
     m_filename = params->get("filename");
   }
 
   // Returns true if there is a current sprite to save.
   // [main thread]
-  bool onEnabled(Context* context) OVERRIDE {
+  bool onEnabled(Context* context) override {
     return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
   }
 
@@ -224,7 +224,7 @@ protected:
 class SaveFileCommand : public SaveFileBaseCommand {
 public:
   SaveFileCommand();
-  Command* clone() const OVERRIDE { return new SaveFileCommand(*this); }
+  Command* clone() const override { return new SaveFileCommand(*this); }
 
 protected:
   void onExecute(Context* context);
@@ -265,7 +265,7 @@ void SaveFileCommand::onExecute(Context* context)
 class SaveFileAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileAsCommand();
-  Command* clone() const OVERRIDE { return new SaveFileAsCommand(*this); }
+  Command* clone() const override { return new SaveFileAsCommand(*this); }
 
 protected:
   void onExecute(Context* context);
@@ -285,7 +285,7 @@ void SaveFileAsCommand::onExecute(Context* context)
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
 public:
   SaveFileCopyAsCommand();
-  Command* clone() const OVERRIDE { return new SaveFileCopyAsCommand(*this); }
+  Command* clone() const override { return new SaveFileCopyAsCommand(*this); }
 
 protected:
   void onExecute(Context* context);

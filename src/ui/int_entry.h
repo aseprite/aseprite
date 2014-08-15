@@ -25,8 +25,8 @@ namespace ui {
     void setValue(int value);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onEntryChange() OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onEntryChange() override;
 
     // New events
     virtual void onValueChange();

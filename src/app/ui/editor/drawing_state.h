@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/ui/editor/standby_state.h"
-#include "base/override.h"
 
 namespace app {
   namespace tools {
@@ -33,17 +32,17 @@ namespace app {
   public:
     DrawingState(tools::ToolLoop* loop, Editor* editor, ui::MouseMessage* msg);
     virtual ~DrawingState();
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onSetCursor(Editor* editor) OVERRIDE;
-    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onSetCursor(Editor* editor) override;
+    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onUpdateStatusBar(Editor* editor) override;
 
     // Drawing state doesn't require the brush-preview because we are
     // already drawing (viewing the real trace).
-    virtual bool requireBrushPreview() OVERRIDE { return false; }
+    virtual bool requireBrushPreview() override { return false; }
 
   private:
     void destroyLoop();

@@ -26,7 +26,6 @@
 #include "app/document_api.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
-#include "base/override.h"
 #include "base/path.h"
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
@@ -113,7 +112,7 @@ public:
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples) OVERRIDE {
+  void layoutSamples(Samples& samples) override {
     const Sprite* oldSprite = NULL;
 
     gfx::Point framePt(0, 0);

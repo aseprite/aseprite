@@ -20,7 +20,6 @@
 #define APP_COMMANDS_FILTERS_FILTER_PREVIEW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -39,7 +38,7 @@ namespace app {
     FilterManagerImpl* getFilterManager() const;
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
 
   private:
     FilterManagerImpl* m_filterMgr;

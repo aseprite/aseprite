@@ -94,7 +94,7 @@ public:
   }
 
 protected:
-  virtual bool onProcessMessage(Message* msg) OVERRIDE {
+  virtual bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
       case kCloseMessage:
@@ -185,7 +185,7 @@ protected:
     return Window::onProcessMessage(msg);
   }
 
-  virtual void onPaint(PaintEvent& ev) OVERRIDE {
+  virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.getGraphics();
 
     // Render sprite and leave the result in 'render' variable
@@ -260,7 +260,7 @@ private:
 class PreviewCommand : public Command {
 public:
   PreviewCommand();
-  Command* clone() const OVERRIDE { return new PreviewCommand(*this); }
+  Command* clone() const override { return new PreviewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

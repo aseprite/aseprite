@@ -8,7 +8,6 @@
 #define UI_GRID_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 #include <vector>
@@ -25,9 +24,9 @@ namespace ui {
 
   protected:
     // Events
-    void onResize(ResizeEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    void onResize(ResizeEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
 
   private:
     struct Cell {

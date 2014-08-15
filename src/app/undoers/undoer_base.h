@@ -20,7 +20,6 @@
 #define APP_UNDOERS_UNDOER_BASE_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "undo/undoer.h"
 
 namespace app {
@@ -30,9 +29,9 @@ namespace app {
     // revert(), getMemSize(), and dispose() methods only.
     class UndoerBase : public undo::Undoer {
     public:
-      undo::Modification getModification() const OVERRIDE { return undo::DoesntModifyDocument; }
-      bool isOpenGroup() const OVERRIDE { return false; }
-      bool isCloseGroup() const OVERRIDE { return false; }
+      undo::Modification getModification() const override { return undo::DoesntModifyDocument; }
+      bool isOpenGroup() const override { return false; }
+      bool isCloseGroup() const override { return false; }
     };
 
   } // namespace undoers

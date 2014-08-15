@@ -8,7 +8,6 @@
 #define UI_LABEL_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "gfx/color.h"
 #include "ui/widget.h"
 
@@ -23,8 +22,8 @@ namespace ui {
     void setTextColor(gfx::Color color);
 
   protected:
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
 
   private:
     gfx::Color m_textColor;

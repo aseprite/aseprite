@@ -22,7 +22,6 @@
 
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "base/override.h"
 #include "ui/box.h"
 
 namespace ui {
@@ -38,12 +37,12 @@ namespace app {
     ~StartView();
 
     // TabView implementation
-    std::string getTabText() OVERRIDE;
+    std::string getTabText() override;
 
     // WorkspaceView implementation
-    ui::Widget* getContentWidget() OVERRIDE { return this; }
-    WorkspaceView* cloneWorkspaceView() OVERRIDE;
-    void onClonedFrom(WorkspaceView* from) OVERRIDE;
+    ui::Widget* getContentWidget() override { return this; }
+    WorkspaceView* cloneWorkspaceView() override;
+    void onClonedFrom(WorkspaceView* from) override;
   };
 
 } // namespace app

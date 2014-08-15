@@ -38,8 +38,8 @@ namespace app {
     void updateUsingEditor(Editor* editor);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onClose(ui::CloseEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onClose(ui::CloseEvent& ev) override;
 
   private:
     void onPlayClicked();

@@ -23,7 +23,6 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/handle_type.h"
-#include "base/override.h"
 #include "gfx/transformation.h"
 
 namespace app {
@@ -34,20 +33,20 @@ namespace app {
   public:
     StandbyState();
     virtual ~StandbyState();
-    virtual void onAfterChangeState(Editor* editor) OVERRIDE;
-    virtual void onCurrentToolChange(Editor* editor) OVERRIDE;
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onSetCursor(Editor* editor) OVERRIDE;
-    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+    virtual void onAfterChangeState(Editor* editor) override;
+    virtual void onCurrentToolChange(Editor* editor) override;
+    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseWheel(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onSetCursor(Editor* editor) override;
+    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onUpdateStatusBar(Editor* editor) override;
 
     // Returns true as the standby state is the only one which shows
     // the brush-preview.
-    virtual bool requireBrushPreview() OVERRIDE { return true; }
+    virtual bool requireBrushPreview() override { return true; }
 
     virtual gfx::Transformation getTransformation(Editor* editor);
 
@@ -69,8 +68,8 @@ namespace app {
       bool onSetCursor(Editor* editor);
 
       // EditorDecorator overrides
-      void preRenderDecorator(EditorPreRender* render) OVERRIDE;
-      void postRenderDecorator(EditorPostRender* render) OVERRIDE;
+      void preRenderDecorator(EditorPreRender* render) override;
+      void postRenderDecorator(EditorPostRender* render) override;
     private:
       TransformHandles* m_transfHandles;
       StandbyState* m_standbyState;

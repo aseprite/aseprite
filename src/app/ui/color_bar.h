@@ -25,7 +25,6 @@
 #include "app/ui/drop_down_button.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
-#include "base/override.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "raster/pixel_format.h"
@@ -75,7 +74,7 @@ namespace app {
     public:
       ScrollableView();
     protected:
-      void onPaint(ui::PaintEvent& ev) OVERRIDE;
+      void onPaint(ui::PaintEvent& ev) override;
     };
 
     DropDownButton m_paletteButton;

@@ -49,7 +49,7 @@ public:
   }
 
 protected:
-  bool onProcessMessage(ui::Message* msg) OVERRIDE {
+  bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
       case kMouseLeaveMessage:
       case kMouseEnterMessage:
@@ -59,7 +59,7 @@ protected:
     return ListItem::onProcessMessage(msg);
   }
 
-  void onPaint(PaintEvent& ev) OVERRIDE {
+  void onPaint(PaintEvent& ev) override {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Graphics* g = ev.getGraphics();
     gfx::Rect bounds = getClientBounds();
@@ -96,7 +96,7 @@ protected:
         bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE {
+  void onPreferredSize(PreferredSizeEvent& ev) override {
     ev.setPreferredSize(
       static_cast<ResourcesListBox*>(getParent())->
         preferredResourceSize(m_resource));

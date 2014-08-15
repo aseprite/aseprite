@@ -26,7 +26,6 @@
 
 #include "app/settings/settings.h"
 #include "app/settings/settings_observers.h"
-#include "base/override.h"
 #include "base/observable.h"
 #include "base/unique_ptr.h"
 
@@ -42,47 +41,47 @@ namespace app {
     ~UISettingsImpl();
 
     // Undo settings
-    size_t undoSizeLimit() const OVERRIDE;
-    bool undoGotoModified() const OVERRIDE;
-    void setUndoSizeLimit(size_t size) OVERRIDE;
-    void setUndoGotoModified(bool state) OVERRIDE;
+    size_t undoSizeLimit() const override;
+    bool undoGotoModified() const override;
+    void setUndoSizeLimit(size_t size) override;
+    void setUndoGotoModified(bool state) override;
 
     // ISettings implementation
-    bool getZoomWithScrollWheel() OVERRIDE;
-    bool getShowSpriteEditorScrollbars() OVERRIDE;
-    bool getGrabAlpha() OVERRIDE;
-    app::Color getFgColor() OVERRIDE;
-    app::Color getBgColor() OVERRIDE;
-    tools::Tool* getCurrentTool() OVERRIDE;
-    app::ColorSwatches* getColorSwatches() OVERRIDE;
+    bool getZoomWithScrollWheel() override;
+    bool getShowSpriteEditorScrollbars() override;
+    bool getGrabAlpha() override;
+    app::Color getFgColor() override;
+    app::Color getBgColor() override;
+    tools::Tool* getCurrentTool() override;
+    app::ColorSwatches* getColorSwatches() override;
 
-    void setZoomWithScrollWheel(bool state) OVERRIDE;
-    void setShowSpriteEditorScrollbars(bool state) OVERRIDE;
-    void setGrabAlpha(bool state) OVERRIDE;
-    void setFgColor(const app::Color& color) OVERRIDE;
-    void setBgColor(const app::Color& color) OVERRIDE;
-    void setCurrentTool(tools::Tool* tool) OVERRIDE;
-    void setColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
+    void setZoomWithScrollWheel(bool state) override;
+    void setShowSpriteEditorScrollbars(bool state) override;
+    void setGrabAlpha(bool state) override;
+    void setFgColor(const app::Color& color) override;
+    void setBgColor(const app::Color& color) override;
+    void setCurrentTool(tools::Tool* tool) override;
+    void setColorSwatches(app::ColorSwatches* colorSwatches) override;
 
-    IDocumentSettings* getDocumentSettings(const Document* document) OVERRIDE;
-    IToolSettings* getToolSettings(tools::Tool* tool) OVERRIDE;
-    IColorSwatchesStore* getColorSwatchesStore() OVERRIDE;
+    IDocumentSettings* getDocumentSettings(const Document* document) override;
+    IToolSettings* getToolSettings(tools::Tool* tool) override;
+    IColorSwatchesStore* getColorSwatchesStore() override;
 
-    ISelectionSettings* selection() OVERRIDE;
-    IExperimentalSettings* experimental() OVERRIDE;
+    ISelectionSettings* selection() override;
+    IExperimentalSettings* experimental() override;
 
     // IExperimentalSettings implementation
 
-    bool useNativeCursor() const OVERRIDE;
-    void setUseNativeCursor(bool state) OVERRIDE;
+    bool useNativeCursor() const override;
+    void setUseNativeCursor(bool state) override;
 
     // IColorSwatchesStore implementation
 
-    void addColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
-    void removeColorSwatches(app::ColorSwatches* colorSwatches) OVERRIDE;
+    void addColorSwatches(app::ColorSwatches* colorSwatches) override;
+    void removeColorSwatches(app::ColorSwatches* colorSwatches) override;
 
-    void addObserver(GlobalSettingsObserver* observer) OVERRIDE;
-    void removeObserver(GlobalSettingsObserver* observer) OVERRIDE;
+    void addObserver(GlobalSettingsObserver* observer) override;
+    void removeObserver(GlobalSettingsObserver* observer) override;
 
   private:
     tools::Tool* m_currentTool;

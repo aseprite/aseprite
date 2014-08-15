@@ -20,7 +20,6 @@
 #define RASTER_IMAGE_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "raster/blend.h"
@@ -59,7 +58,7 @@ namespace raster {
     color_t maskColor() const { return m_maskColor; }
     void setMaskColor(color_t c) { m_maskColor = c; }
 
-    int getMemSize() const OVERRIDE;
+    int getMemSize() const override;
     int getRowStrideSize() const;
     int getRowStrideSize(int pixels_per_row) const;
 

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/color.h"
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/event.h"
 #include "ui/grid.h"
@@ -89,8 +88,8 @@ namespace app {
     RgbSliders();
 
   private:
-    virtual void onSetColor(const app::Color& color) OVERRIDE;
-    virtual app::Color getColorFromSliders() OVERRIDE;
+    virtual void onSetColor(const app::Color& color) override;
+    virtual app::Color getColorFromSliders() override;
   };
 
   class HsvSliders : public ColorSliders
@@ -99,8 +98,8 @@ namespace app {
     HsvSliders();
 
   private:
-    virtual void onSetColor(const app::Color& color) OVERRIDE;
-    virtual app::Color getColorFromSliders() OVERRIDE;
+    virtual void onSetColor(const app::Color& color) override;
+    virtual app::Color getColorFromSliders() override;
   };
 
   class GraySlider : public ColorSliders
@@ -109,8 +108,8 @@ namespace app {
     GraySlider();
 
   private:
-    virtual void onSetColor(const app::Color& color) OVERRIDE;
-    virtual app::Color getColorFromSliders() OVERRIDE;
+    virtual void onSetColor(const app::Color& color) override;
+    virtual app::Color getColorFromSliders() override;
   };
 
   //////////////////////////////////////////////////////////////////////

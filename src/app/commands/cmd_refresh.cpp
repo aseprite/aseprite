@@ -40,7 +40,7 @@ namespace app {
 class RefreshCommand : public Command {
 public:
   RefreshCommand();
-  Command* clone() const OVERRIDE { return new RefreshCommand(*this); }
+  Command* clone() const override { return new RefreshCommand(*this); }
 
 protected:
   void onExecute(Context* context);

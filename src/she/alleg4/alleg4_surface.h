@@ -11,7 +11,6 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "base/override.h"
 #include "base/string.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -66,24 +65,24 @@ namespace she {
 
     // Surface implementation
 
-    void dispose() OVERRIDE {
+    void dispose() override {
       if (m_destroy & DeleteThis)
         delete this;
     }
 
-    int width() const OVERRIDE {
+    int width() const override {
       return m_bmp->w;
     }
 
-    int height() const OVERRIDE {
+    int height() const override {
       return m_bmp->h;
     }
 
-    bool isDirectToScreen() const OVERRIDE {
+    bool isDirectToScreen() const override {
       return m_bmp == screen;
     }
 
-    gfx::Rect getClipBounds() OVERRIDE {
+    gfx::Rect getClipBounds() override {
       return gfx::Rect(
         m_bmp->cl,
         m_bmp->ct,
@@ -91,7 +90,7 @@ namespace she {
         m_bmp->cb - m_bmp->ct);
     }
 
-    void setClipBounds(const gfx::Rect& rc) OVERRIDE {
+    void setClipBounds(const gfx::Rect& rc) override {
       set_clip_rect(m_bmp,
         rc.x,
         rc.y,
@@ -99,7 +98,7 @@ namespace she {
         rc.y+rc.h-1);
     }
 
-    bool intersectClipRect(const gfx::Rect& rc) OVERRIDE {
+    bool intersectClipRect(const gfx::Rect& rc) override {
       add_clip_rect(m_bmp,
         rc.x,
         rc.y,
@@ -111,12 +110,12 @@ namespace she {
          m_bmp->ct < m_bmp->cb);
     }
 
-    LockedSurface* lock() OVERRIDE {
+    LockedSurface* lock() override {
       acquire_bitmap(m_bmp);
       return this;
     }
 
-    void applyScale(int scale) OVERRIDE {
+    void applyScale(int scale) override {
       if (scale < 2)
         return;
 
@@ -136,21 +135,21 @@ namespace she {
       m_destroy = DestroyHandle;
     }
 
-    void* nativeHandle() OVERRIDE {
+    void* nativeHandle() override {
       return reinterpret_cast<void*>(m_bmp);
     }
 
     // LockedSurface implementation
 
-    void unlock() OVERRIDE {
+    void unlock() override {
       release_bitmap(m_bmp);
     }
 
-    void clear() OVERRIDE {
+    void clear() override {
       clear_to_color(m_bmp, 0);
     }
 
-    uint8_t* getData(int x, int y) OVERRIDE {
+    uint8_t* getData(int x, int y) override {
       switch (bitmap_color_depth(m_bmp)) {
         case 8: return (uint8_t*)(((uint8_t*)bmp_write_line(m_bmp, y)) + x);
         case 15:
@@ -161,7 +160,7 @@ namespace she {
       return NULL;
     }
 
-    void getFormat(SurfaceFormatData* formatData) OVERRIDE {
+    void getFormat(SurfaceFormatData* formatData) override {
       formatData->format = kRgbaSurfaceFormat;
       formatData->bitsPerPixel = bitmap_color_depth(m_bmp);
 
@@ -219,37 +218,37 @@ namespace she {
       }
     }
 
-    gfx::Color getPixel(int x, int y) OVERRIDE {
+    gfx::Color getPixel(int x, int y) override {
       return from_allegro(
         bitmap_color_depth(m_bmp),
         getpixel(m_bmp, x, y));
     }
 
-    void putPixel(gfx::Color color, int x, int y) OVERRIDE {
+    void putPixel(gfx::Color color, int x, int y) override {
       putpixel(m_bmp, x, y, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawHLine(gfx::Color color, int x, int y, int w) OVERRIDE {
+    void drawHLine(gfx::Color color, int x, int y, int w) override {
       hline(m_bmp, x, y, x+w-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawVLine(gfx::Color color, int x, int y, int h) OVERRIDE {
+    void drawVLine(gfx::Color color, int x, int y, int h) override {
       vline(m_bmp, x, y, y+h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) OVERRIDE {
+    void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override {
       line(m_bmp, a.x, a.y, b.x, b.y, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void drawRect(gfx::Color color, const gfx::Rect& rc) OVERRIDE {
+    void drawRect(gfx::Color color, const gfx::Rect& rc) override {
       rect(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void fillRect(gfx::Color color, const gfx::Rect& rc) OVERRIDE {
+    void fillRect(gfx::Color color, const gfx::Rect& rc) override {
       rectfill(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
     }
 
-    void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const OVERRIDE {
+    void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
       ASSERT(m_bmp);
       ASSERT(dest);
       ASSERT(static_cast<Alleg4Surface*>(dest)->m_bmp);
@@ -261,16 +260,16 @@ namespace she {
         width, height);
     }
 
-    void drawSurface(const LockedSurface* src, int dstx, int dsty) OVERRIDE {
+    void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
       draw_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
     }
 
-    void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) OVERRIDE {
+    void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
       set_alpha_blender();
       draw_trans_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
     }
 
-    void drawChar(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, int chr) OVERRIDE {
+    void drawChar(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
       FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
 
       allegFont->vtable->render_char(allegFont, chr,
@@ -279,7 +278,7 @@ namespace she {
         m_bmp, x, y);
     }
 
-    void drawString(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) OVERRIDE {
+    void drawString(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
       FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
       base::utf8_const_iterator it(str.begin()), end(str.end());
       int length = 0;

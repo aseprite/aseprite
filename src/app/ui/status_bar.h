@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/color.h"
-#include "base/override.h"
 #include "base/observers.h"
 #include "raster/layer_index.h"
 #include "ui/base.h"
@@ -81,10 +80,10 @@ namespace app {
     void removeProgress(Progress* progress);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onResize(ui::ResizeEvent& ev) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onResize(ui::ResizeEvent& ev) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
 
   private:
     void onCurrentToolChange();

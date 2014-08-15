@@ -20,7 +20,6 @@
 #define RASTER_LAYER_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "raster/blend.h"
 #include "raster/frame_number.h"
 #include "raster/object.h"
@@ -111,7 +110,7 @@ namespace raster {
     void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
-    void getCels(CelList& cels) const OVERRIDE;
+    void getCels(CelList& cels) const override;
     Cel* getLastCel() const;
 
     void configureAsBackground();
@@ -153,7 +152,7 @@ namespace raster {
     Layer* getFirstLayer() { return (m_layers.empty() ? NULL: m_layers.front()); }
     Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
 
-    void getCels(CelList& cels) const OVERRIDE;
+    void getCels(CelList& cels) const override;
 
   private:
     void destroyAllLayers();

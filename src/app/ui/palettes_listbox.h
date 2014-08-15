@@ -37,9 +37,9 @@ namespace app {
     Signal1<void, raster::Palette*> PalChange;
 
   protected:
-    virtual void onResourceChange(Resource* resource) OVERRIDE;
-    virtual void onPaintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource) OVERRIDE;
-    virtual void onResourcePreferredSize(Resource* resource, gfx::Size& size) OVERRIDE;
+    virtual void onResourceChange(Resource* resource) override;
+    virtual void onPaintResource(ui::Graphics* g, const gfx::Rect& bounds, Resource* resource) override;
+    virtual void onResourcePreferredSize(Resource* resource, gfx::Size& size) override;
   };
 
 } // namespace app

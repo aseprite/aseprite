@@ -240,11 +240,11 @@ class IntertwineAsPixelPerfect : public Intertwine {
   Points m_pts;
 
 public:
-  void prepareIntertwine() OVERRIDE {
+  void prepareIntertwine() override {
     m_pts.clear();
   }
 
-  void joinPoints(ToolLoop* loop, const Points& points) OVERRIDE {
+  void joinPoints(ToolLoop* loop, const Points& points) override {
     if (points.size() == 0)
       return;
     else if (m_pts.empty() && points.size() == 1) {

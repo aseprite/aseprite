@@ -8,7 +8,6 @@
 #define DOC_CONTEXT_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "doc/context_observer.h"
@@ -36,8 +35,8 @@ namespace doc {
     void setActiveDocument(Document* doc);
 
     // DocumentsObserver impl
-    virtual void onAddDocument(Document* doc) OVERRIDE;
-    virtual void onRemoveDocument(Document* doc) OVERRIDE;
+    virtual void onAddDocument(Document* doc) override;
+    virtual void onRemoveDocument(Document* doc) override;
 
   private:
     Settings* m_settings;

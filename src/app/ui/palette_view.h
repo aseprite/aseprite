@@ -20,7 +20,6 @@
 #define APP_UI_PALETTE_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/connection.h"
 #include "base/signal.h"
 #include "ui/widget.h"
@@ -54,10 +53,10 @@ namespace app {
     Signal1<void, int> IndexChange;
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    void onResize(ui::ResizeEvent& ev) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPaint(ui::PaintEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
   private:
     void request_size(int* w, int* h);

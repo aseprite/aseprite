@@ -23,7 +23,6 @@
 #include "webserver/webserver.h"
 
 #include "base/bind.h"
-#include "base/override.h"
 #include "mongoose.h"
 
 #include <sstream>
@@ -48,37 +47,37 @@ public:
 
   // IRequest implementation
 
-  virtual const char* getRequestMethod() OVERRIDE {
+  virtual const char* getRequestMethod() override {
     return m_requestInfo->request_method;
   }
 
-  virtual const char* getUri() OVERRIDE {
+  virtual const char* getUri() override {
     return m_requestInfo->uri;
   }
 
-  virtual const char* getHttpVersion() OVERRIDE {
+  virtual const char* getHttpVersion() override {
     return m_requestInfo->http_version;
   }
 
-  virtual const char* getQueryString() OVERRIDE {
+  virtual const char* getQueryString() override {
     return m_requestInfo->query_string;
   }
 
   // IResponse implementation
 
-  virtual void setStatusCode(int code) OVERRIDE {
+  virtual void setStatusCode(int code) override {
     m_code = code;
   }
 
-  virtual void setContentType(const char* contentType) OVERRIDE {
+  virtual void setContentType(const char* contentType) override {
     m_contentType = contentType;
   }
   
-  virtual std::ostream& getStream() OVERRIDE {
+  virtual std::ostream& getStream() override {
     return m_stream;
   }
 
-  virtual void sendFile(const char* path) OVERRIDE {
+  virtual void sendFile(const char* path) override {
     mg_send_file(m_conn, path);
     m_done = true;
   }

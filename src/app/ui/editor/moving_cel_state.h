@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/ui/editor/standby_state.h"
-#include "base/override.h"
 
 namespace raster {
   class Cel;
@@ -35,9 +34,9 @@ namespace app {
     MovingCelState(Editor* editor, ui::MouseMessage* msg);
     virtual ~MovingCelState();
 
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onUpdateStatusBar(Editor* editor) override;
 
   private:
     Cel* m_cel;

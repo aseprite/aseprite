@@ -22,7 +22,6 @@
 
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "base/override.h"
 #include "ui/box.h"
 #include "ui/label.h"
 #include "ui/textbox.h"
@@ -37,16 +36,16 @@ namespace app {
     ~DevConsoleView();
 
     // TabView implementation
-    std::string getTabText() OVERRIDE;
+    std::string getTabText() override;
 
     // WorkspaceView implementation
-    ui::Widget* getContentWidget() OVERRIDE { return this; }
-    WorkspaceView* cloneWorkspaceView() OVERRIDE;
-    void onWorkspaceViewSelected() OVERRIDE;
-    void onClonedFrom(WorkspaceView* from) OVERRIDE;
+    ui::Widget* getContentWidget() override { return this; }
+    WorkspaceView* cloneWorkspaceView() override;
+    void onWorkspaceViewSelected() override;
+    void onClonedFrom(WorkspaceView* from) override;
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
     void onExecuteCommand(const std::string& cmd);
 
   private:

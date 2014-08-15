@@ -8,7 +8,6 @@
 #define BASE_SIGNAL_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/connection.h"
 #include "base/disable_copying.h"
 #include "base/remove_from_container.h"
@@ -49,7 +48,7 @@ public:
     return addSlot(new Slot0_mem<R, T>(m, t));
   }
 
-  virtual void disconnectSlot(Slot* slot) OVERRIDE {
+  virtual void disconnectSlot(Slot* slot) override {
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 
@@ -144,7 +143,7 @@ public:
     return addSlot(new Slot1_mem<R, T, A1>(m, t));
   }
 
-  virtual void disconnectSlot(Slot* slot) OVERRIDE {
+  virtual void disconnectSlot(Slot* slot) override {
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 
@@ -240,7 +239,7 @@ public:
     return addSlot(new Slot2_mem<R, T, A1, A2>(m, t));
   }
 
-  virtual void disconnectSlot(Slot* slot) OVERRIDE {
+  virtual void disconnectSlot(Slot* slot) override {
     base::remove_from_container(m_slots, static_cast<SlotType*>(slot));
   }
 

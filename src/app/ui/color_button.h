@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/color.h"
-#include "base/override.h"
 #include "base/signal.h"
 #include "raster/pixel_format.h"
 #include "ui/button.h"
@@ -45,10 +44,10 @@ namespace app {
 
   protected:
     // Events
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    void onClick(ui::Event& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
+    void onClick(ui::Event& ev) override;
 
   private:
     void openSelectorDialog();

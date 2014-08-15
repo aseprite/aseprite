@@ -21,15 +21,14 @@
 #pragma once
 
 #include "app/res/resources_loader_delegate.h"
-#include "base/override.h"
 
 namespace app {
 
   class PalettesLoaderDelegate : public ResourcesLoaderDelegate {
   public:
     // ResourcesLoaderDelegate impl
-    virtual std::string resourcesLocation() const OVERRIDE;
-    virtual Resource* loadResource(const std::string& filename) OVERRIDE;
+    virtual std::string resourcesLocation() const override;
+    virtual Resource* loadResource(const std::string& filename) override;
   };
 
 } // namespace app

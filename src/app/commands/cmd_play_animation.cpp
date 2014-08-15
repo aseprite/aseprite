@@ -97,7 +97,7 @@ protected:
     }
   }
 
-  virtual bool onProcessMessage(Message* msg) OVERRIDE {
+  virtual bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
       case kOpenMessage:
@@ -134,7 +134,7 @@ protected:
     return Window::onProcessMessage(msg);
   }
 
-  virtual void onPaint(PaintEvent& ev) OVERRIDE {
+  virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.getGraphics();
     g->fillRect(gfx::rgba(0, 0, 0), getClientBounds());
 
@@ -165,7 +165,7 @@ private:
 class PlayAnimationCommand : public Command {
 public:
   PlayAnimationCommand();
-  Command* clone() const OVERRIDE { return new PlayAnimationCommand(*this); }
+  Command* clone() const override { return new PlayAnimationCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

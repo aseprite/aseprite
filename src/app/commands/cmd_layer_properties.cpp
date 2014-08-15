@@ -39,7 +39,7 @@ using namespace ui;
 class LayerPropertiesCommand : public Command {
 public:
   LayerPropertiesCommand();
-  Command* clone() const OVERRIDE { return new LayerPropertiesCommand(*this); }
+  Command* clone() const override { return new LayerPropertiesCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

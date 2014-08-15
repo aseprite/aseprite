@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/override.h"
 #include "doc/export_data.h"
 
 #include <string>
@@ -34,7 +33,7 @@ namespace app {
     enum ExportAction { SaveCopyAs, SaveAs, Save, DoNotSave };
 
     ExportSpriteSheetCommand();
-    Command* clone() const OVERRIDE { return new ExportSpriteSheetCommand(*this); }
+    Command* clone() const override { return new ExportSpriteSheetCommand(*this); }
 
     SpriteSheetType type() const { return m_type; }
     ExportAction action() const { return m_action; }
@@ -44,8 +43,8 @@ namespace app {
     void setAction(ExportAction action) { m_action = action; }
 
   protected:
-    virtual bool onEnabled(Context* context) OVERRIDE;
-    virtual void onExecute(Context* context) OVERRIDE;
+    virtual bool onEnabled(Context* context) override;
+    virtual void onExecute(Context* context) override;
 
   private:
     bool m_useUI;

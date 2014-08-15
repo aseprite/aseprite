@@ -22,7 +22,6 @@
 
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "base/override.h"
 #include "doc/document_observer.h"
 #include "ui/box.h"
 
@@ -53,27 +52,27 @@ namespace app {
     Editor* getEditor() { return m_editor; }
 
     // TabView implementation
-    std::string getTabText() OVERRIDE;
+    std::string getTabText() override;
 
     // WorkspaceView implementation
-    ui::Widget* getContentWidget() OVERRIDE { return this; }
-    WorkspaceView* cloneWorkspaceView() OVERRIDE;
-    void onWorkspaceViewSelected() OVERRIDE;
-    void onClonedFrom(WorkspaceView* from) OVERRIDE;
+    ui::Widget* getContentWidget() override { return this; }
+    WorkspaceView* cloneWorkspaceView() override;
+    void onWorkspaceViewSelected() override;
+    void onClonedFrom(WorkspaceView* from) override;
 
     // DocumentObserver implementation
-    void onGeneralUpdate(doc::DocumentEvent& ev) OVERRIDE;
-    void onSpritePixelsModified(doc::DocumentEvent& ev) OVERRIDE;
-    void onLayerMergedDown(doc::DocumentEvent& ev) OVERRIDE;
-    void onAddLayer(doc::DocumentEvent& ev) OVERRIDE;
-    void onBeforeRemoveLayer(doc::DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(doc::DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
-    void onTotalFramesChanged(doc::DocumentEvent& ev) OVERRIDE;
-    void onLayerRestacked(doc::DocumentEvent& ev) OVERRIDE;
+    void onGeneralUpdate(doc::DocumentEvent& ev) override;
+    void onSpritePixelsModified(doc::DocumentEvent& ev) override;
+    void onLayerMergedDown(doc::DocumentEvent& ev) override;
+    void onAddLayer(doc::DocumentEvent& ev) override;
+    void onBeforeRemoveLayer(doc::DocumentEvent& ev) override;
+    void onAddFrame(doc::DocumentEvent& ev) override;
+    void onRemoveFrame(doc::DocumentEvent& ev) override;
+    void onTotalFramesChanged(doc::DocumentEvent& ev) override;
+    void onLayerRestacked(doc::DocumentEvent& ev) override;
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
 
   private:
     Document* m_document;

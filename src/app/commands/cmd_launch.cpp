@@ -24,7 +24,6 @@
 #include "app/commands/params.h"
 #include "app/launcher.h"
 #include "app/resource_finder.h"
-#include "base/override.h"
 #include "base/fs.h"
 
 namespace app {
@@ -32,11 +31,11 @@ namespace app {
 class LaunchCommand : public Command {
 public:
   LaunchCommand();
-  Command* clone() const OVERRIDE { return new LaunchCommand(*this); }
+  Command* clone() const override { return new LaunchCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE;
-  void onExecute(Context* context) OVERRIDE;
+  void onLoadParams(Params* params) override;
+  void onExecute(Context* context) override;
 
 private:
   enum Type { Url, FileInDocs };

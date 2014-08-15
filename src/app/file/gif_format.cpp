@@ -97,12 +97,12 @@ class GifFormat : public FileFormat {
   }
 
   bool onLoad(FileOp* fop);
-  bool onPostLoad(FileOp* fop) OVERRIDE;
-  void onDestroyData(FileOp* fop) OVERRIDE;
+  bool onPostLoad(FileOp* fop) override;
+  void onDestroyData(FileOp* fop) override;
 #ifdef ENABLE_SAVE
-  bool onSave(FileOp* fop) OVERRIDE;
+  bool onSave(FileOp* fop) override;
 #endif
-  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) OVERRIDE;
+  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateGifFormat()

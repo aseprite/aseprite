@@ -8,7 +8,6 @@
 #define UI_SPLITTER_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -25,12 +24,12 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onResize(ResizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onLoadLayout(LoadLayoutEvent& ev) OVERRIDE;
-    void onSaveLayout(SaveLayoutEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onResize(ResizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onLoadLayout(LoadLayoutEvent& ev) override;
+    void onSaveLayout(SaveLayoutEvent& ev) override;
 
   private:
     Type m_type;

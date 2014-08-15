@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/override.h"
 
 namespace app {
 
@@ -41,7 +40,7 @@ namespace app {
     };
 
     MoveMaskCommand();
-    Command* clone() const OVERRIDE { return new MoveMaskCommand(*this); }
+    Command* clone() const override { return new MoveMaskCommand(*this); }
 
     Target getTarget() const { return m_target; }
 

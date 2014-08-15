@@ -27,7 +27,6 @@
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"
 #include "app/undo_transaction.h"
-#include "base/override.h"
 #include "base/unique_ptr.h"
 #include "raster/palette.h"
 #include "ui/alert.h"

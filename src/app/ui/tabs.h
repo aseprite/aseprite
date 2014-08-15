@@ -20,7 +20,6 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -94,12 +93,12 @@ namespace app {
     void stopScrolling();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    void onResize(ui::ResizeEvent& ev) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onInitTheme(ui::InitThemeEvent& ev) OVERRIDE;
-    void onSetText() OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPaint(ui::PaintEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onInitTheme(ui::InitThemeEvent& ev) override;
+    void onSetText() override;
 
   private:
     void startAni(Ani ani);

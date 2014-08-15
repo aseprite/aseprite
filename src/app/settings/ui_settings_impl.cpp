@@ -98,60 +98,60 @@ public:
 
   // Tiled mode
 
-  virtual TiledMode getTiledMode() OVERRIDE;
-  virtual void setTiledMode(TiledMode mode) OVERRIDE;
+  virtual TiledMode getTiledMode() override;
+  virtual void setTiledMode(TiledMode mode) override;
 
   // Grid settings
 
-  virtual bool getSnapToGrid() OVERRIDE;
-  virtual bool getGridVisible() OVERRIDE;
-  virtual gfx::Rect getGridBounds() OVERRIDE;
-  virtual app::Color getGridColor() OVERRIDE;
+  virtual bool getSnapToGrid() override;
+  virtual bool getGridVisible() override;
+  virtual gfx::Rect getGridBounds() override;
+  virtual app::Color getGridColor() override;
 
-  virtual void setSnapToGrid(bool state) OVERRIDE;
-  virtual void setGridVisible(bool state) OVERRIDE;
-  virtual void setGridBounds(const gfx::Rect& rect) OVERRIDE;
-  virtual void setGridColor(const app::Color& color) OVERRIDE;
+  virtual void setSnapToGrid(bool state) override;
+  virtual void setGridVisible(bool state) override;
+  virtual void setGridBounds(const gfx::Rect& rect) override;
+  virtual void setGridColor(const app::Color& color) override;
 
-  virtual void snapToGrid(gfx::Point& point) const OVERRIDE;
+  virtual void snapToGrid(gfx::Point& point) const override;
 
   // Pixel grid
 
-  virtual bool getPixelGridVisible() OVERRIDE;
-  virtual app::Color getPixelGridColor() OVERRIDE;
+  virtual bool getPixelGridVisible() override;
+  virtual app::Color getPixelGridColor() override;
 
-  virtual void setPixelGridVisible(bool state) OVERRIDE;
-  virtual void setPixelGridColor(const app::Color& color) OVERRIDE;
+  virtual void setPixelGridVisible(bool state) override;
+  virtual void setPixelGridColor(const app::Color& color) override;
 
   // Onionskin settings
 
-  virtual bool getUseOnionskin() OVERRIDE;
-  virtual int getOnionskinPrevFrames() OVERRIDE;
-  virtual int getOnionskinNextFrames() OVERRIDE;
-  virtual int getOnionskinOpacityBase() OVERRIDE;
-  virtual int getOnionskinOpacityStep() OVERRIDE;
-  virtual OnionskinType getOnionskinType() OVERRIDE;
+  virtual bool getUseOnionskin() override;
+  virtual int getOnionskinPrevFrames() override;
+  virtual int getOnionskinNextFrames() override;
+  virtual int getOnionskinOpacityBase() override;
+  virtual int getOnionskinOpacityStep() override;
+  virtual OnionskinType getOnionskinType() override;
 
-  virtual void setUseOnionskin(bool state) OVERRIDE;
-  virtual void setOnionskinPrevFrames(int frames) OVERRIDE;
-  virtual void setOnionskinNextFrames(int frames) OVERRIDE;
-  virtual void setOnionskinOpacityBase(int base) OVERRIDE;
-  virtual void setOnionskinOpacityStep(int step) OVERRIDE;
-  virtual void setOnionskinType(OnionskinType type) OVERRIDE;
-  virtual void setDefaultOnionskinSettings() OVERRIDE;
+  virtual void setUseOnionskin(bool state) override;
+  virtual void setOnionskinPrevFrames(int frames) override;
+  virtual void setOnionskinNextFrames(int frames) override;
+  virtual void setOnionskinOpacityBase(int base) override;
+  virtual void setOnionskinOpacityStep(int step) override;
+  virtual void setOnionskinType(OnionskinType type) override;
+  virtual void setDefaultOnionskinSettings() override;
 
   // Animation
 
-  virtual bool getLoopAnimation() OVERRIDE;
-  virtual void getLoopRange(raster::FrameNumber* begin, raster::FrameNumber* end) OVERRIDE;
-  virtual AniDir getAnimationDirection() OVERRIDE;
+  virtual bool getLoopAnimation() override;
+  virtual void getLoopRange(raster::FrameNumber* begin, raster::FrameNumber* end) override;
+  virtual AniDir getAnimationDirection() override;
 
-  virtual void setLoopAnimation(bool state) OVERRIDE;
-  virtual void setLoopRange(raster::FrameNumber begin, raster::FrameNumber end) OVERRIDE;
-  virtual void setAnimationDirection(AniDir dir) OVERRIDE;
+  virtual void setLoopAnimation(bool state) override;
+  virtual void setLoopRange(raster::FrameNumber begin, raster::FrameNumber end) override;
+  virtual void setAnimationDirection(AniDir dir) override;
 
-  virtual void addObserver(DocumentSettingsObserver* observer) OVERRIDE;
-  virtual void removeObserver(DocumentSettingsObserver* observer) OVERRIDE;
+  virtual void addObserver(DocumentSettingsObserver* observer) override;
+  virtual void removeObserver(DocumentSettingsObserver* observer) override;
 
 private:
   void redrawDocumentViews() {
@@ -695,11 +695,11 @@ public:
     m_fireSignals = state;
   }
 
-  void addObserver(BrushSettingsObserver* observer) OVERRIDE{
+  void addObserver(BrushSettingsObserver* observer) override{
     base::Observable<BrushSettingsObserver>::addObserver(observer);
   }
 
-  void removeObserver(BrushSettingsObserver* observer) OVERRIDE{
+  void removeObserver(BrushSettingsObserver* observer) override{
     base::Observable<BrushSettingsObserver>::removeObserver(observer);
   }
 };
@@ -791,25 +791,25 @@ public:
 
   IBrushSettings* getBrush() { return &m_brush; }
 
-  int getOpacity() OVERRIDE { return m_opacity; }
-  int getTolerance() OVERRIDE { return m_tolerance; }
-  bool getContiguous() OVERRIDE { return m_contiguous; }
-  bool getFilled() OVERRIDE { return m_filled; }
-  bool getPreviewFilled() OVERRIDE { return m_previewFilled; }
-  int getSprayWidth() OVERRIDE { return m_spray_width; }
-  int getSpraySpeed() OVERRIDE { return m_spray_speed; }
-  InkType getInkType() OVERRIDE { return m_inkType; }
-  FreehandAlgorithm getFreehandAlgorithm() OVERRIDE { return m_freehandAlgorithm; }
+  int getOpacity() override { return m_opacity; }
+  int getTolerance() override { return m_tolerance; }
+  bool getContiguous() override { return m_contiguous; }
+  bool getFilled() override { return m_filled; }
+  bool getPreviewFilled() override { return m_previewFilled; }
+  int getSprayWidth() override { return m_spray_width; }
+  int getSpraySpeed() override { return m_spray_speed; }
+  InkType getInkType() override { return m_inkType; }
+  FreehandAlgorithm getFreehandAlgorithm() override { return m_freehandAlgorithm; }
 
-  void setOpacity(int opacity) OVERRIDE { m_opacity = opacity; }
-  void setTolerance(int tolerance) OVERRIDE { m_tolerance = tolerance; }
-  void setContiguous(bool state) OVERRIDE { m_contiguous = state; }
-  void setFilled(bool state) OVERRIDE { m_filled = state; }
-  void setPreviewFilled(bool state) OVERRIDE { m_previewFilled = state; }
-  void setSprayWidth(int width) OVERRIDE { m_spray_width = width; }
-  void setSpraySpeed(int speed) OVERRIDE { m_spray_speed = speed; }
-  void setInkType(InkType inkType) OVERRIDE { m_inkType = inkType; }
-  void setFreehandAlgorithm(FreehandAlgorithm algorithm) OVERRIDE {
+  void setOpacity(int opacity) override { m_opacity = opacity; }
+  void setTolerance(int tolerance) override { m_tolerance = tolerance; }
+  void setContiguous(bool state) override { m_contiguous = state; }
+  void setFilled(bool state) override { m_filled = state; }
+  void setPreviewFilled(bool state) override { m_previewFilled = state; }
+  void setSprayWidth(int width) override { m_spray_width = width; }
+  void setSpraySpeed(int speed) override { m_spray_speed = speed; }
+  void setInkType(InkType inkType) override { m_inkType = inkType; }
+  void setFreehandAlgorithm(FreehandAlgorithm algorithm) override {
     m_freehandAlgorithm = algorithm;
 
     tools::ToolBox* toolBox = App::instance()->getToolBox();
@@ -831,11 +831,11 @@ public:
     }
   }
 
-  void addObserver(ToolSettingsObserver* observer) OVERRIDE {
+  void addObserver(ToolSettingsObserver* observer) override {
     base::Observable<ToolSettingsObserver>::addObserver(observer);
   }
 
-  void removeObserver(ToolSettingsObserver* observer) OVERRIDE{
+  void removeObserver(ToolSettingsObserver* observer) override{
     base::Observable<ToolSettingsObserver>::removeObserver(observer);
   }
 

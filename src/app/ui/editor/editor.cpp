@@ -80,17 +80,17 @@ public:
   {
   }
 
-  Editor* getEditor() OVERRIDE
+  Editor* getEditor() override
   {
     return m_editor;
   }
 
-  Image* getImage() OVERRIDE
+  Image* getImage() override
   {
     return m_image;
   }
 
-  void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) OVERRIDE
+  void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) override
   {
     blend_rect(m_image,
                m_offset.x + (rect.x << m_zoom),

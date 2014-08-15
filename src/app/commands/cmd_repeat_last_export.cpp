@@ -26,18 +26,17 @@
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
-#include "base/override.h"
 
 namespace app {
 
 class RepeatLastExportCommand : public Command {
 public:
   RepeatLastExportCommand();
-  Command* clone() const OVERRIDE { return new RepeatLastExportCommand(*this); }
+  Command* clone() const override { return new RepeatLastExportCommand(*this); }
 
 protected:
-  virtual bool onEnabled(Context* context) OVERRIDE;
-  virtual void onExecute(Context* context) OVERRIDE;
+  virtual bool onEnabled(Context* context) override;
+  virtual void onExecute(Context* context) override;
 };
 
 RepeatLastExportCommand::RepeatLastExportCommand()

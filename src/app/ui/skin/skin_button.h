@@ -52,7 +52,7 @@ namespace app {
       }
 
     protected:
-      void onPaint(ui::PaintEvent& ev) OVERRIDE {
+      void onPaint(ui::PaintEvent& ev) override {
         gfx::Rect bounds(Base::getClientBounds());
         ui::Graphics* g = ev.getGraphics();
         SkinTheme* theme = static_cast<SkinTheme*>(Base::getTheme());

@@ -128,12 +128,12 @@ class CustomizedGuiManager : public Manager
                            , public LayoutIO
 {
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  LayoutIO* onGetLayoutIO() OVERRIDE { return this; }
+  bool onProcessMessage(Message* msg) override;
+  LayoutIO* onGetLayoutIO() override { return this; }
 
   // LayoutIO implementation
-  std::string loadLayout(Widget* widget) OVERRIDE;
-  void saveLayout(Widget* widget, const std::string& str) OVERRIDE;
+  std::string loadLayout(Widget* widget) override;
+  void saveLayout(Widget* widget, const std::string& str) override;
 };
 
 static she::Display* main_display = NULL;

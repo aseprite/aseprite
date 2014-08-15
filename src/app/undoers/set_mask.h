@@ -34,9 +34,9 @@ namespace app {
     public:
       SetMask(undo::ObjectsContainer* objects, Document* document);
 
-      void dispose() OVERRIDE;
-      size_t getMemSize() const OVERRIDE { return sizeof(*this) + getStreamSize(); }
-      void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) OVERRIDE;
+      void dispose() override;
+      size_t getMemSize() const override { return sizeof(*this) + getStreamSize(); }
+      void revert(undo::ObjectsContainer* objects, undo::UndoersCollector* redoers) override;
 
     private:
       size_t getStreamSize() const {

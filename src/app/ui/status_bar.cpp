@@ -114,7 +114,7 @@ public:
   GotoFrameEntry() : Entry(4, "") {
   }
 
-  bool onProcessMessage(Message* msg) OVERRIDE {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
       // When the mouse enter in this entry, it got the focus and the
       // text is automatically selected.

@@ -32,7 +32,7 @@ public:
   enum Action { In, Out, Set };
 
   ZoomCommand();
-  Command* clone() const OVERRIDE { return new ZoomCommand(*this); }
+  Command* clone() const override { return new ZoomCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

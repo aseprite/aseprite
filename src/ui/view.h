@@ -8,7 +8,6 @@
 #define UI_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 #include "ui/scroll_bar.h"
@@ -54,10 +53,10 @@ public:
 
 protected:
   // Events
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onResize(ResizeEvent& ev) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  bool onProcessMessage(Message* msg) override;
+  void onResize(ResizeEvent& ev) override;
+  void onPreferredSize(PreferredSizeEvent& ev) override;
+  void onPaint(PaintEvent& ev) override;
 
   virtual void onScrollChange();
 

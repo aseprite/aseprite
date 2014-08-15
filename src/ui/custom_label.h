@@ -8,7 +8,6 @@
 #define UI_CUSTOM_LABEL_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/label.h"
 
 namespace ui {
@@ -19,7 +18,7 @@ namespace ui {
     CustomLabel(const std::string& text);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
 
   };
 

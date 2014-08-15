@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/ui/skin/skin_part.h"
-#include "base/override.h"
 #include "base/disable_copying.h"
 #include "css/compound_style.h"
 #include "css/state.h"
@@ -62,7 +61,7 @@ namespace app {
       void setPart(const SkinPartPtr& part) { m_part = part; }
 
     protected:
-      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) OVERRIDE;
+      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
 
     private:
       gfx::Color m_color;
@@ -79,7 +78,7 @@ namespace app {
       void setPadding(const gfx::Border& padding) { m_padding = padding; }
 
     protected:
-      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) OVERRIDE;
+      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
 
     private:
       int m_align;
@@ -97,7 +96,7 @@ namespace app {
       SkinPartPtr getPart() { return m_part; }
 
     protected:
-      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) OVERRIDE;
+      void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
 
     private:
       int m_align;

@@ -36,7 +36,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "base/override.h"
 #include "base/signal.h"
 #include "gfx/size.h"
 #include "she/surface.h"
@@ -63,9 +62,9 @@ public:
   Signal1<void, Tool*> ToolSelected;
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  bool onProcessMessage(Message* msg) override;
+  void onPreferredSize(PreferredSizeEvent& ev) override;
+  void onPaint(PaintEvent& ev) override;
 
 private:
   Rect getToolBounds(int index);

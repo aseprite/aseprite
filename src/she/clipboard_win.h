@@ -20,11 +20,11 @@ namespace she {
     ~ClipboardImpl() {
     }
 
-    void dispose() OVERRIDE {
+    void dispose() override {
       delete this;
     }
 
-    std::string getText() OVERRIDE {
+    std::string getText() override {
       std::string text;
 
       if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {

@@ -48,9 +48,9 @@ class IcoFormat : public FileFormat {
       FILE_SUPPORT_INDEXED;
   }
 
-  bool onLoad(FileOp* fop) OVERRIDE;
+  bool onLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
-  bool onSave(FileOp* fop) OVERRIDE;
+  bool onSave(FileOp* fop) override;
 #endif
 };
 

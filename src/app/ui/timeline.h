@@ -23,7 +23,6 @@
 #include "app/document_range.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
-#include "base/override.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
@@ -100,28 +99,28 @@ namespace app {
     void dropRange(DropOp op);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
 
     // DocumentObserver impl.
-    void onAddLayer(doc::DocumentEvent& ev) OVERRIDE;
-    void onAfterRemoveLayer(doc::DocumentEvent& ev) OVERRIDE;
-    void onAddFrame(doc::DocumentEvent& ev) OVERRIDE;
-    void onRemoveFrame(doc::DocumentEvent& ev) OVERRIDE;
+    void onAddLayer(doc::DocumentEvent& ev) override;
+    void onAfterRemoveLayer(doc::DocumentEvent& ev) override;
+    void onAddFrame(doc::DocumentEvent& ev) override;
+    void onRemoveFrame(doc::DocumentEvent& ev) override;
 
     // app::Context slots.
     void onAfterCommandExecution(Command* command);
 
     // DocumentsObserver impl.
-    void onRemoveDocument(doc::Document* document) OVERRIDE;
+    void onRemoveDocument(doc::Document* document) override;
 
     // EditorObserver impl.
-    void dispose() OVERRIDE { }
-    void onStateChanged(Editor* editor) OVERRIDE { }
-    void onScrollChanged(Editor* editor) OVERRIDE { }
-    void onFrameChanged(Editor* editor) OVERRIDE;
-    void onLayerChanged(Editor* editor) OVERRIDE;
+    void dispose() override { }
+    void onStateChanged(Editor* editor) override { }
+    void onScrollChanged(Editor* editor) override { }
+    void onFrameChanged(Editor* editor) override;
+    void onLayerChanged(Editor* editor) override;
 
   private:
     struct DropTarget {

@@ -48,7 +48,7 @@ public:
   {
   }
 
-  Command* clone() const OVERRIDE { return new ShowGridCommand(*this); }
+  Command* clone() const override { return new ShowGridCommand(*this); }
 
 protected:
   bool onChecked(Context* context)
@@ -75,7 +75,7 @@ public:
   {
   }
 
-  Command* clone() const OVERRIDE { return new SnapToGridCommand(*this); }
+  Command* clone() const override { return new SnapToGridCommand(*this); }
 
 protected:
   bool onChecked(Context* context)
@@ -102,7 +102,7 @@ protected:
 class GridSettingsCommand : public Command {
 public:
   GridSettingsCommand();
-  Command* clone() const OVERRIDE { return new GridSettingsCommand(*this); }
+  Command* clone() const override { return new GridSettingsCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

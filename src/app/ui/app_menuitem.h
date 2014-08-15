@@ -40,8 +40,8 @@ namespace app {
     Params* getParams() { return m_params; }
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onClick() OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onClick() override;
 
   private:
     Command* m_command;

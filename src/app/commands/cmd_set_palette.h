@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/override.h"
 
 namespace raster {
   class Palette;
@@ -32,12 +31,12 @@ namespace app {
   class SetPaletteCommand : public Command {
   public:
     SetPaletteCommand();
-    Command* clone() const OVERRIDE { return new SetPaletteCommand(*this); }
+    Command* clone() const override { return new SetPaletteCommand(*this); }
 
     void setPalette(raster::Palette* palette) { m_palette = palette; }
 
   protected:
-    virtual void onExecute(Context* context) OVERRIDE;
+    virtual void onExecute(Context* context) override;
 
   private:
     raster::Palette* m_palette;

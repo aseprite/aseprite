@@ -75,16 +75,16 @@ public:
   }
 
 protected:
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     Button::onClick(ev);
     closeWindow();
   }
 
-  void onPaint(PaintEvent& ev) OVERRIDE {
+  void onPaint(PaintEvent& ev) override {
     static_cast<SkinTheme*>(getTheme())->paintWindowButton(ev);
   }
 
-  bool onProcessMessage(Message* msg) OVERRIDE {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
       case kSetCursorMessage:

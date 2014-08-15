@@ -41,7 +41,7 @@ using namespace ui;
 class NewLayerSetCommand : public Command {
 public:
   NewLayerSetCommand();
-  Command* clone() const OVERRIDE { return new NewLayerSetCommand(*this); }
+  Command* clone() const override { return new NewLayerSetCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

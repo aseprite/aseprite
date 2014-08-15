@@ -36,7 +36,7 @@ namespace app {
     }
     virtual ~PaletteResource() { }
     virtual raster::Palette* palette() { return m_palette; }
-    virtual const std::string& name() const OVERRIDE { return m_name; }
+    virtual const std::string& name() const override { return m_name; }
 
   private:
     raster::Palette* m_palette;

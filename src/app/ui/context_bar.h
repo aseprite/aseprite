@@ -22,7 +22,6 @@
 
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
-#include "base/override.h"
 #include "base/observable.h"
 #include "ui/box.h"
 
@@ -50,11 +49,11 @@ namespace app {
     void updateForMovingPixels();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
     // ToolSettingsObserver impl
-    void onSetOpacity(int newOpacity) OVERRIDE;
+    void onSetOpacity(int newOpacity) override;
 
   private:
     void onBrushSizeChange();

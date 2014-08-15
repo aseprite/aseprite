@@ -50,7 +50,7 @@ protected:
 class GotoPreviousLayerCommand : public GotoCommand {
 public:
   GotoPreviousLayerCommand();
-  Command* clone() const OVERRIDE { return new GotoPreviousLayerCommand(*this); }
+  Command* clone() const override { return new GotoPreviousLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
@@ -92,7 +92,7 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
 class GotoNextLayerCommand : public GotoCommand {
 public:
   GotoNextLayerCommand();
-  Command* clone() const OVERRIDE { return new GotoNextLayerCommand(*this); }
+  Command* clone() const override { return new GotoNextLayerCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

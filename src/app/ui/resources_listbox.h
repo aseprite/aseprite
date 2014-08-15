@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/res/resources_loader.h"
-#include "base/override.h"
 #include "base/unique_ptr.h"
 #include "ui/listbox.h"
 #include "ui/timer.h"
@@ -38,8 +37,8 @@ namespace app {
     gfx::Size preferredResourceSize(Resource* resource);
 
   protected:
-    virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    virtual void onChangeSelectedItem() OVERRIDE;
+    virtual bool onProcessMessage(ui::Message* msg) override;
+    virtual void onChangeSelectedItem() override;
     virtual void onResourceChange(Resource* resource) = 0;
 
     // abstract

@@ -46,7 +46,7 @@ public:
   };
 
   ScrollCommand();
-  Command* clone() const OVERRIDE { return new ScrollCommand(*this); }
+  Command* clone() const override { return new ScrollCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

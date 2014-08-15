@@ -64,7 +64,7 @@ private:
     return skin::get_style("warning_box");
   }
 
-  bool onProcessMessage(Message* msg) OVERRIDE {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
       case kSetCursorMessage:
         jmouse_set_cursor(kHandCursor);
@@ -73,12 +73,12 @@ private:
     return Button::onProcessMessage(msg);
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE {
+  void onPreferredSize(PreferredSizeEvent& ev) override {
     ev.setPreferredSize(
       style()->preferredSize(NULL, skin::Style::State()) + 4*jguiscale());
   }
 
-  void onPaint(PaintEvent& ev) OVERRIDE {
+  void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.getGraphics();
     skin::Style::State state;
     if (hasMouse()) state += skin::Style::hover();

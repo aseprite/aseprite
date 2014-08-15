@@ -37,12 +37,12 @@ namespace app {
     ~EditorView();
 
   protected:
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    void onResize(ui::ResizeEvent& ev) OVERRIDE;
-    void onScrollChange() OVERRIDE;
+    void onPaint(ui::PaintEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
+    void onScrollChange() override;
 
     // GlobalSettingsObserver impl
-    void onSetShowSpriteEditorScrollbars(bool state) OVERRIDE;
+    void onSetShowSpriteEditorScrollbars(bool state) override;
 
   private:
     void setupScrollbars();

@@ -67,8 +67,8 @@ public:
   int getDirection() const { return m_direction; }
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onDisable() OVERRIDE;
+  bool onProcessMessage(Message* msg) override;
+  void onDisable() override;
 
 private:
   int m_direction;

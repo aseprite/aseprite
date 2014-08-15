@@ -17,11 +17,11 @@ namespace she {
     ~ClipboardImpl() {
     }
 
-    void dispose() OVERRIDE {
+    void dispose() override {
       delete this;
     }
 
-    std::string getText() OVERRIDE {
+    std::string getText() override {
       return m_text;
     }
 

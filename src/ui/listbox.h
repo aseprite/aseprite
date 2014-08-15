@@ -8,7 +8,6 @@
 #define UI_LISTBOX_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/widget.h"
 
@@ -35,10 +34,10 @@ namespace ui {
     Signal0<void> DoubleClickItem;
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
-    virtual void onPaint(PaintEvent& ev) OVERRIDE;
-    virtual void onResize(ResizeEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual bool onProcessMessage(Message* msg) override;
+    virtual void onPaint(PaintEvent& ev) override;
+    virtual void onResize(ResizeEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
     virtual void onChangeSelectedItem();
     virtual void onDoubleClickItem();
   };

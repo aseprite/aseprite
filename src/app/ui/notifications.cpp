@@ -43,7 +43,7 @@ public:
   }
 
 protected:
-  void onClick() OVERRIDE {
+  void onClick() override {
     MenuItem::onClick();
 
     if (!m_url.empty())

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/settings/document_settings.h"
-#include "base/override.h"
 #include "ui/popup_window.h"
 
 namespace ui {
@@ -38,7 +37,7 @@ namespace app {
     ConfigureTimelinePopup();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
     void onChangeType();
     void onOpacity();
     void onOpacityStep();

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "base/override.h"
 
 #include <string>
 
@@ -37,8 +36,8 @@ namespace app {
     }
 
   protected:
-    void onLoadParams(Params* params) OVERRIDE;
-    bool onEnabled(Context* context) OVERRIDE;
+    void onLoadParams(Params* params) override;
+    bool onEnabled(Context* context) override;
 
     void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved);
 

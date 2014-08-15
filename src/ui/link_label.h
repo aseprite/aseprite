@@ -8,7 +8,6 @@
 #define UI_LINK_LABEL_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/custom_label.h"
 
@@ -27,8 +26,8 @@ namespace ui {
     Signal0<void> Click;
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPaint(PaintEvent& ev) override;
 
     std::string m_url;
   };

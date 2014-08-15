@@ -8,7 +8,6 @@
 #define UI_MANAGER_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
@@ -84,11 +83,11 @@ namespace ui {
     void _closeWindow(Window* window, bool redraw_background);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onResize(ResizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onResize(ResizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onBroadcastMouseMessage(WidgetsList& targets) override;
     virtual LayoutIO* onGetLayoutIO();
 
   private:

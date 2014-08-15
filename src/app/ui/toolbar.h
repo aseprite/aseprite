@@ -20,7 +20,6 @@
 #define APP_UI_TOOLBAR_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/connection.h"
 #include "gfx/point.h"
 #include "ui/timer.h"
@@ -60,9 +59,9 @@ namespace app {
     void closeTipWindow();
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
 
   private:
     int getToolGroupIndex(tools::ToolGroup* group);

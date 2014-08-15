@@ -33,7 +33,7 @@ namespace app {
 class ReselectMaskCommand : public Command {
 public:
   ReselectMaskCommand();
-  Command* clone() const OVERRIDE { return new ReselectMaskCommand(*this); }
+  Command* clone() const override { return new ReselectMaskCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

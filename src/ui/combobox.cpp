@@ -8,7 +8,6 @@
 #include "config.h"
 #endif
 
-#include "base/override.h"
 #include "gfx/size.h"
 #include "she/font.h"
 #include "ui/ui.h"
@@ -23,7 +22,7 @@ public:
     setFocusStop(false);
   }
 
-  void onPaint(PaintEvent& ev) OVERRIDE {
+  void onPaint(PaintEvent& ev) override {
     getTheme()->paintComboBoxButton(ev);
   }
 };
@@ -37,8 +36,8 @@ public:
   }
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onPaint(PaintEvent& ev) OVERRIDE;
+  bool onProcessMessage(Message* msg) override;
+  void onPaint(PaintEvent& ev) override;
 
 private:
   ComboBox* m_comboBox;
@@ -67,8 +66,8 @@ public:
   }
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE;
-  void onChangeSelectedItem() OVERRIDE;
+  bool onProcessMessage(Message* msg) override;
+  void onChangeSelectedItem() override;
 
 private:
   bool isValidItem(int index) const {

@@ -85,28 +85,28 @@ namespace raster {
       }
     }
 
-    uint8_t* getPixelAddress(int x, int y) const OVERRIDE {
+    uint8_t* getPixelAddress(int x, int y) const override {
       ASSERT(x >= 0 && x < width());
       ASSERT(y >= 0 && y < height());
 
       return (uint8_t*)address(x, y);
     }
 
-    color_t getPixel(int x, int y) const OVERRIDE {
+    color_t getPixel(int x, int y) const override {
       ASSERT(x >= 0 && x < width());
       ASSERT(y >= 0 && y < height());
 
       return *address(x, y);
     }
 
-    void putPixel(int x, int y, color_t color) OVERRIDE {
+    void putPixel(int x, int y, color_t color) override {
       ASSERT(x >= 0 && x < width());
       ASSERT(y >= 0 && y < height());
 
       *address(x, y) = color;
     }
 
-    void clear(color_t color) OVERRIDE {
+    void clear(color_t color) override {
       LockImageBits<Traits> bits(this);
       typename LockImageBits<Traits>::iterator it(bits.begin());
       typename LockImageBits<Traits>::iterator end(bits.end());
@@ -115,7 +115,7 @@ namespace raster {
         *it = color;
     }
 
-    void copy(const Image* _src, int x, int y) OVERRIDE {
+    void copy(const Image* _src, int x, int y) override {
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
       ImageImpl<Traits>* dst = this;
       address_t src_address;
@@ -166,7 +166,7 @@ namespace raster {
       }
     }
 
-    void merge(const Image* _src, int x, int y, int opacity, int blend_mode) OVERRIDE {
+    void merge(const Image* _src, int x, int y, int opacity, int blend_mode) override {
       BLEND_COLOR blender = Traits::get_blender(blend_mode);
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
       ImageImpl<Traits>* dst = this;
@@ -226,7 +226,7 @@ namespace raster {
       }
     }
 
-    void drawHLine(int x1, int y, int x2, color_t color) OVERRIDE {
+    void drawHLine(int x1, int y, int x2, color_t color) override {
       LockImageBits<Traits> bits(this, gfx::Rect(x1, y, x2 - x1 + 1, 1));
       typename LockImageBits<Traits>::iterator it(bits.begin());
       typename LockImageBits<Traits>::iterator end(bits.end());
@@ -235,12 +235,12 @@ namespace raster {
         *it = color;
     }
 
-    void fillRect(int x1, int y1, int x2, int y2, color_t color) OVERRIDE {
+    void fillRect(int x1, int y1, int x2, int y2, color_t color) override {
       for (int y=y1; y<=y2; ++y)
         ImageImpl<Traits>::drawHLine(x1, y, x2, color);
     }
 
-    void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) OVERRIDE {
+    void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) override {
       fillRect(x1, y1, x2, y2, color);
     }
   };

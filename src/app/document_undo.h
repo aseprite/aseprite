@@ -20,7 +20,6 @@
 #define APP_DOCUMENT_UNDO_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "raster/sprite_position.h"
@@ -64,8 +63,8 @@ namespace app {
     void impossibleToBackToSavedState();
 
     // UndoHistoryDelegate implementation.
-    undo::ObjectsContainer* getObjects() const OVERRIDE { return m_objects; }
-    size_t getUndoSizeLimit() const OVERRIDE;
+    undo::ObjectsContainer* getObjects() const override { return m_objects; }
+    size_t getUndoSizeLimit() const override;
 
     void pushUndoer(undo::Undoer* undoer);
 

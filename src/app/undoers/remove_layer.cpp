@@ -50,29 +50,29 @@ public:
   virtual ~LayerSubObjectsSerializerImpl() { }
 
   // How to write cels, images, and sub-layers
-  void write_cel(std::ostream& os, Cel* cel) OVERRIDE {
+  void write_cel(std::ostream& os, Cel* cel) override {
     write_object(m_objects, os, cel, raster::write_cel);
   }
 
-  void write_image(std::ostream& os, Image* image) OVERRIDE {
+  void write_image(std::ostream& os, Image* image) override {
     write_object(m_objects, os, image, raster::write_image);
   }
 
-  void write_layer(std::ostream& os, Layer* layer) OVERRIDE {
+  void write_layer(std::ostream& os, Layer* layer) override {
     // To write a sub-layer we use the operator() of this instance (*this)
     write_object(m_objects, os, layer, *this);
   }
 
   // How to read cels, images, and sub-layers
-  Cel* read_cel(std::istream& is) OVERRIDE {
+  Cel* read_cel(std::istream& is) override {
     return read_object<Cel>(m_objects, is, raster::read_cel);
   }
 
-  Image* read_image(std::istream& is) OVERRIDE {
+  Image* read_image(std::istream& is) override {
     return read_object<Image>(m_objects, is, raster::read_image);
   }
 
-  Layer* read_layer(std::istream& is) OVERRIDE {
+  Layer* read_layer(std::istream& is) override {
     // To read a sub-layer we use the operator() of this instance (*this)
     return read_object<Layer>(m_objects, is, *this);
   }

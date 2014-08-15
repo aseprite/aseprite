@@ -23,7 +23,6 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"
 #include "app/ui/editor/standby_state.h"
-#include "base/override.h"
 
 #include <vector>
 
@@ -54,20 +53,20 @@ namespace app {
     void setBoxBounds(const gfx::Rect& rc);
 
     // EditorState overrides
-    virtual void onAfterChangeState(Editor* editor) OVERRIDE;
-    virtual void onBeforePopState(Editor* editor) OVERRIDE;
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onSetCursor(Editor* editor) OVERRIDE;
+    virtual void onAfterChangeState(Editor* editor) override;
+    virtual void onBeforePopState(Editor* editor) override;
+    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onSetCursor(Editor* editor) override;
 
     // Returns false as it overrides default standby state behavior &
     // look. This state uses normal arrow cursors.
-    virtual bool requireBrushPreview() OVERRIDE { return false; }
+    virtual bool requireBrushPreview() override { return false; }
 
     // EditorDecorator overrides
-    virtual void preRenderDecorator(EditorPreRender* render) OVERRIDE;
-    virtual void postRenderDecorator(EditorPostRender* render) OVERRIDE;
+    virtual void preRenderDecorator(EditorPreRender* render) override;
+    virtual void postRenderDecorator(EditorPostRender* render) override;
 
   private:
     typedef std::vector<Ruler> Rulers;

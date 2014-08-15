@@ -24,7 +24,6 @@
 #include "app/settings/settings_observers.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/undo_transaction.h"
-#include "base/override.h"
 #include "base/shared_ptr.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_type.h"
@@ -99,7 +98,7 @@ namespace app {
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
   protected:
-    void onSetRotationAlgorithm(RotationAlgorithm algorithm) OVERRIDE;
+    void onSetRotationAlgorithm(RotationAlgorithm algorithm) override;
 
   private:
     void redrawExtraImage();

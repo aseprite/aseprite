@@ -8,7 +8,6 @@
 #define UI_SLIDER_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/widget.h"
 
@@ -34,9 +33,9 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
 
     // New events
     virtual void onChange();

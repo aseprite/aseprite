@@ -8,7 +8,6 @@
 #define UI_SEPARATOR_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -19,8 +18,8 @@ namespace ui {
     Separator(const std::string& text, int align);
 
   protected:
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    void onPaint(PaintEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
   };
 
 } // namespace ui

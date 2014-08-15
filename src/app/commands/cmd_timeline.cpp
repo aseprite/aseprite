@@ -34,11 +34,11 @@ namespace app {
 class TimelineCommand : public Command {
 public:
   TimelineCommand();
-  Command* clone() const OVERRIDE { return new TimelineCommand(*this); }
+  Command* clone() const override { return new TimelineCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE;
-  void onExecute(Context* context) OVERRIDE;
+  void onLoadParams(Params* params) override;
+  void onExecute(Context* context) override;
 
   bool m_open;
   bool m_close;

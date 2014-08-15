@@ -101,7 +101,7 @@ public:
   }
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE
+  bool onProcessMessage(Message* msg) override
   {
     switch (msg->type()) {
 

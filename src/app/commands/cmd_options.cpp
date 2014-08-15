@@ -197,7 +197,7 @@ private:
 class OptionsCommand : public Command {
 public:
   OptionsCommand();
-  Command* clone() const OVERRIDE { return new OptionsCommand(*this); }
+  Command* clone() const override { return new OptionsCommand(*this); }
 
 protected:
   void onExecute(Context* context);

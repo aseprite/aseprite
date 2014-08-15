@@ -20,7 +20,6 @@
 #define APP_COMMANDS_FILTERS_COLOR_CURVE_EDITOR_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "gfx/point.h"
 #include "ui/widget.h"
@@ -41,8 +40,8 @@ namespace app {
     Signal0<void> CurveEditorChange;
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
   private:
     gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);

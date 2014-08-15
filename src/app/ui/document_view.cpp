@@ -60,35 +60,35 @@ public:
   }
 
   // EditorObserver implementation
-  void dispose() OVERRIDE {
+  void dispose() override {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(NULL);
   }
 
-  void onScrollChanged(Editor* editor) OVERRIDE {
+  void onScrollChanged(Editor* editor) override {
     if (current_editor == this)
       App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
-  void onStateChanged(Editor* editor) OVERRIDE {
+  void onStateChanged(Editor* editor) override {
     // Do nothing
   }
 
-  void onFrameChanged(Editor* editor) OVERRIDE {
+  void onFrameChanged(Editor* editor) override {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
 
     set_current_palette(editor->sprite()->getPalette(editor->frame()), true);
   }
 
-  void onLayerChanged(Editor* editor) OVERRIDE {
+  void onLayerChanged(Editor* editor) override {
     // Do nothing
   }
 
   // EditorCustomizationDelegate implementation
-  tools::Tool* getQuickTool(tools::Tool* currentTool) OVERRIDE {
+  tools::Tool* getQuickTool(tools::Tool* currentTool) override {
     return get_selected_quicktool(currentTool);
   }
 
-  bool isCopySelectionKeyPressed() OVERRIDE {
+  bool isCopySelectionKeyPressed() override {
     Accelerator* accel = get_accel_to_copy_selection();
     if (accel)
       return accel->checkFromAllegroKeyArray();
@@ -96,7 +96,7 @@ public:
       return false;
   }
 
-  bool isSnapToGridKeyPressed() OVERRIDE {
+  bool isSnapToGridKeyPressed() override {
     Accelerator* accel = get_accel_to_snap_to_grid();
     if (accel)
       return accel->checkFromAllegroKeyArray();
@@ -104,7 +104,7 @@ public:
       return false;
   }
 
-  bool isAngleSnapKeyPressed() OVERRIDE {
+  bool isAngleSnapKeyPressed() override {
     Accelerator* accel = get_accel_to_angle_snap();
     if (accel)
       return accel->checkFromAllegroKeyArray();
@@ -112,7 +112,7 @@ public:
       return false;
   }
 
-  bool isMaintainAspectRatioKeyPressed() OVERRIDE {
+  bool isMaintainAspectRatioKeyPressed() override {
     Accelerator* accel = get_accel_to_maintain_aspect_ratio();
     if (accel)
       return accel->checkFromAllegroKeyArray();
@@ -120,7 +120,7 @@ public:
       return false;
   }
 
-  bool isLockAxisKeyPressed() OVERRIDE {
+  bool isLockAxisKeyPressed() override {
     Accelerator* accel = get_accel_to_lock_axis();
     if (accel)
       return accel->checkFromAllegroKeyArray();

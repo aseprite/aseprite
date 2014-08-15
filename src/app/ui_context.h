@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/context.h"
-#include "base/override.h"
 #include "doc/documents_observer.h"
 
 namespace app {
@@ -53,9 +52,9 @@ namespace app {
     Editor* getEditorFor(Document* document);
 
   protected:
-    virtual void onAddDocument(doc::Document* doc) OVERRIDE;
-    virtual void onRemoveDocument(doc::Document* doc) OVERRIDE;
-    virtual void onGetActiveLocation(DocumentLocation* location) const OVERRIDE;
+    virtual void onAddDocument(doc::Document* doc) override;
+    virtual void onRemoveDocument(doc::Document* doc) override;
+    virtual void onGetActiveLocation(DocumentLocation* location) const override;
 
   private:
     static UIContext* m_instance;

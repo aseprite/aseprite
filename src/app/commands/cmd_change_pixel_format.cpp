@@ -41,7 +41,7 @@ class ChangePixelFormatCommand : public Command {
   DitheringMethod m_dithering;
 public:
   ChangePixelFormatCommand();
-  Command* clone() const OVERRIDE { return new ChangePixelFormatCommand(*this); }
+  Command* clone() const override { return new ChangePixelFormatCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

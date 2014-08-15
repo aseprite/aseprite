@@ -8,7 +8,6 @@
 #define UI_IMAGE_VIEW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace she {
@@ -23,8 +22,8 @@ namespace ui {
     ImageView(she::Surface* sur, int align);
 
   protected:
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
 
   private:
     she::Surface* m_sur;

@@ -37,7 +37,7 @@ namespace app {
 class InvertMaskCommand : public Command {
 public:
   InvertMaskCommand();
-  Command* clone() const OVERRIDE { return new InvertMaskCommand(*this); }
+  Command* clone() const override { return new InvertMaskCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

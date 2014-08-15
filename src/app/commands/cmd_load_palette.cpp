@@ -25,7 +25,6 @@
 #include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/file_selector.h"
-#include "base/override.h"
 #include "base/unique_ptr.h"
 #include "raster/palette.h"
 #include "ui/alert.h"
@@ -37,10 +36,10 @@ using namespace ui;
 class LoadPaletteCommand : public Command {
 public:
   LoadPaletteCommand();
-  Command* clone() const OVERRIDE { return new LoadPaletteCommand(*this); }
+  Command* clone() const override { return new LoadPaletteCommand(*this); }
 
 protected:
-  void onExecute(Context* context) OVERRIDE;
+  void onExecute(Context* context) override;
 };
 
 LoadPaletteCommand::LoadPaletteCommand()

@@ -75,8 +75,8 @@ namespace app {
     void mouseOverTab(Tabs* tabs, TabView* tabView);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    void onSaveLayout(ui::SaveLayoutEvent& ev) OVERRIDE;
+    bool onProcessMessage(ui::Message* msg) override;
+    void onSaveLayout(ui::SaveLayoutEvent& ev) override;
     void onActiveViewChange();
 
   private:

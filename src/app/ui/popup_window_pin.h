@@ -30,8 +30,8 @@ namespace app {
     PopupWindowPin(const std::string& text, ClickBehavior clickBehavior);
 
   protected:
-    virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    virtual void onHitTest(ui::HitTestEvent& ev) OVERRIDE;
+    virtual bool onProcessMessage(ui::Message* msg) override;
+    virtual void onHitTest(ui::HitTestEvent& ev) override;
 
     // The pin. Your derived class must add this pin in some place of
     // the frame as a children, and you must to remove the pin from the

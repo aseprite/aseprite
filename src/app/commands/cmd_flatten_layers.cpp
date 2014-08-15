@@ -35,7 +35,7 @@ namespace app {
 class FlattenLayersCommand : public Command {
 public:
   FlattenLayersCommand();
-  Command* clone() const OVERRIDE { return new FlattenLayersCommand(*this); }
+  Command* clone() const override { return new FlattenLayersCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

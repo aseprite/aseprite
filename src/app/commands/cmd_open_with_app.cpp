@@ -25,18 +25,17 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/launcher.h"
-#include "base/override.h"
 
 namespace app {
 
 class OpenWithAppCommand : public Command {
 public:
   OpenWithAppCommand();
-  Command* clone() const OVERRIDE { return new OpenWithAppCommand(*this); }
+  Command* clone() const override { return new OpenWithAppCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context) OVERRIDE;
-  void onExecute(Context* context) OVERRIDE;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 OpenWithAppCommand::OpenWithAppCommand()

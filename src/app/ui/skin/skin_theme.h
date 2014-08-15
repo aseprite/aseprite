@@ -23,7 +23,6 @@
 #include "app/ui/skin/skin_part.h"
 #include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/style_sheet.h"
-#include "base/override.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "ui/manager.h"
@@ -187,7 +186,7 @@ namespace app {
       }
 
     protected:
-      void onRegenerate() OVERRIDE;
+      void onRegenerate() override;
 
     private:
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,

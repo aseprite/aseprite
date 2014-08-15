@@ -8,7 +8,6 @@
 #define UI_COMBOBOX_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/widget.h"
 
@@ -88,9 +87,9 @@ namespace ui {
     Signal0<void> CloseListBox;
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onResize(ResizeEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onResize(ResizeEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
     virtual void onChange();
     virtual void onOpenListBox();
     virtual void onCloseListBox();

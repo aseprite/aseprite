@@ -8,7 +8,6 @@
 #define UI_SCROLL_BAR_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -31,8 +30,8 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPaint(PaintEvent& ev) override;
 
   private:
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);

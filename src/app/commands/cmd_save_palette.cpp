@@ -23,7 +23,6 @@
 #include "app/commands/command.h"
 #include "app/file_selector.h"
 #include "app/modules/palettes.h"
-#include "base/override.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "raster/palette.h"
@@ -36,10 +35,10 @@ using namespace ui;
 class SavePaletteCommand : public Command {
 public:
   SavePaletteCommand();
-  Command* clone() const OVERRIDE { return new SavePaletteCommand(*this); }
+  Command* clone() const override { return new SavePaletteCommand(*this); }
 
 protected:
-  void onExecute(Context* context) OVERRIDE;
+  void onExecute(Context* context) override;
 };
 
 SavePaletteCommand::SavePaletteCommand()

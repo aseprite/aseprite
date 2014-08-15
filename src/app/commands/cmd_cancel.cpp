@@ -25,7 +25,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
-#include "base/override.h"
 
 namespace app {
 
@@ -37,7 +36,7 @@ public:
   };
 
   CancelCommand();
-  Command* clone() const OVERRIDE { return new CancelCommand(*this); }
+  Command* clone() const override { return new CancelCommand(*this); }
 
 protected:
   void onLoadParams(Params* params);

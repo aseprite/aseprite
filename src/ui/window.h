@@ -8,7 +8,6 @@
 #define UI_WINDOW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "gfx/point.h"
 #include "ui/close_event.h"
@@ -58,12 +57,12 @@ namespace ui {
     Signal1<void, CloseEvent&> Close;
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
-    virtual void onResize(ResizeEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    virtual void onPaint(PaintEvent& ev) OVERRIDE;
-    virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE;
-    virtual void onSetText() OVERRIDE;
+    virtual bool onProcessMessage(Message* msg) override;
+    virtual void onResize(ResizeEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
+    virtual void onPaint(PaintEvent& ev) override;
+    virtual void onBroadcastMouseMessage(WidgetsList& targets) override;
+    virtual void onSetText() override;
 
     // New events
     virtual void onClose(CloseEvent& ev);

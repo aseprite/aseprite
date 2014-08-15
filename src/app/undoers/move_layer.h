@@ -36,9 +36,9 @@ namespace app {
     public:
       MoveLayer(ObjectsContainer* objects, Layer* layer);
 
-      void dispose() OVERRIDE;
-      size_t getMemSize() const OVERRIDE { return sizeof(*this); }
-      void revert(ObjectsContainer* objects, UndoersCollector* redoers) OVERRIDE;
+      void dispose() override;
+      size_t getMemSize() const override { return sizeof(*this); }
+      void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
       ObjectId m_folderId;

@@ -8,7 +8,6 @@
 #define UI_TOOLTIPS_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/base.h"
 #include "ui/popup_window.h"
 #include "ui/window.h"
@@ -28,7 +27,7 @@ namespace ui {
     void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
 
   private:
     void onTick();
@@ -62,10 +61,10 @@ namespace ui {
     void setArrowAlign(int arrowAlign);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onInitTheme(InitThemeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onInitTheme(InitThemeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
 
   private:
     int m_arrowAlign;

@@ -8,7 +8,6 @@
 #define UI_MENU_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "ui/register_message.h"
@@ -35,9 +34,9 @@ namespace ui {
     }
 
   protected:
-    virtual void onPaint(PaintEvent& ev) OVERRIDE;
-    virtual void onResize(ResizeEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual void onPaint(PaintEvent& ev) override;
+    virtual void onResize(ResizeEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
 
   private:
     void setOwnerMenuItem(MenuItem* ownerMenuItem) {
@@ -74,9 +73,9 @@ namespace ui {
     void cancelMenuLoop();
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
-    virtual void onResize(ResizeEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual bool onProcessMessage(Message* msg) override;
+    virtual void onResize(ResizeEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
     MenuBaseData* createBase();
 
   private:
@@ -126,9 +125,9 @@ namespace ui {
     Signal0<void> Click;
 
   protected:
-    virtual bool onProcessMessage(Message* msg) OVERRIDE;
-    virtual void onPaint(PaintEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual bool onProcessMessage(Message* msg) override;
+    virtual void onPaint(PaintEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
     virtual void onClick();
 
   private:

@@ -22,7 +22,6 @@
 
 #ifdef ENABLE_WEBSERVER
 
-#include "base/override.h"
 #include "webserver/webserver.h"
 
 namespace app {
@@ -36,7 +35,7 @@ namespace app {
 
     // webserver::IDelegate implementation
     virtual void onProcessRequest(webserver::IRequest* request,
-                                  webserver::IResponse* response) OVERRIDE;
+                                  webserver::IResponse* response) override;
 
   private:
     webserver::WebServer* m_webServer;

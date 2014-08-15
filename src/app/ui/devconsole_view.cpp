@@ -41,7 +41,7 @@ public:
   Signal1<void, const std::string&> ExecuteCommand;
 
 protected:
-  bool onProcessMessage(Message* msg) OVERRIDE {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
       case kKeyDownMessage:
         if (hasFocus()) {

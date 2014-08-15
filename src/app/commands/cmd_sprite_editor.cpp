@@ -31,7 +31,7 @@ namespace app {
 class MakeUniqueEditorCommand : public Command {
 public:
   MakeUniqueEditorCommand();
-  Command* clone() const OVERRIDE { return new MakeUniqueEditorCommand(*this); }
+  Command* clone() const override { return new MakeUniqueEditorCommand(*this); }
 
 protected:
   void onExecute(Context* context);
@@ -54,7 +54,7 @@ void MakeUniqueEditorCommand::onExecute(Context* context)
 class SplitEditorHorizontallyCommand : public Command {
 public:
   SplitEditorHorizontallyCommand();
-  Command* clone() const OVERRIDE { return new SplitEditorHorizontallyCommand(*this); }
+  Command* clone() const override { return new SplitEditorHorizontallyCommand(*this); }
 
 protected:
   void onExecute(Context* context);
@@ -77,7 +77,7 @@ void SplitEditorHorizontallyCommand::onExecute(Context* context)
 class SplitEditorVerticallyCommand : public Command {
 public:
   SplitEditorVerticallyCommand();
-  Command* clone() const OVERRIDE { return new SplitEditorVerticallyCommand(*this); }
+  Command* clone() const override { return new SplitEditorVerticallyCommand(*this); }
 
 protected:
   void onExecute(Context* context);

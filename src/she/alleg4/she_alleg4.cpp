@@ -10,7 +10,6 @@
 
 #include "she/she.h"
 
-#include "base/override.h"
 #include "base/concurrent_queue.h"
 #include "base/string.h"
 #include "she/alleg4/alleg4_font.h"
@@ -462,27 +461,27 @@ public:
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
   }
 
-  void dispose() OVERRIDE {
+  void dispose() override {
     delete this;
   }
 
-  int width() const OVERRIDE {
+  int width() const override {
     return SCREEN_W;
   }
 
-  int height() const OVERRIDE {
+  int height() const override {
     return SCREEN_H;
   }
 
-  int originalWidth() const OVERRIDE {
+  int originalWidth() const override {
     return original_width > 0 ? original_width: width();
   }
 
-  int originalHeight() const OVERRIDE {
+  int originalHeight() const override {
     return original_height > 0 ? original_height: height();
   }
 
-  void setScale(int scale) OVERRIDE {
+  void setScale(int scale) override {
     ASSERT(scale >= 1);
     display_scale = scale;
 
@@ -498,15 +497,15 @@ public:
     m_surface = newSurface;
   }
 
-  int scale() const OVERRIDE {
+  int scale() const override {
     return m_scale;
   }
 
-  NonDisposableSurface* getSurface() OVERRIDE {
+  NonDisposableSurface* getSurface() override {
     return static_cast<NonDisposableSurface*>(m_surface);
   }
 
-  bool flip() OVERRIDE {
+  bool flip() override {
 #ifdef ALLEGRO4_WITH_RESIZE_PATCH
     if (display_flags & DISPLAY_FLAG_WINDOW_RESIZE) {
       display_flags ^= DISPLAY_FLAG_WINDOW_RESIZE;
@@ -533,13 +532,13 @@ public:
     return true;
   }
 
-  void maximize() OVERRIDE {
+  void maximize() override {
 #ifdef WIN32
     ::ShowWindow(win_get_window(), SW_MAXIMIZE);
 #endif
   }
 
-  bool isMaximized() const OVERRIDE {
+  bool isMaximized() const override {
 #ifdef WIN32
     return (::GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
 #else
@@ -547,11 +546,11 @@ public:
 #endif
   }
 
-  EventQueue* getEventQueue() OVERRIDE {
+  EventQueue* getEventQueue() override {
     return m_queue;
   }
 
-  bool setNativeMouseCursor(NativeCursor cursor) OVERRIDE {
+  bool setNativeMouseCursor(NativeCursor cursor) override {
     int newCursor = MOUSE_CURSOR_NONE;
 
     switch (cursor) {
@@ -592,7 +591,7 @@ public:
     return (show_os_cursor(newCursor) == 0);
   }
 
-  void setMousePosition(const gfx::Point& position) OVERRIDE {
+  void setMousePosition(const gfx::Point& position) override {
     position_mouse(
       m_scale * position.x,
       m_scale * position.y);
@@ -625,7 +624,7 @@ public:
 #endif
   }
 
-  void* nativeHandle() OVERRIDE {
+  void* nativeHandle() override {
 #ifdef WIN32
     return reinterpret_cast<void*>(win_get_window());
 #else
@@ -658,11 +657,11 @@ public:
     allegro_exit();
   }
 
-  void dispose() OVERRIDE {
+  void dispose() override {
     delete this;
   }
 
-  Capabilities capabilities() const OVERRIDE {
+  Capabilities capabilities() const override {
     return (Capabilities)
       (kCanResizeDisplayCapability
 #ifdef WIN32
@@ -671,27 +670,27 @@ public:
        );
   }
 
-  Display* defaultDisplay() OVERRIDE {
+  Display* defaultDisplay() override {
     return unique_display;
   }
 
-  Font* defaultFont() OVERRIDE {
+  Font* defaultFont() override {
     return &m_font;
   }
 
-  Display* createDisplay(int width, int height, int scale) OVERRIDE {
+  Display* createDisplay(int width, int height, int scale) override {
     return new Alleg4Display(width, height, scale);
   }
 
-  Surface* createSurface(int width, int height) OVERRIDE {
+  Surface* createSurface(int width, int height) override {
     return new Alleg4Surface(width, height, Alleg4Surface::DeleteAndDestroy);
   }
 
-  Surface* createRgbaSurface(int width, int height) OVERRIDE {
+  Surface* createRgbaSurface(int width, int height) override {
     return new Alleg4Surface(width, height, 32, Alleg4Surface::DeleteAndDestroy);
   }
 
-  Surface* loadSurface(const char* filename) OVERRIDE {
+  Surface* loadSurface(const char* filename) override {
     PALETTE pal;
     BITMAP* bmp = load_bitmap(filename, pal);
     if (!bmp)
@@ -700,7 +699,7 @@ public:
     return new Alleg4Surface(bmp, Alleg4Surface::DeleteAndDestroy);
   }
 
-  Surface* loadRgbaSurface(const char* filename) OVERRIDE {
+  Surface* loadRgbaSurface(const char* filename) override {
     int old_color_conv = _color_conv;
     set_color_conversion(COLORCONV_NONE);
     Surface* sur = loadSurface(filename);
@@ -708,7 +707,7 @@ public:
     return sur;
   }
 
-  Clipboard* createClipboard() OVERRIDE {
+  Clipboard* createClipboard() override {
     return new ClipboardImpl();
   }
 

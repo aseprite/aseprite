@@ -65,7 +65,7 @@ public:
   bool isPlaying() { return m_isPlaying; }
 
 protected:
-  void onClick(Event& ev) OVERRIDE
+  void onClick(Event& ev) override
   {
     m_isPlaying = !m_isPlaying;
     if (m_isPlaying)
@@ -80,7 +80,7 @@ protected:
     SkinButton<Button>::onClick(ev);
   }
 
-  void onSetDecorativeWidgetBounds() OVERRIDE
+  void onSetDecorativeWidgetBounds() override
   {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Widget* window = getParent();
@@ -98,7 +98,7 @@ protected:
     setBounds(rect);
   }
 
-  bool onProcessMessage(Message* msg) OVERRIDE
+  bool onProcessMessage(Message* msg) override
   {
     switch (msg->type()) {
 

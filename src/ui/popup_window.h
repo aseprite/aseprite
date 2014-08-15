@@ -8,7 +8,6 @@
 #define UI_POPUP_WINDOW_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/window.h"
 
 namespace ui {
@@ -31,10 +30,10 @@ namespace ui {
     void makeFixed();
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onInitTheme(InitThemeEvent& ev) OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
+    void onInitTheme(InitThemeEvent& ev) override;
 
   private:
     void startFilteringMessages();

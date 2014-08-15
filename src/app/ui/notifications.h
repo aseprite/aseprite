@@ -35,9 +35,9 @@ namespace app {
     void addLink(const char* text, const char* url);
 
   protected:
-    void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    void onClick(ui::Event& ev) OVERRIDE;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
+    void onClick(ui::Event& ev) override;
 
   private:
     skin::Style* m_flagStyle;

@@ -11,7 +11,6 @@
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
 
-#include "base/override.h"
 #include "she/font.h"
 
 namespace she {
@@ -35,20 +34,20 @@ namespace she {
         destroy_font(m_font);
     }
 
-    virtual void dispose() OVERRIDE {
+    virtual void dispose() override {
       if (m_destroy & DeleteThis)
         delete this;
     }
 
-    virtual int height() const OVERRIDE {
+    virtual int height() const override {
       return text_height(m_font);
     }
 
-    virtual int charWidth(int chr) const OVERRIDE {
+    virtual int charWidth(int chr) const override {
       return m_font->vtable->char_length(m_font, chr);
     }
 
-    virtual int textLength(const char* str) const OVERRIDE {
+    virtual int textLength(const char* str) const override {
       return text_length(m_font, str);
     }
 
@@ -60,7 +59,7 @@ namespace she {
       // Do nothing
     }
 
-    virtual void* nativeHandle() OVERRIDE {
+    virtual void* nativeHandle() override {
       return reinterpret_cast<void*>(m_font);
     }
 

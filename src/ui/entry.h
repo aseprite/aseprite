@@ -8,7 +8,6 @@
 #define UI_ENTRY_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -48,10 +47,10 @@ namespace ui {
 
   protected:
     // Events
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onSetText() OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onPaint(PaintEvent& ev) override;
+    void onSetText() override;
 
     // New Events
     virtual void onEntryChange();

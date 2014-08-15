@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/ui/palettes_listbox.h"
-#include "base/override.h"
 #include "ui/popup_window.h"
 
 namespace ui {

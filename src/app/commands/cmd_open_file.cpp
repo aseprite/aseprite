@@ -48,11 +48,11 @@ namespace app {
 class OpenFileCommand : public Command {
 public:
   OpenFileCommand();
-  Command* clone() const OVERRIDE { return new OpenFileCommand(*this); }
+  Command* clone() const override { return new OpenFileCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE;
-  void onExecute(Context* context) OVERRIDE;
+  void onLoadParams(Params* params) override;
+  void onExecute(Context* context) override;
 
 private:
   std::string m_filename;
@@ -78,7 +78,7 @@ public:
 
 private:
   // Thread to do the hard work: load the file from the disk.
-  virtual void onJob() OVERRIDE {
+  virtual void onJob() override {
     try {
       fop_operate(m_fop, this);
     }
@@ -94,7 +94,7 @@ private:
     fop_done(m_fop);
   }
 
-  virtual void ackFileOpProgress(double progress) OVERRIDE {
+  virtual void ackFileOpProgress(double progress) override {
     jobProgress(progress);
   }
 

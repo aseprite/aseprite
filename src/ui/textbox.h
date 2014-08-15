@@ -8,7 +8,6 @@
 #define UI_TEXTBOX_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -19,10 +18,10 @@ namespace ui {
     TextBox(const std::string& text, int align);
 
   protected:
-    bool onProcessMessage(Message* msg) OVERRIDE;
-    void onPaint(PaintEvent& ev) OVERRIDE;
-    void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
-    void onSetText() OVERRIDE;
+    bool onProcessMessage(Message* msg) override;
+    void onPaint(PaintEvent& ev) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
+    void onSetText() override;
 
   private:
     gfx::Point m_oldPos;

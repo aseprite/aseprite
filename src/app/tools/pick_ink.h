@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/tools/ink.h"
-#include "base/override.h"
 
 namespace app {
   namespace tools {
@@ -35,9 +34,9 @@ namespace app {
 
       Target target() const { return m_target; }
 
-      bool isEyedropper() const OVERRIDE;
-      void prepareInk(ToolLoop* loop) OVERRIDE;
-      void inkHline(int x1, int y, int x2, ToolLoop* loop) OVERRIDE;
+      bool isEyedropper() const override;
+      void prepareInk(ToolLoop* loop) override;
+      void inkHline(int x1, int y, int x2, ToolLoop* loop) override;
 
     private:
       Target m_target;

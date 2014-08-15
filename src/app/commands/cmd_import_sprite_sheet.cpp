@@ -273,7 +273,7 @@ protected:
     }
   }
 
-  bool onProcessMessage(ui::Message* msg) OVERRIDE
+  bool onProcessMessage(ui::Message* msg) override
   {
     switch (msg->type()) {
       case kCloseMessage:
@@ -283,7 +283,7 @@ protected:
     return Window::onProcessMessage(msg);
   }
 
-  virtual void onBroadcastMouseMessage(WidgetsList& targets) OVERRIDE
+  virtual void onBroadcastMouseMessage(WidgetsList& targets) override
   {
     Window::onBroadcastMouseMessage(targets);
 
@@ -293,7 +293,7 @@ protected:
   }
 
   // SelectBoxDelegate impleentation
-  virtual void onChangeRectangle(const gfx::Rect& rect) OVERRIDE
+  virtual void onChangeRectangle(const gfx::Rect& rect) override
   {
     m_rect = rect;
 
@@ -362,10 +362,10 @@ private:
 class ImportSpriteSheetCommand : public Command {
 public:
   ImportSpriteSheetCommand();
-  Command* clone() const OVERRIDE { return new ImportSpriteSheetCommand(*this); }
+  Command* clone() const override { return new ImportSpriteSheetCommand(*this); }
 
 protected:
-  virtual void onExecute(Context* context) OVERRIDE;
+  virtual void onExecute(Context* context) override;
 };
 
 ImportSpriteSheetCommand::ImportSpriteSheetCommand()

@@ -109,38 +109,38 @@ public:
   }
 
   // IButtonIcon implementation
-  void destroy() OVERRIDE {
+  void destroy() override {
     // Do nothing, BrushTypeField is added as a widget in the
     // ContextBar, so it will be destroyed together with the
     // ContextBar.
   }
 
-  int getWidth() OVERRIDE {
+  int getWidth() override {
     return m_bitmap->width();
   }
 
-  int getHeight() OVERRIDE {
+  int getHeight() override {
     return m_bitmap->height();
   }
 
-  she::Surface* getNormalIcon() OVERRIDE {
+  she::Surface* getNormalIcon() override {
     return m_bitmap;
   }
 
-  she::Surface* getSelectedIcon() OVERRIDE {
+  she::Surface* getSelectedIcon() override {
     return m_bitmap;
   }
 
-  she::Surface* getDisabledIcon() OVERRIDE {
+  she::Surface* getDisabledIcon() override {
     return m_bitmap;
   }
 
-  int getIconAlign() OVERRIDE {
+  int getIconAlign() override {
     return JI_CENTER | JI_MIDDLE;
   }
 
 protected:
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     Button::onClick(ev);
 
     if (!m_popupWindow || !m_popupWindow->isVisible())
@@ -213,7 +213,7 @@ public:
   }
 
 private:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -234,7 +234,7 @@ public:
   }
 
 protected:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -259,7 +259,7 @@ public:
   }
 
 protected:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -281,7 +281,7 @@ public:
   }
 
 protected:
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
     ISettings* settings = UIContext::instance()->settings();
@@ -330,7 +330,7 @@ public:
   }
 
 protected:
-  void onChange() OVERRIDE {
+  void onChange() override {
     ComboBox::onChange();
 
     if (m_lock)
@@ -349,7 +349,7 @@ protected:
     settings->getToolSettings(currentTool)->setInkType(inkType);
   }
 
-  void onCloseListBox() OVERRIDE {
+  void onCloseListBox() override {
     releaseFocus();
   }
 
@@ -363,7 +363,7 @@ public:
   }
 
 protected:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -380,7 +380,7 @@ public:
   }
 
 protected:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -397,7 +397,7 @@ public:
   }
 
 protected:
-  void onValueChange() OVERRIDE {
+  void onValueChange() override {
     IntEntry::onValueChange();
 
     ISettings* settings = UIContext::instance()->settings();
@@ -438,7 +438,7 @@ public:
   }
 
 protected:
-  void onChange() OVERRIDE {
+  void onChange() override {
     if (m_lockChange)
       return;
 
@@ -446,7 +446,7 @@ protected:
       ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
   }
 
-  void onCloseListBox() OVERRIDE {
+  void onCloseListBox() override {
     releaseFocus();
   }
 
@@ -509,38 +509,38 @@ public:
   }
 
   // IButtonIcon implementation
-  void destroy() OVERRIDE {
+  void destroy() override {
     // Do nothing, BrushTypeField is added as a widget in the
     // ContextBar, so it will be destroyed together with the
     // ContextBar.
   }
 
-  int getWidth() OVERRIDE {
+  int getWidth() override {
     return m_bitmap->width();
   }
 
-  int getHeight() OVERRIDE {
+  int getHeight() override {
     return m_bitmap->height();
   }
 
-  she::Surface* getNormalIcon() OVERRIDE {
+  she::Surface* getNormalIcon() override {
     return m_bitmap;
   }
 
-  she::Surface* getSelectedIcon() OVERRIDE {
+  she::Surface* getSelectedIcon() override {
     return m_bitmap;
   }
 
-  she::Surface* getDisabledIcon() OVERRIDE {
+  she::Surface* getDisabledIcon() override {
     return m_bitmap;
   }
 
-  int getIconAlign() OVERRIDE {
+  int getIconAlign() override {
     return JI_CENTER | JI_MIDDLE;
   }
 
 protected:
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     Button::onClick(ev);
 
     if (!m_popupWindow || !m_popupWindow->isVisible())
@@ -638,7 +638,7 @@ public:
 
 protected:
 
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
     ISettings* settings = UIContext::instance()->settings();
@@ -673,7 +673,7 @@ public:
   }
 
 protected:
-  void onItemChange() OVERRIDE {
+  void onItemChange() override {
     ButtonSet::onItemChange();
 
     int item = getSelectedItem();
@@ -698,7 +698,7 @@ public:
   Signal1<void, ContextBarObserver::DropAction> DropPixels;
 
 protected:
-  void onItemChange() OVERRIDE {
+  void onItemChange() override {
     ButtonSet::onItemChange();
 
     switch (getSelectedItem()) {
@@ -716,7 +716,7 @@ public:
   }
 
 protected:
-  void onClick(Event& ev) OVERRIDE {
+  void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
     UIContext::instance()->settings()->setGrabAlpha(isSelected());

@@ -34,7 +34,7 @@ namespace app {
 class CutCommand : public Command {
 public:
   CutCommand();
-  Command* clone() const OVERRIDE { return new CutCommand(*this); }
+  Command* clone() const override { return new CutCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);

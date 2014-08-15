@@ -20,7 +20,6 @@
 #define APP_UNDOERS_OPEN_GROUP_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "raster/sprite_position.h"
 #include "undo/object_id.h"
 #include "undo/undoer.h"
@@ -42,12 +41,12 @@ namespace app {
                 Sprite* sprite,
                 const SpritePosition& pos);
 
-      void dispose() OVERRIDE;
-      size_t getMemSize() const OVERRIDE { return sizeof(*this); }
+      void dispose() override;
+      size_t getMemSize() const override { return sizeof(*this); }
       Modification getModification() const { return m_modification; }
-      bool isOpenGroup() const OVERRIDE { return true; }
-      bool isCloseGroup() const OVERRIDE { return false; }
-      void revert(ObjectsContainer* objects, UndoersCollector* redoers) OVERRIDE;
+      bool isOpenGroup() const override { return true; }
+      bool isCloseGroup() const override { return false; }
+      void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
       const SpritePosition& getSpritePosition() { return m_spritePosition; }
 

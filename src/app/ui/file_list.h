@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/file_system.h"
-#include "base/override.h"
 #include "base/signal.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -50,9 +49,9 @@ namespace app {
     Signal0<void> CurrentFolderChanged;
 
   protected:
-    virtual bool onProcessMessage(ui::Message* msg) OVERRIDE;
-    virtual void onPaint(ui::PaintEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(ui::PreferredSizeEvent& ev) OVERRIDE;
+    virtual bool onProcessMessage(ui::Message* msg) override;
+    virtual void onPaint(ui::PaintEvent& ev) override;
+    virtual void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     virtual void onFileSelected();
     virtual void onFileAccepted();
     virtual void onCurrentFolderChanged();

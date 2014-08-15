@@ -41,11 +41,11 @@ protected:
   GotoCommand(const char* short_name, const char* friendly_name)
     : Command(short_name, friendly_name, CmdRecordableFlag) { }
 
-  bool onEnabled(Context* context) OVERRIDE {
+  bool onEnabled(Context* context) override {
     return (current_editor != NULL);
   }
 
-  void onExecute(Context* context) OVERRIDE {
+  void onExecute(Context* context) override {
     ASSERT(current_editor != NULL);
 
     current_editor->setFrame(onGetFrame(current_editor));
@@ -59,10 +59,10 @@ public:
   GotoFirstFrameCommand()
     : GotoCommand("GotoFirstFrame",
                   "Goto First Frame") { }
-  Command* clone() const OVERRIDE { return new GotoFirstFrameCommand(*this); }
+  Command* clone() const override { return new GotoFirstFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+  FrameNumber onGetFrame(Editor* editor) override {
     return FrameNumber(0);
   }
 };
@@ -72,10 +72,10 @@ public:
   GotoPreviousFrameCommand()
     : GotoCommand("GotoPreviousFrame",
                   "Goto Previous Frame") { }
-  Command* clone() const OVERRIDE { return new GotoPreviousFrameCommand(*this); }
+  Command* clone() const override { return new GotoPreviousFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+  FrameNumber onGetFrame(Editor* editor) override {
     FrameNumber frame = editor->frame();
 
     if (frame > FrameNumber(0))
@@ -89,10 +89,10 @@ class GotoNextFrameCommand : public GotoCommand {
 public:
   GotoNextFrameCommand() : GotoCommand("GotoNextFrame",
                                        "Goto Next Frame") { }
-  Command* clone() const OVERRIDE { return new GotoNextFrameCommand(*this); }
+  Command* clone() const override { return new GotoNextFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+  FrameNumber onGetFrame(Editor* editor) override {
     FrameNumber frame = editor->frame();
     if (frame < editor->sprite()->lastFrame())
       return frame.next();
@@ -105,10 +105,10 @@ class GotoLastFrameCommand : public GotoCommand {
 public:
   GotoLastFrameCommand() : GotoCommand("GotoLastFrame",
                                        "Goto Last Frame") { }
-  Command* clone() const OVERRIDE { return new GotoLastFrameCommand(*this); }
+  Command* clone() const override { return new GotoLastFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+  FrameNumber onGetFrame(Editor* editor) override {
     return editor->sprite()->lastFrame();
   }
 };
@@ -118,17 +118,17 @@ public:
   GotoFrameCommand() : GotoCommand("GotoFrame",
                                    "Goto Frame")
                      , m_frame(0) { }
-  Command* clone() const OVERRIDE { return new GotoFrameCommand(*this); }
+  Command* clone() const override { return new GotoFrameCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) OVERRIDE
+  void onLoadParams(Params* params) override
   {
     std::string frame = params->get("frame");
     if (!frame.empty()) m_frame = ustrtol(frame.c_str(), NULL, 10);
     else m_frame = 0;
   }
 
-  FrameNumber onGetFrame(Editor* editor) OVERRIDE {
+  FrameNumber onGetFrame(Editor* editor) override {
     if (m_frame == 0) {
       base::UniquePtr<Window> window(app::load_widget<Window>("goto_frame.xml", "goto_frame"));
       Widget* frame = app::find_widget<Widget>(window, "frame");

@@ -21,7 +21,6 @@
 #pragma once
 
 #include "app/ui/editor/editor_state.h"
-#include "base/override.h"
 #include "gfx/point.h"
 
 namespace app {
@@ -30,14 +29,14 @@ namespace app {
   public:
     ScrollingState();
     virtual ~ScrollingState();
-    virtual bool isTemporalState() const OVERRIDE { return true; }
-    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) OVERRIDE;
-    virtual bool onSetCursor(Editor* editor) OVERRIDE;
-    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) OVERRIDE;
-    virtual bool onUpdateStatusBar(Editor* editor) OVERRIDE;
+    virtual bool isTemporalState() const override { return true; }
+    virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
+    virtual bool onSetCursor(Editor* editor) override;
+    virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
+    virtual bool onUpdateStatusBar(Editor* editor) override;
 
   private:
     gfx::Point m_oldPos;

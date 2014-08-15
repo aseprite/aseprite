@@ -8,7 +8,6 @@
 #define UI_PANEL_H_INCLUDED
 #pragma once
 
-#include "base/override.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -20,8 +19,8 @@ namespace ui {
     void showChild(Widget* widget);
 
   protected:
-    virtual void onResize(ResizeEvent& ev) OVERRIDE;
-    virtual void onPreferredSize(PreferredSizeEvent& ev) OVERRIDE;
+    virtual void onResize(ResizeEvent& ev) override;
+    virtual void onPreferredSize(PreferredSizeEvent& ev) override;
   };
 
 } // namespace ui
