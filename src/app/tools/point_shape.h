@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_TOOLS_TOOL_POINT_SHAPE_INCLUDED
+#ifndef APP_TOOLS_TOOL_POINT_SHAPE_H_INCLUDED
 #define APP_TOOLS_TOOL_POINT_SHAPE_H_INCLUDED
 #pragma once
 
@@ -44,4 +44,4 @@ namespace app {
   } // namespace tools
 } // namespace app
 
-#endif  // TOOLS_INK_H_INCLUDED
+#endif  // APP_TOOLS_TOOL_POINT_SHAPE_H_INCLUDED
