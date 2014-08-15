@@ -31,7 +31,7 @@
 
 #elif __APPLE__ // Mac OS X
 
-  extern "C" void getMacOSXVersion(int* major, int* minor, int* bugFix);
+  void getMacOSXVersion(int* major, int* minor, int* bugFix);
 
 #else  // Unix-like system
 
