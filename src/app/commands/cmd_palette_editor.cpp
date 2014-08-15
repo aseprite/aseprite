@@ -254,10 +254,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_rampButton("Ramp")
   , m_quantizeButton("Quantize")
   , m_disableHexUpdate(false)
+  , m_redrawTimer(250, this)
   , m_redrawAll(false)
   , m_implantChange(false)
   , m_selfPalChange(false)
-  , m_redrawTimer(250, this)
 {
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;
