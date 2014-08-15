@@ -93,23 +93,23 @@ static inline bool color_equal_8(color_t c1, color_t c2, int tolerance)
 template<typename ImageTraits>
 static inline bool color_equal(color_t c1, color_t c2, int tolerance)
 {
-  // TODO static_assert(false)
+  static_assert(false && sizeof(ImageTraits), "Invalid color comparison");
 }
 
 template<>
-static inline bool color_equal<RgbTraits>(color_t c1, color_t c2, int tolerance)
+inline bool color_equal<RgbTraits>(color_t c1, color_t c2, int tolerance)
 {
   return color_equal_32(c1, c2, tolerance);
 }
 
 template<>
-static inline bool color_equal<GrayscaleTraits>(color_t c1, color_t c2, int tolerance)
+inline bool color_equal<GrayscaleTraits>(color_t c1, color_t c2, int tolerance)
 {
   return color_equal_16(c1, c2, tolerance);
 }
 
 template<>
-static inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
+inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
 {
   return color_equal_8(c1, c2, tolerance);
 }

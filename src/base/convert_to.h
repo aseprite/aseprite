@@ -18,11 +18,7 @@ namespace base {
   // Undefined convertion
   template<typename To, typename From>
   To convert_to(const From& from) {
-    // As this function doesn't return a value, if a specialization is
-    // not found, a compiler error will be thrown (which means that
-    // the conversion isn't supported).
-
-    // TODO Use a static_assert(false)
+    static_assert(false && sizeof(To), "Invalid conversion");
   }
 
   template<> int convert_to(const std::string& from);

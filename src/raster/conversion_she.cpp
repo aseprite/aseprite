@@ -41,9 +41,7 @@ namespace {
 
 template<typename ImageTraits, she::SurfaceFormat format>
 uint32_t convert_color_to_surface(color_t color, const Palette* palette, const she::SurfaceFormatData* fd) {
-  // Error, it must use a specialization
-
-  // TODO Use a static_assert(false)
+  static_assert(false && sizeof(ImageTraits), "Invalid color conversion");
 }
 
 template<>
