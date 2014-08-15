@@ -33,6 +33,30 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # Third-party libraries
 
+if(USE_SHARED_ALLEGRO4)
+  # Find the shared Allegro 4 library
+  find_library(LIBALLEGRO4_LIBRARY alleg)
+  find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
+
+  if(NOT LIBALLEGRO4_LIBRARY)
+    message(FATAL_ERROR "Allegro 4 not found")
+  endif()
+
+  # Get flags to link programs using allegro-config program
+  execute_process(COMMAND allegro-config --libs --shared
+    OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  include_directories(${LIBALLEGRO4_INCLUDE_DIR})
+else()
+  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
+  add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
+
+  # Use patched version of Allegro 4 (with window resize support).
+  add_subdirectory(allegro)
+  set(libs3rdparty ${libs3rdparty} allegro)
+endif()
+
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
   if(JPEG_FOUND)
@@ -99,6 +123,16 @@ else()
   include_directories(${LOADPNG_DIR})
 endif()
 
+######################################################################
+# Add C++11 support only for our code (avoid Allegro)
+
+if(UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-switch -std=gnu++11")
+endif()
+
+######################################################################
+# Updater
+
 if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
 endif()
@@ -144,37 +178,6 @@ if(NOT ENABLE_TRIAL_MODE)
   add_definitions(-DENABLE_SAVE)
 else()
   add_definitions(-DENABLE_TRIAL_MODE)
-endif()
-
-if(USE_SHARED_ALLEGRO4)
-  # Find the shared Allegro 4 library
-  find_library(LIBALLEGRO4_LIBRARY alleg)
-  find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
-
-  if(NOT LIBALLEGRO4_LIBRARY)
-    message(FATAL_ERROR "Allegro 4 not found")
-  endif()
-
-  # Get flags to link programs using allegro-config program
-  execute_process(COMMAND allegro-config --libs --shared
-    OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  include_directories(${LIBALLEGRO4_INCLUDE_DIR})
-else()
-  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
-  add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
-
-  # Use patched version of Allegro 4 (with window resize support).
-  add_subdirectory(allegro)
-  set(libs3rdparty ${libs3rdparty} allegro)
-endif()
-
-######################################################################
-# Add C++11 support only for our code (avoid Allegro)
-
-if(UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++11")
 endif()
 
 ######################################################################
