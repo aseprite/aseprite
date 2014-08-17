@@ -53,6 +53,7 @@ namespace base {                // Based on C++0x threads lib
 
     class func_wrapper {
     public:
+      virtual ~func_wrapper() { }
       virtual void operator()() = 0;
     };
 
