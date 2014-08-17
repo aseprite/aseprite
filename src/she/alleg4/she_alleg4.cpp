@@ -733,7 +733,7 @@ void error_message(const char* msg)
   std::wstring title = base::from_utf8(PACKAGE);
   ::MessageBoxW(NULL, wmsg.c_str(), title.c_str(), MB_OK | MB_ICONERROR);
 #else
-  allegro_message(msg);
+  allegro_message("%s", msg);
 #endif
 }
 
