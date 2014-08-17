@@ -33,7 +33,7 @@ Hsv::Hsv(const Rgb& rgb)
   int m = rgb.minComponent();
   int c = M - m;
   double chroma = double(c) / 255.0;
-  double hue_prime;
+  double hue_prime = 0.0;
   double h, s, v;
   double r, g, b;
 
