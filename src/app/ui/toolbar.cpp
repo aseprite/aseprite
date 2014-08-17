@@ -91,8 +91,8 @@ ToolBar* ToolBar::m_instance = NULL;
 
 ToolBar::ToolBar()
   : Widget(kGenericWidget)
-  , m_tipTimer(300, this)
   , m_openedRecently(false)
+  , m_tipTimer(300, this)
 {
   m_instance = this;
 

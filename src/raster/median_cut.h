@@ -56,8 +56,8 @@ namespace quantization {
         int r2, int g2, int b2)
       : r1(r1), g1(g1), b1(b1)
       , r2(r2), g2(g2), b2(b2)
-      , volume(calculateVolume())
-      , points(0) { }
+      , points(0)
+      , volume(calculateVolume()) { }
 
     // Shrinks each plane of the box to a position where there are
     // points in the histogram.

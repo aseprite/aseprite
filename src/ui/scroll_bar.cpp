@@ -25,9 +25,9 @@ int ScrollBar::m_whereclick = 0;
 
 ScrollBar::ScrollBar(int align)
   : Widget(kViewScrollbarWidget)
+  , m_barWidth(getTheme()->scrollbar_size)
   , m_pos(0)
   , m_size(0)
-  , m_barWidth(getTheme()->scrollbar_size)
 {
   setAlign(align);
   initTheme();

@@ -59,18 +59,18 @@ public:
   CanvasSizeWindow(int left, int top, int right, int bottom)
     : Window(WithTitleBar, "Canvas Size")
     , m_editor(current_editor)
+    , m_mainBox(app::load_widget<Widget>("canvas_size.xml", "main_box"))
+    , m_left(app::find_widget<Entry>(m_mainBox, "left"))
+    , m_right(app::find_widget<Entry>(m_mainBox, "right"))
+    , m_top(app::find_widget<Entry>(m_mainBox, "top"))
+    , m_bottom(app::find_widget<Entry>(m_mainBox, "bottom"))
+    , m_ok(app::find_widget<Button>(m_mainBox, "ok"))
     , m_rect(-left, -top,
              current_editor->sprite()->width() + left + right,
              current_editor->sprite()->height() + top + bottom)
     , m_selectBoxState(new SelectBoxState(this, m_rect,
                                           SelectBoxState::PaintRulers |
                                           SelectBoxState::PaintDarkOutside))
-    , m_mainBox(app::load_widget<Widget>("canvas_size.xml", "main_box"))
-    , m_left(app::find_widget<Entry>(m_mainBox, "left"))
-    , m_top(app::find_widget<Entry>(m_mainBox, "top"))
-    , m_right(app::find_widget<Entry>(m_mainBox, "right"))
-    , m_bottom(app::find_widget<Entry>(m_mainBox, "bottom"))
-    , m_ok(app::find_widget<Button>(m_mainBox, "ok"))
   {
     addChild(m_mainBox);
 

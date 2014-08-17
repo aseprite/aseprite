@@ -54,8 +54,6 @@ namespace app {
     base::UniquePtr<CheckUpdateBackgroundJob> m_bgJob;
     bool m_doCheck;
     bool m_received;
-    updater::CheckUpdateResponse m_response;
-    ui::Timer m_timer;
 
     // Mini-stats
     int m_inits;
@@ -63,6 +61,9 @@ namespace app {
 
     // True if this is a developer
     bool m_isDeveloper;
+
+    updater::CheckUpdateResponse m_response;
+    ui::Timer m_timer;
   };
 
 } // namespace app

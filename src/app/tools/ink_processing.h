@@ -394,10 +394,10 @@ public:
   BlurInkProcessing(ToolLoop* loop) :
     m_palette(get_current_palette()),
     m_rgbmap(loop->getRgbMap()),
-    m_area(get_current_palette()),
     m_opacity(loop->getOpacity()),
     m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
-    m_srcImage(loop->getSrcImage()) {
+    m_srcImage(loop->getSrcImage()),
+    m_area(get_current_palette()) {
   }
 
   void processPixel(int x, int y) {

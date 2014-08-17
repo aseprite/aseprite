@@ -89,9 +89,9 @@ private:
 
 ColorSelector::ColorSelector()
   : PopupWindowPin("Color Selector", PopupWindow::kCloseOnClickInOtherWindow)
-  , m_color(app::Color::fromMask())
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
+  , m_color(app::Color::fromMask())
   , m_colorPalette(false)
   , m_indexButton("Index", 1, kButtonWidget)
   , m_rgbButton("RGB", 1, kButtonWidget)

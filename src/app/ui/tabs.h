@@ -119,6 +119,9 @@ namespace app {
     Tab* m_selected;
     int m_scrollX;
 
+    // Delegate of notifications
+    TabsDelegate* m_delegate;
+
     // Variables for animation purposes
     ui::Timer m_timer;
     int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
@@ -132,9 +135,6 @@ namespace app {
     class ScrollButton;
     ScrollButton* m_button_left;
     ScrollButton* m_button_right;
-
-    // Delegate of notifications
-    TabsDelegate* m_delegate;
   };
 
 } // namespace app

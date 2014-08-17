@@ -18,8 +18,8 @@
 namespace doc {
 
 Document::Document()
-  : m_ctx(NULL)
-  , m_sprites(this)
+  : m_sprites(this)
+  , m_ctx(NULL)
 {
 }
 

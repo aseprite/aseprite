@@ -31,8 +31,8 @@ namespace raster {
 
 Stock::Stock(Sprite* sprite, PixelFormat format)
   : Object(OBJECT_STOCK)
-  , m_sprite(sprite)
   , m_format(format)
+  , m_sprite(sprite)
 {
   // Image with index=0 is always NULL.
   m_image.push_back(NULL);

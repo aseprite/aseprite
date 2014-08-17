@@ -52,9 +52,9 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   : m_context(context)
   , m_location(context->activeLocation())
   , m_filter(filter)
-  , m_progressDelegate(NULL)
   , m_dst(NULL)
   , m_preview_mask(NULL)
+  , m_progressDelegate(NULL)
 {
   int offset_x, offset_y;
 

@@ -30,10 +30,10 @@ ButtonBase::ButtonBase(const std::string& text,
                        WidgetType drawType)
   : Widget(type)
   , m_pressedStatus(false)
-  , m_handleSelect(true)
   , m_behaviorType(behaviorType)
   , m_drawType(drawType)
   , m_iconInterface(NULL)
+  , m_handleSelect(true)
 {
   setAlign(JI_CENTER | JI_MIDDLE);
   setText(text);
