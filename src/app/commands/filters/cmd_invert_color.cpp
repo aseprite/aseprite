@@ -45,16 +45,12 @@ static const char* ConfigSection = "InvertColor";
 
 class InvertColorWindow : public FilterWindow {
 public:
-  InvertColorWindow(InvertColorFilter& filter, FilterManagerImpl& filterMgr)
+  InvertColorWindow(FilterManagerImpl& filterMgr)
     : FilterWindow("Invert Color", ConfigSection, &filterMgr,
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
-    , m_filter(filter)
   {
   }
-
-private:
-  InvertColorFilter& m_filter;
 };
 
 class InvertColorCommand : public Command {
@@ -89,7 +85,7 @@ void InvertColorCommand::onExecute(Context* context)
                       TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL);
 
-  InvertColorWindow window(filter, filterMgr);
+  InvertColorWindow window(filterMgr);
   window.doModal();
 }
 

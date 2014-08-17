@@ -158,7 +158,6 @@ void SelectBoxState::preRenderDecorator(EditorPreRender* render)
     return;
 
   gfx::Rect rc = getBoxBounds();
-  Image* image = render->getImage();
   Sprite* sprite = render->getEditor()->sprite();
   int sprite_w = sprite->width();
   int sprite_h = sprite->height();

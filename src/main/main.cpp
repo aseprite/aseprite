@@ -39,18 +39,9 @@
 #include <windows.h>
 #endif
 
-//////////////////////////////////////////////////////////////////////
-// Information for "ident".
-
-const char aseprite_ident[] =
-    "$" PACKAGE ": " VERSION " " COPYRIGHT " $\n"
-    "$Website: " WEBSITE " $\n";
-
-//////////////////////////////////////////////////////////////////////
-// Memory leak detector wrapper
-
 namespace {
 
+  // Memory leak detector wrapper
   class MemLeak {
   public:
 #ifdef MEMLEAK

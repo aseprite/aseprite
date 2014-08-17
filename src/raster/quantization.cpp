@@ -484,7 +484,8 @@ void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
   // will not be used later in the color conversion (from RGB to
   // Indexed).
   int first_usable_entry = (has_background_layer ? 0: 1);
-  int used_colors = m_histogram.createOptimizedPalette(palette, first_usable_entry, 255);
+  //int used_colors =
+  m_histogram.createOptimizedPalette(palette, first_usable_entry, 255);
   //palette->resize(first_usable_entry+used_colors);   // TODO
 }
 

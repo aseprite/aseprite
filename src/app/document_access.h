@@ -209,7 +209,6 @@ namespace app {
   public:
     explicit DocumentDestroyer(Context* context, Document* document)
       : DocumentWriter(document)
-      , m_context(context)
     {
     }
 
@@ -224,8 +223,6 @@ namespace app {
       m_document = NULL;
     }
 
-  private:
-    Context* m_context;
   };
 
 } // namespace app

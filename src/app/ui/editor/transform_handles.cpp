@@ -215,8 +215,6 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 
 bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixed angle)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-
   adjustHandle(x, y, gfx_w, gfx_h, angle);
 
   return (pt.x >= x && pt.x < x+gfx_w &&

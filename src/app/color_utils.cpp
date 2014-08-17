@@ -32,26 +32,6 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 
-// Internal functions
-namespace {
-
-// Returns the same values of bitmap_mask_color() (this function *must*
-// returns the same values).
-int get_mask_for_bitmap(int depth)
-{
-  switch (depth) {
-    case  8: return MASK_COLOR_8;  break;
-    case 15: return MASK_COLOR_15; break;
-    case 16: return MASK_COLOR_16; break;
-    case 24: return MASK_COLOR_24; break;
-    case 32: return MASK_COLOR_32; break;
-    default:
-      return -1;
-  }
-}
-
-}
-
 namespace app {
 
 gfx::Color color_utils::blackandwhite(gfx::Color color)

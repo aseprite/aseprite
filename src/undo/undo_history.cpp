@@ -112,8 +112,6 @@ void UndoHistory::runUndo(Direction direction)
   int level = 0;
 
   do {
-    const char* itemLabel = NULL;
-
     Undoer* undoer = undoers->popUndoer(UndoersStack::PopFromHead);
     if (!undoer)
       break;

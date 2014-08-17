@@ -36,9 +36,6 @@ namespace app {
 
 using namespace ui;
 
-static Widget* find_selected(Widget* widget);
-static int select_button(Widget* widget, int index);
-
 class ButtonSet::Item : public RadioButton
 {
 public:

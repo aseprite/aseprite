@@ -108,7 +108,9 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
 static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, FrameNumber frame, PixelFormat pixelFormat, FileOp* fop, ASE_Header* header, size_t chunk_end);
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel* cel, LayerImage* layer, Sprite* sprite);
 static Mask* ase_file_read_mask_chunk(FILE* f);
+#if 0
 static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Mask* mask);
+#endif
 
 class ChunkWriter {
 public:
@@ -1236,6 +1238,7 @@ static Mask* ase_file_read_mask_chunk(FILE* f)
   return mask;
 }
 
+#if 0
 static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Mask* mask)
 {
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_MASK);
@@ -1262,5 +1265,6 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
       fputc(byte, f);
     }
 }
+#endif
 
 } // namespace app

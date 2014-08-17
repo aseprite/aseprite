@@ -113,7 +113,7 @@ void StandbyState::onAfterChangeState(Editor* editor)
 
 void StandbyState::onCurrentToolChange(Editor* editor)
 {
-  tools::Tool* currentTool = editor->getCurrentEditorTool();
+  //tools::Tool* currentTool = editor->getCurrentEditorTool();
 
   // If the user change from a selection tool to a non-selection tool,
   // or viceversa, we've to show or hide the transformation handles.
@@ -124,7 +124,6 @@ void StandbyState::onCurrentToolChange(Editor* editor)
 
 bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 {
-  UIContext* context = UIContext::instance();
   tools::Tool* currentTool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
 
@@ -142,7 +141,6 @@ bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::checkForZoom(Editor* editor, MouseMessage* msg)
 {
-  UIContext* context = UIContext::instance();
   tools::Tool* currentTool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
 
@@ -169,7 +167,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   DocumentLocation location;
   editor->getDocumentLocation(&location);
   Document* document = location.document();
-  Sprite* sprite = location.sprite();
   Layer* layer = location.layer();
 
   // When an editor is clicked the current view is changed.

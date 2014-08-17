@@ -83,8 +83,6 @@ void EyedropperCommand::onExecute(Context* context)
   if (!sprite)
     return;
 
-  FrameNumber frame = editor->frame();
-
   // pixel position to get
   int x, y;
   editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);

@@ -39,8 +39,6 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-static const int kMonitoringPeriod = 100;
-
 namespace app {
 
 class SaveFileJob : public Job, public IFileOpProgress {

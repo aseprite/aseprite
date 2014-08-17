@@ -105,14 +105,12 @@ TEST(Region, Iterators)
   a.createUnion(a, Region(Rect(0, 0, 64, 32)));
   int c = 0;
   for (Region::iterator it=a.begin(), end=a.end(); it!=end; ++it) {
-    Rect& r = *it;
     ++c;
   }
   EXPECT_EQ(2, c);
 
   c = 0;
   for (Region::const_iterator it=a.begin(), end=a.end(); it!=end; ++it) {
-    const Rect& r = *it;
     ++c;
   }
   EXPECT_EQ(2, c);

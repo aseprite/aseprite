@@ -61,7 +61,6 @@ class ToolLoopImpl : public tools::ToolLoop,
   Sprite* m_sprite;
   Layer* m_layer;
   FrameNumber m_frame;
-  Cel* m_cel;
   bool m_filled;
   bool m_previewFilled;
   int m_sprayWidth;

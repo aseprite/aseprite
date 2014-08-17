@@ -508,7 +508,6 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 Point ToolBar::getToolPositionInGroup(int group_index, Tool* tool)
 {
   ToolBox* toolbox = App::instance()->getToolBox();
-  int groups = toolbox->getGroupsCount();
   Size iconsize = getToolIconSize(this);
   int nth = 0;
 
@@ -731,7 +730,6 @@ void ToolBar::ToolStrip::onPreferredSize(PreferredSizeEvent& ev)
 void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
-  gfx::Rect bounds = getClientBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   ToolBox* toolbox = App::instance()->getToolBox();
   Rect toolrc;

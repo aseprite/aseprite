@@ -89,8 +89,6 @@ static struct {
                         {  320, 200, 1 },
                         {    0,   0, 0 } };
 
-static int try_depths[] = { 32, 24, 16, 15 };
-
 //////////////////////////////////////////////////////////////////////
 
 enum ShortcutType { Shortcut_ExecuteCommand,
@@ -143,9 +141,6 @@ static Theme* ase_theme = NULL;
 
 static std::vector<Shortcut*>* shortcuts = NULL;
 
-static volatile int restored_width = 0;
-static volatile int restored_height = 0;
-
 // Default GUI screen configuration
 static int screen_scaling;
 
@@ -154,8 +149,6 @@ static void reload_default_font();
 // Load & save graphics configuration
 static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
-
-static bool button_with_icon_msg_proc(Widget* widget, Message* msg);
 
 // Initializes GUI.
 int init_module_gui()

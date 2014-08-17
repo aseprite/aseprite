@@ -82,7 +82,6 @@ void MoveMaskCommand::onExecute(Context* context)
   IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
-  gfx::Point scroll = view->getViewScroll();
   gfx::Rect gridBounds = docSettings->getGridBounds();
   int dx = 0;
   int dy = 0;

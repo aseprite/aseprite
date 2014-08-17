@@ -48,8 +48,6 @@ using namespace app::tools;
 
 static Window* window = NULL;
 
-static bool window_close_hook(Widget* widget, void *data);
-
 // Slot for App::Exit signal
 static void on_exit_delete_this_widget()
 {
@@ -125,10 +123,6 @@ void ConfigureTools::onExecute(Context* context)
     window = NULL;
     throw;
   }
-
-  // Current settings
-  Tool* current_tool = m_settings->getCurrentTool();
-  IToolSettings* tool_settings = m_settings->getToolSettings(current_tool);
 
   if (m_docSettings->getTiledMode() != filters::TILED_NONE) {
     m_tiled->setSelected(true);

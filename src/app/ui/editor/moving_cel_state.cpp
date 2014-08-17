@@ -43,7 +43,6 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   : m_canceled(false)
 {
   Document* document = editor->document();
-  Sprite* sprite = editor->sprite();
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 

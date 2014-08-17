@@ -67,7 +67,6 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
 
   UIContext* context = UIContext::instance();
 
-  EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
   m_pixelsMovement = pixelsMovement;
 
   if (handle != NoHandle) {
@@ -387,7 +386,6 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   ASSERT(m_pixelsMovement != NULL);
 
   const gfx::Transformation& transform(getTransformation(editor));
-  Document* document = editor->document();
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
 
   StatusBar::instance()->setStatusText

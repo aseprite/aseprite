@@ -212,7 +212,6 @@ public:
 protected:
 
   void onSheetTypeChange() {
-    bool col = false;
     bool state = false;
     switch (sheetType()->getSelectedItemIndex()) {
       case ExportSpriteSheetCommand::Matrix:

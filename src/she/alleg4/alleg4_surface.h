@@ -281,7 +281,6 @@ namespace she {
     void drawString(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
       FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
       base::utf8_const_iterator it(str.begin()), end(str.end());
-      int length = 0;
       int sysfg = to_allegro(bitmap_color_depth(m_bmp), fg);
       int sysbg = to_allegro(bitmap_color_depth(m_bmp), bg);
 

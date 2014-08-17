@@ -932,7 +932,6 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 
 void SkinTheme::paintDesktop(PaintEvent& ev)
 {
-  Widget* widget = static_cast<Widget*>(ev.getSource());
   Graphics* g = ev.getGraphics();
 
   g->fillRect(getColor(ThemeColor::Disabled), g->getClipBounds());
@@ -1198,7 +1197,6 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
 
 void SkinTheme::paintListBox(PaintEvent& ev)
 {
-  Widget* widget = static_cast<Widget*>(ev.getSource());
   Graphics* g = ev.getGraphics();
 
   g->fillRect(getColor(ThemeColor::Background), g->getClipBounds());
@@ -1343,7 +1341,6 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 
 void SkinTheme::paintSplitter(PaintEvent& ev)
 {
-  Splitter* splitter = static_cast<Splitter*>(ev.getSource());
   Graphics* g = ev.getGraphics();
 
   g->fillRect(getColor(ThemeColor::SplitterNormalFace), g->getClipBounds());

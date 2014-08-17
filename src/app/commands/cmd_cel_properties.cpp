@@ -68,7 +68,6 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 void CelPropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
-  const Document* document = reader.document();
   const Sprite* sprite = reader.sprite();
   const Layer* layer = reader.layer();
   const Cel* cel = reader.cel(); // Get current cel (can be NULL)

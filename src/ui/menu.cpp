@@ -118,8 +118,6 @@ protected:
 static MenuBox* get_base_menubox(Widget* widget);
 static MenuBaseData* get_base(Widget* widget);
 
-static bool window_msg_proc(Widget* widget, Message* msg);
-
 static MenuItem* check_for_letter(Menu* menu, int ascii);
 
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);

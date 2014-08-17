@@ -364,10 +364,8 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         case A_PART_LAYER_TEXT: {
           const DocumentReader document(const_cast<Document*>(m_document));
-          const Sprite* sprite = m_sprite;
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk_layer));
-          FrameNumber frame = m_frame;
 
           if (selectLayer) {
             // Did the user select another layer?
@@ -392,7 +390,6 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         case A_PART_CEL: {
           const DocumentReader document(const_cast<Document*>(m_document));
-          const Sprite* sprite = document->sprite();
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk_layer)
@@ -1261,7 +1258,6 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame, Cel* cel)
 {
-  Layer* layer = m_layers[layerIndex];
   Image* image = (cel ? cel->image(): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layerIndex &&
@@ -1289,6 +1285,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, FrameNumber frame
       // user draw over it), so then we can compare hashes.  Other
       // option is to use a thread to calculate differences, but I
       // think it's too much for just UI stuff.
+    Layer* layer = m_layers[layerIndex];
     Cel* left = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.previous()): NULL);
     Cel* right = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame.next()): NULL);
     Image* leftImg = (left ? m_sprite->stock()->getImage(left->getImage()): NULL);
@@ -1548,8 +1545,6 @@ gfx::Rect Timeline::getPartBounds(int part, LayerIndex layer, FrameNumber frame)
 
     case A_PART_CEL:
       if (validLayer(layer) && validFrame(frame)) {
-        Cel* cel = (m_layers[layer]->isImage() ? static_cast<LayerImage*>(m_layers[layer])->getCel(frame): NULL);
-
         return gfx::Rect(
           m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
           HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
@@ -1946,9 +1941,6 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     m_dropRange.disableRange();
     return;
   }
-
-  bool insideOrigFrames = false;
-  bool insideOrigLayers = false;
 
   switch (m_range.type()) {
 

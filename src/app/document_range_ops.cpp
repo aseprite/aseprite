@@ -258,9 +258,6 @@ static DocumentRange drop_range_op(
           if (layers.empty())
             break;
 
-          Layer* firstLayer = layers.front();
-          Layer* lastLayer = layers.back();
-
           switch (op) {
 
             case Move:

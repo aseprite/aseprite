@@ -668,7 +668,6 @@ void FileSelector::onLocationCloseListBox()
 {
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
-  int itemIndex = m_location->getSelectedItemIndex();
   CustomFileNameItem* comboFileItem = dynamic_cast<CustomFileNameItem*>(m_location->getSelectedItem());
   IFileItem* fileItem = (comboFileItem != NULL ? comboFileItem->getFileItem(): NULL);
 

@@ -306,7 +306,6 @@ void FileList::onPaint(ui::PaintEvent& ev)
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Rect bounds = getClientBounds();
-  int th = getTextHeight();
   int x, y = bounds.y;
   int evenRow = 0;
   gfx::Color bgcolor;

@@ -188,8 +188,6 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
   m_currentData.transformBox(oldCorners);
 
   ContextWriter writer(m_reader);
-  Image* image = m_document->getExtraCelImage();
-  Cel* cel = m_document->getExtraCel();
   int x1, y1, x2, y2;
 
   x1 = m_initialData.bounds().x;

@@ -41,8 +41,6 @@
 
 #include <cstdio>
 
-static const int kMonitoringPeriod = 100;
-
 namespace app {
 
 class OpenFileCommand : public Command {

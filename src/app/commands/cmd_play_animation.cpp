@@ -119,10 +119,7 @@ protected:
       }
 
       case kKeyDownMessage: {
-        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
-
         closeWindow(this);
-
         return true;
       }
 

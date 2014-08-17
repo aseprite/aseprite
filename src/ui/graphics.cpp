@@ -164,7 +164,6 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
 {
   she::ScopedSurfaceLock dst(m_surface);
   base::utf8_const_iterator it(str.begin()), end(str.end());
-  int length = 0;
   int x = m_dx+pt.x;
   int y = m_dy+pt.y;
   int underscored_x;
