@@ -11,9 +11,12 @@
 
 using namespace base;
 
-std::ostream& operator<<(std::ostream& os, const Version& ver)
-{
-  return os << convert_to<std::string>(ver);
+namespace base {
+
+  std::ostream& operator<<(std::ostream& os, const Version& ver) {
+    return os << convert_to<std::string>(ver);
+  }
+  
 }
 
 TEST(Version, Ctor)

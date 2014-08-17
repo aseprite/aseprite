@@ -31,6 +31,15 @@
 using namespace app;
 using namespace raster;
 
+namespace app {
+
+  std::ostream& operator<<(std::ostream& os, const DocumentRange& range) {
+    return os << "{ layers: [" << range.layerBegin() << ", " << range.layerEnd() << "]"
+              << ", frames: [" << range.frameBegin() << ", " << range.frameEnd() << "] }";
+  }
+
+}
+
 typedef base::UniquePtr<Document> DocumentPtr;
 
 #define EXPECT_LAYER_ORDER(a, b, c, d)               \
@@ -121,11 +130,6 @@ inline DocumentRange frames_range(int fromFrame, int toFrame) {
 
 inline DocumentRange frames_range(int frame) {
   return range(0, frame, 0, frame, DocumentRange::kFrames);
-}
-
-std::ostream& operator<<(std::ostream& os, const DocumentRange& range) {
-  return os << "{ layers: [" << range.layerBegin() << ", " << range.layerEnd() << "]"
-            << ", frames: [" << range.frameBegin() << ", " << range.frameEnd() << "] }";
 }
 
 TEST_F(DocRangeOps, MoveLayersNoOp) {

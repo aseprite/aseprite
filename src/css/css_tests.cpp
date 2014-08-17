@@ -9,20 +9,23 @@
 #include "css/css.h"
 
 using namespace css;
-using namespace std;
 
-ostream& operator<<(ostream& os, const Value& value)
-{
-  os << "(" << value.type();
+namespace css {
 
-  if (value.type() == Value::Number)
-    os << ", " << value.number() << " [" << value.unit() << "]";
-  else if (value.type() == Value::String)
-    os << ", " << value.string();
+  std::ostream& operator<<(std::ostream& os, const Value& value)
+  {
+    os << "(" << value.type();
 
-  os << ")";
-  return os;
-}
+    if (value.type() == Value::Number)
+      os << ", " << value.number() << " [" << value.unit() << "]";
+    else if (value.type() == Value::String)
+      os << ", " << value.string();
+
+    os << ")";
+    return os;
+  }
+  
+} // namespace css
 
 TEST(Css, Style)
 {

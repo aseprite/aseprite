@@ -13,13 +13,17 @@
 using namespace std;
 using namespace gfx;
 
-ostream& operator<<(ostream& os, const Rect& rect)
-{
-  return os << "("
-            << rect.x << ", "
-            << rect.y << ", "
-            << rect.w << ", "
-            << rect.h << ")";
+namespace gfx {
+
+  ostream& operator<<(ostream& os, const Rect& rect)
+  {
+    return os << "("
+              << rect.x << ", "
+              << rect.y << ", "
+              << rect.w << ", "
+              << rect.h << ")";
+  }
+  
 }
 
 TEST(Rect, Ctor)

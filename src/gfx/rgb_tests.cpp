@@ -12,12 +12,15 @@
 using namespace gfx;
 using namespace std;
 
-ostream& operator<<(ostream& os, const Rgb& rgb)
-{
-  return os << "("
-            << rgb.red() << ", "
-            << rgb.green() << ", "
-            << rgb.blue() << ")";
+namespace gfx {
+
+  ostream& operator<<(ostream& os, const Rgb& rgb) {
+    return os << "("
+              << rgb.red() << ", "
+              << rgb.green() << ", "
+              << rgb.blue() << ")";
+  }
+  
 }
 
 TEST(Rgb, Ctor)

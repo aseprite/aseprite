@@ -22,8 +22,12 @@
 
 using namespace app;
 
-inline std::ostream& operator<<(std::ostream& os, const Color& color) {
-  return os << color.toString();
+namespace app {
+
+  inline std::ostream& operator<<(std::ostream& os, const Color& color) {
+    return os << color.toString();
+  }
+  
 }
 
 TEST(Color, fromRgb)
