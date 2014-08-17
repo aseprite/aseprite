@@ -87,7 +87,10 @@ void convert_image_to_surface_templ(const Image* image, she::LockedSurface* dst,
   int src_x, int src_y, int dst_x, int dst_y, int w, int h, const Palette* palette, const she::SurfaceFormatData* fd)
 {
   const LockImageBits<ImageTraits> bits(image, gfx::Rect(src_x, src_y, w, h));
-  typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin(), src_end = bits.end();
+  typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin();
+#ifdef _DEBUG
+  typename LockImageBits<ImageTraits>::const_iterator src_end = bits.end();
+#endif
 
   for (int v=0; v<h; ++v, ++dst_y) {
     AddressType dst_address = AddressType(dst->getData(dst_x, dst_y));

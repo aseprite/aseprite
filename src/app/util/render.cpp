@@ -180,12 +180,17 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
   typedef std::vector<typename DstTraits::pixel_t> Scanline;
   Scanline scanline(src_w);
   typename Scanline::iterator scanline_it;
+#ifdef _DEBUG
   typename Scanline::iterator scanline_end = scanline.end();
+#endif
 
   // Lock all necessary bits
   const LockImageBits<SrcTraits> srcBits(src, gfx::Rect(src_x, src_y, src_w, src_h));
   LockImageBits<DstTraits> dstBits(dst, gfx::Rect(dst_x, dst_y, dst_w, dst_h));
-  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
+  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
+#ifdef _DEBUG
+  typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
+#endif
   typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
 
   // For each line to draw of the source image...

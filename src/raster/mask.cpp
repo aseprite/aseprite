@@ -233,7 +233,10 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
       const LockImageBits<RgbTraits> srcBits(src);
       LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
       LockImageBits<RgbTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
-      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin();
+#ifdef _DEBUG
+      LockImageBits<BitmapTraits>::iterator dst_end = dstBits.end();
+#endif
       int src_r, src_g, src_b, src_a;
       int dst_r, dst_g, dst_b, dst_a;
       color_t c;
@@ -266,7 +269,10 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
       const LockImageBits<GrayscaleTraits> srcBits(src);
       LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
       LockImageBits<GrayscaleTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
-      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin();
+#ifdef _DEBUG
+      LockImageBits<BitmapTraits>::iterator dst_end = dstBits.end();
+#endif
       int src_k, src_a;
       int dst_k, dst_a;
       color_t c;
@@ -293,7 +299,10 @@ void Mask::byColor(const Image *src, int color, int fuzziness)
       const LockImageBits<IndexedTraits> srcBits(src);
       LockImageBits<BitmapTraits> dstBits(dst, Image::WriteLock);
       LockImageBits<IndexedTraits>::const_iterator src_it = srcBits.begin(), src_end = srcBits.end();
-      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin(), dst_end = dstBits.end();
+      LockImageBits<BitmapTraits>::iterator dst_it = dstBits.begin();
+#ifdef _DEBUG
+      LockImageBits<BitmapTraits>::iterator dst_end = dstBits.end();
+#endif
       color_t c, min, max;
 
       for (; src_it != src_end; ++src_it, ++dst_it) {

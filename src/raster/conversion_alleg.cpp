@@ -137,7 +137,10 @@ template<typename ImageTraits>
 void convert_image_to_allegro_templ(const Image* image, BITMAP* bmp, int _x, int _y, const Palette* palette)
 {
   const LockImageBits<ImageTraits> bits(image);
-  typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin(), src_end = bits.end();
+  typename LockImageBits<ImageTraits>::const_iterator src_it = bits.begin();
+#ifdef _DEBUG
+  typename LockImageBits<ImageTraits>::const_iterator src_end = bits.end();
+#endif
   int depth = bitmap_color_depth(bmp);
   int x, y, w = image->width(), h = image->height();
   unsigned long bmp_address;

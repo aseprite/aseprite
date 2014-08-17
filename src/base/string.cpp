@@ -147,7 +147,9 @@ std::wstring from_utf8(const std::string& src)
   int required_size = utf8_length(src);
   std::vector<wchar_t> buf(++required_size);
   std::vector<wchar_t>::iterator buf_it = buf.begin();
+#ifdef _DEBUG
   std::vector<wchar_t>::iterator buf_end = buf.end();
+#endif
   utf8_const_iterator it(src.begin());
   utf8_const_iterator end(src.end());
 
