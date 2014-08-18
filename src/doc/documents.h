@@ -40,7 +40,7 @@ namespace doc {
     bool empty() const { return m_docs.empty(); }
 
     // Add a new documents to the list.
-    Document* add(int width, int height, ColorMode mode = ColorMode_RGB, int ncolors = 256);
+    Document* add(int width, int height, ColorMode mode = ColorMode::RGB, int ncolors = 256);
     Document* add(Document* doc);
 
     // Removes a document from the list without deleting it. You must

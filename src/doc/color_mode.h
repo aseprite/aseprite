@@ -10,11 +10,11 @@
 
 namespace doc {
 
-  enum ColorMode {
-    ColorMode_RGB,
-    ColorMode_GRAYSCALE,
-    ColorMode_INDEXED,
-    ColorMode_BITMAP
+  enum class ColorMode {
+    RGB,
+    GRAYSCALE,
+    INDEXED,
+    BITMAP
   };
 
 } // namespace doc

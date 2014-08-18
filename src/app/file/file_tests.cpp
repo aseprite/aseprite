@@ -46,7 +46,7 @@ TEST(File, SeveralSizes)
       std::sprintf(&fn[0], "test.ase");
 
       {
-        doc::Document* doc = ctx.documents().add(w, h, doc::ColorMode_INDEXED, 256);
+        doc::Document* doc = ctx.documents().add(w, h, doc::ColorMode::INDEXED, 256);
         doc->setFilename(&fn[0]);
 
         // Random pixels

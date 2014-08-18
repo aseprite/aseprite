@@ -46,7 +46,7 @@ TEST_F(GifFormat, Dimensions)
   const char* fn = "test.gif";
 
   {
-    doc::Document* doc = m_ctx.documents().add(31, 29, doc::ColorMode_INDEXED, 14);
+    doc::Document* doc = m_ctx.documents().add(31, 29, doc::ColorMode::INDEXED, 14);
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
     sprite->setTransparentColor(3);
@@ -84,7 +84,7 @@ TEST_F(GifFormat, OpaqueIndexed)
   const char* fn = "test.gif";
 
   {
-    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_INDEXED, 4);
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode::INDEXED, 4);
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
@@ -141,7 +141,7 @@ TEST_F(GifFormat, TransparentIndexed)
   const char* fn = "test.gif";
 
   {
-    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_INDEXED, 4);
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode::INDEXED, 4);
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
@@ -197,7 +197,7 @@ TEST_F(GifFormat, TransparentRgbQuantization)
   const char* fn = "test.gif";
 
   {
-    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256);
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode::RGB, 256);
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
@@ -241,7 +241,7 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
   const char* fn = "test.gif";
 
   {
-    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256);
+    doc::Document* doc = m_ctx.documents().add(2, 2, doc::ColorMode::RGB, 256);
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
@@ -289,7 +289,7 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
   const char* fn = "test.gif";
 
   {
-    Document* doc(static_cast<Document*>(m_ctx.documents().add(2, 2, doc::ColorMode_RGB, 256)));
+    Document* doc(static_cast<Document*>(m_ctx.documents().add(2, 2, doc::ColorMode::RGB, 256)));
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
