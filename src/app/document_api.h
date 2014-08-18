@@ -82,12 +82,12 @@ namespace app {
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
     void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
     void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
-    void moveCel(Sprite* sprite,
-      LayerImage* srcLayer, LayerImage* dstLayer,
-      FrameNumber srcFrame, FrameNumber dstFrame, color_t bgcolor);
-    void copyCel(Sprite* sprite,
-      LayerImage* srcLayer, LayerImage* dstLayer,
-      FrameNumber srcFrame, FrameNumber dstFrame, color_t bgcolor);
+    void moveCel(
+      LayerImage* srcLayer, FrameNumber srcFrame,
+      LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor);
+    void copyCel(
+      LayerImage* srcLayer, FrameNumber srcFrame,
+      LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor);
 
     // Layers API
     LayerImage* newLayer(Sprite* sprite);

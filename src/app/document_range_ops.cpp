@@ -148,8 +148,8 @@ static DocumentRange drop_range_op(
               color_t bgcolor = app_get_color_to_clear_layer(dstLayer);
 
               switch (op) {
-                case Move: api.moveCel(sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor); break;
-                case Copy: api.copyCel(sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor); break;
+                case Move: api.moveCel(srcLayer, srcFrame, dstLayer, dstFrame, bgcolor); break;
+                case Copy: api.copyCel(srcLayer, srcFrame, dstLayer, dstFrame, bgcolor); break;
               }
 
               srcFrame += srcFrameStep;

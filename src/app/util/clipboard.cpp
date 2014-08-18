@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,8 +249,9 @@ void clipboard::paste()
   if (editor == NULL)
     return;
 
-  Document* dst_doc = editor->document();
-  Sprite* dst_spr = dst_doc->sprite();
+  Document* dstDoc = editor->document();
+  Sprite* dstSpr = dstDoc->sprite();
+  color_t bgcolor = 0;
 
   switch (get_current_format()) {
 
@@ -269,11 +270,11 @@ void clipboard::paste()
       if (clipboard_image == NULL)
         return;
 
-      Palette* dst_palette = dst_spr->getPalette(editor->frame());
+      Palette* dst_palette = dstSpr->getPalette(editor->frame());
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')
       Image* src_image;
-      if (clipboard_image->pixelFormat() == dst_spr->pixelFormat() &&
+      if (clipboard_image->pixelFormat() == dstSpr->pixelFormat() &&
         // Indexed images can be copied directly only if both images
         // have the same palette.
         (clipboard_image->pixelFormat() != IMAGE_INDEXED ||
@@ -281,10 +282,10 @@ void clipboard::paste()
         src_image = clipboard_image;
       }
       else {
-        RgbMap* dst_rgbmap = dst_spr->getRgbMap(editor->frame());
+        RgbMap* dst_rgbmap = dstSpr->getRgbMap(editor->frame());
 
         src_image = quantization::convert_pixel_format(
-          clipboard_image, NULL, dst_spr->pixelFormat(),
+          clipboard_image, NULL, dstSpr->pixelFormat(),
           DITHERING_NONE, dst_rgbmap, clipboard_palette,
           false);
       }
@@ -298,37 +299,111 @@ void clipboard::paste()
     }
 
     case clipboard::ClipboardDocumentRange: {
-      DocumentRange range = clipboard_range.range();
-      Document* src_doc = clipboard_range.document();
+      DocumentRange srcRange = clipboard_range.range();
+      Document* srcDoc = clipboard_range.document();
+      Sprite* srcSpr = srcDoc->sprite();
+      DocumentApi api = dstDoc->getApi();
+      std::vector<Layer*> srcLayers;
+      std::vector<Layer*> dstLayers;
+      srcSpr->getLayersList(srcLayers);
+      dstSpr->getLayersList(dstLayers);
 
-      switch (range.type()) {
+      switch (srcRange.type()) {
 
+        case DocumentRange::kCels: {
+          UndoTransaction undoTransaction(UIContext::instance(), "Paste Cels");
+
+          FrameNumber dstFrame = editor->frame();
+          for (FrameNumber frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
+            if (dstFrame == dstSpr->totalFrames())
+              api.addFrame(dstSpr, dstFrame);
+
+            for (LayerIndex
+                   i = srcRange.layerEnd(),
+                   j = dstSpr->layerToIndex(editor->layer());
+                   i >= srcRange.layerBegin() &&
+                   i >= LayerIndex(0) &&
+                   j >= LayerIndex(0); --i, --j) {
+              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
+
+              if (cel && cel->image()) {
+                bgcolor = app_get_color_to_clear_layer(dstLayers[j]);
+
+                api.copyCel(
+                  static_cast<LayerImage*>(srcLayers[i]), frame,
+                  static_cast<LayerImage*>(dstLayers[j]), dstFrame, bgcolor);
+              }
+              else {
+                Cel* dstCel = static_cast<LayerImage*>(dstLayers[j])->getCel(dstFrame);
+                if (dstCel)
+                  api.removeCel(static_cast<LayerImage*>(dstLayers[j]), dstCel);
+              }
+            }
+
+            dstFrame = dstFrame.next();
+          }
+
+          undoTransaction.commit();
+          editor->invalidate();
+          break;
+        }
+
+        case DocumentRange::kFrames: {
+          UndoTransaction undoTransaction(UIContext::instance(), "Paste Frames");
+          FrameNumber dstFrame = FrameNumber(editor->frame() + 1);
+
+          for (FrameNumber frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
+            api.addFrame(dstSpr, dstFrame);
+
+            for (LayerIndex
+                   i = LayerIndex(srcLayers.size()-1),
+                   j = LayerIndex(dstLayers.size()-1);
+                   i >= LayerIndex(0) &&
+                   j >= LayerIndex(0); --i, --j) {
+              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
+              if (cel && cel->image()) {
+                bgcolor = app_get_color_to_clear_layer(dstLayers[j]);
+
+                api.copyCel(
+                  static_cast<LayerImage*>(srcLayers[i]), frame,
+                  static_cast<LayerImage*>(dstLayers[j]), dstFrame, bgcolor);
+              }
+            }
+
+            dstFrame = dstFrame.next();
+          }
+
+          undoTransaction.commit();
+          editor->invalidate();
+          break;
+        }
+          
         case DocumentRange::kLayers: {
-          if (src_doc->colorMode() != dst_doc->colorMode())
+          if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
           UndoTransaction undoTransaction(UIContext::instance(), "Paste Layers");
-          std::vector<Layer*> src_layers;
-          src_doc->sprite()->getLayersList(src_layers);
 
-          // Expand frames of dst_doc if it's needed.
+          // Expand frames of dstDoc if it's needed.
           FrameNumber maxFrame(0);
-          for (LayerIndex i = range.layerBegin(); i <= range.layerEnd(); ++i) {
-            Cel* lastCel = static_cast<LayerImage*>(src_layers[i])->getLastCel();
+          for (LayerIndex i = srcRange.layerBegin();
+               i <= srcRange.layerEnd() &&
+               i < LayerIndex(srcLayers.size()); ++i) {
+            Cel* lastCel = static_cast<LayerImage*>(srcLayers[i])->getLastCel();
             if (maxFrame < lastCel->frame())
               maxFrame = lastCel->frame();
           }
-          if (dst_doc->sprite()->totalFrames() < maxFrame.next())
-            dst_doc->getApi().setTotalFrames(dst_spr, maxFrame.next());
+          if (dstSpr->totalFrames() < maxFrame.next())
+            api.setTotalFrames(dstSpr, maxFrame.next());
 
-          for (LayerIndex i = range.layerBegin(); i <= range.layerEnd(); ++i) {
-            LayerImage* new_layer = new LayerImage(dst_spr);
-            dst_doc->getApi().addLayer(
-              dst_spr->folder(), new_layer,
-              dst_spr->folder()->getLastLayer());
+          for (LayerIndex i = srcRange.layerBegin(); i <= srcRange.layerEnd(); ++i) {
+            LayerImage* newLayer = new LayerImage(dstSpr);
+            api.addLayer(
+              dstSpr->folder(), newLayer,
+              dstSpr->folder()->getLastLayer());
 
-            src_doc->copyLayerContent(
-              src_layers[i], dst_doc, new_layer);
+            srcDoc->copyLayerContent(
+              srcLayers[i], dstDoc, newLayer);
           }
 
           undoTransaction.commit();
@@ -339,6 +414,7 @@ void clipboard::paste()
       }
       break;
     }
+
   }
 }
 

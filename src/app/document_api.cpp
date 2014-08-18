@@ -286,7 +286,7 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
       if (fromFrame >= frame)
         fromFrame = fromFrame.next();
 
-      copyCel(sprite, imglayer, imglayer, fromFrame, frame, 0);
+      copyCel(imglayer, fromFrame, imglayer, frame, 0);
       break;
     }
 
@@ -615,19 +615,25 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, 
   setCelPosition(sprite, cel, x, y);
 }
 
-void DocumentApi::moveCel(Sprite* sprite,
-  LayerImage* srcLayer, LayerImage* dstLayer,
-  FrameNumber srcFrame, FrameNumber dstFrame,
+void DocumentApi::moveCel(
+  LayerImage* srcLayer, FrameNumber srcFrame,
+  LayerImage* dstLayer, FrameNumber dstFrame,
   color_t bgcolor)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
-  ASSERT(srcFrame >= 0 && srcFrame < sprite->totalFrames());
-  ASSERT(dstFrame >= 0 && dstFrame < sprite->totalFrames());
+
+  Sprite* srcSprite = srcLayer->sprite();
+  Sprite* dstSprite = dstLayer->sprite();
+  ASSERT(srcSprite != NULL);
+  ASSERT(dstSprite != NULL);
+
+  ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
+  ASSERT(dstFrame >= 0 && dstFrame < dstSprite->totalFrames());
 
   // Background to any other layer, we use copyCel() instead.
   if (srcLayer->isBackground()) {
-    copyCel(sprite, srcLayer, dstLayer, srcFrame, dstFrame, bgcolor);
+    copyCel(srcLayer, srcFrame, dstLayer, dstFrame, bgcolor);
     return;
   }
   // In this we copy from a transparent layer to another layer...
@@ -658,15 +664,15 @@ void DocumentApi::moveCel(Sprite* sprite,
         Image* dstImage = crop_image(srcImage,
           -srcCel->x(),
           -srcCel->y(),
-          sprite->width(),
-          sprite->height(), 0);
+          dstSprite->width(),   // TODO dstSprite or srcSprite
+          dstSprite->height(), 0);
 
         clear_image(dstImage, bgcolor);
         composite_image(dstImage, srcImage, srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
 
         newCel->setPosition(0, 0);
         newCel->setOpacity(255);
-        newCel->setImage(addImageInStock(sprite, dstImage));
+        newCel->setImage(addImageInStock(dstSprite, dstImage));
       }
 
       // Add and the remove, so the Stock's image is reused.
@@ -678,15 +684,20 @@ void DocumentApi::moveCel(Sprite* sprite,
   m_document->notifyCelMoved(srcLayer, srcFrame, dstLayer, dstFrame);
 }
 
-void DocumentApi::copyCel(Sprite* sprite,
-  LayerImage* srcLayer, LayerImage* dstLayer,
-  FrameNumber srcFrame, FrameNumber dstFrame,
-  color_t bgcolor)
+void DocumentApi::copyCel(
+  LayerImage* srcLayer, FrameNumber srcFrame,
+  LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
-  ASSERT(srcFrame >= 0 && srcFrame < sprite->totalFrames());
-  ASSERT(dstFrame >= 0 && dstFrame < sprite->totalFrames());
+
+  Sprite* srcSprite = srcLayer->sprite();
+  Sprite* dstSprite = dstLayer->sprite();
+  ASSERT(srcSprite != NULL);
+  ASSERT(dstSprite != NULL);
+
+  ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
+  ASSERT(dstFrame >= 0 && dstFrame < dstSprite->totalFrames());
 
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
@@ -709,10 +720,10 @@ void DocumentApi::copyCel(Sprite* sprite,
     if (!srcLayer->isBackground() &&
         dstLayer->isBackground()) {
       dstImage = crop_image(srcImage,
-                             -srcCel->x(),
-                             -srcCel->y(),
-                             sprite->width(),
-                             sprite->height(), 0);
+        -srcCel->x(),
+        -srcCel->y(),
+        dstSprite->width(),     // TODO is dstSprite or srcSprite?
+        dstSprite->height(), 0);
 
       clear_image(dstImage, bgcolor);
       composite_image(dstImage, srcImage, srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
@@ -729,7 +740,7 @@ void DocumentApi::copyCel(Sprite* sprite,
     }
 
     // Add the image in the stock
-    int image_index = addImageInStock(sprite, dstImage);
+    int image_index = addImageInStock(dstSprite, dstImage);
     
     // Create the new cel
     dstCel = new Cel(dstFrame, image_index);
