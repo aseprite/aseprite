@@ -254,10 +254,10 @@ static void call_user_main(void)
 /* main:
  *  Replacement for main function.
  */
-int main(int argc, char *argv[])
+// dacap: modified to receive a customized delegate (subclass of AllegroAppDelegate)
+int allegro_main(int argc, char *argv[], NSObject* app_delegate)
 {
    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-   AllegroAppDelegate *app_delegate = [[AllegroAppDelegate alloc] init];
    NSMenu *menu;
    NSMenuItem *menu_item, *temp_item;
 

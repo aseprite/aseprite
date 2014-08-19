@@ -103,24 +103,24 @@ private:
   base::concurrent_queue<Event> m_events;
 };
 
-namespace {
-
 base::mutex unique_display_mutex;
 Display* unique_display = NULL;
 int display_scale;
+
+void queue_event(Event& ev)
+{
+  base::scoped_lock hold(unique_display_mutex);
+  if (unique_display)
+    static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
+}
+
+namespace {
 
 #if WIN32
 
 wndproc_t base_wndproc = NULL;
 bool display_has_mouse = false;
 bool capture_mouse = false;
-
-static void queue_event(Event& ev)
-{
-  base::scoped_lock hold(unique_display_mutex);
-  if (unique_display)
-    static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
-}
 
 static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
