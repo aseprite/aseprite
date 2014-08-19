@@ -14,6 +14,7 @@
       <key command="SaveFileCopyAs" shortcut="Ctrl+Shift+C" mac="Cmd+Shift+C" />
       <key command="CloseFile" shortcut="Ctrl+W" mac="Cmd+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" mac="Cmd+Shift+W" />
+      <key command="ImportSpriteSheet" shortcut="Ctrl+I" mac="Cmd+I" />
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
@@ -44,7 +45,6 @@
         <param name="orientation" value="vertical" />
       </key>
       <key command="ReplaceColor" shortcut="Shift+R" />
-      <key command="InvertColor" shortcut="Ctrl+I" mac="Cmd+I" />
       <key command="ConvolutionMatrix" shortcut="F9" />
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
