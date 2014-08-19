@@ -25,14 +25,11 @@ Its main features are:
 ## Issues
 
 There are a list of
-[Known Issues](https://code.google.com/p/aseprite/issues/list) (things
+[Known Issues](https://github.com/aseprite/aseprite/issues) (things
 to be fixed or that aren't yet implemented).
 
-If you found a bug, or you have a new idea/feature for the program,
-you can report them using the following links:
-
-* [Report a bug](http://code.google.com/p/aseprite/issues/entry)
-* [Fill a feature request](http://code.google.com/p/aseprite/issues/entry?template=New%20feature)
+If you found a bug or you have a new idea/feature for the program,
+[you can report them](https://github.com/aseprite/aseprite/issues/new).
 
 ## Support
 
