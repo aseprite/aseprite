@@ -1,4 +1,6 @@
 allegro_icon ICON data/icons/ase.ico
+0 ICON data/icons/ase.ico
+1 ICON data/icons/doc.ico
 
 1 VERSIONINFO
   FILEVERSION 1,0,3,0
