@@ -12,7 +12,7 @@ Other ways to contribute require direct contact with us. For example:
 * Writting documentation.
 * Making art *for* Aseprite (logos, skins, mockups).
 * Sending patches for features or bug fixes.
-* Reviewing issues in the [issue tracker](http://code.google.com/p/aseprite/issues/list) and making comments.
+* Reviewing issues in the [issue tracker](https://github.com/aseprite/aseprite/issues) and making comments.
 
 The following sections explain some tips about each of these points.
 
@@ -34,7 +34,7 @@ screenshots or record a GIF animations to show steps:
 
 You can review issues, make comments, or create new ones (features,
 bug reports, etc.) in our
-[issue tracker](http://code.google.com/p/aseprite/issues/list).  You
+[issue tracker](https://github.com/aseprite/aseprite/issues).  You
 are encouraged to create mockups for any issue you see and attach them.
 
 ## Hacking
@@ -93,7 +93,7 @@ fixes in one single branch. E.g. `fix-issues-3-and-8-and-25`.
 Subscribe to
 [aseprite-discuss](http://groups.google.com/group/aseprite-discuss)
 group. If you want to start working in something
-(e.g. [an open issue](http://code.google.com/p/aseprite/issues/list)),
+(e.g. [an open issue](https://github.com/aseprite/aseprite/issues)),
 you should send an email to the group describing what you want to do,
 to avoid programming in something that is already done or which
 someone else is working on.
