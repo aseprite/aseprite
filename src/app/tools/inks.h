@@ -173,6 +173,7 @@ public:
 
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
+  bool isEraser() const { return true; }
 
   void prepareInk(ToolLoop* loop)
   {

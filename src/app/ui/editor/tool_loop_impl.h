@@ -20,10 +20,6 @@
 #define APP_UI_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 #pragma once
 
-namespace ui {
-  class MouseMessage;
-}
-
 namespace app {
   class Context;
   class Editor;
@@ -32,7 +28,7 @@ namespace app {
     class ToolLoop;
   }
 
-  tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, ui::MouseMessage* msg);
+  tools::ToolLoop* create_tool_loop(Editor* editor, Context* context);
 
 } // namespace app
 

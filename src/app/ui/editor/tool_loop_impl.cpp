@@ -92,6 +92,7 @@ public:
   ToolLoopImpl(Editor* editor,
                Context* context,
                tools::Tool* tool,
+               tools::Ink* ink,
                Document* document,
                tools::ToolLoop::Button button,
                const app::Color& primary_color,
@@ -108,7 +109,7 @@ public:
     , m_toolSettings(m_settings->getToolSettings(m_tool))
     , m_canceled(false)
     , m_button(button)
-    , m_ink(getInkFromType())
+    , m_ink(ink)
     , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
     , m_selectionMode(m_settings->selection()->getSelectionMode())
@@ -282,61 +283,13 @@ public:
     return m_shadeTable;
   }
 
-private:
-  tools::Ink* getInkFromType()
-  {
-    using namespace tools;
-
-    InkType inkType = m_toolSettings->getInkType();
-    if (inkType == kDefaultInk)
-      return m_tool->getInk(m_button);
-
-    const char* id = WellKnownInks::Paint;
-    switch (inkType) {
-      case kOpaqueInk:
-        id = WellKnownInks::PaintOpaque;
-        break;
-      case kSetAlphaInk:
-        id = WellKnownInks::PaintSetAlpha;
-        break;
-      case kLockAlphaInk:
-        id = WellKnownInks::PaintLockAlpha;
-        break;
-      case kMergeInk:
-        id = WellKnownInks::Paint;
-        break;
-      case kShadingInk:
-        id = WellKnownInks::Shading;
-        break;
-      case kReplaceInk:
-        if (m_button == ToolLoop::Left)
-          id = WellKnownInks::ReplaceBgWithFg;
-        else
-          id = WellKnownInks::ReplaceFgWithBg;
-        break;
-      case kEraseInk:
-        id = WellKnownInks::Eraser;
-        break;
-      case kSelectionInk:
-        id = WellKnownInks::Selection;
-        break;
-      case kBlurInk:
-        id = WellKnownInks::Blur;
-        break;
-      case kJumbleInk:
-        id = WellKnownInks::Jumble;
-        break;
-    }
-
-    return App::instance()->getToolBox()->getInkById(id);
-  }
-
 };
 
-tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage* msg)
+tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 {
-  tools::Tool* current_tool = context->settings()->getCurrentTool();
-  if (!current_tool)
+  tools::Tool* current_tool = editor->getCurrentEditorTool();
+  tools::Ink* current_ink = editor->getCurrentEditorInk();
+  if (!current_tool || !current_ink)
     return NULL;
 
   Layer* layer = editor->layer();
@@ -376,19 +329,16 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context, MouseMessage
   }
 
   // Create the new tool loop
-  try
-  {
-    return new ToolLoopImpl(editor,
-                            context,
-                            current_tool,
-                            editor->document(),
-                            msg->left() ? tools::ToolLoop::Left:
-                                          tools::ToolLoop::Right,
-                            msg->left() ? fg: bg,
-                            msg->left() ? bg: fg);
+  try {
+    return new ToolLoopImpl(editor, context,
+      current_tool,
+      current_ink,
+      editor->document(),
+      !editor->isSecondaryButton() ? tools::ToolLoop::Left: tools::ToolLoop::Right,
+      !editor->isSecondaryButton() ? fg: bg,
+      !editor->isSecondaryButton() ? bg: fg);
   }
-  catch (const std::exception& ex)
-  {
+  catch (const std::exception& ex) {
     Alert::show(PACKAGE
                 "<<Error drawing ink:"
                 "<<%s"

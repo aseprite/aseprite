@@ -143,6 +143,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
   , m_flags(flags)
+  , m_secondaryButton(false)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
@@ -732,14 +733,121 @@ gfx::Point Editor::controlInfiniteScroll(MouseMessage* msg)
   return mousePos;
 }
 
+bool Editor::isCurrentToolAffectedByRightClickMode()
+{
+  Context* context = UIContext::instance();
+  tools::Tool* tool = context->settings()->getCurrentTool();
+
+  return
+    (tool->getInk(0)->isPaint() || tool->getInk(0)->isEffect()) &&
+    (!tool->getInk(0)->isEraser());
+}
+
 tools::Tool* Editor::getCurrentEditorTool()
 {
   if (m_quicktool)
     return m_quicktool;
-  else {
-    UIContext* context = UIContext::instance();
-    return context->settings()->getCurrentTool();
+
+  Context* context = UIContext::instance();
+  tools::Tool* tool = context->settings()->getCurrentTool();
+
+  if (m_secondaryButton && isCurrentToolAffectedByRightClickMode()) {
+    tools::ToolBox* toolbox = App::instance()->getToolBox();
+
+    switch (context->settings()->getRightClickMode()) {
+      case RightClickMode::PaintBgColor:
+        // Do nothing, use the current tool
+        break;
+      case RightClickMode::PickFgColor:
+        tool = toolbox->getToolById(tools::WellKnownTools::Eyedropper);
+        break;
+      case RightClickMode::Erase:
+        tool = toolbox->getToolById(tools::WellKnownTools::Eraser);
+        break;
+    }
   }
+
+  return tool;
+}
+
+tools::Ink* Editor::getCurrentEditorInk()
+{
+  Context* context = UIContext::instance();
+  tools::Tool* tool = getCurrentEditorTool();
+  tools::Ink* ink = tool->getInk(m_secondaryButton ? 1: 0);
+
+  if (m_quicktool)
+    return ink;
+
+  tools::Tool* selectedTool = context->settings()->getCurrentTool();
+  RightClickMode rightClickMode = context->settings()->getRightClickMode();
+
+  if (m_secondaryButton &&
+      rightClickMode != RightClickMode::Default &&
+      isCurrentToolAffectedByRightClickMode()) {
+    tools::ToolBox* toolbox = App::instance()->getToolBox();
+
+    switch (rightClickMode) {
+      case RightClickMode::Default:
+        // Do nothing
+        break;
+      case RightClickMode::PickFgColor:
+        ink = toolbox->getInkById(tools::WellKnownInks::PickFg);
+        break;
+      case RightClickMode::Erase:
+        ink = toolbox->getInkById(tools::WellKnownInks::Eraser);
+        break;
+    }
+  }
+  else {
+    IToolSettings* toolSettings = context->settings()->getToolSettings(tool);
+    InkType inkType = toolSettings->getInkType();
+    const char* id = NULL;
+
+    switch (inkType) {
+      case kDefaultInk:
+        // Do nothing
+        break;
+      case kOpaqueInk:
+        id = tools::WellKnownInks::PaintOpaque;
+        break;
+      case kSetAlphaInk:
+        id = tools::WellKnownInks::PaintSetAlpha;
+        break;
+      case kLockAlphaInk:
+        id = tools::WellKnownInks::PaintLockAlpha;
+        break;
+      case kMergeInk:
+        id = tools::WellKnownInks::Paint;
+        break;
+      case kShadingInk:
+        id = tools::WellKnownInks::Shading;
+        break;
+      case kReplaceInk:
+        if (!m_secondaryButton)
+          id = tools::WellKnownInks::ReplaceBgWithFg;
+        else
+          id = tools::WellKnownInks::ReplaceFgWithBg;
+        break;
+      case kEraseInk:
+        id = tools::WellKnownInks::Eraser;
+        break;
+      case kSelectionInk:
+        id = tools::WellKnownInks::Selection;
+        break;
+      case kBlurInk:
+        id = tools::WellKnownInks::Blur;
+        break;
+      case kJumbleInk:
+        id = tools::WellKnownInks::Jumble;
+        break;
+    }
+
+    if (id)
+      ink = App::instance()->getToolBox()->getInkById(id);
+  }
+
+  return ink;
 }
 
 void Editor::screenToEditor(int xin, int yin, int* xout, int* yout)
@@ -930,10 +1038,18 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       if (m_sprite) {
-        m_oldPos = static_cast<MouseMessage*>(msg)->position();
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
+        m_oldPos = mouseMsg->position();
+        if (!m_secondaryButton && mouseMsg->right()) {
+          m_secondaryButton = mouseMsg->right();
+
+          editor_update_quicktool();
+          editor_setcursor();
+        }
 
         EditorStatePtr holdState(m_state);
-        return m_state->onMouseDown(this, static_cast<MouseMessage*>(msg));
+        return m_state->onMouseDown(this, mouseMsg);
       }
       break;
 
@@ -947,7 +1063,16 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        if (m_state->onMouseUp(this, static_cast<MouseMessage*>(msg)))
+        bool result = m_state->onMouseUp(this, static_cast<MouseMessage*>(msg));
+
+        if (!hasCapture() && m_secondaryButton) {
+          m_secondaryButton = false;
+
+          editor_update_quicktool();
+          editor_setcursor();
+        }
+
+        if (result)
           return true;
       }
       break;
@@ -1169,8 +1294,7 @@ void Editor::pasteImage(const Image* image, int x, int y)
   // which will use the extra cel for transformation preview, and is
   // not compatible with the drawing cursor preview which overwrite
   // the extra cel.
-  tools::Tool* currentTool = getCurrentEditorTool();
-  if (!currentTool->getInk(0)->isSelection()) {
+  if (!getCurrentEditorInk()->isSelection()) {
     tools::Tool* defaultSelectionTool =
       App::instance()->getToolBox()->getToolById(tools::WellKnownTools::RectangularMarquee);
 

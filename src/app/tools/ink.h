@@ -46,6 +46,9 @@ namespace app {
       // is a effect so the Editor can display the cursor bounds)
       virtual bool isEffect() const { return false; }
 
+      // Returns true if this ink acts like an eraser
+      virtual bool isEraser() const { return false; }
+
       // Returns true if this ink picks colors from the image
       virtual bool isEyedropper() const { return false; }
 

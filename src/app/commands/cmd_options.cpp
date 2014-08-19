@@ -87,6 +87,12 @@ public:
     screenScale()->addItem("4:1");
     screenScale()->setSelectedItemIndex(get_screen_scaling()-1);
 
+    // Right-click
+    rightClickBehavior()->addItem("Paint with background color");
+    rightClickBehavior()->addItem("Pick foreground color");
+    rightClickBehavior()->addItem("Erase");
+    rightClickBehavior()->setSelectedItemIndex((int)m_settings->getRightClickMode());
+
     // Zoom with Scroll Wheel
     wheelZoom()->setSelected(m_settings->getZoomWithScrollWheel());
 
@@ -135,6 +141,7 @@ public:
 
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
+    m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 
     RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)checkedBgSize()->getSelectedItemIndex());
     RenderEngine::setCheckedBgZoom(checkedBgZoom()->isSelected());

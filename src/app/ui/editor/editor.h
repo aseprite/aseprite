@@ -58,6 +58,7 @@ namespace app {
   class PixelsMovement;
 
   namespace tools {
+    class Ink;
     class Tool;
   }
 
@@ -169,6 +170,9 @@ namespace app {
     gfx::Point controlInfiniteScroll(ui::MouseMessage* msg);
 
     tools::Tool* getCurrentEditorTool();
+    tools::Ink* getCurrentEditorInk();
+
+    bool isSecondaryButton() const { return m_secondaryButton; }
 
     // Returns true if we are able to draw in the current doc/sprite/layer/cel.
     bool canDraw();
@@ -213,6 +217,7 @@ namespace app {
     void moveBrushPreview(int x, int y, bool refresh = true);
     void clearBrushPreview(bool refresh = true);
     bool doesBrushPreviewNeedSubpixel();
+    bool isCurrentToolAffectedByRightClickMode();
 
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
@@ -286,6 +291,8 @@ namespace app {
     gfx::Point m_oldPos;
 
     EditorFlags m_flags;
+
+    bool m_secondaryButton;
   };
 
   ui::WidgetType editor_type();

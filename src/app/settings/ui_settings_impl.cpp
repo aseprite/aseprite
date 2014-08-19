@@ -216,6 +216,8 @@ UISettingsImpl::UISettingsImpl()
   , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
+  , m_rightClickMode(static_cast<RightClickMode>(get_config_int("Options", "RightClickMode",
+        static_cast<int>(RightClickMode::Default))))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -229,6 +231,7 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Options", "ZoomWithMouseWheel", m_zoomWithScrollWheel);
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
+  set_config_int("Options", "RightClickMode", static_cast<int>(m_rightClickMode));
 
   // Delete all tool settings.
   for (std::map<std::string, IToolSettings*>::iterator
@@ -277,6 +280,11 @@ bool UISettingsImpl::getShowSpriteEditorScrollbars()
   return m_showSpriteEditorScrollbars;
 }
 
+RightClickMode UISettingsImpl::getRightClickMode()
+{
+  return m_rightClickMode;
+}
+
 bool UISettingsImpl::getGrabAlpha()
 {
   return m_grabAlpha;
@@ -315,6 +323,11 @@ void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
   m_showSpriteEditorScrollbars = state;
 
   notifyObservers<bool>(&GlobalSettingsObserver::onSetShowSpriteEditorScrollbars, state);
+}
+
+void UISettingsImpl::setRightClickMode(RightClickMode mode)
+{
+  m_rightClickMode = mode;
 }
 
 void UISettingsImpl::setGrabAlpha(bool state)

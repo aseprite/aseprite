@@ -124,8 +124,7 @@ void StandbyState::onCurrentToolChange(Editor* editor)
 
 bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 {
-  tools::Tool* currentTool = editor->getCurrentEditorTool();
-  tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
+  tools::Ink* clickedInk = editor->getCurrentEditorInk();
 
   // Start scroll loop
   if (msg->middle() || clickedInk->isScrollMovement()) { // TODO msg->middle() should be customizable
@@ -141,8 +140,7 @@ bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::checkForZoom(Editor* editor, MouseMessage* msg)
 {
-  tools::Tool* currentTool = editor->getCurrentEditorTool();
-  tools::Ink* clickedInk = currentTool->getInk(msg->right() ? 1: 0);
+  tools::Ink* clickedInk = editor->getCurrentEditorInk();
 
   // Start scroll loop
   if (clickedInk->isZoom()) {
@@ -162,8 +160,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
 
   UIContext* context = UIContext::instance();
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
-  tools::Ink* clickedInk = current_tool->getInk(msg->right() ? 1: 0);
+  tools::Tool* currentTool = editor->getCurrentEditorTool();
+  tools::Ink* clickedInk = editor->getCurrentEditorInk();
   DocumentLocation location;
   editor->getDocumentLocation(&location);
   Document* document = location.document();
@@ -225,7 +223,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Move selected pixels
   if (editor->isInsideSelection() &&
-      current_tool->getInk(0)->isSelection() &&
+      currentTool->getInk(0)->isSelection() &&
       msg->left()) {
     int x, y, opacity;
     Image* image = location.image(&x, &y, &opacity);
@@ -243,20 +241,13 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Call the eyedropper command
   if (clickedInk->isEyedropper()) {
-    Command* eyedropper_cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
-    bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
-
-    Params params;
-    params.set("target", fg ? "foreground": "background");
-
-    UIContext::instance()->executeCommand(eyedropper_cmd, &params);
+    onMouseMove(editor, msg);
     return true;
   }
 
   // Start the Tool-Loop
   if (layer) {
-    tools::ToolLoop* toolLoop = create_tool_loop(editor, context, msg);
+    tools::ToolLoop* toolLoop = create_tool_loop(editor, context);
     if (toolLoop)
       editor->setState(EditorStatePtr(new DrawingState(toolLoop, editor, msg)));
     return true;
@@ -273,6 +264,21 @@ bool StandbyState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
+  // We control eyedropper tool from here. TODO move this to another place
+  if (msg->left() || msg->right()) {
+    tools::Ink* clickedInk = editor->getCurrentEditorInk();
+    if (clickedInk->isEyedropper()) {
+      Command* eyedropper_cmd =
+        CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
+      bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
+
+      Params params;
+      params.set("target", fg ? "foreground": "background");
+
+      UIContext::instance()->executeCommand(eyedropper_cmd, &params);
+    }
+  }
+
   editor->moveDrawingCursor();
   editor->updateStatusBar();
   return true;
@@ -397,13 +403,10 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 
 bool StandbyState::onSetCursor(Editor* editor)
 {
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
-
-  if (current_tool) {
-    tools::Ink* current_ink = current_tool->getInk(0);
-
+  tools::Ink* ink = editor->getCurrentEditorInk();
+  if (ink) {
     // If the current tool change selection (e.g. rectangular marquee, etc.)
-    if (current_ink->isSelection()) {
+    if (ink->isSelection()) {
       // See if the cursor is in some selection handle.
       if (m_decorator->onSetCursor(editor))
         return true;
@@ -422,27 +425,27 @@ bool StandbyState::onSetCursor(Editor* editor)
         return true;
       }
     }
-    else if (current_ink->isEyedropper()) {
+    else if (ink->isEyedropper()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kEyedropperCursor);
       return true;
     }
-    else if (current_ink->isZoom()) {
+    else if (ink->isZoom()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kMagnifierCursor);
       return true;
     }
-    else if (current_ink->isScrollMovement()) {
+    else if (ink->isScrollMovement()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kScrollCursor);
       return true;
     }
-    else if (current_ink->isCelMovement()) {
+    else if (ink->isCelMovement()) {
       editor->hideDrawingCursor();
       jmouse_set_cursor(kMoveCursor);
       return true;
     }
-    else if (current_ink->isSlice()) {
+    else if (ink->isSlice()) {
       jmouse_set_cursor(kNoCursor);
       editor->showDrawingCursor();
       return true;
@@ -475,7 +478,7 @@ bool StandbyState::onKeyUp(Editor* editor, KeyMessage* msg)
 
 bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
-  tools::Tool* current_tool = editor->getCurrentEditorTool();
+  tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
   int x, y;
 
@@ -485,7 +488,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
     StatusBar::instance()->clearText();
   }
   // For eye-dropper
-  else if (current_tool->getInk(0)->isEyedropper()) {
+  else if (ink->isEyedropper()) {
     bool grabAlpha = UIContext::instance()->settings()->getGrabAlpha();
     ColorPicker picker;
     picker.pickColor(editor->getDocumentLocation(), x, y,
@@ -663,9 +666,9 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
       editor->document()->isMaskVisible() &&
       !editor->document()->mask()->isFrozen()) {
     // And draw only when the user has a selection tool as active tool.
-    tools::Tool* currentTool = editor->getCurrentEditorTool();
+    tools::Ink* ink = editor->getCurrentEditorInk();
 
-    if (currentTool->getInk(0)->isSelection())
+    if (ink->isSelection())
       getTransformHandles(editor)->drawHandles(editor,
         m_standbyState->getTransformation(editor));
   }

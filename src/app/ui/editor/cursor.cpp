@@ -85,7 +85,7 @@ static int saved_pixel_n;
 static gfx::Region clipping_region;
 static gfx::Region old_clipping_region;
 
-static void generate_cursor_boundaries();
+static void generate_cursor_boundaries(Editor* editor);
 
 static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, int x, int y, gfx::Color color, Editor::PixelDelegate pixel);
 static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor, int x, int y, gfx::Color color, int thickness, Editor::PixelDelegate pixel);
@@ -156,16 +156,13 @@ static void on_brush_after_change()
   }
 }
 
-static Brush* editor_get_current_brush()
+static Brush* editor_get_current_brush(Editor* editor)
 {
   // Create the current brush from settings
-  tools::Tool* current_tool = UIContext::instance()
-    ->settings()
-    ->getCurrentTool();
-
+  tools::Tool* tool = editor->getCurrentEditorTool();
   IBrushSettings* brush_settings = UIContext::instance()
     ->settings()
-    ->getToolSettings(current_tool)
+    ->getToolSettings(tool)
     ->getBrush();
 
   ASSERT(brush_settings != NULL);
@@ -235,22 +232,20 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
   screenToEditor(x, y, &x, &y);
 
   // Get the current tool
-  tools::Tool* current_tool = UIContext::instance()
-    ->settings()
-    ->getCurrentTool();
+  tools::Tool* tool = getCurrentEditorTool();
+  tools::Ink* ink = getCurrentEditorInk();
 
   // Setup the cursor type debrushding of several factors (current tool,
   // foreground color, and layer transparency).
   color_t brush_color = get_brush_color(m_sprite, m_layer);
   color_t mask_color = m_sprite->transparentColor();
 
-  if (current_tool->getInk(0)->isSelection() ||
-      current_tool->getInk(0)->isSlice()) {
+  if (ink->isSelection() || ink->isSlice()) {
     cursor_type = CURSOR_THICKCROSS;
   }
   else if (
     // Use cursor bounds for inks that are effects (eraser, blur, etc.)
-    (current_tool->getInk(0)->isEffect()) ||
+    (ink->isEffect()) ||
     // or when the brush color is transparent and we are not in the background layer
     (m_layer && !m_layer->isBackground() &&
      brush_color == mask_color)) {
@@ -262,15 +257,15 @@ void Editor::drawBrushPreview(int x, int y, bool refresh)
 
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (cursor_type & CURSOR_BRUSHBOUNDS)
-    generate_cursor_boundaries();
+    generate_cursor_boundaries(this);
 
   // Draw pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
     IToolSettings* tool_settings = UIContext::instance()
       ->settings()
-      ->getToolSettings(current_tool);
+      ->getToolSettings(tool);
 
-    Brush* brush = editor_get_current_brush();
+    Brush* brush = editor_get_current_brush(this);
     gfx::Rect brushBounds = brush->bounds();
 
     // Create the extra cel to show the brush preview
@@ -342,7 +337,7 @@ void Editor::moveBrushPreview(int x, int y, bool refresh)
     }
 
     if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-      Brush* brush = editor_get_current_brush();
+      Brush* brush = editor_get_current_brush(this);
       gfx::Rect brushBounds = brush->bounds();
       gfx::Rect rc1(old_x+brushBounds.x, old_y+brushBounds.y, brushBounds.w, brushBounds.h);
       gfx::Rect rc2(new_x+brushBounds.x, new_y+brushBounds.y, brushBounds.w, brushBounds.h);
@@ -392,7 +387,7 @@ void Editor::clearBrushPreview(bool refresh)
 
   // Clean pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-    Brush* brush = editor_get_current_brush();
+    Brush* brush = editor_get_current_brush(this);
     gfx::Rect brushBounds = brush->bounds();
 
     m_document->prepareExtraCel(x+brushBounds.x, y+brushBounds.y,
@@ -424,17 +419,15 @@ bool Editor::doesBrushPreviewNeedSubpixel()
 
 //////////////////////////////////////////////////////////////////////
 
-static void generate_cursor_boundaries()
+static void generate_cursor_boundaries(Editor* editor)
 {
-  tools::Tool* current_tool = UIContext::instance()
-    ->settings()
-    ->getCurrentTool();
+  tools::Tool* tool = editor->getCurrentEditorTool();
 
   IBrushSettings* brush_settings = NULL;
-  if (current_tool)
+  if (tool)
     brush_settings = UIContext::instance()
       ->settings()
-      ->getToolSettings(current_tool)
+      ->getToolSettings(tool)
       ->getBrush();
 
   if (cursor_bound.seg == NULL ||

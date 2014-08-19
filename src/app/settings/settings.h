@@ -25,6 +25,7 @@
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "app/settings/selection_mode.h"
+#include "app/settings/right_click_mode.h"
 #include "doc/settings.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -62,6 +63,7 @@ namespace app {
     // General settings
     virtual bool getZoomWithScrollWheel() = 0;
     virtual bool getShowSpriteEditorScrollbars() = 0;
+    virtual RightClickMode getRightClickMode() = 0;
     virtual bool getGrabAlpha() = 0;
     virtual app::Color getFgColor() = 0;
     virtual app::Color getBgColor() = 0;
@@ -70,6 +72,7 @@ namespace app {
 
     virtual void setZoomWithScrollWheel(bool state) = 0;
     virtual void setShowSpriteEditorScrollbars(bool state) = 0;
+    virtual void setRightClickMode(RightClickMode mode) = 0;
     virtual void setGrabAlpha(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;
     virtual void setBgColor(const app::Color& color) = 0;

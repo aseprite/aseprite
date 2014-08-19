@@ -63,7 +63,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // MovingPixelsState needs a selection tool to avoid problems
   // sharing the extra cel between the drawing cursor preview and the
   // pixels movement/transformation preview.
-  //ASSERT(!editor->getCurrentEditorTool()->getInk(0)->isSelection());
+  //ASSERT(!editor->getCurrentEditorInk()->isSelection());
 
   UIContext* context = UIContext::instance();
 

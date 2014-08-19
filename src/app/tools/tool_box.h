@@ -33,6 +33,8 @@ namespace app {
 
     namespace WellKnownTools {
       extern const char* RectangularMarquee;
+      extern const char* Eraser;
+      extern const char* Eyedropper;
     };
 
     namespace WellKnownInks {

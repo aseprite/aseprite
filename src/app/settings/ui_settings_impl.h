@@ -49,6 +49,7 @@ namespace app {
     // ISettings implementation
     bool getZoomWithScrollWheel() override;
     bool getShowSpriteEditorScrollbars() override;
+    RightClickMode getRightClickMode() override;
     bool getGrabAlpha() override;
     app::Color getFgColor() override;
     app::Color getBgColor() override;
@@ -57,6 +58,7 @@ namespace app {
 
     void setZoomWithScrollWheel(bool state) override;
     void setShowSpriteEditorScrollbars(bool state) override;
+    void setRightClickMode(RightClickMode mode) override;
     void setGrabAlpha(bool state) override;
     void setFgColor(const app::Color& color) override;
     void setBgColor(const app::Color& color) override;
@@ -93,6 +95,7 @@ namespace app {
     bool m_zoomWithScrollWheel;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
+    RightClickMode m_rightClickMode;
   };
 
 } // namespace app
