@@ -162,6 +162,7 @@ bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
             width, height));
 
         load_window_pos(this, "MiniEditor");
+        invalidate();
       }
       break;
 
