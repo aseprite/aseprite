@@ -22,6 +22,7 @@
 
 #ifdef ENABLE_UPDATER
 
+#include "app/notification_delegate.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "ui/timer.h"
@@ -31,7 +32,7 @@ namespace app {
 
   class CheckUpdateBackgroundJob;
 
-  class CheckUpdateThreadLauncher {
+  class CheckUpdateThreadLauncher : public INotificationDelegate {
   public:
     CheckUpdateThreadLauncher();
     ~CheckUpdateThreadLauncher();
@@ -44,6 +45,9 @@ namespace app {
     {
       return m_response;
     }
+
+    virtual std::string notificationText() override;
+    virtual void notificationClick() override;
 
   private:
     void onMonitoringTick();

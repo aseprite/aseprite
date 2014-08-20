@@ -23,6 +23,7 @@
 #include "app/app.h"
 #include "app/console.h"
 #include "app/resource_finder.h"
+#include "app/send_crash.h"
 #include "base/exception.h"
 #include "base/memory.h"
 #include "base/memory_dump.h"
@@ -52,11 +53,10 @@ namespace {
 #endif
   };
 
-  bool getMemoryDumpFilename(std::string& filename)
-  {
+  bool getMemoryDumpFilename(std::string& filename) {
 #ifdef WIN32
     app::ResourceFinder rf;
-    rf.includeBinDir("aseprite-memory.dmp");
+    rf.includeHomeDir(app::SendCrash::kDefaultCrashName);
     filename = rf.defaultFilename();
     return true;
 #else

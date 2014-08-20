@@ -22,6 +22,7 @@
 
 #include "app/ui/notifications.h"
 
+#include "app/notification_delegate.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "base/launcher.h"
@@ -37,21 +38,19 @@ static const char* kFlag = "flag";
 
 class NotificationItem : public MenuItem {
 public:
-  NotificationItem(const char* text, const char* url)
-    : MenuItem(text),
-      m_url(url) {
+  NotificationItem(INotificationDelegate* del)
+    : MenuItem(del->notificationText()),
+      m_delegate(del) {
   }
 
 protected:
   void onClick() override {
     MenuItem::onClick();
-
-    if (!m_url.empty())
-      base::launcher::open_url(m_url);
+    m_delegate->notificationClick();
   }
 
 private:
-  std::string m_url;
+  INotificationDelegate* m_delegate;
 };
 
 Notifications::Notifications()
@@ -61,9 +60,9 @@ Notifications::Notifications()
 {
 }
 
-void Notifications::addLink(const char* text, const char* url)
+void Notifications::addLink(INotificationDelegate* del)
 {
-  m_popup.addChild(new NotificationItem(text, url));
+  m_popup.addChild(new NotificationItem(del));
   m_withNotifications = true;
 }
 

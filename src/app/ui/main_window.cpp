@@ -157,9 +157,9 @@ void MainWindow::reloadMenus()
   invalidate();
 }
 
-void MainWindow::showNotification(const char* text, const char* url)
+void MainWindow::showNotification(INotificationDelegate* del)
 {
-  m_notifications->addLink(text, url);
+  m_notifications->addLink(del);
   m_notifications->setVisible(true);
   m_notifications->getParent()->layout();
 }

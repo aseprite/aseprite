@@ -144,6 +144,7 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
+  send_crash.cpp
   settings/ui_settings_impl.cpp
   shell.cpp
   thumbnail_generator.cpp
@@ -186,9 +187,9 @@ add_library(app-lib
   ui/main_window.cpp
   ui/mini_editor.cpp
   ui/notifications.cpp
-  ui/palettes_listbox.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp
+  ui/palettes_listbox.cpp
   ui/popup_window_pin.cpp
   ui/resources_listbox.cpp
   ui/skin/button_icon_impl.cpp

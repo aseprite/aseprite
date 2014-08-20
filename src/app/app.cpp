@@ -45,6 +45,7 @@
 #include "app/modules/palettes.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/send_crash.h"
 #include "app/settings/settings.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
@@ -70,6 +71,7 @@
 #include "she/error.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+
 
 #include <allegro.h>
 #include <iostream>
@@ -258,6 +260,9 @@ int App::run()
     webServer.start();
 #endif
 
+    app::SendCrash sendCrash;
+    sendCrash.search();
+
     // Run the GUI main message loop
     gui_run();
 
@@ -346,9 +351,9 @@ RecentFiles* App::getRecentFiles() const
   return &m_modules->m_recent_files;
 }
 
-void App::showNotification(const char* text, const char* url)
+void App::showNotification(INotificationDelegate* del)
 {
-  m_mainWindow->showNotification(text, url);
+  m_mainWindow->showNotification(del);
 }
 
 // Updates palette and redraw the screen.

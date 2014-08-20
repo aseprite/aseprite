@@ -27,6 +27,7 @@
 #include "app/app.h"
 #include "app/ini_file.h"
 #include "base/bind.h"
+#include "base/launcher.h"
 
 #include <ctime>
 #include <sstream>
@@ -169,7 +170,7 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
 
     case updater::CheckUpdateResponse::Critical:
     case updater::CheckUpdateResponse::Major:
-      App::instance()->showNotification("New Version Available!", m_response.getUrl().c_str());
+      App::instance()->showNotification(this);
       break;
   }
 
@@ -208,6 +209,17 @@ void CheckUpdateThreadLauncher::checkForUpdates()
     m_received = true;
     m_response = m_bgJob->getResponse();
   }
+}
+
+std::string CheckUpdateThreadLauncher::notificationText()
+{
+  return "New Version Available!";
+}
+
+void CheckUpdateThreadLauncher::notificationClick()
+{
+  if (!m_response.getUrl().empty())
+    base::launcher::open_url(m_response.getUrl());
 }
 
 }

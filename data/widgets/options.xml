@@ -22,6 +22,9 @@
             <combobox id="screen_scale" />
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
+          <separator horizontal="true" />
+          <link id="locate_file" text="Locate Configuration File" />
+          <link id="locate_crash_folder" text="Locate Crash Folder" />
         </vbox>
 
         <!-- Editor -->
@@ -90,7 +93,6 @@
     </hbox>
     <separator horizontal="true" />
     <hbox>
-      <link id="locate_file" text="Locate File" />
       <boxfiller />
       <hbox homogeneous="true">
         <button text="&amp;OK" closewindow="true" id="button_ok" magnet="true" width="60" />

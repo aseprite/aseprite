@@ -16,37 +16,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_NOTIFICATIONS_H_INCLUDED
-#define APP_UI_NOTIFICATIONS_H_INCLUDED
+#ifndef APP_SEND_CRASH_H_INCLUDED
+#define APP_SEND_CRASH_H_INCLUDED
 #pragma once
 
-#include "ui/button.h"
-#include "ui/menu.h"
+#include "app/notification_delegate.h"
+
+#include <string>
 
 namespace app {
-  namespace skin {
-    class Style;
-  }
 
-  class INotificationDelegate;
-
-  class Notifications : public ui::Button {
+  class SendCrash : public INotificationDelegate {
   public:
-    Notifications();
+    static const char* kDefaultCrashName;
 
-    void addLink(INotificationDelegate* del);
+    void search();
 
-  protected:
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    void onClick(ui::Event& ev) override;
+    virtual std::string notificationText() override;
+    virtual void notificationClick() override;
 
   private:
-    skin::Style* m_flagStyle;
-    bool m_withNotifications;
-    ui::Menu m_popup;
+    void onClickFilename();
+
+    std::string m_dumpFilename;
   };
 
 } // namespace app
 
-#endif
+#endif // APP_SEND_CRASH_H_INCLUDED

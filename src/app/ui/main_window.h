@@ -31,6 +31,7 @@ namespace app {
 
   class ColorBar;
   class ContextBar;
+  class INotificationDelegate;
   class MainMenuBar;
   class MiniEditorWindow;
   class Notifications;
@@ -61,7 +62,7 @@ namespace app {
 
     void start();
     void reloadMenus();
-    void showNotification(const char* text, const char* url);
+    void showNotification(INotificationDelegate* del);
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);

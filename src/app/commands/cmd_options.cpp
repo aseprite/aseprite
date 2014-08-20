@@ -29,6 +29,7 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/resource_finder.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
@@ -114,8 +115,13 @@ public:
     // Reset button
     checkedBgReset()->Click.connect(Bind<void>(&OptionsWindow::onResetCheckedBg, this));
 
-    // Locate config file
+    // Links
     locateFile()->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
+#if WIN32
+    locateCrashFolder()->Click.connect(Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
+#else
+    locateCrashFolder()->setVisible(false);
+#endif
 
     // Undo limit
     undoSizeLimit()->setTextf("%d", m_settings->undoSizeLimit());
@@ -186,6 +192,12 @@ private:
     checkedBgZoom()->setSelected(true);
     m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
     m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
+  }
+
+  void onLocateCrashFolder() {
+    app::ResourceFinder rf;
+    rf.includeHomeDir(".");
+    app::launcher::open_folder(rf.defaultFilename());
   }
 
   void onLocateConfigFile() {

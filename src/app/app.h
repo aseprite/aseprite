@@ -40,8 +40,10 @@ namespace raster {
 }
 
 namespace app {
+
   class Document;
   class DocumentExporter;
+  class INotificationDelegate;
   class LegacyModules;
   class LoggerModule;
   class MainWindow;
@@ -71,7 +73,7 @@ namespace app {
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
 
-    void showNotification(const char* text, const char* url);
+    void showNotification(INotificationDelegate* del);
 
     // App Signals
     Signal0<void> Exit;

@@ -16,37 +16,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_NOTIFICATIONS_H_INCLUDED
-#define APP_UI_NOTIFICATIONS_H_INCLUDED
+#ifndef APP_NOTIFICATION_DELEGATE_H_INCLUDED
+#define APP_NOTIFICATION_DELEGATE_H_INCLUDED
 #pragma once
 
-#include "ui/button.h"
-#include "ui/menu.h"
+#include <string>
 
 namespace app {
-  namespace skin {
-    class Style;
-  }
 
-  class INotificationDelegate;
-
-  class Notifications : public ui::Button {
+  class INotificationDelegate {
   public:
-    Notifications();
-
-    void addLink(INotificationDelegate* del);
-
-  protected:
-    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
-    void onPaint(ui::PaintEvent& ev) override;
-    void onClick(ui::Event& ev) override;
-
-  private:
-    skin::Style* m_flagStyle;
-    bool m_withNotifications;
-    ui::Menu m_popup;
+    virtual ~INotificationDelegate() { }
+    virtual std::string notificationText() = 0;
+    virtual void notificationClick() = 0;
   };
 
-} // namespace app
+}
 
 #endif

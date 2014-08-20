@@ -1,0 +1,19 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2014 by David Capello -->
+<gui>
+<window text="Crash Report" id="send_crash">
+  <vbox>
+
+    <label text="Please send the following file:" />
+    <link id="filename" text="" url="" />
+    <label text="to this email:" />
+    <entry readonly="true" text="support@aseprite.org" maxsize="256" />
+    <label text="explaining what you was doing when the program crashed." />
+
+    <separator horizontal="true" />
+
+    <button text="Do it later" closewindow="true" />
+    <button id="delete_file" text="Delete file, I've already sent it" closewindow="true" />
+  </vbox>
+</window>
+</gui>
