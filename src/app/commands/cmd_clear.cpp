@@ -65,12 +65,26 @@ bool ClearCommand::onEnabled(Context* context)
 void ClearCommand::onExecute(Context* context)
 {
   // Clear of several frames is handled with RemoveCel command.
-  Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
-  if (range.enabled() && (range.layers() > 1 || range.frames() > 1)) {
-    Command* subCommand = CommandsModule::instance()
-      ->getCommandByName(CommandId::RemoveCel);
-    context->executeCommand(subCommand);
-    return;
+  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+  if (range.enabled()) {
+    Command* subCommand = NULL;
+
+    switch (range.type()) {
+      case DocumentRange::kCels:
+        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveCel);
+        break;
+      case DocumentRange::kFrames:
+        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveFrame);
+        break;
+      case DocumentRange::kLayers:
+        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveLayer);
+        break;
+    }
+
+    if (subCommand) {
+      context->executeCommand(subCommand);
+      return;
+    }
   }
 
   // TODO add support to clear the mask in the selected range of frames.
