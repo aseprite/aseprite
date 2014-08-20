@@ -32,14 +32,29 @@
 
 namespace app {
 
-const char* SendCrash::kDefaultCrashName = "Aseprite-crash.dmp";
+static const char* kDefaultCrashName = "Aseprite-crash.dmp";
+
+std::string memory_dump_filename()
+{
+#ifdef WIN32
+
+  app::ResourceFinder rf;
+  if (App::instance()->isPortable())
+    rf.includeBinDir(kDefaultCrashName);
+  else
+    rf.includeHomeDir(kDefaultCrashName);
+
+  return rf.defaultFilename();
+
+#else
+  return "";
+#endif
+}
 
 void SendCrash::search()
 {
 #ifdef WIN32
-  app::ResourceFinder rf;
-  rf.includeHomeDir(kDefaultCrashName);
-  m_dumpFilename = rf.defaultFilename();
+  m_dumpFilename = memory_dump_filename();
 
   if (base::is_file(m_dumpFilename)) {
     App::instance()->showNotification(this);

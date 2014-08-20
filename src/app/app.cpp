@@ -146,6 +146,8 @@ App::App(int argc, const char* argv[])
 
   // Load RenderEngine configuration
   RenderEngine::loadConfig();
+  if (isPortable())
+    PRINTF("Running in portable mode\n");
 
   // Default palette.
   std::string palFile(!options.paletteFileName().empty() ?
@@ -337,6 +339,14 @@ App::~App()
 
     // no re-throw
   }
+}
+
+bool App::isPortable()
+{
+  std::string ini_file = get_config_file();
+  app::ResourceFinder rf;
+  rf.includeBinDir("aseprite.ini");
+  return (ini_file == rf.defaultFilename());
 }
 
 tools::ToolBox* App::getToolBox() const

@@ -65,6 +65,9 @@ namespace app {
     // Returns true if Aseprite is running with GUI available.
     bool isGui() const { return m_isGui; }
 
+    // Returns true if the application is running in portable mode.
+    bool isPortable();
+
     // Runs the Aseprite application. In GUI mode it's the top-level
     // window, in console/scripting it just runs the specified scripts.
     int run();

@@ -28,8 +28,6 @@ namespace app {
 
   class SendCrash : public INotificationDelegate {
   public:
-    static const char* kDefaultCrashName;
-
     void search();
 
     virtual std::string notificationText() override;
@@ -40,6 +38,8 @@ namespace app {
 
     std::string m_dumpFilename;
   };
+
+  std::string memory_dump_filename();
 
 } // namespace app
 

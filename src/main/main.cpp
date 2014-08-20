@@ -53,17 +53,6 @@ namespace {
 #endif
   };
 
-  bool getMemoryDumpFilename(std::string& filename) {
-#ifdef WIN32
-    app::ResourceFinder rf;
-    rf.includeHomeDir(app::SendCrash::kDefaultCrashName);
-    filename = rf.defaultFilename();
-    return true;
-#else
-    return false;
-#endif
-  }
-
 }
 
 // Aseprite entry point. (Called from she library.)
@@ -85,8 +74,8 @@ int app_main(int argc, char* argv[])
 
     // Change the name of the memory dump file
     {
-      std::string filename;
-      if (getMemoryDumpFilename(filename))
+      std::string filename = app::memory_dump_filename();
+      if (!filename.empty())
         memoryDump.setFileName(filename);
     }
 
