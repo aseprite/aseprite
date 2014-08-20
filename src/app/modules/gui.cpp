@@ -153,19 +153,22 @@ static void save_gui_config();
 // Initializes GUI.
 int init_module_gui()
 {
-  int c, w, h, min_possible_dsk_res = 0;
-  bool maximized;
-
   shortcuts = new std::vector<Shortcut*>;
 
-  // Set the graphics mode...
+  int w, h;
+  bool maximized;
   load_gui_config(w, h, maximized);
 
   try {
-    main_display = she::instance()->createDisplay(w, h, screen_scaling);
+    if (w > 0 && h > 0)
+      main_display = she::instance()->createDisplay(w, h, screen_scaling);
   }
   catch (const she::DisplayCreationException&) {
-    for (c=min_possible_dsk_res; try_resolutions[c].width; ++c) {
+    // Do nothing, the display wasn't created.
+  }
+
+  if (!main_display) {
+    for (int c=0; try_resolutions[c].width; ++c) {
       try {
         main_display =
           she::instance()->createDisplay(try_resolutions[c].width,
