@@ -390,7 +390,7 @@ void clipboard::paste()
                i <= srcRange.layerEnd() &&
                i < LayerIndex(srcLayers.size()); ++i) {
             Cel* lastCel = static_cast<LayerImage*>(srcLayers[i])->getLastCel();
-            if (maxFrame < lastCel->frame())
+            if (lastCel && maxFrame < lastCel->frame())
               maxFrame = lastCel->frame();
           }
           if (dstSpr->totalFrames() < maxFrame.next())
