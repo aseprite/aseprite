@@ -69,7 +69,7 @@ void RefreshCommand::onExecute(Context* context)
   app_refresh_screen();
 
   // Print memory information
-#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
+#if defined WIN32 && defined _DEBUG
   {
     PROCESS_MEMORY_COUNTERS pmc;
     if (::GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
