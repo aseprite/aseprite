@@ -71,13 +71,15 @@ the source code in a directory called `aseprite-source`):
 ## Mac OS X details
 
 You need the old Mac OS X 10.4 SDK universal, which can be obtained
-from a Xcode 3.2 distribution. You can get it from Apple developer
+from Xcode 3.1 Developer Tools (Xcode 3.1 Developer DVD,
+`xcode31_2199_developerdvd.dmg`). You can get it from Apple developer
 website (you need to be registered):
 
   https://developer.apple.com/downloads/
 
-Install the MacOSX10.4.Universal.pkg and run cmake with the following
-parameters:
+Inside the `Packages` folder, there is a MacOSX10.4.Universal.pkg,
+install it (it will be installed in `/SDKs/MacOSX10.4u.sdk`), and run
+cmake with the following parameters:
 
     -DCMAKE_OSX_ARCHITECTURES:STRING=i386
     -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
