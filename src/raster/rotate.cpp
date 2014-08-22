@@ -19,15 +19,7 @@
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
-#include <math.h>
-
-#ifndef _AL_SINCOS
-#if defined (__i386__) && defined (__GNUC__)
-  #define _AL_SINCOS(x, s, c)  __asm__ ("fsincos" : "=t" (c), "=u" (s) : "0" (x))
-#else
-  #define _AL_SINCOS(x, s, c)  do { (c) = cos(x); (s) = sin(x); } while (0)
-#endif
-#endif
+#include <cmath>
 
 namespace raster {
 
@@ -747,7 +739,8 @@ static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,
    if (angle >= 0x800000)
       angle -= 0x1000000;
 
-   _AL_SINCOS(angle * (PI / (double)0x800000), sin_angle, cos_angle);
+   cos_angle = cos(angle * (PI / (double)0x800000));
+   sin_angle = sin(angle * (PI / (double)0x800000));
 
    if (cos_angle >= 0)
       fix_cos = (int)(cos_angle * 0x10000 + 0.5);
