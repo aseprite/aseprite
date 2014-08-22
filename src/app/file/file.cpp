@@ -111,7 +111,7 @@ Document* load_document(Context* context, const char* filename)
   document = fop->document;
   fop_free(fop);
 
-  if (context)
+  if (document && context)
     document->setContext(context);
 
   return document;
