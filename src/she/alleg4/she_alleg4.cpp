@@ -104,14 +104,17 @@ private:
 };
 
 base::mutex unique_display_mutex;
+base::concurrent_queue<Event> initial_queue; // Events generated when "unique_display" is NULL
 Display* unique_display = NULL;
 int display_scale;
 
-void queue_event(Event& ev)
+void queue_event(const Event& ev)
 {
   base::scoped_lock hold(unique_display_mutex);
   if (unique_display)
     static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
+  else
+    initial_queue.push(ev);
 }
 
 namespace {
@@ -426,6 +429,14 @@ public:
     setScale(scale);
 
     m_queue = new Alleg4EventQueue();
+
+    // Copy the initial queue to the display queue
+    {
+      base::scoped_lock hold(unique_display_mutex);
+      Event ev;
+      while (initial_queue.try_pop(ev))
+        m_queue->queueEvent(ev);
+    }
 
     // Add a hook to display-switch so when the user returns to the
     // screen it's completelly refreshed/redrawn.

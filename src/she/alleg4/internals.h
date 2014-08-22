@@ -12,7 +12,7 @@ namespace she {
 
   class Event;
 
-  void queue_event(Event& ev);
+  void queue_event(const Event& ev);
 
 } // namespace she
 

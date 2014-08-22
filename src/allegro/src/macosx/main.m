@@ -33,7 +33,6 @@ extern int    __crt0_argc;
 extern char **__crt0_argv;
 extern void *_mangled_main_address;
 
-static char *arg0, *arg1 = NULL;
 static int refresh_rate = 70;
 
 static volatile BOOL ready_to_terminate = NO;
@@ -55,12 +54,6 @@ static BOOL in_bundle(void)
 }
 
 @implementation AllegroAppDelegate
-
-- (BOOL)application: (NSApplication *)theApplication openFile: (NSString *)filename
-{
-  arg1 = strdup([filename lossyCString]);
-  return YES;
-}
 
 
 
@@ -102,18 +95,6 @@ static BOOL in_bundle(void)
             [fm changeCurrentDirectoryPath: [osx_bundle resourcePath]];
          }
          /* It doesn't exist - this is unusual for a bundle. Don't chdir */
-      }
-      arg0 = strdup([[osx_bundle bundlePath] fileSystemRepresentation]);
-      if (arg1) {
-         static char *args[2];
-         args[0] = arg0;
-         args[1] = arg1;
-         __crt0_argv = args;
-         __crt0_argc = 2;
-      }
-      else {
-         __crt0_argv = &arg0;
-         __crt0_argc = 1;
       }
    }
    /* else: not in a bundle so don't chdir */

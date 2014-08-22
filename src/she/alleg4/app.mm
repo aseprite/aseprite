@@ -24,15 +24,6 @@
 
 - (BOOL)application: (NSApplication *)theApplication openFile: (NSString *)filename
 {
-  // This case is used when the application wasn't run by the user,
-  // and a file is double-clicked from Finder. As the she::Display
-  // (the class that contains the events queue) is not yet created, we
-  // can use the Allegro implementation which converts this
-  // application:openFile: message to an argument for the command
-  // line. So the clicked file will be opened in the application.
-  if (!she::instance())
-    return [super application: theApplication openFile: filename];
-
   she::Event ev;
   ev.setType(she::Event::DropFiles);
 
@@ -40,7 +31,7 @@
   files.push_back([filename lossyCString]);
 
   ev.setFiles(files);
-  she::queue_event(ev); // If the display is not created yet, we lost this event.
+  she::queue_event(ev);
   return YES;
 }
 

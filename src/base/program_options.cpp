@@ -63,6 +63,12 @@ void ProgramOptions::parse(int argc, const char* argv[])
       ;
     size_t len = arg.size()-n;
 
+    // Ignore process serial number argument (-psn...) when the app is run from command line
+#if __APPLE__
+    if (arg.size() >= 4 && arg.substr(0, 4) == "-psn")
+      continue;
+#endif
+
     if ((n > 0) && (len > 0)) {
       // Use mnemonics
       if (n == 1) {
