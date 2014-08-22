@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <windows.h>
+#include <sys/stat.h>
 
 #include "base/string.h"
 #include "base/win32_exception.h"
@@ -28,6 +29,12 @@ bool is_directory(const std::string& path)
 
   return ((attr != INVALID_FILE_ATTRIBUTES) &&
           ((attr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY));
+}
+
+size_t file_size(const std::string& path)
+{
+  struct _stat sts;
+  return (_wstat(from_utf8(path).c_str(), &sts) == 0) ? sts.st_size: 0;
 }
 
 void delete_file(const std::string& path)

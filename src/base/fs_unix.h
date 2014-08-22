@@ -42,6 +42,12 @@ void make_directory(const std::string& path)
   }
 }
 
+size_t file_size(const std::string& path)
+{
+  struct stat sts;
+  return (stat(path.c_str(), &sts) == 0) ? sts.st_size: 0;
+}
+
 void delete_file(const std::string& path)
 {
   int result = unlink(path.c_str());
