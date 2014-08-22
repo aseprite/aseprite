@@ -36,8 +36,6 @@
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
-struct BITMAP;
-
 namespace raster {
   class Sprite;
   class Layer;

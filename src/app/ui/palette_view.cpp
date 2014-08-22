@@ -281,7 +281,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int x, y, u, v;
   int c, color;
   Palette* palette = get_current_palette();
-  int bordercolor = makecol(255, 255, 255);
+  gfx::Color bordercolor = gfx::rgba(255, 255, 255);
 
   g->fillRect(gfx::rgba(0 , 0, 0), bounds);
 

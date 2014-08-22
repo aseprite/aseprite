@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/modules/palettes.h"

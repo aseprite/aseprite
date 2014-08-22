@@ -26,7 +26,6 @@
 #include "gfx/color.h"
 #include "gfx/fwd.h"
 #include "ui/manager.h"
-#include "ui/system.h"
 #include "ui/theme.h"
 
 #include <map>

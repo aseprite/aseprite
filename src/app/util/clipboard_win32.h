@@ -18,6 +18,11 @@
 
 // included by clipboard.cpp
 
+#include "raster/color_scales.h"
+#include "she/display.h"
+#include "she/system.h"
+#include "ui/alert.h"
+
 #ifndef LCS_WINDOWS_COLOR_SPACE
 #define LCS_WINDOWS_COLOR_SPACE 'Win '
 #endif
@@ -54,7 +59,8 @@ static bool win32_clipboard_contains_bitmap()
  */
 static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
 {
-  if (!OpenClipboard(win_get_window()))
+  HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
+  if (!OpenClipboard(hwnd))
     return;
 
   if (!EmptyClipboard()) {
@@ -183,7 +189,8 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
   if (!win32_clipboard_contains_bitmap())
     return;
 
-  if (!OpenClipboard(win_get_window()))
+  HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
+  if (!OpenClipboard(hwnd))
     return;
 
   BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
@@ -278,9 +285,9 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
             for (int x=0; x<image->width(); ++x) {
               b1 = *(src++);
               b2 = *(src++);
-              b = _rgb_scale_5[((b1 & 0xf800) >> 11)];
-              g = _rgb_scale_6[((b2 & 0x07e0) >> 5)];
-              r = _rgb_scale_5[(b2 & 0x001f)];
+              b = scale_5bits_to_8bits((b1 & 0xf800) >> 11);
+              g = scale_6bits_to_8bits((b2 & 0x07e0) >> 5);
+              r = scale_5bits_to_8bits(b2 & 0x001f);
               put_pixel_fast<RgbTraits>(image, x, y, rgba(r, g, b, 255));
             }
             src += padding;
@@ -339,8 +346,9 @@ static bool get_win32_clipboard_bitmap_size(gfx::Size& size)
 {
   bool result = false;
 
-  if (win32_clipboard_contains_bitmap() &&
-      OpenClipboard(win_get_window())) {
+  HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
+
+  if (win32_clipboard_contains_bitmap() && OpenClipboard(hwnd)) {
     BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
     if (bi) {
       size.w = bi->bmiHeader.biWidth;

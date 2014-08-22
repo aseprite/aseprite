@@ -45,14 +45,10 @@
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
 #include "raster/raster.h"
-#include "ui/ui.h"
 #include "undo/undo_history.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-
-#if defined ALLEGRO_WINDOWS
-  #include <winalleg.h>
+#if defined WIN32
+  #include <windows.h>
 
   #include "app/util/clipboard_win32.h"
 #endif

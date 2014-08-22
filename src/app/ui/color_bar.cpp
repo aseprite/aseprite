@@ -37,6 +37,7 @@
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/paint_event.h"
+#include "ui/system.h"
 
 #include <cstring>
 

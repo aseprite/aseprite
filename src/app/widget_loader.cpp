@@ -36,7 +36,6 @@
 
 #include "tinyxml.h"
 
-#include <allegro.h>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -177,11 +176,11 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       for (c=0; c<4; ++c)
         b[c] = 0;
 
-      for (tok=ustrtok(bevel, " "), c=0;
+      for (tok=strtok(bevel, " "), c=0;
            tok;
-           tok=ustrtok(NULL, " "), ++c) {
+           tok=strtok(NULL, " "), ++c) {
         if (c < 4)
-          b[c] = ustrtol(tok, NULL, 10);
+          b[c] = strtol(tok, NULL, 10);
       }
       base_free(bevel);
 
@@ -545,34 +544,34 @@ static int convert_align_value_to_flags(const char *value)
   char *tok, *ptr = base_strdup(value);
   int flags = 0;
 
-  for (tok=ustrtok(ptr, " ");
+  for (tok=strtok(ptr, " ");
        tok != NULL;
-       tok=ustrtok(NULL, " ")) {
-    if (ustrcmp(tok, "horizontal") == 0) {
+       tok=strtok(NULL, " ")) {
+    if (strcmp(tok, "horizontal") == 0) {
       flags |= JI_HORIZONTAL;
     }
-    else if (ustrcmp(tok, "vertical") == 0) {
+    else if (strcmp(tok, "vertical") == 0) {
       flags |= JI_VERTICAL;
     }
-    else if (ustrcmp(tok, "left") == 0) {
+    else if (strcmp(tok, "left") == 0) {
       flags |= JI_LEFT;
     }
-    else if (ustrcmp(tok, "center") == 0) {
+    else if (strcmp(tok, "center") == 0) {
       flags |= JI_CENTER;
     }
-    else if (ustrcmp(tok, "right") == 0) {
+    else if (strcmp(tok, "right") == 0) {
       flags |= JI_RIGHT;
     }
-    else if (ustrcmp(tok, "top") == 0) {
+    else if (strcmp(tok, "top") == 0) {
       flags |= JI_TOP;
     }
-    else if (ustrcmp(tok, "middle") == 0) {
+    else if (strcmp(tok, "middle") == 0) {
       flags |= JI_MIDDLE;
     }
-    else if (ustrcmp(tok, "bottom") == 0) {
+    else if (strcmp(tok, "bottom") == 0) {
       flags |= JI_BOTTOM;
     }
-    else if (ustrcmp(tok, "homogeneous") == 0) {
+    else if (strcmp(tok, "homogeneous") == 0) {
       flags |= JI_HOMOGENEOUS;
     }
   }

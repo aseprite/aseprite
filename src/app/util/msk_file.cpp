@@ -20,9 +20,10 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-
 #include "app/util/pic_file.h"
+#include "base/cfile.h"
+#include "base/file_handle.h"
+#include "base/fs.h"
 #include "base/unique_ptr.h"
 #include "raster/image.h"
 #include "raster/mask.h"
@@ -34,29 +35,22 @@ using namespace raster;
 // Loads a MSK file (Animator and Animator Pro format)
 Mask* load_msk_file(const char* filename)
 {
-#if (MAKE_VERSION(4, 2, 1) >= MAKE_VERSION(ALLEGRO_VERSION,             \
-                                           ALLEGRO_SUB_VERSION,         \
-                                           ALLEGRO_WIP_VERSION))
-  int orig_size = file_size(filename);
-#else
-  int orig_size = file_size_ex(filename);
-#endif
+  int orig_size = base::file_size(filename);
   int i, c, u, v, byte, magic, size;
-  Mask *mask = NULL;
-  PACKFILE *f;
+  Mask* mask = NULL;
 
-  f = pack_fopen(filename, F_READ);
+  FILE* f = base::open_file_raw(filename, "r");
   if (!f)
     return NULL;
 
-  size = pack_igetl(f);
-  magic = pack_igetw(f);
+  size = base::fgetl(f);
+  magic = base::fgetw(f);
 
   // Animator Pro MSK format
   if ((size == orig_size) && (magic == 0x9500)) {
     int x, y;
 
-    pack_fclose(f);
+    fclose(f);
 
     // Just load an Animator Pro PIC file
     base::UniquePtr<Image> image(load_pic_file(filename, &x, &y, NULL));
@@ -70,7 +64,7 @@ Mask* load_msk_file(const char* filename)
 
     u = v = 0;
     for (i=0; i<8000; i++) {
-      byte = pack_getc (f);
+      byte = getc(f);
       for (c=0; c<8; c++) {
         mask->bitmap()->putPixel(u, v, byte & (1<<(7-c)));
         u++;
@@ -80,10 +74,10 @@ Mask* load_msk_file(const char* filename)
         }
       }
     }
-    pack_fclose(f);
+    fclose(f);
   }
   else {
-    pack_fclose(f);
+    fclose(f);
   }
 
   return mask;

@@ -24,7 +24,6 @@
 #include "base/signal.h"
 #include "ui/widget.h"
 
-#include <allegro/color.h>
 #include <vector>
 
 namespace app {
