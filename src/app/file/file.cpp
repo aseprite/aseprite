@@ -50,14 +50,12 @@ using namespace base;
 
 static FileOp* fop_new(FileOpType type, Context* context);
 static void fop_prepare_for_sequence(FileOp* fop);
-
-static FileFormat* get_fileformat(const char* extension);
 static int split_filename(const char* filename, char* left, char* right, int* width);
 
 void get_readable_extensions(char* buf, int size)
 {
-  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
-  FileFormatsList::iterator end = FileFormatsManager::instance().end();
+  FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
+  FileFormatsList::iterator end = FileFormatsManager::instance()->end();
 
   /* clear the string */
   ustrncpy(buf, empty_string, size);
@@ -74,8 +72,8 @@ void get_readable_extensions(char* buf, int size)
 
 void get_writable_extensions(char* buf, int size)
 {
-  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
-  FileFormatsList::iterator end = FileFormatsManager::instance().end();
+  FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
+  FileFormatsList::iterator end = FileFormatsManager::instance()->end();
 
   /* clear the string */
   ustrncpy(buf, empty_string, size);
@@ -162,8 +160,10 @@ FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
     goto done;
   }
 
-  /* get the format through the extension of the filename */
-  fop->format = get_fileformat(extension.c_str());
+  // Get the format through the extension of the filename
+  fop->format = FileFormatsManager::instance()
+    ->getFileFormatByExtension(extension.c_str());
+
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_LOAD)) {
     fop_error(fop, "ASEPRITE can't load \"%s\" files\n", extension.c_str());
@@ -252,8 +252,10 @@ FileOp* fop_to_save_document(Context* context, Document* document)
 
   PRINTF("Saving document \"%s\" (%s)\n", fop->document->filename().c_str(), extension.c_str());
 
-  /* get the format through the extension of the filename */
-  fop->format = get_fileformat(extension.c_str());
+  // Get the format through the extension of the filename
+  fop->format = FileFormatsManager::instance()
+    ->getFileFormatByExtension(extension.c_str());
+
   if (!fop->format ||
       !fop->format->support(FILE_SUPPORT_SAVE)) {
     fop_error(fop, "ASEPRITE can't save \"%s\" files\n", extension.c_str());
@@ -846,25 +848,6 @@ static void fop_prepare_for_sequence(FileOp* fop)
 {
   fop->seq.palette = new Palette(FrameNumber(0), 256);
   fop->seq.format_options.reset();
-}
-
-static FileFormat* get_fileformat(const char* extension)
-{
-  FileFormatsList::iterator it = FileFormatsManager::instance().begin();
-  FileFormatsList::iterator end = FileFormatsManager::instance().end();
-  char buf[512], *tok;
-
-  for (; it != end; ++it) {
-    ustrcpy(buf, (*it)->extensions());
-
-    for (tok=ustrtok(buf, ","); tok;
-         tok=ustrtok(NULL, ",")) {
-      if (ustricmp(extension, tok) == 0)
-        return (*it);
-    }
-  }
-
-  return NULL;
 }
 
 // Splits a file-name like "my_ani0000.pcx" to "my_ani" and ".pcx",

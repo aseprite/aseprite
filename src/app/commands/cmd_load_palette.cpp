@@ -24,6 +24,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
+#include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "base/unique_ptr.h"
 #include "raster/palette.h"
@@ -51,9 +52,12 @@ LoadPaletteCommand::LoadPaletteCommand()
 
 void LoadPaletteCommand::onExecute(Context* context)
 {
-  std::string filename = app::show_file_selector("Load Palette", "", "png,pcx,bmp,tga,lbm,col,gpl");
+  char exts[4096];
+  get_readable_palette_extensions(exts, sizeof(exts));
+
+  std::string filename = app::show_file_selector("Load Palette", "", exts);
   if (!filename.empty()) {
-    base::UniquePtr<raster::Palette> palette(raster::Palette::load(filename.c_str()));
+    base::UniquePtr<raster::Palette> palette(load_palette(filename.c_str()));
     if (!palette) {
       Alert::show("Error<<Loading palette file||&Close");
     }

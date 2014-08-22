@@ -21,6 +21,7 @@
 #endif
 
 #include "app/commands/command.h"
+#include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/modules/palettes.h"
 #include "base/fs.h"
@@ -50,11 +51,14 @@ SavePaletteCommand::SavePaletteCommand()
 
 void SavePaletteCommand::onExecute(Context* context)
 {
+  char exts[4096];
+  get_writable_palette_extensions(exts, sizeof(exts));
+
   std::string filename;
   int ret;
 
 again:
-  filename = app::show_file_selector("Save Palette", "", "png,pcx,bmp,tga,col,gpl");
+  filename = app::show_file_selector("Save Palette", "", exts);
   if (!filename.empty()) {
     if (base::is_file(filename)) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
@@ -67,7 +71,7 @@ again:
     }
 
     raster::Palette* palette = get_current_palette();
-    if (!palette->save(filename.c_str())) {
+    if (!save_palette(filename.c_str(), palette)) {
       Alert::show("Error<<Saving palette file||&Close");
     }
   }

@@ -22,6 +22,7 @@
 
 #include "app/res/palettes_loader_delegate.h"
 
+#include "app/file/palette_file.h"
 #include "app/file_system.h"
 #include "app/res/palette_resource.h"
 #include "app/resource_finder.h"
@@ -49,7 +50,7 @@ std::string PalettesLoaderDelegate::resourcesLocation() const
 
 Resource* PalettesLoaderDelegate::loadResource(const std::string& filename)
 {
-  raster::Palette* palette = raster::Palette::load(filename.c_str());
+  raster::Palette* palette = load_palette(filename.c_str());
   if (!palette)
     return NULL;
 

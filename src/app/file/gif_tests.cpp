@@ -33,7 +33,7 @@ using namespace app;
 class GifFormat : public ::testing::Test {
 public:
   GifFormat() : m_system(she::create_system()) {
-    FileFormatsManager::instance().registerAllFormats();
+    FileFormatsManager::instance()->registerAllFormats();
   }
 
 protected:

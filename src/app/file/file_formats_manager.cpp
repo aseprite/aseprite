@@ -41,11 +41,11 @@ extern FileFormat* CreateTgaFormat();
 static FileFormatsManager* singleton = NULL;
 
 // static
-FileFormatsManager& FileFormatsManager::instance()
+FileFormatsManager* FileFormatsManager::instance()
 {
   if (!singleton)
     singleton = new FileFormatsManager();
-  return *singleton;
+  return singleton;
 }
 
 // static
@@ -89,6 +89,23 @@ FileFormatsList::iterator FileFormatsManager::begin()
 FileFormatsList::iterator FileFormatsManager::end()
 {
   return m_formats.end();
+}
+
+FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) const
+{
+  char buf[512], *tok;
+
+  for (FileFormat* ff : m_formats) {
+    strcpy(buf, ff->extensions());
+
+    for (tok=strtok(buf, ","); tok;
+         tok=strtok(NULL, ",")) {
+      if (stricmp(extension, tok) == 0)
+        return ff;
+    }
+  }
+
+  return NULL;
 }
 
 } // namespace app

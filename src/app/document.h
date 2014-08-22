@@ -20,6 +20,7 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "app/file/format_options.h"
 #include "base/disable_copying.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
@@ -54,7 +55,6 @@ namespace undo {
 namespace app {
   class DocumentApi;
   class DocumentUndo;
-  class FormatOptions;
   struct BoundSeg;
 
   using namespace raster;

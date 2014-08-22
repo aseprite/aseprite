@@ -120,6 +120,7 @@ add_library(app-lib
   file/gif_format.cpp
   file/ico_format.cpp
   file/jpeg_format.cpp
+  file/palette_file.cpp
   file/pcx_format.cpp
   file/png_format.cpp
   file/tga_format.cpp

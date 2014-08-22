@@ -36,7 +36,7 @@ TEST(File, SeveralSizes)
 {
   she::ScopedHandle<she::System> system(she::create_system());
   // Register all possible image formats.
-  FileFormatsManager::instance().registerAllFormats();
+  FileFormatsManager::instance()->registerAllFormats();
   std::vector<char> fn(256);
   app::Context ctx;
 

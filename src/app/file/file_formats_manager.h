@@ -35,7 +35,7 @@ namespace app {
   class FileFormatsManager {
   public:
     // Returns a singleton of this class.
-    static FileFormatsManager& instance();
+    static FileFormatsManager* instance();
     static void destroyInstance();
 
     virtual ~FileFormatsManager();
@@ -45,6 +45,8 @@ namespace app {
     // Iterators to access to the list of formats.
     FileFormatsList::iterator begin();
     FileFormatsList::iterator end();
+
+    FileFormat* getFileFormatByExtension(const char* extension) const;
 
   private:
     // Register one format.

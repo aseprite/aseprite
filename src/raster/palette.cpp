@@ -22,18 +22,12 @@
 
 #include "raster/palette.h"
 
-#include "base/path.h"
-#include "base/string.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "raster/conversion_alleg.h"
-#include "raster/file/col_file.h"
-#include "raster/file/gpl_file.h"
 #include "raster/image.h"
 
 #include <algorithm>
-
-#include <allegro.h>            // TODO Remove this dependency
 
 namespace raster {
 
@@ -404,73 +398,6 @@ void Palette::sort(int from, int to, SortPalette* sort_palette, std::vector<int>
 
 // End of Sort stuff
 //////////////////////////////////////////////////////////////////////
-
-Palette* Palette::load(const char *filename)
-{
-  std::string ext = base::string_to_lower(base::get_file_extension(filename));
-  Palette* pal = NULL;
-
-  if (ext == "png" ||
-      ext == "pcx" ||
-      ext == "bmp" ||
-      ext == "tga" ||
-      ext == "lbm") {
-    PALETTE rgbpal;
-    BITMAP* bmp;
-
-    bmp = load_bitmap(filename, rgbpal);
-    if (bmp) {
-      destroy_bitmap(bmp);
-
-      pal = new Palette(FrameNumber(0), MaxColors);
-      convert_palette_from_allegro(rgbpal, pal);
-    }
-  }
-  else if (ext == "col") {
-    pal = raster::file::load_col_file(filename);
-  }
-  else if (ext == "gpl") {
-    pal = raster::file::load_gpl_file(filename);
-  }
-
-  if (pal)
-    pal->setFilename(filename);
-
-  return pal;
-}
-
-bool Palette::save(const char *filename) const
-{
-  std::string ext = base::string_to_lower(base::get_file_extension(filename));
-  bool success = false;
-
-  if (ext == "png" ||
-      ext == "pcx" ||
-      ext == "bmp" ||
-      ext == "tga") {
-    PALETTE rgbpal;
-    BITMAP* bmp;
-    int c, x, y;
-
-    bmp = create_bitmap_ex(8, 16, 16);
-    for (y=c=0; y<16; y++)
-      for (x=0; x<16; x++)
-        putpixel(bmp, x, y, c++);
-
-    convert_palette_to_allegro(this, rgbpal);
-
-    success = (save_bitmap(filename, bmp, rgbpal) == 0);
-    destroy_bitmap(bmp);
-  }
-  else if (ext == "col") {
-    success = raster::file::save_col_file(this, filename);
-  }
-  else if (ext == "gpl") {
-    success = raster::file::save_gpl_file(this, filename);
-  }
-
-  return success;
-}
 
 int Palette::findExactMatch(int r, int g, int b) const
 {

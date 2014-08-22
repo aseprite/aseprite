@@ -33,6 +33,7 @@
 #include "app/document_location.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
+#include "app/file/palette_file.h"
 #include "app/file_system.h"
 #include "app/find_widget.h"
 #include "app/gui_xml.h"
@@ -139,7 +140,7 @@ App::App(int argc, const char* argv[])
   }
 
   // Register well-known image file types.
-  FileFormatsManager::instance().registerAllFormats();
+  FileFormatsManager::instance()->registerAllFormats();
 
   // init editor cursor
   Editor::editor_cursor_init();
@@ -165,7 +166,7 @@ App::App(int argc, const char* argv[])
   if (!palFile.empty()) {
     PRINTF("Loading custom palette file: %s\n", palFile.c_str());
 
-    base::UniquePtr<Palette> pal(Palette::load(palFile.c_str()));
+    base::UniquePtr<Palette> pal(load_palette(palFile.c_str()));
     if (pal.get() != NULL) {
       set_default_palette(pal.get());
     }
