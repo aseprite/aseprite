@@ -22,6 +22,7 @@
 
 #include "app/document_exporter.h"
 
+#include "app/console.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/file/file.h"
@@ -90,6 +91,8 @@ public:
   typedef List::iterator iterator;
   typedef List::const_iterator const_iterator;
 
+  bool empty() const { return m_samples.empty(); }
+
   void addSample(const Sample& sample) {
     m_samples.push_back(sample);
   }
@@ -156,6 +159,11 @@ void DocumentExporter::exportSheet()
   // 1) Capture the samples (each sprite+frame pair)
   Samples samples;
   captureSamples(samples);
+  if (samples.empty()) {
+    Console console;
+    console.printf("No documents to export");
+    return;
+  }
 
   // 2) Layout those samples in a texture field.
   SimpleLayoutSamples layout;
