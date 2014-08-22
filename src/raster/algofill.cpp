@@ -14,31 +14,30 @@
 #include "raster/image.h"
 #include "raster/primitives.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <limits.h>
-#include <math.h>
+#include <climits>
+#include <cmath>
+#include <vector>
 
 namespace raster {
 
-typedef struct FLOODED_LINE     /* store segments which have been flooded */
-{
-  short flags;                  /* status of the segment */
-  short lpos, rpos;             /* left and right ends of segment */
-  short y;                      /* y coordinate of the segment */
-  int next;                     /* linked list if several per line */
-} FLOODED_LINE;
+struct FLOODED_LINE {   // store segments which have been flooded
+  short flags;          // status of the segment
+  short lpos, rpos;     // left and right ends of segment
+  short y;              // y coordinate of the segment
+  int next;             // linked list if several per line
+};
 
 /* Note: a 'short' is not sufficient for 'next' above in some corner cases. */
 
 
+static std::vector<FLOODED_LINE> flood_buf;
 static int flood_count;          /* number of flooded segments */
 
 #define FLOOD_IN_USE             1
 #define FLOOD_TODO_ABOVE         2
 #define FLOOD_TODO_BELOW         4
 
-#define FLOOD_LINE(c)            (((FLOODED_LINE *)_scratch_mem) + c)
+#define FLOOD_LINE(c)            (&flood_buf[c])
 
 static inline bool color_equal_32(color_t c1, color_t c2, int tolerance)
 {
@@ -232,7 +231,7 @@ static int flooder(Image *image, int x, int y,
     }
 
     p->next = c = flood_count++;
-    _grow_scratch_mem(sizeof(FLOODED_LINE) * flood_count);
+    flood_buf.resize(flood_count);
     p = FLOOD_LINE(c);
   }
 
@@ -341,9 +340,9 @@ void algo_floodfill(Image* image, int x, int y,
   }
 
   /* set up the list of flooded segments */
-  _grow_scratch_mem(sizeof(FLOODED_LINE) * image->height());
+  flood_buf.resize(image->height());
   flood_count = image->height();
-  FLOODED_LINE* p = (FLOODED_LINE*)_scratch_mem;
+  FLOODED_LINE* p = (FLOODED_LINE*)&flood_buf[0];
   for (int c=0; c<flood_count; c++) {
     p[c].flags = 0;
     p[c].lpos = SHRT_MAX;
