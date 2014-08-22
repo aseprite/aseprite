@@ -239,36 +239,24 @@ void osx_event_handler()
                [NSApp sendEvent: event];
                break;
             }
-            /* fallthrough */
+
+            buttons |= ((event_type == NSLeftMouseDown) ? 0x1 : 0);
+            buttons |= ((event_type == NSRightMouseDown) ? 0x2 : 0);
+            buttons |= ((event_type == NSOtherMouseDown) ? 0x4 : 0);
+
+            [NSApp sendEvent: event];
+            gotmouseevent = YES;
+            break;
+
          case NSLeftMouseUp:
          case NSOtherMouseUp:
          case NSRightMouseUp:
-            if (osx_emulate_mouse_buttons) {
-               if (event_type == NSLeftMouseDown) {
-                  if ((!osx_window) || (NSPointInRect(point, view))) {
-                     buttons = 0x1;
-                     if (key[KEY_ALT])
-                        buttons = 0x4;
-                     if (key[KEY_LCONTROL])
-                        buttons = 0x2;
-                  }
-               }
-               else if (event_type == NSLeftMouseUp)
-                  buttons &= ~0x7;
-            }
-            else {
-               if ((!osx_window) || (NSPointInRect(point, view))) {
-                  /* Deliver mouse downs only if cursor is on the window */
-                  buttons |= ((event_type == NSLeftMouseDown) ? 0x1 : 0);
-                  buttons |= ((event_type == NSRightMouseDown) ? 0x2 : 0);
-                  buttons |= ((event_type == NSOtherMouseDown) ? 0x4 : 0);
-               }
-               buttons &= ~((event_type == NSLeftMouseUp) ? 0x1 : 0);
-               buttons &= ~((event_type == NSRightMouseUp) ? 0x2 : 0);
-               buttons &= ~((event_type == NSOtherMouseUp) ? 0x4 : 0);
-            }
-            gotmouseevent = YES;
+            buttons &= ~((event_type == NSLeftMouseUp) ? 0x1 : 0);
+            buttons &= ~((event_type == NSRightMouseUp) ? 0x2 : 0);
+            buttons &= ~((event_type == NSOtherMouseUp) ? 0x4 : 0);
+
             [NSApp sendEvent: event];
+            gotmouseevent = YES;
             break;
 
          case NSLeftMouseDragged:
