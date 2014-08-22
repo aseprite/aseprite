@@ -73,8 +73,6 @@
 #include "ui/intern.h"
 #include "ui/ui.h"
 
-
-#include <allegro.h>
 #include <iostream>
 #include <memory>
 #include <stdarg.h>
@@ -82,10 +80,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#ifdef ALLEGRO_WINDOWS
-  #include <winalleg.h>
-#endif
 
 namespace app {
 
@@ -210,9 +204,6 @@ int App::run()
     // window title to proper devault value. (Issue #285)
     UIContext::instance()->setActiveView(NULL);
   }
-
-  // Set background mode for non-GUI modes
-  set_display_switch_mode(SWITCH_BACKGROUND);
 
   // Procress options
   PRINTF("Processing options...\n");
@@ -370,8 +361,6 @@ void App::showNotification(INotificationDelegate* del)
 // Updates palette and redraw the screen.
 void app_refresh_screen()
 {
-  ASSERT(screen != NULL);
-
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
@@ -399,8 +388,6 @@ PixelFormat app_get_current_pixel_format()
   Document* document = context->activeDocument();
   if (document != NULL)
     return document->sprite()->pixelFormat();
-  else if (screen != NULL && bitmap_color_depth(screen) == 8)
-    return IMAGE_INDEXED;
   else
     return IMAGE_RGB;
 }
