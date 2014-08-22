@@ -266,7 +266,7 @@ bool Entry::onProcessMessage(Message* msg)
             }
             else {
               // Map common Windows shortcuts for Cut/Copy/Paste
-#if defined ALLEGRO_MACOSX
+#if defined __APPLE__
               if (msg->onlyCmdPressed())
 #else
               if (msg->onlyCtrlPressed())
