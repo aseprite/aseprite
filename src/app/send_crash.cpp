@@ -32,7 +32,9 @@
 
 namespace app {
 
+#ifdef WIN32
 static const char* kDefaultCrashName = "Aseprite-crash.dmp";
+#endif
 
 std::string memory_dump_filename()
 {
