@@ -61,7 +61,6 @@
 
 
 @interface AllegroAppDelegate : NSObject
-- (BOOL)application: (NSApplication *)theApplication openFile: (NSString *)filename;
 - (void)applicationDidFinishLaunching: (NSNotification *)aNotification;
 - (void)applicationDidChangeScreenParameters: (NSNotification *)aNotification;
 + (void)app_main: (id)arg;
