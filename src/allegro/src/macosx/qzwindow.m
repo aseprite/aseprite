@@ -349,7 +349,7 @@ void osx_update_dirty_lines(void)
    Rect rect;
    CGrafPtr qd_view_port;
    int qd_view_pitch;
-   char *qd_view_addr;
+   char *qd_view_addr = NULL;
 
    if (![osx_window isVisible])
       return;
@@ -773,6 +773,7 @@ static int osx_show_video_bitmap(BITMAP* vb)
                         pseudo_screen->write_bank = pseudo_screen->read_bank = osx_qz_write_line_win;
                 }
                 pseudo_screen_addr = vb->line[0];
+                pseudo_screen_depth = bitmap_color_depth(vb);
                 vb->vtable = &_special_vtable;
                 vb->write_bank = vb->read_bank = osx_qz_write_line_win;
                 current_video_page = vb;
@@ -851,6 +852,7 @@ static BITMAP *private_osx_create_screen_data(int w, int h, int color_depth)
 
    pseudo_screen_pitch = w * BYTES_PER_PIXEL(color_depth);
    pseudo_screen_addr = _AL_MALLOC(h * pseudo_screen_pitch);
+   pseudo_screen_depth = color_depth;
    pseudo_screen = _make_bitmap(w, h, (unsigned long) pseudo_screen_addr, &gfx_quartz_window, color_depth, pseudo_screen_pitch);
    if (!pseudo_screen) {
       return NULL;
