@@ -535,6 +535,8 @@ static BITMAP *private_osx_qz_window_init(int w, int h, int v_w, int v_h, int co
 
         setup_direct_shifts();
 
+        w = [qd_view bounds].size.width;
+        h = [qd_view bounds].size.height;
         private_osx_create_screen_data(w, h, color_depth);
 
         requested_color_depth = color_depth;
@@ -826,6 +828,8 @@ static BITMAP* osx_qz_window_acknowledge_resize(void)
    [qd_view setFrameSize: NSMakeSize(w, h)];
 
    /* re-create the screen */
+   w = [qd_view bounds].size.width;
+   h = [qd_view bounds].size.height;
    new_screen = private_osx_create_screen_data(w, h, color_depth);
 
    _unix_unlock_mutex(osx_window_mutex);
