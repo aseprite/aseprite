@@ -257,26 +257,24 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           default:
-            if (keymsg->unicodeChar() >= 32) {
+            // Map common Windows shortcuts for Cut/Copy/Paste
+#if defined __APPLE__
+            if (msg->onlyCmdPressed())
+#else
+            if (msg->onlyCtrlPressed())
+#endif
+            {
+              switch (scancode) {
+                case kKeyX: cmd = EntryCmd::Cut; break;
+                case kKeyC: cmd = EntryCmd::Copy; break;
+                case kKeyV: cmd = EntryCmd::Paste; break;
+              }
+            }
+            else if (keymsg->unicodeChar() >= 32) {
               // Ctrl and Alt must be unpressed to insert a character
               // in the text-field.
               if ((msg->keyModifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
                 cmd = EntryCmd::InsertChar;
-              }
-            }
-            else {
-              // Map common Windows shortcuts for Cut/Copy/Paste
-#if defined __APPLE__
-              if (msg->onlyCmdPressed())
-#else
-              if (msg->onlyCtrlPressed())
-#endif
-              {
-                switch (scancode) {
-                  case kKeyX: cmd = EntryCmd::Cut; break;
-                  case kKeyC: cmd = EntryCmd::Copy; break;
-                  case kKeyV: cmd = EntryCmd::Paste; break;
-                }
               }
             }
             break;
