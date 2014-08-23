@@ -23,6 +23,7 @@ namespace base {
   void remove_readonly_attr(const std::string& path);
 
   void make_directory(const std::string& path);
+  void make_all_directories(const std::string& path);
   void remove_directory(const std::string& path);
 
   std::string get_app_path();

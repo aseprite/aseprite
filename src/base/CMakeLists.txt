@@ -1,5 +1,5 @@
 # Aseprite Base Library
-# Copyright (c) 2001-2013 David Capello
+# Copyright (c) 2001-2014 David Capello
 
 include(CheckCSourceCompiles)
 

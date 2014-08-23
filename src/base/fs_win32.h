@@ -6,8 +6,10 @@
 
 #include <stdexcept>
 #include <windows.h>
+#include <shlobj.h>
 #include <sys/stat.h>
 
+#include "base/path.h"
 #include "base/string.h"
 #include "base/win32_exception.h"
 
@@ -66,7 +68,6 @@ void make_directory(const std::string& path)
     throw Win32Exception("Error creating directory");
 }
 
-
 void remove_directory(const std::string& path)
 {
   BOOL result = ::RemoveDirectory(from_utf8(path).c_str());
@@ -86,7 +87,7 @@ std::string get_app_path()
 std::string get_temp_path()
 {
   TCHAR buffer[MAX_PATH+1];
-  DWORD result = GetTempPath(sizeof(buffer)/sizeof(TCHAR), buffer);
+  DWORD result = ::GetTempPath(sizeof(buffer)/sizeof(TCHAR), buffer);
   return to_utf8(buffer);
 }
 
