@@ -50,7 +50,7 @@ size_t file_size(const std::string& path)
 
 void move_file(const std::string& src, const std::string& dst)
 {
-  int result = rename(src, dst);
+  int result = rename(src.c_str(), dst.c_str());
   if (result != 0)
     // TODO add errno into the exception
     throw std::runtime_error("Error moving file");
