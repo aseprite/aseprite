@@ -23,7 +23,6 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/launcher.h"
-#include "app/resource_finder.h"
 #include "base/fs.h"
 
 namespace app {
@@ -38,7 +37,7 @@ protected:
   void onExecute(Context* context) override;
 
 private:
-  enum Type { Url, FileInDocs };
+  enum Type { Url };
 
   Type m_type;
   std::string m_path;
@@ -55,12 +54,6 @@ LaunchCommand::LaunchCommand()
 
 void LaunchCommand::onLoadParams(Params* params)
 {
-  std::string type = params->get("type");
-  if (type == "docs")
-    m_type = FileInDocs;
-  else if (type == "url")
-    m_type = Url;
-
   m_path = params->get("path");
 
   if (m_type == Url && !m_path.empty() && m_path[0] == '/') {
@@ -74,15 +67,6 @@ void LaunchCommand::onExecute(Context* context)
 
     case Url:
       launcher::open_url(m_path);
-      break;
-
-    case FileInDocs:
-      {
-        ResourceFinder rf;
-        rf.includeDocsDir(m_path.c_str());
-        if (rf.findFirst())
-          launcher::open_file(rf.filename());
-      }
       break;
 
   }
