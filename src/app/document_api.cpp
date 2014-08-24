@@ -245,6 +245,32 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
   copyFrame(sprite, newFrame.previous(), newFrame);
 }
 
+void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
+{
+  // Add the frame in the sprite structure, it adjusts the total
+  // number of frames in the sprite.
+  if (undoEnabled())
+    m_undoers->pushUndoer(new undoers::AddFrame(getObjects(), m_document, sprite, newFrame));
+
+  sprite->addFrame(newFrame);
+
+  // Move cels.
+  displaceFrames(sprite->folder(), newFrame);
+
+  // Add background cel
+  Layer* bgLayer = sprite->backgroundLayer();
+  if (bgLayer) {
+    LayerImage* imglayer = static_cast<LayerImage*>(bgLayer);
+    copyCel(imglayer, FrameNumber(0), imglayer, newFrame, 0);
+  }
+
+  // Notify observers about the new frame.
+  doc::DocumentEvent ev(m_document);
+  ev.sprite(sprite);
+  ev.frame(newFrame);
+  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
+}
+
 void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
 {
   // Add the frame in the sprite structure, it adjusts the total
@@ -264,7 +290,7 @@ void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber n
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
 }
 
-void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame)
+void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -282,6 +308,34 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
         if (cel)
           setCelFramePosition(imglayer, cel, cel->frame().next());
       }
+      break;
+    }
+
+    case OBJECT_LAYER_FOLDER: {
+      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
+      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
+
+      for (; it != end; ++it)
+        displaceFrames(*it, frame);
+      break;
+    }
+
+  }
+}
+
+void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame)
+{
+  ASSERT(layer);
+  ASSERT(frame >= 0);
+
+  Sprite* sprite = layer->sprite();
+
+  switch (layer->type()) {
+
+    case OBJECT_LAYER_IMAGE: {
+      LayerImage* imglayer = static_cast<LayerImage*>(layer);
+
+      displaceFrames(imglayer, frame);
 
       if (fromFrame >= frame)
         fromFrame = fromFrame.next();

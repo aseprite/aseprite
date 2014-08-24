@@ -69,6 +69,7 @@ namespace app {
 
     // Frames API
     void addFrame(Sprite* sprite, FrameNumber newFrame);
+    void addEmptyFrame(Sprite* sprite, FrameNumber newFrame);
     void copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame);
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
@@ -126,6 +127,7 @@ namespace app {
   private:
     undo::ObjectsContainer* getObjects() const;
     void setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber frame);
+    void displaceFrames(Layer* layer, FrameNumber frame);
     void copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame);
     void removeFrameOfLayer(Layer* layer, FrameNumber frame);
     void moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame);

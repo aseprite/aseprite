@@ -59,6 +59,9 @@
       <key command="GotoNextLayer" shortcut="Up" />
       <!-- Frame -->
       <key command="NewFrame" shortcut="Alt+N" />
+      <key command="NewFrame" shortcut="Alt+B">
+        <param name="content" value="empty" />
+      </key>
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
       </key>
@@ -378,6 +381,9 @@
         <item command="CelProperties" text="&amp;Cel Properties..." />
         <separator />
         <item command="NewFrame" text="&amp;New Frame" />
+        <item command="NewFrame" text="&amp;New Empty Frame">
+          <param name="content" value="empty" />
+        </item>
         <item command="RemoveFrame" text="&amp;Remove Frame" />
         <separator />
         <menu text="&amp;Jump to">
@@ -493,6 +499,9 @@
       </item>
       <separator />
       <item command="NewFrame" text="&amp;New" />
+      <item command="NewFrame" text="&amp;New Empty Frame">
+        <param name="content" value="empty" />
+      </item>
       <item command="RemoveFrame" text="&amp;Remove" />
     </menu>
 

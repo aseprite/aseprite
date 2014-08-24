@@ -23,6 +23,7 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -42,12 +43,18 @@ namespace app {
   
 class NewFrameCommand : public Command {
 public:
+  enum class Content { CurrentFrame, EmptyFrame };
+
   NewFrameCommand();
   Command* clone() const override { return new NewFrameCommand(*this); }
 
 protected:
+  void onLoadParams(Params* params);
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+
+private:
+  Content m_content;
 };
 
 NewFrameCommand::NewFrameCommand()
@@ -55,6 +62,15 @@ NewFrameCommand::NewFrameCommand()
             "New Frame",
             CmdRecordableFlag)
 {
+}
+
+void NewFrameCommand::onLoadParams(Params* params)
+{
+  m_content = Content::CurrentFrame;
+
+  std::string content = params->get("content");
+  if (content == "current") m_content = Content::CurrentFrame;
+  else if (content == "empty") m_content = Content::EmptyFrame;
 }
 
 bool NewFrameCommand::onEnabled(Context* context)
@@ -70,7 +86,14 @@ void NewFrameCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   {
     UndoTransaction undoTransaction(writer.context(), "New Frame");
-    document->getApi().addFrame(sprite, writer.frame().next());
+    switch (m_content) {
+      case Content::CurrentFrame:
+        document->getApi().addFrame(sprite, writer.frame().next());
+        break;
+      case Content::EmptyFrame:
+        document->getApi().addEmptyFrame(sprite, writer.frame().next());
+        break;
+    }
     undoTransaction.commit();
   }
   update_screen_for_document(document);
