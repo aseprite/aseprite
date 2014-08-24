@@ -30,12 +30,14 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
+#include "app/send_crash.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/util/render.h"
 #include "base/bind.h"
+#include "base/path.h"
 #include "raster/image.h"
 #include "she/system.h"
 #include "ui/ui.h"
@@ -195,9 +197,7 @@ private:
   }
 
   void onLocateCrashFolder() {
-    app::ResourceFinder rf;
-    rf.includeHomeDir(".");
-    app::launcher::open_folder(rf.defaultFilename());
+    app::launcher::open_folder(base::get_file_path(app::memory_dump_filename()));
   }
 
   void onLocateConfigFile() {
