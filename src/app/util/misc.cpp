@@ -52,31 +52,32 @@ Image* NewImageFromMask(const DocumentLocation& location)
   ASSERT(srcSprite);
   ASSERT(srcMask);
   ASSERT(srcMaskBitmap);
-  ASSERT(src);
 
   dst = Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h);
   if (!dst)
     return NULL;
 
   // Clear the new image
-  dst->setMaskColor(src->maskColor());
+  dst->setMaskColor(src ? src->maskColor(): srcSprite->transparentColor());
   clear_image(dst, dst->maskColor());
 
   // Copy the masked zones
-  const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
-  LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
+  if (src) {
+    const LockImageBits<BitmapTraits> maskBits(srcMaskBitmap, gfx::Rect(0, 0, srcBounds.w, srcBounds.h));
+    LockImageBits<BitmapTraits>::const_iterator mask_it = maskBits.begin();
 
-  for (v=0; v<srcBounds.h; ++v) {
-    for (u=0; u<srcBounds.w; ++u, ++mask_it) {
-      ASSERT(mask_it != maskBits.end());
+    for (v=0; v<srcBounds.h; ++v) {
+      for (u=0; u<srcBounds.w; ++u, ++mask_it) {
+        ASSERT(mask_it != maskBits.end());
 
-      if (*mask_it) {
-        getx = u+srcBounds.x-x;
-        gety = v+srcBounds.y-y;
+        if (*mask_it) {
+          getx = u+srcBounds.x-x;
+          gety = v+srcBounds.y-y;
 
-        if ((getx >= 0) && (getx < src->width()) &&
+          if ((getx >= 0) && (getx < src->width()) &&
             (gety >= 0) && (gety < src->height()))
-          dst->putPixel(u, v, src->getPixel(getx, gety));
+            dst->putPixel(u, v, src->getPixel(getx, gety));
+        }
       }
     }
   }

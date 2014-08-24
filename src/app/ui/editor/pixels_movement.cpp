@@ -118,8 +118,9 @@ void PixelsMovement::cutMask()
 {
   {
     ContextWriter writer(m_reader);
-    m_document->getApi().clearMask(m_layer, writer.cel(),
-                                   app_get_color_to_clear_layer(m_layer));
+    if (writer.cel())
+      m_document->getApi().clearMask(m_layer, writer.cel(),
+        app_get_color_to_clear_layer(m_layer));
   }
 
   copyMask();

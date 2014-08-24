@@ -225,17 +225,15 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (editor->isInsideSelection() &&
       currentTool->getInk(0)->isSelection() &&
       msg->left()) {
+    if (!layer->isWritable()) {
+      Alert::show(PACKAGE "<<The layer is locked.||&Close");
+      return true;
+    }
+
     int x, y, opacity;
     Image* image = location.image(&x, &y, &opacity);
-    if (image) {
-      if (!layer->isWritable()) {
-        Alert::show(PACKAGE "<<The layer is locked.||&Close");
-        return true;
-      }
-
-      // Change to MovingPixelsState
-      transformSelection(editor, msg, MoveHandle);
-    }
+    // Change to MovingPixelsState
+    transformSelection(editor, msg, MoveHandle);
     return true;
   }
 
