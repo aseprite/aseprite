@@ -91,7 +91,9 @@ void NewFrameCommand::onExecute(Context* context)
         document->getApi().addFrame(sprite, writer.frame().next());
         break;
       case Content::EmptyFrame:
-        document->getApi().addEmptyFrame(sprite, writer.frame().next());
+        document->getApi().addEmptyFrame(sprite,
+          writer.frame().next(),
+          app_get_color_to_clear_layer(writer.layer()));
         break;
     }
     undoTransaction.commit();

@@ -245,7 +245,7 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
   copyFrame(sprite, newFrame.previous(), newFrame);
 }
 
-void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
+void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bgcolor)
 {
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
@@ -261,7 +261,9 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
   Layer* bgLayer = sprite->backgroundLayer();
   if (bgLayer) {
     LayerImage* imglayer = static_cast<LayerImage*>(bgLayer);
-    copyCel(imglayer, FrameNumber(0), imglayer, newFrame, 0);
+    Image* bgimage = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
+    clear_image(bgimage, bgcolor);
+    addImage(imglayer, newFrame, bgimage);
   }
 
   // Notify observers about the new frame.
@@ -1138,6 +1140,17 @@ int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
         sprite->stock(), imageIndex));
 
   return imageIndex;
+}
+
+Cel* DocumentApi::addImage(LayerImage* layer, FrameNumber frameNumber, Image* image)
+{
+  int imageIndex = addImageInStock(layer->sprite(), image);
+  base::UniquePtr<Cel> cel(new Cel(frameNumber, imageIndex));
+
+  addCel(layer, cel);
+  cel.release();
+
+  return cel;
 }
 
 // Removes and destroys the specified image in the stock.

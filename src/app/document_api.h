@@ -69,7 +69,7 @@ namespace app {
 
     // Frames API
     void addFrame(Sprite* sprite, FrameNumber newFrame);
-    void addEmptyFrame(Sprite* sprite, FrameNumber newFrame);
+    void addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bgcolor);
     void copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame);
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
@@ -106,6 +106,7 @@ namespace app {
     void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
 
     // Images stock API
+    Cel* addImage(LayerImage* layer, FrameNumber frameNumber, Image* image);
     int addImageInStock(Sprite* sprite, Image* image);
     void removeImageFromStock(Sprite* sprite, int imageIndex);
     void replaceStockImage(Sprite* sprite, int imageIndex, Image* newImage);
