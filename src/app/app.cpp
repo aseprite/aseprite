@@ -62,6 +62,8 @@
 #include "app/util/render.h"
 #include "app/webserver.h"
 #include "base/exception.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
 #include "raster/image.h"
@@ -335,10 +337,15 @@ App::~App()
 
 bool App::isPortable()
 {
-  std::string ini_file = get_config_file();
-  app::ResourceFinder rf;
-  rf.includeBinDir("aseprite.ini");
-  return (ini_file == rf.defaultFilename());
+  static bool* is_portable = NULL;
+  if (!is_portable) {
+    is_portable =
+      new bool(
+        base::is_file(base::join_path(
+            base::get_file_path(base::get_app_path()),
+            "aseprite.ini")));
+  }
+  return *is_portable;
 }
 
 tools::ToolBox* App::getToolBox() const
