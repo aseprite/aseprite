@@ -29,7 +29,8 @@
 
 namespace app {
 
-ResourceFinder::ResourceFinder()
+ResourceFinder::ResourceFinder(bool log)
+  : m_log(log)
 {
   m_current = -1;
 }
@@ -59,15 +60,20 @@ bool ResourceFinder::next()
 bool ResourceFinder::findFirst()
 {
   while (next()) {
-    PRINTF("Loading resource from \"%s\"...\n", filename().c_str());
+    if (m_log)
+      PRINTF("Loading resource from \"%s\"...\n", filename().c_str());
 
     if (base::is_file(filename())) {
-      PRINTF("- OK\n");
+      if (m_log)
+        PRINTF("- OK\n");
+
       return true;
     }
   }
 
-  PRINTF("- Resource not found.\n");
+  if (m_log)
+    PRINTF("- Resource not found.\n");
+
   return false;
 }
 

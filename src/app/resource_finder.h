@@ -32,7 +32,7 @@ namespace app {
   // data/ directory, etc.).
   class ResourceFinder {
   public:
-    ResourceFinder();
+    ResourceFinder(bool log = true);
 
     // Returns the current possible path. You cannot call this
     // function if you haven't call first() or next() before.
@@ -56,7 +56,8 @@ namespace app {
 
   private:
 
-    // Members
+  private:
+    bool m_log;
     std::vector<std::string> m_paths;
     int m_current;
     std::string m_default;
