@@ -17,6 +17,7 @@ namespace base {
 
   size_t file_size(const std::string& path);
 
+  void move_file(const std::string& src, const std::string& dst);
   void delete_file(const std::string& path);
 
   bool has_readonly_attr(const std::string& path);

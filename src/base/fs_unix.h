@@ -48,6 +48,14 @@ size_t file_size(const std::string& path)
   return (stat(path.c_str(), &sts) == 0) ? sts.st_size: 0;
 }
 
+void move_file(const std::string& src, const std::string& dst)
+{
+  int result = rename(src, dst);
+  if (result != 0)
+    // TODO add errno into the exception
+    throw std::runtime_error("Error moving file");
+}
+
 void delete_file(const std::string& path)
 {
   int result = unlink(path.c_str());

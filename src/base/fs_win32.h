@@ -39,6 +39,13 @@ size_t file_size(const std::string& path)
   return (_wstat(from_utf8(path).c_str(), &sts) == 0) ? sts.st_size: 0;
 }
 
+void move_file(const std::string& src, const std::string& dst)
+{
+  BOOL result = ::MoveFile(from_utf8(src).c_str(), from_utf8(dst).c_str());
+  if (result == 0)
+    throw Win32Exception("Error moving file");
+}
+
 void delete_file(const std::string& path)
 {
   BOOL result = ::DeleteFile(from_utf8(path).c_str());
