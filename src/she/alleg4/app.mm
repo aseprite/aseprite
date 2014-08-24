@@ -42,9 +42,9 @@ extern "C" int allegro_main(int argc, char *argv[], NSObject* app_delegate);
 #undef main
 int main(int argc, char *argv[])
 {
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-  (void*)pool;
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  (void)pool;
 
-  SheAppDelegate *app_delegate = [[SheAppDelegate alloc] init];
+  SheAppDelegate* app_delegate = [[SheAppDelegate alloc] init];
   return allegro_main(argc, argv, app_delegate);
 }
