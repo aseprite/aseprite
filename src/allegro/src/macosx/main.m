@@ -65,8 +65,6 @@ static BOOL in_bundle(void)
 {
    NSAutoreleasePool *pool = NULL;
    CFDictionaryRef mode;
-   NSString* exename, *resdir;
-   NSFileManager* fm;
    BOOL isDir;
 
    /* create mutex */
@@ -75,29 +73,7 @@ static BOOL in_bundle(void)
 
    pool = [[NSAutoreleasePool alloc] init];
    if (in_bundle() == YES)
-   {
-      /* In a bundle, so chdir to the containing directory,
-       * or to the 'magic' resource directory if it exists.
-       * (see the readme.osx file for more info)
-       */
       osx_bundle = [NSBundle mainBundle];
-      exename = [[osx_bundle executablePath] lastPathComponent];
-      resdir = [[osx_bundle resourcePath] stringByAppendingPathComponent: exename];
-      fm = [NSFileManager defaultManager];
-      if ([fm fileExistsAtPath: resdir isDirectory: &isDir] && isDir) {
-          /* Yes, it exists inside the bundle */
-          [fm changeCurrentDirectoryPath: resdir];
-      }
-      else {
-         /* No, change to the 'standard' OSX resource directory if it exists*/
-         if ([fm fileExistsAtPath: [osx_bundle resourcePath] isDirectory: &isDir] && isDir)
-         {
-            [fm changeCurrentDirectoryPath: [osx_bundle resourcePath]];
-         }
-         /* It doesn't exist - this is unusual for a bundle. Don't chdir */
-      }
-   }
-   /* else: not in a bundle so don't chdir */
 
    mode = CGDisplayCurrentMode(kCGDirectMainDisplay);
    CFNumberGetValue(CFDictionaryGetValue(mode, kCGDisplayRefreshRate), kCFNumberSInt32Type, &refresh_rate);

@@ -21,6 +21,8 @@
 #endif
 
 #include "app/resource_finder.h"
+
+#include "app/app.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/string.h"
@@ -91,78 +93,49 @@ void ResourceFinder::includeDataDir(const char* filename)
 {
   char buf[4096];
 
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
+#ifdef WIN32
 
-  // $HOME/.aseprite/filename
-  sprintf(buf, ".aseprite/%s", filename);
+  // $BINDIR/data/filename
+  sprintf(buf, "data/%s", filename);
+  includeBinDir(buf);
+
+#else
+
+  // $HOME/.config/aseprite/filename
+  sprintf(buf, ".config/aseprite/data/%s", filename);
   includeHomeDir(buf);
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
   includeBinDir(buf);
 
-  // $BINDIR/../share/aseprite/data/filename
-  sprintf(buf, "../share/aseprite/data/%s", filename);
-  includeBinDir(buf);
-
-  #ifdef ALLEGRO_MACOSX
-    // $BINDIR/aseprite.app/Contents/Resources/data/filename
-    sprintf(buf, "aseprite.app/Contents/Resources/data/%s", filename);
+  #ifdef __APPLE__
+    // $BINDIR/../Resources/data/filename (inside a bundle)
+    sprintf(buf, "../Resources/data/%s", filename);
+    includeBinDir(buf);
+  #else
+    // $BINDIR/../share/aseprite/data/filename (installed in /usr/ or /usr/local/)
+    sprintf(buf, "../share/aseprite/data/%s", filename);
     includeBinDir(buf);
   #endif
-
-#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
-
-  // $BINDIR/data/filename
-  sprintf(buf, "data/%s", filename);
-  includeBinDir(buf);
-
-#else
-
-  // filename
-  addPath(filename);
-
-#endif
-}
-
-
-void ResourceFinder::includeDocsDir(const char* filename)
-{
-  char buf[4096];
-
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
-
-  // $BINDIR/docs/filename
-  sprintf(buf, "docs/%s", filename);
-  includeBinDir(buf);
-
-  // $BINDIR/../share/aseprite/docs/filename
-  sprintf(buf, "../share/aseprite/docs/%s", filename);
-  includeBinDir(buf);
-
-  #ifdef ALLEGRO_MACOSX
-    // $BINDIR/aseprite.app/Contents/Resources/docs/filename
-    sprintf(buf, "aseprite.app/Contents/Resources/docs/%s", filename);
-    includeBinDir(buf);
-  #endif
-
-#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
-
-  // $BINDIR/docs/filename
-  sprintf(buf, "docs/%s", filename);
-  includeBinDir(buf);
-
-#else
-
-  // filename
-  addPath(filename);
 
 #endif
 }
 
 void ResourceFinder::includeHomeDir(const char* filename)
 {
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
+#ifdef WIN32
+
+  // %AppData%/Aseprite/filename
+  wchar_t* env = _wgetenv(L"AppData");
+  if (env) {
+    std::string path = base::join_path(base::to_utf8(env), "Aseprite");
+    path = base::join_path(path, filename);
+    addPath(path);
+    m_default = path;
+  }
+
+#else
 
   char* env = getenv("HOME");
   char buf[4096];
@@ -177,44 +150,49 @@ void ResourceFinder::includeHomeDir(const char* filename)
     addPath(filename);
   }
 
-#elif defined ALLEGRO_WINDOWS || defined ALLEGRO_DOS
+#endif
+}
 
-  // %AppData%/Aseprite/filename
-  wchar_t* env = _wgetenv(L"AppData");
-  if (env) {
-    std::string path = base::join_path(base::to_utf8(env), "Aseprite");
-    path = base::join_path(path, filename);
-    addPath(path);
-    m_default = path;
+void ResourceFinder::includeUserDir(const char* filename)
+{
+#ifdef WIN32
+
+  if (App::instance()->isPortable()) {
+    // $BINDIR/filename
+    includeBinDir(filename);
   }
-
-  // $PREFIX/data/filename
-  includeDataDir(filename);
+  else {
+    // %AppData%/Aseprite/filename
+    includeHomeDir(filename);
+  }
 
 #else
 
-  // filename
-  addPath(filename);
+  // $HOME/.config/aseprite/filename
+  includeHomeDir((std::string(".config/aseprite/") + filename).c_str());
 
 #endif
 }
 
-void ResourceFinder::includeConfFile()
+std::string ResourceFinder::getFirstOrCreateDefault()
 {
-#if defined ALLEGRO_UNIX || defined ALLEGRO_MACOSX
+  std::string fn;
 
-  // $HOME/.asepriterc
-  includeHomeDir(".asepriterc");
+  // Search from first to last path
+  if (findFirst())
+    fn = filename();
 
-#elif defined ALLEGRO_WINDOWS
+  // If the file wasn't found, we will create the directories for the
+  // default file name.
+  if (fn.empty()) {
+    fn = defaultFilename();
 
-  // $BINDIR/aseprite.ini
-  includeBinDir("aseprite.ini");
+    std::string dir = base::get_file_path(fn);
+    if (!base::is_directory(dir))
+      base::make_all_directories(dir);
+  }
 
-  // %AppData%/Aseprite/aseprite.ini
-  includeHomeDir("aseprite.ini");
-
-#endif
+  return fn;
 }
 
 } // namespace app

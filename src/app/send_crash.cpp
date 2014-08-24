@@ -41,12 +41,8 @@ std::string memory_dump_filename()
 #ifdef WIN32
 
   app::ResourceFinder rf;
-  if (App::instance()->isPortable())
-    rf.includeBinDir(kDefaultCrashName);
-  else
-    rf.includeHomeDir(kDefaultCrashName);
-
-  return rf.defaultFilename();
+  rf.includeUserDir(kDefaultCrashName);
+  return rf.getFirstOrCreateDefault();
 
 #else
   return "";

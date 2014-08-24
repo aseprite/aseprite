@@ -50,11 +50,21 @@ namespace app {
     void addPath(const std::string& path);
     void includeBinDir(const char* filename);
     void includeDataDir(const char* filename);
-    void includeDocsDir(const char* filename);
     void includeHomeDir(const char* filename);
-    void includeConfFile();
 
-  private:
+    // Tries to add the given filename in these locations:
+    // For Windows:
+    // - If the app is running in portable mode, the filename
+    //   will be in the same location as the .exe file.
+    // - If the app is installed, the filename will be inside
+    //   %AppData% location
+    // For Unix-like platforms:
+    // - The filename will be in $HOME/.config/aseprite/
+    void includeUserDir(const char* filename);
+
+    // Returns the first file found or creates the whole directory
+    // structure to create the file in its default location.
+    std::string getFirstOrCreateDefault();
 
   private:
     bool m_log;

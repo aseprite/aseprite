@@ -23,8 +23,10 @@
 #include "app/ini_file.h"
 
 #include "app/resource_finder.h"
+
+#ifndef WIN32
 #include "base/fs.h"
-#include "base/path.h"
+#endif
 
 #include <allegro/config.h>
 #include <allegro/file.h>
@@ -39,26 +41,21 @@ static std::string g_configFilename;
 ConfigModule::ConfigModule()
 {
   ResourceFinder rf;
-  rf.includeConfFile();
+  rf.includeUserDir("aseprite.ini");
+  std::string fn = rf.getFirstOrCreateDefault();
 
-  std::string config_filename;
-
-  // Search the configuration file from first to last path
-  if (rf.findFirst())
-    config_filename = rf.filename();
-
-  // If the file wasn't found, we will create configuration file
-  // in the first path
-  if (config_filename[0] == 0) {
-    config_filename = rf.defaultFilename();
-
-    std::string dir = base::get_file_path(config_filename);
-    if (!base::is_directory(dir))
-      base::make_directory(dir);
+#ifndef WIN32 // Migrate the configuration file to the new location in Unix-like systems
+  {
+    ResourceFinder old_rf;
+    old_rf.includeHomeDir(".asepriterc");
+    std::string old_fn = old_rf.defaultFilename();
+    if (base::is_file(old_fn))
+      base::move_file(old_fn, fn);
   }
+#endif
 
-  override_config_file(config_filename.c_str());
-  g_configFilename = config_filename;
+  override_config_file(fn.c_str());
+  g_configFilename = fn;
 }
 
 ConfigModule::~ConfigModule()
