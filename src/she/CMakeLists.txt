@@ -5,8 +5,12 @@ set(SHE_SOURCES
   alleg4/fontbmp.cpp
   alleg4/she_alleg4.cpp)
 
-if(APPLE AND NOT USE_SHARED_ALLEGRO4)
-  list(APPEND SHE_SOURCES alleg4/app.mm)
+if(APPLE)
+  if(NOT USE_SHARED_ALLEGRO4)
+    list(APPEND SHE_SOURCES alleg4/app.mm)
+  endif()
+
+  list(APPEND SHE_SOURCES osx/logger.mm)
 endif()
 
 add_library(she ${SHE_SOURCES})

@@ -14,6 +14,7 @@
 #include "base/string.h"
 #include "she/alleg4/alleg4_font.h"
 #include "she/alleg4/alleg4_surface.h"
+#include "she/logger.h"
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
@@ -22,6 +23,7 @@
   #include <winalleg.h>
 
   #include <windowsx.h>
+
   #include <commctrl.h>
 
   #if defined STRICT || defined __GNUC__
@@ -77,6 +79,10 @@ static void resize_callback(RESIZE_DISPLAY_EVENT* ev)
 #endif // ALLEGRO4_WITH_RESIZE_PATCH
 
 namespace she {
+
+#ifdef __APPLE__
+  Logger* getOsxLogger();
+#endif
 
 class Alleg4EventQueue : public EventQueue {
 public:
@@ -681,6 +687,14 @@ public:
        );
   }
 
+  Logger* logger() override {
+#ifdef __APPLE__
+    return getOsxLogger();
+#else
+    return NULL;
+#endif
+  }
+
   Display* defaultDisplay() override {
     return unique_display;
   }
@@ -740,6 +754,9 @@ System* instance()
 
 void error_message(const char* msg)
 {
+  if (g_instance && g_instance->logger())
+    g_instance->logger()->logError(msg);
+
 #ifdef WIN32
   std::wstring wmsg = base::from_utf8(msg);
   std::wstring title = base::from_utf8(PACKAGE);

@@ -17,6 +17,7 @@ namespace she {
   class Display;
   class EventLoop;
   class Font;
+  class Logger;
   class Surface;
 
   class DisplayCreationException : std::runtime_error {
@@ -30,6 +31,7 @@ namespace she {
     virtual ~System() { }
     virtual void dispose() = 0;
     virtual Capabilities capabilities() const = 0;
+    virtual Logger* logger() = 0;
     virtual Display* defaultDisplay() = 0;
     virtual Font* defaultFont() = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;
