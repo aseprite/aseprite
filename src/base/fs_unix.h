@@ -95,12 +95,11 @@ std::string get_app_path()
 
 #else
 
-  if (readlink("/proc/self/exe", &path[0], path.size()) > 0)
-    return std::string(&path[0]);
+  readlink("/proc/self/exe", &path[0], path.size());
 
 #endif
 
-  return std::string();
+  return std::string(&path[0]);
 }
 
 std::string get_temp_path()
