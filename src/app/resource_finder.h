@@ -20,6 +20,8 @@
 #define APP_RESOURCE_FINDER_H_INCLUDED
 #pragma once
 
+#include "base/disable_copying.h"
+
 #include <string>
 #include <vector>
 
@@ -53,14 +55,13 @@ namespace app {
     void includeConfFile();
 
   private:
-    // Disable copy
-    ResourceFinder(const ResourceFinder&);
-    ResourceFinder& operator==(const ResourceFinder&);
 
     // Members
     std::vector<std::string> m_paths;
     int m_current;
     std::string m_default;
+
+    DISABLE_COPYING(ResourceFinder);
   };
 
 } // namespace app
