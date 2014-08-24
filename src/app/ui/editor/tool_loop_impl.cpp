@@ -27,6 +27,7 @@
 #include "app/color_utils.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/document_undo.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
@@ -39,6 +40,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/undo_transaction.h"
+#include "app/undoers/set_mask.h"
 #include "app/util/expand_cel_canvas.h"
 #include "raster/brush.h"
 #include "raster/cel.h"
@@ -155,6 +157,10 @@ public:
     if (getInk()->isSelection() &&
         (!m_document->isMaskVisible() ||
           getSelectionMode() == kDefaultSelectionMode)) {
+      DocumentUndo* undo = m_document->getUndo();
+      if (undo->isEnabled())
+        undo->pushUndoer(new undoers::SetMask(undo->getObjects(), m_document));
+
       Mask emptyMask;
       m_document->setMask(&emptyMask);
     }
