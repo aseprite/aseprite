@@ -127,6 +127,23 @@ public:
     else
       return false;
   }
+
+  bool isAddSelectionPressed() override {
+    Accelerator* accel = get_accel_to_add_selection();
+    if (accel)
+      return accel->checkFromAllegroKeyArray();
+    else
+      return false;
+  }
+
+  bool isSubtractSelectionPressed() override {
+    Accelerator* accel = get_accel_to_subtract_selection();
+    if (accel)
+      return accel->checkFromAllegroKeyArray();
+    else
+      return false;
+  }
+
 };
 
 DocumentView::DocumentView(Document* document, Type type)

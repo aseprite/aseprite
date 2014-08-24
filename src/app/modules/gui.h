@@ -88,6 +88,8 @@ namespace app {
   ui::Accelerator* get_accel_to_angle_snap();
   ui::Accelerator* get_accel_to_maintain_aspect_ratio();
   ui::Accelerator* get_accel_to_lock_axis();
+  ui::Accelerator* get_accel_to_add_selection();
+  ui::Accelerator* get_accel_to_subtract_selection();
 
   tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 

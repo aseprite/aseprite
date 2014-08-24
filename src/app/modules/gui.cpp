@@ -71,6 +71,8 @@
 #define SPRITEDITOR_ACTION_ANGLESNAP            "AngleSnap"
 #define SPRITEDITOR_ACTION_MAINTAINASPECTRATIO  "MaintainAspectRatio"
 #define SPRITEDITOR_ACTION_LOCKAXIS             "LockAxis"
+#define SPRITEDITOR_ACTION_ADDSEL               "AddSelection"
+#define SPRITEDITOR_ACTION_SUBSEL               "SubtractSelection"
 
 namespace app {
 
@@ -589,6 +591,24 @@ Accelerator* get_accel_to_maintain_aspect_ratio()
 Accelerator* get_accel_to_lock_axis()
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_LOCKAXIS);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+Accelerator* get_accel_to_add_selection()
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_ADDSEL);
+  if (shortcut)
+    return shortcut->accel;
+  else
+    return NULL;
+}
+
+Accelerator* get_accel_to_subtract_selection()
+{
+  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_SUBSEL);
   if (shortcut)
     return shortcut->accel;
   else

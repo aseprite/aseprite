@@ -81,7 +81,6 @@ class ToolLoopImpl : public tools::ToolLoop,
   tools::Ink* m_ink;
   int m_primary_color;
   int m_secondary_color;
-  SelectionMode m_selectionMode;
   UndoTransaction m_undoTransaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
@@ -112,7 +111,6 @@ public:
     , m_ink(ink)
     , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
-    , m_selectionMode(m_settings->selection()->getSelectionMode())
     , m_undoTransaction(m_context,
                         m_tool->getText().c_str(),
                         ((getInk()->isSelection() ||
@@ -137,10 +135,6 @@ public:
         break;
     }
 
-    // Right-click subtract selection always.
-    if (m_button == 1)
-      m_selectionMode = kSubtractSelectionMode;
-
     m_previewFilled = m_toolSettings->getPreviewFilled();
 
     m_sprayWidth = m_toolSettings->getSprayWidth();
@@ -160,7 +154,7 @@ public:
     // Selection ink
     if (getInk()->isSelection() &&
         (!m_document->isMaskVisible() ||
-          m_selectionMode == kDefaultSelectionMode)) {
+          getSelectionMode() == kDefaultSelectionMode)) {
       Mask emptyMask;
       m_document->setMask(&emptyMask);
     }
@@ -227,7 +221,7 @@ public:
   int getOpacity() override { return m_opacity; }
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
-  SelectionMode getSelectionMode() override { return m_selectionMode; }
+  SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
   ISettings* settings() override { return m_settings; }
   IDocumentSettings* getDocumentSettings() override { return m_docSettings; }
   bool getFilled() override { return m_filled; }

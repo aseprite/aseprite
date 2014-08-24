@@ -47,6 +47,7 @@ namespace app {
 
     void updateFromTool(tools::Tool* tool);
     void updateForMovingPixels();
+    void updateForSelectionMode(SelectionMode mode);
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

@@ -668,8 +668,13 @@ public:
 
   void setupTooltips(TooltipManager* tooltipManager) {
     tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection", JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection (Shift key)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection (Alt key)", JI_BOTTOM);
+  }
+
+  void setSelectionMode(SelectionMode mode) {
+    setSelectedItem((int)mode);
+    invalidate();
   }
 
 protected:
@@ -946,6 +951,14 @@ void ContextBar::updateForMovingPixels()
   m_dropPixels->setVisible(true);
   m_selectionMode->setVisible(false);
   layout();
+}
+
+void ContextBar::updateForSelectionMode(SelectionMode mode)
+{
+  if (!m_selectionMode->isVisible())
+    return;
+
+  m_selectionMode->setSelectionMode(mode);
 }
 
 } // namespace app

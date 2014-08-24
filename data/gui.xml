@@ -262,6 +262,10 @@
       <!-- When you scale the selection, pressing this
            keyboard shortcut you maintain aspect ratio -->
       <key action="MaintainAspectRatio" shortcut="Shift" />
+
+      <!-- Modifiers for selection tool -->
+      <key action="AddSelection" shortcut="Shift" />
+      <key action="SubtractSelection" shortcut="Alt" />
     </spriteeditor>
 
   </keyboard>

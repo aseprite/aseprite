@@ -56,6 +56,10 @@ namespace app {
     // Returns true if the user wants to lock the X or Y axis when he is
     // dragging the selection.
     virtual bool isLockAxisKeyPressed() = 0;
+
+    virtual bool isAddSelectionPressed() = 0;
+
+    virtual bool isSubtractSelectionPressed() = 0;
   };
 
 } // namespace app

@@ -22,6 +22,7 @@
 
 #include "app/color.h"
 #include "app/document.h"
+#include "app/settings/selection_mode.h"
 #include "app/settings/settings_observers.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
@@ -170,6 +171,8 @@ namespace app {
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();
 
+    SelectionMode getSelectionMode() const { return m_selectionMode; }
+
     bool isSecondaryButton() const { return m_secondaryButton; }
 
     // Returns true if we are able to draw in the current doc/sprite/layer/cel.
@@ -210,7 +213,8 @@ namespace app {
 
   private:
     void setStateInternal(const EditorStatePtr& newState);
-    void editor_update_quicktool();
+    void updateQuicktool();
+    void updateSelectionMode();
     void drawBrushPreview(int x, int y, bool refresh = true);
     void moveBrushPreview(int x, int y, bool refresh = true);
     void clearBrushPreview(bool refresh = true);
@@ -261,6 +265,8 @@ namespace app {
     // Current selected quicktool (this genererally should be NULL if
     // the user is not pressing any keyboard key).
     tools::Tool* m_quicktool;
+
+    SelectionMode m_selectionMode;
 
     // Offset for the sprite
     int m_offset_x;

@@ -140,6 +140,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_frame(FrameNumber(0))
   , m_zoom(0)
   , m_mask_timer(100, this)
+  , m_selectionMode(kDefaultSelectionMode)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
   , m_flags(flags)
@@ -983,13 +984,21 @@ void Editor::updateStatusBar()
   m_state->onUpdateStatusBar(this);
 }
 
-void Editor::editor_update_quicktool()
+void Editor::updateQuicktool()
 {
   if (m_customizationDelegate) {
     UIContext* context = UIContext::instance();
     tools::Tool* current_tool = context->settings()->getCurrentTool();
-    tools::Tool* old_quicktool = m_quicktool;
 
+    // Don't change quicktools if we are in a selection tool and using
+    // the selection modifiers.
+    if (current_tool->getInk(0)->isSelection()) {
+      if (m_customizationDelegate->isAddSelectionPressed() ||
+          m_customizationDelegate->isSubtractSelectionPressed())
+        return;
+    }
+
+    tools::Tool* old_quicktool = m_quicktool;
     m_quicktool = m_customizationDelegate->getQuickTool(current_tool);
 
     // If the tool has changed, we must to update the status bar because
@@ -1000,6 +1009,25 @@ void Editor::editor_update_quicktool()
       App::instance()->getMainWindow()->getContextBar()
         ->updateFromTool(getCurrentEditorTool());
     }
+  }
+}
+
+void Editor::updateSelectionMode()
+{
+  SelectionMode mode = UIContext::instance()->settings()->selection()->getSelectionMode();
+
+  if (m_customizationDelegate && m_customizationDelegate->isAddSelectionPressed())
+    mode = kAddSelectionMode;
+  else if (m_customizationDelegate && m_customizationDelegate->isSubtractSelectionPressed())
+    mode = kSubtractSelectionMode;
+  else if (m_secondaryButton)
+    mode = kSubtractSelectionMode;
+
+  if (mode != m_selectionMode) {
+    m_selectionMode = mode;
+
+    App::instance()->getMainWindow()->getContextBar()
+      ->updateForSelectionMode(mode);
   }
 }
 
@@ -1028,7 +1056,8 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kMouseEnterMessage:
-      editor_update_quicktool();
+      updateQuicktool();
+      updateSelectionMode();
       break;
 
     case kMouseLeaveMessage:
@@ -1044,7 +1073,8 @@ bool Editor::onProcessMessage(Message* msg)
         if (!m_secondaryButton && mouseMsg->right()) {
           m_secondaryButton = mouseMsg->right();
 
-          editor_update_quicktool();
+          updateQuicktool();
+          updateSelectionMode();
           editor_setcursor();
         }
 
@@ -1068,7 +1098,8 @@ bool Editor::onProcessMessage(Message* msg)
         if (!hasCapture() && m_secondaryButton) {
           m_secondaryButton = false;
 
-          editor_update_quicktool();
+          updateQuicktool();
+          updateSelectionMode();
           editor_setcursor();
         }
 
@@ -1083,7 +1114,8 @@ bool Editor::onProcessMessage(Message* msg)
         bool used = m_state->onKeyDown(this, static_cast<KeyMessage*>(msg));
 
         if (hasMouse()) {
-          editor_update_quicktool();
+          updateQuicktool();
+          updateSelectionMode();
           editor_setcursor();
         }
 
@@ -1098,7 +1130,8 @@ bool Editor::onProcessMessage(Message* msg)
         bool used = m_state->onKeyUp(this, static_cast<KeyMessage*>(msg));
 
         if (hasMouse()) {
-          editor_update_quicktool();
+          updateQuicktool();
+          updateSelectionMode();
           editor_setcursor();
         }
 
@@ -1234,7 +1267,7 @@ bool Editor::isInsideSelection()
   int x, y;
   screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
   return
-    (UIContext::instance()->settings()->selection()->getSelectionMode() != kSubtractSelectionMode) &&
+    (m_selectionMode != kSubtractSelectionMode) &&
     m_document != NULL &&
     m_document->isMaskVisible() &&
     m_document->mask()->containsPoint(x, y);
