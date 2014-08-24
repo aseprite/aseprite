@@ -105,7 +105,13 @@ bool open_folder(const std::string& file)
 
 #elif __APPLE__
 
-  int ret = system(("open \"" + file + "\"").c_str());
+  int ret;
+  if (base::is_directory(file)) {
+    ret = system(("open \"" + file + "\"").c_str());
+  }
+  else {
+    ret = system(("open --reveal \"" + file + "\"").c_str());
+  }
   return (ret == 0);
 
 #else
