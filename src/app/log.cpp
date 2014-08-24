@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,22 +33,9 @@
 #include <string.h>
 #include <string>
 
-// DOS and Windows needs "log" files (because their poor stderr support)
-#if defined ALLEGRO_DOS || defined ALLEGRO_WINDOWS
-#  define NEED_LOG
-#endif
-
-// in DOS, print in stderr is like print in the video screen
-#if defined ALLEGRO_DOS
-#  define NO_STDERR
-#endif
-
 namespace app {
 
-#ifdef NEED_LOG                 // log file info
 static FILE* log_fileptr = NULL;
-#endif
-
 static LoggerModule* logger_instance = NULL;
 
 LoggerModule::LoggerModule(bool verbose)
@@ -61,12 +48,10 @@ LoggerModule::~LoggerModule()
 {
   PRINTF("Logger module: shutting down (this is the last line)\n");
 
-#ifdef NEED_LOG
   if (log_fileptr) {
     fclose(log_fileptr);
     log_fileptr = NULL;
   }
-#endif
 
   logger_instance = NULL;
 }
@@ -75,47 +60,24 @@ LoggerModule::~LoggerModule()
 
 void verbose_printf(const char* format, ...)
 {
-  using namespace app;
-
-  if (!logger_instance) {
-    va_list ap;
-    va_start(ap, format);
-    vfprintf(stderr, format, ap);
-    fflush(stderr);
-    va_end(ap);
-    return;
-  }
-
-  if (!logger_instance->isVerbose())
+  if (app::logger_instance && !app::logger_instance->isVerbose())
     return;
 
-#ifdef NEED_LOG
-  if (!log_fileptr) {
+  if (!app::log_fileptr) {
     std::string filename;
-    ResourceFinder rf;
-    rf.includeBinDir("aseprite.log");
+    app::ResourceFinder rf(false);
+    rf.includeUserDir("aseprite.log");
     filename = rf.defaultFilename();
 
     if (filename.size() > 0)
-      log_fileptr = fopen(filename.c_str(), "w");
+      app::log_fileptr = fopen(filename.c_str(), "w");
   }
 
-  if (log_fileptr)
-#endif
-    {
-      va_list ap;
-      va_start(ap, format);
-
-#ifndef NO_STDERR
-      vfprintf(stderr, format, ap);
-      fflush(stderr);
-#endif
-
-#ifdef NEED_LOG
-      vfprintf(log_fileptr, format, ap);
-      fflush(log_fileptr);
-#endif
-
-      va_end(ap);
-    }
+  if (app::log_fileptr) {
+    va_list ap;
+    va_start(ap, format);
+    vfprintf(app::log_fileptr, format, ap);
+    fflush(app::log_fileptr);
+    va_end(ap);
+  }
 }
