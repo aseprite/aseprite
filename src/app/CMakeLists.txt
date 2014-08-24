@@ -248,6 +248,7 @@ add_library(app-lib
   util/misc.cpp
   util/msk_file.cpp
   util/pic_file.cpp
+  util/range_utils.cpp
   util/render.cpp
   webserver.cpp
   widget_loader.cpp

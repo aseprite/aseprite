@@ -24,6 +24,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/document_range.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -32,10 +33,13 @@
 #include "app/tools/tool.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/misc.h"
+#include "app/util/range_utils.h"
 #include "base/bind.h"
 #include "gfx/size.h"
 #include "raster/cel.h"
@@ -574,14 +578,23 @@ static void slider_change_hook(Slider* slider)
 {
   try {
     ContextWriter writer(UIContext::instance());
-    Cel* cel = writer.cel();
-    if (cel) {
-      // Update the opacity
-      cel->setOpacity(slider->getValue());
 
-      // Update the editors
-      update_screen_for_document(writer.document());
+    // Clear of several frames is handled with RemoveCel command.
+    DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+    if (range.enabled()) {
+      for (Cel* cel : get_cels_in_range(writer.sprite(), range))
+        cel->setOpacity(slider->getValue());
     }
+    else {
+      Cel* cel = writer.cel();
+      if (cel) {
+        // Update the opacity
+        cel->setOpacity(slider->getValue());
+      }
+    }
+
+    // Update the editors
+    update_screen_for_document(writer.document());
   }
   catch (LockedDocumentException&) {
     // do nothing
