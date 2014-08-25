@@ -55,8 +55,8 @@
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
       <key command="NewLayer" shortcut="Shift+N" />
-      <key command="GotoPreviousLayer" shortcut="Down" />
-      <key command="GotoNextLayer" shortcut="Up" />
+      <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
+      <key command="GotoNextLayer" shortcut="Up" context="Normal" />
       <!-- Frame -->
       <key command="NewFrame" shortcut="Alt+N" />
       <key command="NewFrame" shortcut="Alt+B">
@@ -66,8 +66,8 @@
         <param name="frame" value="current" />
       </key>
       <key command="GotoFirstFrame" shortcut="Home" />
-      <key command="GotoPreviousFrame" shortcut="Left" />
-      <key command="GotoNextFrame" shortcut="Right" />
+      <key command="GotoPreviousFrame" shortcut="Left" context="Normal" />
+      <key command="GotoNextFrame" shortcut="Right" context="Normal" />
       <key command="GotoPreviousFrame" shortcut="," />
       <key command="GotoNextFrame" shortcut="." />
       <key command="GotoLastFrame" shortcut="End" />
@@ -195,30 +195,107 @@
       </key>
 
       <!-- Move selection with arrows -->
-      <key command="MoveMask" shortcut="Shift+Left">
+      <key command="MoveMask" shortcut="Left" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="left" />
         <param name="units" value="pixel" />
         <param name="quantity" value="1" />
       </key>
-      <key command="MoveMask" shortcut="Shift+Right">
+      <key command="MoveMask" shortcut="Right" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="right" />
         <param name="units" value="pixel" />
         <param name="quantity" value="1" />
       </key>
-      <key command="MoveMask" shortcut="Shift+Up">
+      <key command="MoveMask" shortcut="Up" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="up" />
         <param name="units" value="pixel" />
         <param name="quantity" value="1" />
       </key>
-      <key command="MoveMask" shortcut="Shift+Down">
+      <key command="MoveMask" shortcut="Down" context="Selection">
         <param name="target" value="content" />
         <param name="direction" value="down" />
         <param name="units" value="pixel" />
         <param name="quantity" value="1" />
       </key>
+
+      <key command="MoveMask" shortcut="Shift+Left" context="Selection">
+        <param name="target" value="content" />
+        <param name="direction" value="left" />
+        <param name="units" value="tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Right" context="Selection">
+        <param name="target" value="content" />
+        <param name="direction" value="right" />
+        <param name="units" value="tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Up" context="Selection">
+        <param name="target" value="content" />
+        <param name="direction" value="up" />
+        <param name="units" value="tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Shift+Down" context="Selection">
+        <param name="target" value="content" />
+        <param name="direction" value="down" />
+        <param name="units" value="tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+
+      <!-- Move selection boundaries with Alt+arrows -->
+      <key command="MoveMask" shortcut="Alt+Left" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="left" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Right" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="right" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Up" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="up" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Down" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="down" />
+        <param name="units" value="pixel" />
+        <param name="quantity" value="1" />
+      </key>
+
+      <key command="MoveMask" shortcut="Alt+Shift+Left" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="left" />
+        <param name="units" value="tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Shift+Right" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="right" />
+        <param name="units" value="tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Shift+Up" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="up" />
+        <param name="units" value="tile-width" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="MoveMask" shortcut="Alt+Shift+Down" context="Selection">
+        <param name="target" value="boundaries" />
+        <param name="direction" value="down" />
+        <param name="units" value="tile-height" />
+        <param name="quantity" value="1" />
+      </key>
+
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

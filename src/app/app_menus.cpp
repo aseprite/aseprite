@@ -113,6 +113,16 @@ void AppMenus::reload()
     if (command_name && command_key) {
       Command* command = CommandsModule::instance()->getCommandByName(command_name);
       if (command) {
+        // Read context
+        KeyContext keycontext = KeyContext::Any;
+        const char* keycontextstr = xmlKey->Attribute("context");
+        if (keycontextstr) {
+          if (strcmp(keycontextstr, "Selection") == 0)
+            keycontext = KeyContext::Selection;
+          else if (strcmp(keycontextstr, "Normal") == 0)
+            keycontext = KeyContext::Normal;
+        }
+
         // Read params
         Params params;
 
@@ -134,7 +144,7 @@ void AppMenus::reload()
 
         // add the keyboard shortcut to the command
         Accelerator* accel =
-          add_keyboard_shortcut_to_execute_command(command_key, command_name, &params);
+          add_keyboard_shortcut_to_execute_command(command_key, command_name, &params, keycontext);
 
         // add the shortcut to the menuitems with this
         // command (this is only visual, the "manager_msg_proc"

@@ -45,6 +45,12 @@ namespace app {
     class Tool;
   }
 
+  enum class KeyContext {
+    Any,
+    Normal,
+    Selection,
+  };
+
   int init_module_gui();
   void exit_module_gui();
 
@@ -75,7 +81,9 @@ namespace app {
   //////////////////////////////////////////////////////////////////////
   // Keyboard shortcuts
 
-  ui::Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut, const char* command_name, Params* params);
+  ui::Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut,
+    const char* command_name, Params* params, KeyContext keyContext);
+
   ui::Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
   ui::Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
   ui::Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut, const char* action_name);

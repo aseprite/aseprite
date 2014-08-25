@@ -25,6 +25,8 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
+#include "app/document.h"
+#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -93,22 +95,23 @@ static struct {
 
 //////////////////////////////////////////////////////////////////////
 
-enum ShortcutType { Shortcut_ExecuteCommand,
-                    Shortcut_ChangeTool,
-                    Shortcut_EditorQuicktool,
-                    Shortcut_SpriteEditor };
-
 struct Shortcut {
-  Accelerator* accel;
-  ShortcutType type;
-  union {
-    Command* command;
-    tools::Tool* tool;
-    char* action;
+  enum class Type {
+    ExecuteCommand,
+    ChangeTool,
+    EditorQuicktool,
+    SpriteEditor
   };
+
+  Accelerator* accel;
+  Type type;
+  Command* command;
+  KeyContext keycontext;
+  tools::Tool* tool;
+  std::string action;
   Params* params;
 
-  Shortcut(ShortcutType type);
+  Shortcut(Type type);
   ~Shortcut();
 
   void add_shortcut(const char* shortcut_string);
@@ -151,6 +154,17 @@ static void reload_default_font();
 // Load & save graphics configuration
 static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
+
+static KeyContext get_current_keycontext()
+{
+  DocumentLocation location = UIContext::instance()->activeLocation();
+  Document* document = location.document();
+
+  if (document && document->isMaskVisible())
+    return KeyContext::Selection;
+  else
+    return KeyContext::Normal;
+}
 
 // Initializes GUI.
 int init_module_gui()
@@ -219,11 +233,8 @@ void exit_module_gui()
 
   // destroy shortcuts
   ASSERT(shortcuts != NULL);
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
+  for (Shortcut* shortcut : *shortcuts)
     delete shortcut;
-  }
   delete shortcuts;
   shortcuts = NULL;
 
@@ -462,17 +473,17 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 // Keyboard shortcuts
 //////////////////////////////////////////////////////////////////////
 
-Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut_string, const char* command_name, Params* params)
+Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut_string,
+  const char* command_name, Params* params, KeyContext keyContext)
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
   if (!shortcut) {
-    shortcut = new Shortcut(Shortcut_ExecuteCommand);
+    shortcut = new Shortcut(Shortcut::Type::ExecuteCommand);
     shortcut->command = CommandsModule::instance()->getCommandByName(command_name);
     shortcut->params = params ? params->clone(): new Params;
-
+    shortcut->keycontext = keyContext;
     shortcuts->push_back(shortcut);
   }
-
   shortcut->add_shortcut(shortcut_string);
   return shortcut->accel;
 }
@@ -481,7 +492,7 @@ Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut_string, t
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
   if (!shortcut) {
-    shortcut = new Shortcut(Shortcut_ChangeTool);
+    shortcut = new Shortcut(Shortcut::Type::ChangeTool);
     shortcut->tool = tool;
 
     shortcuts->push_back(shortcut);
@@ -495,7 +506,7 @@ Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut_string, too
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
   if (!shortcut) {
-    shortcut = new Shortcut(Shortcut_EditorQuicktool);
+    shortcut = new Shortcut(Shortcut::Type::EditorQuicktool);
     shortcut->tool = tool;
 
     shortcuts->push_back(shortcut);
@@ -509,8 +520,8 @@ Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, 
 {
   Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(action_name);
   if (!shortcut) {
-    shortcut = new Shortcut(Shortcut_SpriteEditor);
-    shortcut->action = base_strdup(action_name);
+    shortcut = new Shortcut(Shortcut::Type::SpriteEditor);
+    shortcut->action = action_name;
 
     shortcuts->push_back(shortcut);
   }
@@ -521,11 +532,9 @@ Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, 
 
 bool get_command_from_key_message(Message* msg, Command** command, Params** params)
 {
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
-
-    if (shortcut->type == Shortcut_ExecuteCommand && shortcut->is_pressed(msg)) {
+  for (Shortcut* shortcut : *shortcuts) {
+    if (shortcut->type == Shortcut::Type::ExecuteCommand &&
+        shortcut->is_pressed(msg)) {
       if (command) *command = shortcut->command;
       if (params) *params = shortcut->params;
       return true;
@@ -638,11 +647,12 @@ tools::Tool* get_selected_quicktool(tools::Tool* currentTool)
   return NULL;
 }
 
-Shortcut::Shortcut(ShortcutType type)
+Shortcut::Shortcut(Shortcut::Type type)
 {
   this->type = type;
   this->accel = new Accelerator;
   this->command = NULL;
+  this->keycontext = KeyContext::Any;
   this->tool = NULL;
   this->params = NULL;
 }
@@ -650,8 +660,6 @@ Shortcut::Shortcut(ShortcutType type)
 Shortcut::~Shortcut()
 {
   delete params;
-  if (type == Shortcut_SpriteEditor)
-    base_free(action);
   delete accel;
 }
 
@@ -662,20 +670,38 @@ void Shortcut::add_shortcut(const char* shortcut_string)
 
 bool Shortcut::is_pressed(Message* msg)
 {
+  bool res = false;
+
   if (accel) {
-    return accel->check(msg->keyModifiers(),
-                        static_cast<KeyMessage*>(msg)->scancode(),
-                        static_cast<KeyMessage*>(msg)->unicodeChar());
+    res = accel->check(msg->keyModifiers(),
+      static_cast<KeyMessage*>(msg)->scancode(),
+      static_cast<KeyMessage*>(msg)->unicodeChar());
+
+    if (res &&
+        keycontext != KeyContext::Any &&
+        keycontext != get_current_keycontext()) {
+      res = false;
+    }
   }
-  return false;
+
+  return res;
 }
 
 bool Shortcut::is_pressed_from_key_array()
 {
+  bool res = false;
+
   if (accel) {
-    return accel->checkFromAllegroKeyArray();
+    res = accel->checkFromAllegroKeyArray();
+
+    if (res &&
+        keycontext != KeyContext::Any &&
+        keycontext != get_current_keycontext()) {
+      res = false;
+    }
   }
-  return false;
+
+  return res;
 }
 
 static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params)
@@ -684,11 +710,8 @@ static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Par
   if (!command)
     return NULL;
 
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
-
-    if (shortcut->type == Shortcut_ExecuteCommand &&
+  for (Shortcut* shortcut : *shortcuts) {
+    if (shortcut->type == Shortcut::Type::ExecuteCommand &&
         shortcut->command == command &&
         ((!params && shortcut->params->empty()) ||
          (params && *shortcut->params == *params))) {
@@ -701,11 +724,8 @@ static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Par
 
 static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
 {
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
-
-    if (shortcut->type == Shortcut_ChangeTool &&
+  for (Shortcut* shortcut : *shortcuts) {
+    if (shortcut->type == Shortcut::Type::ChangeTool &&
         shortcut->tool == tool) {
       return shortcut;
     }
@@ -716,11 +736,8 @@ static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
 
 static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 {
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
-
-    if (shortcut->type == Shortcut_EditorQuicktool &&
+  for (Shortcut* shortcut : *shortcuts) {
+    if (shortcut->type == Shortcut::Type::EditorQuicktool &&
         shortcut->tool == tool) {
       return shortcut;
     }
@@ -731,12 +748,9 @@ static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
 
 static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
 {
-  for (std::vector<Shortcut*>::iterator
-         it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-    Shortcut* shortcut = *it;
-
-    if (shortcut->type == Shortcut_SpriteEditor &&
-        strcmp(shortcut->action, action_name) == 0) {
+  for (Shortcut* shortcut : *shortcuts) {
+    if (shortcut->type == Shortcut::Type::SpriteEditor &&
+        shortcut->action == action_name) {
       return shortcut;
     }
   }
@@ -794,17 +808,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
         break;
       }
 
-      for (std::vector<Shortcut*>::iterator
-             it = shortcuts->begin(); it != shortcuts->end(); ++it) {
-        Shortcut* shortcut = *it;
-
+      for (Shortcut* shortcut : *shortcuts) {
         if (shortcut->is_pressed(msg)) {
           // Cancel menu-bar loops (to close any popup menu)
           App::instance()->getMainWindow()->getMenuBar()->cancelMenuLoop();
 
           switch (shortcut->type) {
 
-            case Shortcut_ChangeTool: {
+            case Shortcut::Type::ChangeTool: {
               tools::Tool* current_tool = UIContext::instance()->settings()->getCurrentTool();
               tools::Tool* select_this_tool = shortcut->tool;
               tools::ToolBox* toolbox = App::instance()->getToolBox();
@@ -847,7 +858,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               return true;
             }
 
-            case Shortcut_ExecuteCommand: {
+            case Shortcut::Type::ExecuteCommand: {
               Command* command = shortcut->command;
 
               // Commands are executed only when the main window is
@@ -870,7 +881,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               break;
             }
 
-            case Shortcut_EditorQuicktool: {
+            case Shortcut::Type::EditorQuicktool: {
               // Do nothing, it is used in the editor through the
               // get_selected_quicktool() function.
               break;
