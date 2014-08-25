@@ -72,7 +72,7 @@ add_library(app-lib
   commands/cmd_remove_layer.cpp
   commands/cmd_repeat_last_export.cpp
   commands/cmd_reselect_mask.cpp
-  commands/cmd_rotate_canvas.cpp
+  commands/cmd_rotate.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp

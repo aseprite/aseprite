@@ -399,6 +399,20 @@
         <item command="Paste" text="&amp;Paste" />
         <item command="Clear" text="C&amp;lear" />
         <separator />
+        <menu text="&amp;Rotate">
+          <item command="Rotate" text="180">
+            <param name="target" value="mask" />
+            <param name="angle" value="180" />
+          </item>
+          <item command="Rotate" text="90 CW">
+            <param name="target" value="mask" />
+            <param name="angle" value="90" />
+          </item>
+          <item command="Rotate" text="90 CCW">
+            <param name="target" value="mask" />
+            <param name="angle" value="-90" />
+          </item>
+        </menu>
         <item command="Flip" text="Flip &amp;Horizontal">
           <param name="target" value="mask" />
           <param name="orientation" value="horizontal" />
@@ -443,13 +457,16 @@
         <item command="SpriteSize" text="&amp;Sprite Size..." />
         <item command="CanvasSize" text="&amp;Canvas Size..." />
         <menu text="&amp;Rotate Canvas">
-          <item command="RotateCanvas" text="180">
+          <item command="Rotate" text="180">
+            <param name="target" value="canvas" />
             <param name="angle" value="180" />
           </item>
-          <item command="RotateCanvas" text="90 CW">
+          <item command="Rotate" text="90 CW">
+            <param name="target" value="canvas" />
             <param name="angle" value="90" />
           </item>
-          <item command="RotateCanvas" text="90 CCW">
+          <item command="Rotate" text="90 CCW">
+            <param name="target" value="canvas" />
             <param name="angle" value="-90" />
           </item>
           <separator />
