@@ -30,9 +30,10 @@ namespace app {
 
 using namespace raster;
 
-std::vector<Cel*> get_cels_in_range(Sprite* sprite, const DocumentRange& range)
+// TODO the DocumentRange should be "iteratable" to replace this function
+CelList get_cels_in_range(Sprite* sprite, const DocumentRange& range)
 {
-  std::vector<Cel*> cels;
+  CelList cels;
 
   for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
     Layer* layer = sprite->indexToLayer(layerIdx);

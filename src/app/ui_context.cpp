@@ -46,6 +46,7 @@ UIContext* UIContext::m_instance = NULL;
 
 UIContext::UIContext()
   : Context(new UISettingsImpl)
+  , m_lastSelectedView(NULL)
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -74,6 +75,9 @@ DocumentView* UIContext::activeView() const
 
 void UIContext::setActiveView(DocumentView* docView)
 {
+  if (m_lastSelectedView == docView)    // Do nothing case
+    return;
+
   setActiveDocument(docView ? docView->getDocument(): NULL);
 
   if (docView != NULL) {
@@ -108,6 +112,8 @@ void UIContext::setActiveView(DocumentView* docView)
 
   title += defaultTitle;
   set_window_title(title.c_str());
+
+  m_lastSelectedView = docView;
 }
 
 size_t UIContext::countViewsOf(Document* document) const

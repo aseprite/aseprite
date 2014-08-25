@@ -23,17 +23,21 @@
 #include "app/ui/editor/moving_cel_state.h"
 
 #include "app/app.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/document_range.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
+#include "app/ui_context.h"
+#include "app/undo_transaction.h"
+#include "app/util/range_utils.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/message.h"
-#include "app/ui_context.h"
-#include "app/undo_transaction.h"
 
 namespace app {
 
@@ -91,14 +95,23 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       UndoTransaction undoTransaction(writer.context(), "Cel Movement", undo::ModifyDocument);
       DocumentApi api = document->getApi();
 
-      // And now we move the cel to the new position.
-      if (m_cel)
+      // And now we move the cel (or all selected range) to the new position.
+      int deltaX = m_celNewX - m_celStartX;
+      int deltaY = m_celNewY - m_celStartY;
+
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (range.enabled()) {
+        for (Cel* cel : get_cels_in_range(writer.sprite(), range))
+          api.setCelPosition(writer.sprite(), cel, cel->x()+deltaX, cel->y()+deltaY);
+      }
+      else if (m_cel) {
         api.setCelPosition(writer.sprite(), m_cel, m_celNewX, m_celNewY);
+      }
 
       // Move selection if it was visible
       if (m_maskVisible)
-        api.setMaskPosition(document->mask()->bounds().x + m_celNewX - m_celStartX,
-                            document->mask()->bounds().y + m_celNewY - m_celStartY);
+        api.setMaskPosition(document->mask()->bounds().x + deltaX,
+                            document->mask()->bounds().y + deltaY);
 
       undoTransaction.commit();
     }

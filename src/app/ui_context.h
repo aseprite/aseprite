@@ -57,6 +57,7 @@ namespace app {
     virtual void onGetActiveLocation(DocumentLocation* location) const override;
 
   private:
+    DocumentView* m_lastSelectedView;
     static UIContext* m_instance;
   };
 
