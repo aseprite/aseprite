@@ -35,6 +35,7 @@
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
+#include "app/ui/styled_button.h"
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/undoers/set_palette_colors.h"
@@ -54,36 +55,9 @@ namespace app {
 using namespace ui;
 using namespace raster;
 
-class ColorSelector::WarningIcon : public Button {
+class ColorSelector::WarningIcon : public StyledButton {
 public:
-  WarningIcon() : Button("") {
-  }
-
-private:
-  skin::Style* style() {
-    return skin::get_style("warning_box");
-  }
-
-  bool onProcessMessage(Message* msg) override {
-    switch (msg->type()) {
-      case kSetCursorMessage:
-        jmouse_set_cursor(kHandCursor);
-        return true;
-    }
-    return Button::onProcessMessage(msg);
-  }
-
-  void onPreferredSize(PreferredSizeEvent& ev) override {
-    ev.setPreferredSize(
-      style()->preferredSize(NULL, skin::Style::State()) + 4*jguiscale());
-  }
-
-  void onPaint(PaintEvent& ev) override {
-    Graphics* g = ev.getGraphics();
-    skin::Style::State state;
-    if (hasMouse()) state += skin::Style::hover();
-    if (isSelected()) state += skin::Style::clicked();
-    style()->paint(g, getClientBounds(), NULL, state);
+  WarningIcon() : StyledButton("warning_box") {
   }
 };
 

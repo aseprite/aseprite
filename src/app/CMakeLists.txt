@@ -202,6 +202,7 @@ add_library(app-lib
   ui/skin/style_sheet.cpp
   ui/start_view.cpp
   ui/status_bar.cpp
+  ui/styled_button.cpp
   ui/tabs.cpp
   ui/timeline.cpp
   ui/toolbar.cpp
