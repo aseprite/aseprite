@@ -657,9 +657,7 @@ Shortcut::~Shortcut()
 
 void Shortcut::add_shortcut(const char* shortcut_string)
 {
-  char buf[256];
-  usprintf(buf, "<%s>", shortcut_string);
-  this->accel->addKeysFromString(buf);
+  this->accel->addKeysFromString(shortcut_string);
 }
 
 bool Shortcut::is_pressed(Message* msg)

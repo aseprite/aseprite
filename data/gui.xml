@@ -152,22 +152,43 @@
       </key>
 
       <!-- Scroll with arrows -->
-      <key command="Scroll" shortcut="Ctrl+Left" mac="Cmd+Left">
+      <key command="Scroll" shortcut="Space+Left">
+        <param name="direction" value="left" />
+        <param name="units" value="zoomed-pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Space+Right">
+        <param name="direction" value="right" />
+        <param name="units" value="zoomed-pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Space+Up">
+        <param name="direction" value="up" />
+        <param name="units" value="zoomed-pixel" />
+        <param name="quantity" value="1" />
+      </key>
+      <key command="Scroll" shortcut="Space+Down">
+        <param name="direction" value="down" />
+        <param name="units" value="zoomed-pixel" />
+        <param name="quantity" value="1" />
+      </key>
+
+      <key command="Scroll" shortcut="Shift+Space+Left">
         <param name="direction" value="left" />
         <param name="units" value="zoomed-tile-width" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Right" mac="Cmd+Right">
+      <key command="Scroll" shortcut="Shift+Space+Right">
         <param name="direction" value="right" />
         <param name="units" value="zoomed-tile-width" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Up" mac="Cmd+Up">
+      <key command="Scroll" shortcut="Shift+Space+Up">
         <param name="direction" value="up" />
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />
       </key>
-      <key command="Scroll" shortcut="Ctrl+Down" mac="Cmd+Down">
+      <key command="Scroll" shortcut="Shift+Space+Down">
         <param name="direction" value="down" />
         <param name="units" value="zoomed-tile-height" />
         <param name="quantity" value="1" />

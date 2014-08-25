@@ -20,8 +20,8 @@ namespace ui {
   public:
     void addKey(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
 
-    // Adds keys from strings like "<Ctrl+Q> <ESC>"
-    void addKeysFromString(const char* string);
+    // Adds keys from strings like "Ctrl+Q" or "Alt+X"
+    void addKeysFromString(const std::string& str);
 
     bool isEmpty() const { return m_combos.empty(); }
     std::string toString();
