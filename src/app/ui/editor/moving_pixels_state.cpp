@@ -408,7 +408,8 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
       return;
   }
-  else if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+  else if ((strcmp(command->short_name(), CommandId::Zoom) == 0) ||
+           (strcmp(command->short_name(), CommandId::Scroll) == 0)) {
     return;
   }
 
