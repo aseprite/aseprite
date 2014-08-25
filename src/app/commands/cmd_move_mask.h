@@ -26,7 +26,7 @@ namespace app {
 
   class MoveMaskCommand : public Command {
   public:
-    enum Target { Outline, Content };
+    enum Target { Boundaries, Content };
     enum Direction { Left, Up, Right, Down, }; // TODO join this enum with scroll command
     enum Units {
       Pixel,

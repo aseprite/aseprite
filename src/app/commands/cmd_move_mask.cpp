@@ -48,7 +48,7 @@ MoveMaskCommand::MoveMaskCommand()
 void MoveMaskCommand::onLoadParams(Params* params)
 {
   std::string target = params->get("target");
-  if (target == "outline") m_target = Outline;
+  if (target == "boundaries") m_target = Boundaries;
   else if (target == "content") m_target = Content;
 
   std::string direction = params->get("direction");
@@ -123,7 +123,7 @@ void MoveMaskCommand::onExecute(Context* context)
 
   switch (m_target) {
 
-    case Outline: {
+    case Boundaries: {
       ContextWriter writer(context);
       Document* document(writer.document());
       {
