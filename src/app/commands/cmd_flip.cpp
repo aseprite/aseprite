@@ -26,12 +26,17 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/document_range.h"
 #include "app/modules/gui.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
+#include "app/util/range_utils.h"
 #include "gfx/size.h"
 #include "raster/algorithm/flip_image.h"
 #include "raster/cel.h"
 #include "raster/image.h"
+#include "raster/layer.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
@@ -80,59 +85,80 @@ void FlipCommand::onExecute(Context* context)
                                      "Flip Canvas Vertical"));
 
     if (m_flipMask) {
-      int x, y;
-      Image* image = writer.image(&x, &y);
-      if (!image)
-        return;
+      Mask* mask = document->mask();
+      CelList cels;
 
-      Mask* mask = NULL;
-      bool alreadyFlipped = false;
+      DocumentLocation loc = *writer.location();
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (range.enabled())
+        cels = get_cels_in_range(sprite, range);
+      else if (writer.cel())
+        cels.push_back(writer.cel());
 
-      // This variable will be the area to be flipped inside the image.
-      gfx::Rect bounds(image->bounds());
+      for (Cel* cel : cels) {
+        loc.frame(cel->frame());
+        loc.layer(cel->layer());
 
-      // If there is some portion of sprite selected, we flip the
-      // selected region only. If the mask isn't visible, we flip the
-      // whole image.
-      if (document->isMaskVisible()) {
-        mask = document->mask();
+        int x, y;
+        Image* image = loc.image(&x, &y);
+        if (!image)
+          continue;
 
-        // Intersect the full area of the image with the mask's
-        // bounds, so we don't request to flip an area outside the
-        // image's bounds.
-        bounds = bounds.createIntersect(gfx::Rect(mask->bounds()).offset(-x, -y));
+        bool alreadyFlipped = false;
 
-        // If the mask isn't a rectangular area, we've to flip the mask too.
-        if (mask->bitmap() && !mask->isRectangular()) {
-          raster::color_t bgcolor = app_get_color_to_clear_layer(writer.layer());
+        // This variable will be the area to be flipped inside the image.
+        gfx::Rect bounds(image->bounds());
 
-          // Flip the portion of image specified by the mask.
-          mask->offsetOrigin(-x, -y);
-          api.flipImageWithMask(image, mask, m_flipType, bgcolor);
-          mask->offsetOrigin(x, y);
-          alreadyFlipped = true;
+        // If there is some portion of sprite selected, we flip the
+        // selected region only. If the mask isn't visible, we flip the
+        // whole image.
+        if (document->isMaskVisible()) {
+          // Intersect the full area of the image with the mask's
+          // bounds, so we don't request to flip an area outside the
+          // image's bounds.
+          bounds = bounds.createIntersect(gfx::Rect(mask->bounds()).offset(-x, -y));
 
-          // Flip the mask.
-          Image* maskBitmap = mask->bitmap();
-          if (maskBitmap) {
-            // Create a flipped copy of the current mask.
-            base::UniquePtr<Mask> newMask(new Mask(*mask));
-            newMask->freeze();
-            raster::algorithm::flip_image(newMask->bitmap(),
-              maskBitmap->bounds(), m_flipType);
-            newMask->unfreeze();
+          // If the mask isn't a rectangular area, we've to flip the mask too.
+          if (mask->bitmap() && !mask->isRectangular()) {
+            raster::color_t bgcolor = app_get_color_to_clear_layer(writer.layer());
 
-            // Change the current mask and generate the new boundaries.
-            api.copyToCurrentMask(newMask);
-
-            document->generateMaskBoundaries();
+            // Flip the portion of image specified by the mask.
+            mask->offsetOrigin(-x, -y);
+            api.flipImageWithMask(image, mask, m_flipType, bgcolor);
+            mask->offsetOrigin(x, y);
+            alreadyFlipped = true;
           }
+        }
+
+        // Flip the portion of image specified by "bounds" variable.
+        if (!alreadyFlipped) {
+          api.setCelPosition
+            (sprite, cel,
+              (m_flipType == raster::algorithm::FlipHorizontal ?
+                sprite->width() - image->width() - cel->x():
+                cel->x()),
+              (m_flipType == raster::algorithm::FlipVertical ?
+                sprite->height() - image->height() - cel->y():
+                cel->y()));
+
+          api.flipImage(image, bounds, m_flipType);
         }
       }
 
-      // Flip the portion of image specified by "bounds" variable.
-      if (!alreadyFlipped) {
-        api.flipImage(image, bounds, m_flipType);
+      // Flip the mask.
+      Image* maskBitmap = mask->bitmap();
+      if (maskBitmap) {
+        // Create a flipped copy of the current mask.
+        base::UniquePtr<Mask> newMask(new Mask(*mask));
+        newMask->freeze();
+        raster::algorithm::flip_image(newMask->bitmap(),
+          maskBitmap->bounds(), m_flipType);
+        newMask->unfreeze();
+
+        // Change the current mask and generate the new boundaries.
+        api.copyToCurrentMask(newMask);
+
+        document->generateMaskBoundaries();
       }
     }
     else {
