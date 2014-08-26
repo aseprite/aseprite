@@ -120,29 +120,6 @@ bool Slider::onProcessMessage(Message* msg)
           onChange();
         }
 
-        // For left click
-        if (slider_press_left) {
-          int x = mousePos.x;
-
-          if (x < rc.x-1)
-            x = rc.x-1;
-          else if (x > rc.x2())
-            x = rc.x2();
-
-          if (x != mousePos.x)
-            ui::set_mouse_position(gfx::Point(x, mousePos.y));
-        }
-        // For right click
-        else {
-          gfx::Point newPoint =
-            ui::control_infinite_scroll(this, getBounds() - getBorder(), mousePos);
-
-          if (newPoint != mousePos) {
-            slider_press_x = newPoint.x;
-            slider_press_value = m_value;
-          }
-        }
-
         return true;
       }
       break;
