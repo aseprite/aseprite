@@ -712,8 +712,18 @@ gfx::Point Editor::autoScroll(MouseMessage* msg)
   gfx::Point mousePos = msg->position();
 
   if (!vp.contains(mousePos)) {
+    gfx::Point delta = (mousePos - m_oldPos);
+
+    if (!((mousePos.x <  vp.x      && delta.x < 0) ||
+          (mousePos.x >= vp.x+vp.w && delta.x > 0)))
+      delta.x = 0;
+
+    if (!((mousePos.y <  vp.y      && delta.y < 0) ||
+          (mousePos.y >= vp.y+vp.h && delta.y > 0)))
+      delta.y = 0;
+
     gfx::Point scroll = view->getViewScroll();
-    scroll += (mousePos - m_oldPos);
+    scroll += delta;
     setEditorScroll(scroll.x, scroll.y, true);
 
     m_oldPos = mousePos;
