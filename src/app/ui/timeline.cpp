@@ -445,10 +445,10 @@ bool Timeline::onProcessMessage(Message* msg)
           case STATE_SCROLLING: {
             gfx::Point absMousePos = static_cast<MouseMessage*>(msg)->position();
             setScroll(
-              m_scroll_x + m_oldPos.x - absMousePos.x,
-              m_scroll_y + m_oldPos.y - absMousePos.y);
+              m_scroll_x - (absMousePos.x - m_oldPos.x),
+              m_scroll_y - (absMousePos.y - m_oldPos.y));
 
-            m_oldPos = ui::control_infinite_scroll(this, getBounds(), absMousePos);
+            m_oldPos = absMousePos;
             return true;
           }
 

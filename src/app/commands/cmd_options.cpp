@@ -71,9 +71,6 @@ public:
     pixelGridColorBox()->addChild(m_pixelGridColor);
 
     // Others
-    if (get_config_bool("Options", "MoveSmooth", true))
-      smooth()->setSelected(true);
-
     if (get_config_bool("Options", "AutoShowTimeline", true))
       autotimeline()->setSelected(true);
 
@@ -144,7 +141,6 @@ public:
     m_docSettings->setGridColor(m_gridColor->getColor());
     m_docSettings->setPixelGridColor(m_pixelGridColor->getColor());
 
-    set_config_bool("Options", "MoveSmooth", smooth()->isSelected());
     set_config_bool("Options", "AutoShowTimeline", autotimeline()->isSelected());
 
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());

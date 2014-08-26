@@ -354,19 +354,6 @@ gfx::Point get_mouse_position()
   return gfx::Point(jmouse_x(0), jmouse_y(0));
 }
 
-void set_mouse_position(const gfx::Point& newPos)
-{
-  moved = true;
-
-  if (mouse_display)
-    mouse_display->setMousePosition(newPos);
-
-  update_mouse_position(newPos);
-
-  m_x[1] = m_x[0];
-  m_y[1] = m_y[0];
-}
-
 MouseButtons jmouse_b(int antique)
 {
   return (MouseButtons)m_b[antique & 1];
@@ -375,56 +362,6 @@ MouseButtons jmouse_b(int antique)
 int jmouse_x(int antique) { return m_x[antique & 1]; }
 int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
-
-gfx::Point get_delta_outside_box(const gfx::Rect& rect, const gfx::Point& mousePoint)
-{
-  gfx::Point delta(0, 0);
-
-  if (mousePoint.x < rect.x)
-    delta.x = mousePoint.x - rect.x;
-  else if (mousePoint.x >= rect.x+rect.w)
-    delta.x = mousePoint.x - (rect.x+rect.w);
-
-  if (mousePoint.y < rect.y)
-    delta.y = mousePoint.y - rect.y;
-  else if (mousePoint.y > rect.y+rect.h)
-    delta.y = mousePoint.y - (rect.y+rect.h);
-
-  return delta;
-}
-
-gfx::Point control_infinite_scroll(Widget* widget, const gfx::Rect& rect, const gfx::Point& mousePoint)
-{
-  gfx::Point newPoint = mousePoint;
-  gfx::Point delta = get_delta_outside_box(rect, newPoint);
-
-  if (delta.x < 0) {
-    newPoint.x = rect.x+rect.w+delta.x;
-    if (newPoint.x < rect.x)
-      newPoint.x = rect.x;
-  }
-  else if (delta.x > 0) {
-    newPoint.x = rect.x+delta.x;
-    if (newPoint.x >= rect.x+rect.w)
-      newPoint.x = rect.x+rect.w-1;
-  }
-
-  if (delta.y < 0) {
-    newPoint.y = rect.y+rect.h+delta.y;
-    if (newPoint.y < rect.y)
-      newPoint.y = rect.y;
-  }
-  else if (delta.y > 0) {
-    newPoint.y = rect.y+delta.y;
-    if (newPoint.y >= rect.y+rect.h)
-      newPoint.y = rect.y+rect.h-1;
-  }
-
-  if (mousePoint != newPoint)
-    ui::set_mouse_position(newPoint);
-
-  return newPoint;
-}
 
 static void update_mouse_position(const gfx::Point& pt)
 {

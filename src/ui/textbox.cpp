@@ -114,7 +114,7 @@ bool TextBox::onProcessMessage(Message* msg)
         scroll += m_oldPos - newPos;
         view->setViewScroll(scroll);
 
-        m_oldPos = ui::control_infinite_scroll(this, vp, newPos);
+        m_oldPos = newPos;
       }
       break;
     }

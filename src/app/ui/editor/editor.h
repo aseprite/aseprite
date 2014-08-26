@@ -165,8 +165,8 @@ namespace app {
 
     void updateStatusBar();
 
-    // Control scroll when cursor goes out of the editor.
-    gfx::Point controlInfiniteScroll(ui::MouseMessage* msg);
+    // Control scroll when cursor goes out of the editor viewport.
+    gfx::Point autoScroll(ui::MouseMessage* msg);
 
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();

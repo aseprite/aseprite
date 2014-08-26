@@ -63,15 +63,11 @@ namespace ui {
   void _internal_set_mouse_buttons(MouseButtons buttons);
 
   gfx::Point get_mouse_position();
-  void set_mouse_position(const gfx::Point& newPos);
 
   MouseButtons jmouse_b(int antique);
   int jmouse_x(int antique);
   int jmouse_y(int antique);
   int jmouse_z(int antique);
-
-  gfx::Point get_delta_outside_box(const gfx::Rect& rect, const gfx::Point& mousePoint);
-  gfx::Point control_infinite_scroll(Widget* widget, const gfx::Rect& rect, const gfx::Point& mousePoint);
 
 } // namespace ui
 

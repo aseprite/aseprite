@@ -705,31 +705,24 @@ void Editor::flashCurrentLayer()
 #endif
 }
 
-gfx::Point Editor::controlInfiniteScroll(MouseMessage* msg)
+gfx::Point Editor::autoScroll(MouseMessage* msg)
 {
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point mousePos = msg->position();
 
-  gfx::Point delta = ui::get_delta_outside_box(vp, mousePos);
-  if (delta != gfx::Point(0, 0)) {
-    // Scrolling-by-steps (non-smooth), this is better for high
-    // resolutions: scroll movement by big steps.
-    if (!get_config_bool("Options", "MoveSmooth", true)) {
-      gfx::Point newPos = mousePos;
-      if (delta.x != 0) newPos.x = (mousePos.x-delta.x+(vp.x+vp.w/2))/2;
-      if (delta.y != 0) newPos.y = (mousePos.y-delta.y+(vp.y+vp.h/2))/2;
-      delta = mousePos - newPos;
-    }
-
-    mousePos.x -= delta.x;
-    mousePos.y -= delta.y;
-    ui::set_mouse_position(mousePos);
-
+  if (!vp.contains(mousePos)) {
     gfx::Point scroll = view->getViewScroll();
-    scroll += delta;
+    scroll += (mousePos - m_oldPos);
     setEditorScroll(scroll.x, scroll.y, true);
+
+    m_oldPos = mousePos;
+    mousePos = gfx::Point(
+      MID(vp.x, mousePos.x, vp.x+vp.w-1),
+      MID(vp.y, mousePos.y, vp.y+vp.h-1));
   }
+  else
+    m_oldPos = mousePos;
 
   return mousePos;
 }

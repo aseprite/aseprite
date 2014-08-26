@@ -31,7 +31,6 @@
         <vbox id="section_editor">
           <separator text="Editor" horizontal="true" />
           <check text="Zoom with Scroll Wheel" id="wheel_zoom" />
-          <check text="Smooth auto-scroll" id="smooth" />
           <check text="Show scroll-bars in sprite editor" id="show_scrollbars" tooltip="Show scroll-bars in all sprite editors." />
           <hbox>
             <label text="Right-click:" />

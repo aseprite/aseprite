@@ -62,15 +62,11 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   View* view = View::getView(editor);
   gfx::Point scroll = view->getViewScroll();
-
   gfx::Point newPos = msg->position();
+  scroll -= newPos - m_oldPos;
+  m_oldPos = newPos;
 
-  scroll += m_oldPos - newPos;
   editor->setEditorScroll(scroll.x, scroll.y, true);
-
-  gfx::Rect vp = view->getViewportBounds();
-  m_oldPos = ui::control_infinite_scroll(editor, vp, newPos);
-
   return true;
 }
 
