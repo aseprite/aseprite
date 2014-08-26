@@ -80,14 +80,10 @@ public:
     gfx::Rect vp = view->getViewportBounds();
     gfx::Point scroll = view->getViewScroll();
 
-    m_first_mouse_pos = m_old_pos = ui::get_mouse_position();
-    ui::set_mouse_position(gfx::Point(JI_SCREEN_W/2, JI_SCREEN_H/2));
-
+    m_oldMousePos = ui::get_mouse_position();
     m_pos.x = -scroll.x + vp.x + editor->offsetX();
     m_pos.y = -scroll.y + vp.y + editor->offsetY();
     m_zoom = editor->zoom();
-
-    ui::set_mouse_position(m_first_mouse_pos);
 
     setFocusStop(true);
     captureMouse();
@@ -99,7 +95,6 @@ protected:
 
       case kCloseMessage:
         releaseMouse();
-        ui::set_mouse_position(m_first_mouse_pos);
         break;
 
       case kMouseMoveMessage: {
@@ -117,9 +112,8 @@ protected:
           border.bottom(32*jguiscale());
         }
 
-        m_delta += mousePos - m_old_pos;
-        mousePos = ui::control_infinite_scroll(this, bounds.shrink(border), mousePos);
-        m_old_pos = mousePos;
+        m_delta += mousePos - m_oldMousePos;
+        m_oldMousePos = mousePos;
 
         invalidate();
         break;
@@ -246,8 +240,7 @@ private:
   Sprite* m_sprite;
   const Palette* m_pal;
   gfx::Point m_pos;
-  gfx::Point m_old_pos;
-  gfx::Point m_first_mouse_pos;
+  gfx::Point m_oldMousePos;
   gfx::Point m_delta;
   int m_zoom;
   int m_index_bg_color;
