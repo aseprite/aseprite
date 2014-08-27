@@ -31,6 +31,7 @@ namespace raster {
     BLEND_MODE_MERGE,
     BLEND_MODE_RED_TINT,
     BLEND_MODE_BLUE_TINT,
+    BLEND_MODE_BLACKANDWHITE,
     BLEND_MODE_MAX,
   };
 
@@ -45,11 +46,13 @@ namespace raster {
   int rgba_blend_merge(int back, int front, int opacity);
   int rgba_blend_red_tint(int back, int front, int opacity);
   int rgba_blend_blue_tint(int back, int front, int opacity);
+  int rgba_blend_blackandwhite(int back, int front, int opacity);
 
   int graya_blend_normal(int back, int front, int opacity);
   int graya_blend_copy(int back, int front, int opacity);
   int graya_blend_forpath(int back, int front, int opacity);
   int graya_blend_merge(int back, int front, int opacity);
+  int graya_blend_blackandwhite(int back, int front, int opacity);
 
 } // namespace raster
 

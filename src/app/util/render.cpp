@@ -289,7 +289,8 @@ static app::Color checked_bg_color2;
 
 static int global_opacity = 255;
 static const Layer* selected_layer = NULL;
-static Image* rastering_image = NULL;
+static Image* preview_image = NULL;
+static int preview_blendmode = BLEND_MODE_NORMAL;
 
 // static
 void RenderEngine::loadConfig()
@@ -370,7 +371,7 @@ RenderEngine::RenderEngine(const Document* document,
 void RenderEngine::setPreviewImage(const Layer* layer, Image* image)
 {
   selected_layer = layer;
-  rastering_image = image;
+  preview_image = image;
 }
 
 /**
@@ -585,11 +586,11 @@ void RenderEngine::renderLayer(
       if (cel != NULL) {
         Image* src_image;
 
-        // Is the 'rastering_image' set to be used with this layer?
+        // Is the 'preview_image' set to be used with this layer?
         if ((frame == m_currentFrame) &&
             (selected_layer == layer) &&
-            (rastering_image != NULL)) {
-          src_image = rastering_image;
+            (preview_image != NULL)) {
+          src_image = preview_image;
         }
         // If not, we use the original cel-image from the images' stock
         else {
@@ -608,9 +609,9 @@ void RenderEngine::renderLayer(
             (cel->x() << zoom) - source_x,
             (cel->y() << zoom) - source_y,
             output_opacity,
-            blend_mode < 0 ?
+            (blend_mode < 0 ?
               static_cast<const LayerImage*>(layer)->getBlendMode():
-              blend_mode,
+              blend_mode),
             zoom);
         }
       }
@@ -642,9 +643,10 @@ void RenderEngine::renderLayer(
       Image* extraImage = m_document->getExtraCelImage();
 
       (*zoomed_func)(image, extraImage, m_sprite->getPalette(frame),
-                     (extraCel->x() << zoom) - source_x,
-                     (extraCel->y() << zoom) - source_y,
-                     extraCel->opacity(), BLEND_MODE_NORMAL, zoom);
+        (extraCel->x() << zoom) - source_x,
+        (extraCel->y() << zoom) - source_y,
+        extraCel->opacity(),
+        m_document->getExtraCelBlendMode(), zoom);
     }
   }
 }

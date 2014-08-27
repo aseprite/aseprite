@@ -649,6 +649,51 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
+// Xor Ink
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class XorInkProcessing : public DoubleInkProcessing<XorInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  XorInkProcessing(ToolLoop* loop) { }
+  void processPixel(int x, int y) {
+    // Do nothing
+  }
+};
+
+template<>
+void XorInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  *m_dstAddress = rgba_blend_blackandwhite(*m_srcAddress, 0, 255);
+}
+
+template<>
+void XorInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  *m_dstAddress = graya_blend_blackandwhite(*m_srcAddress, 0, 255);
+}
+
+template<>
+class XorInkProcessing<IndexedTraits> : public DoubleInkProcessing<XorInkProcessing<IndexedTraits>, IndexedTraits> {
+public:
+  XorInkProcessing(ToolLoop* loop) :
+    m_palette(get_current_palette()),
+    m_rgbmap(loop->getRgbMap()),
+    m_color(m_palette->getEntry(loop->getPrimaryColor())) {
+  }
+
+  void processPixel(int x, int y) {
+    color_t c = rgba_blend_blackandwhite(m_palette->getEntry(*m_srcAddress), m_color, 255);
+    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
+                                       rgba_getg(c),
+                                       rgba_getb(c));
+  }
+
+private:
+  const Palette* m_palette;
+  const RgbMap* m_rgbmap;
+  color_t m_color;
+};
+
+//////////////////////////////////////////////////////////////////////
 
 enum {
   INK_OPAQUE,
@@ -659,6 +704,7 @@ enum {
   INK_REPLACE,
   INK_JUMBLE,
   INK_SHADING,
+  INK_XOR,
   MAX_INKS
 };
 
@@ -672,7 +718,7 @@ void ink_processing_algo(int x1, int y, int x2, void* data)
 
 AlgoHLine ink_processing[][3] =
 {
-#define DEFINE_INK(name)                          \
+#define DEFINE_INK(name)                         \
   { ink_processing_algo<name<RgbTraits> >,       \
     ink_processing_algo<name<GrayscaleTraits> >, \
     ink_processing_algo<name<IndexedTraits> > }
@@ -684,7 +730,8 @@ AlgoHLine ink_processing[][3] =
   DEFINE_INK(BlurInkProcessing),
   DEFINE_INK(ReplaceInkProcessing),
   DEFINE_INK(JumbleInkProcessing),
-  DEFINE_INK(ShadingInkProcessing)
+  DEFINE_INK(ShadingInkProcessing),
+  DEFINE_INK(XorInkProcessing)
 };
 
 } // anonymous namespace

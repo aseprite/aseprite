@@ -278,7 +278,8 @@ public:
     }
     // TODO show the selection-preview with a XOR color or something like that
     else {
-      draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
+      ink_processing[INK_XOR][MID(0, loop->sprite()->pixelFormat(), 2)]
+        (x1, y, x2, loop);
     }
   }
 

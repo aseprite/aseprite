@@ -151,7 +151,10 @@ public:
       brush_settings->getSize(),
       brush_settings->getAngle());
 
-    m_useMask = m_document->isMaskVisible();
+    if (m_ink->isSelection())
+      m_useMask = false;
+    else
+      m_useMask = m_document->isMaskVisible();
 
     // Selection ink
     if (getInk()->isSelection() &&

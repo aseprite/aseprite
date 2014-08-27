@@ -129,6 +129,9 @@ namespace app {
     Cel* getExtraCel() const;
     Image* getExtraCelImage() const;
 
+    int getExtraCelBlendMode() const { return m_extraCelBlendMode; }
+    void setExtraCelBlendMode(int mode) { m_extraCelBlendMode = mode; }
+
     //////////////////////////////////////////////////////////////////////
     // Mask
 
@@ -214,6 +217,7 @@ namespace app {
 
     // Image of the extra cel.
     Image* m_extraImage;
+    int m_extraCelBlendMode;
 
     // Current mask.
     base::UniquePtr<Mask> m_mask;

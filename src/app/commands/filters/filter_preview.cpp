@@ -75,8 +75,9 @@ bool FilterPreview::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      RenderEngine::setPreviewImage(m_filterMgr->layer(),
-                                    m_filterMgr->destinationImage());
+      RenderEngine::setPreviewImage(
+        m_filterMgr->layer(),
+        m_filterMgr->destinationImage());
       break;
 
     case kCloseMessage:

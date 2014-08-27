@@ -32,6 +32,7 @@
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
+#include "raster/blend.h"
 #include "ui/message.h"
 #include "ui/system.h"
 

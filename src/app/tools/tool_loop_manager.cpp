@@ -72,8 +72,9 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
-  RenderEngine::setPreviewImage(m_toolLoop->getLayer(),
-                                m_toolLoop->getDstImage());
+  RenderEngine::setPreviewImage(
+    m_toolLoop->getLayer(),
+    m_toolLoop->getDstImage());
 }
 
 void ToolLoopManager::releaseLoop(const Pointer& pointer)

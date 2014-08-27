@@ -32,6 +32,7 @@ BLEND_COLOR rgba_blenders[] =
   rgba_blend_merge,
   rgba_blend_red_tint,
   rgba_blend_blue_tint,
+  rgba_blend_blackandwhite,
 };
 
 BLEND_COLOR graya_blenders[] =
@@ -41,6 +42,7 @@ BLEND_COLOR graya_blenders[] =
   graya_blend_copy,
   graya_blend_copy,
   graya_blend_copy,
+  graya_blend_blackandwhite,
 };
 
 /**********************************************************************/
@@ -195,6 +197,24 @@ int rgba_blend_blue_tint(int back, int front, int opacity)
   return rgba_blend_color_tint(back, front, opacity, rgba(0, 0, 255, 128));
 }
 
+int rgba_blend_blackandwhite(int back, int front, int opacity)
+{
+  int B_r, B_g, B_b, B_a;
+  int D_v;
+
+  B_r = rgba_getr(back);
+  B_g = rgba_getg(back);
+  B_b = rgba_getb(back);
+  B_a = rgba_geta(back);
+
+  if ((B_r*30 + B_g*59 + B_b*11)/100 < 128)
+    D_v = 255;
+  else
+    D_v = 0;
+
+  return rgba(D_v, D_v, D_v, B_a);
+}
+
 /**********************************************************************/
 /* Grayscale blenders                                                 */
 /**********************************************************************/
@@ -270,6 +290,22 @@ int graya_blend_merge(int back, int front, int opacity)
   D_a = B_a + (F_a-B_a) * opacity / 255;
 
   return graya(D_k, D_a);
+}
+
+int graya_blend_blackandwhite(int back, int front, int opacity)
+{
+  int B_k, B_a;
+  int D_k;
+
+  B_k = graya_getv(back);
+  B_a = graya_geta(back);
+
+  if (B_k < 128)
+    D_k = 255;
+  else
+    D_k = 0;
+
+  return graya(D_k, B_a);
 }
 
 } // namespace raster
