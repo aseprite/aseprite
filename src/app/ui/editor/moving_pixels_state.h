@@ -74,7 +74,7 @@ namespace app {
 
     // Helper member to move/translate selection and pixels.
     PixelsMovementPtr m_pixelsMovement;
-    Editor* m_currentEditor;
+    Editor* m_editor;
 
     // True if the image was discarded (e.g. when a "Cut" command was
     // used to remove the dragged image).

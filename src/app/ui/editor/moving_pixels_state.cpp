@@ -57,7 +57,7 @@ namespace app {
 using namespace ui;
 
 MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
-  : m_currentEditor(editor)
+  : m_editor(editor)
   , m_discarded(false)
 {
   // MovingPixelsState needs a selection tool to avoid problems
@@ -92,8 +92,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
   // PlayAnimation command.
-  m_currentEditor->getManager()->addMessageFilter(kKeyDownMessage, m_currentEditor);
-  m_currentEditor->getManager()->addMessageFilter(kKeyUpMessage, m_currentEditor);
+  m_editor->getManager()->addMessageFilter(kKeyDownMessage, m_editor);
+  m_editor->getManager()->addMessageFilter(kKeyUpMessage, m_editor);
 
   ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
   contextBar->updateForMovingPixels();
@@ -111,10 +111,10 @@ MovingPixelsState::~MovingPixelsState()
 
   m_pixelsMovement.reset(NULL);
 
-  m_currentEditor->getManager()->removeMessageFilter(kKeyDownMessage, m_currentEditor);
-  m_currentEditor->getManager()->removeMessageFilter(kKeyUpMessage, m_currentEditor);
+  m_editor->getManager()->removeMessageFilter(kKeyDownMessage, m_editor);
+  m_editor->getManager()->removeMessageFilter(kKeyUpMessage, m_editor);
 
-  m_currentEditor->document()->generateMaskBoundaries();
+  m_editor->document()->generateMaskBoundaries();
 }
 
 void MovingPixelsState::translate(int dx, int dy)
@@ -251,7 +251,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
-    // Infinite scroll
+    // Auto-scroll
     gfx::Point mousePos = editor->autoScroll(msg);
 
     // Get the position of the mouse in the sprite
@@ -273,7 +273,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
     if (editor->getCustomizationDelegate()->isLockAxisKeyPressed())
       moveModifier |= PixelsMovement::LockAxisMovement;
 
-    // Invalidate handles area.
+    // Invalidate handles
     Decorator* decorator = static_cast<Decorator*>(editor->decorator());
     TransformHandles* transfHandles = decorator->getTransformHandles(editor);
     transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
@@ -414,7 +414,7 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
   }
 
   if (m_pixelsMovement)
-    dropPixels(m_currentEditor);
+    dropPixels(m_editor);
 }
 
 void MovingPixelsState::onSetMoveTransparentColor(app::Color newColor)
@@ -428,7 +428,7 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
   switch (action) {
 
     case ContextBarObserver::DropPixels:
-      dropPixels(m_currentEditor);
+      dropPixels(m_editor);
       break;
 
     case ContextBarObserver::CancelDrag:
@@ -436,7 +436,7 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
       m_discarded = true;
 
       // Quit from MovingPixelsState, back to standby.
-      m_currentEditor->backToPreviousState();
+      m_editor->backToPreviousState();
       break;
   }
 }
@@ -445,7 +445,7 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
   ASSERT(m_pixelsMovement != NULL);
 
-  Layer* layer = m_currentEditor->layer();
+  Layer* layer = m_editor->layer();
   ASSERT(layer != NULL);
 
   m_pixelsMovement->setMaskColor(color_utils::color_for_layer(color, layer));
