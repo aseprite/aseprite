@@ -291,7 +291,7 @@ void Editor::setDefaultScroll()
 }
 
 // Sets the scroll position of the editor
-void Editor::setEditorScroll(int x, int y, int use_refresh_region)
+void Editor::setEditorScroll(int x, int y, bool blit_valid_rgn)
 {
   View* view = View::getView(this);
   Point oldScroll;
@@ -301,7 +301,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   if (thick)
     clearBrushPreview();
 
-  if (use_refresh_region) {
+  if (blit_valid_rgn) {
     getDrawableRegion(region, kCutTopWindows);
     oldScroll = view->getViewScroll();
   }
@@ -309,7 +309,7 @@ void Editor::setEditorScroll(int x, int y, int use_refresh_region)
   view->setViewScroll(Point(x, y));
   Point newScroll = view->getViewScroll();
 
-  if (use_refresh_region) {
+  if (blit_valid_rgn) {
     // Move screen with blits
     scrollRegion(region,
                  oldScroll.x - newScroll.x,
@@ -701,7 +701,7 @@ void Editor::flashCurrentLayer()
 #endif
 }
 
-gfx::Point Editor::autoScroll(MouseMessage* msg)
+gfx::Point Editor::autoScroll(MouseMessage* msg, bool blit_valid_rgn)
 {
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
@@ -720,7 +720,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg)
 
     gfx::Point scroll = view->getViewScroll();
     scroll += delta;
-    setEditorScroll(scroll.x, scroll.y, true);
+    setEditorScroll(scroll.x, scroll.y, blit_valid_rgn);
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(

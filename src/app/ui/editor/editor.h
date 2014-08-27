@@ -127,7 +127,7 @@ namespace app {
     void setOffsetY(int y) { m_offset_y = y; }
 
     void setDefaultScroll();
-    void setEditorScroll(int x, int y, int use_refresh_region);
+    void setEditorScroll(int x, int y, bool blit_valid_rgn);
     void setEditorZoom(int zoom);
 
     // Updates the Editor's view.
@@ -166,7 +166,7 @@ namespace app {
     void updateStatusBar();
 
     // Control scroll when cursor goes out of the editor viewport.
-    gfx::Point autoScroll(ui::MouseMessage* msg);
+    gfx::Point autoScroll(ui::MouseMessage* msg, bool blit_valid_rgn);
 
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();
