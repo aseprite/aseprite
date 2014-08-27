@@ -20,10 +20,11 @@
 #define APP_TOOLS_TOOL_LOOP_MANAGER_H_INCLUDED
 #pragma once
 
-#include <vector>
-
 #include "gfx/point.h"
 #include "gfx/region.h"
+#include "ui/keys.h"
+
+#include <vector>
 
 namespace gfx { class Region; }
 
@@ -52,8 +53,7 @@ namespace app {
     public:
 
       // Simple container of mouse events information.
-      class Pointer
-      {
+      class Pointer {
       public:
         enum Button { Left, Middle, Right };
 
@@ -81,6 +81,9 @@ namespace app {
 
       // Called when the loop is over.
       void releaseLoop(const Pointer& pointer);
+
+      void pressKey(ui::KeyScancode key);
+      void releaseKey(ui::KeyScancode key);
 
       // Should be called each time the user presses a mouse button.
       void pressButton(const Pointer& pointer);

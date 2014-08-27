@@ -126,8 +126,6 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
 
-  acquire_bitmap(ji_screen);
-
   // Hide the drawing cursor
   editor->hideDrawingCursor();
 
@@ -145,8 +143,6 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // draw the cursor again
   editor->showDrawingCursor();
-
-  release_bitmap(ji_screen);
   return true;
 }
 
@@ -165,6 +161,9 @@ bool DrawingState::onSetCursor(Editor* editor)
 
 bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
+  if (msg->repeat() == 0)
+    m_toolLoopManager->pressKey(msg->scancode());
+
   Command* command = NULL;
   Params* params = NULL;
   if (get_command_from_key_message(msg, &command, &params)) {
@@ -180,6 +179,7 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
 
 bool DrawingState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
+  m_toolLoopManager->releaseKey(msg->scancode());
   return true;
 }
 

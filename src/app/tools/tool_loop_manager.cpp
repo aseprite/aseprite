@@ -68,6 +68,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
   m_toolLoop->getIntertwine()->prepareIntertwine();
+  m_toolLoop->getController()->prepareController();
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
@@ -79,6 +80,27 @@ void ToolLoopManager::releaseLoop(const Pointer& pointer)
 {
   // No more preview image
   RenderEngine::setPreviewImage(NULL, NULL);
+}
+
+void ToolLoopManager::pressKey(ui::KeyScancode key)
+{
+  if (isCanceled())
+    return;
+
+  m_toolLoop->getController()->pressKey(key);
+}
+
+void ToolLoopManager::releaseKey(ui::KeyScancode key)
+{
+  if (isCanceled())
+    return;
+
+  if (key == ui::kKeyEsc) {
+    m_toolLoop->cancel();
+    return;
+  }
+
+  m_toolLoop->getController()->releaseKey(key);
 }
 
 void ToolLoopManager::pressButton(const Pointer& pointer)

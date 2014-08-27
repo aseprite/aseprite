@@ -21,6 +21,7 @@
 #pragma once
 
 #include "gfx/point.h"
+#include "ui/keys.h"
 
 #include <string>
 #include <vector>
@@ -39,6 +40,12 @@ namespace app {
 
       virtual bool canSnapToGrid() { return true; }
       virtual bool isFreehand() { return false; }
+
+      virtual void prepareController() { }
+
+      // Called when the user presses or releases a key.
+      virtual void pressKey(ui::KeyScancode key) { }
+      virtual void releaseKey(ui::KeyScancode key) { }
 
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called

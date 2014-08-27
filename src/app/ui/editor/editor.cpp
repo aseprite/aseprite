@@ -228,10 +228,6 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   // Redraw all the editors with the same document of this editor
   update_screen_for_document(m_document);
 
-  // Clear keyboard buffer just in case (to avoid sending keys to the
-  // new state).
-  clear_keybuf();
-
   // Notify observers
   m_observers.notifyStateChanged(this);
 
@@ -1017,6 +1013,10 @@ void Editor::updateQuicktool()
 
 void Editor::updateSelectionMode()
 {
+  // We update the selection mode only if we're not selecting.
+  if (hasCapture())
+    return;
+
   SelectionMode mode = UIContext::instance()->settings()->selection()->getSelectionMode();
 
   if (m_customizationDelegate && m_customizationDelegate->isAddSelectionPressed())
@@ -1098,7 +1098,7 @@ bool Editor::onProcessMessage(Message* msg)
         EditorStatePtr holdState(m_state);
         bool result = m_state->onMouseUp(this, static_cast<MouseMessage*>(msg));
 
-        if (!hasCapture() && m_secondaryButton) {
+        if (!hasCapture()) {
           m_secondaryButton = false;
 
           updateQuicktool();

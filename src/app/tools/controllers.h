@@ -17,7 +17,6 @@
  */
 
 #include <cmath>
-#include <allegro.h>            // TODO avoid to include this for key[]
 
 #ifndef M_PI
 #define M_PI            3.14159265358979323846
@@ -74,29 +73,41 @@ public:
 
 // Controls clicks for tools like line
 class TwoPointsController : public Controller {
-  Point m_center;
 public:
-  void pressButton(Points& points, const Point& point)
-  {
+  void prepareController() override {
+    m_squareAspect = false;
+    m_fromCenter = false;
+  }
+
+  void pressButton(Points& points, const Point& point) override {
     m_center = point;
 
     points.push_back(point);
     points.push_back(point);
   }
-  bool releaseButton(Points& points, const Point& point)
-  {
+
+  bool releaseButton(Points& points, const Point& point) override {
     return false;
   }
-  void movement(ToolLoop* loop, Points& points, const Point& point)
-  {
+
+  void pressKey(ui::KeyScancode key) override {
+    PRINTF("pressKey(%d)\n", key);
+    processKey(key, true);
+  }
+
+  void releaseKey(ui::KeyScancode key) override {
+    PRINTF("releaseKey(%d)\n", key);
+    processKey(key, false);
+  }
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) {
     ASSERT(points.size() >= 2);
     if (points.size() < 2)
       return;
 
     points[1] = point;
 
-    // Square aspect
-    if (key[KEY_LSHIFT] || key[KEY_RSHIFT]) {
+    if (m_squareAspect) {
       int dx = points[1].x - m_center.x;
       int dy = points[1].y - m_center.y;
       int minsize = MIN(ABS(dx), ABS(dy));
@@ -139,8 +150,7 @@ public:
       }
     }
 
-    // Center
-    if (key[KEY_LCONTROL] || key[KEY_RCONTROL]) {
+    if (m_fromCenter) {
       int rx = points[1].x - m_center.x;
       int ry = points[1].y - m_center.y;
       points[0].x = m_center.x - rx;
@@ -151,8 +161,8 @@ public:
     else
       points[0] = m_center;
   }
-  void getPointsToInterwine(const Points& input, Points& output)
-  {
+
+  void getPointsToInterwine(const Points& input, Points& output) {
     ASSERT(input.size() >= 2);
     if (input.size() < 2)
       return;
@@ -160,8 +170,8 @@ public:
     output.push_back(input[0]);
     output.push_back(input[1]);
   }
-  void getStatusBarText(const Points& points, std::string& text)
-  {
+
+  void getStatusBarText(const Points& points, std::string& text) {
     ASSERT(points.size() >= 2);
     if (points.size() < 2)
       return;
@@ -176,6 +186,24 @@ public:
                                static_cast<double>(points[1].x-points[0].x)) / M_PI);
     text = buf;
   }
+
+private:
+  void processKey(ui::KeyScancode key, bool state) {
+    switch (key) {
+      case ui::kKeyLShift:
+      case ui::kKeyRShift:
+        m_squareAspect = state;
+        break;
+      case ui::kKeyLControl:
+      case ui::kKeyRControl:
+        m_fromCenter = state;
+        break;
+    }
+  }
+
+  Point m_center;
+  bool m_squareAspect;
+  bool m_fromCenter;
 };
 
 // Controls clicks for tools like polygon
