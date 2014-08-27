@@ -52,6 +52,11 @@ namespace app {
 
     // Tool-loop manager
     tools::ToolLoopManager* m_toolLoopManager;
+
+    // True if at least we've received a onMouseMove(). It's used to
+    // cancel selection tool (deselect) when the user click (press and
+    // release the mouse button in the same location).
+    bool m_mouseMoveReceived;
   };
 
 } // namespace app

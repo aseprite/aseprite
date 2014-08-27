@@ -63,6 +63,7 @@ static tools::ToolLoopManager::Pointer pointer_from_msg(MouseMessage* msg)
 DrawingState::DrawingState(tools::ToolLoop* toolLoop, Editor* editor, MouseMessage* msg)
   : m_toolLoop(toolLoop)
   , m_toolLoopManager(new tools::ToolLoopManager(toolLoop))
+  , m_mouseMoveReceived(false)
 {
   // Hide the cursor (mainly to clean the pen preview)
   editor->hideDrawingCursor();
@@ -106,9 +107,12 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
 
-  // Notify the release of the mouse button to the tool loop manager.
-  if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
-    return true;
+  // Selection tools are cancelled with a simple click
+  if (!m_toolLoop->getInk()->isSelection() || m_mouseMoveReceived) {
+    // Notify the release of the mouse button to the tool loop manager.
+    if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
+      return true;
+  }
 
   m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
   destroyLoop();
@@ -125,6 +129,8 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
+
+  m_mouseMoveReceived = true;
 
   // Hide the drawing cursor
   editor->hideDrawingCursor();
