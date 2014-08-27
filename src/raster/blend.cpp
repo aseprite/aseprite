@@ -202,17 +202,20 @@ int rgba_blend_blackandwhite(int back, int front, int opacity)
   int B_r, B_g, B_b, B_a;
   int D_v;
 
+  B_a = rgba_geta(back);
+  if (B_a == 0)
+    return front;
+
   B_r = rgba_getr(back);
   B_g = rgba_getg(back);
   B_b = rgba_getb(back);
-  B_a = rgba_geta(back);
 
   if ((B_r*30 + B_g*59 + B_b*11)/100 < 128)
     D_v = 255;
   else
     D_v = 0;
 
-  return rgba(D_v, D_v, D_v, B_a);
+  return rgba(D_v, D_v, D_v, 255);
 }
 
 /**********************************************************************/
@@ -297,15 +300,18 @@ int graya_blend_blackandwhite(int back, int front, int opacity)
   int B_k, B_a;
   int D_k;
 
-  B_k = graya_getv(back);
   B_a = graya_geta(back);
+  if (B_a == 0)
+    return front;
+
+  B_k = graya_getv(back);
 
   if (B_k < 128)
     D_k = 255;
   else
     D_k = 0;
 
-  return graya(D_k, B_a);
+  return graya(D_k, 255);
 }
 
 } // namespace raster

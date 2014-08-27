@@ -655,20 +655,25 @@ private:
 template<typename ImageTraits>
 class XorInkProcessing : public DoubleInkProcessing<XorInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  XorInkProcessing(ToolLoop* loop) { }
+  XorInkProcessing(ToolLoop* loop) {
+    m_color = loop->getPrimaryColor();
+  }
   void processPixel(int x, int y) {
     // Do nothing
   }
+
+private:
+  color_t m_color;
 };
 
 template<>
 void XorInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba_blend_blackandwhite(*m_srcAddress, 0, 255);
+  *m_dstAddress = rgba_blend_blackandwhite(*m_srcAddress, m_color, 255);
 }
 
 template<>
 void XorInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya_blend_blackandwhite(*m_srcAddress, 0, 255);
+  *m_dstAddress = graya_blend_blackandwhite(*m_srcAddress, m_color, 255);
 }
 
 template<>
