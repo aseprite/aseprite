@@ -249,8 +249,9 @@ void Editor::backToPreviousState()
 
 void Editor::setLayer(const Layer* layer)
 {
+  m_observers.notifyBeforeLayerChanged(this);
   m_layer = const_cast<Layer*>(layer);
-  m_observers.notifyLayerChanged(this);
+  m_observers.notifyAfterLayerChanged(this);
 
   updateStatusBar();
 }
@@ -258,8 +259,9 @@ void Editor::setLayer(const Layer* layer)
 void Editor::setFrame(FrameNumber frame)
 {
   if (m_frame != frame) {
+    m_observers.notifyBeforeFrameChanged(this);
     m_frame = frame;
-    m_observers.notifyFrameChanged(this);
+    m_observers.notifyAfterFrameChanged(this);
 
     invalidate();
     updateStatusBar();

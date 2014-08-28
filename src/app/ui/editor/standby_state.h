@@ -28,8 +28,7 @@
 namespace app {
   class TransformHandles;
 
-  class StandbyState : public EditorState
-  {
+  class StandbyState : public EditorState {
   public:
     StandbyState();
     virtual ~StandbyState();

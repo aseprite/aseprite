@@ -365,7 +365,6 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         }
         case A_PART_LAYER_TEXT: {
-          const DocumentReader document(const_cast<Document*>(m_document));
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk_layer));
 
@@ -391,7 +390,6 @@ bool Timeline::onProcessMessage(Message* msg)
         case A_PART_LAYER_PADLOCK_ICON:
           break;
         case A_PART_CEL: {
-          const DocumentReader document(const_cast<Document*>(m_document));
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk_layer)
@@ -1041,7 +1039,7 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   invalidate();
 }
 
-void Timeline::onFrameChanged(Editor* editor)
+void Timeline::onAfterFrameChanged(Editor* editor)
 {
   setFrame(editor->frame());
 
@@ -1053,7 +1051,7 @@ void Timeline::onFrameChanged(Editor* editor)
   invalidate();
 }
 
-void Timeline::onLayerChanged(Editor* editor)
+void Timeline::onAfterLayerChanged(Editor* editor)
 {
   setLayer(editor->layer());
 

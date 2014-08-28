@@ -22,6 +22,7 @@
 
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
+#include "app/ui/editor/editor_observer.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
@@ -38,6 +39,7 @@ namespace app {
 
   class MovingPixelsState
     : public StandbyState
+    , EditorObserver
     , SelectionSettingsObserver
     , ContextBarObserver {
   public:
@@ -56,7 +58,11 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
-    
+
+    // EditorObserver
+    virtual void onBeforeFrameChanged(Editor* editor) override;
+    virtual void onBeforeLayerChanged(Editor* editor) override;
+
     // SettingsObserver
     virtual void onSetMoveTransparentColor(app::Color newColor) override;
 

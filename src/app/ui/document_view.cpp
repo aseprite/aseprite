@@ -69,18 +69,10 @@ public:
       App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
   }
 
-  void onStateChanged(Editor* editor) override {
-    // Do nothing
-  }
-
-  void onFrameChanged(Editor* editor) override {
+  void onAfterFrameChanged(Editor* editor) override {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
 
     set_current_palette(editor->sprite()->getPalette(editor->frame()), true);
-  }
-
-  void onLayerChanged(Editor* editor) override {
-    // Do nothing
   }
 
   // EditorCustomizationDelegate implementation

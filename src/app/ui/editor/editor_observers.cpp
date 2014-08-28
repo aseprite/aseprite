@@ -51,14 +51,24 @@ void EditorObservers::notifyScrollChanged(Editor* editor)
   m_observers.notifyObservers(&EditorObserver::onScrollChanged, editor);
 }
 
-void EditorObservers::notifyFrameChanged(Editor* editor)
+void EditorObservers::notifyBeforeFrameChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::onFrameChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onBeforeFrameChanged, editor);
 }
 
-void EditorObservers::notifyLayerChanged(Editor* editor)
+void EditorObservers::notifyAfterFrameChanged(Editor* editor)
 {
-  m_observers.notifyObservers(&EditorObserver::onLayerChanged, editor);
+  m_observers.notifyObservers(&EditorObserver::onAfterFrameChanged, editor);
+}
+
+void EditorObservers::notifyBeforeLayerChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::onBeforeLayerChanged, editor);
+}
+
+void EditorObservers::notifyAfterLayerChanged(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::onAfterLayerChanged, editor);
 }
 
 } // namespace app

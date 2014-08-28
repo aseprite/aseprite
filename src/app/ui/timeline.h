@@ -116,11 +116,8 @@ namespace app {
     void onRemoveDocument(doc::Document* document) override;
 
     // EditorObserver impl.
-    void dispose() override { }
-    void onStateChanged(Editor* editor) override { }
-    void onScrollChanged(Editor* editor) override { }
-    void onFrameChanged(Editor* editor) override;
-    void onLayerChanged(Editor* editor) override;
+    void onAfterFrameChanged(Editor* editor) override;
+    void onAfterLayerChanged(Editor* editor) override;
 
   private:
     struct DropTarget {
