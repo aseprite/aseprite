@@ -168,6 +168,8 @@ Timeline::Timeline()
   , m_confPopup(NULL)
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
+  , m_scroll(false)
+  , m_copy(false)
 {
   m_ctxConn = m_context->AfterCommandExecution.connect(&Timeline::onAfterCommandExecution, this);
   m_context->documents().addObserver(this);
@@ -804,6 +806,7 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
 
         case kKeySpace: {
+          m_scroll = true;
           setCursor(jmouse_x(0), jmouse_y(0));
           return true;
         }
@@ -814,6 +817,8 @@ bool Timeline::onProcessMessage(Message* msg)
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeySpace: {
+          m_scroll = false;
+
           // We have to clear all the KEY_SPACE in buffer.
           clear_keybuf();
 
@@ -1065,12 +1070,12 @@ void Timeline::setCursor(int x, int y)
   int mx = x - getBounds().x;
 
   // Scrolling.
-  if (m_state == STATE_SCROLLING || key[KEY_SPACE]) {
+  if (m_state == STATE_SCROLLING || m_scroll) {
     jmouse_set_cursor(kScrollCursor);
   }
   // Moving.
   else if (m_state == STATE_MOVING_RANGE) {
-    if (key[KEY_LCONTROL] || key[KEY_RCONTROL])
+    if (m_copy)
       jmouse_set_cursor(kArrowPlusCursor);
     else
       jmouse_set_cursor(kMoveCursor);
@@ -2028,7 +2033,9 @@ void Timeline::clearClipboardRange()
 
 bool Timeline::isCopyKeyPressed(ui::Message* msg)
 {
-  return msg->ctrlPressed();
+  m_copy = msg->ctrlPressed() ||  // Ctrl is common on Windows
+           msg->altPressed();    // Alt is common on Mac OS X
+  return m_copy;
 }
 
 } // namespace app
