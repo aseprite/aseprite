@@ -1314,12 +1314,12 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
   if ((m_zoom != zoom) ||
       (m_cursor_editor_x != mx) ||
       (m_cursor_editor_y != my)) {
-    int use_refresh_region = (m_zoom == zoom) ? true: false;
+    bool blit_valid_rgn = (m_zoom == zoom);
 
     m_zoom = zoom;
 
     updateEditor();
-    setEditorScroll(x, y, use_refresh_region);
+    setEditorScroll(x, y, blit_valid_rgn);
   }
   showDrawingCursor();
 }
