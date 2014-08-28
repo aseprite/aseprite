@@ -30,10 +30,8 @@ using namespace gfx;
 // Controls clicks for tools like pencil
 class FreehandController : public Controller {
 public:
-  bool isFreehand()
-  {
-    return true;
-  }
+  bool isFreehand() { return true; }
+
   void pressButton(Points& points, const Point& point)
   {
     points.push_back(point);
@@ -257,6 +255,7 @@ class OnePointController : public Controller {
 public:
   // Do not apply grid to "one point tools" (e.g. magic wand, flood fill, etc.)
   bool canSnapToGrid() { return false; }
+  bool isOnePoint() { return true; }
 
   void pressButton(Points& points, const Point& point)
   {

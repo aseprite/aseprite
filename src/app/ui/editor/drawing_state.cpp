@@ -26,6 +26,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/modules/gui.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_loop.h"
@@ -40,8 +41,6 @@
 #include "app/app.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-
-#include <allegro.h>
 
 namespace app {
 
@@ -108,9 +107,15 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_toolLoopManager != NULL);
 
-  // Selection tools are cancelled with a simple click
-  if (!m_toolLoop->getInk()->isSelection() || m_mouseMoveReceived) {
-    // Notify the release of the mouse button to the tool loop manager.
+  // Selection tools are cancelled with a simple click (only "one
+  // point" controller selection tools aren't cancelled with one click,
+  // i.e. the magic wand).
+  if (!m_toolLoop->getInk()->isSelection() ||
+      m_toolLoop->getController()->isOnePoint() ||
+      m_mouseMoveReceived) {
+    // Notify the release of the mouse button to the tool loop
+    // manager. This is the correct way to say "the user finishes the
+    // drawing trace correctly".
     if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
       return true;
   }
