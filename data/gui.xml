@@ -62,6 +62,7 @@
       <key command="NewFrame" shortcut="Alt+B">
         <param name="content" value="empty" />
       </key>
+      <key command="RemoveFrame" shortcut="Alt+C" />
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
       </key>
