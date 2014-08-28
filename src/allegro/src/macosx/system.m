@@ -198,15 +198,21 @@ void osx_event_handler()
          case NSKeyDown:
             if (_keyboard_installed)
                osx_keyboard_handler(TRUE, event);
-            if ([event modifierFlags] & NSCommandKeyMask)
+
+#if 0 // Avoid beeps TODO uncomment this when the OS X menus are ready
+            if ([event modifierFlags] & NSCommandKeyMask && )
                [NSApp sendEvent: event];
+#endif
             break;
 
          case NSKeyUp:
             if (_keyboard_installed)
                osx_keyboard_handler(FALSE, event);
+
+#if 0 // Avoid beeps TODO uncomment this when the OS X menus are ready
             if ([event modifierFlags] & NSCommandKeyMask)
                [NSApp sendEvent: event];
+#endif
             break;
 
          case NSFlagsChanged:
