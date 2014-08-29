@@ -1,13 +1,14 @@
 <!-- ASEPRITE -->
 <!-- Copyright (C) 2014 by David Capello -->
 <gui>
-  <vbox id="mainbox">
+  <vbox id="palette_popup">
     <label text="Available Palettes:" />
     <view id="view" expansive="true" />
     <hbox>
+      <button id="load_pal" text="Load" width="80" />
       <hbox expansive="true" />
-      <button id="load" text="Load" width="80" />
-      <button id="openfolder" text="Open Folder" width="60" />
+      <button id="set_default" text="Set as Default" width="80" />
+      <button id="open_folder" text="Open Folder" width="60" />
     </hbox>
   </vbox>
 </gui>

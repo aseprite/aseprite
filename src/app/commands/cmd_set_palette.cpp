@@ -41,6 +41,7 @@ SetPaletteCommand::SetPaletteCommand()
             "Set Palette",
             CmdRecordableFlag)
   , m_palette(NULL)
+  , m_target(Target::Document)
 {
 }
 
@@ -50,22 +51,31 @@ void SetPaletteCommand::onExecute(Context* context)
   if (!m_palette)
     return;
 
-  ContextWriter writer(context);
+  switch (m_target) {
 
-  if (writer.document()) {
-    UndoTransaction undoTransaction(writer.context(), "Set Palette");
-    writer.document()->getApi()
-      .setPalette(writer.sprite(), writer.frame(), m_palette);
-    undoTransaction.commit();
-  }
-  // Set default palette
-  else {
-    set_default_palette(m_palette);
-    set_config_string("GfxMode", "Palette", m_palette->filename().c_str());
-  }
+    case Target::Document: {
+      ContextWriter writer(context);
+      if (writer.document()) {
+        UndoTransaction undoTransaction(writer.context(), "Set Palette");
+        writer.document()->getApi()
+          .setPalette(writer.sprite(), writer.frame(), m_palette);
+        undoTransaction.commit();
+      }
+      set_current_palette(m_palette, false);
+      break;
+    }
 
-  // Set the palette calling the hooks
-  set_current_palette(m_palette, false);
+    // Set default palette
+    case Target::App: {
+      set_default_palette(m_palette);
+      set_config_string("GfxMode", "Palette", m_palette->filename().c_str());
+
+      if (!context->activeDocument())
+        set_current_palette(m_palette, false);
+      break;
+    }
+
+  }
 
   // Redraw the entire screen
   ui::Manager::getDefault()->invalidate();

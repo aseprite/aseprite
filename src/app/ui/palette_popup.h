@@ -30,6 +30,10 @@ namespace ui {
 
 namespace app {
 
+  namespace gen {
+    class PalettePopup;
+  }
+
   class PalettePopup : public ui::PopupWindow {
   public:
     PalettePopup();
@@ -38,12 +42,11 @@ namespace app {
 
   protected:
     void onPalChange(raster::Palette* palette);
-    void onLoad();
+    void onLoadPal(bool asDefault);
     void onOpenFolder();
 
   private:
-    ui::View* m_view;
-    ui::Button* m_load;
+    gen::PalettePopup* m_popup;
     PalettesListBox m_paletteListBox;
   };
 

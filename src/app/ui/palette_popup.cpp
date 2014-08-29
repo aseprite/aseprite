@@ -35,37 +35,35 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
+#include "generated_palette_popup.h"
+
 namespace app {
 
 using namespace ui;
 
 PalettePopup::PalettePopup()
   : PopupWindow("Palettes", kCloseOnClickInOtherWindow)
+  , m_popup(new gen::PalettePopup())
 {
   setAutoRemap(false);
   setBorder(gfx::Border(4*jguiscale()));
 
-  addChild(app::load_widget<Box>("palette_popup.xml", "mainbox"));
+  addChild(m_popup);
 
-  m_load = findChildT<Button>("load");
-  m_load->Click.connect(Bind<void>(&PalettePopup::onLoad, this));
-  findChildT<Button>("openfolder")->Click.connect(Bind<void>(&PalettePopup::onOpenFolder, this));
+  m_popup->loadPal()->Click.connect(Bind<void>(&PalettePopup::onLoadPal, this, false));
+  m_popup->setDefault()->Click.connect(Bind<void>(&PalettePopup::onLoadPal, this, true));
+  m_popup->openFolder()->Click.connect(Bind<void>(&PalettePopup::onOpenFolder, this));
 
-  m_view = findChildT<View>("view");
-  m_view->attachToView(&m_paletteListBox);
+  m_popup->view()->attachToView(&m_paletteListBox);
 
   m_paletteListBox.PalChange.connect(&PalettePopup::onPalChange, this);
 }
 
 void PalettePopup::showPopup(const gfx::Rect& bounds)
 {
-  m_load->setEnabled(false);
+  m_popup->loadPal()->setEnabled(false);
+  m_popup->setDefault()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
-
-  if (!UIContext::instance()->activeDocument())
-    m_load->setText("Set as Default");
-  else
-    m_load->setText("Load");
 
   moveWindow(bounds);
   openWindow();
@@ -73,10 +71,14 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
 
 void PalettePopup::onPalChange(raster::Palette* palette)
 {
-  m_load->setEnabled(palette != NULL);
+  m_popup->loadPal()->setEnabled(
+    UIContext::instance()->activeDocument() &&
+    palette != NULL);
+
+  m_popup->setDefault()->setEnabled(palette != NULL);
 }
 
-void PalettePopup::onLoad()
+void PalettePopup::onLoadPal(bool asDefault)
 {
   raster::Palette* palette = m_paletteListBox.selectedPalette();
   if (!palette)
@@ -84,7 +86,12 @@ void PalettePopup::onLoad()
 
   SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
     CommandsModule::instance()->getCommandByName(CommandId::SetPalette));
+
   cmd->setPalette(palette);
+  if (asDefault)
+    cmd->setTarget(SetPaletteCommand::Target::App);
+  else
+    cmd->setTarget(SetPaletteCommand::Target::Document);
 
   UIContext::instance()->executeCommand(cmd);
 }
