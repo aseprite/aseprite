@@ -307,6 +307,10 @@ void clipboard::paste()
       switch (srcRange.type()) {
 
         case DocumentRange::kCels: {
+          // Do nothing case: pasting in the same document.
+          if (srcDoc == dstDoc)
+            return;
+
           UndoTransaction undoTransaction(UIContext::instance(), "Paste Cels");
 
           FrameNumber dstFrame = editor->frame();
