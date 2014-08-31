@@ -66,6 +66,10 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
   m_paletteListBox.selectChild(NULL);
 
   moveWindow(bounds);
+
+  // Setup the hot-region
+  setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * jguiscale())));
+
   openWindow();
 }
 
