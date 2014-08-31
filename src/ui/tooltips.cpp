@@ -136,13 +136,15 @@ void TooltipManager::onTick()
         break;
     }
 
-    // if (x+w > JI_SCREEN_W) {
+    // if (x+w > ui::display_w()) {
     //   x = jmouse_x(0) - w - 4*jguiscale();
     //   y = jmouse_y(0);
     // }
 
-    m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
-                                MID(0, y, JI_SCREEN_H-h));
+    m_tipWindow->positionWindow(
+      MID(0, x, ui::display_w()-w),
+      MID(0, y, ui::display_h()-h));
+
     m_tipWindow->openWindow();
   }
   m_timer->stop();

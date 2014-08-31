@@ -51,7 +51,7 @@ bool Timer::isRunning() const
 
 void Timer::start()
 {
-  m_lastTime = ji_clock;
+  m_lastTime = ui::clock();
 }
 
 void Timer::stop()
@@ -79,7 +79,7 @@ void Timer::pollTimers()
 {
   // Generate messages for timers
   if (!timers.empty()) {
-    int t = ji_clock;
+    int t = ui::clock();
     int count;
 
     for (Timers::iterator it=timers.begin(), end=timers.end(); it != end; ++it) {
@@ -91,8 +91,8 @@ void Timer::pollTimers()
           ++count;
 
           /* we spend too much time here */
-          if (ji_clock - t > timer->m_interval) {
-            timer->m_lastTime = ji_clock;
+          if (ui::clock() - t > timer->m_interval) {
+            timer->m_lastTime = ui::clock();
             break;
           }
         }

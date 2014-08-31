@@ -68,7 +68,7 @@ public:
 
     setFocusStop(true);         // To receive keyboard messages
 
-    m_curFrameTick = ji_clock;
+    m_curFrameTick = ui::clock();
     m_pingPongForward = true;
     m_nextFrameTime = editor->sprite()->getFrameDuration(editor->frame());
 
@@ -79,7 +79,7 @@ public:
 protected:
   void onPlaybackTick() {
     if (m_nextFrameTime >= 0) {
-      m_nextFrameTime -= (ji_clock - m_curFrameTick);
+      m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
       while (m_nextFrameTime <= 0) {
         FrameNumber frame = calculate_next_frame(
@@ -93,7 +93,7 @@ protected:
         invalidate();
       }
 
-      m_curFrameTick = ji_clock;
+      m_curFrameTick = ui::clock();
     }
   }
 

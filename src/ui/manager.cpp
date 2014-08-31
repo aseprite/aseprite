@@ -18,6 +18,8 @@
 #include "she/display.h"
 #include "she/event.h"
 #include "she/event_queue.h"
+#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
 #include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
@@ -151,7 +153,7 @@ Manager::Manager()
     }
   }
 
-  setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
+  setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
   setVisible(true);
 
   // Default manager is the first one (and is always visible).
@@ -301,7 +303,7 @@ void Manager::generateMouseMessages()
 
   // Mouse clicks
   if (jmouse_b(0) != jmouse_b(1)) {
-    int current_ticks = ji_clock;
+    int current_ticks = ui::clock();
     bool pressed =
       ((jmouse_b(1) & 1) == 0 && (jmouse_b(0) & 1) == 1) ||
       ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
@@ -1228,13 +1230,13 @@ void Manager::onPreferredSize(PreferredSizeEvent& ev)
 void Manager::pumpQueue()
 {
 #ifdef LIMIT_DISPATCH_TIME
-  int t = ji_clock;
+  int t = ui::clock();
 #endif
 
   Messages::iterator it = msg_queue.begin();
   while (it != msg_queue.end()) {
 #ifdef LIMIT_DISPATCH_TIME
-    if (ji_clock-t > 250)
+    if (ui::clock()-t > 250)
       break;
 #endif
 
@@ -1309,47 +1311,45 @@ void Manager::pumpQueue()
           continue;
 
         PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);
+        she::NonDisposableSurface* surface = m_display->getSurface();
+        gfx::Rect oldClip = surface->getClipBounds();
 
-        jmouse_hide();
-        acquire_bitmap(ji_screen);
-
-        ASSERT(get_clip_state(ji_screen));
-        set_clip_rect(ji_screen,
-                      paintMsg->rect().x,
-                      paintMsg->rect().y,
-                      paintMsg->rect().x2()-1,
-                      paintMsg->rect().y2()-1);
-        dirty_display_flag = true;
+        if (surface->intersectClipRect(paintMsg->rect())) {
+          dirty_display_flag = true;
 
 #ifdef REPORT_EVENTS
-        std::cout << " - clip("
-                  << paintMsg->rect().x << ", "
-                  << paintMsg->rect().y << ", "
-                  << paintMsg->rect().w << ", "
-                  << paintMsg->rect().h << ")"
-                  << std::endl;
+          std::cout << " - clip("
+                    << paintMsg->rect().x << ", "
+                    << paintMsg->rect().y << ", "
+                    << paintMsg->rect().w << ", "
+                    << paintMsg->rect().h << ")"
+                    << std::endl;
 #endif
 
 #ifdef DEBUG_PAINT_EVENTS
-        rectfill(screen,
-          SCREEN_W*paintMsg->rect().x/JI_SCREEN_W,
-          SCREEN_H*paintMsg->rect().y/JI_SCREEN_H,
-          SCREEN_W*(paintMsg->rect().x+paintMsg->rect().w)/JI_SCREEN_W-1,
-          SCREEN_H*(paintMsg->rect().y+paintMsg->rect().h)/JI_SCREEN_H-1,
-          makecol(0, 0, 255));
-        base::this_thread::sleep_for(0.002);
+          {
+            she::ScopedSurfaceLock lock(surface);
+            lock->fillRect(gfx::rgba(0, 0, 255), paintMsg->rect());
+          }
+
+          if (!m_display->flip())
+            surface = NULL;
+
+          base::this_thread::sleep_for(0.002);
 #endif
+
+          if (surface) {
+            // Call the message handler
+            done = widget->sendMessage(msg);
+
+            // Restore clip region for paint messages.
+            surface->setClipBounds(oldClip);
+          }
+        }
       }
-
-      // Call the message handler
-      done = widget->sendMessage(msg);
-
-      // Restore clip region for paint messages.
-      if (msg->type() == kPaintMessage) {
-        set_clip_rect(ji_screen, 0, 0, JI_SCREEN_W-1, JI_SCREEN_H-1);
-
-        release_bitmap(ji_screen);
-        jmouse_show();
+      else {
+        // Call the message handler
+        done = widget->sendMessage(msg);
       }
 
       if (done)

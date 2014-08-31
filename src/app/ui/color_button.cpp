@@ -242,8 +242,8 @@ void ColorButton::openSelectorDialog()
   m_window->setColor(m_color, ColorSelector::ChangeType);
   m_window->openWindow();
 
-  x = MID(0, getBounds().x, JI_SCREEN_W-m_window->getBounds().w);
-  if (getBounds().y2() <= JI_SCREEN_H-m_window->getBounds().h)
+  x = MID(0, getBounds().x, ui::display_w()-m_window->getBounds().w);
+  if (getBounds().y2() <= ui::display_h()-m_window->getBounds().h)
     y = MAX(0, getBounds().y2());
   else
     y = MAX(0, getBounds().y-m_window->getBounds().h);

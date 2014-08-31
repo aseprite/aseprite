@@ -136,7 +136,7 @@ void IntEntry::openPopup()
   rc.y += rc.h;
   rc.h += 2*jguiscale();
   rc.w = 128*jguiscale();
-  if (rc.x+rc.w > JI_SCREEN_W)
+  if (rc.x+rc.w > ui::display_w())
     rc.x = rc.x - rc.w + getBounds().w;
 
   m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);

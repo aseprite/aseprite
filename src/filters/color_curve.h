@@ -33,12 +33,18 @@ namespace filters {
       //Spline,                      // TODO for the future
     };
 
-    typedef std::vector<gfx::Point>::iterator iterator;
+    typedef std::vector<gfx::Point> Points;
+
+    typedef Points::iterator iterator;
+    typedef Points::const_iterator const_iterator;
 
     ColorCurve(Type type);
 
     iterator begin() { return m_points.begin(); }
     iterator end() { return m_points.end(); }
+
+    const_iterator begin() const { return m_points.begin(); }
+    const_iterator end() const { return m_points.end(); }
 
     void addPoint(const gfx::Point& point);
     void removePoint(const gfx::Point& point);
@@ -47,7 +53,7 @@ namespace filters {
 
   private:
     Type m_type;
-    std::vector<gfx::Point> m_points;
+    Points m_points;
   };
 
 } // namespace filters

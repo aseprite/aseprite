@@ -48,8 +48,9 @@ Console::Console()
 {
   console_counter++;
 
-  if (!ji_screen ||
-      !App::instance()->isGui() ||
+  if (!App::instance()->isGui() ||
+      !Manager::getDefault() ||
+      !Manager::getDefault()->getDisplay() ||
       wid_console ||
       console_counter > 1)
     return;
@@ -131,7 +132,7 @@ void Console::printf(const char* format, ...)
       wid_view->setVisible(true);
 
       wid_console->remapWindow();
-      wid_console->setBounds(gfx::Rect(0, 0, JI_SCREEN_W*9/10, JI_SCREEN_H*6/10));
+      wid_console->setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
       wid_console->centerWindow();
       wid_console->invalidate();
     }

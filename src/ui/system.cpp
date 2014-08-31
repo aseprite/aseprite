@@ -28,17 +28,11 @@
 
 namespace ui {
 
-/* Global output bitmap.  */
-
-BITMAP* ji_screen = NULL;
-int ji_screen_w = 0;
-int ji_screen_h = 0;
-
 bool dirty_display_flag = true;
 
-/* Global timer.  */
+// Global timer.
 
-volatile int ji_clock = 0;
+static volatile int clock_var = 0;
 
 // Current mouse cursor type.
 
@@ -66,7 +60,7 @@ static void update_mouse_position(const gfx::Point& pt);
 
 static void clock_inc()
 {
-  ji_clock++;
+  ++clock_var;
 }
 
 END_OF_STATIC_FUNCTION(clock_inc);
@@ -86,7 +80,7 @@ static void update_mouse_overlay(Cursor* cursor)
     }
     else {
       mouse_cursor_overlay->setSurface(mouse_cursor->getSurface());
-      UpdateCursorOverlay();
+      update_cursor_overlay();
     }
   }
   else if (mouse_cursor_overlay) {
@@ -173,7 +167,7 @@ static void update_mouse_cursor()
 int _ji_system_init()
 {
   /* Install timer related stuff.  */
-  LOCK_VARIABLE(ji_clock);
+  LOCK_VARIABLE(clock_var);
   LOCK_VARIABLE(m_b);
   LOCK_FUNCTION(clock_inc);
 
@@ -197,25 +191,27 @@ void _ji_system_exit()
   remove_int(clock_inc);
 }
 
+int clock()
+{
+  return clock_var;
+}
+
 void set_display(she::Display* display)
 {
   CursorType cursor = jmouse_get_cursor();
 
   jmouse_set_cursor(kNoCursor);
   mouse_display = display;
-  ji_screen = (display ? reinterpret_cast<BITMAP*>(display->getSurface()->nativeHandle()): NULL);
-  ji_screen_w = (ji_screen ? ji_screen->w: 0);
-  ji_screen_h = (ji_screen ? ji_screen->h: 0);
 
-  if (ji_screen != NULL) {
+  if (display) {
     Manager* manager = Manager::getDefault();
     if (manager) {
       manager->setDisplay(display);
 
       // Update default-manager size
-      if ((manager->getBounds().w != JI_SCREEN_W ||
-           manager->getBounds().h != JI_SCREEN_H)) {
-        manager->setBounds(gfx::Rect(0, 0, JI_SCREEN_W, JI_SCREEN_H));
+      if ((manager->getBounds().w != ui::display_w() ||
+           manager->getBounds().h != ui::display_h())) {
+        manager->setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
       }
     }
 
@@ -223,7 +219,23 @@ void set_display(she::Display* display)
   }
 }
 
-void UpdateCursorOverlay()
+int display_w()
+{
+  if (mouse_display)
+    return mouse_display->width() / mouse_display->scale();
+  else
+    return 1;
+}
+
+int display_h()
+{
+  if (mouse_display)
+    return mouse_display->height() / mouse_display->scale();
+  else
+    return 1;
+}
+
+void update_cursor_overlay()
 {
   if (mouse_cursor_overlay != NULL && mouse_scares == 0) {
     gfx::Point newPos(m_x[0]-mouse_cursor->getFocus().x,
@@ -285,8 +297,8 @@ bool jmouse_is_shown()
 static gfx::Point allegro_mouse_point()
 {
   return gfx::Point(
-    (int)JI_SCREEN_W * mouse_x / SCREEN_W,
-    (int)JI_SCREEN_W * mouse_y / SCREEN_W);
+    (int)ui::display_w() * mouse_x / SCREEN_W,
+    (int)ui::display_w() * mouse_y / SCREEN_W);
 }
 
 /**
@@ -368,7 +380,7 @@ static void update_mouse_position(const gfx::Point& pt)
   m_x[0] = pt.x;
   m_y[0] = pt.y;
 
-  if (is_windowed_mode()) {
+  if (is_windowed_mode()) {     // TODO move this to "she" module
 #ifdef WIN32
     // This help us (on Windows) to get mouse feedback when we capture
     // the mouse but we are outside the window.
@@ -383,8 +395,8 @@ static void update_mouse_position(const gfx::Point& pt)
         // mouse outside the screen (right-bottom corder).
         if (!Manager::getDefault()->getCapture()) {
           if (mouse_cursor) {
-            m_x[0] = JI_SCREEN_W + mouse_cursor->getFocus().x;
-            m_y[0] = JI_SCREEN_H + mouse_cursor->getFocus().y;
+            m_x[0] = ui::display_w() + mouse_cursor->getFocus().x;
+            m_y[0] = ui::display_h() + mouse_cursor->getFocus().y;
           }
         }
         // If the mouse is captured we can put it in the edges of the
@@ -393,11 +405,11 @@ static void update_mouse_position(const gfx::Point& pt)
           pt.x -= rc.left;
           pt.y -= rc.top;
 
-          m_x[0] = JI_SCREEN_W * pt.x / SCREEN_W;
-          m_y[0] = JI_SCREEN_H * pt.y / SCREEN_H;
+          m_x[0] = ui::display_w() * pt.x / SCREEN_W;
+          m_y[0] = ui::display_h() * pt.y / SCREEN_H;
 
-          m_x[0] = MID(0, m_x[0], JI_SCREEN_W-1);
-          m_y[0] = MID(0, m_y[0], JI_SCREEN_H-1);
+          m_x[0] = MID(0, m_x[0], ui::display_w()-1);
+          m_y[0] = MID(0, m_y[0], ui::display_h()-1);
         }
       }
     }

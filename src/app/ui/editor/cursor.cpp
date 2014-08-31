@@ -107,11 +107,7 @@ static bool is_cursor_mask;
 
 static void update_cursor_color()
 {
-  if (ji_screen)
-    ui_cursor_color = color_utils::color_for_ui(cursor_color);
-  else
-    ui_cursor_color = 0;
-
+  ui_cursor_color = color_utils::color_for_ui(cursor_color);
   is_cursor_mask = (cursor_color.getType() == app::Color::MaskType);
 }
 

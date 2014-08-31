@@ -560,7 +560,7 @@ gfx::Rect ComboBox::getListBoxPos() const
                gfx::Point(m_button->getBounds().x2(),
                           m_entry->getBounds().y2()+m_window->getBounds().h));
 
-  if (rc.y2() > JI_SCREEN_H)
+  if (rc.y2() > ui::display_h())
     rc.offset(0, -(rc.h + m_entry->getBounds().h));
 
   return rc;

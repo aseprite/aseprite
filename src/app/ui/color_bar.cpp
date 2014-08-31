@@ -195,7 +195,7 @@ void ColorBar::onPaletteButtonDropDownClick()
 
     m_palettePopup.showPopup(
       gfx::Rect(bounds.x+bounds.w, bounds.y,
-        JI_SCREEN_W/2, JI_SCREEN_H/2));
+        ui::display_w()/2, ui::display_h()/2));
   }
   else {
     m_palettePopup.closeWindow(NULL);

@@ -62,8 +62,8 @@ public:
     , m_sprite(editor->sprite())
     , m_pal(m_sprite->getPalette(editor->frame()))
     , m_index_bg_color(-1)
-    , m_doublebuf(Image::create(IMAGE_RGB, JI_SCREEN_W, JI_SCREEN_H))
-    , m_doublesur(she::instance()->createRgbaSurface(JI_SCREEN_W, JI_SCREEN_H)) {
+    , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
+    , m_doublesur(she::instance()->createRgbaSurface(ui::display_w(), ui::display_h())) {
     // Do not use DocumentWriter (do not lock the document) because we
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
@@ -214,16 +214,16 @@ protected:
         RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, y, m_zoom);
         break;
       case TILED_X_AXIS:
-        for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+        for (u=x-w; u<ui::display_w()+w; u+=w)
           RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, y, m_zoom);
         break;
       case TILED_Y_AXIS:
-        for (v=y-h; v<JI_SCREEN_H+h; v+=h)
+        for (v=y-h; v<ui::display_h()+h; v+=h)
           RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, v, m_zoom);
         break;
       case TILED_BOTH:
-        for (v=y-h; v<JI_SCREEN_H+h; v+=h)
-          for (u=x-w; u<JI_SCREEN_W+w; u+=w)
+        for (v=y-h; v<ui::display_h()+h; v+=h)
+          for (u=x-w; u<ui::display_w()+w; u+=w)
             RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, v, m_zoom);
         break;
     }

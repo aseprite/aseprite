@@ -108,8 +108,9 @@ private:
 
 class EditorPostRenderImpl : public EditorPostRender {
 public:
-  EditorPostRenderImpl(Editor* editor)
+  EditorPostRenderImpl(Editor* editor, Graphics* g)
     : m_editor(editor)
+    , m_g(g)
   {
   }
 
@@ -118,16 +119,17 @@ public:
     return m_editor;
   }
 
-  void drawLine(int x1, int y1, int x2, int y2, int screenColor)
+  void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor)
   {
     int u1, v1, u2, v2;
     m_editor->editorToScreen(x1, y1, &u1, &v1);
     m_editor->editorToScreen(x2, y2, &u2, &v2);
-    line(ji_screen, u1, v1, u2, v2, screenColor);
+    m_g->drawLine(screenColor, gfx::Point(u1, v1), gfx::Point(u2, v2));
   }
 
 private:
   Editor* m_editor;
+  Graphics* m_g;
 };
 
 Editor::Editor(Document* document, EditorFlags flags)
@@ -493,7 +495,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
 
   // Post-render decorator.
   if ((m_flags & kShowDecorators) && m_decorator) {
-    EditorPostRenderImpl postRender(this);
+    EditorPostRenderImpl postRender(this, g);
     m_decorator->postRenderDecorator(&postRender);
   }
 }

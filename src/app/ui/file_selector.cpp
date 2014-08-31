@@ -316,7 +316,7 @@ std::string FileSelector::show(const std::string& title,
 
   PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
-  setMinSize(gfx::Size(JI_SCREEN_W*9/10, JI_SCREEN_H*9/10));
+  setMinSize(gfx::Size(ui::display_w()*9/10, ui::display_h()*9/10));
   remapWindow();
   centerWindow();
 

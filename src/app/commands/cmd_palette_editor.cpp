@@ -211,10 +211,11 @@ void PaletteEditorCommand::onExecute(Context* context)
       // Default bounds
       g_window->remapWindow();
 
-      int width = MAX(g_window->getBounds().w, JI_SCREEN_W/2);
-      g_window->setBounds(Rect(JI_SCREEN_W - width - ToolBar::instance()->getBounds().w,
-                               JI_SCREEN_H - g_window->getBounds().h - StatusBar::instance()->getBounds().h,
-                               width, g_window->getBounds().h));
+      int width = MAX(g_window->getBounds().w, ui::display_w()/2);
+      g_window->setBounds(Rect(
+          ui::display_w() - width - ToolBar::instance()->getBounds().w,
+          ui::display_h() - g_window->getBounds().h - StatusBar::instance()->getBounds().h,
+          width, g_window->getBounds().h));
 
       // Load window configuration
       load_window_pos(g_window, "PaletteEditor");
@@ -488,8 +489,8 @@ void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
       gfx::Rect rect(getOrigin(), gfx::Size(getBounds().w, reqSize.h));
 
       // Show the expanded area inside the screen
-      if (rect.y2() > JI_SCREEN_H)
-        rect.offset(0, JI_SCREEN_H - rect.y2());
+      if (rect.y2() > ui::display_h())
+        rect.offset(0, ui::display_h() - rect.y2());
 
       moveWindow(rect);
     }

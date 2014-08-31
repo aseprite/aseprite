@@ -152,13 +152,13 @@ bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
     case kOpenMessage:
       {
         // Default bounds
-        int width = JI_SCREEN_W/4;
-        int height = JI_SCREEN_H/4;
+        int width = ui::display_w()/4;
+        int height = ui::display_h()/4;
         int extra = 2*kEditorViewScrollbarWidth*jguiscale();
         setBounds(
           gfx::Rect(
-            JI_SCREEN_W - width - ToolBar::instance()->getBounds().w - extra,
-            JI_SCREEN_H - height - StatusBar::instance()->getBounds().h - extra,
+            ui::display_w() - width - ToolBar::instance()->getBounds().w - extra,
+            ui::display_h() - height - StatusBar::instance()->getBounds().h - extra,
             width, height));
 
         load_window_pos(this, "MiniEditor");
@@ -203,7 +203,7 @@ void MiniEditorWindow::onPlayClicked()
     else
       m_nextFrameTime = -1;
 
-    m_curFrameTick = ji_clock;
+    m_curFrameTick = ui::clock();
     m_pingPongForward = true;
 
     m_playTimer.start();
@@ -271,7 +271,7 @@ void MiniEditorWindow::onPlaybackTick()
     return;
 
   if (m_nextFrameTime >= 0) {
-    m_nextFrameTime -= (ji_clock - m_curFrameTick);
+    m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
     while (m_nextFrameTime <= 0) {
       FrameNumber frame = calculate_next_frame(
@@ -285,7 +285,7 @@ void MiniEditorWindow::onPlaybackTick()
       m_nextFrameTime += miniEditor->sprite()->getFrameDuration(frame);
     }
 
-    m_curFrameTick = ji_clock;
+    m_curFrameTick = ui::clock();
   }
 
   invalidate();

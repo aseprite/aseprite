@@ -33,7 +33,7 @@ namespace app {
 
   class ColorCurveEditor : public ui::Widget {
   public:
-    ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, int y2);
+    ColorCurveEditor(ColorCurve* curve, const gfx::Rect& viewBounds);
 
     ColorCurve* getCurve() const { return m_curve; }
 
@@ -42,18 +42,19 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onPaint(ui::PaintEvent& ev) override;
 
   private:
-    gfx::Point* getClosestPoint(int x, int y, int** edit_x, int** edit_y);
-    int editNodeManually(gfx::Point& point);
+    gfx::Point* getClosestPoint(const gfx::Point& viewPt);
+    bool editNodeManually(gfx::Point& viewPt);
+    gfx::Point viewToClient(const gfx::Point& viewPt);
+    gfx::Point screenToView(const gfx::Point& screenPt);
+    gfx::Point clientToView(const gfx::Point& clientPt);
 
     ColorCurve* m_curve;
-    int m_x1, m_y1;
-    int m_x2, m_y2;
     int m_status;
+    gfx::Rect m_viewBounds;
     gfx::Point* m_editPoint;
-    int* m_editX;
-    int* m_editY;
   };
 
 } // namespace app

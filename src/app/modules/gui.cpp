@@ -218,7 +218,6 @@ int init_module_gui()
   if (maximized)
     main_display->maximize();
 
-  // Configure ji_screen
   gui_setup_screen(true);
 
   // Set graphics options for next time
@@ -311,7 +310,7 @@ void gui_feedback()
   Manager* manager = Manager::getDefault();
   OverlayManager* overlays = OverlayManager::instance();
 
-  ui::UpdateCursorOverlay();
+  ui::update_cursor_overlay();
 
   // Avoid updating a non-dirty screen over and over again.
 #if 0                           // TODO It doesn't work yet
@@ -335,8 +334,7 @@ void gui_feedback()
   dirty_display_flag = false;
 }
 
-// Sets the ji_screen variable. This routine should be called
-// everytime you changes the graphics mode.
+// Refresh the UI display, font, etc.
 void gui_setup_screen(bool reload_font)
 {
   bool regen = false;
@@ -348,8 +346,8 @@ void gui_setup_screen(bool reload_font)
   // Update guiscale factor
   int old_guiscale = jguiscale();
   CurrentTheme::get()->guiscale = (screen_scaling == 1 &&
-                                   JI_SCREEN_W > 512 &&
-                                   JI_SCREEN_H > 256) ? 2: 1;
+    ui::display_w() > 512 &&
+    ui::display_h() > 256) ? 2: 1;
 
   // If the guiscale have changed
   if (old_guiscale != jguiscale()) {
@@ -396,11 +394,11 @@ void load_window_pos(Widget* window, const char *section)
   // Load configurated position
   pos = get_config_rect(section, "WindowPos", pos);
 
-  pos.w = MID(orig_pos.w, pos.w, JI_SCREEN_W);
-  pos.h = MID(orig_pos.h, pos.h, JI_SCREEN_H);
+  pos.w = MID(orig_pos.w, pos.w, ui::display_w());
+  pos.h = MID(orig_pos.h, pos.h, ui::display_h());
 
-  pos.setOrigin(Point(MID(0, pos.x, JI_SCREEN_W-pos.w),
-                      MID(0, pos.y, JI_SCREEN_H-pos.h)));
+  pos.setOrigin(Point(MID(0, pos.x, ui::display_w()-pos.w),
+      MID(0, pos.y, ui::display_h()-pos.h)));
 
   window->setBounds(pos);
 }

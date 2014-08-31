@@ -15,36 +15,29 @@
 
 struct BITMAP;
 
-#define JI_SCREEN_W ui::ji_screen_w
-#define JI_SCREEN_H ui::ji_screen_h
-
 namespace she { class Display; }
 
 namespace ui {
 
   class Widget;
 
-  // Screen related
-
-  extern struct BITMAP* ji_screen;
-  extern int ji_screen_w;
-  extern int ji_screen_h;
-
   // Simple flag to indicate that something in the screen was modified
   // so a flip to the real screen is needed.
   extern bool dirty_display_flag;
 
   void set_display(she::Display* display);
+  int display_w();
+  int display_h();
 
   // Timer related
 
-  extern int volatile ji_clock;   /* in milliseconds */
+  int clock();
 
   // Mouse related
 
   // Updates the position of the mouse cursor overlay depending on the
   // current mouse position.
-  void UpdateCursorOverlay();
+  void update_cursor_overlay();
 
   void set_use_native_cursors(bool state);
   CursorType jmouse_get_cursor();

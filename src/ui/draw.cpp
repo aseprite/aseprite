@@ -11,8 +11,12 @@
 #include "ui/draw.h"
 
 #include "ui/intern.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/widget.h"
+
+#include "she/display.h"
+#include "she/surface.h"
 
 #include <allegro.h>
 #include <vector>
@@ -23,12 +27,22 @@ using namespace gfx;
 
 void _move_region(const Region& region, int dx, int dy)
 {
+  ASSERT(Manager::getDefault());
+  if (!Manager::getDefault())
+    return;
+
+  she::Display* display = Manager::getDefault()->getDisplay();
+  ASSERT(display);
+  if (!display)
+    return;
+
+  BITMAP* native_bmp = reinterpret_cast<BITMAP*>(display->getSurface()->nativeHandle());
   size_t nrects = region.size();
 
   // Blit directly screen to screen.
-  if (is_linear_bitmap(ji_screen) && nrects == 1) {
+  if (is_linear_bitmap(native_bmp) && nrects == 1) {
     Rect rc = region[0];
-    blit(ji_screen, ji_screen, rc.x, rc.y, rc.x+dx, rc.y+dy, rc.w, rc.h);
+    blit(native_bmp, native_bmp, rc.x, rc.y, rc.x+dx, rc.y+dy, rc.w, rc.h);
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {
@@ -40,14 +54,14 @@ void _move_region(const Region& region, int dx, int dy)
     for (c=0, it=begin; it != end; ++it, ++c) {
       const Rect& rc = *it;
       bmp = create_bitmap(rc.w, rc.h);
-      blit(ji_screen, bmp, rc.x, rc.y, 0, 0, bmp->w, bmp->h);
+      blit(native_bmp, bmp, rc.x, rc.y, 0, 0, bmp->w, bmp->h);
       images[c] = bmp;
     }
 
     for (c=0, it=begin; it != end; ++it, ++c) {
       const Rect& rc = *it;
       bmp = images[c];
-      blit(bmp, ji_screen, 0, 0, rc.x+dx, rc.y+dy, bmp->w, bmp->h);
+      blit(bmp, native_bmp, 0, 0, rc.x+dx, rc.y+dy, bmp->w, bmp->h);
       destroy_bitmap(bmp);
     }
   }

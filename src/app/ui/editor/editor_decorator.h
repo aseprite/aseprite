@@ -20,6 +20,7 @@
 #define APP_UI_EDITOR_EDITOR_DECORATOR_H_INCLUDED
 #pragma once
 
+#include "gfx/color.h"
 #include "gfx/rect.h"
 
 namespace raster {
@@ -47,7 +48,7 @@ namespace app {
   public:
     virtual ~EditorPostRender() { }
     virtual Editor* getEditor() = 0;
-    virtual void drawLine(int x1, int y1, int x2, int y2, int screenColor) = 0;
+    virtual void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor) = 0;
   };
 
   // Used by editor's states to pre- and post-render customized

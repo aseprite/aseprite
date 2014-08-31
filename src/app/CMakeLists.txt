@@ -127,7 +127,6 @@ add_library(app-lib
   file_selector.cpp
   file_system.cpp
   flatten.cpp
-  gfxmode.cpp
   gui_xml.cpp
   handle_anidir.cpp
   ini_file.cpp

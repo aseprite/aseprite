@@ -393,7 +393,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
     + 2*jguiscale()
     + border_width.r;
 
-  w = MIN(w, JI_SCREEN_W/2);
+  w = MIN(w, ui::display_w()/2);
 
   int h =
     + border_width.t

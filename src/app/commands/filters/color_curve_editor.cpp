@@ -20,51 +20,26 @@
 #include "config.h"
 #endif
 
+#include "app/commands/filters/color_curve_editor.h"
+
 #include "app/find_widget.h"
 #include "app/load_widget.h"
-#include "app/commands/filters/color_curve_editor.h"
 #include "filters/color_curve.h"
 #include "ui/alert.h"
 #include "ui/entry.h"
 #include "ui/manager.h"
 #include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include <allegro.h>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
-
-#define SCR2EDIT_X(xpos)                                        \
-  (m_x1 +                                                       \
-   ((m_x2 - m_x1 + 1)                                           \
-    * ((xpos) - getBounds().x - border_width.l)                 \
-    / (getBounds().w - border_width.l - border_width.r)))
-
-#define SCR2EDIT_Y(ypos)                                        \
-  (m_y1 +                                                       \
-   ((m_y2 - m_y1 + 1)                                           \
-    * ((getBounds().h - border_width.t - border_width.b)        \
-       - ((ypos) - getBounds().y - border_width.t))             \
-    / (getBounds().h - border_width.t - border_width.b)))
-
-#define EDIT2SCR_X(xpos)                                        \
-  (getBounds().x + border_width.l                               \
-   + ((getBounds().w - border_width.l - border_width.r)         \
-      * ((xpos) - m_x1)                                         \
-      / (m_x2 - m_x1 + 1)))
-
-#define EDIT2SCR_Y(ypos)                                          \
-  (getBounds().y                                                  \
-   + (getBounds().h - border_width.t - border_width.b)            \
-   - ((getBounds().h - border_width.t - border_width.b)           \
-      * ((ypos) - m_y1)                                           \
-      / (m_y2 - m_y1 + 1)))
 
 namespace app {
 
@@ -77,26 +52,23 @@ enum {
   STATUS_SCALING,
 };
 
-ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, int x1, int y1, int x2, int y2)
+ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, const gfx::Rect& viewBounds)
   : Widget(kGenericWidget)
   , m_curve(curve)
+  , m_viewBounds(viewBounds)
+  , m_editPoint(NULL)
 {
-  this->setFocusStop(true);
+  setFocusStop(true);
+  setDoubleBuffered(true);
 
   border_width.l = border_width.r = 1;
   border_width.t = border_width.b = 1;
   child_spacing = 0;
 
-  m_curve = curve;
-  m_x1 = x1;
-  m_y1 = y1;
-  m_x2 = x2;
-  m_y2 = y2;
   m_status = STATUS_STANDBY;
-  m_editPoint = NULL;
 
-  /* TODO */
-  /* m_curve->type = CURVE_SPLINE; */
+  // TODO
+  // m_curve->type = CURVE_SPLINE;
 }
 
 bool ColorCurveEditor::onProcessMessage(Message* msg)
@@ -107,11 +79,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeyInsert: {
-          int x = SCR2EDIT_X(jmouse_x(0));
-          int y = SCR2EDIT_Y(jmouse_y(0));
-
           // TODO undo?
-          m_curve->addPoint(gfx::Point(x, y));
+          m_curve->addPoint(screenToView(get_mouse_position()));
 
           invalidate();
           CurveEditorChange();
@@ -119,9 +88,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
         }
 
         case kKeyDel: {
-          gfx::Point* point = getClosestPoint(SCR2EDIT_X(jmouse_x(0)),
-                                              SCR2EDIT_Y(jmouse_y(0)),
-                                              NULL, NULL);
+          gfx::Point* point = getClosestPoint(screenToView(get_mouse_position()));
 
           // TODO undo?
           if (point) {
@@ -140,92 +107,34 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       return true;
     }
 
-    case kPaintMessage: {
-      BITMAP *bmp;
-      int x, y, u;
+    case kMouseDownMessage: {
+      gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
+      m_editPoint = getClosestPoint(screenToView(mousePos));
+      if (!m_editPoint)
+        break;
 
-      bmp = create_bitmap(getBounds().w, getBounds().h);
-      clear_to_color(bmp, makecol (0, 0, 0));
-
-      // Draw border
-      rect(bmp, 0, 0, bmp->w-1, bmp->h-1, makecol (255, 255, 0));
-
-      // Draw guides
-      for (x=1; x<=3; x++)
-        vline(bmp, x*bmp->w/4, 1, bmp->h-2, makecol (128, 128, 0));
-
-      for (y=1; y<=3; y++)
-        hline(bmp, 1, y*bmp->h/4, bmp->w-2, makecol (128, 128, 0));
-
-      // Get curve values
-      std::vector<int> values(m_x2-m_x1+1);
-      m_curve->getValues(m_x1, m_x2, values);
-
-      // Draw curve
-      for (x=border_width.l;
-           x<getBounds().w-border_width.r; x++) {
-        u = SCR2EDIT_X(getBounds().x+x);
-        u = MID(m_x1, u, m_x2);
-
-        y = values[u - m_x1];
-        y = MID(m_y1, y, m_y2);
-
-        putpixel(bmp, x, EDIT2SCR_Y(y)-getBounds().y,
-                 makecol(255, 255, 255));
-      }
-
-      // Draw nodes
-      for (ColorCurve::iterator it = m_curve->begin(), end = m_curve->end(); it != end; ++it) {
-        const gfx::Point& point = *it;
-
-        x = EDIT2SCR_X(point.x) - getBounds().x;
-        y = EDIT2SCR_Y(point.y) - getBounds().y;
-
-        rect(bmp, x-2, y-2, x+2, y+2,
-             m_editPoint == &point ? makecol(255, 255, 0):
-                                     makecol(0, 0, 255));
-      }
-
-      // Blit to screen
-      blit(bmp, ji_screen, 0, 0, getBounds().x, getBounds().y, bmp->w, bmp->h);
-      destroy_bitmap(bmp);
-      return true;
-    }
-
-    case kMouseDownMessage:
       // Show manual-entry dialog
       if (static_cast<MouseMessage*>(msg)->right()) {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        m_editPoint = getClosestPoint(SCR2EDIT_X(mousePos.x),
-                                      SCR2EDIT_Y(mousePos.y),
-                                      NULL, NULL);
-        if (m_editPoint) {
-          invalidate();
-          this->flushRedraw();
+        invalidate();
+        flushRedraw();
 
-          if (editNodeManually(*m_editPoint))
-            CurveEditorChange();
+        if (editNodeManually(*m_editPoint))
+          CurveEditorChange();
 
-          m_editPoint = NULL;
-          invalidate();
-        }
-
+        m_editPoint = NULL;
+        invalidate();
         return true;
       }
       // Edit node
       else {
-        gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        m_editPoint = getClosestPoint(SCR2EDIT_X(mousePos.x),
-                                      SCR2EDIT_Y(mousePos.y),
-                                      &m_editX,
-                                      &m_editY);
-
         m_status = STATUS_MOVING_POINT;
         jmouse_set_cursor(kHandCursor);
       }
 
       captureMouse();
+
       // continue in motion message...
+    }
 
     case kMouseMoveMessage:
       if (hasCapture()) {
@@ -234,10 +143,9 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           case STATUS_MOVING_POINT:
             if (m_editPoint) {
               gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-              *m_editX = SCR2EDIT_X(mousePos.x);
-              *m_editY = SCR2EDIT_Y(mousePos.y);
-              *m_editX = MID(m_x1, *m_editX, m_x2);
-              *m_editY = MID(m_y1, *m_editY, m_y2);
+              *m_editPoint = screenToView(mousePos);
+              m_editPoint->x = MID(m_viewBounds.x, m_editPoint->x, m_viewBounds.x+m_viewBounds.w-1);
+              m_editPoint->y = MID(m_viewBounds.y, m_editPoint->y, m_viewBounds.y+m_viewBounds.h-1);
 
               // TODO this should be optional
               CurveEditorChange();
@@ -245,6 +153,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
               invalidate();
             }
             break;
+
         }
 
         return true;
@@ -260,7 +169,6 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
           case STATUS_MOVING_POINT:
             jmouse_set_cursor(kArrowCursor);
             CurveEditorChange();
-
             m_editPoint = NULL;
             invalidate();
             break;
@@ -281,39 +189,74 @@ void ColorCurveEditor::onPreferredSize(PreferredSizeEvent& ev)
                                 border_width.t + 1 + border_width.b));
 }
 
-gfx::Point* ColorCurveEditor::getClosestPoint(int x, int y, int** edit_x, int** edit_y)
+void ColorCurveEditor::onPaint(ui::PaintEvent& ev)
 {
-#define CALCDIST(xx, yy)                                \
-  dx = point->xx-x;                                     \
-  dy = point->yy-y;                                     \
-  dist = std::sqrt(static_cast<double>(dx*dx + dy*dy)); \
-                                                        \
-  if (!point_found || dist <= dist_min) {               \
-    point_found = point;                                \
-    dist_min = dist;                                    \
-                                                        \
-    if (edit_x) *edit_x = &point->xx;                   \
-    if (edit_y) *edit_y = &point->yy;                   \
+  ui::Graphics* g = ev.getGraphics();
+  gfx::Rect rc = getClientBounds();
+  gfx::Rect client = getClientChildrenBounds();
+  gfx::Point pt;
+  int c;
+
+  g->fillRect(gfx::rgba(0, 0, 0), rc);
+  g->drawRect(gfx::rgba(255, 255, 0), rc);
+
+  // Draw guides
+  for (c=1; c<=3; c++)
+    g->drawVLine(gfx::rgba(128, 128, 0), c*client.w/4, client.y, client.h);
+
+  for (c=1; c<=3; c++)
+    g->drawHLine(gfx::rgba(128, 128, 0), client.x, c*client.h/4, client.w);
+
+  // Get curve values
+  std::vector<int> values(m_viewBounds.w);
+  m_curve->getValues(m_viewBounds.x, m_viewBounds.x+m_viewBounds.w-1, values);
+
+  // Draw curve
+  for (c = client.x; c < client.x+client.w; ++c) {
+    pt = clientToView(gfx::Point(c, 0));
+    pt.x = MID(m_viewBounds.x, pt.x, m_viewBounds.x+m_viewBounds.w-1);
+    pt.y = values[pt.x - m_viewBounds.x];
+    pt.y = MID(m_viewBounds.y, pt.y, m_viewBounds.y+m_viewBounds.h-1);
+    pt = viewToClient(pt);
+
+    g->putPixel(gfx::rgba(255, 255, 255), c, pt.y);
   }
 
-  gfx::Point* point;
-  gfx::Point* point_found = NULL;
-  int dx, dy;
-  double dist, dist_min = 0;
+  // Draw nodes
+  for (const gfx::Point& point : *m_curve) {
+    pt = viewToClient(point);
+    g->drawRect(
+      m_editPoint == &point ?
+        gfx::rgba(255, 255, 0):
+        gfx::rgba(0, 0, 255),
+      gfx::Rect(pt.x-2, pt.y-2, 5, 5));
+  }
+}
 
-  for (ColorCurve::iterator it = m_curve->begin(), end = m_curve->end(); it != end; ++it) {
-    point = &(*it);
-    CALCDIST(x, y);
+gfx::Point* ColorCurveEditor::getClosestPoint(const gfx::Point& viewPt)
+{
+  gfx::Point* point_found = NULL;
+  double dist_min = 0;
+
+  for (gfx::Point& point : *m_curve) {
+    int dx = point.x - viewPt.x;
+    int dy = point.y - viewPt.y;
+    double dist = std::sqrt(static_cast<double>(dx*dx + dy*dy));
+ 
+    if (!point_found || dist <= dist_min) {
+      point_found = &point;
+      dist_min = dist;
+    }
   }
 
   return point_found;
 }
 
-int ColorCurveEditor::editNodeManually(gfx::Point& point)
+bool ColorCurveEditor::editNodeManually(gfx::Point& viewPt)
 {
   Widget* entry_x, *entry_y, *button_ok;
-  gfx::Point point_copy = point;
-  int res;
+  gfx::Point point_copy = viewPt;
+  bool res;
 
   base::UniquePtr<Window> window(app::load_widget<Window>("color_curve.xml", "point_properties"));
 
@@ -321,22 +264,43 @@ int ColorCurveEditor::editNodeManually(gfx::Point& point)
   entry_y = window->findChild("y");
   button_ok = window->findChild("button_ok");
 
-  entry_x->setTextf("%d", point.x);
-  entry_y->setTextf("%d", point.y);
+  entry_x->setTextf("%d", viewPt.x);
+  entry_y->setTextf("%d", viewPt.y);
 
   window->openWindowInForeground();
 
   if (window->getKiller() == button_ok) {
-    point.x = entry_x->getTextDouble();
-    point.y = entry_y->getTextDouble();
+    viewPt.x = entry_x->getTextDouble();
+    viewPt.y = entry_y->getTextDouble();
     res = true;
   }
   else {
-    point = point_copy;
+    viewPt = point_copy;
     res = false;
   }
 
   return res;
+}
+
+gfx::Point ColorCurveEditor::viewToClient(const gfx::Point& viewPt)
+{
+  gfx::Rect client = getClientChildrenBounds();
+  return gfx::Point(
+    client.x + client.w * (viewPt.x - m_viewBounds.x) / m_viewBounds.w,
+    client.y + client.h-1 - (client.h-1) * (viewPt.y - m_viewBounds.y) / m_viewBounds.h);
+}
+
+gfx::Point ColorCurveEditor::screenToView(const gfx::Point& screenPt)
+{
+  return clientToView(screenPt - getBounds().getOrigin());
+}
+
+gfx::Point ColorCurveEditor::clientToView(const gfx::Point& clientPt)
+{
+  gfx::Rect client = getClientChildrenBounds();
+  return gfx::Point(
+    m_viewBounds.x + m_viewBounds.w * (clientPt.x - client.x) / client.w,
+    m_viewBounds.y + m_viewBounds.h-1 - (m_viewBounds.h-1) * (clientPt.y - client.y) / client.h);
 }
 
 } // namespace app

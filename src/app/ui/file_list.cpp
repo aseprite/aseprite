@@ -239,7 +239,7 @@ bool FileList::onProcessMessage(Message* msg)
                  utolower(unicodeChar) <= 'z') ||
                 (utolower(unicodeChar) >= '0' &&
                  utolower(unicodeChar) <= '9')) {
-              if (ji_clock - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
+              if (ui::clock() - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 
               m_isearch.push_back(unicodeChar);
@@ -257,7 +257,7 @@ bool FileList::onProcessMessage(Message* msg)
                   break;
                 }
               }
-              m_isearchClock = ji_clock;
+              m_isearchClock = ui::clock();
               // Go to selectIndex...
             }
             else

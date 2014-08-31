@@ -571,8 +571,8 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);
   int y = toolrc.y + toolrc.h;
 
-  m_tipWindow->positionWindow(MID(0, x, JI_SCREEN_W-w),
-                              MID(0, y, JI_SCREEN_H-h));
+  m_tipWindow->positionWindow(MID(0, x, ui::display_w()-w),
+    MID(0, y, ui::display_h()-h));
 
   if (m_tipOpened)
     m_tipWindow->openWindow();

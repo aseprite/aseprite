@@ -56,7 +56,7 @@ public:
                    WithChannelsSelector,
                    WithoutTiledCheckBox)
     , m_filter(filter)
-    , m_editor(filter.getCurve(), 0, 0, 255, 255)
+    , m_editor(filter.getCurve(), gfx::Rect(0, 0, 256, 256))
   {
     m_view.attachToView(&m_editor);
     m_view.setExpansive(true);

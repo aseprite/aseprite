@@ -212,7 +212,7 @@ StatusBar::StatusBar()
     ICON_NEW(m_b_last, PART_ANI_LAST, ACTION_LAST);
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
-    m_slider->setMinSize(gfx::Size(JI_SCREEN_W/5, 0));
+    m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
     box2->noBorderNoChildSpacing();
@@ -288,7 +288,7 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
   // TODO this call should be in an observer of the "current frame" property changes.
   updateCurrentFrame();
 
-  if ((ji_clock > m_timeout) || (msecs > 0)) {
+  if ((ui::clock() > m_timeout) || (msecs > 0)) {
     char buf[256];              // TODO warning buffer overflow
     va_list ap;
 
@@ -296,7 +296,7 @@ bool StatusBar::setStatusText(int msecs, const char *format, ...)
     vsprintf(buf, format, ap);
     va_end(ap);
 
-    m_timeout = ji_clock + msecs;
+    m_timeout = ui::clock() + msecs;
     m_state = SHOW_TEXT;
 
     setText(buf);
@@ -340,7 +340,7 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   m_tipwindow->startTimer();
 
   // Set the text in status-bar (with inmediate timeout)
-  m_timeout = ji_clock;
+  m_timeout = ui::clock();
   setText(buf);
   invalidate();
 }

@@ -285,8 +285,8 @@ void Menu::showPopup(int x, int y)
   window->remapWindow();
 
   // Menubox position
-  window->positionWindow(MID(0, x, JI_SCREEN_W-window->getBounds().w),
-                         MID(0, y, JI_SCREEN_H-window->getBounds().h));
+  window->positionWindow(MID(0, x, ui::display_w()-window->getBounds().w),
+    MID(0, y, ui::display_h()-window->getBounds().h));
 
   // Set the focus to the new menubox
   Manager::getDefault()->setFocus(menubox);
@@ -721,8 +721,8 @@ bool MenuItem::onProcessMessage(Message* msg)
         Rect pos = window->getBounds();
 
         if (this->getParent()->getParent()->type == kMenuBarWidget) {
-          pos.x = MID(0, getBounds().x, JI_SCREEN_W-pos.w);
-          pos.y = MID(0, getBounds().y2(), JI_SCREEN_H-pos.h);
+          pos.x = MID(0, getBounds().x, ui::display_w()-pos.w);
+          pos.y = MID(0, getBounds().y2(), ui::display_h()-pos.h);
         }
         else {
           int x_left = getBounds().x - pos.w;
@@ -730,9 +730,9 @@ bool MenuItem::onProcessMessage(Message* msg)
           int x, y = getBounds().y;
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
-          r1.x = x_left = MID(0, x_left, JI_SCREEN_W-pos.w);
-          r2.x = x_right = MID(0, x_right, JI_SCREEN_W-pos.w);
-          r1.y = r2.y = y = MID(0, y, JI_SCREEN_H-pos.h);
+          r1.x = x_left = MID(0, x_left, ui::display_w()-pos.w);
+          r2.x = x_right = MID(0, x_right, ui::display_w()-pos.w);
+          r1.y = r2.y = y = MID(0, y, ui::display_h()-pos.h);
 
           // Calculate both intersections
           gfx::Rect s1 = r1.createIntersect(old_pos);
