@@ -292,7 +292,7 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
   if (buttons & kButtonRight) {
     Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
     if (popup_menu != NULL) {
-      popup_menu->showPopup(jmouse_x(0), jmouse_y(0));
+      popup_menu->showPopup(ui::get_mouse_position());
     }
   }
   // Middle-button: close the sprite

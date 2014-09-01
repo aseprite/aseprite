@@ -56,40 +56,41 @@ namespace ui {
     virtual void onEntryChange();
 
   private:
-    struct EntryCmd {
-      enum Type {
-        NoOp,
-        InsertChar,
-        ForwardChar,
-        ForwardWord,
-        BackwardChar,
-        BackwardWord,
-        BeginningOfLine,
-        EndOfLine,
-        DeleteForward,
-        DeleteBackward,
-        Cut,
-        Copy,
-        Paste,
-      };
+    enum class EntryCmd {
+      NoOp,
+      InsertChar,
+      ForwardChar,
+      ForwardWord,
+      BackwardChar,
+      BackwardWord,
+      BeginningOfLine,
+      EndOfLine,
+      DeleteForward,
+      DeleteBackward,
+      Cut,
+      Copy,
+      Paste,
     };
 
     int getCaretFromMouse(MouseMessage* mousemsg);
-    void executeCmd(EntryCmd::Type cmd, int ascii, bool shift_pressed);
+    void executeCmd(EntryCmd cmd, int ascii, bool shift_pressed);
     void forwardWord();
     void backwardWord();
     int getAvailableTextLength();
+    bool isPosInSelection(int pos);
+    void showEditPopupMenu(const gfx::Point& pt);
 
+    Timer m_timer;
     size_t m_maxsize;
     int m_caret;
     int m_scroll;
     int m_select;
-    Timer m_timer;
-    bool m_hidden : 1;
-    bool m_state : 1;             // show or not the text caret
-    bool m_readonly : 1;
-    bool m_password : 1;
-    bool m_recent_focused : 1;
+    bool m_hidden;
+    bool m_state;             // show or not the text caret
+    bool m_readonly;
+    bool m_password;
+    bool m_recent_focused;
+    bool m_lock_selection;
     std::string m_suffix;
   };
 

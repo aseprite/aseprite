@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,21 +14,33 @@
 #include "she/font.h"
 #include "ui/clipboard.h"
 #include "ui/manager.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <cctype>
 #include <cstdarg>
 #include <cstdio>
-#include <cctype>
+#include <functional>
 
 namespace ui {
 
 Entry::Entry(size_t maxsize, const char *format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
+  , m_maxsize(maxsize)
+  , m_caret(0)
+  , m_scroll(0)
+  , m_select(0)
+  , m_hidden(false)
+  , m_state(false)
+  , m_readonly(false)
+  , m_password(false)
+  , m_recent_focused(false)
+  , m_lock_selection(false)
 {
   char buf[4096];
 
@@ -44,18 +56,8 @@ Entry::Entry(size_t maxsize, const char *format, ...)
     buf[0] = 0;
   }
 
-  m_maxsize = maxsize;
-  m_caret = 0;
-  m_scroll = 0;
-  m_select = 0;
-  m_hidden = false;
-  m_state = false;
-  m_password = false;
-  m_readonly = false;
-  m_recent_focused = false;
-
-  /* TODO support for text alignment and multi-line */
-  /* widget->align = JI_LEFT | JI_MIDDLE; */
+  // TODO support for text alignment and multi-line
+  // widget->align = JI_LEFT | JI_MIDDLE;
   setText(buf);
 
   setFocusStop(true);
@@ -194,8 +196,13 @@ bool Entry::onProcessMessage(Message* msg)
       m_state = true;
       invalidate();
 
-      selectText(0, -1);
-      m_recent_focused = true;
+      if (m_lock_selection) {
+        m_lock_selection = false;
+      }
+      else {
+        selectAllText();
+        m_recent_focused = true;
+      }
       break;
 
     case kFocusLeaveMessage:
@@ -203,14 +210,16 @@ bool Entry::onProcessMessage(Message* msg)
 
       m_timer.stop();
 
-      deselectText();
+      if (!m_lock_selection)
+        deselectText();
+
       m_recent_focused = false;
       break;
 
     case kKeyDownMessage:
       if (hasFocus() && !isReadOnly()) {
         // Command to execute
-        EntryCmd::Type cmd = EntryCmd::NoOp;
+        EntryCmd cmd = EntryCmd::NoOp;
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keymsg->scancode();
 
@@ -333,24 +342,27 @@ bool Entry::onProcessMessage(Message* msg)
           }
         }
 
-        // Move caret
-        if (move) {
-          c = getCaretFromMouse(static_cast<MouseMessage*>(msg));
+        c = getCaretFromMouse(static_cast<MouseMessage*>(msg));
 
-          if (m_caret != c) {
-            m_caret = c;
-            is_dirty = true;
-            invalidate();
+        if (static_cast<MouseMessage*>(msg)->left() ||
+            (move && !isPosInSelection(c))) {
+          // Move caret
+          if (move) {
+            if (m_caret != c) {
+              m_caret = c;
+              is_dirty = true;
+              invalidate();
+            }
           }
-        }
 
-        // Move selection
-        if (m_recent_focused) {
-          m_recent_focused = false;
-          m_select = m_caret;
+          // Move selection
+          if (m_recent_focused) {
+            m_recent_focused = false;
+            m_select = m_caret;
+          }
+          else if (msg->type() == kMouseDownMessage)
+            m_select = m_caret;
         }
-        else if (msg->type() == kMouseDownMessage)
-          m_select = m_caret;
 
         // Show the caret
         if (is_dirty) {
@@ -363,8 +375,18 @@ bool Entry::onProcessMessage(Message* msg)
       break;
 
     case kMouseUpMessage:
-      if (hasCapture())
+      if (hasCapture()) {
         releaseMouse();
+
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        if (mouseMsg->right()) {
+          // This flag is disabled in kFocusEnterMessage message handler.
+          m_lock_selection = true;
+
+          showEditPopupMenu(mouseMsg->position());
+          requestFocus();
+        }
+      }
       return true;
 
     case kDoubleClickMessage:
@@ -376,7 +398,7 @@ bool Entry::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
     case kMouseLeaveMessage:
-      /* TODO theme stuff */
+      // TODO theme stuff
       if (isEnabled())
         invalidate();
       break;
@@ -461,7 +483,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   return caret;
 }
 
-void Entry::executeCmd(EntryCmd::Type cmd, int unicodeChar, bool shift_pressed)
+void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 {
   std::wstring text = base::from_utf8(getText());
   int c, selbeg, selend;
@@ -691,6 +713,32 @@ void Entry::backwardWord()
 int Entry::getAvailableTextLength()
 {
   return getClientChildrenBounds().w / getFont()->charWidth('w');
+}
+
+bool Entry::isPosInSelection(int pos)
+{
+  return (pos >= MIN(m_caret, m_select) && pos <= MAX(m_caret, m_select));
+}
+
+void Entry::showEditPopupMenu(const gfx::Point& pt)
+{
+  Menu menu;
+  MenuItem cut("Cut");
+  MenuItem copy("Copy");
+  MenuItem paste("Paste");
+  menu.addChild(&cut);
+  menu.addChild(&copy);
+  menu.addChild(&paste);
+  cut.Click.connect(std::bind(&Entry::executeCmd, this, EntryCmd::Cut, 0, false));
+  copy.Click.connect(std::bind(&Entry::executeCmd, this, EntryCmd::Copy, 0, false));
+  paste.Click.connect(std::bind(&Entry::executeCmd, this, EntryCmd::Paste, 0, false));
+
+  if (isReadOnly()) {
+    cut.setEnabled(false);
+    paste.setEnabled(false);
+  }
+
+  menu.showPopup(pt);
 }
 
 } // namespace ui

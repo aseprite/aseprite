@@ -88,9 +88,9 @@ void Notifications::onClick(ui::Event& ev)
   invalidate();
 
   gfx::Rect bounds = getBounds();
-  m_popup.showPopup(
-    bounds.x - m_popup.getPreferredSize().w,
-    bounds.y + bounds.h);
+  m_popup.showPopup(gfx::Point(
+      bounds.x - m_popup.getPreferredSize().w,
+      bounds.y + bounds.h));
 }
 
 } // namespace app

@@ -26,7 +26,7 @@ namespace ui {
     Menu();
     ~Menu();
 
-    void showPopup(int x, int y);
+    void showPopup(const gfx::Point& pos);
 
     // Returns the MenuItem that has as submenu this menu.
     MenuItem* getOwnerMenuItem() {

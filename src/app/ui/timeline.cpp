@@ -670,10 +670,8 @@ bool Timeline::onProcessMessage(Message* msg)
             if (mouseMsg->right()) {
               if (m_clk_frame == m_hot_frame) {
                 Menu* popup_menu = AppMenus::instance()->getFramePopupMenu();
-                if (popup_menu != NULL) {
-                  gfx::Point mousePos = mouseMsg->position();
-                  popup_menu->showPopup(mousePos.x, mousePos.y);
-                }
+                if (popup_menu)
+                  popup_menu->showPopup(mouseMsg->position());
               }
             }
             break;
@@ -683,10 +681,8 @@ bool Timeline::onProcessMessage(Message* msg)
             if (mouseMsg->right()) {
               if (m_clk_layer == m_hot_layer) {
                 Menu* popup_menu = AppMenus::instance()->getLayerPopupMenu();
-                if (popup_menu != NULL) {
-                  gfx::Point mousePos = mouseMsg->position();
-                  popup_menu->showPopup(mousePos.x, mousePos.y);
-                }
+                if (popup_menu != NULL)
+                  popup_menu->showPopup(mouseMsg->position());
               }
             }
             break;
@@ -721,10 +717,8 @@ bool Timeline::onProcessMessage(Message* msg)
                   AppMenus::instance()->getCelMovementPopupMenu():
                   AppMenus::instance()->getCelPopupMenu();
 
-              if (popup_menu != NULL) {
-                gfx::Point mousePos = mouseMsg->position();
-                popup_menu->showPopup(mousePos.x, mousePos.y);
-              }
+              if (popup_menu)
+                popup_menu->showPopup(mouseMsg->position());
             }
             break;
           }

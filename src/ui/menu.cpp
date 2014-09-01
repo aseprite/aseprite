@@ -266,7 +266,7 @@ bool MenuItem::hasSubmenu() const
   return (m_submenu && !m_submenu->getChildren().empty());
 }
 
-void Menu::showPopup(int x, int y)
+void Menu::showPopup(const gfx::Point& pos)
 {
   // New window and new menu-box
   Window* window = new Window(Window::WithoutTitleBar);
@@ -285,8 +285,9 @@ void Menu::showPopup(int x, int y)
   window->remapWindow();
 
   // Menubox position
-  window->positionWindow(MID(0, x, ui::display_w()-window->getBounds().w),
-    MID(0, y, ui::display_h()-window->getBounds().h));
+  window->positionWindow(
+    MID(0, pos.x, ui::display_w() - window->getBounds().w),
+    MID(0, pos.y, ui::display_h() - window->getBounds().h));
 
   // Set the focus to the new menubox
   Manager::getDefault()->setFocus(menubox);

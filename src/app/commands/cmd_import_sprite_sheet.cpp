@@ -144,7 +144,7 @@ protected:
     menu->addChild(item);
 
     const gfx::Rect& bounds = m_selectFile.getBounds();
-    menu->showPopup(bounds.x, bounds.y+bounds.h);
+    menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
 
   void onUseCurrentSprite()
