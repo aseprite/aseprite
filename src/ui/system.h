@@ -13,8 +13,6 @@
 #include "ui/cursor_type.h"
 #include "ui/mouse_buttons.h"
 
-struct BITMAP;
-
 namespace she { class Display; }
 
 namespace ui {
