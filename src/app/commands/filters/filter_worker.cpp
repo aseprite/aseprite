@@ -25,6 +25,7 @@
 
 #include "app/app.h"
 #include "app/commands/filters/filter_manager_impl.h"
+#include "app/console.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
@@ -47,8 +48,7 @@ static const int kMonitoringPeriod = 100;
 // modify the sprite, and the main thread to monitoring the progress
 // (and given to the user the possibility to cancel the process).
 
-class FilterWorker : public FilterManagerImpl::IProgressDelegate
-{
+class FilterWorker : public FilterManagerImpl::IProgressDelegate {
 public:
   FilterWorker(FilterManagerImpl* filterMgr);
   ~FilterWorker();
@@ -71,11 +71,13 @@ private:
   FilterManagerImpl* m_filterMgr; // Effect to be applied.
   base::mutex m_mutex;          // Mutex to access to 'pos', 'done' and 'cancelled' fields in different threads.
   float m_pos;                  // Current progress position
-  bool m_done : 1;              // Was the effect completelly applied?
-  bool m_cancelled : 1;         // Was the effect cancelled by the user?
+  bool m_done;                  // Was the effect completelly applied?
+  bool m_cancelled;             // Was the effect cancelled by the user?
+  bool m_abort;                 // An exception was thrown
   ui::Timer m_timer;            // Monitoring timer to update the progress-bar
   Progress* m_progressBar;      // The progress-bar.
   AlertPtr m_alertWindow;       // Alert for the user to cancel the filter-progress if he wants.
+  std::string m_error;
 };
 
 FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
@@ -87,11 +89,12 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_pos = 0.0;
   m_done = false;
   m_cancelled = false;
+  m_abort = false;
 
   m_progressBar = StatusBar::instance()->addProgress();
 
   m_alertWindow = ui::Alert::create(PACKAGE
-                                    "<<Applying effect...||&Cancel");
+    "<<Applying effect...||&Cancel");
 
   m_timer.Tick.connect(&FilterWorker::onMonitoringTick, this);
   m_timer.start();
@@ -124,6 +127,11 @@ void FilterWorker::run()
 
   // Wait the `effect_bg' thread
   thread.join();
+
+  if (!m_error.empty()) {
+    Console console;
+    console.printf("A problem has occurred.\n\nDetails:\n%s", m_error.c_str());
+  }
 }
 
 // Called by FilterManagerImpl to informate the progress of the filter.
@@ -145,7 +153,7 @@ bool FilterWorker::isCancelled()
   bool cancelled;
 
   scoped_lock lock(m_mutex);
-  cancelled = m_cancelled;
+  cancelled = (m_cancelled || m_abort);
 
   return cancelled;
 }
@@ -156,12 +164,18 @@ bool FilterWorker::isCancelled()
 //
 void FilterWorker::applyFilterInBackground()
 {
-  // Apply the filter
-  m_filterMgr->applyToTarget();
+  try {
+    // Apply the filter
+    m_filterMgr->applyToTarget();
 
-  // Mark the work as 'done'.
-  scoped_lock lock(m_mutex);
-  m_done = true;
+    // Mark the work as 'done'.
+    scoped_lock lock(m_mutex);
+    m_done = true;
+  }
+  catch (std::exception& e) {
+    m_error = e.what();
+    m_abort = true;
+  }
 }
 
 // Called by the GUI monitor (a timer in the gui module that is called
@@ -173,7 +187,7 @@ void FilterWorker::onMonitoringTick()
   if (m_progressBar)
     m_progressBar->setPos(m_pos);
 
-  if (m_done)
+  if (m_done || m_abort)
     m_alertWindow->closeWindow(NULL);
 }
 
