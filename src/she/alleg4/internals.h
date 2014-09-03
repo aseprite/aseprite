@@ -10,7 +10,10 @@
 
 namespace she {
 
+  class Display;
   class Event;
+
+  extern Display* unique_display;
 
   void queue_event(const Event& ev);
 

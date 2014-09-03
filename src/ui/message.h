@@ -24,8 +24,7 @@ namespace ui {
   class Timer;
   class Widget;
 
-  class Message
-  {
+  class Message {
   public:
     typedef WidgetsList::iterator& recipients_iterator;
 

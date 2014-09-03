@@ -481,7 +481,9 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (((this->type == kMenuBoxWidget) && (msg->keyModifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
                                                 msg->keyModifiers() == kKeyAltModifier)) ||
             ((this->type == kMenuBarWidget) && (msg->keyModifiers() == kKeyAltModifier))) {
-          selected = check_for_letter(menu, scancode_to_unicode(static_cast<KeyMessage*>(msg)->scancode()));
+          selected = check_for_letter(menu,
+            static_cast<KeyMessage*>(msg)->unicodeChar());
+
           if (selected) {
             menu->highlightItem(selected, true, true, true);
             return true;

@@ -32,12 +32,18 @@
 #include "config.h"
 #endif
 
-#include <allegro/unicode.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include "ui/alert.h"
 
 #include "base/bind.h"
-#include "ui/ui.h"
+#include "ui/box.h"
+#include "ui/button.h"
+#include "ui/grid.h"
+#include "ui/label.h"
+#include "ui/separator.h"
+#include "ui/theme.h"
+
+#include <cstdarg>
+#include <cstdio>
 
 namespace ui {
 
@@ -147,7 +153,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           button_widget->setMinSize(gfx::Size(60*jguiscale(), 0));
           buttons.push_back(button_widget);
 
-          usprintf(buttonId, "button-%lu", buttons.size());
+          sprintf(buttonId, "button-%lu", buttons.size());
           button_widget->setId(buttonId);
           button_widget->Click.connect(Bind<void>(&Window::closeWindow, this, button_widget));
         }

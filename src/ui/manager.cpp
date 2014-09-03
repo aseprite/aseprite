@@ -31,7 +31,7 @@
 #ifdef REPORT_EVENTS
 #include <iostream>
 #endif
-#include <allegro.h>
+
 #include <list>
 #include <vector>
 
@@ -43,21 +43,6 @@ namespace ui {
         JI_HIDDEN |                                     \
         JI_DECORATIVE)) == JI_FOCUSSTOP) &&             \
     ((widget)->isVisible()))
-
-#define DOUBLE_CLICK_TIMEOUT_MSECS   400
-
-enum {
-  DOUBLE_CLICK_NONE,
-  DOUBLE_CLICK_DOWN,
-  DOUBLE_CLICK_UP
-};
-
-enum {
-  STAGE_NORMAL,
-  STAGE_WANT_CLOSE,
-  STAGE_WAITING_REPLY,
-  STAGE_CLOSE_ALL,
-};
 
 static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
@@ -74,16 +59,6 @@ struct Filter
 typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
 
-static bool mouse_events_from_she;
-
-static int double_click_level;
-static MouseButtons double_click_buttons;
-static int double_click_ticks;
-
-static int want_close_stage;       /* variable to handle the external
-                                      close button in some Windows
-                                      enviroments */
-
 Manager* Manager::m_defaultManager = NULL;
 
 static WidgetsList new_windows; // Windows that we should show
@@ -95,12 +70,7 @@ static Widget* focus_widget;    // The widget with the focus
 static Widget* mouse_widget;    // The widget with the mouse
 static Widget* capture_widget;  // The widget that captures the mouse
 
-static bool first_time_poll;    /* true when we don't enter in poll yet */
-
-static char old_readed_key[KEY_MAX]; /* keyboard status of previous
-                                        poll */
-
-static unsigned key_repeated[KEY_MAX];
+static bool first_time = true;    // true when we don't enter in poll yet
 
 /* keyboard focus movement stuff */
 static bool move_focus(Manager* manager, Message* msg);
@@ -112,13 +82,6 @@ static int cmp_right(Widget* widget, int x, int y);
 static int cmp_up(Widget* widget, int x, int y);
 static int cmp_down(Widget* widget, int x, int y);
 
-/* hooks the close-button in some platform with window support */
-static void allegro_window_close_hook()
-{
-  if (want_close_stage == STAGE_NORMAL)
-    want_close_stage = STAGE_WANT_CLOSE;
-}
-
 Manager::Manager()
   : Widget(kManagerWidget)
   , m_display(NULL)
@@ -128,10 +91,6 @@ Manager::Manager()
   , m_mouseButtons(kButtonNone)
 {
   if (!m_defaultManager) {
-    // Hook the window close message
-    want_close_stage = STAGE_NORMAL;
-    set_close_button_callback(allegro_window_close_hook);
-
     // Empty lists
     ASSERT(msg_queue.empty());
     ASSERT(new_windows.empty());
@@ -141,29 +100,14 @@ Manager::Manager()
     focus_widget = NULL;
     mouse_widget = NULL;
     capture_widget = NULL;
-
-    first_time_poll = true;
-    double_click_level = DOUBLE_CLICK_NONE;
-    double_click_ticks = 0;
-
-    // Reset keyboard
-    for (int c=0; c<KEY_MAX; c++) {
-      old_readed_key[c] = 0;
-      key_repeated[c] = 0;
-    }
   }
 
   setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
   setVisible(true);
 
   // Default manager is the first one (and is always visible).
-  if (!m_defaultManager) {
+  if (!m_defaultManager)
     m_defaultManager = this;
-
-    mouse_events_from_she =
-      ((she::instance()->capabilities() & she::kMouseEventsCapability)
-        == she::kMouseEventsCapability);
-  }
 }
 
 Manager::~Manager()
@@ -213,22 +157,19 @@ void Manager::run()
 {
   MessageLoop loop(this);
 
+  if (first_time) {
+    first_time = false;
+
+    Manager::getDefault()->invalidate();
+    jmouse_set_cursor(kArrowCursor);
+  }
+
   while (!getChildren().empty())
     loop.pumpMessages();
 }
 
 bool Manager::generateMessages()
 {
-  // Poll keyboard
-  poll_keyboard();
-
-  if (first_time_poll) {
-    first_time_poll = false;
-
-    Manager::getDefault()->invalidate();
-    jmouse_set_cursor(kArrowCursor);
-  }
-
   // First check: there are windows to manage?
   if (getChildren().empty())
     return false;
@@ -259,19 +200,6 @@ bool Manager::generateMessages()
     new_windows.clear();
   }
 
-  if (!mouse_events_from_she)
-    generateMouseMessages();
-
-  // Generate Close message when the user press close button on the system window.
-  if (want_close_stage == STAGE_WANT_CLOSE) {
-    want_close_stage = STAGE_NORMAL;
-
-    Message* msg = new Message(kCloseAppMessage);
-    msg->broadcastToChildren(this);
-    enqueueMessage(msg);
-  }
-
-  generateKeyMessages();
   generateMessagesFromSheEvents();
 
   // Generate messages for timers
@@ -286,92 +214,6 @@ bool Manager::generateMessages()
     return false;
 }
 
-void Manager::generateMouseMessages()
-{
-  // Update mouse status
-  bool mousemove = _internal_poll_mouse();
-
-  gfx::Point mousePos(gfx::Point(jmouse_x(0), jmouse_y(0)));
-
-  if (mousemove || !mouse_widget)
-    handleMouseMove(mousePos, currentMouseButtons(0));
-
-  // Mouse wheel
-  if (jmouse_z(0) != jmouse_z(1))
-    handleMouseWheel(mousePos, currentMouseButtons(0),
-      gfx::Point(0, jmouse_z(1) - jmouse_z(0)));
-
-  // Mouse clicks
-  if (jmouse_b(0) != jmouse_b(1)) {
-    int current_ticks = ui::clock();
-    bool pressed =
-      ((jmouse_b(1) & 1) == 0 && (jmouse_b(0) & 1) == 1) ||
-      ((jmouse_b(1) & 2) == 0 && (jmouse_b(0) & 2) == 2) ||
-      ((jmouse_b(1) & 4) == 0 && (jmouse_b(0) & 4) == 4);
-    MessageType msgType = (pressed ? kMouseDownMessage: kMouseUpMessage);
-    MouseButtons mouseButtons = (pressed ? currentMouseButtons(0): currentMouseButtons(1));
-
-    // The message will include which button was pressed or released.
-    // (This doesn't represent all buttons that are currently pushed.)
-    MouseButtons mouseButtonsDelta = (MouseButtons)
-      (currentMouseButtons(0) ^ currentMouseButtons(1));
-
-    //////////////////////////////////////////////////////////////////////
-    // Double Click
-    if (msgType == kMouseDownMessage) {
-      if (double_click_level != DOUBLE_CLICK_NONE) {
-        // Time out, back to NONE
-        if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
-          double_click_level = DOUBLE_CLICK_NONE;
-        }
-        else if (double_click_buttons == mouseButtons) {
-          if (double_click_level == DOUBLE_CLICK_UP) {
-            msgType = kDoubleClickMessage;
-          }
-          else {
-            double_click_level = DOUBLE_CLICK_NONE;
-          }
-        }
-        // Press other button, back to NONE
-        else {
-          double_click_level = DOUBLE_CLICK_NONE;
-        }
-      }
-
-      // This could be the beginning of the state
-      if (double_click_level == DOUBLE_CLICK_NONE) {
-        double_click_level = DOUBLE_CLICK_DOWN;
-        double_click_buttons = mouseButtons;
-        double_click_ticks = current_ticks;
-      }
-    }
-    else if (msgType == kMouseUpMessage) {
-      if (double_click_level != DOUBLE_CLICK_NONE) {
-        // Time out, back to NONE
-        if (current_ticks - double_click_ticks > DOUBLE_CLICK_TIMEOUT_MSECS) {
-          double_click_level = DOUBLE_CLICK_NONE;
-        }
-        else if (double_click_level == DOUBLE_CLICK_DOWN) {
-          double_click_level = DOUBLE_CLICK_UP;
-          double_click_ticks = current_ticks;
-        }
-      }
-    }
-
-    switch (msgType) {
-      case kMouseDownMessage:
-        handleMouseDown(mousePos, mouseButtonsDelta);
-        break;
-      case kMouseUpMessage:
-        handleMouseUp(mousePos, mouseButtonsDelta);
-        break;
-      case kDoubleClickMessage:
-        handleMouseDoubleClick(mousePos, mouseButtonsDelta);
-        break;
-    }
-  }
-}
-
 void Manager::generateSetCursorMessage(const gfx::Point& mousePos)
 {
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);
@@ -380,62 +222,6 @@ void Manager::generateSetCursorMessage(const gfx::Point& mousePos)
         mousePos, currentMouseButtons(0)));
   else
     jmouse_set_cursor(kArrowCursor);
-}
-
-void Manager::generateKeyMessages()
-{
-  // Generate kKeyDownMessage messages.
-  int c;
-  while (keypressed()) {
-    int scancode;
-    int unicode_char = ureadkey(&scancode);
-    int repeat = 0;
-    {
-      c = scancode;
-      if (c >= 0 && c < KEY_MAX) {
-        old_readed_key[c] = key[c];
-        repeat = key_repeated[c]++;
-      }
-    }
-
-    Message* msg = new KeyMessage(kKeyDownMessage,
-                                  static_cast<KeyScancode>(scancode),
-                                  unicode_char, repeat);
-    broadcastKeyMsg(msg);
-    enqueueMessage(msg);
-  }
-
-  for (int c=0; c<KEY_MAX; c++) {
-    if (old_readed_key[c] != key[c]) {
-      KeyScancode scancode = static_cast<ui::KeyScancode>(c);
-
-      // Generate kKeyUpMessage messages (old key state is activated,
-      // the new one is deactivated).
-      if (old_readed_key[c]) {
-        // Press/release key interface
-        Message* msg = new KeyMessage(kKeyUpMessage,
-                                      scancode,
-                                      scancode_to_unicode(scancode), 0);
-        old_readed_key[c] = key[c];
-        key_repeated[c] = 0;
-
-        broadcastKeyMsg(msg);
-        enqueueMessage(msg);
-      }
-      // Generate kKeyDownMessage messages for modifiers
-      else if (c >= kKeyFirstModifierScancode) {
-        // Press/release key interface
-        Message* msg = new KeyMessage(kKeyDownMessage,
-                                      scancode,
-                                      scancode_to_unicode(scancode),
-                                      key_repeated[c]++);
-        old_readed_key[c] = key[c];
-
-        broadcastKeyMsg(msg);
-        enqueueMessage(msg);
-      }
-    }
-  }
 }
 
 static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
@@ -461,6 +247,13 @@ void Manager::generateMessagesFromSheEvents()
 
     switch (sheEvent.type()) {
 
+      case she::Event::CloseDisplay: {
+        Message* msg = new Message(kCloseAppMessage);
+        msg->broadcastToChildren(this);
+        enqueueMessage(msg);
+        break;
+      }
+
       case she::Event::DropFiles: {
         Message* msg = new DropFilesMessage(sheEvent.files());
         msg->addRecipient(this);
@@ -468,18 +261,26 @@ void Manager::generateMessagesFromSheEvents()
         break;
       }
 
-      case she::Event::MouseEnter: {
-        if (!mouse_events_from_she)
-          continue;
+      case she::Event::KeyDown:
+      case she::Event::KeyUp: {
+        Message* msg = new KeyMessage(
+          sheEvent.type() == she::Event::KeyDown ?
+            kKeyDownMessage:
+            kKeyUpMessage,
+          sheEvent.scancode(),
+          sheEvent.unicodeChar(),
+          sheEvent.repeat());
+        broadcastKeyMsg(msg);
+        enqueueMessage(msg);
+        break;
+      }
 
+      case she::Event::MouseEnter: {
         jmouse_set_cursor(kArrowCursor);
         break;
       }
 
       case she::Event::MouseLeave: {
-        if (!mouse_events_from_she)
-          continue;
-
         jmouse_set_cursor(kNoCursor);
         setMouse(NULL);
 
@@ -488,9 +289,6 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseMove: {
-        if (!mouse_events_from_she)
-          continue;
-
         // TODO Currently we cannot handleMouseMove() for each
         // she::Event::MouseMove as the UI library is not prepared yet
         // to process more than one kMouseMoveMessage message for
@@ -501,9 +299,6 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseDown: {
-        if (!mouse_events_from_she)
-          continue;
-
         MouseButtons pressedButton = mouse_buttons_from_she_to_ui(sheEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons | (int)pressedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
@@ -513,9 +308,6 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseUp: {
-        if (!mouse_events_from_she)
-          continue;
-
         MouseButtons releasedButton = mouse_buttons_from_she_to_ui(sheEvent);
         m_mouseButtons = (MouseButtons)((int)m_mouseButtons & ~(int)releasedButton);
         _internal_set_mouse_buttons(m_mouseButtons);
@@ -525,18 +317,12 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseDoubleClick: {
-        if (!mouse_events_from_she)
-          continue;
-
         MouseButtons clickedButton = mouse_buttons_from_she_to_ui(sheEvent);
         handleMouseDoubleClick(sheEvent.position(), clickedButton);
         break;
       }
 
       case she::Event::MouseWheel: {
-        if (!mouse_events_from_she)
-          continue;
-
         handleMouseWheel(sheEvent.position(), m_mouseButtons, sheEvent.wheelDelta());
         break;
       }
@@ -571,9 +357,6 @@ void Manager::handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButt
     else
       setMouse(widget);
   }
-
-  // Reset double click status
-  double_click_level = DOUBLE_CLICK_NONE;
 
   // Send the mouse movement message
   Widget* dst = (capture_widget ? capture_widget: mouse_widget);

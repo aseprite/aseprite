@@ -14,7 +14,6 @@ namespace she {
     kMultipleDisplaysCapability = 1,
     kCanResizeDisplayCapability = 2,
     kDisplayScaleCapability = 4,
-    kMouseEventsCapability = 8,
   };
 
 } // namespace she

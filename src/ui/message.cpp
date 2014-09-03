@@ -22,7 +22,8 @@ namespace ui {
 Message::Message(MessageType type)
   : m_type(type)
   , m_used(false)
-  , m_modifiers((KeyModifiers)((key[KEY_LSHIFT] || key[KEY_RSHIFT] ? kKeyShiftModifier: 0) |
+  , m_modifiers((KeyModifiers)
+     ((key[KEY_LSHIFT] || key[KEY_RSHIFT] ? kKeyShiftModifier: 0) |
       (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? kKeyCtrlModifier: 0) |
       (key[KEY_ALT] ? kKeyAltModifier: 0) |
       (key[KEY_COMMAND] ? kKeyCmdModifier: 0) |

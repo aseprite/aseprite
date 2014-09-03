@@ -27,11 +27,8 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
-#include <allegro.h>
-
 #if defined ALLEGRO_WINDOWS && defined DEBUGMODE
-  #include <winalleg.h>
-
+  #include <windows.h>
   #include <psapi.h>
 #endif
 
@@ -55,10 +52,6 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
-  ui::jmouse_hide();
-  clear_to_color(screen, makecol(0, 0, 0));
-  ui::jmouse_show();
-
   // Reload skin
   {
     skin::SkinTheme* theme = (skin::SkinTheme*)ui::CurrentTheme::get();

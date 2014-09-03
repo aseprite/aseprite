@@ -16,11 +16,8 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include <allegro/gfx.h>
-#include <allegro/keyboard.h>
-#include <allegro/timer.h>
 #include <queue>
-#include <string.h>
+#include <cstring>
 
 namespace ui {
 

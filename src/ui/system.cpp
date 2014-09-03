@@ -11,6 +11,7 @@
 #include "ui/system.h"
 
 #include "gfx/point.h"
+#include "she/clock.h"
 #include "she/display.h"
 #include "she/surface.h"
 #include "ui/cursor.h"
@@ -21,18 +22,9 @@
 #include "ui/theme.h"
 #include "ui/widget.h"
 
-#include <allegro.h>
-#if defined(WIN32)
-  #include <winalleg.h>
-#endif
-
 namespace ui {
 
 bool dirty_display_flag = true;
-
-// Global timer.
-
-static volatile int clock_var = 0;
 
 // Current mouse cursor type.
 
@@ -50,20 +42,7 @@ static int m_x[2];
 static int m_y[2];
 static int m_z[2];
 
-static bool moved;
 static int mouse_scares = 0;
-
-/* Local routines.  */
-
-static void clock_inc();
-static void update_mouse_position(const gfx::Point& pt);
-
-static void clock_inc()
-{
-  ++clock_var;
-}
-
-END_OF_STATIC_FUNCTION(clock_inc);
 
 static void update_mouse_overlay(Cursor* cursor)
 {
@@ -93,8 +72,6 @@ static void update_mouse_overlay(Cursor* cursor)
 
 static void update_mouse_cursor()
 {
-  show_mouse(NULL);
-
   // Use native cursor when it's possible/available/configured to do so.
 
   bool native_cursor_available = false;
@@ -166,20 +143,7 @@ static void update_mouse_cursor()
 
 int _ji_system_init()
 {
-  /* Install timer related stuff.  */
-  LOCK_VARIABLE(clock_var);
-  LOCK_VARIABLE(m_b);
-  LOCK_FUNCTION(clock_inc);
-
-  if (install_int_ex(clock_inc, BPS_TO_TIMER(1000)) < 0)
-    return -1;
-
-  if (screen)
-    _internal_poll_mouse();
-
-  moved = true;
   mouse_cursor_type = kNoCursor;
-
   return 0;
 }
 
@@ -187,13 +151,11 @@ void _ji_system_exit()
 {
   set_display(NULL);
   update_mouse_overlay(NULL);
-
-  remove_int(clock_inc);
 }
 
 int clock()
 {
-  return clock_var;
+  return she::clock_value();
 }
 
 void set_display(she::Display* display)
@@ -294,55 +256,13 @@ bool jmouse_is_shown()
   return mouse_scares == 0;
 }
 
-static gfx::Point allegro_mouse_point()
-{
-  return gfx::Point(
-    (int)ui::display_w() * mouse_x / SCREEN_W,
-    (int)ui::display_w() * mouse_y / SCREEN_W);
-}
-
-/**
- * Updates the mouse information (position, wheel and buttons).
- *
- * @return Returns true if the mouse moved.
- */
-bool _internal_poll_mouse()
-{
-  m_b[1] = m_b[0];
-  m_x[1] = m_x[0];
-  m_y[1] = m_y[0];
-  m_z[1] = m_z[0];
-
-  poll_mouse();
-
-  m_b[0] = mouse_b;
-  m_z[0] = mouse_z;
-
-  update_mouse_position(allegro_mouse_point());
-
-  if ((m_x[0] != m_x[1]) || (m_y[0] != m_y[1])) {
-    poll_mouse();
-    update_mouse_position(allegro_mouse_point());
-    moved = true;
-  }
-
-  if (moved) {
-    moved = false;
-    return true;
-  }
-  else
-    return false;
-}
-
 void _internal_no_mouse_position()
 {
-  moved = true;
   update_mouse_overlay(NULL);
 }
 
 void _internal_set_mouse_position(const gfx::Point& newPos)
 {
-  moved = true;
   if (m_x[0] >= 0) {
     m_x[1] = m_x[0];
     m_y[1] = m_y[0];
@@ -387,47 +307,5 @@ MouseButtons jmouse_b(int antique)
 int jmouse_x(int antique) { return m_x[antique & 1]; }
 int jmouse_y(int antique) { return m_y[antique & 1]; }
 int jmouse_z(int antique) { return m_z[antique & 1]; }
-
-static void update_mouse_position(const gfx::Point& pt)
-{
-  m_x[0] = pt.x;
-  m_y[0] = pt.y;
-
-  if (is_windowed_mode()) {     // TODO move this to "she" module
-#ifdef WIN32
-    // This help us (on Windows) to get mouse feedback when we capture
-    // the mouse but we are outside the window.
-    POINT pt;
-    RECT rc;
-
-    if (GetCursorPos(&pt) && GetClientRect(win_get_window(), &rc)) {
-      MapWindowPoints(win_get_window(), NULL, (LPPOINT)&rc, 2);
-
-      if (!PtInRect(&rc, pt)) {
-        // If the mouse is free we can hide the cursor putting the
-        // mouse outside the screen (right-bottom corder).
-        if (!Manager::getDefault()->getCapture()) {
-          if (mouse_cursor) {
-            m_x[0] = ui::display_w() + mouse_cursor->getFocus().x;
-            m_y[0] = ui::display_h() + mouse_cursor->getFocus().y;
-          }
-        }
-        // If the mouse is captured we can put it in the edges of the
-        // screen.
-        else {
-          pt.x -= rc.left;
-          pt.y -= rc.top;
-
-          m_x[0] = ui::display_w() * pt.x / SCREEN_W;
-          m_y[0] = ui::display_h() * pt.y / SCREEN_H;
-
-          m_x[0] = MID(0, m_x[0], ui::display_w()-1);
-          m_y[0] = MID(0, m_y[0], ui::display_h()-1);
-        }
-      }
-    }
-#endif
-  }
-}
 
 } // namespace ui

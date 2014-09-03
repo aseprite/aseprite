@@ -12,12 +12,17 @@
 
 #include "base/concurrent_queue.h"
 #include "base/string.h"
-#include "she/alleg4/alleg4_font.h"
-#include "she/alleg4/alleg4_surface.h"
+#include "she/alleg4/font.h"
+#include "she/alleg4/surface.h"
 #include "she/logger.h"
 
 #include <allegro.h>
 #include <allegro/internal/aintern.h>
+
+#define USE_KEY_POLLER
+// #ifndef WIN32 // On Windows we generated events from the HWND procedure
+  #define USE_MOUSE_POLLER
+// #endif
 
 #ifdef WIN32
   #include <winalleg.h>
@@ -53,8 +58,19 @@
 #include "loadpng.h"
 
 #include <cassert>
-#include <vector>
 #include <list>
+#include <vector>
+
+#include "she/alleg4/clock.h"
+#include "she/alleg4/close_button.h"
+
+#ifdef USE_KEY_POLLER
+  #include "she/alleg4/key_poller.h"
+#endif
+
+#ifdef USE_MOUSE_POLLER
+  #include "she/alleg4/mouse_poller.h"
+#endif
 
 #define DISPLAY_FLAG_FULL_REFRESH     1
 #define DISPLAY_FLAG_WINDOW_RESIZE    2
@@ -92,13 +108,34 @@ namespace she {
 class Alleg4EventQueue : public EventQueue {
 public:
   Alleg4EventQueue() {
+    clock_init();
+    close_button_init();
+
+#ifdef USE_KEY_POLLER
+    key_poller_init();
+#endif
+
+#ifdef USE_MOUSE_POLLER
+    mouse_poller_init();
+#endif
   }
 
   void dispose() {
+    clock_exit();
     delete this;
   }
 
   void getEvent(Event& event) {
+    close_button_generate_events();
+
+#ifdef USE_KEY_POLLER
+    key_poller_generate_events();
+#endif
+
+#ifdef USE_MOUSE_POLLER
+    mouse_poller_generate_events();
+#endif
+
     if (!m_events.try_pop(event))
       event.setType(Event::None);
   }
@@ -162,6 +199,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       queue_event(ev);
       break;
     }
+
+#ifndef USE_MOUSE_POLLER
 
     case WM_MOUSEMOVE: {
       // Adjust capture
@@ -339,6 +378,8 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       break;
     }
 
+#endif
+
     case WM_NCCALCSIZE: {
       if (wparam) {
         // Scrollbars must be enabled and visible to get trackpad
@@ -435,6 +476,7 @@ public:
                      width, height, 0, 0) < 0)
       throw DisplayCreationException(allegro_error);
 
+    show_mouse(NULL);
     setScale(scale);
 
     m_queue = new Alleg4EventQueue();
@@ -686,12 +728,7 @@ public:
   }
 
   Capabilities capabilities() const override {
-    return (Capabilities)
-      (kCanResizeDisplayCapability
-#ifdef WIN32
-        | kMouseEventsCapability
-#endif
-       );
+    return (Capabilities)(kCanResizeDisplayCapability);
   }
 
   Logger* logger() override {

@@ -19,7 +19,6 @@ add_library(ui-lib
   image_view.cpp
   int_entry.cpp
   intern.cpp
-  keys.cpp
   label.cpp
   link_label.cpp
   listbox.cpp

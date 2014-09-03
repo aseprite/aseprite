@@ -13,9 +13,9 @@
 #include "config.h"
 #endif
 
-#include "she/alleg4/alleg4_font.h"
+#include "she/alleg4/font.h"
 
-#include "she/alleg4/alleg4_surface.h"
+#include "she/alleg4/surface.h"
 #include "she/display.h"
 #include "she/system.h"
 

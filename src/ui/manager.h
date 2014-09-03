@@ -92,9 +92,7 @@ namespace ui {
     virtual LayoutIO* onGetLayoutIO();
 
   private:
-    void generateMouseMessages();
     void generateSetCursorMessage(const gfx::Point& mousePos);
-    void generateKeyMessages();
     void generateMessagesFromSheEvents();
     void handleMouseMove(const gfx::Point& mousePos, MouseButtons mouseButtons);
     void handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons);
