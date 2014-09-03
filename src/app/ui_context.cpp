@@ -102,16 +102,7 @@ void UIContext::setActiveView(DocumentView* docView)
   app_refresh_screen();
 
   // Change the main frame title.
-  std::string defaultTitle = PACKAGE " v" VERSION;
-  std::string title;
-  if (docView) {
-    // Prepend the document's filename.
-    title += docView->getDocument()->name();
-    title += " - ";
-  }
-
-  title += defaultTitle;
-  set_window_title(title.c_str());
+  App::instance()->updateDisplayTitleBar();
 
   m_lastSelectedView = docView;
 }

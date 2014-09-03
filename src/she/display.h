@@ -11,6 +11,8 @@
 #include "gfx/point.h"
 #include "she/native_cursor.h"
 
+#include <string>
+
 namespace she {
 
   class EventQueue;
@@ -49,6 +51,8 @@ namespace she {
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;
+
+    virtual void setTitleBar(const std::string& title) = 0;
 
     virtual EventQueue* getEventQueue() = 0;
 

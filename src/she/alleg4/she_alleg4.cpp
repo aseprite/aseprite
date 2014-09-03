@@ -563,6 +563,10 @@ public:
 #endif
   }
 
+  void setTitleBar(const std::string& title) override {
+    set_window_title(title.c_str());
+  }
+
   EventQueue* getEventQueue() override {
     return m_queue;
   }

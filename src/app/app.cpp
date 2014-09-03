@@ -51,6 +51,7 @@
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/main_window.h"
@@ -71,7 +72,9 @@
 #include "raster/palette.h"
 #include "raster/sprite.h"
 #include "scripting/engine.h"
+#include "she/display.h"
 #include "she/error.h"
+#include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -177,6 +180,8 @@ App::App(int argc, const char* argv[])
 
 int App::run()
 {
+  UIContext* context = UIContext::instance();
+
   // Initialize GUI interface
   if (isGui()) {
     PRINTF("GUI mode\n");
@@ -184,7 +189,7 @@ int App::run()
     // Setup the GUI cursor and redraw screen
 
     ui::set_use_native_cursors(
-      UIContext::instance()->settings()->experimental()->useNativeCursor());
+      context->settings()->experimental()->useNativeCursor());
 
     jmouse_set_cursor(kArrowCursor);
 
@@ -197,21 +202,19 @@ int App::run()
     app_rebuild_documents_tabs();
     app_default_statusbar_message();
 
+    // Default window title bar.
+    updateDisplayTitleBar();
+    
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.
     ui::Manager::getDefault()->invalidate();
-
-    // 2013-11-19 - JRM - Force setting active view to NULL, workaround for setting 
-    // window title to proper devault value. (Issue #285)
-    UIContext::instance()->setActiveView(NULL);
   }
 
   // Procress options
   PRINTF("Processing options...\n");
 
   {
-    UIContext* context = UIContext::instance();
     Console console;
     for (const std::string& filename : m_files) {
       // Load the sprite
@@ -363,6 +366,22 @@ RecentFiles* App::getRecentFiles() const
 void App::showNotification(INotificationDelegate* del)
 {
   m_mainWindow->showNotification(del);
+}
+
+void App::updateDisplayTitleBar()
+{
+  std::string defaultTitle = PACKAGE " v" VERSION;
+  std::string title;
+
+  DocumentView* docView = UIContext::instance()->activeView();
+  if (docView) {
+    // Prepend the document's filename.
+    title += docView->getDocument()->name();
+    title += " - ";
+  }
+
+  title += defaultTitle;
+  she::instance()->defaultDisplay()->setTitleBar(title);
 }
 
 // Updates palette and redraw the screen.

@@ -77,6 +77,7 @@ namespace app {
     MainWindow* getMainWindow() const { return m_mainWindow; }
 
     void showNotification(INotificationDelegate* del);
+    void updateDisplayTitleBar();
 
     // App Signals
     Signal0<void> Exit;
