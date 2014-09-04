@@ -462,7 +462,7 @@ class BindAdapter3_mem<void, T, B1, B2, B3, X1, X2, X3>
   X3 x3;
 public:
   template<typename T2>
-  BindAdapter3_mem(void (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2) : m(m), t(t), x1(x1), x2(x2) { }
+  BindAdapter3_mem(void (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2, X3 x3) : m(m), t(t), x1(x1), x2(x2), x3(x3) { }
 
   void operator()() { (t->*m)(x1, x2, x3); }
 
@@ -483,9 +483,145 @@ template<typename R, typename T, typename T2,
          typename B1, typename B2, typename B3,
          typename X1, typename X2, typename X3>
 BindAdapter3_mem<R, T, B1, B2, B3, X1, X2, X3>
-Bind(R (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2)
+Bind(R (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2, X3 x3)
 {
-  return BindAdapter3_mem<R, T, B1, B2, B3, X1, X2, X3>(m, t, x1, x2);
+  return BindAdapter3_mem<R, T, B1, B2, B3, X1, X2, X3>(m, t, x1, x2, x3);
+}
+
+
+// BindAdapter4_fun
+template<typename R, typename F,
+         typename X1, typename X2, typename X3, typename X4>
+class BindAdapter4_fun
+{
+  F f;
+  X1 x1;
+  X2 x2;
+  X3 x3;
+  X4 x4;
+public:
+  BindAdapter4_fun(const F& f, X1 x1, X2 x2, X3 x3, X4 x4) : f(f), x1(x1), x2(x2), x3(x3), x4(x4) { }
+
+  R operator()() { return f(x1, x2, x3, x4); }
+
+  template<typename A1>
+  R operator()(const A1& a1) { return f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2>
+  R operator()(const A1& a1, const A2& a2) { return f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3>
+  R operator()(const A1& a1, const A2& a2, const A3& a3) { return f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3, typename A4>
+  R operator()(const A1& a1, const A2& a2, const A3& a3, const A4& a4) { return f(x1, x2, x3, x4); }
+};
+
+template<typename F,
+         typename X1, typename X2, typename X3, typename X4>
+class BindAdapter4_fun<void, F, X1, X2, X3, X4>
+{
+  F f;
+  X1 x1;
+  X2 x2;
+  X3 x3;
+  X4 x4;
+public:
+  BindAdapter4_fun(const F& f, X1 x1, X2 x2, X3 x3, X4 x4) : f(f), x1(x1), x2(x2), x3(x3), x4(x4) { }
+
+  void operator()() { f(x1, x2, x3, x4); }
+
+  template<typename A1>
+  void operator()(const A1& a1) { f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2>
+  void operator()(const A1& a1, const A2& a2) { f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3>
+  void operator()(const A1& a1, const A2& a2, const A3& a3) { f(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3, typename A4>
+  void operator()(const A1& a1, const A2& a2, const A3& a3, const A4& a4) { f(x1, x2, x3, x4); }
+};
+
+template<typename R, typename F,
+         typename X1, typename X2, typename X3, typename X4>
+BindAdapter4_fun<R, F, X1, X2, X3, X4>
+Bind(const F& f, X1 x1, X2 x2, X3 x3, X4 x4)
+{
+  return BindAdapter4_fun<R, F, X1, X2, X3, X4>(f, x1, x2, x3, x4);
+}
+
+// BindAdapter4_mem
+template<typename R, typename T,
+         typename B1, typename B2, typename B3, typename B4,
+         typename X1, typename X2, typename X3, typename X4>
+class BindAdapter4_mem
+{
+  R (T::*m)(B1, B2, B3, B4);
+  T* t;
+  X1 x1;
+  X2 x2;
+  X3 x3;
+  X4 x4;
+public:
+  template<typename T2>
+  BindAdapter4_mem(R (T::*m)(B1, B2, B3, B4), T2* t, X1 x1, X2 x2, X3 x3, X4 x4)
+    : m(m), t(t), x1(x1), x2(x2), x3(x3), x4(x4) { }
+
+  R operator()() { return (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1>
+  R operator()(const A1& a1) { return (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2>
+  R operator()(const A1& a1, const A2& a2) { return (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3>
+  R operator()(const A1& a1, const A2& a2, const A3& a3) { return (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3, typename A4>
+  R operator()(const A1& a1, const A2& a2, const A3& a3, const A4& a4) { return (t->*m)(x1, x2, x3, x4); }
+};
+
+template<typename T,
+         typename B1, typename B2, typename B3, typename B4,
+         typename X1, typename X2, typename X3, typename X4>
+class BindAdapter4_mem<void, T, B1, B2, B3, B4, X1, X2, X3, X4>
+{
+  void (T::*m)(B1, B2, B3, B4);
+  T* t;
+  X1 x1;
+  X2 x2;
+  X3 x3;
+  X4 x4;
+public:
+  template<typename T2>
+  BindAdapter4_mem(void (T::*m)(B1, B2, B3), T2* t, X1 x1, X2 x2, X3 x3, X4 x4)
+    : m(m), t(t), x1(x1), x2(x2), x3(x3), x4(x4) { }
+
+  void operator()() { (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1>
+  void operator()(const A1& a1) { (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2>
+  void operator()(const A1& a1, const A2& a2) { (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3>
+  void operator()(const A1& a1, const A2& a2, const A3& a3) { (t->*m)(x1, x2, x3, x4); }
+
+  template<typename A1, typename A2, typename A3, typename A4>
+  void operator()(const A1& a1, const A2& a2, const A3& a3, const A4& a4) { (t->*m)(x1, x2, x3, x4); }
+};
+
+template<typename R, typename T, typename T2,
+         typename B1, typename B2, typename B3, typename B4,
+         typename X1, typename X2, typename X3, typename X4>
+BindAdapter4_mem<R, T, B1, B2, B3, B4, X1, X2, X3, X4>
+Bind(R (T::*m)(B1, B2, B3, B4), T2* t, X1 x1, X2 x2, X3 x3, X4 x4)
+{
+  return BindAdapter4_mem<R, T, B1, B2, B3, B4, X1, X2, X3, X4>(m, t, x1, x2, x3, x4);
 }
 
 // Helper class to holds references as pointers (to avoid copying the
