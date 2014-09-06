@@ -20,9 +20,9 @@
 #include <allegro/internal/aintern.h>
 
 #define USE_KEY_POLLER
-// #ifndef WIN32 // On Windows we generated events from the HWND procedure
+#ifndef WIN32 // On Windows we generated events from the HWND procedure
   #define USE_MOUSE_POLLER
-// #endif
+#endif
 
 #ifdef WIN32
   #include <winalleg.h>
