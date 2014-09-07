@@ -124,6 +124,11 @@ public:
     int u1, v1, u2, v2;
     m_editor->editorToScreen(x1, y1, &u1, &v1);
     m_editor->editorToScreen(x2, y2, &u2, &v2);
+    gfx::Rect bounds = m_editor->getBounds();
+    u1 -= bounds.x;
+    v1 -= bounds.y;
+    u2 -= bounds.x;
+    v2 -= bounds.y;
     m_g->drawLine(screenColor, gfx::Point(u1, v1), gfx::Point(u2, v2));
   }
 
