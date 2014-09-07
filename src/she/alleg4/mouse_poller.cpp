@@ -129,6 +129,10 @@ void generate_mouse_event_for_button(Event::MouseButton button, int old_b, int n
   Event ev;
   ev.setType(new_b ? Event::MouseDown: Event::MouseUp);
 
+  gfx::Point mousePos(gfx::Point(she_mouse_x, she_mouse_y));
+  ev.setPosition(mousePos);
+  ev.setButton(button);
+
   // Double Click
   int current_ticks = clock_value();
   if (ev.type() == Event::MouseDown) {
