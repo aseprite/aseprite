@@ -43,73 +43,26 @@ int double_click_ticks;
 inline int display_w() { return (unique_display->width() / unique_display->scale()); }
 inline int display_h() { return (unique_display->height() / unique_display->scale()); }
 
-gfx::Point allegro_mouse_point()
+void update_mouse_position()
 {
-  return gfx::Point(
-    (int)display_w() * mouse_x / SCREEN_W,
-    (int)display_h() * mouse_y / SCREEN_H);
-}
-
-void update_mouse_position(const gfx::Point& pt)
-{
-  she_mouse_x = pt.x;
-  she_mouse_y = pt.y;
-
-#ifdef WIN32
-  if (is_windowed_mode()) {
-    // This help us (on Windows) to get mouse feedback when we capture
-    // the mouse but we are outside the window.
-    POINT pt;
-    RECT rc;
-
-    if (GetCursorPos(&pt) && GetClientRect(win_get_window(), &rc)) {
-      MapWindowPoints(win_get_window(), NULL, (LPPOINT)&rc, 2);
-
-      if (!PtInRect(&rc, pt)) {
-        // If the mouse is free we can hide the cursor putting the
-        // mouse outside the screen (right-bottom corder).
-        if (GetCapture() != win_get_window()) {
-          she_mouse_x = display_w() + 32 * unique_display->scale();
-          she_mouse_y = display_h() + 32 * unique_display->scale();
-        }
-        // If the mouse is captured we can put it in the edges of the
-        // screen.
-        else {
-          pt.x -= rc.left;
-          pt.y -= rc.top;
-
-          she_mouse_x = display_w() * pt.x / SCREEN_W;
-          she_mouse_y = display_h() * pt.y / SCREEN_H;
-          she_mouse_x = MID(0, she_mouse_x, display_w()-1);
-          she_mouse_y = MID(0, she_mouse_y, display_h()-1);
-        }
-      }
-    }
-  }
-#endif
+  she_mouse_x = display_w() * mouse_x / SCREEN_W;
+  she_mouse_y = display_h() * mouse_y / SCREEN_H;
 }
 
 bool poll_mouse_position()
 {
   poll_mouse();
 
-  int old_x = she_mouse_x;
-  int old_y = she_mouse_y;
-
-  she_mouse_x = mouse_x;
-  she_mouse_y = mouse_y;
   she_mouse_b = mouse_b;
   she_mouse_z = mouse_z;
 
-  update_mouse_position(allegro_mouse_point());
+  int old_x = she_mouse_x;
+  int old_y = she_mouse_y;
+  update_mouse_position();
 
   if ((she_mouse_x != old_x) || (she_mouse_y != old_y)) {
-    poll_mouse();
-    update_mouse_position(allegro_mouse_point());
-
     // Reset double click status
     double_click_level = DOUBLE_CLICK_NONE;
-
     moved = true;
   }
 
