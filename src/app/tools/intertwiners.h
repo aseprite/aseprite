@@ -22,13 +22,13 @@ namespace tools {
 class IntertwineNone : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points)
+  void joinPoints(ToolLoop* loop, const Points& points) override
   {
     for (size_t c=0; c<points.size(); ++c)
       doPointshapePoint(points[c].x, points[c].y, loop);
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     joinPoints(loop, points);
   }
@@ -36,9 +36,9 @@ public:
 
 class IntertwineAsLines : public Intertwine {
 public:
-  bool snapByAngle() { return true; }
+  bool snapByAngle() override { return true; }
 
-  void joinPoints(ToolLoop* loop, const Points& points)
+  void joinPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() == 0)
       return;
@@ -65,7 +65,7 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() < 3) {
       joinPoints(loop, points);
@@ -83,7 +83,7 @@ public:
 class IntertwineAsRectangles : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points)
+  void joinPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() == 0)
       return;
@@ -113,7 +113,7 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() < 2) {
       joinPoints(loop, points);
@@ -139,7 +139,7 @@ public:
 class IntertwineAsEllipses : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points)
+  void joinPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() == 0)
       return;
@@ -162,7 +162,7 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() < 2) {
       joinPoints(loop, points);
@@ -186,7 +186,7 @@ public:
 class IntertwineAsBezier : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points)
+  void joinPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() == 0)
       return;
@@ -214,7 +214,7 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     joinPoints(loop, points);
   }
@@ -280,7 +280,7 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points)
+  void fillPoints(ToolLoop* loop, const Points& points) override
   {
     if (points.size() < 3) {
       joinPoints(loop, points);
