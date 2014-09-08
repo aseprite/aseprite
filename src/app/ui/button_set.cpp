@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,117 +20,178 @@
 #include "config.h"
 #endif
 
-#include <allegro/unicode.h>
-#include <stdarg.h>
-
 #include "app/ui/button_set.h"
-#include "base/bind.h"
+
 #include "app/modules/gui.h"
+#include "app/ui/skin/skin_theme.h"
+#include "base/bind.h"
+#include "gfx/color.h"
+#include "she/surface.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/graphics.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
+#include "ui/preferred_size_event.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
 
+#include <cstdarg>
+
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
-class ButtonSet::Item : public RadioButton
+WidgetType buttonset_item_type()
 {
-public:
-  Item(int index, int radioGroup, int b1, int b2, int b3, int b4)
-    : RadioButton("", radioGroup, kButtonWidget)
-    , m_index(index)
-  {
-    setRadioGroup(radioGroup);
-    setAlign(JI_CENTER | JI_MIDDLE);
-
-    setup_mini_look(this);
-    setup_bevels(this, b1, b2, b3, b4);
-  }
-
-  int getIndex() const { return m_index; }
-
-private:
-  int m_index;
-};
-
-ButtonSet::ButtonSet(int w, int h, int firstSelected, ...)
-  : Box(JI_VERTICAL | JI_HOMOGENEOUS)
-{
-  Box* hbox = NULL;
-  int x, y, icon;
-  va_list ap;
-  int c = 0;
-  char buf[256];
-
-  va_start(ap, firstSelected);
-
-  this->noBorderNoChildSpacing();
-
-  for (y=0; y<h; y++) {
-    if (w > 1) {
-      hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-      hbox->noBorderNoChildSpacing();
-    }
-
-    for (x=0; x<w; x++) {
-      icon = va_arg(ap, int);
-
-      Item* item = new Item(c,
-                            (int)(reinterpret_cast<unsigned long>(this) & 0xffffffff),
-                            x ==   0 && y ==   0 ? 2: 0,
-                            x == w-1 && y ==   0 ? 2: 0,
-                            x ==   0 && y == h-1 ? 2: 0,
-                            x == w-1 && y == h-1 ? 2: 0);
-
-      m_items.push_back(item);
-
-      usprintf(buf, "radio%d", c);
-      item->setId(buf);
-
-      if (icon >= 0)
-        set_gfxicon_to_button(item, icon, icon+1, icon, JI_CENTER | JI_MIDDLE);
-
-      item->Click.connect(Bind<void>(&ButtonSet::onItemChange, this));
-
-      if (c == firstSelected)
-        item->setSelected(true);
-
-      if (hbox)
-        hbox->addChild(item);
-      else
-        this->addChild(item);
-
-      c++;
-    }
-
-    if (hbox)
-      this->addChild(hbox);
-  }
-
-  va_end(ap);
+  static WidgetType type = kGenericWidget;
+  if (type == kGenericWidget)
+    type = register_widget_type();
+  return type;
 }
 
-int ButtonSet::getSelectedItem() const
+ButtonSet::Item::Item()
+  : Widget(buttonset_item_type())
+  , m_icon(NULL)
 {
-  Item* sel = findSelectedItem();
+}
 
-  if (sel)
-    return sel->getIndex();
-  else
-    return -1;
+void ButtonSet::Item::setIcon(she::Surface* icon)
+{
+  m_icon = icon;
+  invalidate();
+}
+
+ButtonSet* ButtonSet::Item::buttonSet()
+{
+  return static_cast<ButtonSet*>(getParent());
+}
+
+void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  Graphics* g = ev.getGraphics();
+  gfx::Rect rc = getClientBounds();
+  gfx::Color face;
+  int nw;
+
+  if (!gfx::is_transparent(getBgColor()))
+    g->fillRect(getBgColor(), g->getClipBounds());
+
+  if (isSelected() || hasMouseOver()) {
+    nw = PART_TOOLBUTTON_HOT_NW;
+    face = theme->getColor(ThemeColor::ButtonHotFace);
+  }
+  else {
+    nw = PART_TOOLBUTTON_LAST_NW;
+    face = theme->getColor(ThemeColor::ButtonNormalFace);
+  }
+
+  Grid::Info info = buttonSet()->getChildInfo(this);
+  if (info.col < info.grid_cols-1) rc.w+=1*jguiscale();
+  if (info.row < info.grid_rows-1) rc.h+=3*jguiscale();
+
+  theme->draw_bounds_nw(g, rc, nw, face);
+
+  if (m_icon) {
+    g->drawRgbaSurface(m_icon,
+      rc.x + rc.w/2 - m_icon->width()/2,
+      rc.y + rc.h/2 - m_icon->height()/2);
+  }
+}
+
+bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+
+    case ui::kMouseDownMessage:
+      captureMouse();
+      buttonSet()->setSelectedItem(this);
+      buttonSet()->onItemChange();
+      break;
+
+    case ui::kMouseUpMessage:
+      if (hasCapture())
+        releaseMouse();
+      break;
+
+    case ui::kMouseMoveMessage:
+      if (hasCapture()) {
+        if (buttonSet()->m_offerCapture)
+          offerCapture(static_cast<ui::MouseMessage*>(msg), buttonset_item_type());
+      }
+      break;
+
+    case ui::kMouseLeaveMessage:
+    case ui::kMouseEnterMessage:
+      invalidate();
+      break;
+  }
+  return Widget::onProcessMessage(msg);
+}
+
+void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
+{
+  gfx::Size sz(16, 16); // TODO Calculate from icon
+
+  Grid::Info info = buttonSet()->getChildInfo(this);
+  if (info.row == info.grid_rows-1)
+    sz.h += 3;
+
+  ev.setPreferredSize(sz*jguiscale());
+}
+
+ButtonSet::ButtonSet(int columns)
+  : Grid(columns, false)
+  , m_offerCapture(true)
+{
+  noBorderNoChildSpacing();
+}
+
+void ButtonSet::addItem(she::Surface* icon, int hspan, int vspan)
+{
+  Item* item = new Item();
+  item->setIcon(icon);
+  addChildInCell(item, hspan, vspan, JI_CENTER | JI_MIDDLE);
+}
+
+ButtonSet::Item* ButtonSet::getItem(int index)
+{
+  return dynamic_cast<Item*>(at(index));
+}
+
+int ButtonSet::selectedItem() const
+{
+  int index = 0;
+  for (Widget* child : getChildren()) {
+    if (child->isSelected())
+      return index;
+    ++index;
+  }
+  return -1;
 }
 
 void ButtonSet::setSelectedItem(int index)
 {
-  Item* sel = findSelectedItem();
-  if (sel && sel->getIndex() == index)
+  if (index >= 0 && index < (int)getChildren().size())
+    setSelectedItem(static_cast<Item*>(at(index)));
+  else
+    setSelectedItem(static_cast<Item*>(NULL));
+}
+
+void ButtonSet::setSelectedItem(Item* item)
+{
+  if (item && item->isSelected())
     return;
 
-  sel->setSelected(false);
-  m_items[index]->setSelected(true);
+  Item* sel = findSelectedItem();
+  if (sel)
+    sel->setSelected(false);
+
+  if (item)
+    item->setSelected(true);
 }
 
 void ButtonSet::deselectItems()
@@ -140,24 +201,23 @@ void ButtonSet::deselectItems()
     sel->setSelected(false);
 }
 
-Widget* ButtonSet::getButtonAt(int index)
+void ButtonSet::setOfferCapture(bool state)
 {
-  return m_items[index];
-}
-
-ButtonSet::Item* ButtonSet::findSelectedItem() const
-{
-  for (Items::const_iterator it=m_items.begin(), end=m_items.end();
-         it != end; ++it) {
-    if ((*it)->isSelected())
-      return *it;
-  }
-  return NULL;
+  m_offerCapture = state;
 }
 
 void ButtonSet::onItemChange()
 {
   ItemChange();
+}
+
+ButtonSet::Item* ButtonSet::findSelectedItem() const
+{
+  for (Widget* child : getChildren()) {
+    if (child->isSelected())
+      return static_cast<Item*>(child);
+  }
+  return NULL;
 }
     
 } // namespace app

@@ -63,24 +63,21 @@ using namespace gfx;
 using namespace ui;
 using namespace tools;
 
-class ContextBar::BrushTypeField : public Button
-                                 , public IButtonIcon {
+class ContextBar::BrushTypeField : public ButtonSet {
 public:
   BrushTypeField()
-    : Button("")
+    : ButtonSet(1)
     , m_popupWindow(NULL)
     , m_brushTypeButton(NULL) {
-    setup_mini_look(this);
-    setIconInterface(this);
-
     m_bitmap = she::instance()->createRgbaSurface(8, 8);
     she::ScopedSurfaceLock lock(m_bitmap);
     lock->clear();
+
+    addItem(m_bitmap);
   }
 
   ~BrushTypeField() {
     closePopup();
-    setIconInterface(NULL);
 
     m_bitmap->dispose();
   }
@@ -105,43 +102,12 @@ public:
     convert_image_to_surface(image, palette, m_bitmap,
       0, 0, 0, 0, image->width(), image->height());
 
-    invalidate();
-  }
-
-  // IButtonIcon implementation
-  void destroy() override {
-    // Do nothing, BrushTypeField is added as a widget in the
-    // ContextBar, so it will be destroyed together with the
-    // ContextBar.
-  }
-
-  int getWidth() override {
-    return m_bitmap->width();
-  }
-
-  int getHeight() override {
-    return m_bitmap->height();
-  }
-
-  she::Surface* getNormalIcon() override {
-    return m_bitmap;
-  }
-
-  she::Surface* getSelectedIcon() override {
-    return m_bitmap;
-  }
-
-  she::Surface* getDisabledIcon() override {
-    return m_bitmap;
-  }
-
-  int getIconAlign() override {
-    return JI_CENTER | JI_MIDDLE;
+    getItem(0)->setIcon(m_bitmap);
   }
 
 protected:
-  void onClick(Event& ev) override {
-    Button::onClick(ev);
+  void onItemChange() override {
+    ButtonSet::onItemChange();
 
     if (!m_popupWindow || !m_popupWindow->isVisible())
       openPopup();
@@ -150,27 +116,30 @@ protected:
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) {
-    ev.setPreferredSize(Size(16*jguiscale(),
-                             16*jguiscale()));
+    ev.setPreferredSize(Size(16, 18)*jguiscale());
   }
 
 private:
   void openPopup() {
-    Border border = Border(2, 2, 2, 3)*jguiscale();
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
     Rect rc = getBounds();
-    rc.y += rc.h;
+    rc.y += rc.h - 2*jguiscale();
+    rc.setSize(getPreferredSize());
     rc.w *= 3;
     m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
     m_popupWindow->setAutoRemap(false);
-    m_popupWindow->setBorder(border);
-    m_popupWindow->setBounds(rc + border);
+    m_popupWindow->setBorder(Border(0));
+    m_popupWindow->setBounds(rc);
+    m_popupWindow->child_spacing = 0;
 
     Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
-    m_brushTypeButton = new ButtonSet(3, 1, m_brushType,
-      PART_BRUSH_CIRCLE,
-      PART_BRUSH_SQUARE,
-      PART_BRUSH_LINE);
+    m_brushTypeButton = new ButtonSet(3);
+    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_CIRCLE));
+    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_SQUARE));
+    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_LINE));
+    m_brushTypeButton->setSelectedItem(m_brushType);
     m_brushTypeButton->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
     m_brushTypeButton->setTransparent(true);
     m_brushTypeButton->setBgColor(gfx::ColorNone);
@@ -189,7 +158,7 @@ private:
   }
 
   void onBrushTypeChange() {
-    m_brushType = (BrushType)m_brushTypeButton->getSelectedItem();
+    m_brushType = (BrushType)m_brushTypeButton->selectedItem();
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -550,12 +519,13 @@ protected:
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) {
-    ev.setPreferredSize(Size(16*jguiscale(),
-                             16*jguiscale()));
+    ev.setPreferredSize(Size(16, 18)*jguiscale());
   }
 
 private:
   void openPopup() {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
     Border border = Border(2, 2, 2, 3)*jguiscale();
     Rect rc = getBounds();
     rc.y += rc.h;
@@ -567,17 +537,18 @@ private:
 
     Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
-    m_freehandAlgoButton = new ButtonSet(3, 1, m_freehandAlgo,
-      PART_FREEHAND_ALGO_DEFAULT,
-      PART_FREEHAND_ALGO_PIXEL_PERFECT,
-      PART_FREEHAND_ALGO_DOTS);
+    m_freehandAlgoButton = new ButtonSet(3);
+    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_DEFAULT));
+    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_PIXEL_PERFECT));
+    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_DOTS));
+    m_freehandAlgoButton->setSelectedItem((int)m_freehandAlgo);
     m_freehandAlgoButton->ItemChange.connect(&FreehandAlgorithmField::onFreehandAlgoChange, this);
     m_freehandAlgoButton->setTransparent(true);
     m_freehandAlgoButton->setBgColor(gfx::ColorNone);
 
-    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(0), "Normal trace", JI_TOP);
-    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(1), "Pixel-perfect trace", JI_TOP);
-    m_tooltipManager->addTooltipFor(m_freehandAlgoButton->getButtonAt(2), "Dots", JI_TOP);
+    m_tooltipManager->addTooltipFor(at(0), "Normal trace", JI_TOP);
+    m_tooltipManager->addTooltipFor(at(1), "Pixel-perfect trace", JI_TOP);
+    m_tooltipManager->addTooltipFor(at(2), "Dots", JI_TOP);
 
     m_popupWindow->addChild(m_freehandAlgoButton);
     m_popupWindow->openWindow();
@@ -657,19 +628,22 @@ protected:
 class ContextBar::SelectionModeField : public ButtonSet
 {
 public:
-  SelectionModeField() : ButtonSet(3, 1, 0,
-    PART_SELECTION_REPLACE,
-    PART_SELECTION_ADD,
-    PART_SELECTION_SUBTRACT) {
+  SelectionModeField() : ButtonSet(3) {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+    addItem(theme->get_part(PART_SELECTION_REPLACE));
+    addItem(theme->get_part(PART_SELECTION_ADD));
+    addItem(theme->get_part(PART_SELECTION_SUBTRACT));
+
     setSelectedItem(
       (int)UIContext::instance()->settings()
       ->selection()->getSelectionMode());
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(getButtonAt(0), "Replace selection", JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(1), "Add to selection (Shift key)", JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(2), "Subtract from selection (Alt key)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(0), "Replace selection", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Add to selection (Shift key)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(2), "Subtract from selection (Alt key)", JI_BOTTOM);
   }
 
   void setSelectionMode(SelectionMode mode) {
@@ -681,23 +655,25 @@ protected:
   void onItemChange() override {
     ButtonSet::onItemChange();
 
-    int item = getSelectedItem();
     UIContext::instance()->settings()->selection()
-      ->setSelectionMode((SelectionMode)item);
+      ->setSelectionMode((SelectionMode)selectedItem());
   }
 };
 
 class ContextBar::DropPixelsField : public ButtonSet
 {
 public:
-  DropPixelsField() : ButtonSet(2, 1, -1,
-    PART_DROP_PIXELS_OK,
-    PART_DROP_PIXELS_CANCEL) {
+  DropPixelsField() : ButtonSet(2) {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+    addItem(theme->get_part(PART_DROP_PIXELS_OK));
+    addItem(theme->get_part(PART_DROP_PIXELS_CANCEL));
+    setOfferCapture(false);
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(getButtonAt(0), "Drop pixels here", JI_BOTTOM);
-    tooltipManager->addTooltipFor(getButtonAt(1), "Cancel drag and drop", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(0), "Drop pixels here", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", JI_BOTTOM);
   }
 
   Signal1<void, ContextBarObserver::DropAction> DropPixels;
@@ -706,7 +682,7 @@ protected:
   void onItemChange() override {
     ButtonSet::onItemChange();
 
-    switch (getSelectedItem()) {
+    switch (selectedItem()) {
       case 0: DropPixels(ContextBarObserver::DropPixels); break;
       case 1: DropPixels(ContextBarObserver::CancelDrag); break;
     }

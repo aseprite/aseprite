@@ -69,6 +69,7 @@ static std::string convert_type(const std::string& name)
 {
   if (name == "box") return "ui::Box";
   if (name == "button") return "ui::Button";
+  if (name == "buttonset") return "app::ButtonSet";
   if (name == "check") return "ui::CheckBox";
   if (name == "combobox") return "ui::ComboBox";
   if (name == "entry") return "ui::Entry";

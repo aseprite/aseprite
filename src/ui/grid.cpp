@@ -96,6 +96,27 @@ void Grid::addChildInCell(Widget* child, int hspan, int vspan, int align)
   }
 }
 
+Grid::Info Grid::getChildInfo(Widget* child)
+{
+  Info info;
+  for (int row=0; row<(int)m_rowstrip.size(); ++row) {
+    for (int col=0; col<(int)m_colstrip.size(); ++col) {
+      Cell* cell = m_cells[row][col];
+
+      if (cell->child == child) {
+        info.col = col;
+        info.row = row;
+        info.hspan = cell->hspan;
+        info.vspan = cell->vspan;
+        info.grid_cols = m_colstrip.size();
+        info.grid_rows = m_rowstrip.size();
+        return info;
+      }
+    }
+  }
+  return info;
+}
+
 void Grid::onResize(ResizeEvent& ev)
 {
   gfx::Rect rect = ev.getBounds();
@@ -150,6 +171,11 @@ void Grid::onResize(ResizeEvent& ev)
           y += h - reqSize.h;
           h = reqSize.h;
         }
+
+        if (x+w > rect.x+rect.w-this->border_width.r)
+          w = rect.x+rect.w-this->border_width.r-x;
+        if (y+h > rect.y+rect.h-this->border_width.b)
+          h = rect.y+rect.h-this->border_width.b-y;
 
         cell->child->setBounds(Rect(x, y, w, h));
       }

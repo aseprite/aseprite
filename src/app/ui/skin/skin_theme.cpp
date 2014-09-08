@@ -1847,6 +1847,11 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   g->drawAlignedUIString(widget->getText(), fg, bg, rc, widget->getAlign());
 }
 
+she::Surface* SkinTheme::get_part(const std::string& id) const
+{
+  return get_part_by_id(id)->getBitmap(0);
+}
+
 gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
 {
   gfx::Color c = widget->getBgColor();

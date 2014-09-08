@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -34,6 +34,7 @@ namespace ui {
   class LoadLayoutEvent;
   class Manager;
   class Message;
+  class MouseMessage;
   class PaintEvent;
   class PreferredSizeEvent;
   class ResizeEvent;
@@ -179,6 +180,8 @@ namespace ui {
 
     // Returns a list of children.
     const WidgetsList& getChildren() const { return m_children; }
+
+    Widget* at(int index) { return m_children[index]; }
 
     // Returns the first/last child or NULL if it doesn't exist.
     Widget* getFirstChild() {
@@ -332,10 +335,14 @@ namespace ui {
     void releaseFocus();
     void captureMouse();
     void releaseMouse();
+
     bool hasFocus();
     bool hasMouse();
     bool hasMouseOver();
     bool hasCapture();
+
+    // Offer the capture to widgets of the given type
+    void offerCapture(ui::MouseMessage* mouseMsg, int widget_type);
 
     // Returns lower-case letter that represet the mnemonic of the widget
     // (the underscored character, i.e. the letter after & symbol).

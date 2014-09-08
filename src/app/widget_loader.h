@@ -73,7 +73,7 @@ namespace app {
       const std::string& widgetId,
       ui::Widget* widget);
 
-    ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget);
+    ui::Widget* convertXmlElementToWidget(const TiXmlElement* elem, ui::Widget* root, ui::Widget* parent, ui::Widget* widget);
     void fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget);
 
     typedef std::map<std::string, IWidgetTypeCreator*> TypeCreatorsMap;

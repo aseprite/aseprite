@@ -24,10 +24,12 @@
 
 #include "app/app.h"
 #include "app/modules/gui.h"
-#include "app/xml_document.h"
 #include "app/resource_finder.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
+#include "app/xml_document.h"
 #include "app/xml_exception.h"
 #include "base/bind.h"
 #include "base/fs.h"
@@ -44,9 +46,11 @@
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
 static int convert_align_value_to_flags(const char *value);
 static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name);
+static int int_attr(const TiXmlElement* elem, const char* attribute_name, int default_value);
 
 WidgetLoader::WidgetLoader()
   : m_tooltipManager(NULL)
@@ -105,7 +109,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(
     const char* nodename = xmlElement->Attribute("id");
 
     if (nodename && nodename == widgetId) {
-      widget = convertXmlElementToWidget(xmlElement, NULL, widget);
+      widget = convertXmlElementToWidget(xmlElement, NULL, NULL, widget);
       break;
     }
 
@@ -115,7 +119,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(
   return widget;
 }
 
-Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root, Widget* widget)
+Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget* root, Widget* parent, Widget* widget)
 {
   const std::string elem_name = elem->Value();
 
@@ -413,6 +417,29 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     if (!widget)
       widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
   }
+  else if (elem_name == "buttonset") {
+    const char* columns = elem->Attribute("columns");
+
+    if (!widget && columns)
+      widget = new ButtonSet(strtol(columns, NULL, 10));
+  }
+  else if (elem_name == "item") {
+    if (!parent)
+      throw std::runtime_error("<item> without parent");
+
+    if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(parent)) {
+      SkinTheme* theme = static_cast<SkinTheme*>(parent->getTheme());
+
+      const char* icon = elem->Attribute("icon");
+      if (icon) {
+        int hspan = int_attr(elem, "hspan", 1);
+        int vspan = int_attr(elem, "vspan", 1);
+
+        she::Surface* sur = theme->get_part(std::string(icon));
+        buttonset->addItem(sur, hspan, vspan);
+      }
+    }
+  }
 
   // Was the widget created?
   if (widget)
@@ -421,7 +448,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   return widget;
 }
 
-void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget)
+void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, Widget* root, Widget* widget)
 {
   const char* id        = elem->Attribute("id");
   const char* text      = elem->Attribute("text");
@@ -505,7 +532,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   // Children
   const TiXmlElement* childElem = elem->FirstChildElement();
   while (childElem) {
-    Widget* child = convertXmlElementToWidget(childElem, root, NULL);
+    Widget* child = convertXmlElementToWidget(childElem, root, widget, NULL);
     if (child) {
       // Attach the child in the view
       if (widget->type == kViewWidget) {
@@ -585,6 +612,13 @@ static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_na
   const char* value = elem->Attribute(attribute_name);
 
   return (value != NULL) && (strcmp(value, "true") == 0);
+}
+
+static int int_attr(const TiXmlElement* elem, const char* attribute_name, int default_value)
+{
+  const char* value = elem->Attribute(attribute_name);
+
+  return (value ? strtol(value, NULL, 10): default_value);
 }
 
 } // namespace app

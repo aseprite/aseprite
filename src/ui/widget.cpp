@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2014  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -1234,6 +1234,23 @@ void Widget::releaseMouse()
 {
   if (getManager()->getCapture() == this) {
     getManager()->freeCapture();
+  }
+}
+
+void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
+{
+  if (hasCapture()) {
+    Widget* pick = getManager()->pick(mouseMsg->position());
+    if (pick && pick->getType() == widget_type) {
+      releaseMouse();
+
+      MouseMessage* mouseMsg2 = new MouseMessage(
+        kMouseDownMessage,
+        mouseMsg->buttons(),
+        mouseMsg->position());
+      mouseMsg2->addRecipient(pick);
+      getManager()->enqueueMessage(mouseMsg2);
+    }
   }
 }
 

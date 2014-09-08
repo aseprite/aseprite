@@ -29,9 +29,11 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/settings/settings.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
@@ -40,11 +42,12 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro/unicode.h>
+#include "generated_canvas_size.h"
 
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
 // Disable warning about usage of "this" in initializer list.
 #ifdef _MSC_VER
@@ -52,82 +55,84 @@ using namespace ui;
 #endif
 
 // Window used to show canvas parameters.
-class CanvasSizeWindow : public Window
+class CanvasSizeWindow : public app::gen::CanvasSize
                        , public SelectBoxDelegate
 {
 public:
-  CanvasSizeWindow(int left, int top, int right, int bottom)
-    : Window(WithTitleBar, "Canvas Size")
-    , m_editor(current_editor)
-    , m_mainBox(app::load_widget<Widget>("canvas_size.xml", "main_box"))
-    , m_left(app::find_widget<Entry>(m_mainBox, "left"))
-    , m_right(app::find_widget<Entry>(m_mainBox, "right"))
-    , m_top(app::find_widget<Entry>(m_mainBox, "top"))
-    , m_bottom(app::find_widget<Entry>(m_mainBox, "bottom"))
-    , m_ok(app::find_widget<Button>(m_mainBox, "ok"))
-    , m_rect(-left, -top,
-             current_editor->sprite()->width() + left + right,
-             current_editor->sprite()->height() + top + bottom)
+  enum class Dir { NW, N, NE, W, C, E, SW, S, SE };
+
+  CanvasSizeWindow()
+    : m_editor(current_editor)
+    , m_rect(0, 0, current_editor->sprite()->width(), current_editor->sprite()->height())
     , m_selectBoxState(new SelectBoxState(this, m_rect,
-                                          SelectBoxState::PaintRulers |
-                                          SelectBoxState::PaintDarkOutside))
-  {
-    addChild(m_mainBox);
+        SelectBoxState::PaintRulers |
+        SelectBoxState::PaintDarkOutside)) {
+    setWidth(m_rect.w);
+    setHeight(m_rect.h);
+    setLeft(0);
+    setRight(0);
+    setTop(0);
+    setBottom(0);
 
-    m_left->setTextf("%d", left);
-    m_right->setTextf("%d", right);
-    m_top->setTextf("%d", top);
-    m_bottom->setTextf("%d", bottom);
-
-    m_left  ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
-    m_right ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
-    m_top   ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
-    m_bottom->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onEntriesChange, this));
+    width() ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onSizeChange, this));
+    height()->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onSizeChange, this));
+    dir()   ->ItemChange.connect(Bind<void>(&CanvasSizeWindow::onDirChange, this));;
+    left()  ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onBorderChange, this));
+    right() ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onBorderChange, this));
+    top()   ->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onBorderChange, this));
+    bottom()->EntryChange.connect(Bind<void>(&CanvasSizeWindow::onBorderChange, this));
 
     m_editor->setState(m_selectBoxState);
+
+    dir()->setSelectedItem((int)Dir::C);
+    updateIcons();
   }
 
-  ~CanvasSizeWindow()
-  {
+  ~CanvasSizeWindow() {
     m_editor->backToPreviousState();
   }
 
-  bool pressedOk() { return getKiller() == m_ok; }
+  bool pressedOk() { return getKiller() == ok(); }
 
-  int getLeft()   const { return m_left->getTextInt(); }
-  int getRight()  const { return m_right->getTextInt(); }
-  int getTop()    const { return m_top->getTextInt(); }
-  int getBottom() const { return m_bottom->getTextInt(); }
+  int getWidth()  { return width()->getTextInt(); }
+  int getHeight() { return height()->getTextInt(); }
+  int getLeft()   { return left()->getTextInt(); }
+  int getRight()  { return right()->getTextInt(); }
+  int getTop()    { return top()->getTextInt(); }
+  int getBottom() { return bottom()->getTextInt(); }
 
 protected:
+
   // SelectBoxDelegate impleentation
-  virtual void onChangeRectangle(const gfx::Rect& rect) override
-  {
+  virtual void onChangeRectangle(const gfx::Rect& rect) override {
     m_rect = rect;
 
-    m_left->setTextf("%d", -m_rect.x);
-    m_top->setTextf("%d", -m_rect.y);
-    m_right->setTextf("%d", (m_rect.x + m_rect.w) - current_editor->sprite()->width());
-    m_bottom->setTextf("%d", (m_rect.y + m_rect.h) - current_editor->sprite()->height());
+    updateSizeFromRect();
+    updateBorderFromRect();
+    updateIcons();
   }
 
-  void onEntriesChange()
-  {
-    int left = getLeft();
-    int top = getTop();
-
-    m_rect = gfx::Rect(-left, -top,
-                       m_editor->sprite()->width() + left + getRight(),
-                       m_editor->sprite()->height() + top + getBottom());
-
-    static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
-
-    // Redraw new rulers position
-    m_editor->invalidate();
+  void onSizeChange() {
+    updateBorderFromSize();
+    updateRectFromBorder();
+    updateEditorBoxFromRect();
   }
 
-  virtual void onBroadcastMouseMessage(WidgetsList& targets) override
-  {
+  void onDirChange() {
+    updateIcons();
+    updateBorderFromSize();
+    updateRectFromBorder();
+    updateEditorBoxFromRect();
+  }
+
+  void onBorderChange() {
+    updateIcons();
+    updateRectFromBorder();
+    updateSizeFromRect();
+    updateEditorBoxFromRect();
+  }
+
+  virtual void onBroadcastMouseMessage(WidgetsList& targets) override {
     Window::onBroadcastMouseMessage(targets);
 
     // Add the editor as receptor of mouse events too.
@@ -135,13 +140,143 @@ protected:
   }
 
 private:
+
+  void updateBorderFromSize() {
+    int w = getWidth() - m_editor->sprite()->width();
+    int h = getHeight() - m_editor->sprite()->height();
+    int l, r, t, b;
+    l = r = t = b = 0;
+
+    switch ((Dir)dir()->selectedItem()) {
+      case Dir::NW:
+      case Dir::W:
+      case Dir::SW:
+        r = w;
+        break;
+      case Dir::N:
+      case Dir::C:
+      case Dir::S:
+        l = r = w/2;
+        if (w & 1)
+          r += (w >= 0 ? 1: -1);
+        break;
+      case Dir::NE:
+      case Dir::E:
+      case Dir::SE:
+        l = w;
+        break;
+    }
+
+    switch ((Dir)dir()->selectedItem()) {
+      case Dir::NW:
+      case Dir::N:
+      case Dir::NE:
+        b = h;
+        break;
+      case Dir::W:
+      case Dir::C:
+      case Dir::E:
+        b = t = h/2;
+        if (h & 1)
+          t += (h >= 0 ? 1: -1);
+        break;
+      case Dir::SW:
+      case Dir::S:
+      case Dir::SE:
+        t = h;
+        break;
+    }
+
+    setLeft(l);
+    setRight(r);
+    setTop(t);
+    setBottom(b);
+  }
+
+  void updateRectFromBorder() {
+    int left = getLeft();
+    int top = getTop();
+
+    m_rect = gfx::Rect(-left, -top,
+      m_editor->sprite()->width() + left + getRight(),
+      m_editor->sprite()->height() + top + getBottom());
+  }
+
+  void updateSizeFromRect() {
+    setWidth(m_rect.w);
+    setHeight(m_rect.h);
+  }
+
+  void updateBorderFromRect() {
+    setLeft(-m_rect.x);
+    setTop(-m_rect.y);
+    setRight((m_rect.x + m_rect.w) - current_editor->sprite()->width());
+    setBottom((m_rect.y + m_rect.h) - current_editor->sprite()->height());
+  }
+
+  void updateEditorBoxFromRect() {
+    static_cast<SelectBoxState*>(m_selectBoxState.get())->setBoxBounds(m_rect);
+
+    // Redraw new rulers position
+    m_editor->invalidate();
+  }
+
+  void updateIcons() {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+    int l = getLeft();
+    int r = getRight();
+    int t = getTop();
+    int b = getBottom();
+    int sel = dir()->selectedItem();
+
+    int c = 0;
+    for (int v=0; v<3; ++v) {
+      for (int u=0; u<3; ++u) {
+        const char* iconId = "canvas_empty";
+
+        if (c == sel) {
+          iconId = "canvas_c";
+        }
+        else if (u+1 < 3 && (u+1)+3*v == sel) {
+          iconId = "canvas_w";
+        }
+        else if (u-1 >= 0 && (u-1)+3*v == sel) {
+          iconId = "canvas_e";
+        }
+        else if (v+1 < 3 && u+3*(v+1) == sel) {
+          iconId = "canvas_n";
+        }
+        else if (v-1 >= 0 && u+3*(v-1) == sel) {
+          iconId = "canvas_s";
+        }
+        else if (u+1 < 3 && v+1 < 3 && (u+1)+3*(v+1) == sel) {
+          iconId = "canvas_nw";
+        }
+        else if (u-1 >= 0 && v+1 < 3 && (u-1)+3*(v+1) == sel) {
+          iconId = "canvas_ne";
+        }
+        else if (u+1 < 3 && v-1 >= 0 && (u+1)+3*(v-1) == sel) {
+          iconId = "canvas_sw";
+        }
+        else if (u-1 >= 0 && v-1 >= 0 && (u-1)+3*(v-1) == sel) {
+          iconId = "canvas_se";
+        }
+
+        dir()->getItem(c)->setIcon(theme->get_part(iconId));
+        ++c;
+      }
+    }
+  }
+
+  void setWidth(int v)  { width()->setTextf("%d", v); }
+  void setHeight(int v) { height()->setTextf("%d", v); }
+  void setLeft(int v)   { left()->setTextf("%d", v); }
+  void setRight(int v)  { right()->setTextf("%d", v); }
+  void setTop(int v)    { top()->setTextf("%d", v); }
+  void setBottom(int v) { bottom()->setTextf("%d", v); }
+
   Editor* m_editor;
-  Widget* m_mainBox;
-  Entry* m_left;
-  Entry* m_right;
-  Entry* m_top;
-  Entry* m_bottom;
-  Widget* m_ok;
   gfx::Rect m_rect;
   EditorStatePtr m_selectBoxState;
 };
@@ -179,7 +314,7 @@ void CanvasSizeCommand::onExecute(Context* context)
 
   if (context->isUiAvailable()) {
     // load the window widget
-    base::UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow(0, 0, 0, 0));
+    base::UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow());
 
     window->remapWindow();
     window->centerWindow();

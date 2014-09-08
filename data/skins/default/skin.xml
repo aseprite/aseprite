@@ -339,6 +339,16 @@
     <part id="freehand_algo_pixel_perfect_selected" x="168" y="208" w="8" h="8" />
     <part id="freehand_algo_dots"               x="176" y="208" w="8" h="8" />
     <part id="freehand_algo_dots_selected"      x="184" y="208" w="8" h="8" />
+    <part id="canvas_nw"                        x="96" y="96" w="16" h="16" />
+    <part id="canvas_n"                         x="112" y="96" w="16" h="16" />
+    <part id="canvas_ne"                        x="128" y="96" w="16" h="16" />
+    <part id="canvas_w"                         x="96" y="112" w="16" h="16" />
+    <part id="canvas_c"                         x="112" y="112" w="16" h="16" />
+    <part id="canvas_e"                         x="128" y="112" w="16" h="16" />
+    <part id="canvas_sw"                        x="96" y="128" w="16" h="16" />
+    <part id="canvas_s"                         x="112" y="128" w="16" h="16" />
+    <part id="canvas_se"                        x="128" y="128" w="16" h="16" />
+    <part id="canvas_empty"                     x="96" y="96" w="1" h="1" />
   </parts>
 
   <stylesheet>

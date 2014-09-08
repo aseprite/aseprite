@@ -160,6 +160,7 @@ namespace app {
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
       she::Surface* get_part(int part_i) const { return m_part[part_i]; }
+      she::Surface* get_part(const std::string& id) const;
       she::Surface* get_toolicon(const char* tool_id) const;
       gfx::Size get_part_size(int part_i) const;
 

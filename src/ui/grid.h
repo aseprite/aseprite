@@ -14,13 +14,23 @@
 
 namespace ui {
 
-  class Grid : public Widget
-  {
+  class Grid : public Widget {
   public:
+    struct Info {
+      int col, row;
+      int hspan, vspan;
+      int grid_cols, grid_rows;
+      Info() : col(0), row(0),
+               hspan(0), vspan(0),
+               grid_cols(0), grid_rows(0) {
+      }
+    };
+
     Grid(int columns, bool same_width_columns);
     ~Grid();
 
     void addChildInCell(Widget* child, int hspan, int vspan, int align);
+    Info getChildInfo(Widget* child);
 
   protected:
     // Events
