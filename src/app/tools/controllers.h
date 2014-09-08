@@ -18,6 +18,8 @@
 
 #include <cmath>
 
+#include "app/settings/document_settings.h"
+
 #ifndef M_PI
 #define M_PI            3.14159265358979323846
 #endif
@@ -78,7 +80,7 @@ public:
   }
 
   void pressButton(Points& points, const Point& point) override {
-    m_center = point;
+    m_first = point;
 
     points.push_back(point);
     points.push_back(point);
@@ -106,8 +108,8 @@ public:
     points[1] = point;
 
     if (m_squareAspect) {
-      int dx = points[1].x - m_center.x;
-      int dy = points[1].y - m_center.y;
+      int dx = points[1].x - m_first.x;
+      int dy = points[1].y - m_first.y;
       int minsize = MIN(ABS(dx), ABS(dy));
       int maxsize = MAX(ABS(dx), ABS(dy));
 
@@ -119,45 +121,60 @@ public:
 
         // Snap horizontally
         if (angle < 18.0) {
-          points[1].y = m_center.y;
+          points[1].y = m_first.y;
         }
         // Snap at 26.565
         else if (angle < 36.0) {
-          points[1].x = m_center.x + SGN(dx)*maxsize;
-          points[1].y = m_center.y + SGN(dy)*maxsize/2;
+          points[1].x = m_first.x + SGN(dx)*maxsize;
+          points[1].y = m_first.y + SGN(dy)*maxsize/2;
         }
         // Snap at 45
         else if (angle < 54.0) {
-          points[1].x = m_center.x + SGN(dx)*minsize;
-          points[1].y = m_center.y + SGN(dy)*minsize;
+          points[1].x = m_first.x + SGN(dx)*minsize;
+          points[1].y = m_first.y + SGN(dy)*minsize;
         }
         // Snap at 63.435
         else if (angle < 72.0) {
-          points[1].x = m_center.x + SGN(dx)*maxsize/2;
-          points[1].y = m_center.y + SGN(dy)*maxsize;
+          points[1].x = m_first.x + SGN(dx)*maxsize/2;
+          points[1].y = m_first.y + SGN(dy)*maxsize;
         }
         // Snap vertically
         else {
-          points[1].x = m_center.x;
+          points[1].x = m_first.x;
         }
       }
       // Rectangles and ellipses
       else {
-        points[1].x = m_center.x + SGN(dx)*minsize;
-        points[1].y = m_center.y + SGN(dy)*minsize;
+        points[1].x = m_first.x + SGN(dx)*minsize;
+        points[1].y = m_first.y + SGN(dy)*minsize;
       }
     }
 
+    points[0] = m_first;
+
     if (m_fromCenter) {
-      int rx = points[1].x - m_center.x;
-      int ry = points[1].y - m_center.y;
-      points[0].x = m_center.x - rx;
-      points[0].y = m_center.y - ry;
-      points[1].x = m_center.x + rx;
-      points[1].y = m_center.y + ry;
+      int rx = points[1].x - m_first.x;
+      int ry = points[1].y - m_first.y;
+      points[0].x = m_first.x - rx;
+      points[0].y = m_first.y - ry;
+      points[1].x = m_first.x + rx;
+      points[1].y = m_first.y + ry;
     }
-    else
-      points[0] = m_center;
+
+    // Adjust points for selection like tools (so we can select tiles)
+    if (loop->getController()->canSnapToGrid() &&
+        loop->getDocumentSettings()->getSnapToGrid() &&
+        loop->getInk()->isSelection()) {
+      if (points[0].x < points[1].x)
+        points[1].x--;
+      else if (points[0].x > points[1].x)
+        points[0].x--;
+
+      if (points[0].y < points[1].y)
+        points[1].y--;
+      else if (points[0].y > points[1].y)
+        points[0].y--;
+    }
   }
 
   void getPointsToInterwine(const Points& input, Points& output) {
@@ -199,7 +216,7 @@ private:
     }
   }
 
-  Point m_center;
+  Point m_first;
   bool m_squareAspect;
   bool m_fromCenter;
 };
