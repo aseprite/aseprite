@@ -1029,6 +1029,20 @@ void Manager::removeMessageFilterFor(Widget* widget)
   }
 }
 
+bool Manager::isFocusMovementKey(Message* msg)
+{
+  switch (static_cast<KeyMessage*>(msg)->scancode()) {
+
+    case kKeyTab:
+    case kKeyLeft:
+    case kKeyRight:
+    case kKeyUp:
+    case kKeyDown:
+      return true;
+  }
+  return false;
+}
+
 /* configures the window for begin the loop */
 void Manager::_openWindow(Window* window)
 {

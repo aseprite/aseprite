@@ -24,8 +24,7 @@ namespace ui {
   class Timer;
   class Window;
 
-  class Manager : public Widget
-  {
+  class Manager : public Widget {
   public:
     static Manager* getDefault() {
       return m_defaultManager;
@@ -78,6 +77,8 @@ namespace ui {
     void invalidateDisplayRegion(const gfx::Region& region);
 
     LayoutIO* getLayoutIO();
+
+    bool isFocusMovementKey(Message* msg);
 
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);

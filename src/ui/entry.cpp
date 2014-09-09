@@ -279,6 +279,9 @@ bool Entry::onProcessMessage(Message* msg)
                 case kKeyV: cmd = EntryCmd::Paste; break;
               }
             }
+            else if (getManager()->isFocusMovementKey(msg)) {
+              break;
+            }
             else if (keymsg->unicodeChar() >= 32) {
               // Ctrl and Alt must be unpressed to insert a character
               // in the text-field.
