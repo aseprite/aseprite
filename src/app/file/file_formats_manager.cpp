@@ -91,6 +91,10 @@ FileFormatsList::iterator FileFormatsManager::end()
   return m_formats.end();
 }
 
+#ifdef _MSC_VER
+#pragma warning (disable: 4996) // Disable warning about 'stricmp'
+#endif
+
 FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) const
 {
   char buf[512], *tok;
