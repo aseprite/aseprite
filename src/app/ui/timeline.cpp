@@ -169,7 +169,6 @@ Timeline::Timeline()
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
   , m_scroll(false)
-  , m_copy(false)
 {
   m_ctxConn = m_context->AfterCommandExecution.connect(&Timeline::onAfterCommandExecution, this);
   m_context->documents().addObserver(this);
@@ -428,16 +427,13 @@ bool Timeline::onProcessMessage(Message* msg)
       if (!m_document)
         break;
 
-      int hot_part = A_PART_NOTHING;
-      LayerIndex hot_layer = LayerIndex::NoLayer;
+      int hot_part;
+      LayerIndex hot_layer;
+      FrameNumber hot_frame;
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position()
         - getBounds().getOrigin();
 
-      FrameNumber hot_frame =
-        FrameNumber((mousePos.x
-            - m_separator_x
-            - m_separator_w
-            + m_scroll_x) / FRMSIZE);
+      updateHot(msg, mousePos, hot_part, hot_layer, hot_frame);
 
       if (hasCapture()) {
         switch (m_state) {
@@ -474,92 +470,12 @@ bool Timeline::onProcessMessage(Message* msg)
         // we shouldn't change the hot (so the separator can be
         // tracked to the mouse's released).
         if (m_clk_part == A_PART_SEPARATOR) {
-          hot_part = m_clk_part;
           m_separator_x = MAX(0, mousePos.x);
           invalidate();
           return true;
         }
       }
 
-      hot_layer = lastLayer() - LayerIndex(
-        (mousePos.y
-          - HDRSIZE
-          + m_scroll_y) / LAYSIZE);
-
-      hot_frame = FrameNumber((mousePos.x
-          - m_separator_x
-          - m_separator_w
-          + m_scroll_x) / FRMSIZE);
-
-      if (hasCapture()) {
-        hot_layer = MID(firstLayer(), hot_layer, lastLayer());
-        hot_frame = MID(firstFrame(), hot_frame, lastFrame());
-      }
-      else {
-        if (hot_layer > lastLayer()) hot_layer = LayerIndex::NoLayer;
-        if (hot_frame > lastFrame()) hot_frame = FrameNumber(-1);
-      }
-
-      // Is the mouse over onionskin handles?
-      gfx::Rect bounds = getOnionskinFramesBounds();
-      if (!bounds.isEmpty() && gfx::Rect(bounds.x, bounds.y, 3, bounds.h).contains(mousePos)) {
-        hot_part = A_PART_HEADER_ONIONSKIN_RANGE_LEFT;
-      }
-      else if (!bounds.isEmpty() && gfx::Rect(bounds.x+bounds.w-3, bounds.y, 3, bounds.h).contains(mousePos)) {
-        hot_part = A_PART_HEADER_ONIONSKIN_RANGE_RIGHT;
-      }
-      // Is the mouse on the separator.
-      else if (mousePos.x > m_separator_x-4
-            && mousePos.x < m_separator_x+4)  {
-        hot_part = A_PART_SEPARATOR;
-      }
-      // Is the mouse on the headers?
-      else if (mousePos.y < HDRSIZE) {
-        if (mousePos.x < m_separator_x) {
-          if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
-            hot_part = A_PART_HEADER_EYE;
-          else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
-            hot_part = A_PART_HEADER_PADLOCK;
-          else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
-            hot_part = A_PART_HEADER_GEAR;
-          else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
-            hot_part = A_PART_HEADER_ONIONSKIN;
-          else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
-            hot_part = A_PART_HEADER_LAYER;
-        }
-        else {
-          hot_part = A_PART_HEADER_FRAME;
-        }
-      }
-      else {
-        // Is the mouse on a layer's label?
-        if (mousePos.x < m_separator_x) {
-          if (getPartBounds(A_PART_LAYER_EYE_ICON, hot_layer).contains(mousePos))
-            hot_part = A_PART_LAYER_EYE_ICON;
-          else if (getPartBounds(A_PART_LAYER_PADLOCK_ICON, hot_layer).contains(mousePos))
-            hot_part = A_PART_LAYER_PADLOCK_ICON;
-          else if (getPartBounds(A_PART_LAYER_TEXT, hot_layer).contains(mousePos))
-            hot_part = A_PART_LAYER_TEXT;
-          else
-            hot_part = A_PART_LAYER;
-        }
-        else if (validLayer(hot_layer) && validFrame(hot_frame)) {
-          hot_part = A_PART_CEL;
-        }
-        else
-          hot_part = A_PART_NOTHING;
-      }
-
-      if (!hasCapture()) {
-        gfx::Rect outline = getPartBounds(A_PART_RANGE_OUTLINE);
-        if (outline.contains(mousePos) &&
-            !gfx::Rect(outline).shrink(2*OUTLINE_WIDTH).contains(mousePos)) {
-          hot_part = A_PART_RANGE_OUTLINE;
-        }
-      }
-
-      // Set the new 'hot' thing.
-      hotThis(hot_part, hot_layer, hot_frame);
       updateDropRange(mousePos);
 
       if (hasCapture()) {
@@ -743,8 +659,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
-        setCursor(mouseMsg->position().x,
-                  mouseMsg->position().y);
+        setCursor(msg, mouseMsg->position());
 
         releaseMouse();
         updateStatusBar(msg);
@@ -784,7 +699,9 @@ bool Timeline::onProcessMessage(Message* msg)
       }
       break;
 
-    case kKeyDownMessage:
+    case kKeyDownMessage: {
+      bool used = false;
+
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeyEsc:
@@ -795,17 +712,27 @@ bool Timeline::onProcessMessage(Message* msg)
           else {
             m_state = STATE_STANDBY;
           }
+          used = true;
           break;
 
         case kKeySpace: {
           m_scroll = true;
-          setCursor(jmouse_x(0), jmouse_y(0));
-          return true;
+          used = true;
+          break;
         }
       }
-      break;
 
-    case kKeyUpMessage:
+      updateHotByMousePos(msg,
+        gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+      if (used)
+        return true;
+
+      break;
+    }
+
+    case kKeyUpMessage: {
+      bool used = false;
+
       switch (static_cast<KeyMessage*>(msg)->scancode()) {
 
         case kKeySpace: {
@@ -813,12 +740,18 @@ bool Timeline::onProcessMessage(Message* msg)
 
           // We have to clear all the KEY_SPACE in buffer.
           clear_keybuf();
-
-          setCursor(jmouse_x(0), jmouse_y(0));
-          return true;
+          used = true;
+          break;
         }
       }
+
+      updateHotByMousePos(msg,
+        gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+      if (used)
+        return true;
+
       break;
+    }
 
     case kMouseWheelMessage:
       if (m_document) {
@@ -846,7 +779,7 @@ bool Timeline::onProcessMessage(Message* msg)
     case kSetCursorMessage:
       if (m_document) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        setCursor(mousePos.x, mousePos.y);
+        setCursor(msg, mousePos);
         return true;
       }
       break;
@@ -1057,9 +990,9 @@ void Timeline::onAfterLayerChanged(Editor* editor)
   invalidate();
 }
 
-void Timeline::setCursor(int x, int y)
+void Timeline::setCursor(ui::Message* msg, const gfx::Point& mousePos)
 {
-  int mx = x - getBounds().x;
+  int mx = mousePos.x - getBounds().x;
 
   // Scrolling.
   if (m_state == STATE_SCROLLING || m_scroll) {
@@ -1067,7 +1000,7 @@ void Timeline::setCursor(int x, int y)
   }
   // Moving.
   else if (m_state == STATE_MOVING_RANGE) {
-    if (m_copy)
+    if (isCopyKeyPressed(msg))
       jmouse_set_cursor(kArrowPlusCursor);
     else
       jmouse_set_cursor(kMoveCursor);
@@ -1605,6 +1538,115 @@ void Timeline::regenerateLayers()
     m_layers[c] = m_sprite->indexToLayer(LayerIndex(c));
 }
 
+void Timeline::updateHotByMousePos(ui::Message* msg, const gfx::Point& mousePos)
+{
+  int hot_part;
+  LayerIndex hot_layer;
+  FrameNumber hot_frame;
+  updateHot(msg, mousePos, hot_part, hot_layer, hot_frame);
+  setCursor(msg, mousePos);
+}
+
+void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, FrameNumber& hot_frame)
+{
+  hot_part = A_PART_NOTHING;
+  hot_layer = LayerIndex::NoLayer;
+  hot_frame = FrameNumber((mousePos.x
+      - m_separator_x
+      - m_separator_w
+      + m_scroll_x) / FRMSIZE);
+
+  if (!m_document)
+    return;
+
+  if (m_clk_part == A_PART_SEPARATOR) {
+    hot_part = A_PART_SEPARATOR;
+  }
+  else {
+    hot_layer = lastLayer() - LayerIndex(
+      (mousePos.y
+        - HDRSIZE
+        + m_scroll_y) / LAYSIZE);
+
+    hot_frame = FrameNumber((mousePos.x
+        - m_separator_x
+        - m_separator_w
+        + m_scroll_x) / FRMSIZE);
+
+    if (hasCapture()) {
+      hot_layer = MID(firstLayer(), hot_layer, lastLayer());
+      hot_frame = MID(firstFrame(), hot_frame, lastFrame());
+    }
+    else {
+      if (hot_layer > lastLayer()) hot_layer = LayerIndex::NoLayer;
+      if (hot_frame > lastFrame()) hot_frame = FrameNumber(-1);
+    }
+
+    // Is the mouse over onionskin handles?
+    gfx::Rect bounds = getOnionskinFramesBounds();
+    if (!bounds.isEmpty() && gfx::Rect(bounds.x, bounds.y, 3, bounds.h).contains(mousePos)) {
+      hot_part = A_PART_HEADER_ONIONSKIN_RANGE_LEFT;
+    }
+    else if (!bounds.isEmpty() && gfx::Rect(bounds.x+bounds.w-3, bounds.y, 3, bounds.h).contains(mousePos)) {
+      hot_part = A_PART_HEADER_ONIONSKIN_RANGE_RIGHT;
+    }
+    // Is the mouse on the separator.
+    else if (mousePos.x > m_separator_x-4
+      && mousePos.x < m_separator_x+4)  {
+      hot_part = A_PART_SEPARATOR;
+    }
+    // Is the mouse on the headers?
+    else if (mousePos.y < HDRSIZE) {
+      if (mousePos.x < m_separator_x) {
+        if (getPartBounds(A_PART_HEADER_EYE).contains(mousePos))
+          hot_part = A_PART_HEADER_EYE;
+        else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
+          hot_part = A_PART_HEADER_PADLOCK;
+        else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
+          hot_part = A_PART_HEADER_GEAR;
+        else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
+          hot_part = A_PART_HEADER_ONIONSKIN;
+        else if (getPartBounds(A_PART_HEADER_LAYER).contains(mousePos))
+          hot_part = A_PART_HEADER_LAYER;
+      }
+      else {
+        hot_part = A_PART_HEADER_FRAME;
+      }
+    }
+    else {
+      // Is the mouse on a layer's label?
+      if (mousePos.x < m_separator_x) {
+        if (getPartBounds(A_PART_LAYER_EYE_ICON, hot_layer).contains(mousePos))
+          hot_part = A_PART_LAYER_EYE_ICON;
+        else if (getPartBounds(A_PART_LAYER_PADLOCK_ICON, hot_layer).contains(mousePos))
+          hot_part = A_PART_LAYER_PADLOCK_ICON;
+        else if (getPartBounds(A_PART_LAYER_TEXT, hot_layer).contains(mousePos))
+          hot_part = A_PART_LAYER_TEXT;
+        else
+          hot_part = A_PART_LAYER;
+      }
+      else if (validLayer(hot_layer) && validFrame(hot_frame)) {
+        hot_part = A_PART_CEL;
+      }
+      else
+        hot_part = A_PART_NOTHING;
+    }
+
+    if (!hasCapture()) {
+      gfx::Rect outline = getPartBounds(A_PART_RANGE_OUTLINE);
+      if (outline.contains(mousePos)) {
+        // With Ctrl and Alt key we can drag the range from any place (not necessary from the outline.
+        if (isCopyKeyPressed(msg) ||
+            !gfx::Rect(outline).shrink(2*OUTLINE_WIDTH).contains(mousePos)) {
+          hot_part = A_PART_RANGE_OUTLINE;
+        }
+      }
+    }
+  }
+
+  hotThis(hot_part, hot_layer, hot_frame);
+}
+
 void Timeline::hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hot_frame)
 {
   // If the part, layer or frame change.
@@ -2025,9 +2067,8 @@ void Timeline::clearClipboardRange()
 
 bool Timeline::isCopyKeyPressed(ui::Message* msg)
 {
-  m_copy = msg->ctrlPressed() ||  // Ctrl is common on Windows
-           msg->altPressed();    // Alt is common on Mac OS X
-  return m_copy;
+  return msg->ctrlPressed() ||  // Ctrl is common on Windows
+         msg->altPressed();    // Alt is common on Mac OS X
 }
 
 } // namespace app

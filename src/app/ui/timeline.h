@@ -142,7 +142,7 @@ namespace app {
     bool allLayersLocked();
     bool allLayersUnlocked();
     void detachDocument();
-    void setCursor(int x, int y);
+    void setCursor(ui::Message* msg, const gfx::Point& mousePos);
     void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
     void getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -165,7 +165,9 @@ namespace app {
     gfx::Rect getRangeBounds(const Range& range) const;
     void invalidatePart(int part, LayerIndex layer, FrameNumber frame);
     void regenerateLayers();
-    void hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hotFrame);
+    void updateHotByMousePos(ui::Message* msg, const gfx::Point& mousePos);
+    void updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, FrameNumber& hot_frame);
+    void hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hot_frame);
     void centerCel(LayerIndex layer, FrameNumber frame);
     void showCel(LayerIndex layer, FrameNumber frame);
     void showCurrentCel();
