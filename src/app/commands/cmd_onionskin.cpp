@@ -23,6 +23,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "app/document.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 

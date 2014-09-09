@@ -54,13 +54,12 @@ ConfigModule::ConfigModule()
   }
 #endif
 
-  override_config_file(fn.c_str());
+  set_config_file(fn.c_str());
   g_configFilename = fn;
 }
 
 ConfigModule::~ConfigModule()
 {
-  //override_config_file(NULL);
   flush_config_file();
 }
 

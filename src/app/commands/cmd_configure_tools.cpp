@@ -36,6 +36,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "doc/context_observer.h"
 #include "gfx/size.h"
 #include "raster/mask.h"
 #include "ui/ui.h"
@@ -55,13 +56,15 @@ static void on_exit_delete_this_widget()
   delete window;
 }
 
-class ConfigureTools : public Command {
+class ConfigureTools : public Command,
+                       public doc::ContextObserver {
 public:
   ConfigureTools();
   Command* clone() const override { return new ConfigureTools(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
+  void onSetActiveDocument(doc::Document* document) override;
 
 private:
   CheckBox* m_tiled;
@@ -93,8 +96,8 @@ ConfigureTools::ConfigureTools()
 
 void ConfigureTools::onExecute(Context* context)
 {
-  m_settings = UIContext::instance()->settings();
-  m_docSettings = m_settings->getDocumentSettings(NULL);
+  m_settings = context->settings();
+  m_docSettings = NULL;
 
   Button* set_grid;
   bool first_time = false;
@@ -105,9 +108,12 @@ void ConfigureTools::onExecute(Context* context)
   }
   // If the window is opened, close it
   else if (window->isVisible()) {
+    context->removeObserver(this);
     window->closeWindow(NULL);
     return;
   }
+
+  context->addObserver(this);
 
   try {
     m_tiled = app::find_widget<CheckBox>(window, "tiled");
@@ -124,15 +130,7 @@ void ConfigureTools::onExecute(Context* context)
     throw;
   }
 
-  if (m_docSettings->getTiledMode() != filters::TILED_NONE) {
-    m_tiled->setSelected(true);
-    if (m_docSettings->getTiledMode() & filters::TILED_X_AXIS) m_tiledX->setSelected(true);
-    if (m_docSettings->getTiledMode() & filters::TILED_Y_AXIS) m_tiledY->setSelected(true);
-  }
-
-  if (m_docSettings->getSnapToGrid()) m_snapToGrid->setSelected(true);
-  if (m_docSettings->getGridVisible()) m_viewGrid->setSelected(true);
-  if (m_docSettings->getPixelGridVisible()) m_pixelGrid->setSelected(true);
+  onSetActiveDocument(context->activeDocument());
 
   if (first_time) {
     // Slots
@@ -225,6 +223,24 @@ void ConfigureTools::onSetGridClick()
   catch (LockedDocumentException& e) {
     Console::showException(e);
   }
+}
+
+void ConfigureTools::onSetActiveDocument(doc::Document* document)
+{
+  if (!document)
+    return;
+
+  m_docSettings = m_settings->getDocumentSettings(document);
+  ASSERT(m_docSettings);
+  if (!m_docSettings)
+    return;
+
+  m_tiled->setSelected(m_docSettings->getTiledMode() != filters::TILED_NONE);
+  m_tiledX->setSelected(m_docSettings->getTiledMode() & filters::TILED_X_AXIS ? true: false);
+  m_tiledY->setSelected(m_docSettings->getTiledMode() & filters::TILED_Y_AXIS ? true: false);
+  m_snapToGrid->setSelected(m_docSettings->getSnapToGrid());
+  m_viewGrid->setSelected(m_docSettings->getGridVisible());
+  m_pixelGrid->setSelected(m_docSettings->getPixelGridVisible());
 }
 
 Command* CommandFactory::createConfigureToolsCommand()

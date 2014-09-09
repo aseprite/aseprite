@@ -24,7 +24,9 @@
 
 #include "app/app.h"
 #include "app/color_swatches.h"
+#include "app/document.h"
 #include "app/ini_file.h"
+#include "app/resource_finder.h"
 #include "app/settings/document_settings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -32,7 +34,10 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
+#include "app/ui_context.h"
 #include "base/observable.h"
+#include "doc/context.h"
+#include "doc/documents_observer.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 
@@ -55,45 +60,88 @@ namespace {
 class UIDocumentSettingsImpl : public IDocumentSettings,
                                public base::Observable<DocumentSettingsObserver> {
 public:
-  UIDocumentSettingsImpl()
-    : m_tiledMode((TiledMode)get_config_int("Tools", "Tiled", (int)TILED_NONE))
-    , m_use_onionskin(get_config_bool("Onionskin", "Enabled", false))
-    , m_prev_frames_onionskin(get_config_int("Onionskin", "PrevFrames", 1))
-    , m_next_frames_onionskin(get_config_int("Onionskin", "NextFrames", 1))
-    , m_onionskin_opacity_base(get_config_int("Onionskin", "OpacityBase", DEFAULT_ONIONSKIN_OPACITY_BASE))
-    , m_onionskin_opacity_step(get_config_int("Onionskin", "OpacityStep", DEFAULT_ONIONSKIN_OPACITY_STEP))
-    , m_onionskinType((OnionskinType)get_config_int("Onionskin", "Type", (int)DEFAULT_ONIONSKIN_TYPE))
-    , m_snapToGrid(get_config_bool("Grid", "SnapTo", false))
-    , m_gridVisible(get_config_bool("Grid", "Visible", false))
-    , m_gridBounds(get_config_rect("Grid", "Bounds", Rect(0, 0, 16, 16)))
-    , m_gridColor(get_config_color("Grid", "Color", app::Color::fromRgb(0, 0, 255)))
-    , m_pixelGridVisible(get_config_bool("PixelGrid", "Visible", false))
-    , m_pixelGridColor(get_config_color("PixelGrid", "Color", app::Color::fromRgb(200, 200, 200)))
+  UIDocumentSettingsImpl(const doc::Document* doc)
+    : m_doc(doc)
+    , m_tiledMode(TILED_NONE)
+    , m_use_onionskin(false)
+    , m_prev_frames_onionskin(1)
+    , m_next_frames_onionskin(1)
+    , m_onionskin_opacity_base(DEFAULT_ONIONSKIN_OPACITY_BASE)
+    , m_onionskin_opacity_step(DEFAULT_ONIONSKIN_OPACITY_STEP)
+    , m_onionskinType(DEFAULT_ONIONSKIN_TYPE)
+    , m_snapToGrid(false)
+    , m_gridVisible(false)
+    , m_gridBounds(0, 0, 16, 16)
+    , m_gridColor(app::Color::fromRgb(0, 0, 255))
+    , m_pixelGridVisible(false)
+    , m_pixelGridColor(app::Color::fromRgb(200, 200, 200))
     , m_isLoop(false)
     , m_loopBegin(0)
-    , m_loopEnd(-1)
+    , m_loopEnd(1)
     , m_aniDir(AniDir_Normal)
   {
-    m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
-    m_onionskinType = (OnionskinType)MID(0, (int)m_onionskinType, (int)Onionskin_Last);
+    bool specific_file = false;
+    if (m_doc && static_cast<const app::Document*>(m_doc)->isAssociatedToFile()) {
+      push_config_state();
+      set_config_file(configFileName().c_str());
+      specific_file = true;
+
+      m_tiledMode = (TiledMode)get_config_int("Tools", "Tiled", (int)m_tiledMode);
+      m_use_onionskin = get_config_bool("Onionskin", "Enabled", m_use_onionskin);
+      m_prev_frames_onionskin = get_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
+      m_next_frames_onionskin = get_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
+      m_onionskin_opacity_base = get_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
+      m_onionskin_opacity_step = get_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
+      m_onionskinType = (OnionskinType)get_config_int("Onionskin", "Type", m_onionskinType);
+      m_snapToGrid = get_config_bool("Grid", "SnapTo", m_snapToGrid);
+      m_gridVisible = get_config_bool("Grid", "Visible", m_gridVisible);
+      m_gridBounds = get_config_rect("Grid", "Bounds", m_gridBounds);
+      m_pixelGridVisible = get_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
+
+      // Limit values
+      m_tiledMode = (TiledMode)MID(0, (int)m_tiledMode, (int)TILED_BOTH);
+      m_onionskinType = (OnionskinType)MID(0, (int)m_onionskinType, (int)Onionskin_Last);
+    }
+
+    m_gridColor = get_config_color("Grid", "Color", m_gridColor);
+    m_pixelGridColor = get_config_color("PixelGrid", "Color", m_pixelGridColor);
+
+    if (specific_file)
+      pop_config_state();
   }
 
   ~UIDocumentSettingsImpl()
   {
-    set_config_int("Tools", "Tiled", m_tiledMode);
-    set_config_bool("Grid", "SnapTo", m_snapToGrid);
-    set_config_bool("Grid", "Visible", m_gridVisible);
-    set_config_rect("Grid", "Bounds", m_gridBounds);
-    set_config_color("Grid", "Color", m_gridColor);
-    set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
-    set_config_color("PixelGrid", "Color", m_pixelGridColor);
+    bool specific_file = false;
+    if (m_doc) {
+      // We don't save the document configuration if it isn't associated with a file.
+      if (!static_cast<const app::Document*>(m_doc)->isAssociatedToFile())
+        return;
 
-    set_config_bool("Onionskin", "Enabled", m_use_onionskin);
-    set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
-    set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
-    set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
-    set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
-    set_config_int("Onionskin", "Type", m_onionskinType);
+      push_config_state();
+      set_config_file(configFileName().c_str());
+      specific_file = true;
+
+      set_config_int("Tools", "Tiled", m_tiledMode);
+      set_config_bool("Grid", "SnapTo", m_snapToGrid);
+      set_config_bool("Grid", "Visible", m_gridVisible);
+      set_config_rect("Grid", "Bounds", m_gridBounds);
+      set_config_bool("PixelGrid", "Visible", m_pixelGridVisible);
+
+      set_config_bool("Onionskin", "Enabled", m_use_onionskin);
+      set_config_int("Onionskin", "PrevFrames", m_prev_frames_onionskin);
+      set_config_int("Onionskin", "NextFrames", m_next_frames_onionskin);
+      set_config_int("Onionskin", "OpacityBase", m_onionskin_opacity_base);
+      set_config_int("Onionskin", "OpacityStep", m_onionskin_opacity_step);
+      set_config_int("Onionskin", "Type", m_onionskinType);
+    }
+
+    saveSharedSettings();
+
+    if (specific_file) {
+      flush_config_file();
+      pop_config_state();
+    }
   }
 
   // Tiled mode
@@ -154,11 +202,36 @@ public:
   virtual void removeObserver(DocumentSettingsObserver* observer) override;
 
 private:
+  void saveSharedSettings() {
+    set_config_color("Grid", "Color", m_gridColor);
+    set_config_color("PixelGrid", "Color", m_pixelGridColor);
+  }
+
+  std::string configFileName() {
+    if (!m_doc)
+      return "";
+
+    if (m_cfgName.empty()) {
+      ResourceFinder rf;
+      std::string fn = m_doc->filename();
+      for (size_t i=0; i<fn.size(); ++i) {
+        if (fn[i] == ' ' || fn[i] == '/' || fn[i] == '\\' || fn[i] == ':' || fn[i] == '.') {
+          fn[i] = '-';
+        }
+      }
+      rf.includeUserDir(("files/" + fn + ".ini").c_str());
+      m_cfgName = rf.getFirstOrCreateDefault();
+    }
+    return m_cfgName;
+  }
+
   void redrawDocumentViews() {
     // TODO Redraw only document's views
     ui::Manager::getDefault()->invalidate();
   }
 
+  const doc::Document* m_doc;
+  std::string m_cfgName;
   TiledMode m_tiledMode;
   bool m_use_onionskin;
   int m_prev_frames_onionskin;
@@ -176,7 +249,6 @@ private:
   raster::FrameNumber m_loopBegin;
   raster::FrameNumber m_loopEnd;
   AniDir m_aniDir;
-
 };
 
 class UISelectionSettingsImpl
@@ -210,7 +282,6 @@ private:
 
 UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
-  , m_globalDocumentSettings(new UIDocumentSettingsImpl)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
   , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
@@ -233,17 +304,22 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
   set_config_int("Options", "RightClickMode", static_cast<int>(m_rightClickMode));
 
-  // Delete all tool settings.
-  for (std::map<std::string, IToolSettings*>::iterator
-         it = m_toolSettings.begin(), end = m_toolSettings.end(); it != end; ++it) {
-    delete it->second;
-  }
+  for (auto it : m_docSettings)
+    delete it.second;
 
-  // Delete all color swatches
-  for (std::vector<app::ColorSwatches*>::iterator
-         it = m_colorSwatchesStore.begin(), end = m_colorSwatchesStore.end();
-       it != end; ++it) {
-    delete *it;
+  for (auto it : m_toolSettings)
+    delete it.second;
+
+  for (auto it : m_colorSwatchesStore)
+    delete it;
+}
+
+void UISettingsImpl::onRemoveDocument(doc::Document* doc)
+{
+  auto it = m_docSettings.find(doc->id());
+  if (it != m_docSettings.end()) {
+    delete it->second;
+    m_docSettings.erase(it);
   }
 }
 
@@ -369,9 +445,20 @@ void UISettingsImpl::setColorSwatches(app::ColorSwatches* colorSwatches)
   notifyObservers<app::ColorSwatches*>(&GlobalSettingsObserver::onSetColorSwatches, colorSwatches);
 }
 
-IDocumentSettings* UISettingsImpl::getDocumentSettings(const Document* document)
+IDocumentSettings* UISettingsImpl::getDocumentSettings(const doc::Document* document)
 {
-  return m_globalDocumentSettings;
+  doc::ObjectId id;
+
+  if (!document)
+    id = doc::NullId;
+  else
+    id = document->id();
+
+  auto it = m_docSettings.find(id);
+  if (it != m_docSettings.end())
+    return it->second;
+
+  return m_docSettings[id] = new UIDocumentSettingsImpl(document);
 }
 
 IColorSwatchesStore* UISettingsImpl::getColorSwatchesStore()
@@ -482,6 +569,8 @@ void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
   notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, color);
+
+  saveSharedSettings();
 }
 
 void UIDocumentSettingsImpl::snapToGrid(gfx::Point& point) const
@@ -520,6 +609,8 @@ void UIDocumentSettingsImpl::setPixelGridColor(const app::Color& color)
 {
   m_pixelGridColor = color;
   redrawDocumentViews();
+
+  saveSharedSettings();
 }
 
 bool UIDocumentSettingsImpl::getUseOnionskin()

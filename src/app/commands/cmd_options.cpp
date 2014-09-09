@@ -52,7 +52,7 @@ class OptionsWindow : public app::gen::Options {
 public:
   OptionsWindow(Context* context)
     : m_settings(context->settings())
-    , m_docSettings(m_settings->getDocumentSettings(NULL))
+    , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
     , m_checked_bg_color1(new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB))
     , m_checked_bg_color2(new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(m_docSettings->getPixelGridColor(), IMAGE_RGB))

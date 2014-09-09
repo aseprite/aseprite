@@ -48,6 +48,8 @@ UIContext::UIContext()
   : Context(new UISettingsImpl)
   , m_lastSelectedView(NULL)
 {
+  documents().addObserver(static_cast<UISettingsImpl*>(settings()));
+
   ASSERT(m_instance == NULL);
   m_instance = this;
 }
@@ -56,6 +58,8 @@ UIContext::~UIContext()
 {
   ASSERT(m_instance == this);
   m_instance = NULL;
+
+  documents().removeObserver(static_cast<UISettingsImpl*>(settings()));
 
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can

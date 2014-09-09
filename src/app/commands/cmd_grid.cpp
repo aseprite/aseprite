@@ -23,6 +23,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "app/document.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"

@@ -31,10 +31,13 @@
 #include "gfx/rect.h"
 #include "raster/brush_type.h"
 
+namespace doc {
+  class Document;
+}
+
 namespace app {
 
   class ColorSwatches;
-  class Document;
   class IColorSwatchesStore;
   class IDocumentSettings;
   class IBrushSettings;
@@ -82,7 +85,7 @@ namespace app {
     // Returns the specific settings for the given document. If the
     // document is null, it should return an interface for
     // global/default settings.
-    virtual IDocumentSettings* getDocumentSettings(const Document* document) = 0;
+    virtual IDocumentSettings* getDocumentSettings(const doc::Document* document) = 0;
 
     // Specific configuration for the given tool.
     virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;
