@@ -37,6 +37,11 @@
   #endif
 #elif defined(ALLEGRO_UNIX)
   #include <xalleg.h>
+  #ifdef None
+  #undef None
+  #define X11_None 0L
+  #endif
+
 #endif
 
 #ifdef WIN32
@@ -628,7 +633,7 @@ public:
     XGrabPointer(_xwin.display, _xwin.window, False,
       PointerMotionMask | ButtonPressMask | ButtonReleaseMask,
       GrabModeAsync, GrabModeAsync,
-      None, None, CurrentTime);
+      X11_None, X11_None, CurrentTime);
 
 #endif
   }
