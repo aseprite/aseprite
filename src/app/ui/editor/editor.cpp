@@ -146,8 +146,11 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(FrameNumber(0))
   , m_zoom(0)
-  , m_mask_timer(100, this)
   , m_selectionMode(kDefaultSelectionMode)
+  , m_offset_x(0)
+  , m_offset_y(0)
+  , m_mask_timer(100, this)
+  , m_offset_count(0)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
   , m_flags(flags)
@@ -163,10 +166,6 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_cursor_editor_y = 0;
 
   m_quicktool = NULL;
-
-  m_offset_x = 0;
-  m_offset_y = 0;
-  m_offset_count = 0;
 
   this->setFocusStop(true);
 
