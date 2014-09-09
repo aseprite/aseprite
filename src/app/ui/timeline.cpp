@@ -1284,7 +1284,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   switch (drop.type()) {
 
     case Range::kCels: {
-      gfx::Rect dropBounds = getRangeBounds(drop).enlarge(OUTLINE_WIDTH);
+      dropBounds = dropBounds.enlarge(OUTLINE_WIDTH);
       m_timelineRangeOutlineStyle->paint(g, dropBounds, NULL, Style::active());
       break;
     }
@@ -1474,7 +1474,7 @@ gfx::Rect Timeline::getPartBounds(int part, LayerIndex layer, FrameNumber frame)
       break;
 
     case A_PART_CEL:
-      if (validLayer(layer) && validFrame(frame)) {
+      if (validLayer(layer) && frame >= FrameNumber(0)) {
         return gfx::Rect(
           m_separator_x + m_separator_w - 1 + FRMSIZE*frame - m_scroll_x,
           HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
@@ -1575,7 +1575,10 @@ void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_
 
     if (hasCapture()) {
       hot_layer = MID(firstLayer(), hot_layer, lastLayer());
-      hot_frame = MID(firstFrame(), hot_frame, lastFrame());
+      if (isMovingCel())
+        hot_frame = MAX(firstFrame(), hot_frame);
+      else
+        hot_frame = MID(firstFrame(), hot_frame, lastFrame());
     }
     else {
       if (hot_layer > lastLayer()) hot_layer = LayerIndex::NoLayer;
@@ -1993,7 +1996,7 @@ void Timeline::updateDropRange(const gfx::Point& pt)
       layerIdx = MID(firstLayer(), layerIdx, LayerIndex(m_layers.size() - m_range.layers()));
 
       frame = dx+m_range.frameBegin();
-      frame = MID(firstFrame(), frame, m_sprite->totalFrames() - m_range.frames());
+      frame = MAX(firstFrame(), frame);
 
       m_dropRange.startRange(layerIdx, frame, m_range.type());
       m_dropRange.endRange(

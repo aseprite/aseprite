@@ -685,7 +685,7 @@ void DocumentApi::moveCel(
   ASSERT(dstSprite != NULL);
 
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
-  ASSERT(dstFrame >= 0 && dstFrame < dstSprite->totalFrames());
+  ASSERT(dstFrame >= 0);
 
   // Background to any other layer, we use copyCel() instead.
   if (srcLayer->isBackground()) {
@@ -702,6 +702,10 @@ void DocumentApi::moveCel(
     removeCel(dstLayer, dstCel);
 
   if (srcCel != NULL) {
+    // Add more frames
+    while (dstSprite->totalFrames() <= dstFrame)
+      addEmptyFrame(dstSprite, dstSprite->totalFrames(), bgcolor);
+
     // Move the cel in the same layer.
     if (srcLayer == dstLayer) {
       setCelFramePosition(srcLayer, srcCel, dstFrame);
@@ -753,7 +757,7 @@ void DocumentApi::copyCel(
   ASSERT(dstSprite != NULL);
 
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
-  ASSERT(dstFrame >= 0 && dstFrame < dstSprite->totalFrames());
+  ASSERT(dstFrame >= 0);
 
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
@@ -765,6 +769,10 @@ void DocumentApi::copyCel(
 
   // Move the cel in the same layer.
   if (srcCel != NULL) {
+    // Add more frames
+    while (dstSprite->totalFrames() <= dstFrame)
+      addEmptyFrame(dstSprite, dstSprite->totalFrames(), bgcolor);
+
     Image *srcImage = srcCel->image();
     Image *dstImage;
     int dstCel_x;
