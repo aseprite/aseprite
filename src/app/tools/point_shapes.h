@@ -96,6 +96,23 @@ private:
 
     bounds = bounds.createIntersect(loop->getSrcImage()->bounds());
 
+    // Limit the flood-fill to the current tile if the grid is visible.
+    if (loop->getDocumentSettings()->getGridVisible()) {
+      gfx::Rect grid = loop->getDocumentSettings()->getGridBounds();
+      div_t d, dx, dy;
+
+      dx = div(grid.x+loop->getOffset().x, grid.w);
+      dy = div(grid.y+loop->getOffset().y, grid.h);
+
+      d = div(x-dx.rem, grid.w);
+      x = dx.rem + d.quot*grid.w;
+
+      d = div(y-dy.rem, grid.h);
+      y = dy.rem + d.quot*grid.h;
+
+      bounds = bounds.createIntersect(gfx::Rect(x, y, grid.w, grid.h));
+    }
+
     return bounds;
   }
 };
