@@ -1102,7 +1102,7 @@ static std::string get_key_for_filename(const std::string& filename)
   std::string buf(filename);
 
 #if !defined CASE_SENSITIVE
-  buf.tolower();
+  buf = base::string_to_lower(buf);
 #endif
   buf = base::fix_path_separators(buf);
 
