@@ -788,7 +788,6 @@ tools::Ink* Editor::getCurrentEditorInk()
   if (m_quicktool)
     return ink;
 
-  tools::Tool* selectedTool = context->settings()->getCurrentTool();
   RightClickMode rightClickMode = context->settings()->getRightClickMode();
 
   if (m_secondaryButton &&

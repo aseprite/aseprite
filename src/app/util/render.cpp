@@ -290,7 +290,6 @@ static app::Color checked_bg_color2;
 static int global_opacity = 255;
 static const Layer* selected_layer = NULL;
 static Image* preview_image = NULL;
-static int preview_blendmode = BLEND_MODE_NORMAL;
 
 // static
 void RenderEngine::loadConfig()

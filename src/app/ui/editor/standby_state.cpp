@@ -230,8 +230,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       return true;
     }
 
-    int x, y, opacity;
-    Image* image = location.image(&x, &y, &opacity);
     // Change to MovingPixelsState
     transformSelection(editor, msg, MoveHandle);
     return true;

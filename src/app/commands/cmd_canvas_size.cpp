@@ -224,10 +224,6 @@ private:
   void updateIcons() {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-    int l = getLeft();
-    int r = getRight();
-    int t = getTop();
-    int b = getBottom();
     int sel = dir()->selectedItem();
 
     int c = 0;

@@ -330,8 +330,6 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
   ASSERT(layer);
   ASSERT(frame >= 0);
 
-  Sprite* sprite = layer->sprite();
-
   switch (layer->type()) {
 
     case OBJECT_LAYER_IMAGE: {
