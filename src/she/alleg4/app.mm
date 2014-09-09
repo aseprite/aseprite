@@ -28,7 +28,7 @@
   ev.setType(she::Event::DropFiles);
 
   std::vector<std::string> files;
-  files.push_back([filename lossyCString]);
+  files.push_back([filename UTF8String]);
 
   ev.setFiles(files);
   she::queue_event(ev);
