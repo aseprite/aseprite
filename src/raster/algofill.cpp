@@ -121,7 +121,8 @@ inline bool color_equal<IndexedTraits>(color_t c1, color_t c2, int tolerance)
  *  the part of the line which it has dealt with.
  */
 static int flooder(Image *image, int x, int y,
-                   color_t src_color, int tolerance, void *data, AlgoHLine proc)
+  const gfx::Rect& bounds,
+  color_t src_color, int tolerance, void *data, AlgoHLine proc)
 {
   FLOODED_LINE *p;
   int left = 0, right = 0;
@@ -138,13 +139,13 @@ static int flooder(Image *image, int x, int y,
           return x+1;
 
         // Work left from starting point
-        for (left=x-1; left>=0; left--) {
+        for (left=x-1; left>=bounds.x; left--) {
           if (!color_equal_32((int)*(address+left), src_color, tolerance))
             break;
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->width(); right++) {
+        for (right=x+1; right<bounds.x2(); right++) {
           if (!color_equal_32((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -160,13 +161,13 @@ static int flooder(Image *image, int x, int y,
           return x+1;
 
         // Work left from starting point
-        for (left=x-1; left>=0; left--) {
+        for (left=x-1; left>=bounds.x; left--) {
           if (!color_equal_16((int)*(address+left), src_color, tolerance))
             break;
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->width(); right++) {
+        for (right=x+1; right<bounds.x2(); right++) {
           if (!color_equal_16((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -182,13 +183,13 @@ static int flooder(Image *image, int x, int y,
           return x+1;
 
         // Work left from starting point
-        for (left=x-1; left>=0; left--) {
+        for (left=x-1; left>=bounds.x; left--) {
           if (!color_equal_8((int)*(address+left), src_color, tolerance))
             break;
         }
 
         // Work right from starting point
-        for (right=x+1; right<image->width(); right++) {
+        for (right=x+1; right<bounds.x2(); right++) {
           if (!color_equal_8((int)*(address+right), src_color, tolerance))
             break;
         }
@@ -201,13 +202,13 @@ static int flooder(Image *image, int x, int y,
         return x+1;
 
       // Work left from starting point
-      for (left=x-1; left>=0; left--) {
+      for (left=x-1; left>=bounds.x; left--) {
         if (get_pixel(image, left, y) != src_color)
           break;
       }
 
       // Work right from starting point
-      for (right=x+1; right<image->width(); right++) {
+      for (right=x+1; right<bounds.x2(); right++) {
         if (get_pixel(image, right, y) != src_color)
           break;
       }
@@ -241,10 +242,10 @@ static int flooder(Image *image, int x, int y,
   p->y = y;
   p->next = 0;
 
-  if (y > 0)
+  if (y > bounds.y)
     p->flags |= FLOOD_TODO_ABOVE;
 
-  if (y+1 < image->height())
+  if (y+1 < bounds.y2())
     p->flags |= FLOOD_TODO_BELOW;
 
   return right+2;
@@ -258,7 +259,8 @@ static int flooder(Image *image, int x, int y,
  *  number of tests.
  */
 static int check_flood_line(Image* image, int y, int left, int right,
-                            int src_color, int tolerance, void *data, AlgoHLine proc)
+  const gfx::Rect& bounds,
+  int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   int c;
   FLOODED_LINE *p;
@@ -278,7 +280,7 @@ static int check_flood_line(Image* image, int y, int left, int right,
       c = p->next;
 
       if (!c) {
-        left = flooder(image, left, y, src_color, tolerance, data, proc);
+        left = flooder(image, left, y, bounds, src_color, tolerance, data, proc);
         ret = true;
         break;
       }
@@ -289,21 +291,19 @@ static int check_flood_line(Image* image, int y, int left, int right,
 }
 
 template<typename ImageTraits>
-static void replace_color(Image* image, int src_color, int tolerance, void *data, AlgoHLine proc)
+static void replace_color(Image* image, const gfx::Rect& bounds, int src_color, int tolerance, void *data, AlgoHLine proc)
 {
   typename ImageTraits::address_t address;
-  int w = image->width();
-  int h = image->height();
 
-  for (int y=0; y<h; ++y) {
-    address = reinterpret_cast<typename ImageTraits::address_t>(image->getPixelAddress(0, y));
+  for (int y=bounds.y; y<bounds.y2(); ++y) {
+    address = reinterpret_cast<typename ImageTraits::address_t>(image->getPixelAddress(bounds.x, y));
 
-    for (int x=0; x<w; ++x, ++address) {
+    for (int x=bounds.x; x<bounds.x2(); ++x, ++address) {
       int right = -1;
 
       if (color_equal<ImageTraits>((int)(*address), src_color, tolerance)) {
         ++address;
-        for (right=x+1; right<w; ++right, ++address) {
+        for (right=x+1; right<bounds.x2(); ++right, ++address) {
           if (!color_equal<ImageTraits>((int)(*address), src_color, tolerance))
             break;
         }
@@ -318,6 +318,7 @@ static void replace_color(Image* image, int src_color, int tolerance, void *data
  *  Fills an enclosed area (starting at point x, y) with the specified color.
  */
 void algo_floodfill(Image* image, int x, int y,
+  const gfx::Rect& bounds,
   int tolerance, bool contiguous,
   void* data, AlgoHLine proc)
 {
@@ -332,9 +333,15 @@ void algo_floodfill(Image* image, int x, int y,
   // Non-contiguous case, we replace colors in the whole image.
   if (!contiguous) {
     switch (image->pixelFormat()) {
-      case IMAGE_RGB: replace_color<RgbTraits>(image, src_color, tolerance, data, proc); break;
-      case IMAGE_GRAYSCALE: replace_color<GrayscaleTraits>(image, src_color, tolerance, data, proc); break;
-      case IMAGE_INDEXED: replace_color<IndexedTraits>(image, src_color, tolerance, data, proc); break;
+      case IMAGE_RGB:
+        replace_color<RgbTraits>(image, bounds, src_color, tolerance, data, proc);
+        break;
+      case IMAGE_GRAYSCALE:
+        replace_color<GrayscaleTraits>(image, bounds, src_color, tolerance, data, proc);
+        break;
+      case IMAGE_INDEXED:
+        replace_color<IndexedTraits>(image, bounds, src_color, tolerance, data, proc);
+        break;
     }
     return;
   }
@@ -351,37 +358,37 @@ void algo_floodfill(Image* image, int x, int y,
     p[c].next = 0;
   }
 
-  /* start up the flood algorithm */
-  flooder(image, x, y, src_color, tolerance, data, proc);
+  // Start up the flood algorithm
+  flooder(image, x, y, bounds, src_color, tolerance, data, proc);
 
-  /* continue as long as there are some segments still to test */
+  // Continue as long as there are some segments still to test
   bool done;
   do {
     done = true;
 
-    /* for each line on the screen */
+    // For each line on the screen
     for (int c=0; c<flood_count; c++) {
 
       p = FLOOD_LINE(c);
 
-      /* check below the segment? */
+      // Check below the segment?
       if (p->flags & FLOOD_TODO_BELOW) {
         p->flags &= ~FLOOD_TODO_BELOW;
-        if (check_flood_line(image, p->y+1, p->lpos, p->rpos,
-                             src_color, tolerance, data, proc)) {
+        if (check_flood_line(image, p->y+1, p->lpos, p->rpos, bounds,
+            src_color, tolerance, data, proc)) {
           done = false;
           p = FLOOD_LINE(c);
         }
       }
 
-      /* check above the segment? */
+      // Check above the segment?
       if (p->flags & FLOOD_TODO_ABOVE) {
         p->flags &= ~FLOOD_TODO_ABOVE;
-        if (check_flood_line(image, p->y-1, p->lpos, p->rpos,
+        if (check_flood_line(image, p->y-1, p->lpos, p->rpos, bounds,
                              src_color, tolerance, data, proc)) {
           done = false;
-          /* special case shortcut for going backwards */
-          if ((c < image->height()) && (c > 0))
+          // Special case shortcut for going backwards
+          if ((c > bounds.y) && (c < bounds.y2()))
             c -= 2;
         }
       }

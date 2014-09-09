@@ -20,6 +20,8 @@
 #define RASTER_ALGO_H_INCLUDED
 #pragma once
 
+#include "gfx/fwd.h"
+
 namespace raster {
 
   class Image;
@@ -43,6 +45,7 @@ namespace raster {
                              double in_x);
 
   void algo_floodfill(Image* image, int x, int y,
+    const gfx::Rect& bounds,
     int tolerance, bool contiguous,
     void* data, AlgoHLine proc);
 

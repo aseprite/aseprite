@@ -76,13 +76,27 @@ public:
   void transformPoint(ToolLoop* loop, int x, int y)
   {
     algo_floodfill(loop->getSrcImage(), x, y,
-      loop->getTolerance(), loop->getContiguous(),
+      paintBounds(loop, x, y),
+      loop->getTolerance(),
+      loop->getContiguous(),
       loop, (AlgoHLine)doInkHline);
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
   {
-    area = Rect(0, 0, loop->sprite()->width(), loop->sprite()->height());
+    area = paintBounds(loop, x, y);
+  }
+
+private:
+  gfx::Rect paintBounds(ToolLoop* loop, int x, int y) {
+    gfx::Point offset = loop->getOffset();
+    gfx::Rect bounds(
+      offset.x, offset.y,
+      loop->sprite()->width(), loop->sprite()->height());
+
+    bounds = bounds.createIntersect(loop->getSrcImage()->bounds());
+
+    return bounds;
   }
 };
 
