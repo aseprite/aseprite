@@ -709,7 +709,7 @@ void Editor::flashCurrentLayer()
 #endif
 }
 
-gfx::Point Editor::autoScroll(MouseMessage* msg, bool blit_valid_rgn)
+gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid_rgn)
 {
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
@@ -717,18 +717,31 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, bool blit_valid_rgn)
 
   if (!vp.contains(mousePos)) {
     gfx::Point delta = (mousePos - m_oldPos);
+    gfx::Point deltaScroll = delta;
 
     if (!((mousePos.x <  vp.x      && delta.x < 0) ||
-          (mousePos.x >= vp.x+vp.w && delta.x > 0)))
+          (mousePos.x >= vp.x+vp.w && delta.x > 0))) {
       delta.x = 0;
+    }
 
     if (!((mousePos.y <  vp.y      && delta.y < 0) ||
-          (mousePos.y >= vp.y+vp.h && delta.y > 0)))
+          (mousePos.y >= vp.y+vp.h && delta.y > 0))) {
       delta.y = 0;
+    }
 
     gfx::Point scroll = view->getViewScroll();
-    scroll += delta;
+    if (dir == AutoScroll::MouseDir) {
+      scroll += delta;
+    }
+    else {
+      scroll -= deltaScroll;
+    }
     setEditorScroll(scroll.x, scroll.y, blit_valid_rgn);
+
+#ifdef WIN32
+    mousePos -= delta;
+    ui::set_mouse_position(mousePos);
+#endif
 
     m_oldPos = mousePos;
     mousePos = gfx::Point(

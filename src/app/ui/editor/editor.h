@@ -61,6 +61,11 @@ namespace app {
     class Tool;
   }
 
+  enum class AutoScroll {
+    MouseDir,
+    ScrollDir,
+  };
+
   class Editor : public ui::Widget,
                  public DocumentSettingsObserver {
   public:
@@ -166,7 +171,7 @@ namespace app {
     void updateStatusBar();
 
     // Control scroll when cursor goes out of the editor viewport.
-    gfx::Point autoScroll(ui::MouseMessage* msg, bool blit_valid_rgn);
+    gfx::Point autoScroll(ui::MouseMessage* msg, AutoScroll dir, bool blit_valid_rgn);
 
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();

@@ -63,6 +63,14 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
   View* view = View::getView(editor);
   gfx::Point scroll = view->getViewScroll();
   gfx::Point newPos = msg->position();
+
+#ifdef WIN32
+  if (newPos != editor->autoScroll(msg, AutoScroll::ScrollDir, true)) {
+    m_oldPos = newPos;
+    return true;
+  }
+#endif
+
   scroll -= newPos - m_oldPos;
   m_oldPos = newPos;
 

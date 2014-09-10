@@ -254,7 +254,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
     // Auto-scroll
-    gfx::Point mousePos = editor->autoScroll(msg, false);
+    gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, false);
 
     // Get the position of the mouse in the sprite
     int x, y;

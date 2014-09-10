@@ -142,7 +142,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   editor->hideDrawingCursor();
 
   // Infinite scroll
-  gfx::Point mousePos = editor->autoScroll(msg, true);
+  gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, true);
 
   // Hide the cursor again
   editor->hideDrawingCursor();
