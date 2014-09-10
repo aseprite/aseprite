@@ -364,7 +364,7 @@ again:
 
     std::string fn = m_fileName->getText();
     std::string buf;
-    IFileItem* enter_folder = m_fileList->getSelectedFileItem();
+    IFileItem* enter_folder = NULL;
 
     // up a level?
     if (fn == "..") {
