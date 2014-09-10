@@ -104,7 +104,11 @@ static void on_exit_delete_navigation_history()
 class CustomFileNameEntry : public Entry
 {
 public:
-  CustomFileNameEntry() : Entry(256, ""), m_fileList(NULL) {
+  CustomFileNameEntry() :
+    Entry(256, ""),
+    m_fileList(NULL),
+    m_timer(250, this) {
+    m_timer.Tick.connect(&CustomFileNameEntry::onTick, this);
   }
 
   void setAssociatedFileList(FileList* fileList) {
@@ -113,39 +117,54 @@ public:
 
 protected:
   virtual bool onProcessMessage(Message* msg) override {
-    if (msg->type() == kKeyUpMessage &&
-        static_cast<KeyMessage*>(msg)->unicodeChar() >= 32) {
-      // String to be autocompleted
-      std::string left_part = getText();
-      if (left_part.empty())
-        return false;
+    switch (msg->type()) {
 
-      const FileItemList& children = m_fileList->getFileList();
+      case kKeyDownMessage:
+        m_timer.stop();
+        break;
 
-      for (IFileItem* child : children) {
-        std::string child_name = child->getDisplayName();
-        std::string::iterator it1, it2;
+      case kKeyUpMessage:
+        if (static_cast<KeyMessage*>(msg)->unicodeChar() >= 32)
+          m_timer.start();
+        break;
 
-        for (it1 = child_name.begin(), it2 = left_part.begin();
-             it1 != child_name.end() && it2 != left_part.end();
-             ++it1, ++it2) {
-          if (std::tolower(*it1) != std::tolower(*it2))
-            break;
-        }
-
-        // Is the pattern (left_part) in the child_name's beginning?
-        if (it2 == left_part.end()) {
-          setText(left_part + child_name.substr(left_part.size()));
-          selectText(child_name.size(), left_part.size());
-          return true;
-        }
-      }
     }
     return Entry::onProcessMessage(msg);
   }
 
+  void onTick() {
+    m_timer.stop();
+
+    // String to be autocompleted
+    std::string left_part = getText();
+    if (left_part.empty())
+      return;
+
+    const FileItemList& children = m_fileList->getFileList();
+
+    for (IFileItem* child : children) {
+      std::string child_name = child->getDisplayName();
+      std::string::iterator it1, it2;
+
+      for (it1 = child_name.begin(), it2 = left_part.begin();
+           it1 != child_name.end() && it2 != left_part.end();
+           ++it1, ++it2) {
+        if (std::tolower(*it1) != std::tolower(*it2))
+          break;
+      }
+
+      // Is the pattern (left_part) in the child_name's beginning?
+      if (it2 == left_part.end()) {
+        setText(left_part + child_name.substr(left_part.size()));
+        selectText(child_name.size(), left_part.size());
+        return;
+      }
+    }
+  }
+
 private:
   FileList* m_fileList;
+  Timer m_timer;
 };
 
 // Class to create CustomFileNameEntries.
