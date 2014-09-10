@@ -724,6 +724,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateHotByMousePos(msg,
         gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+
       if (used)
         return true;
 
@@ -747,6 +748,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
       updateHotByMousePos(msg,
         gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+
       if (used)
         return true;
 
@@ -1544,7 +1546,9 @@ void Timeline::updateHotByMousePos(ui::Message* msg, const gfx::Point& mousePos)
   LayerIndex hot_layer;
   FrameNumber hot_frame;
   updateHot(msg, mousePos, hot_part, hot_layer, hot_frame);
-  setCursor(msg, mousePos);
+
+  if (hasMouseOver())
+    setCursor(msg, mousePos);
 }
 
 void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, FrameNumber& hot_frame)
