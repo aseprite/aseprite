@@ -1190,6 +1190,16 @@ void DocumentApi::replaceStockImage(Sprite* sprite, int imageIndex, Image* newIm
   delete oldImage;
 }
 
+void DocumentApi::clearImage(Image* image, color_t bgcolor)
+{
+  if (undoEnabled())
+    m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
+        image, 0, 0, image->width(), image->height()));
+
+  // clear all
+  clear_image(image, bgcolor);
+}
+
 // Clears the mask region in the current sprite with the specified background color.
 void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
 {
@@ -1207,12 +1217,7 @@ void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
   if (!m_document->isMaskVisible()) {
     // If the layer is the background then we clear the image.
     if (layer->isBackground()) {
-      if (undoEnabled())
-        m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
-          image, 0, 0, image->width(), image->height()));
-
-      // clear all
-      clear_image(image, bgcolor);
+      clearImage(image, bgcolor);
     }
     // If the layer is transparent we can remove the cel (and its
     // associated image).
