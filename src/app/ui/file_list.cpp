@@ -175,24 +175,29 @@ bool FileList::onProcessMessage(Message* msg)
         int bottom = m_list.size();
 
         switch (scancode) {
+
           case kKeyUp:
             if (select >= 0)
               select--;
             else
               select = 0;
             break;
+
           case kKeyDown:
             if (select >= 0)
               select++;
             else
               select = 0;
             break;
+
           case kKeyHome:
             select = 0;
             break;
+
           case kKeyEnd:
             select = bottom-1;
             break;
+
           case kKeyPageUp:
           case kKeyPageDown: {
             int sgn = (scancode == kKeyPageUp) ? -1: 1;
@@ -202,6 +207,7 @@ bool FileList::onProcessMessage(Message* msg)
             select += sgn * vp.h / (getTextHeight()+4*jguiscale());
             break;
           }
+
           case kKeyLeft:
           case kKeyRight:
             if (select >= 0) {
@@ -212,14 +218,16 @@ bool FileList::onProcessMessage(Message* msg)
               view->setViewScroll(scroll);
             }
             break;
+
           case kKeyEnter:
+          case kKeyEnterPad:
             if (m_selected) {
               if (m_selected->isBrowsable()) {
                 setCurrentFolder(m_selected);
                 return true;
               }
               if (m_selected->isFolder()) {
-                // Do nothing (is a folder but not browseable.
+                // Do nothing (is a folder but not browseable).
                 return true;
               }
               else {
@@ -230,15 +238,17 @@ bool FileList::onProcessMessage(Message* msg)
             }
             else
               return Widget::onProcessMessage(msg);
+
           case kKeyBackspace:
             goUp();
             return true;
+
           default:
             if (unicodeChar == ' ' ||
                 (utolower(unicodeChar) >= 'a' &&
                  utolower(unicodeChar) <= 'z') ||
-                (utolower(unicodeChar) >= '0' &&
-                 utolower(unicodeChar) <= '9')) {
+                (unicodeChar >= '0' &&
+                 unicodeChar <= '9')) {
               if (ui::clock() - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
                 m_isearch.clear();
 

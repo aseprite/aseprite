@@ -115,12 +115,6 @@ protected:
   virtual bool onProcessMessage(Message* msg) override {
     if (msg->type() == kKeyUpMessage &&
         static_cast<KeyMessage*>(msg)->unicodeChar() >= 32) {
-      // Check if all keys are released
-      for (int c=0; c<KEY_MAX; ++c) {
-        if (key[c])
-          return false;
-      }
-
       // String to be autocompleted
       std::string left_part = getText();
       if (left_part.empty())
@@ -128,15 +122,12 @@ protected:
 
       const FileItemList& children = m_fileList->getFileList();
 
-      for (FileItemList::const_iterator
-             it=children.begin(); it!=children.end(); ++it) {
-        IFileItem* child = *it;
+      for (IFileItem* child : children) {
         std::string child_name = child->getDisplayName();
-
         std::string::iterator it1, it2;
 
         for (it1 = child_name.begin(), it2 = left_part.begin();
-             it1!=child_name.end() && it2!=left_part.end();
+             it1 != child_name.end() && it2 != left_part.end();
              ++it1, ++it2) {
           if (std::tolower(*it1) != std::tolower(*it2))
             break;
@@ -146,7 +137,6 @@ protected:
         if (it2 == left_part.end()) {
           setText(left_part + child_name.substr(left_part.size()));
           selectText(child_name.size(), left_part.size());
-          clear_keybuf();
           return true;
         }
       }
@@ -259,6 +249,13 @@ FileSelector::FileSelector()
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
   m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
+
+  getManager()->addMessageFilter(kKeyDownMessage, this);
+}
+
+FileSelector::~FileSelector()
+{
+  getManager()->removeMessageFilter(kKeyDownMessage, this);
 }
 
 std::string FileSelector::show(const std::string& title,
@@ -367,7 +364,7 @@ again:
 
     std::string fn = m_fileName->getText();
     std::string buf;
-    IFileItem* enter_folder = NULL;
+    IFileItem* enter_folder = m_fileList->getSelectedFileItem();
 
     // up a level?
     if (fn == "..") {
@@ -375,7 +372,12 @@ again:
       if (!enter_folder)
         enter_folder = folder;
     }
-    else if (!fn.empty()) {
+    else if (fn.empty()) {
+      // show the window again
+      setVisible(true);
+      goto again;
+    }
+    else {
       // check if the user specified in "fn" a item of "fileview"
       const FileItemList& children = m_fileList->getFileList();
 
@@ -384,16 +386,14 @@ again:
       fn2 = base::string_to_lower(fn2);
 #endif
 
-      for (FileItemList::const_iterator
-             it=children.begin(); it!=children.end(); ++it) {
-        IFileItem* child = *it;
+      for (IFileItem* child : children) {
         std::string child_name = child->getDisplayName();
 
 #ifdef WIN32
         child_name = base::string_to_lower(child_name);
 #endif
         if (child_name == fn2) {
-          enter_folder = *it;
+          enter_folder = child;
           buf = enter_folder->getFileName();
           break;
         }
@@ -437,11 +437,6 @@ again:
         enter_folder = fs->getFileItemFromPath(buf);
       }
     }
-    else {
-      // show the window again
-      setVisible(true);
-      goto again;
-    }
 
     // did we find a folder to enter?
     if (enter_folder &&
@@ -476,6 +471,31 @@ again:
   }
 
   return result;
+}
+
+bool FileSelector::onProcessMessage(ui::Message* msg)
+{
+  switch (msg->type()) {
+    case kKeyDownMessage:
+      if (msg->ctrlPressed() || msg->cmdPressed()) {
+        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keyMsg->scancode();
+        switch (scancode) {
+          case kKeyUp: onGoUp(); return true;
+          case kKeyLeft: onGoBack(); return true;
+          case kKeyRight: onGoForward(); return true;
+          case kKeyDown:
+            if (m_fileList->getSelectedFileItem() &&
+                m_fileList->getSelectedFileItem()->isBrowsable()) {
+              m_fileList->setCurrentFolder(
+                m_fileList->getSelectedFileItem());
+            }
+            return true;
+        }
+      }
+      break;
+  }
+  return Window::onProcessMessage(msg);
 }
 
 // Updates the content of the combo-box that shows the current
@@ -701,7 +721,7 @@ void FileSelector::onFileTypeChange()
 
   if (!currentExtension.empty()) {
     m_fileName->setText((fileName.substr(0, fileName.size()-currentExtension.size())+newExtension).c_str());
-    m_fileName->selectText(0, -1);
+    m_fileName->selectAllText();
   }
 }
 
@@ -713,7 +733,7 @@ void FileSelector::onFileListFileSelected()
     std::string filename = base::get_file_name(fileitem->getFileName());
 
     m_fileName->setText(filename.c_str());
-    m_fileName->selectText(0, -1);
+    m_fileName->selectAllText();
     selectFileTypeFromFileName();
   }
 }
