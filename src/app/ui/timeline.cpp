@@ -1973,6 +1973,11 @@ void Timeline::dropRange(DropOp op)
     ui::Alert::show("Problem<<%s||&OK", e.what());
   }
 
+  // If we drop a cel in the same frame (but in another layer),
+  // document views are not updated, so we are forcing the updating of
+  // all views.
+  m_document->notifyGeneralUpdate();
+
   invalidate();
 }
 

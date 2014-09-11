@@ -70,6 +70,7 @@ namespace app {
     // Frames API
     void addFrame(Sprite* sprite, FrameNumber newFrame);
     void addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bgcolor);
+    void addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame, color_t bgcolor);
     void copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame);
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
@@ -83,6 +84,7 @@ namespace app {
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
     void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
     void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
+    void clearCel(LayerImage* layer, FrameNumber frame, color_t bgcolor);
     void moveCel(
       LayerImage* srcLayer, FrameNumber srcFrame,
       LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor);

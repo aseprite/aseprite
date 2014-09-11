@@ -273,6 +273,12 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bg
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
 }
 
+void DocumentApi::addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame, color_t bgcolor)
+{
+  while (sprite->totalFrames() <= newFrame)
+    addEmptyFrame(sprite, sprite->totalFrames(), bgcolor);
+}
+
 void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
 {
   // Add the frame in the sprite structure, it adjusts the total
@@ -669,6 +675,23 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, 
   setCelPosition(sprite, cel, x, y);
 }
 
+void DocumentApi::clearCel(LayerImage* layer, FrameNumber frame, color_t bgcolor)
+{
+  Cel* cel = layer->getCel(frame);
+  Image* image = (cel ? cel->image(): NULL);
+  if (!image)
+    return;
+
+  if (layer->isBackground()) {
+    ASSERT(image);
+    if (image)
+      clearImage(image, bgcolor);
+  }
+  else {
+    removeCel(layer, cel);
+  }
+}
+
 void DocumentApi::moveCel(
   LayerImage* srcLayer, FrameNumber srcFrame,
   LayerImage* dstLayer, FrameNumber dstFrame,
@@ -681,61 +704,57 @@ void DocumentApi::moveCel(
   Sprite* dstSprite = dstLayer->sprite();
   ASSERT(srcSprite != NULL);
   ASSERT(dstSprite != NULL);
-
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
 
-  // Background to any other layer, we use copyCel() instead.
-  if (srcLayer->isBackground()) {
-    copyCel(srcLayer, srcFrame, dstLayer, dstFrame, bgcolor);
-    return;
-  }
-  // In this we copy from a transparent layer to another layer...
+  clearCel(dstLayer, dstFrame, bgcolor);
+  addEmptyFramesTo(dstSprite, dstFrame, bgcolor);
 
-  // Remove the dstCel (if it exists) because it must be replaced with
-  // srcCel.
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
-  if ((dstCel != NULL) && (!dstLayer->isBackground() || srcCel != NULL))
-    removeCel(dstLayer, dstCel);
+  Image* srcImage = (srcCel ? srcCel->image(): NULL);
+  Image* dstImage = (dstCel ? dstCel->image(): NULL);
 
-  if (srcCel != NULL) {
-    // Add more frames
-    while (dstSprite->totalFrames() <= dstFrame)
-      addEmptyFrame(dstSprite, dstSprite->totalFrames(), bgcolor);
-
-    // Move the cel in the same layer.
+  if (srcCel) {
     if (srcLayer == dstLayer) {
-      setCelFramePosition(srcLayer, srcCel, dstFrame);
+      if (dstLayer->isBackground()) {
+        ASSERT(dstImage);
+        if (dstImage)
+          composite_image(dstImage, srcImage,
+            srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
+
+        clearImage(srcImage, bgcolor);
+      }
+      // Move the cel in the same layer.
+      else {
+        setCelFramePosition(srcLayer, srcCel, dstFrame);
+      }
     }
     // Move the cel between different layers.
     else {
-      Cel* newCel = new Cel(*srcCel);
-      newCel->setFrame(dstFrame);
-
-      // If we are moving a cel from a transparent layer to the
-      // background layer, we have to clear the background of the
-      // image.
-      ASSERT(!srcLayer->isBackground());
-      if (dstLayer->isBackground()) {
-        Image* srcImage = srcCel->image();
-        Image* dstImage = crop_image(srcImage,
+      if (!dstCel) {
+        dstCel = new Cel(*srcCel);
+        dstCel->setFrame(dstFrame);
+        dstImage = crop_image(srcImage,
           -srcCel->x(),
           -srcCel->y(),
           dstSprite->width(),   // TODO dstSprite or srcSprite
           dstSprite->height(), 0);
-
-        clear_image(dstImage, bgcolor);
-        composite_image(dstImage, srcImage, srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
-
-        newCel->setPosition(0, 0);
-        newCel->setOpacity(255);
-        newCel->setImage(addImageInStock(dstSprite, dstImage));
+        dstCel->setImage(addImageInStock(dstSprite, dstImage));
       }
 
-      // Add and the remove, so the Stock's image is reused.
-      addCel(dstLayer, newCel);
-      removeCel(srcLayer, srcCel);
+      if (dstLayer->isBackground()) {
+        composite_image(dstImage, srcImage,
+          srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
+      }
+      else {
+        addCel(dstLayer, dstCel);
+      }
+
+      if (srcLayer->isBackground())
+        clearImage(srcImage, bgcolor);
+      else
+        removeCel(srcLayer, srcCel);
     }
   }
 
@@ -753,63 +772,40 @@ void DocumentApi::copyCel(
   Sprite* dstSprite = dstLayer->sprite();
   ASSERT(srcSprite != NULL);
   ASSERT(dstSprite != NULL);
-
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
 
+  clearCel(dstLayer, dstFrame, bgcolor);
+  addEmptyFramesTo(dstSprite, dstFrame, bgcolor);
+
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
+  Image* srcImage = (srcCel ? srcCel->image(): NULL);
+  Image* dstImage = (dstCel ? dstCel->image(): NULL);
 
-  // Remove the 'dstCel' (if it exists) because it must be replaced
-  // with 'srcCel'
-  if ((dstCel != NULL) && (!dstLayer->isBackground() || srcCel != NULL))
-    removeCel(dstLayer, dstCel);
-
-  // Move the cel in the same layer.
-  if (srcCel != NULL) {
-    // Add more frames
-    while (dstSprite->totalFrames() <= dstFrame)
-      addEmptyFrame(dstSprite, dstSprite->totalFrames(), bgcolor);
-
-    Image *srcImage = srcCel->image();
-    Image *dstImage;
-    int dstCel_x;
-    int dstCel_y;
-    int dstCel_opacity;
-
-    // If we are moving a cel from a transparent layer to the
-    // background layer, we have to clear the background of the image.
-    if (!srcLayer->isBackground() &&
-        dstLayer->isBackground()) {
-      dstImage = crop_image(srcImage,
-        -srcCel->x(),
-        -srcCel->y(),
-        dstSprite->width(),     // TODO is dstSprite or srcSprite?
-        dstSprite->height(), 0);
-
-      clear_image(dstImage, bgcolor);
-      composite_image(dstImage, srcImage, srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
-
-      dstCel_x = 0;
-      dstCel_y = 0;
-      dstCel_opacity = 255;
+  if (dstLayer->isBackground()) {
+    if (srcCel) {
+      ASSERT(dstImage);
+      if (dstImage)
+        composite_image(dstImage, srcImage,
+          srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
     }
-    else {
+  }
+  else {
+    if (dstCel)
+      removeCel(dstLayer, dstCel);
+
+    if (srcCel) {
+      // Add the image in the stock
       dstImage = Image::createCopy(srcImage);
-      dstCel_x = srcCel->x();
-      dstCel_y = srcCel->y();
-      dstCel_opacity = srcCel->opacity();
+      int imageIndex = addImageInStock(dstSprite, dstImage);
+
+      dstCel = new Cel(*srcCel);
+      dstCel->setFrame(dstFrame);
+      dstCel->setImage(imageIndex);
+
+      addCel(dstLayer, dstCel);
     }
-
-    // Add the image in the stock
-    int image_index = addImageInStock(dstSprite, dstImage);
-    
-    // Create the new cel
-    dstCel = new Cel(dstFrame, image_index);
-    dstCel->setPosition(dstCel_x, dstCel_y);
-    dstCel->setOpacity(dstCel_opacity);
-
-    addCel(dstLayer, dstCel);
   }
 
   m_document->notifyCelCopied(srcLayer, srcFrame, dstLayer, dstFrame);
