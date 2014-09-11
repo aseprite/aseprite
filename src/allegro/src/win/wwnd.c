@@ -346,6 +346,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
          }
          break;
 
+#if 0 /* We don't support extra mouse buttons */
       case WM_XBUTTONDOWN:
       case WM_XBUTTONUP:
          if (win_gfx_driver && _mouse_installed) {
@@ -360,6 +361,7 @@ static LRESULT CALLBACK directx_wnd_proc(HWND wnd, UINT message, WPARAM wparam, 
             return TRUE;
          }
          break;
+#endif
 
       case WM_MOUSEWHEEL:
          if (win_gfx_driver && _mouse_installed) {

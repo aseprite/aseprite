@@ -213,8 +213,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_LBUTTONDOWN:
     case WM_RBUTTONDOWN:
-    case WM_MBUTTONDOWN:
-    case WM_XBUTTONDOWN: {
+    case WM_MBUTTONDOWN: {
       Event ev;
       ev.setType(Event::MouseDown);
       ev.setPosition(gfx::Point(
@@ -230,8 +229,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
-    case WM_MBUTTONUP:
-    case WM_XBUTTONUP: {
+    case WM_MBUTTONUP: {
       Event ev;
       ev.setType(Event::MouseUp);
       ev.setPosition(gfx::Point(
