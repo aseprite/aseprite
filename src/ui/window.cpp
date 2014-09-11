@@ -174,6 +174,11 @@ void Window::onHitTest(HitTestEvent& ev)
   ev.setHit(ht);
 }
 
+void Window::onWindowResize()
+{
+  // Do nothing
+}
+
 void Window::remapWindow()
 {
   if (m_isAutoRemap) {
@@ -482,6 +487,8 @@ void Window::windowSetPosition(const gfx::Rect& rect)
     else
       child->setBounds(cpos);
   }
+
+  onWindowResize();
 }
 
 void Window::limitSize(int *w, int *h)

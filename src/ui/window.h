@@ -67,6 +67,7 @@ namespace ui {
     // New events
     virtual void onClose(CloseEvent& ev);
     virtual void onHitTest(HitTestEvent& ev);
+    virtual void onWindowResize();
 
   private:
     void windowSetPosition(const gfx::Rect& rect);

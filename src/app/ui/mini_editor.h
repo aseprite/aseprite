@@ -40,6 +40,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onClose(ui::CloseEvent& ev) override;
+    void onWindowResize() override;
 
   private:
     void onPlayClicked();

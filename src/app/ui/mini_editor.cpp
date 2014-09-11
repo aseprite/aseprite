@@ -194,6 +194,15 @@ void MiniEditorWindow::onClose(ui::CloseEvent& ev)
   }
 }
 
+void MiniEditorWindow::onWindowResize()
+{
+  Window::onWindowResize();
+
+  DocumentView* view = UIContext::instance()->activeView();
+  if (view)
+    updateUsingEditor(view->getEditor());
+}
+
 void MiniEditorWindow::onPlayClicked()
 {
   if (m_playButton->isPlaying()) {
