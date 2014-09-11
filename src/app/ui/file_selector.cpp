@@ -116,20 +116,11 @@ public:
   }
 
 protected:
-  virtual bool onProcessMessage(Message* msg) override {
-    switch (msg->type()) {
+  virtual void onEntryChange() override {
+    Entry::onEntryChange();
 
-      case kKeyDownMessage:
-        m_timer.stop();
-        break;
-
-      case kKeyUpMessage:
-        if (static_cast<KeyMessage*>(msg)->unicodeChar() >= 32)
-          m_timer.start();
-        break;
-
-    }
-    return Entry::onProcessMessage(msg);
+    // Start timer to autocomplete again.
+    m_timer.start();
   }
 
   void onTick() {
