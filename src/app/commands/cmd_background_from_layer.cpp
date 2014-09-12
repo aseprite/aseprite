@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -68,19 +67,10 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
 
-  raster::color_t bgcolor =
-    color_utils::color_for_target(
-      context->settings()->getBgColor(),
-      ColorTarget(
-        ColorTarget::BackgroundLayer,
-        sprite->pixelFormat(),
-        sprite->transparentColor()));
-
   {
     UndoTransaction undo_transaction(writer.context(), "Background from Layer");
     document->getApi().backgroundFromLayer(
-      static_cast<LayerImage*>(writer.layer()),
-      bgcolor);
+      static_cast<LayerImage*>(writer.layer()));
     undo_transaction.commit();
   }
 

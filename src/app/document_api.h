@@ -101,7 +101,7 @@ namespace app {
     void restackLayerBefore(Layer* layer, Layer* beforeThis);
     void cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor);
     void displaceLayers(Layer* layer, int dx, int dy);
-    void backgroundFromLayer(LayerImage* layer, color_t bgcolor);
+    void backgroundFromLayer(LayerImage* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite, color_t bgcolor);
     void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);

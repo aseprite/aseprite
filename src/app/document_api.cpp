@@ -950,7 +950,7 @@ void DocumentApi::displaceLayers(Layer* layer, int dx, int dy)
   }
 }
 
-void DocumentApi::backgroundFromLayer(LayerImage* layer, color_t bgcolor)
+void DocumentApi::backgroundFromLayer(LayerImage* layer)
 {
   ASSERT(layer);
   ASSERT(layer->isImage());
@@ -960,6 +960,7 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer, color_t bgcolor)
   ASSERT(layer->sprite()->backgroundLayer() == NULL);
 
   Sprite* sprite = layer->sprite();
+  color_t bgcolor = bgColor();
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
@@ -980,10 +981,9 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer, color_t bgcolor)
 
     clear_image(bg_image, bgcolor);
     composite_image(bg_image, cel_image,
-                    cel->x(),
-                    cel->y(),
-                    MID(0, cel->opacity(), 255),
-                    layer->getBlendMode());
+      cel->x(), cel->y(),
+      MID(0, cel->opacity(), 255),
+      layer->getBlendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
     setCelPosition(sprite, cel, 0, 0);
