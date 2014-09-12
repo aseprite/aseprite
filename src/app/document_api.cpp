@@ -22,8 +22,11 @@
 
 #include "app/document_api.h"
 
+#include "app/color_target.h"
+#include "app/color_utils.h"
 #include "app/document.h"
 #include "app/document_undo.h"
+#include "app/settings/settings.h"
 #include "app/undoers/add_cel.h"
 #include "app/undoers/add_frame.h"
 #include "app/undoers/add_image.h"
@@ -56,6 +59,7 @@
 #include "app/undoers/set_sprite_transparent_color.h"
 #include "app/undoers/set_total_frames.h"
 #include "base/unique_ptr.h"
+#include "doc/context.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
 #include "raster/algorithm/flip_image.h"
@@ -71,7 +75,6 @@
 #include "raster/quantization.h"
 #include "raster/sprite.h"
 #include "raster/stock.h"
-
 
 namespace app {
 
@@ -1362,6 +1365,31 @@ bool DocumentApi::undoEnabled()
   return
     m_undoers != NULL &&
     m_document->getUndo()->isEnabled();
+}
+
+raster::color_t DocumentApi::bgColor()
+{
+  app::ISettings* appSettings =
+    dynamic_cast<app::ISettings*>(m_document->context()->settings());
+
+  return color_utils::color_for_target(
+    appSettings ? appSettings->getBgColor(): Color::fromMask(),
+    ColorTarget(ColorTarget::BackgroundLayer,
+      m_document->sprite()->pixelFormat(),
+      m_document->sprite()->transparentColor()));
+}
+
+raster::color_t DocumentApi::bgColor(Layer* layer)
+{
+  app::ISettings* appSettings =
+    dynamic_cast<app::ISettings*>(m_document->context()->settings());
+
+  if (layer->isBackground())
+    return color_utils::color_for_layer(
+      appSettings ? appSettings->getBgColor(): Color::fromMask(),
+      layer);
+  else
+    return layer->sprite()->transparentColor();
 }
 
 } // namespace app

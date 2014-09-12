@@ -138,6 +138,9 @@ namespace app {
     void configureLayerAsBackground(LayerImage* layer);
     bool undoEnabled();
 
+    raster::color_t bgColor();
+    raster::color_t bgColor(Layer* layer);
+
     Document* m_document;
     undo::UndoersCollector* m_undoers;
   };
