@@ -186,7 +186,6 @@ void ConfigureTimelinePopup::onSetLoopSection()
 {
   IDocumentSettings* docSet = docSettings();
   if (docSet) {
-    // Clear of several frames is handled with RemoveCel command.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled() && (range.frames() >= 1)) {
       docSet->setLoopAnimation(true);

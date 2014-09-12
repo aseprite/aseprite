@@ -579,7 +579,6 @@ static void slider_change_hook(Slider* slider)
   try {
     ContextWriter writer(UIContext::instance());
 
-    // Clear of several frames is handled with RemoveCel command.
     DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       for (Cel* cel : get_cels_in_range(writer.sprite(), range))
