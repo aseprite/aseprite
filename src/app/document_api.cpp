@@ -1208,7 +1208,7 @@ void DocumentApi::clearMask(Cel* cel)
   if (!image)
     return;
 
-  Layer* layer = cel->layer();
+  LayerImage* layer = cel->layer();
   Mask* mask = m_document->mask();
   color_t bgcolor = bgColor(layer);
 
@@ -1223,7 +1223,7 @@ void DocumentApi::clearMask(Cel* cel)
     // associated image).
     else {
       ASSERT(layer->isImage());
-      removeCel(cel);
+      removeCel(layer, cel);
     }
   }
   else {
