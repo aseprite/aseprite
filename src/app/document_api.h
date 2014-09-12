@@ -115,7 +115,7 @@ namespace app {
 
     // Image API
     void clearImage(Image* image, color_t bgcolor);
-    void clearMask(Layer* layer, Cel* cel, color_t bgcolor);
+    void clearMask(Cel* cel);
     void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
     void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor);
     void pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity);

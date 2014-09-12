@@ -1200,16 +1200,17 @@ void DocumentApi::clearImage(Image* image, color_t bgcolor)
 }
 
 // Clears the mask region in the current sprite with the specified background color.
-void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
+void DocumentApi::clearMask(Cel* cel)
 {
   ASSERT(cel);
-  ASSERT(layer == cel->layer());
 
   Image* image = (cel ? cel->image(): NULL);
   if (!image)
     return;
 
+  Layer* layer = cel->layer();
   Mask* mask = m_document->mask();
+  color_t bgcolor = bgColor(layer);
 
   // If the mask is empty or is not visible then we have to clear the
   // entire image in the cel.
@@ -1222,7 +1223,7 @@ void DocumentApi::clearMask(Layer* layer, Cel* cel, color_t bgcolor)
     // associated image).
     else {
       ASSERT(layer->isImage());
-      removeCel(static_cast<LayerImage*>(layer), cel);
+      removeCel(cel);
     }
   }
   else {

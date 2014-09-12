@@ -99,8 +99,7 @@ void ClearCommand::onExecute(Context* context)
   {
     UndoTransaction undoTransaction(writer.context(), "Clear");
     DocumentApi api = document->getApi();
-    api.clearMask(writer.layer(), writer.cel(),
-                  app_get_color_to_clear_layer(writer.layer()));
+    api.clearMask(writer.cel());
     if (visibleMask)
       api.deselectMask();
 

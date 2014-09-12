@@ -22,7 +22,6 @@
 
 #include "app/ui/editor/pixels_movement.h"
 
-#include "app/app.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
@@ -119,8 +118,7 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader);
     if (writer.cel())
-      m_document->getApi().clearMask(m_layer, writer.cel(),
-        app_get_color_to_clear_layer(m_layer));
+      m_document->getApi().clearMask(writer.cel());
   }
 
   copyMask();

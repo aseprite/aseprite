@@ -193,8 +193,7 @@ void clipboard::cut(ContextWriter& writer)
       UndoTransaction undoTransaction(writer.context(), "Cut");
       DocumentApi api(writer.document()->getApi());
 
-      api.clearMask(writer.layer(), writer.cel(),
-                    app_get_color_to_clear_layer(writer.layer()));
+      api.clearMask(writer.cel());
       api.deselectMask();
 
       undoTransaction.commit();
