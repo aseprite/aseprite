@@ -1019,8 +1019,7 @@ void Timeline::setCursor(ui::Message* msg, const gfx::Point& mousePos)
   else if (m_hot_part == A_PART_RANGE_OUTLINE) {
     jmouse_set_cursor(kMoveCursor);
   }
-  else if (mx > m_separator_x-2 && mx < m_separator_x+2)  {
-      // Is the mouse in the separator.
+  else if (m_hot_part == A_PART_SEPARATOR) {
     jmouse_set_cursor(kSizeWECursor);
   }
   else {
@@ -1599,7 +1598,7 @@ void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_
     }
     // Is the mouse on the separator.
     else if (mousePos.x > m_separator_x-4
-      && mousePos.x < m_separator_x+4)  {
+          && mousePos.x <= m_separator_x)  {
       hot_part = A_PART_SEPARATOR;
     }
     // Is the mouse on the headers?
