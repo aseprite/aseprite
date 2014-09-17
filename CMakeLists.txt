@@ -9,9 +9,10 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.
   #cmake_policy(SET CMP0003 NEW)
-
-  # CMP0046: Old behavior to silently ignore non-existent dependencies.
-  cmake_policy(SET CMP0046 OLD)
+  if(CMAKE_MAJOR_VERSION GREATER 2)
+    # CMP0046: Old behavior to silently ignore non-existent dependencies.
+    cmake_policy(SET CMP0046 OLD)
+  endif(CMAKE_MAJOR_VERSION GREATER 2)
 endif(COMMAND cmake_policy)
 
 if(NOT CMAKE_BUILD_TYPE)
