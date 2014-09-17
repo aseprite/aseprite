@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -211,25 +211,19 @@ bool AseFormat::onLoad(FileOp* fop)
 
           /* only for 8 bpp images */
           case ASE_FILE_CHUNK_FLI_COLOR:
-          case ASE_FILE_CHUNK_FLI_COLOR2:
-            /* fop_error(fop, "Color chunk\n"); */
+          case ASE_FILE_CHUNK_FLI_COLOR2: {
+            Palette* prev_pal = sprite->getPalette(frame);
+            Palette* pal =
+              chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
+              ase_file_read_color_chunk(f, sprite, frame):
+              ase_file_read_color2_chunk(f, sprite, frame);
 
-            if (sprite->pixelFormat() == IMAGE_INDEXED) {
-              Palette* prev_pal = sprite->getPalette(frame);
-              Palette* pal =
-                chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
-                ase_file_read_color_chunk(f, sprite, frame):
-                ase_file_read_color2_chunk(f, sprite, frame);
+            if (prev_pal->countDiff(pal, NULL, NULL) > 0)
+              sprite->setPalette(pal, true);
 
-              if (prev_pal->countDiff(pal, NULL, NULL) > 0) {
-                sprite->setPalette(pal, true);
-              }
-
-              delete pal;
-            }
-            else
-              fop_error(fop, "Warning: was found a color chunk in non-8bpp file\n");
+            delete pal;
             break;
+          }
 
           case ASE_FILE_CHUNK_LAYER: {
             /* fop_error(fop, "Layer chunk\n"); */
@@ -320,9 +314,8 @@ bool AseFormat::onSave(FileOp* fop)
     // Frame duration
     frame_header.duration = sprite->getFrameDuration(frame);
 
-    // The sprite is indexed and the palette changes? (or is the first frame)
-    if (sprite->pixelFormat() == IMAGE_INDEXED &&
-        (frame == 0 ||
+    // is the first frame or did the palette change?
+    if ((frame == 0 ||
          sprite->getPalette(frame.previous())->countDiff(sprite->getPalette(frame), NULL, NULL) > 0)) {
       // Write the color chunk
       ase_file_write_color2_chunk(f, &frame_header, sprite->getPalette(frame));

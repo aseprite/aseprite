@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2001-2013 by David Capello
+Copyright (C) 2001-2014 by David Capello
 ----------------------------------------------------------------------
 
 1. References
@@ -39,10 +39,9 @@ PIXEL           Pixel format:
 The format is much like FLI/FLC files, but with different magic number
 and differents chunks.  Also, the color depth can be 8, 16 or 32 for
 Indexed, Grayscale and RGB respectively, and the images are more easy
-to read (there aren't differences with old frames).  The palette isn't
-included for color depths more than 8, but when the sprite is 8 bpp,
-the palette is in a FLI color chunk (it could be type=11 or type=4).
-See fli.txt for details.
+to read (there aren't differences with old frames). Color palettes
+are in FLI color chunks (it could be type=11 or type=4). For color
+depths more than 8bpp, palettes are optional. See fli.txt for details.
 
 To read the sprite, just do this:
 * Read the ASE header (section 3)
