@@ -721,9 +721,13 @@ void DocumentApi::moveCel(
     if (srcLayer == dstLayer) {
       if (dstLayer->isBackground()) {
         ASSERT(dstImage);
-        if (dstImage)
+        if (dstImage) {
+          int blend = (srcLayer->isBackground() ?
+            BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+
           composite_image(dstImage, srcImage,
-            srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
+            srcCel->x(), srcCel->y(), 255, blend);
+        }
 
         clearImage(srcImage, bgColor(srcLayer));
       }
@@ -785,9 +789,13 @@ void DocumentApi::copyCel(
   if (dstLayer->isBackground()) {
     if (srcCel) {
       ASSERT(dstImage);
-      if (dstImage)
+      if (dstImage) {
+        int blend = (srcLayer->isBackground() ?
+          BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+
         composite_image(dstImage, srcImage,
-          srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
+          srcCel->x(), srcCel->y(), 255, blend);
+      }
     }
   }
   else {
