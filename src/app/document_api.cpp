@@ -250,12 +250,15 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
 
 void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
 {
+  int duration = sprite->getFrameDuration(newFrame.previous());
+
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
   if (undoEnabled())
     m_undoers->pushUndoer(new undoers::AddFrame(getObjects(), m_document, sprite, newFrame));
 
   sprite->addFrame(newFrame);
+  setFrameDuration(sprite, newFrame, duration);
 
   // Move cels.
   displaceFrames(sprite->folder(), newFrame);
@@ -275,21 +278,16 @@ void DocumentApi::addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame)
 
 void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
 {
-  // Add the frame in the sprite structure, it adjusts the total
-  // number of frames in the sprite.
-  if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::AddFrame(getObjects(), m_document, sprite, newFrame));
+  int duration = sprite->getFrameDuration(fromFrame);
 
-  sprite->addFrame(newFrame);
+  addEmptyFrame(sprite, newFrame);
 
-  // Move cels, and create copies of the cels in the given "newFrame".
+  if (fromFrame >= newFrame)
+    fromFrame = fromFrame.next();
+
   copyFrameForLayer(sprite->folder(), fromFrame, newFrame);
 
-  // Notify observers about the new frame.
-  doc::DocumentEvent ev(m_document);
-  ev.sprite(sprite);
-  ev.frame(newFrame);
-  m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
+  setFrameDuration(sprite, newFrame, duration);
 }
 
 void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
@@ -341,12 +339,6 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
 
     case OBJECT_LAYER_IMAGE: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
-
-      displaceFrames(imglayer, frame);
-
-      if (fromFrame >= frame)
-        fromFrame = fromFrame.next();
-
       copyCel(imglayer, fromFrame, imglayer, frame);
       break;
     }
