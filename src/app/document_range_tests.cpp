@@ -42,22 +42,49 @@ namespace app {
 
 typedef base::UniquePtr<Document> DocumentPtr;
 
-#define EXPECT_LAYER_ORDER(a, b, c, d)               \
-  EXPECT_EQ(a, sprite->indexToLayer(LayerIndex(0))); \
-  EXPECT_EQ(b, sprite->indexToLayer(LayerIndex(1))); \
-  EXPECT_EQ(c, sprite->indexToLayer(LayerIndex(2))); \
-  EXPECT_EQ(d, sprite->indexToLayer(LayerIndex(3)));
+#define EXPECT_LAYER_ORDER(a, b, c, d) \
+  EXPECT_TRUE(expect_layer(a, 0));     \
+  EXPECT_TRUE(expect_layer(b, 1));     \
+  EXPECT_TRUE(expect_layer(c, 2));     \
+  EXPECT_TRUE(expect_layer(d, 3));
 
-#define EXPECT_FRAME_ORDER(a, b, c, d)                        \
-  EXPECT_EQ((a+1), sprite->getFrameDuration(FrameNumber(0))); \
-  EXPECT_EQ((b+1), sprite->getFrameDuration(FrameNumber(1))); \
-  EXPECT_EQ((c+1), sprite->getFrameDuration(FrameNumber(2))); \
-  EXPECT_EQ((d+1), sprite->getFrameDuration(FrameNumber(3)));
+#define EXPECT_FRAME_ORDER(a, b, c, d) \
+  EXPECT_TRUE(expect_frame(a, 0));     \
+  EXPECT_TRUE(expect_frame(b, 1));     \
+  EXPECT_TRUE(expect_frame(c, 2));     \
+  EXPECT_TRUE(expect_frame(d, 3));
+
+#define EXPECT_FRAME_COPY1(a, b, c, d, e) \
+  EXPECT_TRUE(expect_frame(a, 0));        \
+  EXPECT_TRUE(expect_frame(b, 1));        \
+  EXPECT_TRUE(expect_frame(c, 2));        \
+  EXPECT_TRUE(expect_frame(d, 3));        \
+  EXPECT_TRUE(expect_frame(e, 4));
+
+#define EXPECT_FRAME_COPY2(a, b, c, d, e, f)    \
+  EXPECT_TRUE(expect_frame(a, 0));              \
+  EXPECT_TRUE(expect_frame(b, 1));              \
+  EXPECT_TRUE(expect_frame(c, 2));              \
+  EXPECT_TRUE(expect_frame(d, 3));              \
+  EXPECT_TRUE(expect_frame(e, 4));              \
+  EXPECT_TRUE(expect_frame(f, 5));
+
+#define EXPECT_FRAME_COPY3(a, b, c, d, e, f, g) \
+  EXPECT_TRUE(expect_frame(a, 0));              \
+  EXPECT_TRUE(expect_frame(b, 1));              \
+  EXPECT_TRUE(expect_frame(c, 2));              \
+  EXPECT_TRUE(expect_frame(d, 3));              \
+  EXPECT_TRUE(expect_frame(e, 4));              \
+  EXPECT_TRUE(expect_frame(f, 5));              \
+  EXPECT_TRUE(expect_frame(g, 6));
 
 class DocRangeOps : public ::testing::Test {
 public:
   DocRangeOps() {
-    doc.reset(static_cast<Document*>(ctx.documents().add(2, 2)));
+    black = rgba(0, 0, 0, 0);
+    white = rgba(255, 255, 255, 255);
+
+    doc.reset(static_cast<Document*>(ctx.documents().add(4, 4)));
     sprite = doc->sprite();
     layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
     layer2 = new LayerImage(sprite);
@@ -78,6 +105,27 @@ public:
     sprite->setFrameDuration(FrameNumber(1), 2); // frames after a move operation
     sprite->setFrameDuration(FrameNumber(2), 3);
     sprite->setFrameDuration(FrameNumber(3), 4);
+
+    DocumentApi api = doc->getApi();
+    for (int i=0; i<4; i++) {
+      LayerImage* layer = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(i)));
+
+      for (int j=0; j<4; j++) {
+        Cel* cel = layer->getCel(FrameNumber(j));
+        Image* image;
+        if (cel)
+          image = cel->image();
+        else {
+          image = Image::create(IMAGE_RGB, 4, 4);
+          int imageIdx = sprite->stock()->addImage(image);
+          cel = new Cel(FrameNumber(j), imageIdx);
+          layer->addCel(cel);
+        }
+
+        clear_image(image, black);
+        put_pixel(image, i, j, white);
+      }
+    }
   }
 
   ~DocRangeOps() {
@@ -85,6 +133,46 @@ public:
   }
 
 protected:
+  bool expect_layer(Layer* expected_layer, int layer) {
+    return expect_layer_frame(sprite->layerToIndex(expected_layer), -1, layer, -1);
+  }
+
+  bool expect_frame(int expected_frame, int frame) {
+    for (int i=0; i<(int)sprite->countLayers(); ++i) {
+      if (!expect_layer_frame(i, expected_frame, i, frame))
+        return false;
+    }
+    return true;
+  }
+
+  bool expect_layer_frame(int expected_layer, int expected_frame, int layer, int frame) {
+    if (frame >= 0) {
+      color_t expected_color = white;
+
+      color_t color = get_pixel(
+        static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
+          ->getCel(FrameNumber(frame))->image(),
+        expected_layer, expected_frame);
+
+      EXPECT_EQ(expected_color, color);
+      EXPECT_EQ((expected_frame+1), sprite->getFrameDuration(FrameNumber(frame)));
+
+      return
+        (expected_color == color
+          && (expected_frame+1) == sprite->getFrameDuration(FrameNumber(frame)));
+    }
+
+    if (layer >= 0) {
+      Layer* a = sprite->indexToLayer(LayerIndex(expected_layer));
+      Layer* b = sprite->indexToLayer(LayerIndex(layer));
+      EXPECT_EQ(a, b);
+      if (a != b)
+        return false;
+    }
+
+    return true;
+  }
+
   TestContext ctx;
   DocumentPtr doc;
   Sprite* sprite;
@@ -92,6 +180,8 @@ protected:
   LayerImage* layer2;
   LayerImage* layer3;
   LayerImage* layer4;
+  color_t black;
+  color_t white;
 };
 
 inline DocumentRange range(Layer* fromLayer, int fromFrNum, Layer* toLayer, int toFrNum, DocumentRange::Type type) {
@@ -597,7 +687,78 @@ TEST_F(DocRangeOps, CopyLayers) {
 }
 
 TEST_F(DocRangeOps, CopyFrames) {
-  // TODO
+  // Copy one frame
+  copy_range(doc,
+    frames_range(0),
+    frames_range(2, 3), kDocumentRangeBefore);
+  EXPECT_FRAME_COPY1(0, 1, 0, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(0),
+    frames_range(2, 3), kDocumentRangeAfter);
+  EXPECT_FRAME_COPY1(0, 1, 2, 3, 0);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(3),
+    frames_range(0, 1), kDocumentRangeBefore);
+  EXPECT_FRAME_COPY1(3, 0, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(3),
+    frames_range(0, 1), kDocumentRangeAfter);
+  EXPECT_FRAME_COPY1(0, 1, 3, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  // Copy three frames
+
+  copy_range(doc,
+    frames_range(0, 2),
+    frames_range(3), kDocumentRangeBefore);
+  EXPECT_FRAME_COPY3(0, 1, 2, 0, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(0, 2),
+    frames_range(3), kDocumentRangeAfter);
+  EXPECT_FRAME_COPY3(0, 1, 2, 3, 0, 1, 2);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(1, 3),
+    frames_range(0), kDocumentRangeBefore);
+  EXPECT_FRAME_COPY3(1, 2, 3, 0, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(1, 3),
+    frames_range(0), kDocumentRangeAfter);
+  EXPECT_FRAME_COPY3(0, 1, 2, 3, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(0, 2),
+    frames_range(0, 2), kDocumentRangeBefore);
+  EXPECT_FRAME_COPY3(0, 1, 2, 0, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  copy_range(doc,
+    frames_range(0, 2),
+    frames_range(0, 2), kDocumentRangeAfter);
+  EXPECT_FRAME_COPY3(0, 1, 2, 0, 1, 2, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
 }
 
 TEST_F(DocRangeOps, CopyCels) {

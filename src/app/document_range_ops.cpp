@@ -206,23 +206,38 @@ static DocumentRange drop_range_op(
               break;
 
             case Copy:
-              if (to.frameBegin() <= from.frameBegin()) {
-                srcFrameBegin = from.frameBegin();
-                srcFrameStep = FrameNumber(2);
-                srcFrameEnd = from.frameBegin().next(2*from.frames());
-                dstFrameBegin = to.frameBegin();
-                dstFrameStep = FrameNumber(1);
+              if (place == kDocumentRangeBefore) {
+                if (to.frameBegin() <= from.frameBegin()) {
+                  srcFrameBegin = from.frameBegin();
+                  srcFrameStep = FrameNumber(2);
+                  srcFrameEnd = from.frameBegin().next(2*from.frames());
+                  dstFrameBegin = to.frameBegin();
+                  dstFrameStep = FrameNumber(1);
+                }
+                else {
+                  srcFrameBegin = from.frameEnd();
+                  srcFrameStep = FrameNumber(-1);
+                  srcFrameEnd = from.frameBegin().previous();
+                  dstFrameBegin = to.frameBegin();
+                  dstFrameStep = FrameNumber(0);
+                }
               }
-              else {
-                srcFrameBegin = from.frameEnd();
-                srcFrameStep = FrameNumber(-1);
-                srcFrameEnd = from.frameBegin().previous();
-                dstFrameBegin = to.frameBegin();
-                dstFrameStep = FrameNumber(0);
+              else if (place == kDocumentRangeAfter) {
+                if (to.frameEnd() <= from.frameBegin()) {
+                  srcFrameBegin = from.frameBegin();
+                  srcFrameStep = FrameNumber(2);
+                  srcFrameEnd = from.frameBegin().next(2*from.frames());
+                  dstFrameBegin = to.frameEnd().next();
+                  dstFrameStep = FrameNumber(1);
+                }
+                else {
+                  srcFrameBegin = from.frameEnd();
+                  srcFrameStep = FrameNumber(-1);
+                  srcFrameEnd = from.frameBegin().previous();
+                  dstFrameBegin = to.frameEnd().next();
+                  dstFrameStep = FrameNumber(0);
+                }
               }
-
-              if (place == kDocumentRangeAfter)
-                dstFrameBegin = dstFrameBegin.next();
               break;
           }
 
