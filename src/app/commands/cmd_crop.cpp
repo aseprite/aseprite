@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
-#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -68,10 +66,7 @@ void CropSpriteCommand::onExecute(Context* context)
   Mask* mask(document->mask());
   {
     UndoTransaction undoTransaction(writer.context(), "Sprite Crop");
-    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
-                                               sprite->pixelFormat());
-
-    document->getApi().cropSprite(sprite, mask->bounds(), bgcolor);
+    document->getApi().cropSprite(sprite, mask->bounds());
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();
@@ -107,11 +102,8 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
-                                               sprite->pixelFormat());
-
     UndoTransaction undoTransaction(writer.context(), "Trim Sprite");
-    document->getApi().trimSprite(sprite, bgcolor);
+    document->getApi().trimSprite(sprite);
     undoTransaction.commit();
   }
   document->generateMaskBoundaries();

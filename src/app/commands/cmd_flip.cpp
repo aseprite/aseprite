@@ -120,11 +120,9 @@ void FlipCommand::onExecute(Context* context)
 
           // If the mask isn't a rectangular area, we've to flip the mask too.
           if (mask->bitmap() && !mask->isRectangular()) {
-            raster::color_t bgcolor = app_get_color_to_clear_layer(writer.layer());
-
             // Flip the portion of image specified by the mask.
             mask->offsetOrigin(-x, -y);
-            api.flipImageWithMask(image, mask, m_flipType, bgcolor);
+            api.flipImageWithMask(writer.layer(), image, mask, m_flipType);
             mask->offsetOrigin(x, y);
             alreadyFlipped = true;
           }

@@ -64,14 +64,14 @@ bool ClearCommand::onEnabled(Context* context)
 
 void ClearCommand::onExecute(Context* context)
 {
-  // Clear of several frames is handled with RemoveCel command.
+  // Clear of several frames is handled with ClearCel command.
   DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
   if (range.enabled()) {
     Command* subCommand = NULL;
 
     switch (range.type()) {
       case DocumentRange::kCels:
-        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveCel);
+        subCommand = CommandsModule::instance()->getCommandByName(CommandId::ClearCel);
         break;
       case DocumentRange::kFrames:
         subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveFrame);

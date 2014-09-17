@@ -63,14 +63,14 @@ namespace app {
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
     void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
-    void cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor);
-    void trimSprite(Sprite* sprite, color_t bgcolor);
+    void cropSprite(Sprite* sprite, const gfx::Rect& bounds);
+    void trimSprite(Sprite* sprite);
     void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method);
 
     // Frames API
     void addFrame(Sprite* sprite, FrameNumber newFrame);
-    void addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bgcolor);
-    void addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame, color_t bgcolor);
+    void addEmptyFrame(Sprite* sprite, FrameNumber newFrame);
+    void addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame);
     void copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame);
     void removeFrame(Sprite* sprite, FrameNumber frame);
     void setTotalFrames(Sprite* sprite, FrameNumber frames);
@@ -80,17 +80,17 @@ namespace app {
 
     // Cels API
     void addCel(LayerImage* layer, Cel* cel);
-    void removeCel(LayerImage* layer, Cel* cel);
+    void clearCel(LayerImage* layer, FrameNumber frame);
+    void clearCel(Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
     void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
-    void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor);
-    void clearCel(LayerImage* layer, FrameNumber frame, color_t bgcolor);
+    void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h);
     void moveCel(
       LayerImage* srcLayer, FrameNumber srcFrame,
-      LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor);
+      LayerImage* dstLayer, FrameNumber dstFrame);
     void copyCel(
       LayerImage* srcLayer, FrameNumber srcFrame,
-      LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor);
+      LayerImage* dstLayer, FrameNumber dstFrame);
 
     // Layers API
     LayerImage* newLayer(Sprite* sprite);
@@ -99,11 +99,11 @@ namespace app {
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
     void restackLayerBefore(Layer* layer, Layer* beforeThis);
-    void cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor);
+    void cropLayer(Layer* layer, int x, int y, int w, int h);
     void displaceLayers(Layer* layer, int dx, int dy);
     void backgroundFromLayer(LayerImage* layer);
     void layerFromBackground(Layer* layer);
-    void flattenLayers(Sprite* sprite, color_t bgcolor);
+    void flattenLayers(Sprite* sprite);
     void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
     void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
 
@@ -117,7 +117,7 @@ namespace app {
     void clearImage(Image* image, color_t bgcolor);
     void clearMask(Cel* cel);
     void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
-    void flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor);
+    void flipImageWithMask(Layer* layer, Image* image, const Mask* mask, raster::algorithm::FlipType flipType);
     void pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity);
 
     // Mask API
@@ -130,6 +130,7 @@ namespace app {
 
   private:
     undo::ObjectsContainer* getObjects() const;
+    void removeCel(Cel* cel);
     void setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber frame);
     void displaceFrames(Layer* layer, FrameNumber frame);
     void copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame);

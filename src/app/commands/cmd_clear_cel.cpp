@@ -34,24 +34,24 @@
 
 namespace app {
 
-class RemoveCelCommand : public Command {
+class ClearCelCommand : public Command {
 public:
-  RemoveCelCommand();
-  Command* clone() const override { return new RemoveCelCommand(*this); }
+  ClearCelCommand();
+  Command* clone() const override { return new ClearCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
 
-RemoveCelCommand::RemoveCelCommand()
-  : Command("RemoveCel",
-            "Remove Cel",
+ClearCelCommand::ClearCelCommand()
+  : Command("ClearCel",
+            "Clear Cel",
             CmdRecordableFlag)
 {
 }
 
-bool RemoveCelCommand::onEnabled(Context* context)
+bool ClearCelCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::ActiveLayerIsReadable |
@@ -60,12 +60,12 @@ bool RemoveCelCommand::onEnabled(Context* context)
                              ContextFlags::HasActiveCel);
 }
 
-void RemoveCelCommand::onExecute(Context* context)
+void ClearCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(writer.context(), "Remove Cel");
+    UndoTransaction undoTransaction(writer.context(), "Clear Cel");
 
     // TODO the range of selected frames should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
@@ -83,14 +83,12 @@ void RemoveCelCommand::onExecute(Context* context)
                begin = range.frameBegin().previous();
              frame != begin;
              frame = frame.previous()) {
-          Cel* cel = layerImage->getCel(frame);
-          if (cel)
-            document->getApi().removeCel(layerImage, cel);
+          document->getApi().clearCel(layerImage, frame);
         }
       }
     }
     else {
-      document->getApi().removeCel(static_cast<LayerImage*>(writer.layer()), writer.cel());
+      document->getApi().clearCel(writer.cel());
     }
 
     undoTransaction.commit();
@@ -98,9 +96,9 @@ void RemoveCelCommand::onExecute(Context* context)
   update_screen_for_document(document);
 }
 
-Command* CommandFactory::createRemoveCelCommand()
+Command* CommandFactory::createClearCelCommand()
 {
-  return new RemoveCelCommand;
+  return new ClearCelCommand;
 }
 
 } // namespace app

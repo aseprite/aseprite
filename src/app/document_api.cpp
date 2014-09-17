@@ -116,21 +116,21 @@ void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpriteTransparentColorChanged, ev);
 }
 
-void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds, color_t bgcolor)
+void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
 {
   setSpriteSize(sprite, bounds.w, bounds.h);
   displaceLayers(sprite->folder(), -bounds.x, -bounds.y);
 
   Layer *background_layer = sprite->backgroundLayer();
   if (background_layer)
-    cropLayer(background_layer, 0, 0, sprite->width(), sprite->height(), bgcolor);
+    cropLayer(background_layer, 0, 0, sprite->width(), sprite->height());
 
   if (!m_document->mask()->isEmpty())
     setMaskPosition(m_document->mask()->bounds().x-bounds.x,
                     m_document->mask()->bounds().y-bounds.y);
 }
 
-void DocumentApi::trimSprite(Sprite* sprite, color_t bgcolor)
+void DocumentApi::trimSprite(Sprite* sprite)
 {
   gfx::Rect bounds;
 
@@ -152,7 +152,7 @@ void DocumentApi::trimSprite(Sprite* sprite, color_t bgcolor)
   }
 
   if (!bounds.isEmpty())
-    cropSprite(sprite, bounds, bgcolor);
+    cropSprite(sprite, bounds);
 }
 
 void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method)
@@ -248,7 +248,7 @@ void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
   copyFrame(sprite, newFrame.previous(), newFrame);
 }
 
-void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bgcolor)
+void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
 {
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
@@ -260,15 +260,6 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bg
   // Move cels.
   displaceFrames(sprite->folder(), newFrame);
 
-  // Add background cel
-  Layer* bgLayer = sprite->backgroundLayer();
-  if (bgLayer) {
-    LayerImage* imglayer = static_cast<LayerImage*>(bgLayer);
-    Image* bgimage = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
-    clear_image(bgimage, bgcolor);
-    addImage(imglayer, newFrame, bgimage);
-  }
-
   // Notify observers about the new frame.
   doc::DocumentEvent ev(m_document);
   ev.sprite(sprite);
@@ -276,10 +267,10 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame, color_t bg
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
 }
 
-void DocumentApi::addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame, color_t bgcolor)
+void DocumentApi::addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame)
 {
   while (sprite->totalFrames() <= newFrame)
-    addEmptyFrame(sprite, sprite->totalFrames(), bgcolor);
+    addEmptyFrame(sprite, sprite->totalFrames());
 }
 
 void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
@@ -319,6 +310,13 @@ void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
         if (cel)
           setCelFramePosition(imglayer, cel, cel->frame().next());
       }
+
+      // Add background cel
+      if (imglayer->isBackground()) {
+        Image* bgimage = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
+        clear_image(bgimage, bgColor(layer));
+        addImage(imglayer, frame, bgimage);
+      }
       break;
     }
 
@@ -349,7 +347,7 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
       if (fromFrame >= frame)
         fromFrame = fromFrame.next();
 
-      copyCel(imglayer, fromFrame, imglayer, frame, 0);
+      copyCel(imglayer, fromFrame, imglayer, frame);
       break;
     }
 
@@ -403,7 +401,7 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
     case OBJECT_LAYER_IMAGE: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
       if (Cel* cel = imglayer->getCel(frame))
-        removeCel(imglayer, cel);
+        removeCel(cel);
 
       for (++frame; frame<sprite->totalFrames(); ++frame)
         if (Cel* cel = imglayer->getCel(frame))
@@ -581,11 +579,11 @@ void DocumentApi::addCel(LayerImage* layer, Cel* cel)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddCel, ev);
 }
 
-void DocumentApi::removeCel(LayerImage* layer, Cel* cel)
+void DocumentApi::removeCel(Cel* cel)
 {
-  ASSERT(layer);
   ASSERT(cel);
 
+  LayerImage* layer = cel->layer();
   Sprite* sprite = layer->sprite();
 
   doc::DocumentEvent ev(m_document);
@@ -663,13 +661,14 @@ void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelOpacityChanged, ev);
 }
 
-void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, color_t bgcolor)
+void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h)
 {
   Image* cel_image = cel->image();
   ASSERT(cel_image);
 
   // create the new image through a crop
-  Image* new_image = crop_image(cel_image, x-cel->x(), y-cel->y(), w, h, bgcolor);
+  Image* new_image = crop_image(cel_image,
+    x-cel->x(), y-cel->y(), w, h, bgColor(cel->layer()));
 
   // replace the image in the stock that is pointed by the cel
   replaceStockImage(sprite, cel->imageIndex(), new_image);
@@ -678,27 +677,35 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h, 
   setCelPosition(sprite, cel, x, y);
 }
 
-void DocumentApi::clearCel(LayerImage* layer, FrameNumber frame, color_t bgcolor)
+void DocumentApi::clearCel(LayerImage* layer, FrameNumber frame)
 {
   Cel* cel = layer->getCel(frame);
-  Image* image = (cel ? cel->image(): NULL);
+  if (cel)
+    clearCel(cel);
+}
+
+void DocumentApi::clearCel(Cel* cel)
+{
+  ASSERT(cel);
+
+  Image* image = cel->image();
+  ASSERT(image);
   if (!image)
     return;
 
-  if (layer->isBackground()) {
+  if (cel->layer()->isBackground()) {
     ASSERT(image);
     if (image)
-      clearImage(image, bgcolor);
+      clearImage(image, bgColor(cel->layer()));
   }
   else {
-    removeCel(layer, cel);
+    removeCel(cel);
   }
 }
 
 void DocumentApi::moveCel(
   LayerImage* srcLayer, FrameNumber srcFrame,
-  LayerImage* dstLayer, FrameNumber dstFrame,
-  color_t bgcolor)
+  LayerImage* dstLayer, FrameNumber dstFrame)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
@@ -710,8 +717,8 @@ void DocumentApi::moveCel(
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
 
-  clearCel(dstLayer, dstFrame, bgcolor);
-  addEmptyFramesTo(dstSprite, dstFrame, bgcolor);
+  clearCel(dstLayer, dstFrame);
+  addEmptyFramesTo(dstSprite, dstFrame);
 
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
@@ -726,7 +733,7 @@ void DocumentApi::moveCel(
           composite_image(dstImage, srcImage,
             srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
 
-        clearImage(srcImage, bgcolor);
+        clearImage(srcImage, bgColor(srcLayer));
       }
       // Move the cel in the same layer.
       else {
@@ -754,10 +761,7 @@ void DocumentApi::moveCel(
         addCel(dstLayer, dstCel);
       }
 
-      if (srcLayer->isBackground())
-        clearImage(srcImage, bgcolor);
-      else
-        removeCel(srcLayer, srcCel);
+      clearCel(srcCel);
     }
   }
 
@@ -766,7 +770,7 @@ void DocumentApi::moveCel(
 
 void DocumentApi::copyCel(
   LayerImage* srcLayer, FrameNumber srcFrame,
-  LayerImage* dstLayer, FrameNumber dstFrame, color_t bgcolor)
+  LayerImage* dstLayer, FrameNumber dstFrame)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
@@ -778,8 +782,8 @@ void DocumentApi::copyCel(
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
 
-  clearCel(dstLayer, dstFrame, bgcolor);
-  addEmptyFramesTo(dstSprite, dstFrame, bgcolor);
+  clearCel(dstLayer, dstFrame);
+  addEmptyFramesTo(dstSprite, dstFrame);
 
   Cel* srcCel = srcLayer->getCel(srcFrame);
   Cel* dstCel = dstLayer->getCel(dstFrame);
@@ -796,7 +800,7 @@ void DocumentApi::copyCel(
   }
   else {
     if (dstCel)
-      removeCel(dstLayer, dstCel);
+      removeCel(dstCel);
 
     if (srcCel) {
       // Add the image in the stock
@@ -909,19 +913,17 @@ void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
   restackLayerAfter(layer, layer->sprite()->indexToLayer(afterThisIdx));
 }
 
-void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h, color_t bgcolor)
+void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h)
 {
   if (!layer->isImage())
     return;
 
-  if (!layer->isBackground())
-    bgcolor = 0;                // TODO use proper mask color
-
+  color_t bgcolor = bgColor(layer);
   Sprite* sprite = layer->sprite();
   CelIterator it = ((LayerImage*)layer)->getCelBegin();
   CelIterator end = ((LayerImage*)layer)->getCelEnd();
   for (; it != end; ++it)
-    cropCel(sprite, *it, x, y, w, h, bgcolor);
+    cropCel(sprite, *it, x, y, w, h);
 }
 
 // Moves every frame in @a layer with the offset (@a dx, @a dy).
@@ -1041,7 +1043,7 @@ void DocumentApi::layerFromBackground(Layer* layer)
   layer->setName("Layer 0");
 }
 
-void DocumentApi::flattenLayers(Sprite* sprite, color_t bgcolor)
+void DocumentApi::flattenLayers(Sprite* sprite)
 {
   Image* cel_image;
   Cel* cel;
@@ -1061,6 +1063,8 @@ void DocumentApi::flattenLayers(Sprite* sprite, color_t bgcolor)
     addLayer(sprite->folder(), background, NULL);
     configureLayerAsBackground(background);
   }
+
+  color_t bgcolor = bgColor(background);
 
   // Copy all frames to the background.
   for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
@@ -1150,6 +1154,9 @@ int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
 Cel* DocumentApi::addImage(LayerImage* layer, FrameNumber frameNumber, Image* image)
 {
   int imageIndex = addImageInStock(layer->sprite(), image);
+
+  ASSERT(layer->getCel(frameNumber) == NULL);
+
   base::UniquePtr<Cel> cel(new Cel(frameNumber, imageIndex));
 
   addCel(layer, cel);
@@ -1204,62 +1211,51 @@ void DocumentApi::clearMask(Cel* cel)
 {
   ASSERT(cel);
 
+  // If the mask is empty or is not visible then we have to clear the
+  // entire image in the cel.
+  if (!m_document->isMaskVisible()) {
+    clearCel(cel);
+    return;
+  }
+
   Image* image = (cel ? cel->image(): NULL);
   if (!image)
     return;
 
-  LayerImage* layer = cel->layer();
   Mask* mask = m_document->mask();
-  color_t bgcolor = bgColor(layer);
+  color_t bgcolor = bgColor(cel->layer());
+  int offset_x = mask->bounds().x-cel->x();
+  int offset_y = mask->bounds().y-cel->y();
+  int u, v, putx, puty;
+  int x1 = MAX(0, offset_x);
+  int y1 = MAX(0, offset_y);
+  int x2 = MIN(image->width()-1, offset_x+mask->bounds().w-1);
+  int y2 = MIN(image->height()-1, offset_y+mask->bounds().h-1);
 
-  // If the mask is empty or is not visible then we have to clear the
-  // entire image in the cel.
-  if (!m_document->isMaskVisible()) {
-    // If the layer is the background then we clear the image.
-    if (layer->isBackground()) {
-      clearImage(image, bgcolor);
-    }
-    // If the layer is transparent we can remove the cel (and its
-    // associated image).
-    else {
-      ASSERT(layer->isImage());
-      removeCel(layer, cel);
-    }
-  }
-  else {
-    int offset_x = mask->bounds().x-cel->x();
-    int offset_y = mask->bounds().y-cel->y();
-    int u, v, putx, puty;
-    int x1 = MAX(0, offset_x);
-    int y1 = MAX(0, offset_y);
-    int x2 = MIN(image->width()-1, offset_x+mask->bounds().w-1);
-    int y2 = MIN(image->height()-1, offset_y+mask->bounds().h-1);
+  // Do nothing
+  if (x1 > x2 || y1 > y2)
+    return;
 
-    // Do nothing
-    if (x1 > x2 || y1 > y2)
-      return;
+  if (undoEnabled())
+    m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
+        image, x1, y1, x2-x1+1, y2-y1+1));
 
-    if (undoEnabled())
-      m_undoers->pushUndoer(new undoers::ImageArea(getObjects(),
-          image, x1, y1, x2-x1+1, y2-y1+1));
+  const LockImageBits<BitmapTraits> maskBits(mask->bitmap());
+  LockImageBits<BitmapTraits>::const_iterator it = maskBits.begin();
 
-    const LockImageBits<BitmapTraits> maskBits(mask->bitmap());
-    LockImageBits<BitmapTraits>::const_iterator it = maskBits.begin();
-
-    // Clear the masked zones
-    for (v=0; v<mask->bounds().h; ++v) {
-      for (u=0; u<mask->bounds().w; ++u, ++it) {
-        ASSERT(it != maskBits.end());
-        if (*it) {
-          putx = u + offset_x;
-          puty = v + offset_y;
-          put_pixel(image, putx, puty, bgcolor);
-        }
+  // Clear the masked zones
+  for (v=0; v<mask->bounds().h; ++v) {
+    for (u=0; u<mask->bounds().w; ++u, ++it) {
+      ASSERT(it != maskBits.end());
+      if (*it) {
+        putx = u + offset_x;
+        puty = v + offset_y;
+        put_pixel(image, putx, puty, bgcolor);
       }
     }
-
-    ASSERT(it == maskBits.end());
   }
+
+  ASSERT(it == maskBits.end());
 }
 
 void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
@@ -1276,9 +1272,10 @@ void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
   raster::algorithm::flip_image(image, bounds, flipType);
 }
 
-void DocumentApi::flipImageWithMask(Image* image, const Mask* mask, raster::algorithm::FlipType flipType, color_t bgcolor)
+void DocumentApi::flipImageWithMask(Layer* layer, Image* image, const Mask* mask, raster::algorithm::FlipType flipType)
 {
   base::UniquePtr<Image> flippedImage((Image::createCopy(image)));
+  color_t bgcolor = bgColor(layer);
 
   // Flip the portion of the bitmap.
   raster::algorithm::flip_image_with_mask(flippedImage, mask, flipType, bgcolor);

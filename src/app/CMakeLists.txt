@@ -21,6 +21,7 @@ add_library(app-lib
   commands/cmd_change_color.cpp
   commands/cmd_change_pixel_format.cpp
   commands/cmd_clear.cpp
+  commands/cmd_clear_cel.cpp
   commands/cmd_close_file.cpp
   commands/cmd_configure_tools.cpp
   commands/cmd_copy.cpp
@@ -67,7 +68,6 @@ add_library(app-lib
   commands/cmd_play_animation.cpp
   commands/cmd_preview.cpp
   commands/cmd_refresh.cpp
-  commands/cmd_remove_cel.cpp
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_layer.cpp
   commands/cmd_repeat_last_export.cpp

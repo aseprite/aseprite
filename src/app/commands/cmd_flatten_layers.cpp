@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
-#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -59,11 +57,9 @@ void FlattenLayersCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document = writer.document();
   Sprite* sprite = writer.sprite();
-  int bgcolor = color_utils::color_for_image(ColorBar::instance()->getBgColor(),
-                                             sprite->pixelFormat());
   {
     UndoTransaction undoTransaction(writer.context(), "Flatten Layers");
-    document->getApi().flattenLayers(sprite, bgcolor);
+    document->getApi().flattenLayers(sprite);
     undoTransaction.commit();
   }
   update_screen_for_document(writer.document());

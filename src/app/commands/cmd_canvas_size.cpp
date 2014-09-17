@@ -20,7 +20,6 @@
 #include "config.h"
 #endif
 
-#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
@@ -345,14 +344,8 @@ void CanvasSizeCommand::onExecute(Context* context)
     Sprite* sprite = writer.sprite();
     UndoTransaction undoTransaction(writer.context(), "Canvas Size");
     DocumentApi api = document->getApi();
-    raster::color_t bgcolor = color_utils::color_for_target(
-      context->settings()->getBgColor(),
-      ColorTarget(
-        ColorTarget::BackgroundLayer,
-        sprite->pixelFormat(),
-        sprite->transparentColor()));
 
-    api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1), bgcolor);
+    api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1));
     undoTransaction.commit();
 
     document->generateMaskBoundaries();

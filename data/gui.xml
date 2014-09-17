@@ -630,7 +630,7 @@
     <menu id="cel_popup">
       <item command="CelProperties" text="&amp;Properties..." />
       <separator />
-      <item command="RemoveCel" text="&amp;Clear" />
+      <item command="ClearCel" text="&amp;Clear" />
     </menu>
 
     <menu id="cel_movement_popup">

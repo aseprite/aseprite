@@ -326,16 +326,14 @@ void clipboard::paste()
               Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
 
               if (cel && cel->image()) {
-                bgcolor = app_get_color_to_clear_layer(dstLayers[j]);
-
                 api.copyCel(
                   static_cast<LayerImage*>(srcLayers[i]), frame,
-                  static_cast<LayerImage*>(dstLayers[j]), dstFrame, bgcolor);
+                  static_cast<LayerImage*>(dstLayers[j]), dstFrame);
               }
               else {
                 Cel* dstCel = static_cast<LayerImage*>(dstLayers[j])->getCel(dstFrame);
                 if (dstCel)
-                  api.removeCel(static_cast<LayerImage*>(dstLayers[j]), dstCel);
+                  api.clearCel(dstCel);
               }
             }
 
@@ -361,11 +359,9 @@ void clipboard::paste()
                    j >= LayerIndex(0); --i, --j) {
               Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
               if (cel && cel->image()) {
-                bgcolor = app_get_color_to_clear_layer(dstLayers[j]);
-
                 api.copyCel(
                   static_cast<LayerImage*>(srcLayers[i]), frame,
-                  static_cast<LayerImage*>(dstLayers[j]), dstFrame, bgcolor);
+                  static_cast<LayerImage*>(dstLayers[j]), dstFrame);
               }
             }
 
