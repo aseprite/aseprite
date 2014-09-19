@@ -288,15 +288,10 @@ gfx::Point get_mouse_position()
 
 void set_mouse_position(const gfx::Point& newPos)
 {
-  moved = true;
-
   if (mouse_display)
     mouse_display->setMousePosition(newPos);
 
-  update_mouse_position(newPos);
-
-  m_x[1] = m_x[0];
-  m_y[1] = m_y[0];
+  _internal_set_mouse_position(newPos);
 }
 
 MouseButtons jmouse_b(int antique)
