@@ -11,7 +11,6 @@
 #include "ui/image_view.h"
 
 #include "she/surface.h"
-#include "ui/draw.h"
 #include "ui/graphics.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"

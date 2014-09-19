@@ -10,14 +10,29 @@
 #include "config.h"
 #endif
 
+#include "ui/widget.h"
+
 #include "base/memory.h"
 #include "she/display.h"
 #include "she/font.h"
 #include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
+#include "ui/init_theme_event.h"
 #include "ui/intern.h"
-#include "ui/ui.h"
+#include "ui/layout_io.h"
+#include "ui/load_layout_event.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/move_region.h"
+#include "ui/paint_event.h"
+#include "ui/preferred_size_event.h"
+#include "ui/resize_event.h"
+#include "ui/save_layout_event.h"
+#include "ui/system.h"
+#include "ui/theme.h"
+#include "ui/view.h"
+#include "ui/window.h"
 
 #include <cctype>
 #include <climits>
@@ -1045,7 +1060,7 @@ void Widget::scrollRegion(const Region& region, int dx, int dy)
   reg2.offset(-dx, -dy);
 
   // Move screen pixels
-  ui::_move_region(reg2, dx, dy);
+  ui::move_region(reg2, dx, dy);
 
   reg2.offset(dx, dy);
 

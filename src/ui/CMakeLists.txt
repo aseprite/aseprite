@@ -11,7 +11,6 @@ add_library(ui-lib
   component.cpp
   cursor.cpp
   custom_label.cpp
-  draw.cpp
   entry.cpp
   event.cpp
   graphics.cpp
@@ -27,6 +26,7 @@ add_library(ui-lib
   menu.cpp
   message.cpp
   message_loop.cpp
+  move_region.cpp
   overlay.cpp
   overlay_manager.cpp
   paint_event.cpp

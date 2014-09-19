@@ -12,7 +12,6 @@
 #include "gfx/size.h"
 #include "she/font.h"
 #include "she/system.h"
-#include "ui/draw.h"
 #include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/system.h"

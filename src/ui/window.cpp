@@ -8,11 +8,19 @@
 #include "config.h"
 #endif
 
+#include "ui/window.h"
+
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
+#include "ui/manager.h"
+#include "ui/message.h"
+#include "ui/message_loop.h"
+#include "ui/move_region.h"
 #include "ui/preferred_size_event.h"
-#include "ui/ui.h"
+#include "ui/resize_event.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 
 namespace ui {
 
@@ -570,7 +578,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {
-        ui::_move_region(moveableRegion, dx, dy);
+        ui::move_region(moveableRegion, dx, dy);
       }
     }
     jmouse_show();
