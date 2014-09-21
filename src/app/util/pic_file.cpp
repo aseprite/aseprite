@@ -20,26 +20,28 @@
 #include "config.h"
 #endif
 
+#include "base/cfile.h"
+#include "base/file_handle.h"
 #include "base/unique_ptr.h"
+#include "raster/color_scales.h"
 #include "raster/image.h"
+#include "raster/palette.h"
 #include "raster/primitives.h"
 
-#include <allegro/color.h>
-#include <allegro/file.h>
+#include <cstdio>
 
 namespace app {
 
 using namespace raster;
 
 // Loads a PIC file (Animator and Animator Pro format)
-Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
+Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
 {
   base::UniquePtr<Image> image;
   int size, compression;
   int image_size;
   int block_size;
   int block_type;
-  PACKFILE *f;
   int version;
   int r, g, b;
   int c, u, v;
@@ -48,38 +50,38 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
   int byte;
   int bpp;
 
-  f = pack_fopen (filename, F_READ);
-  if (!f)
-    return NULL;
+  base::FileHandle f(base::open_file_with_exception(filename, "rb"));
 
-  /* Animator format? */
-  magic = pack_igetw (f);
+  // Animator format?
+  magic = base::fgetw(f);
   if (magic == 0x9119) {
-    /* read Animator PIC file ***************************************/
-    w = pack_igetw (f);                 /* width */
-    h = pack_igetw (f);                 /* height */
-    *x = ((short)pack_igetw (f));       /* X offset */
-    *y = ((short)pack_igetw (f));       /* Y offset */
-    bpp = pack_getc (f);                /* bits per pixel (must be 8) */
-    compression = pack_getc (f);        /* compression flag (must be 0) */
-    image_size = pack_igetl (f);        /* image size (in bytes) */
-    pack_getc (f);                      /* reserved */
+    // Read Animator PIC file
+    w = base::fgetw(f);                 // width
+    h = base::fgetw(f);                 // height
+    *x = ((short)base::fgetw(f));       // X offset
+    *y = ((short)base::fgetw(f));       // Y offset
+    bpp = std::fgetc(f);                // bits per pixel (must be 8)
+    compression = std::fgetc(f);        // compression flag (must be 0)
+    image_size = base::fgetl(f);        // image size (in bytes)
+    std::fgetc(f);                      // reserved
 
     if (bpp != 8 || compression != 0) {
-      pack_fclose (f);
       return NULL;
     }
 
-    /* read palette (RGB in 0-63) */
+    // Read palette (RGB in 0-63)
+    if (palette) {
+      *palette = new Palette(FrameNumber(0), Palette::MaxColors);
+    }
     for (c=0; c<256; c++) {
-      r = pack_getc (f);
-      g = pack_getc (f);
-      b = pack_getc (f);
-      if (palette) {
-        palette[c].r = r;
-        palette[c].g = g;
-        palette[c].b = b;
-      }
+      r = std::fgetc(f);
+      g = std::fgetc(f);
+      b = std::fgetc(f);
+      if (palette)
+        (*palette)->setEntry(c, rgba(
+            scale_6bits_to_8bits(r),
+            scale_6bits_to_8bits(g),
+            scale_6bits_to_8bits(b), 255));
     }
 
     // Read image
@@ -87,85 +89,74 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
 
     for (v=0; v<h; v++)
       for (u=0; u<w; u++)
-        image->putPixel(u, v, pack_getc(f));
+        image->putPixel(u, v, std::fgetc(f));
 
-    pack_fclose(f);
     return image.release();
   }
 
-  /* rewind */
-  pack_fclose (f);
-  f = pack_fopen (filename, F_READ);
-  if (!f)
+  // rewind
+  f.reset(NULL);
+  f = base::open_file_with_exception(filename, "rb");
+
+  // read a PIC/MSK Animator Pro file
+  size = base::fgetl(f);        // file size
+  magic = base::fgetw(f);       // magic number 9500h
+  if (magic != 0x9500)
     return NULL;
 
-  /* read a PIC/MSK Animator Pro file *************************************/
-  size = pack_igetl (f);        /* file size */
-  magic = pack_igetw (f);       /* magic number 9500h */
-  if (magic != 0x9500) {
-    pack_fclose (f);
+  w = base::fgetw(f);           // width
+  h = base::fgetw(f);           // height
+  *x = base::fgetw(f);          // X offset
+  *y = base::fgetw(f);          // Y offset
+  base::fgetl(f);               // user ID, is 0
+  bpp = std::fgetc(f);          // bits per pixel
+
+  if ((bpp != 1 && bpp != 8) || (w<1) || (h<1) || (w>9999) || (h>9999))
     return NULL;
-  }
 
-  w = pack_igetw (f);           /* width */
-  h = pack_igetw (f);           /* height */
-  *x = pack_igetw (f);          /* X offset */
-  *y = pack_igetw (f);          /* Y offset */
-  pack_igetl (f);               /* user ID, is 0 */
-  bpp = pack_getc (f);          /* bits per pixel */
-
-  if ((bpp != 1 && bpp != 8) || (w<1) || (h<1) || (w>9999) || (h>9999)) {
-    pack_fclose (f);
-    return NULL;
-  }
-
-  /* skip reserved data */
+  // Skip reserved data
   for (c=0; c<45; c++)
-    pack_getc (f);
+    std::fgetc(f);
 
-  size -= 64;                   /* the header uses 64 bytes */
+  size -= 64;                   // The header uses 64 bytes
 
   image.reset(Image::create(bpp == 8 ? IMAGE_INDEXED: IMAGE_BITMAP, w, h));
 
   /* read blocks to end of file */
   while (size > 0) {
-    block_size = pack_igetl (f);
-    block_type = pack_igetw (f);
+    block_size = base::fgetl(f);
+    block_type = base::fgetw(f);
 
     switch (block_type) {
 
-      /* color palette info */
+      // Color palette info
       case 0:
-        version = pack_igetw (f);       /* palette version */
-        if (version != 0) {
-          pack_fclose (f);
+        version = base::fgetw(f);       // Palette version
+        if (version != 0)
           return NULL;
-        }
-        /* 256 RGB entries in 0-255 format */
+
+        // 256 RGB entries in 0-255 format
         for (c=0; c<256; c++) {
-          r = pack_getc (f);
-          g = pack_getc (f);
-          b = pack_getc (f);
-          if (palette) {
-            palette[c].r = MID (0, r, 255) >> 2;
-            palette[c].g = MID (0, g, 255) >> 2;
-            palette[c].b = MID (0, b, 255) >> 2;
-          }
+          r = std::fgetc(f);
+          g = std::fgetc(f);
+          b = std::fgetc(f);
+          if (palette)
+            (*palette)->setEntry(c, rgba(r, g, b, 255));
         }
         break;
 
-      /* byte-per-pixel image data */
+      // Byte-per-pixel image data
       case 1:
         for (v=0; v<h; v++)
           for (u=0; u<w; u++)
-            image->putPixel(u, v, pack_getc(f));
+            image->putPixel(u, v, std::fgetc(f));
         break;
 
-      /* bit-per-pixel image data */
+      // Bit-per-pixel image data
       case 2:
         for (v=0; v<h; v++)
           for (u=0; u<(w+7)/8; u++) {
-            byte = pack_getc (f);
+            byte = std::fgetc(f);
             for (c=0; c<8; c++)
               put_pixel(image, u*8+c, v, byte & (1<<(7-c)));
           }
@@ -175,15 +166,13 @@ Image* load_pic_file(const char* filename, int* x, int* y, RGB* palette)
     size -= block_size;
   }
 
-  pack_fclose (f);
   return image.release();
 }
 
 // Saves an Animator Pro PIC file
-int save_pic_file(const char *filename, int x, int y, const RGB* palette, const Image* image)
+int save_pic_file(const char *filename, int x, int y, const Palette* palette, const Image* image)
 {
   int c, u, v, bpp, size, byte;
-  PACKFILE* f;
 
   if (image->pixelFormat() == IMAGE_INDEXED)
     bpp = 8;
@@ -195,66 +184,66 @@ int save_pic_file(const char *filename, int x, int y, const RGB* palette, const 
   if ((bpp == 8) && (!palette))
     return -1;
 
-  f = pack_fopen (filename, F_WRITE);
-  if (!f)
-    return -1;
+  base::FileHandle f(base::open_file_with_exception(filename, "wb"));
 
   size = 64;
-  /* bit-per-pixel image data block */
+  // Bit-per-pixel image data block
   if (bpp == 1)
     size += (4+2+((image->width()+7)/8)*image->height());
-  /* color palette info + byte-per-pixel image data block */
+  // Color palette info + byte-per-pixel image data block
   else
     size += (4+2+2+256*3) + (4+2+image->width()*image->height());
 
-  pack_iputl(size, f);          /* file size */
-  pack_iputw(0x9500, f);        /* magic number 9500h */
-  pack_iputw(image->width(), f);      /* width */
-  pack_iputw(image->height(), f);      /* height */
-  pack_iputw(x, f);             /* X offset */
-  pack_iputw(y, f);             /* Y offset */
-  pack_iputl(0, f);             /* user ID, is 0 */
-  pack_putc(bpp, f);            /* bits per pixel */
+  base::fputl(size, f);          /* file size */
+  base::fputw(0x9500, f);        /* magic number 9500h */
+  base::fputw(image->width(), f);  /* width */
+  base::fputw(image->height(), f); /* height */
+  base::fputw(x, f);             /* X offset */
+  base::fputw(y, f);             /* Y offset */
+  base::fputl(0, f);             /* user ID, is 0 */
+  std::fputc(bpp, f);            /* bits per pixel */
 
-  /* reserved data */
+  // Reserved data
   for (c=0; c<45; c++)
-    pack_putc(0, f);
+    std::fputc(0, f);
 
-  /* 1 bpp */
+  // 1 bpp
   if (bpp == 1) {
-    /* bit-per-data image data block */
-    pack_iputl((4+2+((image->width()+7)/8)*image->height()), f);    /* block size */
-    pack_iputw(2, f);                                  /* block type */
-    for (v=0; v<image->height(); v++)                          /* image data */
+    // Bit-per-data image data block
+    base::fputl((4+2+((image->width()+7)/8)*image->height()), f); // Block size
+    base::fputw(2, f);                // Block type
+    for (v=0; v<image->height(); v++) // Image data
       for (u=0; u<(image->width()+7)/8; u++) {
         byte = 0;
         for (c=0; c<8; c++)
           if (get_pixel(image, u*8+c, v))
             byte |= (1<<(7-c));
-        pack_putc (byte, f);
+        std::fputc(byte, f);
       }
   }
   // 8 bpp
   else {
+    ASSERT(palette);
+
     // Color palette info
-    pack_iputl((4+2+2+256*3), f);       // Block size
-    pack_iputw(0, f);                   // Block type
-    pack_iputw(0, f);                   // Version
-    for (c=0; c<256; c++) {             // 256 palette entries
-      pack_putc(_rgb_scale_6[palette[c].r], f);
-      pack_putc(_rgb_scale_6[palette[c].g], f);
-      pack_putc(_rgb_scale_6[palette[c].b], f);
+    base::fputl((4+2+2+256*3), f);       // Block size
+    base::fputw(0, f);                   // Block type
+    base::fputw(0, f);                   // Version
+    for (c=0; c<256; c++) {              // 256 palette entries
+      color_t color = palette->getEntry(c);
+      std::fputc(rgba_getr(color), f);
+      std::fputc(rgba_getg(color), f);
+      std::fputc(rgba_getb(color), f);
     }
 
-    /* pixel-per-data image data block */
-    pack_iputl ((4+2+image->width()*image->height()), f); // Block size
-    pack_iputw (1, f);                   // Block type
+    // Pixel-per-data image data block
+    base::fputl((4+2+image->width()*image->height()), f); // Block size
+    base::fputw(1, f);                // Block type
     for (v=0; v<image->height(); v++) // Image data
       for (u=0; u<image->width(); u++)
-        pack_putc(image->getPixel(u, v), f);
+        std::fputc(image->getPixel(u, v), f);
   }
 
-  pack_fclose (f);
   return 0;
 }
 

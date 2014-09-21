@@ -20,16 +20,15 @@
 #define APP_UTIL_PIC_FILE_H_INCLUDED
 #pragma once
 
-#include <allegro/color.h>
-
 namespace raster {
   class Image;
+  class Palette;
 }
 
 namespace app {
 
-  raster::Image* load_pic_file(const char* filename, int *x, int *y, RGB* palette);
-  int save_pic_file(const char* filename, int x, int y, const RGB* palette, const raster::Image* image);
+  raster::Image* load_pic_file(const char* filename, int *x, int *y, raster::Palette** palette);
+  int save_pic_file(const char* filename, int x, int y, const raster::Palette* palette, const raster::Image* image);
 
 } // namespace app
 
