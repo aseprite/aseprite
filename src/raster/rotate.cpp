@@ -11,17 +11,18 @@
 #include "config.h"
 #endif
 
+#include "fixmath/fixmath.h"
 #include "raster/blend.h"
 #include "raster/image.h"
 #include "raster/image_bits.h"
 #include "raster/primitives.h"
 #include "raster/primitives_fast.h"
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
 #include <cmath>
 
 namespace raster {
+
+using namespace fixmath;
 
 static void ase_parallelogram_map_standard(Image *bmp, Image *sprite, fixed xs[4], fixed ys[4]);
 static void ase_rotate_scale_flip_coordinates(fixed w, fixed h,

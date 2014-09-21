@@ -21,10 +21,9 @@
 #pragma once
 
 #include "app/ui/editor/handle_type.h"
+#include "fixmath/fixmath.h"
 #include "gfx/point.h"
 #include "gfx/transformation.h"
-
-#include <allegro/fixed.h>
 
 namespace ui {
   class Graphics;
@@ -52,9 +51,9 @@ namespace app {
       const gfx::Transformation& transform,
       const gfx::Transformation::Corners& corners);
 
-    bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixed angle);
-    void drawHandle(ui::Graphics* g, int x, int y, fixed angle);
-    void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixed angle);
+    bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle);
+    void drawHandle(ui::Graphics* g, int x, int y, fixmath::fixed angle);
+    void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle);
   };
 
 } // namespace app

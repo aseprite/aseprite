@@ -47,6 +47,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/misc.h"
+#include "fixmath/fixmath.h"
 #include "gfx/rect.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -55,8 +56,6 @@
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
-
-#include <allegro.h>
 
 namespace app {
 
@@ -493,7 +492,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       ColorPicker::FromComposition);
 
     char buf[256];
-    usprintf(buf, "- Pos %d %d", x, y);
+    sprintf(buf, "- Pos %d %d", x, y);
 
     StatusBar::instance()->showColor(0, buf, picker.color(), picker.alpha());
   }
@@ -617,8 +616,8 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   }
 
   // Adjust the cursor depending the current transformation angle.
-  fixed angle = ftofix(128.0 * transformation.angle() / PI);
-  angle = fixadd(angle, itofix(16));
+  fixmath::fixed angle = fixmath::ftofix(128.0 * transformation.angle() / PI);
+  angle = fixmath::fixadd(angle, fixmath::itofix(16));
   angle &= (255<<16);
   angle >>= 16;
   angle /= 32;

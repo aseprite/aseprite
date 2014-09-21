@@ -26,8 +26,6 @@
 #include "app/ui/skin/skin_theme.h"
 #include "she/surface.h"
 
-#include <allegro.h>
-
 namespace app {
 
 using namespace app::skin;
@@ -49,7 +47,7 @@ static struct HandlesInfo {
   //
   int i1, i2;
   // The angle bias of this specific handle.
-  fixed angle;
+  fixmath::fixed angle;
   // The exact handle type ([0] for scaling, [1] for rotating).
   HandleType handle[2];
 } handles_info[HANDLES] = {
@@ -75,7 +73,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   she::Surface* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
-  fixed angle = ftofix(128.0 * transform.angle() / PI);
+  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
@@ -109,7 +107,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
 void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& transform)
 {
   ScreenGraphics g;
-  fixed angle = ftofix(128.0 * transform.angle() / PI);
+  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
@@ -161,7 +159,7 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
 void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  fixed angle = ftofix(128.0 * transform.angle() / PI);
+  fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
@@ -213,7 +211,7 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
     part->height());
 }
 
-bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixed angle)
+bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle)
 {
   adjustHandle(x, y, gfx_w, gfx_h, angle);
 
@@ -221,7 +219,7 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
           pt.y >= y && pt.y < y+gfx_h);
 }
 
-void TransformHandles::drawHandle(Graphics* g, int x, int y, fixed angle)
+void TransformHandles::drawHandle(Graphics* g, int x, int y, fixmath::fixed angle)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
@@ -231,9 +229,9 @@ void TransformHandles::drawHandle(Graphics* g, int x, int y, fixed angle)
   g->drawRgbaSurface(part, x, y);
 }
 
-void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, fixed angle)
+void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle)
 {
-  angle = fixadd(angle, itofix(16));
+  angle = fixmath::fixadd(angle, fixmath::itofix(16));
   angle &= (255<<16);
   angle >>= 16;
   angle /= 32;
