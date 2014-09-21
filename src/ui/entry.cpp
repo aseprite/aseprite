@@ -667,7 +667,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
 #define IS_WORD_CHAR(ch)                                \
   (!((!ch) || (std::isspace(ch)) ||                     \
-    ((ch) == '/') || ((ch) == OTHER_PATH_SEPARATOR)))
+    ((ch) == '/') || ((ch) == '\\')))
 
 void Entry::forwardWord()
 {
