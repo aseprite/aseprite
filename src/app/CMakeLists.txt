@@ -123,6 +123,7 @@ add_library(app-lib
   file/palette_file.cpp
   file/pcx_format.cpp
   file/png_format.cpp
+  file/split_filename.cpp
   file/tga_format.cpp
   file_selector.cpp
   file_system.cpp

@@ -28,6 +28,7 @@
 #include "app/file/file_format.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file/format_options.h"
+#include "app/file/split_filename.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/status_bar.h"
@@ -41,7 +42,6 @@
 #include "raster/raster.h"
 #include "ui/alert.h"
 
-#include <allegro.h>
 #include <cstring>
 
 namespace app {
@@ -50,22 +50,20 @@ using namespace base;
 
 static FileOp* fop_new(FileOpType type, Context* context);
 static void fop_prepare_for_sequence(FileOp* fop);
-static int split_filename(const char* filename, char* left, char* right, int* width);
 
 void get_readable_extensions(char* buf, int size)
 {
   FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
   FileFormatsList::iterator end = FileFormatsManager::instance()->end();
 
-  /* clear the string */
-  ustrncpy(buf, empty_string, size);
+  // Clear the string
+  strncpy(buf, "", size);
 
-  /* insert file format */
+  // Insert file format
   for (; it != end; ++it) {
     if ((*it)->support(FILE_SUPPORT_LOAD)) {
-      if (ustrcmp(buf, empty_string) != 0)
-        ustrncat(buf, ",", size);
-      ustrncat(buf, (*it)->extensions(), size);
+      if (*buf) strncat(buf, ",", size);
+      strncat(buf, (*it)->extensions(), size);
     }
   }
 }
@@ -75,15 +73,14 @@ void get_writable_extensions(char* buf, int size)
   FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
   FileFormatsList::iterator end = FileFormatsManager::instance()->end();
 
-  /* clear the string */
-  ustrncpy(buf, empty_string, size);
+  // Clear the string
+  strncpy(buf, "", size);
 
-  /* insert file format */
+  // Insert file format
   for (; it != end; ++it) {
     if ((*it)->support(FILE_SUPPORT_SAVE)) {
-      if (ustrcmp(buf, empty_string) != 0)
-        ustrncat(buf, ",", size);
-      ustrncat(buf, (*it)->extensions(), size);
+      if (*buf) strncat(buf, ",", size);
+      strncat(buf, (*it)->extensions(), size);
     }
   }
 }
@@ -180,22 +177,23 @@ FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
 
     /* don't load the sequence (just the one file/one frame) */
     if (!(flags & FILE_LOAD_SEQUENCE_NONE)) {
-      char buf[512], left[512], right[512];
+      std::string left, right;
       int c, width, start_from;
+      char buf[512];
 
       /* first of all, we must generate the list of files to load in the
          sequence... */
 
-      /* check is this could be a sequence */
-      start_from = split_filename(filename, left, right, &width);
+      // Check is this could be a sequence
+      start_from = split_filename(filename, left, right, width);
       if (start_from >= 0) {
-        /* try to get more file names */
+        // Try to get more file names
         for (c=start_from+1; ; c++) {
-          /* get the next file name */
-          usprintf(buf, "%s%0*d%s", left, width, c, right);
+          // Get the next file name
+          sprintf(buf, "%s%0*d%s", left.c_str(), width, c, right.c_str());
 
-          /* if the file doesn't exist, we doesn't need more files to load */
-          if (!exists(buf))
+          // If the file doesn't exist, we doesn't need more files to load
+          if (!base::is_file(buf))
             break;
 
           /* add this file name to the list */
@@ -208,14 +206,15 @@ FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
         /* really want load all files? */
         if ((fop->seq.filename_list.size() > 1) &&
             (ui::Alert::show("Notice"
-                             "<<Possible animation with:"
-                             "<<%s"
-                             "<<Load the sequence of bitmaps?"
-                             "||&Agree||&Skip",
-                             get_filename(filename)) != 1)) {
+              "<<Possible animation with:"
+              "<<%s, %s..."
+              "<<Do you want to load the sequence of bitmaps?"
+              "||&Agree||&Skip",
+              base::get_file_name(fop->seq.filename_list[0]).c_str(),
+              base::get_file_name(fop->seq.filename_list[1]).c_str()) != 1)) {
 
-          /* if the user replies "Skip", we need just one file name (the
-             first one) */
+          // If the user replies "Skip", we need just one file name
+          // (the first one).
           if (fop->seq.filename_list.size() > 1) {
             fop->seq.filename_list.erase(fop->seq.filename_list.begin()+1,
                                          fop->seq.filename_list.end());
@@ -365,10 +364,10 @@ FileOp* fop_to_save_document(Context* context, Document* document)
     }
     // To save more frames
     else {
-      char left[256], right[256];
+      std::string left, right;
       int width, start_from;
 
-      start_from = split_filename(fop->document->filename().c_str(), left, right, &width);
+      start_from = split_filename(fop->document->filename().c_str(), left, right, width);
       if (start_from < 0) {
         start_from = 0;
         width =
@@ -380,7 +379,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
       for (FrameNumber frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
         // Get the name for this frame
         char buf[4096];
-        sprintf(buf, "%s%0*d%s", left, width, start_from+frame, right);
+        sprintf(buf, "%s%0*d%s", left.c_str(), width, start_from+frame, right.c_str());
         fop->seq.filename_list.push_back(buf);
       }
     }
@@ -755,9 +754,8 @@ void fop_error(FileOp *fop, const char *format, ...)
 {
   char buf_error[4096];
   va_list ap;
-
   va_start(ap, format);
-  uvszprintf(buf_error, sizeof(buf_error), format, ap);
+  vsnprintf(buf_error, sizeof(buf_error), format, ap);
   va_end(ap);
 
   // Concatenate the new error
@@ -848,73 +846,6 @@ static void fop_prepare_for_sequence(FileOp* fop)
 {
   fop->seq.palette = new Palette(FrameNumber(0), 256);
   fop->seq.format_options.reset();
-}
-
-// Splits a file-name like "my_ani0000.pcx" to "my_ani" and ".pcx",
-// returning the number of the center; returns "-1" if the function
-// can't split anything
-static int split_filename(const char* filename, char* left, char* right, int* width)
-{
-  char *ptr, *ext;
-  char buf[16];
-  int chr, ret;
-
-  // Get the extension.
-  ext = get_extension(filename);
-
-  // With extension.
-  if ((ext) && (*ext)) {
-    // Left side (the filename without the extension and without the '.').
-    ext--;
-    *ext = 0;
-    ustrcpy(left, filename);
-    *ext = '.';
-
-    // Right side (the extension with the '.').
-    ustrcpy(right, ext);
-  }
-  // Without extension (without right side).
-  else {
-    ustrcpy(left, filename);
-    ustrcpy(right, empty_string);
-  }
-
-  // Remove all trailing numbers in the "left" side, and pass they to "buf".
-
-  ptr = buf+9;
-  ptr[1] = 0;
-  ret = -1;
-
-  if (width)
-    *width = 0;
-
-  for (;;) {
-    chr = ugetat(left, -1);
-    if ((chr >= '0') && (chr <= '9')) {
-      ret = 0;
-
-      if (ptr >= buf) {
-        *(ptr--) = chr;
-
-        if (width)
-          (*width)++;
-      }
-
-      uremove(left, -1);
-    }
-    else
-      break;
-  }
-
-  // Convert the "buf" to integer and return it.
-  if (ret == 0) {
-    while (ptr >= buf)
-      *(ptr--) = '0';
-
-    ret = ustrtol(buf, NULL, 10);
-  }
-
-  return ret;
 }
 
 } // namespace app
