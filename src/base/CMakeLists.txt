@@ -20,6 +20,7 @@ set(BASE_SOURCES
   chrono.cpp
   connection.cpp
   convert_to.cpp
+  debug.cpp
   errno_string.cpp
   exception.cpp
   file_handle.cpp

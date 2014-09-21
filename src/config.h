@@ -54,7 +54,11 @@ void verbose_printf(const char* format, ...);
 #define PI 3.14159265358979323846
 
 #include <allegro/base.h>
-#include <allegro/debug.h>      // ASSERT
+#include <allegro/debug.h>
+#undef ASSERT
+#undef TRACE
+
+#include "base/debug.h"
 
 //////////////////////////////////////////////////////////////////////
 // Overloaded new/delete operators to detect memory-leaks
