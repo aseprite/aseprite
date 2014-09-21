@@ -22,13 +22,9 @@
 
 #include <allegro/color.h>
 
-struct BITMAP;
-
 namespace raster {
-  class Image;
   class Palette;
 
-  void convert_image_to_allegro(const Image* image, BITMAP* bmp, int x, int y, const Palette* palette);
   void convert_palette_to_allegro(const Palette* palette, RGB* rgb);
   void convert_palette_from_allegro(const RGB* rgb, Palette* palette);
 
