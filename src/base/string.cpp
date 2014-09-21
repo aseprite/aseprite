@@ -177,4 +177,32 @@ int utf8_length(const std::string& utf8string)
   return c;
 }
 
+int utf8_icmp(const std::string& a, const std::string& b, int n)
+{
+  utf8_const_iterator a_it(a.begin());
+  utf8_const_iterator a_end(a.end());
+  utf8_const_iterator b_it(b.begin());
+  utf8_const_iterator b_end(b.end());
+  int i = 0;
+
+  for (; (n == 0 || i < n) && a_it != a_end && b_it != b_end; ++a_it, ++b_it, ++i) {
+    int a_chr = std::tolower(*a_it);
+    int b_chr = std::tolower(*b_it);
+
+    if (a_chr < b_chr)
+      return -1;
+    else if (a_chr > b_chr)
+      return 1;
+  }
+
+  if (n > 0 && i == n)
+    return 0;
+  else if (a_it == a_end && b_it == b_end)
+    return 0;
+  else if (a_it == a_end)
+    return -1;
+  else
+    return 1;
+}
+
 } // namespace base

@@ -20,6 +20,7 @@ namespace base {
   std::wstring from_utf8(const std::string& utf8string);
 
   int utf8_length(const std::string& utf8string);
+  int utf8_icmp(const std::string& a, const std::string& b, int n = 0);
 
   template<typename SubIterator>
   class utf8_iteratorT : public std::iterator<std::forward_iterator_tag,

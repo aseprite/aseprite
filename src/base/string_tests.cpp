@@ -66,6 +66,27 @@ TEST(String, Utf8Iterator)
   ASSERT_TRUE((utf8_iterator(d.begin())+1) == utf8_iterator(d.end()));
 }
 
+TEST(String, Utf8ICmp)
+{
+  EXPECT_EQ(-1, utf8_icmp("a", "b"));
+  EXPECT_EQ(-1, utf8_icmp("a", "b", 1));
+  EXPECT_EQ(-1, utf8_icmp("a", "b", 2));
+  EXPECT_EQ(-1, utf8_icmp("a", "aa"));
+  EXPECT_EQ(-1, utf8_icmp("A", "aa", 3));
+  EXPECT_EQ(-1, utf8_icmp("a", "ab"));
+
+  EXPECT_EQ(0, utf8_icmp("AaE", "aae"));
+  EXPECT_EQ(0, utf8_icmp("AaE", "aae", 3));
+  EXPECT_EQ(0, utf8_icmp("a", "aa", 1));
+  EXPECT_EQ(0, utf8_icmp("a", "ab", 1));
+
+  EXPECT_EQ(1, utf8_icmp("aaa", "Aa", 3));
+  EXPECT_EQ(1, utf8_icmp("Bb", "b"));
+  EXPECT_EQ(1, utf8_icmp("z", "b"));
+  EXPECT_EQ(1, utf8_icmp("z", "b", 1));
+  EXPECT_EQ(1, utf8_icmp("z", "b", 2));
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
