@@ -32,8 +32,6 @@
 #include "raster/image.h"
 #include "raster/sprite.h"
 
-#include <allegro/unicode.h>
-
 namespace app {
   
 class ChangePixelFormatCommand : public Command {

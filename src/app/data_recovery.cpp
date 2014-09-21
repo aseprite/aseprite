@@ -23,13 +23,12 @@
 #include "app/data_recovery.h"
 
 #include "app/backup.h"
+#include "app/document.h"
+#include "app/ini_file.h"
+#include "app/ui_context.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/temp_dir.h"
-#include "app/document.h"
-#include "app/ui_context.h"
-
-#include <allegro.h>
 
 namespace app {
 

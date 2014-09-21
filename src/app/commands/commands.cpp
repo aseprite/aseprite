@@ -20,16 +20,15 @@
 #include "config.h"
 #endif
 
-/* #include <stdio.h> */
-#include <allegro/unicode.h>
-#include <exception>
-#include <string.h>
-
-#include "ui/ui.h"
+#include "app/commands/commands.h"
 
 #include "app/commands/command.h"
-#include "app/commands/commands.h"
 #include "app/console.h"
+#include "base/string.h"
+#include "ui/ui.h"
+
+#include <cstring>
+#include <exception>
 
 namespace app {
 
@@ -58,10 +57,8 @@ CommandsModule::~CommandsModule()
 {
   ASSERT(m_instance == this);
 
-  for (CommandsList::iterator
-         it = m_commands.begin(); it != m_commands.end(); ++it) {
-    delete *it;
-  }
+  for (Command* cmd : m_commands)
+    delete cmd;
 
   m_commands.clear();
   m_instance = NULL;
@@ -78,10 +75,10 @@ Command* CommandsModule::getCommandByName(const char* name)
   if (!name)
     return NULL;
 
-  for (CommandsList::iterator
-         it = m_commands.begin(); it != m_commands.end(); ++it) {
-    if (ustricmp((*it)->short_name(), name) == 0)
-      return *it;
+  std::string lname = base::string_to_lower(name);
+  for (Command* cmd : m_commands) {
+    if (base::string_to_lower(cmd->short_name()) == lname)
+      return cmd;
   }
 
   return NULL;

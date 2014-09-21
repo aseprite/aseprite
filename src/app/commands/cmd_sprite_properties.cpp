@@ -36,7 +36,6 @@
 #include "raster/sprite.h"
 #include "ui/ui.h"
 
-#include <allegro/unicode.h>
 #include <cstdio>
 
 namespace app {
@@ -113,10 +112,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
     type->setText(imgtype_text.c_str());
 
     // Sprite size (width and height)
-    usprintf(buf, "%dx%d (%s)",
-             sprite->width(),
-             sprite->height(),
-             base::get_pretty_memory_size(sprite->getMemSize()).c_str());
+    sprintf(buf, "%dx%d (%s)",
+      sprite->width(),
+      sprite->height(),
+      base::get_pretty_memory_size(sprite->getMemSize()).c_str());
 
     size->setText(buf);
 

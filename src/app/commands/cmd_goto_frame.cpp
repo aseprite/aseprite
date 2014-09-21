@@ -30,8 +30,6 @@
 #include "raster/sprite.h"
 #include "ui/window.h"
 
-#include <allegro/unicode.h>
-
 namespace app {
 
 using namespace ui;
@@ -124,7 +122,7 @@ protected:
   void onLoadParams(Params* params) override
   {
     std::string frame = params->get("frame");
-    if (!frame.empty()) m_frame = ustrtol(frame.c_str(), NULL, 10);
+    if (!frame.empty()) m_frame = strtol(frame.c_str(), NULL, 10);
     else m_frame = 0;
   }
 

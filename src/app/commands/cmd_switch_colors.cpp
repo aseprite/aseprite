@@ -20,8 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro/unicode.h>
-
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/ui/color_bar.h"

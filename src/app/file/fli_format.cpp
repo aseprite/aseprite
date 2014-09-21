@@ -29,8 +29,7 @@
 #include "base/file_handle.h"
 #include "raster/raster.h"
 
-#include <allegro/color.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace app {
 

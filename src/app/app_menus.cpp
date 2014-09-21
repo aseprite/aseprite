@@ -35,13 +35,13 @@
 #include "app/ui/main_window.h"
 #include "app/util/filetoks.h"
 #include "base/bind.h"
+#include "base/path.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"
-#include <allegro/file.h>
-#include <allegro/unicode.h>
-#include <stdio.h>
-#include <string.h>
+
+#include <cstdio>
+#include <cstring>
 
 namespace app {
 
@@ -251,7 +251,9 @@ bool AppMenus::rebuildRecentList()
 
         params.set("filename", filename);
 
-        menuitem = new AppMenuItem(get_filename(filename), cmd_open_file, &params);
+        menuitem = new AppMenuItem(
+          base::get_file_name(filename).c_str(),
+          cmd_open_file, &params);
         submenu->addChild(menuitem);
       }
     }
@@ -389,8 +391,9 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command,
       Command* mi_command = menuitem->getCommand();
       Params* mi_params = menuitem->getParams();
 
-      if (mi_command &&
-          ustricmp(mi_command->short_name(), command->short_name()) == 0 &&
+      if ((mi_command) &&
+          (base::string_to_lower(mi_command->short_name()) ==
+           base::string_to_lower(command->short_name())) &&
           ((mi_params && *mi_params == *params) ||
            (Params() == *params))) {
         // Set the accelerator to be shown in this menu-item

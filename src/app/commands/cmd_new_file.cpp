@@ -47,9 +47,6 @@
 
 #include "generated_new_sprite.h"
 
-#include <allegro/config.h>
-#include <allegro/unicode.h>
-
 using namespace ui;
 
 namespace app {
@@ -194,7 +191,7 @@ void NewFileCommand::onExecute(Context* context)
       // Show the sprite to the user
       base::UniquePtr<Document> doc(new Document(sprite));
       sprite.release();
-      usprintf(buf, "Sprite-%04d", ++_sprite_counter);
+      sprintf(buf, "Sprite-%04d", ++_sprite_counter);
       doc->setFilename(buf);
       doc->setContext(context);
       doc.release();

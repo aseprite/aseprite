@@ -40,8 +40,6 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
-#include <allegro/unicode.h>
-
 namespace app {
 
 class RotateCommand : public Command {
@@ -193,7 +191,7 @@ void RotateCommand::onLoadParams(Params* params)
   m_flipMask = (target == "mask");
 
   if (params->has_param("angle")) {
-    m_angle = ustrtol(params->get("angle").c_str(), NULL, 10);
+    m_angle = strtol(params->get("angle").c_str(), NULL, 10);
   }
 }
 

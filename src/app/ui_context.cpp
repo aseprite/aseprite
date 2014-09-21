@@ -37,9 +37,6 @@
 #include "raster/sprite.h"
 #include "undo/undo_history.h"
 
-#include <allegro/file.h>
-#include <allegro/system.h>
-
 namespace app {
 
 UIContext* UIContext::m_instance = NULL;

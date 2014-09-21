@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 
+#include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
 #include "app/ui/skin/button_icon_impl.h"
@@ -33,6 +34,7 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/shared_ptr.h"
+#include "base/string.h"
 #include "css/sheet.h"
 #include "gfx/border.h"
 #include "gfx/point.h"
@@ -46,8 +48,6 @@
 #include "ui/ui.h"
 
 #include "tinyxml.h"
-
-#include <allegro.h>
 
 #define BGCOLOR                 (getWidgetBgColor(widget))
 
@@ -1082,7 +1082,6 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   int scroll, caret, state, selbeg, selend;
   std::string textString = widget->getText() + widget->getSuffix();
   int suffixIndex = widget->getTextLength();
-  const char* text = textString.c_str();
   int c, ch, x, y, w;
   int caret_x;
 
@@ -1107,8 +1106,11 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   x = bounds.x + widget->border_width.l;
   y = bounds.y + bounds.h/2 - widget->getTextHeight()/2;
 
-  for (c=scroll; ugetat(text, c); c++) {
-    ch = password ? '*': ugetat(text, c);
+  base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
+  int textlen = base::utf8_length(textString);
+
+  for (c=scroll, utf8_it+=scroll; c<textlen; ++c, ++utf8_it) {
+    ch = password ? '*': *utf8_it;
 
     // Normal text
     bg = ColorNone;
@@ -1546,7 +1548,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   gfx::Rect bounds = widget->getClientBounds();
   bool password = widget->isPassword();
   int scroll, caret, state, selbeg, selend;
-  const char *text = widget->getText().c_str();
+  const std::string& textString = widget->getText();
   int c, ch, x, y, w;
   int caret_x;
 
@@ -1566,8 +1568,11 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   x = bounds.x + widget->border_width.l;
   y = bounds.y + bounds.h/2 - widget->getTextHeight()/2;
 
-  for (c=scroll; ugetat(text, c); c++) {
-    ch = password ? '*': ugetat(text, c);
+  base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
+  int textlen = base::utf8_length(textString);
+
+  for (c=scroll, utf8_it+=scroll; c<textlen; ++c, ++utf8_it) {
+    ch = password ? '*': *utf8_it;
 
     // Normal text
     bg = ColorNone;

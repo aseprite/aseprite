@@ -30,8 +30,6 @@
 #include "base/file_handle.h"
 #include "raster/raster.h"
 
-#include <allegro/color.h>
-
 namespace app {
 
 using namespace base;

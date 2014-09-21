@@ -48,8 +48,6 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
-#include <allegro/color.h>
-
 namespace app {
 
 using namespace ui;

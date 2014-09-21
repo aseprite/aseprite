@@ -35,7 +35,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/mini_editor.h"
-#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"

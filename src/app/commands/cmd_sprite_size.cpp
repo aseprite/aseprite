@@ -42,8 +42,6 @@
 #include "raster/stock.h"
 #include "ui/ui.h"
 
-#include <allegro/unicode.h>
-
 #define PERC_FORMAT     "%.1f"
 
 namespace app {

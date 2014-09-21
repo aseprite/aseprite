@@ -33,8 +33,6 @@
 #include "app/ui_context.h"
 #include "ui/window.h"
 
-#include <allegro/unicode.h>
-
 namespace app {
 
 using namespace ui;
@@ -89,12 +87,11 @@ protected:
   void onExecute(Context* context)
   {
     IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-    char buf[512];
-
     docSettings->setSnapToGrid(docSettings->getSnapToGrid() ? false: true);
 
-    usprintf(buf, "Snap to grid: %s",
-             (docSettings->getSnapToGrid() ? "On": "Off"));
+    char buf[512];
+    sprintf(buf, "Snap to grid: %s",
+      (docSettings->getSnapToGrid() ? "On": "Off"));
 
     StatusBar::instance()->setStatusText(250, buf);
   }

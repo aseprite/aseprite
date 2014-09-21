@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
-#include <allegro/file.h>
-
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/file_selector.h"
 #include "app/util/msk_file.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/alert.h"
@@ -66,11 +66,11 @@ void SaveMaskCommand::onExecute(Context* context)
     if (filename.empty())
       return;
 
-    /* does the file exist? */
-    if (exists(filename.c_str())) {
+    // Does the file exist?
+    if (base::is_file(filename.c_str())) {
       /* ask if the user wants overwrite the file? */
       ret = ui::Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                            get_filename(filename.c_str()));
+        base::get_file_name(filename).c_str());
     }
     else
       break;
