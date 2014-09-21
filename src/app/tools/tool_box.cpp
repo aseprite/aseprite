@@ -30,15 +30,13 @@
 #include "app/tools/tool_group.h"
 #include "app/tools/tool_loop.h"
 #include "base/exception.h"
+#include "fixmath/fixmath.h"
 #include "raster/algo.h"
 #include "raster/brush.h"
 #include "raster/image.h"
 #include "raster/mask.h"
 
 #include <algorithm>
-#include <allegro/file.h>
-#include <allegro/fixed.h>
-#include <allegro/fmaths.h>
 
 #include "app/tools/controllers.h"
 #include "app/tools/inks.h"

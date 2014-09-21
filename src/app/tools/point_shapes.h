@@ -132,24 +132,24 @@ public:
 
     // In Windows, rand() has a RAND_MAX too small
 #if RAND_MAX <= 0xffff
-    fixed angle, radius;
+    fixmath::fixed angle, radius;
 
     for (c=0; c<times; c++) {
-      angle = itofix(rand() * 256 / RAND_MAX);
-      radius = itofix(rand() * (spray_width*10) / RAND_MAX) / 10;
-      u = fixtoi(fixmul(radius, fixcos(angle)));
-      v = fixtoi(fixmul(radius, fixsin(angle)));
+      angle = fixmath::itofix(rand() * 256 / RAND_MAX);
+      radius = fixmath::itofix(rand() * (spray_width*10) / RAND_MAX) / 10;
+      u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
+      v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
 
       m_subPointShape.transformPoint(loop, x+u, y+v);
     }
 #else
-    fixed angle, radius;
+    fixmath::fixed angle, radius;
 
     for (c=0; c<times; c++) {
       angle = rand();
-      radius = rand() % itofix(spray_width);
-      u = fixtoi(fixmul(radius, fixcos(angle)));
-      v = fixtoi(fixmul(radius, fixsin(angle)));
+      radius = rand() % fixmath::itofix(spray_width);
+      u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
+      v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
       m_subPointShape.transformPoint(loop, x+u, y+v);
     }
 #endif

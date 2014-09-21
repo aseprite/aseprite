@@ -22,8 +22,19 @@ if(MSVC)
 endif(MSVC)
 
 # Libraries in this directory
-set(aseprite_libraries app-lib css-lib doc-lib raster-lib
-  scripting-lib undo-lib filters-lib ui-lib she gfx-lib base-lib)
+set(aseprite_libraries
+  app-lib
+  fixmath-lib
+  css-lib
+  doc-lib
+  raster-lib
+  scripting-lib
+  undo-lib
+  filters-lib
+  ui-lib
+  she
+  gfx-lib
+  base-lib)
 
 # Directories where .h files can be found
 include_directories(. .. ../third_party)

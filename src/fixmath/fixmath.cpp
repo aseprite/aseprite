@@ -3,6 +3,10 @@
  * Based on Allegro library by Shawn Hargreaves.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "fixmath/fixmath.h"
 
 #include <cmath>
