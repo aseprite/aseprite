@@ -211,7 +211,7 @@ fixed fixsqrt(fixed x)
 // Fixed point sqrt (x*x+y*y) for non-i386.
 fixed fixhypot(fixed x, fixed y)
 {
-  return ftofix(std::hypot(fixtof(x), fixtof(y)));
+  return ftofix(hypot(fixtof(x), fixtof(y)));
 }
 
 // Fixed point inverse tangent. Does a binary search on the tan table.
