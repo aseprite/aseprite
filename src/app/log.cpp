@@ -26,11 +26,9 @@
 #include "app/resource_finder.h"
 #include "ui/base.h"
 
-#include <allegro/file.h>
-#include <allegro/unicode.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
 #include <string>
 
 namespace app {

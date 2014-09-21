@@ -30,8 +30,6 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
-#include <allegro/color.h>
-
 namespace app {
 
 using namespace ui;

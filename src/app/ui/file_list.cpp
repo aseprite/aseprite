@@ -30,7 +30,8 @@
 #include "ui/ui.h"
 
 #include <algorithm>
-#include <allegro.h>
+#include <cctype>
+#include <cstring>
 
 #define ISEARCH_KEYPRESS_INTERVAL_MSECS 500
 
@@ -245,8 +246,8 @@ bool FileList::onProcessMessage(Message* msg)
 
           default:
             if (unicodeChar == ' ' ||
-                (utolower(unicodeChar) >= 'a' &&
-                 utolower(unicodeChar) <= 'z') ||
+                (std::tolower(unicodeChar) >= 'a' &&
+                 std::tolower(unicodeChar) <= 'z') ||
                 (unicodeChar >= '0' &&
                  unicodeChar <= '9')) {
               if (ui::clock() - m_isearchClock > ISEARCH_KEYPRESS_INTERVAL_MSECS)
@@ -260,9 +261,9 @@ bool FileList::onProcessMessage(Message* msg)
 
               for (i=MAX(select, 0); i<bottom; ++i, ++link) {
                 IFileItem* fi = *link;
-                if (ustrnicmp(fi->getDisplayName().c_str(),
-                              m_isearch.c_str(),
-                              chrs) == 0) {
+                if (strnicmp(fi->getDisplayName().c_str(),
+                             m_isearch.c_str(),
+                             chrs) == 0) {
                   select = i;
                   break;
                 }

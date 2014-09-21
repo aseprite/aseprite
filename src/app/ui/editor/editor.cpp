@@ -61,7 +61,6 @@
 #include "she/system.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <cstdio>
 
 namespace app {

@@ -42,7 +42,6 @@
 #include "ui/system.h"
 
 #include <algorithm>
-#include <allegro/color.h>
 #include <string>
 
 #define DEFAULT_ONIONSKIN_TYPE         Onionskin_Merge
