@@ -119,4 +119,13 @@ std::string get_temp_path()
     return "/tmp";
 }
 
+std::string get_user_docs_folder()
+{
+  char* tmpdir = getenv("HOME");
+  if (tmpdir)
+    return tmpdir;
+  else
+    return "/";
+}
+
 }

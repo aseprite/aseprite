@@ -98,4 +98,16 @@ std::string get_temp_path()
   return to_utf8(buffer);
 }
 
+std::string get_user_docs_folder()
+{
+  TCHAR buffer[MAX_PATH+1];
+  HRESULT hr = SHGetFolderPath(
+    NULL, CSIDL_MYDOCUMENTS, NULL, SHGFP_TYPE_CURRENT,
+    buffer);
+  if (hr == S_OK)
+    return to_utf8(buffer);
+  else
+    return "";
+}
+
 }

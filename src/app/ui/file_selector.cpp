@@ -35,6 +35,7 @@
 #include "app/ui/skin/skin_parts.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "base/path.h"
 #include "base/split_string.h"
 #include "base/unique_ptr.h"
@@ -42,21 +43,14 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
 #include <iterator>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-#include <cerrno>
-
-#if (DEVICE_SEPARATOR != 0) && (DEVICE_SEPARATOR != '\0')
-#  define HAVE_DRIVES
-#endif
-
 #ifndef MAX_PATH
-#  define MAX_PATH 4096         /* TODO this is needed for Linux, is it correct? */
+#  define MAX_PATH 4096         // TODO this is needed for Linux, is it correct?
 #endif
 
 namespace app {
@@ -292,25 +286,11 @@ std::string FileSelector::show(const std::string& title,
   if (base::get_file_path(initialPath).empty()) {
     // Get the saved `path' in the configuration file.
     std::string path = get_config_string("FileSelect", "CurrentDirectory", "");
-    start_folder = fs->getFileItemFromPath(path);
-
-    // Is the folder find?
-    if (!start_folder) {
-      // If the `path' doesn't exist.
-      if (path.empty() || (!fs->dirExists(path))) {
-        // We can get the current path from the system.
-#ifdef HAVE_DRIVES
-        int drive = _al_getdrive();
-#else
-        int drive = 0;
-#endif
-        char tmp[1024];
-        _al_getdcwd(drive, tmp, sizeof(tmp) - ucwidth(OTHER_PATH_SEPARATOR));
-        path = tmp;
-      }
-
-      start_folder_path = base::join_path(path, initialPath);
+    if (path.empty()) {
+      start_folder_path = base::get_user_docs_folder();
+      path = base::join_path(start_folder_path, initialPath);
     }
+    start_folder = fs->getFileItemFromPath(path);
   }
   else {
     // Remove the filename.

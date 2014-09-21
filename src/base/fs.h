@@ -29,6 +29,7 @@ namespace base {
 
   std::string get_app_path();
   std::string get_temp_path();
+  std::string get_user_docs_folder();
 
 }
 
