@@ -14,8 +14,7 @@
 #include "base/split_string.h"
 #include "base/string.h"
 
-#include <allegro/keyboard.h>
-#include <ctype.h>
+#include <cctype>
 #include <string>
 #include <vector>
 
@@ -410,16 +409,16 @@ bool Accelerator::checkFromAllegroKeyArray()
 {
   KeyModifiers modifiers = kKeyNoneModifier;
 
-  if (key[KEY_LSHIFT]  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
-  if (key[KEY_RSHIFT]  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
-  if (key[KEY_LCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
-  if (key[KEY_RCONTROL]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
-  if (key[KEY_ALT]     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
-  if (key[KEY_COMMAND ]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
+  if (she::is_key_pressed(kKeyLShift)  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
+  if (she::is_key_pressed(kKeyRShift)  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
+  if (she::is_key_pressed(kKeyLControl)) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
+  if (she::is_key_pressed(kKeyRControl)) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
+  if (she::is_key_pressed(kKeyAlt)     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
+  if (she::is_key_pressed(kKeyCommand) ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
 
   for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
        it != end; ++it) {
-    if ((it->scancode == 0 || key[it->scancode]) &&
+    if ((it->scancode == 0 || she::is_key_pressed(it->scancode)) &&
         (it->modifiers == modifiers)) {
       return true;
     }

@@ -18,8 +18,6 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
-#include <allegro/keyboard.h>
-
 namespace ui {
 
 using namespace gfx;

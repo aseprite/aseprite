@@ -53,7 +53,6 @@
 #include "raster/raster.h"
 #include "ui/ui.h"
 
-#include <allegro.h>
 #include <cstdio>
 #include <vector>
 
@@ -320,7 +319,7 @@ bool Timeline::onProcessMessage(Message* msg)
       if (!m_document)
         break;
 
-      if (mouseMsg->middle() || key[KEY_SPACE]) {
+      if (mouseMsg->middle() || she::is_key_pressed(kKeySpace)) {
         captureMouse();
         m_state = STATE_SCROLLING;
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
@@ -739,8 +738,8 @@ bool Timeline::onProcessMessage(Message* msg)
         case kKeySpace: {
           m_scroll = false;
 
-          // We have to clear all the KEY_SPACE in buffer.
-          clear_keybuf();
+          // We have to clear all the kKeySpace keys in buffer.
+          she::clear_keyboard_buffer();
           used = true;
           break;
         }

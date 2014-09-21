@@ -154,6 +154,9 @@ namespace she {
     kKeyScancodes    = 127
   };
 
+  bool is_key_pressed(KeyScancode scancode);
+  void clear_keyboard_buffer();
+
 } // namespace she
 
 #endif

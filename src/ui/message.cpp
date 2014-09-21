@@ -14,8 +14,7 @@
 #include "ui/manager.h"
 #include "ui/widget.h"
 
-#include <allegro/keyboard.h>
-#include <string.h>
+#include <cstring>
 
 namespace ui {
 
@@ -23,11 +22,11 @@ Message::Message(MessageType type)
   : m_type(type)
   , m_used(false)
   , m_modifiers((KeyModifiers)
-     ((key[KEY_LSHIFT] || key[KEY_RSHIFT] ? kKeyShiftModifier: 0) |
-      (key[KEY_LCONTROL] || key[KEY_RCONTROL] ? kKeyCtrlModifier: 0) |
-      (key[KEY_ALT] ? kKeyAltModifier: 0) |
-      (key[KEY_COMMAND] ? kKeyCmdModifier: 0) |
-      (key[KEY_SPACE] ? kKeySpaceModifier: 0)))
+     ((she::is_key_pressed(kKeyLShift) || she::is_key_pressed(kKeyRShift) ? kKeyShiftModifier: 0) |
+      (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
+      (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
+      (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
+      (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0)))
 {
 }
 

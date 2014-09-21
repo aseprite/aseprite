@@ -810,6 +810,16 @@ void error_message(const char* msg)
 #endif
 }
 
+bool is_key_pressed(KeyScancode scancode)
+{
+  return key[scancode] ? true: false;
+}
+
+void clear_keyboard_buffer()
+{
+  clear_keybuf();
+}
+
 } // namespace she
 
 // It must be defined by the user program code.
