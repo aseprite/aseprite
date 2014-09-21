@@ -114,31 +114,4 @@ void set_black_palette()
   delete p;
 }
 
-// Changes a color of the current system palette
-void set_current_color(int index, int r, int g, int b)
-{
-  int c;
-
-  ASSERT(index >= 0 && index <= 255);
-  ASSERT(r >= 0 && r <= 255);
-  ASSERT(g >= 0 && g <= 255);
-  ASSERT(b >= 0 && b <= 255);
-
-  c = ase_current_palette->getEntry(index);
-
-  if (rgba_getr(c) != r ||
-      rgba_getg(c) != g ||
-      rgba_getb(c) != b) {
-    RGB rgb;
-
-    ase_current_palette->setEntry(index, rgba(r, g, b, 255));
-
-    rgb.r = r>>2;
-    rgb.g = g>>2;
-    rgb.b = b>>2;
-
-    set_color(index, &rgb);
-  }
-}
-
 } // namespace app
