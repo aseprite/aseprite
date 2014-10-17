@@ -89,6 +89,7 @@ of the following projects created by third-parties:
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
 * [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [simpleini](https://github.com/aseprite/simpleini/) - [MIT license](https://github.com/aseprite/simpleini/blob/aseprite/LICENCE.txt)
 * [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 
