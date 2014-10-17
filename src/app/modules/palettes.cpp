@@ -23,12 +23,10 @@
 #include "app/app.h"
 #include "app/modules/palettes.h"
 #include "raster/blend.h"
-#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 #include "raster/palette.h"
 #include "raster/sprite.h"
 
-#include <allegro.h>
 #include <cstring>
 
 namespace app {
@@ -47,11 +45,7 @@ static Palette* ase_current_palette = NULL;
 int init_module_palette()
 {
   ase_default_palette = new Palette(FrameNumber(0), 256);
-  convert_palette_from_allegro(default_palette, ase_default_palette);
-
   ase_current_palette = new Palette(FrameNumber(0), 256);
-  convert_palette_from_allegro(black_palette, ase_current_palette);
-
   return 0;
 }
 
@@ -92,11 +86,6 @@ bool set_current_palette(const Palette *_palette, bool forced)
       palette->countDiff(ase_current_palette, NULL, NULL) > 0) {
     // Copy current palette
     palette->copyColorsTo(ase_current_palette);
-
-    // Change system color palette
-    PALETTE allegPal;
-    convert_palette_to_allegro(palette, allegPal);
-    set_palette(allegPal);
 
     // Call slots in signals
     App::instance()->PaletteChange();

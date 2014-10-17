@@ -13,7 +13,6 @@ add_library(raster-lib
   cel.cpp
   cel_io.cpp
   color_scales.cpp
-  conversion_alleg.cpp
   conversion_she.cpp
   dirty.cpp
   dirty_io.cpp

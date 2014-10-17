@@ -24,7 +24,6 @@
 
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "raster/conversion_alleg.h"
 #include "raster/image.h"
 
 #include <algorithm>
