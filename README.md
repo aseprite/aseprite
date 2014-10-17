@@ -76,21 +76,21 @@ report, feature requests, donations, and help me developing Aseprite.
 Aseprite uses libraries or parts of the original source code
 of the following projects created by third-parties:
 
-* [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/dacap/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
-* [curl](http://curl.haxx.se/) - [curl license](https://github.com/dacap/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
-* [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/FTL.txt)
-* [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
-* [GIMP](http://www.gimp.org/) - [GPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/GPL.txt)
-* [GTK+](http://www.gtk.org/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.1.txt)
-* [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/dacap/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
+* [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
+* [curl](http://curl.haxx.se/) - [curl license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
+* [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/FTL.txt)
+* [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
+* [GIMP](http://www.gimp.org/) - [GPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/GPL.txt)
+* [GTK+](http://www.gtk.org/) - [LGPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/LGPL-2.1.txt)
+* [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
 * [mongoose](https://github.com/valenok/mongoose) - [MIT license](https://github.com/valenok/mongoose/blob/master/LICENSE)
-* [libart](http://www.levien.com/libart/) - [LGPL license](https://github.com/dacap/aseprite/tree/master/docs/licenses/LGPL-2.0.txt)
-* [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
-* [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/dacap/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
-* [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
-* [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
-* [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/dacap/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
-* [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/dacap/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [libart](http://www.levien.com/libart/) - [LGPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/LGPL-2.0.txt)
+* [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
+* [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
+* [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
+* [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
+* [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 
 Other parts of code by:
 
