@@ -60,6 +60,18 @@ bool Graphics::intersectClipRect(const gfx::Rect& rc)
   return m_surface->intersectClipRect(gfx::Rect(rc).offset(m_dx, m_dy));
 }
 
+void Graphics::setDrawMode(DrawMode mode, int param)
+{
+  switch (mode) {
+    case DrawMode::Solid:
+      m_surface->setDrawMode(she::DrawMode::Solid);
+      break;
+    case DrawMode::Checked:
+      m_surface->setDrawMode(she::DrawMode::Checked, param);
+      break;
+  }
+}
+
 gfx::Color Graphics::getPixel(int x, int y)
 {
   she::ScopedSurfaceLock dst(m_surface);

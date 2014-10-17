@@ -20,9 +20,6 @@
 #include "config.h"
 #endif
 
-#include <allegro.h>
-#include <allegro/internal/aintern.h>
-
 #include "gfx/color.h"
 #include "ui/intern.h"
 #include "ui/system.h"
@@ -46,123 +43,6 @@ namespace app {
 
 using namespace app::skin;
 using namespace gfx;
-
-void dotted_mode(int offset)
-{
-  /* these pattern were taken from The GIMP:
-     gimp-1.3.11/app/display/gimpdisplayshell-marching-ants.h */
-  static int pattern_data[8][8] = {
-    {
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-    },
-    {
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-    },
-    {
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-    },
-    {
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-    },
-    {
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-    },
-    {
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-    },
-    {
-      0x3C,    /*  --####--  */
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-    },
-    {
-      0x78,    /*  -####---  */
-      0xF0,    /*  ####----  */
-      0xE1,    /*  ###----#  */
-      0xC3,    /*  ##----##  */
-      0x87,    /*  #----###  */
-      0x0F,    /*  ----####  */
-      0x1E,    /*  ---####-  */
-      0x3C,    /*  --####--  */
-    },
-  };
-
-  static BITMAP* pattern = NULL;
-  int x, y, fg, bg;
-
-  if (offset < 0) {
-    if (pattern) {
-      destroy_bitmap(pattern);
-      pattern = NULL;
-    }
-    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
-    return;
-  }
-
-  if (!pattern)
-    pattern = create_bitmap(8, 8);
-
-  offset = 7 - (offset & 7);
-
-  bg = makecol(0, 0, 0);
-  fg = makecol(255, 255, 255);
-
-  clear_bitmap(pattern);
-
-  for (y=0; y<8; y++)
-    for (x=0; x<8; x++)
-      putpixel(pattern, x, y,
-               (pattern_data[offset][y] & (1<<(7-x)))? fg: bg);
-
-  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
-}
 
 static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile)
 {

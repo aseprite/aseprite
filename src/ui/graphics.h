@@ -31,6 +31,11 @@ namespace ui {
   // Class to render a widget in the screen.
   class Graphics {
   public:
+    enum class DrawMode {
+      Solid,
+      Checked,
+    };
+
     Graphics(she::Surface* surface, int dx, int dy);
     ~Graphics();
 
@@ -44,6 +49,8 @@ namespace ui {
     gfx::Rect getClipBounds() const;
     void setClipBounds(const gfx::Rect& rc);
     bool intersectClipRect(const gfx::Rect& rc);
+
+    void setDrawMode(DrawMode mode, int param = 0);
 
     gfx::Color getPixel(int x, int y);
     void putPixel(gfx::Color color, int x, int y);
@@ -144,6 +151,22 @@ namespace ui {
     bool m_notEmpty;
 
     DISABLE_COPYING(IntersectClip);
+  };
+
+  class CheckedDrawMode {
+  public:
+    CheckedDrawMode(Graphics* g, int param) : m_graphics(g) {
+      m_graphics->setDrawMode(Graphics::DrawMode::Checked, param);
+    }
+
+    ~CheckedDrawMode() {
+      m_graphics->setDrawMode(Graphics::DrawMode::Solid);
+    }
+
+  private:
+    Graphics* m_graphics;
+
+    DISABLE_COPYING(CheckedDrawMode);
   };
 
   typedef SharedPtr<Graphics> GraphicsPtr;

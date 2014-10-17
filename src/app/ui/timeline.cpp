@@ -1079,9 +1079,8 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
   if (!m_clipboard_timer.isRunning())
     m_clipboard_timer.start();
 
-  dotted_mode(m_offset_count);
+  CheckedDrawMode checked(g, m_offset_count);
   g->drawRect(0, getRangeBounds(clipboard_range));
-  dotted_mode(-1);
 }
 
 void Timeline::drawHeader(ui::Graphics* g)

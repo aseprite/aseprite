@@ -17,6 +17,40 @@
 #include "she/locked_surface.h"
 #include "she/surface.h"
 
+namespace {
+
+void checked_mode(int offset)
+{
+  static BITMAP* pattern = NULL;
+  int x, y, fg, bg;
+
+  if (offset < 0) {
+    if (pattern) {
+      destroy_bitmap(pattern);
+      pattern = NULL;
+    }
+    drawing_mode(DRAW_MODE_SOLID, NULL, 0, 0);
+    return;
+  }
+
+  if (!pattern)
+    pattern = create_bitmap(8, 8);
+
+  bg = makecol(0, 0, 0);
+  fg = makecol(255, 255, 255);
+  offset = 7 - (offset & 7);
+
+  clear_bitmap(pattern);
+
+  for (y=0; y<8; y++)
+    for (x=0; x<8; x++)
+      putpixel(pattern, x, y, ((x+y+offset)&7) < 4 ? fg: bg);
+
+  drawing_mode(DRAW_MODE_COPY_PATTERN, pattern, 0, 0);
+}
+
+}
+
 namespace she {
 
   inline int to_allegro(int color_depth, gfx::Color color) {
@@ -113,6 +147,13 @@ namespace she {
     LockedSurface* lock() override {
       acquire_bitmap(m_bmp);
       return this;
+    }
+
+    void setDrawMode(DrawMode mode, int param) {
+      switch (mode) {
+        case DrawMode::Solid: checked_mode(-1); break;
+        case DrawMode::Checked: checked_mode(param); break;
+      }
     }
 
     void applyScale(int scale) override {

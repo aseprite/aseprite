@@ -14,6 +14,11 @@ namespace she {
 
   class LockedSurface;
 
+  enum class DrawMode {
+    Solid,
+    Checked
+  };
+
   class Surface {
   public:
     virtual ~Surface() { }
@@ -25,6 +30,8 @@ namespace she {
     virtual gfx::Rect getClipBounds() = 0;
     virtual void setClipBounds(const gfx::Rect& rc) = 0;
     virtual bool intersectClipRect(const gfx::Rect& rc) = 0;
+
+    virtual void setDrawMode(DrawMode mode, int param = 0) = 0;
 
     virtual LockedSurface* lock() = 0;
     virtual void applyScale(int scaleFactor) = 0;
