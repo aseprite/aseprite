@@ -88,6 +88,7 @@ set(LIBJPEG_DIR         ${CMAKE_SOURCE_DIR}/third_party/jpeg)
 set(LIBPNG_DIR          ${CMAKE_SOURCE_DIR}/third_party/libpng)
 set(LOADPNG_DIR         ${CMAKE_SOURCE_DIR}/third_party/loadpng)
 set(MONGOOSE_DIR        ${CMAKE_SOURCE_DIR}/third_party/mongoose)
+set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 

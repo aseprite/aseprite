@@ -1,0 +1,3 @@
+[submodule "third_party/simpleini"]
+	path = third_party/simpleini
+	url = git@github.com:aseprite/simpleini.git

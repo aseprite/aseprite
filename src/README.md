@@ -22,7 +22,7 @@ because they don't depend on any other component.
 
 ## Level 1
 
-  * [cfg](cfg/) (base, allegro): Library to handle configuration/settings/user preferences.
+  * [cfg](cfg/) (base): Library to load/save .ini files.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [net](net/) (base): Networking library to send HTTP requests.
   * [raster](raster/) (base, gfx): Library to handle graphics entities like sprites, images, frames.

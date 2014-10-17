@@ -43,3 +43,5 @@ endif()
 if(ENABLE_WEBSERVER)
   add_subdirectory(mongoose)
 endif()
+
+add_subdirectory(simpleini)

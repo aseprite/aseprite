@@ -20,7 +20,6 @@
 #define APP_INI_FILE_H_INCLUDED
 #pragma once
 
-#include <allegro/config.h>
 #include "gfx/rect.h"
 #include "app/color.h"
 
@@ -32,16 +31,30 @@ namespace app {
     ~ConfigModule();
   };
 
-  std::string get_config_file();
+  void push_config_state();
+  void pop_config_state();
+  void flush_config_file();
+  void set_config_file(const char* filename);
 
-  bool get_config_bool(const char *section, const char *name, bool value);
-  void set_config_bool(const char *section, const char *name, bool value);
+  std::string main_config_filename();
 
-  gfx::Rect get_config_rect(const char *section, const char *name, const gfx::Rect& rect);
-  void set_config_rect(const char *section, const char *name, const gfx::Rect& rect);
+  const char* get_config_string(const char* section, const char* name, const char* value);
+  void set_config_string(const char* section, const char* name, const char* value);
 
-  app::Color get_config_color(const char *section, const char *name, const app::Color& value);
-  void set_config_color(const char *section, const char *name, const app::Color& value);
+  int get_config_int(const char* section, const char* name, int value);
+  void set_config_int(const char* section, const char* name, int value);
+
+  float get_config_float(const char* section, const char* name, float value);
+  void set_config_float(const char* section, const char* name, float value);
+
+  bool get_config_bool(const char* section, const char* name, bool value);
+  void set_config_bool(const char* section, const char* name, bool value);
+
+  gfx::Rect get_config_rect(const char* section, const char* name, const gfx::Rect& rect);
+  void set_config_rect(const char* section, const char* name, const gfx::Rect& rect);
+
+  app::Color get_config_color(const char* section, const char* name, const app::Color& value);
+  void set_config_color(const char* section, const char* name, const app::Color& value);
 
 } // namespace app
 

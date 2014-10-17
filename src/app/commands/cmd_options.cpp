@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -197,7 +197,7 @@ private:
   }
 
   void onLocateConfigFile() {
-    app::launcher::open_folder(app::get_config_file());
+    app::launcher::open_folder(app::main_config_filename());
   }
 
   ISettings* m_settings;

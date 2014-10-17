@@ -25,6 +25,7 @@ endif(MSVC)
 set(aseprite_libraries
   app-lib
   fixmath-lib
+  cfg-lib
   css-lib
   doc-lib
   raster-lib
@@ -134,6 +135,9 @@ else()
   include_directories(${LOADPNG_DIR})
 endif()
 
+set(libs3rdparty simpleini ${libs3rdparty})
+include_directories(${SIMPLEINI_DIR})
+
 ######################################################################
 # Add C++11 support only for our code (avoid Allegro)
 
@@ -195,6 +199,7 @@ endif()
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+add_subdirectory(cfg)
 add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(filters)

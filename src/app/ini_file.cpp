@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,20 +23,22 @@
 #include "app/ini_file.h"
 
 #include "app/resource_finder.h"
+#include "base/split_string.h"
+#include "base/string.h"
+#include "cfg/cfg.h"
 
 #ifndef WIN32
 #include "base/fs.h"
 #endif
 
-#include <allegro/config.h>
-#include <allegro/file.h>
-#include <allegro/unicode.h>
+#include <vector>
 
 namespace app {
 
 using namespace gfx;
 
 static std::string g_configFilename;
+static std::vector<cfg::CfgFile*> g_configs;
 
 ConfigModule::ConfigModule()
 {
@@ -61,59 +63,118 @@ ConfigModule::ConfigModule()
 ConfigModule::~ConfigModule()
 {
   flush_config_file();
+
+  for (auto cfg : g_configs)
+    delete cfg;
+  g_configs.clear();
 }
 
-std::string get_config_file()
+//////////////////////////////////////////////////////////////////////
+// Allegro-like API to handle .ini configuration files
+
+void push_config_state()
+{
+  g_configs.push_back(new cfg::CfgFile());
+}
+
+void pop_config_state()
+{
+  ASSERT(!g_configs.empty());
+
+  delete g_configs.back();
+  g_configs.erase(--g_configs.end());
+}
+
+void flush_config_file()
+{
+  ASSERT(!g_configs.empty());
+
+  g_configs.back()->save();
+}
+
+void set_config_file(const char* filename)
+{
+  if (g_configs.empty())
+    g_configs.push_back(new cfg::CfgFile());
+
+  g_configs.back()->load(filename);
+}
+
+std::string main_config_filename()
 {
   return g_configFilename;
 }
 
-bool get_config_bool(const char *section, const char *name, bool value)
+const char* get_config_string(const char* section, const char* name, const char* value)
 {
-  const char *got = get_config_string(section, name, value ? "yes": "no");
-  return (got &&
-          (ustricmp(got, "yes") == 0 ||
-           ustricmp(got, "true") == 0 ||
-           ustricmp(got, "1") == 0)) ? true: false;
+  return g_configs.back()->getValue(section, name, value);
 }
 
-void set_config_bool(const char *section, const char *name, bool value)
+void set_config_string(const char* section, const char* name, const char* value)
 {
-  set_config_string(section, name, value ? "yes": "no");
+  g_configs.back()->setValue(section, name, value);
 }
 
-Rect get_config_rect(const char *section, const char *name, const Rect& rect)
+int get_config_int(const char* section, const char* name, int value)
+{
+  return g_configs.back()->getIntValue(section, name, value);
+}
+
+void set_config_int(const char* section, const char* name, int value)
+{
+  g_configs.back()->setIntValue(section, name, value);
+}
+
+float get_config_float(const char* section, const char* name, float value)
+{
+  return g_configs.back()->getDoubleValue(section, name, value);
+}
+
+void set_config_float(const char* section, const char* name, float value)
+{
+  g_configs.back()->setDoubleValue(section, name, value);
+}
+
+bool get_config_bool(const char* section, const char* name, bool value)
+{
+  return g_configs.back()->getBoolValue(section, name, value);
+}
+
+void set_config_bool(const char* section, const char* name, bool value)
+{
+  g_configs.back()->setBoolValue(section, name, value);
+}
+
+Rect get_config_rect(const char* section, const char* name, const Rect& rect)
 {
   Rect rect2(rect);
-  char **argv;
-  int argc;
-
-  argv = get_config_argv(section, name, &argc);
-
-  if (argv && argc == 4) {
-    rect2.x = ustrtol(argv[0], NULL, 10);
-    rect2.y = ustrtol(argv[1], NULL, 10);
-    rect2.w = ustrtol(argv[2], NULL, 10);
-    rect2.h = ustrtol(argv[3], NULL, 10);
+  const char* value = get_config_string(section, name, "");
+  if (value) {
+    std::vector<std::string> parts;
+    base::split_string(value, parts, " ");
+    if (parts.size() == 4) {
+      rect2.x = strtol(parts[0].c_str(), NULL, 10);
+      rect2.y = strtol(parts[1].c_str(), NULL, 10);
+      rect2.w = strtol(parts[2].c_str(), NULL, 10);
+      rect2.h = strtol(parts[3].c_str(), NULL, 10);
+    }
   }
-
   return rect2;
 }
 
-void set_config_rect(const char *section, const char *name, const Rect& rect)
+void set_config_rect(const char* section, const char* name, const Rect& rect)
 {
   char buf[128];
-  uszprintf(buf, sizeof(buf), "%d %d %d %d",
-            rect.x, rect.y, rect.w, rect.h);
+  sprintf(buf, "%d %d %d %d", rect.x, rect.y, rect.w, rect.h);
   set_config_string(section, name, buf);
 }
 
-app::Color get_config_color(const char *section, const char *name, const app::Color& value)
+app::Color get_config_color(const char* section, const char* name, const app::Color& value)
 {
   return app::Color::fromString(get_config_string(section, name, value.toString().c_str()));
 }
 
-void set_config_color(const char *section, const char *name, const app::Color& value)
+void set_config_color(const char* section, const char* name, const app::Color& value)
 {
   set_config_string(section, name, value.toString().c_str());
 }
