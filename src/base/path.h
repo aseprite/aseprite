@@ -45,6 +45,8 @@ namespace base {
   // possible extensions separated by comma.
   bool has_file_extension(const std::string& filename, const std::string& csv_extensions);
 
+  int compare_filenames(const std::string& a, const std::string& b);
+
 }
 
 #endif

@@ -285,8 +285,8 @@ std::string FileSelector::show(const std::string& title,
   // If initialPath doesn't contain a path.
   if (base::get_file_path(initialPath).empty()) {
     // Get the saved `path' in the configuration file.
-    std::string path = get_config_string("FileSelect", "CurrentDirectory", "");
-    if (path.empty()) {
+    std::string path = get_config_string("FileSelect", "CurrentDirectory", "<empty>");
+    if (path == "<empty>") {
       start_folder_path = base::get_user_docs_folder();
       path = base::join_path(start_folder_path, initialPath);
     }

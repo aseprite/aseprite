@@ -13,6 +13,7 @@
 #include "base/string.h"
 
 #include <algorithm>
+#include <cctype>
 #include <iterator>
 
 namespace base {
@@ -157,6 +158,52 @@ bool has_file_extension(const std::string& filename, const std::string& csv_exte
       return true;
   }
   return false;
+}
+
+int compare_filenames(const std::string& a, const std::string& b)
+{
+  utf8_const_iterator a_begin(a.begin()), a_end(a.end());
+  utf8_const_iterator b_begin(b.begin()), b_end(b.end());
+  utf8_const_iterator a_it(a_begin);
+  utf8_const_iterator b_it(b_begin);
+
+  for (; a_it != a_end && b_it != b_end; ) {
+    int a_chr = *a_it;
+    int b_chr = *b_it;
+
+    if ((a_chr >= '0') && (a_chr <= '9') && (b_chr >= '0') && (b_chr <= '9')) {
+      utf8_const_iterator a_it2 = a_it;
+      utf8_const_iterator b_it2 = b_it;
+
+      while (a_it2 != a_end && (*a_it2 >= '0') && (*a_it2 <= '9')) ++a_it2;
+      while (b_it2 != b_end && (*b_it2 >= '0') && (*b_it2 <= '9')) ++b_it2;
+
+      int a_num = std::strtol(std::string(a_it, a_it2).c_str(), NULL, 10);
+      int b_num = std::strtol(std::string(b_it, b_it2).c_str(), NULL, 10);
+      if (a_num != b_num)
+        return a_num - b_num < 0 ? -1: 1;
+
+      a_it = a_it2;
+      b_it = b_it2;
+    }
+    else {
+      a_chr = std::tolower(a_chr);
+      b_chr = std::tolower(b_chr);
+
+      if (a_chr != b_chr)
+        return a_chr - b_chr < 0 ? -1: 1;
+
+      ++a_it;
+      ++b_it;
+    }
+  }
+
+  if (a_it == a_end && b_it == b_end)
+    return 0;
+  else if (a_it == a_end)
+    return -1;
+  else
+    return 1;
 }
 
 } // namespace base

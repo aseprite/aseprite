@@ -120,6 +120,33 @@ TEST(Path, HasFileExtension)
   EXPECT_TRUE (has_file_extension("hi.ase", "ase,jpg,jpeg"));
 }
 
+TEST(Path, CompareFilenames)
+{
+  EXPECT_EQ(-1, compare_filenames("a", "b"));
+  EXPECT_EQ(-1, compare_filenames("a0", "a1"));
+  EXPECT_EQ(-1, compare_filenames("a0", "b1"));
+  EXPECT_EQ(-1, compare_filenames("a0.png", "a1.png"));
+  EXPECT_EQ(-1, compare_filenames("a1-1.png", "a1-2.png"));
+  EXPECT_EQ(-1, compare_filenames("a1-2.png", "a1-10.png"));
+  EXPECT_EQ(-1, compare_filenames("a1-64-2.png", "a1-64-10.png"));
+  EXPECT_EQ(-1, compare_filenames("a32.txt", "a32l.txt"));
+  EXPECT_EQ(-1, compare_filenames("a", "aa"));
+
+  EXPECT_EQ(0, compare_filenames("a", "a"));
+  EXPECT_EQ(0, compare_filenames("a", "A"));
+  EXPECT_EQ(0, compare_filenames("a1B", "A1b"));
+  EXPECT_EQ(0, compare_filenames("a32-16.txt32", "a32-16.txt32"));
+
+  EXPECT_EQ(1, compare_filenames("aa", "a"));
+  EXPECT_EQ(1, compare_filenames("b", "a"));
+  EXPECT_EQ(1, compare_filenames("a1", "a0"));
+  EXPECT_EQ(1, compare_filenames("b1", "a0"));
+  EXPECT_EQ(1, compare_filenames("a1.png", "a0.png"));
+  EXPECT_EQ(1, compare_filenames("a1-2.png", "a1-1.png"));
+  EXPECT_EQ(1, compare_filenames("a1-10.png", "a1-9.png"));
+  EXPECT_EQ(1, compare_filenames("a1-64-10.png", "a1-64-9.png"));
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);

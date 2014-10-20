@@ -54,8 +54,6 @@ namespace app {
     // Warning: You have to call path.fix_separators() before.
     IFileItem* getFileItemFromPath(const std::string& path);
 
-    bool dirExists(const std::string& path);
-
     void lock() { m_mutex.lock(); }
     void unlock() { m_mutex.unlock(); }
 
