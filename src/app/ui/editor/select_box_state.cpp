@@ -24,8 +24,8 @@
 
 #include "app/ui/editor/editor.h"
 #include "gfx/rect.h"
-#include "raster/image.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/sprite.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -162,19 +162,19 @@ void SelectBoxState::preRenderDecorator(EditorPreRender* render)
 
   // Top band
   if (rc.y > 0)
-    render->fillRect(gfx::Rect(0, 0, sprite_w, rc.y), raster::rgba(0, 0, 0, 255), 128);
+    render->fillRect(gfx::Rect(0, 0, sprite_w, rc.y), doc::rgba(0, 0, 0, 255), 128);
 
   // Bottom band
   if (rc.y+rc.h < sprite_h)
-    render->fillRect(gfx::Rect(0, rc.y+rc.h, sprite_w, sprite_h-(rc.y+rc.h)), raster::rgba(0, 0, 0, 255), 128);
+    render->fillRect(gfx::Rect(0, rc.y+rc.h, sprite_w, sprite_h-(rc.y+rc.h)), doc::rgba(0, 0, 0, 255), 128);
 
   // Left band
   if (rc.x > 0)
-    render->fillRect(gfx::Rect(0, rc.y, rc.x, rc.h), raster::rgba(0, 0, 0, 255), 128);
+    render->fillRect(gfx::Rect(0, rc.y, rc.x, rc.h), doc::rgba(0, 0, 0, 255), 128);
 
   // Right band
   if (rc.x+rc.w < sprite_w)
-    render->fillRect(gfx::Rect(rc.x+rc.w, rc.y, sprite_w-(rc.x+rc.w), rc.h), raster::rgba(0, 0, 0, 255), 128);
+    render->fillRect(gfx::Rect(rc.x+rc.w, rc.y, sprite_w-(rc.x+rc.w), rc.h), doc::rgba(0, 0, 0, 255), 128);
 }
 
 void SelectBoxState::postRenderDecorator(EditorPostRender* render)

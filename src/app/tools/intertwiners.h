@@ -76,7 +76,7 @@ public:
     joinPoints(loop, points);
 
     // Fill content
-    algo_polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+    doc::algorithm::polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 
@@ -291,7 +291,7 @@ public:
     joinPoints(loop, points);
 
     // Fill content
-    algo_polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+    doc::algorithm::polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 

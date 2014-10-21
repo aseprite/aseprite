@@ -50,7 +50,7 @@
 #include "doc/document_event.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "ui/ui.h"
 
 #include <cstdio>
@@ -82,7 +82,7 @@ namespace app {
 
 using namespace app::skin;
 using namespace gfx;
-using namespace raster;
+using namespace doc;
 using namespace ui;
 
 static const char* kTimeline = "timeline";

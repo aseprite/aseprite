@@ -41,7 +41,7 @@ namespace app {
     void showPopup(const gfx::Rect& bounds);
 
   protected:
-    void onPalChange(raster::Palette* palette);
+    void onPalChange(doc::Palette* palette);
     void onLoadPal(bool asDefault);
     void onOpenFolder();
 

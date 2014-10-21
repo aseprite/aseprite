@@ -26,7 +26,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_parts.h"
 #include "base/bind.h"
-#include "raster/image.h"
+#include "doc/image.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/theme.h"

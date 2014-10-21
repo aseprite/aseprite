@@ -23,7 +23,7 @@
 #include "app/commands/filters/filter_preview.h"
 
 #include "app/commands/filters/filter_manager_impl.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/widget.h"

@@ -25,11 +25,11 @@
 #include "app/document_undo.h"
 #include "app/test_context.h"
 #include "base/unique_ptr.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "undo/undo_history.h"
 
 using namespace app;
-using namespace raster;
+using namespace doc;
 
 namespace app {
 
@@ -40,7 +40,7 @@ namespace app {
 
 }
 
-typedef base::UniquePtr<Document> DocumentPtr;
+typedef base::UniquePtr<app::Document> DocumentPtr;
 
 #define EXPECT_LAYER_ORDER(a, b, c, d) \
   EXPECT_TRUE(expect_layer(a, 0));     \
@@ -84,7 +84,7 @@ public:
     black = rgba(0, 0, 0, 0);
     white = rgba(255, 255, 255, 255);
 
-    doc.reset(static_cast<Document*>(ctx.documents().add(4, 4)));
+    doc.reset(static_cast<app::Document*>(ctx.documents().add(4, 4)));
     sprite = doc->sprite();
     layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
     layer2 = new LayerImage(sprite);

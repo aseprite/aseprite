@@ -33,8 +33,8 @@
 #include "base/bind.h"
 #include "filters/color_curve.h"
 #include "filters/color_curve_filter.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

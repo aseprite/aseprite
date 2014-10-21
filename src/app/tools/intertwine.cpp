@@ -24,13 +24,13 @@
 
 #include "app/tools/point_shape.h"
 #include "app/tools/tool_loop.h"
-#include "raster/algo.h"
+#include "doc/algo.h"
 
 namespace app {
 namespace tools {
 
 using namespace gfx;
-using namespace raster;
+using namespace doc;
 
 void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 {

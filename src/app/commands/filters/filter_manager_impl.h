@@ -25,13 +25,13 @@
 #include "base/unique_ptr.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
-#include "raster/image_bits.h"
-#include "raster/image_traits.h"
-#include "raster/pixel_format.h"
+#include "doc/image_bits.h"
+#include "doc/image_traits.h"
+#include "doc/pixel_format.h"
 
 #include <cstring>
 
-namespace raster {
+namespace doc {
   class Image;
   class Layer;
   class Mask;
@@ -131,8 +131,8 @@ namespace app {
     int m_offset_x, m_offset_y;
     Mask* m_mask;
     base::UniquePtr<Mask> m_preview_mask;
-    raster::ImageBits<raster::BitmapTraits> m_maskBits;
-    raster::ImageBits<raster::BitmapTraits>::iterator m_maskIterator;
+    doc::ImageBits<doc::BitmapTraits> m_maskBits;
+    doc::ImageBits<doc::BitmapTraits>::iterator m_maskIterator;
     Target m_targetOrig;          // Original targets
     Target m_target;              // Filtered targets
 

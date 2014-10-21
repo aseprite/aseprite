@@ -49,9 +49,9 @@
 #include "app/util/misc.h"
 #include "fixmath/fixmath.h"
 #include "gfx/rect.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/alert.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -176,7 +176,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Move cel X,Y coordinates
   if (clickedInk->isCelMovement()) {
     if ((layer) &&
-        (layer->type() == OBJECT_LAYER_IMAGE)) {
+      (layer->type() == ObjectType::LayerImage)) {
       // TODO you can move the `Background' with tiled mode
       if (layer->isBackground()) {
         Alert::show(PACKAGE

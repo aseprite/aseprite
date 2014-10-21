@@ -27,7 +27,7 @@
 #include "app/ui/palette_view.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
-#include "raster/pixel_format.h"
+#include "doc/pixel_format.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/view.h"

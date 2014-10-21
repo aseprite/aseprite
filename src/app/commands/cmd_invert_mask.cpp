@@ -27,10 +27,10 @@
 #include "app/undo_transaction.h"
 #include "app/undoers/set_mask.h"
 #include "base/unique_ptr.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 
 namespace app {
 
@@ -90,7 +90,7 @@ void InvertMaskCommand::onExecute(Context* context)
 
     /* remove in the new mask the current sprite marked region */
     const gfx::Rect& maskBounds = document->mask()->bounds();
-    raster::fill_rect(mask->bitmap(),
+    doc::fill_rect(mask->bitmap(),
                       maskBounds.x, maskBounds.y,
                       maskBounds.x + maskBounds.w-1,
                       maskBounds.y + maskBounds.h-1, 0);
@@ -99,7 +99,7 @@ void InvertMaskCommand::onExecute(Context* context)
     document->mask()->invert();
     if (document->mask()->bitmap()) {
       // Copy the inverted region in the new mask
-      raster::copy_image(mask->bitmap(),
+      doc::copy_image(mask->bitmap(),
                          document->mask()->bitmap(),
                          document->mask()->bounds().x,
                          document->mask()->bounds().y);

@@ -33,17 +33,17 @@
 #include "app/undoers/replace_image.h"
 #include "app/undoers/set_cel_position.h"
 #include "base/unique_ptr.h"
-#include "raster/cel.h"
-#include "raster/dirty.h"
-#include "raster/layer.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/dirty.h"
+#include "doc/layer.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace {
 
-static raster::ImageBufferPtr src_buffer;
-static raster::ImageBufferPtr dst_buffer;
+static doc::ImageBufferPtr src_buffer;
+static doc::ImageBufferPtr dst_buffer;
 
 static void destroy_buffers()
 {
@@ -56,8 +56,8 @@ static void create_buffers()
   if (!src_buffer) {
     app::App::instance()->Exit.connect(&destroy_buffers);
 
-    src_buffer.reset(new raster::ImageBuffer(1));
-    dst_buffer.reset(new raster::ImageBuffer(1));
+    src_buffer.reset(new doc::ImageBuffer(1));
+    dst_buffer.reset(new doc::ImageBuffer(1));
   }
 }
 

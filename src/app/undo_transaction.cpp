@@ -27,7 +27,7 @@
 #include "app/document_undo.h"
 #include "app/undoers/close_group.h"
 #include "app/undoers/open_group.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/undo_history.h"
 
 namespace app {

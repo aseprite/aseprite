@@ -26,7 +26,7 @@
 #include "app/modules/palettes.h"
 #include "base/fs.h"
 #include "base/path.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -70,7 +70,7 @@ again:
         return;
     }
 
-    raster::Palette* palette = get_current_palette();
+    doc::Palette* palette = get_current_palette();
     if (!save_palette(filename.c_str(), palette)) {
       Alert::show("Error<<Saving palette file||&Close");
     }

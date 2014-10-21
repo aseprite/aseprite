@@ -23,13 +23,13 @@
 #include "app/handle_anidir.h"
 
 #include "app/settings/document_settings.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 
 namespace app {
 
-raster::FrameNumber calculate_next_frame(
-  raster::Sprite* sprite,
-  raster::FrameNumber frame,
+doc::FrameNumber calculate_next_frame(
+  doc::Sprite* sprite,
+  doc::FrameNumber frame,
   IDocumentSettings* docSettings,
   bool& pingPongForward)
 {

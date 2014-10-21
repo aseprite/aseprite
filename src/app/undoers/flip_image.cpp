@@ -26,8 +26,8 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
-#include "raster/algorithm/flip_image.h"
-#include "raster/image.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/image.h"
 #include "undo/objects_container.h"
 #include "undo/undo_exception.h"
 #include "undo/undoers_collector.h"
@@ -35,12 +35,12 @@
 namespace app {
 namespace undoers {
 
-using namespace raster;
+using namespace doc;
 using namespace undo;
 
 FlipImage::FlipImage(ObjectsContainer* objects, Image* image,
                      const gfx::Rect& bounds,
-                     raster::algorithm::FlipType flipType)
+                     doc::algorithm::FlipType flipType)
   : m_imageId(objects->addObject(image))
   , m_format(image->pixelFormat())
   , m_x(bounds.x), m_y(bounds.y)
@@ -59,7 +59,7 @@ void FlipImage::dispose()
 void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Image* image = objects->getObjectT<Image>(m_imageId);
-  raster::algorithm::FlipType flipType = static_cast<raster::algorithm::FlipType>(m_flipType);
+  doc::algorithm::FlipType flipType = static_cast<doc::algorithm::FlipType>(m_flipType);
   gfx::Rect bounds(gfx::Point(m_x, m_y), gfx::Size(m_w, m_h));
 
   if (image->pixelFormat() != m_format)
@@ -67,7 +67,7 @@ void FlipImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 
   redoers->pushUndoer(new FlipImage(objects, image, bounds, flipType));
 
-  raster::algorithm::flip_image(image, bounds, flipType);
+  doc::algorithm::flip_image(image, bounds, flipType);
 }
 
 } // namespace undoers

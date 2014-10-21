@@ -80,12 +80,12 @@ protected:
       paintResource(g, bounds, m_resource);
       
     // for (int i=0; i<m_palette->size(); ++i) {
-    //   raster::color_t c = m_resource->getEntry(i);
+    //   doc::color_t c = m_resource->getEntry(i);
 
     //   g->fillRect(gfx::rgba(
-    //       raster::rgba_getr(c),
-    //       raster::rgba_getg(c),
-    //       raster::rgba_getb(c)), box);
+    //       doc::rgba_getr(c),
+    //       doc::rgba_getg(c),
+    //       doc::rgba_getb(c)), box);
 
     //   box.x += box.w;
     // }

@@ -24,7 +24,7 @@
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 void DocumentRange::startRange(LayerIndex layer, FrameNumber frame, Type type)
 {

@@ -25,13 +25,13 @@
 
 #include <vector>
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class ImageArea : public UndoerBase {
@@ -43,7 +43,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_imageId;
+      undo::ObjectId m_imageId;
       uint8_t m_format;
       uint16_t m_x, m_y, m_w, m_h;
       uint32_t m_lineSize;

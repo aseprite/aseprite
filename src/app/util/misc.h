@@ -20,14 +20,14 @@
 #define APP_UTIL_MISC_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
 namespace app {
   class DocumentLocation;
 
-  raster::Image* NewImageFromMask(const DocumentLocation& location);
+  doc::Image* NewImageFromMask(const DocumentLocation& location);
   
 } // namespace app
 

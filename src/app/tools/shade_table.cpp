@@ -23,7 +23,7 @@
 #include "app/tools/shade_table.h"
 
 #include "app/color_swatches.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 
 namespace app {
 namespace tools {

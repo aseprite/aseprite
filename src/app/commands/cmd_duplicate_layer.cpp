@@ -32,8 +32,8 @@
 #include "app/undo_transaction.h"
 #include "app/undoers/add_layer.h"
 #include "app/undoers/move_layer.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

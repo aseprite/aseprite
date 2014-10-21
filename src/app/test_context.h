@@ -23,7 +23,7 @@
 #include "app/context.h"
 #include "app/document_location.h"
 #include "doc/settings.h"
-#include "raster/layer.h"
+#include "doc/layer.h"
 
 namespace app {
 

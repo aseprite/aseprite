@@ -28,7 +28,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

@@ -27,7 +27,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/window.h"
 
 namespace app {

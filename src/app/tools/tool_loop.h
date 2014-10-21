@@ -29,7 +29,7 @@ namespace gfx {
   class Region;
 }
 
-namespace raster {
+namespace doc {
   class Image;
   class Layer;
   class Mask;
@@ -52,7 +52,7 @@ namespace app {
     class ShadingOptions;
     class Tool;
 
-    using namespace raster;
+    using namespace doc;
 
     // Interface to communicate the sprite editor with the tool when the user
     // starts using a tool to paint, select, pick color, etc.

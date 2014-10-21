@@ -21,9 +21,9 @@
 #pragma once
 
 #include "gfx/rect.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 
-namespace raster {
+namespace doc {
   class Sprite;
   class Layer;
   class LayerImage;

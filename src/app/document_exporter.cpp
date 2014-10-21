@@ -30,19 +30,19 @@
 #include "base/path.h"
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
-#include "raster/cel.h"
-#include "raster/dithering_method.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/dithering_method.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 
-using namespace raster;
+using namespace doc;
 
 namespace app {
 

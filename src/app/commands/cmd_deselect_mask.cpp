@@ -25,8 +25,8 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/undo_transaction.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 
 namespace app {
 

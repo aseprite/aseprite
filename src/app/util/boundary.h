@@ -25,12 +25,12 @@
 #define APP_UTIL_BOUNDARY_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Image;  
 }
 
 namespace app {
-  using namespace raster;
+  using namespace doc;
 
   enum BoundaryType {
     WithinBounds,

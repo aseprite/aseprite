@@ -30,7 +30,7 @@
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/scoped_value.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 
 namespace app {
 
@@ -50,7 +50,7 @@ std::string PalettesLoaderDelegate::resourcesLocation() const
 
 Resource* PalettesLoaderDelegate::loadResource(const std::string& filename)
 {
-  raster::Palette* palette = load_palette(filename.c_str());
+  doc::Palette* palette = load_palette(filename.c_str());
   if (!palette)
     return NULL;
 

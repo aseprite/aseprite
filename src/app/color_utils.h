@@ -23,10 +23,10 @@
 #include "app/color.h"
 #include "app/color_target.h"
 #include "gfx/color.h"
-#include "raster/color.h"
-#include "raster/pixel_format.h"
+#include "doc/color.h"
+#include "doc/pixel_format.h"
 
-namespace raster {
+namespace doc {
   class Layer;
 }
 
@@ -37,9 +37,9 @@ namespace app {
     gfx::Color blackandwhite_neg(gfx::Color color);
 
     gfx::Color color_for_ui(const app::Color& color);
-    raster::color_t color_for_image(const app::Color& color, raster::PixelFormat format);
-    raster::color_t color_for_layer(const app::Color& color, raster::Layer* layer);
-    raster::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);
+    doc::color_t color_for_image(const app::Color& color, doc::PixelFormat format);
+    doc::color_t color_for_layer(const app::Color& color, doc::Layer* layer);
+    doc::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);
 
   } // namespace color_utils
 } // namespace app

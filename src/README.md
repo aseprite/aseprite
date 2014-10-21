@@ -23,16 +23,15 @@ because they don't depend on any other component.
 ## Level 1
 
   * [cfg](cfg/) (base): Library to load/save .ini files.
+  * [doc](doc/) (base, gfx): Document model library.
   * [gen](gen/) (base): Helper utility to generate C++ files from different XMLs.
   * [net](net/) (base): Networking library to send HTTP requests.
-  * [raster](raster/) (base, gfx): Library to handle graphics entities like sprites, images, frames.
   * [she](she/) (base, gfx, allegro): A wrapper for the Allegro library.
   * [webserver](webserver/) (base): HTTP web server (based on [mongoose](https://github.com/valenok/mongoose))
 
 ## Level 2
 
-  * [doc](doc/) (raster, base, gfx): Document model library.
-  * [filters](filters/) (base, gfx, raster): FX for raster images.
+  * [filters](filters/) (base, doc, gfx): Effects for images.
   * [ui](ui/) (base, gfx, she): Portable UI library (buttons, windows, text fields, etc.)
   * [updater](updater/) (base, net): Component to check for updates.
 
@@ -42,7 +41,7 @@ because they don't depend on any other component.
 
 ## Level 4
 
-  * [app](app/) (allegro, base, doc, filters, gfx, iff, raster, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (allegro, base, doc, filters, gfx, iff, scripting, she, ui, undo, updater, webserver)
 
 ## Level 5
 

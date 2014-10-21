@@ -28,10 +28,10 @@
 #include "app/undo_transaction.h"
 #include "app/util/autocrop.h"
 #include "app/util/misc.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 
 namespace app {
 

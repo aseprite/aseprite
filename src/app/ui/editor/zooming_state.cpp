@@ -26,7 +26,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "gfx/rect.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"

@@ -23,7 +23,7 @@
 #include "app/undoers/add_palette.h"
 
 #include "app/undoers/remove_palette.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

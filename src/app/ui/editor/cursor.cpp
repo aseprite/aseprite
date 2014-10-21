@@ -33,12 +33,12 @@
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
-#include "raster/algo.h"
-#include "raster/brush.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
+#include "doc/algo.h"
+#include "doc/brush.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 #include "ui/base.h"
 #include "ui/system.h"
 #include "ui/widget.h"
@@ -595,7 +595,7 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
       }
     }
 
-    raster::algo_line(x1, y1, x2, y2, (void*)&data, algo_line_proxy);
+    doc::algo_line(x1, y1, x2, y2, (void*)&data, algo_line_proxy);
   }
 }
 

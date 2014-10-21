@@ -39,13 +39,13 @@
 #include "app/ui/workspace.h"
 #include "app/undo_transaction.h"
 #include "base/bind.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -172,7 +172,7 @@ protected:
           base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
 
           // Clear the image with mask color.
-          raster::clear_image(resultImage, 0);
+          doc::clear_image(resultImage, 0);
 
           // Render the portion of sheet.
           sprite->render(resultImage, -x, -y, currentFrame);

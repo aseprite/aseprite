@@ -26,8 +26,8 @@
 #include "app/util/msk_file.h"
 #include "base/fs.h"
 #include "base/path.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/alert.h"
 
 namespace app {

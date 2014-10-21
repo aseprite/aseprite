@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/commands/command.h"
-#include "raster/algorithm/flip_type.h"
+#include "doc/algorithm/flip_type.h"
 
 namespace app {
 
@@ -30,7 +30,7 @@ namespace app {
     FlipCommand();
     Command* clone() const override { return new FlipCommand(*this); }
 
-    raster::algorithm::FlipType getFlipType() const { return m_flipType; }
+    doc::algorithm::FlipType getFlipType() const { return m_flipType; }
 
   protected:
     void onLoadParams(Params* params);
@@ -39,7 +39,7 @@ namespace app {
 
   private:
     bool m_flipMask;
-    raster::algorithm::FlipType m_flipType;
+    doc::algorithm::FlipType m_flipType;
   };
 
 } // namespace app

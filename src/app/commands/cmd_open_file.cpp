@@ -36,7 +36,7 @@
 #include "base/bind.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include <cstdio>

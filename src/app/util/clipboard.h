@@ -24,7 +24,7 @@
 #include "gfx/size.h"
 #include "ui/base.h"
 
-namespace raster {
+namespace doc {
   class Image;
   class Palette;
 }
@@ -35,7 +35,7 @@ namespace app {
   class DocumentRange;
 
   namespace clipboard {
-    using namespace raster;
+    using namespace doc;
 
     enum ClipboardFormat {
       ClipboardNone,

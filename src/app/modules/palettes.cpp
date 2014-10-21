@@ -22,10 +22,10 @@
 
 #include "app/app.h"
 #include "app/modules/palettes.h"
-#include "raster/blend.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/blend.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 
 #include <cstring>
 

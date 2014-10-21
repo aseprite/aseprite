@@ -21,16 +21,16 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 #include "undo/object_id.h"
 
-namespace raster {
+namespace doc {
   class Sprite;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class SetFrameDuration : public UndoerBase {
@@ -42,7 +42,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_spriteId;
+      undo::ObjectId m_spriteId;
       FrameNumber m_frame;
       uint32_t m_duration;
     };

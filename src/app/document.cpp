@@ -36,17 +36,17 @@
 #include "base/unique_ptr.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
-#include "raster/cel.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace app {
 
 using namespace base;
-using namespace raster;
+using namespace doc;
 
 Document::Document(Sprite* sprite)
   : m_undo(new DocumentUndo)

@@ -23,13 +23,13 @@
 #include "app/undoers/undoer_base.h"
 #include "undo/object_id.h"
 
-namespace raster {
+namespace doc {
   class Layer;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class MoveLayer : public UndoerBase {
@@ -41,9 +41,9 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_folderId;
-      ObjectId m_layerId;
-      ObjectId m_afterId;
+      undo::ObjectId m_folderId;
+      undo::ObjectId m_layerId;
+      undo::ObjectId m_afterId;
     };
 
   } // namespace undoers

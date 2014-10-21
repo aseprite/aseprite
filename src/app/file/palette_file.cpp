@@ -27,17 +27,17 @@
 #include "app/file/file_formats_manager.h"
 #include "base/path.h"
 #include "base/string.h"
-#include "raster/cel.h"
-#include "raster/file/col_file.h"
-#include "raster/file/gpl_file.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/cel.h"
+#include "doc/file/col_file.h"
+#include "doc/file/gpl_file.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 void get_readable_palette_extensions(char* buf, int size)
 {
@@ -57,10 +57,10 @@ Palette* load_palette(const char *filename)
   Palette* pal = NULL;
 
   if (ext == "col") {
-    pal = raster::file::load_col_file(filename);
+    pal = doc::file::load_col_file(filename);
   }
   else if (ext == "gpl") {
-    pal = raster::file::load_gpl_file(filename);
+    pal = doc::file::load_gpl_file(filename);
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
@@ -101,10 +101,10 @@ bool save_palette(const char *filename, Palette* pal)
   bool success = false;
 
   if (ext == "col") {
-    success = raster::file::save_col_file(pal, filename);
+    success = doc::file::save_col_file(pal, filename);
   }
   else if (ext == "gpl") {
-    success = raster::file::save_gpl_file(pal, filename);
+    success = doc::file::save_gpl_file(pal, filename);
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());

@@ -23,16 +23,16 @@
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "base/unique_ptr.h"
-#include "raster/color_scales.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
+#include "doc/color_scales.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
 
 #include <cstdio>
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 // Loads a PIC file (Animator and Animator Pro format)
 Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)

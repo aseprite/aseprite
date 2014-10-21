@@ -23,7 +23,7 @@
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "she/she.h"
 
 #include <cstdio>
@@ -69,7 +69,7 @@ TEST(File, SeveralSizes)
       }
 
       {
-        Document* doc = load_document(&ctx, &fn[0]);
+        app::Document* doc = load_document(&ctx, &fn[0]);
         ASSERT_EQ(w, doc->sprite()->width());
         ASSERT_EQ(h, doc->sprite()->height());
 

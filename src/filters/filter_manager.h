@@ -22,7 +22,7 @@
 
 #include "filters/target.h"
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
@@ -73,7 +73,7 @@ namespace filters {
     // Special members for 2D filters like convolution matrices.
 
     // Returns the source image.
-    virtual const raster::Image* getSourceImage() = 0;
+    virtual const doc::Image* getSourceImage() = 0;
 
     // Returns the first X coordinate of the row to apply the filter.
     virtual int x() = 0;

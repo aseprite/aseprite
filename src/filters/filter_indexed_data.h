@@ -20,7 +20,7 @@
 #define FILTERS_FILTER_INDEXED_DATA_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Palette;
   class RgbMap;
 }
@@ -32,8 +32,8 @@ namespace filters {
   class FilterIndexedData {
   public:
     virtual ~FilterIndexedData() { }
-    virtual raster::Palette* getPalette() = 0;
-    virtual raster::RgbMap* getRgbMap() = 0;
+    virtual doc::Palette* getPalette() = 0;
+    virtual doc::RgbMap* getRgbMap() = 0;
   };
 
 } // namespace filters

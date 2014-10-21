@@ -27,9 +27,9 @@
 #include "app/ui/timeline.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/base.h"
 
 namespace app {

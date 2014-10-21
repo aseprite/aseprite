@@ -39,10 +39,10 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/brush.h"
-#include "raster/conversion_she.h"
-#include "raster/image.h"
-#include "raster/palette.h"
+#include "doc/brush.h"
+#include "doc/conversion_she.h"
+#include "doc/image.h"
+#include "doc/palette.h"
 #include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
@@ -84,8 +84,8 @@ public:
 
   void setBrushSettings(IBrushSettings* brushSettings) {
     base::UniquePtr<Palette> palette(new Palette(FrameNumber(0), 2));
-    palette->setEntry(0, raster::rgba(0, 0, 0, 0));
-    palette->setEntry(1, raster::rgba(0, 0, 0, 255));
+    palette->setEntry(0, doc::rgba(0, 0, 0, 0));
+    palette->setEntry(1, doc::rgba(0, 0, 0, 255));
 
     base::UniquePtr<Brush> brush(
       new Brush(

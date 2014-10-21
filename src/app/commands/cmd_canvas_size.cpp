@@ -36,9 +36,9 @@
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include "generated_canvas_size.h"

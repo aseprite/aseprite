@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
@@ -94,8 +94,8 @@ namespace app {
 
     void captureSamples(Samples& samples);
     Document* createEmptyTexture(const Samples& samples);
-    void renderTexture(const Samples& samples, raster::Image* textureImage);
-    void createDataFile(const Samples& samples, std::ostream& os, raster::Image* textureImage);
+    void renderTexture(const Samples& samples, doc::Image* textureImage);
+    void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
 
     DataFormat m_dataFormat;
     std::string m_dataFilename;

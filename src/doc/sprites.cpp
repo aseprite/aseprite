@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,11 +13,11 @@
 #include "base/mutex.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/primitives.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/primitives.h"
+#include "doc/stock.h"
 
 #include <algorithm>
 
@@ -37,8 +37,8 @@ Sprites::~Sprites()
 Sprite* Sprites::add(int width, int height, ColorMode mode, int ncolors)
 {
   base::UniquePtr<Sprite> spr(
-    raster::Sprite::createBasicSprite(
-      (raster::PixelFormat)mode, width, height, ncolors));
+    doc::Sprite::createBasicSprite(
+      (doc::PixelFormat)mode, width, height, ncolors));
 
   add(spr);
 

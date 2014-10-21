@@ -20,10 +20,10 @@
 #define APP_DOCUMENT_LOCATION_H_INCLUDED
 #pragma once
 
-#include "raster/frame_number.h"
-#include "raster/layer_index.h"
+#include "doc/frame_number.h"
+#include "doc/layer_index.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -34,7 +34,7 @@ namespace raster {
 namespace app {
   class Document;
 
-  using namespace raster;
+  using namespace doc;
 
   // Specifies the current location in a context. If we are in the
   // UIContext, it means the location in the current Editor (current

@@ -33,7 +33,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/preferred_size_event.h"
 #include "ui/ui.h"
 

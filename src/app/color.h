@@ -20,19 +20,19 @@
 #define APP_COLOR_H_INCLUDED
 #pragma once
 
-#include "raster/color.h"
-#include "raster/pixel_format.h"
+#include "doc/color.h"
+#include "doc/pixel_format.h"
 
 #include <string>
 
-namespace raster {
+namespace doc {
   class Image;
   class Layer;
 }
 
 namespace app {
 
-  using namespace raster;
+  using namespace doc;
 
   class Color {
   public:

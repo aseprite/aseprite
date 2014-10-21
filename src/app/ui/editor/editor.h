@@ -29,7 +29,7 @@
 #include "app/ui/editor/editor_states_history.h"
 #include "base/connection.h"
 #include "gfx/fwd.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -37,7 +37,7 @@
 #define MIN_ZOOM 0
 #define MAX_ZOOM 5
 
-namespace raster {
+namespace doc {
   class Sprite;
   class Layer;
 }

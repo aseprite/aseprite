@@ -35,9 +35,9 @@
 #include "app/ui/skin/skin_theme.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "raster/blend.h"
-#include "raster/image.h"
-#include "raster/palette.h"
+#include "doc/blend.h"
+#include "doc/image.h"
+#include "doc/palette.h"
 
 namespace app {
 

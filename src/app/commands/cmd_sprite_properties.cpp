@@ -31,9 +31,9 @@
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include <cstdio>

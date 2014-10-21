@@ -32,7 +32,7 @@
 #include "app/util/autocrop.h"
 #include "base/file_handle.h"
 #include "base/unique_ptr.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "ui/alert.h"
 #include "ui/button.h"
 
@@ -614,7 +614,7 @@ bool GifFormat::onSave(FileOp* fop)
   if (sprite_format != IMAGE_INDEXED &&
       gif_options->quantize() == GifOptions::QuantizeAll) {
     // Feed the optimizer with all rendered frames.
-    raster::quantization::PaletteOptimizer optimizer;
+    doc::quantization::PaletteOptimizer optimizer;
     for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
       clear_image(buffer_image, background_color);
       layer_render(sprite->folder(), buffer_image, 0, 0, frame_num);
@@ -644,7 +644,7 @@ bool GifFormat::onSave(FileOp* fop)
 
             std::vector<Image*> imgarray(1);
             imgarray[0] = buffer_image;
-            raster::quantization::create_palette_from_images(imgarray, &current_palette, has_background);
+            doc::quantization::create_palette_from_images(imgarray, &current_palette, has_background);
             rgbmap.regenerate(&current_palette, transparent_index);
           }
           break;
@@ -811,7 +811,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     // Configuration parameters
     gif_options->setQuantize((GifOptions::Quantize)get_config_int("GIF", "Quantize", (int)gif_options->quantize()));
     gif_options->setInterlaced(get_config_bool("GIF", "Interlaced", gif_options->interlaced()));
-    gif_options->setDithering((raster::DitheringMethod)get_config_int("GIF", "Dither", (int)gif_options->dithering()));
+    gif_options->setDithering((doc::DitheringMethod)get_config_int("GIF", "Dither", (int)gif_options->dithering()));
 
     // Load the window to ask to the user the GIF options he wants.
 
@@ -826,7 +826,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     win.interlaced()->setSelected(gif_options->interlaced());
 
     win.dither()->setEnabled(true);
-    win.dither()->setSelected(gif_options->dithering() == raster::DITHERING_ORDERED);
+    win.dither()->setSelected(gif_options->dithering() == doc::DITHERING_ORDERED);
 
     win.openWindowInForeground();
 
@@ -840,8 +840,8 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 
       gif_options->setInterlaced(win.interlaced()->isSelected());
       gif_options->setDithering(win.dither()->isSelected() ?
-        raster::DITHERING_ORDERED:
-        raster::DITHERING_NONE);
+        doc::DITHERING_ORDERED:
+        doc::DITHERING_NONE);
 
       set_config_int("GIF", "Quantize", gif_options->quantize());
       set_config_bool("GIF", "Interlaced", gif_options->interlaced());

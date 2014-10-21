@@ -31,15 +31,15 @@
 #include "app/tools/tool_loop.h"
 #include "app/util/render.h"
 #include "gfx/region.h"
-#include "raster/image.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace tools {
 
 using namespace gfx;
-using namespace raster;
+using namespace doc;
 using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)

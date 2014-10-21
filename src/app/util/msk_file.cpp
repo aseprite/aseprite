@@ -25,12 +25,12 @@
 #include "base/file_handle.h"
 #include "base/fs.h"
 #include "base/unique_ptr.h"
-#include "raster/image.h"
-#include "raster/mask.h"
+#include "doc/image.h"
+#include "doc/mask.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 // Loads a MSK file (Animator and Animator Pro format)
 Mask* load_msk_file(const char* filename)

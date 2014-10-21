@@ -24,16 +24,16 @@
 
 #include "app/undoers/add_image.h"
 #include "app/undoers/object_io.h"
-#include "raster/image.h"
-#include "raster/image_io.h"
-#include "raster/stock.h"
+#include "doc/image.h"
+#include "doc/image_io.h"
+#include "doc/stock.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
 namespace app {
 namespace undoers {
 
-using namespace raster;
+using namespace doc;
 using namespace undo;
 
 RemoveImage::RemoveImage(ObjectsContainer* objects, Stock* stock, int imageIndex)
@@ -42,7 +42,7 @@ RemoveImage::RemoveImage(ObjectsContainer* objects, Stock* stock, int imageIndex
 {
   Image* image = stock->getImage(imageIndex);
 
-  write_object(objects, m_stream, image, raster::write_image);
+  write_object(objects, m_stream, image, doc::write_image);
 }
 
 void RemoveImage::dispose()
@@ -53,7 +53,7 @@ void RemoveImage::dispose()
 void RemoveImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Stock* stock = objects->getObjectT<Stock>(m_stockId);
-  Image* image = read_object<Image>(objects, m_stream, raster::read_image);
+  Image* image = read_object<Image>(objects, m_stream, doc::read_image);
 
   // Push an AddImage as redoer
   redoers->pushUndoer(new AddImage(objects, stock, m_imageIndex));

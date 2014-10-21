@@ -20,13 +20,13 @@
 #define APP_DOCUMENT_RANGE_H_INCLUDED
 #pragma once
 
-#include "raster/frame_number.h"
-#include "raster/layer_index.h"
+#include "doc/frame_number.h"
+#include "doc/layer_index.h"
 
 #include <algorithm>
 
 namespace app {
-  using namespace raster;
+  using namespace doc;
 
   class DocumentRange {
   public:

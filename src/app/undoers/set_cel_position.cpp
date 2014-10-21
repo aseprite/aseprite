@@ -22,7 +22,7 @@
 
 #include "app/undoers/set_cel_position.h"
 
-#include "raster/cel.h"
+#include "doc/cel.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

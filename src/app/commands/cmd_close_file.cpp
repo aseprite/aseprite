@@ -31,7 +31,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include <memory>

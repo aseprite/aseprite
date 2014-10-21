@@ -22,14 +22,14 @@
 
 #include "app/document_location.h"
 
-#include "raster/cel.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 LayerIndex DocumentLocation::layerIndex() const
 {

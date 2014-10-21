@@ -22,7 +22,7 @@
 
 #include "app/color.h"
 #include "base/signal.h"
-#include "raster/pixel_format.h"
+#include "doc/pixel_format.h"
 #include "ui/button.h"
 
 namespace app {

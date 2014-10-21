@@ -40,7 +40,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_documentId;
+      undo::ObjectId m_documentId;
       int m_x, m_y;
     };
 

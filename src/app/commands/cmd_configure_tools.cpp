@@ -38,7 +38,7 @@
 #include "base/bind.h"
 #include "doc/context_observer.h"
 #include "gfx/size.h"
-#include "raster/mask.h"
+#include "doc/mask.h"
 #include "ui/ui.h"
 
 namespace app {

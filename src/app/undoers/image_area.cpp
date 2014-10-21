@@ -22,7 +22,7 @@
 
 #include "app/undoers/image_area.h"
 
-#include "raster/image.h"
+#include "doc/image.h"
 #include "undo/objects_container.h"
 #include "undo/undo_exception.h"
 #include "undo/undoers_collector.h"

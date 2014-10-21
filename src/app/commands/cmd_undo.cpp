@@ -32,7 +32,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "base/thread.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/system.h"
 
 namespace app {

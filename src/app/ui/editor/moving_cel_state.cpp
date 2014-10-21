@@ -33,10 +33,10 @@
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
 #include "app/util/range_utils.h"
-#include "raster/cel.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/message.h"
 
 namespace app {

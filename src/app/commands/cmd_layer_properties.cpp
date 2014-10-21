@@ -27,8 +27,8 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "raster/image.h"
-#include "raster/layer.h"
+#include "doc/image.h"
+#include "doc/layer.h"
 
 #include "generated_layer_properties.h"
 

@@ -27,8 +27,8 @@
 #include "base/unique_ptr.h"
 #include "doc/document.h"
 #include "gfx/transformation.h"
-#include "raster/frame_number.h"
-#include "raster/pixel_format.h"
+#include "doc/frame_number.h"
+#include "doc/pixel_format.h"
 
 #include <string>
 
@@ -36,7 +36,7 @@ namespace base {
   class mutex;
 }
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -57,7 +57,7 @@ namespace app {
   class DocumentUndo;
   struct BoundSeg;
 
-  using namespace raster;
+  using namespace doc;
 
   enum DuplicateType {
     DuplicateExactCopy,

@@ -27,7 +27,7 @@
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "base/unique_ptr.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 #include "ui/alert.h"
 
 namespace app {
@@ -57,7 +57,7 @@ void LoadPaletteCommand::onExecute(Context* context)
 
   std::string filename = app::show_file_selector("Load Palette", "", exts);
   if (!filename.empty()) {
-    base::UniquePtr<raster::Palette> palette(load_palette(filename.c_str()));
+    base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
     if (!palette) {
       Alert::show("Error<<Loading palette file||&Close");
     }

@@ -22,8 +22,8 @@
 
 #include "app/undoers/set_cel_frame.h"
 
-#include "raster/cel.h"
-#include "raster/layer.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

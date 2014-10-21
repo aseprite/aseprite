@@ -22,7 +22,7 @@
 
 #include "app/res/resource.h"
 
-namespace raster {
+namespace doc {
   class Palette;
 }
 
@@ -30,16 +30,16 @@ namespace app {
 
   class PaletteResource : public Resource {
   public:
-    PaletteResource(raster::Palette* palette, const std::string& name)
+    PaletteResource(doc::Palette* palette, const std::string& name)
       : m_palette(palette)
       , m_name(name) {
     }
     virtual ~PaletteResource() { }
-    virtual raster::Palette* palette() { return m_palette; }
+    virtual doc::Palette* palette() { return m_palette; }
     virtual const std::string& name() const override { return m_name; }
 
   private:
-    raster::Palette* m_palette;
+    doc::Palette* m_palette;
     std::string m_name;
   };
 

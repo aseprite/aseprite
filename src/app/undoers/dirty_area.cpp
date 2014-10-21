@@ -23,9 +23,9 @@
 #include "app/undoers/dirty_area.h"
 
 #include "base/unique_ptr.h"
-#include "raster/dirty.h"
-#include "raster/dirty_io.h"
-#include "raster/image.h"
+#include "doc/dirty.h"
+#include "doc/dirty_io.h"
+#include "doc/image.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -37,7 +37,7 @@ using namespace undo;
 DirtyArea::DirtyArea(ObjectsContainer* objects, Image* image, Dirty* dirty)
   : m_imageId(objects->addObject(image))
 {
-  raster::write_dirty(m_stream, dirty);
+  doc::write_dirty(m_stream, dirty);
 }
 
 void DirtyArea::dispose()
@@ -48,7 +48,7 @@ void DirtyArea::dispose()
 void DirtyArea::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   Image* image = objects->getObjectT<Image>(m_imageId);
-  base::UniquePtr<Dirty> dirty(raster::read_dirty(m_stream));
+  base::UniquePtr<Dirty> dirty(doc::read_dirty(m_stream));
 
   // Swap the saved pixels in the dirty with the pixels in the image
   dirty->swapImagePixels(image);

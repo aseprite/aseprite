@@ -33,12 +33,12 @@
 #include "app/undoers/replace_image.h"
 #include "app/undoers/set_cel_position.h"
 #include "base/unique_ptr.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -150,15 +150,15 @@ void MergeDownLayerCommand::onExecute(Context* context)
           y2 = MAX(src_cel->y()+src_image->height()-1, dst_cel->y()+dst_image->height()-1);
         }
 
-        raster::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
+        doc::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
 
-        Image* new_image = raster::crop_image(dst_image,
+        Image* new_image = doc::crop_image(dst_image,
           x1-dst_cel->x(),
           y1-dst_cel->y(),
           x2-x1+1, y2-y1+1, bgcolor);
 
         // Merge src_image in new_image
-        raster::composite_image(new_image, src_image,
+        doc::composite_image(new_image, src_image,
                                 src_cel->x()-x1,
                                 src_cel->y()-y1,
                                 src_cel->opacity(),

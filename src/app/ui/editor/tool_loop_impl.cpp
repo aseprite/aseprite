@@ -42,11 +42,11 @@
 #include "app/undo_transaction.h"
 #include "app/undoers/set_mask.h"
 #include "app/util/expand_cel_canvas.h"
-#include "raster/brush.h"
-#include "raster/cel.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/brush.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

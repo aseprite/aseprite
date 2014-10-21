@@ -23,8 +23,8 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/util/clipboard.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace app {
 

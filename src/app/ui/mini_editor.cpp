@@ -38,7 +38,7 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "gfx/rect.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"

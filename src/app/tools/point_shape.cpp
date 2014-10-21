@@ -25,12 +25,12 @@
 #include "app/settings/document_settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_loop.h"
-#include "raster/image.h"
+#include "doc/image.h"
 
 namespace app {
 namespace tools {
 
-using namespace raster;
+using namespace doc;
 using namespace filters;
   
 void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)

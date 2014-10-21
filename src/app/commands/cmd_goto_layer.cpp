@@ -27,8 +27,8 @@
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace app {
 

@@ -29,7 +29,7 @@
 #include "doc/settings.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "raster/brush_type.h"
+#include "doc/brush_type.h"
 
 namespace doc {
   class Document;
@@ -137,7 +137,7 @@ namespace app {
   public:
     virtual ~IBrushSettings() { }
 
-    virtual raster::BrushType getType() = 0;
+    virtual doc::BrushType getType() = 0;
     virtual int getSize() = 0;
     virtual int getAngle() = 0;
 

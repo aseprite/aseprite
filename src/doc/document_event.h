@@ -9,9 +9,9 @@
 #pragma once
 
 #include "gfx/region.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -22,7 +22,7 @@ namespace raster {
 namespace doc {
   class Document;
 
-  using namespace raster;
+  using namespace doc;
 
   class DocumentEvent {
   public:

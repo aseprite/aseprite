@@ -20,14 +20,14 @@
 #define APP_UTIL_RANGE_UTILS_H_INCLUDED
 #pragma once
 
-#include "raster/object.h"
+#include "doc/object.h"
 
 #include <vector>
 
 namespace app {
   class DocumentRange;
 
-  CelList get_cels_in_range(raster::Sprite* sprite, const DocumentRange& range);
+  CelList get_cels_in_range(doc::Sprite* sprite, const DocumentRange& range);
   
 } // namespace app
 

@@ -23,12 +23,12 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/document_range.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 // TODO the DocumentRange should be "iteratable" to replace this function
 CelList get_cels_in_range(Sprite* sprite, const DocumentRange& range)

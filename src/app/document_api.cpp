@@ -62,19 +62,19 @@
 #include "doc/context.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
-#include "raster/algorithm/flip_image.h"
-#include "raster/algorithm/shrink_bounds.h"
-#include "raster/blend.h"
-#include "raster/cel.h"
-#include "raster/dirty.h"
-#include "raster/image.h"
-#include "raster/image_bits.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/palette.h"
-#include "raster/quantization.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/algorithm/shrink_bounds.h"
+#include "doc/blend.h"
+#include "doc/cel.h"
+#include "doc/dirty.h"
+#include "doc/image.h"
+#include "doc/image_bits.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/palette.h"
+#include "doc/quantization.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace app {
 
@@ -147,7 +147,7 @@ void DocumentApi::trimSprite(Sprite* sprite)
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
     gfx::Rect frameBounds;
-    if (raster::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
+    if (doc::algorithm::shrink_bounds(image, frameBounds, get_pixel(image, 0, 0)))
       bounds = bounds.createUnion(frameBounds);
   }
 
@@ -299,7 +299,7 @@ void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
 
       // Displace all cels in '>=frame' to the next frame.
@@ -318,7 +318,7 @@ void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
@@ -337,13 +337,13 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
       copyCel(imglayer, fromFrame, imglayer, frame);
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
@@ -390,7 +390,7 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
       if (Cel* cel = imglayer->getCel(frame))
         removeCel(cel);
@@ -401,7 +401,7 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
@@ -501,7 +501,7 @@ void DocumentApi::moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber be
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
 
       CelList cels;
@@ -542,7 +542,7 @@ void DocumentApi::moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber be
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
       LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
 
@@ -931,7 +931,7 @@ void DocumentApi::displaceLayers(Layer* layer, int dx, int dy)
 {
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       CelIterator it = ((LayerImage*)layer)->getCelBegin();
       CelIterator end = ((LayerImage*)layer)->getCelEnd();
       for (; it != end; ++it) {
@@ -941,7 +941,7 @@ void DocumentApi::displaceLayers(Layer* layer, int dx, int dy)
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerIterator it = ((LayerFolder*)layer)->getLayerBegin();
       LayerIterator end = ((LayerFolder*)layer)->getLayerEnd();
       for (; it != end; ++it)
@@ -1259,7 +1259,7 @@ void DocumentApi::clearMask(Cel* cel)
 }
 
 void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
-  raster::algorithm::FlipType flipType)
+  doc::algorithm::FlipType flipType)
 {
   // Insert the undo operation.
   if (undoEnabled()) {
@@ -1269,16 +1269,16 @@ void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
   }
 
   // Flip the portion of the bitmap.
-  raster::algorithm::flip_image(image, bounds, flipType);
+  doc::algorithm::flip_image(image, bounds, flipType);
 }
 
-void DocumentApi::flipImageWithMask(Layer* layer, Image* image, const Mask* mask, raster::algorithm::FlipType flipType)
+void DocumentApi::flipImageWithMask(Layer* layer, Image* image, const Mask* mask, doc::algorithm::FlipType flipType)
 {
   base::UniquePtr<Image> flippedImage((Image::createCopy(image)));
   color_t bgcolor = bgColor(layer);
 
   // Flip the portion of the bitmap.
-  raster::algorithm::flip_image_with_mask(flippedImage, mask, flipType, bgcolor);
+  doc::algorithm::flip_image_with_mask(flippedImage, mask, flipType, bgcolor);
 
   // Insert the undo operation.
   if (undoEnabled()) {
@@ -1365,7 +1365,7 @@ bool DocumentApi::undoEnabled()
     m_document->getUndo()->isEnabled();
 }
 
-raster::color_t DocumentApi::bgColor()
+doc::color_t DocumentApi::bgColor()
 {
   app::ISettings* appSettings =
     dynamic_cast<app::ISettings*>(m_document->context()->settings());
@@ -1377,7 +1377,7 @@ raster::color_t DocumentApi::bgColor()
       m_document->sprite()->transparentColor()));
 }
 
-raster::color_t DocumentApi::bgColor(Layer* layer)
+doc::color_t DocumentApi::bgColor(Layer* layer)
 {
   app::ISettings* appSettings =
     dynamic_cast<app::ISettings*>(m_document->context()->settings());

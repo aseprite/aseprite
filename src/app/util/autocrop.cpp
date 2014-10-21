@@ -20,14 +20,14 @@
 #include "config.h"
 #endif
 
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "app/util/autocrop.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
                      Image *image, int refpixel)

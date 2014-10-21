@@ -27,7 +27,7 @@
 #include "app/settings/selection_mode.h"
 #include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
-#include "raster/brush_type.h"
+#include "doc/brush_type.h"
 
 namespace app {
   class Color;
@@ -42,7 +42,7 @@ namespace app {
     virtual ~BrushSettingsObserver() {}
 
     virtual void onSetBrushSize(int newSize) {}
-    virtual void onSetBrushType(raster::BrushType newType) {}
+    virtual void onSetBrushType(doc::BrushType newType) {}
     virtual void onSetBrushAngle(int newAngle) {}
   };
 

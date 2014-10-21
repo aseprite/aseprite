@@ -48,7 +48,7 @@
 #include "base/memory.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "she/clipboard.h"
 #include "she/display.h"
 #include "she/error.h"

@@ -27,7 +27,7 @@
 #include "base/cfile.h"
 #include "base/exception.h"
 #include "base/file_handle.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "zlib.h"
 
 #include <stdio.h>

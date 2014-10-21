@@ -22,7 +22,7 @@
 
 #include "app/color.h"
 #include "base/observers.h"
-#include "raster/layer_index.h"
+#include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/link_label.h"
 #include "ui/widget.h"

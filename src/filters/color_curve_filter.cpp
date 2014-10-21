@@ -27,14 +27,14 @@
 #include "filters/color_curve.h"
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/rgbmap.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/rgbmap.h"
+#include "doc/sprite.h"
 
 namespace filters {
 
-using namespace raster;
+using namespace doc;
 
 ColorCurveFilter::ColorCurveFilter()
   : m_curve(NULL)

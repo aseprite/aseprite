@@ -21,19 +21,19 @@
 #pragma once
 
 #include "filters/tiled_mode.h"
-#include "raster/image.h"
-#include "raster/image_traits.h"
+#include "doc/image.h"
+#include "doc/image_traits.h"
 
 #include <vector>
 
 namespace filters {
-  using namespace raster;
+  using namespace doc;
 
   // Calls the specified "delegate" for all neighboring pixels in a 2D
   // (width*height) matrix located in (x,y) where its center is the
   // (centerX,centerY) element of the matrix.
   template<typename Traits, typename Delegate>
-  inline void get_neighboring_pixels(const raster::Image* sourceImage, int x, int y,
+  inline void get_neighboring_pixels(const doc::Image* sourceImage, int x, int y,
                                      int width, int height,
                                      int centerX, int centerY,
                                      TiledMode tiledMode,

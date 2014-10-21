@@ -23,7 +23,7 @@
 #include "app/undoers/set_mask_position.h"
 
 #include "app/document.h"
-#include "raster/mask.h"
+#include "doc/mask.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

@@ -25,7 +25,7 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/undoers/remove_layer.h"
-#include "raster/layer.h"
+#include "doc/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

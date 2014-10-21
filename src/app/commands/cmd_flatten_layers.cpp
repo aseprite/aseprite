@@ -26,7 +26,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
 #include "app/undo_transaction.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 
 namespace app {
 

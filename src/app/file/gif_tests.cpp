@@ -24,7 +24,7 @@
 #include "app/file/file_formats_manager.h"
 #include "app/file/gif_options.h"
 #include "app/test_context.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "she/scoped_handle.h"
 #include "she/system.h"
 
@@ -64,7 +64,7 @@ TEST_F(GifFormat, Dimensions)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     EXPECT_EQ(31, sprite->width());
@@ -111,7 +111,7 @@ TEST_F(GifFormat, OpaqueIndexed)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
@@ -167,7 +167,7 @@ TEST_F(GifFormat, TransparentIndexed)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
@@ -217,7 +217,7 @@ TEST_F(GifFormat, TransparentRgbQuantization)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
@@ -263,7 +263,7 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
@@ -289,7 +289,7 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
   const char* fn = "test.gif";
 
   {
-    Document* doc(static_cast<Document*>(m_ctx.documents().add(2, 2, doc::ColorMode::RGB, 256)));
+    app::Document* doc(static_cast<app::Document*>(m_ctx.documents().add(2, 2, doc::ColorMode::RGB, 256)));
     Sprite* sprite = doc->sprite();
     doc->setFilename(fn);
 
@@ -322,7 +322,7 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
   }
 
   {
-    Document* doc = load_document(&m_ctx, fn);
+    app::Document* doc = load_document(&m_ctx, fn);
     Sprite* sprite = doc->sprite();
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());

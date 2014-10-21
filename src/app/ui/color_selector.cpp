@@ -43,17 +43,17 @@
 #include "base/scoped_value.h"
 #include "gfx/border.h"
 #include "gfx/size.h"
-#include "raster/image.h"
-#include "raster/image_bits.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/image.h"
+#include "doc/image_bits.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 namespace app {
 
 using namespace ui;
-using namespace raster;
+using namespace doc;
 
 class ColorSelector::WarningIcon : public StyledButton {
 public:
@@ -213,7 +213,7 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
 {
   try {
     Palette* newPalette = get_current_palette(); // System current pal
-    color_t newColor = raster::rgba(
+    color_t newColor = doc::rgba(
       m_color.getRed(),
       m_color.getGreen(),
       m_color.getBlue(), 255);

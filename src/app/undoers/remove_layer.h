@@ -25,7 +25,7 @@
 
 #include <sstream>
 
-namespace raster {
+namespace doc {
   class Layer;
 }
 
@@ -34,7 +34,7 @@ namespace app {
 
   namespace undoers {
     using namespace undo;
-    using namespace raster;
+    using namespace doc;
 
     class RemoveLayer : public UndoerBase {
     public:
@@ -49,9 +49,9 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      ObjectId m_documentId;
-      ObjectId m_folderId;
-      ObjectId m_afterId;
+      undo::ObjectId m_documentId;
+      undo::ObjectId m_folderId;
+      undo::ObjectId m_afterId;
       std::stringstream m_stream;
     };
 

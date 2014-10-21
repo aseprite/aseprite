@@ -24,7 +24,7 @@
 #include "base/string.h"
 #include "base/system_console.h"
 #include "base/unique_ptr.h"
-#include "raster/pixel_format.h"
+#include "doc/pixel_format.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ namespace ui {
   class Window;
 }
 
-namespace raster {
+namespace doc {
   class Layer;
 }
 
@@ -53,7 +53,7 @@ namespace app {
     class ToolBox;
   }
 
-  using namespace raster;
+  using namespace doc;
 
   class App {
   public:

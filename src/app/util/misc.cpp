@@ -30,14 +30,14 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/util/misc.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 #include "ui/widget.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 Image* NewImageFromMask(const DocumentLocation& location)
 {

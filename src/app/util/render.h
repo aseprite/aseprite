@@ -21,9 +21,9 @@
 #pragma once
 
 #include "app/color.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 
-namespace raster {
+namespace doc {
   class Image;
   class Layer;
   class Palette;
@@ -33,7 +33,7 @@ namespace raster {
 namespace app {
   class Document;
 
-  using namespace raster;
+  using namespace doc;
 
   class RenderEngine {
   public:

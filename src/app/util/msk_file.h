@@ -20,14 +20,14 @@
 #define APP_UTIL_MSK_FILE_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Mask;
 }
 
 namespace app {
 
-  raster::Mask* load_msk_file(const char* filename);
-  int save_msk_file(const raster::Mask* mask, const char* filename);
+  doc::Mask* load_msk_file(const char* filename);
+  int save_msk_file(const doc::Mask* mask, const char* filename);
 
 } // namespace app
 

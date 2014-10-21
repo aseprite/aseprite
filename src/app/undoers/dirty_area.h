@@ -25,14 +25,14 @@
 
 #include <sstream>
 
-namespace raster {
+namespace doc {
   class Dirty;
   class Image;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class DirtyArea : public UndoerBase {
@@ -48,7 +48,7 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      ObjectId m_imageId;
+      undo::ObjectId m_imageId;
       std::stringstream m_stream;
     };
 

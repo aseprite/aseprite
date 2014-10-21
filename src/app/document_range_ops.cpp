@@ -27,8 +27,8 @@
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/undo_transaction.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 
 #include <stdexcept>
 

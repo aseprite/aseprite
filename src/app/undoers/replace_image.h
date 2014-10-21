@@ -25,13 +25,13 @@
 
 #include <sstream>
 
-namespace raster {
+namespace doc {
   class Stock;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class ReplaceImage : public UndoerBase {
@@ -47,7 +47,7 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      ObjectId m_stockId;
+      undo::ObjectId m_stockId;
       uint32_t m_imageIndex;
       std::stringstream m_stream;
     };

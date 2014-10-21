@@ -35,9 +35,9 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/mini_editor.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 
 namespace app {
 

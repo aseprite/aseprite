@@ -33,13 +33,13 @@
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "raster/algorithm/resize_image.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/algorithm/resize_image.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 #define PERC_FORMAT     "%.1f"
@@ -47,7 +47,7 @@
 namespace app {
 
 using namespace ui;
-using raster::algorithm::ResizeMethod;
+using doc::algorithm::ResizeMethod;
 
 class SpriteSizeJob : public Job {
   ContextWriter m_writer;
@@ -105,8 +105,8 @@ protected:
       int h = scale_y(image->height());
       Image* new_image = Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h));
 
-      raster::algorithm::fixup_image_transparent_colors(image);
-      raster::algorithm::resize_image(image, new_image,
+      doc::algorithm::fixup_image_transparent_colors(image);
+      doc::algorithm::resize_image(image, new_image,
                                       m_resize_method,
                                       m_sprite->getPalette(cel->frame()),
                                       m_sprite->getRgbMap(cel->frame()));
@@ -220,7 +220,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   method->addItem("Nearest-neighbor");
   method->addItem("Bilinear");
   method->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
-                                              raster::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
+                                              doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
 
   window->remapWindow();
   window->centerWindow();

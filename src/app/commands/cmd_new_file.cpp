@@ -36,13 +36,13 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/unique_ptr.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 #include "generated_new_sprite.h"
@@ -75,7 +75,7 @@ NewFileCommand::NewFileCommand()
 void NewFileCommand::onExecute(Context* context)
 {
   PixelFormat format;
-  int w, h, bg, ncolors = raster::Palette::MaxColors;
+  int w, h, bg, ncolors = doc::Palette::MaxColors;
   char buf[1024];
   app::Color bg_table[] = {
     app::Color::fromMask(),
@@ -179,7 +179,7 @@ void NewFileCommand::onExecute(Context* context)
           layerImage->configureAsBackground();
 
           Image* image = layerImage->getCel(FrameNumber(0))->image();
-          raster::clear_image(image,
+          doc::clear_image(image,
             color_utils::color_for_target(color,
               ColorTarget(
                 ColorTarget::BackgroundLayer,

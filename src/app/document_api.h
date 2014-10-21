@@ -21,13 +21,13 @@
 #pragma once
 
 #include "gfx/rect.h"
-#include "raster/algorithm/flip_type.h"
-#include "raster/color.h"
-#include "raster/dithering_method.h"
-#include "raster/frame_number.h"
-#include "raster/pixel_format.h"
+#include "doc/algorithm/flip_type.h"
+#include "doc/color.h"
+#include "doc/dithering_method.h"
+#include "doc/frame_number.h"
+#include "doc/pixel_format.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -46,12 +46,11 @@ namespace undo {
 namespace app {
   class Document;
 
-  using namespace raster;
+  using namespace doc;
 
   // High-level API to modify a document in an undoable and observable way.
   // Each method of this class take care of three important things:
-  // 1) Do the given action with low-level operations (raster
-  //    namespace mainly),
+  // 1) Do the given action with low-level operations (doc namespace mainly),
   // 2) Add undoers so the action can be undone in the
   //    future (undoers namespace mainly),
   // 3) Notify observers of the document that a change
@@ -116,8 +115,8 @@ namespace app {
     // Image API
     void clearImage(Image* image, color_t bgcolor);
     void clearMask(Cel* cel);
-    void flipImage(Image* image, const gfx::Rect& bounds, raster::algorithm::FlipType flipType);
-    void flipImageWithMask(Layer* layer, Image* image, const Mask* mask, raster::algorithm::FlipType flipType);
+    void flipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType);
+    void flipImageWithMask(Layer* layer, Image* image, const Mask* mask, doc::algorithm::FlipType flipType);
     void pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity);
 
     // Mask API
@@ -139,8 +138,8 @@ namespace app {
     void configureLayerAsBackground(LayerImage* layer);
     bool undoEnabled();
 
-    raster::color_t bgColor();
-    raster::color_t bgColor(Layer* layer);
+    doc::color_t bgColor();
+    doc::color_t bgColor(Layer* layer);
 
     Document* m_document;
     undo::UndoersCollector* m_undoers;

@@ -22,7 +22,7 @@
 
 #include "app/ui/editor/standby_state.h"
 
-namespace raster {
+namespace doc {
   class Cel;
 }
 

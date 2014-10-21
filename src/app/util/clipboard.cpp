@@ -44,7 +44,7 @@
 #include "app/undoers/image_area.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "undo/undo_history.h"
 
 #if defined WIN32
@@ -87,7 +87,7 @@ namespace {
 
 }
 
-using namespace raster;
+using namespace doc;
 
 static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard);
 static bool copy_from_document(const DocumentLocation& location);

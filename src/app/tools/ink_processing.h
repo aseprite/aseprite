@@ -21,9 +21,9 @@
 #include "app/tools/shade_table.h"
 #include "app/tools/shading_options.h"
 #include "filters/neighboring_pixels.h"
-#include "raster/palette.h"
-#include "raster/rgbmap.h"
-#include "raster/sprite.h"
+#include "doc/palette.h"
+#include "doc/rgbmap.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace tools {

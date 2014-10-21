@@ -24,9 +24,9 @@
 
 #include "app/document_location.h"
 #include "gfx/point.h"
-#include "raster/image.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 
 namespace app {
 
@@ -48,18 +48,18 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
   }
   else {                        // Pick from the current layer
     int u, v;
-    raster::Image* image = location.image(&u, &v, NULL);
+    doc::Image* image = location.image(&u, &v, NULL);
     gfx::Point pt(x-u, y-v);
 
     if (image && image->bounds().contains(pt)) {
-      raster::color_t imageColor = get_pixel(image, pt.x, pt.y);
+      doc::color_t imageColor = get_pixel(image, pt.x, pt.y);
 
       switch (image->pixelFormat()) {
         case IMAGE_RGB:
-          m_alpha = raster::rgba_geta(imageColor);
+          m_alpha = doc::rgba_geta(imageColor);
           break;
         case IMAGE_GRAYSCALE:
-          m_alpha = raster::graya_geta(imageColor);
+          m_alpha = doc::graya_geta(imageColor);
           break;
       }
 

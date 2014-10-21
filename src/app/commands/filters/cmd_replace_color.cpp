@@ -36,9 +36,9 @@
 #include "app/ui/color_button.h"
 #include "base/bind.h"
 #include "filters/replace_color_filter.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

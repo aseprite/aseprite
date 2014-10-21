@@ -26,12 +26,12 @@
 #include "app/document_api.h"
 #include "app/undoers/add_layer.h"
 #include "app/undoers/object_io.h"
-#include "raster/cel.h"
-#include "raster/cel_io.h"
-#include "raster/image.h"
-#include "raster/image_io.h"
-#include "raster/layer.h"
-#include "raster/layer_io.h"
+#include "doc/cel.h"
+#include "doc/cel_io.h"
+#include "doc/image.h"
+#include "doc/image_io.h"
+#include "doc/layer.h"
+#include "doc/layer_io.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -40,7 +40,7 @@ namespace undoers {
 
 using namespace undo;
 
-class LayerSubObjectsSerializerImpl : public raster::LayerSubObjectsSerializer {
+class LayerSubObjectsSerializerImpl : public doc::LayerSubObjectsSerializer {
 public:
   LayerSubObjectsSerializerImpl(ObjectsContainer* objects, Sprite* sprite)
     : m_objects(objects)
@@ -51,11 +51,11 @@ public:
 
   // How to write cels, images, and sub-layers
   void write_cel(std::ostream& os, Cel* cel) override {
-    write_object(m_objects, os, cel, raster::write_cel);
+    write_object(m_objects, os, cel, doc::write_cel);
   }
 
   void write_image(std::ostream& os, Image* image) override {
-    write_object(m_objects, os, image, raster::write_image);
+    write_object(m_objects, os, image, doc::write_image);
   }
 
   void write_layer(std::ostream& os, Layer* layer) override {
@@ -65,11 +65,11 @@ public:
 
   // How to read cels, images, and sub-layers
   Cel* read_cel(std::istream& is) override {
-    return read_object<Cel>(m_objects, is, raster::read_cel);
+    return read_object<Cel>(m_objects, is, doc::read_cel);
   }
 
   Image* read_image(std::istream& is) override {
-    return read_object<Image>(m_objects, is, raster::read_image);
+    return read_object<Image>(m_objects, is, doc::read_image);
   }
 
   Layer* read_layer(std::istream& is) override {
@@ -80,11 +80,11 @@ public:
   // The following operator() calls are used in write/read_object() functions.
 
   void operator()(std::ostream& os, Layer* layer) {
-    raster::write_layer(os, this, layer);
+    doc::write_layer(os, this, layer);
   }
 
   Layer* operator()(std::istream& is) {
-    return raster::read_layer(is, this, m_sprite);
+    return doc::read_layer(is, this, m_sprite);
   }
 
 private:

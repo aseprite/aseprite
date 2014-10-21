@@ -23,7 +23,7 @@
 #include "gfx/color.h"
 #include "gfx/rect.h"
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
@@ -31,7 +31,7 @@ namespace app {
   class Editor;
   class EditorDecorator;
 
-  using namespace raster;
+  using namespace doc;
 
   // EditorPreRender and EditorPostRender are two interfaces used to
   // draw elements in the editor's area. They are implemented by the

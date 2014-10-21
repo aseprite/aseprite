@@ -20,17 +20,17 @@
 #define APP_UNDOERS_CLOSE_GROUP_H_INCLUDED
 #pragma once
 
-#include "raster/sprite_position.h"
+#include "doc/sprite_position.h"
 #include "undo/object_id.h"
 #include "undo/undoer.h"
 
-namespace raster {
+namespace doc {
   class Sprite;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class CloseGroup : public undo::Undoer {
@@ -54,7 +54,7 @@ namespace app {
     private:
       const char* m_label;
       Modification m_modification;
-      ObjectId m_spriteId;
+      undo::ObjectId m_spriteId;
       SpritePosition m_spritePosition;
     };
 

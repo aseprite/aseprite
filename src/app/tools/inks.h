@@ -26,7 +26,7 @@
 #include "app/settings/settings.h"
 #include "app/tools/pick_ink.h"
 #include "app/undoers/set_mask.h"
-#include "raster/mask.h"
+#include "doc/mask.h"
 
 namespace app {
 namespace tools {

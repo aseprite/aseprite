@@ -25,13 +25,13 @@
 
 #include <string>
 
-namespace raster {
+namespace doc {
   class Layer;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class SetLayerName : public UndoerBase {
@@ -43,7 +43,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_layerId;
+      undo::ObjectId m_layerId;
       std::string m_name;
     };
 

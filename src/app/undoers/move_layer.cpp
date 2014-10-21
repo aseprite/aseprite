@@ -22,7 +22,7 @@
 
 #include "app/undoers/move_layer.h"
 
-#include "raster/layer.h"
+#include "doc/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

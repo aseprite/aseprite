@@ -28,9 +28,9 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/undo_transaction.h"
-#include "raster/dithering_method.h"
-#include "raster/image.h"
-#include "raster/sprite.h"
+#include "doc/dithering_method.h"
+#include "doc/image.h"
+#include "doc/sprite.h"
 
 namespace app {
   

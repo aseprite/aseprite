@@ -26,9 +26,9 @@
 #include "app/undo_transaction.h"
 #include "base/shared_ptr.h"
 #include "gfx/size.h"
-#include "raster/algorithm/flip_type.h"
+#include "doc/algorithm/flip_type.h"
 
-namespace raster {
+namespace doc {
   class Image;
   class Sprite;
 }
@@ -93,7 +93,7 @@ namespace app {
     // Flip Horizontally/Vertically commands are replaced calling this
     // function, so they work more as the user would expect (flip the
     // current selection instead of dropping and flipping it).
-    void flipImage(raster::algorithm::FlipType flipType);
+    void flipImage(doc::algorithm::FlipType flipType);
 
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
@@ -103,8 +103,8 @@ namespace app {
   private:
     void redrawExtraImage();
     void redrawCurrentMask();
-    void drawImage(raster::Image* dst, const gfx::Point& pt);
-    void drawParallelogram(raster::Image* dst, raster::Image* src,
+    void drawImage(doc::Image* dst, const gfx::Point& pt);
+    void drawParallelogram(doc::Image* dst, doc::Image* src,
       const gfx::Transformation::Corners& corners,
       const gfx::Point& leftTop);
     void updateDocumentMask();

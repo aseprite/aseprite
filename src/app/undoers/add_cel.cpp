@@ -23,15 +23,15 @@
 #include "app/undoers/add_cel.h"
 
 #include "app/undoers/remove_cel.h"
-#include "raster/cel.h"
-#include "raster/layer.h"
+#include "doc/cel.h"
+#include "doc/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
 namespace app {
 namespace undoers {
 
-using namespace raster;
+using namespace doc;
 using namespace undo;
 
 AddCel::AddCel(ObjectsContainer* objects, Layer* layer, Cel* cel)

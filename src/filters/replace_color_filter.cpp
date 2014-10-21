@@ -23,11 +23,11 @@
 #include "filters/replace_color_filter.h"
 
 #include "filters/filter_manager.h"
-#include "raster/image.h"
+#include "doc/image.h"
 
 namespace filters {
 
-using namespace raster;
+using namespace doc;
 
 ReplaceColorFilter::ReplaceColorFilter()
 {

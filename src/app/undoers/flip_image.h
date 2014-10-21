@@ -22,16 +22,16 @@
 
 #include "app/undoers/undoer_base.h"
 #include "gfx/fwd.h"
-#include "raster/algorithm/flip_type.h"
+#include "doc/algorithm/flip_type.h"
 #include "undo/object_id.h"
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class FlipImage : public UndoerBase {
@@ -45,7 +45,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_imageId;
+      undo::ObjectId m_imageId;
       uint8_t m_format;
       uint16_t m_x, m_y, m_w, m_h;
       uint8_t m_flipType;

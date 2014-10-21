@@ -28,7 +28,7 @@
 #include "app/modules/palettes.h"
 #include "app/undo_transaction.h"
 #include "base/unique_ptr.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 #include "ui/alert.h"
 #include "ui/manager.h"
 

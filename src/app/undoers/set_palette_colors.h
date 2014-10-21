@@ -21,19 +21,19 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 #include "undo/object_id.h"
 
 #include <sstream>
 
-namespace raster {
+namespace doc {
   class Palette;
   class Sprite;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class SetPaletteColors : public UndoerBase {
@@ -49,7 +49,7 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      ObjectId m_spriteId;
+      undo::ObjectId m_spriteId;
       FrameNumber m_frame;
       uint8_t m_from;
       uint8_t m_to;

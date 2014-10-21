@@ -38,8 +38,8 @@
 #include "base/scoped_lock.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
-#include "raster/quantization.h"
-#include "raster/raster.h"
+#include "doc/quantization.h"
+#include "doc/doc.h"
 #include "ui/alert.h"
 
 #include <cstring>

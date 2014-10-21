@@ -22,7 +22,7 @@
 
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
-#include "raster/sprite_position.h"
+#include "doc/sprite_position.h"
 #include "undo/undo_history.h"
 
 namespace doc {
@@ -39,7 +39,7 @@ namespace app {
     class CloseGroup;
   }
 
-  using namespace raster;
+  using namespace doc;
 
   class DocumentUndo : public undo::UndoHistoryDelegate {
   public:

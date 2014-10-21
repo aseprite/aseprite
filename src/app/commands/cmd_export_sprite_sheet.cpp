@@ -39,13 +39,13 @@
 #include "app/undo_transaction.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 #include "generated_export_sprite_sheet.h"
@@ -329,7 +329,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
   base::UniquePtr<Image> tempImage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
-  raster::clear_image(resultImage, 0);
+  doc::clear_image(resultImage, 0);
 
   int column = 0, row = 0;
   for (FrameNumber frame(0); frame<nframes; ++frame) {

@@ -32,8 +32,8 @@
 // For Aseprite
 #include <limits.h>
 #include "base/memory.h"
-#include "raster/image.h"
-#include "raster/image_bits.h"
+#include "doc/image.h"
+#include "doc/image_bits.h"
 #include "app/util/boundary.h"
 
 #define g_new(struct_type, n_structs) \
@@ -46,7 +46,7 @@
 #define gboolean        bool
 #define G_MAXINT        INT_MAX
 #define g_message(msg)  {}
-#define PixelRegion     const raster::Image
+#define PixelRegion     const doc::Image
 
 namespace app {
 //////////////////////////////////////////////////////////////////////

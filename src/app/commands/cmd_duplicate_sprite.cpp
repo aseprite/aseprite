@@ -29,7 +29,7 @@
 #include "app/modules/editors.h"
 #include "app/ui_context.h"
 #include "base/path.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include "generated_duplicate_sprite.h"

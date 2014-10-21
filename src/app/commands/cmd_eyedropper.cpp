@@ -33,8 +33,8 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
-#include "raster/image.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
 

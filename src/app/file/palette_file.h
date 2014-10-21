@@ -20,7 +20,7 @@
 #define APP_FILE_PALETTE_FILE_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Palette;
 }
 
@@ -29,8 +29,8 @@ namespace app {
   void get_readable_palette_extensions(char* buf, int size);
   void get_writable_palette_extensions(char* buf, int size);
 
-  raster::Palette* load_palette(const char *filename);
-  bool save_palette(const char *filename, raster::Palette* pal);
+  doc::Palette* load_palette(const char *filename);
+  bool save_palette(const char *filename, doc::Palette* pal);
 
 } // namespace app
 

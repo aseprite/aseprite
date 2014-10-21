@@ -42,10 +42,10 @@
 #include "app/util/range_utils.h"
 #include "base/bind.h"
 #include "gfx/size.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 #include "she/font.h"
 #include "she/surface.h"
 #include "ui/ui.h"
@@ -61,7 +61,7 @@ namespace app {
 using namespace app::skin;
 using namespace gfx;
 using namespace ui;
-using namespace raster;
+using namespace doc;
 
 enum AniAction {
   ACTION_FIRST,

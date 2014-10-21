@@ -38,7 +38,7 @@
 #include "app/util/render.h"
 #include "base/bind.h"
 #include "base/path.h"
-#include "raster/image.h"
+#include "doc/image.h"
 #include "she/system.h"
 #include "ui/ui.h"
 

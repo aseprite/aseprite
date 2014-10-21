@@ -23,8 +23,8 @@
 #include "app/undoers/set_palette_colors.h"
 
 #include "base/serialization.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undo_exception.h"
 #include "undo/undoers_collector.h"

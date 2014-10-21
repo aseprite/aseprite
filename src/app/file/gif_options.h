@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/file/format_options.h"
-#include "raster/dithering_method.h"
+#include "doc/dithering_method.h"
 
 namespace app {
 
@@ -33,7 +33,7 @@ namespace app {
     GifOptions(
       Quantize quantize = QuantizeEach,
       bool interlaced = false,
-      DitheringMethod dithering = raster::DITHERING_NONE)
+      DitheringMethod dithering = doc::DITHERING_NONE)
       : m_quantize(quantize)
       , m_interlaced(interlaced)
       , m_dithering(dithering) {
@@ -41,16 +41,16 @@ namespace app {
 
     Quantize quantize() const { return m_quantize; }
     bool interlaced() const { return m_interlaced; }
-    raster::DitheringMethod dithering() const { return m_dithering; }
+    doc::DitheringMethod dithering() const { return m_dithering; }
 
     void setQuantize(const Quantize quantize) { m_quantize = quantize; }
     void setInterlaced(bool interlaced) { m_interlaced = interlaced; }
-    void setDithering(const raster::DitheringMethod dithering) { m_dithering = dithering; }
+    void setDithering(const doc::DitheringMethod dithering) { m_dithering = dithering; }
 
   private:
     Quantize m_quantize;
     bool m_interlaced;
-    raster::DitheringMethod m_dithering;
+    doc::DitheringMethod m_dithering;
   };
 
 } // namespace app

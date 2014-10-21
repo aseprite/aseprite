@@ -30,14 +30,14 @@
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "base/vector2d.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/algorithm/rotate.h"
+#include "doc/algorithm/rotsprite.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 #include "gfx/region.h"
-#include "raster/algorithm/flip_image.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/rotate.h"
-#include "raster/rotsprite.h"
-#include "raster/sprite.h"
 
 namespace app {
 
@@ -85,17 +85,17 @@ PixelsMovement::~PixelsMovement()
   delete m_currentMask;
 }
 
-void PixelsMovement::flipImage(raster::algorithm::FlipType flipType)
+void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
 {
   // Flip the image.
-  raster::algorithm::flip_image(m_originalImage,
+  doc::algorithm::flip_image(m_originalImage,
                                 gfx::Rect(gfx::Point(0, 0),
                                           gfx::Size(m_originalImage->width(),
                                                     m_originalImage->height())),
                                 flipType);
 
   // Flip the mask.
-  raster::algorithm::flip_image(m_initialMask->bitmap(),
+  doc::algorithm::flip_image(m_initialMask->bitmap(),
     gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().getSize()),
     flipType);
 
@@ -596,7 +596,7 @@ void PixelsMovement::redrawCurrentMask()
   m_currentMask->unfreeze();
 }
 
-void PixelsMovement::drawImage(raster::Image* dst, const gfx::Point& pt)
+void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt)
 {
   gfx::Transformation::Corners corners;
   m_currentData.transformBox(corners);
@@ -608,7 +608,7 @@ void PixelsMovement::drawImage(raster::Image* dst, const gfx::Point& pt)
   drawParallelogram(dst, m_originalImage, corners, pt);
 }
 
-void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
+void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
@@ -625,7 +625,7 @@ void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
   switch (rotAlgo) {
 
     case kFastRotationAlgorithm:
-      image_parallelogram(dst, src,
+      doc::algorithm::parallelogram(dst, src,
         corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
         corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
         corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
@@ -633,7 +633,7 @@ void PixelsMovement::drawParallelogram(raster::Image* dst, raster::Image* src,
       break;
 
     case kRotSpriteRotationAlgorithm:
-      image_rotsprite(dst, src,
+      doc::algorithm::rotsprite_image(dst, src,
         corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
         corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
         corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,

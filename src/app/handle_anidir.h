@@ -20,9 +20,9 @@
 #define APP_HANDLE_ANIDIR_H_INCLUDED
 #pragma once
 
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 
-namespace raster {
+namespace doc {
   class Sprite;
 }
 
@@ -30,9 +30,9 @@ namespace app {
 
   class IDocumentSettings;
 
-  raster::FrameNumber calculate_next_frame(
-    raster::Sprite* sprite,
-    raster::FrameNumber frame,
+  doc::FrameNumber calculate_next_frame(
+    doc::Sprite* sprite,
+    doc::FrameNumber frame,
     IDocumentSettings* docSettings,
     bool& pingPongForward);
   

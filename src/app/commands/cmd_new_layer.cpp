@@ -31,8 +31,8 @@
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/undo_transaction.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include <cstdio>

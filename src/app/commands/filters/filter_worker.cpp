@@ -34,7 +34,7 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "ui/ui.h"
 
 namespace app {

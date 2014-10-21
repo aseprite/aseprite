@@ -20,16 +20,16 @@
 #define APP_UTIL_AUTOCROP_H_INCLUDED
 #pragma once
 
-namespace raster {
+namespace doc {
   class Image;
 }
 
 namespace app {
 
   bool get_shrink_rect(int* x1, int* y1, int* x2, int* y2,
-                       raster::Image *image, int refpixel);
+                       doc::Image *image, int refpixel);
   bool get_shrink_rect2(int* x1, int* y1, int* x2, int* y2,
-                        raster::Image* image, raster::Image* regimage);
+                        doc::Image* image, doc::Image* regimage);
   
 } // namespace app
 

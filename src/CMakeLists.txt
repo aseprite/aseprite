@@ -28,7 +28,6 @@ set(aseprite_libraries
   cfg-lib
   css-lib
   doc-lib
-  raster-lib
   scripting-lib
   undo-lib
   filters-lib
@@ -206,7 +205,6 @@ add_subdirectory(filters)
 add_subdirectory(fixmath)
 add_subdirectory(gen)
 add_subdirectory(gfx)
-add_subdirectory(raster)
 add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
@@ -322,8 +320,7 @@ endfunction()
 
 find_tests(base base-lib ${sys_libs})
 find_tests(gfx gfx-lib base-lib ${sys_libs})
-find_tests(raster raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(doc doc-lib raster-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
+find_tests(doc doc-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(app/file ${all_libs})

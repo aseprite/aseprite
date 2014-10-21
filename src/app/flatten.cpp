@@ -22,16 +22,16 @@
 
 #include "base/unique_ptr.h"
 #include "gfx/rect.h"
-#include "raster/cel.h"
-#include "raster/frame_number.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/frame_number.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace app {
 
-using namespace raster;
+using namespace doc;
 
 static bool has_cels(const Layer* layer, FrameNumber frame);
 
@@ -77,10 +77,10 @@ static bool has_cels(const Layer* layer, FrameNumber frame)
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE:
+    case ObjectType::LayerImage:
       return static_cast<const LayerImage*>(layer)->getCel(frame) ? true: false;
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 

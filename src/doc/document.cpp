@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,7 +18,8 @@
 namespace doc {
 
 Document::Document()
-  : m_sprites(this)
+  : Object(ObjectType::Document)
+  , m_sprites(this)
   , m_ctx(NULL)
 {
 }

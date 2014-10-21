@@ -26,9 +26,9 @@
 #include "app/modules/palettes.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
 
 #include <cstdlib>
 #include <iomanip>
@@ -116,7 +116,7 @@ Color Color::fromImage(PixelFormat pixelFormat, color_t c)
 Color Color::fromImageGetPixel(Image *image, int x, int y)
 {
   if ((x >= 0) && (y >= 0) && (x < image->width()) && (y < image->height()))
-    return Color::fromImage(image->pixelFormat(), raster::get_pixel(image, x, y));
+    return Color::fromImage(image->pixelFormat(), doc::get_pixel(image, x, y));
   else
     return Color::fromMask();
 }

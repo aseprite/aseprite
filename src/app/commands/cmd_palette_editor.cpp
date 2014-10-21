@@ -52,11 +52,11 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/quantization.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/quantization.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/graphics.h"
 #include "ui/ui.h"
 
@@ -601,7 +601,7 @@ void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
   PaletteView::SelectedEntries entries;
   palView->getSelectedEntries(entries);
 
-  color_t new_pal_color = raster::rgba(color.getRed(),
+  color_t new_pal_color = doc::rgba(color.getRed(),
                                        color.getGreen(),
                                        color.getBlue(), 255);
 
@@ -697,7 +697,7 @@ void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSl
           break;
       }
 
-      palette->setEntry(c, raster::rgba(r, g, b, 255));
+      palette->setEntry(c, doc::rgba(r, g, b, 255));
     }
   }
 }

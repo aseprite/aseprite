@@ -27,16 +27,16 @@
 #include "filters/filter_manager.h"
 #include "filters/neighboring_pixels.h"
 #include "filters/tiled_mode.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/primitives_fast.h"
-#include "raster/rgbmap.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives_fast.h"
+#include "doc/rgbmap.h"
 
 #include <algorithm>
 
 namespace filters {
 
-using namespace raster;
+using namespace doc;
 
 namespace {
   struct GetPixelsDelegateRgba {

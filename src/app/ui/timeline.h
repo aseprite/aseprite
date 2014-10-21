@@ -26,15 +26,15 @@
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
-#include "raster/frame_number.h"
-#include "raster/layer_index.h"
-#include "raster/sprite.h"
+#include "doc/frame_number.h"
+#include "doc/layer_index.h"
+#include "doc/sprite.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <vector>
 
-namespace raster {
+namespace doc {
   class Cel;
   class Layer;
   class LayerImage;
@@ -46,7 +46,7 @@ namespace ui {
 }
 
 namespace app {
-  using namespace raster;
+  using namespace doc;
 
   class Command;
   class ConfigureTimelinePopup;

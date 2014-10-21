@@ -25,14 +25,14 @@
 
 #include <sstream>
 
-namespace raster {
+namespace doc {
   class Cel;
   class Layer;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class RemoveCel : public UndoerBase {
@@ -48,7 +48,7 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      ObjectId m_layerId;
+      undo::ObjectId m_layerId;
       std::stringstream m_stream;
     };
 

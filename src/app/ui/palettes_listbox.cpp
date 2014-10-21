@@ -27,7 +27,7 @@
 #include "app/res/palettes_loader_delegate.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
-#include "raster/palette.h"
+#include "doc/palette.h"
 #include "ui/graphics.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
@@ -44,7 +44,7 @@ PalettesListBox::PalettesListBox()
 {
 }
 
-raster::Palette* PalettesListBox::selectedPalette()
+doc::Palette* PalettesListBox::selectedPalette()
 {
   Resource* resource = selectedResource();
   if (!resource)
@@ -57,25 +57,25 @@ void PalettesListBox::onResourceChange(Resource* resource)
 {
   ResourcesListBox::onResourceChange(resource);
 
-  raster::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
   PalChange(palette);
 }
 
 void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Resource* resource)
 {
-  raster::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
+  doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
 
   gfx::Rect box(
     bounds.x, bounds.y+bounds.h-6*jguiscale(),
     4*jguiscale(), 4*jguiscale());
 
   for (int i=0; i<palette->size(); ++i) {
-    raster::color_t c = palette->getEntry(i);
+    doc::color_t c = palette->getEntry(i);
 
     g->fillRect(gfx::rgba(
-        raster::rgba_getr(c),
-        raster::rgba_getg(c),
-        raster::rgba_getb(c)), box);
+        doc::rgba_getr(c),
+        doc::rgba_getg(c),
+        doc::rgba_getb(c)), box);
 
     box.x += box.w;
   }

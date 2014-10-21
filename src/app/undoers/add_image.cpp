@@ -23,8 +23,8 @@
 #include "app/undoers/add_image.h"
 
 #include "app/undoers/remove_image.h"
-#include "raster/image.h"
-#include "raster/stock.h"
+#include "doc/image.h"
+#include "doc/stock.h"
 #include "undo/objects_container.h"
 #include "undo/undo_exception.h"
 #include "undo/undoers_collector.h"

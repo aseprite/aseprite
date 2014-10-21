@@ -31,8 +31,8 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
 #include "undo/undo_history.h"
 
 namespace app {

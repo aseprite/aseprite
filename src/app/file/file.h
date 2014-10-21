@@ -21,8 +21,8 @@
 #pragma once
 
 #include "base/shared_ptr.h"
-#include "raster/frame_number.h"
-#include "raster/pixel_format.h"
+#include "doc/frame_number.h"
+#include "doc/pixel_format.h"
 
 #include <stdio.h>
 #include <string>
@@ -41,7 +41,7 @@ namespace doc {
   class Document;
 }
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -56,7 +56,7 @@ namespace app {
   class FileFormat;
   class FormatOptions;
 
-  using namespace raster;
+  using namespace doc;
 
   // File operations.
   typedef enum {

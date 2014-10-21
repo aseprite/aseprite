@@ -24,7 +24,7 @@
 
 #include "app/document.h"
 #include "app/document_api.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

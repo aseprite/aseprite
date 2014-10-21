@@ -23,7 +23,7 @@
 #include "app/undoers/close_group.h"
 
 #include "app/undoers/open_group.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

@@ -27,7 +27,7 @@
 #include "app/file/format_options.h"
 #include "app/ini_file.h"
 #include "base/file_handle.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -22,7 +22,7 @@
 
 #include "app/undoers/set_sprite_pixel_format.h"
 
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

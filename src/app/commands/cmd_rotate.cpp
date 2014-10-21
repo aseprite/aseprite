@@ -33,11 +33,11 @@
 #include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "app/util/range_utils.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -117,7 +117,7 @@ protected:
         Image* new_image = Image::create(image->pixelFormat(),
           m_angle == 180 ? image->width(): image->height(),
           m_angle == 180 ? image->height(): image->width());
-        raster::rotate_image(image, new_image, m_angle);
+        doc::rotate_image(image, new_image, m_angle);
 
         api.replaceStockImage(m_sprite, cel->imageIndex(), new_image);
       }
@@ -156,7 +156,7 @@ protected:
       new_mask->replace(x, y,
                         m_angle == 180 ? origBounds.w: origBounds.h,
                         m_angle == 180 ? origBounds.h: origBounds.w);
-      raster::rotate_image(origMask->bitmap(), new_mask->bitmap(), m_angle);
+      doc::rotate_image(origMask->bitmap(), new_mask->bitmap(), m_angle);
 
       // Copy new mask
       api.copyToCurrentMask(new_mask);

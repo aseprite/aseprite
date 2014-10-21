@@ -73,7 +73,7 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
   openWindow();
 }
 
-void PalettePopup::onPalChange(raster::Palette* palette)
+void PalettePopup::onPalChange(doc::Palette* palette)
 {
   m_popup->loadPal()->setEnabled(
     UIContext::instance()->activeDocument() &&
@@ -84,7 +84,7 @@ void PalettePopup::onPalChange(raster::Palette* palette)
 
 void PalettePopup::onLoadPal(bool asDefault)
 {
-  raster::Palette* palette = m_paletteListBox.selectedPalette();
+  doc::Palette* palette = m_paletteListBox.selectedPalette();
   if (!palette)
     return;
 

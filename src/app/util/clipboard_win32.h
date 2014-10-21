@@ -18,7 +18,7 @@
 
 // included by clipboard.cpp
 
-#include "raster/color_scales.h"
+#include "doc/color_scales.h"
 #include "she/display.h"
 #include "she/system.h"
 #include "ui/alert.h"
@@ -33,7 +33,7 @@
 
 namespace {
 
-using namespace raster;
+using namespace doc;
 
 static uint32_t get_shift_from_mask(uint32_t mask)
 {

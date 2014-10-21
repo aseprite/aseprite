@@ -29,7 +29,7 @@
 #include "app/ui/status_bar.h"
 #include "base/connection.h"
 
-namespace raster {
+namespace doc {
   class Image;
 }
 

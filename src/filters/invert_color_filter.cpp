@@ -24,13 +24,13 @@
 
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/rgbmap.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/rgbmap.h"
 
 namespace filters {
 
-using namespace raster;
+using namespace doc;
 
 const char* InvertColorFilter::getName()
 {

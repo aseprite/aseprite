@@ -22,7 +22,7 @@
 
 #include "undo/modification.h"
 
-namespace raster {
+namespace doc {
   class Sprite;
 }
 
@@ -37,7 +37,7 @@ namespace app {
   class Document;
   class DocumentUndo;
 
-  using namespace raster;
+  using namespace doc;
 
   // High-level class to group a set of operations to modify the
   // document atomically, adding information in the undo history to

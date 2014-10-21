@@ -22,7 +22,7 @@
 
 #include "app/undoers/set_layer_flags.h"
 
-#include "raster/layer.h"
+#include "doc/layer.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

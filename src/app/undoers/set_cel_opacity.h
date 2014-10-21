@@ -23,14 +23,14 @@
 #include "app/undoers/undoer_base.h"
 #include "undo/object_id.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class Layer;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class SetCelOpacity : public UndoerBase {
@@ -42,7 +42,7 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_celId;
+      undo::ObjectId m_celId;
       uint8_t m_opacity;
     };
 

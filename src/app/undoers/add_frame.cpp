@@ -26,7 +26,7 @@
 #include "app/undoers/remove_frame.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 

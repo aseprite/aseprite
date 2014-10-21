@@ -21,17 +21,17 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "raster/frame_number.h"
+#include "doc/frame_number.h"
 #include "undo/object_id.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class LayerImage;
 }
 
 namespace app {
   namespace undoers {
-    using namespace raster;
+    using namespace doc;
     using namespace undo;
 
     class SetCelFrame : public UndoerBase {
@@ -43,8 +43,8 @@ namespace app {
       void revert(ObjectsContainer* objects, UndoersCollector* redoers) override;
 
     private:
-      ObjectId m_layerId;
-      ObjectId m_celId;
+      undo::ObjectId m_layerId;
+      undo::ObjectId m_celId;
       FrameNumber m_frame;
     };
 

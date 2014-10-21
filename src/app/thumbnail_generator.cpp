@@ -30,12 +30,12 @@
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
-#include "raster/conversion_she.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
-#include "raster/rotate.h"
-#include "raster/sprite.h"
+#include "doc/algorithm/rotate.h"
+#include "doc/conversion_she.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 #include "she/system.h"
 
 #define MAX_THUMBNAIL_SIZE              128
@@ -100,7 +100,7 @@ private:
         // Stretch the 'image'
         m_thumbnail.reset(Image::create(image->pixelFormat(), thumb_w, thumb_h));
         clear_image(m_thumbnail, 0);
-        image_scale(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
+        algorithm::scale_image(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
       }
 
       // Close file

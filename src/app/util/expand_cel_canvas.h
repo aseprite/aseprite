@@ -23,7 +23,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
 
-namespace raster {
+namespace doc {
   class Cel;
   class Image;
   class Layer;
@@ -36,7 +36,7 @@ namespace app {
   class UndoTransaction;
 
   using namespace filters;
-  using namespace raster;
+  using namespace doc;
 
   // This class can be used to expand the canvas of the current cel to
   // the visible portion of sprite. If the user cancels the operation,

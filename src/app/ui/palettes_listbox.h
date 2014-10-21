@@ -22,7 +22,7 @@
 
 #include "app/ui/resources_listbox.h"
 
-namespace raster {
+namespace doc {
   class Palette;
 }
 
@@ -32,9 +32,9 @@ namespace app {
   public:
     PalettesListBox();
 
-    raster::Palette* selectedPalette();
+    doc::Palette* selectedPalette();
 
-    Signal1<void, raster::Palette*> PalChange;
+    Signal1<void, doc::Palette*> PalChange;
 
   protected:
     virtual void onResourceChange(Resource* resource) override;

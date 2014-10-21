@@ -34,11 +34,11 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
 #include "app/util/render.h"
-#include "raster/conversion_she.h"
-#include "raster/image.h"
-#include "raster/palette.h"
-#include "raster/primitives.h"
-#include "raster/sprite.h"
+#include "doc/conversion_she.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
 #include "she/scoped_handle.h"
 #include "she/surface.h"
 #include "she/system.h"
@@ -49,7 +49,7 @@
 namespace app {
 
 using namespace ui;
-using namespace raster;
+using namespace doc;
 using namespace filters;
 
 class PreviewWindow : public Window {
@@ -207,7 +207,7 @@ protected:
     if (m_index_bg_color == -1)
       RenderEngine::renderCheckedBackground(m_doublebuf, -m_pos.x, -m_pos.y, m_zoom);
     else
-      raster::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
+      doc::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
 
     switch (m_tiled) {
       case TILED_NONE:
@@ -228,7 +228,7 @@ protected:
         break;
     }
 
-    raster::convert_image_to_surface(m_doublebuf, m_pal,
+    doc::convert_image_to_surface(m_doublebuf, m_pal,
       m_doublesur, 0, 0, 0, 0, m_doublebuf->width(), m_doublebuf->height());
     g->blit(m_doublesur, 0, 0, 0, 0, m_doublesur->width(), m_doublesur->height());
   }

@@ -24,8 +24,8 @@
 
 #include "app/document.h"
 #include "base/unique_ptr.h"
-#include "raster/mask.h"
-#include "raster/mask_io.h"
+#include "doc/mask.h"
+#include "doc/mask_io.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -39,7 +39,7 @@ SetMask::SetMask(ObjectsContainer* objects, Document* document)
   , m_isMaskVisible(document->isMaskVisible())
 {
   if (m_isMaskVisible)
-    raster::write_mask(m_stream, document->mask());
+    doc::write_mask(m_stream, document->mask());
 }
 
 void SetMask::dispose()
@@ -55,7 +55,7 @@ void SetMask::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   redoers->pushUndoer(new SetMask(objects, document));
 
   if (m_isMaskVisible) {
-    base::UniquePtr<Mask> mask(raster::read_mask(m_stream));
+    base::UniquePtr<Mask> mask(doc::read_mask(m_stream));
 
     document->setMask(mask);
 

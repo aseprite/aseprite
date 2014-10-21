@@ -33,7 +33,7 @@
 #include "app/load_widget.h"
 #include "base/file_handle.h"
 #include "base/memory.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "ui/ui.h"
 
 #include <csetjmp>

@@ -25,10 +25,10 @@
 #include "app/modules/palettes.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/palette.h"
-#include "raster/sprite.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
 
 namespace app {
 
@@ -90,19 +90,19 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
   return c;
 }
 
-raster::color_t color_utils::color_for_image(const app::Color& color, PixelFormat format)
+doc::color_t color_utils::color_for_image(const app::Color& color, PixelFormat format)
 {
   if (color.getType() == app::Color::MaskType)
     return 0;
 
-  raster::color_t c = -1;
+  doc::color_t c = -1;
 
   switch (format) {
     case IMAGE_RGB:
-      c = raster::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = raster::graya(color.getGray(), 255);
+      c = doc::graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
       c = color.getIndex();
@@ -112,24 +112,24 @@ raster::color_t color_utils::color_for_image(const app::Color& color, PixelForma
   return c;
 }
 
-raster::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
+doc::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
 {
   return color_for_target(color, ColorTarget(layer));
 }
 
-raster::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
+doc::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
 {
   if (color.getType() == app::Color::MaskType)
     return colorTarget.maskColor();
 
-  raster::color_t c = -1;
+  doc::color_t c = -1;
 
   switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:
-      c = raster::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = raster::graya(color.getGray(), 255);
+      c = doc::graya(color.getGray(), 255);
       break;
     case IMAGE_INDEXED:
       if (color.getType() == app::Color::IndexType) {

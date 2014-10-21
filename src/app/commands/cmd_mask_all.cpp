@@ -25,8 +25,8 @@
 #include "app/modules/gui.h"
 #include "app/undo_transaction.h"
 #include "app/undoers/set_mask.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
 
 namespace app {
 

@@ -24,14 +24,14 @@
 
 #include "app/undoers/add_cel.h"
 #include "app/undoers/object_io.h"
-#include "raster/sprite.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
 namespace app {
 namespace undoers {
 
-using namespace raster;
+using namespace doc;
 using namespace undo;
 
 RemapPalette::RemapPalette(ObjectsContainer* objects, Sprite* sprite,

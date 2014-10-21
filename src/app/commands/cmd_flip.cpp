@@ -33,13 +33,13 @@
 #include "app/undo_transaction.h"
 #include "app/util/range_utils.h"
 #include "gfx/size.h"
-#include "raster/algorithm/flip_image.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/layer.h"
-#include "raster/mask.h"
-#include "raster/sprite.h"
-#include "raster/stock.h"
+#include "doc/algorithm/flip_image.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/mask.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 
 namespace app {
 
@@ -49,7 +49,7 @@ FlipCommand::FlipCommand()
             CmdRecordableFlag)
 {
   m_flipMask = false;
-  m_flipType = raster::algorithm::FlipHorizontal;
+  m_flipType = doc::algorithm::FlipHorizontal;
 }
 
 void FlipCommand::onLoadParams(Params* params)
@@ -58,8 +58,8 @@ void FlipCommand::onLoadParams(Params* params)
   m_flipMask = (target == "mask");
 
   std::string orientation = params->get("orientation");
-  m_flipType = (orientation == "vertical" ? raster::algorithm::FlipVertical:
-                                            raster::algorithm::FlipHorizontal);
+  m_flipType = (orientation == "vertical" ? doc::algorithm::FlipVertical:
+                                            doc::algorithm::FlipHorizontal);
 }
 
 bool FlipCommand::onEnabled(Context* context)
@@ -77,10 +77,10 @@ void FlipCommand::onExecute(Context* context)
   {
     UndoTransaction undoTransaction(writer.context(),
                                     m_flipMask ?
-                                    (m_flipType == raster::algorithm::FlipHorizontal ?
+                                    (m_flipType == doc::algorithm::FlipHorizontal ?
                                      "Flip Horizontal":
                                      "Flip Vertical"):
-                                    (m_flipType == raster::algorithm::FlipHorizontal ?
+                                    (m_flipType == doc::algorithm::FlipHorizontal ?
                                      "Flip Canvas Horizontal":
                                      "Flip Canvas Vertical"));
 
@@ -132,10 +132,10 @@ void FlipCommand::onExecute(Context* context)
         if (!alreadyFlipped) {
           api.setCelPosition
             (sprite, cel,
-              (m_flipType == raster::algorithm::FlipHorizontal ?
+              (m_flipType == doc::algorithm::FlipHorizontal ?
                 sprite->width() - image->width() - cel->x():
                 cel->x()),
-              (m_flipType == raster::algorithm::FlipVertical ?
+              (m_flipType == doc::algorithm::FlipVertical ?
                 sprite->height() - image->height() - cel->y():
                 cel->y()));
 
@@ -149,7 +149,7 @@ void FlipCommand::onExecute(Context* context)
         // Create a flipped copy of the current mask.
         base::UniquePtr<Mask> newMask(new Mask(*mask));
         newMask->freeze();
-        raster::algorithm::flip_image(newMask->bitmap(),
+        doc::algorithm::flip_image(newMask->bitmap(),
           maskBitmap->bounds(), m_flipType);
         newMask->unfreeze();
 
@@ -171,10 +171,10 @@ void FlipCommand::onExecute(Context* context)
 
         api.setCelPosition
           (sprite, cel,
-           (m_flipType == raster::algorithm::FlipHorizontal ?
+           (m_flipType == doc::algorithm::FlipHorizontal ?
             sprite->width() - image->width() - cel->x():
             cel->x()),
-           (m_flipType == raster::algorithm::FlipVertical ?
+           (m_flipType == doc::algorithm::FlipVertical ?
             sprite->height() - image->height() - cel->y():
             cel->y()));
 

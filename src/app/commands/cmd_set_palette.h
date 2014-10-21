@@ -22,7 +22,7 @@
 
 #include "app/commands/command.h"
 
-namespace raster {
+namespace doc {
   class Palette;
 }
 
@@ -35,14 +35,14 @@ namespace app {
     SetPaletteCommand();
     Command* clone() const override { return new SetPaletteCommand(*this); }
 
-    void setPalette(raster::Palette* palette) { m_palette = palette; }
+    void setPalette(doc::Palette* palette) { m_palette = palette; }
     void setTarget(Target target) { m_target = target; }
 
   protected:
     virtual void onExecute(Context* context) override;
 
   private:
-    raster::Palette* m_palette;
+    doc::Palette* m_palette;
     Target m_target;
   };
 

@@ -25,7 +25,7 @@
 #include "app/color_utils.h"
 #include "app/document.h"
 #include "app/ini_file.h"
-#include "raster/raster.h"
+#include "doc/doc.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui_context.h"
@@ -576,7 +576,7 @@ void RenderEngine::renderLayer(
 
   switch (layer->type()) {
 
-    case OBJECT_LAYER_IMAGE: {
+    case ObjectType::LayerImage: {
       if ((!render_background  &&  layer->isBackground()) ||
           (!render_transparent && !layer->isBackground()))
         break;
@@ -617,7 +617,7 @@ void RenderEngine::renderLayer(
       break;
     }
 
-    case OBJECT_LAYER_FOLDER: {
+    case ObjectType::LayerFolder: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
       LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
