@@ -90,7 +90,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 
   base::UniquePtr<Layer> layer;
 
-  switch (layer_type) {
+  switch (static_cast<ObjectType>(layer_type)) {
 
     case ObjectType::LayerImage: {
       // Create layer
