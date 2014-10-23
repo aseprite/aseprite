@@ -262,6 +262,11 @@ std::string Color::toHumanReadableString(PixelFormat pixelFormat, HumanReadableS
         ASSERT(false);
         break;
     }
+
+    result << " #" << std::hex << std::setfill('0')
+           << std::setw(2) << getRed()
+           << std::setw(2) << getGreen()
+           << std::setw(2) << getBlue();
   }
   else if (humanReadable == ShortHumanReadableString) {
     switch (getType()) {
