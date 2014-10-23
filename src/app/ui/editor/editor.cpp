@@ -1017,8 +1017,15 @@ void Editor::updateQuicktool()
         return;
     }
 
+    // Hide the drawing cursor with the current tool brush size before
+    // we change the quicktool. In this way we avoid using the
+    // quicktool brush size to clean the current tool cursor.
+    hideDrawingCursor();
+
     tools::Tool* old_quicktool = m_quicktool;
     m_quicktool = m_customizationDelegate->getQuickTool(current_tool);
+
+    showDrawingCursor();
 
     // If the tool has changed, we must to update the status bar because
     // the new tool can display something different in the status bar (e.g. Eyedropper)
