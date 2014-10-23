@@ -687,7 +687,8 @@ bool MenuItem::onProcessMessage(Message* msg)
       // When a menu item receives the mouse, start a timer to open the submenu...
       if (isEnabled() && hasSubmenu()) {
         // Start the timer to open the submenu...
-        startTimer();
+        if (!inBar())
+          startTimer();
       }
       break;
 
@@ -721,7 +722,7 @@ bool MenuItem::onProcessMessage(Message* msg)
         // Menubox position
         Rect pos = window->getBounds();
 
-        if (this->getParent()->getParent()->type == kMenuBarWidget) {
+        if (inBar()) {
           pos.x = MID(0, getBounds().x, ui::display_w()-pos.w);
           pos.y = MID(0, getBounds().y2(), ui::display_h()-pos.h);
         }
@@ -870,15 +871,12 @@ void MenuItem::onClick()
 void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size size(0, 0);
-  bool bar = (getParent() &&
-    getParent()->getParent() &&
-    getParent()->getParent()->type == kMenuBarWidget);
 
   if (hasText()) {
     size.w =
       + this->border_width.l
       + getTextWidth()
-      + (bar ? this->child_spacing/4: this->child_spacing)
+      + (inBar() ? this->child_spacing/4: this->child_spacing)
       + this->border_width.r;
 
     size.h =
@@ -999,6 +997,14 @@ void Menu::highlightItem(MenuItem* menuitem, bool click, bool open_submenu, bool
 void Menu::unhighlightItem()
 {
   highlightItem(NULL, false, false, false);
+}
+
+bool MenuItem::inBar()
+{
+  return
+    (getParent() &&
+     getParent()->getParent() &&
+     getParent()->getParent()->type == kMenuBarWidget);
 }
 
 void MenuItem::openSubmenu(bool select_first)
