@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,6 +91,7 @@ FOR_EACH_COMMAND(RemoveLayer)
 FOR_EACH_COMMAND(RepeatLastExport)
 FOR_EACH_COMMAND(ReplaceColor)
 FOR_EACH_COMMAND(ReselectMask)
+FOR_EACH_COMMAND(ReverseFrames)
 FOR_EACH_COMMAND(Rotate)
 FOR_EACH_COMMAND(SaveFile)
 FOR_EACH_COMMAND(SaveFileAs)

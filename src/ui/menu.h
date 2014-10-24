@@ -55,8 +55,7 @@ namespace ui {
     friend class MenuItem;
   };
 
-  class MenuBox : public Widget
-  {
+  class MenuBox : public Widget {
   public:
     MenuBox(WidgetType type = kMenuBoxWidget);
     ~MenuBox();
@@ -86,14 +85,12 @@ namespace ui {
     friend class Menu;
   };
 
-  class MenuBar : public MenuBox
-  {
+  class MenuBar : public MenuBox {
   public:
     MenuBar();
   };
 
-  class MenuItem : public Widget
-  {
+  class MenuItem : public Widget {
   public:
     MenuItem(const std::string& text);
     ~MenuItem();
@@ -131,6 +128,7 @@ namespace ui {
     virtual void onClick();
 
   private:
+    bool inBar();
     void openSubmenu(bool select_first);
     void closeSubmenu(bool last_of_close_chain);
     void startTimer();

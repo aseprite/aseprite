@@ -764,3 +764,35 @@ TEST_F(DocRangeOps, CopyFrames) {
 TEST_F(DocRangeOps, CopyCels) {
   // TODO
 }
+
+TEST_F(DocRangeOps, ReverseFrames) {
+  reverse_frames(doc, frames_range(0, 0));
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  reverse_frames(doc, frames_range(1, 1));
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  reverse_frames(doc, frames_range(1, 2));
+  EXPECT_FRAME_ORDER(0, 2, 1, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  reverse_frames(doc, frames_range(0, 2));
+  EXPECT_FRAME_ORDER(2, 1, 0, 3);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  reverse_frames(doc, frames_range(1, 3));
+  EXPECT_FRAME_ORDER(0, 3, 2, 1);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+
+  reverse_frames(doc, frames_range(0, 3));
+  EXPECT_FRAME_ORDER(3, 2, 1, 0);
+  doc->getUndo()->doUndo();
+  EXPECT_FRAME_ORDER(0, 1, 2, 3);
+}
+
+TEST_F(DocRangeOps, ReverseCels) {
+  // TODO
+}

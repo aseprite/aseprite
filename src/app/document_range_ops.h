@@ -37,6 +37,8 @@ namespace app {
   DocumentRange move_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place);
   DocumentRange copy_range(Document* doc, const DocumentRange& from, const DocumentRange& to, DocumentRangePlace place);
 
+  void reverse_frames(Document* doc, const DocumentRange& range);
+
 } // namespace app
 
 #endif
