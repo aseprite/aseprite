@@ -341,4 +341,62 @@ DocumentRange copy_range(Document* doc, const DocumentRange& from, const Documen
   return drop_range_op(doc, Copy, from, place, to);
 }
 
+void reverse_frames(Document* doc, const DocumentRange& range)
+{
+  const app::Context* context = static_cast<app::Context*>(doc->context());
+  const ContextReader reader(context);
+  ContextWriter writer(reader);
+  UndoTransaction undo(writer.context(), "Reverse Frames");
+  DocumentApi api = doc->getApi();
+  Sprite* sprite = doc->sprite();
+  FrameNumber frameBegin, frameEnd;
+  int layerBegin, layerEnd;
+  bool moveFrames = false;
+
+  switch (range.type()) {
+    case DocumentRange::kCels:
+      frameBegin = range.frameBegin();
+      frameEnd = range.frameEnd();
+      layerBegin = range.layerBegin();
+      layerEnd = range.layerEnd() + 1;
+      break;
+    case DocumentRange::kFrames:
+      frameBegin = range.frameBegin();
+      frameEnd = range.frameEnd();
+      moveFrames = true;
+      break;
+    case DocumentRange::kLayers:
+      frameBegin = FrameNumber(0);
+      frameEnd = sprite->totalFrames().previous();
+      layerBegin = range.layerBegin();
+      layerEnd = range.layerEnd() + 1;
+      break;
+  }
+
+  if (moveFrames) {
+    for (FrameNumber frameRev = frameEnd.next();
+         frameRev > frameBegin;
+         frameRev = frameRev.previous()) {
+      api.moveFrame(sprite, frameBegin, frameRev);
+    }
+  }
+  else {
+    std::vector<Layer*> layers;
+    sprite->getLayersList(layers);
+
+    for (int layerIdx = layerBegin; layerIdx != layerEnd; ++layerIdx) {
+      for (FrameNumber frame = frameBegin,
+             frameRev = frameEnd;
+           frame != FrameNumber((frameBegin+frameEnd)/2).next();
+           frame = frame.next(),
+             frameRev = frameRev.previous()) {
+        LayerImage* layer = static_cast<LayerImage*>(layers[layerIdx]);
+        api.swapCel(layer, frame, frameRev);
+      }
+    }
+  }
+
+  undo.commit();
+}
+
 } // namespace app

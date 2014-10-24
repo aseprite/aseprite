@@ -66,6 +66,7 @@
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
       </key>
+      <key command="ReverseFrames" shortcut="Alt+I" />
       <key command="GotoFirstFrame" shortcut="Home" />
       <key command="GotoPreviousFrame" shortcut="Left" context="Normal" />
       <key command="GotoNextFrame" shortcut="Right" context="Normal" />
@@ -503,7 +504,7 @@
         <item command="CelProperties" text="&amp;Cel Properties..." />
         <separator />
         <item command="NewFrame" text="&amp;New Frame" />
-        <item command="NewFrame" text="&amp;New Empty Frame">
+        <item command="NewFrame" text="New &amp;Empty Frame">
           <param name="content" value="empty" />
         </item>
         <item command="RemoveFrame" text="&amp;Remove Frame" />
@@ -521,6 +522,7 @@
         <item command="FrameProperties" text="Constant Frame Rate">
           <param name="frame" value="all" />
         </item>
+        <item command="ReverseFrames" text="Re&amp;verse Frames" />
       </menu>
       <menu text="&amp;Palette">
         <item command="PaletteEditor" text="&amp;Palette Editor">
