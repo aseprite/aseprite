@@ -74,8 +74,15 @@ public:
     if (get_config_bool("Options", "AutoShowTimeline", true))
       autotimeline()->setSelected(true);
 
+    if (get_config_bool("Options", "ExpandMenuBarOnMouseover",
+        ui::MenuBar::expandOnMouseover()))
+      expandMenubarOnMouseover()->setSelected(true);
+
     if (m_settings->experimental()->useNativeCursor())
       nativeCursor()->setSelected(true);
+
+    if (m_settings->experimental()->flashLayer())
+      flashLayer()->setSelected(true);
 
     if (m_settings->getShowSpriteEditorScrollbars())
       showScrollbars()->setSelected(true);
@@ -143,6 +150,10 @@ public:
 
     set_config_bool("Options", "AutoShowTimeline", autotimeline()->isSelected());
 
+    bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
+    set_config_bool("Options", "ExpandMenuBarOnMouseover", expandOnMouseover);
+    ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
+
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
@@ -159,8 +170,9 @@ public:
     m_settings->setUndoSizeLimit(undo_size_limit_value);
     m_settings->setUndoGotoModified(undoGotoModified()->isSelected());
 
-    // Native cursor
+    // Experimental features
     m_settings->experimental()->setUseNativeCursor(nativeCursor()->isSelected());
+    m_settings->experimental()->setFlashLayer(flashLayer()->isSelected());
 
     int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {
@@ -223,6 +235,9 @@ OptionsCommand::OptionsCommand()
             "Options",
             CmdUIOnlyFlag)
 {
+  ui::MenuBar::setExpandOnMouseover(
+    get_config_bool("Options", "ExpandMenuBarOnMouseover",
+      ui::MenuBar::expandOnMouseover()));
 }
 
 void OptionsCommand::onExecute(Context* context)

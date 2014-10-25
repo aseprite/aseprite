@@ -145,7 +145,6 @@ static DocumentRange drop_range_op(
                    dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
               LayerImage* srcLayer = static_cast<LayerImage*>(layers[srcLayerIdx]);
               LayerImage* dstLayer = static_cast<LayerImage*>(layers[dstLayerIdx]);
-              color_t bgcolor = app_get_color_to_clear_layer(dstLayer);
 
               switch (op) {
                 case Move: api.moveCel(srcLayer, srcFrame, dstLayer, dstFrame); break;

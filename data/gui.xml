@@ -49,7 +49,8 @@
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
       <key command="ConfigureTools" shortcut="C" />
-      <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" />
+      <key command="Options" shortcut="Ctrl+K" mac="Cmd+," />
+      <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" /> <!-- TODO remove this shortcut in v1.1 -->
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
       <!-- Layer -->
@@ -433,8 +434,8 @@
           <item command="Despeckle" text="&amp;Despeckle (median filter)" />
         </menu>
         <separator />
-        <item command="ConfigureTools" text="Tool&amp;s" />
-        <item command="Options" text="&amp;Options" />
+        <item command="ConfigureTools" text="Tool&amp;s..." />
+        <item command="Options" text="Pre&amp;ferences..." />
       </menu>
       <menu text="&amp;Sprite">
         <item command="SpriteProperties" text="&amp;Properties..." />

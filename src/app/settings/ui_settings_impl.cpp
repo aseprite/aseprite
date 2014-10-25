@@ -512,6 +512,16 @@ void UISettingsImpl::setUseNativeCursor(bool state)
   ui::set_use_native_cursors(state);
 }
 
+bool UISettingsImpl::flashLayer() const
+{
+  return get_config_bool("Options", "FlashLayer", false);
+}
+
+void UISettingsImpl::setFlashLayer(bool state)
+{
+  set_config_bool("Options", "FlashLayer", state);
+}
+
 //////////////////////////////////////////////////////////////////////
 // IDocumentSettings implementation
 

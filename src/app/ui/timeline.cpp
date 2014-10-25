@@ -993,8 +993,6 @@ void Timeline::onAfterLayerChanged(Editor* editor)
 
 void Timeline::setCursor(ui::Message* msg, const gfx::Point& mousePos)
 {
-  int mx = mousePos.x - getBounds().x;
-
   // Scrolling.
   if (m_state == STATE_SCROLLING || m_scroll) {
     jmouse_set_cursor(kScrollCursor);

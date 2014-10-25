@@ -176,8 +176,12 @@ namespace app {
   class IExperimentalSettings {
   public:
     virtual ~IExperimentalSettings() { }
+
     virtual bool useNativeCursor() const = 0;
     virtual void setUseNativeCursor(bool state) = 0;
+
+    virtual bool flashLayer() const = 0;
+    virtual void setFlashLayer(bool state) = 0;
   };
 
 } // namespace app

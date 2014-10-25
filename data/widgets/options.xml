@@ -1,7 +1,7 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2014 by David Capello -->
 <gui>
-  <window id="options" text="Options">
+  <window id="options" text="Preferences">
   <vbox>
     <hbox>
       <view maxsize="true">
@@ -22,6 +22,7 @@
             <combobox id="screen_scale" />
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
+          <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
           <separator horizontal="true" />
           <link id="locate_file" text="Locate Configuration File" />
           <link id="locate_crash_folder" text="Locate Crash Folder" />
@@ -86,6 +87,7 @@
         <vbox id="section_experimental">
           <separator text="User Interface" horizontal="true" />
           <check id="native_cursor" text="Use native mouse cursor" />
+          <check id="flash_layer" text="Flash layer when it is selected" />
         </vbox>
 
       </panel>

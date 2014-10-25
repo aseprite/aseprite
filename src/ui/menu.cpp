@@ -123,6 +123,9 @@ static MenuItem* check_for_letter(Menu* menu, int ascii);
 static MenuItem* find_nextitem(Menu* menu, MenuItem* menuitem);
 static MenuItem* find_previtem(Menu* menu, MenuItem* menuitem);
 
+//////////////////////////////////////////////////////////////////////
+// Menu
+
 Menu::Menu()
   : Widget(kMenuWidget)
   , m_menuitem(NULL)
@@ -142,6 +145,9 @@ Menu::~Menu()
   }
 }
 
+//////////////////////////////////////////////////////////////////////
+// MenuBox
+
 MenuBox::MenuBox(WidgetType type)
  : Widget(type)
  , m_base(NULL)
@@ -160,11 +166,31 @@ MenuBox::~MenuBox()
   delete m_base;
 }
 
+//////////////////////////////////////////////////////////////////////
+// MenuBar
+
+bool MenuBar::m_expandOnMouseover = false;
+
 MenuBar::MenuBar()
   : MenuBox(kMenuBarWidget)
 {
   createBase();
 }
+
+// static
+bool MenuBar::expandOnMouseover()
+{
+  return m_expandOnMouseover;
+}
+
+// static
+void MenuBar::setExpandOnMouseover(bool state)
+{
+  m_expandOnMouseover = state;
+}
+
+//////////////////////////////////////////////////////////////////////
+// MenuItem
 
 MenuItem::MenuItem(const std::string& text)
   : Widget(kMenuItemWidget)
@@ -689,7 +715,7 @@ bool MenuItem::onProcessMessage(Message* msg)
       // When a menu item receives the mouse, start a timer to open the submenu...
       if (isEnabled() && hasSubmenu()) {
         // Start the timer to open the submenu...
-        if (!inBar())
+        if (!inBar() || MenuBar::expandOnMouseover())
           startTimer();
       }
       break;
