@@ -88,6 +88,12 @@ namespace ui {
   class MenuBar : public MenuBox {
   public:
     MenuBar();
+
+    static bool expandOnMouseover();
+    static void setExpandOnMouseover(bool state);
+
+  private:
+    static bool m_expandOnMouseover;
   };
 
   class MenuItem : public Widget {

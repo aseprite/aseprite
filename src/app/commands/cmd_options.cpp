@@ -74,6 +74,10 @@ public:
     if (get_config_bool("Options", "AutoShowTimeline", true))
       autotimeline()->setSelected(true);
 
+    if (get_config_bool("Options", "ExpandMenuBarOnMouseover",
+        ui::MenuBar::expandOnMouseover()))
+      expandMenubarOnMouseover()->setSelected(true);
+
     if (m_settings->experimental()->useNativeCursor())
       nativeCursor()->setSelected(true);
 
@@ -142,6 +146,10 @@ public:
     m_docSettings->setPixelGridColor(m_pixelGridColor->getColor());
 
     set_config_bool("Options", "AutoShowTimeline", autotimeline()->isSelected());
+
+    bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
+    set_config_bool("Options", "ExpandMenuBarOnMouseover", expandOnMouseover);
+    ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
@@ -223,6 +231,9 @@ OptionsCommand::OptionsCommand()
             "Options",
             CmdUIOnlyFlag)
 {
+  ui::MenuBar::setExpandOnMouseover(
+    get_config_bool("Options", "ExpandMenuBarOnMouseover",
+      ui::MenuBar::expandOnMouseover()));
 }
 
 void OptionsCommand::onExecute(Context* context)
