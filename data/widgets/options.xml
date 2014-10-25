@@ -1,7 +1,7 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2014 by David Capello -->
 <gui>
-  <window id="options" text="Options">
+  <window id="options" text="Preferences">
   <vbox>
     <hbox>
       <view maxsize="true">
