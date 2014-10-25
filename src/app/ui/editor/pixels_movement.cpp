@@ -53,7 +53,6 @@ PixelsMovement::PixelsMovement(Context* context,
   : m_reader(context)
   , m_document(document)
   , m_sprite(sprite)
-  , m_layer(layer)
   , m_undoTransaction(context, operationName)
   , m_firstDrop(true)
   , m_isDragging(false)

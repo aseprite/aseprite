@@ -246,7 +246,6 @@ void clipboard::paste()
 
   Document* dstDoc = editor->document();
   Sprite* dstSpr = dstDoc->sprite();
-  color_t bgcolor = 0;
 
   switch (get_current_format()) {
 

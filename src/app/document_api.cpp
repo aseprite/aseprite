@@ -708,6 +708,7 @@ void DocumentApi::moveCel(
   ASSERT(dstSprite != NULL);
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
+  (void)srcSprite;              // To avoid unused variable warning on Release mode
 
   clearCel(dstLayer, dstFrame);
   addEmptyFramesTo(dstSprite, dstFrame);
@@ -777,6 +778,7 @@ void DocumentApi::copyCel(
   ASSERT(dstSprite != NULL);
   ASSERT(srcFrame >= 0 && srcFrame < srcSprite->totalFrames());
   ASSERT(dstFrame >= 0);
+  (void)srcSprite;              // To avoid unused variable warning on Release mode
 
   clearCel(dstLayer, dstFrame);
   addEmptyFramesTo(dstSprite, dstFrame);
@@ -825,6 +827,7 @@ void DocumentApi::swapCel(
   ASSERT(sprite != NULL);
   ASSERT(frame1 >= 0 && frame1 < sprite->totalFrames());
   ASSERT(frame2 >= 0 && frame2 < sprite->totalFrames());
+  (void)sprite;              // To avoid unused variable warning on Release mode
 
   Cel* cel1 = layer->getCel(frame1);
   Cel* cel2 = layer->getCel(frame2);
@@ -933,7 +936,6 @@ void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h)
   if (!layer->isImage())
     return;
 
-  color_t bgcolor = bgColor(layer);
   Sprite* sprite = layer->sprite();
   CelIterator it = ((LayerImage*)layer)->getCelBegin();
   CelIterator end = ((LayerImage*)layer)->getCelEnd();

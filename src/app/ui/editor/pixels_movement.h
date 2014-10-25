@@ -112,7 +112,6 @@ namespace app {
     const ContextReader m_reader;
     Document* m_document;
     Sprite* m_sprite;
-    Layer* m_layer;
     UndoTransaction m_undoTransaction;
     bool m_firstDrop;
     bool m_isDragging;

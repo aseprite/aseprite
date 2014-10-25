@@ -65,7 +65,6 @@ void BackgroundFromLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
-  Sprite* sprite(writer.sprite());
 
   {
     UndoTransaction undo_transaction(writer.context(), "Background from Layer");
