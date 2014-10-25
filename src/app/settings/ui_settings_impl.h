@@ -83,6 +83,9 @@ namespace app {
     bool useNativeCursor() const override;
     void setUseNativeCursor(bool state) override;
 
+    bool flashLayer() const override;
+    void setFlashLayer(bool state) override;
+
     // IColorSwatchesStore implementation
 
     void addColorSwatches(app::ColorSwatches* colorSwatches) override;

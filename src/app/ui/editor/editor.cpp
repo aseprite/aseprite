@@ -674,39 +674,29 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
 void Editor::flashCurrentLayer()
 {
-#if 0                           // TODO this flash effect can be done
-                                // only with hardware acceleration.
-                                // Finish it when the
-                                // Allegro 5 port is ready.
+  if (!UIContext::instance()->settings()->experimental()->flashLayer())
+    return;
+
+  DocumentLocation loc = getDocumentLocation();
+
   int x, y;
-  const Image* src_image = m_sprite->getCurrentImage(&x, &y);
+  const Image* src_image = loc.image(&x, &y);
   if (src_image) {
     m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), 255);
     Image* flash_image = m_document->getExtraCelImage();
-    int u, v;
 
-    clear_image(flash_image, flash_image->mask_color);
-    for (v=0; v<flash_image->height(); ++v) {
-      for (u=0; u<flash_image->width(); ++u) {
-        if (u-x >= 0 && u-x < src_image->width() &&
-            v-y >= 0 && v-y < src_image->height()) {
-          uint32_t color = get_pixel(src_image, u-x, v-y);
-          if (color != src_image->mask_color) {
-            Color ccc = Color::fromRgb(255, 255, 255);
-            put_pixel(flash_image, u, v,
-                      color_utils::color_for_image(ccc, flash_image->imgtype));
-          }
-        }
-      }
-    }
+    clear_image(flash_image, flash_image->maskColor());
+    copy_image(flash_image, src_image, x, y);
+    m_document->setExtraCelBlendMode(BLEND_MODE_BLACKANDWHITE);
 
-    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
-    gui_flip_screen();
+    drawSpriteClipped(gfx::Region(
+        gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
+    gui_feedback();
 
-    clear_image(flash_image, flash_image->mask_color);
-    drawSpriteSafe(0, 0, m_sprite->width()-1, m_sprite->height()-1);
+    m_document->setExtraCelBlendMode(BLEND_MODE_NORMAL);
+    m_document->destroyExtraCel();
+    invalidate();
   }
-#endif
 }
 
 gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid_rgn)

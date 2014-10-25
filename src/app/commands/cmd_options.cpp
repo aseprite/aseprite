@@ -81,6 +81,9 @@ public:
     if (m_settings->experimental()->useNativeCursor())
       nativeCursor()->setSelected(true);
 
+    if (m_settings->experimental()->flashLayer())
+      flashLayer()->setSelected(true);
+
     if (m_settings->getShowSpriteEditorScrollbars())
       showScrollbars()->setSelected(true);
 
@@ -167,8 +170,9 @@ public:
     m_settings->setUndoSizeLimit(undo_size_limit_value);
     m_settings->setUndoGotoModified(undoGotoModified()->isSelected());
 
-    // Native cursor
+    // Experimental features
     m_settings->experimental()->setUseNativeCursor(nativeCursor()->isSelected());
+    m_settings->experimental()->setFlashLayer(flashLayer()->isSelected());
 
     int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {
