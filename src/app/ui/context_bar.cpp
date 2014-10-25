@@ -38,6 +38,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/scoped_value.h"
 #include "base/unique_ptr.h"
 #include "raster/brush.h"
 #include "raster/conversion_she.h"
@@ -62,6 +63,8 @@ using namespace app::skin;
 using namespace gfx;
 using namespace ui;
 using namespace tools;
+
+static bool g_updatingFromTool = false;
 
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
@@ -184,6 +187,8 @@ public:
 private:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -205,6 +210,8 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -230,6 +237,8 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -334,6 +343,8 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -351,6 +362,8 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -368,6 +381,8 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
+    if (g_updatingFromTool)
+      return;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -841,6 +856,8 @@ void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 
 void ContextBar::updateFromTool(tools::Tool* tool)
 {
+  base::ScopedValue<bool> lockFlag(g_updatingFromTool, true, false);
+
   ISettings* settings = UIContext::instance()->settings();
   IToolSettings* toolSettings = settings->getToolSettings(tool);
   IBrushSettings* brushSettings = toolSettings->getBrush();
