@@ -157,10 +157,13 @@ static void save_gui_config();
 
 static KeyContext get_current_keycontext()
 {
-  DocumentLocation location = UIContext::instance()->activeLocation();
-  Document* document = location.document();
+  app::Context* ctx = UIContext::instance();
+  DocumentLocation location = ctx->activeLocation();
+  Document* doc = location.document();
 
-  if (document && document->isMaskVisible())
+  if (doc &&
+      doc->isMaskVisible() &&
+      ctx->settings()->getCurrentTool()->getInk(0)->isSelection())
     return KeyContext::Selection;
   else
     return KeyContext::Normal;
