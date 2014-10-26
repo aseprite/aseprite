@@ -67,6 +67,33 @@ protected:
   }
 };
 
+class ShowPixelGridCommand : public Command {
+public:
+  ShowPixelGridCommand()
+    : Command("ShowPixelGrid",
+              "Show Pixel Grid",
+              CmdUIOnlyFlag)
+  {
+  }
+
+  Command* clone() const override { return new ShowPixelGridCommand(*this); }
+
+protected:
+  bool onChecked(Context* context)
+  {
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
+
+    return docSettings->getPixelGridVisible();
+  }
+
+  void onExecute(Context* context)
+  {
+    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
+
+    docSettings->setPixelGridVisible(docSettings->getPixelGridVisible() ? false: true);
+  }
+};
+
 class SnapToGridCommand : public Command {
 public:
   SnapToGridCommand()
@@ -156,6 +183,11 @@ void GridSettingsCommand::onExecute(Context* context)
 Command* CommandFactory::createShowGridCommand()
 {
   return new ShowGridCommand;
+}
+
+Command* CommandFactory::createShowPixelGridCommand()
+{
+  return new ShowPixelGridCommand;
 }
 
 Command* CommandFactory::createSnapToGridCommand()
