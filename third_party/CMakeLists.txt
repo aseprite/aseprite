@@ -43,3 +43,7 @@ endif()
 if(ENABLE_WEBSERVER)
   add_subdirectory(mongoose)
 endif()
+
+if(NOT USE_SHARED_PIXMAN)
+  add_subdirectory(pixman-cmake)
+endif()

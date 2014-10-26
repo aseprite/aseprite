@@ -20,24 +20,22 @@ namespace gfx {
 
   namespace details {
 
+#ifdef PIXMAN_VERSION_MAJOR
+    typedef struct pixman_box32 Box;
+    typedef struct pixman_region32 Region;
+#else
     struct Box {
-      int x1, y1, x2, y2;
+      int32_t x1, y1, x2, y2;
 
       operator Rect() const {
         return Rect(x1, y1, x2-x1, y2-y1);
       }
     };
-
-    struct RegionData {
-      long size;
-      long numRects;
-      // From here this struct has an array of rectangles (Box[size])
-    };
-
     struct Region {
       Box extents;
-      RegionData* data;
+      void* data;
     };
+#endif
 
     template<typename T>
     class RegionIterator : public std::iterator<std::forward_iterator_tag, T> {
@@ -83,7 +81,7 @@ namespace gfx {
     const_iterator end() const;
 
     bool isEmpty() const;
-    Rect getBounds() const;
+    Rect bounds() const;
     size_t size() const;
 
     void clear();

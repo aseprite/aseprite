@@ -123,6 +123,18 @@ else()
   include_directories(${LOADPNG_DIR})
 endif()
 
+if(USE_SHARED_PIXMAN)
+  find_library(LIBPIXMAN_LIBRARY NAMES pixman)
+  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h)
+
+  set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
+  include_directories(${LIBPIXMAN_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} pixman)
+  include_directories(${PIXMAN_DIR}/pixman)
+  include_directories(${CMAKE_BINARY_DIR})
+endif()
+
 ######################################################################
 # Add C++11 support only for our code (avoid Allegro)
 
