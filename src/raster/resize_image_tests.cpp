@@ -1,8 +1,20 @@
-// Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
-//
-// This file is released under the terms of the MIT license.
-// Read LICENSE.txt for more information.
+/* Aseprite
+ * Copyright (C) 2001-2014  David Capello
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -10,16 +22,15 @@
 
 #include <gtest/gtest.h>
 
+#include "raster/algorithm/resize_image.h"
 #include "raster/color.h"
 #include "raster/image.h"
-#include "raster/algorithm/resize_image.h"
+#include "raster/primitives.h"
 
 using namespace std;
 using namespace raster;
 
-/***************************
- * Test dat
- */
+// Test data
 
 // Base image
 color_t test_image_base_3x3[9] =
@@ -67,43 +78,27 @@ Image* create_image_from_data(PixelFormat format, color_t* data, int width, int 
   return new_image;
 }
 
-// Simple pixel to pixel image comparison
-bool compare_images(Image* a, Image* b)
-{
-  for (int y = 0; y < a->height(); y++) {
-    for (int x = 0; x < a->width(); x++) {
-      if (!(a->getPixel(x, y) == b->getPixel(x, y)))
-        return false;
-    }
-  }
-  return true;
-}
-
 TEST(ResizeImage, NearestNeighborInterp)
 {
   Image* src = create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3);
+  Image* dst_expected = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
+
   Image* dst = Image::create(IMAGE_RGB, 9, 9);
-
-  // Pre-rendered test image for comparison
-  Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
-
   algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL);
 
-  ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
+  ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
 }
 
 #if 0                           // TODO complete this test
 TEST(ResizeImage, BilinearInterpRGBType)
 {
   Image* src = create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3);
+  Image* dst_expected = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_bilinear, 9, 9);
+
   Image* dst = Image::create(IMAGE_RGB, 9, 9);
-
-  // Pre-rendered test image for comparison
-  Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_bilinear, 9, 9);
-
   algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_BILINEAR, NULL, NULL);
 
-  ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
+  ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
 }
 #endif
 
