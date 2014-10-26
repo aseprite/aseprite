@@ -2,6 +2,10 @@
 
 add_definitions(-DHAVE_CONFIG_H)
 
+if(UNIX OR APPLE)
+  add_definitions(-DHAVE_PTHREADS)
+endif()
+
 set(PIXMAN_VERSION_MAJOR 0)
 set(PIXMAN_VERSION_MINOR 32)
 set(PIXMAN_VERSION_MICRO 6)
