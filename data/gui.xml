@@ -550,6 +550,7 @@
         <item command="SplitEditorVertically" text="Split &amp;Vertically" />
         <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
         <separator />
+        <item command="ShowPixelGrid" text="Show &amp;Pixel Grid" />
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
