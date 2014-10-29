@@ -33,6 +33,7 @@
 #include "app/tools/tool.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -362,10 +363,10 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   std::string text = tool->getText();
 
   // Tool shortcut
-  Accelerator* accel = get_accel_to_change_tool(tool);
-  if (accel) {
+  Key* key = KeyboardShortcuts::instance()->tool(tool);
+  if (key && !key->accels().empty()) {
     text += ", Shortcut: ";
-    text += accel->toString();
+    text += key->accels().front().toString();
   }
 
   // Set text

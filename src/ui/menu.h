@@ -15,7 +15,6 @@
 
 namespace ui {
 
-  class Accelerator;
   class MenuItem;
   class Timer;
   struct MenuBaseData;
@@ -104,9 +103,6 @@ namespace ui {
     Menu* getSubmenu();
     void setSubmenu(Menu* submenu);
 
-    Accelerator* getAccel();
-    void setAccel(Accelerator* accel);
-
     bool isHighlighted() const;
     void setHighlighted(bool state);
 
@@ -133,15 +129,15 @@ namespace ui {
     virtual void onPreferredSize(PreferredSizeEvent& ev) override;
     virtual void onClick();
 
-  private:
     bool inBar();
+
+  private:
     void openSubmenu(bool select_first);
     void closeSubmenu(bool last_of_close_chain);
     void startTimer();
     void stopTimer();
     void executeClick();
 
-    Accelerator* m_accel;         // Hot-key
     bool m_highlighted;           // Is it highlighted?
     Menu* m_submenu;              // The sub-menu
     MenuBox* m_submenu_menubox;   // The opened menubox for this menu-item

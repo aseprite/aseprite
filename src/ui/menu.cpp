@@ -195,7 +195,6 @@ void MenuBar::setExpandOnMouseover(bool state)
 MenuItem::MenuItem(const std::string& text)
   : Widget(kMenuItemWidget)
 {
-  m_accel = NULL;
   m_highlighted = false;
   m_submenu = NULL;
   m_submenu_menubox = NULL;
@@ -206,11 +205,7 @@ MenuItem::MenuItem(const std::string& text)
 
 MenuItem::~MenuItem()
 {
-  if (m_accel)
-    delete m_accel;
-
-  if (m_submenu)
-    delete m_submenu;
+  delete m_submenu;
 }
 
 Menu* MenuBox::getMenu()
@@ -231,11 +226,6 @@ MenuBaseData* MenuBox::createBase()
 Menu* MenuItem::getSubmenu()
 {
   return m_submenu;
-}
-
-Accelerator* MenuItem::getAccel()
-{
-  return m_accel;
 }
 
 void MenuBox::setMenu(Menu* menu)
@@ -260,21 +250,6 @@ void MenuItem::setSubmenu(Menu* menu)
     ASSERT_VALID_WIDGET(m_submenu);
     m_submenu->setOwnerMenuItem(this);
   }
-}
-
-/**
- * Changes the keyboard shortcuts (accelerators) for the specified
- * widget (a menu-item).
- *
- * @warning The specified @a accel will be freed automatically when
- *          the menu-item is deleted.
- */
-void MenuItem::setAccel(Accelerator* accel)
-{
-  if (m_accel)
-    delete m_accel;
-
-  m_accel = accel;
 }
 
 bool MenuItem::isHighlighted() const
@@ -909,10 +884,6 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
       + this->border_width.t
       + getTextHeight()
       + this->border_width.b;
-
-    if (m_accel && !m_accel->isEmpty()) {
-      size.w += Graphics::measureUIStringLength(m_accel->toString().c_str(), getFont());
-    }
   }
 
   ev.setPreferredSize(size);

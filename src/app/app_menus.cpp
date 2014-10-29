@@ -28,13 +28,15 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/gui_xml.h"
-#include "app/modules/gui.h"
 #include "app/recent_files.h"
+#include "app/resource_finder.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/app_menuitem.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/util/filetoks.h"
 #include "base/bind.h"
+#include "base/fs.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"
@@ -74,9 +76,8 @@ void AppMenus::reload()
   TiXmlHandle handle(doc);
   const char* path = GuiXml::instance()->filename();
 
-  /**************************************************/
-  /* load menus                                     */
-  /**************************************************/
+  ////////////////////////////////////////
+  // Load menus
 
   PRINTF(" - Loading menus from \"%s\"...\n", path);
 
@@ -94,127 +95,25 @@ void AppMenus::reload()
   m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
 
-  /**************************************************/
-  /* load keyboard shortcuts for commands           */
-  /**************************************************/
+  ////////////////////////////////////////
+  // Load keyboard shortcuts for commands
 
   PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
 
-  // <gui><keyboard><commands><key>
   TiXmlElement* xmlKey = handle
     .FirstChild("gui")
-    .FirstChild("keyboard")
-    .FirstChild("commands")
-    .FirstChild("key").ToElement();
-  while (xmlKey) {
-    const char* command_name = xmlKey->Attribute("command");
-    const char* command_key = getShortcut(xmlKey);
+    .FirstChild("keyboard").ToElement();
 
-    if (command_name && command_key) {
-      Command* command = CommandsModule::instance()->getCommandByName(command_name);
-      if (command) {
-        // Read context
-        KeyContext keycontext = KeyContext::Any;
-        const char* keycontextstr = xmlKey->Attribute("context");
-        if (keycontextstr) {
-          if (strcmp(keycontextstr, "Selection") == 0)
-            keycontext = KeyContext::Selection;
-          else if (strcmp(keycontextstr, "Normal") == 0)
-            keycontext = KeyContext::Normal;
-        }
+  KeyboardShortcuts::instance()->clear();
+  KeyboardShortcuts::instance()->importFile(xmlKey, KeySource::Original);
 
-        // Read params
-        Params params;
-
-        TiXmlElement* xmlParam = xmlKey->FirstChildElement("param");
-        while (xmlParam) {
-          const char* param_name = xmlParam->Attribute("name");
-          const char* param_value = xmlParam->Attribute("value");
-
-          if (param_name && param_value)
-            params.set(param_name, param_value);
-
-          xmlParam = xmlParam->NextSiblingElement();
-        }
-
-        bool first_shortcut =
-          (get_accel_to_execute_command(command_name, &params) == NULL);
-
-        PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
-
-        // add the keyboard shortcut to the command
-        Accelerator* accel =
-          add_keyboard_shortcut_to_execute_command(command_key, command_name, &params, keycontext);
-
-        // add the shortcut to the menuitems with this
-        // command (this is only visual, the "manager_msg_proc"
-        // is the only one that process keyboard shortcuts)
-        if (first_shortcut)
-          applyShortcutToMenuitemsWithCommand(m_rootMenu, command, &params, accel);
-      }
-    }
-
-    xmlKey = xmlKey->NextSiblingElement();
-  }
-
-  // Load keyboard shortcuts for tools
-  PRINTF(" - Loading tools keyboard shortcuts from \"%s\"...\n", path);
-  // <gui><keyboard><tools><key>
-  xmlKey = handle
-    .FirstChild("gui")
-    .FirstChild("keyboard")
-    .FirstChild("tools")
-    .FirstChild("key").ToElement();
-  while (xmlKey) {
-    const char* tool_id = xmlKey->Attribute("tool");
-    const char* tool_key = getShortcut(xmlKey);
-
-    if (tool_id && tool_key) {
-      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
-      if (tool) {
-        PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
-        add_keyboard_shortcut_to_change_tool(tool_key, tool);
-      }
-    }
-    xmlKey = xmlKey->NextSiblingElement();
-  }
-
-  // Load keyboard shortcuts for quicktools
-  // <gui><keyboard><quicktools><key>
-  xmlKey = handle
-    .FirstChild("gui")
-    .FirstChild("keyboard")
-    .FirstChild("quicktools")
-    .FirstChild("key").ToElement();
-  while (xmlKey) {
-    const char* tool_id = xmlKey->Attribute("tool");
-    const char* tool_key = getShortcut(xmlKey);
-    if (tool_id && tool_key) {
-      tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
-      if (tool) {
-        PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
-        add_keyboard_shortcut_to_quicktool(tool_key, tool);
-      }
-    }
-    xmlKey = xmlKey->NextSiblingElement();
-  }
-
-  // Load special keyboard shortcuts for sprite editor customization
-  // <gui><keyboard><spriteeditor>
-  xmlKey = handle
-    .FirstChild("gui")
-    .FirstChild("keyboard")
-    .FirstChild("spriteeditor")
-    .FirstChild("key").ToElement();
-  while (xmlKey) {
-    const char* tool_action = xmlKey->Attribute("action");
-    const char* tool_key = getShortcut(xmlKey);
-
-    if (tool_action && tool_key) {
-      PRINTF(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
-      add_keyboard_shortcut_to_spriteeditor(tool_key, tool_action);
-    }
-    xmlKey = xmlKey->NextSiblingElement();
+  // Load user settings
+  {
+    ResourceFinder rf;
+    rf.includeUserDir("user.aseprite-keys");
+    std::string fn = rf.getFirstOrCreateDefault();
+    if (base::is_file(fn))
+      KeyboardShortcuts::instance()->importFile(fn, KeySource::UserDefined);
   }
 }
 
@@ -377,7 +276,12 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   return menuitem;
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command, Params* params, Accelerator* accel)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, Params* params, Key* key)
+{
+  applyShortcutToMenuitemsWithCommand(m_rootMenu, command, params, key);
+}
+
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Key* key)
 {
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
@@ -393,32 +297,14 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command *command,
           ustricmp(mi_command->short_name(), command->short_name()) == 0 &&
           ((mi_params && *mi_params == *params) ||
            (Params() == *params))) {
-        // Set the accelerator to be shown in this menu-item
-        menuitem->setAccel(new Accelerator(*accel));
+        // Set the keyboard shortcut to be shown in this menu-item
+        menuitem->setKey(key);
       }
 
       if (Menu* submenu = menuitem->getSubmenu())
-        applyShortcutToMenuitemsWithCommand(submenu, command, params, accel);
+        applyShortcutToMenuitemsWithCommand(submenu, command, params, key);
     }
   }
-}
-
-const char* AppMenus::getShortcut(TiXmlElement* elem)
-{
-  const char* shortcut = NULL;
-
-#if defined ALLEGRO_WINDOWS
-  if (!shortcut) shortcut = elem->Attribute("win");
-#elif defined ALLEGRO_MACOSX
-  if (!shortcut) shortcut = elem->Attribute("mac");
-#elif defined ALLEGRO_UNIX
-  if (!shortcut) shortcut = elem->Attribute("linux");
-#endif
-
-  if (!shortcut)
-    shortcut = elem->Attribute("shortcut");
-
-  return shortcut;
 }
 
 } // namespace app

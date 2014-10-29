@@ -29,12 +29,6 @@
 #include <string>
 #include <vector>
 
-namespace ui {
-  class MenuBar;
-  class Widget;
-  class Window;
-}
-
 namespace raster {
   class Layer;
 }

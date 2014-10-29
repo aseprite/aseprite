@@ -25,7 +25,7 @@
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
-#include "app/modules/gui.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "ui/ui.h"
 
@@ -74,19 +74,14 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   if (oldMode == MainWindow::NormalMode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
-    Accelerator* accel = get_accel_to_execute_command(short_name());
-    if (accel != NULL) {
-      char warning[1024];
-      char buf[1024];
-
+    Key* key = KeyboardShortcuts::instance()->command(short_name());
+    if (!key->accels().empty()) {
       base::UniquePtr<Window> window(app::load_widget<Window>("advanced_mode.xml", "advanced_mode_warning"));
       Widget* warning_label = app::find_widget<Widget>(window, "warning_label");
       Widget* donot_show = app::find_widget<Widget>(window, "donot_show");
 
-      strcpy(warning, "You can back pressing the \"%s\" key.");
-      std::sprintf(buf, warning, accel->toString().c_str());
-
-      warning_label->setText(buf);
+      warning_label->setTextf("You can go back pressing \"%s\" key.",
+        key->accels().front().toString().c_str());
 
       window->openWindowInForeground();
 

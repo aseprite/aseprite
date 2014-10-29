@@ -36,6 +36,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
@@ -63,18 +64,11 @@
 #include <list>
 #include <vector>
 
+
 #ifdef ALLEGRO_WINDOWS
 #include <winalleg.h>
 
 #endif
-
-#define SPRITEDITOR_ACTION_COPYSELECTION        "CopySelection"
-#define SPRITEDITOR_ACTION_SNAPTOGRID           "SnapToGrid"
-#define SPRITEDITOR_ACTION_ANGLESNAP            "AngleSnap"
-#define SPRITEDITOR_ACTION_MAINTAINASPECTRATIO  "MaintainAspectRatio"
-#define SPRITEDITOR_ACTION_LOCKAXIS             "LockAxis"
-#define SPRITEDITOR_ACTION_ADDSEL               "AddSelection"
-#define SPRITEDITOR_ACTION_SUBSEL               "SubtractSelection"
 
 namespace app {
 
@@ -95,38 +89,6 @@ static struct {
 
 //////////////////////////////////////////////////////////////////////
 
-struct Shortcut {
-  enum class Type {
-    ExecuteCommand,
-    ChangeTool,
-    EditorQuicktool,
-    SpriteEditor
-  };
-
-  Accelerator* accel;
-  Type type;
-  Command* command;
-  KeyContext keycontext;
-  tools::Tool* tool;
-  std::string action;
-  Params* params;
-
-  Shortcut(Type type);
-  ~Shortcut();
-
-  void add_shortcut(const char* shortcut_string);
-  bool is_pressed(Message* msg);
-  bool is_pressed_from_key_array();
-
-};
-
-static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params);
-static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool);
-static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool);
-static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name);
-
-//////////////////////////////////////////////////////////////////////
-
 class CustomizedGuiManager : public Manager
                            , public LayoutIO
 {
@@ -144,8 +106,6 @@ static she::Clipboard* main_clipboard = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
 
-static std::vector<Shortcut*>* shortcuts = NULL;
-
 // Default GUI screen configuration
 static int screen_scaling;
 
@@ -155,25 +115,9 @@ static void reload_default_font();
 static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
 
-static KeyContext get_current_keycontext()
-{
-  app::Context* ctx = UIContext::instance();
-  DocumentLocation location = ctx->activeLocation();
-  Document* doc = location.document();
-
-  if (doc &&
-      doc->isMaskVisible() &&
-      ctx->settings()->getCurrentTool()->getInk(0)->isSelection())
-    return KeyContext::Selection;
-  else
-    return KeyContext::Normal;
-}
-
 // Initializes GUI.
 int init_module_gui()
 {
-  shortcuts = new std::vector<Shortcut*>;
-
   int w, h;
   bool maximized;
   load_gui_config(w, h, maximized);
@@ -232,13 +176,6 @@ int init_module_gui()
 void exit_module_gui()
 {
   save_gui_config();
-
-  // destroy shortcuts
-  ASSERT(shortcuts != NULL);
-  for (Shortcut* shortcut : *shortcuts)
-    delete shortcut;
-  delete shortcuts;
-  shortcuts = NULL;
 
   delete manager;
 
@@ -470,295 +407,6 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Keyboard shortcuts
-//////////////////////////////////////////////////////////////////////
-
-Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut_string,
-  const char* command_name, Params* params, KeyContext keyContext)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
-  if (!shortcut) {
-    shortcut = new Shortcut(Shortcut::Type::ExecuteCommand);
-    shortcut->command = CommandsModule::instance()->getCommandByName(command_name);
-    shortcut->params = params ? params->clone(): new Params;
-    shortcut->keycontext = keyContext;
-    shortcuts->push_back(shortcut);
-  }
-  shortcut->add_shortcut(shortcut_string);
-  return shortcut->accel;
-}
-
-Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut_string, tools::Tool* tool)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
-  if (!shortcut) {
-    shortcut = new Shortcut(Shortcut::Type::ChangeTool);
-    shortcut->tool = tool;
-
-    shortcuts->push_back(shortcut);
-  }
-
-  shortcut->add_shortcut(shortcut_string);
-  return shortcut->accel;
-}
-
-Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut_string, tools::Tool* tool)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(tool);
-  if (!shortcut) {
-    shortcut = new Shortcut(Shortcut::Type::EditorQuicktool);
-    shortcut->tool = tool;
-
-    shortcuts->push_back(shortcut);
-  }
-
-  shortcut->add_shortcut(shortcut_string);
-  return shortcut->accel;
-}
-
-Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut_string, const char* action_name)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(action_name);
-  if (!shortcut) {
-    shortcut = new Shortcut(Shortcut::Type::SpriteEditor);
-    shortcut->action = action_name;
-
-    shortcuts->push_back(shortcut);
-  }
-
-  shortcut->add_shortcut(shortcut_string);
-  return shortcut->accel;
-}
-
-bool get_command_from_key_message(Message* msg, Command** command, Params** params)
-{
-  for (Shortcut* shortcut : *shortcuts) {
-    if (shortcut->type == Shortcut::Type::ExecuteCommand &&
-        shortcut->is_pressed(msg)) {
-      if (command) *command = shortcut->command;
-      if (params) *params = shortcut->params;
-      return true;
-    }
-  }
-  return false;
-}
-
-Accelerator* get_accel_to_execute_command(const char* command_name, Params* params)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_command(command_name, params);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_change_tool(tools::Tool* tool)
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_tool(tool);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_copy_selection()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_COPYSELECTION);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_snap_to_grid()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_SNAPTOGRID);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_angle_snap()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_ANGLESNAP);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_maintain_aspect_ratio()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_MAINTAINASPECTRATIO);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_lock_axis()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_LOCKAXIS);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_add_selection()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_ADDSEL);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-Accelerator* get_accel_to_subtract_selection()
-{
-  Shortcut* shortcut = get_keyboard_shortcut_for_spriteeditor(SPRITEDITOR_ACTION_SUBSEL);
-  if (shortcut)
-    return shortcut->accel;
-  else
-    return NULL;
-}
-
-tools::Tool* get_selected_quicktool(tools::Tool* currentTool)
-{
-  if (currentTool && currentTool->getInk(0)->isSelection()) {
-    Accelerator* copyselection_accel = get_accel_to_copy_selection();
-    if (copyselection_accel && copyselection_accel->checkFromAllegroKeyArray())
-      return NULL;
-  }
-
-  tools::ToolBox* toolbox = App::instance()->getToolBox();
-
-  // Iterate over all tools
-  for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-    Shortcut* shortcut = get_keyboard_shortcut_for_quicktool(*it);
-
-    // Collect all tools with the pressed keyboard-shortcut
-    if (shortcut && shortcut->is_pressed_from_key_array()) {
-      return *it;
-    }
-  }
-
-  return NULL;
-}
-
-Shortcut::Shortcut(Shortcut::Type type)
-{
-  this->type = type;
-  this->accel = new Accelerator;
-  this->command = NULL;
-  this->keycontext = KeyContext::Any;
-  this->tool = NULL;
-  this->params = NULL;
-}
-
-Shortcut::~Shortcut()
-{
-  delete params;
-  delete accel;
-}
-
-void Shortcut::add_shortcut(const char* shortcut_string)
-{
-  this->accel->addKeysFromString(shortcut_string);
-}
-
-bool Shortcut::is_pressed(Message* msg)
-{
-  bool res = false;
-
-  if (accel) {
-    res = accel->check(msg->keyModifiers(),
-      static_cast<KeyMessage*>(msg)->scancode(),
-      static_cast<KeyMessage*>(msg)->unicodeChar());
-
-    if (res &&
-        keycontext != KeyContext::Any &&
-        keycontext != get_current_keycontext()) {
-      res = false;
-    }
-  }
-
-  return res;
-}
-
-bool Shortcut::is_pressed_from_key_array()
-{
-  bool res = false;
-
-  if (accel) {
-    res = accel->checkFromAllegroKeyArray();
-
-    if (res &&
-        keycontext != KeyContext::Any &&
-        keycontext != get_current_keycontext()) {
-      res = false;
-    }
-  }
-
-  return res;
-}
-
-static Shortcut* get_keyboard_shortcut_for_command(const char* command_name, Params* params)
-{
-  Command* command = CommandsModule::instance()->getCommandByName(command_name);
-  if (!command)
-    return NULL;
-
-  for (Shortcut* shortcut : *shortcuts) {
-    if (shortcut->type == Shortcut::Type::ExecuteCommand &&
-        shortcut->command == command &&
-        ((!params && shortcut->params->empty()) ||
-         (params && *shortcut->params == *params))) {
-      return shortcut;
-    }
-  }
-
-  return NULL;
-}
-
-static Shortcut* get_keyboard_shortcut_for_tool(tools::Tool* tool)
-{
-  for (Shortcut* shortcut : *shortcuts) {
-    if (shortcut->type == Shortcut::Type::ChangeTool &&
-        shortcut->tool == tool) {
-      return shortcut;
-    }
-  }
-
-  return NULL;
-}
-
-static Shortcut* get_keyboard_shortcut_for_quicktool(tools::Tool* tool)
-{
-  for (Shortcut* shortcut : *shortcuts) {
-    if (shortcut->type == Shortcut::Type::EditorQuicktool &&
-        shortcut->tool == tool) {
-      return shortcut;
-    }
-  }
-
-  return NULL;
-}
-
-static Shortcut* get_keyboard_shortcut_for_spriteeditor(const char* action_name)
-{
-  for (Shortcut* shortcut : *shortcuts) {
-    if (shortcut->type == Shortcut::Type::SpriteEditor &&
-        shortcut->action == action_name) {
-      return shortcut;
-    }
-  }
-
-  return NULL;
-}
-
 // Manager event handler.
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
@@ -809,26 +457,24 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
         break;
       }
 
-      for (Shortcut* shortcut : *shortcuts) {
-        if (shortcut->is_pressed(msg)) {
+      for (const Key* key : *KeyboardShortcuts::instance()) {
+        if (key->isPressed(msg)) {
           // Cancel menu-bar loops (to close any popup menu)
           App::instance()->getMainWindow()->getMenuBar()->cancelMenuLoop();
 
-          switch (shortcut->type) {
+          switch (key->type()) {
 
-            case Shortcut::Type::ChangeTool: {
+            case KeyType::Tool: {
               tools::Tool* current_tool = UIContext::instance()->settings()->getCurrentTool();
-              tools::Tool* select_this_tool = shortcut->tool;
+              tools::Tool* select_this_tool = key->tool();
               tools::ToolBox* toolbox = App::instance()->getToolBox();
               std::vector<tools::Tool*> possibles;
 
-              // Iterate over all tools
-              for (tools::ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
-                Shortcut* shortcut = get_keyboard_shortcut_for_tool(*it);
-
-                // Collect all tools with the pressed keyboard-shortcut
-                if (shortcut && shortcut->is_pressed(msg))
-                  possibles.push_back(*it);
+              // Collect all tools with the pressed keyboard-shortcut
+              for (tools::Tool* tool : *toolbox) {
+                Key* key = KeyboardShortcuts::instance()->tool(tool);
+                if (key && key->isPressed(msg))
+                  possibles.push_back(tool);
               }
 
               if (possibles.size() >= 2) {
@@ -859,8 +505,8 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
               return true;
             }
 
-            case Shortcut::Type::ExecuteCommand: {
-              Command* command = shortcut->command;
+            case KeyType::Command: {
+              Command* command = key->command();
 
               // Commands are executed only when the main window is
               // the current window running at foreground.
@@ -875,16 +521,17 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
                 else if (child->isDesktop() && child == App::instance()->getMainWindow()) {
                   // OK, so we can execute the command represented
                   // by the pressed-key in the message...
-                  UIContext::instance()->executeCommand(command, shortcut->params);
+                  UIContext::instance()->executeCommand(
+                    command, key->params());
                   return true;
                 }
               }
               break;
             }
 
-            case Shortcut::Type::EditorQuicktool: {
+            case KeyType::Quicktool: {
               // Do nothing, it is used in the editor through the
-              // get_selected_quicktool() function.
+              // KeyboardShortcuts::getCurrentQuicktool() function.
               break;
             }
 

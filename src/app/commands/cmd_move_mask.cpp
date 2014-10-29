@@ -32,6 +32,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/undo_transaction.h"
 #include "app/undoers/set_mask_position.h"
+#include "base/convert_to.h"
 #include "raster/mask.h"
 #include "raster/sprite.h"
 #include "ui/view.h"
@@ -144,6 +145,65 @@ void MoveMaskCommand::onExecute(Context* context)
     }
 
   }
+}
+
+std::string MoveMaskCommand::onGetFriendlyName() const
+{
+  std::string text = "Move";
+
+  switch (m_target) {
+
+    case Boundaries: {
+      text += " Selection Boundaries";
+      break;
+    }
+
+    case Content: {
+      text += " Selection Content";
+      break;
+    }
+
+  }
+
+  text += " " + base::convert_to<std::string>(m_quantity);
+
+  switch (m_units) {
+    case Pixel:
+      text += " pixel";
+      break;
+    case TileWidth:
+      text += " horizontal tile";
+      break;
+    case TileHeight:
+      text += " vertical tile";
+      break;
+    case ZoomedPixel:
+      text += " zoomed pixel";
+      break;
+    case ZoomedTileWidth:
+      text += " zoomed horizontal tile";
+      break;
+    case ZoomedTileHeight:
+      text += " zoomed vertical tile";
+      break;
+    case ViewportWidth:
+      text += " viewport width";
+      break;
+    case ViewportHeight:
+      text += " viewport height";
+      break;
+  }
+  if (m_quantity != 1)
+    text += "s";
+
+  switch (m_direction) {
+    case Left:  text += " left"; break;
+    case Right: text += " right"; break;
+    case Up:    text += " up"; break;
+    case Down:  text += " down"; break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createMoveMaskCommand()

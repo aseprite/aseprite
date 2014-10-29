@@ -46,4 +46,14 @@ XmlDocumentRef open_xml(const std::string& filename)
   return doc;
 }
 
+void save_xml(XmlDocumentRef doc, const std::string& filename)
+{
+  FileHandle file(open_file(filename, "wb"));
+  if (!file)
+    throw Exception("Error loading file: " + filename);
+
+  if (!doc->SaveFile(file))
+    throw XmlException(doc);
+}
+
 } // namespace app

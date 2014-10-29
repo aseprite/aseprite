@@ -27,9 +27,9 @@
 #include "app/commands/commands.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/modules/gui.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/mini_editor.h"
 #include "app/ui/skin/skin_theme.h"
@@ -542,10 +542,10 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
     }
 
     // Tool shortcut
-    Accelerator* accel = get_accel_to_change_tool(tool);
-    if (accel) {
+    Key* key = KeyboardShortcuts::instance()->tool(tool);
+    if (key && !key->accels().empty()) {
       tooltip += "\n\nShortcut: ";
-      tooltip += accel->toString();
+      tooltip += key->accels().front().toString();
     }
   }
   else if (group_index == ConfigureToolIndex) {

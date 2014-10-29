@@ -24,11 +24,11 @@
 
 #include "app/app.h"
 #include "app/modules/editors.h"
-#include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/mini_editor.h"
 #include "app/ui/workspace.h"
@@ -77,61 +77,42 @@ public:
 
   // EditorCustomizationDelegate implementation
   tools::Tool* getQuickTool(tools::Tool* currentTool) override {
-    return get_selected_quicktool(currentTool);
+    return KeyboardShortcuts::instance()
+      ->getCurrentQuicktool(currentTool);
   }
 
   bool isCopySelectionKeyPressed() override {
-    Accelerator* accel = get_accel_to_copy_selection();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::CopySelection);
   }
 
   bool isSnapToGridKeyPressed() override {
-    Accelerator* accel = get_accel_to_snap_to_grid();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::SnapToGrid);
   }
 
   bool isAngleSnapKeyPressed() override {
-    Accelerator* accel = get_accel_to_angle_snap();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::AngleSnap);
   }
 
   bool isMaintainAspectRatioKeyPressed() override {
-    Accelerator* accel = get_accel_to_maintain_aspect_ratio();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::MaintainAspectRatio);
   }
 
   bool isLockAxisKeyPressed() override {
-    Accelerator* accel = get_accel_to_lock_axis();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::LockAxis);
   }
 
   bool isAddSelectionPressed() override {
-    Accelerator* accel = get_accel_to_add_selection();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
-    else
-      return false;
+    return isKeyActionPressed(KeyAction::AddSelection);
   }
 
   bool isSubtractSelectionPressed() override {
-    Accelerator* accel = get_accel_to_subtract_selection();
-    if (accel)
-      return accel->checkFromAllegroKeyArray();
+    return isKeyActionPressed(KeyAction::SubtractSelection);
+  }
+
+private:
+  bool isKeyActionPressed(KeyAction action) {
+    if (Key* key = KeyboardShortcuts::instance()->action(action))
+      return key->checkFromAllegroKeyArray();
     else
       return false;
   }

@@ -188,6 +188,23 @@ void FlipCommand::onExecute(Context* context)
   update_screen_for_document(document);
 }
 
+std::string FlipCommand::onGetFriendlyName() const
+{
+  std::string text = "Flip";
+
+  if (m_flipMask)
+    text += " Selection";
+  else
+    text += " Canvas";
+
+  if (m_flipType == raster::algorithm::FlipHorizontal)
+    text += " Horizontal";
+  else
+    text += " Vertical";
+
+  return text;
+}
+
 Command* CommandFactory::createFlipCommand()
 {
   return new FlipCommand;

@@ -106,7 +106,7 @@ size_t ListBox::getItemsCount() const
   return getChildren().size();
 }
 
-/* setup the scroll to center the selected item in the viewport */
+// Setup the scroll to center the selected item in the viewport
 void ListBox::centerScroll()
 {
   View* view = View::getView(this);
@@ -121,6 +121,23 @@ void ListBox::centerScroll()
 
     view->setViewScroll(scroll);
   }
+}
+
+inline bool sort_by_text(Widget* a, Widget* b) {
+  return a->getText() < b->getText();
+}
+
+void ListBox::sortItems()
+{
+  WidgetsList widgets = getChildren();
+  std::sort(widgets.begin(), widgets.end(), &sort_by_text);
+
+  // Remove all children and add then again.
+  while (!getChildren().empty())
+    removeChild(getChildren().back());
+
+  for (Widget* child : widgets)
+    addChild(child);
 }
 
 bool ListBox::onProcessMessage(Message* msg)

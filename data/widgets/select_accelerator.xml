@@ -1,0 +1,36 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2014 by David Capello -->
+<gui>
+  <window id="select_accelerator" text="Keyboard Shortcut">
+    <vbox expansive="true">
+      <grid columns="3">
+        <label text="Key:" />
+        <hbox id="key_placeholder" expansive="true" />
+        <button text="Clear" id="clear_button" width="60" />
+
+        <label text="Modifiers:" />
+        <hbox cell_hspan="2">
+          <check text="Ctrl" id="ctrl" />
+          <check text="Cmd" id="cmd" />
+          <check text="Alt" id="alt" />
+          <check text="Shift" id="shift" />
+          <check text="Space" id="space" />
+        </hbox>
+
+        <label text="" id="assigned_to" cell_hspan="3" />
+      </grid>
+
+      <separator horizontal="true" />
+
+      <box horizontal="true">
+        <boxfiller />
+        <box horizontal="true" homogeneous="true">
+          <button text="OK" id="ok_button" magnet="true" width="60" />
+          <button text="Cancel" id="cancel_button" />
+          <button text="Delete" id="delete_button" />
+        </box>
+      </box>
+
+    </vbox>
+  </window>
+</gui>

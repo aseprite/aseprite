@@ -48,6 +48,7 @@ public:
 protected:
   void onLoadParams(Params* params);
   void onExecute(Context* context);
+  std::string onGetFriendlyName() const;
 };
 
 ChangeBrushCommand::ChangeBrushCommand()
@@ -94,6 +95,30 @@ void ChangeBrushCommand::onExecute(Context* context)
         brush->setAngle(brush->getAngle()-1);
       break;
   }
+}
+
+std::string ChangeBrushCommand::onGetFriendlyName() const
+{
+  std::string text = "Brush";
+
+  switch (m_change) {
+    case None:
+      break;
+    case IncrementSize:
+      text += ": Increment Size";
+      break;
+    case DecrementSize:
+      text += ": Decrement Size";
+      break;
+    case IncrementAngle:
+      text += ": Increment Angle";
+      break;
+    case DecrementAngle:
+      text += ": Decrement Angle";
+      break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createChangeBrushCommand()

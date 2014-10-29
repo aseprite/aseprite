@@ -25,9 +25,12 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/modules/gui.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
+#include "ui/accelerator.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/widget.h"
 
 #include <stdarg.h>
@@ -38,8 +41,9 @@ namespace app {
 
 using namespace ui;
 
-AppMenuItem::AppMenuItem(const char* text, Command* command, Params* params)
+AppMenuItem::AppMenuItem(const char* text, Command* command, const Params* params)
  : MenuItem(text)
+ , m_key(NULL)
  , m_command(command)
  , m_params(params ? params->clone(): NULL)
 {
@@ -80,6 +84,31 @@ bool AppMenuItem::onProcessMessage(Message* msg)
   }
 
   return MenuItem::onProcessMessage(msg);
+}
+
+void AppMenuItem::onPreferredSize(PreferredSizeEvent& ev)
+{
+  gfx::Size size(0, 0);
+
+  if (hasText()) {
+    size.w =
+      + this->border_width.l
+      + getTextWidth()
+      + (inBar() ? this->child_spacing/4: this->child_spacing)
+      + this->border_width.r;
+
+    size.h =
+      + this->border_width.t
+      + getTextHeight()
+      + this->border_width.b;
+
+    if (m_key && !m_key->accels().empty()) {
+      size.w += Graphics::measureUIStringLength(
+        m_key->accels().front().toString().c_str(), getFont());
+    }
+  }
+
+  ev.setPreferredSize(size);
 }
 
 void AppMenuItem::onClick()

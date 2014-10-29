@@ -28,11 +28,8 @@
 class TiXmlElement;
 class TiXmlHandle;
 
-namespace ui {
-  class Accelerator;
-}
-
 namespace app {
+  class Key;
   class Command;
   class Params;
 
@@ -59,13 +56,14 @@ namespace app {
     Menu* getCelPopupMenu() { return m_celPopupMenu; }
     Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu; }
 
+    void applyShortcutToMenuitemsWithCommand(Command* command, Params* params, Key* key);
+
   private:
     Menu* loadMenuById(TiXmlHandle& handle, const char *id);
     Menu* convertXmlelemToMenu(TiXmlElement* elem);
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
-    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Accelerator* accel);
-    const char* getShortcut(TiXmlElement* elem);
+    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Key* key);
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;

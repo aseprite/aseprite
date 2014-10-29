@@ -29,7 +29,6 @@
 
 namespace app {
 
-using namespace ui;
 using namespace gfx;
 
 class ShowOnionSkinCommand : public Command {

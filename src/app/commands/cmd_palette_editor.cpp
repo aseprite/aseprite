@@ -159,7 +159,7 @@ private:
 
 PaletteEditorCommand::PaletteEditorCommand()
   : Command("PaletteEditor",
-            "PaletteEditor",
+            "Palette Editor",
             CmdRecordableFlag)
 {
   m_open = true;

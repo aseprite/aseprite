@@ -24,26 +24,28 @@
 
 namespace ui {
 
-void Accelerator::addKey(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+Accelerator::Accelerator()
+  : m_modifiers(kKeyNoneModifier)
+  , m_scancode(kKeyNil)
+  , m_unicodeChar(0)
 {
-  KeyCombo key;
-
-  key.modifiers = modifiers;
-  key.scancode = scancode;
-  key.unicodeChar = unicodeChar;
-
-  m_combos.push_back(key);
 }
 
-void Accelerator::addKeysFromString(const std::string& str)
+Accelerator::Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+  : m_modifiers(modifiers)
+  , m_scancode(scancode)
+  , m_unicodeChar(unicodeChar)
 {
-  KeyModifiers modifiers = kKeyNoneModifier;
-  KeyScancode scancode = kKeyNil;
-  int unicodeChar = 0;
+}
 
+Accelerator::Accelerator(const std::string& str)
+  : m_modifiers(kKeyNoneModifier)
+  , m_scancode(kKeyNil)
+  , m_unicodeChar(0)
+{
   // Special case: plus sign
   if (str == "+") {
-    addKey(kKeyNoneModifier, kKeyNil, '+');
+    m_unicodeChar = '+';
     return;
   }
 
@@ -52,137 +54,143 @@ void Accelerator::addKeysFromString(const std::string& str)
   for (std::string tok : tokens) {
     tok = base::string_to_lower(tok);
 
-    if (scancode == kKeySpace) {
-      modifiers = (KeyModifiers)((int)modifiers | (int)kKeySpaceModifier);
-      scancode = kKeyNil;
+    if (m_scancode == kKeySpace) {
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
+      m_scancode = kKeyNil;
     }
 
     // Modifiers
     if (tok == "shift") {
-      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyShiftModifier);
     }
     else if (tok == "alt") {
-      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyAltModifier);
     }
     else if (tok == "ctrl") {
-      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyCtrlModifier);
     }
     else if (tok == "cmd") {
-      modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
+      m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeyCmdModifier);
     }
 
     // Scancode
 
-    // word with one character
+    // Word with one character
     else if (tok.size() == 1) {
       if ((tok[0] >= 'a') && (tok[0] <= 'z')) {
-        unicodeChar = tok[0];
+        m_unicodeChar = tok[0];
       }
       else {
-        unicodeChar = tok[0];
+        m_unicodeChar = tok[0];
       }
 
       if ((tok[0] >= 'a') && (tok[0] <= 'z'))
-        scancode = (KeyScancode)((int)kKeyA + tolower(tok[0]) - 'a');
+        m_scancode = (KeyScancode)((int)kKeyA + tolower(tok[0]) - 'a');
       else if ((tok[0] >= '0') && (tok[0] <= '9'))
-        scancode = (KeyScancode)((int)kKey0 + tok[0] - '0');
+        m_scancode = (KeyScancode)((int)kKey0 + tok[0] - '0');
       else {
         switch (tok[0]) {
-          case '~': scancode = kKeyTilde; break;
-          case '-': scancode = kKeyMinus; break;
-          case '=': scancode = kKeyEquals; break;
-          case '[': scancode = kKeyOpenbrace; break;
-          case ']': scancode = kKeyClosebrace; break;
-          case ';': scancode = kKeyColon; break;
-          case '\'': scancode = kKeyQuote; break;
-          case '\\': scancode = kKeyBackslash; break;
-          case ',': scancode = kKeyComma; break;
-          case '.': scancode = kKeyStop; break;
-          case '/': scancode = kKeySlash; break;
-          case '*': scancode = kKeyAsterisk; break;
+          case '~': m_scancode = kKeyTilde; break;
+          case '-': m_scancode = kKeyMinus; break;
+          case '=': m_scancode = kKeyEquals; break;
+          case '[': m_scancode = kKeyOpenbrace; break;
+          case ']': m_scancode = kKeyClosebrace; break;
+          case ';': m_scancode = kKeyColon; break;
+          case '\'': m_scancode = kKeyQuote; break;
+          case '\\': m_scancode = kKeyBackslash; break;
+          case ',': m_scancode = kKeyComma; break;
+          case '.': m_scancode = kKeyStop; break;
+          case '/': m_scancode = kKeySlash; break;
+          case '*': m_scancode = kKeyAsterisk; break;
         }
       }
     }
-    /* other ones */
+    // Other ones
     else {
-      /* F1, F2, ..., F11, F12 */
+      // F1, F2, ..., F11, F12
       if (tok[0] == 'f' && (tok.size() <= 3)) {
         int num = strtol(tok.c_str()+1, NULL, 10);
         if ((num >= 1) && (num <= 12))
-          scancode = (KeyScancode)((int)kKeyF1 + num - 1);
+          m_scancode = (KeyScancode)((int)kKeyF1 + num - 1);
       }
       else if ((tok == "escape") || (tok == "esc"))
-        scancode = kKeyEsc;
+        m_scancode = kKeyEsc;
       else if (tok == "backspace")
-        scancode = kKeyBackspace;
+        m_scancode = kKeyBackspace;
       else if (tok == "tab")
-        scancode = kKeyTab;
+        m_scancode = kKeyTab;
       else if (tok == "enter")
-        scancode = kKeyEnter;
+        m_scancode = kKeyEnter;
       else if (tok == "space")
-        scancode = kKeySpace;
+        m_scancode = kKeySpace;
       else if ((tok == "insert") || (tok == "ins"))
-        scancode = kKeyInsert;
+        m_scancode = kKeyInsert;
       else if ((tok == "delete") || (tok == "del"))
-        scancode = kKeyDel;
+        m_scancode = kKeyDel;
       else if (tok == "home")
-        scancode = kKeyHome;
+        m_scancode = kKeyHome;
       else if (tok == "end")
-        scancode = kKeyEnd;
+        m_scancode = kKeyEnd;
       else if ((tok == "page up") || (tok == "pgup"))
-        scancode = kKeyPageUp;
+        m_scancode = kKeyPageUp;
       else if ((tok == "page down") || (tok == "pgdn"))
-        scancode = kKeyPageDown;
+        m_scancode = kKeyPageDown;
       else if (tok == "left")
-        scancode = kKeyLeft;
+        m_scancode = kKeyLeft;
       else if (tok == "right")
-        scancode = kKeyRight;
+        m_scancode = kKeyRight;
       else if (tok == "up")
-        scancode = kKeyUp;
+        m_scancode = kKeyUp;
       else if (tok == "down")
-        scancode = kKeyDown;
+        m_scancode = kKeyDown;
       else if (tok == "0 pad")
-        scancode = kKey0Pad;
+        m_scancode = kKey0Pad;
       else if (tok == "1 pad")
-        scancode = kKey1Pad;
+        m_scancode = kKey1Pad;
       else if (tok == "2 pad")
-        scancode = kKey2Pad;
+        m_scancode = kKey2Pad;
       else if (tok == "3 pad")
-        scancode = kKey3Pad;
+        m_scancode = kKey3Pad;
       else if (tok == "4 pad")
-        scancode = kKey4Pad;
+        m_scancode = kKey4Pad;
       else if (tok == "5 pad")
-        scancode = kKey5Pad;
+        m_scancode = kKey5Pad;
       else if (tok == "6 pad")
-        scancode = kKey6Pad;
+        m_scancode = kKey6Pad;
       else if (tok == "7 pad")
-        scancode = kKey7Pad;
+        m_scancode = kKey7Pad;
       else if (tok == "8 pad")
-        scancode = kKey8Pad;
+        m_scancode = kKey8Pad;
       else if (tok == "9 pad")
-        scancode = kKey9Pad;
+        m_scancode = kKey9Pad;
       else if (tok == "slash pad")
-        scancode = kKeySlashPad;
+        m_scancode = kKeySlashPad;
       else if (tok == "asterisk")
-        scancode = kKeyAsterisk;
+        m_scancode = kKeyAsterisk;
       else if (tok == "minus pad")
-        scancode = kKeyMinusPad;
+        m_scancode = kKeyMinusPad;
       else if (tok == "plus pad")
-        scancode = kKeyPlusPad;
+        m_scancode = kKeyPlusPad;
       else if (tok == "del pad")
-        scancode = kKeyDelPad;
+        m_scancode = kKeyDelPad;
       else if (tok == "enter pad")
-        scancode = kKeyEnterPad;
+        m_scancode = kKeyEnterPad;
     }
   }
-
-  addKey(modifiers, scancode, unicodeChar);
 }
 
-std::string Accelerator::KeyCombo::toString()
+bool Accelerator::isEmpty() const
+{
+  return
+    (m_modifiers == kKeyNoneModifier &&
+     m_scancode == kKeyNil &&
+     m_unicodeChar == 0);
+}
+
+std::string Accelerator::toString() const
 {
   // Same order that Allegro scancodes
-  static const char *table[] = {
+  static const char* table[] = {
     NULL,
     "A",
     "B",
@@ -287,34 +295,29 @@ std::string Accelerator::KeyCombo::toString()
     "KEY_COLON2",
     "Kanji",
   };
+  static size_t table_size = sizeof(table) / sizeof(table[0]);
 
   std::string buf;
 
   // Shifts
-  if (this->modifiers & kKeyCtrlModifier) buf += "Ctrl+";
-  if (this->modifiers & kKeyCmdModifier) buf += "Cmd+";
-  if (this->modifiers & kKeyAltModifier) buf += "Alt+";
-  if (this->modifiers & kKeyShiftModifier) buf += "Shift+";
-  if (this->modifiers & kKeySpaceModifier) buf += "Space+";
+  if (m_modifiers & kKeyCtrlModifier) buf += "Ctrl+";
+  if (m_modifiers & kKeyCmdModifier) buf += "Cmd+";
+  if (m_modifiers & kKeyAltModifier) buf += "Alt+";
+  if (m_modifiers & kKeyShiftModifier) buf += "Shift+";
+  if (m_modifiers & kKeySpaceModifier) buf += "Space+";
 
   // Key
-  if (this->unicodeChar)
-    buf += (wchar_t)toupper(this->unicodeChar);
-  else if (this->scancode)
-    buf += table[this->scancode];
+  if (m_unicodeChar)
+    buf += (wchar_t)toupper(m_unicodeChar);
+  else if (m_scancode && m_scancode > 0 && m_scancode < (int)table_size)
+    buf += table[m_scancode];
   else if (!buf.empty() && buf[buf.size()-1] == '+')
     buf.erase(buf.size()-1);
 
   return buf;
 }
 
-std::string Accelerator::toString()
-{
-  ASSERT(!m_combos.empty());
-  return m_combos.front().toString();
-}
-
-bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar)
+bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
 #ifdef REPORT_KEYS
   char buf[256];
@@ -373,40 +376,29 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicod
 #endif
 
 #ifdef REPORT_KEYS
-  {
-    base::UniquePtr<Accelerator> a2(new Accelerator);
-    a2->addKey(modifiers, scancode, unicodeChar);
-    buf2 = a2->getString();
-  }
+  printf("%3d==%3d %3d==%3d %s==%s ",
+    m_scancode, scancode,
+    m_unicodeChar, unicodeChar,
+    toString().c_str(),
+    Accelerator(modifiers, scancode, unicodeChar).toString().c_str());
 #endif
 
-  for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
-       it != end; ++it) {
+  if ((m_modifiers == modifiers) &&
+      ((m_scancode != kKeyNil && m_scancode == scancode) ||
+       (m_unicodeChar && m_unicodeChar == unicodeChar))) {
 #ifdef REPORT_KEYS
-    printf("%3d==%3d %3d==%3d %s==%s ",
-           it->scancode, scancode, it->unicodeChar, unicodeChar,
-           it->getString().c_str(), buf2.c_str();
+    printf("true\n");
 #endif
-
-    if ((it->modifiers == modifiers) &&
-        ((it->scancode != kKeyNil && it->scancode == scancode) ||
-         (it->unicodeChar && it->unicodeChar == unicodeChar))) {
-
-#ifdef REPORT_KEYS
-      printf("true\n");
-#endif
-
-      return true;
-    }
-#ifdef REPORT_KEYS
-    printf("false\n");
-#endif
+    return true;
   }
 
+#ifdef REPORT_KEYS
+  printf("false\n");
+#endif
   return false;
 }
 
-bool Accelerator::checkFromAllegroKeyArray()
+bool Accelerator::checkFromAllegroKeyArray() const
 {
   KeyModifiers modifiers = kKeyNoneModifier;
 
@@ -417,14 +409,8 @@ bool Accelerator::checkFromAllegroKeyArray()
   if (key[KEY_ALT]     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
   if (key[KEY_COMMAND ]) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
 
-  for (KeyCombos::iterator it = m_combos.begin(), end = m_combos.end();
-       it != end; ++it) {
-    if ((it->scancode == 0 || key[it->scancode]) &&
-        (it->modifiers == modifiers)) {
-      return true;
-    }
-  }
-  return false;
+  return ((m_scancode == 0 || key[m_scancode]) &&
+          (m_modifiers == modifiers));
 }
 
 } // namespace ui
