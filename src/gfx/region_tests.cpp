@@ -4,6 +4,10 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gtest/gtest.h>
 
 #include "gfx/region.h"
@@ -52,12 +56,12 @@ TEST(Region, Equal)
 {
   Region a;
   a = Rect(2, 3, 4, 5);
-  EXPECT_EQ(Rect(2, 3, 4, 5), a.getBounds());
+  EXPECT_EQ(Rect(2, 3, 4, 5), a.bounds());
   EXPECT_EQ(Rect(2, 3, 4, 5), a[0]);
   EXPECT_FALSE(a.isEmpty());
 
   a = Rect(6, 7, 8, 9);
-  EXPECT_EQ(Rect(6, 7, 8, 9), a.getBounds());
+  EXPECT_EQ(Rect(6, 7, 8, 9), a.bounds());
   EXPECT_EQ(Rect(6, 7, 8, 9), a[0]);
 
   Region b;
@@ -80,8 +84,8 @@ TEST(Region, Union)
 {
   Region a(Rect(2, 3, 4, 5));
   Region b(Rect(6, 3, 4, 5));
-  EXPECT_EQ(Rect(2, 3, 8, 5), Region().createUnion(a, b).getBounds());
-  EXPECT_EQ(Rect(2, 3, 8, 5), Region().createUnion(b, a).getBounds());
+  EXPECT_EQ(Rect(2, 3, 8, 5), Region().createUnion(a, b).bounds());
+  EXPECT_EQ(Rect(2, 3, 8, 5), Region().createUnion(b, a).bounds());
   ASSERT_EQ(1, Region().createUnion(a, b).size());
   ASSERT_EQ(1, Region().createUnion(b, a).size());
   EXPECT_EQ(Rect(2, 3, 8, 5), Region().createUnion(a, b)[0]);
