@@ -71,12 +71,11 @@ public:
   }
 
   void restoreKeys() {
-    if (m_key) {
-      if (m_keyOrig)
-        *m_key = *m_keyOrig;
-      else if (m_menuitem)
-        m_menuitem->setKey(NULL);
-    }
+    if (m_key && m_keyOrig)
+      *m_key = *m_keyOrig;
+
+    if (m_menuitem && !m_keyOrig)
+      m_menuitem->setKey(NULL);
   }
 
 private:
