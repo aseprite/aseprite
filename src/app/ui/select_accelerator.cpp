@@ -76,10 +76,9 @@ protected:
   Accelerator m_accel;
 };
 
-SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, bool canDelete)
+SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel)
   : m_keyField(new KeyField(accel))
   , m_accel(accel)
-  , m_deleted(false)
   , m_modified(false)
 {
   updateModifiers();
@@ -97,11 +96,6 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, bool canDelet
   clearButton()->Click.connect(Bind<void>(&SelectAccelerator::onClear, this));
   okButton()->Click.connect(Bind<void>(&SelectAccelerator::onOK, this));
   cancelButton()->Click.connect(Bind<void>(&SelectAccelerator::onCancel, this));
-
-  if (canDelete)
-    deleteButton()->Click.connect(Bind<void>(&SelectAccelerator::onDelete, this));
-  else
-    deleteButton()->setVisible(false);
 }
 
 void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
@@ -143,17 +137,6 @@ void SelectAccelerator::onOK()
 
 void SelectAccelerator::onCancel()
 {
-  closeWindow(NULL);
-}
-
-void SelectAccelerator::onDelete()
-{
-  if (Alert::show("Warning"
-      "<<Do you really want to delete this keyboard shortcut?"
-      "||&Yes||&No") != 1)
-    return;
-
-  m_deleted = true;
   closeWindow(NULL);
 }
 

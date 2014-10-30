@@ -27,7 +27,6 @@
         <box horizontal="true" homogeneous="true">
           <button text="OK" id="ok_button" magnet="true" width="60" />
           <button text="Cancel" id="cancel_button" />
-          <button text="Delete" id="delete_button" />
         </box>
       </box>
 

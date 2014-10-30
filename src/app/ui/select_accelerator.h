@@ -28,9 +28,8 @@ namespace app {
 
   class SelectAccelerator : public app::gen::SelectAccelerator {
   public:
-    explicit SelectAccelerator(const ui::Accelerator& accelerator, bool canDelete);
+    explicit SelectAccelerator(const ui::Accelerator& accelerator);
 
-    bool isDeleted() const { return m_deleted; }
     bool isModified() const { return m_modified; }
     const ui::Accelerator& accel() const { return m_accel; }
 
@@ -40,7 +39,6 @@ namespace app {
     void onClear();
     void onOK();
     void onCancel();
-    void onDelete();
     void updateModifiers();
     void updateAssignedTo();
 
@@ -49,7 +47,6 @@ namespace app {
     KeyField* m_keyField;
     ui::Accelerator m_origAccel;
     ui::Accelerator m_accel;
-    bool m_deleted;
     bool m_modified;
   };
 

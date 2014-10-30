@@ -60,6 +60,7 @@ public:
     , m_menuitem(menuitem)
     , m_level(level)
     , m_changeButton(NULL)
+    , m_deleteButton(NULL)
     , m_addButton(NULL)
     , m_hotAccel(-1) {
     this->border_width.t = this->border_width.b = 0;
@@ -80,25 +81,33 @@ public:
 
 private:
 
-  void onChangeAccel() {
-    Accelerator origAccel = m_key->accels()[m_hotAccel];
-    SelectAccelerator window(origAccel, true);
+  void onChangeAccel(int index) {
+    Accelerator origAccel = m_key->accels()[index];
+    SelectAccelerator window(origAccel);
     window.openWindowInForeground();
 
     if (window.isModified()) {
       m_key->disableAccel(origAccel);
       m_key->add(window.accel(), KeySource::UserDefined);
     }
-    else if (window.isDeleted()) {
-      m_key->disableAccel(origAccel);
-    }
 
+    getRoot()->layout();
+  }
+
+  void onDeleteAccel(int index)
+  {
+    if (Alert::show("Warning"
+        "<<Do you really want to delete this keyboard shortcut?"
+        "||&Yes||&No") != 1)
+      return;
+
+    m_key->disableAccel(m_key->accels()[index]);
     getRoot()->layout();
   }
 
   void onAddAccel() {
     ui::Accelerator accel;
-    SelectAccelerator window(accel, false);
+    SelectAccelerator window(accel);
     window.openWindowInForeground();
 
     if (window.isModified()) {
@@ -216,19 +225,38 @@ private:
                 6*jguiscale(), 1*jguiscale()));
 
             if (accels && i < (int)accels->size() &&
-                itemBounds.contains(mouseMsg->position())) {
+                mouseMsg->position().y >= itemBounds.y &&
+                mouseMsg->position().y < itemBounds.y+itemBounds.h) {
               hotAccel = i;
 
               if (!m_changeButton) {
                 m_changeButton = new Button("");
-                m_changeButton->Click.connect(Bind<void>(&KeyItem::onChangeAccel, this));
+                m_changeButton->Click.connect(Bind<void>(&KeyItem::onChangeAccel, this, i));
                 setup_mini_look(m_changeButton);
                 addChild(m_changeButton);
+              }
+
+              if (!m_deleteButton) {
+                m_deleteButton = new Button("");
+                m_deleteButton->Click.connect(Bind<void>(&KeyItem::onDeleteAccel, this, i));
+                setup_mini_look(m_deleteButton);
+                addChild(m_deleteButton);
               }
 
               m_changeButton->setBgColor(gfx::ColorNone);
               m_changeButton->setBounds(itemBounds);
               m_changeButton->setText((*accels)[i].toString());
+
+              const char* label = "x";
+              m_deleteButton->setBgColor(gfx::ColorNone);
+              m_deleteButton->setBounds(gfx::Rect(
+                  itemBounds.x + itemBounds.w + 2*jguiscale(),
+                  itemBounds.y,
+                  Graphics::measureUIStringLength(
+                    label, getFont()) + 4*jguiscale(),
+                  itemBounds.h));
+              m_deleteButton->setText(label);
+
               invalidate();
             }
 
@@ -266,8 +294,10 @@ private:
 
   void destroyButtons() {
     delete m_changeButton;
+    delete m_deleteButton;
     delete m_addButton;
     m_changeButton = NULL;
+    m_deleteButton = NULL;
     m_addButton = NULL;
   }
 
@@ -277,6 +307,7 @@ private:
   int m_level;
   ui::Accelerators m_newAccels;
   ui::Button* m_changeButton;
+  ui::Button* m_deleteButton;
   ui::Button* m_addButton;
   int m_hotAccel;
 };
