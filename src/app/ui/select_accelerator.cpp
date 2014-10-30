@@ -35,6 +35,7 @@ using namespace ui;
 class SelectAccelerator::KeyField : public ui::Entry {
 public:
   KeyField(const Accelerator& accel) : ui::Entry(256, "") {
+    setExpansive(true);
     setFocusMagnet(true);
     setAccel(accel);
   }
@@ -175,7 +176,7 @@ void SelectAccelerator::updateAssignedTo()
     }
   }
 
-  assignedTo()->setText("Assigned to: " + res);
+  assignedTo()->setText(res);
 }
 
 } // namespace app
