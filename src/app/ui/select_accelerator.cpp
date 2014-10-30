@@ -26,6 +26,8 @@
 #include "base/bind.h"
 #include "base/signal.h"
 
+#include <cctype>
+
 namespace app {
 
 using namespace ui;
@@ -50,11 +52,16 @@ protected:
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
           KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+          KeyModifiers modifiers = keymsg->keyModifiers();
+
+          if (keymsg->scancode() == kKeySpace)
+            modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);
 
           m_accel = Accelerator(
-            keymsg->keyModifiers(),
+            modifiers,
             keymsg->scancode(),
-            keymsg->unicodeChar() >= 32 ? keymsg->unicodeChar(): 0);
+            keymsg->unicodeChar() > 32 ?
+              std::tolower(keymsg->unicodeChar()): 0);
           updateText();
 
           AccelChange(&m_accel);
@@ -101,11 +108,15 @@ SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel)
 void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkbox)
 {
   bool state = (checkbox->isSelected());
+  KeyModifiers modifiers = m_accel.modifiers();
+  KeyScancode scancode = m_accel.scancode();
+  int unicodeChar = m_accel.unicodeChar();
 
-  m_accel = Accelerator(
-    (KeyModifiers)((m_accel.modifiers() & ~modifier) | (state ? modifier : 0)),
-    m_accel.scancode(),
-    m_accel.unicodeChar());
+  modifiers = (KeyModifiers)((modifiers & ~modifier) | (state ? modifier : 0));
+  if (modifiers == kKeySpaceModifier && scancode == kKeySpace)
+    modifiers = kKeyNoneModifier;
+
+  m_accel = Accelerator(modifiers, scancode, unicodeChar);
 
   m_keyField->setAccel(m_accel);
   updateAssignedTo();

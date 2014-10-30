@@ -28,13 +28,7 @@ namespace ui {
     bool check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const;
     bool checkFromAllegroKeyArray() const;
 
-    bool operator==(const Accelerator& other) const {
-      return
-        (m_modifiers == other.m_modifiers &&
-         m_scancode == other.m_scancode &&
-         m_unicodeChar == other.m_unicodeChar);
-    }
-
+    bool operator==(const Accelerator& other) const;
     bool operator!=(const Accelerator& other) const {
       return !operator==(other);
     }

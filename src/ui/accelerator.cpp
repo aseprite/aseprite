@@ -15,7 +15,7 @@
 #include "base/string.h"
 
 #include <allegro/keyboard.h>
-#include <ctype.h>
+#include <cctype>
 #include <string>
 #include <vector>
 
@@ -85,7 +85,7 @@ Accelerator::Accelerator(const std::string& str)
       }
 
       if ((tok[0] >= 'a') && (tok[0] <= 'z'))
-        m_scancode = (KeyScancode)((int)kKeyA + tolower(tok[0]) - 'a');
+        m_scancode = (KeyScancode)((int)kKeyA + std::tolower(tok[0]) - 'a');
       else if ((tok[0] >= '0') && (tok[0] <= '9'))
         m_scancode = (KeyScancode)((int)kKey0 + tok[0] - '0');
       else {
@@ -177,6 +177,21 @@ Accelerator::Accelerator(const std::string& str)
         m_scancode = kKeyEnterPad;
     }
   }
+}
+
+bool Accelerator::operator==(const Accelerator& other) const
+{
+  if (m_modifiers != other.m_modifiers)
+    return false;
+
+  if (m_scancode == other.m_scancode) {
+    if (m_scancode != kKeyNil)
+      return true;
+    else if (m_unicodeChar != 0)
+      return (std::tolower(m_unicodeChar) == std::tolower(other.m_unicodeChar));
+  }
+
+  return false;
 }
 
 bool Accelerator::isEmpty() const
@@ -364,7 +379,7 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicod
   }
   // For any other legal Unicode code
   else if (unicodeChar >= ' ') {
-    unicodeChar = tolower(unicodeChar);
+    unicodeChar = std::tolower(unicodeChar);
 
     /* without shift (because characters like '*' can be trigger with
        "Shift+8", so we don't want "Shift+*") */
