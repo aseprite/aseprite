@@ -48,6 +48,7 @@ namespace app {
     void onLoadParams(Params* params);
     bool onEnabled(Context* context);
     void onExecute(Context* context);
+    std::string onGetFriendlyName() const;
 
   private:
     Target m_target;

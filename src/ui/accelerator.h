@@ -15,32 +15,35 @@
 
 namespace ui {
 
-  class Accelerator
-  {
+  class Accelerator {
   public:
-    void addKey(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
+    Accelerator();
+    Accelerator(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
+    // Convert string like "Ctrl+Q" or "Alt+X" into an accelerator.
+    explicit Accelerator(const std::string& str);
 
-    // Adds keys from strings like "Ctrl+Q" or "Alt+X"
-    void addKeysFromString(const std::string& str);
+    bool isEmpty() const;
+    std::string toString() const;
 
-    bool isEmpty() const { return m_combos.empty(); }
-    std::string toString();
+    bool check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const;
+    bool checkFromAllegroKeyArray() const;
 
-    bool check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar);
-    bool checkFromAllegroKeyArray();
+    bool operator==(const Accelerator& other) const;
+    bool operator!=(const Accelerator& other) const {
+      return !operator==(other);
+    }
+
+    KeyModifiers modifiers() const { return m_modifiers; }
+    KeyScancode scancode() const { return m_scancode; }
+    int unicodeChar() const { return m_unicodeChar; }
 
   private:
-    struct KeyCombo {
-      KeyModifiers modifiers;
-      KeyScancode scancode;
-      int unicodeChar;
-
-      std::string toString();
-    };
-
-    typedef std::vector<KeyCombo> KeyCombos;
-    KeyCombos m_combos;
+    KeyModifiers m_modifiers;
+    KeyScancode m_scancode;
+    int m_unicodeChar;
   };
+
+  typedef std::vector<Accelerator> Accelerators;
 
 } // namespace ui
 

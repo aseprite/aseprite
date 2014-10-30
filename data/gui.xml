@@ -2,7 +2,7 @@
 <!-- ASE menus, tools and keyboard shortcuts -->
 <gui version="1.0.6-dev">
   <!-- Keyboard shortcuts -->
-  <keyboard>
+  <keyboard version="1">
 
     <!-- Keyboard shortcuts for commands (menu options) -->
     <commands>
@@ -51,6 +51,7 @@
       <key command="ConfigureTools" shortcut="C" />
       <key command="Options" shortcut="Ctrl+K" mac="Cmd+," />
       <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" /> <!-- TODO remove this shortcut in v1.1 -->
+      <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
       <!-- Sprite -->
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
       <!-- Layer -->
@@ -88,6 +89,7 @@
       <key command="SplitEditorHorizontally" shortcut="Ctrl+3" mac="Cmd+3" />
       <key command="Preview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
+      <key command="ShowPixelGrid" shortcut="Alt+Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
       <key command="ShowOnionSkin" shortcut="F3" />
       <key command="Timeline" shortcut="Tab">
@@ -344,8 +346,8 @@
       <key tool="hand" shortcut="Space" />
     </quicktools>
 
-    <!-- Special keyboard shortcuts for the sprite editor -->
-    <spriteeditor>
+    <!-- Special keyboard shortcuts for specific actions -->
+    <actions>
       <!-- When you drag-and-drop the selection, pressing this
            keyboard shortcut you can copy instead of move -->
       <key action="CopySelection" shortcut="Ctrl" />
@@ -369,7 +371,7 @@
       <!-- Modifiers for selection tool -->
       <key action="AddSelection" shortcut="Shift" />
       <key action="SubtractSelection" shortcut="Alt" />
-    </spriteeditor>
+    </actions>
 
   </keyboard>
 
@@ -435,6 +437,7 @@
         </menu>
         <separator />
         <item command="ConfigureTools" text="Tool&amp;s..." />
+        <item command="KeyboardShortcuts" text="&amp;Keyboard Shortcuts..." />
         <item command="Options" text="Pre&amp;ferences..." />
       </menu>
       <menu text="&amp;Sprite">
@@ -549,6 +552,7 @@
         <item command="SplitEditorVertically" text="Split &amp;Vertically" />
         <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
         <separator />
+        <item command="ShowPixelGrid" text="Show &amp;Pixel Grid" />
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />

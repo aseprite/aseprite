@@ -27,6 +27,7 @@
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
+#include "base/convert_to.h"
 #include "ui/view.h"
 
 namespace app {
@@ -52,6 +53,7 @@ protected:
   void onLoadParams(Params* params);
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+  std::string onGetFriendlyName() const;
 
 private:
   Direction m_direction;
@@ -140,6 +142,49 @@ void ScrollCommand::onExecute(Context* context)
   }
 
   current_editor->setEditorScroll(scroll.x+dx, scroll.y+dy, true);
+}
+
+std::string ScrollCommand::onGetFriendlyName() const
+{
+  std::string text = "Scroll " + base::convert_to<std::string>(m_quantity);
+
+  switch (m_units) {
+    case Pixel:
+      text += " pixel";
+      break;
+    case TileWidth:
+      text += " horizontal tile";
+      break;
+    case TileHeight:
+      text += " vertical tile";
+      break;
+    case ZoomedPixel:
+      text += " zoomed pixel";
+      break;
+    case ZoomedTileWidth:
+      text += " zoomed horizontal tile";
+      break;
+    case ZoomedTileHeight:
+      text += " zoomed vertical tile";
+      break;
+    case ViewportWidth:
+      text += " viewport width";
+      break;
+    case ViewportHeight:
+      text += " viewport height";
+      break;
+  }
+  if (m_quantity != 1)
+    text += "s";
+
+  switch (m_direction) {
+    case Left:  text += " left"; break;
+    case Right: text += " right"; break;
+    case Up:    text += " up"; break;
+    case Down:  text += " down"; break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createScrollCommand()

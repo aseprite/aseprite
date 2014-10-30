@@ -22,10 +22,7 @@
 
 #include "app/ui/skin/skin_property.h"
 #include "base/exception.h"
-#include "ui/accelerator.h"
 #include "ui/base.h"
-#include <list>
-#include <string>
 
 namespace ui {
   class ButtonBase;
@@ -44,12 +41,6 @@ namespace app {
   namespace tools {
     class Tool;
   }
-
-  enum class KeyContext {
-    Any,
-    Normal,
-    Selection,
-  };
 
   int init_module_gui();
   void exit_module_gui();
@@ -77,29 +68,6 @@ namespace app {
                              int disabled_part_id, int icon_align);
 
   ui::CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
-
-  //////////////////////////////////////////////////////////////////////
-  // Keyboard shortcuts
-
-  ui::Accelerator* add_keyboard_shortcut_to_execute_command(const char* shortcut,
-    const char* command_name, Params* params, KeyContext keyContext);
-
-  ui::Accelerator* add_keyboard_shortcut_to_change_tool(const char* shortcut, tools::Tool* tool);
-  ui::Accelerator* add_keyboard_shortcut_to_quicktool(const char* shortcut, tools::Tool* tool);
-  ui::Accelerator* add_keyboard_shortcut_to_spriteeditor(const char* shortcut, const char* action_name);
-
-  bool get_command_from_key_message(ui::Message* msg, Command** command, Params** params);
-  ui::Accelerator* get_accel_to_execute_command(const char* command, Params* params = NULL);
-  ui::Accelerator* get_accel_to_change_tool(tools::Tool* tool);
-  ui::Accelerator* get_accel_to_copy_selection();
-  ui::Accelerator* get_accel_to_snap_to_grid();
-  ui::Accelerator* get_accel_to_angle_snap();
-  ui::Accelerator* get_accel_to_maintain_aspect_ratio();
-  ui::Accelerator* get_accel_to_lock_axis();
-  ui::Accelerator* get_accel_to_add_selection();
-  ui::Accelerator* get_accel_to_subtract_selection();
-
-  tools::Tool* get_selected_quicktool(tools::Tool* currentTool);
 
 } // namespace app
 

@@ -265,7 +265,7 @@ public:
 
   void updateDirtyArea() override
   {
-    m_dirtyBounds = m_dirtyBounds.createUnion(m_dirtyArea.getBounds());
+    m_dirtyBounds = m_dirtyBounds.createUnion(m_dirtyArea.bounds());
     m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
   }
 

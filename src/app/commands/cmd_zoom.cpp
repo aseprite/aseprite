@@ -24,6 +24,7 @@
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
+#include "base/convert_to.h"
 
 namespace app {
 
@@ -38,6 +39,7 @@ protected:
   void onLoadParams(Params* params);
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+  std::string onGetFriendlyName() const;
 
 private:
   Action m_action;
@@ -96,6 +98,25 @@ void ZoomCommand::onExecute(Context* context)
   }
 
   current_editor->setEditorZoom(zoom);
+}
+
+std::string ZoomCommand::onGetFriendlyName() const
+{
+  std::string text = "Zoom";
+
+  switch (m_action) {
+    case In:
+      text += " in";
+      break;
+    case Out:
+      text += " out";
+      break;
+    case Set:
+      text += " " + base::convert_to<std::string>(m_percentage) + "%";
+      break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createZoomCommand()

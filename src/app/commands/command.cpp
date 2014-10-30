@@ -37,6 +37,11 @@ Command::~Command()
 {
 }
 
+std::string Command::friendlyName() const
+{
+  return onGetFriendlyName();
+}
+
 void Command::loadParams(Params* params)
 {
   onLoadParams(params);
@@ -99,6 +104,11 @@ bool Command::onChecked(Context* context)
 void Command::onExecute(Context* context)
 {
   // Do nothing
+}
+
+std::string Command::onGetFriendlyName() const
+{
+  return m_friendly_name;
 }
 
 } // namespace app

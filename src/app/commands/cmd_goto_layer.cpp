@@ -59,7 +59,7 @@ protected:
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
  : GotoCommand("GotoPreviousLayer",
-               "Goto Previous Layer",
+               "Go to Previous Layer",
                CmdUIOnlyFlag)
 {
 }
@@ -101,7 +101,7 @@ protected:
 
 GotoNextLayerCommand::GotoNextLayerCommand()
   : GotoCommand("GotoNextLayer",
-                "Goto Next Layer",
+                "Go to Next Layer",
                 CmdUIOnlyFlag)
 {
 }

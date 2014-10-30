@@ -39,7 +39,7 @@ protected:
 
 GotoNextTabCommand::GotoNextTabCommand()
   : Command("GotoNextTab",
-            "Goto Next Tab",
+            "Go to Next Tab",
             CmdUIOnlyFlag)
 {
 }
@@ -60,7 +60,7 @@ protected:
 
 GotoPreviousTabCommand::GotoPreviousTabCommand()
   : Command("GotoPreviousTab",
-            "Goto Previous tab",
+            "Go to Previous tab",
             CmdRecordableFlag)
 {
 }

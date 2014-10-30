@@ -56,7 +56,7 @@ class GotoFirstFrameCommand : public GotoCommand {
 public:
   GotoFirstFrameCommand()
     : GotoCommand("GotoFirstFrame",
-                  "Goto First Frame") { }
+                  "Go to First Frame") { }
   Command* clone() const override { return new GotoFirstFrameCommand(*this); }
 
 protected:
@@ -69,7 +69,7 @@ class GotoPreviousFrameCommand : public GotoCommand {
 public:
   GotoPreviousFrameCommand()
     : GotoCommand("GotoPreviousFrame",
-                  "Goto Previous Frame") { }
+                  "Go to Previous Frame") { }
   Command* clone() const override { return new GotoPreviousFrameCommand(*this); }
 
 protected:
@@ -86,7 +86,7 @@ protected:
 class GotoNextFrameCommand : public GotoCommand {
 public:
   GotoNextFrameCommand() : GotoCommand("GotoNextFrame",
-                                       "Goto Next Frame") { }
+                                       "Go to Next Frame") { }
   Command* clone() const override { return new GotoNextFrameCommand(*this); }
 
 protected:
@@ -102,7 +102,7 @@ protected:
 class GotoLastFrameCommand : public GotoCommand {
 public:
   GotoLastFrameCommand() : GotoCommand("GotoLastFrame",
-                                       "Goto Last Frame") { }
+                                       "Go to Last Frame") { }
   Command* clone() const override { return new GotoLastFrameCommand(*this); }
 
 protected:
@@ -114,7 +114,7 @@ protected:
 class GotoFrameCommand : public GotoCommand {
 public:
   GotoFrameCommand() : GotoCommand("GotoFrame",
-                                   "Goto Frame")
+                                   "Go to Frame")
                      , m_frame(0) { }
   Command* clone() const override { return new GotoFrameCommand(*this); }
 

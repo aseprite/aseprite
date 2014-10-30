@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#include <pixman.h>
+
 #include "gfx/region.h"
 #include "gfx/point.h"
 #include <limits>
@@ -17,44 +19,16 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
-
-// Anonymous namespace to include pixman-region.c. Macros doesn't respect
-// namespaces but anyway they are defined inside it just for reference
-// (to know that they are needed only for pixman-region.c).
-namespace {
-
-  #define PREFIX(x) pixman_region32##x
-  #define PIXMAN_EXPORT
-  #define _pixman_log_error(x, y) while (0) { }
-  #define critical_if_fail assert
-
-  typedef int64_t overflow_int_t;
-  typedef gfx::details::Box box_type_t;
-  typedef gfx::details::RegionData region_data_type_t;
-  typedef gfx::details::Region region_type_t;
-  typedef bool pixman_bool_t;
-
-  #ifndef UINT32_MAX
-  #define UINT32_MAX        std::numeric_limits<uint32_t>::max()
-  #endif
-
-  #define PIXMAN_REGION_MAX std::numeric_limits<int>::max()
-  #define PIXMAN_REGION_MIN std::numeric_limits<int>::min()
-
-  typedef gfx::Region::Overlap pixman_region_overlap_t;
-  const gfx::Region::Overlap PIXMAN_REGION_OUT = gfx::Region::Out;
-  const gfx::Region::Overlap PIXMAN_REGION_IN = gfx::Region::In;
-  const gfx::Region::Overlap PIXMAN_REGION_PART = gfx::Region::Part;
-
-  pixman_bool_t
-  PREFIX(_union)(region_type_t *new_reg,
-    region_type_t *reg1,
-    region_type_t *reg2);
-
-  #include "gfx/pixman/pixman-region.c"
-}
   
 namespace gfx {
+
+inline Rect to_rect(const pixman_box32& extends)
+{
+  return Rect(
+    extends.x1, extends.y1,
+    extends.x2 - extends.x1,
+    extends.y2 - extends.y1);
+}
 
 Region::Region()
 {
@@ -83,7 +57,7 @@ Region::~Region()
 Region& Region::operator=(const Rect& rect)
 {
   if (!rect.isEmpty()) {
-    box_type_t box = { rect.x, rect.y, rect.x2(), rect.y2() };
+    pixman_box32 box = { rect.x, rect.y, rect.x2(), rect.y2() };
     pixman_region32_reset(&m_region, &box);
   }
   else
@@ -100,28 +74,28 @@ Region& Region::operator=(const Region& copy)
 Region::iterator Region::begin()
 {
   iterator it;
-  it.m_ptr = PIXREGION_RECTS(&m_region);
+  it.m_ptr = pixman_region32_rectangles(&m_region, NULL);
   return it;
 }
 
 Region::iterator Region::end()
 {
   iterator it;
-  it.m_ptr = PIXREGION_RECTS(&m_region) + PIXREGION_NUMRECTS(&m_region);
+  it.m_ptr = pixman_region32_rectangles(&m_region, NULL) + size();
   return it;
 }
 
 Region::const_iterator Region::begin() const
 {
   const_iterator it;
-  it.m_ptr = PIXREGION_RECTS(&m_region);
+  it.m_ptr = pixman_region32_rectangles(&m_region, NULL);
   return it;
 }
 
 Region::const_iterator Region::end() const
 {
   const_iterator it;
-  it.m_ptr = PIXREGION_RECTS(&m_region) + PIXREGION_NUMRECTS(&m_region);
+  it.m_ptr = pixman_region32_rectangles(&m_region, NULL) + size();
   return it;
 }
 
@@ -130,14 +104,14 @@ bool Region::isEmpty() const
   return pixman_region32_not_empty(&m_region) ? false: true;
 }
 
-Rect Region::getBounds() const
+Rect Region::bounds() const
 {
-  return m_region.extents;
+  return to_rect(*pixman_region32_extents(&m_region));
 }
 
 size_t Region::size() const
 {
-  return PIXREGION_NUMRECTS(&m_region);
+  return pixman_region32_n_rects(&m_region);
 }
 
 void Region::clear()
@@ -180,20 +154,20 @@ bool Region::contains(const PointT<int>& pt) const
 
 Region::Overlap Region::contains(const Rect& rect) const
 {
-  box_type_t box = { rect.x, rect.y, rect.x2(), rect.y2() };
-  return pixman_region32_contains_rectangle(&m_region, &box);
+  pixman_box32 box = { rect.x, rect.y, rect.x2(), rect.y2() };
+  return (Region::Overlap)pixman_region32_contains_rectangle(&m_region, &box);
 }
 
 Rect Region::operator[](int i)
 {
-  assert(i >= 0 && i < PIXREGION_NUMRECTS(&m_region));
-  return Rect(PIXREGION_RECTS(&m_region)[i]);
+  assert(i >= 0 && i < (int)size());
+  return to_rect(pixman_region32_rectangles(&m_region, NULL)[i]);
 }
 
 const Rect Region::operator[](int i) const
 {
-  assert(i >= 0 && i < PIXREGION_NUMRECTS(&m_region));
-  return Rect(PIXREGION_RECTS(&m_region)[i]);
+  assert(i >= 0 && i < (int)size());
+  return to_rect(pixman_region32_rectangles(&m_region, NULL)[i]);
 }
 
 } // namespace gfx

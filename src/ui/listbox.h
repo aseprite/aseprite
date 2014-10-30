@@ -15,8 +15,7 @@ namespace ui {
 
   class ListItem;
 
-  class ListBox : public Widget
-  {
+  class ListBox : public Widget {
   public:
     ListBox();
 
@@ -29,6 +28,7 @@ namespace ui {
     size_t getItemsCount() const;
 
     void centerScroll();
+    void sortItems();
 
     Signal0<void> ChangeSelectedItem;
     Signal0<void> DoubleClickItem;

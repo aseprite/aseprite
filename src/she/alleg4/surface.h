@@ -93,8 +93,10 @@ namespace she {
     }
 
     ~Alleg4Surface() {
-      if (m_destroy & DestroyHandle)
-        destroy_bitmap(m_bmp);
+      if (m_destroy & DestroyHandle) {
+        if (m_bmp)
+          destroy_bitmap(m_bmp);
+      }
     }
 
     // Surface implementation

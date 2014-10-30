@@ -28,10 +28,10 @@
 #include "app/context.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/modules/gui.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
 #include "app/util/render.h"
 #include "doc/conversion_she.h"
@@ -127,7 +127,8 @@ protected:
       case kKeyDownMessage: {
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         Command* command = NULL;
-        get_command_from_key_message(msg, &command, NULL);
+        KeyboardShortcuts::instance()
+          ->getCommandFromKeyMessage(msg, &command, NULL);
 
         // Change frame
         if (command != NULL &&

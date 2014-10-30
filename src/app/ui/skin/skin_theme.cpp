@@ -23,6 +23,8 @@
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/resource_finder.h"
+#include "app/ui/app_menuitem.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
@@ -1244,7 +1246,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 {
   int scale = jguiscale();
   Graphics* g = ev.getGraphics();
-  MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
+  AppMenuItem* widget = static_cast<AppMenuItem*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
   gfx::Color fg, bg;
   int c, bar;
@@ -1326,13 +1328,13 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       }
     }
     // Draw the keyboard shortcut
-    else if (widget->getAccel()) {
+    else if (widget->getKey() && !widget->getKey()->accels().empty()) {
       int old_align = widget->getAlign();
 
       pos = bounds;
       pos.w -= widget->child_spacing/4;
 
-      std::string buf = widget->getAccel()->toString();
+      std::string buf = widget->getKey()->accels().front().toString();
 
       widget->setAlign(JI_RIGHT | JI_MIDDLE);
       drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);

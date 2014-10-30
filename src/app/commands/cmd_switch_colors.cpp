@@ -37,7 +37,7 @@ protected:
 
 SwitchColorsCommand::SwitchColorsCommand()
   : Command("SwitchColors",
-            "SwitchColors",
+            "Switch Colors",
             CmdUIOnlyFlag)
 {
 }

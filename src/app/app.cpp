@@ -54,6 +54,7 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
@@ -326,7 +327,8 @@ App::~App()
     delete m_legacy;
     delete m_modules;
 
-    // Destroy the loaded gui.xml file.
+    // Destroy the loaded gui.xml data.
+    delete KeyboardShortcuts::instance();
     delete GuiXml::instance();
 
     m_instance = NULL;

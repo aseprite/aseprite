@@ -134,6 +134,18 @@ else()
   include_directories(${LOADPNG_DIR})
 endif()
 
+if(USE_SHARED_PIXMAN)
+  find_library(LIBPIXMAN_LIBRARY NAMES pixman)
+  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h)
+
+  set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
+  include_directories(${LIBPIXMAN_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} pixman)
+  include_directories(${PIXMAN_DIR}/pixman)
+  include_directories(${CMAKE_BINARY_DIR})
+endif()
+
 set(libs3rdparty simpleini ${libs3rdparty})
 include_directories(${SIMPLEINI_DIR})
 
@@ -319,7 +331,7 @@ function(find_tests dir dependencies)
 endfunction()
 
 find_tests(base base-lib ${sys_libs})
-find_tests(gfx gfx-lib base-lib ${sys_libs})
+find_tests(gfx gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(doc doc-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
 find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})

@@ -23,6 +23,7 @@
 #include "ui/menu.h"
 
 namespace app {
+  class Key;
   class Command;
   class Params;
 
@@ -33,17 +34,22 @@ namespace app {
   // used to check the availability of the command).
   class AppMenuItem : public ui::MenuItem {
   public:
-    AppMenuItem(const char* text, Command* command, Params* params);
+    AppMenuItem(const char* text, Command* command, const Params* params);
     ~AppMenuItem();
+
+    Key* getKey() { return m_key; }
+    void setKey(Key* key) { m_key = key; }
 
     Command* getCommand() { return m_command; }
     Params* getParams() { return m_params; }
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
+    void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onClick() override;
 
   private:
+    Key* m_key;
     Command* m_command;
     Params* m_params;
   };

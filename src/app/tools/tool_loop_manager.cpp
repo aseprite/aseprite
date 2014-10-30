@@ -272,10 +272,10 @@ void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, R
         break;
     }
 
-    Rect outsideBounds = outside.getBounds();
+    Rect outsideBounds = outside.bounds();
     if (outsideBounds.x < 0) outside.offset(w * (1+((-outsideBounds.x) / w)), 0);
     if (outsideBounds.y < 0) outside.offset(0, h * (1+((-outsideBounds.y) / h)));
-    int x1 = outside.getBounds().x;
+    int x1 = outside.bounds().x;
 
     while (true) {
       Region in_sprite;
@@ -283,7 +283,7 @@ void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, R
       outside.createSubtraction(outside, in_sprite);
       dirty_area.createUnion(dirty_area, in_sprite);
 
-      outsideBounds = outside.getBounds();
+      outsideBounds = outside.bounds();
       if (outsideBounds.isEmpty())
         break;
       else if (outsideBounds.x+outsideBounds.w > w)

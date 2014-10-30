@@ -50,6 +50,7 @@ public:
 protected:
   void onLoadParams(Params* params);
   void onExecute(Context* context);
+  std::string onGetFriendlyName() const;
 };
 
 ChangeColorCommand::ChangeColorCommand()
@@ -106,6 +107,29 @@ void ChangeColorCommand::onExecute(Context* context)
     colorbar->setBgColor(color);
   else
     colorbar->setFgColor(color);
+}
+
+std::string ChangeColorCommand::onGetFriendlyName() const
+{
+  std::string text = "Color";
+
+  switch (m_change) {
+    case None:
+      return text;
+    case IncrementIndex:
+      text += ": Increment";
+      break;
+    case DecrementIndex:
+      text += ": Decrement";
+      break;
+  }
+
+  if (m_background)
+    text += " Background Index";
+  else
+    text += " Foreground Index";
+
+  return text;
 }
 
 Command* CommandFactory::createChangeColorCommand()

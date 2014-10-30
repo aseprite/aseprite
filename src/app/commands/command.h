@@ -21,6 +21,7 @@
 #pragma once
 
 #include "app/commands/command_factory.h"
+#include <string>
 
 namespace app {
   class Context;
@@ -44,7 +45,7 @@ namespace app {
     virtual Command* clone() const { return new Command(*this); }
 
     const char* short_name() const { return m_short_name; }
-    const char* friendly_name() const { return m_friendly_name; }
+    std::string friendlyName() const;
 
     void loadParams(Params* params);
     bool isEnabled(Context* context);
@@ -56,6 +57,7 @@ namespace app {
     virtual bool onEnabled(Context* context);
     virtual bool onChecked(Context* context);
     virtual void onExecute(Context* context);
+    virtual std::string onGetFriendlyName() const;
   };
 
 } // namespace app

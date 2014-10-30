@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,6 @@
 
 #include <string>
 #include <vector>
-
-namespace ui {
-  class MenuBar;
-  class Widget;
-  class Window;
-}
 
 namespace doc {
   class Layer;
@@ -108,7 +102,7 @@ namespace app {
   void app_rebuild_documents_tabs();
   PixelFormat app_get_current_pixel_format();
   void app_default_statusbar_message();
-  int app_get_color_to_clear_layer(Layer* layer);
+  int app_get_color_to_clear_layer(doc::Layer* layer);
 
 } // namespace app
 

@@ -10,16 +10,15 @@
 
 #include <gtest/gtest.h>
 
+#include "doc/algorithm/resize_image.h"
 #include "doc/color.h"
 #include "doc/image.h"
-#include "doc/algorithm/resize_image.h"
+#include "doc/primitives.h"
 
 using namespace std;
 using namespace doc;
 
-/***************************
- * Test dat
- */
+// Test data
 
 // Base image
 color_t test_image_base_3x3[9] =
@@ -67,43 +66,27 @@ Image* create_image_from_data(PixelFormat format, color_t* data, int width, int 
   return new_image;
 }
 
-// Simple pixel to pixel image comparison
-bool compare_images(Image* a, Image* b)
-{
-  for (int y = 0; y < a->height(); y++) {
-    for (int x = 0; x < a->width(); x++) {
-      if (!(a->getPixel(x, y) == b->getPixel(x, y)))
-        return false;
-    }
-  }
-  return true;
-}
-
 TEST(ResizeImage, NearestNeighborInterp)
 {
   Image* src = create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3);
+  Image* dst_expected = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
+
   Image* dst = Image::create(IMAGE_RGB, 9, 9);
-
-  // Pre-rendered test image for comparison
-  Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
-
   algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL);
 
-  ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
+  ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
 }
 
 #if 0                           // TODO complete this test
 TEST(ResizeImage, BilinearInterpRGBType)
 {
   Image* src = create_image_from_data(IMAGE_RGB, test_image_base_3x3, 3, 3);
+  Image* dst_expected = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_bilinear, 9, 9);
+
   Image* dst = Image::create(IMAGE_RGB, 9, 9);
-
-  // Pre-rendered test image for comparison
-  Image* test_dst = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_bilinear, 9, 9);
-
   algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_BILINEAR, NULL, NULL);
 
-  ASSERT_TRUE(compare_images(dst, test_dst)) << "resize_image() result does not match test image!";
+  ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
 }
 #endif
 

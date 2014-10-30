@@ -48,7 +48,7 @@ private:
 
 CancelCommand::CancelCommand()
   : Command("Cancel",
-            "Cancel",
+            "Cancel Current Operation",
             CmdUIOnlyFlag)
   , m_type(NoOp)
 {

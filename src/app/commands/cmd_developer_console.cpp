@@ -49,7 +49,7 @@ protected:
 
 DeveloperConsoleCommand::DeveloperConsoleCommand()
   : Command("DeveloperConsole",
-            "DeveloperConsole",
+            "Developer Console",
             CmdUIOnlyFlag)
 {
   m_devConsole = NULL;

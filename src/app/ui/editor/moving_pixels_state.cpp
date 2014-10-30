@@ -28,7 +28,6 @@
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
-#include "app/modules/gui.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -38,6 +37,7 @@
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/editor/transform_handles.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -326,7 +326,8 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
   else {
     Command* command = NULL;
     Params* params = NULL;
-    if (get_command_from_key_message(msg, &command, &params)) {
+    if (KeyboardShortcuts::instance()
+          ->getCommandFromKeyMessage(msg, &command, &params)) {
       // We accept zoom commands.
       if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
         UIContext::instance()->executeCommand(command, params);

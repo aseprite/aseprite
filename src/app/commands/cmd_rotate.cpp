@@ -33,6 +33,7 @@
 #include "app/ui/timeline.h"
 #include "app/undo_transaction.h"
 #include "app/util/range_utils.h"
+#include "base/convert_to.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -51,6 +52,7 @@ protected:
   void onLoadParams(Params* params);
   bool onEnabled(Context* context);
   void onExecute(Context* context);
+  std::string onGetFriendlyName() const;
 
 private:
   bool m_flipMask;
@@ -231,6 +233,20 @@ void RotateCommand::onExecute(Context* context)
   }
   reader.document()->generateMaskBoundaries();
   update_screen_for_document(reader.document());
+}
+
+std::string RotateCommand::onGetFriendlyName() const
+{
+  std::string text = "Rotate";
+
+  if (m_flipMask)
+    text += " Selection";
+  else
+    text += " Sprite";
+
+  text += " " + base::convert_to<std::string>(m_angle) + "\xc2\xb0";
+
+  return text;
 }
 
 Command* CommandFactory::createRotateCommand()

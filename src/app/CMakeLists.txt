@@ -44,6 +44,7 @@ add_library(app-lib
   commands/cmd_grid.cpp
   commands/cmd_import_sprite_sheet.cpp
   commands/cmd_invert_mask.cpp
+  commands/cmd_keyboard_shortcuts.cpp
   commands/cmd_launch.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
@@ -185,6 +186,7 @@ add_library(app-lib
   ui/file_list.cpp
   ui/file_selector.cpp
   ui/hex_color_entry.cpp
+  ui/keyboard_shortcuts.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
   ui/mini_editor.cpp
@@ -194,6 +196,7 @@ add_library(app-lib
   ui/palettes_listbox.cpp
   ui/popup_window_pin.cpp
   ui/resources_listbox.cpp
+  ui/select_accelerator.cpp
   ui/skin/button_icon_impl.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp

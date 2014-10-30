@@ -26,58 +26,58 @@
 namespace app {
 
   class Params {
-    std::map<std::string, std::string> m_params;
-
   public:
+    typedef std::map<std::string, std::string> Map;
+    typedef Map::iterator iterator;
+    typedef Map::const_iterator const_iterator;
+
+    iterator begin() { return m_params.begin(); }
+    iterator end() { return m_params.end(); }
+    const_iterator begin() const { return m_params.begin(); }
+    const_iterator end() const { return m_params.end(); }
 
     Params() { }
     Params(const Params& copy) : m_params(copy.m_params) { }
     virtual ~Params() { }
 
-    Params* clone()
-    {
+    Params* clone() const {
       return new Params(*this);
     }
 
-    bool empty() const
-    {
+    bool empty() const {
       return m_params.empty();
     }
 
-    bool has_param(const char* name) const
-    {
+    bool has_param(const char* name) const {
       return m_params.find(name) != m_params.end();
     }
 
-    bool operator==(const Params& params) const
-    {
+    bool operator==(const Params& params) const {
       return m_params == params.m_params;
     }
 
-    bool operator!=(const Params& params) const
-    {
+    bool operator!=(const Params& params) const {
       return m_params != params.m_params;
     }
 
-    std::string& set(const char* name, const char* value)
-    {
+    std::string& set(const char* name, const char* value) {
       return m_params[name] = value;
     }
 
-    std::string& get(const char* name)
-    {
+    std::string& get(const char* name) {
       return m_params[name];
     }
 
     template<typename T>
-    T get_as(const char* name)
-    {
+    T get_as(const char* name) {
       std::istringstream stream(m_params[name]);
       T value;
       stream >> value;
       return value;
     }
 
+  private:
+    Map m_params;
   };
 
 } // namespace app

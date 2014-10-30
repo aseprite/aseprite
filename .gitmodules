@@ -1,3 +1,6 @@
+[submodule "third_party/pixman"]
+	path = third_party/pixman
+	url = git@github.com:aseprite/pixman.git
 [submodule "third_party/simpleini"]
 	path = third_party/simpleini
 	url = git@github.com:aseprite/simpleini.git
