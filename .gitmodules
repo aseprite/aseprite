@@ -1,3 +1,3 @@
 [submodule "third_party/pixman"]
 	path = third_party/pixman
-	url = git@github.com:aseprite/pixman.git
+	url = https://github.com/aseprite/pixman.git
