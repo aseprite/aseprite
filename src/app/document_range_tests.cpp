@@ -78,6 +78,12 @@ typedef base::UniquePtr<Document> DocumentPtr;
   EXPECT_TRUE(expect_frame(f, 5));              \
   EXPECT_TRUE(expect_frame(g, 6));
 
+#define EXPECT_CEL(y, x, v, u)                  \
+  EXPECT_TRUE(expect_cel(y, x, v, u));
+
+#define EXPECT_EMPTY_CEL(y, x)                  \
+  EXPECT_TRUE(expect_empty_cel(y, x));
+
 class DocRangeOps : public ::testing::Test {
 public:
   DocRangeOps() {
@@ -147,19 +153,11 @@ protected:
 
   bool expect_layer_frame(int expected_layer, int expected_frame, int layer, int frame) {
     if (frame >= 0) {
-      color_t expected_color = white;
+      if (!expect_cel(expected_layer, expected_frame, layer, frame))
+        return false;
 
-      color_t color = get_pixel(
-        static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
-          ->getCel(FrameNumber(frame))->image(),
-        expected_layer, expected_frame);
-
-      EXPECT_EQ(expected_color, color);
       EXPECT_EQ((expected_frame+1), sprite->getFrameDuration(FrameNumber(frame)));
-
-      return
-        (expected_color == color
-          && (expected_frame+1) == sprite->getFrameDuration(FrameNumber(frame)));
+      return ((expected_frame+1) == sprite->getFrameDuration(FrameNumber(frame)));
     }
 
     if (layer >= 0) {
@@ -171,6 +169,27 @@ protected:
     }
 
     return true;
+  }
+
+  bool expect_cel(int expected_layer, int expected_frame, int layer, int frame) {
+    color_t expected_color = white;
+
+    color_t color = get_pixel(
+      static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
+      ->getCel(FrameNumber(frame))->image(),
+      expected_layer, expected_frame);
+
+    EXPECT_EQ(expected_color, color);
+
+    return (expected_color == color);
+  }
+
+  bool expect_empty_cel(int layer, int frame) {
+    Cel* cel = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
+      ->getCel(FrameNumber(frame));
+
+    EXPECT_EQ(NULL, cel);
+    return (cel == NULL);
   }
 
   TestContext ctx;
@@ -220,6 +239,10 @@ inline DocumentRange frames_range(int fromFrame, int toFrame) {
 
 inline DocumentRange frames_range(int frame) {
   return range(0, frame, 0, frame, DocumentRange::kFrames);
+}
+
+inline DocumentRange cels_range(int fromLayer, int fromFrNum, int toLayer, int toFrNum) {
+  return range(fromLayer, fromFrNum, toLayer, toFrNum, DocumentRange::kCels);
 }
 
 TEST_F(DocRangeOps, MoveLayersNoOp) {
@@ -679,7 +702,37 @@ TEST_F(DocRangeOps, MoveFrames) {
 }
 
 TEST_F(DocRangeOps, MoveCels) {
-  // TODO
+  DocumentRangePlace ignore = kDocumentRangeBefore;
+
+  move_range(doc,
+    cels_range(0, 0, 0, 0),
+    cels_range(0, 1, 0, 1), ignore);
+  EXPECT_CEL(0, 0, 0, 1);
+  EXPECT_EMPTY_CEL(0, 0);
+  doc->getUndo()->doUndo();
+  EXPECT_CEL(0, 0, 0, 0);
+
+  move_range(doc,
+    cels_range(0, 0, 0, 1),
+    cels_range(0, 2, 0, 3), ignore);
+  EXPECT_CEL(0, 0, 0, 2);
+  EXPECT_CEL(0, 1, 0, 3);
+  EXPECT_EMPTY_CEL(0, 0);
+  EXPECT_EMPTY_CEL(0, 1);
+  doc->getUndo()->doUndo();
+
+  move_range(doc,
+    cels_range(0, 0, 0, 3),
+    cels_range(1, 0, 1, 3), ignore);
+  EXPECT_CEL(0, 0, 1, 0);
+  EXPECT_CEL(0, 1, 1, 1);
+  EXPECT_CEL(0, 2, 1, 2);
+  EXPECT_CEL(0, 3, 1, 3);
+  EXPECT_EMPTY_CEL(0, 0);
+  EXPECT_EMPTY_CEL(0, 1);
+  EXPECT_EMPTY_CEL(0, 2);
+  EXPECT_EMPTY_CEL(0, 3);
+  doc->getUndo()->doUndo();
 }
 
 TEST_F(DocRangeOps, CopyLayers) {
