@@ -35,7 +35,9 @@
   #ifndef WM_MOUSEHWHEEL
     #define WM_MOUSEHWHEEL 0x020E
   #endif
+
 #elif defined(ALLEGRO_UNIX)
+
   #include <xalleg.h>
   #ifdef None
   #undef None
@@ -48,6 +50,10 @@
   #include "she/clipboard_win.h"
 #else
   #include "she/clipboard_simple.h"
+#endif
+
+#ifdef __APPLE__
+  #include <allegro/platform/aintosx.h>
 #endif
 
 #include "loadpng.h"
@@ -407,7 +413,27 @@ void unsubclass_hwnd(HWND hwnd)
   base_wndproc = NULL;
 }
   
-#endif
+#endif // WIN32
+
+#if __APPLE__
+
+void osx_mouser_enter_she_callback()
+{
+  Event ev;
+  ev.setPosition(gfx::Point(0, 0));
+  ev.setType(Event::MouseEnter);
+  queue_event(ev);
+}
+
+void osx_mouser_leave_she_callback()
+{
+  Event ev;
+  ev.setType(Event::MouseLeave);
+  queue_event(ev);
+}
+
+#endif // __APPLE__
+
 } // anonymous namespace
 
 class Alleg4Display : public Display {
@@ -416,6 +442,11 @@ public:
     : m_surface(NULL)
     , m_scale(0) {
     unique_display = this;
+
+#ifdef __APPLE__
+    osx_mouse_enter_callback = osx_mouser_enter_she_callback;
+    osx_mouse_leave_callback = osx_mouser_leave_she_callback;
+#endif
 
     if (install_mouse() < 0) throw DisplayCreationException(allegro_error);
     if (install_keyboard() < 0) throw DisplayCreationException(allegro_error);

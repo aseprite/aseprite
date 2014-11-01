@@ -181,11 +181,13 @@ AL_VAR(int, osx_mouse_warped);
 AL_VAR(int, osx_skip_mouse_move);
 AL_VAR(int, osx_emulate_mouse_buttons);
 AL_VAR(NSTrackingRectTag, osx_mouse_tracking_rect);
-extern AL_METHOD(void, osx_window_close_hook, (void));
-extern AL_METHOD(void, osx_resize_callback, (RESIZE_DISPLAY_EVENT *ev));
-
 
 #endif
+
+extern AL_METHOD(void, osx_window_close_hook, (void));
+extern AL_METHOD(void, osx_resize_callback, (RESIZE_DISPLAY_EVENT *ev));
+extern AL_METHOD(void, osx_mouse_enter_callback, (void));
+extern AL_METHOD(void, osx_mouse_leave_callback, (void));
 
 #endif
 

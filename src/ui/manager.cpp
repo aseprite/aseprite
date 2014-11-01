@@ -102,6 +102,9 @@ static char old_readed_key[KEY_MAX]; /* keyboard status of previous
 
 static unsigned key_repeated[KEY_MAX];
 
+// Flag to block all the generation of mouse messages from polling.
+static bool mouse_left = false;
+
 /* keyboard focus movement stuff */
 static bool move_focus(Manager* manager, Message* msg);
 static int count_widgets_accept_focus(Widget* widget);
@@ -288,6 +291,9 @@ bool Manager::generateMessages()
 
 void Manager::generateMouseMessages()
 {
+  if (mouse_left)
+    return;
+
   // Update mouse status
   bool mousemove = _internal_poll_mouse();
 
@@ -469,18 +475,14 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseEnter: {
-        if (!mouse_events_from_she)
-          continue;
-
+        mouse_left = false;
         jmouse_set_cursor(kArrowCursor);
         break;
       }
 
       case she::Event::MouseLeave: {
-        if (!mouse_events_from_she)
-          continue;
-
-        jmouse_set_cursor(kNoCursor);
+        mouse_left = true;
+        jmouse_set_cursor(kOutsideDisplay);
         setMouse(NULL);
 
         _internal_no_mouse_position();

@@ -11,6 +11,8 @@
 namespace ui {
 
   enum CursorType {
+    kOutsideDisplay = -1,
+
     kFirstCursorType = 0,
     kNoCursor = 0,
     kArrowCursor,
