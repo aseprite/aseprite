@@ -707,20 +707,6 @@ bool GifFormat::onSave(FileOp* fop)
         throw Exception("Error writing GIF graphics extension record (trailer section).");
     }
 
-    // Add Aseprite block (at this moment, it's empty).
-    if (frame_num == 0) {
-      if (EGifPutExtensionLeader(gif_file, APPLICATION_EXT_FUNC_CODE) == GIF_ERROR)
-        throw Exception("Error writing GIF comment (header section).");
-
-      unsigned char extension_bytes[11];
-      memcpy(extension_bytes, "ASEPRITE1.0", 11);
-      if (EGifPutExtensionBlock(gif_file, sizeof(extension_bytes), extension_bytes) == GIF_ERROR)
-        throw Exception("Error writing GIF comment (first block).");
-
-      if (EGifPutExtensionTrailer(gif_file) == GIF_ERROR)
-        throw Exception("Error writing GIF comment (trailer section).");
-    }
-
     // Write graphics extension record (to save the duration of the
     // frame and maybe the transparency index).
     {
