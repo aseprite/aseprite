@@ -75,11 +75,14 @@ static void update_mouse_cursor()
   // Use native cursor when it's possible/available/configured to do so.
 
   bool native_cursor_available = false;
-  if (use_native_mouse_cursor) {
+  if (use_native_mouse_cursor || mouse_cursor_type == kOutsideDisplay) {
     she::NativeCursor nativeCursor = she::kNoCursor;
 
     native_cursor_available = true;
     switch (mouse_cursor_type) {
+      case ui::kOutsideDisplay:
+        nativeCursor = she::kArrowCursor;
+        break;
       case ui::kNoCursor: break;
       case ui::kArrowCursor:
       case ui::kArrowPlusCursor:
@@ -128,10 +131,12 @@ static void update_mouse_cursor()
   // Use a software cursor with the overlay.
 
   if (!native_cursor_set) {
-    if (mouse_cursor_type == ui::kNoCursor)
+    if (mouse_cursor_type == ui::kNoCursor) {
       update_mouse_overlay(NULL);
-    else
+    }
+    else {
       update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
+    }
   }
   else {
     // Hide the overlay if we are using a native cursor.

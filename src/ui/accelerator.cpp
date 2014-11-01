@@ -321,8 +321,11 @@ std::string Accelerator::toString() const
   if (m_modifiers & kKeySpaceModifier) buf += "Space+";
 
   // Key
-  if (m_unicodeChar)
-    buf += (wchar_t)toupper(m_unicodeChar);
+  if (m_unicodeChar) {
+    std::wstring wideUnicodeChar;
+    wideUnicodeChar.push_back((wchar_t)toupper(m_unicodeChar));
+    buf += base::to_utf8(wideUnicodeChar);
+  }
   else if (m_scancode && m_scancode > 0 && m_scancode < (int)table_size)
     buf += table[m_scancode];
   else if (!buf.empty() && buf[buf.size()-1] == '+')

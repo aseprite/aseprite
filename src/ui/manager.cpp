@@ -281,7 +281,7 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseLeave: {
-        jmouse_set_cursor(kNoCursor);
+        jmouse_set_cursor(kOutsideDisplay);
         setMouse(NULL);
 
         _internal_no_mouse_position();

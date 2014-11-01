@@ -740,13 +740,10 @@ void DocumentApi::moveCel(
     // Move the cel between different layers.
     else {
       if (!dstCel) {
+        dstImage = Image::createCopy(srcImage);
+
         dstCel = new Cel(*srcCel);
         dstCel->setFrame(dstFrame);
-        dstImage = crop_image(srcImage,
-          -srcCel->x(),
-          -srcCel->y(),
-          dstSprite->width(),   // TODO dstSprite or srcSprite
-          dstSprite->height(), 0);
         dstCel->setImage(addImageInStock(dstSprite, dstImage));
       }
 

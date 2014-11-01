@@ -21,9 +21,11 @@
 #pragma once
 
 #include "app/context.h"
+#include "app/document.h"
 #include "app/document_location.h"
-#include "doc/settings.h"
 #include "doc/layer.h"
+#include "doc/settings.h"
+#include "doc/sprite.h"
 
 namespace app {
 

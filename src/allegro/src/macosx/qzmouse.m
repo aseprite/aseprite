@@ -255,7 +255,12 @@ static void osx_mouse_set_range(int x1, int y1, int x2, int y2)
    mouse_maxx = x2;
    mouse_maxy = y2;
 
-   osx_mouse_position(CLAMP(mouse_minx, _mouse_x, mouse_maxx), CLAMP(mouse_miny, _mouse_y, mouse_maxy));
+   // Do not change the position of the mouse inside the
+   // range to avoid changing the position to 0,0 when
+   // the program starts.
+   //osx_mouse_position(
+   //  CLAMP(mouse_minx, _mouse_x, mouse_maxx),
+   //  CLAMP(mouse_miny, _mouse_y, mouse_maxy));
 }
 
 
@@ -418,13 +423,13 @@ static int osx_select_system_cursor(AL_CONST int cursor)
          requested_cursor = [NSCursor operationNotAllowedCursor];
          break;
       case MOUSE_CURSOR_SIZE_N:
-         requested_cursor = [NSCursor resizeUpCursor]; break;
+         requested_cursor = [NSCursor resizeUpCursor];
          break;
       case MOUSE_CURSOR_SIZE_S:
-         requested_cursor = [NSCursor resizeDownCursor]; break;
+         requested_cursor = [NSCursor resizeDownCursor];
          break;
       case MOUSE_CURSOR_SIZE_NS:
-         requested_cursor = [NSCursor resizeUpDownCursor]; break;
+         requested_cursor = [NSCursor resizeUpDownCursor];
          break;
       case MOUSE_CURSOR_SIZE_W:
          requested_cursor = [NSCursor resizeLeftCursor];

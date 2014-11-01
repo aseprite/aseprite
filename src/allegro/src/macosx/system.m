@@ -69,6 +69,8 @@ AllegroWindow *osx_window = NULL;
 char osx_window_title[ALLEGRO_MESSAGE_SIZE];
 void (*osx_window_close_hook)(void) = NULL;
 void (*osx_resize_callback)(RESIZE_DISPLAY_EVENT *ev) = NULL;
+void (*osx_mouse_enter_callback)() = NULL;
+void (*osx_mouse_leave_callback)() = NULL;
 int osx_gfx_mode = OSX_GFX_NONE;
 int osx_emulate_mouse_buttons = FALSE;
 int osx_window_first_expose = FALSE;
@@ -295,6 +297,9 @@ void osx_event_handler()
                     _mouse_on = TRUE;
                     osx_hide_native_mouse();
                   }
+
+                  if (osx_mouse_enter_callback)
+                    osx_mouse_enter_callback();
                }
             }
             [NSApp sendEvent: event];
@@ -308,6 +313,9 @@ void osx_event_handler()
                     _mouse_on = FALSE;
                     osx_show_native_mouse();
                   }
+
+                  if (osx_mouse_leave_callback)
+                    osx_mouse_leave_callback();
                }
             }
             [NSApp sendEvent: event];

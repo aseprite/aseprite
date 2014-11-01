@@ -54,7 +54,10 @@ void key_poller_generate_events()
 
     ev.setType(Event::KeyDown);
     ev.setScancode(static_cast<KeyScancode>(scancode));
-    ev.setUnicodeChar(unicode_char);
+    if (unicode_char != 0)
+      ev.setUnicodeChar(unicode_char);
+    else
+      ev.setUnicodeChar(::scancode_to_ascii(scancode));
     ev.setRepeat(repeat);
     queue_event(ev);
   }

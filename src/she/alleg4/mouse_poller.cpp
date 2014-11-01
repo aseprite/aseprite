@@ -14,8 +14,13 @@
 #include "she/event.h"
 
 #include <allegro.h>
+
 #ifdef WIN32
   #include <winalleg.h>
+#endif
+
+#ifdef __APPLE__
+  #include <allegro/platform/aintosx.h>
 #endif
 
 namespace {
@@ -35,6 +40,9 @@ int she_mouse_x;
 int she_mouse_y;
 int she_mouse_z;
 int she_mouse_b;
+
+// Flag to block all the generation of mouse messages from polling.
+bool mouse_left = false;
 
 DlbClk double_click_level;
 Event::MouseButton double_click_button = Event::NoneButton;
@@ -131,6 +139,29 @@ void generate_mouse_event_for_button(Event::MouseButton button, int old_b, int n
   queue_event(ev);
 }
 
+#if __APPLE__
+
+void osx_mouser_enter_she_callback()
+{
+  Event ev;
+  ev.setPosition(gfx::Point(0, 0));
+  ev.setType(Event::MouseEnter);
+  queue_event(ev);
+
+  mouse_left = false;
+}
+
+void osx_mouser_leave_she_callback()
+{
+  Event ev;
+  ev.setType(Event::MouseLeave);
+  queue_event(ev);
+
+  mouse_left = true;
+}
+
+#endif // __APPLE__
+
 }
 
 namespace she { 
@@ -140,10 +171,18 @@ void mouse_poller_init()
   double_click_level = DOUBLE_CLICK_NONE;
   double_click_ticks = 0;
   moved = true;
+
+#ifdef __APPLE__
+  osx_mouse_enter_callback = osx_mouser_enter_she_callback;
+  osx_mouse_leave_callback = osx_mouser_leave_she_callback;
+#endif
 }
 
 void mouse_poller_generate_events()
 {
+  if (mouse_left)
+    return;
+
   int old_b = she_mouse_b;
   int old_z = she_mouse_z;
 

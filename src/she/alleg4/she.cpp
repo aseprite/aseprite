@@ -40,7 +40,9 @@
   #ifndef WM_MOUSEHWHEEL
     #define WM_MOUSEHWHEEL 0x020E
   #endif
+
 #elif defined(ALLEGRO_UNIX)
+
   #include <xalleg.h>
   #ifdef None
   #undef None
@@ -448,7 +450,8 @@ void unsubclass_hwnd(HWND hwnd)
   base_wndproc = NULL;
 }
   
-#endif
+#endif // WIN32
+
 } // anonymous namespace
 
 class Alleg4Display : public Display {
