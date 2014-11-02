@@ -109,6 +109,7 @@ int rgba_blend_merge(int back, int front, int opacity)
   int B_r, B_g, B_b, B_a;
   int F_r, F_g, F_b, F_a;
   int D_r, D_g, D_b, D_a;
+  int t;
 
   B_r = rgba_getr(back);
   B_g = rgba_getg(back);
@@ -131,11 +132,13 @@ int rgba_blend_merge(int back, int front, int opacity)
     D_b = B_b;
   }
   else {
-    D_r = B_r + (F_r-B_r) * opacity / 255;
-    D_g = B_g + (F_g-B_g) * opacity / 255;
-    D_b = B_b + (F_b-B_b) * opacity / 255;
+    D_r = B_r + INT_MULT((F_r - B_r), opacity, t);
+    D_g = B_g + INT_MULT((F_g - B_g), opacity, t);
+    D_b = B_b + INT_MULT((F_b - B_b), opacity, t);
   }
-  D_a = B_a + (F_a-B_a) * opacity / 255;
+  D_a = B_a + INT_MULT((F_a - B_a), opacity, t);
+  if (D_a == 0)
+    D_r = D_g = D_b = 0;
 
   return rgba(D_r, D_g, D_b, D_a);
 }
@@ -274,6 +277,7 @@ int graya_blend_merge(int back, int front, int opacity)
   int B_k, B_a;
   int F_k, F_a;
   int D_k, D_a;
+  int t;
 
   B_k = graya_getv(back);
   B_a = graya_geta(back);
@@ -288,9 +292,11 @@ int graya_blend_merge(int back, int front, int opacity)
     D_k = B_k;
   }
   else {
-    D_k = B_k + (F_k-B_k) * opacity / 255;
+    D_k = B_k + INT_MULT((F_k-B_k), opacity, t);
   }
-  D_a = B_a + (F_a-B_a) * opacity / 255;
+  D_a = B_a + INT_MULT((F_a-B_a), opacity, t);
+  if (D_a == 0)
+    D_k = 0;
 
   return graya(D_k, D_a);
 }

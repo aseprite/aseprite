@@ -22,6 +22,7 @@
 #include "app/tools/shading_options.h"
 #include "filters/neighboring_pixels.h"
 #include "raster/palette.h"
+#include "raster/raster.h"
 #include "raster/rgbmap.h"
 #include "raster/sprite.h"
 
@@ -475,14 +476,27 @@ private:
 
 template<>
 void ReplaceInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  if (*m_srcAddress == m_color1)
-    *m_dstAddress = rgba_blend_normal(*m_srcAddress, m_color2, m_opacity);
+  color_t src = (*m_srcAddress);
+
+  // Colors (m_srcAddress and m_color1) match if:
+  // * They are both completelly transparent (alpha == 0)
+  // * Or they are not transparent and the RGB values are the same
+  if ((rgba_geta(src) == 0 && rgba_geta(m_color1) == 0) ||
+      (rgba_geta(src) > 0 && rgba_geta(m_color1) > 0 &&
+       ((src & rgba_rgb_mask) == (m_color1 & rgba_rgb_mask)))) {
+    *m_dstAddress = rgba_blend_merge(src, m_color2, m_opacity);
+  }
 }
 
 template<>
 void ReplaceInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  if (*m_srcAddress == m_color1)
-    *m_dstAddress = graya_blend_normal(*m_srcAddress, m_color2, m_opacity);
+  color_t src = (*m_srcAddress);
+
+  if ((graya_geta(src) == 0 && graya_geta(m_color1) == 0) ||
+      (graya_geta(src) > 0 && graya_geta(m_color1) > 0 &&
+       ((src & graya_v_mask) == (m_color1 & graya_v_mask)))) {
+    *m_dstAddress = graya_blend_merge(src, m_color2, m_opacity);
+  }
 }
 
 template<>
