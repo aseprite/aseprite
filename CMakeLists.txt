@@ -162,7 +162,7 @@ if(UNIX AND NOT APPLE AND NOT BEOS)
     message(FATAL_ERROR "Unix port requires X11 (e.g. libx11-dev).")
   endif()
   include_directories(SYSTEM ${X11_INCLUDE_DIR})
-  list(APPEND PLATFORM_LIBS ${X11_LIBRARIES})
+  list(APPEND PLATFORM_LIBS ${X11_X11_LIB})
 
   if(X11_XShm_FOUND)
     list(APPEND PLATFORM_LIBS ${X11_Xext_LIB})
