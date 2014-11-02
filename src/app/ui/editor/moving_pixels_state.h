@@ -78,6 +78,9 @@ namespace app {
     void setTransparentColor(const app::Color& color);
     void dropPixels(Editor* editor);
 
+    bool isActiveDocument() const;
+    bool isActiveEditor() const;
+
     // Helper member to move/translate selection and pixels.
     PixelsMovementPtr m_pixelsMovement;
     Editor* m_editor;
