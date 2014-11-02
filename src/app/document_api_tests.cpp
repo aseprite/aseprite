@@ -21,18 +21,18 @@
 #include "app/document_api.h"
 #include "app/test_context.h"
 #include "base/unique_ptr.h"
-#include "raster/cel.h"
-#include "raster/image.h"
-#include "raster/primitives.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/primitives.h"
 
 using namespace app;
-using namespace raster;
+using namespace doc;
 
-typedef base::UniquePtr<Document> DocumentPtr;
+typedef base::UniquePtr<app::Document> DocumentPtr;
 
 TEST(DocumentApi, MoveCel) {
   TestContext ctx;
-  DocumentPtr doc(static_cast<Document*>(ctx.documents().add(32, 16)));
+  DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(32, 16)));
   Sprite* sprite = doc->sprite();
   LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
   LayerImage* layer2 = new LayerImage(sprite);
