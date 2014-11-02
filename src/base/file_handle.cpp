@@ -21,6 +21,11 @@
 #include <fcntl.h>
 #endif
 
+#ifndef O_BINARY
+#define O_BINARY  0
+#define O_TEXT    0
+#endif
+
 using namespace std;
 
 namespace base {
