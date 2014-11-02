@@ -133,6 +133,8 @@ static void get_working_area(RECT *working_area)
  */
 static void switch_in_win(void)
 {
+   gfx_directx_compare_color_depth(desktop_color_depth());
+
    restore_all_ddraw_surfaces();
    get_working_area(&working_area);
 }

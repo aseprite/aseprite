@@ -275,12 +275,14 @@ DDRAW_SURFACE *gfx_directx_create_surface(int w, int h, LPDDPIXELFORMAT pixel_fo
       return NULL;
 
    /* create the surface with the specified characteristics */
-   surf->id = create_directdraw2_surface(w, h, pixel_format,type, 0);
+   surf->id = create_directdraw2_surface(w, h, pixel_format, type, 0);
    if (!surf->id) {
       _AL_FREE(surf);
       return NULL;
    }
 
+   surf->w = w;
+   surf->h = h;
    surf->flags = type;
    surf->lock_nesting = 0;
 
@@ -303,6 +305,40 @@ void gfx_directx_destroy_surface(DDRAW_SURFACE *surf)
 
 
 
+int gfx_directx_restore_surface(DDRAW_SURFACE *surf)
+{
+  int type = (surf->flags & DDRAW_SURFACE_TYPE_MASK);
+  HRESULT hr;
+
+   hr = IDirectDrawSurface2_Restore(surf->id);
+   if (FAILED(hr)) {
+     LPDIRECTDRAWSURFACE2 new_id;
+
+     hr = IDirectDrawSurface2_Release(surf->id);
+     if (FAILED(hr))
+       return -1;
+
+     new_id = create_directdraw2_surface(
+       surf->w, surf->h, ddpixel_format, type, 0);
+     if (!new_id) {
+       surf->id = 0;
+       return -1;
+     }
+
+     surf->id = new_id;
+
+     if (type == DDRAW_SURFACE_PRIMARY) {
+       hr = IDirectDrawSurface_SetClipper(surf->id, ddclipper);
+       if (FAILED(hr))
+         return -1;
+     }
+   }
+
+   return 0;
+}
+
+
+
 /* gfx_directx_make_bitmap_from_surface:
  *  Connects a DirectDraw surface with an Allegro bitmap.
  */
@@ -315,7 +351,7 @@ BITMAP *gfx_directx_make_bitmap_from_surface(DDRAW_SURFACE *surf, int w, int h, 
    if (!bmp)
       return NULL;
 
-   bmp->w =w;
+   bmp->w = w;
    bmp->cr = w;
    bmp->h = h;
    bmp->cb = h;
