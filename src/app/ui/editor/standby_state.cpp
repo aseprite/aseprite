@@ -555,6 +555,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     // Other editor is locking the document.
 
     // TODO steal the PixelsMovement of the other editor and use it for this one.
+    StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
+    jmouse_set_cursor(kForbiddenCursor);
   }
 }
 

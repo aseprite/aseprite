@@ -41,6 +41,7 @@
 /* wrapper for DirectDraw surfaces */
 typedef struct DDRAW_SURFACE {
    LPDIRECTDRAWSURFACE2 id;
+   int w, h;
    int flags;
    int lock_nesting;
    BITMAP *parent_bmp;  /* only used by the flipping chain */
@@ -138,6 +139,7 @@ AL_FUNCPTR(void,   _al_wd_update_window, (RECT *rect));
 /* bitmap creation (from wddbmp.c) */
 AL_FUNC(DDRAW_SURFACE *, gfx_directx_create_surface, (int w, int h, LPDDPIXELFORMAT pixel_format, int type));
 AL_FUNC(void, gfx_directx_destroy_surface, (DDRAW_SURFACE *surf));
+AL_FUNC(int, gfx_directx_restore_surface, (DDRAW_SURFACE *surf));
 AL_FUNC(BITMAP *, gfx_directx_make_bitmap_from_surface, (DDRAW_SURFACE *surf, int w, int h, int id));
 
 

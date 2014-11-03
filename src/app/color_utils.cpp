@@ -119,31 +119,44 @@ doc::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
 
 doc::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
 {
-  if (color.getType() == app::Color::MaskType)
-    return colorTarget.maskColor();
-
   doc::color_t c = -1;
+
+  if (color.getType() == app::Color::MaskType) {
+    c = colorTarget.maskColor();
+  }
+  else {
+    switch (colorTarget.pixelFormat()) {
+      case IMAGE_RGB:
+        c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+        break;
+      case IMAGE_GRAYSCALE:
+        c = doc::graya(color.getGray(), 255);
+        break;
+      case IMAGE_INDEXED:
+        if (color.getType() == app::Color::IndexType) {
+          c = color.getIndex();
+        }
+        else {
+          c = get_current_palette()->findBestfit(
+            color.getRed(),
+            color.getGreen(),
+            color.getBlue(),
+            colorTarget.isTransparent() ?
+              colorTarget.maskColor(): // Don't return the mask color
+              -1);                     // Return any color, we are in a background layer.
+        }
+        break;
+    }
+  }
 
   switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:
-      c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+      if (colorTarget.isBackground())
+        c |= doc::rgba(0, 0, 0, 255);
       break;
     case IMAGE_GRAYSCALE:
-      c = doc::graya(color.getGray(), 255);
-      break;
-    case IMAGE_INDEXED:
-      if (color.getType() == app::Color::IndexType) {
-        c = color.getIndex();
-      }
-      else {
-        c = get_current_palette()->findBestfit(
-          color.getRed(),
-          color.getGreen(),
-          color.getBlue(),
-          colorTarget.isTransparent() ?
-            colorTarget.maskColor(): // Don't return the mask color
-            -1);                     // Return any color, we are in a background layer.
-      }
+      if (colorTarget.isBackground())
+        c |= doc::graya(0, 255);
       break;
   }
 
