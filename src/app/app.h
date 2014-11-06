@@ -51,7 +51,7 @@ namespace app {
 
   class App {
   public:
-    App(int argc, const char* argv[]);
+    App();
     ~App();
 
     static App* instance() { return m_instance; }
@@ -63,8 +63,10 @@ namespace app {
     bool isPortable();
 
     // Runs the Aseprite application. In GUI mode it's the top-level
-    // window, in console/scripting it just runs the specified scripts.
-    int run();
+    // window, in console/scripting it just runs the specified
+    // scripts.
+    void initialize(int argc, const char* argv[]);
+    void run();
 
     tools::ToolBox* getToolBox() const;
     RecentFiles* getRecentFiles() const;

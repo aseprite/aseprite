@@ -39,16 +39,13 @@ namespace base {
     public:
       Option(const std::string& name)
         : m_name(name)
-        , m_mnemonic(0)
-        , m_enabled(false) {
+        , m_mnemonic(0) {
       }
       // Getters
       const std::string& name() const { return m_name; }
       const std::string& description() const { return m_description; }
-      const std::string& value() const { return m_value; }
       const std::string& getValueName() const { return m_valueName; }
       char mnemonic() const { return m_mnemonic; }
-      bool enabled() const { return m_enabled; }
       bool doesRequireValue() const { return !m_valueName.empty(); }
       // Setters
       Option& description(const std::string& desc) { m_description = desc; return *this; }
@@ -58,21 +55,29 @@ namespace base {
         return *this;
       }
     private:
-      void setValue(const std::string& value) { m_value = value; }
-      void setEnabled(bool enabled) { m_enabled = enabled; }
-
       std::string m_name;        // Name of the option (e.g. "help" for "--help")
       std::string m_description; // Description of the option (this can be used when the help is printed).
-      std::string m_value;       // The value specified by the user in the command line.
       std::string m_valueName;   // Empty if this option doesn't require a value, or the name of the expected value.
       char m_mnemonic;           // One character that can be used in the command line to use this option.
-      bool m_enabled;            // True if the user specified this argument.
 
       friend class ProgramOptions;
     };
 
+    class Value {
+    public:
+      Value(Option* option, const std::string& value)
+        : m_option(option)
+        , m_value(value) {
+      }
+      const Option* option() const { return m_option; }
+      const std::string& value() const { return m_value; }
+    private:
+      Option* m_option;
+      std::string m_value;
+    };
+
     typedef std::vector<Option*> OptionList;
-    typedef std::vector<std::string> ValueList;
+    typedef std::vector<Value> ValueList;
 
     ProgramOptions();
 
@@ -88,23 +93,19 @@ namespace base {
     // Detects which options where specified in the command line.
     void parse(int argc, const char* argv[]);
 
-    // Reset all options values/flags.
+    // Reset all option values/flags.
     void reset();
 
-    // Returns the list of available options. To know the list of
-    // specified options you can iterate this list asking for
-    // Option::enabled() flag to know if the option was specified by
-    // the user in the command line.
+    // Returns the list of available options for the user.
     const OptionList& options() const { return m_options; }
 
-    // Returns the list of values that are not associated to any
-    // options. E.g. a list of files specified in the command line to
-    // be opened.
+    // List of specified options/values in the command line.
     const ValueList& values() const { return m_values; }
 
-  private:
-    static void resetOption(Option* option);
+    bool enabled(const Option& option) const;
+    std::string value_of(const Option& option) const;
 
+  private:
     OptionList m_options;
     ValueList m_values;
   };

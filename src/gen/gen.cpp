@@ -18,23 +18,24 @@ typedef base::ProgramOptions PO;
 static void run(int argc, const char* argv[])
 {
   PO po;
-  PO::Option& inputFn = po.add("input").requiresValue("<filename>");
+  PO::Option& inputOpt = po.add("input").requiresValue("<filename>");
   PO::Option& widgetId = po.add("widgetid").requiresValue("<filename>");
   po.parse(argc, argv);
 
   // Try to load the XML file
   TiXmlDocument* doc = NULL;
 
-  if (inputFn.enabled()) {
-    base::FileHandle inputFile(base::open_file(inputFn.value(), "rb"));
+  std::string inputFilename = po.value_of(inputOpt);
+  if (!inputFilename.empty()) {
+    base::FileHandle inputFile(base::open_file(inputFilename, "rb"));
     doc = new TiXmlDocument();
-    doc->SetValue(inputFn.value().c_str());
+    doc->SetValue(inputFilename.c_str());
     if (!doc->LoadFile(inputFile))
       throw std::runtime_error("invalid input file");
   }
 
-  if (doc && widgetId.enabled())
-    gen_ui_class(doc, inputFn.value(), widgetId.value());
+  if (doc && po.enabled(widgetId))
+    gen_ui_class(doc, inputFilename, po.value_of(widgetId));
 }
 
 int main(int argc, const char* argv[])

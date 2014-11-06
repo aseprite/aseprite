@@ -38,7 +38,7 @@ public:
 
   const std::string& paletteFileName() const { return m_paletteFileName; }
 
-  const base::ProgramOptions::ValueList& files() const {
+  const base::ProgramOptions::ValueList& values() const {
     return m_po.values();
   }
 

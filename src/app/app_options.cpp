@@ -57,27 +57,27 @@ AppOptions::AppOptions(int argc, const char* argv[])
   try {
     m_po.parse(argc, argv);
 
-    m_verbose = verbose.enabled();
-    m_paletteFileName = palette.value();
-    m_startShell = shell.enabled();
-    // m_dataFormat = dataFormat.value();
-    m_data = data.value();
-    // m_textureFormat = textureFormat.value();
-    m_sheet = sheet.value();
+    m_verbose = m_po.enabled(verbose);
+    m_paletteFileName = m_po.value_of(palette);
+    m_startShell = m_po.enabled(shell);
+    // m_dataFormat = m_po.value_of(dataFormat);
+    m_data = m_po.value_of(data);
+    // m_textureFormat = m_po.value_of(textureFormat);
+    m_sheet = m_po.value_of(sheet);
     // if (scale.enabled())
-    //   m_scale = std::strtod(scale.value().c_str(), NULL);
-    // m_scaleMode = scaleMode.value();
+    //   m_scale = std::strtod(m_po.value_of(scale).c_str(), NULL);
+    // m_scaleMode = m_po.value_of(scaleMode);
 
-    if (help.enabled()) {
+    if (m_po.enabled(help)) {
       showHelp();
       m_startUI = false;
     }
-    else if (version.enabled()) {
+    else if (m_po.enabled(version)) {
       showVersion();
       m_startUI = false;
     }
 
-    if (shell.enabled() || batch.enabled()) {
+    if (m_po.enabled(shell) || m_po.enabled(batch)) {
       m_startUI = false;
     }
   }

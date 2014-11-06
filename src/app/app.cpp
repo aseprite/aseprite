@@ -111,9 +111,7 @@ public:
 
 App* App::m_instance = NULL;
 
-// Initializes the application loading the modules, setting the
-// graphics mode, loading the configuration and resources, etc.
-App::App(int argc, const char* argv[])
+App::App()
   : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
@@ -122,14 +120,18 @@ App::App(int argc, const char* argv[])
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
+}
 
+void App::initialize(int argc, const char* argv[])
+{
   AppOptions options(argc, argv);
 
+  // Initializes the application loading the modules, setting the
+  // graphics mode, loading the configuration and resources, etc.
   m_modules = new Modules(!options.startUI(), options.verbose());
   m_isGui = options.startUI();
   m_isShell = options.startShell();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
-  m_files = options.files();
 
   if (options.hasExporterParams()) {
     m_exporter.reset(new DocumentExporter);
@@ -177,13 +179,9 @@ App::App(int argc, const char* argv[])
 
   // Set system palette to the default one.
   set_current_palette(NULL, true);
-}
-
-int App::run()
-{
-  UIContext* context = UIContext::instance();
 
   // Initialize GUI interface
+  UIContext* context = UIContext::instance();
   if (isGui()) {
     PRINTF("GUI mode\n");
 
@@ -215,9 +213,15 @@ int App::run()
   // Procress options
   PRINTF("Processing options...\n");
 
+  // Open file specified in the command line
   {
     Console console;
-    for (const std::string& filename : m_files) {
+    for (const auto& value : options.values()) {
+      if (value.option() != NULL) // File names aren't associated to any option
+        continue;
+
+      const std::string& filename = value.value();
+
       // Load the sprite
       Document* document = load_document(context, filename.c_str());
       if (!document) {
@@ -245,7 +249,10 @@ int App::run()
     m_exporter->exportSheet();
     m_exporter.reset(NULL);
   }
+}
 
+void App::run()
+{
   // Run the GUI
   if (isGui()) {
 #ifdef ENABLE_UPDATER
@@ -301,8 +308,6 @@ int App::run()
       std::cerr << "Your version of " PACKAGE " wasn't compiled with shell support.\n";
     }
   }
-
-  return 0;
 }
 
 // Finishes the Aseprite application.
