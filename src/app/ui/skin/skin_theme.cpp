@@ -1244,7 +1244,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 {
   int scale = jguiscale();
   Graphics* g = ev.getGraphics();
-  AppMenuItem* widget = static_cast<AppMenuItem*>(ev.getSource());
+  MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
   gfx::Color fg, bg;
   int c, bar;
@@ -1326,17 +1326,19 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       }
     }
     // Draw the keyboard shortcut
-    else if (widget->getKey() && !widget->getKey()->accels().empty()) {
-      int old_align = widget->getAlign();
+    else if (AppMenuItem* appMenuItem = dynamic_cast<AppMenuItem*>(widget)) {
+      if (appMenuItem->getKey() && !appMenuItem->getKey()->accels().empty()) {
+        int old_align = appMenuItem->getAlign();
 
-      pos = bounds;
-      pos.w -= widget->child_spacing/4;
+        pos = bounds;
+        pos.w -= widget->child_spacing/4;
 
-      std::string buf = widget->getKey()->accels().front().toString();
+        std::string buf = appMenuItem->getKey()->accels().front().toString();
 
-      widget->setAlign(JI_RIGHT | JI_MIDDLE);
-      drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
-      widget->setAlign(old_align);
+        widget->setAlign(JI_RIGHT | JI_MIDDLE);
+        drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
+        widget->setAlign(old_align);
+      }
     }
   }
 }
