@@ -67,8 +67,16 @@ UIContext::~UIContext()
   ASSERT(documents().empty());
 }
 
+bool UIContext::isUiAvailable() const
+{
+  return App::instance()->isGui();
+}
+
 DocumentView* UIContext::activeView() const
 {
+  if (!isUiAvailable())
+    return NULL;
+
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
   WorkspaceView* view = workspace->activeView();
   if (DocumentView* docView = dynamic_cast<DocumentView*>(view))
