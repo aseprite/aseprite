@@ -70,7 +70,7 @@ int app_main(int argc, char* argv[])
     she::ScopedHandle<she::System> system(she::create_system());
     MemLeak memleak;
     ui::GuiSystem guiSystem;
-    app::App app(argc, const_cast<const char**>(argv));
+    app::App app;
 
     // Change the name of the memory dump file
     {
@@ -79,7 +79,9 @@ int app_main(int argc, char* argv[])
         memoryDump.setFileName(filename);
     }
 
-    return app.run();
+    app.initialize(argc, const_cast<const char**>(argv));
+    app.run();
+    return 0;
   }
   catch (std::exception& e) {
     std::cerr << e.what() << '\n';

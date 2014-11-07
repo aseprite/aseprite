@@ -20,7 +20,9 @@
 #include "config.h"
 #endif
 
+#include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/find_widget.h"
@@ -157,34 +159,48 @@ protected:
 
 };
 
-class SpriteSizeCommand : public Command {
-public:
-  SpriteSizeCommand();
-  Command* clone() const override { return new SpriteSizeCommand(*this); }
-
-protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
-
-private:
-  void onLockRatioClick();
-  void onWidthPxChange();
-  void onHeightPxChange();
-  void onWidthPercChange();
-  void onHeightPercChange();
-
-  CheckBox* m_lockRatio;
-  Entry* m_widthPx;
-  Entry* m_heightPx;
-  Entry* m_widthPerc;
-  Entry* m_heightPerc;
-};
-
 SpriteSizeCommand::SpriteSizeCommand()
   : Command("SpriteSize",
             "Sprite Size",
             CmdRecordableFlag)
 {
+  m_width = 0;
+  m_height = 0;
+  m_scaleX = 1.0;
+  m_scaleY = 1.0;
+  m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
+}
+
+Command* SpriteSizeCommand::clone() const
+{
+  return new SpriteSizeCommand(*this);
+}
+
+void SpriteSizeCommand::onLoadParams(Params* params)
+{
+  std::string width = params->get("width");
+  if (!width.empty()) {
+    m_width = std::strtol(width.c_str(), NULL, 10);
+  }
+  else
+    m_width = 0;
+
+  std::string height = params->get("height");
+  if (!height.empty()) {
+    m_height = std::strtol(height.c_str(), NULL, 10);
+  }
+  else
+    m_height = 0;
+
+  std::string resize_method = params->get("resize-method");
+  if (!resize_method.empty()) {
+    if (resize_method == "bilinear")
+      m_resizeMethod = doc::algorithm::RESIZE_METHOD_BILINEAR;
+    else
+      m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
+  }
+  else
+    m_resizeMethod = doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR;
 }
 
 bool SpriteSizeCommand::onEnabled(Context* context)
@@ -195,58 +211,63 @@ bool SpriteSizeCommand::onEnabled(Context* context)
 
 void SpriteSizeCommand::onExecute(Context* context)
 {
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
+  const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
+  int new_width = (m_width ? m_width: sprite->width()*m_scaleX);
+  int new_height = (m_height ? m_height: sprite->height()*m_scaleY);
+  ResizeMethod resize_method = m_resizeMethod;
 
-  // load the window widget
-  base::UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
-  m_widthPx = app::find_widget<Entry>(window, "width_px");
-  m_heightPx = app::find_widget<Entry>(window, "height_px");
-  m_widthPerc = app::find_widget<Entry>(window, "width_perc");
-  m_heightPerc = app::find_widget<Entry>(window, "height_perc");
-  m_lockRatio = app::find_widget<CheckBox>(window, "lock_ratio");
-  ComboBox* method = app::find_widget<ComboBox>(window, "method");
-  Widget* ok = app::find_widget<Widget>(window, "ok");
+  if (context->isUiAvailable()) {
+    // load the window widget
+    base::UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
+    m_widthPx = app::find_widget<Entry>(window, "width_px");
+    m_heightPx = app::find_widget<Entry>(window, "height_px");
+    m_widthPerc = app::find_widget<Entry>(window, "width_perc");
+    m_heightPerc = app::find_widget<Entry>(window, "height_perc");
+    m_lockRatio = app::find_widget<CheckBox>(window, "lock_ratio");
+    ComboBox* method = app::find_widget<ComboBox>(window, "method");
+    Widget* ok = app::find_widget<Widget>(window, "ok");
 
-  m_widthPx->setTextf("%d", sprite->width());
-  m_heightPx->setTextf("%d", sprite->height());
+    m_widthPx->setTextf("%d", new_width);
+    m_heightPx->setTextf("%d", new_height);
 
-  m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
-  m_widthPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
-  m_heightPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
-  m_widthPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
-  m_heightPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
+    m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
+    m_widthPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
+    m_heightPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
+    m_widthPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
+    m_heightPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
 
-  method->addItem("Nearest-neighbor");
-  method->addItem("Bilinear");
-  method->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
-                                              doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
+    method->addItem("Nearest-neighbor");
+    method->addItem("Bilinear");
+    method->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
+        doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
 
-  window->remapWindow();
-  window->centerWindow();
+    window->remapWindow();
+    window->centerWindow();
 
-  load_window_pos(window, "SpriteSize");
-  window->setVisible(true);
-  window->openWindowInForeground();
-  save_window_pos(window, "SpriteSize");
+    load_window_pos(window, "SpriteSize");
+    window->setVisible(true);
+    window->openWindowInForeground();
+    save_window_pos(window, "SpriteSize");
 
-  if (window->getKiller() == ok) {
-    int new_width = m_widthPx->getTextInt();
-    int new_height = m_heightPx->getTextInt();
-    ResizeMethod resize_method =
-      (ResizeMethod)method->getSelectedItemIndex();
+    if (window->getKiller() != ok)
+      return;
+
+    new_width = m_widthPx->getTextInt();
+    new_height = m_heightPx->getTextInt();
+    resize_method = (ResizeMethod)method->getSelectedItemIndex();
 
     set_config_int("SpriteSize", "Method", resize_method);
-
-    {
-      SpriteSizeJob job(reader, new_width, new_height, resize_method);
-      job.startJob();
-      job.waitJob();
-    }
-
-    ContextWriter writer(reader);
-    update_screen_for_document(writer.document());
   }
+
+  {
+    SpriteSizeJob job(reader, new_width, new_height, resize_method);
+    job.startJob();
+    job.waitJob();
+  }
+
+  ContextWriter writer(reader);
+  update_screen_for_document(writer.document());
 }
 
 void SpriteSizeCommand::onLockRatioClick()

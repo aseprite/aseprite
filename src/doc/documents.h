@@ -35,6 +35,7 @@ namespace doc {
 
     Document* front() const { return m_docs.front(); }
     Document* back() const { return m_docs.back(); }
+    Document* lastAdded() const { return front(); }
 
     int size() const { return m_docs.size(); }
     bool empty() const { return m_docs.empty(); }

@@ -289,9 +289,10 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command,
     Widget* child = *it;
 
     if (child->getType() == kMenuItemWidget) {
-      ASSERT(dynamic_cast<AppMenuItem*>(child) != NULL);
+      AppMenuItem* menuitem = dynamic_cast<AppMenuItem*>(child);
+      if (!menuitem)
+        continue;
 
-      AppMenuItem* menuitem = static_cast<AppMenuItem*>(child);
       Command* mi_command = menuitem->getCommand();
       Params* mi_params = menuitem->getParams();
 

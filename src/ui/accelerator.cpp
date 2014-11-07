@@ -75,32 +75,40 @@ Accelerator::Accelerator(const std::string& str)
     // Scancode
 
     // Word with one character
-    else if (tok.size() == 1) {
-      if ((tok[0] >= 'a') && (tok[0] <= 'z')) {
-        m_unicodeChar = tok[0];
-      }
-      else {
-        m_unicodeChar = tok[0];
+    else if (base::utf8_length(tok) == 1) {
+      std::wstring wstr = base::from_utf8(tok);
+      if (wstr.size() != 1) {
+        ASSERT(false && "Something wrong converting utf-8 to wchar string");
+        continue;
       }
 
-      if ((tok[0] >= 'a') && (tok[0] <= 'z'))
-        m_scancode = (KeyScancode)((int)kKeyA + std::tolower(tok[0]) - 'a');
-      else if ((tok[0] >= '0') && (tok[0] <= '9'))
-        m_scancode = (KeyScancode)((int)kKey0 + tok[0] - '0');
+      wchar_t wchr = wstr[0];
+      wchr = tolower(wchr);
+
+      if ((wchr >= 'a') && (wchr <= 'z')) {
+        m_unicodeChar = wchr;
+        m_scancode = (KeyScancode)((int)kKeyA + wchr - 'a');
+      }
       else {
-        switch (tok[0]) {
-          case '~': m_scancode = kKeyTilde; break;
-          case '-': m_scancode = kKeyMinus; break;
-          case '=': m_scancode = kKeyEquals; break;
-          case '[': m_scancode = kKeyOpenbrace; break;
-          case ']': m_scancode = kKeyClosebrace; break;
-          case ';': m_scancode = kKeyColon; break;
-          case '\'': m_scancode = kKeyQuote; break;
-          case '\\': m_scancode = kKeyBackslash; break;
-          case ',': m_scancode = kKeyComma; break;
-          case '.': m_scancode = kKeyStop; break;
-          case '/': m_scancode = kKeySlash; break;
-          case '*': m_scancode = kKeyAsterisk; break;
+        m_unicodeChar = wchr;
+
+        if ((wchr >= '0') && (wchr <= '9'))
+          m_scancode = (KeyScancode)((int)kKey0 + wchr - '0');
+        else {
+          switch (wchr) {
+            case '~': m_scancode = kKeyTilde; break;
+            case '-': m_scancode = kKeyMinus; break;
+            case '=': m_scancode = kKeyEquals; break;
+            case '[': m_scancode = kKeyOpenbrace; break;
+            case ']': m_scancode = kKeyClosebrace; break;
+            case ';': m_scancode = kKeyColon; break;
+            case '\'': m_scancode = kKeyQuote; break;
+            case '\\': m_scancode = kKeyBackslash; break;
+            case ',': m_scancode = kKeyComma; break;
+            case '.': m_scancode = kKeyStop; break;
+            case '/': m_scancode = kKeySlash; break;
+            case '*': m_scancode = kKeyAsterisk; break;
+          }
         }
       }
     }

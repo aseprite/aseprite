@@ -22,6 +22,7 @@
 
 #include "app/job.h"
 
+#include "app/app.h"
 #include "app/ui/status_bar.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
@@ -34,7 +35,7 @@ static const int kMonitoringPeriod = 100;
 
 namespace app {
 
-Job::Job(const char* job_name)
+Job::Job(const char* jobName)
 {
   m_mutex = NULL;
   m_thread = NULL;
@@ -44,24 +45,29 @@ Job::Job(const char* job_name)
   m_canceled_flag = false;
 
   m_mutex = new base::mutex();
-  m_progress = StatusBar::instance()->addProgress();
-  m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", job_name);
 
-  m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window));
-  m_timer->Tick.connect(&Job::onMonitoringTick, this);
-  m_timer->start();
+  if (App::instance()->isGui()) {
+    m_progress = StatusBar::instance()->addProgress();
+    m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", jobName);
+
+    m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window));
+    m_timer->Tick.connect(&Job::onMonitoringTick, this);
+    m_timer->start();
+  }
 }
 
 Job::~Job()
 {
-  ASSERT(!m_timer->isRunning());
-  ASSERT(m_thread == NULL);
+  if (App::instance()->isGui()) {
+    ASSERT(!m_timer->isRunning());
+    ASSERT(m_thread == NULL);
 
-  if (m_alert_window != NULL)
-    m_alert_window->closeWindow(NULL);
+    if (m_alert_window != NULL)
+      m_alert_window->closeWindow(NULL);
 
-  if (m_progress)
-    delete m_progress;
+    if (m_progress)
+      delete m_progress;
+  }
 
   if (m_mutex)
     delete m_mutex;
@@ -70,19 +76,22 @@ Job::~Job()
 void Job::startJob()
 {
   m_thread = new base::thread(&Job::thread_proc, this);
-  m_alert_window->openWindowInForeground();
 
-  // The job was canceled by the user?
-  {
-    base::scoped_lock hold(*m_mutex);
-    if (!m_done_flag)
-      m_canceled_flag = true;
+  if (m_alert_window) {
+    m_alert_window->openWindowInForeground();
+
+    // The job was canceled by the user?
+    {
+      base::scoped_lock hold(*m_mutex);
+      if (!m_done_flag)
+        m_canceled_flag = true;
+    }
   }
 }
 
 void Job::waitJob()
 {
-  if (m_timer->isRunning())
+  if (m_timer && m_timer->isRunning())
     m_timer->stop();
 
   if (m_thread) {

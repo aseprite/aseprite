@@ -30,33 +30,34 @@ namespace app {
 
 class AppOptions {
 public:
+  typedef base::ProgramOptions PO;
+  typedef PO::Option Option;
+  typedef PO::ValueList ValueList;
+
   AppOptions(int argc, const char* argv[]);
 
   bool startUI() const { return m_startUI; }
   bool startShell() const { return m_startShell; }
-  bool verbose() const { return m_verbose; }
+  bool verbose() const { return m_verboseEnabled; }
 
   const std::string& paletteFileName() const { return m_paletteFileName; }
 
-  const base::ProgramOptions::ValueList& files() const {
+  const ValueList& values() const {
     return m_po.values();
   }
 
   // Export options
-  const std::string& dataFormat() const { return m_dataFormat; }
-  const std::string& data() const { return m_data; }
-  const std::string& textureFormat() const { return m_textureFormat; }
-  const std::string& sheet() const { return m_sheet; }
-  const double scale() const { return m_scale; }
-  const std::string& scaleMode() const { return m_scaleMode; }
+  const Option& saveAs() const { return m_saveAs; }
+  const Option& scale() const { return m_scale; }
+  const Option& data() const { return m_data; }
+  const Option& sheet() const { return m_sheet; }
+  const Option& sheetWidth() const { return m_sheetWidth; }
+  const Option& sheetHeight() const { return m_sheetHeight; }
+  const Option& sheetPack() const { return m_sheetPack; }
+  const Option& splitLayers() const { return m_splitLayers; }
+  const Option& importLayer() const { return m_importLayer; }
 
-  bool hasExporterParams() {
-    return
-      !m_dataFormat.empty() ||
-      !m_data.empty() ||
-      !m_textureFormat.empty() ||
-      !m_sheet.empty();
-  }
+  bool hasExporterParams() const;
 
 private:
   void showHelp();
@@ -66,15 +67,26 @@ private:
   base::ProgramOptions m_po;
   bool m_startUI;
   bool m_startShell;
-  bool m_verbose;
+  bool m_verboseEnabled;
   std::string m_paletteFileName;
 
-  std::string m_dataFormat;
-  std::string m_data;
-  std::string m_textureFormat;
-  std::string m_sheet;
-  double m_scale;
-  std::string m_scaleMode;
+  Option& m_palette;
+  Option& m_shell;
+  Option& m_batch;
+  Option& m_saveAs;
+  Option& m_scale;
+  Option& m_data;
+  Option& m_sheet;
+  Option& m_sheetWidth;
+  Option& m_sheetHeight;
+  Option& m_sheetPack;
+  Option& m_splitLayers;
+  Option& m_importLayer;
+
+  Option& m_verbose;
+  Option& m_help;
+  Option& m_version;
+
 };
 
 } // namespace app

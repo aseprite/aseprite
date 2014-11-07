@@ -85,7 +85,7 @@ void ProgramOptions::parse(int argc, const char* argv[])
           }
 
           Option* option = *it;
-          option->setEnabled(true);
+          std::string optionValue;
 
           if (option->doesRequireValue()) {
             if (usedBy != 0) {
@@ -104,9 +104,11 @@ void ProgramOptions::parse(int argc, const char* argv[])
             }
 
             // Set the value specified for this argument
-            option->setValue(argv[++i]);
+            optionValue = argv[++i];
             usedBy = option->mnemonic();
           }
+
+          m_values.push_back(Value(option, optionValue));
         }
       }
       // Use name
@@ -133,7 +135,6 @@ void ProgramOptions::parse(int argc, const char* argv[])
         }
 
         Option* option = *it;
-        option->setEnabled(true);
 
         if (option->doesRequireValue()) {
           // If the option was specified without '=', we can get the
@@ -147,15 +148,14 @@ void ProgramOptions::parse(int argc, const char* argv[])
             }
             optionValue = argv[++i];
           }
-
-          // Set the value specified for this argument
-          option->setValue(optionValue);
         }
+
+        m_values.push_back(Value(option, optionValue));
       }
     }
-    // Add values
+    // Add values without a related option.
     else {
-      m_values.push_back(arg);
+      m_values.push_back(Value(NULL, arg));
     }
   }
 }
@@ -163,14 +163,24 @@ void ProgramOptions::parse(int argc, const char* argv[])
 void ProgramOptions::reset()
 {
   m_values.clear();
-  for_each(m_options.begin(), m_options.end(), &ProgramOptions::resetOption);
 }
 
-// static
-void ProgramOptions::resetOption(Option* option)
+bool ProgramOptions::enabled(const Option& option) const
 {
-  option->setEnabled(false);
-  option->setValue("");
+  for (const auto& value : m_values) {
+    if (value.option() == &option)
+      return true;
+  }
+  return false;
+}
+
+std::string ProgramOptions::value_of(const Option& option) const
+{
+  for (const auto& value : m_values) {
+    if (value.option() == &option)
+      return value.value();
+  }
+  return "";
 }
 
 } // namespace base
@@ -182,8 +192,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
     size_t optionWidth =
-      std::min<int>(26, 6+option->name().size()+1+
-                        (option->doesRequireValue() ? option->getValueName().size()+1: 0));
+      6+option->name().size()+1+
+      (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (maxOptionWidth < optionWidth)
       maxOptionWidth = optionWidth;
@@ -207,7 +217,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
       bool multilines = (option->description().find('\n') != std::string::npos);
 
       if (!multilines) {
-        os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description();
+        os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description()
+           << "\n";
       }
       else {
         std::istringstream s(option->description());
@@ -220,7 +231,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
         }
       }
     }
-    os << "\n";
+    else
+      os << "\n";
   }
 
   return os;

@@ -153,6 +153,46 @@ static RETSIGTYPE osx_signal_handler(int num)
 
 
 
+static BOOL handle_mouse_enter(
+  NSRect frame, NSRect view, NSPoint point,
+  int* mx, int* my, int* buttons)
+{
+  if (_mouse_installed && !_mouse_on &&
+      (osx_window) && (NSPointInRect(point, view))) {
+    *mx = point.x;
+    *my = frame.size.height - point.y;
+    *buttons = 0;
+
+    _mouse_on = TRUE;
+    osx_hide_native_mouse();
+    if (osx_mouse_enter_callback)
+      osx_mouse_enter_callback();
+
+    return YES;
+  }
+  else
+    return NO;
+}
+
+
+
+static BOOL handle_mouse_leave()
+{
+  if (_mouse_installed) {
+    if (_mouse_on) {
+      _mouse_on = FALSE;
+      osx_show_native_mouse();
+      if (osx_mouse_leave_callback)
+        osx_mouse_leave_callback();
+    }
+    return YES;
+  }
+  else
+    return NO;
+}
+
+
+
 /* osx_event_handler:
  *  Event handling function; gets repeatedly called inside a dedicated thread.
  */
@@ -164,8 +204,8 @@ void osx_event_handler()
    NSPoint point;
    NSRect frame, view;
    int dx = 0, dy = 0, dz = 0;
-   int mx=_mouse_x;
-   int my=_mouse_y;
+   int mx = _mouse_x;
+   int my = _mouse_y;
    static int buttons = 0;
    int event_type;
    BOOL gotmouseevent = NO;
@@ -225,19 +265,10 @@ void osx_event_handler()
          case NSLeftMouseDown:
          case NSOtherMouseDown:
          case NSRightMouseDown:
+            /* App is regaining focus */
             if (![NSApp isActive]) {
-               /* App is regaining focus */
-               if (_mouse_installed) {
-                  if ((osx_window) && (NSPointInRect(point, view))) {
-                     mx = point.x;
-                     my = frame.size.height - point.y;
-                     buttons = 0;
-                     if (!_mouse_on) {
-                       _mouse_on = TRUE;
-                       osx_hide_native_mouse();
-                     }
-                  }
-               }
+               handle_mouse_enter(frame, view, point, &mx, &my, &buttons);
+
                if (osx_window)
                   [osx_window invalidateCursorRectsForView: [osx_window contentView]];
                if (_keyboard_installed)
@@ -259,6 +290,9 @@ void osx_event_handler()
          case NSLeftMouseUp:
          case NSOtherMouseUp:
          case NSRightMouseUp:
+            if ([NSApp isActive])
+               handle_mouse_enter(frame, view, point, &mx, &my, &buttons);
+
             buttons &= ~((event_type == NSLeftMouseUp) ? 0x1 : 0);
             buttons &= ~((event_type == NSRightMouseUp) ? 0x2 : 0);
             buttons &= ~((event_type == NSOtherMouseUp) ? 0x4 : 0);
@@ -271,11 +305,14 @@ void osx_event_handler()
          case NSRightMouseDragged:
          case NSOtherMouseDragged:
          case NSMouseMoved:
+            if ([NSApp isActive])
+               handle_mouse_enter(frame, view, point, &mx, &my, &buttons);
+
             dx += [event deltaX];
             dy += [event deltaY];
 
-            mx=point.x;
-            my=frame.size.height-point.y;
+            mx = point.x;
+            my = frame.size.height - point.y;
 
             [NSApp sendEvent: event];
             gotmouseevent = YES;
@@ -288,35 +325,16 @@ void osx_event_handler()
 
          case NSMouseEntered:
             if (([event trackingNumber] == osx_mouse_tracking_rect) && ([NSApp isActive])) {
-               if (_mouse_installed) {
-                  mx = point.x;
-                  my = frame.size.height - point.y;
-                  buttons = 0;
+               if (handle_mouse_enter(frame, view, point, &mx, &my, &buttons))
                   gotmouseevent = YES;
-                  if (!_mouse_on) {
-                    _mouse_on = TRUE;
-                    osx_hide_native_mouse();
-                  }
-
-                  if (osx_mouse_enter_callback)
-                    osx_mouse_enter_callback();
-               }
             }
             [NSApp sendEvent: event];
             break;
 
          case NSMouseExited:
             if ([event trackingNumber] == osx_mouse_tracking_rect) {
-               if (_mouse_installed) {
+               if (handle_mouse_leave())
                   gotmouseevent = YES;
-                  if (_mouse_on) {
-                    _mouse_on = FALSE;
-                    osx_show_native_mouse();
-                  }
-
-                  if (osx_mouse_leave_callback)
-                    osx_mouse_leave_callback();
-               }
             }
             [NSApp sendEvent: event];
             break;
@@ -328,6 +346,8 @@ void osx_event_handler()
                      [osx_window invalidateCursorRectsForView: [osx_window contentView]];
                      if (_keyboard_installed)
                         osx_keyboard_focused(TRUE, 0);
+
+                     handle_mouse_enter(frame, view, point, &mx, &my, &buttons);
                   }
                   _switch_in();
                   break;
@@ -335,6 +355,7 @@ void osx_event_handler()
                case NSApplicationDeactivatedEventType:
                   if (osx_window && _keyboard_installed)
                      osx_keyboard_focused(FALSE, 0);
+                  handle_mouse_leave();
                   _switch_out();
                   break;
 

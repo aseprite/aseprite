@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 #include "app/app_options.h"
 #include "app/check_update.h"
 #include "app/color_utils.h"
+#include "app/commands/cmd_save_file.h"
+#include "app/commands/cmd_sprite_size.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
@@ -111,9 +113,7 @@ public:
 
 App* App::m_instance = NULL;
 
-// Initializes the application loading the modules, setting the
-// graphics mode, loading the configuration and resources, etc.
-App::App(int argc, const char* argv[])
+App::App()
   : m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
@@ -122,22 +122,21 @@ App::App(int argc, const char* argv[])
 {
   ASSERT(m_instance == NULL);
   m_instance = this;
+}
 
+void App::initialize(int argc, const char* argv[])
+{
   AppOptions options(argc, argv);
 
+  // Initializes the application loading the modules, setting the
+  // graphics mode, loading the configuration and resources, etc.
   m_modules = new Modules(!options.startUI(), options.verbose());
   m_isGui = options.startUI();
   m_isShell = options.startShell();
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
-  m_files = options.files();
 
-  if (options.hasExporterParams()) {
+  if (options.hasExporterParams())
     m_exporter.reset(new DocumentExporter);
-
-    m_exporter->setDataFilename(options.data());
-    m_exporter->setTextureFilename(options.sheet());
-    m_exporter->setScale(options.scale());
-  }
 
   // Register well-known image file types.
   FileFormatsManager::instance()->registerAllFormats();
@@ -177,20 +176,16 @@ App::App(int argc, const char* argv[])
 
   // Set system palette to the default one.
   set_current_palette(NULL, true);
-}
-
-int App::run()
-{
-  UIContext* context = UIContext::instance();
 
   // Initialize GUI interface
+  UIContext* ctx = UIContext::instance();
   if (isGui()) {
     PRINTF("GUI mode\n");
 
     // Setup the GUI cursor and redraw screen
 
     ui::set_use_native_cursors(
-      context->settings()->experimental()->useNativeCursor());
+      ctx->settings()->experimental()->useNativeCursor());
 
     jmouse_set_cursor(kArrowCursor);
 
@@ -215,25 +210,127 @@ int App::run()
   // Procress options
   PRINTF("Processing options...\n");
 
-  {
+  // Open file specified in the command line
+  if (!options.values().empty()) {
     Console console;
-    for (const std::string& filename : m_files) {
-      // Load the sprite
-      Document* document = load_document(context, filename.c_str());
-      if (!document) {
-        if (!isGui())
-          console.printf("Error loading file \"%s\"\n", filename.c_str());
-      }
-      else {
-        // Add the given file in the argument as a "recent file" only
-        // if we are running in GUI mode. If the program is executed
-        // in batch mode this is not desirable.
-        if (isGui())
-          getRecentFiles()->addRecentFile(filename.c_str());
+    bool splitLayers = false;
+    std::string importLayer;
 
-        // Add the document to the exporter.
-        if (m_exporter != NULL)
-          m_exporter->addDocument(document);
+    for (const auto& value : options.values()) {
+      const AppOptions::Option* opt = value.option();
+
+      // Special options/commands
+      if (opt) {
+        // --data <file.json>
+        if (opt == &options.data()) {
+          if (m_exporter)
+            m_exporter->setDataFilename(value.value());
+        }
+        // --sheet <file.png>
+        else if (opt == &options.sheet()) {
+          if (m_exporter)
+            m_exporter->setTextureFilename(value.value());
+        }
+        // --sheet-width <width>
+        else if (opt == &options.sheetWidth()) {
+          if (m_exporter)
+            m_exporter->setTextureWidth(strtol(value.value().c_str(), NULL, 0));
+        }
+        // --sheet-height <height>
+        else if (opt == &options.sheetHeight()) {
+          if (m_exporter)
+            m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
+        }
+        // --sheet-pack
+        else if (opt == &options.sheetPack()) {
+          if (m_exporter)
+            m_exporter->setTexturePack(true);
+        }
+        // --split-layers
+        else if (opt == &options.splitLayers()) {
+          splitLayers = true;
+        }
+        // --import-layer <layer-name>
+        else if (opt == &options.importLayer()) {
+          importLayer = value.value();
+        }
+        // --save-as <filename>
+        else if (opt == &options.saveAs()) {
+          Document* doc = NULL;
+          if (!ctx->documents().empty())
+            doc = dynamic_cast<Document*>(ctx->documents().lastAdded());
+
+          if (!doc) {
+            console.printf("A document is needed before --save-as argument\n");
+          }
+          else {
+            ctx->setActiveDocument(doc);
+
+            Command* command = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
+            static_cast<SaveFileBaseCommand*>(command)->setFilename(value.value());
+            ctx->executeCommand(command);
+          }
+        }
+        // --scale <factor>
+        else if (opt == &options.scale()) {
+          Command* command = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+          double scale = strtod(value.value().c_str(), NULL);
+          static_cast<SpriteSizeCommand*>(command)->setScale(scale, scale);
+
+          // Scale all sprites
+          for (auto doc : ctx->documents()) {
+            ctx->setActiveDocument(doc);
+            ctx->executeCommand(command);
+          }
+        }
+      }
+      // File names aren't associated to any option
+      else {
+        const std::string& filename = value.value();
+
+        // Load the sprite
+        Document* doc = load_document(ctx, filename.c_str());
+        if (!doc) {
+          if (!isGui())
+            console.printf("Error loading file \"%s\"\n", filename.c_str());
+        }
+        else {
+          // Add the given file in the argument as a "recent file" only
+          // if we are running in GUI mode. If the program is executed
+          // in batch mode this is not desirable.
+          if (isGui())
+            getRecentFiles()->addRecentFile(filename.c_str());
+
+          if (m_exporter != NULL) {
+            if (!importLayer.empty()) {
+              std::vector<Layer*> layers;
+              Layer* foundLayer = NULL;
+              doc->sprite()->getLayersList(layers);
+              for (Layer* layer : layers) {
+                if (layer->name() == importLayer) {
+                  foundLayer = layer;
+                  break;
+                }
+              }
+              if (foundLayer)
+                m_exporter->addDocument(doc, foundLayer);
+            }
+            else if (splitLayers) {
+              std::vector<Layer*> layers;
+              doc->sprite()->getLayersList(layers);
+              for (auto layer : layers)
+                m_exporter->addDocument(doc, layer);
+            }
+            else
+              m_exporter->addDocument(doc);
+          }
+        }
+
+        if (!importLayer.empty())
+          importLayer.clear();
+
+        if (splitLayers)
+          splitLayers = false;
       }
     }
   }
@@ -245,7 +342,10 @@ int App::run()
     m_exporter->exportSheet();
     m_exporter.reset(NULL);
   }
+}
 
+void App::run()
+{
   // Run the GUI
   if (isGui()) {
 #ifdef ENABLE_UPDATER
@@ -265,32 +365,10 @@ int App::run()
 
     // Run the GUI main message loop
     gui_run();
-
-    // Destroy all documents in the UIContext.
-    const doc::Documents& docs = m_modules->m_ui_context.documents();
-    while (!docs.empty()) {
-      doc::Document* doc = docs.back();
-
-      // First we close the document. In this way we receive recent
-      // notifications related to the document as an app::Document. If
-      // we delete the document directly, we destroy the app::Document
-      // too early, and then doc::~Document() call
-      // DocumentsObserver::onRemoveDocument(). In this way, observers
-      // could think that they have a fully created app::Document when
-      // in reality it's a doc::Document (in the middle of a
-      // destruction process).
-      //
-      // TODO: This problem is because we're extending doc::Document,
-      // in the future, we should remove app::Document.
-      doc->close();
-      delete doc;
-    }
-
-    // Destroy the window.
-    m_mainWindow.reset(NULL);
   }
+
   // Start shell to execute scripts.
-  else if (m_isShell) {
+  if (m_isShell) {
     m_systemConsole.prepareShell();
 
     if (m_modules->m_scriptingEngine.supportEval()) {
@@ -302,7 +380,30 @@ int App::run()
     }
   }
 
-  return 0;
+  // Destroy all documents in the UIContext.
+  const doc::Documents& docs = m_modules->m_ui_context.documents();
+  while (!docs.empty()) {
+    doc::Document* doc = docs.back();
+
+    // First we close the document. In this way we receive recent
+    // notifications related to the document as an app::Document. If
+    // we delete the document directly, we destroy the app::Document
+    // too early, and then doc::~Document() call
+    // DocumentsObserver::onRemoveDocument(). In this way, observers
+    // could think that they have a fully created app::Document when
+    // in reality it's a doc::Document (in the middle of a
+    // destruction process).
+    //
+    // TODO: This problem is because we're extending doc::Document,
+    // in the future, we should remove app::Document.
+    doc->close();
+    delete doc;
+  }
+
+  if (isGui()) {
+    // Destroy the window.
+    m_mainWindow.reset(NULL);
+  }
 }
 
 // Finishes the Aseprite application.
@@ -405,7 +506,8 @@ void app_refresh_screen()
 
 void app_rebuild_documents_tabs()
 {
-  App::instance()->getMainWindow()->getTabsBar()->updateTabsText();
+  if (App::instance()->isGui())
+    App::instance()->getMainWindow()->getTabsBar()->updateTabsText();
 }
 
 PixelFormat app_get_current_pixel_format()

@@ -29,14 +29,16 @@
 #include "app/ui_context.h"
 #include "base/path.h"
 #include "base/unique_ptr.h"
-#include "gfx/size.h"
 #include "doc/cel.h"
 #include "doc/dithering_method.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "doc/stock.h"
+#include "gfx/packing_rects.h"
+#include "gfx/size.h"
 
 #include <cstdio>
 #include <fstream>
@@ -48,16 +50,18 @@ namespace app {
 
 class DocumentExporter::Sample {
 public:
-  Sample(Document* document, Sprite* sprite,
+  Sample(Document* document, Sprite* sprite, Layer* layer,
     FrameNumber frame, const std::string& filename) :
     m_document(document),
     m_sprite(sprite),
+    m_layer(layer),
     m_frame(frame),
     m_filename(filename) {
   }
 
   Document* document() const { return m_document; }
   Sprite* sprite() const { return m_sprite; }
+  Layer* layer() const { return m_layer; }
   FrameNumber frame() const { return m_frame; }
   std::string filename() const { return m_filename; }
   const gfx::Size& originalSize() const { return m_originalSize; }
@@ -78,6 +82,7 @@ public:
 private:
   Document* m_document;
   Sprite* m_sprite;
+  Layer* m_layer;
   FrameNumber m_frame;
   std::string m_filename;
   gfx::Size m_originalSize;
@@ -109,38 +114,98 @@ private:
 class DocumentExporter::LayoutSamples {
 public:
   virtual ~LayoutSamples() { }
-  virtual void layoutSamples(Samples& samples) = 0;
+  virtual void layoutSamples(Samples& samples, int& width, int& height) = 0;
 };
 
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples) override {
+  void layoutSamples(Samples& samples, int& width, int& height) override {
     const Sprite* oldSprite = NULL;
+    const Layer* oldLayer = NULL;
 
     gfx::Point framePt(0, 0);
-    for (Samples::iterator it=samples.begin(), end=samples.end();
-         it != end; ++it) {
-      const Sprite* sprite = it->sprite();
+    for (auto& sample : samples) {
+      const Sprite* sprite = sample.sprite();
+      const Layer* layer = sample.layer();
       gfx::Size size(sprite->width(), sprite->height());
 
-      it->setOriginalSize(size);
-      it->setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
-      it->setInTextureBounds(gfx::Rect(framePt, size));
-
-      // All frames of each sprite in one row.
-      if (oldSprite != NULL && oldSprite != it->sprite()) {
-        framePt.x = 0;
-        framePt.y += size.h;
+      if (oldSprite) {
+          // If the user didn't specified a width for the texture, we put
+          // each sprite/layer in a different row.
+          if (width == 0) {
+              // New sprite or layer, go to next row.
+              if (oldSprite != sprite || oldLayer != layer) {
+                  framePt.x = 0;
+                  framePt.y += oldSprite->height(); // We're skipping the previous sprite height
+              }
+          }
+          // When a texture width is specified, we can put different
+          // sprites/layers in each row until we reach the texture
+          // right-border.
+          else if (framePt.x+size.w > width) {
+              framePt.x = 0;
+              framePt.y += oldSprite->height();
+              // TODO framePt.y+size.h > height ?
+          }
       }
-      else {
-        framePt.x += size.w;
-      }
 
-      oldSprite = it->sprite();
+      sample.setOriginalSize(size);
+      sample.setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
+      sample.setInTextureBounds(gfx::Rect(framePt, size));
+
+      // Next frame position.
+      framePt.x += size.w;
+
+      oldSprite = sprite;
+      oldLayer = layer;
     }
   }
 };
+
+class DocumentExporter::BestFitLayoutSamples :
+    public DocumentExporter::LayoutSamples {
+public:
+  void layoutSamples(Samples& samples, int& width, int& height) override {
+    gfx::PackingRects pr;
+
+    for (auto& sample : samples) {
+      const Sprite* sprite = sample.sprite();
+      gfx::Size size(sprite->width(), sprite->height());
+
+      sample.setOriginalSize(size);
+      sample.setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
+
+      pr.add(size);
+    }
+
+    if (width == 0 || height == 0) {
+      gfx::Size sz = pr.bestFit();
+      width = sz.w;
+      height = sz.h;
+    }
+    else
+      pr.pack(gfx::Size(width, height));
+
+    auto it = samples.begin();
+    for (auto& rc : pr) {
+      ASSERT(it != samples.end());
+      it->setInTextureBounds(rc);
+      ++it;
+    }
+  }
+};
+
+DocumentExporter::DocumentExporter()
+ : m_dataFormat(DefaultDataFormat)
+ , m_textureFormat(DefaultTextureFormat)
+ , m_textureWidth(0)
+ , m_textureHeight(0)
+ , m_texturePack(false)
+ , m_scaleMode(DefaultScaleMode)
+ , m_scale(1.0)
+{
+}
 
 void DocumentExporter::exportSheet()
 {
@@ -166,15 +231,22 @@ void DocumentExporter::exportSheet()
   }
 
   // 2) Layout those samples in a texture field.
-  SimpleLayoutSamples layout;
-  layout.layoutSamples(samples);
+  if (m_texturePack) {
+    BestFitLayoutSamples layout;
+    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+  }
+  else {
+    SimpleLayoutSamples layout;
+    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+  }
 
   // 3) Create and render the texture.
   base::UniquePtr<Document> textureDocument(
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
-  Image* textureImage = static_cast<LayerImage*>(texture->folder()->getFirstLayer())
+  Image* textureImage = static_cast<LayerImage*>(
+    texture->folder()->getFirstLayer())
     ->getCel(FrameNumber(0))->image();
 
   renderTexture(samples, textureImage);
@@ -193,15 +265,14 @@ void DocumentExporter::captureSamples(Samples& samples)
 {
   std::vector<char> buf(32);
 
-  for (std::vector<Document*>::iterator
-         it = m_documents.begin(),
-         end = m_documents.end(); it != end; ++it) {
-    Document* document = *it;
-    Sprite* sprite = document->sprite();
-    
+  for (auto& item : m_documents) {
+    Document* doc = item.doc;
+    Sprite* sprite = doc->sprite();
+    Layer* layer = item.layer;
+
     for (FrameNumber frame=FrameNumber(0);
          frame<sprite->totalFrames(); ++frame) {
-      std::string filename = document->filename();
+      std::string filename = doc->filename();
 
       if (sprite->totalFrames() > FrameNumber(1)) {
         int frameNumWidth =
@@ -212,11 +283,16 @@ void DocumentExporter::captureSamples(Samples& samples)
 
         std::string path = base::get_file_path(filename);
         std::string title = base::get_file_title(filename);
+        if (layer) {
+          title += "-";
+          title += layer->name();
+        }
+
         std::string ext = base::get_file_extension(filename);
         filename = base::join_path(path, title + &buf[0] + "." + ext);
       }
 
-      samples.addSample(Sample(document, sprite, frame, filename));
+      samples.addSample(Sample(doc, sprite, layer, frame, filename));
     }
   }
 }
@@ -225,7 +301,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
 {
   Palette* palette = NULL;
   PixelFormat pixelFormat = IMAGE_INDEXED;
-  gfx::Rect fullTextureBounds;
+  gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
   int maxColors = 256;
 
   for (Samples::const_iterator
@@ -268,21 +344,26 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
 {
   textureImage->clear(0);
 
-  for (Samples::const_iterator
-         it = samples.begin(),
-         end = samples.end(); it != end; ++it) {
+  for (const auto& sample : samples) {
     // Make the sprite compatible with the texture so the render()
     // works correctly.
-    if (it->sprite()->pixelFormat() != textureImage->pixelFormat()) {
-      DocumentApi docApi(it->document(), NULL); // DocumentApi without undo
-      docApi.setPixelFormat(it->sprite(), textureImage->pixelFormat(),
+    if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
+      DocumentApi docApi(sample.document(), NULL); // DocumentApi without undo
+      docApi.setPixelFormat(
+        sample.sprite(),
+        textureImage->pixelFormat(),
         DITHERING_NONE);
     }
 
-    it->sprite()->render(textureImage,
-      it->inTextureBounds().x - it->trimmedBounds().x,
-      it->inTextureBounds().y - it->trimmedBounds().y,
-      it->frame());
+    int x = sample.inTextureBounds().x - sample.trimmedBounds().x;
+    int y = sample.inTextureBounds().y - sample.trimmedBounds().y;
+
+    if (sample.layer()) {
+      layer_render(sample.layer(), textureImage, x, y, sample.frame());
+    }
+    else {
+      sample.sprite()->render(textureImage, x, y, sample.frame());
+    }
   }
 }
 
@@ -292,18 +373,19 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
   for (Samples::const_iterator
          it = samples.begin(),
          end = samples.end(); it != end; ) {
-    gfx::Size srcSize = it->originalSize();
-    gfx::Rect spriteSourceBounds = it->trimmedBounds();
-    gfx::Rect frameBounds = it->inTextureBounds();
+    const Sample& sample = *it;
+    gfx::Size srcSize = sample.originalSize();
+    gfx::Rect spriteSourceBounds = sample.trimmedBounds();
+    gfx::Rect frameBounds = sample.inTextureBounds();
 
-    os << "   \"" << it->filename() << "\": {\n"
+    os << "   \"" << sample.filename() << "\": {\n"
        << "    \"frame\": { "
        << "\"x\": " << frameBounds.x << ", "
        << "\"y\": " << frameBounds.y << ", "
        << "\"w\": " << frameBounds.w << ", "
        << "\"h\": " << frameBounds.h << " },\n"
        << "    \"rotated\": false,\n"
-       << "    \"trimmed\": " << (it->trimmed() ? "true": "false") << ",\n"
+       << "    \"trimmed\": " << (sample.trimmed() ? "true": "false") << ",\n"
        << "    \"spriteSourceSize\": { "
        << "\"x\": " << spriteSourceBounds.x << ", "
        << "\"y\": " << spriteSourceBounds.y << ", "
@@ -312,7 +394,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
        << "    \"sourceSize\": { "
        << "\"w\": " << srcSize.w << ", "
        << "\"h\": " << srcSize.h << " },\n"
-       << "    \"duration\": " << it->sprite()->getFrameDuration(it->frame()) << "\n"
+       << "    \"duration\": " << sample.sprite()->getFrameDuration(sample.frame()) << "\n"
        << "   }";
 
     if (++it != samples.end())

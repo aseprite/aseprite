@@ -105,7 +105,6 @@ bool TextBox::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       View* view = View::getView(this);
       if (view && hasCapture()) {
-        gfx::Rect vp = view->getViewportBounds();
         gfx::Point scroll = view->getViewScroll();
         gfx::Point newPos = static_cast<MouseMessage*>(msg)->position();
 

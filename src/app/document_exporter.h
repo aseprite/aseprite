@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 
 namespace doc {
   class Image;
+  class Layer;
 }
 
 namespace app {
@@ -50,11 +51,7 @@ namespace app {
       DefaultScaleMode
     };
 
-    DocumentExporter() :
-      m_dataFormat(DefaultDataFormat),
-      m_textureFormat(DefaultTextureFormat),
-      m_scaleMode(DefaultScaleMode) {
-    }
+    DocumentExporter();
 
     void setDataFormat(DataFormat format) {
       m_dataFormat = format;
@@ -72,6 +69,18 @@ namespace app {
       m_textureFilename = filename;
     }
 
+    void setTextureWidth(int width) {
+      m_textureWidth = width;
+    }
+
+    void setTextureHeight(int height) {
+      m_textureHeight = height;
+    }
+
+    void setTexturePack(bool state) {
+      m_texturePack = state;
+    }
+
     void setScale(double scale) {
       m_scale = scale;
     }
@@ -80,8 +89,8 @@ namespace app {
       m_scaleMode = mode;
     }
 
-    void addDocument(Document* document) {
-      m_documents.push_back(document);
+    void addDocument(Document* document, doc::Layer* layer = NULL) {
+      m_documents.push_back(Item(document, layer));
     }
 
     void exportSheet();
@@ -91,19 +100,33 @@ namespace app {
     class Samples;
     class LayoutSamples;
     class SimpleLayoutSamples;
+    class BestFitLayoutSamples;
 
     void captureSamples(Samples& samples);
     Document* createEmptyTexture(const Samples& samples);
     void renderTexture(const Samples& samples, doc::Image* textureImage);
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
 
+    class Item {
+    public:
+      Document* doc;
+      doc::Layer* layer;
+      Item(Document* doc, doc::Layer* layer)
+        : doc(doc), layer(layer) {
+      }
+    };
+    typedef std::vector<Item> Items;
+
     DataFormat m_dataFormat;
     std::string m_dataFilename;
     TextureFormat m_textureFormat;
     std::string m_textureFilename;
+    int m_textureWidth;
+    int m_textureHeight;
+    bool m_texturePack;
     double m_scale;
     ScaleMode m_scaleMode;
-    std::vector<Document*> m_documents;
+    Items m_documents;
 
     DISABLE_COPYING(DocumentExporter);
   };
