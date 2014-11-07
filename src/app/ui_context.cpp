@@ -22,6 +22,7 @@
 
 #include "app/app.h"
 #include "app/document.h"
+#include "app/document_location.h"
 #include "app/modules/editors.h"
 #include "app/settings/ui_settings_impl.h"
 #include "app/ui/color_bar.h"
@@ -167,6 +168,10 @@ void UIContext::onRemoveDocument(doc::Document* doc)
 {
   Context::onRemoveDocument(doc);
 
+  // We don't destroy views in batch mode.
+  if (!isUiAvailable())
+    return;
+
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
   DocumentViews docViews;
 
@@ -190,8 +195,16 @@ void UIContext::onRemoveDocument(doc::Document* doc)
 void UIContext::onGetActiveLocation(DocumentLocation* location) const
 {
   DocumentView* view = activeView();
-  if (view)
+  if (view) {
     view->getDocumentLocation(location);
+  }
+  // Default/dummy location (maybe for batch/command line mode)
+  else if (Document* doc = activeDocument()) {
+    location->document(doc);
+    location->sprite(doc->sprite());
+    location->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
+    location->frame(FrameNumber(0));
+  }
 }
 
 } // namespace app

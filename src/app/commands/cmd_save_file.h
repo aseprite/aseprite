@@ -35,6 +35,10 @@ namespace app {
       return m_selectedFilename;
     }
 
+    void setFilename(const std::string& fn) {
+      m_filename = fn;
+    }
+
   protected:
     void onLoadParams(Params* params) override;
     bool onEnabled(Context* context) override;

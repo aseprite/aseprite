@@ -29,6 +29,7 @@
 
 namespace raster {
   class Image;
+  class Layer;
 }
 
 namespace app {
@@ -53,7 +54,8 @@ namespace app {
     DocumentExporter() :
       m_dataFormat(DefaultDataFormat),
       m_textureFormat(DefaultTextureFormat),
-      m_scaleMode(DefaultScaleMode) {
+      m_scaleMode(DefaultScaleMode),
+      m_scale(1.0) {
     }
 
     void setDataFormat(DataFormat format) {
@@ -80,8 +82,8 @@ namespace app {
       m_scaleMode = mode;
     }
 
-    void addDocument(Document* document) {
-      m_documents.push_back(document);
+    void addDocument(Document* document, raster::Layer* layer = NULL) {
+      m_documents.push_back(Item(document, layer));
     }
 
     void exportSheet();
@@ -97,13 +99,23 @@ namespace app {
     void renderTexture(const Samples& samples, raster::Image* textureImage);
     void createDataFile(const Samples& samples, std::ostream& os, raster::Image* textureImage);
 
+    class Item {
+    public:
+      Document* doc;
+      raster::Layer* layer;
+      Item(Document* doc, raster::Layer* layer)
+        : doc(doc), layer(layer) {
+      }
+    };
+    typedef std::vector<Item> Items;
+
     DataFormat m_dataFormat;
     std::string m_dataFilename;
     TextureFormat m_textureFormat;
     std::string m_textureFilename;
     double m_scale;
     ScaleMode m_scaleMode;
-    std::vector<Document*> m_documents;
+    Items m_documents;
 
     DISABLE_COPYING(DocumentExporter);
   };

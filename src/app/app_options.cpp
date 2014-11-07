@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,49 +35,37 @@ AppOptions::AppOptions(int argc, const char* argv[])
   : m_exeName(base::get_file_name(argv[0]))
   , m_startUI(true)
   , m_startShell(false)
-  , m_verbose(false)
-  , m_scale(1.0)
+  , m_verboseEnabled(false)
+  , m_palette(m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default"))
+  , m_shell(m_po.add("shell").description("Start an interactive console to execute scripts"))
+  , m_batch(m_po.add("batch").description("Do not start the UI"))
+  , m_saveAs(m_po.add("save-as").requiresValue("<filename>").description("Save the last give document with other name/format"))
+  , m_scale(m_po.add("scale").requiresValue("<factor>").description("Scale all opened documents at the moment"))
+  , m_data(m_po.add("data").requiresValue("<filename.json>").description("File to store the sprite sheet metadata"))
+  , m_sheet(m_po.add("sheet").requiresValue("<filename.png>").description("Image file to save the texture"))
+  , m_splitLayers(m_po.add("split-layers").description("Import each layer of the next given sprite as\n a separated image in the sheet"))
+  , m_importLayer(m_po.add("import-layer").requiresValue("<name>").description("Import just one layer of the next given sprite"))
+  , m_verbose(m_po.add("verbose").description("Explain what is being done (in stderr or log file)"))
+  , m_help(m_po.add("help").mnemonic('?').description("Display this help and exits"))
+  , m_version(m_po.add("version").description("Output version information and exit"))
 {
-  Option& palette = m_po.add("palette").requiresValue("<filename>").description("Use a specific palette by default");
-  Option& shell = m_po.add("shell").description("Start an interactive console to execute scripts");
-  Option& batch = m_po.add("batch").description("Do not start the UI");
-  // Option& dataFormat = m_po.add("format").requiresValue("<name>").description("Select the format for the sprite sheet data");
-  Option& data = m_po.add("data").requiresValue("<filename>").description("File to store the sprite sheet metadata (.json file)");
-  //Option& textureFormat = m_po.add("texture-format").requiresValue("<name>").description("Output texture format.");
-  Option& sheet = m_po.add("sheet").requiresValue("<filename>").description("Image file to save the texture (.png)");
-  //Option& scale = m_po.add("scale").requiresValue("<float>").description("");
-  //Option& scaleMode = m_po.add("scale-mode").requiresValue("<mode>").description("Export the first given document to a JSON object");
-  //Option& splitLayers = m_po.add("split-layers").description("Specifies that each layer of the given file should be saved as a different image in the sheet.");
-  //Option& rotsprite = m_po.add("rotsprite").requiresValue("<angle1,angle2,...>").description("Specifies different angles to export the given image.");
-  //Option& merge = m_po.add("merge").requiresValue("<datafiles>").description("Merge several sprite sheets in one.");
-  Option& verbose = m_po.add("verbose").description("Explain what is being done (in stderr or a log file)");
-  Option& help = m_po.add("help").mnemonic('?').description("Display this help and exits");
-  Option& version = m_po.add("version").description("Output version information and exit");
-
   try {
     m_po.parse(argc, argv);
 
-    m_verbose = m_po.enabled(verbose);
-    m_paletteFileName = m_po.value_of(palette);
-    m_startShell = m_po.enabled(shell);
-    // m_dataFormat = m_po.value_of(dataFormat);
-    m_data = m_po.value_of(data);
-    // m_textureFormat = m_po.value_of(textureFormat);
-    m_sheet = m_po.value_of(sheet);
-    // if (scale.enabled())
-    //   m_scale = std::strtod(m_po.value_of(scale).c_str(), NULL);
-    // m_scaleMode = m_po.value_of(scaleMode);
+    m_verboseEnabled = m_po.enabled(m_verbose);
+    m_paletteFileName = m_po.value_of(m_palette);
+    m_startShell = m_po.enabled(m_shell);
 
-    if (m_po.enabled(help)) {
+    if (m_po.enabled(m_help)) {
       showHelp();
       m_startUI = false;
     }
-    else if (m_po.enabled(version)) {
+    else if (m_po.enabled(m_version)) {
       showVersion();
       m_startUI = false;
     }
 
-    if (m_po.enabled(shell) || m_po.enabled(batch)) {
+    if (m_po.enabled(m_shell) || m_po.enabled(m_batch)) {
       m_startUI = false;
     }
   }
@@ -86,6 +74,13 @@ AppOptions::AppOptions(int argc, const char* argv[])
               << "Try \"" << m_exeName << " --help\" for more information.\n";
     m_startUI = false;
   }
+}
+
+bool AppOptions::hasExporterParams() const
+{
+  return
+    m_po.enabled(m_data) ||
+    m_po.enabled(m_sheet);
 }
 
 void AppOptions::showHelp()

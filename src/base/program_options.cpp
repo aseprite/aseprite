@@ -192,8 +192,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
     size_t optionWidth =
-      std::min<int>(26, 6+option->name().size()+1+
-                        (option->doesRequireValue() ? option->getValueName().size()+1: 0));
+      6+option->name().size()+1+
+      (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (maxOptionWidth < optionWidth)
       maxOptionWidth = optionWidth;

@@ -34,7 +34,7 @@ namespace app {
 
   class Job {
   public:
-    Job(const char* job_name);
+    Job(const char* jobName);
     virtual ~Job();
 
     // Starts the job calling onJob() event in another thread and

@@ -228,7 +228,8 @@ void update_screen_for_document(Document* document)
     // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
       // If the palette changes, refresh the whole screen.
-      Manager::getDefault()->invalidate();
+      if (Manager::getDefault())
+        Manager::getDefault()->invalidate();
     }
   }
   // With a document.
