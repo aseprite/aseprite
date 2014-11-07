@@ -57,7 +57,7 @@ https://github.com/aseprite/aseprite
 
 You can clone it locally using the following command (read-only URL):
 
-    git clone git://github.com/aseprite/aseprite.git
+    git clone --recursive https://github.com/aseprite/aseprite.git
 
 On Windows you can use programs like
 [msysgit](http://msysgit.github.io/) to clone the repository.
