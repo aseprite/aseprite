@@ -217,7 +217,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
       bool multilines = (option->description().find('\n') != std::string::npos);
 
       if (!multilines) {
-        os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description();
+        os << std::setw(maxOptionWidth - optionWidth + 1) << ' ' << option->description()
+           << "\n";
       }
       else {
         std::istringstream s(option->description());
@@ -230,7 +231,8 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
         }
       }
     }
-    os << "\n";
+    else
+      os << "\n";
   }
 
   return os;
