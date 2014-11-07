@@ -23,6 +23,7 @@
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
+          <check text="Center editor when zoom with keys or zoom tool" id="center_on_zoom" />
           <separator horizontal="true" />
           <link id="locate_file" text="Locate Configuration File" />
           <link id="locate_crash_folder" text="Locate Crash Folder" />

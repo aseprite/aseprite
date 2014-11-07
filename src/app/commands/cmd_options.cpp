@@ -78,6 +78,9 @@ public:
         ui::MenuBar::expandOnMouseover()))
       expandMenubarOnMouseover()->setSelected(true);
 
+    if (get_config_bool("Editor", "CenterOnZoom", false))
+      centerOnZoom()->setSelected(true);
+
     if (m_settings->experimental()->useNativeCursor())
       nativeCursor()->setSelected(true);
 
@@ -153,6 +156,8 @@ public:
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
     set_config_bool("Options", "ExpandMenuBarOnMouseover", expandOnMouseover);
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
+
+    set_config_bool("Editor", "CenterOnZoom", centerOnZoom()->isSelected());
 
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
