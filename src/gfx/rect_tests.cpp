@@ -6,25 +6,13 @@
 
 #include <gtest/gtest.h>
 
-#include "gfx/rect.h"
-#include "gfx/size.h"
 #include "gfx/border.h"
+#include "gfx/rect.h"
+#include "gfx/rect_io.h"
+#include "gfx/size.h"
 
 using namespace std;
 using namespace gfx;
-
-namespace gfx {
-
-  ostream& operator<<(ostream& os, const Rect& rect)
-  {
-    return os << "("
-              << rect.x << ", "
-              << rect.y << ", "
-              << rect.w << ", "
-              << rect.h << ")";
-  }
-  
-}
 
 TEST(Rect, Ctor)
 {
