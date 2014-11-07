@@ -113,13 +113,13 @@ private:
 class DocumentExporter::LayoutSamples {
 public:
   virtual ~LayoutSamples() { }
-  virtual void layoutSamples(Samples& samples) = 0;
+  virtual void layoutSamples(Samples& samples, int width, int height) = 0;
 };
 
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples) override {
+  void layoutSamples(Samples& samples, int width, int height) override {
     const Sprite* oldSprite = NULL;
     const Layer* oldLayer = NULL;
 
@@ -129,10 +129,24 @@ public:
       const Layer* layer = sample.layer();
       gfx::Size size(sprite->width(), sprite->height());
 
-      // New sprite or layer, go to next row.
-      if (oldSprite && (oldSprite != sprite || oldLayer != layer)) {
-        framePt.x = 0;
-        framePt.y += size.h;
+      if (oldSprite) {
+          // If the user didn't specified a width for the texture, we put
+          // each sprite/layer in a different row.
+          if (width == 0) {
+              // New sprite or layer, go to next row.
+              if (oldSprite != sprite || oldLayer != layer) {
+                  framePt.x = 0;
+                  framePt.y += oldSprite->height(); // We're skipping the previous sprite height
+              }
+          }
+          // When a texture width is specified, we can put different
+          // sprites/layers in each row until we reach the texture
+          // right-border.
+          else if (framePt.x+size.w > width) {
+              framePt.x = 0;
+              framePt.y += oldSprite->height();
+              // TODO framePt.y+size.h > height ?
+          }
       }
 
       sample.setOriginalSize(size);
@@ -147,6 +161,16 @@ public:
     }
   }
 };
+
+DocumentExporter::DocumentExporter()
+ : m_dataFormat(DefaultDataFormat)
+ , m_textureFormat(DefaultTextureFormat)
+ , m_textureWidth(0)
+ , m_textureHeight(0)
+ , m_scaleMode(DefaultScaleMode)
+ , m_scale(1.0)
+{
+}
 
 void DocumentExporter::exportSheet()
 {
@@ -173,7 +197,7 @@ void DocumentExporter::exportSheet()
 
   // 2) Layout those samples in a texture field.
   SimpleLayoutSamples layout;
-  layout.layoutSamples(samples);
+  layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
 
   // 3) Create and render the texture.
   base::UniquePtr<Document> textureDocument(
@@ -236,7 +260,7 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
 {
   Palette* palette = NULL;
   PixelFormat pixelFormat = IMAGE_INDEXED;
-  gfx::Rect fullTextureBounds;
+  gfx::Rect fullTextureBounds(0, 0, m_textureWidth, m_textureHeight);
   int maxColors = 256;
 
   for (Samples::const_iterator

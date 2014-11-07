@@ -51,12 +51,7 @@ namespace app {
       DefaultScaleMode
     };
 
-    DocumentExporter() :
-      m_dataFormat(DefaultDataFormat),
-      m_textureFormat(DefaultTextureFormat),
-      m_scaleMode(DefaultScaleMode),
-      m_scale(1.0) {
-    }
+    DocumentExporter();
 
     void setDataFormat(DataFormat format) {
       m_dataFormat = format;
@@ -72,6 +67,14 @@ namespace app {
 
     void setTextureFilename(const std::string& filename) {
       m_textureFilename = filename;
+    }
+
+    void setTextureWidth(int width) {
+      m_textureWidth = width;
+    }
+
+    void setTextureHeight(int height) {
+      m_textureHeight = height;
     }
 
     void setScale(double scale) {
@@ -113,6 +116,8 @@ namespace app {
     std::string m_dataFilename;
     TextureFormat m_textureFormat;
     std::string m_textureFilename;
+    int m_textureWidth;
+    int m_textureHeight;
     double m_scale;
     ScaleMode m_scaleMode;
     Items m_documents;

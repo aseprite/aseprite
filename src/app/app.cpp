@@ -231,6 +231,16 @@ void App::initialize(int argc, const char* argv[])
           if (m_exporter)
             m_exporter->setTextureFilename(value.value());
         }
+        // --sheet-width <width>
+        else if (opt == &options.sheetWidth()) {
+          if (m_exporter)
+            m_exporter->setTextureWidth(strtol(value.value().c_str(), NULL, 0));
+        }
+        // --sheet-height <height>
+        else if (opt == &options.sheetHeight()) {
+          if (m_exporter)
+            m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
+        }
         // --split-layers
         else if (opt == &options.splitLayers()) {
           splitLayers = true;
