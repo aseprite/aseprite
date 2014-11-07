@@ -53,6 +53,7 @@ public:
   const Option& sheet() const { return m_sheet; }
   const Option& sheetWidth() const { return m_sheetWidth; }
   const Option& sheetHeight() const { return m_sheetHeight; }
+  const Option& sheetPack() const { return m_sheetPack; }
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& importLayer() const { return m_importLayer; }
 
@@ -78,6 +79,7 @@ private:
   Option& m_sheet;
   Option& m_sheetWidth;
   Option& m_sheetHeight;
+  Option& m_sheetPack;
   Option& m_splitLayers;
   Option& m_importLayer;
 

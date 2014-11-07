@@ -241,6 +241,11 @@ void App::initialize(int argc, const char* argv[])
           if (m_exporter)
             m_exporter->setTextureHeight(strtol(value.value().c_str(), NULL, 0));
         }
+        // --sheet-pack
+        else if (opt == &options.sheetPack()) {
+          if (m_exporter)
+            m_exporter->setTexturePack(true);
+        }
         // --split-layers
         else if (opt == &options.splitLayers()) {
           splitLayers = true;

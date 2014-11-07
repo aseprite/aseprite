@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,10 @@ namespace app {
       m_textureHeight = height;
     }
 
+    void setTexturePack(bool state) {
+      m_texturePack = state;
+    }
+
     void setScale(double scale) {
       m_scale = scale;
     }
@@ -96,6 +100,7 @@ namespace app {
     class Samples;
     class LayoutSamples;
     class SimpleLayoutSamples;
+    class BestFitLayoutSamples;
 
     void captureSamples(Samples& samples);
     Document* createEmptyTexture(const Samples& samples);
@@ -118,6 +123,7 @@ namespace app {
     std::string m_textureFilename;
     int m_textureWidth;
     int m_textureHeight;
+    bool m_texturePack;
     double m_scale;
     ScaleMode m_scaleMode;
     Items m_documents;

@@ -29,6 +29,7 @@
 #include "app/ui_context.h"
 #include "base/path.h"
 #include "base/unique_ptr.h"
+#include "gfx/packing_rects.h"
 #include "gfx/size.h"
 #include "raster/cel.h"
 #include "raster/dithering_method.h"
@@ -113,13 +114,13 @@ private:
 class DocumentExporter::LayoutSamples {
 public:
   virtual ~LayoutSamples() { }
-  virtual void layoutSamples(Samples& samples, int width, int height) = 0;
+  virtual void layoutSamples(Samples& samples, int& width, int& height) = 0;
 };
 
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples, int width, int height) override {
+  void layoutSamples(Samples& samples, int& width, int& height) override {
     const Sprite* oldSprite = NULL;
     const Layer* oldLayer = NULL;
 
@@ -162,11 +163,45 @@ public:
   }
 };
 
+class DocumentExporter::BestFitLayoutSamples :
+    public DocumentExporter::LayoutSamples {
+public:
+  void layoutSamples(Samples& samples, int& width, int& height) override {
+    gfx::PackingRects pr;
+
+    for (auto& sample : samples) {
+      const Sprite* sprite = sample.sprite();
+      gfx::Size size(sprite->width(), sprite->height());
+
+      sample.setOriginalSize(size);
+      sample.setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
+
+      pr.add(size);
+    }
+
+    if (width == 0 || height == 0) {
+      gfx::Size sz = pr.bestFit();
+      width = sz.w;
+      height = sz.h;
+    }
+    else
+      pr.pack(gfx::Size(width, height));
+
+    auto it = samples.begin();
+    for (auto& rc : pr) {
+      ASSERT(it != samples.end());
+      it->setInTextureBounds(rc);
+      ++it;
+    }
+  }
+};
+
 DocumentExporter::DocumentExporter()
  : m_dataFormat(DefaultDataFormat)
  , m_textureFormat(DefaultTextureFormat)
  , m_textureWidth(0)
  , m_textureHeight(0)
+ , m_texturePack(false)
  , m_scaleMode(DefaultScaleMode)
  , m_scale(1.0)
 {
@@ -196,8 +231,14 @@ void DocumentExporter::exportSheet()
   }
 
   // 2) Layout those samples in a texture field.
-  SimpleLayoutSamples layout;
-  layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+  if (m_texturePack) {
+    BestFitLayoutSamples layout;
+    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+  }
+  else {
+    SimpleLayoutSamples layout;
+    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+  }
 
   // 3) Create and render the texture.
   base::UniquePtr<Document> textureDocument(
