@@ -77,11 +77,12 @@ bool FilterPreview::onProcessMessage(Message* msg)
     case kOpenMessage:
       RenderEngine::setPreviewImage(
         m_filterMgr->layer(),
+        m_filterMgr->frame(),
         m_filterMgr->destinationImage());
       break;
 
     case kCloseMessage:
-      RenderEngine::setPreviewImage(NULL, NULL);
+      RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
 
       // Stop the preview timer.
       m_timer.stop();

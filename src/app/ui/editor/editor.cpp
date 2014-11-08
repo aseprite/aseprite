@@ -684,6 +684,8 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = loc.image(&x, &y);
   if (src_image) {
+    RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
+
     m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), 255);
     Image* flash_image = m_document->getExtraCelImage();
 

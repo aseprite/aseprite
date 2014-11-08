@@ -216,6 +216,7 @@ public:
   Document* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
+  FrameNumber getFrame() override { return m_frame; }
   Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
   RgbMap* getRgbMap() override { return m_sprite->getRgbMap(m_frame); }
