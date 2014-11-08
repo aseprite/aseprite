@@ -63,6 +63,7 @@ namespace app {
     app::Document* activeDocument() const;
     DocumentLocation activeLocation() const;
 
+    void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, Params* params = NULL);
 
     Signal1<void, Command*> BeforeCommandExecution;
