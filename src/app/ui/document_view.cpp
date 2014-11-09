@@ -38,6 +38,7 @@
 #include "raster/sprite.h"
 #include "ui/accelerator.h"
 #include "ui/message.h"
+#include "ui/system.h"
 #include "ui/view.h"
 
 namespace app {
@@ -107,6 +108,32 @@ public:
 
   bool isSubtractSelectionPressed() override {
     return isKeyActionPressed(KeyAction::SubtractSelection);
+  }
+
+protected:
+  bool onProcessMessage(Message* msg) override {
+    switch (msg->type()) {
+
+      case kKeyDownMessage:
+      case kKeyUpMessage:
+        if (static_cast<KeyMessage*>(msg)->repeat() == 0) {
+          Key* lmb = KeyboardShortcuts::instance()->action(KeyAction::LeftMouseButton);
+          Key* rmb = KeyboardShortcuts::instance()->action(KeyAction::RightMouseButton);
+
+          // Convert action keys into mouse messages.
+          if (lmb->isPressed(msg) || rmb->isPressed(msg)) {
+            MouseMessage mouseMsg(
+              (msg->type() == kKeyDownMessage ? kMouseDownMessage: kMouseUpMessage),
+              (lmb->isPressed(msg) ? kButtonLeft: kButtonRight),
+              gfx::Point(jmouse_x(0), jmouse_y(0)));
+
+            sendMessage(&mouseMsg);
+            return true;
+          }
+        }
+        break;
+    }
+    return Editor::onProcessMessage(msg);
   }
 
 private:

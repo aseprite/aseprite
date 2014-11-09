@@ -57,6 +57,8 @@ namespace {
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
+    { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
+    { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
     { NULL                  , NULL                 , app::KeyAction::None }
   };
 
