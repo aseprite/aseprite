@@ -29,6 +29,7 @@
 #include "app/load_widget.h"
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
+#include "app/commands/commands.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
@@ -184,14 +185,7 @@ void ConfigureTimelinePopup::onResetOnionskin()
 
 void ConfigureTimelinePopup::onSetLoopSection()
 {
-  IDocumentSettings* docSet = docSettings();
-  if (docSet) {
-    Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
-    if (range.enabled() && (range.frames() >= 1)) {
-      docSet->setLoopAnimation(true);
-      docSet->setLoopRange(range.frameBegin(), range.frameEnd());
-    }
-  }
+  UIContext::instance()->executeCommand(CommandId::SetLoopSection);
 }
 
 void ConfigureTimelinePopup::onResetLoopSection()

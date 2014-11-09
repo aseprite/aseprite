@@ -67,6 +67,8 @@ namespace app {
     LockAxis,
     AddSelection,
     SubtractSelection,
+    LeftMouseButton,
+    RightMouseButton
   };
 
   class Key {

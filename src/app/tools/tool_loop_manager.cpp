@@ -74,13 +74,14 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // in the tool-loop time, so we can see what we are drawing)
   RenderEngine::setPreviewImage(
     m_toolLoop->getLayer(),
+    m_toolLoop->getFrame(),
     m_toolLoop->getDstImage());
 }
 
 void ToolLoopManager::releaseLoop(const Pointer& pointer)
 {
   // No more preview image
-  RenderEngine::setPreviewImage(NULL, NULL);
+  RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
 }
 
 void ToolLoopManager::pressKey(ui::KeyScancode key)

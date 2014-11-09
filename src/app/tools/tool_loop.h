@@ -22,6 +22,7 @@
 
 #include "app/settings/selection_mode.h"
 #include "app/tools/trace_policy.h"
+#include "doc/frame_number.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 
@@ -81,6 +82,9 @@ namespace app {
 
       // Returns the layer that will be modified if the tool paints
       virtual Layer* getLayer() = 0;
+
+      // Returns the frame where we're paiting
+      virtual FrameNumber getFrame() = 0;
 
       // Should return an image where we can read pixels (readonly image)
       virtual Image* getSrcImage() = 0;

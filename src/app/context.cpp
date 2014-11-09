@@ -23,6 +23,7 @@
 #include "app/context.h"
 
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/document.h"
 #include "app/document_location.h"
@@ -67,6 +68,15 @@ DocumentLocation Context::activeLocation() const
   onGetActiveLocation(&location);
   ASSERT(location.document() == doc::Context::activeDocument());
   return location;
+}
+
+void Context::executeCommand(const char* commandName)
+{
+  Command* cmd = CommandsModule::instance()->getCommandByName(commandName);
+  if (cmd)
+    executeCommand(cmd);
+  else
+    throw std::runtime_error("Invalid command name");
 }
 
 void Context::executeCommand(Command* command, Params* params)

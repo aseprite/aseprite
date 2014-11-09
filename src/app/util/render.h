@@ -63,7 +63,7 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Preview image
 
-    static void setPreviewImage(const Layer* layer, Image* drawable);
+    static void setPreviewImage(const Layer* layer, FrameNumber frame, Image* drawable);
 
     //////////////////////////////////////////////////////////////////////
     // Main function used by sprite-editors to render the sprite

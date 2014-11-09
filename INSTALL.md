@@ -39,21 +39,12 @@ the source code in a directory called `aseprite-source`):
 
    If you have Visual Studio you can generate a solution:
 
-        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 8 2005"
-        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 9 2008"
-        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 10"
+        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 11 2012"
+        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 12 2013"
 
    If you are on Linux:
 
         /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
-
-   If you have MinGW + MSYS:
-
-        C:\...\aseprite-source\build>cmake .. -G "MSYS Makefiles"
-
-   If you have MinGW + mingw-make:
-
-        C:\...\aseprite-source\build>cmake .. -G "MinGW Makefiles"
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
     
