@@ -27,6 +27,7 @@
 #include "app/document_api.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
+#include "base/convert_to.h"
 #include "base/path.h"
 #include "base/unique_ptr.h"
 #include "gfx/packing_rects.h"
@@ -275,21 +276,17 @@ void DocumentExporter::captureSamples(Samples& samples)
       std::string filename = doc->filename();
 
       if (sprite->totalFrames() > FrameNumber(1)) {
-        int frameNumWidth =
-          (sprite->totalFrames() < 10)? 1:
-          (sprite->totalFrames() < 100)? 2:
-          (sprite->totalFrames() < 1000)? 3: 4;
-        std::sprintf(&buf[0], "%0*d", frameNumWidth, (int)frame);
-
         std::string path = base::get_file_path(filename);
         std::string title = base::get_file_title(filename);
         if (layer) {
-          title += "-";
+          title += " (";
           title += layer->name();
+          title += ") ";
         }
 
-        std::string ext = base::get_file_extension(filename);
-        filename = base::join_path(path, title + &buf[0] + "." + ext);
+        filename = base::join_path(path, title +
+            base::convert_to<std::string>((int)frame + 1)
+            + "." + base::get_file_extension(filename));
       }
 
       samples.addSample(Sample(doc, sprite, layer, frame, filename));
