@@ -47,14 +47,6 @@ the source code in a directory called `aseprite-source`):
 
         /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
 
-   If you have MinGW + MSYS:
-
-        C:\...\aseprite-source\build>cmake .. -G "MSYS Makefiles"
-
-   If you have MinGW + mingw-make:
-
-        C:\...\aseprite-source\build>cmake .. -G "MinGW Makefiles"
-
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
     
 3. After you have executed one of the `cmake .. -G <generator>`
