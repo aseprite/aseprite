@@ -369,11 +369,8 @@ FileOp* fop_to_save_document(Context* context, Document* document)
 
       start_from = split_filename(fop->document->filename().c_str(), left, right, width);
       if (start_from < 0) {
-        start_from = 0;
-        width =
-          (fop->document->sprite()->totalFrames() < 10)? 1:
-          (fop->document->sprite()->totalFrames() < 100)? 2:
-          (fop->document->sprite()->totalFrames() < 1000)? 3: 4;
+        start_from = 1;
+        width = 1;
       }
 
       for (FrameNumber frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {

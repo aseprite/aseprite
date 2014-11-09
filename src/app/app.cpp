@@ -214,7 +214,9 @@ void App::initialize(int argc, const char* argv[])
   if (!options.values().empty()) {
     Console console;
     bool splitLayers = false;
+    bool splitLayersSaveAs = false;
     std::string importLayer;
+    std::string importLayerSaveAs;
 
     for (const auto& value : options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -249,10 +251,12 @@ void App::initialize(int argc, const char* argv[])
         // --split-layers
         else if (opt == &options.splitLayers()) {
           splitLayers = true;
+          splitLayersSaveAs = true;
         }
         // --import-layer <layer-name>
         else if (opt == &options.importLayer()) {
           importLayer = value.value();
+          importLayerSaveAs = value.value();
         }
         // --save-as <filename>
         else if (opt == &options.saveAs()) {
@@ -267,8 +271,44 @@ void App::initialize(int argc, const char* argv[])
             ctx->setActiveDocument(doc);
 
             Command* command = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
-            static_cast<SaveFileBaseCommand*>(command)->setFilename(value.value());
-            ctx->executeCommand(command);
+            if (splitLayersSaveAs) {
+              std::vector<Layer*> layers;
+              doc->sprite()->getLayersList(layers);
+
+              // For each layer, hide other ones and save the sprite.
+              for (Layer* show : layers) {
+                for (Layer* hide : layers)
+                  hide->setReadable(hide == show);
+
+                std::string frameStr;
+                if (doc->sprite()->totalFrames() > FrameNumber(1))
+                  frameStr += " 1";
+
+                std::string fn = value.value();
+                fn =
+                  base::join_path(
+                    base::get_file_path(fn),
+                    base::get_file_title(fn))
+                  + " (" + show->name() + ")" + frameStr + "." +
+                  base::get_file_extension(fn);
+
+                static_cast<SaveFileBaseCommand*>(command)->setFilename(fn);
+                ctx->executeCommand(command);
+              }
+            }
+            else {
+              std::vector<Layer*> layers;
+              doc->sprite()->getLayersList(layers);
+
+              // Show only one layer
+              if (!importLayerSaveAs.empty()) {
+                for (Layer* layer : layers)
+                  layer->setReadable(layer->name() == importLayerSaveAs);
+              }
+
+              static_cast<SaveFileBaseCommand*>(command)->setFilename(value.value());
+              ctx->executeCommand(command);
+            }
           }
         }
         // --scale <factor>
@@ -304,8 +344,9 @@ void App::initialize(int argc, const char* argv[])
           if (m_exporter != NULL) {
             if (!importLayer.empty()) {
               std::vector<Layer*> layers;
-              Layer* foundLayer = NULL;
               doc->sprite()->getLayersList(layers);
+
+              Layer* foundLayer = NULL;
               for (Layer* layer : layers) {
                 if (layer->name() == importLayer) {
                   foundLayer = layer;
