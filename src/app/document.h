@@ -93,6 +93,7 @@ namespace app {
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
     void notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);
     void notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);
+    void notifySelectionChanged();
 
     //////////////////////////////////////////////////////////////////////
     // File related properties

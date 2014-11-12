@@ -55,6 +55,9 @@ namespace doc {
     // When the number of total frames available is modified.
     virtual void onTotalFramesChanged(DocumentEvent& ev) { }
 
+    // The selection has changed.
+    virtual void onSelectionChanged(DocumentEvent& ev) { }
+
     // Called to destroy the observable. (Here you could call "delete this".)
     virtual void dispose() { }
   };

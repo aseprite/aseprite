@@ -36,6 +36,7 @@
 #include "base/unique_ptr.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
+#include "doc/document_observer.h"
 #include "raster/cel.h"
 #include "raster/layer.h"
 #include "raster/mask.h"
@@ -139,6 +140,12 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelCopied, ev);
 }
 
+void Document::notifySelectionChanged()
+{
+  doc::DocumentEvent ev(this);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSelectionChanged, ev);
+}
+
 bool Document::isModified() const
 {
   return !m_undo->isSavedState();
@@ -210,6 +217,9 @@ void Document::generateMaskBoundaries(Mask* mask)
       m_bound.seg[c].y2 += mask->bounds().y;
     }
   }
+
+  // TODO move this to the exact place where selection is modified.
+  notifySelectionChanged();
 }
 
 //////////////////////////////////////////////////////////////////////
