@@ -76,6 +76,7 @@ namespace app {
 
   private:
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
+    void callEyedropper(Editor* editor);
 
     Decorator* m_decorator;
   };
