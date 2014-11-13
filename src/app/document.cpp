@@ -34,9 +34,9 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
+#include "doc/cel.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
-#include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
@@ -139,6 +139,12 @@ void Document::notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* t
   notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onCelCopied, ev);
 }
 
+void Document::notifySelectionChanged()
+{
+  doc::DocumentEvent ev(this);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSelectionChanged, ev);
+}
+
 bool Document::isModified() const
 {
   return !m_undo->isSavedState();
@@ -210,6 +216,9 @@ void Document::generateMaskBoundaries(Mask* mask)
       m_bound.seg[c].y2 += mask->bounds().y;
     }
   }
+
+  // TODO move this to the exact place where selection is modified.
+  notifySelectionChanged();
 }
 
 //////////////////////////////////////////////////////////////////////

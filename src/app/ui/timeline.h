@@ -108,6 +108,7 @@ namespace app {
     void onAfterRemoveLayer(doc::DocumentEvent& ev) override;
     void onAddFrame(doc::DocumentEvent& ev) override;
     void onRemoveFrame(doc::DocumentEvent& ev) override;
+    void onSelectionChanged(doc::DocumentEvent& ev) override;
 
     // app::Context slots.
     void onAfterCommandExecution(Command* command);

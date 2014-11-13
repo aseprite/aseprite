@@ -966,7 +966,8 @@ Rect Editor::getVisibleSpriteBounds()
   screenToEditor(vp.x, vp.y, &x1, &y1);
   screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
 
-  return Rect(x1, y1, x2-x1+1, y2-y1+1);
+  return Rect(0, 0, m_sprite->width(), m_sprite->height())
+    .createIntersect(Rect(x1, y1, x2-x1+1, y2-y1+1));
 }
 
 // Changes the scroll to see the given point as the center of the editor.
@@ -1361,10 +1362,6 @@ void Editor::pasteImage(const Image* image, int x, int y)
 
   // Check bounds where the image will be pasted.
   {
-    // First we limit the image inside the sprite's bounds.
-    x = MID(0, x, sprite->width() - image->width());
-    y = MID(0, y, sprite->height() - image->height());
-
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds();
     x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
@@ -1381,6 +1378,10 @@ void Editor::pasteImage(const Image* image, int x, int y)
       x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
       y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
     }
+
+    // We limit the image inside the sprite's bounds.
+    x = MID(0, x, sprite->width() - image->width());
+    y = MID(0, y, sprite->height() - image->height());
   }
 
   PixelsMovementPtr pixelsMovement(

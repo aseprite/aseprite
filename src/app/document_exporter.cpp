@@ -203,8 +203,8 @@ DocumentExporter::DocumentExporter()
  , m_textureWidth(0)
  , m_textureHeight(0)
  , m_texturePack(false)
- , m_scaleMode(DefaultScaleMode)
  , m_scale(1.0)
+ , m_scaleMode(DefaultScaleMode)
 {
 }
 

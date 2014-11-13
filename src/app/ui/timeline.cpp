@@ -967,6 +967,14 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
   invalidate();
 }
 
+void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
+{
+  m_range.disableRange();
+
+  clearClipboardRange();
+  invalidate();
+}
+
 void Timeline::onAfterFrameChanged(Editor* editor)
 {
   setFrame(editor->frame());
