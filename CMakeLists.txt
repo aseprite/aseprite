@@ -103,11 +103,6 @@ endif()
 # Zlib generated zconf.h file
 include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
 
-# We need private libpng header files so it doesn't matter if we use
-# the shared version of libpng or not, we need to find header files in
-# "third_party/libpng"" directory.
-include_directories(${LIBPNG_DIR})
-
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
