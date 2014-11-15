@@ -32,6 +32,10 @@ namespace app {
   class Editor;
   class EditorDecorator;
 
+  namespace tools {
+    class Tool;
+  }
+
   // Represents one state of the sprite's editor (Editor class).  This
   // is a base class, a dummy state that ignores all events from the
   // Editor. Subclasses overrides these methods to customize the
@@ -102,6 +106,13 @@ namespace app {
     // Returns true if the this state requires the brush-preview as
     // drawing cursor.
     virtual bool requireBrushPreview() { return false; }
+
+    // Returns true if this state accept the given quicktool.
+    virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
+
+    // Returns true if this state supports changing the drawing cursor
+    // extra cel.
+    virtual bool regenerateDrawingCursor() { return true; }
 
   private:
     DISABLE_COPYING(EditorState);

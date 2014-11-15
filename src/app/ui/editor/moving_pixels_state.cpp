@@ -413,6 +413,16 @@ bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
   return true;
 }
 
+bool MovingPixelsState::acceptQuickTool(tools::Tool* tool)
+{
+  return
+    (!m_pixelsMovement ||
+     tool->getInk(0)->isSelection() ||
+     tool->getInk(0)->isEyedropper() ||
+     tool->getInk(0)->isScrollMovement() ||
+     tool->getInk(0)->isZoom());
+}
+
 // Before executing any command, we drop the pixels (go back to standby).
 void MovingPixelsState::onBeforeCommandExecution(Command* command)
 {
