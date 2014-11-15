@@ -49,9 +49,10 @@ public:
   Command* clone() const override { return new NewFrameCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   Content m_content;
@@ -104,6 +105,22 @@ void NewFrameCommand::onExecute(Context* context)
               (int)sprite->totalFrames());
 
   App::instance()->getMainWindow()->popTimeline();
+}
+
+std::string NewFrameCommand::onGetFriendlyName() const
+{
+  std::string text = "New Frame";
+
+  switch (m_content) {
+    case Content::CurrentFrame:
+      text = "New Frame (duplicated)";
+      break;
+    case Content::EmptyFrame:
+      text = "New Frame (empty)";
+      break;
+  }
+
+  return text;
 }
 
 Command* CommandFactory::createNewFrameCommand()
