@@ -82,12 +82,13 @@ private:
 
   void onChangeAccel(int index) {
     Accelerator origAccel = m_key->accels()[index];
-    SelectAccelerator window(origAccel);
+    SelectAccelerator window(origAccel, m_key->keycontext());
     window.openWindowInForeground();
 
     if (window.isModified()) {
       m_key->disableAccel(origAccel);
-      m_key->add(window.accel(), KeySource::UserDefined);
+      if (!window.accel().isEmpty())
+        m_key->add(window.accel(), KeySource::UserDefined);
     }
 
     getRoot()->layout();
@@ -106,7 +107,7 @@ private:
 
   void onAddAccel() {
     ui::Accelerator accel;
-    SelectAccelerator window(accel);
+    SelectAccelerator window(accel, m_key->keycontext());
     window.openWindowInForeground();
 
     if (window.isModified()) {
@@ -359,8 +360,14 @@ private:
     fillList(this->menus(), AppMenus::instance()->getRootMenu(), 0);
     for (Key* key : *app::KeyboardShortcuts::instance()) {
       std::string text = key->triggerString();
-      if (key->keycontext() == KeyContext::Selection)
-        text += " (w/selection)";
+      switch (key->keycontext()) {
+        case KeyContext::Selection:
+          text = "Selection context: " + text;
+          break;
+        case KeyContext::MovingPixels:
+          text = "Moving pixels context: " + text;
+          break;
+      }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
 
       ListBox* listBox = NULL;

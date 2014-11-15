@@ -19,10 +19,15 @@
 #include <string>
 #include <vector>
 
+#include <algorithm>
+
 // #define REPORT_KEYS
 #define PREPROCESS_KEYS
 
 namespace ui {
+
+//////////////////////////////////////////////////////////////////////
+// Accelerator
 
 Accelerator::Accelerator()
   : m_modifiers(kKeyNoneModifier)
@@ -197,6 +202,8 @@ bool Accelerator::operator==(const Accelerator& other) const
       return true;
     else if (m_unicodeChar != 0)
       return (std::tolower(m_unicodeChar) == std::tolower(other.m_unicodeChar));
+    else               // Only comparing modifiers, and they are equal
+      return true;
   }
 
   return false;
@@ -345,11 +352,6 @@ std::string Accelerator::toString() const
 
 bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
-#ifdef REPORT_KEYS
-  char buf[256];
-  std::string buf2;
-#endif
-
   // Preprocess the character to be compared with the accelerator
 #ifdef PREPROCESS_KEYS
   // Directly scancode
@@ -411,15 +413,18 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicod
 
   if ((m_modifiers == modifiers) &&
       ((m_scancode != kKeyNil && m_scancode == scancode) ||
-       (m_unicodeChar && m_unicodeChar == unicodeChar))) {
+       (m_unicodeChar && m_unicodeChar == unicodeChar) ||
+       (m_scancode == kKeyNil && scancode == kKeyNil && !m_unicodeChar && !unicodeChar))) {
 #ifdef REPORT_KEYS
     printf("true\n");
+    fflush(stdout);
 #endif
     return true;
   }
 
 #ifdef REPORT_KEYS
   printf("false\n");
+  fflush(stdout);
 #endif
   return false;
 }
@@ -437,6 +442,27 @@ bool Accelerator::checkFromAllegroKeyArray() const
 
   return ((m_scancode == 0 || key[m_scancode]) &&
           (m_modifiers == modifiers));
+}
+
+//////////////////////////////////////////////////////////////////////
+// Accelerators
+
+bool Accelerators::has(const Accelerator& accel) const
+{
+  return (std::find(begin(), end(), accel) != end());
+}
+
+void Accelerators::add(const Accelerator& accel)
+{
+  if (!has(accel))
+    m_list.push_back(accel);
+}
+
+void Accelerators::remove(const Accelerator& accel)
+{
+  auto it = std::find(begin(), end(), accel);
+  if (it != end())
+    m_list.erase(it);
 }
 
 } // namespace ui
