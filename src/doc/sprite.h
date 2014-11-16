@@ -133,6 +133,8 @@ namespace doc {
     // return the 0 color (the mask-color).
     int getPixel(int x, int y, FrameNumber frame) const;
 
+    void pickCels(int x, int y, FrameNumber frame, int opacityThreshold, CelList& cels) const;
+
   private:
     Sprite* m_self;                        // pointer to the Sprite
     PixelFormat m_format;                  // pixel format

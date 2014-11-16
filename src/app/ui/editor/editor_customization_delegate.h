@@ -60,6 +60,8 @@ namespace app {
     virtual bool isAddSelectionPressed() = 0;
 
     virtual bool isSubtractSelectionPressed() = 0;
+
+    virtual bool isAutoSelectLayerPressed() = 0;
   };
 
 } // namespace app

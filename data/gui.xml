@@ -344,7 +344,7 @@
          tool without changing the current one -->
     <quicktools>
       <key tool="eyedropper" shortcut="Alt" />
-      <key tool="move" shortcut="Ctrl" />
+      <key tool="move" shortcut="Ctrl" mac="Cmd" />
       <key tool="hand" shortcut="Space" />
     </quicktools>
 
@@ -373,6 +373,9 @@
       <!-- Modifiers for selection tool -->
       <key action="AddSelection" shortcut="Shift" />
       <key action="SubtractSelection" shortcut="Alt" />
+
+      <!-- Modifiers for move tool -->
+      <key action="AutoSelectLayer" shortcut="Ctrl" mac="Cmd" />
     </actions>
 
   </keyboard>
@@ -782,6 +785,9 @@
             ink="scroll"
             controller="freehand"
             />
+    </group>
+
+    <group id="move_tools" text="Move Tools">
       <tool id="move"
             text="Move Tool"
             ink="move"

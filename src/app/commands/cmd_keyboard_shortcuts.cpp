@@ -367,6 +367,9 @@ private:
         case KeyContext::MovingPixels:
           text = "Moving pixels context: " + text;
           break;
+        case KeyContext::MoveTool:
+          text = "Move tool: " + text;
+          break;
       }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
 

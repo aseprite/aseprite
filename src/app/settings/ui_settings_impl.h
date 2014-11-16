@@ -57,6 +57,7 @@ namespace app {
     bool getShowSpriteEditorScrollbars() override;
     RightClickMode getRightClickMode() override;
     bool getGrabAlpha() override;
+    bool getAutoSelectLayer() override;
     app::Color getFgColor() override;
     app::Color getBgColor() override;
     tools::Tool* getCurrentTool() override;
@@ -66,6 +67,7 @@ namespace app {
     void setShowSpriteEditorScrollbars(bool state) override;
     void setRightClickMode(RightClickMode mode) override;
     void setGrabAlpha(bool state) override;
+    void setAutoSelectLayer(bool state) override;
     void setFgColor(const app::Color& color) override;
     void setBgColor(const app::Color& color) override;
     void setCurrentTool(tools::Tool* tool) override;
@@ -103,6 +105,7 @@ namespace app {
     bool m_zoomWithScrollWheel;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
+    bool m_autoSelectLayer;
     RightClickMode m_rightClickMode;
     std::map<doc::ObjectId, IDocumentSettings*> m_docSettings;
   };

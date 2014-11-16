@@ -110,6 +110,10 @@ public:
     return isKeyActionPressed(KeyAction::SubtractSelection);
   }
 
+  bool isAutoSelectLayerPressed() override {
+    return isKeyActionPressed(KeyAction::AutoSelectLayer);
+  }
+
 protected:
   bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {

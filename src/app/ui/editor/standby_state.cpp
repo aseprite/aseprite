@@ -175,6 +175,26 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Move cel X,Y coordinates
   if (clickedInk->isCelMovement()) {
+    // Handle "Auto Select Layer"
+    if (editor->isAutoSelectLayer()) {
+      ColorPicker picker;
+      int x, y;
+
+      editor->screenToEditor(
+        msg->position().x,
+        msg->position().y, &x, &y);
+
+      picker.pickColor(location, x, y, ColorPicker::FromComposition);
+
+      if (layer != picker.layer()) {
+        layer = picker.layer();
+        if (layer) {
+          editor->setLayer(layer);
+          editor->flashCurrentLayer();
+        }
+      }
+    }
+
     if ((layer) &&
       (layer->type() == ObjectType::LayerImage)) {
       // TODO you can move the `Background' with tiled mode
@@ -191,6 +211,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
       }
     }
+
     return true;
   }
 

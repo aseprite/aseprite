@@ -47,7 +47,8 @@ namespace app {
 
     void updateFromTool(tools::Tool* tool);
     void updateForMovingPixels();
-    void updateForSelectionMode(SelectionMode mode);
+    void updateSelectionMode(SelectionMode mode);
+    void updateAutoSelectLayer(bool state);
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -77,6 +78,7 @@ namespace app {
     class FreehandAlgorithmField;
     class GrabAlphaField;
     class DropPixelsField;
+    class AutoSelectLayerField;
 
     IToolSettings* m_toolSettings;
     BrushTypeField* m_brushType;
@@ -89,6 +91,7 @@ namespace app {
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;
     GrabAlphaField* m_grabAlpha;
+    AutoSelectLayerField* m_autoSelectLayer;
     ui::Box* m_freehandBox;
     FreehandAlgorithmField* m_freehandAlgo;
     ui::Box* m_sprayBox;

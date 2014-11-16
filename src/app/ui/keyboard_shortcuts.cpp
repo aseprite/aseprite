@@ -55,6 +55,7 @@ namespace {
     { "LockAxis"            , "Lock Axis"          , app::KeyAction::LockAxis },
     { "AddSelection"        , "Add Selection"      , app::KeyAction::AddSelection },
     { "SubtractSelection"   , "Subtract Selection" , app::KeyAction::SubtractSelection },
+    { "AutoSelectLayer"     , "Auto Select Layer" , app::KeyAction::AutoSelectLayer },
     { "LeftMouseButton"     , "Trigger Left Mouse Button" , app::KeyAction::LeftMouseButton },
     { "RightMouseButton"    , "Trigger Right Mouse Button" , app::KeyAction::RightMouseButton },
     { NULL                  , NULL                 , app::KeyAction::None }
@@ -173,6 +174,9 @@ Key::Key(KeyAction action)
       break;
     case KeyAction::SubtractSelection:
       m_keycontext = KeyContext::Selection;
+      break;
+    case KeyAction::AutoSelectLayer:
+      m_keycontext = KeyContext::MoveTool;
       break;
     case KeyAction::LeftMouseButton:
       m_keycontext = KeyContext::Any;
@@ -531,6 +535,9 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
           break;
         case KeyContext::MovingPixels:
           keycontextStr = "MovingPixels";
+          break;
+        case KeyContext::MoveTool:
+          keycontextStr = "MoveTool";
           break;
       }
 

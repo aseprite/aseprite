@@ -721,6 +721,23 @@ protected:
   }
 };
 
+class ContextBar::AutoSelectLayerField : public CheckBox
+{
+public:
+  AutoSelectLayerField() : CheckBox("Auto Select Layer") {
+    setup_mini_font(this);
+  }
+
+protected:
+  void onClick(Event& ev) override {
+    CheckBox::onClick(ev);
+
+    UIContext::instance()->settings()->setAutoSelectLayer(isSelected());
+
+    releaseFocus();
+  }
+};
+
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
   , m_toolSettings(NULL)
@@ -750,6 +767,8 @@ ContextBar::ContextBar()
   addChild(m_inkOpacity = new InkOpacityField());
 
   addChild(m_grabAlpha = new GrabAlphaField());
+
+  addChild(m_autoSelectLayer = new AutoSelectLayerField());
 
   // addChild(new InkChannelTargetField());
   // addChild(new InkShadeField());
@@ -878,6 +897,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
   m_grabAlpha->setSelected(settings->getGrabAlpha());
+  m_autoSelectLayer->setSelected(settings->getAutoSelectLayer());
   m_freehandAlgo->setFreehandAlgorithm(toolSettings->getFreehandAlgorithm());
 
   m_sprayWidth->setValue(toolSettings->getSprayWidth());
@@ -893,6 +913,11 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   bool isEyedropper =
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
+
+  // True if the current tool is move tool.
+  bool isMove =
+    (tool->getInk(0)->isCelMovement() ||
+     tool->getInk(1)->isCelMovement());
 
   // True if it makes sense to change the ink property for the current
   // tool.
@@ -921,6 +946,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_inkType->setVisible(hasInk);
   m_inkOpacity->setVisible(hasOpacity);
   m_grabAlpha->setVisible(isEyedropper);
+  m_autoSelectLayer->setVisible(isMove);
   m_freehandBox->setVisible(isFreehand && hasOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
@@ -946,12 +972,20 @@ void ContextBar::updateForMovingPixels()
   layout();
 }
 
-void ContextBar::updateForSelectionMode(SelectionMode mode)
+void ContextBar::updateSelectionMode(SelectionMode mode)
 {
   if (!m_selectionMode->isVisible())
     return;
 
   m_selectionMode->setSelectionMode(mode);
+}
+
+void ContextBar::updateAutoSelectLayer(bool state)
+{
+  if (!m_autoSelectLayer->isVisible())
+    return;
+
+  m_autoSelectLayer->setSelected(state);
 }
 
 } // namespace app

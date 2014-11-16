@@ -286,6 +286,7 @@ UISettingsImpl::UISettingsImpl()
   , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
+  , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
   , m_rightClickMode(static_cast<RightClickMode>(get_config_int("Options", "RightClickMode",
         static_cast<int>(RightClickMode::Default))))
 {
@@ -301,6 +302,7 @@ UISettingsImpl::~UISettingsImpl()
   set_config_bool("Options", "ZoomWithMouseWheel", m_zoomWithScrollWheel);
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
+  set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
   set_config_int("Options", "RightClickMode", static_cast<int>(m_rightClickMode));
 
   for (auto it : m_docSettings)
@@ -365,6 +367,11 @@ bool UISettingsImpl::getGrabAlpha()
   return m_grabAlpha;
 }
 
+bool UISettingsImpl::getAutoSelectLayer()
+{
+  return m_autoSelectLayer;
+}
+
 app::Color UISettingsImpl::getFgColor()
 {
   return ColorBar::instance()->getFgColor();
@@ -410,6 +417,13 @@ void UISettingsImpl::setGrabAlpha(bool state)
   m_grabAlpha = state;
 
   notifyObservers<bool>(&GlobalSettingsObserver::onSetGrabAlpha, state);
+}
+
+void UISettingsImpl::setAutoSelectLayer(bool state)
+{
+  m_autoSelectLayer = state;
+
+  notifyObservers<bool>(&GlobalSettingsObserver::onSetAutoSelectLayer, state);
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
