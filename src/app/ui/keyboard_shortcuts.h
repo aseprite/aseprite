@@ -44,6 +44,7 @@ namespace app {
     Any,
     Normal,
     Selection,
+    MovingPixels,
   };
 
   enum class KeySource {
@@ -83,8 +84,7 @@ namespace app {
     }
     const ui::Accelerators& origAccels() const { return m_accels; }
     const ui::Accelerators& userAccels() const { return m_users; }
-
-    void setUserAccels(const ui::Accelerators& accels);
+    const ui::Accelerators& userRemovedAccels() const { return m_userRemoved; }
 
     void add(const ui::Accelerator& accel, KeySource source);
     bool isPressed(ui::Message* msg) const;
@@ -109,8 +109,9 @@ namespace app {
 
   private:
     KeyType m_type;
-    ui::Accelerators m_accels;
-    ui::Accelerators m_users;
+    ui::Accelerators m_accels;      // Default accelerators (from gui.xml)
+    ui::Accelerators m_users;       // User-defined accelerators
+    ui::Accelerators m_userRemoved; // Default accelerators removed by user
     bool m_useUsers;
     KeyContext m_keycontext;
 
@@ -149,7 +150,7 @@ namespace app {
     Key* quicktool(tools::Tool* tool);
     Key* action(KeyAction action);
 
-    void disableAccel(const ui::Accelerator& accel);
+    void disableAccel(const ui::Accelerator& accel, KeyContext keyContext);
 
     KeyContext getCurrentKeyContext();
     bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params** params);
@@ -159,6 +160,7 @@ namespace app {
     KeyboardShortcuts();
 
     void exportKeys(TiXmlElement& parent, KeyType type);
+    void exportAccel(TiXmlElement& parent, Key* key, const ui::Accelerator& accel, bool removed);
 
     Keys m_keys;
 

@@ -194,50 +194,49 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
   }
 
-  // Transform selected pixels
-  if (document->isMaskVisible() &&
-      m_decorator->getTransformHandles(editor)) {
-    TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
-
-    // Get the handle covered by the mouse.
-    HandleType handle = transfHandles->getHandleAtPoint(editor,
-                                                        msg->position(),
-                                                        document->getTransformation());
-
-    if (handle != NoHandle) {
-      int x, y, opacity;
-      Image* image = location.image(&x, &y, &opacity);
-      if (image) {
-        if (!layer->isWritable()) {
-          Alert::show(PACKAGE "<<The layer is locked.||&Close");
-          return true;
-        }
-
-        // Change to MovingPixelsState
-        transformSelection(editor, msg, handle);
-      }
-      return true;
-    }
-  }
-
-  // Move selected pixels
-  if (editor->isInsideSelection() &&
-      currentTool->getInk(0)->isSelection() &&
-      msg->left()) {
-    if (!layer->isWritable()) {
-      Alert::show(PACKAGE "<<The layer is locked.||&Close");
-      return true;
-    }
-
-    // Change to MovingPixelsState
-    transformSelection(editor, msg, MoveHandle);
-    return true;
-  }
-
   // Call the eyedropper command
   if (clickedInk->isEyedropper()) {
-    onMouseMove(editor, msg);
+    callEyedropper(editor);
     return true;
+  }
+
+  if (clickedInk->isSelection()) {
+    // Transform selected pixels
+    if (document->isMaskVisible() && m_decorator->getTransformHandles(editor)) {
+      TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
+
+      // Get the handle covered by the mouse.
+      HandleType handle = transfHandles->getHandleAtPoint(editor,
+        msg->position(),
+        document->getTransformation());
+
+      if (handle != NoHandle) {
+        int x, y, opacity;
+        Image* image = location.image(&x, &y, &opacity);
+        if (image) {
+          if (!layer->isWritable()) {
+            Alert::show(PACKAGE "<<The layer is locked.||&Close");
+            return true;
+          }
+
+          // Change to MovingPixelsState
+          transformSelection(editor, msg, handle);
+        }
+        return true;
+      }
+    }
+
+    // Move selected pixels
+    if (editor->isInsideSelection() && msg->left()) {
+      if (!layer->isWritable()) {
+        Alert::show(PACKAGE "<<The layer is locked.||&Close");
+        return true;
+      }
+
+      // Change to MovingPixelsState
+      transformSelection(editor, msg, MoveHandle);
+      return true;
+    }
   }
 
   // Start the Tool-Loop
@@ -262,16 +261,8 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
   // We control eyedropper tool from here. TODO move this to another place
   if (msg->left() || msg->right()) {
     tools::Ink* clickedInk = editor->getCurrentEditorInk();
-    if (clickedInk->isEyedropper()) {
-      Command* eyedropper_cmd =
-        CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
-      bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
-
-      Params params;
-      params.set("target", fg ? "foreground": "background");
-
-      UIContext::instance()->executeCommand(eyedropper_cmd, &params);
-    }
+    if (clickedInk->isEyedropper())
+      callEyedropper(editor);
   }
 
   editor->moveDrawingCursor();
@@ -558,6 +549,22 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
     jmouse_set_cursor(kForbiddenCursor);
   }
+}
+
+void StandbyState::callEyedropper(Editor* editor)
+{
+  tools::Ink* clickedInk = editor->getCurrentEditorInk();
+  if (!clickedInk->isEyedropper())
+    return;
+
+  Command* eyedropper_cmd =
+    CommandsModule::instance()->getCommandByName(CommandId::Eyedropper);
+  bool fg = (static_cast<tools::PickInk*>(clickedInk)->target() == tools::PickInk::Fg);
+
+  Params params;
+  params.set("target", fg ? "foreground": "background");
+
+  UIContext::instance()->executeCommand(eyedropper_cmd, &params);
 }
 
 //////////////////////////////////////////////////////////////////////

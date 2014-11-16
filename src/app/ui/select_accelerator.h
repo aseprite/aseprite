@@ -20,6 +20,7 @@
 #define APP_UI_SELECT_ACCELERATOR_H_INCLUDED
 #pragma once
 
+#include "app/ui/keyboard_shortcuts.h"
 #include "ui/accelerator.h"
 
 #include "generated_select_accelerator.h"
@@ -28,7 +29,7 @@ namespace app {
 
   class SelectAccelerator : public app::gen::SelectAccelerator {
   public:
-    explicit SelectAccelerator(const ui::Accelerator& accelerator);
+    SelectAccelerator(const ui::Accelerator& accelerator, KeyContext keyContext);
 
     bool isModified() const { return m_modified; }
     const ui::Accelerator& accel() const { return m_accel; }
@@ -45,6 +46,7 @@ namespace app {
     class KeyField;
 
     KeyField* m_keyField;
+    KeyContext m_keyContext;
     ui::Accelerator m_origAccel;
     ui::Accelerator m_accel;
     bool m_modified;

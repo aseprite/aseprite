@@ -1008,15 +1008,29 @@ void Editor::updateQuicktool()
         return;
     }
 
+    tools::Tool* old_quicktool = m_quicktool;
+    tools::Tool* new_quicktool = m_customizationDelegate->getQuickTool(current_tool);
+
+    // Check if the current state accept the given quicktool.
+    if (new_quicktool && !m_state->acceptQuickTool(new_quicktool))
+      return;
+
     // Hide the drawing cursor with the current tool brush size before
     // we change the quicktool. In this way we avoid using the
     // quicktool brush size to clean the current tool cursor.
-    hideDrawingCursor();
+    //
+    // TODO Remove EditorState::regenerateDrawingCursor() creating a
+    // new Document concept of multiple extra cels: we need an extra
+    // cel for the drawing cursor, other for the moving pixels,
+    // etc. In this way we'll not have conflicts between different
+    // uses of the same extra cel.
+    if (m_state->regenerateDrawingCursor())
+      hideDrawingCursor();
 
-    tools::Tool* old_quicktool = m_quicktool;
-    m_quicktool = m_customizationDelegate->getQuickTool(current_tool);
+    m_quicktool = new_quicktool;
 
-    showDrawingCursor();
+    if (m_state->regenerateDrawingCursor())
+      showDrawingCursor();
 
     // If the tool has changed, we must to update the status bar because
     // the new tool can display something different in the status bar (e.g. Eyedropper)

@@ -43,7 +43,38 @@ namespace ui {
     int m_unicodeChar;
   };
 
-  typedef std::vector<Accelerator> Accelerators;
+  class Accelerators {
+  public:
+    typedef std::vector<Accelerator> List;
+    typedef List::iterator iterator;
+    typedef List::const_iterator const_iterator;
+
+    iterator begin() { return m_list.begin(); }
+    iterator end() { return m_list.end(); }
+    const_iterator begin() const { return m_list.begin(); }
+    const_iterator end() const { return m_list.end(); }
+
+    bool empty() const { return m_list.empty(); }
+    size_t size() const { return m_list.size(); }
+
+    const ui::Accelerator& front() const { return m_list.front(); }
+
+    const ui::Accelerator& operator[](int index) const {
+      return m_list[index];
+    }
+
+    ui::Accelerator& operator[](int index) {
+      return m_list[index];
+    }
+
+    void clear() { m_list.clear(); }
+    bool has(const Accelerator& accel) const;
+    void add(const Accelerator& accel);
+    void remove(const Accelerator& accel);
+
+  private:
+    List m_list;
+  };
 
 } // namespace ui
 

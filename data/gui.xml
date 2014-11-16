@@ -18,7 +18,8 @@
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
-      <key command="Exit" shortcut="Alt+F4" mac="Cmd+Q" />
+      <key command="Exit" win="Ctrl+Q" linux="Ctrl+Q" mac="Cmd+Q" />
+      <key command="Exit" win="Alt+F4" />
       <key command="Cancel" shortcut="Esc">
         <param name="type" value="all" />
       </key>

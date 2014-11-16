@@ -63,6 +63,12 @@ protected:
             keymsg->scancode(),
             keymsg->unicodeChar() > 32 ?
               std::tolower(keymsg->unicodeChar()): 0);
+
+          // Convert the accelerator to a string, and parse it
+          // again. Just to obtain the exact accelerator we'll read
+          // when we import the gui.xml file or an .aseprite-keys file.
+          m_accel = Accelerator(m_accel.toString());
+
           updateText();
 
           AccelChange(&m_accel);
@@ -84,8 +90,9 @@ protected:
   Accelerator m_accel;
 };
 
-SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel)
+SelectAccelerator::SelectAccelerator(const ui::Accelerator& accel, KeyContext keyContext)
   : m_keyField(new KeyField(accel))
+  , m_keyContext(keyContext)
   , m_accel(accel)
   , m_modified(false)
 {
@@ -170,7 +177,8 @@ void SelectAccelerator::updateAssignedTo()
   std::string res = "None";
 
   for (Key* key : *KeyboardShortcuts::instance()) {
-    if (key->hasAccel(m_accel)) {
+    if (key->keycontext() == m_keyContext &&
+        key->hasAccel(m_accel)) {
       res = key->triggerString();
       break;
     }

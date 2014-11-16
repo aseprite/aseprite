@@ -39,8 +39,6 @@
 #include "ui/accelerator.h"
 #include "ui/message.h"
 
-#include <algorithm>
-
 #define XML_KEYBOARD_FILE_VERSION "1"
 
 namespace {
@@ -78,6 +76,13 @@ namespace {
       shortcut = elem->Attribute("shortcut");
 
     return shortcut;
+  }
+
+  bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name)
+  {
+    const char* value = elem->Attribute(attribute_name);
+
+    return (value != NULL) && (strcmp(value, "true") == 0);
   }
 
   std::string get_user_friendly_string_for_keyaction(app::KeyAction action)
@@ -118,6 +123,9 @@ namespace app {
 
 using namespace ui;
 
+//////////////////////////////////////////////////////////////////////
+// Key
+
 Key::Key(Command* command, const Params* params, KeyContext keyContext)
   : m_type(KeyType::Command)
   , m_useUsers(false)
@@ -141,12 +149,38 @@ Key::Key(KeyAction action)
   , m_keycontext(KeyContext::Any)
   , m_action(action)
 {
-}
-
-void Key::setUserAccels(const Accelerators& accels)
-{
-  m_useUsers = true;
-  m_users = accels;
+  switch (action) {
+    case KeyAction::None:
+      m_keycontext = KeyContext::Any;
+      break;
+    case KeyAction::CopySelection:
+      m_keycontext = KeyContext::MovingPixels;
+      break;
+    case KeyAction::SnapToGrid:
+      m_keycontext = KeyContext::MovingPixels;
+      break;
+    case KeyAction::AngleSnap:
+      m_keycontext = KeyContext::MovingPixels;
+      break;
+    case KeyAction::MaintainAspectRatio:
+      m_keycontext = KeyContext::MovingPixels;
+      break;
+    case KeyAction::LockAxis:
+      m_keycontext = KeyContext::MovingPixels;
+      break;
+    case KeyAction::AddSelection:
+      m_keycontext = KeyContext::Selection;
+      break;
+    case KeyAction::SubtractSelection:
+      m_keycontext = KeyContext::Selection;
+      break;
+    case KeyAction::LeftMouseButton:
+      m_keycontext = KeyContext::Any;
+      break;
+    case KeyAction::RightMouseButton:
+      m_keycontext = KeyContext::Any;
+      break;
+  }
 }
 
 void Key::add(const ui::Accelerator& accel, KeySource source)
@@ -159,11 +193,16 @@ void Key::add(const ui::Accelerator& accel, KeySource source)
       m_users = m_accels;
     }
     accels = &m_users;
-
-    KeyboardShortcuts::instance()->disableAccel(accel);
   }
 
-  accels->push_back(accel);
+  // Remove the accelerator from other commands
+  if (source == KeySource::UserDefined) {
+    KeyboardShortcuts::instance()->disableAccel(accel, m_keycontext);
+    m_userRemoved.remove(accel);
+  }
+
+  // Add the accelerator
+  accels->add(accel);
 }
 
 bool Key::isPressed(Message* msg) const
@@ -194,7 +233,7 @@ bool Key::checkFromAllegroKeyArray()
 
 bool Key::hasAccel(const ui::Accelerator& accel) const
 {
-  return (std::find(accels().begin(), accels().end(), accel) != accels().end());
+  return accels().has(accel);
 }
 
 void Key::disableAccel(const ui::Accelerator& accel)
@@ -204,14 +243,16 @@ void Key::disableAccel(const ui::Accelerator& accel)
     m_users = m_accels;
   }
 
-  Accelerators::iterator it = std::find(m_users.begin(), m_users.end(), accel);
-  if (it != m_users.end())
-    m_users.erase(it);
+  m_users.remove(accel);
+
+  if (m_accels.has(accel))
+    m_userRemoved.add(accel);
 }
 
 void Key::reset()
 {
   m_users.clear();
+  m_userRemoved.clear();
   m_useUsers = false;
 }
 
@@ -234,6 +275,9 @@ std::string Key::triggerString() const
   }
   return "Unknown";
 }
+
+//////////////////////////////////////////////////////////////////////
+// KeyboardShortcuts
 
 KeyboardShortcuts* KeyboardShortcuts::instance()
 {
@@ -270,6 +314,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* command_name = xmlKey->Attribute("command");
     const char* command_key = get_shortcut(xmlKey);
+    bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (command_name && command_key) {
       Command* command = CommandsModule::instance()->getCommandByName(command_name);
@@ -303,15 +348,21 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         // add the keyboard shortcut to the command
         Key* key = this->command(command_name, &params, keycontext);
         if (key) {
-          key->add(Accelerator(command_key), source);
+          Accelerator accel(command_key);
 
-          // Add the shortcut to the menuitems with this
-          // command (this is only visual, the "manager_msg_proc"
-          // is the only one that process keyboard shortcuts)
-          if (key->accels().size() == 1) {
-            AppMenus::instance()->applyShortcutToMenuitemsWithCommand(
-              command, &params, key);
+          if (!removed) {
+            key->add(accel, source);
+
+            // Add the shortcut to the menuitems with this
+            // command (this is only visual, the "manager_msg_proc"
+            // is the only one that process keyboard shortcuts)
+            if (key->accels().size() == 1) {
+              AppMenus::instance()->applyShortcutToMenuitemsWithCommand(
+                command, &params, key);
+            }
           }
+          else
+            key->disableAccel(accel);
         }
       }
     }
@@ -327,6 +378,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
+    bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
@@ -334,8 +386,14 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
 
         Key* key = this->tool(tool);
-        if (key)
-          key->add(Accelerator(tool_key), source);
+        if (key) {
+          Accelerator accel(tool_key);
+
+          if (!removed)
+            key->add(accel, source);
+          else
+            key->disableAccel(accel);
+        }
       }
     }
     xmlKey = xmlKey->NextSiblingElement();
@@ -349,14 +407,22 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* tool_id = xmlKey->Attribute("tool");
     const char* tool_key = get_shortcut(xmlKey);
+    bool removed = bool_attr_is_true(xmlKey, "removed");
+
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
         PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
 
         Key* key = this->quicktool(tool);
-        if (key)
-          key->add(Accelerator(tool_key), source);
+        if (key) {
+          Accelerator accel(tool_key);
+
+          if (!removed)
+            key->add(accel, source);
+          else
+            key->disableAccel(accel);
+        }
       }
     }
     xmlKey = xmlKey->NextSiblingElement();
@@ -370,6 +436,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
   while (xmlKey) {
     const char* tool_action = xmlKey->Attribute("action");
     const char* tool_key = get_shortcut(xmlKey);
+    bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (tool_action && tool_key) {
       PRINTF(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
@@ -378,8 +445,14 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
 
       if (action != KeyAction::None) {
         Key* key = this->action(action);
-        if (key)
-          key->add(Accelerator(tool_key), source);
+        if (key) {
+          Accelerator accel(tool_key);
+
+          if (!removed)
+            key->add(accel, source);
+          else
+            key->disableAccel(accel);
+        }
       }
     }
     xmlKey = xmlKey->NextSiblingElement();
@@ -424,41 +497,77 @@ void KeyboardShortcuts::exportKeys(TiXmlElement& parent, KeyType type)
 {
   for (Key* key : m_keys) {
     // Save only user defined accelerators.
-    if (key->type() != type || key->userAccels().empty())
+    if (key->type() != type)
       continue;
 
-    for (const ui::Accelerator& accel : key->userAccels()) {
-      TiXmlElement elem("key");
+    for (const ui::Accelerator& accel : key->userRemovedAccels())
+      exportAccel(parent, key, accel, true);
 
-      switch (key->type()) {
-        case KeyType::Command:
-          elem.SetAttribute("command", key->command()->short_name());
-          if (key->params()) {
-            for (const auto& param : *key->params()) {
-              if (param.second.empty())
-                continue;
+    for (const ui::Accelerator& accel : key->userAccels())
+      exportAccel(parent, key, accel, false);
+  }
+}
 
-              TiXmlElement paramElem("param");
-              paramElem.SetAttribute("name", param.first.c_str());
-              paramElem.SetAttribute("value", param.second.c_str());
-              elem.InsertEndChild(paramElem);
-            }
-          }
+void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Accelerator& accel, bool removed)
+{
+  TiXmlElement elem("key");
+
+  switch (key->type()) {
+
+    case KeyType::Command: {
+      const char* keycontextStr = NULL;
+
+      elem.SetAttribute("command", key->command()->short_name());
+
+      switch (key->keycontext()) {
+        case KeyContext::Any:
+          // Without "context" attribute
           break;
-        case KeyType::Tool:
-        case KeyType::Quicktool:
-          elem.SetAttribute("tool", key->tool()->getId().c_str());
+        case KeyContext::Normal:
+          keycontextStr = "Normal";
           break;
-        case KeyType::Action:
-          elem.SetAttribute("action",
-            base::convert_to<std::string>(key->action()).c_str());
+        case KeyContext::Selection:
+          keycontextStr = "Selection";
+          break;
+        case KeyContext::MovingPixels:
+          keycontextStr = "MovingPixels";
           break;
       }
 
-      elem.SetAttribute("shortcut", accel.toString().c_str());
-      parent.InsertEndChild(elem);
+      if (keycontextStr)
+        elem.SetAttribute("context", keycontextStr);
+
+      if (key->params()) {
+        for (const auto& param : *key->params()) {
+          if (param.second.empty())
+            continue;
+
+          TiXmlElement paramElem("param");
+          paramElem.SetAttribute("name", param.first.c_str());
+          paramElem.SetAttribute("value", param.second.c_str());
+          elem.InsertEndChild(paramElem);
+        }
+      }
+      break;
     }
+
+    case KeyType::Tool:
+    case KeyType::Quicktool:
+      elem.SetAttribute("tool", key->tool()->getId().c_str());
+      break;
+
+    case KeyType::Action:
+      elem.SetAttribute("action",
+        base::convert_to<std::string>(key->action()).c_str());
+      break;
   }
+
+  elem.SetAttribute("shortcut", accel.toString().c_str());
+
+  if (removed)
+    elem.SetAttribute("removed", "true");
+
+  parent.InsertEndChild(elem);
 }
 
 void KeyboardShortcuts::reset()
@@ -531,10 +640,10 @@ Key* KeyboardShortcuts::action(KeyAction action)
   return key;
 }
 
-void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel)
+void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel, KeyContext keyContext)
 {
   for (Key* key : m_keys) {
-    if (key->hasAccel(accel))
+    if (key->keycontext() == keyContext && key->hasAccel(accel))
       key->disableAccel(accel);
   }
 }
