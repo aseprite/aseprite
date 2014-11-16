@@ -75,6 +75,7 @@ namespace app {
 
     virtual void onSetShowSpriteEditorScrollbars(bool state) {}
     virtual void onSetGrabAlpha(bool state) {}
+    virtual void onSetAutoSelectLayer(bool state) {}
     virtual void onSetFgColor(app::Color newColor) {}
     virtual void onSetBgColor(app::Color newColor) {}
     virtual void onSetCurrentTool(tools::Tool* newTool) {}

@@ -45,6 +45,7 @@ namespace app {
     Normal,
     Selection,
     MovingPixels,
+    MoveTool,
   };
 
   enum class KeySource {
@@ -68,6 +69,7 @@ namespace app {
     LockAxis,
     AddSelection,
     SubtractSelection,
+    AutoSelectLayer,
     LeftMouseButton,
     RightMouseButton
   };

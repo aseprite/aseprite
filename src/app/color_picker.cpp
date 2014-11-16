@@ -24,6 +24,7 @@
 
 #include "app/document_location.h"
 #include "gfx/point.h"
+#include "raster/cel.h"
 #include "raster/image.h"
 #include "raster/primitives.h"
 #include "raster/sprite.h"
@@ -32,6 +33,7 @@ namespace app {
 
 ColorPicker::ColorPicker()
   : m_alpha(0)
+  , m_layer(NULL)
 {
 }
 
@@ -45,6 +47,11 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
     m_color = app::Color::fromImage(
       location.sprite()->pixelFormat(),
       location.sprite()->getPixel(x, y, location.frame()));
+
+    raster::CelList cels;
+    location.sprite()->pickCels(x, y, location.frame(), 128, cels);
+    if (!cels.empty())
+      m_layer = cels.front()->layer();
   }
   else {                        // Pick from the current layer
     int u, v;
@@ -64,6 +71,7 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
       }
 
       m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
+      m_layer = const_cast<Layer*>(location.layer());
     }
   }
 }

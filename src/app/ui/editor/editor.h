@@ -177,6 +177,7 @@ namespace app {
     tools::Ink* getCurrentEditorInk();
 
     SelectionMode getSelectionMode() const { return m_selectionMode; }
+    bool isAutoSelectLayer() const { return m_autoSelectLayer; }
 
     bool isSecondaryButton() const { return m_secondaryButton; }
 
@@ -219,7 +220,7 @@ namespace app {
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
-    void updateSelectionMode();
+    void updateContextBarFromModifiers();
     void drawBrushPreview(int x, int y, bool refresh = true);
     void moveBrushPreview(int x, int y, bool refresh = true);
     void clearBrushPreview(bool refresh = true);
@@ -272,6 +273,7 @@ namespace app {
     tools::Tool* m_quicktool;
 
     SelectionMode m_selectionMode;
+    bool m_autoSelectLayer;
 
     // Offset for the sprite
     int m_offset_x;

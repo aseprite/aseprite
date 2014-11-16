@@ -1047,11 +1047,15 @@ void Editor::updateQuicktool()
   }
 }
 
-void Editor::updateSelectionMode()
+void Editor::updateContextBarFromModifiers()
 {
   // We update the selection mode only if we're not selecting.
   if (hasCapture())
     return;
+
+  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+
+  // Selection mode
 
   SelectionMode mode = UIContext::instance()->settings()->selection()->getSelectionMode();
 
@@ -1064,9 +1068,19 @@ void Editor::updateSelectionMode()
 
   if (mode != m_selectionMode) {
     m_selectionMode = mode;
+    ctxBar->updateSelectionMode(mode);
+  }
 
-    App::instance()->getMainWindow()->getContextBar()
-      ->updateForSelectionMode(mode);
+  // Move tool options
+
+  bool autoSelectLayer = UIContext::instance()->settings()->getAutoSelectLayer();
+
+  if (m_customizationDelegate && m_customizationDelegate->isAutoSelectLayerPressed())
+    autoSelectLayer = true;
+
+  if (m_autoSelectLayer != autoSelectLayer) {
+    m_autoSelectLayer = autoSelectLayer;
+    ctxBar->updateAutoSelectLayer(autoSelectLayer);
   }
 }
 
@@ -1096,7 +1110,7 @@ bool Editor::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
       updateQuicktool();
-      updateSelectionMode();
+      updateContextBarFromModifiers();
       break;
 
     case kMouseLeaveMessage:
@@ -1113,7 +1127,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = mouseMsg->right();
 
           updateQuicktool();
-          updateSelectionMode();
+          updateContextBarFromModifiers();
           editor_setcursor();
         }
 
@@ -1138,7 +1152,7 @@ bool Editor::onProcessMessage(Message* msg)
           m_secondaryButton = false;
 
           updateQuicktool();
-          updateSelectionMode();
+          updateContextBarFromModifiers();
           editor_setcursor();
         }
 
@@ -1154,7 +1168,7 @@ bool Editor::onProcessMessage(Message* msg)
 
         if (hasMouse()) {
           updateQuicktool();
-          updateSelectionMode();
+          updateContextBarFromModifiers();
           editor_setcursor();
         }
 
@@ -1170,7 +1184,7 @@ bool Editor::onProcessMessage(Message* msg)
 
         if (hasMouse()) {
           updateQuicktool();
-          updateSelectionMode();
+          updateContextBarFromModifiers();
           editor_setcursor();
         }
 

@@ -491,6 +491,53 @@ int Sprite::getPixel(int x, int y, FrameNumber frame) const
   return color;
 }
 
+void Sprite::pickCels(int x, int y, FrameNumber frame, int opacityThreshold, CelList& cels) const
+{
+  std::vector<Layer*> layers;
+  getLayersList(layers);
+
+  for (int i=(int)layers.size()-1; i>=0; --i) {
+    Layer* layer = layers[i];
+    if (!layer->isImage())
+      continue;
+
+    Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
+    if (!cel)
+      continue;
+
+    Image* image = cel->image();
+    if (!image)
+      continue;
+
+    if (!cel->bounds().contains(gfx::Point(x, y)))
+      continue;
+
+    color_t color = get_pixel(image,
+      x - cel->x(),
+      y - cel->y());
+
+    bool isOpaque = true;
+
+    switch (image->pixelFormat()) {
+      case IMAGE_RGB:
+        isOpaque = (rgba_geta(color) >= opacityThreshold);
+        break;
+      case IMAGE_INDEXED:
+        isOpaque = (color != image->maskColor());
+        break;
+      case IMAGE_GRAYSCALE:
+        isOpaque = (graya_geta(color) >= opacityThreshold);
+        break;
+    }
+
+    if (!isOpaque)
+      continue;
+
+    cels.push_back(cel);
+  }
+  fflush(stdout);
+}
+
 //////////////////////////////////////////////////////////////////////
 
 static Layer* index2layer(const Layer* layer, const LayerIndex& index, int* index_count)

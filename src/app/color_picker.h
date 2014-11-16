@@ -21,6 +21,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "raster/layer.h"
 
 namespace app {
   class DocumentLocation;
@@ -35,10 +36,12 @@ namespace app {
 
     app::Color color() const { return m_color; }
     int alpha() const { return m_alpha; }
+    raster::Layer* layer() const { return m_layer; }
 
   private:
     app::Color m_color;
     int m_alpha;
+    raster::Layer* m_layer;
   };
 
 } // namespace app
