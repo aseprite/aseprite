@@ -303,7 +303,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
   }
 
   // If the active layer is not visible.
-  if (!layer->isReadable()) {
+  if (!layer->isVisible()) {
     Alert::show(PACKAGE
                 "<<The current layer is hidden,"
                 "<<make it visible and try again"
@@ -311,7 +311,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
     return NULL;
   }
   // If the active layer is read-only.
-  else if (!layer->isWritable()) {
+  else if (!layer->isEditable()) {
     Alert::show(PACKAGE
                 "<<The current layer is locked,"
                 "<<unlock it and try again"

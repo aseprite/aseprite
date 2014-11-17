@@ -81,8 +81,8 @@ void CelPropertiesCommand::onExecute(Context* context)
   // Mini look for the opacity slider
   setup_mini_look(slider_opacity);
 
-  /* if the layer isn't writable */
-  if (!layer->isWritable()) {
+  // If the layer isn't writable
+  if (!layer->isEditable()) {
     button_ok->setText("Locked");
     button_ok->setEnabled(false);
   }

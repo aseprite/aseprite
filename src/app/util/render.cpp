@@ -390,7 +390,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
   const LayerImage* background = m_sprite->backgroundLayer();
-  bool need_checked_bg = (background != NULL ? !background->isReadable(): true);
+  bool need_checked_bg = (background != NULL ? !background->isVisible(): true);
   uint32_t bg_color = 0;
   Image *image;
 
@@ -573,7 +573,7 @@ void RenderEngine::renderLayer(
   int blend_mode)
 {
   // we can't read from this layer
-  if (!layer->isReadable())
+  if (!layer->isVisible())
     return;
 
   switch (layer->type()) {

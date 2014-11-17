@@ -24,16 +24,15 @@ namespace doc {
 
 Layer::Layer(ObjectType type, Sprite* sprite)
   : Object(type)
+  , m_sprite(sprite)
+  , m_parent(NULL)
+  , m_flags(LayerFlags(
+      int(LayerFlags::Visible) |
+      int(LayerFlags::Editable)))
 {
   ASSERT(type == ObjectType::LayerImage || type == ObjectType::LayerFolder);
 
   setName("Layer");
-
-  m_sprite = sprite;
-  m_parent = NULL;
-  m_flags =
-    LAYER_IS_READABLE |
-    LAYER_IS_WRITABLE;
 }
 
 Layer::~Layer()
@@ -210,7 +209,7 @@ void LayerImage::configureAsBackground()
   ASSERT(sprite() != NULL);
   ASSERT(sprite()->backgroundLayer() == NULL);
 
-  setMoveable(false);
+  setMovable(false);
   setBackground(true);
   setName("Background");
 
@@ -303,7 +302,7 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
 
 void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber frame)
 {
-  if (!layer->isReadable())
+  if (!layer->isVisible())
     return;
 
   switch (layer->type()) {

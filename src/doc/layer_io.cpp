@@ -35,8 +35,8 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
   if (!name.empty())
     os.write(name.c_str(), name.size());               // Name
 
-  write32(os, layer->getFlags());                      // Flags
-  write16(os, static_cast<int>(layer->type()));        // Type
+  write32(os, static_cast<int>(layer->flags())); // Flags
+  write16(os, static_cast<int>(layer->type()));  // Type
 
   switch (layer->type()) {
 
@@ -136,7 +136,7 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 
   if (layer != NULL) {
     layer->setName(&name[0]);
-    layer->setFlags(flags);
+    layer->setFlags(static_cast<LayerFlags>(flags));
   }
 
   return layer.release();

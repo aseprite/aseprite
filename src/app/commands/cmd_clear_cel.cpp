@@ -54,8 +54,8 @@ ClearCelCommand::ClearCelCommand()
 bool ClearCelCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsVisible |
+                             ContextFlags::ActiveLayerIsEditable |
                              ContextFlags::ActiveLayerIsImage |
                              ContextFlags::HasActiveCel);
 }

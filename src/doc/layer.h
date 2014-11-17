@@ -28,11 +28,11 @@ namespace doc {
   //////////////////////////////////////////////////////////////////////
   // Layer class
 
-  enum {
-    LAYER_IS_READABLE = 0x0001,
-    LAYER_IS_WRITABLE = 0x0002,
-    LAYER_IS_LOCKMOVE = 0x0004,
-    LAYER_IS_BACKGROUND = 0x0008,
+  enum class LayerFlags {
+    Visible    = 1,             // Can be read
+    Editable   = 2,             // Can be written
+    LockMove   = 4,             // Cannot be moved
+    Background = 8,             // Stack order cannot be changed
   };
 
   class Layer : public Object {
@@ -57,18 +57,35 @@ namespace doc {
 
     bool isImage() const { return type() == ObjectType::LayerImage; }
     bool isFolder() const { return type() == ObjectType::LayerFolder; }
-    bool isBackground() const { return (m_flags & LAYER_IS_BACKGROUND) == LAYER_IS_BACKGROUND; }
-    bool isMoveable() const { return (m_flags & LAYER_IS_LOCKMOVE) == 0; }
-    bool isReadable() const { return (m_flags & LAYER_IS_READABLE) == LAYER_IS_READABLE; }
-    bool isWritable() const { return (m_flags & LAYER_IS_WRITABLE) == LAYER_IS_WRITABLE; }
 
-    void setBackground(bool b) { if (b) m_flags |= LAYER_IS_BACKGROUND; else m_flags &= ~LAYER_IS_BACKGROUND; }
-    void setMoveable(bool b) { if (b) m_flags &= ~LAYER_IS_LOCKMOVE; else m_flags |= LAYER_IS_LOCKMOVE; }
-    void setReadable(bool b) { if (b) m_flags |= LAYER_IS_READABLE; else m_flags &= ~LAYER_IS_READABLE; }
-    void setWritable(bool b) { if (b) m_flags |= LAYER_IS_WRITABLE; else m_flags &= ~LAYER_IS_WRITABLE; }
+    bool isBackground() const { return hasFlags(LayerFlags::Background); }
+    bool isVisible() const    { return hasFlags(LayerFlags::Visible); }
+    bool isEditable() const   { return hasFlags(LayerFlags::Editable); }
+    bool isMovable() const    { return !hasFlags(LayerFlags::LockMove); }
 
-    uint32_t getFlags() const { return m_flags; }
-    void setFlags(uint32_t flags) { m_flags = flags; }
+    void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
+    void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }
+    void setEditable  (bool state) { switchFlags(LayerFlags::Editable, state); }
+    void setMovable   (bool state) { switchFlags(LayerFlags::LockMove, !state); }
+
+    LayerFlags flags() const {
+      return m_flags;
+    }
+
+    bool hasFlags(LayerFlags flags) const {
+      return (int(m_flags) & int(flags)) == int(flags);
+    }
+
+    void setFlags(LayerFlags flags) {
+      m_flags = flags;
+    }
+
+    void switchFlags(LayerFlags flags, bool state) {
+      if (state)
+        m_flags = LayerFlags(int(m_flags) | int(flags));
+      else
+        m_flags = LayerFlags(int(m_flags) & ~int(flags));
+    }
 
     virtual void getCels(CelList& cels) const = 0;
 
@@ -76,7 +93,7 @@ namespace doc {
     std::string m_name;           // layer name
     Sprite* m_sprite;             // owner of the layer
     LayerFolder* m_parent;        // parent layer
-    unsigned short m_flags;
+    LayerFlags m_flags;           // stack order cannot be changed
 
     // Disable assigment
     Layer& operator=(const Layer& other);

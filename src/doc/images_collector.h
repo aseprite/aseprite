@@ -47,12 +47,12 @@ namespace doc {
     // Parameters:
     // * allFrames: True if you want to collect images from all frames
     //              or false if you need images from the given "frame" param.
-    // * forWrite: True if you will modify the images (it is used to avoid
-    //             returning images from layers which are read-only/write-locked).
+    // * forEdit:   True if you will modify the images (it is used to avoid
+    //              returning images from layers which are read-only/write-locked).
     ImagesCollector(Layer* layer,
                     FrameNumber frame,
                     bool allFrames,
-                    bool forWrite);
+                    bool forEdit);
 
     ItemsIterator begin() { return m_items.begin(); }
     ItemsIterator end() { return m_items.end(); }
@@ -66,7 +66,7 @@ namespace doc {
 
     Items m_items;
     bool m_allFrames;
-    bool m_forWrite;
+    bool m_forEdit;
   };
 
 } // namespace doc

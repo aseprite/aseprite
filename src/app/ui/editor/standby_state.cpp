@@ -203,7 +203,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
                     "<<You can't move the `Background' layer."
                     "||&Close");
       }
-      else if (!layer->isMoveable()) {
+      else if (!layer->isMovable()) {
         Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
       }
       else {
@@ -235,7 +235,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         int x, y, opacity;
         Image* image = location.image(&x, &y, &opacity);
         if (image) {
-          if (!layer->isWritable()) {
+          if (!layer->isEditable()) {
             Alert::show(PACKAGE "<<The layer is locked.||&Close");
             return true;
           }
@@ -249,7 +249,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     // Move selected pixels
     if (editor->isInsideSelection() && msg->left()) {
-      if (!layer->isWritable()) {
+      if (!layer->isEditable()) {
         Alert::show(PACKAGE "<<The layer is locked.||&Close");
         return true;
       }

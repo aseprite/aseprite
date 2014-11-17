@@ -72,7 +72,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
 // in the given "frame".
 static bool has_cels(const Layer* layer, FrameNumber frame)
 {
-  if (!layer->isReadable())
+  if (!layer->isVisible())
     return false;
 
   switch (layer->type()) {

@@ -676,7 +676,7 @@ static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previou
 
   if (layer) {
     // flags
-    layer->setFlags(flags);
+    layer->setFlags(static_cast<LayerFlags>(flags));
 
     // name
     layer->setName(name.c_str());
@@ -701,12 +701,12 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
   // Flags
-  fputw(layer->getFlags(), f);
+  fputw(static_cast<int>(layer->flags()), f);
 
-  /* layer type */
+  // Layer type
   fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
 
-  /* layer child level */
+  // Layer child level
   LayerFolder* parent = layer->parent();
   int child_level = -1;
   while (parent != NULL) {

@@ -278,7 +278,7 @@ void App::initialize(int argc, const char* argv[])
               // For each layer, hide other ones and save the sprite.
               for (Layer* show : layers) {
                 for (Layer* hide : layers)
-                  hide->setReadable(hide == show);
+                  hide->setVisible(hide == show);
 
                 std::string frameStr;
                 if (doc->sprite()->totalFrames() > FrameNumber(1))
@@ -303,7 +303,7 @@ void App::initialize(int argc, const char* argv[])
               // Show only one layer
               if (!importLayerSaveAs.empty()) {
                 for (Layer* layer : layers)
-                  layer->setReadable(layer->name() == importLayerSaveAs);
+                  layer->setVisible(layer->name() == importLayerSaveAs);
               }
 
               static_cast<SaveFileBaseCommand*>(command)->setFilename(value.value());

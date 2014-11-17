@@ -531,9 +531,9 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
 
           case A_PART_HEADER_EYE: {
-            bool newReadableState = !allLayersVisible();
+            bool newVisibleState = !allLayersVisible();
             for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i]->setReadable(newReadableState);
+              m_layers[i]->setVisible(newVisibleState);
 
             // Redraw all views.
             m_document->notifyGeneralUpdate();
@@ -541,9 +541,9 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case A_PART_HEADER_PADLOCK: {
-            bool newWritableState = !allLayersUnlocked();
+            bool newEditableState = !allLayersUnlocked();
             for (size_t i=0; i<m_layers.size(); i++)
-              m_layers[i]->setWritable(newWritableState);
+              m_layers[i]->setEditable(newEditableState);
             break;
           }
 
@@ -607,7 +607,7 @@ bool Timeline::onProcessMessage(Message* msg)
             if (m_hot_layer == m_clk_layer && validLayer(m_hot_layer)) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
-              layer->setReadable(!layer->isReadable());
+              layer->setVisible(!layer->isVisible());
 
               // Redraw all views.
               m_document->notifyGeneralUpdate();
@@ -619,7 +619,7 @@ bool Timeline::onProcessMessage(Message* msg)
             if (m_hot_layer == m_clk_layer && validLayer(m_hot_layer)) {
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
-              layer->setWritable(!layer->isWritable());
+              layer->setEditable(!layer->isEditable());
             }
             break;
 
@@ -1158,18 +1158,18 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   if (!clip)
     return;
 
-  // Draw the eye (readable flag).
+  // Draw the eye (visible flag).
   bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layerIdx);
   drawPart(g, bounds, NULL,
-    layer->isReadable() ? m_timelineOpenEyeStyle: m_timelineClosedEyeStyle,
+    layer->isVisible() ? m_timelineOpenEyeStyle: m_timelineClosedEyeStyle,
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_EYE_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_EYE_ICON));
 
-  // Draw the padlock (writable flag).
+  // Draw the padlock (editable flag).
   bounds = getPartBounds(A_PART_LAYER_PADLOCK_ICON, layerIdx);
   drawPart(g, bounds, NULL,
-    layer->isWritable() ? m_timelineOpenPadlockStyle: m_timelineClosedPadlockStyle,
+    layer->isEditable() ? m_timelineOpenPadlockStyle: m_timelineClosedPadlockStyle,
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_PADLOCK_ICON));
@@ -1755,8 +1755,8 @@ void Timeline::updateStatusBar(ui::Message* msg)
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' [%s%s]",
             layer->name().c_str(),
-            layer->isReadable() ? "visible": "hidden",
-            layer->isWritable() ? "": " locked");
+            layer->isVisible() ? "visible": "hidden",
+            layer->isEditable() ? "": " locked");
           return;
         }
         break;
@@ -1765,7 +1765,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
             layer->name().c_str(),
-            layer->isReadable() ? "visible": "hidden");
+            layer->isVisible() ? "visible": "hidden");
           return;
         }
         break;
@@ -1774,7 +1774,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
         if (layer != NULL) {
           sb->setStatusText(0, "Layer '%s' is %s",
             layer->name().c_str(),
-            layer->isWritable() ? "unlocked (modifiable)": "locked (read-only)");
+            layer->isEditable() ? "unlocked (editable)": "locked (read-only)");
           return;
         }
         break;
@@ -1878,7 +1878,7 @@ void Timeline::setScroll(int x, int y)
 bool Timeline::allLayersVisible()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i]->isReadable())
+    if (!m_layers[i]->isVisible())
       return false;
 
   return true;
@@ -1887,7 +1887,7 @@ bool Timeline::allLayersVisible()
 bool Timeline::allLayersInvisible()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i]->isReadable())
+    if (m_layers[i]->isVisible())
       return false;
 
   return true;
@@ -1896,7 +1896,7 @@ bool Timeline::allLayersInvisible()
 bool Timeline::allLayersLocked()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (m_layers[i]->isWritable())
+    if (m_layers[i]->isEditable())
       return false;
 
   return true;
@@ -1905,7 +1905,7 @@ bool Timeline::allLayersLocked()
 bool Timeline::allLayersUnlocked()
 {
   for (size_t i=0; i<m_layers.size(); i++)
-    if (!m_layers[i]->isWritable())
+    if (!m_layers[i]->isEditable())
       return false;
 
   return true;

@@ -1307,8 +1307,8 @@ bool Editor::canDraw()
 {
   return (m_layer != NULL &&
           m_layer->isImage() &&
-          m_layer->isReadable() &&
-          m_layer->isWritable());
+          m_layer->isVisible() &&
+          m_layer->isEditable());
 }
 
 bool Editor::isInsideSelection()

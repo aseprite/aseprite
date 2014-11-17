@@ -51,8 +51,8 @@ CutCommand::CutCommand()
 bool CutCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsVisible |
+                             ContextFlags::ActiveLayerIsEditable |
                              ContextFlags::HasVisibleMask |
                              ContextFlags::HasActiveImage);
 }

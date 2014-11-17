@@ -53,8 +53,8 @@ bool LayerFromBackgroundCommand::onEnabled(Context* context)
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite |
                              ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsVisible |
+                             ContextFlags::ActiveLayerIsEditable |
                              ContextFlags::ActiveLayerIsImage |
                              ContextFlags::ActiveLayerIsBackground);
 }

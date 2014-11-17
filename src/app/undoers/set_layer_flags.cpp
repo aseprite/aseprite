@@ -33,7 +33,7 @@ using namespace undo;
 
 SetLayerFlags::SetLayerFlags(ObjectsContainer* objects, Layer* layer)
   : m_layerId(objects->addObject(layer))
-  , m_flags(layer->getFlags())
+  , m_flags(uint32_t(layer->flags()))
 {
 }
 
@@ -49,7 +49,7 @@ void SetLayerFlags::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   // Push another SetLayerFlags as redoer
   redoers->pushUndoer(new SetLayerFlags(objects, layer));
 
-  layer->setFlags(m_flags);
+  layer->setFlags(LayerFlags(m_flags));
 }
 
 } // namespace undoers

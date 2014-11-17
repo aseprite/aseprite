@@ -50,8 +50,8 @@ bool PasteCommand::onEnabled(Context* context)
   return
     (clipboard::get_current_format() == clipboard::ClipboardImage &&
       context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-        ContextFlags::ActiveLayerIsReadable |
-        ContextFlags::ActiveLayerIsWritable |
+        ContextFlags::ActiveLayerIsVisible |
+        ContextFlags::ActiveLayerIsEditable |
         ContextFlags::ActiveLayerIsImage)) ||
     (clipboard::get_current_format() == clipboard::ClipboardDocumentRange &&
       context->checkFlags(ContextFlags::ActiveDocumentIsWritable));

@@ -58,8 +58,8 @@ bool RemoveLayerCommand::onEnabled(Context* context)
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite |
                              ContextFlags::HasActiveLayer |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable);
+                             ContextFlags::ActiveLayerIsVisible |
+                             ContextFlags::ActiveLayerIsEditable);
 }
 
 void RemoveLayerCommand::onExecute(Context* context)

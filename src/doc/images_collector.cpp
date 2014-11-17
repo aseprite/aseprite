@@ -21,9 +21,9 @@ namespace doc {
 ImagesCollector::ImagesCollector(Layer* layer,
                                  FrameNumber frame,
                                  bool allFrames,
-                                 bool forWrite)
+                                 bool forEdit)
   : m_allFrames(allFrames)
-  , m_forWrite(forWrite)
+  , m_forEdit(forEdit)
 {
   collectFromLayer(layer, frame);
 }
@@ -32,10 +32,10 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 {
   const Sprite* sprite = layer->sprite();
 
-  if (!layer->isReadable())
+  if (!layer->isVisible())
     return;
 
-  if (m_forWrite && !layer->isWritable())
+  if (m_forEdit && !layer->isEditable())
     return;
 
   switch (layer->type()) {

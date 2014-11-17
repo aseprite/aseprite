@@ -67,11 +67,11 @@ void ContextFlags::update(Context* context)
           if (layer->isBackground())
             m_flags |= ActiveLayerIsBackground;
 
-          if (layer->isReadable())
-            m_flags |= ActiveLayerIsReadable;
+          if (layer->isVisible())
+            m_flags |= ActiveLayerIsVisible;
 
-          if (layer->isWritable())
-            m_flags |= ActiveLayerIsWritable;
+          if (layer->isEditable())
+            m_flags |= ActiveLayerIsEditable;
 
           if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;

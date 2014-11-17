@@ -38,8 +38,8 @@ namespace app {
       ActiveDocumentIsWritable    = 1 << 8,
       ActiveLayerIsImage          = 1 << 9,
       ActiveLayerIsBackground     = 1 << 10,
-      ActiveLayerIsReadable       = 1 << 11,
-      ActiveLayerIsWritable       = 1 << 12,
+      ActiveLayerIsVisible        = 1 << 11,
+      ActiveLayerIsEditable       = 1 << 12,
     };
 
     ContextFlags();

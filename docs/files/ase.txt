@@ -115,10 +115,10 @@ Layer Chunk (0x2004)
   entire layers layout:
 
   WORD          Flags:
-                  LAYER_IS_READABLE     = 0x0001
-                  LAYER_IS_WRITABLE     = 0x0002
-                  LAYER_IS_LOCKMOVE     = 0x0004
-                  LAYER_IS_BACKGROUND   = 0x0008
+                  1 = Visible
+                  2 = Editable
+                  4 = Lock movement
+                  8 = Background
   WORD          Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)

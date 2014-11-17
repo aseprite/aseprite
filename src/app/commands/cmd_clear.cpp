@@ -57,8 +57,8 @@ ClearCommand::ClearCommand()
 bool ClearCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsReadable |
-                             ContextFlags::ActiveLayerIsWritable |
+                             ContextFlags::ActiveLayerIsVisible |
+                             ContextFlags::ActiveLayerIsEditable |
                              ContextFlags::ActiveLayerIsImage);
 }
 
