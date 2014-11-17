@@ -25,7 +25,7 @@ namespace doc {
     Mask(int x, int y, Image* bitmap);
     virtual ~Mask();
 
-    int getMemSize() const;
+    virtual int getMemSize() const override;
 
     void setName(const char *name);
     const std::string& name() const { return m_name; }

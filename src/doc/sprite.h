@@ -65,7 +65,7 @@ namespace doc {
     color_t transparentColor() const { return m_transparentColor; }
     void setTransparentColor(color_t color);
 
-    int getMemSize() const;
+    virtual int getMemSize() const override;
 
     ////////////////////////////////////////
     // Layers

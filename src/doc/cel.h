@@ -43,7 +43,7 @@ namespace doc {
     void setPosition(int x, int y) { m_x = x; m_y = y; }
     void setOpacity(int opacity) { m_opacity = opacity; }
 
-    int getMemSize() const {
+    virtual int getMemSize() const override {
       return sizeof(Cel);
     }
 

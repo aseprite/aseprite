@@ -42,7 +42,7 @@ namespace doc {
   public:
     virtual ~Layer();
 
-    int getMemSize() const;
+    virtual int getMemSize() const override;
 
     std::string name() const { return m_name; }
     void setName(const std::string& name) { m_name = name; }
@@ -90,7 +90,7 @@ namespace doc {
     explicit LayerImage(Sprite* sprite);
     virtual ~LayerImage();
 
-    int getMemSize() const;
+    virtual int getMemSize() const override;
 
     int getBlendMode() const { return BLEND_MODE_NORMAL; }
 
@@ -124,7 +124,7 @@ namespace doc {
     explicit LayerFolder(Sprite* sprite);
     virtual ~LayerFolder();
 
-    int getMemSize() const;
+    virtual int getMemSize() const override;
 
     const LayerList& getLayersList() { return m_layers; }
     LayerIterator getLayerBegin() { return m_layers.begin(); }

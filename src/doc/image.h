@@ -46,7 +46,7 @@ namespace doc {
     color_t maskColor() const { return m_maskColor; }
     void setMaskColor(color_t c) { m_maskColor = c; }
 
-    int getMemSize() const override;
+    virtual int getMemSize() const override;
     int getRowStrideSize() const;
     int getRowStrideSize(int pixels_per_row) const;
 
