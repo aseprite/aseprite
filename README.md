@@ -24,7 +24,7 @@ Its main features are:
 
 ## Issues
 
-There are a list of
+There is a list of
 [Known Issues](https://github.com/aseprite/aseprite/issues) (things
 to be fixed or that aren't yet implemented).
 
