@@ -372,7 +372,7 @@
 
       <!-- Modifiers for selection tool -->
       <key action="AddSelection" shortcut="Shift" />
-      <key action="SubtractSelection" shortcut="Alt" />
+      <key action="SubtractSelection" shortcut="Shift+Alt" />
 
       <!-- Modifiers for move tool -->
       <key action="AutoSelectLayer" shortcut="Ctrl" mac="Cmd" />
