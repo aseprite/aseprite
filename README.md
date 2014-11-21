@@ -28,7 +28,7 @@ There are a list of
 [Known Issues](https://github.com/aseprite/aseprite/issues) (things
 to be fixed or that aren't yet implemented).
 
-If you found a bug or you have a new idea/feature for the program,
+If you found a bug or have a new idea/feature for the program,
 [you can report them](https://github.com/aseprite/aseprite/issues/new).
 
 ## Support
