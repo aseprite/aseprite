@@ -64,11 +64,15 @@ public:
 
     // Grid color
     m_gridColor->setId("grid_color");
-    gridColorBox()->addChild(m_gridColor);
+    gridColorPlaceholder()->addChild(m_gridColor);
+    gridOpacity()->setValue(m_docSettings->getGridOpacity());
+    gridAutoOpacity()->setSelected(m_docSettings->getGridAutoOpacity());
 
     // Pixel grid color
     m_pixelGridColor->setId("pixel_grid_color");
-    pixelGridColorBox()->addChild(m_pixelGridColor);
+    pixelGridColorPlaceholder()->addChild(m_pixelGridColor);
+    pixelGridOpacity()->setValue(m_docSettings->getPixelGridOpacity());
+    pixelGridAutoOpacity()->setSelected(m_docSettings->getPixelGridAutoOpacity());
 
     // Others
     if (get_config_bool("Options", "AutoShowTimeline", true))
@@ -122,7 +126,7 @@ public:
     checkedBgColor2Box()->addChild(m_checked_bg_color2);
 
     // Reset button
-    checkedBgReset()->Click.connect(Bind<void>(&OptionsWindow::onResetCheckedBg, this));
+    reset()->Click.connect(Bind<void>(&OptionsWindow::onReset, this));
 
     // Links
     locateFile()->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
@@ -149,8 +153,12 @@ public:
   void saveConfig() {
     Editor::set_cursor_color(m_cursorColor->getColor());
     m_docSettings->setGridColor(m_gridColor->getColor());
+    m_docSettings->setGridOpacity(gridOpacity()->getValue());
+    m_docSettings->setGridAutoOpacity(gridAutoOpacity()->isSelected());
     m_docSettings->setPixelGridColor(m_pixelGridColor->getColor());
-
+    m_docSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
+    m_docSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
+    
     set_config_bool("Options", "AutoShowTimeline", autotimeline()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
@@ -201,8 +209,19 @@ private:
     panel()->showChild(findChild(item->getValue().c_str()));
   }
 
-  void onResetCheckedBg() {
+  void onReset() {
     // Default values
+    // TODO improve settings and default values (store everything in
+    // an XML and generate code from it)
+
+    m_gridColor->setColor(app::Color::fromRgb(0, 0, 255));
+    gridOpacity()->setValue(200);
+    gridAutoOpacity()->setSelected(true);
+
+    m_pixelGridColor->setColor(app::Color::fromRgb(200, 200, 200));
+    pixelGridOpacity()->setValue(200);
+    pixelGridAutoOpacity()->setSelected(true);
+
     checkedBgSize()->setSelectedItemIndex((int)RenderEngine::CHECKED_BG_16X16);
     checkedBgZoom()->setSelected(true);
     m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));

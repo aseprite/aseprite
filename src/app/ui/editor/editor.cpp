@@ -472,14 +472,40 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
     g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
   }
 
-  // Draw the pixel grid
-  if ((m_zoom.scale() > 1.0) && docSettings->getPixelGridVisible()) {
-    drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
-  }
+  // Grids
+  {
+    // Clipping
+    IntersectClip clip(g, editorToScreen(rc).offset(-getBounds().getOrigin()));
 
-  // Draw the grid
-  if (docSettings->getGridVisible())
-    drawGrid(g, enclosingRect, docSettings->getGridBounds(), docSettings->getGridColor());
+    // Draw the pixel grid
+    if ((m_zoom.scale() > 2.0) && docSettings->getPixelGridVisible()) {
+      int alpha = docSettings->getPixelGridOpacity();
+
+      if (docSettings->getPixelGridAutoOpacity()) {
+        alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
+        alpha = MID(0, alpha, 255);
+      }
+
+      drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
+        docSettings->getPixelGridColor(), alpha);
+    }
+
+    // Draw the grid
+    if (docSettings->getGridVisible()) {
+      int alpha = docSettings->getGridOpacity();
+
+      if (docSettings->getGridAutoOpacity()) {
+        gfx::Rect rc = docSettings->getGridBounds();
+        double len = (m_zoom.apply(rc.w) + m_zoom.apply(rc.h)) / 2.;
+
+        alpha = int(alpha * len / 32.);
+        alpha = MID(0, alpha, 255);
+      }
+
+      drawGrid(g, enclosingRect, docSettings->getGridBounds(),
+        docSettings->getGridColor(), alpha);
+    }
+  }
 
   if (m_flags & kShowOutside) {
     // Draw the borders that enclose the sprite.
@@ -503,21 +529,17 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
 
 void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
 {
-  Region region;
-  getDrawableRegion(region, kCutTopWindows);
+  Region screenRegion;
+  getDrawableRegion(screenRegion, kCutTopWindows);
 
-  ScreenGraphics g;
+  ScreenGraphics screenGraphics;
+  GraphicsPtr editorGraphics = getGraphics(getClientBounds());
 
-  for (Region::const_iterator
-         it=region.begin(), end=region.end(); it != end; ++it) {
-    const Rect& rc = *it;
-
-    IntersectClip clip(&g, rc);
-    if (clip) {
-      for (Region::const_iterator
-             it2=updateRegion.begin(), end2=updateRegion.end(); it2 != end2; ++it2) {
-        drawSpriteUnclippedRect(getGraphics(getClientBounds()), *it2);
-      }
+  for (const Rect& updateRect : updateRegion) {
+    for (const Rect& screenRect : screenRegion) {
+      IntersectClip clip(&screenGraphics, screenRect);
+      if (clip)
+        drawSpriteUnclippedRect(editorGraphics, updateRect);
     }
   }
 }
@@ -541,9 +563,9 @@ void Editor::drawMask(Graphics* g)
   int nseg = m_document->getBoundariesSegmentsCount();
   const BoundSeg* seg = m_document->getBoundariesSegments();
 
-  CheckedDrawMode checked(g, m_offset_count);
-
   for (int c=0; c<nseg; ++c, ++seg) {
+    CheckedDrawMode checked(g, m_offset_count);
+
     x1 = m_zoom.apply(seg->x1);
     y1 = m_zoom.apply(seg->y1);
     x2 = m_zoom.apply(seg->x2);
@@ -576,7 +598,8 @@ void Editor::drawMask(Graphics* g)
     }
 
     // The color doesn't matter, we are using CheckedDrawMode
-    g->drawLine(0, gfx::Point(x+x1, y+y1), gfx::Point(x+x2, y+y2));
+    g->drawLine(gfx::rgba(0, 0, 0),
+      gfx::Point(x+x1, y+y1), gfx::Point(x+x2, y+y2));
   }
 }
 
@@ -601,9 +624,8 @@ void Editor::drawMaskSafe()
 
     GraphicsPtr g = getGraphics(getClientBounds());
 
-    for (Region::const_iterator it=region.begin(), end=region.end();
-         it != end; ++it) {
-      IntersectClip clip(g, gfx::Rect(*it));
+    for (const gfx::Rect& rc : region) {
+      IntersectClip clip(g, rc);
       if (clip)
         drawMask(g);
     }
@@ -616,7 +638,7 @@ void Editor::drawMaskSafe()
   }
 }
 
-void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gridBounds, const app::Color& color)
+void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gridBounds, const app::Color& color, int alpha)
 {
   if ((m_flags & kShowGrid) == 0)
     return;
@@ -648,6 +670,10 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
   // Get the grid's color
   gfx::Color grid_color = color_utils::color_for_ui(color);
+  grid_color = gfx::rgba(
+    gfx::getr(grid_color),
+    gfx::getg(grid_color),
+    gfx::getb(grid_color), alpha);
 
   // Draw horizontal lines
   int x1 = spriteBounds.x;

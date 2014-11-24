@@ -47,27 +47,40 @@
         <!-- Grid & background -->
         <vbox id="section_grid">
           <separator text="Grid" horizontal="true" />
-          <grid columns="2">
+          <grid columns="3">
             <label text="Grid Color:" />
-            <box id="grid_color_box" /><!-- custom widget -->
+            <box id="grid_color_placeholder" /><!-- custom widget -->
+	    <hbox />
 
-            <label text="Pixel Grid:" />
-            <box id="pixel_grid_color_box" /><!-- custom widget -->
+	    <label text="Grid Opacity:" />
+            <slider grid_hspan="1" id="grid_opacity" min="1" max="255" width="128" />
+            <check id="grid_auto_opacity" text="Auto" />
+
+            <label text="Pixel Grid Color:" />
+            <box id="pixel_grid_color_placeholder" /><!-- custom widget -->
+	    <hbox />
+
+	    <label text="Pixel Grid Opacity:" />
+            <slider id="pixel_grid_opacity" min="1" max="255" width="128" />
+            <check id="pixel_grid_auto_opacity" text="Auto" />
           </grid>
 
           <separator text="Checked Background" horizontal="true" />
-          <box horizontal="true">
+          <hbox>
             <label text="Size:" />
             <combobox id="checked_bg_size" expansive="true" />
-          </box>
+          </hbox>
           <check text="Apply Zoom" id="checked_bg_zoom" />
-          <grid columns="2">
-            <label text="Color 1" />
+          <hbox>
+            <label text="Colors:" />
             <box horizontal="true" id="checked_bg_color1_box" />
-            <label text="Color 2" />
             <box horizontal="true" id="checked_bg_color2_box" />
-          </grid>
-          <button id="checked_bg_reset" text="Reset" />
+          </hbox>
+
+	  <hbox>
+	    <hbox expansive="true" />
+            <button id="reset" text="Reset" width="60" />
+	  </hbox>
         </vbox>
 
         <!-- Undo -->

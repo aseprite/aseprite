@@ -272,23 +272,53 @@ namespace she {
     }
 
     void drawHLine(gfx::Color color, int x, int y, int w) override {
+      if (gfx::geta(color) < 255) {
+        set_trans_blender(0, 0, 0, gfx::geta(color));
+        drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      }
+
       hline(m_bmp, x, y, x+w-1, to_allegro(bitmap_color_depth(m_bmp), color));
+      solid_mode();
     }
 
     void drawVLine(gfx::Color color, int x, int y, int h) override {
+      if (gfx::geta(color) < 255) {
+        set_trans_blender(0, 0, 0, gfx::geta(color));
+        drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      }
+
       vline(m_bmp, x, y, y+h-1, to_allegro(bitmap_color_depth(m_bmp), color));
+      solid_mode();
     }
 
     void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override {
+      if (gfx::geta(color) < 255) {
+        set_trans_blender(0, 0, 0, gfx::geta(color));
+        drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      }
+
       line(m_bmp, a.x, a.y, b.x, b.y, to_allegro(bitmap_color_depth(m_bmp), color));
+      solid_mode();
     }
 
     void drawRect(gfx::Color color, const gfx::Rect& rc) override {
+      if (gfx::geta(color) < 255) {
+        set_trans_blender(0, 0, 0, gfx::geta(color));
+        drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      }
+
       rect(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
+      solid_mode();
     }
 
     void fillRect(gfx::Color color, const gfx::Rect& rc) override {
+      if (gfx::geta(color) < 255) {
+        set_trans_blender(0, 0, 0, gfx::geta(color));
+        drawing_mode(DRAW_MODE_TRANS, NULL, 0, 0);
+      }
+
       rectfill(m_bmp, rc.x, rc.y, rc.x+rc.w-1, rc.y+rc.h-1, to_allegro(bitmap_color_depth(m_bmp), color));
+      solid_mode();
     }
 
     void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {

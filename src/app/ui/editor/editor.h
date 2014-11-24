@@ -228,7 +228,8 @@ namespace app {
 
     void drawMaskSafe();
     void drawMask(ui::Graphics* g);
-    void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds, const app::Color& color);
+    void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
+      const app::Color& color, int alpha);
 
     void editor_setcursor();
 

@@ -72,8 +72,12 @@ public:
     , m_gridVisible(false)
     , m_gridBounds(0, 0, 16, 16)
     , m_gridColor(app::Color::fromRgb(0, 0, 255))
+    , m_gridOpacity(200)
+    , m_gridAutoOpacity(true)
     , m_pixelGridVisible(false)
     , m_pixelGridColor(app::Color::fromRgb(200, 200, 200))
+    , m_pixelGridOpacity(200)
+    , m_pixelGridAutoOpacity(true)
     , m_isLoop(false)
     , m_loopBegin(0)
     , m_loopEnd(1)
@@ -103,7 +107,11 @@ public:
     }
 
     m_gridColor = get_config_color("Grid", "Color", m_gridColor);
+    m_gridOpacity = get_config_int("Grid", "Opacity", m_gridOpacity);
+    m_gridAutoOpacity = get_config_bool("Grid", "AutoOpacity", m_gridAutoOpacity);
     m_pixelGridColor = get_config_color("PixelGrid", "Color", m_pixelGridColor);
+    m_pixelGridOpacity = get_config_int("PixelGrid", "Opacity", m_pixelGridOpacity);
+    m_pixelGridAutoOpacity = get_config_bool("PixelGrid", "AutoOpacity", m_pixelGridAutoOpacity);
 
     if (specific_file)
       pop_config_state();
@@ -154,11 +162,15 @@ public:
   virtual bool getGridVisible() override;
   virtual gfx::Rect getGridBounds() override;
   virtual app::Color getGridColor() override;
+  virtual int getGridOpacity() override;
+  virtual bool getGridAutoOpacity() override;
 
   virtual void setSnapToGrid(bool state) override;
   virtual void setGridVisible(bool state) override;
   virtual void setGridBounds(const gfx::Rect& rect) override;
   virtual void setGridColor(const app::Color& color) override;
+  virtual void setGridOpacity(int opacity) override;
+  virtual void setGridAutoOpacity(bool state) override;
 
   virtual void snapToGrid(gfx::Point& point) const override;
 
@@ -166,9 +178,13 @@ public:
 
   virtual bool getPixelGridVisible() override;
   virtual app::Color getPixelGridColor() override;
+  virtual int getPixelGridOpacity() override;
+  virtual bool getPixelGridAutoOpacity() override;
 
   virtual void setPixelGridVisible(bool state) override;
   virtual void setPixelGridColor(const app::Color& color) override;
+  virtual void setPixelGridOpacity(int opacity) override;
+  virtual void setPixelGridAutoOpacity(bool state) override;
 
   // Onionskin settings
 
@@ -203,7 +219,11 @@ public:
 private:
   void saveSharedSettings() {
     set_config_color("Grid", "Color", m_gridColor);
+    set_config_int("Grid", "Opacity", m_gridOpacity);
+    set_config_bool("Grid", "AutoOpacity", m_gridAutoOpacity);
     set_config_color("PixelGrid", "Color", m_pixelGridColor);
+    set_config_int("PixelGrid", "Opacity", m_pixelGridOpacity);
+    set_config_bool("PixelGrid", "AutoOpacity", m_pixelGridAutoOpacity);
   }
 
   std::string configFileName() {
@@ -242,8 +262,12 @@ private:
   bool m_gridVisible;
   gfx::Rect m_gridBounds;
   app::Color m_gridColor;
+  int m_gridOpacity;
+  bool m_gridAutoOpacity;
   bool m_pixelGridVisible;
   app::Color m_pixelGridColor;
+  int m_pixelGridOpacity;
+  bool m_pixelGridAutoOpacity;
   bool m_isLoop;
   doc::FrameNumber m_loopBegin;
   doc::FrameNumber m_loopEnd;
@@ -570,6 +594,16 @@ app::Color UIDocumentSettingsImpl::getGridColor()
   return m_gridColor;
 }
 
+int UIDocumentSettingsImpl::getGridOpacity()
+{
+  return m_gridOpacity;
+}
+
+bool UIDocumentSettingsImpl::getGridAutoOpacity()
+{
+  return m_gridAutoOpacity;
+}
+
 void UIDocumentSettingsImpl::setSnapToGrid(bool state)
 {
   m_snapToGrid = state;
@@ -592,6 +626,22 @@ void UIDocumentSettingsImpl::setGridColor(const app::Color& color)
 {
   m_gridColor = color;
   notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, color);
+
+  saveSharedSettings();
+}
+
+void UIDocumentSettingsImpl::setGridOpacity(int opacity)
+{
+  m_gridOpacity = opacity;
+  notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, m_gridColor);
+
+  saveSharedSettings();
+}
+
+void UIDocumentSettingsImpl::setGridAutoOpacity(bool state)
+{
+  m_gridAutoOpacity = state;
+  notifyObservers<const app::Color&>(&DocumentSettingsObserver::onSetGridColor, m_gridColor);
 
   saveSharedSettings();
 }
@@ -622,6 +672,16 @@ app::Color UIDocumentSettingsImpl::getPixelGridColor()
   return m_pixelGridColor;
 }
 
+int UIDocumentSettingsImpl::getPixelGridOpacity()
+{
+  return m_pixelGridOpacity;
+}
+
+bool UIDocumentSettingsImpl::getPixelGridAutoOpacity()
+{
+  return m_pixelGridAutoOpacity;
+}
+
 void UIDocumentSettingsImpl::setPixelGridVisible(bool state)
 {
   m_pixelGridVisible = state;
@@ -634,6 +694,18 @@ void UIDocumentSettingsImpl::setPixelGridColor(const app::Color& color)
   redrawDocumentViews();
 
   saveSharedSettings();
+}
+
+void UIDocumentSettingsImpl::setPixelGridOpacity(int opacity)
+{
+  m_pixelGridOpacity = opacity;
+  redrawDocumentViews();
+}
+
+void UIDocumentSettingsImpl::setPixelGridAutoOpacity(bool state)
+{
+  m_pixelGridAutoOpacity = state;
+  redrawDocumentViews();
 }
 
 bool UIDocumentSettingsImpl::getUseOnionskin()
