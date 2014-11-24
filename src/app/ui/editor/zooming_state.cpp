@@ -60,8 +60,8 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
   else if (msg->right() && zoom > 0)
     --zoom;
 
-  editor->setZoomAndCenterInMouse(zoom, msg->position().x, msg->position().y,
-    Editor::kCofiguredZoomBehavior);
+  editor->setZoomAndCenterInMouse(zoom,
+    msg->position(), Editor::kCofiguredZoomBehavior);
 
   editor->backToPreviousState();
   editor->releaseMouse();

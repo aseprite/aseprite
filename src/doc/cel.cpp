@@ -23,10 +23,9 @@ Cel::Cel(FrameNumber frame, int image)
   , m_layer(NULL)
   , m_frame(frame)
   , m_image(image)
+  , m_position(0, 0)
+  , m_opacity(255)
 {
-  m_x = 0;
-  m_y = 0;
-  m_opacity = 255;
 }
 
 Cel::Cel(const Cel& cel)
@@ -34,10 +33,9 @@ Cel::Cel(const Cel& cel)
   , m_layer(NULL)
   , m_frame(cel.m_frame)
   , m_image(cel.m_image)
+  , m_position(cel.m_position)
+  , m_opacity(cel.m_opacity)
 {
-  m_x = cel.m_x;
-  m_y = cel.m_y;
-  m_opacity = cel.m_opacity;
 }
 
 Cel::~Cel()
@@ -80,7 +78,9 @@ gfx::Rect Cel::bounds() const
   Image* image = this->image();
   ASSERT(image);
   if (image)
-    return gfx::Rect(m_x, m_y, image->width(), image->height());
+    return gfx::Rect(
+      m_position.x, m_position.y,
+      image->width(), image->height());
   else
     return gfx::Rect();
 }

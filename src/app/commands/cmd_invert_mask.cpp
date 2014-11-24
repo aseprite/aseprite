@@ -106,7 +106,7 @@ void InvertMaskCommand::onExecute(Context* context)
     }
 
     // We need only need the area inside the sprite
-    mask->intersect(0, 0, sprite->width(), sprite->height());
+    mask->intersect(sprite->bounds());
 
     // Set the new mask
     document->setMask(mask);

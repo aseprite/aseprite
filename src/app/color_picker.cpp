@@ -37,7 +37,8 @@ ColorPicker::ColorPicker()
 {
 }
 
-void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode mode)
+void ColorPicker::pickColor(const DocumentLocation& location,
+  const gfx::Point& pos, Mode mode)
 {
   m_alpha = 255;
   m_color = app::Color::fromMask();
@@ -46,17 +47,17 @@ void ColorPicker::pickColor(const DocumentLocation& location, int x, int y, Mode
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
       location.sprite()->pixelFormat(),
-      location.sprite()->getPixel(x, y, location.frame()));
+      location.sprite()->getPixel(pos.x, pos.y, location.frame()));
 
     doc::CelList cels;
-    location.sprite()->pickCels(x, y, location.frame(), 128, cels);
+    location.sprite()->pickCels(pos.x, pos.y, location.frame(), 128, cels);
     if (!cels.empty())
       m_layer = cels.front()->layer();
   }
   else {                        // Pick from the current layer
     int u, v;
     doc::Image* image = location.image(&u, &v, NULL);
-    gfx::Point pt(x-u, y-v);
+    gfx::Point pt(pos.x-u, pos.y-v);
 
     if (image && image->bounds().contains(pt)) {
       doc::color_t imageColor = get_pixel(image, pt.x, pt.y);

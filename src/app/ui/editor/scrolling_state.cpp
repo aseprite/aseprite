@@ -74,7 +74,7 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
   scroll -= newPos - m_oldPos;
   m_oldPos = newPos;
 
-  editor->setEditorScroll(scroll.x, scroll.y, true);
+  editor->setEditorScroll(scroll, true);
   return true;
 }
 

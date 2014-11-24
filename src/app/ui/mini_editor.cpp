@@ -250,7 +250,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
     layout();
   }
 
-  miniEditor->centerInSpritePoint(pt.x, pt.y);
+  miniEditor->centerInSpritePoint(pt);
   miniEditor->setLayer(editor->layer());
   miniEditor->setFrame(editor->frame());
 }

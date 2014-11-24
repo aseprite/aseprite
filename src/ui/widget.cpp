@@ -1049,20 +1049,20 @@ void Widget::invalidateRegion(const Region& region)
   onInvalidateRegion(region);
 }
 
-void Widget::scrollRegion(const Region& region, int dx, int dy)
+void Widget::scrollRegion(const Region& region, const Point& delta)
 {
-  if (dx == 0 && dy == 0)
+  if (delta.x == 0 && delta.y == 0)
     return;
 
   Region reg2 = region;
-  reg2.offset(dx, dy);
+  reg2.offset(delta);
   reg2.createIntersection(reg2, region);
-  reg2.offset(-dx, -dy);
+  reg2.offset(-delta);
 
   // Move screen pixels
-  ui::move_region(reg2, dx, dy);
+  ui::move_region(reg2, delta.x, delta.y);
 
-  reg2.offset(dx, dy);
+  reg2.offset(delta);
 
   m_updateRegion.createUnion(m_updateRegion, region);
   m_updateRegion.createSubtraction(m_updateRegion, reg2);

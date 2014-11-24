@@ -305,7 +305,7 @@ namespace ui {
 
     void flushRedraw();
 
-    void scrollRegion(const gfx::Region& region, int dx, int dy);
+    void scrollRegion(const gfx::Region& region, const gfx::Point& delta);
 
     GraphicsPtr getGraphics(const gfx::Rect& clip);
 

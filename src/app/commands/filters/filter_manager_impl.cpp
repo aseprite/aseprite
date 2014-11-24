@@ -117,8 +117,8 @@ void FilterManagerImpl::beginForPreview()
   else {
     m_preview_mask.reset(new Mask());
     m_preview_mask->replace(m_offset_x, m_offset_y,
-                            m_src->width(),
-                            m_src->height());
+      m_src->width(),
+      m_src->height());
   }
 
   m_row = 0;
@@ -128,29 +128,16 @@ void FilterManagerImpl::beginForPreview()
     Editor* editor = current_editor;
     Sprite* sprite = m_location.sprite();
     gfx::Rect vp = View::getView(editor)->getViewportBounds();
-    int x1, y1, x2, y2;
-    int x, y, w, h;
+    vp = editor->screenToEditor(vp);
+    vp = vp.createIntersect(sprite->bounds());
 
-    editor->screenToEditor(vp.x, vp.y, &x1, &y1);
-    editor->screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
-
-    if (x1 < 0) x1 = 0;
-    if (y1 < 0) y1 = 0;
-    if (x2 >= sprite->width()) x2 = sprite->width()-1;
-    if (y2 >= sprite->height()) y2 = sprite->height()-1;
-
-    x = x1;
-    y = y1;
-    w = x2 - x1 + 1;
-    h = y2 - y1 + 1;
-
-    if ((w < 1) || (h < 1)) {
+    if (vp.isEmpty()) {
       m_preview_mask.reset(NULL);
       m_row = -1;
       return;
     }
 
-    m_preview_mask->intersect(x, y, w, h);
+    m_preview_mask->intersect(vp);
   }
 
   if (!updateMask(m_mask, m_src)) {
@@ -263,14 +250,15 @@ void FilterManagerImpl::applyToTarget()
 void FilterManagerImpl::flush()
 {
   if (m_row >= 0) {
-    gfx::Rect rect;
-
     Editor* editor = current_editor;
-    editor->editorToScreen(m_x+m_offset_x,
-                           m_y+m_offset_y+m_row-1,
-                           &rect.x, &rect.y);
-    rect.w = (m_w << editor->zoom());
-    rect.h = (1 << editor->zoom());
+    gfx::Rect rect(
+      editor->editorToScreen(
+        gfx::Point(
+          m_x+m_offset_x,
+          m_y+m_offset_y+m_row-1)),
+      gfx::Size(
+        (m_w << editor->zoom()),
+        (1 << editor->zoom())));
 
     gfx::Region reg1(rect);
     gfx::Region reg2;
@@ -346,7 +334,7 @@ bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)
 {
   int x, y, w, h;
 
-  if ((mask) && (mask->bitmap())) {
+  if (mask && mask->bitmap()) {
     x = mask->bounds().x - m_offset_x;
     y = mask->bounds().y - m_offset_y;
     w = mask->bounds().w;

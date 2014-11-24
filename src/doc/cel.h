@@ -8,9 +8,10 @@
 #define DOC_CEL_H_INCLUDED
 #pragma once
 
-#include "gfx/fwd.h"
 #include "doc/frame_number.h"
 #include "doc/object.h"
+#include "gfx/fwd.h"
+#include "gfx/point.h"
 
 namespace doc {
 
@@ -26,8 +27,9 @@ namespace doc {
 
     FrameNumber frame() const { return m_frame; }
     int imageIndex() const { return m_image; }
-    int x() const { return m_x; }
-    int y() const { return m_y; }
+    int x() const { return m_position.x; }
+    int y() const { return m_position.y; }
+    gfx::Point position() const { return m_position; }
     int opacity() const { return m_opacity; }
 
     LayerImage* layer() const { return m_layer; }
@@ -40,7 +42,11 @@ namespace doc {
     // LayerImage::moveCel() member function.
     void setFrame(FrameNumber frame) { m_frame = frame; }
     void setImage(int image) { m_image = image; }
-    void setPosition(int x, int y) { m_x = x; m_y = y; }
+    void setPosition(int x, int y) {
+      m_position.x = x;
+      m_position.y = y;
+    }
+    void setPosition(const gfx::Point& pos) { m_position = pos; }
     void setOpacity(int opacity) { m_opacity = opacity; }
 
     virtual int getMemSize() const override {
@@ -55,7 +61,7 @@ namespace doc {
     LayerImage* m_layer;
     FrameNumber m_frame;          // Frame position
     int m_image;                  // Image index of stock
-    int m_x, m_y;                 // X/Y screen position
+    gfx::Point m_position;        // X/Y screen position
     int m_opacity;                // Opacity level
   };
 

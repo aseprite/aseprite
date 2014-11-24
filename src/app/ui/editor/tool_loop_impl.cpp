@@ -253,10 +253,7 @@ public:
 
   gfx::Point screenToSprite(const gfx::Point& screenPoint) override
   {
-    gfx::Point spritePoint;
-    m_editor->screenToEditor(screenPoint.x, screenPoint.y,
-                             &spritePoint.x, &spritePoint.y);
-    return spritePoint;
+    return m_editor->screenToEditor(screenPoint);
   }
 
   gfx::Region& getDirtyArea() override

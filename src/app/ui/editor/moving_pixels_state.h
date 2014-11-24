@@ -46,7 +46,7 @@ namespace app {
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
     virtual ~MovingPixelsState();
 
-    void translate(int dx, int dy);
+    void translate(const gfx::Point& delta);
 
     // EditorState
     virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) override;

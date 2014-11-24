@@ -16,6 +16,7 @@
 #include "doc/object.h"
 #include "doc/pixel_format.h"
 #include "doc/sprite_position.h"
+#include "gfx/rect.h"
 
 #include <vector>
 
@@ -52,6 +53,7 @@ namespace doc {
     PixelFormat pixelFormat() const { return m_format; }
     void setPixelFormat(PixelFormat format);
 
+    gfx::Rect bounds() const { return gfx::Rect(0, 0, m_width, m_height); }
     int width() const { return m_width; }
     int height() const { return m_height; }
     void setSize(int width, int height);

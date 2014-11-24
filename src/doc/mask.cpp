@@ -206,7 +206,7 @@ void Mask::intersect(int x, int y, int w, int h)
 
 void Mask::intersect(const gfx::Rect& bounds)
 {
-  subtract(bounds.x, bounds.y, bounds.w, bounds.h);
+  intersect(bounds.x, bounds.y, bounds.w, bounds.h);
 }
 
 void Mask::byColor(const Image *src, int color, int fuzziness)
@@ -371,7 +371,7 @@ void Mask::crop(const Image *image)
           get_pixel(image, c, y2));
 
   if (done_count < 4)
-    intersect(x1, y1, x2, y2);
+    intersect(x1, y1, x2-x1+1, y2-y1+1);
   else
     clear();
 

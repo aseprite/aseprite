@@ -54,23 +54,24 @@ namespace app {
     // The "moveThis" image specifies the chunk of pixels to be moved.
     // The "x" and "y" parameters specify the initial position of the image.
     PixelsMovement(Context* context,
-                   Document* document, Sprite* sprite, Layer* layer,
-                   const Image* moveThis, int x, int y, int opacity,
-                   const char* operationName);
+      Document* document, Sprite* sprite, Layer* layer,
+      const Image* moveThis,
+      const gfx::Point& initialPos, int opacity,
+      const char* operationName);
     ~PixelsMovement();
 
     void cutMask();
     void copyMask();
-    void catchImage(int x, int y, HandleType handle);
-    void catchImageAgain(int x, int y, HandleType handle);
+    void catchImage(const gfx::Point& pos, HandleType handle);
+    void catchImageAgain(const gfx::Point& pos, HandleType handle);
 
     // Creates a mask for the given image. Useful when the user paste a
     // image from the clipboard.
-    void maskImage(const Image* image, int x, int y);
+    void maskImage(const Image* image);
 
     // Moves the image to the new position (relative to the start
     // position given in the ctor).
-    void moveImage(int x, int y, MoveModifier moveModifier);
+    void moveImage(const gfx::Point& pos, MoveModifier moveModifier);
 
     // Returns a copy of the current image being dragged with the
     // current transformation.
@@ -103,7 +104,7 @@ namespace app {
   private:
     void redrawExtraImage();
     void redrawCurrentMask();
-    void drawImage(doc::Image* dst, const gfx::Point& pt);
+    void drawImage(doc::Image* dst, const gfx::Point& pos);
     void drawParallelogram(doc::Image* dst, doc::Image* src,
       const gfx::Transformation::Corners& corners,
       const gfx::Point& leftTop);
@@ -118,7 +119,7 @@ namespace app {
     bool m_adjustPivot;
     HandleType m_handle;
     Image* m_originalImage;
-    int m_catchX, m_catchY;
+    gfx::Point m_catchPos;
     gfx::Transformation m_initialData;
     gfx::Transformation m_currentData;
     Mask* m_initialMask;

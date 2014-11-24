@@ -84,15 +84,15 @@ void EyedropperCommand::onExecute(Context* context)
     return;
 
   // pixel position to get
-  int x, y;
-  editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
+  gfx::Point pixelPos = editor->screenToEditor(ui::get_mouse_position());
 
   // Check if we've to grab alpha channel or the merged color.
   ISettings* settings = UIContext::instance()->settings();
   bool grabAlpha = settings->getGrabAlpha();
 
   ColorPicker picker;
-  picker.pickColor(editor->getDocumentLocation(), x, y,
+  picker.pickColor(editor->getDocumentLocation(),
+    pixelPos,
     grabAlpha ?
     ColorPicker::FromActiveLayer:
     ColorPicker::FromComposition);

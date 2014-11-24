@@ -177,14 +177,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (clickedInk->isCelMovement()) {
     // Handle "Auto Select Layer"
     if (editor->isAutoSelectLayer()) {
+      gfx::Point cursor = editor->screenToEditor(msg->position());
+
       ColorPicker picker;
-      int x, y;
-
-      editor->screenToEditor(
-        msg->position().x,
-        msg->position().y, &x, &y);
-
-      picker.pickColor(location, x, y, ColorPicker::FromComposition);
+      picker.pickColor(location, cursor, ColorPicker::FromComposition);
 
       if (layer != picker.layer()) {
         layer = picker.layer();
@@ -367,8 +363,7 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
       int zoom = MID(MIN_ZOOM, editor->zoom()-dz, MAX_ZOOM);
       if (editor->zoom() != zoom)
         editor->setZoomAndCenterInMouse(zoom,
-          mouseMsg->position().x, mouseMsg->position().y,
-          Editor::kDontCenterOnZoom);
+          mouseMsg->position(), Editor::kDontCenterOnZoom);
       break;
     }
 
@@ -376,29 +371,26 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
     case WHEEL_VSCROLL: {
       View* view = View::getView(editor);
       gfx::Rect vp = view->getViewportBounds();
-      int dx = 0;
-      int dy = 0;
+      gfx::Point delta(0, 0);
 
       if (wheelAction == WHEEL_HSCROLL) {
-        dx = dz * vp.w;
+        delta.x = dz * vp.w;
       }
       else {
-        dy = dz * vp.h;
+        delta.y = dz * vp.h;
       }
 
       if (scrollBigSteps) {
-        dx /= 2;
-        dy /= 2;
+        delta /= 2;
       }
       else {
-        dx /= 10;
-        dy /= 10;
+        delta /= 10;
       }
 
       gfx::Point scroll = view->getViewScroll();
 
       editor->hideDrawingCursor();
-      editor->setEditorScroll(scroll.x+dx, scroll.y+dy, true);
+      editor->setEditorScroll(scroll+delta, true);
       editor->showDrawingCursor();
       break;
     }
@@ -487,9 +479,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
   const Sprite* sprite = editor->sprite();
-  int x, y;
-
-  editor->screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
+  gfx::Point spritePos = editor->screenToEditor(ui::get_mouse_position());
 
   if (!sprite) {
     StatusBar::instance()->clearText();
@@ -498,13 +488,14 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   else if (ink->isEyedropper()) {
     bool grabAlpha = UIContext::instance()->settings()->getGrabAlpha();
     ColorPicker picker;
-    picker.pickColor(editor->getDocumentLocation(), x, y,
+    picker.pickColor(editor->getDocumentLocation(),
+      spritePos,
       grabAlpha ?
       ColorPicker::FromActiveLayer:
       ColorPicker::FromComposition);
 
     char buf[256];
-    sprintf(buf, "- Pos %d %d", x, y);
+    sprintf(buf, "- Pos %d %d", spritePos.x, spritePos.y);
 
     StatusBar::instance()->showColor(0, buf, picker.color(), picker.alpha());
   }
@@ -515,7 +506,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
     StatusBar::instance()->setStatusText(0,
       "Pos %d %d, Size %d %d, Frame %d [%d msecs]",
-      x, y,
+      spritePos.x, spritePos.y,
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()),
       editor->frame()+1,
@@ -535,7 +526,7 @@ void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point
   transformSelection(editor, NULL, NoHandle);
 
   if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
-    movingPixels->translate(move.x, move.y);
+    movingPixels->translate(move);
 }
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
@@ -544,15 +535,14 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
-    int x = document->mask()->bounds().x;
-    int y = document->mask()->bounds().y;
+    gfx::Point origin = document->mask()->bounds().getOrigin();
     int opacity = 255;
     Sprite* sprite = editor->sprite();
     Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
         document, sprite, layer,
-        tmpImage, x, y, opacity,
+        tmpImage, origin, opacity,
         "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection

@@ -103,8 +103,7 @@ void ScrollCommand::onExecute(Context* context)
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
   gfx::Rect gridBounds = docSettings->getGridBounds();
-  int dx = 0;
-  int dy = 0;
+  gfx::Point delta(0, 0);
   int pixels = 0;
 
   switch (m_units) {
@@ -135,13 +134,13 @@ void ScrollCommand::onExecute(Context* context)
   }
 
   switch (m_direction) {
-    case Left:  dx = -m_quantity * pixels; break;
-    case Right: dx = +m_quantity * pixels; break;
-    case Up:    dy = -m_quantity * pixels; break;
-    case Down:  dy = +m_quantity * pixels; break;
+    case Left:  delta.x = -m_quantity * pixels; break;
+    case Right: delta.x = +m_quantity * pixels; break;
+    case Up:    delta.y = -m_quantity * pixels; break;
+    case Down:  delta.y = +m_quantity * pixels; break;
   }
 
-  current_editor->setEditorScroll(scroll.x+dx, scroll.y+dy, true);
+  current_editor->setEditorScroll(scroll+delta, true);
 }
 
 std::string ScrollCommand::onGetFriendlyName() const

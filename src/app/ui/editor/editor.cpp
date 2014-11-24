@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,15 +120,16 @@ public:
 
   void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor)
   {
-    int u1, v1, u2, v2;
-    m_editor->editorToScreen(x1, y1, &u1, &v1);
-    m_editor->editorToScreen(x2, y2, &u2, &v2);
+    gfx::Point a(x1, y1);
+    gfx::Point b(x2, y2);
+    a = m_editor->editorToScreen(a);
+    b = m_editor->editorToScreen(b);
     gfx::Rect bounds = m_editor->getBounds();
-    u1 -= bounds.x;
-    v1 -= bounds.y;
-    u2 -= bounds.x;
-    v2 -= bounds.y;
-    m_g->drawLine(screenColor, gfx::Point(u1, v1), gfx::Point(u2, v2));
+    a.x -= bounds.x;
+    a.y -= bounds.y;
+    b.x -= bounds.x;
+    b.y -= bounds.y;
+    m_g->drawLine(screenColor, a, b);
   }
 
 private:
@@ -145,6 +146,10 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(FrameNumber(0))
   , m_zoom(0)
+  , m_cursorThick(0)
+  , m_cursorScreen(0, 0)
+  , m_cursorEditor(0, 0)
+  , m_quicktool(NULL)
   , m_selectionMode(kDefaultSelectionMode)
   , m_offset_x(0)
   , m_offset_y(0)
@@ -157,14 +162,6 @@ Editor::Editor(Document* document, EditorFlags flags)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
-
-  m_cursor_thick = 0;
-  m_cursor_screen_x = 0;
-  m_cursor_screen_y = 0;
-  m_cursor_editor_x = 0;
-  m_cursor_editor_y = 0;
-
-  m_quicktool = NULL;
 
   this->setFocusStop(true);
 
@@ -293,17 +290,19 @@ void Editor::setDefaultScroll()
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
 
-  setEditorScroll(m_offset_x - vp.w/2 + (m_sprite->width()/2),
-                  m_offset_y - vp.h/2 + (m_sprite->height()/2), false);
+  setEditorScroll(
+    gfx::Point(
+      m_offset_x - vp.w/2 + (m_sprite->width()/2),
+      m_offset_y - vp.h/2 + (m_sprite->height()/2)), false);
 }
 
 // Sets the scroll position of the editor
-void Editor::setEditorScroll(int x, int y, bool blit_valid_rgn)
+void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
 {
   View* view = View::getView(this);
   Point oldScroll;
   Region region;
-  int thick = m_cursor_thick;
+  int thick = m_cursorThick;
 
   if (thick)
     clearBrushPreview();
@@ -313,25 +312,22 @@ void Editor::setEditorScroll(int x, int y, bool blit_valid_rgn)
     oldScroll = view->getViewScroll();
   }
 
-  view->setViewScroll(Point(x, y));
+  view->setViewScroll(scroll);
   Point newScroll = view->getViewScroll();
 
   if (blit_valid_rgn) {
     // Move screen with blits
-    scrollRegion(region,
-                 oldScroll.x - newScroll.x,
-                 oldScroll.y - newScroll.y);
+    scrollRegion(region, oldScroll - newScroll);
   }
 
   if (thick)
-    drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
+    drawBrushPreview(m_cursorScreen);
 }
 
 void Editor::setEditorZoom(int zoom)
 {
   setZoomAndCenterInMouse(zoom,
-    jmouse_x(0), jmouse_y(0),
-    Editor::kCofiguredZoomBehavior);
+    ui::get_mouse_position(), Editor::kCofiguredZoomBehavior);
 }
 
 void Editor::updateEditor()
@@ -592,7 +588,7 @@ void Editor::drawMaskSafe()
   if (isVisible() &&
       m_document &&
       m_document->getBoundariesSegments()) {
-    int thick = m_cursor_thick;
+    int thick = m_cursorThick;
 
     Region region;
     getDrawableRegion(region, kCutTopWindows);
@@ -614,7 +610,7 @@ void Editor::drawMaskSafe()
 
     // Draw the cursor
     if (thick)
-      drawBrushPreview(m_cursor_screen_x, m_cursor_screen_y);
+      drawBrushPreview(m_cursorScreen);
     else
       jmouse_show();
   }
@@ -641,7 +637,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
   if (grid.y < 0) grid.y += grid.h;
 
   // Convert the "grid" rectangle to screen coordinates
-  editorToScreen(grid, &grid);
+  grid = editorToScreen(grid);
 
   // Adjust for client area
   gfx::Rect bounds = getBounds();
@@ -682,7 +678,7 @@ void Editor::flashCurrentLayer()
   if (src_image) {
     RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
 
-    m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), 255);
+    m_document->prepareExtraCel(m_sprite->bounds(), 255);
     Image* flash_image = m_document->getExtraCelImage();
 
     clear_image(flash_image, flash_image->maskColor());
@@ -726,7 +722,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
     else {
       scroll -= deltaScroll;
     }
-    setEditorScroll(scroll.x, scroll.y, blit_valid_rgn);
+    setEditorScroll(scroll, blit_valid_rgn);
 
 #ifdef WIN32
     mousePos -= delta;
@@ -860,56 +856,56 @@ tools::Ink* Editor::getCurrentEditorInk()
   return ink;
 }
 
-void Editor::screenToEditor(int xin, int yin, int* xout, int* yout)
+gfx::Point Editor::screenToEditor(const gfx::Point& pt)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   Point scroll = view->getViewScroll();
 
-  *xout = (xin - vp.x + scroll.x - m_offset_x) >> m_zoom;
-  *yout = (yin - vp.y + scroll.y - m_offset_y) >> m_zoom;
+  return gfx::Point(
+    (pt.x - vp.x + scroll.x - m_offset_x) >> m_zoom,
+    (pt.y - vp.y + scroll.y - m_offset_y) >> m_zoom);
 }
 
-void Editor::screenToEditor(const Rect& in, Rect* out)
-{
-  int x1, y1, x2, y2;
-  screenToEditor(in.x, in.y, &x1, &y1);
-  screenToEditor(in.x+in.w, in.y+in.h, &x2, &y2);
-  *out = Rect(x1, y1, x2 - x1, y2 - y1);
-}
-
-void Editor::editorToScreen(int xin, int yin, int* xout, int* yout)
+Point Editor::editorToScreen(const gfx::Point& pt)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
   Point scroll = view->getViewScroll();
 
-  *xout = (vp.x - scroll.x + m_offset_x + (xin << m_zoom));
-  *yout = (vp.y - scroll.y + m_offset_y + (yin << m_zoom));
+  return Point(
+    (vp.x - scroll.x + m_offset_x + (pt.x << m_zoom)),
+    (vp.y - scroll.y + m_offset_y + (pt.y << m_zoom)));
 }
 
-void Editor::editorToScreen(const Rect& in, Rect* out)
+Rect Editor::screenToEditor(const Rect& rc)
 {
-  int x1, y1, x2, y2;
-  editorToScreen(in.x, in.y, &x1, &y1);
-  editorToScreen(in.x+in.w, in.y+in.h, &x2, &y2);
-  *out = Rect(x1, y1, x2 - x1, y2 - y1);
+  return gfx::Rect(
+    screenToEditor(rc.getOrigin()),
+    screenToEditor(rc.getPoint2()));
+}
+
+Rect Editor::editorToScreen(const Rect& rc)
+{
+  return gfx::Rect(
+    editorToScreen(rc.getOrigin()),
+    editorToScreen(rc.getPoint2()));
 }
 
 void Editor::showDrawingCursor()
 {
   ASSERT(m_sprite != NULL);
 
-  if (!m_cursor_thick && canDraw()) {
+  if (!m_cursorThick && canDraw()) {
     jmouse_hide();
-    drawBrushPreview(jmouse_x(0), jmouse_y(0));
+    drawBrushPreview(ui::get_mouse_position());
     jmouse_show();
   }
 }
 
 void Editor::hideDrawingCursor()
 {
-  if (m_cursor_thick) {
+  if (m_cursorThick) {
     jmouse_hide();
     clearBrushPreview();
     jmouse_show();
@@ -919,17 +915,14 @@ void Editor::hideDrawingCursor()
 void Editor::moveDrawingCursor()
 {
   // Draw cursor
-  if (m_cursor_thick) {
-    int x, y;
-
-    x = jmouse_x(0);
-    y = jmouse_y(0);
+  if (m_cursorThick) {
+    gfx::Point mousePos = ui::get_mouse_position();
 
     // Redraw it only when the mouse change to other pixel (not
     // when the mouse moves only).
-    if ((m_cursor_screen_x != x) || (m_cursor_screen_y != y)) {
+    if (m_cursorScreen != mousePos) {
       jmouse_hide();
-      moveBrushPreview(x, y);
+      moveBrushPreview(mousePos);
       jmouse_show();
     }
   }
@@ -961,28 +954,25 @@ Rect Editor::getVisibleSpriteBounds()
 
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-  int x1, y1, x2, y2;
+  vp = screenToEditor(vp);
 
-  screenToEditor(vp.x, vp.y, &x1, &y1);
-  screenToEditor(vp.x+vp.w-1, vp.y+vp.h-1, &x2, &y2);
-
-  return Rect(0, 0, m_sprite->width(), m_sprite->height())
-    .createIntersect(Rect(x1, y1, x2-x1+1, y2-y1+1));
+  return vp.createIntersect(m_sprite->bounds());
 }
 
 // Changes the scroll to see the given point as the center of the editor.
-void Editor::centerInSpritePoint(int x, int y)
+void Editor::centerInSpritePoint(const gfx::Point& spritePos)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
 
   hideDrawingCursor();
 
-  x = m_offset_x - (vp.w/2) + ((1<<m_zoom)>>1) + (x << m_zoom);
-  y = m_offset_y - (vp.h/2) + ((1<<m_zoom)>>1) + (y << m_zoom);
+  gfx::Point scroll(
+    m_offset_x - (vp.w/2) + ((1<<m_zoom)>>1) + (spritePos.x << m_zoom),
+    m_offset_y - (vp.h/2) + ((1<<m_zoom)>>1) + (spritePos.y << m_zoom));
 
   updateEditor();
-  setEditorScroll(x, y, false);
+  setEditorScroll(scroll, false);
 
   showDrawingCursor();
   invalidate();
@@ -1238,8 +1228,8 @@ void Editor::onPaint(ui::PaintEvent& ev)
   gfx::Rect rc = getClientBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
-  int old_cursor_thick = m_cursor_thick;
-  if (m_cursor_thick)
+  int old_cursor_thick = m_cursorThick;
+  if (m_cursorThick)
     clearBrushPreview();
 
   // Editor without sprite
@@ -1266,7 +1256,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
       // Draw the cursor again
       if (old_cursor_thick != 0) {
-        drawBrushPreview(jmouse_x(0), jmouse_y(0));
+        drawBrushPreview(ui::get_mouse_position());
       }
     }
     catch (const LockedDocumentException&) {
@@ -1285,7 +1275,7 @@ void Editor::onCurrentToolChange()
 
 void Editor::onFgColorChange()
 {
-  if (m_cursor_thick) {
+  if (m_cursorThick) {
     hideDrawingCursor();
     showDrawingCursor();
   }
@@ -1313,22 +1303,20 @@ bool Editor::canDraw()
 
 bool Editor::isInsideSelection()
 {
-  int x, y;
-  screenToEditor(jmouse_x(0), jmouse_y(0), &x, &y);
+  gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
   return
     (m_selectionMode != kSubtractSelectionMode) &&
-    m_document != NULL &&
-    m_document->isMaskVisible() &&
-    m_document->mask()->containsPoint(x, y);
+     m_document != NULL &&
+     m_document->isMaskVisible() &&
+     m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
 
-void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior)
+void Editor::setZoomAndCenterInMouse(int zoom,
+  const gfx::Point& mousePos, ZoomBehavior zoomBehavior)
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-  int x, y;
   bool centerMouse = false;
-  int mx, my;
 
   switch (zoomBehavior) {
     case kCofiguredZoomBehavior:
@@ -1343,34 +1331,33 @@ void Editor::setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBeh
   }
 
   hideDrawingCursor();
-  screenToEditor(mouse_x, mouse_y, &x, &y);
+  gfx::Point spritePos = screenToEditor(mousePos);
+  gfx::Point mid;
 
   if (centerMouse) {
-    mx = vp.x+vp.w/2;
-    my = vp.y+vp.h/2;
+    mid.x = vp.x+vp.w/2;
+    mid.y = vp.y+vp.h/2;
   }
   else {
-    mx = mouse_x;
-    my = mouse_y;
+    mid.x = mousePos.x;
+    mid.y = mousePos.y;
   }
 
-  x = m_offset_x - (mx - vp.x) + ((1<<zoom)>>1) + (x << zoom);
-  y = m_offset_y - (my - vp.y) + ((1<<zoom)>>1) + (y << zoom);
+  spritePos.x = m_offset_x - (mid.x - vp.x) + ((1<<zoom)>>1) + (spritePos.x << zoom);
+  spritePos.y = m_offset_y - (mid.y - vp.y) + ((1<<zoom)>>1) + (spritePos.y << zoom);
 
-  if ((m_zoom != zoom) ||
-      (m_cursor_editor_x != mx) ||
-      (m_cursor_editor_y != my)) {
+  if ((m_zoom != zoom) || (m_cursorEditor != mid)) {
     bool blit_valid_rgn = (m_zoom == zoom);
 
     m_zoom = zoom;
 
     updateEditor();
-    setEditorScroll(x, y, blit_valid_rgn);
+    setEditorScroll(spritePos, blit_valid_rgn);
   }
   showDrawingCursor();
 }
 
-void Editor::pasteImage(const Image* image, int x, int y)
+void Editor::pasteImage(const Image* image, const gfx::Point& pos)
 {
   // Change to a selection tool: it's necessary for PixelsMovement
   // which will use the extra cel for transformation preview, and is
@@ -1389,6 +1376,8 @@ void Editor::pasteImage(const Image* image, int x, int y)
   Layer* layer = this->layer();
 
   // Check bounds where the image will be pasted.
+  int x = pos.x;
+  int y = pos.y;
   {
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds();
@@ -1415,10 +1404,10 @@ void Editor::pasteImage(const Image* image, int x, int y)
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
       document, sprite, layer,
-      image, x, y, opacity, "Paste"));
+      image, gfx::Point(x, y), opacity, "Paste"));
 
   // Select the pasted image so the user can move it and transform it.
-  pixelsMovement->maskImage(image, x, y);
+  pixelsMovement->maskImage(image);
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }
@@ -1426,7 +1415,7 @@ void Editor::pasteImage(const Image* image, int x, int y)
 void Editor::startSelectionTransformation(const gfx::Point& move)
 {
   if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
-    movingPixels->translate(move.x, move.y);
+    movingPixels->translate(move);
   }
   else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get())) {
     standby->startSelectionTransformation(this, move);

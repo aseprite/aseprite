@@ -47,9 +47,9 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
 }
 
 PixelsMovement::PixelsMovement(Context* context,
-                               Document* document, Sprite* sprite, Layer* layer,
-                               const Image* moveThis, int initialX, int initialY, int opacity,
-                               const char* operationName)
+  Document* document, Sprite* sprite, Layer* layer,
+  const Image* moveThis, const gfx::Point& initialPos, int opacity,
+  const char* operationName)
   : m_reader(context)
   , m_document(document)
   , m_sprite(sprite)
@@ -61,11 +61,11 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_originalImage(Image::createCopy(moveThis))
   , m_maskColor(m_sprite->transparentColor())
 {
-  m_initialData = gfx::Transformation(gfx::Rect(initialX, initialY, moveThis->width(), moveThis->height()));
+  m_initialData = gfx::Transformation(gfx::Rect(initialPos, gfx::Size(moveThis->width(), moveThis->height())));
   m_currentData = m_initialData;
 
   ContextWriter writer(m_reader);
-  m_document->prepareExtraCel(0, 0, m_sprite->width(), m_sprite->height(), opacity);
+  m_document->prepareExtraCel(m_sprite->bounds(), opacity);
 
   redrawExtraImage();
 
@@ -134,25 +134,21 @@ void PixelsMovement::copyMask()
   }
 }
 
-void PixelsMovement::catchImage(int x, int y, HandleType handle)
+void PixelsMovement::catchImage(const gfx::Point& pos, HandleType handle)
 {
   ASSERT(handle != NoHandle);
 
-  m_catchX = x;
-  m_catchY = y;
+  m_catchPos = pos;
   m_isDragging = true;
   m_handle = handle;
 }
 
-void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
+void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
 {
   // Create a new UndoTransaction to move the pixels to other position
   m_initialData = m_currentData;
   m_isDragging = true;
-
-  m_catchX = x;
-  m_catchY = y;
-
+  m_catchPos = pos;
   m_handle = handle;
 
   // Hide the mask (do not deselect it, it will be moved them using
@@ -165,7 +161,7 @@ void PixelsMovement::catchImageAgain(int x, int y, HandleType handle)
   }
 }
 
-void PixelsMovement::maskImage(const Image* image, int x, int y)
+void PixelsMovement::maskImage(const Image* image)
 {
   m_currentMask->replace(m_currentData.bounds());
   m_initialMask->copyFrom(m_currentMask);
@@ -180,7 +176,7 @@ void PixelsMovement::maskImage(const Image* image, int x, int y)
   update_screen_for_document(m_document);
 }
 
-void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
+void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 {
   gfx::Transformation::Corners oldCorners;
   m_currentData.transformBox(oldCorners);
@@ -196,10 +192,10 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
   bool updateBounds = false;
   int dx, dy;
 
-  dx = ((x - m_catchX) *  cos(m_currentData.angle()) +
-        (y - m_catchY) * -sin(m_currentData.angle()));
-  dy = ((x - m_catchX) *  sin(m_currentData.angle()) +
-        (y - m_catchY) *  cos(m_currentData.angle()));
+  dx = ((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
+        (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
+  dy = ((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
+        (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
 
   switch (m_handle) {
 
@@ -339,10 +335,10 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
 
         double newAngle =
           m_initialData.angle()
-          + atan2((double)(-y + abs_pivot.y),
-                  (double)(+x - abs_pivot.x))
-          - atan2((double)(-m_catchY + abs_initial_pivot.y),
-                  (double)(+m_catchX - abs_initial_pivot.x));
+          + atan2((double)(-pos.y + abs_pivot.y),
+                  (double)(+pos.x - abs_pivot.x))
+          - atan2((double)(-m_catchPos.y + abs_initial_pivot.y),
+                  (double)(+m_catchPos.x - abs_initial_pivot.x));
 
         // Put the angle in -180 to 180 range.
         while (newAngle < -PI) newAngle += 2*PI;
@@ -377,8 +373,8 @@ void PixelsMovement::moveImage(int x, int y, MoveModifier moveModifier)
     case PivotHandle:
       {
         // Calculate the new position of the pivot
-        gfx::Point newPivot(m_initialData.pivot().x + (x - m_catchX),
-                            m_initialData.pivot().y + (y - m_catchY));
+        gfx::Point newPivot(m_initialData.pivot().x + (pos.x - m_catchPos.x),
+                            m_initialData.pivot().y + (pos.y - m_catchPos.y));
 
         m_currentData = m_initialData;
         m_currentData.displacePivotTo(newPivot);

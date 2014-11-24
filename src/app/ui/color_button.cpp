@@ -133,12 +133,10 @@ bool ColorButton::onProcessMessage(Message* msg)
             Editor* editor = static_cast<Editor*>(picked);
             DocumentLocation location = editor->getDocumentLocation();
             if (location.sprite()) {
-              int x = mousePos.x;
-              int y = mousePos.y;
-              editor->screenToEditor(x, y, &x, &y);
+              gfx::Point editorPos = editor->screenToEditor(mousePos);
 
               ColorPicker picker;
-              picker.pickColor(location, x, y, ColorPicker::FromComposition);
+              picker.pickColor(location, editorPos, ColorPicker::FromComposition);
               color = picker.color();
             }
           }

@@ -52,17 +52,14 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
 
   m_cel = layer->getCel(editor->frame());
   if (m_cel) {
-    m_celStartX = m_cel->x();
-    m_celStartY = m_cel->y();
+    m_celStart = m_cel->position();
   }
   else {
-    m_celStartX = 0;
-    m_celStartY = 0;
+    m_celStart = gfx::Point(0, 0);
   }
-  m_celNewX = m_celStartX;
-  m_celNewY = m_celStartY;
+  m_celNew = m_celStart;
 
-  editor->screenToEditor(msg->position().x, msg->position().y, &m_mouseStartX, &m_mouseStartY);
+  m_mouseStart = editor->screenToEditor(msg->position());
   editor->captureMouse();
 
   // Hide the mask (temporarily, until mouse-up event)
@@ -83,11 +80,10 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   // Here we put back the cel into its original coordinate (so we can
   // add an undoer before).
-  if (m_celStartX != m_celNewX ||
-      m_celStartY != m_celNewY) {
+  if (m_celStart != m_celNew) {
     // Put the cel in the original position.
     if (m_cel)
-      m_cel->setPosition(m_celStartX, m_celStartY);
+      m_cel->setPosition(m_celStart);
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
@@ -96,22 +92,21 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       DocumentApi api = document->getApi();
 
       // And now we move the cel (or all selected range) to the new position.
-      int deltaX = m_celNewX - m_celStartX;
-      int deltaY = m_celNewY - m_celStartY;
+      gfx::Point delta = m_celNew - m_celStart;
 
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled()) {
         for (Cel* cel : get_cels_in_range(writer.sprite(), range))
-          api.setCelPosition(writer.sprite(), cel, cel->x()+deltaX, cel->y()+deltaY);
+          api.setCelPosition(writer.sprite(), cel, cel->x()+delta.x, cel->y()+delta.y);
       }
       else if (m_cel) {
-        api.setCelPosition(writer.sprite(), m_cel, m_celNewX, m_celNewY);
+        api.setCelPosition(writer.sprite(), m_cel, m_celNew.x, m_celNew.y);
       }
 
       // Move selection if it was visible
       if (m_maskVisible)
-        api.setMaskPosition(document->mask()->bounds().x + deltaX,
-                            document->mask()->bounds().y + deltaY);
+        api.setMaskPosition(document->mask()->bounds().x + delta.x,
+                            document->mask()->bounds().y + delta.y);
 
       undoTransaction.commit();
     }
@@ -130,14 +125,11 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  int newMouseX, newMouseY;
-  editor->screenToEditor(msg->position().x, msg->position().y, &newMouseX, &newMouseY);
+  gfx::Point newCursorPos = editor->screenToEditor(msg->position());
 
-  m_celNewX = m_celStartX - m_mouseStartX + newMouseX;
-  m_celNewY = m_celStartY - m_mouseStartY + newMouseY;
-
+  m_celNew = m_celStart - m_mouseStart + newCursorPos;
   if (m_cel)
-    m_cel->setPosition(m_celNewX, m_celNewY);
+    m_cel->setPosition(m_celNew);
 
   // Redraw the new cel position.
   editor->invalidate();
@@ -151,10 +143,10 @@ bool MovingCelState::onUpdateStatusBar(Editor* editor)
   StatusBar::instance()->setStatusText
     (0,
      "Pos %3d %3d Offset %3d %3d",
-     (int)m_celNewX,
-     (int)m_celNewY,
-     (int)(m_celNewX - m_celStartX),
-     (int)(m_celNewY - m_celStartY));
+     (int)m_celNew.x,
+     (int)m_celNew.y,
+     (int)(m_celNew.x - m_celStart.x),
+     (int)(m_celNew.y - m_celStart.y));
 
   return true;
 }

@@ -97,8 +97,7 @@ static bool first_time = true;
 static Palette* clipboard_palette = NULL;
 static Image* clipboard_image = NULL;
 static ClipboardRange clipboard_range;
-static int clipboard_x = 0;
-static int clipboard_y = 0;
+static gfx::Point clipboard_pos(0, 0);
 
 static void on_exit_delete_clipboard()
 {
@@ -139,8 +138,7 @@ static bool copy_from_document(const DocumentLocation& location)
   if (!image)
     return false;
 
-  clipboard_x = document->mask()->bounds().x;
-  clipboard_y = document->mask()->bounds().y;
+  clipboard_pos = document->mask()->bounds().getOrigin();
 
   const Palette* pal = document->sprite()->getPalette(location.frame());
   set_clipboard_image(image, pal ? new Palette(*pal): NULL, true);
@@ -234,8 +232,7 @@ void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
   set_clipboard_image(Image::createCopy(image),
     pal ? new Palette(*pal): NULL, true);
 
-  clipboard_x = point.x;
-  clipboard_y = point.y;
+  clipboard_pos = point;
 }
 
 void clipboard::paste()
@@ -285,7 +282,7 @@ void clipboard::paste()
       }
 
       // Change to MovingPixelsState
-      editor->pasteImage(src_image, clipboard_x, clipboard_y);
+      editor->pasteImage(src_image, clipboard_pos);
 
       if (src_image != clipboard_image)
         delete src_image;

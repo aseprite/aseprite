@@ -40,12 +40,9 @@ namespace app {
 
   private:
     Cel* m_cel;
-    int m_celStartX;
-    int m_celStartY;
-    int m_mouseStartX;
-    int m_mouseStartY;
-    int m_celNewX;
-    int m_celNewY;
+    gfx::Point m_celStart;
+    gfx::Point m_mouseStart;
+    gfx::Point m_celNew;
     bool m_canceled;
     bool m_maskVisible;
   };

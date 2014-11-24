@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ namespace app {
   class Editor : public ui::Widget,
                  public DocumentSettingsObserver {
   public:
-    typedef void (*PixelDelegate)(ui::Graphics* g, int x, int y, gfx::Color color);
+    typedef void (*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
 
     enum EditorFlags {
       kNoneFlag = 0,
@@ -125,14 +125,14 @@ namespace app {
     int zoom() const { return m_zoom; }
     int offsetX() const { return m_offset_x; }
     int offsetY() const { return m_offset_y; }
-    int cursorThick() { return m_cursor_thick; }
+    int cursorThick() { return m_cursorThick; }
 
     void setZoom(int zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }
     void setOffsetY(int y) { m_offset_y = y; }
 
     void setDefaultScroll();
-    void setEditorScroll(int x, int y, bool blit_valid_rgn);
+    void setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn);
     void setEditorZoom(int zoom);
 
     // Updates the Editor's view.
@@ -144,10 +144,10 @@ namespace app {
 
     void flashCurrentLayer();
 
-    void screenToEditor(int xin, int yin, int* xout, int* yout);
-    void screenToEditor(const gfx::Rect& in, gfx::Rect* out);
-    void editorToScreen(int xin, int yin, int* xout, int* yout);
-    void editorToScreen(const gfx::Rect& in, gfx::Rect* out);
+    gfx::Point screenToEditor(const gfx::Point& pt);
+    gfx::Point editorToScreen(const gfx::Point& pt);
+    gfx::Rect screenToEditor(const gfx::Rect& rc);
+    gfx::Rect editorToScreen(const gfx::Rect& rc);
 
     void showDrawingCursor();
     void hideDrawingCursor();
@@ -166,7 +166,7 @@ namespace app {
     gfx::Rect getVisibleSpriteBounds();
 
     // Changes the scroll to see the given point as the center of the editor.
-    void centerInSpritePoint(int x, int y);
+    void centerInSpritePoint(const gfx::Point& spritePos);
 
     void updateStatusBar();
 
@@ -187,9 +187,10 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
-    void setZoomAndCenterInMouse(int zoom, int mouse_x, int mouse_y, ZoomBehavior zoomBehavior);
+    void setZoomAndCenterInMouse(int zoom,
+      const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
-    void pasteImage(const Image* image, int x, int y);
+    void pasteImage(const Image* image, const gfx::Point& pos);
 
     void startSelectionTransformation(const gfx::Point& move);
 
@@ -221,8 +222,8 @@ namespace app {
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateContextBarFromModifiers();
-    void drawBrushPreview(int x, int y, bool refresh = true);
-    void moveBrushPreview(int x, int y, bool refresh = true);
+    void drawBrushPreview(const gfx::Point& pos, bool refresh = true);
+    void moveBrushPreview(const gfx::Point& pos, bool refresh = true);
     void clearBrushPreview(bool refresh = true);
     bool doesBrushPreviewNeedSubpixel();
     bool isCurrentToolAffectedByRightClickMode();
@@ -235,8 +236,8 @@ namespace app {
 
     void forEachBrushPixel(
       ui::Graphics* g,
-      int screen_x, int screen_y,
-      int sprite_x, int sprite_y,
+      const gfx::Point& screenPos,
+      const gfx::Point& spritePos,
       gfx::Color color,
       PixelDelegate pixelDelegate);
 
@@ -262,11 +263,9 @@ namespace app {
     int m_zoom;                   // Zoom in the editor
 
     // Drawing cursor
-    int m_cursor_thick;
-    int m_cursor_screen_x; // Position in the screen (view)
-    int m_cursor_screen_y;
-    int m_cursor_editor_x; // Position in the editor (model)
-    int m_cursor_editor_y;
+    int m_cursorThick;
+    gfx::Point m_cursorScreen; // Position in the screen (view)
+    gfx::Point m_cursorEditor; // Position in the editor (model)
 
     // Current selected quicktool (this genererally should be NULL if
     // the user is not pressing any keyboard key).

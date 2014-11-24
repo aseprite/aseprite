@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,22 +233,23 @@ void Document::destroyExtraCel()
   m_extraImage = NULL;
 }
 
-void Document::prepareExtraCel(int x, int y, int w, int h, int opacity)
+void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
 {
   ASSERT(sprite() != NULL);
 
   if (!m_extraCel)
     m_extraCel = new Cel(FrameNumber(0), 0); // Ignored fields for this cell (frame, and image index)
 
-  m_extraCel->setPosition(x, y);
+  m_extraCel->setPosition(bounds.getOrigin());
   m_extraCel->setOpacity(opacity);
 
   if (!m_extraImage ||
       m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
-      m_extraImage->width() != w ||
-      m_extraImage->height() != h) {
+      m_extraImage->width() != bounds.w ||
+      m_extraImage->height() != bounds.h) {
     delete m_extraImage;                // image
-    m_extraImage = Image::create(sprite()->pixelFormat(), w, h);
+    m_extraImage = Image::create(sprite()->pixelFormat(),
+      bounds.w, bounds.h);
   }
 }
 

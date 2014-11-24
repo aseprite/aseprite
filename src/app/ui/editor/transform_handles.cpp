@@ -78,18 +78,17 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<int> x(corners.size());
-  std::vector<int> y(corners.size());
+  std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
+    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
 
   int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
   for (int i=0; i<2; ++i) {
     int handle_r = handle_rs[i];
     for (size_t c=0; c<HANDLES; ++c) {
       if (inHandle(pt,
-                   (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
-                   (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
+                   (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2,
+                   (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2,
                    handle_r, handle_r,
                    angle + handles_info[c].angle)) {
         return handles_info[c].handle[i];
@@ -112,10 +111,9 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<int> x(corners.size());
-  std::vector<int> y(corners.size());
+  std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
+    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
 
   // TODO DO NOT COMMIT
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
@@ -141,9 +139,9 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   // Draw corner handle
   for (size_t c=0; c<HANDLES; ++c) {
     drawHandle(&g,
-               (x[handles_info[c].i1]+x[handles_info[c].i2])/2,
-               (y[handles_info[c].i1]+y[handles_info[c].i2])/2,
-               angle + handles_info[c].angle);
+      (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2,
+      (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2,
+      angle + handles_info[c].angle);
   }
 
   // Draw the pivot
@@ -164,16 +162,15 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
   gfx::Transformation::Corners corners;
   transform.transformBox(corners);
 
-  std::vector<int> x(corners.size());
-  std::vector<int> y(corners.size());
+  std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    editor->editorToScreen(corners[c].x, corners[c].y, &x[c], &y[c]);
+    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
 
   // Invalidate each corner handle.
   for (size_t c=0; c<HANDLES; ++c) {
     she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
-    int u = (x[handles_info[c].i1]+x[handles_info[c].i2])/2;
-    int v = (y[handles_info[c].i1]+y[handles_info[c].i2])/2;
+    int u = (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2;
+    int v = (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2;
 
     adjustHandle(u, v, part->width(), part->height(), angle + handles_info[c].angle);
 
@@ -197,16 +194,14 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
   she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
-  int pvx, pvy;
+  gfx::Point screenPivotPos = editor->editorToScreen(transform.pivot());
 
-  editor->editorToScreen(transform.pivot().x, transform.pivot().y, &pvx, &pvy);
-
-  pvx += (1 << editor->zoom()) / 2;
-  pvy += (1 << editor->zoom()) / 2;
+  screenPivotPos.x += (1 << editor->zoom()) / 2;
+  screenPivotPos.y += (1 << editor->zoom()) / 2;
 
   return gfx::Rect(
-    pvx-part->width()/2,
-    pvy-part->height()/2,
+    screenPivotPos.x-part->width()/2,
+    screenPivotPos.y-part->height()/2,
     part->width(),
     part->height());
 }

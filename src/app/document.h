@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,9 +26,10 @@
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "doc/document.h"
-#include "gfx/transformation.h"
 #include "doc/frame_number.h"
 #include "doc/pixel_format.h"
+#include "gfx/rect.h"
+#include "gfx/transformation.h"
 
 #include <string>
 
@@ -125,7 +126,7 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
 
-    void prepareExtraCel(int x, int y, int w, int h, int opacity);
+    void prepareExtraCel(const gfx::Rect& bounds, int opacity);
     void destroyExtraCel();
     Cel* getExtraCel() const;
     Image* getExtraCelImage() const;

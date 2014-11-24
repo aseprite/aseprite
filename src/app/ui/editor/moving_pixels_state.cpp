@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,9 +70,8 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   m_pixelsMovement = pixelsMovement;
 
   if (handle != NoHandle) {
-    int u, v;
-    editor->screenToEditor(msg->position().x, msg->position().y, &u, &v);
-    m_pixelsMovement->catchImage(u, v, handle);
+    gfx::Point pt = editor->screenToEditor(msg->position());
+    m_pixelsMovement->catchImage(pt, handle);
 
     editor->captureMouse();
   }
@@ -119,13 +118,13 @@ MovingPixelsState::~MovingPixelsState()
   m_editor->document()->generateMaskBoundaries();
 }
 
-void MovingPixelsState::translate(int dx, int dy)
+void MovingPixelsState::translate(const gfx::Point& delta)
 {
   if (m_pixelsMovement->isDragging())
     m_pixelsMovement->dropImageTemporarily();
 
-  m_pixelsMovement->catchImageAgain(0, 0, MoveHandle);
-  m_pixelsMovement->moveImage(dx, dy, PixelsMovement::NormalMovement);
+  m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MoveHandle);
+  m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
 }
 
@@ -206,9 +205,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     if (handle != NoHandle) {
       // Re-catch the image
-      int x, y;
-      editor->screenToEditor(msg->position().x, msg->position().y, &x, &y);
-      m_pixelsMovement->catchImageAgain(x, y, handle);
+      m_pixelsMovement->catchImageAgain(
+        editor->screenToEditor(msg->position()), handle);
 
       editor->captureMouse();
       return true;
@@ -226,9 +224,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
 
     // Re-catch the image
-    int x, y;
-    editor->screenToEditor(msg->position().x, msg->position().y, &x, &y);
-    m_pixelsMovement->catchImageAgain(x, y, MoveHandle);
+    m_pixelsMovement->catchImageAgain(
+      editor->screenToEditor(msg->position()), MoveHandle);
 
     editor->captureMouse();
     return true;
@@ -267,8 +264,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
     gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, false);
 
     // Get the position of the mouse in the sprite
-    int x, y;
-    editor->screenToEditor(mousePos.x, mousePos.y, &x, &y);
+    gfx::Point spritePos = editor->screenToEditor(mousePos);
 
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
@@ -291,7 +287,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
     transfHandles->invalidateHandles(editor, m_pixelsMovement->getTransformation());
 
     // Drag the image to that position
-    m_pixelsMovement->moveImage(x, y, moveModifier);
+    m_pixelsMovement->moveImage(spritePos, moveModifier);
 
     editor->updateStatusBar();
     return true;
