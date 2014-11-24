@@ -198,14 +198,14 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     if ((layer) &&
         (layer->type() == OBJECT_LAYER_IMAGE)) {
-      // TODO you can move the `Background' with tiled mode
+      // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
-        Alert::show(PACKAGE
-                    "<<You can't move the `Background' layer."
-                    "||&Close");
+        StatusBar::instance()->showTip(1000,
+          "The background layer cannot be moved");
       }
-      else if (!layer->isMoveable()) {
-        Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
+      else if (!layer->isMoveable() || !layer->isWritable()) {
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is locked", layer->name().c_str());
       }
       else {
         // Change to MovingCelState
@@ -237,7 +237,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         Image* image = location.image(&x, &y, &opacity);
         if (image) {
           if (!layer->isWritable()) {
-            Alert::show(PACKAGE "<<The layer is locked.||&Close");
+            StatusBar::instance()->showTip(1000,
+              "Layer '%s' is locked", layer->name().c_str());
             return true;
           }
 
@@ -251,7 +252,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Move selected pixels
     if (editor->isInsideSelection() && msg->left()) {
       if (!layer->isWritable()) {
-        Alert::show(PACKAGE "<<The layer is locked.||&Close");
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is locked", layer->name().c_str());
         return true;
       }
 
