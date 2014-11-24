@@ -207,8 +207,10 @@ static void paint_win(RECT *rect)
    /* we may have lost the DirectDraw surfaces
     * (e.g after the monitor has gone to low power)
     */
-   if (IDirectDrawSurface2_IsLost(gfx_directx_primary_surface->id) == DDERR_SURFACELOST)
+   if (gfx_directx_primary_surface->id == 0 ||
+       IDirectDrawSurface2_IsLost(gfx_directx_primary_surface->id) == DDERR_SURFACELOST) {
       switch_in_win();
+   }
 
    /* clip the rectangle */
    rect->right = MIN(rect->right, gfx_directx_win.w);
@@ -249,9 +251,14 @@ static void update_matching_window(RECT *rect)
    ClientToScreen(allegro_wnd, &dest_rect.p);
    ClientToScreen(allegro_wnd, &dest_rect.p + 1);
 
-   /* blit offscreen backbuffer to the window */
-   IDirectDrawSurface2_Blt(gfx_directx_primary_surface->id, &dest_rect.r,
-                           offscreen_surface->id, rect, 0, NULL);
+   /* Blit offscreen backbuffer to the window.
+      The ID can be 0 when the primary surface is lost and we weren't
+      able to restore & recreate it in gfx_directx_restore_surface().
+    */
+   if (gfx_directx_primary_surface->id != 0) {
+      IDirectDrawSurface2_Blt(gfx_directx_primary_surface->id, &dest_rect.r,
+                              offscreen_surface->id, rect, 0, NULL);
+   }
 
    _exit_gfx_critical();
 }
@@ -372,8 +379,10 @@ static void update_colorconv_window(RECT *rect)
 
    if (direct) {
       /* blit directly to the primary surface without clipping */
-      ddsurf_blit_ex(gfx_directx_primary_surface->id, &dest_rect.r,
-                     offscreen_surface->id, &src_rect);
+      if (gfx_directx_primary_surface->id != 0) {
+         ddsurf_blit_ex(gfx_directx_primary_surface->id, &dest_rect.r,
+            offscreen_surface->id, &src_rect);
+      }
    }
    else {
       /* blit to the window using GDI */
