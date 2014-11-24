@@ -213,7 +213,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   // Calculate the area to be updated in all document observers.
   Region& dirty_area = m_toolLoop->getDirtyArea();
-  calculateDirtyArea(m_toolLoop, points_to_interwine, dirty_area);
+  calculateDirtyArea(points_to_interwine, dirty_area);
 
   if (m_toolLoop->getTracePolicy() == TracePolicyLast) {
     Region prev_dirty_area = dirty_area;
@@ -235,7 +235,7 @@ void ToolLoopManager::snapToGrid(Point& point)
   m_toolLoop->getDocumentSettings()->snapToGrid(point);
 }
 
-void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, Region& dirty_area)
+void ToolLoopManager::calculateDirtyArea(const Points& points, Region& dirty_area)
 {
   dirty_area.clear();
 
@@ -245,21 +245,21 @@ void ToolLoopManager::calculateDirtyArea(ToolLoop* loop, const Points& points, R
 
     // Expand the dirty-area with the pen width
     Rect r1, r2;
-    loop->getPointShape()->getModifiedArea(loop, minpt.x, minpt.y, r1);
-    loop->getPointShape()->getModifiedArea(loop, maxpt.x, maxpt.y, r2);
+    m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, minpt.x, minpt.y, r1);
+    m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, maxpt.x, maxpt.y, r2);
 
     dirty_area.createUnion(dirty_area, Region(r1.createUnion(r2)));
   }
 
   // Apply offset mode
-  Point offset(loop->getOffset());
+  Point offset(m_toolLoop->getOffset());
   dirty_area.offset(-offset);
 
   // Apply tiled mode
-  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
+  TiledMode tiledMode = m_toolLoop->getDocumentSettings()->getTiledMode();
   if (tiledMode != TILED_NONE) {
-    int w = loop->sprite()->width();
-    int h = loop->sprite()->height();
+    int w = m_toolLoop->sprite()->width();
+    int h = m_toolLoop->sprite()->height();
     Region sprite_area(Rect(0, 0, w, h));
     Region outside;
     outside.createSubtraction(dirty_area, sprite_area);
@@ -311,6 +311,11 @@ void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point&
     minpt.y = MIN(minpt.y, points[c].y);
     maxpt.x = MAX(maxpt.x, points[c].x);
     maxpt.y = MAX(maxpt.y, points[c].y);
+  }
+
+  if (m_toolLoop->zoom().scale() < 1.0) {
+    maxpt.x += m_toolLoop->zoom().remove(1);
+    maxpt.y += m_toolLoop->zoom().remove(1);
   }
 }
 

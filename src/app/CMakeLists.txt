@@ -259,4 +259,5 @@ add_library(app-lib
   webserver.cpp
   widget_loader.cpp
   xml_document.cpp
-  xml_exception.cpp)
+  xml_exception.cpp
+  zoom.cpp)

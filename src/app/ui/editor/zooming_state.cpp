@@ -53,12 +53,12 @@ bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  int zoom = editor->zoom();
+  Zoom zoom = editor->zoom();
 
-  if (msg->left() && zoom < 5)
-    ++zoom;
-  else if (msg->right() && zoom > 0)
-    --zoom;
+  if (msg->left())
+    zoom.in();
+  else if (msg->right())
+    zoom.out();
 
   editor->setZoomAndCenterInMouse(zoom,
     msg->position(), Editor::kCofiguredZoomBehavior);

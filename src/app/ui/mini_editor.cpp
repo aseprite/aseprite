@@ -245,7 +245,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
     addChild(m_docView);
 
     miniEditor = m_docView->getEditor();
-    miniEditor->setZoom(0);
+    miniEditor->setZoom(Zoom(1, 1));
     miniEditor->setState(EditorStatePtr(new EditorState));
     layout();
   }

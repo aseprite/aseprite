@@ -55,7 +55,7 @@ namespace app {
 using namespace ui;
 
 // Returns true if the cursor of the editor needs subpixel movement.
-#define IS_SUBPIXEL(editor)     ((editor)->m_zoom >= 2)
+#define IS_SUBPIXEL(editor)     ((editor)->m_zoom.scale() >= 4.0)
 
 // Maximum quantity of colors to save pixels overlapped by the cursor.
 #define MAX_SAVED   4096
@@ -514,25 +514,22 @@ static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor,
     0, 0, 1, 1, 0, 0,
     0, 0, 1, 1, 0, 0,
   };
-  gfx::Point out;
+  gfx::Point out, outpt = editor->editorToScreen(pt);
   int u, v;
-  int zoom = editor->zoom();
+  int size = editor->zoom().apply(thickness/2);
+  int size2 = editor->zoom().apply(thickness);
+  if (size2 == 0) size2 = 1;
 
   for (v=0; v<6; v++) {
     for (u=0; u<6; u++) {
-      if (cursor_cross[v*6+u]) {
-        out = editor->editorToScreen(pt);
+      if (!cursor_cross[v*6+u])
+        continue;
 
-        out.x += ((u<3) ?
-          u-((thickness>>1)<<zoom)-3:
-          u-((thickness>>1)<<zoom)-3+(thickness<<zoom));
+      out = outpt;
+      out.x += ((u<3) ? u-size-3: u-size-3+size2);
+      out.y += ((v<3) ? v-size-3: v-size-3+size2);
 
-        out.y += ((v<3)?
-          v-((thickness>>1)<<zoom)-3:
-          v-((thickness>>1)<<zoom)-3+(thickness<<zoom));
-
-        pixelDelegate(g, out, color);
-      }
+      pixelDelegate(g, out, color);
     }
   }
 }

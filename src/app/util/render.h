@@ -21,6 +21,7 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/zoom.h"
 #include "doc/frame_number.h"
 
 namespace doc {
@@ -70,7 +71,7 @@ namespace app {
 
     Image* renderSprite(int source_x, int source_y,
       int width, int height,
-      FrameNumber frame, int zoom,
+      FrameNumber frame, Zoom zoom,
       bool draw_tiled_bg,
       bool enable_onionskin);
 
@@ -79,18 +80,18 @@ namespace app {
 
     static void renderCheckedBackground(Image* image,
                                         int source_x, int source_y,
-                                        int zoom);
+                                        Zoom zoom);
 
     static void renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
-                            int x, int y, int zoom);
+                            int x, int y, Zoom zoom);
 
   private:
     void renderLayer(
       const Layer* layer,
       Image* image,
       int source_x, int source_y,
-      FrameNumber frame, int zoom,
-      void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+      FrameNumber frame, Zoom zoom,
+      void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, Zoom),
       bool render_background,
       bool render_transparent,
       int blend_mode);

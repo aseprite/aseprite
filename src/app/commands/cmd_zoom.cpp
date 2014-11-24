@@ -74,25 +74,23 @@ bool ZoomCommand::onEnabled(Context* context)
 
 void ZoomCommand::onExecute(Context* context)
 {
-  int zoom = current_editor->zoom();
+  Zoom zoom = current_editor->zoom();
 
   switch (m_action) {
     case In:
-      if (zoom < 5)
-        ++zoom;
+      zoom.in();
       break;
     case Out:
-      if (zoom > 0)
-        --zoom;
+      zoom.out();
       break;
     case Set:
       switch (m_percentage) {
-        case 3200: zoom = 5; break;
-        case 1600: zoom = 4; break;
-        case 800: zoom = 3; break;
-        case 400: zoom = 2; break;
-        case 200: zoom = 1; break;
-        default: zoom = 0; break;
+        case 3200: zoom = Zoom(32, 1); break;
+        case 1600: zoom = Zoom(16, 1); break;
+        case 800: zoom = Zoom(8, 1); break;
+        case 400: zoom = Zoom(4, 1); break;
+        case 200: zoom = Zoom(2, 1); break;
+        default: zoom = Zoom(1, 1); break;
       }
       break;
   }

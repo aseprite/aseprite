@@ -196,8 +196,8 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
   she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
   gfx::Point screenPivotPos = editor->editorToScreen(transform.pivot());
 
-  screenPivotPos.x += (1 << editor->zoom()) / 2;
-  screenPivotPos.y += (1 << editor->zoom()) / 2;
+  screenPivotPos.x += editor->zoom().apply(1) / 2;
+  screenPivotPos.y += editor->zoom().apply(1) / 2;
 
   return gfx::Rect(
     screenPivotPos.x-part->width()/2,

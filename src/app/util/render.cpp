@@ -115,9 +115,8 @@ public:
 };
 
 template<class DstTraits, class SrcTraits>
-static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
-                               int x, int y, int opacity,
-                               int blend_mode, int zoom)
+static void merge_zoomed_image_scale_up(Image* dst, const Image* src, const Palette* pal,
+  int x, int y, int opacity, int blend_mode, Zoom zoom)
 {
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   int src_x, src_y, src_w, src_h;
@@ -126,8 +125,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
   int first_box_w, first_box_h;
   int line_h, bottom;
 
-  box_w = 1<<zoom;
-  box_h = 1<<zoom;
+  box_w = zoom.apply(1);
+  box_h = zoom.apply(1);
 
   src_x = 0;
   src_y = 0;
@@ -136,13 +135,13 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
 
   dst_x = x;
   dst_y = y;
-  dst_w = src->width()<<zoom;
-  dst_h = src->height()<<zoom;
+  dst_w = zoom.apply(src->width());
+  dst_h = zoom.apply(src->height());
 
   // clipping...
   if (dst_x < 0) {
-    src_x += (-dst_x)>>zoom;
-    src_w -= (-dst_x)>>zoom;
+    src_x += zoom.remove(-dst_x);
+    src_w -= zoom.remove(-dst_x);
     dst_w -= (-dst_x);
     first_box_w = box_w - ((-dst_x) % box_w);
     dst_x = 0;
@@ -151,8 +150,8 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
     first_box_w = 0;
 
   if (dst_y < 0) {
-    src_y += (-dst_y)>>zoom;
-    src_h -= (-dst_y)>>zoom;
+    src_y += zoom.remove(-dst_y);
+    src_h -= zoom.remove(-dst_y);
     dst_h -= (-dst_y);
     first_box_h = box_h - ((-dst_y) % box_h);
     dst_y = 0;
@@ -161,12 +160,12 @@ static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
     first_box_h = 0;
 
   if (dst_x+dst_w > dst->width()) {
-    src_w -= (dst_x+dst_w-dst->width()) >> zoom;
+    src_w -= zoom.remove(dst_x+dst_w-dst->width());
     dst_w = dst->width() - dst_x;
   }
 
   if (dst_y+dst_h > dst->height()) {
-    src_h -= (dst_y+dst_h-dst->height()) >> zoom;
+    src_h -= zoom.remove(dst_y+dst_h-dst->height());
     dst_h = dst->height() - dst_y;
   }
 
@@ -279,6 +278,107 @@ done_with_line:;
 done_with_blit:;
 }
 
+template<class DstTraits, class SrcTraits>
+static void merge_zoomed_image_scale_down(Image* dst, const Image* src, const Palette* pal,
+  int x, int y, int opacity, int blend_mode, Zoom zoom)
+{
+  BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
+  int src_x, src_y, src_w, src_h;
+  int dst_x, dst_y, dst_w, dst_h;
+  int unbox_w, unbox_h;
+  int bottom;
+
+  unbox_w = zoom.remove(1);
+  unbox_h = zoom.remove(1);
+
+  src_x = 0;
+  src_y = 0;
+  src_w = src->width();
+  src_h = src->height();
+
+  dst_x = x;
+  dst_y = y;
+  dst_w = zoom.apply(src->width());
+  dst_h = zoom.apply(src->height());
+
+  // clipping...
+  if (dst_x < 0) {
+    src_x += zoom.remove(-dst_x);
+    src_w -= zoom.remove(-dst_x);
+    dst_w -= (-dst_x);
+    dst_x = 0;
+  }
+
+  if (dst_y < 0) {
+    src_y += zoom.remove(-dst_y);
+    src_h -= zoom.remove(-dst_y);
+    dst_h -= (-dst_y);
+    dst_y = 0;
+  }
+
+  if (dst_x+dst_w > dst->width()) {
+    src_w -= zoom.remove(dst_x+dst_w-dst->width());
+    dst_w = dst->width() - dst_x;
+  }
+
+  if (dst_y+dst_h > dst->height()) {
+    src_h -= zoom.remove(dst_y+dst_h-dst->height());
+    dst_h = dst->height() - dst_y;
+  }
+
+  src_w = zoom.remove(zoom.apply(src_w));
+  src_h = zoom.remove(zoom.apply(src_h));
+
+  if ((src_w <= 0) || (src_h <= 0) ||
+      (dst_w <= 0) || (dst_h <= 0))
+    return;
+
+  bottom = dst_y+dst_h-1;
+
+  // Lock all necessary bits
+  const LockImageBits<SrcTraits> srcBits(src, gfx::Rect(src_x, src_y, src_w, src_h));
+  LockImageBits<DstTraits> dstBits(dst, gfx::Rect(dst_x, dst_y, dst_w, dst_h));
+  typename LockImageBits<SrcTraits>::const_iterator src_it = srcBits.begin();
+  typename LockImageBits<SrcTraits>::const_iterator src_end = srcBits.end();
+  typename LockImageBits<DstTraits>::iterator dst_it, dst_end;
+
+  // For each line to draw of the source image...
+  for (y=0; y<src_h; y+=unbox_h) {
+    dst_it = dstBits.begin_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
+    dst_end = dstBits.end_area(gfx::Rect(dst_x, dst_y, dst_w, 1));
+
+    for (x=0; x<src_w; x+=unbox_w) {
+      ASSERT(src_it >= srcBits.begin() && src_it < src_end);
+      ASSERT(dst_it >= dstBits.begin() && dst_it < dst_end);
+
+      blender(*dst_it, *dst_it, *src_it, opacity);
+
+      // Skip source pixels
+      for (int delta=0; delta < unbox_w && src_it != src_end; ++delta)
+        ++src_it;
+
+      ++dst_it;
+    }
+
+    if (++dst_y > bottom)
+      break;
+
+    // Skip lines
+    for (int delta=0; delta < src_w * (unbox_h-1) && src_it != src_end; ++delta)
+      ++src_it;
+  }
+}
+
+template<class DstTraits, class SrcTraits>
+static void merge_zoomed_image(Image* dst, const Image* src, const Palette* pal,
+  int x, int y, int opacity, int blend_mode, Zoom zoom)
+{
+  if (zoom.scale() >= 1.0)
+    merge_zoomed_image_scale_up<DstTraits, SrcTraits>(dst, src, pal, x, y, opacity, blend_mode, zoom);
+  else
+    merge_zoomed_image_scale_down<DstTraits, SrcTraits>(dst, src, pal, x, y, opacity, blend_mode, zoom);
+}
+
 //////////////////////////////////////////////////////////////////////
 // Render Engine
 
@@ -380,15 +480,15 @@ void RenderEngine::setPreviewImage(const Layer* layer, FrameNumber frame, Image*
    in a new image and return it.
 
    Positions source_x, source_y, width and height must have the
-   zoom applied (sorce_x<<zoom, source_y<<zoom, width<<zoom, etc.)
+   zoom applied (zoom.apply(sorce_x), zoom.apply(source_y), zoom.apply(width), etc.)
  */
 Image* RenderEngine::renderSprite(int source_x, int source_y,
   int width, int height,
-  FrameNumber frame, int zoom,
+  FrameNumber frame, Zoom zoom,
   bool draw_tiled_bg,
   bool enable_onionskin)
 {
-  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, Zoom);
   const LayerImage* background = m_sprite->backgroundLayer();
   bool need_checked_bg = (background != NULL ? !background->isVisible(): true);
   uint32_t bg_color = 0;
@@ -471,7 +571,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
 // static
 void RenderEngine::renderCheckedBackground(Image* image,
                                            int source_x, int source_y,
-                                           int zoom)
+                                           Zoom zoom)
 {
   int x, y, u, v;
   int tile_w = 16;
@@ -504,13 +604,13 @@ void RenderEngine::renderCheckedBackground(Image* image,
   }
 
   if (checked_bg_zoom) {
-    tile_w <<= zoom;
-    tile_h <<= zoom;
+    tile_w = zoom.apply(tile_w);
+    tile_h = zoom.apply(tile_h);
   }
 
   // Tile size
-  if (tile_w < (1<<zoom)) tile_w = (1<<zoom);
-  if (tile_h < (1<<zoom)) tile_h = (1<<zoom);
+  if (tile_w < zoom.apply(1)) tile_w = zoom.apply(1);
+  if (tile_h < zoom.apply(1)) tile_h = zoom.apply(1);
 
   // Tile position (u,v) is the number of tile we start in (source_x,source_y) coordinate
   u = (source_x / tile_w);
@@ -535,9 +635,9 @@ void RenderEngine::renderCheckedBackground(Image* image,
 
 // static
 void RenderEngine::renderImage(Image* rgb_image, Image* src_image, const Palette* pal,
-                               int x, int y, int zoom)
+  int x, int y, Zoom zoom)
 {
-  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int);
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, Zoom);
 
   ASSERT(rgb_image->pixelFormat() == IMAGE_RGB && "renderImage accepts RGB destination images only");
 
@@ -566,8 +666,8 @@ void RenderEngine::renderLayer(
   const Layer* layer,
   Image *image,
   int source_x, int source_y,
-  FrameNumber frame, int zoom,
-  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, int),
+  FrameNumber frame, Zoom zoom,
+  void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, Zoom),
   bool render_background,
   bool render_transparent,
   int blend_mode)
@@ -607,8 +707,8 @@ void RenderEngine::renderLayer(
           ASSERT(src_image->maskColor() == m_sprite->transparentColor());
 
           (*zoomed_func)(image, src_image, m_sprite->getPalette(frame),
-            (cel->x() << zoom) - source_x,
-            (cel->y() << zoom) - source_y,
+            zoom.apply(cel->x()) - source_x,
+            zoom.apply(cel->y()) - source_y,
             output_opacity,
             (blend_mode < 0 ?
               static_cast<const LayerImage*>(layer)->getBlendMode():
@@ -645,8 +745,8 @@ void RenderEngine::renderLayer(
       Image* extraImage = m_document->getExtraCelImage();
 
       (*zoomed_func)(image, extraImage, m_sprite->getPalette(frame),
-        (extraCel->x() << zoom) - source_x,
-        (extraCel->y() << zoom) - source_y,
+        zoom.apply(extraCel->x()) - source_x,
+        zoom.apply(extraCel->y()) - source_y,
         extraCel->opacity(),
         m_document->getExtraCelBlendMode(), zoom);
     }

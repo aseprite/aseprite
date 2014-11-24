@@ -27,15 +27,13 @@
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
+#include "app/zoom.h"
 #include "base/connection.h"
-#include "gfx/fwd.h"
 #include "doc/frame_number.h"
+#include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
-
-#define MIN_ZOOM 0
-#define MAX_ZOOM 5
 
 namespace doc {
   class Sprite;
@@ -122,18 +120,18 @@ namespace app {
     void setLayer(const Layer* layer);
     void setFrame(FrameNumber frame);
 
-    int zoom() const { return m_zoom; }
+    const Zoom& zoom() const { return m_zoom; }
     int offsetX() const { return m_offset_x; }
     int offsetY() const { return m_offset_y; }
     int cursorThick() { return m_cursorThick; }
 
-    void setZoom(int zoom) { m_zoom = zoom; }
+    void setZoom(Zoom zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }
     void setOffsetY(int y) { m_offset_y = y; }
 
     void setDefaultScroll();
     void setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn);
-    void setEditorZoom(int zoom);
+    void setEditorZoom(Zoom zoom);
 
     // Updates the Editor's view.
     void updateEditor();
@@ -187,7 +185,7 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
-    void setZoomAndCenterInMouse(int zoom,
+    void setZoomAndCenterInMouse(Zoom zoom,
       const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
     void pasteImage(const Image* image, const gfx::Point& pos);
@@ -260,7 +258,7 @@ namespace app {
     Sprite* m_sprite;             // Active sprite in the editor
     Layer* m_layer;               // Active layer in the editor
     FrameNumber m_frame;          // Active frame in the editor
-    int m_zoom;                   // Zoom in the editor
+    Zoom m_zoom;                  // Zoom in the editor
 
     // Drawing cursor
     int m_cursorThick;

@@ -71,7 +71,7 @@ using namespace ui;
 
 class EditorPreRenderImpl : public EditorPreRender {
 public:
-  EditorPreRenderImpl(Editor* editor, Image* image, const Point& offset, int zoom)
+  EditorPreRenderImpl(Editor* editor, Image* image, const Point& offset, Zoom zoom)
     : m_editor(editor)
     , m_image(image)
     , m_offset(offset)
@@ -92,17 +92,17 @@ public:
   void fillRect(const gfx::Rect& rect, uint32_t rgbaColor, int opacity) override
   {
     blend_rect(m_image,
-               m_offset.x + (rect.x << m_zoom),
-               m_offset.y + (rect.y << m_zoom),
-               m_offset.x + ((rect.x+rect.w) << m_zoom) - 1,
-               m_offset.y + ((rect.y+rect.h) << m_zoom) - 1, rgbaColor, opacity);
+      m_offset.x + m_zoom.apply(rect.x),
+      m_offset.y + m_zoom.apply(rect.y),
+      m_offset.x + m_zoom.apply(rect.x+rect.w) - 1,
+      m_offset.y + m_zoom.apply(rect.y+rect.h) - 1, rgbaColor, opacity);
   }
 
 private:
   Editor* m_editor;
   Image* m_image;
   Point m_offset;
-  int m_zoom;
+  Zoom m_zoom;
 };
 
 class EditorPostRenderImpl : public EditorPostRender {
@@ -145,7 +145,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_sprite(m_document->sprite())
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(FrameNumber(0))
-  , m_zoom(0)
+  , m_zoom(1, 1)
   , m_cursorThick(0)
   , m_cursorScreen(0, 0)
   , m_cursorEditor(0, 0)
@@ -324,7 +324,7 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
     drawBrushPreview(m_cursorScreen);
 }
 
-void Editor::setEditorZoom(int zoom)
+void Editor::setEditorZoom(Zoom zoom)
 {
   setZoomAndCenterInMouse(zoom,
     ui::get_mouse_position(), Editor::kCofiguredZoomBehavior);
@@ -338,12 +338,12 @@ void Editor::updateEditor()
 void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy)
 {
   // Output information
-  int source_x = rc.x << m_zoom;
-  int source_y = rc.y << m_zoom;
+  int source_x = m_zoom.apply(rc.x);
+  int source_y = m_zoom.apply(rc.y);
   int dest_x   = dx + m_offset_x + source_x;
   int dest_y   = dy + m_offset_y + source_y;
-  int width    = rc.w << m_zoom;
-  int height   = rc.h << m_zoom;
+  int width    = m_zoom.apply(rc.w);
+  int height   = m_zoom.apply(rc.h);
 
   // Clip from graphics/screen
   const gfx::Rect& clip = g->getClipBounds();
@@ -375,11 +375,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     dest_y -= source_y;
     source_y = 0;
   }
-  if (source_x+width > (m_sprite->width() << m_zoom)) {
-    width = (m_sprite->width() << m_zoom) - source_x;
+  if (source_x+width > m_zoom.apply(m_sprite->width())) {
+    width = m_zoom.apply(m_sprite->width()) - source_x;
   }
-  if (source_y+height > (m_sprite->height() << m_zoom)) {
-    height = (m_sprite->height() << m_zoom) - source_y;
+  if (source_y+height > m_zoom.apply(m_sprite->height())) {
+    height = m_zoom.apply(m_sprite->height()) - source_y;
   }
 
   // Draw the sprite
@@ -402,7 +402,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
       // Pre-render decorator.
       if ((m_flags & kShowDecorators) && m_decorator) {
         EditorPreRenderImpl preRender(this, rendered,
-                                      Point(-source_x, -source_y), m_zoom);
+          Point(-source_x, -source_y), m_zoom);
         m_decorator->preRenderDecorator(&preRender);
       }
 
@@ -423,8 +423,8 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   gfx::Rect spriteRect(
     client.x + m_offset_x,
     client.y + m_offset_y,
-    (m_sprite->width() << m_zoom),
-    (m_sprite->height() << m_zoom));
+    m_zoom.apply(m_sprite->width()),
+    m_zoom.apply(m_sprite->height()));
   gfx::Rect enclosingRect = spriteRect;
 
   // Draw the main sprite at the center.
@@ -473,7 +473,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   }
 
   // Draw the pixel grid
-  if ((m_zoom > 1) && docSettings->getPixelGridVisible()) {
+  if ((m_zoom.scale() > 1.0) && docSettings->getPixelGridVisible()) {
     drawGrid(g, enclosingRect, Rect(0, 0, 1, 1), docSettings->getPixelGridColor());
   }
 
@@ -544,10 +544,10 @@ void Editor::drawMask(Graphics* g)
   CheckedDrawMode checked(g, m_offset_count);
 
   for (int c=0; c<nseg; ++c, ++seg) {
-    x1 = seg->x1 << m_zoom;
-    y1 = seg->y1 << m_zoom;
-    x2 = seg->x2 << m_zoom;
-    y2 = seg->y2 << m_zoom;
+    x1 = m_zoom.apply(seg->x1);
+    y1 = m_zoom.apply(seg->y1);
+    x2 = m_zoom.apply(seg->x2);
+    y2 = m_zoom.apply(seg->y2);
 
 #if 1                           // Bounds inside mask
     if (!seg->open)
@@ -863,8 +863,8 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
   Point scroll = view->getViewScroll();
 
   return gfx::Point(
-    (pt.x - vp.x + scroll.x - m_offset_x) >> m_zoom,
-    (pt.y - vp.y + scroll.y - m_offset_y) >> m_zoom);
+    m_zoom.remove(pt.x - vp.x + scroll.x - m_offset_x),
+    m_zoom.remove(pt.y - vp.y + scroll.y - m_offset_y));
 }
 
 Point Editor::editorToScreen(const gfx::Point& pt)
@@ -874,8 +874,8 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   Point scroll = view->getViewScroll();
 
   return Point(
-    (vp.x - scroll.x + m_offset_x + (pt.x << m_zoom)),
-    (vp.y - scroll.y + m_offset_y + (pt.y << m_zoom)));
+    (vp.x - scroll.x + m_offset_x + m_zoom.apply(pt.x)),
+    (vp.y - scroll.y + m_offset_y + m_zoom.apply(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
@@ -968,8 +968,8 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
   hideDrawingCursor();
 
   gfx::Point scroll(
-    m_offset_x - (vp.w/2) + ((1<<m_zoom)>>1) + (spritePos.x << m_zoom),
-    m_offset_y - (vp.h/2) + ((1<<m_zoom)>>1) + (spritePos.y << m_zoom));
+    m_offset_x - (vp.w/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.x),
+    m_offset_y - (vp.h/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.y));
 
   updateEditor();
   setEditorScroll(scroll, false);
@@ -1212,8 +1212,8 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
     m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
     m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
 
-    sz.w = (m_sprite->width() << m_zoom) + m_offset_x*2;
-    sz.h = (m_sprite->height() << m_zoom) + m_offset_y*2;
+    sz.w = m_zoom.apply(m_sprite->width()) + m_offset_x*2;
+    sz.h = m_zoom.apply(m_sprite->height()) + m_offset_y*2;
   }
   else {
     sz.w = 4;
@@ -1311,7 +1311,7 @@ bool Editor::isInsideSelection()
      m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
 
-void Editor::setZoomAndCenterInMouse(int zoom,
+void Editor::setZoomAndCenterInMouse(Zoom zoom,
   const gfx::Point& mousePos, ZoomBehavior zoomBehavior)
 {
   View* view = View::getView(this);
@@ -1343,8 +1343,8 @@ void Editor::setZoomAndCenterInMouse(int zoom,
     mid.y = mousePos.y;
   }
 
-  spritePos.x = m_offset_x - (mid.x - vp.x) + ((1<<zoom)>>1) + (spritePos.x << zoom);
-  spritePos.y = m_offset_y - (mid.y - vp.y) + ((1<<zoom)>>1) + (spritePos.y << zoom);
+  spritePos.x = m_offset_x - (mid.x - vp.x) + (zoom.apply(1)/2) + zoom.apply(spritePos.x);
+  spritePos.y = m_offset_y - (mid.y - vp.y) + (zoom.apply(1)/2) + zoom.apply(spritePos.y);
 
   if ((m_zoom != zoom) || (m_cursorEditor != mid)) {
     bool blit_valid_rgn = (m_zoom == zoom);
