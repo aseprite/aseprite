@@ -127,6 +127,7 @@ void SelectAccelerator::onModifierChange(KeyModifiers modifier, CheckBox* checkb
   m_accel = Accelerator(modifiers, scancode, unicodeChar);
 
   m_keyField->setAccel(m_accel);
+  m_keyField->requestFocus();
   updateAssignedTo();
 }
 
