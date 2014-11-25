@@ -429,7 +429,7 @@ void Manager::generateKeyMessages()
         enqueueMessage(msg);
       }
       // Generate kKeyDownMessage messages for modifiers
-      else if (c >= kKeyFirstModifierScancode) {
+      else if (c >= kKeyFirstModifierScancode || c == kKeyCommand) {
         // Press/release key interface
         Message* msg = new KeyMessage(kKeyDownMessage,
                                       scancode,
