@@ -122,6 +122,11 @@ void StandbyState::onCurrentToolChange(Editor* editor)
   editor->invalidate();
 }
 
+void StandbyState::onQuickToolChange(Editor* editor)
+{
+  editor->invalidate();
+}
+
 bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 {
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
