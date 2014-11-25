@@ -296,24 +296,21 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 
   Layer* layer = editor->layer();
   if (!layer) {
-    Alert::show(PACKAGE "<<The current sprite does not have any layer.||&Close");
+    StatusBar::instance()->showTip(1000,
+      "There is no active layer");
     return NULL;
   }
 
   // If the active layer is not visible.
   if (!layer->isVisible()) {
-    Alert::show(PACKAGE
-                "<<The current layer is hidden,"
-                "<<make it visible and try again"
-                "||&Close");
+    StatusBar::instance()->showTip(1000,
+      "Layer '%s' is hidden", layer->name().c_str());
     return NULL;
   }
   // If the active layer is read-only.
   else if (!layer->isEditable()) {
-    Alert::show(PACKAGE
-                "<<The current layer is locked,"
-                "<<unlock it and try again"
-                "||&Close");
+    StatusBar::instance()->showTip(1000,
+      "Layer '%s' is locked", layer->name().c_str());
     return NULL;
   }
 

@@ -307,34 +307,41 @@ void gfx_directx_destroy_surface(DDRAW_SURFACE *surf)
 
 int gfx_directx_restore_surface(DDRAW_SURFACE *surf)
 {
+  LPDIRECTDRAWSURFACE2 new_id;
   int type = (surf->flags & DDRAW_SURFACE_TYPE_MASK);
   HRESULT hr;
 
-   hr = IDirectDrawSurface2_Restore(surf->id);
-   if (FAILED(hr)) {
-     LPDIRECTDRAWSURFACE2 new_id;
+  if (surf->id != 0) {
+    hr = IDirectDrawSurface2_Restore(surf->id);
+    if (SUCCEEDED(hr))
+      return 0; /* We were able to restore the surface successfully */
 
-     hr = IDirectDrawSurface2_Release(surf->id);
-     if (FAILED(hr))
-       return -1;
+    hr = IDirectDrawSurface2_Release(surf->id);
+    if (FAILED(hr))
+      return -1;
+  }
 
-     new_id = create_directdraw2_surface(
-       surf->w, surf->h, ddpixel_format, type, 0);
-     if (!new_id) {
-       surf->id = 0;
-       return -1;
-     }
+  /* In this case, the surface must be recreated because:
+     1) We weren't able to restore it with IDirectDrawSurface2_Restore()
+     2) We weren't able to re-create it in a previous
+        gfx_directx_restore_surface() call
+   */
+  new_id = create_directdraw2_surface(
+    surf->w, surf->h, ddpixel_format, type, 0);
+  if (!new_id) {
+    surf->id = 0;
+    return -1;
+  }
 
-     surf->id = new_id;
+  surf->id = new_id;
 
-     if (type == DDRAW_SURFACE_PRIMARY) {
-       hr = IDirectDrawSurface_SetClipper(surf->id, ddclipper);
-       if (FAILED(hr))
-         return -1;
-     }
-   }
+  if (type == DDRAW_SURFACE_PRIMARY) {
+    hr = IDirectDrawSurface_SetClipper(surf->id, ddclipper);
+    if (FAILED(hr))
+      return -1;
+  }
 
-   return 0;
+  return 0;
 }
 
 

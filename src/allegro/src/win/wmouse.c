@@ -10,6 +10,8 @@
 #include "allegro/internal/aintern.h"
 #include "allegro/platform/aintwin.h"
 
+#include "wddraw.h"
+
 #ifndef ALLEGRO_WINDOWS
    #error something is wrong with the makefile
 #endif
@@ -332,6 +334,12 @@ void _al_win_mouse_handle_wheel(HWND hwnd, int z, BOOL abs)
 void _al_win_mouse_handle_move(HWND hwnd, int x, int y)
 {
    _enter_critical();
+
+   /* Try to restore the primary surface as soon as possible if we
+      have lost it and were not able to recreate it */
+   if (gfx_directx_primary_surface && gfx_directx_primary_surface->id == 0) {
+     restore_all_ddraw_surfaces();
+   }
 
    _mouse_x = CLAMP(mouse_minx, x, mouse_maxx);
    _mouse_y = CLAMP(mouse_miny, y, mouse_maxy);

@@ -1051,6 +1051,8 @@ void Editor::updateQuicktool()
     // If the tool has changed, we must to update the status bar because
     // the new tool can display something different in the status bar (e.g. Eyedropper)
     if (old_quicktool != m_quicktool) {
+      m_state->onQuickToolChange(this);
+
       updateStatusBar();
 
       App::instance()->getMainWindow()->getContextBar()

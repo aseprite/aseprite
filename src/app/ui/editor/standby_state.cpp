@@ -121,6 +121,11 @@ void StandbyState::onCurrentToolChange(Editor* editor)
   editor->invalidate();
 }
 
+void StandbyState::onQuickToolChange(Editor* editor)
+{
+  editor->invalidate();
+}
+
 bool StandbyState::checkForScroll(Editor* editor, MouseMessage* msg)
 {
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
@@ -192,15 +197,15 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
 
     if ((layer) &&
-      (layer->type() == ObjectType::LayerImage)) {
-      // TODO you can move the `Background' with tiled mode
+        (layer->type() == ObjectType::LayerImage)) {
+      // TODO we should be able to move the `Background' with tiled mode
       if (layer->isBackground()) {
-        Alert::show(PACKAGE
-                    "<<You can't move the `Background' layer."
-                    "||&Close");
+        StatusBar::instance()->showTip(1000,
+          "The background layer cannot be moved");
       }
-      else if (!layer->isMovable()) {
-        Alert::show(PACKAGE "<<The layer movement is locked.||&Close");
+      else if (!layer->isMovable() || !layer->isEditable()) {
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is locked", layer->name().c_str());
       }
       else {
         // Change to MovingCelState
@@ -232,7 +237,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         Image* image = location.image(&x, &y, &opacity);
         if (image) {
           if (!layer->isEditable()) {
-            Alert::show(PACKAGE "<<The layer is locked.||&Close");
+            StatusBar::instance()->showTip(1000,
+              "Layer '%s' is locked", layer->name().c_str());
             return true;
           }
 
@@ -246,7 +252,8 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     // Move selected pixels
     if (editor->isInsideSelection() && msg->left()) {
       if (!layer->isEditable()) {
-        Alert::show(PACKAGE "<<The layer is locked.||&Close");
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is locked", layer->name().c_str());
         return true;
       }
 

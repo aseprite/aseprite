@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,13 +41,146 @@
 #include "doc/mask.h"
 #include "ui/ui.h"
 
+#include "generated_tools_configuration.h"
+
 namespace app {
 
 using namespace gfx;
 using namespace ui;
 using namespace app::tools;
 
-static Window* window = NULL;
+class ToolsConfigurationWindow : public app::gen::ToolsConfiguration,
+                                 public doc::ContextObserver {
+public:
+  ToolsConfigurationWindow(Context* ctx) : m_ctx(ctx) {
+    m_ctx->addObserver(this);
+
+    // Slots
+    this->Close.connect(Bind<void>(&ToolsConfigurationWindow::onWindowClose, this));
+    tiled()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledClick, this));
+    tiledX()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TILED_X_AXIS, tiledX()));
+    tiledY()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TILED_Y_AXIS, tiledY()));
+    viewGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onViewGridClick, this));
+    pixelGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onPixelGridClick, this));
+    setGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onSetGridClick, this));
+    snapToGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onSnapToGridClick, this));
+
+    remapWindow();
+    centerWindow();
+    load_window_pos(this, "ConfigureTool");
+
+    onSetActiveDocument(m_ctx->activeDocument());
+  }
+
+  ~ToolsConfigurationWindow() {
+    m_ctx->removeObserver(this);
+  }
+
+private:
+  ISettings* settings() {
+    ASSERT(m_ctx);
+    return m_ctx->settings();
+  }
+
+  IDocumentSettings* docSettings() {
+    ASSERT(settings());
+    return settings()->getDocumentSettings(m_ctx->activeDocument());
+  }
+
+  void onSetActiveDocument(doc::Document* document) override {
+    IDocumentSettings* docSettings = this->docSettings();
+
+    tiled()->setSelected(docSettings->getTiledMode() != filters::TILED_NONE);
+    tiledX()->setSelected(docSettings->getTiledMode() & filters::TILED_X_AXIS ? true: false);
+    tiledY()->setSelected(docSettings->getTiledMode() & filters::TILED_Y_AXIS ? true: false);
+    snapToGrid()->setSelected(docSettings->getSnapToGrid());
+    viewGrid()->setSelected(docSettings->getGridVisible());
+    pixelGrid()->setSelected(docSettings->getPixelGridVisible());
+  }
+
+  void onWindowClose() {
+    save_window_pos(this, "ConfigureTool");
+  }
+
+  void onTiledClick() {
+    bool flag = tiled()->isSelected();
+
+    docSettings()->setTiledMode(
+      flag ? filters::TILED_BOTH:
+             filters::TILED_NONE);
+
+    tiledX()->setSelected(flag);
+    tiledY()->setSelected(flag);
+  }
+
+  void onTiledXYClick(int tiled_axis, CheckBox* checkbox) {
+    int tiled_mode = docSettings()->getTiledMode();
+
+    if (checkbox->isSelected())
+      tiled_mode |= tiled_axis;
+    else
+      tiled_mode &= ~tiled_axis;
+
+    checkbox->findSibling("tiled")->setSelected(tiled_mode != filters::TILED_NONE);
+
+    docSettings()->setTiledMode((filters::TiledMode)tiled_mode);
+  }
+
+  void onViewGridClick() {
+    docSettings()->setGridVisible(viewGrid()->isSelected());
+  }
+
+  void onPixelGridClick() {
+    docSettings()->setPixelGridVisible(pixelGrid()->isSelected());
+  }
+
+  void onSetGridClick() {
+    try {
+      // TODO use the same context as in ConfigureTools::onExecute
+      const ContextReader reader(UIContext::instance());
+      const Document* document = reader.document();
+
+      if (document && document->isMaskVisible()) {
+        const Mask* mask(document->mask());
+
+        docSettings()->setGridBounds(mask->bounds());
+      }
+      else {
+        Command* grid_settings_cmd =
+          CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
+
+        UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
+      }
+    }
+    catch (LockedDocumentException& e) {
+      Console::showException(e);
+    }
+  }
+
+  void onSnapToGridClick() {
+    docSettings()->setSnapToGrid(snapToGrid()->isSelected());
+  }
+
+  Context* m_ctx;
+};
+
+class ConfigureTools : public Command {
+public:
+  ConfigureTools();
+  Command* clone() const override { return new ConfigureTools(*this); }
+
+protected:
+  void onExecute(Context* context) override;
+};
+
+static ToolsConfigurationWindow* window;
+
+ConfigureTools::ConfigureTools()
+  : Command("ConfigureTools",
+            "Configure Tools",
+            CmdUIOnlyFlag)
+{
+}
 
 // Slot for App::Exit signal
 static void on_exit_delete_this_widget()
@@ -56,191 +189,20 @@ static void on_exit_delete_this_widget()
   delete window;
 }
 
-class ConfigureTools : public Command,
-                       public doc::ContextObserver {
-public:
-  ConfigureTools();
-  Command* clone() const override { return new ConfigureTools(*this); }
-
-protected:
-  void onExecute(Context* context) override;
-  void onSetActiveDocument(doc::Document* document) override;
-
-private:
-  CheckBox* m_tiled;
-  CheckBox* m_tiledX;
-  CheckBox* m_tiledY;
-  CheckBox* m_pixelGrid;
-  CheckBox* m_snapToGrid;
-  CheckBox* m_viewGrid;
-  ISettings* m_settings;
-  IDocumentSettings* m_docSettings;
-
-  void onWindowClose();
-  void onTiledClick();
-  void onTiledXYClick(int tiled_axis, CheckBox* checkbox);
-  void onViewGridClick();
-  void onPixelGridClick();
-  void onSetGridClick();
-  void onSnapToGridClick();
-};
-
-ConfigureTools::ConfigureTools()
-  : Command("ConfigureTools",
-            "Configure Tools",
-            CmdUIOnlyFlag)
-{
-  m_settings = NULL;
-  m_docSettings = NULL;
-}
-
 void ConfigureTools::onExecute(Context* context)
 {
-  m_settings = context->settings();
-  m_docSettings = NULL;
-
-  Button* set_grid;
-  bool first_time = false;
-
   if (!window) {
-    window = app::load_widget<Window>("tools_configuration.xml", "configure_tool");
-    first_time = true;
+    window = new ToolsConfigurationWindow(context);
+
+    App::instance()->Exit.connect(&on_exit_delete_this_widget);
   }
   // If the window is opened, close it
   else if (window->isVisible()) {
-    context->removeObserver(this);
     window->closeWindow(NULL);
     return;
   }
 
-  context->addObserver(this);
-
-  try {
-    m_tiled = app::find_widget<CheckBox>(window, "tiled");
-    m_tiledX = app::find_widget<CheckBox>(window, "tiled_x");
-    m_tiledY = app::find_widget<CheckBox>(window, "tiled_y");
-    m_snapToGrid = app::find_widget<CheckBox>(window, "snap_to_grid");
-    m_viewGrid = app::find_widget<CheckBox>(window, "view_grid");
-    m_pixelGrid = app::find_widget<CheckBox>(window, "pixel_grid");
-    set_grid = app::find_widget<Button>(window, "set_grid");
-  }
-  catch (...) {
-    delete window;
-    window = NULL;
-    throw;
-  }
-
-  onSetActiveDocument(context->activeDocument());
-
-  if (first_time) {
-    // Slots
-    window->Close.connect(Bind<void>(&ConfigureTools::onWindowClose, this));
-    m_tiled->Click.connect(Bind<void>(&ConfigureTools::onTiledClick, this));
-    m_tiledX->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, filters::TILED_X_AXIS, m_tiledX));
-    m_tiledY->Click.connect(Bind<void>(&ConfigureTools::onTiledXYClick, this, filters::TILED_Y_AXIS, m_tiledY));
-    m_viewGrid->Click.connect(Bind<void>(&ConfigureTools::onViewGridClick, this));
-    m_pixelGrid->Click.connect(Bind<void>(&ConfigureTools::onPixelGridClick, this));
-    set_grid->Click.connect(Bind<void>(&ConfigureTools::onSetGridClick, this));
-    m_snapToGrid->Click.connect(Bind<void>(&ConfigureTools::onSnapToGridClick, this));
-
-    App::instance()->Exit.connect(&on_exit_delete_this_widget);
-  }
-
-  // Default position
-  window->remapWindow();
-  window->centerWindow();
-
-  // Load window configuration
-  load_window_pos(window, "ConfigureTool");
-
   window->openWindow();
-}
-
-void ConfigureTools::onWindowClose()
-{
-  save_window_pos(window, "ConfigureTool");
-}
-
-void ConfigureTools::onTiledClick()
-{
-  bool flag = m_tiled->isSelected();
-
-  m_docSettings->setTiledMode(flag ? filters::TILED_BOTH:
-                                     filters::TILED_NONE);
-
-  m_tiledX->setSelected(flag);
-  m_tiledY->setSelected(flag);
-}
-
-void ConfigureTools::onTiledXYClick(int tiled_axis, CheckBox* checkbox)
-{
-  int tiled_mode = m_docSettings->getTiledMode();
-
-  if (checkbox->isSelected())
-    tiled_mode |= tiled_axis;
-  else
-    tiled_mode &= ~tiled_axis;
-
-  checkbox->findSibling("tiled")->setSelected(tiled_mode != filters::TILED_NONE);
-
-  m_docSettings->setTiledMode((filters::TiledMode)tiled_mode);
-}
-
-void ConfigureTools::onSnapToGridClick()
-{
-  m_docSettings->setSnapToGrid(m_snapToGrid->isSelected());
-}
-
-void ConfigureTools::onViewGridClick()
-{
-  m_docSettings->setGridVisible(m_viewGrid->isSelected());
-}
-
-void ConfigureTools::onPixelGridClick()
-{
-  m_docSettings->setPixelGridVisible(m_pixelGrid->isSelected());
-}
-
-void ConfigureTools::onSetGridClick()
-{
-  try {
-    // TODO use the same context as in ConfigureTools::onExecute
-    const ContextReader reader(UIContext::instance());
-    const Document* document = reader.document();
-
-    if (document && document->isMaskVisible()) {
-      const Mask* mask(document->mask());
-
-      m_docSettings->setGridBounds(mask->bounds());
-    }
-    else {
-      Command* grid_settings_cmd =
-        CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
-
-      UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
-    }
-  }
-  catch (LockedDocumentException& e) {
-    Console::showException(e);
-  }
-}
-
-void ConfigureTools::onSetActiveDocument(doc::Document* document)
-{
-  if (!document)
-    return;
-
-  m_docSettings = m_settings->getDocumentSettings(document);
-  ASSERT(m_docSettings);
-  if (!m_docSettings)
-    return;
-
-  m_tiled->setSelected(m_docSettings->getTiledMode() != filters::TILED_NONE);
-  m_tiledX->setSelected(m_docSettings->getTiledMode() & filters::TILED_X_AXIS ? true: false);
-  m_tiledY->setSelected(m_docSettings->getTiledMode() & filters::TILED_Y_AXIS ? true: false);
-  m_snapToGrid->setSelected(m_docSettings->getSnapToGrid());
-  m_viewGrid->setSelected(m_docSettings->getGridVisible());
-  m_pixelGrid->setSelected(m_docSettings->getPixelGridVisible());
 }
 
 Command* CommandFactory::createConfigureToolsCommand()

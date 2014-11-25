@@ -187,8 +187,15 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   contextBar->updateForMovingPixels();
 
   // Start scroll loop
-  if (checkForScroll(editor, msg))
+  if (checkForScroll(editor, msg) || checkForZoom(editor, msg))
     return true;
+
+  // Call the eyedropper command
+  tools::Ink* clickedInk = editor->getCurrentEditorInk();
+  if (clickedInk->isEyedropper()) {
+    callEyedropper(editor);
+    return true;
+  }
 
   Decorator* decorator = static_cast<Decorator*>(editor->decorator());
   Document* document = editor->document();

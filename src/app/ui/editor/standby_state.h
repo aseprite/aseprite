@@ -34,6 +34,7 @@ namespace app {
     virtual ~StandbyState();
     virtual void onAfterChangeState(Editor* editor) override;
     virtual void onCurrentToolChange(Editor* editor) override;
+    virtual void onQuickToolChange(Editor* editor) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
@@ -56,6 +57,7 @@ namespace app {
     // user wants to scroll".
     bool checkForScroll(Editor* editor, ui::MouseMessage* msg);
     bool checkForZoom(Editor* editor, ui::MouseMessage* msg);
+    void callEyedropper(Editor* editor);
 
     class Decorator : public EditorDecorator {
     public:
@@ -76,7 +78,6 @@ namespace app {
 
   private:
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
-    void callEyedropper(Editor* editor);
 
     Decorator* m_decorator;
   };
