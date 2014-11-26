@@ -108,7 +108,6 @@ namespace ui {
     static Message* newMouseMessage(MessageType type,
       Widget* widget, const gfx::Point& mousePos,
       MouseButtons buttons, const gfx::Point& wheelDelta = gfx::Point(0, 0));
-    static MouseButtons currentMouseButtons();
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;
