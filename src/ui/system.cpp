@@ -37,7 +37,7 @@ static bool native_cursor_set = false; // If we displayed a native cursor
 
 /* Mouse information (button and position).  */
 
-static volatile int m_b[2];
+static volatile MouseButtons m_buttons;
 static int m_x[2];
 static int m_y[2];
 static int m_z[2];
@@ -270,8 +270,12 @@ void _internal_set_mouse_position(const gfx::Point& newPos)
 
 void _internal_set_mouse_buttons(MouseButtons buttons)
 {
-  m_b[1] = m_b[0];
-  m_b[0] = buttons;
+  m_buttons = buttons;
+}
+
+MouseButtons _internal_get_mouse_buttons()
+{
+  return m_buttons;
 }
 
 gfx::Point get_mouse_position()
@@ -285,11 +289,6 @@ void set_mouse_position(const gfx::Point& newPos)
     mouse_display->setMousePosition(newPos);
 
   _internal_set_mouse_position(newPos);
-}
-
-MouseButtons jmouse_b(int antique)
-{
-  return (MouseButtons)m_b[antique & 1];
 }
 
 int jmouse_x(int antique) { return m_x[antique & 1]; }
