@@ -238,7 +238,8 @@ bool PaletteView::onProcessMessage(Message* msg)
             selectColor(idx);
 
           // Emit signal
-          IndexChange(idx);
+          PaletteIndexChangeEvent ev(this, idx, mouseMsg->buttons());
+          IndexChange(ev);
         }
       }
 

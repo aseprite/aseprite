@@ -172,9 +172,9 @@ app::Color ColorSelector::getColor() const
   return m_color;
 }
 
-void ColorSelector::onColorPaletteIndexChange(int index)
+void ColorSelector::onColorPaletteIndexChange(PaletteIndexChangeEvent& ev)
 {
-  setColorWithSignal(app::Color::fromIndex(index));
+  setColorWithSignal(app::Color::fromIndex(ev.index()));
 }
 
 void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)

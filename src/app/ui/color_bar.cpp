@@ -202,14 +202,13 @@ void ColorBar::onPaletteButtonDropDownClick()
   }
 }
 
-void ColorBar::onPaletteIndexChange(int index)
+void ColorBar::onPaletteIndexChange(PaletteIndexChangeEvent& ev)
 {
   m_lock = true;
 
-  app::Color color = app::Color::fromIndex(index);
+  app::Color color = app::Color::fromIndex(ev.index());
 
-  // TODO create a PaletteChangeEvent and take left/right mouse button from there
-  if ((jmouse_b(0) & kButtonRight) == kButtonRight)
+  if ((ev.buttons() & kButtonRight) == kButtonRight)
     setBgColor(color);
   else
     setFgColor(color);

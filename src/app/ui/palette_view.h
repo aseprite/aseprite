@@ -22,11 +22,28 @@
 
 #include "base/connection.h"
 #include "base/signal.h"
+#include "ui/event.h"
+#include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
 #include <vector>
 
 namespace app {
+
+  class PaletteIndexChangeEvent : public ui::Event {
+  public:
+    PaletteIndexChangeEvent(ui::Widget* source, int index, ui::MouseButtons buttons)
+      : Event(source)
+      , m_index(index)
+      , m_buttons(buttons) { }
+
+    int index() const { return m_index; }
+    ui::MouseButtons buttons() const { return m_buttons; }
+
+  private:
+    int m_index;
+    ui::MouseButtons m_buttons;
+  };
 
   class PaletteView : public ui::Widget {
   public:
@@ -49,7 +66,7 @@ namespace app {
     app::Color getColorByPosition(int x, int y);
 
     // Signals
-    Signal1<void, int> IndexChange;
+    Signal1<void, PaletteIndexChangeEvent&> IndexChange;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

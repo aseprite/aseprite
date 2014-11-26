@@ -35,6 +35,7 @@
 namespace app {
   class ColorButton;
   class PalettesLoader;
+  class PaletteIndexChangeEvent;
 
   class ColorBar : public ui::Box {
     static ColorBar* m_instance;
@@ -64,7 +65,7 @@ namespace app {
   protected:
     void onPaletteButtonClick();
     void onPaletteButtonDropDownClick();
-    void onPaletteIndexChange(int index);
+    void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);

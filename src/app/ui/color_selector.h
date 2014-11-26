@@ -34,6 +34,7 @@
 #include "ui/view.h"
 
 namespace app {
+  class PaletteIndexChangeEvent;
 
   class ColorSelector : public PopupWindowPin {
   public:
@@ -52,7 +53,7 @@ namespace app {
     Signal1<void, const app::Color&> ColorChange;
 
   protected:
-    void onColorPaletteIndexChange(int index);
+    void onColorPaletteIndexChange(PaletteIndexChangeEvent& ev);;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
     void onColorTypeButtonClick(ui::Event& ev);
