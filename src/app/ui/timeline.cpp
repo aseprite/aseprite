@@ -722,7 +722,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateHotByMousePos(msg,
-        gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+        ui::get_mouse_position() - getBounds().getOrigin());
 
       if (used)
         return true;
@@ -746,7 +746,7 @@ bool Timeline::onProcessMessage(Message* msg)
       }
 
       updateHotByMousePos(msg,
-        gfx::Point(jmouse_x(0), jmouse_y(0)) - getBounds().getOrigin());
+        ui::get_mouse_position() - getBounds().getOrigin());
 
       if (used)
         return true;

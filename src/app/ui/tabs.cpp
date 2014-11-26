@@ -644,7 +644,7 @@ void Tabs::calculateHot()
 
     box.w = tab->width;
 
-    if (box.contains(gfx::Point(jmouse_x(0), jmouse_y(0)))) {
+    if (box.contains(ui::get_mouse_position())) {
       hot = tab;
       break;
     }

@@ -129,8 +129,8 @@ bool SelectBoxState::onSetCursor(Editor* editor)
     }
   }
 
-  int x = jmouse_x(0);
-  int y = jmouse_y(0);
+  int x = ui::get_mouse_position().x;
+  int y = ui::get_mouse_position().y;
 
   for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
     if (touchRuler(editor, *it, x, y)) {

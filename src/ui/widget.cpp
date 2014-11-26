@@ -1281,7 +1281,7 @@ bool Widget::hasMouse()
 
 bool Widget::hasMouseOver()
 {
-  return (this == this->pick(gfx::Point(jmouse_x(0), jmouse_y(0))));
+  return (this == pick(get_mouse_position()));
 }
 
 bool Widget::hasCapture()

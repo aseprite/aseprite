@@ -38,9 +38,7 @@ static bool native_cursor_set = false; // If we displayed a native cursor
 /* Mouse information (button and position).  */
 
 static volatile MouseButtons m_buttons;
-static int m_x[2];
-static int m_y[2];
-static int m_z[2];
+static gfx::Point m_mouse_pos;
 
 static int mouse_scares = 0;
 
@@ -52,7 +50,7 @@ static void update_mouse_overlay(Cursor* cursor)
     if (!mouse_cursor_overlay) {
       mouse_cursor_overlay = new Overlay(
         mouse_cursor->getSurface(),
-        gfx::Point(m_x[0], m_y[0]),
+        get_mouse_position(),
         Overlay::MouseZOrder);
 
       OverlayManager::instance()->addOverlay(mouse_cursor_overlay);
@@ -205,8 +203,8 @@ int display_h()
 void update_cursor_overlay()
 {
   if (mouse_cursor_overlay != NULL && mouse_scares == 0) {
-    gfx::Point newPos(m_x[0]-mouse_cursor->getFocus().x,
-                      m_y[0]-mouse_cursor->getFocus().y);
+    gfx::Point newPos =
+      get_mouse_position() - mouse_cursor->getFocus();
 
     if (newPos != mouse_cursor_overlay->getPosition()) {
       mouse_cursor_overlay->moveOverlay(newPos);
@@ -256,16 +254,7 @@ void _internal_no_mouse_position()
 
 void _internal_set_mouse_position(const gfx::Point& newPos)
 {
-  if (m_x[0] >= 0) {
-    m_x[1] = m_x[0];
-    m_y[1] = m_y[0];
-  }
-  else {
-    m_x[1] = newPos.x;
-    m_y[1] = newPos.y;
-  }
-  m_x[0] = newPos.x;
-  m_y[0] = newPos.y;
+  m_mouse_pos = newPos;
 }
 
 void _internal_set_mouse_buttons(MouseButtons buttons)
@@ -278,9 +267,9 @@ MouseButtons _internal_get_mouse_buttons()
   return m_buttons;
 }
 
-gfx::Point get_mouse_position()
+const gfx::Point& get_mouse_position()
 {
-  return gfx::Point(jmouse_x(0), jmouse_y(0));
+  return m_mouse_pos;
 }
 
 void set_mouse_position(const gfx::Point& newPos)
@@ -290,9 +279,5 @@ void set_mouse_position(const gfx::Point& newPos)
 
   _internal_set_mouse_position(newPos);
 }
-
-int jmouse_x(int antique) { return m_x[antique & 1]; }
-int jmouse_y(int antique) { return m_y[antique & 1]; }
-int jmouse_z(int antique) { return m_z[antique & 1]; }
 
 } // namespace ui

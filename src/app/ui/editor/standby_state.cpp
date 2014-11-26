@@ -625,8 +625,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
   TransformHandles* tr = getTransformHandles(editor);
   HandleType handle = tr->getHandleAtPoint(editor,
-                                           gfx::Point(jmouse_x(0), jmouse_y(0)),
-                                           transformation);
+    ui::get_mouse_position(), transformation);
 
   CursorType newCursor = kArrowCursor;
 

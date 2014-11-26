@@ -447,7 +447,7 @@ void Manager::dispatchMessages()
 {
   // Add the "Queue Processing" message for the manager.
   enqueueMessage(newMouseMessage(kQueueProcessingMessage, this,
-      gfx::Point(jmouse_x(0), jmouse_y(0)), currentMouseButtons()));
+      get_mouse_position(), currentMouseButtons()));
 
   pumpQueue();
 }
@@ -660,7 +660,7 @@ void Manager::setMouse(Widget* widget)
         it = widget_parents.begin();
 
       Message* msg = newMouseMessage(kMouseEnterMessage, NULL,
-        gfx::Point(jmouse_x(0), jmouse_y(0)), currentMouseButtons());
+        get_mouse_position(), currentMouseButtons());
 
       for (; it != widget_parents.end(); ++it) {
         (*it)->flags |= JI_HASMOUSE;
@@ -668,7 +668,7 @@ void Manager::setMouse(Widget* widget)
       }
 
       enqueueMessage(msg);
-      generateSetCursorMessage(gfx::Point(jmouse_x(0), jmouse_y(0)));
+      generateSetCursorMessage(get_mouse_position());
     }
   }
 }

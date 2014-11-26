@@ -129,7 +129,7 @@ protected:
             MouseMessage mouseMsg(
               (msg->type() == kKeyDownMessage ? kMouseDownMessage: kMouseUpMessage),
               (lmb->isPressed(msg) ? kButtonLeft: kButtonRight),
-              gfx::Point(jmouse_x(0), jmouse_y(0)));
+              ui::get_mouse_position());
 
             sendMessage(&mouseMsg);
             return true;

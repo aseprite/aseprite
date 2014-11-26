@@ -91,8 +91,8 @@ void TooltipManager::onTick()
   if (!m_tipWindow) {
     m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str()));
     gfx::Rect bounds = m_target.widget->getBounds();
-    int x = jmouse_x(0)+12*jguiscale();
-    int y = jmouse_y(0)+12*jguiscale();
+    int x = get_mouse_position().x+12*jguiscale();
+    int y = get_mouse_position().y+12*jguiscale();
     int w, h;
 
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
@@ -135,11 +135,6 @@ void TooltipManager::onTick()
         y = bounds.y + bounds.h/2 - h/2;
         break;
     }
-
-    // if (x+w > ui::display_w()) {
-    //   x = jmouse_x(0) - w - 4*jguiscale();
-    //   y = jmouse_y(0);
-    // }
 
     m_tipWindow->positionWindow(
       MID(0, x, ui::display_w()-w),
