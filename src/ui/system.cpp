@@ -249,18 +249,6 @@ void jmouse_show()
     update_mouse_cursor();
 }
 
-bool jmouse_is_hidden()
-{
-  ASSERT(mouse_scares >= 0);
-  return mouse_scares > 0;
-}
-
-bool jmouse_is_shown()
-{
-  ASSERT(mouse_scares >= 0);
-  return mouse_scares == 0;
-}
-
 void _internal_no_mouse_position()
 {
   update_mouse_overlay(NULL);
