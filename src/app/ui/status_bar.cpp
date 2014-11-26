@@ -189,7 +189,7 @@ StatusBar::StatusBar()
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
   // and upper-right pixels drawn in onPaint() event (see putpixels)
-  setBorder(gfx::Border(1*jguiscale(), 0, 1*jguiscale(), 0));
+  setBorder(gfx::Border(1*guiscale(), 0, 1*guiscale(), 0));
 
   // Construct the commands box
   {
@@ -215,7 +215,7 @@ StatusBar::StatusBar()
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
-    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
     box2->noBorderNoChildSpacing();
     box3->noBorderNoChildSpacing();
     box3->setExpansive(true);
@@ -242,7 +242,7 @@ StatusBar::StatusBar()
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_VERTICAL);
 
-    box1->setBorder(gfx::Border(2, 1, 2, 2)*jguiscale());
+    box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
     box2->noBorderNoChildSpacing();
     box2->setExpansive(true);
 
@@ -473,13 +473,13 @@ void StatusBar::onResize(ResizeEvent& ev)
   m_notificationsBox->setBounds(rc);
 
   rc = ev.getBounds();
-  rc.w -= rc.w/4 + 4*jguiscale();
+  rc.w -= rc.w/4 + 4*guiscale();
   m_commandsBox->setBounds(rc);
 }
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 {
-  int s = 4*jguiscale() + getTextHeight() + 4*jguiscale();
+  int s = 4*guiscale() + getTextHeight() + 4*guiscale();
   ev.setPreferredSize(Size(s, s));
 }
 
@@ -492,9 +492,9 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
 
   g->fillRect(getBgColor(), rc);
 
-  rc.shrink(Border(2, 1, 2, 2)*jguiscale());
+  rc.shrink(Border(2, 1, 2, 2)*guiscale());
 
-  int x = rc.x + 4*jguiscale();
+  int x = rc.x + 4*guiscale();
 
   // Color
   if (m_state == SHOW_COLOR) {
@@ -502,14 +502,14 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     she::Surface* icon = theme->get_toolicon("eyedropper");
     if (icon) {
       g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
-      x += icon->width() + 4*jguiscale();
+      x += icon->width() + 4*guiscale();
     }
 
     // Draw color
-    draw_color_button(g, gfx::Rect(x, rc.y, 32*jguiscale(), rc.h),
+    draw_color_button(g, gfx::Rect(x, rc.y, 32*guiscale(), rc.h),
       m_color, false, false);
 
-    x += (32+4)*jguiscale();
+    x += (32+4)*guiscale();
 
     // Draw color description
     std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
@@ -523,7 +523,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     g->drawString(str, textColor, ColorNone,
       gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += getFont()->textLength(str.c_str()) + 4*jguiscale();
+    x += getFont()->textLength(str.c_str()) + 4*guiscale();
   }
 
   // Show tool
@@ -532,7 +532,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     she::Surface* icon = theme->get_toolicon(m_tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
-      x += icon->width() + 4*jguiscale();
+      x += icon->width() + 4*guiscale();
     }
   }
 
@@ -541,7 +541,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     g->drawString(getText(), textColor, ColorNone,
       gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
-    x += getFont()->textLength(getText().c_str()) + 4*jguiscale();
+    x += getFont()->textLength(getText().c_str()) + 4*guiscale();
   }
 
   // Draw progress bar

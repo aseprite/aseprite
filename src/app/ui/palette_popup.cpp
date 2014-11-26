@@ -46,7 +46,7 @@ PalettePopup::PalettePopup()
   , m_popup(new gen::PalettePopup())
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(4*jguiscale()));
+  setBorder(gfx::Border(4*guiscale()));
 
   addChild(m_popup);
 
@@ -68,7 +68,7 @@ void PalettePopup::showPopup(const gfx::Rect& bounds)
   moveWindow(bounds);
 
   // Setup the hot-region
-  setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * jguiscale())));
+  setHotRegion(gfx::Region(gfx::Rect(bounds).enlarge(32 * guiscale())));
 
   openWindow();
 }

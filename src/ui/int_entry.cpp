@@ -134,8 +134,8 @@ void IntEntry::openPopup()
 {
   Rect rc = getBounds();
   rc.y += rc.h;
-  rc.h += 2*jguiscale();
-  rc.w = 128*jguiscale();
+  rc.h += 2*guiscale();
+  rc.w = 128*guiscale();
   if (rc.x+rc.w > ui::display_w())
     rc.x = rc.x - rc.w + getBounds().w;
 

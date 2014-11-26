@@ -415,7 +415,7 @@ void Entry::onPreferredSize(PreferredSizeEvent& ev)
   int w =
     + border_width.l
     + getFont()->charWidth('w') * MIN(m_maxsize, 6)
-    + 2*jguiscale()
+    + 2*guiscale()
     + border_width.r;
 
   w = MIN(w, ui::display_w()/2);

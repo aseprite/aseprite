@@ -90,8 +90,8 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 
   Grid::Info info = buttonSet()->getChildInfo(this);
-  if (info.col < info.grid_cols-1) rc.w+=1*jguiscale();
-  if (info.row < info.grid_rows-1) rc.h+=3*jguiscale();
+  if (info.col < info.grid_cols-1) rc.w+=1*guiscale();
+  if (info.row < info.grid_rows-1) rc.h+=3*guiscale();
 
   theme->draw_bounds_nw(g, rc, nw, face);
 
@@ -140,7 +140,7 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
   if (info.row == info.grid_rows-1)
     sz.h += 3;
 
-  ev.setPreferredSize(sz*jguiscale());
+  ev.setPreferredSize(sz*guiscale());
 }
 
 ButtonSet::ButtonSet(int columns)

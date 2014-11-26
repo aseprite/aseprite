@@ -144,7 +144,7 @@ Rules::Rules(const css::Query& query) :
     m_text->setColor(StyleSheet::convertColor(textColor));
     m_text->setPadding(gfx::Border(
         paddingLeft.number(), paddingTop.number(),
-        paddingRight.number(), paddingBottom.number())*ui::jguiscale());
+        paddingRight.number(), paddingBottom.number())*ui::guiscale());
   }
 }
 

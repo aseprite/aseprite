@@ -119,7 +119,7 @@ protected:
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) {
-    ev.setPreferredSize(Size(16, 18)*jguiscale());
+    ev.setPreferredSize(Size(16, 18)*guiscale());
   }
 
 private:
@@ -127,7 +127,7 @@ private:
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
     Rect rc = getBounds();
-    rc.y += rc.h - 2*jguiscale();
+    rc.y += rc.h - 2*guiscale();
     rc.setSize(getPreferredSize());
     rc.w *= 3;
     m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
@@ -534,14 +534,14 @@ protected:
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) {
-    ev.setPreferredSize(Size(16, 18)*jguiscale());
+    ev.setPreferredSize(Size(16, 18)*guiscale());
   }
 
 private:
   void openPopup() {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-    Border border = Border(2, 2, 2, 3)*jguiscale();
+    Border border = Border(2, 2, 2, 3)*guiscale();
     Rect rc = getBounds();
     rc.y += rc.h;
     rc.w *= 3;
@@ -742,7 +742,7 @@ ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
   , m_toolSettings(NULL)
 {
-  border_width.b = 2*jguiscale();
+  border_width.b = 2*guiscale();
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
@@ -832,7 +832,7 @@ bool ContextBar::onProcessMessage(Message* msg)
 
 void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(0, 18*jguiscale())); // TODO calculate height
+  ev.setPreferredSize(gfx::Size(0, 18*guiscale())); // TODO calculate height
 }
 
 void ContextBar::onSetOpacity(int newOpacity)

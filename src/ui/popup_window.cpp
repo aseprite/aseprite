@@ -181,10 +181,10 @@ void PopupWindow::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  this->border_width.l = 3 * jguiscale();
-  this->border_width.t = 3 * jguiscale();
-  this->border_width.r = 3 * jguiscale();
-  this->border_width.b = 3 * jguiscale();
+  this->border_width.l = 3 * guiscale();
+  this->border_width.t = 3 * guiscale();
+  this->border_width.r = 3 * guiscale();
+  this->border_width.b = 3 * guiscale();
 }
 
 void PopupWindow::startFilteringMessages()

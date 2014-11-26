@@ -66,8 +66,8 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
   doc::Palette* palette = static_cast<PaletteResource*>(resource)->palette();
 
   gfx::Rect box(
-    bounds.x, bounds.y+bounds.h-6*jguiscale(),
-    4*jguiscale(), 4*jguiscale());
+    bounds.x, bounds.y+bounds.h-6*guiscale(),
+    4*guiscale(), 4*guiscale());
 
   for (int i=0; i<palette->size(); ++i) {
     doc::color_t c = palette->getEntry(i);
@@ -82,13 +82,13 @@ void PalettesListBox::onPaintResource(Graphics* g, const gfx::Rect& bounds, Reso
 
   // g->drawString(getText(), fgcolor, gfx::ColorNone, false,
   //   gfx::Point(
-  //     bounds.x + jguiscale()*2,
+  //     bounds.x + guiscale()*2,
   //     bounds.y + bounds.h/2 - g->measureUIString(getText()).h/2));
 }
 
 void PalettesListBox::onResourcePreferredSize(Resource* resource, gfx::Size& size)
 {
-  size = gfx::Size(0, (2+16+2)*jguiscale());
+  size = gfx::Size(0, (2+16+2)*guiscale());
 }
 
 } // namespace app

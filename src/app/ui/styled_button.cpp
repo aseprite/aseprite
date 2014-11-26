@@ -48,7 +48,7 @@ bool StyledButton::onProcessMessage(Message* msg) {
 
 void StyledButton::onPreferredSize(PreferredSizeEvent& ev) {
   ev.setPreferredSize(
-    m_style->preferredSize(NULL, skin::Style::State()) + 4*jguiscale());
+    m_style->preferredSize(NULL, skin::Style::State()) + 4*guiscale());
 }
 
 void StyledButton::onPaint(PaintEvent& ev) {

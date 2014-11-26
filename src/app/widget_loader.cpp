@@ -321,7 +321,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                                       vertical ? JI_VERTICAL: 0);
     if (position) {
       splitter->setPosition(strtod(position, NULL)
-        * (type == Splitter::ByPixel ? jguiscale(): 1));
+        * (type == Splitter::ByPixel ? guiscale(): 1));
     }
     widget = splitter;
   }
@@ -515,14 +515,14 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   gfx::Size reqSize = widget->getPreferredSize();
 
   if (minwidth || minheight) {
-    int w = (minwidth ? jguiscale()*strtol(minwidth, NULL, 10): reqSize.w);
-    int h = (minheight ? jguiscale()*strtol(minheight, NULL, 10): reqSize.h);
+    int w = (minwidth ? guiscale()*strtol(minwidth, NULL, 10): reqSize.w);
+    int h = (minheight ? guiscale()*strtol(minheight, NULL, 10): reqSize.h);
     widget->setMinSize(gfx::Size(w, h));
   }
 
   if (maxwidth || maxheight) {
-    int w = (maxwidth ? jguiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
-    int h = (maxheight ? jguiscale()*strtol(maxheight, NULL, 10): INT_MAX);
+    int w = (maxwidth ? guiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
+    int h = (maxheight ? guiscale()*strtol(maxheight, NULL, 10): INT_MAX);
     widget->setMaxSize(gfx::Size(w, h));
   }
 

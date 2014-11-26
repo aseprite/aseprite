@@ -24,11 +24,11 @@ namespace ui {
 static Theme* current_theme = NULL;
 
 Theme::Theme()
+  : m_guiscale(1)
 {
   this->name = "Theme";
   this->default_font = she::instance()->defaultFont();
   this->scrollbar_size = 0;
-  this->guiscale = 1;
 }
 
 Theme::~Theme()

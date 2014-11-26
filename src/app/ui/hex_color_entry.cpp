@@ -50,7 +50,7 @@ HexColorEntry::HexColorEntry()
 
   initTheme();
 
-  setBorder(gfx::Border(2*jguiscale(), 0, 0, 0));
+  setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
   child_spacing = 0;
 }
 

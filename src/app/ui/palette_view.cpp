@@ -67,11 +67,11 @@ PaletteView::PaletteView(bool editable)
 
   m_editable = editable;
   m_columns = 16;
-  m_boxsize = 6*jguiscale();
+  m_boxsize = 6*guiscale();
 
-  this->border_width.l = this->border_width.r = 1 * jguiscale();
-  this->border_width.t = this->border_width.b = 1 * jguiscale();
-  this->child_spacing = 1 * jguiscale();
+  this->border_width.l = this->border_width.r = 1 * guiscale();
+  this->border_width.t = this->border_width.b = 1 * guiscale();
+  this->child_spacing = 1 * guiscale();
 
   m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
 }

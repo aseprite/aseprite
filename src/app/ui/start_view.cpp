@@ -38,7 +38,7 @@ StartView::StartView()
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->getColor(ThemeColor::Workspace));
 
-  child_spacing = 8 * jguiscale();
+  child_spacing = 8 * guiscale();
 
   addChild(new Label("Welcome to " PACKAGE " v" VERSION));
 }

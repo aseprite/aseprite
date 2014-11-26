@@ -25,18 +25,19 @@ namespace ui {
   class PaintEvent;
   class Widget;
 
-  class Theme
-  {
+  class Theme {
   public:
     const char* name;
     she::Font* default_font;
     int scrollbar_size;
-    int guiscale;
 
     Theme();
     virtual ~Theme();
 
     void regenerate();
+
+    int guiscale() const { return m_guiscale; }
+    void setScale(int value) { m_guiscale = value; }
 
     virtual Cursor* getCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;
@@ -71,6 +72,9 @@ namespace ui {
 
   protected:
     virtual void onRegenerate() = 0;
+
+  private:
+    int m_guiscale;
   };
 
   namespace CurrentTheme
@@ -81,9 +85,9 @@ namespace ui {
 
   // This value is a factor to multiply every screen size/coordinate.
   // Every icon/graphics/font should be scaled to this factor.
-  inline int jguiscale()
+  inline int guiscale()
   {
-    return CurrentTheme::get() ? CurrentTheme::get()->guiscale: 1;
+    return CurrentTheme::get() ? CurrentTheme::get()->guiscale(): 1;
   }
 
 } // namespace ui

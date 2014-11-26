@@ -139,9 +139,9 @@ bool FileList::onProcessMessage(Message* msg)
           gfx::Size itemSize = getFileItemSize(fi);
 
           if (((mouseMsg->position().y >= y) &&
-               (mouseMsg->position().y < y+th+4*jguiscale())) ||
+               (mouseMsg->position().y < y+th+4*guiscale())) ||
               (it == m_list.begin() && mouseMsg->position().y < y) ||
-              (it == m_list.end()-1 && mouseMsg->position().y >= y+th+4*jguiscale())) {
+              (it == m_list.end()-1 && mouseMsg->position().y >= y+th+4*guiscale())) {
             m_selected = fi;
             makeSelectedFileitemVisible();
             break;
@@ -206,7 +206,7 @@ bool FileList::onProcessMessage(Message* msg)
             gfx::Rect vp = view->getViewportBounds();
             if (select < 0)
               select = 0;
-            select += sgn * vp.h / (getTextHeight()+4*jguiscale());
+            select += sgn * vp.h / (getTextHeight()+4*guiscale());
             break;
           }
 
@@ -285,7 +285,7 @@ bool FileList::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view) {
         gfx::Point scroll = view->getViewScroll();
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(getTextHeight()+4*jguiscale());
+        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3*(getTextHeight()+4*guiscale());
         view->setViewScroll(scroll);
       }
       break;
@@ -346,7 +346,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
                             theme->getColor(ThemeColor::FileListOddRowText);
     }
 
-    x = bounds.x+2*jguiscale();
+    x = bounds.x+2*guiscale();
 
     // Item background
     g->fillRect(bgcolor, gfx::Rect(bounds.x, y, bounds.w, itemSize.h));
@@ -354,14 +354,14 @@ void FileList::onPaint(ui::PaintEvent& ev)
     if (fi->isFolder()) {
       int icon_w = getFont()->textLength("[+]");
 
-      g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
-      x += icon_w+2*jguiscale();
+      g->drawUIString("[+]", fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
+      x += icon_w+2*guiscale();
     }
 
     // item name
     g->drawString(
       fi->getDisplayName().c_str(),
-      fgcolor, bgcolor, gfx::Point(x, y+2*jguiscale()));
+      fgcolor, bgcolor, gfx::Point(x, y+2*guiscale()));
 
     // draw progress bars
     double progress;
@@ -369,13 +369,13 @@ void FileList::onPaint(ui::PaintEvent& ev)
       ThumbnailGenerator::instance()->getWorkerStatus(fi, progress);
 
     if (workerStatus == ThumbnailGenerator::WorkingOnThumbnail) {
-      int barw = 64*jguiscale();
+      int barw = 64*guiscale();
 
       theme->paintProgressBar(g,
         gfx::Rect(
-          bounds.x2()-2*jguiscale()-barw,
-          y+itemSize.h/2-3*jguiscale(),
-          barw, 6*jguiscale()),
+          bounds.x2()-2*guiscale()-barw,
+          y+itemSize.h/2-3*guiscale(),
+          barw, 6*guiscale()),
         progress);
     }
 
@@ -392,9 +392,9 @@ void FileList::onPaint(ui::PaintEvent& ev)
 
   // Draw the thumbnail
   if (thumbnail) {
-    x = vp.x+vp.w - 2*jguiscale() - thumbnail->width();
+    x = vp.x+vp.w - 2*guiscale() - thumbnail->width();
     y = thumbnail_y - thumbnail->height()/2 + getBounds().y;
-    y = MID(vp.y+2*jguiscale(), y, vp.y+vp.h-3*jguiscale()-thumbnail->height());
+    y = MID(vp.y+2*guiscale(), y, vp.y+vp.h-3*guiscale()-thumbnail->height());
     x -= getBounds().x;
     y -= getBounds().y;
 
@@ -461,11 +461,11 @@ gfx::Size FileList::getFileItemSize(IFileItem* fi) const
   int len = 0;
 
   if (fi->isFolder())
-    len += getFont()->textLength("[+]") + 2*jguiscale();
+    len += getFont()->textLength("[+]") + 2*guiscale();
 
   len += getFont()->textLength(fi->getDisplayName().c_str());
 
-  return gfx::Size(len+4*jguiscale(), getTextHeight()+4*jguiscale());
+  return gfx::Size(len+4*guiscale(), getTextHeight()+4*guiscale());
 }
 
 void FileList::makeSelectedFileitemVisible()
@@ -486,8 +486,8 @@ void FileList::makeSelectedFileitemVisible()
     if (fi == m_selected) {
       if (y < vp.y)
         scroll.y = y - getBounds().y;
-      else if (y > vp.y + vp.h - (th+4*jguiscale()))
-        scroll.y = y - getBounds().y - vp.h + (th+4*jguiscale());
+      else if (y > vp.y + vp.h - (th+4*guiscale()))
+        scroll.y = y - getBounds().y - vp.h + (th+4*guiscale());
 
       view->setViewScroll(scroll);
       break;

@@ -50,7 +50,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   , m_lockUpdates(false)
 {
   setAutoRemap(false);
-  setBorder(gfx::Border(4*jguiscale()));
+  setBorder(gfx::Border(4*guiscale()));
 
   addChild(app::load_widget<Box>("timeline_conf.xml", "mainbox"));
 

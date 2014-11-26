@@ -150,7 +150,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
         else if (button) {
           char buttonId[256];
           Button* button_widget = new Button(beg);
-          button_widget->setMinSize(gfx::Size(60*jguiscale(), 0));
+          button_widget->setMinSize(gfx::Size(60*guiscale(), 0));
           buttons.push_back(button_widget);
 
           sprintf(buttonId, "button-%lu", buttons.size());

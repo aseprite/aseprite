@@ -277,13 +277,14 @@ void gui_setup_screen(bool reload_font)
   ui::set_display(main_display);
 
   // Update guiscale factor
-  int old_guiscale = jguiscale();
-  CurrentTheme::get()->guiscale = (screen_scaling == 1 &&
-    ui::display_w() > 512 &&
-    ui::display_h() > 256) ? 2: 1;
+  int old_guiscale = guiscale();
+  CurrentTheme::get()->setScale(
+    (screen_scaling == 1 &&
+      ui::display_w() > 512 &&
+      ui::display_h() > 256) ? 2: 1);
 
   // If the guiscale have changed
-  if (old_guiscale != jguiscale()) {
+  if (old_guiscale != guiscale()) {
     reload_font = true;
     regen = true;
   }

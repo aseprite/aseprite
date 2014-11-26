@@ -197,7 +197,7 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
   if (underscored_w > 0) {
     y += m_font->height();
     dst->fillRect(fg,
-      gfx::Rect(underscored_x, y, underscored_w, jguiscale()));
+      gfx::Rect(underscored_x, y, underscored_w, guiscale()));
   }
 }
 

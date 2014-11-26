@@ -434,7 +434,7 @@ gfx::Size SkinTheme::get_part_size(int part_i) const
 
 void SkinTheme::onRegenerate()
 {
-  scrollbar_size = 12 * jguiscale();
+  scrollbar_size = 12 * guiscale();
 
   m_part.clear();
   m_part.resize(PARTS, NULL);
@@ -504,7 +504,7 @@ void SkinTheme::onRegenerate()
         she::Surface* slice = sliceSheet(NULL, gfx::Rect(x, y, w, h));
 
         m_cursors[c] = new Cursor(slice,
-          gfx::Point(focusx*jguiscale(), focusy*jguiscale()));
+          gfx::Point(focusx*guiscale(), focusy*guiscale()));
         break;
       }
 
@@ -687,7 +687,7 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
     src->blitTo(dst, bounds.x, bounds.y, 0, 0, bounds.w, bounds.h);
   }
 
-  sur->applyScale(jguiscale());
+  sur->applyScale(guiscale());
   return sur;
 }
 
@@ -716,7 +716,7 @@ void SkinTheme::initWidget(Widget* widget)
   widget->border_width.r = (R);         \
   widget->border_width.b = (B);
 
-  int scale = jguiscale();
+  int scale = guiscale();
 
   switch (widget->type) {
 
@@ -785,8 +785,8 @@ void SkinTheme::initWidget(Widget* widget)
         button->border_width.r = 0;
         button->border_width.b = 0;
         button->child_spacing = 0;
-        button->min_w = 15 * jguiscale();
-        button->min_h = 16 * jguiscale();
+        button->min_w = 15 * guiscale();
+        button->min_h = 16 * guiscale();
 
         static_cast<ButtonBase*>(button)->setIconInterface
           (new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
@@ -925,8 +925,8 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
     rect.w = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->width();
     rect.h = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->height();
 
-    rect.offset(window->getBounds().x2() - 3*jguiscale() - rect.w,
-                window->getBounds().y + 3*jguiscale());
+    rect.offset(window->getBounds().x2() - 3*guiscale() - rect.w,
+                window->getBounds().y + 3*guiscale());
 
     widget->setBounds(rect);
   }
@@ -1194,7 +1194,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   // Underline style
   if (widget->hasMouseOver()) {
     int w = widget->getTextWidth();
-    for (int v=0; v<jguiscale(); ++v)
+    for (int v=0; v<guiscale(); ++v)
       g->drawHLine(fg, bounds.x, bounds.y2()-1-v, w);
   }
 }
@@ -1244,7 +1244,7 @@ void SkinTheme::paintMenu(PaintEvent& ev)
 
 void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 {
-  int scale = jguiscale();
+  int scale = guiscale();
   Graphics* g = ev.getGraphics();
   MenuItem* widget = static_cast<MenuItem*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
@@ -1474,15 +1474,15 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
     // Draw borders
     rc.shrink(Border(
-        3 * jguiscale(),
+        3 * guiscale(),
         thumb->height(),
-        3 * jguiscale(),
-        1 * jguiscale()));
+        3 * guiscale(),
+        1 * guiscale()));
 
     draw_bounds_nw(g, rc, nw, gfx::ColorNone);
 
     // Draw background (using the customized ISliderBgPainter implementation)
-    rc.shrink(Border(1, 1, 1, 2) * jguiscale());
+    rc.shrink(Border(1, 1, 1, 2) * guiscale());
     if (!rc.isEmpty())
       bgPainter->paint(widget, g, rc);
   }
@@ -1742,7 +1742,7 @@ void SkinTheme::paintWindow(PaintEvent& ev)
     if (window->hasText()) {
       get_style("window")->paint(g, pos, NULL, Style::State());
       get_style("window_title")->paint(g,
-        gfx::Rect(cpos.x, pos.y+5*jguiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
+        gfx::Rect(cpos.x, pos.y+5*guiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
           window->getTextHeight()),
         window->getText().c_str(), Style::State());
     }
@@ -1914,7 +1914,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     // Background
     if (!is_transparent(bg_color)) {
       if (!widget->isEnabled())
-        g->fillRect(bg_color, Rect(textrc).inflate(jguiscale(), jguiscale()));
+        g->fillRect(bg_color, Rect(textrc).inflate(guiscale(), guiscale()));
       else
         g->fillRect(bg_color, textrc);
     }
@@ -1923,7 +1923,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     Rect textWrap = textrc.createIntersect(
       // TODO add ui::Widget::getPadding() property
       // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
-      widget->getClientBounds()).inflate(0, 1*jguiscale());
+      widget->getClientBounds()).inflate(0, 1*guiscale());
 
     IntersectClip clip(g, textWrap);
     if (clip) {
@@ -1932,7 +1932,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
         g->drawUIString(t,
           getColor(ThemeColor::Background),
           gfx::ColorNone,
-          textrc.getOrigin() + Point(jguiscale(), jguiscale()));
+          textrc.getOrigin() + Point(guiscale(), guiscale()));
       }
 
       g->drawUIString(t,
@@ -1950,7 +1950,7 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
   gfx::Color color = getColor(ThemeColor::Text);
   int h = widget->getTextHeight();
 
-  for (int u=x; u<x+2*jguiscale(); ++u)
+  for (int u=x; u<x+2*guiscale(); ++u)
     g->drawVLine(color, u, y-1, h+2);
 }
 
@@ -2193,7 +2193,6 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
     g->drawRgbaSurface(icon_bmp, x, y);
 }
 
-// static
 she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
 {
   ResourceFinder rf;
@@ -2207,7 +2206,7 @@ she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
 
   // Try to load the font
   while (rf.next()) {
-    she::Font* f = she::load_bitmap_font(rf.filename().c_str(), jguiscale());
+    she::Font* f = she::load_bitmap_font(rf.filename().c_str(), guiscale());
     if (f) {
       if (f->isScalable())
         f->setSize(8);

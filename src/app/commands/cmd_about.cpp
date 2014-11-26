@@ -92,9 +92,9 @@ void AboutCommand::onExecute(Context* context)
   window->addChild(box1);
 
   close_button->setBorder(gfx::Border(
-      close_button->border_width.l + 16*jguiscale(),
+      close_button->border_width.l + 16*guiscale(),
       close_button->border_width.t,
-      close_button->border_width.r + 16*jguiscale(),
+      close_button->border_width.r + 16*guiscale(),
       close_button->border_width.b));
 
   close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));

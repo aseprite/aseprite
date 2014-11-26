@@ -46,7 +46,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 {
 #define ADD(box, widget, hook)                                          \
   if (widget) {                                                         \
-    widget->setBorder(gfx::Border(2 * jguiscale()));                    \
+    widget->setBorder(gfx::Border(2 * guiscale()));                    \
     box->addChild(widget);                                              \
     widget->Click.connect(Bind<void>(&FilterTargetButtons::hook, this, widget)); \
   }

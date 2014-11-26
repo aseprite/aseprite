@@ -91,8 +91,8 @@ void TooltipManager::onTick()
   if (!m_tipWindow) {
     m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str()));
     gfx::Rect bounds = m_target.widget->getBounds();
-    int x = get_mouse_position().x+12*jguiscale();
-    int y = get_mouse_position().y+12*jguiscale();
+    int x = get_mouse_position().x+12*guiscale();
+    int y = get_mouse_position().y+12*guiscale();
     int w, h;
 
     m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
@@ -220,10 +220,10 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
 {
   Window::onInitTheme(ev);
 
-  this->border_width.l = 6 * jguiscale();
-  this->border_width.t = 6 * jguiscale();
-  this->border_width.r = 6 * jguiscale();
-  this->border_width.b = 7 * jguiscale();
+  this->border_width.l = 6 * guiscale();
+  this->border_width.t = 6 * guiscale();
+  this->border_width.r = 6 * guiscale();
+  this->border_width.b = 7 * guiscale();
 
   // Setup the background color.
   setBgColor(gfx::rgba(255, 255, 200));

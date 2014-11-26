@@ -103,13 +103,13 @@ protected:
 
         gfx::Rect bounds = getBounds();
         gfx::Border border;
-        if (bounds.w > 64*jguiscale()) {
-          border.left(32*jguiscale());
-          border.right(32*jguiscale());
+        if (bounds.w > 64*guiscale()) {
+          border.left(32*guiscale());
+          border.right(32*guiscale());
         }
-        if (bounds.h > 64*jguiscale()) {
-          border.top(32*jguiscale());
-          border.bottom(32*jguiscale());
+        if (bounds.h > 64*guiscale()) {
+          border.top(32*guiscale());
+          border.bottom(32*guiscale());
         }
 
         m_delta += mousePos - m_oldMousePos;

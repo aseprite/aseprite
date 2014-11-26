@@ -68,7 +68,7 @@ void Notifications::addLink(INotificationDelegate* del)
 
 void Notifications::onPreferredSize(PreferredSizeEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(16, 10)*jguiscale()); // TODO hard-coded flag size
+  ev.setPreferredSize(gfx::Size(16, 10)*guiscale()); // TODO hard-coded flag size
 }
 
 void Notifications::onPaint(PaintEvent& ev)

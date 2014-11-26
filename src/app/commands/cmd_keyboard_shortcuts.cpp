@@ -133,7 +133,7 @@ private:
     gfx::Size size = getTextSize();
     size.w = this->border_width.l + size.w + this->border_width.r;
     size.h = this->border_width.t + size.h + this->border_width.b
-      + 4*jguiscale();
+      + 4*guiscale();
 
     if (m_key && !m_key->accels().empty()) {
       size_t combos = m_key->accels().size();
@@ -164,19 +164,19 @@ private:
     bounds.shrink(getBorder());
     g->drawUIString(getText(), fg, bg,
       gfx::Point(
-        bounds.x + m_level*16 * jguiscale(),
-        bounds.y + 2*jguiscale()));
+        bounds.x + m_level*16 * guiscale(),
+        bounds.y + 2*guiscale()));
 
     if (m_key && !m_key->accels().empty()) {
       std::string buf;
       int y = bounds.y;
-      int dh = getTextSize().h + 4*jguiscale();
+      int dh = getTextSize().h + 4*guiscale();
       int i = 0;
 
       for (const Accelerator& accel : m_key->accels()) {
         if (i != m_hotAccel || !m_changeButton) {
           g->drawString(accel.toString(), fg, bg,
-            gfx::Point(bounds.x + g_sep, y + 2*jguiscale()));
+            gfx::Point(bounds.x + g_sep, y + 2*guiscale()));
         }
 
         y += dh;
@@ -208,7 +208,7 @@ private:
 
         const Accelerators* accels = (m_key ? &m_key->accels() : NULL);
         int y = bounds.y;
-        int dh = getTextSize().h + 4*jguiscale();
+        int dh = getTextSize().h + 4*guiscale();
         int maxi = (accels && accels->size() > 1 ? accels->size(): 1);
 
         for (int i=0; i<maxi; ++i, y += dh) {
@@ -221,8 +221,8 @@ private:
               mouseMsg->position().y < bounds.y+bounds.h) {
             itemBounds = itemBounds.enlarge(
               gfx::Border(
-                4*jguiscale(), 0,
-                6*jguiscale(), 1*jguiscale()));
+                4*guiscale(), 0,
+                6*guiscale(), 1*guiscale()));
 
             if (accels && i < (int)accels->size() &&
                 mouseMsg->position().y >= itemBounds.y &&
@@ -250,10 +250,10 @@ private:
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
               m_deleteButton->setBounds(gfx::Rect(
-                  itemBounds.x + itemBounds.w + 2*jguiscale(),
+                  itemBounds.x + itemBounds.w + 2*guiscale(),
                   itemBounds.y,
                   Graphics::measureUIStringLength(
-                    label, getFont()) + 4*jguiscale(),
+                    label, getFont()) + 4*guiscale(),
                   itemBounds.h));
               m_deleteButton->setText(label);
 
@@ -268,8 +268,8 @@ private:
                 addChild(m_addButton);
               }
 
-              itemBounds.w = 8*jguiscale() + Graphics::measureUIStringLength("Add", getFont());
-              itemBounds.x -= itemBounds.w + 2*jguiscale();
+              itemBounds.w = 8*guiscale() + Graphics::measureUIStringLength("Add", getFont());
+              itemBounds.x -= itemBounds.w + 2*guiscale();
 
               m_addButton->setBgColor(gfx::ColorNone);
               m_addButton->setBounds(itemBounds);

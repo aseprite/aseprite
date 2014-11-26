@@ -81,7 +81,7 @@ static Size getToolIconSize(Widget* widget)
   if (icon)
     return Size(icon->width(), icon->height());
   else
-    return Size(16, 16) * jguiscale();
+    return Size(16, 16) * guiscale();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -96,9 +96,9 @@ ToolBar::ToolBar()
 {
   m_instance = this;
 
-  this->border_width.l = 1*jguiscale();
+  this->border_width.l = 1*guiscale();
   this->border_width.t = 0;
-  this->border_width.r = 1*jguiscale();
+  this->border_width.r = 1*guiscale();
   this->border_width.b = 0;
 
   m_hotTool = NULL;
@@ -461,7 +461,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   rc.w = w;
 
   // Set hotregion of popup window
-  Region rgn(gfx::Rect(rc).enlarge(16*jguiscale()));
+  Region rgn(gfx::Rect(rc).enlarge(16*guiscale()));
   rgn.createUnion(rgn, Region(getBounds()));
   m_popupWindow->setHotRegion(rgn);
 
@@ -486,19 +486,19 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   switch (group_index) {
 
     case ConfigureToolIndex:
-      rc.y += groups*(iconsize.h-1*jguiscale())+ 8*jguiscale();
-      rc.h = iconsize.h+2*jguiscale();
+      rc.y += groups*(iconsize.h-1*guiscale())+ 8*guiscale();
+      rc.h = iconsize.h+2*guiscale();
       break;
 
     case MiniEditorVisibilityIndex:
-      rc.y += rc.h - iconsize.h - 2*jguiscale();
-      rc.h = iconsize.h+2*jguiscale();
+      rc.y += rc.h - iconsize.h - 2*guiscale();
+      rc.h = iconsize.h+2*guiscale();
       break;
 
     default:
-      rc.y += group_index*(iconsize.h-1*jguiscale());
-      rc.h = group_index < groups-1 ? iconsize.h+1*jguiscale():
-                                      iconsize.h+2*jguiscale();
+      rc.y += group_index*(iconsize.h-1*guiscale());
+      rc.h = group_index < groups-1 ? iconsize.h+1*guiscale():
+                                      iconsize.h+2*guiscale();
       break;
   }
 

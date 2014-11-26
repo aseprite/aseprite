@@ -206,7 +206,7 @@ namespace app {
 
       void paintIcon(ui::Widget* widget, ui::Graphics* g, ui::IButtonIcon* iconInterface, int x, int y);
 
-      static she::Font* loadFont(const char* userFont, const std::string& path);
+      she::Font* loadFont(const char* userFont, const std::string& path);
 
       std::string m_selected_skin;
       she::Surface* m_sheet;

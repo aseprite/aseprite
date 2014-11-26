@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <cmath>
 
-#define ARROW_W         (12*jguiscale())
+#define ARROW_W         (12*guiscale())
 
 #define ANI_ADDING_TAB_TICKS      5
 #define ANI_REMOVING_TAB_TICKS    10
@@ -367,7 +367,7 @@ void Tabs::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y,
-    2*jguiscale(),
+    2*guiscale(),
     m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
 
   g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
@@ -505,7 +505,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 
     g->drawString(tab->text, text_color, gfx::ColorNone,
       gfx::Point(
-        box.x + 4*jguiscale(),
+        box.x + 4*guiscale(),
         box.y + box.h/2 - getFont()->height()/2+1 + y_delta));
   }
 
@@ -524,8 +524,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   she::Surface* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
   g->drawRgbaSurface(close_icon,
-    box.x2() - 4*jguiscale() - close_icon->width(),
-    box.y + box.h/2 - close_icon->height()/2+1 * jguiscale());
+    box.x2() - 4*guiscale() - close_icon->width(),
+    box.y + box.h/2 - close_icon->height()/2+1 * guiscale());
 #endif
 }
 
@@ -667,7 +667,7 @@ void Tabs::calcTabWidth(Tab* tab)
   // Cache current tab text
   tab->text = tab->view->getTabText();
 
-  int border = 4*jguiscale();
+  int border = 4*guiscale();
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->width();

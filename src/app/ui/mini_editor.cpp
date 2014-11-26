@@ -91,9 +91,9 @@ protected:
     rect.w = playSize.w;
     rect.h = playSize.h;
 
-    rect.offset(window->getBounds().x2() - 3*jguiscale()
-                - playSize.w - 1*jguiscale() - closeSize.w,
-                window->getBounds().y + 3*jguiscale());
+    rect.offset(window->getBounds().x2() - 3*guiscale()
+                - playSize.w - 1*guiscale() - closeSize.w,
+                window->getBounds().y + 3*guiscale());
 
     setBounds(rect);
   }
@@ -154,7 +154,7 @@ bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
         // Default bounds
         int width = ui::display_w()/4;
         int height = ui::display_h()/4;
-        int extra = 2*kEditorViewScrollbarWidth*jguiscale();
+        int extra = 2*kEditorViewScrollbarWidth*guiscale();
         setBounds(
           gfx::Rect(
             ui::display_w() - width - ToolBar::instance()->getBounds().w - extra,

@@ -362,9 +362,9 @@ void ComboBox::onPreferredSize(PreferredSizeEvent& ev)
   ListItems::iterator it, end = m_items.end();
   for (it = m_items.begin(); it != end; ++it) {
     int item_w =
-      2*jguiscale()+
+      2*guiscale()+
       getFont()->textLength((*it)->getText().c_str())+
-      10*jguiscale();
+      10*guiscale();
 
     reqSize.w = MAX(reqSize.w, item_w);
   }
@@ -507,7 +507,7 @@ void ComboBox::openListBox()
       (gfx::Size(
         m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
         +viewport->border_width.t
-        +(2*jguiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
+        +(2*guiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
         +viewport->border_width.b));
 
     m_window->addChild(view);

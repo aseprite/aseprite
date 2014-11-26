@@ -108,7 +108,7 @@ void draw_color_button(ui::Graphics* g,
   bool hot, bool drag)
 {
   SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
-  int scale = ui::jguiscale();
+  int scale = ui::guiscale();
 
   // Draw background (the color)
   draw_color(g,

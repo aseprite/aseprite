@@ -292,7 +292,7 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
   ev.stream() >> m_pos;
   if (m_pos < 0) m_pos = 0;
   if (m_type == ByPixel)
-    m_pos *= jguiscale();
+    m_pos *= guiscale();
 
   // Do for all children
   UI_FOREACH_WIDGET(getChildren(), it)
@@ -301,7 +301,7 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
 {
-  double pos = (m_type == ByPixel ? m_pos / jguiscale(): m_pos);
+  double pos = (m_type == ByPixel ? m_pos / guiscale(): m_pos);
   ev.stream() << pos;
 
   // Do for all children
