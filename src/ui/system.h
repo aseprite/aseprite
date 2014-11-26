@@ -41,8 +41,8 @@ namespace ui {
   CursorType get_mouse_cursor();
   void set_mouse_cursor(CursorType type);
 
-  void jmouse_hide();
-  void jmouse_show();
+  void hide_mouse_cursor();
+  void show_mouse_cursor();
 
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);

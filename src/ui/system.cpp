@@ -234,13 +234,13 @@ void set_mouse_cursor(CursorType type)
   update_mouse_cursor();
 }
 
-void jmouse_hide()
+void hide_mouse_cursor()
 {
   ASSERT(mouse_scares >= 0);
   mouse_scares++;
 }
 
-void jmouse_show()
+void show_mouse_cursor()
 {
   ASSERT(mouse_scares > 0);
   mouse_scares--;

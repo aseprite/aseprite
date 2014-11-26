@@ -620,7 +620,7 @@ void Editor::drawMaskSafe()
     if (thick)
       clearBrushPreview();
     else
-      jmouse_hide();
+      ui::hide_mouse_cursor();
 
     GraphicsPtr g = getGraphics(getClientBounds());
 
@@ -634,7 +634,7 @@ void Editor::drawMaskSafe()
     if (thick)
       drawBrushPreview(m_cursorScreen);
     else
-      jmouse_show();
+      ui::show_mouse_cursor();
   }
 }
 
@@ -923,18 +923,18 @@ void Editor::showDrawingCursor()
   ASSERT(m_sprite != NULL);
 
   if (!m_cursorThick && canDraw()) {
-    jmouse_hide();
+    ui::hide_mouse_cursor();
     drawBrushPreview(ui::get_mouse_position());
-    jmouse_show();
+    ui::show_mouse_cursor();
   }
 }
 
 void Editor::hideDrawingCursor()
 {
   if (m_cursorThick) {
-    jmouse_hide();
+    ui::hide_mouse_cursor();
     clearBrushPreview();
-    jmouse_show();
+    ui::show_mouse_cursor();
   }
 }
 
@@ -947,9 +947,9 @@ void Editor::moveDrawingCursor()
     // Redraw it only when the mouse change to other pixel (not
     // when the mouse moves only).
     if (m_cursorScreen != mousePos) {
-      jmouse_hide();
+      ui::hide_mouse_cursor();
       moveBrushPreview(mousePos);
-      jmouse_show();
+      ui::show_mouse_cursor();
     }
   }
 }
