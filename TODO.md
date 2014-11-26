@@ -1,8 +1,3 @@
-# Next release
-
-* canvas dialog should show width and height and expansion point
-* double click or right click a range outline in timeline should open popups or properties
-
 # Hard to reproduce bugs
 
 * add PRINTFs to observers, there is something wrong with save as
@@ -16,18 +11,8 @@
 
 # Tasks
 
-* Paste in place doesn't work as expected sometimes (copy something
-  from one frame, paste in other frame).
-  - Paste does not paste in the correct position if the cel is moved.
-
 * onion-skin-bug.ase: See frame 2 with onion skin, there is a bug
-* add drag-and-drop of colors.
-* add Mac OS X:
-  - hide OS cursor
-  - Ctrl key should be Cmd key
-  - Use OS menu (the same for Windows?)
 * update copyright year of source files (automate this in with a script)
-
 * Remove Image::getPixelAddress(), it shouldn't be public and almost
   everywhere we should use iterators for images. Also get/put_pixel_fast
   and ImageImpl::address() are dangerous.
@@ -73,14 +58,7 @@
 * About Signals/Slots: Add some field in slots to avoid disconnecting
   them from dead signals.
 * editors_ -> MultiEditors class widget
-* convert all widgets to classes:
-  * match UI library design with Vaca library.
-  * move all functions (jwidget_*) to methods in Widget class.
-  * the same for each widget (e.g. jbutton_* to Button widget)
-  * AppHooks to Vaca::Signals
 * all member functions should be named verbNoun instead of verb_noun or noun_verb.
-* all functions to handle an object should be converted to member functions:
-  * e.g. jwidget_set_text -> Widget::setText
 
 # Old issues
 
@@ -107,17 +85,6 @@
 * fix algo_ellipsefill;
 * view_tiled() should support animation playback (partial support:
   with left and right keys).
-* dacap wish-list:
-  * added starred file-items in the file-selector.
-  * tweening of cels (translate, scale, rotate)
-  * tweening of polygons
-* manuq wish-list:
-  * layer-with-constant-cel
-* Mateusz Czaplinski ideas:
-  * when move selections, will be good the possibility to see relative
-    position from the starting point of movement;
-  * make drawing the 'marching-ants-rectangle' a prioritaire thing to
-    draw (when move it).
 * fix the fli reader (both Allegro and Gfli): when a frame hasn't
   chunks means that it's looks like the last frame;
 * talk with Elias Pschernig, his "do_ellipse_diameter" (algo_ellipse)
