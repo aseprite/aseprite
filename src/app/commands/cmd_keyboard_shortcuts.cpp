@@ -107,7 +107,7 @@ private:
 
   void onAddAccel() {
     ui::Accelerator accel;
-    SelectAccelerator window(accel, m_key->keycontext());
+    SelectAccelerator window(accel, m_key ? m_key->keycontext(): KeyContext::Any);
     window.openWindowInForeground();
 
     if (window.isModified()) {

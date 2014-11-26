@@ -79,7 +79,7 @@ void key_poller_generate_events()
         key_repeated[c] = 0;
       }
       // Generate kKeyDownMessage messages for modifiers
-      else if (c >= kKeyFirstModifierScancode) {
+      else if (c >= kKeyFirstModifierScancode || c == kKeyCommand) {
         ev.setType(Event::KeyDown);
         ev.setScancode(scancode);
         ev.setUnicodeChar(::scancode_to_ascii(scancode));
