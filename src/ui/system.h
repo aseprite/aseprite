@@ -38,8 +38,8 @@ namespace ui {
   void update_cursor_overlay();
 
   void set_use_native_cursors(bool state);
-  CursorType jmouse_get_cursor();
-  void jmouse_set_cursor(CursorType type);
+  CursorType get_mouse_cursor();
+  void set_mouse_cursor(CursorType type);
 
   void jmouse_hide();
   void jmouse_show();

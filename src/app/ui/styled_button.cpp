@@ -40,7 +40,7 @@ StyledButton::StyledButton(const std::string& styleName) : Button("") {
 bool StyledButton::onProcessMessage(Message* msg) {
   switch (msg->type()) {
     case kSetCursorMessage:
-      jmouse_set_cursor(kHandCursor);
+      ui::set_mouse_cursor(kHandCursor);
       return true;
   }
   return Button::onProcessMessage(msg);

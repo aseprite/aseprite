@@ -1365,7 +1365,7 @@ bool Widget::onProcessMessage(Message* msg)
       if (getParent() != NULL)
         return getParent()->sendMessage(msg);
       else {
-        jmouse_set_cursor(kArrowCursor);
+        set_mouse_cursor(kArrowCursor);
         return true;
       }
 

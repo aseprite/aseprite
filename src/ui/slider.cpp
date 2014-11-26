@@ -229,12 +229,12 @@ void Slider::setupSliderCursor()
 {
   if (hasCapture()) {
     if (slider_press_left)
-      jmouse_set_cursor(kArrowCursor);
+      set_mouse_cursor(kArrowCursor);
     else
-      jmouse_set_cursor(kSizeWECursor);
+      set_mouse_cursor(kSizeWECursor);
   }
   else
-    jmouse_set_cursor(kArrowCursor);
+    set_mouse_cursor(kArrowCursor);
 }
 
 } // namespace ui

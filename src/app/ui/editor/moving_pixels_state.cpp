@@ -311,7 +311,7 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
   // Move selection
   if (m_pixelsMovement->isDragging()) {
     editor->hideDrawingCursor();
-    jmouse_set_cursor(kMoveCursor);
+    ui::set_mouse_cursor(kMoveCursor);
     return true;
   }
 

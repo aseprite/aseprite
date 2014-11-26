@@ -173,7 +173,7 @@ protected:
       }
 
       case kSetCursorMessage:
-        jmouse_set_cursor(kNoCursor);
+        ui::set_mouse_cursor(kNoCursor);
         return true;
     }
 

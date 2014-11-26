@@ -42,12 +42,12 @@ Theme::~Theme()
 
 void Theme::regenerate()
 {
-  CursorType type = jmouse_get_cursor();
-  jmouse_set_cursor(kNoCursor);
+  CursorType type = get_mouse_cursor();
+  set_mouse_cursor(kNoCursor);
 
   onRegenerate();
 
-  jmouse_set_cursor(type);
+  set_mouse_cursor(type);
 }
 
 //////////////////////////////////////////////////////////////////////

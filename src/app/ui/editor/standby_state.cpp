@@ -434,35 +434,35 @@ bool StandbyState::onSetCursor(Editor* editor)
         editor->hideDrawingCursor();
 
         if (customization && customization->isCopySelectionKeyPressed())
-          jmouse_set_cursor(kArrowPlusCursor);
+          ui::set_mouse_cursor(kArrowPlusCursor);
         else
-          jmouse_set_cursor(kMoveCursor);
+          ui::set_mouse_cursor(kMoveCursor);
 
         return true;
       }
     }
     else if (ink->isEyedropper()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(kEyedropperCursor);
+      ui::set_mouse_cursor(kEyedropperCursor);
       return true;
     }
     else if (ink->isZoom()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(kMagnifierCursor);
+      ui::set_mouse_cursor(kMagnifierCursor);
       return true;
     }
     else if (ink->isScrollMovement()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(kScrollCursor);
+      ui::set_mouse_cursor(kScrollCursor);
       return true;
     }
     else if (ink->isCelMovement()) {
       editor->hideDrawingCursor();
-      jmouse_set_cursor(kMoveCursor);
+      ui::set_mouse_cursor(kMoveCursor);
       return true;
     }
     else if (ink->isSlice()) {
-      jmouse_set_cursor(kNoCursor);
+      ui::set_mouse_cursor(kNoCursor);
       editor->showDrawingCursor();
       return true;
     }
@@ -470,13 +470,13 @@ bool StandbyState::onSetCursor(Editor* editor)
 
   // Draw
   if (editor->canDraw()) {
-    jmouse_set_cursor(kNoCursor);
+    ui::set_mouse_cursor(kNoCursor);
     editor->showDrawingCursor();
   }
   // Forbidden
   else {
     editor->hideDrawingCursor();
-    jmouse_set_cursor(kForbiddenCursor);
+    ui::set_mouse_cursor(kForbiddenCursor);
   }
 
   return true;
@@ -575,7 +575,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
 
     // TODO steal the PixelsMovement of the other editor and use it for this one.
     StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
-    jmouse_set_cursor(kForbiddenCursor);
+    ui::set_mouse_cursor(kForbiddenCursor);
   }
 }
 
@@ -680,7 +680,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
 
   // Hide the drawing cursor (just in case) and show the new system cursor.
   editor->hideDrawingCursor();
-  jmouse_set_cursor(newCursor);
+  ui::set_mouse_cursor(newCursor);
   return true;
 }
 

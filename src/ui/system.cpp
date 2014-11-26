@@ -165,9 +165,9 @@ int clock()
 
 void set_display(she::Display* display)
 {
-  CursorType cursor = jmouse_get_cursor();
+  CursorType cursor = get_mouse_cursor();
 
-  jmouse_set_cursor(kNoCursor);
+  set_mouse_cursor(kNoCursor);
   mouse_display = display;
 
   if (display) {
@@ -182,7 +182,7 @@ void set_display(she::Display* display)
       }
     }
 
-    jmouse_set_cursor(cursor);  // Restore mouse cursor
+    set_mouse_cursor(cursor);  // Restore mouse cursor
   }
 }
 
@@ -220,12 +220,12 @@ void set_use_native_cursors(bool state)
   use_native_mouse_cursor = state;
 }
 
-CursorType jmouse_get_cursor()
+CursorType get_mouse_cursor()
 {
   return mouse_cursor_type;
 }
 
-void jmouse_set_cursor(CursorType type)
+void set_mouse_cursor(CursorType type)
 {
   if (mouse_cursor_type == type)
     return;

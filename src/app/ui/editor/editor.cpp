@@ -1317,7 +1317,7 @@ void Editor::editor_setcursor()
 
   if (!used) {
     hideDrawingCursor();
-    jmouse_set_cursor(kArrowCursor);
+    ui::set_mouse_cursor(kArrowCursor);
   }
 }
 

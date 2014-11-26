@@ -76,7 +76,7 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onSetCursor(Editor* editor)
 {
   editor->hideDrawingCursor();
-  jmouse_set_cursor(kMagnifierCursor);
+  ui::set_mouse_cursor(kMagnifierCursor);
   return true;
 }
 

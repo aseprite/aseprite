@@ -96,7 +96,7 @@ bool TextBox::onProcessMessage(Message* msg)
       if (view) {
         captureMouse();
         m_oldPos = static_cast<MouseMessage*>(msg)->position();
-        jmouse_set_cursor(kScrollCursor);
+        set_mouse_cursor(kScrollCursor);
         return true;
       }
       break;
@@ -120,7 +120,7 @@ bool TextBox::onProcessMessage(Message* msg)
       View* view = View::getView(this);
       if (view && hasCapture()) {
         releaseMouse();
-        jmouse_set_cursor(kArrowCursor);
+        set_mouse_cursor(kArrowCursor);
         return true;
       }
       break;

@@ -128,7 +128,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
       // Edit node
       else {
         m_status = STATUS_MOVING_POINT;
-        jmouse_set_cursor(kHandCursor);
+        ui::set_mouse_cursor(kHandCursor);
       }
 
       captureMouse();
@@ -167,7 +167,7 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
         switch (m_status) {
 
           case STATUS_MOVING_POINT:
-            jmouse_set_cursor(kArrowCursor);
+            ui::set_mouse_cursor(kArrowCursor);
             CurveEditorChange();
             m_editPoint = NULL;
             invalidate();

@@ -103,7 +103,7 @@ protected:
     switch (msg->type()) {
 
       case kSetCursorMessage:
-        jmouse_set_cursor(kArrowCursor);
+        ui::set_mouse_cursor(kArrowCursor);
         return true;
     }
 

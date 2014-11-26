@@ -119,7 +119,7 @@ Manager::~Manager()
   // Finish the main manager.
   if (m_defaultManager == this) {
     // No more cursor
-    jmouse_set_cursor(kNoCursor);
+    set_mouse_cursor(kNoCursor);
 
     // Destroy timers
     Timer::checkNoTimers();
@@ -161,7 +161,7 @@ void Manager::run()
     first_time = false;
 
     Manager::getDefault()->invalidate();
-    jmouse_set_cursor(kArrowCursor);
+    set_mouse_cursor(kArrowCursor);
   }
 
   while (!getChildren().empty())
@@ -221,7 +221,7 @@ void Manager::generateSetCursorMessage(const gfx::Point& mousePos)
     enqueueMessage(newMouseMessage(kSetCursorMessage, dst,
         mousePos, currentMouseButtons(0)));
   else
-    jmouse_set_cursor(kArrowCursor);
+    set_mouse_cursor(kArrowCursor);
 }
 
 static MouseButtons mouse_buttons_from_she_to_ui(const she::Event& sheEvent)
@@ -276,12 +276,12 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseEnter: {
-        jmouse_set_cursor(kArrowCursor);
+        set_mouse_cursor(kArrowCursor);
         break;
       }
 
       case she::Event::MouseLeave: {
-        jmouse_set_cursor(kOutsideDisplay);
+        set_mouse_cursor(kOutsideDisplay);
         setMouse(NULL);
 
         _internal_no_mouse_position();

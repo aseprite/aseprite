@@ -309,7 +309,7 @@ bool Window::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
-        jmouse_set_cursor(kArrowCursor);
+        set_mouse_cursor(kArrowCursor);
 
         if (clickedWindowPos != NULL) {
           delete clickedWindowPos;
@@ -409,7 +409,7 @@ bool Window::onProcessMessage(Message* msg)
           case HitTestBorderS: cursor = kSizeSCursor; break;
         }
 
-        jmouse_set_cursor(cursor);
+        set_mouse_cursor(cursor);
         return true;
       }
       break;

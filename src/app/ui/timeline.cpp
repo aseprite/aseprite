@@ -1003,32 +1003,32 @@ void Timeline::setCursor(ui::Message* msg, const gfx::Point& mousePos)
 {
   // Scrolling.
   if (m_state == STATE_SCROLLING || m_scroll) {
-    jmouse_set_cursor(kScrollCursor);
+    ui::set_mouse_cursor(kScrollCursor);
   }
   // Moving.
   else if (m_state == STATE_MOVING_RANGE) {
     if (isCopyKeyPressed(msg))
-      jmouse_set_cursor(kArrowPlusCursor);
+      ui::set_mouse_cursor(kArrowPlusCursor);
     else
-      jmouse_set_cursor(kMoveCursor);
+      ui::set_mouse_cursor(kMoveCursor);
   }
   // Normal state.
   else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_LEFT
     || m_state == STATE_MOVING_ONIONSKIN_RANGE_LEFT) {
-    jmouse_set_cursor(kSizeWCursor);
+    ui::set_mouse_cursor(kSizeWCursor);
   }
   else if (m_hot_part == A_PART_HEADER_ONIONSKIN_RANGE_RIGHT
     || m_state == STATE_MOVING_ONIONSKIN_RANGE_RIGHT) {
-    jmouse_set_cursor(kSizeECursor);
+    ui::set_mouse_cursor(kSizeECursor);
   }
   else if (m_hot_part == A_PART_RANGE_OUTLINE) {
-    jmouse_set_cursor(kMoveCursor);
+    ui::set_mouse_cursor(kMoveCursor);
   }
   else if (m_hot_part == A_PART_SEPARATOR) {
-    jmouse_set_cursor(kSizeWECursor);
+    ui::set_mouse_cursor(kSizeWECursor);
   }
   else {
-    jmouse_set_cursor(kArrowCursor);
+    ui::set_mouse_cursor(kArrowCursor);
   }
 }
 

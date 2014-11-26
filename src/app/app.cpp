@@ -187,7 +187,7 @@ void App::initialize(int argc, const char* argv[])
     ui::set_use_native_cursors(
       ctx->settings()->experimental()->useNativeCursor());
 
-    jmouse_set_cursor(kArrowCursor);
+    ui::set_mouse_cursor(kArrowCursor);
 
     ui::Manager::getDefault()->invalidate();
 
