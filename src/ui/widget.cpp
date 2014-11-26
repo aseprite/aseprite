@@ -83,16 +83,6 @@ Widget::Widget(WidgetType type)
   this->m_font = (this->m_theme ? this->m_theme->default_font: NULL);
   this->m_bgColor = gfx::ColorNone;
 
-  this->theme_data[0] = NULL;
-  this->theme_data[1] = NULL;
-  this->theme_data[2] = NULL;
-  this->theme_data[3] = NULL;
-
-  this->user_data[0] = NULL;
-  this->user_data[1] = NULL;
-  this->user_data[2] = NULL;
-  this->user_data[3] = NULL;
-
   m_preferredSize = NULL;
   m_doubleBuffered = false;
   m_transparent = false;

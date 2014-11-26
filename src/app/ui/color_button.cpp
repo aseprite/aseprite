@@ -233,7 +233,6 @@ void ColorButton::openSelectorDialog()
 
   if (m_window == NULL) {
     m_window = new ColorSelector();
-    m_window->user_data[0] = this;
     m_window->ColorChange.connect(&ColorButton::onWindowColorChange, this);
   }
 

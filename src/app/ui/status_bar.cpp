@@ -169,7 +169,6 @@ StatusBar::StatusBar()
 #define BUTTON_NEW(name, text, action)                                  \
   {                                                                     \
     (name) = new Button(text);                                          \
-    (name)->user_data[0] = this;                                        \
     setup_mini_look(name);                                              \
     (name)->Click.connect(Bind<void>(&ani_button_command, (name), action)); \
   }
