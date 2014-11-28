@@ -28,7 +28,7 @@ namespace raster {
 
   class ImageBuffer {
   public:
-    ImageBuffer(size_t size) : m_buffer(size) {
+    ImageBuffer(size_t size = 1) : m_buffer(size) {
     }
 
     size_t size() const { return m_buffer.size(); }

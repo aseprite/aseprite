@@ -22,6 +22,7 @@
 
 #include "app/color.h"
 #include "raster/frame_number.h"
+#include "raster/image_buffer.h"
 
 namespace raster {
   class Image;
@@ -72,7 +73,8 @@ namespace app {
       int width, int height,
       FrameNumber frame, int zoom,
       bool draw_tiled_bg,
-      bool enable_onionskin);
+      bool enable_onionskin,
+      ImageBufferPtr& buffer);
 
     //////////////////////////////////////////////////////////////////////
     // Extra functions

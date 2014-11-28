@@ -193,7 +193,8 @@ protected:
       m_render.reset(
         renderEngine.renderSprite(
           0, 0, m_sprite->width(), m_sprite->height(),
-          m_editor->frame(), 0, false, false));
+          m_editor->frame(), 0, false, false,
+          Editor::getRenderImageBuffer()));
     }
 
     int x, y, w, h, u, v;
