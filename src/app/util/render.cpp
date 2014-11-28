@@ -613,6 +613,9 @@ void RenderEngine::renderCheckedBackground(Image* image,
   if (tile_w < zoom.apply(1)) tile_w = zoom.apply(1);
   if (tile_h < zoom.apply(1)) tile_h = zoom.apply(1);
 
+  if (tile_w < 1) tile_w = 1;
+  if (tile_h < 1) tile_h = 1;
+
   // Tile position (u,v) is the number of tile we start in (source_x,source_y) coordinate
   u = (source_x / tile_w);
   v = (source_y / tile_h);

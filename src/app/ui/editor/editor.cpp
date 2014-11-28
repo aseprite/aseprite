@@ -666,6 +666,8 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
   // Convert the "grid" rectangle to screen coordinates
   grid = editorToScreen(grid);
+  if (grid.w < 1 || grid.h < 1)
+    return;
 
   // Adjust for client area
   gfx::Rect bounds = getBounds();
