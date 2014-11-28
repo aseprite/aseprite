@@ -137,6 +137,8 @@ private:
   Graphics* m_g;
 };
 
+static doc::ImageBufferPtr render_buffer;
+
 Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
   , m_state(new StandbyState())
@@ -387,12 +389,16 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
     // Generate the rendered image
+    if (!render_buffer)
+      render_buffer.reset(new doc::ImageBuffer());
+
     base::UniquePtr<Image> rendered(NULL);
     try {
       rendered.reset(renderEngine.renderSprite(
           source_x, source_y, width, height,
           m_frame, m_zoom, true,
-          ((m_flags & kShowOnionskin) == kShowOnionskin)));
+          ((m_flags & kShowOnionskin) == kShowOnionskin),
+          render_buffer));
     }
     catch (const std::exception& e) {
       Console::showException(e);
@@ -1453,6 +1459,12 @@ void Editor::startSelectionTransformation(const gfx::Point& move)
 void Editor::notifyScrollChanged()
 {
   m_observers.notifyScrollChanged(this);
+}
+
+// static
+ImageBufferPtr Editor::getRenderImageBuffer()
+{
+  return render_buffer;
 }
 
 void Editor::onSetTiledMode(filters::TiledMode mode)

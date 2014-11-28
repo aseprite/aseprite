@@ -486,7 +486,8 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   int width, int height,
   FrameNumber frame, Zoom zoom,
   bool draw_tiled_bg,
-  bool enable_onionskin)
+  bool enable_onionskin,
+  ImageBufferPtr& buffer)
 {
   void (*zoomed_func)(Image*, const Image*, const Palette*, int, int, int, int, Zoom);
   const LayerImage* background = m_sprite->backgroundLayer();
@@ -515,7 +516,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   }
 
   // Create a temporary RGB bitmap to draw all to it
-  image = Image::create(IMAGE_RGB, width, height);
+  image = Image::create(IMAGE_RGB, width, height, buffer);
   if (!image)
     return NULL;
 

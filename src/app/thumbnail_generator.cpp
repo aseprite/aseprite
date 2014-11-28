@@ -83,9 +83,11 @@ private:
         RenderEngine renderEngine(m_fop->document,
           sprite, NULL, FrameNumber(0));
 
+        doc::ImageBufferPtr thumbnail_buffer(new doc::ImageBuffer);
         base::UniquePtr<Image> image(renderEngine.renderSprite(
             0, 0, sprite->width(), sprite->height(),
-            FrameNumber(0), Zoom(1, 1), true, false));
+            FrameNumber(0), Zoom(1, 1), true, false,
+            thumbnail_buffer));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());

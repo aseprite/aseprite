@@ -30,6 +30,7 @@
 #include "app/zoom.h"
 #include "base/connection.h"
 #include "doc/frame_number.h"
+#include "doc/image_buffer.h"
 #include "gfx/fwd.h"
 #include "ui/base.h"
 #include "ui/timer.h"
@@ -195,6 +196,10 @@ namespace app {
     // Used by EditorView to notify changes in the view's scroll
     // position.
     void notifyScrollChanged();
+
+    // Returns the buffer used to render editor viewports.
+    // E.g. It can be re-used by PreviewCommand
+    static ImageBufferPtr getRenderImageBuffer();
 
     // in cursor.cpp
 
