@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@ namespace app {
 using namespace ui;
   
 ZoomingState::ZoomingState()
+  : m_startZoom(1, 1)
+  , m_moved(false)
 {
 }
 
@@ -45,7 +47,8 @@ ZoomingState::~ZoomingState()
 
 bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
-  m_oldPos = msg->position();
+  m_startPos = msg->position();
+  m_startZoom = editor->zoom();
 
   editor->captureMouse();
   return true;
@@ -53,15 +56,17 @@ bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  Zoom zoom = editor->zoom();
+  if (!m_moved) {
+    Zoom zoom = editor->zoom();
 
-  if (msg->left())
-    zoom.in();
-  else if (msg->right())
-    zoom.out();
+    if (msg->left())
+      zoom.in();
+    else if (msg->right())
+      zoom.out();
 
-  editor->setZoomAndCenterInMouse(zoom,
-    msg->position(), Editor::kCofiguredZoomBehavior);
+    editor->setZoomAndCenterInMouse(zoom,
+      msg->position(), Editor::kCofiguredZoomBehavior);
+  }
 
   editor->backToPreviousState();
   editor->releaseMouse();
@@ -70,6 +75,24 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
+  gfx::Point pt = (msg->position() - m_startPos);
+  int length = ABS(pt.x);
+  Zoom zoom = m_startZoom;
+
+  if (length > 0) {
+    if (pt.x > 0) {
+      while (length--)
+        zoom.in();
+    }
+    else {
+      while (length--)
+        zoom.out();
+    }
+  }
+
+  editor->setZoomAndCenterInMouse(zoom,
+    m_startPos, Editor::kDontCenterOnZoom);
+
   return true;
 }
 

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #pragma once
 
 #include "app/ui/editor/editor_state.h"
+#include "app/zoom.h"
 #include "gfx/point.h"
 
 namespace app {
@@ -39,7 +40,9 @@ namespace app {
     virtual bool onUpdateStatusBar(Editor* editor) override;
 
   private:
-    gfx::Point m_oldPos;
+    gfx::Point m_startPos;
+    Zoom m_startZoom;
+    bool m_moved;
   };
 
 } // namespace app
