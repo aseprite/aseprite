@@ -54,6 +54,7 @@ namespace app {
 
     // ISettings implementation
     bool getZoomWithScrollWheel() override;
+    bool getCenterOnZoom() override;
     bool getShowSpriteEditorScrollbars() override;
     RightClickMode getRightClickMode() override;
     bool getGrabAlpha() override;
@@ -64,6 +65,7 @@ namespace app {
     app::ColorSwatches* getColorSwatches() override;
 
     void setZoomWithScrollWheel(bool state) override;
+    void setCenterOnZoom(bool state) override;
     void setShowSpriteEditorScrollbars(bool state) override;
     void setRightClickMode(RightClickMode mode) override;
     void setGrabAlpha(bool state) override;
@@ -103,6 +105,7 @@ namespace app {
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
     bool m_zoomWithScrollWheel;
+    bool m_centerOnZoom;
     bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
     bool m_autoSelectLayer;

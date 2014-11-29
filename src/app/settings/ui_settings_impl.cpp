@@ -308,6 +308,7 @@ UISettingsImpl::UISettingsImpl()
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
   , m_zoomWithScrollWheel(get_config_bool("Options", "ZoomWithMouseWheel", true))
+  , m_centerOnZoom(get_config_bool("Editor", "CenterOnZoom", false))
   , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
   , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
@@ -324,6 +325,7 @@ UISettingsImpl::UISettingsImpl()
 UISettingsImpl::~UISettingsImpl()
 {
   set_config_bool("Options", "ZoomWithMouseWheel", m_zoomWithScrollWheel);
+  set_config_bool("Editor", "CenterOnZoom", m_centerOnZoom);
   set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
   set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
@@ -376,6 +378,11 @@ bool UISettingsImpl::getZoomWithScrollWheel()
   return m_zoomWithScrollWheel;
 }
 
+bool UISettingsImpl::getCenterOnZoom()
+{
+  return m_centerOnZoom;
+}
+
 bool UISettingsImpl::getShowSpriteEditorScrollbars()
 {
   return m_showSpriteEditorScrollbars;
@@ -422,6 +429,11 @@ app::ColorSwatches* UISettingsImpl::getColorSwatches()
 void UISettingsImpl::setZoomWithScrollWheel(bool state)
 {
   m_zoomWithScrollWheel = state;
+}
+
+void UISettingsImpl::setCenterOnZoom(bool state)
+{
+  m_centerOnZoom = state;
 }
 
 void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)

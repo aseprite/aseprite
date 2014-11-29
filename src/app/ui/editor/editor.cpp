@@ -1356,7 +1356,7 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
 
   switch (zoomBehavior) {
     case kCofiguredZoomBehavior:
-      centerMouse = get_config_bool("Editor", "CenterOnZoom", false);
+      centerMouse = UIContext::instance()->settings()->getCenterOnZoom();
       break;
     case kCenterOnZoom:
       centerMouse = true;
