@@ -61,23 +61,23 @@ mark_as_advanced(
     CMAKE_EXE_LINKER_FLAGS_PROFILE
     )
 
-if(COMPILER_GCC)
+if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS_PROFILE "-pg"
-        CACHE STRING "profiling flags")
+        CACHE STRING "Profiling C flags")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
-        CACHE STRING "profiling flags")
+        CACHE STRING "Profiling C++ flags")
     set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-pg"
-        CACHE STRING "profiling flags")
-endif(COMPILER_GCC)
+        CACHE STRING "Profiling linker flags")
+endif()
 
-if(COMPILER_MSVC)
-    set(CMAKE_C_FLAGS_PROFILE "-Gd -Ox"
-        CACHE STRING "profiling flags")
+if(MSVC)
+    set(CMAKE_C_FLAGS_PROFILE "/MD /Zi /Ox /Gd /D NDEBUG"
+        CACHE STRING "Profiling C flags")
     set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_C_FLAGS_PROFILE}"
-        CACHE STRING "profiling flags")
-    set(CMAKE_EXE_LINKER_FLAGS_PROFILE "-profile"
-        CACHE STRING "profiling flags")
-endif(COMPILER_MSVC)
+        CACHE STRING "Profiling C++ flags")
+    set(CMAKE_EXE_LINKER_FLAGS_PROFILE "/PROFILE /DEBUG"
+        CACHE STRING "Profiling linker flags")
+endif()
 
 ######################################################################
 # Directories
