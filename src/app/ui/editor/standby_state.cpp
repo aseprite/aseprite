@@ -208,6 +208,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         StatusBar::instance()->showTip(1000,
           "The background layer cannot be moved");
       }
+      else if (!layer->isReadable()) {
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is hidden", layer->name().c_str());
+      }
       else if (!layer->isMoveable() || !layer->isWritable()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
