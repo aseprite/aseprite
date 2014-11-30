@@ -89,6 +89,10 @@ namespace app {
       m_scaleMode = mode;
     }
 
+    void setIgnoreEmptyCels(bool ignore) {
+      m_ignoreEmptyCels = ignore;
+    }
+
     void addDocument(Document* document, raster::Layer* layer = NULL) {
       m_documents.push_back(Item(document, layer));
     }
@@ -106,6 +110,7 @@ namespace app {
     Document* createEmptyTexture(const Samples& samples);
     void renderTexture(const Samples& samples, raster::Image* textureImage);
     void createDataFile(const Samples& samples, std::ostream& os, raster::Image* textureImage);
+    void renderSample(const Sample& sample, raster::Image* dst, int x, int y);
 
     class Item {
     public:
@@ -126,6 +131,7 @@ namespace app {
     bool m_texturePack;
     double m_scale;
     ScaleMode m_scaleMode;
+    bool m_ignoreEmptyCels;
     Items m_documents;
 
     DISABLE_COPYING(DocumentExporter);

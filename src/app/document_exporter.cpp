@@ -32,6 +32,7 @@
 #include "base/unique_ptr.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
+#include "raster/algorithm/shrink_bounds.h"
 #include "raster/cel.h"
 #include "raster/dithering_method.h"
 #include "raster/image.h"
@@ -205,6 +206,7 @@ DocumentExporter::DocumentExporter()
  , m_texturePack(false)
  , m_scale(1.0)
  , m_scaleMode(DefaultScaleMode)
+ , m_ignoreEmptyCels(false)
 {
 }
 
@@ -264,6 +266,7 @@ void DocumentExporter::exportSheet()
 
 void DocumentExporter::captureSamples(Samples& samples)
 {
+  ImageBufferPtr checkEmptyImageBuf;
   std::vector<char> buf(32);
 
   for (auto& item : m_documents) {
@@ -289,7 +292,35 @@ void DocumentExporter::captureSamples(Samples& samples)
             + "." + base::get_file_extension(filename));
       }
 
-      samples.addSample(Sample(doc, sprite, layer, frame, filename));
+      Sample sample(doc, sprite, layer, frame, filename);
+
+      if (m_ignoreEmptyCels) {
+        if (layer && layer->isImage() &&
+            !static_cast<LayerImage*>(layer)->getCel(frame)) {
+          // Empty cel this sample completely
+          continue;
+        }
+
+        base::UniquePtr<Image> checkEmptyImage(
+          Image::create(sprite->pixelFormat(),
+            sprite->width(),
+            sprite->height(),
+            checkEmptyImageBuf));
+
+        checkEmptyImage->setMaskColor(sprite->transparentColor());
+        clear_image(checkEmptyImage, sprite->transparentColor());
+        renderSample(sample, checkEmptyImage, 0, 0);
+
+        gfx::Rect frameBounds;
+        if (!algorithm::shrink_bounds(checkEmptyImage, frameBounds,
+            sprite->transparentColor())) {
+          // If shrink_bounds returns false, it's because the whole
+          // image is transparent (equal to the mask color).
+          continue;
+        }
+      }
+
+      samples.addSample(sample);
     }
   }
 }
@@ -355,12 +386,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
     int x = sample.inTextureBounds().x - sample.trimmedBounds().x;
     int y = sample.inTextureBounds().y - sample.trimmedBounds().y;
 
-    if (sample.layer()) {
-      layer_render(sample.layer(), textureImage, x, y, sample.frame());
-    }
-    else {
-      sample.sprite()->render(textureImage, x, y, sample.frame());
-    }
+    renderSample(sample, textureImage, x, y);
   }
 }
 
@@ -413,6 +439,16 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "  \"scale\": \"" << m_scale << "\"\n"
      << " }\n"
      << "}\n";
+}
+
+void DocumentExporter::renderSample(const Sample& sample, raster::Image* dst, int x, int y)
+{
+  if (sample.layer()) {
+    layer_render(sample.layer(), dst, x, y, sample.frame());
+  }
+  else {
+    sample.sprite()->render(dst, x, y, sample.frame());
+  }
 }
 
 } // namespace app
