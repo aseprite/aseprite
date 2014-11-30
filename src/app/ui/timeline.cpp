@@ -1673,12 +1673,8 @@ void Timeline::hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hot_frame
     }
     // Invalidate the old and new 'hot' thing.
     else {
-      invalidatePart(m_hot_part,
-        m_hot_layer,
-        m_hot_frame);
-      invalidatePart(m_hot_part,
-        m_hot_layer,
-        m_hot_frame);
+      invalidatePart(m_hot_part, m_hot_layer, m_hot_frame);
+      invalidatePart(hot_part, hot_layer, hot_frame);
     }
 
     // Draw the new 'hot' thing.
