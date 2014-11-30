@@ -698,7 +698,9 @@ public:
   Alleg4System()
     : m_font(font, Alleg4Font::None)       // Default Allegro font
   {
-    allegro_init();
+    if (allegro_init() < 0)
+      throw std::runtime_error("Cannot initialize Allegro library");
+
     set_uformat(U_UTF8);
     _al_detect_filename_encoding();
     install_timer();
