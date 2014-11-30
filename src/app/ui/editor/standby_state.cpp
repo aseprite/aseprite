@@ -165,7 +165,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
 
   UIContext* context = UIContext::instance();
-  tools::Tool* currentTool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
   DocumentLocation location;
   editor->getDocumentLocation(&location);
