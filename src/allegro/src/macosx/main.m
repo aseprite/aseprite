@@ -226,8 +226,10 @@ int allegro_main(int argc, char *argv[], NSObject* app_delegate)
    __crt0_argc = argc;
    __crt0_argv = argv;
 
+#if 0
    if (!osx_bootstrap_ok()) /* not safe to use NSApplication */
       call_user_main();
+#endif
 
    [NSApplication sharedApplication];
 

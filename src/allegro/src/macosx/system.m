@@ -440,10 +440,12 @@ static int osx_sys_init(void)
 {
    long result;
 
+#if 0
    /* If we're in the 'dead bootstrap' environment, the Mac driver won't work. */
    if (!osx_bootstrap_ok()) {
       return -1;
    }
+#endif
 
    /* Install emergency-exit signal handlers */
    old_sig_abrt = signal(SIGABRT, osx_signal_handler);
