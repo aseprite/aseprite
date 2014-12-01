@@ -14,7 +14,10 @@ namespace she {
   class ScopedHandle {
   public:
     ScopedHandle(T* handle) : m_handle(handle) { }
-    ~ScopedHandle() { m_handle->dispose(); }
+    ~ScopedHandle() {
+      if (m_handle)
+        m_handle->dispose();
+    }
 
     T* operator->() { return m_handle; }
     operator T*() { return m_handle; }
