@@ -56,6 +56,7 @@ namespace doc {
     Document* operator[](int index) const { return m_docs[index]; }
     Document* getById(ObjectId id) const;
     Document* getByName(const std::string& name) const;
+    Document* getByFileName(const std::string& filename) const;
 
   private:
     // Deletes all documents in the list (calling "delete" operation).

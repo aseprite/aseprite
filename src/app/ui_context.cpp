@@ -125,8 +125,7 @@ size_t UIContext::countViewsOf(Document* document) const
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
   size_t counter = 0;
 
-  for (Workspace::iterator it=workspace->begin(); it != workspace->end(); ++it) {
-    WorkspaceView* view = *it;
+  for (auto view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
       if (docView->getDocument() == document) {
         ++counter;
@@ -135,6 +134,21 @@ size_t UIContext::countViewsOf(Document* document) const
   }
 
   return counter;
+}
+
+DocumentView* UIContext::getFirstDocumentView(Document* document) const
+{
+  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+
+  for (auto view : *workspace) {
+    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+      if (docView->getDocument() == document) {
+        return docView;
+      }
+    }
+  }
+
+  return NULL;
 }
 
 Editor* UIContext::activeEditor()

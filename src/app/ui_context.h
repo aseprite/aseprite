@@ -44,6 +44,8 @@ namespace app {
     // Returns the number of views that the given document has.
     size_t countViewsOf(Document* document) const;
 
+    DocumentView* getFirstDocumentView(Document* document) const;
+
     // Returns the current editor. It can be null.
     Editor* activeEditor();
 

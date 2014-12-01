@@ -435,10 +435,24 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
         Params params;
 
-        for (DropFilesMessage::Files::const_iterator
-               it = files.begin(); it != files.end(); ++it) {
-          params.set("filename", it->c_str());
-          UIContext::instance()->executeCommand(cmd_open_file, &params);
+        UIContext* ctx = UIContext::instance();
+
+        for (const auto& fn : files) {
+          // If the document is already open, select it.
+          Document* doc = static_cast<Document*>(ctx->documents().getByFileName(fn));
+          if (doc) {
+            DocumentView* docView = ctx->getFirstDocumentView(doc);
+            if (docView)
+              ctx->setActiveView(docView);
+            else {
+              ASSERT(false);    // Must be some DocumentView available
+            }
+          }
+          // Load the file
+          else {
+            params.set("filename", fn.c_str());
+            ctx->executeCommand(cmd_open_file, &params);
+          }
         }
       }
       break;
