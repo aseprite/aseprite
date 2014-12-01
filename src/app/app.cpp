@@ -124,9 +124,10 @@ App::App()
   m_instance = this;
 }
 
-void App::initialize(int argc, const char* argv[])
+void App::initialize(const AppOptions& options)
 {
-  AppOptions options(argc, argv);
+  if (options.startUI())
+    m_guiSystem.reset(new ui::GuiSystem);
 
   // Initializes the application loading the modules, setting the
   // graphics mode, loading the configuration and resources, etc.
