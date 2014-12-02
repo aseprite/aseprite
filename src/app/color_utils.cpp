@@ -117,7 +117,7 @@ raster::color_t color_utils::color_for_layer(const app::Color& color, Layer* lay
   return color_for_target(color, ColorTarget(layer));
 }
 
-raster::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
+raster::color_t color_utils::color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget)
 {
   raster::color_t c = -1;
 
@@ -148,6 +148,13 @@ raster::color_t color_utils::color_for_target(const app::Color& color, const Col
         break;
     }
   }
+
+  return c;
+}
+
+raster::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
+{
+  raster::color_t c = color_utils::color_for_target_mask(color, colorTarget);
 
   switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:
