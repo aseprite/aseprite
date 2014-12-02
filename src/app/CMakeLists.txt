@@ -1,6 +1,31 @@
 # Aseprite
 # Copyright (C) 2001-2014  David Capello
 
+######################################################################
+# Generate source files from widget XML files
+
+file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
+foreach(widget_file ${widget_files})
+  get_filename_component(widget_name ${widget_file} NAME_WE)
+  set(target_name generated_${widget_name})
+  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
+
+  add_custom_command(
+    OUTPUT ${output_fn}
+    COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${widget_file} --widgetid ${widget_name} > ${output_fn}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    MAIN_DEPENDENCY ${widget_file}
+    DEPENDS gen)
+
+  list(APPEND generated_header_files ${output_fn})
+endforeach()
+
+# Directory where generated files by "gen" utility will stay.
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+######################################################################
+# app-lib target
+
 add_library(app-lib
   app.cpp
   app_menus.cpp
@@ -258,4 +283,5 @@ add_library(app-lib
   webserver.cpp
   widget_loader.cpp
   xml_document.cpp
-  xml_exception.cpp)
+  xml_exception.cpp
+  ${generated_header_files})
