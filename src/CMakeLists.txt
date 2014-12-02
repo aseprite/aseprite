@@ -222,8 +222,6 @@ endif()
 file(GLOB_RECURSE src_data_files
   RELATIVE ${CMAKE_SOURCE_DIR}/data/ "${CMAKE_SOURCE_DIR}/data/*.*")
 foreach(fn ${src_data_files})
-  string(MAKE_C_IDENTIFIER "copy_data_${fn}" copy_fn_target_name)
-  add_custom_target(${copy_fn_target_name})
   add_custom_command(
     OUTPUT ${CMAKE_BINARY_DIR}/bin/data/${fn}
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/${fn} ${CMAKE_BINARY_DIR}/bin/data/${fn}
