@@ -217,7 +217,24 @@ if(LIBALLEGRO4_LINK_FLAGS)
 endif()
 
 ######################################################################
-# ASEPRITE application
+# Copy data/ directory target
+
+file(GLOB_RECURSE src_data_files
+  RELATIVE ${CMAKE_SOURCE_DIR}/data/ "${CMAKE_SOURCE_DIR}/data/*.*")
+foreach(fn ${src_data_files})
+  string(MAKE_C_IDENTIFIER "copy_data_${fn}" copy_fn_target_name)
+  add_custom_target(${copy_fn_target_name})
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/${fn} ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/data/${fn})
+  list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/${fn})
+endforeach()
+
+add_custom_target(copy_data DEPENDS ${out_data_files})
+
+######################################################################
+# Aseprite application
 
 if(WIN32)
   set(win32_resources main/resources_win32.rc)
@@ -227,19 +244,18 @@ if(UNIX)
   set(x11_resources main/xpm_icon.c)
 endif(UNIX)
 
-add_executable(aseprite WIN32 main/main.cpp ${win32_resources} ${x11_resources})
+add_executable(aseprite WIN32
+  main/main.cpp
+  ${win32_resources}
+  ${x11_resources})
 target_link_libraries(aseprite ${all_libs})
+add_dependencies(aseprite copy_data)
 
 install(TARGETS aseprite
   RUNTIME DESTINATION bin)
 
 install(DIRECTORY ../data
   DESTINATION share/aseprite)
-
-if(EXISTS ../docs/quickref.pdf)
-  install(FILES ../docs/quickref.pdf
-    DESTINATION share/aseprite/docs/quickref.pdf)
-endif()
 
 ######################################################################
 # Tests
