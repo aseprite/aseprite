@@ -26,7 +26,7 @@ endif()
 # Note: This needs to be done before the project command
 set(CMAKE_CONFIGURATION_TYPES "${CMAKE_BUILD_TYPE}" CACHE INTERNAL "internal")
 
-# ASE project
+# Aseprite project
 project(aseprite C CXX)
 
 ######################################################################
