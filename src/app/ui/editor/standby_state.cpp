@@ -164,7 +164,6 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     return true;
 
   UIContext* context = UIContext::instance();
-  tools::Tool* currentTool = editor->getCurrentEditorTool();
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
   DocumentLocation location;
   editor->getDocumentLocation(&location);
@@ -202,6 +201,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       if (layer->isBackground()) {
         StatusBar::instance()->showTip(1000,
           "The background layer cannot be moved");
+      }
+      else if (!layer->isVisible()) {
+        StatusBar::instance()->showTip(1000,
+          "Layer '%s' is hidden", layer->name().c_str());
       }
       else if (!layer->isMovable() || !layer->isEditable()) {
         StatusBar::instance()->showTip(1000,

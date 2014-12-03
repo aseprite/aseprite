@@ -117,7 +117,7 @@ doc::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
   return color_for_target(color, ColorTarget(layer));
 }
 
-doc::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
+doc::color_t color_utils::color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget)
 {
   doc::color_t c = -1;
 
@@ -148,6 +148,13 @@ doc::color_t color_utils::color_for_target(const app::Color& color, const ColorT
         break;
     }
   }
+
+  return c;
+}
+
+doc::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
+{
+  doc::color_t c = color_utils::color_for_target_mask(color, colorTarget);
 
   switch (colorTarget.pixelFormat()) {
     case IMAGE_RGB:

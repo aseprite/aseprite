@@ -39,6 +39,7 @@ namespace app {
     gfx::Color color_for_ui(const app::Color& color);
     doc::color_t color_for_image(const app::Color& color, doc::PixelFormat format);
     doc::color_t color_for_layer(const app::Color& color, doc::Layer* layer);
+    doc::color_t color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget);
     doc::color_t color_for_target(const app::Color& color, const ColorTarget& colorTarget);
 
   } // namespace color_utils

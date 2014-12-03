@@ -52,12 +52,8 @@ the source code in a directory called `aseprite-source`):
    commands, you have to compile the project executing make, nmake,
    opening the solution, etc.
 
-4. When the project is compiled, you can copy the resulting executable
-   file (e.g. `build/src/aseprite.exe`) to `aseprite-source` and
-   execute it. If you have used a Visual Studio project, you can copy
-   the whole `data/` directory to `build/src/RelWithDebInfo/` so you
-   can run/debug the program from Visual Studio IDE. On Linux, you can
-   copy the `data/` directory in `~/.aseprite/` directory.
+4. When the project is compiled, you can find the executable file
+   inside `build/bin/aseprite.exe`.
 
 ## Mac OS X details
 

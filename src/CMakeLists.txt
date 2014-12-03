@@ -39,11 +39,7 @@ set(aseprite_libraries
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
 
-# Directory where generated files by "gen" utility will stay.
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # Third-party libraries
-
 if(USE_SHARED_ALLEGRO4)
   # Find the shared Allegro 4 library
   find_library(LIBALLEGRO4_LIBRARY alleg)
@@ -237,7 +233,22 @@ if(LIBALLEGRO4_LINK_FLAGS)
 endif()
 
 ######################################################################
-# ASEPRITE application
+# Copy data/ directory target
+
+file(GLOB_RECURSE src_data_files
+  RELATIVE ${CMAKE_SOURCE_DIR}/data/ "${CMAKE_SOURCE_DIR}/data/*.*")
+foreach(fn ${src_data_files})
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/${fn} ${CMAKE_BINARY_DIR}/bin/data/${fn}
+    MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/data/${fn})
+  list(APPEND out_data_files ${CMAKE_BINARY_DIR}/bin/data/${fn})
+endforeach()
+
+add_custom_target(copy_data DEPENDS ${out_data_files})
+
+######################################################################
+# Aseprite application
 
 if(WIN32)
   set(win32_resources main/resources_win32.rc)
@@ -247,42 +258,18 @@ if(UNIX)
   set(x11_resources main/xpm_icon.c)
 endif(UNIX)
 
-add_executable(aseprite WIN32 main/main.cpp ${win32_resources} ${x11_resources})
+add_executable(aseprite WIN32
+  main/main.cpp
+  ${win32_resources}
+  ${x11_resources})
 target_link_libraries(aseprite ${all_libs})
+add_dependencies(aseprite copy_data)
 
 install(TARGETS aseprite
   RUNTIME DESTINATION bin)
 
 install(DIRECTORY ../data
   DESTINATION share/aseprite)
-
-if(EXISTS ../docs/quickref.pdf)
-  install(FILES ../docs/quickref.pdf
-    DESTINATION share/aseprite/docs/quickref.pdf)
-endif()
-
-######################################################################
-# Generate source files from widget XML files
-
-file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
-foreach(widget_file ${widget_files})
-  get_filename_component(widget_name ${widget_file} NAME_WE)
-  set(target_name generated_${widget_name})
-  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
-
-  add_custom_command(
-    OUTPUT ${output_fn}
-    COMMAND gen/gen --input ${widget_file} --widgetid ${widget_name} > ${output_fn}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    MAIN_DEPENDENCY ${widget_file}
-    DEPENDS gen)
-
-  add_custom_target(${target_name} DEPENDS ${output_fn})
-
-  set_source_files_properties(${target_name} PROPERTIES GENERATED TRUE)
-
-  add_dependencies(app-lib ${target_name})
-endforeach()
 
 ######################################################################
 # Tests
@@ -306,6 +293,13 @@ function(find_tests dir dependencies)
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
     add_executable(${testname} ${testsourcefile})
+
+    if(MSVC)
+      # Fix problem compiling gen from a Visual Studio solution
+      set_target_properties(${testname}
+	PROPERTIES LINK_FLAGS -ENTRY:"mainCRTStartup")
+    endif()
+
     target_link_libraries(${testname} gtest ${ARGV})
     if(LIBALLEGRO4_LINK_FLAGS)
       target_link_libraries(${testname} ${LIBALLEGRO4_LINK_FLAGS})

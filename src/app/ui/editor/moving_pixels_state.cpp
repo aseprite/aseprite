@@ -499,7 +499,8 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
   Layer* layer = m_editor->layer();
   ASSERT(layer != NULL);
 
-  m_pixelsMovement->setMaskColor(color_utils::color_for_layer(color, layer));
+  m_pixelsMovement->setMaskColor(
+    color_utils::color_for_target_mask(color, ColorTarget(layer)));
 }
 
 void MovingPixelsState::dropPixels(Editor* editor)

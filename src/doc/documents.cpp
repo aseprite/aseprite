@@ -11,6 +11,7 @@
 #include "doc/documents.h"
 
 #include "base/mutex.h"
+#include "base/path.h"
 #include "doc/document.h"
 
 #include <algorithm>
@@ -87,18 +88,28 @@ void Documents::move(Document* doc, int index)
 
 Document* Documents::getById(ObjectId id) const
 {
-  for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
-    if ((*it)->id() == id)
-      return *it;
+  for (const auto& doc : *this) {
+    if (doc->id() == id)
+      return doc;
   }
   return NULL;
 }
 
 Document* Documents::getByName(const std::string& name) const
 {
-  for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
-    if ((*it)->name() == name)
-      return *it;
+  for (const auto& doc : *this) {
+    if (doc->name() == name)
+      return doc;
+  }
+  return NULL;
+}
+
+Document* Documents::getByFileName(const std::string& filename) const
+{
+  std::string fixfn = base::fix_path_separators(filename);
+  for (const auto& doc : *this) {
+    if (base::fix_path_separators(doc->filename()) == fixfn)
+      return doc;
   }
   return NULL;
 }

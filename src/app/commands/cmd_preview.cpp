@@ -190,11 +190,11 @@ protected:
         m_editor->layer(),
         m_editor->frame());
 
+      ImageBufferPtr buf = Editor::getRenderImageBuffer();
       m_render.reset(
         renderEngine.renderSprite(
           0, 0, m_sprite->width(), m_sprite->height(),
-          m_editor->frame(), Zoom(1, 1), false, false,
-          Editor::getRenderImageBuffer()));
+          m_editor->frame(), Zoom(1, 1), false, false, buf));
     }
 
     int x, y, w, h, u, v;

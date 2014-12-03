@@ -486,7 +486,7 @@ void Sprite::pickCels(int x, int y, FrameNumber frame, int opacityThreshold, Cel
 
   for (int i=(int)layers.size()-1; i>=0; --i) {
     Layer* layer = layers[i];
-    if (!layer->isImage())
+    if (!layer->isImage() || !layer->isVisible())
       continue;
 
     Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);

@@ -1416,21 +1416,9 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
   int y = pos.y;
   {
     // Then we check if the image will be visible by the user.
-    Rect visibleBounds = getVisibleSpriteBounds();
+    Rect visibleBounds = getVisibleSpriteBounds().shrink(4*ui::guiscale());
     x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
     y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
-
-    // If the visible part of the pasted image will not fit in the
-    // visible bounds of the editor, we put the image in the center of
-    // the visible bounds.
-    Rect visiblePasted = visibleBounds.createIntersect(gfx::Rect(x, y, image->width(), image->height()));
-    if (((visibleBounds.w >= image->width() && visiblePasted.w < image->width()/2) ||
-         (visibleBounds.w <  image->width() && visiblePasted.w < visibleBounds.w/2)) ||
-        ((visibleBounds.h >= image->height() && visiblePasted.h < image->width()/2) ||
-         (visibleBounds.h <  image->height() && visiblePasted.h < visibleBounds.h/2))) {
-      x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
-      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
-    }
 
     // We limit the image inside the sprite's bounds.
     x = MID(0, x, sprite->width() - image->width());

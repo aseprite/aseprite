@@ -56,6 +56,7 @@ public:
   const Option& sheetPack() const { return m_sheetPack; }
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& importLayer() const { return m_importLayer; }
+  const Option& ignoreEmpty() const { return m_ignoreEmpty; }
 
   bool hasExporterParams() const;
 
@@ -82,6 +83,7 @@ private:
   Option& m_sheetPack;
   Option& m_splitLayers;
   Option& m_importLayer;
+  Option& m_ignoreEmpty;
 
   Option& m_verbose;
   Option& m_help;
