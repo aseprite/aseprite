@@ -90,7 +90,11 @@ CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
   , m_received(false)
   , m_inits(get_config_int("Updater", "Inits", 0))
   , m_exits(get_config_int("Updater", "Exits", 0))
+#ifdef _DEBUG
+  , m_isDeveloper(true)
+#else
   , m_isDeveloper(get_config_bool("Updater", "IsDeveloper", false))
+#endif
   , m_timer(kMonitoringPeriod, NULL)
 {
   // Get how many days we have to wait for the next "check for update"
