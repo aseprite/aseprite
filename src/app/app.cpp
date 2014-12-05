@@ -420,8 +420,6 @@ void App::run()
 
   // Start shell to execute scripts.
   if (m_isShell) {
-    m_systemConsole.prepareShell();
-
     if (m_modules->m_scriptingEngine.supportEval()) {
       Shell shell;
       shell.run(m_modules->m_scriptingEngine);

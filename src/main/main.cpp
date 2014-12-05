@@ -28,6 +28,7 @@
 #include "base/exception.h"
 #include "base/memory.h"
 #include "base/memory_dump.h"
+#include "base/system_console.h"
 #include "she/error.h"
 #include "she/scoped_handle.h"
 #include "she/system.h"
@@ -68,7 +69,7 @@ int app_main(int argc, char* argv[])
   try {
     base::MemoryDump memoryDump;
     MemLeak memleak;
-
+    base::SystemConsole systemConsole;
     app::AppOptions options(argc, const_cast<const char**>(argv));
     she::ScopedHandle<she::System> system(she::create_system());
     app::App app;
@@ -81,6 +82,10 @@ int app_main(int argc, char* argv[])
     }
 
     app.initialize(options);
+
+    if (options.startShell())
+      systemConsole.prepareShell();
+
     app.run();
     return 0;
   }
