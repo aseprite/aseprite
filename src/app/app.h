@@ -22,7 +22,6 @@
 
 #include "base/signal.h"
 #include "base/string.h"
-#include "base/system_console.h"
 #include "base/unique_ptr.h"
 #include "doc/pixel_format.h"
 
@@ -95,7 +94,6 @@ namespace app {
 
     static App* m_instance;
 
-    base::SystemConsole m_systemConsole;
     base::UniquePtr<ui::GuiSystem> m_guiSystem;
     Modules* m_modules;
     LegacyModules* m_legacy;

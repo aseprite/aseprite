@@ -128,6 +128,11 @@ public:
     HttpResponse response(&body);
     request.send(response);
 
+#ifdef _DEBUG
+    PRINTF("Checking updates: %s (User-Agent: %s)\n", url.c_str(), getUserAgent().c_str());
+    PRINTF("Response:\n--\n%s--\n", body.str().c_str());
+#endif
+
     CheckUpdateResponse data(body.str());
     delegate->onResponse(data);
   }
