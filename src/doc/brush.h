@@ -23,6 +23,9 @@ namespace doc {
 
   class Brush {
   public:
+    static const int kMinBrushSize = 1;
+    static const int kMaxBrushSize = 32;
+
     Brush();
     Brush(BrushType type, int size, int angle);
     Brush(const Brush& brush);

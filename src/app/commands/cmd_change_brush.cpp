@@ -28,6 +28,7 @@
 #include "app/context.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool.h"
+#include "doc/brush.h"
 
 namespace app {
 
@@ -79,11 +80,11 @@ void ChangeBrushCommand::onExecute(Context* context)
       // Do nothing
       break;
     case IncrementSize:
-      if (brush->getSize() < 32)
+      if (brush->getSize() < doc::Brush::kMaxBrushSize)
         brush->setSize(brush->getSize()+1);
       break;
     case DecrementSize:
-      if (brush->getSize() > 1)
+      if (brush->getSize() > doc::Brush::kMinBrushSize)
         brush->setSize(brush->getSize()-1);
       break;
     case IncrementAngle:

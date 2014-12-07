@@ -36,6 +36,7 @@
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
 #include "base/observable.h"
+#include "doc/brush.h"
 #include "doc/context.h"
 #include "doc/documents_observer.h"
 #include "ui/manager.h"
@@ -880,7 +881,7 @@ public:
       App::instance()->BrushSizeBeforeChange();
 
     // Change the size of the brushcil
-    m_size = MID(1, size, 32);
+    m_size = MID(doc::Brush::kMinBrushSize, size, doc::Brush::kMaxBrushSize);
 
     // Trigger BrushSizeAfterChange signal
     if (m_fireSignals)

@@ -180,7 +180,7 @@ private:
 class ContextBar::BrushSizeField : public IntEntry
 {
 public:
-  BrushSizeField() : IntEntry(1, 32) {
+  BrushSizeField() : IntEntry(Brush::kMinBrushSize, Brush::kMaxBrushSize) {
     setSuffix("px");
   }
 
