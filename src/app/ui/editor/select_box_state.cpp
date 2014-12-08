@@ -63,6 +63,7 @@ void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 void SelectBoxState::onAfterChangeState(Editor* editor)
 {
   editor->setDecorator(this);
+  editor->invalidate();
 }
 
 void SelectBoxState::onBeforePopState(Editor* editor)

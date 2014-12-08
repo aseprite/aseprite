@@ -1093,11 +1093,10 @@ void DocumentApi::flattenLayers(Sprite* sprite)
 
       // We have to save the current state of `cel_image' in the undo.
       if (undoEnabled()) {
-        Dirty* dirty = new Dirty(cel_image, image, image->bounds());
-        dirty->saveImagePixels(cel_image);
+        Dirty dirty(cel_image, image, image->bounds());
+        dirty.saveImagePixels(cel_image);
         m_undoers->pushUndoer(new undoers::DirtyArea(
-            getObjects(), cel_image, dirty));
-        delete dirty;
+            getObjects(), cel_image, &dirty));
       }
     }
     else {
@@ -1296,10 +1295,9 @@ void DocumentApi::flipImageWithMask(Layer* layer, Image* image, const Mask* mask
 
   // Insert the undo operation.
   if (undoEnabled()) {
-    base::UniquePtr<Dirty> dirty((new Dirty(image, flippedImage, image->bounds())));
-    dirty->saveImagePixels(image);
-
-    m_undoers->pushUndoer(new undoers::DirtyArea(getObjects(), image, dirty));
+    Dirty dirty(image, flippedImage, image->bounds());
+    dirty.saveImagePixels(image);
+    m_undoers->pushUndoer(new undoers::DirtyArea(getObjects(), image, &dirty));
   }
 
   // Copy the flipped image into the image specified as argument.

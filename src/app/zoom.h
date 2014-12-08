@@ -20,6 +20,8 @@
 #define APP_ZOOM_H_INCLUDED
 #pragma once
 
+#include "gfx/rect.h"
+
 namespace app {
 
   class Zoom {
@@ -35,6 +37,19 @@ namespace app {
 
     double apply(double x) const { return x * m_num / m_den; }
     double remove(double x) const { return x * m_den / m_num; }
+
+    gfx::Rect apply(const gfx::Rect& r) const {
+      return gfx::Rect(
+        apply(r.x), apply(r.y),
+        apply(r.x+r.w) - apply(r.x),
+        apply(r.y+r.h) - apply(r.y));
+    }
+    gfx::Rect remove(const gfx::Rect& r) const {
+      return gfx::Rect(
+        remove(r.x), remove(r.y),
+        remove(r.x+r.w) - remove(r.x),
+        remove(r.y+r.h) - remove(r.y));
+    }
 
     void in();
     void out();

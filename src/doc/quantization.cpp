@@ -108,7 +108,7 @@ Image* convert_pixel_format(
 
         // RGB -> RGB
         case IMAGE_RGB:
-          new_image->copy(image, 0, 0);
+          new_image->copy(image, 0, 0, 0, 0, image->width(), image->height());
           break;
 
         // RGB -> Grayscale
@@ -189,7 +189,7 @@ Image* convert_pixel_format(
 
         // Grayscale -> Grayscale
         case IMAGE_GRAYSCALE:
-          new_image->copy(image, 0, 0);
+          new_image->copy(image, 0, 0, 0, 0, image->width(), image->height());
           break;
 
         // Grayscale -> Indexed

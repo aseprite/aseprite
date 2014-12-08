@@ -91,6 +91,7 @@ namespace app {
 
     void notifyGeneralUpdate();
     void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region);
+    void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
     void notifyCelMoved(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);
     void notifyCelCopied(Layer* fromLayer, FrameNumber fromFrame, Layer* toLayer, FrameNumber toFrame);

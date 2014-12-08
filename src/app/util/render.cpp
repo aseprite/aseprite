@@ -475,15 +475,8 @@ void RenderEngine::setPreviewImage(const Layer* layer, FrameNumber frame, Image*
   preview_image = image;
 }
 
-/**
-   Draws the @a frame of animation of the specified @a sprite
-   in a new image and return it.
-
-   Positions source_x, source_y, width and height must have the
-   zoom applied (zoom.apply(sorce_x), zoom.apply(source_y), zoom.apply(width), etc.)
- */
-Image* RenderEngine::renderSprite(int source_x, int source_y,
-  int width, int height,
+Image* RenderEngine::renderSprite(
+  const gfx::Rect& zoomedRect,
   FrameNumber frame, Zoom zoom,
   bool draw_tiled_bg,
   bool enable_onionskin,
@@ -516,20 +509,21 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
   }
 
   // Create a temporary RGB bitmap to draw all to it
-  image = Image::create(IMAGE_RGB, width, height, buffer);
+  image = Image::create(IMAGE_RGB, zoomedRect.w, zoomedRect.h, buffer);
   if (!image)
     return NULL;
 
   // Draw checked background
   if (need_checked_bg && draw_tiled_bg)
-    renderCheckedBackground(image, source_x, source_y, zoom);
+    renderCheckedBackground(image, zoomedRect.x, zoomedRect.y, zoom);
   else
     clear_image(image, bg_color);
 
   // Draw the current frame.
   global_opacity = 255;
   renderLayer(m_sprite->folder(), image,
-    source_x, source_y, frame, zoom, zoomed_func, true, true, -1);
+    zoomedRect.x, zoomedRect.y,
+    frame, zoom, zoomed_func, true, true, -1);
 
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255) (it is the onion-skinning)
@@ -560,7 +554,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
           blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
         renderLayer(m_sprite->folder(), image,
-          source_x, source_y, f, zoom, zoomed_func,
+          zoomedRect.x, zoomedRect.y, f, zoom, zoomed_func,
           true, true, blend_mode);
       }
     }
@@ -571,8 +565,7 @@ Image* RenderEngine::renderSprite(int source_x, int source_y,
 
 // static
 void RenderEngine::renderCheckedBackground(Image* image,
-                                           int source_x, int source_y,
-                                           Zoom zoom)
+  int source_x, int source_y, Zoom zoom)
 {
   int x, y, u, v;
   int tile_w = 16;

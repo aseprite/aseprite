@@ -269,8 +269,13 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
   // Start the Tool-Loop
   if (layer) {
     tools::ToolLoop* toolLoop = create_tool_loop(editor, context);
-    if (toolLoop)
-      editor->setState(EditorStatePtr(new DrawingState(toolLoop, editor, msg)));
+    if (toolLoop) {
+      EditorStatePtr newState(new DrawingState(toolLoop));
+      editor->setState(newState);
+
+      static_cast<DrawingState*>(newState.get())
+        ->initToolLoop(editor, msg);
+    }
     return true;
   }
 

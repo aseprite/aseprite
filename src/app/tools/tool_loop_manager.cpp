@@ -44,6 +44,7 @@ using namespace filters;
 
 ToolLoopManager::ToolLoopManager(ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
+  , m_dirtyArea(toolLoop->getDirtyArea())
 {
 }
 
@@ -60,10 +61,6 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 {
   // Start with no points at all
   m_points.clear();
-
-  // Prepare the image where we will draw on
-  copy_image(m_toolLoop->getDstImage(),
-             m_toolLoop->getSrcImage(), 0, 0);
 
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
@@ -185,25 +182,34 @@ void ToolLoopManager::doLoopStep(bool last_step)
   for (size_t i=0; i<points_to_interwine.size(); ++i)
     points_to_interwine[i] += offset;
 
-  switch (m_toolLoop->getTracePolicy()) {
+  // Calculate the area to be updated in all document observers.
+  calculateDirtyArea(points_to_interwine);
 
-    case TracePolicyAccumulate:
-      // Do nothing. We accumulate traces in the destination image.
-      break;
-
-    case TracePolicyLast:
-      // Copy source to destination (reset the previous trace). Useful
-      // for tools like Line and Ellipse tools (we kept the last trace only).
-      clear_image(m_toolLoop->getDstImage(), 0);
-      copy_image(m_toolLoop->getDstImage(), m_toolLoop->getSrcImage(), 0, 0);
-      break;
-
-    case TracePolicyOverlap:
-      // Copy destination to source (yes, destination to source). In
-      // this way each new trace overlaps the previous one.
-      copy_image(m_toolLoop->getSrcImage(), m_toolLoop->getDstImage(), 0, 0);
-      break;
+  // Validate source image area.
+  if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
+    gfx::Region srcArea;
+    m_toolLoop->getInk()->createSpecialSourceArea(m_dirtyArea, srcArea);
+    m_toolLoop->validateSrcImage(srcArea);
   }
+  else {
+    m_toolLoop->validateSrcImage(m_dirtyArea);
+  }
+
+  // Invalidate destionation image areas.
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last) {
+    // Copy source to destination (reset the previous trace). Useful
+    // for tools like Line and Ellipse (we kept the last trace only).
+    m_toolLoop->invalidateDstImage();
+  }
+  else if (m_toolLoop->getTracePolicy() == TracePolicy::AccumulateUpdateLast) {
+    // Revalidate only this last dirty area (e.g. pixel-perfect
+    // freehand algorithm needs this trace policy to redraw only the
+    // last dirty area, which can vary in one pixel from the previous
+    // tool loop cycle).
+    m_toolLoop->invalidateDstImage(m_dirtyArea);
+  }
+
+  m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Get the modified area in the sprite with this intertwined set of points
   if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
@@ -211,17 +217,13 @@ void ToolLoopManager::doLoopStep(bool last_step)
   else
     m_toolLoop->getIntertwine()->fillPoints(m_toolLoop, points_to_interwine);
 
-  // Calculate the area to be updated in all document observers.
-  Region& dirty_area = m_toolLoop->getDirtyArea();
-  calculateDirtyArea(points_to_interwine, dirty_area);
-
-  if (m_toolLoop->getTracePolicy() == TracePolicyLast) {
-    Region prev_dirty_area = dirty_area;
-    dirty_area.createUnion(dirty_area, m_oldDirtyArea);
-    m_oldDirtyArea = prev_dirty_area;
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
+    // Copy destination to source (yes, destination to source). In
+    // this way each new trace overlaps the previous one.
+    m_toolLoop->copyValidDstToSrcImage(m_dirtyArea);
   }
 
-  if (!dirty_area.isEmpty())
+  if (!m_dirtyArea.isEmpty())
     m_toolLoop->updateDirtyArea();
 }
 
@@ -235,9 +237,15 @@ void ToolLoopManager::snapToGrid(Point& point)
   m_toolLoop->getDocumentSettings()->snapToGrid(point);
 }
 
-void ToolLoopManager::calculateDirtyArea(const Points& points, Region& dirty_area)
+void ToolLoopManager::calculateDirtyArea(const Points& points)
 {
-  dirty_area.clear();
+  // Save the current dirty area if it's needed
+  Region prevDirtyArea;
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
+    prevDirtyArea = m_dirtyArea;
+
+  // Start with a fresh dirty area
+  m_dirtyArea.clear();
 
   if (points.size() > 0) {
     Point minpt, maxpt;
@@ -248,12 +256,18 @@ void ToolLoopManager::calculateDirtyArea(const Points& points, Region& dirty_are
     m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, minpt.x, minpt.y, r1);
     m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, maxpt.x, maxpt.y, r2);
 
-    dirty_area.createUnion(dirty_area, Region(r1.createUnion(r2)));
+    m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
   }
 
   // Apply offset mode
   Point offset(m_toolLoop->getOffset());
-  dirty_area.offset(-offset);
+  m_dirtyArea.offset(-offset);
+
+  // Merge new dirty area with the previous one (for tools like line
+  // or rectangle it's needed to redraw the previous position and
+  // the new one)
+  if (m_toolLoop->getTracePolicy() == TracePolicy::Last)
+    m_dirtyArea.createUnion(m_dirtyArea, prevDirtyArea);
 
   // Apply tiled mode
   TiledMode tiledMode = m_toolLoop->getDocumentSettings()->getTiledMode();
@@ -262,7 +276,7 @@ void ToolLoopManager::calculateDirtyArea(const Points& points, Region& dirty_are
     int h = m_toolLoop->sprite()->height();
     Region sprite_area(Rect(0, 0, w, h));
     Region outside;
-    outside.createSubtraction(dirty_area, sprite_area);
+    outside.createSubtraction(m_dirtyArea, sprite_area);
 
     switch (tiledMode) {
       case TILED_X_AXIS:
@@ -282,7 +296,7 @@ void ToolLoopManager::calculateDirtyArea(const Points& points, Region& dirty_are
       Region in_sprite;
       in_sprite.createIntersection(outside, sprite_area);
       outside.createSubtraction(outside, in_sprite);
-      dirty_area.createUnion(dirty_area, in_sprite);
+      m_dirtyArea.createUnion(m_dirtyArea, in_sprite);
 
       outsideBounds = outside.bounds();
       if (outsideBounds.isEmpty())
@@ -311,11 +325,6 @@ void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point&
     minpt.y = MIN(minpt.y, points[c].y);
     maxpt.x = MAX(maxpt.x, points[c].x);
     maxpt.y = MAX(maxpt.y, points[c].y);
-  }
-
-  if (m_toolLoop->zoom().scale() < 1.0) {
-    maxpt.x += m_toolLoop->zoom().remove(1);
-    maxpt.y += m_toolLoop->zoom().remove(1);
   }
 }
 

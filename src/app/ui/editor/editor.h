@@ -29,6 +29,7 @@
 #include "app/ui/editor/editor_states_history.h"
 #include "app/zoom.h"
 #include "base/connection.h"
+#include "doc/document_observer.h"
 #include "doc/frame_number.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
@@ -66,6 +67,7 @@ namespace app {
   };
 
   class Editor : public ui::Widget,
+                 public doc::DocumentObserver,
                  public DocumentSettingsObserver {
   public:
     typedef void (*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
@@ -215,6 +217,8 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
     void onCurrentToolChange();
     void onFgColorChange();
+
+    void onExposeSpritePixels(doc::DocumentEvent& ev);
 
     void onSetTiledMode(filters::TiledMode mode);
     void onSetGridVisible(bool state);

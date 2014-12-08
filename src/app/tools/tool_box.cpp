@@ -275,14 +275,14 @@ void ToolBox::loadToolProperties(TiXmlElement* xmlTool, Tool* tool, int button, 
     throw base::Exception("Invalid intertwiner '%s' specified in '%s' tool.\n", intertwine, tool_id);
 
   // Trace policy
-  TracePolicy tracepolicy_value = TracePolicyLast;
+  TracePolicy tracepolicy_value = TracePolicy::Last;
   if (tracepolicy) {
-    if (strcmp(tracepolicy, "accumulative") == 0)
-      tracepolicy_value = TracePolicyAccumulate;
+    if (strcmp(tracepolicy, "accumulate") == 0)
+      tracepolicy_value = TracePolicy::Accumulate;
     else if (strcmp(tracepolicy, "last") == 0)
-      tracepolicy_value = TracePolicyLast;
+      tracepolicy_value = TracePolicy::Last;
     else if (strcmp(tracepolicy, "overlap") == 0)
-      tracepolicy_value = TracePolicyOverlap;
+      tracepolicy_value = TracePolicy::Overlap;
     else
       throw base::Exception("Invalid trace-policy '%s' specified in '%s' tool.\n", tracepolicy, tool_id);
   }

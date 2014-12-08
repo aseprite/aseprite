@@ -337,7 +337,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // destination clipping bounds in Sprite::render() function.
     tempImage->clear(0);
     sprite->render(tempImage, 0, 0, frame);
-    resultImage->copy(tempImage, column*sprite->width(), row*sprite->height());
+    resultImage->copy(tempImage, column*sprite->width(), row*sprite->height(),
+      0, 0, tempImage->width(), tempImage->height());
 
     if (++column >= columns) {
       column = 0;

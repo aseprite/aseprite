@@ -20,6 +20,10 @@
 #define APP_TOOLS_INK_H_INCLUDED
 #pragma once
 
+namespace gfx {
+  class Region;
+}
+
 namespace app {
   namespace tools {
 
@@ -63,6 +67,12 @@ namespace app {
 
       // Returns true if this ink is used to mark slices
       virtual bool isSlice() const { return false; }
+
+      // Returns true if this ink needs a special source area.  For
+      // example, blur tool needs one extra pixel to all sides of the
+      // modified area, so it can use a 3x3 convolution matrix.
+      virtual bool needsSpecialSourceArea() const { return false; }
+      virtual void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const { }
 
       // It is called when the tool-loop start (generally when the user
       // presses a mouse button over a sprite editor)

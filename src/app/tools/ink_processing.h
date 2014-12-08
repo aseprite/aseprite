@@ -587,7 +587,7 @@ private:
   Point m_speed;
   int m_opacity;
   TiledMode m_tiledMode;
-  Image* m_srcImage;
+  const Image* m_srcImage;
   int m_srcImageWidth;
   int m_srcImageHeight;
   color_t m_color;

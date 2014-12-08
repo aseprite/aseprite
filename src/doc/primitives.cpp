@@ -67,12 +67,12 @@ void clear_image(Image* image, color_t color)
 
 void copy_image(Image* dst, const Image* src, int x, int y)
 {
-  dst->copy(src, x, y);
+  dst->copy(src, x, y, 0, 0, src->width(), src->height());
 }
 
 void composite_image(Image* dst, const Image* src, int x, int y, int opacity, int blend_mode)
 {
-  dst->merge(src, x, y, opacity, blend_mode);
+  dst->merge(src, x, y, 0, 0, src->width(), src->height(), opacity, blend_mode);
 }
 
 Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer)
@@ -84,7 +84,7 @@ Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, co
   trim->setMaskColor(image->maskColor());
 
   clear_image(trim, bg);
-  copy_image(trim, image, -x, -y);
+  trim->copy(image, 0, 0, x, y, w, h);
 
   return trim;
 }
@@ -220,6 +220,14 @@ void fill_rect(Image* image, int x1, int y1, int x2, int y2, color_t color)
   if (y2 >= image->height()) y2 = image->height()-1;
 
   image->fillRect(x1, y1, x2, y2, color);
+}
+
+void fill_rect(Image* image, const gfx::Rect& rc, color_t c)
+{
+  gfx::Rect clip = rc.createIntersect(image->bounds());
+  if (!clip.isEmpty())
+    image->fillRect(clip.x, clip.y,
+      clip.x+clip.w-1, clip.y+clip.h-1, c);
 }
 
 void blend_rect(Image* image, int x1, int y1, int x2, int y2, color_t color, int opacity)

@@ -30,7 +30,7 @@ namespace app {
 
   class DrawingState : public StandbyState {
   public:
-    DrawingState(tools::ToolLoop* loop, Editor* editor, ui::MouseMessage* msg);
+    DrawingState(tools::ToolLoop* loop);
     virtual ~DrawingState();
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
@@ -39,10 +39,13 @@ namespace app {
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
+    virtual void onExposeSpritePixels(const gfx::Region& rgn) override;
 
     // Drawing state doesn't require the brush-preview because we are
     // already drawing (viewing the real trace).
     virtual bool requireBrushPreview() override { return false; }
+
+    void initToolLoop(Editor* editor, ui::MouseMessage* msg);
 
   private:
     void destroyLoop();

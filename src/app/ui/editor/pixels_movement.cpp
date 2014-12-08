@@ -447,15 +447,21 @@ void PixelsMovement::stampImage()
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expandCelCanvas(writer.context(), TILED_NONE,
-                                      m_undoTransaction);
+      ExpandCelCanvas expand(writer.context(),
+        TILED_NONE, m_undoTransaction,
+        ExpandCelCanvas::None);
 
-      composite_image(expandCelCanvas.getDestCanvas(), image,
-                      -expandCelCanvas.getCel()->x(),
-                      -expandCelCanvas.getCel()->y(),
-                      cel->opacity(), BLEND_MODE_NORMAL);
+      // TODO can we reduce this region?
+      gfx::Region modifiedRegion(expand.getDestCanvas()->bounds());
+      expand.validateDestCanvas(modifiedRegion);
 
-      expandCelCanvas.commit();
+      composite_image(
+        expand.getDestCanvas(), image,
+        -expand.getCel()->x(),
+        -expand.getCel()->y(),
+        cel->opacity(), BLEND_MODE_NORMAL);
+
+      expand.commit();
     }
     // TODO
     // m_undoTransaction.commit();

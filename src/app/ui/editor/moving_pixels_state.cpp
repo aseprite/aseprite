@@ -148,6 +148,9 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 
     editor->releaseMouse();
 
+    // Redraw the document without the transformation handles.
+    editor->document()->notifyGeneralUpdate();
+
     return DiscardState;
   }
   else {

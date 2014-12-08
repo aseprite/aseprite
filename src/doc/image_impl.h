@@ -103,108 +103,48 @@ namespace doc {
         *it = color;
     }
 
-    void copy(const Image* _src, int x, int y) override {
+    void copy(const Image* _src, int dst_x, int dst_y, int src_x, int src_y, int w, int h) override {
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
-      ImageImpl<Traits>* dst = this;
       address_t src_address;
       address_t dst_address;
-      int xbeg, xend, xsrc;
-      int ybeg, yend, ysrc, ydst;
       int bytes;
 
-      // Clipping
-
-      xsrc = 0;
-      ysrc = 0;
-
-      xbeg = x;
-      ybeg = y;
-      xend = x+src->width()-1;
-      yend = y+src->height()-1;
-
-      if ((xend < 0) || (xbeg >= dst->width()) ||
-          (yend < 0) || (ybeg >= dst->height()))
+      if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
         return;
 
-      if (xbeg < 0) {
-        xsrc -= xbeg;
-        xbeg = 0;
-      }
-
-      if (ybeg < 0) {
-        ysrc -= ybeg;
-        ybeg = 0;
-      }
-
-      if (xend >= dst->width())
-        xend = dst->width()-1;
-
-      if (yend >= dst->height())
-        yend = dst->height()-1;
-
       // Copy process
+      bytes = Traits::getRowStrideBytes(w);
 
-      bytes = Traits::getRowStrideBytes(xend - xbeg + 1);
-
-      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = src->address(xsrc, ysrc);
-        dst_address = dst->address(xbeg, ydst);
+      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+        src_address = src->address(src_x, src_y);
+        dst_address = address(dst_x, dst_y);
 
         memcpy(dst_address, src_address, bytes);
       }
     }
 
-    void merge(const Image* _src, int x, int y, int opacity, int blend_mode) override {
+    void merge(const Image* _src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) override {
       BLEND_COLOR blender = Traits::get_blender(blend_mode);
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
       ImageImpl<Traits>* dst = this;
       address_t src_address;
       address_t dst_address;
-      int xbeg, xend, xsrc, xdst;
-      int ybeg, yend, ysrc, ydst;
       uint32_t mask_color = src->maskColor();
 
       // nothing to do
       if (!opacity)
         return;
 
-      // clipping
-
-      xsrc = 0;
-      ysrc = 0;
-
-      xbeg = x;
-      ybeg = y;
-      xend = x+src->width()-1;
-      yend = y+src->height()-1;
-
-      if ((xend < 0) || (xbeg >= dst->width()) ||
-          (yend < 0) || (ybeg >= dst->height()))
+      if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
         return;
 
-      if (xbeg < 0) {
-        xsrc -= xbeg;
-        xbeg = 0;
-      }
-
-      if (ybeg < 0) {
-        ysrc -= ybeg;
-        ybeg = 0;
-      }
-
-      if (xend >= dst->width())
-        xend = dst->width()-1;
-
-      if (yend >= dst->height())
-        yend = dst->height()-1;
-
       // Merge process
+      int end_x = dst_x+w;
+      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+        src_address = src->address(src_x, src_y);
+        dst_address = dst->address(dst_x, dst_y);
 
-      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = (address_t)src->address(xsrc, ysrc);
-        dst_address = (address_t)dst->address(xbeg, ydst);
-
-        for (xdst=xbeg; xdst<=xend; ++xdst) {
+        for (int x=dst_x; x<end_x; ++x) {
           if (*src_address != mask_color)
             *dst_address = (*blender)(*dst_address, *src_address, opacity);
 
@@ -230,6 +170,63 @@ namespace doc {
 
     void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) override {
       fillRect(x1, y1, x2, y2, color);
+    }
+
+  private:
+    bool clip_rects(const Image* src, int& dst_x, int& dst_y, int& src_x, int& src_y, int& w, int& h) const {
+      // Clip with destionation image
+      if (dst_x < 0) {
+        src_x -= dst_x;
+        dst_x = 0;
+      }
+      if (dst_y < 0) {
+        src_y -= dst_y;
+        dst_y = 0;
+      }
+      if (dst_x+w > width()) {
+        w = width() - dst_x;
+        if (w < 0)
+          return false;
+      }
+      if (dst_y+h > height()) {
+        h = height() - dst_y;
+        if (h < 0)
+          return false;
+      }
+
+      // Clip with source image
+      if (src_x < 0) {
+        dst_x -= src_x;
+        src_x = 0;
+      }
+      if (src_y < 0) {
+        dst_y -= src_y;
+        src_y = 0;
+      }
+      if (src_x+w > src->width()) {
+        w = src->width() - src_x;
+        if (w < 0)
+          return false;
+      }
+      if (src_y+h > src->height()) {
+        h = src->height() - src_y;
+        if (h < 0)
+          return false;
+      }
+
+      // Empty cases
+      if ((src_x+w <= 0) || (src_x >= src->width()) ||
+          (src_y+h <= 0) || (src_y >= src->height()))
+        return false;
+
+      if ((dst_x+w <= 0) || (dst_x >= width()) ||
+          (dst_y+h <= 0) || (dst_y >= height()))
+        return false;
+
+      ASSERT(src->bounds().contains(gfx::Rect(src_x, src_y, w, h)));
+      ASSERT(bounds().contains(gfx::Rect(dst_x, dst_y, w, h)));
+
+      return true;
     }
   };
 
@@ -283,52 +280,22 @@ namespace doc {
   }
 
   template<>
-  inline void ImageImpl<IndexedTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode) {
-    Image* dst = this;
-    address_t src_address;
-    address_t dst_address;
-    int xbeg, xend, xsrc, xdst;
-    int ybeg, yend, ysrc, ydst;
-
-    // clipping
-
-    xsrc = 0;
-    ysrc = 0;
-
-    xbeg = x;
-    ybeg = y;
-    xend = x+src->width()-1;
-    yend = y+src->height()-1;
-
-    if ((xend < 0) || (xbeg >= dst->width()) ||
-        (yend < 0) || (ybeg >= dst->height()))
+  inline void ImageImpl<IndexedTraits>::merge(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) {
+    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
       return;
 
-    if (xbeg < 0) {
-      xsrc -= xbeg;
-      xbeg = 0;
-    }
+    address_t src_address;
+    address_t dst_address;
 
-    if (ybeg < 0) {
-      ysrc -= ybeg;
-      ybeg = 0;
-    }
+    int end_x = dst_x+w;
 
-    if (xend >= dst->width())
-      xend = dst->width()-1;
-
-    if (yend >= dst->height())
-      yend = dst->height()-1;
-
-    // merge process
-
-    // direct copy
+    // Direct copy
     if (blend_mode == BLEND_MODE_COPY) {
-      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = src->getPixelAddress(xsrc, ysrc);
-        dst_address = dst->getPixelAddress(xbeg, ydst);
+      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+        src_address = src->getPixelAddress(src_x, src_y);
+        dst_address = getPixelAddress(dst_x, dst_y);
 
-        for (xdst=xbeg; xdst<=xend; xdst++) {
+        for (int x=dst_x; x<end_x; ++x) {
           *dst_address = (*src_address);
 
           ++dst_address;
@@ -336,15 +303,15 @@ namespace doc {
         }
       }
     }
-    // with mask
+    // With mask
     else {
       int mask_color = src->maskColor();
 
-      for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-        src_address = src->getPixelAddress(xsrc, ysrc);
-        dst_address = dst->getPixelAddress(xbeg, ydst);
+      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+        src_address = src->getPixelAddress(src_x, src_y);
+        dst_address = getPixelAddress(dst_x, dst_y);
 
-        for (xdst=xbeg; xdst<=xend; ++xdst) {
+        for (int x=dst_x; x<end_x; ++x) {
           if (*src_address != mask_color)
             *dst_address = (*src_address);
 
@@ -356,50 +323,18 @@ namespace doc {
   }
 
   template<>
-  inline void ImageImpl<BitmapTraits>::copy(const Image* src, int x, int y) {
-    Image* dst = this;
-    int xbeg, xend, xsrc, xdst;
-    int ybeg, yend, ysrc, ydst;
-
-    // clipping
-
-    xsrc = 0;
-    ysrc = 0;
-
-    xbeg = x;
-    ybeg = y;
-    xend = x+src->width()-1;
-    yend = y+src->height()-1;
-
-    if ((xend < 0) || (xbeg >= dst->width()) ||
-        (yend < 0) || (ybeg >= dst->height()))
+  inline void ImageImpl<BitmapTraits>::copy(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h) {
+    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
       return;
 
-    if (xbeg < 0) {
-      xsrc -= xbeg;
-      xbeg = 0;
-    }
+    // Copy process
+    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(src_x, src_y, w, h), src_x, src_y);
+    ImageIterator<BitmapTraits> dst_it(this, gfx::Rect(dst_x, dst_y, w, h), dst_x, dst_y);
 
-    if (ybeg < 0) {
-      ysrc -= ybeg;
-      ybeg = 0;
-    }
+    int end_x = dst_x+w;
 
-    if (xend >= dst->width())
-      xend = dst->width()-1;
-
-    if (yend >= dst->height())
-      yend = dst->height()-1;
-
-    // copy process
-
-    int w = xend - xbeg + 1;
-    int h = yend - ybeg + 1;
-    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(xsrc, ysrc, w, h), xsrc, ysrc);
-    ImageIterator<BitmapTraits> dst_it(dst, gfx::Rect(xbeg, ybeg, w, h), xbeg, ybeg);
-
-    for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-      for (xdst=xbeg; xdst<=xend; ++xdst) {
+    for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+      for (int x=dst_x; x<end_x; ++x) {
         *dst_it = *src_it;
         ++src_it;
         ++dst_it;
@@ -408,50 +343,18 @@ namespace doc {
   }
 
   template<>
-  inline void ImageImpl<BitmapTraits>::merge(const Image* src, int x, int y, int opacity, int blend_mode) {
-    Image* dst = this;
-    int xbeg, xend, xsrc, xdst;
-    int ybeg, yend, ysrc, ydst;
-
-    // clipping
-
-    xsrc = 0;
-    ysrc = 0;
-
-    xbeg = x;
-    ybeg = y;
-    xend = x+src->width()-1;
-    yend = y+src->height()-1;
-
-    if ((xend < 0) || (xbeg >= dst->width()) ||
-        (yend < 0) || (ybeg >= dst->height()))
+  inline void ImageImpl<BitmapTraits>::merge(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) {
+    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
       return;
 
-    if (xbeg < 0) {
-      xsrc -= xbeg;
-      xbeg = 0;
-    }
+    // Merge process
+    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(src_x, src_y, w, h), src_x, src_y);
+    ImageIterator<BitmapTraits> dst_it(this, gfx::Rect(dst_x, dst_y, w, h), dst_x, dst_y);
 
-    if (ybeg < 0) {
-      ysrc -= ybeg;
-      ybeg = 0;
-    }
+    int end_x = dst_x+w;
 
-    if (xend >= dst->width())
-      xend = dst->width()-1;
-
-    if (yend >= dst->height())
-      yend = dst->height()-1;
-
-    // merge process
-
-    int w = xend - xbeg + 1;
-    int h = yend - ybeg + 1;
-    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(xsrc, ysrc, w, h), xsrc, ysrc);
-    ImageIterator<BitmapTraits> dst_it(dst, gfx::Rect(xbeg, ybeg, w, h), xbeg, ybeg);
-
-    for (ydst=ybeg; ydst<=yend; ++ydst, ++ysrc) {
-      for (xdst=xbeg; xdst<=xend; ++xdst) {
+    for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
+      for (int x=dst_x; x<end_x; ++x) {
         if (*dst_it != 0)
           *dst_it = *src_it;
         ++src_it;

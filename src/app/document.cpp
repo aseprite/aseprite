@@ -108,6 +108,14 @@ void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& reg
   notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpritePixelsModified, ev);
 }
 
+void Document::notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region)
+{
+  doc::DocumentEvent ev(this);
+  ev.sprite(sprite);
+  ev.region(region);
+  notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onExposeSpritePixels, ev);
+}
+
 void Document::notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer)
 {
   doc::DocumentEvent ev(this);

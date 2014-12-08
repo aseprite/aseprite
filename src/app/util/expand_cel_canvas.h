@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,10 @@
 #pragma once
 
 #include "filters/tiled_mode.h"
+#include "gfx/point.h"
 #include "gfx/rect.h"
+#include "gfx/region.h"
+#include "gfx/size.h"
 
 namespace doc {
   class Cel;
@@ -46,46 +49,55 @@ namespace app {
   // state using "Undo" command.
   class ExpandCelCanvas {
   public:
-    ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo);
+    enum Flags {
+      None = 0,
+      NeedsSource = 1,
+      UseModifiedRegionAsUndoInfo = 2,
+    };
+
+    ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo, Flags flags);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds
     // information in the undo history so the user can undo the
     // modifications in the canvas.
-    void commit(const gfx::Rect& bounds = gfx::Rect());
+    void commit();
 
     // Restore the cel as its original state as when ExpandCelCanvas()
     // was created.
     void rollback();
 
-    // You can read pixels from here
-    Image* getSourceCanvas() {    // TODO this should be "const"
-      return m_srcImage;
-    }
+    Image* getSourceCanvas(); // You can read pixels from here
+    Image* getDestCanvas();   // You can write pixels right here
 
-    // You can write pixels right here
-    Image* getDestCanvas() {
-      return m_dstImage;
-    }
+    void validateSourceCanvas(const gfx::Region& rgn);
+    void validateDestCanvas(const gfx::Region& rgn);
+    void invalidateDestCanvas();
+    void invalidateDestCanvas(const gfx::Region& rgn);
+    void copyValidDestToSourceCanvas(const gfx::Region& rgn);
 
-    const Cel* getCel() const {
-      return m_cel;
-    }
+    const Cel* getCel() const { return m_cel; }
 
   private:
+    void copyValidDestToOriginalCel();
+
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
     Cel* m_cel;
     Image* m_celImage;
     bool m_celCreated;
-    int m_originalCelX;
-    int m_originalCelY;
+    gfx::Point m_origCelPos;
+    gfx::Point m_celPos;
+    Flags m_flags;
+    gfx::Rect m_bounds;
     Image* m_srcImage;
     Image* m_dstImage;
     bool m_closed;
     bool m_committed;
     UndoTransaction& m_undo;
+    gfx::Region m_validSrcRegion;
+    gfx::Region m_validDstRegion;
   };
 
 } // namespace app

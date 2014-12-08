@@ -38,10 +38,10 @@ using namespace base::serialization::little_endian;
 void write_dirty(std::ostream& os, Dirty* dirty)
 {
   write8(os, dirty->pixelFormat());
-  write16(os, dirty->x1());
-  write16(os, dirty->y1());
-  write16(os, dirty->x2());
-  write16(os, dirty->y2());
+  write16(os, dirty->bounds().x);
+  write16(os, dirty->bounds().y);
+  write16(os, dirty->bounds().w);
+  write16(os, dirty->bounds().h);
   write16(os, dirty->getRowsCount());
 
   for (int v=0; v<dirty->getRowsCount(); v++) {
@@ -62,19 +62,20 @@ void write_dirty(std::ostream& os, Dirty* dirty)
 
 Dirty* read_dirty(std::istream& is)
 {
-  int u, v, x, y, w;
   int pixelFormat = read8(is);
-  int x1 = read16(is);
-  int y1 = read16(is);
-  int x2 = read16(is);
-  int y2 = read16(is);
-  base::UniquePtr<Dirty> dirty(new Dirty(static_cast<PixelFormat>(pixelFormat), x1, y1, x2, y2));
+  int x = read16(is);
+  int y = read16(is);
+  int w = read16(is);
+  int h = read16(is);
+  base::UniquePtr<Dirty> dirty(new Dirty(
+      static_cast<PixelFormat>(pixelFormat),
+      gfx::Rect(x, y, w, h)));
 
   int noRows = read16(is);
   if (noRows > 0) {
     dirty->m_rows.resize(noRows);
 
-    for (v=0; v<dirty->getRowsCount(); v++) {
+    for (int v=0; v<dirty->getRowsCount(); v++) {
       y = read16(is);
 
       base::UniquePtr<Dirty::Row> row(new Dirty::Row(y));
@@ -82,7 +83,7 @@ Dirty* read_dirty(std::istream& is)
       int noCols = read16(is);
       row->cols.resize(noCols);
 
-      for (u=0; u<noCols; u++) {
+      for (int u=0; u<noCols; u++) {
         x = read16(is);
         w = read16(is);
 

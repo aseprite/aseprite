@@ -249,6 +249,7 @@ add_library(app-lib
   undoers/dirty_area.cpp
   undoers/flip_image.cpp
   undoers/image_area.cpp
+  undoers/modified_region.cpp
   undoers/move_layer.cpp
   undoers/open_group.cpp
   undoers/remap_palette.cpp

@@ -18,35 +18,6 @@
 
 namespace doc {
 
-Dirty::Dirty(PixelFormat format, int x1, int y1, int x2, int y2)
-  : m_format(format)
-  , m_x1(x1), m_y1(y1)
-  , m_x2(x2), m_y2(y2)
-{
-}
-
-Dirty::Dirty(const Dirty& src)
-  : m_format(src.m_format)
-  , m_x1(src.m_x1), m_y1(src.m_y1)
-  , m_x2(src.m_x2), m_y2(src.m_y2)
-{
-  m_rows.resize(src.m_rows.size());
-
-  for (size_t v=0; v<m_rows.size(); ++v) {
-    const Row& srcRow = src.getRow(v);
-    Row* row = new Row(srcRow.y);
-
-    row->cols.resize(srcRow.cols.size());
-
-    for (size_t u=0; u<row->cols.size(); ++u) {
-      Col* col = new Col(*srcRow.cols[u]);
-      row->cols[u] = col;
-    }
-
-    m_rows[v] = row;
-  }
-}
-
 template<typename ImageTraits>
 inline bool shrink_row(const Image* image, const Image* image_diff, int& x1, int y, int& x2)
 {
@@ -68,45 +39,85 @@ inline bool shrink_row(const Image* image, const Image* image_diff, int& x1, int
   return true;
 }
 
-Dirty::Dirty(Image* image, Image* image_diff, const gfx::Rect& bounds)
-  : m_format(image->pixelFormat())
-  , m_x1(bounds.x), m_y1(bounds.y)
-  , m_x2(bounds.x2()-1), m_y2(bounds.y2()-1)
+Dirty::Dirty(PixelFormat format, const gfx::Rect& bounds)
+  : m_format(format)
+  , m_bounds(bounds)
+{
+}
+
+Dirty::Dirty(const Dirty& src)
+  : m_format(src.m_format)
+  , m_bounds(src.m_bounds)
+{
+  m_rows.resize(src.m_rows.size());
+
+  for (size_t v=0; v<m_rows.size(); ++v) {
+    const Row& srcRow = src.getRow(v);
+    Row* row = new Row(srcRow.y);
+
+    row->cols.resize(srcRow.cols.size());
+
+    for (size_t u=0; u<row->cols.size(); ++u) {
+      Col* col = new Col(*srcRow.cols[u]);
+      row->cols[u] = col;
+    }
+
+    m_rows[v] = row;
+  }
+}
+
+Dirty::Dirty(Image* image1, Image* image2, const gfx::Rect& bounds)
+  : m_format(image1->pixelFormat())
+  , m_bounds(bounds)
+{
+  initialize(image1, image2, gfx::Region(bounds));
+}
+
+Dirty::Dirty(Image* image1, Image* image2, const gfx::Region& region)
+  : m_format(image1->pixelFormat())
+  , m_bounds(region.bounds())
+{
+  initialize(image1, image2, region);
+}
+
+void Dirty::initialize(Image* image1, Image* image2, const gfx::Region& region)
 {
   int y, x1, x2;
 
-  for (y=m_y1; y<=m_y2; y++) {
-    x1 = m_x1;
-    x2 = m_x2;
+  for (const auto& rc : region) {
+    for (y=rc.y; y<rc.y+rc.h; ++y) {
+      x1 = rc.x;
+      x2 = rc.x+rc.w-1;
 
-    bool res;
-    switch (image->pixelFormat()) {
-      case IMAGE_RGB:
-        res = shrink_row<RgbTraits>(image, image_diff, x1, y, x2);
-        break;
+      bool res;
+      switch (m_format) {
+        case IMAGE_RGB:
+          res = shrink_row<RgbTraits>(image1, image2, x1, y, x2);
+          break;
 
-      case IMAGE_GRAYSCALE:
-        res = shrink_row<GrayscaleTraits>(image, image_diff, x1, y, x2);
-        break;
+        case IMAGE_GRAYSCALE:
+          res = shrink_row<GrayscaleTraits>(image1, image2, x1, y, x2);
+          break;
 
-      case IMAGE_INDEXED:
-        res = shrink_row<IndexedTraits>(image, image_diff, x1, y, x2);
-        break;
+        case IMAGE_INDEXED:
+          res = shrink_row<IndexedTraits>(image1, image2, x1, y, x2);
+          break;
 
-      default:
-        ASSERT(false && "Not implemented for bitmaps");
-        return;
+        default:
+          ASSERT(false && "Not implemented for bitmaps");
+          return;
+      }
+      if (!res)
+        continue;
+
+      Col* col = new Col(x1, x2-x1+1);
+      col->data.resize(getLineSize(col->w));
+
+      Row* row = new Row(y);
+      row->cols.push_back(col);
+
+      m_rows.push_back(row);
     }
-    if (!res)
-      continue;
-
-    Col* col = new Col(x1, x2-x1+1);
-    col->data.resize(getLineSize(col->w));
-
-    Row* row = new Row(y);
-    row->cols.push_back(col);
-
-    m_rows.push_back(row);
   }
 }
 

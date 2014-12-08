@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/image.h"
+#include "gfx/region.h"
 
 #include <vector>
 
@@ -44,18 +45,16 @@ namespace doc {
     };
 
 public:
-    Dirty(PixelFormat format, int x1, int y1, int x2, int y2);
+    Dirty(PixelFormat format, const gfx::Rect& bounds);
     Dirty(const Dirty& src);
     Dirty(Image* image1, Image* image2, const gfx::Rect& bounds);
+    Dirty(Image* image1, Image* image2, const gfx::Region& region);
     ~Dirty();
 
     int getMemSize() const;
 
     PixelFormat pixelFormat() const { return m_format; }
-    int x1() const { return m_x1; }
-    int y1() const { return m_y1; }
-    int x2() const { return m_x2; }
-    int y2() const { return m_y2; }
+    gfx::Rect bounds() const { return m_bounds; }
 
     int getRowsCount() const { return m_rows.size(); }
     const Row& getRow(int i) const { return *m_rows[i]; }
@@ -70,6 +69,8 @@ public:
     Dirty* clone() const { return new Dirty(*this); }
 
   private:
+    void initialize(Image* image1, Image* image2, const gfx::Region& region);
+
     // Disable copying through operator=
     Dirty& operator=(const Dirty&);
 
@@ -79,8 +80,7 @@ public:
     // new Undo implementation is finished.
 
     PixelFormat m_format;
-    int m_x1, m_y1;
-    int m_x2, m_y2;
+    gfx::Rect m_bounds;
     RowsList m_rows;
 
   };

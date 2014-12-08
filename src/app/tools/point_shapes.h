@@ -75,7 +75,8 @@ public:
 
   void transformPoint(ToolLoop* loop, int x, int y)
   {
-    doc::algorithm::floodfill(loop->getSrcImage(), x, y,
+    doc::algorithm::floodfill(
+      const_cast<Image*>(loop->getSrcImage()), x, y,
       paintBounds(loop, x, y),
       loop->getTolerance(),
       loop->getContiguous(),

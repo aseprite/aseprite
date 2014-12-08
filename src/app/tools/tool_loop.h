@@ -88,10 +88,33 @@ namespace app {
       virtual FrameNumber getFrame() = 0;
 
       // Should return an image where we can read pixels (readonly image)
-      virtual Image* getSrcImage() = 0;
+      virtual const Image* getSrcImage() = 0;
 
       // Should return an image where we can write pixels
       virtual Image* getDstImage() = 0;
+
+      // Makes the specified region valid in the source
+      // image. Basically the implementation should copy from the
+      // original cel the given region to the source image. The source
+      // image is used by inks to create blur effects or similar.
+      virtual void validateSrcImage(const gfx::Region& rgn) = 0;
+
+      // Makes the specified destination image region valid to be
+      // painted. The destination image is used by inks to compose the
+      // brush, so we've to make sure that the destination image
+      // matches the original cel when we make that composition.
+      virtual void validateDstImage(const gfx::Region& rgn) = 0;
+
+      // Invalidates the whole destination image. It's used for tools
+      // like line or rectangle which don't accumulate the effect so
+      // they need to start with a fresh destination image on each
+      // loop step/cycle.
+      virtual void invalidateDstImage() = 0;
+      virtual void invalidateDstImage(const gfx::Region& rgn) = 0;
+
+      // Copies the given region from the destination to the source
+      // image, used by "overlap" tools like jumble or spray.
+      virtual void copyValidDstToSrcImage(const gfx::Region& rgn) = 0;
 
       // Returns the RGB map used to convert RGB values to palette index.
       virtual RgbMap* getRgbMap() = 0;

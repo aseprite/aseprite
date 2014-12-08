@@ -23,6 +23,10 @@
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
 
+namespace gfx {
+  class Region;
+}
+
 namespace ui {
   class MouseMessage;
   class KeyMessage;
@@ -103,6 +107,9 @@ namespace app {
 
     // Called when a key is released.
     virtual bool onUpdateStatusBar(Editor* editor) { return false; }
+
+    // When a part of the sprite will be exposed.
+    virtual void onExposeSpritePixels(const gfx::Region& rgn) { }
 
     // Returns true if the this state requires the brush-preview as
     // drawing cursor.

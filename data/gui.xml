@@ -696,7 +696,7 @@
             controller="freehand"
             pointshape="pixel"
             intertwine="as_lines"
-            tracepolicy="accumulative">
+            tracepolicy="accumulate">
         <tooltip>*
         Left-button: Replace/add to current selection.&#10;*
         Right-button: Remove from current selection.
@@ -723,7 +723,7 @@
             ink="selection"
             controller="one_point"
             pointshape="floodfill"
-            tracepolicy="accumulative">
+            tracepolicy="accumulate">
         <tooltip>*
         Left-button: Replace/add to current selection.&#10;*
         Right-button: Remove from current selection.
@@ -738,7 +738,7 @@
             controller="freehand"
             pointshape="brush"
             intertwine="as_lines"
-            tracepolicy="accumulative"
+            tracepolicy="accumulate"
             />
       <tool id="spray"
             text="Spray Tool"
@@ -757,7 +757,7 @@
             controller="freehand"
             pointshape="brush"
             intertwine="as_lines"
-            tracepolicy="accumulative"
+            tracepolicy="accumulate"
             default_brush_size="8">
         <tooltip>*
         Left-button: Erase with the background color in `Background' layer&#10;
@@ -810,7 +810,7 @@
             ink="paint"
             controller="one_point"
             pointshape="floodfill"
-            tracepolicy="accumulative"
+            tracepolicy="accumulate"
             />
     </group>
 
@@ -880,7 +880,7 @@
             controller="freehand"
             pointshape="brush"
             intertwine="as_lines"
-            tracepolicy="accumulative"
+            tracepolicy="accumulate"
             />
       <tool id="polygon"
             text="Polygon Tool"
@@ -900,7 +900,7 @@
             controller="freehand"
             pointshape="brush"
             intertwine="as_lines"
-            tracepolicy="overlap"
+            tracepolicy="accumulate"
             default_brush_size="16"
             />
       <tool id="jumble"

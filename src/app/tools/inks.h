@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2014  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "app/tools/pick_ink.h"
 #include "app/undoers/set_mask.h"
 #include "doc/mask.h"
+#include "gfx/region.h"
 
 namespace app {
 namespace tools {
@@ -220,6 +221,7 @@ class BlurInk : public Ink {
 public:
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
+  bool needsSpecialSourceArea() const { return true; }
 
   void prepareInk(ToolLoop* loop)
   {
@@ -230,6 +232,14 @@ public:
   {
     (*m_proc)(x1, y, x2, loop);
   }
+
+  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const {
+    // We need one pixel more for each side, to use a 3x3 convolution matrix.
+    for (const auto& rc : dirtyArea) {
+      sourceArea.createUnion(sourceArea,
+        gfx::Region(gfx::Rect(rc).enlarge(1)));
+    }
+  }
 };
 
 
@@ -239,6 +249,7 @@ class JumbleInk : public Ink {
 public:
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
+  bool needsSpecialSourceArea() const { return true; }
 
   void prepareInk(ToolLoop* loop)
   {
@@ -248,6 +259,14 @@ public:
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
     (*m_proc)(x1, y, x2, loop);
+  }
+
+  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const {
+    // We need one pixel more for each side.
+    for (const auto& rc : dirtyArea) {
+      sourceArea.createUnion(sourceArea,
+        gfx::Region(gfx::Rect(rc).enlarge(1)));
+    }
   }
 };
 

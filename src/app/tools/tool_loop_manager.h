@@ -103,10 +103,7 @@ namespace app {
       void doLoopStep(bool last_step);
       void snapToGrid(gfx::Point& point);
 
-      void calculateDirtyArea(
-        const Points& points,
-        gfx::Region& dirty_area);
-
+      void calculateDirtyArea(const Points& points);
       void calculateMinMax(const Points& points,
         gfx::Point& minpt,
         gfx::Point& maxpt);
@@ -114,7 +111,7 @@ namespace app {
       ToolLoop* m_toolLoop;
       Points m_points;
       gfx::Point m_oldPoint;
-      gfx::Region m_oldDirtyArea;
+      gfx::Region& m_dirtyArea;
     };
 
   } // namespace tools

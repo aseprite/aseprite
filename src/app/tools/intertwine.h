@@ -28,6 +28,10 @@ namespace app {
   namespace tools {
     class ToolLoop;
 
+    // Converts a sequence of points in several call to
+    // Intertwine::doPointshapePoint(). Basically each implementation
+    // says which pixels should be drawn between a sequence of
+    // user-defined points.
     class Intertwine {
     public:
       typedef std::vector<gfx::Point> Points;

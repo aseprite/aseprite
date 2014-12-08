@@ -44,6 +44,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
+#include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
@@ -57,6 +58,7 @@
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
+#include "doc/document_event.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/ui.h"
@@ -177,11 +179,15 @@ Editor::Editor(Document* document, EditorFlags flags)
     ->getDocumentSettings(m_document)
     ->addObserver(this);
 
+  m_document->addObserver(this);
+
   m_state->onAfterChangeState(this);
 }
 
 Editor::~Editor()
 {
+  m_document->removeObserver(this);
+
   UIContext::instance()->settings()
     ->getDocumentSettings(m_document)
     ->removeObserver(this);
@@ -201,7 +207,7 @@ WidgetType editor_type()
 
 void Editor::setStateInternal(const EditorStatePtr& newState)
 {
-  hideDrawingCursor();
+  HideShowDrawingCursor hideShow(this);
 
   // Fire before change state event, set the state, and fire after
   // change state event.
@@ -228,9 +234,6 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
 
   // Change to the new state.
   m_state->onAfterChangeState(this);
-
-  // Redraw all the editors with the same document of this editor
-  update_screen_for_document(m_document);
 
   // Notify observers
   m_observers.notifyStateChanged(this);
@@ -337,55 +340,36 @@ void Editor::updateEditor()
   View::getView(this)->updateView();
 }
 
-void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy)
+void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& spriteRectToDraw, int dx, int dy)
 {
-  // Output information
-  int source_x = m_zoom.apply(rc.x);
-  int source_y = m_zoom.apply(rc.y);
-  int dest_x   = dx + m_offset_x + source_x;
-  int dest_y   = dy + m_offset_y + source_y;
-  int width    = m_zoom.apply(rc.w);
-  int height   = m_zoom.apply(rc.h);
+  // Clip from sprite and apply zoom
+  gfx::Rect rc = m_sprite->bounds().createIntersect(spriteRectToDraw);
+  rc = m_zoom.apply(rc);
+
+  int dest_x = dx + m_offset_x + rc.x;
+  int dest_y = dy + m_offset_y + rc.y;
 
   // Clip from graphics/screen
   const gfx::Rect& clip = g->getClipBounds();
   if (dest_x < clip.x) {
-    source_x += clip.x - dest_x;
-    width -= clip.x - dest_x;
+    rc.x += clip.x - dest_x;
+    rc.w -= clip.x - dest_x;
     dest_x = clip.x;
   }
   if (dest_y < clip.y) {
-    source_y += clip.y - dest_y;
-    height -= clip.y - dest_y;
+    rc.y += clip.y - dest_y;
+    rc.h -= clip.y - dest_y;
     dest_y = clip.y;
   }
-  if (dest_x+width > clip.x+clip.w) {
-    width = clip.x+clip.w-dest_x;
+  if (dest_x+rc.w > clip.x+clip.w) {
+    rc.w = clip.x+clip.w-dest_x;
   }
-  if (dest_y+height > clip.y+clip.h) {
-    height = clip.y+clip.h-dest_y;
-  }
-
-  // Clip from sprite
-  if (source_x < 0) {
-    width += source_x;
-    dest_x -= source_x;
-    source_x = 0;
-  }
-  if (source_y < 0) {
-    height += source_y;
-    dest_y -= source_y;
-    source_y = 0;
-  }
-  if (source_x+width > m_zoom.apply(m_sprite->width())) {
-    width = m_zoom.apply(m_sprite->width()) - source_x;
-  }
-  if (source_y+height > m_zoom.apply(m_sprite->height())) {
-    height = m_zoom.apply(m_sprite->height()) - source_y;
+  if (dest_y+rc.h > clip.y+clip.h) {
+    rc.h = clip.y+clip.h-dest_y;
   }
 
   // Draw the sprite
-  if ((width > 0) && (height > 0)) {
+  if ((rc.w > 0) && (rc.h > 0)) {
     RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
 
     // Generate the rendered image
@@ -394,9 +378,22 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
 
     base::UniquePtr<Image> rendered(NULL);
     try {
+      // Generate a "expose sprite pixels" notification. This is used by
+      // tool managers that need to validate this region (copy pixels from
+      // the original cel) before it can be used by the RenderEngine.
+      {
+        gfx::Rect expose = m_zoom.remove(rc);
+        // If the zoom level is less than 100%, we add extra pixels to
+        // the exposed area. Those pixels could be shown in the
+        // rendering process depending on each cel position.
+        // E.g. when we are drawing in a cel with position < (0,0)
+        if (m_zoom.scale() < 1.0)
+          expose.enlarge(1./m_zoom.scale());
+        m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
+      }
+
       rendered.reset(renderEngine.renderSprite(
-          source_x, source_y, width, height,
-          m_frame, m_zoom, true,
+          rc, m_frame, m_zoom, true,
           ((m_flags & kShowOnionskin) == kShowOnionskin),
           render_buffer));
     }
@@ -408,23 +405,30 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, in
       // Pre-render decorator.
       if ((m_flags & kShowDecorators) && m_decorator) {
         EditorPreRenderImpl preRender(this, rendered,
-          Point(-source_x, -source_y), m_zoom);
+          Point(-rc.x, -rc.y), m_zoom);
         m_decorator->preRenderDecorator(&preRender);
       }
 
-      she::Surface* tmp(she::instance()->createRgbaSurface(width, height));
+      // Convert the render to a she::Surface
+      she::Surface* tmp(she::instance()->createRgbaSurface(rc.w, rc.h));
       if (tmp->nativeHandle()) {
         convert_image_to_surface(rendered, m_sprite->getPalette(m_frame),
-          tmp, 0, 0, 0, 0, width, height);
-        g->blit(tmp, 0, 0, dest_x, dest_y, width, height);
+          tmp, 0, 0, 0, 0, rc.w, rc.h);
+        g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
       }
       tmp->dispose();
     }
   }
 }
 
-void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
+void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 {
+  gfx::Rect rc = _rc;
+  // For odd zoom scales minor than 100% we have to add an extra window
+  // just to make sure the whole rectangle is drawn.
+  if (m_zoom.scale() < 1.0)
+    rc.inflate(1./m_zoom.scale(), 1./m_zoom.scale());
+
   gfx::Rect client = getClientBounds();
   gfx::Rect spriteRect(
     client.x + m_offset_x,
@@ -481,35 +485,42 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc)
   // Grids
   {
     // Clipping
-    IntersectClip clip(g, editorToScreen(rc).offset(-getBounds().getOrigin()));
+    gfx::Rect cliprc = editorToScreen(rc).offset(-getBounds().getOrigin());
+    cliprc = cliprc.createIntersect(spriteRect);
+    if (!cliprc.isEmpty()) {
+      IntersectClip clip(g, cliprc);
 
-    // Draw the pixel grid
-    if ((m_zoom.scale() > 2.0) && docSettings->getPixelGridVisible()) {
-      int alpha = docSettings->getPixelGridOpacity();
+      // Draw the pixel grid
+      if ((m_zoom.scale() > 2.0) && docSettings->getPixelGridVisible()) {
+        int alpha = docSettings->getPixelGridOpacity();
 
-      if (docSettings->getPixelGridAutoOpacity()) {
-        alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
-        alpha = MID(0, alpha, 255);
+        if (docSettings->getPixelGridAutoOpacity()) {
+          alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
+          alpha = MID(0, alpha, 255);
+        }
+
+        drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
+          docSettings->getPixelGridColor(), alpha);
       }
 
-      drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
-        docSettings->getPixelGridColor(), alpha);
-    }
+      // Draw the grid
+      if (docSettings->getGridVisible()) {
+        gfx::Rect gridrc = docSettings->getGridBounds();
+        if (m_zoom.apply(gridrc.w) > 2 &&
+          m_zoom.apply(gridrc.h) > 2) {
+          int alpha = docSettings->getGridOpacity();
 
-    // Draw the grid
-    if (docSettings->getGridVisible()) {
-      int alpha = docSettings->getGridOpacity();
+          if (docSettings->getGridAutoOpacity()) {
+            double len = (m_zoom.apply(gridrc.w) + m_zoom.apply(gridrc.h)) / 2.;
+            alpha = int(alpha * len / 32.);
+            alpha = MID(0, alpha, 255);
+          }
 
-      if (docSettings->getGridAutoOpacity()) {
-        gfx::Rect rc = docSettings->getGridBounds();
-        double len = (m_zoom.apply(rc.w) + m_zoom.apply(rc.h)) / 2.;
-
-        alpha = int(alpha * len / 32.);
-        alpha = MID(0, alpha, 255);
+          if (alpha > 8)
+            drawGrid(g, enclosingRect, docSettings->getGridBounds(),
+              docSettings->getGridColor(), alpha);
+        }
       }
-
-      drawGrid(g, enclosingRect, docSettings->getGridBounds(),
-        docSettings->getGridColor(), alpha);
     }
   }
 
@@ -1315,6 +1326,12 @@ void Editor::onFgColorChange()
     hideDrawingCursor();
     showDrawingCursor();
   }
+}
+
+void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
+{
+  if (m_state && ev.sprite() == m_sprite)
+    m_state->onExposeSpritePixels(ev.region());
 }
 
 void Editor::editor_setcursor()

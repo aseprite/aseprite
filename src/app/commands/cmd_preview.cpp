@@ -192,8 +192,7 @@ protected:
 
       ImageBufferPtr buf = Editor::getRenderImageBuffer();
       m_render.reset(
-        renderEngine.renderSprite(
-          0, 0, m_sprite->width(), m_sprite->height(),
+        renderEngine.renderSprite(m_sprite->bounds(),
           m_editor->frame(), Zoom(1, 1), false, false, buf));
     }
 

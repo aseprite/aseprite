@@ -31,6 +31,7 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "doc/blend.h"
@@ -60,26 +61,26 @@ static tools::ToolLoopManager::Pointer pointer_from_msg(MouseMessage* msg)
     tools::ToolLoopManager::Pointer(msg->position().x, msg->position().y, button_from_msg(msg));
 }
 
-DrawingState::DrawingState(tools::ToolLoop* toolLoop, Editor* editor, MouseMessage* msg)
+DrawingState::DrawingState(tools::ToolLoop* toolLoop)
   : m_toolLoop(toolLoop)
   , m_toolLoopManager(new tools::ToolLoopManager(toolLoop))
   , m_mouseMoveReceived(false)
 {
-  // Hide the cursor (mainly to clean the pen preview)
-  editor->hideDrawingCursor();
-
-  m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
-  m_toolLoopManager->pressButton(pointer_from_msg(msg));
-
-  // Show drawing cursor again (without pen preview in this case)
-  editor->showDrawingCursor();
-
-  editor->captureMouse();
 }
 
 DrawingState::~DrawingState()
 {
   destroyLoop();
+}
+
+void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
+{
+  HideShowDrawingCursor hideShow(editor);
+
+  m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
+  m_toolLoopManager->pressButton(pointer_from_msg(msg));
+
+  editor->captureMouse();
 }
 
 bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
@@ -139,7 +140,7 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   m_mouseMoveReceived = true;
 
   // Hide the drawing cursor
-  editor->hideDrawingCursor();
+  HideShowDrawingCursor hideShow(editor);
 
   // Infinite scroll
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, true);
@@ -153,8 +154,6 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
     ->movement(tools::ToolLoopManager::Pointer(mousePos.x, mousePos.y,
                                                button_from_msg(msg)));
 
-  // draw the cursor again
-  editor->showDrawingCursor();
   return true;
 }
 
@@ -201,6 +200,12 @@ bool DrawingState::onUpdateStatusBar(Editor* editor)
   // The status bar is updated by ToolLoopImpl::updateStatusBar()
   // method called by the ToolLoopManager.
   return false;
+}
+
+void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
+{
+  if (m_toolLoop)
+    m_toolLoop->validateDstImage(rgn);
 }
 
 void DrawingState::destroyLoop()

@@ -254,12 +254,11 @@ public:
       PPData data(m_pts, loop);
 
       for (size_t c=0; c+1<points.size(); ++c) {
-        int x1 = points[c].x;
-        int y1 = points[c].y;
-        int x2 = points[c+1].x;
-        int y2 = points[c+1].y;
-
-        algo_line(x1, y1, x2, y2,
+        algo_line(
+          points[c].x,
+          points[c].y,
+          points[c+1].x,
+          points[c+1].y,
           (void*)&data,
           (AlgoPixel)&IntertwineAsPixelPerfect::pixelPerfectLine);
       }

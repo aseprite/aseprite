@@ -72,8 +72,8 @@ namespace doc {
     virtual color_t getPixel(int x, int y) const = 0;
     virtual void putPixel(int x, int y, color_t color) = 0;
     virtual void clear(color_t color) = 0;
-    virtual void copy(const Image* src, int x, int y) = 0;
-    virtual void merge(const Image* src, int x, int y, int opacity, int blend_mode) = 0;
+    virtual void copy(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h) = 0;
+    virtual void merge(const Image* _src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) = 0;
     virtual void drawHLine(int x1, int y, int x2, color_t color) = 0;
     virtual void fillRect(int x1, int y1, int x2, int y2, color_t color) = 0;
     virtual void blendRect(int x1, int y1, int x2, int y2, color_t color, int opacity) = 0;

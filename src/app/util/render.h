@@ -24,6 +24,7 @@
 #include "app/zoom.h"
 #include "doc/frame_number.h"
 #include "doc/image_buffer.h"
+#include "gfx/rect.h"
 
 namespace doc {
   class Image;
@@ -68,10 +69,10 @@ namespace app {
     static void setPreviewImage(const Layer* layer, FrameNumber frame, Image* drawable);
 
     //////////////////////////////////////////////////////////////////////
-    // Main function used by sprite-editors to render the sprite
-
-    Image* renderSprite(int source_x, int source_y,
-      int width, int height,
+    // Main function used by sprite-editors to render the sprite.
+    // Draws the given sprite frame in a new image and return it.
+    // Note: zoomedRect must have the zoom applied (zoomedRect = zoom.apply(spriteRect)).
+    Image* renderSprite(const gfx::Rect& zoomedRect,
       FrameNumber frame, Zoom zoom,
       bool draw_tiled_bg,
       bool enable_onionskin,

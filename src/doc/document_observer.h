@@ -51,6 +51,7 @@ namespace doc {
 
     virtual void onImagePixelsModified(DocumentEvent& ev) { }
     virtual void onSpritePixelsModified(DocumentEvent& ev) { }
+    virtual void onExposeSpritePixels(DocumentEvent& ev) { }
 
     // When the number of total frames available is modified.
     virtual void onTotalFramesChanged(DocumentEvent& ev) { }
