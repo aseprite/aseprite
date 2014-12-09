@@ -176,45 +176,44 @@ namespace doc {
     bool clip_rects(const Image* src, int& dst_x, int& dst_y, int& src_x, int& src_y, int& w, int& h) const {
       // Clip with destionation image
       if (dst_x < 0) {
+        w += dst_x;
         src_x -= dst_x;
         dst_x = 0;
       }
       if (dst_y < 0) {
+        h += dst_y;
         src_y -= dst_y;
         dst_y = 0;
       }
       if (dst_x+w > width()) {
         w = width() - dst_x;
-        if (w < 0)
-          return false;
       }
       if (dst_y+h > height()) {
         h = height() - dst_y;
-        if (h < 0)
-          return false;
       }
 
       // Clip with source image
       if (src_x < 0) {
+        w += src_x;
         dst_x -= src_x;
         src_x = 0;
       }
       if (src_y < 0) {
+        h += src_y;
         dst_y -= src_y;
         src_y = 0;
       }
       if (src_x+w > src->width()) {
         w = src->width() - src_x;
-        if (w < 0)
-          return false;
       }
       if (src_y+h > src->height()) {
         h = src->height() - src_y;
-        if (h < 0)
-          return false;
       }
 
       // Empty cases
+      if (w < 1 || h < 1)
+        return false;
+
       if ((src_x+w <= 0) || (src_x >= src->width()) ||
           (src_y+h <= 0) || (src_y >= src->height()))
         return false;
@@ -223,9 +222,9 @@ namespace doc {
           (dst_y+h <= 0) || (dst_y >= height()))
         return false;
 
+      // Check this function is working correctly
       ASSERT(src->bounds().contains(gfx::Rect(src_x, src_y, w, h)));
       ASSERT(bounds().contains(gfx::Rect(dst_x, dst_y, w, h)));
-
       return true;
     }
   };
