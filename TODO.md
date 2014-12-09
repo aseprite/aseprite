@@ -62,7 +62,6 @@
 
 # Old issues
 
-* Ctrl+T should transform the current cel
 * fix bilinear: when getpixel have alpha = 0 get a neighbor color.
 * fix sliders in Tools Configuration, they are too big
   for small resolutions.
