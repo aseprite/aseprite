@@ -588,7 +588,7 @@ void PixelsMovement::redrawCurrentMask()
 
   // Transform mask
 
-  m_currentMask->replace(0, 0, m_sprite->width(), m_sprite->height());
+  m_currentMask->replace(m_sprite->bounds());
   m_currentMask->freeze();
   clear_image(m_currentMask->bitmap(), 0);
   drawParallelogram(m_currentMask->bitmap(), m_initialMask->bitmap(),

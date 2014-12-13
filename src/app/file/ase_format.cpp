@@ -1218,7 +1218,7 @@ static Mask* ase_file_read_mask_chunk(FILE* f)
 
   mask = new Mask();
   mask->setName(name.c_str());
-  mask->replace(x, y, w, h);
+  mask->replace(gfx::Rect(x, y, w, h));
 
   // Read image data
   for (v=0; v<h; v++)

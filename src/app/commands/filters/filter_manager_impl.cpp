@@ -116,9 +116,10 @@ void FilterManagerImpl::beginForPreview()
     m_preview_mask.reset(new Mask(*document->mask()));
   else {
     m_preview_mask.reset(new Mask());
-    m_preview_mask->replace(m_offset_x, m_offset_y,
-      m_src->width(),
-      m_src->height());
+    m_preview_mask->replace(
+      gfx::Rect(m_offset_x, m_offset_y,
+        m_src->width(),
+        m_src->height()));
   }
 
   m_row = 0;

@@ -132,8 +132,10 @@ protected:
       int w = scale_x(old_bitmap->width());
       int h = scale_y(old_bitmap->height());
       base::UniquePtr<Mask> new_mask(new Mask);
-      new_mask->replace(scale_x(m_document->mask()->bounds().x-1),
-                        scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h));
+      new_mask->replace(
+        gfx::Rect(
+          scale_x(m_document->mask()->bounds().x-1),
+          scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
       algorithm::resize_image(old_bitmap, new_mask->bitmap(),
                               m_resize_method,
                               m_sprite->getPalette(FrameNumber(0)), // Ignored

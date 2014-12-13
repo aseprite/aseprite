@@ -155,9 +155,10 @@ protected:
       }
 
       // create the new rotated mask
-      new_mask->replace(x, y,
-                        m_angle == 180 ? origBounds.w: origBounds.h,
-                        m_angle == 180 ? origBounds.h: origBounds.w);
+      new_mask->replace(
+        gfx::Rect(x, y,
+          m_angle == 180 ? origBounds.w: origBounds.h,
+          m_angle == 180 ? origBounds.h: origBounds.w));
       doc::rotate_image(origMask->bitmap(), new_mask->bitmap(), m_angle);
 
       // Copy new mask

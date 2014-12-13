@@ -58,7 +58,7 @@ Mask* read_mask(std::istream& is)
   if (w > 0 && h > 0) {
     int size = BitmapTraits::getRowStrideBytes(w);
 
-    mask->add(x, y, w, h);
+    mask->add(gfx::Rect(x, y, w, h));
     for (int c=0; c<mask->bounds().h; c++)
       is.read((char*)mask->bitmap()->getPixelAddress(0, c), size);
   }

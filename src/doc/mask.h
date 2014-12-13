@@ -73,26 +73,21 @@ namespace doc {
     void copyFrom(const Mask* sourceMask);
 
     // Replace the whole mask with the given region.
-    void replace(int x, int y, int w, int h);
     void replace(const gfx::Rect& bounds);
 
     // Inverts the mask.
     void invert();
 
     // Adds the specified rectangle in the mask/selection
-    void add(int x, int y, int w, int h);
     void add(const gfx::Rect& bounds);
-
-    void subtract(int x, int y, int w, int h);
     void subtract(const gfx::Rect& bounds);
-    void intersect(int x, int y, int w, int h);
     void intersect(const gfx::Rect& bounds);
     void byColor(const Image* image, int color, int fuzziness);
     void crop(const Image* image);
 
     // Reserves a rectangle to draw onto the bitmap (you should call
     // shrink after you draw in the bitmap)
-    void reserve(int x, int y, int w, int h);
+    void reserve(const gfx::Rect& bounds);
 
     // Shrinks all sides of the mask to the minimum possible looking at
     // empty pixels in the bitmap

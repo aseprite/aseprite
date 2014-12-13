@@ -60,7 +60,7 @@ Mask* load_msk_file(const char* filename)
   // Animator MSK format
   else if (orig_size == 8000) {
     mask = new Mask();
-    mask->replace(0, 0, 320, 200);
+    mask->replace(gfx::Rect(0, 0, 320, 200));
 
     u = v = 0;
     for (i=0; i<8000; i++) {

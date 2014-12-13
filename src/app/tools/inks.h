@@ -288,10 +288,12 @@ public:
       switch (loop->getSelectionMode()) {
         case kDefaultSelectionMode:
         case kAddSelectionMode:
-          loop->getMask()->add(x1-offset.x, y-offset.y, x2-x1+1, 1);
+          loop->getMask()->add(
+            gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
         case kSubtractSelectionMode:
-          loop->getMask()->subtract(x1-offset.x, y-offset.y, x2-x1+1, 1);
+          loop->getMask()->subtract(
+            gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
       }
     }
@@ -312,7 +314,7 @@ public:
         undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
 
       loop->getMask()->freeze();
-      loop->getMask()->reserve(0, 0, loop->sprite()->width(), loop->sprite()->height());
+      loop->getMask()->reserve(loop->sprite()->bounds());
     }
     else {
       loop->getMask()->unfreeze();
