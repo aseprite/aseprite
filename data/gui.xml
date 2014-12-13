@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ASE menus, tools and keyboard shortcuts -->
 <gui version="1.1.0-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
