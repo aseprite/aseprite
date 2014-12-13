@@ -80,6 +80,7 @@
       <key command="PlayAnimation" shortcut="Enter" />
       <!-- Select -->
       <key command="MaskAll" shortcut="Ctrl+A" mac="Cmd+A" />
+      <key command="MaskContent" shortcut="Ctrl+T" mac="Cmd+T" />
       <key command="DeselectMask" shortcut="Ctrl+D" mac="Cmd+D" />
       <key command="ReselectMask" shortcut="Ctrl+Shift+D" mac="Cmd+Shift+D" />
       <key command="InvertMask" shortcut="Ctrl+Shift+I" mac="Cmd+Shift+I" />
@@ -431,6 +432,7 @@
           <param name="target" value="mask" />
           <param name="orientation" value="vertical" />
         </item>
+        <item command="MaskContent" text="Transfor&amp;m" />
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert" />

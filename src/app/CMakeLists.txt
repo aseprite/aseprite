@@ -77,6 +77,7 @@ add_library(app-lib
   commands/cmd_load_palette.cpp
   commands/cmd_mask_all.cpp
   commands/cmd_mask_by_color.cpp
+  commands/cmd_mask_content.cpp
   commands/cmd_merge_down_layer.cpp
   commands/cmd_move_cel.cpp
   commands/cmd_move_mask.cpp
