@@ -63,7 +63,7 @@ void ReselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undo(writer.context(), "Mask Reselection", undo::DoesntModifyDocument);
+    UndoTransaction undo(writer.context(), "Reselect", undo::DoesntModifyDocument);
     if (undo.isEnabled())
       undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
