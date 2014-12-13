@@ -8,10 +8,11 @@
 #define DOC_MASK_H_INCLUDED
 #pragma once
 
-#include "gfx/rect.h"
 #include "doc/image.h"
+#include "doc/image_buffer.h"
 #include "doc/object.h"
 #include "doc/primitives.h"
+#include "gfx/rect.h"
 
 #include <string>
 
@@ -22,7 +23,6 @@ namespace doc {
   public:
     Mask();
     Mask(const Mask& mask);
-    Mask(int x, int y, Image* bitmap);
     virtual ~Mask();
 
     virtual int getMemSize() const override;
@@ -103,6 +103,7 @@ namespace doc {
     std::string m_name;           // Mask name
     gfx::Rect m_bounds;           // Region bounds
     Image* m_bitmap;              // Bitmapped image mask
+    ImageBufferPtr m_buffer;      // Buffer used in m_bitmap
   };
 
 } // namespace doc

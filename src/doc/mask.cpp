@@ -32,14 +32,6 @@ Mask::Mask(const Mask& mask)
   copyFrom(&mask);
 }
 
-Mask::Mask(int x, int y, Image* bitmap)
-  : Object(ObjectType::Mask)
-  , m_freeze_count(0)
-  , m_bounds(x, y, bitmap->width(), bitmap->height())
-  , m_bitmap(bitmap)
-{
-}
-
 Mask::~Mask()
 {
   ASSERT(m_freeze_count == 0);
@@ -141,8 +133,7 @@ void Mask::replace(const gfx::Rect& bounds)
   m_bounds = bounds;
 
   delete m_bitmap;
-  m_bitmap = Image::create(IMAGE_BITMAP, bounds.w, bounds.h);
-
+  m_bitmap = Image::create(IMAGE_BITMAP, bounds.w, bounds.h, m_buffer);
   clear_image(m_bitmap, 1);
 }
 
@@ -369,7 +360,7 @@ void Mask::reserve(const gfx::Rect& bounds)
 
   if (!m_bitmap) {
     m_bounds = bounds;
-    m_bitmap = Image::create(IMAGE_BITMAP, bounds.w, bounds.h);
+    m_bitmap = Image::create(IMAGE_BITMAP, bounds.w, bounds.h, m_buffer);
     clear_image(m_bitmap, 0);
   }
   else {

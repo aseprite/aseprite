@@ -48,14 +48,18 @@ Mask* load_msk_file(const char* filename)
 
   // Animator Pro MSK format
   if ((size == orig_size) && (magic == 0x9500)) {
-    int x, y;
-
     fclose(f);
 
     // Just load an Animator Pro PIC file
+    int x, y;
     base::UniquePtr<Image> image(load_pic_file(filename, &x, &y, NULL));
-    if (image != NULL && (image->pixelFormat() == IMAGE_BITMAP))
-      mask = new Mask(x, y, image.release());
+
+    if (image != NULL && (image->pixelFormat() == IMAGE_BITMAP)) {
+      mask = new Mask();
+      mask->replace(gfx::Rect(x, y, image->width(), image->height()));
+      mask->bitmap()->copy(image, 0, 0, 0, 0, image->width(), image->height());
+      mask->shrink();
+    }
   }
   // Animator MSK format
   else if (orig_size == 8000) {
