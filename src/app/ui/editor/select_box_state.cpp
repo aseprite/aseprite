@@ -69,6 +69,7 @@ void SelectBoxState::onAfterChangeState(Editor* editor)
 void SelectBoxState::onBeforePopState(Editor* editor)
 {
   editor->setDecorator(NULL);
+  editor->invalidate();
 }
 
 bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
