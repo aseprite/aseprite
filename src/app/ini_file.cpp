@@ -179,4 +179,9 @@ void set_config_color(const char* section, const char* name, const app::Color& v
   set_config_string(section, name, value.toString().c_str());
 }
 
+void del_config_value(const char* section, const char* name)
+{
+  g_configs.back()->deleteValue(section, name);
+}
+
 } // namespace app

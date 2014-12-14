@@ -56,6 +56,76 @@ namespace app {
   app::Color get_config_color(const char* section, const char* name, const app::Color& value);
   void set_config_color(const char* section, const char* name, const app::Color& value);
 
+  void del_config_value(const char* section, const char* name);
+
+  // Generic get/set_config_value functions
+
+  inline const char* get_config_value(const char* section, const char* name, const char* value) {
+    return get_config_string(section, name, value);
+  }
+
+  inline std::string get_config_value(const char* section, const char* name, const std::string& value) {
+    return get_config_string(section, name, value.c_str());
+  }
+
+  inline bool get_config_value(const char* section, const char* name, bool value) {
+    return get_config_bool(section, name, value);
+  }
+
+  template<typename T>
+  inline T get_config_value(const char* section, const char* name, const T& value) {
+    return static_cast<T>(get_config_int(section, name, static_cast<int>(value)));
+  }
+
+  inline float get_config_value(const char* section, const char* name, float value) {
+    return get_config_float(section, name, value);
+  }
+
+  inline double get_config_value(const char* section, const char* name, double value) {
+    return get_config_float(section, name, value);
+  }
+
+  inline gfx::Rect get_config_value(const char* section, const char* name, const gfx::Rect& value) {
+    return get_config_rect(section, name, value);
+  }
+
+  inline app::Color get_config_value(const char* section, const char* name, const app::Color& value) {
+    return get_config_color(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, const char* value) {
+    set_config_string(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, const std::string& value) {
+    set_config_string(section, name, value.c_str());
+  }
+
+  inline void set_config_value(const char* section, const char* name, bool value) {
+    set_config_bool(section, name, value);
+  }
+
+  template<typename T>
+  inline void set_config_value(const char* section, const char* name, const T& value) {
+    set_config_int(section, name, static_cast<int>(value));
+  }
+
+  inline void set_config_value(const char* section, const char* name, float value) {
+    set_config_float(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, double value) {
+    set_config_float(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, const gfx::Rect& value) {
+    set_config_rect(section, name, value);
+  }
+
+  inline void set_config_value(const char* section, const char* name, const app::Color& value) {
+    set_config_color(section, name, value);
+  }
+
 } // namespace app
 
 #endif

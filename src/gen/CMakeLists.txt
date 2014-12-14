@@ -3,6 +3,7 @@
 
 add_executable(gen
   gen.cpp
+  pref_types.cpp
   ui_class.cpp)
 
 if(MSVC)

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preferences>
+
+  <types>
+    <enum id="InkType">
+      <value id="DEFAULT" value="0" />
+      <value id="SET_ALPHA" value="1" />
+      <value id="LOCK_ALPHA" value="2" />
+    </enum>
+    <enum id="RightClickMode">
+      <value id="PAINT_BGCOLOR" value="0" />
+      <value id="PICK_FGCOLOR" value="1" />
+      <value id="ERASE" value="2" />
+    </enum>
+    <enum id="TiledMode">
+      <value id="NONE" value="0" />
+      <value id="X_AXIS" value="1" />
+      <value id="Y_AXIS" value="2" />
+      <value id="BOTH" value="3" />
+    </enum>
+    <enum id="OnionskinType">
+      <value id="MERGE" value="0" />
+      <value id="RED_BLUE_TINT" value="1" />
+    </enum>
+    <enum id="AniDir">
+      <value id="FORWARD" value="0" />
+      <value id="REVERSE" value="1" />
+      <value id="PING_PONG" value="2" />
+    </enum>
+    <enum id="FreehandAlgorithm">
+      <value id="REGULAR" value="0" />
+      <value id="PIXEL_PERFECT" value="1" />
+      <value id="DOTS" value="2" />
+    </enum>
+    <enum id="BrushType">
+      <value id="CIRCLE" value="0" />
+      <value id="SQUARE" value="1" />
+      <value id="LINE" value="2" />
+    </enum>
+    <enum id="SelectionMode">
+      <value id="DEFAULT" value="0" />
+      <value id="ADD" value="1" />
+      <value id="SUBTRACT" value="2" />
+    </enum>
+    <enum id="RotationAlgorithm">
+      <value id="FAST" value="0" />
+      <value id="ROTSPRITE" value="1" />
+    </enum>
+  </types>
+
+  <global>
+    <section id="general">
+      <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
+      <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
+    </section>
+    <section id="undo" text="Undo">
+      <option id="size_limit" type="int" default="0" />
+      <option id="goto_modified" type="bool" default="false" />
+    </section>
+    <section id="editor" text="Editor">
+      <option id="zoom_with_scroll_wheel" type="bool" default="false" form="" />
+      <option id="center_on_zoom" type="bool" default="false" />
+      <option id="show_scrollbars" type="bool" default="false" />
+      <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
+      <option id="grab_alpha" type="bool" default="false" />
+      <option id="auto_select_layer" type="bool" default="false" />
+      <option id="fg_color" type="app::Color" />
+      <option id="bg_color" type="app::Color" />
+      <option id="current_tool" type="std::string" default="&quot;pencil&quot;" />
+    </section>
+    <section id="experimental" text="Experimental">
+      <option id="use_native_cursor" type="bool" default="false" />
+      <option id="flash_layer" type="bool" default="false" />
+    </section>
+  </global>
+
+  <tool>
+    <option id="opacity" type="int" default="255" />
+    <option id="tolerance" type="int" default="0" />
+    <option id="contiguous" type="bool" default="true" />
+    <option id="filled" type="bool" default="false" />
+    <option id="filled_preview" type="bool" default="false" />
+    <option id="ink" type="InkType" />
+    <option id="freehand_algorithm" type="FreehandAlgorithm" />
+    <section id="brush">
+      <option id="type" type="BrushType" />
+      <option id="size" type="int" />
+      <option id="angle" type="int" />
+    </section>
+    <section id="spray">
+      <option id="width" type="int" default="16" />
+      <option id="speed" type="int" default="32" />
+    </section>
+    <section id="selection">
+      <option id="mode" type="SelectionMode" />
+      <option id="transparent_color" type="app::Color" />
+      <option id="rotation_algorithm" type="RotationAlgorithm" />
+    </section>
+  </tool>
+
+  <document>
+    <section id="tiled">
+      <option id="tiled_mode" type="TiledMode" default="TiledMode::NONE" />
+    </section>
+    <section id="grid">
+      <option id="snap" type="bool" default="false" />
+      <option id="visible" type="bool" default="false" />
+      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
+      <option id="opacity" type="int" default="160" />
+      <option id="auto_opacity" type="bool" default="true" />
+    </section>
+    <section id="pixel_grid">
+      <option id="visible" type="bool" default="false" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" />
+      <option id="opacity" type="int" default="160" />
+      <option id="auto_opacity" type="bool" default="true" />
+    </section>
+    <section id="onionskin">
+      <option id="active" type="bool" default="false" />
+      <option id="prev_frames" type="int" default="1" />
+      <option id="next_frames" type="int" default="1" />
+      <option id="opacity_base" type="int" default="68" />
+      <option id="opacity_step" type="int" default="28" />
+      <option id="type" type="OnionskinType" default="OnionskinType::MERGE" />
+    </section>
+    <section id="loop">
+      <option id="visible" type="bool" default="false" />
+      <option id="from" type="doc::FrameNumber" default="doc::FrameNumber(0)" />
+      <option id="to" type="doc::FrameNumber" default="doc::FrameNumber(1)" />
+      <option id="ani_dir" type="AniDir" default="AniDir::FORWARD" />
+    </section>
+  </document>
+
+</preferences>

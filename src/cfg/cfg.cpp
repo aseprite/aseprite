@@ -55,6 +55,10 @@ public:
     m_ini.SetDoubleValue(section, name, value);
   }
 
+  void deleteValue(const char* section, const char* name) {
+    m_ini.Delete(section, name, true);
+  }
+
   void load(const std::string& filename) {
     m_filename = filename;
 
@@ -133,6 +137,11 @@ void CfgFile::setIntValue(const char* section, const char* name, int value)
 void CfgFile::setDoubleValue(const char* section, const char* name, double value)
 {
   m_impl->setDoubleValue(section, name, value);
+}
+
+void CfgFile::deleteValue(const char* section, const char* name)
+{
+  m_impl->deleteValue(section, name);
 }
 
 void CfgFile::load(const std::string& filename)

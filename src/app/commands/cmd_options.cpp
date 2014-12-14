@@ -29,6 +29,7 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
 #include "app/settings/document_settings.h"
@@ -59,6 +60,8 @@ public:
     , m_gridColor(new ColorButton(m_docSettings->getGridColor(), IMAGE_RGB))
     , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
   {
+    Preferences& preferences = App::instance()->preferences();
+
     sectionListbox()->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
     cursorColorBox()->addChild(m_cursorColor);
 
@@ -75,11 +78,10 @@ public:
     pixelGridAutoOpacity()->setSelected(m_docSettings->getPixelGridAutoOpacity());
 
     // Others
-    if (get_config_bool("Options", "AutoShowTimeline", true))
+    if (preferences.general.autoshowTimeline())
       autotimeline()->setSelected(true);
 
-    if (get_config_bool("Options", "ExpandMenuBarOnMouseover",
-        ui::MenuBar::expandOnMouseover()))
+    if (preferences.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
     if (m_settings->getCenterOnZoom())
@@ -151,6 +153,8 @@ public:
   }
 
   void saveConfig() {
+    Preferences& preferences = App::instance()->preferences();
+
     Editor::set_cursor_color(m_cursorColor->getColor());
     m_docSettings->setGridColor(m_gridColor->getColor());
     m_docSettings->setGridOpacity(gridOpacity()->getValue());
@@ -159,10 +163,10 @@ public:
     m_docSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
     m_docSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
     
-    set_config_bool("Options", "AutoShowTimeline", autotimeline()->isSelected());
+    preferences.general.autoshowTimeline(autotimeline()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
-    set_config_bool("Options", "ExpandMenuBarOnMouseover", expandOnMouseover);
+    preferences.general.expandMenubarOnMouseover(expandOnMouseover);
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
     m_settings->setCenterOnZoom(centerOnZoom()->isSelected());
@@ -259,9 +263,10 @@ OptionsCommand::OptionsCommand()
             "Options",
             CmdUIOnlyFlag)
 {
+  Preferences& preferences = App::instance()->preferences();
+
   ui::MenuBar::setExpandOnMouseover(
-    get_config_bool("Options", "ExpandMenuBarOnMouseover",
-      ui::MenuBar::expandOnMouseover()));
+    preferences.general.expandMenubarOnMouseover());
 }
 
 void OptionsCommand::onExecute(Context* context)

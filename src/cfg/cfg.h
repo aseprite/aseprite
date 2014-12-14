@@ -29,6 +29,8 @@ namespace cfg {
     void setIntValue(const char* section, const char* name, int value);
     void setDoubleValue(const char* section, const char* name, double value);
 
+    void deleteValue(const char* section, const char* name);
+
     void load(const std::string& filename);
     void save();
 

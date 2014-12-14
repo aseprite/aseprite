@@ -28,6 +28,7 @@
 #include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
@@ -218,7 +219,9 @@ void MainWindow::setTimelineVisibility(bool visible)
 
 void MainWindow::popTimeline()
 {
-  if (!get_config_bool("Options", "AutoShowTimeline", true))
+  Preferences& preferences = App::instance()->preferences();
+
+  if (!preferences.general.autoshowTimeline())
     return;
 
   if (!getTimelineVisibility())

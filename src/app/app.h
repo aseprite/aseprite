@@ -45,6 +45,7 @@ namespace app {
   class LegacyModules;
   class LoggerModule;
   class MainWindow;
+  class Preferences;
   class RecentFiles;
 
   namespace tools {
@@ -75,6 +76,7 @@ namespace app {
     tools::ToolBox* getToolBox() const;
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
+    Preferences& preferences() const;
 
     void showNotification(INotificationDelegate* del);
     void updateDisplayTitleBar();
@@ -90,11 +92,13 @@ namespace app {
 
   private:
     typedef std::vector<std::string> FileList;
+    class CoreModules;
     class Modules;
 
     static App* m_instance;
 
     base::UniquePtr<ui::GuiSystem> m_guiSystem;
+    CoreModules* m_coreModules;
     Modules* m_modules;
     LegacyModules* m_legacy;
     bool m_isGui;

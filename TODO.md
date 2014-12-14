@@ -43,8 +43,6 @@
 
 # Refactoring
 
-* Merge everything related to configuration/settings in one class
-  (allow configuration per document). Use cfg.cpp and settings/ dir.
 * Refactor src/file/ in several layers.
 * Use streams instead of FILEs.
 * Destroy modules/gui.h.

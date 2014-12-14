@@ -8,6 +8,7 @@
 #include "base/path.h"
 #include "base/program_options.h"
 #include "base/string.h"
+#include "gen/pref_types.h"
 #include "gen/ui_class.h"
 #include "tinyxml.h"
 
@@ -20,6 +21,8 @@ static void run(int argc, const char* argv[])
   PO po;
   PO::Option& inputOpt = po.add("input").requiresValue("<filename>");
   PO::Option& widgetId = po.add("widgetid").requiresValue("<filename>");
+  PO::Option& prefH = po.add("pref-h");
+  PO::Option& prefCpp = po.add("pref-cpp");
   po.parse(argc, argv);
 
   // Try to load the XML file
@@ -34,8 +37,14 @@ static void run(int argc, const char* argv[])
       throw std::runtime_error("invalid input file");
   }
 
-  if (doc && po.enabled(widgetId))
-    gen_ui_class(doc, inputFilename, po.value_of(widgetId));
+  if (doc) {
+    if (po.enabled(widgetId))
+      gen_ui_class(doc, inputFilename, po.value_of(widgetId));
+    else if (po.enabled(prefH))
+      gen_pref_header(doc, inputFilename);
+    else if (po.enabled(prefCpp))
+      gen_pref_impl(doc, inputFilename);
+  }
 }
 
 int main(int argc, const char* argv[])

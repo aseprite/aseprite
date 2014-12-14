@@ -7,7 +7,6 @@
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
-  set(target_name generated_${widget_name})
   set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
 
   add_custom_command(
@@ -17,8 +16,29 @@ foreach(widget_file ${widget_files})
     MAIN_DEPENDENCY ${widget_file}
     DEPENDS gen)
 
-  list(APPEND generated_header_files ${output_fn})
+  list(APPEND generated_files ${output_fn})
 endforeach()
+
+# pref.h and pref.cpp
+set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
+
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.h)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-h > ${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${pref_xml}
+  DEPENDS gen)
+list(APPEND generated_files ${output_fn})
+
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.cpp)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-cpp > ${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${pref_xml}
+  DEPENDS gen)
+list(APPEND generated_files ${output_fn})
 
 # Directory where generated files by "gen" utility will stay.
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -169,6 +189,7 @@ add_library(app-lib
   modules/gui.cpp
   modules/palettes.cpp
   objects_container_impl.cpp
+  pref/preferences.cpp
   project.cpp
   recent_files.cpp
   res/palettes_loader_delegate.cpp
@@ -288,4 +309,4 @@ add_library(app-lib
   xml_document.cpp
   xml_exception.cpp
   zoom.cpp
-  ${generated_header_files})
+  ${generated_files})

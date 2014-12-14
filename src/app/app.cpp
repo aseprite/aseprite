@@ -46,6 +46,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
@@ -93,9 +94,14 @@ namespace app {
 
 using namespace ui;
 
-class App::Modules {
+class App::CoreModules {
 public:
   ConfigModule m_configModule;
+  Preferences m_preferences;
+};
+
+class App::Modules {
+public:
   LoggerModule m_loggerModule;
   FileSystemModule m_file_system_module;
   tools::ToolBox m_toolbox;
@@ -114,7 +120,8 @@ public:
 App* App::m_instance = NULL;
 
 App::App()
-  : m_modules(NULL)
+  : m_coreModules(NULL)
+  , m_modules(NULL)
   , m_legacy(NULL)
   , m_isGui(false)
   , m_isShell(false)
@@ -131,6 +138,7 @@ void App::initialize(const AppOptions& options)
 
   // Initializes the application loading the modules, setting the
   // graphics mode, loading the configuration and resources, etc.
+  m_coreModules = new CoreModules;
   m_modules = new Modules(!options.startUI(), options.verbose());
   m_isGui = options.startUI();
   m_isShell = options.startShell();
@@ -476,6 +484,7 @@ App::~App()
 
     delete m_legacy;
     delete m_modules;
+    delete m_coreModules;
 
     // Destroy the loaded gui.xml data.
     delete KeyboardShortcuts::instance();
@@ -513,6 +522,11 @@ RecentFiles* App::getRecentFiles() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_recent_files;
+}
+
+Preferences& App::preferences() const
+{
+  return m_coreModules->m_preferences;
 }
 
 void App::showNotification(INotificationDelegate* del)

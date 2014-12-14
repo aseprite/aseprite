@@ -7,33 +7,14 @@
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/path.h"
-#include "base/program_options.h"
 #include "base/string.h"
+#include "gen/common.h"
 #include "gen/ui_class.h"
 
-#include <cctype>
 #include <iostream>
+#include <vector>
 
-typedef base::ProgramOptions PO;
 typedef std::vector<TiXmlElement*> XmlElements;
-
-static std::string convert_xmlid_to_cppid(const std::string& xmlid, bool firstLetterUpperCase)
-{
-  bool firstLetter = firstLetterUpperCase;
-  std::string cppid;
-  for (size_t i=0; i<xmlid.size(); ++i) {
-    if (xmlid[i] == '_') {
-      firstLetter = true;
-    }
-    else if (firstLetter) {
-      firstLetter = false;
-      cppid += std::toupper(xmlid[i]);
-    }
-    else
-      cppid += xmlid[i];
-  }
-  return cppid;
-}
 
 static TiXmlElement* find_element_by_id(TiXmlElement* elem, const std::string& thisId)
 {
