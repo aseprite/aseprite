@@ -1,4 +1,6 @@
 # Aseprite
+
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aseprite/aseprite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 *Copyright (C) 2001-2014 David Capello*
 
 > THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
