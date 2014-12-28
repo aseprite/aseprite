@@ -77,7 +77,7 @@ private:
 
       if (!fop_is_stop(m_fop) && sprite) {
         // The palette to convert the Image
-        m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
+        m_palette.reset(new Palette(*sprite->palette(frame_t(0))));
 
         // Render first frame of the sprite in 'image'
         base::UniquePtr<Image> image(Image::create(
@@ -86,7 +86,7 @@ private:
         AppRender render;
         render.setupBackground(NULL, image->pixelFormat());
         render.setBgType(render::BgType::CHECKED);
-        render.renderSprite(image, sprite, FrameNumber(0));
+        render.renderSprite(image, sprite, frame_t(0));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());

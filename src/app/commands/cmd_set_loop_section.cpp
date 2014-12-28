@@ -44,7 +44,7 @@ protected:
   void onExecute(Context* context) override;
 
   Action m_action;
-  FrameNumber m_begin, m_end;
+  frame_t m_begin, m_end;
 };
 
 SetLoopSectionCommand::SetLoopSectionCommand()
@@ -67,8 +67,8 @@ void SetLoopSectionCommand::onLoadParams(Params* params)
   std::string begin = params->get("begin");
   std::string end = params->get("end");
 
-  m_begin = FrameNumber(strtol(begin.c_str(), NULL, 10));
-  m_end = FrameNumber(strtol(end.c_str(), NULL, 10));
+  m_begin = frame_t(strtol(begin.c_str(), NULL, 10));
+  m_end = frame_t(strtol(end.c_str(), NULL, 10));
 }
 
 bool SetLoopSectionCommand::onEnabled(Context* ctx)
@@ -86,8 +86,8 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   if (!docSets)
     return;
 
-  FrameNumber begin = m_begin;
-  FrameNumber end = m_end;
+  frame_t begin = m_begin;
+  frame_t end = m_end;
   bool on = false;
 
   switch (m_action) {

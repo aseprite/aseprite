@@ -152,7 +152,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_document(document)
   , m_sprite(m_document->sprite())
   , m_layer(m_sprite->folder()->getFirstLayer())
-  , m_frame(FrameNumber(0))
+  , m_frame(frame_t(0))
   , m_zoom(1, 1)
   , m_cursorThick(0)
   , m_cursorScreen(0, 0)
@@ -267,7 +267,7 @@ void Editor::setLayer(const Layer* layer)
   updateStatusBar();
 }
 
-void Editor::setFrame(FrameNumber frame)
+void Editor::setFrame(frame_t frame)
 {
   if (m_frame != frame) {
     m_observers.notifyBeforeFrameChanged(this);
@@ -444,7 +444,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // Convert the render to a she::Surface
     she::Surface* tmp(she::instance()->createRgbaSurface(rc.w, rc.h));
     if (tmp->nativeHandle()) {
-      convert_image_to_surface(rendered, m_sprite->getPalette(m_frame),
+      convert_image_to_surface(rendered, m_sprite->palette(m_frame),
         tmp, 0, 0, 0, 0, rc.w, rc.h);
       g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
     }

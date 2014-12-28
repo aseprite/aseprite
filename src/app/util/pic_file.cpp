@@ -71,7 +71,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
 
     // Read palette (RGB in 0-63)
     if (palette) {
-      *palette = new Palette(FrameNumber(0), Palette::MaxColors);
+      *palette = new Palette(frame_t(0), Palette::MaxColors);
     }
     for (c=0; c<256; c++) {
       r = std::fgetc(f);

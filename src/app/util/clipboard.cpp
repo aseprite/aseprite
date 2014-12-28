@@ -141,7 +141,7 @@ static bool copy_from_document(const DocumentLocation& location)
 
   clipboard_pos = document->mask()->bounds().getOrigin();
 
-  const Palette* pal = document->sprite()->getPalette(location.frame());
+  const Palette* pal = document->sprite()->palette(location.frame());
   set_clipboard_image(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -262,7 +262,7 @@ void clipboard::paste()
       if (clipboard_image == NULL)
         return;
 
-      Palette* dst_palette = dstSpr->getPalette(editor->frame());
+      Palette* dst_palette = dstSpr->palette(editor->frame());
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')
       Image* src_image;
@@ -274,7 +274,7 @@ void clipboard::paste()
         src_image = clipboard_image;
       }
       else {
-        RgbMap* dst_rgbmap = dstSpr->getRgbMap(editor->frame());
+        RgbMap* dst_rgbmap = dstSpr->rgbMap(editor->frame());
 
         src_image = render::convert_pixel_format(
           clipboard_image, NULL, dstSpr->pixelFormat(),
@@ -309,8 +309,8 @@ void clipboard::paste()
 
           UndoTransaction undoTransaction(UIContext::instance(), "Paste Cels");
 
-          FrameNumber dstFrame = editor->frame();
-          for (FrameNumber frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
+          frame_t dstFrame = editor->frame();
+          for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
             if (dstFrame == dstSpr->totalFrames())
               api.addFrame(dstSpr, dstFrame);
 
@@ -334,7 +334,7 @@ void clipboard::paste()
               }
             }
 
-            dstFrame = dstFrame.next();
+            ++dstFrame;
           }
 
           undoTransaction.commit();
@@ -344,9 +344,9 @@ void clipboard::paste()
 
         case DocumentRange::kFrames: {
           UndoTransaction undoTransaction(UIContext::instance(), "Paste Frames");
-          FrameNumber dstFrame = FrameNumber(editor->frame() + 1);
+          frame_t dstFrame = frame_t(editor->frame() + 1);
 
-          for (FrameNumber frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
+          for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
             api.addFrame(dstSpr, dstFrame);
 
             for (LayerIndex
@@ -362,7 +362,7 @@ void clipboard::paste()
               }
             }
 
-            dstFrame = dstFrame.next();
+            ++dstFrame;
           }
 
           undoTransaction.commit();
@@ -377,7 +377,7 @@ void clipboard::paste()
           UndoTransaction undoTransaction(UIContext::instance(), "Paste Layers");
 
           // Expand frames of dstDoc if it's needed.
-          FrameNumber maxFrame(0);
+          frame_t maxFrame(0);
           for (LayerIndex i = srcRange.layerBegin();
                i <= srcRange.layerEnd() &&
                i < LayerIndex(srcLayers.size()); ++i) {
@@ -385,8 +385,8 @@ void clipboard::paste()
             if (lastCel && maxFrame < lastCel->frame())
               maxFrame = lastCel->frame();
           }
-          if (dstSpr->totalFrames() < maxFrame.next())
-            api.setTotalFrames(dstSpr, maxFrame.next());
+          if (dstSpr->totalFrames() < maxFrame+1)
+            api.setTotalFrames(dstSpr, maxFrame+1);
 
           for (LayerIndex i = srcRange.layerBegin(); i <= srcRange.layerEnd(); ++i) {
             LayerImage* newLayer = new LayerImage(dstSpr);

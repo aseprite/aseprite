@@ -60,7 +60,7 @@ public:
     , m_editor(editor)
     , m_doc(editor->document())
     , m_sprite(editor->sprite())
-    , m_pal(m_sprite->getPalette(editor->frame()))
+    , m_pal(m_sprite->palette(editor->frame()))
     , m_index_bg_color(-1)
     , m_doublebuf(Image::create(IMAGE_RGB, ui::display_w(), ui::display_h()))
     , m_doublesur(she::instance()->createRgbaSurface(ui::display_w(), ui::display_h()))

@@ -106,25 +106,25 @@ public:
     layer3->setName("layer3");
     layer4->setName("layer4");
 
-    sprite->setTotalFrames(FrameNumber(4));
-    sprite->setFrameDuration(FrameNumber(0), 1); // These durations can be used to identify
-    sprite->setFrameDuration(FrameNumber(1), 2); // frames after a move operation
-    sprite->setFrameDuration(FrameNumber(2), 3);
-    sprite->setFrameDuration(FrameNumber(3), 4);
+    sprite->setTotalFrames(frame_t(4));
+    sprite->setFrameDuration(frame_t(0), 1); // These durations can be used to identify
+    sprite->setFrameDuration(frame_t(1), 2); // frames after a move operation
+    sprite->setFrameDuration(frame_t(2), 3);
+    sprite->setFrameDuration(frame_t(3), 4);
 
     DocumentApi api = doc->getApi();
     for (int i=0; i<4; i++) {
       LayerImage* layer = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(i)));
 
       for (int j=0; j<4; j++) {
-        Cel* cel = layer->getCel(FrameNumber(j));
+        Cel* cel = layer->getCel(frame_t(j));
         Image* image;
         if (cel)
           image = cel->image();
         else {
           image = Image::create(IMAGE_RGB, 4, 4);
           int imageIdx = sprite->stock()->addImage(image);
-          cel = new Cel(FrameNumber(j), imageIdx);
+          cel = new Cel(frame_t(j), imageIdx);
           layer->addCel(cel);
         }
 
@@ -156,8 +156,8 @@ protected:
       if (!expect_cel(expected_layer, expected_frame, layer, frame))
         return false;
 
-      EXPECT_EQ((expected_frame+1), sprite->getFrameDuration(FrameNumber(frame)));
-      return ((expected_frame+1) == sprite->getFrameDuration(FrameNumber(frame)));
+      EXPECT_EQ((expected_frame+1), sprite->frameDuration(frame_t(frame)));
+      return ((expected_frame+1) == sprite->frameDuration(frame_t(frame)));
     }
 
     if (layer >= 0) {
@@ -176,7 +176,7 @@ protected:
 
     color_t color = get_pixel(
       static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
-      ->getCel(FrameNumber(frame))->image(),
+      ->getCel(frame_t(frame))->image(),
       expected_layer, expected_frame);
 
     EXPECT_EQ(expected_color, color);
@@ -186,7 +186,7 @@ protected:
 
   bool expect_empty_cel(int layer, int frame) {
     Cel* cel = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
-      ->getCel(FrameNumber(frame));
+      ->getCel(frame_t(frame));
 
     EXPECT_EQ(NULL, cel);
     return (cel == NULL);
@@ -205,15 +205,15 @@ protected:
 
 inline DocumentRange range(Layer* fromLayer, int fromFrNum, Layer* toLayer, int toFrNum, DocumentRange::Type type) {
   DocumentRange r;
-  r.startRange(fromLayer->sprite()->layerToIndex(fromLayer), FrameNumber(fromFrNum), type);
-  r.endRange(toLayer->sprite()->layerToIndex(toLayer), FrameNumber(toFrNum));
+  r.startRange(fromLayer->sprite()->layerToIndex(fromLayer), frame_t(fromFrNum), type);
+  r.endRange(toLayer->sprite()->layerToIndex(toLayer), frame_t(toFrNum));
   return r;
 }
 
 inline DocumentRange range(int fromLayer, int fromFrNum, int toLayer, int toFrNum, DocumentRange::Type type) {
   DocumentRange r;
-  r.startRange(LayerIndex(fromLayer), FrameNumber(fromFrNum), type);
-  r.endRange(LayerIndex(toLayer), FrameNumber(toFrNum));
+  r.startRange(LayerIndex(fromLayer), frame_t(fromFrNum), type);
+  r.endRange(LayerIndex(toLayer), frame_t(toFrNum));
   return r;
 }
 

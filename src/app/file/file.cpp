@@ -374,7 +374,7 @@ FileOp* fop_to_save_document(Context* context, Document* document)
         width = 1;
       }
 
-      for (FrameNumber frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
+      for (frame_t frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
         // Get the name for this frame
         char buf[4096];
         sprintf(buf, "%s%0*d%s", left.c_str(), width, start_from+frame, right.c_str());
@@ -434,12 +434,12 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       do {                                                              \
         image_index = fop->document                                     \
           ->sprite()                                                    \
-          ->stock()->addImage(fop->seq.image);                       \
+          ->stock()->addImage(fop->seq.image);                          \
                                                                         \
         fop->seq.last_cel->setImage(image_index);                       \
         fop->seq.layer->addCel(fop->seq.last_cel);                      \
                                                                         \
-        if (fop->document->sprite()->getPalette(frame)                  \
+        if (fop->document->sprite()->palette(frame)                     \
               ->countDiff(fop->seq.palette, NULL, NULL) > 0) {          \
           fop->seq.palette->setFrame(frame);                            \
           fop->document->sprite()->setPalette(fop->seq.palette, true);  \
@@ -451,8 +451,8 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       } while (0)
 
       /* load the sequence */
-      FrameNumber frames(fop->seq.filename_list.size());
-      FrameNumber frame(0);
+      frame_t frames(fop->seq.filename_list.size());
+      frame_t frame(0);
       old_image = NULL;
 
       fop->seq.has_alpha = false;
@@ -565,12 +565,12 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
 
         // For each frame in the sprite.
         render::Render render;
-        for (FrameNumber frame(0); frame < sprite->totalFrames(); ++frame) {
+        for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
           // Draw the "frame" in "fop->seq.image"
           render.renderSprite(fop->seq.image, sprite, frame);
 
           // Setup the palette.
-          sprite->getPalette(frame)->copyColorsTo(fop->seq.palette);
+          sprite->palette(frame)->copyColorsTo(fop->seq.palette);
 
           // Setup the filename to be used.
           fop->filename = fop->seq.filename_list[frame];
@@ -672,11 +672,11 @@ void fop_post_load(FileOp* fop)
     // Creates a suitable palette for RGB images
     if (fop->document->sprite()->pixelFormat() == IMAGE_RGB &&
         fop->document->sprite()->getPalettes().size() <= 1 &&
-        fop->document->sprite()->getPalette(FrameNumber(0))->isBlack()) {
+        fop->document->sprite()->palette(frame_t(0))->isBlack()) {
       SharedPtr<Palette> palette
         (render::create_palette_from_rgb(
           fop->document->sprite(),
-          FrameNumber(0), NULL));
+          frame_t(0), NULL));
 
       fop->document->sprite()->resetPalettes();
       fop->document->sprite()->setPalette(palette, false);
@@ -834,7 +834,7 @@ static FileOp* fop_new(FileOpType type, Context* context)
   fop->seq.image = NULL;
   fop->seq.progress_offset = 0.0f;
   fop->seq.progress_fraction = 0.0f;
-  fop->seq.frame = FrameNumber(0);
+  fop->seq.frame = frame_t(0);
   fop->seq.layer = NULL;
   fop->seq.last_cel = NULL;
 
@@ -843,7 +843,7 @@ static FileOp* fop_new(FileOpType type, Context* context)
 
 static void fop_prepare_for_sequence(FileOp* fop)
 {
-  fop->seq.palette = new Palette(FrameNumber(0), 256);
+  fop->seq.palette = new Palette(frame_t(0), 256);
   fop->seq.format_options.reset();
 }
 

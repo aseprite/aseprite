@@ -70,10 +70,10 @@ void RemoveFrameCommand::onExecute(Context* context)
     // TODO the range of selected frames should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
-      for (FrameNumber frame = range.frameEnd(),
-             begin = range.frameBegin().previous();
+      for (frame_t frame = range.frameEnd(),
+             begin = range.frameBegin()-1;
            frame != begin;
-           frame = frame.previous()) {
+           --frame) {
         document->getApi().removeFrame(sprite, frame);
       }
     }

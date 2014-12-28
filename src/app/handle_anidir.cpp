@@ -27,17 +27,17 @@
 
 namespace app {
 
-doc::FrameNumber calculate_next_frame(
+doc::frame_t calculate_next_frame(
   doc::Sprite* sprite,
-  doc::FrameNumber frame,
+  doc::frame_t frame,
   IDocumentSettings* docSettings,
   bool& pingPongForward)
 {
-  FrameNumber first = FrameNumber(0);
-  FrameNumber last = sprite->lastFrame();
+  frame_t first = frame_t(0);
+  frame_t last = sprite->lastFrame();
 
   if (docSettings->getLoopAnimation()) {
-    FrameNumber loopBegin, loopEnd;
+    frame_t loopBegin, loopEnd;
     docSettings->getLoopRange(&loopBegin, &loopEnd);
     loopBegin = MID(first, loopBegin, last);
     loopEnd = MID(first, loopEnd, last);
@@ -49,29 +49,33 @@ doc::FrameNumber calculate_next_frame(
   switch (docSettings->getAnimationDirection()) {
 
     case IDocumentSettings::AniDir_Normal:
-      frame = frame.next();
-      if (frame > last) frame = first;
+      ++frame;
+      if (frame > last)
+        frame = first;
       break;
 
     case IDocumentSettings::AniDir_Reverse:
-      frame = frame.previous();
-      if (frame < first) frame = last;
+      --frame;
+      if (frame < first)
+        frame = last;
       break;
 
     case IDocumentSettings::AniDir_PingPong:
       if (pingPongForward) {
-        frame = frame.next();
+        ++frame;
         if (frame > last) {
-          frame = last.previous();
-          if (frame < first) frame = first;
+          frame = last-1;
+          if (frame < first)
+            frame = first;
           pingPongForward = false;
         }
       }
       else {
-        frame = frame.previous();
+        --frame;
         if (frame < first) {
-          frame = first.next();
-          if (frame > last) frame = last;
+          frame = first+1;
+          if (frame > last)
+            frame = last;
           pingPongForward = true;
         }
       }

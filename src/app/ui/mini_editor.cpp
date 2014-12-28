@@ -208,7 +208,7 @@ void MiniEditorWindow::onPlayClicked()
   if (m_playButton->isPlaying()) {
     Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
     if (miniEditor && miniEditor->document() != NULL)
-      m_nextFrameTime = miniEditor->sprite()->getFrameDuration(miniEditor->frame());
+      m_nextFrameTime = miniEditor->sprite()->frameDuration(miniEditor->frame());
     else
       m_nextFrameTime = -1;
 
@@ -284,7 +284,7 @@ void MiniEditorWindow::onPlaybackTick()
     m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
     while (m_nextFrameTime <= 0) {
-      FrameNumber frame = calculate_next_frame(
+      frame_t frame = calculate_next_frame(
         sprite,
         miniEditor->frame(),
         docSettings,
@@ -292,7 +292,7 @@ void MiniEditorWindow::onPlaybackTick()
 
       miniEditor->setFrame(frame);
 
-      m_nextFrameTime += miniEditor->sprite()->getFrameDuration(frame);
+      m_nextFrameTime += miniEditor->sprite()->frameDuration(frame);
     }
 
     m_curFrameTick = ui::clock();

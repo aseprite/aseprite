@@ -167,7 +167,7 @@ void NewFileCommand::onExecute(Context* context)
           (format == IMAGE_INDEXED ? ncolors: 256)));
 
       if (sprite->pixelFormat() != IMAGE_GRAYSCALE)
-        get_default_palette()->copyColorsTo(sprite->getPalette(FrameNumber(0)));
+        get_default_palette()->copyColorsTo(sprite->palette(frame_t(0)));
 
       // If the background color isn't transparent, we have to
       // convert the `Layer 1' in a `Background'
@@ -178,7 +178,7 @@ void NewFileCommand::onExecute(Context* context)
           LayerImage* layerImage = static_cast<LayerImage*>(layer);
           layerImage->configureAsBackground();
 
-          Image* image = layerImage->getCel(FrameNumber(0))->image();
+          Image* image = layerImage->getCel(frame_t(0))->image();
           doc::clear_image(image,
             color_utils::color_for_target(color,
               ColorTarget(

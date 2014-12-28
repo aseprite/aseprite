@@ -9,7 +9,7 @@
 #pragma once
 
 #include "gfx/region.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 namespace doc {
   class Cel;
@@ -45,7 +45,7 @@ namespace doc {
     Cel* cel() const { return m_cel; }
     Image* image() const { return m_image; }
     int imageIndex() const { return m_imageIndex; }
-    FrameNumber frame() const { return m_frame; }
+    frame_t frame() const { return m_frame; }
     const gfx::Region& region() const { return m_region; }
 
     void sprite(Sprite* sprite) { m_sprite = sprite; }
@@ -53,15 +53,15 @@ namespace doc {
     void cel(Cel* cel) { m_cel = cel; }
     void image(Image* image) { m_image = image; }
     void imageIndex(int imageIndex) { m_imageIndex = imageIndex; }
-    void frame(FrameNumber frame) { m_frame = frame; }
+    void frame(frame_t frame) { m_frame = frame; }
     void region(const gfx::Region& rgn) { m_region = rgn; }
 
     // Destination of the operation.
     Layer* targetLayer() const { return m_targetLayer; }
-    FrameNumber targetFrame() const { return m_targetFrame; }
+    frame_t targetFrame() const { return m_targetFrame; }
 
     void targetLayer(Layer* layer) { m_targetLayer = layer; }
-    void targetFrame(FrameNumber frame) { m_targetFrame = frame; }
+    void targetFrame(frame_t frame) { m_targetFrame = frame; }
 
   private:
     Document* m_document;
@@ -70,13 +70,13 @@ namespace doc {
     Cel* m_cel;
     Image* m_image;
     int m_imageIndex;
-    FrameNumber m_frame;
+    frame_t m_frame;
     gfx::Region m_region;
 
     // For copy/move commands, the m_layer/m_frame are source of the
     // operation, and these are the destination of the operation.
     Layer* m_targetLayer;
-    FrameNumber m_targetFrame;
+    frame_t m_targetFrame;
   };
 
 } // namespace app

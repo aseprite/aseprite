@@ -15,7 +15,7 @@
 #include "doc/color_scales.h"
 #include "doc/dirty.h"
 #include "doc/document.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/layer.h"

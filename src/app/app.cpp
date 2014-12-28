@@ -294,7 +294,7 @@ void App::initialize(const AppOptions& options)
                   hide->setVisible(hide == show);
 
                 std::string frameStr;
-                if (doc->sprite()->totalFrames() > FrameNumber(1))
+                if (doc->sprite()->totalFrames() > frame_t(1))
                   frameStr += " 1";
 
                 std::string fn = value.value();

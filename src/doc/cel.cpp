@@ -18,7 +18,7 @@
 
 namespace doc {
 
-Cel::Cel(FrameNumber frame, int image)
+Cel::Cel(frame_t frame, int image)
   : Object(ObjectType::Cel)
   , m_layer(NULL)
   , m_frame(frame)

@@ -22,7 +22,7 @@
 
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -34,16 +34,16 @@ namespace app {
 
 using namespace doc;
 
-static bool has_cels(const Layer* layer, FrameNumber frame);
+static bool has_cels(const Layer* layer, frame_t frame);
 
 LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
                                       const gfx::Rect& bounds,
-                                      FrameNumber frmin, FrameNumber frmax)
+                                      frame_t frmin, frame_t frmax)
 {
   base::UniquePtr<LayerImage> flatLayer(new LayerImage(dstSprite));
   render::Render render;
 
-  for (FrameNumber frame=frmin; frame<=frmax; ++frame) {
+  for (frame_t frame=frmin; frame<=frmax; ++frame) {
     // Does this frame have cels to render?
     if (has_cels(srcLayer, frame)) {
       // Create a new image to render each frame.
@@ -72,7 +72,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
 
 // Returns true if the "layer" or its children have any cel to render
 // in the given "frame".
-static bool has_cels(const Layer* layer, FrameNumber frame)
+static bool has_cels(const Layer* layer, frame_t frame)
 {
   if (!layer->isVisible())
     return false;

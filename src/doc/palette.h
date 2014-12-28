@@ -9,7 +9,7 @@
 #pragma once
 
 #include "doc/color.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/object.h"
 
 #include <vector>
@@ -47,7 +47,7 @@ namespace doc {
   public:
     enum { MaxColors = 256 };
 
-    Palette(FrameNumber frame, int ncolors);
+    Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
     ~Palette();
 
@@ -63,8 +63,8 @@ namespace doc {
 
     int getModifications() const { return m_modifications; }
 
-    FrameNumber frame() const { return m_frame; }
-    void setFrame(FrameNumber frame);
+    frame_t frame() const { return m_frame; }
+    void setFrame(frame_t frame);
 
     color_t entry(int i) const {
       ASSERT(i >= 0 && i < size());
@@ -94,7 +94,7 @@ namespace doc {
     int findBestfit(int r, int g, int b, int mask_index = 0) const;
 
   private:
-    FrameNumber m_frame;
+    frame_t m_frame;
     std::vector<color_t> m_colors;
     int m_modifications;
     std::string m_filename; // If the palette is associated with a file.

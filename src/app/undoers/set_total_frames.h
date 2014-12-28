@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "undo/object_id.h"
 
 #include <sstream>
@@ -48,7 +48,7 @@ namespace app {
     private:
       undo::ObjectId m_documentId;
       undo::ObjectId m_spriteId;
-      FrameNumber m_totalFrames;
+      frame_t m_totalFrames;
     };
 
   } // namespace undoers

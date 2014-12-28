@@ -48,7 +48,7 @@ Palette* load_col_file(const char* filename)
   
   // Animator format
   if (!pro) {
-    pal = new Palette(FrameNumber(0), 256);
+    pal = new Palette(frame_t(0), 256);
 
     for (c=0; c<256; c++) {
       r = fgetc(f);
@@ -76,7 +76,7 @@ Palette* load_col_file(const char* filename)
       return NULL;
     }
 
-    pal = new Palette(FrameNumber(0), MIN(d.quot, 256));
+    pal = new Palette(frame_t(0), MIN(d.quot, 256));
 
     for (c=0; c<pal->size(); c++) {
       r = fgetc(f);

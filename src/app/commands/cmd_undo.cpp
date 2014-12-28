@@ -89,7 +89,7 @@ void UndoCommand::onExecute(Context* context)
 
     if (spritePosition != currentPosition) {
       current_editor->setLayer(sprite->indexToLayer(spritePosition.layerIndex()));
-      current_editor->setFrame(spritePosition.frameNumber());
+      current_editor->setFrame(spritePosition.frame());
 
       // Draw the current layer/frame (which is not undone yet) so the
       // user can see the doUndo/doRedo effect.

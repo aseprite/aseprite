@@ -41,7 +41,7 @@ void write_palette(std::ostream& os, Palette* palette)
 
 Palette* read_palette(std::istream& is)
 {
-  FrameNumber frame(read16(is)); // Frame
+  frame_t frame(read16(is)); // Frame
   int ncolors = read16(is);      // Number of colors
 
   base::UniquePtr<Palette> palette(new Palette(frame, ncolors));

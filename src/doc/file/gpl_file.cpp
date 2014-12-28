@@ -34,7 +34,7 @@ Palette* load_gpl_file(const char *filename)
   base::trim_string(line, line);
   if (line != "GIMP Palette") return NULL;
 
-  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 0));
+  base::UniquePtr<Palette> pal(new Palette(frame_t(0), 0));
 
   while (std::getline(f, line)) {
     // Trim line.

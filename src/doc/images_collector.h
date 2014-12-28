@@ -8,7 +8,7 @@
 #define DOC_IMAGES_REF_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 #include <list>
 
@@ -50,7 +50,7 @@ namespace doc {
     // * forEdit:   True if you will modify the images (it is used to avoid
     //              returning images from layers which are read-only/write-locked).
     ImagesCollector(Layer* layer,
-                    FrameNumber frame,
+                    frame_t frame,
                     bool allFrames,
                     bool forEdit);
 
@@ -61,7 +61,7 @@ namespace doc {
     bool empty() const { return m_items.empty(); }
 
   private:
-    void collectFromLayer(Layer* layer, FrameNumber frame);
+    void collectFromLayer(Layer* layer, frame_t frame);
     void collectImage(Layer* layer, Cel* cel);
 
     Items m_items;

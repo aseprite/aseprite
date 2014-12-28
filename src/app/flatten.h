@@ -21,7 +21,7 @@
 #pragma once
 
 #include "gfx/rect.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 namespace doc {
   class Sprite;
@@ -40,7 +40,7 @@ namespace app {
   // sprite.
   LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
                                         const gfx::Rect& bounds,
-                                        FrameNumber frmin, FrameNumber frmax);
+                                        frame_t frmin, frame_t frmax);
 
 } // namespace app
 

@@ -30,7 +30,7 @@
 #include "app/ui/editor/editor_states_history.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/image_buffer.h"
 #include "gfx/fwd.h"
 #include "render/zoom.h"
@@ -116,13 +116,13 @@ namespace app {
     Document* document() { return m_document; }
     Sprite* sprite() { return m_sprite; }
     Layer* layer() { return m_layer; }
-    FrameNumber frame() { return m_frame; }
+    frame_t frame() { return m_frame; }
 
     void getDocumentLocation(DocumentLocation* location) const;
     DocumentLocation getDocumentLocation() const;
 
     void setLayer(const Layer* layer);
-    void setFrame(FrameNumber frame);
+    void setFrame(frame_t frame);
 
     const render::Zoom& zoom() const { return m_zoom; }
     int offsetX() const { return m_offset_x; }
@@ -270,7 +270,7 @@ namespace app {
     Document* m_document;         // Active document in the editor
     Sprite* m_sprite;             // Active sprite in the editor
     Layer* m_layer;               // Active layer in the editor
-    FrameNumber m_frame;          // Active frame in the editor
+    frame_t m_frame;          // Active frame in the editor
     render::Zoom m_zoom;          // Zoom in the editor
 
     // Drawing cursor

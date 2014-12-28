@@ -42,11 +42,11 @@ static Image* ordered_dithering(
 
 Palette* create_palette_from_rgb(
   const Sprite* sprite,
-  FrameNumber frameNumber,
+  frame_t frameNumber,
   Palette* palette)
 {
   if (!palette)
-    palette = new Palette(FrameNumber(0), 256);
+    palette = new Palette(frame_t(0), 256);
 
   bool has_background_layer = (sprite->backgroundLayer() != NULL);
   Image* flat_image;

@@ -79,10 +79,10 @@ void ClearCelCommand::onExecute(Context* context)
 
         LayerImage* layerImage = static_cast<LayerImage*>(layer);
 
-        for (FrameNumber frame = range.frameEnd(),
-               begin = range.frameBegin().previous();
+        for (frame_t frame = range.frameEnd(),
+               begin = range.frameBegin()-1;
              frame != begin;
-             frame = frame.previous()) {
+             --frame) {
           document->getApi().clearCel(layerImage, frame);
         }
       }

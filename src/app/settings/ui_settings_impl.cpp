@@ -207,11 +207,11 @@ public:
   // Animation
 
   virtual bool getLoopAnimation() override;
-  virtual void getLoopRange(doc::FrameNumber* begin, doc::FrameNumber* end) override;
+  virtual void getLoopRange(doc::frame_t* begin, doc::frame_t* end) override;
   virtual AniDir getAnimationDirection() override;
 
   virtual void setLoopAnimation(bool state) override;
-  virtual void setLoopRange(doc::FrameNumber begin, doc::FrameNumber end) override;
+  virtual void setLoopRange(doc::frame_t begin, doc::frame_t end) override;
   virtual void setAnimationDirection(AniDir dir) override;
 
   virtual void addObserver(DocumentSettingsObserver* observer) override;
@@ -270,8 +270,8 @@ private:
   int m_pixelGridOpacity;
   bool m_pixelGridAutoOpacity;
   bool m_isLoop;
-  doc::FrameNumber m_loopBegin;
-  doc::FrameNumber m_loopEnd;
+  doc::frame_t m_loopBegin;
+  doc::frame_t m_loopEnd;
   AniDir m_aniDir;
 };
 
@@ -800,7 +800,7 @@ bool UIDocumentSettingsImpl::getLoopAnimation()
   return m_isLoop;
 }
 
-void UIDocumentSettingsImpl::getLoopRange(doc::FrameNumber* begin, doc::FrameNumber* end)
+void UIDocumentSettingsImpl::getLoopRange(doc::frame_t* begin, doc::frame_t* end)
 {
   *begin = m_loopBegin;
   *end = m_loopEnd;
@@ -817,7 +817,7 @@ void UIDocumentSettingsImpl::setLoopAnimation(bool state)
   redrawDocumentViews();
 }
 
-void UIDocumentSettingsImpl::setLoopRange(doc::FrameNumber begin, doc::FrameNumber end)
+void UIDocumentSettingsImpl::setLoopRange(doc::frame_t begin, doc::frame_t end)
 {
   m_loopBegin = begin;
   m_loopEnd = end;

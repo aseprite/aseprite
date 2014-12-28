@@ -330,7 +330,7 @@ void Render::setBgCheckedSize(const gfx::Size& size)
   m_bgCheckedSize = size;
 }
 
-void Render::setPreviewImage(const Layer* layer, FrameNumber frame, Image* image)
+void Render::setPreviewImage(const Layer* layer, frame_t frame, Image* image)
 {
   m_selectedLayer = layer;
   m_selectedFrame = frame;
@@ -340,7 +340,7 @@ void Render::setPreviewImage(const Layer* layer, FrameNumber frame, Image* image
 void Render::setExtraImage(
   const Cel* cel, const Image* image, int blendMode,
   const Layer* currentLayer,
-  FrameNumber currentFrame)
+  frame_t currentFrame)
 {
   m_extraCel = cel;
   m_extraImage = image;
@@ -376,7 +376,7 @@ void Render::disableOnionskin()
 void Render::renderSprite(
   Image* dstImage,
   const Sprite* sprite,
-  FrameNumber frame)
+  frame_t frame)
 {
   renderSprite(dstImage, sprite, frame,
     gfx::Clip(sprite->bounds()), Zoom(1, 1));
@@ -385,7 +385,7 @@ void Render::renderSprite(
 void Render::renderSprite(
   Image* dstImage,
   const Sprite* sprite,
-  FrameNumber frame,
+  frame_t frame,
   const gfx::Clip& area)
 {
   renderSprite(dstImage, sprite, frame, area, Zoom(1, 1));
@@ -394,7 +394,7 @@ void Render::renderSprite(
 void Render::renderLayer(
   Image* dstImage,
   const Layer* layer,
-  FrameNumber frame)
+  frame_t frame)
 {
   renderLayer(dstImage, layer, frame,
     gfx::Clip(layer->sprite()->bounds()));
@@ -403,7 +403,7 @@ void Render::renderLayer(
 void Render::renderLayer(
   Image* dstImage,
   const Layer* layer,
-  FrameNumber frame,
+  frame_t frame,
   const gfx::Clip& area)
 {
   m_sprite = layer->sprite();
@@ -428,7 +428,7 @@ void Render::renderLayer(
 void Render::renderSprite(
   Image* dstImage,
   const Sprite* sprite,
-  FrameNumber frame,
+  frame_t frame,
   const gfx::Clip& area,
   Zoom zoom)
 {
@@ -448,7 +448,7 @@ void Render::renderSprite(
       case IMAGE_RGB:
       case IMAGE_GRAYSCALE:
         if (bgLayer && bgLayer->isVisible())
-          bg_color = m_sprite->getPalette(frame)->getEntry(m_sprite->transparentColor());
+          bg_color = m_sprite->palette(frame)->getEntry(m_sprite->transparentColor());
         break;
       case IMAGE_INDEXED:
         bg_color = m_sprite->transparentColor();
@@ -481,8 +481,8 @@ void Render::renderSprite(
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
   if (m_onionskinType != OnionskinType::NONE) {
-    for (FrameNumber f=frame.previous(m_onionskinPrevs);
-         f <= frame.next(m_onionskinNexts); ++f) {
+    for (frame_t f = frame - m_onionskinPrevs;
+         f <= frame + m_onionskinNexts; ++f) {
       if (f == frame || f < 0 || f > m_sprite->lastFrame())
         continue;
       else if (f < frame)
@@ -573,7 +573,7 @@ void Render::renderLayer(
   const Layer* layer,
   Image *image,
   const gfx::Clip& area,
-  FrameNumber frame, Zoom zoom,
+  frame_t frame, Zoom zoom,
   RenderScaledImage scaled_func,
   bool render_background,
   bool render_transparent,
@@ -614,7 +614,7 @@ void Render::renderLayer(
           ASSERT(src_image->maskColor() == m_sprite->transparentColor());
 
           renderCel(image, src_image,
-            m_sprite->getPalette(frame),
+            m_sprite->palette(frame),
             cel, area, scaled_func,
             output_opacity,
             (blend_mode < 0 ?
@@ -649,7 +649,7 @@ void Render::renderLayer(
       frame == m_currentFrame) {
     if (m_extraCel->opacity() > 0) {
       renderCel(image, m_extraImage,
-        m_sprite->getPalette(frame),
+        m_sprite->palette(frame),
         m_extraCel, area, scaled_func,
         m_extraCel->opacity(),
         m_extraBlendMode, zoom);

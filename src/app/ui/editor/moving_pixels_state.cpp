@@ -359,7 +359,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
           gfx::Point origin;
           base::UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
           clipboard::copy_image(floatingImage.get(),
-                                document->sprite()->getPalette(editor->frame()),
+                                document->sprite()->palette(editor->frame()),
                                 origin);
         }
 

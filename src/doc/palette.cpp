@@ -20,7 +20,7 @@ namespace doc {
 
 using namespace gfx;
 
-Palette::Palette(FrameNumber frame, int ncolors)
+Palette::Palette(frame_t frame, int ncolors)
   : Object(ObjectType::Palette)
 {
   ASSERT(ncolors >= 0 && ncolors <= MaxColors);
@@ -46,7 +46,7 @@ Palette::~Palette()
 
 Palette* Palette::createGrayscale()
 {
-  Palette* graypal = new Palette(FrameNumber(0), MaxColors);
+  Palette* graypal = new Palette(frame_t(0), MaxColors);
   for (int c=0; c<MaxColors; c++)
     graypal->setEntry(c, rgba(c, c, c, 255));
   return graypal;
@@ -75,7 +75,7 @@ void Palette::addEntry(color_t color)
   setEntry(size()-1, color);
 }
 
-void Palette::setFrame(FrameNumber frame)
+void Palette::setFrame(frame_t frame)
 {
   ASSERT(frame >= 0);
 

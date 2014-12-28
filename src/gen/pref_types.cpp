@@ -185,7 +185,7 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
     << "\n"
     << "#include \"app/color.h\"\n"
     << "#include \"app/pref/option.h\"\n"
-    << "#include \"doc/frame_number.h\"\n"
+    << "#include \"doc/frame.h\"\n"
     << "#include \"gfx/rect.h\"\n"
     << "\n"
     << "#include <string>\n"

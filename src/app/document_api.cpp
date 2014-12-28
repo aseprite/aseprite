@@ -141,7 +141,7 @@ void DocumentApi::trimSprite(Sprite* sprite)
   Image* image = image_wrap.get();
   render::Render render;
 
-  for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
+  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     render.renderSprite(image, sprite, frame);
 
     // TODO configurable (what color pixel to use as "refpixel",
@@ -165,10 +165,10 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
     return;
 
   // TODO Review this, why we use the palette in frame 0?
-  FrameNumber frame(0);
+  frame_t frame(0);
 
   // Use the rgbmap for the specified sprite
-  const RgbMap* rgbmap = sprite->getRgbMap(frame);
+  const RgbMap* rgbmap = sprite->rgbMap(frame);
 
   // Get the list of cels from the background layer (if it
   // exists). This list will be used to check if each image belong to
@@ -192,7 +192,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
 
     new_image = render::convert_pixel_format
       (old_image, NULL, newFormat, dithering_method, rgbmap,
-       sprite->getPalette(frame),
+       sprite->palette(frame),
        is_image_from_background);
 
     replaceStockImage(sprite, c, new_image);
@@ -232,7 +232,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
       }
 
       m_undoers->pushUndoer(new undoers::AddPalette(
-        getObjects(), sprite, FrameNumber(0)));
+        getObjects(), sprite, frame_t(0)));
     }
 
     // It's a base::UniquePtr because setPalette'll create a copy of "graypal".
@@ -243,14 +243,14 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
   }
 }
 
-void DocumentApi::addFrame(Sprite* sprite, FrameNumber newFrame)
+void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
 {
-  copyFrame(sprite, newFrame.previous(), newFrame);
+  copyFrame(sprite, newFrame-1, newFrame);
 }
 
-void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
+void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
-  int duration = sprite->getFrameDuration(newFrame.previous());
+  int duration = sprite->frameDuration(newFrame-1);
 
   // Add the frame in the sprite structure, it adjusts the total
   // number of frames in the sprite.
@@ -270,27 +270,27 @@ void DocumentApi::addEmptyFrame(Sprite* sprite, FrameNumber newFrame)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onAddFrame, ev);
 }
 
-void DocumentApi::addEmptyFramesTo(Sprite* sprite, FrameNumber newFrame)
+void DocumentApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
 {
   while (sprite->totalFrames() <= newFrame)
     addEmptyFrame(sprite, sprite->totalFrames());
 }
 
-void DocumentApi::copyFrame(Sprite* sprite, FrameNumber fromFrame, FrameNumber newFrame)
+void DocumentApi::copyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame)
 {
-  int duration = sprite->getFrameDuration(fromFrame);
+  int duration = sprite->frameDuration(fromFrame);
 
   addEmptyFrame(sprite, newFrame);
 
   if (fromFrame >= newFrame)
-    fromFrame = fromFrame.next();
+    ++fromFrame;
 
   copyFrameForLayer(sprite->folder(), fromFrame, newFrame);
 
   setFrameDuration(sprite, newFrame, duration);
 }
 
-void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
+void DocumentApi::displaceFrames(Layer* layer, frame_t frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -303,10 +303,10 @@ void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
 
       // Displace all cels in '>=frame' to the next frame.
-      for (FrameNumber c=sprite->lastFrame(); c>=frame; --c) {
+      for (frame_t c=sprite->lastFrame(); c>=frame; --c) {
         Cel* cel = imglayer->getCel(c);
         if (cel)
-          setCelFramePosition(imglayer, cel, cel->frame().next());
+          setCelFramePosition(imglayer, cel, cel->frame()+1);
       }
 
       // Add background cel
@@ -330,7 +330,7 @@ void DocumentApi::displaceFrames(Layer* layer, FrameNumber frame)
   }
 }
 
-void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNumber frame)
+void DocumentApi::copyFrameForLayer(Layer* layer, frame_t fromFrame, frame_t frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -355,7 +355,7 @@ void DocumentApi::copyFrameForLayer(Layer* layer, FrameNumber fromFrame, FrameNu
   }
 }
 
-void DocumentApi::removeFrame(Sprite* sprite, FrameNumber frame)
+void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
 
@@ -381,7 +381,7 @@ void DocumentApi::removeFrame(Sprite* sprite, FrameNumber frame)
 
 // Does the hard part of removing a frame: Removes all cels located in
 // the given frame, and moves all following cels one frame position back.
-void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
+void DocumentApi::removeFrameOfLayer(Layer* layer, frame_t frame)
 {
   ASSERT(layer);
   ASSERT(frame >= 0);
@@ -397,7 +397,7 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
 
       for (++frame; frame<sprite->totalFrames(); ++frame)
         if (Cel* cel = imglayer->getCel(frame))
-          setCelFramePosition(imglayer, cel, cel->frame().previous());
+          setCelFramePosition(imglayer, cel, cel->frame()-1);
       break;
     }
 
@@ -413,7 +413,7 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, FrameNumber frame)
   }
 }
 
-void DocumentApi::setTotalFrames(Sprite* sprite, FrameNumber frames)
+void DocumentApi::setTotalFrames(Sprite* sprite, frame_t frames)
 {
   ASSERT(frames >= 1);
 
@@ -431,7 +431,7 @@ void DocumentApi::setTotalFrames(Sprite* sprite, FrameNumber frames)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onTotalFramesChanged, ev);
 }
 
-void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
+void DocumentApi::setFrameDuration(Sprite* sprite, frame_t frame, int msecs)
 {
   // Add undoers.
   if (undoEnabled())
@@ -448,15 +448,15 @@ void DocumentApi::setFrameDuration(Sprite* sprite, FrameNumber frame, int msecs)
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onFrameDurationChanged, ev);
 }
 
-void DocumentApi::setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameNumber to, int msecs)
+void DocumentApi::setFrameRangeDuration(Sprite* sprite, frame_t from, frame_t to, int msecs)
 {
-  ASSERT(from >= FrameNumber(0));
+  ASSERT(from >= frame_t(0));
   ASSERT(from < to);
   ASSERT(to <= sprite->lastFrame());
 
   // Add undoers.
   if (undoEnabled()) {
-    for (FrameNumber fr(from); fr<=to; ++fr)
+    for (frame_t fr(from); fr<=to; ++fr)
       m_undoers->pushUndoer(new undoers::SetFrameDuration(
           getObjects(), sprite, fr));
   }
@@ -465,27 +465,27 @@ void DocumentApi::setFrameRangeDuration(Sprite* sprite, FrameNumber from, FrameN
   sprite->setFrameRangeDuration(from, to, msecs);
 }
 
-void DocumentApi::moveFrame(Sprite* sprite, FrameNumber frame, FrameNumber beforeFrame)
+void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
 {
   if (frame != beforeFrame &&
       frame >= 0 &&
       frame <= sprite->lastFrame() &&
       beforeFrame >= 0 &&
-      beforeFrame <= sprite->lastFrame().next()) {
+      beforeFrame <= sprite->lastFrame()+1) {
     // Change the frame-lengths.
-    int frlen_aux = sprite->getFrameDuration(frame);
+    int frlen_aux = sprite->frameDuration(frame);
 
     // Moving the frame to the future.
     if (frame < beforeFrame) {
-      for (FrameNumber c=frame; c<beforeFrame.previous(); ++c)
-        setFrameDuration(sprite, c, sprite->getFrameDuration(c.next()));
+      for (frame_t c=frame; c<beforeFrame-1; ++c)
+        setFrameDuration(sprite, c, sprite->frameDuration(c+1));
 
-      setFrameDuration(sprite, beforeFrame.previous(), frlen_aux);
+      setFrameDuration(sprite, beforeFrame-1, frlen_aux);
     }
     // Moving the frame to the past.
     else if (beforeFrame < frame) {
-      for (FrameNumber c=frame; c>beforeFrame; --c)
-        setFrameDuration(sprite, c, sprite->getFrameDuration(c.previous()));
+      for (frame_t c=frame; c>beforeFrame; --c)
+        setFrameDuration(sprite, c, sprite->frameDuration(c-1));
 
       setFrameDuration(sprite, beforeFrame, frlen_aux);
     }
@@ -495,7 +495,7 @@ void DocumentApi::moveFrame(Sprite* sprite, FrameNumber frame, FrameNumber befor
   }
 }
 
-void DocumentApi::moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber beforeFrame)
+void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame)
 {
   ASSERT(layer);
 
@@ -512,13 +512,13 @@ void DocumentApi::moveFrameLayer(Layer* layer, FrameNumber frame, FrameNumber be
 
       for (; it != end; ++it) {
         Cel* cel = *it;
-        FrameNumber celFrame = cel->frame();
-        FrameNumber newFrame = celFrame;
+        frame_t celFrame = cel->frame();
+        frame_t newFrame = celFrame;
 
         // fthe frame to the future
         if (frame < beforeFrame) {
           if (celFrame == frame) {
-            newFrame = beforeFrame.previous();
+            newFrame = beforeFrame-1;
           }
           else if (celFrame > frame &&
                    celFrame < beforeFrame) {
@@ -604,7 +604,7 @@ void DocumentApi::removeCel(Cel* cel)
   delete cel;
 }
 
-void DocumentApi::setCelFramePosition(LayerImage* layer, Cel* cel, FrameNumber frame)
+void DocumentApi::setCelFramePosition(LayerImage* layer, Cel* cel, frame_t frame)
 {
   ASSERT(cel);
   ASSERT(frame >= 0);
@@ -669,7 +669,7 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h)
   setCelPosition(sprite, cel, x, y);
 }
 
-void DocumentApi::clearCel(LayerImage* layer, FrameNumber frame)
+void DocumentApi::clearCel(LayerImage* layer, frame_t frame)
 {
   Cel* cel = layer->getCel(frame);
   if (cel)
@@ -696,8 +696,8 @@ void DocumentApi::clearCel(Cel* cel)
 }
 
 void DocumentApi::moveCel(
-  LayerImage* srcLayer, FrameNumber srcFrame,
-  LayerImage* dstLayer, FrameNumber dstFrame)
+  LayerImage* srcLayer, frame_t srcFrame,
+  LayerImage* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
@@ -763,8 +763,8 @@ void DocumentApi::moveCel(
 }
 
 void DocumentApi::copyCel(
-  LayerImage* srcLayer, FrameNumber srcFrame,
-  LayerImage* dstLayer, FrameNumber dstFrame)
+  LayerImage* srcLayer, frame_t srcFrame,
+  LayerImage* dstLayer, frame_t dstFrame)
 {
   ASSERT(srcLayer != NULL);
   ASSERT(dstLayer != NULL);
@@ -818,7 +818,7 @@ void DocumentApi::copyCel(
 }
 
 void DocumentApi::swapCel(
-  LayerImage* layer, FrameNumber frame1, FrameNumber frame2)
+  LayerImage* layer, frame_t frame1, frame_t frame2)
 {
   Sprite* sprite = layer->sprite();
   ASSERT(sprite != NULL);
@@ -1019,7 +1019,7 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
   }
 
   // Fill all empty cels with a flat-image filled with bgcolor
-  for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
+  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     Cel* cel = layer->getCel(frame);
     if (!cel) {
       Image* cel_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
@@ -1083,7 +1083,7 @@ void DocumentApi::flattenLayers(Sprite* sprite)
   color_t bgcolor = bgColor(background);
 
   // Copy all frames to the background.
-  for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
+  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     // Clear the image and render this frame.
     clear_image(image, bgcolor);
     render.renderSprite(image, sprite, frame);
@@ -1166,7 +1166,7 @@ int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
   return imageIndex;
 }
 
-Cel* DocumentApi::addImage(LayerImage* layer, FrameNumber frameNumber, Image* image)
+Cel* DocumentApi::addImage(LayerImage* layer, frame_t frameNumber, Image* image)
 {
   int imageIndex = addImageInStock(layer->sprite(), image);
 
@@ -1338,9 +1338,9 @@ void DocumentApi::deselectMask()
   m_document->setMaskVisible(false);
 }
 
-void DocumentApi::setPalette(Sprite* sprite, FrameNumber frame, Palette* newPalette)
+void DocumentApi::setPalette(Sprite* sprite, frame_t frame, Palette* newPalette)
 {
-  Palette* currentSpritePalette = sprite->getPalette(frame); // Sprite current pal
+  Palette* currentSpritePalette = sprite->palette(frame); // Sprite current pal
   int from, to;
 
   // Check differences between current sprite palette and current system palette

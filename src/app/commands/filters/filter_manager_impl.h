@@ -95,7 +95,7 @@ namespace app {
     Document* document() { return m_location.document(); }
     Sprite* sprite() { return m_location.sprite(); }
     Layer* layer() { return m_location.layer(); }
-    FrameNumber frame() { return m_location.frame(); }
+    frame_t frame() { return m_location.frame(); }
     Image* destinationImage() const { return m_dst; }
 
     // Updates the current editor to show the progress of the preview.

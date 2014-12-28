@@ -297,12 +297,12 @@ bool FilterManagerImpl::skipPixel()
 
 Palette* FilterManagerImpl::getPalette()
 {
-  return m_location.sprite()->getPalette(m_location.frame());
+  return m_location.sprite()->palette(m_location.frame());
 }
 
 RgbMap* FilterManagerImpl::getRgbMap()
 {
-  return m_location.sprite()->getRgbMap(m_location.frame());
+  return m_location.sprite()->rgbMap(m_location.frame());
 }
 
 void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int offset_y)

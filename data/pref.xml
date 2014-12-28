@@ -138,8 +138,8 @@
     </section>
     <section id="loop">
       <option id="visible" type="bool" default="false" />
-      <option id="from" type="doc::FrameNumber" default="doc::FrameNumber(0)" />
-      <option id="to" type="doc::FrameNumber" default="doc::FrameNumber(1)" />
+      <option id="from" type="doc::frame_t" default="0" />
+      <option id="to" type="doc::frame_t" default="1" />
       <option id="ani_dir" type="AniDir" default="AniDir::FORWARD" />
     </section>
   </document>

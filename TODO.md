@@ -46,7 +46,6 @@
 * Convert doc::PixelFormat to a enum class
 * Add doc::Spec with width/height/channels/ColorMode/ncolors
 * Convert doc::LayerIndex -> typedef int doc::layer_t;
-* Convert doc::FrameNumber -> typedef int doc::frame_t;
 * Replace doc::LayerImage::getCel() with doc::Layer::cel()
 * Replace doc::Sprite::getPalette() with doc::Sprite::palette()
 * Replace doc::Palette::getEntry() with doc::Palette::entry()

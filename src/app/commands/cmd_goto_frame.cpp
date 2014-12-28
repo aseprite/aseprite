@@ -49,7 +49,7 @@ protected:
     current_editor->setFrame(onGetFrame(current_editor));
   }
 
-  virtual FrameNumber onGetFrame(Editor* editor) = 0;
+  virtual frame_t onGetFrame(Editor* editor) = 0;
 };
 
 class GotoFirstFrameCommand : public GotoCommand {
@@ -60,8 +60,8 @@ public:
   Command* clone() const override { return new GotoFirstFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) override {
-    return FrameNumber(0);
+  frame_t onGetFrame(Editor* editor) override {
+    return frame_t(0);
   }
 };
 
@@ -73,11 +73,11 @@ public:
   Command* clone() const override { return new GotoPreviousFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) override {
-    FrameNumber frame = editor->frame();
+  frame_t onGetFrame(Editor* editor) override {
+    frame_t frame = editor->frame();
 
-    if (frame > FrameNumber(0))
-      return frame.previous();
+    if (frame > frame_t(0))
+      return frame-1;
     else
       return editor->sprite()->lastFrame();
   }
@@ -90,12 +90,12 @@ public:
   Command* clone() const override { return new GotoNextFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) override {
-    FrameNumber frame = editor->frame();
+  frame_t onGetFrame(Editor* editor) override {
+    frame_t frame = editor->frame();
     if (frame < editor->sprite()->lastFrame())
-      return frame.next();
+      return frame+1;
     else
-      return FrameNumber(0);
+      return frame_t(0);
   }
 };
 
@@ -106,7 +106,7 @@ public:
   Command* clone() const override { return new GotoLastFrameCommand(*this); }
 
 protected:
-  FrameNumber onGetFrame(Editor* editor) override {
+  frame_t onGetFrame(Editor* editor) override {
     return editor->sprite()->lastFrame();
   }
 };
@@ -126,7 +126,7 @@ protected:
     else m_frame = 0;
   }
 
-  FrameNumber onGetFrame(Editor* editor) override {
+  frame_t onGetFrame(Editor* editor) override {
     if (m_frame == 0) {
       base::UniquePtr<Window> window(app::load_widget<Window>("goto_frame.xml", "goto_frame"));
       Widget* frame = app::find_widget<Widget>(window, "frame");
@@ -141,7 +141,7 @@ protected:
       m_frame = frame->getTextInt();
     }
 
-    return MID(FrameNumber(0), FrameNumber(m_frame-1), editor->sprite()->lastFrame());
+    return MID(0, m_frame-1, editor->sprite()->lastFrame());
   }
 
 private:

@@ -20,7 +20,7 @@
 #define APP_DOCUMENT_LOCATION_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/layer_index.h"
 
 namespace doc {
@@ -50,7 +50,7 @@ namespace app {
     const Document* document() const { return m_document; }
     const Sprite* sprite() const { return m_sprite; }
     const Layer* layer() const { return m_layer; }
-    FrameNumber frame() const { return m_frame; }
+    frame_t frame() const { return m_frame; }
     const Cel* cel() const;
 
     Document* document() { return m_document; }
@@ -61,7 +61,7 @@ namespace app {
     void document(Document* document) { m_document = document; }
     void sprite(Sprite* sprite) { m_sprite = sprite; }
     void layer(Layer* layer) { m_layer = layer; }
-    void frame(FrameNumber frame) { m_frame = frame; }
+    void frame(frame_t frame) { m_frame = frame; }
 
     LayerIndex layerIndex() const;
     void layerIndex(LayerIndex layerIndex);
@@ -73,7 +73,7 @@ namespace app {
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
-    FrameNumber m_frame;
+    frame_t m_frame;
   };
 
 } // namespace app

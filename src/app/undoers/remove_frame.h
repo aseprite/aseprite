@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "undo/object_id.h"
 
 #include <sstream>
@@ -39,7 +39,7 @@ namespace app {
 
     class RemoveFrame : public UndoerBase {
     public:
-      RemoveFrame(ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame);
+      RemoveFrame(ObjectsContainer* objects, Document* document, Sprite* sprite, frame_t frame);
 
       void dispose() override;
       size_t getMemSize() const override { return sizeof(*this); }
@@ -48,7 +48,7 @@ namespace app {
     private:
       undo::ObjectId m_documentId;
       undo::ObjectId m_spriteId;
-      FrameNumber m_frame;
+      frame_t m_frame;
       int m_frameDuration;
     };
 

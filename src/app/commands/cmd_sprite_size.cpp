@@ -110,8 +110,8 @@ protected:
       doc::algorithm::fixup_image_transparent_colors(image);
       doc::algorithm::resize_image(image, new_image,
                                       m_resize_method,
-                                      m_sprite->getPalette(cel->frame()),
-                                      m_sprite->getRgbMap(cel->frame()));
+                                      m_sprite->palette(cel->frame()),
+                                      m_sprite->rgbMap(cel->frame()));
 
       api.replaceStockImage(m_sprite, cel->imageIndex(), new_image);
 
@@ -138,8 +138,8 @@ protected:
           scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
       algorithm::resize_image(old_bitmap, new_mask->bitmap(),
                               m_resize_method,
-                              m_sprite->getPalette(FrameNumber(0)), // Ignored
-                              m_sprite->getRgbMap(FrameNumber(0))); // Ignored
+                              m_sprite->palette(0), // Ignored
+                              m_sprite->rgbMap(0)); // Ignored
 
       // Reshrink
       new_mask->intersect(new_mask->bounds());

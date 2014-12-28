@@ -35,7 +35,7 @@ using namespace doc;
 using namespace undo;
 
 RemapPalette::RemapPalette(ObjectsContainer* objects, Sprite* sprite,
-                           FrameNumber frameFrom, FrameNumber frameTo,
+                           frame_t frameFrom, frame_t frameTo,
                            const std::vector<uint8_t>& mapping)
   : m_spriteId(objects->addObject(sprite))
   , m_frameFrom(frameFrom)

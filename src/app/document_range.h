@@ -20,7 +20,7 @@
 #define APP_DOCUMENT_RANGE_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/layer_index.h"
 
 #include <algorithm>
@@ -38,21 +38,21 @@ namespace app {
     bool enabled() const { return m_type != kNone; }
     LayerIndex layerBegin() const  { return std::min(m_layerBegin, m_layerEnd); }
     LayerIndex layerEnd() const    { return std::max(m_layerBegin, m_layerEnd); }
-    FrameNumber frameBegin() const { return std::min(m_frameBegin, m_frameEnd); }
-    FrameNumber frameEnd() const   { return std::max(m_frameBegin, m_frameEnd); }
+    frame_t frameBegin() const { return std::min(m_frameBegin, m_frameEnd); }
+    frame_t frameEnd() const   { return std::max(m_frameBegin, m_frameEnd); }
 
     int layers() const { return layerEnd() - layerBegin() + 1; }
-    FrameNumber frames() const { return (frameEnd() - frameBegin()).next(); }
+    frame_t frames() const { return frameEnd() - frameBegin() + 1; }
     void setLayers(int layers);
-    void setFrames(FrameNumber frames);
+    void setFrames(frame_t frames);
     void displace(int layerDelta, int frameDelta);
 
     bool inRange(LayerIndex layer) const;
-    bool inRange(FrameNumber frame) const;
-    bool inRange(LayerIndex layer, FrameNumber frame) const;
+    bool inRange(frame_t frame) const;
+    bool inRange(LayerIndex layer, frame_t frame) const;
 
-    void startRange(LayerIndex layer, FrameNumber frame, Type type);
-    void endRange(LayerIndex layer, FrameNumber frame);
+    void startRange(LayerIndex layer, frame_t frame, Type type);
+    void endRange(LayerIndex layer, frame_t frame);
     void disableRange();
 
     bool operator==(const DocumentRange& o) const {
@@ -65,8 +65,8 @@ namespace app {
     Type m_type;
     LayerIndex m_layerBegin;
     LayerIndex m_layerEnd;
-    FrameNumber m_frameBegin;
-    FrameNumber m_frameEnd;
+    frame_t m_frameBegin;
+    frame_t m_frameEnd;
   };
 
 } // namespace app

@@ -8,7 +8,7 @@
 #define DOC_CEL_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/object.h"
 #include "gfx/fwd.h"
 #include "gfx/point.h"
@@ -21,11 +21,11 @@ namespace doc {
 
   class Cel : public Object {
   public:
-    Cel(FrameNumber frame, int image);
+    Cel(frame_t frame, int image);
     Cel(const Cel& cel);
     virtual ~Cel();
 
-    FrameNumber frame() const { return m_frame; }
+    frame_t frame() const { return m_frame; }
     int imageIndex() const { return m_image; }
     int x() const { return m_position.x; }
     int y() const { return m_position.y; }
@@ -40,7 +40,7 @@ namespace doc {
     // You should change the frame only if the cel isn't member of a
     // layer.  If the cel is already in a layer, you should use
     // LayerImage::moveCel() member function.
-    void setFrame(FrameNumber frame) { m_frame = frame; }
+    void setFrame(frame_t frame) { m_frame = frame; }
     void setImage(int image) { m_image = image; }
     void setPosition(int x, int y) {
       m_position.x = x;
@@ -59,10 +59,10 @@ namespace doc {
 
   private:
     LayerImage* m_layer;
-    FrameNumber m_frame;          // Frame position
-    int m_image;                  // Image index of stock
-    gfx::Point m_position;        // X/Y screen position
-    int m_opacity;                // Opacity level
+    frame_t m_frame;            // Frame position
+    int m_image;                // Image index of stock
+    gfx::Point m_position;      // X/Y screen position
+    int m_opacity;              // Opacity level
   };
 
 } // namespace doc

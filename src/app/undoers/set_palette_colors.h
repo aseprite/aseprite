@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "undo/object_id.h"
 
 #include <sstream>
@@ -38,7 +38,7 @@ namespace app {
 
     class SetPaletteColors : public UndoerBase {
     public:
-      SetPaletteColors(ObjectsContainer* objects, Sprite* sprite, Palette* palette, FrameNumber frame, int from, int to);
+      SetPaletteColors(ObjectsContainer* objects, Sprite* sprite, Palette* palette, frame_t frame, int from, int to);
 
       void dispose() override;
       size_t getMemSize() const override { return sizeof(*this) + getStreamSize(); }
@@ -50,7 +50,7 @@ namespace app {
       }
 
       undo::ObjectId m_spriteId;
-      FrameNumber m_frame;
+      frame_t m_frame;
       uint8_t m_from;
       uint8_t m_to;
       std::stringstream m_stream;

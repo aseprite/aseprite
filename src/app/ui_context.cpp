@@ -217,7 +217,7 @@ void UIContext::onGetActiveLocation(DocumentLocation* location) const
     location->document(doc);
     location->sprite(doc->sprite());
     location->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
-    location->frame(FrameNumber(0));
+    location->frame(0);
   }
 }
 

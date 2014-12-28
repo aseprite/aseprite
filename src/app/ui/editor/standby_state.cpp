@@ -535,7 +535,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
       (mask ? mask->bounds().w: sprite->width()),
       (mask ? mask->bounds().h: sprite->height()),
       editor->frame()+1,
-      sprite->getFrameDuration(editor->frame()));
+      sprite->frameDuration(editor->frame()));
   }
 
   return true;

@@ -21,7 +21,7 @@
 #pragma once
 
 #include "base/shared_ptr.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/pixel_format.h"
 
 #include <stdio.h>
@@ -100,7 +100,7 @@ namespace app {
       double progress_offset;      // Progress offset from the current frame.
       double progress_fraction;    // Progress fraction for one frame.
       // To load sequences.
-      FrameNumber frame;
+      frame_t frame;
       bool has_alpha;
       LayerImage* layer;
       Cel* last_cel;

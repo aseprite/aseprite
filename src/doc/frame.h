@@ -4,19 +4,13 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOC_COLOR_SCALES_H_INCLUDED
-#define DOC_COLOR_SCALES_H_INCLUDED
+#ifndef DOC_FRAME_H_INCLUDED
+#define DOC_FRAME_H_INCLUDED
 #pragma once
-
-#include "doc/frame.h"
-#include "doc/object.h"
-
-#include <vector>
 
 namespace doc {
 
-  int scale_5bits_to_8bits(int channel5bits);
-  int scale_6bits_to_8bits(int channel6bits);
+  typedef int frame_t;
 
 } // namespace doc
 

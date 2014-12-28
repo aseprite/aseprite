@@ -31,13 +31,13 @@ namespace undoers {
 
 using namespace undo;
 
-SetFrameDuration::SetFrameDuration(ObjectsContainer* objects, Sprite* sprite, FrameNumber frame)
+SetFrameDuration::SetFrameDuration(ObjectsContainer* objects, Sprite* sprite, frame_t frame)
   : m_spriteId(objects->addObject(sprite))
   , m_frame(frame)
 {
   ASSERT(frame >= 0 && frame < sprite->totalFrames());
 
-  m_duration = sprite->getFrameDuration(frame);
+  m_duration = sprite->frameDuration(frame);
 }
 
 void SetFrameDuration::dispose()

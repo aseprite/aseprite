@@ -9,7 +9,7 @@
 #pragma once
 
 #include "doc/dithering_method.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/pixel_format.h"
 
 #include "render/color_histogram.h"
@@ -44,7 +44,7 @@ namespace render {
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
   Palette* create_palette_from_rgb(
     const Sprite* sprite,
-    FrameNumber frameNumber,
+    frame_t frameNumber,
     Palette* newPalette);     // Can be NULL to create a new palette
 
   // Changes the image pixel format. The dithering method is used only

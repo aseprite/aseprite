@@ -560,7 +560,7 @@ void PaletteEntryEditor::onRampClick(Event& ev)
     return;
 
   Palette* src_palette = get_current_palette();
-  Palette* dst_palette = new Palette(FrameNumber(0), 256);
+  Palette* dst_palette = new Palette(frame_t(0), 256);
 
   src_palette->copyColorsTo(dst_palette);
   dst_palette->makeHorzRamp(index1, index2);
@@ -740,8 +740,8 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
       Document* document(writer.document());
       Sprite* sprite(writer.sprite());
       Palette* newPalette = get_current_palette(); // System current pal
-      FrameNumber frame = writer.frame();
-      Palette* currentSpritePalette = sprite->getPalette(frame); // Sprite current pal
+      frame_t frame = writer.frame();
+      Palette* currentSpritePalette = sprite->palette(frame); // Sprite current pal
       int from, to;
 
       // Check differences between current sprite palette and current system palette

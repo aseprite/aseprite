@@ -42,7 +42,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   m_folder = new LayerFolder(this);
 
   // Generate palette
-  Palette pal(FrameNumber(0), ncolors);
+  Palette pal(frame_t(0), ncolors);
 
   switch (format) {
 
@@ -98,7 +98,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 {
   // Create the sprite.
   base::UniquePtr<doc::Sprite> sprite(new doc::Sprite(format, width, height, ncolors));
-  sprite->setTotalFrames(doc::FrameNumber(1));
+  sprite->setTotalFrames(doc::frame_t(1));
 
   // Create the main image.
   int indexInStock;
@@ -120,7 +120,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 
     // Create the cel.
     {
-      base::UniquePtr<doc::Cel> cel(new doc::Cel(doc::FrameNumber(0), indexInStock));
+      base::UniquePtr<doc::Cel> cel(new doc::Cel(doc::frame_t(0), indexInStock));
       cel->setPosition(0, 0);
 
       // Add the cel in the layer.
@@ -259,11 +259,6 @@ void Sprite::getLayersList(std::vector<Layer*>& layers) const
 
 Palette* Sprite::palette(frame_t frame) const
 {
-  return getPalette(FrameNumber(frame));
-}
-
-Palette* Sprite::getPalette(FrameNumber frame) const
-{
   ASSERT(frame >= 0);
 
   Palette* found = NULL;
@@ -294,7 +289,7 @@ void Sprite::setPalette(const Palette* pal, bool truncate)
   ASSERT(pal != NULL);
 
   if (!truncate) {
-    Palette* sprite_pal = getPalette(pal->frame());
+    Palette* sprite_pal = palette(pal->frame());
     pal->copyColorsTo(sprite_pal);
   }
   else {
@@ -340,16 +335,16 @@ void Sprite::deletePalette(Palette* pal)
   delete pal;                   // palette
 }
 
-RgbMap* Sprite::getRgbMap(FrameNumber frame)
+RgbMap* Sprite::rgbMap(frame_t frame)
 {
   int mask_color = (backgroundLayer() ? -1: transparentColor());
 
   if (m_rgbMap == NULL) {
     m_rgbMap = new RgbMap();
-    m_rgbMap->regenerate(getPalette(frame), mask_color);
+    m_rgbMap->regenerate(palette(frame), mask_color);
   }
-  else if (!m_rgbMap->match(getPalette(frame))) {
-    m_rgbMap->regenerate(getPalette(frame), mask_color);
+  else if (!m_rgbMap->match(palette(frame))) {
+    m_rgbMap->regenerate(palette(frame), mask_color);
   }
 
   return m_rgbMap;
@@ -358,35 +353,35 @@ RgbMap* Sprite::getRgbMap(FrameNumber frame)
 //////////////////////////////////////////////////////////////////////
 // Frames
 
-void Sprite::addFrame(FrameNumber newFrame)
+void Sprite::addFrame(frame_t newFrame)
 {
-  setTotalFrames(m_frames.next());
-  for (FrameNumber i=m_frames.previous(); i>=newFrame; i=i.previous())
-    setFrameDuration(i, getFrameDuration(i.previous()));
+  setTotalFrames(m_frames+1);
+  for (frame_t i=m_frames-1; i>=newFrame; --i)
+    setFrameDuration(i, frameDuration(i-1));
 }
 
-void Sprite::removeFrame(FrameNumber newFrame)
+void Sprite::removeFrame(frame_t newFrame)
 {
-  FrameNumber newTotal = m_frames.previous();
-  for (FrameNumber i=newFrame; i<newTotal; i=i.next())
-    setFrameDuration(i, getFrameDuration(i.next()));
+  frame_t newTotal = m_frames-1;
+  for (frame_t i=newFrame; i<newTotal; ++i)
+    setFrameDuration(i, frameDuration(i+1));
   setTotalFrames(newTotal);
 }
 
-void Sprite::setTotalFrames(FrameNumber frames)
+void Sprite::setTotalFrames(frame_t frames)
 {
-  frames = MAX(FrameNumber(1), frames);
+  frames = MAX(frame_t(1), frames);
   m_frlens.resize(frames);
 
   if (frames > m_frames) {
-    for (FrameNumber c=m_frames; c<frames; ++c)
-      m_frlens[c] = m_frlens[m_frames.previous()];
+    for (frame_t c=m_frames; c<frames; ++c)
+      m_frlens[c] = m_frlens[m_frames-1];
   }
 
   m_frames = frames;
 }
 
-int Sprite::getFrameDuration(FrameNumber frame) const
+int Sprite::frameDuration(frame_t frame) const
 {
   if (frame >= 0 && frame < m_frames)
     return m_frlens[frame];
@@ -394,13 +389,13 @@ int Sprite::getFrameDuration(FrameNumber frame) const
     return 0;
 }
 
-void Sprite::setFrameDuration(FrameNumber frame, int msecs)
+void Sprite::setFrameDuration(frame_t frame, int msecs)
 {
   if (frame >= 0 && frame < m_frames)
     m_frlens[frame] = MID(1, msecs, 65535);
 }
 
-void Sprite::setFrameRangeDuration(FrameNumber from, FrameNumber to, int msecs)
+void Sprite::setFrameRangeDuration(frame_t from, frame_t to, int msecs)
 {
   std::fill(
     m_frlens.begin()+(size_t)from,
@@ -438,7 +433,7 @@ size_t Sprite::getImageRefs(int imageIndex) const
   return refs;
 }
 
-void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping)
+void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping)
 {
   ASSERT(m_format == IMAGE_INDEXED);
   ASSERT(mapping.size() == 256);
@@ -467,7 +462,7 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 //////////////////////////////////////////////////////////////////////
 // Drawing
 
-void Sprite::pickCels(int x, int y, FrameNumber frame, int opacityThreshold, CelList& cels) const
+void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const
 {
   std::vector<Layer*> layers;
   getLayersList(layers);

@@ -64,7 +64,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
-  FrameNumber m_frame;
+  frame_t m_frame;
   bool m_filled;
   bool m_previewFilled;
   int m_sprayWidth;
@@ -236,7 +236,7 @@ public:
   Document* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
-  FrameNumber getFrame() override { return m_frame; }
+  frame_t getFrame() override { return m_frame; }
 
   const Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
@@ -256,7 +256,7 @@ public:
     return m_expandCelCanvas.copyValidDestToSourceCanvas(rgn);
   }
 
-  RgbMap* getRgbMap() override { return m_sprite->getRgbMap(m_frame); }
+  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
   bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }

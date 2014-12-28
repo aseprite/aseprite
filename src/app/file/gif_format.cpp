@@ -157,8 +157,8 @@ bool GifFormat::onLoad(FileOp* fop)
   data->sprite_w = gif_file->SWidth;
   data->sprite_h = gif_file->SHeight;
 
-  UniquePtr<Palette> current_palette(new Palette(FrameNumber(0), 256));
-  UniquePtr<Palette> previous_palette(new Palette(FrameNumber(0), 256));
+  UniquePtr<Palette> current_palette(new Palette(frame_t(0), 256));
+  UniquePtr<Palette> previous_palette(new Palette(frame_t(0), 256));
 
   // If the GIF image has a global palette, it has a valid
   // background color (so the GIF is not transparent).
@@ -181,7 +181,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
   // Scan the content of the GIF file (read record by record)
   GifRecordType record_type;
-  FrameNumber frame_num(0);
+  frame_t frame_num(0);
   DisposalMethod disposal_method = DISPOSAL_METHOD_NONE;
   int transparent_index = -1;
   int frame_delay = -1;
@@ -207,8 +207,8 @@ bool GifFormat::onLoad(FileOp* fop)
           throw Exception("Image %d is out of sprite bounds.\n", (int)frame_num);
 
         // Add a new frames.
-        if (frame_num >= FrameNumber(data->frames.size()))
-          data->frames.resize(frame_num.next());
+        if (frame_num >= frame_t(data->frames.size()))
+          data->frames.resize(frame_num+1);
 
         data->frames[frame_num].x = frame_x;
         data->frames[frame_num].y = frame_y;
@@ -409,10 +409,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
   clear_image(previous_image, bgcolor);
 
   // Add all frames in the sprite.
-  sprite->setTotalFrames(FrameNumber(data->frames.size()));
+  sprite->setTotalFrames(frame_t(data->frames.size()));
   Palette* current_palette = NULL;
 
-  FrameNumber frame_num(0);
+  frame_t frame_num(0);
   for (GifFrames::iterator
          frame_it=data->frames.begin(),
          frame_end=data->frames.end(); frame_it != frame_end; ++frame_it, ++frame_num) {
@@ -551,7 +551,7 @@ bool GifFormat::onSave(FileOp* fop)
   int background_color = (sprite_format == IMAGE_INDEXED ? sprite->transparentColor(): 0);
   int transparent_index = (has_background ? -1: sprite->transparentColor());
 
-  Palette current_palette = *sprite->getPalette(FrameNumber(0));
+  Palette current_palette = *sprite->palette(frame_t(0));
   Palette previous_palette(current_palette);
   RgbMap rgbmap;
 
@@ -620,7 +620,7 @@ bool GifFormat::onSave(FileOp* fop)
       gif_options->quantize() == GifOptions::QuantizeAll) {
     // Feed the optimizer with all rendered frames.
     render::PaletteOptimizer optimizer;
-    for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
+    for (frame_t frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
       clear_image(buffer_image, background_color);
       render.renderSprite(buffer_image, sprite, frame_num);
       optimizer.feedWithImage(buffer_image);
@@ -632,7 +632,7 @@ bool GifFormat::onSave(FileOp* fop)
     rgbmap.regenerate(&current_palette, transparent_index);
   }
 
-  for (FrameNumber frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
+  for (frame_t frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
     // If the sprite is RGB or Grayscale, we must to convert it to Indexed on the fly.
     if (sprite_format != IMAGE_INDEXED) {
       clear_image(buffer_image, background_color);
@@ -640,7 +640,7 @@ bool GifFormat::onSave(FileOp* fop)
 
       switch (gif_options->quantize()) {
         case GifOptions::NoQuantize:
-          sprite->getPalette(frame_num)->copyColorsTo(&current_palette);
+          sprite->palette(frame_num)->copyColorsTo(&current_palette);
           rgbmap.regenerate(&current_palette, transparent_index);
           break;
         case GifOptions::QuantizeEach:
@@ -718,7 +718,7 @@ bool GifFormat::onSave(FileOp* fop)
       unsigned char extension_bytes[5];
       int disposal_method = (sprite->backgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
                                                          DISPOSAL_METHOD_RESTORE_BGCOLOR);
-      int frame_delay = sprite->getFrameDuration(frame_num) / 10;
+      int frame_delay = sprite->frameDuration(frame_num) / 10;
 
       extension_bytes[0] = (((disposal_method & 7) << 2) |
                             (transparent_index >= 0 ? 1: 0));

@@ -50,7 +50,7 @@ namespace app {
       location->document(doc);
       location->sprite(doc->sprite());
       location->layer(doc->sprite()->folder()->getFirstLayer());
-      location->frame(FrameNumber(0));
+      location->frame(0);
     }
   };
 

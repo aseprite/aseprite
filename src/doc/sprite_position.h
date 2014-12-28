@@ -8,7 +8,7 @@
 #define DOC_SPRITE_POSITION_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/layer_index.h"
 
 namespace doc {
@@ -18,23 +18,23 @@ namespace doc {
   class SpritePosition {
   public:
     SpritePosition() { }
-    SpritePosition(LayerIndex layerIndex, FrameNumber frameNumber)
+    SpritePosition(LayerIndex layerIndex, frame_t frame)
       : m_layerIndex(layerIndex)
-      , m_frameNumber(frameNumber) {
+      , m_frame(frame) {
     }
 
     const LayerIndex& layerIndex() const { return m_layerIndex; }
-    const FrameNumber& frameNumber() const { return m_frameNumber; }
+    const frame_t& frame() const { return m_frame; }
 
     void layerIndex(LayerIndex layerIndex) { m_layerIndex = layerIndex; }
-    void frameNumber(FrameNumber frameNumber) { m_frameNumber = frameNumber; }
+    void frame(frame_t frame) { m_frame = frame; }
 
-    bool operator==(const SpritePosition& o) const { return m_layerIndex == o.m_layerIndex && m_frameNumber == o.m_frameNumber; }
-    bool operator!=(const SpritePosition& o) const { return m_layerIndex != o.m_layerIndex || m_frameNumber != o.m_frameNumber; }
+    bool operator==(const SpritePosition& o) const { return m_layerIndex == o.m_layerIndex && m_frame == o.m_frame; }
+    bool operator!=(const SpritePosition& o) const { return m_layerIndex != o.m_layerIndex || m_frame != o.m_frame; }
 
   private:
     LayerIndex m_layerIndex;
-    FrameNumber m_frameNumber;
+    frame_t m_frame;
   };
 
 } // namespace doc

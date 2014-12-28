@@ -35,7 +35,7 @@ namespace undoers {
 
 using namespace undo;
 
-AddFrame::AddFrame(ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame)
+AddFrame::AddFrame(ObjectsContainer* objects, Document* document, Sprite* sprite, frame_t frame)
   : m_documentId(objects->addObject(document))
   , m_spriteId(objects->addObject(sprite))
   , m_frame(frame)

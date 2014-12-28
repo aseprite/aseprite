@@ -86,7 +86,7 @@ public:
   }
 
   void setBrushSettings(IBrushSettings* brushSettings) {
-    base::UniquePtr<Palette> palette(new Palette(FrameNumber(0), 2));
+    base::UniquePtr<Palette> palette(new Palette(frame_t(0), 2));
     palette->setEntry(0, doc::rgba(0, 0, 0, 0));
     palette->setEntry(1, doc::rgba(0, 0, 0, 255));
 

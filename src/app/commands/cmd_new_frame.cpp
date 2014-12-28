@@ -89,10 +89,10 @@ void NewFrameCommand::onExecute(Context* context)
     UndoTransaction undoTransaction(writer.context(), "New Frame");
     switch (m_content) {
       case Content::CurrentFrame:
-        document->getApi().addFrame(sprite, writer.frame().next());
+        document->getApi().addFrame(sprite, writer.frame()+1);
         break;
       case Content::EmptyFrame:
-        document->getApi().addEmptyFrame(sprite, writer.frame().next());
+        document->getApi().addEmptyFrame(sprite, writer.frame()+1);
         break;
     }
     undoTransaction.commit();

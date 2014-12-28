@@ -287,12 +287,12 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
     }
 
     if (document) {
-      FrameNumber frame = writer.frame();
+      frame_t frame = writer.frame();
 
       UndoTransaction undoTransaction(writer.context(), "Add palette entry", undo::ModifyDocument);
       undoTransaction.pushUndoer
         (new undoers::SetPaletteColors(undoTransaction.getObjects(),
-          sprite, sprite->getPalette(frame),
+          sprite, sprite->palette(frame),
           frame, index, index));
 
       sprite->setPalette(newPalette, false);

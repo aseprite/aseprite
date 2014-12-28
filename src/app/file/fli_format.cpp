@@ -78,8 +78,8 @@ bool FliFormat::onLoad(FileOp* fop)
   unsigned char omap[768];
   s_fli_header fli_header;
   int c, w, h;
-  FrameNumber frpos_in;
-  FrameNumber frpos_out;
+  frame_t frpos_in;
+  frame_t frpos_out;
   int index = 0;
 
   // Open the file to read in binary mode
@@ -93,14 +93,14 @@ bool FliFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  /* size by frame */
+  // Size by frame
   w = fli_header.width;
   h = fli_header.height;
 
   // Create the bitmaps
   base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, w, h));
   base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, w, h));
-  base::UniquePtr<Palette> pal(new Palette(FrameNumber(0), 256));
+  base::UniquePtr<Palette> pal(new Palette(frame_t(0), 256));
 
   // Create the image
   Sprite* sprite = new Sprite(IMAGE_INDEXED, w, h, 256);
@@ -109,26 +109,26 @@ bool FliFormat::onLoad(FileOp* fop)
   layer->configureAsBackground();
 
   // Set frames and speed
-  sprite->setTotalFrames(FrameNumber(fli_header.frames));
+  sprite->setTotalFrames(frame_t(fli_header.frames));
   sprite->setDurationForAllFrames(fli_header.speed);
 
-  /* write frame by frame */
-  for (frpos_in = frpos_out = FrameNumber(0);
+  // Write frame by frame
+  for (frpos_in = frpos_out = frame_t(0);
        frpos_in < sprite->totalFrames();
        ++frpos_in) {
-    /* read the frame */
+    // Read the frame
     fli_read_frame(f, &fli_header,
                    (unsigned char *)old->getPixelAddress(0, 0), omap,
                    (unsigned char *)bmp->getPixelAddress(0, 0), cmap);
 
-    /* first frame, or the frames changes, or the palette changes */
+    // First frame, or the frames changes, or the palette changes
     if ((frpos_in == 0) ||
         (count_diff_between_images(old, bmp))
 #ifndef USE_LINK /* TODO this should be configurable through a check-box */
         || (memcmp(omap, cmap, 768) != 0)
 #endif
         ) {
-      /* the image changes? */
+      // The image changes?
       if (frpos_in != 0)
         ++frpos_out;
 
@@ -139,12 +139,12 @@ bool FliFormat::onLoad(FileOp* fop)
       Cel* cel = new Cel(frpos_out, index);
       layer->addCel(cel);
 
-      /* first frame or the palette changes */
+      // First frame or the palette changes
       if ((frpos_in == 0) || (memcmp(omap, cmap, 768) != 0))
         SETPAL();
     }
 #ifdef USE_LINK
-    /* the palette changes */
+    // The palette changes
     else if (memcmp(omap, cmap, 768) != 0) {
       ++frpos_out;
       SETPAL();
@@ -157,25 +157,25 @@ bool FliFormat::onLoad(FileOp* fop)
     // The palette and the image don't change: add duration to the last added frame
     else {
       sprite->setFrameDuration(frpos_out,
-                               sprite->getFrameDuration(frpos_out)+fli_header.speed);
+                               sprite->frameDuration(frpos_out)+fli_header.speed);
     }
 
-    /* update the old image and color-map to the new ones to compare later */
+    // Update the old image and color-map to the new ones to compare later
     copy_image(old, bmp);
     memcpy(omap, cmap, 768);
 
-    /* update progress */
+    // Update progress
     fop_progress(fop, (float)(frpos_in+1) / (float)(sprite->totalFrames()));
     if (fop_is_stop(fop))
       break;
 
-    /* just one frame? */
+    // Just one frame?
     if (fop->oneframe)
       break;
   }
 
   // Update number of frames
-  sprite->setTotalFrames(frpos_out.next());
+  sprite->setTotalFrames(frpos_out+1);
 
   fop->createDocument(sprite);
   return true;
@@ -222,26 +222,26 @@ bool FliFormat::onSave(FileOp* fop)
   render::Render render;
 
   // Write frame by frame
-  for (FrameNumber frpos(0);
+  for (frame_t frpos(0);
        frpos < sprite->totalFrames();
        ++frpos) {
-    /* get color map */
-    pal = sprite->getPalette(frpos);
+    // Get color map
+    pal = sprite->palette(frpos);
     for (c=0; c<256; c++) {
       cmap[3*c  ] = rgba_getr(pal->getEntry(c));
       cmap[3*c+1] = rgba_getg(pal->getEntry(c));
       cmap[3*c+2] = rgba_getb(pal->getEntry(c));
     }
 
-    /* render the frame in the bitmap */
+    // Render the frame in the bitmap
     render.renderSprite(bmp, sprite, frpos);
 
-    /* how many times this frame should be written to get the same
-       time that it has in the sprite */
-    times = sprite->getFrameDuration(frpos) / fli_header.speed;
+    // How many times this frame should be written to get the same
+    // time that it has in the sprite
+    times = sprite->frameDuration(frpos) / fli_header.speed;
 
     for (c=0; c<times; c++) {
-      /* write this frame */
+      // Write this frame
       if (frpos == 0 && c == 0)
         fli_write_frame(f, &fli_header, NULL, NULL,
                         (unsigned char *)bmp->getPixelAddress(0, 0), cmap, W_ALL);
@@ -250,13 +250,13 @@ bool FliFormat::onSave(FileOp* fop)
                         (unsigned char *)old->getPixelAddress(0, 0), omap,
                         (unsigned char *)bmp->getPixelAddress(0, 0), cmap, W_ALL);
 
-      /* update the old image and color-map to the new ones to compare later */
+      // Update the old image and color-map to the new ones to compare later
       copy_image(old, bmp);
       memcpy(omap, cmap, 768);
     }
 
-    /* update progress */
-    fop_progress(fop, (float)(frpos.next()) / (float)(sprite->totalFrames()));
+    // Update progress
+    fop_progress(fop, (float)(frpos+1) / (float)(sprite->totalFrames()));
   }
 
   // Write the header and close the file
@@ -270,8 +270,8 @@ static int get_time_precision(Sprite *sprite)
 {
   int precision = 1000;
 
-  for (FrameNumber c(0); c < sprite->totalFrames() && precision > 1; ++c) {
-    int len = sprite->getFrameDuration(c);
+  for (frame_t c(0); c < sprite->totalFrames() && precision > 1; ++c) {
+    int len = sprite->frameDuration(c);
 
     while (len / precision == 0)
       precision /= 10;

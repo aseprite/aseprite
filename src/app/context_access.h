@@ -35,7 +35,7 @@ namespace app {
     const DocumentAccessT& document() const { return m_document; }
     const Sprite* sprite() const { return m_location.sprite(); }
     const Layer* layer() const { return m_location.layer(); }
-    FrameNumber frame() const { return m_location.frame(); }
+    frame_t frame() const { return m_location.frame(); }
     const Cel* cel() const { return m_location.cel(); }
 
     // You cannot change the location directly from a writable ContextAccess anyway.

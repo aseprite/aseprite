@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "undo/object_id.h"
 
 #include <vector>
@@ -38,7 +38,7 @@ namespace app {
     class RemapPalette : public UndoerBase {
     public:
       RemapPalette(ObjectsContainer* objects, Sprite* sprite,
-                   FrameNumber frameFrom, FrameNumber frameTo,
+                   frame_t frameFrom, frame_t frameTo,
                    const std::vector<uint8_t>& mapping);
 
       void dispose() override;
@@ -47,8 +47,8 @@ namespace app {
 
     private:
       undo::ObjectId m_spriteId;
-      FrameNumber m_frameFrom;
-      FrameNumber m_frameTo;
+      frame_t m_frameFrom;
+      frame_t m_frameTo;
       std::vector<uint8_t> m_mapping;
     };
 

@@ -26,7 +26,7 @@
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/layer_index.h"
 #include "doc/sprite.h"
 #include "ui/timer.h"
@@ -82,10 +82,10 @@ namespace app {
 
     Sprite* sprite() { return m_sprite; }
     Layer* getLayer() { return m_layer; }
-    FrameNumber getFrame() { return m_frame; }
+    frame_t getFrame() { return m_frame; }
 
     void setLayer(Layer* layer);
-    void setFrame(FrameNumber frame);
+    void setFrame(frame_t frame);
 
     State getState() const { return m_state; }
     bool isMovingCel() const;
@@ -134,7 +134,7 @@ namespace app {
       VHit vhit;
       Layer* layer;
       LayerIndex layerIdx;
-      FrameNumber frame;
+      frame_t frame;
       int xpos, ypos;
     };
 
@@ -145,38 +145,38 @@ namespace app {
     void detachDocument();
     void setCursor(ui::Message* msg, const gfx::Point& mousePos);
     void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
-    void getDrawableFrames(ui::Graphics* g, FrameNumber* first_frame, FrameNumber* last_frame);
+    void getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
       const char* text, skin::Style* style,
       bool is_active = false, bool is_hover = false, bool is_clicked = false);
     void drawHeader(ui::Graphics* g);
-    void drawHeaderFrame(ui::Graphics* g, FrameNumber frame);
+    void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
-    void drawCel(ui::Graphics* g, LayerIndex layerIdx, FrameNumber frame, Cel* cel);
+    void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel);
     void drawLoopRange(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
-    bool drawPart(ui::Graphics* g, int part, LayerIndex layer, FrameNumber frame);
+    bool drawPart(ui::Graphics* g, int part, LayerIndex layer, frame_t frame);
     void drawClipboardRange(ui::Graphics* g);
     gfx::Rect getLayerHeadersBounds() const;
     gfx::Rect getFrameHeadersBounds() const;
     gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
-    gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), FrameNumber frame = FrameNumber(0)) const;
+    gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), frame_t frame = frame_t(0)) const;
     gfx::Rect getRangeBounds(const Range& range) const;
-    void invalidatePart(int part, LayerIndex layer, FrameNumber frame);
+    void invalidatePart(int part, LayerIndex layer, frame_t frame);
     void regenerateLayers();
     void updateHotByMousePos(ui::Message* msg, const gfx::Point& mousePos);
-    void updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, FrameNumber& hot_frame);
-    void hotThis(int hot_part, LayerIndex hot_layer, FrameNumber hot_frame);
-    void centerCel(LayerIndex layer, FrameNumber frame);
-    void showCel(LayerIndex layer, FrameNumber frame);
+    void updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, frame_t& hot_frame);
+    void hotThis(int hot_part, LayerIndex hot_layer, frame_t hot_frame);
+    void centerCel(LayerIndex layer, frame_t frame);
+    void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
     void cleanClk();
     void setScroll(int x, int y);
     LayerIndex getLayerIndex(const Layer* layer) const;
     bool isLayerActive(LayerIndex layerIdx) const;
-    bool isFrameActive(FrameNumber frame) const;
+    bool isFrameActive(frame_t frame) const;
     void updateStatusBar(ui::Message* msg);
     void updateDropRange(const gfx::Point& pt);
     void clearClipboardRange();
@@ -189,11 +189,11 @@ namespace app {
     // The layer of the top.
     LayerIndex lastLayer() const { return LayerIndex(m_layers.size()-1); }
 
-    FrameNumber firstFrame() const { return FrameNumber(0); }
-    FrameNumber lastFrame() const { return m_sprite->lastFrame(); }
+    frame_t firstFrame() const { return frame_t(0); }
+    frame_t lastFrame() const { return m_sprite->lastFrame(); }
 
     bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
-    bool validFrame(FrameNumber frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
+    bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;
@@ -224,7 +224,7 @@ namespace app {
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
-    FrameNumber m_frame;
+    frame_t m_frame;
     Range m_range;
     Range m_dropRange;
     State m_state;
@@ -237,12 +237,12 @@ namespace app {
     // The 'hot' part is where the mouse is on top of
     int m_hot_part;
     LayerIndex m_hot_layer;
-    FrameNumber m_hot_frame;
+    frame_t m_hot_frame;
     DropTarget m_dropTarget;
     // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     int m_clk_part;
     LayerIndex m_clk_layer;
-    FrameNumber m_clk_frame;
+    frame_t m_clk_frame;
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
     // Configure timeline

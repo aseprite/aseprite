@@ -52,7 +52,7 @@ TEST(File, SeveralSizes)
         // Random pixels
         LayerImage* layer = dynamic_cast<LayerImage*>(doc->sprite()->folder()->getFirstLayer());
         ASSERT_TRUE(layer != NULL);
-        Image* image = layer->getCel(FrameNumber(0))->image();
+        Image* image = layer->getCel(frame_t(0))->image();
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {
@@ -76,7 +76,7 @@ TEST(File, SeveralSizes)
         // Same random pixels (see the seed)
         LayerImage* layer = dynamic_cast<LayerImage*>(doc->sprite()->folder()->getFirstLayer());
         ASSERT_TRUE(layer != NULL);
-        Image* image = layer->getCel(FrameNumber(0))->image();
+        Image* image = layer->getCel(frame_t(0))->image();
         std::srand(w*h);
         int c = std::rand()%256;
         for (int y=0; y<h; y++) {

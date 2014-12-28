@@ -19,7 +19,7 @@
 namespace doc {
 
 ImagesCollector::ImagesCollector(Layer* layer,
-                                 FrameNumber frame,
+                                 frame_t frame,
                                  bool allFrames,
                                  bool forEdit)
   : m_allFrames(allFrames)
@@ -28,7 +28,7 @@ ImagesCollector::ImagesCollector(Layer* layer,
   collectFromLayer(layer, frame);
 }
 
-void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
+void ImagesCollector::collectFromLayer(Layer* layer, frame_t frame)
 {
   const Sprite* sprite = layer->sprite();
 
@@ -42,7 +42,7 @@ void ImagesCollector::collectFromLayer(Layer* layer, FrameNumber frame)
 
     case ObjectType::LayerImage: {
       if (m_allFrames) {
-        for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
+        for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
           Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
           if (cel != NULL)
             collectImage(layer, cel);

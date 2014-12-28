@@ -36,11 +36,11 @@ namespace undoers {
 using namespace doc;
 using namespace undo;
 
-RemoveFrame::RemoveFrame(undo::ObjectsContainer* objects, Document* document, Sprite* sprite, FrameNumber frame)
+RemoveFrame::RemoveFrame(undo::ObjectsContainer* objects, Document* document, Sprite* sprite, frame_t frame)
   : m_documentId(objects->addObject(document))
   , m_spriteId(objects->addObject(sprite))
   , m_frame(frame)
-  , m_frameDuration(sprite->getFrameDuration(frame))
+  , m_frameDuration(sprite->frameDuration(frame))
 {
 }
 

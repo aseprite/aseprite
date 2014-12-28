@@ -76,7 +76,7 @@ TEST(Render, Basic)
   EXPECT_2X2_PIXELS(dst, 1, 1, 1, 1);
 
   Render render;
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_2X2_PIXELS(dst, 2, 2, 2, 2);
 }
 
@@ -98,7 +98,7 @@ TYPED_TEST(RenderAllModes, CheckDefaultBackgroundMode)
   EXPECT_2X2_PIXELS(dst, 1, 1, 1, 1);
 
   Render render;
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   // Default background mode is to set all pixels to transparent color
   EXPECT_2X2_PIXELS(dst, 0, 0, 0, 1);
 }
@@ -119,13 +119,13 @@ TEST(Render, DefaultBackgroundModeWithNonzeroTransparentIndex)
   EXPECT_2X2_PIXELS(dst, 1, 1, 1, 1);
 
   Render render;
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_2X2_PIXELS(dst, 2, 2, 2, 1); // Indexed transparent
 
   dst.reset(Image::create(IMAGE_RGB, 2, 2));
   clear_image(dst, 1);
   EXPECT_2X2_PIXELS(dst, 1, 1, 1, 1);
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   color_t c1 = doc->sprite()->palette(0)->entry(1);
   EXPECT_NE(0, c1);
   EXPECT_2X2_PIXELS(dst, 0, 0, 0, c1); // RGB transparent
@@ -146,7 +146,7 @@ TEST(Render, CheckedBackground)
   render.setBgColor2(2);
 
   render.setBgCheckedSize(gfx::Size(1, 1));
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst, 
     1, 2, 1, 2,
     2, 1, 2, 1,
@@ -154,7 +154,7 @@ TEST(Render, CheckedBackground)
     2, 1, 2, 1);
 
   render.setBgCheckedSize(gfx::Size(2, 2));
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst, 
     1, 1, 2, 2,
     1, 1, 2, 2,
@@ -162,7 +162,7 @@ TEST(Render, CheckedBackground)
     2, 2, 1, 1);
 
   render.setBgCheckedSize(gfx::Size(3, 3));
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0));
+  render.renderSprite(dst, doc->sprite(), frame_t(0));
   EXPECT_4X4_PIXELS(dst, 
     1, 1, 1, 2,
     1, 1, 1, 2,
@@ -171,7 +171,7 @@ TEST(Render, CheckedBackground)
 
   render.setBgCheckedSize(gfx::Size(1, 1));
   render.renderSprite(dst,
-    doc->sprite(), FrameNumber(0),
+    doc->sprite(), frame_t(0),
     gfx::Clip(dst->bounds()),
     Zoom(2, 1));
   EXPECT_4X4_PIXELS(dst,
@@ -204,7 +204,7 @@ TEST(Render, ZoomAndDstBounds)
   render.setBgColor2(2);
   render.setBgCheckedSize(gfx::Size(1, 1));
 
-  render.renderSprite(dst, doc->sprite(), FrameNumber(0),
+  render.renderSprite(dst, doc->sprite(), frame_t(0),
     gfx::Clip(1, 1, 0, 0, 2, 2),
     Zoom(1, 1));
   EXPECT_4X4_PIXELS(dst, 

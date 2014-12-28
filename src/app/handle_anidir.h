@@ -20,7 +20,7 @@
 #define APP_HANDLE_ANIDIR_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 namespace doc {
   class Sprite;
@@ -30,9 +30,9 @@ namespace app {
 
   class IDocumentSettings;
 
-  doc::FrameNumber calculate_next_frame(
+  doc::frame_t calculate_next_frame(
     doc::Sprite* sprite,
-    doc::FrameNumber frame,
+    doc::frame_t frame,
     IDocumentSettings* docSettings,
     bool& pingPongForward);
   

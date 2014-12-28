@@ -26,14 +26,14 @@ namespace app {
 
 using namespace doc;
 
-void DocumentRange::startRange(LayerIndex layer, FrameNumber frame, Type type)
+void DocumentRange::startRange(LayerIndex layer, frame_t frame, Type type)
 {
   m_type = type;
   m_layerBegin = m_layerEnd = layer;
   m_frameBegin = m_frameEnd = frame;
 }
 
-void DocumentRange::endRange(LayerIndex layer, FrameNumber frame)
+void DocumentRange::endRange(LayerIndex layer, frame_t frame)
 {
   ASSERT(enabled());
   m_layerEnd = layer;
@@ -53,7 +53,7 @@ bool DocumentRange::inRange(LayerIndex layer) const
     return false;
 }
 
-bool DocumentRange::inRange(FrameNumber frame) const
+bool DocumentRange::inRange(frame_t frame) const
 {
   if (enabled())
     return (frame >= frameBegin() && frame <= frameEnd());
@@ -61,7 +61,7 @@ bool DocumentRange::inRange(FrameNumber frame) const
     return false;
 }
 
-bool DocumentRange::inRange(LayerIndex layer, FrameNumber frame) const
+bool DocumentRange::inRange(LayerIndex layer, frame_t frame) const
 {
   return inRange(layer) && inRange(frame);
 }
@@ -72,18 +72,20 @@ void DocumentRange::setLayers(int layers)
   else m_layerBegin = m_layerEnd + LayerIndex(layers - 1);
 }
 
-void DocumentRange::setFrames(FrameNumber frames)
+void DocumentRange::setFrames(frame_t frames)
 {
-  if (m_frameBegin <= m_frameEnd) m_frameEnd = (m_frameBegin + frames).previous();
-  else m_frameBegin = (m_frameEnd + frames).previous();
+  if (m_frameBegin <= m_frameEnd)
+    m_frameEnd = (m_frameBegin + frames) - 1;
+  else
+    m_frameBegin = (m_frameEnd + frames) - 1;
 }
 
 void DocumentRange::displace(int layerDelta, int frameDelta)
 {
   m_layerBegin += LayerIndex(layerDelta);
   m_layerEnd   += LayerIndex(layerDelta);
-  m_frameBegin += FrameNumber(frameDelta);
-  m_frameEnd   += FrameNumber(frameDelta);
+  m_frameBegin += frame_t(frameDelta);
+  m_frameEnd   += frame_t(frameDelta);
 }
 
 } // namespace app

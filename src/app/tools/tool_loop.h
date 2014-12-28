@@ -22,7 +22,7 @@
 
 #include "app/settings/selection_mode.h"
 #include "app/tools/trace_policy.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 
@@ -88,7 +88,7 @@ namespace app {
       virtual Layer* getLayer() = 0;
 
       // Returns the frame where we're paiting
-      virtual FrameNumber getFrame() = 0;
+      virtual frame_t getFrame() = 0;
 
       // Should return an image where we can read pixels (readonly image)
       virtual const Image* getSrcImage() = 0;

@@ -9,7 +9,7 @@
 #pragma once
 
 #include "doc/color.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/pixel_format.h"
 #include "gfx/fwd.h"
 #include "gfx/size.h"
@@ -55,7 +55,7 @@ namespace render {
 
     // Sets the preview image. This preview image is an alternative
     // image to be used for the given layer/frame.
-    void setPreviewImage(const Layer* layer, FrameNumber frame, Image* drawable);
+    void setPreviewImage(const Layer* layer, frame_t frame, Image* drawable);
     void removePreviewImage();
 
     // Sets an extra cel/image to be drawn after the current
@@ -63,7 +63,7 @@ namespace render {
     void setExtraImage(
       const Cel* cel, const Image* image, int blendMode,
       const Layer* currentLayer,
-      FrameNumber currentFrame);
+      frame_t currentFrame);
     void removeExtraImage();
 
     void setOnionskin(OnionskinType type,
@@ -73,23 +73,23 @@ namespace render {
     void renderSprite(
       Image* dstImage,
       const Sprite* sprite,
-      FrameNumber frame);
+      frame_t frame);
 
     void renderSprite(
       Image* dstImage,
       const Sprite* sprite,
-      FrameNumber frame,
+      frame_t frame,
       const gfx::Clip& area);
 
     void renderLayer(
       Image* dstImage,
       const Layer* layer,
-      FrameNumber frame);
+      frame_t frame);
 
     void renderLayer(
       Image* dstImage,
       const Layer* layer,
-      FrameNumber frame,
+      frame_t frame,
       const gfx::Clip& area);
 
     // Main function used to render the sprite. Draws the given sprite
@@ -98,7 +98,7 @@ namespace render {
     void renderSprite(
       Image* dstImage,
       const Sprite* sprite,
-      FrameNumber frame,
+      frame_t frame,
       const gfx::Clip& area,
       Zoom zoom);
 
@@ -121,7 +121,7 @@ namespace render {
       const Layer* layer,
       Image* image,
       const gfx::Clip& area,
-      FrameNumber frame, Zoom zoom,
+      frame_t frame, Zoom zoom,
       RenderScaledImage renderScaledImage,
       bool render_background,
       bool render_transparent,
@@ -142,7 +142,7 @@ namespace render {
 
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
-    FrameNumber m_currentFrame;
+    frame_t m_currentFrame;
     const Cel* m_extraCel;
     const Image* m_extraImage;
     int m_extraBlendMode;
@@ -154,7 +154,7 @@ namespace render {
     gfx::Size m_bgCheckedSize;
     int m_globalOpacity;
     const Layer* m_selectedLayer;
-    FrameNumber m_selectedFrame;
+    frame_t m_selectedFrame;
     Image* m_previewImage;
 
     OnionskinType m_onionskinType;

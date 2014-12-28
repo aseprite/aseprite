@@ -106,8 +106,8 @@ static DocumentRange drop_range_op(
 
           int srcLayerBegin, srcLayerStep, srcLayerEnd;
           int dstLayerBegin, dstLayerStep;
-          FrameNumber srcFrameBegin, srcFrameStep, srcFrameEnd;
-          FrameNumber dstFrameBegin, dstFrameStep;
+          frame_t srcFrameBegin, srcFrameStep, srcFrameEnd;
+          frame_t dstFrameBegin, dstFrameStep;
 
           if (to.layerBegin() <= from.layerBegin()) {
             srcLayerBegin = from.layerBegin();
@@ -126,22 +126,22 @@ static DocumentRange drop_range_op(
 
           if (to.frameBegin() <= from.frameBegin()) {
             srcFrameBegin = from.frameBegin();
-            srcFrameStep = FrameNumber(1);
-            srcFrameEnd = from.frameEnd().next();
+            srcFrameStep = frame_t(1);
+            srcFrameEnd = from.frameEnd()+1;
             dstFrameBegin = to.frameBegin();
-            dstFrameStep = FrameNumber(1);
+            dstFrameStep = frame_t(1);
           }
           else {
             srcFrameBegin = from.frameEnd();
-            srcFrameStep = FrameNumber(-1);
-            srcFrameEnd = from.frameBegin().previous();
+            srcFrameStep = frame_t(-1);
+            srcFrameEnd = from.frameBegin()-1;
             dstFrameBegin = to.frameEnd();
-            dstFrameStep = FrameNumber(-1);
+            dstFrameStep = frame_t(-1);
           }
 
           for (int srcLayerIdx = srcLayerBegin,
                  dstLayerIdx = dstLayerBegin; srcLayerIdx != srcLayerEnd; ) {
-            for (FrameNumber srcFrame = srcFrameBegin,
+            for (frame_t srcFrame = srcFrameBegin,
                    dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
               LayerImage* srcLayer = static_cast<LayerImage*>(layers[srcLayerIdx]);
               LayerImage* dstLayer = static_cast<LayerImage*>(layers[dstLayerIdx]);
@@ -164,8 +164,8 @@ static DocumentRange drop_range_op(
 
       case DocumentRange::kFrames:
         {
-          FrameNumber srcFrameBegin, srcFrameStep, srcFrameEnd;
-          FrameNumber dstFrameBegin, dstFrameStep;
+          frame_t srcFrameBegin, srcFrameStep, srcFrameEnd;
+          frame_t dstFrameBegin, dstFrameStep;
 
           switch (op) {
 
@@ -173,33 +173,33 @@ static DocumentRange drop_range_op(
               if (place == kDocumentRangeBefore) {
                 if (to.frameBegin() <= from.frameBegin()) {
                   srcFrameBegin = from.frameBegin();
-                  srcFrameStep = FrameNumber(1);
-                  srcFrameEnd = from.frameEnd().next();
+                  srcFrameStep = frame_t(1);
+                  srcFrameEnd = from.frameEnd()+1;
                   dstFrameBegin = to.frameBegin();
-                  dstFrameStep = FrameNumber(1);
+                  dstFrameStep = frame_t(1);
                 }
                 else {
                   srcFrameBegin = from.frameEnd();
-                  srcFrameStep = FrameNumber(-1);
-                  srcFrameEnd = from.frameBegin().previous();
+                  srcFrameStep = frame_t(-1);
+                  srcFrameEnd = from.frameBegin()-1;
                   dstFrameBegin = to.frameBegin();
-                  dstFrameStep = FrameNumber(-1);
+                  dstFrameStep = frame_t(-1);
                 }
               }
               else if (place == kDocumentRangeAfter) {
                 if (to.frameEnd() <= from.frameBegin()) {
                   srcFrameBegin = from.frameBegin();
-                  srcFrameStep = FrameNumber(1);
-                  srcFrameEnd = from.frameEnd().next();
+                  srcFrameStep = frame_t(1);
+                  srcFrameEnd = from.frameEnd()+1;
                   dstFrameBegin = to.frameEnd();
-                  dstFrameStep = FrameNumber(1);
+                  dstFrameStep = frame_t(1);
                 }
                 else {
                   srcFrameBegin = from.frameEnd();
-                  srcFrameStep = FrameNumber(-1);
-                  srcFrameEnd = from.frameBegin().previous();
-                  dstFrameBegin = to.frameEnd().next();
-                  dstFrameStep = FrameNumber(-1);
+                  srcFrameStep = frame_t(-1);
+                  srcFrameEnd = from.frameBegin()-1;
+                  dstFrameBegin = to.frameEnd()+1;
+                  dstFrameStep = frame_t(-1);
                 }
               }
               break;
@@ -208,39 +208,39 @@ static DocumentRange drop_range_op(
               if (place == kDocumentRangeBefore) {
                 if (to.frameBegin() <= from.frameBegin()) {
                   srcFrameBegin = from.frameBegin();
-                  srcFrameStep = FrameNumber(2);
-                  srcFrameEnd = from.frameBegin().next(2*from.frames());
+                  srcFrameStep = frame_t(2);
+                  srcFrameEnd = from.frameBegin() + 2*from.frames();
                   dstFrameBegin = to.frameBegin();
-                  dstFrameStep = FrameNumber(1);
+                  dstFrameStep = frame_t(1);
                 }
                 else {
                   srcFrameBegin = from.frameEnd();
-                  srcFrameStep = FrameNumber(-1);
-                  srcFrameEnd = from.frameBegin().previous();
+                  srcFrameStep = frame_t(-1);
+                  srcFrameEnd = from.frameBegin()-1;
                   dstFrameBegin = to.frameBegin();
-                  dstFrameStep = FrameNumber(0);
+                  dstFrameStep = frame_t(0);
                 }
               }
               else if (place == kDocumentRangeAfter) {
                 if (to.frameEnd() <= from.frameBegin()) {
                   srcFrameBegin = from.frameBegin();
-                  srcFrameStep = FrameNumber(2);
-                  srcFrameEnd = from.frameBegin().next(2*from.frames());
-                  dstFrameBegin = to.frameEnd().next();
-                  dstFrameStep = FrameNumber(1);
+                  srcFrameStep = frame_t(2);
+                  srcFrameEnd = from.frameBegin() + 2*from.frames();
+                  dstFrameBegin = to.frameEnd()+1;
+                  dstFrameStep = frame_t(1);
                 }
                 else {
                   srcFrameBegin = from.frameEnd();
-                  srcFrameStep = FrameNumber(-1);
-                  srcFrameEnd = from.frameBegin().previous();
-                  dstFrameBegin = to.frameEnd().next();
-                  dstFrameStep = FrameNumber(0);
+                  srcFrameStep = frame_t(-1);
+                  srcFrameEnd = from.frameBegin()-1;
+                  dstFrameBegin = to.frameEnd()+1;
+                  dstFrameStep = frame_t(0);
                 }
               }
               break;
           }
 
-          for (FrameNumber srcFrame = srcFrameBegin,
+          for (frame_t srcFrame = srcFrameBegin,
                  dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
             switch (op) {
               case Move: api.moveFrame(sprite, srcFrame, dstFrame); break;
@@ -251,12 +251,12 @@ static DocumentRange drop_range_op(
           }
 
           if (place == kDocumentRangeBefore) {
-            resultRange.startRange(LayerIndex::NoLayer, FrameNumber(to.frameBegin()), from.type());
-            resultRange.endRange(LayerIndex::NoLayer, FrameNumber(to.frameBegin()+from.frames()-1));
+            resultRange.startRange(LayerIndex::NoLayer, frame_t(to.frameBegin()), from.type());
+            resultRange.endRange(LayerIndex::NoLayer, frame_t(to.frameBegin()+from.frames()-1));
           }
           else if (place == kDocumentRangeAfter) {
-            resultRange.startRange(LayerIndex::NoLayer, FrameNumber(to.frameEnd()+1), from.type());
-            resultRange.endRange(LayerIndex::NoLayer, FrameNumber(to.frameEnd()+1+from.frames()-1));
+            resultRange.startRange(LayerIndex::NoLayer, frame_t(to.frameEnd()+1), from.type());
+            resultRange.endRange(LayerIndex::NoLayer, frame_t(to.frameEnd()+1+from.frames()-1));
           }
 
           if (op == Move && from.frameBegin() < to.frameBegin())
@@ -310,12 +310,12 @@ static DocumentRange drop_range_op(
           }
 
           if (place == kDocumentRangeBefore) {
-            resultRange.startRange(LayerIndex(to.layerBegin()), FrameNumber(-1), from.type());
-            resultRange.endRange(LayerIndex(to.layerBegin()+from.layers()-1), FrameNumber(-1));
+            resultRange.startRange(LayerIndex(to.layerBegin()), frame_t(-1), from.type());
+            resultRange.endRange(LayerIndex(to.layerBegin()+from.layers()-1), frame_t(-1));
           }
           else if (place == kDocumentRangeAfter) {
-            resultRange.startRange(LayerIndex(to.layerEnd()+1), FrameNumber(-1), from.type());
-            resultRange.endRange(LayerIndex(to.layerEnd()+1+from.layers()-1), FrameNumber(-1));
+            resultRange.startRange(LayerIndex(to.layerEnd()+1), frame_t(-1), from.type());
+            resultRange.endRange(LayerIndex(to.layerEnd()+1+from.layers()-1), frame_t(-1));
           }
 
           if (op == Move && from.layerBegin() < to.layerBegin())
@@ -348,7 +348,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
   UndoTransaction undo(writer.context(), "Reverse Frames");
   DocumentApi api = doc->getApi();
   Sprite* sprite = doc->sprite();
-  FrameNumber frameBegin, frameEnd;
+  frame_t frameBegin, frameEnd;
   int layerBegin, layerEnd;
   bool moveFrames = false;
 
@@ -365,17 +365,17 @@ void reverse_frames(Document* doc, const DocumentRange& range)
       moveFrames = true;
       break;
     case DocumentRange::kLayers:
-      frameBegin = FrameNumber(0);
-      frameEnd = sprite->totalFrames().previous();
+      frameBegin = frame_t(0);
+      frameEnd = sprite->totalFrames()-1;
       layerBegin = range.layerBegin();
       layerEnd = range.layerEnd() + 1;
       break;
   }
 
   if (moveFrames) {
-    for (FrameNumber frameRev = frameEnd.next();
+    for (frame_t frameRev = frameEnd+1;
          frameRev > frameBegin;
-         frameRev = frameRev.previous()) {
+         --frameRev) {
       api.moveFrame(sprite, frameBegin, frameRev);
     }
   }
@@ -384,11 +384,10 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     sprite->getLayersList(layers);
 
     for (int layerIdx = layerBegin; layerIdx != layerEnd; ++layerIdx) {
-      for (FrameNumber frame = frameBegin,
+      for (frame_t frame = frameBegin,
              frameRev = frameEnd;
-           frame != FrameNumber((frameBegin+frameEnd)/2).next();
-           frame = frame.next(),
-             frameRev = frameRev.previous()) {
+           frame != (frameBegin+frameEnd)/2+1;
+           ++frame, --frameRev) {
         LayerImage* layer = static_cast<LayerImage*>(layers[layerIdx]);
         api.swapCel(layer, frame, frameRev);
       }

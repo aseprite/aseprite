@@ -16,7 +16,7 @@ namespace render {
 
 using namespace doc;
 
-color_t get_sprite_pixel(const Sprite* sprite, int x, int y, FrameNumber frame)
+color_t get_sprite_pixel(const Sprite* sprite, int x, int y, frame_t frame)
 {
   color_t color = 0;
 

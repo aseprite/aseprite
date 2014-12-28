@@ -142,7 +142,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   // Create the first image/cel
   Image* image = Image::create(pixelFormat, width, height);
   int image_index = sprite->stock()->addImage(image);
-  Cel* cel = new Cel(FrameNumber(0), image_index);
+  Cel* cel = new Cel(frame_t(0), image_index);
   layer->addCel(cel);
   clear_image(image, 0);
 
@@ -165,7 +165,7 @@ bool IcoFormat::onLoad(FileOp* fop)
 
   // Read the palette
   if (entry.bpp <= 8) {
-    Palette* pal = new Palette(FrameNumber(0), numcolors);
+    Palette* pal = new Palette(frame_t(0), numcolors);
 
     for (int i=0; i<numcolors; ++i) {
       int b = fgetc(f);
@@ -242,7 +242,7 @@ bool IcoFormat::onSave(FileOp* fop)
   int bpp, bw, bitsw;
   int size, offset, i;
   int c, x, y, b, m, v;
-  FrameNumber n, num = sprite->totalFrames();
+  frame_t n, num = sprite->totalFrames();
 
   FileHandle f(open_file_with_exception(fop->filename, "wb"));
 
@@ -254,7 +254,7 @@ bool IcoFormat::onSave(FileOp* fop)
   fputw(num, f);                // number of icons
 
   // Entries
-  for (n=FrameNumber(0); n<num; ++n) {
+  for (n=frame_t(0); n<num; ++n) {
     bpp = (sprite->pixelFormat() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((sprite->width() * bpp / 8) + 3) / 4) * 4;
     bitsw = ((((sprite->width() + 7) / 8) + 3) / 4) * 4;
@@ -282,7 +282,7 @@ bool IcoFormat::onSave(FileOp* fop)
       sprite->height()));
 
   render::Render render;
-  for (n=FrameNumber(0); n<num; ++n) {
+  for (n=frame_t(0); n<num; ++n) {
     render.renderSprite(image, sprite, n);
 
     bpp = (sprite->pixelFormat() == IMAGE_INDEXED) ? 8 : 24;
@@ -308,7 +308,7 @@ bool IcoFormat::onSave(FileOp* fop)
 
     // PALETTE
     if (bpp == 8) {
-      Palette *pal = sprite->getPalette(n);
+      Palette *pal = sprite->palette(n);
 
       fputl(0, f);  // color 0 is black, so the XOR mask works
 

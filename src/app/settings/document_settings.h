@@ -24,7 +24,7 @@
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 namespace app {
   class DocumentSettingsObserver;
@@ -100,11 +100,11 @@ namespace app {
     };
 
     virtual bool getLoopAnimation() = 0;
-    virtual void getLoopRange(doc::FrameNumber* begin, doc::FrameNumber* end) = 0;
+    virtual void getLoopRange(doc::frame_t* begin, doc::frame_t* end) = 0;
     virtual AniDir getAnimationDirection() = 0;
 
     virtual void setLoopAnimation(bool state) = 0;
-    virtual void setLoopRange(doc::FrameNumber begin, doc::FrameNumber end) = 0;
+    virtual void setLoopRange(doc::frame_t begin, doc::frame_t end) = 0;
     virtual void setAnimationDirection(AniDir dir) = 0;
 
     // Observable

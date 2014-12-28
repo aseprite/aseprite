@@ -299,7 +299,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
         // 8 BPP
         case 8: {
           int colors = bi->bmiHeader.biClrUsed > 0 ? bi->bmiHeader.biClrUsed: 256;
-          palette = new Palette(FrameNumber(0), colors);
+          palette = new Palette(frame_t(0), colors);
           for (int c=0; c<colors; ++c) {
             palette->setEntry(c, rgba(bi->bmiColors[c].rgbRed,
                                        bi->bmiColors[c].rgbGreen,

@@ -46,7 +46,7 @@ Cel* read_cel(std::istream& is)
 {
   // ObjectId cel_id = read32();
 
-  FrameNumber frame(read16(is));
+  frame_t frame(read16(is));
   int imageIndex = read16(is);
   int x = (int16_t)read16(is);
   int y = (int16_t)read16(is);

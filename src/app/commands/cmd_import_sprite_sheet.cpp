@@ -164,7 +164,7 @@ protected:
 
     try {
       Sprite* sprite = m_document->sprite();
-      FrameNumber currentFrame = m_context->activeLocation().frame();
+      frame_t currentFrame = m_context->activeLocation().frame();
       render::Render render;
 
       // As first step, we cut each tile and add them into "animation" list.
@@ -208,7 +208,7 @@ protected:
         animation[i] = NULL;
 
         // Create the cel.
-        base::UniquePtr<Cel> resultCel(new Cel(FrameNumber(i), indexInStock));
+        base::UniquePtr<Cel> resultCel(new Cel(frame_t(i), indexInStock));
 
         // Add the cel in the layer.
         api.addCel(resultLayer, resultCel);
@@ -225,7 +225,7 @@ protected:
       }
 
       // Change the number of frames
-      api.setTotalFrames(sprite, FrameNumber(animation.size()));
+      api.setTotalFrames(sprite, frame_t(animation.size()));
 
       // Set the size of the sprite to the tile size.
       api.setSpriteSize(sprite, m_rect.w, m_rect.h);

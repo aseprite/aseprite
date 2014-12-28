@@ -69,7 +69,7 @@ public:
 
     m_curFrameTick = ui::clock();
     m_pingPongForward = true;
-    m_nextFrameTime = editor->sprite()->getFrameDuration(editor->frame());
+    m_nextFrameTime = editor->sprite()->frameDuration(editor->frame());
 
     m_playTimer.Tick.connect(&PlayAniWindow::onPlaybackTick, this);
     m_playTimer.start();
@@ -81,14 +81,14 @@ protected:
       m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
       while (m_nextFrameTime <= 0) {
-        FrameNumber frame = calculate_next_frame(
+        frame_t frame = calculate_next_frame(
           m_editor->sprite(),
           m_editor->frame(),
           m_docSettings,
           m_pingPongForward);
 
         m_editor->setFrame(frame);
-        m_nextFrameTime += m_editor->sprite()->getFrameDuration(frame);
+        m_nextFrameTime += m_editor->sprite()->frameDuration(frame);
         invalidate();
       }
 
@@ -146,7 +146,7 @@ protected:
 
 private:
   Editor* m_editor;
-  FrameNumber m_oldFrame;
+  frame_t m_oldFrame;
   Editor::EditorFlags m_oldFlags;
   Document* m_doc;
   IDocumentSettings* m_docSettings;

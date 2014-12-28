@@ -10,7 +10,7 @@
 
 #include "doc/blend.h"
 #include "doc/cel_list.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "doc/layer_list.h"
 #include "doc/object.h"
 
@@ -114,9 +114,9 @@ namespace doc {
 
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
-    void moveCel(Cel *cel, FrameNumber frame);
-    const Cel* getCel(FrameNumber frame) const;
-    Cel* getCel(FrameNumber frame);
+    void moveCel(Cel *cel, frame_t frame);
+    const Cel* getCel(frame_t frame) const;
+    Cel* getCel(frame_t frame);
     Cel* cel(frame_t frame) const override;
     void getCels(CelList& cels) const override;
     Cel* getLastCel() const;

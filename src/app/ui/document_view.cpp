@@ -73,7 +73,7 @@ public:
   void onAfterFrameChanged(Editor* editor) override {
     App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
 
-    set_current_palette(editor->sprite()->getPalette(editor->frame()), true);
+    set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
 
   // EditorCustomizationDelegate implementation
@@ -276,7 +276,7 @@ void DocumentView::onAddFrame(doc::DocumentEvent& ev)
   if (current_editor == m_editor)
     m_editor->setFrame(ev.frame());
   else if (m_editor->frame() > ev.frame())
-    m_editor->setFrame(m_editor->frame().next());
+    m_editor->setFrame(m_editor->frame()+1);
 }
 
 void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
@@ -284,7 +284,7 @@ void DocumentView::onRemoveFrame(doc::DocumentEvent& ev)
   // Adjust current frame of all editors that are in a frame more
   // advanced that the removed one.
   if (m_editor->frame() > ev.frame()) {
-    m_editor->setFrame(m_editor->frame().previous());
+    m_editor->setFrame(m_editor->frame()-1);
   }
   // If the editor was in the previous "last frame" (current value of
   // totalFrames()), we've to adjust it to the new last frame

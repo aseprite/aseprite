@@ -35,10 +35,10 @@ namespace undoers {
 
 using namespace undo;
 
-RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, FrameNumber paletteFrame)
+RemovePalette::RemovePalette(ObjectsContainer* objects, Sprite* sprite, frame_t paletteFrame)
   : m_spriteId(objects->addObject(sprite))
 {
-  doc::write_palette(m_stream, sprite->getPalette(paletteFrame));
+  doc::write_palette(m_stream, sprite->palette(paletteFrame));
 }
 
 void RemovePalette::dispose()

@@ -58,7 +58,7 @@ private:
   // Frame to be shown. It can be ALL_FRAMES, CURRENT_RANGE, or a
   // number indicating a specific frame (1 is the first frame).
   Target m_target;
-  FrameNumber m_frame;
+  frame_t m_frame;
 };
 
 FramePropertiesCommand::FramePropertiesCommand()
@@ -79,7 +79,7 @@ void FramePropertiesCommand::onLoadParams(Params* params)
   }
   else {
     m_target = SPECIFIC_FRAME;
-    m_frame = FrameNumber(base::convert_to<int>(frame)-1);
+    m_frame = frame_t(base::convert_to<int>(frame)-1);
   }
 }
 
@@ -98,8 +98,8 @@ void FramePropertiesCommand::onExecute(Context* context)
   Widget* frlen = app::find_widget<Widget>(window, "frlen");
   Widget* ok = app::find_widget<Widget>(window, "ok");
 
-  FrameNumber firstFrame(0);
-  FrameNumber lastFrame(0);
+  frame_t firstFrame(0);
+  frame_t lastFrame(0);
 
   switch (m_target) {
 
@@ -130,7 +130,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   else
     frame->setTextf("%d", (int)firstFrame+1);
 
-  frlen->setTextf("%d", sprite->getFrameDuration(firstFrame));
+  frlen->setTextf("%d", sprite->frameDuration(firstFrame));
 
   window->openWindowInForeground();
   if (window->getKiller() == ok) {

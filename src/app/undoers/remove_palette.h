@@ -21,7 +21,7 @@
 #pragma once
 
 #include "app/undoers/undoer_base.h"
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 #include "undo/object_id.h"
 
 #include <sstream>
@@ -37,7 +37,7 @@ namespace app {
 
     class RemovePalette : public UndoerBase {
     public:
-      RemovePalette(ObjectsContainer* objects, Sprite* sprite, FrameNumber paletteFrame);
+      RemovePalette(ObjectsContainer* objects, Sprite* sprite, frame_t paletteFrame);
 
       void dispose() override;
       size_t getMemSize() const override { return sizeof(*this) + getStreamSize(); }

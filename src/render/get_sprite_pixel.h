@@ -8,7 +8,7 @@
 #define RENDER_GET_SPRITE_PIXEL_H_INCLUDED
 #pragma once
 
-#include "doc/frame_number.h"
+#include "doc/frame.h"
 
 namespace doc {
   class Sprite;
@@ -20,7 +20,7 @@ namespace render {
   // Gets a pixel from the sprite in the specified position. If in the
   // specified coordinates there're background this routine will
   // return the 0 color (the mask-color).
-  color_t get_sprite_pixel(const Sprite* sprite, int x, int y, FrameNumber frame);
+  color_t get_sprite_pixel(const Sprite* sprite, int x, int y, frame_t frame);
 
 } // namespace render
 
