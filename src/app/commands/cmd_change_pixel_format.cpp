@@ -54,7 +54,7 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
             CmdUIOnlyFlag)
 {
   m_format = IMAGE_RGB;
-  m_dithering = DITHERING_NONE;
+  m_dithering = DitheringMethod::NONE;
 }
 
 void ChangePixelFormatCommand::onLoadParams(Params* params)
@@ -66,9 +66,9 @@ void ChangePixelFormatCommand::onLoadParams(Params* params)
 
   std::string dithering = params->get("dithering");
   if (dithering == "ordered")
-    m_dithering = DITHERING_ORDERED;
+    m_dithering = DitheringMethod::ORDERED;
   else
-    m_dithering = DITHERING_NONE;
+    m_dithering = DitheringMethod::NONE;
 }
 
 bool ChangePixelFormatCommand::onEnabled(Context* context)
@@ -79,7 +79,7 @@ bool ChangePixelFormatCommand::onEnabled(Context* context)
   if (sprite != NULL &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == DITHERING_ORDERED)
+      m_dithering == DitheringMethod::ORDERED)
     return false;
 
   return sprite != NULL;
@@ -93,7 +93,7 @@ bool ChangePixelFormatCommand::onChecked(Context* context)
   if (sprite != NULL &&
       sprite->pixelFormat() == IMAGE_INDEXED &&
       m_format == IMAGE_INDEXED &&
-      m_dithering == DITHERING_ORDERED)
+      m_dithering == DitheringMethod::ORDERED)
     return false;
 
   return

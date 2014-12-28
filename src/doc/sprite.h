@@ -77,6 +77,7 @@ namespace doc {
 
     LayerIndex countLayers() const;
 
+    Layer* layer(int layerIndex) const;
     Layer* indexToLayer(LayerIndex index) const;
     LayerIndex layerToIndex(const Layer* layer) const;
 
@@ -85,6 +86,7 @@ namespace doc {
     ////////////////////////////////////////
     // Palettes
 
+    Palette* palette(frame_t frame) const;
     Palette* getPalette(FrameNumber frame) const;
     const PalettesList& getPalettes() const;
 
@@ -123,17 +125,6 @@ namespace doc {
     size_t getImageRefs(int imageIndex) const;
 
     void remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::vector<uint8_t>& mapping);
-
-    // Draws the sprite in the given image at the given position. Before
-    // drawing the sprite, this function clears (with the sprite's
-    // background color) the rectangle area that will occupy the drawn
-    // sprite.
-    void render(Image* image, int x, int y, FrameNumber frame) const;
-
-    // Gets a pixel from the sprite in the specified position. If in the
-    // specified coordinates there're background this routine will
-    // return the 0 color (the mask-color).
-    int getPixel(int x, int y, FrameNumber frame) const;
 
     void pickCels(int x, int y, FrameNumber frame, int opacityThreshold, CelList& cels) const;
 

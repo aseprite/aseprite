@@ -176,12 +176,12 @@ void rotsprite_image(Image* bmp, Image* spr,
 
   bmp_copy->clear(bmp->maskColor());
   spr_copy->clear(maskColor);
-  spr_copy->copy(spr, 0, 0, 0, 0, spr->width(), spr->height());
+  spr_copy->copy(spr, gfx::Clip(spr->bounds()));
 
   for (int i=0; i<3; ++i) {
     tmp_copy->clear(maskColor);
     image_scale2x(tmp_copy, spr_copy, spr->width()*(1<<i), spr->height()*(1<<i));
-    spr_copy->copy(tmp_copy, 0, 0, 0, 0, tmp_copy->width(), tmp_copy->height());
+    spr_copy->copy(tmp_copy, gfx::Clip(tmp_copy->bounds()));
   }
 
   doc::algorithm::parallelogram(bmp_copy, spr_copy,

@@ -28,6 +28,7 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "gfx/point.h"
+#include "render/get_sprite_pixel.h"
 
 namespace app {
 
@@ -47,7 +48,7 @@ void ColorPicker::pickColor(const DocumentLocation& location,
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
       location.sprite()->pixelFormat(),
-      location.sprite()->getPixel(pos.x, pos.y, location.frame()));
+      render::get_sprite_pixel(location.sprite(), pos.x, pos.y, location.frame()));
 
     doc::CelList cels;
     location.sprite()->pickCels(pos.x, pos.y, location.frame(), 128, cels);

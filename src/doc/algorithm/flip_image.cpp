@@ -63,7 +63,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
 
       for (int y=bounds.y; y<bounds.y+bounds.h; ++y) {
         // Copy the current row.
-        copy_image(originalRow, image, -bounds.x, -y);
+        originalRow->copy(image, gfx::Clip(0, 0, bounds.x, y, bounds.w, 1));
 
         int u = bounds.x+bounds.w-1;
         for (int x=bounds.x; x<bounds.x+bounds.w; ++x, --u) {
@@ -82,7 +82,7 @@ void flip_image_with_mask(Image* image, const Mask* mask, FlipType flipType, int
 
       for (int x=bounds.x; x<bounds.x+bounds.w; ++x) {
         // Copy the current column.
-        copy_image(originalCol, image, -x, -bounds.y);
+        originalCol->copy(image, gfx::Clip(0, 0, x, bounds.y, 1, bounds.h));
 
         int v = bounds.y+bounds.h-1;
         for (int y=bounds.y; y<bounds.y+bounds.h; ++y, --v) {

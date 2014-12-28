@@ -38,6 +38,7 @@
 #include "doc/mask.h"
 #include "doc/sprite.h"
 #include "gfx/region.h"
+#include "render/render.h"
 
 namespace app {
 
@@ -455,7 +456,7 @@ void PixelsMovement::stampImage()
       gfx::Region modifiedRegion(expand.getDestCanvas()->bounds());
       expand.validateDestCanvas(modifiedRegion);
 
-      composite_image(
+      render::composite_image(
         expand.getDestCanvas(), image,
         -expand.getCel()->x(),
         -expand.getCel()->y(),

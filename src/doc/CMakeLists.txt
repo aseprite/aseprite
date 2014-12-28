@@ -36,7 +36,6 @@ add_library(doc-lib
   palette.cpp
   palette_io.cpp
   primitives.cpp
-  quantization.cpp
   rgbmap.cpp
   sprite.cpp
   sprites.cpp

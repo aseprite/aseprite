@@ -57,7 +57,7 @@ Mask* load_msk_file(const char* filename)
     if (image != NULL && (image->pixelFormat() == IMAGE_BITMAP)) {
       mask = new Mask();
       mask->replace(gfx::Rect(x, y, image->width(), image->height()));
-      mask->bitmap()->copy(image, 0, 0, 0, 0, image->width(), image->height());
+      mask->bitmap()->copy(image, gfx::Clip(image->bounds()));
       mask->shrink();
     }
   }

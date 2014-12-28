@@ -13,9 +13,9 @@
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "base/unique_ptr.h"
+#include "doc/doc.h"
 #include "doc/image_bits.h"
 #include "doc/primitives.h"
-#include "doc/doc.h"
 
 #include <cstring>
 #include <vector>
@@ -223,6 +223,11 @@ LayerIndex Sprite::countLayers() const
   return LayerIndex(folder()->getLayersCount());
 }
 
+Layer* Sprite::layer(int layerIndex) const
+{
+  return indexToLayer(LayerIndex(layerIndex));
+}
+
 Layer* Sprite::indexToLayer(LayerIndex index) const
 {
   if (index < LayerIndex(0))
@@ -251,6 +256,11 @@ void Sprite::getLayersList(std::vector<Layer*>& layers) const
 
 //////////////////////////////////////////////////////////////////////
 // Palettes
+
+Palette* Sprite::palette(frame_t frame) const
+{
+  return getPalette(FrameNumber(frame));
+}
 
 Palette* Sprite::getPalette(FrameNumber frame) const
 {
@@ -456,28 +466,6 @@ void Sprite::remapImages(FrameNumber frameFrom, FrameNumber frameTo, const std::
 
 //////////////////////////////////////////////////////////////////////
 // Drawing
-
-void Sprite::render(Image* image, int x, int y, FrameNumber frame) const
-{
-  fill_rect(image, x, y, x+m_width-1, y+m_height-1,
-            (m_format == IMAGE_INDEXED ? transparentColor(): 0));
-
-  layer_render(folder(), image, x, y, frame);
-}
-
-int Sprite::getPixel(int x, int y, FrameNumber frame) const
-{
-  int color = 0;
-
-  if ((x >= 0) && (y >= 0) && (x < m_width) && (y < m_height)) {
-    base::UniquePtr<Image> image(Image::create(m_format, 1, 1));
-    clear_image(image, (m_format == IMAGE_INDEXED ? transparentColor(): 0));
-    render(image, -x, -y, frame);
-    color = get_pixel(image, 0, 0);
-  }
-
-  return color;
-}
 
 void Sprite::pickCels(int x, int y, FrameNumber frame, int opacityThreshold, CelList& cels) const
 {

@@ -65,14 +65,14 @@ void clear_image(Image* image, color_t color)
   image->clear(color);
 }
 
-void copy_image(Image* dst, const Image* src, int x, int y)
+void copy_image(Image* dst, const Image* src)
 {
-  dst->copy(src, x, y, 0, 0, src->width(), src->height());
+  dst->copy(src, gfx::Clip(0, 0, 0, 0, src->width(), src->height()));
 }
 
-void composite_image(Image* dst, const Image* src, int x, int y, int opacity, int blend_mode)
+void copy_image(Image* dst, const Image* src, int x, int y)
 {
-  dst->merge(src, x, y, 0, 0, src->width(), src->height(), opacity, blend_mode);
+  dst->copy(src, gfx::Clip(x, y, 0, 0, src->width(), src->height()));
 }
 
 Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer)
@@ -84,7 +84,7 @@ Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, co
   trim->setMaskColor(image->maskColor());
 
   clear_image(trim, bg);
-  trim->copy(image, 0, 0, x, y, w, h);
+  trim->copy(image, gfx::Clip(0, 0, x, y, w, h));
 
   return trim;
 }

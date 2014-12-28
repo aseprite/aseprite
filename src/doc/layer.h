@@ -87,6 +87,7 @@ namespace doc {
         m_flags = LayerFlags(int(m_flags) & ~int(flags));
     }
 
+    virtual Cel* cel(frame_t frame) const;
     virtual void getCels(CelList& cels) const = 0;
 
   private:
@@ -116,6 +117,7 @@ namespace doc {
     void moveCel(Cel *cel, FrameNumber frame);
     const Cel* getCel(FrameNumber frame) const;
     Cel* getCel(FrameNumber frame);
+    Cel* cel(frame_t frame) const override;
     void getCels(CelList& cels) const override;
     Cel* getLastCel() const;
 
@@ -164,8 +166,6 @@ namespace doc {
 
     LayerList m_layers;
   };
-
-  void layer_render(const Layer* layer, Image *image, int x, int y, FrameNumber frame);
 
 } // namespace doc
 

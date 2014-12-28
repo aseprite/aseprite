@@ -33,7 +33,7 @@ namespace app {
     GifOptions(
       Quantize quantize = QuantizeEach,
       bool interlaced = false,
-      DitheringMethod dithering = doc::DITHERING_NONE)
+      DitheringMethod dithering = doc::DitheringMethod::NONE)
       : m_quantize(quantize)
       , m_interlaced(interlaced)
       , m_dithering(dithering) {

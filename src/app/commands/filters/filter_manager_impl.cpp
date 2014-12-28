@@ -155,30 +155,31 @@ void FilterManagerImpl::end()
 
 bool FilterManagerImpl::applyStep()
 {
-  if ((m_row >= 0) && (m_row < m_h)) {
-    if ((m_mask) && (m_mask->bitmap())) {
-      int x = m_x - m_mask->bounds().x + m_offset_x;
-      int y = m_row + m_y - m_mask->bounds().y + m_offset_y;
-
-      m_maskBits = m_mask->bitmap()
-        ->lockBits<BitmapTraits>(Image::ReadLock,
-                                 gfx::Rect(x, y, m_w - x, m_h - y));
-
-      m_maskIterator = m_maskBits.begin();
-    }
-
-    switch (m_location.sprite()->pixelFormat()) {
-      case IMAGE_RGB:       m_filter->applyToRgba(this); break;
-      case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
-      case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
-    }
-    ++m_row;
-
-    return true;
-  }
-  else {
+  if (m_row < 0 || m_row >= m_h)
     return false;
+
+  if ((m_mask) && (m_mask->bitmap())) {
+    int x = m_x - m_mask->bounds().x + m_offset_x;
+    int y = m_y - m_mask->bounds().y + m_offset_y + m_row;
+
+    if ((m_w - x < 1) || (m_h - y < 1))
+      return false;
+
+    m_maskBits = m_mask->bitmap()
+      ->lockBits<BitmapTraits>(Image::ReadLock,
+        gfx::Rect(x, y, m_w - x, m_h - y));
+
+    m_maskIterator = m_maskBits.begin();
   }
+
+  switch (m_location.sprite()->pixelFormat()) {
+    case IMAGE_RGB:       m_filter->applyToRgba(this); break;
+    case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
+    case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
+  }
+  ++m_row;
+
+  return true;
 }
 
 void FilterManagerImpl::apply()
@@ -204,7 +205,7 @@ void FilterManagerImpl::apply()
       undo.pushUndoer(new undoers::ImageArea(undo.getObjects(), m_src, m_x, m_y, m_w, m_h));
 
     // Copy "dst" to "src"
-    copy_image(m_src, m_dst, 0, 0);
+    copy_image(m_src, m_dst);
 
     undo.commit();
   }

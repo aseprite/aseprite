@@ -10,6 +10,8 @@
 
 namespace doc {
 
+  typedef int frame_t;
+
   class FrameNumber {
   public:
     FrameNumber() : m_value(0) { }

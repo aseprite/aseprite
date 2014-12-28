@@ -28,6 +28,7 @@
 #include "app/modules/palettes.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "render/render.h"
 
 #include <cstdio>
 
@@ -160,7 +161,7 @@ bool FliFormat::onLoad(FileOp* fop)
     }
 
     /* update the old image and color-map to the new ones to compare later */
-    copy_image(old, bmp, 0, 0);
+    copy_image(old, bmp);
     memcpy(omap, cmap, 768);
 
     /* update progress */
@@ -218,6 +219,7 @@ bool FliFormat::onSave(FileOp* fop)
   // Create the bitmaps
   base::UniquePtr<Image> bmp(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
   base::UniquePtr<Image> old(Image::create(IMAGE_INDEXED, sprite->width(), sprite->height()));
+  render::Render render;
 
   // Write frame by frame
   for (FrameNumber frpos(0);
@@ -232,8 +234,7 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     /* render the frame in the bitmap */
-    clear_image(bmp, 0);
-    layer_render(sprite->folder(), bmp, 0, 0, frpos);
+    render.renderSprite(bmp, sprite, frpos);
 
     /* how many times this frame should be written to get the same
        time that it has in the sprite */
@@ -250,7 +251,7 @@ bool FliFormat::onSave(FileOp* fop)
                         (unsigned char *)bmp->getPixelAddress(0, 0), cmap, W_ALL);
 
       /* update the old image and color-map to the new ones to compare later */
-      copy_image(old, bmp, 0, 0);
+      copy_image(old, bmp);
       memcpy(omap, cmap, 768);
     }
 

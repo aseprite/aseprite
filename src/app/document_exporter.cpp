@@ -41,6 +41,7 @@
 #include "doc/stock.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
+#include "render/render.h"
 
 #include <cstdio>
 #include <fstream>
@@ -380,7 +381,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
       docApi.setPixelFormat(
         sample.sprite(),
         textureImage->pixelFormat(),
-        DITHERING_NONE);
+        DitheringMethod::NONE);
     }
 
     int x = sample.inTextureBounds().x - sample.trimmedBounds().x;
@@ -443,11 +444,15 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
 
 void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y)
 {
+  render::Render render;
+
   if (sample.layer()) {
-    layer_render(sample.layer(), dst, x, y, sample.frame());
+    render.renderLayer(dst, sample.layer(), sample.frame(),
+      gfx::Clip(x, y, sample.sprite()->bounds()));
   }
   else {
-    sample.sprite()->render(dst, x, y, sample.frame());
+    render.renderSprite(dst, sample.sprite(), sample.frame(),
+      gfx::Clip(x, y, sample.sprite()->bounds()));
   }
 }
 

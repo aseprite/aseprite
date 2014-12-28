@@ -36,10 +36,10 @@
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
-#include "app/util/render.h"
 #include "base/bind.h"
 #include "base/path.h"
 #include "doc/image.h"
+#include "render/render.h"
 #include "she/system.h"
 #include "ui/ui.h"
 
@@ -54,14 +54,14 @@ public:
   OptionsWindow(Context* context)
     : m_settings(context->settings())
     , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
-    , m_checked_bg_color1(new ColorButton(RenderEngine::getCheckedBgColor1(), IMAGE_RGB))
-    , m_checked_bg_color2(new ColorButton(RenderEngine::getCheckedBgColor2(), IMAGE_RGB))
+    , m_preferences(App::instance()->preferences())
+    , m_docPref(m_preferences.document(context->activeDocument()))
+    , m_checked_bg_color1(new ColorButton(m_docPref.bg.color1(), IMAGE_RGB))
+    , m_checked_bg_color2(new ColorButton(m_docPref.bg.color2(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(m_docSettings->getPixelGridColor(), IMAGE_RGB))
     , m_gridColor(new ColorButton(m_docSettings->getGridColor(), IMAGE_RGB))
     , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
   {
-    Preferences& preferences = App::instance()->preferences();
-
     sectionListbox()->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
     cursorColorBox()->addChild(m_cursorColor);
 
@@ -78,10 +78,10 @@ public:
     pixelGridAutoOpacity()->setSelected(m_docSettings->getPixelGridAutoOpacity());
 
     // Others
-    if (preferences.general.autoshowTimeline())
+    if (m_preferences.general.autoshowTimeline())
       autotimeline()->setSelected(true);
 
-    if (preferences.general.expandMenubarOnMouseover())
+    if (m_preferences.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
     if (m_settings->getCenterOnZoom())
@@ -117,10 +117,10 @@ public:
     checkedBgSize()->addItem("8x8");
     checkedBgSize()->addItem("4x4");
     checkedBgSize()->addItem("2x2");
-    checkedBgSize()->setSelectedItemIndex((int)RenderEngine::getCheckedBgType());
+    checkedBgSize()->setSelectedItemIndex(int(m_docPref.bg.type()));
 
     // Zoom checked background
-    if (RenderEngine::getCheckedBgZoom())
+    if (m_docPref.bg.zoom())
       checkedBgZoom()->setSelected(true);
 
     // Checked background colors
@@ -153,8 +153,6 @@ public:
   }
 
   void saveConfig() {
-    Preferences& preferences = App::instance()->preferences();
-
     Editor::set_cursor_color(m_cursorColor->getColor());
     m_docSettings->setGridColor(m_gridColor->getColor());
     m_docSettings->setGridOpacity(gridOpacity()->getValue());
@@ -163,10 +161,10 @@ public:
     m_docSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
     m_docSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
     
-    preferences.general.autoshowTimeline(autotimeline()->isSelected());
+    m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
-    preferences.general.expandMenubarOnMouseover(expandOnMouseover);
+    m_preferences.general.expandMenubarOnMouseover(expandOnMouseover);
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
     m_settings->setCenterOnZoom(centerOnZoom()->isSelected());
@@ -175,10 +173,10 @@ public:
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 
-    RenderEngine::setCheckedBgType((RenderEngine::CheckedBgType)checkedBgSize()->getSelectedItemIndex());
-    RenderEngine::setCheckedBgZoom(checkedBgZoom()->isSelected());
-    RenderEngine::setCheckedBgColor1(m_checked_bg_color1->getColor());
-    RenderEngine::setCheckedBgColor2(m_checked_bg_color2->getColor());
+    m_docPref.bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
+    m_docPref.bg.zoom(checkedBgZoom()->isSelected());
+    m_docPref.bg.color1(m_checked_bg_color1->getColor());
+    m_docPref.bg.color2(m_checked_bg_color2->getColor());
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->getTextInt();
@@ -226,10 +224,10 @@ private:
     pixelGridOpacity()->setValue(200);
     pixelGridAutoOpacity()->setSelected(true);
 
-    checkedBgSize()->setSelectedItemIndex((int)RenderEngine::CHECKED_BG_16X16);
-    checkedBgZoom()->setSelected(true);
-    m_checked_bg_color1->setColor(app::Color::fromRgb(128, 128, 128));
-    m_checked_bg_color2->setColor(app::Color::fromRgb(192, 192, 192));
+    checkedBgSize()->setSelectedItemIndex(int(m_docPref.bg.type.defaultValue()));
+    checkedBgZoom()->setSelected(m_docPref.bg.zoom.defaultValue());
+    m_checked_bg_color1->setColor(m_docPref.bg.color1.defaultValue());
+    m_checked_bg_color2->setColor(m_docPref.bg.color2.defaultValue());
   }
 
   void onLocateCrashFolder() {
@@ -242,6 +240,8 @@ private:
 
   ISettings* m_settings;
   IDocumentSettings* m_docSettings;
+  Preferences& m_preferences;
+  DocumentPreferences& m_docPref;
   ColorButton* m_checked_bg_color1;
   ColorButton* m_checked_bg_color2;
   ColorButton* m_pixelGridColor;

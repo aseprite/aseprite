@@ -23,11 +23,11 @@
 #include "app/commands/filters/filter_preview.h"
 
 #include "app/commands/filters/filter_manager_impl.h"
+#include "app/ui/editor/editor.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/widget.h"
-#include "app/util/render.h"
 
 namespace app {
 
@@ -75,14 +75,14 @@ bool FilterPreview::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kOpenMessage:
-      RenderEngine::setPreviewImage(
+      Editor::renderEngine().setPreviewImage(
         m_filterMgr->layer(),
         m_filterMgr->frame(),
         m_filterMgr->destinationImage());
       break;
 
     case kCloseMessage:
-      RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
+      Editor::renderEngine().removePreviewImage();
 
       // Stop the preview timer.
       m_timer.stop();

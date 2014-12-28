@@ -97,7 +97,7 @@ void Mask::copyFrom(const Mask* sourceMask)
     add(sourceMask->bounds());
 
     // And copy the "mask" bitmap
-    copy_image(m_bitmap, sourceMask->m_bitmap, 0, 0);
+    copy_image(m_bitmap, sourceMask->m_bitmap);
   }
 }
 

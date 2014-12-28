@@ -42,6 +42,8 @@ namespace doc {
   int graya_blend_merge(int back, int front, int opacity);
   int graya_blend_blackandwhite(int back, int front, int opacity);
 
+  int indexed_blend_direct(int back, int front, int opacity);
+
 } // namespace doc
 
 #endif

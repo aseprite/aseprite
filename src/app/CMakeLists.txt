@@ -50,6 +50,7 @@ add_library(app-lib
   app.cpp
   app_menus.cpp
   app_options.cpp
+  app_render.cpp
   backup.cpp
   check_update.cpp
   color.cpp
@@ -303,10 +304,8 @@ add_library(app-lib
   util/msk_file.cpp
   util/pic_file.cpp
   util/range_utils.cpp
-  util/render.cpp
   webserver.cpp
   widget_loader.cpp
   xml_document.cpp
   xml_exception.cpp
-  zoom.cpp
   ${generated_files})

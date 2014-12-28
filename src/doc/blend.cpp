@@ -33,9 +33,8 @@ BLEND_COLOR graya_blenders[] =
   graya_blend_blackandwhite,
 };
 
-/**********************************************************************/
-/* RGB blenders                                                       */
-/**********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// RGB blenders
 
 int rgba_blend_normal(int back, int front, int opacity)
 {
@@ -209,9 +208,8 @@ int rgba_blend_blackandwhite(int back, int front, int opacity)
   return rgba(D_v, D_v, D_v, 255);
 }
 
-/**********************************************************************/
-/* Grayscale blenders                                                 */
-/**********************************************************************/
+//////////////////////////////////////////////////////////////////////
+// Grayscale blenders
 
 int graya_blend_normal(int back, int front, int opacity)
 {
@@ -306,6 +304,14 @@ int graya_blend_blackandwhite(int back, int front, int opacity)
     D_k = 0;
 
   return graya(D_k, 255);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Indexed blenders
+
+int indexed_blend_direct(int back, int front, int opacity)
+{
+  return front;
 }
 
 } // namespace doc

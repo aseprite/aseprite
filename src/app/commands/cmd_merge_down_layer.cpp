@@ -39,6 +39,7 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "doc/stock.h"
+#include "render/render.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -158,11 +159,11 @@ void MergeDownLayerCommand::onExecute(Context* context)
           x2-x1+1, y2-y1+1, bgcolor);
 
         // Merge src_image in new_image
-        doc::composite_image(new_image, src_image,
-                                src_cel->x()-x1,
-                                src_cel->y()-y1,
-                                src_cel->opacity(),
-                                static_cast<LayerImage*>(src_layer)->getBlendMode());
+        render::composite_image(new_image, src_image,
+          src_cel->x()-x1,
+          src_cel->y()-y1,
+          src_cel->opacity(),
+          static_cast<LayerImage*>(src_layer)->getBlendMode());
 
         if (undo.isEnabled())
           undo.pushUndoer(new undoers::SetCelPosition(undo.getObjects(), dst_cel));

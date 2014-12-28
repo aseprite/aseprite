@@ -23,10 +23,10 @@
 #include "app/thumbnail_generator.h"
 
 #include "app/app.h"
+#include "app/app_render.h"
 #include "app/document.h"
 #include "app/file/file.h"
 #include "app/file_system.h"
-#include "app/util/render.h"
 #include "base/bind.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -79,15 +79,14 @@ private:
         // The palette to convert the Image
         m_palette.reset(new Palette(*sprite->getPalette(FrameNumber(0))));
 
-        // Render the 'sprite' in one plain 'image'
-        RenderEngine renderEngine(m_fop->document,
-          sprite, NULL, FrameNumber(0));
+        // Render first frame of the sprite in 'image'
+        base::UniquePtr<Image> image(Image::create(
+            sprite->pixelFormat(), sprite->width(), sprite->height()));
 
-        doc::ImageBufferPtr thumbnail_buffer(new doc::ImageBuffer);
-        base::UniquePtr<Image> image(renderEngine.renderSprite(
-            sprite->bounds(), FrameNumber(0),
-            Zoom(1, 1), true, false,
-            thumbnail_buffer));
+        AppRender render;
+        render.setupBackground(NULL, image->pixelFormat());
+        render.setBgType(render::BgType::CHECKED);
+        render.renderSprite(image, sprite, FrameNumber(0));
 
         // Calculate the thumbnail size
         int thumb_w = MAX_THUMBNAIL_SIZE * image->width() / MAX(image->width(), image->height());

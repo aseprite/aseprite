@@ -29,11 +29,11 @@
 #include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool_loop.h"
-#include "app/util/render.h"
-#include "gfx/region.h"
+#include "app/ui/editor/editor.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
+#include "gfx/region.h"
 
 namespace app {
 namespace tools {
@@ -69,7 +69,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
-  RenderEngine::setPreviewImage(
+  Editor::renderEngine().setPreviewImage(
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
     m_toolLoop->getDstImage());
@@ -78,7 +78,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
 void ToolLoopManager::releaseLoop(const Pointer& pointer)
 {
   // No more preview image
-  RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
+  Editor::renderEngine().removePreviewImage();
 }
 
 void ToolLoopManager::pressKey(ui::KeyScancode key)

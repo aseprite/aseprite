@@ -98,9 +98,9 @@ void InvertMaskCommand::onExecute(Context* context)
     if (document->mask()->bitmap()) {
       // Copy the inverted region in the new mask
       doc::copy_image(mask->bitmap(),
-                         document->mask()->bitmap(),
-                         document->mask()->bounds().x,
-                         document->mask()->bounds().y);
+        document->mask()->bitmap(),
+        document->mask()->bounds().x,
+        document->mask()->bounds().y);
     }
 
     // We need only need the area inside the sprite

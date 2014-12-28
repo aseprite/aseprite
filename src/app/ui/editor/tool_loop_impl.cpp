@@ -260,7 +260,7 @@ public:
   bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
-  const Zoom& zoom() override { return m_editor->zoom(); }
+  const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
   int getPrimaryColor() override { return m_primary_color; }
   void setPrimaryColor(int color) override { m_primary_color = color; }

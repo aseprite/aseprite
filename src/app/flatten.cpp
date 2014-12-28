@@ -21,13 +21,14 @@
 #endif
 
 #include "base/unique_ptr.h"
-#include "gfx/rect.h"
 #include "doc/cel.h"
 #include "doc/frame_number.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "doc/stock.h"
+#include "gfx/rect.h"
+#include "render/render.h"
 
 namespace app {
 
@@ -40,6 +41,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
                                       FrameNumber frmin, FrameNumber frmax)
 {
   base::UniquePtr<LayerImage> flatLayer(new LayerImage(dstSprite));
+  render::Render render;
 
   for (FrameNumber frame=frmin; frame<=frmax; ++frame) {
     // Does this frame have cels to render?
@@ -55,9 +57,9 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
       base::UniquePtr<Cel> cel(new Cel(frame, imageIndex));
       cel->setPosition(bounds.x, bounds.y);
 
-      // Clear the image and render this frame.
-      image->clear(0);
-      layer_render(srcLayer, image, -bounds.x, -bounds.y, frame);
+      // Render this frame.
+      render.renderLayer(image, srcLayer, frame,
+        gfx::Clip(0, 0, bounds));
 
       // Add the cel (and release the base::UniquePtr).
       flatLayer->addCel(cel);

@@ -25,6 +25,7 @@
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
+#include "render/zoom.h"
 
 namespace app {
 
@@ -74,7 +75,7 @@ bool ZoomCommand::onEnabled(Context* context)
 
 void ZoomCommand::onExecute(Context* context)
 {
-  Zoom zoom = current_editor->zoom();
+  render::Zoom zoom = current_editor->zoom();
 
   switch (m_action) {
     case In:
@@ -85,12 +86,12 @@ void ZoomCommand::onExecute(Context* context)
       break;
     case Set:
       switch (m_percentage) {
-        case 3200: zoom = Zoom(32, 1); break;
-        case 1600: zoom = Zoom(16, 1); break;
-        case 800: zoom = Zoom(8, 1); break;
-        case 400: zoom = Zoom(4, 1); break;
-        case 200: zoom = Zoom(2, 1); break;
-        default: zoom = Zoom(1, 1); break;
+        case 3200: zoom = render::Zoom(32, 1); break;
+        case 1600: zoom = render::Zoom(16, 1); break;
+        case 800: zoom = render::Zoom(8, 1); break;
+        case 400: zoom = render::Zoom(4, 1); break;
+        case 200: zoom = render::Zoom(2, 1); break;
+        default: zoom = render::Zoom(1, 1); break;
       }
       break;
   }

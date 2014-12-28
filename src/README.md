@@ -32,16 +32,17 @@ because they don't depend on any other component.
 ## Level 2
 
   * [filters](filters/) (base, doc, gfx): Effects for images.
+  * [render](render/) (base, gfx, doc): Library to render documents.
   * [ui](ui/) (base, gfx, she): Portable UI library (buttons, windows, text fields, etc.)
   * [updater](updater/) (base, net): Component to check for updates.
 
 ## Level 3
 
-  * [iff](iff/) (base, doc): Image File Formats library (load/save documents).
+  * [iff](iff/) (base, doc, render): Image File Formats library (load/save documents).
 
 ## Level 4
 
-  * [app](app/) (allegro, base, doc, filters, gfx, iff, scripting, she, ui, undo, updater, webserver)
+  * [app](app/) (allegro, base, doc, filters, gfx, iff, render, scripting, she, ui, undo, updater, webserver)
 
 ## Level 5
 

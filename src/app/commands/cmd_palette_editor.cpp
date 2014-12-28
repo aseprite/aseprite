@@ -49,14 +49,14 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "doc/image.h"
+#include "doc/palette.h"
+#include "doc/sprite.h"
+#include "doc/stock.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
-#include "doc/image.h"
-#include "doc/palette.h"
-#include "doc/quantization.h"
-#include "doc/sprite.h"
-#include "doc/stock.h"
+#include "render/quantization.h"
 #include "ui/graphics.h"
 #include "ui/ui.h"
 
@@ -587,7 +587,7 @@ void PaletteEntryEditor::onQuantizeClick(Event& ev)
       return;
     }
 
-    palette = quantization::create_palette_from_rgb(
+    palette = render::create_palette_from_rgb(
       sprite, reader.frame(), NULL);
   }
 

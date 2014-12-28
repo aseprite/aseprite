@@ -1,4 +1,4 @@
-// Aseprite Document Library
+// Aseprite Render Library
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,10 +8,8 @@
 #include "config.h"
 #endif
 
-#include "doc/quantization.h"
+#include "render/quantization.h"
 
-#include "gfx/hsv.h"
-#include "gfx/rgb.h"
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
@@ -21,14 +19,17 @@
 #include "doc/primitives.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
+#include "gfx/hsv.h"
+#include "gfx/rgb.h"
+#include "render/render.h"
 
 #include <algorithm>
 #include <limits>
 #include <vector>
 
-namespace doc {
-namespace quantization {
+namespace render {
 
+using namespace doc;
 using namespace gfx;
 
 // Converts a RGB image to indexed with ordered dithering method.
@@ -50,15 +51,17 @@ Palette* create_palette_from_rgb(
   bool has_background_layer = (sprite->backgroundLayer() != NULL);
   Image* flat_image;
 
-  ImagesCollector images(sprite->folder(), // All layers
-                         frameNumber,         // Ignored, we'll use all frames
-                         true,                // All frames,
-                         false); // forWrite=false, read only
+  ImagesCollector images(
+    sprite->folder(),           // All layers
+    frameNumber,                // Ignored, we'll use all frames
+    true,                       // All frames,
+    false);                     // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
-  clear_image(flat_image, 0);
-  sprite->render(flat_image, 0, 0, frameNumber);
+  flat_image = Image::create(sprite->pixelFormat(),
+    sprite->width(), sprite->height());
+
+  render::Render().renderSprite(flat_image, sprite, frameNumber);
 
   // Create an array of images
   size_t nimage = images.size() + 1; // +1 for flat_image
@@ -91,7 +94,7 @@ Image* convert_pixel_format(
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
-      ditheringMethod == DITHERING_ORDERED) {
+      ditheringMethod == DitheringMethod::ORDERED) {
     return ordered_dithering(image, new_image, 0, 0, rgbmap, palette);
   }
 
@@ -108,7 +111,7 @@ Image* convert_pixel_format(
 
         // RGB -> RGB
         case IMAGE_RGB:
-          new_image->copy(image, 0, 0, 0, 0, image->width(), image->height());
+          new_image->copy(image, gfx::Clip(image->bounds()));
           break;
 
         // RGB -> Grayscale
@@ -189,7 +192,7 @@ Image* convert_pixel_format(
 
         // Grayscale -> Grayscale
         case IMAGE_GRAYSCALE:
-          new_image->copy(image, 0, 0, 0, 0, image->width(), image->height());
+          new_image->copy(image, gfx::Clip(image->bounds()));
           break;
 
         // Grayscale -> Indexed
@@ -486,5 +489,4 @@ void create_palette_from_images(const std::vector<Image*>& images, Palette* pale
   optimizer.calculate(palette, has_background_layer);
 }
 
-} // namespace quantization
-} // namespace doc
+} // namespace render

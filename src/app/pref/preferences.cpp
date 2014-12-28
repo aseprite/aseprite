@@ -57,23 +57,8 @@ void Preferences::save()
   for (auto& pair : m_tools)
     pair.second->save();
 
-  for (auto& pair : m_docs) {
-    app::Document* doc = pair.first;
-    bool specific_file = false;
-
-    if (doc && doc->isAssociatedToFile()) {
-      push_config_state();
-      set_config_file(docConfigFileName(doc).c_str());
-      specific_file = true;
-    }
-
-    pair.second->save();
-
-    if (specific_file) {
-      flush_config_file();
-      pop_config_state();
-    }
-  }
+  for (auto& pair : m_docs)
+    saveDocPref(pair.first, pair.second);
 
   flush_config_file();
 }
@@ -98,8 +83,6 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
 
 DocumentPreferences& Preferences::document(app::Document* document)
 {
-  ASSERT(document != NULL);
-
   auto it = m_docs.find(document);
   if (it != m_docs.end()) {
     return *it->second;
@@ -108,6 +91,18 @@ DocumentPreferences& Preferences::document(app::Document* document)
     DocumentPreferences* docPref = new DocumentPreferences("");
     m_docs[document] = docPref;
     return *docPref;
+  }
+}
+
+void Preferences::onRemoveDocument(doc::Document* doc)
+{
+  ASSERT(dynamic_cast<app::Document*>(doc));
+
+  auto it = m_docs.find(static_cast<app::Document*>(doc));
+  if (it != m_docs.end()) {
+    saveDocPref(it->first, it->second);
+    delete it->second;
+    m_docs.erase(it);
   }
 }
 
@@ -125,6 +120,24 @@ std::string Preferences::docConfigFileName(app::Document* doc)
   }
   rf.includeUserDir(("files/" + fn + ".ini").c_str());
   return rf.getFirstOrCreateDefault();
+}
+
+void Preferences::saveDocPref(app::Document* doc, app::DocumentPreferences* docPref)
+{
+  bool specific_file = false;
+
+  if (doc && doc->isAssociatedToFile()) {
+    push_config_state();
+    set_config_file(docConfigFileName(doc).c_str());
+    specific_file = true;
+  }
+
+  docPref->save();
+
+  if (specific_file) {
+    flush_config_file();
+    pop_config_state();
+  }
 }
 
 } // namespace app

@@ -21,8 +21,8 @@
 #pragma once
 
 #include "app/ui/editor/editor_state.h"
-#include "app/zoom.h"
 #include "gfx/point.h"
+#include "render/zoom.h"
 
 namespace app {
 
@@ -41,7 +41,7 @@ namespace app {
 
   private:
     gfx::Point m_startPos;
-    Zoom m_startZoom;
+    render::Zoom m_startZoom;
     bool m_moved;
   };
 

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2013  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +16,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+#ifndef APP_RENDER_H_INCLUDED
+#define APP_RENDER_H_INCLUDED
+#pragma once
 
-#include "app/zoom.h"
+#include "doc/pixel_format.h"
+#include "render/render.h"
 
 namespace app {
+  class Document;
 
-void Zoom::in()
-{
-  if (m_den > 1) {
-    m_den--;
-  }
-  else if (m_num < 64) {
-    m_num++;
-  }
-}
+  class AppRender : public render::Render {
+  public:
+    AppRender();
+    AppRender(app::Document* doc, doc::PixelFormat pixelFormat);
 
-void Zoom::out()
-{
-  if (m_num > 1) {
-    m_num--;
-  }
-  else if (m_den < 32) {
-    m_den++;
-  }
-}
+    void setupBackground(app::Document* doc, doc::PixelFormat pixelFormat);
+  };
 
 } // namespace app
+
+#endif // APP_RENDER_H_INCLUDED

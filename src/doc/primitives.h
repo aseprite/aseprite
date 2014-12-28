@@ -23,9 +23,8 @@ namespace doc {
 
   void clear_image(Image* image, color_t bg);
 
+  void copy_image(Image* dst, const Image* src);
   void copy_image(Image* dst, const Image* src, int x, int y);
-  void composite_image(Image* dst, const Image* src, int x, int y, int opacity, int blend_mode);
-
   Image* crop_image(const Image* image, int x, int y, int w, int h, color_t bg, const ImageBufferPtr& buffer = ImageBufferPtr());
   void rotate_image(const Image* src, Image* dst, int angle);
 

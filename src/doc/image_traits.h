@@ -94,6 +94,11 @@ namespace doc {
     {
       return bytes_per_pixel * pixels_per_row;
     }
+
+    static inline BLEND_COLOR get_blender(int blend_mode)
+    {
+      return indexed_blend_direct;
+    }
   };
 
   struct BitmapTraits {

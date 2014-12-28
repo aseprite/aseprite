@@ -38,8 +38,9 @@
 #include "base/scoped_lock.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
-#include "doc/quantization.h"
 #include "doc/doc.h"
+#include "render/quantization.h"
+#include "render/render.h"
 #include "ui/alert.h"
 
 #include <cstring>
@@ -563,9 +564,10 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         fop->seq.progress_fraction = 1.0f / (double)sprite->totalFrames();
 
         // For each frame in the sprite.
+        render::Render render;
         for (FrameNumber frame(0); frame < sprite->totalFrames(); ++frame) {
           // Draw the "frame" in "fop->seq.image"
-          sprite->render(fop->seq.image, 0, 0, frame);
+          render.renderSprite(fop->seq.image, sprite, frame);
 
           // Setup the palette.
           sprite->getPalette(frame)->copyColorsTo(fop->seq.palette);
@@ -672,7 +674,7 @@ void fop_post_load(FileOp* fop)
         fop->document->sprite()->getPalettes().size() <= 1 &&
         fop->document->sprite()->getPalette(FrameNumber(0))->isBlack()) {
       SharedPtr<Palette> palette
-        (quantization::create_palette_from_rgb(
+        (render::create_palette_from_rgb(
           fop->document->sprite(),
           FrameNumber(0), NULL));
 

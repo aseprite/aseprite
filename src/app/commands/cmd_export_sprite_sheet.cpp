@@ -328,17 +328,15 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   columns = sheet_w / sprite->width();
 
   base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
-  base::UniquePtr<Image> tempImage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
   doc::clear_image(resultImage, 0);
+
+  render::Render render;
 
   int column = 0, row = 0;
   for (FrameNumber frame(0); frame<nframes; ++frame) {
-    // TODO "tempImage" could not be necessary if we could specify
-    // destination clipping bounds in Sprite::render() function.
-    tempImage->clear(0);
-    sprite->render(tempImage, 0, 0, frame);
-    resultImage->copy(tempImage, column*sprite->width(), row*sprite->height(),
-      0, 0, tempImage->width(), tempImage->height());
+    render.renderSprite(resultImage, sprite, frame,
+      gfx::Clip(column*sprite->width(), row*sprite->height(),
+        sprite->bounds()));
 
     if (++column >= columns) {
       column = 0;

@@ -11,9 +11,9 @@
 namespace doc {
 
   // Dithering methods
-  enum DitheringMethod {
-    DITHERING_NONE,
-    DITHERING_ORDERED,
+  enum class DitheringMethod {
+    NONE,
+    ORDERED,
   };
 
 } // namespace doc

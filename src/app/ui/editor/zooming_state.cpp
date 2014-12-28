@@ -57,7 +57,7 @@ bool ZoomingState::onMouseDown(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   if (!m_moved) {
-    Zoom zoom = editor->zoom();
+    render::Zoom zoom = editor->zoom();
 
     if (msg->left())
       zoom.in();
@@ -77,7 +77,7 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
   int length = ABS(pt.x);
-  Zoom zoom = m_startZoom;
+  render::Zoom zoom = m_startZoom;
 
   if (length > 0) {
     if (pt.x > 0) {

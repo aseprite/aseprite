@@ -13,7 +13,7 @@
 
 namespace gfx {
 
-  std::ostream& operator<<(std::ostream& os, const Rect& rect)
+  inline std::ostream& operator<<(std::ostream& os, const Rect& rect)
   {
     return os << "("
               << rect.x << ", "

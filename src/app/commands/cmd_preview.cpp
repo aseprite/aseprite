@@ -23,6 +23,7 @@
 #include "ui/ui.h"
 
 #include "app/app.h"
+#include "app/app_render.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
@@ -33,7 +34,6 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
-#include "app/util/render.h"
 #include "doc/conversion_she.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -182,18 +182,18 @@ protected:
 
   virtual void onPaint(PaintEvent& ev) override {
     Graphics* g = ev.getGraphics();
+    AppRender& render = Editor::renderEngine();
+    render.disableOnionskin();
+    render.setBgType(render::BgType::TRANSPARENT);
 
-    // Render sprite and leave the result in 'render' variable
+    // Render sprite and leave the result in 'm_render' variable
     if (m_render == NULL) {
-      RenderEngine renderEngine(
-        m_doc, m_sprite,
-        m_editor->layer(),
-        m_editor->frame());
-
       ImageBufferPtr buf = Editor::getRenderImageBuffer();
-      m_render.reset(
-        renderEngine.renderSprite(m_sprite->bounds(),
-          m_editor->frame(), Zoom(1, 1), false, false, buf));
+      m_render.reset(Image::create(IMAGE_RGB,
+          m_sprite->width(), m_sprite->height(), buf));
+
+      render.renderSprite(
+        m_render.get(), m_sprite, m_editor->frame());
     }
 
     int x, y, w, h, u, v;
@@ -205,27 +205,36 @@ protected:
     if (m_tiled & TILED_X_AXIS) x = SGN(x) * (ABS(x)%w);
     if (m_tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
 
-    if (m_index_bg_color == -1)
-      RenderEngine::renderCheckedBackground(m_doublebuf, -m_pos.x, -m_pos.y, m_zoom);
-    else
+    if (m_index_bg_color == -1) {
+      render.setupBackground(m_doc, m_doublebuf->pixelFormat());
+      render.renderBackground(m_doublebuf,
+        gfx::Clip(0, 0, -m_pos.x, -m_pos.y,
+          m_doublebuf->width(), m_doublebuf->height()), m_zoom);
+    }
+    else {
       doc::clear_image(m_doublebuf, m_pal->getEntry(m_index_bg_color));
+    }
 
     switch (m_tiled) {
       case TILED_NONE:
-        RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, y, m_zoom);
+        render.renderImage(m_doublebuf, m_render, m_pal, x, y,
+          m_zoom, 255, BLEND_MODE_NORMAL);
         break;
       case TILED_X_AXIS:
         for (u=x-w; u<ui::display_w()+w; u+=w)
-          RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, y, m_zoom);
+          render.renderImage(m_doublebuf, m_render, m_pal, u, y,
+            m_zoom, 255, BLEND_MODE_NORMAL);
         break;
       case TILED_Y_AXIS:
         for (v=y-h; v<ui::display_h()+h; v+=h)
-          RenderEngine::renderImage(m_doublebuf, m_render, m_pal, x, v, m_zoom);
+          render.renderImage(m_doublebuf, m_render, m_pal, x, v,
+            m_zoom, 255, BLEND_MODE_NORMAL);
         break;
       case TILED_BOTH:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           for (u=x-w; u<ui::display_w()+w; u+=w)
-            RenderEngine::renderImage(m_doublebuf, m_render, m_pal, u, v, m_zoom);
+            render.renderImage(m_doublebuf, m_render, m_pal, u, v,
+              m_zoom, 255, BLEND_MODE_NORMAL);
         break;
     }
 
@@ -243,7 +252,7 @@ private:
   gfx::Point m_pos;
   gfx::Point m_oldMousePos;
   gfx::Point m_delta;
-  Zoom m_zoom;
+  render::Zoom m_zoom;
   int m_index_bg_color;
   base::UniquePtr<Image> m_render;
   base::UniquePtr<Image> m_doublebuf;

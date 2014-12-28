@@ -74,7 +74,7 @@ private:
 void scale_image(Image *dst, Image *src, int x, int y, int w, int h)
 {
   if (w == src->width() && src->height() == h)
-    composite_image(dst, src, x, y, 255, BLEND_MODE_NORMAL);
+    dst->copy(src, gfx::Clip(x, y, 0, 0, w, h));
   else {
     switch (dst->pixelFormat()) {
 

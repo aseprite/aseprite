@@ -290,9 +290,10 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
       fill_rect(m_srcImage, rc, m_srcImage->maskColor());
 
     for (const auto& rc : rgnToValidate)
-      m_srcImage->copy(m_celImage, rc.x, rc.y,
-        rc.x+m_bounds.x-m_origCelPos.x,
-        rc.y+m_bounds.y-m_origCelPos.y, rc.w, rc.h);
+      m_srcImage->copy(m_celImage,
+        gfx::Clip(rc.x, rc.y,
+          rc.x+m_bounds.x-m_origCelPos.x,
+          rc.y+m_bounds.y-m_origCelPos.y, rc.w, rc.h));
   }
   else {
     for (const auto& rc : rgnToValidate)
@@ -335,9 +336,10 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
       fill_rect(m_dstImage, rc, m_dstImage->maskColor());
 
     for (const auto& rc : rgnToValidate)
-      m_dstImage->copy(src, rc.x, rc.y,
-        rc.x+m_bounds.x-src_x,
-        rc.y+m_bounds.y-src_y, rc.w, rc.h);
+      m_dstImage->copy(src,
+        gfx::Clip(rc.x, rc.y,
+          rc.x+m_bounds.x-src_x,
+          rc.y+m_bounds.y-src_y, rc.w, rc.h));
   }
   else {
     for (const auto& rc : rgnToValidate)
@@ -366,7 +368,8 @@ void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
   rgn2.createIntersection(rgn2, m_validSrcRegion);
   rgn2.createIntersection(rgn2, m_validDstRegion);
   for (const auto& rc : rgn2)
-    m_srcImage->copy(m_dstImage, rc.x, rc.y, rc.x, rc.y, rc.w, rc.h);
+    m_srcImage->copy(m_dstImage,
+      gfx::Clip(rc.x, rc.y, rc.x, rc.y, rc.w, rc.h));
 }
 
 void ExpandCelCanvas::copyValidDestToOriginalCel()
@@ -374,9 +377,10 @@ void ExpandCelCanvas::copyValidDestToOriginalCel()
   // Copy valid destination region to the m_celImage
   for (const auto& rc : m_validDstRegion) {
     m_celImage->copy(m_dstImage,
-      rc.x-m_bounds.x+m_origCelPos.x,
-      rc.y-m_bounds.y+m_origCelPos.y,
-      rc.x, rc.y, rc.w, rc.h);
+      gfx::Clip(
+        rc.x-m_bounds.x+m_origCelPos.x,
+        rc.y-m_bounds.y+m_origCelPos.y,
+        rc.x, rc.y, rc.w, rc.h));
   }
 }
 

@@ -119,7 +119,6 @@ namespace app {
     void clearMask(Cel* cel);
     void flipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType);
     void flipImageWithMask(Layer* layer, Image* image, const Mask* mask, doc::algorithm::FlipType flipType);
-    void pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity);
 
     // Mask API
     void copyToCurrentMask(Mask* mask);

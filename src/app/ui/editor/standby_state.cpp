@@ -375,7 +375,7 @@ bool StandbyState::onMouseWheel(Editor* editor, MouseMessage* msg)
 
     case WHEEL_ZOOM: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      Zoom zoom = editor->zoom();
+      render::Zoom zoom = editor->zoom();
       if (dz < 0) {
         while (dz++ < 0)
           zoom.in();

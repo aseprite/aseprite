@@ -59,22 +59,23 @@
 #include "app/undoers/set_sprite_transparent_color.h"
 #include "app/undoers/set_total_frames.h"
 #include "base/unique_ptr.h"
-#include "doc/context.h"
-#include "doc/document_event.h"
-#include "doc/document_observer.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/blend.h"
 #include "doc/cel.h"
+#include "doc/context.h"
 #include "doc/dirty.h"
+#include "doc/document_event.h"
+#include "doc/document_observer.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
-#include "doc/quantization.h"
 #include "doc/sprite.h"
 #include "doc/stock.h"
+#include "render/quantization.h"
+#include "render/render.h"
 
 namespace app {
 
@@ -138,11 +139,10 @@ void DocumentApi::trimSprite(Sprite* sprite)
                                                   sprite->width(),
                                                   sprite->height()));
   Image* image = image_wrap.get();
+  render::Render render;
 
   for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
-    image->clear(0);
-
-    sprite->render(image, 0, 0, frame);
+    render.renderSprite(image, sprite, frame);
 
     // TODO configurable (what color pixel to use as "refpixel",
     // here we are using the top-left pixel by default)
@@ -190,7 +190,7 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
       }
     }
 
-    new_image = quantization::convert_pixel_format
+    new_image = render::convert_pixel_format
       (old_image, NULL, newFormat, dithering_method, rgbmap,
        sprite->getPalette(frame),
        is_image_from_background);
@@ -726,7 +726,7 @@ void DocumentApi::moveCel(
           int blend = (srcLayer->isBackground() ?
             BLEND_MODE_COPY: BLEND_MODE_NORMAL);
 
-          composite_image(dstImage, srcImage,
+          render::composite_image(dstImage, srcImage,
             srcCel->x(), srcCel->y(), 255, blend);
         }
 
@@ -748,7 +748,7 @@ void DocumentApi::moveCel(
       }
 
       if (dstLayer->isBackground()) {
-        composite_image(dstImage, srcImage,
+        render::composite_image(dstImage, srcImage,
           srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
       }
       else {
@@ -792,7 +792,7 @@ void DocumentApi::copyCel(
         int blend = (srcLayer->isBackground() ?
           BLEND_MODE_COPY: BLEND_MODE_NORMAL);
 
-        composite_image(dstImage, srcImage,
+        render::composite_image(dstImage, srcImage,
           srcCel->x(), srcCel->y(), 255, blend);
       }
     }
@@ -996,7 +996,7 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
     ASSERT(cel_image);
 
     clear_image(bg_image, bgcolor);
-    composite_image(bg_image, cel_image,
+    render::composite_image(bg_image, cel_image,
       cel->x(), cel->y(),
       MID(0, cel->opacity(), 255),
       layer->getBlendMode());
@@ -1078,13 +1078,15 @@ void DocumentApi::flattenLayers(Sprite* sprite)
     configureLayerAsBackground(background);
   }
 
+  render::Render render;
+  render.setBgType(render::BgType::NONE);
   color_t bgcolor = bgColor(background);
 
   // Copy all frames to the background.
   for (FrameNumber frame(0); frame<sprite->totalFrames(); ++frame) {
     // Clear the image and render this frame.
     clear_image(image, bgcolor);
-    layer_render(sprite->folder(), image, 0, 0, frame);
+    render.renderSprite(image, sprite, frame);
 
     cel = background->getCel(frame);
     if (cel) {
@@ -1302,17 +1304,6 @@ void DocumentApi::flipImageWithMask(Layer* layer, Image* image, const Mask* mask
 
   // Copy the flipped image into the image specified as argument.
   copy_image(image, flippedImage, 0, 0);
-}
-
-void DocumentApi::pasteImage(Sprite* sprite, Cel* cel, const Image* src_image, int x, int y, int opacity)
-{
-  ASSERT(cel != NULL);
-
-  Image* cel_image = cel->image();
-  Image* cel_image2 = Image::createCopy(cel_image);
-  composite_image(cel_image2, src_image, x-cel->x(), y-cel->y(), opacity, BLEND_MODE_NORMAL);
-
-  replaceStockImage(sprite, cel->imageIndex(), cel_image2); // TODO fix this, improve, avoid replacing the whole image
 }
 
 void DocumentApi::copyToCurrentMask(Mask* mask)

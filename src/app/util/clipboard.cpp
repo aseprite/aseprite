@@ -45,6 +45,7 @@
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
 #include "doc/doc.h"
+#include "render/quantization.h"
 #include "undo/undo_history.h"
 
 #if defined WIN32
@@ -275,9 +276,9 @@ void clipboard::paste()
       else {
         RgbMap* dst_rgbmap = dstSpr->getRgbMap(editor->frame());
 
-        src_image = quantization::convert_pixel_format(
+        src_image = render::convert_pixel_format(
           clipboard_image, NULL, dstSpr->pixelFormat(),
-          DITHERING_NONE, dst_rgbmap, clipboard_palette,
+          DitheringMethod::NONE, dst_rgbmap, clipboard_palette,
           false);
       }
 

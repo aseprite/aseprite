@@ -66,6 +66,10 @@ namespace doc {
     FrameNumber frame() const { return m_frame; }
     void setFrame(FrameNumber frame);
 
+    color_t entry(int i) const {
+      ASSERT(i >= 0 && i < size());
+      return m_colors[i];
+    }
     color_t getEntry(int i) const {
       ASSERT(i >= 0 && i < size());
       return m_colors[i];

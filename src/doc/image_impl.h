@@ -103,54 +103,25 @@ namespace doc {
         *it = color;
     }
 
-    void copy(const Image* _src, int dst_x, int dst_y, int src_x, int src_y, int w, int h) override {
+    void copy(const Image* _src, gfx::Clip area) override {
       const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
       address_t src_address;
       address_t dst_address;
       int bytes;
 
-      if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
+      if (!area.clip(width(), height(), src->width(), src->height()))
         return;
 
       // Copy process
-      bytes = Traits::getRowStrideBytes(w);
+      bytes = Traits::getRowStrideBytes(area.size.w);
 
-      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-        src_address = src->address(src_x, src_y);
-        dst_address = address(dst_x, dst_y);
+      for (int end_y=area.dst.y+area.size.h;
+           area.dst.y<end_y;
+           ++area.dst.y, ++area.src.y) {
+        src_address = src->address(area.src.x, area.src.y);
+        dst_address = address(area.dst.x, area.dst.y);
 
         memcpy(dst_address, src_address, bytes);
-      }
-    }
-
-    void merge(const Image* _src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) override {
-      BLEND_COLOR blender = Traits::get_blender(blend_mode);
-      const ImageImpl<Traits>* src = (const ImageImpl<Traits>*)_src;
-      ImageImpl<Traits>* dst = this;
-      address_t src_address;
-      address_t dst_address;
-      uint32_t mask_color = src->maskColor();
-
-      // nothing to do
-      if (!opacity)
-        return;
-
-      if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
-        return;
-
-      // Merge process
-      int end_x = dst_x+w;
-      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-        src_address = src->address(src_x, src_y);
-        dst_address = dst->address(dst_x, dst_y);
-
-        for (int x=dst_x; x<end_x; ++x) {
-          if (*src_address != mask_color)
-            *dst_address = (*blender)(*dst_address, *src_address, opacity);
-
-          ++dst_address;
-          ++src_address;
-        }
       }
     }
 
@@ -279,83 +250,21 @@ namespace doc {
   }
 
   template<>
-  inline void ImageImpl<IndexedTraits>::merge(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) {
-    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
-      return;
-
-    address_t src_address;
-    address_t dst_address;
-
-    int end_x = dst_x+w;
-
-    // Direct copy
-    if (blend_mode == BLEND_MODE_COPY) {
-      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-        src_address = src->getPixelAddress(src_x, src_y);
-        dst_address = getPixelAddress(dst_x, dst_y);
-
-        for (int x=dst_x; x<end_x; ++x) {
-          *dst_address = (*src_address);
-
-          ++dst_address;
-          ++src_address;
-        }
-      }
-    }
-    // With mask
-    else {
-      int mask_color = src->maskColor();
-
-      for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-        src_address = src->getPixelAddress(src_x, src_y);
-        dst_address = getPixelAddress(dst_x, dst_y);
-
-        for (int x=dst_x; x<end_x; ++x) {
-          if (*src_address != mask_color)
-            *dst_address = (*src_address);
-
-          ++dst_address;
-          ++src_address;
-        }
-      }
-    }
-  }
-
-  template<>
-  inline void ImageImpl<BitmapTraits>::copy(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h) {
-    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
+  inline void ImageImpl<BitmapTraits>::copy(const Image* src, gfx::Clip area) {
+    if (!area.clip(width(), height(), src->width(), src->height()))
       return;
 
     // Copy process
-    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(src_x, src_y, w, h), src_x, src_y);
-    ImageIterator<BitmapTraits> dst_it(this, gfx::Rect(dst_x, dst_y, w, h), dst_x, dst_y);
+    ImageConstIterator<BitmapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
+    ImageIterator<BitmapTraits> dst_it(this, area.dstBounds(), area.dst.x, area.dst.y);
 
-    int end_x = dst_x+w;
+    int end_x = area.dst.x+area.size.w;
 
-    for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-      for (int x=dst_x; x<end_x; ++x) {
+    for (int end_y=area.dst.y+area.size.h;
+         area.dst.y<end_y;
+         ++area.dst.y, ++area.src.y) {
+      for (int x=area.dst.x; x<end_x; ++x) {
         *dst_it = *src_it;
-        ++src_it;
-        ++dst_it;
-      }
-    }
-  }
-
-  template<>
-  inline void ImageImpl<BitmapTraits>::merge(const Image* src, int dst_x, int dst_y, int src_x, int src_y, int w, int h, int opacity, int blend_mode) {
-    if (!clip_rects(src, dst_x, dst_y, src_x, src_y, w, h))
-      return;
-
-    // Merge process
-    ImageConstIterator<BitmapTraits> src_it(src, gfx::Rect(src_x, src_y, w, h), src_x, src_y);
-    ImageIterator<BitmapTraits> dst_it(this, gfx::Rect(dst_x, dst_y, w, h), dst_x, dst_y);
-
-    int end_x = dst_x+w;
-
-    for (int end_y=dst_y+h; dst_y<end_y; ++dst_y, ++src_y) {
-      for (int x=dst_x; x<end_x; ++x) {
-        if (*dst_it != 0)
-          *dst_it = *src_it;
         ++src_it;
         ++dst_it;
       }

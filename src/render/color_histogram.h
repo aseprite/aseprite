@@ -1,11 +1,11 @@
-// Aseprite Document Library
+// Aseprite Render Library
 // Copyright (c) 2001-2014 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef DOC_COLOR_HISTOGRAM_H_INCLUDED
-#define DOC_COLOR_HISTOGRAM_H_INCLUDED
+#ifndef RENDER_COLOR_HISTOGRAM_H_INCLUDED
+#define RENDER_COLOR_HISTOGRAM_H_INCLUDED
 #pragma once
 
 #include <limits>
@@ -13,11 +13,12 @@
 
 #include "doc/image.h"
 #include "doc/image_traits.h"
-#include "doc/median_cut.h"
 #include "doc/palette.h"
 
-namespace doc {
-namespace quantization {
+#include "render/median_cut.h"
+
+namespace render {
+  using namespace doc;
 
   template<int RBits, int GBits, int BBits> // Number of bits for each component in the histogram
   class ColorHistogram {
@@ -128,7 +129,6 @@ namespace quantization {
     bool m_useHighPrecision;
   };
 
-} // namespace quantization
-} // namespace doc
+} // namespace render
 
 #endif

@@ -53,7 +53,6 @@
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "app/util/misc.h"
-#include "app/util/render.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
@@ -70,6 +69,7 @@ namespace app {
 using namespace app::skin;
 using namespace gfx;
 using namespace ui;
+using namespace render;
 
 class EditorPreRenderImpl : public EditorPreRender {
 public:
@@ -139,7 +139,11 @@ private:
   Graphics* m_g;
 };
 
-static doc::ImageBufferPtr render_buffer;
+// static
+doc::ImageBufferPtr Editor::m_renderBuffer;
+
+// static
+AppRender Editor::m_renderEngine;
 
 Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
@@ -368,56 +372,83 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     rc.h = clip.y+clip.h-dest_y;
   }
 
-  // Draw the sprite
-  if ((rc.w > 0) && (rc.h > 0)) {
-    RenderEngine renderEngine(m_document, m_sprite, m_layer, m_frame);
+  if (rc.isEmpty())
+    return;
 
-    // Generate the rendered image
-    if (!render_buffer)
-      render_buffer.reset(new doc::ImageBuffer());
+  // Generate the rendered image
+  if (!m_renderBuffer)
+    m_renderBuffer.reset(new doc::ImageBuffer());
 
-    base::UniquePtr<Image> rendered(NULL);
-    try {
-      // Generate a "expose sprite pixels" notification. This is used by
-      // tool managers that need to validate this region (copy pixels from
-      // the original cel) before it can be used by the RenderEngine.
-      {
-        gfx::Rect expose = m_zoom.remove(rc);
-        // If the zoom level is less than 100%, we add extra pixels to
-        // the exposed area. Those pixels could be shown in the
-        // rendering process depending on each cel position.
-        // E.g. when we are drawing in a cel with position < (0,0)
-        if (m_zoom.scale() < 1.0)
-          expose.enlarge(1./m_zoom.scale());
-        m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
-      }
-
-      rendered.reset(renderEngine.renderSprite(
-          rc, m_frame, m_zoom, true,
-          ((m_flags & kShowOnionskin) == kShowOnionskin),
-          render_buffer));
-    }
-    catch (const std::exception& e) {
-      Console::showException(e);
+  base::UniquePtr<Image> rendered(NULL);
+  try {
+    // Generate a "expose sprite pixels" notification. This is used by
+    // tool managers that need to validate this region (copy pixels from
+    // the original cel) before it can be used by the RenderEngine.
+    {
+      gfx::Rect expose = m_zoom.remove(rc);
+      // If the zoom level is less than 100%, we add extra pixels to
+      // the exposed area. Those pixels could be shown in the
+      // rendering process depending on each cel position.
+      // E.g. when we are drawing in a cel with position < (0,0)
+      if (m_zoom.scale() < 1.0)
+        expose.enlarge(1./m_zoom.scale());
+      m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
     }
 
-    if (rendered) {
-      // Pre-render decorator.
-      if ((m_flags & kShowDecorators) && m_decorator) {
-        EditorPreRenderImpl preRender(this, rendered,
-          Point(-rc.x, -rc.y), m_zoom);
-        m_decorator->preRenderDecorator(&preRender);
-      }
+    // Create a temporary RGB bitmap to draw all to it
+    rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
+    m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
+    m_renderEngine.setOnionskin(render::OnionskinType::NONE, 0, 0, 0, 0);
 
-      // Convert the render to a she::Surface
-      she::Surface* tmp(she::instance()->createRgbaSurface(rc.w, rc.h));
-      if (tmp->nativeHandle()) {
-        convert_image_to_surface(rendered, m_sprite->getPalette(m_frame),
-          tmp, 0, 0, 0, 0, rc.w, rc.h);
-        g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
+    if ((m_flags & kShowOnionskin) == kShowOnionskin) {
+      IDocumentSettings* docSettings = UIContext::instance()
+        ->settings()->getDocumentSettings(m_document);
+
+      if (docSettings->getUseOnionskin()) {
+        m_renderEngine.setOnionskin(
+          (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_Merge ?
+            render::OnionskinType::MERGE:
+            (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_RedBlueTint ?
+              render::OnionskinType::RED_BLUE_TINT:
+              render::OnionskinType::NONE)),
+          docSettings->getOnionskinPrevFrames(),
+          docSettings->getOnionskinNextFrames(),
+          docSettings->getOnionskinOpacityBase(),
+          docSettings->getOnionskinOpacityStep());
       }
-      tmp->dispose();
     }
+
+    m_renderEngine.setExtraImage(
+      m_document->getExtraCel(),
+      m_document->getExtraCelImage(),
+      m_document->getExtraCelBlendMode(),
+      m_layer, m_frame);
+
+    m_renderEngine.renderSprite(rendered, m_sprite, m_frame,
+      gfx::Clip(0, 0, rc), m_zoom);
+
+    m_renderEngine.removeExtraImage();
+  }
+  catch (const std::exception& e) {
+    Console::showException(e);
+  }
+
+  if (rendered) {
+    // Pre-render decorator.
+    if ((m_flags & kShowDecorators) && m_decorator) {
+      EditorPreRenderImpl preRender(this, rendered,
+        Point(-rc.x, -rc.y), m_zoom);
+      m_decorator->preRenderDecorator(&preRender);
+    }
+
+    // Convert the render to a she::Surface
+    she::Surface* tmp(she::instance()->createRgbaSurface(rc.w, rc.h));
+    if (tmp->nativeHandle()) {
+      convert_image_to_surface(rendered, m_sprite->getPalette(m_frame),
+        tmp, 0, 0, 0, 0, rc.w, rc.h);
+      g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
+    }
+    tmp->dispose();
   }
 }
 
@@ -721,7 +752,7 @@ void Editor::flashCurrentLayer()
   int x, y;
   const Image* src_image = loc.image(&x, &y);
   if (src_image) {
-    RenderEngine::setPreviewImage(NULL, FrameNumber(0), NULL);
+    m_renderEngine.removePreviewImage();
 
     m_document->prepareExtraCel(m_sprite->bounds(), 255);
     Image* flash_image = m_document->getExtraCelImage();
@@ -1471,7 +1502,7 @@ void Editor::notifyScrollChanged()
 // static
 ImageBufferPtr Editor::getRenderImageBuffer()
 {
-  return render_buffer;
+  return m_renderBuffer;
 }
 
 void Editor::onSetTiledMode(filters::TiledMode mode)

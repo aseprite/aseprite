@@ -64,7 +64,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
-#include "app/util/render.h"
 #include "app/webserver.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -75,6 +74,7 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "scripting/engine.h"
 #include "she/display.h"
 #include "she/error.h"
@@ -153,8 +153,6 @@ void App::initialize(const AppOptions& options)
   // init editor cursor
   Editor::editor_cursor_init();
 
-  // Load RenderEngine configuration
-  RenderEngine::loadConfig();
   if (isPortable())
     PRINTF("Running in portable mode\n");
 
@@ -491,6 +489,11 @@ App::~App()
     delete GuiXml::instance();
 
     m_instance = NULL;
+  }
+  catch (const std::exception& e) {
+    she::error_message(e.what());
+
+    // no re-throw
   }
   catch (...) {
     she::error_message("Error closing ASE.\n(uncaught exception)");

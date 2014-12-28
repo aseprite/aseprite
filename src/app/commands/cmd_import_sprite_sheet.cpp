@@ -165,17 +165,18 @@ protected:
     try {
       Sprite* sprite = m_document->sprite();
       FrameNumber currentFrame = m_context->activeLocation().frame();
+      render::Render render;
 
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->height(); y += m_rect.h) {
         for (int x=m_rect.x; x<sprite->width(); x += m_rect.w) {
-          base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
-
-          // Clear the image with mask color.
-          doc::clear_image(resultImage, 0);
+          base::UniquePtr<Image> resultImage(
+            Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
 
           // Render the portion of sheet.
-          sprite->render(resultImage, -x, -y, currentFrame);
+          render.renderSprite(resultImage, sprite, currentFrame,
+            gfx::Clip(0, 0, x, y, m_rect.w, m_rect.h));
+
           animation.push_back(resultImage);
           resultImage.release();
         }

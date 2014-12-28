@@ -76,6 +76,11 @@ Layer* Layer::getNext() const
   return NULL;
 }
 
+Cel* Layer::cel(frame_t frame) const
+{
+  return NULL;
+}
+
 //////////////////////////////////////////////////////////////////////
 // LayerImage class
 
@@ -122,6 +127,11 @@ void LayerImage::destroyAllCels()
     delete cel;
   }
   m_cels.clear();
+}
+
+Cel* LayerImage::cel(frame_t frame) const
+{
+  return const_cast<Cel*>(getCel(FrameNumber(frame)));
 }
 
 void LayerImage::getCels(CelList& cels) const
@@ -298,48 +308,6 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
   }
   else
     m_layers.push_front(layer);
-}
-
-void layer_render(const Layer* layer, Image* image, int x, int y, FrameNumber frame)
-{
-  if (!layer->isVisible())
-    return;
-
-  switch (layer->type()) {
-
-    case ObjectType::LayerImage: {
-      const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
-      Image* src_image;
-
-      if (cel) {
-        ASSERT((cel->imageIndex() >= 0) &&
-               (cel->imageIndex() < layer->sprite()->stock()->size()));
-
-        src_image = cel->image();
-        ASSERT(src_image != NULL);
-
-        ASSERT(src_image->maskColor() == layer->sprite()->transparentColor());
-
-        composite_image(image, src_image,
-          cel->x() + x,
-          cel->y() + y,
-          MID(0, cel->opacity(), 255),
-          static_cast<const LayerImage*>(layer)->getBlendMode());
-      }
-      break;
-    }
-
-    case ObjectType::LayerFolder: {
-      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
-      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
-
-      for (; it != end; ++it)
-        layer_render(*it, image, x, y, frame);
-
-      break;
-    }
-
-  }
 }
 
 } // namespace doc

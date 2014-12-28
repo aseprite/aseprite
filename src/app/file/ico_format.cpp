@@ -29,6 +29,7 @@
 #include "base/cfile.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
+#include "render/render.h"
 
 namespace app {
 
@@ -280,9 +281,9 @@ bool IcoFormat::onSave(FileOp* fop)
       sprite->width(),
       sprite->height()));
 
+  render::Render render;
   for (n=FrameNumber(0); n<num; ++n) {
-    clear_image(image, 0);
-    layer_render(sprite->folder(), image, 0, 0, n);
+    render.renderSprite(image, sprite, n);
 
     bpp = (sprite->pixelFormat() == IMAGE_INDEXED) ? 8 : 24;
     bw = (((image->width() * bpp / 8) + 3) / 4) * 4;
