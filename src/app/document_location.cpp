@@ -50,16 +50,16 @@ Palette* DocumentLocation::palette()
 
 const Cel* DocumentLocation::cel() const
 {
-  if (m_layer && m_layer->isImage())
-    return static_cast<const LayerImage*>(m_layer)->getCel(m_frame);
+  if (m_layer)
+    return m_layer->cel(m_frame);
   else
     return NULL;
 }
 
 Cel* DocumentLocation::cel()
 {
-  if (m_layer && m_layer->isImage())
-    return static_cast<LayerImage*>(m_layer)->getCel(m_frame);
+  if (m_layer)
+    return m_layer->cel(m_frame);
   else
     return NULL;
 }

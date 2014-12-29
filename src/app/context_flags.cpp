@@ -76,7 +76,7 @@ void ContextFlags::update(Context* context)
           if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;
 
-            Cel* cel = static_cast<LayerImage*>(layer)->getCel(location.frame());
+            Cel* cel = layer->cel(location.frame());
             if (cel) {
               m_flags |= HasActiveCel;
 

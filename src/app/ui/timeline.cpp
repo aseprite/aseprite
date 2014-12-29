@@ -1787,7 +1787,7 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case A_PART_CEL:
         if (layer) {
-          Cel* cel = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(m_hot_frame): NULL);
+          Cel* cel = (layer->isImage() ? layer->cel(m_hot_frame): NULL);
           StatusBar::instance()->setStatusText(0,
             "%s at frame %d",
             cel ? "Cel": "Empty cel",

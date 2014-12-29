@@ -131,7 +131,16 @@ void LayerImage::destroyAllCels()
 
 Cel* LayerImage::cel(frame_t frame) const
 {
-  return const_cast<Cel*>(getCel(frame_t(frame)));
+  CelConstIterator it = getCelBegin();
+  CelConstIterator end = getCelEnd();
+
+  for (; it != end; ++it) {
+    Cel* cel = *it;
+    if (cel->frame() == frame)
+      return cel;
+  }
+
+  return NULL;
 }
 
 void LayerImage::getCels(CelList& cels) const
@@ -186,25 +195,6 @@ void LayerImage::moveCel(Cel* cel, frame_t frame)
   removeCel(cel);
   cel->setFrame(frame);
   addCel(cel);
-}
-
-const Cel* LayerImage::getCel(frame_t frame) const
-{
-  CelConstIterator it = getCelBegin();
-  CelConstIterator end = getCelEnd();
-
-  for (; it != end; ++it) {
-    const Cel* cel = *it;
-    if (cel->frame() == frame)
-      return cel;
-  }
-
-  return NULL;
-}
-
-Cel* LayerImage::getCel(frame_t frame)
-{
-  return const_cast<Cel*>(static_cast<const LayerImage*>(this)->getCel(frame));
 }
 
 /**

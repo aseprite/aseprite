@@ -320,7 +320,7 @@ void clipboard::paste()
                    i >= srcRange.layerBegin() &&
                    i >= LayerIndex(0) &&
                    j >= LayerIndex(0); --i, --j) {
-              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
+              Cel* cel = srcLayers[i]->cel(frame);
 
               if (cel && cel->image()) {
                 api.copyCel(
@@ -328,7 +328,7 @@ void clipboard::paste()
                   static_cast<LayerImage*>(dstLayers[j]), dstFrame);
               }
               else {
-                Cel* dstCel = static_cast<LayerImage*>(dstLayers[j])->getCel(dstFrame);
+                Cel* dstCel = dstLayers[j]->cel(dstFrame);
                 if (dstCel)
                   api.clearCel(dstCel);
               }
@@ -354,7 +354,7 @@ void clipboard::paste()
                    j = LayerIndex(dstLayers.size()-1);
                    i >= LayerIndex(0) &&
                    j >= LayerIndex(0); --i, --j) {
-              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->getCel(frame);
+              Cel* cel = static_cast<LayerImage*>(srcLayers[i])->cel(frame);
               if (cel && cel->image()) {
                 api.copyCel(
                   static_cast<LayerImage*>(srcLayers[i]), frame,

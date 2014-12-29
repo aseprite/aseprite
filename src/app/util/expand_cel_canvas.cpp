@@ -86,7 +86,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   m_layer = location.layer();
 
   if (m_layer->isImage()) {
-    m_cel = static_cast<LayerImage*>(m_layer)->getCel(location.frame());
+    m_cel = m_layer->cel(location.frame());
     if (m_cel)
       m_celImage = m_cel->image();
   }

@@ -91,8 +91,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
   for (frame_t frpos = 0; frpos<sprite->totalFrames(); ++frpos) {
     // Get frames
-    Cel* src_cel = static_cast<LayerImage*>(src_layer)->getCel(frpos);
-    Cel* dst_cel = static_cast<LayerImage*>(dst_layer)->getCel(frpos);
+    Cel* src_cel = src_layer->cel(frpos);
+    Cel* dst_cel = dst_layer->cel(frpos);
 
     // Get images
     Image* src_image;

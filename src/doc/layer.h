@@ -115,8 +115,6 @@ namespace doc {
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
     void moveCel(Cel *cel, frame_t frame);
-    const Cel* getCel(frame_t frame) const;
-    Cel* getCel(frame_t frame);
     Cel* cel(frame_t frame) const override;
     void getCels(CelList& cels) const override;
     Cel* getLastCel() const;

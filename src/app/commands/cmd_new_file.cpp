@@ -178,7 +178,7 @@ void NewFileCommand::onExecute(Context* context)
           LayerImage* layerImage = static_cast<LayerImage*>(layer);
           layerImage->configureAsBackground();
 
-          Image* image = layerImage->getCel(frame_t(0))->image();
+          Image* image = layerImage->cel(frame_t(0))->image();
           doc::clear_image(image,
             color_utils::color_for_target(color,
               ColorTarget(

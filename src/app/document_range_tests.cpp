@@ -117,7 +117,7 @@ public:
       LayerImage* layer = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(i)));
 
       for (int j=0; j<4; j++) {
-        Cel* cel = layer->getCel(frame_t(j));
+        Cel* cel = layer->cel(frame_t(j));
         Image* image;
         if (cel)
           image = cel->image();
@@ -143,7 +143,7 @@ protected:
     return expect_layer_frame(sprite->layerToIndex(expected_layer), -1, layer, -1);
   }
 
-  bool expect_frame(int expected_frame, int frame) {
+  bool expect_frame(int expected_frame, frame_t frame) {
     for (int i=0; i<(int)sprite->countLayers(); ++i) {
       if (!expect_layer_frame(i, expected_frame, i, frame))
         return false;
@@ -151,13 +151,13 @@ protected:
     return true;
   }
 
-  bool expect_layer_frame(int expected_layer, int expected_frame, int layer, int frame) {
+  bool expect_layer_frame(int expected_layer, int expected_frame, int layer, frame_t frame) {
     if (frame >= 0) {
       if (!expect_cel(expected_layer, expected_frame, layer, frame))
         return false;
 
-      EXPECT_EQ((expected_frame+1), sprite->frameDuration(frame_t(frame)));
-      return ((expected_frame+1) == sprite->frameDuration(frame_t(frame)));
+      EXPECT_EQ((expected_frame+1), sprite->frameDuration(frame));
+      return ((expected_frame+1) == sprite->frameDuration(frame));
     }
 
     if (layer >= 0) {
@@ -171,12 +171,12 @@ protected:
     return true;
   }
 
-  bool expect_cel(int expected_layer, int expected_frame, int layer, int frame) {
+  bool expect_cel(int expected_layer, int expected_frame, int layer, frame_t frame) {
     color_t expected_color = white;
 
     color_t color = get_pixel(
-      static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
-      ->getCel(frame_t(frame))->image(),
+      sprite->indexToLayer(LayerIndex(layer))
+      ->cel(frame)->image(),
       expected_layer, expected_frame);
 
     EXPECT_EQ(expected_color, color);
@@ -184,9 +184,8 @@ protected:
     return (expected_color == color);
   }
 
-  bool expect_empty_cel(int layer, int frame) {
-    Cel* cel = static_cast<LayerImage*>(sprite->indexToLayer(LayerIndex(layer)))
-      ->getCel(frame_t(frame));
+  bool expect_empty_cel(int layer, frame_t frame) {
+    Cel* cel = sprite->indexToLayer(LayerIndex(layer))->cel(frame);
 
     EXPECT_EQ(NULL, cel);
     return (cel == NULL);
@@ -203,17 +202,17 @@ protected:
   color_t white;
 };
 
-inline DocumentRange range(Layer* fromLayer, int fromFrNum, Layer* toLayer, int toFrNum, DocumentRange::Type type) {
+inline DocumentRange range(Layer* fromLayer, frame_t fromFrNum, Layer* toLayer, frame_t toFrNum, DocumentRange::Type type) {
   DocumentRange r;
-  r.startRange(fromLayer->sprite()->layerToIndex(fromLayer), frame_t(fromFrNum), type);
-  r.endRange(toLayer->sprite()->layerToIndex(toLayer), frame_t(toFrNum));
+  r.startRange(fromLayer->sprite()->layerToIndex(fromLayer), fromFrNum, type);
+  r.endRange(toLayer->sprite()->layerToIndex(toLayer), toFrNum);
   return r;
 }
 
-inline DocumentRange range(int fromLayer, int fromFrNum, int toLayer, int toFrNum, DocumentRange::Type type) {
+inline DocumentRange range(int fromLayer, frame_t fromFrNum, int toLayer, frame_t toFrNum, DocumentRange::Type type) {
   DocumentRange r;
-  r.startRange(LayerIndex(fromLayer), frame_t(fromFrNum), type);
-  r.endRange(LayerIndex(toLayer), frame_t(toFrNum));
+  r.startRange(LayerIndex(fromLayer), fromFrNum, type);
+  r.endRange(LayerIndex(toLayer), toFrNum);
   return r;
 }
 
@@ -233,15 +232,15 @@ inline DocumentRange layers_range(int layer) {
   return range(layer, -1, layer, -1, DocumentRange::kLayers);
 }
 
-inline DocumentRange frames_range(int fromFrame, int toFrame) {
+inline DocumentRange frames_range(frame_t fromFrame, frame_t toFrame) {
   return range(0, fromFrame, 0, toFrame, DocumentRange::kFrames);
 }
 
-inline DocumentRange frames_range(int frame) {
+inline DocumentRange frames_range(frame_t frame) {
   return range(0, frame, 0, frame, DocumentRange::kFrames);
 }
 
-inline DocumentRange cels_range(int fromLayer, int fromFrNum, int toLayer, int toFrNum) {
+inline DocumentRange cels_range(int fromLayer, frame_t fromFrNum, int toLayer, frame_t toFrNum) {
   return range(fromLayer, fromFrNum, toLayer, toFrNum, DocumentRange::kCels);
 }
 

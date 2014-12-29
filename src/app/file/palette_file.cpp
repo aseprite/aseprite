@@ -117,8 +117,8 @@ bool save_palette(const char *filename, Palette* pal)
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
 
-      LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
-      Image* image = layer->getCel(frame_t(0))->image();
+      Layer* layer = sprite->folder()->getFirstLayer();
+      Image* image = layer->cel(frame_t(0))->image();
 
       int x, y, c;
       for (y=c=0; y<16; y++)

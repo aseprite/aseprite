@@ -46,7 +46,7 @@ CelList get_cels_in_range(Sprite* sprite, const DocumentRange& range)
            begin = range.frameBegin()-1;
          frame != begin;
          --frame) {
-      Cel* cel = layerImage->getCel(frame);
+      Cel* cel = layerImage->cel(frame);
       if (cel)
         cels.push_back(cel);
     }

@@ -498,7 +498,7 @@ static void ase_file_write_layers(FILE* f, ASE_FrameHeader* frame_header, Layer*
 static void ase_file_write_cels(FILE* f, ASE_FrameHeader* frame_header, Sprite* sprite, Layer* layer, frame_t frame)
 {
   if (layer->isImage()) {
-    Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
+    Cel* cel = layer->cel(frame);
     if (cel) {
 /*       fop_error(fop, "New cel in frame %d, in layer %d\n", */
 /*                   frame, sprite_layer2index(sprite, layer)); */
@@ -1058,7 +1058,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
     case ASE_FILE_LINK_CEL: {
       // Read link position
       frame_t link_frame = frame_t(fgetw(f));
-      Cel* link = static_cast<LayerImage*>(layer)->getCel(link_frame);
+      Cel* link = layer->cel(link_frame);
 
       if (link) {
         // Create a copy of the linked cel (avoid using links cel)

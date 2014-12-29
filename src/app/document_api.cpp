@@ -304,8 +304,7 @@ void DocumentApi::displaceFrames(Layer* layer, frame_t frame)
 
       // Displace all cels in '>=frame' to the next frame.
       for (frame_t c=sprite->lastFrame(); c>=frame; --c) {
-        Cel* cel = imglayer->getCel(c);
-        if (cel)
+        if (Cel* cel = imglayer->cel(c))
           setCelFramePosition(imglayer, cel, cel->frame()+1);
       }
 
@@ -392,11 +391,11 @@ void DocumentApi::removeFrameOfLayer(Layer* layer, frame_t frame)
 
     case ObjectType::LayerImage: {
       LayerImage* imglayer = static_cast<LayerImage*>(layer);
-      if (Cel* cel = imglayer->getCel(frame))
+      if (Cel* cel = imglayer->cel(frame))
         removeCel(cel);
 
       for (++frame; frame<sprite->totalFrames(); ++frame)
-        if (Cel* cel = imglayer->getCel(frame))
+        if (Cel* cel = imglayer->cel(frame))
           setCelFramePosition(imglayer, cel, cel->frame()-1);
       break;
     }
@@ -671,8 +670,7 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h)
 
 void DocumentApi::clearCel(LayerImage* layer, frame_t frame)
 {
-  Cel* cel = layer->getCel(frame);
-  if (cel)
+  if (Cel* cel = layer->cel(frame))
     clearCel(cel);
 }
 
@@ -713,8 +711,8 @@ void DocumentApi::moveCel(
   clearCel(dstLayer, dstFrame);
   addEmptyFramesTo(dstSprite, dstFrame);
 
-  Cel* srcCel = srcLayer->getCel(srcFrame);
-  Cel* dstCel = dstLayer->getCel(dstFrame);
+  Cel* srcCel = srcLayer->cel(srcFrame);
+  Cel* dstCel = dstLayer->cel(dstFrame);
   Image* srcImage = (srcCel ? srcCel->image(): NULL);
   Image* dstImage = (dstCel ? dstCel->image(): NULL);
 
@@ -780,8 +778,8 @@ void DocumentApi::copyCel(
   clearCel(dstLayer, dstFrame);
   addEmptyFramesTo(dstSprite, dstFrame);
 
-  Cel* srcCel = srcLayer->getCel(srcFrame);
-  Cel* dstCel = dstLayer->getCel(dstFrame);
+  Cel* srcCel = srcLayer->cel(srcFrame);
+  Cel* dstCel = dstLayer->cel(dstFrame);
   Image* srcImage = (srcCel ? srcCel->image(): NULL);
   Image* dstImage = (dstCel ? dstCel->image(): NULL);
 
@@ -826,8 +824,8 @@ void DocumentApi::swapCel(
   ASSERT(frame2 >= 0 && frame2 < sprite->totalFrames());
   (void)sprite;              // To avoid unused variable warning on Release mode
 
-  Cel* cel1 = layer->getCel(frame1);
-  Cel* cel2 = layer->getCel(frame2);
+  Cel* cel1 = layer->cel(frame1);
+  Cel* cel2 = layer->cel(frame2);
 
   if (cel1) setCelFramePosition(layer, cel1, frame2);
   if (cel2) setCelFramePosition(layer, cel2, frame1);
@@ -1020,7 +1018,7 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
 
   // Fill all empty cels with a flat-image filled with bgcolor
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
-    Cel* cel = layer->getCel(frame);
+    Cel* cel = layer->cel(frame);
     if (!cel) {
       Image* cel_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
       clear_image(cel_image, bgcolor);
@@ -1088,7 +1086,7 @@ void DocumentApi::flattenLayers(Sprite* sprite)
     clear_image(image, bgcolor);
     render.renderSprite(image, sprite, frame);
 
-    cel = background->getCel(frame);
+    cel = background->cel(frame);
     if (cel) {
       cel_image = cel->image();
       ASSERT(cel_image != NULL);
@@ -1170,7 +1168,7 @@ Cel* DocumentApi::addImage(LayerImage* layer, frame_t frameNumber, Image* image)
 {
   int imageIndex = addImageInStock(layer->sprite(), image);
 
-  ASSERT(layer->getCel(frameNumber) == NULL);
+  ASSERT(layer->cel(frameNumber) == NULL);
 
   base::UniquePtr<Cel> cel(new Cel(frameNumber, imageIndex));
 

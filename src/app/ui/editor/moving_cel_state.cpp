@@ -50,7 +50,7 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   LayerImage* layer = static_cast<LayerImage*>(editor->layer());
   ASSERT(layer->isImage());
 
-  m_cel = layer->getCel(editor->frame());
+  m_cel = layer->cel(editor->frame());
   if (m_cel) {
     m_celStart = m_cel->position();
   }

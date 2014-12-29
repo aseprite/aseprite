@@ -43,14 +43,12 @@ void ImagesCollector::collectFromLayer(Layer* layer, frame_t frame)
     case ObjectType::LayerImage: {
       if (m_allFrames) {
         for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
-          Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
-          if (cel != NULL)
+          if (Cel* cel = layer->cel(frame))
             collectImage(layer, cel);
         }
       }
       else {
-        Cel* cel = static_cast<LayerImage*>(layer)->getCel(frame);
-        if (cel != NULL)
+        if (Cel* cel = layer->cel(frame))
           collectImage(layer, cel);
       }
       break;

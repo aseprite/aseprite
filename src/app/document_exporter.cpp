@@ -249,9 +249,8 @@ void DocumentExporter::exportSheet()
     createEmptyTexture(samples));
 
   Sprite* texture = textureDocument->sprite();
-  Image* textureImage = static_cast<LayerImage*>(
-    texture->folder()->getFirstLayer())
-    ->getCel(frame_t(0))->image();
+  Image* textureImage = texture->folder()->getFirstLayer()
+    ->cel(frame_t(0))->image();
 
   renderTexture(samples, textureImage);
 
@@ -296,8 +295,7 @@ void DocumentExporter::captureSamples(Samples& samples)
       Sample sample(doc, sprite, layer, frame, filename);
 
       if (m_ignoreEmptyCels) {
-        if (layer && layer->isImage() &&
-            !static_cast<LayerImage*>(layer)->getCel(frame)) {
+        if (layer && layer->isImage() && !layer->cel(frame)) {
           // Empty cel this sample completely
           continue;
         }

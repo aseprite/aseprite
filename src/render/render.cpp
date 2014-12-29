@@ -590,7 +590,7 @@ void Render::renderLayer(
           (!render_transparent && !layer->isBackground()))
         break;
 
-      const Cel* cel = static_cast<const LayerImage*>(layer)->getCel(frame);
+      const Cel* cel = layer->cel(frame);
       if (cel != NULL) {
         Image* src_image;
 

@@ -80,7 +80,7 @@ static bool has_cels(const Layer* layer, frame_t frame)
   switch (layer->type()) {
 
     case ObjectType::LayerImage:
-      return static_cast<const LayerImage*>(layer)->getCel(frame) ? true: false;
+      return (layer->cel(frame) ? true: false);
 
     case ObjectType::LayerFolder: {
       LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
