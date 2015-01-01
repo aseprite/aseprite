@@ -8,6 +8,8 @@
 #define RENDER_MEDIAN_CUT_H_INCLUDED
 #pragma once
 
+#include "doc/color.h"
+
 #include <list>
 #include <queue>
 
@@ -97,12 +99,12 @@ namespace render {
       // No colors in the box? This should not be possible.
       ASSERT(count > 0 && "Box without histogram points, you must fill the histogram before using this function.");
       if (count == 0)
-        return rgba(0, 0, 0, 255);
+        return doc::rgba(0, 0, 0, 255);
 
       // Returns the mean.
-      return rgba((255 * r / (Histogram::RElements-1)) / count,
-                  (255 * g / (Histogram::GElements-1)) / count,
-                  (255 * b / (Histogram::BElements-1)) / count, 255);
+      return doc::rgba((255 * r / (Histogram::RElements-1)) / count,
+                       (255 * g / (Histogram::GElements-1)) / count,
+                       (255 * b / (Histogram::BElements-1)) / count, 255);
     }
 
     // The boxes will be sort in the priority_queue by volume.
