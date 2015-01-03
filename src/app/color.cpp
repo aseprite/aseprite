@@ -86,7 +86,7 @@ Color Color::fromIndex(int index)
 // static
 Color Color::fromImage(PixelFormat pixelFormat, color_t c)
 {
-  Color color = Color::fromMask();
+  Color color = app::Color::fromMask();
 
   switch (pixelFormat) {
 
@@ -124,7 +124,7 @@ Color Color::fromImageGetPixel(Image *image, int x, int y)
 // static
 Color Color::fromString(const std::string& str)
 {
-  Color color = Color::fromMask();
+  Color color = app::Color::fromMask();
 
   if (str != "mask") {
     if (str.find("rgb{") == 0 ||

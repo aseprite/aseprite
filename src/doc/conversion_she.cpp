@@ -30,6 +30,7 @@ namespace {
 template<typename ImageTraits, she::SurfaceFormat format>
 uint32_t convert_color_to_surface(color_t color, const Palette* palette, const she::SurfaceFormatData* fd) {
   static_assert(false && sizeof(ImageTraits), "Invalid color conversion");
+  return 0;
 }
 
 template<>
