@@ -93,6 +93,7 @@ template<typename ImageTraits>
 static inline bool color_equal(color_t c1, color_t c2, int tolerance)
 {
   static_assert(false && sizeof(ImageTraits), "Invalid color comparison");
+  return false;
 }
 
 template<>
