@@ -39,6 +39,7 @@ namespace {
 template<typename ImageTraits, int color_depth>
 int convert_color_to_allegro(color_t color, const Palette* palette) {
   static_assert(false && sizeof(ImageTraits), "Invalid color conversion");
+  return 0;
 }
 
 template<>
