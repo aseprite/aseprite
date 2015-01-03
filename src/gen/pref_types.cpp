@@ -13,6 +13,7 @@
 #include "gen/pref_types.h"
 
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 typedef std::vector<TiXmlElement*> XmlElements;
