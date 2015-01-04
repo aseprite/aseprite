@@ -76,23 +76,16 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
-  int length = ABS(pt.x);
-  render::Zoom zoom = m_startZoom;
-
-  if (length > 0) {
-    if (pt.x > 0) {
-      while (length--)
-        zoom.in();
-    }
-    else {
-      while (length--)
-        zoom.out();
-    }
-  }
+  render::Zoom zoom(1, 1);
+  double scale = m_startZoom.scale() + pt.x / 16.0;
+  if (scale < 1.0)
+    scale = 1.0 / -(scale-2.0);
+  zoom = render::Zoom::fromScale(scale);
 
   editor->setZoomAndCenterInMouse(zoom,
     m_startPos, Editor::kDontCenterOnZoom);
 
+  m_moved = true;
   return true;
 }
 

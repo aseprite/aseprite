@@ -32,4 +32,15 @@ void Zoom::out()
   }
 }
 
+// static
+Zoom Zoom::fromScale(double scale)
+{
+  if (scale >= 1.0) {
+    return Zoom(int(scale), 1);
+  }
+  else {
+    return Zoom(1, int(1.0 / scale));
+  }
+}
+
 } // namespace render

@@ -16,6 +16,8 @@ namespace render {
   public:
     Zoom(int num, int den)
       : m_num(num), m_den(den) {
+      ASSERT(m_num > 0);
+      ASSERT(m_den > 0);
     }
 
     double scale() const { return static_cast<double>(m_num) / static_cast<double>(m_den); }
@@ -49,6 +51,8 @@ namespace render {
     bool operator!=(const Zoom& other) const {
       return !operator==(other);
     }
+
+    static Zoom fromScale(double scale);
 
   private:
     int m_num;
