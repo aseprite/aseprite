@@ -28,7 +28,6 @@
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 
 namespace app {
 

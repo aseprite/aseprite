@@ -118,13 +118,12 @@ public:
 
       for (int j=0; j<4; j++) {
         Cel* cel = layer->cel(frame_t(j));
-        Image* image;
+        ImageRef image;
         if (cel)
-          image = cel->image();
+          image = cel->imageRef();
         else {
-          image = Image::create(IMAGE_RGB, 4, 4);
-          int imageIdx = sprite->stock()->addImage(image);
-          cel = new Cel(frame_t(j), imageIdx);
+          image.reset(Image::create(IMAGE_RGB, 4, 4));
+          cel = new Cel(frame_t(j), image);
           layer->addCel(cel);
         }
 

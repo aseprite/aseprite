@@ -25,9 +25,7 @@
 #include "app/undoers/add_cel.h"
 #include "app/undoers/object_io.h"
 #include "doc/cel.h"
-#include "doc/cel_io.h"
 #include "doc/layer.h"
-#include "doc/stock.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -40,7 +38,7 @@ using namespace undo;
 RemoveCel::RemoveCel(ObjectsContainer* objects, Layer* layer, Cel* cel)
   : m_layerId(objects->addObject(layer))
 {
-  write_object(objects, m_stream, cel, doc::write_cel);
+  ObjectIO(objects, layer->sprite()).write_cel(m_stream, cel);
 }
 
 void RemoveCel::dispose()
@@ -51,9 +49,8 @@ void RemoveCel::dispose()
 void RemoveCel::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
   LayerImage* layer = objects->getObjectT<LayerImage>(m_layerId);
-  Cel* cel = read_object<Cel>(objects, m_stream, doc::read_cel);
+  Cel* cel = ObjectIO(objects, layer->sprite()).read_cel(m_stream);
 
-  // Push an AddCel as redoer
   redoers->pushUndoer(new AddCel(objects, layer, cel));
 
   layer->addCel(cel);

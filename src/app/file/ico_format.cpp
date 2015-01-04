@@ -140,9 +140,8 @@ bool IcoFormat::onLoad(FileOp* fop)
   sprite->folder()->addLayer(layer);
 
   // Create the first image/cel
-  Image* image = Image::create(pixelFormat, width, height);
-  int image_index = sprite->stock()->addImage(image);
-  Cel* cel = new Cel(frame_t(0), image_index);
+  ImageRef image(Image::create(pixelFormat, width, height));
+  Cel* cel = new Cel(frame_t(0), image);
   layer->addCel(cel);
   clear_image(image, 0);
 

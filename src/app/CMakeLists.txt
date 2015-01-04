@@ -265,7 +265,6 @@ add_library(app-lib
   undo_transaction.cpp
   undoers/add_cel.cpp
   undoers/add_frame.cpp
-  undoers/add_image.cpp
   undoers/add_layer.cpp
   undoers/add_palette.cpp
   undoers/close_group.cpp
@@ -274,11 +273,11 @@ add_library(app-lib
   undoers/image_area.cpp
   undoers/modified_region.cpp
   undoers/move_layer.cpp
+  undoers/object_io.cpp
   undoers/open_group.cpp
   undoers/remap_palette.cpp
   undoers/remove_cel.cpp
   undoers/remove_frame.cpp
-  undoers/remove_image.cpp
   undoers/remove_layer.cpp
   undoers/remove_palette.cpp
   undoers/replace_image.cpp

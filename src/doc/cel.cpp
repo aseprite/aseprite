@@ -14,11 +14,10 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 
 namespace doc {
 
-Cel::Cel(frame_t frame, int image)
+Cel::Cel(frame_t frame, const ImageRef& image)
   : Object(ObjectType::Cel)
   , m_layer(NULL)
   , m_frame(frame)
@@ -42,26 +41,16 @@ Cel::~Cel()
 {
 }
 
-Image* Cel::image() const
+void Cel::setFrame(frame_t frame)
 {
-  ASSERT(m_layer != NULL);
-  ASSERT(m_image >= 0);
-  ASSERT(m_image < m_layer->sprite()->stock()->size());
+  ASSERT(m_layer == NULL);
+  m_frame = frame;
+}
 
-  if (m_layer) {
-    Stock* stock = m_layer->sprite()->stock();
-
-    ASSERT(stock);
-    ASSERT(m_image >= 0 && m_image < stock->size());
-
-    if (m_image >= 0 && m_image < stock->size()) {
-      Image* image = stock->getImage(m_image);
-      ASSERT((m_image == 0 && !image) || (m_image != 0 && image));
-      return image;
-    }
-  }
-
-  return NULL;
+void Cel::setImage(const ImageRef& image)
+{
+  m_image = image;
+  fixupImage();
 }
 
 Sprite* Cel::sprite() const
@@ -71,6 +60,22 @@ Sprite* Cel::sprite() const
     return m_layer->sprite();
   else
     return NULL;
+}
+
+Cel* Cel::link() const
+{
+  if (m_image.get() == NULL)
+    return NULL;
+
+  if (!m_image.unique()) {
+    for (frame_t fr=0; fr<m_frame; ++fr) {
+      Cel* possible = m_layer->cel(fr);
+      if (possible && possible->imageRef().get() == m_image.get())
+        return possible;
+    }
+  }
+
+  return NULL;
 }
 
 gfx::Rect Cel::bounds() const
@@ -83,6 +88,19 @@ gfx::Rect Cel::bounds() const
       image->width(), image->height());
   else
     return gfx::Rect();
+}
+
+void Cel::setParentLayer(LayerImage* layer)
+{
+  m_layer = layer;
+  fixupImage();
+}
+
+void Cel::fixupImage()
+{
+  // Change the mask color to the sprite mask color
+  if (m_layer && m_image.get())
+    m_image->setMaskColor(m_layer->sprite()->transparentColor());
 }
 
 } // namespace doc

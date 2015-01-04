@@ -26,7 +26,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "gfx/rect.h"
 #include "render/render.h"
 
@@ -47,14 +46,10 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
     // Does this frame have cels to render?
     if (has_cels(srcLayer, frame)) {
       // Create a new image to render each frame.
-      base::UniquePtr<Image> imageWrap(Image::create(flatLayer->sprite()->pixelFormat(), bounds.w, bounds.h));
-
-      // Add the image into the sprite's stock too.
-      int imageIndex = flatLayer->sprite()->stock()->addImage(imageWrap);
-      Image* image = imageWrap.release();
+      ImageRef image(Image::create(flatLayer->sprite()->pixelFormat(), bounds.w, bounds.h));
 
       // Create the new cel for the output layer.
-      base::UniquePtr<Cel> cel(new Cel(frame, imageIndex));
+      base::UniquePtr<Cel> cel(new Cel(frame, image));
       cel->setPosition(bounds.x, bounds.y);
 
       // Render this frame.

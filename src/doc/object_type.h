@@ -20,7 +20,6 @@ namespace doc {
     Cel,
     LayerImage,
     LayerFolder,
-    Stock,
     Sprite,
     Document,
   };

@@ -38,7 +38,6 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   ASSERT(width > 0 && height > 0);
 
   m_frlens.push_back(100);      // First frame with 100 msecs of duration
-  m_stock = new Stock(this, format);
   m_folder = new LayerFolder(this);
 
   // Generate palette
@@ -77,10 +76,6 @@ Sprite::~Sprite()
   // Destroy layers
   delete m_folder;
 
-  // Destroy images' stock
-  if (m_stock)
-    delete m_stock;
-
   // Destroy palettes
   {
     PalettesList::iterator end = m_palettes.end();
@@ -101,17 +96,8 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
   sprite->setTotalFrames(doc::frame_t(1));
 
   // Create the main image.
-  int indexInStock;
-  {
-    base::UniquePtr<doc::Image> image(doc::Image::create(format, width, height));
-
-    // Clear the image with mask color.
-    doc::clear_image(image, 0);
-
-    // Add image in the sprite's stock.
-    indexInStock = sprite->stock()->addImage(image);
-    image.release();            // Release the image because it is in the sprite's stock.
-  }
+  doc::ImageRef image(doc::Image::create(format, width, height));
+  doc::clear_image(image, 0);
 
   // Create the first transparent layer.
   {
@@ -120,7 +106,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 
     // Create the cel.
     {
-      base::UniquePtr<doc::Cel> cel(new doc::Cel(doc::frame_t(0), indexInStock));
+      base::UniquePtr<doc::Cel> cel(new doc::Cel(doc::frame_t(0), image));
       cel->setPosition(0, 0);
 
       // Add the cel in the layer.
@@ -177,22 +163,20 @@ void Sprite::setTransparentColor(color_t color)
   m_transparentColor = color;
 
   // Change the mask color of all images.
-  for (int i=0; i<m_stock->size(); i++) {
-    Image* image = m_stock->getImage(i);
-    if (image != NULL)
-      image->setMaskColor(color);
-  }
+  std::vector<Image*> images;
+  getImages(images);
+  for (Image* image : images)
+    image->setMaskColor(color);
 }
 
 int Sprite::getMemSize() const
 {
   int size = 0;
 
-  for (int i=0; i<m_stock->size(); i++) {
-    Image* image = m_stock->getImage(i);
-    if (image != NULL)
-      size += image->getRowStrideSize() * image->height();
-  }
+  std::vector<Image*> images;
+  getImages(images);
+  for (Image* image : images)
+    size += image->getRowStrideSize() * image->height();
 
   return size;
 }
@@ -410,9 +394,25 @@ void Sprite::setDurationForAllFrames(int msecs)
 //////////////////////////////////////////////////////////////////////
 // Images
 
-Stock* Sprite::stock() const
+ImageRef Sprite::getImage(ObjectId imageId)
 {
-  return m_stock;
+  CelList cels;
+  getCels(cels);
+  for (auto& cel : cels) {
+    if (cel->image()->id() == imageId)
+      return cel->imageRef();
+  }
+  return ImageRef(NULL);
+}
+
+void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
+{
+  CelList cels;
+  getCels(cels);
+  for (auto& cel : cels) {
+    if (cel->image()->id() == curImageId)
+      cel->setImage(newImage);
+  }
 }
 
 void Sprite::getCels(CelList& cels) const
@@ -420,17 +420,15 @@ void Sprite::getCels(CelList& cels) const
   folder()->getCels(cels);
 }
 
-size_t Sprite::getImageRefs(int imageIndex) const
+// TODO replace it with a images iterator
+void Sprite::getImages(std::vector<Image*>& images) const
 {
   CelList cels;
-  getCels(cels);
+  getCels(cels);                // TODO create a cel iterator
 
-  size_t refs = 0;
-  for (CelList::iterator it=cels.begin(), end=cels.end(); it != end; ++it)
-    if ((*it)->imageIndex() == imageIndex)
-      ++refs;
-
-  return refs;
+  for (const auto& cel : cels)
+    if (!cel->link())
+      images.push_back(cel->image());
 }
 
 void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping)

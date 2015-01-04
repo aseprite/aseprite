@@ -1214,19 +1214,13 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     style = m_timelineEmptyFrameStyle;
   }
   else {
-#if 0 // TODO We must find a fast-way to compare keyframes. Cels could
-      // share images until the user draw over them. Also, we could
-      // calculate a hash for each image (and recalculate it when the
-      // user draw over it), so then we can compare hashes.  Other
-      // option is to use a thread to calculate differences, but I
-      // think it's too much for just UI stuff.
     Layer* layer = m_layers[layerIndex];
-    Cel* left = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame-1): NULL);
-    Cel* right = (layer->isImage() ? static_cast<LayerImage*>(layer)->getCel(frame+1): NULL);
-    Image* leftImg = (left ? m_sprite->stock()->getImage(left->getImage()): NULL);
-    Image* rightImg = (right ? m_sprite->stock()->getImage(right->getImage()): NULL);
-    bool fromLeft = (leftImg && count_diff_between_images(image, leftImg) == 0);
-    bool fromRight = (rightImg && count_diff_between_images(image, rightImg) == 0);
+    Cel* left = (layer->isImage() ? layer->cel(frame-1): NULL);
+    Cel* right = (layer->isImage() ? layer->cel(frame+1): NULL);
+    ObjectId leftImg = (left ? left->image()->id(): 0);
+    ObjectId rightImg = (right ? right->image()->id(): 0);
+    bool fromLeft = (leftImg == cel->image()->id());
+    bool fromRight = (rightImg == cel->image()->id());
 
     if (fromLeft && fromRight)
       style = m_timelineFromBothStyle;
@@ -1235,7 +1229,6 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     else if (fromRight)
       style = m_timelineFromRightStyle;
     else
-#endif
       style = m_timelineKeyframeStyle;
   }
   drawPart(g, bounds, NULL, style, is_active, is_hover);

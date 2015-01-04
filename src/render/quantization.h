@@ -21,7 +21,6 @@ namespace doc {
   class Palette;
   class RgbMap;
   class Sprite;
-  class Stock;
 }
 
 namespace render {

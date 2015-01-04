@@ -18,6 +18,7 @@ namespace doc {
   class Image;
   class Layer;
   class Sprite;
+  class SubObjectsIO;
 
   // Thrown when a invalid layer type is read from the istream.
   class InvalidLayerType : public base::Exception {
@@ -25,24 +26,8 @@ namespace doc {
     InvalidLayerType(const char* msg) throw() : base::Exception(msg) { }
   };
 
-  // Interface used to read sub-objects of a layer.
-  class LayerSubObjectsSerializer {
-  public:
-    virtual ~LayerSubObjectsSerializer() { }
-
-    // How to write cels, images, and sub-layers
-    virtual void write_cel(std::ostream& os, Cel* cel) = 0;
-    virtual void write_image(std::ostream& os, Image* image) = 0;
-    virtual void write_layer(std::ostream& os, Layer* layer) = 0;
-
-    // How to read cels, images, and sub-layers
-    virtual Cel* read_cel(std::istream& is) = 0;
-    virtual Image* read_image(std::istream& is) = 0;
-    virtual Layer* read_layer(std::istream& is) = 0;
-  };
-
-  void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer* layer);
-  Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprite* sprite);
+  void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer);
+  Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite);
 
 } // namespace doc
 

@@ -52,7 +52,6 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"

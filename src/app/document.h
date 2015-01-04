@@ -27,6 +27,7 @@
 #include "base/unique_ptr.h"
 #include "doc/document.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "gfx/transformation.h"
@@ -39,7 +40,6 @@ namespace base {
 
 namespace doc {
   class Cel;
-  class Image;
   class Layer;
   class Mask;
   class Sprite;
@@ -219,7 +219,7 @@ namespace app {
     Cel* m_extraCel;
 
     // Image of the extra cel.
-    Image* m_extraImage;
+    ImageRef m_extraImage;
     int m_extraCelBlendMode;
 
     // Current mask.

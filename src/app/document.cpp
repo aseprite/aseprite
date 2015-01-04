@@ -27,7 +27,6 @@
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/objects_container_impl.h"
-#include "app/undoers/add_image.h"
 #include "app/undoers/add_layer.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
@@ -41,7 +40,6 @@
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 
 namespace app {
 
@@ -235,10 +233,9 @@ void Document::generateMaskBoundaries(Mask* mask)
 void Document::destroyExtraCel()
 {
   delete m_extraCel;
-  delete m_extraImage;
 
   m_extraCel = NULL;
-  m_extraImage = NULL;
+  m_extraImage.reset(NULL);
 }
 
 void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
@@ -246,7 +243,7 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
   ASSERT(sprite() != NULL);
 
   if (!m_extraCel)
-    m_extraCel = new Cel(frame_t(0), 0); // Ignored fields for this cell (frame, and image index)
+    m_extraCel = new Cel(frame_t(0), ImageRef(NULL)); // Ignored fields for this cel (frame, and image index)
 
   m_extraCel->setPosition(bounds.getOrigin());
   m_extraCel->setOpacity(opacity);
@@ -255,9 +252,8 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
       m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
       m_extraImage->width() != bounds.w ||
       m_extraImage->height() != bounds.h) {
-    delete m_extraImage;                // image
-    m_extraImage = Image::create(sprite()->pixelFormat(),
-      bounds.w, bounds.h);
+    m_extraImage.reset(Image::create(sprite()->pixelFormat(),
+        bounds.w, bounds.h));
   }
 }
 
@@ -268,7 +264,7 @@ Cel* Document::getExtraCel() const
 
 Image* Document::getExtraCelImage() const
 {
-  return m_extraImage;
+  return m_extraImage.get();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -342,8 +338,8 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       const Image* sourceImage = sourceCel->image();
       ASSERT(sourceImage != NULL);
 
-      Image* newImage = Image::createCopy(sourceImage);
-      newCel->setImage(destLayer->sprite()->stock()->addImage(newImage));
+      ImageRef newImage(Image::createCopy(sourceImage));
+      newCel->setImage(newImage);
 
       destLayer->addCel(newCel);
       newCel.release();

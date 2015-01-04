@@ -1020,7 +1020,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
   }
 
   // Create the new frame.
-  base::UniquePtr<Cel> cel(new Cel(frame, 0));
+  base::UniquePtr<Cel> cel(new Cel(frame, ImageRef(NULL)));
   cel->setPosition(x, y);
   cel->setOpacity(opacity);
 
@@ -1032,7 +1032,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = Image::create(pixelFormat, w, h);
+        ImageRef image(Image::create(pixelFormat, w, h));
 
         // Read pixel data
         switch (image->pixelFormat()) {
@@ -1050,7 +1050,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
             break;
         }
 
-        cel->setImage(sprite->stock()->addImage(image));
+        cel->setImage(image);
       }
       break;
     }
@@ -1061,9 +1061,12 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
       Cel* link = layer->cel(link_frame);
 
       if (link) {
-        // Create a copy of the linked cel (avoid using links cel)
-        Image* image = Image::createCopy(link->image());
-        cel->setImage(sprite->stock()->addImage(image));
+#if 1   // Create a copy of the linked cel (avoid using links cel)
+        ImageRef image(Image::createCopy(link->image()));
+        cel->setImage(image);
+#else
+        cel->setImage(link->imageRef());
+#endif
       }
       else {
         // Linked cel doesn't found
@@ -1078,7 +1081,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
       int h = fgetw(f);
 
       if (w > 0 && h > 0) {
-        Image* image = Image::create(pixelFormat, w, h);
+        ImageRef image(Image::create(pixelFormat, w, h));
 
         // Try to read pixel data
         try {
@@ -1103,7 +1106,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
           fop_error(fop, e.what());
         }
 
-        cel->setImage(sprite->stock()->addImage(image));
+        cel->setImage(image);
       }
       break;
     }
@@ -1120,7 +1123,8 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_CEL);
 
   int layer_index = sprite->layerToIndex(layer);
-  int cel_type = ASE_FILE_COMPRESSED_CEL;
+  Cel* link = cel->link();
+  int cel_type = (link ? ASE_FILE_LINK_CEL: ASE_FILE_COMPRESSED_CEL);
 
   fputw(layer_index, f);
   fputw(cel->x(), f);
@@ -1165,8 +1169,7 @@ static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel
 
     case ASE_FILE_LINK_CEL:
       // Linked cel to another frame
-      //fputw(link->frame, f);
-      fputw(0, f);
+      fputw(link->frame(), f);
       break;
 
     case ASE_FILE_COMPRESSED_CEL: {

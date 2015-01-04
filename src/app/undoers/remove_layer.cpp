@@ -27,11 +27,8 @@
 #include "app/undoers/add_layer.h"
 #include "app/undoers/object_io.h"
 #include "doc/cel.h"
-#include "doc/cel_io.h"
 #include "doc/image.h"
-#include "doc/image_io.h"
 #include "doc/layer.h"
-#include "doc/layer_io.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -40,58 +37,6 @@ namespace undoers {
 
 using namespace undo;
 
-class LayerSubObjectsSerializerImpl : public doc::LayerSubObjectsSerializer {
-public:
-  LayerSubObjectsSerializerImpl(ObjectsContainer* objects, Sprite* sprite)
-    : m_objects(objects)
-    , m_sprite(sprite) {
-  }
-
-  virtual ~LayerSubObjectsSerializerImpl() { }
-
-  // How to write cels, images, and sub-layers
-  void write_cel(std::ostream& os, Cel* cel) override {
-    write_object(m_objects, os, cel, doc::write_cel);
-  }
-
-  void write_image(std::ostream& os, Image* image) override {
-    write_object(m_objects, os, image, doc::write_image);
-  }
-
-  void write_layer(std::ostream& os, Layer* layer) override {
-    // To write a sub-layer we use the operator() of this instance (*this)
-    write_object(m_objects, os, layer, *this);
-  }
-
-  // How to read cels, images, and sub-layers
-  Cel* read_cel(std::istream& is) override {
-    return read_object<Cel>(m_objects, is, doc::read_cel);
-  }
-
-  Image* read_image(std::istream& is) override {
-    return read_object<Image>(m_objects, is, doc::read_image);
-  }
-
-  Layer* read_layer(std::istream& is) override {
-    // To read a sub-layer we use the operator() of this instance (*this)
-    return read_object<Layer>(m_objects, is, *this);
-  }
-
-  // The following operator() calls are used in write/read_object() functions.
-
-  void operator()(std::ostream& os, Layer* layer) {
-    doc::write_layer(os, this, layer);
-  }
-
-  Layer* operator()(std::istream& is) {
-    return doc::read_layer(is, this, m_sprite);
-  }
-
-private:
-  ObjectsContainer* m_objects;
-  Sprite* m_sprite;
-};
-
 RemoveLayer::RemoveLayer(ObjectsContainer* objects, Document* document, Layer* layer)
   : m_documentId(objects->addObject(document))
   , m_folderId(objects->addObject(layer->parent()))
@@ -99,8 +44,7 @@ RemoveLayer::RemoveLayer(ObjectsContainer* objects, Document* document, Layer* l
   Layer* after = layer->getPrevious();
   m_afterId = (after ? objects->addObject(after): 0);
 
-  LayerSubObjectsSerializerImpl serializer(objects, layer->sprite());
-  write_object(objects, m_stream, layer, serializer);
+  ObjectIO(objects, layer->sprite()).write_layer(m_stream, layer);
 }
 
 void RemoveLayer::dispose()
@@ -115,8 +59,8 @@ void RemoveLayer::revert(ObjectsContainer* objects, UndoersCollector* redoers)
   Layer* after = (m_afterId != 0 ? objects->getObjectT<Layer>(m_afterId): NULL);
 
   // Read the layer from the stream
-  LayerSubObjectsSerializerImpl serializer(objects, folder->sprite());
-  Layer* layer = read_object<Layer>(objects, m_stream, serializer);
+  Layer* layer =
+    ObjectIO(objects, folder->sprite()).read_layer(m_stream);
 
   document->getApi(redoers).addLayer(folder, layer, after);
 }

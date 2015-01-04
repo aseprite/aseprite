@@ -456,16 +456,15 @@ bool GifFormat::onPostLoad(FileOp* fop)
     }
 
     // Create a new Cel and a image with the whole content of "current_image"
-    Cel* cel = new Cel(frame_num, 0);
+    Cel* cel = new Cel(frame_num, ImageRef(0));
     try {
-      Image* cel_image = Image::createCopy(current_image);
+      ImageRef cel_image(Image::createCopy(current_image));
       try {
         // Add the image in the sprite's stock and update the cel's
         // reference to the new stock's image.
-        cel->setImage(sprite->stock()->addImage(cel_image));
+        cel->setImage(cel_image);
       }
       catch (...) {
-        delete cel_image;
         throw;
       }
 

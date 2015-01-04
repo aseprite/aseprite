@@ -25,7 +25,8 @@
 #include "app/undoers/object_io.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
-#include "doc/stock.h"
+#include "doc/image_ref.h"
+#include "doc/sprite.h"
 #include "undo/objects_container.h"
 #include "undo/undoers_collector.h"
 
@@ -34,13 +35,12 @@ namespace undoers {
 
 using namespace undo;
 
-ReplaceImage::ReplaceImage(ObjectsContainer* objects, Stock* stock, int imageIndex)
-  : m_stockId(objects->addObject(stock))
-  , m_imageIndex(imageIndex)
+ReplaceImage::ReplaceImage(ObjectsContainer* objects, Sprite* sprite,
+  Image* oldImage, Image* newImage)
+  : m_spriteId(objects->addObject(sprite))
+  , m_newImageId(objects->addObject(newImage))
 {
-  Image* image = stock->getImage(imageIndex);
-
-  write_object(objects, m_stream, image, doc::write_image);
+  ObjectIO(objects, sprite).write_image(m_stream, oldImage);
 }
 
 void ReplaceImage::dispose()
@@ -50,20 +50,23 @@ void ReplaceImage::dispose()
 
 void ReplaceImage::revert(ObjectsContainer* objects, UndoersCollector* redoers)
 {
-  Stock* stock = objects->getObjectT<Stock>(m_stockId);
+  Sprite* sprite = objects->getObjectT<Sprite>(m_spriteId);
+  Image* currentImageRaw = objects->getObjectT<Image>(m_newImageId);
+  ASSERT(currentImageRaw != NULL);
+
+  ImageRef currentImage = sprite->getImage(currentImageRaw->id());
+  ASSERT(currentImage != NULL);
 
   // Read the image to be restored from the stream
-  Image* image = read_object<Image>(objects, m_stream, doc::read_image);
+  ImageRef restoreImage(
+    ObjectIO(objects, sprite).read_image(m_stream));
 
   // Save the current image in the redoers
-  redoers->pushUndoer(new ReplaceImage(objects, stock, m_imageIndex));
-  Image* oldImage = stock->getImage(m_imageIndex);
+  redoers->pushUndoer(new ReplaceImage(objects, sprite,
+      currentImage, restoreImage));
 
   // Replace the image in the stock
-  stock->replaceImage(m_imageIndex, image);
-
-  // Destroy the old image
-  delete oldImage;
+  sprite->replaceImage(currentImage->id(), restoreImage);
 }
 
 } // namespace undoers

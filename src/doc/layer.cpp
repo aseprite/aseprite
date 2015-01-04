@@ -15,7 +15,6 @@
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 
 #include <algorithm>
 #include <string.h>
@@ -118,12 +117,6 @@ void LayerImage::destroyAllCels()
 
   for (; it != end; ++it) {
     Cel* cel = *it;
-    Image* image = cel->image();
-
-    ASSERT(image != NULL);
-
-    sprite()->stock()->removeImage(image);
-    delete image;
     delete cel;
   }
   m_cels.clear();
@@ -181,13 +174,15 @@ void LayerImage::addCel(Cel *cel)
  * It doesn't destroy the cel, you have to delete it after calling
  * this routine.
  */
-void LayerImage::removeCel(Cel *cel)
+void LayerImage::removeCel(Cel* cel)
 {
   CelIterator it = std::find(m_cels.begin(), m_cels.end(), cel);
 
   ASSERT(it != m_cels.end());
 
   m_cels.erase(it);
+
+  cel->setParentLayer(NULL);
 }
 
 void LayerImage::moveCel(Cel* cel, frame_t frame)

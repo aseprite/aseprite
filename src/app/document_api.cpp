@@ -29,7 +29,6 @@
 #include "app/settings/settings.h"
 #include "app/undoers/add_cel.h"
 #include "app/undoers/add_frame.h"
-#include "app/undoers/add_image.h"
 #include "app/undoers/add_layer.h"
 #include "app/undoers/add_palette.h"
 #include "app/undoers/dirty_area.h"
@@ -39,7 +38,6 @@
 #include "app/undoers/move_layer.h"
 #include "app/undoers/remove_cel.h"
 #include "app/undoers/remove_frame.h"
-#include "app/undoers/remove_image.h"
 #include "app/undoers/remove_layer.h"
 #include "app/undoers/remove_palette.h"
 #include "app/undoers/replace_image.h"
@@ -73,7 +71,6 @@
 #include "doc/mask.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "render/quantization.h"
 #include "render/render.h"
 
@@ -157,10 +154,6 @@ void DocumentApi::trimSprite(Sprite* sprite)
 
 void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method)
 {
-  Image* old_image;
-  Image* new_image;
-  int c;
-
   if (sprite->pixelFormat() == newFormat)
     return;
 
@@ -177,25 +170,23 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
   if (sprite->backgroundLayer() != NULL)
     sprite->backgroundLayer()->getCels(bgCels);
 
-  for (c=0; c<sprite->stock()->size(); c++) {
-    old_image = sprite->stock()->getImage(c);
-    if (!old_image)
-      continue;
-
+  std::vector<Image*> images;
+  sprite->getImages(images);
+  for (auto& old_image : images) {
     bool is_image_from_background = false;
     for (CelList::iterator it=bgCels.begin(), end=bgCels.end(); it != end; ++it) {
-      if ((*it)->imageIndex() == c) {
+      if ((*it)->image()->id() == old_image->id()) {
         is_image_from_background = true;
         break;
       }
     }
 
-    new_image = render::convert_pixel_format
+    ImageRef new_image(render::convert_pixel_format
       (old_image, NULL, newFormat, dithering_method, rgbmap,
-       sprite->palette(frame),
-       is_image_from_background);
+        sprite->palette(frame),
+        is_image_from_background));
 
-    replaceStockImage(sprite, c, new_image);
+    replaceImage(sprite, sprite->getImage(old_image->id()), new_image);
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
@@ -310,9 +301,9 @@ void DocumentApi::displaceFrames(Layer* layer, frame_t frame)
 
       // Add background cel
       if (imglayer->isBackground()) {
-        Image* bgimage = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
+        ImageRef bgimage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
         clear_image(bgimage, bgColor(layer));
-        addImage(imglayer, frame, bgimage);
+        addCel(imglayer, frame, bgimage);
       }
       break;
     }
@@ -583,18 +574,8 @@ void DocumentApi::removeCel(Cel* cel)
   ev.cel(cel);
   m_document->notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onRemoveCel, ev);
 
-  // Find if the image that use this cel we are going to remove, is
-  // used by other cels.
-  size_t refs = sprite->getImageRefs(cel->imageIndex());
-
-  // If the image is only used by this cel, we can remove the image
-  // from the stock.
-  if (refs == 1)
-    removeImageFromStock(sprite, cel->imageIndex());
-
   if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(),
-        layer, cel));
+    m_undoers->pushUndoer(new undoers::RemoveCel(getObjects(), layer, cel));
 
   // Remove the cel from the layer.
   layer->removeCel(cel);
@@ -658,11 +639,11 @@ void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h)
   ASSERT(cel_image);
 
   // create the new image through a crop
-  Image* new_image = crop_image(cel_image,
-    x-cel->x(), y-cel->y(), w, h, bgColor(cel->layer()));
+  ImageRef new_image(crop_image(cel_image,
+      x-cel->x(), y-cel->y(), w, h, bgColor(cel->layer())));
 
   // replace the image in the stock that is pointed by the cel
-  replaceStockImage(sprite, cel->imageIndex(), new_image);
+  replaceImage(sprite, cel->imageRef(), new_image);
 
   // update the cel's position
   setCelPosition(sprite, cel, x, y);
@@ -714,7 +695,9 @@ void DocumentApi::moveCel(
   Cel* srcCel = srcLayer->cel(srcFrame);
   Cel* dstCel = dstLayer->cel(dstFrame);
   Image* srcImage = (srcCel ? srcCel->image(): NULL);
-  Image* dstImage = (dstCel ? dstCel->image(): NULL);
+  ImageRef dstImage;
+  if (dstCel)
+    dstImage = dstCel->imageRef();
 
   if (srcCel) {
     if (srcLayer == dstLayer) {
@@ -738,11 +721,11 @@ void DocumentApi::moveCel(
     // Move the cel between different layers.
     else {
       if (!dstCel) {
-        dstImage = Image::createCopy(srcImage);
+        dstImage.reset(Image::createCopy(srcImage));
 
         dstCel = new Cel(*srcCel);
         dstCel->setFrame(dstFrame);
-        dstCel->setImage(addImageInStock(dstSprite, dstImage));
+        dstCel->setImage(dstImage);
       }
 
       if (dstLayer->isBackground()) {
@@ -781,7 +764,9 @@ void DocumentApi::copyCel(
   Cel* srcCel = srcLayer->cel(srcFrame);
   Cel* dstCel = dstLayer->cel(dstFrame);
   Image* srcImage = (srcCel ? srcCel->image(): NULL);
-  Image* dstImage = (dstCel ? dstCel->image(): NULL);
+  ImageRef dstImage;
+  if (dstCel)
+    dstImage = dstCel->imageRef();
 
   if (dstLayer->isBackground()) {
     if (srcCel) {
@@ -800,13 +785,12 @@ void DocumentApi::copyCel(
       removeCel(dstCel);
 
     if (srcCel) {
-      // Add the image in the stock
-      dstImage = Image::createCopy(srcImage);
-      int imageIndex = addImageInStock(dstSprite, dstImage);
+      // Create a new image in the stock
+      dstImage.reset(Image::createCopy(srcImage));
 
       dstCel = new Cel(*srcCel);
       dstCel->setFrame(dstFrame);
-      dstCel->setImage(imageIndex);
+      dstCel->setImage(dstImage);
 
       addCel(dstLayer, dstCel);
     }
@@ -978,10 +962,9 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
 
   // create a temporary image to draw each frame of the new
   // `Background' layer
-  base::UniquePtr<Image> bg_image_wrap(Image::create(sprite->pixelFormat(),
-                                               sprite->width(),
-                                               sprite->height()));
-  Image* bg_image = bg_image_wrap.get();
+  ImageRef bg_image(Image::create(sprite->pixelFormat(),
+      sprite->width(),
+      sprite->height()));
 
   CelIterator it = layer->getCelBegin();
   CelIterator end = layer->getCelEnd();
@@ -1012,7 +995,8 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
       copy_image(cel_image, bg_image, 0, 0);
     }
     else {
-      replaceStockImage(sprite, cel->imageIndex(), Image::createCopy(bg_image));
+      ImageRef bg_image2(Image::createCopy(bg_image));
+      replaceImage(sprite, cel->imageRef(), bg_image2);
     }
   }
 
@@ -1020,14 +1004,12 @@ void DocumentApi::backgroundFromLayer(LayerImage* layer)
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     Cel* cel = layer->cel(frame);
     if (!cel) {
-      Image* cel_image = Image::create(sprite->pixelFormat(), sprite->width(), sprite->height());
+      ImageRef cel_image(Image::create(sprite->pixelFormat(),
+          sprite->width(), sprite->height()));
       clear_image(cel_image, bgcolor);
 
-      // Add the new image in the stock
-      int image_index = addImageInStock(sprite, cel_image);
-
       // Create the new cel and add it to the new background layer
-      cel = new Cel(frame, image_index);
+      cel = new Cel(frame, cel_image);
       addCel(layer, cel);
     }
   }
@@ -1057,7 +1039,7 @@ void DocumentApi::layerFromBackground(Layer* layer)
 
 void DocumentApi::flattenLayers(Sprite* sprite)
 {
-  Image* cel_image;
+  ImageRef cel_image;
   Cel* cel;
 
   // Create a temporary image.
@@ -1088,7 +1070,7 @@ void DocumentApi::flattenLayers(Sprite* sprite)
 
     cel = background->cel(frame);
     if (cel) {
-      cel_image = cel->image();
+      cel_image = cel->imageRef();
       ASSERT(cel_image != NULL);
 
       // We have to save the current state of `cel_image' in the undo.
@@ -1102,11 +1084,11 @@ void DocumentApi::flattenLayers(Sprite* sprite)
     else {
       // If there aren't a cel in this frame in the background, we
       // have to create a copy of the image for the new cel.
-      cel_image = Image::createCopy(image);
+      cel_image.reset(Image::createCopy(image));
       // TODO error handling: if createCopy throws
 
       // Here we create the new cel (with the new image `cel_image').
-      cel = new Cel(frame, sprite->stock()->addImage(cel_image));
+      cel = new Cel(frame, cel_image);
       // TODO error handling: if new Cel throws
 
       // And finally we add the cel in the background.
@@ -1147,30 +1129,11 @@ void DocumentApi::duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer)
   duplicateLayerAfter(sourceLayer, sourceLayer->sprite()->indexToLayer(afterThisIdx));
 }
 
-// Adds a new image in the stock. Returns the image index in the
-// stock.
-int DocumentApi::addImageInStock(Sprite* sprite, Image* image)
+Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image)
 {
-  ASSERT(image != NULL);
-
-  // Do the action.
-  int imageIndex = sprite->stock()->addImage(image);
-
-  // Add undoers.
-  if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::AddImage(getObjects(),
-        sprite->stock(), imageIndex));
-
-  return imageIndex;
-}
-
-Cel* DocumentApi::addImage(LayerImage* layer, frame_t frameNumber, Image* image)
-{
-  int imageIndex = addImageInStock(layer->sprite(), image);
-
   ASSERT(layer->cel(frameNumber) == NULL);
 
-  base::UniquePtr<Cel> cel(new Cel(frameNumber, imageIndex));
+  base::UniquePtr<Cel> cel(new Cel(frameNumber, image));
 
   addCel(layer, cel);
   cel.release();
@@ -1178,35 +1141,13 @@ Cel* DocumentApi::addImage(LayerImage* layer, frame_t frameNumber, Image* image)
   return cel;
 }
 
-// Removes and destroys the specified image in the stock.
-void DocumentApi::removeImageFromStock(Sprite* sprite, int imageIndex)
+void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage)
 {
-  ASSERT(imageIndex >= 0);
-
-  Image* image = sprite->stock()->getImage(imageIndex);
-  ASSERT(image);
-
-  if (undoEnabled())
-    m_undoers->pushUndoer(new undoers::RemoveImage(getObjects(),
-        sprite->stock(), imageIndex));
-
-  sprite->stock()->removeImage(image);
-  delete image;
-}
-
-void DocumentApi::replaceStockImage(Sprite* sprite, int imageIndex, Image* newImage)
-{
-  // Get the current image in the 'image_index' position.
-  Image* oldImage = sprite->stock()->getImage(imageIndex);
-  ASSERT(oldImage);
-
-  // Replace the image in the stock.
   if (undoEnabled())
     m_undoers->pushUndoer(new undoers::ReplaceImage(getObjects(),
-        sprite->stock(), imageIndex));
+        sprite, oldImage, newImage));
 
-  sprite->stock()->replaceImage(imageIndex, newImage);
-  delete oldImage;
+  sprite->replaceImage(oldImage->id(), newImage);
 }
 
 void DocumentApi::clearImage(Image* image, color_t bgcolor)

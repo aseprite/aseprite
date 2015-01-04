@@ -35,7 +35,6 @@
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "ui/manager.h"
 #include "ui/view.h"
 #include "ui/widget.h"

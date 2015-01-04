@@ -12,6 +12,7 @@
 #include "doc/cel_list.h"
 #include "doc/color.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "doc/layer_index.h"
 #include "doc/object.h"
 #include "doc/pixel_format.h"
@@ -31,7 +32,6 @@ namespace doc {
   class Path;
   class RgbMap;
   class Sprite;
-  class Stock;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -116,26 +116,20 @@ namespace doc {
     ////////////////////////////////////////
     // Images
 
-    Stock* stock() const;
-
+    ImageRef getImage(ObjectId imageId);
+    void replaceImage(ObjectId curImageId, const ImageRef& newImage);
     void getCels(CelList& cels) const;
-
-    // Returns the how many cels are referencing the given imageIndex.
-    size_t getImageRefs(int imageIndex) const;
-
+    void getImages(std::vector<Image*>& images) const;
     void remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping);
-
     void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
 
   private:
-    Sprite* m_self;                        // pointer to the Sprite
     PixelFormat m_format;                  // pixel format
     int m_width;                           // image width (in pixels)
     int m_height;                          // image height (in pixels)
     frame_t m_frames;                      // how many frames has this sprite
     std::vector<int> m_frlens;             // duration per frame
     PalettesList m_palettes;               // list of palettes
-    Stock* m_stock;                        // stock to get images
     LayerFolder* m_folder;                 // main folder of layers
 
     // Current rgb map

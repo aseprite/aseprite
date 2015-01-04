@@ -45,7 +45,6 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "ui/ui.h"
 
 #include "generated_export_sprite_sheet.h"
@@ -327,7 +326,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (sheet_h == 0) sheet_h = sprite->height()*((nframes/columns)+((nframes%columns)>0?1:0));
   columns = sheet_w / sprite->width();
 
-  base::UniquePtr<Image> resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
+  ImageRef resultImage(Image::create(sprite->pixelFormat(), sheet_w, sheet_h));
   doc::clear_image(resultImage, 0);
 
   render::Render render;
@@ -360,12 +359,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // Add the layer in the sprite.
     LayerImage* resultLayer = api.newLayer(sprite);
 
-    // Add the image into the sprite's stock
-    int indexInStock = api.addImageInStock(sprite, resultImage);
-    resultImage.release();
-
     // Create the cel.
-    base::UniquePtr<Cel> resultCel(new Cel(frame_t(0), indexInStock));
+    base::UniquePtr<Cel> resultCel(new Cel(frame_t(0), resultImage));
 
     // Add the cel in the layer.
     api.addCel(resultLayer, resultCel);

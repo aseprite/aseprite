@@ -27,6 +27,5 @@
 #include "doc/primitives_fast.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 
 #endif

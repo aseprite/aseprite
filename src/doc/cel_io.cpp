@@ -13,6 +13,8 @@
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
+#include "doc/sprite.h"
+#include "doc/subobjects_io.h"
 
 #include <iostream>
 
@@ -21,43 +23,41 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-// Serialized Cel data:
-//
-//   WORD               Frame
-//   WORD               Image index
-//   WORD[2]            X, Y
-//   WORD               Opacity
-
-void write_cel(std::ostream& os, Cel* cel)
+void write_cel(std::ostream& os, SubObjectsIO* subObjects, Cel* cel)
 {
-  // ObjectId cel_id = objects->addObject(cel);
-  // write_raw_uint32(cel_id);
+  Cel* link = cel->link();
 
   write16(os, cel->frame());
-  write16(os, cel->imageIndex());
   write16(os, (int16_t)cel->x());
   write16(os, (int16_t)cel->y());
   write16(os, cel->opacity());
-
-  // objects->removeObject(cel_id);
+  write16(os, link ? 1: 0);
+  if (link)
+    write32(os, link->id());
+  else
+    subObjects->write_image(os, cel->image());
 }
 
-Cel* read_cel(std::istream& is)
+Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
 {
-  // ObjectId cel_id = read32();
-
   frame_t frame(read16(is));
-  int imageIndex = read16(is);
   int x = (int16_t)read16(is);
   int y = (int16_t)read16(is);
   int opacity = read16(is);
+  bool is_link = (read16(is) == 1);
 
-  base::UniquePtr<Cel> cel(new Cel(frame, imageIndex));
+  base::UniquePtr<Cel> cel(new Cel(frame, ImageRef(NULL)));
 
   cel->setPosition(x, y);
   cel->setOpacity(opacity);
 
-  // objects->insertObject(cel_id, cel);
+  if (is_link) {
+    ObjectId imageId = read32(is);
+    cel->setImage(sprite->getImage(imageId));
+  }
+  else
+    cel->setImage(ImageRef(subObjects->read_image(is)));
+
   return cel.release();
 }
 

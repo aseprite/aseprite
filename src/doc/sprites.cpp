@@ -17,7 +17,6 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
-#include "doc/stock.h"
 
 #include <algorithm>
 

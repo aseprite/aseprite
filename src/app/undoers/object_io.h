@@ -22,10 +22,37 @@
 
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
+#include "doc/subobjects_io.h"
 #include "undo/objects_container.h"
 
+namespace doc {
+  class Cel;
+  class Image;
+  class Layer;
+  class Sprite;
+}
+
 namespace app {
-  namespace undoers {
+namespace undoers {
+  using namespace doc;
+  using namespace undo;
+
+  class ObjectIO : public SubObjectsIO {
+  public:
+    ObjectIO(ObjectsContainer* objects, Sprite* sprite);
+    virtual ~ObjectIO();
+
+    // How to write cels, images, and sub-layers
+    void write_cel(std::ostream& os, Cel* cel) override;
+    void write_image(std::ostream& os, Image* image) override;
+    void write_layer(std::ostream& os, Layer* layer) override;
+
+    // How to read cels, images, and sub-layers
+    Cel* read_cel(std::istream& is) override;
+    Image* read_image(std::istream& is) override;
+    Layer* read_layer(std::istream& is) override;
+
+  private:
 
     // read_object and write_object functions can be used to serialize an
     // object into a stream, and restore it back into the memory with the
@@ -35,37 +62,41 @@ namespace app {
     // ID from the ObjectsContainer. When the object is deserialized with
     // read_object, the object is added to the container with the same ID.
     template<class T, class Writer>
-    void write_object(undo::ObjectsContainer* objects, std::ostream& os, T* object, Writer& writer)
+    void write_object(std::ostream& os, T* object, Writer writer)
     {
       using base::serialization::little_endian::write32;
 
       // Get an ID for the image.
-      undo::ObjectId objectId = objects->addObject(object);
+      undo::ObjectId objectId = m_objects->addObject(object);
 
       write32(os, objectId);        // Write the ID
       writer(os, object);           // Write the object
 
       // Remove the object from the container (it will be
       // re-added by a undoers::read_object call).
-      objects->removeObject(objectId);
+      m_objects->removeObject(objectId);
     }
 
     // Deserializes the given object from the stream, adding the object
     // into the ObjectsContainer with the same ID saved with write_object().
     template<class T, class Reader>
-    T* read_object(undo::ObjectsContainer* objects, std::istream& is, Reader& reader)
+    T* read_object(std::istream& is, Reader reader)
     {
       using base::serialization::little_endian::read32;
 
       undo::ObjectId objectId = read32(is);    // Read the ID
-      base::UniquePtr<T> object(reader(is));         // Read the object
+      base::UniquePtr<T> object(reader(is));   // Read the object
 
       // Re-insert the object in the container with the read ID.
-      objects->insertObject(objectId, object);
+      m_objects->insertObject(objectId, object);
       return object.release();
     }
 
-  } // namespace undoers
+    ObjectsContainer* m_objects;
+    Sprite* m_sprite;
+  };
+
+} // namespace undoers
 } // namespace app
 
 #endif  // UNDOERS_OBJECT_IO_H_INCLUDED

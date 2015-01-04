@@ -20,6 +20,7 @@
 #define APP_UTIL_EXPAND_CEL_CANVAS_H_INCLUDED
 #pragma once
 
+#include "doc/image_ref.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -85,7 +86,7 @@ namespace app {
     Sprite* m_sprite;
     Layer* m_layer;
     Cel* m_cel;
-    Image* m_celImage;
+    ImageRef m_celImage;
     bool m_celCreated;
     gfx::Point m_origCelPos;
     gfx::Point m_celPos;

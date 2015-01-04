@@ -38,7 +38,6 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "gfx/packing_rects.h"
 #include "gfx/size.h"
 #include "render/render.h"

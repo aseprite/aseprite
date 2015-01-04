@@ -42,7 +42,6 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "ui/ui.h"
 
 #include "generated_new_sprite.h"

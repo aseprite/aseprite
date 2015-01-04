@@ -15,7 +15,7 @@
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
+#include "doc/subobjects_io.h"
 
 #include <iostream>
 #include <vector>
@@ -27,7 +27,7 @@ using namespace base::serialization::little_endian;
 
 // Serialized Layer data:
 
-void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer* layer)
+void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer)
 {
   std::string name = layer->name();
 
@@ -50,11 +50,6 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
       for (; it != end; ++it) {
         Cel* cel = *it;
         subObjects->write_cel(os, cel);
-
-        Image* image = cel->image();
-        ASSERT(image != NULL);
-
-        subObjects->write_image(os, image);
       }
       break;
     }
@@ -74,7 +69,7 @@ void write_layer(std::ostream& os, LayerSubObjectsSerializer* subObjects, Layer*
   }
 }
 
-Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprite* sprite)
+Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
 {
   uint16_t name_length = read16(is);                // Name length
   std::vector<char> name(name_length+1);
@@ -104,11 +99,6 @@ Layer* read_layer(std::istream& is, LayerSubObjectsSerializer* subObjects, Sprit
 
         // Add the cel in the layer
         static_cast<LayerImage*>(layer.get())->addCel(cel);
-
-        // Read the cel's image
-        Image* image = subObjects->read_image(is);
-
-        sprite->stock()->replaceImage(cel->imageIndex(), image);
       }
       break;
     }

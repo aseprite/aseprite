@@ -299,10 +299,9 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
     LayerImage* layer2 = new LayerImage(sprite);
     sprite->folder()->addLayer(layer2);
 
-    Image* image1 = layer1->cel(frame_t(0))->image();
-    Image* image2 = Image::create(IMAGE_RGB, 2, 2);
-    int image2Idx = sprite->stock()->addImage(image2);
-    Cel* cel2 = new Cel(frame_t(0), image2Idx);
+    ImageRef image1 = layer1->cel(frame_t(0))->imageRef();
+    ImageRef image2(Image::create(IMAGE_RGB, 2, 2));
+    Cel* cel2 = new Cel(frame_t(0), image2);
     layer2->addCel(cel2);
 
     image1->clear(rgba(255, 255, 255, 255));

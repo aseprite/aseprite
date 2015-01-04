@@ -26,7 +26,8 @@
 #include <sstream>
 
 namespace doc {
-  class Stock;
+  class Image;
+  class Sprite;
 }
 
 namespace app {
@@ -36,7 +37,8 @@ namespace app {
 
     class ReplaceImage : public UndoerBase {
     public:
-      ReplaceImage(ObjectsContainer* objects, Stock* stock, int imageIndex);
+      ReplaceImage(ObjectsContainer* objects, Sprite* sprite,
+        Image* oldImage, Image* newImage);
 
       void dispose() override;
       size_t getMemSize() const override { return sizeof(*this) + getStreamSize(); }
@@ -47,8 +49,8 @@ namespace app {
         return const_cast<std::stringstream*>(&m_stream)->tellp();
       }
 
-      undo::ObjectId m_stockId;
-      uint32_t m_imageIndex;
+      undo::ObjectId m_spriteId;
+      undo::ObjectId m_newImageId;
       std::stringstream m_stream;
     };
 

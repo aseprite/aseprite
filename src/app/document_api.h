@@ -20,12 +20,13 @@
 #define APP_DOCUMENT_API_H_INCLUDED
 #pragma once
 
-#include "gfx/rect.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/color.h"
 #include "doc/dithering_method.h"
 #include "doc/frame.h"
+#include "doc/image_ref.h"
 #include "doc/pixel_format.h"
+#include "gfx/rect.h"
 
 namespace doc {
   class Cel;
@@ -79,6 +80,7 @@ namespace app {
 
     // Cels API
     void addCel(LayerImage* layer, Cel* cel);
+    Cel* addCel(LayerImage* layer, frame_t frameNumber, const ImageRef& image);
     void clearCel(LayerImage* layer, frame_t frame);
     void clearCel(Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
@@ -108,11 +110,8 @@ namespace app {
     void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
     void duplicateLayerBefore(Layer* sourceLayer, Layer* beforeLayer);
 
-    // Images stock API
-    Cel* addImage(LayerImage* layer, frame_t frameNumber, Image* image);
-    int addImageInStock(Sprite* sprite, Image* image);
-    void removeImageFromStock(Sprite* sprite, int imageIndex);
-    void replaceStockImage(Sprite* sprite, int imageIndex, Image* newImage);
+    // Images API
+    void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
 
     // Image API
     void clearImage(Image* image, color_t bgcolor);

@@ -41,7 +41,6 @@
 #include "doc/mask.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "ui/ui.h"
 
 #define PERC_FORMAT     "%.1f"
@@ -105,15 +104,15 @@ protected:
       // Resize the image
       int w = scale_x(image->width());
       int h = scale_y(image->height());
-      Image* new_image = Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h));
+      ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
 
       doc::algorithm::fixup_image_transparent_colors(image);
       doc::algorithm::resize_image(image, new_image,
-                                      m_resize_method,
-                                      m_sprite->palette(cel->frame()),
-                                      m_sprite->rgbMap(cel->frame()));
+          m_resize_method,
+          m_sprite->palette(cel->frame()),
+          m_sprite->rgbMap(cel->frame()));
 
-      api.replaceStockImage(m_sprite, cel->imageIndex(), new_image);
+      api.replaceImage(m_sprite, cel->imageRef(), new_image);
 
       jobProgress((float)progress / cels.size());
 
@@ -124,7 +123,7 @@ protected:
 
     // Resize mask
     if (m_document->isMaskVisible()) {
-      base::UniquePtr<Image> old_bitmap
+      ImageRef old_bitmap
         (crop_image(m_document->mask()->bitmap(), -1, -1,
                     m_document->mask()->bitmap()->width()+2,
                     m_document->mask()->bitmap()->height()+2, 0));
@@ -137,9 +136,9 @@ protected:
           scale_x(m_document->mask()->bounds().x-1),
           scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
       algorithm::resize_image(old_bitmap, new_mask->bitmap(),
-                              m_resize_method,
-                              m_sprite->palette(0), // Ignored
-                              m_sprite->rgbMap(0)); // Ignored
+          m_resize_method,
+          m_sprite->palette(0), // Ignored
+          m_sprite->rgbMap(0)); // Ignored
 
       // Reshrink
       new_mask->intersect(new_mask->bounds());

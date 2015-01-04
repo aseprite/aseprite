@@ -38,5 +38,4 @@ add_library(doc-lib
   primitives.cpp
   rgbmap.cpp
   sprite.cpp
-  sprites.cpp
-  stock.cpp)
+  sprites.cpp)

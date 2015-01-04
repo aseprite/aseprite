@@ -133,10 +133,8 @@ bool FliFormat::onLoad(FileOp* fop)
         ++frpos_out;
 
       // Add the new frame
-      Image* image = Image::createCopy(bmp);
-      index = sprite->stock()->addImage(image);
-
-      Cel* cel = new Cel(frpos_out, index);
+      ImageRef image(Image::createCopy(bmp));
+      Cel* cel = new Cel(frpos_out, image);
       layer->addCel(cel);
 
       // First frame or the palette changes

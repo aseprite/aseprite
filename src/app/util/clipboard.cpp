@@ -40,7 +40,6 @@
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/undo_transaction.h"
-#include "app/undoers/add_image.h"
 #include "app/undoers/image_area.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"

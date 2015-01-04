@@ -45,7 +45,6 @@
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
-#include "doc/stock.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -160,7 +159,7 @@ protected:
     }
 
     // The list of frames imported from the sheet
-    std::vector<Image*> animation;
+    std::vector<ImageRef> animation;
 
     try {
       Sprite* sprite = m_document->sprite();
@@ -170,7 +169,7 @@ protected:
       // As first step, we cut each tile and add them into "animation" list.
       for (int y=m_rect.y; y<sprite->height(); y += m_rect.h) {
         for (int x=m_rect.x; x<sprite->width(); x += m_rect.w) {
-          base::UniquePtr<Image> resultImage(
+          ImageRef resultImage(
             Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
 
           // Render the portion of sheet.
@@ -178,7 +177,6 @@ protected:
             gfx::Clip(0, 0, x, y, m_rect.w, m_rect.h));
 
           animation.push_back(resultImage);
-          resultImage.release();
         }
       }
 
@@ -201,14 +199,8 @@ protected:
 
       // Add all frames+cels to the new layer
       for (size_t i=0; i<animation.size(); ++i) {
-        int indexInStock;
-
-        // Add the image into the sprite's stock
-        indexInStock = api.addImageInStock(sprite, animation[i]);
-        animation[i] = NULL;
-
         // Create the cel.
-        base::UniquePtr<Cel> resultCel(new Cel(frame_t(i), indexInStock));
+        base::UniquePtr<Cel> resultCel(new Cel(frame_t(i), animation[i]));
 
         // Add the cel in the layer.
         api.addCel(resultLayer, resultCel);
@@ -233,8 +225,6 @@ protected:
       undoTransaction.commit();
     }
     catch (...) {
-      for (size_t i=0; i<animation.size(); ++i)
-        delete animation[i];
       throw;
     }
 
