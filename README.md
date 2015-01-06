@@ -1,5 +1,5 @@
 # Aseprite
-*Copyright (C) 2001-2014 David Capello*
+*Copyright (C) 2001-2015 David Capello*
 
 > THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
 > See the [license section](#license) for more information.
