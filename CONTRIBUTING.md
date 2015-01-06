@@ -1,7 +1,31 @@
+# Code of Conduct
+
+We have a [code of conduct](CODE_OF_CONDUCT.md) that we all must
+read. Be polite to everyone. If you are not in your best day, take a
+deep breath and try again. Smile ^_^
+
+# New Issues
+
+Before you submit an issue:
+
+* Search in the current [list of issues](https://github.com/aseprite/aseprite/issues).
+* If the issue already exists, you can click the `Subscribe` button to get notifications.
+
+Before you submit an issue about a **compilation problem**, check
+the following items:
+
+* See how to get the source code correctly in the [INSTALL](INSTALL.md) guide.
+* Check if you are using the latest repository clone.
+* Remember that we use submodules, so you need to initialize and update them.
+* Remember that might be some [pull requests](https://github.com/aseprite/aseprite/pulls)
+  being reviewed to fix your same problem.
+* If you are compiling on Mac OS X or on Linux, be patient, we don't
+  compile on those platforms regularly.
+
 # Contributing
 
-You can contribute to Aseprite in several ways. One of the easiest
-ways is writting articles, blog posts, recording video tutorials,
+One of the easiest ways to contribute is writting articles, blog posts,
+recording video tutorials,
 [creating pixel art](http://aseprite.deviantart.com/), or showing your love
 to Aseprite e.g. naming Aseprite in your website and linking it to
 http://www.aseprite.org/, following
@@ -9,12 +33,11 @@ http://www.aseprite.org/, following
 [giving a donation](http://www.aseprite.org/donate/).
 
 Other ways to contribute require direct contact with us. For example:
+
 * Writting documentation.
-* Making art *for* Aseprite (logos, skins, mockups).
+* Making art with Aseprite and for Aseprite (logos, skins, mockups).
 * Sending patches for features or bug fixes.
 * Reviewing issues in the [issue tracker](https://github.com/aseprite/aseprite/issues) and making comments.
-
-The following sections explain some tips about each of these points.
 
 ## Documentation
 
@@ -30,11 +53,11 @@ screenshots or record a GIF animations to show steps:
   using [LICEcap](http://www.cockos.com/licecap/).
 * You can upload the PNG/GIF images to [Imgur](http://imgur.com/).
 
-## Issues
+## Reviewing Issues
 
 You can review issues, make comments, or create new ones (features,
-bug reports, etc.) in our
-[issue tracker](https://github.com/aseprite/aseprite/issues).  You
+bug reports, etc.) in the
+[issue tracker](https://github.com/aseprite/aseprite/issues). You
 are encouraged to create mockups for any issue you see and attach them.
 
 ## Hacking
@@ -42,29 +65,11 @@ are encouraged to create mockups for any issue you see and attach them.
 The first thing to keep in main if you want to modify the source code:
 checkout the **master** branch. It is the branch that we use to
 develop new features and fix issues that are planned for the next big
-release.
+release. See the [INSTALL](INSTALL.md) guide to know how to compile.
 
 To start looking the source code, see how it is organized in
 [src/README.md](https://github.com/aseprite/aseprite/tree/master/src/#aseprite-source-code)
 file.
-
-## Get the Source Code
-
-If you want to help in Aseprite, first of all you will need a fresh
-copy of the Git repository. It is located in GitHub, right here:
-
-https://github.com/aseprite/aseprite
-
-You can clone it locally using the following command (read-only URL):
-
-    git clone --recursive https://github.com/aseprite/aseprite.git
-
-On Windows you can use programs like
-[msysgit](http://msysgit.github.io/) to clone the repository.
-
-## Compiling
-
-See [INSTALL.md](INSTALL.md) to know how to compile Aseprite.
 
 ## Forking & Pull Requests
 
@@ -98,5 +103,5 @@ you should send an email to the group describing what you want to do,
 to avoid programming in something that is already done or which
 someone else is working on.
 
-And always remember to look the
-[Roadmap](http://www.aseprite.org/roadmap/).
+And always remember to take a look at our
+[roadmap](http://www.aseprite.org/roadmap/).

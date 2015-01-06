@@ -1,4 +1,4 @@
-# What platforms are supported?
+# Platforms
 
 You should be able to compile Aseprite successfully on the following
 platforms:
@@ -8,7 +8,21 @@ platforms:
 * Linux + gcc with some C++11 support, this port is not compiled
   regularly so you can expect some errors in the master branch.
 
-# How can I compile Aseprite?
+# Get the source code
+
+At the moment the only way to compile Aseprite is clonning the Git
+repository located here:
+
+https://github.com/aseprite/aseprite
+
+You can clone it using the following command (read-only URL):
+
+    git clone --recursive https://github.com/aseprite/aseprite.git
+
+On Windows you can use programs like
+[msysgit](http://msysgit.github.io/) to clone the repository.
+
+# Compiling
 
 Aseprite uses the latest version of [CMake](http://www.cmake.org/)
 (3.0) as its build system. You will not need any extra library
@@ -17,7 +31,7 @@ dependencies, even a modified version of the Allegro library is
 included in master branch.
 
 The following are the steps to compile Aseprite (in this case we have
-the source code in a directory called `aseprite-source`):
+the repository clone in a directory called `aseprite-source`):
 
 1. Make a build directory to leave all the files that are result of
    the compilation process (`.exe`, `.lib`, `.obj`, `.a`, `.o`, etc).
@@ -64,7 +78,7 @@ website (you need to be registered):
 
   https://developer.apple.com/downloads/
 
-Inside the `Packages` folder, there is a MacOSX10.4.Universal.pkg,
+Inside the `Packages` folder, there is a `MacOSX10.4.Universal.pkg`,
 install it (it will be installed in `/SDKs/MacOSX10.4u.sdk`), and run
 cmake with the following parameters:
 
@@ -72,17 +86,17 @@ cmake with the following parameters:
     -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
     -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
 
-# How to use installed third party libraries?
+# Using shared third party libraries
 
 If you don't want to use the embedded code of third party libraries
 (i.e. to use your installed versions), you can disable static linking
 configuring each `USE_SHARED_` option.
 
-After running `cmake -G`, you edit `build/CMakeCache.txt` file, and
+After running `cmake -G`, you can edit `build/CMakeCache.txt` file, and
 enable the `USE_SHARED_` flag (set its value to `ON`) of the library
 that you want to be linked dynamically.
 
-# How to profile Aseprite?
+# Profiling
 
 You must compile with `Profile` configuration. For example on Linux:
 
