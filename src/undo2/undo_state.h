@@ -18,9 +18,9 @@ namespace undo2 {
   class UndoState {
     friend class UndoHistory;
   public:
-    UndoState* prev() { return m_prev; }
-    UndoState* next() { return m_next; }
-    UndoCommand* cmd() { return m_cmd; }
+    UndoState* prev() const { return m_prev; }
+    UndoState* next() const { return m_next; }
+    UndoCommand* cmd() const { return m_cmd; }
   private:
     UndoState* m_prev;
     UndoState* m_next;
