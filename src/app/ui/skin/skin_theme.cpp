@@ -269,14 +269,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["rotate_arrow_1"] = PART_ROTATE_ARROW_1;
   sheet_mapping["rotate_arrow_2"] = PART_ROTATE_ARROW_2;
   sheet_mapping["rotate_arrow_3"] = PART_ROTATE_ARROW_3;
-  sheet_mapping["layer_visible"] = PART_LAYER_VISIBLE;
-  sheet_mapping["layer_visible_selected"] = PART_LAYER_VISIBLE_SELECTED;
-  sheet_mapping["layer_hidden"] = PART_LAYER_HIDDEN;
-  sheet_mapping["layer_hidden_selected"] = PART_LAYER_HIDDEN_SELECTED;
-  sheet_mapping["layer_editable"] = PART_LAYER_EDITABLE;
-  sheet_mapping["layer_editable_selected"] = PART_LAYER_EDITABLE_SELECTED;
-  sheet_mapping["layer_locked"] = PART_LAYER_LOCKED;
-  sheet_mapping["layer_locked_selected"] = PART_LAYER_LOCKED_SELECTED;
   sheet_mapping["selection_replace"] = PART_SELECTION_REPLACE;
   sheet_mapping["selection_replace_selected"] = PART_SELECTION_REPLACE_SELECTED;
   sheet_mapping["selection_add"] = PART_SELECTION_ADD;

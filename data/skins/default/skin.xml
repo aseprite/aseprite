@@ -265,14 +265,6 @@
     <part id="rotate_arrow_1"                   x="96" y="240" w="11" h="11" />
     <part id="rotate_arrow_2"                   x="112" y="240" w="15" h="10" />
     <part id="rotate_arrow_3"                   x="128" y="240" w="10" h="15" />
-    <part id="layer_visible"                    x="144" y="160" w="8" h="8" />
-    <part id="layer_visible_selected"           x="144" y="168" w="8" h="8" />
-    <part id="layer_hidden"                     x="160" y="160" w="8" h="8" />
-    <part id="layer_hidden_selected"            x="160" y="168" w="8" h="8" />
-    <part id="layer_editable"                   x="144" y="176" w="8" h="8" />
-    <part id="layer_editable_selected"          x="144" y="184" w="8" h="8" />
-    <part id="layer_locked"                     x="160" y="176" w="8" h="8" />
-    <part id="layer_locked_selected"            x="160" y="184" w="8" h="8" />
     <part id="selection_replace"                x="176" y="160" w="7" h="8" />
     <part id="selection_replace_selected"       x="176" y="168" w="7" h="8" />
     <part id="selection_add"                    x="192" y="160" w="7" h="8" />
