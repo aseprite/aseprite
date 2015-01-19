@@ -187,6 +187,23 @@ void PopupWindow::onInitTheme(InitThemeEvent& ev)
   this->border_width.b = 3 * jguiscale();
 }
 
+void PopupWindow::onHitTest(HitTestEvent& ev)
+{
+  Widget* picked = getManager()->pick(ev.getPoint());
+  if (picked) {
+    WidgetType type = picked->getType();
+    if ((type == kWindowWidget && picked == this) ||
+        type == kBoxWidget ||
+        type == kLabelWidget ||
+        type == kGridWidget ||
+        type == kSeparatorWidget) {
+      ev.setHit(HitTestCaption);
+      return;
+    }
+  }
+  Window::onHitTest(ev);
+}
+
 void PopupWindow::startFilteringMessages()
 {
   if (!m_filtering) {
