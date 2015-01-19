@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,19 +21,19 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/clear_mask.h"
+#include "app/cmd/deselect_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/document_location.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
-#include "undo/undo_history.h"
 
 namespace app {
 
@@ -97,13 +97,11 @@ void ClearCommand::onExecute(Context* context)
     return;
 
   {
-    UndoTransaction undoTransaction(writer.context(), "Clear");
-    DocumentApi api = document->getApi();
-    api.clearMask(writer.cel());
+    Transaction transaction(writer.context(), "Clear");
+    transaction.execute(new cmd::ClearMask(writer.cel()));
     if (visibleMask)
-      api.deselectMask();
-
-    undoTransaction.commit();
+      transaction.execute(new cmd::DeselectMask(document));
+    transaction.commit();
   }
   if (visibleMask)
     document->generateMaskBoundaries();

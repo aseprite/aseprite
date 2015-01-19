@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,7 +17,10 @@ namespace doc {
 
   class SpritePosition {
   public:
-    SpritePosition() { }
+    SpritePosition()
+      : m_layerIndex(0)
+      , m_frame(0) {
+    }
     SpritePosition(LayerIndex layerIndex, frame_t frame)
       : m_layerIndex(layerIndex)
       , m_frame(frame) {

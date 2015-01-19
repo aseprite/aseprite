@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,33 +39,26 @@ namespace doc {
   class Sprite;
 }
 
-namespace undo {
-  class UndoersCollector;
-  class ObjectsContainer;
-}
-
 namespace app {
   class Document;
+  class Transaction;
 
   using namespace doc;
 
-  // High-level API to modify a document in an undoable and observable way.
-  // Each method of this class take care of three important things:
-  // 1) Do the given action with low-level operations (doc namespace mainly),
-  // 2) Add undoers so the action can be undone in the
-  //    future (undoers namespace mainly),
-  // 3) Notify observers of the document that a change
-  //    was made (call DocumentObserver methods).
+  // Old high-level API. The new way is to create Cmds and add them
+  // directly to the transaction.
+  //
+  // TODO refactor this class in several Cmd, don't make it bigger
   class DocumentApi {
   public:
-    DocumentApi(Document* document, undo::UndoersCollector* undoers);
+    DocumentApi(Document* document, Transaction& transaction);
 
     // Sprite API
     void setSpriteSize(Sprite* sprite, int w, int h);
     void setSpriteTransparentColor(Sprite* sprite, color_t maskColor);
     void cropSprite(Sprite* sprite, const gfx::Rect& bounds);
     void trimSprite(Sprite* sprite);
-    void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering_method);
+    void setPixelFormat(Sprite* sprite, PixelFormat newFormat, DitheringMethod dithering);
 
     // Frames API
     void addFrame(Sprite* sprite, frame_t newFrame);
@@ -104,7 +97,7 @@ namespace app {
     void restackLayerBefore(Layer* layer, Layer* beforeThis);
     void cropLayer(Layer* layer, int x, int y, int w, int h);
     void displaceLayers(Layer* layer, int dx, int dy);
-    void backgroundFromLayer(LayerImage* layer);
+    void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite);
     void duplicateLayerAfter(Layer* sourceLayer, Layer* afterLayer);
@@ -115,34 +108,22 @@ namespace app {
 
     // Image API
     void clearImage(Image* image, color_t bgcolor);
-    void clearMask(Cel* cel);
     void flipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType);
-    void flipImageWithMask(Layer* layer, Image* image, const Mask* mask, doc::algorithm::FlipType flipType);
+    void flipImageWithMask(Layer* layer, Image* image, doc::algorithm::FlipType flipType);
 
     // Mask API
     void copyToCurrentMask(Mask* mask);
     void setMaskPosition(int x, int y);
-    void deselectMask();
 
     // Palette API
     void setPalette(Sprite* sprite, frame_t frame, Palette* newPalette);
 
   private:
-    undo::ObjectsContainer* getObjects() const;
-    void removeCel(Cel* cel);
-    void setCelFramePosition(LayerImage* layer, Cel* cel, frame_t frame);
-    void displaceFrames(Layer* layer, frame_t frame);
-    void copyFrameForLayer(Layer* layer, frame_t fromFrame, frame_t frame);
-    void removeFrameOfLayer(Layer* layer, frame_t frame);
+    void setCelFramePosition(Cel* cel, frame_t frame);
     void moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame);
-    void configureLayerAsBackground(LayerImage* layer);
-    bool undoEnabled();
-
-    doc::color_t bgColor();
-    doc::color_t bgColor(Layer* layer);
 
     Document* m_document;
-    undo::UndoersCollector* m_undoers;
+    Transaction& m_transaction;
   };
 
 } // namespace app

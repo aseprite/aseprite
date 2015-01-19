@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,6 @@
 #include "she/font.h"
 #include "she/surface.h"
 #include "ui/ui.h"
-#include "undo/undo_history.h"
 
 #include <algorithm>
 #include <cstdarg>

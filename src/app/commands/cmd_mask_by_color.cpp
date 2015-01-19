@@ -21,6 +21,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_mask.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -30,10 +31,9 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
 #include "app/util/misc.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
@@ -162,18 +162,10 @@ void MaskByColorCommand::onExecute(Context* context)
   Document* document(writer.document());
 
   if (apply) {
-    UndoTransaction undo(writer.context(), "Mask by Color", undo::DoesntModifyDocument);
-
-    if (undo.isEnabled())
-      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
-
-    // Change the mask
-    {
-      base::UniquePtr<Mask> mask(generateMask(sprite, image, xpos, ypos));
-      document->setMask(mask);
-    }
-
-    undo.commit();
+    Transaction transaction(writer.context(), "Mask by Color", DoesntModifyDocument);
+    base::UniquePtr<Mask> mask(generateMask(sprite, image, xpos, ypos));
+    transaction.execute(new cmd::SetMask(document, mask));
+    transaction.commit();
 
     set_config_color("MaskColor", "Color", m_buttonColor->getColor());
     set_config_int("MaskColor", "Tolerance", m_sliderTolerance->getValue());

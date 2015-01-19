@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/alert.h"
@@ -70,7 +70,8 @@ void RemoveLayerCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   Layer* layer(writer.layer());
   {
-    UndoTransaction undoTransaction(writer.context(), "Remove Layer");
+    Transaction transaction(writer.context(), "Remove Layer");
+    DocumentApi api = document->getApi(transaction);
 
     // TODO the range of selected layer should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
@@ -81,7 +82,7 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
 
       for (LayerIndex layer = range.layerEnd(); layer >= range.layerBegin(); --layer) {
-        document->getApi().removeLayer(sprite->indexToLayer(layer));
+        api.removeLayer(sprite->indexToLayer(layer));
       }
     }
     else {
@@ -91,10 +92,10 @@ void RemoveLayerCommand::onExecute(Context* context)
       }
 
       layer_name = layer->name();
-      document->getApi().removeLayer(layer);
+      api.removeLayer(layer);
     }
 
-    undoTransaction.commit();
+    transaction.commit();
   }
   update_screen_for_document(document);
 

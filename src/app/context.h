@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ namespace app {
     virtual bool isExecutingMacro() const  { return false; }
     virtual bool isExecutingScript() const { return false; }
 
-    ISettings* settings() { return m_settings; }
+    app::ISettings* settings() { return m_settings; }
 
     bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
     void updateFlags() { m_flags.update(this); }

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "app/file_selector.h"
 #include "app/ini_file.h"
 #include "app/modules/palettes.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "ui/alert.h"
@@ -56,10 +56,10 @@ void SetPaletteCommand::onExecute(Context* context)
     case Target::Document: {
       ContextWriter writer(context);
       if (writer.document()) {
-        UndoTransaction undoTransaction(writer.context(), "Set Palette");
-        writer.document()->getApi()
+        Transaction transaction(writer.context(), "Set Palette");
+        writer.document()->getApi(transaction)
           .setPalette(writer.sprite(), writer.frame(), m_palette);
-        undoTransaction.commit();
+        transaction.commit();
       }
       set_current_palette(m_palette, false);
       break;

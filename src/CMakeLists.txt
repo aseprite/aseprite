@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2014  David Capello
+# Copyright (C) 2001-2015  David Capello
 
 add_definitions(-DHAVE_CONFIG_H)
 
@@ -30,7 +30,6 @@ set(aseprite_libraries
   doc-lib
   render-lib
   scripting-lib
-  undo-lib
   undo2-lib
   filters-lib
   ui-lib
@@ -220,7 +219,6 @@ add_subdirectory(gfx)
 add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
-add_subdirectory(undo)
 add_subdirectory(undo2)
 
 add_subdirectory(app)

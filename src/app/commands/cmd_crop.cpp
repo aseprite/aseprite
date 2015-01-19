@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "app/util/autocrop.h"
 #include "app/util/misc.h"
 #include "doc/image.h"
@@ -65,9 +65,9 @@ void CropSpriteCommand::onExecute(Context* context)
   Sprite* sprite(writer.sprite());
   Mask* mask(document->mask());
   {
-    UndoTransaction undoTransaction(writer.context(), "Sprite Crop");
-    document->getApi().cropSprite(sprite, mask->bounds());
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "Sprite Crop");
+    document->getApi(transaction).cropSprite(sprite, mask->bounds());
+    transaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);
@@ -102,9 +102,9 @@ void AutocropSpriteCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    UndoTransaction undoTransaction(writer.context(), "Trim Sprite");
-    document->getApi().trimSprite(sprite);
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "Trim Sprite");
+    document->getApi(transaction).trimSprite(sprite);
+    transaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

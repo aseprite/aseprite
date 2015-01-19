@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/cel.h"
@@ -353,8 +353,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // The following steps modify the sprite, so we wrap all
     // operations in a undo-transaction.
     ContextWriter writer(context);
-    UndoTransaction undoTransaction(writer.context(), "Export Sprite Sheet", undo::ModifyDocument);
-    DocumentApi api = document->getApi();
+    Transaction transaction(writer.context(), "Export Sprite Sheet", ModifyDocument);
+    DocumentApi api = document->getApi(transaction);
 
     // Add the layer in the sprite.
     LayerImage* resultLayer = api.newLayer(sprite);
@@ -384,7 +384,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     // Set the size of the sprite to the tile size.
     api.setSpriteSize(sprite, sheet_w, sheet_h);
 
-    undoTransaction.commit();
+    transaction.commit();
 
     // Draw the document with the new dimensions in the screen.
     update_screen_for_document(document);
@@ -469,8 +469,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
 
   // Undo the sprite sheet conversion
   if (undo) {
-    if (document->getUndo()->canUndo()) {
-      document->getUndo()->doUndo();
+    if (document->undoHistory()->canUndo()) {
+      document->undoHistory()->undo();
 
       // We've to restore the previously selected frame. As we've
       // called setTotalFrames(), all document observers

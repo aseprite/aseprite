@@ -77,43 +77,6 @@ TEST(Undo, Basics)
   EXPECT_FALSE(history.canRedo());
 }
 
-TEST(Undo, Linear)
-{
-  UndoHistory history;
-  history.setCreateBranches(false);
-
-  int model = 0;
-  EXPECT_EQ(0, model);
-
-  // 1 --- 3 --- 4
-  Cmd cmd1([&]{ model = 1; }, [&]{ model = 0; });
-  Cmd cmd2([&]{ model = 2; }, [&]{ model = 1; });
-  Cmd cmd3([&]{ model = 3; }, [&]{ model = 1; });
-  Cmd cmd4([&]{ model = 4; }, [&]{ model = 3; });
-
-  cmd1.redo(); history.add(&cmd1);
-  cmd2.redo(); history.add(&cmd2);
-  history.undo();
-  cmd3.redo(); history.add(&cmd3); // Removes state 2
-  cmd4.redo(); history.add(&cmd4);
-
-  EXPECT_EQ(4, model);
-  history.undo();
-  EXPECT_EQ(3, model);
-  history.undo();
-  EXPECT_EQ(1, model);
-  history.undo();
-  EXPECT_EQ(0,  model);
-  EXPECT_FALSE(history.canUndo());
-  history.redo();
-  EXPECT_EQ(1, model);
-  history.redo();
-  EXPECT_EQ(3, model);
-  history.redo();
-  EXPECT_EQ(4,  model);
-  EXPECT_FALSE(history.canRedo());
-}
-
 TEST(Undo, Tree)
 {
   UndoHistory history;

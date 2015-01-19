@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,22 +23,24 @@
 #include "app/commands/cmd_flip.h"
 
 #include "app/app.h"
+#include "app/cmd/flip_mask.h"
+#include "app/cmd/flip_masked_cel.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
 #include "app/util/range_utils.h"
-#include "gfx/size.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "gfx/size.h"
 
 namespace app {
 
@@ -71,17 +73,17 @@ void FlipCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document = writer.document();
   Sprite* sprite = writer.sprite();
-  DocumentApi api = document->getApi();
 
   {
-    UndoTransaction undoTransaction(writer.context(),
-                                    m_flipMask ?
-                                    (m_flipType == doc::algorithm::FlipHorizontal ?
-                                     "Flip Horizontal":
-                                     "Flip Vertical"):
-                                    (m_flipType == doc::algorithm::FlipHorizontal ?
-                                     "Flip Canvas Horizontal":
-                                     "Flip Canvas Vertical"));
+    Transaction transaction(writer.context(),
+      m_flipMask ?
+      (m_flipType == doc::algorithm::FlipHorizontal ?
+        "Flip Horizontal":
+        "Flip Vertical"):
+      (m_flipType == doc::algorithm::FlipHorizontal ?
+        "Flip Canvas Horizontal":
+        "Flip Canvas Vertical"));
+    DocumentApi api = document->getApi(transaction);
 
     if (m_flipMask) {
       Mask* mask = document->mask();
@@ -120,9 +122,7 @@ void FlipCommand::onExecute(Context* context)
           // If the mask isn't a rectangular area, we've to flip the mask too.
           if (mask->bitmap() && !mask->isRectangular()) {
             // Flip the portion of image specified by the mask.
-            mask->offsetOrigin(-x, -y);
-            api.flipImageWithMask(writer.layer(), image, mask, m_flipType);
-            mask->offsetOrigin(x, y);
+            transaction.execute(new cmd::FlipMaskedCel(cel, m_flipType));
             alreadyFlipped = true;
           }
         }
@@ -145,16 +145,7 @@ void FlipCommand::onExecute(Context* context)
       // Flip the mask.
       Image* maskBitmap = mask->bitmap();
       if (maskBitmap) {
-        // Create a flipped copy of the current mask.
-        base::UniquePtr<Mask> newMask(new Mask(*mask));
-        newMask->freeze();
-        doc::algorithm::flip_image(newMask->bitmap(),
-          maskBitmap->bounds(), m_flipType);
-        newMask->unfreeze();
-
-        // Change the current mask and generate the new boundaries.
-        api.copyToCurrentMask(newMask);
-
+        transaction.execute(new cmd::FlipMask(document, m_flipType));
         document->generateMaskBoundaries();
       }
     }
@@ -181,7 +172,7 @@ void FlipCommand::onExecute(Context* context)
       }
     }
 
-    undoTransaction.commit();
+    transaction.commit();
   }
 
   update_screen_for_document(document);

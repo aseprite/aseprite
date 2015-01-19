@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2014 by David Capello -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
   <window id="options" text="Preferences">
   <vbox>
@@ -86,15 +86,16 @@
         <!-- Undo -->
         <vbox id="section_undo">
           <separator text="Undo" horizontal="true" />
-          <box horizontal="true">
+          <hbox>
             <label text="Undo Limit:" />
             <entry id="undo_size_limit" maxsize="4" tooltip="Limit of memory to be used&#10;for undo information per sprite.&#10;Specified in megabytes." />
             <label text="MB" />
-          </box>
+          </hbox>
 
-          <box horizontal="true">
+          <vbox>
             <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
-          </box>
+            <check id="undo_allow_nonlinear_history" text="Allow non-linear history." />
+          </vbox>
         </vbox>
 
         <!-- Experimental -->

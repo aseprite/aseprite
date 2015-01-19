@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,15 +23,14 @@
 
 namespace doc {
 
+  class Document;
   class Image;
   class Layer;
   class LayerFolder;
   class LayerImage;
   class Mask;
   class Palette;
-  class Path;
   class RgbMap;
-  class Sprite;
 
   typedef std::vector<Palette*> PalettesList;
 
@@ -49,6 +48,9 @@ namespace doc {
 
     ////////////////////////////////////////
     // Main properties
+
+    Document* document() { return m_document; }
+    void setDocument(Document* doc) { m_document = doc; }
 
     PixelFormat pixelFormat() const { return m_format; }
     void setPixelFormat(PixelFormat format);
@@ -105,7 +107,7 @@ namespace doc {
     frame_t lastFrame() const { return m_frames-1; }
 
     void addFrame(frame_t newFrame);
-    void removeFrame(frame_t newFrame);
+    void removeFrame(frame_t frame);
     void setTotalFrames(frame_t frames);
 
     int frameDuration(frame_t frame) const;
@@ -123,7 +125,11 @@ namespace doc {
     void remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping);
     void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
 
+    // Returns the list of cels in the given frame
+    CelList cels(frame_t frame) const;
+
   private:
+    Document* m_document;
     PixelFormat m_format;                  // pixel format
     int m_width;                           // image width (in pixels)
     int m_height;                          // image height (in pixels)

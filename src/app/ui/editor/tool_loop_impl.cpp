@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 
 #include "app/app.h"
+#include "app/cmd/set_mask.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/context.h"
@@ -38,11 +39,10 @@
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
@@ -85,7 +85,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   tools::Ink* m_ink;
   int m_primary_color;
   int m_secondary_color;
-  UndoTransaction m_undoTransaction;
+  Transaction m_transaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
   tools::ShadeTable8* m_shadeTable;
@@ -114,17 +114,17 @@ public:
     , m_ink(ink)
     , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
     , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
-    , m_undoTransaction(m_context,
-                        m_tool->getText().c_str(),
-                        ((getInk()->isSelection() ||
-                          getInk()->isEyedropper() ||
-                          getInk()->isScrollMovement() ||
-                          getInk()->isSlice() ||
-                          getInk()->isZoom()) ? undo::DoesntModifyDocument:
-                                                undo::ModifyDocument))
+    , m_transaction(m_context,
+                    m_tool->getText().c_str(),
+                    ((getInk()->isSelection() ||
+                      getInk()->isEyedropper() ||
+                      getInk()->isScrollMovement() ||
+                      getInk()->isSlice() ||
+                      getInk()->isZoom()) ? DoesntModifyDocument:
+                                            ModifyDocument))
     , m_expandCelCanvas(m_context,
         m_docSettings->getTiledMode(),
-        m_undoTransaction,
+        m_transaction,
         ExpandCelCanvas::Flags(
           ExpandCelCanvas::NeedsSource |
           // If the tool is freehand-like, we can use the modified
@@ -168,16 +168,12 @@ public:
     else
       m_useMask = m_document->isMaskVisible();
 
-    // Selection ink
+    // Start with an empty mask if the user is selecting with "default selection mode"
     if (getInk()->isSelection() &&
         (!m_document->isMaskVisible() ||
           getSelectionMode() == kDefaultSelectionMode)) {
-      DocumentUndo* undo = m_document->getUndo();
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::SetMask(undo->getObjects(), m_document));
-
       Mask emptyMask;
-      m_document->setMask(&emptyMask);
+      m_transaction.execute(new cmd::SetMask(m_document, &emptyMask));
     }
 
     int x1 = m_expandCelCanvas.getCel()->x();
@@ -213,7 +209,7 @@ public:
         redraw = true;
       }
 
-      m_undoTransaction.commit();
+      m_transaction.commit();
     }
     else
       redraw = true;
@@ -228,6 +224,8 @@ public:
 
     if (redraw)
       update_screen_for_document(m_document);
+    else
+      app_rebuild_documents_tabs();
   }
 
   // IToolLoop interface
@@ -259,6 +257,9 @@ public:
   RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
   bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
+  void setMask(Mask* newMask) override {
+    m_transaction.execute(new cmd::SetMask(m_document, newMask));
+  }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }

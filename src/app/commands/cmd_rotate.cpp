@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "base/convert_to.h"
 #include "doc/cel.h"
@@ -87,8 +87,8 @@ protected:
    */
   virtual void onJob()
   {
-    UndoTransaction undoTransaction(m_writer.context(), "Rotate Canvas");
-    DocumentApi api = m_document->getApi();
+    Transaction transaction(m_writer.context(), "Rotate Canvas");
+    DocumentApi api = m_document->getApi(transaction);
 
     // for each cel...
     int i = 0;
@@ -128,7 +128,7 @@ protected:
 
       // cancel all the operation?
       if (isCanceled())
-        return;        // UndoTransaction destructor will undo all operations
+        return;        // Transaction destructor will undo all operations
     }
 
     // rotate mask
@@ -173,7 +173,7 @@ protected:
       api.setSpriteSize(m_sprite, m_sprite->height(), m_sprite->width());
 
     // commit changes
-    undoTransaction.commit();
+    transaction.commit();
   }
 
 };

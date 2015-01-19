@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/reselect_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
+#include "app/transaction.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 
@@ -63,14 +63,9 @@ void ReselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undo(writer.context(), "Reselect", undo::DoesntModifyDocument);
-    if (undo.isEnabled())
-      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
-
-    // Make the mask visible again.
-    document->setMaskVisible(true);
-
-    undo.commit();
+    Transaction transaction(writer.context(), "Reselect", DoesntModifyDocument);
+    transaction.execute(new cmd::ReselectMask(document));
+    transaction.commit();
   }
 
   document->generateMaskBoundaries();

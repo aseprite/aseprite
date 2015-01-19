@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
@@ -90,8 +90,8 @@ static DocumentRange drop_range_op(
     const app::Context* context = static_cast<app::Context*>(doc->context());
     const ContextReader reader(context);
     ContextWriter writer(reader);
-    UndoTransaction undo(writer.context(), undoLabel, undo::ModifyDocument);
-    DocumentApi api = doc->getApi();
+    Transaction transaction(writer.context(), undoLabel, ModifyDocument);
+    DocumentApi api = doc->getApi(transaction);
 
     // TODO Try to add the range with just one call to DocumentApi
     // methods, to avoid generating a lot of SetCelFrame undoers (see
@@ -324,7 +324,7 @@ static DocumentRange drop_range_op(
         break;
     }
 
-    undo.commit();
+    transaction.commit();
   }
 
   return resultRange;
@@ -345,8 +345,8 @@ void reverse_frames(Document* doc, const DocumentRange& range)
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
   ContextWriter writer(reader);
-  UndoTransaction undo(writer.context(), "Reverse Frames");
-  DocumentApi api = doc->getApi();
+  Transaction transaction(writer.context(), "Reverse Frames");
+  DocumentApi api = doc->getApi(transaction);
   Sprite* sprite = doc->sprite();
   frame_t frameBegin, frameEnd;
   int layerBegin, layerEnd;
@@ -394,7 +394,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
     }
   }
 
-  undo.commit();
+  transaction.commit();
 }
 
 } // namespace app

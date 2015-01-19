@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2014  David Capello
+# Copyright (C) 2001-2015  David Capello
 
 ######################################################################
 # Generate source files from widget XML files
@@ -53,6 +53,56 @@ add_library(app-lib
   app_render.cpp
   backup.cpp
   check_update.cpp
+  cmd.cpp
+  cmd/add_cel.cpp
+  cmd/add_frame.cpp
+  cmd/add_layer.cpp
+  cmd/add_palette.cpp
+  cmd/background_from_layer.cpp
+  cmd/clear_cel.cpp
+  cmd/clear_image.cpp
+  cmd/clear_mask.cpp
+  cmd/configure_background.cpp
+  cmd/copy_cel.cpp
+  cmd/copy_frame.cpp
+  cmd/copy_rect.cpp
+  cmd/copy_region.cpp
+  cmd/deselect_mask.cpp
+  cmd/flatten_layers.cpp
+  cmd/flip_image.cpp
+  cmd/flip_mask.cpp
+  cmd/flip_masked_cel.cpp
+  cmd/layer_from_background.cpp
+  cmd/move_cel.cpp
+  cmd/move_layer.cpp
+  cmd/object_io.cpp
+  cmd/remove_cel.cpp
+  cmd/remove_frame.cpp
+  cmd/remove_layer.cpp
+  cmd/remove_palette.cpp
+  cmd/replace_image.cpp
+  cmd/reselect_mask.cpp
+  cmd/set_cel_frame.cpp
+  cmd/set_cel_opacity.cpp
+  cmd/set_cel_position.cpp
+  cmd/set_frame_duration.cpp
+  cmd/set_layer_flags.cpp
+  cmd/set_layer_name.cpp
+  cmd/set_mask.cpp
+  cmd/set_mask_position.cpp
+  cmd/set_palette.cpp
+  cmd/set_pixel_format.cpp
+  cmd/set_sprite_size.cpp
+  cmd/set_total_frames.cpp
+  cmd/set_transparent_color.cpp
+  cmd/with_cel.cpp
+  cmd/with_document.cpp
+  cmd/with_image.cpp
+  cmd/with_layer.cpp
+  cmd/with_palette.cpp
+  cmd/with_sprite.cpp
+  cmd_sequence.cpp
+  cmd_transaction.cpp
   color.cpp
   color_picker.cpp
   color_swatches.cpp
@@ -189,7 +239,6 @@ add_library(app-lib
   modules/gfx.cpp
   modules/gui.cpp
   modules/palettes.cpp
-  objects_container_impl.cpp
   pref/preferences.cpp
   project.cpp
   recent_files.cpp
@@ -206,6 +255,7 @@ add_library(app-lib
   tools/shade_table.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
+  transaction.cpp
   ui/app_menuitem.cpp
   ui/button_set.cpp
   ui/color_bar.cpp
@@ -262,38 +312,6 @@ add_library(app-lib
   ui/workspace.cpp
   ui/workspace_part.cpp
   ui_context.cpp
-  undo_transaction.cpp
-  undoers/add_cel.cpp
-  undoers/add_frame.cpp
-  undoers/add_layer.cpp
-  undoers/add_palette.cpp
-  undoers/close_group.cpp
-  undoers/dirty_area.cpp
-  undoers/flip_image.cpp
-  undoers/image_area.cpp
-  undoers/modified_region.cpp
-  undoers/move_layer.cpp
-  undoers/object_io.cpp
-  undoers/open_group.cpp
-  undoers/remap_palette.cpp
-  undoers/remove_cel.cpp
-  undoers/remove_frame.cpp
-  undoers/remove_layer.cpp
-  undoers/remove_palette.cpp
-  undoers/replace_image.cpp
-  undoers/set_cel_frame.cpp
-  undoers/set_cel_opacity.cpp
-  undoers/set_cel_position.cpp
-  undoers/set_frame_duration.cpp
-  undoers/set_layer_flags.cpp
-  undoers/set_layer_name.cpp
-  undoers/set_mask.cpp
-  undoers/set_mask_position.cpp
-  undoers/set_palette_colors.cpp
-  undoers/set_sprite_pixel_format.cpp
-  undoers/set_sprite_size.cpp
-  undoers/set_sprite_transparent_color.cpp
-  undoers/set_total_frames.cpp
   util/autocrop.cpp
   util/boundary.cpp
   util/clipboard.cpp

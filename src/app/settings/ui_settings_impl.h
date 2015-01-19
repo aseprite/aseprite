@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,12 +45,6 @@ namespace app {
 
     // doc::DocumentsObserver
     void onRemoveDocument(doc::Document* doc) override;
-
-    // Undo settings
-    size_t undoSizeLimit() const override;
-    bool undoGotoModified() const override;
-    void setUndoSizeLimit(size_t size) override;
-    void setUndoGotoModified(bool state) override;
 
     // ISettings implementation
     bool getZoomWithScrollWheel() override;

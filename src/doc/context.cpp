@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,8 +15,7 @@
 namespace doc {
 
 Context::Context()
-  : m_settings(NULL)
-  , m_docs(this)
+  : m_docs(this)
   , m_activeDoc(NULL)
 {
   m_docs.addObserver(this);
@@ -26,11 +25,6 @@ Context::~Context()
 {
   setActiveDocument(NULL);
   m_docs.removeObserver(this);
-}
-
-void Context::setSettings(Settings* settings)
-{
-  m_settings = settings;
 }
 
 Document* Context::activeDocument() const

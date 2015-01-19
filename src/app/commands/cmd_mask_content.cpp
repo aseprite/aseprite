@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,15 +21,15 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/tools/tool_box.h"
+#include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/toolbar.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -71,24 +71,20 @@ void MaskContentCommand::onExecute(Context* context)
   if (!cel)
     return;
 
-  UndoTransaction undo(writer.context(), "Select Content", undo::DoesntModifyDocument);
-  if (undo.isEnabled())
-    undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
-
+  Mask newMask;
   gfx::Rect imgBounds = cel->image()->bounds();
   if (algorithm::shrink_bounds(cel->image(), imgBounds,
         cel->image()->maskColor())) {
-    document->mask()->replace(
-      imgBounds.offset(cel->bounds().getOrigin()));
-    document->setMaskVisible(true);
-    document->resetTransformation();
-  }
-  else {
-    document->mask()->clear();
-    document->setMaskVisible(false);
+
+    newMask.copyFrom(document->mask());
+    newMask.replace(imgBounds.offset(cel->bounds().getOrigin()));
   }
 
-  undo.commit();
+  Transaction transaction(writer.context(), "Select Content", DoesntModifyDocument);
+  transaction.execute(new cmd::SetMask(document, &newMask));
+  transaction.commit();
+
+  document->resetTransformation();
   document->generateMaskBoundaries();
 
   // Select marquee tool

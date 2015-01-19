@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "app/context_access.h"
 #include "app/settings/settings_observers.h"
 #include "app/ui/editor/handle_type.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/shared_ptr.h"
 #include "gfx/size.h"
 #include "doc/algorithm/flip_type.h"
@@ -35,6 +35,10 @@ namespace doc {
 
 namespace app {
   class Document;
+
+  namespace cmd {
+    class SetMask;
+  }
 
   // Helper class to move pixels interactively and control undo history
   // correctly.  The extra cel of the sprite is temporally used to show
@@ -113,8 +117,8 @@ namespace app {
     const ContextReader m_reader;
     Document* m_document;
     Sprite* m_sprite;
-    UndoTransaction m_undoTransaction;
-    bool m_firstDrop;
+    Transaction m_transaction;
+    cmd::SetMask* m_setMaskCmd;
     bool m_isDragging;
     bool m_adjustPivot;
     HandleType m_handle;

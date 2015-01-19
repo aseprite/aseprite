@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -30,6 +30,7 @@ static LayerIndex layer2index(const Layer* layer, const Layer* find_layer, int* 
 
 Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   : Object(ObjectType::Sprite)
+  , m_document(NULL)
   , m_format(format)
   , m_width(width)
   , m_height(height)
@@ -342,12 +343,16 @@ void Sprite::addFrame(frame_t newFrame)
   setTotalFrames(m_frames+1);
   for (frame_t i=m_frames-1; i>=newFrame; --i)
     setFrameDuration(i, frameDuration(i-1));
+
+  folder()->displaceFrames(newFrame, +1);
 }
 
-void Sprite::removeFrame(frame_t newFrame)
+void Sprite::removeFrame(frame_t frame)
 {
+  folder()->displaceFrames(frame, -1);
+
   frame_t newTotal = m_frames-1;
-  for (frame_t i=newFrame; i<newTotal; ++i)
+  for (frame_t i=frame; i<newTotal; ++i)
     setFrameDuration(i, frameDuration(i+1));
   setTotalFrames(newTotal);
 }
@@ -418,6 +423,18 @@ void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 void Sprite::getCels(CelList& cels) const
 {
   folder()->getCels(cels);
+}
+
+CelList Sprite::cels(frame_t frame) const
+{
+  // TODO create a proper CelsIterator
+  CelList cels, final;
+  folder()->getCels(cels);
+  for (Cel* cel : cels) {
+    if (cel->frame() == frame)
+      final.push_back(cel);
+  }
+  return final;
 }
 
 // TODO replace it with a images iterator

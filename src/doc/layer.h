@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -33,6 +33,8 @@ namespace doc {
     Editable   = 2,             // Can be written
     LockMove   = 4,             // Cannot be moved
     Background = 8,             // Stack order cannot be changed
+
+    BackgroundLayerFlags = LockMove | Background,
   };
 
   class Layer : public Object {
@@ -89,6 +91,7 @@ namespace doc {
 
     virtual Cel* cel(frame_t frame) const;
     virtual void getCels(CelList& cels) const = 0;
+    virtual void displaceFrames(frame_t fromThis, frame_t delta) = 0;
 
   private:
     std::string m_name;           // layer name
@@ -117,6 +120,7 @@ namespace doc {
     void moveCel(Cel *cel, frame_t frame);
     Cel* cel(frame_t frame) const override;
     void getCels(CelList& cels) const override;
+    void displaceFrames(frame_t fromThis, frame_t delta) override;
     Cel* getLastCel() const;
 
     void configureAsBackground();
@@ -158,6 +162,7 @@ namespace doc {
     Layer* getLastLayer() { return (m_layers.empty() ? NULL: m_layers.back()); }
 
     void getCels(CelList& cels) const override;
+    void displaceFrames(frame_t fromThis, frame_t delta) override;
 
   private:
     void destroyAllLayers();

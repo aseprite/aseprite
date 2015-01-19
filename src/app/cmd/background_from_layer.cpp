@@ -1,0 +1,110 @@
+/* Aseprite
+ * Copyright (C) 2001-2015  David Capello
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "app/cmd/background_from_layer.h"
+
+#include "app/cmd/add_cel.h"
+#include "app/cmd/configure_background.h"
+#include "app/cmd/copy_rect.h"
+#include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_position.h"
+#include "app/document.h"
+#include "doc/cel.h"
+#include "doc/image.h"
+#include "doc/layer.h"
+#include "doc/primitives.h"
+#include "doc/sprite.h"
+#include "render/render.h"
+
+namespace app {
+namespace cmd {
+
+BackgroundFromLayer::BackgroundFromLayer(Layer* layer)
+  : WithLayer(layer)
+{
+  ASSERT(layer);
+  ASSERT(layer->isVisible());
+  ASSERT(layer->isEditable());
+  ASSERT(layer->sprite() != NULL);
+  ASSERT(layer->sprite()->backgroundLayer() == NULL);
+}
+
+void BackgroundFromLayer::onExecute()
+{
+  Layer* layer = this->layer();
+  Sprite* sprite = layer->sprite();
+  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  color_t bgcolor = doc->bgColor();
+
+  // create a temporary image to draw each frame of the new
+  // `Background' layer
+  ImageRef bg_image(Image::create(sprite->pixelFormat(),
+      sprite->width(),
+      sprite->height()));
+
+  CelList cels;
+  layer->getCels(cels);
+  for (Cel* cel : cels) {
+    // get the image from the sprite's stock of images
+    Image* cel_image = cel->image();
+    ASSERT(cel_image);
+
+    clear_image(bg_image, bgcolor);
+    render::composite_image(bg_image, cel_image,
+      cel->x(), cel->y(),
+      MID(0, cel->opacity(), 255),
+      static_cast<LayerImage*>(layer)->getBlendMode());
+
+    // now we have to copy the new image (bg_image) to the cel...
+    executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));
+
+    // same size of cel-image and bg-image
+    if (bg_image->width() == cel_image->width() &&
+        bg_image->height() == cel_image->height()) {
+      executeAndAdd(new CopyRect(cel_image, bg_image,
+          gfx::Clip(0, 0, cel_image->bounds())));
+    }
+    else {
+      ImageRef bg_image2(Image::createCopy(bg_image));
+      executeAndAdd(new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
+    }
+  }
+
+  // Fill all empty cels with a flat-image filled with bgcolor
+  for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
+    Cel* cel = layer->cel(frame);
+    if (!cel) {
+      ImageRef cel_image(Image::create(sprite->pixelFormat(),
+          sprite->width(), sprite->height()));
+      clear_image(cel_image, bgcolor);
+
+      // Create the new cel and add it to the new background layer
+      cel = new Cel(frame, cel_image);
+      executeAndAdd(new cmd::AddCel(layer, cel));
+    }
+  }
+
+  executeAndAdd(new cmd::ConfigureBackground(layer));
+}
+
+} // namespace cmd
+} // namespace app

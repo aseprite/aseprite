@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -78,9 +78,9 @@ void NewLayerSetCommand::onExecute(Context* context)
   std::string name = window->findChild("name")->getText();
   Layer* layer;
   {
-    UndoTransaction undoTransaction(writer.context(), "New Layer");
-    layer = document->getApi().newLayerFolder(sprite);
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "New Layer");
+    layer = document->getApi(transaction).newLayerFolder(sprite);
+    transaction.commit();
   }
   layer->setName(name);
 

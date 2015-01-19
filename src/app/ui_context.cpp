@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,6 @@
 #include "app/ui_context.h"
 #include "base/mutex.h"
 #include "doc/sprite.h"
-#include "undo/undo_history.h"
 
 namespace app {
 

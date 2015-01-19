@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,18 +22,21 @@
 
 #include "app/document.h"
 
+#include "app/color_target.h"
+#include "app/color_utils.h"
+#include "app/context.h"
 #include "app/document_api.h"
 #include "app/document_undo.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
-#include "app/objects_container_impl.h"
-#include "app/undoers/add_layer.h"
+#include "app/settings/settings.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
+#include "doc/context.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
 #include "doc/layer.h"
@@ -87,10 +90,43 @@ Document::~Document()
   destroyExtraCel();
 }
 
-DocumentApi Document::getApi(undo::UndoersCollector* undoers)
+DocumentApi Document::getApi(Transaction& transaction)
 {
-  return DocumentApi(this, undoers ? undoers: m_undo->getDefaultUndoersCollector());
+  return DocumentApi(this, transaction);
 }
+
+//////////////////////////////////////////////////////////////////////
+// Main properties
+
+color_t Document::bgColor() const
+{
+  app::ISettings* appSettings = nullptr;
+  if (app::Context* ctx = dynamic_cast<app::Context*>(context()))
+    appSettings = ctx->settings();
+
+  return color_utils::color_for_target(
+    (appSettings ? appSettings->getBgColor(): Color::fromMask()),
+    ColorTarget(ColorTarget::BackgroundLayer,
+      sprite()->pixelFormat(),
+      sprite()->transparentColor()));
+}
+
+color_t Document::bgColor(Layer* layer) const
+{
+  app::ISettings* appSettings = nullptr;
+  if (app::Context* ctx = dynamic_cast<app::Context*>(context()))
+    appSettings = ctx->settings();
+
+  if (layer->isBackground())
+    return color_utils::color_for_layer(
+      appSettings ? appSettings->getBgColor(): Color::fromMask(),
+      layer);
+  else
+    return layer->sprite()->transparentColor();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Notifications
 
 void Document::notifyGeneralUpdate()
 {

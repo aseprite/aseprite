@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui_context.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
@@ -81,8 +81,8 @@ protected:
    */
   virtual void onJob()
   {
-    UndoTransaction undoTransaction(m_writer.context(), "Sprite Size");
-    DocumentApi api = m_writer.document()->getApi();
+    Transaction transaction(m_writer.context(), "Sprite Size");
+    DocumentApi api = m_writer.document()->getApi(transaction);
 
     // Get all sprite cels
     CelList cels;
@@ -118,7 +118,7 @@ protected:
 
       // cancel all the operation?
       if (isCanceled())
-        return;        // UndoTransaction destructor will undo all operations
+        return;        // Transaction destructor will undo all operations
     }
 
     // Resize mask
@@ -155,7 +155,7 @@ protected:
     api.setSpriteSize(m_sprite, m_new_width, m_new_height);
 
     // commit changes
-    undoTransaction.commit();
+    transaction.commit();
   }
 
 };

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -49,6 +49,7 @@ Sprite* Sprites::add(Sprite* spr)
   ASSERT(spr != NULL);
 
   m_sprites.insert(begin(), spr);
+  spr->setDocument(m_doc);
 
   notifyObservers(&SpritesObserver::onAddSprite, spr);
   return spr;
@@ -59,8 +60,10 @@ void Sprites::remove(Sprite* spr)
   iterator it = std::find(begin(), end(), spr);
   ASSERT(it != end());
 
-  if (it != end())
+  if (it != end()) {
+    (*it)->setDocument(NULL);
     m_sprites.erase(it);
+  }
 }
 
 void Sprites::move(Sprite* spr, int index)

@@ -1,5 +1,5 @@
 # Aseprite Document Library
-# Copyright (C) 2001-2014 David Capello
+# Copyright (C) 2001-2015 David Capello
 
 add_library(doc-lib
   algo.cpp
@@ -17,8 +17,6 @@ add_library(doc-lib
   color_scales.cpp
   context.cpp
   conversion_she.cpp
-  dirty.cpp
-  dirty_io.cpp
   document.cpp
   documents.cpp
   file/col_file.cpp

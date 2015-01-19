@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -86,16 +86,19 @@ void NewFrameCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    UndoTransaction undoTransaction(writer.context(), "New Frame");
+    Transaction transaction(writer.context(), "New Frame");
+    DocumentApi api = document->getApi(transaction);
+
     switch (m_content) {
       case Content::CurrentFrame:
-        document->getApi().addFrame(sprite, writer.frame()+1);
+        api.addFrame(sprite, writer.frame()+1);
         break;
       case Content::EmptyFrame:
-        document->getApi().addEmptyFrame(sprite, writer.frame()+1);
+        api.addEmptyFrame(sprite, writer.frame()+1);
         break;
     }
-    undoTransaction.commit();
+
+    transaction.commit();
   }
   update_screen_for_document(document);
 

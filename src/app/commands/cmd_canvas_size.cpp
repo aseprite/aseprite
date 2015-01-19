@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"
@@ -342,11 +342,11 @@ void CanvasSizeCommand::onExecute(Context* context)
     ContextWriter writer(reader);
     Document* document = writer.document();
     Sprite* sprite = writer.sprite();
-    UndoTransaction undoTransaction(writer.context(), "Canvas Size");
-    DocumentApi api = document->getApi();
+    Transaction transaction(writer.context(), "Canvas Size");
+    DocumentApi api = document->getApi(transaction);
 
     api.cropSprite(sprite, gfx::Rect(x1, y1, x2-x1, y2-y1));
-    undoTransaction.commit();
+    transaction.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

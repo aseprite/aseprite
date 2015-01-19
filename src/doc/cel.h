@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -16,6 +16,7 @@
 
 namespace doc {
 
+  class Document;
   class LayerImage;
   class Sprite;
 
@@ -34,6 +35,7 @@ namespace doc {
     LayerImage* layer() const { return m_layer; }
     Image* image() const { return const_cast<Image*>(m_image.get()); };
     ImageRef imageRef() const { return m_image; }
+    Document* document() const;
     Sprite* sprite() const;
     Cel* link() const;
     gfx::Rect bounds() const;

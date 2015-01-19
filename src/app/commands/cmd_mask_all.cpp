@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
+#include "app/transaction.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 
@@ -58,18 +58,15 @@ void MaskAllCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
-  UndoTransaction undo(writer.context(), "Select All", undo::DoesntModifyDocument);
 
-  // Undo
-  if (undo.isEnabled())
-    undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
+  Mask newMask;
+  newMask.replace(sprite->bounds());
 
-  // Change the selection
-  document->mask()->replace(sprite->bounds());
-  document->setMaskVisible(true);
+  Transaction transaction(writer.context(), "Select All", DoesntModifyDocument);
+  transaction.execute(new cmd::SetMask(document, &newMask));
+  transaction.commit();
+
   document->resetTransformation();
-
-  undo.commit();
   document->generateMaskBoundaries();
   update_screen_for_document(document);
 }

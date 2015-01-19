@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -64,9 +64,9 @@ void LayerFromBackgroundCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(writer.context(), "Layer from Background");
-    document->getApi().layerFromBackground(writer.layer());
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "Layer from Background");
+    document->getApi(transaction).layerFromBackground(writer.layer());
+    transaction.commit();
   }
   update_screen_for_document(document);
 }

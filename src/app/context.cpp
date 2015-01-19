@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "app/context.h"
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
@@ -42,7 +43,6 @@ Context::Context()
 Context::Context(ISettings* settings)
   : m_settings(settings)
 {
-  setSettings(settings);
 }
 
 Context::~Context()
@@ -100,6 +100,10 @@ void Context::executeCommand(Command* command, Params* params)
 
       AfterCommandExecution(command);
     }
+
+    // TODO move this code to another place (e.g. a Workplace/Tabs widget)
+    if (isUiAvailable())
+      app_rebuild_documents_tabs();
   }
   catch (base::Exception& e) {
     PRINTF("Exception caught executing '%s' command\n%s\n",

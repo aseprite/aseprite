@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -204,11 +204,28 @@ void LayerImage::configureAsBackground()
   ASSERT(sprite() != NULL);
   ASSERT(sprite()->backgroundLayer() == NULL);
 
-  setMovable(false);
-  setBackground(true);
+  switchFlags(LayerFlags::BackgroundLayerFlags, true);
   setName("Background");
 
   sprite()->folder()->stackLayer(this, NULL);
+}
+
+void LayerImage::displaceFrames(frame_t fromThis, frame_t delta)
+{
+  Sprite* sprite = this->sprite();
+
+  if (delta > 0) {
+    for (frame_t c=sprite->lastFrame(); c>=fromThis; --c) {
+      if (Cel* cel = this->cel(c))
+        moveCel(cel, c+delta);
+    }
+  }
+  else {
+    for (frame_t c=fromThis; c<=sprite->lastFrame(); ++c) {
+      if (Cel* cel = this->cel(c))
+        moveCel(cel, c+delta);
+    }
+  }
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -293,6 +310,12 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
   }
   else
     m_layers.push_front(layer);
+}
+
+void LayerFolder::displaceFrames(frame_t fromThis, frame_t delta)
+{
+  for (Layer* layer : m_layers)
+    layer->displaceFrames(fromThis, delta);
 }
 
 } // namespace doc

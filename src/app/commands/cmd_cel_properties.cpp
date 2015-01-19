@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/mem_utils.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -140,11 +140,11 @@ void CelPropertiesCommand::onExecute(Context* context)
     // The opacity was changed?
     if (cel_writer != NULL &&
         cel_writer->opacity() != newOpacity) {
-      DocumentApi api = document_writer->getApi();
       {
-        UndoTransaction undo(writer.context(), "Cel Opacity Change", undo::ModifyDocument);
-        api.setCelOpacity(sprite_writer, cel_writer, newOpacity);
-        undo.commit();
+        Transaction transaction(writer.context(), "Cel Opacity Change", ModifyDocument);
+        document_writer->getApi(transaction)
+          .setCelOpacity(sprite_writer, cel_writer, newOpacity);
+        transaction.commit();
       }
 
       update_screen_for_document(document_writer);

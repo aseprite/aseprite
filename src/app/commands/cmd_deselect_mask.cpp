@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/deselect_mask.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 
@@ -58,9 +58,9 @@ void DeselectMaskCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(writer.context(), "Deselect", undo::DoesntModifyDocument);
-    document->getApi().deselectMask();
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "Deselect", DoesntModifyDocument);
+    transaction.execute(new cmd::DeselectMask(document));
+    transaction.commit();
   }
   document->generateMaskBoundaries();
   update_screen_for_document(document);

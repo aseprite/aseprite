@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -88,8 +88,8 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
     // If the user didn't cancel the operation...
     if (!m_canceled) {
       ContextWriter writer(UIContext::instance());
-      UndoTransaction undoTransaction(writer.context(), "Cel Movement", undo::ModifyDocument);
-      DocumentApi api = document->getApi();
+      Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
+      DocumentApi api = document->getApi(transaction);
 
       // And now we move the cel (or all selected range) to the new position.
       gfx::Point delta = m_celNew - m_celStart;
@@ -108,7 +108,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
         api.setMaskPosition(document->mask()->bounds().x + delta.x,
                             document->mask()->bounds().y + delta.y);
 
-      undoTransaction.commit();
+      transaction.commit();
     }
   }
 

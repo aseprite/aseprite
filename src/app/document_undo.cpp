@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,13 @@
 
 #include "app/document_undo.h"
 
-#include "app/objects_container_impl.h"
-#include "app/undoers/close_group.h"
+#include "app/app.h"
+#include "app/cmd.h"
+#include "app/cmd_transaction.h"
+#include "app/pref/preferences.h"
 #include "doc/context.h"
-#include "doc/settings.h"
-#include "undo/undo_history.h"
+#include "undo2/undo_history.h"
+#include "undo2/undo_state.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -34,10 +36,9 @@
 namespace app {
 
 DocumentUndo::DocumentUndo()
-  : m_objects(new ObjectsContainerImpl)
-  , m_undoHistory(new undo::UndoHistory(this))
-  , m_enabled(true)
-  , m_ctx(NULL)
+  : m_ctx(NULL)
+  , m_savedCounter(0)
+  , m_savedStateIsLost(false)
 {
 }
 
@@ -46,105 +47,119 @@ void DocumentUndo::setContext(doc::Context* ctx)
   m_ctx = ctx;
 }
 
+void DocumentUndo::add(CmdTransaction* cmd)
+{
+  ASSERT(cmd);
+
+  // A linear undo history is the default behavior
+  if (!App::instance() ||
+      !App::instance()->preferences().undo.allowNonlinearHistory()) {
+    m_undoHistory.clearRedo();
+  }
+
+  m_undoHistory.add(cmd);
+}
+
 bool DocumentUndo::canUndo() const
 {
-  return m_undoHistory->canUndo();
+  return m_undoHistory.canUndo();
 }
 
 bool DocumentUndo::canRedo() const
 {
-  return m_undoHistory->canRedo();
+  return m_undoHistory.canRedo();
 }
 
-void DocumentUndo::doUndo()
+void DocumentUndo::undo()
 {
-  return m_undoHistory->doUndo();
+  return m_undoHistory.undo();
 }
 
-void DocumentUndo::doRedo()
+void DocumentUndo::redo()
 {
-  return m_undoHistory->doRedo();
+  return m_undoHistory.redo();
 }
 
 void DocumentUndo::clearRedo()
 {
-  return m_undoHistory->clearRedo();
+  return m_undoHistory.clearRedo();
 }
 
 bool DocumentUndo::isSavedState() const
 {
-  return m_undoHistory->isSavedState();
+  return (!m_savedStateIsLost && m_savedCounter == 0);
 }
 
 void DocumentUndo::markSavedState()
 {
-  return m_undoHistory->markSavedState();
+  m_savedCounter = 0;
+  m_savedStateIsLost = false;
 }
 
 void DocumentUndo::impossibleToBackToSavedState()
 {
-  m_undoHistory->impossibleToBackToSavedState();
+  m_savedStateIsLost = true;
 }
 
-void DocumentUndo::pushUndoer(undo::Undoer* undoer)
+std::string DocumentUndo::nextUndoLabel() const
 {
-  return m_undoHistory->pushUndoer(undoer);
-}
-
-bool DocumentUndo::implantUndoerInLastGroup(undo::Undoer* undoer)
-{
-  return m_undoHistory->implantUndoerInLastGroup(undoer);
-}
-
-size_t DocumentUndo::getUndoSizeLimit() const
-{
-  ASSERT(m_ctx);
-  ASSERT(m_ctx->settings());
-  return m_ctx->settings()->undoSizeLimit() * 1024 * 1024;
-}
-
-const char* DocumentUndo::getNextUndoLabel() const
-{
-  return getNextUndoGroup()->getLabel();
-}
-
-const char* DocumentUndo::getNextRedoLabel() const
-{
-  return getNextRedoGroup()->getLabel();
-}
-
-SpritePosition DocumentUndo::getNextUndoSpritePosition() const
-{
-  return getNextUndoGroup()->getSpritePosition();
-}
-
-SpritePosition DocumentUndo::getNextRedoSpritePosition() const
-{
-  return getNextRedoGroup()->getSpritePosition();
-}
-
-undoers::CloseGroup* DocumentUndo::getNextUndoGroup() const
-{
-  undo::Undoer* undoer = m_undoHistory->getNextUndoer();
-  if (!undoer)
-    throw std::logic_error("There are some action without label");
-
-  if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer))
-    return closeGroup;
+  const undo2::UndoState* state = nextUndo();
+  if (state)
+    return static_cast<Cmd*>(state->cmd())->label();
   else
-    throw std::logic_error("There are some action without a CloseGroup");
+    return "";
 }
 
-undoers::CloseGroup* DocumentUndo::getNextRedoGroup() const
+std::string DocumentUndo::nextRedoLabel() const
 {
-  undo::Undoer* undoer = m_undoHistory->getNextRedoer();
-  if (!undoer)
-    throw std::logic_error("There are some action without label");
-
-  if (undoers::CloseGroup* closeGroup = dynamic_cast<undoers::CloseGroup*>(undoer))
-    return closeGroup;
+  const undo2::UndoState* state = nextRedo();
+  if (state)
+    return static_cast<const Cmd*>(state->cmd())->label();
   else
-    throw std::logic_error("There are some action without a CloseGroup");
+    return "";
+}
+
+SpritePosition DocumentUndo::nextUndoSpritePosition() const
+{
+  const undo2::UndoState* state = nextUndo();
+  if (state)
+    return static_cast<const CmdTransaction*>(state->cmd())
+      ->spritePositionBeforeExecute();
+  else
+    return SpritePosition();
+}
+
+SpritePosition DocumentUndo::nextRedoSpritePosition() const
+{
+  const undo2::UndoState* state = nextRedo();
+  if (state)
+    return static_cast<const CmdTransaction*>(state->cmd())
+      ->spritePositionAfterExecute();
+  else
+    return SpritePosition();
+}
+
+Cmd* DocumentUndo::lastExecutedCmd() const
+{
+  const undo2::UndoState* state = m_undoHistory.currentState();
+  if (state)
+    return static_cast<Cmd*>(state->cmd());
+  else
+    return NULL;
+}
+
+const undo2::UndoState* DocumentUndo::nextUndo() const
+{
+  return m_undoHistory.currentState();
+}
+
+const undo2::UndoState* DocumentUndo::nextRedo() const
+{
+  const undo2::UndoState* state = m_undoHistory.currentState();
+  if (state)
+    return state->next();
+  else
+    return m_undoHistory.firstState();
 }
 
 } // namespace app

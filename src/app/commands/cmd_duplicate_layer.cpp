@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/add_layer.h"
-#include "app/undoers/move_layer.h"
+#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -66,13 +64,13 @@ void DuplicateLayerCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document = writer.document();
-  DocumentApi api = document->getApi();
 
   {
-    UndoTransaction undo(writer.context(), "Layer Duplication");
+    Transaction transaction(writer.context(), "Layer Duplication");
     LayerImage* sourceLayer = static_cast<LayerImage*>(writer.layer());
+    DocumentApi api = document->getApi(transaction);
     api.duplicateLayerAfter(sourceLayer, sourceLayer);
-    undo.commit();
+    transaction.commit();
   }
 
   update_screen_for_document(document);

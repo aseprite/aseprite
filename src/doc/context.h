@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,9 +24,6 @@ namespace doc {
   public:
     Context();
     virtual ~Context();
-
-    Settings* settings() const { return m_settings; }
-    void setSettings(Settings* settings);
 
     const Documents& documents() const { return m_docs; }
     Documents& documents() { return m_docs; }

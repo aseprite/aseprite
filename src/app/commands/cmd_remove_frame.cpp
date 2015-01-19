@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -65,7 +65,8 @@ void RemoveFrameCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    UndoTransaction undoTransaction(writer.context(), "Remove Frame");
+    Transaction transaction(writer.context(), "Remove Frame");
+    DocumentApi api = document->getApi(transaction);
 
     // TODO the range of selected frames should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
@@ -74,14 +75,14 @@ void RemoveFrameCommand::onExecute(Context* context)
              begin = range.frameBegin()-1;
            frame != begin;
            --frame) {
-        document->getApi().removeFrame(sprite, frame);
+        api.removeFrame(sprite, frame);
       }
     }
     else {
-      document->getApi().removeFrame(sprite, writer.frame());
+      api.removeFrame(sprite, writer.frame());
     }
 
-    undoTransaction.commit();
+    transaction.commit();
   }
   update_screen_for_document(document);
 }

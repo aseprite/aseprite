@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,9 @@
 
 #include "app/document_exporter.h"
 
+#include "app/cmd/set_pixel_format.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/document_api.h"
 #include "app/file/file.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
@@ -374,11 +374,10 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
     // Make the sprite compatible with the texture so the render()
     // works correctly.
     if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
-      DocumentApi docApi(sample.document(), NULL); // DocumentApi without undo
-      docApi.setPixelFormat(
+      cmd::SetPixelFormat(
         sample.sprite(),
         textureImage->pixelFormat(),
-        DitheringMethod::NONE);
+        DitheringMethod::NONE).execute(UIContext::instance());
     }
 
     int x = sample.inTextureBounds().x - sample.trimmedBounds().x;

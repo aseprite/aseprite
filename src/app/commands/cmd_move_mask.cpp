@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@
 #include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask_position.h"
+#include "app/transaction.h"
 #include "base/convert_to.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -128,10 +127,10 @@ void MoveMaskCommand::onExecute(Context* context)
       ContextWriter writer(context);
       Document* document(writer.document());
       {
-        UndoTransaction undo(writer.context(), "Move Selection", undo::DoesntModifyDocument);
+        Transaction transaction(writer.context(), "Move Selection", DoesntModifyDocument);
         gfx::Point pt = document->mask()->bounds().getOrigin();
-        document->getApi().setMaskPosition(pt.x+dx, pt.y+dy);
-        undo.commit();
+        document->getApi(transaction).setMaskPosition(pt.x+dx, pt.y+dy);
+        transaction.commit();
       }
 
       document->generateMaskBoundaries();

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -58,9 +58,9 @@ void FlattenLayersCommand::onExecute(Context* context)
   Document* document = writer.document();
   Sprite* sprite = writer.sprite();
   {
-    UndoTransaction undoTransaction(writer.context(), "Flatten Layers");
-    document->getApi().flattenLayers(sprite);
-    undoTransaction.commit();
+    Transaction transaction(writer.context(), "Flatten Layers");
+    document->getApi(transaction).flattenLayers(sprite);
+    transaction.commit();
   }
   update_screen_for_document(writer.document());
 }

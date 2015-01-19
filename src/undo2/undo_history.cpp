@@ -22,7 +22,6 @@ UndoHistory::UndoHistory()
   : m_first(nullptr)
   , m_last(nullptr)
   , m_cur(nullptr)
-  , m_createBranches(true)
 {
 }
 
@@ -63,11 +62,6 @@ void UndoHistory::redo()
     moveTo(m_cur->m_next);
 }
 
-void UndoHistory::setCreateBranches(bool state)
-{
-  m_createBranches = false;
-}
-
 void UndoHistory::clearRedo()
 {
   for (UndoState* state = m_last, *prev;
@@ -88,9 +82,6 @@ void UndoHistory::clearRedo()
 
 void UndoHistory::add(UndoCommand* cmd)
 {
-  if (!m_createBranches)
-    clearRedo();
-
   UndoState* state = new UndoState;
   state->m_prev = m_last;
   state->m_next = nullptr;

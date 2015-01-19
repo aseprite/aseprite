@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "app/document_api.h"
 #include "app/test_context.h"
+#include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -51,9 +52,11 @@ TEST(DocumentApi, MoveCel) {
   // Create a copy for later comparison.
   base::UniquePtr<Image> expectedImage(Image::createCopy(image1));
 
-  doc->getApi().moveCel(
+  Transaction transaction(&ctx, "");
+  doc->getApi(transaction).moveCel(
     layer1, frame_t(0),
     layer2, frame_t(1));
+  transaction.commit();
 
   EXPECT_EQ(NULL, layer1->cel(frame_t(0)));
 

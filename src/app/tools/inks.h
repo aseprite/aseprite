@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "app/document_undo.h"
 #include "app/settings/settings.h"
 #include "app/tools/pick_ink.h"
-#include "app/undoers/set_mask.h"
 #include "doc/mask.h"
 #include "gfx/region.h"
 
@@ -274,6 +273,7 @@ public:
 // Ink used for selection tools (like Rectangle Marquee, Lasso, Magic Wand, etc.)
 class SelectionInk : public Ink {
   bool m_modify_selection;
+  Mask m_mask;
 
 public:
   SelectionInk() { m_modify_selection = false; }
@@ -288,12 +288,10 @@ public:
       switch (loop->getSelectionMode()) {
         case kDefaultSelectionMode:
         case kAddSelectionMode:
-          loop->getMask()->add(
-            gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
+          m_mask.add(gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
         case kSubtractSelectionMode:
-          loop->getMask()->subtract(
-            gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
+          m_mask.subtract(gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
       }
     }
@@ -309,17 +307,17 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      DocumentUndo* undo = loop->getDocument()->getUndo();
-      if (undo->isEnabled())
-        undo->pushUndoer(new undoers::SetMask(undo->getObjects(), loop->getDocument()));
-
-      loop->getMask()->freeze();
-      loop->getMask()->reserve(loop->sprite()->bounds());
+      m_mask.copyFrom(loop->getMask());
+      m_mask.freeze();
+      m_mask.reserve(loop->sprite()->bounds());
     }
     else {
-      loop->getMask()->unfreeze();
-      loop->getDocument()->setTransformation(Transformation(loop->getMask()->bounds()));
-      loop->getDocument()->setMaskVisible(true);
+      m_mask.unfreeze();
+
+      loop->setMask(&m_mask);
+      loop->getDocument()->setTransformation(Transformation(m_mask.bounds()));
+
+      m_mask.clear();
     }
   }
 

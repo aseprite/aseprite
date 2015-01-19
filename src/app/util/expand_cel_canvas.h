@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ namespace doc {
 namespace app {
   class Context;
   class Document;
-  class UndoTransaction;
+  class Transaction;
 
   using namespace filters;
   using namespace doc;
@@ -56,7 +56,7 @@ namespace app {
       UseModifiedRegionAsUndoInfo = 2,
     };
 
-    ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo, Flags flags);
+    ExpandCelCanvas(Context* context, TiledMode tiledMode, Transaction& undo, Flags flags);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds
@@ -80,8 +80,6 @@ namespace app {
     const Cel* getCel() const { return m_cel; }
 
   private:
-    void copyValidDestToOriginalCel();
-
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;
@@ -96,7 +94,7 @@ namespace app {
     Image* m_dstImage;
     bool m_closed;
     bool m_committed;
-    UndoTransaction& m_undo;
+    Transaction& m_transaction;
     gfx::Region m_validSrcRegion;
     gfx::Region m_validDstRegion;
   };

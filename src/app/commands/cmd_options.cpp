@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,12 +138,10 @@ public:
     locateCrashFolder()->setVisible(false);
 #endif
 
-    // Undo limit
-    undoSizeLimit()->setTextf("%d", m_settings->undoSizeLimit());
-
-    // Goto modified frame/layer on undo/redo
-    if (m_settings->undoGotoModified())
-      undoGotoModified()->setSelected(true);
+    // Undo preferences
+    undoSizeLimit()->setTextf("%d", m_preferences.undo.sizeLimit());
+    undoGotoModified()->setSelected(m_preferences.undo.gotoModified());
+    undoAllowNonlinearHistory()->setSelected(m_preferences.undo.allowNonlinearHistory());
 
     sectionListbox()->selectIndex(0);
   }
@@ -182,8 +180,9 @@ public:
     undo_size_limit_value = undoSizeLimit()->getTextInt();
     undo_size_limit_value = MID(1, undo_size_limit_value, 9999);
 
-    m_settings->setUndoSizeLimit(undo_size_limit_value);
-    m_settings->setUndoGotoModified(undoGotoModified()->isSelected());
+    m_preferences.undo.sizeLimit(undo_size_limit_value);
+    m_preferences.undo.gotoModified(undoGotoModified()->isSelected());
+    m_preferences.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
     m_settings->experimental()->setUseNativeCursor(nativeCursor()->isSelected());

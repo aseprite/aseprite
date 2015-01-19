@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/workspace.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/bind.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -191,8 +191,8 @@ protected:
       // The following steps modify the sprite, so we wrap all
       // operations in a undo-transaction.
       ContextWriter writer(m_context);
-      UndoTransaction undoTransaction(writer.context(), "Import Sprite Sheet", undo::ModifyDocument);
-      DocumentApi api = m_document->getApi();
+      Transaction transaction(writer.context(), "Import Sprite Sheet", ModifyDocument);
+      DocumentApi api = m_document->getApi(transaction);
 
       // Add the layer in the sprite.
       LayerImage* resultLayer = api.newLayer(sprite);
@@ -222,7 +222,7 @@ protected:
       // Set the size of the sprite to the tile size.
       api.setSpriteSize(sprite, m_rect.w, m_rect.h);
 
-      undoTransaction.commit();
+      transaction.commit();
     }
     catch (...) {
       throw;

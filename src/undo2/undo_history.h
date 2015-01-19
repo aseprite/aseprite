@@ -28,11 +28,6 @@ namespace undo2 {
     void undo();
     void redo();
 
-    // By default, UndoHistory creates branches if we undo a command
-    // and call add(). With this method we can disable this behavior
-    // and call clearRedo() automatically when a new command is added
-    // in the history. (Like a regular undo history works.)
-    void setCreateBranches(bool state);
     void clearRedo();
 
   private:
@@ -42,7 +37,6 @@ namespace undo2 {
     UndoState* m_first;
     UndoState* m_last;
     UndoState* m_cur;          // Current action that can be undone
-    bool m_createBranches;
   };
 
 } // namespace undo2

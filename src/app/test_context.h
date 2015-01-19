@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,21 +24,13 @@
 #include "app/document.h"
 #include "app/document_location.h"
 #include "doc/layer.h"
-#include "doc/settings.h"
 #include "doc/sprite.h"
 
 namespace app {
 
-  class TestContext : public app::Context,
-                      public doc::Settings {
+  class TestContext : public app::Context {
   public:
     TestContext() : app::Context(NULL) {
-      setSettings(this);
-    }
-
-    // doc::Settings impl
-    size_t undoSizeLimit() const {
-      return 8;
     }
 
   protected:

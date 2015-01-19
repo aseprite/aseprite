@@ -18,8 +18,7 @@ because they don't depend on any other component.
   * [css](css/): Pseudo-style sheet library.
   * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [scripting](scripting/): JavaScript engine ([V8](https://code.google.com/p/v8/)).
-  * [undo](undo/): Generic library to manage undo history of undoable actions.
-  * [undo2](undo2/): New library to replace the old undo system.
+  * [undo2](undo2/): Generic library to manage a history of undoable commands.
 
 ## Level 1
 

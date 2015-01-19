@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@
 
 #include "app/ui/editor/pixels_movement.h"
 
+#include "app/cmd/clear_mask.h"
+#include "app/cmd/deselect_mask.h"
+#include "app/cmd/set_mask.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
@@ -54,8 +57,8 @@ PixelsMovement::PixelsMovement(Context* context,
   : m_reader(context)
   , m_document(document)
   , m_sprite(sprite)
-  , m_undoTransaction(context, operationName)
-  , m_firstDrop(true)
+  , m_transaction(context, operationName)
+  , m_setMaskCmd(nullptr)
   , m_isDragging(false)
   , m_adjustPivot(false)
   , m_handle(NoHandle)
@@ -118,7 +121,7 @@ void PixelsMovement::cutMask()
   {
     ContextWriter writer(m_reader);
     if (writer.cel())
-      m_document->getApi().clearMask(writer.cel());
+      m_transaction.execute(new cmd::ClearMask(writer.cel()));
   }
 
   copyMask();
@@ -126,7 +129,8 @@ void PixelsMovement::cutMask()
 
 void PixelsMovement::copyMask()
 {
-  // Hide the mask (do not deselect it, it will be moved them using m_undoTransaction.setMaskPosition)
+  // Hide the mask (do not deselect it, it will be moved them using
+  // m_transaction.setMaskPosition)
   Mask emptyMask;
   {
     ContextWriter writer(m_reader);
@@ -146,14 +150,14 @@ void PixelsMovement::catchImage(const gfx::Point& pos, HandleType handle)
 
 void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
 {
-  // Create a new UndoTransaction to move the pixels to other position
+  // Create a new Transaction to move the pixels to other position
   m_initialData = m_currentData;
   m_isDragging = true;
   m_catchPos = pos;
   m_handle = handle;
 
   // Hide the mask (do not deselect it, it will be moved them using
-  // m_undoTransaction.setMaskPosition)
+  // m_transaction.setMaskPosition)
   Mask emptyMask;
   {
     ContextWriter writer(m_reader);
@@ -167,12 +171,7 @@ void PixelsMovement::maskImage(const Image* image)
   m_currentMask->replace(m_currentData.bounds());
   m_initialMask->copyFrom(m_currentMask);
 
-  ContextWriter writer(m_reader);
-
-  m_document->getApi().copyToCurrentMask(m_currentMask);
-
-  m_document->setMask(m_currentMask);
-  m_document->generateMaskBoundaries(m_currentMask);
+  updateDocumentMask();
 
   update_screen_for_document(m_document);
 }
@@ -449,7 +448,7 @@ void PixelsMovement::stampImage()
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
       ExpandCelCanvas expand(writer.context(),
-        TILED_NONE, m_undoTransaction,
+        TILED_NONE, m_transaction,
         ExpandCelCanvas::None);
 
       // TODO can we reduce this region?
@@ -465,7 +464,7 @@ void PixelsMovement::stampImage()
       expand.commit();
     }
     // TODO
-    // m_undoTransaction.commit();
+    // m_transaction.commit();
   }
 }
 
@@ -519,7 +518,7 @@ void PixelsMovement::dropImage()
   stampImage();
 
   // This is the end of the whole undo transaction.
-  m_undoTransaction.commit();
+  m_transaction.commit();
 
   // Destroy the extra cel (this cel will be used by the drawing
   // cursor surely).
@@ -531,11 +530,11 @@ void PixelsMovement::discardImage(bool commit)
 {
   m_isDragging = false;
 
-  // Deselect the mask (here we don't stamp the image).
-  m_document->getApi().deselectMask();
+  // Deselect the mask (here we don't stamp the image)
+  m_transaction.execute(new cmd::DeselectMask(m_document));
 
   if (commit)
-    m_undoTransaction.commit();
+    m_transaction.commit();
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).
@@ -656,12 +655,12 @@ void PixelsMovement::onSetRotationAlgorithm(RotationAlgorithm algorithm)
 
 void PixelsMovement::updateDocumentMask()
 {
-  if (m_firstDrop) {
-    m_firstDrop = false;
-    m_document->getApi().copyToCurrentMask(m_currentMask);
+  if (!m_setMaskCmd) {
+    m_setMaskCmd = new cmd::SetMask(m_document, m_currentMask);
+    m_transaction.execute(m_setMaskCmd);
   }
   else
-    m_document->setMask(m_currentMask);
+    m_setMaskCmd->setNewMask(m_currentMask);
 
   m_document->generateMaskBoundaries(m_currentMask);
 }

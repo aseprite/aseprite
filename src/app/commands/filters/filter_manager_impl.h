@@ -45,6 +45,7 @@ namespace filters {
 namespace app {
   class Context;
   class Document;
+  class Transaction;
 
   using namespace filters;
 
@@ -118,8 +119,8 @@ namespace app {
 
   private:
     void init(const Layer* layer, Image* image, int offset_x, int offset_y);
-    void apply();
-    void applyToImage(Layer* layer, Image* image, int x, int y);
+    void apply(Transaction& transaction);
+    void applyToImage(Transaction& transaction, Layer* layer, Image* image, int x, int y);
     bool updateMask(Mask* mask, const Image* image);
 
     Context* m_context;

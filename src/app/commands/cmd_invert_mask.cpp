@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
+#include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -78,9 +78,6 @@ void InvertMaskCommand::onExecute(Context* context)
     ContextWriter writer(context);
     Document* document(writer.document());
     Sprite* sprite(writer.sprite());
-    UndoTransaction undo(writer.context(), "Mask Invert", undo::DoesntModifyDocument);
-    if (undo.isEnabled())
-      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
 
     // Select all the sprite area
     base::UniquePtr<Mask> mask(new Mask());
@@ -93,22 +90,27 @@ void InvertMaskCommand::onExecute(Context* context)
       maskBounds.x + maskBounds.w-1,
       maskBounds.y + maskBounds.h-1, 0);
 
-    // Invert the current mask in the sprite
-    document->mask()->invert();
-    if (document->mask()->bitmap()) {
-      // Copy the inverted region in the new mask
+    Mask* curMask = document->mask();
+    if (curMask->bitmap()) {
+      // Copy the inverted region in the new mask (we just modify the
+      // document's mask temporaly here)
+      curMask->freeze();
+      curMask->invert();
       doc::copy_image(mask->bitmap(),
-        document->mask()->bitmap(),
-        document->mask()->bounds().x,
-        document->mask()->bounds().y);
+        curMask->bitmap(),
+        curMask->bounds().x,
+        curMask->bounds().y);
+      curMask->invert();
+      curMask->unfreeze();
     }
 
     // We need only need the area inside the sprite
     mask->intersect(sprite->bounds());
 
     // Set the new mask
-    document->setMask(mask);
-    undo.commit();
+    Transaction transaction(writer.context(), "Mask Invert", DoesntModifyDocument);
+    transaction.execute(new cmd::SetMask(document, mask));
+    transaction.commit();
 
     document->generateMaskBoundaries();
     update_screen_for_document(document);

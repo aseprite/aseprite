@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "app/settings/rotation_algorithm.h"
 #include "app/settings/selection_mode.h"
 #include "app/settings/right_click_mode.h"
-#include "doc/settings.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "doc/brush_type.h"
@@ -53,15 +52,9 @@ namespace app {
     class Tool;
   }
 
-  class ISettings : public doc::Settings {
+  class ISettings {
   public:
     virtual ~ISettings() { }
-
-    // Undo
-    virtual size_t undoSizeLimit() const = 0;
-    virtual bool undoGotoModified() const = 0;
-    virtual void setUndoSizeLimit(size_t size) = 0;
-    virtual void setUndoGotoModified(bool state) = 0;
 
     // General settings
     virtual bool getZoomWithScrollWheel() = 0;

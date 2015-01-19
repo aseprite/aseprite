@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@ Cel::Cel(frame_t frame, const ImageRef& image)
 }
 
 Cel::Cel(const Cel& cel)
-  : Object(cel)
+  : Object(ObjectType::Cel)
   , m_layer(NULL)
   , m_frame(cel.m_frame)
   , m_image(cel.m_image)
@@ -51,6 +51,15 @@ void Cel::setImage(const ImageRef& image)
 {
   m_image = image;
   fixupImage();
+}
+
+Document* Cel::document() const
+{
+  ASSERT(m_layer);
+  if (m_layer && m_layer->sprite())
+    return m_layer->sprite()->document();
+  else
+    return NULL;
 }
 
 Sprite* Cel::sprite() const

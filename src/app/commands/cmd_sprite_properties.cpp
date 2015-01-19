@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_button.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
 #include "doc/image.h"
@@ -149,10 +149,10 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // property in the sprite.
       int index = color_button->getColor().getIndex();
       if (index != sprite->transparentColor()) {
-        UndoTransaction undoTransaction(writer.context(), "Set Transparent Color");
-        DocumentApi api = writer.document()->getApi();
+        Transaction transaction(writer.context(), "Set Transparent Color");
+        DocumentApi api = writer.document()->getApi(transaction);
         api.setSpriteTransparentColor(sprite, index);
-        undoTransaction.commit();
+        transaction.commit();
 
         update_screen_for_document(writer.document());
       }

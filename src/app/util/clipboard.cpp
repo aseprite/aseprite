@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/deselect_mask.h"
+#include "app/cmd/clear_mask.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document.h"
@@ -32,6 +34,7 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/settings/settings.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
@@ -39,13 +42,10 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/image_area.h"
 #include "app/util/clipboard.h"
 #include "app/util/misc.h"
 #include "doc/doc.h"
 #include "render/quantization.h"
-#include "undo/undo_history.h"
 
 #if defined WIN32
   #include <windows.h>
@@ -188,13 +188,10 @@ void clipboard::cut(ContextWriter& writer)
   }
   else {
     {
-      UndoTransaction undoTransaction(writer.context(), "Cut");
-      DocumentApi api(writer.document()->getApi());
-
-      api.clearMask(writer.cel());
-      api.deselectMask();
-
-      undoTransaction.commit();
+      Transaction transaction(writer.context(), "Cut");
+      transaction.execute(new cmd::ClearMask(writer.cel()));
+      transaction.execute(new cmd::DeselectMask(writer.document()));
+      transaction.commit();
     }
     writer.document()->generateMaskBoundaries();
     update_screen_for_document(writer.document());
@@ -293,7 +290,6 @@ void clipboard::paste()
       DocumentRange srcRange = clipboard_range.range();
       Document* srcDoc = clipboard_range.document();
       Sprite* srcSpr = srcDoc->sprite();
-      DocumentApi api = dstDoc->getApi();
       std::vector<Layer*> srcLayers;
       std::vector<Layer*> dstLayers;
       srcSpr->getLayersList(srcLayers);
@@ -306,7 +302,8 @@ void clipboard::paste()
           if (srcDoc == dstDoc)
             return;
 
-          UndoTransaction undoTransaction(UIContext::instance(), "Paste Cels");
+          Transaction transaction(UIContext::instance(), "Paste Cels");
+          DocumentApi api = dstDoc->getApi(transaction);
 
           frame_t dstFrame = editor->frame();
           for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
@@ -336,13 +333,14 @@ void clipboard::paste()
             ++dstFrame;
           }
 
-          undoTransaction.commit();
+          transaction.commit();
           editor->invalidate();
           break;
         }
 
         case DocumentRange::kFrames: {
-          UndoTransaction undoTransaction(UIContext::instance(), "Paste Frames");
+          Transaction transaction(UIContext::instance(), "Paste Frames");
+          DocumentApi api = dstDoc->getApi(transaction);
           frame_t dstFrame = frame_t(editor->frame() + 1);
 
           for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
@@ -364,7 +362,7 @@ void clipboard::paste()
             ++dstFrame;
           }
 
-          undoTransaction.commit();
+          transaction.commit();
           editor->invalidate();
           break;
         }
@@ -373,7 +371,8 @@ void clipboard::paste()
           if (srcDoc->colorMode() != dstDoc->colorMode())
             throw std::runtime_error("You cannot copy layers of document with different color modes");
 
-          UndoTransaction undoTransaction(UIContext::instance(), "Paste Layers");
+          Transaction transaction(UIContext::instance(), "Paste Layers");
+          DocumentApi api = dstDoc->getApi(transaction);
 
           // Expand frames of dstDoc if it's needed.
           frame_t maxFrame(0);
@@ -397,7 +396,7 @@ void clipboard::paste()
               srcLayers[i], dstDoc, newLayer);
           }
 
-          undoTransaction.commit();
+          transaction.commit();
           editor->invalidate();
           break;
         }

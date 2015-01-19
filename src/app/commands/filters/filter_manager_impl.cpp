@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
 
 #include "app/commands/filters/filter_manager_impl.h"
 
+#include "app/cmd/copy_rect.h"
 #include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/image_area.h"
+#include "app/transaction.h"
 #include "filters/filter.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -181,7 +181,7 @@ bool FilterManagerImpl::applyStep()
   return true;
 }
 
-void FilterManagerImpl::apply()
+void FilterManagerImpl::apply(Transaction& transaction)
 {
   bool cancelled = false;
 
@@ -197,16 +197,9 @@ void FilterManagerImpl::apply()
   }
 
   if (!cancelled) {
-    UndoTransaction undo(m_context, m_filter->getName(), undo::ModifyDocument);
-
-    // Undo stuff
-    if (undo.isEnabled())
-      undo.pushUndoer(new undoers::ImageArea(undo.getObjects(), m_src, m_x, m_y, m_w, m_h));
-
     // Copy "dst" to "src"
-    copy_image(m_src, m_dst);
-
-    undo.commit();
+    transaction.execute(new cmd::CopyRect(
+        m_src, m_dst, gfx::Clip(m_x, m_y, m_x, m_y, m_w, m_h)));
   }
 }
 
@@ -226,7 +219,7 @@ void FilterManagerImpl::applyToTarget()
   // Initialize writting operation
   ContextReader reader(m_context);
   ContextWriter writer(reader);
-  UndoTransaction undo(writer.context(), m_filter->getName(), undo::ModifyDocument);
+  Transaction transaction(writer.context(), m_filter->getName(), ModifyDocument);
 
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
@@ -235,7 +228,7 @@ void FilterManagerImpl::applyToTarget()
   for (ImagesCollector::ItemsIterator it = images.begin();
        it != images.end() && !cancelled;
        ++it) {
-    applyToImage(it->layer(), it->image(), it->cel()->x(), it->cel()->y());
+    applyToImage(transaction, it->layer(), it->image(), it->cel()->x(), it->cel()->y());
 
     // Is there a delegate to know if the process was cancelled by the user?
     if (m_progressDelegate)
@@ -245,7 +238,7 @@ void FilterManagerImpl::applyToTarget()
     m_progressBase += m_progressWidth;
   }
 
-  undo.commit();
+  transaction.commit();
 }
 
 void FilterManagerImpl::flush()
@@ -325,10 +318,10 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
-void FilterManagerImpl::applyToImage(Layer* layer, Image* image, int x, int y)
+void FilterManagerImpl::applyToImage(Transaction& transaction, Layer* layer, Image* image, int x, int y)
 {
   init(layer, image, x, y);
-  apply();
+  apply(transaction);
 }
 
 bool FilterManagerImpl::updateMask(Mask* mask, const Image* image)

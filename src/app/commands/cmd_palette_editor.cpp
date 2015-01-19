@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd_sequence.h"
+#include "app/cmd/set_palette.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -35,6 +37,7 @@
 #include "app/modules/palettes.h"
 #include "app/settings/settings.h"
 #include "app/settings/settings.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/editor/editor.h"
@@ -44,8 +47,6 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/path.h"
@@ -748,28 +749,24 @@ void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
       currentSpritePalette->countDiff(newPalette, &from, &to);
 
       if (from >= 0 && to >= from) {
-        DocumentUndo* undo = document->getUndo();
+        DocumentUndo* undo = document->undoHistory();
+        Cmd* cmd = new cmd::SetPalette(sprite, frame, newPalette);
 
         // Add undo information to save the range of pal entries that will be modified.
-        if (undo->isEnabled()) {
-          if (m_implantChange && strcmp(undo->getNextUndoLabel(), operationName) == 0) {
-            undo->implantUndoerInLastGroup
-              (new undoers::SetPaletteColors(undo->getObjects(),
-                                             sprite, currentSpritePalette,
-                                             frame, from, to));
-          }
-          else {
-            UndoTransaction undoTransaction(writer.context(), operationName, undo::ModifyDocument);
-            undoTransaction.pushUndoer
-              (new undoers::SetPaletteColors(undoTransaction.getObjects(),
-                                             sprite, currentSpritePalette,
-                                             frame, from, to));
-            undoTransaction.commit();
-          }
+        if (m_implantChange &&
+            undo->lastExecutedCmd() &&
+            undo->lastExecutedCmd()->label() == operationName) {
+          // Implant the cmd in the last CmdSequence if it's
+          // related about color palette modifications
+          ASSERT(dynamic_cast<CmdSequence*>(undo->lastExecutedCmd()));
+          static_cast<CmdSequence*>(undo->lastExecutedCmd())->add(cmd);
+          cmd->execute(UIContext::instance());
         }
-
-        // Change the sprite palette
-        sprite->setPalette(newPalette, false);
+        else {
+          Transaction transaction(writer.context(), operationName, ModifyDocument);
+          transaction.execute(cmd);
+          transaction.commit();
+        }
       }
     }
     catch (base::Exception& e) {

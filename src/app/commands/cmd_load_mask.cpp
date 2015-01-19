@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #include "config.h"
 #endif
 
+#include "app/cmd/set_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/file_selector.h"
 #include "app/modules/gui.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_mask.h"
+#include "app/transaction.h"
 #include "app/util/msk_file.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -88,15 +88,10 @@ void LoadMaskCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     Document* document = writer.document();
-    UndoTransaction undo(writer.context(), "Mask Load", undo::DoesntModifyDocument);
+    Transaction transaction(writer.context(), "Mask Load", DoesntModifyDocument);
+    transaction.execute(new cmd::SetMask(document, mask));
+    transaction.commit();
 
-    // Add the mask change into the undo history.
-    if (undo.isEnabled())
-      undo.pushUndoer(new undoers::SetMask(undo.getObjects(), document));
-
-    document->setMask(mask);
-
-    undo.commit();
     document->generateMaskBoundaries();
     update_screen_for_document(document);
   }

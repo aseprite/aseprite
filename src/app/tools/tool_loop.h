@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,6 +127,7 @@ namespace app {
 
       // Current mask to limit paint area
       virtual Mask* getMask() = 0;
+      virtual void setMask(Mask* newMask) = 0;
 
       // Gets mask X,Y origin coordinates
       virtual gfx::Point getMaskOrigin() = 0;

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 #include "app/load_widget.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "base/convert_to.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
@@ -137,12 +137,13 @@ void FramePropertiesCommand::onExecute(Context* context)
     int num = frlen->getTextInt();
 
     ContextWriter writer(reader);
-    UndoTransaction undoTransaction(writer.context(), "Frame Duration");
+    Transaction transaction(writer.context(), "Frame Duration");
+    DocumentApi api = writer.document()->getApi(transaction);
     if (firstFrame != lastFrame)
-      writer.document()->getApi().setFrameRangeDuration(writer.sprite(), firstFrame, lastFrame, num);
+      api.setFrameRangeDuration(writer.sprite(), firstFrame, lastFrame, num);
     else
-      writer.document()->getApi().setFrameDuration(writer.sprite(), firstFrame, num);
-    undoTransaction.commit();
+      api.setFrameDuration(writer.sprite(), firstFrame, num);
+    transaction.commit();
   }
 }
 

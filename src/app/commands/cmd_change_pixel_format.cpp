@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/dithering_method.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
@@ -105,12 +105,12 @@ void ChangePixelFormatCommand::onExecute(Context* context)
 {
   {
     ContextWriter writer(context);
-    UndoTransaction undoTransaction(writer.context(), "Color Mode Change");
+    Transaction transaction(writer.context(), "Color Mode Change");
     Document* document(writer.document());
     Sprite* sprite(writer.sprite());
 
-    document->getApi().setPixelFormat(sprite, m_format, m_dithering);
-    undoTransaction.commit();
+    document->getApi(transaction).setPixelFormat(sprite, m_format, m_dithering);
+    transaction.commit();
   }
   app_refresh_screen();
 }

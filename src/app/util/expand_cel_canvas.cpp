@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,18 +23,16 @@
 #include "app/util/expand_cel_canvas.h"
 
 #include "app/app.h"
+#include "app/cmd/add_cel.h"
+#include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_position.h"
+#include "app/cmd/copy_region.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_location.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/add_cel.h"
-#include "app/undoers/dirty_area.h"
-#include "app/undoers/modified_region.h"
-#include "app/undoers/replace_image.h"
-#include "app/undoers/set_cel_position.h"
+#include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
-#include "doc/dirty.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -65,7 +63,7 @@ static void create_buffers()
 
 namespace app {
 
-ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo, Flags flags)
+ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, Transaction& transaction, Flags flags)
   : m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
@@ -74,7 +72,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   , m_dstImage(NULL)
   , m_closed(false)
   , m_committed(false)
-  , m_undo(undo)
+  , m_transaction(transaction)
 {
   create_buffers();
 
@@ -157,14 +155,8 @@ void ExpandCelCanvas::commit()
     ImageRef newImage(Image::createCopy(m_dstImage));
     m_cel->setImage(newImage);
 
-    // Is the undo enabled?.
-    if (m_undo.isEnabled()) {
-      m_undo.pushUndoer(new undoers::AddCel(m_undo.getObjects(),
-          m_layer, m_cel));
-    }
-
     // And finally we add the cel again in the layer.
-    static_cast<LayerImage*>(m_layer)->addCel(m_cel);
+    m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
   }
   else if (m_celImage) {
     // If the size of each image is the same, we can create an undo
@@ -173,33 +165,26 @@ void ExpandCelCanvas::commit()
         m_bounds.getOrigin() == m_origCelPos &&
         m_celImage->width() == m_dstImage->width() &&
         m_celImage->height() == m_dstImage->height()) {
-      // Add to the undo history the differences between m_celImage and m_dstImage
-      if (m_undo.isEnabled()) {
-        if ((m_flags & UseModifiedRegionAsUndoInfo) == UseModifiedRegionAsUndoInfo) {
-          m_undo.pushUndoer(new undoers::ModifiedRegion(
-              m_undo.getObjects(), m_celImage, m_validDstRegion));
-        }
-        else {
-          Dirty dirty(m_celImage, m_dstImage, m_validDstRegion);
-          dirty.saveImagePixels(m_celImage);
-          m_undo.pushUndoer(new undoers::DirtyArea(
-              m_undo.getObjects(), m_celImage, &dirty));
-        }
+      int dx = -m_bounds.x + m_origCelPos.x;
+      int dy = -m_bounds.y + m_origCelPos.y;
+
+      if ((m_flags & UseModifiedRegionAsUndoInfo) != UseModifiedRegionAsUndoInfo) {
+        // TODO Reduce m_validDstRegion to modified areas between
+        //      m_celImage and m_dstImage
       }
 
       // Copy the destination to the cel image.
-      copyValidDestToOriginalCel();
+      m_transaction.execute(new cmd::CopyRegion(
+          m_celImage, m_dstImage, m_validDstRegion, dx, dy));
     }
     // If the size of both images are different, we have to
     // replace the entire image.
     else {
-      if (m_undo.isEnabled()) {
-        if (m_cel->position() != m_origCelPos) {
-          gfx::Point newPos = m_cel->position();
-          m_cel->setPosition(m_origCelPos);
-          m_undo.pushUndoer(new undoers::SetCelPosition(m_undo.getObjects(), m_cel));
-          m_cel->setPosition(newPos);
-        }
+      if (m_cel->position() != m_origCelPos) {
+        gfx::Point newPos = m_cel->position();
+        m_cel->setPosition(m_origCelPos);
+        m_transaction.execute(new cmd::SetCelPosition(m_cel,
+            newPos.x, newPos.y));
       }
 
       // Validate the whole m_dstImage copying invalid areas from m_celImage
@@ -208,12 +193,8 @@ void ExpandCelCanvas::commit()
       // Replace the image in the stock. We need to create a copy of
       // image because m_dstImage's ImageBuffer cannot be shared.
       ImageRef newImage(Image::createCopy(m_dstImage));
-
-      if (m_undo.isEnabled())
-        m_undo.pushUndoer(new undoers::ReplaceImage(m_undo.getObjects(),
-            m_sprite, m_celImage, newImage));
-
-      m_sprite->replaceImage(m_celImage->id(), newImage);
+      m_transaction.execute(new cmd::ReplaceImage(
+          m_sprite, m_celImage, newImage));
     }
   }
   else {
@@ -363,18 +344,6 @@ void ExpandCelCanvas::copyValidDestToSourceCanvas(const gfx::Region& rgn)
   for (const auto& rc : rgn2)
     m_srcImage->copy(m_dstImage,
       gfx::Clip(rc.x, rc.y, rc.x, rc.y, rc.w, rc.h));
-}
-
-void ExpandCelCanvas::copyValidDestToOriginalCel()
-{
-  // Copy valid destination region to the m_celImage
-  for (const auto& rc : m_validDstRegion) {
-    m_celImage->copy(m_dstImage,
-      gfx::Clip(
-        rc.x-m_bounds.x+m_origCelPos.x,
-        rc.y-m_bounds.y+m_origCelPos.y,
-        rc.x, rc.y, rc.w, rc.h));
-  }
 }
 
 } // namespace app

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "base/observable.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
+#include "doc/color.h"
 #include "doc/document.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
@@ -49,13 +50,10 @@ namespace gfx {
   class Region;
 }
 
-namespace undo {
-  class UndoersCollector;
-}
-
 namespace app {
   class DocumentApi;
   class DocumentUndo;
+  class Transaction;
   struct BoundSeg;
 
   using namespace doc;
@@ -78,13 +76,16 @@ namespace app {
     ~Document();
 
     // Returns a high-level API: observable and undoable methods.
-    DocumentApi getApi(undo::UndoersCollector* undoers = NULL);
+    DocumentApi getApi(Transaction& transaction);
 
     //////////////////////////////////////////////////////////////////////
     // Main properties
 
-    const DocumentUndo* getUndo() const { return m_undo; }
-    DocumentUndo* getUndo() { return m_undo; }
+    const DocumentUndo* undoHistory() const { return m_undo; }
+    DocumentUndo* undoHistory() { return m_undo; }
+
+    color_t bgColor() const;
+    color_t bgColor(Layer* layer) const;
 
     //////////////////////////////////////////////////////////////////////
     // Notifications

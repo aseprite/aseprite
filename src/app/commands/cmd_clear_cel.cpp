@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "app/modules/gui.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/undo_transaction.h"
+#include "app/transaction.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -65,8 +65,8 @@ void ClearCelCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   {
-    UndoTransaction undoTransaction(writer.context(), "Clear Cel");
-
+    Transaction transaction(writer.context(), "Clear Cel");
+    
     // TODO the range of selected frames should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
@@ -83,15 +83,15 @@ void ClearCelCommand::onExecute(Context* context)
                begin = range.frameBegin()-1;
              frame != begin;
              --frame) {
-          document->getApi().clearCel(layerImage, frame);
+          document->getApi(transaction).clearCel(layerImage, frame);
         }
       }
     }
     else {
-      document->getApi().clearCel(writer.cel());
+      document->getApi(transaction).clearCel(writer.cel());
     }
 
-    undoTransaction.commit();
+    transaction.commit();
   }
   update_screen_for_document(document);
 }

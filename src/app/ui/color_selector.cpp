@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "app/app.h"
+#include "app/cmd/set_palette.h"
 #include "app/color.h"
 #include "app/console.h"
 #include "app/context.h"
@@ -31,22 +32,21 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/transaction.h"
 #include "app/ui/color_selector.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui/styled_button.h"
 #include "app/ui_context.h"
-#include "app/undo_transaction.h"
-#include "app/undoers/set_palette_colors.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
-#include "gfx/border.h"
-#include "gfx/size.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
+#include "gfx/border.h"
+#include "gfx/size.h"
 #include "ui/ui.h"
 
 namespace app {
@@ -285,15 +285,9 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
     if (document) {
       frame_t frame = writer.frame();
 
-      UndoTransaction undoTransaction(writer.context(), "Add palette entry", undo::ModifyDocument);
-      undoTransaction.pushUndoer
-        (new undoers::SetPaletteColors(undoTransaction.getObjects(),
-          sprite, sprite->palette(frame),
-          frame, index, index));
-
-      sprite->setPalette(newPalette, false);
-
-      undoTransaction.commit();
+      Transaction transaction(writer.context(), "Add palette entry", ModifyDocument);
+      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
+      transaction.commit();
     }
 
     set_current_palette(newPalette, false);

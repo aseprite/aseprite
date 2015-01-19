@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -353,26 +353,6 @@ void UISettingsImpl::onRemoveDocument(doc::Document* doc)
 
 //////////////////////////////////////////////////////////////////////
 // General settings
-
-size_t UISettingsImpl::undoSizeLimit() const
-{
-  return ((size_t)get_config_int("Options", "UndoSizeLimit", 8));
-}
-
-bool UISettingsImpl::undoGotoModified() const
-{
-  return get_config_bool("Options", "UndoGotoModified", true);
-}
-
-void UISettingsImpl::setUndoSizeLimit(size_t size)
-{
-  set_config_int("Options", "UndoSizeLimit", size);
-}
-
-void UISettingsImpl::setUndoGotoModified(bool state)
-{
-  set_config_bool("Options", "UndoGotoModified", state);
-}
 
 bool UISettingsImpl::getZoomWithScrollWheel()
 {

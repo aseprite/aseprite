@@ -624,7 +624,7 @@
       <item command="BackgroundFromLayer" text="&amp;Background from Layer" />
       <item command="LayerFromBackground" text="&amp;Layer from Background" />
       <separator />
-      <item command="DuplicateLayer" text="&amp;Duplicate..." />
+      <item command="DuplicateLayer" text="&amp;Duplicate" />
       <item command="MergeDownLayer" text="&amp;Merge Down" />
       <item command="FlattenLayers" text="&amp;Flatten" />
     </menu>
