@@ -27,8 +27,8 @@
 #include "app/cmd_transaction.h"
 #include "app/pref/preferences.h"
 #include "doc/context.h"
-#include "undo2/undo_history.h"
-#include "undo2/undo_state.h"
+#include "undo/undo_history.h"
+#include "undo/undo_state.h"
 
 #include <cassert>
 #include <stdexcept>
@@ -103,7 +103,7 @@ void DocumentUndo::impossibleToBackToSavedState()
 
 std::string DocumentUndo::nextUndoLabel() const
 {
-  const undo2::UndoState* state = nextUndo();
+  const undo::UndoState* state = nextUndo();
   if (state)
     return static_cast<Cmd*>(state->cmd())->label();
   else
@@ -112,7 +112,7 @@ std::string DocumentUndo::nextUndoLabel() const
 
 std::string DocumentUndo::nextRedoLabel() const
 {
-  const undo2::UndoState* state = nextRedo();
+  const undo::UndoState* state = nextRedo();
   if (state)
     return static_cast<const Cmd*>(state->cmd())->label();
   else
@@ -121,7 +121,7 @@ std::string DocumentUndo::nextRedoLabel() const
 
 SpritePosition DocumentUndo::nextUndoSpritePosition() const
 {
-  const undo2::UndoState* state = nextUndo();
+  const undo::UndoState* state = nextUndo();
   if (state)
     return static_cast<const CmdTransaction*>(state->cmd())
       ->spritePositionBeforeExecute();
@@ -131,7 +131,7 @@ SpritePosition DocumentUndo::nextUndoSpritePosition() const
 
 SpritePosition DocumentUndo::nextRedoSpritePosition() const
 {
-  const undo2::UndoState* state = nextRedo();
+  const undo::UndoState* state = nextRedo();
   if (state)
     return static_cast<const CmdTransaction*>(state->cmd())
       ->spritePositionAfterExecute();
@@ -141,21 +141,21 @@ SpritePosition DocumentUndo::nextRedoSpritePosition() const
 
 Cmd* DocumentUndo::lastExecutedCmd() const
 {
-  const undo2::UndoState* state = m_undoHistory.currentState();
+  const undo::UndoState* state = m_undoHistory.currentState();
   if (state)
     return static_cast<Cmd*>(state->cmd());
   else
     return NULL;
 }
 
-const undo2::UndoState* DocumentUndo::nextUndo() const
+const undo::UndoState* DocumentUndo::nextUndo() const
 {
   return m_undoHistory.currentState();
 }
 
-const undo2::UndoState* DocumentUndo::nextRedo() const
+const undo::UndoState* DocumentUndo::nextRedo() const
 {
-  const undo2::UndoState* state = m_undoHistory.currentState();
+  const undo::UndoState* state = m_undoHistory.currentState();
   if (state)
     return state->next();
   else

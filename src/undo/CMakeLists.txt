@@ -1,5 +1,5 @@
-# Aseprite Undo2 Library
+# Aseprite Undo Library
 # Copyright (C) 2015 David Capello
 
-add_library(undo2-lib
+add_library(undo-lib
   undo_history.cpp)

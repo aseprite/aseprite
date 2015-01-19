@@ -23,7 +23,7 @@
 #include "base/disable_copying.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite_position.h"
-#include "undo2/undo_history.h"
+#include "undo/undo_history.h"
 
 #include <string>
 
@@ -67,10 +67,10 @@ namespace app {
     int* savedCounter() { return &m_savedCounter; }
 
   private:
-    const undo2::UndoState* nextUndo() const;
-    const undo2::UndoState* nextRedo() const;
+    const undo::UndoState* nextUndo() const;
+    const undo::UndoState* nextRedo() const;
 
-    undo2::UndoHistory m_undoHistory;
+    undo::UndoHistory m_undoHistory;
     doc::Context* m_ctx;
 
     // This counter is equal to 0 if we are in the "saved state", i.e.

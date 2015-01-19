@@ -1,14 +1,14 @@
-// Aseprite Undo2 Library
+// Aseprite Undo Library
 // Copyright (C) 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef UNDO2_UNDO_COMMAND_H_INCLUDED
-#define UNDO2_UNDO_COMMAND_H_INCLUDED
+#ifndef UNDO_UNDO_COMMAND_H_INCLUDED
+#define UNDO_UNDO_COMMAND_H_INCLUDED
 #pragma once
 
-namespace undo2 {
+namespace undo {
 
   class UndoCommand {
   public:
@@ -17,6 +17,6 @@ namespace undo2 {
     virtual void redo() = 0;
   };
 
-} // namespace undo2
+} // namespace undo
 
-#endif  // UNDO2_UNDO_COMMAND_H_INCLUDED
+#endif  // UNDO_UNDO_COMMAND_H_INCLUDED

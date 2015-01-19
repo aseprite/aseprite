@@ -21,14 +21,14 @@
 #pragma once
 
 #include "doc/sprite_position.h"
-#include "undo2/undo_command.h"
+#include "undo/undo_command.h"
 
 #include <string>
 
 namespace app {
   class Context;
 
-  class Cmd : public undo2::UndoCommand {
+  class Cmd : public undo::UndoCommand {
   public:
     Cmd();
     virtual ~Cmd();

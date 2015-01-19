@@ -45,7 +45,6 @@
 
 * Remove unused skin parts
 * Make one level of layers (folders should modify only timeline/UI)
-* rename undo2 to undo
 * Convert doc::PixelFormat to a enum class
 * Add doc::Spec with width/height/channels/ColorMode/ncolors
 * Convert doc::LayerIndex -> typedef int doc::layer_t;

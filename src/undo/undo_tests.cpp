@@ -1,4 +1,4 @@
-// Aseprite Undo2 Library
+// Aseprite Undo Library
 // Copyright (C) 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -11,10 +11,10 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#include "undo2/undo_command.h"
-#include "undo2/undo_history.h"
+#include "undo/undo_command.h"
+#include "undo/undo_history.h"
 
-using namespace undo2;
+using namespace undo;
 
 class Cmd : public UndoCommand {
 public:

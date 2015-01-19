@@ -1,4 +1,4 @@
-// Aseprite Undo2 Library
+// Aseprite Undo Library
 // Copyright (C) 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
@@ -8,15 +8,15 @@
 #include "config.h"
 #endif
 
-#include "undo2/undo_history.h"
+#include "undo/undo_history.h"
 
-#include "undo2/undo_command.h"
-#include "undo2/undo_state.h"
+#include "undo/undo_command.h"
+#include "undo/undo_state.h"
 
 #include <cassert>
 #include <stack>
 
-namespace undo2 {
+namespace undo {
 
 UndoHistory::UndoHistory()
   : m_first(nullptr)
