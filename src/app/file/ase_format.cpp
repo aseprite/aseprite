@@ -1061,10 +1061,10 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
       Cel* link = layer->cel(link_frame);
 
       if (link) {
-#if 1   // Create a copy of the linked cel (avoid using links cel)
+#if 0   // Create a copy of the linked cel (avoid using links cel)
         ImageRef image(Image::createCopy(link->image()));
         cel->setImage(image);
-#else
+#else   // Use linked cels
         cel->setImage(link->imageRef());
 #endif
       }
