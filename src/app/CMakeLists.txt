@@ -83,6 +83,7 @@ add_library(app-lib
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
   cmd/set_cel_frame.cpp
+  cmd/set_cel_image.cpp
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
   cmd/set_frame_duration.cpp
