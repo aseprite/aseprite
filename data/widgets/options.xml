@@ -94,7 +94,7 @@
 
           <vbox>
             <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
-            <check id="undo_allow_nonlinear_history" text="Allow non-linear history." />
+            <check id="undo_allow_nonlinear_history" text="Allow non-linear history" />
           </vbox>
         </vbox>
 
