@@ -29,6 +29,9 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/set_cel_frame.h"
+#include "app/cmd/set_cel_image.h"
+#include "app/cmd/set_cel_position.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -72,8 +75,11 @@ void MoveCel::onExecute()
 
   // Clear destination cel if it does exist. It'll be overriden by the
   // copy of srcCel.
-  if (dstCel)
+  if (dstCel) {
+    if (dstCel->links())
+      executeAndAdd(new cmd::UnlinkCel(dstCel));
     executeAndAdd(new cmd::ClearCel(dstCel));
+  }
 
   // Add empty frames until newFrame
   while (dstSprite->totalFrames() <= m_dstFrame)
@@ -85,49 +91,51 @@ void MoveCel::onExecute()
   if (dstCel)
     dstImage = dstCel->imageRef();
 
-  if (srcCel) {
-    if (srcLayer == dstLayer) {
-      if (dstLayer->isBackground()) {
-        ASSERT(dstImage);
-        if (dstImage) {
-          int blend = (srcLayer->isBackground() ?
-            BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+  bool createLink =
+    (srcLayer == dstLayer && dstLayer->isContinuous());
 
-          ImageRef tmp(Image::createCopy(dstImage));
-          render::composite_image(tmp, srcImage,
-            srcCel->x(), srcCel->y(), 255, blend);
-          executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
-        }
+  // For background layer
+  if (dstLayer->isBackground()) {
+    ASSERT(dstCel);
+    ASSERT(dstImage);
+    if (!dstCel || !dstImage ||
+        !srcCel || !srcImage)
+      return;
 
-        executeAndAdd(new cmd::ClearImage(srcImage,
-            static_cast<app::Document*>(srcSprite->document())
-            ->bgColor(srcLayer)));
-      }
-      // Move the cel in the same layer.
-      else {
-        executeAndAdd(new cmd::SetCelFrame(srcCel, m_dstFrame));
-      }
+    if (createLink) {
+      executeAndAdd(new cmd::SetCelImage(dstCel, srcCel->imageRef()));
+      executeAndAdd(new cmd::SetCelPosition(dstCel, srcCel->x(), srcCel->y()));
+      executeAndAdd(new cmd::UnlinkCel(srcCel));
     }
-    // Move the cel between different layers.
     else {
-      if (!dstCel) {
-        dstImage.reset(Image::createCopy(srcImage));
+      int blend = (srcLayer->isBackground() ?
+        BLEND_MODE_COPY: BLEND_MODE_NORMAL);
 
-        dstCel = new Cel(*srcCel);
-        dstCel->setFrame(m_dstFrame);
-        dstCel->setImage(dstImage);
-      }
+      ImageRef tmp(Image::createCopy(dstImage));
+      render::composite_image(tmp, srcImage,
+        srcCel->x(), srcCel->y(), 255, blend);
+      executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
+    }
+    executeAndAdd(new cmd::ClearCel(srcCel));
+  }
+  // For transparent layers
+  else if (srcCel) {
+    ASSERT(!dstCel);
+    if (dstCel)
+      return;
 
-      if (dstLayer->isBackground()) {
-        ImageRef tmp(Image::createCopy(dstImage));
-        render::composite_image(tmp, srcImage,
-          srcCel->x(), srcCel->y(), 255, BLEND_MODE_NORMAL);
-        executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
-      }
-      else {
-        executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
-      }
+    // Move the cel in the same layer.
+    if (srcLayer == dstLayer) {
+      executeAndAdd(new cmd::SetCelFrame(srcCel, m_dstFrame));
+    }
+    else {
+      dstImage.reset(Image::createCopy(srcImage));
 
+      dstCel = new Cel(*srcCel);
+      dstCel->setFrame(m_dstFrame);
+      dstCel->setImage(dstImage);
+
+      executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
       executeAndAdd(new cmd::ClearCel(srcCel));
     }
   }
