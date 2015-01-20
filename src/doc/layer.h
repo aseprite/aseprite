@@ -33,6 +33,7 @@ namespace doc {
     Editable   = 2,             // Can be written
     LockMove   = 4,             // Cannot be moved
     Background = 8,             // Stack order cannot be changed
+    Continuous = 16,            // Prefer to link cels when the user copy them
 
     BackgroundLayerFlags = LockMove | Background,
   };
@@ -64,11 +65,13 @@ namespace doc {
     bool isVisible() const    { return hasFlags(LayerFlags::Visible); }
     bool isEditable() const   { return hasFlags(LayerFlags::Editable); }
     bool isMovable() const    { return !hasFlags(LayerFlags::LockMove); }
+    bool isContinuous() const { return hasFlags(LayerFlags::Continuous); }
 
     void setBackground(bool state) { switchFlags(LayerFlags::Background, state); }
     void setVisible   (bool state) { switchFlags(LayerFlags::Visible, state); }
     void setEditable  (bool state) { switchFlags(LayerFlags::Editable, state); }
     void setMovable   (bool state) { switchFlags(LayerFlags::LockMove, !state); }
+    void setContinuous(bool state) { switchFlags(LayerFlags::Continuous, state); }
 
     LayerFlags flags() const {
       return m_flags;
