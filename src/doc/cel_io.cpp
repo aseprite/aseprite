@@ -33,7 +33,7 @@ void write_cel(std::ostream& os, SubObjectsIO* subObjects, Cel* cel)
   write16(os, cel->opacity());
   write16(os, link ? 1: 0);
   if (link)
-    write32(os, link->id());
+    write32(os, cel->image()->id());
   else
     subObjects->write_image(os, cel->image());
 }
