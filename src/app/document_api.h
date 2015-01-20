@@ -107,7 +107,6 @@ namespace app {
     void replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
 
     // Image API
-    void clearImage(Image* image, color_t bgcolor);
     void flipImage(Image* image, const gfx::Rect& bounds, doc::algorithm::FlipType flipType);
     void flipImageWithMask(Layer* layer, Image* image, doc::algorithm::FlipType flipType);
 

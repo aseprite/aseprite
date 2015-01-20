@@ -499,11 +499,6 @@ void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const I
       sprite, oldImage, newImage));
 }
 
-void DocumentApi::clearImage(Image* image, color_t bgcolor)
-{
-  m_transaction.execute(new cmd::ClearImage(image, bgcolor));
-}
-
 void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,
   doc::algorithm::FlipType flipType)
 {
