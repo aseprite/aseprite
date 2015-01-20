@@ -22,7 +22,6 @@
 
 #include "app/cmd.h"
 #include "app/cmd/with_sprite.h"
-// #include "app/cmd/with_image.h"
 #include "doc/image_ref.h"
 
 #include <sstream>
