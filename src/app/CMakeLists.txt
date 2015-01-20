@@ -95,6 +95,7 @@ add_library(app-lib
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
+  cmd/unlink_cel.cpp
   cmd/with_cel.cpp
   cmd/with_document.cpp
   cmd/with_image.cpp
@@ -184,6 +185,7 @@ add_library(app-lib
   commands/cmd_switch_colors.cpp
   commands/cmd_timeline.cpp
   commands/cmd_undo.cpp
+  commands/cmd_unlink_cel.cpp
   commands/cmd_zoom.cpp
   commands/command.cpp
   commands/commands.cpp
