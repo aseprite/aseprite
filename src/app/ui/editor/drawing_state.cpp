@@ -214,6 +214,8 @@ void DrawingState::destroyLoop()
   delete m_toolLoop;
   m_toolLoopManager = NULL;
   m_toolLoop = NULL;
+
+  app_rebuild_documents_tabs();
 }
 
 } // namespace app

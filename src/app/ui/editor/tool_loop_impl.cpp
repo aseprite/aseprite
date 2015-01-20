@@ -224,8 +224,6 @@ public:
 
     if (redraw)
       update_screen_for_document(m_document);
-    else
-      app_rebuild_documents_tabs();
   }
 
   // IToolLoop interface
