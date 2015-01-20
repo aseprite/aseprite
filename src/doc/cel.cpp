@@ -49,6 +49,8 @@ void Cel::setFrame(frame_t frame)
 
 void Cel::setImage(const ImageRef& image)
 {
+  ASSERT(image.get());
+
   m_image = image;
   fixupImage();
 }
@@ -85,6 +87,20 @@ Cel* Cel::link() const
   }
 
   return NULL;
+}
+
+size_t Cel::links() const
+{
+  size_t links = 0;
+
+  Sprite* sprite = this->sprite();
+  for (frame_t fr=0; fr<sprite->totalFrames(); ++fr) {
+    Cel* cel = m_layer->cel(fr);
+    if (cel && cel != this && cel->imageRef().get() == m_image.get())
+      ++links;
+  }
+
+  return links;
 }
 
 gfx::Rect Cel::bounds() const
