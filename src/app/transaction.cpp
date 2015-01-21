@@ -34,7 +34,6 @@ using namespace doc;
 
 Transaction::Transaction(Context* ctx, const std::string& label, Modification modification)
   : m_ctx(ctx)
-  , m_modification(modification)
   , m_cmds(NULL)
 {
   DocumentLocation location = m_ctx->activeLocation();

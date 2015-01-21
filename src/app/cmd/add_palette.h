@@ -51,7 +51,6 @@ namespace cmd {
     }
 
   private:
-    frame_t m_frame;
     std::stringstream m_stream;
   };
 

@@ -20,6 +20,7 @@
 #define APP_CMD_H_INCLUDED
 #pragma once
 
+#include "base/disable_copying.h"
 #include "doc/sprite_position.h"
 #include "undo/undo_command.h"
 
@@ -55,6 +56,8 @@ namespace app {
     enum class State { NotExecuted, Executed, Undone, Redone };
     State m_state;
 #endif
+
+    DISABLE_COPYING(Cmd);
   };
 
 } // namespace app

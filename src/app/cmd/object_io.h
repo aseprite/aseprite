@@ -22,6 +22,7 @@
 
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
+#include "doc/object_id.h"
 #include "doc/subobjects_io.h"
 
 namespace doc {
