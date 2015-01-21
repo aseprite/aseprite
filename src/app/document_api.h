@@ -78,7 +78,6 @@ namespace app {
     void clearCel(Cel* cel);
     void setCelPosition(Sprite* sprite, Cel* cel, int x, int y);
     void setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity);
-    void cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h);
     void moveCel(
       LayerImage* srcLayer, frame_t srcFrame,
       LayerImage* dstLayer, frame_t dstFrame);
@@ -95,8 +94,6 @@ namespace app {
     void removeLayer(Layer* layer);
     void restackLayerAfter(Layer* layer, Layer* afterThis);
     void restackLayerBefore(Layer* layer, Layer* beforeThis);
-    void cropLayer(Layer* layer, int x, int y, int w, int h);
-    void displaceLayers(Layer* layer, int dx, int dy);
     void backgroundFromLayer(Layer* layer);
     void layerFromBackground(Layer* layer);
     void flattenLayers(Sprite* sprite);
