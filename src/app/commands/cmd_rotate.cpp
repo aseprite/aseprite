@@ -90,31 +90,36 @@ protected:
     Transaction transaction(m_writer.context(), "Rotate Canvas");
     DocumentApi api = m_document->getApi(transaction);
 
-    // for each cel...
+    // 1) Rotate cel positions
+    for (Cel* cel : m_cels) {
+      Image* image = cel->image();
+      if (!image)
+        continue;
+
+      switch (m_angle) {
+        case 180:
+          api.setCelPosition(m_sprite, cel,
+            m_sprite->width() - cel->x() - image->width(),
+            m_sprite->height() - cel->y() - image->height());
+          break;
+        case 90:
+          api.setCelPosition(m_sprite, cel,
+            m_sprite->height() - cel->y() - image->height(),
+            cel->x());
+          break;
+        case -90:
+          api.setCelPosition(m_sprite, cel,
+            cel->y(),
+            m_sprite->width() - cel->x() - image->width());
+          break;
+      }
+    }
+
+    // 2) Rotate images
     int i = 0;
     for (Cel* cel : m_cels) {
       Image* image = cel->image();
-      if (image) {
-        // change it location
-        switch (m_angle) {
-          case 180:
-            api.setCelPosition(m_sprite, cel,
-              m_sprite->width() - cel->x() - image->width(),
-              m_sprite->height() - cel->y() - image->height());
-            break;
-          case 90:
-            api.setCelPosition(m_sprite, cel,
-              m_sprite->height() - cel->y() - image->height(),
-              cel->x());
-            break;
-          case -90:
-            api.setCelPosition(m_sprite, cel,
-              cel->y(),
-              m_sprite->width() - cel->x() - image->width());
-            break;
-        }
-
-        // rotate the image
+      if (image && !cel->link()) {
         ImageRef new_image(Image::create(image->pixelFormat(),
             m_angle == 180 ? image->width(): image->height(),
             m_angle == 180 ? image->height(): image->width()));
