@@ -25,9 +25,10 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/ui/main_window.h"
-#include "app/ui/timeline.h"
 #include "app/transaction.h"
+#include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -53,17 +54,14 @@ ClearCelCommand::ClearCelCommand()
 
 bool ClearCelCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsVisible |
-                             ContextFlags::ActiveLayerIsEditable |
-                             ContextFlags::ActiveLayerIsImage |
-                             ContextFlags::HasActiveCel);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void ClearCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
+  bool nonEditableLayers = false;
   {
     Transaction transaction(writer.context(), "Clear Cel");
     
@@ -83,16 +81,29 @@ void ClearCelCommand::onExecute(Context* context)
                begin = range.frameBegin()-1;
              frame != begin;
              --frame) {
-          document->getApi(transaction).clearCel(layerImage, frame);
+          if (layerImage->cel(frame)) {
+            if (layerImage->isEditable())
+              document->getApi(transaction).clearCel(layerImage, frame);
+            else
+              nonEditableLayers = true;
+          }
         }
       }
     }
-    else {
-      document->getApi(transaction).clearCel(writer.cel());
+    else if (writer.cel()) {
+      if (writer.layer()->isEditable())
+        document->getApi(transaction).clearCel(writer.cel());
+      else
+        nonEditableLayers = true;
     }
 
     transaction.commit();
   }
+
+  if (nonEditableLayers)
+    StatusBar::instance()->showTip(1000,
+      "There are locked layers");
+
   update_screen_for_document(document);
 }
 
