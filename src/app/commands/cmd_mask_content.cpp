@@ -65,8 +65,6 @@ void MaskContentCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
-  Sprite* sprite(writer.sprite());
-  Layer* layer = writer.layer();
   Cel* cel = writer.cel(); // Get current cel (can be NULL)
   if (!cel)
     return;

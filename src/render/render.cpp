@@ -415,10 +415,6 @@ void Render::renderLayer(
   if (!scaled_func)
     return;
 
-  const LayerImage* background = m_sprite->backgroundLayer();
-  bool need_checked_bg = (background != NULL ? !background->isVisible(): true);
-  color_t bg_color = 0;
-
   m_globalOpacity = 255;
   renderLayer(layer, dstImage, area,
     frame, Zoom(1, 1), scaled_func,

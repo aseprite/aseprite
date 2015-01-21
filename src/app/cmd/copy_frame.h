@@ -43,7 +43,6 @@ namespace cmd {
   private:
     frame_t m_fromFrame;
     frame_t m_newFrame;
-    bool m_firstTime;
   };
 
 } // namespace cmd

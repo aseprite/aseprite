@@ -73,7 +73,6 @@ namespace app {
     Context* m_ctx;
     DocumentUndo* m_undo;
     CmdTransaction* m_cmds;
-    Modification m_modification;
   };
 
 } // namespace app
