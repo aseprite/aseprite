@@ -13,13 +13,14 @@
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 
-#include <unordered_map>
+#include <map>
 
 namespace doc {
 
 static base::mutex mutex;
 static ObjectId newId = 0;
-static std::unordered_map<ObjectId, Object*> objects;
+// TODO Profile this and see if an unordered_map works best.
+static std::map<ObjectId, Object*> objects;
 
 Object::Object(ObjectType type)
   : m_type(type)
