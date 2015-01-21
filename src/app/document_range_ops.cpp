@@ -40,6 +40,12 @@ static DocumentRange drop_range_op(
   Document* doc, Op op, const DocumentRange& from,
   DocumentRangePlace place, const DocumentRange& to)
 {
+  if (place != kDocumentRangeBefore &&
+      place != kDocumentRangeAfter) {
+    ASSERT(false);
+    throw std::invalid_argument("Invalid 'place' argument");
+  }
+
   Sprite* sprite = doc->sprite();
 
   // Check noop/trivial/do nothing cases, i.e., move a range to the same place.
@@ -83,6 +89,9 @@ static DocumentRange drop_range_op(
   switch (op) {
     case Move: undoLabel = "Move Range"; break;
     case Copy: undoLabel = "Copy Range"; break;
+    default:
+      ASSERT(false);
+      throw std::invalid_argument("Invalid 'op' argument");
   }
   DocumentRange resultRange;
 
