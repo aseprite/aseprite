@@ -89,7 +89,9 @@ void CopyRegion::swap()
     }
   }
 
-  std::swap(m_stream, tmp);
+  // TODO use m_stream.swap(tmp) when clang and gcc support it
+  m_stream.str(tmp.str());
+  m_stream.clear();
 }
 
 } // namespace cmd
