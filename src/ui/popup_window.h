@@ -34,6 +34,7 @@ namespace ui {
     void onPreferredSize(PreferredSizeEvent& ev) override;
     void onPaint(PaintEvent& ev) override;
     void onInitTheme(InitThemeEvent& ev) override;
+    void onHitTest(HitTestEvent& ev) override;
 
   private:
     void startFilteringMessages();
