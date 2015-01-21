@@ -27,6 +27,7 @@
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -60,6 +61,7 @@ void UnlinkCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
+  bool nonEditableLayers = false;
   {
     Transaction transaction(writer.context(), "Unlink Cel");
     
@@ -80,19 +82,32 @@ void UnlinkCelCommand::onExecute(Context* context)
              frame != begin;
              --frame) {
           Cel* cel = layerImage->cel(frame);
-          if (cel && cel->links())
-            transaction.execute(new cmd::UnlinkCel(cel));
+          if (cel && cel->links()) {
+            if (layerImage->isEditable())
+              transaction.execute(new cmd::UnlinkCel(cel));
+            else
+              nonEditableLayers = true;
+          }
         }
       }
     }
     else {
       Cel* cel = writer.cel();
-      if (cel && cel->links())
-        transaction.execute(new cmd::UnlinkCel(writer.cel()));
+      if (cel && cel->links()) {
+        if (cel->layer()->isEditable())
+          transaction.execute(new cmd::UnlinkCel(writer.cel()));
+        else
+          nonEditableLayers = true;
+      }
     }
 
     transaction.commit();
   }
+
+  if (nonEditableLayers)
+    StatusBar::instance()->showTip(1000,
+      "There are locked layers");
+
   update_screen_for_document(document);
 }
 
