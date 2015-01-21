@@ -99,6 +99,8 @@ void FlipCommand::onExecute(Context* context)
       for (Cel* cel : cels) {
         loc.frame(cel->frame());
         loc.layer(cel->layer());
+        if (cel->link())
+          continue;
 
         int x, y;
         Image* image = loc.image(&x, &y);
@@ -161,14 +163,15 @@ void FlipCommand::onExecute(Context* context)
 
         api.setCelPosition
           (sprite, cel,
-           (m_flipType == doc::algorithm::FlipHorizontal ?
-            sprite->width() - image->width() - cel->x():
-            cel->x()),
-           (m_flipType == doc::algorithm::FlipVertical ?
-            sprite->height() - image->height() - cel->y():
-            cel->y()));
+            (m_flipType == doc::algorithm::FlipHorizontal ?
+              sprite->width() - image->width() - cel->x():
+              cel->x()),
+            (m_flipType == doc::algorithm::FlipVertical ?
+              sprite->height() - image->height() - cel->y():
+              cel->y()));
 
-        api.flipImage(image, image->bounds(), m_flipType);
+        if (!cel->link())
+          api.flipImage(image, image->bounds(), m_flipType);
       }
     }
 
