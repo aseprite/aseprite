@@ -45,13 +45,13 @@ namespace cmd {
     }
 
   private:
+    ObjectId m_oldImageId;
+    ObjectId m_newImageId;
+
     // Reference used only to keep the copy of the new image from the
     // SetCelImage() ctor until the SetCelImage::onExecute() call.
     // Then the reference is not used anymore.
     ImageRef m_newImage;
-
-    ObjectId m_oldImageId;
-    ObjectId m_newImageId;
     ImageRef m_copy;
   };
 
