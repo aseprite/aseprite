@@ -17,7 +17,7 @@
  */
 
 #ifndef APP_CMD_SET_CEL_FRAME_H_INCLUDED
-#define APP_CMD_SET_CEL_FRAME_CEL_H_INCLUDED
+#define APP_CMD_SET_CEL_FRAME_H_INCLUDED
 #pragma once
 
 #include "app/cmd.h"
