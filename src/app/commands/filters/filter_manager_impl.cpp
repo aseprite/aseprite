@@ -23,18 +23,19 @@
 #include "app/commands/filters/filter_manager_impl.h"
 
 #include "app/cmd/copy_rect.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
-#include "app/ui/editor/editor.h"
 #include "app/transaction.h"
-#include "filters/filter.h"
+#include "app/ui/editor/editor.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/images_collector.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "filters/filter.h"
 #include "ui/manager.h"
 #include "ui/view.h"
 #include "ui/widget.h"
@@ -225,10 +226,18 @@ void FilterManagerImpl::applyToTarget()
   m_progressWidth = 1.0f / images.size();
 
   // For each target image
-  for (ImagesCollector::ItemsIterator it = images.begin();
+  for (auto it = images.begin();
        it != images.end() && !cancelled;
        ++it) {
-    applyToImage(transaction, it->layer(), it->image(), it->cel()->x(), it->cel()->y());
+    Image* image = it->image();
+
+    if (it->cel()->links() && images.size() > 1) {
+      transaction.execute(new cmd::UnlinkCel(it->cel()));
+      image = it->cel()->image();
+    }
+
+    applyToImage(transaction, it->layer(),
+      image, it->cel()->x(), it->cel()->y());
 
     // Is there a delegate to know if the process was cancelled by the user?
     if (m_progressDelegate)
