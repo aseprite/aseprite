@@ -8,6 +8,8 @@
 #define DOC_SUBOBJECTS_IO_H_INCLUDED
 #pragma once
 
+#include "doc/image_ref.h"
+
 #include <iosfwd>
 
 namespace doc {
@@ -30,6 +32,9 @@ namespace doc {
     virtual Cel* read_cel(std::istream& is) = 0;
     virtual Image* read_image(std::istream& is) = 0;
     virtual Layer* read_layer(std::istream& is) = 0;
+
+    virtual void add_image_ref(const ImageRef& image) = 0;
+    virtual ImageRef get_image_ref(ObjectId imageId) = 0;
   };
 
 } // namespace doc

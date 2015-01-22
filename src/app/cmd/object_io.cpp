@@ -28,6 +28,7 @@
 #include "doc/image_io.h"
 #include "doc/layer.h"
 #include "doc/layer_io.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace cmd {
@@ -79,6 +80,25 @@ Layer* ObjectIO::read_layer(std::istream& is)
   return read_object<Layer>(is, [this](std::istream& is) {
       return doc::read_layer(is, this, m_sprite);
     });
+}
+
+void ObjectIO::add_image_ref(const ImageRef& image)
+{
+  ASSERT(image);
+  ASSERT(!get_image_ref(image->id()));
+  m_images.push_back(image);
+}
+
+ImageRef ObjectIO::get_image_ref(ObjectId imageId)
+{
+  for (ImageRef& image : m_images) {
+    if (image->id() == imageId) {
+      ASSERT(!m_sprite->getImage(imageId));
+      return image;
+    }
+  }
+
+  return m_sprite->getImage(imageId);
 }
 
 } // namespace cmd

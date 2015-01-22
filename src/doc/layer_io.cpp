@@ -41,13 +41,26 @@ void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer)
   switch (layer->type()) {
 
     case ObjectType::LayerImage: {
-      // Number of cels
-      write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
-
-      CelIterator it = static_cast<LayerImage*>(layer)->getCelBegin();
+      CelIterator it, begin = static_cast<LayerImage*>(layer)->getCelBegin();
       CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
 
-      for (; it != end; ++it) {
+      // Images
+      int images = 0;
+      for (it=begin; it != end; ++it) {
+        Cel* cel = *it;
+        if (!cel->link())
+          ++images;
+      }
+      write16(os, images);
+      for (it=begin; it != end; ++it) {
+        Cel* cel = *it;
+        if (!cel->link())
+          subObjects->write_image(os, cel->image());
+      }
+
+      // Cels
+      write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
+      for (it=begin; it != end; ++it) {
         Cel* cel = *it;
         subObjects->write_cel(os, cel);
       }
@@ -90,6 +103,13 @@ Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
     case ObjectType::LayerImage: {
       // Create layer
       layer.reset(new LayerImage(sprite));
+
+      // Read images
+      int images = read16(is);  // Number of images
+      for (int c=0; c<images; ++c) {
+        ImageRef image(subObjects->read_image(is));
+        subObjects->add_image_ref(image);
+      }
 
       // Read cels
       int cels = read16(is);                      // Number of cels

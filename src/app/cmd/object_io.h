@@ -51,6 +51,9 @@ namespace cmd {
     Image* read_image(std::istream& is) override;
     Layer* read_layer(std::istream& is) override;
 
+    void add_image_ref(const ImageRef& image) override;
+    ImageRef get_image_ref(ObjectId imageId) override;
+
   private:
 
     // read_object and write_object functions can be used to serialize an
@@ -84,6 +87,10 @@ namespace cmd {
     }
 
     Sprite* m_sprite;
+
+    // List of images that can be queried from read_cel() using
+    // get_image_ref().
+    std::vector<ImageRef> m_images;
   };
 
 } // namespace cmd

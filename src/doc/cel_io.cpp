@@ -25,17 +25,11 @@ using namespace base::serialization::little_endian;
 
 void write_cel(std::ostream& os, SubObjectsIO* subObjects, Cel* cel)
 {
-  Cel* link = cel->link();
-
   write16(os, cel->frame());
   write16(os, (int16_t)cel->x());
   write16(os, (int16_t)cel->y());
-  write16(os, cel->opacity());
-  write16(os, link ? 1: 0);
-  if (link)
-    write32(os, cel->image()->id());
-  else
-    subObjects->write_image(os, cel->image());
+  write8(os, cel->opacity());
+  write32(os, cel->image()->id());
 }
 
 Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
@@ -43,20 +37,14 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
   frame_t frame(read16(is));
   int x = (int16_t)read16(is);
   int y = (int16_t)read16(is);
-  int opacity = read16(is);
-  bool is_link = (read16(is) == 1);
+  int opacity = read8(is);
 
   base::UniquePtr<Cel> cel(new Cel(frame, ImageRef(NULL)));
-
   cel->setPosition(x, y);
   cel->setOpacity(opacity);
 
-  if (is_link) {
-    ObjectId imageId = read32(is);
-    cel->setImage(sprite->getImage(imageId));
-  }
-  else
-    cel->setImage(ImageRef(subObjects->read_image(is)));
+  ObjectId imageId = read32(is);
+  cel->setImage(subObjects->get_image_ref(imageId));
 
   return cel.release();
 }
