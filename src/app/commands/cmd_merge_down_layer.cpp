@@ -24,6 +24,7 @@
 #include "app/cmd/add_cel.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document.h"
@@ -146,6 +147,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         transaction.execute(new cmd::SetCelPosition(dst_cel,
             bounds.x, bounds.y));
+
+        if (dst_cel->links())
+          transaction.execute(new cmd::UnlinkCel(dst_cel));
 
         transaction.execute(new cmd::ReplaceImage(sprite,
             dst_cel->imageRef(), new_image));
