@@ -44,6 +44,8 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
+#include <map>
+
 namespace app {
 
 using namespace base;
@@ -364,6 +366,8 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
     CelConstIterator it = sourceLayer->getCelBegin();
     CelConstIterator end = sourceLayer->getCelEnd();
 
+    std::map<ObjectId, ImageRef> linkedImages;
+
     for (; it != end; ++it) {
       const Cel* sourceCel = *it;
       if (sourceCel->frame() > destLayer->sprite()->lastFrame())
@@ -374,8 +378,15 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
       const Image* sourceImage = sourceCel->image();
       ASSERT(sourceImage != NULL);
 
-      ImageRef newImage(Image::createCopy(sourceImage));
-      newCel->setImage(newImage);
+      auto it = linkedImages.find(sourceImage->id());
+      if (it != linkedImages.end()) {
+        newCel->setImage(it->second);
+      }
+      else {
+        ImageRef newImage(Image::createCopy(sourceImage));
+        newCel->setImage(newImage);
+        linkedImages.insert(std::make_pair(sourceImage->id(), newImage));
+      }
 
       destLayer->addCel(newCel);
       newCel.release();
