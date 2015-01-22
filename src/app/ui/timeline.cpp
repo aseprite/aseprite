@@ -1882,9 +1882,10 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
       case A_PART_LAYER_CONTINUOUS_ICON:
         if (layer != NULL) {
-          sb->setStatusText(0, "Layer '%s' is %s",
+          sb->setStatusText(0, "Layer '%s' is %s (%s)",
             layer->name().c_str(),
-            layer->isContinuous() ? "continuous": "discontinuous");
+            layer->isContinuous() ? "continuous": "discontinuous",
+            layer->isContinuous() ? "prefer linked cels/frames": "prefer individual cels/frames");
           return;
         }
         break;
