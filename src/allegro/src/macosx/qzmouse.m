@@ -216,26 +216,24 @@ static void osx_mouse_exit(void)
  */
 static void osx_mouse_position(int x, int y)
 {
-   CGPoint point;
-   NSRect frame;
-   int screen_height;
+   int scale, view_scale;
+   NSPoint pt;
+   CGPoint pos;
+   CGEventRef event;
+   NSView* view = [osx_window contentView];
 
    _unix_lock_mutex(osx_event_mutex);
 
-   _mouse_x = point.x = x;
-   _mouse_y = point.y = y;
+   pt = NSMakePoint(x, y);
+   pt = [view convertPoint:pt toView:view];
+   pt = [view convertPoint:pt toView:nil];
+   pt = [osx_window convertBaseToScreen:pt];
+   pt.y = [[osx_window screen] frame].size.height - pt.y;
 
-   if (osx_window) {
-      CFNumberGetValue(CFDictionaryGetValue(CGDisplayCurrentMode(kCGDirectMainDisplay), kCGDisplayHeight), kCFNumberSInt32Type, &screen_height);
-      frame = [osx_window frame];
-      point.x += frame.origin.x;
-      point.y += (screen_height - (frame.origin.y + gfx_driver->h));
-   }
-
-   CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, point);
-
-   mymickey_x = mymickey_y = 0;
-   osx_mouse_warped = TRUE;
+   pos = CGPointMake(pt.x, pt.y);
+   event = CGEventCreateMouseEvent(NULL, kCGEventMouseMoved, pos, 0);
+   CGEventPost(kCGHIDEventTap, event);
+   CFRelease(event);
 
    _unix_unlock_mutex(osx_event_mutex);
 }

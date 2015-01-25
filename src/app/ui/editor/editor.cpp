@@ -738,7 +738,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
     }
     setEditorScroll(scroll.x, scroll.y, blit_valid_rgn);
 
-#ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
     mousePos -= delta;
     ui::set_mouse_position(mousePos);
 #endif
