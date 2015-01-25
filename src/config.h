@@ -33,7 +33,7 @@
 
 // General information
 #define PACKAGE                 "Aseprite"
-#define VERSION "1.0.8-dev"
+#define VERSION "1.0.9-dev"
 #ifdef CUSTOM_WEBSITE_URL
 #define WEBSITE                 CUSTOM_WEBSITE_URL // To test web server
 #else
@@ -42,7 +42,7 @@
 #define WEBSITE_DOWNLOAD        WEBSITE "download/"
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
 #define UPDATE_URL              WEBSITE "update/?xml=1"
-#define COPYRIGHT               "Copyright (C) 2001-2014 David Capello"
+#define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
 
 #define PRINTF                  verbose_printf
 

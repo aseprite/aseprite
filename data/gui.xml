@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- ASE menus, tools and keyboard shortcuts -->
-<gui version="1.0.8-dev">
+<gui version="1.0.9-dev">
   <!-- Keyboard shortcuts -->
   <keyboard version="1">
 
