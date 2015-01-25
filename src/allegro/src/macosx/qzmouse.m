@@ -131,9 +131,6 @@ void osx_mouse_handler(int ax, int ay, int x, int y, int z, int buttons)
    _mouse_y = ay;
    _mouse_z += z;
 
-   _mouse_x = CLAMP(mouse_minx, _mouse_x, mouse_maxx);
-   _mouse_y = CLAMP(mouse_miny, _mouse_y, mouse_maxy);
-
    _handle_mouse_input();
 }
 
