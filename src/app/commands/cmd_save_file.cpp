@@ -20,6 +20,8 @@
 #include "config.h"
 #endif
 
+#include "app/commands/cmd_save_file.h"
+
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -79,9 +81,11 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(Context* context, Document* document, bool mark_as_saved)
+static void save_document_in_background(Context* context, Document* document,
+  bool mark_as_saved, const std::string& fn_format)
 {
-  base::UniquePtr<FileOp> fop(fop_to_save_document(context, document));
+  base::UniquePtr<FileOp> fop(fop_to_save_document(context, document,
+      fn_format.c_str()));
   if (!fop)
     return;
 
@@ -113,111 +117,112 @@ static void save_document_in_background(Context* context, Document* document, bo
 
 //////////////////////////////////////////////////////////////////////
 
-class SaveFileBaseCommand : public Command {
-public:
-  SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
-    : Command(short_name, friendly_name, flags) {
+SaveFileBaseCommand::SaveFileBaseCommand(const char* short_name, const char* friendly_name, CommandFlags flags)
+  : Command(short_name, friendly_name, flags)
+{
+}
+
+void SaveFileBaseCommand::onLoadParams(Params* params)
+{
+  m_filename = params->get("filename");
+  m_filenameFormat = params->get("filename-format");
+}
+
+// Returns true if there is a current sprite to save.
+// [main thread]
+bool SaveFileBaseCommand::onEnabled(Context* context)
+{
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+}
+
+void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
+{
+  const Document* document = reader.document();
+  std::string filename;
+
+  if (!m_filename.empty()) {
+    filename = m_filename;
   }
+  else {
+    filename = document->filename();
 
-protected:
-  void onLoadParams(Params* params) override {
-    m_filename = params->get("filename");
-  }
+    char exts[4096];
+    get_writable_extensions(exts, sizeof(exts));
 
-  // Returns true if there is a current sprite to save.
-  // [main thread]
-  bool onEnabled(Context* context) override {
-    return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
-  }
+    for (;;) {
+      std::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
+      if (newfilename.empty())
+        return;
 
-  void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
-  {
-    const Document* document = reader.document();
-    std::string filename;
+      filename = newfilename;
 
-    if (!m_filename.empty()) {
-      filename = m_filename;
-    }
-    else {
-      filename = document->filename();
+      // Ask if the user wants overwrite the existent file.
+      int ret = 0;
+      if (base::is_file(filename)) {
+        ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+          base::get_file_name(filename).c_str());
 
-      char exts[4096];
-      get_writable_extensions(exts, sizeof(exts));
-
-      for (;;) {
-        std::string newfilename = app::show_file_selector(dlgTitle, filename, exts);
-        if (newfilename.empty())
-          return;
-
-        filename = newfilename;
-
-        // Ask if the user wants overwrite the existent file.
-        int ret = 0;
-        if (base::is_file(filename)) {
-          ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-            base::get_file_name(filename).c_str());
-
-          // Check for read-only attribute.
-          if (ret == 1) {
-            if (!confirmReadonly(filename))
-              ret = 2;              // Select file again.
-            else
-              break;
-          }
-        }
-        else
-          break;
-
-        // "yes": we must continue with the operation...
+        // Check for read-only attribute.
         if (ret == 1) {
-          break;
+          if (!confirmReadonly(filename))
+            ret = 2;              // Select file again.
+          else
+            break;
         }
-        // "cancel" or <esc> per example: we back doing nothing
-        else if (ret != 2)
-          return;
-
-        // "no": we must back to select other file-name
       }
-    }
+      else
+        break;
 
-    {
-      ContextWriter writer(reader);
-      Document* documentWriter = writer.document();
-      std::string oldFilename = documentWriter->filename();
+      // "yes": we must continue with the operation...
+      if (ret == 1) {
+        break;
+      }
+      // "cancel" or <esc> per example: we back doing nothing
+      else if (ret != 2)
+        return;
 
-      // Change the document file name
-      documentWriter->setFilename(filename.c_str());
-      m_selectedFilename = filename;
-
-      // Save the document
-      save_document_in_background(writer.context(), documentWriter, markAsSaved);
-
-      if (documentWriter->isModified())
-        documentWriter->setFilename(oldFilename);
-
-      update_screen_for_document(documentWriter);
+      // "no": we must back to select other file-name
     }
   }
 
-  static bool confirmReadonly(const std::string& filename)
   {
-    if (!base::has_readonly_attr(filename))
-      return true;
+    ContextWriter writer(reader);
+    Document* documentWriter = writer.document();
+    std::string oldFilename = documentWriter->filename();
 
-    int ret = ui::Alert::show("Warning<<The file is read-only, do you really want to overwrite it?<<%s||&Yes||&No",
-      base::get_file_name(filename).c_str());
+    // Change the document file name
+    documentWriter->setFilename(filename.c_str());
+    m_selectedFilename = filename;
 
-    if (ret == 1) {
-      base::remove_readonly_attr(filename);
-      return true;
-    }
-    else
-      return false;
+    // Save the document
+    save_document_in_background(writer.context(), documentWriter,
+      markAsSaved, m_filenameFormat);
+
+    if (documentWriter->isModified())
+      documentWriter->setFilename(oldFilename);
+
+    update_screen_for_document(documentWriter);
   }
+}
 
-  std::string m_filename;
-  std::string m_selectedFilename;
-};
+//static
+bool SaveFileBaseCommand::confirmReadonly(const std::string& filename)
+{
+  if (!base::has_readonly_attr(filename))
+    return true;
+
+  int ret = ui::Alert::show("Warning<<The file is read-only, do you really want to overwrite it?<<%s||&Yes||&No",
+    base::get_file_name(filename).c_str());
+
+  if (ret == 1) {
+    base::remove_readonly_attr(filename);
+    return true;
+  }
+  else
+    return false;
+}
+
+//////////////////////////////////////////////////////////////////////
 
 class SaveFileCommand : public SaveFileBaseCommand {
 public:
@@ -249,7 +254,8 @@ void SaveFileCommand::onExecute(Context* context)
     if (!confirmReadonly(documentWriter->filename()))
       return;
 
-    save_document_in_background(context, documentWriter, true);
+    save_document_in_background(context, documentWriter, true,
+      m_filenameFormat.c_str());
     update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the

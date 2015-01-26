@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,37 +16,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
-#define APP_COMMANDS_CMD_SAVE_FILE_H_INCLUDED
+#ifndef APP_FILENAME_FORMATTER_H_INCLUDED
+#define APP_FILENAME_FORMATTER_H_INCLUDED
 #pragma once
-
-#include "app/commands/command.h"
 
 #include <string>
 
 namespace app {
-  class ContextReader;
 
-  class SaveFileBaseCommand : public Command {
-  public:
-    SaveFileBaseCommand(const char* shortName, const char* friendlyName, CommandFlags flags);
+  std::string filename_formatter(
+    const std::string& format,
+    const std::string& filename,
+    const std::string& layerName = "",
+    int frame = -1,
+    bool replaceFrame = true);
 
-    std::string selectedFilename() const {
-      return m_selectedFilename;
-    }
+  std::string set_frame_format(
+    const std::string& format,
+    const std::string& newFrameFormat);
 
-  protected:
-    void onLoadParams(Params* params) override;
-    bool onEnabled(Context* context) override;
-
-    void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved);
-
-    static bool confirmReadonly(const std::string& filename);
-
-    std::string m_filename;
-    std::string m_filenameFormat;
-    std::string m_selectedFilename;
-  };
+  std::string add_frame_format(
+    const std::string& format,
+    const std::string& newFrameFormat);
 
 } // namespace app
 

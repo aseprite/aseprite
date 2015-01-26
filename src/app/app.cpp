@@ -37,6 +37,7 @@
 #include "app/file/file_formats_manager.h"
 #include "app/file/palette_file.h"
 #include "app/file_system.h"
+#include "app/filename_formatter.h"
 #include "app/find_widget.h"
 #include "app/gui_xml.h"
 #include "app/ini_file.h"
@@ -220,6 +221,7 @@ void App::initialize(const AppOptions& options)
     bool splitLayersSaveAs = false;
     std::string importLayer;
     std::string importLayerSaveAs;
+    std::string filenameFormat;
 
     for (const auto& value : options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -265,6 +267,10 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.ignoreEmpty()) {
           ignoreEmpty = true;
         }
+        // --filename-format
+        else if (opt == &options.filenameFormat()) {
+          filenameFormat = value.value();
+        }
         // --save-as <filename>
         else if (opt == &options.saveAs()) {
           Document* doc = NULL;
@@ -277,30 +283,35 @@ void App::initialize(const AppOptions& options)
           else {
             ctx->setActiveDocument(doc);
 
+            std::string format = filenameFormat;
+
             Command* command = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
             if (splitLayersSaveAs) {
               std::vector<Layer*> layers;
               doc->sprite()->getLayersList(layers);
+
+              std::string fn, fmt;
+              if (format.empty()) {
+                if (doc->sprite()->totalFrames() > FrameNumber(1))
+                  format = "{path}/{title} ({layer}) {frame}.{extension}";
+                else
+                  format = "{path}/{title} ({layer}).{extension}";
+              }
 
               // For each layer, hide other ones and save the sprite.
               for (Layer* show : layers) {
                 for (Layer* hide : layers)
                   hide->setReadable(hide == show);
 
-                std::string frameStr;
-                if (doc->sprite()->totalFrames() > FrameNumber(1))
-                  frameStr += " 1";
+                fn = filename_formatter(format,
+                  value.value(), show->name());
+                fmt = filename_formatter(format,
+                  value.value(), show->name(), -1, false);
 
-                std::string fn = value.value();
-                fn =
-                  base::join_path(
-                    base::get_file_path(fn),
-                    base::get_file_title(fn))
-                  + " (" + show->name() + ")" + frameStr + "." +
-                  base::get_file_extension(fn);
-
-                static_cast<SaveFileBaseCommand*>(command)->setFilename(fn);
-                ctx->executeCommand(command);
+                Params params;
+                params.set("filename", fn.c_str());
+                params.set("filename-format", fmt.c_str());
+                ctx->executeCommand(command, &params);
               }
             }
             else {
@@ -313,8 +324,10 @@ void App::initialize(const AppOptions& options)
                   layer->setReadable(layer->name() == importLayerSaveAs);
               }
 
-              static_cast<SaveFileBaseCommand*>(command)->setFilename(value.value());
-              ctx->executeCommand(command);
+              Params params;
+              params.set("filename", value.value().c_str());
+              params.set("filename-format", format.c_str());
+              ctx->executeCommand(command, &params);
             }
           }
         }
@@ -381,6 +394,9 @@ void App::initialize(const AppOptions& options)
           splitLayers = false;
       }
     }
+
+    if (m_exporter && !filenameFormat.empty())
+      m_exporter->setFilenameFormat(filenameFormat);
   }
 
   // Export
