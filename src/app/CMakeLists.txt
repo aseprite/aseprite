@@ -227,6 +227,7 @@ add_library(app-lib
   file/tga_format.cpp
   file_selector.cpp
   file_system.cpp
+  filename_formatter.cpp
   flatten.cpp
   gui_xml.cpp
   handle_anidir.cpp

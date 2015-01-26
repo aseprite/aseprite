@@ -26,6 +26,7 @@
 #include "app/console.h"
 #include "app/document.h"
 #include "app/file/file.h"
+#include "app/filename_formatter.h"
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/path.h"
@@ -272,24 +273,28 @@ void DocumentExporter::captureSamples(Samples& samples)
     Document* doc = item.doc;
     Sprite* sprite = doc->sprite();
     Layer* layer = item.layer;
+    bool hasFrames = (doc->sprite()->totalFrames() > frame_t(1));
+    bool hasLayer = (layer != NULL);
+
+    std::string format = m_filenameFormat;
+    if (format.empty()) {
+      if (hasFrames && hasLayer)
+        format = "{title} ({layer}) {frame}.{extension}";
+      else if (hasFrames)
+        format = "{title} {frame}.{extension}";
+      else if (hasLayer)
+        format = "{title} ({layer}).{extension}";
+      else
+        format = "{fullname}";
+    }
 
     for (frame_t frame=frame_t(0);
          frame<sprite->totalFrames(); ++frame) {
-      std::string filename = doc->filename();
-
-      if (sprite->totalFrames() > frame_t(1)) {
-        std::string path = base::get_file_path(filename);
-        std::string title = base::get_file_title(filename);
-        if (layer) {
-          title += " (";
-          title += layer->name();
-          title += ") ";
-        }
-
-        filename = base::join_path(path, title +
-            base::convert_to<std::string>((int)frame + 1)
-            + "." + base::get_file_extension(filename));
-      }
+      std::string filename =
+        filename_formatter(format,
+          doc->filename(),
+          layer ? layer->name(): "",
+          (sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
 
       Sample sample(doc, sprite, layer, frame, filename);
 

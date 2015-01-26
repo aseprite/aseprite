@@ -32,6 +32,7 @@ set(BASE_SOURCES
   mutex.cpp
   path.cpp
   program_options.cpp
+  replace_string.cpp
   serialization.cpp
   sha1.cpp
   sha1_rfc3174.c

@@ -93,6 +93,10 @@ namespace app {
       m_ignoreEmptyCels = ignore;
     }
 
+    void setFilenameFormat(const std::string& format) {
+      m_filenameFormat = format;
+    }
+
     void addDocument(Document* document, doc::Layer* layer = NULL) {
       m_documents.push_back(Item(document, layer));
     }
@@ -133,6 +137,7 @@ namespace app {
     ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;
     Items m_documents;
+    std::string m_filenameFormat;
 
     DISABLE_COPYING(DocumentExporter);
   };
