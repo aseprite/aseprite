@@ -121,28 +121,33 @@ static void prepare_window_for_animation(int refresh_view)
    int pitch, y, x;
 
    _unix_lock_mutex(osx_window_mutex);
-   while (![qd_view lockFocusIfCanDraw]);
-   while (!QDDone([qd_view qdPort]));
-   LockPortBits([qd_view qdPort]);
-   pitch = GetPixRowBytes(GetPortPixMap([qd_view qdPort])) / 4;
-   addr = (unsigned int *)GetPixBaseAddr(GetPortPixMap([qd_view qdPort])) +
-      ((int)([osx_window frame].size.height) - gfx_quartz_window.h) * pitch;
-   if (refresh_view && colorconv_blitter) {
-      src_gfx_rect.width  = gfx_quartz_window.w;
-      src_gfx_rect.height = gfx_quartz_window.h;
-      src_gfx_rect.pitch  = pseudo_screen_pitch;
-      src_gfx_rect.data   = pseudo_screen_addr;
-      dest_gfx_rect.pitch = pitch * 4;
-      dest_gfx_rect.data  = addr;
-      colorconv_blitter(&src_gfx_rect, &dest_gfx_rect);
+
+   if ([qd_view lockFocusIfCanDraw] == YES) {
+      while (!QDDone([qd_view qdPort]));
+      LockPortBits([qd_view qdPort]);
+
+      pitch = GetPixRowBytes(GetPortPixMap([qd_view qdPort])) / 4;
+      addr = (unsigned int *)GetPixBaseAddr(GetPortPixMap([qd_view qdPort])) +
+         ((int)([osx_window frame].size.height) - gfx_quartz_window.h) * pitch;
+      if (refresh_view && colorconv_blitter) {
+         src_gfx_rect.width  = gfx_quartz_window.w;
+         src_gfx_rect.height = gfx_quartz_window.h;
+         src_gfx_rect.pitch  = pseudo_screen_pitch;
+         src_gfx_rect.data   = pseudo_screen_addr;
+         dest_gfx_rect.pitch = pitch * 4;
+         dest_gfx_rect.data  = addr;
+         colorconv_blitter(&src_gfx_rect, &dest_gfx_rect);
+      }
+      for (y = gfx_quartz_window.h; y; y--) {
+         for (x = 0; x < gfx_quartz_window.w; x++)
+            *(addr + x) |= 0xff000000;
+         addr += pitch;
+      }
+      QDFlushPortBuffer([qd_view qdPort], update_region);
+      UnlockPortBits([qd_view qdPort]);
+      [qd_view unlockFocus];
    }
-   for (y = gfx_quartz_window.h; y; y--) {
-      for (x = 0; x < gfx_quartz_window.w; x++)
-         *(addr + x) |= 0xff000000;
-      addr += pitch;
-   }
-   UnlockPortBits([qd_view qdPort]);
-   [qd_view unlockFocus];
+
    _unix_unlock_mutex(osx_window_mutex);
 }
 
