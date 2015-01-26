@@ -345,6 +345,9 @@ int osx_mouse_set_sprite(BITMAP *sprite, int x, int y)
  */
 int osx_mouse_show(BITMAP *bmp, int x, int y)
 {
+   if (!_mouse_on)
+      return -1;
+
    /* Only draw on screen */
    if (!is_same_bitmap(bmp, screen))
       return -1;
@@ -363,6 +366,9 @@ int osx_mouse_show(BITMAP *bmp, int x, int y)
  */
 void osx_mouse_hide(void)
 {
+   if (!_mouse_on)
+      return;
+
    osx_change_cursor(osx_blank_cursor);
 
    osx_using_native_cursor = FALSE;

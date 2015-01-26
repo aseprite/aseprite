@@ -258,7 +258,8 @@ void osx_event_handler()
          case NSRightMouseDown:
             /* App is regaining focus */
             if (![NSApp isActive]) {
-               handle_mouse_enter();
+               if ([view mouse:point inRect:[view frame]])
+                  handle_mouse_enter();
 
                if (osx_window)
                   [osx_window invalidateCursorRectsForView:view];
@@ -283,7 +284,7 @@ void osx_event_handler()
          case NSLeftMouseUp:
          case NSOtherMouseUp:
          case NSRightMouseUp:
-            if ([NSApp isActive])
+            if ([NSApp isActive] && [view mouse:point inRect:[view frame]])
                handle_mouse_enter();
 
             if (_mouse_on) {
@@ -327,7 +328,7 @@ void osx_event_handler()
 
          case NSMouseEntered:
             if ([event window] == osx_window &&
-                [event trackingNumber] == osx_mouse_tracking_rect) {
+                [view mouse:point inRect:[view frame]]) {
                handle_mouse_enter();
 
                if (_mouse_on) {
