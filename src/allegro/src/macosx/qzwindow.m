@@ -143,6 +143,7 @@ static void prepare_window_for_animation(int refresh_view)
             *(addr + x) |= 0xff000000;
          addr += pitch;
       }
+      QDFlushPortBuffer([qd_view qdPort], update_region);
       UnlockPortBits([qd_view qdPort]);
       [qd_view unlockFocus];
    }
