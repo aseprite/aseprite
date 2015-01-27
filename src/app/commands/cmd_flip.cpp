@@ -130,14 +130,16 @@ void FlipCommand::onExecute(Context* context)
 
         // Flip the portion of image specified by "bounds" variable.
         if (!alreadyFlipped) {
-          api.setCelPosition
-            (sprite, cel,
-              (m_flipType == raster::algorithm::FlipHorizontal ?
-                sprite->width() - image->width() - cel->x():
-                cel->x()),
-              (m_flipType == raster::algorithm::FlipVertical ?
-                sprite->height() - image->height() - cel->y():
-                cel->y()));
+          if (!document->isMaskVisible()) {
+            api.setCelPosition
+              (sprite, cel,
+                (m_flipType == raster::algorithm::FlipHorizontal ?
+                  sprite->width() - image->width() - cel->x():
+                  cel->x()),
+                (m_flipType == raster::algorithm::FlipVertical ?
+                  sprite->height() - image->height() - cel->y():
+                  cel->y()));
+          }
 
           api.flipImage(image, bounds, m_flipType);
         }
