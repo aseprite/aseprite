@@ -101,8 +101,12 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled()) {
-        for (Cel* cel : get_cels_in_range(writer.sprite(), range))
-          api.setCelPosition(writer.sprite(), cel, cel->x()+deltaX, cel->y()+deltaY);
+        for (Cel* cel : get_cels_in_range(writer.sprite(), range)) {
+          Layer* layer = cel->layer();
+          ASSERT(layer);
+          if (layer && layer->isMoveable() && !layer->isBackground())
+            api.setCelPosition(writer.sprite(), cel, cel->x()+deltaX, cel->y()+deltaY);
+        }
       }
       else if (m_cel) {
         api.setCelPosition(writer.sprite(), m_cel, m_celNewX, m_celNewY);
