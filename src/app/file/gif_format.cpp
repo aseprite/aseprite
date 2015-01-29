@@ -545,7 +545,7 @@ bool GifFormat::onSave(FileOp* fop)
   int sprite_h = sprite->height();
   PixelFormat sprite_format = sprite->pixelFormat();
   bool interlaced = gif_options->interlaced();
-  int loop = 0;
+  int loop = (gif_options->loop() ? 0: -1);
   bool has_background = (sprite->backgroundLayer() ? true: false);
   int background_color = (sprite_format == IMAGE_INDEXED ? sprite->transparentColor(): 0);
   int transparent_index = (has_background ? -1: sprite->transparentColor());
@@ -801,6 +801,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     // Configuration parameters
     gif_options->setQuantize((GifOptions::Quantize)get_config_int("GIF", "Quantize", (int)gif_options->quantize()));
     gif_options->setInterlaced(get_config_bool("GIF", "Interlaced", gif_options->interlaced()));
+    gif_options->setLoop(get_config_bool("GIF", "Loop", gif_options->loop()));
     gif_options->setDithering((doc::DitheringMethod)get_config_int("GIF", "Dither", (int)gif_options->dithering()));
 
     // Load the window to ask to the user the GIF options he wants.
@@ -814,6 +815,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
       case GifOptions::QuantizeAll: win.quantizeAll()->setSelected(true); break;
     }
     win.interlaced()->setSelected(gif_options->interlaced());
+    win.loop()->setSelected(gif_options->loop());
 
     win.dither()->setEnabled(true);
     win.dither()->setSelected(gif_options->dithering() == doc::DitheringMethod::ORDERED);
@@ -829,12 +831,14 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
         gif_options->setQuantize(GifOptions::NoQuantize);
 
       gif_options->setInterlaced(win.interlaced()->isSelected());
+      gif_options->setLoop(win.loop()->isSelected());
       gif_options->setDithering(win.dither()->isSelected() ?
         doc::DitheringMethod::ORDERED:
         doc::DitheringMethod::NONE);
 
       set_config_int("GIF", "Quantize", gif_options->quantize());
       set_config_bool("GIF", "Interlaced", gif_options->interlaced());
+      set_config_bool("GIF", "Loop", gif_options->loop());
       set_config_int("GIF", "Dither", int(gif_options->dithering()));
     }
     else {

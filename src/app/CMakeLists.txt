@@ -144,6 +144,7 @@ add_library(app-lib
   commands/cmd_launch.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
+  commands/cmd_layer_visibility.cpp
   commands/cmd_load_mask.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_mask_all.cpp

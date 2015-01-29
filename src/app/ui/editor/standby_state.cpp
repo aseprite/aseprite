@@ -238,7 +238,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       if (handle != NoHandle) {
         int x, y, opacity;
         Image* image = location.image(&x, &y, &opacity);
-        if (image) {
+        if (layer && image) {
           if (!layer->isEditable()) {
             StatusBar::instance()->showTip(1000,
               "Layer '%s' is locked", layer->name().c_str());
@@ -253,7 +253,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
     }
 
     // Move selected pixels
-    if (editor->isInsideSelection() && msg->left()) {
+    if (layer && editor->isInsideSelection() && msg->left()) {
       if (!layer->isEditable()) {
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
