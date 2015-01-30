@@ -146,6 +146,7 @@ add_library(app-lib
   commands/cmd_launch.cpp
   commands/cmd_layer_from_background.cpp
   commands/cmd_layer_properties.cpp
+  commands/cmd_layer_visibility.cpp
   commands/cmd_load_mask.cpp
   commands/cmd_load_palette.cpp
   commands/cmd_mask_all.cpp
@@ -230,6 +231,7 @@ add_library(app-lib
   file/tga_format.cpp
   file_selector.cpp
   file_system.cpp
+  filename_formatter.cpp
   flatten.cpp
   gui_xml.cpp
   handle_anidir.cpp

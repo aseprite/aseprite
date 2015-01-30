@@ -56,6 +56,7 @@
       <key command="SpriteProperties" shortcut="Ctrl+P" mac="Cmd+P" />
       <!-- Layer -->
       <key command="LayerProperties" shortcut="Shift+P" />
+      <key command="LayerVisibility" shortcut="Shift+X" />
       <key command="NewLayer" shortcut="Shift+N" />
       <key command="GotoPreviousLayer" shortcut="Down" context="Normal" />
       <key command="GotoNextLayer" shortcut="Up" context="Normal" />
@@ -497,6 +498,7 @@
       </menu>
       <menu text="&amp;Layer">
         <item command="LayerProperties" text="&amp;Properties..." />
+        <item command="LayerVisibility" text="&amp;Visible" />
         <separator />
         <item command="NewLayer" text="&amp;New Layer" />
         <item command="RemoveLayer" text="&amp;Remove Layer" />
@@ -576,7 +578,7 @@
       <menu text="&amp;Help">
         <item command="Launch" text="Readme">
           <param name="type" value="url" />
-          <param name="path" value="https://github.com/dacap/aseprite#readme" />
+          <param name="path" value="https://github.com/aseprite/aseprite#readme" />
         </item>
         <separator />
         <item command="Launch" text="Quick &amp;Reference">

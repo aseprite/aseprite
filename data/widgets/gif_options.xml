@@ -13,8 +13,9 @@
       <radio id="no_quantize" text="&amp;Don't modify color palette" group="1" />
     </vbox>
 
-    <separator text="Optimize for Web:" left="true" horizontal="true" />
+    <separator text="General Options:" left="true" horizontal="true" />
     <check text="Interlaced" id="interlaced" />
+    <check text="Animation Loop" id="loop" />
 
     <separator horizontal="true" />
 

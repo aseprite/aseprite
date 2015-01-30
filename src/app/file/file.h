@@ -134,7 +134,7 @@ namespace app {
   // Low-level routines to load/save documents.
 
   FileOp* fop_to_load_document(Context* context, const char* filename, int flags);
-  FileOp* fop_to_save_document(Context* context, Document* document);
+  FileOp* fop_to_save_document(Context* context, Document* document, const char* fn_format);
   void fop_operate(FileOp* fop, IFileOpProgress* progress);
   void fop_done(FileOp* fop);
   void fop_stop(FileOp* fop);

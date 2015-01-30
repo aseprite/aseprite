@@ -29,6 +29,7 @@
 #include "app/file/file_formats_manager.h"
 #include "app/file/format_options.h"
 #include "app/file/split_filename.h"
+#include "app/filename_formatter.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/status_bar.h"
@@ -120,7 +121,8 @@ int save_document(Context* context, doc::Document* document)
   ASSERT(dynamic_cast<app::Document*>(document));
 
   int ret;
-  FileOp* fop = fop_to_save_document(context, static_cast<app::Document*>(document));
+  FileOp* fop = fop_to_save_document(context,
+    static_cast<app::Document*>(document), "");
   if (!fop)
     return -1;
 
@@ -235,7 +237,7 @@ done:;
   return fop;
 }
 
-FileOp* fop_to_save_document(Context* context, Document* document)
+FileOp* fop_to_save_document(Context* context, Document* document, const char* fn_format_arg)
 {
   FileOp *fop;
   bool fatal;
@@ -359,26 +361,59 @@ FileOp* fop_to_save_document(Context* context, Document* document)
   if (fop->format->support(FILE_SUPPORT_SEQUENCES)) {
     fop_prepare_for_sequence(fop);
 
-    // To save one frame
-    if (fop->document->sprite()->totalFrames() == 1) {
-      fop->seq.filename_list.push_back(fop->document->filename());
-    }
-    // To save more frames
-    else {
-      std::string left, right;
-      int width, start_from;
+    std::string fn = fop->document->filename();
+    std::string fn_format = fn_format_arg;
+    bool default_format = false;
 
-      start_from = split_filename(fop->document->filename().c_str(), left, right, width);
-      if (start_from < 0) {
-        start_from = 1;
-        width = 1;
+    if (fn_format.empty()) {
+      if (fop->document->sprite()->totalFrames() == 1)
+        fn_format = "{fullname}";
+      else {
+        fn_format = "{path}/{title}{frame}.{extension}";
+        default_format = true;
+      }
+    }
+
+    // Save one frame
+    if (fop->document->sprite()->totalFrames() == 1) {
+      fn = filename_formatter(fn_format, fn);
+      fop->seq.filename_list.push_back(fn);
+    }
+    // Save multiple frames
+    else {
+      int width = 0;
+      int start_from = 0;
+
+      if (default_format) {
+        std::string left, right;
+        start_from = split_filename(fn.c_str(), left, right, width);
+        if (start_from < 0) {
+          start_from = 1;
+          width = 1;
+        }
+        else {
+          fn = left;
+          fn += right;
+        }
       }
 
+      std::vector<char> buf(32);
+      std::sprintf(&buf[0], "{frame%0*d}", width, 0);
+      if (default_format)
+        fn_format = set_frame_format(fn_format, &buf[0]);
+      else if (fop->document->sprite()->totalFrames() > 1)
+        fn_format = add_frame_format(fn_format, &buf[0]);
+
+      printf("start_from = %d\n", start_from);
+      printf("fn_format = %s\n", fn_format.c_str());
+      printf("fn = %s\n", fn.c_str());
+
       for (frame_t frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
-        // Get the name for this frame
-        char buf[4096];
-        sprintf(buf, "%s%0*d%s", left.c_str(), width, start_from+frame, right.c_str());
-        fop->seq.filename_list.push_back(buf);
+        std::string frame_fn =
+          filename_formatter(fn_format, fn, "", start_from+frame);
+
+        printf("frame_fn = %s\n", frame_fn.c_str());
+        fop->seq.filename_list.push_back(frame_fn);
       }
     }
   }

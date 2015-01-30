@@ -31,17 +31,32 @@ namespace app {
 using namespace doc;
 
 // TODO the DocumentRange should be "iteratable" to replace this function
-CelList get_cels_in_range(Sprite* sprite, const DocumentRange& range)
+CelList get_cels_in_range(Sprite* sprite, const DocumentRange& inrange)
 {
+  DocumentRange range = inrange;
   CelList cels;
+
+  switch (range.type()) {
+    case DocumentRange::kNone:
+      return cels;
+    case DocumentRange::kCels:
+      break;
+    case DocumentRange::kFrames:
+      range.startRange(LayerIndex(0), inrange.frameBegin(), DocumentRange::kCels);
+      range.endRange(LayerIndex(sprite->countLayers()-1), inrange.frameEnd());
+      break;
+    case DocumentRange::kLayers:
+      range.startRange(inrange.layerBegin(), frame_t(0), DocumentRange::kCels);
+      range.endRange(inrange.layerEnd(), sprite->lastFrame());
+      break;
+  }
 
   for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
     Layer* layer = sprite->indexToLayer(layerIdx);
-    if (!layer->isImage())
+    if (!layer || !layer->isImage())
       continue;
 
     LayerImage* layerImage = static_cast<LayerImage*>(layer);
-
     for (frame_t frame = range.frameEnd(),
            begin = range.frameBegin()-1;
          frame != begin;
