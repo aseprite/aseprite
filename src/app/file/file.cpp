@@ -404,15 +404,10 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
       else if (fop->document->sprite()->totalFrames() > 1)
         fn_format = add_frame_format(fn_format, &buf[0]);
 
-      printf("start_from = %d\n", start_from);
-      printf("fn_format = %s\n", fn_format.c_str());
-      printf("fn = %s\n", fn.c_str());
-
       for (frame_t frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
         std::string frame_fn =
           filename_formatter(fn_format, fn, "", start_from+frame);
 
-        printf("frame_fn = %s\n", frame_fn.c_str());
         fop->seq.filename_list.push_back(frame_fn);
       }
     }
