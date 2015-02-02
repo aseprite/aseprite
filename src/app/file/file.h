@@ -86,11 +86,11 @@ namespace app {
     double progress;              // Progress (1.0 is ready).
     IFileOpProgress* progressInterface;
     std::string error;            // Error string.
-    bool done : 1;                // True if the operation finished.
-    bool stop : 1;                // Force the break of the operation.
-    bool oneframe : 1;            // Load just one frame (in formats
-    // that support animation like
-    // GIF/FLI/ASE).
+    bool done;                    // True if the operation finished.
+    bool stop;                    // Force the break of the operation.
+    bool oneframe;                // Load just one frame (in formats
+                                  // that support animation like
+                                  // GIF/FLI/ASE).
 
     // Data for sequences.
     struct {

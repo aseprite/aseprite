@@ -105,8 +105,9 @@ void UndoCommand::onExecute(Context* context)
     }
   }
 
-  StatusBar::instance()
-    ->showTip(1000, "%s %s",
+  StatusBar* statusbar = StatusBar::instance();
+  if (statusbar)
+    statusbar->showTip(1000, "%s %s",
       (m_type == Undo ? "Undid": "Redid"),
       (m_type == Undo ?
         undo->nextUndoLabel().c_str():

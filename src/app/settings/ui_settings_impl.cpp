@@ -386,12 +386,14 @@ bool UISettingsImpl::getAutoSelectLayer()
 
 app::Color UISettingsImpl::getFgColor()
 {
-  return ColorBar::instance()->getFgColor();
+  ColorBar* colorbar = ColorBar::instance();
+  return colorbar ? colorbar->getFgColor(): app::Color::fromMask();
 }
 
 app::Color UISettingsImpl::getBgColor()
 {
-  return ColorBar::instance()->getBgColor();
+  ColorBar* colorbar = ColorBar::instance();
+  return colorbar ? colorbar->getBgColor(): app::Color::fromMask();
 }
 
 tools::Tool* UISettingsImpl::getCurrentTool()

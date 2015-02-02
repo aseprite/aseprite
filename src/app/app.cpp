@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -219,6 +219,7 @@ void App::initialize(const AppOptions& options)
   PRINTF("Processing options...\n");
 
   bool ignoreEmpty = false;
+  bool trim = false;
 
   // Open file specified in the command line
   if (!options.values().empty()) {
@@ -273,6 +274,10 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.ignoreEmpty()) {
           ignoreEmpty = true;
         }
+        // --trim
+        else if (opt == &options.trim()) {
+          trim = true;
+        }
         // --filename-format
         else if (opt == &options.filenameFormat()) {
           filenameFormat = value.value();
@@ -291,7 +296,10 @@ void App::initialize(const AppOptions& options)
 
             std::string format = filenameFormat;
 
-            Command* command = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
+            Command* saveAsCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
+            Command* trimCommand = CommandsModule::instance()->getCommandByName(CommandId::AutocropSprite);
+            Command* undoCommand = CommandsModule::instance()->getCommandByName(CommandId::Undo);
+
             if (splitLayersSaveAs) {
               std::vector<Layer*> layers;
               doc->sprite()->getLayersList(layers);
@@ -314,10 +322,21 @@ void App::initialize(const AppOptions& options)
                 fmt = filename_formatter(format,
                   value.value(), show->name(), -1, false);
 
+                // TODO --trim command with --save-as doesn't make too
+                // much sense as we lost the trim rectangle
+                // information (e.g. we don't have sheet .json) Also,
+                // we should trim each frame individually (a process
+                // that can be done only in fop_operate()).
+                if (trim)
+                  ctx->executeCommand(trimCommand);
+
                 Params params;
                 params.set("filename", fn.c_str());
                 params.set("filename-format", fmt.c_str());
-                ctx->executeCommand(command, &params);
+                ctx->executeCommand(saveAsCommand, &params);
+
+                if (trim)         // Undo trim command
+                  ctx->executeCommand(undoCommand);
               }
             }
             else {
@@ -330,10 +349,16 @@ void App::initialize(const AppOptions& options)
                   layer->setVisible(layer->name() == importLayerSaveAs);
               }
 
+              if (trim)
+                ctx->executeCommand(trimCommand);
+
               Params params;
               params.set("filename", value.value().c_str());
               params.set("filename-format", format.c_str());
-              ctx->executeCommand(command, &params);
+              ctx->executeCommand(saveAsCommand, &params);
+
+              if (trim)         // Undo trim command
+                ctx->executeCommand(undoCommand);
             }
           }
         }
@@ -406,11 +431,14 @@ void App::initialize(const AppOptions& options)
   }
 
   // Export
-  if (m_exporter != NULL) {
+  if (m_exporter) {
     PRINTF("Exporting sheet...\n");
 
     if (ignoreEmpty)
       m_exporter->setIgnoreEmptyCels(true);
+
+    if (trim)
+      m_exporter->setTrimCels(true);
 
     m_exporter->exportSheet();
     m_exporter.reset(NULL);
