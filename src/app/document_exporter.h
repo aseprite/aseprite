@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,11 @@
 
 #include "base/disable_copying.h"
 #include "gfx/fwd.h"
+#include "raster/image_buffer.h"
 
 #include <iosfwd>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace raster {
   class Image;
@@ -93,6 +94,10 @@ namespace app {
       m_ignoreEmptyCels = ignore;
     }
 
+    void setTrimCels(bool trim) {
+      m_trimCels = trim;
+    }
+
     void setFilenameFormat(const std::string& format) {
       m_filenameFormat = format;
     }
@@ -114,7 +119,7 @@ namespace app {
     Document* createEmptyTexture(const Samples& samples);
     void renderTexture(const Samples& samples, raster::Image* textureImage);
     void createDataFile(const Samples& samples, std::ostream& os, raster::Image* textureImage);
-    void renderSample(const Sample& sample, raster::Image* dst, int x, int y);
+    void renderSample(const Sample& sample, raster::Image* dst);
 
     class Item {
     public:
@@ -136,8 +141,10 @@ namespace app {
     double m_scale;
     ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;
+    bool m_trimCels;
     Items m_documents;
     std::string m_filenameFormat;
+    raster::ImageBufferPtr m_sampleRenderBuf;
 
     DISABLE_COPYING(DocumentExporter);
   };

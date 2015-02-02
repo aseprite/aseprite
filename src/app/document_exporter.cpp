@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,10 @@ public:
     m_sprite(sprite),
     m_layer(layer),
     m_frame(frame),
-    m_filename(filename) {
+    m_filename(filename),
+    m_originalSize(sprite->width(), sprite->height()),
+    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
+    m_inTextureBounds(0, 0, sprite->width(), sprite->height()) {
   }
 
   Document* document() const { return m_document; }
@@ -128,37 +131,39 @@ public:
     const Layer* oldLayer = NULL;
 
     gfx::Point framePt(0, 0);
+    gfx::Size rowSize(0, 0);
+
     for (auto& sample : samples) {
       const Sprite* sprite = sample.sprite();
       const Layer* layer = sample.layer();
-      gfx::Size size(sprite->width(), sprite->height());
+      gfx::Size size = sample.trimmedBounds().getSize();
 
       if (oldSprite) {
-          // If the user didn't specified a width for the texture, we put
-          // each sprite/layer in a different row.
-          if (width == 0) {
-              // New sprite or layer, go to next row.
-              if (oldSprite != sprite || oldLayer != layer) {
-                  framePt.x = 0;
-                  framePt.y += oldSprite->height(); // We're skipping the previous sprite height
-              }
+        // If the user didn't specify a width for the texture, we put
+        // each sprite/layer in a different row.
+        if (width == 0) {
+          // New sprite or layer, go to next row.
+          if (oldSprite != sprite || oldLayer != layer) {
+            framePt.x = 0;
+            framePt.y += rowSize.h;
+            rowSize = size;
           }
-          // When a texture width is specified, we can put different
-          // sprites/layers in each row until we reach the texture
-          // right-border.
-          else if (framePt.x+size.w > width) {
-              framePt.x = 0;
-              framePt.y += oldSprite->height();
-              // TODO framePt.y+size.h > height ?
-          }
+        }
+        // When a texture width is specified, we can put different
+        // sprites/layers in each row until we reach the texture
+        // right-border.
+        else if (framePt.x+size.w > width) {
+          framePt.x = 0;
+          framePt.y += rowSize.h;
+          rowSize = size;
+        }
       }
 
-      sample.setOriginalSize(size);
-      sample.setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
       sample.setInTextureBounds(gfx::Rect(framePt, size));
 
       // Next frame position.
       framePt.x += size.w;
+      rowSize = rowSize.createUnion(size);
 
       oldSprite = sprite;
       oldLayer = layer;
@@ -172,15 +177,8 @@ public:
   void layoutSamples(Samples& samples, int& width, int& height) override {
     gfx::PackingRects pr;
 
-    for (auto& sample : samples) {
-      const Sprite* sprite = sample.sprite();
-      gfx::Size size(sprite->width(), sprite->height());
-
-      sample.setOriginalSize(size);
-      sample.setTrimmedBounds(gfx::Rect(gfx::Point(0, 0), size));
-
-      pr.add(size);
-    }
+    for (auto& sample : samples)
+      pr.add(sample.trimmedBounds().getSize());
 
     if (width == 0 || height == 0) {
       gfx::Size sz = pr.bestFit();
@@ -208,6 +206,7 @@ DocumentExporter::DocumentExporter()
  , m_scale(1.0)
  , m_scaleMode(DefaultScaleMode)
  , m_ignoreEmptyCels(false)
+ , m_trimCels(false)
 {
 }
 
@@ -267,7 +266,6 @@ void DocumentExporter::exportSheet()
 
 void DocumentExporter::captureSamples(Samples& samples)
 {
-  ImageBufferPtr checkEmptyImageBuf;
   std::vector<char> buf(32);
 
   for (auto& item : m_documents) {
@@ -299,30 +297,39 @@ void DocumentExporter::captureSamples(Samples& samples)
 
       Sample sample(doc, sprite, layer, frame, filename);
 
-      if (m_ignoreEmptyCels) {
+      if (m_ignoreEmptyCels || m_trimCels) {
         if (layer && layer->isImage() &&
             !static_cast<LayerImage*>(layer)->getCel(frame)) {
           // Empty cel this sample completely
           continue;
         }
 
-        base::UniquePtr<Image> checkEmptyImage(
+        base::UniquePtr<Image> sampleRender(
           Image::create(sprite->pixelFormat(),
             sprite->width(),
             sprite->height(),
-            checkEmptyImageBuf));
+            m_sampleRenderBuf));
 
-        checkEmptyImage->setMaskColor(sprite->transparentColor());
-        clear_image(checkEmptyImage, sprite->transparentColor());
-        renderSample(sample, checkEmptyImage, 0, 0);
+        sampleRender->setMaskColor(sprite->transparentColor());
+        clear_image(sampleRender, sprite->transparentColor());
+        renderSample(sample, sampleRender);
 
         gfx::Rect frameBounds;
-        if (!algorithm::shrink_bounds(checkEmptyImage, frameBounds,
-            sprite->transparentColor())) {
+        raster::color_t refColor;
+
+        if (m_trimCels)
+          refColor = get_pixel(sampleRender, 0, 0);
+        else if (m_ignoreEmptyCels)
+          refColor = sprite->transparentColor();
+
+        if (!algorithm::shrink_bounds(sampleRender, frameBounds, refColor)) {
           // If shrink_bounds returns false, it's because the whole
           // image is transparent (equal to the mask color).
           continue;
         }
+
+        if (m_trimCels)
+          sample.setTrimmedBounds(frameBounds);
       }
 
       samples.addSample(sample);
@@ -388,10 +395,7 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
         DITHERING_NONE);
     }
 
-    int x = sample.inTextureBounds().x - sample.trimmedBounds().x;
-    int y = sample.inTextureBounds().y - sample.trimmedBounds().y;
-
-    renderSample(sample, textureImage, x, y);
+    renderSample(sample, textureImage);
   }
 }
 
@@ -446,14 +450,24 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "}\n";
 }
 
-void DocumentExporter::renderSample(const Sample& sample, raster::Image* dst, int x, int y)
+void DocumentExporter::renderSample(const Sample& sample, raster::Image* dst)
 {
+  gfx::Rect trimmed = sample.trimmedBounds();
+  base::UniquePtr<Image> tmp(
+    Image::create(sample.sprite()->pixelFormat(),
+      trimmed.w, trimmed.h,
+      m_sampleRenderBuf));
+
   if (sample.layer()) {
-    layer_render(sample.layer(), dst, x, y, sample.frame());
+    layer_render(sample.layer(), tmp, -trimmed.x, -trimmed.y, sample.frame());
   }
   else {
-    sample.sprite()->render(dst, x, y, sample.frame());
+    sample.sprite()->render(tmp, -trimmed.x, -trimmed.y, sample.frame());
   }
+
+  copy_image(dst, tmp,
+    sample.inTextureBounds().x,
+    sample.inTextureBounds().y);
 }
 
 } // namespace app
