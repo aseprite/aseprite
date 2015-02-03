@@ -14,6 +14,7 @@
       <key command="CloseFile" shortcut="Ctrl+W" mac="Cmd+W" />
       <key command="CloseAllFiles" shortcut="Ctrl+Shift+W" mac="Cmd+Shift+W" />
       <key command="ImportSpriteSheet" shortcut="Ctrl+I" mac="Cmd+I" />
+      <key command="ExportSpriteSheet" shortcut="Ctrl+E" mac="Cmd+E" />
       <key command="RepeatLastExport" shortcut="Ctrl+Shift+X" mac="Cmd+Shift+X" />
       <key command="AdvancedMode" shortcut="F11" />
       <key command="DeveloperConsole" shortcut="F12" />
