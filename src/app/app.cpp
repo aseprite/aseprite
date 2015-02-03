@@ -33,6 +33,7 @@
 #include "app/data_recovery.h"
 #include "app/document_exporter.h"
 #include "app/document_location.h"
+#include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file/palette_file.h"
@@ -335,8 +336,13 @@ void App::initialize(const AppOptions& options)
                 params.set("filename-format", fmt.c_str());
                 ctx->executeCommand(saveAsCommand, &params);
 
-                if (trim)         // Undo trim command
+                if (trim) {     // Undo trim command
                   ctx->executeCommand(undoCommand);
+
+                  // Just in case allow non-linear history is enabled
+                  // we clear redo information
+                  doc->undoHistory()->clearRedo();
+                }
               }
             }
             else {
@@ -357,8 +363,13 @@ void App::initialize(const AppOptions& options)
               params.set("filename-format", format.c_str());
               ctx->executeCommand(saveAsCommand, &params);
 
-              if (trim)         // Undo trim command
+              if (trim) {       // Undo trim command
                 ctx->executeCommand(undoCommand);
+
+                // Just in case allow non-linear history is enabled
+                // we clear redo information
+                doc->undoHistory()->clearRedo();
+              }
             }
           }
         }
