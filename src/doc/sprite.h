@@ -78,6 +78,8 @@ namespace doc {
     LayerImage* backgroundLayer() const;
 
     LayerIndex countLayers() const;
+    LayerIndex firstLayer() const;
+    LayerIndex lastLayer() const;
 
     Layer* layer(int layerIndex) const;
     Layer* indexToLayer(LayerIndex index) const;

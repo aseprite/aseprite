@@ -208,6 +208,16 @@ LayerIndex Sprite::countLayers() const
   return LayerIndex(folder()->getLayersCount());
 }
 
+LayerIndex Sprite::firstLayer() const
+{
+  return LayerIndex(0);
+}
+
+LayerIndex Sprite::lastLayer() const
+{
+  return LayerIndex(folder()->getLayersCount()-1);
+}
+
 Layer* Sprite::layer(int layerIndex) const
 {
   return indexToLayer(LayerIndex(layerIndex));
