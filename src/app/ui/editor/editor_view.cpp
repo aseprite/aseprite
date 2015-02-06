@@ -62,7 +62,6 @@ EditorView::~EditorView()
 void EditorView::onPaint(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
-  Widget* child = attachedWidget();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   bool selected = false;
 
@@ -70,7 +69,7 @@ void EditorView::onPaint(PaintEvent& ev)
 
     // Only show the view selected if it is the current editor
     case CurrentEditorMode:
-      selected = (child == current_editor);
+      selected = (editor() == current_editor);
       break;
 
       // Always show selected
@@ -98,7 +97,7 @@ void EditorView::onScrollChange()
 {
   View::onScrollChange();
 
-  Editor* editor = static_cast<Editor*>(attachedWidget());
+  Editor* editor = this->editor();
   ASSERT(editor != NULL);
   if (editor)
     editor->notifyScrollChanged();
@@ -123,6 +122,11 @@ void EditorView::setupScrollbars()
 
     showScrollBars();
   }
+}
+
+Editor* EditorView::editor()
+{
+  return static_cast<Editor*>(attachedWidget());
 }
 
 } // namespace app
