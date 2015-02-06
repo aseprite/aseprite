@@ -87,10 +87,19 @@ void EditorView::onPaint(PaintEvent& ev)
 
 void EditorView::onResize(ResizeEvent& ev)
 {
-  // This avoid the displacement of the widgets in the viewport
+  Editor* editor = this->editor();
+  gfx::Point oldPos;
+  if (editor)
+    oldPos = editor->editorToScreen(gfx::Point(0, 0));
 
-  setBoundsQuietly(ev.getBounds());
-  updateView();
+  View::onResize(ev);
+
+  if (editor) {
+    // This keeps the same scroll position for the editor
+    gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
+    gfx::Point oldScroll = getViewScroll();
+    editor->setEditorScroll(oldScroll + newPos - oldPos, false);
+  }
 }
 
 void EditorView::onScrollChange()
