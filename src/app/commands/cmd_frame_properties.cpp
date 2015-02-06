@@ -126,7 +126,7 @@ void FramePropertiesCommand::onExecute(Context* context)
   }
 
   if (firstFrame != lastFrame)
-    frame->setTextf("%d-%d", (int)firstFrame+1, (int)lastFrame+1);
+    frame->setTextf("[%d...%d]", (int)firstFrame+1, (int)lastFrame+1);
   else
     frame->setTextf("%d", (int)firstFrame+1);
 
