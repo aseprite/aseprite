@@ -24,6 +24,7 @@
 #include "app/settings/settings_observers.h"
 
 namespace app {
+  class Editor;
 
   // TODO hardcoded scroll bar width should be get from skin.xml file
   const int kEditorViewScrollbarWidth = 6;
@@ -45,6 +46,7 @@ namespace app {
     void onSetShowSpriteEditorScrollbars(bool state) override;
 
   private:
+    Editor* editor();
     void setupScrollbars();
 
     Type m_type;
