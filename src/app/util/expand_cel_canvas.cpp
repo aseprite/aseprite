@@ -24,13 +24,14 @@
 
 #include "app/app.h"
 #include "app/cmd/add_cel.h"
+#include "app/cmd/copy_region.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_position.h"
-#include "app/cmd/copy_region.h"
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_location.h"
 #include "app/transaction.h"
+#include "app/util/range_utils.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -153,7 +154,7 @@ void ExpandCelCanvas::commit()
 
     // Add a copy of m_dstImage in the sprite's image stock
     ImageRef newImage(Image::createCopy(m_dstImage));
-    m_cel->setImage(newImage);
+    m_cel->data()->setImage(newImage);
 
     // And finally we add the cel again in the layer.
     m_transaction.execute(new cmd::AddCel(m_layer, m_cel));
@@ -183,8 +184,7 @@ void ExpandCelCanvas::commit()
       if (m_cel->position() != m_origCelPos) {
         gfx::Point newPos = m_cel->position();
         m_cel->setPosition(m_origCelPos);
-        m_transaction.execute(new cmd::SetCelPosition(m_cel,
-            newPos.x, newPos.y));
+        m_transaction.execute(new cmd::SetCelPosition(m_cel, newPos.x, newPos.y));
       }
 
       // Validate the whole m_dstImage copying invalid areas from m_celImage

@@ -42,6 +42,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <set>
 
 namespace app {
 
@@ -225,19 +226,20 @@ void FilterManagerImpl::applyToTarget()
   m_progressBase = 0.0f;
   m_progressWidth = 1.0f / images.size();
 
+  std::set<ObjectId> visited;
+
   // For each target image
   for (auto it = images.begin();
        it != images.end() && !cancelled;
        ++it) {
     Image* image = it->image();
 
-    if (it->cel()->links() && images.size() > 1) {
-      transaction.execute(new cmd::UnlinkCel(it->cel()));
-      image = it->cel()->image();
+    // Avoid applying the filter two times to the same image
+    if (visited.find(image->id()) == visited.end()) {
+      visited.insert(image->id());
+      applyToImage(transaction, it->layer(),
+        image, it->cel()->x(), it->cel()->y());
     }
-
-    applyToImage(transaction, it->layer(),
-      image, it->cel()->x(), it->cel()->y());
 
     // Is there a delegate to know if the process was cancelled by the user?
     if (m_progressDelegate)

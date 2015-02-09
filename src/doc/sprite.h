@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "doc/cel_data.h"
 #include "doc/cel_list.h"
 #include "doc/color.h"
 #include "doc/frame.h"
@@ -23,6 +24,7 @@
 
 namespace doc {
 
+  class CelsRange;
   class Document;
   class Image;
   class Layer;
@@ -118,17 +120,22 @@ namespace doc {
     void setDurationForAllFrames(int msecs);
 
     ////////////////////////////////////////
+    // Shared Images and CelData (for linked Cels)
+
+    ImageRef getImageRef(ObjectId imageId);
+    CelDataRef getCelDataRef(ObjectId celDataId);
+
+    ////////////////////////////////////////
     // Images
 
-    ImageRef getImage(ObjectId imageId);
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
-    void getCels(CelList& cels) const;
     void getImages(std::vector<Image*>& images) const;
     void remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping);
     void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
 
-    // Returns the list of cels in the given frame
-    CelList cels(frame_t frame) const;
+    CelsRange cels() const;
+    CelsRange cels(frame_t frame) const;
+    CelsRange uniqueCels() const;
 
   private:
     Document* m_document;

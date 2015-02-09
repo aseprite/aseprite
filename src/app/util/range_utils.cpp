@@ -20,36 +20,30 @@
 #include "config.h"
 #endif
 
+#include "app/util/range_utils.h"
+
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/document_range.h"
+#include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+
+#include <set>
 
 namespace app {
 
 using namespace doc;
 
 // TODO the DocumentRange should be "iteratable" to replace this function
-CelList get_cels_in_range(Sprite* sprite, const DocumentRange& inrange)
+CelList get_unique_cels(Sprite* sprite, const DocumentRange& inrange)
 {
   DocumentRange range = inrange;
   CelList cels;
+  if (!range.convertToCels(sprite))
+    return cels;
 
-  switch (range.type()) {
-    case DocumentRange::kNone:
-      return cels;
-    case DocumentRange::kCels:
-      break;
-    case DocumentRange::kFrames:
-      range.startRange(LayerIndex(0), inrange.frameBegin(), DocumentRange::kCels);
-      range.endRange(LayerIndex(sprite->countLayers()-1), inrange.frameEnd());
-      break;
-    case DocumentRange::kLayers:
-      range.startRange(inrange.layerBegin(), frame_t(0), DocumentRange::kCels);
-      range.endRange(inrange.layerEnd(), sprite->lastFrame());
-      break;
-  }
+  std::set<ObjectId> visited;
 
   for (LayerIndex layerIdx = range.layerBegin(); layerIdx <= range.layerEnd(); ++layerIdx) {
     Layer* layer = sprite->indexToLayer(layerIdx);
@@ -62,8 +56,13 @@ CelList get_cels_in_range(Sprite* sprite, const DocumentRange& inrange)
          frame != begin;
          --frame) {
       Cel* cel = layerImage->cel(frame);
-      if (cel)
+      if (!cel)
+        continue;
+
+      if (visited.find(cel->data()->id()) == visited.end()) {
+        visited.insert(cel->data()->id());
         cels.push_back(cel);
+      }
     }
   }
   return cels;

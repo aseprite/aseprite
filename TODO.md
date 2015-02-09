@@ -43,6 +43,7 @@
 
 # Refactoring
 
+* Replace get_unique_cels() with CelsRange
 * Make one level of layers (folders should modify only timeline/UI)
 * Convert doc::PixelFormat to a enum class
 * Add doc::Spec with width/height/channels/ColorMode/ncolors

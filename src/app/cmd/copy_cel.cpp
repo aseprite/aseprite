@@ -27,8 +27,7 @@
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_cel.h"
-#include "app/cmd/set_cel_image.h"
-#include "app/cmd/set_cel_position.h"
+#include "app/cmd/set_cel_data.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
@@ -101,8 +100,7 @@ void CopyCel::onExecute()
       return;
 
     if (createLink) {
-      executeAndAdd(new cmd::SetCelImage(dstCel, srcCel->imageRef()));
-      executeAndAdd(new cmd::SetCelPosition(dstCel, srcCel->x(), srcCel->y()));
+      executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
     }
     else {
       int blend = (srcLayer->isBackground() ?
@@ -121,13 +119,10 @@ void CopyCel::onExecute()
 
     if (srcCel) {
       if (createLink)
-        dstImage = srcSprite->getImage(srcImage->id());
+        dstCel = Cel::createLink(srcCel);
       else
-        dstImage.reset(Image::createCopy(srcImage));
-
-      dstCel = new Cel(*srcCel);
+        dstCel = Cel::createCopy(srcCel);
       dstCel->setFrame(m_dstFrame);
-      dstCel->setImage(dstImage);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
     }

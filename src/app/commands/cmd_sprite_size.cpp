@@ -31,12 +31,13 @@
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/ui_context.h"
 #include "app/transaction.h"
+#include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
 #include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
@@ -84,15 +85,13 @@ protected:
     Transaction transaction(m_writer.context(), "Sprite Size");
     DocumentApi api = m_writer.document()->getApi(transaction);
 
-    // Get all sprite cels
-    CelList cels;
-    m_sprite->getCels(cels);
+    int cels_count = 0;
+    for (Cel* cel : m_sprite->uniqueCels())
+      ++cels_count;
 
     // For each cel...
     int progress = 0;
-    for (CelIterator it = cels.begin(); it != cels.end(); ++it, ++progress) {
-      Cel* cel = *it;
-
+    for (Cel* cel : m_sprite->uniqueCels()) {
       // Change its location
       api.setCelPosition(m_sprite, cel, scale_x(cel->x()), scale_y(cel->y()));
 
@@ -113,7 +112,8 @@ protected:
         api.replaceImage(m_sprite, cel->imageRef(), new_image);
       }
 
-      jobProgress((float)progress / cels.size());
+      jobProgress((float)progress / cels_count);
+      ++progress;
 
       // cancel all the operation?
       if (isCanceled())

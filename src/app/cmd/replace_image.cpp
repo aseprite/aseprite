@@ -22,11 +22,11 @@
 
 #include "app/cmd/replace_image.h"
 
-#include "app/cmd/object_io.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
 #include "doc/image_ref.h"
 #include "doc/sprite.h"
+#include "doc/subobjects_io.h"
 
 namespace app {
 namespace cmd {
@@ -46,7 +46,7 @@ void ReplaceImage::onExecute()
   // Save old image in m_copy. We cannot keep an ImageRef to this
   // image, because there are other undo branches that could try to
   // modify/re-add this same image ID
-  ImageRef oldImage = sprite()->getImage(m_oldImageId);
+  ImageRef oldImage = sprite()->getImageRef(m_oldImageId);
   ASSERT(oldImage);
   m_copy.reset(Image::createCopy(oldImage));
 
@@ -56,9 +56,9 @@ void ReplaceImage::onExecute()
 
 void ReplaceImage::onUndo()
 {
-  ImageRef newImage = sprite()->getImage(m_newImageId);
+  ImageRef newImage = sprite()->getImageRef(m_newImageId);
   ASSERT(newImage);
-  ASSERT(!sprite()->getImage(m_oldImageId));
+  ASSERT(!sprite()->getImageRef(m_oldImageId));
   m_copy->setId(m_oldImageId);
 
   sprite()->replaceImage(m_newImageId, m_copy);
@@ -67,9 +67,9 @@ void ReplaceImage::onUndo()
 
 void ReplaceImage::onRedo()
 {
-  ImageRef oldImage = sprite()->getImage(m_oldImageId);
+  ImageRef oldImage = sprite()->getImageRef(m_oldImageId);
   ASSERT(oldImage);
-  ASSERT(!sprite()->getImage(m_newImageId));
+  ASSERT(!sprite()->getImageRef(m_newImageId));
   m_copy->setId(m_newImageId);
 
   sprite()->replaceImage(m_oldImageId, m_copy);

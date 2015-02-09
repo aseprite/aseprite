@@ -13,6 +13,7 @@
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "base/unique_ptr.h"
+#include "doc/cels_range.h"
 #include "doc/doc.h"
 #include "doc/image_bits.h"
 #include "doc/primitives.h"
@@ -407,55 +408,42 @@ void Sprite::setDurationForAllFrames(int msecs)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Images
+// Shared Images and CelData (for linked Cels)
 
-ImageRef Sprite::getImage(ObjectId imageId)
+ImageRef Sprite::getImageRef(ObjectId imageId)
 {
-  CelList cels;
-  getCels(cels);
-  for (auto& cel : cels) {
+  for (Cel* cel : cels()) {
     if (cel->image()->id() == imageId)
       return cel->imageRef();
   }
-  return ImageRef(NULL);
+  return ImageRef(nullptr);
 }
+
+CelDataRef Sprite::getCelDataRef(ObjectId celDataId)
+{
+  for (Cel* cel : cels()) {
+    if (cel->dataRef()->id() == celDataId)
+      return cel->dataRef();
+  }
+  return CelDataRef(nullptr);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Images
 
 void Sprite::replaceImage(ObjectId curImageId, const ImageRef& newImage)
 {
-  CelList cels;
-  getCels(cels);
-  for (auto& cel : cels) {
+  for (Cel* cel : cels()) {
     if (cel->image()->id() == curImageId)
-      cel->setImage(newImage);
+      cel->data()->setImage(newImage);
   }
-}
-
-void Sprite::getCels(CelList& cels) const
-{
-  folder()->getCels(cels);
-}
-
-CelList Sprite::cels(frame_t frame) const
-{
-  // TODO create a proper CelsIterator
-  CelList cels, final;
-  folder()->getCels(cels);
-  for (Cel* cel : cels) {
-    if (cel->frame() == frame)
-      final.push_back(cel);
-  }
-  return final;
 }
 
 // TODO replace it with a images iterator
 void Sprite::getImages(std::vector<Image*>& images) const
 {
-  CelList cels;
-  getCels(cels);                // TODO create a cel iterator
-
-  for (const auto& cel : cels)
-    if (!cel->link())
-      images.push_back(cel->image());
+  for (const auto& cel : uniqueCels())
+    images.push_back(cel->image());
 }
 
 void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping)
@@ -463,12 +451,7 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<u
   ASSERT(m_format == IMAGE_INDEXED);
   ASSERT(mapping.size() == 256);
 
-  CelList cels;
-  getCels(cels);
-
-  for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
-    Cel* cel = *it;
-
+  for (Cel* cel : cels()) {
     // Remap this Cel because is inside the specified range
     if (cel->frame() >= frameFrom &&
         cel->frame() <= frameTo) {
@@ -532,6 +515,24 @@ void Sprite::pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList
     cels.push_back(cel);
   }
   fflush(stdout);
+}
+
+//////////////////////////////////////////////////////////////////////
+// CelsRange
+
+CelsRange Sprite::cels() const
+{
+  return CelsRange(this, frame_t(0), lastFrame());
+}
+
+CelsRange Sprite::cels(frame_t frame) const
+{
+  return CelsRange(this, frame, frame);
+}
+
+CelsRange Sprite::uniqueCels() const
+{
+  return CelsRange(this, frame_t(0), lastFrame(), CelsRange::UNIQUE);
 }
 
 //////////////////////////////////////////////////////////////////////

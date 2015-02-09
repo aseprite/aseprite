@@ -357,6 +357,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
 {
   // Copy the layer name
   destLayer0->setName(sourceLayer0->name());
+  destLayer0->setFlags(sourceLayer0->flags());
 
   if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
@@ -366,26 +367,23 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
     CelConstIterator it = sourceLayer->getCelBegin();
     CelConstIterator end = sourceLayer->getCelEnd();
 
-    std::map<ObjectId, ImageRef> linkedImages;
+    std::map<ObjectId, Cel*> linked;
 
     for (; it != end; ++it) {
       const Cel* sourceCel = *it;
       if (sourceCel->frame() > destLayer->sprite()->lastFrame())
         break;
 
-      base::UniquePtr<Cel> newCel(new Cel(*sourceCel));
+      base::UniquePtr<Cel> newCel;
 
-      const Image* sourceImage = sourceCel->image();
-      ASSERT(sourceImage != NULL);
-
-      auto it = linkedImages.find(sourceImage->id());
-      if (it != linkedImages.end()) {
-        newCel->setImage(it->second);
+      auto it = linked.find(sourceCel->data()->id());
+      if (it != linked.end()) {
+        newCel.reset(Cel::createLink(it->second));
+        newCel->setFrame(sourceCel->frame());
       }
       else {
-        ImageRef newImage(Image::createCopy(sourceImage));
-        newCel->setImage(newImage);
-        linkedImages.insert(std::make_pair(sourceImage->id(), newImage));
+        newCel.reset(Cel::createCopy(sourceCel));
+        linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
       }
 
       destLayer->addCel(newCel);

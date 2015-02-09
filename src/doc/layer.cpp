@@ -153,8 +153,10 @@ Cel* LayerImage::getLastCel() const
     return NULL;
 }
 
-void LayerImage::addCel(Cel *cel)
+void LayerImage::addCel(Cel* cel)
 {
+  ASSERT(cel->data() && "The cel doesn't contain CelData");
+
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();
 

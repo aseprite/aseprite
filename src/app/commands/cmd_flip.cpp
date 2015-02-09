@@ -36,6 +36,7 @@
 #include "app/util/range_utils.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -92,15 +93,13 @@ void FlipCommand::onExecute(Context* context)
       DocumentLocation loc = *writer.location();
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled())
-        cels = get_cels_in_range(sprite, range);
+        cels = get_unique_cels(sprite, range);
       else if (writer.cel())
         cels.push_back(writer.cel());
 
       for (Cel* cel : cels) {
         loc.frame(cel->frame());
         loc.layer(cel->layer());
-        if (cel->link())
-          continue;
 
         int x, y;
         Image* image = loc.image(&x, &y);
@@ -154,13 +153,7 @@ void FlipCommand::onExecute(Context* context)
       }
     }
     else {
-      // get all sprite cels
-      CelList cels;
-      sprite->getCels(cels);
-
-      // for each cel...
-      for (CelIterator it = cels.begin(); it != cels.end(); ++it) {
-        Cel* cel = *it;
+      for (Cel* cel : sprite->uniqueCels()) {
         Image* image = cel->image();
 
         api.setCelPosition
@@ -172,8 +165,7 @@ void FlipCommand::onExecute(Context* context)
               sprite->height() - image->height() - cel->y():
               cel->y()));
 
-        if (!cel->link())
-          api.flipImage(image, image->bounds(), m_flipType);
+        api.flipImage(image, image->bounds(), m_flipType);
       }
     }
 

@@ -13,11 +13,7 @@
 #include <iosfwd>
 
 namespace doc {
-
-  class Cel;
-  class Image;
   class Layer;
-  class Sprite;
   class SubObjectsIO;
 
   // Thrown when a invalid layer type is read from the istream.
@@ -26,8 +22,8 @@ namespace doc {
     InvalidLayerType(const char* msg) throw() : base::Exception(msg) { }
   };
 
-  void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer);
-  Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite);
+  void write_layer(std::ostream& os, Layer* layer);
+  Layer* read_layer(std::istream& is, SubObjectsIO* subObjects);
 
 } // namespace doc
 

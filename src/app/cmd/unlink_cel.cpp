@@ -33,8 +33,9 @@ using namespace doc;
 
 UnlinkCel::UnlinkCel(Cel* cel)
   : WithCel(cel)
-  , m_oldLinkedImageId(cel->image()->id())
-  , m_newLinkedImageId(0)
+  , m_newImageId(0)
+  , m_oldCelDataId(cel->dataRef()->id())
+  , m_newCelDataId(0)
 {
   ASSERT(cel->links());
 }
@@ -42,22 +43,32 @@ UnlinkCel::UnlinkCel(Cel* cel)
 void UnlinkCel::onExecute()
 {
   Cel* cel = this->cel();
-  ImageRef oldImage = cel->sprite()->getImage(m_oldLinkedImageId);
+  CelDataRef oldCelData = cel->sprite()->getCelDataRef(m_oldCelDataId);
+  ASSERT(oldCelData);
 
-  ImageRef copy(Image::createCopy(oldImage));
-  if (m_newLinkedImageId)
-    copy->setId(m_newLinkedImageId);
-  else
-    m_newLinkedImageId = copy->id();
+  ImageRef imgCopy(Image::createCopy(oldCelData->image()));
+  CelDataRef celDataCopy(new CelData(*oldCelData));
+  celDataCopy->setImage(imgCopy);
 
-  cel->setImage(copy);
+  if (m_newImageId) {
+    imgCopy->setId(m_newImageId);
+    celDataCopy->setId(m_newCelDataId);
+  }
+  else {
+    m_newImageId = imgCopy->id();
+    m_newCelDataId = celDataCopy->id();
+  }
+
+  cel->setDataRef(celDataCopy);
 }
 
 void UnlinkCel::onUndo()
 {
   Cel* cel = this->cel();
-  ImageRef oldImage = cel->sprite()->getImage(m_oldLinkedImageId);
-  cel->setImage(oldImage);
+  CelDataRef oldCelData = cel->sprite()->getCelDataRef(m_oldCelDataId);
+  ASSERT(oldCelData);
+
+  cel->setDataRef(oldCelData);
 }
 
 } // namespace cmd

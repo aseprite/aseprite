@@ -13,7 +13,6 @@
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
-#include "doc/sprite.h"
 #include "doc/subobjects_io.h"
 
 #include <iostream>
@@ -23,29 +22,23 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-void write_cel(std::ostream& os, SubObjectsIO* subObjects, Cel* cel)
+void write_cel(std::ostream& os, Cel* cel)
 {
+  write32(os, cel->id());
   write16(os, cel->frame());
-  write16(os, (int16_t)cel->x());
-  write16(os, (int16_t)cel->y());
-  write8(os, cel->opacity());
-  write32(os, cel->image()->id());
+  write32(os, cel->dataRef()->id());
 }
 
-Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
+Cel* read_cel(std::istream& is, SubObjectsIO* subObjects)
 {
+  ObjectId id = read32(is);
   frame_t frame(read16(is));
-  int x = (int16_t)read16(is);
-  int y = (int16_t)read16(is);
-  int opacity = read8(is);
+  ObjectId celDataId = read32(is);
+  CelDataRef celData(subObjects->getCelDataRef(celDataId));
+  ASSERT(celData);
 
-  base::UniquePtr<Cel> cel(new Cel(frame, ImageRef(NULL)));
-  cel->setPosition(x, y);
-  cel->setOpacity(opacity);
-
-  ObjectId imageId = read32(is);
-  cel->setImage(subObjects->get_image_ref(imageId));
-
+  base::UniquePtr<Cel> cel(new Cel(frame, celData));
+  cel->setId(id);
   return cel.release();
 }
 

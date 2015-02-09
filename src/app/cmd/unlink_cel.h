@@ -37,8 +37,9 @@ namespace cmd {
     void onUndo() override;
 
   private:
-    ObjectId m_oldLinkedImageId;
-    ObjectId m_newLinkedImageId;
+    ObjectId m_newImageId;
+    ObjectId m_oldCelDataId;
+    ObjectId m_newCelDataId;
   };
 
 } // namespace cmd

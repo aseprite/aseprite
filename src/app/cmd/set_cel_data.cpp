@@ -20,71 +20,76 @@
 #include "config.h"
 #endif
 
-#include "app/cmd/set_cel_image.h"
+#include "app/cmd/set_cel_data.h"
 
-#include "app/cmd/object_io.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
 #include "doc/image_ref.h"
 #include "doc/sprite.h"
+#include "doc/subobjects_io.h"
 
 namespace app {
 namespace cmd {
 
 using namespace doc;
 
-SetCelImage::SetCelImage(Cel* cel, const ImageRef& newImage)
+SetCelData::SetCelData(Cel* cel, const CelDataRef& newData)
   : WithCel(cel)
+  , m_oldDataId(cel->data()->id())
   , m_oldImageId(cel->image()->id())
-  , m_newImageId(newImage->id())
-  , m_newImage(newImage)
+  , m_newDataId(newData->id())
+  , m_newData(newData)
 {
 }
 
-void SetCelImage::onExecute()
+void SetCelData::onExecute()
 {
   Cel* cel = this->cel();
+  if (!cel->links())
+    createCopy();
 
-  if (!cel->links()) {
-    ImageRef oldImage = cel->imageRef();
-    m_copy.reset(Image::createCopy(oldImage));
-  }
-
-  cel->setImage(m_newImage);
-  m_newImage.reset(nullptr);
+  cel->setDataRef(m_newData);
+  m_newData.reset(nullptr);
 }
 
-void SetCelImage::onUndo()
+void SetCelData::onUndo()
 {
   Cel* cel = this->cel();
 
-  if (m_copy) {
-    ASSERT(!cel->sprite()->getImage(m_oldImageId));
-    m_copy->setId(m_oldImageId);
-    cel->setImage(m_copy);
-    m_copy.reset(nullptr);
+  if (m_dataCopy) {
+    ASSERT(!cel->sprite()->getCelDataRef(m_oldDataId));
+    m_dataCopy->setId(m_oldDataId);
+    m_dataCopy->image()->setId(m_oldImageId);
+
+    cel->setDataRef(m_dataCopy);
+    m_dataCopy.reset(nullptr);
   }
   else {
-    ImageRef oldImage = cel->sprite()->getImage(m_oldImageId);
-    ASSERT(oldImage);
-    cel->setImage(oldImage);
+    CelDataRef oldData = cel->sprite()->getCelDataRef(m_oldDataId);
+    ASSERT(oldData);
+    cel->setDataRef(oldData);
   }
 }
 
-void SetCelImage::onRedo()
+void SetCelData::onRedo()
+{
+  Cel* cel = this->cel();
+  if (!cel->links())
+    createCopy();
+
+  CelDataRef newData = cel->sprite()->getCelDataRef(m_newDataId);
+  ASSERT(newData);
+  cel->setDataRef(newData);
+}
+
+void SetCelData::createCopy()
 {
   Cel* cel = this->cel();
 
-  if (!cel->links()) {
-    ImageRef oldImage = cel->imageRef();
-    m_copy.reset(Image::createCopy(oldImage));
-  }
-
-  ImageRef newImage = cel->sprite()->getImage(m_newImageId);
-  ASSERT(newImage);
-  cel->setImage(newImage);
-  m_newImage.reset(nullptr);
+  ASSERT(!m_dataCopy);
+  m_dataCopy.reset(new CelData(*cel->data()));
+  m_dataCopy->setImage(ImageRef(Image::createCopy(cel->image())));
 }
 
 } // namespace cmd

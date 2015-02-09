@@ -580,7 +580,7 @@ static void slider_change_hook(Slider* slider)
 
     DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
-      for (Cel* cel : get_cels_in_range(writer.sprite(), range))
+      for (Cel* cel : get_unique_cels(writer.sprite(), range))
         cel->setOpacity(slider->getValue());
     }
     else {

@@ -65,6 +65,8 @@
 #include "render/quantization.h"
 #include "render/render.h"
 
+#include <set>
+
 namespace app {
 
 DocumentApi::DocumentApi(Document* document, Transaction& transaction)
@@ -94,10 +96,14 @@ void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
     if (!layer->isImage())
       continue;
 
+    std::set<ObjectId> visited;
     CelIterator it = ((LayerImage*)layer)->getCelBegin();
     CelIterator end = ((LayerImage*)layer)->getCelEnd();
     for (; it != end; ++it) {
       Cel* cel = *it;
+      if (visited.find(cel->data()->id()) != visited.end())
+        continue;
+      visited.insert(cel->data()->id());
 
       if (layer->isBackground()) {
         Image* image = cel->image();
@@ -260,7 +266,7 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
         frame_t celFrame = cel->frame();
         frame_t newFrame = celFrame;
 
-        // fthe frame to the future
+        // moving the frame to the future
         if (frame < beforeFrame) {
           if (celFrame == frame) {
             newFrame = beforeFrame-1;

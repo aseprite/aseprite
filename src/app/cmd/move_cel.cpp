@@ -28,9 +28,8 @@
 #include "app/cmd/clear_image.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_cel.h"
+#include "app/cmd/set_cel_data.h"
 #include "app/cmd/set_cel_frame.h"
-#include "app/cmd/set_cel_image.h"
-#include "app/cmd/set_cel_position.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
@@ -103,8 +102,7 @@ void MoveCel::onExecute()
       return;
 
     if (createLink) {
-      executeAndAdd(new cmd::SetCelImage(dstCel, srcCel->imageRef()));
-      executeAndAdd(new cmd::SetCelPosition(dstCel, srcCel->x(), srcCel->y()));
+      executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
       executeAndAdd(new cmd::UnlinkCel(srcCel));
     }
     else {
@@ -129,11 +127,8 @@ void MoveCel::onExecute()
       executeAndAdd(new cmd::SetCelFrame(srcCel, m_dstFrame));
     }
     else {
-      dstImage.reset(Image::createCopy(srcImage));
-
-      dstCel = new Cel(*srcCel);
+      dstCel = Cel::createCopy(srcCel);
       dstCel->setFrame(m_dstFrame);
-      dstCel->setImage(dstImage);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
       executeAndAdd(new cmd::ClearCel(srcCel));

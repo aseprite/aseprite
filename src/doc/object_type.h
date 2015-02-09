@@ -18,6 +18,7 @@ namespace doc {
     Path,
     Mask,
     Cel,
+    CelData,
     LayerImage,
     LayerFolder,
     Sprite,

@@ -29,6 +29,7 @@
 #include "app/document.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/document.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -80,15 +81,12 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
         is_image_from_background));
 
     m_seq.add(new cmd::ReplaceImage(sprite,
-        sprite->getImage(old_image->id()), new_image));
+        sprite->getImageRef(old_image->id()), new_image));
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
   if (newFormat == IMAGE_INDEXED) {
-    CelList cels;
-    sprite->getCels(cels);
-    for (auto it = cels.begin(), end = cels.end(); it != end; ++it) {
-      Cel* cel = *it;
+    for (Cel* cel : sprite->uniqueCels()) {
       if (cel->opacity() < 255)
         m_seq.add(new cmd::SetCelOpacity(cel, 255));
     }

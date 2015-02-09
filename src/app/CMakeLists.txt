@@ -75,15 +75,14 @@ add_library(app-lib
   cmd/layer_from_background.cpp
   cmd/move_cel.cpp
   cmd/move_layer.cpp
-  cmd/object_io.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
   cmd/replace_image.cpp
   cmd/reselect_mask.cpp
+  cmd/set_cel_data.cpp
   cmd/set_cel_frame.cpp
-  cmd/set_cel_image.cpp
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
   cmd/set_frame_duration.cpp

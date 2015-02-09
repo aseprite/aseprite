@@ -466,7 +466,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       // TODO set_palette for each frame???
 #define SEQUENCE_IMAGE()                                                \
       do {                                                              \
-        fop->seq.last_cel->setImage(fop->seq.image);                    \
+        fop->seq.last_cel->data()->setImage(fop->seq.image);            \
         fop->seq.layer->addCel(fop->seq.last_cel);                      \
                                                                         \
         if (fop->document->sprite()->palette(frame)                     \
