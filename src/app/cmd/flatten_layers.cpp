@@ -70,6 +70,8 @@ void FlattenLayers::onExecute()
     clear_image(image, bgcolor);
     render.renderSprite(image, sprite, frame);
 
+    // TODO Keep cel links when possible
+
     ImageRef cel_image;
     Cel* cel = background->cel(frame);
     if (cel) {

@@ -23,6 +23,7 @@
 #include "app/cmd/remove_frame.h"
 
 #include "app/cmd/remove_cel.h"
+#include "doc/cels_range.h"
 #include "doc/document.h"
 #include "doc/document_event.h"
 #include "doc/sprite.h"

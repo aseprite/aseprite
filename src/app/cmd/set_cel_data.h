@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_CMD_REPLACE_IMAGE_H_INCLUDED
-#define APP_CMD_REPLACE_IMAGE_H_INCLUDED
+#ifndef APP_CMD_SET_CEL_DATA_H_INCLUDED
+#define APP_CMD_SET_CEL_DATA_H_INCLUDED
 #pragma once
 
 #include "app/cmd.h"
-#include "app/cmd/with_sprite.h"
-#include "doc/image_ref.h"
+#include "app/cmd/with_cel.h"
+#include "doc/cel_data.h"
 
 #include <sstream>
 
@@ -30,10 +30,10 @@ namespace app {
 namespace cmd {
   using namespace doc;
 
-  class ReplaceImage : public Cmd
-                     , public WithSprite {
+  class SetCelData : public Cmd
+                   , public WithCel {
   public:
-    ReplaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
+    SetCelData(Cel* cel, const CelDataRef& newData);
 
   protected:
     void onExecute() override;
@@ -41,18 +41,21 @@ namespace cmd {
     void onRedo() override;
     size_t onMemSize() const override {
       return sizeof(*this) +
-        (m_copy ? m_copy->getMemSize(): 0);
+        (m_dataCopy ? m_dataCopy->getMemSize(): 0);
     }
 
   private:
-    ObjectId m_oldImageId;
-    ObjectId m_newImageId;
+    void createCopy();
 
-    // Reference used only to keep the copy of the new image from the
-    // ReplaceImage() ctor until the ReplaceImage::onExecute() call.
+    ObjectId m_oldDataId;
+    ObjectId m_oldImageId;
+    ObjectId m_newDataId;
+    CelDataRef m_dataCopy;
+
+    // Reference used only to keep the copy of the new CelData from
+    // the SetCelData() ctor until the SetCelData::onExecute() call.
     // Then the reference is not used anymore.
-    ImageRef m_newImage;
-    ImageRef m_copy;
+    CelDataRef m_newData;
   };
 
 } // namespace cmd

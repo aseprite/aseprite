@@ -172,9 +172,12 @@ protected:
   bool expect_cel(int expected_layer, int expected_frame, int layer, frame_t frame) {
     color_t expected_color = white;
 
+    Cel* cel = sprite->indexToLayer(LayerIndex(layer))->cel(frame);
+    if (!cel)
+      return false;
+
     color_t color = get_pixel(
-      sprite->indexToLayer(LayerIndex(layer))
-      ->cel(frame)->image(),
+      cel->image(),
       expected_layer, expected_frame);
 
     EXPECT_EQ(expected_color, color);

@@ -13,11 +13,10 @@
 namespace doc {
 
   class Cel;
-  class Sprite;
   class SubObjectsIO;
 
-  void write_cel(std::ostream& os, SubObjectsIO* subObjects, Cel* cel);
-  Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite);
+  void write_cel(std::ostream& os, Cel* cel);
+  Cel* read_cel(std::istream& is, SubObjectsIO* subObjects);
 
 } // namespace doc
 

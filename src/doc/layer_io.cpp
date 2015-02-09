@@ -13,7 +13,12 @@
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
+#include "doc/cel_data.h"
+#include "doc/cel_data_io.h"
+#include "doc/cel_io.h"
+#include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/layer_io.h"
 #include "doc/sprite.h"
 #include "doc/subobjects_io.h"
 
@@ -27,9 +32,11 @@ using namespace base::serialization::little_endian;
 
 // Serialized Layer data:
 
-void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer)
+void write_layer(std::ostream& os, Layer* layer)
 {
   std::string name = layer->name();
+
+  write32(os, layer->id());
 
   write16(os, name.size());                            // Name length
   if (!name.empty())
@@ -41,15 +48,39 @@ void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer)
   switch (layer->type()) {
 
     case ObjectType::LayerImage: {
-      // Number of cels
-      write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
-
-      CelIterator it = static_cast<LayerImage*>(layer)->getCelBegin();
+      CelIterator it, begin = static_cast<LayerImage*>(layer)->getCelBegin();
       CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
 
-      for (; it != end; ++it) {
+      // Images
+      int images = 0;
+      int celdatas = 0;
+      for (it=begin; it != end; ++it) {
         Cel* cel = *it;
-        subObjects->write_cel(os, cel);
+        if (!cel->link()) {
+          ++images;
+          ++celdatas;
+        }
+      }
+
+      write16(os, images);
+      for (it=begin; it != end; ++it) {
+        Cel* cel = *it;
+        if (!cel->link())
+          write_image(os, cel->image());
+      }
+
+      write16(os, celdatas);
+      for (it=begin; it != end; ++it) {
+        Cel* cel = *it;
+        if (!cel->link())
+          write_celdata(os, cel->dataRef());
+      }
+
+      // Cels
+      write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
+      for (it=begin; it != end; ++it) {
+        Cel* cel = *it;
+        write_cel(os, cel);
       }
       break;
     }
@@ -62,15 +93,16 @@ void write_layer(std::ostream& os, SubObjectsIO* subObjects, Layer* layer)
       write16(os, static_cast<LayerFolder*>(layer)->getLayersCount());
 
       for (; it != end; ++it)
-        subObjects->write_layer(os, *it);
+        write_layer(os, *it);
       break;
     }
 
   }
 }
 
-Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
+Layer* read_layer(std::istream& is, SubObjectsIO* subObjects)
 {
+  ObjectId id = read32(is);
   uint16_t name_length = read16(is);                // Name length
   std::vector<char> name(name_length+1);
   if (name_length > 0) {
@@ -89,13 +121,27 @@ Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
 
     case ObjectType::LayerImage: {
       // Create layer
-      layer.reset(new LayerImage(sprite));
+      layer.reset(new LayerImage(subObjects->sprite()));
+
+      // Read images
+      int images = read16(is);  // Number of images
+      for (int c=0; c<images; ++c) {
+        ImageRef image(read_image(is));
+        subObjects->addImageRef(image);
+      }
+
+      // Read celdatas
+      int celdatas = read16(is);
+      for (int c=0; c<celdatas; ++c) {
+        CelDataRef celdata(read_celdata(is, subObjects));
+        subObjects->addCelDataRef(celdata);
+      }
 
       // Read cels
       int cels = read16(is);                      // Number of cels
       for (int c=0; c<cels; ++c) {
         // Read the cel
-        Cel* cel = subObjects->read_cel(is);
+        Cel* cel = read_cel(is, subObjects);
 
         // Add the cel in the layer
         static_cast<LayerImage*>(layer.get())->addCel(cel);
@@ -105,12 +151,12 @@ Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
 
     case ObjectType::LayerFolder: {
       // Create the layer set
-      layer.reset(new LayerFolder(sprite));
+      layer.reset(new LayerFolder(subObjects->sprite()));
 
       // Number of sub-layers
       int layers = read16(is);
       for (int c=0; c<layers; c++) {
-        Layer* child = subObjects->read_layer(is);
+        Layer* child = read_layer(is, subObjects);
         if (child)
           static_cast<LayerFolder*>(layer.get())->addLayer(child);
         else
@@ -124,9 +170,10 @@ Layer* read_layer(std::istream& is, SubObjectsIO* subObjects, Sprite* sprite)
 
   }
 
-  if (layer != NULL) {
+  if (layer) {
     layer->setName(&name[0]);
     layer->setFlags(static_cast<LayerFlags>(flags));
+    layer->setId(id);
   }
 
   return layer.release();

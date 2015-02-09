@@ -25,6 +25,11 @@
 
 #include <algorithm>
 
+namespace doc {
+  class Cel;
+  class Sprite;
+}
+
 namespace app {
   using namespace doc;
 
@@ -32,7 +37,8 @@ namespace app {
   public:
     enum Type { kNone, kCels, kFrames, kLayers };
 
-    DocumentRange() : m_type(kNone) { }
+    DocumentRange();
+    DocumentRange(Cel* cel);
 
     Type type() const { return m_type; }
     bool enabled() const { return m_type != kNone; }
@@ -60,6 +66,8 @@ namespace app {
         layerBegin() == o.layerBegin() && layerEnd() == o.layerEnd() &&
         frameBegin() == o.frameBegin() && frameEnd() == o.frameEnd();
     }
+
+    bool convertToCels(Sprite* sprite);
 
   private:
     Type m_type;

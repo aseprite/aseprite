@@ -21,9 +21,9 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
-#include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
@@ -35,35 +35,35 @@
 
 namespace app {
 
-class ClearCelCommand : public Command {
+class UnlinkCelCommand : public Command {
 public:
-  ClearCelCommand();
-  Command* clone() const override { return new ClearCelCommand(*this); }
+  UnlinkCelCommand();
+  Command* clone() const override { return new UnlinkCelCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
 
-ClearCelCommand::ClearCelCommand()
-  : Command("ClearCel",
-            "Clear Cel",
+UnlinkCelCommand::UnlinkCelCommand()
+  : Command("UnlinkCel",
+            "Unlink Cel",
             CmdRecordableFlag)
 {
 }
 
-bool ClearCelCommand::onEnabled(Context* context)
+bool UnlinkCelCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
-void ClearCelCommand::onExecute(Context* context)
+void UnlinkCelCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
   Document* document(writer.document());
   bool nonEditableLayers = false;
   {
-    Transaction transaction(writer.context(), "Clear Cel");
+    Transaction transaction(writer.context(), "Unlink Cel");
     
     // TODO the range of selected frames should be in the DocumentLocation.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
@@ -81,20 +81,24 @@ void ClearCelCommand::onExecute(Context* context)
                begin = range.frameBegin()-1;
              frame != begin;
              --frame) {
-          if (layerImage->cel(frame)) {
+          Cel* cel = layerImage->cel(frame);
+          if (cel && cel->links()) {
             if (layerImage->isEditable())
-              document->getApi(transaction).clearCel(layerImage, frame);
+              transaction.execute(new cmd::UnlinkCel(cel));
             else
               nonEditableLayers = true;
           }
         }
       }
     }
-    else if (writer.cel()) {
-      if (writer.layer()->isEditable())
-        document->getApi(transaction).clearCel(writer.cel());
-      else
-        nonEditableLayers = true;
+    else {
+      Cel* cel = writer.cel();
+      if (cel && cel->links()) {
+        if (cel->layer()->isEditable())
+          transaction.execute(new cmd::UnlinkCel(writer.cel()));
+        else
+          nonEditableLayers = true;
+      }
     }
 
     transaction.commit();
@@ -107,9 +111,9 @@ void ClearCelCommand::onExecute(Context* context)
   update_screen_for_document(document);
 }
 
-Command* CommandFactory::createClearCelCommand()
+Command* CommandFactory::createUnlinkCelCommand()
 {
-  return new ClearCelCommand;
+  return new UnlinkCelCommand;
 }
 
 } // namespace app

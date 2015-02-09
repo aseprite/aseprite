@@ -65,6 +65,8 @@
 #include "render/quantization.h"
 #include "render/render.h"
 
+#include <set>
+
 namespace app {
 
 DocumentApi::DocumentApi(Document* document, Transaction& transaction)
@@ -86,11 +88,47 @@ void DocumentApi::setSpriteTransparentColor(Sprite* sprite, color_t maskColor)
 void DocumentApi::cropSprite(Sprite* sprite, const gfx::Rect& bounds)
 {
   setSpriteSize(sprite, bounds.w, bounds.h);
-  displaceLayers(sprite->folder(), -bounds.x, -bounds.y);
 
-  Layer *background_layer = sprite->backgroundLayer();
-  if (background_layer)
-    cropLayer(background_layer, 0, 0, sprite->width(), sprite->height());
+  app::Document* doc = static_cast<app::Document*>(sprite->document());
+  std::vector<Layer*> layers;
+  sprite->getLayersList(layers);
+  for (Layer* layer : layers) {
+    if (!layer->isImage())
+      continue;
+
+    std::set<ObjectId> visited;
+    CelIterator it = ((LayerImage*)layer)->getCelBegin();
+    CelIterator end = ((LayerImage*)layer)->getCelEnd();
+    for (; it != end; ++it) {
+      Cel* cel = *it;
+      if (visited.find(cel->data()->id()) != visited.end())
+        continue;
+      visited.insert(cel->data()->id());
+
+      if (layer->isBackground()) {
+        Image* image = cel->image();
+        if (image && !cel->link()) {
+          ASSERT(cel->x() == 0);
+          ASSERT(cel->y() == 0);
+
+          // Create the new image through a crop
+          ImageRef new_image(
+            crop_image(image,
+              bounds.x, bounds.y,
+              bounds.w, bounds.h,
+              doc->bgColor(layer)));
+
+          // Replace the image in the stock that is pointed by the cel
+          replaceImage(sprite, cel->imageRef(), new_image);
+        }
+      }
+      else {
+        // Update the cel's position
+        setCelPosition(sprite, cel,
+          cel->x()-bounds.x, cel->y()-bounds.y);
+      }
+    }
+  }
 
   if (!m_document->mask()->isEmpty())
     setMaskPosition(m_document->mask()->bounds().x-bounds.x,
@@ -228,7 +266,7 @@ void DocumentApi::moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFram
         frame_t celFrame = cel->frame();
         frame_t newFrame = celFrame;
 
-        // fthe frame to the future
+        // moving the frame to the future
         if (frame < beforeFrame) {
           if (celFrame == frame) {
             newFrame = beforeFrame-1;
@@ -296,23 +334,6 @@ void DocumentApi::setCelOpacity(Sprite* sprite, Cel* cel, int newOpacity)
   ASSERT(sprite->supportAlpha());
 
   m_transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
-}
-
-void DocumentApi::cropCel(Sprite* sprite, Cel* cel, int x, int y, int w, int h)
-{
-  Image* cel_image = cel->image();
-  ASSERT(cel_image);
-
-  // create the new image through a crop
-  ImageRef new_image(crop_image(cel_image,
-      x-cel->x(), y-cel->y(), w, h,
-      static_cast<app::Document*>(sprite->document())->bgColor(cel->layer())));
-
-  // replace the image in the stock that is pointed by the cel
-  replaceImage(sprite, cel->imageRef(), new_image);
-
-  // update the cel's position
-  setCelPosition(sprite, cel, x, y);
 }
 
 void DocumentApi::clearCel(LayerImage* layer, frame_t frame)
@@ -406,44 +427,6 @@ void DocumentApi::restackLayerBefore(Layer* layer, Layer* beforeThis)
   restackLayerAfter(layer, layer->sprite()->indexToLayer(afterThisIdx));
 }
 
-void DocumentApi::cropLayer(Layer* layer, int x, int y, int w, int h)
-{
-  if (!layer->isImage())
-    return;
-
-  Sprite* sprite = layer->sprite();
-  CelIterator it = ((LayerImage*)layer)->getCelBegin();
-  CelIterator end = ((LayerImage*)layer)->getCelEnd();
-  for (; it != end; ++it)
-    cropCel(sprite, *it, x, y, w, h);
-}
-
-// Moves every frame in @a layer with the offset (@a dx, @a dy).
-void DocumentApi::displaceLayers(Layer* layer, int dx, int dy)
-{
-  switch (layer->type()) {
-
-    case ObjectType::LayerImage: {
-      CelIterator it = ((LayerImage*)layer)->getCelBegin();
-      CelIterator end = ((LayerImage*)layer)->getCelEnd();
-      for (; it != end; ++it) {
-        Cel* cel = *it;
-        setCelPosition(layer->sprite(), cel, cel->x()+dx, cel->y()+dy);
-      }
-      break;
-    }
-
-    case ObjectType::LayerFolder: {
-      LayerIterator it = ((LayerFolder*)layer)->getLayerBegin();
-      LayerIterator end = ((LayerFolder*)layer)->getLayerEnd();
-      for (; it != end; ++it)
-        displaceLayers(*it, dx, dy);
-      break;
-    }
-
-  }
-}
-
 void DocumentApi::backgroundFromLayer(Layer* layer)
 {
   m_transaction.execute(new cmd::BackgroundFromLayer(layer));
@@ -497,11 +480,6 @@ void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const I
 {
   m_transaction.execute(new cmd::ReplaceImage(
       sprite, oldImage, newImage));
-}
-
-void DocumentApi::clearImage(Image* image, color_t bgcolor)
-{
-  m_transaction.execute(new cmd::ClearImage(image, bgcolor));
 }
 
 void DocumentApi::flipImage(Image* image, const gfx::Rect& bounds,

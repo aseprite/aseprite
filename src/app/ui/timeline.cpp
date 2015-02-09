@@ -91,12 +91,17 @@ static const char* kTimelineOpenEye = "timeline_open_eye";
 static const char* kTimelineClosedEye = "timeline_closed_eye";
 static const char* kTimelineOpenPadlock = "timeline_open_padlock";
 static const char* kTimelineClosedPadlock = "timeline_closed_padlock";
+static const char* kTimelineContinuous = "timeline_continuous";
+static const char* kTimelineDiscontinuous = "timeline_discontinuous";
 static const char* kTimelineLayer = "timeline_layer";
 static const char* kTimelineEmptyFrame = "timeline_empty_frame";
 static const char* kTimelineKeyframe = "timeline_keyframe";
 static const char* kTimelineFromLeft = "timeline_fromleft";
 static const char* kTimelineFromRight = "timeline_fromright";
 static const char* kTimelineFromBoth = "timeline_fromboth";
+static const char* kTimelineLeftLink = "timeline_leftlink";
+static const char* kTimelineRightLink = "timeline_rightlink";
+static const char* kTimelineBothLinks = "timeline_bothlinks";
 static const char* kTimelineGear = "timeline_gear";
 static const char* kTimelineOnionskin = "timeline_onionskin";
 static const char* kTimelineOnionskinRange = "timeline_onionskin_range";
@@ -117,6 +122,7 @@ enum {
   A_PART_SEPARATOR,
   A_PART_HEADER_EYE,
   A_PART_HEADER_PADLOCK,
+  A_PART_HEADER_CONTINUOUS,
   A_PART_HEADER_GEAR,
   A_PART_HEADER_ONIONSKIN,
   A_PART_HEADER_ONIONSKIN_RANGE_LEFT,
@@ -126,6 +132,7 @@ enum {
   A_PART_LAYER,
   A_PART_LAYER_EYE_ICON,
   A_PART_LAYER_PADLOCK_ICON,
+  A_PART_LAYER_CONTINUOUS_ICON,
   A_PART_LAYER_TEXT,
   A_PART_CEL,
   A_PART_RANGE_OUTLINE
@@ -139,12 +146,17 @@ Timeline::Timeline()
   , m_timelineClosedEyeStyle(get_style(kTimelineClosedEye))
   , m_timelineOpenPadlockStyle(get_style(kTimelineOpenPadlock))
   , m_timelineClosedPadlockStyle(get_style(kTimelineClosedPadlock))
+  , m_timelineContinuousStyle(get_style(kTimelineContinuous))
+  , m_timelineDiscontinuousStyle(get_style(kTimelineDiscontinuous))
   , m_timelineLayerStyle(get_style(kTimelineLayer))
   , m_timelineEmptyFrameStyle(get_style(kTimelineEmptyFrame))
   , m_timelineKeyframeStyle(get_style(kTimelineKeyframe))
   , m_timelineFromLeftStyle(get_style(kTimelineFromLeft))
   , m_timelineFromRightStyle(get_style(kTimelineFromRight))
   , m_timelineFromBothStyle(get_style(kTimelineFromBoth))
+  , m_timelineLeftLinkStyle(get_style(kTimelineLeftLink))
+  , m_timelineRightLinkStyle(get_style(kTimelineRightLink))
+  , m_timelineBothLinksStyle(get_style(kTimelineBothLinks))
   , m_timelineGearStyle(get_style(kTimelineGear))
   , m_timelineOnionskinStyle(get_style(kTimelineOnionskin))
   , m_timelineOnionskinRangeStyle(get_style(kTimelineOnionskinRange))
@@ -387,6 +399,8 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         case A_PART_LAYER_PADLOCK_ICON:
           break;
+        case A_PART_LAYER_CONTINUOUS_ICON:
+          break;
         case A_PART_CEL: {
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
@@ -547,6 +561,13 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
+          case A_PART_HEADER_CONTINUOUS: {
+            bool newContinuousState = !allLayersContinuous();
+            for (size_t i=0; i<m_layers.size(); i++)
+              m_layers[i]->setContinuous(newContinuousState);
+            break;
+          }
+
           case A_PART_HEADER_GEAR: {
             gfx::Rect gearBounds =
               getPartBounds(A_PART_HEADER_GEAR).offset(getBounds().getOrigin());
@@ -620,6 +641,14 @@ bool Timeline::onProcessMessage(Message* msg)
               Layer* layer = m_layers[m_clk_layer];
               ASSERT(layer != NULL);
               layer->setEditable(!layer->isEditable());
+            }
+            break;
+
+          case A_PART_LAYER_CONTINUOUS_ICON:
+            if (m_hot_layer == m_clk_layer && validLayer(m_hot_layer)) {
+              Layer* layer = m_layers[m_clk_layer];
+              ASSERT(layer != NULL);
+              layer->setContinuous(!layer->isContinuous());
             }
             break;
 
@@ -1095,6 +1124,7 @@ void Timeline::drawHeader(ui::Graphics* g)
   IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
+  bool allContinuous = allLayersContinuous();
 
   drawPart(g, getPartBounds(A_PART_HEADER_EYE),
     NULL,
@@ -1109,6 +1139,13 @@ void Timeline::drawHeader(ui::Graphics* g)
     m_clk_part == A_PART_HEADER_PADLOCK,
     m_hot_part == A_PART_HEADER_PADLOCK,
     m_clk_part == A_PART_HEADER_PADLOCK);
+
+  drawPart(g, getPartBounds(A_PART_HEADER_CONTINUOUS),
+    NULL,
+    allContinuous ? m_timelineContinuousStyle: m_timelineDiscontinuousStyle,
+    m_clk_part == A_PART_HEADER_CONTINUOUS,
+    m_hot_part == A_PART_HEADER_CONTINUOUS,
+    m_clk_part == A_PART_HEADER_CONTINUOUS);
 
   drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
     NULL, m_timelineGearStyle,
@@ -1174,6 +1211,14 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
     (hotlayer && m_hot_part == A_PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_PADLOCK_ICON));
 
+  // Draw the continuous flag.
+  bounds = getPartBounds(A_PART_LAYER_CONTINUOUS_ICON, layerIdx);
+  drawPart(g, bounds, NULL,
+    layer->isContinuous() ? m_timelineContinuousStyle: m_timelineDiscontinuousStyle,
+    is_active,
+    (hotlayer && m_hot_part == A_PART_LAYER_CONTINUOUS_ICON),
+    (clklayer && m_clk_part == A_PART_LAYER_CONTINUOUS_ICON));
+
   // Draw the layer's name.
   bounds = getPartBounds(A_PART_LAYER_TEXT, layerIdx);
   drawPart(g, bounds, layer->name().c_str(), m_timelineLayerStyle,
@@ -1193,6 +1238,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel)
 {
+  Layer* layer = m_layers[layerIndex];
   Image* image = (cel ? cel->image(): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
     m_hot_layer == layerIndex &&
@@ -1204,23 +1250,24 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   if (!clip)
     return;
 
-  if (layerIndex == getLayerIndex(m_layer) && frame == m_frame)
+  if (layer == m_layer && frame == m_frame)
     drawPart(g, bounds, NULL, m_timelineSelectedCelStyle, false, false, true);
   else
     drawPart(g, bounds, NULL, m_timelineBoxStyle, is_active, is_hover);
 
   skin::Style* style;
+  bool fromLeft = false;
+  bool fromRight = false;
   if (is_empty) {
     style = m_timelineEmptyFrameStyle;
   }
   else {
-    Layer* layer = m_layers[layerIndex];
     Cel* left = (layer->isImage() ? layer->cel(frame-1): NULL);
     Cel* right = (layer->isImage() ? layer->cel(frame+1): NULL);
     ObjectId leftImg = (left ? left->image()->id(): 0);
     ObjectId rightImg = (right ? right->image()->id(): 0);
-    bool fromLeft = (leftImg == cel->image()->id());
-    bool fromRight = (rightImg == cel->image()->id());
+    fromLeft = (leftImg == cel->image()->id());
+    fromRight = (rightImg == cel->image()->id());
 
     if (fromLeft && fromRight)
       style = m_timelineFromBothStyle;
@@ -1232,6 +1279,56 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
       style = m_timelineKeyframeStyle;
   }
   drawPart(g, bounds, NULL, style, is_active, is_hover);
+
+  // Draw decorators to link the activeCel with its links.
+  if (layer == m_layer) {
+    Cel* activeCel = m_layer->cel(m_frame);
+    if (activeCel)
+      drawCelLinkDecorators(g, bounds, cel, activeCel, frame, is_active, is_hover);
+  }
+}
+
+void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
+  Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover)
+{
+  ObjectId imageId = activeCel->image()->id();
+
+  // Link in some cel at the left side
+  bool left = false;
+  for (frame_t fr=frame-1; fr>=0; --fr) {
+    Cel* c = m_layer->cel(fr);
+    if (c && c->image()->id() == imageId) {
+      left = true;
+      break;
+    }
+  }
+
+  // Link in some cel at the right side
+  bool right = false;
+  for (frame_t fr=frame+1; fr<m_sprite->totalFrames(); ++fr) {
+    Cel* c = m_layer->cel(fr);
+    if (c && c->image()->id() == imageId) {
+      right = true;
+      break;
+    }
+  }
+
+  if (!cel || cel->image()->id() != imageId) {
+    if (left && right)
+      drawPart(g, bounds, NULL, m_timelineBothLinksStyle, is_active, is_hover);
+  }
+  else {
+    if (left) {
+      Cel* prevCel = m_layer->cel(cel->frame()-1);
+      if (!prevCel || prevCel->image()->id() != imageId)
+        drawPart(g, bounds, NULL, m_timelineLeftLinkStyle, is_active, is_hover);
+    }
+    if (right) {
+      Cel* nextCel = m_layer->cel(cel->frame()+1);
+      if (!nextCel || nextCel->image()->id() != imageId)
+        drawPart(g, bounds, NULL, m_timelineRightLinkStyle, is_active, is_hover);
+    }
+  }
 }
 
 void Timeline::drawLoopRange(ui::Graphics* g)
@@ -1421,15 +1518,18 @@ gfx::Rect Timeline::getPartBounds(int part, LayerIndex layer, frame_t frame) con
     case A_PART_HEADER_PADLOCK:
       return gfx::Rect(FRMSIZE*1, 0, FRMSIZE, HDRSIZE);
 
-    case A_PART_HEADER_GEAR:
+    case A_PART_HEADER_CONTINUOUS:
       return gfx::Rect(FRMSIZE*2, 0, FRMSIZE, HDRSIZE);
 
-    case A_PART_HEADER_ONIONSKIN:
+    case A_PART_HEADER_GEAR:
       return gfx::Rect(FRMSIZE*3, 0, FRMSIZE, HDRSIZE);
 
+    case A_PART_HEADER_ONIONSKIN:
+      return gfx::Rect(FRMSIZE*4, 0, FRMSIZE, HDRSIZE);
+
     case A_PART_HEADER_LAYER:
-      return gfx::Rect(FRMSIZE*4, 0,
-        m_separator_x - FRMSIZE*4, HDRSIZE);
+      return gfx::Rect(FRMSIZE*5, 0,
+        m_separator_x - FRMSIZE*5, HDRSIZE);
 
     case A_PART_HEADER_FRAME:
       if (validFrame(frame)) {
@@ -1462,9 +1562,17 @@ gfx::Rect Timeline::getPartBounds(int part, LayerIndex layer, frame_t frame) con
       }
       break;
 
+    case A_PART_LAYER_CONTINUOUS_ICON:
+      if (validLayer(layer)) {
+        return gfx::Rect(2*FRMSIZE,
+          HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
+          FRMSIZE, LAYSIZE);
+      }
+      break;
+
     case A_PART_LAYER_TEXT:
       if (validLayer(layer)) {
-        int x = FRMSIZE*2;
+        int x = FRMSIZE*3;
         return gfx::Rect(x,
           HDRSIZE + LAYSIZE*(lastLayer()-layer) - m_scroll_y,
           m_separator_x - x, LAYSIZE);
@@ -1605,6 +1713,8 @@ void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_
           hot_part = A_PART_HEADER_EYE;
         else if (getPartBounds(A_PART_HEADER_PADLOCK).contains(mousePos))
           hot_part = A_PART_HEADER_PADLOCK;
+        else if (getPartBounds(A_PART_HEADER_CONTINUOUS).contains(mousePos))
+          hot_part = A_PART_HEADER_CONTINUOUS;
         else if (getPartBounds(A_PART_HEADER_GEAR).contains(mousePos))
           hot_part = A_PART_HEADER_GEAR;
         else if (getPartBounds(A_PART_HEADER_ONIONSKIN).contains(mousePos))
@@ -1623,6 +1733,8 @@ void Timeline::updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_
           hot_part = A_PART_LAYER_EYE_ICON;
         else if (getPartBounds(A_PART_LAYER_PADLOCK_ICON, hot_layer).contains(mousePos))
           hot_part = A_PART_LAYER_PADLOCK_ICON;
+        else if (getPartBounds(A_PART_LAYER_CONTINUOUS_ICON, hot_layer).contains(mousePos))
+          hot_part = A_PART_LAYER_CONTINUOUS_ICON;
         else if (getPartBounds(A_PART_LAYER_TEXT, hot_layer).contains(mousePos))
           hot_part = A_PART_LAYER_TEXT;
         else
@@ -1768,6 +1880,16 @@ void Timeline::updateStatusBar(ui::Message* msg)
         }
         break;
 
+      case A_PART_LAYER_CONTINUOUS_ICON:
+        if (layer != NULL) {
+          sb->setStatusText(0, "Layer '%s' is %s (%s)",
+            layer->name().c_str(),
+            layer->isContinuous() ? "continuous": "discontinuous",
+            layer->isContinuous() ? "prefer linked cels/frames": "prefer individual cels/frames");
+          return;
+        }
+        break;
+
       case A_PART_HEADER_FRAME:
         if (validFrame(m_hot_frame)) {
           sb->setStatusText(0,
@@ -1782,9 +1904,16 @@ void Timeline::updateStatusBar(ui::Message* msg)
         if (layer) {
           Cel* cel = (layer->isImage() ? layer->cel(m_hot_frame): NULL);
           StatusBar::instance()->setStatusText(0,
-            "%s at frame %d",
-            cel ? "Cel": "Empty cel",
-            (int)m_hot_frame+1);
+            "%s at frame %d"
+#ifdef _DEBUG
+            " (Image %d)"
+#endif
+            , cel ? "Cel": "Empty cel"
+            , (int)m_hot_frame+1
+#ifdef _DEBUG
+            , (cel ? cel->image()->id(): 0)
+#endif
+            );
           return;
         }
         break;
@@ -1895,6 +2024,24 @@ bool Timeline::allLayersUnlocked()
 {
   for (size_t i=0; i<m_layers.size(); i++)
     if (!m_layers[i]->isEditable())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersContinuous()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (!m_layers[i]->isContinuous())
+      return false;
+
+  return true;
+}
+
+bool Timeline::allLayersDiscontinuous()
+{
+  for (size_t i=0; i<m_layers.size(); i++)
+    if (m_layers[i]->isContinuous())
       return false;
 
   return true;

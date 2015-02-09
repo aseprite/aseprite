@@ -22,11 +22,11 @@
 
 #include "app/cmd/add_layer.h"
 
-#include "app/cmd/object_io.h"
-#include "doc/layer.h"
 #include "doc/document.h"
 #include "doc/document_event.h"
 #include "doc/layer.h"
+#include "doc/layer_io.h"
+#include "doc/subobjects_io.h"
 
 namespace app {
 namespace cmd {
@@ -54,7 +54,7 @@ void AddLayer::onUndo()
   Layer* folder = m_folder.layer();
   Layer* layer = m_newLayer.layer();
 
-  ObjectIO(folder->sprite()).write_layer(m_stream, layer);
+  write_layer(m_stream, layer);
 
   removeLayer(folder, layer);
 }
@@ -62,7 +62,8 @@ void AddLayer::onUndo()
 void AddLayer::onRedo()
 {
   Layer* folder = m_folder.layer();
-  Layer* newLayer = ObjectIO(folder->sprite()).read_layer(m_stream);
+  SubObjectsIO io(folder->sprite());
+  Layer* newLayer = read_layer(m_stream, &io);
   Layer* afterThis = m_afterThis.layer();
 
   addLayer(folder, newLayer, afterThis);

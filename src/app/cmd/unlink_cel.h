@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -16,43 +16,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_CMD_REPLACE_IMAGE_H_INCLUDED
-#define APP_CMD_REPLACE_IMAGE_H_INCLUDED
+#ifndef APP_CMD_UNLINK_CEL_H_INCLUDED
+#define APP_CMD_UNLINK_CEL_H_INCLUDED
 #pragma once
 
 #include "app/cmd.h"
-#include "app/cmd/with_sprite.h"
-#include "doc/image_ref.h"
-
-#include <sstream>
+#include "app/cmd/with_cel.h"
 
 namespace app {
 namespace cmd {
   using namespace doc;
 
-  class ReplaceImage : public Cmd
-                     , public WithSprite {
+  class UnlinkCel : public Cmd
+                  , public WithCel {
   public:
-    ReplaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage);
+    UnlinkCel(Cel* cel);
 
   protected:
     void onExecute() override;
     void onUndo() override;
-    void onRedo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this) +
-        (m_copy ? m_copy->getMemSize(): 0);
-    }
 
   private:
-    ObjectId m_oldImageId;
     ObjectId m_newImageId;
-
-    // Reference used only to keep the copy of the new image from the
-    // ReplaceImage() ctor until the ReplaceImage::onExecute() call.
-    // Then the reference is not used anymore.
-    ImageRef m_newImage;
-    ImageRef m_copy;
+    ObjectId m_oldCelDataId;
+    ObjectId m_newCelDataId;
   };
 
 } // namespace cmd

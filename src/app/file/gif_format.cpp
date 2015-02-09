@@ -462,7 +462,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
       try {
         // Add the image in the sprite's stock and update the cel's
         // reference to the new stock's image.
-        cel->setImage(cel_image);
+        cel->data()->setImage(cel_image);
       }
       catch (...) {
         throw;

@@ -142,6 +142,8 @@ namespace app {
     bool allLayersInvisible();
     bool allLayersLocked();
     bool allLayersUnlocked();
+    bool allLayersContinuous();
+    bool allLayersDiscontinuous();
     void detachDocument();
     void setCursor(ui::Message* msg, const gfx::Point& mousePos);
     void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
@@ -153,6 +155,8 @@ namespace app {
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
     void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel);
+    void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
+      Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover);
     void drawLoopRange(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
@@ -201,12 +205,17 @@ namespace app {
     skin::Style* m_timelineClosedEyeStyle;
     skin::Style* m_timelineOpenPadlockStyle;
     skin::Style* m_timelineClosedPadlockStyle;
+    skin::Style* m_timelineContinuousStyle;
+    skin::Style* m_timelineDiscontinuousStyle;
     skin::Style* m_timelineLayerStyle;
     skin::Style* m_timelineEmptyFrameStyle;
     skin::Style* m_timelineKeyframeStyle;
     skin::Style* m_timelineFromLeftStyle;
     skin::Style* m_timelineFromRightStyle;
     skin::Style* m_timelineFromBothStyle;
+    skin::Style* m_timelineLeftLinkStyle;
+    skin::Style* m_timelineRightLinkStyle;
+    skin::Style* m_timelineBothLinksStyle;
     skin::Style* m_timelineGearStyle;
     skin::Style* m_timelineOnionskinStyle;
     skin::Style* m_timelineOnionskinRangeStyle;

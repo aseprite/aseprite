@@ -35,6 +35,7 @@ using namespace base::serialization::little_endian;
 
 void write_image(std::ostream& os, Image* image)
 {
+  write32(os, image->id());
   write8(os, image->pixelFormat());    // Pixel format
   write16(os, image->width());         // Width
   write16(os, image->height());        // Height
@@ -47,6 +48,7 @@ void write_image(std::ostream& os, Image* image)
 
 Image* read_image(std::istream& is)
 {
+  ObjectId id = read32(is);
   int pixelFormat = read8(is);          // Pixel format
   int width = read16(is);               // Width
   int height = read16(is);              // Height
@@ -59,6 +61,7 @@ Image* read_image(std::istream& is)
     is.read((char*)image->getPixelAddress(0, c), size);
 
   image->setMaskColor(maskColor);
+  image->setId(id);
   return image.release();
 }
 

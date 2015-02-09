@@ -13,7 +13,10 @@ add_library(doc-lib
   blend.cpp
   brush.cpp
   cel.cpp
+  cel_data.cpp
+  cel_data_io.cpp
   cel_io.cpp
+  cels_range.cpp
   color_scales.cpp
   context.cpp
   conversion_she.cpp
@@ -36,4 +39,5 @@ add_library(doc-lib
   primitives.cpp
   rgbmap.cpp
   sprite.cpp
-  sprites.cpp)
+  sprites.cpp
+  subobjects_io.cpp)

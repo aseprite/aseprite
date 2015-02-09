@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <limits>
 #include <vector>
+#include <map>
 
 namespace render {
 
@@ -49,7 +50,6 @@ Palette* create_palette_from_rgb(
     palette = new Palette(frame_t(0), 256);
 
   bool has_background_layer = (sprite->backgroundLayer() != NULL);
-  Image* flat_image;
 
   ImagesCollector images(
     sprite->folder(),           // All layers
@@ -58,24 +58,29 @@ Palette* create_palette_from_rgb(
     false);                     // forWrite=false, read only
 
   // Add a flat image with the current sprite's frame rendered
-  flat_image = Image::create(sprite->pixelFormat(),
-    sprite->width(), sprite->height());
+  ImageRef flat_image(Image::create(sprite->pixelFormat(),
+      sprite->width(), sprite->height()));
 
   render::Render().renderSprite(flat_image, sprite, frameNumber);
 
   // Create an array of images
-  size_t nimage = images.size() + 1; // +1 for flat_image
-  std::vector<Image*> image_array(nimage);
+  std::vector<Image*> image_array;
+  std::map<ObjectId, Image*> used_images;
 
-  size_t c = 0;
-  for (ImagesCollector::ItemsIterator it=images.begin(); it!=images.end(); ++it)
-    image_array[c++] = it->image();
-  image_array[c++] = flat_image; // The 'flat_image'
+  for (auto it=images.begin(); it!=images.end(); ++it) {
+    Image* image = it->image();
+    ObjectId imageId = image->id();
+
+    if (used_images.find(imageId) == used_images.end()) {
+      used_images.insert(std::make_pair(imageId, image));
+      image_array.push_back(image);
+    }
+  }
+  image_array.push_back(flat_image);
 
   // Generate an optimized palette for all images
   create_palette_from_images(image_array, palette, has_background_layer);
 
-  delete flat_image;
   return palette;
 }
 

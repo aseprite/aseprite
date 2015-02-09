@@ -27,6 +27,8 @@
 #include "app/cmd/clear_cel.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_cel.h"
+#include "app/cmd/set_cel_data.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -70,8 +72,11 @@ void CopyCel::onExecute()
 
   // Clear destination cel if it does exist. It'll be overriden by the
   // copy of srcCel.
-  if (dstCel)
+  if (dstCel) {
+    if (dstCel->links())
+      executeAndAdd(new cmd::UnlinkCel(dstCel));
     executeAndAdd(new cmd::ClearCel(dstCel));
+  }
 
   // Add empty frames until newFrame
   while (dstSprite->totalFrames() <= m_dstFrame)
@@ -83,35 +88,41 @@ void CopyCel::onExecute()
   if (dstCel)
     dstImage = dstCel->imageRef();
 
-  if (dstLayer->isBackground()) {
-    if (srcCel) {
-      ASSERT(dstImage);
-      if (dstImage) {
-        int blend = (srcLayer->isBackground() ?
-          BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+  bool createLink =
+    (srcLayer == dstLayer && dstLayer->isContinuous());
 
-        ImageRef tmp(Image::createCopy(dstImage));
-        render::composite_image(tmp, srcImage,
-          srcCel->x(), srcCel->y(), 255, blend);
-        executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
-      }
+  // For background layer
+  if (dstLayer->isBackground()) {
+    ASSERT(dstCel);
+    ASSERT(dstImage);
+    if (!dstCel || !dstImage ||
+        !srcCel || !srcImage)
+      return;
+
+    if (createLink) {
+      executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
     }
     else {
-      ASSERT(dstCel);
-      if (dstCel)
-        executeAndAdd(new cmd::ClearCel(dstCel));
+      int blend = (srcLayer->isBackground() ?
+        BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+
+      ImageRef tmp(Image::createCopy(dstImage));
+      render::composite_image(tmp, srcImage,
+        srcCel->x(), srcCel->y(), 255, blend);
+      executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
     }
   }
+  // For transparent layers
   else {
     if (dstCel)
       executeAndAdd(new cmd::RemoveCel(dstCel));
 
     if (srcCel) {
-      dstImage.reset(Image::createCopy(srcImage));
-
-      dstCel = new Cel(*srcCel);
+      if (createLink)
+        dstCel = Cel::createLink(srcCel);
+      else
+        dstCel = Cel::createCopy(srcCel);
       dstCel->setFrame(m_dstFrame);
-      dstCel->setImage(dstImage);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
     }

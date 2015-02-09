@@ -22,15 +22,21 @@
 
 #include "app/cmd/add_cel.h"
 
-#include "app/cmd/object_io.h"
+#include "base/serialization.h"
 #include "doc/cel.h"
+#include "doc/cel_io.h"
+#include "doc/cel_data_io.h"
 #include "doc/document.h"
 #include "doc/document_event.h"
+#include "doc/image_io.h"
 #include "doc/layer.h"
+#include "doc/subobjects_io.h"
 
 namespace app {
 namespace cmd {
 
+using namespace base::serialization;
+using namespace base::serialization::little_endian;
 using namespace doc;
 
 AddCel::AddCel(Layer* layer, Cel* cel)
@@ -52,7 +58,14 @@ void AddCel::onUndo()
   Layer* layer = this->layer();
   Cel* cel = this->cel();
 
-  ObjectIO(layer->sprite()).write_cel(m_stream, cel);
+  // Save the CelData only if the cel isn't linked
+  bool has_data = (cel->links() == 0);
+  write8(m_stream, has_data ? 1: 0);
+  if (has_data) {
+    write_image(m_stream, cel->image());
+    write_celdata(m_stream, cel->data());
+  }
+  write_cel(m_stream, cel);
 
   removeCel(layer, cel);
 }
@@ -60,7 +73,17 @@ void AddCel::onUndo()
 void AddCel::onRedo()
 {
   Layer* layer = this->layer();
-  Cel* cel = ObjectIO(layer->sprite()).read_cel(m_stream);
+
+  SubObjectsIO io(layer->sprite());
+  bool has_data = (read8(m_stream) != 0);
+  if (has_data) {
+    ImageRef image(read_image(m_stream));
+    io.addImageRef(image);
+
+    CelDataRef celdata(read_celdata(m_stream, &io));
+    io.addCelDataRef(celdata);
+  }
+  Cel* cel = read_cel(m_stream, &io);
 
   addCel(layer, cel);
 

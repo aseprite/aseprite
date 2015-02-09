@@ -28,13 +28,14 @@
 #include "app/document_range.h"
 #include "app/job.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
-#include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "base/convert_to.h"
 #include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -82,39 +83,42 @@ public:
 
 protected:
 
-  /**
-   * [working thread]
-   */
+  // [working thread]
   virtual void onJob()
   {
     Transaction transaction(m_writer.context(), "Rotate Canvas");
     DocumentApi api = m_document->getApi(transaction);
 
-    // for each cel...
+    // 1) Rotate cel positions
+    for (Cel* cel : m_cels) {
+      Image* image = cel->image();
+      if (!image)
+        continue;
+
+      switch (m_angle) {
+        case 180:
+          api.setCelPosition(m_sprite, cel,
+            m_sprite->width() - cel->x() - image->width(),
+            m_sprite->height() - cel->y() - image->height());
+          break;
+        case 90:
+          api.setCelPosition(m_sprite, cel,
+            m_sprite->height() - cel->y() - image->height(),
+            cel->x());
+          break;
+        case -90:
+          api.setCelPosition(m_sprite, cel,
+            cel->y(),
+            m_sprite->width() - cel->x() - image->width());
+          break;
+      }
+    }
+
+    // 2) Rotate images
     int i = 0;
     for (Cel* cel : m_cels) {
       Image* image = cel->image();
       if (image) {
-        // change it location
-        switch (m_angle) {
-          case 180:
-            api.setCelPosition(m_sprite, cel,
-              m_sprite->width() - cel->x() - image->width(),
-              m_sprite->height() - cel->y() - image->height());
-            break;
-          case 90:
-            api.setCelPosition(m_sprite, cel,
-              m_sprite->height() - cel->y() - image->height(),
-              cel->x());
-            break;
-          case -90:
-            api.setCelPosition(m_sprite, cel,
-              cel->y(),
-              m_sprite->width() - cel->x() - image->width());
-            break;
-        }
-
-        // rotate the image
         ImageRef new_image(Image::create(image->pixelFormat(),
             m_angle == 180 ? image->width(): image->height(),
             m_angle == 180 ? image->height(): image->width()));
@@ -214,13 +218,15 @@ void RotateCommand::onExecute(Context* context)
     if (m_flipMask) {
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled())
-        cels = get_cels_in_range(reader.sprite(), range);
+        cels = get_unique_cels(reader.sprite(), range);
       else if (reader.cel())
         cels.push_back(reader.cel());
     }
     // Flip the whole sprite
     else if (reader.sprite()) {
-      reader.sprite()->getCels(cels);
+      for (Cel* cel : reader.sprite()->uniqueCels())
+        cels.push_back(cel);
+
       rotateSprite = true;
     }
 

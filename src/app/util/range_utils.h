@@ -20,14 +20,20 @@
 #define APP_UTIL_RANGE_UTILS_H_INCLUDED
 #pragma once
 
-#include "doc/object.h"
+#include "doc/cel_list.h"
 
 #include <vector>
 
+namespace doc {
+  class Sprite;
+}
+
 namespace app {
+  using namespace doc;
+
   class DocumentRange;
 
-  CelList get_cels_in_range(doc::Sprite* sprite, const DocumentRange& range);
+  doc::CelList get_unique_cels(doc::Sprite* sprite, const DocumentRange& range);
   
 } // namespace app
 

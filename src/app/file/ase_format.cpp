@@ -1020,9 +1020,7 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
   }
 
   // Create the new frame.
-  base::UniquePtr<Cel> cel(new Cel(frame, ImageRef(NULL)));
-  cel->setPosition(x, y);
-  cel->setOpacity(opacity);
+  base::UniquePtr<Cel> cel;
 
   switch (cel_type) {
 
@@ -1050,7 +1048,9 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
             break;
         }
 
-        cel->setImage(image);
+        cel.reset(new Cel(frame, image));
+        cel->setPosition(x, y);
+        cel->setOpacity(opacity);
       }
       break;
     }
@@ -1061,12 +1061,19 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
       Cel* link = layer->cel(link_frame);
 
       if (link) {
-#if 1   // Create a copy of the linked cel (avoid using links cel)
-        ImageRef image(Image::createCopy(link->image()));
-        cel->setImage(image);
-#else
-        cel->setImage(link->imageRef());
-#endif
+        // There were a beta version that allow to the user specify
+        // different X, Y, or opacity per link, in that case we must
+        // create a copy.
+        if (link->x() == x && link->y() == y && link->opacity() == opacity) {
+          cel.reset(Cel::createLink(link));
+          cel->setFrame(frame);
+        }
+        else {
+          cel.reset(Cel::createCopy(link));
+          cel->setFrame(frame);
+          cel->setPosition(x, y);
+          cel->setOpacity(opacity);
+        }
       }
       else {
         // Linked cel doesn't found
@@ -1106,16 +1113,20 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
           fop_error(fop, e.what());
         }
 
-        cel->setImage(image);
+        cel.reset(new Cel(frame, image));
+        cel->setPosition(x, y);
+        cel->setOpacity(opacity);
       }
       break;
     }
 
   }
 
-  Cel* newCel = cel.release();
-  static_cast<LayerImage*>(layer)->addCel(newCel);
-  return newCel;
+  if (!cel)
+    return nullptr;
+
+  static_cast<LayerImage*>(layer)->addCel(cel);
+  return cel.release();
 }
 
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel* cel, LayerImage* layer, Sprite* sprite)

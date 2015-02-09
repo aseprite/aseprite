@@ -95,16 +95,15 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
       gfx::Point delta = m_celNew - m_celStart;
 
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
-      if (range.enabled()) {
-        for (Cel* cel : get_cels_in_range(writer.sprite(), range)) {
-          Layer* layer = cel->layer();
-          ASSERT(layer);
-          if (layer && layer->isMovable() && !layer->isBackground())
-            api.setCelPosition(writer.sprite(), cel, cel->x()+delta.x, cel->y()+delta.y);
+      if (!range.enabled())
+        range = DocumentRange(m_cel);
+
+      for (Cel* cel : get_unique_cels(writer.sprite(), range)) {
+        Layer* layer = cel->layer();
+        ASSERT(layer);
+        if (layer && layer->isMovable() && !layer->isBackground()) {
+          api.setCelPosition(writer.sprite(), cel, cel->x()+delta.x, cel->y()+delta.y);
         }
-      }
-      else if (m_cel) {
-        api.setCelPosition(writer.sprite(), m_cel, m_celNew.x, m_celNew.y);
       }
 
       // Move selection if it was visible
