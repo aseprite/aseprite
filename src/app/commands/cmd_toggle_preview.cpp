@@ -24,7 +24,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/ui/main_window.h"
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 
 namespace app {
 
@@ -58,17 +58,17 @@ bool TogglePreviewCommand::onChecked(Context* context)
   if (!mainWin)
     return false;
 
-  MiniEditorWindow* previewWin = mainWin->getMiniEditor();
+  PreviewEditorWindow* previewWin = mainWin->getPreviewEditor();
   return (previewWin && previewWin->isVisible());
 }
 
 void TogglePreviewCommand::onExecute(Context* context)
 {
-  MiniEditorWindow* previewWin =
-    App::instance()->getMainWindow()->getMiniEditor();
+  PreviewEditorWindow* previewWin =
+    App::instance()->getMainWindow()->getPreviewEditor();
 
-  bool state = previewWin->isMiniEditorEnabled();
-  previewWin->setMiniEditorEnabled(!state);
+  bool state = previewWin->isPreviewEnabled();
+  previewWin->setPreviewEnabled(!state);
 }
 
 Command* CommandFactory::createTogglePreviewCommand()

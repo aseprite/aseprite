@@ -33,7 +33,7 @@ namespace app {
   class ContextBar;
   class INotificationDelegate;
   class MainMenuBar;
-  class MiniEditorWindow;
+  class PreviewEditorWindow;
   class Notifications;
   class StartView;
   class StatusBar;
@@ -58,7 +58,7 @@ namespace app {
     Tabs* getTabsBar() { return m_tabsBar; }
     Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }
-    MiniEditorWindow* getMiniEditor() { return m_miniEditor; }
+    PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
 
     void start();
     void reloadMenus();
@@ -94,7 +94,7 @@ namespace app {
     Mode m_mode;
     Timeline* m_timeline;
     Workspace* m_workspace;
-    MiniEditorWindow* m_miniEditor;
+    PreviewEditorWindow* m_previewEditor;
     StartView* m_startView;
     Notifications* m_notifications;
   };

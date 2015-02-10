@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef APP_UI_MINI_EDITOR_VIEW_H_INCLUDED
-#define APP_UI_MINI_EDITOR_VIEW_H_INCLUDED
+#ifndef APP_UI_PREVIEW_EDITOR_H_INCLUDED
+#define APP_UI_PREVIEW_EDITOR_H_INCLUDED
 #pragma once
 
 #include "app/ui/document_view.h"
@@ -27,13 +27,13 @@
 namespace app {
   class MiniPlayButton;
 
-  class MiniEditorWindow : public ui::Window {
+  class PreviewEditorWindow : public ui::Window {
   public:
-    MiniEditorWindow();
-    ~MiniEditorWindow();
+    PreviewEditorWindow();
+    ~PreviewEditorWindow();
 
-    bool isMiniEditorEnabled() const { return m_isEnabled; }
-    void setMiniEditorEnabled(bool state);
+    bool isPreviewEnabled() const { return m_isEnabled; }
+    void setPreviewEnabled(bool state);
 
     void updateUsingEditor(Editor* editor);
 

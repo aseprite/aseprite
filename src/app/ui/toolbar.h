@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ namespace app {
 
     static const int NoneIndex = -1;
     static const int ConfigureToolIndex = -2;
-    static const int MiniEditorVisibilityIndex = -3;
+    static const int PreviewVisibilityIndex = -3;
 
     ToolBar();
     ~ToolBar();

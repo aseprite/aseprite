@@ -30,7 +30,7 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/tabs.h"
 #include "app/ui/timeline.h"
 #include "app/ui/workspace.h"
@@ -92,11 +92,12 @@ void UIContext::setActiveView(DocumentView* docView)
 
   setActiveDocument(docView ? docView->getDocument(): NULL);
 
-  if (docView != NULL) {
-    App::instance()->getMainWindow()->getTabsBar()->selectTab(docView);
+  MainWindow* mainWin = App::instance()->getMainWindow();
+  if (docView) {
+    mainWin->getTabsBar()->selectTab(docView);
 
-    if (App::instance()->getMainWindow()->getWorkspace()->activeView() != docView)
-      App::instance()->getMainWindow()->getWorkspace()->setActiveView(docView);
+    if (mainWin->getWorkspace()->activeView() != docView)
+      mainWin->getWorkspace()->setActiveView(docView);
   }
 
   current_editor = (docView ? docView->getEditor(): NULL);
@@ -104,8 +105,8 @@ void UIContext::setActiveView(DocumentView* docView)
   if (current_editor)
     current_editor->requestFocus();
 
-  App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(current_editor);
-  App::instance()->getMainWindow()->getTimeline()->updateUsingEditor(current_editor);
+  mainWin->getPreviewEditor()->updateUsingEditor(current_editor);
+  mainWin->getTimeline()->updateUsingEditor(current_editor);
 
   // Change the image-type of color bar.
   ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());

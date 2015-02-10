@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "config.h"
 #endif
 
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 
 #include "app/document.h"
 #include "app/handle_anidir.h"
@@ -114,7 +114,7 @@ private:
   bool m_isPlaying;
 };
 
-MiniEditorWindow::MiniEditorWindow()
+PreviewEditorWindow::PreviewEditorWindow()
   : Window(WithTitleBar, "Preview")
   , m_docView(NULL)
   , m_playButton(new MiniPlayButton())
@@ -127,25 +127,25 @@ MiniEditorWindow::MiniEditorWindow()
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
-  m_playButton->Click.connect(Bind<void>(&MiniEditorWindow::onPlayClicked, this));
+  m_playButton->Click.connect(Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
   addChild(m_playButton);
 
-  m_playTimer.Tick.connect(&MiniEditorWindow::onPlaybackTick, this);
+  m_playTimer.Tick.connect(&PreviewEditorWindow::onPlaybackTick, this);
 }
 
-MiniEditorWindow::~MiniEditorWindow()
+PreviewEditorWindow::~PreviewEditorWindow()
 {
   set_config_bool("MiniEditor", "Enabled", m_isEnabled);
 }
 
-void MiniEditorWindow::setMiniEditorEnabled(bool state)
+void PreviewEditorWindow::setPreviewEnabled(bool state)
 {
   m_isEnabled = state;
 
   updateUsingEditor(current_editor);
 }
 
-bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
+bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
 
@@ -175,7 +175,7 @@ bool MiniEditorWindow::onProcessMessage(ui::Message* msg)
   return Window::onProcessMessage(msg);
 }
 
-void MiniEditorWindow::onClose(ui::CloseEvent& ev)
+void PreviewEditorWindow::onClose(ui::CloseEvent& ev)
 {
   Button* closeButton = dynamic_cast<Button*>(ev.getSource());
   if (closeButton != NULL &&
@@ -194,7 +194,7 @@ void MiniEditorWindow::onClose(ui::CloseEvent& ev)
   }
 }
 
-void MiniEditorWindow::onWindowResize()
+void PreviewEditorWindow::onWindowResize()
 {
   Window::onWindowResize();
 
@@ -203,7 +203,7 @@ void MiniEditorWindow::onWindowResize()
     updateUsingEditor(view->getEditor());
 }
 
-void MiniEditorWindow::onPlayClicked()
+void PreviewEditorWindow::onPlayClicked()
 {
   if (m_playButton->isPlaying()) {
     Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
@@ -222,7 +222,7 @@ void MiniEditorWindow::onPlayClicked()
   }
 }
 
-void MiniEditorWindow::updateUsingEditor(Editor* editor)
+void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 {
   if (!m_isEnabled || !editor) {
     hideWindow();
@@ -255,7 +255,7 @@ void MiniEditorWindow::updateUsingEditor(Editor* editor)
   miniEditor->setFrame(editor->frame());
 }
 
-void MiniEditorWindow::hideWindow()
+void PreviewEditorWindow::hideWindow()
 {
   delete m_docView;
   m_docView = NULL;
@@ -264,7 +264,7 @@ void MiniEditorWindow::hideWindow()
     closeWindow(NULL);
 }
 
-void MiniEditorWindow::onPlaybackTick()
+void PreviewEditorWindow::onPlaybackTick()
 {
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
   if (!miniEditor)

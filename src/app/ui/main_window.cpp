@@ -36,8 +36,8 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/main_menu_bar.h"
-#include "app/ui/mini_editor.h"
 #include "app/ui/notifications.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/start_view.h"
@@ -89,7 +89,7 @@ MainWindow::MainWindow()
   m_tabsBar = new Tabs(this);
   m_workspace = new Workspace();
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
-  m_miniEditor = new MiniEditorWindow();
+  m_previewEditor = new PreviewEditorWindow();
   m_timeline = new Timeline();
   m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
   m_timelineSplitter = findChildT<Splitter>("timelinesplitter");
@@ -138,7 +138,7 @@ MainWindow::~MainWindow()
     delete m_startView;
   }
   delete m_contextBar;
-  delete m_miniEditor;
+  delete m_previewEditor;
 
   // Destroy the workspace first so ~Editor can dettach slots from
   // ColorBar. TODO this is a terrible hack for slot/signal stuff,

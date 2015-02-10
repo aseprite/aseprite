@@ -31,7 +31,7 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -166,14 +166,14 @@ bool ToolBar::onProcessMessage(Message* msg)
         UIContext::instance()->executeCommand(conf_tools_cmd);
       }
 
-      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+      toolrc = getToolGroupBounds(PreviewVisibilityIndex);
       if (mouseMsg->position().y >= toolrc.y &&
           mouseMsg->position().y < toolrc.y+toolrc.h) {
-        // Switch the state of the mini editor
-        MiniEditorWindow* miniEditorWindow =
-          App::instance()->getMainWindow()->getMiniEditor();
-        bool state = miniEditorWindow->isMiniEditorEnabled();
-        miniEditorWindow->setMiniEditorEnabled(!state);
+        // Toggle preview visibility
+        PreviewEditorWindow* preview =
+          App::instance()->getMainWindow()->getPreviewEditor();
+        bool state = preview->isPreviewEnabled();
+        preview->setPreviewEnabled(!state);
       }
       break;
     }
@@ -211,10 +211,10 @@ bool ToolBar::onProcessMessage(Message* msg)
         new_hot_index = ConfigureToolIndex;
       }
 
-      toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+      toolrc = getToolGroupBounds(PreviewVisibilityIndex);
       if (mouseMsg->position().y >= toolrc.y &&
           mouseMsg->position().y < toolrc.y+toolrc.h) {
-        new_hot_index = MiniEditorVisibilityIndex;
+        new_hot_index = PreviewVisibilityIndex;
       }
 
       // hot button changed
@@ -373,11 +373,11 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
       toolrc.y+toolrc.h/2-icon->height()/2);
   }
 
-  // Draw button to show/hide mini editor
-  toolrc = getToolGroupBounds(MiniEditorVisibilityIndex);
+  // Draw button to show/hide preview
+  toolrc = getToolGroupBounds(PreviewVisibilityIndex);
   toolrc.offset(-getBounds().x, -getBounds().y);
-  isHot = (m_hotIndex == MiniEditorVisibilityIndex ||
-    App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled());
+  isHot = (m_hotIndex == PreviewVisibilityIndex ||
+    App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled());
   theme->draw_bounds_nw(g,
     toolrc,
     isHot ? PART_TOOLBUTTON_HOT_NW:
@@ -490,7 +490,7 @@ Rect ToolBar::getToolGroupBounds(int group_index)
       rc.h = iconsize.h+2*guiscale();
       break;
 
-    case MiniEditorVisibilityIndex:
+    case PreviewVisibilityIndex:
       rc.y += rc.h - iconsize.h - 2*guiscale();
       rc.h = iconsize.h+2*guiscale();
       break;
@@ -551,11 +551,11 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else if (group_index == ConfigureToolIndex) {
     tooltip = "Configure Tool";
   }
-  else if (group_index == MiniEditorVisibilityIndex) {
-    if (App::instance()->getMainWindow()->getMiniEditor()->isMiniEditorEnabled())
-      tooltip = "Disable Mini-Editor";
+  else if (group_index == PreviewVisibilityIndex) {
+    if (App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled())
+      tooltip = "Hide Preview";
     else
-      tooltip = "Enable Mini-Editor";
+      tooltip = "Show Preview";
   }
   else
     return;

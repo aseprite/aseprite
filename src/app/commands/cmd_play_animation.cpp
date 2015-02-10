@@ -34,14 +34,14 @@
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
 namespace app {
 
-// TODO merge this with MiniEditor logic and create a new Editor state
+// TODO merge this with PreviewEditor logic and create a new Editor state
 
 using namespace ui;
 
@@ -192,16 +192,17 @@ void PlayAnimationCommand::onExecute(Context* context)
   }
 
   // Hide mini editor
-  MiniEditorWindow* miniEditor = App::instance()->getMainWindow()->getMiniEditor();
-  bool enabled = (miniEditor ? miniEditor->isMiniEditorEnabled(): false);
+  PreviewEditorWindow* preview =
+    App::instance()->getMainWindow()->getPreviewEditor();
+  bool enabled = (preview ? preview->isPreviewEnabled(): false);
   if (enabled)
-    miniEditor->setMiniEditorEnabled(false);
+    preview->setPreviewEnabled(false);
 
   PlayAniWindow window(context, current_editor);
   window.openWindowInForeground();
 
   if (enabled)
-    miniEditor->setMiniEditorEnabled(enabled);
+    preview->setPreviewEnabled(enabled);
 }
 
 Command* CommandFactory::createPlayAnimationCommand()

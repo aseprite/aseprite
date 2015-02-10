@@ -30,7 +30,7 @@
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
-#include "app/ui/mini_editor.h"
+#include "app/ui/preview_editor.h"
 #include "app/ui/workspace.h"
 #include "base/path.h"
 #include "doc/document_event.h"
@@ -62,16 +62,16 @@ public:
 
   // EditorObserver implementation
   void dispose() override {
-    App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(NULL);
+    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(NULL);
   }
 
   void onScrollChanged(Editor* editor) override {
     if (current_editor == this)
-      App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
+      App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
   }
 
   void onAfterFrameChanged(Editor* editor) override {
-    App::instance()->getMainWindow()->getMiniEditor()->updateUsingEditor(this);
+    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
 
     set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
@@ -157,7 +157,7 @@ DocumentView::DocumentView(Document* document, Type type)
                                            EditorView::AlwaysSelected))
   , m_editor(type == Normal ?
     new AppEditor(document):
-    new Editor(document, Editor::kShowOutside)) // Don't show grid/mask in mini preview
+    new Editor(document, Editor::kShowOutside)) // Don't show grid/mask in preview preview
 {
   addChild(m_view);
 
