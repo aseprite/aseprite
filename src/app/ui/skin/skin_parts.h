@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,6 +70,10 @@ namespace app {
       PART_WINDOW_STOP_BUTTON_NORMAL,
       PART_WINDOW_STOP_BUTTON_HOT,
       PART_WINDOW_STOP_BUTTON_SELECTED,
+
+      PART_WINDOW_CENTER_BUTTON_NORMAL,
+      PART_WINDOW_CENTER_BUTTON_HOT,
+      PART_WINDOW_CENTER_BUTTON_SELECTED,
 
       SKIN_PART_NESW(PART_SLIDER_FULL),
       SKIN_PART_NESW(PART_SLIDER_EMPTY),

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,8 +47,7 @@ using namespace ui;
 
 class AppEditor : public Editor,
                   public EditorObserver,
-                  public EditorCustomizationDelegate
-{
+                  public EditorCustomizationDelegate {
 public:
   AppEditor(Document* document) : Editor(document) {
     addObserver(this);
@@ -150,14 +149,36 @@ private:
 
 };
 
+class PreviewEditor : public Editor,
+                      public EditorObserver {
+public:
+  PreviewEditor(Document* document)
+    : Editor(document, Editor::kShowOutside) // Don't show grid/mask in preview preview
+  {
+    addObserver(this);
+  }
+
+  ~PreviewEditor() {
+    removeObserver(this);
+  }
+
+private:
+  void onScrollChanged(Editor* editor) override {
+    if (hasCapture()) {
+      // TODO create a signal
+      App::instance()->getMainWindow()->getPreviewEditor()->uncheckCenterButton();
+    }
+  }
+};
+
 DocumentView::DocumentView(Document* document, Type type)
   : Box(JI_VERTICAL)
   , m_document(document)
   , m_view(new EditorView(type == Normal ? EditorView::CurrentEditorMode:
                                            EditorView::AlwaysSelected))
-  , m_editor(type == Normal ?
-    new AppEditor(document):
-    new Editor(document, Editor::kShowOutside)) // Don't show grid/mask in preview preview
+  , m_editor((type == Normal ?
+      (Editor*)new AppEditor(document):
+      (Editor*)new PreviewEditor(document)))
 {
   addChild(m_view);
 

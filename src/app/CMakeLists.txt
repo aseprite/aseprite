@@ -280,10 +280,12 @@ add_library(app-lib
   ui/editor/editor_view.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
+  ui/editor/navigate_state.cpp
   ui/editor/pixels_movement.cpp
   ui/editor/scrolling_state.cpp
   ui/editor/select_box_state.cpp
   ui/editor/standby_state.cpp
+  ui/editor/state_with_wheel_behavior.cpp
   ui/editor/tool_loop_impl.cpp
   ui/editor/transform_handles.cpp
   ui/editor/zooming_state.cpp

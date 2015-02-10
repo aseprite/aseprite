@@ -25,6 +25,7 @@
 #include "ui/window.h"
 
 namespace app {
+  class MiniCenterButton;
   class MiniPlayButton;
 
   class PreviewEditorWindow : public ui::Window {
@@ -36,6 +37,7 @@ namespace app {
     void setPreviewEnabled(bool state);
 
     void updateUsingEditor(Editor* editor);
+    void uncheckCenterButton();
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -43,12 +45,14 @@ namespace app {
     void onWindowResize() override;
 
   private:
+    void onCenterClicked();
     void onPlayClicked();
     void onPlaybackTick();
     void hideWindow();
 
     bool m_isEnabled;
     DocumentView* m_docView;
+    MiniCenterButton* m_centerButton;
     MiniPlayButton* m_playButton;
     ui::Timer m_playTimer;
 

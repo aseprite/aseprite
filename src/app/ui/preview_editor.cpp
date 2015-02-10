@@ -31,14 +31,15 @@
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/editor/navigate_state.h"
 #include "app/ui/skin/skin_button.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
-#include "gfx/rect.h"
 #include "doc/sprite.h"
+#include "gfx/rect.h"
 #include "ui/base.h"
 #include "ui/button.h"
 #include "ui/close_event.h"
@@ -49,6 +50,52 @@ namespace app {
 
 using namespace app::skin;
 using namespace ui;
+
+class MiniCenterButton : public SkinButton<CheckBox> {
+public:
+  MiniCenterButton()
+    : SkinButton<CheckBox>(
+      PART_WINDOW_CENTER_BUTTON_NORMAL,
+      PART_WINDOW_CENTER_BUTTON_HOT,
+      PART_WINDOW_CENTER_BUTTON_SELECTED)
+  {
+    setup_bevels(this, 0, 0, 0, 0);
+    setDecorative(true);
+    setSelected(true);
+  }
+
+protected:
+  void onSetDecorativeWidgetBounds() override
+  {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    Widget* window = getParent();
+    gfx::Rect rect(0, 0, 0, 0);
+    gfx::Size iconSize = theme->get_part_size(PART_WINDOW_PLAY_BUTTON_NORMAL);
+    gfx::Size closeSize = theme->get_part_size(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+
+    rect.w = iconSize.w;
+    rect.h = iconSize.h;
+
+    rect.offset(window->getBounds().x2() - 3*guiscale()
+      - iconSize.w - 1*guiscale()
+      - iconSize.w - 1*guiscale() - closeSize.w,
+      window->getBounds().y + 3*guiscale());
+
+    setBounds(rect);
+  }
+
+  bool onProcessMessage(Message* msg) override
+  {
+    switch (msg->type()) {
+
+      case kSetCursorMessage:
+        ui::set_mouse_cursor(kArrowCursor);
+        return true;
+    }
+
+    return SkinButton<CheckBox>::onProcessMessage(msg);
+  }
+};
 
 class MiniPlayButton : public SkinButton<Button> {
 public:
@@ -92,8 +139,8 @@ protected:
     rect.h = playSize.h;
 
     rect.offset(window->getBounds().x2() - 3*guiscale()
-                - playSize.w - 1*guiscale() - closeSize.w,
-                window->getBounds().y + 3*guiscale());
+      - playSize.w - 1*guiscale() - closeSize.w,
+      window->getBounds().y + 3*guiscale());
 
     setBounds(rect);
   }
@@ -117,6 +164,7 @@ private:
 PreviewEditorWindow::PreviewEditorWindow()
   : Window(WithTitleBar, "Preview")
   , m_docView(NULL)
+  , m_centerButton(new MiniCenterButton())
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
   , m_pingPongForward(true)
@@ -127,7 +175,10 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   m_isEnabled = get_config_bool("MiniEditor", "Enabled", true);
 
+  m_centerButton->Click.connect(Bind<void>(&PreviewEditorWindow::onCenterClicked, this));
   m_playButton->Click.connect(Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
+
+  addChild(m_centerButton);
   addChild(m_playButton);
 
   m_playTimer.Tick.connect(&PreviewEditorWindow::onPlaybackTick, this);
@@ -203,6 +254,15 @@ void PreviewEditorWindow::onWindowResize()
     updateUsingEditor(view->getEditor());
 }
 
+void PreviewEditorWindow::onCenterClicked()
+{
+  if (m_centerButton->isSelected()) {
+    DocumentView* view = UIContext::instance()->activeView();
+    if (view)
+      updateUsingEditor(view->getEditor());
+  }
+}
+
 void PreviewEditorWindow::onPlayClicked()
 {
   if (m_playButton->isPlaying()) {
@@ -236,23 +296,33 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     openWindow();
 
   gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
-  gfx::Point pt = visibleBounds.getCenter();
+  gfx::Point centerPoint = visibleBounds.getCenter();
+  bool center = (m_centerButton->isSelected());
 
   // Set the same location as in the given editor.
   if (!miniEditor || miniEditor->document() != document) {
     delete m_docView;
-    m_docView = new DocumentView(document, DocumentView::Mini); // MiniEditorDocumentView(document, this);
+    m_docView = new DocumentView(document, DocumentView::Preview);
     addChild(m_docView);
 
     miniEditor = m_docView->getEditor();
     miniEditor->setZoom(render::Zoom(1, 1));
-    miniEditor->setState(EditorStatePtr(new EditorState));
+    miniEditor->setState(EditorStatePtr(new NavigateState));
     layout();
+    center = true;
   }
 
-  miniEditor->centerInSpritePoint(pt);
+  if (center)
+    miniEditor->centerInSpritePoint(centerPoint);
+
   miniEditor->setLayer(editor->layer());
   miniEditor->setFrame(editor->frame());
+}
+
+void PreviewEditorWindow::uncheckCenterButton()
+{
+  if (m_centerButton->isSelected())
+    m_centerButton->setSelected(false);
 }
 
 void PreviewEditorWindow::hideWindow()

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,6 +188,9 @@ SkinTheme::SkinTheme()
   sheet_mapping["window_stop_button_normal"] = PART_WINDOW_STOP_BUTTON_NORMAL;
   sheet_mapping["window_stop_button_hot"] = PART_WINDOW_STOP_BUTTON_HOT;
   sheet_mapping["window_stop_button_selected"] = PART_WINDOW_STOP_BUTTON_SELECTED;
+  sheet_mapping["window_center_button_normal"] = PART_WINDOW_CENTER_BUTTON_NORMAL;
+  sheet_mapping["window_center_button_hot"] = PART_WINDOW_CENTER_BUTTON_HOT;
+  sheet_mapping["window_center_button_selected"] = PART_WINDOW_CENTER_BUTTON_SELECTED;
   sheet_mapping["slider_full"] = PART_SLIDER_FULL_NW;
   sheet_mapping["slider_empty"] = PART_SLIDER_EMPTY_NW;
   sheet_mapping["slider_full_focused"] = PART_SLIDER_FULL_FOCUSED_NW;
