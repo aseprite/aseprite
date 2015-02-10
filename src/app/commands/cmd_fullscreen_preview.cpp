@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -260,31 +260,31 @@ private:
   filters::TiledMode m_tiled;
 };
 
-class PreviewCommand : public Command {
+class FullscreenPreviewCommand : public Command {
 public:
-  PreviewCommand();
-  Command* clone() const override { return new PreviewCommand(*this); }
+  FullscreenPreviewCommand();
+  Command* clone() const override { return new FullscreenPreviewCommand(*this); }
 
 protected:
   bool onEnabled(Context* context);
   void onExecute(Context* context);
 };
 
-PreviewCommand::PreviewCommand()
-  : Command("Preview",
-            "Preview",
+FullscreenPreviewCommand::FullscreenPreviewCommand()
+  : Command("FullscreenPreview",
+            "Fullscreen Preview",
             CmdUIOnlyFlag)
 {
 }
 
-bool PreviewCommand::onEnabled(Context* context)
+bool FullscreenPreviewCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
                              ContextFlags::HasActiveSprite);
 }
 
 // Shows the sprite using the complete screen.
-void PreviewCommand::onExecute(Context* context)
+void FullscreenPreviewCommand::onExecute(Context* context)
 {
   Editor* editor = current_editor;
 
@@ -296,9 +296,9 @@ void PreviewCommand::onExecute(Context* context)
   window.openWindowInForeground();
 }
 
-Command* CommandFactory::createPreviewCommand()
+Command* CommandFactory::createFullscreenPreviewCommand()
 {
-  return new PreviewCommand;
+  return new FullscreenPreviewCommand;
 }
 
 } // namespace app

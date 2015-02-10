@@ -90,7 +90,8 @@
       <key command="MakeUniqueEditor" shortcut="Ctrl+1" mac="Cmd+1" />
       <key command="SplitEditorVertically" shortcut="Ctrl+2" mac="Cmd+2" />
       <key command="SplitEditorHorizontally" shortcut="Ctrl+3" mac="Cmd+3" />
-      <key command="Preview" shortcut="F8" />
+      <key command="TogglePreview" shortcut="F7" />
+      <key command="FullscreenPreview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
       <key command="ShowPixelGrid" shortcut="Alt+Shift+G" />
       <key command="SnapToGrid" shortcut="Shift+S" />
@@ -572,7 +573,8 @@
         <item command="Timeline" text="&amp;Timeline">
           <param name="switch" value="true" />
         </item>
-        <item command="Preview" text="Previe&amp;w" />
+        <item command="TogglePreview" text="Previe&amp;w" />
+        <item command="FullscreenPreview" text="&amp;Fullscreen Preview" />
         <separator />
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>

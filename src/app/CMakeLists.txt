@@ -135,6 +135,7 @@ add_library(app-lib
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
   commands/cmd_frame_properties.cpp
+  commands/cmd_fullscreen_preview.cpp
   commands/cmd_goto_frame.cpp
   commands/cmd_goto_layer.cpp
   commands/cmd_goto_tab.cpp
@@ -166,7 +167,6 @@ add_library(app-lib
   commands/cmd_palette_editor.cpp
   commands/cmd_paste.cpp
   commands/cmd_play_animation.cpp
-  commands/cmd_preview.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_frame.cpp
   commands/cmd_remove_layer.cpp
@@ -185,6 +185,7 @@ add_library(app-lib
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
   commands/cmd_timeline.cpp
+  commands/cmd_toggle_preview.cpp
   commands/cmd_undo.cpp
   commands/cmd_unlink_cel.cpp
   commands/cmd_zoom.cpp

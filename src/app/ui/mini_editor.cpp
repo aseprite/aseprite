@@ -115,7 +115,7 @@ private:
 };
 
 MiniEditorWindow::MiniEditorWindow()
-  : Window(WithTitleBar, "Mini-Editor")
+  : Window(WithTitleBar, "Preview")
   , m_docView(NULL)
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
