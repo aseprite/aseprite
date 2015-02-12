@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -42,7 +42,7 @@ TEST(FileSystem, MakeAllDirectories)
   remove_directory("a");
   EXPECT_FALSE(is_directory("a"));
 
-#ifndef WIN32
+#ifndef _WIN32
   EXPECT_FALSE(is_directory("/Users/david/.config/aseprite/"));
   make_all_directories("/Users/david/.config/aseprite/");
   EXPECT_TRUE(is_directory("/Users/david/.config/aseprite/"));

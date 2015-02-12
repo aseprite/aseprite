@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,7 @@
 
 #include <allegro.h>
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <winalleg.h>
 #endif
 
@@ -164,7 +164,7 @@ void osx_mouser_leave_she_callback()
 
 }
 
-namespace she { 
+namespace she {
 
 void mouse_poller_init()
 {
@@ -215,4 +215,3 @@ void mouse_poller_generate_events()
 }
 
 } // namespace she
-

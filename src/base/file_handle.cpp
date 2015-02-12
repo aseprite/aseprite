@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,7 @@
 
 #include <stdexcept>
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <windows.h>
   #include <sys/stat.h>
   #include <io.h>
@@ -32,7 +32,7 @@ namespace base {
 
 FILE* open_file_raw(const string& filename, const string& mode)
 {
-#ifdef WIN32
+#ifdef _WIN32
   return _wfopen(from_utf8(filename).c_str(),
                  from_utf8(mode).c_str());
 #else
@@ -61,7 +61,7 @@ int open_file_descriptor_with_exception(const string& filename, const string& mo
   if (mode.find('b') != string::npos) flags |= O_BINARY;
 
   int fd;
-#ifdef WIN32
+#ifdef _WIN32
   fd = _wopen(from_utf8(filename).c_str(), flags, _S_IREAD | _S_IWRITE);
 #else
   fd = open(filename.c_str(), flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);

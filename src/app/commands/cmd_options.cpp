@@ -121,7 +121,7 @@ public:
 
     // Links
     locateFile()->Click.connect(Bind<void>(&OptionsWindow::onLocateConfigFile, this));
-#if WIN32
+#if _WIN32
     locateCrashFolder()->Click.connect(Bind<void>(&OptionsWindow::onLocateCrashFolder, this));
 #else
     locateCrashFolder()->setVisible(false);

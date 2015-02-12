@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,10 +10,10 @@
 
 #include "base/system_console.h"
 
-#ifdef WIN32 // Windows needs some adjustments to the console if the
-             // process is linked with /subsystem:windows. These
-             // adjustments are not great but are good enough.
-             // See system_console.h for more information.
+#ifdef _WIN32 // Windows needs some adjustments to the console if the
+              // process is linked with /subsystem:windows. These
+              // adjustments are not great but are good enough.
+              // See system_console.h for more information.
 
 #include <cstdio>
 #include <iostream>

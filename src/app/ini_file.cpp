@@ -16,8 +16,8 @@
 #include "base/string.h"
 #include "cfg/cfg.h"
 
-#ifndef WIN32
-#include "base/fs.h"
+#ifndef _WIN32
+  #include "base/fs.h"
 #endif
 
 #include <vector>
@@ -35,7 +35,7 @@ ConfigModule::ConfigModule()
   rf.includeUserDir("aseprite.ini");
   std::string fn = rf.getFirstOrCreateDefault();
 
-#ifndef WIN32 // Migrate the configuration file to the new location in Unix-like systems
+#ifndef _WIN32 // Migrate the configuration file to the new location in Unix-like systems
   {
     ResourceFinder old_rf;
     old_rf.includeHomeDir(".asepriterc");

@@ -361,14 +361,14 @@ again:
       const FileItemList& children = m_fileList->getFileList();
 
       std::string fn2 = fn;
-#ifdef WIN32
+#ifdef _WIN32
       fn2 = base::string_to_lower(fn2);
 #endif
 
       for (IFileItem* child : children) {
         std::string child_name = child->getDisplayName();
 
-#ifdef WIN32
+#ifdef _WIN32
         child_name = base::string_to_lower(child_name);
 #endif
         if (child_name == fn2) {
@@ -381,7 +381,7 @@ again:
       if (!enter_folder) {
         // does the file-name entry have separators?
         if (base::is_path_separator(*fn.begin())) { // absolute path (UNIX style)
-#ifdef WIN32
+#ifdef _WIN32
           // get the drive of the current folder
           std::string drive = folder->getFileName();
           if (drive.size() >= 2 && drive[1] == ':') {
@@ -395,7 +395,7 @@ again:
           buf = fn;
 #endif
         }
-#ifdef WIN32
+#ifdef _WIN32
         // does the file-name entry have colon?
         else if (fn.find(':') != std::string::npos) { // absolute path on Windows
           if (fn.size() == 2 && fn[1] == ':') {

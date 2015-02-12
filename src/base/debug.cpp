@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,13 +20,13 @@
 #include <string>
 #include <vector>
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <windows.h>
 #endif
 
 int base_assert(const char* condition, const char* file, int lineNum)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   std::vector<wchar_t> buf(MAX_PATH);
   GetModuleFileNameW(NULL, &buf[0], MAX_PATH);
@@ -61,7 +61,7 @@ void base_trace(const char* msg, ...)
   vsprintf(buf, msg, ap);
   va_end(ap);
 
-#ifdef WIN32
+#ifdef _WIN32
 
   _CrtDbgReport(_CRT_WARN, NULL, 0, NULL, buf);
 

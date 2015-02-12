@@ -20,11 +20,11 @@
 #include <allegro/internal/aintern.h>
 
 #define USE_KEY_POLLER
-#ifndef WIN32 // On Windows we generated events from the HWND procedure
+#ifndef _WIN32 // On Windows we generated events from the HWND procedure
   #define USE_MOUSE_POLLER
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <winalleg.h>
 
   #include <windowsx.h>
@@ -51,7 +51,7 @@
 
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
   #include "she/clipboard_win.h"
 #else
   #include "she/clipboard_simple.h"
@@ -169,7 +169,7 @@ void queue_event(const Event& ev)
 
 namespace {
 
-#if WIN32
+#if _WIN32
 
 wndproc_t base_wndproc = NULL;
 bool display_has_mouse = false;
@@ -449,8 +449,8 @@ void unsubclass_hwnd(HWND hwnd)
   SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)base_wndproc);
   base_wndproc = NULL;
 }
-  
-#endif // WIN32
+
+#endif // _WIN32
 
 } // anonymous namespace
 
@@ -503,7 +503,7 @@ public:
     set_resize_callback(resize_callback);
 #endif
 
-#if WIN32
+#if _WIN32
     subclass_hwnd((HWND)nativeHandle());
 #endif
   }
@@ -516,7 +516,7 @@ public:
       unique_display = NULL;
     }
 
-#if WIN32
+#if _WIN32
     unsubclass_hwnd((HWND)nativeHandle());
 #endif
 
@@ -598,13 +598,13 @@ public:
   }
 
   void maximize() override {
-#ifdef WIN32
+#ifdef _WIN32
     ::ShowWindow(win_get_window(), SW_MAXIMIZE);
 #endif
   }
 
   bool isMaximized() const override {
-#ifdef WIN32
+#ifdef _WIN32
     return (::GetWindowLong(win_get_window(), GWL_STYLE) & WS_MAXIMIZE ? true: false);
 #else
     return false;
@@ -647,7 +647,7 @@ public:
       case kSizeNCursor: newCursor = MOUSE_CURSOR_SIZE_N; break;
       case kSizeNECursor: newCursor = MOUSE_CURSOR_SIZE_NE; break;
       case kSizeECursor: newCursor = MOUSE_CURSOR_SIZE_E; break;
-      case kSizeSECursor: newCursor = MOUSE_CURSOR_SIZE_SE; break; 
+      case kSizeSECursor: newCursor = MOUSE_CURSOR_SIZE_SE; break;
       case kSizeSCursor: newCursor = MOUSE_CURSOR_SIZE_S; break;
       case kSizeSWCursor: newCursor = MOUSE_CURSOR_SIZE_SW; break;
       case kSizeWCursor: newCursor = MOUSE_CURSOR_SIZE_W; break;
@@ -667,7 +667,7 @@ public:
   }
 
   void captureMouse() {
-#ifdef WIN32
+#ifdef _WIN32
 
     capture_mouse = true;
 
@@ -682,7 +682,7 @@ public:
   }
 
   void releaseMouse() {
-#ifdef WIN32
+#ifdef _WIN32
 
     capture_mouse = false;
 
@@ -694,7 +694,7 @@ public:
   }
 
   void* nativeHandle() override {
-#ifdef WIN32
+#ifdef _WIN32
     return reinterpret_cast<void*>(win_get_window());
 #else
     return NULL;
@@ -806,7 +806,7 @@ void error_message(const char* msg)
   if (g_instance && g_instance->logger())
     g_instance->logger()->logError(msg);
 
-#ifdef WIN32
+#ifdef _WIN32
   std::wstring wmsg = base::from_utf8(msg);
   std::wstring title = base::from_utf8(PACKAGE);
   ::MessageBoxW(NULL, wmsg.c_str(), title.c_str(), MB_OK | MB_ICONERROR);

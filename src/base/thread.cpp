@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,21 +10,21 @@
 
 #include "base/thread.h"
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <windows.h>
   #include <process.h>
 #else
   #include <pthread.h>          // Use pthread library in Unix-like systems
 #endif
 
-#if !defined(WIN32)
+#if !defined(_WIN32)
   #include <unistd.h>
   #include <sys/time.h>
 #endif
 
 namespace {
 
-#ifdef WIN32
+#ifdef _WIN32
 
   static DWORD WINAPI win32_thread_proxy(LPVOID data)
   {
@@ -63,7 +63,7 @@ bool base::thread::joinable() const
 void base::thread::join()
 {
   if (joinable()) {
-#ifdef WIN32
+#ifdef _WIN32
     ::WaitForSingleObject(m_native_handle, INFINITE);
 #else
     ::pthread_join((pthread_t)m_native_handle, NULL);
@@ -75,7 +75,7 @@ void base::thread::join()
 void base::thread::detach()
 {
   if (joinable()) {
-#ifdef WIN32
+#ifdef _WIN32
     ::CloseHandle(m_native_handle);
     m_native_handle = (native_handle_type)0;
 #else
@@ -93,7 +93,7 @@ void base::thread::launch_thread(func_wrapper* f)
 {
   m_native_handle = (native_handle_type)0;
 
-#ifdef WIN32
+#ifdef _WIN32
 
   DWORD native_id;
   m_native_handle = ::CreateThread(NULL, 0, win32_thread_proxy, (LPVOID)f,
@@ -122,7 +122,7 @@ void base::thread::details::thread_proxy(void* data)
 
 void base::this_thread::yield()
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   ::Sleep(0);
 
@@ -142,7 +142,7 @@ void base::this_thread::yield()
 
 void base::this_thread::sleep_for(double seconds)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   ::Sleep(seconds * 1000.0);
 

@@ -82,7 +82,7 @@ void ResourceFinder::includeDataDir(const char* filename)
 {
   char buf[4096];
 
-#ifdef WIN32
+#ifdef _WIN32
 
   // $BINDIR/data/filename
   sprintf(buf, "data/%s", filename);
@@ -113,7 +113,7 @@ void ResourceFinder::includeDataDir(const char* filename)
 
 void ResourceFinder::includeHomeDir(const char* filename)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   // %AppData%/Aseprite/filename
   wchar_t* env = _wgetenv(L"AppData");
@@ -144,7 +144,7 @@ void ResourceFinder::includeHomeDir(const char* filename)
 
 void ResourceFinder::includeUserDir(const char* filename)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   if (App::instance()->isPortable()) {
     // $BINDIR/filename

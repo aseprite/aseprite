@@ -21,13 +21,13 @@
 
 namespace app {
 
-#ifdef WIN32
+#ifdef _WIN32
 static const char* kDefaultCrashName = "Aseprite-crash.dmp";
 #endif
 
 std::string memory_dump_filename()
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   app::ResourceFinder rf;
   rf.includeUserDir(kDefaultCrashName);
@@ -40,7 +40,7 @@ std::string memory_dump_filename()
 
 void SendCrash::search()
 {
-#ifdef WIN32
+#ifdef _WIN32
   m_dumpFilename = memory_dump_filename();
 
   if (base::is_file(m_dumpFilename)) {

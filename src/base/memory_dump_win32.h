@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,9 +8,9 @@
 #define BASE_MEMORY_DUMP_WIN32_H_INCLUDED
 #pragma once
 
-#ifdef WIN32
-#include <windows.h>
-#include <dbghelp.h>
+#ifdef _WIN32
+  #include <windows.h>
+  #include <dbghelp.h>
 #endif
 
 #include "base/string.h"

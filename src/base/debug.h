@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,7 @@ void base_trace(const char* msg, ...);
 #undef TRACE
 
 #ifdef _DEBUG
-  #ifdef WIN32
+  #ifdef _WIN32
     #include <crtdbg.h>
     #define base_break() _CrtDbgBreak()
   #else

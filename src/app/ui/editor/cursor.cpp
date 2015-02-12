@@ -34,11 +34,6 @@
 
 #include <algorithm>
 
-#ifdef WIN32
-#undef max
-#undef min
-#endif
-
 namespace app {
 
 using namespace ui;

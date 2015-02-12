@@ -26,8 +26,8 @@
 #include <ctime>
 #include <iostream>
 
-#ifdef WIN32
-#include <windows.h>
+#ifdef _WIN32
+  #include <windows.h>
 #endif
 
 namespace {
@@ -51,7 +51,7 @@ int app_main(int argc, char* argv[])
   // Initialize the random seed.
   std::srand(static_cast<unsigned int>(std::time(NULL)));
 
-#ifdef WIN32
+#ifdef _WIN32
   ::CoInitialize(NULL);
 #endif
 

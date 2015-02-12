@@ -36,7 +36,7 @@
 #include "doc/doc.h"
 #include "render/quantization.h"
 
-#if defined WIN32
+#ifdef _WIN32
   #include <windows.h>
 
   #include "app/util/clipboard_win32.h"
@@ -108,7 +108,7 @@ static void set_clipboard_image(Image* image, Palette* palette, bool set_system_
   clipboard_image = image;
 
   // copy to the Windows clipboard
-#ifdef ALLEGRO_WINDOWS
+#ifdef _WIN32
   if (set_system_clipboard)
     set_win32_clipboard_bitmap(image, palette);
 #endif
@@ -136,7 +136,7 @@ static bool copy_from_document(const DocumentLocation& location)
 
 clipboard::ClipboardFormat clipboard::get_current_format()
 {
-#ifdef ALLEGRO_WINDOWS
+#ifdef _WIN32
   if (win32_clipboard_contains_bitmap())
     return ClipboardImage;
 #endif
@@ -233,7 +233,7 @@ void clipboard::paste()
   switch (get_current_format()) {
 
     case clipboard::ClipboardImage: {
-#ifdef ALLEGRO_WINDOWS
+#ifdef _WIN32
       // Get the image from the clipboard.
       {
         Image* win32_image = NULL;
@@ -399,7 +399,7 @@ void clipboard::paste()
 
 bool clipboard::get_image_size(gfx::Size& size)
 {
-#ifdef ALLEGRO_WINDOWS
+#ifdef _WIN32
   // Get the image from the clipboard.
   return get_win32_clipboard_bitmap_size(size);
 #else

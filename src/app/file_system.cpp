@@ -30,7 +30,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef WIN32
+#ifdef _WIN32
   #include <windows.h>
 
   #include <shlobj.h>
@@ -62,7 +62,7 @@ public:
   unsigned int version;
   bool removed;
   bool is_folder;
-#ifdef WIN32
+#ifdef _WIN32
   LPITEMIDLIST pidl;            // relative to parent
   LPITEMIDLIST fullpidl;        // relative to the Desktop folder
                                 // (like a full path-name, because the
@@ -109,13 +109,13 @@ static FileItemMap* fileitems_map;
 static ThumbnailMap* thumbnail_map;
 static unsigned int current_file_system_version = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
   static IMalloc* shl_imalloc = NULL;
   static IShellFolder* shl_idesktop = NULL;
 #endif
 
-/* a more easy PIDLs interface (without using the SH* & IL* routines of W2K) */
-#ifdef WIN32
+// A more easy PIDLs interface (without using the SH* & IL* routines of W2K)
+#ifdef _WIN32
   static bool is_sfgaof_folder(SFGAOF attrib);
   static void update_by_pidl(FileItem* fileitem, SFGAOF attrib);
   static LPITEMIDLIST concat_pidl(LPITEMIDLIST pidlHead, LPITEMIDLIST pidlTail);
@@ -146,7 +146,7 @@ FileSystemModule::FileSystemModule()
   fileitems_map = new FileItemMap;
   thumbnail_map = new ThumbnailMap;
 
-#ifdef WIN32
+#ifdef _WIN32
   /* get the IMalloc interface */
   HRESULT hr = SHGetMalloc(&shl_imalloc);
   if (hr != S_OK)
@@ -185,7 +185,7 @@ FileSystemModule::~FileSystemModule()
   }
   thumbnail_map->clear();
 
-#ifdef WIN32
+#ifdef _WIN32
   // relase desktop IShellFolder interface
   shl_idesktop->Release();
 
@@ -223,7 +223,7 @@ IFileItem* FileSystemModule::getRootFileItem()
 
   //PRINTF("FS: Creating root fileitem %p\n", rootitem);
 
-#ifdef WIN32
+#ifdef _WIN32
   {
     // get the desktop PIDL
     LPITEMIDLIST pidl = NULL;
@@ -262,7 +262,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
 
   //PRINTF("FS: get_fileitem_from_path(%s)\n", path.c_str());
 
-#ifdef WIN32
+#ifdef _WIN32
   {
     ULONG cbEaten = 0UL;
     LPITEMIDLIST fullpidl = NULL;
@@ -364,7 +364,7 @@ const FileItemList& FileItem::getChildren()
     }
 
     //PRINTF("FS: Loading files for %p (%s)\n", fileitem, fileitem->displayname);
-#ifdef WIN32
+#ifdef _WIN32
     {
       IShellFolder* pFolder = NULL;
       HRESULT hr;
@@ -537,7 +537,7 @@ FileItem::FileItem(FileItem* parent)
   this->version = current_file_system_version;
   this->removed = false;
   this->is_folder = false;
-#ifdef WIN32
+#ifdef _WIN32
   this->pidl = NULL;
   this->fullpidl = NULL;
 #endif
@@ -547,7 +547,7 @@ FileItem::~FileItem()
 {
   PRINTF("FS: Destroying FileItem() with parent %p\n", parent);
 
-#ifdef WIN32
+#ifdef _WIN32
   if (this->fullpidl && this->fullpidl != this->pidl) {
     free_pidl(this->fullpidl);
     this->fullpidl = NULL;
@@ -596,7 +596,7 @@ int FileItem::compare(const FileItem& that) const
 // PIDLS: Only for Win32
 //////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef _WIN32
 
 static bool calc_is_folder(std::string filename, SFGAOF attrib)
 {

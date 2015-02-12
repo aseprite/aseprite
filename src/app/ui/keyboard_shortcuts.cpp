@@ -54,11 +54,11 @@ namespace {
   {
     const char* shortcut = NULL;
 
-#if defined ALLEGRO_WINDOWS
+#ifdef _WIN32
     if (!shortcut) shortcut = elem->Attribute("win");
-#elif defined ALLEGRO_MACOSX
+#elif defined __APPLE__
     if (!shortcut) shortcut = elem->Attribute("mac");
-#elif defined ALLEGRO_UNIX
+#else
     if (!shortcut) shortcut = elem->Attribute("linux");
 #endif
 

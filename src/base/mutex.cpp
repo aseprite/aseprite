@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,7 +10,7 @@
 
 #include "base/mutex.h"
 
-#ifdef WIN32
+#ifdef _WIN32
   #include "base/mutex_win32.h"
 #else
   #include "base/mutex_pthread.h"

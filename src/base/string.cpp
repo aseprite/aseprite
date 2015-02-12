@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,8 +13,8 @@
 #include <cctype>
 #include <vector>
 
-#ifdef WIN32
-#include <windows.h>
+#ifdef _WIN32
+  #include <windows.h>
 #endif
 
 namespace base {
@@ -39,7 +39,7 @@ std::string string_to_upper(const std::string& original)
   return result;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 std::string to_utf8(const std::wstring& src)
 {

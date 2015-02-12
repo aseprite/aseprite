@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,7 @@
 #include "base/launcher.h"
 #include "base/string.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #ifndef SEE_MASK_DEFAULT
 #define SEE_MASK_DEFAULT 0x00000000
@@ -56,7 +56,7 @@ static int win32_shell_execute(const wchar_t* verb, const wchar_t* file, const w
   else
     return 0;
 }
-#endif  // WIN32
+#endif  // _WIN32
 
 namespace base {
 namespace launcher {
@@ -70,7 +70,7 @@ bool open_file(const std::string& file)
 {
   int ret = -1;
 
-#ifdef WIN32
+#ifdef _WIN32
 
   ret = win32_shell_execute(L"open",
                             base::from_utf8(file).c_str(), NULL);
@@ -90,7 +90,7 @@ bool open_file(const std::string& file)
 
 bool open_folder(const std::string& file)
 {
-#ifdef WIN32
+#ifdef _WIN32
 
   int ret;
   if (base::is_directory(file)) {
@@ -123,7 +123,7 @@ bool open_folder(const std::string& file)
 
 bool support_open_folder()
 {
-#if defined(WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__)
   return true;
 #else
   return false;

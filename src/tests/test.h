@@ -22,7 +22,7 @@
 
 #ifdef LINKED_WITH_SHE
   #undef main
-  #ifdef WIN32
+  #ifdef _WIN32
     int main(int argc, char* argv[]) {
       extern int app_main(int argc, char* argv[]);
       return app_main(argc, argv);
