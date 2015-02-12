@@ -45,6 +45,7 @@
 #include "ui/alert.h"
 
 #include <cstring>
+#include <cstdarg>
 
 namespace app {
 

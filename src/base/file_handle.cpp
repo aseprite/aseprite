@@ -15,11 +15,11 @@
 #include <stdexcept>
 
 #ifdef WIN32
-#include <windows.h>
-#include <sys/stat.h>
-#else
-#include <fcntl.h>
+  #include <windows.h>
+  #include <sys/stat.h>
+  #include <io.h>
 #endif
+#include <fcntl.h>
 
 #ifndef O_BINARY
 #define O_BINARY  0

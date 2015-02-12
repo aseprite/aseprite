@@ -182,9 +182,6 @@ if(ENABLE_UPDATER)
 
   set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
   add_definitions(-DENABLE_UPDATER)
-
-  add_subdirectory(net)
-  add_subdirectory(updater)
 endif()
 
 if(ENABLE_WEBSERVER)
@@ -193,8 +190,6 @@ if(ENABLE_WEBSERVER)
 
   set(aseprite_libraries ${aseprite_libraries} webserver-lib)
   add_definitions(-DENABLE_WEBSERVER)
-
-  add_subdirectory(webserver)
 endif()
 
 # Full-version or trial-mode?
@@ -208,6 +203,8 @@ endif()
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+include_directories(${BASE_INCLUDE_DIR})
+
 add_subdirectory(cfg)
 add_subdirectory(css)
 add_subdirectory(doc)
@@ -220,6 +217,15 @@ add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
 add_subdirectory(undo)
+
+if(ENABLE_UPDATER)
+  add_subdirectory(net)
+  add_subdirectory(updater)
+endif()
+
+if(ENABLE_WEBSERVER)
+  add_subdirectory(webserver)
+endif()
 
 add_subdirectory(app)
 

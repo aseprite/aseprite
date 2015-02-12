@@ -10,6 +10,7 @@
 
 #include "doc/conversion_she.h"
 
+#include "base/24bits.h"
 #include "doc/algo.h"
 #include "doc/blend.h"
 #include "doc/color_scales.h"
@@ -100,7 +101,7 @@ struct Address24bpp
   Address24bpp& operator++() { m_ptr += 3; return *this; }
   Address24bpp& operator*() { return *this; }
   Address24bpp& operator=(uint32_t c) {
-    WRITE3BYTES(m_ptr, c);
+    base::write24bits(m_ptr, c);
     return *this;
   }
 };

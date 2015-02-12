@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -354,7 +354,7 @@ static void read_32bit_line(int length, FILE *f, Image *image, int line)
 /* read_image:
  *  For reading the noncompressed BMP image format.
  */
-static void read_image(FILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader, FileOp *fop)
+static void read_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader, FileOp *fop)
 {
   int i, line, height, dir;
 
@@ -385,7 +385,7 @@ static void read_image(FILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infohea
  * @note This support compressed top-down bitmaps, the MSDN says that
  *       they can't exist, but Photoshop can create them.
  */
-static void read_rle8_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_rle8_compressed_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader)
 {
   unsigned char count, val, val0;
   int j, pos, line, height, dir;
@@ -460,7 +460,7 @@ static void read_rle8_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINF
  * @note This support compressed top-down bitmaps, the MSDN says that
  *       they can't exist, but Photoshop can create them.
  */
-static void read_rle4_compressed_image(FILE *f, Image *image, AL_CONST BITMAPINFOHEADER *infoheader)
+static void read_rle4_compressed_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader)
 {
   unsigned char b[8];
   unsigned char count;

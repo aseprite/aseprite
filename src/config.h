@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014 David Capello
+ * Copyright (C) 2001-2015 David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,53 +49,5 @@
 // verbose_printf is defined in src/app/log.cpp and used through PRINTF macro
 void verbose_printf(const char* format, ...);
 
-#include <math.h>
-#undef PI
-#define PI 3.14159265358979323846
-
-#include <allegro/base.h>
-#include <allegro/debug.h>
-#undef ASSERT
-#undef TRACE
-
+#include "base/base.h"
 #include "base/debug.h"
-
-//////////////////////////////////////////////////////////////////////
-// Overloaded new/delete operators to detect memory-leaks
-
-#if defined __cplusplus && defined MEMLEAK
-
-#include <new>
-#include "base/memory.h"
-
-inline void* operator new(std::size_t size)
-{
-  void* ptr = base_malloc(size);
-  if (!ptr)
-    throw std::bad_alloc();
-  return ptr;
-}
-
-inline void operator delete(void* ptr)
-{
-  if (!ptr)
-    return;
-  base_free(ptr);
-}
-
-inline void* operator new[](std::size_t size)
-{
-  void* ptr = base_malloc(size);
-  if (!ptr)
-    throw std::bad_alloc();
-  return ptr;
-}
-
-inline void operator delete[](void* ptr)
-{
-  if (!ptr)
-    return;
-  base_free(ptr);
-}
-
-#endif

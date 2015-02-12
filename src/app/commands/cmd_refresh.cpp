@@ -27,7 +27,7 @@
 #include "ui/system.h"
 #include "ui/theme.h"
 
-#if defined ALLEGRO_WINDOWS && defined DEBUGMODE
+#if defined _WIN32 && defined _DEBUG
   #include <windows.h>
   #include <psapi.h>
 #endif

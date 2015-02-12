@@ -2,8 +2,16 @@
 # Copyright (c) 2001-2014 David Capello
 
 include(CheckCSourceCompiles)
+include(CheckCXXSourceCompiles)
 
-CHECK_C_SOURCE_COMPILES("
+check_c_source_compiles("
+#include <stdint.h>
+int main() {
+  return 0;
+}
+" HAVE_STDINT_H)
+
+check_c_source_compiles("
 #include <unistd.h>
 int main() {
   sched_yield();
@@ -11,9 +19,25 @@ int main() {
 }
 " HAVE_SCHED_YIELD)
 
-if(HAVE_SCHED_YIELD)
-  add_definitions(-DHAVE_SCHED_YIELD)
+check_c_source_runs("
+int main() {
+  unsigned long value = 0x40302010ul;
+  return (((unsigned char*)&value)[0] == 0x10) ? 0: 1;
+}
+" ASEPRITE_LITTLE_ENDIAN)
+
+if(NOT ASEPRITE_LITTLE_ENDIAN)
+  set(ASEPRITE_BIG_ENDIAN TRUE)
 endif()
+
+# Generate config.h file
+configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.cmakein
+               ${CMAKE_CURRENT_BINARY_DIR}/base/config.h @ONLY)
+
+set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
+    CACHE STRING "Extra include directory for base lib")
+mark_as_advanced(${BASE_INCLUDE_DIR})
+include_directories(${BASE_INCLUDE_DIR})
 
 set(BASE_SOURCES
   cfile.cpp

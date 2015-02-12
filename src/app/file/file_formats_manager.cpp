@@ -25,6 +25,7 @@
 #include "app/file/file_formats_manager.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "base/string.h"
 
 namespace app {
 
@@ -91,10 +92,6 @@ FileFormatsList::iterator FileFormatsManager::end()
   return m_formats.end();
 }
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4996) // Disable warning about 'stricmp'
-#endif
-
 FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) const
 {
   char buf[512], *tok;
@@ -104,7 +101,7 @@ FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) 
 
     for (tok=strtok(buf, ","); tok;
          tok=strtok(NULL, ",")) {
-      if (stricmp(extension, tok) == 0)
+      if (base::utf8_icmp(extension, tok) == 0)
         return ff;
     }
   }

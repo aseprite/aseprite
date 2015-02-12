@@ -11,6 +11,9 @@
 int base_assert(const char* condition, const char* file, int lineNum);
 void base_trace(const char* msg, ...);
 
+#undef ASSERT
+#undef TRACE
+
 #ifdef _DEBUG
   #ifdef WIN32
     #include <crtdbg.h>
