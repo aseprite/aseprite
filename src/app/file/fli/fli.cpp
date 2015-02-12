@@ -17,7 +17,7 @@
  *
  */
 
-/* Modified by David Capello to use with ASEPRITE (2001-2012). */
+/* Modified by David Capello to use with Aseprite (2001-2012). */
 
 #include <stdio.h>
 #include <stdlib.h>
