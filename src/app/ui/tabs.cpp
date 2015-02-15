@@ -112,10 +112,9 @@ Tabs::~Tabs()
   stopAni();
 
   // Remove all tabs
-  TabsListIterator it, end = m_list_of_tabs.end();
-  for (it = m_list_of_tabs.begin(); it != end; ++it)
-    delete *it; // tab
-  m_list_of_tabs.clear();
+  for (Tab* tab : m_list)
+    delete tab;
+  m_list.clear();
 
   delete m_button_left;         // widget
   delete m_button_right;        // widget
@@ -126,7 +125,7 @@ void Tabs::addTab(TabView* tabView)
   Tab* tab = new Tab(tabView);
   calcTabWidth(tab);
 
-  m_list_of_tabs.push_back(tab);
+  m_list.push_back(tab);
 
   // Update scroll (in the same position if we can
   setScrollX(m_scrollX);
@@ -150,11 +149,11 @@ void Tabs::removeTab(TabView* tabView)
   }
 
   TabsListIterator it =
-    std::find(m_list_of_tabs.begin(), m_list_of_tabs.end(), tab);
+    std::find(m_list.begin(), m_list.end(), tab);
 
-  ASSERT(it != m_list_of_tabs.end() && "Removing a tab that is not part of the Tabs widget");
+  ASSERT(it != m_list.end() && "Removing a tab that is not part of the Tabs widget");
 
-  it = m_list_of_tabs.erase(it);
+  it = m_list.erase(it);
 
   // Width of the removed tab
   if (m_removedTab) {
@@ -164,7 +163,7 @@ void Tabs::removeTab(TabView* tabView)
   m_removedTab = tab;
 
   // Next tab in the list
-  if (it != m_list_of_tabs.end())
+  if (it != m_list.end())
     m_nextTabOfTheRemovedOne = *it;
   else
     m_nextTabOfTheRemovedOne = NULL;
@@ -177,11 +176,7 @@ void Tabs::removeTab(TabView* tabView)
 
 void Tabs::updateTabsText()
 {
-  TabsListIterator it, end = m_list_of_tabs.end();
-
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
-
+  for (Tab* tab : m_list) {
     // Change text of the tab
     calcTabWidth(tab);
   }
@@ -201,10 +196,10 @@ void Tabs::selectNextTab()
 {
   TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
-  if (it != m_list_of_tabs.end()) {
+  if (it != m_list.end()) {
     // If we are at the end of the list, cycle to the first tab.
-    if (it == --m_list_of_tabs.end())
-      it = m_list_of_tabs.begin();
+    if (it == --m_list.end())
+      it = m_list.begin();
     // Go to next tab.
     else
       ++it;
@@ -221,10 +216,10 @@ void Tabs::selectPreviousTab()
 {
   TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
-  if (it != m_list_of_tabs.end()) {
+  if (it != m_list.end()) {
     // If we are at the beginning of the list, cycle to the last tab.
-    if (it == m_list_of_tabs.begin())
-      it = --m_list_of_tabs.end();
+    if (it == m_list.begin())
+      it = --m_list.end();
     // Go to previous tab.
     else
       --it;
@@ -357,7 +352,7 @@ void Tabs::onPaint(PaintEvent& ev)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y,
     2*guiscale(),
-    m_list_of_tabs.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
+    m_list.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
 
   g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
 
@@ -367,11 +362,7 @@ void Tabs::onPaint(PaintEvent& ev)
   box.x = box.x2();
 
   // For each tab...
-  TabsListIterator it, end = m_list_of_tabs.end();
-
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
-
+  for (Tab* tab : m_list) {
     box.w = tab->width;
 
     int x_delta = 0;
@@ -432,7 +423,7 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->height());
 
-  if (!m_list_of_tabs.empty()) {
+  if (!m_list.empty()) {
     reqsize.h += theme->get_part(PART_TAB_FILLER)->height();
   }
 
@@ -451,12 +442,8 @@ void Tabs::onInitTheme(InitThemeEvent& ev)
 
 void Tabs::onSetText()
 {
-  TabsListIterator it, end = m_list_of_tabs.end();
-
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
+  for (Tab* tab : m_list)
     calcTabWidth(tab);
-  }
 }
 
 void Tabs::selectTabInternal(Tab* tab)
@@ -522,9 +509,9 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 
 Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
 {
-  TabsListIterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list.end();
 
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+  for (it = m_list.begin(); it != end; ++it) {
     if ((*it)->view == tabView)
       break;
   }
@@ -535,7 +522,7 @@ Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
 Tabs::Tab* Tabs::getTabByView(TabView* tabView)
 {
   TabsListIterator it = getTabIteratorByView(tabView);
-  if (it != m_list_of_tabs.end())
+  if (it != m_list.end())
     return *it;
   else
     return NULL;
@@ -543,10 +530,10 @@ Tabs::Tab* Tabs::getTabByView(TabView* tabView)
 
 int Tabs::getMaxScrollX()
 {
-  TabsListIterator it, end = m_list_of_tabs.end();
+  TabsListIterator it, end = m_list.end();
   int x = 0;
 
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
+  for (it = m_list.begin(); it != end; ++it) {
     Tab* tab = *it;
     x += tab->width;
   }
@@ -563,11 +550,8 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
 {
   int x = 0;
   int extra_x = getMaxScrollX() > 0 ? ARROW_W*2: 0;
-  TabsListIterator it, end = m_list_of_tabs.end();
 
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
-
+  for (Tab* tab : m_list) {
     if (tab == make_visible_this_tab) {
       if (x - m_scrollX < 0) {
         setScrollX(x);
@@ -627,12 +611,9 @@ void Tabs::calculateHot()
   gfx::Rect rect = getBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y, 0, rect.h-1);
   Tab *hot = NULL;
-  TabsListIterator it, end = m_list_of_tabs.end();
 
   // For each tab
-  for (it = m_list_of_tabs.begin(); it != end; ++it) {
-    Tab* tab = *it;
-
+  for (Tab* tab : m_list) {
     box.w = tab->width;
 
     if (box.contains(ui::get_mouse_position())) {

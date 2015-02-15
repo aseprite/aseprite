@@ -103,7 +103,7 @@ namespace app {
     void calculateHot();
     void calcTabWidth(Tab* tab);
 
-    TabsList m_list_of_tabs;
+    TabsList m_list;
     Tab* m_hot;
     Tab* m_selected;
     int m_scrollX;
