@@ -380,8 +380,16 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       // the exposed area. Those pixels could be shown in the
       // rendering process depending on each cel position.
       // E.g. when we are drawing in a cel with position < (0,0)
-      if (m_zoom.scale() < 1.0)
+      if (m_zoom.scale() < 1.0) {
         expose.enlarge(int(1./m_zoom.scale()));
+      }
+      // If the zoom level is more than %100 we add an extra pixel to
+      // expose just in case the zoom requires to display it.  Note:
+      // this is really necessary to avoid showing invalid destination
+      // areas in ToolLoopImpl.
+      else if (m_zoom.scale() > 1.0) {
+        expose.enlarge(1);
+      }
       m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
     }
 
