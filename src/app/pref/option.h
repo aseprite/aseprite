@@ -10,7 +10,6 @@
 #pragma once
 
 #include "base/signal.h"
-#include "base/disable_copying.h"
 
 namespace app {
 
@@ -23,6 +22,19 @@ namespace app {
       , m_default(defaultValue)
       , m_value(defaultValue)
       , m_dirty(false) {
+    }
+
+    Option(const Option& opt)
+      : m_section(opt.m_section)
+      , m_id(opt.m_id)
+      , m_default(opt.m_default)
+      , m_value(opt.m_value)
+      , m_dirty(false) {
+    }
+
+    Option& operator=(const Option& opt) {
+      operator()(opt.m_value());
+      return *this;
     }
 
     const char* section() const { return m_section; }
@@ -62,7 +74,6 @@ namespace app {
     bool m_dirty;
 
     Option();
-    DISABLE_COPYING(Option);
   };
 
 } // namespace app

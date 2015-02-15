@@ -78,7 +78,12 @@ DocumentPreferences& Preferences::document(app::Document* document)
     return *it->second;
   }
   else {
-    DocumentPreferences* docPref = new DocumentPreferences("");
+    DocumentPreferences* docPref;
+    if (document)
+      docPref = new DocumentPreferences(this->document(nullptr));
+    else
+      docPref = new DocumentPreferences("");
+
     m_docs[document] = docPref;
     serializeDocPref(document, docPref, false);
     return *docPref;
