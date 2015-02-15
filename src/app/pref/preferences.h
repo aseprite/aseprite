@@ -45,7 +45,8 @@ namespace app {
 
   private:
     std::string docConfigFileName(app::Document* doc);
-    void saveDocPref(app::Document* doc, app::DocumentPreferences* docPref);
+
+    void serializeDocPref(app::Document* doc, app::DocumentPreferences* docPref, bool save);
 
     std::map<std::string, app::ToolPreferences*> m_tools;
     std::map<app::Document*, app::DocumentPreferences*> m_docs;

@@ -47,7 +47,7 @@ void Preferences::save()
     pair.second->save();
 
   for (auto& pair : m_docs)
-    saveDocPref(pair.first, pair.second);
+    serializeDocPref(pair.first, pair.second, true);
 
   flush_config_file();
 }
@@ -66,6 +66,7 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
 
     ToolPreferences* toolPref = new ToolPreferences(section);
     m_tools[tool->getId()] = toolPref;
+    toolPref->load();
     return *toolPref;
   }
 }
@@ -79,6 +80,7 @@ DocumentPreferences& Preferences::document(app::Document* document)
   else {
     DocumentPreferences* docPref = new DocumentPreferences("");
     m_docs[document] = docPref;
+    serializeDocPref(document, docPref, false);
     return *docPref;
   }
 }
@@ -89,7 +91,7 @@ void Preferences::onRemoveDocument(doc::Document* doc)
 
   auto it = m_docs.find(static_cast<app::Document*>(doc));
   if (it != m_docs.end()) {
-    saveDocPref(it->first, it->second);
+    serializeDocPref(it->first, it->second, true);
     delete it->second;
     m_docs.erase(it);
   }
@@ -111,17 +113,23 @@ std::string Preferences::docConfigFileName(app::Document* doc)
   return rf.getFirstOrCreateDefault();
 }
 
-void Preferences::saveDocPref(app::Document* doc, app::DocumentPreferences* docPref)
+void Preferences::serializeDocPref(app::Document* doc, app::DocumentPreferences* docPref, bool save)
 {
   bool specific_file = false;
 
-  if (doc && doc->isAssociatedToFile()) {
+  if (doc) {
+    if (!doc->isAssociatedToFile())
+      return;
+
     push_config_state();
     set_config_file(docConfigFileName(doc).c_str());
     specific_file = true;
   }
 
-  docPref->save();
+  if (save)
+    docPref->save();
+  else
+    docPref->load();
 
   if (specific_file) {
     flush_config_file();
