@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/document_range.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/skin/style.h"
 #include "base/connection.h"
@@ -187,6 +188,8 @@ namespace app {
 
     bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
     bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
+
+    DocumentPreferences& docPref() const;
 
     skin::Style* m_timelineStyle;
     skin::Style* m_timelineBoxStyle;

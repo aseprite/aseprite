@@ -12,7 +12,7 @@
 #include "app/tools/tool_loop_manager.h"
 
 #include "app/context.h"
-#include "app/settings/document_settings.h"
+#include "app/snap_to_grid.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
@@ -220,10 +220,10 @@ void ToolLoopManager::doLoopStep(bool last_step)
 void ToolLoopManager::snapToGrid(Point& point)
 {
   if (!m_toolLoop->getController()->canSnapToGrid() ||
-      !m_toolLoop->getDocumentSettings()->getSnapToGrid())
+      !m_toolLoop->getSnapToGrid())
     return;
 
-  m_toolLoop->getDocumentSettings()->snapToGrid(point);
+  point = snap_to_grid(m_toolLoop->getGridBounds(), point);
 }
 
 void ToolLoopManager::calculateDirtyArea(const Points& points)
@@ -259,8 +259,8 @@ void ToolLoopManager::calculateDirtyArea(const Points& points)
     m_dirtyArea.createUnion(m_dirtyArea, prevDirtyArea);
 
   // Apply tiled mode
-  TiledMode tiledMode = m_toolLoop->getDocumentSettings()->getTiledMode();
-  if (tiledMode != TILED_NONE) {
+  TiledMode tiledMode = m_toolLoop->getTiledMode();
+  if (tiledMode != TiledMode::NONE) {
     int w = m_toolLoop->sprite()->width();
     int h = m_toolLoop->sprite()->height();
     Region sprite_area(Rect(0, 0, w, h));
@@ -268,10 +268,10 @@ void ToolLoopManager::calculateDirtyArea(const Points& points)
     outside.createSubtraction(m_dirtyArea, sprite_area);
 
     switch (tiledMode) {
-      case TILED_X_AXIS:
+      case TiledMode::X_AXIS:
         outside.createIntersection(outside, Region(Rect(-w*10000, 0, w*20000, h)));
         break;
-      case TILED_Y_AXIS:
+      case TiledMode::Y_AXIS:
         outside.createIntersection(outside, Region(Rect(0, -h*10000, w, h*20000)));
         break;
     }

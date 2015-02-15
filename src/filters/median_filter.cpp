@@ -89,7 +89,7 @@ namespace {
 };
 
 MedianFilter::MedianFilter()
-  : m_tiledMode(TILED_NONE)
+  : m_tiledMode(TiledMode::NONE)
   , m_width(0)
   , m_height(0)
   , m_ncolors(0)

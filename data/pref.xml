@@ -14,12 +14,6 @@
       <value id="PICK_FGCOLOR" value="1" />
       <value id="ERASE" value="2" />
     </enum>
-    <enum id="TiledMode">
-      <value id="NONE" value="0" />
-      <value id="X_AXIS" value="1" />
-      <value id="Y_AXIS" value="2" />
-      <value id="BOTH" value="3" />
-    </enum>
     <enum id="OnionskinType">
       <value id="MERGE" value="0" />
       <value id="RED_BLUE_TINT" value="1" />
@@ -109,21 +103,21 @@
 
   <document>
     <section id="tiled">
-      <option id="tiled_mode" type="TiledMode" default="TiledMode::NONE" />
+      <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />
     </section>
     <section id="grid">
-      <option id="snap" type="bool" default="false" />
-      <option id="visible" type="bool" default="false" />
-      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
-      <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" />
-      <option id="opacity" type="int" default="160" />
-      <option id="auto_opacity" type="bool" default="true" />
+      <option id="snap" type="bool" default="false" migrate="Grid.SnapTo" />
+      <option id="visible" type="bool" default="false" migrate="Grid.Visible" />
+      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" migrate="Grid.Bounds" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(0, 0, 255)" migrate="Grid.Color" />
+      <option id="opacity" type="int" default="160" migrate="Grid.Opacity" />
+      <option id="auto_opacity" type="bool" default="true" migrate="Grid.AutoOpacity" />
     </section>
     <section id="pixel_grid">
-      <option id="visible" type="bool" default="false" />
-      <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" />
-      <option id="opacity" type="int" default="160" />
-      <option id="auto_opacity" type="bool" default="true" />
+      <option id="visible" type="bool" default="false" migrate="PixelGrid.Visible" />
+      <option id="color" type="app::Color" default="app::Color::fromRgb(200, 200, 200)" migrate="PixelGrid.Color" />
+      <option id="opacity" type="int" default="160" migrate="PixelGrid.Opacity" />
+      <option id="auto_opacity" type="bool" default="true" migrate="PixelGrid.AutoOpacity" />
     </section>
     <section id="bg">
       <option id="type" type="BgType" default="BgType::CHECKED_16x16" migrate="Option.CheckedBgType" />
@@ -132,12 +126,12 @@
       <option id="color2" type="app::Color" default="app::Color::fromRgb(192, 192, 192)" migrate="Option.CheckedBgColor2" />
     </section>
     <section id="onionskin">
-      <option id="active" type="bool" default="false" />
-      <option id="prev_frames" type="int" default="1" />
-      <option id="next_frames" type="int" default="1" />
-      <option id="opacity_base" type="int" default="68" />
-      <option id="opacity_step" type="int" default="28" />
-      <option id="type" type="OnionskinType" default="OnionskinType::MERGE" />
+      <option id="active" type="bool" default="false" migrate="Onionskin.Enabled" />
+      <option id="prev_frames" type="int" default="1" migrate="Onionskin.PrevFrames" />
+      <option id="next_frames" type="int" default="1" migrate="Onionskin.NextFrames" />
+      <option id="opacity_base" type="int" default="68" migrate="Onionskin.OpacityBase" />
+      <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
+      <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
     </section>
     <section id="loop">
       <option id="visible" type="bool" default="false" />

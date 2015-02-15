@@ -13,7 +13,6 @@
 #include "app/color.h"
 #include "app/document.h"
 #include "app/settings/selection_mode.h"
-#include "app/settings/settings_observers.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
@@ -21,6 +20,7 @@
 #include "doc/document_observer.h"
 #include "doc/frame.h"
 #include "doc/image_buffer.h"
+#include "filters/tiled_mode.h"
 #include "gfx/fwd.h"
 #include "render/zoom.h"
 #include "ui/base.h"
@@ -57,8 +57,7 @@ namespace app {
   };
 
   class Editor : public ui::Widget,
-                 public doc::DocumentObserver,
-                 public DocumentSettingsObserver {
+                 public doc::DocumentObserver {
   public:
     typedef void (*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
 
@@ -212,11 +211,6 @@ namespace app {
 
     void onExposeSpritePixels(doc::DocumentEvent& ev);
 
-    void onSetTiledMode(filters::TiledMode mode);
-    void onSetGridVisible(bool state);
-    void onSetGridBounds(const gfx::Rect& rect);
-    void onSetGridColor(const app::Color& color);
-
   private:
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
@@ -288,6 +282,14 @@ namespace app {
     // signals).
     ScopedConnection m_currentToolChangeConn;
     ScopedConnection m_fgColorChangeConn;
+
+    // Slots listeing document preferences.
+    ScopedConnection m_tiledModeConn;
+    ScopedConnection m_gridVisibleConn;
+    ScopedConnection m_gridBoundsConn;
+    ScopedConnection m_gridColorConn;
+    ScopedConnection m_pixelGridVisibleConn;
+    ScopedConnection m_pixelGridColorConn;
 
     EditorObservers m_observers;
 

@@ -71,17 +71,6 @@ namespace app {
     virtual void onSetColorSwatches(ColorSwatches* swaches) {}
   };
 
-  class DocumentSettingsObserver {
-  public:
-    virtual ~DocumentSettingsObserver() { }
-
-    virtual void onSetTiledMode(filters::TiledMode mode) { }
-    virtual void onSetSnapToGrid(bool state) { }
-    virtual void onSetGridVisible(bool state) { }
-    virtual void onSetGridBounds(const gfx::Rect& rect) { }
-    virtual void onSetGridColor(const app::Color& color) { }
-  };
-
 } // namespace app
 
 #endif // APP_SETTINGS_SETTINGS_OBSERVERS_H_INCLUDED

@@ -87,8 +87,8 @@ private:
     bounds = bounds.createIntersect(loop->getSrcImage()->bounds());
 
     // Limit the flood-fill to the current tile if the grid is visible.
-    if (loop->getDocumentSettings()->getGridVisible()) {
-      gfx::Rect grid = loop->getDocumentSettings()->getGridBounds();
+    if (loop->getGridVisible()) {
+      gfx::Rect grid = loop->getGridBounds();
       div_t d, dx, dy;
 
       dx = div(grid.x+loop->getOffset().x, grid.w);

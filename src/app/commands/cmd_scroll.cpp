@@ -9,12 +9,12 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
 #include "ui/view.h"
@@ -87,11 +87,11 @@ bool ScrollCommand::onEnabled(Context* context)
 
 void ScrollCommand::onExecute(Context* context)
 {
-  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
+  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point scroll = view->getViewScroll();
-  gfx::Rect gridBounds = docSettings->getGridBounds();
+  gfx::Rect gridBounds = docPref.grid.bounds();
   gfx::Point delta(0, 0);
   int pixels = 0;
 

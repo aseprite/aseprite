@@ -25,8 +25,6 @@
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
@@ -339,17 +337,13 @@ bool Timeline::onProcessMessage(Message* msg)
           m_state = STATE_MOVING_SEPARATOR;
           break;
         case A_PART_HEADER_ONIONSKIN_RANGE_LEFT: {
-          ISettings* settings = UIContext::instance()->settings();
-          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_LEFT;
-          m_origFrames = docSettings->getOnionskinPrevFrames();
+          m_origFrames = docPref().onionskin.prevFrames();
           break;
         }
         case A_PART_HEADER_ONIONSKIN_RANGE_RIGHT: {
-          ISettings* settings = UIContext::instance()->settings();
-          IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
           m_state = STATE_MOVING_ONIONSKIN_RANGE_RIGHT;
-          m_origFrames = docSettings->getOnionskinNextFrames();
+          m_origFrames = docPref().onionskin.nextFrames();
           break;
         }
         case A_PART_HEADER_FRAME: {
@@ -451,19 +445,15 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_LEFT: {
-            ISettings* settings = UIContext::instance()->settings();
-            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames + (m_clk_frame - hot_frame);
-            docSettings->setOnionskinPrevFrames(MAX(0, newValue));
+            docPref().onionskin.prevFrames(MAX(0, newValue));
             invalidate();
             return true;
           }
 
           case STATE_MOVING_ONIONSKIN_RANGE_RIGHT:
-            ISettings* settings = UIContext::instance()->settings();
-            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
             int newValue = m_origFrames - (m_clk_frame - hot_frame);
-            docSettings->setOnionskinNextFrames(MAX(0, newValue));
+            docPref().onionskin.nextFrames(MAX(0, newValue));
             invalidate();
             return true;
         }
@@ -583,10 +573,7 @@ bool Timeline::onProcessMessage(Message* msg)
           }
 
           case A_PART_HEADER_ONIONSKIN: {
-            ISettings* settings = UIContext::instance()->settings();
-            IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
-            if (docSettings)
-              docSettings->setUseOnionskin(!docSettings->getUseOnionskin());
+            docPref().onionskin.active(!docPref().onionskin.active());
             break;
           }
 
@@ -1109,8 +1096,6 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
-  ISettings* settings = UIContext::instance()->settings();
-  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
   bool allContinuous = allLayersContinuous();
@@ -1144,7 +1129,7 @@ void Timeline::drawHeader(ui::Graphics* g)
 
   drawPart(g, getPartBounds(A_PART_HEADER_ONIONSKIN),
     NULL, m_timelineOnionskinStyle,
-    docSettings->getUseOnionskin(),
+    docPref().onionskin.active(),
     m_hot_part == A_PART_HEADER_ONIONSKIN,
     m_clk_part == A_PART_HEADER_ONIONSKIN);
 
@@ -1322,13 +1307,12 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
 
 void Timeline::drawLoopRange(ui::Graphics* g)
 {
-  ISettings* settings = UIContext::instance()->settings();
-  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
-  if (!docSettings->getLoopAnimation())
+  DocumentPreferences& docPref = this->docPref();
+  if (!docPref.loop.visible())
     return;
 
-  frame_t begin, end;
-  docSettings->getLoopRange(&begin, &end);
+  frame_t begin = docPref.loop.from();
+  frame_t end = docPref.loop.to();
   if (begin > end)
     return;
 
@@ -1460,22 +1444,21 @@ gfx::Rect Timeline::getFrameHeadersBounds() const
 
 gfx::Rect Timeline::getOnionskinFramesBounds() const
 {
-  ISettings* settings = UIContext::instance()->settings();
-  IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
-  if (docSettings->getUseOnionskin()) {
-    frame_t firstFrame = m_frame - docSettings->getOnionskinPrevFrames();
-    frame_t lastFrame = m_frame + docSettings->getOnionskinNextFrames();
+  DocumentPreferences& docPref = this->docPref();
+  if (!docPref.onionskin.active())
+    return gfx::Rect();
 
-    if (firstFrame < this->firstFrame())
-      firstFrame = this->firstFrame();
+  frame_t firstFrame = m_frame - docPref.onionskin.prevFrames();
+  frame_t lastFrame = m_frame + docPref.onionskin.nextFrames();
 
-    if (lastFrame > this->lastFrame())
-      lastFrame = this->lastFrame();
+  if (firstFrame < this->firstFrame())
+    firstFrame = this->firstFrame();
 
-    return getPartBounds(A_PART_HEADER_FRAME, firstLayer(), firstFrame)
-      .createUnion(getPartBounds(A_PART_HEADER_FRAME, firstLayer(), lastFrame));
-  }
-  return gfx::Rect();
+  if (lastFrame > this->lastFrame())
+    lastFrame = this->lastFrame();
+
+  return getPartBounds(A_PART_HEADER_FRAME, firstLayer(), firstFrame)
+    .createUnion(getPartBounds(A_PART_HEADER_FRAME, firstLayer(), lastFrame));
 }
 
 gfx::Rect Timeline::getCelsBounds() const
@@ -1831,14 +1814,9 @@ void Timeline::updateStatusBar(ui::Message* msg)
     switch (m_hot_part) {
 
       case A_PART_HEADER_ONIONSKIN: {
-        ISettings* settings = UIContext::instance()->settings();
-        IDocumentSettings* docSettings = settings->getDocumentSettings(m_document);
-        if (docSettings) {
-          sb->setStatusText(0, "Onionskin is %s",
-            docSettings->getUseOnionskin() ? "enabled": "disabled");
-          return;
-        }
-        break;
+        sb->setStatusText(0, "Onionskin is %s",
+          docPref().onionskin.active() ? "enabled": "disabled");
+        return;
       }
 
       case A_PART_LAYER_TEXT:
@@ -2209,6 +2187,11 @@ bool Timeline::isCopyKeyPressed(ui::Message* msg)
 {
   return msg->ctrlPressed() ||  // Ctrl is common on Windows
          msg->altPressed();    // Alt is common on Mac OS X
+}
+
+DocumentPreferences& Timeline::docPref() const
+{
+  return App::instance()->preferences().document(m_document);
 }
 
 } // namespace app

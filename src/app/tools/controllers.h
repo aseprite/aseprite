@@ -7,7 +7,6 @@
 
 #include <cmath>
 
-#include "app/settings/document_settings.h"
 
 #ifndef M_PI
 #define M_PI            3.14159265358979323846
@@ -152,7 +151,7 @@ public:
 
     // Adjust points for selection like tools (so we can select tiles)
     if (loop->getController()->canSnapToGrid() &&
-        loop->getDocumentSettings()->getSnapToGrid() &&
+        loop->getSnapToGrid() &&
         loop->getInk()->isSelection()) {
       if (points[0].x < points[1].x)
         points[1].x--;

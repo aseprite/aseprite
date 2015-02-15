@@ -13,8 +13,7 @@
 #include "app/commands/command.h"
 #include "app/context.h"
 #include "app/document.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 
 namespace app {
 
@@ -34,16 +33,14 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    return docSettings->getUseOnionskin();
+    DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+    return docPref.onionskin.active();
   }
 
   void onExecute(Context* context)
   {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    docSettings->setUseOnionskin(docSettings->getUseOnionskin() ? false: true);
+    DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+    docPref.onionskin.active(!docPref.onionskin.active());
   }
 };
 

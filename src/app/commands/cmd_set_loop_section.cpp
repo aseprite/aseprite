@@ -13,8 +13,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 
@@ -71,10 +70,7 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   if (!doc)
     return;
 
-  IDocumentSettings* docSets = ctx->settings()->getDocumentSettings(doc);
-  if (!docSets)
-    return;
-
+  DocumentPreferences& docPref = App::instance()->preferences().document(doc);
   frame_t begin = m_begin;
   frame_t end = m_end;
   bool on = false;
@@ -105,11 +101,12 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
   }
 
   if (on) {
-    docSets->setLoopAnimation(true);
-    docSets->setLoopRange(begin, end);
+    docPref.loop.visible(true);
+    docPref.loop.from(begin);
+    docPref.loop.to(end);
   }
   else
-    docSets->setLoopAnimation(false);
+    docPref.loop.visible(false);
 }
 
 Command* CommandFactory::createSetLoopSectionCommand()

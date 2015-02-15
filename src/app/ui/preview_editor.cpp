@@ -11,13 +11,13 @@
 
 #include "app/ui/preview_editor.h"
 
+#include "app/app.h"
 #include "app/document.h"
 #include "app/handle_anidir.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
 #include "app/ui/editor/navigate_state.h"
@@ -334,10 +334,8 @@ void PreviewEditorWindow::onPlaybackTick()
   if (!document || !sprite)
     return;
 
-  ISettings* settings = UIContext::instance()->settings();
-  IDocumentSettings* docSettings = settings->getDocumentSettings(document);
-  if (!docSettings)
-    return;
+  DocumentPreferences& docPref =
+    App::instance()->preferences().document(document);
 
   if (m_nextFrameTime >= 0) {
     m_nextFrameTime -= (ui::clock() - m_curFrameTick);
@@ -346,7 +344,7 @@ void PreviewEditorWindow::onPlaybackTick()
       frame_t frame = calculate_next_frame(
         sprite,
         miniEditor->frame(),
-        docSettings,
+        docPref,
         m_pingPongForward);
 
       miniEditor->setFrame(frame);

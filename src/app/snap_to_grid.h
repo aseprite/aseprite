@@ -5,19 +5,16 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef FILTERS_TILED_MODE_H_INCLUDED
-#define FILTERS_TILED_MODE_H_INCLUDED
+#ifndef APP_SNAP_TO_GRID_H_INCLUDED
+#define APP_SNAP_TO_GRID_H_INCLUDED
 #pragma once
 
-namespace filters {
+#include "gfx/fwd.h"
 
-  enum class TiledMode {
-    NONE    = 0,
-    X_AXIS  = 1,
-    Y_AXIS  = 2,
-    BOTH    = 3,
-  };
+namespace app {
 
-} // namespace filters
+  gfx::Point snap_to_grid(const gfx::Rect& grid, const gfx::Point& point);
+
+} // namespace app
 
 #endif

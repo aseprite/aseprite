@@ -19,7 +19,7 @@
 #include "app/context_access.h"
 #include "app/document_undo.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
@@ -59,7 +59,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   int m_sprayWidth;
   int m_spraySpeed;
   ISettings* m_settings;
-  IDocumentSettings* m_docSettings;
+  DocumentPreferences& m_docPref;
   IToolSettings* m_toolSettings;
   bool m_useMask;
   Mask* m_mask;
@@ -96,7 +96,7 @@ public:
     , m_layer(editor->layer())
     , m_frame(editor->frame())
     , m_settings(m_context->settings())
-    , m_docSettings(m_settings->getDocumentSettings(m_document))
+    , m_docPref(App::instance()->preferences().document(m_document))
     , m_toolSettings(m_settings->getToolSettings(m_tool))
     , m_canceled(false)
     , m_button(button)
@@ -112,7 +112,7 @@ public:
                       getInk()->isZoom()) ? DoesntModifyDocument:
                                             ModifyDocument))
     , m_expandCelCanvas(m_context,
-        m_docSettings->getTiledMode(),
+        m_docPref.tiled.mode(),
         m_transaction,
         ExpandCelCanvas::Flags(
           ExpandCelCanvas::NeedsSource |
@@ -259,7 +259,10 @@ public:
   bool getContiguous() override { return m_contiguous; }
   SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
   ISettings* settings() override { return m_settings; }
-  IDocumentSettings* getDocumentSettings() override { return m_docSettings; }
+  filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
+  bool getGridVisible() override { return m_docPref.grid.visible(); }
+  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
+  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
   bool getFilled() override { return m_filled; }
   bool getPreviewFilled() override { return m_previewFilled; }
   int getSprayWidth() override { return m_sprayWidth; }

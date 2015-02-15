@@ -60,7 +60,7 @@ FilterWindow::FilterWindow(const char* title, const char* cfgSection,
   addChild(&m_hbox);
 
   if (m_tiledCheck) {
-    m_tiledCheck->setSelected(tiledMode != TILED_NONE);
+    m_tiledCheck->setSelected(tiledMode != TiledMode::NONE);
     m_tiledCheck->Click.connect(Bind<void>(&FilterWindow::onTiledChange, this));
 
     m_vbox.addChild(m_tiledCheck);
@@ -155,7 +155,9 @@ void FilterWindow::onTiledChange()
 
   // Call derived class implementation of setupTiledMode() so the
   // filter is modified.
-  setupTiledMode(m_tiledCheck->isSelected() ? TILED_BOTH: TILED_NONE);
+  setupTiledMode(m_tiledCheck->isSelected() ?
+    TiledMode::BOTH:
+    TiledMode::NONE);
 
   // Restart the preview.
   restartPreview();

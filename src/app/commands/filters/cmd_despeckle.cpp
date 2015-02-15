@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/commands/filters/filter_window.h"
@@ -17,12 +18,11 @@
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "base/bind.h"
-#include "filters/median_filter.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "filters/median_filter.h"
 #include "ui/button.h"
 #include "ui/entry.h"
 #include "ui/grid.h"
@@ -106,10 +106,10 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
+  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
 
   MedianFilter filter;
-  filter.setTiledMode(docSettings->getTiledMode());
+  filter.setTiledMode((filters::TiledMode)docPref.tiled.mode());
   filter.setSize(get_config_int(ConfigSection, "Width", 3),
                  get_config_int(ConfigSection, "Height", 3));
 

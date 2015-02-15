@@ -114,7 +114,7 @@ namespace {
 
 ConvolutionMatrixFilter::ConvolutionMatrixFilter()
   : m_matrix(NULL)
-  , m_tiledMode(TILED_NONE)
+  , m_tiledMode(TiledMode::NONE)
 {
 }
 

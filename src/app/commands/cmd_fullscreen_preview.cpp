@@ -18,8 +18,7 @@
 #include "app/context.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/status_bar.h"
@@ -58,8 +57,8 @@ public:
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
     View* view = View::getView(editor);
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(m_doc);
-    m_tiled = docSettings->getTiledMode();
+    DocumentPreferences& docPref = App::instance()->preferences().document(m_doc);
+    m_tiled = (filters::TiledMode)docPref.tiled.mode();
 
     // Free mouse
     editor->getManager()->freeMouse();
@@ -191,8 +190,8 @@ protected:
     w = m_zoom.apply(m_sprite->width());
     h = m_zoom.apply(m_sprite->height());
 
-    if (m_tiled & TILED_X_AXIS) x = SGN(x) * (ABS(x)%w);
-    if (m_tiled & TILED_Y_AXIS) y = SGN(y) * (ABS(y)%h);
+    if (int(m_tiled) & int(TiledMode::X_AXIS)) x = SGN(x) * (ABS(x)%w);
+    if (int(m_tiled) & int(TiledMode::Y_AXIS)) y = SGN(y) * (ABS(y)%h);
 
     if (m_index_bg_color == -1) {
       render.setupBackground(m_doc, m_doublebuf->pixelFormat());
@@ -205,21 +204,21 @@ protected:
     }
 
     switch (m_tiled) {
-      case TILED_NONE:
+      case TiledMode::NONE:
         render.renderImage(m_doublebuf, m_render, m_pal, x, y,
           m_zoom, 255, BLEND_MODE_NORMAL);
         break;
-      case TILED_X_AXIS:
+      case TiledMode::X_AXIS:
         for (u=x-w; u<ui::display_w()+w; u+=w)
           render.renderImage(m_doublebuf, m_render, m_pal, u, y,
             m_zoom, 255, BLEND_MODE_NORMAL);
         break;
-      case TILED_Y_AXIS:
+      case TiledMode::Y_AXIS:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           render.renderImage(m_doublebuf, m_render, m_pal, x, v,
             m_zoom, 255, BLEND_MODE_NORMAL);
         break;
-      case TILED_BOTH:
+      case TiledMode::BOTH:
         for (v=y-h; v<ui::display_h()+h; v+=h)
           for (u=x-w; u<ui::display_w()+w; u+=w)
             render.renderImage(m_doublebuf, m_render, m_pal, u, v,

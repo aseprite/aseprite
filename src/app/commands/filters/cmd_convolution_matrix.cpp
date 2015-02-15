@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/filters/convolution_matrix_stock.h"
@@ -19,13 +20,12 @@
 #include "app/find_widget.h"
 #include "app/ini_file.h"
 #include "app/load_widget.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "base/bind.h"
-#include "filters/convolution_matrix.h"
-#include "filters/convolution_matrix_filter.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "filters/convolution_matrix.h"
+#include "filters/convolution_matrix_filter.h"
 #include "ui/button.h"
 #include "ui/label.h"
 #include "ui/listbox.h"
@@ -176,9 +176,11 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
     m_stock.getByName(get_config_string(ConfigSection, "Selected", ""));
 
   // Create the filter and setup initial settings
+  DocumentPreferences& docPref = App::instance()
+    ->preferences().document(context->activeDocument());
+
   ConvolutionMatrixFilter filter;
-  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-  filter.setTiledMode(docSettings->getTiledMode());
+  filter.setTiledMode(docPref.tiled.mode());
   if (matrix != 0)
     filter.setMatrix(matrix);
 

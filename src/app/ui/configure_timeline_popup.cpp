@@ -16,7 +16,6 @@
 #include "app/document.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
-#include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/commands/commands.h"
 #include "app/ui/main_window.h"
@@ -62,57 +61,50 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_resetOnionskin->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
   m_setLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onSetLoopSection, this));
   m_resetLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetLoopSection, this));
-  m_normalDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, IDocumentSettings::AniDir_Normal));
-  m_reverseDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, IDocumentSettings::AniDir_Reverse));
-  m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, IDocumentSettings::AniDir_PingPong));
+  m_normalDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::FORWARD));
+  m_reverseDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::REVERSE));
+  m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::PING_PONG));
 }
 
-IDocumentSettings* ConfigureTimelinePopup::docSettings()
+DocumentPreferences& ConfigureTimelinePopup::docPref()
 {
-  Context* context = UIContext::instance();
-  Document* document = context->activeDocument();
-  if (!document)
-    return NULL;
-
-  return context->settings()->getDocumentSettings(document);
+  return App::instance()->preferences().document(
+    UIContext::instance()->activeDocument());
 }
 
 void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 {
-  IDocumentSettings* docSet = docSettings();
-  if (!docSet)
-    return;
-
+  DocumentPreferences& docPref = this->docPref();
   base::ScopedValue<bool> lockUpdates(m_lockUpdates, true, false);
 
-  switch (docSet->getOnionskinType()) {
-    case IDocumentSettings::Onionskin_Merge:
+  switch (docPref.onionskin.type()) {
+    case app::gen::OnionskinType::MERGE:
       m_merge->setSelected(true);
       break;
-    case IDocumentSettings::Onionskin_RedBlueTint:
+    case app::gen::OnionskinType::RED_BLUE_TINT:
       m_tint->setSelected(true);
       break;
   }
-  m_opacity->setValue(docSet->getOnionskinOpacityBase());
-  m_opacityStep->setValue(docSet->getOnionskinOpacityStep());
+  m_opacity->setValue(docPref.onionskin.opacityBase());
+  m_opacityStep->setValue(docPref.onionskin.opacityStep());
 
-  switch (docSet->getOnionskinType()) {
-    case IDocumentSettings::Onionskin_Merge:
+  switch (docPref.onionskin.type()) {
+    case app::gen::OnionskinType::MERGE:
       m_merge->setSelected(true);
       break;
-    case IDocumentSettings::Onionskin_RedBlueTint:
+    case app::gen::OnionskinType::RED_BLUE_TINT:
       m_tint->setSelected(true);
       break;
   }
 
-  switch (docSet->getAnimationDirection()) {
-    case IDocumentSettings::AniDir_Normal:
+  switch (docPref.loop.aniDir()) {
+    case app::gen::AniDir::FORWARD:
       m_normalDir->setSelected(true);
       break;
-    case IDocumentSettings::AniDir_Reverse:
+    case app::gen::AniDir::REVERSE:
       m_reverseDir->setSelected(true);
       break;
-    case IDocumentSettings::AniDir_PingPong:
+    case app::gen::AniDir::PING_PONG:
       m_pingPongDir->setSelected(true);
       break;
   }
@@ -136,11 +128,9 @@ void ConfigureTimelinePopup::onChangeType()
   if (m_lockUpdates)
     return;
 
-  IDocumentSettings* docSet = docSettings();
-  if (docSet)
-    docSet->setOnionskinType(m_merge->isSelected() ?
-      IDocumentSettings::Onionskin_Merge:
-      IDocumentSettings::Onionskin_RedBlueTint);
+  docPref().onionskin.type(m_merge->isSelected() ?
+    app::gen::OnionskinType::MERGE:
+    app::gen::OnionskinType::RED_BLUE_TINT);
 }
 
 void ConfigureTimelinePopup::onOpacity()
@@ -148,9 +138,7 @@ void ConfigureTimelinePopup::onOpacity()
   if (m_lockUpdates)
     return;
 
-  IDocumentSettings* docSet = docSettings();
-  if (docSet)
-    docSet->setOnionskinOpacityBase(m_opacity->getValue());
+  docPref().onionskin.opacityBase(m_opacity->getValue());
 }
 
 void ConfigureTimelinePopup::onOpacityStep()
@@ -158,18 +146,18 @@ void ConfigureTimelinePopup::onOpacityStep()
   if (m_lockUpdates)
     return;
 
-  IDocumentSettings* docSet = docSettings();
-  if (docSet)
-    docSet->setOnionskinOpacityStep(m_opacityStep->getValue());
+  docPref().onionskin.opacityStep(m_opacityStep->getValue());
 }
 
 void ConfigureTimelinePopup::onResetOnionskin()
 {
-  IDocumentSettings* docSet = docSettings();
-  if (docSet) {
-    docSet->setDefaultOnionskinSettings();
-    updateWidgetsFromCurrentSettings();
-  }
+  DocumentPreferences& docPref = this->docPref();
+
+  docPref.onionskin.type(docPref.onionskin.type.defaultValue());
+  docPref.onionskin.opacityBase(docPref.onionskin.opacityBase.defaultValue());
+  docPref.onionskin.opacityStep(docPref.onionskin.opacityStep.defaultValue());
+
+  updateWidgetsFromCurrentSettings();
 }
 
 void ConfigureTimelinePopup::onSetLoopSection()
@@ -179,16 +167,12 @@ void ConfigureTimelinePopup::onSetLoopSection()
 
 void ConfigureTimelinePopup::onResetLoopSection()
 {
-  IDocumentSettings* docSet = docSettings();
-  if (docSet)
-    docSet->setLoopAnimation(false);
+  docPref().loop.visible(false);
 }
 
-void ConfigureTimelinePopup::onAniDir(IDocumentSettings::AniDir aniDir)
+void ConfigureTimelinePopup::onAniDir(app::gen::AniDir aniDir)
 {
-  IDocumentSettings* docSet = docSettings();
-  if (docSet)
-    docSet->setAnimationDirection(aniDir);
+  docPref().loop.aniDir(aniDir);
 }
 
 } // namespace app

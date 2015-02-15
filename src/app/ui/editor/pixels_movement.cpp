@@ -11,14 +11,16 @@
 
 #include "app/ui/editor/pixels_movement.h"
 
+#include "app/app.h"
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
+#include "app/snap_to_grid.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "base/vector2d.h"
@@ -197,9 +199,10 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
 
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
+        gfx::Rect gridBounds = App::instance()
+          ->preferences().document(m_document).grid.bounds();
         gfx::Point gridOffset(x1, y1);
-        UIContext::instance()->settings()
-          ->getDocumentSettings(m_document)->snapToGrid(gridOffset);
+        gridOffset = snap_to_grid(gridBounds, gridOffset);
 
         // Now we calculate the difference from x1,y1 point and we can
         // use it to adjust all coordinates (x1, y1, x2, y2).
@@ -437,7 +440,7 @@ void PixelsMovement::stampImage()
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
       ExpandCelCanvas expand(writer.context(),
-        TILED_NONE, m_transaction,
+        TiledMode::NONE, m_transaction,
         ExpandCelCanvas::None);
 
       // TODO can we reduce this region?

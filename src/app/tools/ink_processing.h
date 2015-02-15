@@ -6,7 +6,6 @@
 // published by the Free Software Foundation.
 
 #include "app/modules/palettes.h"
-#include "app/settings/document_settings.h"
 #include "app/tools/shade_table.h"
 #include "app/tools/shading_options.h"
 #include "doc/palette.h"
@@ -276,7 +275,7 @@ class BlurInkProcessing<RgbTraits> : public DoubleInkProcessing<BlurInkProcessin
 public:
   BlurInkProcessing(ToolLoop* loop) :
     m_opacity(loop->getOpacity()),
-    m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
+    m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()) {
   }
 
@@ -332,7 +331,7 @@ class BlurInkProcessing<GrayscaleTraits> : public DoubleInkProcessing<BlurInkPro
 public:
   BlurInkProcessing(ToolLoop* loop) :
     m_opacity(loop->getOpacity()),
-    m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
+    m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()) {
   }
 
@@ -384,7 +383,7 @@ public:
     m_palette(get_current_palette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
-    m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
+    m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()),
     m_area(get_current_palette()) {
   }
@@ -534,7 +533,7 @@ public:
     m_rgbmap(loop->getRgbMap()),
     m_speed(loop->getSpeed() / 4),
     m_opacity(loop->getOpacity()),
-    m_tiledMode(loop->getDocumentSettings()->getTiledMode()),
+    m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()),
     m_srcImageWidth(m_srcImage->width()),
     m_srcImageHeight(m_srcImage->height()) {
@@ -549,7 +548,7 @@ private:
     int u = x + (rand() % 3)-1 - m_speed.x;
     int v = y + (rand() % 3)-1 - m_speed.y;
 
-    if (m_tiledMode & TILED_X_AXIS) {
+    if (int(m_tiledMode) & int(TiledMode::X_AXIS)) {
       if (u < 0)
         u = m_srcImageWidth - (-(u+1) % m_srcImageWidth) - 1;
       else if (u >= m_srcImageWidth)
@@ -559,7 +558,7 @@ private:
       u = MID(0, u, m_srcImageWidth-1);
     }
 
-    if (m_tiledMode & TILED_Y_AXIS) {
+    if (int(m_tiledMode) & int(TiledMode::Y_AXIS)) {
       if (v < 0)
         v = m_srcImageHeight - (-(v+1) % m_srcImageHeight) - 1;
       else if (v >= m_srcImageHeight)

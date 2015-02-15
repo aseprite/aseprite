@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -16,10 +17,9 @@
 #include "app/document_api.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
-#include "app/ui/editor/editor.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
+#include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -68,10 +68,10 @@ bool MoveMaskCommand::onEnabled(Context* context)
 
 void MoveMaskCommand::onExecute(Context* context)
 {
-  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
+  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
-  gfx::Rect gridBounds = docSettings->getGridBounds();
+  gfx::Rect gridBounds = docPref.grid.bounds();
   int dx = 0;
   int dy = 0;
   int pixels = 0;

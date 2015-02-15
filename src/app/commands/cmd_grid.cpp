@@ -16,8 +16,7 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
-#include "app/settings/document_settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "ui/window.h"
@@ -32,25 +31,20 @@ public:
   ShowGridCommand()
     : Command("ShowGrid",
               "Show Grid",
-              CmdUIOnlyFlag)
-  {
+              CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    return docSettings->getGridVisible();
+  bool onChecked(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    return docPref.grid.visible();
   }
 
-  void onExecute(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    docSettings->setGridVisible(docSettings->getGridVisible() ? false: true);
+  void onExecute(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    docPref.grid.visible(!docPref.grid.visible());
   }
 };
 
@@ -59,25 +53,20 @@ public:
   ShowPixelGridCommand()
     : Command("ShowPixelGrid",
               "Show Pixel Grid",
-              CmdUIOnlyFlag)
-  {
+              CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new ShowPixelGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    return docSettings->getPixelGridVisible();
+  bool onChecked(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    return docPref.pixelGrid.visible();
   }
 
-  void onExecute(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    docSettings->setPixelGridVisible(docSettings->getPixelGridVisible() ? false: true);
+  void onExecute(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    docPref.pixelGrid.visible(!docPref.pixelGrid.visible());
   }
 };
 
@@ -86,28 +75,24 @@ public:
   SnapToGridCommand()
     : Command("SnapToGrid",
               "Snap to Grid",
-              CmdUIOnlyFlag)
-  {
+              CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new SnapToGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-
-    return docSettings->getSnapToGrid();
+  bool onChecked(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    return docPref.grid.snap();
   }
 
-  void onExecute(Context* context)
-  {
-    IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-    docSettings->setSnapToGrid(docSettings->getSnapToGrid() ? false: true);
+  void onExecute(Context* ctx) {
+    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    docPref.grid.snap(!docPref.grid.snap());
 
     char buf[512];
     sprintf(buf, "Snap to grid: %s",
-      (docSettings->getSnapToGrid() ? "On": "Off"));
+      (docPref.grid.snap() ? "On": "Off"));
 
     StatusBar::instance()->setStatusText(250, buf);
   }
@@ -144,8 +129,8 @@ void GridSettingsCommand::onExecute(Context* context)
   Widget* grid_w = app::find_widget<Widget>(window, "grid_w");
   Widget* grid_h = app::find_widget<Widget>(window, "grid_h");
 
-  IDocumentSettings* docSettings = context->settings()->getDocumentSettings(context->activeDocument());
-  Rect bounds = docSettings->getGridBounds();
+  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+  Rect bounds = docPref.grid.bounds();
 
   grid_x->setTextf("%d", bounds.x);
   grid_y->setTextf("%d", bounds.y);
@@ -162,7 +147,7 @@ void GridSettingsCommand::onExecute(Context* context)
     bounds.w = MAX(bounds.w, 1);
     bounds.h = MAX(bounds.h, 1);
 
-    docSettings->setGridBounds(bounds);
+    docPref.grid.bounds(bounds);
   }
 }
 

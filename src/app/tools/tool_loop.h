@@ -35,7 +35,6 @@ namespace render {
 namespace app {
   class Context;
   class Document;
-  class IDocumentSettings;
   class ISettings;
 
   namespace tools {
@@ -161,15 +160,16 @@ namespace app {
       // primary/secondary).
       virtual ISettings* settings() = 0;
 
-      // Returns the document settings (tiled mode, grid bounds, etc.).
-      // It's used to know the preferred "tiled" mode of the document.
+      // Returns the preferred "tiled" mode of the document.
       // See the method PointShape::doInkHline to check how this member is
       // used. When tiled mode is activated, each scanline can be divided
       // in various sub-lines if they pass the image bounds. For each of
       // these scanlines a Ink::inkHline is called
-      // Also it's used to know the grid/snap-to-grid settings/behavior
-      // (see ToolLoopManager::snapToGrid).
-      virtual IDocumentSettings* getDocumentSettings() = 0;
+      virtual filters::TiledMode getTiledMode() = 0;
+
+      virtual bool getGridVisible() = 0;
+      virtual bool getSnapToGrid() = 0;
+      virtual gfx::Rect getGridBounds() = 0;
 
       // Returns true if the figure must be filled when we release the
       // mouse (e.g. a filled rectangle, etc.)

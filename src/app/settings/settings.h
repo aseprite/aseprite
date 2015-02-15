@@ -27,7 +27,6 @@ namespace app {
 
   class ColorSwatches;
   class IColorSwatchesStore;
-  class IDocumentSettings;
   class IBrushSettings;
   class BrushSettingsObserver;
   class IToolSettings;
@@ -67,11 +66,6 @@ namespace app {
     virtual void setBgColor(const app::Color& color) = 0;
     virtual void setCurrentTool(tools::Tool* tool) = 0;
     virtual void setColorSwatches(app::ColorSwatches* colorSwatches) = 0;
-
-    // Returns the specific settings for the given document. If the
-    // document is null, it should return an interface for
-    // global/default settings.
-    virtual IDocumentSettings* getDocumentSettings(const doc::Document* document) = 0;
 
     // Specific configuration for the given tool.
     virtual IToolSettings* getToolSettings(tools::Tool* tool) = 0;

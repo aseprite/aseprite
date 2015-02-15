@@ -253,6 +253,7 @@ add_library(app-lib
   send_crash.cpp
   settings/ui_settings_impl.cpp
   shell.cpp
+  snap_to_grid.cpp
   thumbnail_generator.cpp
   tools/intertwine.cpp
   tools/pick_ink.cpp

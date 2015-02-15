@@ -17,7 +17,6 @@
 #include "app/settings/settings_observers.h"
 #include "base/observable.h"
 #include "base/unique_ptr.h"
-#include "doc/documents_observer.h"
 #include "doc/object_id.h"
 
 namespace app {
@@ -26,14 +25,10 @@ namespace app {
       : public ISettings
       , public IExperimentalSettings
       , public IColorSwatchesStore
-      , public doc::DocumentsObserver
       , base::Observable<GlobalSettingsObserver> {
   public:
     UISettingsImpl();
     ~UISettingsImpl();
-
-    // doc::DocumentsObserver
-    void onRemoveDocument(doc::Document* doc) override;
 
     // ISettings implementation
     bool getZoomWithScrollWheel() override;
@@ -58,7 +53,6 @@ namespace app {
     void setCurrentTool(tools::Tool* tool) override;
     void setColorSwatches(app::ColorSwatches* colorSwatches) override;
 
-    IDocumentSettings* getDocumentSettings(const doc::Document* document) override;
     IToolSettings* getToolSettings(tools::Tool* tool) override;
     IColorSwatchesStore* getColorSwatchesStore() override;
 
@@ -93,7 +87,6 @@ namespace app {
     bool m_grabAlpha;
     bool m_autoSelectLayer;
     RightClickMode m_rightClickMode;
-    std::map<doc::ObjectId, IDocumentSettings*> m_docSettings;
   };
 
 } // namespace app

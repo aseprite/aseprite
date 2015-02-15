@@ -9,7 +9,7 @@
 #define APP_UI_CONFIGURE_TIMELINE_POPUP_H_INCLUDED
 #pragma once
 
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "ui/popup_window.h"
 
 namespace ui {
@@ -33,11 +33,11 @@ namespace app {
     void onResetOnionskin();
     void onSetLoopSection();
     void onResetLoopSection();
-    void onAniDir(IDocumentSettings::AniDir aniDir);
+    void onAniDir(app::gen::AniDir aniDir);
 
   private:
     void updateWidgetsFromCurrentSettings();
-    IDocumentSettings* docSettings();
+    DocumentPreferences& docPref();
 
     ui::RadioButton* m_merge;
     ui::RadioButton* m_tint;

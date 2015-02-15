@@ -11,7 +11,6 @@
 
 #include "app/tools/point_shape.h"
 
-#include "app/settings/document_settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_loop.h"
 #include "doc/image.h"
@@ -24,11 +23,11 @@ using namespace filters;
 
 void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
 {
-  TiledMode tiledMode = loop->getDocumentSettings()->getTiledMode();
+  TiledMode tiledMode = loop->getTiledMode();
   int x, w, size; // width or height
 
   // Tiled in Y axis
-  if (tiledMode & TILED_Y_AXIS) {
+  if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
     size = loop->getDstImage()->height();      // size = image height
     if (y < 0)
       y = size - (-(y+1) % size) - 1;
@@ -39,7 +38,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
       return;
 
   // Tiled in X axis
-  if (tiledMode & TILED_X_AXIS) {
+  if (int(tiledMode) & int(TiledMode::X_AXIS)) {
     if (x1 > x2)
       return;
 

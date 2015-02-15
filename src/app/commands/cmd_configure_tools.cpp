@@ -18,7 +18,7 @@
 #include "app/load_widget.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
@@ -26,8 +26,8 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "doc/context_observer.h"
-#include "gfx/size.h"
 #include "doc/mask.h"
+#include "gfx/size.h"
 #include "ui/ui.h"
 
 #include "generated_tools_configuration.h"
@@ -47,8 +47,8 @@ public:
     // Slots
     this->Close.connect(Bind<void>(&ToolsConfigurationWindow::onWindowClose, this));
     tiled()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledClick, this));
-    tiledX()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TILED_X_AXIS, tiledX()));
-    tiledY()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TILED_Y_AXIS, tiledY()));
+    tiledX()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TiledMode::X_AXIS, tiledX()));
+    tiledY()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onTiledXYClick, this, filters::TiledMode::Y_AXIS, tiledY()));
     viewGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onViewGridClick, this));
     pixelGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onPixelGridClick, this));
     setGrid()->Click.connect(Bind<void>(&ToolsConfigurationWindow::onSetGridClick, this));
@@ -71,20 +71,23 @@ private:
     return m_ctx->settings();
   }
 
-  IDocumentSettings* docSettings() {
-    ASSERT(settings());
-    return settings()->getDocumentSettings(m_ctx->activeDocument());
+  Preferences& preferences() {
+    return App::instance()->preferences();
+  }
+
+  DocumentPreferences& docPref() {
+    return preferences().document(m_ctx->activeDocument());
   }
 
   void onSetActiveDocument(doc::Document* document) override {
-    IDocumentSettings* docSettings = this->docSettings();
+    DocumentPreferences& docPref = this->docPref();
 
-    tiled()->setSelected(docSettings->getTiledMode() != filters::TILED_NONE);
-    tiledX()->setSelected(docSettings->getTiledMode() & filters::TILED_X_AXIS ? true: false);
-    tiledY()->setSelected(docSettings->getTiledMode() & filters::TILED_Y_AXIS ? true: false);
-    snapToGrid()->setSelected(docSettings->getSnapToGrid());
-    viewGrid()->setSelected(docSettings->getGridVisible());
-    pixelGrid()->setSelected(docSettings->getPixelGridVisible());
+    tiled()->setSelected(docPref.tiled.mode() != filters::TiledMode::NONE);
+    tiledX()->setSelected(int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS) ? true: false);
+    tiledY()->setSelected(int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS) ? true: false);
+    snapToGrid()->setSelected(docPref.grid.snap());
+    viewGrid()->setSelected(docPref.grid.visible());
+    pixelGrid()->setSelected(docPref.pixelGrid.visible());
   }
 
   void onWindowClose() {
@@ -94,33 +97,34 @@ private:
   void onTiledClick() {
     bool flag = tiled()->isSelected();
 
-    docSettings()->setTiledMode(
-      flag ? filters::TILED_BOTH:
-             filters::TILED_NONE);
+    docPref().tiled.mode(
+      flag ? filters::TiledMode::BOTH:
+             filters::TiledMode::NONE);
 
     tiledX()->setSelected(flag);
     tiledY()->setSelected(flag);
   }
 
-  void onTiledXYClick(int tiled_axis, CheckBox* checkbox) {
-    int tiled_mode = docSettings()->getTiledMode();
+  void onTiledXYClick(filters::TiledMode tiled_axis, CheckBox* checkbox) {
+    int tiled_mode = int(docPref().tiled.mode());
 
     if (checkbox->isSelected())
-      tiled_mode |= tiled_axis;
+      tiled_mode |= int(tiled_axis);
     else
-      tiled_mode &= ~tiled_axis;
+      tiled_mode &= ~int(tiled_axis);
 
-    checkbox->findSibling("tiled")->setSelected(tiled_mode != filters::TILED_NONE);
+    checkbox->findSibling("tiled")->setSelected(
+      tiled_mode != int(filters::TiledMode::NONE));
 
-    docSettings()->setTiledMode((filters::TiledMode)tiled_mode);
+    docPref().tiled.mode(filters::TiledMode(tiled_mode));
   }
 
   void onViewGridClick() {
-    docSettings()->setGridVisible(viewGrid()->isSelected());
+    docPref().grid.visible(viewGrid()->isSelected());
   }
 
   void onPixelGridClick() {
-    docSettings()->setPixelGridVisible(pixelGrid()->isSelected());
+    docPref().pixelGrid.visible(pixelGrid()->isSelected());
   }
 
   void onSetGridClick() {
@@ -132,7 +136,7 @@ private:
       if (document && document->isMaskVisible()) {
         const Mask* mask(document->mask());
 
-        docSettings()->setGridBounds(mask->bounds());
+        docPref().grid.bounds(mask->bounds());
       }
       else {
         Command* grid_settings_cmd =
@@ -147,7 +151,7 @@ private:
   }
 
   void onSnapToGridClick() {
-    docSettings()->setSnapToGrid(snapToGrid()->isSelected());
+    docPref().grid.snap(snapToGrid()->isSelected());
   }
 
   Context* m_ctx;

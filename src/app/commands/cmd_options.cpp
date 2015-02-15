@@ -21,7 +21,6 @@
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
-#include "app/settings/document_settings.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
@@ -43,9 +42,6 @@ public:
   OptionsWindow(Context* context, int& curSection)
     : m_settings(context->settings())
     , m_preferences(App::instance()->preferences())
-    , m_globSettings(m_settings->getDocumentSettings(nullptr))
-    , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
-    , m_curSettings(m_docSettings)
     , m_globPref(m_preferences.document(nullptr))
     , m_docPref(m_preferences.document(context->activeDocument()))
     , m_curPref(&m_docPref)
@@ -146,13 +142,6 @@ public:
 
   void saveConfig() {
     Editor::set_cursor_color(m_cursorColor->getColor());
-    m_curSettings->setGridColor(m_gridColor->getColor());
-    m_curSettings->setGridOpacity(gridOpacity()->getValue());
-    m_curSettings->setGridAutoOpacity(gridAutoOpacity()->isSelected());
-    m_curSettings->setPixelGridColor(m_pixelGridColor->getColor());
-    m_curSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
-    m_curSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
-
     m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
@@ -165,6 +154,12 @@ public:
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 
+    m_curPref->grid.color(m_gridColor->getColor());
+    m_curPref->grid.opacity(gridOpacity()->getValue());
+    m_curPref->grid.autoOpacity(gridAutoOpacity()->isSelected());
+    m_curPref->pixelGrid.color(m_pixelGridColor->getColor());
+    m_curPref->pixelGrid.opacity(pixelGridOpacity()->getValue());
+    m_curPref->pixelGrid.autoOpacity(pixelGridAutoOpacity()->isSelected());
     m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
     m_curPref->bg.zoom(checkedBgZoom()->isSelected());
     m_curPref->bg.color1(m_checked_bg_color1->getColor());
@@ -209,23 +204,17 @@ private:
     int item = gridScope()->getSelectedItemIndex();
 
     switch (item) {
-      case 0:
-        m_curSettings = m_globSettings;
-        m_curPref = &m_globPref;
-        break;
-      case 1:
-        m_curSettings = m_docSettings;
-        m_curPref = &m_docPref;
-        break;
+      case 0: m_curPref = &m_globPref; break;
+      case 1: m_curPref = &m_docPref; break;
     }
 
-    m_gridColor->setColor(m_curSettings->getGridColor());
-    gridOpacity()->setValue(m_curSettings->getGridOpacity());
-    gridAutoOpacity()->setSelected(m_curSettings->getGridAutoOpacity());
+    m_gridColor->setColor(m_curPref->grid.color());
+    gridOpacity()->setValue(m_curPref->grid.opacity());
+    gridAutoOpacity()->setSelected(m_curPref->grid.autoOpacity());
 
-    m_pixelGridColor->setColor(m_curSettings->getPixelGridColor());
-    pixelGridOpacity()->setValue(m_curSettings->getPixelGridOpacity());
-    pixelGridAutoOpacity()->setSelected(m_curSettings->getPixelGridAutoOpacity());
+    m_pixelGridColor->setColor(m_curPref->pixelGrid.color());
+    pixelGridOpacity()->setValue(m_curPref->pixelGrid.opacity());
+    pixelGridAutoOpacity()->setSelected(m_curPref->pixelGrid.autoOpacity());
 
     checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
     checkedBgZoom()->setSelected(m_curPref->bg.zoom());
@@ -261,9 +250,6 @@ private:
   }
 
   ISettings* m_settings;
-  IDocumentSettings* m_globSettings;
-  IDocumentSettings* m_docSettings;
-  IDocumentSettings* m_curSettings;
   Preferences& m_preferences;
   DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;

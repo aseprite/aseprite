@@ -19,7 +19,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
@@ -42,14 +42,14 @@ public:
     , m_oldFrame(editor->frame())
     , m_oldFlags(m_editor->editorFlags())
     , m_doc(editor->document())
-    , m_docSettings(context->settings()->getDocumentSettings(m_doc))
-    , m_oldOnionskinState(m_docSettings->getUseOnionskin())
+    , m_docPref(App::instance()->preferences().document(m_doc))
+    , m_oldOnionskinState(m_docPref.onionskin.active())
     , m_playTimer(10)
   {
     m_editor->setEditorFlags(Editor::kNoneFlag);
 
     // Desactivate the onionskin
-    m_docSettings->setUseOnionskin(false);
+    m_docPref.onionskin.active(false);
 
     // Clear extras (e.g. pen preview)
     m_doc->destroyExtraCel();
@@ -73,7 +73,7 @@ protected:
         frame_t frame = calculate_next_frame(
           m_editor->sprite(),
           m_editor->frame(),
-          m_docSettings,
+          m_docPref,
           m_pingPongForward);
 
         m_editor->setFrame(frame);
@@ -94,7 +94,7 @@ protected:
 
       case kCloseMessage:
         // Restore onionskin flag
-        m_docSettings->setUseOnionskin(m_oldOnionskinState);
+        m_docPref.onionskin.active(m_oldOnionskinState);
 
         // Restore editor
         m_editor->setFrame(m_oldFrame);
@@ -138,7 +138,7 @@ private:
   frame_t m_oldFrame;
   Editor::EditorFlags m_oldFlags;
   Document* m_doc;
-  IDocumentSettings* m_docSettings;
+  DocumentPreferences& m_docPref;
   bool m_oldOnionskinState;
   bool m_pingPongForward;
 

@@ -22,7 +22,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/settings/document_settings.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -168,9 +168,14 @@ Editor::Editor(Document* document, EditorFlags flags)
   m_fgColorChangeConn =
     ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
 
-  UIContext::instance()->settings()
-    ->getDocumentSettings(m_document)
-    ->addObserver(this);
+  DocumentPreferences& docPref = App::instance()
+    ->preferences().document(m_document);
+  m_tiledModeConn = docPref.tiled.mode.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_gridVisibleConn = docPref.grid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_gridBoundsConn = docPref.grid.bounds.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_gridColorConn = docPref.grid.color.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_pixelGridVisibleConn = docPref.pixelGrid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_pixelGridColorConn = docPref.pixelGrid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
 
   m_document->addObserver(this);
 
@@ -180,10 +185,6 @@ Editor::Editor(Document* document, EditorFlags flags)
 Editor::~Editor()
 {
   m_document->removeObserver(this);
-
-  UIContext::instance()->settings()
-    ->getDocumentSettings(m_document)
-    ->removeObserver(this);
 
   setCustomizationDelegate(NULL);
 
@@ -390,20 +391,20 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     m_renderEngine.setOnionskin(render::OnionskinType::NONE, 0, 0, 0, 0);
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
-      IDocumentSettings* docSettings = UIContext::instance()
-        ->settings()->getDocumentSettings(m_document);
+      DocumentPreferences& docPref = App::instance()
+        ->preferences().document(m_document);
 
-      if (docSettings->getUseOnionskin()) {
+      if (docPref.onionskin.active()) {
         m_renderEngine.setOnionskin(
-          (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_Merge ?
+          (docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
             render::OnionskinType::MERGE:
-            (docSettings->getOnionskinType() == IDocumentSettings::Onionskin_RedBlueTint ?
+            (docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
               render::OnionskinType::RED_BLUE_TINT:
               render::OnionskinType::NONE)),
-          docSettings->getOnionskinPrevFrames(),
-          docSettings->getOnionskinNextFrames(),
-          docSettings->getOnionskinOpacityBase(),
-          docSettings->getOnionskinOpacityStep());
+          docPref.onionskin.prevFrames(),
+          docPref.onionskin.nextFrames(),
+          docPref.onionskin.opacityBase(),
+          docPref.onionskin.opacityStep());
       }
     }
 
@@ -464,10 +465,10 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   outside.createSubtraction(outside, gfx::Region(spriteRect));
 
   // Document settings
-  IDocumentSettings* docSettings =
-      UIContext::instance()->settings()->getDocumentSettings(m_document);
+  DocumentPreferences& docPref =
+      App::instance()->preferences().document(m_document);
 
-  if (docSettings->getTiledMode() & filters::TILED_X_AXIS) {
+  if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
     drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, 0);
 
@@ -475,7 +476,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
-  if (docSettings->getTiledMode() & filters::TILED_Y_AXIS) {
+  if (int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, 0, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, 0, +spriteRect.h);
 
@@ -483,7 +484,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     outside.createSubtraction(outside, gfx::Region(enclosingRect));
   }
 
-  if (docSettings->getTiledMode() == filters::TILED_BOTH) {
+  if (docPref.tiled.mode() == filters::TiledMode::BOTH) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, +spriteRect.w, -spriteRect.h);
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, +spriteRect.h);
@@ -511,34 +512,34 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
       IntersectClip clip(g, cliprc);
 
       // Draw the pixel grid
-      if ((m_zoom.scale() > 2.0) && docSettings->getPixelGridVisible()) {
-        int alpha = docSettings->getPixelGridOpacity();
+      if ((m_zoom.scale() > 2.0) && docPref.pixelGrid.visible()) {
+        int alpha = docPref.pixelGrid.opacity();
 
-        if (docSettings->getPixelGridAutoOpacity()) {
+        if (docPref.pixelGrid.autoOpacity()) {
           alpha = int(alpha * (m_zoom.scale()-2.) / (16.-2.));
           alpha = MID(0, alpha, 255);
         }
 
         drawGrid(g, enclosingRect, Rect(0, 0, 1, 1),
-          docSettings->getPixelGridColor(), alpha);
+          docPref.pixelGrid.color(), alpha);
       }
 
       // Draw the grid
-      if (docSettings->getGridVisible()) {
-        gfx::Rect gridrc = docSettings->getGridBounds();
+      if (docPref.grid.visible()) {
+        gfx::Rect gridrc = docPref.grid.bounds();
         if (m_zoom.apply(gridrc.w) > 2 &&
           m_zoom.apply(gridrc.h) > 2) {
-          int alpha = docSettings->getGridOpacity();
+          int alpha = docPref.grid.opacity();
 
-          if (docSettings->getGridAutoOpacity()) {
+          if (docPref.grid.autoOpacity()) {
             double len = (m_zoom.apply(gridrc.w) + m_zoom.apply(gridrc.h)) / 2.;
             alpha = int(alpha * len / 32.);
             alpha = MID(0, alpha, 255);
           }
 
           if (alpha > 8)
-            drawGrid(g, enclosingRect, docSettings->getGridBounds(),
-              docSettings->getGridColor(), alpha);
+            drawGrid(g, enclosingRect, docPref.grid.bounds(),
+              docPref.grid.color(), alpha);
         }
       }
     }
@@ -1492,26 +1493,6 @@ void Editor::notifyScrollChanged()
 ImageBufferPtr Editor::getRenderImageBuffer()
 {
   return m_renderBuffer;
-}
-
-void Editor::onSetTiledMode(filters::TiledMode mode)
-{
-  invalidate();
-}
-
-void Editor::onSetGridVisible(bool state)
-{
-  invalidate();
-}
-
-void Editor::onSetGridBounds(const gfx::Rect& rect)
-{
-  invalidate();
-}
-
-void Editor::onSetGridColor(const app::Color& color)
-{
-  invalidate();
 }
 
 } // namespace app

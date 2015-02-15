@@ -34,7 +34,7 @@ namespace filters {
     int getx, gety = y - centerY;
     int addx, addy = 0;
     if (gety < 0) {
-      if (tiledMode & TILED_Y_AXIS)
+      if (int(tiledMode) & int(TiledMode::Y_AXIS))
         gety = sourceImage->height() - (-(gety+1) % sourceImage->height()) - 1;
       else {
         addy = -gety;
@@ -42,7 +42,7 @@ namespace filters {
       }
     }
     else if (gety >= sourceImage->height()) {
-      if (tiledMode & TILED_Y_AXIS)
+      if (int(tiledMode) & int(TiledMode::Y_AXIS))
         gety = gety % sourceImage->height();
       else
         gety = sourceImage->height()-1;
@@ -53,7 +53,7 @@ namespace filters {
       getx = x - centerX;
       addx = 0;
       if (getx < 0) {
-        if (tiledMode & TILED_X_AXIS)
+        if (int(tiledMode) & int(TiledMode::X_AXIS))
           getx = sourceImage->width() - (-(getx+1) % sourceImage->width()) - 1;
         else {
           addx = -getx;
@@ -61,7 +61,7 @@ namespace filters {
         }
       }
       else if (getx >= sourceImage->width()) {
-        if (tiledMode & TILED_X_AXIS)
+        if (int(tiledMode) & int(TiledMode::X_AXIS))
           getx = getx % sourceImage->width();
         else
           getx = sourceImage->width()-1;
@@ -82,7 +82,7 @@ namespace filters {
           else
             --addx;
         }
-        else if (tiledMode & TILED_X_AXIS) {
+        else if (int(tiledMode) & int(TiledMode::X_AXIS)) {
           getx = 0;
           srcAddress =
             reinterpret_cast<typename Traits::const_address_t>(sourceImage->getPixelAddress(getx, gety));
@@ -96,7 +96,7 @@ namespace filters {
         else
           --addy;
       }
-      else if (tiledMode & TILED_Y_AXIS)
+      else if (int(tiledMode) & int(TiledMode::Y_AXIS))
         gety = 0;
     }
   }

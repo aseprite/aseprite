@@ -11,7 +11,6 @@
 
 #include "app/handle_anidir.h"
 
-#include "app/settings/document_settings.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -19,15 +18,16 @@ namespace app {
 doc::frame_t calculate_next_frame(
   doc::Sprite* sprite,
   doc::frame_t frame,
-  IDocumentSettings* docSettings,
+  DocumentPreferences& docPref,
   bool& pingPongForward)
 {
   frame_t first = frame_t(0);
   frame_t last = sprite->lastFrame();
 
-  if (docSettings->getLoopAnimation()) {
+  if (docPref.loop.visible()) {
     frame_t loopBegin, loopEnd;
-    docSettings->getLoopRange(&loopBegin, &loopEnd);
+    loopBegin = docPref.loop.from();
+    loopEnd = docPref.loop.to();
     loopBegin = MID(first, loopBegin, last);
     loopEnd = MID(first, loopEnd, last);
 
@@ -35,21 +35,21 @@ doc::frame_t calculate_next_frame(
     last = loopEnd;
   }
 
-  switch (docSettings->getAnimationDirection()) {
+  switch (docPref.loop.aniDir()) {
 
-    case IDocumentSettings::AniDir_Normal:
+    case app::gen::AniDir::FORWARD:
       ++frame;
       if (frame > last)
         frame = first;
       break;
 
-    case IDocumentSettings::AniDir_Reverse:
+    case app::gen::AniDir::REVERSE:
       --frame;
       if (frame < first)
         frame = last;
       break;
 
-    case IDocumentSettings::AniDir_PingPong:
+    case app::gen::AniDir::PING_PONG:
       if (pingPongForward) {
         ++frame;
         if (frame > last) {

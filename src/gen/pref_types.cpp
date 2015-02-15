@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,7 +21,7 @@ typedef std::vector<TiXmlElement*> XmlElements;
 static void print_pref_class_def(TiXmlElement* elem, const std::string& className, const char* section, int indentSpaces)
 {
   std::string indent(indentSpaces, ' ');
-  std::cout 
+  std::cout
     << "\n"
     << indent << "class " << className << " {\n"
     << indent << "  std::string m_section;\n"
@@ -97,11 +97,11 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
     child = child->NextSiblingElement();
   }
 
-  std::cout 
+  std::cout
     << "{\n"
     << "}\n";
 
-  std::cout 
+  std::cout
     << "\n"
     << "void " << prefix << className << "::load()\n"
     << "{\n";
@@ -135,7 +135,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
     child = child->NextSiblingElement();
   }
 
-  std::cout 
+  std::cout
     << "}\n"
     << "\n"
     << "void " << prefix << className << "::save()\n"
@@ -157,7 +157,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
     child = child->NextSiblingElement();
   }
 
-  std::cout 
+  std::cout
     << "}\n";
 
   child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
@@ -178,7 +178,7 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
   std::cout
     << "// Don't modify, generated file from " << inputFn << "\n"
     << "\n";
-  
+
   std::cout
     << "#ifndef GENERATED_PREF_TYPES_H_INCLUDED\n"
     << "#define GENERATED_PREF_TYPES_H_INCLUDED\n"
@@ -188,6 +188,7 @@ void gen_pref_header(TiXmlDocument* doc, const std::string& inputFn)
     << "#include \"app/pref/option.h\"\n"
     << "#include \"doc/frame.h\"\n"
     << "#include \"gfx/rect.h\"\n"
+    << "#include \"filters/tiled_mode.h\"\n"
     << "\n"
     << "#include <string>\n"
     << "\n"

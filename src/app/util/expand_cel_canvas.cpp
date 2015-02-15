@@ -98,7 +98,7 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, Transact
     m_sprite->width(),
     m_sprite->height());
 
-  if (tiledMode == TILED_NONE) { // Non-tiled
+  if (tiledMode == TiledMode::NONE) { // Non-tiled
     m_bounds = celBounds.createUnion(spriteBounds);
   }
   else {                         // Tiled
