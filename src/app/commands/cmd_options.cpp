@@ -42,13 +42,17 @@ class OptionsWindow : public app::gen::Options {
 public:
   OptionsWindow(Context* context, int& curSection)
     : m_settings(context->settings())
-    , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
     , m_preferences(App::instance()->preferences())
+    , m_globSettings(m_settings->getDocumentSettings(nullptr))
+    , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
+    , m_curSettings(m_docSettings)
+    , m_globPref(m_preferences.document(nullptr))
     , m_docPref(m_preferences.document(context->activeDocument()))
-    , m_checked_bg_color1(new ColorButton(m_docPref.bg.color1(), IMAGE_RGB))
-    , m_checked_bg_color2(new ColorButton(m_docPref.bg.color2(), IMAGE_RGB))
-    , m_pixelGridColor(new ColorButton(m_docSettings->getPixelGridColor(), IMAGE_RGB))
-    , m_gridColor(new ColorButton(m_docSettings->getGridColor(), IMAGE_RGB))
+    , m_curPref(&m_docPref)
+    , m_checked_bg_color1(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
+    , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
+    , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
+    , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
     , m_curSection(curSection)
   {
@@ -58,14 +62,10 @@ public:
     // Grid color
     m_gridColor->setId("grid_color");
     gridColorPlaceholder()->addChild(m_gridColor);
-    gridOpacity()->setValue(m_docSettings->getGridOpacity());
-    gridAutoOpacity()->setSelected(m_docSettings->getGridAutoOpacity());
 
     // Pixel grid color
     m_pixelGridColor->setId("pixel_grid_color");
     pixelGridColorPlaceholder()->addChild(m_pixelGridColor);
-    pixelGridOpacity()->setValue(m_docSettings->getPixelGridOpacity());
-    pixelGridAutoOpacity()->setSelected(m_docSettings->getPixelGridAutoOpacity());
 
     // Others
     if (m_preferences.general.autoshowTimeline())
@@ -85,6 +85,14 @@ public:
 
     if (m_settings->getShowSpriteEditorScrollbars())
       showScrollbars()->setSelected(true);
+
+    // Scope
+    gridScope()->addItem("Global");
+    if (context->activeDocument()) {
+      gridScope()->addItem("Current Document");
+      gridScope()->setSelectedItemIndex(1);
+      gridScope()->Change.connect(Bind<void>(&OptionsWindow::onChangeGridScope, this));
+    }
 
     // Checked background size
     screenScale()->addItem("1:1");
@@ -107,11 +115,6 @@ public:
     checkedBgSize()->addItem("8x8");
     checkedBgSize()->addItem("4x4");
     checkedBgSize()->addItem("2x2");
-    checkedBgSize()->setSelectedItemIndex(int(m_docPref.bg.type()));
-
-    // Zoom checked background
-    if (m_docPref.bg.zoom())
-      checkedBgZoom()->setSelected(true);
 
     // Checked background colors
     checkedBgColor1Box()->addChild(m_checked_bg_color1);
@@ -133,6 +136,7 @@ public:
     undoGotoModified()->setSelected(m_preferences.undo.gotoModified());
     undoAllowNonlinearHistory()->setSelected(m_preferences.undo.allowNonlinearHistory());
 
+    onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
   }
 
@@ -142,12 +146,12 @@ public:
 
   void saveConfig() {
     Editor::set_cursor_color(m_cursorColor->getColor());
-    m_docSettings->setGridColor(m_gridColor->getColor());
-    m_docSettings->setGridOpacity(gridOpacity()->getValue());
-    m_docSettings->setGridAutoOpacity(gridAutoOpacity()->isSelected());
-    m_docSettings->setPixelGridColor(m_pixelGridColor->getColor());
-    m_docSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
-    m_docSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
+    m_curSettings->setGridColor(m_gridColor->getColor());
+    m_curSettings->setGridOpacity(gridOpacity()->getValue());
+    m_curSettings->setGridAutoOpacity(gridAutoOpacity()->isSelected());
+    m_curSettings->setPixelGridColor(m_pixelGridColor->getColor());
+    m_curSettings->setPixelGridOpacity(pixelGridOpacity()->getValue());
+    m_curSettings->setPixelGridAutoOpacity(pixelGridAutoOpacity()->isSelected());
 
     m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
 
@@ -161,10 +165,10 @@ public:
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 
-    m_docPref.bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
-    m_docPref.bg.zoom(checkedBgZoom()->isSelected());
-    m_docPref.bg.color1(m_checked_bg_color1->getColor());
-    m_docPref.bg.color2(m_checked_bg_color2->getColor());
+    m_curPref->bg.type(app::gen::BgType(checkedBgSize()->getSelectedItemIndex()));
+    m_curPref->bg.zoom(checkedBgZoom()->isSelected());
+    m_curPref->bg.color1(m_checked_bg_color1->getColor());
+    m_curPref->bg.color2(m_checked_bg_color2->getColor());
 
     int undo_size_limit_value;
     undo_size_limit_value = undoSizeLimit()->getTextInt();
@@ -201,6 +205,34 @@ private:
     m_curSection = sectionListbox()->getSelectedIndex();
   }
 
+  void onChangeGridScope() {
+    int item = gridScope()->getSelectedItemIndex();
+
+    switch (item) {
+      case 0:
+        m_curSettings = m_globSettings;
+        m_curPref = &m_globPref;
+        break;
+      case 1:
+        m_curSettings = m_docSettings;
+        m_curPref = &m_docPref;
+        break;
+    }
+
+    m_gridColor->setColor(m_curSettings->getGridColor());
+    gridOpacity()->setValue(m_curSettings->getGridOpacity());
+    gridAutoOpacity()->setSelected(m_curSettings->getGridAutoOpacity());
+
+    m_pixelGridColor->setColor(m_curSettings->getPixelGridColor());
+    pixelGridOpacity()->setValue(m_curSettings->getPixelGridOpacity());
+    pixelGridAutoOpacity()->setSelected(m_curSettings->getPixelGridAutoOpacity());
+
+    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type()));
+    checkedBgZoom()->setSelected(m_curPref->bg.zoom());
+    m_checked_bg_color1->setColor(m_curPref->bg.color1());
+    m_checked_bg_color2->setColor(m_curPref->bg.color2());
+  }
+
   void onReset() {
     // Default values
     // TODO improve settings and default values (store everything in
@@ -214,10 +246,10 @@ private:
     pixelGridOpacity()->setValue(200);
     pixelGridAutoOpacity()->setSelected(true);
 
-    checkedBgSize()->setSelectedItemIndex(int(m_docPref.bg.type.defaultValue()));
-    checkedBgZoom()->setSelected(m_docPref.bg.zoom.defaultValue());
-    m_checked_bg_color1->setColor(m_docPref.bg.color1.defaultValue());
-    m_checked_bg_color2->setColor(m_docPref.bg.color2.defaultValue());
+    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type.defaultValue()));
+    checkedBgZoom()->setSelected(m_curPref->bg.zoom.defaultValue());
+    m_checked_bg_color1->setColor(m_curPref->bg.color1.defaultValue());
+    m_checked_bg_color2->setColor(m_curPref->bg.color2.defaultValue());
   }
 
   void onLocateCrashFolder() {
@@ -229,9 +261,13 @@ private:
   }
 
   ISettings* m_settings;
+  IDocumentSettings* m_globSettings;
   IDocumentSettings* m_docSettings;
+  IDocumentSettings* m_curSettings;
   Preferences& m_preferences;
+  DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;
+  DocumentPreferences* m_curPref;
   ColorButton* m_checked_bg_color1;
   ColorButton* m_checked_bg_color2;
   ColorButton* m_pixelGridColor;

@@ -46,7 +46,8 @@
 
         <!-- Grid & background -->
         <vbox id="section_grid">
-          <separator text="Grid" horizontal="true" />
+          <combobox id="grid_scope" />
+          <separator text="Grid" horizontal="true" expansive="true" />
           <grid columns="3">
             <label text="Grid Color:" />
             <box id="grid_color_placeholder" /><!-- custom widget -->
