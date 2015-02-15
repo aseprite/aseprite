@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ namespace raster {
 }
 
 namespace app {
-  class Context;
   class Document;
+  class DocumentLocation;
   class UndoTransaction;
 
   using namespace filters;
@@ -46,7 +46,8 @@ namespace app {
   // state using "Undo" command.
   class ExpandCelCanvas {
   public:
-    ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo);
+    ExpandCelCanvas(DocumentLocation location,
+      TiledMode tiledMode, UndoTransaction& undo);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds

@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,8 +65,12 @@ static void create_buffers()
 
 namespace app {
 
-ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTransaction& undo)
-  : m_cel(NULL)
+ExpandCelCanvas::ExpandCelCanvas(DocumentLocation location,
+  TiledMode tiledMode, UndoTransaction& undo)
+  : m_document(location.document())
+  , m_sprite(location.sprite())
+  , m_layer(location.layer())
+  , m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
   , m_closed(false)
@@ -74,11 +78,6 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, UndoTran
   , m_undo(undo)
 {
   create_buffers();
-
-  DocumentLocation location = context->activeLocation();
-  m_document = location.document();
-  m_sprite = location.sprite();
-  m_layer = location.layer();
 
   if (m_layer->isImage()) {
     m_cel = static_cast<LayerImage*>(m_layer)->getCel(location.frame());

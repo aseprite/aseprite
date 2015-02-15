@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,12 +47,14 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
 }
 
 PixelsMovement::PixelsMovement(Context* context,
-                               Document* document, Sprite* sprite, Layer* layer,
-                               const Image* moveThis, int initialX, int initialY, int opacity,
-                               const char* operationName)
+  DocumentLocation location,
+  const Image* moveThis, int initialX, int initialY, int opacity,
+  const char* operationName)
   : m_reader(context)
-  , m_document(document)
-  , m_sprite(sprite)
+  , m_location(location)
+  , m_document(location.document())
+  , m_sprite(location.sprite())
+  , m_layer(location.layer())
   , m_undoTransaction(context, operationName)
   , m_firstDrop(true)
   , m_isDragging(false)
@@ -451,8 +453,8 @@ void PixelsMovement::stampImage()
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expandCelCanvas(writer.context(), TILED_NONE,
-                                      m_undoTransaction);
+      ExpandCelCanvas expandCelCanvas(m_location,
+        TILED_NONE, m_undoTransaction);
 
       composite_image(expandCelCanvas.getDestCanvas(), image,
                       -expandCelCanvas.getCel()->x(),

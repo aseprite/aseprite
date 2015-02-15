@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -521,7 +521,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   else {
     Mask* mask =
-      (editor->document()->isMaskVisible() ? 
+      (editor->document()->isMaskVisible() ?
        editor->document()->mask(): NULL);
 
     StatusBar::instance()->setStatusText(0,
@@ -562,7 +562,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-        document, sprite, layer,
+        editor->getDocumentLocation(),
         tmpImage, x, y, opacity,
         "Transformation"));
 

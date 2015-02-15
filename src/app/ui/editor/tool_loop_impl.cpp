@@ -121,7 +121,8 @@ public:
                           getInk()->isSlice() ||
                           getInk()->isZoom()) ? undo::DoesntModifyDocument:
                                                 undo::ModifyDocument))
-    , m_expandCelCanvas(m_context, m_docSettings->getTiledMode(), m_undoTransaction)
+    , m_expandCelCanvas(editor->getDocumentLocation(),
+        m_docSettings->getTiledMode(), m_undoTransaction)
     , m_shadeTable(NULL)
   {
     // Settings

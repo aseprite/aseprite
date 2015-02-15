@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2014  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ namespace app {
     // The "moveThis" image specifies the chunk of pixels to be moved.
     // The "x" and "y" parameters specify the initial position of the image.
     PixelsMovement(Context* context,
-                   Document* document, Sprite* sprite, Layer* layer,
+                   DocumentLocation location,
                    const Image* moveThis, int x, int y, int opacity,
                    const char* operationName);
     ~PixelsMovement();
@@ -110,8 +110,10 @@ namespace app {
     void updateDocumentMask();
 
     const ContextReader m_reader;
+    DocumentLocation m_location;
     Document* m_document;
     Sprite* m_sprite;
+    Layer* m_layer;
     UndoTransaction m_undoTransaction;
     bool m_firstDrop;
     bool m_isDragging;
@@ -133,7 +135,7 @@ namespace app {
   }
 
   typedef SharedPtr<PixelsMovement> PixelsMovementPtr;
-  
+
 } // namespace app
 
 #endif

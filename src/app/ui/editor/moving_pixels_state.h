@@ -1,5 +1,5 @@
 /* Aseprite
- * Copyright (C) 2001-2013  David Capello
+ * Copyright (C) 2001-2015  David Capello
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ namespace app {
     void onBeforeCommandExecution(Command* command);
 
     void setTransparentColor(const app::Color& color);
-    void dropPixels(Editor* editor);
+    void dropPixels();
 
     bool isActiveDocument() const;
     bool isActiveEditor() const;
