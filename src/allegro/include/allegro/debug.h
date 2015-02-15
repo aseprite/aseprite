@@ -33,11 +33,21 @@ AL_FUNC(void, register_trace_handler, (AL_METHOD(int, handler, (AL_CONST char *m
 
 
 #ifdef DEBUGMODE
+   #ifndef ASSERT
    #define ASSERT(condition)     { if (!(condition)) al_assert(__FILE__, __LINE__); }
+   #endif
+
+   #ifndef TRACE
    #define TRACE                 al_trace
+   #endif
 #else
+   #ifndef ASSERT
    #define ASSERT(condition)
+   #endif
+
+   #ifndef TRACE
    #define TRACE                 1 ? (void) 0 : al_trace
+   #endif TRACE
 #endif
 
 #ifdef __cplusplus
