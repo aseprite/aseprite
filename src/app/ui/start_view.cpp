@@ -51,4 +51,8 @@ void StartView::onClonedFrom(WorkspaceView* from)
   ASSERT(false);                // Never called
 }
 
+void StartView::onWorkspaceViewSelected()
+{
+}
+
 } // namespace app

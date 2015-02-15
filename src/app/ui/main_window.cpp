@@ -219,13 +219,11 @@ void MainWindow::popTimeline()
 
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
-#if 0                           // TODO Enable start view
   if (msg->type() == kOpenMessage) {
     m_startView = new StartView;
     m_workspace->addView(m_startView);
     m_tabsBar->selectTab(m_startView);
   }
-#endif
 
   return Window::onProcessMessage(msg);
 }
