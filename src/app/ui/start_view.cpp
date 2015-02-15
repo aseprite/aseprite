@@ -25,7 +25,7 @@ StartView::StartView()
   : Box(JI_VERTICAL)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  setBgColor(theme->getColor(ThemeColor::Workspace));
+  setBgColor(theme->colors.workspace());
 
   child_spacing = 8 * guiscale();
 

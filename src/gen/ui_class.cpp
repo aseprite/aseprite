@@ -1,15 +1,16 @@
 // Aseprite Code Generator
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
+
+#include "gen/ui_class.h"
 
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/path.h"
 #include "base/string.h"
 #include "gen/common.h"
-#include "gen/ui_class.h"
 
 #include <iostream>
 #include <vector>

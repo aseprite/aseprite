@@ -49,12 +49,8 @@ using namespace gfx;
 using namespace ui;
 
 static std::map<std::string, int> sheet_mapping;
-static std::map<std::string, ThemeColor::Type> color_mapping;
 
 const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
-
-const char* kWindowFaceColorId = "window_face";
-const char* kSeparatorLabelColorId = "separator_label";
 
 // Controls the "X" button in a window to close it.
 class WindowCloseButton : public Button {
@@ -140,7 +136,6 @@ static const char* cursor_names[kCursorTypes] = {
 
 SkinTheme::SkinTheme()
   : m_cursors(ui::kCursorTypes, NULL)
-  , m_colors(ThemeColor::MaxColors)
 {
   this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default");
@@ -290,62 +285,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["freehand_algo_dots"] = PART_FREEHAND_ALGO_DOTS;
   sheet_mapping["freehand_algo_dots_selected"] = PART_FREEHAND_ALGO_DOTS_SELECTED;
 
-  color_mapping["text"] = ThemeColor::Text;
-  color_mapping["disabled"] = ThemeColor::Disabled;
-  color_mapping["face"] = ThemeColor::Face;
-  color_mapping["hot_face"] = ThemeColor::HotFace;
-  color_mapping["selected"] = ThemeColor::Selected;
-  color_mapping["background"] = ThemeColor::Background;
-  color_mapping["textbox_text"] = ThemeColor::TextBoxText;
-  color_mapping["textbox_face"] = ThemeColor::TextBoxFace;
-  color_mapping["entry_suffix"] = ThemeColor::EntrySuffix;
-  color_mapping["link_text"] = ThemeColor::LinkText;
-  color_mapping["button_normal_text"] = ThemeColor::ButtonNormalText;
-  color_mapping["button_normal_face"] = ThemeColor::ButtonNormalFace;
-  color_mapping["button_hot_text"] = ThemeColor::ButtonHotText;
-  color_mapping["button_hot_face"] = ThemeColor::ButtonHotFace;
-  color_mapping["button_selected_text"] = ThemeColor::ButtonSelectedText;
-  color_mapping["button_selected_face"] = ThemeColor::ButtonSelectedFace;
-  color_mapping["check_hot_face"] = ThemeColor::CheckHotFace;
-  color_mapping["check_focus_face"] = ThemeColor::CheckFocusFace;
-  color_mapping["radio_hot_face"] = ThemeColor::RadioHotFace;
-  color_mapping["radio_focus_face"] = ThemeColor::RadioFocusFace;
-  color_mapping["menuitem_normal_text"] = ThemeColor::MenuItemNormalText;
-  color_mapping["menuitem_normal_face"] = ThemeColor::MenuItemNormalFace;
-  color_mapping["menuitem_hot_text"] = ThemeColor::MenuItemHotText;
-  color_mapping["menuitem_hot_face"] = ThemeColor::MenuItemHotFace;
-  color_mapping["menuitem_highlight_text"] = ThemeColor::MenuItemHighlightText;
-  color_mapping["menuitem_highlight_face"] = ThemeColor::MenuItemHighlightFace;
-  color_mapping["editor_face"] = ThemeColor::EditorFace;
-  color_mapping["editor_sprite_border"] = ThemeColor::EditorSpriteBorder;
-  color_mapping["editor_sprite_bottom_border"] = ThemeColor::EditorSpriteBottomBorder;
-  color_mapping["listitem_normal_text"] = ThemeColor::ListItemNormalText;
-  color_mapping["listitem_normal_face"] = ThemeColor::ListItemNormalFace;
-  color_mapping["listitem_selected_text"] = ThemeColor::ListItemSelectedText;
-  color_mapping["listitem_selected_face"] = ThemeColor::ListItemSelectedFace;
-  color_mapping["slider_empty_text"] = ThemeColor::SliderEmptyText;
-  color_mapping["slider_empty_face"] = ThemeColor::SliderEmptyFace;
-  color_mapping["slider_full_text"] = ThemeColor::SliderFullText;
-  color_mapping["slider_full_face"] = ThemeColor::SliderFullFace;
-  color_mapping["tab_normal_text"] = ThemeColor::TabNormalText;
-  color_mapping["tab_normal_face"] = ThemeColor::TabNormalFace;
-  color_mapping["tab_selected_text"] = ThemeColor::TabSelectedText;
-  color_mapping["tab_selected_face"] = ThemeColor::TabSelectedFace;
-  color_mapping["splitter_normal_face"] = ThemeColor::SplitterNormalFace;
-  color_mapping["scrollbar_bg_face"] = ThemeColor::ScrollBarBgFace;
-  color_mapping["scrollbar_thumb_face"] = ThemeColor::ScrollBarThumbFace;
-  color_mapping["popup_window_border"] = ThemeColor::PopupWindowBorder;
-  color_mapping["tooltip_text"] = ThemeColor::TooltipText;
-  color_mapping["tooltip_face"] = ThemeColor::TooltipFace;
-  color_mapping["filelist_even_row_text"] = ThemeColor::FileListEvenRowText;
-  color_mapping["filelist_even_row_face"] = ThemeColor::FileListEvenRowFace;
-  color_mapping["filelist_odd_row_text"] = ThemeColor::FileListOddRowText;
-  color_mapping["filelist_odd_row_face"] = ThemeColor::FileListOddRowFace;
-  color_mapping["filelist_selected_row_text"] = ThemeColor::FileListSelectedRowText;
-  color_mapping["filelist_selected_row_face"] = ThemeColor::FileListSelectedRowFace;
-  color_mapping["filelist_disabled_row_text"] = ThemeColor::FileListDisabledRowText;
-  color_mapping["workspace"] = ThemeColor::Workspace;
-
   reload_skin();
 }
 
@@ -366,7 +305,6 @@ SkinTheme::~SkinTheme()
   m_part.clear();
   m_parts_by_id.clear();
   sheet_mapping.clear();
-  color_mapping.clear();
 
   // Destroy the minifont
   if (m_minifont)
@@ -450,12 +388,6 @@ void SkinTheme::onRegenerate()
       PRINTF("Loading color '%s'...\n", id.c_str());
 
       m_colors_by_id[id] = color;
-
-      std::map<std::string, ThemeColor::Type>::iterator it = color_mapping.find(id);
-      if (it != color_mapping.end()) {
-        m_colors[it->second] = color;
-      }
-
       xmlColor = xmlColor->NextSiblingElement();
     }
   }
@@ -652,6 +584,8 @@ void SkinTheme::onRegenerate()
       xmlStyle = xmlStyle->NextSiblingElement();
     }
   }
+
+  SkinFile<SkinTheme>::updateInternals();
 }
 
 she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
@@ -745,7 +679,7 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kLabelWidget:
       BORDER(1 * scale);
-      static_cast<Label*>(widget)->setTextColor(getColor(ThemeColor::Text));
+      static_cast<Label*>(widget)->setTextColor(colors.text());
       break;
 
     case kListBoxWidget:
@@ -855,7 +789,7 @@ void SkinTheme::initWidget(Widget* widget)
         m_part[PART_SUNKEN_NORMAL_E]->width()-1*scale,
         m_part[PART_SUNKEN_NORMAL_S]->height()-1*scale);
       widget->child_spacing = 0;
-      widget->setBgColor(getColorById(kWindowFaceColorId));
+      widget->setBgColor(colors.windowFace());
       break;
 
     case kViewScrollbarWidget:
@@ -887,7 +821,7 @@ void SkinTheme::initWidget(Widget* widget)
         BORDER(0);
       }
       widget->child_spacing = 4 * scale; // TODO this hard-coded 4 should be configurable in skin.xml
-      widget->setBgColor(getColorById(kWindowFaceColorId));
+      widget->setBgColor(colors.windowFace());
       break;
 
     default:
@@ -920,7 +854,7 @@ void SkinTheme::paintDesktop(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(getColor(ThemeColor::Disabled), g->getClipBounds());
+  g->fillRect(colors.disabled(), g->getClipBounds());
 }
 
 void SkinTheme::paintBox(PaintEvent& ev)
@@ -954,8 +888,8 @@ void SkinTheme::paintButton(PaintEvent& ev)
 
   // Selected
   if (widget->isSelected()) {
-    fg = getColor(ThemeColor::ButtonSelectedText);
-    bg = getColor(ThemeColor::ButtonSelectedFace);
+    fg = colors.buttonSelectedText();
+    bg = colors.buttonSelectedFace();
     part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
                look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_SELECTED_NW:
                look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW:
@@ -963,8 +897,8 @@ void SkinTheme::paintButton(PaintEvent& ev)
   }
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
-    fg = getColor(ThemeColor::ButtonHotText);
-    bg = getColor(ThemeColor::ButtonHotFace);
+    fg = colors.buttonHotText();
+    bg = colors.buttonHotFace();
     part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
                look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_HOT_NW:
                look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW:
@@ -972,8 +906,8 @@ void SkinTheme::paintButton(PaintEvent& ev)
   }
   // Without mouse
   else {
-    fg = getColor(ThemeColor::ButtonNormalText);
-    bg = getColor(ThemeColor::ButtonNormalFace);
+    fg = colors.buttonNormalText();
+    bg = colors.buttonNormalFace();
 
     if (widget->hasFocus())
       part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
@@ -1033,9 +967,9 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      g->fillRect(bg = getColor(ThemeColor::CheckHotFace), bounds);
+      g->fillRect(bg = colors.checkHotFace(), bounds);
     else if (widget->hasFocus())
-      g->fillRect(bg = getColor(ThemeColor::CheckFocusFace), bounds);
+      g->fillRect(bg = colors.checkFocusFace(), bounds);
   }
 
   // Text
@@ -1081,7 +1015,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  gfx::Color bg = getColor(ThemeColor::Background);
+  gfx::Color bg = colors.background();
   draw_bounds_nw(g, bounds,
     (widget->hasFocus() ?
       (isMiniLook ? PART_SUNKEN_MINI_FOCUSED_NW: PART_SUNKEN_FOCUSED_NW):
@@ -1100,21 +1034,21 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
     // Normal text
     bg = ColorNone;
-    gfx::Color fg = getColor(ThemeColor::Text);
+    gfx::Color fg = colors.text();
 
     // Selected
     if ((c >= selbeg) && (c <= selend)) {
       if (widget->hasFocus())
-        bg = getColor(ThemeColor::Selected);
+        bg = colors.selected();
       else
-        bg = getColor(ThemeColor::Disabled);
-      fg = getColor(ThemeColor::Background);
+        bg = colors.disabled();
+      fg = colors.background();
     }
 
     // Disabled
     if (!widget->isEnabled()) {
       bg = ColorNone;
-      fg = getColor(ThemeColor::Disabled);
+      fg = colors.disabled();
     }
 
     // Suffix
@@ -1123,7 +1057,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
         break;
 
       bg = ColorNone;
-      fg = getColor(ThemeColor::EntrySuffix);
+      fg = colors.entrySuffix();
     }
 
     w = g->measureChar(ch).w;
@@ -1169,7 +1103,7 @@ void SkinTheme::paintLinkLabel(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
-  gfx::Color fg = getColor(ThemeColor::LinkText);
+  gfx::Color fg = colors.linkText();
   gfx::Color bg = BGCOLOR;
 
   g->fillRect(bg, bounds);
@@ -1187,7 +1121,7 @@ void SkinTheme::paintListBox(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(getColor(ThemeColor::Background), g->getClipBounds());
+  g->fillRect(colors.background(), g->getClipBounds());
 }
 
 void SkinTheme::paintListItem(ui::PaintEvent& ev)
@@ -1198,16 +1132,16 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
   gfx::Color fg, bg;
 
   if (!widget->isEnabled()) {
-    bg = getColor(ThemeColor::Face);
-    fg = getColor(ThemeColor::Disabled);
+    bg = colors.face();
+    fg = colors.disabled();
   }
   else if (widget->isSelected()) {
-    fg = getColor(ThemeColor::ListItemSelectedText);
-    bg = getColor(ThemeColor::ListItemSelectedFace);
+    fg = colors.listitemSelectedText();
+    bg = colors.listitemSelectedFace();
   }
   else {
-    fg = getColor(ThemeColor::ListItemNormalText);
-    bg = getColor(ThemeColor::ListItemNormalFace);
+    fg = colors.listitemNormalText();
+    bg = colors.listitemNormalFace();
   }
 
   g->fillRect(bg, bounds);
@@ -1244,20 +1178,20 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   // Colors
   if (!widget->isEnabled()) {
     fg = ColorNone;
-    bg = getColor(ThemeColor::MenuItemNormalFace);
+    bg = colors.menuitemNormalFace();
   }
   else {
     if (widget->isHighlighted()) {
-      fg = getColor(ThemeColor::MenuItemHighlightText);
-      bg = getColor(ThemeColor::MenuItemHighlightFace);
+      fg = colors.menuitemHighlightText();
+      bg = colors.menuitemHighlightFace();
     }
     else if (widget->hasMouse()) {
-      fg = getColor(ThemeColor::MenuItemHotText);
-      bg = getColor(ThemeColor::MenuItemHotFace);
+      fg = colors.menuitemHotText();
+      bg = colors.menuitemHotFace();
     }
     else {
-      fg = getColor(ThemeColor::MenuItemNormalText);
-      bg = getColor(ThemeColor::MenuItemNormalFace);
+      fg = colors.menuitemNormalText();
+      bg = colors.menuitemNormalFace();
     }
   }
 
@@ -1301,12 +1235,12 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
       // Disabled
       else {
         for (c=0; c<3*scale; c++)
-          g->drawVLine(getColor(ThemeColor::Background),
+          g->drawVLine(colors.background(),
             bounds.x2()-3*scale-c+1,
             bounds.y+bounds.h/2-c+1, 2*c+1);
 
         for (c=0; c<3*scale; c++)
-          g->drawVLine(getColor(ThemeColor::Disabled),
+          g->drawVLine(colors.disabled(),
             bounds.x2()-3*scale-c,
             bounds.y+bounds.h/2-c, 2*c+1);
       }
@@ -1333,7 +1267,7 @@ void SkinTheme::paintSplitter(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
 
-  g->fillRect(getColor(ThemeColor::SplitterNormalFace), g->getClipBounds());
+  g->fillRect(colors.splitterNormalFace(), g->getClipBounds());
 }
 
 void SkinTheme::paintRadioButton(PaintEvent& ev)
@@ -1356,9 +1290,9 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   // Mouse
   if (widget->isEnabled()) {
     if (widget->hasMouseOver())
-      g->fillRect(bg = getColor(ThemeColor::RadioHotFace), bounds);
+      g->fillRect(bg = colors.radioHotFace(), bounds);
     else if (widget->hasFocus())
-      g->fillRect(bg = getColor(ThemeColor::RadioFocusFace), bounds);
+      g->fillRect(bg = colors.radioFocusFace(), bounds);
   }
 
   // Text
@@ -1400,7 +1334,7 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
         bounds.y2() - widget->border_width.b/2 + h));
 
     drawTextString(g, NULL,
-      getColorById(kSeparatorLabelColorId), BGCOLOR,
+      colors.separatorLabel(), BGCOLOR,
       widget, r, 0);
   }
 }
@@ -1489,14 +1423,14 @@ void SkinTheme::paintSlider(PaintEvent& ev)
     }
 
     if (value == min)
-      draw_bounds_nw(g, rc, empty_part_nw, getColor(ThemeColor::SliderEmptyFace));
+      draw_bounds_nw(g, rc, empty_part_nw, colors.sliderEmptyFace());
     else if (value == max)
-      draw_bounds_nw(g, rc, full_part_nw, getColor(ThemeColor::SliderFullFace));
+      draw_bounds_nw(g, rc, full_part_nw, colors.sliderFullFace());
     else
       draw_bounds_nw2(g, rc, x,
-                      full_part_nw, empty_part_nw,
-                      getColor(ThemeColor::SliderFullFace),
-                      getColor(ThemeColor::SliderEmptyFace));
+        full_part_nw, empty_part_nw,
+        colors.sliderFullFace(),
+        colors.sliderEmptyFace());
 
     // Draw text
     std::string old_text = widget->getText();
@@ -1511,7 +1445,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
       IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));
       if (clip) {
         drawTextString(g, NULL,
-          getColor(ThemeColor::SliderFullText), ColorNone,
+          colors.sliderFullText(), ColorNone,
           widget, rc, 0);
       }
     }
@@ -1520,7 +1454,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
       IntersectClip clip(g, Rect(x+1, rc.y, rc.w-(x-rc.x+1), rc.h));
       if (clip) {
         drawTextString(g, NULL,
-          getColor(ThemeColor::SliderEmptyText),
+          colors.sliderEmptyText(),
           ColorNone, widget, rc, 0);
       }
     }
@@ -1545,7 +1479,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   // Outside borders
   g->fillRect(BGCOLOR, bounds);
 
-  gfx::Color fg, bg = getColor(ThemeColor::Background);
+  gfx::Color fg, bg = colors.background();
 
   draw_bounds_nw(g, bounds,
     widget->hasFocus() ?
@@ -1564,21 +1498,21 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 
     // Normal text
     bg = ColorNone;
-    fg = getColor(ThemeColor::Text);
+    fg = colors.text();
 
     // Selected
     if ((c >= selbeg) && (c <= selend)) {
       if (widget->hasFocus())
-        bg = getColor(ThemeColor::Selected);
+        bg = colors.selected();
       else
-        bg = getColor(ThemeColor::Disabled);
-      fg = getColor(ThemeColor::Background);
+        bg = colors.disabled();
+      fg = colors.background();
     }
 
     // Disabled
     if (!widget->isEnabled()) {
       bg = ColorNone;
-      fg = getColor(ThemeColor::Disabled);
+      fg = colors.disabled();
     }
 
     w = g->measureChar(ch).w;
@@ -1611,17 +1545,17 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   gfx::Color bg;
 
   if (widget->isSelected()) {
-    bg = getColor(ThemeColor::ButtonSelectedFace);
+    bg = colors.buttonSelectedFace();
     part_nw = PART_TOOLBUTTON_PUSHED_NW;
   }
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
-    bg = getColor(ThemeColor::ButtonHotFace);
+    bg = colors.buttonHotFace();
     part_nw = PART_TOOLBUTTON_HOT_NW;
   }
   // Without mouse
   else {
-    bg = getColor(ThemeColor::ButtonNormalFace);
+    bg = colors.buttonNormalFace();
     part_nw = PART_TOOLBUTTON_LAST_NW;
   }
 
@@ -1649,8 +1583,8 @@ void SkinTheme::paintTextBox(ui::PaintEvent& ev)
   Widget* widget = static_cast<Widget*>(ev.getSource());
 
   drawTextBox(g, widget, NULL, NULL,
-    getColor(ThemeColor::TextBoxFace),
-    getColor(ThemeColor::TextBoxText));
+    colors.textboxFace(),
+    colors.textboxText());
 }
 
 void SkinTheme::paintView(PaintEvent& ev)
@@ -1754,7 +1688,7 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
   pos.shrink(window->getBorder());
 
   g->drawAlignedUIString(window->getText(),
-    getColor(ThemeColor::Text),
+    colors.text(),
     window->getBgColor(), pos,
     window->getAlign());
 }
@@ -1781,8 +1715,8 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   Rect rc = widget->getClientBounds();
-  gfx::Color fg = getColor(ThemeColor::TooltipText);
-  gfx::Color bg = getColor(ThemeColor::TooltipFace);
+  gfx::Color fg = colors.tooltipText();
+  gfx::Color bg = colors.tooltipFace();
 
   int nw = PART_TOOLTIP_NW;
   int n  = PART_TOOLTIP_N;
@@ -1853,9 +1787,9 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
   if (!is_transparent(c) || widget->getType() == kWindowWidget)
     return c;
   else if (decorative)
-    return getColor(ThemeColor::Selected);
+    return colors.selected();
   else
-    return getColor(ThemeColor::Face);
+    return colors.face();
 }
 
 void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, gfx::Color bg_color,
@@ -1914,16 +1848,16 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
       if (!widget->isEnabled()) {
         // Draw white part
         g->drawUIString(t,
-          getColor(ThemeColor::Background),
+          colors.background(),
           gfx::ColorNone,
           textrc.getOrigin() + Point(guiscale(), guiscale()));
       }
 
       g->drawUIString(t,
         (!widget->isEnabled() ?
-          getColor(ThemeColor::Disabled):
+          colors.disabled():
           (gfx::geta(fg_color) > 0 ? fg_color :
-            getColor(ThemeColor::Text))),
+            colors.text())),
         bg_color, textrc.getOrigin());
     }
   }
@@ -1931,7 +1865,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
 
 void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
 {
-  gfx::Color color = getColor(ThemeColor::Text);
+  gfx::Color color = colors.text();
   int h = widget->getTextHeight();
 
   for (int u=x; u<x+2*guiscale(); ++u)
@@ -2142,7 +2076,7 @@ void SkinTheme::draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int par
 
 void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double progress)
 {
-  g->drawRect(getColor(ThemeColor::Text), rc0);
+  g->drawRect(colors.text(), rc0);
 
   gfx::Rect rc = rc0;
   rc.shrink(1);
@@ -2151,10 +2085,10 @@ void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double p
   u = MID(0, u, rc.w);
 
   if (u > 0)
-    g->fillRect(getColor(ThemeColor::Selected), gfx::Rect(rc.x, rc.y, u, rc.h));
+    g->fillRect(colors.selected(), gfx::Rect(rc.x, rc.y, u, rc.h));
 
   if (1+u < rc.w)
-    g->fillRect(getColor(ThemeColor::Background), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
+    g->fillRect(colors.background(), gfx::Rect(rc.x+u, rc.y, rc.w-u, rc.h));
 }
 
 void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterface, int x, int y)

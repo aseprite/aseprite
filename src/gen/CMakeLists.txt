@@ -1,9 +1,10 @@
 # Aseprite Code Generator
-# Copyright (C) 2014  David Capello
+# Copyright (C) 2014, 2015  David Capello
 
 add_executable(gen
   gen.cpp
   pref_types.cpp
+  skin_class.cpp
   ui_class.cpp)
 
 if(MSVC)
@@ -18,4 +19,3 @@ if(USE_SHARED_TINYXML)
 else()
   target_link_libraries(gen tinyxml)
 endif()
-

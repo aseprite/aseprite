@@ -1,9 +1,7 @@
 # Aseprite
 # Copyright (C) 2001-2015  David Capello
 
-######################################################################
-# Generate source files from widget XML files
-
+# Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
@@ -19,7 +17,7 @@ foreach(widget_file ${widget_files})
   list(APPEND generated_files ${output_fn})
 endforeach()
 
-# pref.h and pref.cpp
+# Generate preference types from data/pref.xml
 set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
 
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.h)
@@ -37,6 +35,17 @@ add_custom_command(
   COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-cpp > ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${pref_xml}
+  DEPENDS gen)
+list(APPEND generated_files ${output_fn})
+
+# Generate generated_skin.h from data/skins/default/skin.xml
+set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_skin.h)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${skin_xml} --skin > ${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${skin_xml}
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 

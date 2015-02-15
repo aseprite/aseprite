@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #include "base/program_options.h"
 #include "base/string.h"
 #include "gen/pref_types.h"
+#include "gen/skin_class.h"
 #include "gen/ui_class.h"
 #include "tinyxml.h"
 
@@ -23,6 +24,7 @@ static void run(int argc, const char* argv[])
   PO::Option& widgetId = po.add("widgetid").requiresValue("<filename>");
   PO::Option& prefH = po.add("pref-h");
   PO::Option& prefCpp = po.add("pref-cpp");
+  PO::Option& skin = po.add("skin");
   po.parse(argc, argv);
 
   // Try to load the XML file
@@ -44,6 +46,8 @@ static void run(int argc, const char* argv[])
       gen_pref_header(doc, inputFilename);
     else if (po.enabled(prefCpp))
       gen_pref_impl(doc, inputFilename);
+    else if (po.enabled(skin))
+      gen_skin_class(doc, inputFilename);
   }
 }
 

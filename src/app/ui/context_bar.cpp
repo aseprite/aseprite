@@ -734,7 +734,7 @@ ContextBar::ContextBar()
   border_width.b = 2*guiscale();
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  setBgColor(theme->getColor(ThemeColor::Workspace));
+  setBgColor(theme->colors.workspace());
 
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());

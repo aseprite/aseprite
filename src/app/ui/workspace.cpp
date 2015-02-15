@@ -32,7 +32,7 @@ Workspace::Workspace()
   , m_activePart(new WorkspacePart)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  setBgColor(theme->getColor(ThemeColor::Workspace));
+  setBgColor(theme->colors.workspace());
 
   addChild(m_activePart);
 }

@@ -26,7 +26,7 @@ WorkspacePart::WorkspacePart()
   , m_activeView(NULL)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  setBgColor(theme->getColor(ThemeColor::Workspace));
+  setBgColor(theme->colors.workspace());
 
   setExpansive(true);
 }

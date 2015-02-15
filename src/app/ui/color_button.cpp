@@ -168,7 +168,7 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   gfx::Color bg = getBgColor();
   if (gfx::is_transparent(bg))
-    bg = theme->getColor(ThemeColor::Face);
+    bg = theme->colors.face();
   g->fillRect(bg, rc);
 
   app::Color color;

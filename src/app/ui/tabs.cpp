@@ -354,7 +354,7 @@ void Tabs::onPaint(PaintEvent& ev)
     2*guiscale(),
     m_list.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
 
-  g->fillRect(theme->getColorById(kWindowFaceColorId), g->getClipBounds());
+  g->fillRect(theme->colors.windowFace(), g->getClipBounds());
 
   theme->draw_part_as_hline(g, box, PART_TAB_FILLER);
   theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
@@ -436,8 +436,8 @@ void Tabs::onInitTheme(InitThemeEvent& ev)
 
   SkinTheme* theme = static_cast<SkinTheme*>(ev.getTheme());
 
-  m_button_left->setBgColor(theme->getColor(ThemeColor::TabSelectedFace));
-  m_button_right->setBgColor(theme->getColor(ThemeColor::TabSelectedFace));
+  m_button_left->setBgColor(theme->colors.tabSelectedFace());
+  m_button_right->setBgColor(theme->colors.tabSelectedFace());
 }
 
 void Tabs::onSetText()
@@ -465,13 +465,13 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 
   // Selected
   if (selected) {
-    text_color = theme->getColor(ThemeColor::TabSelectedText);
-    face_color = theme->getColor(ThemeColor::TabSelectedFace);
+    text_color = theme->colors.tabSelectedText();
+    face_color = theme->colors.tabSelectedFace();
   }
   // Non-selected
   else {
-    text_color = theme->getColor(ThemeColor::TabNormalText);
-    face_color = theme->getColor(ThemeColor::TabNormalFace);
+    text_color = theme->colors.tabNormalText();
+    face_color = theme->colors.tabNormalFace();
   }
 
   if (box.w > 2) {
@@ -491,7 +491,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
     theme->draw_bounds_nw(g,
       gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
       PART_TAB_BOTTOM_SELECTED_NW,
-      theme->getColor(ThemeColor::TabSelectedFace));
+      theme->colors.tabSelectedFace());
   }
   else {
     theme->draw_part_as_hline(g,

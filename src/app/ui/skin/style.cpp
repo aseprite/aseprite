@@ -62,7 +62,7 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   if (text) {
     g->drawAlignedUIString(text,
       (gfx::is_transparent(m_color) ?
-        theme->getColor(ThemeColor::Text):
+        theme->colors.text():
         m_color),
       gfx::ColorNone,
       gfx::Rect(bounds).shrink(m_padding), m_align);

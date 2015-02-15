@@ -1205,8 +1205,9 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   // layers.
   if (hotlayer && !is_active && m_clk_part == A_PART_LAYER_TEXT) {
     // TODO this should be skinneable
-    g->fillRect(get_color_by_id(kTimelineActiveColor),
-                gfx::Rect(bounds.x, bounds.y, bounds.w, 2));
+    g->fillRect(
+      ((SkinTheme*)getTheme())->colors.timelineActive(),
+      gfx::Rect(bounds.x, bounds.y, bounds.w, 2));
   }
 }
 

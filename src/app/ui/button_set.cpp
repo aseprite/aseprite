@@ -71,11 +71,11 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 
   if (isSelected() || hasMouseOver()) {
     nw = PART_TOOLBUTTON_HOT_NW;
-    face = theme->getColor(ThemeColor::ButtonHotFace);
+    face = theme->colors.buttonHotFace();
   }
   else {
     nw = PART_TOOLBUTTON_LAST_NW;
-    face = theme->getColor(ThemeColor::ButtonNormalFace);
+    face = theme->colors.buttonNormalFace();
   }
 
   Grid::Info info = buttonSet()->getChildInfo(this);
