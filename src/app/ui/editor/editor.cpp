@@ -1452,10 +1452,8 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
     ToolBar::instance()->selectTool(defaultSelectionTool);
   }
 
-  Document* document = this->document();
-  int opacity = 255;
   Sprite* sprite = this->sprite();
-  Layer* layer = this->layer();
+  int opacity = 255;
 
   // Check bounds where the image will be pasted.
   int x = pos.x;
@@ -1473,7 +1471,7 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
-      document, sprite, layer,
+      getDocumentLocation(),
       image, gfx::Point(x, y), opacity, "Paste"));
 
   // Select the pasted image so the user can move it and transform it.

@@ -67,7 +67,7 @@ namespace app {
     void onBeforeCommandExecution(Command* command);
 
     void setTransparentColor(const app::Color& color);
-    void dropPixels(Editor* editor);
+    void dropPixels();
 
     bool isActiveDocument() const;
     bool isActiveEditor() const;

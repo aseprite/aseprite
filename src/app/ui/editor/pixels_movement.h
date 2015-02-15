@@ -47,7 +47,7 @@ namespace app {
     // The "moveThis" image specifies the chunk of pixels to be moved.
     // The "x" and "y" parameters specify the initial position of the image.
     PixelsMovement(Context* context,
-      Document* document, Sprite* sprite, Layer* layer,
+      DocumentLocation location,
       const Image* moveThis,
       const gfx::Point& initialPos, int opacity,
       const char* operationName);
@@ -104,8 +104,10 @@ namespace app {
     void updateDocumentMask();
 
     const ContextReader m_reader;
+    DocumentLocation m_location;
     Document* m_document;
     Sprite* m_sprite;
+    Layer* m_layer;
     Transaction m_transaction;
     cmd::SetMask* m_setMaskCmd;
     bool m_isDragging;

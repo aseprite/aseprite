@@ -42,12 +42,14 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
 }
 
 PixelsMovement::PixelsMovement(Context* context,
-  Document* document, Sprite* sprite, Layer* layer,
+  DocumentLocation location,
   const Image* moveThis, const gfx::Point& initialPos, int opacity,
   const char* operationName)
   : m_reader(context)
-  , m_document(document)
-  , m_sprite(sprite)
+  , m_location(location)
+  , m_document(location.document())
+  , m_sprite(location.sprite())
+  , m_layer(location.layer())
   , m_transaction(context, operationName)
   , m_setMaskCmd(nullptr)
   , m_isDragging(false)
@@ -439,7 +441,7 @@ void PixelsMovement::stampImage()
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expand(writer.context(),
+      ExpandCelCanvas expand(m_location,
         TiledMode::NONE, m_transaction,
         ExpandCelCanvas::None);
 

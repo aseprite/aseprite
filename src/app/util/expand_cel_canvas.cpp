@@ -53,8 +53,12 @@ static void create_buffers()
 
 namespace app {
 
-ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, Transaction& transaction, Flags flags)
-  : m_cel(NULL)
+ExpandCelCanvas::ExpandCelCanvas(DocumentLocation location,
+  TiledMode tiledMode, Transaction& transaction, Flags flags)
+  : m_document(location.document())
+  , m_sprite(location.sprite())
+  , m_layer(location.layer())
+  , m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
   , m_flags(flags)
@@ -65,11 +69,6 @@ ExpandCelCanvas::ExpandCelCanvas(Context* context, TiledMode tiledMode, Transact
   , m_transaction(transaction)
 {
   create_buffers();
-
-  DocumentLocation location = context->activeLocation();
-  m_document = location.document();
-  m_sprite = location.sprite();
-  m_layer = location.layer();
 
   if (m_layer->isImage()) {
     m_cel = m_layer->cel(location.frame());

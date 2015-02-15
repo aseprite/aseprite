@@ -423,7 +423,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-        document, sprite, layer,
+        editor->getDocumentLocation(),
         tmpImage, origin, opacity,
         "Transformation"));
 

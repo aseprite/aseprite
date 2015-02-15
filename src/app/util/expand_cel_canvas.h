@@ -24,8 +24,8 @@ namespace doc {
 }
 
 namespace app {
-  class Context;
   class Document;
+  class DocumentLocation;
   class Transaction;
 
   using namespace filters;
@@ -45,7 +45,8 @@ namespace app {
       UseModifiedRegionAsUndoInfo = 2,
     };
 
-    ExpandCelCanvas(Context* context, TiledMode tiledMode, Transaction& undo, Flags flags);
+    ExpandCelCanvas(DocumentLocation location,
+      TiledMode tiledMode, Transaction& undo, Flags flags);
     ~ExpandCelCanvas();
 
     // Commit changes made in getDestCanvas() in the cel's image. Adds

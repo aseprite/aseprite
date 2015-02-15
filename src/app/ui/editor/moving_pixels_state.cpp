@@ -120,6 +120,7 @@ void MovingPixelsState::translate(const gfx::Point& delta)
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   // If we are changing to another state, we've to drop the image.
   if (m_pixelsMovement->isDragging())
@@ -151,6 +152,7 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 void MovingPixelsState::onCurrentToolChange(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   tools::Tool* current_tool = editor->getCurrentEditorTool();
 
@@ -160,13 +162,14 @@ void MovingPixelsState::onCurrentToolChange(Editor* editor)
       (!current_tool->getInk(0)->isSelection() ||
        !current_tool->getInk(1)->isSelection())) {
     // We have to drop pixels
-    dropPixels(editor);
+    dropPixels();
   }
 }
 
 bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   // Set this editor as the active one and setup the ContextBar for
   // moving pixels. This is needed in case that the user is working
@@ -232,7 +235,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
   // End "moving pixels" loop
   else {
     // Drop pixels (e.g. to start drawing)
-    dropPixels(editor);
+    dropPixels();
   }
 
   // Use StandbyState implementation
@@ -242,6 +245,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   // Drop the image temporarily in this location (where the user releases the mouse)
   m_pixelsMovement->dropImageTemporarily();
@@ -256,6 +260,7 @@ bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   // If there is a button pressed
   if (m_pixelsMovement->isDragging()) {
@@ -299,6 +304,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool MovingPixelsState::onSetCursor(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   // Move selection
   if (m_pixelsMovement->isDragging()) {
@@ -314,11 +320,14 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
 bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  if (!isActiveEditor())
+    return false;
+  ASSERT(editor == m_editor);
 
   if (msg->scancode() == kKeyEnter || // TODO make this key customizable
       msg->scancode() == kKeyEnterPad ||
       msg->scancode() == kKeyEsc) {
-    dropPixels(editor);
+    dropPixels();
 
     // The escape key drop pixels and deselect the mask.
     if (msg->scancode() == kKeyEsc) { // TODO make this key customizable
@@ -384,6 +393,9 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
   ASSERT(m_pixelsMovement != NULL);
+  if (!isActiveEditor())
+    return false;
+  ASSERT(editor == m_editor);
 
   // Use StandbyState implementation
   return StandbyState::onKeyUp(editor, msg);
@@ -392,6 +404,7 @@ bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 {
   ASSERT(m_pixelsMovement != NULL);
+  ASSERT(editor == m_editor);
 
   const gfx::Transformation& transform(getTransformation(editor));
   gfx::Size imageSize = m_pixelsMovement->getInitialImageSize();
@@ -436,7 +449,7 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
   }
 
   if (m_pixelsMovement)
-    dropPixels(m_editor);
+    dropPixels();
 }
 
 void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
@@ -445,7 +458,7 @@ void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
     return;
 
   if (m_pixelsMovement)
-    dropPixels(m_editor);
+    dropPixels();
 }
 
 void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
@@ -454,7 +467,7 @@ void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
     return;
 
   if (m_pixelsMovement)
-    dropPixels(m_editor);
+    dropPixels();
 }
 
 void MovingPixelsState::onSetMoveTransparentColor(app::Color newColor)
@@ -471,7 +484,7 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
   switch (action) {
 
     case ContextBarObserver::DropPixels:
-      dropPixels(m_editor);
+      dropPixels();
       break;
 
     case ContextBarObserver::CancelDrag:
@@ -495,11 +508,11 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
     color_utils::color_for_target_mask(color, ColorTarget(layer)));
 }
 
-void MovingPixelsState::dropPixels(Editor* editor)
+void MovingPixelsState::dropPixels()
 {
   // Just change to default state (StandbyState generally). We'll
   // receive an onBeforeChangeState() event after this call.
-  editor->backToPreviousState();
+  m_editor->backToPreviousState();
 }
 
 gfx::Transformation MovingPixelsState::getTransformation(Editor* editor)
