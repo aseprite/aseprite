@@ -223,22 +223,40 @@ private:
   }
 
   void onReset() {
-    // Default values
-    // TODO improve settings and default values (store everything in
-    // an XML and generate code from it)
+    // Reset global settings (use default values specified in pref.xml)
+    if (m_curPref == &m_globPref) {
+      DocumentPreferences& pref = m_globPref;
 
-    m_gridColor->setColor(app::Color::fromRgb(0, 0, 255));
-    gridOpacity()->setValue(200);
-    gridAutoOpacity()->setSelected(true);
+      m_gridColor->setColor(pref.grid.color.defaultValue());
+      gridOpacity()->setValue(pref.grid.opacity.defaultValue());
+      gridAutoOpacity()->setSelected(pref.grid.autoOpacity.defaultValue());
 
-    m_pixelGridColor->setColor(app::Color::fromRgb(200, 200, 200));
-    pixelGridOpacity()->setValue(200);
-    pixelGridAutoOpacity()->setSelected(true);
+      m_pixelGridColor->setColor(pref.pixelGrid.color.defaultValue());
+      pixelGridOpacity()->setValue(pref.pixelGrid.opacity.defaultValue());
+      pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity.defaultValue());
 
-    checkedBgSize()->setSelectedItemIndex(int(m_curPref->bg.type.defaultValue()));
-    checkedBgZoom()->setSelected(m_curPref->bg.zoom.defaultValue());
-    m_checked_bg_color1->setColor(m_curPref->bg.color1.defaultValue());
-    m_checked_bg_color2->setColor(m_curPref->bg.color2.defaultValue());
+      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type.defaultValue()));
+      checkedBgZoom()->setSelected(pref.bg.zoom.defaultValue());
+      m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
+      m_checked_bg_color2->setColor(pref.bg.color2.defaultValue());
+    }
+    // Reset document settings with global settings
+    else {
+      DocumentPreferences& pref = m_globPref;
+
+      m_gridColor->setColor(pref.grid.color());
+      gridOpacity()->setValue(pref.grid.opacity());
+      gridAutoOpacity()->setSelected(pref.grid.autoOpacity());
+
+      m_pixelGridColor->setColor(pref.pixelGrid.color());
+      pixelGridOpacity()->setValue(pref.pixelGrid.opacity());
+      pixelGridAutoOpacity()->setSelected(pref.pixelGrid.autoOpacity());
+
+      checkedBgSize()->setSelectedItemIndex(int(pref.bg.type()));
+      checkedBgZoom()->setSelected(pref.bg.zoom());
+      m_checked_bg_color1->setColor(pref.bg.color1());
+      m_checked_bg_color2->setColor(pref.bg.color2());
+    }
   }
 
   void onLocateCrashFolder() {
