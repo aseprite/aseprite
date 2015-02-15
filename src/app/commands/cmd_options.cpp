@@ -40,7 +40,7 @@ using namespace ui;
 
 class OptionsWindow : public app::gen::Options {
 public:
-  OptionsWindow(Context* context)
+  OptionsWindow(Context* context, int& curSection)
     : m_settings(context->settings())
     , m_docSettings(m_settings->getDocumentSettings(context->activeDocument()))
     , m_preferences(App::instance()->preferences())
@@ -50,6 +50,7 @@ public:
     , m_pixelGridColor(new ColorButton(m_docSettings->getPixelGridColor(), IMAGE_RGB))
     , m_gridColor(new ColorButton(m_docSettings->getGridColor(), IMAGE_RGB))
     , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
+    , m_curSection(curSection)
   {
     sectionListbox()->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
     cursorColorBox()->addChild(m_cursorColor);
@@ -132,7 +133,7 @@ public:
     undoGotoModified()->setSelected(m_preferences.undo.gotoModified());
     undoAllowNonlinearHistory()->setSelected(m_preferences.undo.allowNonlinearHistory());
 
-    sectionListbox()->selectIndex(0);
+    sectionListbox()->selectIndex(m_curSection);
   }
 
   bool ok() {
@@ -197,6 +198,7 @@ private:
       return;
 
     panel()->showChild(findChild(item->getValue().c_str()));
+    m_curSection = sectionListbox()->getSelectedIndex();
   }
 
   void onReset() {
@@ -235,6 +237,7 @@ private:
   ColorButton* m_pixelGridColor;
   ColorButton* m_gridColor;
   ColorButton* m_cursorColor;
+  int& m_curSection;
 };
 
 class OptionsCommand : public Command {
@@ -259,7 +262,9 @@ OptionsCommand::OptionsCommand()
 
 void OptionsCommand::onExecute(Context* context)
 {
-  OptionsWindow window(context);
+  static int curSection = 0;
+
+  OptionsWindow window(context, curSection);
   window.openWindowInForeground();
   if (window.ok())
     window.saveConfig();
