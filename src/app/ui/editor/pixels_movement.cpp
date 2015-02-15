@@ -181,10 +181,10 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   bool updateBounds = false;
   int dx, dy;
 
-  dx = ((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
-        (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
-  dy = ((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
-        (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
+  dx = int((pos.x - m_catchPos.x) *  cos(m_currentData.angle()) +
+           (pos.y - m_catchPos.y) * -sin(m_currentData.angle()));
+  dy = int((pos.x - m_catchPos.x) *  sin(m_currentData.angle()) +
+           (pos.y - m_catchPos.y) *  cos(m_currentData.angle()));
 
   switch (m_handle) {
 
@@ -388,8 +388,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   // redraw of the sprite.
   gfx::Rect fullBounds;
   for (int i=0; i<gfx::Transformation::Corners::NUM_OF_CORNERS; ++i) {
-    fullBounds = fullBounds.createUnion(gfx::Rect(oldCorners[i].x, oldCorners[i].y, 1, 1));
-    fullBounds = fullBounds.createUnion(gfx::Rect(newCorners[i].x, newCorners[i].y, 1, 1));
+    fullBounds = fullBounds.createUnion(gfx::Rect((int)oldCorners[i].x, (int)oldCorners[i].y, 1, 1));
+    fullBounds = fullBounds.createUnion(gfx::Rect((int)newCorners[i].x, (int)newCorners[i].y, 1, 1));
   }
 
   // If "fullBounds" is empty is because the cel was not moved
@@ -407,10 +407,10 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
   gfx::Point leftTop(corners[0]);
   gfx::Point rightBottom(corners[0]);
   for (size_t i=1; i<corners.size(); ++i) {
-    if (leftTop.x > corners[i].x) leftTop.x = corners[i].x;
-    if (leftTop.y > corners[i].y) leftTop.y = corners[i].y;
-    if (rightBottom.x < corners[i].x) rightBottom.x = corners[i].x;
-    if (rightBottom.y < corners[i].y) rightBottom.y = corners[i].y;
+    if (leftTop.x > corners[i].x) leftTop.x = (int)corners[i].x;
+    if (leftTop.y > corners[i].y) leftTop.y = (int)corners[i].y;
+    if (rightBottom.x < corners[i].x) rightBottom.x = (int)corners[i].x;
+    if (rightBottom.y < corners[i].y) rightBottom.y = (int)corners[i].y;
   }
 
   int width = rightBottom.x - leftTop.x;
@@ -489,7 +489,7 @@ void PixelsMovement::dropImageTemporarily()
       newPivot += pivotPosFactor.x * point2Vector(corners.rightTop() - corners.leftTop());
       newPivot += pivotPosFactor.y * point2Vector(corners.leftBottom() - corners.leftTop());
 
-      m_currentData.displacePivotTo(gfx::Point(newPivot.x, newPivot.y));
+      m_currentData.displacePivotTo(gfx::Point((int)newPivot.x, (int)newPivot.y));
     }
 
     redrawCurrentMask();
@@ -616,18 +616,26 @@ void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
 
     case kFastRotationAlgorithm:
       doc::algorithm::parallelogram(dst, src,
-        corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
-        corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
-        corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
-        corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+        int(corners.leftTop().x-leftTop.x),
+        int(corners.leftTop().y-leftTop.y),
+        int(corners.rightTop().x-leftTop.x),
+        int(corners.rightTop().y-leftTop.y),
+        int(corners.rightBottom().x-leftTop.x),
+        int(corners.rightBottom().y-leftTop.y),
+        int(corners.leftBottom().x-leftTop.x),
+        int(corners.leftBottom().y-leftTop.y));
       break;
 
     case kRotSpriteRotationAlgorithm:
       doc::algorithm::rotsprite_image(dst, src,
-        corners.leftTop().x-leftTop.x, corners.leftTop().y-leftTop.y,
-        corners.rightTop().x-leftTop.x, corners.rightTop().y-leftTop.y,
-        corners.rightBottom().x-leftTop.x, corners.rightBottom().y-leftTop.y,
-        corners.leftBottom().x-leftTop.x, corners.leftBottom().y-leftTop.y);
+        int(corners.leftTop().x-leftTop.x),
+        int(corners.leftTop().y-leftTop.y),
+        int(corners.rightTop().x-leftTop.x),
+        int(corners.rightTop().y-leftTop.y),
+        int(corners.rightBottom().x-leftTop.x),
+        int(corners.rightBottom().y-leftTop.y),
+        int(corners.leftBottom().x-leftTop.x),
+        int(corners.leftBottom().y-leftTop.y));
       break;
 
   }

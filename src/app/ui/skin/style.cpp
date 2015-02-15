@@ -132,8 +132,10 @@ Rules::Rules(const css::Query& query) :
     m_text->setAlign((int)textAlign.number());
     m_text->setColor(StyleSheet::convertColor(textColor));
     m_text->setPadding(gfx::Border(
-        paddingLeft.number(), paddingTop.number(),
-        paddingRight.number(), paddingBottom.number())*ui::guiscale());
+        int(paddingLeft.number()),
+        int(paddingTop.number()),
+        int(paddingRight.number()),
+        int(paddingBottom.number()*ui::guiscale())));
   }
 }
 

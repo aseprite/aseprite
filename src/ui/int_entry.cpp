@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -26,7 +26,7 @@ namespace ui {
 using namespace gfx;
 
 IntEntry::IntEntry(int min, int max)
-  : Entry(std::ceil(std::log10((double)max))+1, "")
+  : Entry(int(std::ceil(std::log10((double)max)))+1, "")
   , m_min(min)
   , m_max(max)
   , m_popupWindow(NULL)

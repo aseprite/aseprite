@@ -160,7 +160,7 @@ namespace app {
       void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, gfx::Color bg1, gfx::Color bg2);
       void draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part);
       void draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part);
-      void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, float progress);
+      void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);
 
       Style* getStyle(const std::string& id) {
         return m_stylesheet.getStyle(id);

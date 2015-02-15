@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -189,10 +189,10 @@ void Splitter::onResize(ResizeEvent& ev)
     pos.y = rect.y;                                                     \
     switch (m_type) {                                                   \
       case ByPercentage:                                                \
-        pos.w = avail*m_pos/100;                                        \
+        pos.w = int(avail*m_pos/100);                                   \
         break;                                                          \
       case ByPixel:                                                     \
-        pos.w = m_pos;                                                  \
+        pos.w = int(m_pos);                                             \
         break;                                                          \
     }                                                                   \
                                                                         \

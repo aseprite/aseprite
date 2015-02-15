@@ -202,8 +202,8 @@ void SpriteSizeCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
-  int new_width = (m_width ? m_width: sprite->width()*m_scaleX);
-  int new_height = (m_height ? m_height: sprite->height()*m_scaleY);
+  int new_width = (m_width ? m_width: int(sprite->width()*m_scaleX));
+  int new_height = (m_height ? m_height: int(sprite->height()*m_scaleY));
   ResizeMethod resize_method = m_resizeMethod;
 
   if (context->isUiAvailable()) {

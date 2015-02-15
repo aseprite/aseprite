@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,7 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
   switch (method) {
 
     // TODO optimize this
-    case RESIZE_METHOD_NEAREST_NEIGHBOR: 
+    case RESIZE_METHOD_NEAREST_NEIGHBOR:
     {
       int o_width = src->width(), o_height = src->height();
       int n_width = dst->width(), n_height = dst->height();
@@ -57,8 +57,8 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
       dv = (src->height()-1) * 1.0 / (dst->height()-1);
       for (y=0; y<dst->height(); ++y) {
         for (x=0; x<dst->width(); ++x) {
-          u_floor = floor(u);
-          v_floor = floor(v);
+          u_floor = (int)floor(u);
+          v_floor = (int)floor(v);
 
           if (u_floor > src->width()-1) {
             u_floor = src->width()-1;
@@ -92,34 +92,34 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
 
           switch (dst->pixelFormat()) {
             case IMAGE_RGB: {
-              int r = ((rgba_getr(color[0])*u2 + rgba_getr(color[1])*u1)*v2 +
-                       (rgba_getr(color[2])*u2 + rgba_getr(color[3])*u1)*v1);
-              int g = ((rgba_getg(color[0])*u2 + rgba_getg(color[1])*u1)*v2 +
-                       (rgba_getg(color[2])*u2 + rgba_getg(color[3])*u1)*v1);
-              int b = ((rgba_getb(color[0])*u2 + rgba_getb(color[1])*u1)*v2 +
-                       (rgba_getb(color[2])*u2 + rgba_getb(color[3])*u1)*v1);
-              int a = ((rgba_geta(color[0])*u2 + rgba_geta(color[1])*u1)*v2 +
-                       (rgba_geta(color[2])*u2 + rgba_geta(color[3])*u1)*v1);
+              int r = int((rgba_getr(color[0])*u2 + rgba_getr(color[1])*u1)*v2 +
+                          (rgba_getr(color[2])*u2 + rgba_getr(color[3])*u1)*v1);
+              int g = int((rgba_getg(color[0])*u2 + rgba_getg(color[1])*u1)*v2 +
+                          (rgba_getg(color[2])*u2 + rgba_getg(color[3])*u1)*v1);
+              int b = int((rgba_getb(color[0])*u2 + rgba_getb(color[1])*u1)*v2 +
+                          (rgba_getb(color[2])*u2 + rgba_getb(color[3])*u1)*v1);
+              int a = int((rgba_geta(color[0])*u2 + rgba_geta(color[1])*u1)*v2 +
+                          (rgba_geta(color[2])*u2 + rgba_geta(color[3])*u1)*v1);
               dst_color = rgba(r, g, b, a);
               break;
             }
             case IMAGE_GRAYSCALE: {
-              int v = ((graya_getv(color[0])*u2 + graya_getv(color[1])*u1)*v2 +
-                       (graya_getv(color[2])*u2 + graya_getv(color[3])*u1)*v1);
-              int a = ((graya_geta(color[0])*u2 + graya_geta(color[1])*u1)*v2 +
-                       (graya_geta(color[2])*u2 + graya_geta(color[3])*u1)*v1);
+              int v = int((graya_getv(color[0])*u2 + graya_getv(color[1])*u1)*v2 +
+                          (graya_getv(color[2])*u2 + graya_getv(color[3])*u1)*v1);
+              int a = int((graya_geta(color[0])*u2 + graya_geta(color[1])*u1)*v2 +
+                          (graya_geta(color[2])*u2 + graya_geta(color[3])*u1)*v1);
               dst_color = graya(v, a);
               break;
             }
             case IMAGE_INDEXED: {
-              int r = ((rgba_getr(pal->getEntry(color[0]))*u2 + rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
-                       (rgba_getr(pal->getEntry(color[2]))*u2 + rgba_getr(pal->getEntry(color[3]))*u1)*v1);
-              int g = ((rgba_getg(pal->getEntry(color[0]))*u2 + rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
-                       (rgba_getg(pal->getEntry(color[2]))*u2 + rgba_getg(pal->getEntry(color[3]))*u1)*v1);
-              int b = ((rgba_getb(pal->getEntry(color[0]))*u2 + rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
-                       (rgba_getb(pal->getEntry(color[2]))*u2 + rgba_getb(pal->getEntry(color[3]))*u1)*v1);
-              int a = (((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
-                       ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
+              int r = int((rgba_getr(pal->getEntry(color[0]))*u2 + rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
+                          (rgba_getr(pal->getEntry(color[2]))*u2 + rgba_getr(pal->getEntry(color[3]))*u1)*v1);
+              int g = int((rgba_getg(pal->getEntry(color[0]))*u2 + rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
+                          (rgba_getg(pal->getEntry(color[2]))*u2 + rgba_getg(pal->getEntry(color[3]))*u1)*v1);
+              int b = int((rgba_getb(pal->getEntry(color[0]))*u2 + rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
+                          (rgba_getb(pal->getEntry(color[2]))*u2 + rgba_getb(pal->getEntry(color[3]))*u1)*v1);
+              int a = int(((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
+                          ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
               dst_color = a > 127 ? rgbmap->mapColor(r, g, b): 0;
               break;
             }

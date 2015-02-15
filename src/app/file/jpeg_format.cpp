@@ -369,7 +369,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
     ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
 
-    slider_quality->setValue(jpeg_options->quality * 10.0f);
+    slider_quality->setValue(int(jpeg_options->quality * 10.0f));
 
     window->openWindowInForeground();
 

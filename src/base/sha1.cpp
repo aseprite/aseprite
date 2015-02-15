@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -42,7 +42,7 @@ Sha1 Sha1::calculateFromFile(const std::string& fileName)
   unsigned char buf[1024];
   while (file.good()) {
     file.read((char*)buf, 1024);
-    streamsize len = file.gcount();
+    size_t len = (size_t)file.gcount();
     if (len > 0)
       SHA1Input(&sha, buf, len);
   }

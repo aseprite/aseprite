@@ -113,7 +113,7 @@ void ConvolutionMatrixStock::reloadStock()
         for (y=0; y<h; ++y) {
           for (x=0; x<w; ++x) {
             READ_TOK();
-            int value = strtod(buf, NULL) * ConvolutionMatrix::Precision;
+            int value = int(strtod(buf, NULL) * ConvolutionMatrix::Precision);
             div += value;
 
             matrix->value(x, y) = value;
@@ -138,14 +138,14 @@ void ConvolutionMatrixStock::reloadStock()
         // Div
         READ_TOK();
         if (strcmp(buf, "auto") != 0)
-          div = strtod(buf, NULL) * ConvolutionMatrix::Precision;
+          div = int(strtod(buf, NULL) * ConvolutionMatrix::Precision);
 
         matrix->setDiv(div);
 
         // Bias
         READ_TOK();
         if (strcmp(buf, "auto") != 0)
-          bias = strtod(buf, NULL);
+          bias = int(strtod(buf, NULL));
 
         matrix->setBias(bias);
 

@@ -69,7 +69,8 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
 
   std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
+    screenPoints[c] = editor->editorToScreen(
+      gfx::Point((int)corners[c].x, (int)corners[c].y));
 
   int handle_rs[2] = { gfx->width()*2, gfx->width()*3 };
   for (int i=0; i<2; ++i) {
@@ -102,7 +103,8 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
 
   std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
+    screenPoints[c] = editor->editorToScreen(
+      gfx::Point((int)corners[c].x, (int)corners[c].y));
 
   // TODO DO NOT COMMIT
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
@@ -153,7 +155,8 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
 
   std::vector<gfx::Point> screenPoints(corners.size());
   for (size_t c=0; c<corners.size(); ++c)
-    screenPoints[c] = editor->editorToScreen(gfx::Point(corners[c].x, corners[c].y));
+    screenPoints[c] = editor->editorToScreen(
+      gfx::Point((int)corners[c].x, (int)corners[c].y));
 
   // Invalidate each corner handle.
   for (size_t c=0; c<HANDLES; ++c) {

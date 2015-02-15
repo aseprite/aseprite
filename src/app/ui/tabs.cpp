@@ -324,7 +324,7 @@ bool Tabs::onProcessMessage(Message* msg)
 
             // Exponential
             setScrollX(m_begScrollX +
-                       (m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS)));
+              int((m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS))));
           }
           break;
         }
@@ -382,7 +382,8 @@ void Tabs::onPaint(PaintEvent& ev)
       y_delta = box.h * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
     }
     else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
-      x_delta += m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+      x_delta += m_removedTab->width
+        - int(double(m_removedTab->width)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
       x_delta = MID(0, x_delta, m_removedTab->width);
 
       // Draw deleted tab
@@ -401,7 +402,8 @@ void Tabs::onPaint(PaintEvent& ev)
   if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
     // Draw deleted tab
     if (m_removedTab) {
-      int x_delta = m_removedTab->width - m_removedTab->width*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS));
+      int x_delta = m_removedTab->width
+        - int(double(m_removedTab->width)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
       x_delta = MID(0, x_delta, m_removedTab->width);
 
       gfx::Rect box2(box.x, box.y, x_delta, box.h);

@@ -2140,14 +2140,14 @@ void SkinTheme::draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int par
   }
 }
 
-void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, float progress)
+void SkinTheme::paintProgressBar(ui::Graphics* g, const gfx::Rect& rc0, double progress)
 {
   g->drawRect(getColor(ThemeColor::Text), rc0);
 
   gfx::Rect rc = rc0;
   rc.shrink(1);
 
-  int u = (int)((float)rc.w*progress);
+  int u = (int)((double)rc.w*progress);
   u = MID(0, u, rc.w);
 
   if (u > 0)

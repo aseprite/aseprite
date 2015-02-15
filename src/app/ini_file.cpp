@@ -116,10 +116,20 @@ void set_config_int(const char* section, const char* name, int value)
 
 float get_config_float(const char* section, const char* name, float value)
 {
-  return g_configs.back()->getDoubleValue(section, name, value);
+  return (float)g_configs.back()->getDoubleValue(section, name, (float)value);
 }
 
 void set_config_float(const char* section, const char* name, float value)
+{
+  g_configs.back()->setDoubleValue(section, name, (float)value);
+}
+
+double get_config_double(const char* section, const char* name, double value)
+{
+  return g_configs.back()->getDoubleValue(section, name, value);
+}
+
+void set_config_double(const char* section, const char* name, double value)
 {
   g_configs.back()->setDoubleValue(section, name, value);
 }

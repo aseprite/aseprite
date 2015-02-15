@@ -418,8 +418,8 @@ void algo_spline(double x0, double y0, double x1, double y1,
   x = x0;
   y = y0;
 
-  out_x1 = x0;
-  out_y1 = y0;
+  out_x1 = (int)x0;
+  out_y1 = (int)y0;
 
   x += .5;
   y += .5;
@@ -431,8 +431,8 @@ void algo_spline(double x0, double y0, double x1, double y1,
     x += dx;
     y += dy;
 
-    out_x2 = x;
-    out_y2 = y;
+    out_x2 = (int)x;
+    out_y2 = (int)y;
 
     proc(out_x1, out_y1, out_x2, out_y2, data);
 

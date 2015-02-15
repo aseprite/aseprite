@@ -144,7 +144,7 @@ void base::this_thread::sleep_for(double seconds)
 {
 #ifdef _WIN32
 
-  ::Sleep(seconds * 1000.0);
+  ::Sleep(DWORD(seconds * 1000.0));
 
 #else
 

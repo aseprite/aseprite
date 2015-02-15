@@ -32,7 +32,7 @@ namespace cmd {
     void onRedo() override;
     size_t onMemSize() const override {
       return sizeof(*this) +
-        const_cast<std::stringstream*>(&m_stream)->tellp();
+        (size_t)const_cast<std::stringstream*>(&m_stream)->tellp();
     }
 
   private:

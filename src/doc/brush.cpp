@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -96,7 +96,7 @@ void Brush::regenerate()
 
   int size = m_size;
   if (m_type == kSquareBrushType && m_angle != 0 && m_size > 2)
-    size = std::sqrt((double)2*m_size*m_size)+2;
+    size = (int)std::sqrt((double)2*m_size*m_size)+2;
 
   m_image = Image::create(IMAGE_BITMAP, size, size);
 
@@ -121,14 +121,14 @@ void Brush::regenerate()
           int c = size/2;
           int r = m_size/2;
           int d = m_size;
-          int x1 = c + r*cos(a-PI/2) + r*cos(a-PI);
-          int y1 = c - r*sin(a-PI/2) - r*sin(a-PI);
-          int x2 = x1 + d*cos(a);
-          int y2 = y1 - d*sin(a);
-          int x3 = x2 + d*cos(a+PI/2);
-          int y3 = y2 - d*sin(a+PI/2);
-          int x4 = x3 + d*cos(a+PI);
-          int y4 = y3 - d*sin(a+PI);
+          int x1 = int(c + r*cos(a-PI/2) + r*cos(a-PI));
+          int y1 = int(c - r*sin(a-PI/2) - r*sin(a-PI));
+          int x2 = int(x1 + d*cos(a));
+          int y2 = int(y1 - d*sin(a));
+          int x3 = int(x2 + d*cos(a+PI/2));
+          int y3 = int(y2 - d*sin(a+PI/2));
+          int x4 = int(x3 + d*cos(a+PI));
+          int y4 = int(y3 - d*sin(a+PI));
           int points[8] = { x1, y1, x2, y2, x3, y3, x4, y4 };
 
           doc::algorithm::polygon(4, points, m_image, algo_hline);
@@ -137,12 +137,12 @@ void Brush::regenerate()
 
       case kLineBrushType: {
         double a = PI * m_angle / 180;
-        float r = m_size/2;
-        float d = m_size;
-        int x1 = r + r*cos(a+PI);
-        int y1 = r - r*sin(a+PI);
-        int x2 = x1 + d*cos(a);
-        int y2 = y1 - d*sin(a);
+        double r = m_size/2;
+        double d = m_size;
+        int x1 = int(r + r*cos(a+PI));
+        int y1 = int(r - r*sin(a+PI));
+        int x2 = int(x1 + d*cos(a));
+        int y2 = int(y1 - d*sin(a));
 
         draw_line(m_image, x1, y1, x2, y2, BitmapTraits::max_value);
         break;

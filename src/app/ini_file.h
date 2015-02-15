@@ -36,6 +36,9 @@ namespace app {
   float get_config_float(const char* section, const char* name, float value);
   void set_config_float(const char* section, const char* name, float value);
 
+  double get_config_double(const char* section, const char* name, double value);
+  void set_config_double(const char* section, const char* name, double value);
+
   bool get_config_bool(const char* section, const char* name, bool value);
   void set_config_bool(const char* section, const char* name, bool value);
 
@@ -71,7 +74,7 @@ namespace app {
   }
 
   inline double get_config_value(const char* section, const char* name, double value) {
-    return get_config_float(section, name, value);
+    return get_config_double(section, name, value);
   }
 
   inline gfx::Rect get_config_value(const char* section, const char* name, const gfx::Rect& value) {
@@ -104,7 +107,7 @@ namespace app {
   }
 
   inline void set_config_value(const char* section, const char* name, double value) {
-    set_config_float(section, name, value);
+    set_config_double(section, name, value);
   }
 
   inline void set_config_value(const char* section, const char* name, const gfx::Rect& value) {

@@ -380,7 +380,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       // rendering process depending on each cel position.
       // E.g. when we are drawing in a cel with position < (0,0)
       if (m_zoom.scale() < 1.0)
-        expose.enlarge(1./m_zoom.scale());
+        expose.enlarge(int(1./m_zoom.scale()));
       m_document->notifyExposeSpritePixels(m_sprite, gfx::Region(expose));
     }
 
@@ -447,7 +447,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   // For odd zoom scales minor than 100% we have to add an extra window
   // just to make sure the whole rectangle is drawn.
   if (m_zoom.scale() < 1.0)
-    rc.inflate(1./m_zoom.scale(), 1./m_zoom.scale());
+    rc.inflate(int(1./m_zoom.scale()), int(1./m_zoom.scale()));
 
   gfx::Rect client = getClientBounds();
   gfx::Rect spriteRect(
