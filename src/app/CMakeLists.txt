@@ -56,6 +56,7 @@ add_library(app-lib
   cmd.cpp
   cmd/add_cel.cpp
   cmd/add_frame.cpp
+  cmd/add_frame_tag.cpp
   cmd/add_layer.cpp
   cmd/add_palette.cpp
   cmd/background_from_layer.cpp
@@ -157,6 +158,7 @@ add_library(app-lib
   commands/cmd_move_mask.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
+  commands/cmd_new_frame_tag.cpp
   commands/cmd_new_layer.cpp
   commands/cmd_new_layer_set.cpp
   commands/cmd_onionskin.cpp

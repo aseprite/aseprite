@@ -25,19 +25,20 @@
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "app/transaction.h"
 #include "app/util/clipboard.h"
 #include "base/memory.h"
+#include "doc/doc.h"
 #include "doc/document_event.h"
+#include "doc/frame_tag.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
-#include "doc/doc.h"
 #include "ui/ui.h"
 
 #include <cstdio>
@@ -871,6 +872,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
     drawPaddings(g);
     drawLoopRange(g);
+    drawFrameTags(g);
     drawRangeOutline(g);
     drawClipboardRange(g);
 
@@ -1325,6 +1327,20 @@ void Timeline::drawLoopRange(ui::Graphics* g)
     return;
 
   drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+}
+
+void Timeline::drawFrameTags(ui::Graphics* g)
+{
+  for (FrameTag* frameTag : m_sprite->frameTags()) {
+    gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame());
+    gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), frameTag->toFrame());
+    gfx::Rect bounds = bounds1.createUnion(bounds2);
+
+    IntersectClip clip(g, bounds);
+    if (clip) {
+      drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+    }
+  }
 }
 
 void Timeline::drawRangeOutline(ui::Graphics* g)

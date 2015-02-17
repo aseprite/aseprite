@@ -148,6 +148,7 @@ namespace app {
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
       Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover);
     void drawLoopRange(ui::Graphics* g);
+    void drawFrameTags(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
     bool drawPart(ui::Graphics* g, int part, LayerIndex layer, frame_t frame);
