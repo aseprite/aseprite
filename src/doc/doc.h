@@ -15,6 +15,8 @@
 #include "doc/color_scales.h"
 #include "doc/document.h"
 #include "doc/frame.h"
+#include "doc/frame_tag.h"
+#include "doc/frame_tags.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/layer.h"

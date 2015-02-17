@@ -30,6 +30,7 @@
 #define ASE_FILE_CHUNK_CEL              0x2005
 #define ASE_FILE_CHUNK_MASK             0x2016
 #define ASE_FILE_CHUNK_PATH             0x2017
+#define ASE_FILE_CHUNK_FRAME_TAGS       0x2018
 
 #define ASE_FILE_RAW_CEL                0
 #define ASE_FILE_LINK_CEL               1
@@ -100,6 +101,8 @@ static Mask* ase_file_read_mask_chunk(FILE* f);
 #if 0
 static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Mask* mask);
 #endif
+static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags);
+static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, FrameTags* frameTags);
 
 class ChunkWriter {
 public:
@@ -250,6 +253,10 @@ bool AseFormat::onLoad(FileOp* fop)
             /* fop_error(fop, "Path chunk\n"); */
             break;
 
+          case ASE_FILE_CHUNK_FRAME_TAGS:
+            ase_file_read_frame_tags_chunk(f, &sprite->frameTags());
+            break;
+
           default:
             fop_error(fop, "Warning: Unsupported chunk type %d (skipping)\n", chunk_type);
             break;
@@ -318,6 +325,10 @@ bool AseFormat::onSave(FileOp* fop)
       // Write layer chunks
       for (; it != end; ++it)
         ase_file_write_layers(f, &frame_header, *it);
+
+      // Writer frame tags
+      if (sprite->frameTags().size() > 0)
+        ase_file_write_frame_tags_chunk(f, &frame_header, &sprite->frameTags());
     }
 
     // Write cel chunks
@@ -1262,5 +1273,38 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
     }
 }
 #endif
+
+static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags)
+{
+  size_t tags = fgetw(f);
+  for (size_t c=0; c<tags; ++c) {
+    frame_t from = fgetw(f);
+    frame_t to = fgetw(f);
+    int r = fgetc(f);
+    int g = fgetc(f);
+    int b = fgetc(f);
+    std::string name = ase_file_read_string(f);
+
+    FrameTag* tag = new FrameTag(from, to);
+    tag->setColor(doc::rgba(r, g, b, 255));
+    tag->setName(name);
+    frameTags->add(tag);
+  }
+}
+
+static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_header, FrameTags* frameTags)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_FRAME_TAGS);
+
+  fputw(frameTags->size(), f);
+  for (FrameTag* tag : *frameTags) {
+    fputw(tag->fromFrame(), f);
+    fputw(tag->toFrame(), f);
+    fputc(doc::rgba_getr(tag->color()), f);
+    fputc(doc::rgba_getg(tag->color()), f);
+    fputc(doc::rgba_getb(tag->color()), f);
+    ase_file_write_string(f, tag->name().c_str());
+  }
+}
 
 } // namespace app

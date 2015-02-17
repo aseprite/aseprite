@@ -227,6 +227,17 @@ Path Chunk (0x2017)
   Never used.
 
 
+Frame Tags Chunk (0x2018)
+----------------------------------------
+
+  WORD          Number of tags
+  + For each tag
+    WORD        From frame
+    WORD        To frame
+    BYTE[3]     RGB values of the tag color
+    STRING      Tag name
+
+
 Notes
 ----------------------------------------
 

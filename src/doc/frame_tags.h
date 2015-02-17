@@ -33,6 +33,8 @@ namespace doc {
     iterator begin() { return m_tags.begin(); }
     iterator end() { return m_tags.end(); }
 
+    size_t size() { return m_tags.size(); }
+
   private:
     Sprite* m_sprite;
     List m_tags;
