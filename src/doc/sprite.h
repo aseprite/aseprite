@@ -120,7 +120,7 @@ namespace doc {
     void setFrameRangeDuration(frame_t from, frame_t to, int msecs);
     void setDurationForAllFrames(int msecs);
 
-    FrameTags& frameTags() const;
+    FrameTags& frameTags() { return m_frameTags; }
 
     ////////////////////////////////////////
     // Shared Images and CelData (for linked Cels)
