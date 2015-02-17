@@ -14,6 +14,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
 #include "app/ui/tabs.h"
 #include "she/font.h"
 #include "she/surface.h"
@@ -352,12 +353,15 @@ void Tabs::onPaint(PaintEvent& ev)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y,
     2*guiscale(),
-    m_list.empty() ? 0: theme->get_part(PART_TAB_FILLER)->height());
+    (m_list.empty() ? 0:
+      theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
 
   g->fillRect(theme->colors.windowFace(), g->getClipBounds());
 
-  theme->draw_part_as_hline(g, box, PART_TAB_FILLER);
-  theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
+  skin::Style::State state;
+  theme->styles.tabFiller()->paint(g, box, nullptr, state);
+  theme->styles.tabBottom()->paint(g,
+    gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), nullptr, state);
 
   box.x = box.x2();
 
@@ -407,8 +411,10 @@ void Tabs::onPaint(PaintEvent& ev)
 
   // Fill the gap to the right-side
   if (box.x < rect.x2()) {
-    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), PART_TAB_FILLER);
-    theme->draw_part_as_hline(g, gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), PART_TAB_BOTTOM_NORMAL);
+    theme->styles.tabFiller()->paint(g,
+      gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), nullptr, state);
+    theme->styles.tabBottom()->paint(g,
+      gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), nullptr, state);
   }
 }
 
@@ -437,8 +443,8 @@ void Tabs::onInitTheme(InitThemeEvent& ev)
 
   SkinTheme* theme = static_cast<SkinTheme*>(ev.getTheme());
 
-  m_button_left->setBgColor(theme->colors.tabSelectedFace());
-  m_button_right->setBgColor(theme->colors.tabSelectedFace());
+  m_button_left->setBgColor(theme->colors.tabActiveFace());
+  m_button_right->setBgColor(theme->colors.tabActiveFace());
 }
 
 void Tabs::onSetText()
@@ -466,8 +472,8 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 
   // Selected
   if (selected) {
-    text_color = theme->colors.tabSelectedText();
-    face_color = theme->colors.tabSelectedFace();
+    text_color = theme->colors.tabActiveText();
+    face_color = theme->colors.tabActiveFace();
   }
   // Non-selected
   else {
@@ -475,30 +481,18 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
     face_color = theme->colors.tabNormalFace();
   }
 
+  skin::Style::State state;
+  if (selected) state += skin::Style::active();
+
   if (box.w > 2) {
-    theme->draw_bounds_nw(g,
-                          gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
-                          (selected) ? PART_TAB_SELECTED_NW:
-                                       PART_TAB_NORMAL_NW,
-                          face_color);
-
-    g->drawString(tab->text, text_color, gfx::ColorNone,
-      gfx::Point(
-        box.x + 4*guiscale(),
-        box.y + box.h/2 - getFont()->height()/2+1 + y_delta));
+    theme->styles.tab()->paint(g,
+      gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
+      tab->text.c_str(), state);
   }
 
-  if (selected) {
-    theme->draw_bounds_nw(g,
-      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
-      PART_TAB_BOTTOM_SELECTED_NW,
-      theme->colors.tabSelectedFace());
-  }
-  else {
-    theme->draw_part_as_hline(g,
-      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
-      PART_TAB_BOTTOM_NORMAL);
-  }
+  theme->styles.tabBottom()->paint(g,
+    gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
+    nullptr, state);
 
 #ifdef CLOSE_BUTTON_IN_EACH_TAB
   she::Surface* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);

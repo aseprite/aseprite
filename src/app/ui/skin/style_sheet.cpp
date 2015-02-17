@@ -23,6 +23,7 @@ namespace skin {
 
 css::Rule StyleSheet::m_backgroundColorRule("background-color");
 css::Rule StyleSheet::m_backgroundPartRule("background-part");
+css::Rule StyleSheet::m_backgroundRepeatRule("background-repeat");
 css::Rule StyleSheet::m_iconAlignRule("icon-align");
 css::Rule StyleSheet::m_iconPartRule("icon-part");
 css::Rule StyleSheet::m_textAlignRule("text-align");
@@ -37,6 +38,7 @@ StyleSheet::StyleSheet()
   m_sheet = new css::Sheet;
   m_sheet->addRule(&m_backgroundColorRule);
   m_sheet->addRule(&m_backgroundPartRule);
+  m_sheet->addRule(&m_backgroundRepeatRule);
   m_sheet->addRule(&m_iconAlignRule);
   m_sheet->addRule(&m_iconPartRule);
   m_sheet->addRule(&m_textAlignRule);
@@ -112,6 +114,26 @@ gfx::Color StyleSheet::convertColor(const css::Value& value)
       throw base::Exception("Unknown color '%s'\n", color_id.c_str());
   }
   return color;
+}
+
+// static
+BackgroundRepeat StyleSheet::convertRepeat(const css::Value& value)
+{
+  BackgroundRepeat repeat = BackgroundRepeat::NO_REPEAT;
+  if (value.type() == css::Value::String) {
+    const std::string& id = value.string();
+    if (id == "repeat")
+      repeat = BackgroundRepeat::REPEAT;
+    else if (id == "repeat-x")
+      repeat = BackgroundRepeat::REPEAT_X;
+    else if (id == "repeat-y")
+      repeat = BackgroundRepeat::REPEAT_Y;
+    else if (id == "no_repeat")
+      repeat = BackgroundRepeat::NO_REPEAT;
+    else
+      throw base::Exception("Unknown repeat value '%s'\n", id.c_str());
+  }
+  return repeat;
 }
 
 } // namespace skin

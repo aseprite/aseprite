@@ -44,7 +44,26 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
-      g->drawRgbaSurface(m_part->getBitmap(0), bounds.x, bounds.y);
+      she::Surface* bmp = m_part->getBitmap(0);
+
+      if (m_repeat == BackgroundRepeat::NO_REPEAT) {
+        g->drawRgbaSurface(bmp, bounds.x, bounds.y);
+      }
+      else {
+        ui::IntersectClip clip(g, bounds);
+        if (!clip)
+          return;
+
+        for (int y=bounds.y; y<bounds.y2(); y+=bmp->height()) {
+          for (int x=bounds.x; x<bounds.x2(); x+=bmp->width()) {
+            g->drawRgbaSurface(bmp, x, y);
+            if (m_repeat == BackgroundRepeat::REPEAT_Y)
+              break;
+          }
+          if (m_repeat == BackgroundRepeat::REPEAT_X)
+            break;
+        }
+      }
     }
     else if (m_part->size() == 8) {
       theme->draw_bounds_nw(g, bounds, m_part, m_color);
@@ -98,6 +117,7 @@ Rules::Rules(const css::Query& query) :
 {
   css::Value backgroundColor = query[StyleSheet::backgroundColorRule()];
   css::Value backgroundPart = query[StyleSheet::backgroundPartRule()];
+  css::Value backgroundRepeat = query[StyleSheet::backgroundRepeatRule()];
   css::Value iconAlign = query[StyleSheet::iconAlignRule()];
   css::Value iconPart = query[StyleSheet::iconPartRule()];
   css::Value textAlign = query[StyleSheet::textAlignRule()];
@@ -109,10 +129,12 @@ Rules::Rules(const css::Query& query) :
   css::Value none;
 
   if (backgroundColor != none
-    || backgroundPart != none) {
+    || backgroundPart != none
+    || backgroundRepeat != none) {
     m_background = new BackgroundRule();
     m_background->setColor(StyleSheet::convertColor(backgroundColor));
     m_background->setPart(StyleSheet::convertPart(backgroundPart));
+    m_background->setRepeat(StyleSheet::convertRepeat(backgroundRepeat));
   }
 
   if (iconAlign != none

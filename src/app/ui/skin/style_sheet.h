@@ -9,6 +9,7 @@
 #define APP_UI_SKIN_STYLE_SHEET_H_INCLUDED
 #pragma once
 
+#include "app/ui/skin/background_repeat.h"
 #include "app/ui/skin/skin_part.h"
 #include "css/rule.h"
 #include "css/state.h"
@@ -37,6 +38,7 @@ namespace app {
 
       static css::Rule& backgroundColorRule() { return m_backgroundColorRule; }
       static css::Rule& backgroundPartRule() { return m_backgroundPartRule; }
+      static css::Rule& backgroundRepeatRule() { return m_backgroundRepeatRule; }
       static css::Rule& iconAlignRule() { return m_iconAlignRule; }
       static css::Rule& iconPartRule() { return m_iconPartRule; }
       static css::Rule& textAlignRule() { return m_textAlignRule; }
@@ -53,12 +55,14 @@ namespace app {
 
       static SkinPartPtr convertPart(const css::Value& value);
       static gfx::Color convertColor(const css::Value& value);
+      static BackgroundRepeat convertRepeat(const css::Value& value);
 
     private:
       typedef std::map<std::string, Style*> StyleMap;
 
       static css::Rule m_backgroundColorRule;
       static css::Rule m_backgroundPartRule;
+      static css::Rule m_backgroundRepeatRule;
       static css::Rule m_iconAlignRule;
       static css::Rule m_iconPartRule;
       static css::Rule m_textAlignRule;

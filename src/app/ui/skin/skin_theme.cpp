@@ -211,11 +211,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
   sheet_mapping["toolbutton_last"] = PART_TOOLBUTTON_LAST_NW;
   sheet_mapping["toolbutton_pushed"] = PART_TOOLBUTTON_PUSHED_NW;
-  sheet_mapping["tab_normal"] = PART_TAB_NORMAL_NW;
-  sheet_mapping["tab_selected"] = PART_TAB_SELECTED_NW;
-  sheet_mapping["tab_bottom_selected"] = PART_TAB_BOTTOM_SELECTED_NW;
-  sheet_mapping["tab_bottom_normal"] = PART_TAB_BOTTOM_NORMAL;
-  sheet_mapping["tab_filler"] = PART_TAB_FILLER;
   sheet_mapping["editor_normal"] = PART_EDITOR_NORMAL_NW;
   sheet_mapping["editor_selected"] = PART_EDITOR_SELECTED_NW;
   sheet_mapping["colorbar_0"] = PART_COLORBAR_0_NW;
@@ -579,8 +574,11 @@ void SkinTheme::onRegenerate()
         }
 
         if (ruleName == "background") {
+          const char* repeat_id = xmlRule->Attribute("repeat");
+
           if (color_id) (*style)[StyleSheet::backgroundColorRule()] = css::Value(color_id);
           if (part_id) (*style)[StyleSheet::backgroundPartRule()] = css::Value(part_id);
+          if (repeat_id) (*style)[StyleSheet::backgroundRepeatRule()] = css::Value(repeat_id);
         }
         else if (ruleName == "icon") {
           if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);

@@ -313,7 +313,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   int groups = toolbox->getGroupsCount();
   Rect toolrc;
 
-  g->fillRect(theme->colors.tabSelectedFace(), bounds);
+  g->fillRect(theme->colors.tabActiveFace(), bounds);
 
   for (int c=0; c<groups; ++c, ++it) {
     ToolGroup* tool_group = *it;

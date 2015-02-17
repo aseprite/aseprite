@@ -112,8 +112,8 @@ ColorBar::ColorBar(int align)
   setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
 
   // Change color-bar background color (not ColorBar::setBgColor)
-  Widget::setBgColor(((SkinTheme*)getTheme())->colors.tabSelectedFace());
-  m_paletteView.setBgColor(((SkinTheme*)getTheme())->colors.tabSelectedFace());
+  Widget::setBgColor(((SkinTheme*)getTheme())->colors.tabActiveFace());
+  m_paletteView.setBgColor(((SkinTheme*)getTheme())->colors.tabActiveFace());
 
   // Change labels foreground color
   setup_mini_font(m_paletteButton.mainButton());
