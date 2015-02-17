@@ -14,11 +14,22 @@
 
 void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
 {
+  std::vector<std::string> dimensions;
   std::vector<std::string> colors;
   std::vector<std::string> styles;
 
   TiXmlHandle handle(doc);
   TiXmlElement* elem = handle
+    .FirstChild("skin")
+    .FirstChild("dimensions")
+    .FirstChild("dim").ToElement();
+  while (elem) {
+    const char* id = elem->Attribute("id");
+    dimensions.push_back(id);
+    elem = elem->NextSiblingElement();
+  }
+
+  elem = handle
     .FirstChild("skin")
     .FirstChild("colors")
     .FirstChild("color").ToElement();
@@ -53,6 +64,26 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
     << "  class SkinFile {\n"
     << "  public:\n"
     << "\n";
+
+  // Dimensions sub class
+  std::cout
+    << "    class Dimensions {\n"
+    << "      template<typename T> friend class SkinFile;\n"
+    << "    public:\n";
+  for (auto dimension : dimensions) {
+    std::string id = convert_xmlid_to_cppid(dimension, false);
+    std::cout
+      << "      int " << id << "() const { return m_" << id << "; }\n";
+  }
+  std::cout
+    << "    private:\n";
+  for (auto dimension : dimensions) {
+    std::string id = convert_xmlid_to_cppid(dimension, false);
+    std::cout
+      << "      int m_" << id << ";\n";
+  }
+  std::cout
+    << "    };\n";
 
   // Colors sub class
   std::cout
@@ -97,11 +128,17 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
 
   std::cout
     << "\n"
+    << "    Dimensions dimensions;\n"
     << "    Colors colors;\n"
     << "    Styles styles;\n"
     << "\n"
     << "  protected:\n"
     << "    void updateInternals() {\n";
+  for (auto dimension : dimensions) {
+    std::string id = convert_xmlid_to_cppid(dimension, false);
+    std::cout << "      dimensions.m_" << id
+              << " = dimensionById(\"" << dimension << "\");\n";
+  }
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
     std::cout << "      colors.m_" << id
@@ -116,6 +153,9 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
     << "    }\n"
     << "\n"
     << "  private:\n"
+    << "    int dimensionById(const std::string& id) {\n"
+    << "      return static_cast<T*>(this)->getDimensionById(id);\n"
+    << "    }\n"
     << "    gfx::Color colorById(const std::string& id) {\n"
     << "      return static_cast<T*>(this)->getColorById(id);\n"
     << "    }\n"

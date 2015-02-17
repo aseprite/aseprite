@@ -3,6 +3,11 @@
       author="Ilija Melentijevic &amp; David Capello"
       url="http://ilkke.blogspot.com/">
 
+  <dimensions>
+    <dim id="tabs_height" value="17" />
+    <dim id="tabs_empty_height" value="5" />
+  </dimensions>
+
   <colors>
     <color id="text" value="#000000" />
     <color id="disabled" value="#968275" />

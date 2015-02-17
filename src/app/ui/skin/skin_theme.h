@@ -108,6 +108,10 @@ namespace app {
         return m_parts_by_id[id];
       }
 
+      int getDimensionById(const std::string& id) {
+        return m_dimensions_by_id[id] * ui::guiscale();
+      }
+
       gfx::Color getColorById(const std::string& id) {
         return m_colors_by_id[id];
       }
@@ -141,6 +145,7 @@ namespace app {
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, she::Surface*> m_toolicon;
       std::map<std::string, gfx::Color> m_colors_by_id;
+      std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;
       StyleSheet m_stylesheet;
       she::Font* m_minifont;

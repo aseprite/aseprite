@@ -421,11 +421,12 @@ void Tabs::onResize(ResizeEvent& ev)
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Size reqsize(0, theme->get_part(PART_TAB_BOTTOM_NORMAL)->height());
+  gfx::Size reqsize(0, 0);
 
-  if (!m_list.empty()) {
-    reqsize.h += theme->get_part(PART_TAB_FILLER)->height();
-  }
+  if (m_list.empty())
+    reqsize.h = theme->dimensions.tabsEmptyHeight();
+  else
+    reqsize.h = theme->dimensions.tabsHeight();
 
   ev.setPreferredSize(reqsize);
 }

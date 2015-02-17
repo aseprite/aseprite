@@ -377,6 +377,23 @@ void SkinTheme::onRegenerate()
   XmlDocumentRef doc = open_xml(rf.filename());
   TiXmlHandle handle(doc);
 
+  // Load dimension
+  {
+    TiXmlElement* xmlDim = handle
+      .FirstChild("skin")
+      .FirstChild("dimensions")
+      .FirstChild("dim").ToElement();
+    while (xmlDim) {
+      std::string id = xmlDim->Attribute("id");
+      uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
+
+      PRINTF("Loading dimension '%s'...\n", id.c_str());
+
+      m_dimensions_by_id[id] = value;
+      xmlDim = xmlDim->NextSiblingElement();
+    }
+  }
+
   // Load colors
   {
     TiXmlElement* xmlColor = handle
