@@ -15,6 +15,7 @@
 void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
 {
   std::vector<std::string> colors;
+  std::vector<std::string> styles;
 
   TiXmlHandle handle(doc);
   TiXmlElement* elem = handle
@@ -24,6 +25,17 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   while (elem) {
     const char* id = elem->Attribute("id");
     colors.push_back(id);
+    elem = elem->NextSiblingElement();
+  }
+
+  elem = handle
+    .FirstChild("skin")
+    .FirstChild("stylesheet")
+    .FirstChild("style").ToElement();
+  while (elem) {
+    const char* id = elem->Attribute("id");
+    if (!strchr(id, ':'))
+      styles.push_back(id);
     elem = elem->NextSiblingElement();
   }
 
@@ -40,48 +52,75 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
     << "  template<typename T>\n"
     << "  class SkinFile {\n"
     << "  public:\n"
-    << "\n"
+    << "\n";
+
+  // Colors sub class
+  std::cout
     << "    class Colors {\n"
     << "      template<typename T> friend class SkinFile;\n"
     << "    public:\n";
-
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
     std::cout
       << "      gfx::Color " << id << "() const { return m_" << id << "; }\n";
   }
-
   std::cout
     << "    private:\n";
-
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
     std::cout
       << "      gfx::Color m_" << id << ";\n";
   }
+  std::cout
+    << "    };\n";
 
+  // Styles sub class
+  std::cout
+    << "\n"
+    << "    class Styles {\n"
+    << "      template<typename T> friend class SkinFile;\n"
+    << "    public:\n";
+  for (auto style : styles) {
+    std::string id = convert_xmlid_to_cppid(style, false);
+    std::cout
+      << "      skin::Style* " << id << "() const { return m_" << id << "; }\n";
+  }
+  std::cout
+    << "    private:\n";
+  for (auto style : styles) {
+    std::string id = convert_xmlid_to_cppid(style, false);
+    std::cout
+      << "      skin::Style* m_" << id << ";\n";
+  }
   std::cout
     << "    };\n";
 
   std::cout
     << "\n"
     << "    Colors colors;\n"
+    << "    Styles styles;\n"
     << "\n"
     << "  protected:\n"
     << "    void updateInternals() {\n";
-
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
     std::cout << "      colors.m_" << id
               << " = colorById(\"" << color << "\");\n";
   }
-
+  for (auto style : styles) {
+    std::string id = convert_xmlid_to_cppid(style, false);
+    std::cout << "      styles.m_" << id
+              << " = styleById(\"" << style << "\");\n";
+  }
   std::cout
     << "    }\n"
     << "\n"
     << "  private:\n"
     << "    gfx::Color colorById(const std::string& id) {\n"
     << "      return static_cast<T*>(this)->getColorById(id);\n"
+    << "    }\n"
+    << "    skin::Style* styleById(const std::string& id) {\n"
+    << "      return static_cast<T*>(this)->getStyle(id);\n"
     << "    }\n";
 
   std::cout
