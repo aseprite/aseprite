@@ -12,31 +12,6 @@
 
 namespace doc {
 
-FrameTag::FrameTag(frame_t from, frame_t to)
-  : Object(ObjectType::FrameTag)
-  , m_from(from)
-  , m_to(to)
-  , m_name("Tag")
-  , m_color(rgba(0, 0, 0, 255))
-{
-}
-
-void FrameTag::setFrameRange(frame_t from, frame_t to)
-{
-  m_from = from;
-  m_to = to;
-}
-
-void FrameTag::setName(const std::string& name)
-{
-  m_name = name;
-}
-
-void FrameTag::setColor(color_t color)
-{
-  m_color = color;
-}
-
 FrameTags::FrameTags(Sprite* sprite)
   : m_sprite(sprite)
 {
