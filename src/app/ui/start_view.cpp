@@ -29,7 +29,9 @@ StartView::StartView()
 
   child_spacing = 8 * guiscale();
 
-  addChild(new Label("Welcome to " PACKAGE " v" VERSION));
+  Label* label = new Label("Welcome to " PACKAGE " v" VERSION);
+  label->setTextColor(theme->colors.workspaceText());
+  addChild(label);
 }
 
 StartView::~StartView()

@@ -69,6 +69,7 @@
     <color id="filelist_selected_row_face" value="#ff5555" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
+    <color id="workspace_text" value="#ffffff" />
     <color id="timeline_normal" value="#c6c6c6" />
     <color id="timeline_normal_text" value="#000000" />
     <color id="timeline_hover" value="#d9d9d9" />
