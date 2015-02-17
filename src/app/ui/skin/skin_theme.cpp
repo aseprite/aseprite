@@ -134,6 +134,12 @@ static const char* cursor_names[kCursorTypes] = {
   "magnifier"                   // kMagnifierCursor
 };
 
+// static
+SkinTheme* SkinTheme::instance()
+{
+  return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme());
+}
+
 SkinTheme::SkinTheme()
   : m_cursors(ui::kCursorTypes, NULL)
 {
@@ -1615,8 +1621,13 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
   if (skinPropery != NULL)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  skin::Style* bgStyle = get_style(isMiniLook ? "mini_scrollbar": "scrollbar");
-  skin::Style* thumbStyle = get_style(isMiniLook ? "mini_scrollbar_thumb": "scrollbar_thumb");
+  skin::Style* bgStyle = (isMiniLook ?
+    styles.miniScrollbar():
+    styles.scrollbar());
+
+  skin::Style* thumbStyle = (isMiniLook ?
+    styles.miniScrollbarThumb():
+    styles.scrollbarThumb());
 
   widget->getScrollBarThemeInfo(&pos, &len);
 
@@ -1658,20 +1669,20 @@ void SkinTheme::paintWindow(PaintEvent& ev)
   if (!window->isDesktop()) {
     // window frame
     if (window->hasText()) {
-      get_style("window")->paint(g, pos, NULL, Style::State());
-      get_style("window_title")->paint(g,
+      styles.window()->paint(g, pos, NULL, Style::State());
+      styles.windowTitle()->paint(g,
         gfx::Rect(cpos.x, pos.y+5*guiscale(), cpos.w, // TODO this hard-coded 5 should be configurable in skin.xml
           window->getTextHeight()),
         window->getText().c_str(), Style::State());
     }
     // menubox
     else {
-      get_style("menubox")->paint(g, pos, NULL, Style::State());
+      styles.menubox()->paint(g, pos, NULL, Style::State());
     }
   }
   // desktop
   else {
-    get_style("desktop")->paint(g, pos, NULL, Style::State());
+    styles.desktop()->paint(g, pos, NULL, Style::State());
   }
 }
 
@@ -1683,7 +1694,7 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
   gfx::Rect pos = window->getClientBounds();
 
   if (!is_transparent(BGCOLOR))
-    get_style("menubox")->paint(g, pos, NULL, Style::State());
+    styles.menubox()->paint(g, pos, NULL, Style::State());
 
   pos.shrink(window->getBorder());
 

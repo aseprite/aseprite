@@ -42,6 +42,8 @@ namespace app {
     public:
       static const char* kThemeCloseButtonId;
 
+      static SkinTheme* instance();
+
       SkinTheme();
       ~SkinTheme();
 
@@ -143,10 +145,6 @@ namespace app {
       StyleSheet m_stylesheet;
       she::Font* m_minifont;
     };
-
-    inline Style* get_style(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getStyle(id);
-    }
 
     inline SkinPartPtr get_part_by_id(const std::string& id) {
       return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getPartById(id);

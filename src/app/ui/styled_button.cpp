@@ -22,8 +22,10 @@ namespace app {
 
 using namespace ui;
 
-StyledButton::StyledButton(const std::string& styleName) : Button("") {
-  m_style = skin::get_style(styleName);
+StyledButton::StyledButton(skin::Style* style)
+  : Button("")
+  , m_style(style)
+{
 }
 
 bool StyledButton::onProcessMessage(Message* msg) {

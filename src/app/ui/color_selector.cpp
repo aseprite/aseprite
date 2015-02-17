@@ -45,7 +45,8 @@ using namespace doc;
 
 class ColorSelector::WarningIcon : public StyledButton {
 public:
-  WarningIcon() : StyledButton("warning_box") {
+  WarningIcon()
+    : StyledButton(skin::SkinTheme::instance()->styles.warningBox()) {
   }
 };
 

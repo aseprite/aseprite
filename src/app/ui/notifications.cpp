@@ -23,8 +23,6 @@ namespace app {
 
 using namespace ui;
 
-static const char* kFlag = "flag";
-
 class NotificationItem : public MenuItem {
 public:
   NotificationItem(INotificationDelegate* del)
@@ -44,7 +42,7 @@ private:
 
 Notifications::Notifications()
   : Button("")
-  , m_flagStyle(skin::get_style(kFlag))
+  , m_flagStyle(skin::SkinTheme::instance()->styles.flag())
   , m_withNotifications(false)
 {
 }
