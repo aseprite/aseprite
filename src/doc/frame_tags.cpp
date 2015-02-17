@@ -17,4 +17,17 @@ FrameTags::FrameTags(Sprite* sprite)
 {
 }
 
+void FrameTags::add(FrameTag* tag)
+{
+  m_tags.push_back(tag);
+}
+
+void FrameTags::remove(FrameTag* tag)
+{
+  auto it = std::find(m_tags.begin(), m_tags.end(), tag);
+  ASSERT(it != m_tags.end());
+  if (it != m_tags.end())
+    m_tags.erase(it);
+}
+
 } // namespace doc
