@@ -13,6 +13,7 @@
 #include "doc/cel_list.h"
 #include "doc/color.h"
 #include "doc/frame.h"
+#include "doc/frame_tags.h"
 #include "doc/image_ref.h"
 #include "doc/layer_index.h"
 #include "doc/object.h"
@@ -119,6 +120,8 @@ namespace doc {
     void setFrameRangeDuration(frame_t from, frame_t to, int msecs);
     void setDurationForAllFrames(int msecs);
 
+    FrameTags& frameTags() const;
+
     ////////////////////////////////////////
     // Shared Images and CelData (for linked Cels)
 
@@ -152,6 +155,8 @@ namespace doc {
 
     // Transparent color used in indexed images
     color_t m_transparentColor;
+
+    FrameTags m_frameTags;
 
     // Disable default constructor and copying
     Sprite();

@@ -36,6 +36,7 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   , m_width(width)
   , m_height(height)
   , m_frames(1)
+  , m_frameTags(this)
 {
   ASSERT(width > 0 && height > 0);
 
