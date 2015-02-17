@@ -15,6 +15,7 @@
 #include "base/unique_ptr.h"
 #include "doc/cels_range.h"
 #include "doc/doc.h"
+#include "doc/frame_tag.h"
 #include "doc/image_bits.h"
 #include "doc/primitives.h"
 
@@ -357,6 +358,18 @@ void Sprite::addFrame(frame_t newFrame)
     setFrameDuration(i, frameDuration(i-1));
 
   folder()->displaceFrames(newFrame, +1);
+
+  for (FrameTag* tag : m_frameTags) {
+    frame_t from = tag->fromFrame();
+    frame_t to = tag->toFrame();
+    if (newFrame <= from) { ++from; }
+    if (newFrame <= to+1) { ++to; }
+
+    if (from != tag->fromFrame() ||
+        to != tag->toFrame()) {
+      tag->setFrameRange(from, to);
+    }
+  }
 }
 
 void Sprite::removeFrame(frame_t frame)
@@ -367,6 +380,18 @@ void Sprite::removeFrame(frame_t frame)
   for (frame_t i=frame; i<newTotal; ++i)
     setFrameDuration(i, frameDuration(i+1));
   setTotalFrames(newTotal);
+
+  for (FrameTag* tag : m_frameTags) {
+    frame_t from = tag->fromFrame();
+    frame_t to = tag->toFrame();
+    if (frame <= from) { --from; }
+    if (frame <= to+1) { --to; }
+
+    if (from != tag->fromFrame() ||
+        to != tag->toFrame()) {
+      tag->setFrameRange(from, to);
+    }
+  }
 }
 
 void Sprite::setTotalFrames(frame_t frames)
