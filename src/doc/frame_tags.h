@@ -18,7 +18,7 @@ namespace doc {
   class Sprite;
 
   class FrameTags {
-    typedef std::vector<FrameTags> List;
+    typedef std::vector<FrameTag*> List;
 
   public:
     typedef List::iterator iterator;
