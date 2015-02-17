@@ -25,6 +25,7 @@ add_library(doc-lib
   file/col_file.cpp
   file/gpl_file.cpp
   frame_tag.cpp
+  frame_tag_io.cpp
   frame_tags.cpp
   image.cpp
   image_io.cpp
