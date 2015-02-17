@@ -1,5 +1,5 @@
 ASE Files (.ASE) Format description
-Copyright (C) 2001-2014 by David Capello
+Copyright (C) 2001-2015 by David Capello
 ----------------------------------------------------------------------
 
 1. References
@@ -38,10 +38,10 @@ PIXEL           Pixel format:
 
 The format is much like FLI/FLC files, but with different magic number
 and differents chunks.  Also, the color depth can be 8, 16 or 32 for
-Indexed, Grayscale and RGB respectively, and the images are more easy
-to read (there aren't differences with old frames). Color palettes
-are in FLI color chunks (it could be type=11 or type=4). For color
-depths more than 8bpp, palettes are optional. See fli.txt for details.
+Indexed, Grayscale and RGB respectively, and images are compressed
+images with zlib.  Color palettes are in FLI color chunks (it could be
+type=11 or type=4). For color depths more than 8bpp, palettes are
+optional. See fli.txt for details.
 
 To read the sprite, just do this:
 * Read the ASE header (section 3)
@@ -105,8 +105,34 @@ Then each chunk format is:
 
 
 ========================================
-5. New chunk types
+5. Chunk types
 ========================================
+
+Palette chunk (0x0004)
+----------------------------------------
+
+  WORD          Number of packets
+  + For each packet
+    BYTE        Number of palette entries to skip from the last packet (start from 0)
+    BYTE        Number of colors in the packet (0 means 256)
+    + For each color in the packet
+      BYTE      Red (0-255)
+      BYTE      Green (0-255)
+      BYTE      Blue (0-255)
+
+
+Old palette chunk (0x0011)
+----------------------------------------
+
+  WORD          Number of packets
+  + For each packet
+    BYTE        Number of palette entries to skip from the last packet (start from 0)
+    BYTE        Number of colors in the packet (0 means 256)
+    + For each color in the packet
+      BYTE      Red (0-63)
+      BYTE      Green (0-63)
+      BYTE      Blue (0-63)
+
 
 Layer Chunk (0x2004)
 ----------------------------------------
