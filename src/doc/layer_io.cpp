@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,6 +20,7 @@
 #include "doc/layer.h"
 #include "doc/layer_io.h"
 #include "doc/sprite.h"
+#include "doc/string_io.h"
 #include "doc/subobjects_io.h"
 
 #include <iostream>
@@ -37,10 +38,7 @@ void write_layer(std::ostream& os, Layer* layer)
   std::string name = layer->name();
 
   write32(os, layer->id());
-
-  write16(os, name.size());                            // Name length
-  if (!name.empty())
-    os.write(name.c_str(), name.size());               // Name
+  write_string(os, layer->name());
 
   write32(os, static_cast<int>(layer->flags())); // Flags
   write16(os, static_cast<int>(layer->type()));  // Type
@@ -103,15 +101,7 @@ void write_layer(std::ostream& os, Layer* layer)
 Layer* read_layer(std::istream& is, SubObjectsIO* subObjects)
 {
   ObjectId id = read32(is);
-  uint16_t name_length = read16(is);                // Name length
-  std::vector<char> name(name_length+1);
-  if (name_length > 0) {
-    is.read(&name[0], name_length);                 // Name
-    name[name_length] = 0;
-  }
-  else
-    name[0] = 0;
-
+  std::string name = read_string(is);
   uint32_t flags = read32(is);                     // Flags
   uint16_t layer_type = read16(is);                // Type
 
@@ -171,7 +161,7 @@ Layer* read_layer(std::istream& is, SubObjectsIO* subObjects)
   }
 
   if (layer) {
-    layer->setName(&name[0]);
+    layer->setName(name);
     layer->setFlags(static_cast<LayerFlags>(flags));
     layer->setId(id);
   }

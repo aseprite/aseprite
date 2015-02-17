@@ -42,4 +42,5 @@ add_library(doc-lib
   rgbmap.cpp
   sprite.cpp
   sprites.cpp
+  string_io.cpp
   subobjects_io.cpp)
