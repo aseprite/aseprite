@@ -521,8 +521,10 @@
         <item command="NewFrame" text="New &amp;Empty Frame">
           <param name="content" value="empty" />
         </item>
-	<item command="NewFrameTag" text="New &amp;Tag" />
         <item command="RemoveFrame" text="&amp;Remove Frame" />
+        <separator />
+	<item command="NewFrameTag" text="New &amp;Tag" />
+	<item command="RemoveFrameTag" text="Remove Ta&amp;g" />
         <separator />
         <menu text="&amp;Jump to">
           <item command="GotoFirstFrame" text="&amp;First Frame" />

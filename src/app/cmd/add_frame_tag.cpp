@@ -22,43 +22,41 @@ using namespace doc;
 
 AddFrameTag::AddFrameTag(Sprite* sprite, FrameTag* frameTag)
   : WithSprite(sprite)
-  , m_frameTag(frameTag)
-  , m_frameTagId(0)
+  , WithFrameTag(frameTag)
 {
 }
 
 void AddFrameTag::onExecute()
 {
   Sprite* sprite = this->sprite();
+  FrameTag* frameTag = this->frameTag();
 
-  if (m_frameTag) {
-    m_frameTagId = m_frameTag->id();
-  }
-  else {
-    m_frameTag = read_frame_tag(m_stream);
-    m_stream.str(std::string());
-    m_stream.clear();
-  }
-
-  sprite->frameTags().add(m_frameTag);
-  m_frameTag = nullptr;
+  sprite->frameTags().add(frameTag);
 }
 
 void AddFrameTag::onUndo()
 {
   Sprite* sprite = this->sprite();
-  FrameTag* frameTag = get<FrameTag>(m_frameTagId);
+  FrameTag* frameTag = this->frameTag();
   write_frame_tag(m_stream, frameTag);
 
   sprite->frameTags().remove(frameTag);
-
   delete frameTag;
+}
+
+void AddFrameTag::onRedo()
+{
+  Sprite* sprite = this->sprite();
+  FrameTag* frameTag = read_frame_tag(m_stream);
+  sprite->frameTags().add(frameTag);
+
+  m_stream.str(std::string());
+  m_stream.clear();
 }
 
 size_t AddFrameTag::onMemSize() const
 {
   return sizeof(*this)
-    + (m_frameTag ? m_frameTag->getMemSize(): 0)
     + (size_t)const_cast<std::stringstream*>(&m_stream)->tellp();
 }
 

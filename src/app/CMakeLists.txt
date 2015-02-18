@@ -78,6 +78,7 @@ add_library(app-lib
   cmd/move_layer.cpp
   cmd/remove_cel.cpp
   cmd/remove_frame.cpp
+  cmd/remove_frame_tag.cpp
   cmd/remove_layer.cpp
   cmd/remove_palette.cpp
   cmd/replace_image.cpp
@@ -99,6 +100,7 @@ add_library(app-lib
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
   cmd/with_document.cpp
+  cmd/with_frame_tag.cpp
   cmd/with_image.cpp
   cmd/with_layer.cpp
   cmd/with_palette.cpp
@@ -171,6 +173,7 @@ add_library(app-lib
   commands/cmd_play_animation.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_frame.cpp
+  commands/cmd_remove_frame_tag.cpp
   commands/cmd_remove_layer.cpp
   commands/cmd_repeat_last_export.cpp
   commands/cmd_reselect_mask.cpp
