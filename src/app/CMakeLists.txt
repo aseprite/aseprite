@@ -302,6 +302,7 @@ add_library(app-lib
   ui/file_list.cpp
   ui/file_selector.cpp
   ui/hex_color_entry.cpp
+  ui/home_view.cpp
   ui/keyboard_shortcuts.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
@@ -320,7 +321,6 @@ add_library(app-lib
   ui/skin/skin_theme.cpp
   ui/skin/style.cpp
   ui/skin/style_sheet.cpp
-  ui/start_view.cpp
   ui/status_bar.cpp
   ui/styled_button.cpp
   ui/tabs.cpp

@@ -20,11 +20,11 @@ namespace app {
 
   class ColorBar;
   class ContextBar;
+  class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
-  class PreviewEditorWindow;
   class Notifications;
-  class StartView;
+  class PreviewEditorWindow;
   class StatusBar;
   class Tabs;
   class Timeline;
@@ -86,7 +86,7 @@ namespace app {
     Timeline* m_timeline;
     Workspace* m_workspace;
     PreviewEditorWindow* m_previewEditor;
-    StartView* m_startView;
+    HomeView* m_homeView;
     Notifications* m_notifications;
   };
 

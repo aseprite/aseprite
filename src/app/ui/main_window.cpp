@@ -24,12 +24,12 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/home_view.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/notifications.h"
 #include "app/ui/preview_editor.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/start_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
 #include "app/ui/timeline.h"
@@ -50,7 +50,7 @@ MainWindow::MainWindow()
   , m_lastSplitterPos(0.0)
   , m_lastTimelineSplitterPos(75.0)
   , m_mode(NormalMode)
-  , m_startView(NULL)
+  , m_homeView(NULL)
 {
   setId("main_window");
 
@@ -122,9 +122,9 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-  if (m_startView) {
-    m_workspace->removeView(m_startView);
-    delete m_startView;
+  if (m_homeView) {
+    m_workspace->removeView(m_homeView);
+    delete m_homeView;
   }
   delete m_contextBar;
   delete m_previewEditor;
@@ -220,9 +220,9 @@ void MainWindow::popTimeline()
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
   if (msg->type() == kOpenMessage) {
-    m_startView = new StartView;
-    m_workspace->addView(m_startView);
-    m_tabsBar->selectTab(m_startView);
+    m_homeView = new HomeView;
+    m_workspace->addView(m_homeView);
+    m_tabsBar->selectTab(m_homeView);
   }
 
   return Window::onProcessMessage(msg);

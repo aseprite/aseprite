@@ -5,8 +5,8 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_UI_START_VIEW_H_INCLUDED
-#define APP_UI_START_VIEW_H_INCLUDED
+#ifndef APP_UI_HOME_VIEW_H_INCLUDED
+#define APP_UI_HOME_VIEW_H_INCLUDED
 #pragma once
 
 #include "app/ui/tabs.h"
@@ -18,12 +18,12 @@ namespace ui {
 }
 
 namespace app {
-  class StartView : public ui::Box
-                  , public TabView
-                  , public WorkspaceView {
+  class HomeView : public ui::Box
+                 , public TabView
+                 , public WorkspaceView {
   public:
-    StartView();
-    ~StartView();
+    HomeView();
+    ~HomeView();
 
     // TabView implementation
     std::string getTabText() override;

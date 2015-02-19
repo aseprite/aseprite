@@ -9,7 +9,7 @@
 #include "config.h"
 #endif
 
-#include "app/ui/start_view.h"
+#include "app/ui/home_view.h"
 
 #include "app/ui/skin/skin_theme.h"
 #include "ui/label.h"
@@ -21,7 +21,7 @@ namespace app {
 using namespace ui;
 using namespace skin;
 
-StartView::StartView()
+HomeView::HomeView()
   : Box(JI_VERTICAL)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
@@ -34,26 +34,26 @@ StartView::StartView()
   addChild(label);
 }
 
-StartView::~StartView()
+HomeView::~HomeView()
 {
 }
 
-std::string StartView::getTabText()
+std::string HomeView::getTabText()
 {
-  return "Start";
+  return "Home";
 }
 
-WorkspaceView* StartView::cloneWorkspaceView()
+WorkspaceView* HomeView::cloneWorkspaceView()
 {
   return NULL;                  // This view cannot be cloned
 }
 
-void StartView::onClonedFrom(WorkspaceView* from)
+void HomeView::onClonedFrom(WorkspaceView* from)
 {
   ASSERT(false);                // Never called
 }
 
-void StartView::onWorkspaceViewSelected()
+void HomeView::onWorkspaceViewSelected()
 {
 }
 
