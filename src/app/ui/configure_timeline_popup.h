@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/pref/preferences.h"
+#include "doc/anidir.h"
 #include "ui/popup_window.h"
 
 namespace ui {
@@ -33,7 +34,7 @@ namespace app {
     void onResetOnionskin();
     void onSetLoopSection();
     void onResetLoopSection();
-    void onAniDir(app::gen::AniDir aniDir);
+    void onAniDir(doc::AniDir aniDir);
 
   private:
     void updateWidgetsFromCurrentSettings();

@@ -37,4 +37,9 @@ void FrameTag::setColor(color_t color)
   m_color = color;
 }
 
+void FrameTag::setAniDir(AniDir aniDir)
+{
+  m_aniDir = aniDir;
+}
+
 } // namespace doc

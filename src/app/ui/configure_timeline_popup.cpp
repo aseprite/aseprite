@@ -61,9 +61,9 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_resetOnionskin->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
   m_setLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onSetLoopSection, this));
   m_resetLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetLoopSection, this));
-  m_normalDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::FORWARD));
-  m_reverseDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::REVERSE));
-  m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, app::gen::AniDir::PING_PONG));
+  m_normalDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::FORWARD));
+  m_reverseDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::REVERSE));
+  m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::PING_PONG));
 }
 
 DocumentPreferences& ConfigureTimelinePopup::docPref()
@@ -98,13 +98,13 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   }
 
   switch (docPref.loop.aniDir()) {
-    case app::gen::AniDir::FORWARD:
+    case doc::AniDir::FORWARD:
       m_normalDir->setSelected(true);
       break;
-    case app::gen::AniDir::REVERSE:
+    case doc::AniDir::REVERSE:
       m_reverseDir->setSelected(true);
       break;
-    case app::gen::AniDir::PING_PONG:
+    case doc::AniDir::PING_PONG:
       m_pingPongDir->setSelected(true);
       break;
   }
@@ -170,7 +170,7 @@ void ConfigureTimelinePopup::onResetLoopSection()
   docPref().loop.visible(false);
 }
 
-void ConfigureTimelinePopup::onAniDir(app::gen::AniDir aniDir)
+void ConfigureTimelinePopup::onAniDir(doc::AniDir aniDir)
 {
   docPref().loop.aniDir(aniDir);
 }

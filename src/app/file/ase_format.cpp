@@ -1277,12 +1277,23 @@ static void ase_file_write_mask_chunk(FILE* f, ASE_FrameHeader* frame_header, Ma
 static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags)
 {
   size_t tags = fgetw(f);
+
+  fgetl(f);                     // 8 reserved bytes
+  fgetl(f);
+
   for (size_t c=0; c<tags; ++c) {
     frame_t from = fgetw(f);
     frame_t to = fgetw(f);
+    int aniDir = fgetc(f);
+
+    fgetl(f);                     // 8 reserved bytes
+    fgetl(f);
+
     int r = fgetc(f);
     int g = fgetc(f);
     int b = fgetc(f);
+    fgetc(f);                     // Skip
+
     std::string name = ase_file_read_string(f);
 
     FrameTag* tag = new FrameTag(from, to);
@@ -1297,12 +1308,23 @@ static void ase_file_write_frame_tags_chunk(FILE* f, ASE_FrameHeader* frame_head
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_FRAME_TAGS);
 
   fputw(frameTags->size(), f);
+
+  fputl(0, f);  // 8 reserved bytes
+  fputl(0, f);
+
   for (FrameTag* tag : *frameTags) {
     fputw(tag->fromFrame(), f);
     fputw(tag->toFrame(), f);
+    fputc((int)tag->aniDir(), f);
+
+    fputl(0, f);  // 8 reserved bytes
+    fputl(0, f);
+
     fputc(doc::rgba_getr(tag->color()), f);
     fputc(doc::rgba_getg(tag->color()), f);
     fputc(doc::rgba_getb(tag->color()), f);
+    fputc(0, f);
+
     ase_file_write_string(f, tag->name().c_str());
   }
 }

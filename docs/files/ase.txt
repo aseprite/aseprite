@@ -231,10 +231,17 @@ Frame Tags Chunk (0x2018)
 ----------------------------------------
 
   WORD          Number of tags
+  BYTE[8]       For future (set to zero)
   + For each tag
     WORD        From frame
     WORD        To frame
+    BYTE        Loop animation direction
+                0 - Forward
+                1 - Reverse
+                2 - Ping-pong
+    BYTE[8]     For future (set to zero)
     BYTE[3]     RGB values of the tag color
+    BYTE        Extra byte (zero)
     STRING      Tag name
 
 

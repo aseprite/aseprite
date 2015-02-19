@@ -37,19 +37,19 @@ doc::frame_t calculate_next_frame(
 
   switch (docPref.loop.aniDir()) {
 
-    case app::gen::AniDir::FORWARD:
+    case doc::AniDir::FORWARD:
       ++frame;
       if (frame > last)
         frame = first;
       break;
 
-    case app::gen::AniDir::REVERSE:
+    case doc::AniDir::REVERSE:
       --frame;
       if (frame < first)
         frame = last;
       break;
 
-    case app::gen::AniDir::PING_PONG:
+    case doc::AniDir::PING_PONG:
       if (pingPongForward) {
         ++frame;
         if (frame > last) {

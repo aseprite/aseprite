@@ -18,11 +18,6 @@
       <value id="MERGE" value="0" />
       <value id="RED_BLUE_TINT" value="1" />
     </enum>
-    <enum id="AniDir">
-      <value id="FORWARD" value="0" />
-      <value id="REVERSE" value="1" />
-      <value id="PING_PONG" value="2" />
-    </enum>
     <enum id="FreehandAlgorithm">
       <value id="REGULAR" value="0" />
       <value id="PIXEL_PERFECT" value="1" />
@@ -137,7 +132,7 @@
       <option id="visible" type="bool" default="false" />
       <option id="from" type="doc::frame_t" default="0" />
       <option id="to" type="doc::frame_t" default="1" />
-      <option id="ani_dir" type="AniDir" default="AniDir::FORWARD" />
+      <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
     </section>
   </document>
 
