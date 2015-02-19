@@ -191,13 +191,7 @@ void DocumentView::getDocumentLocation(DocumentLocation* location) const
 
 std::string DocumentView::getTabText()
 {
-  std::string str = m_document->name();
-
-  // Add an asterisk if the document is modified.
-  if (m_document->isModified())
-    str += "*";
-
-  return str;
+  return m_document->name();
 }
 
 WorkspaceView* DocumentView::cloneWorkspaceView()

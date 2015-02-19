@@ -41,6 +41,8 @@ namespace app {
       static css::Rule& backgroundRepeatRule() { return m_backgroundRepeatRule; }
       static css::Rule& iconAlignRule() { return m_iconAlignRule; }
       static css::Rule& iconPartRule() { return m_iconPartRule; }
+      static css::Rule& iconXRule() { return m_iconXRule; }
+      static css::Rule& iconYRule() { return m_iconYRule; }
       static css::Rule& textAlignRule() { return m_textAlignRule; }
       static css::Rule& textColorRule() { return m_textColorRule; }
       static css::Rule& paddingLeftRule() { return m_paddingLeftRule; }
@@ -65,6 +67,8 @@ namespace app {
       static css::Rule m_backgroundRepeatRule;
       static css::Rule m_iconAlignRule;
       static css::Rule m_iconPartRule;
+      static css::Rule m_iconXRule;
+      static css::Rule m_iconYRule;
       static css::Rule m_textAlignRule;
       static css::Rule m_textColorRule;
       static css::Rule m_paddingLeftRule;

@@ -26,6 +26,8 @@ css::Rule StyleSheet::m_backgroundPartRule("background-part");
 css::Rule StyleSheet::m_backgroundRepeatRule("background-repeat");
 css::Rule StyleSheet::m_iconAlignRule("icon-align");
 css::Rule StyleSheet::m_iconPartRule("icon-part");
+css::Rule StyleSheet::m_iconXRule("icon-x");
+css::Rule StyleSheet::m_iconYRule("icon-y");
 css::Rule StyleSheet::m_textAlignRule("text-align");
 css::Rule StyleSheet::m_textColorRule("text-color");
 css::Rule StyleSheet::m_paddingLeftRule("padding-left");
@@ -41,6 +43,8 @@ StyleSheet::StyleSheet()
   m_sheet->addRule(&m_backgroundRepeatRule);
   m_sheet->addRule(&m_iconAlignRule);
   m_sheet->addRule(&m_iconPartRule);
+  m_sheet->addRule(&m_iconXRule);
+  m_sheet->addRule(&m_iconYRule);
   m_sheet->addRule(&m_textAlignRule);
   m_sheet->addRule(&m_textColorRule);
   m_sheet->addRule(&m_paddingLeftRule);

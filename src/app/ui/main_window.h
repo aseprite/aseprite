@@ -61,8 +61,10 @@ namespace app {
     void popTimeline();
 
     // TabsDelegate implementation.
-    void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons);
-    void mouseOverTab(Tabs* tabs, TabView* tabView);
+    void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons) override;
+    void clickClose(Tabs* tabs, TabView* tabView) override;
+    void mouseOverTab(Tabs* tabs, TabView* tabView) override;
+    bool isModified(Tabs* tabs, TabView* tabView) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

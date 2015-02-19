@@ -107,6 +107,9 @@ void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   else
     y = bounds.y;
 
+  x += m_x;
+  y += m_y;
+
   g->drawRgbaSurface(bmp, x, y);
 }
 
@@ -120,6 +123,8 @@ Rules::Rules(const css::Query& query) :
   css::Value backgroundRepeat = query[StyleSheet::backgroundRepeatRule()];
   css::Value iconAlign = query[StyleSheet::iconAlignRule()];
   css::Value iconPart = query[StyleSheet::iconPartRule()];
+  css::Value iconX = query[StyleSheet::iconXRule()];
+  css::Value iconY = query[StyleSheet::iconYRule()];
   css::Value textAlign = query[StyleSheet::textAlignRule()];
   css::Value textColor = query[StyleSheet::textColorRule()];
   css::Value paddingLeft = query[StyleSheet::paddingLeftRule()];
@@ -138,10 +143,14 @@ Rules::Rules(const css::Query& query) :
   }
 
   if (iconAlign != none
-    || iconPart != none) {
+    || iconPart != none
+    || iconX != none
+    || iconY != none) {
     m_icon = new IconRule();
     m_icon->setAlign((int)iconAlign.number());
     m_icon->setPart(StyleSheet::convertPart(iconPart));
+    m_icon->setX((int)iconX.number()*ui::guiscale());
+    m_icon->setY((int)iconY.number()*ui::guiscale());
   }
 
   if (textAlign != none

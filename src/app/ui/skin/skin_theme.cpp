@@ -583,20 +583,26 @@ void SkinTheme::onRegenerate()
         else if (ruleName == "icon") {
           if (align) (*style)[StyleSheet::iconAlignRule()] = css::Value(align);
           if (part_id) (*style)[StyleSheet::iconPartRule()] = css::Value(part_id);
+
+          const char* x = xmlRule->Attribute("x");
+          const char* y = xmlRule->Attribute("y");
+
+          if (x) (*style)[StyleSheet::iconXRule()] = css::Value(strtol(x, NULL, 10));
+          if (y) (*style)[StyleSheet::iconYRule()] = css::Value(strtol(y, NULL, 10));
         }
         else if (ruleName == "text") {
           if (color_id) (*style)[StyleSheet::textColorRule()] = css::Value(color_id);
           if (align) (*style)[StyleSheet::textAlignRule()] = css::Value(align);
 
-          const char* padding_left = xmlRule->Attribute("padding-left");
-          const char* padding_top = xmlRule->Attribute("padding-top");
-          const char* padding_right = xmlRule->Attribute("padding-right");
-          const char* padding_bottom = xmlRule->Attribute("padding-bottom");
+          const char* l = xmlRule->Attribute("padding-left");
+          const char* t = xmlRule->Attribute("padding-top");
+          const char* r = xmlRule->Attribute("padding-right");
+          const char* b = xmlRule->Attribute("padding-bottom");
 
-          if (padding_left) (*style)[StyleSheet::paddingLeftRule()] = css::Value(strtol(padding_left, NULL, 10));
-          if (padding_top) (*style)[StyleSheet::paddingTopRule()] = css::Value(strtol(padding_top, NULL, 10));
-          if (padding_right) (*style)[StyleSheet::paddingRightRule()] = css::Value(strtol(padding_right, NULL, 10));
-          if (padding_bottom) (*style)[StyleSheet::paddingBottomRule()] = css::Value(strtol(padding_bottom, NULL, 10));
+          if (l) (*style)[StyleSheet::paddingLeftRule()] = css::Value(strtol(l, NULL, 10));
+          if (t) (*style)[StyleSheet::paddingTopRule()] = css::Value(strtol(t, NULL, 10));
+          if (r) (*style)[StyleSheet::paddingRightRule()] = css::Value(strtol(r, NULL, 10));
+          if (b) (*style)[StyleSheet::paddingBottomRule()] = css::Value(strtol(b, NULL, 10));
         }
 
         xmlRule = xmlRule->NextSiblingElement();

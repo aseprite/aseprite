@@ -9,8 +9,6 @@
 #include "config.h"
 #endif
 
-//#define CLOSE_BUTTON_IN_EACH_TAB
-
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
@@ -45,26 +43,6 @@ static WidgetType tabs_type()
   return type;
 }
 
-class Tabs::ScrollButton : public Button
-{
-public:
-  ScrollButton(int direction, Tabs* tabs)
-    : Button("")
-    , m_direction(direction)
-    , m_tabs(tabs) {
-  }
-
-  int getDirection() const { return m_direction; }
-
-protected:
-  bool onProcessMessage(Message* msg) override;
-  void onDisable() override;
-
-private:
-  int m_direction;
-  Tabs* m_tabs;
-};
-
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
   , m_delegate(delegate)
@@ -73,31 +51,11 @@ Tabs::Tabs(TabsDelegate* delegate)
   setDoubleBuffered(true);
 
   m_hot = NULL;
+  m_hotCloseButton = false;
   m_selected = NULL;
   m_scrollX = 0;
   m_ani = ANI_NONE;
   m_removedTab = NULL;
-
-  m_button_left = new ScrollButton(-1, this);
-  m_button_right = new ScrollButton(+1, this);
-
-  setup_mini_look(m_button_left);
-  setup_mini_look(m_button_right);
-  setup_bevels(m_button_left, 2, 0, 2, 0);
-  setup_bevels(m_button_right, 0, 2, 0, 2);
-
-  m_button_left->setFocusStop(false);
-  m_button_right->setFocusStop(false);
-
-  set_gfxicon_to_button(m_button_left,
-                        PART_COMBOBOX_ARROW_LEFT,
-                        PART_COMBOBOX_ARROW_LEFT_SELECTED,
-                        PART_COMBOBOX_ARROW_LEFT_DISABLED, JI_CENTER | JI_MIDDLE);
-
-  set_gfxicon_to_button(m_button_right,
-                        PART_COMBOBOX_ARROW_RIGHT,
-                        PART_COMBOBOX_ARROW_RIGHT_SELECTED,
-                        PART_COMBOBOX_ARROW_RIGHT_DISABLED, JI_CENTER | JI_MIDDLE);
 
   initTheme();
 }
@@ -116,15 +74,12 @@ Tabs::~Tabs()
   for (Tab* tab : m_list)
     delete tab;
   m_list.clear();
-
-  delete m_button_left;         // widget
-  delete m_button_right;        // widget
 }
 
 void Tabs::addTab(TabView* tabView)
 {
   Tab* tab = new Tab(tabView);
-  calcTabWidth(tab);
+  tab->text = tab->view->getTabText();
 
   m_list.push_back(tab);
 
@@ -156,7 +111,6 @@ void Tabs::removeTab(TabView* tabView)
 
   it = m_list.erase(it);
 
-  // Width of the removed tab
   if (m_removedTab) {
     delete m_removedTab;
     m_removedTab = NULL;
@@ -177,10 +131,8 @@ void Tabs::removeTab(TabView* tabView)
 
 void Tabs::updateTabsText()
 {
-  for (Tab* tab : m_list) {
-    // Change text of the tab
-    calcTabWidth(tab);
-  }
+  for (Tab* tab : m_list)
+    tab->text = tab->view->getTabText();
   invalidate();
 }
 
@@ -258,7 +210,6 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseDownMessage:
-    case kMouseUpMessage:
       if (m_hot != NULL) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
@@ -267,13 +218,41 @@ bool Tabs::onProcessMessage(Message* msg)
           invalidate();
         }
 
+        if (m_hotCloseButton) {
+          if (!m_clickedCloseButton) {
+            m_clickedCloseButton = true;
+            invalidate();
+          }
+        }
+
         // Left button is processed in mouse down message, right
         // button is processed in mouse up.
         if (m_selected && m_delegate &&
-            ((mouseMsg->left() && msg->type() == kMouseDownMessage) ||
-             (!mouseMsg->left() && msg->type() == kMouseUpMessage))) {
+            !m_clickedCloseButton &&
+            mouseMsg->left()) {
           m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
         }
+
+        captureMouse();
+      }
+      return true;
+
+    case kMouseUpMessage:
+      if (hasCapture()) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+
+        if (m_delegate && m_selected && m_selected == m_hot) {
+          if (m_hotCloseButton && m_clickedCloseButton) {
+            m_clickedCloseButton = false;
+            invalidate();
+
+            m_delegate->clickClose(this, m_selected->view);
+          }
+          else if (!mouseMsg->left()) {
+            m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
+          }
+        }
+        releaseMouse();
       }
       return true;
 
@@ -303,12 +282,6 @@ bool Tabs::onProcessMessage(Message* msg)
         case ANI_NONE:
           // Do nothing
           break;
-        case ANI_SCROLL: {
-          ScrollButton* button = dynamic_cast<ScrollButton*>(getManager()->getCapture());
-          if (button != NULL)
-            setScrollX(m_scrollX + button->getDirection()*8*static_cast<TimerMessage*>(msg)->count());
-          break;
-        }
         case ANI_SMOOTH_SCROLL: {
           if (m_ani_t == ANI_SMOOTH_SCROLL_TICKS) {
             stopAni();
@@ -366,8 +339,9 @@ void Tabs::onPaint(PaintEvent& ev)
   box.x = box.x2();
 
   // For each tab...
+  int tabWidth = calcTabWidth();
   for (Tab* tab : m_list) {
-    box.w = tab->width;
+    box.w = tabWidth;
 
     int x_delta = 0;
     int y_delta = 0;
@@ -377,19 +351,19 @@ void Tabs::onPaint(PaintEvent& ev)
       y_delta = box.h * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
     }
     else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
-      x_delta += m_removedTab->width
-        - int(double(m_removedTab->width)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
-      x_delta = MID(0, x_delta, m_removedTab->width);
+      x_delta += tabWidth
+        - int(double(tabWidth)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
+      x_delta = MID(0, x_delta, tabWidth);
 
       // Draw deleted tab
       if (m_removedTab) {
         gfx::Rect box2(box.x, box.y, x_delta, box.h);
-        drawTab(g, box2, m_removedTab, 0, false);
+        drawTab(g, box2, m_removedTab, 0, false, false);
       }
     }
 
     box.x += x_delta;
-    drawTab(g, box, tab, y_delta, (tab == m_selected));
+    drawTab(g, box, tab, y_delta, (tab == m_hot), (tab == m_selected));
 
     box.x = box.x2();
   }
@@ -397,12 +371,12 @@ void Tabs::onPaint(PaintEvent& ev)
   if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
     // Draw deleted tab
     if (m_removedTab) {
-      int x_delta = m_removedTab->width
-        - int(double(m_removedTab->width)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
-      x_delta = MID(0, x_delta, m_removedTab->width);
+      int x_delta = tabWidth
+        - int(double(tabWidth)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
+      x_delta = MID(0, x_delta, tabWidth);
 
       gfx::Rect box2(box.x, box.y, x_delta, box.h);
-      drawTab(g, box2, m_removedTab, 0, false);
+      drawTab(g, box2, m_removedTab, 0, false, false);
 
       box.x += x_delta;
       box.w = 0;
@@ -437,22 +411,6 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(reqsize);
 }
 
-void Tabs::onInitTheme(InitThemeEvent& ev)
-{
-  Widget::onInitTheme(ev);
-
-  SkinTheme* theme = static_cast<SkinTheme*>(ev.getTheme());
-
-  m_button_left->setBgColor(theme->colors.tabActiveFace());
-  m_button_right->setBgColor(theme->colors.tabActiveFace());
-}
-
-void Tabs::onSetText()
-{
-  for (Tab* tab : m_list)
-    calcTabWidth(tab);
-}
-
 void Tabs::selectTabInternal(Tab* tab)
 {
   m_selected = tab;
@@ -460,15 +418,30 @@ void Tabs::selectTabInternal(Tab* tab)
   invalidate();
 }
 
-void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected)
+void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int y_delta,
+  bool hover, bool selected)
 {
+  gfx::Rect box = _box;
+
   // Is the tab outside the bounds of the widget?
   if (box.x >= getBounds().x2() || box.x2() <= getBounds().x)
     return;
 
+  if (box.w < ui::guiscale()*8)
+    box.w = ui::guiscale()*8;
+
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Color text_color;
   gfx::Color face_color;
+  int clipTextRightSide;
+
+  gfx::Rect closeBox = getTabCloseButtonBounds(box);
+  if (closeBox.isEmpty())
+    clipTextRightSide = 4*ui::guiscale();
+  else {
+    closeBox.y += y_delta;
+    clipTextRightSide = closeBox.w;
+  }
 
   // Selected
   if (selected) {
@@ -483,8 +456,14 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
 
   skin::Style::State state;
   if (selected) state += skin::Style::active();
+  if (hover) state += skin::Style::hover();
 
-  if (box.w > 2) {
+  theme->styles.tab()->paint(g,
+    gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
+    nullptr, state);
+
+  if (box.w > 8*ui::guiscale()) {
+    IntersectClip clip(g, gfx::Rect(box.x, box.y+y_delta, box.w-clipTextRightSide, box.h));
     theme->styles.tab()->paint(g,
       gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
       tab->text.c_str(), state);
@@ -494,12 +473,28 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, boo
     gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
     nullptr, state);
 
-#ifdef CLOSE_BUTTON_IN_EACH_TAB
-  she::Surface* close_icon = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL);
-  g->drawRgbaSurface(close_icon,
-    box.x2() - 4*guiscale() - close_icon->width(),
-    box.y + box.h/2 - close_icon->height()/2+1 * guiscale());
-#endif
+  // Close button
+  if (!closeBox.isEmpty()) {
+    skin::Style* style = theme->styles.tabCloseIcon();
+    if (m_delegate &&
+      m_delegate->isModified(this, tab->view) &&
+      (!hover || !m_hotCloseButton)) {
+      style = theme->styles.tabModifiedIcon();
+    }
+
+    state = skin::Style::State();
+    if (hover && m_hotCloseButton) {
+      state += skin::Style::hover();
+      if (selected)
+        state += skin::Style::active();
+      if (m_clickedCloseButton)
+        state += skin::Style::clicked();
+    }
+    else if (selected)
+      state += skin::Style::active();
+
+    style->paint(g, closeBox, nullptr, state);
+  }
 }
 
 Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
@@ -527,10 +522,11 @@ int Tabs::getMaxScrollX()
 {
   TabsListIterator it, end = m_list.end();
   int x = 0;
+  int tabWidth = calcTabWidth();
 
   for (it = m_list.begin(); it != end; ++it) {
     Tab* tab = *it;
-    x += tab->width;
+    x += tabWidth;
   }
 
   x -= getBounds().w;
@@ -545,19 +541,20 @@ void Tabs::makeTabVisible(Tab* make_visible_this_tab)
 {
   int x = 0;
   int extra_x = getMaxScrollX() > 0 ? ARROW_W*2: 0;
+  int tabWidth = calcTabWidth();
 
   for (Tab* tab : m_list) {
     if (tab == make_visible_this_tab) {
       if (x - m_scrollX < 0) {
         setScrollX(x);
       }
-      else if (x + tab->width - m_scrollX > getBounds().w - extra_x) {
-        setScrollX(x + tab->width - getBounds().w + extra_x);
+      else if (x + tabWidth - m_scrollX > getBounds().w - extra_x) {
+        setScrollX(x + tabWidth - getBounds().w + extra_x);
       }
       break;
     }
 
-    x += tab->width;
+    x += tabWidth;
   }
 }
 
@@ -571,56 +568,35 @@ void Tabs::setScrollX(int scroll_x)
     calculateHot();
     invalidate();
   }
-
-  // We need scroll buttons?
-  if (max_x > 0) {
-    // Add childs
-    if (!HAS_ARROWS(this)) {
-      addChild(m_button_left);
-      addChild(m_button_right);
-      invalidate();
-    }
-
-    /* disable/enable buttons */
-    m_button_left->setEnabled(m_scrollX > 0);
-    m_button_right->setEnabled(m_scrollX < max_x);
-
-    // Setup the position of each button
-    gfx::Rect rect = getBounds();
-    gfx::Rect box(rect.x2()-ARROW_W*2, rect.y, ARROW_W, rect.h-2);
-    m_button_left->setBounds(box);
-
-    box.x += ARROW_W;
-    m_button_right->setBounds(box);
-  }
-  // Remove buttons
-  else if (HAS_ARROWS(this)) {
-    removeChild(m_button_left);
-    removeChild(m_button_right);
-    invalidate();
-  }
 }
 
 void Tabs::calculateHot()
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getBounds();
   gfx::Rect box(rect.x-m_scrollX, rect.y, 0, rect.h-1);
-  Tab *hot = NULL;
+  gfx::Point mousePos = ui::get_mouse_position();
+  Tab* hot = NULL;
+  bool hotCloseButton = false;
+  int tabWidth = calcTabWidth();
 
   // For each tab
   for (Tab* tab : m_list) {
-    box.w = tab->width;
+    box.w = tabWidth;
 
-    if (box.contains(ui::get_mouse_position())) {
+    if (box.contains(mousePos)) {
       hot = tab;
+      hotCloseButton = getTabCloseButtonBounds(box).contains(mousePos);
       break;
     }
 
     box.x += box.w;
   }
 
-  if (m_hot != hot) {
+  if (m_hot != hot ||
+      m_hotCloseButton != hotCloseButton) {
     m_hot = hot;
+    m_hotCloseButton = hotCloseButton;
 
     if (m_delegate)
       m_delegate->mouseOverTab(this, m_hot ? m_hot->view: NULL);
@@ -629,29 +605,29 @@ void Tabs::calculateHot()
   }
 }
 
-void Tabs::calcTabWidth(Tab* tab)
+int Tabs::calcTabWidth()
 {
-  // Cache current tab text
-  tab->text = tab->view->getTabText();
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  int tabWidth = theme->dimensions.tabsWidth();
 
-  int border = 4*guiscale();
-#ifdef CLOSE_BUTTON_IN_EACH_TAB
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int close_icon_w = theme->get_part(PART_WINDOW_CLOSE_BUTTON_NORMAL)->width();
-  tab->width = (border + getFont()->textLength(tab->text.c_str()) + border + close_icon_w + border);
-#else
-  tab->width = (border + getFont()->textLength(tab->text.c_str()) + border);
-#endif
+  if (tabWidth * m_list.size() > (size_t)getBounds().w) {
+    tabWidth = getBounds().w / m_list.size();
+    tabWidth = MAX(2*ui::guiscale(), tabWidth);
+  }
+
+  return tabWidth;
 }
 
-void Tabs::startScrolling()
+gfx::Rect Tabs::getTabCloseButtonBounds(const gfx::Rect& box)
 {
-  startAni(ANI_SCROLL);
-}
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  int iconW = theme->dimensions.tabsCloseIconWidth();
+  int iconH = theme->dimensions.tabsCloseIconHeight();
 
-void Tabs::stopScrolling()
-{
-  stopAni();
+  if (box.w-iconW > 4*ui::guiscale())
+    return gfx::Rect(box.x2()-iconW, box.y+box.h/2-iconH/2, iconW, iconH);
+  else
+    return gfx::Rect();
 }
 
 void Tabs::startAni(Ani ani)
@@ -669,40 +645,6 @@ void Tabs::stopAni()
 {
   m_ani = ANI_NONE;
   m_timer.stop();
-}
-
-bool Tabs::ScrollButton::onProcessMessage(Message* msg)
-{
-  switch (msg->type()) {
-
-    case kMouseDownMessage:
-      captureMouse();
-      m_tabs->startScrolling();
-      return true;
-
-    case kMouseUpMessage:
-      if (hasCapture())
-        releaseMouse();
-
-      m_tabs->stopScrolling();
-      return true;
-
-  }
-
-  return Button::onProcessMessage(msg);
-}
-
-void Tabs::ScrollButton::onDisable()
-{
-  Button::onDisable();
-
-  if (hasCapture())
-    releaseMouse();
-
-  if (isSelected()) {
-    m_tabs->stopScrolling();
-    setSelected(false);
-  }
 }
 
 } // namespace app

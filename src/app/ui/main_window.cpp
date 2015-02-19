@@ -294,6 +294,22 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
   }
 }
 
+void MainWindow::clickClose(Tabs* tabs, TabView* tabView)
+{
+  DocumentView* docView = dynamic_cast<DocumentView*>(tabView);
+  if (!docView)
+    return;
+
+  UIContext* context = UIContext::instance();
+  context->setActiveView(docView);
+  context->updateFlags();
+
+  Command* close_file_cmd =
+    CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+
+  context->executeCommand(close_file_cmd, NULL);
+}
+
 void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
@@ -304,6 +320,17 @@ void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
   }
   else {
     m_statusBar->clearText();
+  }
+}
+
+bool MainWindow::isModified(Tabs* tabs, TabView* tabView)
+{
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
+    Document* document = docView->getDocument();
+    return document->isModified();
+  }
+  else {
+    return false;
   }
 }
 

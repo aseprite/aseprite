@@ -85,6 +85,8 @@ namespace app {
 
       void setAlign(int align) { m_align = align; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
+      void setX(int x) { m_x = x; }
+      void setY(int y) { m_y = y; }
 
       SkinPartPtr getPart() { return m_part; }
 
@@ -94,6 +96,7 @@ namespace app {
     private:
       int m_align;
       SkinPartPtr m_part;
+      int m_x, m_y;
     };
 
     class Rules {

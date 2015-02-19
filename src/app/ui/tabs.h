@@ -40,9 +40,14 @@ namespace app {
     // Called when the user presses a mouse button over a tab.
     virtual void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons) = 0;
 
+    // When the tab close button is pressed.
+    virtual void clickClose(Tabs* tabs, TabView* tabView) = 0;
+
     // Called when the mouse is over a tab (the data can be null if the
     // mouse just leave all tabs)
     virtual void mouseOverTab(Tabs* tabs, TabView* tabView) = 0;
+
+    virtual bool isModified(Tabs* tabs, TabView* tabView) = 0;
   };
 
   // Tabs control. Used to show opened documents.
@@ -50,9 +55,8 @@ namespace app {
     struct Tab {
       TabView* view;
       std::string text;
-      int width;
 
-      Tab(TabView* view) : view(view), width(0) {
+      Tab(TabView* view) : view(view) {
       }
     };
 
@@ -62,7 +66,6 @@ namespace app {
     enum Ani { ANI_NONE,
                ANI_ADDING_TAB,
                ANI_REMOVING_TAB,
-               ANI_SCROLL,
                ANI_SMOOTH_SCROLL };
 
   public:
@@ -78,33 +81,31 @@ namespace app {
     void selectPreviousTab();
     TabView* getSelectedTab();
 
-    void startScrolling();
-    void stopScrolling();
-
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onSetText() override;
 
   private:
     void startAni(Ani ani);
     void stopAni();
 
     void selectTabInternal(Tab* tab);
-    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected);
+    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool hover, bool selected);
     TabsListIterator getTabIteratorByView(TabView* tabView);
     Tab* getTabByView(TabView* tabView);
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
     void setScrollX(int scroll_x);
     void calculateHot();
-    void calcTabWidth(Tab* tab);
+    int calcTabWidth();
+    gfx::Rect getTabCloseButtonBounds(const gfx::Rect& box);
 
     TabsList m_list;
     Tab* m_hot;
+    bool m_hotCloseButton;
+    bool m_clickedCloseButton;
     Tab* m_selected;
     int m_scrollX;
 
@@ -119,11 +120,6 @@ namespace app {
     int m_ani_t;                  // Number of ticks from the beginning of the animation
     Tab* m_removedTab;
     Tab* m_nextTabOfTheRemovedOne;
-
-    // Buttons to scroll tabs (useful when there are more tabs than visible area)
-    class ScrollButton;
-    ScrollButton* m_button_left;
-    ScrollButton* m_button_right;
   };
 
 } // namespace app
