@@ -1,7 +1,8 @@
-<!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
-<window text="Frame Duration" id="frame_duration">
+<window text="Frame Properties" id="frame_properties">
   <grid columns="3">
     <label text="Frame number:" />
     <label text="" id="frame" />

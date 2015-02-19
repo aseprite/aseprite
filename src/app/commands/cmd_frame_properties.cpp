@@ -23,6 +23,8 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
+#include "generated_frame_properties.h"
+
 namespace app {
 
 using namespace ui;
@@ -82,13 +84,9 @@ void FramePropertiesCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
 
-  base::UniquePtr<Window> window(app::load_widget<Window>("frame_duration.xml", "frame_duration"));
-  Widget* frame = app::find_widget<Widget>(window, "frame");
-  Widget* frlen = app::find_widget<Widget>(window, "frlen");
-  Widget* ok = app::find_widget<Widget>(window, "ok");
-
-  frame_t firstFrame(0);
-  frame_t lastFrame(0);
+  app::gen::FrameProperties window;
+  frame_t firstFrame = 0;
+  frame_t lastFrame = 0;
 
   switch (m_target) {
 
@@ -115,15 +113,15 @@ void FramePropertiesCommand::onExecute(Context* context)
   }
 
   if (firstFrame != lastFrame)
-    frame->setTextf("[%d...%d]", (int)firstFrame+1, (int)lastFrame+1);
+    window.frame()->setTextf("[%d...%d]", (int)firstFrame+1, (int)lastFrame+1);
   else
-    frame->setTextf("%d", (int)firstFrame+1);
+    window.frame()->setTextf("%d", (int)firstFrame+1);
 
-  frlen->setTextf("%d", sprite->frameDuration(firstFrame));
+  window.frlen()->setTextf("%d", sprite->frameDuration(firstFrame));
 
-  window->openWindowInForeground();
-  if (window->getKiller() == ok) {
-    int num = frlen->getTextInt();
+  window.openWindowInForeground();
+  if (window.getKiller() == window.ok()) {
+    int num = window.frlen()->getTextInt();
 
     ContextWriter writer(reader);
     Transaction transaction(writer.context(), "Frame Duration");
