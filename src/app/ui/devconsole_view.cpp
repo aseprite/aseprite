@@ -11,6 +11,7 @@
 
 #include "app/ui/devconsole_view.h"
 
+#include "app/ui/workspace.h"
 #include "ui/entry.h"
 #include "ui/message.h"
 #include "ui/textbox.h"
@@ -100,6 +101,11 @@ void DevConsoleView::onWorkspaceViewSelected()
 
 void DevConsoleView::onClonedFrom(WorkspaceView* from)
 {
+}
+
+void DevConsoleView::onCloseView(Workspace* workspace)
+{
+  workspace->removeView(this);
 }
 
 bool DevConsoleView::onProcessMessage(Message* msg)

@@ -575,6 +575,7 @@
         </item>
         <item command="TogglePreview" text="Previe&amp;w" />
         <item command="FullscreenPreview" text="&amp;Fullscreen Preview" />
+        <item command="Home" text="&amp;Home" />
         <separator />
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>

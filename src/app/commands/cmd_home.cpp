@@ -17,34 +17,34 @@ namespace app {
 
 using namespace ui;
 
-class DeveloperConsoleCommand : public Command {
+class HomeCommand : public Command {
 public:
-  DeveloperConsoleCommand();
-  ~DeveloperConsoleCommand();
+  HomeCommand();
+  ~HomeCommand();
 
 protected:
   void onExecute(Context* context);
 };
 
-DeveloperConsoleCommand::DeveloperConsoleCommand()
-  : Command("DeveloperConsole",
-            "Developer Console",
+HomeCommand::HomeCommand()
+  : Command("Home",
+            "Home",
             CmdUIOnlyFlag)
 {
 }
 
-DeveloperConsoleCommand::~DeveloperConsoleCommand()
+HomeCommand::~HomeCommand()
 {
 }
 
-void DeveloperConsoleCommand::onExecute(Context* context)
+void HomeCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->showDevConsole();
+  App::instance()->getMainWindow()->showHome();
 }
 
-Command* CommandFactory::createDeveloperConsoleCommand()
+Command* CommandFactory::createHomeCommand()
 {
-  return new DeveloperConsoleCommand;
+  return new HomeCommand;
 }
 
 } // namespace app

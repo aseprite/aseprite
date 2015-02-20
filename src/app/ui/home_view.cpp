@@ -12,6 +12,7 @@
 #include "app/ui/home_view.h"
 
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/workspace.h"
 #include "ui/label.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
@@ -56,6 +57,11 @@ WorkspaceView* HomeView::cloneWorkspaceView()
 void HomeView::onClonedFrom(WorkspaceView* from)
 {
   ASSERT(false);                // Never called
+}
+
+void HomeView::onCloseView(Workspace* workspace)
+{
+  workspace->removeView(this);
 }
 
 void HomeView::onWorkspaceViewSelected()

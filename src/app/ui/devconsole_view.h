@@ -33,6 +33,7 @@ namespace app {
     WorkspaceView* cloneWorkspaceView() override;
     void onWorkspaceViewSelected() override;
     void onClonedFrom(WorkspaceView* from) override;
+    void onCloseView(Workspace* workspace) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

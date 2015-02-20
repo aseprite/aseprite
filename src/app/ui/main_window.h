@@ -20,6 +20,7 @@ namespace app {
 
   class ColorBar;
   class ContextBar;
+  class DevConsoleView;
   class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
@@ -52,6 +53,8 @@ namespace app {
     void start();
     void reloadMenus();
     void showNotification(INotificationDelegate* del);
+    void showHome();
+    void showDevConsole();
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);
@@ -87,6 +90,7 @@ namespace app {
     Workspace* m_workspace;
     PreviewEditorWindow* m_previewEditor;
     HomeView* m_homeView;
+    DevConsoleView* m_devConsoleView;
     Notifications* m_notifications;
   };
 

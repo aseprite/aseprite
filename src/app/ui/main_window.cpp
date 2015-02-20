@@ -21,6 +21,7 @@
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/devconsole_view.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
@@ -50,7 +51,8 @@ MainWindow::MainWindow()
   , m_lastSplitterPos(0.0)
   , m_lastTimelineSplitterPos(75.0)
   , m_mode(NormalMode)
-  , m_homeView(NULL)
+  , m_homeView(nullptr)
+  , m_devConsoleView(nullptr)
 {
   setId("main_window");
 
@@ -122,8 +124,14 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
+  if (m_devConsoleView) {
+    if (m_devConsoleView->getParent())
+      m_workspace->removeView(m_devConsoleView);
+    delete m_devConsoleView;
+  }
   if (m_homeView) {
-    m_workspace->removeView(m_homeView);
+    if (m_homeView->getParent())
+      m_workspace->removeView(m_homeView);
     delete m_homeView;
   }
   delete m_contextBar;
@@ -152,6 +160,28 @@ void MainWindow::showNotification(INotificationDelegate* del)
   m_notifications->addLink(del);
   m_notifications->setVisible(true);
   m_notifications->getParent()->layout();
+}
+
+void MainWindow::showHome()
+{
+  if (!m_homeView)
+    m_homeView = new HomeView;
+
+  if (!m_homeView->getParent()) {
+    m_workspace->addView(m_homeView);
+    m_tabsBar->selectTab(m_homeView);
+  }
+}
+
+void MainWindow::showDevConsole()
+{
+  if (!m_devConsoleView)
+    m_devConsoleView = new DevConsoleView;
+
+  if (!m_devConsoleView->getParent()) {
+    m_workspace->addView(m_devConsoleView);
+    m_tabsBar->selectTab(m_devConsoleView);
+  }
 }
 
 void MainWindow::setMode(Mode mode)
@@ -219,11 +249,8 @@ void MainWindow::popTimeline()
 
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
-  if (msg->type() == kOpenMessage) {
-    m_homeView = new HomeView;
-    m_workspace->addView(m_homeView);
-    m_tabsBar->selectTab(m_homeView);
-  }
+  if (msg->type() == kOpenMessage)
+    showHome();
 
   return Window::onProcessMessage(msg);
 }
@@ -287,27 +314,16 @@ void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons
   }
   // Middle-button: close the sprite
   else if (buttons & kButtonMiddle) {
-    Command* close_file_cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
-
-    context->executeCommand(close_file_cmd, NULL);
+    docView->onCloseView(m_workspace);
   }
 }
 
 void MainWindow::clickClose(Tabs* tabs, TabView* tabView)
 {
-  DocumentView* docView = dynamic_cast<DocumentView*>(tabView);
-  if (!docView)
-    return;
-
-  UIContext* context = UIContext::instance();
-  context->setActiveView(docView);
-  context->updateFlags();
-
-  Command* close_file_cmd =
-    CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
-
-  context->executeCommand(close_file_cmd, NULL);
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  ASSERT(view);
+  if (view)
+    view->onCloseView(m_workspace);
 }
 
 void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)

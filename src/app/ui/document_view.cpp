@@ -12,6 +12,7 @@
 #include "app/ui/document_view.h"
 
 #include "app/app.h"
+#include "app/commands/commands.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
@@ -21,6 +22,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/preview_editor.h"
 #include "app/ui/workspace.h"
+#include "app/ui_context.h"
 #include "base/path.h"
 #include "doc/document_event.h"
 #include "doc/layer.h"
@@ -220,6 +222,18 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 
   View::getView(newEditor)
     ->setViewScroll(View::getView(srcEditor)->getViewScroll());
+}
+
+void DocumentView::onCloseView(Workspace* workspace)
+{
+  UIContext* context = UIContext::instance();
+  context->setActiveView(this);
+  context->updateFlags();
+
+  Command* close_file_cmd =
+    CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
+
+  context->executeCommand(close_file_cmd, NULL);
 }
 
 bool DocumentView::onProcessMessage(Message* msg)

@@ -149,6 +149,7 @@ add_library(app-lib
   commands/cmd_goto_layer.cpp
   commands/cmd_goto_tab.cpp
   commands/cmd_grid.cpp
+  commands/cmd_home.cpp
   commands/cmd_import_sprite_sheet.cpp
   commands/cmd_invert_mask.cpp
   commands/cmd_keyboard_shortcuts.cpp
