@@ -246,16 +246,19 @@ bool Tabs::onProcessMessage(Message* msg)
 
         if (m_delegate && m_selected && m_selected == m_hot) {
           if (m_hotCloseButton && m_clickedCloseButton) {
-            m_clickedCloseButton = false;
-            invalidate();
-
             m_delegate->clickClose(this, m_selected->view);
           }
           else if (!mouseMsg->left()) {
             m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
           }
         }
+
         releaseMouse();
+
+        if (m_clickedCloseButton) {
+          m_clickedCloseButton = false;
+          invalidate();
+        }
       }
       return true;
 

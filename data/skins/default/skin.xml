@@ -232,7 +232,7 @@
     <part id="tab_modified_icon_active"         x="32" y="117" w="5" h="5" />
     <part id="tab_close_icon_normal"            x="37" y="112" w="5" h="5" />
     <part id="tab_close_icon_active"            x="37" y="117" w="5" h="5" />
-    <part id="tab_icon_bg_active"               x="42" y="112" w="14" h="12" />
+    <part id="tab_icon_bg_clicked"              x="42" y="112" w="14" h="12" />
     <part id="tab_icon_bg_hover"                x="56" y="112" w="14" h="12" />
     <part id="tab_home_icon_normal"             x="32" y="240" w="7" h="8" />
     <part id="tab_home_icon_active"             x="40" y="240" w="7" h="8" />
@@ -659,7 +659,7 @@
       <background part="tab_icon_bg_hover" />
     </style>
     <style id="tab_icon:clicked">
-      <background part="tab_icon_bg_active" />
+      <background part="tab_icon_bg_clicked" />
     </style>
 
     <!-- tab_close_icon -->
