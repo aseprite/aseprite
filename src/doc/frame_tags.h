@@ -22,6 +22,7 @@ namespace doc {
 
   public:
     typedef List::iterator iterator;
+    typedef List::const_iterator const_iterator;
 
     FrameTags(Sprite* sprite);
 
@@ -32,8 +33,10 @@ namespace doc {
 
     iterator begin() { return m_tags.begin(); }
     iterator end() { return m_tags.end(); }
+    const_iterator begin() const { return m_tags.begin(); }
+    const_iterator end() const { return m_tags.end(); }
 
-    size_t size() { return m_tags.size(); }
+    size_t size() const { return m_tags.size(); }
 
   private:
     Sprite* m_sprite;

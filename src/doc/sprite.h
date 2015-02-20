@@ -120,6 +120,7 @@ namespace doc {
     void setFrameRangeDuration(frame_t from, frame_t to, int msecs);
     void setDurationForAllFrames(int msecs);
 
+    const FrameTags& frameTags() const { return m_frameTags; }
     FrameTags& frameTags() { return m_frameTags; }
 
     ////////////////////////////////////////

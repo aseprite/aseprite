@@ -88,6 +88,10 @@ add_library(app-lib
   cmd/set_cel_opacity.cpp
   cmd/set_cel_position.cpp
   cmd/set_frame_duration.cpp
+  cmd/set_frame_tag_anidir.cpp
+  cmd/set_frame_tag_color.cpp
+  cmd/set_frame_tag_name.cpp
+  cmd/set_frame_tag_range.cpp
   cmd/set_layer_flags.cpp
   cmd/set_layer_name.cpp
   cmd/set_mask.cpp
@@ -138,6 +142,7 @@ add_library(app-lib
   commands/cmd_flatten_layers.cpp
   commands/cmd_flip.cpp
   commands/cmd_frame_properties.cpp
+  commands/cmd_frame_tag_properties.cpp
   commands/cmd_fullscreen_preview.cpp
   commands/cmd_goto_frame.cpp
   commands/cmd_goto_layer.cpp

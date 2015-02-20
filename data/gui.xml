@@ -525,9 +525,12 @@
         </item>
         <item command="RemoveFrame" text="&amp;Remove Frame" />
         <separator />
-	<item command="NewFrameTag" text="New &amp;Tag" />
-	<item command="RemoveFrameTag" text="Remove Ta&amp;g" />
-        <separator />
+        <menu text="&amp;Tags">
+          <item command="FrameTagProperties" text="Tag &amp;Properties..." />
+          <separator />
+          <item command="NewFrameTag" text="New &amp;Tag" />
+          <item command="RemoveFrameTag" text="&amp;Remove Tag" />
+        </menu>
         <menu text="&amp;Jump to">
           <item command="GotoFirstFrame" text="&amp;First Frame" />
           <item command="GotoPreviousFrame" text="&amp;Previous Frame" />

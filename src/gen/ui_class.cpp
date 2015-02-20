@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -52,6 +52,7 @@ static std::string convert_type(const std::string& name)
   if (name == "button") return "ui::Button";
   if (name == "buttonset") return "app::ButtonSet";
   if (name == "check") return "ui::CheckBox";
+  if (name == "colorpicker") return "app::ColorButton";
   if (name == "combobox") return "ui::ComboBox";
   if (name == "entry") return "ui::Entry";
   if (name == "hbox") return "ui::HBox";
