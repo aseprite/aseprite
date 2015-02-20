@@ -4,11 +4,12 @@
       url="http://ilkke.blogspot.com/">
 
   <dimensions>
+    <dim id="tabs_width" value="80" />
     <dim id="tabs_height" value="17" />
     <dim id="tabs_empty_height" value="5" />
-    <dim id="tabs_width" value="80" />
     <dim id="tabs_close_icon_width" value="14" />
     <dim id="tabs_close_icon_height" value="12" />
+    <dim id="tabs_icon_width" value="10" />
   </dimensions>
 
   <colors>
@@ -233,6 +234,8 @@
     <part id="tab_close_icon_active"            x="37" y="117" w="5" h="5" />
     <part id="tab_icon_bg_active"               x="42" y="112" w="14" h="12" />
     <part id="tab_icon_bg_hover"                x="56" y="112" w="14" h="12" />
+    <part id="tab_home_icon_normal"             x="32" y="240" w="7" h="8" />
+    <part id="tab_home_icon_active"             x="40" y="240" w="7" h="8" />
     <part id="editor_normal"                    x="40" y="96" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
     <part id="editor_selected"                  x="56" y="96" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
     <part id="colorbar_0"                       x="0" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
@@ -627,6 +630,14 @@
       <text color="tab_active_text" />
     </style>
 
+    <!-- tab_text -->
+    <style id="tab_text">
+      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
+    </style>
+    <style id="tab_text:active">
+      <text color="tab_active_text" />
+    </style>
+
     <!-- tab_bottom -->
     <style id="tab_bottom">
       <background part="tab_bottom_normal" color="tab_normal_face" repeat="repeat-x" />
@@ -677,6 +688,14 @@
     </style>
     <style id="tab_modified_icon:clicked">
       <icon part="tab_modified_icon_normal" />
+    </style>
+
+    <!-- tab_home -->
+    <style id="tab_home">
+      <icon part="tab_home_icon_normal" align="left" valign="middle" x="4" y="1" />
+    </style>
+    <style id="tab_home:active">
+      <icon part="tab_home_icon_active" />
     </style>
 
   </stylesheet>

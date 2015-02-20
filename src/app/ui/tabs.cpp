@@ -80,6 +80,7 @@ void Tabs::addTab(TabView* tabView)
 {
   Tab* tab = new Tab(tabView);
   tab->text = tab->view->getTabText();
+  tab->icon = tab->view->getTabIcon();
 
   m_list.push_back(tab);
 
@@ -131,8 +132,10 @@ void Tabs::removeTab(TabView* tabView)
 
 void Tabs::updateTabsText()
 {
-  for (Tab* tab : m_list)
+  for (Tab* tab : m_list) {
     tab->text = tab->view->getTabText();
+    tab->icon = tab->view->getTabIcon();
+  }
   invalidate();
 }
 
@@ -418,7 +421,7 @@ void Tabs::selectTabInternal(Tab* tab)
   invalidate();
 }
 
-void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int y_delta,
+void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   bool hover, bool selected)
 {
   gfx::Rect box = _box;
@@ -439,7 +442,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int y_delta,
   if (closeBox.isEmpty())
     clipTextRightSide = 4*ui::guiscale();
   else {
-    closeBox.y += y_delta;
+    closeBox.y += dy;
     clipTextRightSide = closeBox.w;
   }
 
@@ -458,17 +461,40 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int y_delta,
   if (selected) state += skin::Style::active();
   if (hover) state += skin::Style::hover();
 
+  // Tab without text
   theme->styles.tab()->paint(g,
-    gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
+    gfx::Rect(box.x, box.y+dy, box.w, box.h),
     nullptr, state);
 
+  // Tab icon
+  TabIcon icon = tab->icon;
+  int dx = 0;
+  switch (icon) {
+    case TabIcon::NONE:
+      break;
+    case TabIcon::HOME:
+      {
+        theme->styles.tabHome()->paint(g,
+          gfx::Rect(
+            box.x,
+            box.y+dy,
+            box.x-dx,
+            box.h),
+          nullptr, state);
+        dx += theme->dimensions.tabsIconWidth();
+      }
+      break;
+  }
+
+  // Tab with text + clipping the close button
   if (box.w > 8*ui::guiscale()) {
-    IntersectClip clip(g, gfx::Rect(box.x, box.y+y_delta, box.w-clipTextRightSide, box.h));
-    theme->styles.tab()->paint(g,
-      gfx::Rect(box.x, box.y+y_delta, box.w, box.h),
+    IntersectClip clip(g, gfx::Rect(box.x+dx, box.y+dy, box.w-dx-clipTextRightSide, box.h));
+    theme->styles.tabText()->paint(g,
+      gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
       tab->text.c_str(), state);
   }
 
+  // Tab bottom part
   theme->styles.tabBottom()->paint(g,
     gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
     nullptr, state);

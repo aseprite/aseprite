@@ -42,6 +42,7 @@ namespace app {
 
     // TabView implementation
     std::string getTabText() override;
+    TabIcon getTabIcon() override;
 
     // WorkspaceView implementation
     ui::Widget* getContentWidget() override { return this; }

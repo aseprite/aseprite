@@ -194,6 +194,11 @@ std::string DocumentView::getTabText()
   return m_document->name();
 }
 
+TabIcon DocumentView::getTabIcon()
+{
+  return TabIcon::NONE;
+}
+
 WorkspaceView* DocumentView::cloneWorkspaceView()
 {
   return new DocumentView(m_document, Normal);

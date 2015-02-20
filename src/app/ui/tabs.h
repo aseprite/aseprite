@@ -22,6 +22,11 @@ namespace ui {
 namespace app {
   class Tabs;
 
+  enum class TabIcon {
+    NONE,
+    HOME,
+  };
+
   // Required interface to be implemented by each new tab that is added
   // in the Tabs widget.
   class TabView {
@@ -30,6 +35,9 @@ namespace app {
 
     // Returns the text to be shown in the tab.
     virtual std::string getTabText() = 0;
+
+    // Returns the icon to be shown in the tab
+    virtual TabIcon getTabIcon() = 0;
   };
 
   // Interface used to control notifications from the Tabs widget.
@@ -55,6 +63,7 @@ namespace app {
     struct Tab {
       TabView* view;
       std::string text;
+      TabIcon icon;
 
       Tab(TabView* view) : view(view) {
       }
@@ -92,7 +101,7 @@ namespace app {
     void stopAni();
 
     void selectTabInternal(Tab* tab);
-    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool hover, bool selected);
+    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int dy, bool hover, bool selected);
     TabsListIterator getTabIteratorByView(TabView* tabView);
     Tab* getTabByView(TabView* tabView);
     int getMaxScrollX();

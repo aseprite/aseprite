@@ -83,6 +83,11 @@ std::string DevConsoleView::getTabText()
   return "Console";
 }
 
+TabIcon DevConsoleView::getTabIcon()
+{
+  return TabIcon::NONE;
+}
+
 WorkspaceView* DevConsoleView::cloneWorkspaceView()
 {
   return new DevConsoleView();

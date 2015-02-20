@@ -43,6 +43,11 @@ std::string HomeView::getTabText()
   return "Home";
 }
 
+TabIcon HomeView::getTabIcon()
+{
+  return TabIcon::HOME;
+}
+
 WorkspaceView* HomeView::cloneWorkspaceView()
 {
   return NULL;                  // This view cannot be cloned
