@@ -22,11 +22,8 @@
 #include <algorithm>
 #include <cmath>
 
-#define ARROW_W         (12*guiscale())
-
 #define ANI_ADDING_TAB_TICKS      5
 #define ANI_REMOVING_TAB_TICKS    10
-#define ANI_SMOOTH_SCROLL_TICKS   20
 
 #define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
@@ -34,6 +31,15 @@ namespace app {
 
 using namespace app::skin;
 using namespace ui;
+
+namespace {
+  double ease(double t) {
+    return (1.0 - std::pow(1.0 - t, 2));
+  }
+  double inbetween(double x0, double x1, double t) {
+    return x0 + (x1-x0)*ease(t);
+  }
+}
 
 static WidgetType tabs_type()
 {
@@ -45,6 +51,7 @@ static WidgetType tabs_type()
 
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
+  , m_border(2)
   , m_delegate(delegate)
   , m_timer(1000/60, this)
 {
@@ -53,7 +60,6 @@ Tabs::Tabs(TabsDelegate* delegate)
   m_hot = NULL;
   m_hotCloseButton = false;
   m_selected = NULL;
-  m_scrollX = 0;
   m_ani = ANI_NONE;
   m_removedTab = NULL;
 
@@ -78,16 +84,15 @@ Tabs::~Tabs()
 
 void Tabs::addTab(TabView* tabView)
 {
+  startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
+
   Tab* tab = new Tab(tabView);
-  tab->text = tab->view->getTabText();
-  tab->icon = tab->view->getTabIcon();
-
   m_list.push_back(tab);
+  updateTabs();
 
-  // Update scroll (in the same position if we can
-  setScrollX(m_scrollX);
-
-  startAni(ANI_ADDING_TAB);
+  tab->oldX = tab->x;
+  tab->oldWidth = tab->width;
+  tab->modified = false;
 }
 
 void Tabs::removeTab(TabView* tabView)
@@ -97,44 +102,61 @@ void Tabs::removeTab(TabView* tabView)
     return;
 
   if (m_hot == tab)
-    m_hot = NULL;
+    m_hot = nullptr;
 
   if (m_selected == tab) {
     selectNextTab();
     if (m_selected == tab)
-      m_selected = NULL;
+      m_selected = nullptr;
   }
 
   TabsListIterator it =
     std::find(m_list.begin(), m_list.end(), tab);
-
   ASSERT(it != m_list.end() && "Removing a tab that is not part of the Tabs widget");
-
   it = m_list.erase(it);
 
-  if (m_removedTab) {
-    delete m_removedTab;
-    m_removedTab = NULL;
-  }
+  delete m_removedTab;
   m_removedTab = tab;
+
+  if (m_delegate)
+    tab->modified = m_delegate->isModified(this, tabView);
+  tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
   // Next tab in the list
   if (it != m_list.end())
     m_nextTabOfTheRemovedOne = *it;
   else
-    m_nextTabOfTheRemovedOne = NULL;
+    m_nextTabOfTheRemovedOne = nullptr;
 
-  // Update scroll (in the same position if we can)
-  setScrollX(m_scrollX);
-
-  startAni(ANI_REMOVING_TAB);
+  startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+  updateTabs();
 }
 
-void Tabs::updateTabsText()
+void Tabs::updateTabs()
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  double availWidth = getBounds().w - m_border*ui::guiscale();
+  double defTabWidth = theme->dimensions.tabsWidth();
+  double tabWidth = defTabWidth;
+  if (tabWidth * m_list.size() > availWidth) {
+    tabWidth = availWidth / double(m_list.size());
+    tabWidth = MAX(4*ui::guiscale(), tabWidth);
+  }
+  double x = 0.0;
+
   for (Tab* tab : m_list) {
+    double thisTabWidth;
+
+    // if (tab == m_selected)
+    //   thisTabWidth = defTabWidth;
+    // else
+      thisTabWidth = tabWidth;
+
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
+    tab->x = int(x);
+    tab->width = int(x+thisTabWidth) - int(x);
+    x += thisTabWidth;
   }
   invalidate();
 }
@@ -143,8 +165,8 @@ void Tabs::selectTab(TabView* tabView)
 {
   ASSERT(tabView != NULL);
 
-  Tab *tab = getTabByView(tabView);
-  if (tab != NULL)
+  Tab* tab = getTabByView(tabView);
+  if (tab)
     selectTabInternal(tab);
 }
 
@@ -264,59 +286,29 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage: {
       int dz =
-        (static_cast<MouseMessage*>(msg)->wheelDelta().x -
-         static_cast<MouseMessage*>(msg)->wheelDelta().y) * getBounds().w/6;
+        (static_cast<MouseMessage*>(msg)->wheelDelta().x +
+         static_cast<MouseMessage*>(msg)->wheelDelta().y);
 
-      m_begScrollX = m_scrollX;
-      if (m_ani != ANI_SMOOTH_SCROLL)
-        m_endScrollX = m_scrollX + dz;
-      else
-        m_endScrollX += dz;
-
-      // Limit endScrollX position (to improve animation ending to the correct position)
-      {
-        int max_x = getMaxScrollX();
-        m_endScrollX = MID(0, m_endScrollX, max_x);
+      auto it = std::find(m_list.begin(), m_list.end(), m_selected);
+      if (it != m_list.end()) {
+        int index = (it - m_list.begin());
+        int newIndex = index + dz;
+        newIndex = MID(0, newIndex, int(m_list.size())-1);
+        if (newIndex != index)
+          selectTabInternal(m_list[newIndex]);
       }
-
-      startAni(ANI_SMOOTH_SCROLL);
       return true;
     }
 
     case kTimerMessage: {
-      switch (m_ani) {
-        case ANI_NONE:
-          // Do nothing
-          break;
-        case ANI_SMOOTH_SCROLL: {
-          if (m_ani_t == ANI_SMOOTH_SCROLL_TICKS) {
-            stopAni();
-            setScrollX(m_endScrollX);
-          }
-          else {
-            // Lineal
-            //setScrollX(m_begScrollX + m_endScrollX - m_begScrollX) * m_ani_t / 10);
+      if (m_ani != ANI_NONE) {
+        if (m_ani_t == m_ani_T)
+          stopAni();
+        else
+          ++m_ani_t;
 
-            // Exponential
-            setScrollX(m_begScrollX +
-              int((m_endScrollX - m_begScrollX) * (1.0-std::exp(-10.0 * m_ani_t / (double)ANI_SMOOTH_SCROLL_TICKS))));
-          }
-          break;
-        }
-        case ANI_ADDING_TAB: {
-          if (m_ani_t == ANI_ADDING_TAB_TICKS)
-            stopAni();
-          invalidate();
-          break;
-        }
-        case ANI_REMOVING_TAB: {
-          if (m_ani_t == ANI_REMOVING_TAB_TICKS)
-            stopAni();
-          invalidate();
-          break;
-        }
+        invalidate();
       }
-      ++m_ani_t;
       break;
     }
 
@@ -330,8 +322,8 @@ void Tabs::onPaint(PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
-  gfx::Rect box(rect.x-m_scrollX, rect.y,
-    2*guiscale(),
+  gfx::Rect box(rect.x, rect.y,
+    m_border*guiscale(),
     (m_list.empty() ? 0:
       theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
 
@@ -343,50 +335,61 @@ void Tabs::onPaint(PaintEvent& ev)
     gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), nullptr, state);
 
   box.x = box.x2();
+  int startX = box.x;
+  double t = double(m_ani_t)/double(m_ani_T);
+  Tab* prevTab = nullptr;
 
   // For each tab...
-  int tabWidth = calcTabWidth();
   for (Tab* tab : m_list) {
-    box.w = tabWidth;
+    int prevX2 = box.x;
 
-    int x_delta = 0;
-    int y_delta = 0;
-
-    // Y-delta for animating tabs (intros and outros)
-    if (m_ani == ANI_ADDING_TAB && m_selected == tab) {
-      y_delta = box.h * (ANI_ADDING_TAB_TICKS - m_ani_t) / ANI_ADDING_TAB_TICKS;
+    if (m_ani == ANI_NONE) {
+      box.w = tab->width;
     }
-    else if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == tab) {
-      x_delta += tabWidth
-        - int(double(tabWidth)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
-      x_delta = MID(0, x_delta, tabWidth);
+    else {
+      box.x = startX + int(inbetween(tab->oldX, tab->x, t));
+      box.w = int(inbetween(tab->oldWidth, tab->width, t));
+    }
 
-      // Draw deleted tab
-      if (m_removedTab) {
-        gfx::Rect box2(box.x, box.y, x_delta, box.h);
-        drawTab(g, box2, m_removedTab, 0, false, false);
+    int dy = 0;
+    if (m_ani == ANI_ADDING_TAB) {
+      box.x = prevX2;            // To avoid empty spaces in animation between tabs
+      if (m_selected == tab)
+        dy = int(box.h - box.h * t);
+    }
+    else if (m_ani == ANI_REMOVING_TAB) {
+      if (m_nextTabOfTheRemovedOne == tab) {
+        // Draw deleted tab
+        if (m_removedTab) {
+          gfx::Rect box2(0, box.y, 0, box.h);
+          if (prevTab)
+            box2.x = prevX2;
+          box2.w = int(startX + inbetween(tab->oldX, tab->x, t)) - box2.x;
+          drawTab(g, box2, m_removedTab, 0, false, false);
+        }
       }
+      else
+        box.x = prevX2;            // To avoid empty spaces in animation between tabs
     }
 
-    box.x += x_delta;
-    drawTab(g, box, tab, y_delta, (tab == m_hot), (tab == m_selected));
+    drawTab(g, box, tab, dy, (tab == m_hot), (tab == m_selected));
 
     box.x = box.x2();
+    prevTab = tab;
   }
 
-  if (m_ani == ANI_REMOVING_TAB && m_nextTabOfTheRemovedOne == NULL) {
-    // Draw deleted tab
-    if (m_removedTab) {
-      int x_delta = tabWidth
-        - int(double(tabWidth)*(1.0-std::exp(-10.0 * m_ani_t / (double)ANI_REMOVING_TAB_TICKS)));
-      x_delta = MID(0, x_delta, tabWidth);
-
-      gfx::Rect box2(box.x, box.y, x_delta, box.h);
-      drawTab(g, box2, m_removedTab, 0, false, false);
-
-      box.x += x_delta;
-      box.w = 0;
+  // Draw deleted tab
+  if (m_ani == ANI_REMOVING_TAB && !m_nextTabOfTheRemovedOne && m_removedTab) {
+    gfx::Rect box2(0, box.y, 0, box.h);
+    if (prevTab) {
+      box2.x = int(startX + inbetween(
+          prevTab->oldX+prevTab->oldWidth, prevTab->x+prevTab->width, t));
     }
+    box2.w = int(inbetween(m_removedTab->oldWidth, 0, t));
+    drawTab(g, box2, m_removedTab, 0, false, false);
+
+    box.x += box2.w;
+    box.w = 0;
   }
 
   // Fill the gap to the right-side
@@ -401,7 +404,7 @@ void Tabs::onPaint(PaintEvent& ev)
 void Tabs::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.getBounds());
-  setScrollX(m_scrollX);
+  updateTabs();
 }
 
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
@@ -505,10 +508,15 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   // Close button
   if (!closeBox.isEmpty()) {
     skin::Style* style = theme->styles.tabCloseIcon();
-    if (m_delegate &&
-      m_delegate->isModified(this, tab->view) &&
-      (!hover || !m_hotCloseButton)) {
-      style = theme->styles.tabModifiedIcon();
+
+    if (m_delegate) {
+      if (tab->view)
+        tab->modified = m_delegate->isModified(this, tab->view);
+
+      if (tab->modified &&
+          (!hover || !m_hotCloseButton)) {
+        style = theme->styles.tabModifiedIcon();
+      }
     }
 
     state = skin::Style::State();
@@ -547,71 +555,23 @@ Tabs::Tab* Tabs::getTabByView(TabView* tabView)
     return NULL;
 }
 
-int Tabs::getMaxScrollX()
+void Tabs::makeTabVisible(Tab* thisTab)
 {
-  TabsListIterator it, end = m_list.end();
-  int x = 0;
-  int tabWidth = calcTabWidth();
-
-  for (it = m_list.begin(); it != end; ++it) {
-    Tab* tab = *it;
-    x += tabWidth;
-  }
-
-  x -= getBounds().w;
-
-  if (x < 0)
-    return 0;
-  else
-    return x + ARROW_W*2;
-}
-
-void Tabs::makeTabVisible(Tab* make_visible_this_tab)
-{
-  int x = 0;
-  int extra_x = getMaxScrollX() > 0 ? ARROW_W*2: 0;
-  int tabWidth = calcTabWidth();
-
-  for (Tab* tab : m_list) {
-    if (tab == make_visible_this_tab) {
-      if (x - m_scrollX < 0) {
-        setScrollX(x);
-      }
-      else if (x + tabWidth - m_scrollX > getBounds().w - extra_x) {
-        setScrollX(x + tabWidth - getBounds().w + extra_x);
-      }
-      break;
-    }
-
-    x += tabWidth;
-  }
-}
-
-void Tabs::setScrollX(int scroll_x)
-{
-  int max_x = getMaxScrollX();
-
-  scroll_x = MID(0, scroll_x, max_x);
-  if (m_scrollX != scroll_x) {
-    m_scrollX = scroll_x;
-    calculateHot();
-    invalidate();
-  }
+  updateTabs();
 }
 
 void Tabs::calculateHot()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getBounds();
-  gfx::Rect box(rect.x-m_scrollX, rect.y, 0, rect.h-1);
+  gfx::Rect box(rect.x, rect.y, 0, rect.h-1);
   gfx::Point mousePos = ui::get_mouse_position();
   Tab* hot = NULL;
   bool hotCloseButton = false;
-  int tabWidth = calcTabWidth();
 
   // For each tab
   for (Tab* tab : m_list) {
-    box.w = tabWidth;
+    box.w = tab->width;
 
     if (box.contains(mousePos)) {
       hot = tab;
@@ -634,19 +594,6 @@ void Tabs::calculateHot()
   }
 }
 
-int Tabs::calcTabWidth()
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  int tabWidth = theme->dimensions.tabsWidth();
-
-  if (tabWidth * m_list.size() > (size_t)getBounds().w) {
-    tabWidth = getBounds().w / m_list.size();
-    tabWidth = MAX(2*ui::guiscale(), tabWidth);
-  }
-
-  return tabWidth;
-}
-
 gfx::Rect Tabs::getTabCloseButtonBounds(const gfx::Rect& box)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
@@ -659,14 +606,20 @@ gfx::Rect Tabs::getTabCloseButtonBounds(const gfx::Rect& box)
     return gfx::Rect();
 }
 
-void Tabs::startAni(Ani ani)
+void Tabs::startAni(Ani ani, int T)
 {
   // Stop previous animation
   if (m_ani != ANI_NONE)
     stopAni();
 
+  for (Tab* tab : m_list) {
+    tab->oldX = tab->x;
+    tab->oldWidth = tab->width;
+  }
+
   m_ani = ani;
   m_ani_t = 0;
+  m_ani_T = T;
   m_timer.start();
 }
 

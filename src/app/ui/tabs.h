@@ -64,6 +64,9 @@ namespace app {
       TabView* view;
       std::string text;
       TabIcon icon;
+      int x, width;
+      int oldX, oldWidth;
+      bool modified;
 
       Tab(TabView* view) : view(view) {
       }
@@ -74,8 +77,7 @@ namespace app {
 
     enum Ani { ANI_NONE,
                ANI_ADDING_TAB,
-               ANI_REMOVING_TAB,
-               ANI_SMOOTH_SCROLL };
+               ANI_REMOVING_TAB };
 
   public:
     Tabs(TabsDelegate* delegate);
@@ -83,7 +85,7 @@ namespace app {
 
     void addTab(TabView* tabView);
     void removeTab(TabView* tabView);
-    void updateTabsText();
+    void updateTabs();
 
     void selectTab(TabView* tabView);
     void selectNextTab();
@@ -97,7 +99,7 @@ namespace app {
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
   private:
-    void startAni(Ani ani);
+    void startAni(Ani ani, int T);
     void stopAni();
 
     void selectTabInternal(Tab* tab);
@@ -106,27 +108,24 @@ namespace app {
     Tab* getTabByView(TabView* tabView);
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
-    void setScrollX(int scroll_x);
     void calculateHot();
-    int calcTabWidth();
     gfx::Rect getTabCloseButtonBounds(const gfx::Rect& box);
 
+    int m_border;
     TabsList m_list;
     Tab* m_hot;
     bool m_hotCloseButton;
     bool m_clickedCloseButton;
     Tab* m_selected;
-    int m_scrollX;
 
     // Delegate of notifications
     TabsDelegate* m_delegate;
 
     // Variables for animation purposes
     ui::Timer m_timer;
-    int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
-    int m_endScrollX;             // Final X position of scroll in the animation when you scroll with mouse wheel
     Ani m_ani;                    // Current animation
-    int m_ani_t;                  // Number of ticks from the beginning of the animation
+    int m_ani_t;                  // Number of ticks from the beginning of the transition/animation
+    int m_ani_T;                  // Number of ticks in total for the current transition/animation
     Tab* m_removedTab;
     Tab* m_nextTabOfTheRemovedOne;
   };
