@@ -109,7 +109,7 @@ namespace app {
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
     void calculateHot();
-    gfx::Rect getTabCloseButtonBounds(const gfx::Rect& box);
+    gfx::Rect getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box);
 
     int m_border;
     TabsList m_list;

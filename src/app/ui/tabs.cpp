@@ -444,7 +444,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   gfx::Color face_color;
   int clipTextRightSide;
 
-  gfx::Rect closeBox = getTabCloseButtonBounds(box);
+  gfx::Rect closeBox = getTabCloseButtonBounds(tab, box);
   if (closeBox.isEmpty())
     clipTextRightSide = 4*ui::guiscale();
   else {
@@ -575,7 +575,7 @@ void Tabs::calculateHot()
 
     if (box.contains(mousePos)) {
       hot = tab;
-      hotCloseButton = getTabCloseButtonBounds(box).contains(mousePos);
+      hotCloseButton = getTabCloseButtonBounds(tab, box).contains(mousePos);
       break;
     }
 
@@ -594,13 +594,13 @@ void Tabs::calculateHot()
   }
 }
 
-gfx::Rect Tabs::getTabCloseButtonBounds(const gfx::Rect& box)
+gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   int iconW = theme->dimensions.tabsCloseIconWidth();
   int iconH = theme->dimensions.tabsCloseIconHeight();
 
-  if (box.w-iconW > 4*ui::guiscale())
+  if (box.w-iconW > 32*ui::guiscale() || tab == m_selected)
     return gfx::Rect(box.x2()-iconW, box.y+box.h/2-iconH/2, iconW, iconH);
   else
     return gfx::Rect();
