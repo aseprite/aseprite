@@ -62,7 +62,7 @@ are encouraged to create mockups for any issue you see and attach them.
 
 ## Hacking
 
-The first thing to keep in main if you want to modify the source code:
+The first thing to keep in mind if you want to modify the source code:
 checkout the **master** branch. It is the branch that we use to
 develop new features and fix issues that are planned for the next big
 release. See the [INSTALL](INSTALL.md) guide to know how to compile.
