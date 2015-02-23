@@ -149,18 +149,11 @@ void Tabs::updateTabs()
   double x = 0.0;
 
   for (Tab* tab : m_list) {
-    double thisTabWidth;
-
-    // if (tab == m_selected)
-    //   thisTabWidth = defTabWidth;
-    // else
-      thisTabWidth = tabWidth;
-
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
     tab->x = int(x);
-    tab->width = int(x+thisTabWidth) - int(x);
-    x += thisTabWidth;
+    tab->width = int(x+tabWidth) - int(x);
+    x += tabWidth;
   }
   invalidate();
 }
@@ -242,24 +235,21 @@ bool Tabs::onProcessMessage(Message* msg)
       if (m_hot != NULL) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        if (m_selected != m_hot) {
-          m_selected = m_hot;
-          invalidate();
-        }
-
         if (m_hotCloseButton) {
           if (!m_clickedCloseButton) {
             m_clickedCloseButton = true;
             invalidate();
           }
         }
+        else if (mouseMsg->left() && m_selected != m_hot) {
+          m_selected = m_hot;
 
-        // Left button is processed in mouse down message, right
-        // button is processed in mouse up.
-        if (m_selected && m_delegate &&
-            !m_clickedCloseButton &&
-            mouseMsg->left()) {
-          m_delegate->onSelectTab(this, m_selected->view);
+          // Left-click is processed in mouse down message,
+          // right-click is processed in mouse up.
+          if (m_selected && m_delegate)
+            m_delegate->onSelectTab(this, m_selected->view);
+
+          invalidate();
         }
 
         captureMouse();
@@ -270,13 +260,14 @@ bool Tabs::onProcessMessage(Message* msg)
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        if (m_delegate && m_selected && m_selected == m_hot) {
-          if (mouseMsg->middle() || (m_hotCloseButton && m_clickedCloseButton)) {
-            m_delegate->onCloseTab(this, m_selected->view);
-          }
-          else if (mouseMsg->right()) {
-            m_delegate->onContextMenuTab(this, m_selected->view);
-          }
+        if ((mouseMsg->middle()) ||
+            (mouseMsg->left() && m_hotCloseButton && m_clickedCloseButton)) {
+          if (m_hot && m_delegate)
+            m_delegate->onCloseTab(this, m_hot->view);
+        }
+        else if (mouseMsg->right() && m_hot) {
+          if (m_delegate)
+            m_delegate->onContextMenuTab(this, m_hot->view);
         }
 
         releaseMouse();

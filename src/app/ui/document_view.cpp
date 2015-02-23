@@ -231,7 +231,7 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 
 bool DocumentView::onCloseView(Workspace* workspace)
 {
-  Context* ctx = UIContext::instance();
+  UIContext* ctx = UIContext::instance();
   bool save_it;
   bool try_again = true;
 
@@ -263,6 +263,9 @@ bool DocumentView::onCloseView(Workspace* workspace)
 
     // Does we need to save the sprite?
     if (save_it) {
+      ctx->setActiveView(this);
+      ctx->updateFlags();
+
       Command* save_command =
         CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
       ctx->executeCommand(save_command);
@@ -294,9 +297,9 @@ void DocumentView::onTabPopup(Workspace* workspace)
   if (!menu)
     return;
 
-  UIContext* context = UIContext::instance();
-  context->setActiveView(this);
-  context->updateFlags();
+  UIContext* ctx = UIContext::instance();
+  ctx->setActiveView(this);
+  ctx->updateFlags();
 
   menu->showPopup(ui::get_mouse_position());
 }
