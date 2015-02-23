@@ -25,9 +25,13 @@ std::string filename_formatter(
   const std::string& layerName,
   int frame, bool replaceFrame)
 {
+  std::string path = base::get_file_path(filename);
+  if (path.empty())
+    path = ".";
+
   std::string output = format;
   base::replace_string(output, "{fullname}", filename);
-  base::replace_string(output, "{path}", base::get_file_path(filename));
+  base::replace_string(output, "{path}", path);
   base::replace_string(output, "{name}", base::get_file_name(filename));
   base::replace_string(output, "{title}", base::get_file_title(filename));
   base::replace_string(output, "{extension}", base::get_file_extension(filename));
