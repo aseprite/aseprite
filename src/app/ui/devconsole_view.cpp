@@ -11,9 +11,11 @@
 
 #include "app/ui/devconsole_view.h"
 
+#include "app/app_menus.h"
 #include "app/ui/workspace.h"
 #include "ui/entry.h"
 #include "ui/message.h"
+#include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
 
@@ -103,9 +105,19 @@ void DevConsoleView::onClonedFrom(WorkspaceView* from)
 {
 }
 
-void DevConsoleView::onCloseView(Workspace* workspace)
+bool DevConsoleView::onCloseView(Workspace* workspace)
 {
   workspace->removeView(this);
+  return true;
+}
+
+void DevConsoleView::onTabPopup(Workspace* workspace)
+{
+  Menu* menu = AppMenus::instance()->getTabPopupMenu();
+  if (!menu)
+    return;
+
+  menu->showPopup(ui::get_mouse_position());
 }
 
 bool DevConsoleView::onProcessMessage(Message* msg)

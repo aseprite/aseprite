@@ -288,45 +288,33 @@ void MainWindow::onActiveViewChange()
   layout();
 }
 
-void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons)
+void MainWindow::onSelectTab(Tabs* tabs, TabView* tabView)
 {
   if (!tabView)
     return;
 
-  WorkspaceView* workspaceView = dynamic_cast<WorkspaceView*>(tabView);
-  if (m_workspace->activeView() != workspaceView)
-    m_workspace->setActiveView(workspaceView);
-
-  DocumentView* docView = dynamic_cast<DocumentView*>(workspaceView);
-  if (!docView)
-    return;
-
-  UIContext* context = UIContext::instance();
-  context->setActiveView(docView);
-  context->updateFlags();
-
-  // Right-button: popup-menu
-  if (buttons & kButtonRight) {
-    Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
-    if (popup_menu != NULL) {
-      popup_menu->showPopup(ui::get_mouse_position());
-    }
-  }
-  // Middle-button: close the sprite
-  else if (buttons & kButtonMiddle) {
-    docView->onCloseView(m_workspace);
-  }
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  if (m_workspace->activeView() != view)
+    m_workspace->setActiveView(view);
 }
 
-void MainWindow::clickClose(Tabs* tabs, TabView* tabView)
+void MainWindow::onCloseTab(Tabs* tabs, TabView* tabView)
 {
   WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
   ASSERT(view);
   if (view)
-    view->onCloseView(m_workspace);
+    m_workspace->closeView(view);
 }
 
-void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
+void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)
+{
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  ASSERT(view);
+  if (view)
+    view->onTabPopup(m_workspace);
+}
+
+void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
@@ -339,7 +327,7 @@ void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
   }
 }
 
-bool MainWindow::isModified(Tabs* tabs, TabView* tabView)
+bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->getDocument();

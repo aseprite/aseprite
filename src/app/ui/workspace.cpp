@@ -78,6 +78,11 @@ void Workspace::removeView(WorkspaceView* view)
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
 
+bool Workspace::closeView(WorkspaceView* view)
+{
+  return view->onCloseView(this);
+}
+
 WorkspaceView* Workspace::activeView()
 {
   ASSERT(m_activePart != NULL);

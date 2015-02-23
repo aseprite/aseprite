@@ -30,6 +30,10 @@ namespace app {
     void addView(WorkspaceView* view);
     void removeView(WorkspaceView* view);
 
+    // Closes the given view. Returns false if the user cancels the
+    // operation.
+    bool closeView(WorkspaceView* view);
+
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
 

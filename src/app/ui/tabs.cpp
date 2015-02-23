@@ -105,7 +105,11 @@ void Tabs::removeTab(TabView* tabView)
     m_hot = nullptr;
 
   if (m_selected == tab) {
-    selectNextTab();
+    if (tab == m_list.back())
+      selectPreviousTab();
+    else
+      selectNextTab();
+
     if (m_selected == tab)
       m_selected = nullptr;
   }
@@ -119,7 +123,7 @@ void Tabs::removeTab(TabView* tabView)
   m_removedTab = tab;
 
   if (m_delegate)
-    tab->modified = m_delegate->isModified(this, tabView);
+    tab->modified = m_delegate->onIsModified(this, tabView);
   tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
   // Next tab in the list
@@ -185,7 +189,7 @@ void Tabs::selectNextTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->view, kButtonLeft);
+        m_delegate->onSelectTab(this, m_selected->view);
     }
   }
 }
@@ -205,7 +209,7 @@ void Tabs::selectPreviousTab()
     if (it != currentTabIt) {
       selectTabInternal(*it);
       if (m_delegate)
-        m_delegate->clickTab(this, m_selected->view, kButtonLeft);
+        m_delegate->onSelectTab(this, m_selected->view);
     }
   }
 }
@@ -255,7 +259,7 @@ bool Tabs::onProcessMessage(Message* msg)
         if (m_selected && m_delegate &&
             !m_clickedCloseButton &&
             mouseMsg->left()) {
-          m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
+          m_delegate->onSelectTab(this, m_selected->view);
         }
 
         captureMouse();
@@ -267,11 +271,11 @@ bool Tabs::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
         if (m_delegate && m_selected && m_selected == m_hot) {
-          if (m_hotCloseButton && m_clickedCloseButton) {
-            m_delegate->clickClose(this, m_selected->view);
+          if (mouseMsg->middle() || (m_hotCloseButton && m_clickedCloseButton)) {
+            m_delegate->onCloseTab(this, m_selected->view);
           }
-          else if (!mouseMsg->left()) {
-            m_delegate->clickTab(this, m_selected->view, mouseMsg->buttons());
+          else if (mouseMsg->right()) {
+            m_delegate->onContextMenuTab(this, m_selected->view);
           }
         }
 
@@ -511,7 +515,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
 
     if (m_delegate) {
       if (tab->view)
-        tab->modified = m_delegate->isModified(this, tab->view);
+        tab->modified = m_delegate->onIsModified(this, tab->view);
 
       if (tab->modified &&
           (!hover || !m_hotCloseButton)) {
@@ -588,7 +592,7 @@ void Tabs::calculateHot()
     m_hotCloseButton = hotCloseButton;
 
     if (m_delegate)
-      m_delegate->mouseOverTab(this, m_hot ? m_hot->view: NULL);
+      m_delegate->onMouseOverTab(this, m_hot ? m_hot->view: NULL);
 
     invalidate();
   }

@@ -45,17 +45,20 @@ namespace app {
   public:
     virtual ~TabsDelegate() { }
 
-    // Called when the user presses a mouse button over a tab.
-    virtual void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons) = 0;
+    // Called when the user selected the tab with the left mouse button.
+    virtual void onSelectTab(Tabs* tabs, TabView* tabView) = 0;
 
-    // When the tab close button is pressed.
-    virtual void clickClose(Tabs* tabs, TabView* tabView) = 0;
+    // When the tab close button is pressed (or middle mouse button is used to close it).
+    virtual void onCloseTab(Tabs* tabs, TabView* tabView) = 0;
+
+    // When the right-click is pressed in the tab.
+    virtual void onContextMenuTab(Tabs* tabs, TabView* tabView) = 0;
 
     // Called when the mouse is over a tab (the data can be null if the
     // mouse just leave all tabs)
-    virtual void mouseOverTab(Tabs* tabs, TabView* tabView) = 0;
+    virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;
 
-    virtual bool isModified(Tabs* tabs, TabView* tabView) = 0;
+    virtual bool onIsModified(Tabs* tabs, TabView* tabView) = 0;
   };
 
   // Tabs control. Used to show opened documents.

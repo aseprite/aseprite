@@ -78,6 +78,7 @@ void AppMenus::reload()
 
   PRINTF("Main menu loaded.\n");
 
+  m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup"));
   m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup"));
   m_layerPopupMenu.reset(loadMenuById(handle, "layer_popup"));
   m_framePopupMenu.reset(loadMenuById(handle, "frame_popup"));

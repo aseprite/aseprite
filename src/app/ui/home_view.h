@@ -33,7 +33,8 @@ namespace app {
     ui::Widget* getContentWidget() override { return this; }
     WorkspaceView* cloneWorkspaceView() override;
     void onClonedFrom(WorkspaceView* from) override;
-    void onCloseView(Workspace* workspace) override;
+    bool onCloseView(Workspace* workspace) override;
+    void onTabPopup(Workspace* workspace) override;
     void onWorkspaceViewSelected() override;
   };
 

@@ -39,6 +39,7 @@ namespace app {
 
     Menu* getRootMenu() { return m_rootMenu; }
     MenuItem* getRecentListMenuitem() { return m_recentListMenuitem; }
+    Menu* getTabPopupMenu() { return m_tabPopupMenu; }
     Menu* getDocumentTabPopupMenu() { return m_documentTabPopupMenu; }
     Menu* getLayerPopupMenu() { return m_layerPopupMenu; }
     Menu* getFramePopupMenu() { return m_framePopupMenu; }
@@ -56,6 +57,7 @@ namespace app {
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;
+    base::UniquePtr<Menu> m_tabPopupMenu;
     base::UniquePtr<Menu> m_documentTabPopupMenu;
     base::UniquePtr<Menu> m_layerPopupMenu;
     base::UniquePtr<Menu> m_framePopupMenu;

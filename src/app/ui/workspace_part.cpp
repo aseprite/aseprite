@@ -52,8 +52,9 @@ void WorkspacePart::removeView(WorkspaceView* view)
 
   removeChild(view->getContentWidget());
 
-  setActiveView((it != m_views.end() ?
-                 *it : (!m_views.empty() ? m_views.front(): NULL)));
+  setActiveView(
+    (it != m_views.end() ?
+      *it : (!m_views.empty() ? m_views.back(): nullptr)));
 }
 
 void WorkspacePart::setActiveView(WorkspaceView* view)

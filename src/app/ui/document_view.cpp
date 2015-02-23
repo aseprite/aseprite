@@ -12,7 +12,9 @@
 #include "app/ui/document_view.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/document_access.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
@@ -21,6 +23,7 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/preview_editor.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "base/path.h"
@@ -28,6 +31,8 @@
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/accelerator.h"
+#include "ui/alert.h"
+#include "ui/menu.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -224,16 +229,76 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
     ->setViewScroll(View::getView(srcEditor)->getViewScroll());
 }
 
-void DocumentView::onCloseView(Workspace* workspace)
+bool DocumentView::onCloseView(Workspace* workspace)
 {
+  Context* ctx = UIContext::instance();
+  bool save_it;
+  bool try_again = true;
+
+  while (try_again) {
+    // This flag indicates if we have to sabe the sprite before to destroy it
+    save_it = false;
+    {
+      // see if the sprite has changes
+      while (m_document->isModified()) {
+        // ask what want to do the user with the changes in the sprite
+        int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
+          m_document->name().c_str());
+
+        if (ret == 1) {
+          // "save": save the changes
+          save_it = true;
+          break;
+        }
+        else if (ret != 2) {
+          // "cancel" or "ESC" */
+          return false; // we back doing nothing
+        }
+        else {
+          // "discard"
+          break;
+        }
+      }
+    }
+
+    // Does we need to save the sprite?
+    if (save_it) {
+      Command* save_command =
+        CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
+      ctx->executeCommand(save_command);
+
+      try_again = true;
+    }
+    else
+      try_again = false;
+  }
+
+  // Destroy the sprite (locking it as writer)
+  DocumentDestroyer destroyer(
+    static_cast<app::Context*>(m_document->context()), m_document);
+
+  StatusBar::instance()
+    ->setStatusText(0, "Sprite '%s' closed.",
+      m_document->name().c_str());
+
+  destroyer.destroyDocument();
+
+  // At this point the view is already destroyed
+
+  return true;
+}
+
+void DocumentView::onTabPopup(Workspace* workspace)
+{
+  Menu* menu = AppMenus::instance()->getDocumentTabPopupMenu();
+  if (!menu)
+    return;
+
   UIContext* context = UIContext::instance();
   context->setActiveView(this);
   context->updateFlags();
 
-  Command* close_file_cmd =
-    CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
-
-  context->executeCommand(close_file_cmd, NULL);
+  menu->showPopup(ui::get_mouse_position());
 }
 
 bool DocumentView::onProcessMessage(Message* msg)

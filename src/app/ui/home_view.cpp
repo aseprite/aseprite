@@ -11,9 +11,11 @@
 
 #include "app/ui/home_view.h"
 
+#include "app/app_menus.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "ui/label.h"
+#include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
 
@@ -59,9 +61,19 @@ void HomeView::onClonedFrom(WorkspaceView* from)
   ASSERT(false);                // Never called
 }
 
-void HomeView::onCloseView(Workspace* workspace)
+bool HomeView::onCloseView(Workspace* workspace)
 {
   workspace->removeView(this);
+  return true;
+}
+
+void HomeView::onTabPopup(Workspace* workspace)
+{
+  Menu* menu = AppMenus::instance()->getTabPopupMenu();
+  if (!menu)
+    return;
+
+  menu->showPopup(ui::get_mouse_position());
 }
 
 void HomeView::onWorkspaceViewSelected()

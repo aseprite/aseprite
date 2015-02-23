@@ -127,7 +127,7 @@ DocumentView* UIContext::getFirstDocumentView(Document* document) const
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
 
-  for (auto view : *workspace) {
+  for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
       if (docView->getDocument() == document) {
         return docView;
@@ -177,8 +177,7 @@ void UIContext::onRemoveDocument(doc::Document* doc)
   DocumentViews docViews;
 
   // Collect all views related to the document.
-  for (Workspace::iterator it=workspace->begin(); it != workspace->end(); ++it) {
-    WorkspaceView* view = *it;
+  for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
       if (docView->getDocument() == doc) {
         docViews.push_back(docView);
@@ -186,8 +185,7 @@ void UIContext::onRemoveDocument(doc::Document* doc)
     }
   }
 
-  for (DocumentViews::iterator it=docViews.begin(); it != docViews.end(); ++it) {
-    DocumentView* docView = *it;
+  for (DocumentView* docView : docViews) {
     workspace->removeView(docView);
     delete docView;
   }

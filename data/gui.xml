@@ -615,6 +615,10 @@
       </menu>
     </menu>
 
+    <menu id="tab_popup">
+      <item command="CloseFile" text="&amp;Close" />
+    </menu>
+
     <menu id="document_tab_popup">
       <item command="CloseFile" text="&amp;Close" />
       <separator />
