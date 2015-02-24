@@ -615,7 +615,7 @@ void Tabs::calculateHot()
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getBounds();
-  gfx::Rect box(rect.x, rect.y, 0, rect.h-1);
+  gfx::Rect box(rect.x+m_border*guiscale(), rect.y, 0, rect.h-1);
   gfx::Point mousePos = ui::get_mouse_position();
   Tab* hot = NULL;
   bool hotCloseButton = false;
