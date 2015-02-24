@@ -80,7 +80,8 @@ namespace app {
 
     enum Ani { ANI_NONE,
                ANI_ADDING_TAB,
-               ANI_REMOVING_TAB };
+               ANI_REMOVING_TAB,
+               ANI_REORDER_TABS };
 
   public:
     Tabs(TabsDelegate* delegate);
@@ -102,17 +103,22 @@ namespace app {
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
   private:
+    void resetOldPositions();
+    void resetOldPositions(double t);
     void startAni(Ani ani, int T);
     void stopAni();
 
     void selectTabInternal(Tab* tab);
     void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int dy, bool hover, bool selected);
+    void drawFiller(ui::Graphics* g, const gfx::Rect& box);
     TabsListIterator getTabIteratorByView(TabView* tabView);
     Tab* getTabByView(TabView* tabView);
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
     void calculateHot();
     gfx::Rect getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box);
+    void startDrag();
+    void stopDrag();
 
     int m_border;
     TabsList m_list;
@@ -131,6 +137,12 @@ namespace app {
     int m_ani_T;                  // Number of ticks in total for the current transition/animation
     Tab* m_removedTab;
     Tab* m_nextTabOfTheRemovedOne;
+
+    // Drag-and-drop
+    bool m_isDragging;
+    int m_dragTabX;
+    gfx::Point m_dragMousePos;
+    int m_dragTabIndex;
   };
 
 } // namespace app

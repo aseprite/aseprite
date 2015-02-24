@@ -24,6 +24,7 @@
 
 #define ANI_ADDING_TAB_TICKS      5
 #define ANI_REMOVING_TAB_TICKS    10
+#define ANI_REORDER_TABS_TICKS    5
 
 #define HAS_ARROWS(tabs) ((m_button_left->getParent() == (tabs)))
 
@@ -54,6 +55,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_border(2)
   , m_delegate(delegate)
   , m_timer(1000/60, this)
+  , m_isDragging(false)
 {
   setDoubleBuffered(true);
 
@@ -84,6 +86,7 @@ Tabs::~Tabs()
 
 void Tabs::addTab(TabView* tabView)
 {
+  resetOldPositions();
   startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
 
   Tab* tab = new Tab(tabView);
@@ -132,6 +135,7 @@ void Tabs::removeTab(TabView* tabView)
   else
     m_nextTabOfTheRemovedOne = nullptr;
 
+  resetOldPositions();
   startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
   updateTabs();
 }
@@ -147,6 +151,7 @@ void Tabs::updateTabs()
     tabWidth = MAX(4*ui::guiscale(), tabWidth);
   }
   double x = 0.0;
+  int i = 0;
 
   for (Tab* tab : m_list) {
     tab->text = tab->view->getTabText();
@@ -154,6 +159,7 @@ void Tabs::updateTabs()
     tab->x = int(x);
     tab->width = int(x+tabWidth) - int(x);
     x += tabWidth;
+    ++i;
   }
   invalidate();
 }
@@ -220,8 +226,42 @@ bool Tabs::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseEnterMessage:
+      calculateHot();
+      return true;
+
     case kMouseMoveMessage:
       calculateHot();
+
+      if (hasCapture() && m_selected) {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        gfx::Point mousePos = mouseMsg->position();
+        gfx::Point delta = mousePos - m_dragMousePos;
+
+        if (!m_isDragging) {
+          if (!m_clickedCloseButton) {
+            double dist = std::sqrt(delta.x*delta.x + delta.y*delta.y);
+            if (dist > 4.0/ui::guiscale())
+              startDrag();
+          }
+        }
+        // We are drag a tab...
+        else {
+          m_selected->x = m_dragTabX + delta.x;
+
+          int i = (mousePos.x-m_border*guiscale()) / m_selected->width;
+          i = MID(0, i, int(m_list.size())-1);
+          if (i != m_dragTabIndex) {
+            std::swap(m_list[m_dragTabIndex], m_list[i]);
+            m_dragTabIndex = i;
+
+            resetOldPositions(double(m_ani_t) / double(m_ani_T));
+            updateTabs();
+            startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+          }
+
+          invalidate();
+        }
+      }
       return true;
 
     case kMouseLeaveMessage:
@@ -234,6 +274,7 @@ bool Tabs::onProcessMessage(Message* msg)
     case kMouseDownMessage:
       if (m_hot != NULL) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        m_dragMousePos = mouseMsg->position();
 
         if (m_hotCloseButton) {
           if (!m_clickedCloseButton) {
@@ -271,6 +312,9 @@ bool Tabs::onProcessMessage(Message* msg)
         }
 
         releaseMouse();
+
+        if (m_isDragging)
+          stopDrag();
 
         if (m_clickedCloseButton) {
           m_clickedCloseButton = false;
@@ -317,28 +361,66 @@ void Tabs::onPaint(PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
-  gfx::Rect box(rect.x, rect.y,
-    m_border*guiscale(),
+  gfx::Rect box(rect.x, rect.y, rect.w,
     (m_list.empty() ? 0:
       theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
 
   g->fillRect(theme->colors.windowFace(), g->getClipBounds());
+  drawFiller(g, box);
 
-  skin::Style::State state;
-  theme->styles.tabFiller()->paint(g, box, nullptr, state);
-  theme->styles.tabBottom()->paint(g,
-    gfx::Rect(box.x, box.y2(), box.w, rect.y2()-box.y2()), nullptr, state);
-
-  box.x = box.x2();
-  int startX = box.x;
+  int startX = m_border*guiscale();
   double t = double(m_ani_t)/double(m_ani_T);
   Tab* prevTab = nullptr;
 
   // For each tab...
+  int i = 0;
   for (Tab* tab : m_list) {
-    int prevX2 = box.x;
+    if (m_ani == ANI_NONE) {
+      box.x = startX + tab->x;
+      box.w = tab->width;
+    }
+    else {
+      box.x = startX + int(inbetween(tab->oldX, tab->x, t));
+      box.w = int(inbetween(tab->oldWidth, tab->width, t));
+    }
+
+    if (m_ani == ANI_REMOVING_TAB) {
+      if (m_nextTabOfTheRemovedOne == tab) {
+        // Draw deleted tab
+        if (m_removedTab) {
+          gfx::Rect box2(box.x, box.y, 0, box.h);
+          box2.w = int(startX + inbetween(tab->oldX, tab->x, t)) - box2.x;
+          drawTab(g, box2, m_removedTab, 0, false, false);
+        }
+      }
+    }
+
+    if (tab != m_selected)
+      drawTab(g, box, tab, 0, (tab == m_hot), false);
+
+    box.x = box.x2();
+    prevTab = tab;
+    ++i;
+  }
+
+  // Draw deleted tab
+  if (m_ani == ANI_REMOVING_TAB && !m_nextTabOfTheRemovedOne && m_removedTab) {
+    if (prevTab) {
+      box.x = int(startX + inbetween(
+          prevTab->oldX+prevTab->oldWidth, prevTab->x+prevTab->width, t));
+    }
+    else
+      box.x = startX;
+    box.w = int(inbetween(m_removedTab->oldWidth, 0, t));
+    drawTab(g, box, m_removedTab, 0, false, false);
+  }
+
+  // Tab that is being dragged
+  if (m_selected) {
+    Tab* tab = m_selected;
 
     if (m_ani == ANI_NONE) {
+      box.x = startX + tab->x;
       box.w = tab->width;
     }
     else {
@@ -347,52 +429,10 @@ void Tabs::onPaint(PaintEvent& ev)
     }
 
     int dy = 0;
-    if (m_ani == ANI_ADDING_TAB) {
-      box.x = prevX2;            // To avoid empty spaces in animation between tabs
-      if (m_selected == tab)
-        dy = int(box.h - box.h * t);
-    }
-    else if (m_ani == ANI_REMOVING_TAB) {
-      if (m_nextTabOfTheRemovedOne == tab) {
-        // Draw deleted tab
-        if (m_removedTab) {
-          gfx::Rect box2(0, box.y, 0, box.h);
-          if (prevTab)
-            box2.x = prevX2;
-          box2.w = int(startX + inbetween(tab->oldX, tab->x, t)) - box2.x;
-          drawTab(g, box2, m_removedTab, 0, false, false);
-        }
-      }
-      else
-        box.x = prevX2;            // To avoid empty spaces in animation between tabs
-    }
+    if (m_ani == ANI_ADDING_TAB)
+      dy = int(box.h - box.h * t);
 
-    drawTab(g, box, tab, dy, (tab == m_hot), (tab == m_selected));
-
-    box.x = box.x2();
-    prevTab = tab;
-  }
-
-  // Draw deleted tab
-  if (m_ani == ANI_REMOVING_TAB && !m_nextTabOfTheRemovedOne && m_removedTab) {
-    gfx::Rect box2(0, box.y, 0, box.h);
-    if (prevTab) {
-      box2.x = int(startX + inbetween(
-          prevTab->oldX+prevTab->oldWidth, prevTab->x+prevTab->width, t));
-    }
-    box2.w = int(inbetween(m_removedTab->oldWidth, 0, t));
-    drawTab(g, box2, m_removedTab, 0, false, false);
-
-    box.x += box2.w;
-    box.w = 0;
-  }
-
-  // Fill the gap to the right-side
-  if (box.x < rect.x2()) {
-    theme->styles.tabFiller()->paint(g,
-      gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), nullptr, state);
-    theme->styles.tabBottom()->paint(g,
-      gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), nullptr, state);
+    drawTab(g, box, m_selected, dy, (tab == m_hot), true);
   }
 }
 
@@ -529,6 +569,19 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   }
 }
 
+void Tabs::drawFiller(ui::Graphics* g, const gfx::Rect& box)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  gfx::Rect rect = getClientBounds();
+  skin::Style::State state;
+
+  theme->styles.tabFiller()->paint(g,
+    gfx::Rect(box.x, box.y, rect.x2()-box.x, box.h), nullptr, state);
+
+  theme->styles.tabBottom()->paint(g,
+    gfx::Rect(box.x, box.y2(), rect.x2()-box.x, rect.y2()-box.y2()), nullptr, state);
+}
+
 Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
 {
   TabsListIterator it, end = m_list.end();
@@ -557,6 +610,9 @@ void Tabs::makeTabVisible(Tab* thisTab)
 
 void Tabs::calculateHot()
 {
+  if (m_isDragging)
+    return;
+
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getBounds();
   gfx::Rect box(rect.x, rect.y, 0, rect.h-1);
@@ -601,16 +657,27 @@ gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
     return gfx::Rect();
 }
 
+void Tabs::resetOldPositions()
+{
+  for (Tab* tab : m_list) {
+    tab->oldX = tab->x;
+    tab->oldWidth = tab->width;
+  }
+}
+
+void Tabs::resetOldPositions(double t)
+{
+  for (Tab* tab : m_list) {
+    tab->oldX = int(inbetween(tab->oldX, tab->x, t));
+    tab->oldWidth = int(inbetween(tab->oldWidth, tab->width, t));
+  }
+}
+
 void Tabs::startAni(Ani ani, int T)
 {
   // Stop previous animation
   if (m_ani != ANI_NONE)
     stopAni();
-
-  for (Tab* tab : m_list) {
-    tab->oldX = tab->x;
-    tab->oldWidth = tab->width;
-  }
 
   m_ani = ani;
   m_ani_t = 0;
@@ -622,6 +689,28 @@ void Tabs::stopAni()
 {
   m_ani = ANI_NONE;
   m_timer.stop();
+}
+
+void Tabs::startDrag()
+{
+  ASSERT(m_selected);
+
+  updateTabs();
+
+  m_isDragging = true;
+  m_dragTabX = m_selected->x;
+  m_dragTabIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
+}
+
+void Tabs::stopDrag()
+{
+  m_isDragging = false;
+  m_selected->oldX = m_selected->x;
+  m_selected->oldWidth = m_selected->width;
+
+  resetOldPositions(double(m_ani_t) / double(m_ani_T));
+  updateTabs();
+  startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
 }
 
 } // namespace app
