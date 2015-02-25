@@ -185,11 +185,8 @@ void Tabs::selectNextTab()
     else
       ++it;
 
-    if (it != currentTabIt) {
+    if (it != currentTabIt)
       selectTabInternal(*it);
-      if (m_delegate)
-        m_delegate->onSelectTab(this, m_selected->view);
-    }
   }
 }
 
@@ -205,11 +202,8 @@ void Tabs::selectPreviousTab()
     else
       --it;
 
-    if (it != currentTabIt) {
+    if (it != currentTabIt)
       selectTabInternal(*it);
-      if (m_delegate)
-        m_delegate->onSelectTab(this, m_selected->view);
-    }
   }
 }
 
@@ -333,8 +327,9 @@ bool Tabs::onProcessMessage(Message* msg)
         int index = (it - m_list.begin());
         int newIndex = index + dz;
         newIndex = MID(0, newIndex, int(m_list.size())-1);
-        if (newIndex != index)
+        if (newIndex != index) {
           selectTabInternal(m_list[newIndex]);
+        }
       }
       return true;
     }
@@ -460,6 +455,9 @@ void Tabs::selectTabInternal(Tab* tab)
   m_selected = tab;
   makeTabVisible(tab);
   invalidate();
+
+  if (m_delegate)
+    m_delegate->onSelectTab(this, tab->view);
 }
 
 void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
