@@ -390,6 +390,12 @@ bool Timeline::onProcessMessage(Message* msg)
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk_layer)
             || !isFrameActive(m_clk_frame));
+            
+          if (selectCel) {
+            m_state = STATE_SELECTING_CELS;
+            m_range.startRange(m_clk_layer, m_clk_frame, Range::kCels);
+          }
+            
           frame_t old_frame = m_frame;
 
           // Select the new clicked-part.
@@ -403,10 +409,6 @@ bool Timeline::onProcessMessage(Message* msg)
           // Change the scroll to show the new selected cel.
           showCel(m_clk_layer, m_frame);
 
-          if (selectCel) {
-            m_state = STATE_SELECTING_CELS;
-            m_range.startRange(m_clk_layer, m_clk_frame, Range::kCels);
-          }
           invalidate();
           break;
         }
