@@ -38,6 +38,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
@@ -253,8 +254,9 @@ void Editor::setLayer(const Layer* layer)
   m_observers.notifyBeforeLayerChanged(this);
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
-
-  updateStatusBar();
+  
+  if(App::instance()->getMainWindow()->getTimeline()->getState() != Timeline::STATE_SELECTING_CELS)
+    updateStatusBar();
 }
 
 void Editor::setFrame(frame_t frame)
@@ -265,7 +267,9 @@ void Editor::setFrame(frame_t frame)
     m_observers.notifyAfterFrameChanged(this);
 
     invalidate();
-    updateStatusBar();
+    
+    if(App::instance()->getMainWindow()->getTimeline()->getState() != Timeline::STATE_SELECTING_CELS)
+      updateStatusBar();
   }
 }
 
