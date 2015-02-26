@@ -147,6 +147,20 @@ MainWindow::~MainWindow()
   m_menuBar->setMenu(NULL);
 }
 
+HomeView* MainWindow::getHomeView()
+{
+  if (!m_homeView)
+    m_homeView = new HomeView;
+  return m_homeView;
+}
+
+#ifdef ENABLE_UPDATER
+CheckUpdateDelegate* MainWindow::getCheckUpdateDelegate()
+{
+  return getHomeView();
+}
+#endif
+
 void MainWindow::reloadMenus()
 {
   m_menuBar->reload();
@@ -164,10 +178,7 @@ void MainWindow::showNotification(INotificationDelegate* del)
 
 void MainWindow::showHome()
 {
-  if (!m_homeView)
-    m_homeView = new HomeView;
-
-  if (!m_homeView->getParent()) {
+  if (!getHomeView()->getParent()) {
     m_workspace->addView(m_homeView);
     m_tabsBar->selectTab(m_homeView);
   }

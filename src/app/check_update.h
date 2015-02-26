@@ -11,7 +11,6 @@
 
 #ifdef ENABLE_UPDATER
 
-#include "app/notification_delegate.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "ui/timer.h"
@@ -19,11 +18,12 @@
 
 namespace app {
 
+  class CheckUpdateDelegate;
   class CheckUpdateBackgroundJob;
 
-  class CheckUpdateThreadLauncher : public INotificationDelegate {
+  class CheckUpdateThreadLauncher {
   public:
-    CheckUpdateThreadLauncher();
+    CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate);
     ~CheckUpdateThreadLauncher();
 
     void launch();
@@ -35,13 +35,11 @@ namespace app {
       return m_response;
     }
 
-    virtual std::string notificationText() override;
-    virtual void notificationClick() override;
-
   private:
     void onMonitoringTick();
     void checkForUpdates();
 
+    CheckUpdateDelegate* m_delegate;
     updater::Uuid m_uuid;
     base::UniquePtr<base::thread> m_thread;
     base::UniquePtr<CheckUpdateBackgroundJob> m_bgJob;

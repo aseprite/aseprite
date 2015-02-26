@@ -4,9 +4,13 @@
   <vbox noborders="true" id="home_view" childspacing="8" expansive="true">
     <hbox noborders="true">
       <image file="icons/ase48.png" align="center" />
-      <vbox cell_vspan="2" border="4" childspacing="4">
+      <vbox border="4" childspacing="4">
         <link id="new_file" text="New File..." style="workspace_link" />
         <link id="open_file" text="Open File..." style="workspace_link" />
+      </vbox>
+      <boxfiller />
+      <vbox border="4">
+        <link id="check_update" text="" style="workspace_link" />
       </vbox>
     </hbox>
     <hbox noborders="true" expansive="true" homogeneous="true">

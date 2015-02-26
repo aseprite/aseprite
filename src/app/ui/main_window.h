@@ -18,6 +18,10 @@ namespace ui {
 
 namespace app {
 
+#ifdef ENABLE_UPDATER
+  class CheckUpdateDelegate;
+#endif
+
   class ColorBar;
   class ContextBar;
   class DevConsoleView;
@@ -49,6 +53,9 @@ namespace app {
     Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }
     PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
+#ifdef ENABLE_UPDATER
+    CheckUpdateDelegate* getCheckUpdateDelegate();
+#endif
 
     void start();
     void reloadMenus();
@@ -76,6 +83,8 @@ namespace app {
     void onActiveViewChange();
 
   private:
+    HomeView* getHomeView();
+
     MainMenuBar* m_menuBar;
     ContextBar* m_contextBar;
     StatusBar* m_statusBar;

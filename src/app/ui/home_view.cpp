@@ -13,6 +13,7 @@
 
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/commands/params.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -37,6 +38,8 @@ HomeView::HomeView()
 
   newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));
+
+  checkUpdate()->setVisible(false);
 }
 
 HomeView::~HomeView()
@@ -94,6 +97,31 @@ void HomeView::onOpenFile()
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
   Params params;
   UIContext::instance()->executeCommand(command, &params);
+}
+
+void HomeView::onCheckingUpdates()
+{
+  checkUpdate()->setText("Checking Updates...");
+  checkUpdate()->setVisible(true);
+
+  layout();
+}
+
+void HomeView::onUpToDate()
+{
+  checkUpdate()->setText(PACKAGE " is up to date");
+  checkUpdate()->setVisible(true);
+
+  layout();
+}
+
+void HomeView::onNewUpdate(const std::string& url, const std::string& version)
+{
+  checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
+  checkUpdate()->setUrl(url);
+  checkUpdate()->setVisible(true);
+
+  layout();
 }
 
 } // namespace app

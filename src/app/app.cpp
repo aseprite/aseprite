@@ -451,7 +451,8 @@ void App::run()
   if (isGui()) {
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
-    app::CheckUpdateThreadLauncher checkUpdate;
+    app::CheckUpdateThreadLauncher checkUpdate(
+      m_mainWindow->getCheckUpdateDelegate());
     checkUpdate.launch();
 #endif
 

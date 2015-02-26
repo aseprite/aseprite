@@ -9,6 +9,7 @@
 #define APP_UI_HOME_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/check_update_delegate.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "ui/box.h"
@@ -22,7 +23,11 @@ namespace ui {
 namespace app {
   class HomeView : public app::gen::HomeView
                  , public TabView
-                 , public WorkspaceView {
+                 , public WorkspaceView
+#ifdef ENABLE_UPDATER
+                 , public CheckUpdateDelegate
+#endif
+  {
   public:
     HomeView();
     ~HomeView();
@@ -38,6 +43,14 @@ namespace app {
     bool onCloseView(Workspace* workspace) override;
     void onTabPopup(Workspace* workspace) override;
     void onWorkspaceViewSelected() override;
+
+  protected:
+#ifdef ENABLE_UPDATER
+    // CheckUpdateDelegate impl
+    void onCheckingUpdates() override;
+    void onUpToDate() override;
+    void onNewUpdate(const std::string& url, const std::string& version) override;
+#endif
 
   private:
     void onNewFile();

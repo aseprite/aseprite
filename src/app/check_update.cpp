@@ -13,9 +13,10 @@
 
 #include "app/check_update.h"
 
-#include "app/app.h"
+#include "app/check_update_delegate.h"
 #include "app/ini_file.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/launcher.h"
 
 #include <ctime>
@@ -74,8 +75,9 @@ private:
   updater::CheckUpdateResponse m_response;
 };
 
-CheckUpdateThreadLauncher::CheckUpdateThreadLauncher()
-  : m_doCheck(true)
+CheckUpdateThreadLauncher::CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate)
+  : m_delegate(delegate)
+  , m_doCheck(true)
   , m_received(false)
   , m_inits(get_config_int("Updater", "Inits", 0))
   , m_exits(get_config_int("Updater", "Exits", 0))
@@ -133,6 +135,8 @@ void CheckUpdateThreadLauncher::launch()
   if (m_uuid.empty())
     m_uuid = get_config_string("Updater", "Uuid", "");
 
+  m_delegate->onCheckingUpdates();
+
   m_bgJob.reset(new CheckUpdateBackgroundJob);
   m_thread.reset(new base::thread(Bind<void>(&CheckUpdateThreadLauncher::checkForUpdates, this)));
 
@@ -158,12 +162,14 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
   switch (m_response.getUpdateType()) {
 
     case updater::CheckUpdateResponse::NoUpdate:
-      // Nothing to do, we are up-to-date
+      m_delegate->onUpToDate();
       break;
 
     case updater::CheckUpdateResponse::Critical:
     case updater::CheckUpdateResponse::Major:
-      App::instance()->showNotification(this);
+      m_delegate->onNewUpdate(
+        m_response.getUrl(),
+        base::convert_to<std::string>(m_response.getLatestVersion()));
       break;
   }
 
@@ -202,17 +208,6 @@ void CheckUpdateThreadLauncher::checkForUpdates()
     m_received = true;
     m_response = m_bgJob->getResponse();
   }
-}
-
-std::string CheckUpdateThreadLauncher::notificationText()
-{
-  return "New Version Available!";
-}
-
-void CheckUpdateThreadLauncher::notificationClick()
-{
-  if (!m_response.getUrl().empty())
-    base::launcher::open_url(m_response.getUrl());
 }
 
 }
