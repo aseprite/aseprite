@@ -12,6 +12,8 @@
 #include "app/ui/devconsole_view.h"
 
 #include "app/app_menus.h"
+#include "app/ui/skin/skin_style_property.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "ui/entry.h"
 #include "ui/message.h"
@@ -22,6 +24,7 @@
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
 class DevConsoleView::CommmandEntry : public Entry {
 public:
@@ -62,16 +65,20 @@ DevConsoleView::DevConsoleView()
   , m_label(">")
   , m_entry(new CommmandEntry)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
   addChild(&m_view);
   addChild(&m_bottomBox);
 
   m_bottomBox.addChild(&m_label);
   m_bottomBox.addChild(m_entry);
 
+  m_view.setProperty(SkinStylePropertyPtr(
+      new SkinStyleProperty(theme->styles.workspaceView())));
+
   m_view.attachToView(&m_textBox);
   m_view.setExpansive(true);
   m_entry->setExpansive(true);
-
   m_entry->ExecuteCommand.connect(&DevConsoleView::onExecuteCommand, this);
 }
 
