@@ -12,8 +12,12 @@
 #include "app/ui/home_view.h"
 
 #include "app/app_menus.h"
+#include "app/commands/commands.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
+#include "app/ui_context.h"
+#include "base/bind.h"
+#include "base/exception.h"
 #include "ui/label.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
@@ -25,16 +29,14 @@ using namespace ui;
 using namespace skin;
 
 HomeView::HomeView()
-  : Box(JI_VERTICAL)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
 
   child_spacing = 8 * guiscale();
 
-  Label* label = new Label("Welcome to " PACKAGE " v" VERSION);
-  label->setTextColor(theme->colors.workspaceText());
-  addChild(label);
+  newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
+  openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));
 }
 
 HomeView::~HomeView()
@@ -78,6 +80,18 @@ void HomeView::onTabPopup(Workspace* workspace)
 
 void HomeView::onWorkspaceViewSelected()
 {
+}
+
+void HomeView::onNewFile()
+{
+  Command* command = CommandsModule::instance()->getCommandByName(CommandId::NewFile);
+  UIContext::instance()->executeCommand(command, nullptr);
+}
+
+void HomeView::onOpenFile()
+{
+  Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+  UIContext::instance()->executeCommand(command, nullptr);
 }
 
 } // namespace app

@@ -13,12 +13,14 @@
 #include "app/ui/workspace_view.h"
 #include "ui/box.h"
 
+#include "generated_home_view.h"
+
 namespace ui {
   class View;
 }
 
 namespace app {
-  class HomeView : public ui::Box
+  class HomeView : public app::gen::HomeView
                  , public TabView
                  , public WorkspaceView {
   public:
@@ -36,6 +38,10 @@ namespace app {
     bool onCloseView(Workspace* workspace) override;
     void onTabPopup(Workspace* workspace) override;
     void onWorkspaceViewSelected() override;
+
+  private:
+    void onNewFile();
+    void onOpenFile();
   };
 
 } // namespace app

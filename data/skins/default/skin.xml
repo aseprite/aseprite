@@ -24,7 +24,8 @@
     <color id="textbox_text" value="#000000" />
     <color id="textbox_face" value="#ffffff" />
     <color id="entry_suffix" value="#c6c6c6" />
-    <color id="link_text" value="#0000ff" />
+    <color id="link_text" value="#2c4c91" />
+    <color id="link_hover" value="#ff5555" />
     <color id="button_normal_text" value="#000000" />
     <color id="button_normal_face" value="#c6c6c6" />
     <color id="button_hot_text" value="#000000" />
@@ -73,7 +74,9 @@
     <color id="filelist_selected_row_face" value="#ff5555" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
-    <color id="workspace_text" value="#ffffff" />
+    <color id="workspace_text" value="#655561" />
+    <color id="workspace_link" value="#655561" />
+    <color id="workspace_link_hover" value="#ffff7d" />
     <color id="timeline_normal" value="#c6c6c6" />
     <color id="timeline_normal_text" value="#000000" />
     <color id="timeline_hover" value="#d9d9d9" />
@@ -372,6 +375,27 @@
   </parts>
 
   <stylesheet>
+
+    <!-- label -->
+    <style id="label">
+      <text color="text" />
+    </style>
+
+    <!-- link -->
+    <style id="link">
+      <text color="link_text" />
+    </style>
+    <style id="link:hover">
+      <text color="link_hover" />
+    </style>
+
+    <!-- view -->
+    <style id="view">
+      <background part="sunken_normal" />
+    </style>
+    <style id="view:active">
+      <background part="sunken_focused" />
+    </style>
 
     <!-- window -->
     <style id="window">
@@ -696,6 +720,27 @@
     </style>
     <style id="tab_home:active">
       <icon part="tab_home_icon_active" />
+    </style>
+
+    <!-- workspace_label -->
+    <style id="workspace_label">
+      <text color="workspace_text" />
+    </style>
+
+    <!-- workspace_link -->
+    <style id="workspace_link">
+      <text color="workspace_link" />
+    </style>
+    <style id="workspace_link:hover">
+      <text color="workspace_link_hover" />
+    </style>
+
+    <!-- workspace_view -->
+    <style id="workspace_view">
+      <background part="editor_normal" />
+    </style>
+    <style id="workspace_view:active">
+      <background part="editor_selected" />
     </style>
 
   </stylesheet>

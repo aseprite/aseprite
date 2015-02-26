@@ -17,6 +17,7 @@
 #include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_slider_property.h"
+#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui/skin/style_sheet.h"
@@ -706,7 +707,6 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kLabelWidget:
       BORDER(1 * scale);
-      static_cast<Label*>(widget)->setTextColor(colors.text());
       break;
 
     case kListBoxWidget:
@@ -1112,9 +1112,13 @@ void SkinTheme::paintLabel(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   Label* widget = static_cast<Label*>(ev.getSource());
+  Style* style = styles.label();
   gfx::Color bg = BGCOLOR;
-  gfx::Color fg = widget->getTextColor();
   Rect text, rc = widget->getClientBounds();
+
+  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
+  if (styleProp)
+    style = styleProp->getStyle();
 
   if (!is_transparent(bg))
     g->fillRect(bg, rc);
@@ -1122,26 +1126,27 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   rc.shrink(widget->getBorder());
 
   widget->getTextIconInfo(NULL, &text);
-  g->drawUIString(widget->getText(), fg, ColorNone, text.getOrigin());
+  style->paint(g, text, widget->getText().c_str(), Style::State());
 }
 
 void SkinTheme::paintLinkLabel(PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
   Widget* widget = static_cast<Widget*>(ev.getSource());
+  Style* style = styles.link();
   gfx::Rect bounds = widget->getClientBounds();
-  gfx::Color fg = colors.linkText();
   gfx::Color bg = BGCOLOR;
 
-  g->fillRect(bg, bounds);
-  drawTextString(g, NULL, fg, ColorNone, widget, bounds, 0);
+  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
+  if (styleProp)
+    style = styleProp->getStyle();
 
-  // Underline style
-  if (widget->hasMouseOver()) {
-    int w = widget->getTextWidth();
-    for (int v=0; v<guiscale(); ++v)
-      g->drawHLine(fg, bounds.x, bounds.y2()-1-v, w);
-  }
+  Style::State state;
+  if (widget->hasMouseOver()) state += Style::hover();
+  if (widget->isSelected()) state += Style::clicked();
+
+  g->fillRect(bg, bounds);
+  style->paint(g, bounds, widget->getText().c_str(), state);
 }
 
 void SkinTheme::paintListBox(PaintEvent& ev)
@@ -1620,15 +1625,19 @@ void SkinTheme::paintView(PaintEvent& ev)
   View* widget = static_cast<View*>(ev.getSource());
   gfx::Rect bounds = widget->getClientBounds();
   gfx::Color bg = BGCOLOR;
+  Style* style = styles.view();
+
+  SkinStylePropertyPtr styleProp = widget->getProperty(SkinStyleProperty::Name);
+  if (styleProp)
+    style = styleProp->getStyle();
+
+  Style::State state;
+  if (widget->hasMouseOver()) state += Style::hover();
 
   if (!is_transparent(bg))
     g->fillRect(bg, bounds);
 
-  draw_bounds_nw(g, bounds,
-    (widget->hasFocus() ?
-      PART_SUNKEN_FOCUSED_NW:
-      PART_SUNKEN_NORMAL_NW),
-    BGCOLOR);
+  style->paint(g, bounds, nullptr, state);
 }
 
 void SkinTheme::paintViewScrollbar(PaintEvent& ev)

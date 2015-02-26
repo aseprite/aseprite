@@ -113,6 +113,7 @@ namespace app {
       }
 
       gfx::Color getColorById(const std::string& id) {
+        ASSERT(m_colors_by_id.find(id) != m_colors_by_id.end());
         return m_colors_by_id[id];
       }
 

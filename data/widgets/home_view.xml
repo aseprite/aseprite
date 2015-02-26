@@ -1,0 +1,31 @@
+<!-- Aseprite -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
+<gui>
+  <vbox noborders="true" id="home_view" childspacing="8" expansive="true">
+    <hbox noborders="true">
+      <image file="icons/ase48.png" align="center" />
+      <vbox cell_vspan="2" border="4" childspacing="4">
+        <link id="new_file" text="New File..." style="workspace_link" />
+        <link id="open_file" text="Open File..." style="workspace_link" />
+      </vbox>
+    </hbox>
+    <hbox noborders="true" expansive="true" homogeneous="true">
+      <vbox noborders="true">
+        <label text="Recent files:" style="workspace_label" />
+        <view expansive="true" style="workspace_view">
+          <listbox id="recent_files" />
+        </view>
+        <label text="Recent folders:" style="workspace_label" />
+        <view expansive="true" style="workspace_view">
+          <listbox id="recent_folders" />
+        </view>
+      </vbox>
+      <vbox noborders="true">
+        <label text="News:" style="workspace_label" />
+        <view expansive="true" style="workspace_view">
+          <listbox id="news" />
+        </view>
+      </vbox>
+    </hbox>
+  </vbox>
+</gui>
