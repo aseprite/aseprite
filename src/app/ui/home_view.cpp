@@ -85,13 +85,15 @@ void HomeView::onWorkspaceViewSelected()
 void HomeView::onNewFile()
 {
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::NewFile);
-  UIContext::instance()->executeCommand(command, nullptr);
+  Params params;
+  UIContext::instance()->executeCommand(command, &params);
 }
 
 void HomeView::onOpenFile()
 {
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
-  UIContext::instance()->executeCommand(command, nullptr);
+  Params params;
+  UIContext::instance()->executeCommand(command, &params);
 }
 
 } // namespace app
