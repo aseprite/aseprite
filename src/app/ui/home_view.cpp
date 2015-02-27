@@ -14,6 +14,7 @@
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -27,7 +28,7 @@
 namespace app {
 
 using namespace ui;
-using namespace skin;
+using namespace app::skin;
 
 HomeView::HomeView()
 {
@@ -117,8 +118,19 @@ void HomeView::onUpToDate()
 
 void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
   checkUpdate()->setText("New " PACKAGE " v" + version + " available!");
   checkUpdate()->setUrl(url);
+  checkUpdate()->setProperty(
+    SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceUpdateLink())));
+
+  // TODO this should be in a skin.xml's <style>
+  gfx::Size iconSize = theme->styles.workspaceUpdateLink()->preferredSize(
+    nullptr, Style::State());
+  checkUpdate()->setBorder(gfx::Border(6*guiscale())+gfx::Border(
+      0, 0, iconSize.w, 0));
+
   checkUpdate()->setVisible(true);
 
   layout();

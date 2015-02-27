@@ -729,10 +729,25 @@
 
     <!-- workspace_link -->
     <style id="workspace_link">
-      <text color="workspace_link" />
+      <text color="workspace_link" valign="middle" />
     </style>
     <style id="workspace_link:hover">
       <text color="workspace_link_hover" />
+    </style>
+
+    <!-- workspace_link -->
+    <style id="workspace_update_link" base="workspace_link">
+      <background part="button_normal" color="button_normal_face" />
+      <icon part="warning_box" align="right" x="-4" y="4" />
+      <text padding-left="4" />
+    </style>
+    <style id="workspace_update_link:hover">
+      <background part="button_hot" color="button_hot_face" />
+      <text color="button_hot_text" />
+    </style>
+    <style id="workspace_update_link:clicked">
+      <background part="button_selected" color="button_selected_face" />
+      <text color="button_selected_text" />
     </style>
 
     <!-- workspace_view -->
