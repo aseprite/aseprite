@@ -49,7 +49,7 @@ You can ask for help in:
 
 * David Capello [davidcapello@gmail.com](mailto:davidcapello@gmail.com) <br />
   Programmer, designer, and maintainer. <br />
-  http://dacap.com.ar/
+  http://davidcapello.com/
 * Ilija Melentijevic <br />
   New GUI skin for Aseprite v0.8. A lot of good ideas. <br />
   http://ilkke.blogspot.com/ <br />
