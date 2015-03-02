@@ -186,7 +186,7 @@ void Rules::paint(ui::Graphics* g,
   if (m_text) m_text->paint(g, bounds, text);
 }
 
-gfx::Size Rules::preferredSize(const char* text)
+gfx::Size Rules::preferredSize(const char* text, int maxWidth)
 {
   gfx::Size sz(0, 0);
   if (m_icon) {
@@ -195,8 +195,8 @@ gfx::Size Rules::preferredSize(const char* text)
   }
   if (m_text && text) {
     ui::ScreenGraphics g;
-    gfx::Size textSize = g.measureUIString(text);
-    //if (sz.w > 0) sz.w += 2;    // TODO text separation
+    gfx::Size textSize = g.fitString(text, maxWidth, m_text->align());
+    if (sz.w > 0) sz.w += 2*ui::guiscale();    // TODO text separation
     sz.w += textSize.w;
     sz.h = MAX(sz.h, textSize.h);
 
@@ -246,9 +246,10 @@ void Style::paint(ui::Graphics* g,
 
 gfx::Size Style::preferredSize(
   const char* text,
-  const State& state)
+  const State& state,
+  int maxWidth)
 {
-  return getRulesFromState(state)->preferredSize(text);
+  return getRulesFromState(state)->preferredSize(text, maxWidth);
 }
 
 } // namespace skin

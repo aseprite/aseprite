@@ -70,6 +70,7 @@ namespace app {
       void setColor(gfx::Color color) { m_color = color; }
       void setPadding(const gfx::Border& padding) { m_padding = padding; }
 
+      int align() const { return m_align; }
       gfx::Border padding() const { return m_padding; }
 
     protected:
@@ -110,7 +111,7 @@ namespace app {
         const gfx::Rect& bounds,
         const char* text);
 
-      gfx::Size preferredSize(const char* text);
+      gfx::Size preferredSize(const char* text, int maxWidth);
 
     private:
       BackgroundRule* m_background;
@@ -138,7 +139,8 @@ namespace app {
 
       gfx::Size preferredSize(
         const char* text,
-        const State& state);
+        const State& state,
+        int maxWidth = 0);
 
       const std::string& id() const { return m_id; }
 

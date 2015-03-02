@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -257,6 +257,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
   gfx::Size calculatedSize(0, 0);
   size_t beg, end, new_word_beg, old_end;
   std::string line;
+  int lineSeparation = 2*guiscale();
 
   // Draw line-by-line
   for (beg=end=0; end != std::string::npos; ) {
@@ -275,7 +276,8 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
         // If we have already a word to print (old_end != npos), and
         // we are out of the available width (rc.w) using the new "end",
         if ((old_end != std::string::npos) &&
-            (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
+            (rc.w == 0 ||
+              (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w))) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
@@ -302,7 +304,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 
     gfx::Size lineSize(
       m_font->textLength(line.c_str()),
-      m_font->height());
+      m_font->height()+lineSeparation);
     calculatedSize.w = MAX(calculatedSize.w, lineSize.w);
 
     // Render the text
@@ -327,6 +329,9 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     calculatedSize.h += lineSize.h;
     beg = end+1;
   }
+
+  if (calculatedSize.h > 0)
+    calculatedSize.h -= lineSeparation;
 
   // Fill bottom area
   if (draw && !gfx::is_transparent(bg)) {

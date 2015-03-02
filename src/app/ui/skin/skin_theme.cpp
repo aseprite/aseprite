@@ -563,6 +563,7 @@ void SkinTheme::onRegenerate()
         int align = 0;
         const char* halign = xmlRule->Attribute("align");
         const char* valign = xmlRule->Attribute("valign");
+        const char* wordwrap = xmlRule->Attribute("wordwrap");
         if (halign) {
           if (strcmp(halign, "left") == 0) align |= JI_LEFT;
           else if (strcmp(halign, "right") == 0) align |= JI_RIGHT;
@@ -573,6 +574,8 @@ void SkinTheme::onRegenerate()
           else if (strcmp(valign, "bottom") == 0) align |= JI_BOTTOM;
           else if (strcmp(valign, "middle") == 0) align |= JI_MIDDLE;
         }
+        if (wordwrap && strcmp(wordwrap, "true") == 0)
+          align |= JI_WORDWRAP;
 
         if (ruleName == "background") {
           const char* repeat_id = xmlRule->Attribute("repeat");

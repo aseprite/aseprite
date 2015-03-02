@@ -761,7 +761,7 @@
     <!-- recent_file -->
     <style id="recent_file">
       <background color="background" />
-      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="3" />
+      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="1" />
     </style>
     <style id="recent_file:hover">
       <background color="menuitem_hot_face" />
@@ -773,7 +773,25 @@
 
     <!-- recent_file_detail -->
     <style id="recent_file_detail" base="recent_file">
-      <text color="disabled" />
+      <text color="disabled" valign="top" wordwrap="true" />
+    </style>
+
+    <!-- news_item -->
+    <style id="news_item">
+      <background color="background" />
+      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="3" />
+    </style>
+    <style id="news_item:hover">
+      <background color="menuitem_hot_face" />
+    </style>
+    <style id="news_item:active">
+      <background color="listitem_selected_face" />
+      <text color="listitem_selected_text" />
+    </style>
+
+    <!-- news_item_detail -->
+    <style id="news_item_detail" base="news_item">
+      <text color="disabled" valign="top" wordwrap="true" padding-top="0" padding-bottom="0" />
     </style>
 
   </stylesheet>
