@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -52,7 +52,8 @@
 #endif
 
 #ifdef _WIN32
-  #include "she/clipboard_win.h"
+  #include "she/win/clipboard.h"
+  #include "she/win/native_dialogs.h"
 #else
   #include "she/clipboard_simple.h"
 #endif
@@ -711,6 +712,7 @@ class Alleg4System : public System {
 public:
   Alleg4System()
     : m_font(font, Alleg4Font::None)       // Default Allegro font
+    , m_nativeDialogs(nullptr)
   {
     if (allegro_init() < 0)
       throw std::runtime_error("Cannot initialize Allegro library");
@@ -740,8 +742,16 @@ public:
 #ifdef __APPLE__
     return getOsxLogger();
 #else
-    return NULL;
+    return nullptr;
 #endif
+  }
+
+  NativeDialogs* nativeDialogs() override {
+#ifdef _WIN32
+    if (!m_nativeDialogs)
+      m_nativeDialogs = new NativeDialogsWin32();
+#endif
+    return m_nativeDialogs;
   }
 
   Display* defaultDisplay() override {
@@ -783,11 +793,16 @@ public:
   }
 
   Clipboard* createClipboard() override {
+#ifdef _WIN32
+    return new ClipboardWin32();
+#else
     return new ClipboardImpl();
+#endif
   }
 
 private:
   Alleg4Font m_font;
+  NativeDialogs* m_nativeDialogs;
 };
 
 static System* g_instance;

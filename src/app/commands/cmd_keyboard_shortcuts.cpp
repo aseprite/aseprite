@@ -403,7 +403,7 @@ private:
 
   void onImport() {
     std::string filename = app::show_file_selector("Import Keyboard Shortcuts", "",
-      KEYBOARD_FILENAME_EXTENSION);
+      KEYBOARD_FILENAME_EXTENSION, FileSelectorType::Open);
     if (filename.empty())
       return;
 
@@ -415,7 +415,7 @@ private:
   void onExport() {
   again:
     std::string filename = app::show_file_selector("Export Keyboard Shortcuts", "",
-      KEYBOARD_FILENAME_EXTENSION);
+      KEYBOARD_FILENAME_EXTENSION, FileSelectorType::Save);
     if (!filename.empty()) {
       if (base::is_file(filename)) {
         int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",

@@ -51,7 +51,8 @@ void SaveMaskCommand::onExecute(Context* context)
   int ret;
 
   for (;;) {
-    filename = app::show_file_selector("Save .msk File", filename, "msk");
+    filename = app::show_file_selector(
+      "Save .msk File", filename, "msk", FileSelectorType::Save);
     if (filename.empty())
       return;
 

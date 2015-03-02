@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013  David Capello
+// Copyright (C) 2012-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,7 @@ namespace she {
   class EventLoop;
   class Font;
   class Logger;
+  class NativeDialogs;
   class Surface;
 
   class DisplayCreationException : std::runtime_error {
@@ -32,6 +33,7 @@ namespace she {
     virtual void dispose() = 0;
     virtual Capabilities capabilities() const = 0;
     virtual Logger* logger() = 0;
+    virtual NativeDialogs* nativeDialogs() = 0;
     virtual Display* defaultDisplay() = 0;
     virtual Font* defaultFont() = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;

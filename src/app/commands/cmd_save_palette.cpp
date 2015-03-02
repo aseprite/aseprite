@@ -47,7 +47,8 @@ void SavePaletteCommand::onExecute(Context* context)
   int ret;
 
 again:
-  filename = app::show_file_selector("Save Palette", "", exts);
+  filename = app::show_file_selector("Save Palette", "", exts,
+    FileSelectorType::Save);
   if (!filename.empty()) {
     if (base::is_file(filename)) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",

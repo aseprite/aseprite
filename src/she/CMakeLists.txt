@@ -1,5 +1,5 @@
 # SHE
-# Copyright (C) 2012-2014  David Capello
+# Copyright (C) 2012-2015  David Capello
 
 set(SHE_SOURCES
   alleg4/clock.cpp
@@ -8,6 +8,12 @@ set(SHE_SOURCES
   alleg4/key_poller.cpp
   alleg4/mouse_poller.cpp
   alleg4/she.cpp)
+
+if(WIN32)
+  list(APPEND SHE_SOURCES
+    win/clipboard.cpp
+    win/native_dialogs.cpp)
+endif()
 
 if(APPLE)
   if(NOT USE_SHARED_ALLEGRO4)

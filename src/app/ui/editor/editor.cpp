@@ -742,7 +742,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
 void Editor::flashCurrentLayer()
 {
-  if (!UIContext::instance()->settings()->experimental()->flashLayer())
+  if (!App::instance()->preferences().experimental.flashLayer())
     return;
 
   DocumentLocation loc = getDocumentLocation();

@@ -73,10 +73,13 @@ public:
     if (m_settings->getCenterOnZoom())
       centerOnZoom()->setSelected(true);
 
-    if (m_settings->experimental()->useNativeCursor())
+    if (m_preferences.experimental.useNativeCursor())
       nativeCursor()->setSelected(true);
 
-    if (m_settings->experimental()->flashLayer())
+    if (m_preferences.experimental.useNativeFileDialog())
+      nativeFileDialog()->setSelected(true);
+
+    if (m_preferences.experimental.flashLayer())
       flashLayer()->setSelected(true);
 
     if (m_settings->getShowSpriteEditorScrollbars())
@@ -174,8 +177,11 @@ public:
     m_preferences.undo.allowNonlinearHistory(undoAllowNonlinearHistory()->isSelected());
 
     // Experimental features
-    m_settings->experimental()->setUseNativeCursor(nativeCursor()->isSelected());
-    m_settings->experimental()->setFlashLayer(flashLayer()->isSelected());
+    m_preferences.experimental.useNativeCursor(nativeCursor()->isSelected());
+    m_preferences.experimental.useNativeFileDialog(nativeFileDialog()->isSelected());
+    m_preferences.experimental.flashLayer(flashLayer()->isSelected());
+    ui::set_use_native_cursors(
+      m_preferences.experimental.useNativeCursor());
 
     int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {

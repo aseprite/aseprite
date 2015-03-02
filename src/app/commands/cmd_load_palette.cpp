@@ -44,7 +44,10 @@ void LoadPaletteCommand::onExecute(Context* context)
   char exts[4096];
   get_readable_palette_extensions(exts, sizeof(exts));
 
-  std::string filename = app::show_file_selector("Load Palette", "", exts);
+  std::string filename =
+    app::show_file_selector("Load Palette", "", exts,
+      FileSelectorType::Open);
+
   if (!filename.empty()) {
     base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));
     if (!palette) {

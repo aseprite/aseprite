@@ -312,11 +312,9 @@ std::string FileSelector::show(const std::string& title,
   m_fileType->removeAllItems();
 
   std::vector<std::string> tokens;
-  std::vector<std::string>::iterator tok;
-
   base::split_string(showExtensions, tokens, ",");
-  for (tok=tokens.begin(); tok!=tokens.end(); ++tok)
-    m_fileType->addItem(tok->c_str());
+  for (const auto& tok : tokens)
+    m_fileType->addItem(tok.c_str());
 
   // file name entry field
   m_fileName->setText(base::get_file_name(initialPath).c_str());

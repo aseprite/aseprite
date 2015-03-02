@@ -109,7 +109,8 @@ void OpenFileCommand::onExecute(Context* context)
   if (context->isUiAvailable() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
-    m_filename = app::show_file_selector("Open", "", exts);
+    m_filename = app::show_file_selector("Open", "", exts,
+      FileSelectorType::Open);
   }
 
   if (!m_filename.empty()) {

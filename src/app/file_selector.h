@@ -13,9 +13,13 @@
 
 namespace app {
 
-  std::string show_file_selector(const std::string& title,
+  enum class FileSelectorType { Open, Save };
+
+  std::string show_file_selector(
+    const std::string& title,
     const std::string& initialPath,
-    const std::string& showExtensions);
+    const std::string& showExtensions,
+    FileSelectorType type);
 
 } // namespace app
 

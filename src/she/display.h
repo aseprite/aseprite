@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gfx/point.h"
+#include "she/display_handle.h"
 #include "she/native_cursor.h"
 
 #include <string>
@@ -62,7 +63,7 @@ namespace she {
     virtual void releaseMouse() = 0;
 
     // Returns the HWND on Windows.
-    virtual void* nativeHandle() = 0;
+    virtual DisplayHandle nativeHandle() = 0;
   };
 
 } // namespace she
