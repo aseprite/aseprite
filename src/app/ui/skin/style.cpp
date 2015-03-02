@@ -199,6 +199,9 @@ gfx::Size Rules::preferredSize(const char* text)
     //if (sz.w > 0) sz.w += 2;    // TODO text separation
     sz.w += textSize.w;
     sz.h = MAX(sz.h, textSize.h);
+
+    sz.w += m_text->padding().left() + m_text->padding().right();
+    sz.h += m_text->padding().top() + m_text->padding().bottom();
   }
   return sz;
 }

@@ -70,6 +70,8 @@ namespace app {
       void setColor(gfx::Color color) { m_color = color; }
       void setPadding(const gfx::Border& padding) { m_padding = padding; }
 
+      gfx::Border padding() const { return m_padding; }
+
     protected:
       void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
 

@@ -758,6 +758,24 @@
       <background part="editor_selected" />
     </style>
 
+    <!-- recent_file -->
+    <style id="recent_file">
+      <background color="background" />
+      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="3" />
+    </style>
+    <style id="recent_file:hover">
+      <background color="menuitem_hot_face" />
+    </style>
+    <style id="recent_file:active">
+      <background color="listitem_selected_face" />
+      <text color="listitem_selected_text" />
+    </style>
+
+    <!-- recent_file_detail -->
+    <style id="recent_file_detail" base="recent_file">
+      <text color="disabled" />
+    </style>
+
   </stylesheet>
 
 </skin>

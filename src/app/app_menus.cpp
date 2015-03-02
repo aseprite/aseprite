@@ -57,6 +57,9 @@ AppMenus* AppMenus::instance()
 AppMenus::AppMenus()
   : m_recentListMenuitem(NULL)
 {
+  m_recentFilesConn =
+    App::instance()->getRecentFiles()->Changed.connect(
+      Bind(&AppMenus::rebuildRecentList, this));
 }
 
 void AppMenus::reload()

@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/recent_items.h"
+#include "base/signal.h"
 
 #include <string>
 
@@ -34,6 +35,8 @@ namespace app {
 
     void addRecentFile(const char* filename);
     void removeRecentFile(const char* filename);
+
+    Signal0<void> Changed;
 
   private:
     List m_files;

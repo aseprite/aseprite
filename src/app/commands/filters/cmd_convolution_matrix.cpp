@@ -124,7 +124,7 @@ private:
 
   void onMatrixChange()
   {
-    ListItem* selected = m_stockListBox->getSelectedChild();
+    Widget* selected = m_stockListBox->getSelectedChild();
     SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText().c_str());
     Target newTarget = matrix->getDefaultTarget();
 

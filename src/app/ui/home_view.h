@@ -21,6 +21,11 @@ namespace ui {
 }
 
 namespace app {
+
+  class NewsListBox;
+  class RecentFilesListBox;
+  class RecentFoldersListBox;
+
   class HomeView : public app::gen::HomeView
                  , public TabView
                  , public WorkspaceView
@@ -55,6 +60,10 @@ namespace app {
   private:
     void onNewFile();
     void onOpenFile();
+
+    RecentFilesListBox* m_files;
+    RecentFoldersListBox* m_folders;
+    NewsListBox* m_news;
   };
 
 } // namespace app

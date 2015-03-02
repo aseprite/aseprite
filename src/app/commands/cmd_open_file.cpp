@@ -23,6 +23,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
+#include "base/path.h"
 #include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite.h"
@@ -43,6 +44,7 @@ protected:
 
 private:
   std::string m_filename;
+  std::string m_folder;
 };
 
 class OpenFileJob : public Job, public IFileOpProgress
@@ -93,12 +95,12 @@ OpenFileCommand::OpenFileCommand()
             "Open Sprite",
             CmdRecordableFlag)
 {
-  m_filename = "";
 }
 
 void OpenFileCommand::onLoadParams(Params* params)
 {
   m_filename = params->get("filename");
+  m_folder = params->get("folder"); // Initial folder
 }
 
 void OpenFileCommand::onExecute(Context* context)
@@ -109,7 +111,13 @@ void OpenFileCommand::onExecute(Context* context)
   if (context->isUiAvailable() && m_filename.empty()) {
     char exts[4096];
     get_readable_extensions(exts, sizeof(exts));
-    m_filename = app::show_file_selector("Open", "", exts);
+
+    // Add backslash as show_file_selector() expected a filename as
+    // initial path (and the file part is removed from the path).
+    if (!m_folder.empty() && !base::is_path_separator(m_folder[m_folder.size()-1]))
+      m_folder.push_back(base::path_separator);
+
+    m_filename = app::show_file_selector("Open", m_folder, exts);
   }
 
   if (!m_filename.empty()) {

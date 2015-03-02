@@ -76,12 +76,8 @@ bool LinkLabel::onProcessMessage(Message* msg)
         setSelected(false);
         invalidate();           // TODO theme specific
 
-        if (hasMouseOver()) {
-          if (!m_url.empty())
-            base::launcher::open_url(m_url);
-
-          Click();
-        }
+        if (hasMouseOver())
+          onClick();
       }
       break;
   }
@@ -92,6 +88,14 @@ bool LinkLabel::onProcessMessage(Message* msg)
 void LinkLabel::onPaint(PaintEvent& ev)
 {
   getTheme()->paintLinkLabel(ev);
+}
+
+void LinkLabel::onClick()
+{
+  if (!m_url.empty())
+    base::launcher::open_url(m_url);
+
+  Click();
 }
 
 } // namespace ui

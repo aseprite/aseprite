@@ -192,7 +192,7 @@ public:
 
 private:
   void onChangeSection() {
-    ListItem* item = sectionListbox()->getSelectedChild();
+    ListItem* item = static_cast<ListItem*>(sectionListbox()->getSelectedChild());
     if (!item)
       return;
 

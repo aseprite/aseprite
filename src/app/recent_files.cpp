@@ -11,7 +11,6 @@
 
 #include "app/recent_files.h"
 
-#include "app/app_menus.h"
 #include "app/ini_file.h"
 #include "base/fs.h"
 #include "base/path.h"
@@ -90,7 +89,7 @@ void RecentFiles::addRecentFile(const char* filename)
   m_files.addItem(filename);
   m_paths.addItem(base::get_file_path(filename));
 
-  AppMenus::instance()->rebuildRecentList();
+  Changed();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
@@ -98,7 +97,7 @@ void RecentFiles::removeRecentFile(const char* filename)
   m_files.removeItem(filename);
   m_paths.removeItem(base::get_file_path(filename));
 
-  AppMenus::instance()->rebuildRecentList();
+  Changed();
 }
 
 } // namespace app

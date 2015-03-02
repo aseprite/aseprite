@@ -14,6 +14,8 @@
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/ui/news_listbox.h"
+#include "app/ui/recent_listbox.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
@@ -31,6 +33,9 @@ using namespace ui;
 using namespace app::skin;
 
 HomeView::HomeView()
+  : m_files(new RecentFilesListBox)
+  , m_folders(new RecentFoldersListBox)
+  , m_news(new NewsListBox)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -39,6 +44,10 @@ HomeView::HomeView()
 
   newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));
+
+  filesView()->attachToView(m_files);
+  foldersView()->attachToView(m_folders);
+  newsView()->attachToView(m_news);
 
   checkUpdate()->setVisible(false);
 }
