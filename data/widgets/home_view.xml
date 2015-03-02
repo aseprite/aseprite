@@ -1,7 +1,7 @@
 <!-- Aseprite -->
 <!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
-  <vbox noborders="true" id="home_view" childspacing="8" expansive="true">
+  <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
     <hbox noborders="true">
       <image file="icons/ase48.png" align="center" />
       <vbox border="4" childspacing="4">
@@ -13,14 +13,14 @@
         <link id="check_update" text="" style="workspace_link" />
       </vbox>
     </hbox>
-    <hbox noborders="true" expansive="true" homogeneous="true">
-      <vbox noborders="true">
+    <hbox noborders="true" expansive="true" homogeneous="true" childspacing="2">
+      <vbox noborders="true" childspacing="2">
         <label text="Recent files:" style="workspace_label" />
         <view id="files_view" expansive="true" style="workspace_view" />
         <label text="Recent folders:" style="workspace_label" />
         <view id="folders_view" expansive="true" style="workspace_view" />
       </vbox>
-      <vbox noborders="true">
+      <vbox noborders="true" childspacing="2">
         <label text="News:" style="workspace_label" />
         <view id="news_view" expansive="true" style="workspace_view" />
       </vbox>

@@ -52,6 +52,7 @@
 
   <global>
     <section id="general">
+      <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
       <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
     </section>

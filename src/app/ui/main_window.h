@@ -12,6 +12,8 @@
 #include "app/ui/tabs.h"
 #include "ui/window.h"
 
+#include "generated_main_window.h"
+
 namespace ui {
   class Splitter;
 }
@@ -25,6 +27,7 @@ namespace app {
   class ColorBar;
   class ContextBar;
   class DevConsoleView;
+  class DocumentView;
   class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
@@ -35,7 +38,7 @@ namespace app {
   class Timeline;
   class Workspace;
 
-  class MainWindow : public ui::Window
+  class MainWindow : public app::gen::MainWindow
                    , public TabsDelegate {
   public:
     enum Mode {
@@ -83,18 +86,16 @@ namespace app {
     void onActiveViewChange();
 
   private:
+    DocumentView* getDocView();
     HomeView* getHomeView();
+    void configureWorkspaceLayout();
 
     MainMenuBar* m_menuBar;
     ContextBar* m_contextBar;
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
-    ui::Splitter* m_colorBarSplitter;
-    ui::Splitter* m_timelineSplitter;
     ui::Widget* m_toolBar;
     Tabs* m_tabsBar;
-    double m_lastSplitterPos;
-    double m_lastTimelineSplitterPos;
     Mode m_mode;
     Timeline* m_timeline;
     Workspace* m_workspace;
