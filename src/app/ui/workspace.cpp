@@ -64,16 +64,13 @@ void Workspace::removeView(WorkspaceView* view)
   ASSERT(part != NULL);
 
   part->removeView(view);
-  if (part->getViewCount() == 0 &&
-      part->getParent() != this) {
-    bool activePartRemoved = (m_activePart == part);
-    WorkspacePart* otherPart = destroyPart(part);
 
-    if (activePartRemoved)
-      m_activePart = otherPart;
-  }
+  Tabs* tabs = App::instance()->getMainWindow()->getTabsBar();
+  tabs->removeTab(dynamic_cast<TabView*>(view));
 
-  App::instance()->getMainWindow()->getTabsBar()->removeTab(dynamic_cast<TabView*>(view));
+  TabView* tabView = tabs->getSelectedTab();
+  if (tabView)
+    setActiveView(dynamic_cast<WorkspaceView*>(tabView));
 
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
