@@ -667,8 +667,11 @@ void Tabs::stopAni()
   m_ani = ANI_NONE;
   m_timer.stop();
 
-  if (m_list.empty())
-    getRoot()->layout();
+  if (m_list.empty()) {
+    Widget* root = getRoot();
+    if (root)
+      root->layout();
+  }
 }
 
 void Tabs::startDrag()
