@@ -357,7 +357,7 @@ void Tabs::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
-    (m_list.empty() ? 0:
+    (m_list.empty() && m_ani == ANI_NONE ? 0:
       theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
 
   g->fillRect(theme->colors.windowFace(), g->getClipBounds());
@@ -442,7 +442,7 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Size reqsize(0, 0);
 
-  if (m_list.empty())
+  if (m_list.empty() && m_ani == ANI_NONE)
     reqsize.h = theme->dimensions.tabsEmptyHeight();
   else
     reqsize.h = theme->dimensions.tabsHeight();
@@ -687,6 +687,9 @@ void Tabs::stopAni()
 {
   m_ani = ANI_NONE;
   m_timer.stop();
+
+  if (m_list.empty())
+    getRoot()->layout();
 }
 
 void Tabs::startDrag()
