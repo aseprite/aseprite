@@ -136,7 +136,6 @@ namespace app {
     int m_ani_t;                  // Number of ticks from the beginning of the transition/animation
     int m_ani_T;                  // Number of ticks in total for the current transition/animation
     Tab* m_removedTab;
-    Tab* m_nextTabOfTheRemovedOne;
 
     // Drag-and-drop
     bool m_isDragging;

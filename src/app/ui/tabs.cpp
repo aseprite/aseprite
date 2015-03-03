@@ -53,18 +53,16 @@ static WidgetType tabs_type()
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(tabs_type())
   , m_border(2)
+  , m_hot(nullptr)
+  , m_hotCloseButton(false)
+  , m_selected(nullptr)
   , m_delegate(delegate)
   , m_timer(1000/60, this)
+  , m_ani(ANI_NONE)
+  , m_removedTab(nullptr)
   , m_isDragging(false)
 {
   setDoubleBuffered(true);
-
-  m_hot = NULL;
-  m_hotCloseButton = false;
-  m_selected = NULL;
-  m_ani = ANI_NONE;
-  m_removedTab = NULL;
-
   initTheme();
 }
 
@@ -128,12 +126,6 @@ void Tabs::removeTab(TabView* tabView)
   if (m_delegate)
     tab->modified = m_delegate->onIsModified(this, tabView);
   tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
-
-  // Next tab in the list
-  if (it != m_list.end())
-    m_nextTabOfTheRemovedOne = *it;
-  else
-    m_nextTabOfTheRemovedOne = nullptr;
 
   resetOldPositions();
   startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
@@ -379,17 +371,6 @@ void Tabs::onPaint(PaintEvent& ev)
       box.w = int(inbetween(tab->oldWidth, tab->width, t));
     }
 
-    if (m_ani == ANI_REMOVING_TAB) {
-      if (m_nextTabOfTheRemovedOne == tab) {
-        // Draw deleted tab
-        if (m_removedTab) {
-          gfx::Rect box2(box.x, box.y, 0, box.h);
-          box2.w = int(startX + inbetween(tab->oldX, tab->x, t)) - box2.x;
-          drawTab(g, box2, m_removedTab, 0, false, false);
-        }
-      }
-    }
-
     if (tab != m_selected)
       drawTab(g, box, tab, 0, (tab == m_hot), false);
 
@@ -399,13 +380,8 @@ void Tabs::onPaint(PaintEvent& ev)
   }
 
   // Draw deleted tab
-  if (m_ani == ANI_REMOVING_TAB && !m_nextTabOfTheRemovedOne && m_removedTab) {
-    if (prevTab) {
-      box.x = int(startX + inbetween(
-          prevTab->oldX+prevTab->oldWidth, prevTab->x+prevTab->width, t));
-    }
-    else
-      box.x = startX;
+  if (m_ani == ANI_REMOVING_TAB && m_removedTab) {
+    box.x = startX + m_removedTab->x;
     box.w = int(inbetween(m_removedTab->oldWidth, 0, t));
     drawTab(g, box, m_removedTab, 0, false, false);
   }
