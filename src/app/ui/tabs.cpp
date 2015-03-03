@@ -505,32 +505,35 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
     gfx::Rect(box.x, box.y+dy, box.w, box.h),
     nullptr, state);
 
-  // Tab icon
-  TabIcon icon = tab->icon;
-  int dx = 0;
-  switch (icon) {
-    case TabIcon::NONE:
-      break;
-    case TabIcon::HOME:
-      {
-        theme->styles.tabHome()->paint(g,
-          gfx::Rect(
-            box.x,
-            box.y+dy,
-            box.x-dx,
-            box.h),
-          nullptr, state);
-        dx += theme->dimensions.tabsIconWidth();
-      }
-      break;
-  }
+  {
+    IntersectClip clip(g, gfx::Rect(box.x, box.y+dy, box.w-clipTextRightSide, box.h));
 
-  // Tab with text + clipping the close button
-  if (box.w > 8*ui::guiscale()) {
-    IntersectClip clip(g, gfx::Rect(box.x+dx, box.y+dy, box.w-dx-clipTextRightSide, box.h));
-    theme->styles.tabText()->paint(g,
-      gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
-      tab->text.c_str(), state);
+    // Tab icon
+    TabIcon icon = tab->icon;
+    int dx = 0;
+    switch (icon) {
+      case TabIcon::NONE:
+        break;
+      case TabIcon::HOME:
+        {
+          theme->styles.tabHome()->paint(g,
+            gfx::Rect(
+              box.x,
+              box.y+dy,
+              box.x-dx,
+              box.h),
+            nullptr, state);
+          dx += theme->dimensions.tabsIconWidth();
+        }
+        break;
+    }
+
+    // Tab with text + clipping the close button
+    if (box.w > 8*ui::guiscale()) {
+      theme->styles.tabText()->paint(g,
+        gfx::Rect(box.x+dx, box.y+dy, box.w-dx, box.h),
+        tab->text.c_str(), state);
+    }
   }
 
   // Tab bottom part
