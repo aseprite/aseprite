@@ -257,6 +257,7 @@ add_library(app-lib
   pref/preferences.cpp
   project.cpp
   recent_files.cpp
+  res/http_loader.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp

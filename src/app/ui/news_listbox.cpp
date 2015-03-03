@@ -11,11 +11,11 @@
 
 #include "app/ui/news_listbox.h"
 
+#include "app/res/http_loader.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
+#include "app/xml_document.h"
 #include "base/string.h"
-#include "net/http_request.h"
-#include "net/http_response.h"
 #include "ui/link_label.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
@@ -166,16 +166,78 @@ private:
   std::string m_desc;
 };
 
-NewsListBox::NewsListBox()
-{
-  std::stringstream output;
-  net::HttpRequest http(WEBSITE_NEWS_RSS);
-  net::HttpResponse response(&output);
-  http.send(response);
+class ProblemsItem : public NewsItem {
+public:
+  ProblemsItem() : NewsItem("", "Problems loading news. Retry.", "") {
+  }
 
-  TiXmlDocument doc;
-  doc.Parse(output.str().c_str(), 0, TIXML_DEFAULT_ENCODING);
-  TiXmlHandle handle(&doc);
+protected:
+  void onClick() override {
+    static_cast<NewsListBox*>(getParent())->reload();
+  }
+};
+
+NewsListBox::NewsListBox()
+  : m_loader(nullptr)
+  , m_timer(250, this)
+{
+  m_timer.Tick.connect(&NewsListBox::onTick, this);
+  reload();
+}
+
+NewsListBox::~NewsListBox()
+{
+  if (m_timer.isRunning())
+    m_timer.stop();
+
+  delete m_loader;
+  m_loader = nullptr;
+}
+
+void NewsListBox::reload()
+{
+  if (m_loader || m_timer.isRunning())
+    return;
+
+  while (getLastChild())
+    removeChild(getLastChild());
+
+  View* view = View::getView(this);
+  if (view)
+    view->updateView();
+
+  m_loader = new HttpLoader(WEBSITE_NEWS_RSS);
+  m_timer.start();
+}
+
+void NewsListBox::onTick()
+{
+  if (!m_loader || !m_loader->isDone())
+    return;
+
+  std::string fn = m_loader->filename();
+
+  delete m_loader;
+  m_loader = nullptr;
+  m_timer.stop();
+
+  if (fn.empty()) {
+    addChild(new ProblemsItem());
+    View::getView(this)->updateView();
+    return;
+  }
+
+  XmlDocumentRef doc;
+  try {
+    doc = open_xml(fn);
+  }
+  catch (...) {
+    addChild(new ProblemsItem());
+    View::getView(this)->updateView();
+    return;
+  }
+
+  TiXmlHandle handle(doc);
   TiXmlElement* itemXml = handle
     .FirstChild("rss")
     .FirstChild("channel")
@@ -207,6 +269,8 @@ NewsListBox::NewsListBox()
     .FirstChild("link").ToElement();
   if (linkXml)
     addChild(new NewsItem(linkXml->GetText(), "More...", ""));
+
+  View::getView(this)->updateView();
 }
 
 } // namespace app

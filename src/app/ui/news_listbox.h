@@ -10,12 +10,24 @@
 #pragma once
 
 #include "ui/listbox.h"
+#include "ui/timer.h"
 
 namespace app {
+
+  class HttpLoader;
 
   class NewsListBox : public ui::ListBox {
   public:
     NewsListBox();
+    ~NewsListBox();
+
+    void reload();
+
+  private:
+    void onTick();
+
+    ui::Timer m_timer;
+    HttpLoader* m_loader;
   };
 
 } // namespace app

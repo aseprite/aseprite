@@ -43,11 +43,6 @@ void ResourcesLoader::cancel()
   m_cancel = true;
 }
 
-bool ResourcesLoader::done()
-{
-  return m_done;
-}
-
 bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
 {
   Resource* rawResource;

@@ -62,6 +62,10 @@ public:
   {
     m_response = &response;
     curl_easy_perform(m_curl);
+
+    long code;
+    curl_easy_getinfo(m_curl, CURLINFO_RESPONSE_CODE, &code);
+    m_response->setStatus(code);
   }
 
   void abort()
