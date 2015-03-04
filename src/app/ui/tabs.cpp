@@ -201,7 +201,7 @@ void Tabs::selectPreviousTab()
 
 TabView* Tabs::getSelectedTab()
 {
-  if (m_selected != NULL)
+  if (m_selected)
     return m_selected->view;
   else
     return NULL;

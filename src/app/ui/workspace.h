@@ -11,13 +11,14 @@
 
 #include "app/ui/workspace_views.h"
 #include "base/signal.h"
-#include "ui/box.h"
+#include "ui/widget.h"
+
+#include <map>
 #include <vector>
 
 namespace app {
-  class WorkspacePart;
 
-  class Workspace : public ui::Box {
+  class Workspace : public ui::Widget {
   public:
     typedef WorkspaceViews::iterator iterator;
 
@@ -37,21 +38,14 @@ namespace app {
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
 
-    void splitView(WorkspaceView* view, int orientation);
-    void makeUnique(WorkspaceView* view);
-
     Signal0<void> ActiveViewChanged;
 
+  protected:
+    void onPaint(ui::PaintEvent& ev) override;
+
   private:
-    typedef std::vector<WorkspacePart*> WorkspaceParts;
-
-    WorkspacePart* destroyPart(WorkspacePart* part);
-    WorkspacePart* getPartByView(WorkspaceView* view);
-    void enumAllParts(WorkspaceParts& parts);
-
-    // All views of all parts.
     WorkspaceViews m_views;
-    WorkspacePart* m_activePart;
+    WorkspaceView* m_activeView;
   };
 
 } // namespace app
