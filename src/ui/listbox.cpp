@@ -128,9 +128,7 @@ void ListBox::sortItems()
   std::sort(widgets.begin(), widgets.end(), &sort_by_text);
 
   // Remove all children and add then again.
-  while (!getChildren().empty())
-    removeChild(getChildren().back());
-
+  removeAllChildren();
   for (Widget* child : widgets)
     addChild(child);
 }

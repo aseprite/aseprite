@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -57,12 +57,8 @@ public:
   void clean()
   {
     // Remove all added items so ~Widget() don't delete them.
-    while (getLastChild())
-      removeChild(getLastChild());
-
-    ASSERT(getChildren().empty());
-
-    selectChild(NULL);
+    removeAllChildren();
+    selectChild(nullptr);
   }
 
 protected:
