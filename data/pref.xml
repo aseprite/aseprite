@@ -76,6 +76,9 @@
       <option id="use_native_cursor" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" />
     </section>
+    <section id="news">
+      <option id="cache_file" type="std::string" />
+    </section>
   </global>
 
   <tool>

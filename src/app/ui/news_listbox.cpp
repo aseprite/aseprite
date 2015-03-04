@@ -11,11 +11,15 @@
 
 #include "app/ui/news_listbox.h"
 
+#include "app/app.h"
+#include "app/pref/preferences.h"
 #include "app/res/http_loader.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/xml_document.h"
+#include "base/fs.h"
 #include "base/string.h"
+#include "base/time.h"
 #include "ui/link_label.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
@@ -182,7 +186,12 @@ NewsListBox::NewsListBox()
   , m_timer(250, this)
 {
   m_timer.Tick.connect(&NewsListBox::onTick, this);
-  reload();
+
+  std::string cache = App::instance()->preferences().news.cacheFile();
+  if (!cache.empty() && base::is_file(cache) && validCache(cache))
+    parseFile(cache);
+  else
+    reload();
 }
 
 NewsListBox::~NewsListBox()
@@ -227,13 +236,21 @@ void NewsListBox::onTick()
     return;
   }
 
+  parseFile(fn);
+}
+
+void NewsListBox::parseFile(const std::string& filename)
+{
+  View* view = View::getView(this);
+
   XmlDocumentRef doc;
   try {
-    doc = open_xml(fn);
+    doc = open_xml(filename);
   }
   catch (...) {
     addChild(new ProblemsItem());
-    View::getView(this)->updateView();
+    if (view)
+      view->updateView();
     return;
   }
 
@@ -270,7 +287,23 @@ void NewsListBox::onTick()
   if (linkXml)
     addChild(new NewsItem(linkXml->GetText(), "More...", ""));
 
-  View::getView(this)->updateView();
+  if (view)
+    view->updateView();
+
+  // Save as cached news
+  App::instance()->preferences().news.cacheFile(filename);
+}
+
+bool NewsListBox::validCache(const std::string& filename)
+{
+  base::Time
+    now = base::current_time(),
+    time = base::get_modification_time(filename);
+
+  now.dateOnly();
+  time.dateOnly();
+
+  return (now == time);
 }
 
 } // namespace app

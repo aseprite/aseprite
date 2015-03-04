@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,7 @@
 #include "base/path.h"
 #include "base/string.h"
 #include "base/win32_exception.h"
+#include "base/time.h"
 
 namespace base {
 
@@ -66,6 +67,24 @@ void remove_readonly_attr(const std::string& path)
   DWORD attr = ::GetFileAttributes(fn.c_str());
   if ((attr & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY)
     ::SetFileAttributes(fn.c_str(), attr & ~FILE_ATTRIBUTE_READONLY);
+}
+
+Time get_modification_time(const std::string& path)
+{
+  WIN32_FILE_ATTRIBUTE_DATA data;
+  ZeroMemory(&data, sizeof(data));
+
+  std::wstring fn = from_utf8(path);
+  if (!GetFileAttributesEx(fn.c_str(), GetFileExInfoStandard, (LPVOID)&data))
+    return Time();
+
+  SYSTEMTIME utc, local;
+  FileTimeToSystemTime(&data.ftLastWriteTime, &utc);
+  SystemTimeToTzSpecificLocalTime(NULL, &utc, &local);
+
+  return Time(
+    local.wYear, local.wMonth, local.wDay,
+    local.wHour, local.wMinute, local.wSecond);
 }
 
 void make_directory(const std::string& path)

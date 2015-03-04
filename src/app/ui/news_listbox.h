@@ -12,6 +12,8 @@
 #include "ui/listbox.h"
 #include "ui/timer.h"
 
+#include <string>
+
 namespace app {
 
   class HttpLoader;
@@ -25,6 +27,8 @@ namespace app {
 
   private:
     void onTick();
+    void parseFile(const std::string& filename);
+    bool validCache(const std::string& filename);
 
     ui::Timer m_timer;
     HttpLoader* m_loader;
