@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <vector>
+#include <ctime>
 
 #if __APPLE__
 #include <mach-o/dyld.h>
@@ -90,7 +91,7 @@ Time get_modification_time(const std::string& path)
   if (result != 0)
     return Time();
 
-  struct tm* t = localtime(&sts.st_mtime);
+  std::tm* t = std::localtime(&sts.st_mtime);
   return Time(
     t->tm_year+1900, t->tm_mon+1, t->tm_mday,
     t->tm_hour, t->tm_min, t->tm_sec);

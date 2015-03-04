@@ -29,7 +29,7 @@ Time current_time()
 #else
 
   std::time_t now = std::time(nullptr);
-  struct tm* t = std::time(nullptr);
+  std::tm* t = std::localtime(&now);
   return Time(
     t->tm_year+1900, t->tm_mon+1, t->tm_mday,
     t->tm_hour, t->tm_min, t->tm_sec);
