@@ -129,7 +129,7 @@ GifQuantizeBuffer(unsigned int Width,
         free((char *)ColorArrayEntries);
         return GIF_ERROR;
     }
-    if (NewColorMapSize < *ColorMapSize) {
+    if ((int)NewColorMapSize < *ColorMapSize) {
         /* And clear rest of color map: */
         for (i = NewColorMapSize; i < *ColorMapSize; i++)
             OutputColorMap[i].Red = OutputColorMap[i].Green =
@@ -138,7 +138,7 @@ GifQuantizeBuffer(unsigned int Width,
 
     /* Average the colors in each entry to be the color to be used in the
      * output color map, and plug it into the output color map itself. */
-    for (i = 0; i < NewColorMapSize; i++) {
+    for (i = 0; i < (int)NewColorMapSize; i++) {
         if ((j = NewColorSubdiv[i].NumEntries) > 0) {
             QuantizedColor = NewColorSubdiv[i].QuantizedColors;
             Red = Green = Blue = 0;
@@ -149,9 +149,9 @@ GifQuantizeBuffer(unsigned int Width,
                 Blue += QuantizedColor->RGB[2];
                 QuantizedColor = QuantizedColor->Pnext;
             }
-            OutputColorMap[i].Red = (Red << (8 - BITS_PER_PRIM_COLOR)) / j;
-            OutputColorMap[i].Green = (Green << (8 - BITS_PER_PRIM_COLOR)) / j;
-            OutputColorMap[i].Blue = (Blue << (8 - BITS_PER_PRIM_COLOR)) / j;
+            OutputColorMap[i].Red   = (GifByteType)((Red << (8 - BITS_PER_PRIM_COLOR)) / j);
+            OutputColorMap[i].Green = (GifByteType)((Green << (8 - BITS_PER_PRIM_COLOR)) / j);
+            OutputColorMap[i].Blue  = (GifByteType)((Blue << (8 - BITS_PER_PRIM_COLOR)) / j);
         }
     }
 
@@ -225,7 +225,7 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
         /* Sort all elements in that entry along the given axis and split at
          * the median.  */
         SortArray = (QuantizedColorType **)malloc(
-                      sizeof(QuantizedColorType *) * 
+                      sizeof(QuantizedColorType *) *
                       NewColorSubdiv[Index].NumEntries);
         if (SortArray == NULL)
             return GIF_ERROR;
@@ -235,14 +235,14 @@ SubdivColorMap(NewColorMapType * NewColorSubdiv,
             SortArray[j] = QuantizedColor;
 
 	/*
-	 * Because qsort isn't stable, this can produce differing 
+	 * Because qsort isn't stable, this can produce differing
 	 * results for the order of tuples depending on platform
 	 * details of how qsort() is implemented.
 	 *
 	 * We mitigate this problem by sorting on all three axes rather
 	 * than only the one specied by SortRGBAxis; that way the instability
 	 * can only become an issue if there are multiple color indices
-	 * referring to identical RGB tuples.  Older versions of this 
+	 * referring to identical RGB tuples.  Older versions of this
 	 * sorted on only the one axis.
 	 */
         qsort(SortArray, NewColorSubdiv[Index].NumEntries,

@@ -192,8 +192,8 @@ bool TgaFormat::onLoad(FileOp* fop)
   unsigned char image_id[256], image_palette[256][3], rgb[4];
   unsigned char id_length, palette_type, image_type, palette_entry_size;
   unsigned char bpp, descriptor_bits;
-  short unsigned int first_color, palette_colors;
-  short unsigned int left, top, image_width, image_height;
+  short unsigned int palette_colors;
+  short unsigned int image_width, image_height;
   unsigned int c, i, x, y, yc;
   int compressed;
 
@@ -202,11 +202,11 @@ bool TgaFormat::onLoad(FileOp* fop)
   id_length = fgetc(f);
   palette_type = fgetc(f);
   image_type = fgetc(f);
-  first_color = fgetw(f);
+  fgetw(f);                     // first_color
   palette_colors  = fgetw(f);
   palette_entry_size = fgetc(f);
-  left = fgetw(f);
-  top = fgetw(f);
+  fgetw(f);                     // "left" field
+  fgetw(f);                     // "top" field
   image_width = fgetw(f);
   image_height = fgetw(f);
   bpp = fgetc(f);

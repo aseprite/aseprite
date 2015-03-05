@@ -47,7 +47,6 @@ bool RemoveFrameTagCommand::onEnabled(Context* context)
 void RemoveFrameTagCommand::onExecute(Context* context)
 {
   ContextWriter writer(context);
-  Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   frame_t frame = writer.frame();
 

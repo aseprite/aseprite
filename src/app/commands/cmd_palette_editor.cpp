@@ -354,7 +354,7 @@ void PaletteEntryEditor::setColor(const app::Color& color)
   else if (j-i+1 == i2-i) {
     m_entryLabel.setTextf(" Range: %d-%d", i, j);
   }
-  else if (i == entries.size()) {
+  else if (i == int(entries.size())) {
     m_entryLabel.setText(" No Entry");
   }
   else {

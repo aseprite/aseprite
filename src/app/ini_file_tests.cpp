@@ -19,18 +19,18 @@ TEST(IniFile, Basic)
 
   set_config_file("_test.ini");
 
-  EXPECT_EQ(false, get_config_bool("A", "a", false));
-  EXPECT_EQ(true, get_config_bool("A", "b", true));
-  EXPECT_EQ(0, get_config_bool("B", "a", 0));
-  EXPECT_EQ(1, get_config_bool("B", "b", 1));
+  EXPECT_FALSE(get_config_bool("A", "a", false));
+  EXPECT_TRUE(get_config_bool("A", "b", true));
+  EXPECT_FALSE(get_config_bool("B", "a", 0));
+  EXPECT_TRUE(get_config_bool("B", "b", 1));
 
   set_config_bool("A", "a", true);
   set_config_bool("A", "b", false);
   set_config_int("B", "a", 2);
   set_config_int("B", "b", 3);
 
-  EXPECT_EQ(true, get_config_bool("A", "a", false));
-  EXPECT_EQ(false, get_config_bool("A", "b", true));
+  EXPECT_TRUE(get_config_bool("A", "a", false));
+  EXPECT_FALSE(get_config_bool("A", "b", true));
   EXPECT_EQ(2, get_config_int("B", "a", 0));
   EXPECT_EQ(3, get_config_int("B", "b", 1));
 }

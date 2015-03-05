@@ -523,9 +523,8 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
                            double x2, double y2, double x3, double y3,
                            double in_x)
 {
+  double out_x, old_x, old_dx, old_dy;
   int npts;
-  double out_x, old_dx, old_x;
-  double out_y, old_dy;
 
   /* Derivatives of x(t) and y(t). */
   double x, dx, ddx, dddx;
@@ -572,7 +571,6 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
   y = y0;
 
   out_x = x0;
-  out_y = y0;
 
   old_x = x0;
   old_dx = dx;
@@ -589,7 +587,6 @@ double algo_spline_get_tan(double x0, double y0, double x1, double y1,
     y += dy;
 
     out_x = x;
-    out_y = y;
     if (out_x > in_x) {
       dx = old_dx + (dx-old_dx) * (in_x-old_x) / (out_x-old_x);
       dy = old_dy + (dy-old_dy) * (in_x-old_x) / (out_x-old_x);

@@ -12,15 +12,20 @@ two modules will be linked.  Preserve this property!
 #include <limits.h>
 #include <stdint.h>
 #include <fcntl.h>
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #include <stdio.h>
 #include <string.h>
 
 #ifdef _WIN32
-#include <io.h>
-#endif /* _WIN32 */
+  #include <io.h>
+  #define posix_open   _open
+  #define posix_close  _close
+  #define posix_fdopen _fdopen
+#else
+  #include <unistd.h>
+  #define posix_open   open
+  #define posix_close  close
+  #define posix_fdopen fdopen
+#endif
 
 #include "gif_lib.h"
 #include "gif_lib_private.h"
@@ -54,7 +59,7 @@ DGifOpenFileName(const char *FileName, int *Error)
     int FileHandle;
     GifFileType *GifFile;
 
-    if ((FileHandle = open(FileName, O_RDONLY)) == -1) {
+    if ((FileHandle = posix_open(FileName, O_RDONLY)) == -1) {
 	if (Error != NULL)
 	    *Error = D_GIF_ERR_OPEN_FAILED;
         return NULL;
@@ -81,7 +86,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     if (GifFile == NULL) {
         if (Error != NULL)
 	    *Error = D_GIF_ERR_NOT_ENOUGH_MEM;
-        (void)close(FileHandle);
+        posix_close(FileHandle);
         return NULL;
     }
 
@@ -95,7 +100,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     if (Private == NULL) {
         if (Error != NULL)
 	    *Error = D_GIF_ERR_NOT_ENOUGH_MEM;
-        (void)close(FileHandle);
+        posix_close(FileHandle);
         free((char *)GifFile);
         return NULL;
     }
@@ -103,7 +108,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     _setmode(FileHandle, O_BINARY);    /* Make sure it is in binary mode. */
 #endif /* _WIN32 */
 
-    f = fdopen(FileHandle, "rb");    /* Make it into a stream: */
+    f = posix_fdopen(FileHandle, "rb");    /* Make it into a stream: */
 
     /*@-mustfreeonly@*/
     GifFile->Private = (void *)Private;
@@ -256,7 +261,7 @@ DGifGetScreenDesc(GifFileType *GifFile)
     SortFlag = (Buf[0] & 0x08) != 0;
     BitsPerPixel = (Buf[0] & 0x07) + 1;
     GifFile->SBackGroundColor = Buf[1];
-    GifFile->AspectByte = Buf[2]; 
+    GifFile->AspectByte = Buf[2];
     if (Buf[0] & 0x80) {    /* Do we have global color map? */
 	int i;
 
@@ -373,7 +378,7 @@ DGifGetImageDesc(GifFileType *GifFile)
         }
 
         /* Get the image local color map: */
-        for (i = 0; i < GifFile->Image.ColorMap->ColorCount; i++) {
+        for (i = 0; i < (unsigned int)GifFile->Image.ColorMap->ColorCount; i++) {
             if (READ(GifFile, Buf, 3) != 3) {
                 GifFreeMapObject(GifFile->Image.ColorMap);
                 GifFile->Error = D_GIF_ERR_READ_FAILED;
@@ -983,7 +988,7 @@ DGifDecompressInput(GifFileType *GifFile, int *Code)
         GifFile->Error = D_GIF_ERR_IMAGE_DEFECT;
         return GIF_ERROR;
     }
-    
+
     while (Private->CrntShiftState < Private->RunningBits) {
         /* Needs to get more bytes from input stream for next code: */
         if (DGifBufferedInput(GifFile, Private->Buf, &NextByte) == GIF_ERROR) {
@@ -1096,19 +1101,19 @@ DGifSlurp(GifFileType *GifFile)
 
 	      if (sp->ImageDesc.Interlace) {
 		  int i, j;
-		   /* 
-		    * The way an interlaced image should be read - 
+		   /*
+		    * The way an interlaced image should be read -
 		    * offsets and jumps...
 		    */
 		  int InterlacedOffset[] = { 0, 4, 2, 1 };
 		  int InterlacedJumps[] = { 8, 8, 4, 2 };
 		  /* Need to perform 4 passes on the image */
 		  for (i = 0; i < 4; i++)
-		      for (j = InterlacedOffset[i]; 
+		      for (j = InterlacedOffset[i];
 			   j < sp->ImageDesc.Height;
 			   j += InterlacedJumps[i]) {
-			  if (DGifGetLine(GifFile, 
-					  sp->RasterBits+j*sp->ImageDesc.Width, 
+			  if (DGifGetLine(GifFile,
+					  sp->RasterBits+j*sp->ImageDesc.Width,
 					  sp->ImageDesc.Width) == GIF_ERROR)
 			      return GIF_ERROR;
 		      }
@@ -1133,7 +1138,7 @@ DGifSlurp(GifFileType *GifFile)
 	      /* Create an extension block with our data */
               if (ExtData != NULL) {
 		  if (GifAddExtensionBlock(&GifFile->ExtensionBlockCount,
-					   &GifFile->ExtensionBlocks, 
+					   &GifFile->ExtensionBlocks,
 					   ExtFunction, ExtData[0], &ExtData[1])
 		      == GIF_ERROR)
 		      return (GIF_ERROR);
@@ -1145,7 +1150,7 @@ DGifSlurp(GifFileType *GifFile)
 		  if (ExtData != NULL)
 		      if (GifAddExtensionBlock(&GifFile->ExtensionBlockCount,
 					       &GifFile->ExtensionBlocks,
-					       CONTINUE_EXT_FUNC_CODE, 
+					       CONTINUE_EXT_FUNC_CODE,
 					       ExtData[0], &ExtData[1]) == GIF_ERROR)
                       return (GIF_ERROR);
               }

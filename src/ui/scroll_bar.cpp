@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -138,10 +138,8 @@ bool ScrollBar::onProcessMessage(Message* msg)
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         View* view = static_cast<View*>(getParent());
         int pos, len, bar_size, viewport_size;
-        int old_pos;
 
         getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
-        old_pos = pos;
 
         if (bar_size > len) {
           Point scroll = view->getViewScroll();

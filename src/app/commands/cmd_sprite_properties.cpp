@@ -137,7 +137,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
       // If the transparent color index has changed, we update the
       // property in the sprite.
       int index = color_button->getColor().getIndex();
-      if (index != sprite->transparentColor()) {
+      if (color_t(index) != sprite->transparentColor()) {
         Transaction transaction(writer.context(), "Set Transparent Color");
         DocumentApi api = writer.document()->getApi(transaction);
         api.setSpriteTransparentColor(sprite, index);

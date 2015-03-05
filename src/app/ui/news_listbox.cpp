@@ -182,8 +182,8 @@ protected:
 };
 
 NewsListBox::NewsListBox()
-  : m_loader(nullptr)
-  , m_timer(250, this)
+  : m_timer(250, this)
+  , m_loader(nullptr)
 {
   m_timer.Tick.connect(&NewsListBox::onTick, this);
 
@@ -266,8 +266,6 @@ void NewsListBox::parseFile(const std::string& filename)
     TiXmlElement* titleXml = itemXml->FirstChildElement("title");
     TiXmlElement* descXml = itemXml->FirstChildElement("description");
     TiXmlElement* linkXml = itemXml->FirstChildElement("link");
-    TiXmlElement* guidXml = itemXml->FirstChildElement("guid");
-    TiXmlElement* pubDateXml = itemXml->FirstChildElement("pubDate");
 
     std::string link = linkXml->GetText();
     std::string title = titleXml->GetText();

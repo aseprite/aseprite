@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -209,7 +209,7 @@ namespace doc {
     }
 
     bool operator==(int b) const {
-      return (color_t(*this) == b);
+      return (color_t(*this) == color_t(b));
     }
 
     bool operator==(color_t b) const {
@@ -221,7 +221,7 @@ namespace doc {
     }
 
     bool operator!=(int b) const {
-      return (color_t(*this) != b);
+      return (color_t(*this) != color_t(b));
     }
 
     bool operator!=(color_t b) const {
@@ -241,7 +241,7 @@ namespace doc {
   };
 
   inline bool operator==(int a, const BitPixelAccess& b) {
-    return (a == color_t(b));
+    return (color_t(a) == color_t(b));
   }
 
   inline bool operator==(color_t a, const BitPixelAccess& b) {
@@ -249,7 +249,7 @@ namespace doc {
   }
 
   inline bool operator!=(int a, const BitPixelAccess& b) {
-    return (a != color_t(b));
+    return (color_t(a) != color_t(b));
   }
 
   inline bool operator!=(color_t a, const BitPixelAccess& b) {

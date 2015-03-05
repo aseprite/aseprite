@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,11 +15,6 @@
 
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
-
-// It is used so MSVC doesn't complain about deprecated POSIX names.
-#ifdef _MSC_VER
-#pragma warning(disable:4996)
-#endif
 
 using namespace std;
 
@@ -52,7 +47,11 @@ void base_free(void* mem)
 char* base_strdup(const char* string)
 {
   assert(string != NULL);
+#ifdef _MSC_VER
+  return _strdup(string);
+#else
   return strdup(string);
+#endif
 }
 
 #else  // With leak detection

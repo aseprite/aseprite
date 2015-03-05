@@ -419,8 +419,6 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
     gfx::Point origin = document->mask()->bounds().getOrigin();
     int opacity = 255;
-    Sprite* sprite = editor->sprite();
-    Layer* layer = editor->layer();
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
         editor->getDocumentLocation(),

@@ -153,9 +153,9 @@ bool Region::contains(const PointT<int>& pt) const
 Region::Overlap Region::contains(const Rect& rect) const
 {
   static_assert(
-    Out   == PIXMAN_REGION_OUT &&
-    In    == PIXMAN_REGION_IN &&
-    Part  == PIXMAN_REGION_PART, "Pixman constants have changed");
+    int(Out)   == int(PIXMAN_REGION_OUT) &&
+    int(In)    == int(PIXMAN_REGION_IN) &&
+    int(Part)  == int(PIXMAN_REGION_PART), "Pixman constants have changed");
 
   pixman_box32 box = { rect.x, rect.y, rect.x2(), rect.y2() };
   return (Region::Overlap)pixman_region32_contains_rectangle(&m_region, &box);

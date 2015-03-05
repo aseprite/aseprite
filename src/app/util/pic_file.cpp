@@ -28,7 +28,6 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
 {
   base::UniquePtr<Image> image;
   int size, compression;
-  int image_size;
   int block_size;
   int block_type;
   int version;
@@ -51,7 +50,7 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
     *y = ((short)base::fgetw(f));       // Y offset
     bpp = std::fgetc(f);                // bits per pixel (must be 8)
     compression = std::fgetc(f);        // compression flag (must be 0)
-    image_size = base::fgetl(f);        // image size (in bytes)
+    base::fgetl(f);                     // image size (in bytes)
     std::fgetc(f);                      // reserved
 
     if (bpp != 8 || compression != 0) {

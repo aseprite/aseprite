@@ -162,8 +162,8 @@ static DocumentRange drop_range_op(
 
       case DocumentRange::kFrames:
         {
-          frame_t srcFrameBegin, srcFrameStep, srcFrameEnd;
-          frame_t dstFrameBegin, dstFrameStep;
+          frame_t srcFrameBegin = 0, srcFrameStep, srcFrameEnd = 0;
+          frame_t dstFrameBegin = 0, dstFrameStep;
 
           switch (op) {
 

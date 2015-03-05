@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -308,9 +308,10 @@ void Mask::crop(const Image *image)
   }
 
   int beg_x1, beg_y1, beg_x2, beg_y2;
-  int c, x1, y1, x2, y2, old_color;
+  int c, x1, y1, x2, y2;
   int done_count = 0;
   int done;
+  color_t old_color;
 
   if (!m_bitmap)
     return;

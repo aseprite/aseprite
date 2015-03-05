@@ -116,7 +116,7 @@ void fli_write_header(FILE *f, s_fli_header *fli_header)
         fli_write_short(f, fli_header->flags);  /* 14 */
         if (fli_header->magic == HEADER_FLI) {
                 /* FLI saves speed in 1/70s */
-                fli_write_short(f, fli_header->speed / 14);     /* 16 */
+                fli_write_short(f, (unsigned short)fli_header->speed / 14);     /* 16 */
         } else {
                 if (fli_header->magic == HEADER_FLC) {
                         /* FLC saves speed in 1/1000s */
@@ -375,8 +375,8 @@ int fli_write_color_2(FILE *f, s_fli_header *fli_header, unsigned char *old_cmap
                         }
                         if (cnt_col>0) {
                                 num_packets++;
-                                fli_write_char(f, cnt_skip);
-                                fli_write_char(f, cnt_col);
+                                fli_write_char(f, (unsigned char)cnt_skip);
+                                fli_write_char(f, (unsigned char)cnt_col);
                                 while (cnt_col>0) {
                                         fli_write_char(f, cmap[col_start++]);
                                         fli_write_char(f, cmap[col_start++]);
@@ -510,7 +510,7 @@ void fli_write_brun(FILE *f, s_fli_header *fli_header, unsigned char *framebuf)
                                         tc=0;
                                 }
                                 bc++;
-                                fli_write_char(f, pc);
+                                fli_write_char(f, (unsigned char)pc);
                                 fli_write_char(f, linebuf[xc]);
                                 t1=xc+pc;
                         } else {
@@ -533,7 +533,7 @@ void fli_write_brun(FILE *f, s_fli_header *fli_header, unsigned char *framebuf)
                 }
                 lineend=ftell(f);
                 fseek(f, linepos, SEEK_SET);
-                fli_write_char(f, bc);
+                fli_write_char(f, (unsigned char)bc);
                 fseek(f, lineend, SEEK_SET);
         }
 
@@ -626,7 +626,7 @@ void fli_write_lc(FILE *f, s_fli_header *fli_header, unsigned char *old_framebuf
                         while ((linebuf[xc]==old_linebuf[xc]) && (xc<fli_header->width) && (sc<255)) {
                                 xc++; sc++;
                         }
-                        fli_write_char(f, sc);
+                        fli_write_char(f, (unsigned char)sc);
                         cc=1;
                         while ((linebuf[xc]==linebuf[xc+cc]) && ((xc+cc)<fli_header->width) && (cc<120)) {
                                 cc++;
@@ -650,14 +650,14 @@ void fli_write_lc(FILE *f, s_fli_header *fli_header, unsigned char *old_framebuf
                                         tc++;
                                 } while ((tc<120) && (cc<9) && (sc<4) && ((xc+tc)<fli_header->width));
                                 bc++;
-                                fli_write_char(f, tc);
+                                fli_write_char(f, (unsigned char)tc);
                                 fwrite(linebuf+xc, tc, 1, f);
                                 xc+=tc;
                         }
                 }
                 lineend=ftell(f);
                 fseek(f, linepos, SEEK_SET);
-                fli_write_char(f, bc);
+                fli_write_char(f, (unsigned char)bc);
                 fseek(f, lineend, SEEK_SET);
         }
 
@@ -719,7 +719,7 @@ void fli_read_lc_2(FILE *f, s_fli_header *fli_header, unsigned char *old_framebu
                                 xc+=ps << 1;
                         }
                 }
-                if (lpf) pos[xc]=lpn;
+                if (lpf) pos[xc]=(unsigned char)lpn;
                 yc++;
         }
 }

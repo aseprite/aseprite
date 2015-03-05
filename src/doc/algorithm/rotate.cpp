@@ -233,7 +233,7 @@ public:
   void feedLine(Image* spr, int spr_x, int spr_y) {
     ASSERT(m_it != m_end);
 
-    int c = spr->getPixel(spr_x, spr_y);
+    color_t c = spr->getPixel(spr_x, spr_y);
     if (c != m_mask_color)
       *m_it = c;
     ++m_it;

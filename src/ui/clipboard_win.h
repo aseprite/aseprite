@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,12 +9,8 @@
 #include <algorithm>
 #include <windows.h>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4996)   // To void MSVC warning about std::copy() with unsafe arguments
-#endif
-
 namespace {
-  
+
 void get_system_clipboard_text(std::string& text)
 {
   if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {

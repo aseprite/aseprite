@@ -1299,6 +1299,7 @@ static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags)
     FrameTag* tag = new FrameTag(from, to);
     tag->setColor(doc::rgba(r, g, b, 255));
     tag->setName(name);
+    tag->setAniDir((AniDir)aniDir);
     frameTags->add(tag);
   }
 }

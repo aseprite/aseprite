@@ -19,7 +19,7 @@ namespace app {
 using namespace doc;
 
 bool get_shrink_rect(int *x1, int *y1, int *x2, int *y2,
-                     Image *image, int refpixel)
+                     Image *image, color_t refpixel)
 {
 #define SHRINK_SIDE(u_begin, u_op, u_final, u_add,              \
                     v_begin, v_op, v_final, v_add, U, V, var)   \

@@ -302,7 +302,7 @@ void DocumentExporter::captureSamples(Samples& samples)
         renderSample(sample, sampleRender);
 
         gfx::Rect frameBounds;
-        doc::color_t refColor;
+        doc::color_t refColor = 0;
 
         if (m_trimCels)
           refColor = get_pixel(sampleRender, 0, 0);

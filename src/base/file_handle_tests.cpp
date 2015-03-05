@@ -12,16 +12,18 @@
 
 #include <vector>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <fcntl.h>
-#endif
-
 using namespace base;
 
 #ifdef _MSC_VER
-#pragma warning (disable: 4996)
+  #define posix_open   _open
+  #define posix_close  _close
+  #define posix_read   _read
+  #define posix_write  _write
+#else
+  #define posix_open   open
+  #define posix_close  close
+  #define posix_read   read
+  #define posix_write  write
 #endif
 
 TEST(FileHandle, Descriptors)
@@ -37,23 +39,23 @@ TEST(FileHandle, Descriptors)
   // Create file.
   ASSERT_NO_THROW({
       int fd = open_file_descriptor_with_exception(fn, "wb");
-      close(fd);
+      posix_close(fd);
     });
 
   // Truncate file.
   ASSERT_NO_THROW({
       int fd = open_file_descriptor_with_exception(fn, "wb");
-      EXPECT_EQ(6, write(fd, "hello", 6));
-      close(fd);
+      EXPECT_EQ(6, posix_write(fd, "hello", 6));
+      posix_close(fd);
     });
 
   // Read.
   ASSERT_NO_THROW({
       int fd = open_file_descriptor_with_exception(fn, "rb");
       std::vector<char> buf(6);
-      EXPECT_EQ(6, read(fd, &buf[0], 6));
+      EXPECT_EQ(6, posix_read(fd, &buf[0], 6));
       EXPECT_EQ("hello", std::string(&buf[0]));
-      close(fd);
+      posix_close(fd);
     });
 
   ASSERT_NO_THROW({

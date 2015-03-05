@@ -357,7 +357,6 @@ void Tabs::onPaint(PaintEvent& ev)
 
   int startX = m_border*guiscale();
   double t = double(m_ani_t)/double(m_ani_T);
-  Tab* prevTab = nullptr;
 
   // For each tab...
   int i = 0;
@@ -375,7 +374,6 @@ void Tabs::onPaint(PaintEvent& ev)
       drawTab(g, box, tab, 0, (tab == m_hot), false);
 
     box.x = box.x2();
-    prevTab = tab;
     ++i;
   }
 
@@ -449,8 +447,6 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
     box.w = ui::guiscale()*8;
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Color text_color;
-  gfx::Color face_color;
   int clipTextRightSide;
 
   gfx::Rect closeBox = getTabCloseButtonBounds(tab, box);
@@ -459,17 +455,6 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   else {
     closeBox.y += dy;
     clipTextRightSide = closeBox.w;
-  }
-
-  // Selected
-  if (selected) {
-    text_color = theme->colors.tabActiveText();
-    face_color = theme->colors.tabActiveFace();
-  }
-  // Non-selected
-  else {
-    text_color = theme->colors.tabNormalText();
-    face_color = theme->colors.tabNormalFace();
   }
 
   skin::Style::State state;
@@ -590,7 +575,6 @@ void Tabs::calculateHot()
   if (m_isDragging)
     return;
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getBounds();
   gfx::Rect box(rect.x+m_border*guiscale(), rect.y, 0, rect.h-1);
   gfx::Point mousePos = ui::get_mouse_position();

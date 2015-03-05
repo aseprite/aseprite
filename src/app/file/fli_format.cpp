@@ -69,7 +69,9 @@ bool FliFormat::onLoad(FileOp* fop)
   int c, w, h;
   frame_t frpos_in;
   frame_t frpos_out;
+#ifdef USE_LINK
   int index = 0;                // TODO this is used to create linked cels
+#endif
 
   // Open the file to read in binary mode
   FileHandle f(open_file_with_exception(fop->filename, "rb"));

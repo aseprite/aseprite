@@ -56,7 +56,7 @@ void ConvolutionMatrixStock::reloadStock()
                           "convmatr.gen",
                           "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
-  int i, c, x, y, w, h, div, bias;
+  int i, x, y, w, h, div, bias;
   SharedPtr<ConvolutionMatrix> matrix;
   std::string name;
 
@@ -109,7 +109,6 @@ void ConvolutionMatrixStock::reloadStock()
         if (*buf != '{')
           break;
 
-        c = 0;
         div = 0;
         for (y=0; y<h; ++y) {
           for (x=0; x<w; ++x) {

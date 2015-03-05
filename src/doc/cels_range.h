@@ -58,7 +58,6 @@ namespace doc {
 
   private:
     iterator m_begin, m_end;
-    Flags m_flags;
   };
 
 } // namespace doc

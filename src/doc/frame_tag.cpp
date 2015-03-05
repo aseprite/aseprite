@@ -16,8 +16,8 @@ FrameTag::FrameTag(frame_t from, frame_t to)
   : Object(ObjectType::FrameTag)
   , m_from(from)
   , m_to(to)
-  , m_name("Tag")
   , m_color(rgba(0, 0, 0, 255))
+  , m_name("Tag")
 {
 }
 

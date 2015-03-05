@@ -71,8 +71,8 @@ template<> std::string convert_to(const Sha1& from)
 template<> Version convert_to(const std::string& from)
 {
   Version result;
-  int i = 0;
-  int j = 0;
+  std::string::size_type i = 0;
+  std::string::size_type j = 0;
   while (j != std::string::npos) {
     j = from.find('.', i);
     std::string digitString = from.substr(i, j - i);

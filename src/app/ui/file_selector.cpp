@@ -483,7 +483,6 @@ void FileSelector::updateLocation()
   IFileItem* fileItem = currentFolder;
   std::list<IFileItem*> locations;
   int selected_index = -1;
-  int newItem;
 
   while (fileItem != NULL) {
     locations.push_front(fileItem);
@@ -518,8 +517,8 @@ void FileSelector::updateLocation()
 
   // Add paths from recent files list
   {
-    newItem = m_location->addItem("");
-    newItem = m_location->addItem("-------- Recent Paths --------");
+    m_location->addItem("");
+    m_location->addItem("-------- Recent Paths --------");
 
     RecentFiles::const_iterator it = App::instance()->getRecentFiles()->paths_begin();
     RecentFiles::const_iterator end = App::instance()->getRecentFiles()->paths_end();

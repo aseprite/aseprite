@@ -14,10 +14,6 @@
 #include <allegro.h>
 #include <winalleg.h>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4996)   // To avoid MSVC warning about std::copy() with unsafe arguments
-#endif
-
 namespace she {
 
 void ClipboardWin32::dispose()
