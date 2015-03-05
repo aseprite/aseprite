@@ -58,7 +58,7 @@ void HttpLoader::threadHttpRequest()
     base::replace_string(fn, "&", "-");
     fn = base::join_path(dir, fn);
 
-    std::ofstream output(fn);
+    std::ofstream output(fn.c_str());
     net::HttpRequest http(m_url);
     net::HttpResponse response(&output);
     http.send(response);

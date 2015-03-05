@@ -13,6 +13,7 @@
 #include "base/serialization.h"
 
 #include <vector>
+#include <iostream>
 
 namespace doc {
 

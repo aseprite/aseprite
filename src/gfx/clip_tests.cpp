@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,6 +14,8 @@
 
 using namespace gfx;
 
+namespace gfx {
+
 inline std::ostream& operator<<(std::ostream& os, const Clip& area)
 {
   return os << "("
@@ -23,6 +25,8 @@ inline std::ostream& operator<<(std::ostream& os, const Clip& area)
             << area.src.y << ", "
             << area.size.w << ", "
             << area.size.h << ")";
+}
+
 }
 
 TEST(ScaledClip, WithoutClip)
@@ -82,7 +86,7 @@ TEST(ScaledClip, Zoom)
   // [        ]
   //   a[a a b] b c c c          DST
   // a a[a b b]b c c c           SRC
-  // 
+  //
   // Y:
   //  -1 0 1 2 3
   //      [       ]

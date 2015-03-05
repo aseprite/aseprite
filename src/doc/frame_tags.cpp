@@ -10,6 +10,8 @@
 
 #include "doc/frame_tags.h"
 
+#include <algorithm>
+
 namespace doc {
 
 FrameTags::FrameTags(Sprite* sprite)
