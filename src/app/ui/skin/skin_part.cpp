@@ -36,7 +36,7 @@ void SkinPart::clear()
   }
 }
 
-void SkinPart::setBitmap(size_t index, she::Surface* bitmap)
+void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
 {
   if (index >= m_bitmaps.size())
     m_bitmaps.resize(index+1, NULL);

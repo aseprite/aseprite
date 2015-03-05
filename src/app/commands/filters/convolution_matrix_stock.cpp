@@ -9,14 +9,15 @@
 #include "config.h"
 #endif
 
-#include <cstdlib>
-
 #include "app/commands/filters/convolution_matrix_stock.h"
 
 #include "app/resource_finder.h"
 #include "app/util/filetoks.h"
 #include "base/file_handle.h"
 #include "filters/convolution_matrix.h"
+
+#include <cstdlib>
+#include <cstring>
 
 namespace app {
 
@@ -33,7 +34,7 @@ ConvolutionMatrixStock::~ConvolutionMatrixStock()
 SharedPtr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
 {
   for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
-    if (strcmp((*it)->getName(), name) == 0)
+    if (std::strcmp((*it)->getName(), name) == 0)
       return *it;
   }
   return SharedPtr<ConvolutionMatrix>(0);
@@ -73,7 +74,7 @@ void ConvolutionMatrixStock::reloadStock()
 
       tok_reset_line_num();
 
-      strcpy(leavings, "");
+      std::strcpy(leavings, "");
 
       // Read the matrix name
       while (tok_read(f, buf, leavings, sizeof(leavings))) {
@@ -137,14 +138,14 @@ void ConvolutionMatrixStock::reloadStock()
 
         // Div
         READ_TOK();
-        if (strcmp(buf, "auto") != 0)
+        if (std::strcmp(buf, "auto") != 0)
           div = int(strtod(buf, NULL) * ConvolutionMatrix::Precision);
 
         matrix->setDiv(div);
 
         // Bias
         READ_TOK();
-        if (strcmp(buf, "auto") != 0)
+        if (std::strcmp(buf, "auto") != 0)
           bias = int(strtod(buf, NULL));
 
         matrix->setBias(bias);

@@ -24,6 +24,8 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
+#include <cstring>
+
 namespace app {
 
 using namespace doc;
@@ -31,13 +33,13 @@ using namespace doc;
 void get_readable_palette_extensions(char* buf, int size)
 {
   get_readable_extensions(buf, size);
-  strcat(buf, ",col,gpl");
+  std::strcat(buf, ",col,gpl");
 }
 
 void get_writable_palette_extensions(char* buf, int size)
 {
   get_writable_extensions(buf, size);
-  strcat(buf, ",col,gpl");
+  std::strcat(buf, ",col,gpl");
 }
 
 Palette* load_palette(const char *filename)

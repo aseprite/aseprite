@@ -9,12 +9,14 @@
 #include "config.h"
 #endif
 
-#include <algorithm>
-
 #include "app/file/file_formats_manager.h"
+
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
 #include "base/string.h"
+
+#include <algorithm>
+#include <cstring>
 
 namespace app {
 
@@ -86,10 +88,10 @@ FileFormat* FileFormatsManager::getFileFormatByExtension(const char* extension) 
   char buf[512], *tok;
 
   for (FileFormat* ff : m_formats) {
-    strcpy(buf, ff->extensions());
+    std::strcpy(buf, ff->extensions());
 
-    for (tok=strtok(buf, ","); tok;
-         tok=strtok(NULL, ",")) {
+    for (tok=std::strtok(buf, ","); tok;
+         tok=std::strtok(NULL, ",")) {
       if (base::utf8_icmp(extension, tok) == 0)
         return ff;
     }

@@ -32,6 +32,8 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 
+#include <cstring>
+
 namespace app {
 
 using namespace ui;
@@ -169,7 +171,7 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
     // We accept zoom commands.
-    if (strcmp(command->short_name(), CommandId::Zoom) == 0) {
+    if (std::strcmp(command->short_name(), CommandId::Zoom) == 0) {
       UIContext::instance()->executeCommand(command, params);
     }
   }
