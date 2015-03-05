@@ -13,16 +13,16 @@
 #include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstring>
 
 //////////////////////////////////////////////////////////////////////
 // For Aseprite
-#include <limits.h>
+#include "app/util/boundary.h"
 #include "base/memory.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
-#include "app/util/boundary.h"
+#include <climits>
 
 #define g_new(struct_type, n_structs) \
   ((struct_type*)base_malloc(sizeof(struct_type) * (n_structs)))

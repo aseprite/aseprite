@@ -10,15 +10,13 @@
 
 #include <pixman.h>
 
-#include "gfx/region.h"
 #include "gfx/point.h"
-#include <limits>
-#include <cassert>
+#include "gfx/region.h"
 
-#include <stdlib.h>
-#include <limits.h>
-#include <string.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace gfx {
 

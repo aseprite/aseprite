@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,13 +10,13 @@
 #include "config.h"
 #endif
 
-#include <string.h>
-
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/path.h"
 
 #include "libart_lgpl/libart.h"
+
+#include <cstring>
 
 namespace doc {
 

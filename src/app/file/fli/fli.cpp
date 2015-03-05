@@ -19,11 +19,13 @@
 
 /* Modified by David Capello to use with Aseprite (2001-2012). */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "fli.h"
+
+using namespace std;
 
 /*
  * To avoid endian-problems I wrote these functions:

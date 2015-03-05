@@ -9,8 +9,8 @@
 #include "config.h"
 #endif
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 static int line_num;
 

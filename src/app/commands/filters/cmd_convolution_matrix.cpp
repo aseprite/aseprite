@@ -35,7 +35,7 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace app {
 

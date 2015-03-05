@@ -9,9 +9,6 @@
 #include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "app/app.h"
 #include "app/commands/filters/filter_manager_impl.h"
 #include "app/console.h"
@@ -25,6 +22,9 @@
 #include "base/thread.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
+
+#include <cstdlib>
+#include <cstring>
 
 namespace app {
 

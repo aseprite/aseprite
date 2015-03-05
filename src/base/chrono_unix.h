@@ -1,10 +1,10 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include <time.h>
+#include <ctime>
 #include <sys/time.h>
 
 class base::Chrono::ChronoImpl {

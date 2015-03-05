@@ -8,10 +8,6 @@
 #include "config.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "base/memory.h"
 #include "gfx/size.h"
 #include "ui/grid.h"
@@ -20,6 +16,10 @@
 #include "ui/resize_event.h"
 #include "ui/theme.h"
 #include "ui/widget.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 namespace ui {
 
