@@ -109,10 +109,6 @@ namespace app {
     ui::Button* m_b_next;             // Go to next frame
     ui::Button* m_b_last;             // Go to last frame
 
-    // Box of notifications.
-    ui::Widget* m_notificationsBox;
-    ui::LinkLabel* m_linkLabel;
-
     // Tip window
     class CustomizedTipWindow;
     CustomizedTipWindow* m_tipwindow;

@@ -181,12 +181,12 @@ bool Splitter::onProcessMessage(Message* msg)
 
 void Splitter::onResize(ResizeEvent& ev)
 {
-#define FIXUP(x, y, w, h, l, t, r, b)                                   \
-  do {                                                                  \
-    avail = rect.w - this->child_spacing;                               \
+#define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                     \
+  {                                                                     \
+    avail = rc.w - this->child_spacing;                                 \
                                                                         \
-    pos.x = rect.x;                                                     \
-    pos.y = rect.y;                                                     \
+    pos.x = rc.x;                                                       \
+    pos.y = rc.y;                                                       \
     switch (m_type) {                                                   \
       case ByPercentage:                                                \
         pos.w = int(avail*m_pos/100);                                   \
@@ -198,34 +198,40 @@ void Splitter::onResize(ResizeEvent& ev)
                                                                         \
     /* TODO uncomment this to make a restricted splitter */             \
     /* pos.w = MID(reqSize1.w, pos.w, avail-reqSize2.w); */             \
-    pos.h = rect.h;                                                     \
+    pos.h = rc.h;                                                       \
                                                                         \
     child1->setBounds(pos);                                             \
     gfx::Rect child1Pos = child1->getBounds();                          \
                                                                         \
     pos.x = child1Pos.x + child1Pos.w + this->child_spacing;            \
-    pos.y = rect.y;                                                     \
+    pos.y = rc.y;                                                       \
     pos.w = avail - child1Pos.w;                                        \
-    pos.h = rect.h;                                                     \
+    pos.h = rc.h;                                                       \
                                                                         \
     child2->setBounds(pos);                                             \
-  } while(0)
+  }
 
-  gfx::Rect rect(ev.getBounds());
+  gfx::Rect rc(ev.getBounds());
   gfx::Rect pos(0, 0, 0, 0);
   int avail;
 
-  setBoundsQuietly(rect);
+  setBoundsQuietly(rc);
 
-  if (getChildren().size() == 2) {
-    Widget* child1 = getChildren()[0];
-    Widget* child2 = getChildren()[1];
+  Widget* child1 = panel1();
+  Widget* child2 = panel2();
 
-    if (this->getAlign() & JI_HORIZONTAL)
-      FIXUP(x, y, w, h, l, t, r, b);
-    else
-      FIXUP(y, x, h, w, t, l, b, r);
+  if (child1 && child2) {
+    if (getAlign() & JI_HORIZONTAL) {
+      LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b);
+    }
+    else {
+      LAYOUT_TWO_CHILDREN(y, x, h, w, t, l, b, r);
+    }
   }
+  else if (child1)
+    child1->setBounds(rc);
+  else if (child2)
+    child2->setBounds(rc);
 }
 
 void Splitter::onPaint(PaintEvent& ev)
@@ -251,19 +257,16 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
   Size reqSize;
 
   visibleChildren = 0;
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-    if (!(child->flags & JI_HIDDEN))
+  for (Widget* child : getChildren()) {
+    if (child->isVisible())
       visibleChildren++;
   }
 
   int w, h;
   w = h = 0;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
-    if (child->flags & JI_HIDDEN)
+  for (Widget* child : getChildren()) {
+    if (!child->isVisible())
       continue;
 
     reqSize = child->getPreferredSize();
@@ -295,8 +298,8 @@ void Splitter::onLoadLayout(LoadLayoutEvent& ev)
     m_pos *= guiscale();
 
   // Do for all children
-  UI_FOREACH_WIDGET(getChildren(), it)
-    (*it)->loadLayout();
+  for (Widget* child : getChildren())
+    child->loadLayout();
 }
 
 void Splitter::onSaveLayout(SaveLayoutEvent& ev)
@@ -305,8 +308,26 @@ void Splitter::onSaveLayout(SaveLayoutEvent& ev)
   ev.stream() << pos;
 
   // Do for all children
-  UI_FOREACH_WIDGET(getChildren(), it)
-    (*it)->saveLayout();
+  for (Widget* child : getChildren())
+    child->saveLayout();
+}
+
+Widget* Splitter::panel1() const
+{
+  const WidgetsList& list = getChildren();
+  if (list.size() >= 1 && list[0]->isVisible())
+    return list[0];
+  else
+    return nullptr;
+}
+
+Widget* Splitter::panel2() const
+{
+  const WidgetsList& list = getChildren();
+  if (list.size() >= 2 && list[1]->isVisible())
+    return list[1];
+  else
+    return nullptr;
 }
 
 } // namespace ui

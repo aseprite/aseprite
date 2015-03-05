@@ -508,7 +508,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   // sprite).
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   if (m_flags & kShowOutside) {
-    g->fillRegion(theme->getColor(ThemeColor::EditorFace), outside);
+    g->fillRegion(theme->colors.editorFace(), outside);
   }
 
   // Grids
@@ -556,9 +556,9 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   if (m_flags & kShowOutside) {
     // Draw the borders that enclose the sprite.
     enclosingRect.enlarge(1);
-    g->drawRect(theme->getColor(ThemeColor::EditorSpriteBorder), enclosingRect);
+    g->drawRect(theme->colors.editorSpriteBorder(), enclosingRect);
     g->drawHLine(
-      theme->getColor(ThemeColor::EditorSpriteBottomBorder),
+      theme->colors.editorSpriteBottomBorder(),
       enclosingRect.x, enclosingRect.y+enclosingRect.h, enclosingRect.w);
   }
 
@@ -1310,7 +1310,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
 
   // Editor without sprite
   if (!m_sprite) {
-    g->fillRect(theme->getColor(ThemeColor::EditorFace), rc);
+    g->fillRect(theme->colors.editorFace(), rc);
   }
   // Editor with sprite
   else {
@@ -1338,7 +1338,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
     catch (const LockedDocumentException&) {
       // The sprite is locked to be read, so we can draw an opaque
       // background only.
-      g->fillRect(theme->getColor(ThemeColor::EditorFace), rc);
+      g->fillRect(theme->colors.editorFace(), rc);
     }
   }
 }

@@ -451,7 +451,8 @@ void App::run()
   if (isGui()) {
 #ifdef ENABLE_UPDATER
     // Launch the thread to check for updates.
-    app::CheckUpdateThreadLauncher checkUpdate;
+    app::CheckUpdateThreadLauncher checkUpdate(
+      m_mainWindow->getCheckUpdateDelegate());
     checkUpdate.launch();
 #endif
 
@@ -617,7 +618,7 @@ void app_refresh_screen()
 void app_rebuild_documents_tabs()
 {
   if (App::instance()->isGui())
-    App::instance()->getMainWindow()->getTabsBar()->updateTabsText();
+    App::instance()->getMainWindow()->getTabsBar()->updateTabs();
 }
 
 PixelFormat app_get_current_pixel_format()

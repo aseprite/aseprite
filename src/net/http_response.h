@@ -27,10 +27,10 @@ public:
 
   // Returns the HTTP status code.
   int status() const { return m_status; }
-  void status(int status) { m_status = status; }
+  void setStatus(int status) { m_status = status; }
 
   // Writes data in the stream.
-  void write(const char* data, size_t length);
+  void write(const char* data, std::size_t length);
 
 private:
   int m_status;

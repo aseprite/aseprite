@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,21 +39,21 @@ namespace render {
     // Returns the number of points in the specified histogram
     // entry. Each index (i, j, k) is in the range of the
     // histogram i=[0,RElements), etc.
-    size_t at(int i, int j, int k) const
+    std::size_t at(int i, int j, int k) const
     {
       return m_histogram[histogramIndex(i, j, k)];
     }
 
     // Add the specified "color" in the histogram as many times as the
     // specified value in "count".
-    void addSamples(uint32_t color, size_t count = 1)
+    void addSamples(uint32_t color, std::size_t count = 1)
     {
       int i = histogramIndex(color);
 
-      if (m_histogram[i] < std::numeric_limits<size_t>::max()-count) // Avoid overflow
+      if (m_histogram[i] < std::numeric_limits<std::size_t>::max()-count) // Avoid overflow
         m_histogram[i] += count;
       else
-        m_histogram[i] = std::numeric_limits<size_t>::max();
+        m_histogram[i] = std::numeric_limits<std::size_t>::max();
 
       // Accurate colors are used only for less than 256 colors.  If the
       // image has more than 256 colors the m_histogram is used
@@ -105,20 +105,20 @@ namespace render {
     // Converts input color in a index for the histogram. It reduces
     // each 8-bit component to the resolution given in the template
     // parameters.
-    size_t histogramIndex(uint32_t color) const
+    std::size_t histogramIndex(uint32_t color) const
     {
       return histogramIndex((rgba_getr(color) >> (8 - RBits)),
                             (rgba_getg(color) >> (8 - GBits)),
                             (rgba_getb(color) >> (8 - BBits)));
     }
 
-    size_t histogramIndex(int i, int j, int k) const
+    std::size_t histogramIndex(int i, int j, int k) const
     {
       return i | (j << RBits) | (k << (RBits+GBits));
     }
 
     // 3D histogram (the index in the histogram is calculated through histogramIndex() function).
-    std::vector<size_t> m_histogram;
+    std::vector<std::size_t> m_histogram;
 
     // High precision histogram to create an accurate palette if RGB
     // source images contains less than 256 colors.

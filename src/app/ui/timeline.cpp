@@ -30,6 +30,7 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -73,38 +74,6 @@ using namespace gfx;
 using namespace doc;
 using namespace ui;
 
-static const char* kTimeline = "timeline";
-static const char* kTimelineBox = "timeline_box";
-static const char* kTimelineOpenEye = "timeline_open_eye";
-static const char* kTimelineClosedEye = "timeline_closed_eye";
-static const char* kTimelineOpenPadlock = "timeline_open_padlock";
-static const char* kTimelineClosedPadlock = "timeline_closed_padlock";
-static const char* kTimelineContinuous = "timeline_continuous";
-static const char* kTimelineDiscontinuous = "timeline_discontinuous";
-static const char* kTimelineLayer = "timeline_layer";
-static const char* kTimelineEmptyFrame = "timeline_empty_frame";
-static const char* kTimelineKeyframe = "timeline_keyframe";
-static const char* kTimelineFromLeft = "timeline_fromleft";
-static const char* kTimelineFromRight = "timeline_fromright";
-static const char* kTimelineFromBoth = "timeline_fromboth";
-static const char* kTimelineLeftLink = "timeline_leftlink";
-static const char* kTimelineRightLink = "timeline_rightlink";
-static const char* kTimelineBothLinks = "timeline_bothlinks";
-static const char* kTimelineGear = "timeline_gear";
-static const char* kTimelineOnionskin = "timeline_onionskin";
-static const char* kTimelineOnionskinRange = "timeline_onionskin_range";
-static const char* kTimelinePadding = "timeline_padding";
-static const char* kTimelinePaddingTr = "timeline_padding_tr";
-static const char* kTimelinePaddingBl = "timeline_padding_bl";
-static const char* kTimelinePaddingBr = "timeline_padding_br";
-static const char* kTimelineSelectedCelStyle = "timeline_selected_cel";
-static const char* kTimelineRangeOutlineStyle = "timeline_range_outline";
-static const char* kTimelineDropLayerDecoStyle = "timeline_drop_layer_deco";
-static const char* kTimelineDropFrameDecoStyle = "timeline_drop_frame_deco";
-static const char* kTimelineLoopRangeStyle = "timeline_loop_range";
-
-static const char* kTimelineActiveColor = "timeline_active";
-
 enum {
   A_PART_NOTHING,
   A_PART_SEPARATOR,
@@ -128,35 +97,6 @@ enum {
 
 Timeline::Timeline()
   : Widget(kGenericWidget)
-  , m_timelineStyle(get_style(kTimeline))
-  , m_timelineBoxStyle(get_style(kTimelineBox))
-  , m_timelineOpenEyeStyle(get_style(kTimelineOpenEye))
-  , m_timelineClosedEyeStyle(get_style(kTimelineClosedEye))
-  , m_timelineOpenPadlockStyle(get_style(kTimelineOpenPadlock))
-  , m_timelineClosedPadlockStyle(get_style(kTimelineClosedPadlock))
-  , m_timelineContinuousStyle(get_style(kTimelineContinuous))
-  , m_timelineDiscontinuousStyle(get_style(kTimelineDiscontinuous))
-  , m_timelineLayerStyle(get_style(kTimelineLayer))
-  , m_timelineEmptyFrameStyle(get_style(kTimelineEmptyFrame))
-  , m_timelineKeyframeStyle(get_style(kTimelineKeyframe))
-  , m_timelineFromLeftStyle(get_style(kTimelineFromLeft))
-  , m_timelineFromRightStyle(get_style(kTimelineFromRight))
-  , m_timelineFromBothStyle(get_style(kTimelineFromBoth))
-  , m_timelineLeftLinkStyle(get_style(kTimelineLeftLink))
-  , m_timelineRightLinkStyle(get_style(kTimelineRightLink))
-  , m_timelineBothLinksStyle(get_style(kTimelineBothLinks))
-  , m_timelineGearStyle(get_style(kTimelineGear))
-  , m_timelineOnionskinStyle(get_style(kTimelineOnionskin))
-  , m_timelineOnionskinRangeStyle(get_style(kTimelineOnionskinRange))
-  , m_timelinePaddingStyle(get_style(kTimelinePadding))
-  , m_timelinePaddingTrStyle(get_style(kTimelinePaddingTr))
-  , m_timelinePaddingBlStyle(get_style(kTimelinePaddingBl))
-  , m_timelinePaddingBrStyle(get_style(kTimelinePaddingBr))
-  , m_timelineSelectedCelStyle(get_style(kTimelineSelectedCelStyle))
-  , m_timelineRangeOutlineStyle(get_style(kTimelineRangeOutlineStyle))
-  , m_timelineDropLayerDecoStyle(get_style(kTimelineDropLayerDecoStyle))
-  , m_timelineDropFrameDecoStyle(get_style(kTimelineDropFrameDecoStyle))
-  , m_timelineLoopRangeStyle(get_style(kTimelineLoopRangeStyle))
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
@@ -832,7 +772,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
         gfx::Rect bounds = getOnionskinFramesBounds();
         if (!bounds.isEmpty()) {
           drawPart(g, bounds,
-            NULL, m_timelineOnionskinRangeStyle,
+            NULL, skinTheme()->styles.timelineOnionskinRange(),
             false, false, false);
         }
       }
@@ -889,7 +829,8 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
 paintNoDoc:;
   if (noDoc)
-    drawPart(g, getClientBounds(), NULL, m_timelinePaddingStyle);
+    drawPart(g, getClientBounds(), NULL,
+      skinTheme()->styles.timelinePadding());
 }
 
 void Timeline::onAfterCommandExecution(Command* command)
@@ -1098,46 +1039,47 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
 
 void Timeline::drawHeader(ui::Graphics* g)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
   bool allInvisible = allLayersInvisible();
   bool allLocked = allLayersLocked();
   bool allContinuous = allLayersContinuous();
 
   drawPart(g, getPartBounds(A_PART_HEADER_EYE),
     NULL,
-    allInvisible ? m_timelineClosedEyeStyle: m_timelineOpenEyeStyle,
+    allInvisible ? styles.timelineClosedEye(): styles.timelineOpenEye(),
     m_clk_part == A_PART_HEADER_EYE,
     m_hot_part == A_PART_HEADER_EYE,
     m_clk_part == A_PART_HEADER_EYE);
 
   drawPart(g, getPartBounds(A_PART_HEADER_PADLOCK),
     NULL,
-    allLocked ? m_timelineClosedPadlockStyle: m_timelineOpenPadlockStyle,
+    allLocked ? styles.timelineClosedPadlock(): styles.timelineOpenPadlock(),
     m_clk_part == A_PART_HEADER_PADLOCK,
     m_hot_part == A_PART_HEADER_PADLOCK,
     m_clk_part == A_PART_HEADER_PADLOCK);
 
   drawPart(g, getPartBounds(A_PART_HEADER_CONTINUOUS),
     NULL,
-    allContinuous ? m_timelineContinuousStyle: m_timelineDiscontinuousStyle,
+    allContinuous ? styles.timelineContinuous(): styles.timelineDiscontinuous(),
     m_clk_part == A_PART_HEADER_CONTINUOUS,
     m_hot_part == A_PART_HEADER_CONTINUOUS,
     m_clk_part == A_PART_HEADER_CONTINUOUS);
 
   drawPart(g, getPartBounds(A_PART_HEADER_GEAR),
-    NULL, m_timelineGearStyle,
+    NULL, styles.timelineGear(),
     false,
     m_hot_part == A_PART_HEADER_GEAR,
     m_clk_part == A_PART_HEADER_GEAR);
 
   drawPart(g, getPartBounds(A_PART_HEADER_ONIONSKIN),
-    NULL, m_timelineOnionskinStyle,
+    NULL, styles.timelineOnionskin(),
     docPref().onionskin.active(),
     m_hot_part == A_PART_HEADER_ONIONSKIN,
     m_clk_part == A_PART_HEADER_ONIONSKIN);
 
   // Empty header space.
   drawPart(g, getPartBounds(A_PART_HEADER_LAYER),
-    NULL, m_timelineBoxStyle, false, false, false);
+    NULL, styles.timelineBox(), false, false, false);
 }
 
 void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
@@ -1155,13 +1097,14 @@ void Timeline::drawHeaderFrame(ui::Graphics* g, frame_t frame)
   std::sprintf(buf, "%d", (frame+1)%100); // Draw only the first two digits.
 
   she::Font* oldFont = g->getFont();
-  g->setFont(((SkinTheme*)getTheme())->getMiniFont());
-  drawPart(g, bounds, buf, m_timelineBoxStyle, is_active, is_hover, is_clicked);
+  g->setFont(skinTheme()->getMiniFont());
+  drawPart(g, bounds, buf, skinTheme()->styles.timelineBox(), is_active, is_hover, is_clicked);
   g->setFont(oldFont);
 }
 
 void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIdx];
   bool is_active = isLayerActive(layerIdx);
   bool hotlayer = (m_hot_layer == layerIdx);
@@ -1174,7 +1117,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   // Draw the eye (visible flag).
   bounds = getPartBounds(A_PART_LAYER_EYE_ICON, layerIdx);
   drawPart(g, bounds, NULL,
-    layer->isVisible() ? m_timelineOpenEyeStyle: m_timelineClosedEyeStyle,
+    layer->isVisible() ? styles.timelineOpenEye(): styles.timelineClosedEye(),
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_EYE_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_EYE_ICON));
@@ -1182,7 +1125,7 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   // Draw the padlock (editable flag).
   bounds = getPartBounds(A_PART_LAYER_PADLOCK_ICON, layerIdx);
   drawPart(g, bounds, NULL,
-    layer->isEditable() ? m_timelineOpenPadlockStyle: m_timelineClosedPadlockStyle,
+    layer->isEditable() ? styles.timelineOpenPadlock(): styles.timelineClosedPadlock(),
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_PADLOCK_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_PADLOCK_ICON));
@@ -1190,14 +1133,14 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   // Draw the continuous flag.
   bounds = getPartBounds(A_PART_LAYER_CONTINUOUS_ICON, layerIdx);
   drawPart(g, bounds, NULL,
-    layer->isContinuous() ? m_timelineContinuousStyle: m_timelineDiscontinuousStyle,
+    layer->isContinuous() ? styles.timelineContinuous(): styles.timelineDiscontinuous(),
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_CONTINUOUS_ICON),
     (clklayer && m_clk_part == A_PART_LAYER_CONTINUOUS_ICON));
 
   // Draw the layer's name.
   bounds = getPartBounds(A_PART_LAYER_TEXT, layerIdx);
-  drawPart(g, bounds, layer->name().c_str(), m_timelineLayerStyle,
+  drawPart(g, bounds, layer->name().c_str(), styles.timelineLayer(),
     is_active,
     (hotlayer && m_hot_part == A_PART_LAYER_TEXT),
     (clklayer && m_clk_part == A_PART_LAYER_TEXT));
@@ -1207,13 +1150,15 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   // layers.
   if (hotlayer && !is_active && m_clk_part == A_PART_LAYER_TEXT) {
     // TODO this should be skinneable
-    g->fillRect(get_color_by_id(kTimelineActiveColor),
-                gfx::Rect(bounds.x, bounds.y, bounds.w, 2));
+    g->fillRect(
+      skinTheme()->colors.timelineActive(),
+      gfx::Rect(bounds.x, bounds.y, bounds.w, 2));
   }
 }
 
 void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
   Layer* layer = m_layers[layerIndex];
   Image* image = (cel ? cel->image(): NULL);
   bool is_hover = (m_hot_part == A_PART_CEL &&
@@ -1227,15 +1172,15 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     return;
 
   if (layer == m_layer && frame == m_frame)
-    drawPart(g, bounds, NULL, m_timelineSelectedCelStyle, false, false, true);
+    drawPart(g, bounds, NULL, styles.timelineSelectedCel(), false, false, true);
   else
-    drawPart(g, bounds, NULL, m_timelineBoxStyle, is_active, is_hover);
+    drawPart(g, bounds, NULL, styles.timelineBox(), is_active, is_hover);
 
   skin::Style* style;
   bool fromLeft = false;
   bool fromRight = false;
   if (is_empty) {
-    style = m_timelineEmptyFrameStyle;
+    style = styles.timelineEmptyFrame();
   }
   else {
     Cel* left = (layer->isImage() ? layer->cel(frame-1): NULL);
@@ -1246,13 +1191,13 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     fromRight = (rightImg == cel->image()->id());
 
     if (fromLeft && fromRight)
-      style = m_timelineFromBothStyle;
+      style = styles.timelineFromBoth();
     else if (fromLeft)
-      style = m_timelineFromLeftStyle;
+      style = styles.timelineFromLeft();
     else if (fromRight)
-      style = m_timelineFromRightStyle;
+      style = styles.timelineFromRight();
     else
-      style = m_timelineKeyframeStyle;
+      style = styles.timelineKeyframe();
   }
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 
@@ -1267,6 +1212,7 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
   Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
   ObjectId imageId = activeCel->image()->id();
 
   // Link in some cel at the left side
@@ -1291,18 +1237,18 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
 
   if (!cel || cel->image()->id() != imageId) {
     if (left && right)
-      drawPart(g, bounds, NULL, m_timelineBothLinksStyle, is_active, is_hover);
+      drawPart(g, bounds, NULL, styles.timelineBothLinks(), is_active, is_hover);
   }
   else {
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame()-1);
       if (!prevCel || prevCel->image()->id() != imageId)
-        drawPart(g, bounds, NULL, m_timelineLeftLinkStyle, is_active, is_hover);
+        drawPart(g, bounds, NULL, styles.timelineLeftLink(), is_active, is_hover);
     }
     if (right) {
       Cel* nextCel = m_layer->cel(cel->frame()+1);
       if (!nextCel || nextCel->image()->id() != imageId)
-        drawPart(g, bounds, NULL, m_timelineRightLinkStyle, is_active, is_hover);
+        drawPart(g, bounds, NULL, styles.timelineRightLink(), is_active, is_hover);
     }
   }
 }
@@ -1326,11 +1272,14 @@ void Timeline::drawLoopRange(ui::Graphics* g)
   if (!clip)
     return;
 
-  drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+  drawPart(g, bounds, NULL,
+    skinTheme()->styles.timelineLoopRange());
 }
 
 void Timeline::drawFrameTags(ui::Graphics* g)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
+
   for (FrameTag* frameTag : m_sprite->frameTags()) {
     gfx::Rect bounds1 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame());
     gfx::Rect bounds2 = getPartBounds(A_PART_HEADER_FRAME, firstLayer(), frameTag->toFrame());
@@ -1338,13 +1287,15 @@ void Timeline::drawFrameTags(ui::Graphics* g)
 
     IntersectClip clip(g, bounds);
     if (clip) {
-      drawPart(g, bounds, NULL, m_timelineLoopRangeStyle);
+      drawPart(g, bounds, NULL, styles.timelineLoopRange());
     }
   }
 }
 
 void Timeline::drawRangeOutline(ui::Graphics* g)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
+
   gfx::Rect clipBounds;
   switch (m_range.type()) {
     case Range::kCels: clipBounds = getCelsBounds(); break;
@@ -1360,7 +1311,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
   if (m_hot_part == A_PART_RANGE_OUTLINE) state += Style::hover();
 
   gfx::Rect bounds = getPartBounds(A_PART_RANGE_OUTLINE);
-  m_timelineRangeOutlineStyle->paint(g, bounds, NULL, state);
+  styles.timelineRangeOutline()->paint(g, bounds, NULL, state);
 
   Range drop = m_dropRange;
   gfx::Rect dropBounds = getRangeBounds(drop);
@@ -1369,7 +1320,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
     case Range::kCels: {
       dropBounds = dropBounds.enlarge(OUTLINE_WIDTH);
-      m_timelineRangeOutlineStyle->paint(g, dropBounds, NULL, Style::active());
+      styles.timelineRangeOutline()->paint(g, dropBounds, NULL, Style::active());
       break;
     }
 
@@ -1385,7 +1336,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
       dropBounds.w = w;
 
-      m_timelineDropFrameDecoStyle->paint(g, dropBounds, NULL, Style::State());
+      styles.timelineDropFrameDeco()->paint(g, dropBounds, NULL, Style::State());
       break;
     }
 
@@ -1401,7 +1352,7 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
       dropBounds.h = h;
 
-      m_timelineDropLayerDecoStyle->paint(g, dropBounds, NULL, Style::State());
+      styles.timelineDropLayerDeco()->paint(g, dropBounds, NULL, Style::State());
       break;
     }
   }
@@ -1409,6 +1360,8 @@ void Timeline::drawRangeOutline(ui::Graphics* g)
 
 void Timeline::drawPaddings(ui::Graphics* g)
 {
+  SkinTheme::Styles& styles = skinTheme()->styles;
+
   gfx::Rect client = getClientBounds();
   gfx::Rect bottomLayer;
   gfx::Rect lastFrame;
@@ -1426,18 +1379,18 @@ void Timeline::drawPaddings(ui::Graphics* g)
     gfx::Rect(lastFrame.x+lastFrame.w, client.y,
       client.w - (lastFrame.x+lastFrame.w),
       bottomLayer.y+bottomLayer.h),
-    NULL, m_timelinePaddingTrStyle);
+    NULL, styles.timelinePaddingTr());
 
   drawPart(g,
     gfx::Rect(client.x, bottomLayer.y+bottomLayer.h,
       lastFrame.x+lastFrame.w - client.x, client.h - (bottomLayer.y+bottomLayer.h)),
-    NULL, m_timelinePaddingBlStyle);
+    NULL, styles.timelinePaddingBl());
 
   drawPart(g,
     gfx::Rect(lastFrame.x+lastFrame.w, bottomLayer.y+bottomLayer.h,
       client.w - (lastFrame.x+lastFrame.w),
       client.h - (bottomLayer.y+bottomLayer.h)),
-    NULL, m_timelinePaddingBrStyle);
+    NULL, styles.timelinePaddingBr());
 }
 
 gfx::Rect Timeline::getLayerHeadersBounds() const
@@ -2208,6 +2161,11 @@ bool Timeline::isCopyKeyPressed(ui::Message* msg)
 DocumentPreferences& Timeline::docPref() const
 {
   return App::instance()->preferences().document(m_document);
+}
+
+skin::SkinTheme* Timeline::skinTheme() const
+{
+  return static_cast<SkinTheme*>(getTheme());
 }
 
 } // namespace app

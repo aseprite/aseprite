@@ -22,6 +22,11 @@ namespace ui {
 namespace app {
   class Tabs;
 
+  enum class TabIcon {
+    NONE,
+    HOME,
+  };
+
   // Required interface to be implemented by each new tab that is added
   // in the Tabs widget.
   class TabView {
@@ -30,6 +35,9 @@ namespace app {
 
     // Returns the text to be shown in the tab.
     virtual std::string getTabText() = 0;
+
+    // Returns the icon to be shown in the tab
+    virtual TabIcon getTabIcon() = 0;
   };
 
   // Interface used to control notifications from the Tabs widget.
@@ -37,12 +45,20 @@ namespace app {
   public:
     virtual ~TabsDelegate() { }
 
-    // Called when the user presses a mouse button over a tab.
-    virtual void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons) = 0;
+    // Called when the user selected the tab with the left mouse button.
+    virtual void onSelectTab(Tabs* tabs, TabView* tabView) = 0;
+
+    // When the tab close button is pressed (or middle mouse button is used to close it).
+    virtual void onCloseTab(Tabs* tabs, TabView* tabView) = 0;
+
+    // When the right-click is pressed in the tab.
+    virtual void onContextMenuTab(Tabs* tabs, TabView* tabView) = 0;
 
     // Called when the mouse is over a tab (the data can be null if the
     // mouse just leave all tabs)
-    virtual void mouseOverTab(Tabs* tabs, TabView* tabView) = 0;
+    virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;
+
+    virtual bool onIsModified(Tabs* tabs, TabView* tabView) = 0;
   };
 
   // Tabs control. Used to show opened documents.
@@ -50,9 +66,12 @@ namespace app {
     struct Tab {
       TabView* view;
       std::string text;
-      int width;
+      TabIcon icon;
+      int x, width;
+      int oldX, oldWidth;
+      bool modified;
 
-      Tab(TabView* view) : view(view), width(0) {
+      Tab(TabView* view) : view(view) {
       }
     };
 
@@ -62,8 +81,7 @@ namespace app {
     enum Ani { ANI_NONE,
                ANI_ADDING_TAB,
                ANI_REMOVING_TAB,
-               ANI_SCROLL,
-               ANI_SMOOTH_SCROLL };
+               ANI_REORDER_TABS };
 
   public:
     Tabs(TabsDelegate* delegate);
@@ -71,59 +89,59 @@ namespace app {
 
     void addTab(TabView* tabView);
     void removeTab(TabView* tabView);
-    void updateTabsText();
+    void updateTabs();
 
     void selectTab(TabView* tabView);
     void selectNextTab();
     void selectPreviousTab();
     TabView* getSelectedTab();
 
-    void startScrolling();
-    void stopScrolling();
-
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
-    void onInitTheme(ui::InitThemeEvent& ev) override;
-    void onSetText() override;
 
   private:
-    void startAni(Ani ani);
+    void resetOldPositions();
+    void resetOldPositions(double t);
+    void startAni(Ani ani, int T);
     void stopAni();
 
     void selectTabInternal(Tab* tab);
-    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int y_delta, bool selected);
+    void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int dy, bool hover, bool selected);
+    void drawFiller(ui::Graphics* g, const gfx::Rect& box);
     TabsListIterator getTabIteratorByView(TabView* tabView);
     Tab* getTabByView(TabView* tabView);
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
-    void setScrollX(int scroll_x);
     void calculateHot();
-    void calcTabWidth(Tab* tab);
+    gfx::Rect getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box);
+    void startDrag();
+    void stopDrag();
 
-    TabsList m_list_of_tabs;
+    int m_border;
+    TabsList m_list;
     Tab* m_hot;
+    bool m_hotCloseButton;
+    bool m_clickedCloseButton;
     Tab* m_selected;
-    int m_scrollX;
 
     // Delegate of notifications
     TabsDelegate* m_delegate;
 
     // Variables for animation purposes
     ui::Timer m_timer;
-    int m_begScrollX;             // Initial X position of scroll in the animation when you scroll with mouse wheel
-    int m_endScrollX;             // Final X position of scroll in the animation when you scroll with mouse wheel
     Ani m_ani;                    // Current animation
-    int m_ani_t;                  // Number of ticks from the beginning of the animation
+    int m_ani_t;                  // Number of ticks from the beginning of the transition/animation
+    int m_ani_T;                  // Number of ticks in total for the current transition/animation
     Tab* m_removedTab;
-    Tab* m_nextTabOfTheRemovedOne;
 
-    // Buttons to scroll tabs (useful when there are more tabs than visible area)
-    class ScrollButton;
-    ScrollButton* m_button_left;
-    ScrollButton* m_button_right;
+    // Drag-and-drop
+    bool m_isDragging;
+    int m_dragTabX;
+    gfx::Point m_dragMousePos;
+    int m_dragTabIndex;
   };
 
 } // namespace app

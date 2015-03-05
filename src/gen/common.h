@@ -1,5 +1,5 @@
 // Aseprite Code Generator
-// Copyright (c) 2014 David Capello
+// Copyright (c) 2014, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,7 @@ inline std::string convert_xmlid_to_cppid(const std::string& xmlid, bool firstLe
 {
   bool firstLetter = firstLetterUpperCase;
   std::string cppid;
-  for (size_t i=0; i<xmlid.size(); ++i) {
+  for (std::size_t i=0; i<xmlid.size(); ++i) {
     if (xmlid[i] == '_') {
       firstLetter = true;
     }

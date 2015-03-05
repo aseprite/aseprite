@@ -1,0 +1,79 @@
+// Aseprite
+// Copyright (C) 2001-2015  David Capello
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License version 2 as
+// published by the Free Software Foundation.
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "app/res/http_loader.h"
+
+#include "base/bind.h"
+#include "base/replace_string.h"
+#include "base/fs.h"
+#include "base/path.h"
+#include "base/scoped_value.h"
+#include "net/http_request.h"
+#include "net/http_response.h"
+
+#include <fstream>
+
+namespace app {
+
+HttpLoader::HttpLoader(const std::string& url)
+  : m_url(url)
+  , m_done(false)
+  , m_cancel(false)
+  , m_thread(Bind<void>(&HttpLoader::threadHttpRequest, this))
+{
+}
+
+HttpLoader::~HttpLoader()
+{
+  m_thread.join();
+}
+
+void HttpLoader::cancel()
+{
+  m_cancel = true;
+}
+
+void HttpLoader::threadHttpRequest()
+{
+  try {
+    base::ScopedValue<bool> scoped(m_done, false, true);
+
+    PRINTF("Sending http request to %s...\n", m_url.c_str());
+
+    std::string dir = base::join_path(getenv("TEMP"), PACKAGE);
+    base::make_all_directories(dir);
+
+    std::string fn = m_url;
+    base::replace_string(fn, ":", "-");
+    base::replace_string(fn, "/", "-");
+    base::replace_string(fn, "?", "-");
+    base::replace_string(fn, "&", "-");
+    fn = base::join_path(dir, fn);
+
+    std::ofstream output(fn);
+    net::HttpRequest http(m_url);
+    net::HttpResponse response(&output);
+    http.send(response);
+
+    if (response.status() == 200)
+      m_filename = fn;
+
+    PRINTF("Response: %d\n", response.status());
+  }
+  catch (const std::exception& e) {
+    PRINTF("Unexpected exception sending http request: '%s'\n", e.what());
+  }
+  catch (...) {
+    PRINTF("Unexpected unknown exception sending http request\n");
+  }
+}
+
+} // namespace app

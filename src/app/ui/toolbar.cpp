@@ -306,14 +306,14 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   gfx::Rect bounds = getClientBounds();
   Graphics* g = ev.getGraphics();
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Color normalFace = theme->getColor(ThemeColor::ButtonNormalFace);
-  gfx::Color hotFace = theme->getColor(ThemeColor::ButtonHotFace);
+  gfx::Color normalFace = theme->colors.buttonNormalFace();
+  gfx::Color hotFace = theme->colors.buttonHotFace();
   ToolBox* toolbox = App::instance()->getToolBox();
   ToolGroupList::iterator it = toolbox->begin_group();
   int groups = toolbox->getGroupsCount();
   Rect toolrc;
 
-  g->fillRect(theme->getColor(ThemeColor::TabSelectedFace), bounds);
+  g->fillRect(theme->colors.tabActiveFace(), bounds);
 
   for (int c=0; c<groups; ++c, ++it) {
     ToolGroup* tool_group = *it;
@@ -733,11 +733,11 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       if (UIContext::instance()->settings()->getCurrentTool() == tool ||
         m_hotTool == tool) {
         nw = PART_TOOLBUTTON_HOT_NW;
-        face = theme->getColor(ThemeColor::ButtonHotFace);
+        face = theme->colors.buttonHotFace();
       }
       else {
         nw = PART_TOOLBUTTON_LAST_NW;
-        face = theme->getColor(ThemeColor::ButtonNormalFace);
+        face = theme->colors.buttonNormalFace();
       }
 
       toolrc = getToolBounds(index++);

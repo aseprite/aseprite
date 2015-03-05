@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,6 +28,7 @@ namespace ui {
   protected:
     bool onProcessMessage(Message* msg) override;
     void onPaint(PaintEvent& ev) override;
+    virtual void onClick();
 
     std::string m_url;
   };

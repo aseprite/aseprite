@@ -21,15 +21,16 @@
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/devconsole_view.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/home_view.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/notifications.h"
 #include "app/ui/preview_editor.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/start_view.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/tabs.h"
 #include "app/ui/timeline.h"
@@ -46,42 +47,24 @@ namespace app {
 using namespace ui;
 
 MainWindow::MainWindow()
-  : Window(DesktopWindow)
-  , m_lastSplitterPos(0.0)
-  , m_lastTimelineSplitterPos(75.0)
-  , m_mode(NormalMode)
-  , m_startView(NULL)
+  : m_mode(NormalMode)
+  , m_homeView(nullptr)
+  , m_devConsoleView(nullptr)
 {
-  setId("main_window");
-
   // Load all menus by first time.
   AppMenus::instance()->reload();
-
-  Widget* mainBox = app::load_widget<Widget>("main_window.xml", "main_box");
-  addChild(mainBox);
-
-  Widget* box_menubar = findChild("menubar");
-  Widget* box_contextbar = findChild("contextbar");
-  Widget* box_colorbar = findChild("colorbar");
-  Widget* box_toolbar = findChild("toolbar");
-  Widget* box_statusbar = findChild("statusbar");
-  Widget* box_tabsbar = findChild("tabsbar");
-  Widget* box_workspace = findChild("workspace");
-  Widget* box_timeline = findChild("timeline");
 
   m_menuBar = new MainMenuBar();
   m_notifications = new Notifications();
   m_contextBar = new ContextBar();
   m_statusBar = new StatusBar();
-  m_colorBar = new ColorBar(box_colorbar->getAlign());
+  m_colorBar = new ColorBar(colorBarPlaceholder()->getAlign());
   m_toolBar = new ToolBar();
   m_tabsBar = new Tabs(this);
   m_workspace = new Workspace();
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
   m_previewEditor = new PreviewEditorWindow();
   m_timeline = new Timeline();
-  m_colorBarSplitter = findChildT<Splitter>("colorbarsplitter");
-  m_timelineSplitter = findChildT<Splitter>("timelinesplitter");
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
@@ -99,20 +82,19 @@ MainWindow::MainWindow()
   m_menuBar->setMenu(AppMenus::instance()->getRootMenu());
 
   // Add the widgets in the boxes
-  if (box_menubar) {
-    box_menubar->addChild(m_menuBar);
-    box_menubar->addChild(m_notifications);
-  }
-  if (box_contextbar) box_contextbar->addChild(m_contextBar);
-  if (box_colorbar) box_colorbar->addChild(m_colorBar);
-  if (box_toolbar) box_toolbar->addChild(m_toolBar);
-  if (box_statusbar) box_statusbar->addChild(m_statusBar);
-  if (box_tabsbar) box_tabsbar->addChild(m_tabsBar);
-  if (box_workspace) box_workspace->addChild(m_workspace);
-  if (box_timeline) box_timeline->addChild(m_timeline);
+  menuBarPlaceholder()->addChild(m_menuBar);
+  menuBarPlaceholder()->addChild(m_notifications);
+  contextBarPlaceholder()->addChild(m_contextBar);
+  colorBarPlaceholder()->addChild(m_colorBar);
+  toolBarPlaceholder()->addChild(m_toolBar);
+  statusBarPlaceholder()->addChild(m_statusBar);
+  tabsPlaceholder()->addChild(m_tabsBar);
+  workspacePlaceholder()->addChild(m_workspace);
+  timelinePlaceholder()->addChild(m_timeline);
 
-  // Default layout of widgets
-  m_colorBarSplitter->setPosition(m_colorBar->getPreferredSize().w);
+  // Default splitter positions
+  colorBarSplitter()->setPosition(m_colorBar->getPreferredSize().w);
+  timelineSplitter()->setPosition(75);
 
   // Prepare the window
   remapWindow();
@@ -122,9 +104,15 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-  if (m_startView) {
-    m_workspace->removeView(m_startView);
-    delete m_startView;
+  if (m_devConsoleView) {
+    if (m_devConsoleView->getParent())
+      m_workspace->removeView(m_devConsoleView);
+    delete m_devConsoleView;
+  }
+  if (m_homeView) {
+    if (m_homeView->getParent())
+      m_workspace->removeView(m_homeView);
+    delete m_homeView;
   }
   delete m_contextBar;
   delete m_previewEditor;
@@ -138,6 +126,25 @@ MainWindow::~MainWindow()
   // module should destroy it).
   m_menuBar->setMenu(NULL);
 }
+
+DocumentView* MainWindow::getDocView()
+{
+  return dynamic_cast<DocumentView*>(m_workspace->activeView());
+}
+
+HomeView* MainWindow::getHomeView()
+{
+  if (!m_homeView)
+    m_homeView = new HomeView;
+  return m_homeView;
+}
+
+#ifdef ENABLE_UPDATER
+CheckUpdateDelegate* MainWindow::getCheckUpdateDelegate()
+{
+  return getHomeView();
+}
+#endif
 
 void MainWindow::reloadMenus()
 {
@@ -154,56 +161,45 @@ void MainWindow::showNotification(INotificationDelegate* del)
   m_notifications->getParent()->layout();
 }
 
+void MainWindow::showHome()
+{
+  if (!getHomeView()->getParent()) {
+    m_workspace->addView(m_homeView);
+    m_tabsBar->selectTab(m_homeView);
+  }
+}
+
+void MainWindow::showDevConsole()
+{
+  if (!m_devConsoleView)
+    m_devConsoleView = new DevConsoleView;
+
+  if (!m_devConsoleView->getParent()) {
+    m_workspace->addView(m_devConsoleView);
+    m_tabsBar->selectTab(m_devConsoleView);
+  }
+}
+
 void MainWindow::setMode(Mode mode)
 {
   // Check if we already are in the given mode.
   if (m_mode == mode)
     return;
 
-  if (mode == NormalMode) {
-    if (m_colorBarSplitter->getPosition() == 0.0)
-      m_colorBarSplitter->setPosition(m_lastSplitterPos);
-  }
-  // If current mode is "normal", we save the splitter position of the
-  // color bar in "m_lastSplitterPos" before we hide it.
-  else if (m_mode == NormalMode) {
-    m_lastSplitterPos = m_colorBarSplitter->getPosition();
-    m_colorBarSplitter->setPosition(0.0);
-  }
-
-  m_menuBar->setVisible(mode == NormalMode);
-  m_tabsBar->setVisible(mode == NormalMode);
-  m_toolBar->setVisible(mode == NormalMode);
-  m_statusBar->setVisible(mode == NormalMode);
-  m_contextBar->setVisible(
-    mode == NormalMode ||
-    mode == ContextBarAndTimelineMode);
-  setTimelineVisibility(
-    mode == NormalMode ||
-    mode == ContextBarAndTimelineMode);
-
   m_mode = mode;
-  layout();
+  configureWorkspaceLayout();
 }
 
 bool MainWindow::getTimelineVisibility() const
 {
-  return m_timelineSplitter->getPosition() < 100.0;
+  return App::instance()->preferences().general.visibleTimeline();
 }
 
 void MainWindow::setTimelineVisibility(bool visible)
 {
-  if (visible) {
-    if (m_timelineSplitter->getPosition() >= 100.0)
-      m_timelineSplitter->setPosition(m_lastTimelineSplitterPos);
-  }
-  else {
-    if (m_timelineSplitter->getPosition() < 100.0) {
-      m_lastTimelineSplitterPos = m_timelineSplitter->getPosition();
-      m_timelineSplitter->setPosition(100.0);
-    }
-  }
-  layout();
+  App::instance()->preferences().general.visibleTimeline(visible);
+
+  configureWorkspaceLayout();
 }
 
 void MainWindow::popTimeline()
@@ -219,13 +215,8 @@ void MainWindow::popTimeline()
 
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
-#if 0                           // TODO Enable start view
-  if (msg->type() == kOpenMessage) {
-    m_startView = new StartView;
-    m_workspace->addView(m_startView);
-    m_tabsBar->selectTab(m_startView);
-  }
-#endif
+  if (msg->type() == kOpenMessage)
+    showHome();
 
   return Window::onProcessMessage(msg);
 }
@@ -233,11 +224,6 @@ bool MainWindow::onProcessMessage(ui::Message* msg)
 void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 {
   Window::onSaveLayout(ev);
-
-  // Restore splitter position if we are in advanced mode, so we save
-  // the original splitter position in the layout.
-  if (m_colorBarSplitter->getPosition() == 0.0)
-    m_colorBarSplitter->setPosition(m_lastSplitterPos);
 }
 
 // When the active view is changed from methods like
@@ -245,58 +231,41 @@ void MainWindow::onSaveLayout(SaveLayoutEvent& ev)
 // inform to the UIContext that the current view has changed.
 void MainWindow::onActiveViewChange()
 {
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(m_workspace->activeView())) {
+  if (DocumentView* docView = getDocView())
     UIContext::instance()->setActiveView(docView);
+  else
+    UIContext::instance()->setActiveView(nullptr);
 
-    m_contextBar->updateFromTool(UIContext::instance()
-      ->settings()->getCurrentTool());
-
-    if (m_mode != EditorOnlyMode)
-      m_contextBar->setVisible(true);
-  }
-  else {
-    UIContext::instance()->setActiveView(NULL);
-
-    if (m_mode != EditorOnlyMode)
-      m_contextBar->setVisible(false);
-  }
-  layout();
+  configureWorkspaceLayout();
 }
 
-void MainWindow::clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons)
+void MainWindow::onSelectTab(Tabs* tabs, TabView* tabView)
 {
   if (!tabView)
     return;
 
-  WorkspaceView* workspaceView = dynamic_cast<WorkspaceView*>(tabView);
-  if (m_workspace->activeView() != workspaceView)
-    m_workspace->setActiveView(workspaceView);
-
-  DocumentView* docView = dynamic_cast<DocumentView*>(workspaceView);
-  if (!docView)
-    return;
-
-  UIContext* context = UIContext::instance();
-  context->setActiveView(docView);
-  context->updateFlags();
-
-  // Right-button: popup-menu
-  if (buttons & kButtonRight) {
-    Menu* popup_menu = AppMenus::instance()->getDocumentTabPopupMenu();
-    if (popup_menu != NULL) {
-      popup_menu->showPopup(ui::get_mouse_position());
-    }
-  }
-  // Middle-button: close the sprite
-  else if (buttons & kButtonMiddle) {
-    Command* close_file_cmd =
-      CommandsModule::instance()->getCommandByName(CommandId::CloseFile);
-
-    context->executeCommand(close_file_cmd, NULL);
-  }
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  if (m_workspace->activeView() != view)
+    m_workspace->setActiveView(view);
 }
 
-void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
+void MainWindow::onCloseTab(Tabs* tabs, TabView* tabView)
+{
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  ASSERT(view);
+  if (view)
+    m_workspace->closeView(view);
+}
+
+void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)
+{
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  ASSERT(view);
+  if (view)
+    view->onTabPopup(m_workspace);
+}
+
+void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 {
   // Note: tabView can be NULL
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
@@ -307,6 +276,45 @@ void MainWindow::mouseOverTab(Tabs* tabs, TabView* tabView)
   else {
     m_statusBar->clearText();
   }
+}
+
+bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
+{
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
+    Document* document = docView->getDocument();
+    return document->isModified();
+  }
+  else {
+    return false;
+  }
+}
+
+void MainWindow::configureWorkspaceLayout()
+{
+  bool normal = (m_mode == NormalMode);
+  bool isDoc = (getDocView() != nullptr);
+
+  m_menuBar->setVisible(normal);
+  m_tabsBar->setVisible(normal);
+  colorBarPlaceholder()->setVisible(normal && isDoc);
+  m_toolBar->setVisible(normal && isDoc);
+  m_statusBar->setVisible(normal);
+  m_contextBar->setVisible(
+    isDoc &&
+    (m_mode == NormalMode ||
+     m_mode == ContextBarAndTimelineMode));
+  timelinePlaceholder()->setVisible(
+    isDoc &&
+    (m_mode == NormalMode ||
+     m_mode == ContextBarAndTimelineMode) &&
+    App::instance()->preferences().general.visibleTimeline());
+
+  if (m_contextBar->isVisible()) {
+    m_contextBar->updateFromTool(
+      UIContext::instance()->settings()->getCurrentTool());
+  }
+
+  layout();
 }
 
 } // namespace app

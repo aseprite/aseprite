@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,7 +19,7 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
-  
+
 namespace gfx {
 
 inline Rect to_rect(const pixman_box32& extends)
@@ -109,7 +109,7 @@ Rect Region::bounds() const
   return to_rect(*pixman_region32_extents(&m_region));
 }
 
-size_t Region::size() const
+std::size_t Region::size() const
 {
   return pixman_region32_n_rects(&m_region);
 }

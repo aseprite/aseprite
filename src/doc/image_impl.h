@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,9 @@
 #ifndef DOC_IMAGE_IMPL_H_INCLUDED
 #define DOC_IMAGE_IMPL_H_INCLUDED
 #pragma once
+
+#include <cstdlib>
+#include <cstring>
 
 #include "doc/blend.h"
 #include "doc/image.h"
@@ -54,9 +57,9 @@ namespace doc {
       : Image(static_cast<PixelFormat>(Traits::pixel_format), width, height)
       , m_buffer(buffer)
     {
-      size_t for_rows = sizeof(address_t) * height;
-      size_t rowstride_bytes = Traits::getRowStrideBytes(width);
-      size_t required_size = for_rows + rowstride_bytes*height;
+      std::size_t for_rows = sizeof(address_t) * height;
+      std::size_t rowstride_bytes = Traits::getRowStrideBytes(width);
+      std::size_t required_size = for_rows + rowstride_bytes*height;
 
       if (!m_buffer)
         m_buffer.reset(new ImageBuffer(required_size));
@@ -121,7 +124,7 @@ namespace doc {
         src_address = src->address(area.src.x, area.src.y);
         dst_address = address(area.dst.x, area.dst.y);
 
-        memcpy(dst_address, src_address, bytes);
+        std::memcpy(dst_address, src_address, bytes);
       }
     }
 
@@ -205,13 +208,13 @@ namespace doc {
 
   template<>
   inline void ImageImpl<IndexedTraits>::clear(color_t color) {
-    memset(m_bits, color, width()*height());
+    std::memset(m_bits, color, width()*height());
   }
 
   template<>
   inline void ImageImpl<BitmapTraits>::clear(color_t color) {
-    memset(m_bits, (color ? 0xff: 0x00),
-           BitmapTraits::getRowStrideBytes(width()) * height());
+    std::memset(m_bits, (color ? 0xff: 0x00),
+      BitmapTraits::getRowStrideBytes(width()) * height());
   }
 
   template<>
@@ -219,7 +222,7 @@ namespace doc {
     ASSERT(x >= 0 && x < width());
     ASSERT(y >= 0 && y < height());
 
-    div_t d = div(x, 8);
+    std::div_t d = std::div(x, 8);
     return ((*(m_rows[y] + d.quot)) & (1<<d.rem)) ? 1: 0;
   }
 
@@ -228,7 +231,7 @@ namespace doc {
     ASSERT(x >= 0 && x < width());
     ASSERT(y >= 0 && y < height());
 
-    div_t d = div(x, 8);
+    std::div_t d = std::div(x, 8);
     if (color)
       (*(m_rows[y] + d.quot)) |= (1 << d.rem);
     else

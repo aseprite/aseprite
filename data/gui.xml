@@ -89,9 +89,6 @@
       <key command="InvertMask" shortcut="Ctrl+Shift+I" mac="Cmd+Shift+I" />
       <!-- View -->
       <key command="Refresh" shortcut="F5" />
-      <key command="MakeUniqueEditor" shortcut="Ctrl+1" mac="Cmd+1" />
-      <key command="SplitEditorVertically" shortcut="Ctrl+2" mac="Cmd+2" />
-      <key command="SplitEditorHorizontally" shortcut="Ctrl+3" mac="Cmd+3" />
       <key command="TogglePreview" shortcut="F7" />
       <key command="FullscreenPreview" shortcut="F8" />
       <key command="ShowGrid" shortcut="Shift+G" />
@@ -566,10 +563,6 @@
         <item command="SaveMask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
-        <item command="MakeUniqueEditor" text="Make &amp;Unique" />
-        <item command="SplitEditorVertically" text="Split &amp;Vertically" />
-        <item command="SplitEditorHorizontally" text="Split &amp;Horizontally" />
-        <separator />
         <item command="ShowPixelGrid" text="Show &amp;Pixel Grid" />
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
@@ -583,6 +576,7 @@
         </item>
         <item command="TogglePreview" text="Previe&amp;w" />
         <item command="FullscreenPreview" text="&amp;Fullscreen Preview" />
+        <item command="Home" text="&amp;Home" />
         <separator />
         <item command="Refresh" text="&amp;Refresh &amp;&amp; Reload Skin" />
       </menu>
@@ -620,6 +614,10 @@
         </item>
         <item command="About" text="&amp;About" />
       </menu>
+    </menu>
+
+    <menu id="tab_popup">
+      <item command="CloseFile" text="&amp;Close" />
     </menu>
 
     <menu id="document_tab_popup">

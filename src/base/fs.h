@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,6 +12,8 @@
 
 namespace base {
 
+  class Time;
+
   bool is_file(const std::string& path);
   bool is_directory(const std::string& path);
 
@@ -22,6 +24,8 @@ namespace base {
 
   bool has_readonly_attr(const std::string& path);
   void remove_readonly_attr(const std::string& path);
+
+  Time get_modification_time(const std::string& path);
 
   void make_directory(const std::string& path);
   void make_all_directories(const std::string& path);

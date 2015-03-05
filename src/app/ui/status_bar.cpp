@@ -224,24 +224,6 @@ StatusBar::StatusBar()
     m_commandsBox = box1;
   }
 
-  // Create the box to show notifications.
-  {
-    Box* box1 = new Box(JI_HORIZONTAL);
-    Box* box2 = new Box(JI_VERTICAL);
-
-    box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
-    box2->noBorderNoChildSpacing();
-    box2->setExpansive(true);
-
-    m_linkLabel = new LinkLabel((std::string(WEBSITE) + "donate/").c_str(), "Support This Project");
-
-    box1->addChild(box2);
-    box1->addChild(m_linkLabel);
-    m_notificationsBox = box1;
-  }
-
-  addChild(m_notificationsBox);
-
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
 
@@ -252,7 +234,6 @@ StatusBar::~StatusBar()
 
   delete m_tipwindow;           // widget
   delete m_commandsBox;
-  delete m_notificationsBox;
 }
 
 void StatusBar::onCurrentToolChange()
@@ -455,11 +436,6 @@ void StatusBar::onResize(ResizeEvent& ev)
   setBoundsQuietly(ev.getBounds());
 
   Rect rc = ev.getBounds();
-  rc.x = rc.x2() - m_notificationsBox->getPreferredSize().w;
-  rc.w = m_notificationsBox->getPreferredSize().w;
-  m_notificationsBox->setBounds(rc);
-
-  rc = ev.getBounds();
   rc.w -= rc.w/4 + 4*guiscale();
   m_commandsBox->setBounds(rc);
 }
@@ -650,7 +626,6 @@ void StatusBar::updateSubwidgetsVisibility()
 {
   const Document* document = UIContext::instance()->activeDocument();
   bool commandsVisible = (document != NULL && hasMouse());
-  bool notificationsVisible = (document == NULL);
 
   if (commandsVisible) {
     if (!hasChild(m_commandsBox)) {
@@ -661,19 +636,6 @@ void StatusBar::updateSubwidgetsVisibility()
   else {
     if (hasChild(m_commandsBox)) {
       removeChild(m_commandsBox);
-      invalidate();
-    }
-  }
-
-  if (notificationsVisible) {
-    if (!hasChild(m_notificationsBox)) {
-      addChild(m_notificationsBox);
-      invalidate();
-    }
-  }
-  else {
-    if (hasChild(m_notificationsBox)) {
-      removeChild(m_notificationsBox);
       invalidate();
     }
   }

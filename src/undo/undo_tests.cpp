@@ -8,11 +8,18 @@
 #include "config.h"
 #endif
 
-#include <functional>
 #include <gtest/gtest.h>
 
 #include "undo/undo_command.h"
 #include "undo/undo_history.h"
+
+#ifdef _WIN32
+  #include <functional>
+  using namespace std;
+#else
+  #include <tr1/functional>
+  using namespace std::tr1;
+#endif
 
 using namespace undo;
 
@@ -25,8 +32,8 @@ public:
   void redo() override { m_redo(); }
   void undo() override { m_undo(); }
 private:
-  std::function<void()> m_redo;
-  std::function<void()> m_undo;
+  function<void()> m_redo;
+  function<void()> m_undo;
 };
 
 TEST(Undo, Basics)

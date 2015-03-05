@@ -12,7 +12,6 @@
 #include "app/document_range.h"
 #include "app/pref/preferences.h"
 #include "app/ui/editor/editor_observer.h"
-#include "app/ui/skin/style.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
@@ -36,6 +35,12 @@ namespace ui {
 }
 
 namespace app {
+
+  namespace skin {
+    class Style;
+    class SkinTheme;
+  }
+
   using namespace doc;
 
   class Command;
@@ -191,36 +196,8 @@ namespace app {
     bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
 
     DocumentPreferences& docPref() const;
+    skin::SkinTheme* skinTheme() const;
 
-    skin::Style* m_timelineStyle;
-    skin::Style* m_timelineBoxStyle;
-    skin::Style* m_timelineOpenEyeStyle;
-    skin::Style* m_timelineClosedEyeStyle;
-    skin::Style* m_timelineOpenPadlockStyle;
-    skin::Style* m_timelineClosedPadlockStyle;
-    skin::Style* m_timelineContinuousStyle;
-    skin::Style* m_timelineDiscontinuousStyle;
-    skin::Style* m_timelineLayerStyle;
-    skin::Style* m_timelineEmptyFrameStyle;
-    skin::Style* m_timelineKeyframeStyle;
-    skin::Style* m_timelineFromLeftStyle;
-    skin::Style* m_timelineFromRightStyle;
-    skin::Style* m_timelineFromBothStyle;
-    skin::Style* m_timelineLeftLinkStyle;
-    skin::Style* m_timelineRightLinkStyle;
-    skin::Style* m_timelineBothLinksStyle;
-    skin::Style* m_timelineGearStyle;
-    skin::Style* m_timelineOnionskinStyle;
-    skin::Style* m_timelineOnionskinRangeStyle;
-    skin::Style* m_timelinePaddingStyle;
-    skin::Style* m_timelinePaddingTrStyle;
-    skin::Style* m_timelinePaddingBlStyle;
-    skin::Style* m_timelinePaddingBrStyle;
-    skin::Style* m_timelineSelectedCelStyle;
-    skin::Style* m_timelineRangeOutlineStyle;
-    skin::Style* m_timelineDropLayerDecoStyle;
-    skin::Style* m_timelineDropFrameDecoStyle;
-    skin::Style* m_timelineLoopRangeStyle;
     Context* m_context;
     Editor* m_editor;
     Document* m_document;

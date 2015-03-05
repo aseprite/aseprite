@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -324,7 +324,7 @@ std::string Accelerator::toString() const
     "KEY_COLON2",
     "Kanji",
   };
-  static size_t table_size = sizeof(table) / sizeof(table[0]);
+  static std::size_t table_size = sizeof(table) / sizeof(table[0]);
 
   std::string buf;
 

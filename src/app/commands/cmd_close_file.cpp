@@ -29,53 +29,30 @@ namespace app {
 
 using namespace ui;
 
-static bool close_active_document(Context* context);
-
 class CloseFileCommand : public Command {
 public:
   CloseFileCommand()
     : Command("CloseFile",
               "Close File",
-              CmdUIOnlyFlag)
-  {
+              CmdUIOnlyFlag) {
   }
 
   Command* clone() const override { return new CloseFileCommand(*this); }
 
 protected:
 
-  bool onEnabled(Context* context)
-  {
-    const ContextReader reader(context);
-    const Sprite* sprite(reader.sprite());
-    return sprite != NULL;
-  }
-
-  void onExecute(Context* context)
-  {
+  bool onEnabled(Context* context) override {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-
-    if (workspace->activeView() == NULL)
-      return;
-
-    if (DocumentView* docView =
-          dynamic_cast<DocumentView*>(workspace->activeView())) {
-      Document* document = docView->getDocument();
-      if (static_cast<UIContext*>(context)->countViewsOf(document) == 1) {
-        // If we have only one view for this document, close the file.
-        close_active_document(context);
-        return;
-      }
-    }
-
-    // Close the active view.
     WorkspaceView* view = workspace->activeView();
-    workspace->removeView(view);
-    delete view;
+    return (view != nullptr);
   }
 
-private:
-  static char* read_authors_txt(const char *filename);
+  void onExecute(Context* context) override {
+    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    WorkspaceView* view = workspace->activeView();
+    if (view)
+      workspace->closeView(view);
+  }
 };
 
 class CloseAllFilesCommand : public Command {
@@ -83,95 +60,30 @@ public:
   CloseAllFilesCommand()
     : Command("CloseAllFiles",
               "Close All Files",
-              CmdRecordableFlag)
-  {
+              CmdRecordableFlag) {
   }
 
   Command* clone() const override { return new CloseAllFilesCommand(*this); }
 
 protected:
 
-  bool onEnabled(Context* context)
-  {
-    return !context->documents().empty();
-  }
+  void onExecute(Context* context) override {
+    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
 
-  void onExecute(Context* context)
-  {
-    while (true) {
-      if (context->activeDocument() != NULL) {
-        if (!close_active_document(context))
-          break;
-      }
-      else
+    std::vector<DocumentView*> docViews;
+    for (auto view : *workspace) {
+      DocumentView* docView = dynamic_cast<DocumentView*>(view);
+      if (docView)
+        docViews.push_back(docView);
+    }
+
+    for (auto docView : docViews) {
+      if (!workspace->closeView(docView))
         break;
     }
   }
 
 };
-
-// Closes the active document, asking to the user to save it if it is
-// modified.
-static bool close_active_document(Context* context)
-{
-  Document* closedDocument = NULL;
-  bool save_it;
-  bool try_again = true;
-
-  while (try_again) {
-    // This flag indicates if we have to sabe the sprite before to destroy it
-    save_it = false;
-    {
-      // The sprite is locked as reader temporaly
-      const ContextReader reader(context);
-      const Document* document = reader.document();
-      closedDocument = const_cast<Document*>(document);
-
-      // see if the sprite has changes
-      while (document->isModified()) {
-        // ask what want to do the user with the changes in the sprite
-        int ret = Alert::show("Warning<<Saving changes in:<<%s||&Save||Do&n't Save||&Cancel",
-          document->name().c_str());
-
-        if (ret == 1) {
-          // "save": save the changes
-          save_it = true;
-          break;
-        }
-        else if (ret != 2) {
-          // "cancel" or "ESC" */
-          return false; // we back doing nothing
-        }
-        else {
-          // "discard"
-          break;
-        }
-      }
-    }
-
-    // Does we need to save the sprite?
-    if (save_it) {
-      Command* save_command =
-        CommandsModule::instance()->getCommandByName(CommandId::SaveFile);
-      context->executeCommand(save_command);
-
-      try_again = true;
-    }
-    else
-      try_again = false;
-  }
-
-  // Destroy the sprite (locking it as writer)
-  {
-    DocumentDestroyer document(context, closedDocument);
-    StatusBar::instance()
-      ->setStatusText(0, "Sprite '%s' closed.",
-        document->name().c_str());
-    document.destroyDocument();
-  }
-
-  return true;
-}
 
 Command* CommandFactory::createCloseFileCommand()
 {

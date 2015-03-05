@@ -47,7 +47,7 @@ AL_FUNC(void, register_trace_handler, (AL_METHOD(int, handler, (AL_CONST char *m
 
    #ifndef TRACE
    #define TRACE                 1 ? (void) 0 : al_trace
-   #endif TRACE
+   #endif
 #endif
 
 #ifdef __cplusplus

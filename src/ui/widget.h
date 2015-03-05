@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -88,7 +88,7 @@ namespace ui {
     const std::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
-    size_t getTextLength() const { return m_text.size(); }
+    std::size_t getTextLength() const { return m_text.size(); }
     void setText(const std::string& text);
     void setTextf(const char* text, ...);
     void setTextQuiet(const std::string& text);
@@ -217,6 +217,7 @@ namespace ui {
 
     void addChild(Widget* child);
     void removeChild(Widget* child);
+    void removeAllChildren();
     void replaceChild(Widget* oldChild, Widget* newChild);
     void insertChild(int index, Widget* child);
 
@@ -373,6 +374,7 @@ namespace ui {
     virtual void onSetBgColor();
 
   private:
+    void removeChild(WidgetsList::iterator& it);
     void paint(Graphics* graphics, const gfx::Region& drawRegion);
     bool paintEvent(Graphics* graphics);
 

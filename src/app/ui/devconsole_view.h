@@ -26,12 +26,15 @@ namespace app {
 
     // TabView implementation
     std::string getTabText() override;
+    TabIcon getTabIcon() override;
 
     // WorkspaceView implementation
     ui::Widget* getContentWidget() override { return this; }
     WorkspaceView* cloneWorkspaceView() override;
     void onWorkspaceViewSelected() override;
     void onClonedFrom(WorkspaceView* from) override;
+    bool onCloseView(Workspace* workspace) override;
+    void onTabPopup(Workspace* workspace) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

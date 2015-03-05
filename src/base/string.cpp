@@ -83,7 +83,7 @@ std::wstring from_utf8(const std::string& src)
 #else
 
 // Based on Allegro Unicode code (allegro/src/unicode.c)
-static size_t insert_utf8_char(std::string* result, wchar_t chr)
+static std::size_t insert_utf8_char(std::string* result, wchar_t chr)
 {
   int size, bits, b, i;
 
@@ -129,7 +129,7 @@ std::string to_utf8(const std::wstring& src)
 
   // Get required size to reserve a string so string::push_back()
   // doesn't need to reallocate its data.
-  size_t required_size = 0;
+  std::size_t required_size = 0;
   for (it = begin; it != end; ++it)
     required_size += insert_utf8_char(NULL, *it);
   if (!required_size)

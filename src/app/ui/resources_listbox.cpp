@@ -55,12 +55,12 @@ protected:
     gfx::Color bgcolor, fgcolor;
 
     if (isSelected()) {
-      bgcolor = theme->getColor(ThemeColor::ListItemSelectedFace);
-      fgcolor = theme->getColor(ThemeColor::ListItemSelectedText);
+      bgcolor = theme->colors.listitemSelectedFace();
+      fgcolor = theme->colors.listitemSelectedText();
     }
     else {
-      bgcolor = theme->getColor(ThemeColor::ListItemNormalFace);
-      fgcolor = theme->getColor(ThemeColor::ListItemNormalText);
+      bgcolor = theme->colors.listitemNormalFace();
+      fgcolor = theme->colors.listitemNormalText();
     }
 
     g->fillRect(bgcolor, bounds);

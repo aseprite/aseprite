@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -105,8 +105,8 @@ void View::setScrollableSize(const Size& sz)
   gfx::Rect pos = getChildrenBounds();
 
   // Setup scroll-bars
-  removeChild(&m_scrollbar_h);
-  removeChild(&m_scrollbar_v);
+  if (m_scrollbar_h.getParent()) removeChild(&m_scrollbar_h);
+  if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
 
   if (m_hasBars) {
     if (CHECK(w, h, l, t, r, b)) {

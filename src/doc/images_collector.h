@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -57,7 +57,7 @@ namespace doc {
     ItemsIterator begin() { return m_items.begin(); }
     ItemsIterator end() { return m_items.end(); }
 
-    size_t size() const { return m_items.size(); }
+    std::size_t size() const { return m_items.size(); }
     bool empty() const { return m_items.empty(); }
 
   private:

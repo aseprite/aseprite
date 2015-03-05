@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,6 +25,18 @@ template<> std::string convert_to(const int& from)
 {
   char buf[32];
   std::sprintf(buf, "%d", from);
+  return buf;
+}
+
+template<> double convert_to(const std::string& from)
+{
+  return std::strtod(from.c_str(), NULL);
+}
+
+template<> std::string convert_to(const double& from)
+{
+  char buf[32];
+  std::sprintf(buf, "%g", from);
   return buf;
 }
 

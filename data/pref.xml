@@ -47,6 +47,7 @@
 
   <global>
     <section id="general">
+      <option id="visible_timeline" type="bool" default="false" />
       <option id="autoshow_timeline" type="bool" default="true" migrate="Options.AutoShowTimeline" />
       <option id="expand_menubar_on_mouseover" type="bool" default="false" migrate="Options.ExpandMenuBarOnMouseover" />
     </section>
@@ -70,6 +71,9 @@
       <option id="use_native_cursor" type="bool" default="false" migrate="Options.NativeCursor" />
       <option id="use_native_file_dialog" type="bool" default="false" />
       <option id="flash_layer" type="bool" default="false" migrate="Options.FlashLayer" />
+    </section>
+    <section id="news">
+      <option id="cache_file" type="std::string" />
     </section>
   </global>
 

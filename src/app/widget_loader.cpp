@@ -16,6 +16,7 @@
 #include "app/resource_finder.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
 #include "app/xml_document.h"
@@ -23,6 +24,7 @@
 #include "base/bind.h"
 #include "base/fs.h"
 #include "base/memory.h"
+#include "she/system.h"
 #include "ui/ui.h"
 
 #include "tinyxml.h"
@@ -429,6 +431,27 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       }
     }
   }
+  else if (elem_name == "image") {
+    if (!widget) {
+      const char* file = elem->Attribute("file");
+
+      // Load image
+      std::string icon(file);
+
+      ResourceFinder rf;
+      rf.includeDataDir(file);
+      if (!rf.findFirst())
+        throw base::Exception("File %s not found", file);
+
+      try {
+        she::Surface* sur = she::instance()->loadRgbaSurface(rf.filename().c_str());
+        widget = new ImageView(sur, 0);
+      }
+      catch (...) {
+        throw base::Exception("Error loading %s file", file);
+      }
+    }
+  }
 
   // Was the widget created?
   if (widget)
@@ -454,6 +477,8 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   const char* minheight = elem->Attribute("minheight");
   const char* maxwidth  = elem->Attribute("maxwidth");
   const char* maxheight = elem->Attribute("maxheight");
+  const char* border    = elem->Attribute("border");
+  const char* styleid   = elem->Attribute("style");
   const char* childspacing = elem->Attribute("childspacing");
 
   if (width) {
@@ -498,8 +523,11 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   if (noborders)
     widget->noBorderNoChildSpacing();
 
+  if (border)
+    widget->setBorder(gfx::Border(strtol(border, NULL, 10)*guiscale()));
+
   if (childspacing)
-    widget->child_spacing = strtol(childspacing, NULL, 10);
+    widget->child_spacing = strtol(childspacing, NULL, 10)*guiscale();
 
   gfx::Size reqSize = widget->getPreferredSize();
 
@@ -513,6 +541,14 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     int w = (maxwidth ? guiscale()*strtol(maxwidth, NULL, 10): INT_MAX);
     int h = (maxheight ? guiscale()*strtol(maxheight, NULL, 10): INT_MAX);
     widget->setMaxSize(gfx::Size(w, h));
+  }
+
+  if (styleid) {
+    SkinTheme* theme = static_cast<SkinTheme*>(root->getTheme());
+    skin::Style* style = theme->getStyle(styleid);
+    ASSERT(style);
+    SkinStylePropertyPtr prop(new SkinStyleProperty(style));
+    widget->setProperty(prop);
   }
 
   if (!root)

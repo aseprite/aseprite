@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,12 +10,14 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <vector>
+#include <ctime>
 
 #if __APPLE__
 #include <mach-o/dyld.h>
 #endif
 
 #include "base/path.h"
+#include "base/time.h"
 
 #define MAXPATHLEN 1024
 
@@ -80,6 +82,19 @@ void remove_readonly_attr(const std::string& path)
       // TODO add errno into the exception
       throw std::runtime_error("Error removing read-only attribute");
   }
+}
+
+Time get_modification_time(const std::string& path)
+{
+  struct stat sts;
+  int result = stat(path.c_str(), &sts);
+  if (result != 0)
+    return Time();
+
+  std::tm* t = std::localtime(&sts.st_mtime);
+  return Time(
+    t->tm_year+1900, t->tm_mon+1, t->tm_mday,
+    t->tm_hour, t->tm_min, t->tm_sec);
 }
 
 void remove_directory(const std::string& path)

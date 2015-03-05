@@ -14,6 +14,7 @@ namespace ui {
 }
 
 namespace app {
+  class Workspace;
 
   class WorkspaceView {
   public:
@@ -27,6 +28,12 @@ namespace app {
     // the workspace. It can be used to copy/clone scroll position
     // from the original view.
     virtual void onClonedFrom(WorkspaceView* from) = 0;
+
+    // Returns true if the view was closed successfully or false if
+    // the user cancels the operation.
+    virtual bool onCloseView(Workspace* workspace) = 0;
+
+    virtual void onTabPopup(Workspace* workspace) = 0;
   };
 
 } // namespace app

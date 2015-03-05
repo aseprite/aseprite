@@ -30,6 +30,7 @@
 #endif
 #define WEBSITE_DOWNLOAD        WEBSITE "download/"
 #define WEBSITE_CONTRIBUTORS    WEBSITE "contributors/"
+#define WEBSITE_NEWS_RSS        "http://blog.aseprite.org/rss"
 #define UPDATE_URL              WEBSITE "update/?xml=1"
 #define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
 

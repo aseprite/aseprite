@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,6 +15,7 @@
 #include "doc/image.h"
 
 #include <algorithm>
+#include <limits>
 
 namespace doc {
 
@@ -124,7 +125,7 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
 
 bool Palette::isBlack() const
 {
-  for (size_t c=0; c<m_colors.size(); ++c)
+  for (std::size_t c=0; c<m_colors.size(); ++c)
     if (getEntry(c) != rgba(0, 0, 0, 255))
       return false;
 
@@ -429,7 +430,7 @@ int Palette::findBestfit(int r, int g, int b, int mask_index) const
     bestfit_init();
 
   bestfit = 0;
-  lowest = INT_MAX;
+  lowest = std::numeric_limits<int>::max();
 
   r >>= 3;
   g >>= 3;

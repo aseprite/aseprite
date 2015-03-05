@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,8 +45,8 @@ TYPED_TEST(ImageAllTypes, PutGetAndIterators)
   lengths.push_back(33);
 
   std::vector<gfx::Size> sizes;
-  for (size_t i=0; i<lengths.size(); ++i)
-    for (size_t j=0; j<lengths.size(); ++j)
+  for (std::size_t i=0; i<lengths.size(); ++i)
+    for (std::size_t j=0; j<lengths.size(); ++j)
       sizes.push_back(gfx::Size(lengths[j], lengths[i]));
 
   for (std::vector<gfx::Size>::iterator sizes_it=sizes.begin(); sizes_it!=sizes.end(); ++sizes_it) {
@@ -160,8 +160,8 @@ TYPED_TEST(ImageAllTypes, DrawHLine)
   lengths.push_back(33);
 
   std::vector<gfx::Size> sizes;
-  for (size_t i=0; i<lengths.size(); ++i)
-    for (size_t j=0; j<lengths.size(); ++j)
+  for (std::size_t i=0; i<lengths.size(); ++i)
+    for (std::size_t j=0; j<lengths.size(); ++j)
       sizes.push_back(gfx::Size(lengths[j], lengths[i]));
 
   for (std::vector<gfx::Size>::iterator sizes_it=sizes.begin(); sizes_it!=sizes.end(); ++sizes_it) {
@@ -169,7 +169,7 @@ TYPED_TEST(ImageAllTypes, DrawHLine)
     int h = sizes_it->h;
     UniquePtr<Image> image(Image::create(ImageTraits::pixel_format, w, h));
     image->clear(0);
-    
+
     for (int c=0; c<100; ++c) {
       int x = rand() % w;
       int y = rand() % h;

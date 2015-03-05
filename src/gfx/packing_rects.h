@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2014 David Capello
+// Copyright (C) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,7 +25,7 @@ namespace gfx {
     const_iterator begin() const { return m_rects.begin(); }
     const_iterator end() const { return m_rects.end(); }
 
-    size_t size() const { return m_rects.size(); }
+    std::size_t size() const { return m_rects.size(); }
     const Rect& operator[](int i) const { return m_rects[i]; }
 
     // Adds a new rectangle.

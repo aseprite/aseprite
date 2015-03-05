@@ -9,6 +9,7 @@
 #define APP_UI_SKIN_STYLE_H_INCLUDED
 #pragma once
 
+#include "app/ui/skin/background_repeat.h"
 #include "app/ui/skin/skin_part.h"
 #include "base/disable_copying.h"
 #include "css/compound_style.h"
@@ -44,10 +45,12 @@ namespace app {
 
     class BackgroundRule : public Rule {
     public:
-      BackgroundRule() : m_color(gfx::ColorNone) { }
+      BackgroundRule() : m_color(gfx::ColorNone)
+                       , m_repeat(BackgroundRepeat::NO_REPEAT) { }
 
       void setColor(gfx::Color color) { m_color = color; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
+      void setRepeat(BackgroundRepeat repeat) { m_repeat = repeat; }
 
     protected:
       void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
@@ -55,6 +58,7 @@ namespace app {
     private:
       gfx::Color m_color;
       SkinPartPtr m_part;
+      BackgroundRepeat m_repeat;
     };
 
     class TextRule : public Rule {
@@ -65,6 +69,9 @@ namespace app {
       void setAlign(int align) { m_align = align; }
       void setColor(gfx::Color color) { m_color = color; }
       void setPadding(const gfx::Border& padding) { m_padding = padding; }
+
+      int align() const { return m_align; }
+      gfx::Border padding() const { return m_padding; }
 
     protected:
       void onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* text) override;
@@ -81,6 +88,8 @@ namespace app {
 
       void setAlign(int align) { m_align = align; }
       void setPart(const SkinPartPtr& part) { m_part = part; }
+      void setX(int x) { m_x = x; }
+      void setY(int y) { m_y = y; }
 
       SkinPartPtr getPart() { return m_part; }
 
@@ -90,6 +99,7 @@ namespace app {
     private:
       int m_align;
       SkinPartPtr m_part;
+      int m_x, m_y;
     };
 
     class Rules {
@@ -101,7 +111,7 @@ namespace app {
         const gfx::Rect& bounds,
         const char* text);
 
-      gfx::Size preferredSize(const char* text);
+      gfx::Size preferredSize(const char* text, int maxWidth);
 
     private:
       BackgroundRule* m_background;
@@ -129,7 +139,8 @@ namespace app {
 
       gfx::Size preferredSize(
         const char* text,
-        const State& state);
+        const State& state,
+        int maxWidth = 0);
 
       const std::string& id() const { return m_id; }
 

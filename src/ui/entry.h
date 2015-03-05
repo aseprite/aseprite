@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,7 +19,7 @@ namespace ui {
   class Entry : public Widget
   {
   public:
-    Entry(size_t maxsize, const char *format, ...);
+    Entry(std::size_t maxsize, const char *format, ...);
     ~Entry();
 
     bool isPassword() const;
@@ -81,7 +81,7 @@ namespace ui {
     void showEditPopupMenu(const gfx::Point& pt);
 
     Timer m_timer;
-    size_t m_maxsize;
+    std::size_t m_maxsize;
     int m_caret;
     int m_scroll;
     int m_select;

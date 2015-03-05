@@ -312,7 +312,7 @@ void FileList::onPaint(ui::PaintEvent& ev)
   she::Surface* thumbnail = NULL;
   int thumbnail_y = 0;
 
-  g->fillRect(theme->getColor(ThemeColor::Background), bounds);
+  g->fillRect(theme->colors.background(), bounds);
 
   // rows
   for (FileItemList::iterator
@@ -321,18 +321,18 @@ void FileList::onPaint(ui::PaintEvent& ev)
     gfx::Size itemSize = getFileItemSize(fi);
 
     if (fi == m_selected) {
-      fgcolor = theme->getColor(ThemeColor::FileListSelectedRowText);
-      bgcolor = theme->getColor(ThemeColor::FileListSelectedRowFace);
+      fgcolor = theme->colors.filelistSelectedRowText();
+      bgcolor = theme->colors.filelistSelectedRowFace();
     }
     else {
-      bgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowFace):
-                          theme->getColor(ThemeColor::FileListOddRowFace);
+      bgcolor = evenRow ? theme->colors.filelistEvenRowFace():
+                          theme->colors.filelistOddRowFace();
 
       if (fi->isFolder() && !fi->isBrowsable())
-        fgcolor = theme->getColor(ThemeColor::FileListDisabledRowText);
+        fgcolor = theme->colors.filelistDisabledRowText();
       else
-        fgcolor = evenRow ? theme->getColor(ThemeColor::FileListEvenRowText):
-                            theme->getColor(ThemeColor::FileListOddRowText);
+        fgcolor = evenRow ? theme->colors.filelistEvenRowText():
+                            theme->colors.filelistOddRowText();
     }
 
     x = bounds.x+2*guiscale();

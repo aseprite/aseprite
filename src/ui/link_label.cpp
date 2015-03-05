@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -41,7 +41,7 @@ bool LinkLabel::onProcessMessage(Message* msg)
 
     case kSetCursorMessage:
       // TODO theme stuff
-      if (isEnabled()) {
+      if (isEnabled() && hasMouseOver()) {
         set_mouse_cursor(kHandCursor);
         return true;
       }
@@ -49,16 +49,35 @@ bool LinkLabel::onProcessMessage(Message* msg)
 
     case kMouseEnterMessage:
     case kMouseLeaveMessage:
-      // TODO theme stuff
-      if (isEnabled())
-        invalidate();
+      if (isEnabled()) {
+        if (hasCapture())
+          setSelected(msg->type() == kMouseEnterMessage);
+
+        invalidate();           // TODO theme specific
+      }
+      break;
+
+    case kMouseMoveMessage:
+      if (isEnabled() && hasCapture())
+        setSelected(hasMouseOver());
+      break;
+
+    case kMouseDownMessage:
+      if (isEnabled()) {
+        captureMouse();
+        setSelected(true);
+      }
       break;
 
     case kMouseUpMessage:
-      if (isEnabled()) {
-        if (!m_url.empty())
-          base::launcher::open_url(m_url);
-        Click();
+      if (hasCapture()) {
+        releaseMouse();
+
+        setSelected(false);
+        invalidate();           // TODO theme specific
+
+        if (hasMouseOver())
+          onClick();
       }
       break;
   }
@@ -69,6 +88,14 @@ bool LinkLabel::onProcessMessage(Message* msg)
 void LinkLabel::onPaint(PaintEvent& ev)
 {
   getTheme()->paintLinkLabel(ev);
+}
+
+void LinkLabel::onClick()
+{
+  if (!m_url.empty())
+    base::launcher::open_url(m_url);
+
+  Click();
 }
 
 } // namespace ui

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,16 +21,6 @@ Label::Label(const std::string& text)
   setAlign(JI_LEFT | JI_MIDDLE);
   setText(text);
   initTheme();
-}
-
-gfx::Color Label::getTextColor() const
-{
-  return m_textColor;
-}
-
-void Label::setTextColor(gfx::Color color)
-{
-  m_textColor = color;
 }
 
 void Label::onPreferredSize(PreferredSizeEvent& ev)

@@ -44,7 +44,26 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
       if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
-      g->drawRgbaSurface(m_part->getBitmap(0), bounds.x, bounds.y);
+      she::Surface* bmp = m_part->getBitmap(0);
+
+      if (m_repeat == BackgroundRepeat::NO_REPEAT) {
+        g->drawRgbaSurface(bmp, bounds.x, bounds.y);
+      }
+      else {
+        ui::IntersectClip clip(g, bounds);
+        if (!clip)
+          return;
+
+        for (int y=bounds.y; y<bounds.y2(); y+=bmp->height()) {
+          for (int x=bounds.x; x<bounds.x2(); x+=bmp->width()) {
+            g->drawRgbaSurface(bmp, x, y);
+            if (m_repeat == BackgroundRepeat::REPEAT_Y)
+              break;
+          }
+          if (m_repeat == BackgroundRepeat::REPEAT_X)
+            break;
+        }
+      }
     }
     else if (m_part->size() == 8) {
       theme->draw_bounds_nw(g, bounds, m_part, m_color);
@@ -62,7 +81,7 @@ void TextRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   if (text) {
     g->drawAlignedUIString(text,
       (gfx::is_transparent(m_color) ?
-        theme->getColor(ThemeColor::Text):
+        theme->colors.text():
         m_color),
       gfx::ColorNone,
       gfx::Rect(bounds).shrink(m_padding), m_align);
@@ -88,6 +107,9 @@ void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   else
     y = bounds.y;
 
+  x += m_x;
+  y += m_y;
+
   g->drawRgbaSurface(bmp, x, y);
 }
 
@@ -98,8 +120,11 @@ Rules::Rules(const css::Query& query) :
 {
   css::Value backgroundColor = query[StyleSheet::backgroundColorRule()];
   css::Value backgroundPart = query[StyleSheet::backgroundPartRule()];
+  css::Value backgroundRepeat = query[StyleSheet::backgroundRepeatRule()];
   css::Value iconAlign = query[StyleSheet::iconAlignRule()];
   css::Value iconPart = query[StyleSheet::iconPartRule()];
+  css::Value iconX = query[StyleSheet::iconXRule()];
+  css::Value iconY = query[StyleSheet::iconYRule()];
   css::Value textAlign = query[StyleSheet::textAlignRule()];
   css::Value textColor = query[StyleSheet::textColorRule()];
   css::Value paddingLeft = query[StyleSheet::paddingLeftRule()];
@@ -109,17 +134,23 @@ Rules::Rules(const css::Query& query) :
   css::Value none;
 
   if (backgroundColor != none
-    || backgroundPart != none) {
+    || backgroundPart != none
+    || backgroundRepeat != none) {
     m_background = new BackgroundRule();
     m_background->setColor(StyleSheet::convertColor(backgroundColor));
     m_background->setPart(StyleSheet::convertPart(backgroundPart));
+    m_background->setRepeat(StyleSheet::convertRepeat(backgroundRepeat));
   }
 
   if (iconAlign != none
-    || iconPart != none) {
+    || iconPart != none
+    || iconX != none
+    || iconY != none) {
     m_icon = new IconRule();
     m_icon->setAlign((int)iconAlign.number());
     m_icon->setPart(StyleSheet::convertPart(iconPart));
+    m_icon->setX((int)iconX.number()*ui::guiscale());
+    m_icon->setY((int)iconY.number()*ui::guiscale());
   }
 
   if (textAlign != none
@@ -155,7 +186,7 @@ void Rules::paint(ui::Graphics* g,
   if (m_text) m_text->paint(g, bounds, text);
 }
 
-gfx::Size Rules::preferredSize(const char* text)
+gfx::Size Rules::preferredSize(const char* text, int maxWidth)
 {
   gfx::Size sz(0, 0);
   if (m_icon) {
@@ -164,10 +195,13 @@ gfx::Size Rules::preferredSize(const char* text)
   }
   if (m_text && text) {
     ui::ScreenGraphics g;
-    gfx::Size textSize = g.measureUIString(text);
-    //if (sz.w > 0) sz.w += 2;    // TODO text separation
+    gfx::Size textSize = g.fitString(text, maxWidth, m_text->align());
+    if (sz.w > 0) sz.w += 2*ui::guiscale();    // TODO text separation
     sz.w += textSize.w;
     sz.h = MAX(sz.h, textSize.h);
+
+    sz.w += m_text->padding().left() + m_text->padding().right();
+    sz.h += m_text->padding().top() + m_text->padding().bottom();
   }
   return sz;
 }
@@ -212,9 +246,10 @@ void Style::paint(ui::Graphics* g,
 
 gfx::Size Style::preferredSize(
   const char* text,
-  const State& state)
+  const State& state,
+  int maxWidth)
 {
-  return getRulesFromState(state)->preferredSize(text);
+  return getRulesFromState(state)->preferredSize(text, maxWidth);
 }
 
 } // namespace skin

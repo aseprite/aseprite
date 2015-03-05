@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,35 +29,32 @@ ListBox::ListBox()
   initTheme();
 }
 
-ListItem* ListBox::getSelectedChild()
+Widget* ListBox::getSelectedChild()
 {
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    ASSERT(dynamic_cast<ListItem*>(*it) != NULL);
+  for (Widget* child : getChildren())
+    if (child->isSelected())
+      return child;
 
-    if (static_cast<ListItem*>(*it)->isSelected())
-      return static_cast<ListItem*>(*it);
-  }
-  return 0;
+  return nullptr;
 }
 
 int ListBox::getSelectedIndex()
 {
   int i = 0;
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    if (static_cast<ListItem*>(*it)->isSelected())
+  for (Widget* child : getChildren()) {
+    if (child->isSelected())
       return i;
+
     i++;
   }
 
   return -1;
 }
 
-void ListBox::selectChild(ListItem* item)
+void ListBox::selectChild(Widget* item)
 {
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    ListItem* child = static_cast<ListItem*>(*it);
-
+  for (Widget* child : getChildren()) {
     if (child->isSelected()) {
       if (item && child == item)
         return;
@@ -99,7 +96,7 @@ void ListBox::selectIndex(int index)
   selectChild(child);
 }
 
-size_t ListBox::getItemsCount() const
+std::size_t ListBox::getItemsCount() const
 {
   return getChildren().size();
 }
@@ -108,7 +105,7 @@ size_t ListBox::getItemsCount() const
 void ListBox::centerScroll()
 {
   View* view = View::getView(this);
-  ListItem* item = getSelectedChild();
+  Widget* item = getSelectedChild();
 
   if (view && item) {
     gfx::Rect vp = view->getViewportBounds();
@@ -131,9 +128,7 @@ void ListBox::sortItems()
   std::sort(widgets.begin(), widgets.end(), &sort_by_text);
 
   // Remove all children and add then again.
-  while (!getChildren().empty())
-    removeChild(getChildren().back());
-
+  removeAllChildren();
   for (Widget* child : widgets)
     addChild(child);
 }

@@ -11,14 +11,20 @@
 
 #include "app/ui/devconsole_view.h"
 
+#include "app/app_menus.h"
+#include "app/ui/skin/skin_style_property.h"
+#include "app/ui/skin/skin_theme.h"
+#include "app/ui/workspace.h"
 #include "ui/entry.h"
 #include "ui/message.h"
+#include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
 
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
 class DevConsoleView::CommmandEntry : public Entry {
 public:
@@ -59,16 +65,20 @@ DevConsoleView::DevConsoleView()
   , m_label(">")
   , m_entry(new CommmandEntry)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
   addChild(&m_view);
   addChild(&m_bottomBox);
 
   m_bottomBox.addChild(&m_label);
   m_bottomBox.addChild(m_entry);
 
+  m_view.setProperty(SkinStylePropertyPtr(
+      new SkinStyleProperty(theme->styles.workspaceView())));
+
   m_view.attachToView(&m_textBox);
   m_view.setExpansive(true);
   m_entry->setExpansive(true);
-
   m_entry->ExecuteCommand.connect(&DevConsoleView::onExecuteCommand, this);
 }
 
@@ -83,6 +93,11 @@ std::string DevConsoleView::getTabText()
   return "Console";
 }
 
+TabIcon DevConsoleView::getTabIcon()
+{
+  return TabIcon::NONE;
+}
+
 WorkspaceView* DevConsoleView::cloneWorkspaceView()
 {
   return new DevConsoleView();
@@ -95,6 +110,21 @@ void DevConsoleView::onWorkspaceViewSelected()
 
 void DevConsoleView::onClonedFrom(WorkspaceView* from)
 {
+}
+
+bool DevConsoleView::onCloseView(Workspace* workspace)
+{
+  workspace->removeView(this);
+  return true;
+}
+
+void DevConsoleView::onTabPopup(Workspace* workspace)
+{
+  Menu* menu = AppMenus::instance()->getTabPopupMenu();
+  if (!menu)
+    return;
+
+  menu->showPopup(ui::get_mouse_position());
 }
 
 bool DevConsoleView::onProcessMessage(Message* msg)

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -32,6 +32,7 @@
 #include <iostream>
 #endif
 
+#include <limits>
 #include <list>
 #include <vector>
 
@@ -1372,7 +1373,7 @@ static bool move_focus(Manager* manager, Message* msg)
           }
 
           // Check if the new widget to put the focus is not in the wrong way.
-          if ((*cmp) (list[c], x, y) < INT_MAX)
+          if ((*cmp) (list[c], x, y) < std::numeric_limits<int>::max())
             focus = list[c];
         }
         // If only there are one widget, put the focus in this
@@ -1439,7 +1440,7 @@ static int cmp_left(Widget* widget, int x, int y)
 {
   int z = x - (widget->getBounds().x+widget->getBounds().w/2);
   if (z <= 0)
-    return INT_MAX;
+    return std::numeric_limits<int>::max();
   return z + ABS((widget->getBounds().y+widget->getBounds().h/2) - y) * 8;
 }
 
@@ -1447,7 +1448,7 @@ static int cmp_right(Widget* widget, int x, int y)
 {
   int z = (widget->getBounds().x+widget->getBounds().w/2) - x;
   if (z <= 0)
-    return INT_MAX;
+    return std::numeric_limits<int>::max();
   return z + ABS((widget->getBounds().y+widget->getBounds().h/2) - y) * 8;
 }
 
@@ -1455,7 +1456,7 @@ static int cmp_up(Widget* widget, int x, int y)
 {
   int z = y - (widget->getBounds().y+widget->getBounds().h/2);
   if (z <= 0)
-    return INT_MAX;
+    return std::numeric_limits<int>::max();
   return z + ABS((widget->getBounds().x+widget->getBounds().w/2) - x) * 8;
 }
 
@@ -1463,7 +1464,7 @@ static int cmp_down(Widget* widget, int x, int y)
 {
   int z = (widget->getBounds().y+widget->getBounds().h/2) - y;
   if (z <= 0)
-    return INT_MAX;
+    return std::numeric_limits<int>::max();
   return z + ABS((widget->getBounds().x+widget->getBounds().w/2) - x) * 8;
 }
 

@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -23,6 +23,9 @@ namespace base {
 
   template<> int convert_to(const std::string& from);
   template<> std::string convert_to(const int& from);
+
+  template<> double convert_to(const std::string& from);
+  template<> std::string convert_to(const double& from);
 
   template<> Sha1 convert_to(const std::string& from);
   template<> std::string convert_to(const Sha1& from);

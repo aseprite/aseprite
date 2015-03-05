@@ -19,7 +19,7 @@ namespace app {
 
   class StyledButton : public ui::Button {
   public:
-    StyledButton(const std::string& styleName);
+    StyledButton(skin::Style* style);
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

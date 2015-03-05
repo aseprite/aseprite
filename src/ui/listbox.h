@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,13 +19,13 @@ namespace ui {
   public:
     ListBox();
 
-    ListItem* getSelectedChild();
+    Widget* getSelectedChild();
     int getSelectedIndex();
 
-    void selectChild(ListItem* item);
+    void selectChild(Widget* item);
     void selectIndex(int index);
 
-    size_t getItemsCount() const;
+    std::size_t getItemsCount() const;
 
     void centerScroll();
     void sortItems();

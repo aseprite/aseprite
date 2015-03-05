@@ -424,8 +424,8 @@ void Sprite::setFrameDuration(frame_t frame, int msecs)
 void Sprite::setFrameRangeDuration(frame_t from, frame_t to, int msecs)
 {
   std::fill(
-    m_frlens.begin()+(size_t)from,
-    m_frlens.begin()+(size_t)to+1, MID(1, msecs, 65535));
+    m_frlens.begin()+(std::size_t)from,
+    m_frlens.begin()+(std::size_t)to+1, MID(1, msecs, 65535));
 }
 
 void Sprite::setDurationForAllFrames(int msecs)

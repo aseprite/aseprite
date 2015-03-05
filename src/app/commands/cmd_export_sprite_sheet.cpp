@@ -63,7 +63,7 @@ namespace {
     int nframes = sprite->totalFrames();
     int framew = sprite->width();
     int frameh = sprite->height();
-    Fit result(framew*nframes, frameh, nframes, INT_MAX);
+    Fit result(framew*nframes, frameh, nframes, std::numeric_limits<int>::max());
     int w, h;
 
     for (w=2; w < framew; w*=2)

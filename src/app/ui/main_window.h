@@ -12,25 +12,33 @@
 #include "app/ui/tabs.h"
 #include "ui/window.h"
 
+#include "generated_main_window.h"
+
 namespace ui {
   class Splitter;
 }
 
 namespace app {
 
+#ifdef ENABLE_UPDATER
+  class CheckUpdateDelegate;
+#endif
+
   class ColorBar;
   class ContextBar;
+  class DevConsoleView;
+  class DocumentView;
+  class HomeView;
   class INotificationDelegate;
   class MainMenuBar;
-  class PreviewEditorWindow;
   class Notifications;
-  class StartView;
+  class PreviewEditorWindow;
   class StatusBar;
   class Tabs;
   class Timeline;
   class Workspace;
 
-  class MainWindow : public ui::Window
+  class MainWindow : public app::gen::MainWindow
                    , public TabsDelegate {
   public:
     enum Mode {
@@ -48,10 +56,15 @@ namespace app {
     Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }
     PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
+#ifdef ENABLE_UPDATER
+    CheckUpdateDelegate* getCheckUpdateDelegate();
+#endif
 
     void start();
     void reloadMenus();
     void showNotification(INotificationDelegate* del);
+    void showHome();
+    void showDevConsole();
 
     Mode getMode() const { return m_mode; }
     void setMode(Mode mode);
@@ -61,8 +74,11 @@ namespace app {
     void popTimeline();
 
     // TabsDelegate implementation.
-    void clickTab(Tabs* tabs, TabView* tabView, ui::MouseButtons buttons);
-    void mouseOverTab(Tabs* tabs, TabView* tabView);
+    void onSelectTab(Tabs* tabs, TabView* tabView) override;
+    void onCloseTab(Tabs* tabs, TabView* tabView) override;
+    void onContextMenuTab(Tabs* tabs, TabView* tabView) override;
+    void onMouseOverTab(Tabs* tabs, TabView* tabView) override;
+    bool onIsModified(Tabs* tabs, TabView* tabView) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -70,21 +86,22 @@ namespace app {
     void onActiveViewChange();
 
   private:
+    DocumentView* getDocView();
+    HomeView* getHomeView();
+    void configureWorkspaceLayout();
+
     MainMenuBar* m_menuBar;
     ContextBar* m_contextBar;
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
-    ui::Splitter* m_colorBarSplitter;
-    ui::Splitter* m_timelineSplitter;
     ui::Widget* m_toolBar;
     Tabs* m_tabsBar;
-    double m_lastSplitterPos;
-    double m_lastTimelineSplitterPos;
     Mode m_mode;
     Timeline* m_timeline;
     Workspace* m_workspace;
     PreviewEditorWindow* m_previewEditor;
-    StartView* m_startView;
+    HomeView* m_homeView;
+    DevConsoleView* m_devConsoleView;
     Notifications* m_notifications;
   };
 

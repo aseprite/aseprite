@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include "base/exception.h"
 
 #include <cstdio>
+#include <cstring>
 #include <cstdarg>
 
 namespace base {
@@ -24,7 +25,7 @@ Exception::Exception() throw()
 Exception::Exception(const char* format, ...) throw()
 {
   try {
-    if (!strchr(format, '%')) {
+    if (!std::strchr(format, '%')) {
       m_msg = format;
     }
     else {
@@ -32,7 +33,7 @@ Exception::Exception(const char* format, ...) throw()
       va_start(ap, format);
 
       char buf[1024];           // TODO warning buffer overflow
-      vsprintf(buf, format, ap);
+      std::vsprintf(buf, format, ap);
       m_msg = buf;
 
       va_end(ap);

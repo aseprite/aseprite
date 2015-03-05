@@ -1,5 +1,5 @@
 # Aseprite Base Library
-# Copyright (c) 2001-2014 David Capello
+# Copyright (c) 2001-2015 David Capello
 
 include(CheckCSourceCompiles)
 include(CheckCXXSourceCompiles)
@@ -65,6 +65,7 @@ set(BASE_SOURCES
   system_console.cpp
   temp_dir.cpp
   thread.cpp
+  time.cpp
   trim_string.cpp
   version.cpp)
 

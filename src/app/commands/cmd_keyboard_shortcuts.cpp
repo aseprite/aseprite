@@ -140,12 +140,12 @@ private:
     gfx::Color fg, bg;
 
     if (isSelected()) {
-      fg = theme->getColor(ThemeColor::ListItemSelectedText);
-      bg = theme->getColor(ThemeColor::ListItemSelectedFace);
+      fg = theme->colors.listitemSelectedText();
+      bg = theme->colors.listitemSelectedFace();
     }
     else {
-      fg = theme->getColor(ThemeColor::ListItemNormalText);
-      bg = theme->getColor(ThemeColor::ListItemNormalFace);
+      fg = theme->colors.listitemNormalText();
+      bg = theme->colors.listitemNormalFace();
     }
 
     g->fillRect(bg, bounds);

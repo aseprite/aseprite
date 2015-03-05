@@ -17,6 +17,8 @@
 #include "ui/manager.h"
 #include "ui/theme.h"
 
+#include "generated_skin.h"
+
 #include <map>
 #include <string>
 
@@ -33,81 +35,17 @@ namespace she {
 namespace app {
   namespace skin {
 
-    namespace ThemeColor {
-      enum Type {
-        Text,
-        Disabled,
-        Face,
-        HotFace,
-        Selected,
-        Background,
-        TextBoxText,
-        TextBoxFace,
-        EntrySuffix,
-        LinkText,
-        ButtonNormalText,
-        ButtonNormalFace,
-        ButtonHotText,
-        ButtonHotFace,
-        ButtonSelectedText,
-        ButtonSelectedFace,
-        CheckHotFace,
-        CheckFocusFace,
-        RadioHotFace,
-        RadioFocusFace,
-        MenuItemNormalText,
-        MenuItemNormalFace,
-        MenuItemHotText,
-        MenuItemHotFace,
-        MenuItemHighlightText,
-        MenuItemHighlightFace,
-        EditorFace,
-        EditorSpriteBorder,
-        EditorSpriteBottomBorder,
-        ListItemNormalText,
-        ListItemNormalFace,
-        ListItemSelectedText,
-        ListItemSelectedFace,
-        SliderEmptyText,
-        SliderEmptyFace,
-        SliderFullText,
-        SliderFullFace,
-        TabNormalText,
-        TabNormalFace,
-        TabSelectedText,
-        TabSelectedFace,
-        SplitterNormalFace,
-        ScrollBarBgFace,
-        ScrollBarThumbFace,
-        PopupWindowBorder,
-        TooltipText,
-        TooltipFace,
-        FileListEvenRowText,
-        FileListEvenRowFace,
-        FileListOddRowText,
-        FileListOddRowFace,
-        FileListSelectedRowText,
-        FileListSelectedRowFace,
-        FileListDisabledRowText,
-        Workspace,
-        MaxColors
-      };
-    }
-
-    extern const char* kWindowFaceColorId;
-
     // This is the GUI theme used by Aseprite (which use images from
     // data/skins directory).
-    class SkinTheme : public ui::Theme {
+    class SkinTheme : public ui::Theme
+                    , public app::gen::SkinFile<SkinTheme> {
     public:
       static const char* kThemeCloseButtonId;
 
+      static SkinTheme* instance();
+
       SkinTheme();
       ~SkinTheme();
-
-      gfx::Color getColor(ThemeColor::Type k) const {
-        return m_colors[k];
-      }
 
       she::Font* getMiniFont() const { return m_minifont; }
 
@@ -170,7 +108,12 @@ namespace app {
         return m_parts_by_id[id];
       }
 
+      int getDimensionById(const std::string& id) {
+        return m_dimensions_by_id[id] * ui::guiscale();
+      }
+
       gfx::Color getColorById(const std::string& id) {
+        ASSERT(m_colors_by_id.find(id) != m_colors_by_id.end());
         return m_colors_by_id[id];
       }
 
@@ -203,15 +146,11 @@ namespace app {
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, she::Surface*> m_toolicon;
       std::map<std::string, gfx::Color> m_colors_by_id;
+      std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;
-      std::vector<gfx::Color> m_colors;
       StyleSheet m_stylesheet;
       she::Font* m_minifont;
     };
-
-    inline Style* get_style(const std::string& id) {
-      return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getStyle(id);
-    }
 
     inline SkinPartPtr get_part_by_id(const std::string& id) {
       return static_cast<SkinTheme*>(ui::Manager::getDefault()->getTheme())->getPartById(id);

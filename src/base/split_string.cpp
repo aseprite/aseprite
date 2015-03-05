@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -38,10 +38,10 @@ void base::split_string(const std::string& string,
                         std::vector<std::string>& parts,
                         const std::string& separators)
 {
-  size_t elements = 1 + std::count_if(string.begin(), string.end(), is_separator(&separators));
+  std::size_t elements = 1 + std::count_if(string.begin(), string.end(), is_separator(&separators));
   parts.reserve(elements);
 
-  size_t beg = 0, end;
+  std::size_t beg = 0, end;
   while (true) {
     end = string.find_first_of(separators, beg);
     if (end != std::string::npos) {

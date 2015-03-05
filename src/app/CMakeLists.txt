@@ -1,9 +1,7 @@
 # Aseprite
 # Copyright (C) 2001-2015  David Capello
 
-######################################################################
-# Generate source files from widget XML files
-
+# Generate a ui::Widget for each widget in a XML file
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
@@ -19,7 +17,7 @@ foreach(widget_file ${widget_files})
   list(APPEND generated_files ${output_fn})
 endforeach()
 
-# pref.h and pref.cpp
+# Generate preference types from data/pref.xml
 set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
 
 set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.h)
@@ -37,6 +35,17 @@ add_custom_command(
   COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-cpp > ${output_fn}
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   MAIN_DEPENDENCY ${pref_xml}
+  DEPENDS gen)
+list(APPEND generated_files ${output_fn})
+
+# Generate generated_skin.h from data/skins/default/skin.xml
+set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_skin.h)
+add_custom_command(
+  OUTPUT ${output_fn}
+  COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${skin_xml} --skin > ${output_fn}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  MAIN_DEPENDENCY ${skin_xml}
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
@@ -148,6 +157,7 @@ add_library(app-lib
   commands/cmd_goto_layer.cpp
   commands/cmd_goto_tab.cpp
   commands/cmd_grid.cpp
+  commands/cmd_home.cpp
   commands/cmd_import_sprite_sheet.cpp
   commands/cmd_invert_mask.cpp
   commands/cmd_keyboard_shortcuts.cpp
@@ -190,7 +200,6 @@ add_library(app-lib
   commands/cmd_scroll.cpp
   commands/cmd_set_loop_section.cpp
   commands/cmd_set_palette.cpp
-  commands/cmd_sprite_editor.cpp
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
@@ -257,6 +266,7 @@ add_library(app-lib
   pref/preferences.cpp
   project.cpp
   recent_files.cpp
+  res/http_loader.cpp
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
@@ -303,32 +313,34 @@ add_library(app-lib
   ui/file_list.cpp
   ui/file_selector.cpp
   ui/hex_color_entry.cpp
+  ui/home_view.cpp
   ui/keyboard_shortcuts.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp
+  ui/news_listbox.cpp
   ui/notifications.cpp
   ui/palette_popup.cpp
   ui/palette_view.cpp
   ui/palettes_listbox.cpp
   ui/popup_window_pin.cpp
   ui/preview_editor.cpp
+  ui/recent_listbox.cpp
   ui/resources_listbox.cpp
   ui/select_accelerator.cpp
   ui/skin/button_icon_impl.cpp
   ui/skin/skin_part.cpp
   ui/skin/skin_property.cpp
   ui/skin/skin_slider_property.cpp
+  ui/skin/skin_style_property.cpp
   ui/skin/skin_theme.cpp
   ui/skin/style.cpp
   ui/skin/style_sheet.cpp
-  ui/start_view.cpp
   ui/status_bar.cpp
   ui/styled_button.cpp
   ui/tabs.cpp
   ui/timeline.cpp
   ui/toolbar.cpp
   ui/workspace.cpp
-  ui/workspace_part.cpp
   ui_context.cpp
   util/autocrop.cpp
   util/boundary.cpp

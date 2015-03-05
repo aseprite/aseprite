@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,7 +45,7 @@ void Transformation::transformBox(Corners& corners) const
   // critical at this point.
 
   corners = m_bounds;
-  for (size_t c=0; c<corners.size(); ++c)
+  for (std::size_t c=0; c<corners.size(); ++c)
     corners[c] = Transformation::rotatePoint(corners[c], pivot_f, m_angle);
 }
 

@@ -4,12 +4,13 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#include "gen/ui_class.h"
+
 #include "base/exception.h"
 #include "base/file_handle.h"
 #include "base/path.h"
 #include "base/string.h"
 #include "gen/common.h"
-#include "gen/ui_class.h"
 
 #include <iostream>
 #include <vector>
@@ -62,6 +63,7 @@ static std::string convert_type(const std::string& name)
   if (name == "panel") return "ui::Panel";
   if (name == "radio") return "ui::RadioButton";
   if (name == "slider") return "ui::Slider";
+  if (name == "splitter") return "ui::Splitter";
   if (name == "vbox") return "ui::VBox";
   if (name == "view") return "ui::View";
   if (name == "window") return "ui::Window";
@@ -107,8 +109,13 @@ void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::str
 
   // Special ctor for base class
   if (widgetType == "ui::Window") {
-    std::cout
-      << " : ui::Window(ui::Window::WithTitleBar)";
+    const char* desktop = elem->Attribute("desktop");
+    if (desktop && std::string(desktop) == "true")
+      std::cout
+        << " : ui::Window(ui::Window::DesktopWindow)";
+    else
+      std::cout
+        << " : ui::Window(ui::Window::WithTitleBar)";
   }
 
   std::cout

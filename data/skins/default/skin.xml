@@ -3,6 +3,15 @@
       author="Ilija Melentijevic &amp; David Capello"
       url="http://ilkke.blogspot.com/">
 
+  <dimensions>
+    <dim id="tabs_width" value="80" />
+    <dim id="tabs_height" value="17" />
+    <dim id="tabs_empty_height" value="5" />
+    <dim id="tabs_close_icon_width" value="14" />
+    <dim id="tabs_close_icon_height" value="12" />
+    <dim id="tabs_icon_width" value="10" />
+  </dimensions>
+
   <colors>
     <color id="text" value="#000000" />
     <color id="disabled" value="#968275" />
@@ -15,7 +24,8 @@
     <color id="textbox_text" value="#000000" />
     <color id="textbox_face" value="#ffffff" />
     <color id="entry_suffix" value="#c6c6c6" />
-    <color id="link_text" value="#0000ff" />
+    <color id="link_text" value="#2c4c91" />
+    <color id="link_hover" value="#ff5555" />
     <color id="button_normal_text" value="#000000" />
     <color id="button_normal_face" value="#c6c6c6" />
     <color id="button_hot_text" value="#000000" />
@@ -48,8 +58,8 @@
     <color id="slider_full_face" value="#7d929e" />
     <color id="tab_normal_text" value="#000000" />
     <color id="tab_normal_face" value="#c6c6c6" />
-    <color id="tab_selected_text" value="#ffffff" />
-    <color id="tab_selected_face" value="#7d929e" />
+    <color id="tab_active_text" value="#ffffff" />
+    <color id="tab_active_face" value="#7d929e" />
     <color id="splitter_normal_face" value="#7d929e" />
     <color id="scrollbar_bg_face" value="#7d929e" />
     <color id="scrollbar_thumb_face" value="#c6c6c6" />
@@ -64,6 +74,9 @@
     <color id="filelist_selected_row_face" value="#ff5555" />
     <color id="filelist_disabled_row_text" value="#ffc8c8" />
     <color id="workspace" value="#7d929e" />
+    <color id="workspace_text" value="#655561" />
+    <color id="workspace_link" value="#655561" />
+    <color id="workspace_link_hover" value="#ffff7d" />
     <color id="timeline_normal" value="#c6c6c6" />
     <color id="timeline_normal_text" value="#000000" />
     <color id="timeline_hover" value="#d9d9d9" />
@@ -214,12 +227,20 @@
     <part id="toolbutton_last"                  x="96" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="toolbutton_pushed"                x="112" y="16" w1="3" w2="10" w3="3" h1="3" h2="9" h3="4" />
     <part id="tab_normal"                       x="2" y="112" w1="4" w2="5" w3="5" h1="4" h2="6" h3="2" />
-    <part id="tab_selected"                     x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
-    <part id="tab_bottom_selected"              x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
+    <part id="tab_active"                       x="16" y="112" w1="4" w2="7" w3="5" h1="4" h2="6" h3="2" />
+    <part id="tab_bottom_active"                x="16" y="124" w1="4" w2="7" w3="5" h1="2" h2="1" h3="2" />
     <part id="tab_bottom_normal"                x="2" y="124" w="12" h="5" />
     <part id="tab_filler"                       x="0" y="112" w="2" h="12" />
-    <part id="editor_normal"                    x="32" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
-    <part id="editor_selected"                  x="48" y="112" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
+    <part id="tab_modified_icon_normal"         x="32" y="112" w="5" h="5" />
+    <part id="tab_modified_icon_active"         x="32" y="117" w="5" h="5" />
+    <part id="tab_close_icon_normal"            x="37" y="112" w="5" h="5" />
+    <part id="tab_close_icon_active"            x="37" y="117" w="5" h="5" />
+    <part id="tab_icon_bg_clicked"              x="42" y="112" w="14" h="12" />
+    <part id="tab_icon_bg_hover"                x="56" y="112" w="14" h="12" />
+    <part id="tab_home_icon_normal"             x="32" y="240" w="7" h="8" />
+    <part id="tab_home_icon_active"             x="40" y="240" w="7" h="8" />
+    <part id="editor_normal"                    x="40" y="96" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
+    <part id="editor_selected"                  x="56" y="96" w1="3" w2="10" w3="3" h1="3" h2="10" h3="3" />
     <part id="colorbar_0"                       x="0" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="colorbar_1"                       x="16" y="192" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
     <part id="colorbar_2"                       x="0" y="208" w1="5" w2="6" w3="5" h1="5" h2="6" h3="5" />
@@ -307,15 +328,15 @@
     <part id="timeline_empty_frame_active"      x="252" y="60" w="12" h="12" />
     <part id="timeline_keyframe_normal"         x="240" y="72" w="12" h="12" />
     <part id="timeline_keyframe_active"         x="252" y="72" w="12" h="12" />
-    <part id="timeline_fromleft_normal"         x="240" y="84" w="12" h="12" />
-    <part id="timeline_fromleft_active"         x="252" y="84" w="12" h="12" />
-    <part id="timeline_fromright_normal"        x="240" y="96" w="12" h="12" />
-    <part id="timeline_fromright_active"        x="252" y="96" w="12" h="12" />
-    <part id="timeline_fromboth_normal"         x="240" y="108" w="12" h="12" />
-    <part id="timeline_fromboth_active"         x="252" y="108" w="12" h="12" />
-    <part id="timeline_leftlink_active"         x="264" y="84" w="12" h="12" />
-    <part id="timeline_bothlinks_active"        x="264" y="96" w="12" h="12" />
-    <part id="timeline_rightlink_active"        x="264" y="108" w="12" h="12" />
+    <part id="timeline_from_left_normal"        x="240" y="84" w="12" h="12" />
+    <part id="timeline_from_left_active"        x="252" y="84" w="12" h="12" />
+    <part id="timeline_from_right_normal"       x="240" y="96" w="12" h="12" />
+    <part id="timeline_from_right_active"       x="252" y="96" w="12" h="12" />
+    <part id="timeline_from_both_normal"        x="240" y="108" w="12" h="12" />
+    <part id="timeline_from_both_active"        x="252" y="108" w="12" h="12" />
+    <part id="timeline_left_link_active"        x="264" y="84" w="12" h="12" />
+    <part id="timeline_both_links_active"       x="264" y="96" w="12" h="12" />
+    <part id="timeline_right_link_active"       x="264" y="108" w="12" h="12" />
     <part id="timeline_gear"                    x="264" y="12" w="12" h="12" />
     <part id="timeline_gear_active"             x="264" y="24" w="12" h="12" />
     <part id="timeline_onionskin"               x="264" y="36" w="12" h="12" />
@@ -354,6 +375,27 @@
   </parts>
 
   <stylesheet>
+
+    <!-- label -->
+    <style id="label">
+      <text color="text" />
+    </style>
+
+    <!-- link -->
+    <style id="link">
+      <text color="link_text" />
+    </style>
+    <style id="link:hover">
+      <text color="link_hover" />
+    </style>
+
+    <!-- view -->
+    <style id="view">
+      <background part="sunken_normal" />
+    </style>
+    <style id="view:active">
+      <background part="sunken_focused" />
+    </style>
 
     <!-- window -->
     <style id="window">
@@ -485,35 +527,35 @@
       <icon part="timeline_keyframe_active" />
     </style>
 
-    <style id="timeline_fromleft">
-      <icon part="timeline_fromleft_normal" />
+    <style id="timeline_from_left">
+      <icon part="timeline_from_left_normal" />
     </style>
-    <style id="timeline_fromleft:active">
-      <icon part="timeline_fromleft_active" />
-    </style>
-
-    <style id="timeline_fromright">
-      <icon part="timeline_fromright_normal" />
-    </style>
-    <style id="timeline_fromright:active">
-      <icon part="timeline_fromright_active" />
+    <style id="timeline_from_left:active">
+      <icon part="timeline_from_left_active" />
     </style>
 
-    <style id="timeline_fromboth">
-      <icon part="timeline_fromboth_normal" />
+    <style id="timeline_from_right">
+      <icon part="timeline_from_right_normal" />
     </style>
-    <style id="timeline_fromboth:active">
-      <icon part="timeline_fromboth_active" />
+    <style id="timeline_from_right:active">
+      <icon part="timeline_from_right_active" />
     </style>
 
-    <style id="timeline_leftlink">
-      <icon part="timeline_leftlink_active" />
+    <style id="timeline_from_both">
+      <icon part="timeline_from_both_normal" />
     </style>
-    <style id="timeline_rightlink">
-      <icon part="timeline_rightlink_active" />
+    <style id="timeline_from_both:active">
+      <icon part="timeline_from_both_active" />
     </style>
-    <style id="timeline_bothlinks">
-      <icon part="timeline_bothlinks_active" />
+
+    <style id="timeline_left_link">
+      <icon part="timeline_left_link_active" />
+    </style>
+    <style id="timeline_right_link">
+      <icon part="timeline_right_link_active" />
+    </style>
+    <style id="timeline_both_links">
+      <icon part="timeline_both_links_active" />
     </style>
 
     <!-- timeline_gear -->
@@ -600,6 +642,156 @@
     </style>
     <style id="warning_box:hover">
       <background color="hot_face" />
+    </style>
+
+    <!-- tab -->
+    <style id="tab">
+      <background part="tab_normal" color="tab_normal_face" repeat="repeat-x" />
+      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
+    </style>
+    <style id="tab:active">
+      <background part="tab_active" color="tab_active_face" />
+      <text color="tab_active_text" />
+    </style>
+
+    <!-- tab_text -->
+    <style id="tab_text">
+      <text color="tab_normal_text" align="left" valign="middle" padding-left="4" padding-top="2" />
+    </style>
+    <style id="tab_text:active">
+      <text color="tab_active_text" />
+    </style>
+
+    <!-- tab_bottom -->
+    <style id="tab_bottom">
+      <background part="tab_bottom_normal" color="tab_normal_face" repeat="repeat-x" />
+    </style>
+    <style id="tab_bottom:active">
+      <background part="tab_bottom_active" color="tab_active_face" />
+    </style>
+
+    <!-- tab_filler -->
+    <style id="tab_filler">
+      <background part="tab_filler" color="window_face" repeat="repeat-x" />
+    </style>
+
+    <!-- tab_icon -->
+    <style id="tab_icon">
+      <icon align="left" valign="middle" x="3" />
+    </style>
+    <style id="tab_icon:hover">
+      <background part="tab_icon_bg_hover" />
+    </style>
+    <style id="tab_icon:clicked">
+      <background part="tab_icon_bg_clicked" />
+    </style>
+
+    <!-- tab_close_icon -->
+    <style id="tab_close_icon" base="tab_icon">
+      <icon part="tab_close_icon_normal" />
+    </style>
+    <style id="tab_close_icon:hover">
+      <icon part="tab_close_icon_normal" />
+    </style>
+    <style id="tab_close_icon:active">
+      <icon part="tab_close_icon_active" />
+    </style>
+    <style id="tab_close_icon:clicked">
+      <icon part="tab_close_icon_normal" />
+    </style>
+
+    <!-- tab_modified_icon -->
+    <style id="tab_modified_icon" base="tab_icon">
+      <icon part="tab_modified_icon_normal" />
+    </style>
+    <style id="tab_modified_icon:hover">
+      <icon part="tab_modified_icon_normal" />
+    </style>
+    <style id="tab_modified_icon:active">
+      <icon part="tab_modified_icon_active" />
+    </style>
+    <style id="tab_modified_icon:clicked">
+      <icon part="tab_modified_icon_normal" />
+    </style>
+
+    <!-- tab_home -->
+    <style id="tab_home">
+      <icon part="tab_home_icon_normal" align="left" valign="middle" x="4" y="1" />
+    </style>
+    <style id="tab_home:active">
+      <icon part="tab_home_icon_active" />
+    </style>
+
+    <!-- workspace_label -->
+    <style id="workspace_label">
+      <text color="workspace_text" />
+    </style>
+
+    <!-- workspace_link -->
+    <style id="workspace_link">
+      <text color="workspace_link" valign="middle" />
+    </style>
+    <style id="workspace_link:hover">
+      <text color="workspace_link_hover" />
+    </style>
+
+    <!-- workspace_link -->
+    <style id="workspace_update_link" base="workspace_link">
+      <background part="button_normal" color="button_normal_face" />
+      <icon part="warning_box" align="right" x="-4" y="4" />
+      <text padding-left="4" />
+    </style>
+    <style id="workspace_update_link:hover">
+      <background part="button_hot" color="button_hot_face" />
+      <text color="button_hot_text" />
+    </style>
+    <style id="workspace_update_link:clicked">
+      <background part="button_selected" color="button_selected_face" />
+      <text color="button_selected_text" />
+    </style>
+
+    <!-- workspace_view -->
+    <style id="workspace_view">
+      <background part="editor_normal" />
+    </style>
+    <style id="workspace_view:active">
+      <background part="editor_selected" />
+    </style>
+
+    <!-- recent_file -->
+    <style id="recent_file">
+      <background color="background" />
+      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="1" />
+    </style>
+    <style id="recent_file:hover">
+      <background color="menuitem_hot_face" />
+    </style>
+    <style id="recent_file:active">
+      <background color="listitem_selected_face" />
+      <text color="listitem_selected_text" />
+    </style>
+
+    <!-- recent_file_detail -->
+    <style id="recent_file_detail" base="recent_file">
+      <text color="disabled" valign="top" wordwrap="true" />
+    </style>
+
+    <!-- news_item -->
+    <style id="news_item">
+      <background color="background" />
+      <text color="text" valign="middle" padding-left="2" padding-right="2" padding-top="3" padding-bottom="3" />
+    </style>
+    <style id="news_item:hover">
+      <background color="menuitem_hot_face" />
+    </style>
+    <style id="news_item:active">
+      <background color="listitem_selected_face" />
+      <text color="listitem_selected_text" />
+    </style>
+
+    <!-- news_item_detail -->
+    <style id="news_item_detail" base="news_item">
+      <text color="disabled" valign="top" wordwrap="true" padding-top="0" padding-bottom="0" />
     </style>
 
   </stylesheet>

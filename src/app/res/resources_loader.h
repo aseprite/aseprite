@@ -24,7 +24,6 @@ namespace app {
     ~ResourcesLoader();
 
     void cancel();
-    bool done();
     bool isDone() const { return m_done; }
 
     bool next(base::UniquePtr<Resource>& resource);

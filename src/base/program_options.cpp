@@ -187,11 +187,11 @@ std::string ProgramOptions::value_of(const Option& option) const
 
 std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
 {
-  size_t maxOptionWidth = 0;
+  std::size_t maxOptionWidth = 0;
   for (base::ProgramOptions::OptionList::const_iterator
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
-    size_t optionWidth =
+    std::size_t optionWidth =
       6+option->name().size()+1+
       (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
@@ -202,7 +202,7 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
   for (base::ProgramOptions::OptionList::const_iterator
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
-    size_t optionWidth = 6+option->name().size()+1+
+    std::size_t optionWidth = 6+option->name().size()+1+
       (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (option->mnemonic() != 0)

@@ -11,15 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context.h"
-#include "app/document.h"
-#include "app/ui/devconsole_view.h"
 #include "app/ui/main_window.h"
-#include "app/ui/workspace.h"
-#include "ui/box.h"
-#include "ui/button.h"
-#include "ui/combobox.h"
-#include "ui/window.h"
 
 namespace app {
 
@@ -32,8 +24,6 @@ public:
 
 protected:
   void onExecute(Context* context);
-
-  DevConsoleView* m_devConsole;
 };
 
 DeveloperConsoleCommand::DeveloperConsoleCommand()
@@ -41,24 +31,15 @@ DeveloperConsoleCommand::DeveloperConsoleCommand()
             "Developer Console",
             CmdUIOnlyFlag)
 {
-  m_devConsole = NULL;
 }
 
 DeveloperConsoleCommand::~DeveloperConsoleCommand()
 {
-  delete m_devConsole;
 }
 
 void DeveloperConsoleCommand::onExecute(Context* context)
 {
-  if (!m_devConsole) {
-    m_devConsole = new DevConsoleView();
-
-    App::instance()->getMainWindow()->getWorkspace()->addView(m_devConsole);
-  }
-
-  App::instance()->getMainWindow()->getTabsBar()->selectTab(m_devConsole);
-  App::instance()->getMainWindow()->getWorkspace()->setActiveView(m_devConsole);
+  App::instance()->getMainWindow()->showDevConsole();
 }
 
 Command* CommandFactory::createDeveloperConsoleCommand()
