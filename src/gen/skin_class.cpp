@@ -68,7 +68,7 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   // Dimensions sub class
   std::cout
     << "    class Dimensions {\n"
-    << "      template<typename T> friend class SkinFile;\n"
+    << "      template<typename> friend class SkinFile;\n"
     << "    public:\n";
   for (auto dimension : dimensions) {
     std::string id = convert_xmlid_to_cppid(dimension, false);
@@ -88,7 +88,7 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   // Colors sub class
   std::cout
     << "    class Colors {\n"
-    << "      template<typename T> friend class SkinFile;\n"
+    << "      template<typename> friend class SkinFile;\n"
     << "    public:\n";
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
@@ -109,7 +109,7 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   std::cout
     << "\n"
     << "    class Styles {\n"
-    << "      template<typename T> friend class SkinFile;\n"
+    << "      template<typename> friend class SkinFile;\n"
     << "    public:\n";
   for (auto style : styles) {
     std::string id = convert_xmlid_to_cppid(style, false);
