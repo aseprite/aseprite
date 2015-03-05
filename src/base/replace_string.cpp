@@ -20,7 +20,7 @@ void replace_string(
   if (replace_this.empty())     // Do nothing case
     return;
 
-  size_t i = 0;
+  std::size_t i = 0;
   while (true) {
     i = subject.find(replace_this, i);
     if (i == std::string::npos)
@@ -29,5 +29,5 @@ void replace_string(
     i += with_that.size();
   }
 }
-  
+
 } // namespace base

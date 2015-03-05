@@ -25,7 +25,7 @@ namespace ui {
     void selectChild(Widget* item);
     void selectIndex(int index);
 
-    size_t getItemsCount() const;
+    std::size_t getItemsCount() const;
 
     void centerScroll();
     void sortItems();

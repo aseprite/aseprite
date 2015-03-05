@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,6 +18,8 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 #include "ui/widget.h"
+
+#include <cstring>
 
 namespace ui {
 
@@ -142,7 +144,7 @@ void drawTextBox(Graphics* g, Widget* widget,
 
     // Without word-wrap
     if (!(widget->getAlign() & JI_WORDWRAP)) {
-      end = strchr(beg, '\n');
+      end = std::strchr(beg, '\n');
       if (end) {
         chr = *end;
         *end = 0;
@@ -152,7 +154,7 @@ void drawTextBox(Graphics* g, Widget* widget,
     else {
       old_end = NULL;
       for (beg_end=beg;;) {
-        end = strpbrk(beg_end, " \n");
+        end = std::strpbrk(beg_end, " \n");
         if (end) {
           chr = *end;
           *end = 0;

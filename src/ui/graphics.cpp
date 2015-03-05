@@ -255,7 +255,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
   }
 
   gfx::Size calculatedSize(0, 0);
-  size_t beg, end, new_word_beg, old_end;
+  std::size_t beg, end, new_word_beg, old_end;
   std::string line;
   int lineSeparation = 2*guiscale();
 

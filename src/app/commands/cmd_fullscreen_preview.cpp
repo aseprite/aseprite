@@ -31,6 +31,8 @@
 #include "she/surface.h"
 #include "she/system.h"
 
+#include <cstring>
+
 #define PREVIEW_TILED           1
 #define PREVIEW_FIT_ON_SCREEN   2
 
@@ -120,10 +122,10 @@ protected:
 
         // Change frame
         if (command != NULL &&
-            (strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-             strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-             strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-             strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
+            (std::strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
+             std::strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
+             std::strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
+             std::strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
           m_context->executeCommand(command);
           invalidate();
           m_render.reset(NULL); // Re-render
@@ -131,7 +133,7 @@ protected:
 #if 0
         // Play the animation
         else if (command != NULL &&
-                 strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
+                 std::strcmp(command->short_name(), CommandId::PlayAnimation) == 0) {
           // TODO
         }
 #endif

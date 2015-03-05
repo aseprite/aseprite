@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,7 +22,7 @@ public:
   typedef typename list_type::const_iterator const_iterator;
 
   bool empty() const { return m_observers.empty(); }
-  size_t size() const { return m_observers.size(); }
+  std::size_t size() const { return m_observers.size(); }
 
   // Adds the observer in the collection. The observer is owned by the
   // collection and will be destroyed calling the T::dispose() member

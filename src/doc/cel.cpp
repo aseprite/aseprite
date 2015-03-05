@@ -112,9 +112,9 @@ Cel* Cel::link() const
   return NULL;
 }
 
-size_t Cel::links() const
+std::size_t Cel::links() const
 {
-  size_t links = 0;
+  std::size_t links = 0;
 
   Sprite* sprite = this->sprite();
   for (frame_t fr=0; fr<sprite->totalFrames(); ++fr) {

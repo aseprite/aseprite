@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -44,7 +44,7 @@ Grid::Grid(int columns, bool same_width_columns)
 
   m_same_width_columns = same_width_columns;
 
-  for (size_t col=0; col<m_colstrip.size(); ++col) {
+  for (std::size_t col=0; col<m_colstrip.size(); ++col) {
     m_colstrip[col].size = 0;
     m_colstrip[col].expand_count = 0;
   }
@@ -55,8 +55,8 @@ Grid::Grid(int columns, bool same_width_columns)
 Grid::~Grid()
 {
   // Delete all cells.
-  for (size_t row=0; row<m_cells.size(); ++row)
-    for (size_t col=0; col<m_cells[row].size(); ++col)
+  for (std::size_t row=0; row<m_cells.size(); ++row)
+    for (std::size_t col=0; col<m_cells[row].size(); ++col)
       delete m_cells[row][col];
 }
 

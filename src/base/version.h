@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -36,19 +36,19 @@ namespace base {
     Version& revision(int digit) { (*this)[2] = digit; return *this; }
     Version& build(int digit)    { (*this)[3] = digit; return *this; }
 
-    size_t size() const {
+    std::size_t size() const {
       return m_digits.size();
     }
 
     // operator[] that can be used to set version digits.
-    int& operator[](size_t index) {
+    int& operator[](std::size_t index) {
       if (index >= m_digits.size())
         m_digits.resize(index+1);
       return m_digits[index];
     }
 
     // operator[] that can be used to get version digits.
-    int operator[](size_t index) const {
+    int operator[](std::size_t index) const {
       if (index < m_digits.size())
         return m_digits[index];
       else

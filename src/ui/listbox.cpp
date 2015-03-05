@@ -96,7 +96,7 @@ void ListBox::selectIndex(int index)
   selectChild(child);
 }
 
-size_t ListBox::getItemsCount() const
+std::size_t ListBox::getItemsCount() const
 {
   return getChildren().size();
 }

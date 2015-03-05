@@ -88,7 +88,7 @@ namespace ui {
     const std::string& getText() const { return m_text; }
     int getTextInt() const;
     double getTextDouble() const;
-    size_t getTextLength() const { return m_text.size(); }
+    std::size_t getTextLength() const { return m_text.size(); }
     void setText(const std::string& text);
     void setTextf(const char* text, ...);
     void setTextQuiet(const std::string& text);

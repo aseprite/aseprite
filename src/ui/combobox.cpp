@@ -191,7 +191,7 @@ void ComboBox::removeItem(ListItem* item)
 
 void ComboBox::removeItem(int itemIndex)
 {
-  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
+  ASSERT(itemIndex >= 0 && (std::size_t)itemIndex < m_items.size());
 
   ListItem* item = m_items[itemIndex];
 
@@ -215,7 +215,7 @@ int ComboBox::getItemCount() const
 
 ListItem* ComboBox::getItem(int itemIndex)
 {
-  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
+  if (itemIndex >= 0 && (std::size_t)itemIndex < m_items.size()) {
     return m_items[itemIndex];
   }
   else
@@ -224,7 +224,7 @@ ListItem* ComboBox::getItem(int itemIndex)
 
 const std::string& ComboBox::getItemText(int itemIndex) const
 {
-  if (itemIndex >= 0 && (size_t)itemIndex < m_items.size()) {
+  if (itemIndex >= 0 && (std::size_t)itemIndex < m_items.size()) {
     ListItem* item = m_items[itemIndex];
     return item->getText();
   }
@@ -237,7 +237,7 @@ const std::string& ComboBox::getItemText(int itemIndex) const
 
 void ComboBox::setItemText(int itemIndex, const std::string& text)
 {
-  ASSERT(itemIndex >= 0 && (size_t)itemIndex < m_items.size());
+  ASSERT(itemIndex >= 0 && (std::size_t)itemIndex < m_items.size());
 
   ListItem* item = m_items[itemIndex];
   item->setText(text);
@@ -285,7 +285,7 @@ int ComboBox::getSelectedItemIndex() const
 void ComboBox::setSelectedItemIndex(int itemIndex)
 {
   if (itemIndex >= 0 &&
-      (size_t)itemIndex < m_items.size() &&
+      (std::size_t)itemIndex < m_items.size() &&
       m_selected != itemIndex) {
     m_selected = itemIndex;
 

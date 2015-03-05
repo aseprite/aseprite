@@ -9,8 +9,9 @@
 #define APP_UI_SKIN_SKIN_PART_H_INCLUDED
 #pragma once
 
-#include <vector>
 #include "base/shared_ptr.h"
+
+#include <vector>
 
 namespace she {
   class Surface;
@@ -26,14 +27,14 @@ namespace app {
       SkinPart();
       ~SkinPart();
 
-      size_t size() const { return m_bitmaps.size(); }
+      std::size_t size() const { return m_bitmaps.size(); }
 
       void clear();
 
       // It doesn't destroy the previous bitmap in the given "index".
-      void setBitmap(size_t index, she::Surface* bitmap);
+      void setBitmap(std::size_t index, she::Surface* bitmap);
 
-      she::Surface* getBitmap(size_t index) const {
+      she::Surface* getBitmap(std::size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
       }
 

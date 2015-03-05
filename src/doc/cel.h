@@ -44,7 +44,7 @@ namespace doc {
     Document* document() const;
     Sprite* sprite() const;
     Cel* link() const;
-    size_t links() const;
+    std::size_t links() const;
     gfx::Rect bounds() const;
 
     // You should change the frame only if the cel isn't member of a

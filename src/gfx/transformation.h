@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -31,7 +31,7 @@ public:
 
       Corners() : m_corners(NUM_OF_CORNERS) { }
 
-      size_t size() const { return m_corners.size(); }
+      std::size_t size() const { return m_corners.size(); }
 
       PointT<double>& operator[](int index) { return m_corners[index]; }
       const PointT<double>& operator[](int index) const { return m_corners[index]; }

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,9 +21,9 @@ namespace render {
     // These classes are used as parameters for some Box's generic
     // member functions, so we can access to a different axis using
     // the same generic function (i=Red channel in RAxisGetter, etc.).
-    struct RAxisGetter { static size_t at(const Histogram& h, int i, int j, int k) { return h.at(i, j, k); } };
-    struct GAxisGetter { static size_t at(const Histogram& h, int i, int j, int k) { return h.at(j, i, k); } };
-    struct BAxisGetter { static size_t at(const Histogram& h, int i, int j, int k) { return h.at(j, k, i); } };
+    struct RAxisGetter { static std::size_t at(const Histogram& h, int i, int j, int k) { return h.at(i, j, k); } };
+    struct GAxisGetter { static std::size_t at(const Histogram& h, int i, int j, int k) { return h.at(j, i, k); } };
+    struct BAxisGetter { static std::size_t at(const Histogram& h, int i, int j, int k) { return h.at(j, k, i); } };
 
     // These classes are used as template parameter to split a Box
     // along an axis (see splitAlongAxis)
@@ -82,8 +82,8 @@ namespace render {
     // all histogram's points inside the box.
     uint32_t meanColor(const Histogram& histogram) const
     {
-      size_t r = 0, g = 0, b = 0;
-      size_t count = 0;
+      std::size_t r = 0, g = 0, b = 0;
+      std::size_t count = 0;
       int i, j, k;
 
       for (i=r1; i<=r2; ++i)
@@ -125,9 +125,9 @@ namespace render {
     }
 
     // Returns the number of histogram's points inside the box bounds.
-    size_t countPoints(const Histogram& histogram) const
+    std::size_t countPoints(const Histogram& histogram) const
     {
-      size_t count = 0;
+      std::size_t count = 0;
       int i, j, k;
 
       for (i=r1; i<=r2; ++i)
@@ -187,8 +187,8 @@ namespace render {
     {
       // These two variables will be used to count how many points are
       // in each side of the box if we split it in "i" position.
-      size_t totalPoints1 = 0;
-      size_t totalPoints2 = this->points;
+      std::size_t totalPoints1 = 0;
+      std::size_t totalPoints2 = this->points;
       int i, j, k;
 
       // We will try to split the box along the "i" axis. Imagine a
@@ -197,7 +197,7 @@ namespace render {
       // the number of points in both sides of the plane are
       // approximated the same.
       for (i=i1; i<=i2; ++i) {
-        size_t planePoints = 0;
+        std::size_t planePoints = 0;
 
         // We count all points in "i" plane.
         for (j=j1; j<=j2; ++j)
@@ -236,7 +236,7 @@ namespace render {
 
     int r1, g1, b1;             // Min point (closest to origin)
     int r2, g2, b2;             // Max point
-    size_t points;              // Number of points in the space which enclose this box
+    std::size_t points;         // Number of points in the space which enclose this box
     int volume;
   }; // end of class Box
 
@@ -244,7 +244,7 @@ namespace render {
   // quantization for frame buffer display,", Computer Graphics,
   // 16(3), pp. 297-307 (1982)
   template<class Histogram>
-  void median_cut(const Histogram& histogram, size_t maxBoxes, std::vector<uint32_t>& result)
+  void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<uint32_t>& result)
   {
     // We need a priority queue to split bigger boxes first (see Box::operator<).
     std::priority_queue<Box<Histogram> > boxes;

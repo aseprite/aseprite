@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,24 +28,24 @@ Palette* load_col_file(const char* filename)
 {
   Palette *pal = NULL;
   int c, r, g, b;
-  FILE *f;
+  FILE* f;
 
-  f = fopen(filename, "rb");
+  f = std::fopen(filename, "rb");
   if (!f)
     return NULL;
 
   // Get file size.
-  fseek(f, 0, SEEK_END);
-  size_t size = ftell(f);
-  div_t d = div(size-8, 3);
-  fseek(f, 0, SEEK_SET);
+  std::fseek(f, 0, SEEK_END);
+  std::size_t size = std::ftell(f);
+  std::div_t d = std::div(size-8, 3);
+  std::fseek(f, 0, SEEK_SET);
 
   bool pro = (size == 768)? false: true; // is Animator Pro format?
-  if (!(size) || (pro && d.rem)) {       // Invalid format 
+  if (!(size) || (pro && d.rem)) {       // Invalid format
     fclose(f);
     return NULL;
   }
-  
+
   // Animator format
   if (!pro) {
     pal = new Palette(frame_t(0), 256);

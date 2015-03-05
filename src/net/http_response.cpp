@@ -15,7 +15,7 @@
 
 namespace net {
 
-void HttpResponse::write(const char* data, size_t length)
+void HttpResponse::write(const char* data, std::size_t length)
 {
   m_stream->write(data, length);
 }

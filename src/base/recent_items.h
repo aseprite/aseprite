@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -20,14 +20,14 @@ public:
   typedef typename Items::iterator iterator;
   typedef typename Items::const_iterator const_iterator;
 
-  RecentItems(size_t limit) : m_limit(limit) { }
+  RecentItems(std::size_t limit) : m_limit(limit) { }
 
   const_iterator begin() { return m_items.begin(); }
   const_iterator end() { return m_items.end(); }
 
   bool empty() const { return m_items.empty(); }
-  size_t size() const { return m_items.size(); }
-  size_t limit() const { return m_limit; }
+  std::size_t size() const { return m_items.size(); }
+  std::size_t limit() const { return m_limit; }
 
   void addItem(const T& item) {
     iterator it = std::find(m_items.begin(), m_items.end(), item);
@@ -57,7 +57,7 @@ public:
 
 private:
   Items m_items;
-  size_t m_limit;
+  std::size_t m_limit;
 };
 
 } // namespace base

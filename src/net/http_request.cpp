@@ -74,14 +74,14 @@ public:
   }
 
 private:
-  size_t writeBody(char* ptr, size_t bytes)
+  std::size_t writeBody(char* ptr, std::size_t bytes)
   {
     ASSERT(m_response != NULL);
     m_response->write(ptr, bytes);
     return bytes;
   }
 
-  static size_t writeBodyCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
+  static std::size_t writeBodyCallback(char* ptr, std::size_t size, std::size_t nmemb, void* userdata)
   {
     HttpRequestImpl* req = reinterpret_cast<HttpRequestImpl*>(userdata);
     return req->writeBody(ptr, size*nmemb);

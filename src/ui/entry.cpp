@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@
 
 namespace ui {
 
-Entry::Entry(size_t maxsize, const char *format, ...)
+Entry::Entry(std::size_t maxsize, const char *format, ...)
   : Widget(kEntryWidget)
   , m_timer(500, this)
   , m_maxsize(maxsize)
@@ -437,7 +437,7 @@ void Entry::onSetText()
 {
   Widget::onSetText();
 
-  if (m_caret >= 0 && (size_t)m_caret > getTextLength())
+  if (m_caret >= 0 && (std::size_t)m_caret > getTextLength())
     m_caret = (int)getTextLength();
 }
 
@@ -508,7 +508,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
 
       // put the character
       if (text.size() < m_maxsize) {
-        ASSERT((size_t)m_caret <= text.size());
+        ASSERT((std::size_t)m_caret <= text.size());
         text.insert(m_caret++, 1, unicodeChar);
       }
 

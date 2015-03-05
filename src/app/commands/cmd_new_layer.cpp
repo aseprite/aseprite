@@ -17,14 +17,15 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
-#include "app/transaction.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
 #include <cstdio>
+#include <cstring>
 
 namespace app {
 
@@ -126,8 +127,8 @@ static int get_max_layer_num(Layer* layer)
 {
   int max = 0;
 
-  if (strncmp(layer->name().c_str(), "Layer ", 6) == 0)
-    max = strtol(layer->name().c_str()+6, NULL, 10);
+  if (std::strncmp(layer->name().c_str(), "Layer ", 6) == 0)
+    max = std::strtol(layer->name().c_str()+6, NULL, 10);
 
   if (layer->isFolder()) {
     LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();

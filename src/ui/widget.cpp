@@ -917,7 +917,7 @@ void Widget::flushRedraw()
         widget->m_updateRegion.createIntersection(widget->m_updateRegion, region);
       }
 
-      size_t c, nrects = widget->m_updateRegion.size();
+      std::size_t c, nrects = widget->m_updateRegion.size();
       Region::const_iterator it = widget->m_updateRegion.begin();
 
       // Draw the widget
