@@ -45,8 +45,8 @@ std::string to_utf8(const std::wstring& src)
 {
   int required_size =
     ::WideCharToMultiByte(CP_UTF8, 0,
-                          src.c_str(), src.size(),
-                          NULL, 0, NULL, NULL);
+      src.c_str(), (int)src.size(),
+      NULL, 0, NULL, NULL);
 
   if (required_size == 0)
     return std::string();
@@ -54,9 +54,9 @@ std::string to_utf8(const std::wstring& src)
   std::vector<char> buf(++required_size);
 
   ::WideCharToMultiByte(CP_UTF8, 0,
-                        src.c_str(), src.size(),
-                        &buf[0], required_size,
-                        NULL, NULL);
+    src.c_str(), (int)src.size(),
+    &buf[0], required_size,
+    NULL, NULL);
 
   return std::string(&buf[0]);
 }
@@ -65,8 +65,8 @@ std::wstring from_utf8(const std::string& src)
 {
   int required_size =
     MultiByteToWideChar(CP_UTF8, 0,
-                        src.c_str(), src.size(),
-                        NULL, 0);
+      src.c_str(), (int)src.size(),
+      NULL, 0);
 
   if (required_size == 0)
     return std::wstring();
@@ -74,8 +74,8 @@ std::wstring from_utf8(const std::string& src)
   std::vector<wchar_t> buf(++required_size);
 
   ::MultiByteToWideChar(CP_UTF8, 0,
-                        src.c_str(), src.size(),
-                        &buf[0], required_size);
+    src.c_str(), (int)src.size(),
+    &buf[0], required_size);
 
   return std::wstring(&buf[0]);
 }

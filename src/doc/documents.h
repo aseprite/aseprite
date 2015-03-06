@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -37,7 +37,7 @@ namespace doc {
     Document* back() const { return m_docs.back(); }
     Document* lastAdded() const { return front(); }
 
-    int size() const { return m_docs.size(); }
+    int size() const { return (int)m_docs.size(); }
     bool empty() const { return m_docs.empty(); }
 
     // Add a new documents to the list.

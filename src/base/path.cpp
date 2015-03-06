@@ -146,7 +146,7 @@ bool has_file_extension(const std::string& filename, const std::string& csv_exte
   if (!filename.empty()) {
     std::string ext = base::string_to_lower(get_file_extension(filename));
 
-    int extsz = ext.size();
+    int extsz = (int)ext.size();
     std::string::const_iterator p =
       std::search(csv_extensions.begin(),
                   csv_extensions.end(),

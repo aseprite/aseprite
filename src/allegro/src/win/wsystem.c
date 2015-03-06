@@ -472,7 +472,7 @@ int _WinMain(void* _main, void* hInst, void* hPrev, char* Cmd, int nShow)
 
    /* can't use parameter because it doesn't include the executable name */
    cmdline = GetCommandLine();
-   i = sizeof(wchar_t) * (wcslen(cmdline) + 1);
+   i = (int)(sizeof(wchar_t) * (wcslen(cmdline) + 1));
    argbuf = _AL_MALLOC(i);
    memcpy(argbuf, cmdline, i);
 

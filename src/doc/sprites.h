@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -36,7 +36,7 @@ namespace doc {
     Sprite* front() const { return m_sprites.front(); }
     Sprite* back() const { return m_sprites.back(); }
 
-    int size() const { return m_sprites.size(); }
+    int size() const { return (int)m_sprites.size(); }
     bool empty() const { return m_sprites.empty(); }
 
     Sprite* add(int width, int height, ColorMode mode = ColorMode::RGB, int ncolors = 256);

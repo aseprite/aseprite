@@ -92,7 +92,7 @@ typedef struct {
  */
 int wnd_call_proc(int (*proc) (void))
 {
-   return SendMessage(allegro_wnd, msg_call_proc, (DWORD) proc, 0);
+   return SendMessage(allegro_wnd, msg_call_proc, (WPARAM)proc, 0);
 }
 
 
@@ -103,7 +103,7 @@ int wnd_call_proc(int (*proc) (void))
  */
 void wnd_schedule_proc(int (*proc) (void))
 {
-   PostMessage(allegro_wnd, msg_call_proc, (DWORD) proc, 0);
+   PostMessage(allegro_wnd, msg_call_proc, (WPARAM)proc, 0);
 }
 
 

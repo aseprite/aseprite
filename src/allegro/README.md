@@ -12,3 +12,7 @@ Changes:
   audio, MIDI, joystick, etc.).
 * The HWND class has CS_DBLCLKS enabled (so UI code can detect
   double-clicks from Windows messages).
+* Fixed issues recreating DirectX surfaces
+* Fixed OS X mouse issues
+* Support for x64
+* Several [other changes](https://github.com/aseprite/aseprite/commits/master/src/allegro)

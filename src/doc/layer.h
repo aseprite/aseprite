@@ -132,7 +132,7 @@ namespace doc {
     CelIterator getCelEnd() { return m_cels.end(); }
     CelConstIterator getCelBegin() const { return m_cels.begin(); }
     CelConstIterator getCelEnd() const { return m_cels.end(); }
-    int getCelsCount() const { return m_cels.size(); }
+    int getCelsCount() const { return (int)m_cels.size(); }
 
   private:
     void destroyAllCels();
@@ -155,7 +155,7 @@ namespace doc {
     LayerIterator getLayerEnd() { return m_layers.end(); }
     LayerConstIterator getLayerBegin() const { return m_layers.begin(); }
     LayerConstIterator getLayerEnd() const { return m_layers.end(); }
-    int getLayersCount() const { return m_layers.size(); }
+    int getLayersCount() const { return (int)m_layers.size(); }
 
     void addLayer(Layer* layer);
     void removeLayer(Layer* layer);

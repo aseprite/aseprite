@@ -22,7 +22,7 @@ using namespace base::serialization::little_endian;
 
 void write_string(std::ostream& os, const std::string& str)
 {
-  write16(os, str.size());
+  write16(os, (int)str.size());
   if (!str.empty())
     os.write(str.c_str(), str.size());
 }

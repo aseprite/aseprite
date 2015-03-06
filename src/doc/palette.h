@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -53,7 +53,7 @@ namespace doc {
 
     static Palette* createGrayscale();
 
-    int size() const { return m_colors.size(); }
+    int size() const { return (int)m_colors.size(); }
     void resize(int ncolors);
 
     std::string filename() const { return m_filename; }
