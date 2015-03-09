@@ -10,6 +10,8 @@
 
 #include "doc/frame_tags.h"
 
+#include "doc/frame_tag.h"
+
 #include <algorithm>
 
 namespace doc {
@@ -21,7 +23,13 @@ FrameTags::FrameTags(Sprite* sprite)
 
 void FrameTags::add(FrameTag* tag)
 {
-  m_tags.push_back(tag);
+  auto it = begin(), end = this->end();
+  for (; it != end; ++it) {
+    if ((*it)->fromFrame() > tag->fromFrame())
+      break;
+  }
+  m_tags.insert(it, tag);
+  tag->setOwner(this);
 }
 
 void FrameTags::remove(FrameTag* tag)
@@ -30,6 +38,8 @@ void FrameTags::remove(FrameTag* tag)
   ASSERT(it != m_tags.end());
   if (it != m_tags.end())
     m_tags.erase(it);
+
+  tag->setOwner(nullptr);
 }
 
 } // namespace doc

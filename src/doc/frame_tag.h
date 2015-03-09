@@ -17,11 +17,13 @@
 #include <string>
 
 namespace doc {
+  class FrameTags;
 
   class FrameTag : public Object {
   public:
     FrameTag(frame_t from, frame_t to);
 
+    FrameTags* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_from; }
     frame_t toFrame() const { return m_to; }
     const std::string& name() const { return m_name; }
@@ -33,7 +35,10 @@ namespace doc {
     void setColor(color_t color);
     void setAniDir(AniDir aniDir);
 
+    void setOwner(FrameTags* owner);
+
   public:
+    FrameTags* m_owner;
     frame_t m_from, m_to;
     color_t m_color;
     std::string m_name;

@@ -10,10 +10,13 @@
 
 #include "doc/frame_tag.h"
 
+#include "doc/frame_tags.h"
+
 namespace doc {
 
 FrameTag::FrameTag(frame_t from, frame_t to)
   : Object(ObjectType::FrameTag)
+  , m_owner(nullptr)
   , m_from(from)
   , m_to(to)
   , m_color(rgba(0, 0, 0, 255))
@@ -22,10 +25,23 @@ FrameTag::FrameTag(frame_t from, frame_t to)
 {
 }
 
+void FrameTag::setOwner(FrameTags* owner)
+{
+  ASSERT(!m_owner);
+  m_owner = owner;
+}
+
 void FrameTag::setFrameRange(frame_t from, frame_t to)
 {
+  FrameTags* owner = m_owner;
+  if (owner)
+    owner->remove(this);
+
   m_from = from;
   m_to = to;
+
+  if (owner)
+    owner->add(this); // Re-add the tag, so it's added in the correct place
 }
 
 void FrameTag::setName(const std::string& name)
