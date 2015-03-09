@@ -116,6 +116,26 @@ namespace app {
     void onAfterLayerChanged(Editor* editor) override;
 
   private:
+    struct Hit {
+      int part;
+      LayerIndex layer;
+      frame_t frame;
+
+      Hit() : part(0) {
+      }
+
+      Hit(int part, LayerIndex layer, frame_t frame)
+        : part(part), layer(layer), frame(frame) {
+      }
+
+      bool operator!=(const Hit& other) const {
+        return
+          part != other.part ||
+          layer != other.layer ||
+          frame != other.frame;
+      }
+    };
+
     struct DropTarget {
       enum HHit { HNone, Before, After };
       enum VHit { VNone, Bottom, Top };
@@ -164,11 +184,11 @@ namespace app {
     gfx::Rect getCelsBounds() const;
     gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), frame_t frame = frame_t(0)) const;
     gfx::Rect getRangeBounds(const Range& range) const;
-    void invalidatePart(int part, LayerIndex layer, frame_t frame);
+    void invalidateHit(const Hit& hit);
     void regenerateLayers();
-    void updateHotByMousePos(ui::Message* msg, const gfx::Point& mousePos);
-    void updateHot(ui::Message* msg, const gfx::Point& mousePos, int& hot_part, LayerIndex& hot_layer, frame_t& hot_frame);
-    void hotThis(int hot_part, LayerIndex hot_layer, frame_t hot_frame);
+    Hit hitTestByMousePos(ui::Message* msg, const gfx::Point& mousePos);
+    Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
+    void setHot(const Hit& hit);
     void centerCel(LayerIndex layer, frame_t frame);
     void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
@@ -215,15 +235,9 @@ namespace app {
     int m_separator_x;
     int m_separator_w;
     int m_origFrames;
-    // The 'hot' part is where the mouse is on top of
-    int m_hot_part;
-    LayerIndex m_hot_layer;
-    frame_t m_hot_frame;
+    Hit m_hot;       // The 'hot' part is where the mouse is on top of
     DropTarget m_dropTarget;
-    // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
-    int m_clk_part;
-    LayerIndex m_clk_layer;
-    frame_t m_clk_frame;
+    Hit m_clk; // The 'clk' part is where the mouse's button was pressed (maybe for a drag & drop operation)
     // Absolute mouse positions for scrolling.
     gfx::Point m_oldPos;
     // Configure timeline
