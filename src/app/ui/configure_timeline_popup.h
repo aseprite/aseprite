@@ -21,6 +21,7 @@ namespace ui {
 }
 
 namespace app {
+  class Document;
 
   class ConfigureTimelinePopup : public ui::PopupWindow {
   public:
@@ -38,6 +39,7 @@ namespace app {
 
   private:
     void updateWidgetsFromCurrentSettings();
+    app::Document* doc();
     DocumentPreferences& docPref();
 
     ui::RadioButton* m_merge;

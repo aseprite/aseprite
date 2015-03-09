@@ -16,13 +16,12 @@
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/loop_tag.h"
 #include "app/transaction.h"
-#include "app/ui/color_button.h"
+#include "app/ui/frame_tag_window.h"
 #include "doc/anidir.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
-
-#include "generated_frame_tag_properties.h"
 
 namespace app {
 
@@ -56,76 +55,39 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-
   frame_t frame = reader.frame();
-
-  const FrameTag* best = nullptr;
-  for (const FrameTag* tag : sprite->frameTags()) {
-    if (frame >= tag->fromFrame() &&
-        frame <= tag->toFrame()) {
-      if (!best ||
-          (tag->toFrame() - tag->fromFrame()) < (best->toFrame() - best->fromFrame())) {
-        best = tag;
-      }
-    }
-  }
-
-  if (!best)
+  const FrameTag* foundTag = get_shortest_tag(sprite, frame);
+  if (!foundTag)
     return;
 
-  app::gen::FrameTagProperties window;
+  FrameTagWindow window(sprite, foundTag);
+  if (!window.show())
+    return;
 
-  window.name()->setText(best->name());
-  window.from()->setTextf("%d", best->fromFrame()+1);
-  window.to()->setTextf("%d", best->toFrame()+1);
-  window.color()->setColor(app::Color::fromRgb(
-      doc::rgba_getr(best->color()),
-      doc::rgba_getg(best->color()),
-      doc::rgba_getb(best->color())));
+  ContextWriter writer(reader);
+  Transaction transaction(writer.context(), "Change Frame Tag Properties");
+  FrameTag* tag = const_cast<FrameTag*>(foundTag);
 
-  static_assert(
-    int(doc::AniDir::FORWARD) == 0 &&
-    int(doc::AniDir::REVERSE) == 1 &&
-    int(doc::AniDir::PING_PONG) == 2, "doc::AniDir has changed");
-  window.anidir()->addItem("Forward");
-  window.anidir()->addItem("Reverse");
-  window.anidir()->addItem("Ping-pong");
-  window.anidir()->setSelectedItemIndex(int(best->aniDir()));
+  std::string name = window.nameValue();
+  if (tag->name() != name)
+    transaction.execute(new cmd::SetFrameTagName(tag, name));
 
-  window.openWindowInForeground();
-  if (window.getKiller() == window.ok()) {
-    std::string name = window.name()->getText();
-    frame_t first = 0;
-    frame_t last = sprite->lastFrame();
-    frame_t from = window.from()->getTextInt()-1;
-    frame_t to = window.to()->getTextInt()-1;
-    from = MID(first, from, last);
-    to = MID(from, to, last);
-    app::Color color = window.color()->getColor();
-    doc::color_t docColor = doc::rgba(
-      color.getRed(), color.getGreen(), color.getBlue(), 255);
-    doc::AniDir anidir = (doc::AniDir)window.anidir()->getSelectedItemIndex();
-
-    ContextWriter writer(reader);
-    Transaction transaction(writer.context(), "Change Frame Tag Properties");
-
-    FrameTag* tag = const_cast<FrameTag*>(best);
-
-    if (tag->name() != name)
-      transaction.execute(new cmd::SetFrameTagName(tag, name));
-
-    if (tag->fromFrame() != from ||
-        tag->toFrame() != to)
-      transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
-
-    if (tag->color() != docColor)
-      transaction.execute(new cmd::SetFrameTagColor(tag, docColor));
-
-    if (tag->aniDir() != anidir)
-      transaction.execute(new cmd::SetFrameTagAniDir(tag, anidir));
-
-    transaction.commit();
+  doc::frame_t from, to;
+  window.rangeValue(from, to);
+  if (tag->fromFrame() != from ||
+      tag->toFrame() != to) {
+    transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
   }
+
+  doc::color_t docColor = window.colorValue();
+  if (tag->color() != docColor)
+    transaction.execute(new cmd::SetFrameTagColor(tag, docColor));
+
+  doc::AniDir anidir = window.aniDirValue();
+  if (tag->aniDir() != anidir)
+    transaction.execute(new cmd::SetFrameTagAniDir(tag, anidir));
+
+  transaction.commit();
 }
 
 Command* CommandFactory::createFrameTagPropertiesCommand()

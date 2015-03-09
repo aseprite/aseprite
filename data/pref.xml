@@ -133,12 +133,6 @@
       <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
       <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
     </section>
-    <section id="loop">
-      <option id="visible" type="bool" default="false" />
-      <option id="from" type="doc::frame_t" default="0" />
-      <option id="to" type="doc::frame_t" default="1" />
-      <option id="ani_dir" type="doc::AniDir" default="doc::AniDir::FORWARD" />
-    </section>
   </document>
 
 </preferences>

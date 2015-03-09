@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/document_view.h"
+#include "doc/frame.h"
 #include "ui/timer.h"
 #include "ui/window.h"
 
@@ -51,6 +52,7 @@ namespace app {
     int m_curFrameTick;
 
     bool m_pingPongForward;
+    doc::frame_t m_refFrame;
   };
 
 } // namespace app

@@ -5,10 +5,10 @@
 <window text="Frame Tag Properties" id="frame_tag_properties">
   <grid columns="2">
     <label text="Name:" />
-    <entry maxsize="256" id="name" />
+    <entry maxsize="256" id="name" magnet="true" />
 
     <label text="From:" />
-    <entry maxsize="10" id="from" magnet="true" />
+    <entry maxsize="10" id="from" />
 
     <label text="To:" />
     <entry maxsize="10" id="to" />

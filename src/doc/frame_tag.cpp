@@ -18,6 +18,7 @@ FrameTag::FrameTag(frame_t from, frame_t to)
   , m_to(to)
   , m_color(rgba(0, 0, 0, 255))
   , m_name("Tag")
+  , m_aniDir(AniDir::FORWARD)
 {
 }
 
@@ -39,6 +40,10 @@ void FrameTag::setColor(color_t color)
 
 void FrameTag::setAniDir(AniDir aniDir)
 {
+  ASSERT(m_aniDir == AniDir::FORWARD ||
+         m_aniDir == AniDir::REVERSE ||
+         m_aniDir == AniDir::PING_PONG);
+
   m_aniDir = aniDir;
 }
 

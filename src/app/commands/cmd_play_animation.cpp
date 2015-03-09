@@ -16,6 +16,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/handle_anidir.h"
+#include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -69,18 +70,19 @@ protected:
     if (m_nextFrameTime >= 0) {
       m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
+      FrameTag* loopTag = get_loop_tag(m_editor->sprite());
+
       while (m_nextFrameTime <= 0) {
         frame_t frame = calculate_next_frame(
           m_editor->sprite(),
-          m_editor->frame(),
-          m_docPref,
+          m_editor->frame(), loopTag,
           m_pingPongForward);
 
         m_editor->setFrame(frame);
         m_nextFrameTime += m_editor->sprite()->frameDuration(frame);
-        invalidate();
       }
 
+      invalidate();
       m_curFrameTick = ui::clock();
     }
   }

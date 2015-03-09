@@ -5,8 +5,8 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_HANDLE_ANIDIR_H_INCLUDED
-#define APP_HANDLE_ANIDIR_H_INCLUDED
+#ifndef APP_LOOP_TAG_H_INCLUDED
+#define APP_LOOP_TAG_H_INCLUDED
 #pragma once
 
 #include "doc/frame.h"
@@ -18,11 +18,9 @@ namespace doc {
 
 namespace app {
 
-  doc::frame_t calculate_next_frame(
-    doc::Sprite* sprite,
-    doc::frame_t frame,
-    doc::FrameTag* tag,
-    bool& pingPongForward);
+  doc::FrameTag* get_shortest_tag(const doc::Sprite* sprite, doc::frame_t frame);
+  doc::FrameTag* get_loop_tag(doc::Sprite* sprite);
+  doc::FrameTag* create_loop_tag(doc::frame_t from, doc::frame_t to);
 
 } // namespace app
 

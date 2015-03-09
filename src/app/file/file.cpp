@@ -294,7 +294,7 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
       break;
   }
 
-  // check frames support
+  // Frames support
   if (fop->document->sprite()->totalFrames() > 1) {
     if (!fop->format->support(FILE_SUPPORT_FRAMES) &&
         !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
@@ -302,18 +302,25 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
     }
   }
 
-  // layers support
+  // Layers support
   if (fop->document->sprite()->folder()->getLayersCount() > 1) {
     if (!(fop->format->support(FILE_SUPPORT_LAYERS))) {
       warnings += "<<- Layers";
     }
   }
 
-  // Palettes support.
+  // Palettes support
   if (fop->document->sprite()->getPalettes().size() > 1) {
     if (!fop->format->support(FILE_SUPPORT_PALETTES) &&
         !fop->format->support(FILE_SUPPORT_SEQUENCES)) {
       warnings += "<<- Palette changes between frames";
+    }
+  }
+
+  // Check frames support
+  if (!fop->document->sprite()->frameTags().empty()) {
+    if (!fop->format->support(FILE_SUPPORT_FRAME_TAGS)) {
+      warnings += "<<- Frame tags";
     }
   }
 

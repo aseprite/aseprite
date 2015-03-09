@@ -146,13 +146,13 @@ namespace app {
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
       const char* text, skin::Style* style,
       bool is_active = false, bool is_hover = false, bool is_clicked = false);
+    void drawTop(ui::Graphics* g);
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
     void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
       Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover);
-    void drawLoopRange(ui::Graphics* g);
     void drawFrameTags(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);
@@ -194,6 +194,8 @@ namespace app {
 
     bool validLayer(LayerIndex layer) const { return layer >= firstLayer() && layer <= lastLayer(); }
     bool validFrame(frame_t frame) const { return frame >= firstFrame() && frame <= lastFrame(); }
+
+    int topHeight() const;
 
     DocumentPreferences& docPref() const;
     skin::SkinTheme* skinTheme() const;

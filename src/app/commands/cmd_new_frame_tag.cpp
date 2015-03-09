@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/transaction.h"
+#include "app/ui/frame_tag_window.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "doc/frame_tag.h"
@@ -50,11 +51,10 @@ bool NewFrameTagCommand::onEnabled(Context* context)
 
 void NewFrameTagCommand::onExecute(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite(writer.sprite());
-
-  frame_t from = writer.frame();
-  frame_t to = writer.frame();
+  const ContextReader reader(context);
+  const Sprite* sprite(reader.sprite());
+  frame_t from = reader.frame();
+  frame_t to = reader.frame();
 
   Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
   if (range.enabled() &&
@@ -64,12 +64,22 @@ void NewFrameTagCommand::onExecute(Context* context)
     to = range.frameEnd();
   }
 
+  base::UniquePtr<FrameTag> frameTag(new FrameTag(from, to));
+  FrameTagWindow window(sprite, frameTag);
+  if (!window.show())
+    return;
+
+  window.rangeValue(from, to);
+  frameTag->setFrameRange(from, to);
+  frameTag->setName(window.nameValue());
+  frameTag->setColor(window.colorValue());
+  frameTag->setAniDir(window.aniDirValue());
+
   {
+    ContextWriter writer(reader);
     Transaction transaction(writer.context(), "New Frames Tag");
-
-    FrameTag* frameTag = new FrameTag(from, to);
-    transaction.execute(new cmd::AddFrameTag(sprite, frameTag));
-
+    transaction.execute(new cmd::AddFrameTag(writer.sprite(), frameTag));
+    frameTag.release();
     transaction.commit();
   }
 

@@ -15,6 +15,7 @@
 #include "app/document.h"
 #include "app/handle_anidir.h"
 #include "app/ini_file.h"
+#include "app/loop_tag.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
@@ -34,6 +35,8 @@
 #include "ui/close_event.h"
 #include "ui/message.h"
 #include "ui/system.h"
+
+#include "doc/frame_tag.h"
 
 namespace app {
 
@@ -157,6 +160,7 @@ PreviewEditorWindow::PreviewEditorWindow()
   , m_playButton(new MiniPlayButton())
   , m_playTimer(10)
   , m_pingPongForward(true)
+  , m_refFrame(0)
 {
   child_spacing = 0;
   setAutoRemap(false);
@@ -305,7 +309,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->centerInSpritePoint(centerPoint);
 
   miniEditor->setLayer(editor->layer());
-  miniEditor->setFrame(editor->frame());
+  miniEditor->setFrame(m_refFrame = editor->frame());
 }
 
 void PreviewEditorWindow::uncheckCenterButton()
@@ -329,22 +333,24 @@ void PreviewEditorWindow::onPlaybackTick()
   if (!miniEditor)
     return;
 
-  Document* document = miniEditor->document();
-  Sprite* sprite = miniEditor->sprite();
+  doc::Document* document = miniEditor->document();
+  doc::Sprite* sprite = miniEditor->sprite();
   if (!document || !sprite)
     return;
-
-  DocumentPreferences& docPref =
-    App::instance()->preferences().document(document);
 
   if (m_nextFrameTime >= 0) {
     m_nextFrameTime -= (ui::clock() - m_curFrameTick);
 
+    // TODO get the frame tag in updateUsingEditor()
+    doc::FrameTag* tag = get_shortest_tag(sprite, m_refFrame);
+    if (!tag)
+      tag = get_loop_tag(sprite);
+
     while (m_nextFrameTime <= 0) {
-      frame_t frame = calculate_next_frame(
+      doc::frame_t frame = calculate_next_frame(
         sprite,
         miniEditor->frame(),
-        docPref,
+        tag,
         m_pingPongForward);
 
       miniEditor->setFrame(frame);

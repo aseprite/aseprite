@@ -10,6 +10,8 @@
     <dim id="tabs_close_icon_width" value="14" />
     <dim id="tabs_close_icon_height" value="12" />
     <dim id="tabs_icon_width" value="10" />
+    <dim id="timeline_top_border" value="2" />
+    <dim id="timeline_tags_area_height" value="4" />
   </dimensions>
 
   <colors>
@@ -348,7 +350,7 @@
     <part id="timeline_padding_br"              x="288" y="24" w1="1" w2="10" w3="1" h1="1" h2="10" h3="1" />
     <part id="timeline_drop_layer_deco"         x="252" y="127" w1="3" w2="1" w3="3" h1="2" h2="1" h3="2" />
     <part id="timeline_drop_frame_deco"         x="252" y="120" w1="2" w2="1" w3="2" h1="3" h2="1" h3="3" />
-    <part id="timeline_loop_range"              x="240" y="132" w1="3" w2="6" w3="3" h1="3" h2="6" h3="3" />
+    <part id="timeline_loop_range"              x="240" y="132" w1="4" w2="4" w3="4" h1="3" h2="6" h3="3" />
     <part id="flag_normal"                      x="0" y="240" w="16" h="10" />
     <part id="flag_highlight"                   x="16" y="240" w="16" h="10" />
     <part id="drop_pixels_ok"                   x="176" y="176" w="7" h="8" />

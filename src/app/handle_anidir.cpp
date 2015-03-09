@@ -11,6 +11,8 @@
 
 #include "app/handle_anidir.h"
 
+#include "doc/frame.h"
+#include "doc/frame_tag.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -18,24 +20,27 @@ namespace app {
 doc::frame_t calculate_next_frame(
   doc::Sprite* sprite,
   doc::frame_t frame,
-  DocumentPreferences& docPref,
+  doc::FrameTag* tag,
   bool& pingPongForward)
 {
-  frame_t first = frame_t(0);
-  frame_t last = sprite->lastFrame();
+  doc::frame_t first = doc::frame_t(0);
+  doc::frame_t last = sprite->lastFrame();
+  doc::AniDir aniDir = doc::AniDir::FORWARD;
 
-  if (docPref.loop.visible()) {
-    frame_t loopBegin, loopEnd;
-    loopBegin = docPref.loop.from();
-    loopEnd = docPref.loop.to();
-    loopBegin = MID(first, loopBegin, last);
-    loopEnd = MID(first, loopEnd, last);
+  if (tag) {
+    doc::frame_t loopFrom, loopTo;
 
-    first = loopBegin;
-    last = loopEnd;
+    loopFrom = tag->fromFrame();
+    loopTo   = tag->toFrame();
+    loopFrom = MID(first, loopFrom, last);
+    loopTo   = MID(first, loopTo, last);
+
+    first  = loopFrom;
+    last   = loopTo;
+    aniDir = tag->aniDir();
   }
 
-  switch (docPref.loop.aniDir()) {
+  switch (aniDir) {
 
     case doc::AniDir::FORWARD:
       ++frame;

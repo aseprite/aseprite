@@ -10,12 +10,18 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/add_frame_tag.h"
+#include "app/cmd/remove_frame_tag.h"
+#include "app/cmd/set_frame_tag_range.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
-#include "app/pref/preferences.h"
+#include "app/loop_tag.h"
+#include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
+#include "doc/frame_tag.h"
 
 namespace app {
 
@@ -32,7 +38,7 @@ protected:
   void onExecute(Context* context) override;
 
   Action m_action;
-  frame_t m_begin, m_end;
+  doc::frame_t m_begin, m_end;
 };
 
 SetLoopSectionCommand::SetLoopSectionCommand()
@@ -66,13 +72,13 @@ bool SetLoopSectionCommand::onEnabled(Context* ctx)
 
 void SetLoopSectionCommand::onExecute(Context* ctx)
 {
-  Document* doc = ctx->activeDocument();
+  doc::Document* doc = ctx->activeDocument();
   if (!doc)
     return;
 
-  DocumentPreferences& docPref = App::instance()->preferences().document(doc);
-  frame_t begin = m_begin;
-  frame_t end = m_end;
+  doc::Sprite* sprite = doc->sprite();
+  doc::frame_t begin = m_begin;
+  doc::frame_t end = m_end;
   bool on = false;
 
   switch (m_action) {
@@ -100,13 +106,39 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
 
   }
 
+  doc::FrameTag* loopTag = get_loop_tag(sprite);
   if (on) {
-    docPref.loop.visible(true);
-    docPref.loop.from(begin);
-    docPref.loop.to(end);
+    if (!loopTag) {
+      loopTag = create_loop_tag(begin, end);
+
+      ContextWriter writer(ctx);
+      Transaction transaction(writer.context(), "Add Loop");
+      transaction.execute(new cmd::AddFrameTag(sprite, loopTag));
+      transaction.commit();
+    }
+    else if (loopTag->fromFrame() != begin ||
+             loopTag->toFrame() != end) {
+      ContextWriter writer(ctx);
+      Transaction transaction(writer.context(), "Set Loop Range");
+      transaction.execute(new cmd::SetFrameTagRange(loopTag, begin, end));
+      transaction.commit();
+    }
+    else {
+      Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::FrameTagProperties);
+      ctx->executeCommand(cmd);
+    }
   }
-  else
-    docPref.loop.visible(false);
+  else {
+    if (loopTag) {
+      ContextWriter writer(ctx);
+      Transaction transaction(writer.context(), "Remove Loop");
+      transaction.execute(new cmd::RemoveFrameTag(sprite, loopTag));
+      transaction.commit();
+      delete loopTag;
+    }
+  }
+
+  App::instance()->getMainWindow()->getTimeline()->invalidate();
 }
 
 Command* CommandFactory::createSetLoopSectionCommand()

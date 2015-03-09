@@ -37,6 +37,7 @@ namespace doc {
     const_iterator end() const { return m_tags.end(); }
 
     std::size_t size() const { return m_tags.size(); }
+    bool empty() const { return m_tags.empty(); }
 
   private:
     Sprite* m_sprite;

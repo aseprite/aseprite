@@ -258,6 +258,7 @@ add_library(app-lib
   job.cpp
   launcher.cpp
   log.cpp
+  loop_tag.cpp
   modules.cpp
   modules/editors.cpp
   modules/gfx.cpp
@@ -312,6 +313,7 @@ add_library(app-lib
   ui/editor/zooming_state.cpp
   ui/file_list.cpp
   ui/file_selector.cpp
+  ui/frame_tag_window.cpp
   ui/hex_color_entry.cpp
   ui/home_view.cpp
   ui/keyboard_shortcuts.cpp

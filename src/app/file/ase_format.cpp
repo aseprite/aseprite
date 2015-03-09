@@ -133,7 +133,8 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_INDEXED |
       FILE_SUPPORT_LAYERS |
       FILE_SUPPORT_FRAMES |
-      FILE_SUPPORT_PALETTES;
+      FILE_SUPPORT_PALETTES |
+      FILE_SUPPORT_FRAME_TAGS;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -1285,6 +1286,11 @@ static void ase_file_read_frame_tags_chunk(FILE* f, FrameTags* frameTags)
     frame_t from = fgetw(f);
     frame_t to = fgetw(f);
     int aniDir = fgetc(f);
+    if (aniDir != int(AniDir::FORWARD) &&
+        aniDir != int(AniDir::REVERSE) &&
+        aniDir != int(AniDir::PING_PONG)) {
+      aniDir = int(AniDir::FORWARD);
+    }
 
     fgetl(f);                     // 8 reserved bytes
     fgetl(f);

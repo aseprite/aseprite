@@ -12,17 +12,23 @@
 #include "app/ui/configure_timeline_popup.h"
 
 #include "app/app.h"
+#include "app/cmd/remove_frame_tag.h"
+#include "app/cmd/set_frame_tag_anidir.h"
+#include "app/commands/commands.h"
 #include "app/context.h"
+#include "app/context_access.h"
 #include "app/document.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
+#include "app/loop_tag.h"
 #include "app/settings/settings.h"
-#include "app/commands/commands.h"
+#include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
+#include "doc/frame_tag.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/message.h"
@@ -66,10 +72,14 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::PING_PONG));
 }
 
+app::Document* ConfigureTimelinePopup::doc()
+{
+  return UIContext::instance()->activeDocument();
+}
+
 DocumentPreferences& ConfigureTimelinePopup::docPref()
 {
-  return App::instance()->preferences().document(
-    UIContext::instance()->activeDocument());
+  return App::instance()->preferences().document(doc());
 }
 
 void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
@@ -97,7 +107,17 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
       break;
   }
 
-  switch (docPref.loop.aniDir()) {
+  doc::AniDir aniDir = doc::AniDir::FORWARD;
+  if (doc()) {
+    if (doc::FrameTag* tag = get_loop_tag(doc()->sprite())) {
+      aniDir = tag->aniDir();
+    }
+  }
+  else {
+    ASSERT(false && "We should have an active sprite at this moment");
+  }
+
+  switch (aniDir) {
     case doc::AniDir::FORWARD:
       m_normalDir->setSelected(true);
       break;
@@ -167,12 +187,32 @@ void ConfigureTimelinePopup::onSetLoopSection()
 
 void ConfigureTimelinePopup::onResetLoopSection()
 {
-  docPref().loop.visible(false);
+  ContextWriter writer(UIContext::instance());
+  Transaction transaction(writer.context(), "Remove Loop");
+  transaction.execute(new cmd::RemoveFrameTag(writer.sprite(),
+      get_loop_tag(writer.sprite())));
+  transaction.commit();
 }
 
 void ConfigureTimelinePopup::onAniDir(doc::AniDir aniDir)
 {
-  docPref().loop.aniDir(aniDir);
+  ContextWriter writer(UIContext::instance());
+  doc::Sprite* sprite = writer.sprite();
+  if (sprite) {
+    ASSERT(false);
+    return;
+  }
+
+  doc::FrameTag* loopTag = get_loop_tag(sprite);
+  Transaction transaction(writer.context(), "Set Loop Direction");
+  if (loopTag)
+    transaction.execute(new cmd::SetFrameTagAniDir(loopTag, aniDir));
+  else {
+    loopTag = create_loop_tag(doc::frame_t(0), sprite->lastFrame());
+    loopTag->setAniDir(aniDir);
+    transaction.execute(new cmd::AddFrameTag(sprite, loopTag));
+  }
+  transaction.commit();
 }
 
 } // namespace app
