@@ -21,6 +21,14 @@ FrameTags::FrameTags(Sprite* sprite)
 {
 }
 
+FrameTags::~FrameTags()
+{
+  for (FrameTag* tag : m_tags) {
+    tag->setOwner(nullptr);
+    delete tag;
+  }
+}
+
 void FrameTags::add(FrameTag* tag)
 {
   auto it = begin(), end = this->end();

@@ -22,6 +22,7 @@ namespace doc {
   class FrameTag : public Object {
   public:
     FrameTag(frame_t from, frame_t to);
+    ~FrameTag();
 
     FrameTags* owner() const { return m_owner; }
     frame_t fromFrame() const { return m_from; }

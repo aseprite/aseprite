@@ -26,6 +26,7 @@ namespace doc {
     typedef List::const_iterator const_iterator;
 
     FrameTags(Sprite* sprite);
+    ~FrameTags();
 
     Sprite* sprite() { return m_sprite; }
 

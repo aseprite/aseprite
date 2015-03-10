@@ -25,9 +25,13 @@ FrameTag::FrameTag(frame_t from, frame_t to)
 {
 }
 
-void FrameTag::setOwner(FrameTags* owner)
+FrameTag::~FrameTag()
 {
   ASSERT(!m_owner);
+}
+
+void FrameTag::setOwner(FrameTags* owner)
+{
   m_owner = owner;
 }
 
