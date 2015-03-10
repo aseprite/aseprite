@@ -107,6 +107,7 @@ Timeline::Timeline()
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
+  , m_sprite(NULL)
   , m_scroll_x(0)
   , m_scroll_y(0)
   , m_separator_x(100 * guiscale())
@@ -2268,10 +2269,13 @@ skin::SkinTheme* Timeline::skinTheme() const
 
 int Timeline::topHeight() const
 {
-  int h = skinTheme()->dimensions.timelineTopBorder();
-  if (m_sprite && !m_sprite->frameTags().empty()) {
-    h += getFont()->height();
-    h += skinTheme()->dimensions.timelineTagsAreaHeight();
+  int h = 0;
+  if (m_document && m_sprite) {
+    h += skinTheme()->dimensions.timelineTopBorder();
+    if (!m_sprite->frameTags().empty()) {
+      h += getFont()->height();
+      h += skinTheme()->dimensions.timelineTagsAreaHeight();
+    }
   }
   return h;
 }
