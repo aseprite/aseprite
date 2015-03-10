@@ -120,19 +120,18 @@ namespace app {
       int part;
       LayerIndex layer;
       frame_t frame;
+      FrameTag* frameTag;
 
-      Hit() : part(0) {
-      }
-
-      Hit(int part, LayerIndex layer, frame_t frame)
-        : part(part), layer(layer), frame(frame) {
+      Hit(int part = 0, LayerIndex layer = LayerIndex(0), frame_t frame = 0, FrameTag* frameTag = nullptr)
+        : part(part), layer(layer), frame(frame), frameTag(frameTag) {
       }
 
       bool operator!=(const Hit& other) const {
         return
           part != other.part ||
           layer != other.layer ||
-          frame != other.frame;
+          frame != other.frame ||
+          frameTag != other.frameTag;
       }
     };
 
@@ -160,7 +159,7 @@ namespace app {
     bool allLayersContinuous();
     bool allLayersDiscontinuous();
     void detachDocument();
-    void setCursor(ui::Message* msg, const gfx::Point& mousePos);
+    void setCursor(ui::Message* msg, const Hit& hit);
     void getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer);
     void getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame);
     void drawPart(ui::Graphics* g, const gfx::Rect& bounds,
@@ -182,11 +181,11 @@ namespace app {
     gfx::Rect getFrameHeadersBounds() const;
     gfx::Rect getOnionskinFramesBounds() const;
     gfx::Rect getCelsBounds() const;
-    gfx::Rect getPartBounds(int part, LayerIndex layer = LayerIndex(0), frame_t frame = frame_t(0)) const;
+    gfx::Rect getPartBounds(const Hit& hit) const;
     gfx::Rect getRangeBounds(const Range& range) const;
     void invalidateHit(const Hit& hit);
     void regenerateLayers();
-    Hit hitTestByMousePos(ui::Message* msg, const gfx::Point& mousePos);
+    void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     void setHot(const Hit& hit);
     void centerCel(LayerIndex layer, frame_t frame);

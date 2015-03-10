@@ -42,4 +42,13 @@ void FrameTags::remove(FrameTag* tag)
   tag->setOwner(nullptr);
 }
 
+FrameTag* FrameTags::getByName(const std::string& name) const
+{
+  for (FrameTag* tag : *this) {
+    if (tag->name() == name)
+      return tag;
+  }
+  return nullptr;
+}
+
 } // namespace doc

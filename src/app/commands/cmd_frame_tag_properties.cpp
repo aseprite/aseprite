@@ -15,6 +15,7 @@
 #include "app/cmd/set_frame_tag_range.h"
 #include "app/color.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/loop_tag.h"
 #include "app/transaction.h"
@@ -33,10 +34,12 @@ public:
   Command* clone() const override { return new FrameTagPropertiesCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 
 private:
+  std::string m_tagName;
 };
 
 FrameTagPropertiesCommand::FrameTagPropertiesCommand()
@@ -44,6 +47,11 @@ FrameTagPropertiesCommand::FrameTagPropertiesCommand()
             "Frame Tag Properties",
             CmdUIOnlyFlag)
 {
+}
+
+void FrameTagPropertiesCommand::onLoadParams(Params* params)
+{
+  m_tagName = params->get("name");
 }
 
 bool FrameTagPropertiesCommand::onEnabled(Context* context)
@@ -56,9 +64,16 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
   frame_t frame = reader.frame();
-  const FrameTag* foundTag = get_shortest_tag(sprite, frame);
-  if (!foundTag)
-    return;
+  const FrameTag* foundTag = nullptr;
+
+  if (!m_tagName.empty())
+    foundTag = sprite->frameTags().getByName(m_tagName);
+
+  if (!foundTag) {
+    foundTag = get_shortest_tag(sprite, frame);
+    if (!foundTag)
+      return;
+  }
 
   FrameTagWindow window(sprite, foundTag);
   if (!window.show())

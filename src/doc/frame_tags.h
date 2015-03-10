@@ -31,6 +31,8 @@ namespace doc {
     void add(FrameTag* tag);
     void remove(FrameTag* tag);
 
+    FrameTag* getByName(const std::string& name) const;
+
     iterator begin() { return m_tags.begin(); }
     iterator end() { return m_tags.end(); }
     const_iterator begin() const { return m_tags.begin(); }
