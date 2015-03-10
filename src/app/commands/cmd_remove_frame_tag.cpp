@@ -12,8 +12,10 @@
 #include "app/app.h"
 #include "app/cmd/remove_frame_tag.h"
 #include "app/commands/command.h"
+#include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/loop_tag.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
@@ -27,8 +29,12 @@ public:
   Command* clone() const override { return new RemoveFrameTagCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(Params* params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+
+private:
+  std::string m_tagName;
 };
 
 RemoveFrameTagCommand::RemoveFrameTagCommand()
@@ -36,6 +42,11 @@ RemoveFrameTagCommand::RemoveFrameTagCommand()
             "Remove Frame Tag",
             CmdRecordableFlag)
 {
+}
+
+void RemoveFrameTagCommand::onLoadParams(Params* params)
+{
+  m_tagName = params->get("name");
 }
 
 bool RemoveFrameTagCommand::onEnabled(Context* context)
@@ -49,23 +60,22 @@ void RemoveFrameTagCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Sprite* sprite(writer.sprite());
   frame_t frame = writer.frame();
+  FrameTag* foundTag = nullptr;
 
-  FrameTag* best = nullptr;
-  for (FrameTag* tag : sprite->frameTags()) {
-    if (frame >= tag->fromFrame() &&
-        frame <= tag->toFrame()) {
-      if (!best ||
-          (tag->toFrame() - tag->fromFrame()) < (best->toFrame() - best->fromFrame())) {
-        best = tag;
-      }
-    }
+  if (!m_tagName.empty())
+    foundTag = sprite->frameTags().getByName(m_tagName);
+
+  if (!foundTag) {
+    foundTag = get_shortest_tag(sprite, frame);
+    if (!foundTag)
+      return;
   }
 
-  if (!best)
+  if (!foundTag)
     return;
 
   Transaction transaction(writer.context(), "Remove Frame Tag");
-  transaction.execute(new cmd::RemoveFrameTag(sprite, best));
+  transaction.execute(new cmd::RemoveFrameTag(sprite, foundTag));
   transaction.commit();
 
   App::instance()->getMainWindow()->getTimeline()->invalidate();

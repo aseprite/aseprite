@@ -23,6 +23,8 @@ namespace app {
   XmlDocumentRef open_xml(const std::string& filename);
   void save_xml(XmlDocumentRef doc, const std::string& filename);
 
+  bool bool_attr_is_true(const TiXmlElement* elem, const char* attrName);
+
 } // namespace app
 
 #endif

@@ -45,4 +45,11 @@ void save_xml(XmlDocumentRef doc, const std::string& filename)
     throw XmlException(doc);
 }
 
+bool bool_attr_is_true(const TiXmlElement* elem, const char* attrName)
+{
+  const char* value = elem->Attribute(attrName);
+
+  return (value != NULL) && (strcmp(value, "true") == 0);
+}
+
 } // namespace app

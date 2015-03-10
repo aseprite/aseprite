@@ -668,6 +668,12 @@
         <param name="type" value="noop" />
       </item>
     </menu>
+
+    <menu id="frame_tag_popup">
+      <item command="FrameTagProperties" text="Tag &amp;Properties..." contextparams="true" />
+      <item command="RemoveFrameTag" text="&amp;Remove Tag" contextparams="true" />
+    </menu>
+
   </menus>
 
   <!-- tools -->

@@ -40,7 +40,6 @@ using namespace ui;
 using namespace app::skin;
 
 static int convert_align_value_to_flags(const char *value);
-static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name);
 static int int_attr(const TiXmlElement* elem, const char* attribute_name, int default_value);
 
 WidgetLoader::WidgetLoader()
@@ -630,13 +629,6 @@ static int convert_align_value_to_flags(const char *value)
 
   base_free(ptr);
   return flags;
-}
-
-static bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name)
-{
-  const char* value = elem->Attribute(attribute_name);
-
-  return (value != NULL) && (strcmp(value, "true") == 0);
 }
 
 static int int_attr(const TiXmlElement* elem, const char* attribute_name, int default_value)

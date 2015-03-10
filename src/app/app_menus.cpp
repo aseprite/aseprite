@@ -87,6 +87,7 @@ void AppMenus::reload()
   m_framePopupMenu.reset(loadMenuById(handle, "frame_popup"));
   m_celPopupMenu.reset(loadMenuById(handle, "cel_popup"));
   m_celMovementPopupMenu.reset(loadMenuById(handle, "cel_movement_popup"));
+  m_frameTagPopupMenu.reset(loadMenuById(handle, "frame_tag_popup"));
 
   ////////////////////////////////////////
   // Load keyboard shortcuts for commands
@@ -214,6 +215,8 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
     command_name ? CommandsModule::instance()->getCommandByName(command_name):
                    NULL;
 
+  bool contextparams = bool_attr_is_true(elem, "contextparams");
+
   // load params
   Params params;
   if (command) {
@@ -231,7 +234,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
   // Create the item
   AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"),
-                                          command, command ? &params: NULL);
+    command, (command && !contextparams ? &params: nullptr));
   if (!menuitem)
     return NULL;
 

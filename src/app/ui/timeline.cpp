@@ -596,11 +596,23 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_FRAME_TAG:
             if (m_clk.frameTag) {
-              Command* command = CommandsModule::instance()
-                ->getCommandByName(CommandId::FrameTagProperties);
-              Params params;
-              params.set("name", m_clk.frameTag->name().c_str());
-              UIContext::instance()->executeCommand(command, &params);
+              if (mouseMsg->right()) {
+                Menu* popup_menu = AppMenus::instance()->getFrameTagPopupMenu();
+                if (popup_menu) {
+                  Params params;
+                  params.set("name", m_clk.frameTag->name().c_str());
+                  CommandsModule::instance()->getCommandByName(CommandId::FrameTagProperties)->loadParams(&params);
+                  CommandsModule::instance()->getCommandByName(CommandId::RemoveFrameTag)->loadParams(&params);
+                  popup_menu->showPopup(mouseMsg->position());
+                }
+              }
+              else if (mouseMsg->left()) {
+                Command* command = CommandsModule::instance()
+                  ->getCommandByName(CommandId::FrameTagProperties);
+                Params params;
+                params.set("name", m_clk.frameTag->name().c_str());
+                UIContext::instance()->executeCommand(command, &params);
+              }
             }
             break;
 
