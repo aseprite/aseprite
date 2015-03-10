@@ -601,6 +601,12 @@ bool Timeline::onProcessMessage(Message* msg)
               Params params;
               params.set("id", base::convert_to<std::string>(m_clk.frameTag->id()).c_str());
 
+              // As the m_clk.frameTag can be deleted with
+              // RemoveFrameTag command, we've to clean all references
+              // to it from Hit() structures.
+              cleanClk();
+              m_hot = m_clk;
+
               if (mouseMsg->right()) {
                 Menu* popup_menu = AppMenus::instance()->getFrameTagPopupMenu();
                 if (popup_menu) {
