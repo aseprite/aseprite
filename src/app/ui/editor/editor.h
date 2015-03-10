@@ -284,12 +284,10 @@ namespace app {
     ScopedConnection m_fgColorChangeConn;
 
     // Slots listeing document preferences.
-    ScopedConnection m_tiledModeConn;
-    ScopedConnection m_gridVisibleConn;
-    ScopedConnection m_gridBoundsConn;
-    ScopedConnection m_gridColorConn;
-    ScopedConnection m_pixelGridVisibleConn;
-    ScopedConnection m_pixelGridColorConn;
+    ScopedConnection m_tiledConn;
+    ScopedConnection m_gridConn;
+    ScopedConnection m_pixelGridConn;
+    ScopedConnection m_onionskinConn;
 
     EditorObservers m_observers;
 

@@ -13,10 +13,22 @@
 
 namespace app {
 
+  class Section {
+  public:
+    Section(const std::string& name) : m_name(name) { }
+    const char* name() const { return m_name.c_str(); }
+
+    Signal0<void> BeforeChange;
+    Signal0<void> AfterChange;
+
+  private:
+    std::string m_name;
+  };
+
   template<typename T>
   class Option {
   public:
-    Option(const char* section, const char* id, const T& defaultValue = T())
+    Option(Section* section, const char* id, const T& defaultValue = T())
       : m_section(section)
       , m_id(id)
       , m_default(defaultValue)
@@ -24,20 +36,12 @@ namespace app {
       , m_dirty(false) {
     }
 
-    Option(const Option& opt)
-      : m_section(opt.m_section)
-      , m_id(opt.m_id)
-      , m_default(opt.m_default)
-      , m_value(opt.m_value)
-      , m_dirty(false) {
-    }
-
     Option& operator=(const Option& opt) {
-      operator()(opt.m_value());
+      operator()(opt.m_value);
       return *this;
     }
 
-    const char* section() const { return m_section; }
+    const char* section() const { return m_section->name(); }
     const char* id() const { return m_id; }
     const T& defaultValue() const { return m_default; }
 
@@ -54,12 +58,17 @@ namespace app {
         return m_value;
 
       BeforeChange(*this, newValue);
+      if (m_section)
+        m_section->BeforeChange();
 
       T oldValue = m_value;
       m_value = newValue;
       m_dirty = true;
 
       AfterChange(*this, oldValue);
+      if (m_section)
+        m_section->AfterChange();
+
       return m_value;
     }
 
@@ -67,13 +76,14 @@ namespace app {
     Signal2<void, Option&, const T&> AfterChange;
 
   private:
-    const char* m_section;
+    Section* m_section;
     const char* m_id;
     T m_default;
     T m_value;
     bool m_dirty;
 
     Option();
+    Option(const Option& opt);
   };
 
 } // namespace app

@@ -170,12 +170,11 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   DocumentPreferences& docPref = App::instance()
     ->preferences().document(m_document);
-  m_tiledModeConn = docPref.tiled.mode.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_gridVisibleConn = docPref.grid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_gridBoundsConn = docPref.grid.bounds.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_gridColorConn = docPref.grid.color.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_pixelGridVisibleConn = docPref.pixelGrid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
-  m_pixelGridColorConn = docPref.pixelGrid.visible.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+
+  m_tiledConn = docPref.tiled.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_gridConn = docPref.grid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
+  m_onionskinConn = docPref.onionskin.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
 
   m_document->addObserver(this);
 

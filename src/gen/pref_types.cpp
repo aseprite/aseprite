@@ -23,10 +23,9 @@ static void print_pref_class_def(TiXmlElement* elem, const std::string& classNam
   std::string indent(indentSpaces, ' ');
   std::cout
     << "\n"
-    << indent << "class " << className << " {\n"
-    << indent << "  std::string m_section;\n"
+    << indent << "class " << className << " : public Section {\n"
     << indent << "public:\n"
-    << indent << "  " << className << "(const std::string& section);\n";
+    << indent << "  " << className << "(const std::string& name);\n";
 
   std::cout
     << indent << "  void load();\n"
@@ -65,12 +64,12 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
 {
   std::cout
     << "\n"
-    << prefix << className << "::" << className << "(const std::string& section)\n";
+    << prefix << className << "::" << className << "(const std::string& name)\n";
 
   if (section)
-    std::cout << "  : m_section((!section.empty() ? section + \".\": section) + \"" << section << "\")\n";
+    std::cout << "  : Section(std::string(!name.empty() ? name + \".\": \"\") + \"" << section << "\")\n";
   else
-    std::cout << "  : m_section(section)\n";
+    std::cout << "  : Section(name)\n";
 
   TiXmlElement* child = (elem->FirstChild() ? elem->FirstChild()->ToElement(): NULL);
   while (child) {
@@ -83,7 +82,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
         if (!childId) throw std::runtime_error("missing 'id' attr in <option>");
         std::string memberName = convert_xmlid_to_cppid(childId, false);
         std::cout << "  , "
-                  << memberName << "(m_section.c_str(), \"" << childId << "\"";
+                  << memberName << "(this, \"" << childId << "\"";
         if (child->Attribute("default"))
           std::cout << ", " << child->Attribute("default");
         std::cout << ")\n";
@@ -91,7 +90,7 @@ static void print_pref_class_impl(TiXmlElement* elem, const std::string& prefix,
       else if (name == "section") {
         if (!childId) throw std::runtime_error("missing 'id' attr in <option>");
         std::string memberName = convert_xmlid_to_cppid(childId, false);
-        std::cout << "  , " << memberName << "(m_section)\n";
+        std::cout << "  , " << memberName << "(name)\n";
       }
     }
     child = child->NextSiblingElement();

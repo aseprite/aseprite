@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "base/connection.h"
-#include "base/disable_copying.h"
 #include "base/remove_from_container.h"
 #include "base/slot.h"
 
@@ -33,6 +32,11 @@ public:
   Signal0_base() { }
   ~Signal0_base() { }
 
+  Signal0_base(const Signal0_base&) { }
+  Signal0_base operator=(const Signal0_base&) {
+    return *this;
+  }
+
   Connection addSlot(SlotType* slot) {
     m_slots.push_back(slot);
     return Connection(this, slot);
@@ -54,9 +58,6 @@ public:
 
 protected:
   SlotList m_slots;
-
-private:
-  DISABLE_COPYING(Signal0_base);
 };
 
 // Signal0<R>
@@ -128,6 +129,11 @@ public:
   Signal1_base() { }
   ~Signal1_base() { }
 
+  Signal1_base(const Signal1_base&) { }
+  Signal1_base operator=(const Signal1_base&) {
+    return *this;
+  }
+
   Connection addSlot(SlotType* slot) {
     m_slots.push_back(slot);
     return Connection(this, slot);
@@ -149,9 +155,6 @@ public:
 
 protected:
   SlotList m_slots;
-
-private:
-  DISABLE_COPYING(Signal1_base);
 };
 
 // Signal1<R, A1>
@@ -224,6 +227,11 @@ public:
   Signal2_base() { }
   ~Signal2_base() { }
 
+  Signal2_base(const Signal2_base&) { }
+  Signal2_base operator=(const Signal2_base&) {
+    return *this;
+  }
+
   Connection addSlot(SlotType* slot) {
     m_slots.push_back(slot);
     return Connection(this, slot);
@@ -245,9 +253,6 @@ public:
 
 protected:
   SlotList m_slots;
-
-private:
-  DISABLE_COPYING(Signal2_base);
 };
 
 // Signal2<R, A1>

@@ -61,9 +61,7 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
     return *it->second;
   }
   else {
-    std::string section = "tool.";
-    section += tool->getId();
-
+    std::string section = std::string("tool.") + tool->getId();
     ToolPreferences* toolPref = new ToolPreferences(section);
     m_tools[tool->getId()] = toolPref;
     toolPref->load();
@@ -79,8 +77,10 @@ DocumentPreferences& Preferences::document(app::Document* document)
   }
   else {
     DocumentPreferences* docPref;
-    if (document)
-      docPref = new DocumentPreferences(this->document(nullptr));
+    if (document) {
+      docPref = new DocumentPreferences("");
+      *docPref = this->document(nullptr);
+    }
     else
       docPref = new DocumentPreferences("");
 
