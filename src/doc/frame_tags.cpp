@@ -51,4 +51,13 @@ FrameTag* FrameTags::getByName(const std::string& name) const
   return nullptr;
 }
 
+FrameTag* FrameTags::getById(ObjectId id) const
+{
+  for (FrameTag* tag : *this) {
+    if (tag->id() == id)
+      return tag;
+  }
+  return nullptr;
+}
+
 } // namespace doc

@@ -24,6 +24,9 @@ namespace base {
   template<> int convert_to(const std::string& from);
   template<> std::string convert_to(const int& from);
 
+  template<> uint32_t convert_to(const std::string& from);
+  template<> std::string convert_to(const uint32_t& from);
+
   template<> double convert_to(const std::string& from);
   template<> std::string convert_to(const double& from);
 

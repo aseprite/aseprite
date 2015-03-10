@@ -19,6 +19,7 @@
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
+#include "base/convert_to.h"
 #include "doc/frame_tag.h"
 
 namespace app {
@@ -35,6 +36,7 @@ protected:
 
 private:
   std::string m_tagName;
+  ObjectId m_tagId;
 };
 
 RemoveFrameTagCommand::RemoveFrameTagCommand()
@@ -47,6 +49,12 @@ RemoveFrameTagCommand::RemoveFrameTagCommand()
 void RemoveFrameTagCommand::onLoadParams(Params* params)
 {
   m_tagName = params->get("name");
+
+  std::string id = params->get("id");
+  if (!id.empty())
+    m_tagId = ObjectId(base::convert_to<ObjectId>(id));
+  else
+    m_tagId = NullId;
 }
 
 bool RemoveFrameTagCommand::onEnabled(Context* context)
@@ -64,12 +72,10 @@ void RemoveFrameTagCommand::onExecute(Context* context)
 
   if (!m_tagName.empty())
     foundTag = sprite->frameTags().getByName(m_tagName);
-
-  if (!foundTag) {
+  else if (m_tagId != NullId)
+    foundTag = sprite->frameTags().getById(m_tagId);
+  else
     foundTag = get_shortest_tag(sprite, frame);
-    if (!foundTag)
-      return;
-  }
 
   if (!foundTag)
     return;

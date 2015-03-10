@@ -36,6 +36,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "base/convert_to.h"
 #include "base/memory.h"
 #include "doc/doc.h"
 #include "doc/document_event.h"
@@ -596,11 +597,12 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case PART_FRAME_TAG:
             if (m_clk.frameTag) {
+              Params params;
+              params.set("id", base::convert_to<std::string>(m_clk.frameTag->id()).c_str());
+
               if (mouseMsg->right()) {
                 Menu* popup_menu = AppMenus::instance()->getFrameTagPopupMenu();
                 if (popup_menu) {
-                  Params params;
-                  params.set("name", m_clk.frameTag->name().c_str());
                   CommandsModule::instance()->getCommandByName(CommandId::FrameTagProperties)->loadParams(&params);
                   CommandsModule::instance()->getCommandByName(CommandId::RemoveFrameTag)->loadParams(&params);
                   popup_menu->showPopup(mouseMsg->position());
@@ -609,8 +611,6 @@ bool Timeline::onProcessMessage(Message* msg)
               else if (mouseMsg->left()) {
                 Command* command = CommandsModule::instance()
                   ->getCommandByName(CommandId::FrameTagProperties);
-                Params params;
-                params.set("name", m_clk.frameTag->name().c_str());
                 UIContext::instance()->executeCommand(command, &params);
               }
             }

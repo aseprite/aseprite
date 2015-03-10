@@ -20,6 +20,7 @@
 #include "app/loop_tag.h"
 #include "app/transaction.h"
 #include "app/ui/frame_tag_window.h"
+#include "base/convert_to.h"
 #include "doc/anidir.h"
 #include "doc/frame_tag.h"
 #include "doc/sprite.h"
@@ -40,6 +41,7 @@ protected:
 
 private:
   std::string m_tagName;
+  ObjectId m_tagId;
 };
 
 FrameTagPropertiesCommand::FrameTagPropertiesCommand()
@@ -52,6 +54,12 @@ FrameTagPropertiesCommand::FrameTagPropertiesCommand()
 void FrameTagPropertiesCommand::onLoadParams(Params* params)
 {
   m_tagName = params->get("name");
+
+  std::string id = params->get("id");
+  if (!id.empty())
+    m_tagId = ObjectId(base::convert_to<ObjectId>(id));
+  else
+    m_tagId = NullId;
 }
 
 bool FrameTagPropertiesCommand::onEnabled(Context* context)
@@ -68,12 +76,10 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
 
   if (!m_tagName.empty())
     foundTag = sprite->frameTags().getByName(m_tagName);
-
-  if (!foundTag) {
+  else if (m_tagId != NullId)
+    foundTag = sprite->frameTags().getById(m_tagId);
+  else
     foundTag = get_shortest_tag(sprite, frame);
-    if (!foundTag)
-      return;
-  }
 
   FrameTagWindow window(sprite, foundTag);
   if (!window.show())

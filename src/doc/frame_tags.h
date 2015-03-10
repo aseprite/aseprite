@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "doc/object_id.h"
 
 #include <vector>
 
@@ -32,6 +33,7 @@ namespace doc {
     void remove(FrameTag* tag);
 
     FrameTag* getByName(const std::string& name) const;
+    FrameTag* getById(const ObjectId id) const;
 
     iterator begin() { return m_tags.begin(); }
     iterator end() { return m_tags.end(); }

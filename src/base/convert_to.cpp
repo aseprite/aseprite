@@ -28,6 +28,18 @@ template<> std::string convert_to(const int& from)
   return buf;
 }
 
+template<> uint32_t convert_to(const std::string& from)
+{
+  return std::strtoul(from.c_str(), NULL, 10);
+}
+
+template<> std::string convert_to(const uint32_t& from)
+{
+  char buf[32];
+  std::sprintf(buf, "%u", from);
+  return buf;
+}
+
 template<> double convert_to(const std::string& from)
 {
   return std::strtod(from.c_str(), NULL);
