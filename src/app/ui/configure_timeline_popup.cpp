@@ -12,8 +12,6 @@
 #include "app/ui/configure_timeline_popup.h"
 
 #include "app/app.h"
-#include "app/cmd/remove_frame_tag.h"
-#include "app/cmd/set_frame_tag_anidir.h"
 #include "app/commands/commands.h"
 #include "app/context.h"
 #include "app/context_access.h"
@@ -28,12 +26,13 @@
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
-#include "doc/frame_tag.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/message.h"
 #include "ui/slider.h"
 #include "ui/theme.h"
+
+#include "generated_timeline_conf.h"
 
 namespace app {
 
@@ -46,30 +45,14 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   setAutoRemap(false);
   setBorder(gfx::Border(4*guiscale()));
 
-  addChild(app::load_widget<Box>("timeline_conf.xml", "mainbox"));
+  m_box = new app::gen::TimelineConf();
+  addChild(m_box);
 
-  app::finder(this)
-    >> "merge" >> m_merge
-    >> "tint" >> m_tint
-    >> "opacity" >> m_opacity
-    >> "opacity_step" >> m_opacityStep
-    >> "reset_onionskin" >> m_resetOnionskin
-    >> "loop_section" >> m_setLoopSection
-    >> "reset_loop_section" >> m_resetLoopSection
-    >> "normal" >> m_normalDir
-    >> "reverse" >> m_reverseDir
-    >> "pingpong" >> m_pingPongDir;
-
-  m_merge->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_tint->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
-  m_opacity->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
-  m_opacityStep->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
-  m_resetOnionskin->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
-  m_setLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onSetLoopSection, this));
-  m_resetLoopSection->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetLoopSection, this));
-  m_normalDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::FORWARD));
-  m_reverseDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::REVERSE));
-  m_pingPongDir->Click.connect(Bind<void>(&ConfigureTimelinePopup::onAniDir, this, doc::AniDir::PING_PONG));
+  m_box->merge()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
+  m_box->tint()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onChangeType, this));
+  m_box->opacity()->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacity, this));
+  m_box->opacityStep()->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
+  m_box->resetOnionskin()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -89,43 +72,21 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
 
   switch (docPref.onionskin.type()) {
     case app::gen::OnionskinType::MERGE:
-      m_merge->setSelected(true);
+      m_box->merge()->setSelected(true);
       break;
     case app::gen::OnionskinType::RED_BLUE_TINT:
-      m_tint->setSelected(true);
+      m_box->tint()->setSelected(true);
       break;
   }
-  m_opacity->setValue(docPref.onionskin.opacityBase());
-  m_opacityStep->setValue(docPref.onionskin.opacityStep());
+  m_box->opacity()->setValue(docPref.onionskin.opacityBase());
+  m_box->opacityStep()->setValue(docPref.onionskin.opacityStep());
 
   switch (docPref.onionskin.type()) {
     case app::gen::OnionskinType::MERGE:
-      m_merge->setSelected(true);
+      m_box->merge()->setSelected(true);
       break;
     case app::gen::OnionskinType::RED_BLUE_TINT:
-      m_tint->setSelected(true);
-      break;
-  }
-
-  doc::AniDir aniDir = doc::AniDir::FORWARD;
-  if (doc()) {
-    if (doc::FrameTag* tag = get_loop_tag(doc()->sprite())) {
-      aniDir = tag->aniDir();
-    }
-  }
-  else {
-    ASSERT(false && "We should have an active sprite at this moment");
-  }
-
-  switch (aniDir) {
-    case doc::AniDir::FORWARD:
-      m_normalDir->setSelected(true);
-      break;
-    case doc::AniDir::REVERSE:
-      m_reverseDir->setSelected(true);
-      break;
-    case doc::AniDir::PING_PONG:
-      m_pingPongDir->setSelected(true);
+      m_box->tint()->setSelected(true);
       break;
   }
 }
@@ -148,7 +109,7 @@ void ConfigureTimelinePopup::onChangeType()
   if (m_lockUpdates)
     return;
 
-  docPref().onionskin.type(m_merge->isSelected() ?
+  docPref().onionskin.type(m_box->merge()->isSelected() ?
     app::gen::OnionskinType::MERGE:
     app::gen::OnionskinType::RED_BLUE_TINT);
 }
@@ -158,7 +119,7 @@ void ConfigureTimelinePopup::onOpacity()
   if (m_lockUpdates)
     return;
 
-  docPref().onionskin.opacityBase(m_opacity->getValue());
+  docPref().onionskin.opacityBase(m_box->opacity()->getValue());
 }
 
 void ConfigureTimelinePopup::onOpacityStep()
@@ -166,7 +127,7 @@ void ConfigureTimelinePopup::onOpacityStep()
   if (m_lockUpdates)
     return;
 
-  docPref().onionskin.opacityStep(m_opacityStep->getValue());
+  docPref().onionskin.opacityStep(m_box->opacityStep()->getValue());
 }
 
 void ConfigureTimelinePopup::onResetOnionskin()
@@ -178,41 +139,6 @@ void ConfigureTimelinePopup::onResetOnionskin()
   docPref.onionskin.opacityStep(docPref.onionskin.opacityStep.defaultValue());
 
   updateWidgetsFromCurrentSettings();
-}
-
-void ConfigureTimelinePopup::onSetLoopSection()
-{
-  UIContext::instance()->executeCommand(CommandId::SetLoopSection);
-}
-
-void ConfigureTimelinePopup::onResetLoopSection()
-{
-  ContextWriter writer(UIContext::instance());
-  Transaction transaction(writer.context(), "Remove Loop");
-  transaction.execute(new cmd::RemoveFrameTag(writer.sprite(),
-      get_loop_tag(writer.sprite())));
-  transaction.commit();
-}
-
-void ConfigureTimelinePopup::onAniDir(doc::AniDir aniDir)
-{
-  ContextWriter writer(UIContext::instance());
-  doc::Sprite* sprite = writer.sprite();
-  if (sprite) {
-    ASSERT(false);
-    return;
-  }
-
-  doc::FrameTag* loopTag = get_loop_tag(sprite);
-  Transaction transaction(writer.context(), "Set Loop Direction");
-  if (loopTag)
-    transaction.execute(new cmd::SetFrameTagAniDir(loopTag, aniDir));
-  else {
-    loopTag = create_loop_tag(doc::frame_t(0), sprite->lastFrame());
-    loopTag->setAniDir(aniDir);
-    transaction.execute(new cmd::AddFrameTag(sprite, loopTag));
-  }
-  transaction.commit();
 }
 
 } // namespace app

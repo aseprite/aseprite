@@ -21,6 +21,10 @@ namespace ui {
 }
 
 namespace app {
+  namespace gen {
+    class TimelineConf;
+  }
+
   class Document;
 
   class ConfigureTimelinePopup : public ui::PopupWindow {
@@ -33,25 +37,13 @@ namespace app {
     void onOpacity();
     void onOpacityStep();
     void onResetOnionskin();
-    void onSetLoopSection();
-    void onResetLoopSection();
-    void onAniDir(doc::AniDir aniDir);
 
   private:
     void updateWidgetsFromCurrentSettings();
     app::Document* doc();
     DocumentPreferences& docPref();
 
-    ui::RadioButton* m_merge;
-    ui::RadioButton* m_tint;
-    ui::Slider* m_opacity;
-    ui::Slider* m_opacityStep;
-    ui::Button* m_resetOnionskin;
-    ui::Button* m_setLoopSection;
-    ui::Button* m_resetLoopSection;
-    ui::RadioButton* m_normalDir;
-    ui::RadioButton* m_reverseDir;
-    ui::RadioButton* m_pingPongDir;
+    app::gen::TimelineConf* m_box;
     bool m_lockUpdates;
   };
 
