@@ -43,6 +43,7 @@ RemoveFrameTagCommand::RemoveFrameTagCommand()
   : Command("RemoveFrameTag",
             "Remove Frame Tag",
             CmdRecordableFlag)
+  , m_tagId(NullId)
 {
 }
 
