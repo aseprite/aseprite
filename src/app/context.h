@@ -9,6 +9,7 @@
 #define APP_CONTEXT_H_INCLUDED
 #pragma once
 
+#include "app/commands/params.h"
 #include "app/context_flags.h"
 #include "base/disable_copying.h"
 #include "base/exception.h"
@@ -22,7 +23,6 @@ namespace app {
   class Document;
   class DocumentLocation;
   class ISettings;
-  class Params;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -53,7 +53,7 @@ namespace app {
     DocumentLocation activeLocation() const;
 
     void executeCommand(const char* commandName);
-    virtual void executeCommand(Command* command, Params* params = NULL);
+    virtual void executeCommand(Command* command, const Params& params = Params());
 
     Signal1<void, Command*> BeforeCommandExecution;
     Signal1<void, Command*> AfterCommandExecution;

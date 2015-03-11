@@ -37,9 +37,9 @@ public:
   Command* clone() const override { return new NewLayerCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 
 private:
   bool m_ask;
@@ -58,12 +58,12 @@ NewLayerCommand::NewLayerCommand()
   m_name = "";
 }
 
-void NewLayerCommand::onLoadParams(Params* params)
+void NewLayerCommand::onLoadParams(const Params& params)
 {
-  std::string ask = params->get("ask");
+  std::string ask = params.get("ask");
   if (ask == "true") m_ask = true;
 
-  m_name = params->get("name");
+  m_name = params.get("name");
 }
 
 bool NewLayerCommand::onEnabled(Context* context)

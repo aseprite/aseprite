@@ -396,7 +396,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       command = static_cast<SaveFileBaseCommand*>(CommandsModule::instance()
         ->getCommandByName(CommandId::SaveFileCopyAs));
 
-      context->executeCommand(command, &params);
+      context->executeCommand(command, params);
 
       // Always go back, as we are using "Save Copy As", so the user
       // wants to continue editing the original sprite.
@@ -407,7 +407,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       command = static_cast<SaveFileBaseCommand*>(CommandsModule::instance()
         ->getCommandByName(CommandId::SaveFileAs));
 
-      context->executeCommand(command, &params);
+      context->executeCommand(command, params);
 
       // If the command was cancelled, we go back to the original
       // state, if the sprite sheet was saved then we don't undo
@@ -419,7 +419,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       command = static_cast<SaveFileBaseCommand*>(CommandsModule::instance()
         ->getCommandByName(CommandId::SaveFile));
 
-      context->executeCommand(command, &params);
+      context->executeCommand(command, params);
 
       // Same case as "Save As"
       undo = (document->isModified());

@@ -108,7 +108,7 @@ protected:
     Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
     Params params;
     params.set("filename", "");
-    openFile->loadParams(&params);
+    openFile->loadParams(params);
     openFile->execute(m_context);
 
     // The user have selected another document.

@@ -167,7 +167,7 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
     m_toolLoopManager->pressKey(msg->scancode());
 
   Command* command = NULL;
-  Params* params = NULL;
+  Params params;
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
     // We accept zoom commands.

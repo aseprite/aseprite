@@ -111,10 +111,10 @@ SaveFileBaseCommand::SaveFileBaseCommand(const char* short_name, const char* fri
 {
 }
 
-void SaveFileBaseCommand::onLoadParams(Params* params)
+void SaveFileBaseCommand::onLoadParams(const Params& params)
 {
-  m_filename = params->get("filename");
-  m_filenameFormat = params->get("filename-format");
+  m_filename = params.get("filename");
+  m_filenameFormat = params.get("filename-format");
 }
 
 // Returns true if there is a current sprite to save.

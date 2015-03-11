@@ -22,10 +22,10 @@ namespace app {
     doc::algorithm::FlipType getFlipType() const { return m_flipType; }
 
   protected:
-    void onLoadParams(Params* params);
-    bool onEnabled(Context* context);
-    void onExecute(Context* context);
-    std::string onGetFriendlyName() const;
+    void onLoadParams(const Params& params) override;
+    bool onEnabled(Context* context) override;
+    void onExecute(Context* context) override;
+    std::string onGetFriendlyName() const override;
 
   private:
     bool m_flipMask;

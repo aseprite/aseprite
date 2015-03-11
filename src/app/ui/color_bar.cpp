@@ -174,7 +174,7 @@ void ColorBar::onPaletteButtonClick()
   Params params;
   params.set("switch", "true");
 
-  UIContext::instance()->executeCommand(cmd_show_palette_editor, &params);
+  UIContext::instance()->executeCommand(cmd_show_palette_editor, params);
 }
 
 void ColorBar::onPaletteButtonDropDownClick()

@@ -38,10 +38,10 @@ public:
   Command* clone() const override { return new RotateCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
-  std::string onGetFriendlyName() const;
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   bool m_flipMask;
@@ -180,13 +180,13 @@ RotateCommand::RotateCommand()
   m_angle = 0;
 }
 
-void RotateCommand::onLoadParams(Params* params)
+void RotateCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   m_flipMask = (target == "mask");
 
-  if (params->has_param("angle")) {
-    m_angle = strtol(params->get("angle").c_str(), NULL, 10);
+  if (params.has_param("angle")) {
+    m_angle = strtol(params.get("angle").c_str(), NULL, 10);
   }
 }
 

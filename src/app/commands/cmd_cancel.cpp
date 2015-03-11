@@ -28,8 +28,8 @@ public:
   Command* clone() const override { return new CancelCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  void onExecute(Context* context) override;
 
 private:
   Type m_type;
@@ -43,9 +43,9 @@ CancelCommand::CancelCommand()
 {
 }
 
-void CancelCommand::onLoadParams(Params* params)
+void CancelCommand::onLoadParams(const Params& params)
 {
-  std::string type = params->get("type");
+  std::string type = params.get("type");
   if (type == "noop") m_type = NoOp;
   else if (type == "all") m_type = All;
 }

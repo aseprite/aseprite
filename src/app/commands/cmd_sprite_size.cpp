@@ -167,23 +167,23 @@ Command* SpriteSizeCommand::clone() const
   return new SpriteSizeCommand(*this);
 }
 
-void SpriteSizeCommand::onLoadParams(Params* params)
+void SpriteSizeCommand::onLoadParams(const Params& params)
 {
-  std::string width = params->get("width");
+  std::string width = params.get("width");
   if (!width.empty()) {
     m_width = std::strtol(width.c_str(), NULL, 10);
   }
   else
     m_width = 0;
 
-  std::string height = params->get("height");
+  std::string height = params.get("height");
   if (!height.empty()) {
     m_height = std::strtol(height.c_str(), NULL, 10);
   }
   else
     m_height = 0;
 
-  std::string resize_method = params->get("resize-method");
+  std::string resize_method = params.get("resize-method");
   if (!resize_method.empty()) {
     if (resize_method == "bilinear")
       m_resizeMethod = doc::algorithm::RESIZE_METHOD_BILINEAR;

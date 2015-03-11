@@ -26,10 +26,10 @@ public:
   Command* clone() const override { return new ZoomCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
-  std::string onGetFriendlyName() const;
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 
 private:
   Action m_action;
@@ -43,14 +43,14 @@ ZoomCommand::ZoomCommand()
 {
 }
 
-void ZoomCommand::onLoadParams(Params* params)
+void ZoomCommand::onLoadParams(const Params& params)
 {
-  std::string action = params->get("action");
+  std::string action = params.get("action");
   if (action == "in") m_action = In;
   else if (action == "out") m_action = Out;
   else if (action == "set") m_action = Set;
 
-  std::string percentage = params->get("percentage");
+  std::string percentage = params.get("percentage");
   if (!percentage.empty()) {
     m_percentage = std::strtol(percentage.c_str(), NULL, 10);
     m_action = Set;

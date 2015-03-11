@@ -25,7 +25,7 @@ namespace app {
     }
 
   protected:
-    void onLoadParams(Params* params) override;
+    void onLoadParams(const Params& params) override;
     bool onEnabled(Context* context) override;
 
     void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved);

@@ -455,7 +455,7 @@ void StandbyState::callEyedropper(Editor* editor)
   Params params;
   params.set("target", fg ? "foreground": "background");
 
-  UIContext::instance()->executeCommand(eyedropper_cmd, &params);
+  UIContext::instance()->executeCommand(eyedropper_cmd, params);
 }
 
 //////////////////////////////////////////////////////////////////////

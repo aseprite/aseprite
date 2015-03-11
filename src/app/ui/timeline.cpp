@@ -28,6 +28,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui/app_menuitem.h"
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
@@ -610,15 +611,14 @@ bool Timeline::onProcessMessage(Message* msg)
               if (mouseMsg->right()) {
                 Menu* popup_menu = AppMenus::instance()->getFrameTagPopupMenu();
                 if (popup_menu) {
-                  CommandsModule::instance()->getCommandByName(CommandId::FrameTagProperties)->loadParams(&params);
-                  CommandsModule::instance()->getCommandByName(CommandId::RemoveFrameTag)->loadParams(&params);
+                  AppMenuItem::setContextParams(params);
                   popup_menu->showPopup(mouseMsg->position());
                 }
               }
               else if (mouseMsg->left()) {
                 Command* command = CommandsModule::instance()
                   ->getCommandByName(CommandId::FrameTagProperties);
-                UIContext::instance()->executeCommand(command, &params);
+                UIContext::instance()->executeCommand(command, params);
               }
             }
             break;
@@ -668,7 +668,7 @@ bool Timeline::onProcessMessage(Message* msg)
           Params params;
           params.set("frame", "current");
 
-          UIContext::instance()->executeCommand(command, &params);
+          UIContext::instance()->executeCommand(command, params);
           return true;
         }
 

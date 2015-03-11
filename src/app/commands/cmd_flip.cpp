@@ -43,12 +43,12 @@ FlipCommand::FlipCommand()
   m_flipType = doc::algorithm::FlipHorizontal;
 }
 
-void FlipCommand::onLoadParams(Params* params)
+void FlipCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   m_flipMask = (target == "mask");
 
-  std::string orientation = params->get("orientation");
+  std::string orientation = params.get("orientation");
   m_flipType = (orientation == "vertical" ? doc::algorithm::FlipVertical:
                                             doc::algorithm::FlipHorizontal);
 }

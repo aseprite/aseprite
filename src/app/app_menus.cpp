@@ -141,17 +141,17 @@ bool AppMenus::rebuildRecentList()
 
       for (; it != end; ++it) {
         const char* filename = it->c_str();
-
         params.set("filename", filename);
 
         menuitem = new AppMenuItem(
           base::get_file_name(filename).c_str(),
-          cmd_open_file, &params);
+          cmd_open_file,
+          params);
         submenu->addChild(menuitem);
       }
     }
     else {
-      menuitem = new AppMenuItem("Nothing", NULL, NULL);
+      menuitem = new AppMenuItem("Nothing", NULL, Params());
       menuitem->setEnabled(false);
       submenu->addChild(menuitem);
     }
@@ -215,8 +215,6 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
     command_name ? CommandsModule::instance()->getCommandByName(command_name):
                    NULL;
 
-  bool contextparams = bool_attr_is_true(elem, "contextparams");
-
   // load params
   Params params;
   if (command) {
@@ -233,8 +231,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
   }
 
   // Create the item
-  AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"),
-    command, (command && !contextparams ? &params: nullptr));
+  AppMenuItem* menuitem = new AppMenuItem(elem->Attribute("text"), command, params);
   if (!menuitem)
     return NULL;
 
@@ -262,24 +259,25 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 
 Widget* AppMenus::createInvalidVersionMenuitem()
 {
-  AppMenuItem* menuitem = new AppMenuItem("WARNING!", NULL, NULL);
+  AppMenuItem* menuitem = new AppMenuItem("WARNING!");
   Menu* subMenu = new Menu();
-  subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory).", NULL, NULL));
-  subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get", NULL, NULL));
-  subMenu->addChild(new AppMenuItem("the latest commands available.", NULL, NULL));
+  Params params;
+  subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory)."));
+  subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get"));
+  subMenu->addChild(new AppMenuItem("the latest commands available."));
   subMenu->addChild(new Separator("", JI_HORIZONTAL));
-  subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version", NULL, NULL));
-  subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element.", NULL, NULL));
+  subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version"));
+  subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element."));
   menuitem->setSubmenu(subMenu);
   return menuitem;
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, Params* params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key)
 {
   applyShortcutToMenuitemsWithCommand(m_rootMenu, command, params, key);
 }
 
-void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Key* key)
+void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key)
 {
   UI_FOREACH_WIDGET(menu->getChildren(), it) {
     Widget* child = *it;
@@ -290,13 +288,12 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command,
         continue;
 
       Command* mi_command = menuitem->getCommand();
-      Params* mi_params = menuitem->getParams();
+      const Params& mi_params = menuitem->getParams();
 
       if ((mi_command) &&
           (base::string_to_lower(mi_command->short_name()) ==
            base::string_to_lower(command->short_name())) &&
-          ((mi_params && *mi_params == *params) ||
-           (Params() == *params))) {
+          (mi_params == params)) {
         // Set the keyboard shortcut to be shown in this menu-item
         menuitem->setKey(key);
       }

@@ -37,9 +37,9 @@ public:
   ChangeColorCommand();
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
-  std::string onGetFriendlyName() const;
+  void onLoadParams(const Params& params) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 };
 
 ChangeColorCommand::ChangeColorCommand()
@@ -51,13 +51,13 @@ ChangeColorCommand::ChangeColorCommand()
   m_change = None;
 }
 
-void ChangeColorCommand::onLoadParams(Params* params)
+void ChangeColorCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   if (target == "foreground") m_background = false;
   else if (target == "background") m_background = true;
 
-  std::string change = params->get("change");
+  std::string change = params.get("change");
   if (change == "increment-index") m_change = IncrementIndex;
   else if (change == "decrement-index") m_change = DecrementIndex;
 }

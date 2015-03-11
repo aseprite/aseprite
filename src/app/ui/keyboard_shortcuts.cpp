@@ -116,12 +116,12 @@ using namespace ui;
 //////////////////////////////////////////////////////////////////////
 // Key
 
-Key::Key(Command* command, const Params* params, KeyContext keyContext)
+Key::Key(Command* command, const Params& params, KeyContext keyContext)
   : m_type(KeyType::Command)
   , m_useUsers(false)
   , m_keycontext(keyContext)
   , m_command(command)
-  , m_params(params ? params->clone(): NULL)
+  , m_params(params)
 {
 }
 
@@ -253,8 +253,7 @@ std::string Key::triggerString() const
 {
   switch (m_type) {
     case KeyType::Command:
-      if (m_params)
-        m_command->loadParams(m_params);
+      m_command->loadParams(m_params);
       return m_command->friendlyName();
     case KeyType::Tool:
     case KeyType::Quicktool: {
@@ -339,7 +338,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
 
         // add the keyboard shortcut to the command
-        Key* key = this->command(command_name, &params, keycontext);
+        Key* key = this->command(command_name, params, keycontext);
         if (key) {
           Accelerator accel(command_key);
 
@@ -351,7 +350,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
             // is the only one that process keyboard shortcuts)
             if (key->accels().size() == 1) {
               AppMenus::instance()->applyShortcutToMenuitemsWithCommand(
-                command, &params, key);
+                command, params, key);
             }
           }
           else
@@ -533,16 +532,14 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
       if (keycontextStr)
         elem.SetAttribute("context", keycontextStr);
 
-      if (key->params()) {
-        for (const auto& param : *key->params()) {
-          if (param.second.empty())
-            continue;
+      for (const auto& param : key->params()) {
+        if (param.second.empty())
+          continue;
 
-          TiXmlElement paramElem("param");
-          paramElem.SetAttribute("name", param.first.c_str());
-          paramElem.SetAttribute("value", param.second.c_str());
-          elem.InsertEndChild(paramElem);
-        }
+        TiXmlElement paramElem("param");
+        paramElem.SetAttribute("name", param.first.c_str());
+        paramElem.SetAttribute("value", param.second.c_str());
+        elem.InsertEndChild(paramElem);
       }
       break;
     }
@@ -572,8 +569,7 @@ void KeyboardShortcuts::reset()
     key->reset();
 }
 
-Key* KeyboardShortcuts::command(const char* commandName,
-  Params* params, KeyContext keyContext)
+Key* KeyboardShortcuts::command(const char* commandName, const Params& params, KeyContext keyContext)
 {
   Command* command = CommandsModule::instance()->getCommandByName(commandName);
   if (!command)
@@ -583,8 +579,7 @@ Key* KeyboardShortcuts::command(const char* commandName,
     if (key->type() == KeyType::Command &&
         key->keycontext() == keyContext &&
         key->command() == command &&
-        ((!params && key->params()->empty()) ||
-          (params && *key->params() == *params))) {
+        key->params() == params) {
       return key;
     }
   }
@@ -658,7 +653,7 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
     return KeyContext::Normal;
 }
 
-bool KeyboardShortcuts::getCommandFromKeyMessage(Message* msg, Command** command, Params** params)
+bool KeyboardShortcuts::getCommandFromKeyMessage(Message* msg, Command** command, Params* params)
 {
   for (Key* key : m_keys) {
     if (key->type() == KeyType::Command && key->isPressed(msg)) {

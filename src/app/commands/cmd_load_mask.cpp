@@ -31,10 +31,9 @@ public:
   Command* clone() const override { return new LoadMaskCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 LoadMaskCommand::LoadMaskCommand()
@@ -45,9 +44,9 @@ LoadMaskCommand::LoadMaskCommand()
   m_filename = "";
 }
 
-void LoadMaskCommand::onLoadParams(Params* params)
+void LoadMaskCommand::onLoadParams(const Params& params)
 {
-  m_filename = params->get("filename");
+  m_filename = params.get("filename");
 }
 
 bool LoadMaskCommand::onEnabled(Context* context)

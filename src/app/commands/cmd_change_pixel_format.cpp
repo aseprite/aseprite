@@ -31,10 +31,10 @@ public:
   Command* clone() const override { return new ChangePixelFormatCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  bool onChecked(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  bool onChecked(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 ChangePixelFormatCommand::ChangePixelFormatCommand()
@@ -46,14 +46,14 @@ ChangePixelFormatCommand::ChangePixelFormatCommand()
   m_dithering = DitheringMethod::NONE;
 }
 
-void ChangePixelFormatCommand::onLoadParams(Params* params)
+void ChangePixelFormatCommand::onLoadParams(const Params& params)
 {
-  std::string format = params->get("format");
+  std::string format = params.get("format");
   if (format == "rgb") m_format = IMAGE_RGB;
   else if (format == "grayscale") m_format = IMAGE_GRAYSCALE;
   else if (format == "indexed") m_format = IMAGE_INDEXED;
 
-  std::string dithering = params->get("dithering");
+  std::string dithering = params.get("dithering");
   if (dithering == "ordered")
     m_dithering = DitheringMethod::ORDERED;
   else

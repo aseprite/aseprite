@@ -33,7 +33,7 @@ public:
   Command* clone() const override { return new SetLoopSectionCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 
@@ -51,15 +51,15 @@ SetLoopSectionCommand::SetLoopSectionCommand()
 {
 }
 
-void SetLoopSectionCommand::onLoadParams(Params* params)
+void SetLoopSectionCommand::onLoadParams(const Params& params)
 {
-  std::string action = params->get("action");
+  std::string action = params.get("action");
   if (action == "on") m_action = Action::On;
   else if (action == "off") m_action = Action::Off;
   else m_action = Action::Auto;
 
-  std::string begin = params->get("begin");
-  std::string end = params->get("end");
+  std::string begin = params.get("begin");
+  std::string end = params.get("end");
 
   m_begin = frame_t(strtol(begin.c_str(), NULL, 10));
   m_end = frame_t(strtol(end.c_str(), NULL, 10));

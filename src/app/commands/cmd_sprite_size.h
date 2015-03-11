@@ -32,7 +32,7 @@ namespace app {
     }
 
   protected:
-    virtual void onLoadParams(Params* params) override;
+    virtual void onLoadParams(const Params& params) override;
     virtual bool onEnabled(Context* context) override;
     virtual void onExecute(Context* context) override;
 

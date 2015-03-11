@@ -317,7 +317,7 @@ void App::initialize(const AppOptions& options)
                 Params params;
                 params.set("filename", fn.c_str());
                 params.set("filename-format", fmt.c_str());
-                ctx->executeCommand(saveAsCommand, &params);
+                ctx->executeCommand(saveAsCommand, params);
 
                 if (trim) {     // Undo trim command
                   ctx->executeCommand(undoCommand);
@@ -344,7 +344,7 @@ void App::initialize(const AppOptions& options)
               Params params;
               params.set("filename", value.value().c_str());
               params.set("filename-format", format.c_str());
-              ctx->executeCommand(saveAsCommand, &params);
+              ctx->executeCommand(saveAsCommand, params);
 
               if (trim) {       // Undo trim command
                 ctx->executeCommand(undoCommand);

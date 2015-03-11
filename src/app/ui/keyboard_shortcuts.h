@@ -9,6 +9,7 @@
 #define APP_UI_KEYBOARD_SHORTCUTS_H_INCLUDED
 #pragma once
 
+#include "app/commands/params.h"
 #include "base/convert_to.h"
 #include "base/disable_copying.h"
 #include "ui/accelerator.h"
@@ -65,7 +66,7 @@ namespace app {
 
   class Key {
   public:
-    Key(Command* command, const Params* params, KeyContext keyContext);
+    Key(Command* command, const Params& params, KeyContext keyContext);
     Key(KeyType type, tools::Tool* tool);
     explicit Key(KeyAction action);
 
@@ -89,7 +90,7 @@ namespace app {
 
     // for KeyType::Command
     Command* command() const { return m_command; }
-    Params* params() const { return m_params; }
+    const Params& params() const { return m_params; }
     KeyContext keycontext() const { return m_keycontext; }
     // for KeyType::Tool or Quicktool
     tools::Tool* tool() const { return m_tool; }
@@ -108,7 +109,7 @@ namespace app {
 
     // for KeyType::Command
     Command* m_command;
-    Params* m_params;
+    Params m_params;
     // for KeyType::Tool or Quicktool
     tools::Tool* m_tool;
     // for KeyType::Action
@@ -136,7 +137,7 @@ namespace app {
     void reset();
 
     Key* command(const char* commandName,
-      Params* params = NULL, KeyContext keyContext = KeyContext::Any);
+      const Params& params = Params(), KeyContext keyContext = KeyContext::Any);
     Key* tool(tools::Tool* tool);
     Key* quicktool(tools::Tool* tool);
     Key* action(KeyAction action);
@@ -144,7 +145,7 @@ namespace app {
     void disableAccel(const ui::Accelerator& accel, KeyContext keyContext);
 
     KeyContext getCurrentKeyContext();
-    bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params** params);
+    bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params* params);
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
 
   private:

@@ -127,7 +127,7 @@ public:
           int frame = getTextInt();
           if (frame > 0) {
             params.set("frame", getText().c_str());
-            UIContext::instance()->executeCommand(cmd, &params);
+            UIContext::instance()->executeCommand(cmd, params);
           }
           // Select the text again
           selectText(0, -1);

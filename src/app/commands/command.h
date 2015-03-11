@@ -36,13 +36,13 @@ namespace app {
     const char* short_name() const { return m_short_name; }
     std::string friendlyName() const;
 
-    void loadParams(Params* params);
+    void loadParams(const Params& params);
     bool isEnabled(Context* context);
     bool isChecked(Context* context);
     void execute(Context* context);
 
   protected:
-    virtual void onLoadParams(Params* params);
+    virtual void onLoadParams(const Params& params);
     virtual bool onEnabled(Context* context);
     virtual bool onChecked(Context* context);
     virtual void onExecute(Context* context);

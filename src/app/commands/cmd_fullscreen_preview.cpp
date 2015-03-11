@@ -117,8 +117,9 @@ protected:
       case kKeyDownMessage: {
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         Command* command = NULL;
+        Params params;
         KeyboardShortcuts::instance()
-          ->getCommandFromKeyMessage(msg, &command, NULL);
+          ->getCommandFromKeyMessage(msg, &command, &params);
 
         // Change frame
         if (command != NULL &&
@@ -126,7 +127,7 @@ protected:
              std::strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
              std::strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
              std::strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
-          m_context->executeCommand(command);
+          m_context->executeCommand(command, params);
           invalidate();
           m_render.reset(NULL); // Re-render
         }

@@ -136,7 +136,7 @@ public:
   Command* clone() const override { return new PaletteEditorCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
 
 private:
@@ -157,21 +157,21 @@ PaletteEditorCommand::PaletteEditorCommand()
   m_background = false;
 }
 
-void PaletteEditorCommand::onLoadParams(Params* params)
+void PaletteEditorCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   if (target == "foreground") m_background = false;
   else if (target == "background") m_background = true;
 
-  std::string open_str = params->get("open");
+  std::string open_str = params.get("open");
   if (open_str == "true") m_open = true;
   else m_open = false;
 
-  std::string close_str = params->get("close");
+  std::string close_str = params.get("close");
   if (close_str == "true") m_close = true;
   else m_close = false;
 
-  std::string switch_str = params->get("switch");
+  std::string switch_str = params.get("switch");
   if (switch_str == "true") m_switch = true;
   else m_switch = false;
 }

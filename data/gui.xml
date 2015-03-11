@@ -670,8 +670,8 @@
     </menu>
 
     <menu id="frame_tag_popup">
-      <item command="FrameTagProperties" text="Tag &amp;Properties..." contextparams="true" />
-      <item command="RemoveFrameTag" text="&amp;Remove Tag" contextparams="true" />
+      <item command="FrameTagProperties" text="Tag &amp;Properties..." />
+      <item command="RemoveFrameTag" text="&amp;Remove Tag" />
     </menu>
 
   </menus>

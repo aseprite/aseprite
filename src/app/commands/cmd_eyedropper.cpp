@@ -42,8 +42,8 @@ public:
   Command* clone() const override { return new EyedropperCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  void onExecute(Context* context) override;
 };
 
 EyedropperCommand::EyedropperCommand()
@@ -54,9 +54,9 @@ EyedropperCommand::EyedropperCommand()
   m_background = false;
 }
 
-void EyedropperCommand::onLoadParams(Params* params)
+void EyedropperCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   if (target == "foreground") m_background = false;
   else if (target == "background") m_background = true;
 }

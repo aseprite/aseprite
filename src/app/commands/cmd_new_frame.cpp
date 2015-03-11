@@ -38,7 +38,7 @@ public:
   Command* clone() const override { return new NewFrameCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
@@ -54,11 +54,11 @@ NewFrameCommand::NewFrameCommand()
 {
 }
 
-void NewFrameCommand::onLoadParams(Params* params)
+void NewFrameCommand::onLoadParams(const Params& params)
 {
   m_content = Content::CurrentFrame;
 
-  std::string content = params->get("content");
+  std::string content = params.get("content");
   if (content == "current") m_content = Content::CurrentFrame;
   else if (content == "empty") m_content = Content::EmptyFrame;
 }

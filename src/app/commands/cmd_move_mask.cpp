@@ -34,19 +34,19 @@ MoveMaskCommand::MoveMaskCommand()
 {
 }
 
-void MoveMaskCommand::onLoadParams(Params* params)
+void MoveMaskCommand::onLoadParams(const Params& params)
 {
-  std::string target = params->get("target");
+  std::string target = params.get("target");
   if (target == "boundaries") m_target = Boundaries;
   else if (target == "content") m_target = Content;
 
-  std::string direction = params->get("direction");
+  std::string direction = params.get("direction");
   if (direction == "left") m_direction = Left;
   else if (direction == "right") m_direction = Right;
   else if (direction == "up") m_direction = Up;
   else if (direction == "down") m_direction = Down;
 
-  std::string units = params->get("units");
+  std::string units = params.get("units");
   if (units == "pixel") m_units = Pixel;
   else if (units == "tile-width") m_units = TileWidth;
   else if (units == "tile-height") m_units = TileHeight;
@@ -56,7 +56,7 @@ void MoveMaskCommand::onLoadParams(Params* params)
   else if (units == "viewport-width") m_units = ViewportWidth;
   else if (units == "viewport-height") m_units = ViewportHeight;
 
-  int quantity = params->get_as<int>("quantity");
+  int quantity = params.get_as<int>("quantity");
   m_quantity = std::max<int>(1, quantity);
 }
 

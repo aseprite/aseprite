@@ -433,7 +433,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           // Load the file
           else {
             params.set("filename", fn.c_str());
-            ctx->executeCommand(cmd_open_file, &params);
+            ctx->executeCommand(cmd_open_file, params);
           }
         }
       }

@@ -30,17 +30,21 @@ namespace app {
 
 using namespace ui;
 
-AppMenuItem::AppMenuItem(const char* text, Command* command, const Params* params)
+// static
+Params AppMenuItem::s_contextParams;
+
+AppMenuItem::AppMenuItem(const char* text, Command* command, const Params& params)
  : MenuItem(text)
  , m_key(NULL)
  , m_command(command)
- , m_params(params ? params->clone(): NULL)
+ , m_params(params)
 {
 }
 
-AppMenuItem::~AppMenuItem()
+// static
+void AppMenuItem::setContextParams(const Params& params)
 {
-  delete m_params;
+  s_contextParams = params;
 }
 
 bool AppMenuItem::onProcessMessage(Message* msg)
@@ -50,6 +54,9 @@ bool AppMenuItem::onProcessMessage(Message* msg)
     case kCloseMessage:
       // disable the menu (the keyboard shortcuts are processed by "manager_msg_proc")
       setEnabled(false);
+
+      if (!s_contextParams.empty())
+        s_contextParams.clear();
       break;
 
     default:
@@ -62,8 +69,11 @@ bool AppMenuItem::onProcessMessage(Message* msg)
         context->updateFlags();
 
         if (m_command) {
-          if (m_params)
-            m_command->loadParams(m_params);
+          Params params = m_params;
+          if (!s_contextParams.empty())
+            params |= s_contextParams;
+
+          m_command->loadParams(params);
 
           setEnabled(m_command->isEnabled(context));
           setSelected(m_command->isChecked(context));
@@ -105,12 +115,15 @@ void AppMenuItem::onClick()
   MenuItem::onClick();
 
   if (m_command) {
-    if (m_params)
-      m_command->loadParams(m_params);
+    Params params = m_params;
+    if (!s_contextParams.empty())
+      params |= s_contextParams;
+
+    m_command->loadParams(params);
 
     UIContext* context = UIContext::instance();
     if (m_command->isEnabled(context))
-      context->executeCommand(m_command);
+      context->executeCommand(m_command, params);
   }
 }
 

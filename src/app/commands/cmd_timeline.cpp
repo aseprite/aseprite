@@ -26,7 +26,7 @@ public:
   Command* clone() const override { return new TimelineCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
 
   bool m_open;
@@ -44,17 +44,17 @@ TimelineCommand::TimelineCommand()
   m_switch = false;
 }
 
-void TimelineCommand::onLoadParams(Params* params)
+void TimelineCommand::onLoadParams(const Params& params)
 {
-  std::string open_str = params->get("open");
+  std::string open_str = params.get("open");
   if (open_str == "true") m_open = true;
   else m_open = false;
 
-  std::string close_str = params->get("close");
+  std::string close_str = params.get("close");
   if (close_str == "true") m_close = true;
   else m_close = false;
 
-  std::string switch_str = params->get("switch");
+  std::string switch_str = params.get("switch");
   if (switch_str == "true") m_switch = true;
   else m_switch = false;
 }

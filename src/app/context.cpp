@@ -69,7 +69,7 @@ void Context::executeCommand(const char* commandName)
     throw std::runtime_error("Invalid command name");
 }
 
-void Context::executeCommand(Command* command, Params* params)
+void Context::executeCommand(Command* command, const Params& params)
 {
   Console console;
 
@@ -81,8 +81,7 @@ void Context::executeCommand(Command* command, Params* params)
   try {
     m_flags.update(this);
 
-    if (params)
-      command->loadParams(params);
+    command->loadParams(params);
 
     if (command->isEnabled(this)) {
       command->execute(this);

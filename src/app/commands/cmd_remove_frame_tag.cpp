@@ -30,7 +30,7 @@ public:
   Command* clone() const override { return new RemoveFrameTagCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
 
@@ -47,11 +47,11 @@ RemoveFrameTagCommand::RemoveFrameTagCommand()
 {
 }
 
-void RemoveFrameTagCommand::onLoadParams(Params* params)
+void RemoveFrameTagCommand::onLoadParams(const Params& params)
 {
-  m_tagName = params->get("name");
+  m_tagName = params.get("name");
 
-  std::string id = params->get("id");
+  std::string id = params.get("id");
   if (!id.empty())
     m_tagId = ObjectId(base::convert_to<ObjectId>(id));
   else

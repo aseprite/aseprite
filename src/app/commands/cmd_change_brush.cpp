@@ -36,9 +36,9 @@ public:
   ChangeBrushCommand();
 
 protected:
-  void onLoadParams(Params* params);
-  void onExecute(Context* context);
-  std::string onGetFriendlyName() const;
+  void onLoadParams(const Params& params) override;
+  void onExecute(Context* context) override;
+  std::string onGetFriendlyName() const override;
 };
 
 ChangeBrushCommand::ChangeBrushCommand()
@@ -49,9 +49,9 @@ ChangeBrushCommand::ChangeBrushCommand()
   m_change = None;
 }
 
-void ChangeBrushCommand::onLoadParams(Params* params)
+void ChangeBrushCommand::onLoadParams(const Params& params)
 {
-  std::string change = params->get("change");
+  std::string change = params.get("change");
   if (change == "increment-size") m_change = IncrementSize;
   else if (change == "decrement-size") m_change = DecrementSize;
   else if (change == "increment-angle") m_change = IncrementAngle;

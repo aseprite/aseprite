@@ -108,9 +108,9 @@ public:
   Command* clone() const override { return new GotoFrameCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override
+  void onLoadParams(const Params& params) override
   {
-    std::string frame = params->get("frame");
+    std::string frame = params.get("frame");
     if (!frame.empty()) m_frame = strtol(frame.c_str(), NULL, 10);
     else m_frame = 0;
   }

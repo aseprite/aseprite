@@ -25,16 +25,12 @@ namespace app {
     const_iterator begin() const { return m_params.begin(); }
     const_iterator end() const { return m_params.end(); }
 
-    Params() { }
-    Params(const Params& copy) : m_params(copy.m_params) { }
-    virtual ~Params() { }
-
-    Params* clone() const {
-      return new Params(*this);
-    }
-
     bool empty() const {
       return m_params.empty();
+    }
+
+    void clear() {
+      return m_params.clear();
     }
 
     bool has_param(const char* name) const {
@@ -53,12 +49,17 @@ namespace app {
       return m_params[name] = value;
     }
 
-    std::string& get(const char* name) {
+    const std::string& get(const char* name) const {
       return m_params[name];
     }
 
+    void operator|=(const Params& params) const {
+      for (const auto& p : params)
+        m_params[p.first] = p.second;
+    }
+
     template<typename T>
-    T get_as(const char* name) {
+    const T get_as(const char* name) const {
       std::istringstream stream(m_params[name]);
       T value;
       stream >> value;
@@ -66,7 +67,7 @@ namespace app {
     }
 
   private:
-    Map m_params;
+    mutable Map m_params;
   };
 
 } // namespace app

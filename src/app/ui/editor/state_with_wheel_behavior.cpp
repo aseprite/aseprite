@@ -97,7 +97,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
           ((dz < 0) ? CommandId::GotoNextFrame:
                       CommandId::GotoPreviousFrame);
         if (command)
-          UIContext::instance()->executeCommand(command, NULL);
+          UIContext::instance()->executeCommand(command);
       }
       break;
 

@@ -47,14 +47,14 @@ namespace app {
     Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu; }
     Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu; }
 
-    void applyShortcutToMenuitemsWithCommand(Command* command, Params* params, Key* key);
+    void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key);
 
   private:
     Menu* loadMenuById(TiXmlHandle& handle, const char *id);
     Menu* convertXmlelemToMenu(TiXmlElement* elem);
     Widget* convertXmlelemToMenuitem(TiXmlElement* elem);
     Widget* createInvalidVersionMenuitem();
-    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, Params* params, Key* key);
+    void applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command, const Params& params, Key* key);
 
     base::UniquePtr<Menu> m_rootMenu;
     MenuItem* m_recentListMenuitem;

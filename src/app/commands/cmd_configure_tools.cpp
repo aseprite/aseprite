@@ -142,7 +142,7 @@ private:
         Command* grid_settings_cmd =
           CommandsModule::instance()->getCommandByName(CommandId::GridSettings);
 
-        UIContext::instance()->executeCommand(grid_settings_cmd, NULL);
+        UIContext::instance()->executeCommand(grid_settings_cmd);
       }
     }
     catch (LockedDocumentException& e) {

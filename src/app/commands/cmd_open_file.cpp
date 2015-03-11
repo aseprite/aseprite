@@ -39,7 +39,7 @@ public:
   Command* clone() const override { return new OpenFileCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
 
 private:
@@ -97,10 +97,10 @@ OpenFileCommand::OpenFileCommand()
 {
 }
 
-void OpenFileCommand::onLoadParams(Params* params)
+void OpenFileCommand::onLoadParams(const Params& params)
 {
-  m_filename = params->get("filename");
-  m_folder = params->get("folder"); // Initial folder
+  m_filename = params.get("filename");
+  m_folder = params.get("folder"); // Initial folder
 }
 
 void OpenFileCommand::onExecute(Context* context)

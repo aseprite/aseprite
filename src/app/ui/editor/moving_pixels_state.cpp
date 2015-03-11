@@ -341,7 +341,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
   }
   else {
     Command* command = NULL;
-    Params* params = NULL;
+    Params params;
     if (KeyboardShortcuts::instance()
           ->getCommandFromKeyMessage(msg, &command, &params)) {
       // We accept zoom commands.

@@ -31,7 +31,7 @@ std::string Command::friendlyName() const
   return onGetFriendlyName();
 }
 
-void Command::loadParams(Params* params)
+void Command::loadParams(const Params& params)
 {
   onLoadParams(params);
 }
@@ -66,7 +66,7 @@ void Command::execute(Context* context)
 /**
  * Converts specified parameters to class members.
  */
-void Command::onLoadParams(Params* params)
+void Command::onLoadParams(const Params& params)
 {
   // do nothing
 }

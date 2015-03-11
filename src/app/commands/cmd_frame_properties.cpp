@@ -35,9 +35,9 @@ public:
   Command* clone() const override { return new FramePropertiesCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params);
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 
 private:
   enum Target {
@@ -59,9 +59,9 @@ FramePropertiesCommand::FramePropertiesCommand()
 {
 }
 
-void FramePropertiesCommand::onLoadParams(Params* params)
+void FramePropertiesCommand::onLoadParams(const Params& params)
 {
-  std::string frame = params->get("frame");
+  std::string frame = params.get("frame");
   if (frame == "all") {
     m_target = ALL_FRAMES;
   }

@@ -22,7 +22,7 @@ public:
   Command* clone() const override { return new LaunchCommand(*this); }
 
 protected:
-  void onLoadParams(Params* params) override;
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
 
 private:
@@ -41,9 +41,9 @@ LaunchCommand::LaunchCommand()
 {
 }
 
-void LaunchCommand::onLoadParams(Params* params)
+void LaunchCommand::onLoadParams(const Params& params)
 {
-  m_path = params->get("path");
+  m_path = params.get("path");
 
   if (m_type == Url && !m_path.empty() && m_path[0] == '/') {
     m_path = WEBSITE + m_path.substr(1);
