@@ -134,7 +134,6 @@ void SetLoopSectionCommand::onExecute(Context* ctx)
       Transaction transaction(writer.context(), "Remove Loop");
       transaction.execute(new cmd::RemoveFrameTag(sprite, loopTag));
       transaction.commit();
-      delete loopTag;
     }
   }
 
