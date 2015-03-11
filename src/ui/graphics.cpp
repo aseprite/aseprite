@@ -276,8 +276,8 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
         // If we have already a word to print (old_end != npos), and
         // we are out of the available width (rc.w) using the new "end",
         if ((old_end != std::string::npos) &&
-            (rc.w == 0 ||
-              (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w))) {
+            (rc.w > 0) &&
+            (pt.x+m_font->textLength(str.substr(beg, end-beg).c_str()) > rc.w)) {
           // We go back to the "old_end" and paint from "beg" to "end"
           end = old_end;
           break;
