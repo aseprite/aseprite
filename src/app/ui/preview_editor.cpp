@@ -258,9 +258,10 @@ void PreviewEditorWindow::onCenterClicked()
 
 void PreviewEditorWindow::onPlayClicked()
 {
+  Editor* miniEditor = (m_docView ? m_docView->getEditor(): nullptr);
+
   if (m_playButton->isPlaying()) {
-    Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
-    if (miniEditor && miniEditor->document() != NULL)
+    if (miniEditor && miniEditor->document())
       m_nextFrameTime = miniEditor->sprite()->frameDuration(miniEditor->frame());
     else
       m_nextFrameTime = -1;
@@ -272,6 +273,9 @@ void PreviewEditorWindow::onPlayClicked()
   }
   else {
     m_playTimer.stop();
+
+    if (miniEditor)
+      miniEditor->setFrame(m_refFrame);
   }
 }
 
