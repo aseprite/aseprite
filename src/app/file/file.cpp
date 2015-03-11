@@ -328,20 +328,29 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
   if (!warnings.empty()) {
     // Interative
     if (context && context->isUiAvailable()) {
-      int ret;
+      warnings += "<<You can use \".ase\" format to keep all this information.";
 
-      if (fatal)
-        ret = ui::Alert::show("Error<<File format \"%s\" doesn't support:%s"
-                              "||&Close",
-                              fop->format->name(), warnings.c_str());
-      else
-        ret = ui::Alert::show("Warning<<File format \"%s\" doesn't support:%s"
-                              "<<Do you want continue?"
-                              "||&Yes||&No",
-                              fop->format->name(), warnings.c_str());
+      std::string title, buttons;
+      if (fatal) {
+        title = "Error";
+        buttons = "&Close";
+      }
+      else {
+        title = "Warning";
+        buttons = "&Yes||&No";
+      }
 
-      /* operation can't be done (by fatal error) or the user cancel
-         the operation */
+      int ret = ui::Alert::show("%s<<File format \".%s\" doesn't support:%s"
+        "<<Do you want continue with \".%s\" anyway?"
+        "||%s",
+        title.c_str(),
+        fop->format->name(),
+        warnings.c_str(),
+        fop->format->name(),
+        buttons.c_str());
+
+      // Operation can't be done (by fatal error) or the user cancel
+      // the operation
       if ((fatal) || (ret != 1)) {
         fop_free(fop);
         return NULL;
