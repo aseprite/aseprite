@@ -359,7 +359,10 @@ void Sprite::addFrame(frame_t newFrame)
 
   folder()->displaceFrames(newFrame, +1);
 
-  for (FrameTag* tag : m_frameTags) {
+  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
+  // a copy of this collection
+  std::vector<FrameTag*> tags(m_frameTags.begin(), m_frameTags.end());
+  for (FrameTag* tag : tags) {
     frame_t from = tag->fromFrame();
     frame_t to = tag->toFrame();
     if (newFrame <= from) { ++from; }
@@ -381,7 +384,10 @@ void Sprite::removeFrame(frame_t frame)
     setFrameDuration(i, frameDuration(i+1));
   setTotalFrames(newTotal);
 
-  for (FrameTag* tag : m_frameTags) {
+  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
+  // a copy of this collection
+  std::vector<FrameTag*> tags(m_frameTags.begin(), m_frameTags.end());
+  for (FrameTag* tag : tags) {
     frame_t from = tag->fromFrame();
     frame_t to = tag->toFrame();
     if (frame <= from) { --from; }
