@@ -11,6 +11,8 @@
 
 #include "app/app.h"
 #include "app/cmd/set_mask.h"
+#include "app/color_picker.h"
+#include "app/color_utils.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
@@ -22,6 +24,7 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
 
@@ -58,13 +61,22 @@ void MaskContentCommand::onExecute(Context* context)
   if (!cel)
     return;
 
+  gfx::Color color;
+  if (writer.layer()->isBackground()) {
+    ColorPicker picker;
+    picker.pickColor(*writer.location(), gfx::Point(0, 0), ColorPicker::FromComposition);
+    color = color_utils::color_for_layer(picker.color(), writer.layer());
+  }
+  else
+    color = cel->image()->maskColor();
+
   Mask newMask;
   gfx::Rect imgBounds = cel->image()->bounds();
-  if (algorithm::shrink_bounds(cel->image(), imgBounds,
-        cel->image()->maskColor())) {
-
-    newMask.copyFrom(document->mask());
+  if (algorithm::shrink_bounds(cel->image(), imgBounds, color)) {
     newMask.replace(imgBounds.offset(cel->bounds().getOrigin()));
+  }
+  else {
+    newMask.replace(cel->bounds());
   }
 
   Transaction transaction(writer.context(), "Select Content", DoesntModifyDocument);
