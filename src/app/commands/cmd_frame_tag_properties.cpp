@@ -82,6 +82,9 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   else
     foundTag = get_shortest_tag(sprite, frame);
 
+  if (!foundTag)
+    return;
+
   FrameTagWindow window(sprite, foundTag);
   if (!window.show())
     return;
