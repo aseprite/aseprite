@@ -775,7 +775,7 @@
 
     <!-- recent_file_detail -->
     <style id="recent_file_detail" base="recent_file">
-      <text color="disabled" valign="top" wordwrap="true" />
+      <text color="disabled" valign="top" />
     </style>
 
     <!-- news_item -->
