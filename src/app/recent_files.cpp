@@ -19,6 +19,18 @@
 #include <cstring>
 #include <set>
 
+namespace {
+
+struct compare_path {
+  std::string a;
+  compare_path(const std::string& a) : a(a) { }
+  bool operator()(const std::string& b) const {
+    return base::compare_filenames(a, b) == 0;
+  }
+};
+
+}
+
 namespace app {
 
 RecentFiles::RecentFiles()
@@ -31,34 +43,19 @@ RecentFiles::RecentFiles()
     sprintf(buf, "Filename%02d", c);
 
     const char* filename = get_config_string("RecentFiles", buf, NULL);
-    if (filename && *filename && base::is_file(filename))
-      m_files.addItem(filename);
+    if (filename && *filename && base::is_file(filename)) {
+      std::string fn = base::fix_path_separators(filename);
+      m_files.addItem(fn, compare_path(fn));
+    }
   }
 
   for (int c=m_paths.limit()-1; c>=0; c--) {
     sprintf(buf, "Path%02d", c);
 
     const char* path = get_config_string("RecentPaths", buf, NULL);
-    if (path && *path)
-      m_paths.addItem(path);
-  }
-
-  // Create recent list of paths from filenames (for backward
-  // compatibility with previous versions of ASEPRITE).
-  if (m_paths.empty()) {
-    std::set<std::string> included;
-
-    // For each recent file...
-    const_iterator it = files_begin();
-    const_iterator end = files_end();
-    for (; it != end; ++it) {
-      std::string path = base::get_file_path(*it);
-
-      // Check if the path was not already included in the list
-      if (included.find(path) == included.end()) {
-        included.insert(path);
-        m_paths.addItem(path);
-      }
+    if (path && *path) {
+      std::string p = base::fix_path_separators(path);
+      m_paths.addItem(p, compare_path(p));
     }
   }
 }
@@ -68,34 +65,38 @@ RecentFiles::~RecentFiles()
   char buf[512];
 
   int c = 0;
-  for (const_iterator it = files_begin(); it != files_end(); ++it) {
-    const char* filename = it->c_str();
+  for (auto const& filename : m_files) {
     sprintf(buf, "Filename%02d", c);
-    set_config_string("RecentFiles", buf, filename);
+    set_config_string("RecentFiles", buf, filename.c_str());
     c++;
   }
 
   c = 0;
-  for (const_iterator it = paths_begin(); it != paths_end(); ++it) {
-    const char* path = it->c_str();
+  for (auto const& path : m_paths) {
     sprintf(buf, "Path%02d", c);
-    set_config_string("RecentPaths", buf, path);
+    set_config_string("RecentPaths", buf, path.c_str());
     c++;
   }
 }
 
 void RecentFiles::addRecentFile(const char* filename)
 {
-  m_files.addItem(filename);
-  m_paths.addItem(base::get_file_path(filename));
+  std::string fn = base::fix_path_separators(filename);
+  m_files.addItem(fn, compare_path(fn));
+
+  std::string path = base::get_file_path(fn);
+  m_paths.addItem(path, compare_path(path));
 
   Changed();
 }
 
 void RecentFiles::removeRecentFile(const char* filename)
 {
-  m_files.removeItem(filename);
-  m_paths.removeItem(base::get_file_path(filename));
+  std::string fn = base::fix_path_separators(filename);
+  m_files.removeItem(fn, compare_path(fn));
+
+  std::string path = base::get_file_path(filename);
+  m_paths.removeItem(path, compare_path(path));
 
   Changed();
 }

@@ -186,6 +186,10 @@ int compare_filenames(const std::string& a, const std::string& b)
       a_it = a_it2;
       b_it = b_it2;
     }
+    else if (is_path_separator(a_chr) && is_path_separator(b_chr)) {
+      ++a_it;
+      ++b_it;
+    }
     else {
       a_chr = std::tolower(a_chr);
       b_chr = std::tolower(b_chr);
