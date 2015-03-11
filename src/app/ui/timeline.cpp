@@ -765,7 +765,7 @@ bool Timeline::onProcessMessage(Message* msg)
     case kSetCursorMessage:
       if (m_document) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        setCursor(msg, hitTest(msg, mousePos));
+        setCursor(msg, m_hot);
         return true;
       }
       break;
