@@ -26,12 +26,14 @@
 #include "app/cmd/move_layer.h"
 #include "app/cmd/remove_cel.h"
 #include "app/cmd/remove_frame.h"
+#include "app/cmd/remove_frame_tag.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_frame.h"
 #include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/cmd/set_frame_duration.h"
+#include "app/cmd/set_frame_tag_range.h"
 #include "app/cmd/set_mask.h"
 #include "app/cmd/set_mask_position.h"
 #include "app/cmd/set_palette.h"
@@ -50,11 +52,14 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/context.h"
+#include "doc/frame_tag.h"
+#include "doc/frame_tags.h"
 #include "doc/mask.h"
 #include "render/quantization.h"
 #include "render/render.h"
 
 #include <set>
+
 
 namespace app {
 
@@ -159,6 +164,21 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
 void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
 {
   copyFrame(sprite, newFrame-1, newFrame);
+
+  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
+  // a copy of this collection
+  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
+  for (FrameTag* tag : tags) {
+    frame_t from = tag->fromFrame();
+    frame_t to = tag->toFrame();
+    if (newFrame <= from) { ++from; }
+    if (newFrame <= to+1) { ++to; }
+
+    if (from != tag->fromFrame() ||
+        to != tag->toFrame()) {
+      m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
+    }
+  }
 }
 
 void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
@@ -182,6 +202,24 @@ void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
+
+  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
+  // a copy of this collection
+  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
+  for (FrameTag* tag : tags) {
+    frame_t from = tag->fromFrame();
+    frame_t to = tag->toFrame();
+    if (frame < from) { --from; }
+    if (frame <= to) { --to; }
+
+    if (from != tag->fromFrame() ||
+        to != tag->toFrame()) {
+      if (from > to)
+        m_transaction.execute(new cmd::RemoveFrameTag(sprite, tag));
+      else
+        m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
+    }
+  }
 }
 
 void DocumentApi::setTotalFrames(Sprite* sprite, frame_t frames)
