@@ -676,8 +676,11 @@ TEST_F(DocRangeOps, MoveFrames) {
   EXPECT_FRAME_ORDER(0, 1, 2, 3);
 
   move_range(doc,
-    frames_range(1, 2),
+    frames_range(2, 3),
     frames_range(0, 0), kDocumentRangeAfter);
+  EXPECT_FRAME_ORDER(0, 2, 3, 1);
+
+  doc->undoHistory()->undo();
   EXPECT_FRAME_ORDER(0, 1, 2, 3);
 
   // Move three frames at the beginning

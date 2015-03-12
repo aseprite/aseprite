@@ -189,7 +189,7 @@ static DocumentRange drop_range_op(
                   srcFrameBegin = from.frameBegin();
                   srcFrameStep = frame_t(1);
                   srcFrameEnd = from.frameEnd()+1;
-                  dstFrameBegin = to.frameEnd();
+                  dstFrameBegin = to.frameEnd()+1;
                   dstFrameStep = frame_t(1);
                 }
                 else {
