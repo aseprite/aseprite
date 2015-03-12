@@ -462,13 +462,13 @@
 
     <!-- timeline_eye -->
     <style id="timeline_open_eye" base="timeline_box">
-      <icon part="timeline_open_eye_normal" />
+      <icon part="timeline_open_eye_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_open_eye:active">
       <icon part="timeline_open_eye_active" />
     </style>
     <style id="timeline_closed_eye" base="timeline_box">
-      <icon part="timeline_closed_eye_normal" />
+      <icon part="timeline_closed_eye_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_closed_eye:active">
       <icon part="timeline_closed_eye_active" />
@@ -476,13 +476,13 @@
 
     <!-- timeline_padlock -->
     <style id="timeline_open_padlock" base="timeline_box">
-      <icon part="timeline_open_padlock_normal" />
+      <icon part="timeline_open_padlock_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_open_padlock:active">
       <icon part="timeline_open_padlock_active" />
     </style>
     <style id="timeline_closed_padlock" base="timeline_box">
-      <icon part="timeline_closed_padlock_normal" />
+      <icon part="timeline_closed_padlock_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_closed_padlock:active">
       <icon part="timeline_closed_padlock_active" />
@@ -490,13 +490,13 @@
 
     <!-- timeline_continuous -->
     <style id="timeline_continuous" base="timeline_box">
-      <icon part="timeline_continuous_normal" />
+      <icon part="timeline_continuous_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_continuous:active">
       <icon part="timeline_continuous_active" />
     </style>
     <style id="timeline_discontinuous" base="timeline_box">
-      <icon part="timeline_discontinuous_normal" />
+      <icon part="timeline_discontinuous_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_discontinuous:active">
       <icon part="timeline_discontinuous_active" />
@@ -515,7 +515,7 @@
 
     <!-- timeline_empty_frame -->
     <style id="timeline_empty_frame">
-      <icon part="timeline_empty_frame_normal" />
+      <icon part="timeline_empty_frame_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_empty_frame:active">
       <icon part="timeline_empty_frame_active" />
@@ -523,46 +523,46 @@
 
     <!--timeline_keyframe-->
     <style id="timeline_keyframe">
-      <icon part="timeline_keyframe_normal" />
+      <icon part="timeline_keyframe_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_keyframe:active">
       <icon part="timeline_keyframe_active" />
     </style>
 
     <style id="timeline_from_left">
-      <icon part="timeline_from_left_normal" />
+      <icon part="timeline_from_left_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_from_left:active">
       <icon part="timeline_from_left_active" />
     </style>
 
     <style id="timeline_from_right">
-      <icon part="timeline_from_right_normal" />
+      <icon part="timeline_from_right_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_from_right:active">
       <icon part="timeline_from_right_active" />
     </style>
 
     <style id="timeline_from_both">
-      <icon part="timeline_from_both_normal" />
+      <icon part="timeline_from_both_normal" align="center" valign="middle" />
     </style>
     <style id="timeline_from_both:active">
       <icon part="timeline_from_both_active" />
     </style>
 
     <style id="timeline_left_link">
-      <icon part="timeline_left_link_active" />
+      <icon part="timeline_left_link_active" align="center" valign="middle" />
     </style>
     <style id="timeline_right_link">
-      <icon part="timeline_right_link_active" />
+      <icon part="timeline_right_link_active" align="center" valign="middle" />
     </style>
     <style id="timeline_both_links">
-      <icon part="timeline_both_links_active" />
+      <icon part="timeline_both_links_active" align="center" valign="middle" />
     </style>
 
     <!-- timeline_gear -->
     <style id="timeline_gear" base="timeline_box">
-      <icon part="timeline_gear" />
+      <icon part="timeline_gear" align="center" valign="middle" />
     </style>
     <style id="timeline_gear:active">
       <icon part="timeline_gear_active" />
@@ -573,7 +573,7 @@
 
     <!-- timeline_onionskin -->
     <style id="timeline_onionskin" base="timeline_box">
-      <icon part="timeline_onionskin" />
+      <icon part="timeline_onionskin" align="center" valign="middle" />
     </style>
     <style id="timeline_onionskin:active">
       <icon part="timeline_onionskin_active" />
