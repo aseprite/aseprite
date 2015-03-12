@@ -10,6 +10,7 @@
 
 #include "she/win/native_dialogs.h"
 
+#include "base/path.h"
 #include "base/string.h"
 #include "she/error.h"
 
@@ -63,7 +64,8 @@ public:
   }
 
   void setFileName(const std::string& filename) override {
-    wcscpy(&m_filename[0], base::from_utf8(filename).c_str());
+    wcscpy(&m_filename[0], base::from_utf8(base::get_file_name(filename)).c_str());
+    m_initialDir = base::from_utf8(base::get_file_path(filename));
   }
 
   bool show(DisplayHandle parent) override {
@@ -78,6 +80,8 @@ public:
     ofn.nFilterIndex = m_defFilter;
     ofn.lpstrFile = &m_filename[0];
     ofn.nMaxFile = FILENAME_BUFSIZE;
+    if (!m_initialDir.empty())
+      ofn.lpstrInitialDir = m_initialDir.c_str();
     ofn.lpstrTitle = m_title.c_str();
     ofn.lpstrDefExt = m_defExtension.c_str();
     ofn.Flags =
@@ -130,6 +134,7 @@ private:
   std::wstring m_defExtension;
   int m_defFilter;
   std::vector<WCHAR> m_filename;
+  std::wstring m_initialDir;
   std::wstring m_title;
   bool m_save;
 };
