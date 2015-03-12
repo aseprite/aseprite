@@ -597,10 +597,11 @@ bool Timeline::onProcessMessage(Message* msg)
             break;
           }
 
-          case PART_FRAME_TAG:
-            if (m_clk.frameTag) {
+          case PART_FRAME_TAG: {
+            FrameTag* frameTag = m_clk.getFrameTag();
+            if (frameTag) {
               Params params;
-              params.set("id", base::convert_to<std::string>(m_clk.frameTag->id()).c_str());
+              params.set("id", base::convert_to<std::string>(frameTag->id()).c_str());
 
               // As the m_clk.frameTag can be deleted with
               // RemoveFrameTag command, we've to clean all references
@@ -622,6 +623,7 @@ bool Timeline::onProcessMessage(Message* msg)
               }
             }
             break;
+          }
 
         }
 
@@ -1332,13 +1334,13 @@ void Timeline::drawFrameTags(ui::Graphics* g)
     }
 
     {
-      bounds = getPartBounds(Hit(PART_FRAME_TAG, LayerIndex(0), 0, frameTag));
+      bounds = getPartBounds(Hit(PART_FRAME_TAG, LayerIndex(0), 0, frameTag->id()));
 
       gfx::Color bg = frameTag->color();
-      if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag) {
+      if (m_clk.part == PART_FRAME_TAG && m_clk.frameTag == frameTag->id()) {
         bg = color_utils::blackandwhite_neg(bg);
       }
-      else if (m_hot.part == PART_FRAME_TAG && m_hot.frameTag == frameTag) {
+      else if (m_hot.part == PART_FRAME_TAG && m_hot.frameTag == frameTag->id()) {
         int r, g, b;
         r = gfx::getr(bg)+32;
         g = gfx::getg(bg)+32;
@@ -1618,21 +1620,24 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       return rc;
     }
 
-    case PART_FRAME_TAG:
-      if (hit.frameTag) {
-        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), hit.frameTag->fromFrame()));
-        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), hit.frameTag->toFrame()));
+    case PART_FRAME_TAG: {
+      FrameTag* frameTag = hit.getFrameTag();
+      if (frameTag) {
+        gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
+        gfx::Rect bounds2 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->toFrame()));
         gfx::Rect bounds = bounds1.createUnion(bounds2);
         bounds.y -= skinTheme()->dimensions.timelineTagsAreaHeight();
 
         int textHeight = getFont()->height();
         bounds.y -= textHeight + 2*ui::guiscale();
         bounds.x += 3*ui::guiscale();
-        bounds.w = getFont()->textLength(hit.frameTag->name().c_str()) + 4*ui::guiscale();
+        bounds.w = getFont()->textLength(frameTag->name().c_str()) + 4*ui::guiscale();
         bounds.h = getFont()->height() + 2*ui::guiscale();
         return bounds;
       }
       break;
+    }
+
   }
 
   return gfx::Rect();
@@ -1747,10 +1752,10 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     // Is the mouse on the frame tags area?
     else if (getPartBounds(Hit(PART_HEADER_FRAME_TAGS)).contains(mousePos)) {
       for (FrameTag* frameTag : m_sprite->frameTags()) {
-        gfx::Rect bounds = getPartBounds(Hit(PART_FRAME_TAG, LayerIndex(0), 0, frameTag));
+        gfx::Rect bounds = getPartBounds(Hit(PART_FRAME_TAG, LayerIndex(0), 0, frameTag->id()));
         if (bounds.contains(mousePos)) {
           hit.part = PART_FRAME_TAG;
-          hit.frameTag = frameTag;
+          hit.frameTag = frameTag->id();
           break;
         }
       }
@@ -2281,6 +2286,11 @@ int Timeline::topHeight() const
     }
   }
   return h;
+}
+
+FrameTag* Timeline::Hit::getFrameTag() const
+{
+  return get<FrameTag>(frameTag);
 }
 
 } // namespace app

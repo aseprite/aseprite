@@ -120,9 +120,9 @@ namespace app {
       int part;
       LayerIndex layer;
       frame_t frame;
-      FrameTag* frameTag;
+      ObjectId frameTag;
 
-      Hit(int part = 0, LayerIndex layer = LayerIndex(0), frame_t frame = 0, FrameTag* frameTag = nullptr)
+      Hit(int part = 0, LayerIndex layer = LayerIndex(0), frame_t frame = 0, ObjectId frameTag = NullId)
         : part(part), layer(layer), frame(frame), frameTag(frameTag) {
       }
 
@@ -133,6 +133,8 @@ namespace app {
           frame != other.frame ||
           frameTag != other.frameTag;
       }
+
+      FrameTag* getFrameTag() const;
     };
 
     struct DropTarget {
