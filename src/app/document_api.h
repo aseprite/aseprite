@@ -106,6 +106,7 @@ namespace app {
   private:
     void setCelFramePosition(Cel* cel, frame_t frame);
     void moveFrameLayer(Layer* layer, frame_t frame, frame_t beforeFrame);
+    void adjustFrameTags(Sprite* sprite, frame_t frame, frame_t delta, bool between);
 
     Document* m_document;
     Transaction& m_transaction;

@@ -164,26 +164,12 @@ void DocumentApi::setPixelFormat(Sprite* sprite, PixelFormat newFormat, Ditherin
 void DocumentApi::addFrame(Sprite* sprite, frame_t newFrame)
 {
   copyFrame(sprite, newFrame-1, newFrame);
-
-  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
-  // a copy of this collection
-  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
-  for (FrameTag* tag : tags) {
-    frame_t from = tag->fromFrame();
-    frame_t to = tag->toFrame();
-    if (newFrame <= from) { ++from; }
-    if (newFrame <= to+1) { ++to; }
-
-    if (from != tag->fromFrame() ||
-        to != tag->toFrame()) {
-      m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
-    }
-  }
 }
 
 void DocumentApi::addEmptyFrame(Sprite* sprite, frame_t newFrame)
 {
   m_transaction.execute(new cmd::AddFrame(sprite, newFrame));
+  adjustFrameTags(sprite, newFrame, +1, false);
 }
 
 void DocumentApi::addEmptyFramesTo(Sprite* sprite, frame_t newFrame)
@@ -196,30 +182,14 @@ void DocumentApi::copyFrame(Sprite* sprite, frame_t fromFrame, frame_t newFrame)
 {
   ASSERT(sprite);
   m_transaction.execute(new cmd::CopyFrame(sprite, fromFrame, newFrame));
+  adjustFrameTags(sprite, newFrame, +1, false);
 }
 
 void DocumentApi::removeFrame(Sprite* sprite, frame_t frame)
 {
   ASSERT(frame >= 0);
   m_transaction.execute(new cmd::RemoveFrame(sprite, frame));
-
-  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
-  // a copy of this collection
-  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
-  for (FrameTag* tag : tags) {
-    frame_t from = tag->fromFrame();
-    frame_t to = tag->toFrame();
-    if (frame < from) { --from; }
-    if (frame <= to) { --to; }
-
-    if (from != tag->fromFrame() ||
-        to != tag->toFrame()) {
-      if (from > to)
-        m_transaction.execute(new cmd::RemoveFrameTag(sprite, tag));
-      else
-        m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
-    }
-  }
+  adjustFrameTags(sprite, frame, -1, false);
 }
 
 void DocumentApi::setTotalFrames(Sprite* sprite, frame_t frames)
@@ -257,16 +227,17 @@ void DocumentApi::moveFrame(Sprite* sprite, frame_t frame, frame_t beforeFrame)
     if (frame < beforeFrame) {
       for (frame_t c=frame; c<beforeFrame-1; ++c)
         setFrameDuration(sprite, c, sprite->frameDuration(c+1));
-
       setFrameDuration(sprite, beforeFrame-1, frlen_aux);
     }
     // Moving the frame to the past.
     else if (beforeFrame < frame) {
       for (frame_t c=frame; c>beforeFrame; --c)
         setFrameDuration(sprite, c, sprite->frameDuration(c-1));
-
       setFrameDuration(sprite, beforeFrame, frlen_aux);
     }
+
+    adjustFrameTags(sprite, frame, -1, true);
+    adjustFrameTags(sprite, beforeFrame, +1, true);
 
     // Change cel positions.
     moveFrameLayer(sprite->folder(), frame, beforeFrame);
@@ -542,6 +513,35 @@ void DocumentApi::setPalette(Sprite* sprite, frame_t frame, Palette* newPalette)
   if (from >= 0 && to >= from) {
     m_transaction.execute(new cmd::SetPalette(
         sprite, frame, newPalette));
+  }
+}
+
+void DocumentApi::adjustFrameTags(Sprite* sprite, frame_t frame, frame_t delta, bool between)
+{
+  // As FrameTag::setFrameRange() changes m_frameTags, we need to use
+  // a copy of this collection
+  std::vector<FrameTag*> tags(sprite->frameTags().begin(), sprite->frameTags().end());
+
+  for (FrameTag* tag : tags) {
+    frame_t from = tag->fromFrame();
+    frame_t to = tag->toFrame();
+
+    if (delta == +1) {
+      if (frame <= from) { ++from; }
+      if (frame <= to+1) { ++to; }
+    }
+    else if (delta == -1) {
+      if (frame < from) { --from; }
+      if (frame <= to) { --to; }
+    }
+
+    if (from != tag->fromFrame() ||
+        to != tag->toFrame()) {
+      if (from > to)
+        m_transaction.execute(new cmd::RemoveFrameTag(sprite, tag));
+      else
+        m_transaction.execute(new cmd::SetFrameTagRange(tag, from, to));
+    }
   }
 }
 
