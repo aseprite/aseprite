@@ -11,6 +11,7 @@
 #include "she/win/native_dialogs.h"
 
 #include "base/string.h"
+#include "she/error.h"
 
 #include <windows.h>
 
@@ -93,7 +94,22 @@ public:
       ofn.Flags |= OFN_OVERWRITEPROMPT;
 #endif
 
-    return GetOpenFileName(&ofn) != FALSE;
+    BOOL res;
+    if (m_save)
+      res = GetSaveFileName(&ofn);
+    else
+      res = GetOpenFileName(&ofn);
+
+    if (!res) {
+      DWORD err = CommDlgExtendedError();
+      if (err) {
+        std::vector<char> buf(1024);
+        sprintf(&buf[0], "Error using GetOpen/SaveFileName Win32 API. Code: %d", err);
+        she::error_message(&buf[0]);
+      }
+    }
+
+    return res != FALSE;
   }
 
 private:
