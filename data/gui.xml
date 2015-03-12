@@ -651,6 +651,8 @@
       </item>
       <item command="NewFrameTag" text="New &amp;Tag" />
       <item command="RemoveFrame" text="&amp;Remove" />
+      <separator />
+      <item command="SetLoopSection" text="Set &amp;Loop Section" />
     </menu>
 
     <menu id="cel_popup">
