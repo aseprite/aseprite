@@ -1549,12 +1549,9 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
         m_separator_x - FRMSIZE*5, HDRSIZE);
 
     case PART_HEADER_FRAME:
-      if (validFrame(hit.frame)) {
-        return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - m_scroll_x,
-          bounds.y + y, FRMSIZE, HDRSIZE);
-      }
-      break;
+      return gfx::Rect(
+        bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*MAX(firstFrame(), hit.frame) - m_scroll_x,
+        bounds.y + y, FRMSIZE, HDRSIZE);
 
     case PART_HEADER_FRAME_TAGS:
       return gfx::Rect(
