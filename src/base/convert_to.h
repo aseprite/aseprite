@@ -8,6 +8,7 @@
 #define BASE_CONVERT_TO_H_INCLUDED
 #pragma once
 
+#include "base/base.h"
 #include <string>
 
 namespace base {
