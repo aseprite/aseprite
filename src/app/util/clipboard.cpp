@@ -208,7 +208,7 @@ void clipboard::copy_range(const ContextReader& reader, const DocumentRange& ran
   clipboard_range.setRange(writer.document(), range);
 
   // TODO Replace this with a signal, because here the timeline
-  // depends on the clipboard and the clipboard of the timeline.
+  // depends on the clipboard and the clipboard on the timeline.
   App::instance()->getMainWindow()
     ->getTimeline()->activateClipboardRange();
 }
