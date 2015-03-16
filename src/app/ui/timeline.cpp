@@ -1079,7 +1079,8 @@ void Timeline::drawClipboardRange(ui::Graphics* g)
     m_clipboard_timer.start();
 
   CheckedDrawMode checked(g, m_offset_count);
-  g->drawRect(0, getRangeBounds(clipboard_range));
+  g->drawRect(gfx::rgba(0, 0, 0),
+    getRangeBounds(clipboard_range));
 }
 
 void Timeline::drawTop(ui::Graphics* g)
