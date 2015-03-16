@@ -28,6 +28,7 @@
 #include "doc/context.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
+#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
@@ -445,6 +446,10 @@ Document* Document::duplicate(DuplicateType type) const
   // Copy frames duration
   for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
     spriteCopy->setFrameDuration(i, sourceSprite->frameDuration(i));
+
+  // Copy frame tags
+  for (const FrameTag* tag : sourceSprite->frameTags())
+    spriteCopy->frameTags().add(new FrameTag(*tag));
 
   // Copy color palettes
   {
