@@ -12,6 +12,7 @@
 #include "doc/object_id.h"
 
 #include <vector>
+#include <string>
 
 namespace doc {
 

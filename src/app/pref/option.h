@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/signal.h"
+#include <string>
 
 namespace app {
 
