@@ -14,6 +14,7 @@
 #include "base/string.h"
 #include "she/alleg4/font.h"
 #include "she/alleg4/surface.h"
+#include "she/common/system.h"
 #include "she/logger.h"
 
 #include <allegro.h>
@@ -49,13 +50,6 @@
   #define X11_None 0L
   #endif
 
-#endif
-
-#ifdef _WIN32
-  #include "she/win/clipboard.h"
-  #include "she/win/native_dialogs.h"
-#else
-  #include "she/clipboard_simple.h"
 #endif
 
 #include "loadpng.h"
@@ -104,10 +98,6 @@ static void resize_callback(RESIZE_DISPLAY_EVENT* ev)
 
 namespace she {
 
-#ifdef __APPLE__
-  Logger* getOsxLogger();
-#endif
-
 class Alleg4EventQueue : public EventQueue {
 public:
   Alleg4EventQueue() {
@@ -123,12 +113,13 @@ public:
 #endif
   }
 
-  void dispose() {
+  ~Alleg4EventQueue() {
     clock_exit();
-    delete this;
   }
 
-  void getEvent(Event& event) {
+  void getEvent(Event& event, bool canWait) override {
+    (void)canWait;              // Ignore this parameter
+
     close_button_generate_events();
 
 #ifdef USE_KEY_POLLER
@@ -708,11 +699,10 @@ private:
   Alleg4EventQueue* m_queue;
 };
 
-class Alleg4System : public System {
+class Alleg4System : public CommonSystem {
 public:
   Alleg4System()
     : m_font(font, Alleg4Font::None)       // Default Allegro font
-    , m_nativeDialogs(nullptr)
   {
     if (allegro_init() < 0)
       throw std::runtime_error("Cannot initialize Allegro library");
@@ -736,22 +726,6 @@ public:
 
   Capabilities capabilities() const override {
     return (Capabilities)(kCanResizeDisplayCapability);
-  }
-
-  Logger* logger() override {
-#ifdef __APPLE__
-    return getOsxLogger();
-#else
-    return nullptr;
-#endif
-  }
-
-  NativeDialogs* nativeDialogs() override {
-#ifdef _WIN32
-    if (!m_nativeDialogs)
-      m_nativeDialogs = new NativeDialogsWin32();
-#endif
-    return m_nativeDialogs;
   }
 
   Display* defaultDisplay() override {
@@ -792,17 +766,8 @@ public:
     return sur;
   }
 
-  Clipboard* createClipboard() override {
-#ifdef _WIN32
-    return new ClipboardWin32();
-#else
-    return new ClipboardImpl();
-#endif
-  }
-
 private:
   Alleg4Font m_font;
-  NativeDialogs* m_nativeDialogs;
 };
 
 static System* g_instance;

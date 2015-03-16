@@ -3,6 +3,7 @@
 
 include(CheckCSourceCompiles)
 include(CheckCXXSourceCompiles)
+include(CheckCSourceRuns)
 
 check_c_source_compiles("
 #include <stdint.h>
@@ -35,8 +36,16 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.cmakein
                ${CMAKE_CURRENT_BINARY_DIR}/base/config.h @ONLY)
 
 set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    CACHE STRING "Extra include directory for base lib")
-mark_as_advanced(${BASE_INCLUDE_DIR})
+    CACHE INTERNAL "Extra include directory for base lib")
+
+if(WIN32)
+  set(EXTRA_LIBS dbghelp shlwapi)
+else()
+  set(EXTRA_LIBS)
+endif()
+set(BASE_EXTRA_LIBRARIES ${EXTRA_LIBS}
+    CACHE INTERNAL "Extra libraries needed by base lib")
+
 include_directories(${BASE_INCLUDE_DIR})
 
 set(BASE_SOURCES

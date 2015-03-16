@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,11 +21,11 @@ namespace she {
       delete this;
     }
 
-    std::string getText() override {
+    std::string getText(DisplayHandle) override {
       return m_text;
     }
 
-    void setText(const std::string& text) {
+    void setText(DisplayHandle, const std::string& text) {
       m_text = text;
     }
 

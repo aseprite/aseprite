@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2014  David Capello
+# Copyright (C) 2001-2015  David Capello
 #
 # Parts of this file come from the Allegro 4.4 CMakeLists.txt
 
@@ -44,6 +44,8 @@ option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
 option(USE_SHARED_GTEST   "Use your installed copy of gtest" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
+option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
+option(USE_SKIA_BACKEND   "Use Skia backend" off)
 option(ENABLE_MEMLEAK     "Enable memory-leaks detector (only for developers)" off)
 option(ENABLE_UPDATER     "Enable automatic check for updates" on)
 option(ENABLE_WEBSERVER   "Enable support to run a webserver (for HTML5 gamedev)" off)
@@ -58,8 +60,7 @@ list(APPEND CMAKE_BUILD_TYPES Profile)
 mark_as_advanced(
     CMAKE_C_FLAGS_PROFILE
     CMAKE_CXX_FLAGS_PROFILE
-    CMAKE_EXE_LINKER_FLAGS_PROFILE
-    )
+    CMAKE_EXE_LINKER_FLAGS_PROFILE)
 
 if(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS_PROFILE "-pg"
@@ -112,12 +113,6 @@ set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 
-# Allegro header files
-if(NOT USE_SHARED_ALLEGRO4)
-  include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
-  include_directories(${CMAKE_BINARY_DIR}/include)
-endif()
-
 # Zlib generated zconf.h file
 include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
 
@@ -138,9 +133,6 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 # Do not use MMX optimizations in PNG code
 add_definitions(-DPNG_NO_MMX_CODE)
 
-# Static Allegro (the code of Allegro library is embedded).
-add_definitions(-DALLEGRO_STATICLINK)
-
 # Debug C/C++ flags
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_definitions(-DDEBUGMODE -D_DEBUG)
@@ -148,14 +140,42 @@ else()
   add_definitions(-DNDEBUG)
 endif()
 
-if(ENABLE_MEMLEAK)
-  add_definitions(-DMEMLEAK)
-endif()
-
 # Fix to compile gtest with VC11 (2012)
 if(NOT USE_SHARED_GTEST)
   if (MSVC_VERSION EQUAL 1700)
     add_definitions(-D_VARIADIC_MAX=10)
+  endif()
+endif()
+
+######################################################################
+# Allegro 4 backend
+
+if(USE_ALLEG4_BACKEND)
+  if(USE_SHARED_ALLEGRO4)
+    # Find the shared Allegro 4 library
+    find_library(LIBALLEGRO4_LIBRARY alleg)
+    find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
+
+    if(NOT LIBALLEGRO4_LIBRARY)
+      message(FATAL_ERROR "Allegro 4 not found")
+    endif()
+
+    # Get flags to link programs using allegro-config program
+    execute_process(COMMAND allegro-config --libs --shared
+      OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(LIBALLEGRO4_LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS} ${PLATFORM_LIBS})
+    include_directories(${LIBALLEGRO4_INCLUDE_DIR})
+  else()
+    include_directories(${CMAKE_SOURCE_DIR}/src/allegro/include)
+    include_directories(${CMAKE_BINARY_DIR}/include)
+
+    add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
+    add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
+
+    # Static Allegro (the code of Allegro library is embedded).
+    add_definitions(-DALLEGRO_STATICLINK)
   endif()
 endif()
 
@@ -212,38 +232,26 @@ endif()
 # -- Windows --
 
 if(WIN32)
-  find_package(DXGuid)
+  if(USE_ALLEG4_BACKEND)
+    find_package(DXGuid)
 
-  if(NOT DXGUID_FOUND)
-    if(MSVC)
-      message(FATAL_ERROR
-        "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.")
-    elseif(MINGW)
-      message(FATAL_ERROR
-        "DirectX required for Windows port. Get it from the Allegro web site (dx80_mgw.zip).")
-    else()
-      message(FATAL_ERROR "DirectX required for Windows port.")
+    if(NOT DXGUID_FOUND)
+      if(MSVC)
+        message(FATAL_ERROR "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.")
+      else()
+        message(FATAL_ERROR "DirectX required for Windows port.")
+      endif()
     endif()
+
+    include_directories(SYSTEM ${DXGUID_INCLUDE_DIR})
+  else()
+    set(DXGUID_LIBRARIES)
   endif()
 
-  include_directories(SYSTEM
-    ${DXGUID_INCLUDE_DIR}
-    )
-
   list(APPEND PLATFORM_LIBS
-    kernel32
-    user32
-    gdi32
-    comdlg32
-    ole32
-    ${DXGUID_LIBRARIES}
-    winmm
-    shlwapi
-    psapi
-    wininet
-    comctl32
-    dbghelp
-    )
+    kernel32 user32 gdi32 comdlg32 ole32 winmm
+    shlwapi psapi wininet comctl32 dbghelp
+    ${DXGUID_LIBRARIES})
 
   # Windows XP is the minimum supported platform.
   add_definitions(-D_WIN32_WINNT=0x0501 -DWINVER=0x0501)
@@ -274,8 +282,7 @@ if(APPLE)
     ${COREAUDIO_LIBRARY}
     ${AUDIOUNIT_LIBRARY}
     ${AUDIOTOOLBOX_LIBRARY}
-    ${QUICKTIME_LIBRARY}
-    )
+    ${QUICKTIME_LIBRARY})
 
     # Hack to deal with Mac OS X 10.6.  NSQuickDrawView is not defined by
     # NSQuickDrawView.h when compiling in 64-bit mode, and 64-bit mode is the

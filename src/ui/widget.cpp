@@ -80,7 +80,7 @@ Widget::Widget(WidgetType type)
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
-  this->m_font = (this->m_theme ? this->m_theme->default_font: NULL);
+  this->m_font = (this->m_theme ? this->m_theme->getDefaultFont(): nullptr);
   this->m_bgColor = gfx::ColorNone;
 
   m_preferredSize = NULL;
@@ -187,7 +187,7 @@ void Widget::setTheme(Theme* theme)
   m_theme = theme;
 
   // TODO maybe some Style in Widget should be great
-  setFont(m_theme ? m_theme->default_font: NULL);
+  setFont(m_theme ? m_theme->getDefaultFont(): nullptr);
 }
 
 // ===============================================================

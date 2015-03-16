@@ -1,5 +1,7 @@
 # ASEPRITE
-# Copyright (C) 2001-2013  David Capello
+# Copyright (C) 2001-2015  David Capello
+
+include(CheckIncludeFiles)
 
 include_directories(
   lib

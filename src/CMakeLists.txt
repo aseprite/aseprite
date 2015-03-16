@@ -1,7 +1,14 @@
 # Aseprite
 # Copyright (C) 2001-2015  David Capello
 
+######################################################################
+# Common definitions for all Aseprite libraries/projects
+
 add_definitions(-DHAVE_CONFIG_H)
+
+if(ENABLE_MEMLEAK)
+  add_definitions(-DMEMLEAK)
+endif()
 
 ######################################################################
 # Compiler-specific flags
@@ -42,31 +49,19 @@ set(aseprite_libraries
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
 
-# Third-party libraries
-if(USE_SHARED_ALLEGRO4)
-  # Find the shared Allegro 4 library
-  find_library(LIBALLEGRO4_LIBRARY alleg)
-  find_path(LIBALLEGRO4_INCLUDE_DIR allegro.h)
+######################################################################
+# Allegro 4 backend
 
-  if(NOT LIBALLEGRO4_LIBRARY)
-    message(FATAL_ERROR "Allegro 4 not found")
+if(USE_ALLEG4_BACKEND)
+  if(NOT USE_SHARED_ALLEGRO4)
+    # Use patched version of Allegro 4 (with window resize support).
+    add_subdirectory(allegro)
+    set(libs3rdparty ${libs3rdparty} allegro)
   endif()
-
-  # Get flags to link programs using allegro-config program
-  execute_process(COMMAND allegro-config --libs --shared
-    OUTPUT_VARIABLE LIBALLEGRO4_LINK_FLAGS
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  set(LIBALLEGRO4_LINK_FLAGS ${LIBALLEGRO4_LINK_FLAGS} ${PLATFORM_LIBS})
-  include_directories(${LIBALLEGRO4_INCLUDE_DIR})
-else()
-  add_definitions(-DALLEGRO4_WITH_RESIZE_PATCH)
-  add_definitions(-DALLEGRO4_WITH_EXTRA_CURSORS)
-
-  # Use patched version of Allegro 4 (with window resize support).
-  add_subdirectory(allegro)
-  set(libs3rdparty ${libs3rdparty} allegro)
 endif()
+
+######################################################################
+# Other third party libraries
 
 if(USE_SHARED_JPEGLIB)
   find_package(JPEG)
@@ -123,15 +118,17 @@ else()
   include_directories(${TINYXML_DIR})
 endif()
 
-if(USE_SHARED_LIBLOADPNG)
-  find_library(LIBLOADPNG_LIBRARY NAMES loadpng)
-  find_path(LIBLOADPNG_INCLUDE_DIR NAMES loadpng.h)
+if(USE_ALLEG4_BACKEND)
+  if(USE_SHARED_LIBLOADPNG)
+    find_library(LIBLOADPNG_LIBRARY NAMES loadpng)
+    find_path(LIBLOADPNG_INCLUDE_DIR NAMES loadpng.h)
 
-  set(libs3rdparty ${libs3rdparty} ${LIBLOADPNG_LIBRARY})
-  include_directories(${LIBLOADPNG_INCLUDE_DIR})
-else()
-  set(libs3rdparty loadpng ${libs3rdparty})
-  include_directories(${LOADPNG_DIR})
+    set(libs3rdparty ${libs3rdparty} ${LIBLOADPNG_LIBRARY})
+    include_directories(${LIBLOADPNG_INCLUDE_DIR})
+  else()
+    set(libs3rdparty loadpng ${libs3rdparty})
+    include_directories(${LOADPNG_DIR})
+  endif()
 endif()
 
 if(USE_SHARED_PIXMAN)
@@ -206,6 +203,7 @@ endif()
 
 add_subdirectory(base)
 include_directories(${BASE_INCLUDE_DIR})
+list(APPEND libs3rdparty ${BASE_EXTRA_LIBRARIES})
 
 add_subdirectory(cfg)
 add_subdirectory(css)
@@ -232,13 +230,18 @@ endif()
 add_subdirectory(app)
 
 if(V8_FOUND)
-list(APPEND libs3rdparty ${V8_LIBRARIES})
+  list(APPEND libs3rdparty ${V8_LIBRARIES})
+endif()
+
+if(USE_SKIA_BACKEND)
+  list(APPEND sys_libs ${PLATFORM_LIBS})
+  list(APPEND libs3rdparty ${SKIA_LIBRARIES})
 endif()
 
 # All libraries for .exe files
 set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
 
-if(LIBALLEGRO4_LINK_FLAGS)
+if(USE_ALLEG4_BACKEND AND LIBALLEGRO4_LINK_FLAGS)
   set(all_libs ${all_libs} ${LIBALLEGRO4_LINK_FLAGS})
 endif()
 
@@ -262,11 +265,11 @@ add_custom_target(copy_data DEPENDS ${out_data_files})
 
 if(WIN32)
   set(win32_resources main/resources_win32.rc)
-endif(WIN32)
+endif()
 
-if(UNIX)
+if(UNIX AND NOT APPLE AND USE_ALLEG4_BACKEND)
   set(x11_resources main/xpm_icon.c)
-endif(UNIX)
+endif()
 
 add_executable(aseprite WIN32
   main/main.cpp
@@ -311,7 +314,7 @@ function(find_tests dir dependencies)
     endif()
 
     target_link_libraries(${testname} gtest ${ARGV})
-    if(LIBALLEGRO4_LINK_FLAGS)
+    if(USE_ALLEG4_BACKEND AND LIBALLEGRO4_LINK_FLAGS)
       target_link_libraries(${testname} ${LIBALLEGRO4_LINK_FLAGS})
     endif()
 

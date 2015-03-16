@@ -11,8 +11,22 @@
 #include "base/string.h"
 #include "she/win/clipboard.h"
 
-#include <allegro.h>
-#include <winalleg.h>
+#include <windows.h>
+
+namespace {
+
+bool open_clipboard(HWND hwnd)
+{
+  for (int i=0; i<5; ++i) {
+    if (OpenClipboard(hwnd))
+      return true;
+
+    Sleep(100);
+  }
+  return false;
+}
+
+}
 
 namespace she {
 
@@ -21,12 +35,12 @@ void ClipboardWin32::dispose()
   delete this;
 }
 
-std::string ClipboardWin32::getText()
+std::string ClipboardWin32::getText(DisplayHandle hwnd)
 {
   std::string text;
 
   if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-    if (OpenClipboard(win_get_window())) {
+    if (open_clipboard((HWND)hwnd)) {
       HGLOBAL hglobal = GetClipboardData(CF_UNICODETEXT);
       if (hglobal != NULL) {
         LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
@@ -42,10 +56,10 @@ std::string ClipboardWin32::getText()
   return text;
 }
 
-void ClipboardWin32::setText(const std::string& text)
+void ClipboardWin32::setText(DisplayHandle hwnd, const std::string& text)
 {
   if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-    if (OpenClipboard(win_get_window())) {
+    if (open_clipboard((HWND)hwnd)) {
       EmptyClipboard();
 
       if (!text.empty()) {

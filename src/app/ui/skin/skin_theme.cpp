@@ -146,7 +146,8 @@ SkinTheme::SkinTheme()
 {
   this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default");
-  m_minifont = she::instance()->defaultFont();
+  m_defaultFont = nullptr;
+  m_miniFont = nullptr;
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet = NULL;
@@ -309,8 +310,8 @@ SkinTheme::~SkinTheme()
   sheet_mapping.clear();
 
   // Destroy the minifont
-  if (m_minifont)
-    m_minifont->dispose();
+  if (m_miniFont)
+    m_miniFont->dispose();
 }
 
 // Call Theme::regenerate() after this.
@@ -339,14 +340,11 @@ void SkinTheme::reload_skin()
 
 void SkinTheme::reload_fonts()
 {
-  if (default_font)
-    default_font->dispose();
+  if (m_defaultFont) m_defaultFont->dispose();
+  if (m_miniFont) m_miniFont->dispose();
 
-  if (m_minifont)
-    m_minifont->dispose();
-
-  default_font = loadFont("UserFont", "skins/" + m_selected_skin + "/font.png");
-  m_minifont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
+  m_defaultFont = loadFont("UserFont", "skins/" + m_selected_skin + "/font.png");
+  m_miniFont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
 }
 
 gfx::Size SkinTheme::get_part_size(int part_i) const

@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2013  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -15,8 +15,7 @@ namespace she {
   class EventQueue {
   public:
     virtual ~EventQueue() { }
-    virtual void dispose() = 0;
-    virtual void getEvent(Event& ev) = 0;
+    virtual void getEvent(Event& ev, bool canWait) = 0;
   };
 
 } // namespace she

@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2013  David Capello
+# Copyright (C) 2001-2015  David Capello
 
 include_directories(.)
 
@@ -37,8 +37,8 @@ if(ENABLE_UPDATER AND NOT USE_SHARED_CURL)
   add_subdirectory(curl)
 endif()
 
-if(NOT USE_SHARED_LIBLOADPNG)
- add_subdirectory(loadpng)
+if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_LIBLOADPNG)
+  add_subdirectory(loadpng)
 endif()
 
 if(ENABLE_WEBSERVER)

@@ -348,7 +348,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 ScreenGraphics::ScreenGraphics()
   : Graphics(she::instance()->defaultDisplay()->getSurface(), 0, 0)
 {
-  setFont(CurrentTheme::get()->default_font);
+  setFont(CurrentTheme::get()->getDefaultFont());
 }
 
 ScreenGraphics::~ScreenGraphics()

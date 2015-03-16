@@ -305,7 +305,7 @@ static void reload_default_font()
   skin_theme->reload_fonts();
 
   // Set all widgets fonts
-  setFontOfAllWidgets(theme->default_font);
+  setFontOfAllWidgets(theme->getDefaultFont());
 }
 
 void load_window_pos(Widget* window, const char *section)

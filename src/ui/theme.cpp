@@ -29,15 +29,11 @@ Theme::Theme()
   : m_guiscale(1)
 {
   this->name = "Theme";
-  this->default_font = she::instance()->defaultFont();
   this->scrollbar_size = 0;
 }
 
 Theme::~Theme()
 {
-  if (default_font)
-    default_font->dispose();
-
   if (current_theme == this)
     CurrentTheme::set(NULL);
 }

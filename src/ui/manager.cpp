@@ -242,7 +242,10 @@ void Manager::generateMessagesFromSheEvents()
   // Events from "she" layer.
   she::Event sheEvent;
   for (;;) {
-    m_eventQueue->getEvent(sheEvent);
+    // bool canWait = (msg_queue.empty());
+    bool canWait = false;
+
+    m_eventQueue->getEvent(sheEvent, canWait);
     if (sheEvent.type() == she::Event::None)
       break;
 

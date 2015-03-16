@@ -47,7 +47,8 @@ namespace app {
       SkinTheme();
       ~SkinTheme();
 
-      she::Font* getMiniFont() const { return m_minifont; }
+      she::Font* getDefaultFont() const { return m_defaultFont; }
+      she::Font* getMiniFont() const { return m_miniFont; }
 
       void reload_skin();
       void reload_fonts();
@@ -149,7 +150,8 @@ namespace app {
       std::map<std::string, int> m_dimensions_by_id;
       std::vector<ui::Cursor*> m_cursors;
       StyleSheet m_stylesheet;
-      she::Font* m_minifont;
+      she::Font* m_defaultFont;
+      she::Font* m_miniFont;
     };
 
     inline SkinPartPtr get_part_by_id(const std::string& id) {

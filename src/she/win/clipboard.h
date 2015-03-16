@@ -16,8 +16,8 @@ namespace she {
   class ClipboardWin32 : public Clipboard {
   public:
     void dispose() override;
-    std::string getText() override;
-    void setText(const std::string& text) override;
+    std::string getText(DisplayHandle hwnd) override;
+    void setText(DisplayHandle hwnd, const std::string& text) override;
 
   private:
     std::string m_text;
