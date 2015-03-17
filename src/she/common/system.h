@@ -7,6 +7,9 @@
 #ifdef _WIN32
   #include "she/win/clipboard.h"
   #include "she/win/native_dialogs.h"
+#elif defined(__APPLE__)
+  #include "she/osx/clipboard.h"
+  #include "she/osx/native_dialogs.h"
 #else
   #include "she/clipboard_simple.h"
 #endif
@@ -43,6 +46,9 @@ public:
 #ifdef _WIN32
     if (!m_nativeDialogs)
       m_nativeDialogs = new NativeDialogsWin32();
+#elif defined(__APPLE__)
+    if (!m_nativeDialogs)
+      m_nativeDialogs = new NativeDialogsOSX();
 #endif
     return m_nativeDialogs;
   }
@@ -50,6 +56,8 @@ public:
   Clipboard* createClipboard() override {
 #ifdef _WIN32
     return new ClipboardWin32();
+#elif defined(__APPLE__)
+    return new ClipboardOSX();
 #else
     return new ClipboardImpl();
 #endif
