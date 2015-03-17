@@ -9,12 +9,13 @@
 #include "config.h"
 #endif
 
-#include "app/commands/cmd_export_sprite_sheet.h"
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/pref/preferences.h"
 
 namespace app {
 
@@ -42,25 +43,20 @@ bool RepeatLastExportCommand::onEnabled(Context* context)
 
 void RepeatLastExportCommand::onExecute(Context* context)
 {
-  base::UniquePtr<ExportSpriteSheetCommand> command(
-    static_cast<ExportSpriteSheetCommand*>(
-      CommandsModule::instance()->getCommandByName(CommandId::ExportSpriteSheet)->clone()));
+  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::ExportSpriteSheet);
+  Params params;
 
   {
     const ContextReader reader(context);
     const Document* document(reader.document());
-    doc::ExportDataPtr data = document->exportData();
+    DocumentPreferences& docPref =
+      App::instance()->preferences().document(document);
 
-    if (data != NULL) {
-      if (data->type() == doc::ExportData::None)
-        return;                 // Do nothing case
-
-      command->setUseUI(false);
-      command->setExportData(data);
-    }
+    params.set("ui",
+      (docPref.spriteSheet.type() == app::gen::SpriteSheetType::NONE ? "1": "0"));
   }
 
-  context->executeCommand(command);
+  context->executeCommand(cmd, params);
 }
 
 Command* CommandFactory::createRepeatLastExportCommand()

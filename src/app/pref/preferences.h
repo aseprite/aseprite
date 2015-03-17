@@ -42,18 +42,18 @@ namespace app {
     void save();
 
     ToolPreferences& tool(tools::Tool* tool);
-    DocumentPreferences& document(app::Document* doc);
+    DocumentPreferences& document(const app::Document* doc);
 
   protected:
     void onRemoveDocument(doc::Document* doc) override;
 
   private:
-    std::string docConfigFileName(app::Document* doc);
+    std::string docConfigFileName(const app::Document* doc);
 
-    void serializeDocPref(app::Document* doc, app::DocumentPreferences* docPref, bool save);
+    void serializeDocPref(const app::Document* doc, app::DocumentPreferences* docPref, bool save);
 
     std::map<std::string, app::ToolPreferences*> m_tools;
-    std::map<app::Document*, app::DocumentPreferences*> m_docs;
+    std::map<const app::Document*, app::DocumentPreferences*> m_docs;
   };
 
 } // namespace app

@@ -69,7 +69,7 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
   }
 }
 
-DocumentPreferences& Preferences::document(app::Document* document)
+DocumentPreferences& Preferences::document(const app::Document* document)
 {
   auto it = m_docs.find(document);
   if (it != m_docs.end()) {
@@ -102,7 +102,7 @@ void Preferences::onRemoveDocument(doc::Document* doc)
   }
 }
 
-std::string Preferences::docConfigFileName(app::Document* doc)
+std::string Preferences::docConfigFileName(const app::Document* doc)
 {
   if (!doc)
     return "";
@@ -118,7 +118,7 @@ std::string Preferences::docConfigFileName(app::Document* doc)
   return rf.getFirstOrCreateDefault();
 }
 
-void Preferences::serializeDocPref(app::Document* doc, app::DocumentPreferences* docPref, bool save)
+void Preferences::serializeDocPref(const app::Document* doc, app::DocumentPreferences* docPref, bool save)
 {
   bool specific_file = false;
 
