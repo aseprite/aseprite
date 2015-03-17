@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,14 +13,12 @@
 #include "base/observable.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
-#include "doc/export_data.h"
 #include "doc/object.h"
 #include "doc/sprites.h"
 
 namespace doc {
 
   class Context;
-  class ExportData;
 
   class Document : public Object
                  , public base::Observable<DocumentObserver> {
@@ -43,10 +41,7 @@ namespace doc {
 
     std::string name() const;
     const std::string& filename() const { return m_filename; }
-    ExportDataPtr exportData() const { return m_exportData; }
-
     void setFilename(const std::string& filename);
-    void setExportData(const ExportDataPtr& data);
 
     void close();
 
@@ -61,7 +56,6 @@ namespace doc {
     std::string m_filename;
     Sprites m_sprites;
     Context* m_ctx;
-    ExportDataPtr m_exportData;
   };
 
 } // namespace doc

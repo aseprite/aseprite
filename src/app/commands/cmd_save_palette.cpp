@@ -40,9 +40,7 @@ SavePaletteCommand::SavePaletteCommand()
 
 void SavePaletteCommand::onExecute(Context* context)
 {
-  char exts[4096];
-  get_writable_palette_extensions(exts, sizeof(exts));
-
+  std::string exts = get_writable_palette_extensions();
   std::string filename;
   int ret;
 

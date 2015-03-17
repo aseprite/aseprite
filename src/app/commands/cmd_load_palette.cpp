@@ -41,9 +41,7 @@ LoadPaletteCommand::LoadPaletteCommand()
 
 void LoadPaletteCommand::onExecute(Context* context)
 {
-  char exts[4096];
-  get_readable_palette_extensions(exts, sizeof(exts));
-
+  std::string exts = get_readable_palette_extensions();
   std::string filename =
     app::show_file_selector("Load Palette", "", exts,
       FileSelectorType::Open);

@@ -43,6 +43,12 @@
       <value id="CHECKED_4x4" value="2" />
       <value id="CHECKED_2x2" value="3" />
     </enum>
+    <enum id="SpriteSheetType">
+      <value id="NONE" value="0" />
+      <value id="HORIZONTAL_STRIP" value="1" />
+      <value id="VERTICAL_STRIP" value="2" />
+      <value id="MATRIX" value="3" />
+    </enum>
   </types>
 
   <global>
@@ -132,6 +138,15 @@
       <option id="opacity_base" type="int" default="68" migrate="Onionskin.OpacityBase" />
       <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
       <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
+    </section>
+    <section id="sprite_sheet">
+      <option id="type" type="SpriteSheetType" default="SpriteSheetType::NONE" />
+      <option id="columns" type="int" default="0" />
+      <option id="width" type="int" default="0" />
+      <option id="height" type="int" default="0" />
+      <option id="best_fit" type="bool" default="false" />
+      <option id="texture_filename" type="std::string" />
+      <option id="data_filename" type="std::string" />
     </section>
   </document>
 

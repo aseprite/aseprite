@@ -28,6 +28,7 @@
 #include "doc/context.h"
 #include "doc/document_event.h"
 #include "doc/document_observer.h"
+#include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/palette.h"
@@ -344,9 +345,17 @@ void Document::resetTransformation()
 
 void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, Layer* destLayer0) const
 {
+  LayerFlags dstFlags = sourceLayer0->flags();
+
+  // Remove the "background" flag if the destDoc already has a background layer.
+  if (((int)dstFlags & (int)LayerFlags::Background) == (int)LayerFlags::Background &&
+      (destDoc->sprite()->backgroundLayer())) {
+    dstFlags = (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
+  }
+
   // Copy the layer name
   destLayer0->setName(sourceLayer0->name());
-  destLayer0->setFlags(sourceLayer0->flags());
+  destLayer0->setFlags(dstFlags);
 
   if (sourceLayer0->isImage() && destLayer0->isImage()) {
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
@@ -438,6 +447,10 @@ Document* Document::duplicate(DuplicateType type) const
   for (frame_t i(0); i < sourceSprite->totalFrames(); ++i)
     spriteCopy->setFrameDuration(i, sourceSprite->frameDuration(i));
 
+  // Copy frame tags
+  for (const FrameTag* tag : sourceSprite->frameTags())
+    spriteCopy->frameTags().add(new FrameTag(*tag));
+
   // Copy color palettes
   {
     PalettesList::const_iterator it = sourceSprite->getPalettes().begin();
@@ -454,10 +467,8 @@ Document* Document::duplicate(DuplicateType type) const
       // Copy the layer folder
       copyLayerContent(sourceSprite->folder(), documentCopy, spriteCopy->folder());
 
-      if (sourceSprite->backgroundLayer() != NULL) {
-        ASSERT(spriteCopy->folder()->getFirstLayer());
-        static_cast<LayerImage*>(spriteCopy->folder()->getFirstLayer())->configureAsBackground();
-      }
+      ASSERT((spriteCopy->backgroundLayer() && sourceSprite->backgroundLayer()) ||
+             (!spriteCopy->backgroundLayer() && !sourceSprite->backgroundLayer()));
       break;
 
     case DuplicateWithFlattenLayers:

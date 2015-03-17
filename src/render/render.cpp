@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,8 +18,7 @@ namespace render {
 // Scaled composite
 
 template<class DstTraits, class SrcTraits>
-class BlenderHelper
-{
+class BlenderHelper {
   BLEND_COLOR m_blend_color;
   color_t m_mask_color;
 public:
@@ -41,8 +40,7 @@ public:
 };
 
 template<>
-class BlenderHelper<RgbTraits, GrayscaleTraits>
-{
+class BlenderHelper<RgbTraits, GrayscaleTraits> {
   BLEND_COLOR m_blend_color;
   color_t m_mask_color;
 public:
@@ -66,8 +64,7 @@ public:
 };
 
 template<>
-class BlenderHelper<RgbTraits, IndexedTraits>
-{
+class BlenderHelper<RgbTraits, IndexedTraits> {
   const Palette* m_pal;
   int m_blend_mode;
   color_t m_mask_color;
@@ -90,6 +87,33 @@ public:
       if (src != m_mask_color) {
         scanline = rgba_blend_normal(dst, m_pal->getEntry(src), opacity);
       }
+      else
+        scanline = dst;
+    }
+  }
+};
+
+template<>
+class BlenderHelper<IndexedTraits, IndexedTraits> {
+  int m_blend_mode;
+  color_t m_mask_color;
+public:
+  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
+  {
+    m_blend_mode = blend_mode;
+    m_mask_color = src->maskColor();
+  }
+  inline void operator()(IndexedTraits::pixel_t& scanline,
+                         const IndexedTraits::pixel_t& dst,
+                         const IndexedTraits::pixel_t& src,
+                         int opacity)
+  {
+    if (m_blend_mode == BLEND_MODE_COPY) {
+      scanline = src;
+    }
+    else {
+      if (src != m_mask_color)
+        scanline = src;
       else
         scanline = dst;
     }

@@ -32,7 +32,8 @@ namespace cmd {
     void onExecute() override;
     void onUndo() override;
     size_t onMemSize() const override {
-      return sizeof(*this);
+      return sizeof(*this) +
+        (m_addCel ? m_addCel->memSize() : 0);
     }
 
   private:

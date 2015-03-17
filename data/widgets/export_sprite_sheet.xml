@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2014 by David Capello -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
   <window id="export_sprite_sheet" text="Export Sprite Sheet">
   <grid columns="4">
@@ -18,8 +18,11 @@
     <hbox id="best_fit_filler" />
     <check cell_hspan="3" id="best_fit" text="Best fit for texture" />
 
-    <label text="Export Action:" />
-    <combobox id="export_action" cell_hspan="3" />
+    <label text="Save As:" />
+    <button id="image_filename" cell_hspan="3" />
+
+    <check id="data_enabled" text="JSON Data:" />
+    <button id="data_filename" cell_hspan="3" />
 
     <hbox cell_hspan="4">
       <boxfiller />

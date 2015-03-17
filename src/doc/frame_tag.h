@@ -22,6 +22,7 @@ namespace doc {
   class FrameTag : public Object {
   public:
     FrameTag(frame_t from, frame_t to);
+    FrameTag(const FrameTag& other);
     ~FrameTag();
 
     FrameTags* owner() const { return m_owner; }
@@ -45,7 +46,8 @@ namespace doc {
     std::string m_name;
     AniDir m_aniDir;
 
-    DISABLE_COPYING(FrameTag);
+    // Disable operator=
+    FrameTag& operator=(FrameTag&);
   };
 
 } // namespace doc

@@ -112,8 +112,8 @@ namespace app {
 
   // Available extensions for each load/save operation.
 
-  void get_readable_extensions(char* buf, int size);
-  void get_writable_extensions(char* buf, int size);
+  std::string get_readable_extensions();
+  std::string get_writable_extensions();
 
   // High-level routines to load/save documents.
 

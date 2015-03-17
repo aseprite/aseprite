@@ -25,6 +25,17 @@ FrameTag::FrameTag(frame_t from, frame_t to)
 {
 }
 
+FrameTag::FrameTag(const FrameTag& other)
+  : Object(ObjectType::FrameTag)
+  , m_owner(nullptr)
+  , m_from(other.m_from)
+  , m_to(other.m_to)
+  , m_color(other.m_color)
+  , m_name(other.m_name)
+  , m_aniDir(other.m_aniDir)
+{
+}
+
 FrameTag::~FrameTag()
 {
   ASSERT(!m_owner);

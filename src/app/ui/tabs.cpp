@@ -672,8 +672,11 @@ void Tabs::startDrag()
 void Tabs::stopDrag()
 {
   m_isDragging = false;
-  m_selected->oldX = m_selected->x;
-  m_selected->oldWidth = m_selected->width;
+
+  if (m_selected) {
+    m_selected->oldX = m_selected->x;
+    m_selected->oldWidth = m_selected->width;
+  }
 
   resetOldPositions(double(m_ani_t) / double(m_ani_T));
   updateTabs();

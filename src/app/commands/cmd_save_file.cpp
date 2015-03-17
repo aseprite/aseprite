@@ -135,8 +135,7 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
   else {
     filename = document->filename();
 
-    char exts[4096];
-    get_writable_extensions(exts, sizeof(exts));
+    std::string exts = get_writable_extensions();
 
     for (;;) {
       std::string newfilename = app::show_file_selector(
