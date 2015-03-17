@@ -372,8 +372,8 @@ void clipboard::paste()
             if (lastCel && maxFrame < lastCel->frame())
               maxFrame = lastCel->frame();
           }
-          if (dstSpr->totalFrames() < maxFrame+1)
-            api.setTotalFrames(dstSpr, maxFrame+1);
+          while (dstSpr->totalFrames() < maxFrame+1)
+            api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
 
           for (LayerIndex i = srcRange.layerBegin(); i <= srcRange.layerEnd(); ++i) {
             LayerImage* newLayer = new LayerImage(dstSpr);
