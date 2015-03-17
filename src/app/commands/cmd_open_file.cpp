@@ -109,8 +109,7 @@ void OpenFileCommand::onExecute(Context* context)
 
   // interactive
   if (context->isUiAvailable() && m_filename.empty()) {
-    char exts[4096];
-    get_readable_extensions(exts, sizeof(exts));
+    std::string exts = get_readable_extensions();
 
     // Add backslash as show_file_selector() expected a filename as
     // initial path (and the file part is removed from the path).

@@ -15,8 +15,8 @@ namespace doc {
 
 namespace app {
 
-  void get_readable_palette_extensions(char* buf, int size);
-  void get_writable_palette_extensions(char* buf, int size);
+  std::string get_readable_palette_extensions();
+  std::string get_writable_palette_extensions();
 
   doc::Palette* load_palette(const char *filename);
   bool save_palette(const char *filename, doc::Palette* pal);

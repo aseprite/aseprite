@@ -265,8 +265,7 @@ protected:
   }
 
   void onImageFilename() {
-    char exts[4096];
-    get_writable_extensions(exts, sizeof(exts));
+    std::string exts = get_writable_extensions();
 
     std::string newFilename = app::show_file_selector(
       "Save Sprite Sheet", m_filename, exts, FileSelectorType::Save);

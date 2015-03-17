@@ -43,38 +43,34 @@ using namespace base;
 static FileOp* fop_new(FileOpType type, Context* context);
 static void fop_prepare_for_sequence(FileOp* fop);
 
-void get_readable_extensions(char* buf, int size)
+std::string get_readable_extensions()
 {
-  FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
-  FileFormatsList::iterator end = FileFormatsManager::instance()->end();
+  std::string buf;
 
-  // Clear the string
-  strncpy(buf, "", size);
-
-  // Insert file format
-  for (; it != end; ++it) {
-    if ((*it)->support(FILE_SUPPORT_LOAD)) {
-      if (*buf) strncat(buf, ",", size);
-      strncat(buf, (*it)->extensions(), size);
+  for (const FileFormat* format : *FileFormatsManager::instance()) {
+    if (format->support(FILE_SUPPORT_LOAD)) {
+      if (!buf.empty())
+        buf.push_back(',');
+      buf += format->extensions();
     }
   }
+
+  return buf;
 }
 
-void get_writable_extensions(char* buf, int size)
+std::string get_writable_extensions()
 {
-  FileFormatsList::iterator it = FileFormatsManager::instance()->begin();
-  FileFormatsList::iterator end = FileFormatsManager::instance()->end();
+  std::string buf;
 
-  // Clear the string
-  strncpy(buf, "", size);
-
-  // Insert file format
-  for (; it != end; ++it) {
-    if ((*it)->support(FILE_SUPPORT_SAVE)) {
-      if (*buf) strncat(buf, ",", size);
-      strncat(buf, (*it)->extensions(), size);
+  for (const FileFormat* format : *FileFormatsManager::instance()) {
+    if (format->support(FILE_SUPPORT_SAVE)) {
+      if (!buf.empty())
+        buf.push_back(',');
+      buf += format->extensions();
     }
   }
+
+  return buf;
 }
 
 Document* load_document(Context* context, const char* filename)

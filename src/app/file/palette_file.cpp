@@ -30,16 +30,18 @@ namespace app {
 
 using namespace doc;
 
-void get_readable_palette_extensions(char* buf, int size)
+std::string get_readable_palette_extensions()
 {
-  get_readable_extensions(buf, size);
-  std::strcat(buf, ",col,gpl");
+  std::string buf = get_readable_extensions();
+  buf += ",col,gpl";
+  return buf;
 }
 
-void get_writable_palette_extensions(char* buf, int size)
+std::string get_writable_palette_extensions()
 {
-  get_writable_extensions(buf, size);
-  std::strcat(buf, ",col,gpl");
+  std::string buf = get_writable_extensions();
+  buf += ",col,gpl";
+  return buf;
 }
 
 Palette* load_palette(const char *filename)
