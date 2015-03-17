@@ -17,9 +17,12 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
+#include "app/ui/document_view.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
-#include "app/transaction.h"
+#include "app/ui_context.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -32,7 +35,11 @@ namespace app {
 
 class NewFrameCommand : public Command {
 public:
-  enum class Content { CurrentFrame, EmptyFrame };
+  enum class Content {
+    DUPLICATE_FRAME,
+    NEW_EMPTY_FRAME,
+    DUPLICATE_CEL
+   };
 
   NewFrameCommand();
   Command* clone() const override { return new NewFrameCommand(*this); }
@@ -56,11 +63,16 @@ NewFrameCommand::NewFrameCommand()
 
 void NewFrameCommand::onLoadParams(const Params& params)
 {
-  m_content = Content::CurrentFrame;
+  m_content = Content::DUPLICATE_FRAME;
 
   std::string content = params.get("content");
-  if (content == "current") m_content = Content::CurrentFrame;
-  else if (content == "empty") m_content = Content::EmptyFrame;
+  if (content == "current" ||
+      content == "frame")
+    m_content = Content::DUPLICATE_FRAME;
+  else if (content == "empty")
+    m_content = Content::NEW_EMPTY_FRAME;
+  else if (content == "cel")
+    m_content = Content::DUPLICATE_CEL;
 }
 
 bool NewFrameCommand::onEnabled(Context* context)
@@ -79,11 +91,22 @@ void NewFrameCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     switch (m_content) {
-      case Content::CurrentFrame:
+      case Content::DUPLICATE_FRAME:
         api.addFrame(sprite, writer.frame()+1);
         break;
-      case Content::EmptyFrame:
+      case Content::NEW_EMPTY_FRAME:
         api.addEmptyFrame(sprite, writer.frame()+1);
+        break;
+      case Content::DUPLICATE_CEL:
+        api.copyCel(
+          static_cast<LayerImage*>(writer.layer()), writer.frame(),
+          static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
+
+        // TODO should we use DocumentObserver?
+        if (UIContext::instance() == context) {
+          if (DocumentView* view = UIContext::instance()->activeView())
+            view->getEditor()->setFrame(writer.frame()+1);
+        }
         break;
     }
 
@@ -104,11 +127,14 @@ std::string NewFrameCommand::onGetFriendlyName() const
   std::string text = "New Frame";
 
   switch (m_content) {
-    case Content::CurrentFrame:
-      text = "New Frame (duplicated)";
+    case Content::DUPLICATE_FRAME:
+      text = "New Frame";
       break;
-    case Content::EmptyFrame:
-      text = "New Frame (empty)";
+    case Content::NEW_EMPTY_FRAME:
+      text = "New Empty Frame";
+      break;
+    case Content::DUPLICATE_CEL:
+      text = "Copy Cel into Next Frame";
       break;
   }
 

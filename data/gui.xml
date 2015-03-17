@@ -68,6 +68,9 @@
       <key command="NewFrame" shortcut="Alt+B">
         <param name="content" value="empty" />
       </key>
+      <key command="NewFrame" shortcut="Alt+M">
+        <param name="content" value="cel" />
+      </key>
       <key command="RemoveFrame" shortcut="Alt+C" />
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
@@ -519,6 +522,9 @@
         <item command="NewFrame" text="&amp;New Frame" />
         <item command="NewFrame" text="New &amp;Empty Frame">
           <param name="content" value="empty" />
+        </item>
+        <item command="NewFrame" text="Copy &amp;Cel in Next Frame">
+          <param name="content" value="cel" />
         </item>
         <item command="RemoveFrame" text="&amp;Remove Frame" />
         <separator />
