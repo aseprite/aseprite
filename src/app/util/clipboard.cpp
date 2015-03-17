@@ -376,10 +376,16 @@ void clipboard::paste()
             api.addEmptyFrame(dstSpr, dstSpr->totalFrames());
 
           for (LayerIndex i = srcRange.layerBegin(); i <= srcRange.layerEnd(); ++i) {
+            Layer* afterThis;
+            if (srcLayers[i]->isBackground() &&
+                !dstDoc->sprite()->backgroundLayer()) {
+              afterThis = nullptr;
+            }
+            else
+              afterThis = dstSpr->folder()->getLastLayer();
+
             LayerImage* newLayer = new LayerImage(dstSpr);
-            api.addLayer(
-              dstSpr->folder(), newLayer,
-              dstSpr->folder()->getLastLayer());
+            api.addLayer(dstSpr->folder(), newLayer, afterThis);
 
             srcDoc->copyLayerContent(
               srcLayers[i], dstDoc, newLayer);
