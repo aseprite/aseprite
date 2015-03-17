@@ -1197,6 +1197,17 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
     (hotlayer && m_hot.part == PART_LAYER_TEXT),
     (clklayer && m_clk.part == PART_LAYER_TEXT));
 
+  if (layer->isBackground()) {
+    int s = ui::guiscale();
+    g->fillRect(
+      is_active ?
+      skinTheme()->colors.timelineClickedText():
+      skinTheme()->colors.timelineNormalText(),
+      gfx::Rect(bounds.x+4*s,
+        bounds.y+bounds.h-2*s,
+        getFont()->textLength(layer->name().c_str()), s));
+  }
+
   // If this layer wasn't clicked but there are another layer clicked,
   // we have to draw some indicators to show that the user can move
   // layers.
