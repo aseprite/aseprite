@@ -350,7 +350,7 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
   // Remove the "background" flag if the destDoc already has a background layer.
   if (((int)dstFlags & (int)LayerFlags::Background) == (int)LayerFlags::Background &&
       (destDoc->sprite()->backgroundLayer())) {
-    dstFlags = (LayerFlags)((int)dstFlags ^ (int)LayerFlags::Background);
+    dstFlags = (LayerFlags)((int)dstFlags & ~(int)(LayerFlags::BackgroundLayerFlags));
   }
 
   // Copy the layer name
