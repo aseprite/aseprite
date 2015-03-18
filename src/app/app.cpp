@@ -436,6 +436,8 @@ void App::initialize(const AppOptions& options)
 
     m_exporter->exportSheet();
     m_exporter.reset(NULL);
+
+    PRINTF("Export sprite sheet: Done\n");
   }
 }
 

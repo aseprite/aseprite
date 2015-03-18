@@ -19,6 +19,7 @@
 #include "app/ui_context.h"
 #include "base/convert_to.h"
 #include "base/path.h"
+#include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -40,6 +41,37 @@ using namespace doc;
 
 namespace app {
 
+class SampleBounds {
+public:
+  SampleBounds(Sprite* sprite) :
+    m_originalSize(sprite->width(), sprite->height()),
+    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
+    m_inTextureBounds(0, 0, sprite->width(), sprite->height()) {
+  }
+
+  bool trimmed() const {
+    return m_trimmedBounds.x > 0
+      || m_trimmedBounds.y > 0
+      || m_trimmedBounds.w != m_originalSize.w
+      || m_trimmedBounds.h != m_originalSize.h;
+  }
+
+  const gfx::Size& originalSize() const { return m_originalSize; }
+  const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
+  const gfx::Rect& inTextureBounds() const { return m_inTextureBounds; }
+
+  void setOriginalSize(const gfx::Size& size) { m_originalSize = size; }
+  void setTrimmedBounds(const gfx::Rect& bounds) { m_trimmedBounds = bounds; }
+  void setInTextureBounds(const gfx::Rect& bounds) { m_inTextureBounds = bounds; }
+
+private:
+  gfx::Size m_originalSize;
+  gfx::Rect m_trimmedBounds;
+  gfx::Rect m_inTextureBounds;
+};
+
+typedef SharedPtr<SampleBounds> SampleBoundsPtr;
+
 class DocumentExporter::Sample {
 public:
   Sample(Document* document, Sprite* sprite, Layer* layer,
@@ -49,9 +81,8 @@ public:
     m_layer(layer),
     m_frame(frame),
     m_filename(filename),
-    m_originalSize(sprite->width(), sprite->height()),
-    m_trimmedBounds(0, 0, sprite->width(), sprite->height()),
-    m_inTextureBounds(0, 0, sprite->width(), sprite->height()) {
+    m_bounds(new SampleBounds(sprite)),
+    m_isDuplicated(false) {
   }
 
   Document* document() const { return m_document; }
@@ -59,20 +90,25 @@ public:
   Layer* layer() const { return m_layer; }
   frame_t frame() const { return m_frame; }
   std::string filename() const { return m_filename; }
-  const gfx::Size& originalSize() const { return m_originalSize; }
-  const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
-  const gfx::Rect& inTextureBounds() const { return m_inTextureBounds; }
+  const gfx::Size& originalSize() const { return m_bounds->originalSize(); }
+  const gfx::Rect& trimmedBounds() const { return m_bounds->trimmedBounds(); }
+  const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
 
   bool trimmed() const {
-    return m_trimmedBounds.x > 0
-      || m_trimmedBounds.y > 0
-      || m_trimmedBounds.w != m_originalSize.w
-      || m_trimmedBounds.h != m_originalSize.h;
+    return m_bounds->trimmed();
   }
 
-  void setOriginalSize(const gfx::Size& size) { m_originalSize = size; }
-  void setTrimmedBounds(const gfx::Rect& bounds) { m_trimmedBounds = bounds; }
-  void setInTextureBounds(const gfx::Rect& bounds) { m_inTextureBounds = bounds; }
+  void setOriginalSize(const gfx::Size& size) { m_bounds->setOriginalSize(size); }
+  void setTrimmedBounds(const gfx::Rect& bounds) { m_bounds->setTrimmedBounds(bounds); }
+  void setInTextureBounds(const gfx::Rect& bounds) { m_bounds->setInTextureBounds(bounds); }
+
+  bool isDuplicated() const { return m_isDuplicated; }
+  SampleBoundsPtr sharedBounds() const { return m_bounds; }
+
+  void setSharedBounds(const SampleBoundsPtr& bounds) {
+    m_isDuplicated = true;
+    m_bounds = bounds;
+  }
 
 private:
   Document* m_document;
@@ -80,9 +116,8 @@ private:
   Layer* m_layer;
   frame_t m_frame;
   std::string m_filename;
-  gfx::Size m_originalSize;
-  gfx::Rect m_trimmedBounds;
-  gfx::Rect m_inTextureBounds;
+  SampleBoundsPtr m_bounds;
+  bool m_isDuplicated;
 };
 
 class DocumentExporter::Samples {
@@ -123,6 +158,9 @@ public:
     gfx::Size rowSize(0, 0);
 
     for (auto& sample : samples) {
+      if (sample.isDuplicated())
+        continue;
+
       const Sprite* sprite = sample.sprite();
       const Layer* layer = sample.layer();
       gfx::Size size = sample.trimmedBounds().getSize();
@@ -166,8 +204,12 @@ public:
   void layoutSamples(Samples& samples, int& width, int& height) override {
     gfx::PackingRects pr;
 
-    for (auto& sample : samples)
+    for (auto& sample : samples) {
+      if (sample.isDuplicated())
+        continue;
+
       pr.add(sample.trimmedBounds().getSize());
+    }
 
     if (width == 0 || height == 0) {
       gfx::Size sz = pr.bestFit();
@@ -179,6 +221,9 @@ public:
 
     auto it = samples.begin();
     for (auto& rc : pr) {
+      if (it->isDuplicated())
+        continue;
+
       ASSERT(it != samples.end());
       it->setInTextureBounds(rc);
       ++it;
@@ -284,12 +329,36 @@ void DocumentExporter::captureSamples(Samples& samples)
           (sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
 
       Sample sample(doc, sprite, layer, frame, filename);
+      Cel* cel = nullptr;
+      Cel* link = nullptr;
+      bool done = false;
 
-      if (m_ignoreEmptyCels || m_trimCels) {
-        if (layer && layer->isImage() && !layer->cel(frame)) {
-          // Empty cel this sample completely
-          continue;
+      if (layer && layer->isImage())
+        cel = layer->cel(frame);
+
+      if (cel)
+        link = cel->link();
+
+      // Re-use linked samples
+      if (link) {
+        for (const Sample& other : samples) {
+          if (other.sprite() == sprite &&
+              other.layer() == layer &&
+              other.frame() == link->frame()) {
+            ASSERT(!other.isDuplicated());
+
+            sample.setSharedBounds(other.sharedBounds());
+            done = true;
+            break;
+          }
         }
+        ASSERT(done);
+      }
+
+      if (!done && (m_ignoreEmptyCels || m_trimCels)) {
+        // Ignore empty cels
+        if (layer && layer->isImage() && !cel)
+          continue;
 
         base::UniquePtr<Image> sampleRender(
           Image::create(sprite->pixelFormat(),
@@ -310,7 +379,7 @@ void DocumentExporter::captureSamples(Samples& samples)
           refColor = sprite->transparentColor();
 
         if (!algorithm::shrink_bounds(sampleRender, frameBounds, refColor)) {
-          // If shrink_bounds returns false, it's because the whole
+          // If shrink_bounds() returns false, it's because the whole
           // image is transparent (equal to the mask color).
           continue;
         }
@@ -372,6 +441,9 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
   textureImage->clear(0);
 
   for (const auto& sample : samples) {
+    if (sample.isDuplicated())
+      continue;
+
     // Make the sprite compatible with the texture so the render()
     // works correctly.
     if (sample.sprite()->pixelFormat() != textureImage->pixelFormat()) {
