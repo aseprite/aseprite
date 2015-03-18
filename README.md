@@ -1,6 +1,8 @@
 # Aseprite
 *Copyright (C) 2001-2015 David Capello*
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/aseprite/aseprite?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 > THIS PROGRAM IS DISTRIBUTED WITHOUT ANY WARRANTY<br/>
 > See the [license section](#license) for more information.
 
