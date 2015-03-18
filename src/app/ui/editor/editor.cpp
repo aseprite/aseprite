@@ -1053,6 +1053,9 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
 
 void Editor::updateStatusBar()
 {
+  if (!hasMouse())
+    return;
+
   // Setup status bar using the current editor's state
   m_state->onUpdateStatusBar(this);
 }

@@ -1851,6 +1851,9 @@ void Timeline::setHot(const Hit& hit)
 
 void Timeline::updateStatusBar(ui::Message* msg)
 {
+  if (!hasMouse())
+    return;
+
   StatusBar* sb = StatusBar::instance();
 
   if (m_state == STATE_MOVING_RANGE) {

@@ -90,7 +90,9 @@ endif()
 
 if(APPLE)
   list(APPEND SHE_SOURCES
-    osx/logger.mm)
+    osx/clipboard.mm
+    osx/logger.mm
+    osx/native_dialogs.mm)
 endif()
 
 add_library(she ${SHE_SOURCES})
