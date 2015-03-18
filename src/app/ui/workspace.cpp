@@ -40,11 +40,14 @@ Workspace::~Workspace()
   ASSERT(m_views.empty());
 }
 
-void Workspace::addView(WorkspaceView* view)
+void Workspace::addView(WorkspaceView* view, int pos)
 {
-  m_views.push_back(view);
+  if (pos < 0)
+    m_views.push_back(view);
+  else
+    m_views.insert(m_views.begin()+pos, view);
 
-  App::instance()->getMainWindow()->getTabsBar()->addTab(dynamic_cast<TabView*>(view));
+  App::instance()->getMainWindow()->getTabsBar()->addTab(dynamic_cast<TabView*>(view), pos);
   setActiveView(view);
 }
 

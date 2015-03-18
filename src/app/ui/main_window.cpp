@@ -164,8 +164,15 @@ void MainWindow::showNotification(INotificationDelegate* del)
 void MainWindow::showHome()
 {
   if (!getHomeView()->getParent()) {
-    m_workspace->addView(m_homeView);
-    m_tabsBar->selectTab(m_homeView);
+    TabView* selectedTab = m_tabsBar->getSelectedTab();
+
+    // Show "Home" tab in the first position, and select it only if
+    // there is no other view selected.
+    m_workspace->addView(m_homeView, 0);
+    if (selectedTab)
+      m_tabsBar->selectTab(selectedTab);
+    else
+      m_tabsBar->selectTab(m_homeView);
   }
 }
 

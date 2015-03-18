@@ -82,13 +82,16 @@ Tabs::~Tabs()
   m_list.clear();
 }
 
-void Tabs::addTab(TabView* tabView)
+void Tabs::addTab(TabView* tabView, int pos)
 {
   resetOldPositions();
   startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
 
   Tab* tab = new Tab(tabView);
-  m_list.push_back(tab);
+  if (pos < 0)
+    m_list.push_back(tab);
+  else
+    m_list.insert(m_list.begin()+pos, tab);
   updateTabs();
 
   tab->oldX = tab->x;

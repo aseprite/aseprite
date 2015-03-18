@@ -28,7 +28,7 @@ namespace app {
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
 
-    void addView(WorkspaceView* view);
+    void addView(WorkspaceView* view, int pos = -1);
     void removeView(WorkspaceView* view);
 
     // Closes the given view. Returns false if the user cancels the

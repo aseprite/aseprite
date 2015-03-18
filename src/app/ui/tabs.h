@@ -87,7 +87,7 @@ namespace app {
     Tabs(TabsDelegate* delegate);
     ~Tabs();
 
-    void addTab(TabView* tabView);
+    void addTab(TabView* tabView, int pos = -1);
     void removeTab(TabView* tabView);
     void updateTabs();
 
