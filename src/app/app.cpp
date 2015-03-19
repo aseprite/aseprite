@@ -434,7 +434,7 @@ void App::initialize(const AppOptions& options)
     if (trim)
       m_exporter->setTrimCels(true);
 
-    m_exporter->exportSheet();
+    base::UniquePtr<Document> spriteSheet(m_exporter->exportSheet());
     m_exporter.reset(NULL);
 
     PRINTF("Export sprite sheet: Done\n");

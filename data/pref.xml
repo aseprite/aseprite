@@ -147,6 +147,7 @@
       <option id="best_fit" type="bool" default="false" />
       <option id="texture_filename" type="std::string" />
       <option id="data_filename" type="std::string" />
+      <option id="open_generated" type="bool" default="false" />
     </section>
   </document>
 

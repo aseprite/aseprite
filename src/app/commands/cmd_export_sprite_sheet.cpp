@@ -121,6 +121,8 @@ public:
     if (m_docPref.spriteSheet.type() != app::gen::SpriteSheetType::NONE)
       sheetType()->setSelectedItemIndex((int)m_docPref.spriteSheet.type()-1);
 
+    openGenerated()->setSelected(m_docPref.spriteSheet.openGenerated());
+
     for (int i=2; i<=8192; i*=2) {
       std::string value = base::convert_to<std::string>(i);
       if (i >= m_sprite->width()) fitWidth()->addItem(value);
@@ -208,6 +210,10 @@ public:
       return m_dataFilename;
     else
       return std::string();
+  }
+
+  bool openGeneratedValue() {
+    return openGenerated()->isSelected();
   }
 
 protected:
@@ -369,6 +375,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.bestFit(window.bestFitValue());
     docPref.spriteSheet.textureFilename(window.filenameValue());
     docPref.spriteSheet.dataFilename(window.dataFilenameValue());
+    docPref.spriteSheet.openGenerated(window.openGeneratedValue());
   }
 
   m_type = docPref.spriteSheet.type();
@@ -418,11 +425,19 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setTextureHeight(sheet_h);
   exporter.setTexturePack(true);
   exporter.addDocument(document);
-  exporter.exportSheet();
+
+  base::UniquePtr<Document> newDocument(exporter.exportSheet());
+  if (!newDocument)
+    return;
 
   StatusBar* statusbar = StatusBar::instance();
   if (statusbar)
     statusbar->showTip(1000, "Sprite Sheet Generated");
+
+  if (docPref.spriteSheet.openGenerated()) {
+    newDocument->setContext(context);
+    newDocument.release();
+  }
 }
 
 Command* CommandFactory::createExportSpriteSheetCommand()

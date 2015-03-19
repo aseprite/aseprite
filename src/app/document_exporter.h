@@ -95,7 +95,7 @@ namespace app {
       m_documents.push_back(Item(document, layer));
     }
 
-    void exportSheet();
+    Document* exportSheet();
 
   private:
     class Sample;

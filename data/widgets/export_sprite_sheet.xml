@@ -24,6 +24,8 @@
     <check id="data_enabled" text="JSON Data:" />
     <button id="data_filename" cell_hspan="3" />
 
+    <check id="open_generated" text="Open generated sprite sheet" cell_hspan="4" />
+
     <hbox cell_hspan="4">
       <boxfiller />
       <hbox homogeneous="true">
