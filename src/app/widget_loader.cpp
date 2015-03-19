@@ -16,6 +16,7 @@
 #include "app/resource_finder.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/drop_down_button.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/widget_not_found.h"
@@ -406,6 +407,12 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "colorpicker") {
     if (!widget)
       widget = new ColorButton(Color::fromMask(), app_get_current_pixel_format());
+  }
+  else if (elem_name == "dropdownbutton")  {
+    if (!widget) {
+      const char* text = elem->Attribute("text");
+      widget = new DropDownButton(text);
+    }
   }
   else if (elem_name == "buttonset") {
     const char* columns = elem->Attribute("columns");

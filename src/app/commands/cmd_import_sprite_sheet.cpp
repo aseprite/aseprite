@@ -36,59 +36,30 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
+#include "generated_import_sprite_sheet.h"
+
 namespace app {
 
 using namespace ui;
 
-class ImportSpriteSheetWindow : public Window,
-                                public SelectBoxDelegate {
+class ImportSpriteSheetWindow : public app::gen::ImportSpriteSheet
+                              , public SelectBoxDelegate {
 public:
   ImportSpriteSheetWindow(Context* context)
-    : Window(WithTitleBar, "Import Sprite Sheet")
-    , m_context(context)
+    : m_context(context)
     , m_document(NULL)
-    , m_grid(4, false)
-    , m_selectFile("Select File")
-    , m_x(4, "0")
-    , m_y(4, "0")
-    , m_width(4, "16")
-    , m_height(4, "16")
-    , m_import("Import")
-    , m_cancel("Cancel")
     , m_editor(NULL)
     , m_fileOpened(false)
   {
-    addChild(&m_grid);
-    m_grid.addChildInCell(&m_selectFile, 4, 1, 0);
-    m_grid.addChildInCell(new Label("X"), 1, 1, 0);
-    m_grid.addChildInCell(&m_x, 1, 1, 0);
-    m_grid.addChildInCell(new Label("Width"), 1, 1, 0);
-    m_grid.addChildInCell(&m_width, 1, 1, 0);
-    m_grid.addChildInCell(new Label("Y"), 1, 1, 0);
-    m_grid.addChildInCell(&m_y, 1, 1, 0);
-    m_grid.addChildInCell(new Label("Height"), 1, 1, 0);
-    m_grid.addChildInCell(&m_height, 1, 1, 0);
+    x()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    y()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    width()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    height()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
 
-    {
-      Box* hbox1 = new Box(JI_HORIZONTAL);
-      Box* hbox2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-      hbox1->addChild(new BoxFiller);
-      hbox1->addChild(hbox2);
-      hbox2->addChild(&m_import);
-      hbox2->addChild(&m_cancel);
-      m_import.setMinSize(gfx::Size(60, 0));
-      m_grid.addChildInCell(hbox1, 4, 1, 0);
-    }
-
-    m_x.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    m_y.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    m_width.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    m_height.EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-
-    m_selectFile.Click.connect(&ImportSpriteSheetWindow::onSelectFile, this);
-    m_selectFile.DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
-    m_import.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
-    m_cancel.Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
+    selectFile()->Click.connect(&ImportSpriteSheetWindow::onSelectFile, this);
+    selectFile()->DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
+    import()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
+    cancel()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
 
     remapWindow();
     centerWindow();
@@ -129,7 +100,7 @@ protected:
 
     menu->addChild(item);
 
-    const gfx::Rect& bounds = m_selectFile.getBounds();
+    const gfx::Rect& bounds = selectFile()->getBounds();
     menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
 
@@ -226,15 +197,16 @@ protected:
     closeWindow(NULL);
   }
 
-  gfx::Rect getRectFromEntries() const
+  gfx::Rect getRectFromEntries()
   {
-    int w = m_width.getTextInt();
-    int h = m_height.getTextInt();
+    int w = width()->getTextInt();
+    int h = height()->getTextInt();
 
-    return gfx::Rect(m_x.getTextInt(),
-                     m_y.getTextInt(),
-                     std::max<int>(1, w),
-                     std::max<int>(1, h));
+    return gfx::Rect(
+      x()->getTextInt(),
+      y()->getTextInt(),
+      std::max<int>(1, w),
+      std::max<int>(1, h));
   }
 
   void onEntriesChange()
@@ -275,10 +247,10 @@ protected:
   {
     m_rect = rect;
 
-    m_x.setTextf("%d", m_rect.x);
-    m_y.setTextf("%d", m_rect.y);
-    m_width.setTextf("%d", m_rect.w);
-    m_height.setTextf("%d", m_rect.h);
+    x()->setTextf("%d", m_rect.x);
+    y()->setTextf("%d", m_rect.y);
+    width()->setTextf("%d", m_rect.w);
+    height()->setTextf("%d", m_rect.h);
   }
 
 private:
@@ -324,11 +296,6 @@ private:
 
   Context* m_context;
   Document* m_document;
-  Grid m_grid;
-  DropDownButton m_selectFile;
-  Entry m_x, m_y, m_width, m_height;
-  Button m_import;
-  Button m_cancel;
   Editor* m_editor;
   gfx::Rect m_rect;
 

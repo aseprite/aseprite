@@ -1,0 +1,27 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
+<gui>
+  <window id="import_sprite_sheet" text="Import Sprite Sheet">
+  <grid columns="4">
+    <dropdownbutton id="select_file" text="Select File" cell_hspan="4" />
+
+    <label text="X" />
+    <entry id="x" text="0" maxsize="4" />
+    <label text="Width" />
+    <entry id="width" text="16" maxsize="4" />
+
+    <label text="Y" />
+    <entry id="y" text="0" maxsize="4" />
+    <label text="Height" />
+    <entry id="height" text="16" maxsize="4" />
+
+    <hbox cell_hspan="4">
+      <boxfiller />
+      <hbox>
+      </hbox>
+      <button id="import" text="&amp;Import" minwidth="60" magnet="true" cell_align="center" />
+      <button id="cancel" text="&amp;Cancel" minwidth="60" cell_align="center" />
+    </hbox>
+  </grid>
+  </window>
+</gui>

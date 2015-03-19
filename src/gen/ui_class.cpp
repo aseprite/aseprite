@@ -55,6 +55,7 @@ static std::string convert_type(const std::string& name)
   if (name == "check") return "ui::CheckBox";
   if (name == "colorpicker") return "app::ColorButton";
   if (name == "combobox") return "ui::ComboBox";
+  if (name == "dropdownbutton") return "app::DropDownButton";
   if (name == "entry") return "ui::Entry";
   if (name == "grid") return "ui::Grid";
   if (name == "hbox") return "ui::HBox";
