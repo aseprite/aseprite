@@ -196,7 +196,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       captureMouse();
-      /* continue... */
+      // Continue...
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
@@ -215,10 +215,9 @@ bool PaletteView::onProcessMessage(Message* msg)
         StatusBar::instance()->showColor(0, "", color, 255);
 
         if (hasCapture() && idx != m_currentEntry) {
-          if (!msg->ctrlPressed())
-            clearSelection();
+          clearSelection();
 
-          if (msg->shiftPressed())
+          if (msg->type() == kMouseMoveMessage)
             selectRange(m_rangeAnchor, idx);
           else
             selectColor(idx);
