@@ -9,6 +9,7 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
@@ -16,17 +17,17 @@
 #include "app/context_access.h"
 #include "app/document_access.h"
 #include "app/document_api.h"
-#include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
+#include "app/transaction.h"
 #include "app/ui/drop_down_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/select_box_state.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/workspace.h"
-#include "app/transaction.h"
 #include "base/bind.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -50,6 +51,7 @@ public:
     , m_document(NULL)
     , m_editor(NULL)
     , m_fileOpened(false)
+    , m_docPref(nullptr)
   {
     x()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     y()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
@@ -183,6 +185,10 @@ protected:
       api.setSpriteSize(sprite, m_rect.w, m_rect.h);
 
       transaction.commit();
+
+      ASSERT(m_docPref);
+      if (m_docPref)
+        m_docPref->importSpriteSheet.bounds(m_rect);
     }
     catch (...) {
       throw;
@@ -269,6 +275,13 @@ private:
     }
 
     captureEditor();
+
+    if (m_document) {
+      m_docPref = &App::instance()->preferences().document(m_document);
+
+      onChangeRectangle(m_docPref->importSpriteSheet.bounds());
+      onEntriesChange();
+    }
   }
 
   void captureEditor()
@@ -302,6 +315,8 @@ private:
   // True if the user has been opened the file (instead of selecting
   // the current document).
   bool m_fileOpened;
+
+  DocumentPreferences* m_docPref;
 };
 
 class ImportSpriteSheetCommand : public Command {

@@ -152,6 +152,9 @@
       <option id="inner_padding" type="int" default="0" />
       <option id="open_generated" type="bool" default="false" />
     </section>
+    <section id="import_sprite_sheet">
+      <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />
+    </section>
   </document>
 
 </preferences>
