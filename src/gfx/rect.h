@@ -253,12 +253,30 @@ public:
     return *this;
   }
 
+  const RectT& operator|=(const RectT& rc) {
+    operator=(createUnion(rc));
+    return *this;
+  }
+
+  const RectT& operator&=(const RectT& rc) {
+    operator=(createIntersect(rc));
+    return *this;
+  }
+
   RectT operator+(const BorderT<T>& br) const {
     return RectT(*this).enlarge(br);
   }
 
   RectT operator-(const BorderT<T>& br) const {
     return RectT(*this).shrink(br);
+  }
+
+  RectT operator|(const RectT& other) const {
+    return createUnion(other);
+  }
+
+  RectT operator&(const RectT& other) const {
+    return createIntersect(other);
   }
 
   bool operator==(const RectT& rc) const {
