@@ -60,7 +60,6 @@ public:
   const gfx::Rect& trimmedBounds() const { return m_trimmedBounds; }
   const gfx::Rect& inTextureBounds() const { return m_inTextureBounds; }
 
-  void setOriginalSize(const gfx::Size& size) { m_originalSize = size; }
   void setTrimmedBounds(const gfx::Rect& bounds) { m_trimmedBounds = bounds; }
   void setInTextureBounds(const gfx::Rect& bounds) { m_inTextureBounds = bounds; }
 
@@ -75,12 +74,13 @@ typedef SharedPtr<SampleBounds> SampleBoundsPtr;
 class DocumentExporter::Sample {
 public:
   Sample(Document* document, Sprite* sprite, Layer* layer,
-    frame_t frame, const std::string& filename) :
+    frame_t frame, const std::string& filename, int innerPadding) :
     m_document(document),
     m_sprite(sprite),
     m_layer(layer),
     m_frame(frame),
     m_filename(filename),
+    m_innerPadding(innerPadding),
     m_bounds(new SampleBounds(sprite)),
     m_isDuplicated(false) {
   }
@@ -94,11 +94,17 @@ public:
   const gfx::Rect& trimmedBounds() const { return m_bounds->trimmedBounds(); }
   const gfx::Rect& inTextureBounds() const { return m_bounds->inTextureBounds(); }
 
+  gfx::Size requiredSize() const {
+    gfx::Size size = m_bounds->trimmedBounds().getSize();
+    size.w += 2*m_innerPadding;
+    size.h += 2*m_innerPadding;
+    return size;
+  }
+
   bool trimmed() const {
     return m_bounds->trimmed();
   }
 
-  void setOriginalSize(const gfx::Size& size) { m_bounds->setOriginalSize(size); }
   void setTrimmedBounds(const gfx::Rect& bounds) { m_bounds->setTrimmedBounds(bounds); }
   void setInTextureBounds(const gfx::Rect& bounds) { m_bounds->setInTextureBounds(bounds); }
 
@@ -116,6 +122,9 @@ private:
   Layer* m_layer;
   frame_t m_frame;
   std::string m_filename;
+  int m_borderPadding;
+  int m_shapePadding;
+  int m_innerPadding;
   SampleBoundsPtr m_bounds;
   bool m_isDuplicated;
 };
@@ -144,17 +153,17 @@ private:
 class DocumentExporter::LayoutSamples {
 public:
   virtual ~LayoutSamples() { }
-  virtual void layoutSamples(Samples& samples, int& width, int& height) = 0;
+  virtual void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) = 0;
 };
 
 class DocumentExporter::SimpleLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples, int& width, int& height) override {
+  void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     const Sprite* oldSprite = NULL;
     const Layer* oldLayer = NULL;
 
-    gfx::Point framePt(0, 0);
+    gfx::Point framePt(borderPadding, borderPadding);
     gfx::Size rowSize(0, 0);
 
     for (auto& sample : samples) {
@@ -163,7 +172,7 @@ public:
 
       const Sprite* sprite = sample.sprite();
       const Layer* layer = sample.layer();
-      gfx::Size size = sample.trimmedBounds().getSize();
+      gfx::Size size = sample.requiredSize();
 
       if (oldSprite) {
         // If the user didn't specify a width for the texture, we put
@@ -171,17 +180,17 @@ public:
         if (width == 0) {
           // New sprite or layer, go to next row.
           if (oldSprite != sprite || oldLayer != layer) {
-            framePt.x = 0;
-            framePt.y += rowSize.h;
+            framePt.x = borderPadding;
+            framePt.y += rowSize.h + shapePadding;
             rowSize = size;
           }
         }
         // When a texture width is specified, we can put different
         // sprites/layers in each row until we reach the texture
         // right-border.
-        else if (framePt.x+size.w > width) {
-          framePt.x = 0;
-          framePt.y += rowSize.h;
+        else if (framePt.x+size.w > width-borderPadding) {
+          framePt.x = borderPadding;
+          framePt.y += rowSize.h + shapePadding;
           rowSize = size;
         }
       }
@@ -189,7 +198,7 @@ public:
       sample.setInTextureBounds(gfx::Rect(framePt, size));
 
       // Next frame position.
-      framePt.x += size.w;
+      framePt.x += size.w + shapePadding;
       rowSize = rowSize.createUnion(size);
 
       oldSprite = sprite;
@@ -201,14 +210,14 @@ public:
 class DocumentExporter::BestFitLayoutSamples :
     public DocumentExporter::LayoutSamples {
 public:
-  void layoutSamples(Samples& samples, int& width, int& height) override {
+  void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     gfx::PackingRects pr;
 
     for (auto& sample : samples) {
       if (sample.isDuplicated())
         continue;
 
-      pr.add(sample.trimmedBounds().getSize());
+      pr.add(sample.requiredSize());
     }
 
     if (width == 0 || height == 0) {
@@ -240,11 +249,14 @@ DocumentExporter::DocumentExporter()
  , m_scale(1.0)
  , m_scaleMode(DefaultScaleMode)
  , m_ignoreEmptyCels(false)
+ , m_borderPadding(0)
+ , m_shapePadding(0)
+ , m_innerPadding(0)
  , m_trimCels(false)
 {
 }
 
-void DocumentExporter::exportSheet()
+Document* DocumentExporter::exportSheet()
 {
   // We output the metadata to std::cout if the user didn't specify a file.
   std::ofstream fos;
@@ -264,17 +276,19 @@ void DocumentExporter::exportSheet()
   if (samples.empty()) {
     Console console;
     console.printf("No documents to export");
-    return;
+    return nullptr;
   }
 
   // 2) Layout those samples in a texture field.
   if (m_texturePack) {
     BestFitLayoutSamples layout;
-    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+    layout.layoutSamples(samples,
+      m_borderPadding, m_shapePadding, m_textureWidth, m_textureHeight);
   }
   else {
     SimpleLayoutSamples layout;
-    layout.layoutSamples(samples, m_textureWidth, m_textureHeight);
+    layout.layoutSamples(samples,
+      m_borderPadding, m_shapePadding, m_textureWidth, m_textureHeight);
   }
 
   // 3) Create and render the texture.
@@ -295,12 +309,12 @@ void DocumentExporter::exportSheet()
     textureDocument->setFilename(m_textureFilename.c_str());
     save_document(UIContext::instance(), textureDocument.get());
   }
+
+  return textureDocument.release();
 }
 
 void DocumentExporter::captureSamples(Samples& samples)
 {
-  std::vector<char> buf(32);
-
   for (auto& item : m_documents) {
     Document* doc = item.doc;
     Sprite* sprite = doc->sprite();
@@ -328,7 +342,7 @@ void DocumentExporter::captureSamples(Samples& samples)
           layer ? layer->name(): "",
           (sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
 
-      Sample sample(doc, sprite, layer, frame, filename);
+      Sample sample(doc, sprite, layer, frame, filename, m_innerPadding);
       Cel* cel = nullptr;
       Cel* link = nullptr;
       bool done = false;
@@ -368,7 +382,7 @@ void DocumentExporter::captureSamples(Samples& samples)
 
         sampleRender->setMaskColor(sprite->transparentColor());
         clear_image(sampleRender, sprite->transparentColor());
-        renderSample(sample, sampleRender);
+        renderSample(sample, sampleRender, 0, 0);
 
         gfx::Rect frameBounds;
         doc::color_t refColor = 0;
@@ -421,7 +435,8 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
         palette = it->sprite()->palette(frame_t(0));
     }
 
-    fullTextureBounds = fullTextureBounds.createUnion(it->inTextureBounds());
+    fullTextureBounds |=
+      gfx::Rect(it->inTextureBounds()).inflate(m_borderPadding);
   }
 
   base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(
@@ -453,7 +468,9 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
         DitheringMethod::NONE).execute(UIContext::instance());
     }
 
-    renderSample(sample, textureImage);
+    renderSample(sample, textureImage,
+      sample.inTextureBounds().x+m_innerPadding,
+      sample.inTextureBounds().y+m_innerPadding);
   }
 }
 
@@ -508,12 +525,10 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "}\n";
 }
 
-void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst)
+void DocumentExporter::renderSample(const Sample& sample, doc::Image* dst, int x, int y)
 {
   render::Render render;
-  gfx::Clip clip(
-    sample.inTextureBounds().x,
-    sample.inTextureBounds().y, sample.trimmedBounds());
+  gfx::Clip clip(x, y, sample.trimmedBounds());
 
   if (sample.layer()) {
     render.renderLayer(dst, sample.layer(), sample.frame(), clip);

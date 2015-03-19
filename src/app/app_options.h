@@ -46,6 +46,9 @@ public:
   const Option& splitLayers() const { return m_splitLayers; }
   const Option& importLayer() const { return m_importLayer; }
   const Option& ignoreEmpty() const { return m_ignoreEmpty; }
+  const Option& borderPadding() const { return m_borderPadding; }
+  const Option& shapePadding() const { return m_shapePadding; }
+  const Option& innerPadding() const { return m_innerPadding; }
   const Option& trim() const { return m_trim; }
   const Option& filenameFormat() const { return m_filenameFormat; }
 
@@ -75,6 +78,9 @@ private:
   Option& m_splitLayers;
   Option& m_importLayer;
   Option& m_ignoreEmpty;
+  Option& m_borderPadding;
+  Option& m_shapePadding;
+  Option& m_innerPadding;
   Option& m_trim;
   Option& m_filenameFormat;
 

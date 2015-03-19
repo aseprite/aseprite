@@ -10,6 +10,19 @@
     <entry id="columns" text="" maxsize="4" />
     <boxfiller cell_hspan="2" />
 
+    <hbox />
+    <vbox>
+      <check id="padding_enabled" text="Padding" />
+    </vbox>
+    <grid columns="2" id="padding_container" cell_hspan="2">
+      <label text="Border:" />
+      <entry id="border_padding" text="0" maxsize="4" />
+      <label text="Shape:" />
+      <entry id="shape_padding" text="0" maxsize="4" />
+      <label text="Inner:" />
+      <entry id="inner_padding" text="0" maxsize="4" />
+    </grid>
+
     <label id="fit_width_label" text="Width:" />
     <combobox id="fit_width" text="" maxsize="5" editable="true" />
     <label id="fit_height_label" text="Height:" />

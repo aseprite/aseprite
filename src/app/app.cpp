@@ -258,6 +258,21 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.ignoreEmpty()) {
           ignoreEmpty = true;
         }
+        // --border-padding
+        else if (opt == &options.borderPadding()) {
+          if (m_exporter)
+            m_exporter->setBorderPadding(strtol(value.value().c_str(), NULL, 0));
+        }
+        // --shape-padding
+        else if (opt == &options.shapePadding()) {
+          if (m_exporter)
+            m_exporter->setShapePadding(strtol(value.value().c_str(), NULL, 0));
+        }
+        // --inner-padding
+        else if (opt == &options.innerPadding()) {
+          if (m_exporter)
+            m_exporter->setInnerPadding(strtol(value.value().c_str(), NULL, 0));
+        }
         // --trim
         else if (opt == &options.trim()) {
           trim = true;

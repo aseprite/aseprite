@@ -43,53 +43,21 @@ namespace app {
 
     DocumentExporter();
 
-    void setDataFormat(DataFormat format) {
-      m_dataFormat = format;
-    }
-
-    void setDataFilename(const std::string& filename) {
-      m_dataFilename = filename;
-    }
-
-    void setTextureFormat(TextureFormat format) {
-      m_textureFormat = format;
-    }
-
-    void setTextureFilename(const std::string& filename) {
-      m_textureFilename = filename;
-    }
-
-    void setTextureWidth(int width) {
-      m_textureWidth = width;
-    }
-
-    void setTextureHeight(int height) {
-      m_textureHeight = height;
-    }
-
-    void setTexturePack(bool state) {
-      m_texturePack = state;
-    }
-
-    void setScale(double scale) {
-      m_scale = scale;
-    }
-
-    void setScaleMode(ScaleMode mode) {
-      m_scaleMode = mode;
-    }
-
-    void setIgnoreEmptyCels(bool ignore) {
-      m_ignoreEmptyCels = ignore;
-    }
-
-    void setTrimCels(bool trim) {
-      m_trimCels = trim;
-    }
-
-    void setFilenameFormat(const std::string& format) {
-      m_filenameFormat = format;
-    }
+    void setDataFormat(DataFormat format) { m_dataFormat = format; }
+    void setDataFilename(const std::string& filename) { m_dataFilename = filename; }
+    void setTextureFormat(TextureFormat format) { m_textureFormat = format; }
+    void setTextureFilename(const std::string& filename) { m_textureFilename = filename; }
+    void setTextureWidth(int width) { m_textureWidth = width; }
+    void setTextureHeight(int height) { m_textureHeight = height; }
+    void setTexturePack(bool state) { m_texturePack = state; }
+    void setScale(double scale) { m_scale = scale; }
+    void setScaleMode(ScaleMode mode) { m_scaleMode = mode; }
+    void setIgnoreEmptyCels(bool ignore) { m_ignoreEmptyCels = ignore; }
+    void setBorderPadding(int padding) { m_borderPadding = padding; }
+    void setShapePadding(int padding) { m_shapePadding = padding; }
+    void setInnerPadding(int padding) { m_innerPadding = padding; }
+    void setTrimCels(bool trim) { m_trimCels = trim; }
+    void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
 
     void addDocument(Document* document, doc::Layer* layer = NULL) {
       m_documents.push_back(Item(document, layer));
@@ -108,7 +76,7 @@ namespace app {
     Document* createEmptyTexture(const Samples& samples);
     void renderTexture(const Samples& samples, doc::Image* textureImage);
     void createDataFile(const Samples& samples, std::ostream& os, doc::Image* textureImage);
-    void renderSample(const Sample& sample, doc::Image* dst);
+    void renderSample(const Sample& sample, doc::Image* dst, int x, int y);
 
     class Item {
     public:
@@ -130,6 +98,9 @@ namespace app {
     double m_scale;
     ScaleMode m_scaleMode;
     bool m_ignoreEmptyCels;
+    int m_borderPadding;
+    int m_shapePadding;
+    int m_innerPadding;
     bool m_trimCels;
     Items m_documents;
     std::string m_filenameFormat;
