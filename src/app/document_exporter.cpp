@@ -307,7 +307,9 @@ Document* DocumentExporter::exportSheet()
   // Save the image files.
   if (!m_textureFilename.empty()) {
     textureDocument->setFilename(m_textureFilename.c_str());
-    save_document(UIContext::instance(), textureDocument.get());
+    int ret = save_document(UIContext::instance(), textureDocument.get());
+    if (ret == 0)
+      textureDocument->markAsSaved();
   }
 
   return textureDocument.release();
