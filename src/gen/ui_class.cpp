@@ -144,7 +144,7 @@ void gen_ui_class(TiXmlDocument* doc, const std::string& inputFn, const std::str
     const char* id = (*it)->Attribute("id");
     std::string cppid = convert_xmlid_to_cppid(id, false);
     std::cout
-      << "    " << childType << "* " << cppid << "() { return m_" << cppid << "; }\n";
+      << "    " << childType << "* " << cppid << "() const { return m_" << cppid << "; }\n";
   }
 
   std::cout

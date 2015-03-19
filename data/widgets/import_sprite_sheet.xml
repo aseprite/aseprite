@@ -19,8 +19,8 @@
       <boxfiller />
       <hbox>
       </hbox>
-      <button id="import" text="&amp;Import" minwidth="60" magnet="true" cell_align="center" />
-      <button id="cancel" text="&amp;Cancel" minwidth="60" cell_align="center" />
+      <button id="import" text="&amp;Import" minwidth="60" magnet="true" cell_align="center" closewindow="true" />
+      <button id="cancel" text="&amp;Cancel" minwidth="60" cell_align="center" closewindow="true" />
     </hbox>
   </grid>
   </window>

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -63,7 +63,7 @@ Window::~Window()
   getManager()->_closeWindow(this, false);
 }
 
-Widget* Window::getKiller()
+Widget* Window::getKiller() const
 {
   return m_killer;
 }

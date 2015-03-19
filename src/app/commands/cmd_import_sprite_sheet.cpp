@@ -51,16 +51,12 @@ public:
     , m_document(NULL)
     , m_editor(NULL)
     , m_fileOpened(false)
-    , m_docPref(nullptr)
-  {
+    , m_docPref(nullptr) {
     x()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     y()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     width()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     height()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-
     selectFile()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
-    import()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
-    cancel()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
 
     remapWindow();
     centerWindow();
@@ -72,15 +68,29 @@ public:
     }
   }
 
-  ~ImportSpriteSheetWindow()
-  {
+  ~ImportSpriteSheetWindow() {
     releaseEditor();
+  }
+
+  bool ok() const {
+    return getKiller() == import();
+  }
+
+  Document* document() const {
+    return m_document;
+  }
+
+  DocumentPreferences* docPref() const {
+    return m_docPref;
+  }
+
+  gfx::Rect frameBounds() const {
+    return m_rect;
   }
 
 protected:
 
-  void onSelectFile()
-  {
+  void onSelectFile() {
     Document* oldActiveDocument = m_context->activeDocument();
     Command* openFile = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
     Params params;
@@ -93,97 +103,6 @@ protected:
       selectActiveDocument();
       m_fileOpened = true;
     }
-  }
-
-  void onImport()
-  {
-    // The user don't select a sheet yet.
-    if (!m_document) {
-      Alert::show("Import Sprite Sheet<<Select a sprite first.||&Close");
-      return;
-    }
-
-    // The list of frames imported from the sheet
-    std::vector<ImageRef> animation;
-
-    try {
-      Sprite* sprite = m_document->sprite();
-      frame_t currentFrame = m_context->activeLocation().frame();
-      render::Render render;
-
-      // As first step, we cut each tile and add them into "animation" list.
-      for (int y=m_rect.y; y<sprite->height(); y += m_rect.h) {
-        for (int x=m_rect.x; x<sprite->width(); x += m_rect.w) {
-          ImageRef resultImage(
-            Image::create(sprite->pixelFormat(), m_rect.w, m_rect.h));
-
-          // Render the portion of sheet.
-          render.renderSprite(resultImage, sprite, currentFrame,
-            gfx::Clip(0, 0, x, y, m_rect.w, m_rect.h));
-
-          animation.push_back(resultImage);
-        }
-      }
-
-      if (animation.size() == 0) {
-        Alert::show("Import Sprite Sheet"
-                    "<<The specified rectangle does not create any tile."
-                    "<<Select a rectangle inside the sprite region."
-                    "||&OK");
-        return;
-      }
-
-      // The following steps modify the sprite, so we wrap all
-      // operations in a undo-transaction.
-      ContextWriter writer(m_context);
-      Transaction transaction(writer.context(), "Import Sprite Sheet", ModifyDocument);
-      DocumentApi api = m_document->getApi(transaction);
-
-      // Add the layer in the sprite.
-      LayerImage* resultLayer = api.newLayer(sprite);
-
-      // Add all frames+cels to the new layer
-      for (size_t i=0; i<animation.size(); ++i) {
-        // Create the cel.
-        base::UniquePtr<Cel> resultCel(new Cel(frame_t(i), animation[i]));
-
-        // Add the cel in the layer.
-        api.addCel(resultLayer, resultCel);
-        resultCel.release();
-      }
-
-      // Copy the list of layers (because we will modify it in the iteration).
-      LayerList layers = sprite->folder()->getLayersList();
-
-      // Remove all other layers
-      for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
-        if (*it != resultLayer)
-          api.removeLayer(*it);
-      }
-
-      // Change the number of frames
-      api.setTotalFrames(sprite, frame_t(animation.size()));
-
-      // Set the size of the sprite to the tile size.
-      api.setSpriteSize(sprite, m_rect.w, m_rect.h);
-
-      transaction.commit();
-
-      ASSERT(m_docPref);
-      if (m_docPref)
-        m_docPref->importSpriteSheet.bounds(m_rect);
-    }
-    catch (...) {
-      throw;
-    }
-
-    update_screen_for_document(m_document);
-    closeWindow(NULL);
-  }
-
-  void onCancel()
-  {
-    closeWindow(NULL);
   }
 
   gfx::Rect getRectFromEntries()
@@ -212,8 +131,7 @@ protected:
     }
   }
 
-  bool onProcessMessage(ui::Message* msg) override
-  {
+  bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
       case kCloseMessage:
         save_window_pos(this, "ImportSpriteSheet");
@@ -222,8 +140,7 @@ protected:
     return Window::onProcessMessage(msg);
   }
 
-  virtual void onBroadcastMouseMessage(WidgetsList& targets) override
-  {
+  void onBroadcastMouseMessage(WidgetsList& targets) override {
     Window::onBroadcastMouseMessage(targets);
 
     // Add the editor as receptor of mouse events too.
@@ -232,8 +149,7 @@ protected:
   }
 
   // SelectBoxDelegate impleentation
-  virtual void onChangeRectangle(const gfx::Rect& rect) override
-  {
+  void onChangeRectangle(const gfx::Rect& rect) override {
     m_rect = rect;
 
     x()->setTextf("%d", m_rect.x);
@@ -243,8 +159,7 @@ protected:
   }
 
 private:
-  void selectActiveDocument()
-  {
+  void selectActiveDocument() {
     Document* oldDocument = m_document;
     m_document = m_context->activeDocument();
 
@@ -269,8 +184,7 @@ private:
     }
   }
 
-  void captureEditor()
-  {
+  void captureEditor() {
     ASSERT(m_editor == NULL);
 
     if (m_document && !m_editor) {
@@ -284,8 +198,7 @@ private:
     }
   }
 
-  void releaseEditor()
-  {
+  void releaseEditor() {
     if (m_editor) {
       m_editor->backToPreviousState();
       m_editor = NULL;
@@ -322,8 +235,98 @@ ImportSpriteSheetCommand::ImportSpriteSheetCommand()
 
 void ImportSpriteSheetCommand::onExecute(Context* context)
 {
-  base::UniquePtr<Window> window(new ImportSpriteSheetWindow(context));
-  window->openWindowInForeground();
+  ImportSpriteSheetWindow window(context);
+
+retry:;
+  window.openWindowInForeground();
+  if (!window.ok())
+    return;
+
+  Document* document = window.document();
+  DocumentPreferences* docPref = window.docPref();
+  gfx::Rect frameBounds = window.frameBounds();
+
+  // The user don't select a sheet yet.
+  if (!document) {
+    Alert::show("Import Sprite Sheet<<Select a sprite first.||&Close");
+    goto retry;
+  }
+
+  // The list of frames imported from the sheet
+  std::vector<ImageRef> animation;
+
+  try {
+    Sprite* sprite = document->sprite();
+    frame_t currentFrame = context->activeLocation().frame();
+    render::Render render;
+
+    // As first step, we cut each tile and add them into "animation" list.
+    for (int y=frameBounds.y; y<sprite->height(); y += frameBounds.h) {
+      for (int x=frameBounds.x; x<sprite->width(); x += frameBounds.w) {
+        ImageRef resultImage(
+          Image::create(sprite->pixelFormat(), frameBounds.w, frameBounds.h));
+
+        // Render the portion of sheet.
+        render.renderSprite(resultImage, sprite, currentFrame,
+          gfx::Clip(0, 0, x, y, frameBounds.w, frameBounds.h));
+
+        animation.push_back(resultImage);
+      }
+    }
+
+    if (animation.size() == 0) {
+      Alert::show("Import Sprite Sheet"
+        "<<The specified rectangle does not create any tile."
+        "<<Select a rectangle inside the sprite region."
+        "||&OK");
+      return;
+    }
+
+    // The following steps modify the sprite, so we wrap all
+    // operations in a undo-transaction.
+    ContextWriter writer(context);
+    Transaction transaction(writer.context(), "Import Sprite Sheet", ModifyDocument);
+    DocumentApi api = document->getApi(transaction);
+
+    // Add the layer in the sprite.
+    LayerImage* resultLayer = api.newLayer(sprite);
+
+    // Add all frames+cels to the new layer
+    for (size_t i=0; i<animation.size(); ++i) {
+      // Create the cel.
+      base::UniquePtr<Cel> resultCel(new Cel(frame_t(i), animation[i]));
+
+      // Add the cel in the layer.
+      api.addCel(resultLayer, resultCel);
+      resultCel.release();
+    }
+
+    // Copy the list of layers (because we will modify it in the iteration).
+    LayerList layers = sprite->folder()->getLayersList();
+
+    // Remove all other layers
+    for (LayerIterator it=layers.begin(), end=layers.end(); it!=end; ++it) {
+      if (*it != resultLayer)
+        api.removeLayer(*it);
+    }
+
+    // Change the number of frames
+    api.setTotalFrames(sprite, frame_t(animation.size()));
+
+    // Set the size of the sprite to the tile size.
+    api.setSpriteSize(sprite, frameBounds.w, frameBounds.h);
+
+    transaction.commit();
+
+    ASSERT(docPref);
+    if (docPref)
+      docPref->importSpriteSheet.bounds(frameBounds);
+  }
+  catch (...) {
+    throw;
+  }
+
+  update_screen_for_document(document);
 }
 
 Command* CommandFactory::createImportSpriteSheetCommand()

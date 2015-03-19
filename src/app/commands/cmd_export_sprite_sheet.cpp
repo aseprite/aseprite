@@ -202,7 +202,7 @@ public:
     onFileNamesChange();
   }
 
-  bool ok() {
+  bool ok() const {
     return getKiller() == exportButton();
   }
 
