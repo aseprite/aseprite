@@ -58,14 +58,18 @@ public:
     width()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     height()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
 
-    selectFile()->Click.connect(&ImportSpriteSheetWindow::onSelectFile, this);
-    selectFile()->DropDownClick.connect(&ImportSpriteSheetWindow::onDropDown, this);
+    selectFile()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
     import()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onImport, this));
     cancel()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onCancel, this));
 
     remapWindow();
     centerWindow();
     load_window_pos(this, "ImportSpriteSheet");
+
+    if (m_context->activeDocument()) {
+      selectActiveDocument();
+      m_fileOpened = false;
+    }
   }
 
   ~ImportSpriteSheetWindow()
@@ -89,27 +93,6 @@ protected:
       selectActiveDocument();
       m_fileOpened = true;
     }
-  }
-
-  void onDropDown()
-  {
-    SharedPtr<Menu> menu(new Menu());
-    MenuItem* item = new MenuItem("Use Current Sprite");
-    item->Click.connect(&ImportSpriteSheetWindow::onUseCurrentSprite, this);
-
-    if (m_editor || !current_editor || current_editor->document() == NULL)
-      item->setEnabled(false);
-
-    menu->addChild(item);
-
-    const gfx::Rect& bounds = selectFile()->getBounds();
-    menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
-  }
-
-  void onUseCurrentSprite()
-  {
-    selectActiveDocument();
-    m_fileOpened = false;
   }
 
   void onImport()
@@ -267,11 +250,13 @@ private:
 
     // If the user already have selected a file, we have to destroy
     // that file in order to select the new one.
-    if (oldDocument && m_fileOpened) {
+    if (oldDocument) {
       releaseEditor();
 
-      DocumentDestroyer destroyer(m_context, oldDocument);
-      destroyer.destroyDocument();
+      if (m_fileOpened) {
+        DocumentDestroyer destroyer(m_context, oldDocument);
+        destroyer.destroyDocument();
+      }
     }
 
     captureEditor();
