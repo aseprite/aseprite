@@ -1,5 +1,5 @@
 // Aseprite Gfx Library
-// Copyright (C) 2001-2013 David Capello
+// Copyright (C) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -138,6 +138,12 @@ public:
   RectT& offset(const PointT<T>& delta) {
     x += delta.x;
     y += delta.y;
+    return *this;
+  }
+
+  RectT& inflate(const T& delta) {
+    w += delta;
+    h += delta;
     return *this;
   }
 
