@@ -16,6 +16,7 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_layer.h"
+#include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
@@ -64,6 +65,9 @@ void FlattenLayers::onExecute()
     ImageRef cel_image;
     Cel* cel = background->cel(frame);
     if (cel) {
+      if (cel->links())
+        executeAndAdd(new cmd::UnlinkCel(cel));
+
       cel_image = cel->imageRef();
       ASSERT(cel_image);
 
