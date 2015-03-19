@@ -103,7 +103,7 @@ namespace doc {
 
     void deletePalette(Palette* pal);
 
-    RgbMap* rgbMap(frame_t frame);
+    RgbMap* rgbMap(frame_t frame) const;
 
     ////////////////////////////////////////
     // Frames
@@ -152,7 +152,7 @@ namespace doc {
     LayerFolder* m_folder;                 // main folder of layers
 
     // Current rgb map
-    RgbMap* m_rgbMap;
+    mutable RgbMap* m_rgbMap;
 
     // Transparent color used in indexed images
     color_t m_transparentColor;

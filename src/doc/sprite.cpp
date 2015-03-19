@@ -333,7 +333,7 @@ void Sprite::deletePalette(Palette* pal)
   delete pal;                   // palette
 }
 
-RgbMap* Sprite::rgbMap(frame_t frame)
+RgbMap* Sprite::rgbMap(frame_t frame) const
 {
   int mask_color = (backgroundLayer() ? -1: transparentColor());
 
