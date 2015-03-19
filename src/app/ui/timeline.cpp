@@ -67,7 +67,7 @@
 // Space between icons and other information in the layer.
 #define ICONSEP         (2*guiscale())
 
-#define OUTLINE_WIDTH   (2*guiscale()) // TODO theme specific
+#define OUTLINE_WIDTH   (skinTheme()->dimensions.timelineOutlineWidth())
 
 // Space between the icon-bitmap and the edge of the surrounding button.
 #define ICONBORDER      0
