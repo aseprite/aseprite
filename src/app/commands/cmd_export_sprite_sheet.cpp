@@ -423,7 +423,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     exporter.setDataFilename(m_dataFilename);
   exporter.setTextureWidth(sheet_w);
   exporter.setTextureHeight(sheet_h);
-  exporter.setTexturePack(true);
+  exporter.setTexturePack(false);
   exporter.addDocument(document);
 
   base::UniquePtr<Document> newDocument(exporter.exportSheet());
