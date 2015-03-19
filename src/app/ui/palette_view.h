@@ -42,7 +42,6 @@ namespace app {
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
-    void setBoxSize(int boxsize);
 
     void clearSelection();
     void selectColor(int index);

@@ -68,7 +68,6 @@ ColorSelector::ColorSelector()
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;
 
-  m_colorPalette.setBoxSize(6*guiscale());
   m_colorPaletteContainer.attachToView(&m_colorPalette);
 
   m_colorPaletteContainer.setExpansive(true);

@@ -83,11 +83,6 @@ void PaletteView::setColumns(int columns)
   }
 }
 
-void PaletteView::setBoxSize(int boxsize)
-{
-  m_boxsize = boxsize;
-}
-
 void PaletteView::clearSelection()
 {
   std::fill(m_selectedEntries.begin(),
