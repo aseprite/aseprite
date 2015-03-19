@@ -14,11 +14,13 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/palette_view.h"
+#include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
-#include "gfx/point.h"
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "gfx/point.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -35,6 +37,7 @@
 namespace app {
 
 using namespace ui;
+using namespace app::skin;
 
 WidgetType palette_view_type()
 {
@@ -46,6 +49,9 @@ WidgetType palette_view_type()
 
 PaletteView::PaletteView(bool editable)
   : Widget(palette_view_type())
+  , m_editable(editable)
+  , m_columns(16)
+  , m_boxsize(7*guiscale())
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
   , m_selectedEntries(Palette::MaxColors, false)
@@ -53,10 +59,6 @@ PaletteView::PaletteView(bool editable)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
-
-  m_editable = editable;
-  m_columns = 16;
-  m_boxsize = 6*guiscale();
 
   this->border_width.l = this->border_width.r = 1 * guiscale();
   this->border_width.t = this->border_width.b = 1 * guiscale();
@@ -263,6 +265,8 @@ bool PaletteView::onProcessMessage(Message* msg)
 
 void PaletteView::onPaint(ui::PaintEvent& ev)
 {
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  int outlineWidth = theme->dimensions.paletteOutlineWidth();
   ui::Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
   div_t d = div(Palette::MaxColors, m_columns);
@@ -275,12 +279,11 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
   g->fillRect(gfx::rgba(0 , 0, 0), bounds);
 
+  // Draw palette entries
   y = bounds.y + this->border_width.t;
   c = 0;
-
   for (v=0; v<rows; v++) {
     x = bounds.x + this->border_width.l;
-
     for (u=0; u<cols; u++) {
       if (c >= palette->size())
         break;
@@ -291,6 +294,20 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         rgba_getb(palette->getEntry(c)));
 
       g->fillRect(color, gfx::Rect(x, y, m_boxsize, m_boxsize));
+      x += m_boxsize+this->child_spacing;
+      c++;
+    }
+    y += m_boxsize+this->child_spacing;
+  }
+
+  // Draw selected entries
+  y = bounds.y + this->border_width.t;
+  c = 0;
+  for (v=0; v<rows; v++) {
+    x = bounds.x + this->border_width.l;
+    for (u=0; u<cols; u++) {
+      if (c >= palette->size())
+        break;
 
       if (m_selectedEntries[c]) {
         const int max = Palette::MaxColors;
@@ -299,16 +316,24 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
         bool right  = ((c%m_columns)<m_columns-1 && c+1         < max ? m_selectedEntries[c+1]: false);
 
-        if (!top   ) g->drawHLine(bordercolor, x-1, y-1, m_boxsize+2);
-        if (!bottom) g->drawHLine(bordercolor, x-1, y+m_boxsize, m_boxsize+2);
-        if (!left  ) g->drawVLine(bordercolor, x-1, y-1, m_boxsize+2);
-        if (!right ) g->drawVLine(bordercolor, x+m_boxsize, y-1, m_boxsize+2);
+        gfx::Rect bounds(x, y, m_boxsize, m_boxsize);
+        gfx::Rect clipR = bounds;
+        bounds.enlarge(outlineWidth);
+        if (!top   ) clipR.y -= outlineWidth, clipR.h += outlineWidth;
+        if (!bottom) clipR.h += outlineWidth;
+        if (!left  ) clipR.x -= outlineWidth, clipR.w += outlineWidth;
+        if (!right ) clipR.w += outlineWidth;
+
+        IntersectClip clip(g, clipR);
+        if (clip) {
+          theme->styles.timelineRangeOutline()->paint(g, bounds,
+            NULL, Style::active());
+        }
       }
 
       x += m_boxsize+this->child_spacing;
       c++;
     }
-
     y += m_boxsize+this->child_spacing;
   }
 }

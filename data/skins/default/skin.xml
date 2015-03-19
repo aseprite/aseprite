@@ -13,6 +13,7 @@
     <dim id="timeline_top_border" value="2" />
     <dim id="timeline_tags_area_height" value="4" />
     <dim id="timeline_outline_width" value="2" />
+    <dim id="palette_outline_width" value="3" />
   </dimensions>
 
   <colors>
