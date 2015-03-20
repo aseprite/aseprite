@@ -63,10 +63,34 @@ namespace app {
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
   private:
+
+    struct Hit {
+      enum Part {
+        NONE,
+        COLOR,
+        OUTLINE
+      };
+
+      Part part;
+      int color;
+
+      Hit(Part part, int color = -1) : part(part), color(color) {
+      }
+
+      bool operator==(const Hit& hit) const {
+        return (part == hit.part && color == hit.color);
+      }
+
+      bool operator!=(const Hit& hit) const {
+        return !operator==(hit);
+      }
+    };
+
     void request_size(int* w, int* h);
     void update_scroll(int color);
     void onAppPaletteChange();
     gfx::Rect getPaletteEntryBounds(int index);
+    Hit hitTest(const gfx::Point& pos);
 
     bool m_editable;
     int m_columns;
@@ -76,6 +100,7 @@ namespace app {
     SelectedEntries m_selectedEntries;
     bool m_isUpdatingColumns;
     ScopedConnection m_conn;
+    Hit m_hot;
   };
 
   ui::WidgetType palette_view_type();

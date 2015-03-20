@@ -11,6 +11,7 @@
 
 #include "app/app.h"
 #include "app/color.h"
+#include "app/color_utils.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/palette_view.h"
@@ -57,6 +58,7 @@ PaletteView::PaletteView(bool editable)
   , m_rangeAnchor(-1)
   , m_selectedEntries(Palette::MaxColors, false)
   , m_isUpdatingColumns(false)
+  , m_hot(Hit::NONE)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
@@ -175,12 +177,12 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      app::Color color = getColorByPosition(mouseMsg->position());
 
-      if (color.getType() == app::Color::IndexType) {
-        int idx = color.getIndex();
+      if (m_hot.part == Hit::COLOR) {
+        int idx = m_hot.color;
 
-        StatusBar::instance()->showColor(0, "", color, 255);
+        StatusBar::instance()->showColor(0, "",
+          app::Color::fromIndex(idx), 255);
 
         if (hasCapture() && idx != m_currentEntry) {
           clearSelection();
@@ -203,7 +205,8 @@ bool PaletteView::onProcessMessage(Message* msg)
     }
 
     case kMouseUpMessage:
-      releaseMouse();
+      if (hasCapture())
+        releaseMouse();
       return true;
 
     case kMouseWheelMessage: {
@@ -218,7 +221,23 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseLeaveMessage:
       StatusBar::instance()->clearText();
+      m_hot = Hit(Hit::NONE);
+      invalidate();
       break;
+
+    case kSetCursorMessage: {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      Hit hit = hitTest(mouseMsg->position() - getBounds().getOrigin());
+      if (hit != m_hot) {
+        m_hot = hit;
+        invalidate();
+      }
+      if (m_hot.part == Hit::OUTLINE)
+        ui::set_mouse_cursor(kMoveCursor);
+      else
+        ui::set_mouse_cursor(kArrowCursor);
+      return true;
+    }
 
   }
 
@@ -234,7 +253,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   Palette* palette = get_current_palette();
   gfx::Color bordercolor = gfx::rgba(255, 255, 255);
 
-  g->fillRect(gfx::rgba(0 , 0, 0), bounds);
+  g->fillRect(gfx::rgba(0, 0, 0), bounds);
 
   // Draw palette entries
   for (int i=0; i<palette->size(); ++i) {
@@ -245,9 +264,16 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       rgba_getb(palette->getEntry(i)));
 
     g->fillRect(color, box);
+
+    if (m_currentEntry == i)
+      g->fillRect(color_utils::blackandwhite_neg(color),
+        gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
   }
 
   // Draw selected entries
+  Style::State state = Style::active();
+  if (m_hot.part == Hit::OUTLINE) state += Style::hover();
+
   for (int i=0; i<palette->size(); ++i) {
     if (!m_selectedEntries[i])
       continue;
@@ -261,15 +287,35 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     gfx::Rect box = getPaletteEntryBounds(i);
     gfx::Rect clipR = box;
     box.enlarge(outlineWidth);
-    if (!top   ) clipR.y -= outlineWidth, clipR.h += outlineWidth;
-    if (!bottom) clipR.h += outlineWidth;
-    if (!left  ) clipR.x -= outlineWidth, clipR.w += outlineWidth;
-    if (!right ) clipR.w += outlineWidth;
+
+    if (!left) {
+      clipR.x -= outlineWidth;
+      clipR.w += outlineWidth;
+    }
+
+    if (!top) {
+      clipR.y -= outlineWidth;
+      clipR.h += outlineWidth;
+    }
+
+    if (!right)
+      clipR.w += outlineWidth;
+    else {
+      clipR.w += guiscale();
+      box.w += outlineWidth;
+    }
+
+    if (!bottom)
+      clipR.h += outlineWidth;
+    else {
+      clipR.h += guiscale();
+      box.h += outlineWidth;
+    }
 
     IntersectClip clip(g, clipR);
     if (clip) {
       theme->styles.timelineRangeOutline()->paint(g, box,
-        NULL, Style::active());
+        NULL, state);
     }
   }
 }
@@ -361,6 +407,47 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index)
     bounds.x + this->border_width.l + col*(m_boxsize+this->child_spacing),
     bounds.y + this->border_width.t + row*(m_boxsize+this->child_spacing),
     m_boxsize, m_boxsize);
+}
+
+PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  int outlineWidth = theme->dimensions.paletteOutlineWidth();
+  Palette* palette = get_current_palette();
+
+  if (!hasCapture()) {
+    // First check if the mouse is inside the selection outline.
+    for (int i=0; i<palette->size(); ++i) {
+      if (!m_selectedEntries[i])
+        continue;
+
+      const int max = Palette::MaxColors;
+      bool top    = (i >= m_columns            && i-m_columns >= 0  ? m_selectedEntries[i-m_columns]: false);
+      bool bottom = (i < max-m_columns         && i+m_columns < max ? m_selectedEntries[i+m_columns]: false);
+      bool left   = ((i%m_columns)>0           && i-1         >= 0  ? m_selectedEntries[i-1]: false);
+      bool right  = ((i%m_columns)<m_columns-1 && i+1         < max ? m_selectedEntries[i+1]: false);
+
+      gfx::Rect box = getPaletteEntryBounds(i);
+      box.enlarge(outlineWidth);
+
+      if ((!top    && gfx::Rect(box.x, box.y, box.w, outlineWidth).contains(pos)) ||
+        (!bottom && gfx::Rect(box.x, box.y+box.h-outlineWidth, box.w, outlineWidth).contains(pos)) ||
+        (!left   && gfx::Rect(box.x, box.y, outlineWidth, box.h).contains(pos)) ||
+        (!right  && gfx::Rect(box.x+box.w-outlineWidth, box.y, outlineWidth, box.h).contains(pos)))
+        return Hit(Hit::OUTLINE, i);
+    }
+  }
+
+  // Check if we are inside a color.
+  for (int i=0; i<palette->size(); ++i) {
+    gfx::Rect box = getPaletteEntryBounds(i);
+    box.w += child_spacing;
+    box.h += child_spacing;
+    if (box.contains(pos))
+      return Hit(Hit::COLOR, i);
+  }
+
+  return Hit(Hit::NONE);
 }
 
 } // namespace app
