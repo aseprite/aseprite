@@ -115,7 +115,7 @@ bool ColorButton::onProcessMessage(Message* msg)
           }
           // Pick a color from the color-bar
           else if (picked->type == palette_view_type()) {
-            color = ((PaletteView*)picked)->getColorByPosition(mousePos.x, mousePos.y);
+            color = ((PaletteView*)picked)->getColorByPosition(mousePos);
           }
           // Pick a color from a editor
           else if (picked->type == editor_type()) {

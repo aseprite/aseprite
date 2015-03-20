@@ -20,6 +20,7 @@
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "gfx/color.h"
 #include "gfx/point.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
@@ -153,40 +154,14 @@ void PaletteView::getSelectedEntries(SelectedEntries& entries) const
   entries = m_selectedEntries;
 }
 
-app::Color PaletteView::getColorByPosition(int target_x, int target_y)
+app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
+  gfx::Point relPos = pos - getBounds().getOrigin();
   Palette* palette = get_current_palette();
-  gfx::Rect cpos = getChildrenBounds();
-  div_t d = div(Palette::MaxColors, m_columns);
-  int cols = m_columns;
-  int rows = d.quot + ((d.rem)? 1: 0);
-  int req_w, req_h;
-  int x, y, u, v;
-  int c;
-
-  request_size(&req_w, &req_h);
-
-  y = cpos.y;
-  c = 0;
-
-  for (v=0; v<rows; v++) {
-    x = cpos.x;
-
-    for (u=0; u<cols; u++) {
-      if (c >= palette->size())
-        break;
-
-      if ((target_x >= x) && (target_x <= x+m_boxsize) &&
-          (target_y >= y) && (target_y <= y+m_boxsize))
-        return app::Color::fromIndex(c);
-
-      x += m_boxsize+this->child_spacing;
-      c++;
-    }
-
-    y += m_boxsize+this->child_spacing;
+  for (int i=0; i<palette->size(); ++i) {
+    if (getPaletteEntryBounds(i).contains(relPos))
+      return app::Color::fromIndex(i);
   }
-
   return app::Color::fromMask();
 }
 
@@ -200,15 +175,8 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      gfx::Rect cpos = getChildrenBounds();
+      app::Color color = getColorByPosition(mouseMsg->position());
 
-      int req_w, req_h;
-      request_size(&req_w, &req_h);
-
-      int mouse_x = MID(cpos.x, mouseMsg->position().x, cpos.x+req_w-this->border_width.r-1);
-      int mouse_y = MID(cpos.y, mouseMsg->position().y, cpos.y+req_h-this->border_width.b-1);
-
-      app::Color color = getColorByPosition(mouse_x, mouse_y);
       if (color.getType() == app::Color::IndexType) {
         int idx = color.getIndex();
 
@@ -263,72 +231,46 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
   ui::Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
-  div_t d = div(Palette::MaxColors, m_columns);
-  int cols = m_columns;
-  int rows = d.quot + ((d.rem)? 1: 0);
-  int x, y, u, v;
-  int c, color;
   Palette* palette = get_current_palette();
   gfx::Color bordercolor = gfx::rgba(255, 255, 255);
 
   g->fillRect(gfx::rgba(0 , 0, 0), bounds);
 
   // Draw palette entries
-  y = bounds.y + this->border_width.t;
-  c = 0;
-  for (v=0; v<rows; v++) {
-    x = bounds.x + this->border_width.l;
-    for (u=0; u<cols; u++) {
-      if (c >= palette->size())
-        break;
+  for (int i=0; i<palette->size(); ++i) {
+    gfx::Rect box = getPaletteEntryBounds(i);
+    gfx::Color color = gfx::rgba(
+      rgba_getr(palette->getEntry(i)),
+      rgba_getg(palette->getEntry(i)),
+      rgba_getb(palette->getEntry(i)));
 
-      color = gfx::rgba(
-        rgba_getr(palette->getEntry(c)),
-        rgba_getg(palette->getEntry(c)),
-        rgba_getb(palette->getEntry(c)));
-
-      g->fillRect(color, gfx::Rect(x, y, m_boxsize, m_boxsize));
-      x += m_boxsize+this->child_spacing;
-      c++;
-    }
-    y += m_boxsize+this->child_spacing;
+    g->fillRect(color, box);
   }
 
   // Draw selected entries
-  y = bounds.y + this->border_width.t;
-  c = 0;
-  for (v=0; v<rows; v++) {
-    x = bounds.x + this->border_width.l;
-    for (u=0; u<cols; u++) {
-      if (c >= palette->size())
-        break;
+  for (int i=0; i<palette->size(); ++i) {
+    if (!m_selectedEntries[i])
+      continue;
 
-      if (m_selectedEntries[c]) {
-        const int max = Palette::MaxColors;
-        bool top    = (c >= m_columns            && c-m_columns >= 0  ? m_selectedEntries[c-m_columns]: false);
-        bool bottom = (c < max-m_columns         && c+m_columns < max ? m_selectedEntries[c+m_columns]: false);
-        bool left   = ((c%m_columns)>0           && c-1         >= 0  ? m_selectedEntries[c-1]: false);
-        bool right  = ((c%m_columns)<m_columns-1 && c+1         < max ? m_selectedEntries[c+1]: false);
+    const int max = Palette::MaxColors;
+    bool top    = (i >= m_columns            && i-m_columns >= 0  ? m_selectedEntries[i-m_columns]: false);
+    bool bottom = (i < max-m_columns         && i+m_columns < max ? m_selectedEntries[i+m_columns]: false);
+    bool left   = ((i%m_columns)>0           && i-1         >= 0  ? m_selectedEntries[i-1]: false);
+    bool right  = ((i%m_columns)<m_columns-1 && i+1         < max ? m_selectedEntries[i+1]: false);
 
-        gfx::Rect bounds(x, y, m_boxsize, m_boxsize);
-        gfx::Rect clipR = bounds;
-        bounds.enlarge(outlineWidth);
-        if (!top   ) clipR.y -= outlineWidth, clipR.h += outlineWidth;
-        if (!bottom) clipR.h += outlineWidth;
-        if (!left  ) clipR.x -= outlineWidth, clipR.w += outlineWidth;
-        if (!right ) clipR.w += outlineWidth;
+    gfx::Rect box = getPaletteEntryBounds(i);
+    gfx::Rect clipR = box;
+    box.enlarge(outlineWidth);
+    if (!top   ) clipR.y -= outlineWidth, clipR.h += outlineWidth;
+    if (!bottom) clipR.h += outlineWidth;
+    if (!left  ) clipR.x -= outlineWidth, clipR.w += outlineWidth;
+    if (!right ) clipR.w += outlineWidth;
 
-        IntersectClip clip(g, clipR);
-        if (clip) {
-          theme->styles.timelineRangeOutline()->paint(g, bounds,
-            NULL, Style::active());
-        }
-      }
-
-      x += m_boxsize+this->child_spacing;
-      c++;
+    IntersectClip clip(g, clipR);
+    if (clip) {
+      theme->styles.timelineRangeOutline()->paint(g, box,
+        NULL, Style::active());
     }
-    y += m_boxsize+this->child_spacing;
   }
 }
 
@@ -404,6 +346,21 @@ void PaletteView::update_scroll(int color)
 void PaletteView::onAppPaletteChange()
 {
   invalidate();
+}
+
+gfx::Rect PaletteView::getPaletteEntryBounds(int index)
+{
+  gfx::Rect bounds = getClientBounds();
+  div_t d = div(Palette::MaxColors, m_columns);
+  int cols = m_columns;
+  int rows = d.quot + (d.rem ? 1: 0);
+  int col = index % cols;
+  int row = index / cols;
+
+  return gfx::Rect(
+    bounds.x + this->border_width.l + col*(m_boxsize+this->child_spacing),
+    bounds.y + this->border_width.t + row*(m_boxsize+this->child_spacing),
+    m_boxsize, m_boxsize);
 }
 
 } // namespace app

@@ -51,7 +51,7 @@ namespace app {
     bool getSelectedRange(int& index1, int& index2) const;
     void getSelectedEntries(SelectedEntries& entries) const;
 
-    app::Color getColorByPosition(int x, int y);
+    app::Color getColorByPosition(const gfx::Point& pos);
 
     // Signals
     Signal1<void, PaletteIndexChangeEvent&> IndexChange;
@@ -66,6 +66,7 @@ namespace app {
     void request_size(int* w, int* h);
     void update_scroll(int color);
     void onAppPaletteChange();
+    gfx::Rect getPaletteEntryBounds(int index);
 
     bool m_editable;
     int m_columns;
