@@ -51,6 +51,7 @@ WidgetType palette_view_type()
 
 PaletteView::PaletteView(bool editable)
   : Widget(palette_view_type())
+  , m_state(State::WAITING)
   , m_editable(editable)
   , m_columns(16)
   , m_boxsize(7*guiscale())
@@ -172,29 +173,42 @@ bool PaletteView::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseDownMessage:
+      switch (m_hot.part) {
+        case Hit::COLOR:
+          m_state = State::SELECTING_COLOR;
+          break;
+        case Hit::OUTLINE:
+          m_state = State::DRAGGING_OUTLINE;
+          break;
+      }
+
       captureMouse();
+
       // Continue...
 
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      if (m_hot.part == Hit::COLOR) {
-        int idx = m_hot.color;
+      if (m_state == State::SELECTING_COLOR) {
+        if (m_hot.part == Hit::COLOR) {
+          int idx = m_hot.color;
 
-        StatusBar::instance()->showColor(0, "",
-          app::Color::fromIndex(idx), 255);
+          StatusBar::instance()->showColor(0, "",
+            app::Color::fromIndex(idx), 255);
 
-        if (hasCapture() && idx != m_currentEntry) {
-          clearSelection();
+          if (hasCapture() && idx != m_currentEntry) {
+            if (!msg->ctrlPressed())
+              clearSelection();
 
-          if (msg->type() == kMouseMoveMessage)
-            selectRange(m_rangeAnchor, idx);
-          else
-            selectColor(idx);
+            if (msg->type() == kMouseMoveMessage)
+              selectRange(m_rangeAnchor, idx);
+            else
+              selectColor(idx);
 
-          // Emit signal
-          PaletteIndexChangeEvent ev(this, idx, mouseMsg->buttons());
-          IndexChange(ev);
+            // Emit signal
+            PaletteIndexChangeEvent ev(this, idx, mouseMsg->buttons());
+            IndexChange(ev);
+          }
         }
       }
 
@@ -205,8 +219,12 @@ bool PaletteView::onProcessMessage(Message* msg)
     }
 
     case kMouseUpMessage:
-      if (hasCapture())
+      if (hasCapture()) {
         releaseMouse();
+
+        m_state = State::WAITING;
+        invalidate();
+      }
       return true;
 
     case kMouseWheelMessage: {
@@ -318,6 +336,23 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
         NULL, state);
     }
   }
+
+  // Draw drop target
+  if (m_state == State::DRAGGING_OUTLINE) {
+    if (m_hot.part == Hit::COLOR) {
+      gfx::Rect box = getPaletteEntryBounds(m_hot.color);
+      if (m_hot.after)
+        box.x += box.w+guiscale();
+
+      box.x -= 3*guiscale();
+      box.y -= 3*guiscale();
+      box.w = 5*guiscale();
+      box.h += 6*guiscale();
+
+      theme->styles.timelineDropFrameDeco()->paint(g,
+        box, NULL, Style::active());
+    }
+  }
 }
 
 void PaletteView::onResize(ui::ResizeEvent& ev)
@@ -415,7 +450,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
   Palette* palette = get_current_palette();
 
-  if (!hasCapture()) {
+  if (m_state == State::WAITING) {
     // First check if the mouse is inside the selection outline.
     for (int i=0; i<palette->size(); ++i) {
       if (!m_selectedEntries[i])
@@ -431,9 +466,9 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
       box.enlarge(outlineWidth);
 
       if ((!top    && gfx::Rect(box.x, box.y, box.w, outlineWidth).contains(pos)) ||
-        (!bottom && gfx::Rect(box.x, box.y+box.h-outlineWidth, box.w, outlineWidth).contains(pos)) ||
-        (!left   && gfx::Rect(box.x, box.y, outlineWidth, box.h).contains(pos)) ||
-        (!right  && gfx::Rect(box.x+box.w-outlineWidth, box.y, outlineWidth, box.h).contains(pos)))
+          (!bottom && gfx::Rect(box.x, box.y+box.h-outlineWidth, box.w, outlineWidth).contains(pos)) ||
+          (!left   && gfx::Rect(box.x, box.y, outlineWidth, box.h).contains(pos)) ||
+          (!right  && gfx::Rect(box.x+box.w-outlineWidth, box.y, outlineWidth, box.h).contains(pos)))
         return Hit(Hit::OUTLINE, i);
     }
   }
@@ -443,8 +478,11 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
     gfx::Rect box = getPaletteEntryBounds(i);
     box.w += child_spacing;
     box.h += child_spacing;
-    if (box.contains(pos))
-      return Hit(Hit::COLOR, i);
+    if (box.contains(pos)) {
+      Hit hit(Hit::COLOR, i);
+      hit.after = (pos.x > box.x+box.w/2);
+      return hit;
+    }
   }
 
   return Hit(Hit::NONE);

@@ -64,23 +64,31 @@ namespace app {
 
   private:
 
+    enum class State {
+      WAITING,
+      SELECTING_COLOR,
+      DRAGGING_OUTLINE,
+    };
+
     struct Hit {
       enum Part {
         NONE,
         COLOR,
         OUTLINE
       };
-
       Part part;
       int color;
+      bool after;
 
-      Hit(Part part, int color = -1) : part(part), color(color) {
+      Hit(Part part, int color = -1) : part(part), color(color), after(false) {
       }
 
       bool operator==(const Hit& hit) const {
-        return (part == hit.part && color == hit.color);
+        return (
+          part == hit.part &&
+          color == hit.color &&
+          after == hit.after);
       }
-
       bool operator!=(const Hit& hit) const {
         return !operator==(hit);
       }
@@ -92,6 +100,7 @@ namespace app {
     gfx::Rect getPaletteEntryBounds(int index);
     Hit hitTest(const gfx::Point& pos);
 
+    State m_state;
     bool m_editable;
     int m_columns;
     int m_boxsize;
