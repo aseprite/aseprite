@@ -16,6 +16,7 @@
 #include "app/ui/palette_view.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
+#include "doc/context_observer.h"
 #include "doc/pixel_format.h"
 #include "ui/box.h"
 #include "ui/button.h"
@@ -27,7 +28,8 @@ namespace app {
   class PaletteIndexChangeEvent;
 
   class ColorBar : public ui::Box
-                 , public PaletteViewDelegate {
+                 , public PaletteViewDelegate
+                 , public doc::ContextObserver {
     static ColorBar* m_instance;
   public:
     static ColorBar* instance() { return m_instance; }
@@ -48,6 +50,9 @@ namespace app {
     // when the visibility of the dialog changes.
     void setPaletteEditorButtonState(bool state);
 
+    // ContextObserver impl
+    void onSetActiveDocument(doc::Document* document) override;
+
     // Signals
     Signal1<void, const app::Color&> FgColorChange;
     Signal1<void, const app::Color&> BgColorChange;
@@ -67,6 +72,8 @@ namespace app {
     void onPaletteViewChangeSize(int boxsize) override;
 
   private:
+    void destroyRemap();
+
     class ScrollableView : public ui::View {
     public:
       ScrollableView();

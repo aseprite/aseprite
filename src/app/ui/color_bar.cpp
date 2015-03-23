@@ -135,10 +135,14 @@ ColorBar::ColorBar(int align)
   m_paletteButton.DropDownClick.connect(Bind<void>(&ColorBar::onPaletteButtonDropDownClick, this));
 
   onColorButtonChange(getFgColor());
+
+  UIContext::instance()->addObserver(this);
 }
 
 ColorBar::~ColorBar()
 {
+  UIContext::instance()->removeObserver(this);
+
   set_config_color("ColorBar", "FG", getFgColor());
   set_config_color("ColorBar", "BG", getBgColor());
 }
@@ -181,6 +185,11 @@ void ColorBar::setPaletteEditorButtonState(bool state)
   m_paletteButton.setSelected(state);
 }
 
+void ColorBar::onSetActiveDocument(doc::Document* document)
+{
+  destroyRemap();
+}
+
 // Switches the palette-editor
 void ColorBar::onPaletteButtonClick()
 {
@@ -217,19 +226,13 @@ void ColorBar::onRemapButtonClick()
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
       transaction.execute(new cmd::RemapColors(sprite, *m_remap));
       transaction.commit();
-
-      delete m_remap;
-      m_remap = nullptr;
     }
-
     update_screen_for_document(writer.document());
+    destroyRemap();
   }
   catch (base::Exception& e) {
     Console::showException(e);
   }
-
-  m_remapButton.setVisible(false);
-  layout();
 }
 
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
@@ -299,6 +302,18 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 {
   if (color.getType() == app::Color::IndexType)
     m_paletteView.selectColor(color.getIndex());
+}
+
+void ColorBar::destroyRemap()
+{
+  if (!m_remap)
+    return;
+
+  delete m_remap;
+  m_remap = nullptr;
+
+  m_remapButton.setVisible(false);
+  layout();
 }
 
 } // namespace app
