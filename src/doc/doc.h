@@ -26,6 +26,7 @@
 #include "doc/pixel_format.h"
 #include "doc/primitives.h"
 #include "doc/primitives_fast.h"
+#include "doc/remap.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
 

@@ -13,11 +13,15 @@
 #include "base/memory.h"
 #include "base/remove_from_container.h"
 #include "base/unique_ptr.h"
+#include "doc/cel.h"
 #include "doc/cels_range.h"
-#include "doc/doc.h"
 #include "doc/frame_tag.h"
 #include "doc/image_bits.h"
+#include "doc/layer.h"
+#include "doc/palette.h"
 #include "doc/primitives.h"
+#include "doc/remap.h"
+#include "doc/rgbmap.h"
 
 #include <cstring>
 #include <vector>
@@ -448,12 +452,12 @@ void Sprite::getImages(std::vector<Image*>& images) const
     images.push_back(cel->image());
 }
 
-void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping)
+void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 {
   ASSERT(m_format == IMAGE_INDEXED);
-  ASSERT(mapping.size() == 256);
+  ASSERT(remap.size() == 256);
 
-  for (Cel* cel : cels()) {
+  for (const Cel* cel : uniqueCels()) {
     // Remap this Cel because is inside the specified range
     if (cel->frame() >= frameFrom &&
         cel->frame() <= frameTo) {
@@ -464,7 +468,7 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<u
         end = bits.end();
 
       for (; it != end; ++it)
-        *it = mapping[*it];
+        *it = remap[*it];
     }
   }
 }

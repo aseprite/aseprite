@@ -37,6 +37,13 @@ namespace doc {
       return m_map[index];
     }
 
+    void merge(const Remap& other);
+    Remap invert() const;
+
+    int getMemSize() const {
+      return sizeof(*this) + sizeof(int)*size();
+    }
+
   private:
     std::vector<int> m_map;
   };

@@ -44,4 +44,19 @@ Remap Remap::moveSelectedEntriesTo(const std::vector<bool>& selectedEntries, int
   return map;
 }
 
+void Remap::merge(const Remap& other)
+{
+  for (int i=0; i<size(); ++i) {
+    m_map[i] = other[m_map[i]];
+  }
+}
+
+Remap Remap::invert() const
+{
+  Remap inv(size());
+  for (int i=0; i<size(); ++i)
+    inv.map(operator[](i), i);
+  return inv;
+}
+
 } // namespace doc

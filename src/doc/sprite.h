@@ -33,6 +33,7 @@ namespace doc {
   class LayerImage;
   class Mask;
   class Palette;
+  class Remap;
   class RgbMap;
 
   typedef std::vector<Palette*> PalettesList;
@@ -134,7 +135,7 @@ namespace doc {
 
     void replaceImage(ObjectId curImageId, const ImageRef& newImage);
     void getImages(std::vector<Image*>& images) const;
-    void remapImages(frame_t frameFrom, frame_t frameTo, const std::vector<uint8_t>& mapping);
+    void remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap);
     void pickCels(int x, int y, frame_t frame, int opacityThreshold, CelList& cels) const;
 
     CelsRange cels() const;

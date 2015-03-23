@@ -55,6 +55,7 @@ namespace app {
   protected:
     void onPaletteButtonClick();
     void onPaletteButtonDropDownClick();
+    void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
@@ -76,9 +77,11 @@ namespace app {
     PalettePopup m_palettePopup;
     ScrollableView m_scrollableView;
     PaletteView m_paletteView;
+    ui::Button m_remapButton;
     ColorButton m_fgColor;
     ColorButton m_bgColor;
     bool m_lock;
+    doc::Remap* m_remap;
   };
 
 } // namespace app

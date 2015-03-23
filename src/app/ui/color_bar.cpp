@@ -11,6 +11,7 @@
 
 #include "app/ui/color_bar.h"
 
+#include "app/cmd/remap_colors.h"
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
 #include "app/commands/commands.h"
@@ -27,6 +28,7 @@
 #include "base/bind.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/remap.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
@@ -74,9 +76,11 @@ ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette")
   , m_paletteView(true, this)
+  , m_remapButton("Remap")
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
+  , m_remap(nullptr)
 {
   m_instance = this;
 
@@ -97,11 +101,15 @@ ColorBar::ColorBar(int align)
   m_scrollableView.attachToView(&m_paletteView);
   m_scrollableView.setExpansive(true);
 
+  m_remapButton.setVisible(false);
+
   addChild(&m_paletteButton);
   addChild(&m_scrollableView);
+  addChild(&m_remapButton);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
 
+  m_remapButton.Click.connect(Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
 
@@ -194,6 +202,33 @@ void ColorBar::onPaletteButtonDropDownClick()
   }
 }
 
+void ColorBar::onRemapButtonClick()
+{
+  ASSERT(m_remap);
+
+  try {
+    ContextWriter writer(UIContext::instance());
+    Sprite* sprite = writer.sprite();
+    frame_t frame = writer.frame();
+    if (sprite) {
+      Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
+      transaction.execute(new cmd::RemapColors(sprite, *m_remap));
+      transaction.commit();
+
+      delete m_remap;
+      m_remap = nullptr;
+    }
+
+    update_screen_for_document(writer.document());
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
+
+  m_remapButton.setVisible(false);
+  layout();
+}
+
 void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
   m_lock = true;
@@ -210,6 +245,15 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 
 void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPalette)
 {
+  if (!m_remap) {
+    m_remap = new doc::Remap(remap);
+    m_remapButton.setVisible(true);
+    layout();
+  }
+  else {
+    m_remap->merge(remap);
+  }
+
   try {
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
