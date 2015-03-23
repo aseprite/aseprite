@@ -28,13 +28,14 @@ namespace app {
     virtual ~PaletteViewDelegate() { }
     virtual void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) { }
     virtual void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) { }
+    virtual void onPaletteViewChangeSize(int boxsize) { }
   };
 
   class PaletteView : public ui::Widget {
   public:
     typedef std::vector<bool> SelectedEntries;
 
-    PaletteView(bool editable, PaletteViewDelegate* delegate);
+    PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize);
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);

@@ -51,13 +51,13 @@ WidgetType palette_view_type()
   return type;
 }
 
-PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate)
+PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize)
   : Widget(palette_view_type())
   , m_state(State::WAITING)
   , m_editable(editable)
   , m_delegate(delegate)
   , m_columns(16)
-  , m_boxsize(7*guiscale())
+  , m_boxsize(boxsize)
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
   , m_selectedEntries(Palette::MaxColors, false)
@@ -248,6 +248,9 @@ bool PaletteView::onProcessMessage(Message* msg)
         int z = delta.x - delta.y;
         m_boxsize += z * guiscale();
         m_boxsize = MID(4*guiscale(), m_boxsize, 32*guiscale());
+        if (m_delegate)
+          m_delegate->onPaletteViewChangeSize(m_boxsize);
+
         view->layout();
       }
       else {

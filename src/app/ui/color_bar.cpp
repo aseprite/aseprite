@@ -11,6 +11,7 @@
 
 #include "app/ui/color_bar.h"
 
+#include "app/app.h"
 #include "app/cmd/remap_colors.h"
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
@@ -20,6 +21,7 @@
 #include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -75,7 +77,8 @@ ColorBar* ColorBar::m_instance = NULL;
 ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette")
-  , m_paletteView(true, this)
+  , m_paletteView(true, this,
+      App::instance()->preferences().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
@@ -267,6 +270,11 @@ void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPa
   catch (base::Exception& e) {
     Console::showException(e);
   }
+}
+
+void ColorBar::onPaletteViewChangeSize(int boxsize)
+{
+  App::instance()->preferences().colorBar.boxSize(boxsize / guiscale());
 }
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)

@@ -64,6 +64,7 @@ namespace app {
     // PaletteViewDelegate impl
     void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
     void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) override;
+    void onPaletteViewChangeSize(int boxsize) override;
 
   private:
     class ScrollableView : public ui::View {
