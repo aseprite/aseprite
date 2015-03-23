@@ -239,9 +239,20 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseWheelMessage: {
       View* view = View::getView(this);
-      if (view) {
+      if (!view)
+        break;
+
+      gfx::Point delta = static_cast<MouseMessage*>(msg)->wheelDelta();
+
+      if (msg->onlyCtrlPressed()) {
+        int z = delta.x - delta.y;
+        m_boxsize += z * guiscale();
+        m_boxsize = MID(4*guiscale(), m_boxsize, 32*guiscale());
+        view->layout();
+      }
+      else {
         gfx::Point scroll = view->getViewScroll();
-        scroll += static_cast<MouseMessage*>(msg)->wheelDelta() * 3 * m_boxsize;
+        scroll += delta * 3 * m_boxsize;
         view->setViewScroll(scroll);
       }
       break;
