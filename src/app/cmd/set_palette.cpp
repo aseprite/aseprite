@@ -20,11 +20,11 @@ namespace cmd {
 
 using namespace doc;
 
-SetPalette::SetPalette(Sprite* sprite, frame_t frame, Palette* newPalette)
+SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
   : WithSprite(sprite)
   , m_frame(frame)
 {
-  Palette* curPalette = sprite->palette(frame);
+  const Palette* curPalette = sprite->palette(frame);
 
   // Check differences between current sprite palette and the new one
   m_from = m_to = -1;

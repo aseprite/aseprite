@@ -21,6 +21,7 @@
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/remap.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
 #include "ui/graphics.h"
@@ -33,6 +34,7 @@
 #include "ui/view.h"
 #include "ui/widget.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 
@@ -49,10 +51,11 @@ WidgetType palette_view_type()
   return type;
 }
 
-PaletteView::PaletteView(bool editable)
+PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate)
   : Widget(palette_view_type())
   , m_state(State::WAITING)
   , m_editable(editable)
+  , m_delegate(delegate)
   , m_columns(16)
   , m_boxsize(7*guiscale())
   , m_currentEntry(-1)
@@ -174,9 +177,11 @@ bool PaletteView::onProcessMessage(Message* msg)
 
     case kMouseDownMessage:
       switch (m_hot.part) {
+
         case Hit::COLOR:
           m_state = State::SELECTING_COLOR;
           break;
+
         case Hit::OUTLINE:
           m_state = State::DRAGGING_OUTLINE;
           break;
@@ -196,7 +201,7 @@ bool PaletteView::onProcessMessage(Message* msg)
           StatusBar::instance()->showColor(0, "",
             app::Color::fromIndex(idx), 255);
 
-          if (hasCapture() && idx != m_currentEntry) {
+          if (hasCapture() && (idx != m_currentEntry || msg->type() == kMouseDownMessage)) {
             if (!msg->ctrlPressed())
               clearSelection();
 
@@ -206,8 +211,8 @@ bool PaletteView::onProcessMessage(Message* msg)
               selectColor(idx);
 
             // Emit signal
-            PaletteIndexChangeEvent ev(this, idx, mouseMsg->buttons());
-            IndexChange(ev);
+            if (m_delegate)
+              m_delegate->onPaletteViewIndexChange(idx, mouseMsg->buttons());
           }
         }
       }
@@ -221,6 +226,11 @@ bool PaletteView::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
+
+        if (m_state == State::DRAGGING_OUTLINE &&
+            m_hot.part == Hit::COLOR) {
+          dropColors(m_hot.color + (m_hot.after ? 1: 0));
+        }
 
         m_state = State::WAITING;
         invalidate();
@@ -450,7 +460,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
   Palette* palette = get_current_palette();
 
-  if (m_state == State::WAITING) {
+  if (m_state == State::WAITING && m_editable) {
     // First check if the mouse is inside the selection outline.
     for (int i=0; i<palette->size(); ++i) {
       if (!m_selectedEntries[i])
@@ -486,6 +496,29 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   }
 
   return Hit(Hit::NONE);
+}
+
+void PaletteView::dropColors(int beforeIndex)
+{
+  Palette* palette = get_current_palette();
+  Remap remap = Remap::moveSelectedEntriesTo(m_selectedEntries, beforeIndex);
+
+  auto oldSelectedCopies = m_selectedEntries;
+  Palette oldPalCopy(*palette);
+  for (int i=0; i<palette->size(); ++i) {
+    palette->setEntry(remap[i], oldPalCopy.getEntry(i));
+    m_selectedEntries[remap[i]] = oldSelectedCopies[i];
+  }
+
+  m_currentEntry = remap[m_currentEntry];
+
+  if (m_delegate) {
+    m_delegate->onPaletteViewRemapColors(remap, palette);
+    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
+  }
+
+  set_current_palette(palette, false);
+  getManager()->invalidate();
 }
 
 } // namespace app

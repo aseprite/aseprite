@@ -10,35 +10,31 @@
 #pragma once
 
 #include "base/connection.h"
-#include "base/signal.h"
 #include "ui/event.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
 
 #include <vector>
 
+namespace doc {
+  class Palette;
+  class Remap;
+}
+
 namespace app {
 
-  class PaletteIndexChangeEvent : public ui::Event {
+  class PaletteViewDelegate {
   public:
-    PaletteIndexChangeEvent(ui::Widget* source, int index, ui::MouseButtons buttons)
-      : Event(source)
-      , m_index(index)
-      , m_buttons(buttons) { }
-
-    int index() const { return m_index; }
-    ui::MouseButtons buttons() const { return m_buttons; }
-
-  private:
-    int m_index;
-    ui::MouseButtons m_buttons;
+    virtual ~PaletteViewDelegate() { }
+    virtual void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) { }
+    virtual void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) { }
   };
 
   class PaletteView : public ui::Widget {
   public:
     typedef std::vector<bool> SelectedEntries;
 
-    PaletteView(bool editable);
+    PaletteView(bool editable, PaletteViewDelegate* delegate);
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
@@ -52,9 +48,6 @@ namespace app {
     void getSelectedEntries(SelectedEntries& entries) const;
 
     app::Color getColorByPosition(const gfx::Point& pos);
-
-    // Signals
-    Signal1<void, PaletteIndexChangeEvent&> IndexChange;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -99,9 +92,11 @@ namespace app {
     void onAppPaletteChange();
     gfx::Rect getPaletteEntryBounds(int index);
     Hit hitTest(const gfx::Point& pos);
+    void dropColors(int beforeIndex);
 
     State m_state;
     bool m_editable;
+    PaletteViewDelegate* m_delegate;
     int m_columns;
     int m_boxsize;
     int m_currentEntry;

@@ -11,13 +11,18 @@
 
 #include "app/ui/color_bar.h"
 
+#include "app/cmd/set_palette.h"
 #include "app/color.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/console.h"
+#include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "doc/image.h"
@@ -68,7 +73,7 @@ ColorBar* ColorBar::m_instance = NULL;
 ColorBar::ColorBar(int align)
   : Box(align)
   , m_paletteButton("Edit Palette")
-  , m_paletteView(false)
+  , m_paletteView(true, this)
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
@@ -97,7 +102,6 @@ ColorBar::ColorBar(int align)
   addChild(&m_fgColor);
   addChild(&m_bgColor);
 
-  m_paletteView.IndexChange.connect(&ColorBar::onPaletteIndexChange, this);
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
 
@@ -190,18 +194,35 @@ void ColorBar::onPaletteButtonDropDownClick()
   }
 }
 
-void ColorBar::onPaletteIndexChange(PaletteIndexChangeEvent& ev)
+void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
   m_lock = true;
 
-  app::Color color = app::Color::fromIndex(ev.index());
+  app::Color color = app::Color::fromIndex(index);
 
-  if ((ev.buttons() & kButtonRight) == kButtonRight)
+  if ((buttons & kButtonRight) == kButtonRight)
     setBgColor(color);
   else
     setFgColor(color);
 
   m_lock = false;
+}
+
+void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPalette)
+{
+  try {
+    ContextWriter writer(UIContext::instance());
+    Sprite* sprite = writer.sprite();
+    frame_t frame = writer.frame();
+    if (sprite) {
+      Transaction transaction(writer.context(), "Move Colors", ModifyDocument);
+      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
+      transaction.commit();
+    }
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
 }
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)

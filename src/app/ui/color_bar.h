@@ -26,7 +26,8 @@ namespace app {
   class PalettesLoader;
   class PaletteIndexChangeEvent;
 
-  class ColorBar : public ui::Box {
+  class ColorBar : public ui::Box
+                 , public PaletteViewDelegate {
     static ColorBar* m_instance;
   public:
     static ColorBar* instance() { return m_instance; }
@@ -58,6 +59,10 @@ namespace app {
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
+
+    // PaletteViewDelegate impl
+    void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
+    void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) override;
 
   private:
     class ScrollableView : public ui::View {

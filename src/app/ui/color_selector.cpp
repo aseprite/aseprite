@@ -55,7 +55,7 @@ ColorSelector::ColorSelector()
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_color(app::Color::fromMask())
-  , m_colorPalette(false)
+  , m_colorPalette(false, this)
   , m_indexButton("Index", 1, kButtonWidget)
   , m_rgbButton("RGB", 1, kButtonWidget)
   , m_hsvButton("HSB", 1, kButtonWidget)
@@ -106,7 +106,6 @@ ColorSelector::ColorSelector()
   m_maskButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
   m_warningIcon->Click.connect(&ColorSelector::onFixWarningClick, this);
 
-  m_colorPalette.IndexChange.connect(&ColorSelector::onColorPaletteIndexChange, this);
   m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
   m_graySlider.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
@@ -160,9 +159,9 @@ app::Color ColorSelector::getColor() const
   return m_color;
 }
 
-void ColorSelector::onColorPaletteIndexChange(PaletteIndexChangeEvent& ev)
+void ColorSelector::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 {
-  setColorWithSignal(app::Color::fromIndex(ev.index()));
+  setColorWithSignal(app::Color::fromIndex(index));
 }
 
 void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)

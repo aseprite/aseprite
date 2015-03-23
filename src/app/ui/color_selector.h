@@ -25,7 +25,8 @@
 namespace app {
   class PaletteIndexChangeEvent;
 
-  class ColorSelector : public PopupWindowPin {
+  class ColorSelector : public PopupWindowPin
+                      , public PaletteViewDelegate {
   public:
     enum SetColorOptions {
       ChangeType,
@@ -42,12 +43,14 @@ namespace app {
     Signal1<void, const app::Color&> ColorChange;
 
   protected:
-    void onColorPaletteIndexChange(PaletteIndexChangeEvent& ev);;
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
     void onColorTypeButtonClick(ui::Event& ev);
     void onFixWarningClick(ui::Event& ev);
     void onPaletteChange();
+
+    // PaletteViewDelegate impl
+    void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
 
   private:
     void selectColorType(app::Color::Type type);
