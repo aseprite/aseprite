@@ -4,6 +4,10 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#ifndef SHE_COMMON_SYSTEM_H
+#define SHE_COMMON_SYSTEM_H
+#pragma once
+
 #ifdef _WIN32
   #include "she/win/clipboard.h"
   #include "she/win/native_dialogs.h"
@@ -13,6 +17,8 @@
 #else
   #include "she/clipboard_simple.h"
 #endif
+
+#include "she/common/font.h"
 
 namespace she {
 
@@ -63,8 +69,20 @@ public:
 #endif
   }
 
+  Font* loadBitmapFont(const char* filename, int scale) override {
+    Surface* sheet = loadRgbaSurface(filename);
+    Font* font = nullptr;
+    if (sheet) {
+      sheet->applyScale(scale);
+      font = CommonFont::fromSurface(sheet);
+    }
+    return font;
+  }
+
 private:
   NativeDialogs* m_nativeDialogs;
 };
 
 } // namespace she
+
+#endif

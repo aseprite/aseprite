@@ -16,6 +16,7 @@
 #include "gfx/rect.h"
 #include "she/locked_surface.h"
 #include "she/surface.h"
+#include "she/common/locked_surface.h"
 
 namespace {
 
@@ -68,7 +69,7 @@ namespace she {
   }
 
   class Alleg4Surface : public Surface
-                      , public LockedSurface {
+                      , public CommonLockedSurface {
   public:
     enum DestroyFlag {
       None = 0,
@@ -192,7 +193,7 @@ namespace she {
       clear_to_color(m_bmp, 0);
     }
 
-    uint8_t* getData(int x, int y) override {
+    uint8_t* getData(int x, int y) const override {
       switch (bitmap_color_depth(m_bmp)) {
         case 8: return (uint8_t*)(((uint8_t*)bmp_write_line(m_bmp, y)) + x);
         case 15:
@@ -203,7 +204,7 @@ namespace she {
       return NULL;
     }
 
-    void getFormat(SurfaceFormatData* formatData) override {
+    void getFormat(SurfaceFormatData* formatData) const override {
       formatData->format = kRgbaSurfaceFormat;
       formatData->bitsPerPixel = bitmap_color_depth(m_bmp);
 
@@ -261,7 +262,7 @@ namespace she {
       }
     }
 
-    gfx::Color getPixel(int x, int y) override {
+    gfx::Color getPixel(int x, int y) const override {
       return from_allegro(
         bitmap_color_depth(m_bmp),
         getpixel(m_bmp, x, y));
@@ -340,28 +341,6 @@ namespace she {
     void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
       set_alpha_blender();
       draw_trans_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
-    }
-
-    void drawChar(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-      FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
-
-      allegFont->vtable->render_char(allegFont, chr,
-        to_allegro(bitmap_color_depth(m_bmp), fg),
-        to_allegro(bitmap_color_depth(m_bmp), bg),
-        m_bmp, x, y);
-    }
-
-    void drawString(Font* sheFont, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
-      FONT* allegFont = reinterpret_cast<FONT*>(sheFont->nativeHandle());
-      base::utf8_const_iterator it(str.begin()), end(str.end());
-      int sysfg = to_allegro(bitmap_color_depth(m_bmp), fg);
-      int sysbg = to_allegro(bitmap_color_depth(m_bmp), bg);
-
-      while (it != end) {
-        allegFont->vtable->render_char(allegFont, *it, sysfg, sysbg, m_bmp, x, y);
-        x += sheFont->charWidth(*it);
-        ++it;
-      }
     }
 
   private:

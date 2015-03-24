@@ -9,8 +9,7 @@ namespace she {
 class SkiaSystem : public CommonSystem {
 public:
   SkiaSystem()
-    : m_font(SkiaFont::None)
-    , m_defaultDisplay(nullptr) {
+    : m_defaultDisplay(nullptr) {
   }
 
   ~SkiaSystem() {
@@ -29,10 +28,6 @@ public:
 
   Display* defaultDisplay() override {
     return m_defaultDisplay;
-  }
-
-  Font* defaultFont() override {
-    return &m_font;
   }
 
   Display* createDisplay(int width, int height, int scale) override {
@@ -67,7 +62,6 @@ public:
   }
 
 private:
-  SkiaFont m_font;
   SkiaDisplay* m_defaultDisplay;
 };
 

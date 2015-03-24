@@ -7,7 +7,6 @@ if(USE_ALLEG4_BACKEND)
   list(APPEND SHE_SOURCES
     alleg4/clock.cpp
     alleg4/close_button.cpp
-    alleg4/fontbmp.cpp
     alleg4/key_poller.cpp
     alleg4/mouse_poller.cpp
     alleg4/she.cpp)

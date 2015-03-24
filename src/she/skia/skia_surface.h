@@ -4,10 +4,12 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#include "she/common/locked_surface.h"
+
 namespace she {
 
 class SkiaSurface : public NonDisposableSurface
-                  , public LockedSurface {
+                  , public CommonLockedSurface {
 public:
   SkiaSurface() {
   }
@@ -75,14 +77,14 @@ public:
   void clear() override {
   }
 
-  uint8_t* getData(int x, int y) override {
+  uint8_t* getData(int x, int y) const override {
     return (uint8_t*)m_bitmap.getAddr(x, y);
   }
 
-  void getFormat(SurfaceFormatData* formatData) override {
+  void getFormat(SurfaceFormatData* formatData) const override {
   }
 
-  gfx::Color getPixel(int x, int y) override {
+  gfx::Color getPixel(int x, int y) const override {
     SkColor c = m_bitmap.getColor(x, y);
     return gfx::rgba(
       SkColorGetR(c),
@@ -116,12 +118,6 @@ public:
   }
 
   void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
-  }
-
-  void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
-  }
-
-  void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
   }
 
   SkBitmap& bitmap() {

@@ -35,12 +35,12 @@ namespace she {
     virtual Logger* logger() = 0;
     virtual NativeDialogs* nativeDialogs() = 0;
     virtual Display* defaultDisplay() = 0;
-    virtual Font* defaultFont() = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;
     virtual Surface* createSurface(int width, int height) = 0;
     virtual Surface* createRgbaSurface(int width, int height) = 0;
     virtual Surface* loadSurface(const char* filename) = 0;
     virtual Surface* loadRgbaSurface(const char* filename) = 0;
+    virtual Font* loadBitmapFont(const char* filename, int scale = 1) = 0;
     virtual Clipboard* createClipboard() = 0;
   };
 

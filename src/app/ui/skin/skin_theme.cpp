@@ -2166,7 +2166,7 @@ she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
 
   // Try to load the font
   while (rf.next()) {
-    she::Font* f = she::load_bitmap_font(rf.filename().c_str(), guiscale());
+    she::Font* f = she::instance()->loadBitmapFont(rf.filename().c_str(), guiscale());
     if (f) {
       if (f->isScalable())
         f->setSize(8);
@@ -2175,7 +2175,7 @@ she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
     }
   }
 
-  return she::instance()->defaultFont();
+  return nullptr;
 }
 
 } // namespace skin

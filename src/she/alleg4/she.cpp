@@ -12,7 +12,6 @@
 
 #include "base/concurrent_queue.h"
 #include "base/string.h"
-#include "she/alleg4/font.h"
 #include "she/alleg4/surface.h"
 #include "she/common/system.h"
 #include "she/logger.h"
@@ -702,7 +701,6 @@ private:
 class Alleg4System : public CommonSystem {
 public:
   Alleg4System()
-    : m_font(font, Alleg4Font::None)       // Default Allegro font
   {
     if (allegro_init() < 0)
       throw std::runtime_error("Cannot initialize Allegro library");
@@ -730,10 +728,6 @@ public:
 
   Display* defaultDisplay() override {
     return unique_display;
-  }
-
-  Font* defaultFont() override {
-    return &m_font;
   }
 
   Display* createDisplay(int width, int height, int scale) override {
@@ -766,8 +760,6 @@ public:
     return sur;
   }
 
-private:
-  Alleg4Font m_font;
 };
 
 static System* g_instance;
