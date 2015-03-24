@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -67,8 +67,8 @@ void OverlayManager::captureOverlappedAreas()
 
   she::Surface* displaySurface = manager->getDisplay()->getSurface();
   she::ScopedSurfaceLock lockedDisplaySurface(displaySurface);
-  for (iterator it = begin(), end = this->end(); it != end; ++it)
-    (*it)->captureOverlappedArea(lockedDisplaySurface);
+  for (Overlay* overlay : *this)
+    overlay->captureOverlappedArea(lockedDisplaySurface);
 }
 
 void OverlayManager::restoreOverlappedAreas()
@@ -79,8 +79,8 @@ void OverlayManager::restoreOverlappedAreas()
 
   she::Surface* displaySurface = manager->getDisplay()->getSurface();
   she::ScopedSurfaceLock lockedDisplaySurface(displaySurface);
-  for (iterator it = begin(), end = this->end(); it != end; ++it)
-    (*it)->restoreOverlappedArea(lockedDisplaySurface);
+  for (Overlay* overlay : *this)
+    overlay->restoreOverlappedArea(lockedDisplaySurface);
 }
 
 void OverlayManager::drawOverlays()
@@ -91,8 +91,8 @@ void OverlayManager::drawOverlays()
 
   she::Surface* displaySurface = manager->getDisplay()->getSurface();
   she::ScopedSurfaceLock lockedDisplaySurface(displaySurface);
-  for (iterator it = begin(), end = this->end(); it != end; ++it)
-    (*it)->drawOverlay(lockedDisplaySurface);
+  for (Overlay* overlay : *this)
+    overlay->drawOverlay(lockedDisplaySurface);
 }
 
 } // namespace ui
