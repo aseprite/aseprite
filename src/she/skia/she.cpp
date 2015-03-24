@@ -37,7 +37,6 @@
 #include "she/skia/skia_event_queue.h"
 #include "she/skia/skia_window.h"
 #include "she/skia/skia_display.h"
-#include "she/skia/skia_font.h"
 #include "she/skia/skia_system.h"
 
 namespace she {
@@ -73,12 +72,6 @@ int clock_value()
 {
   // TODO
   return 0; // clock_var;
-}
-
-Font* load_bitmap_font(const char* filename, int scale)
-{
-  // TODO
-  return new SkiaFont(SkiaFont::DeleteThis);
 }
 
 } // namespace she
