@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -55,10 +55,16 @@ void checked_mode(int offset)
 namespace she {
 
   inline int to_allegro(int color_depth, gfx::Color color) {
-    if (gfx::is_transparent(color))
-      return -1;
-    else
-      return makecol_depth(color_depth, gfx::getr(color), gfx::getg(color), gfx::getb(color));
+    if (color_depth == 32) {
+      return makeacol32(
+        gfx::getr(color), gfx::getg(color), gfx::getb(color), gfx::geta(color));
+    }
+    else {
+      if (gfx::is_transparent(color))
+        return -1;
+      else
+        return makecol_depth(color_depth, gfx::getr(color), gfx::getg(color), gfx::getb(color));
+    }
   }
 
   inline gfx::Color from_allegro(int color_depth, int color) {

@@ -17,6 +17,7 @@
 
 namespace ui {
   class Graphics;
+  class Overlay;
 }
 
 namespace app {
@@ -119,6 +120,9 @@ namespace app {
     gfx::Rect getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box);
     void startDrag();
     void stopDrag();
+    gfx::Rect getTabBounds(Tab* tab);
+    void createFloatingTab(Tab* tab);
+    void destroyFloatingTab();
 
     int m_border;
     TabsList m_list;
@@ -141,7 +145,10 @@ namespace app {
     bool m_isDragging;
     int m_dragTabX;
     gfx::Point m_dragMousePos;
+    gfx::Point m_dragOffset;
     int m_dragTabIndex;
+    Tab* m_floatingTab;
+    ui::Overlay* m_floatingOverlay;
   };
 
 } // namespace app

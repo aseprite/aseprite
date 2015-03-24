@@ -9,13 +9,16 @@
 #include "config.h"
 #endif
 
+#include "app/ui/tabs.h"
+
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
-#include "app/ui/tabs.h"
 #include "she/font.h"
+#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
+#include "she/system.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
 
@@ -62,6 +65,8 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_ani(ANI_NONE)
   , m_removedTab(nullptr)
   , m_isDragging(false)
+  , m_floatingTab(nullptr)
+  , m_floatingOverlay(nullptr)
 {
   setDoubleBuffered(true);
   initTheme();
@@ -71,7 +76,7 @@ Tabs::~Tabs()
 {
   if (m_removedTab) {
     delete m_removedTab;
-    m_removedTab = NULL;
+    m_removedTab = nullptr;
   }
 
   // Stop animation
@@ -147,15 +152,16 @@ void Tabs::updateTabs()
     tabWidth = MAX(4*ui::guiscale(), tabWidth);
   }
   double x = 0.0;
-  int i = 0;
 
   for (Tab* tab : m_list) {
+    if (tab == m_floatingTab)
+      continue;
+
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
     tab->x = int(x);
     tab->width = int(x+tabWidth) - int(x);
     x += tabWidth;
-    ++i;
   }
   invalidate();
 }
@@ -236,17 +242,38 @@ bool Tabs::onProcessMessage(Message* msg)
         }
         // We are drag a tab...
         else {
-          m_selected->x = m_dragTabX + delta.x;
+          Tab* justDocked = nullptr;
 
-          int i = (mousePos.x-m_border*guiscale()) / m_selected->width;
-          i = MID(0, i, int(m_list.size())-1);
-          if (i != m_dragTabIndex) {
-            std::swap(m_list[m_dragTabIndex], m_list[i]);
-            m_dragTabIndex = i;
+          // Floating tab (to create a new window)
+          if (ABS(delta.y) > 16*guiscale()) {
+            if (!m_floatingOverlay)
+              createFloatingTab(m_selected);
 
-            resetOldPositions(double(m_ani_t) / double(m_ani_T));
-            updateTabs();
-            startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+            m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
+          }
+          else {
+            justDocked = m_floatingTab;
+            destroyFloatingTab();
+          }
+
+          // Docked tab
+          if (!m_floatingOverlay) {
+            m_selected->x = m_dragTabX + delta.x;
+
+            int i = (mousePos.x-m_border*guiscale()) / m_selected->width;
+            i = MID(0, i, int(m_list.size())-1);
+            if (i != m_dragTabIndex) {
+              m_list.erase(m_list.begin()+m_dragTabIndex);
+              m_list.insert(m_list.begin()+i, m_selected);
+              m_dragTabIndex = i;
+
+              resetOldPositions(double(m_ani_t) / double(m_ani_T));
+              updateTabs();
+              startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+            }
+
+            if (justDocked)
+              justDocked->oldX = m_dragTabX + delta.x;
           }
 
           invalidate();
@@ -255,16 +282,18 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseLeaveMessage:
-      if (m_hot != NULL) {
-        m_hot = NULL;
+      if (m_hot) {
+        m_hot = nullptr;
         invalidate();
       }
       return true;
 
     case kMouseDownMessage:
-      if (m_hot != NULL) {
+      if (m_hot) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         m_dragMousePos = mouseMsg->position();
+        m_dragOffset = mouseMsg->position() -
+          (getBounds().getOrigin() + getTabBounds(m_hot).getOrigin());
 
         if (m_hotCloseButton) {
           if (!m_clickedCloseButton) {
@@ -360,46 +389,34 @@ void Tabs::onPaint(PaintEvent& ev)
   drawFiller(g, box);
 
   int startX = m_border*guiscale();
-  double t = double(m_ani_t)/double(m_ani_T);
 
   // For each tab...
-  int i = 0;
   for (Tab* tab : m_list) {
-    if (m_ani == ANI_NONE) {
-      box.x = startX + tab->x;
-      box.w = tab->width;
-    }
-    else {
-      box.x = startX + int(inbetween(tab->oldX, tab->x, t));
-      box.w = int(inbetween(tab->oldWidth, tab->width, t));
-    }
+    if (tab == m_floatingTab)
+      continue;
+
+    box = getTabBounds(tab);
 
     if (tab != m_selected)
       drawTab(g, box, tab, 0, (tab == m_hot), false);
 
     box.x = box.x2();
-    ++i;
   }
 
   // Draw deleted tab
   if (m_ani == ANI_REMOVING_TAB && m_removedTab) {
-    box.x = startX + m_removedTab->x;
-    box.w = int(inbetween(m_removedTab->oldWidth, 0, t));
-    drawTab(g, box, m_removedTab, 0, false, false);
+    m_removedTab->width = 0;
+    box = getTabBounds(m_removedTab);
+    drawTab(g, box, m_removedTab, 0,
+      (m_removedTab == m_floatingTab),
+      (m_removedTab == m_floatingTab));
   }
 
   // Tab that is being dragged
-  if (m_selected) {
+  if (m_selected && m_selected != m_floatingTab) {
+    double t = double(m_ani_t) / double(m_ani_T);
     Tab* tab = m_selected;
-
-    if (m_ani == ANI_NONE) {
-      box.x = startX + tab->x;
-      box.w = tab->width;
-    }
-    else {
-      box.x = startX + int(inbetween(tab->oldX, tab->x, t));
-      box.w = int(inbetween(tab->oldWidth, tab->width, t));
-    }
+    box = getTabBounds(tab);
 
     int dy = 0;
     if (m_ani == ANI_ADDING_TAB)
@@ -442,11 +459,6 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   bool hover, bool selected)
 {
   gfx::Rect box = _box;
-
-  // Is the tab outside the bounds of the widget?
-  if (box.x >= getBounds().x2() || box.x2() <= getBounds().x)
-    return;
-
   if (box.w < ui::guiscale()*8)
     box.w = ui::guiscale()*8;
 
@@ -587,6 +599,9 @@ void Tabs::calculateHot()
 
   // For each tab
   for (Tab* tab : m_list) {
+    if (tab == m_floatingTab)
+      continue;
+
     box.w = tab->width;
 
     if (box.contains(mousePos)) {
@@ -625,6 +640,9 @@ gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
 void Tabs::resetOldPositions()
 {
   for (Tab* tab : m_list) {
+    if (tab == m_floatingTab)
+      continue;
+
     tab->oldX = tab->x;
     tab->oldWidth = tab->width;
   }
@@ -633,6 +651,9 @@ void Tabs::resetOldPositions()
 void Tabs::resetOldPositions(double t)
 {
   for (Tab* tab : m_list) {
+    if (tab == m_floatingTab)
+      continue;
+
     tab->oldX = int(inbetween(tab->oldX, tab->x, t));
     tab->oldWidth = int(inbetween(tab->oldWidth, tab->width, t));
   }
@@ -677,6 +698,8 @@ void Tabs::stopDrag()
 {
   m_isDragging = false;
 
+  destroyFloatingTab();
+
   if (m_selected) {
     m_selected->oldX = m_selected->x;
     m_selected->oldWidth = m_selected->width;
@@ -685,6 +708,85 @@ void Tabs::stopDrag()
   resetOldPositions(double(m_ani_t) / double(m_ani_T));
   updateTabs();
   startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+}
+
+gfx::Rect Tabs::getTabBounds(Tab* tab)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  gfx::Rect rect = getClientBounds();
+  gfx::Rect box(rect.x, rect.y, rect.w,
+    (m_list.empty() && m_ani == ANI_NONE ? 0:
+      theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
+  int startX = m_border*guiscale();
+  double t = double(m_ani_t) / double(m_ani_T);
+
+  if (m_ani == ANI_NONE) {
+    box.x = startX + tab->x;
+    box.w = tab->width;
+  }
+  else {
+    box.x = startX + int(inbetween(tab->oldX, tab->x, t));
+    box.w = int(inbetween(tab->oldWidth, tab->width, t));
+  }
+
+  return box;
+}
+
+void Tabs::createFloatingTab(Tab* tab)
+{
+  ASSERT(!m_floatingOverlay);
+
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  she::Surface* surface = she::instance()->createRgbaSurface(
+    tab->width, theme->dimensions.tabsHeight());
+
+  {
+    Graphics g(surface, 0, 0);
+    g.setFont(getFont());
+    g.fillRect(gfx::ColorNone, g.getClipBounds());
+    drawTab(&g, g.getClipBounds(), tab, 0, true, true);
+  }
+
+  // Make opaque (TODO this shouldn't be necessary)
+  {
+    she::ScopedSurfaceLock lock(surface);
+    for (int y=0; y<surface->height(); ++y)
+      for (int x=0; x<surface->width(); ++x) {
+        gfx::Color c = lock->getPixel(x, y);
+        lock->putPixel(gfx::seta(c, 255), x, y);
+      }
+  }
+
+  m_floatingOverlay = new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1);
+  OverlayManager::instance()->addOverlay(m_floatingOverlay);
+
+  resetOldPositions();
+
+  m_floatingTab = tab;
+  m_removedTab = nullptr;
+  startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+  updateTabs();
+}
+
+void Tabs::destroyFloatingTab()
+{
+  if (m_floatingOverlay) {
+    OverlayManager::instance()->removeOverlay(m_floatingOverlay);
+    delete m_floatingOverlay;
+    m_floatingOverlay = nullptr;
+  }
+
+  if (m_floatingTab) {
+    Tab* tab = m_floatingTab;
+    m_floatingTab = nullptr;
+
+    resetOldPositions();
+    startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
+    updateTabs();
+
+    tab->oldX = tab->x;
+    tab->oldWidth = 0;
+  }
 }
 
 } // namespace app
