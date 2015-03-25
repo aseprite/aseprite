@@ -22,17 +22,6 @@
   #error There is no Window implementation
 #endif
 
-// #include "SkApplication.h"
-// #include "SkCanvas.h"
-// #include "SkEvent.h"
-// #include "SkGradientShader.h"
-#include "SkBitmap.h"
-// #include "SkGraphics.h"
-#include "SkImageInfo.h"
-// #include "SkGr.h"
-
-#include <queue>
-
 #include "she/skia/skia_surface.h"
 #include "she/skia/skia_event_queue.h"
 #include "she/skia/skia_window.h"

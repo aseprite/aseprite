@@ -6,6 +6,11 @@
 
 #include "she/common/locked_surface.h"
 
+#include "SkBitmap.h"
+#include "SkCanvas.h"
+#include "SkColorPriv.h"
+#include "SkImageInfo.h"
+
 namespace she {
 
 class SkiaSurface : public NonDisposableSurface
@@ -16,12 +21,12 @@ public:
 
   void create(int width, int height) {
     m_bitmap.tryAllocPixels(
-      SkImageInfo::MakeUnknown(width, height));
+      SkImageInfo::MakeN32Premul(width, height));
   }
 
   void createRgba(int width, int height) {
     m_bitmap.tryAllocPixels(
-      SkImageInfo::MakeN32(width, height, kUnpremul_SkAlphaType));
+      SkImageInfo::MakeN32Premul(width, height));
   }
 
   // Surface impl
@@ -82,6 +87,61 @@ public:
   }
 
   void getFormat(SurfaceFormatData* formatData) const override {
+    formatData->format = kRgbaSurfaceFormat;
+    formatData->bitsPerPixel = 8*m_bitmap.bytesPerPixel();
+
+    switch (m_bitmap.colorType()) {
+      case kRGB_565_SkColorType:
+        formatData->redShift   = SK_R16_SHIFT;
+        formatData->greenShift = SK_G16_SHIFT;
+        formatData->blueShift  = SK_B16_SHIFT;
+        formatData->alphaShift = 0;
+        formatData->redMask    = SK_R16_MASK;
+        formatData->greenMask  = SK_G16_MASK;
+        formatData->blueMask   = SK_B16_MASK;
+        formatData->alphaMask  = 0;
+        break;
+      case kARGB_4444_SkColorType:
+        formatData->redShift   = SK_R4444_SHIFT;
+        formatData->greenShift = SK_G4444_SHIFT;
+        formatData->blueShift  = SK_B4444_SHIFT;
+        formatData->alphaShift = SK_A4444_SHIFT;
+        formatData->redMask    = (15 << SK_R4444_SHIFT);
+        formatData->greenMask  = (15 << SK_G4444_SHIFT);
+        formatData->blueMask   = (15 << SK_B4444_SHIFT);
+        formatData->alphaMask  = (15 << SK_A4444_SHIFT);
+        break;
+      case kRGBA_8888_SkColorType:
+        formatData->redShift   = SK_RGBA_R32_SHIFT;
+        formatData->greenShift = SK_RGBA_G32_SHIFT;
+        formatData->blueShift  = SK_RGBA_B32_SHIFT;
+        formatData->alphaShift = SK_RGBA_A32_SHIFT;
+        formatData->redMask    = ((1 << SK_RGBA_R32_SHIFT) - 1);
+        formatData->greenMask  = ((1 << SK_RGBA_G32_SHIFT) - 1);
+        formatData->blueMask   = ((1 << SK_RGBA_B32_SHIFT) - 1);
+        formatData->alphaMask  = ((1 << SK_RGBA_A32_SHIFT) - 1);
+        break;
+      case kBGRA_8888_SkColorType:
+        formatData->redShift   = SK_BGRA_R32_SHIFT;
+        formatData->greenShift = SK_BGRA_G32_SHIFT;
+        formatData->blueShift  = SK_BGRA_B32_SHIFT;
+        formatData->alphaShift = SK_BGRA_A32_SHIFT;
+        formatData->redMask    = ((1 << SK_BGRA_R32_SHIFT) - 1);
+        formatData->greenMask  = ((1 << SK_BGRA_G32_SHIFT) - 1);
+        formatData->blueMask   = ((1 << SK_BGRA_B32_SHIFT) - 1);
+        formatData->alphaMask  = ((1 << SK_BGRA_A32_SHIFT) - 1);
+        break;
+      default:
+        formatData->redShift   = 0;
+        formatData->greenShift = 0;
+        formatData->blueShift  = 0;
+        formatData->alphaShift = 0;
+        formatData->redMask    = 0;
+        formatData->greenMask  = 0;
+        formatData->blueMask   = 0;
+        formatData->alphaMask  = 0;
+        break;
+    }
   }
 
   gfx::Color getPixel(int x, int y) const override {
@@ -115,9 +175,15 @@ public:
   }
 
   void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
+    SkCanvas canvas(m_bitmap);
+    canvas.drawBitmap(((SkiaSurface*)src)->m_bitmap,
+      SkIntToScalar(dstx), SkIntToScalar(dsty), nullptr);
   }
 
   void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
+    SkCanvas canvas(m_bitmap);
+    canvas.drawBitmap(((SkiaSurface*)src)->m_bitmap,
+      SkIntToScalar(dstx), SkIntToScalar(dsty), nullptr);
   }
 
   SkBitmap& bitmap() {

@@ -4,6 +4,12 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#include "base/file_handle.h"
+
+#include "SkImageDecoder.h"
+#include "SkPixelRef.h"
+#include "SkStream.h"
+
 namespace she {
 
 class SkiaSystem : public CommonSystem {
@@ -50,15 +56,31 @@ public:
   }
 
   Surface* loadSurface(const char* filename) override {
-    SkiaSurface* sur = new SkiaSurface;
-    sur->create(32, 32);
-    return sur;
+    base::FileHandle fp(base::open_file_with_exception(filename, "rb"));
+    SkAutoTDelete<SkStreamAsset> stream(SkNEW_ARGS(SkFILEStream, (fp, SkFILEStream::kCallerRetains_Ownership)));
+
+    SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(stream));
+    decoder->setRequireUnpremultipliedColors(true);
+
+    if (decoder) {
+      stream->rewind();
+      SkBitmap bm;
+      SkImageDecoder::Result res = decoder->decode(stream, &bm,
+        kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
+
+      if (res == SkImageDecoder::kSuccess) {
+        bm.pixelRef()->setURI(filename);
+
+        SkiaSurface* sur = new SkiaSurface();
+        sur->bitmap().swap(bm);
+        return sur;
+      }
+    }
+    return nullptr;
   }
 
   Surface* loadRgbaSurface(const char* filename) override {
-    SkiaSurface* sur = new SkiaSurface;
-    sur->create(32, 32);
-    return sur;
+    return loadSurface(filename);
   }
 
 private:
