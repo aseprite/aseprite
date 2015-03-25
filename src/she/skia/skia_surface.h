@@ -67,6 +67,16 @@ public:
   }
 
   void applyScale(int scaleFactor) override {
+    SkBitmap result;
+    result.tryAllocPixels(
+      SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor));
+
+    SkCanvas canvas(result);
+    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, m_bitmap.width(), m_bitmap.height()));
+    SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, result.width(), result.height()));
+    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect);
+
+    m_bitmap.swap(result);
   }
 
   void* nativeHandle() override {
