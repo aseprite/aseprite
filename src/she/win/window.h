@@ -356,6 +356,10 @@ static KeyScancode vkToScancode(int vk) {
       m_captureMouse = false;
     }
 
+    void invalidate() {
+      InvalidateRect(m_hwnd, NULL, FALSE);
+    }
+
     HWND handle() {
       return m_hwnd;
     }

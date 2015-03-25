@@ -55,6 +55,7 @@ public:
   // false if the flip couldn't be done because the display was
   // resized.
   bool flip() override {
+    m_window.invalidate();
     return true;
   }
 
