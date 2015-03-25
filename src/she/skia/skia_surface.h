@@ -172,6 +172,10 @@ public:
   }
 
   void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
+    SkCanvas canvas(((SkiaSurface*)dest)->m_bitmap);
+    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(srcx, srcy, width, height));
+    SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(dstx, dsty, width, height));
+    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect);
   }
 
   void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
