@@ -221,7 +221,6 @@ void ColorBar::onRemapButtonClick()
   try {
     ContextWriter writer(UIContext::instance());
     Sprite* sprite = writer.sprite();
-    frame_t frame = writer.frame();
     if (sprite) {
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
       transaction.execute(new cmd::RemapColors(sprite, *m_remap));

@@ -388,8 +388,6 @@ void Tabs::onPaint(PaintEvent& ev)
   g->fillRect(theme->colors.windowFace(), g->getClipBounds());
   drawFiller(g, box);
 
-  int startX = m_border*guiscale();
-
   // For each tab...
   for (Tab* tab : m_list) {
     if (tab == m_floatingTab)

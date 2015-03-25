@@ -293,7 +293,6 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   ui::Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
   Palette* palette = get_current_palette();
-  gfx::Color bordercolor = gfx::rgba(255, 255, 255);
 
   g->fillRect(gfx::rgba(0, 0, 0), bounds);
 
@@ -458,7 +457,6 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index)
   gfx::Rect bounds = getClientBounds();
   div_t d = div(Palette::MaxColors, m_columns);
   int cols = m_columns;
-  int rows = d.quot + (d.rem ? 1: 0);
   int col = index % cols;
   int row = index / cols;
 
