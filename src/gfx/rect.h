@@ -254,12 +254,12 @@ public:
   }
 
   const RectT& operator|=(const RectT& rc) {
-    operator=(createUnion(rc));
+    RectT::operator=(createUnion(rc));
     return *this;
   }
 
   const RectT& operator&=(const RectT& rc) {
-    operator=(createIntersect(rc));
+    RectT::operator=(createIntersect(rc));
     return *this;
   }
 
