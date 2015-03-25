@@ -9,9 +9,9 @@ namespace she {
 class SkiaDisplay : public Display {
 public:
   SkiaDisplay(int width, int height, int scale)
-    : m_window(&m_queue, this)
-    , m_scale(scale) {
+    : m_window(&m_queue, this) {
     m_surface.create(width, height);
+    m_window.setScale(scale);
     m_window.setVisible(true);
   }
 
@@ -38,11 +38,11 @@ public:
   }
 
   void setScale(int scale) override {
-    m_scale = scale;
+    m_window.setScale(scale);
   }
 
   int scale() const override {
-    return m_scale;
+    return m_window.scale();
   }
 
   // Returns the main surface to draw into this display.
@@ -98,7 +98,6 @@ private:
   SkiaEventQueue m_queue;
   SkiaWindow m_window;
   SkiaSurface m_surface;
-  int m_scale;
 };
 
 } // namespace she

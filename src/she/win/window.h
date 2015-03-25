@@ -310,6 +310,10 @@ static KeyScancode vkToScancode(int vk) {
       static_cast<T*>(this)->queueEventImpl(ev);
     }
 
+    int scale() const {
+      return m_scale;
+    }
+
     void setScale(int scale) {
       m_scale = scale;
     }

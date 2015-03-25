@@ -34,15 +34,14 @@ public:
 
     ASSERT(bitmap.width() * bitmap.bytesPerPixel() == bitmap.rowBytes());
     bitmap.lockPixels();
-    int ret = SetDIBitsToDevice(hdc,
-      0, 0,
-      bitmap.width(), bitmap.height(),
-      0, 0,
-      0, bitmap.height(),
+
+    int ret = StretchDIBits(hdc,
+      0, 0, bitmap.width()*scale(), bitmap.height()*scale(),
+      0, 0, bitmap.width(), bitmap.height(),
       bitmap.getPixels(),
-      &bmi,
-      DIB_RGB_COLORS);
+      &bmi, DIB_RGB_COLORS, SRCCOPY);
     (void)ret;
+
     bitmap.unlockPixels();
   }
 
