@@ -48,7 +48,7 @@ void HttpLoader::threadHttpRequest()
 
     PRINTF("Sending http request to %s...\n", m_url.c_str());
 
-    std::string dir = base::join_path(getenv("TEMP"), PACKAGE);
+    std::string dir = base::join_path(base::get_temp_path(), PACKAGE);
     base::make_all_directories(dir);
 
     std::string fn = m_url;
