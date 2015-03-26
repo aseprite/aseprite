@@ -95,6 +95,8 @@ static void resize_callback(RESIZE_DISPLAY_EVENT* ev)
 }
 #endif // ALLEGRO4_WITH_RESIZE_PATCH
 
+static she::System* g_instance = nullptr;
+
 namespace she {
 
 class Alleg4EventQueue : public EventQueue {
@@ -711,9 +713,13 @@ public:
 
     // Register PNG as a supported bitmap type
     register_bitmap_file_type("png", load_png, save_png);
+
+    g_instance = this;
   }
 
   ~Alleg4System() {
+    g_instance = nullptr;
+
     remove_timer();
     allegro_exit();
   }
@@ -762,10 +768,8 @@ public:
 
 };
 
-static System* g_instance;
-
 System* create_system() {
-  return g_instance = new Alleg4System();
+  return new Alleg4System();
 }
 
 System* instance()
