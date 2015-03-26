@@ -748,10 +748,13 @@ void Tabs::createFloatingTab(Tab* tab)
   // Make opaque (TODO this shouldn't be necessary)
   {
     she::ScopedSurfaceLock lock(surface);
+    gfx::Color mask = lock->getPixel(0, 0);
+
     for (int y=0; y<surface->height(); ++y)
       for (int x=0; x<surface->width(); ++x) {
         gfx::Color c = lock->getPixel(x, y);
-        lock->putPixel(gfx::seta(c, 255), x, y);
+        c = (c != mask ? gfx::seta(c, 255): gfx::ColorNone);
+        lock->putPixel(c, x, y);
       }
   }
 
