@@ -16,6 +16,7 @@
   #include "she/osx/native_dialogs.h"
 #else
   #include "she/clipboard_simple.h"
+  #include "she/native_dialogs.h"
 #endif
 
 #include "she/common/font.h"
