@@ -254,13 +254,11 @@ public:
   }
 
   const RectT& operator|=(const RectT& rc) {
-    RectT::operator=(createUnion(rc));
-    return *this;
+    return *this = createUnion(rc);
   }
 
   const RectT& operator&=(const RectT& rc) {
-    RectT::operator=(createIntersect(rc));
-    return *this;
+    return *this = createIntersect(rc);
   }
 
   RectT operator+(const BorderT<T>& br) const {
