@@ -2166,12 +2166,14 @@ she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
 
   // Try to load the font
   while (rf.next()) {
-    she::Font* f = she::instance()->loadBitmapFont(rf.filename().c_str(), guiscale());
-    if (f) {
+    try {
+      she::Font* f = she::instance()->loadBitmapFont(rf.filename().c_str(), guiscale());
       if (f->isScalable())
         f->setSize(8);
-
       return f;
+    }
+    catch (const std::exception& ex) {
+      // Do nothing
     }
   }
 
