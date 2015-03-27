@@ -9,6 +9,7 @@
 #define APP_UI_WORKSPACE_H_INCLUDED
 #pragma once
 
+#include "app/ui/animated_widget.h"
 #include "app/ui/workspace_views.h"
 #include "base/signal.h"
 #include "ui/widget.h"
@@ -19,7 +20,13 @@
 namespace app {
   class Tabs;
 
-  class Workspace : public ui::Widget {
+  class Workspace : public ui::Widget
+                  , public AnimatedWidget {
+    enum Ani : int {
+      ANI_NONE,
+      ANI_DROPAREA,
+    };
+
   public:
     typedef WorkspaceViews::iterator iterator;
 
@@ -50,15 +57,20 @@ namespace app {
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
+    void onAnimationFrame() override;
+    void onAnimationStop() override;
 
   private:
     int calculateDropArea(const gfx::Point& pos) const;
     int getDropThreshold() const;
+    void adjustTime(int& time, int flag);
 
     Tabs* m_tabsBar;
     WorkspaceViews m_views;
     WorkspaceView* m_activeView;
     int m_dropArea;
+    int m_leftTime, m_rightTime;
+    int m_topTime, m_bottomTime;
   };
 
 } // namespace app

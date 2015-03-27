@@ -36,15 +36,6 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-namespace {
-  double ease(double t) {
-    return (1.0 - std::pow(1.0 - t, 2));
-  }
-  double inbetween(double x0, double x1, double t) {
-    return x0 + (x1-x0)*ease(t);
-  }
-}
-
 static WidgetType tabs_type()
 {
   static WidgetType type = kGenericWidget;

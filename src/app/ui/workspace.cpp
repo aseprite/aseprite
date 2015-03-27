@@ -23,6 +23,8 @@
 
 namespace app {
 
+#define ANI_DROPAREA_TICKS  4
+
 using namespace app::skin;
 using namespace ui;
 
@@ -31,6 +33,10 @@ Workspace::Workspace()
   , m_tabsBar(nullptr)
   , m_activeView(nullptr)
   , m_dropArea(0)
+  , m_leftTime(0)
+  , m_rightTime(0)
+  , m_topTime(0)
+  , m_bottomTime(0)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -108,22 +114,17 @@ void Workspace::onResize(ui::ResizeEvent& ev)
   gfx::Rect rc = getChildrenBounds();
 
   // Preview to drop tabs in workspace
-  int threshold = getDropThreshold();
-  switch (m_dropArea) {
-    case JI_LEFT:
-      rc.x += threshold;
-      rc.w -= threshold;
-      break;
-    case JI_TOP:
-      rc.y += threshold;
-      rc.h -= threshold;
-      break;
-    case JI_RIGHT:
-      rc.w -= threshold;
-      break;
-    case JI_BOTTOM:
-      rc.h -= threshold;
-      break;
+  if (animation() == ANI_DROPAREA) {
+    double left = double(m_leftTime) / double(ANI_DROPAREA_TICKS);
+    double top = double(m_topTime) / double(ANI_DROPAREA_TICKS);
+    double right = double(m_rightTime) / double(ANI_DROPAREA_TICKS);
+    double bottom = double(m_bottomTime) / double(ANI_DROPAREA_TICKS);
+    double threshold = getDropThreshold();
+
+    rc.x += int(inbetween(0.0, threshold, left));
+    rc.y += int(inbetween(0.0, threshold, top));
+    rc.w -= int(inbetween(0.0, threshold, left) + inbetween(0.0, threshold, right));
+    rc.h -= int(inbetween(0.0, threshold, top) + inbetween(0.0, threshold, bottom));
   }
 
   for (Widget* child : getChildren())
@@ -135,7 +136,7 @@ void Workspace::setDropViewPreview(const gfx::Point& pos)
   int newDropArea = calculateDropArea(pos);
   if (newDropArea != m_dropArea) {
     m_dropArea = newDropArea;
-    layout();
+    startAnimation(ANI_DROPAREA, ANI_DROPAREA_TICKS);
   }
 }
 
@@ -143,8 +144,35 @@ void Workspace::removeDropViewPreview(const gfx::Point& pos)
 {
   if (m_dropArea) {
     m_dropArea = 0;
+    startAnimation(ANI_DROPAREA, ANI_DROPAREA_TICKS);
+  }
+}
+
+void Workspace::onAnimationStop()
+{
+  if (animation() == ANI_DROPAREA)
+    layout();
+}
+
+void Workspace::onAnimationFrame()
+{
+  if (animation() == ANI_DROPAREA) {
+    adjustTime(m_leftTime, JI_LEFT);
+    adjustTime(m_topTime, JI_TOP);
+    adjustTime(m_rightTime, JI_RIGHT);
+    adjustTime(m_bottomTime, JI_BOTTOM);
     layout();
   }
+}
+
+void Workspace::adjustTime(int& time, int flag)
+{
+  if (m_dropArea & flag) {
+    if (time < ANI_DROPAREA_TICKS)
+      ++time;
+  }
+  else if (time > 0)
+    --time;
 }
 
 void Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)

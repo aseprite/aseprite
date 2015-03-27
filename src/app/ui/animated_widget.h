@@ -47,9 +47,10 @@ namespace app {
     }
 
     void stopAnimation() {
+      onAnimationStop();
+
       m_animation = 0;
       m_timer.stop();
-      onAnimationStop();
     }
 
     int animation() const {
@@ -58,6 +59,14 @@ namespace app {
 
     double animationTime() const {
       return double(m_animationTime) / double(m_animationLifespan);
+    }
+
+    double ease(double t) {
+      return (1.0 - std::pow(1.0 - t, 2));
+    }
+
+    double inbetween(double x0, double x1, double t) {
+      return x0 + (x1-x0)*ease(t);
     }
 
   private:
