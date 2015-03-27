@@ -28,6 +28,7 @@ using namespace ui;
 
 Workspace::Workspace()
   : Widget(kGenericWidget)
+  , m_tabsBar(nullptr)
   , m_activeView(nullptr)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
@@ -40,6 +41,11 @@ Workspace::~Workspace()
   ASSERT(m_views.empty());
 }
 
+void Workspace::setTabsBar(Tabs* tabsBar)
+{
+  m_tabsBar = tabsBar;
+}
+
 void Workspace::addView(WorkspaceView* view, int pos)
 {
   if (pos < 0)
@@ -47,7 +53,7 @@ void Workspace::addView(WorkspaceView* view, int pos)
   else
     m_views.insert(m_views.begin()+pos, view);
 
-  App::instance()->getMainWindow()->getTabsBar()->addTab(dynamic_cast<TabView*>(view), pos);
+  m_tabsBar->addTab(dynamic_cast<TabView*>(view), pos);
   setActiveView(view);
 }
 
@@ -59,11 +65,10 @@ void Workspace::removeView(WorkspaceView* view)
   if (content->getParent())
     content->getParent()->removeChild(content);
 
-  // Remove related tab
-  Tabs* tabs = App::instance()->getMainWindow()->getTabsBar();
-  tabs->removeTab(dynamic_cast<TabView*>(view));
+  // Remove related tab.
+  m_tabsBar->removeTab(dynamic_cast<TabView*>(view));
 
-  TabView* tabView = tabs->getSelectedTab();
+  TabView* tabView = m_tabsBar->getSelectedTab();
   setActiveView(dynamic_cast<WorkspaceView*>(tabView));
 }
 

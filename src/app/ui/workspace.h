@@ -17,6 +17,7 @@
 #include <vector>
 
 namespace app {
+  class Tabs;
 
   class Workspace : public ui::Widget {
   public:
@@ -25,6 +26,7 @@ namespace app {
     Workspace();
     ~Workspace();
 
+    void setTabsBar(Tabs* tabsBar);
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
 
@@ -44,6 +46,7 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
 
   private:
+    Tabs* m_tabsBar;
     WorkspaceViews m_views;
     WorkspaceView* m_activeView;
   };

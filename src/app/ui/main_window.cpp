@@ -62,6 +62,7 @@ MainWindow::MainWindow()
   m_toolBar = new ToolBar();
   m_tabsBar = new Tabs(this);
   m_workspace = new Workspace();
+  m_workspace->setTabsBar(m_tabsBar);
   m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
   m_previewEditor = new PreviewEditorWindow();
   m_timeline = new Timeline();
