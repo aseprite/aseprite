@@ -52,11 +52,13 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
 
   private:
+    int calculateDropArea(const gfx::Point& pos) const;
+    int getDropThreshold() const;
+
     Tabs* m_tabsBar;
     WorkspaceViews m_views;
     WorkspaceView* m_activeView;
-    bool m_dropPreview;
-    gfx::Point m_dropPos;
+    int m_dropArea;
   };
 
 } // namespace app

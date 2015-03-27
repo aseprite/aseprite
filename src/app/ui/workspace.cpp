@@ -30,7 +30,7 @@ Workspace::Workspace()
   : Widget(kGenericWidget)
   , m_tabsBar(nullptr)
   , m_activeView(nullptr)
-  , m_dropPreview(false)
+  , m_dropArea(0)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -105,54 +105,86 @@ void Workspace::onResize(ui::ResizeEvent& ev)
 {
   setBoundsQuietly(ev.getBounds());
 
-  gfx::Rect cpos = getChildrenBounds();
+  gfx::Rect rc = getChildrenBounds();
 
   // Preview to drop tabs in workspace
-  if (m_dropPreview && cpos.contains(m_dropPos)) {
-    int left = ABS(cpos.x - m_dropPos.x);
-    int top = ABS(cpos.y - m_dropPos.y);
-    int right = ABS(cpos.x + cpos.w - m_dropPos.x);
-    int bottom = ABS(cpos.y + cpos.h - m_dropPos.y);
-    int threshold = 32*guiscale();
-    if (threshold > cpos.w/2) threshold = cpos.w/2;
-    if (threshold > cpos.h/2) threshold = cpos.h/2;
-
-    if (left < threshold && left < right && left < top && left < bottom) {
-      cpos.x += threshold;
-      cpos.w -= threshold;
-    }
-    else if (top < threshold && top < left && top < right && top < bottom) {
-      cpos.y += threshold;
-      cpos.h -= threshold;
-    }
-    else if (right < threshold && right < left && right < top && right < bottom) {
-      cpos.w -= threshold;
-    }
-    else if (bottom < threshold && bottom < left && bottom < top && bottom < right) {
-      cpos.h -= threshold;
-    }
+  int threshold = getDropThreshold();
+  switch (m_dropArea) {
+    case JI_LEFT:
+      rc.x += threshold;
+      rc.w -= threshold;
+      break;
+    case JI_TOP:
+      rc.y += threshold;
+      rc.h -= threshold;
+      break;
+    case JI_RIGHT:
+      rc.w -= threshold;
+      break;
+    case JI_BOTTOM:
+      rc.h -= threshold;
+      break;
   }
 
   for (Widget* child : getChildren())
-    child->setBounds(cpos);
+    child->setBounds(rc);
 }
 
 void Workspace::setDropViewPreview(const gfx::Point& pos)
 {
-  m_dropPos = pos;
-  m_dropPreview = true;
-
-  layout();
+  int newDropArea = calculateDropArea(pos);
+  if (newDropArea != m_dropArea) {
+    m_dropArea = newDropArea;
+    layout();
+  }
 }
 
 void Workspace::removeDropViewPreview(const gfx::Point& pos)
 {
-  m_dropPreview = false;
-  layout();
+  if (m_dropArea) {
+    m_dropArea = 0;
+    layout();
+  }
 }
 
 void Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
 {
+}
+
+int Workspace::calculateDropArea(const gfx::Point& pos) const
+{
+  gfx::Rect rc = getChildrenBounds();
+  if (rc.contains(pos)) {
+    int left = ABS(rc.x - pos.x);
+    int top = ABS(rc.y - pos.y);
+    int right = ABS(rc.x + rc.w - pos.x);
+    int bottom = ABS(rc.y + rc.h - pos.y);
+    int threshold = getDropThreshold();
+
+    if (left < threshold && left < right && left < top && left < bottom) {
+      return JI_LEFT;
+    }
+    else if (top < threshold && top < left && top < right && top < bottom) {
+      return JI_TOP;
+    }
+    else if (right < threshold && right < left && right < top && right < bottom) {
+      return JI_RIGHT;
+    }
+    else if (bottom < threshold && bottom < left && bottom < top && bottom < right) {
+      return JI_BOTTOM;
+    }
+  }
+
+  return 0;
+}
+
+int Workspace::getDropThreshold() const
+{
+  gfx::Rect cpos = getChildrenBounds();
+  int threshold = 32*guiscale();
+  if (threshold > cpos.w/2) threshold = cpos.w/2;
+  if (threshold > cpos.h/2) threshold = cpos.h/2;
+  return threshold;
 }
 
 } // namespace app
