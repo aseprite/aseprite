@@ -1,0 +1,84 @@
+// Aseprite
+// Copyright (C) 2001-2015  David Capello
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License version 2 as
+// published by the Free Software Foundation.
+
+#ifndef APP_UI_ANIMATED_WIDGET_H_INCLUDED
+#define APP_UI_ANIMATED_WIDGET_H_INCLUDED
+#pragma once
+
+#include "base/connection.h"
+#include "ui/timer.h"
+
+namespace app {
+
+  class AnimatedWidget {
+  public:
+    AnimatedWidget()
+      : m_timer(1000/60)
+      , m_animation(0)
+    {
+      m_scopedConn = m_timer.Tick.connect(&AnimatedWidget::onTick, this);
+    }
+
+    ~AnimatedWidget() {
+      m_timer.stop();
+    }
+
+    // For each animation frame
+    virtual void onAnimationStart() { }
+    virtual void onAnimationStop() { }
+    virtual void onAnimationFrame() { }
+
+  protected:
+    void startAnimation(int animation, int lifespan) {
+      // Stop previous animation
+      if (m_animation)
+        stopAnimation();
+
+      m_animation = animation;
+      m_animationTime = 0;
+      m_animationLifespan = lifespan;
+      m_timer.start();
+
+      onAnimationStart();
+    }
+
+    void stopAnimation() {
+      m_animation = 0;
+      m_timer.stop();
+      onAnimationStop();
+    }
+
+    int animation() const {
+      return m_animation;
+    }
+
+    double animationTime() const {
+      return double(m_animationTime) / double(m_animationLifespan);
+    }
+
+  private:
+    void onTick() {
+      if (m_animation) {
+        if (m_animationTime == m_animationLifespan)
+          stopAnimation();
+        else
+          ++m_animationTime;
+
+        onAnimationFrame();
+      }
+    }
+
+    ui::Timer m_timer;
+    int m_animation;
+    int m_animationTime;
+    int m_animationLifespan;
+    ScopedConnection m_scopedConn;
+  };
+
+} // namespace app
+
+#endif

@@ -61,8 +61,6 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_clickedCloseButton(false)
   , m_selected(nullptr)
   , m_delegate(delegate)
-  , m_timer(1000/60, this)
-  , m_ani(ANI_NONE)
   , m_removedTab(nullptr)
   , m_isDragging(false)
   , m_floatingTab(nullptr)
@@ -80,7 +78,7 @@ Tabs::~Tabs()
   }
 
   // Stop animation
-  stopAni();
+  stopAnimation();
 
   // Remove all tabs
   for (Tab* tab : m_list)
@@ -91,7 +89,7 @@ Tabs::~Tabs()
 void Tabs::addTab(TabView* tabView, int pos)
 {
   resetOldPositions();
-  startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
+  startAnimation(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
 
   Tab* tab = new Tab(tabView);
   if (pos < 0)
@@ -137,7 +135,7 @@ void Tabs::removeTab(TabView* tabView)
   tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
   resetOldPositions();
-  startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+  startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
   updateTabs();
 }
 
@@ -270,9 +268,9 @@ bool Tabs::onProcessMessage(Message* msg)
               m_list.insert(m_list.begin()+i, m_selected);
               m_dragTabIndex = i;
 
-              resetOldPositions(double(m_ani_t) / double(m_ani_T));
+              resetOldPositions(animationTime());
               updateTabs();
-              startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+              startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
             }
 
             if (justDocked)
@@ -367,18 +365,6 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
     }
 
-    case kTimerMessage: {
-      if (m_ani != ANI_NONE) {
-        if (m_ani_t == m_ani_T)
-          stopAni();
-        else
-          ++m_ani_t;
-
-        invalidate();
-      }
-      break;
-    }
-
   }
 
   return Widget::onProcessMessage(msg);
@@ -390,7 +376,7 @@ void Tabs::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
-    (m_list.empty() && m_ani == ANI_NONE ? 0:
+    (m_list.empty() && animation() == ANI_NONE ? 0:
       theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
 
   g->fillRect(theme->colors.windowFace(), g->getClipBounds());
@@ -410,7 +396,7 @@ void Tabs::onPaint(PaintEvent& ev)
   }
 
   // Draw deleted tab
-  if (m_ani == ANI_REMOVING_TAB && m_removedTab) {
+  if (animation() == ANI_REMOVING_TAB && m_removedTab) {
     m_removedTab->width = 0;
     box = getTabBounds(m_removedTab);
     drawTab(g, box, m_removedTab, 0,
@@ -420,12 +406,12 @@ void Tabs::onPaint(PaintEvent& ev)
 
   // Tab that is being dragged
   if (m_selected && m_selected != m_floatingTab) {
-    double t = double(m_ani_t) / double(m_ani_T);
+    double t = animationTime();
     Tab* tab = m_selected;
     box = getTabBounds(tab);
 
     int dy = 0;
-    if (m_ani == ANI_ADDING_TAB)
+    if (animation() == ANI_ADDING_TAB)
       dy = int(box.h - box.h * t);
 
     drawTab(g, box, m_selected, dy, (tab == m_hot), true);
@@ -443,7 +429,7 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Size reqsize(0, 0);
 
-  if (m_list.empty() && m_ani == ANI_NONE)
+  if (m_list.empty() && animation() == ANI_NONE)
     reqsize.h = theme->dimensions.tabsEmptyHeight();
   else
     reqsize.h = theme->dimensions.tabsHeight();
@@ -665,23 +651,13 @@ void Tabs::resetOldPositions(double t)
   }
 }
 
-void Tabs::startAni(Ani ani, int T)
+void Tabs::onAnimationFrame()
 {
-  // Stop previous animation
-  if (m_ani != ANI_NONE)
-    stopAni();
-
-  m_ani = ani;
-  m_ani_t = 0;
-  m_ani_T = T;
-  m_timer.start();
+  invalidate();
 }
 
-void Tabs::stopAni()
+void Tabs::onAnimationStop()
 {
-  m_ani = ANI_NONE;
-  m_timer.stop();
-
   if (m_list.empty()) {
     Widget* root = getRoot();
     if (root)
@@ -711,9 +687,9 @@ void Tabs::stopDrag()
     m_selected->oldWidth = m_selected->width;
   }
 
-  resetOldPositions(double(m_ani_t) / double(m_ani_T));
+  resetOldPositions(animationTime());
   updateTabs();
-  startAni(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
 }
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
@@ -721,12 +697,12 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
-    (m_list.empty() && m_ani == ANI_NONE ? 0:
+    (m_list.empty() && animation() == ANI_NONE ? 0:
       theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
   int startX = m_border*guiscale();
-  double t = double(m_ani_t) / double(m_ani_T);
+  double t = animationTime();
 
-  if (m_ani == ANI_NONE) {
+  if (animation() == ANI_NONE) {
     box.x = startX + tab->x;
     box.w = tab->width;
   }
@@ -773,7 +749,7 @@ void Tabs::createFloatingTab(Tab* tab)
 
   m_floatingTab = tab;
   m_removedTab = nullptr;
-  startAni(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+  startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
   updateTabs();
 }
 
@@ -790,7 +766,7 @@ void Tabs::destroyFloatingTab()
     m_floatingTab = nullptr;
 
     resetOldPositions();
-    startAni(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
+    startAnimation(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
     updateTabs();
 
     tab->oldX = tab->x;

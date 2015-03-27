@@ -9,6 +9,7 @@
 #define APP_UI_TABS_H_INCLUDED
 #pragma once
 
+#include "app/ui/animated_widget.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
@@ -74,7 +75,8 @@ namespace app {
   };
 
   // Tabs control. Used to show opened documents.
-  class Tabs : public ui::Widget {
+  class Tabs : public ui::Widget
+             , public AnimatedWidget {
     struct Tab {
       TabView* view;
       std::string text;
@@ -90,10 +92,12 @@ namespace app {
     typedef std::vector<Tab*> TabsList;
     typedef TabsList::iterator TabsListIterator;
 
-    enum Ani { ANI_NONE,
-               ANI_ADDING_TAB,
-               ANI_REMOVING_TAB,
-               ANI_REORDER_TABS };
+    enum Ani : int {
+      ANI_NONE,
+      ANI_ADDING_TAB,
+      ANI_REMOVING_TAB,
+      ANI_REORDER_TABS
+    };
 
   public:
     Tabs(TabsDelegate* delegate);
@@ -113,12 +117,12 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onAnimationFrame() override;
+    void onAnimationStop() override;
 
   private:
     void resetOldPositions();
     void resetOldPositions(double t);
-    void startAni(Ani ani, int T);
-    void stopAni();
 
     void selectTabInternal(Tab* tab);
     void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int dy, bool hover, bool selected);
@@ -146,10 +150,6 @@ namespace app {
     TabsDelegate* m_delegate;
 
     // Variables for animation purposes
-    ui::Timer m_timer;
-    Ani m_ani;                    // Current animation
-    int m_ani_t;                  // Number of ticks from the beginning of the transition/animation
-    int m_ani_T;                  // Number of ticks in total for the current transition/animation
     Tab* m_removedTab;
 
     // Drag-and-drop
