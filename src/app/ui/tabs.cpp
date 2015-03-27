@@ -250,6 +250,9 @@ bool Tabs::onProcessMessage(Message* msg)
               createFloatingTab(m_selected);
 
             m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
+
+            if (m_delegate)
+              m_delegate->onFloatingTab(this, m_selected->view, mousePos);
           }
           else {
             justDocked = m_floatingTab;
@@ -332,8 +335,13 @@ bool Tabs::onProcessMessage(Message* msg)
 
         releaseMouse();
 
-        if (m_isDragging)
+        if (m_isDragging) {
+          if (m_delegate)
+            m_delegate->onDropTab(this, m_selected->view,
+              mouseMsg->position());
+
           stopDrag();
+        }
 
         if (m_clickedCloseButton) {
           m_clickedCloseButton = false;

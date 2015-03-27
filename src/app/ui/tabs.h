@@ -41,10 +41,19 @@ namespace app {
     virtual TabIcon getTabIcon() = 0;
   };
 
+  enum class DropTabResult {
+    IGNORE,
+    DOCKED_IN_OTHER_PLACE,
+  };
+
   // Interface used to control notifications from the Tabs widget.
   class TabsDelegate {
   public:
+
     virtual ~TabsDelegate() { }
+
+    // Returns true if the tab represent a modified document.
+    virtual bool onIsModified(Tabs* tabs, TabView* tabView) = 0;
 
     // Called when the user selected the tab with the left mouse button.
     virtual void onSelectTab(Tabs* tabs, TabView* tabView) = 0;
@@ -59,7 +68,9 @@ namespace app {
     // mouse just leave all tabs)
     virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;
 
-    virtual bool onIsModified(Tabs* tabs, TabView* tabView) = 0;
+    // Called when the user is dragging a tab outside the Tabs bar.
+    virtual void onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
+    virtual DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
   };
 
   // Tabs control. Used to show opened documents.

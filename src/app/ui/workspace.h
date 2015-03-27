@@ -40,15 +40,23 @@ namespace app {
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
 
+    // Drop views into workspace
+    void setDropViewPreview(const gfx::Point& pos);
+    void removeDropViewPreview(const gfx::Point& pos);
+    void dropViewAt(const gfx::Point& pos, WorkspaceView* view);
+
     Signal0<void> ActiveViewChanged;
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
 
   private:
     Tabs* m_tabsBar;
     WorkspaceViews m_views;
     WorkspaceView* m_activeView;
+    bool m_dropPreview;
+    gfx::Point m_dropPos;
   };
 
 } // namespace app

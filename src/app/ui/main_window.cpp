@@ -247,6 +247,17 @@ void MainWindow::onActiveViewChange()
   configureWorkspaceLayout();
 }
 
+bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
+{
+  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
+    Document* document = docView->getDocument();
+    return document->isModified();
+  }
+  else {
+    return false;
+  }
+}
+
 void MainWindow::onSelectTab(Tabs* tabs, TabView* tabView)
 {
   if (!tabView)
@@ -286,15 +297,16 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
   }
 }
 
-bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
+void MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
 {
-  if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
-    Document* document = docView->getDocument();
-    return document->isModified();
-  }
-  else {
-    return false;
-  }
+  m_workspace->setDropViewPreview(pos);
+}
+
+DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
+{
+  m_workspace->removeDropViewPreview(pos);
+  m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView));
+  return DropTabResult::IGNORE;
 }
 
 void MainWindow::configureWorkspaceLayout()

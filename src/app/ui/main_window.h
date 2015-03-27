@@ -74,11 +74,13 @@ namespace app {
     void popTimeline();
 
     // TabsDelegate implementation.
+    bool onIsModified(Tabs* tabs, TabView* tabView) override;
     void onSelectTab(Tabs* tabs, TabView* tabView) override;
     void onCloseTab(Tabs* tabs, TabView* tabView) override;
     void onContextMenuTab(Tabs* tabs, TabView* tabView) override;
     void onMouseOverTab(Tabs* tabs, TabView* tabView) override;
-    bool onIsModified(Tabs* tabs, TabView* tabView) override;
+    void onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
+    DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

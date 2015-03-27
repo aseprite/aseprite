@@ -30,6 +30,7 @@ Workspace::Workspace()
   : Widget(kGenericWidget)
   , m_tabsBar(nullptr)
   , m_activeView(nullptr)
+  , m_dropPreview(false)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -98,6 +99,60 @@ void Workspace::setActiveView(WorkspaceView* view)
 void Workspace::onPaint(PaintEvent& ev)
 {
   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
+}
+
+void Workspace::onResize(ui::ResizeEvent& ev)
+{
+  setBoundsQuietly(ev.getBounds());
+
+  gfx::Rect cpos = getChildrenBounds();
+
+  // Preview to drop tabs in workspace
+  if (m_dropPreview && cpos.contains(m_dropPos)) {
+    int left = ABS(cpos.x - m_dropPos.x);
+    int top = ABS(cpos.y - m_dropPos.y);
+    int right = ABS(cpos.x + cpos.w - m_dropPos.x);
+    int bottom = ABS(cpos.y + cpos.h - m_dropPos.y);
+    int threshold = 32*guiscale();
+    if (threshold > cpos.w/2) threshold = cpos.w/2;
+    if (threshold > cpos.h/2) threshold = cpos.h/2;
+
+    if (left < threshold && left < right && left < top && left < bottom) {
+      cpos.x += threshold;
+      cpos.w -= threshold;
+    }
+    else if (top < threshold && top < left && top < right && top < bottom) {
+      cpos.y += threshold;
+      cpos.h -= threshold;
+    }
+    else if (right < threshold && right < left && right < top && right < bottom) {
+      cpos.w -= threshold;
+    }
+    else if (bottom < threshold && bottom < left && bottom < top && bottom < right) {
+      cpos.h -= threshold;
+    }
+  }
+
+  for (Widget* child : getChildren())
+    child->setBounds(cpos);
+}
+
+void Workspace::setDropViewPreview(const gfx::Point& pos)
+{
+  m_dropPos = pos;
+  m_dropPreview = true;
+
+  layout();
+}
+
+void Workspace::removeDropViewPreview(const gfx::Point& pos)
+{
+  m_dropPreview = false;
+  layout();
+}
+
+void Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
+{
 }
 
 } // namespace app
