@@ -2172,7 +2172,7 @@ she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
         f->setSize(8);
       return f;
     }
-    catch (const std::exception& ex) {
+    catch (const std::exception&) {
       // Do nothing
     }
   }

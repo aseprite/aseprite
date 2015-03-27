@@ -288,15 +288,18 @@ void Widget::setFocusMagnet(bool state)
 bool Widget::isVisible() const
 {
   const Widget* widget = this;
+  const Widget* lastWidget = nullptr;
 
   do {
     if (widget->flags & JI_HIDDEN)
       return false;
 
+    lastWidget = widget;
     widget = widget->m_parent;
   } while (widget);
 
-  return true;
+  // The widget is visible if it's inside a visible manager
+  return (lastWidget ? lastWidget->type == kManagerWidget: false);
 }
 
 bool Widget::isEnabled() const
