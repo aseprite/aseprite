@@ -12,6 +12,8 @@
 #include "base/connection.h"
 #include "ui/timer.h"
 
+#include <cmath>
+
 namespace app {
 
   class AnimatedWidget {
