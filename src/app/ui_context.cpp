@@ -107,22 +107,6 @@ void UIContext::setActiveView(DocumentView* docView)
   m_lastSelectedView = docView;
 }
 
-size_t UIContext::countViewsOf(Document* document) const
-{
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  size_t counter = 0;
-
-  for (auto view : *workspace) {
-    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-      if (docView->getDocument() == document) {
-        ++counter;
-      }
-    }
-  }
-
-  return counter;
-}
-
 DocumentView* UIContext::getFirstDocumentView(Document* document) const
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
