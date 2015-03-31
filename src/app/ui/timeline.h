@@ -114,6 +114,7 @@ namespace app {
     // EditorObserver impl.
     void onAfterFrameChanged(Editor* editor) override;
     void onAfterLayerChanged(Editor* editor) override;
+    void onDestroyEditor(Editor* editor) override;
 
   private:
     struct Hit {

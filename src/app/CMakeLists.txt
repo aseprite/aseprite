@@ -344,6 +344,8 @@ add_library(app-lib
   ui/timeline.cpp
   ui/toolbar.cpp
   ui/workspace.cpp
+  ui/workspace_panel.cpp
+  ui/workspace_tabs.cpp
   ui_context.cpp
   util/autocrop.cpp
   util/boundary.cpp

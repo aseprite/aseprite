@@ -22,6 +22,7 @@ namespace app {
     void addObserver(EditorObserver* observer);
     void removeObserver(EditorObserver* observer);
 
+    void notifyDestroyEditor(Editor* editor);
     void notifyStateChanged(Editor* editor);
     void notifyScrollChanged(Editor* editor);
     void notifyBeforeFrameChanged(Editor* editor);

@@ -302,11 +302,19 @@ void MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& p
   m_workspace->setDropViewPreview(pos);
 }
 
+void MainWindow::onDockingTab(Tabs* tabs, TabView* tabView)
+{
+  m_workspace->removeDropViewPreview();
+}
+
 DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
 {
-  m_workspace->removeDropViewPreview(pos);
-  m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView));
-  return DropTabResult::IGNORE;
+  m_workspace->removeDropViewPreview();
+
+  if (m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView)))
+    return DropTabResult::DOCKED_IN_OTHER_PLACE;
+  else
+    return DropTabResult::IGNORE;
 }
 
 void MainWindow::configureWorkspaceLayout()
@@ -335,6 +343,7 @@ void MainWindow::configureWorkspaceLayout()
   }
 
   layout();
+  invalidate();
 }
 
 } // namespace app

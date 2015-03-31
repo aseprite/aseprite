@@ -15,6 +15,7 @@
 #include "ui/widget.h"
 
 #include <vector>
+#include <memory>
 
 namespace ui {
   class Graphics;
@@ -71,6 +72,7 @@ namespace app {
 
     // Called when the user is dragging a tab outside the Tabs bar.
     virtual void onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
+    virtual void onDockingTab(Tabs* tabs, TabView* tabView) = 0;
     virtual DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
   };
 
@@ -89,7 +91,9 @@ namespace app {
       }
     };
 
-    typedef std::vector<Tab*> TabsList;
+    typedef std::shared_ptr<Tab> TabPtr;
+
+    typedef std::vector<TabPtr> TabsList;
     typedef TabsList::iterator TabsListIterator;
 
     enum Ani : int {
@@ -103,8 +107,10 @@ namespace app {
     Tabs(TabsDelegate* delegate);
     ~Tabs();
 
+    TabsDelegate* getDelegate() { return m_delegate; }
+
     void addTab(TabView* tabView, int pos = -1);
-    void removeTab(TabView* tabView);
+    void removeTab(TabView* tabView, bool with_animation);
     void updateTabs();
 
     void selectTab(TabView* tabView);
@@ -124,33 +130,33 @@ namespace app {
     void resetOldPositions();
     void resetOldPositions(double t);
 
-    void selectTabInternal(Tab* tab);
+    void selectTabInternal(TabPtr& tab);
     void drawTab(ui::Graphics* g, const gfx::Rect& box, Tab* tab, int dy, bool hover, bool selected);
     void drawFiller(ui::Graphics* g, const gfx::Rect& box);
     TabsListIterator getTabIteratorByView(TabView* tabView);
-    Tab* getTabByView(TabView* tabView);
+    TabPtr getTabByView(TabView* tabView);
     int getMaxScrollX();
     void makeTabVisible(Tab* tab);
     void calculateHot();
     gfx::Rect getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box);
     void startDrag();
-    void stopDrag();
+    void stopDrag(DropTabResult result);
     gfx::Rect getTabBounds(Tab* tab);
-    void createFloatingTab(Tab* tab);
+    void createFloatingTab(TabPtr& tab);
     void destroyFloatingTab();
 
     int m_border;
     TabsList m_list;
-    Tab* m_hot;
+    TabPtr m_hot;
     bool m_hotCloseButton;
     bool m_clickedCloseButton;
-    Tab* m_selected;
+    TabPtr m_selected;
 
     // Delegate of notifications
     TabsDelegate* m_delegate;
 
     // Variables for animation purposes
-    Tab* m_removedTab;
+    TabPtr m_removedTab;
 
     // Drag-and-drop
     bool m_isDragging;
@@ -158,8 +164,8 @@ namespace app {
     gfx::Point m_dragMousePos;
     gfx::Point m_dragOffset;
     int m_dragTabIndex;
-    Tab* m_floatingTab;
-    ui::Overlay* m_floatingOverlay;
+    TabPtr m_floatingTab;
+    std::unique_ptr<ui::Overlay> m_floatingOverlay;
   };
 
 } // namespace app

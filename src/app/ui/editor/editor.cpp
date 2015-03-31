@@ -183,6 +183,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
 Editor::~Editor()
 {
+  m_observers.notifyDestroyEditor(this);
   m_document->removeObserver(this);
 
   setCustomizationDelegate(NULL);

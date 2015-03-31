@@ -63,17 +63,12 @@ Tabs::Tabs(TabsDelegate* delegate)
 
 Tabs::~Tabs()
 {
-  if (m_removedTab) {
-    delete m_removedTab;
-    m_removedTab = nullptr;
-  }
+  m_removedTab = nullptr;
 
   // Stop animation
   stopAnimation();
 
   // Remove all tabs
-  for (Tab* tab : m_list)
-    delete tab;
   m_list.clear();
 }
 
@@ -82,7 +77,7 @@ void Tabs::addTab(TabView* tabView, int pos)
   resetOldPositions();
   startAnimation(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
 
-  Tab* tab = new Tab(tabView);
+  TabPtr tab(new Tab(tabView));
   if (pos < 0)
     m_list.push_back(tab);
   else
@@ -94,9 +89,9 @@ void Tabs::addTab(TabView* tabView, int pos)
   tab->modified = false;
 }
 
-void Tabs::removeTab(TabView* tabView)
+void Tabs::removeTab(TabView* tabView, bool with_animation)
 {
-  Tab* tab = getTabByView(tabView);
+  TabPtr tab(getTabByView(tabView));
   if (!tab)
     return;
 
@@ -118,15 +113,17 @@ void Tabs::removeTab(TabView* tabView)
   ASSERT(it != m_list.end() && "Removing a tab that is not part of the Tabs widget");
   it = m_list.erase(it);
 
-  delete m_removedTab;
   m_removedTab = tab;
 
-  if (m_delegate)
-    tab->modified = m_delegate->onIsModified(this, tabView);
-  tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
+  if (with_animation) {
+    if (m_delegate)
+      tab->modified = m_delegate->onIsModified(this, tabView);
+    tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
-  resetOldPositions();
-  startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+    resetOldPositions();
+    startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+  }
+
   updateTabs();
 }
 
@@ -142,7 +139,7 @@ void Tabs::updateTabs()
   }
   double x = 0.0;
 
-  for (Tab* tab : m_list) {
+  for (auto& tab : m_list) {
     if (tab == m_floatingTab)
       continue;
 
@@ -159,7 +156,7 @@ void Tabs::selectTab(TabView* tabView)
 {
   ASSERT(tabView != NULL);
 
-  Tab* tab = getTabByView(tabView);
+  TabPtr tab(getTabByView(tabView));
   if (tab)
     selectTabInternal(tab);
 }
@@ -231,10 +228,13 @@ bool Tabs::onProcessMessage(Message* msg)
         }
         // We are drag a tab...
         else {
-          Tab* justDocked = nullptr;
+          TabPtr justDocked(nullptr);
 
           // Floating tab (to create a new window)
-          if (ABS(delta.y) > 16*guiscale()) {
+          if (!getBounds().contains(mousePos) &&
+              (ABS(delta.y) > 16*guiscale() ||
+                mousePos.x < getBounds().x-16*guiscale() ||
+                mousePos.x > getBounds().x2()+16*guiscale())) {
             if (!m_floatingOverlay)
               createFloatingTab(m_selected);
 
@@ -246,6 +246,9 @@ bool Tabs::onProcessMessage(Message* msg)
           else {
             justDocked = m_floatingTab;
             destroyFloatingTab();
+
+            if (m_delegate)
+              m_delegate->onDockingTab(this, m_selected->view);
           }
 
           // Docked tab
@@ -285,7 +288,7 @@ bool Tabs::onProcessMessage(Message* msg)
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         m_dragMousePos = mouseMsg->position();
         m_dragOffset = mouseMsg->position() -
-          (getBounds().getOrigin() + getTabBounds(m_hot).getOrigin());
+          (getBounds().getOrigin() + getTabBounds(m_hot.get()).getOrigin());
 
         if (m_hotCloseButton) {
           if (!m_clickedCloseButton) {
@@ -325,11 +328,15 @@ bool Tabs::onProcessMessage(Message* msg)
         releaseMouse();
 
         if (m_isDragging) {
-          if (m_delegate)
-            m_delegate->onDropTab(this, m_selected->view,
-              mouseMsg->position());
+          DropTabResult result = DropTabResult::IGNORE;
 
-          stopDrag();
+          if (m_delegate) {
+            result =
+              m_delegate->onDropTab(this, m_selected->view,
+                mouseMsg->position());
+          }
+
+          stopDrag(result);
         }
 
         if (m_clickedCloseButton) {
@@ -374,14 +381,14 @@ void Tabs::onPaint(PaintEvent& ev)
   drawFiller(g, box);
 
   // For each tab...
-  for (Tab* tab : m_list) {
+  for (TabPtr& tab : m_list) {
     if (tab == m_floatingTab)
       continue;
 
-    box = getTabBounds(tab);
+    box = getTabBounds(tab.get());
 
     if (tab != m_selected)
-      drawTab(g, box, tab, 0, (tab == m_hot), false);
+      drawTab(g, box, tab.get(), 0, (tab == m_hot), false);
 
     box.x = box.x2();
   }
@@ -389,8 +396,8 @@ void Tabs::onPaint(PaintEvent& ev)
   // Draw deleted tab
   if (animation() == ANI_REMOVING_TAB && m_removedTab) {
     m_removedTab->width = 0;
-    box = getTabBounds(m_removedTab);
-    drawTab(g, box, m_removedTab, 0,
+    box = getTabBounds(m_removedTab.get());
+    drawTab(g, box, m_removedTab.get(), 0,
       (m_removedTab == m_floatingTab),
       (m_removedTab == m_floatingTab));
   }
@@ -398,14 +405,14 @@ void Tabs::onPaint(PaintEvent& ev)
   // Tab that is being dragged
   if (m_selected && m_selected != m_floatingTab) {
     double t = animationTime();
-    Tab* tab = m_selected;
-    box = getTabBounds(tab);
+    TabPtr tab(m_selected);
+    box = getTabBounds(tab.get());
 
     int dy = 0;
     if (animation() == ANI_ADDING_TAB)
       dy = int(box.h - box.h * t);
 
-    drawTab(g, box, m_selected, dy, (tab == m_hot), true);
+    drawTab(g, box, m_selected.get(), dy, (tab == m_hot), true);
   }
 }
 
@@ -428,10 +435,10 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(reqsize);
 }
 
-void Tabs::selectTabInternal(Tab* tab)
+void Tabs::selectTabInternal(TabPtr& tab)
 {
   m_selected = tab;
-  makeTabVisible(tab);
+  makeTabVisible(tab.get());
   invalidate();
 
   if (m_delegate)
@@ -555,13 +562,13 @@ Tabs::TabsListIterator Tabs::getTabIteratorByView(TabView* tabView)
   return it;
 }
 
-Tabs::Tab* Tabs::getTabByView(TabView* tabView)
+Tabs::TabPtr Tabs::getTabByView(TabView* tabView)
 {
   TabsListIterator it = getTabIteratorByView(tabView);
   if (it != m_list.end())
-    return *it;
+    return TabPtr(*it);
   else
-    return NULL;
+    return TabPtr(nullptr);
 }
 
 void Tabs::makeTabVisible(Tab* thisTab)
@@ -577,11 +584,11 @@ void Tabs::calculateHot()
   gfx::Rect rect = getBounds();
   gfx::Rect box(rect.x+m_border*guiscale(), rect.y, 0, rect.h-1);
   gfx::Point mousePos = ui::get_mouse_position();
-  Tab* hot = NULL;
+  TabPtr hot(nullptr);
   bool hotCloseButton = false;
 
   // For each tab
-  for (Tab* tab : m_list) {
+  for (TabPtr& tab : m_list) {
     if (tab == m_floatingTab)
       continue;
 
@@ -589,7 +596,7 @@ void Tabs::calculateHot()
 
     if (box.contains(mousePos)) {
       hot = tab;
-      hotCloseButton = getTabCloseButtonBounds(tab, box).contains(mousePos);
+      hotCloseButton = getTabCloseButtonBounds(tab.get(), box).contains(mousePos);
       break;
     }
 
@@ -614,7 +621,7 @@ gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
   int iconW = theme->dimensions.tabsCloseIconWidth();
   int iconH = theme->dimensions.tabsCloseIconHeight();
 
-  if (box.w-iconW > 32*ui::guiscale() || tab == m_selected)
+  if (box.w-iconW > 32*ui::guiscale() || tab == m_selected.get())
     return gfx::Rect(box.x2()-iconW, box.y+box.h/2-iconH/2, iconW, iconH);
   else
     return gfx::Rect();
@@ -622,7 +629,7 @@ gfx::Rect Tabs::getTabCloseButtonBounds(Tab* tab, const gfx::Rect& box)
 
 void Tabs::resetOldPositions()
 {
-  for (Tab* tab : m_list) {
+  for (TabPtr& tab : m_list) {
     if (tab == m_floatingTab)
       continue;
 
@@ -633,7 +640,7 @@ void Tabs::resetOldPositions()
 
 void Tabs::resetOldPositions(double t)
 {
-  for (Tab* tab : m_list) {
+  for (TabPtr& tab : m_list) {
     if (tab == m_floatingTab)
       continue;
 
@@ -667,20 +674,39 @@ void Tabs::startDrag()
   m_dragTabIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
 }
 
-void Tabs::stopDrag()
+void Tabs::stopDrag(DropTabResult result)
 {
   m_isDragging = false;
 
-  destroyFloatingTab();
+  switch (result) {
 
-  if (m_selected) {
-    m_selected->oldX = m_selected->x;
-    m_selected->oldWidth = m_selected->width;
+    case DropTabResult::IGNORE:
+      destroyFloatingTab();
+
+      ASSERT(m_selected);
+      if (m_selected) {
+        m_selected->oldX = m_selected->x;
+        m_selected->oldWidth = m_selected->width;
+      }
+      resetOldPositions(animationTime());
+      updateTabs();
+      startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+      break;
+
+    case DropTabResult::DOCKED_IN_OTHER_PLACE: {
+      TabPtr tab = m_floatingTab;
+
+      m_floatingTab = nullptr;
+      m_removedTab = nullptr;
+      destroyFloatingTab();
+
+      ASSERT(tab);
+      if (tab)
+        removeTab(tab->view, false);
+      break;
+    }
+
   }
-
-  resetOldPositions(animationTime());
-  updateTabs();
-  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
 }
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
@@ -705,7 +731,7 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   return box;
 }
 
-void Tabs::createFloatingTab(Tab* tab)
+void Tabs::createFloatingTab(TabPtr& tab)
 {
   ASSERT(!m_floatingOverlay);
 
@@ -717,7 +743,7 @@ void Tabs::createFloatingTab(Tab* tab)
     Graphics g(surface, 0, 0);
     g.setFont(getFont());
     g.fillRect(gfx::ColorNone, g.getClipBounds());
-    drawTab(&g, g.getClipBounds(), tab, 0, true, true);
+    drawTab(&g, g.getClipBounds(), tab.get(), 0, true, true);
   }
 
   // Make opaque (TODO this shouldn't be necessary)
@@ -733,8 +759,8 @@ void Tabs::createFloatingTab(Tab* tab)
       }
   }
 
-  m_floatingOverlay = new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1);
-  OverlayManager::instance()->addOverlay(m_floatingOverlay);
+  m_floatingOverlay.reset(new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1));
+  OverlayManager::instance()->addOverlay(m_floatingOverlay.get());
 
   resetOldPositions();
 
@@ -747,13 +773,12 @@ void Tabs::createFloatingTab(Tab* tab)
 void Tabs::destroyFloatingTab()
 {
   if (m_floatingOverlay) {
-    OverlayManager::instance()->removeOverlay(m_floatingOverlay);
-    delete m_floatingOverlay;
+    OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
     m_floatingOverlay = nullptr;
   }
 
   if (m_floatingTab) {
-    Tab* tab = m_floatingTab;
+    TabPtr tab(m_floatingTab);
     m_floatingTab = nullptr;
 
     resetOldPositions();

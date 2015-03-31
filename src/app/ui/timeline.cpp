@@ -988,6 +988,15 @@ void Timeline::onAfterLayerChanged(Editor* editor)
   invalidate();
 }
 
+void Timeline::onDestroyEditor(Editor* editor)
+{
+  ASSERT(m_editor == editor);
+  if (m_editor == editor) {
+    m_editor->removeObserver(this);
+    m_editor = nullptr;
+  }
+}
+
 void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 {
   // Scrolling.

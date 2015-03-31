@@ -30,6 +30,11 @@ void EditorObservers::removeObserver(EditorObserver* observer)
   m_observers.removeObserver(observer);
 }
 
+void EditorObservers::notifyDestroyEditor(Editor* editor)
+{
+  m_observers.notifyObservers(&EditorObserver::onDestroyEditor, editor);
+}
+
 void EditorObservers::notifyStateChanged(Editor* editor)
 {
   m_observers.notifyObservers(&EditorObserver::onStateChanged, editor);

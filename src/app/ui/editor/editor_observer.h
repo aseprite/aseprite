@@ -18,6 +18,8 @@ namespace app {
     virtual ~EditorObserver() { }
     virtual void dispose() { }
 
+    virtual void onDestroyEditor(Editor* editor) { }
+
     // Called when the editor's state changes.
     virtual void onStateChanged(Editor* editor) { }
 
