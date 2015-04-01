@@ -10,12 +10,13 @@
 #pragma once
 
 #include "app/ui/animated_widget.h"
+#include "base/shared_ptr.h"
+#include "base/unique_ptr.h"
 #include "ui/mouse_buttons.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
 #include <vector>
-#include <memory>
 
 namespace ui {
   class Graphics;
@@ -91,7 +92,7 @@ namespace app {
       }
     };
 
-    typedef std::shared_ptr<Tab> TabPtr;
+    typedef SharedPtr<Tab> TabPtr;
 
     typedef std::vector<TabPtr> TabsList;
     typedef TabsList::iterator TabsListIterator;
@@ -172,7 +173,7 @@ namespace app {
     gfx::Point m_dragOffset;
     int m_dragTabIndex;
     TabPtr m_floatingTab;
-    std::unique_ptr<ui::Overlay> m_floatingOverlay;
+    base::UniquePtr<ui::Overlay> m_floatingOverlay;
   };
 
 } // namespace app
