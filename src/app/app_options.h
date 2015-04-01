@@ -50,6 +50,7 @@ public:
   const Option& shapePadding() const { return m_shapePadding; }
   const Option& innerPadding() const { return m_innerPadding; }
   const Option& trim() const { return m_trim; }
+  const Option& crop() const { return m_crop; }
   const Option& filenameFormat() const { return m_filenameFormat; }
 
   bool hasExporterParams() const;
@@ -82,6 +83,7 @@ private:
   Option& m_shapePadding;
   Option& m_innerPadding;
   Option& m_trim;
+  Option& m_crop;
   Option& m_filenameFormat;
 
   Option& m_verbose;

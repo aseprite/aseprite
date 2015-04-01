@@ -59,6 +59,7 @@
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "base/split_string.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
 #include "doc/image.h"
@@ -204,6 +205,7 @@ void App::initialize(const AppOptions& options)
 
   bool ignoreEmpty = false;
   bool trim = false;
+  Params cropParams;
 
   // Open file specified in the command line
   if (!options.values().empty()) {
@@ -277,6 +279,17 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.trim()) {
           trim = true;
         }
+        // --crop
+        else if (opt == &options.crop()) {
+          std::vector<std::string> parts;
+          base::split_string(value.value(), parts, ",");
+          if (parts.size() == 4) {
+            cropParams.set("x", parts[0].c_str());
+            cropParams.set("y", parts[1].c_str());
+            cropParams.set("width", parts[2].c_str());
+            cropParams.set("height", parts[3].c_str());
+          }
+        }
         // --filename-format
         else if (opt == &options.filenameFormat()) {
           filenameFormat = value.value();
@@ -297,6 +310,7 @@ void App::initialize(const AppOptions& options)
 
             Command* saveAsCommand = CommandsModule::instance()->getCommandByName(CommandId::SaveFileCopyAs);
             Command* trimCommand = CommandsModule::instance()->getCommandByName(CommandId::AutocropSprite);
+            Command* cropCommand = CommandsModule::instance()->getCommandByName(CommandId::CropSprite);
             Command* undoCommand = CommandsModule::instance()->getCommandByName(CommandId::Undo);
 
             if (splitLayersSaveAs) {
@@ -320,6 +334,9 @@ void App::initialize(const AppOptions& options)
                   value.value(), show->name());
                 fmt = filename_formatter(format,
                   value.value(), show->name(), -1, false);
+
+                if (!cropParams.empty())
+                  ctx->executeCommand(cropCommand, cropParams);
 
                 // TODO --trim command with --save-as doesn't make too
                 // much sense as we lost the trim rectangle
@@ -352,6 +369,9 @@ void App::initialize(const AppOptions& options)
                 for (Layer* layer : layers)
                   layer->setVisible(layer->name() == importLayerSaveAs);
               }
+
+              if (!cropParams.empty())
+                ctx->executeCommand(cropCommand, cropParams);
 
               if (trim)
                 ctx->executeCommand(trimCommand);

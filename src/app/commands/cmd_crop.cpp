@@ -30,8 +30,12 @@ public:
   Command* clone() const override { return new CropSpriteCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  void onLoadParams(const Params& params) override;
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
+
+private:
+  gfx::Rect m_bounds;
 };
 
 CropSpriteCommand::CropSpriteCommand()
@@ -41,10 +45,21 @@ CropSpriteCommand::CropSpriteCommand()
 {
 }
 
+void CropSpriteCommand::onLoadParams(const Params& params)
+{
+  m_bounds = gfx::Rect(0, 0, 0, 0);
+  if (params.has_param("x")) m_bounds.x = params.get_as<int>("x");
+  if (params.has_param("y")) m_bounds.y = params.get_as<int>("y");
+  if (params.has_param("width")) m_bounds.w = params.get_as<int>("width");
+  if (params.has_param("height")) m_bounds.h = params.get_as<int>("height");
+}
+
 bool CropSpriteCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasVisibleMask);
+  return
+    context->checkFlags(
+      ContextFlags::ActiveDocumentIsWritable |
+      (m_bounds.isEmpty() ? ContextFlags::HasVisibleMask: 0));
 }
 
 void CropSpriteCommand::onExecute(Context* context)
@@ -52,10 +67,16 @@ void CropSpriteCommand::onExecute(Context* context)
   ContextWriter writer(context);
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
-  Mask* mask(document->mask());
+
+  gfx::Rect bounds;
+  if (m_bounds.isEmpty())
+    bounds = document->mask()->bounds();
+  else
+    bounds = m_bounds;
+
   {
     Transaction transaction(writer.context(), "Sprite Crop");
-    document->getApi(transaction).cropSprite(sprite, mask->bounds());
+    document->getApi(transaction).cropSprite(sprite, bounds);
     transaction.commit();
   }
   document->generateMaskBoundaries();
