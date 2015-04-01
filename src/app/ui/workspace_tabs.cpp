@@ -11,18 +11,14 @@
 
 #include "app/ui/workspace_tabs.h"
 
-#include "app/ui/skin/skin_theme.h"
-
 namespace app {
 
-using namespace app::skin;
 using namespace ui;
 
 WorkspaceTabs::WorkspaceTabs(TabsDelegate* tabsDelegate)
   : Tabs(tabsDelegate)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  setBgColor(theme->colors.workspace());
+  setDockedStyle();
 }
 
 WorkspaceTabs::~WorkspaceTabs()

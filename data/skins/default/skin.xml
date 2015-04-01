@@ -7,6 +7,7 @@
     <dim id="tabs_width" value="80" />
     <dim id="tabs_height" value="17" />
     <dim id="tabs_empty_height" value="5" />
+    <dim id="docked_tabs_height" value="12" />
     <dim id="tabs_close_icon_width" value="14" />
     <dim id="tabs_close_icon_height" value="12" />
     <dim id="tabs_icon_width" value="10" />

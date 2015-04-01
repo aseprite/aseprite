@@ -118,6 +118,8 @@ namespace app {
     void selectPreviousTab();
     TabView* getSelectedTab();
 
+    void setDockedStyle();
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
@@ -151,6 +153,11 @@ namespace app {
     bool m_hotCloseButton;
     bool m_clickedCloseButton;
     TabPtr m_selected;
+
+    // Style
+    bool m_docked;
+    int m_tabsHeight;
+    int m_tabsEmptyHeight;
 
     // Delegate of notifications
     TabsDelegate* m_delegate;

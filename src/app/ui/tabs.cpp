@@ -51,6 +51,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_hotCloseButton(false)
   , m_clickedCloseButton(false)
   , m_selected(nullptr)
+  , m_docked(false)
   , m_delegate(delegate)
   , m_removedTab(nullptr)
   , m_isDragging(false)
@@ -59,6 +60,11 @@ Tabs::Tabs(TabsDelegate* delegate)
 {
   setDoubleBuffered(true);
   initTheme();
+
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  m_tabsHeight = theme->dimensions.tabsHeight();
+  m_tabsEmptyHeight = theme->dimensions.tabsEmptyHeight();
+  setBgColor(theme->colors.windowFace());
 }
 
 Tabs::~Tabs()
@@ -201,6 +207,17 @@ TabView* Tabs::getSelectedTab()
     return m_selected->view;
   else
     return NULL;
+}
+
+void Tabs::setDockedStyle()
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+
+  m_docked = true;
+  m_tabsHeight = theme->dimensions.dockedTabsHeight();
+  m_tabsEmptyHeight = 0;
+
+  setBgColor(theme->colors.workspace());
 }
 
 bool Tabs::onProcessMessage(Message* msg)
@@ -375,10 +392,12 @@ void Tabs::onPaint(PaintEvent& ev)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
     (m_list.empty() && animation() == ANI_NONE ? 0:
-      theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
+      m_tabsHeight - m_tabsEmptyHeight));
 
-  g->fillRect(theme->colors.windowFace(), g->getClipBounds());
-  drawFiller(g, box);
+  g->fillRect(getBgColor(), g->getClipBounds());
+
+  if (!m_docked)
+    drawFiller(g, box);
 
   // For each tab...
   for (TabPtr& tab : m_list) {
@@ -428,9 +447,9 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
   gfx::Size reqsize(0, 0);
 
   if (m_list.empty() && animation() == ANI_NONE)
-    reqsize.h = theme->dimensions.tabsEmptyHeight();
+    reqsize.h = m_tabsEmptyHeight;
   else
-    reqsize.h = theme->dimensions.tabsHeight();
+    reqsize.h = m_tabsHeight;
 
   ev.setPreferredSize(reqsize);
 }
@@ -504,9 +523,10 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
   }
 
   // Tab bottom part
-  theme->styles.tabBottom()->paint(g,
-    gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
-    nullptr, state);
+  if (!m_docked)
+    theme->styles.tabBottom()->paint(g,
+      gfx::Rect(box.x, box.y2(), box.w, getBounds().y2()-box.y2()),
+      nullptr, state);
 
   // Close button
   if (!closeBox.isEmpty()) {
@@ -715,7 +735,7 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
     (m_list.empty() && animation() == ANI_NONE ? 0:
-      theme->dimensions.tabsHeight() - theme->dimensions.tabsEmptyHeight()));
+      m_tabsHeight - m_tabsEmptyHeight));
   int startX = m_border*guiscale();
   double t = animationTime();
 
@@ -737,7 +757,7 @@ void Tabs::createFloatingTab(TabPtr& tab)
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   she::Surface* surface = she::instance()->createRgbaSurface(
-    tab->width, theme->dimensions.tabsHeight());
+    tab->width, m_tabsHeight);
 
   {
     Graphics g(surface, 0, 0);
