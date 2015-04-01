@@ -387,7 +387,6 @@ bool Tabs::onProcessMessage(Message* msg)
 
 void Tabs::onPaint(PaintEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
@@ -443,7 +442,6 @@ void Tabs::onResize(ResizeEvent& ev)
 
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Size reqsize(0, 0);
 
   if (m_list.empty() && animation() == ANI_NONE)
@@ -731,7 +729,6 @@ void Tabs::stopDrag(DropTabResult result)
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
     (m_list.empty() && animation() == ANI_NONE ? 0:
@@ -755,7 +752,6 @@ void Tabs::createFloatingTab(TabPtr& tab)
 {
   ASSERT(!m_floatingOverlay);
 
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   she::Surface* surface = she::instance()->createRgbaSurface(
     tab->width, m_tabsHeight);
 
