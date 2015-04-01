@@ -389,8 +389,12 @@ void DocumentExporter::captureSamples(Samples& samples)
         gfx::Rect frameBounds;
         doc::color_t refColor = 0;
 
-        if (m_trimCels)
-          refColor = get_pixel(sampleRender, 0, 0);
+        if (m_trimCels) {
+          if (layer->isBackground())
+            refColor = get_pixel(sampleRender, 0, 0);
+          else
+            refColor = sprite->transparentColor();
+        }
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
 
