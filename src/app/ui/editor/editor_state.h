@@ -115,7 +115,7 @@ namespace app {
     DISABLE_COPYING(EditorState);
   };
 
-  typedef SharedPtr<EditorState> EditorStatePtr;
+  typedef base::SharedPtr<EditorState> EditorStatePtr;
 
 } // namespace app
 

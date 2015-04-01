@@ -69,7 +69,7 @@ private:
   gfx::Rect m_inTextureBounds;
 };
 
-typedef SharedPtr<SampleBounds> SampleBoundsPtr;
+typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
 class DocumentExporter::Sample {
 public:

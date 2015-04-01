@@ -91,7 +91,7 @@ private:
 
     for (ConvolutionMatrixStock::iterator it = m_stock.begin(), end = m_stock.end();
          it != end; ++it) {
-      SharedPtr<ConvolutionMatrix> matrix = *it;
+      base::SharedPtr<ConvolutionMatrix> matrix = *it;
       ListItem* listitem = new ListItem(matrix->getName());
       m_stockListBox->addChild(listitem);
     }
@@ -125,7 +125,7 @@ private:
   void onMatrixChange()
   {
     Widget* selected = m_stockListBox->getSelectedChild();
-    SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText().c_str());
+    base::SharedPtr<ConvolutionMatrix> matrix = m_stock.getByName(selected->getText().c_str());
     Target newTarget = matrix->getDefaultTarget();
 
     m_filter.setMatrix(matrix);
@@ -172,7 +172,7 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
   ConvolutionMatrixStock m_stock;
 
   // Get last used (selected) matrix
-  SharedPtr<ConvolutionMatrix> matrix =
+  base::SharedPtr<ConvolutionMatrix> matrix =
     m_stock.getByName(get_config_string(ConfigSection, "Selected", ""));
 
   // Create the filter and setup initial settings

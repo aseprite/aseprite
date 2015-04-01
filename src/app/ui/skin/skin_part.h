@@ -42,7 +42,7 @@ namespace app {
       Bitmaps m_bitmaps;
     };
 
-    typedef SharedPtr<SkinPart> SkinPartPtr;
+    typedef base::SharedPtr<SkinPart> SkinPartPtr;
 
   } // namespace skin
 } // namespace app

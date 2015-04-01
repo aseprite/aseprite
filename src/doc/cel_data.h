@@ -43,7 +43,7 @@ namespace doc {
     int m_opacity;              // Opacity level
   };
 
-  typedef SharedPtr<CelData> CelDataRef;
+  typedef base::SharedPtr<CelData> CelDataRef;
 
 } // namespace doc
 

@@ -128,7 +128,7 @@ namespace app {
     return a;
   }
 
-  typedef SharedPtr<PixelsMovement> PixelsMovementPtr;
+  typedef base::SharedPtr<PixelsMovement> PixelsMovementPtr;
 
 } // namespace app
 

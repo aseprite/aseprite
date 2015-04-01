@@ -302,7 +302,7 @@ TEST_F(GifFormat, OpaqueRgbQuantizationTwoLayers)
     pal->setEntry(1, rgba(255, 0, 0, 255));
 
     // Do not modify palettes
-    doc->setFormatOptions(SharedPtr<FormatOptions>(new GifOptions(GifOptions::NoQuantize)));
+    doc->setFormatOptions(base::SharedPtr<FormatOptions>(new GifOptions(GifOptions::NoQuantize)));
     save_document(&m_ctx, doc);
 
     doc->close();

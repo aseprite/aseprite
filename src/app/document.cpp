@@ -203,7 +203,7 @@ void Document::impossibleToBackToSavedState()
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 
-void Document::setFormatOptions(const SharedPtr<FormatOptions>& format_options)
+void Document::setFormatOptions(const base::SharedPtr<FormatOptions>& format_options)
 {
   m_format_options = format_options;
 }

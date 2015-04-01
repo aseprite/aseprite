@@ -23,8 +23,8 @@ namespace app {
   // A container of all convolution matrices in the convmatr.def file.
   class ConvolutionMatrixStock {
   public:
-    typedef std::vector<SharedPtr<ConvolutionMatrix> >::iterator iterator;
-    typedef std::vector<SharedPtr<ConvolutionMatrix> >::const_iterator const_iterator;
+    typedef std::vector<base::SharedPtr<ConvolutionMatrix> >::iterator iterator;
+    typedef std::vector<base::SharedPtr<ConvolutionMatrix> >::const_iterator const_iterator;
 
     ConvolutionMatrixStock();
     virtual ~ConvolutionMatrixStock();
@@ -34,13 +34,13 @@ namespace app {
     const_iterator begin() const { return m_matrices.begin(); }
     const_iterator end() const { return m_matrices.end(); }
 
-    SharedPtr<ConvolutionMatrix> getByName(const char* name);
+    base::SharedPtr<ConvolutionMatrix> getByName(const char* name);
 
     void reloadStock();
     void cleanStock();
 
   private:
-    std::vector<SharedPtr<ConvolutionMatrix> > m_matrices;
+    std::vector<base::SharedPtr<ConvolutionMatrix> > m_matrices;
   };
 
 } // namespace app

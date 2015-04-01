@@ -18,7 +18,7 @@
 
 namespace app {
 
-  typedef SharedPtr<TiXmlDocument> XmlDocumentRef;
+  typedef base::SharedPtr<TiXmlDocument> XmlDocumentRef;
 
   XmlDocumentRef open_xml(const std::string& filename);
   void save_xml(XmlDocumentRef doc, const std::string& filename);

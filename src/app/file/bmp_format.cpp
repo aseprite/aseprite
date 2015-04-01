@@ -693,7 +693,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 
   // Setup the file-data.
   if (fop->seq.format_options == NULL) {
-    SharedPtr<BmpOptions> bmp_options(new BmpOptions());
+    base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
     bmp_options->compression = infoheader.biCompression;

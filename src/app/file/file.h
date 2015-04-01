@@ -94,7 +94,7 @@ namespace app {
       bool has_alpha;
       LayerImage* layer;
       Cel* last_cel;
-      SharedPtr<FormatOptions> format_options;
+      base::SharedPtr<FormatOptions> format_options;
     } seq;
 
     ~FileOp();
@@ -132,7 +132,7 @@ namespace app {
   // Does extra post-load processing which may require user intervention.
   void fop_post_load(FileOp* fop);
 
-  void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options);
+  void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOptions>& format_options);
   void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);
   void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
   Image* fop_sequence_image(FileOp* fi, PixelFormat pixelFormat, int w, int h);

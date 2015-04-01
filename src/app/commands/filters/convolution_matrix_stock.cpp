@@ -31,13 +31,13 @@ ConvolutionMatrixStock::~ConvolutionMatrixStock()
   cleanStock();
 }
 
-SharedPtr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
+base::SharedPtr<ConvolutionMatrix> ConvolutionMatrixStock::getByName(const char* name)
 {
   for (const_iterator it = begin(), end = this->end(); it != end; ++it) {
     if (std::strcmp((*it)->getName(), name) == 0)
       return *it;
   }
-  return SharedPtr<ConvolutionMatrix>(0);
+  return base::SharedPtr<ConvolutionMatrix>(0);
 }
 
 void ConvolutionMatrixStock::reloadStock()
@@ -57,7 +57,7 @@ void ConvolutionMatrixStock::reloadStock()
                           "convmatr.def", NULL };
   char *s, buf[256], leavings[4096];
   int i, x, y, w, h, div, bias;
-  SharedPtr<ConvolutionMatrix> matrix;
+  base::SharedPtr<ConvolutionMatrix> matrix;
   std::string name;
 
   cleanStock();

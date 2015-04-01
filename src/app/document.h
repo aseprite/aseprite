@@ -103,8 +103,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
 
-    void setFormatOptions(const SharedPtr<FormatOptions>& format_options);
-    SharedPtr<FormatOptions> getFormatOptions() { return m_format_options; }
+    void setFormatOptions(const base::SharedPtr<FormatOptions>& format_options);
+    base::SharedPtr<FormatOptions> getFormatOptions() { return m_format_options; }
 
     //////////////////////////////////////////////////////////////////////
     // Boundaries
@@ -203,7 +203,7 @@ namespace app {
     int m_read_locks;
 
     // Data to save the file in the same format that it was loaded
-    SharedPtr<FormatOptions> m_format_options;
+    base::SharedPtr<FormatOptions> m_format_options;
 
     // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
     Cel* m_extraCel;

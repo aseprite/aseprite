@@ -23,10 +23,10 @@ namespace filters {
   public:
     ConvolutionMatrixFilter();
 
-    void setMatrix(const SharedPtr<ConvolutionMatrix>& matrix);
+    void setMatrix(const base::SharedPtr<ConvolutionMatrix>& matrix);
     void setTiledMode(TiledMode tiledMode);
 
-    SharedPtr<ConvolutionMatrix> getMatrix() { return m_matrix; }
+    base::SharedPtr<ConvolutionMatrix> getMatrix() { return m_matrix; }
     TiledMode getTiledMode() const { return m_tiledMode; }
 
     // Filter implementation
@@ -36,7 +36,7 @@ namespace filters {
     void applyToIndexed(FilterManager* filterMgr);
 
   private:
-    SharedPtr<ConvolutionMatrix> m_matrix;
+    base::SharedPtr<ConvolutionMatrix> m_matrix;
     TiledMode m_tiledMode;
     std::vector<uint8_t*> m_lines;
   };

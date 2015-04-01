@@ -57,7 +57,7 @@ namespace app {
 
     // Returns extra options for this format. It can return != NULL
     // only if flags() returns FILE_SUPPORT_GET_FORMAT_OPTIONS.
-    SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
+    base::SharedPtr<FormatOptions> getFormatOptions(FileOp* fop) {
       return onGetFormatOptions(fop);
     }
 
@@ -78,8 +78,8 @@ namespace app {
 #endif
     virtual void onDestroyData(FileOp* fop) { }
 
-    virtual SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {
-      return SharedPtr<FormatOptions>(0);
+    virtual base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) {
+      return base::SharedPtr<FormatOptions>(0);
     }
 
   };

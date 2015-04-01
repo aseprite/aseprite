@@ -32,7 +32,7 @@ namespace doc {
     std::vector<uint8_t> m_buffer;
   };
 
-  typedef SharedPtr<ImageBuffer> ImageBufferPtr;
+  typedef base::SharedPtr<ImageBuffer> ImageBufferPtr;
 
 } // namespace doc
 

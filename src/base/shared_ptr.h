@@ -8,6 +8,8 @@
 #define BASE_SHARED_PTR_H_INCLUDED
 #pragma once
 
+namespace base {
+
 // This class counts references for a SharedPtr.
 class SharedPtrRefCounterBase
 {
@@ -252,5 +254,7 @@ bool operator!=(const SharedPtr<T>& ptr1, const SharedPtr<T>& ptr2)
 {
   return ptr1.get() != ptr2.get();
 }
+
+} // namespace base
 
 #endif

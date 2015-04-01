@@ -92,7 +92,7 @@ namespace app {
       }
     };
 
-    typedef SharedPtr<Tab> TabPtr;
+    typedef base::SharedPtr<Tab> TabPtr;
 
     typedef std::vector<TabPtr> TabsList;
     typedef TabsList::iterator TabsListIterator;

@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,8 @@
 #include <gtest/gtest.h>
 
 #include "base/shared_ptr.h"
+
+using namespace base;
 
 TEST(SharedPtr, IntPtr)
 {

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -169,7 +169,7 @@ namespace ui {
     DISABLE_COPYING(CheckedDrawMode);
   };
 
-  typedef SharedPtr<Graphics> GraphicsPtr;
+  typedef base::SharedPtr<Graphics> GraphicsPtr;
 
 } // namespace ui
 

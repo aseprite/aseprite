@@ -42,7 +42,7 @@ namespace app {
       ISliderBgPainter* m_painter;
     };
 
-    typedef SharedPtr<SkinSliderProperty> SkinSliderPropertyPtr;
+    typedef base::SharedPtr<SkinSliderProperty> SkinSliderPropertyPtr;
 
   } // namespace skin
 } // namespace app

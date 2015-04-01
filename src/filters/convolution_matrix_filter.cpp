@@ -118,7 +118,7 @@ ConvolutionMatrixFilter::ConvolutionMatrixFilter()
 {
 }
 
-void ConvolutionMatrixFilter::setMatrix(const SharedPtr<ConvolutionMatrix>& matrix)
+void ConvolutionMatrixFilter::setMatrix(const base::SharedPtr<ConvolutionMatrix>& matrix)
 {
   m_matrix = matrix;
   m_lines.resize(matrix->getHeight());

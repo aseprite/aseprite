@@ -419,7 +419,7 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
 
   // Configure output format?
   if (fop->format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
-    SharedPtr<FormatOptions> format_options = fop->format->getFormatOptions(fop);
+    base::SharedPtr<FormatOptions> format_options = fop->format->getFormatOptions(fop);
 
     // Does the user cancelled the operation?
     if (format_options == NULL) {
@@ -696,7 +696,7 @@ void fop_post_load(FileOp* fop)
     if (fop->document->sprite()->pixelFormat() == IMAGE_RGB &&
         fop->document->sprite()->getPalettes().size() <= 1 &&
         fop->document->sprite()->palette(frame_t(0))->isBlack()) {
-      SharedPtr<Palette> palette
+      base::SharedPtr<Palette> palette
         (render::create_palette_from_rgb(
           fop->document->sprite(),
           frame_t(0), NULL));
@@ -709,7 +709,7 @@ void fop_post_load(FileOp* fop)
   fop->document->markAsSaved();
 }
 
-void fop_sequence_set_format_options(FileOp* fop, const SharedPtr<FormatOptions>& format_options)
+void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOptions>& format_options)
 {
   ASSERT(fop->seq.format_options == NULL);
   fop->seq.format_options = format_options;

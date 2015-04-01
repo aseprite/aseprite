@@ -29,7 +29,7 @@ namespace skin {
     skin::Style* m_style;
   };
 
-  typedef SharedPtr<SkinStyleProperty> SkinStylePropertyPtr;
+  typedef base::SharedPtr<SkinStyleProperty> SkinStylePropertyPtr;
 
 } // namespace skin
 } // namespace app

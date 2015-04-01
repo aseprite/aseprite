@@ -56,7 +56,7 @@ namespace app {
       int m_lowerRight;
     };
 
-    typedef SharedPtr<SkinProperty> SkinPropertyPtr;
+    typedef base::SharedPtr<SkinProperty> SkinPropertyPtr;
 
     SkinPropertyPtr get_skin_property(ui::Widget* widget);
 

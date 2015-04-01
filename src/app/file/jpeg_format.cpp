@@ -59,7 +59,7 @@ class JpegFormat : public FileFormat {
   bool onSave(FileOp* fop) override;
 #endif
 
-  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateJpegFormat()
@@ -237,7 +237,7 @@ bool JpegFormat::onSave(FileOp* fop)
   Image *image = fop->seq.image;
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
+  base::SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
   int c;
 
   // Open the file for write in it.
@@ -347,11 +347,11 @@ bool JpegFormat::onSave(FileOp* fop)
 #endif
 
 // Shows the JPEG configuration dialog.
-SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
+base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
-  SharedPtr<JpegOptions> jpeg_options;
+  base::SharedPtr<JpegOptions> jpeg_options;
   if (fop->document->getFormatOptions() != NULL)
-    jpeg_options = SharedPtr<JpegOptions>(fop->document->getFormatOptions());
+    jpeg_options = base::SharedPtr<JpegOptions>(fop->document->getFormatOptions());
 
   if (!jpeg_options)
     jpeg_options.reset(new JpegOptions);
@@ -385,7 +385,7 @@ SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
   }
   catch (std::exception& e) {
     Console::showException(e);
-    return SharedPtr<JpegOptions>(0);
+    return base::SharedPtr<JpegOptions>(0);
   }
 }
 

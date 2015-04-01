@@ -93,7 +93,7 @@ class GifFormat : public FileFormat {
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif
-  SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
+  base::SharedPtr<FormatOptions> onGetFormatOptions(FileOp* fop) override;
 };
 
 FileFormat* CreateGifFormat()
@@ -528,7 +528,7 @@ bool GifFormat::onSave(FileOp* fop)
   if (!gif_file)
     throw Exception("Error creating GIF file.\n");
 
-  SharedPtr<GifOptions> gif_options = fop->seq.format_options;
+  base::SharedPtr<GifOptions> gif_options = fop->seq.format_options;
   Sprite* sprite = fop->document->sprite();
   int sprite_w = sprite->width();
   int sprite_h = sprite->height();
@@ -773,11 +773,11 @@ bool GifFormat::onSave(FileOp* fop)
 }
 #endif
 
-SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
+base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 {
-  SharedPtr<GifOptions> gif_options;
+  base::SharedPtr<GifOptions> gif_options;
   if (fop->document->getFormatOptions() != NULL)
-    gif_options = SharedPtr<GifOptions>(fop->document->getFormatOptions());
+    gif_options = base::SharedPtr<GifOptions>(fop->document->getFormatOptions());
 
   if (!gif_options)
     gif_options.reset(new GifOptions);
@@ -838,7 +838,7 @@ SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
   }
   catch (std::exception& e) {
     Console::showException(e);
-    return SharedPtr<GifOptions>(0);
+    return base::SharedPtr<GifOptions>(0);
   }
 }
 
