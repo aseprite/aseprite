@@ -394,6 +394,7 @@ bool Tabs::onProcessMessage(Message* msg)
           DropTabResult result = DropTabResult::IGNORE;
 
           if (m_delegate) {
+            ASSERT(m_selected);
             result =
               m_delegate->onDropTab(this, m_selected->view,
                 mouseMsg->position());
