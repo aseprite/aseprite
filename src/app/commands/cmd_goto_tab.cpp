@@ -13,7 +13,7 @@
 
 #include "app/app.h"
 #include "app/ui/main_window.h"
-#include "app/ui/tabs.h"
+#include "app/ui/workspace_tabs.h"
 
 namespace app {
 

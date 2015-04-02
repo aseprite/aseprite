@@ -32,10 +32,10 @@
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
-#include "app/ui/tabs.h"
 #include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
+#include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "ui/message.h"
 #include "ui/splitter.h"
@@ -60,12 +60,13 @@ MainWindow::MainWindow()
   m_statusBar = new StatusBar();
   m_colorBar = new ColorBar(colorBarPlaceholder()->getAlign());
   m_toolBar = new ToolBar();
-  m_tabsBar = new Tabs(this);
+  m_tabsBar = new WorkspaceTabs(this);
   m_workspace = new Workspace();
-  m_workspace->setTabsBar(m_tabsBar);
-  m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
   m_previewEditor = new PreviewEditorWindow();
   m_timeline = new Timeline();
+
+  m_workspace->setTabsBar(m_tabsBar);
+  m_workspace->ActiveViewChanged.connect(&MainWindow::onActiveViewChange, this);
 
   // configure all widgets to expansives
   m_menuBar->setExpansive(true);
@@ -299,7 +300,9 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
 
 void MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
 {
-  m_workspace->setDropViewPreview(pos);
+  m_workspace->setDropViewPreview(pos,
+    dynamic_cast<WorkspaceView*>(tabView),
+    static_cast<WorkspaceTabs*>(tabs));
 }
 
 void MainWindow::onDockingTab(Tabs* tabs, TabView* tabView)

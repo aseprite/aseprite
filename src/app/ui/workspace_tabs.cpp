@@ -17,12 +17,18 @@ using namespace ui;
 
 WorkspaceTabs::WorkspaceTabs(TabsDelegate* tabsDelegate)
   : Tabs(tabsDelegate)
+  , m_panel(nullptr)
 {
-  setDockedStyle();
 }
 
 WorkspaceTabs::~WorkspaceTabs()
 {
+}
+
+void WorkspaceTabs::setPanel(WorkspacePanel* panel)
+{
+  ASSERT(!m_panel);
+  m_panel = panel;
 }
 
 } // namespace app

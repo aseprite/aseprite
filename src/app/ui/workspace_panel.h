@@ -18,8 +18,8 @@
 #include <vector>
 
 namespace app {
-  class Tabs;
   class Workspace;
+  class WorkspaceTabs;
 
   class WorkspacePanel : public ui::Widget
                        , public AnimatedWidget {
@@ -41,7 +41,7 @@ namespace app {
     WorkspacePanel(PanelType panelType);
     ~WorkspacePanel();
 
-    void setTabsBar(Tabs* tabs);
+    void setTabsBar(WorkspaceTabs* tabs);
 
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
@@ -55,7 +55,7 @@ namespace app {
     void setActiveView(WorkspaceView* view);
 
     // Drop views into workspace
-    void setDropViewPreview(const gfx::Point& pos);
+    void setDropViewPreview(const gfx::Point& pos, WorkspaceView* view);
     void removeDropViewPreview();
 
     // Returns true if the view was docked inside the panel.
@@ -75,7 +75,7 @@ namespace app {
     Workspace* getWorkspace();
 
     PanelType m_panelType;
-    Tabs* m_tabs;
+    WorkspaceTabs* m_tabs;
     WorkspaceViews m_views;
     WorkspaceView* m_activeView;
     int m_dropArea;

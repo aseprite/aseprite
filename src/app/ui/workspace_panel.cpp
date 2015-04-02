@@ -12,7 +12,6 @@
 #include "app/ui/workspace_panel.h"
 
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/tabs.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui/workspace_view.h"
@@ -59,9 +58,10 @@ WorkspacePanel::~WorkspacePanel()
   ASSERT(m_views.empty());
 }
 
-void WorkspacePanel::setTabsBar(Tabs* tabs)
+void WorkspacePanel::setTabsBar(WorkspaceTabs* tabs)
 {
   m_tabs = tabs;
+  m_tabs->setPanel(this);
 }
 
 void WorkspacePanel::addView(WorkspaceView* view, int pos)
@@ -181,7 +181,7 @@ void WorkspacePanel::adjustActiveViewBounds()
       child->setBounds(rc);
 }
 
-void WorkspacePanel::setDropViewPreview(const gfx::Point& pos)
+void WorkspacePanel::setDropViewPreview(const gfx::Point& pos, WorkspaceView* view)
 {
   int newDropArea = calculateDropArea(pos);
   if (newDropArea != m_dropArea) {
@@ -246,6 +246,7 @@ bool WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, Wor
 
   WorkspaceTabs* newTabs = new WorkspaceTabs(m_tabs->getDelegate());
   WorkspacePanel* newPanel = new WorkspacePanel(SUB_PANEL);
+  newTabs->setDockedStyle();
   newPanel->setTabsBar(newTabs);
   newPanel->setExpansive(true);
 

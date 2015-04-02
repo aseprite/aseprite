@@ -105,6 +105,8 @@ namespace app {
     };
 
   public:
+    static ui::WidgetType Type();
+
     Tabs(TabsDelegate* delegate);
     ~Tabs();
 
@@ -120,6 +122,11 @@ namespace app {
     TabView* getSelectedTab();
 
     void setDockedStyle();
+
+    // Drop TabViews into this Tabs widget
+    void setDropViewPreview(const gfx::Point& pos, TabView* view);
+    void removeDropViewPreview();
+    int getDropTabIndex() const { return m_dropNewIndex; }
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -174,6 +181,11 @@ namespace app {
     int m_dragTabIndex;
     TabPtr m_floatingTab;
     base::UniquePtr<ui::Overlay> m_floatingOverlay;
+
+    // Drop new tabs
+    gfx::Point m_dropNewPos;
+    TabView* m_dropNewTab;
+    int m_dropNewIndex;
   };
 
 } // namespace app

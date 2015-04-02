@@ -12,7 +12,7 @@
 #include "app/ui/workspace.h"
 
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui/tabs.h"
+#include "app/ui/workspace_tabs.h"
 #include "app/ui/workspace_view.h"
 #include "base/remove_from_container.h"
 #include "ui/paint_event.h"
@@ -38,6 +38,7 @@ Workspace::Workspace()
   , m_tabs(nullptr)
   , m_activePanel(&m_mainPanel)
   , m_dropPreviewPanel(nullptr)
+  , m_dropPreviewTabs(nullptr)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -51,7 +52,7 @@ Workspace::~Workspace()
   ASSERT(m_views.empty());
 }
 
-void Workspace::setTabsBar(Tabs* tabs)
+void Workspace::setTabsBar(WorkspaceTabs* tabs)
 {
   m_tabs = tabs;
   m_mainPanel.setTabsBar(tabs);
@@ -59,11 +60,7 @@ void Workspace::setTabsBar(Tabs* tabs)
 
 void Workspace::addView(WorkspaceView* view, int pos)
 {
-  m_mainPanel.addView(view, pos);
-  m_activePanel = &m_mainPanel;
-  m_views.push_back(view);
-
-  setActiveView(view);
+  addViewToPanel(&m_mainPanel, view, pos);
 }
 
 void Workspace::removeView(WorkspaceView* view)
@@ -122,31 +119,69 @@ void Workspace::onResize(ui::ResizeEvent& ev)
     child->setBounds(rc);
 }
 
-void Workspace::setDropViewPreview(const gfx::Point& pos)
+void Workspace::setDropViewPreview(const gfx::Point& pos,
+  WorkspaceView* view, WorkspaceTabs* tabs)
 {
+  TabView* tabView = dynamic_cast<TabView*>(view);
+  WorkspaceTabs* newTabs = nullptr;
   WorkspacePanel* panel = getPanelAt(pos);
+  if (!newTabs) {
+    newTabs = getTabsAt(pos);
+    // Drop preview is only to drop tabs from a different WorkspaceTabs.
+    if (newTabs == tabs)
+      newTabs = nullptr;
+  }
 
   if (m_dropPreviewPanel && m_dropPreviewPanel != panel)
     m_dropPreviewPanel->removeDropViewPreview();
+  if (m_dropPreviewTabs && m_dropPreviewTabs != newTabs)
+    m_dropPreviewTabs->removeDropViewPreview();
 
   m_dropPreviewPanel = panel;
+  m_dropPreviewTabs = newTabs;
 
   if (m_dropPreviewPanel)
-    m_dropPreviewPanel->setDropViewPreview(pos);
+    m_dropPreviewPanel->setDropViewPreview(pos, view);
+  if (m_dropPreviewTabs)
+    m_dropPreviewTabs->setDropViewPreview(pos, tabView);
 }
 
 void Workspace::removeDropViewPreview()
 {
   if (m_dropPreviewPanel)
     m_dropPreviewPanel->removeDropViewPreview();
+
+  if (m_dropPreviewTabs)
+    m_dropPreviewTabs->removeDropViewPreview();
 }
 
 bool Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
 {
-  if (!m_dropPreviewPanel)
-    return false;
+  if (m_dropPreviewPanel)
+    return m_dropPreviewPanel->dropViewAt(pos, getViewPanel(view), view);
+  else if (m_dropPreviewTabs) {
+    WorkspacePanel* dropPanel = m_dropPreviewTabs->panel();
+    ASSERT(dropPanel);
 
-  return m_dropPreviewPanel->dropViewAt(pos, getViewPanel(view), view);
+    int pos = m_dropPreviewTabs->getDropTabIndex();
+    m_dropPreviewTabs->removeDropViewPreview();
+
+    removeView(view);
+    addViewToPanel(dropPanel, view, pos);
+    return true;
+  }
+  else
+    return false;
+}
+
+void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, int pos)
+{
+  panel->addView(view, pos);
+
+  m_activePanel = panel;
+  m_views.push_back(view);
+
+  setActiveView(view);
 }
 
 WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
@@ -167,6 +202,18 @@ WorkspacePanel* Workspace::getPanelAt(const gfx::Point& pos)
   while (widget) {
     if (widget->getType() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
+
+    widget = widget->getParent();
+  }
+  return nullptr;
+}
+
+WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
+{
+  Widget* widget = getManager()->pick(pos);
+  while (widget) {
+    if (widget->getType() == Tabs::Type())
+      return static_cast<WorkspaceTabs*>(widget);
 
     widget = widget->getParent();
   }

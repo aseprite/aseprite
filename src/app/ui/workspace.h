@@ -14,7 +14,7 @@
 #include "ui/widget.h"
 
 namespace app {
-  class Tabs;
+  class WorkspaceTabs;
 
   class Workspace : public ui::Widget {
   public:
@@ -25,7 +25,7 @@ namespace app {
     Workspace();
     ~Workspace();
 
-    void setTabsBar(Tabs* tabs);
+    void setTabsBar(WorkspaceTabs* tabs);
 
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
@@ -42,7 +42,8 @@ namespace app {
     void setMainPanelAsActive();
 
     // Drop views into workspace
-    void setDropViewPreview(const gfx::Point& pos);
+    void setDropViewPreview(const gfx::Point& pos,
+      WorkspaceView* view, WorkspaceTabs* tabs);
     void removeDropViewPreview();
 
     // Returns true if the view was docked inside the workspace.
@@ -55,17 +56,17 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
 
   private:
-    int calculateDropArea(const gfx::Point& pos) const;
-    int getDropThreshold() const;
-    void adjustTime(int& time, int flag);
+    void addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, int pos);
     WorkspacePanel* getViewPanel(WorkspaceView* view);
     WorkspacePanel* getPanelAt(const gfx::Point& pos);
+    WorkspaceTabs* getTabsAt(const gfx::Point& pos);
 
     WorkspacePanel m_mainPanel;
-    Tabs* m_tabs;
+    WorkspaceTabs* m_tabs;
     WorkspaceViews m_views;
     WorkspacePanel* m_activePanel;
     WorkspacePanel* m_dropPreviewPanel;
+    WorkspaceTabs* m_dropPreviewTabs;
   };
 
 } // namespace app

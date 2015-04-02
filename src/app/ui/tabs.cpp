@@ -36,7 +36,7 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-static WidgetType tabs_type()
+WidgetType Tabs::Type()
 {
   static WidgetType type = kGenericWidget;
   if (type == kGenericWidget)
@@ -45,7 +45,7 @@ static WidgetType tabs_type()
 }
 
 Tabs::Tabs(TabsDelegate* delegate)
-  : Widget(tabs_type())
+  : Widget(Tabs::Type())
   , m_border(2)
   , m_hot(nullptr)
   , m_hotCloseButton(false)
@@ -57,6 +57,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_isDragging(false)
   , m_floatingTab(nullptr)
   , m_floatingOverlay(nullptr)
+  , m_dropNewTab(nullptr)
 {
   setDoubleBuffered(true);
   initTheme();
@@ -144,16 +145,31 @@ void Tabs::updateTabs()
     tabWidth = MAX(4*ui::guiscale(), tabWidth);
   }
   double x = 0.0;
+  int i = 0;
+
+  if (m_dropNewTab)
+    m_dropNewIndex = -1;
 
   for (auto& tab : m_list) {
-    if (tab == m_floatingTab)
+    if (tab == m_floatingTab) {
+      ++i;
       continue;
+    }
+
+    if (m_dropNewTab) {
+      int dropX = m_dropNewPos.x - getBounds().x;
+      if (dropX >= x-tabWidth/2 && dropX < x+tabWidth/2) {
+        x += tabWidth;
+        m_dropNewIndex = i;
+      }
+    }
 
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
     tab->x = int(x);
     tab->width = int(x+tabWidth) - int(x);
     x += tabWidth;
+    ++i;
   }
   invalidate();
 }
@@ -218,6 +234,25 @@ void Tabs::setDockedStyle()
   m_tabsEmptyHeight = 0;
 
   setBgColor(theme->colors.workspace());
+}
+
+void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
+{
+  m_dropNewPos = pos;
+  m_dropNewTab = view;
+
+  resetOldPositions(animationTime());
+  updateTabs();
+  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+}
+
+void Tabs::removeDropViewPreview()
+{
+  m_dropNewTab = nullptr;
+
+  resetOldPositions(animationTime());
+  updateTabs();
+  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
 }
 
 bool Tabs::onProcessMessage(Message* msg)
@@ -718,7 +753,7 @@ void Tabs::stopDrag(DropTabResult result)
       m_removedTab.reset(nullptr);
       destroyFloatingTab();
 
-      ASSERT(tab);
+      //ASSERT(tab);      // TODO check this state
       if (tab)
         removeTab(tab->view, false);
       break;

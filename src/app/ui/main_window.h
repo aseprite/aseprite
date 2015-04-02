@@ -34,9 +34,9 @@ namespace app {
   class Notifications;
   class PreviewEditorWindow;
   class StatusBar;
-  class Tabs;
   class Timeline;
   class Workspace;
+  class WorkspaceTabs;
 
   class MainWindow : public app::gen::MainWindow
                    , public TabsDelegate {
@@ -52,7 +52,7 @@ namespace app {
 
     MainMenuBar* getMenuBar() { return m_menuBar; }
     ContextBar* getContextBar() { return m_contextBar; }
-    Tabs* getTabsBar() { return m_tabsBar; }
+    WorkspaceTabs* getTabsBar() { return m_tabsBar; }
     Timeline* getTimeline() { return m_timeline; }
     Workspace* getWorkspace() { return m_workspace; }
     PreviewEditorWindow* getPreviewEditor() { return m_previewEditor; }
@@ -98,7 +98,7 @@ namespace app {
     StatusBar* m_statusBar;
     ColorBar* m_colorBar;
     ui::Widget* m_toolBar;
-    Tabs* m_tabsBar;
+    WorkspaceTabs* m_tabsBar;
     Mode m_mode;
     Timeline* m_timeline;
     Workspace* m_workspace;
