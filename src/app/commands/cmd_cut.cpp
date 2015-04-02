@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/util/clipboard.h"
-#include "app/util/misc.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"

@@ -32,7 +32,7 @@
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
-#include "app/util/misc.h"
+#include "app/util/new_image_from_mask.h"
 #include "doc/doc.h"
 #include "render/quantization.h"
 
@@ -123,7 +123,7 @@ static bool copy_from_document(const DocumentLocation& location)
   ASSERT(document != NULL);
   ASSERT(document->isMaskVisible());
 
-  Image* image = NewImageFromMask(location);
+  Image* image = new_image_from_mask(location);
   if (!image)
     return false;
 

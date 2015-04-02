@@ -15,7 +15,6 @@
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/util/clipboard.h"
-#include "app/util/misc.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"

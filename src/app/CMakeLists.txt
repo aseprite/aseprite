@@ -352,8 +352,8 @@ add_library(app-lib
   util/clipboard.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
-  util/misc.cpp
   util/msk_file.cpp
+  util/new_image_from_mask.cpp
   util/pic_file.cpp
   util/range_utils.cpp
   webserver.cpp

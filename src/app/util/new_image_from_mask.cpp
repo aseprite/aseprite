@@ -9,26 +9,20 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
-#include "app/color.h"
+#include "app/util/new_image_from_mask.h"
+
+#include "app/document.h"
 #include "app/document_location.h"
-#include "app/ini_file.h"
-#include "app/modules/editors.h"
-#include "app/modules/gui.h"
-#include "app/modules/palettes.h"
-#include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
-#include "app/util/misc.h"
-#include "doc/doc.h"
-#include "ui/manager.h"
-#include "ui/system.h"
-#include "ui/widget.h"
+#include "doc/image.h"
+#include "doc/image_bits.h"
+#include "doc/image_traits.h"
+#include "doc/mask.h"
 
 namespace app {
 
 using namespace doc;
 
-Image* NewImageFromMask(const DocumentLocation& location)
+Image* new_image_from_mask(const DocumentLocation& location)
 {
   const Sprite* srcSprite = location.sprite();
   const Mask* srcMask = location.document()->mask();

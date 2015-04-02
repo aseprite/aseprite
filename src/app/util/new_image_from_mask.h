@@ -5,8 +5,8 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_UTIL_MISC_H_INCLUDED
-#define APP_UTIL_MISC_H_INCLUDED
+#ifndef APP_UTIL_NEW_IMAGE_FROM_MASK_H_INCLUDED
+#define APP_UTIL_NEW_IMAGE_FROM_MASK_H_INCLUDED
 #pragma once
 
 namespace doc {
@@ -16,7 +16,7 @@ namespace doc {
 namespace app {
   class DocumentLocation;
 
-  doc::Image* NewImageFromMask(const DocumentLocation& location);
+  doc::Image* new_image_from_mask(const DocumentLocation& location);
 
 } // namespace app
 

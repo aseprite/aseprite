@@ -23,7 +23,6 @@
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
-#include "app/util/misc.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"

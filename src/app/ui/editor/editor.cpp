@@ -41,7 +41,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
-#include "app/util/misc.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"

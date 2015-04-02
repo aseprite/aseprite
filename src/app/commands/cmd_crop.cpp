@@ -16,7 +16,6 @@
 #include "app/ui/color_bar.h"
 #include "app/transaction.h"
 #include "app/util/autocrop.h"
-#include "app/util/misc.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"

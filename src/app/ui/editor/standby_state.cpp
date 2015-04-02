@@ -34,12 +34,12 @@
 #include "app/ui/editor/zooming_state.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
-#include "app/util/misc.h"
-#include "fixmath/fixmath.h"
-#include "gfx/rect.h"
+#include "app/util/new_image_from_mask.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "fixmath/fixmath.h"
+#include "gfx/rect.h"
 #include "ui/alert.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -416,7 +416,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   try {
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
-    base::UniquePtr<Image> tmpImage(NewImageFromMask(editor->getDocumentLocation()));
+    base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getDocumentLocation()));
     gfx::Point origin = document->mask()->bounds().getOrigin();
     int opacity = 255;
     PixelsMovementPtr pixelsMovement(
