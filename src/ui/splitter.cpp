@@ -11,6 +11,7 @@
 #include "ui/splitter.h"
 
 #include "ui/load_layout_event.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/resize_event.h"
@@ -132,7 +133,7 @@ bool Splitter::onProcessMessage(Message* msg)
       break;
 
     case kSetCursorMessage:
-      if (isEnabled()) {
+      if (isEnabled() && (!getManager()->getCapture() || hasCapture())) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
         Widget* c1, *c2;
         int x1, y1, x2, y2;
