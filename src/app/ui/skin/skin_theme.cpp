@@ -369,7 +369,7 @@ void SkinTheme::onRegenerate()
     return;
 
   XmlDocumentRef doc = open_xml(rf.filename());
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
 
   // Load dimension
   {
@@ -491,7 +491,7 @@ void SkinTheme::onRegenerate()
       PRINTF("Loading part '%s'...\n", part_id);
 
       SkinPartPtr part = m_parts_by_id[part_id];
-      if (part == NULL)
+      if (!part)
         part = m_parts_by_id[part_id] = SkinPartPtr(new SkinPart);
 
       if (w > 0 && h > 0) {
@@ -911,7 +911,7 @@ void SkinTheme::paintButton(PaintEvent& ev)
   // Tool buttons are smaller
   LookType look = NormalLook;
   SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery != NULL)
+  if (skinPropery)
     look = skinPropery->getLook();
 
   // Selected
@@ -986,7 +986,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
   // Check box look
   LookType look = NormalLook;
   SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery != NULL)
+  if (skinPropery)
     look = skinPropery->getLook();
 
   // Background
@@ -1040,7 +1040,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
 
   bool isMiniLook = false;
   SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery != NULL)
+  if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
   gfx::Color bg = colors.background();
@@ -1403,11 +1403,11 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   ISliderBgPainter* bgPainter = NULL;
 
   SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery != NULL)
+  if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
   SkinSliderPropertyPtr skinSliderPropery = widget->getProperty(SkinSliderProperty::Name);
-  if (skinSliderPropery != NULL)
+  if (skinSliderPropery)
     bgPainter = skinSliderPropery->getBgPainter();
 
   // Draw customized background
@@ -1649,7 +1649,7 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
 
   bool isMiniLook = false;
   SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
-  if (skinPropery != NULL)
+  if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
   skin::Style* bgStyle = (isMiniLook ?

@@ -22,7 +22,7 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-void write_celdata(std::ostream& os, CelData* celdata)
+void write_celdata(std::ostream& os, const CelData* celdata)
 {
   write32(os, celdata->id());
   write16(os, (int16_t)celdata->position().x);

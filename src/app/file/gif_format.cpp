@@ -776,7 +776,7 @@ bool GifFormat::onSave(FileOp* fop)
 base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 {
   base::SharedPtr<GifOptions> gif_options;
-  if (fop->document->getFormatOptions() != NULL)
+  if (fop->document->getFormatOptions())
     gif_options = base::SharedPtr<GifOptions>(fop->document->getFormatOptions());
 
   if (!gif_options)

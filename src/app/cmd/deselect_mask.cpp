@@ -37,7 +37,7 @@ void DeselectMask::onUndo()
   doc->setMask(m_oldMask);
   doc->setMaskVisible(true);
 
-  m_oldMask.reset(nullptr);
+  m_oldMask.reset();
 }
 
 size_t DeselectMask::onMemSize() const

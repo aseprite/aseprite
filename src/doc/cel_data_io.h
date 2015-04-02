@@ -15,7 +15,7 @@ namespace doc {
   class CelData;
   class SubObjectsIO;
 
-  void write_celdata(std::ostream& os, CelData* cel);
+  void write_celdata(std::ostream& os, const CelData* cel);
   CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects);
 
 } // namespace doc

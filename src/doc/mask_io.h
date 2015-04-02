@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,7 +14,7 @@ namespace doc {
 
   class Mask;
 
-  void write_mask(std::ostream& os, Mask* mask);
+  void write_mask(std::ostream& os, const Mask* mask);
   Mask* read_mask(std::istream& is);
 
 } // namespace doc

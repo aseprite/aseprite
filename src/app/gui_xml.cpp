@@ -43,7 +43,7 @@ GuiXml::GuiXml()
 
 std::string GuiXml::version()
 {
-  TiXmlHandle handle(m_doc);
+  TiXmlHandle handle(m_doc.get());
   TiXmlElement* xmlKey = handle.FirstChild("gui").ToElement();
 
   if (xmlKey && xmlKey->Attribute("version")) {

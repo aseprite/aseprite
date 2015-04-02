@@ -1326,7 +1326,7 @@ bool Widget::onProcessMessage(Message* msg)
       ASSERT(ptmsg->rect().h > 0);
 
       GraphicsPtr graphics = getGraphics(toClient(ptmsg->rect()));
-      return paintEvent(graphics);
+      return paintEvent(graphics.get());
     }
 
     case kKeyDownMessage:

@@ -101,7 +101,7 @@ SkinPartPtr StyleSheet::convertPart(const css::Value& value)
   if (value.type() == css::Value::String) {
     const std::string& part_id = value.string();
     part = get_part_by_id(part_id);
-    if (part == NULL)
+    if (!part)
       throw base::Exception("Unknown part '%s'\n", part_id.c_str());
   }
   return part;

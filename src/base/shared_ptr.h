@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -211,7 +211,7 @@ public:
   T* get() const { return m_ptr; }
   T& operator*() const { return *m_ptr; }
   T* operator->() const { return m_ptr; }
-  operator T*() const { return m_ptr; }
+  explicit operator bool() const { return (m_ptr != nullptr); }
 
   long use_count() const { return (m_refCount ? m_refCount->use_count(): 0); }
   bool unique() const { return use_count() == 1; }

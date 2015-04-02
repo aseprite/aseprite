@@ -105,7 +105,7 @@ Sprite* Sprite::createBasicSprite(doc::PixelFormat format, int width, int height
 
   // Create the main image.
   doc::ImageRef image(doc::Image::create(format, width, height));
-  doc::clear_image(image, 0);
+  doc::clear_image(image.get(), 0);
 
   // Create the first transparent layer.
   {

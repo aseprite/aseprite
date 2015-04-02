@@ -55,7 +55,8 @@ bool PcxFormat::onLoad(FileOp* fop)
   int x, y;
   char ch = 0;
 
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   fgetc(f);                    /* skip manufacturer ID */
   fgetc(f);                    /* skip version flag */
@@ -178,7 +179,7 @@ bool PcxFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PcxFormat::onSave(FileOp* fop)
 {
-  Image *image = fop->seq.image;
+  Image* image = fop->seq.image.get();
   int c, r, g, b;
   int x, y;
   int runcount;
@@ -186,7 +187,8 @@ bool PcxFormat::onSave(FileOp* fop)
   char runchar;
   char ch = 0;
 
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   if (image->pixelFormat() == IMAGE_RGB) {
     depth = 24;

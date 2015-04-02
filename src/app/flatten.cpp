@@ -42,7 +42,7 @@ LayerImage* create_flatten_layer_copy(Sprite* dstSprite, const Layer* srcLayer,
       cel->setPosition(bounds.x, bounds.y);
 
       // Render this frame.
-      render.renderLayer(image, srcLayer, frame,
+      render.renderLayer(image.get(), srcLayer, frame,
         gfx::Clip(0, 0, bounds));
 
       // Add the cel (and release the base::UniquePtr).

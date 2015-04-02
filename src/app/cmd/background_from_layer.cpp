@@ -57,8 +57,8 @@ void BackgroundFromLayer::onExecute()
     Image* cel_image = cel->image();
     ASSERT(cel_image);
 
-    clear_image(bg_image, bgcolor);
-    render::composite_image(bg_image, cel_image,
+    clear_image(bg_image.get(), bgcolor);
+    render::composite_image(bg_image.get(), cel_image,
       cel->x(), cel->y(),
       MID(0, cel->opacity(), 255),
       static_cast<LayerImage*>(layer)->getBlendMode());
@@ -69,11 +69,11 @@ void BackgroundFromLayer::onExecute()
     // same size of cel-image and bg-image
     if (bg_image->width() == cel_image->width() &&
         bg_image->height() == cel_image->height()) {
-      executeAndAdd(new CopyRect(cel_image, bg_image,
+      executeAndAdd(new CopyRect(cel_image, bg_image.get(),
           gfx::Clip(0, 0, cel_image->bounds())));
     }
     else {
-      ImageRef bg_image2(Image::createCopy(bg_image));
+      ImageRef bg_image2(Image::createCopy(bg_image.get()));
       executeAndAdd(new cmd::ReplaceImage(sprite, cel->imageRef(), bg_image2));
     }
   }
@@ -84,7 +84,7 @@ void BackgroundFromLayer::onExecute()
     if (!cel) {
       ImageRef cel_image(Image::create(sprite->pixelFormat(),
           sprite->width(), sprite->height()));
-      clear_image(cel_image, bgcolor);
+      clear_image(cel_image.get(), bgcolor);
 
       // Create the new cel and add it to the new background layer
       cel = new Cel(frame, cel_image);

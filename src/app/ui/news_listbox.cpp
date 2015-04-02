@@ -254,7 +254,7 @@ void NewsListBox::parseFile(const std::string& filename)
     return;
   }
 
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
   TiXmlElement* itemXml = handle
     .FirstChild("rss")
     .FirstChild("channel")

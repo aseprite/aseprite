@@ -22,7 +22,7 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-void write_frame_tag(std::ostream& os, FrameTag* tag)
+void write_frame_tag(std::ostream& os, const FrameTag* tag)
 {
   std::string name = tag->name();
 

@@ -155,7 +155,7 @@ void ConvolutionMatrixFilter::applyToRgba(FilterManager* filterMgr)
       continue;
     }
 
-    delegate.reset(m_matrix);
+    delegate.reset(m_matrix.get());
     get_neighboring_pixels<RgbTraits>(src, x, y,
                                       m_matrix->getWidth(),
                                       m_matrix->getHeight(),
@@ -222,7 +222,7 @@ void ConvolutionMatrixFilter::applyToGrayscale(FilterManager* filterMgr)
       continue;
     }
 
-    delegate.reset(m_matrix);
+    delegate.reset(m_matrix.get());
     get_neighboring_pixels<GrayscaleTraits>(src, x, y,
                                             m_matrix->getWidth(),
                                             m_matrix->getHeight(),
@@ -277,7 +277,7 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
       continue;
     }
 
-    delegate.reset(m_matrix);
+    delegate.reset(m_matrix.get());
     get_neighboring_pixels<IndexedTraits>(src, x, y,
                                           m_matrix->getWidth(),
                                           m_matrix->getHeight(),

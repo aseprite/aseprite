@@ -164,7 +164,7 @@ void ExpandCelCanvas::commit()
 
       // Copy the destination to the cel image.
       m_transaction.execute(new cmd::CopyRegion(
-          m_celImage, m_dstImage, m_validDstRegion, dx, dy));
+          m_celImage.get(), m_dstImage, m_validDstRegion, dx, dy));
     }
     // If the size of both images are different, we have to
     // replace the entire image.
@@ -252,7 +252,7 @@ void ExpandCelCanvas::validateSourceCanvas(const gfx::Region& rgn)
       fill_rect(m_srcImage, rc, m_srcImage->maskColor());
 
     for (const auto& rc : rgnToValidate)
-      m_srcImage->copy(m_celImage,
+      m_srcImage->copy(m_celImage.get(),
         gfx::Clip(rc.x, rc.y,
           rc.x+m_bounds.x-m_origCelPos.x,
           rc.y+m_bounds.y-m_origCelPos.y, rc.w, rc.h));
@@ -276,7 +276,7 @@ void ExpandCelCanvas::validateDestCanvas(const gfx::Region& rgn)
     src_y = m_bounds.y;
   }
   else {
-    src = m_celImage;
+    src = m_celImage.get();
     src_x = m_origCelPos.x;
     src_y = m_origCelPos.y;
   }

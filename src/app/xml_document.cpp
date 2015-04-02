@@ -29,8 +29,8 @@ XmlDocumentRef open_xml(const std::string& filename)
   // Try to load the XML file
   XmlDocumentRef doc(new TiXmlDocument());
   doc->SetValue(filename.c_str());
-  if (!doc->LoadFile(file))
-    throw XmlException(doc);
+  if (!doc->LoadFile(file.get()))
+    throw XmlException(doc.get());
 
   return doc;
 }
@@ -41,8 +41,8 @@ void save_xml(XmlDocumentRef doc, const std::string& filename)
   if (!file)
     throw Exception("Error loading file: " + filename);
 
-  if (!doc->SaveFile(file))
-    throw XmlException(doc);
+  if (!doc->SaveFile(file.get()))
+    throw XmlException(doc.get());
 }
 
 bool bool_attr_is_true(const TiXmlElement* elem, const char* attrName)

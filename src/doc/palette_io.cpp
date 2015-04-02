@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -28,7 +28,7 @@ using namespace base::serialization::little_endian;
 //   for each color     ("ncolors" times)
 //     DWORD            _rgba color
 
-void write_palette(std::ostream& os, Palette* palette)
+void write_palette(std::ostream& os, const Palette* palette)
 {
   write16(os, palette->frame()); // Frame
   write16(os, palette->size());  // Number of colors

@@ -602,7 +602,8 @@ bool BmpFormat::onLoad(FileOp *fop)
   PixelFormat pixelFormat;
   int format;
 
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   if (read_bmfileheader(f, &fileheader) != 0)
     return false;
@@ -692,7 +693,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   }
 
   // Setup the file-data.
-  if (fop->seq.format_options == NULL) {
+  if (!fop->seq.format_options) {
     base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
@@ -711,7 +712,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 #ifdef ENABLE_SAVE
 bool BmpFormat::onSave(FileOp *fop)
 {
-  Image *image = fop->seq.image;
+  Image* image = fop->seq.image.get();
   int bfSize;
   int biSizeImage;
   int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : 8;
@@ -729,7 +730,8 @@ bool BmpFormat::onSave(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   /* file_header */
   fputw(0x4D42, f);              /* bfType ("BM") */

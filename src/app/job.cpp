@@ -39,7 +39,7 @@ Job::Job(const char* jobName)
     m_progress = StatusBar::instance()->addProgress();
     m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", jobName);
 
-    m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window));
+    m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window.get()));
     m_timer->Tick.connect(&Job::onMonitoringTick, this);
     m_timer->start();
   }
@@ -51,7 +51,7 @@ Job::~Job()
     ASSERT(!m_timer->isRunning());
     ASSERT(m_thread == NULL);
 
-    if (m_alert_window != NULL)
+    if (m_alert_window)
       m_alert_window->closeWindow(NULL);
 
     if (m_progress)

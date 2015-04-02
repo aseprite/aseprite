@@ -267,7 +267,7 @@ retry:;
           Image::create(sprite->pixelFormat(), frameBounds.w, frameBounds.h));
 
         // Render the portion of sheet.
-        render.renderSprite(resultImage, sprite, currentFrame,
+        render.renderSprite(resultImage.get(), sprite, currentFrame,
           gfx::Clip(0, 0, x, y, frameBounds.w, frameBounds.h));
 
         animation.push_back(resultImage);

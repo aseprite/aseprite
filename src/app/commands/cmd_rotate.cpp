@@ -111,7 +111,7 @@ protected:
         ImageRef new_image(Image::create(image->pixelFormat(),
             m_angle == 180 ? image->width(): image->height(),
             m_angle == 180 ? image->height(): image->width()));
-        doc::rotate_image(image, new_image, m_angle);
+        doc::rotate_image(image, new_image.get(), m_angle);
 
         api.replaceImage(m_sprite, cel->imageRef(), new_image);
       }

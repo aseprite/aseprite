@@ -65,7 +65,7 @@ AppMenus::AppMenus()
 void AppMenus::reload()
 {
   XmlDocumentRef doc(GuiXml::instance()->doc());
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
   const char* path = GuiXml::instance()->filename();
 
   ////////////////////////////////////////

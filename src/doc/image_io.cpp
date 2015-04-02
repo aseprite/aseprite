@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -33,7 +33,7 @@ using namespace base::serialization::little_endian;
 //        BYTE[2]       for Grayscale images, or
 //        BYTE          for Indexed images
 
-void write_image(std::ostream& os, Image* image)
+void write_image(std::ostream& os, const Image* image)
 {
   write32(os, image->id());
   write8(os, image->pixelFormat());    // Pixel format

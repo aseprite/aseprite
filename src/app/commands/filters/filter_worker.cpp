@@ -91,7 +91,7 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
 
 FilterWorker::~FilterWorker()
 {
-  if (m_alertWindow != NULL)
+  if (m_alertWindow)
     m_alertWindow->closeWindow(NULL);
 
   delete m_progressBar;

@@ -38,7 +38,8 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
   int byte;
   int bpp;
 
-  base::FileHandle f(base::open_file_with_exception(filename, "rb"));
+  base::FileHandle handle(base::open_file_with_exception(filename, "rb"));
+  FILE* f = handle.get();
 
   // Animator format?
   magic = base::fgetw(f);
@@ -83,8 +84,9 @@ Image* load_pic_file(const char* filename, int* x, int* y, Palette** palette)
   }
 
   // rewind
-  f.reset(NULL);
-  f = base::open_file_with_exception(filename, "rb");
+  handle.reset();
+  handle = base::open_file_with_exception(filename, "rb");
+  f = handle.get();
 
   // read a PIC/MSK Animator Pro file
   size = base::fgetl(f);        // file size
@@ -172,7 +174,8 @@ int save_pic_file(const char *filename, int x, int y, const Palette* palette, co
   if ((bpp == 8) && (!palette))
     return -1;
 
-  base::FileHandle f(base::open_file_with_exception(filename, "wb"));
+  base::FileHandle handle(base::open_file_with_exception(filename, "wb"));
+  FILE* f = handle.get();
 
   size = 64;
   // Bit-per-pixel image data block

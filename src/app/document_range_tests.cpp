@@ -115,8 +115,8 @@ public:
           layer->addCel(cel);
         }
 
-        clear_image(image, black);
-        put_pixel(image, i, j, white);
+        clear_image(image.get(), black);
+        put_pixel(image.get(), i, j, white);
       }
     }
   }

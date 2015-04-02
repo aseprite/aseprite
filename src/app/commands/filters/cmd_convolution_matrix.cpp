@@ -181,14 +181,14 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
 
   ConvolutionMatrixFilter filter;
   filter.setTiledMode(docPref.tiled.mode());
-  if (matrix != 0)
+  if (matrix)
     filter.setMatrix(matrix);
 
   FilterManagerImpl filterMgr(context, &filter);
 
   ConvolutionMatrixWindow window(filter, filterMgr, m_stock);
   if (window.doModal()) {
-    if (filter.getMatrix() != NULL)
+    if (filter.getMatrix())
       set_config_string(ConfigSection, "Selected", filter.getMatrix()->getName());
   }
 }

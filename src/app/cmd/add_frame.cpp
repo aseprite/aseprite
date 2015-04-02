@@ -45,7 +45,7 @@ void AddFrame::onExecute()
     LayerImage* bglayer = sprite->backgroundLayer();
     if (bglayer) {
       ImageRef bgimage(Image::create(sprite->pixelFormat(), sprite->width(), sprite->height()));
-      clear_image(bgimage, doc->bgColor(bglayer));
+      clear_image(bgimage.get(), doc->bgColor(bglayer));
       Cel* cel = new Cel(m_newFrame, bgimage);
       m_addCel.reset(new cmd::AddCel(bglayer, cel));
       m_addCel->execute(context());

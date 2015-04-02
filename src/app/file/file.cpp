@@ -422,7 +422,7 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
     base::SharedPtr<FormatOptions> format_options = fop->format->getFormatOptions(fop);
 
     // Does the user cancelled the operation?
-    if (format_options == NULL) {
+    if (!format_options) {
       fop_free(fop);
       return NULL;
     }
@@ -472,7 +472,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
           fop->document->sprite()->setPalette(fop->seq.palette, true);  \
         }                                                               \
                                                                         \
-        old_image = fop->seq.image;                                     \
+        old_image = fop->seq.image.get();                               \
         fop->seq.image.reset(NULL);                                     \
         fop->seq.last_cel = NULL;                                       \
       } while (0)
@@ -480,7 +480,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       // Load the sequence
       frame_t frames(fop->seq.filename_list.size());
       frame_t frame(0);
-      old_image = NULL;
+      old_image = nullptr;
 
       fop->seq.has_alpha = false;
       fop->seq.progress_offset = 0.0f;
@@ -502,10 +502,10 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         if (!old_image) {
           // Error reading the first frame
           if (!loadres || !fop->document || !fop->seq.last_cel) {
-            delete fop->seq.image;
+            fop->seq.image.reset();
             delete fop->seq.last_cel;
             delete fop->document;
-            fop->document = NULL;
+            fop->document = nullptr;
             break;
           }
           // Read ok
@@ -518,7 +518,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         else {
           // All done (or maybe not enough memory)
           if (!loadres || !fop->seq.last_cel) {
-            delete fop->seq.image;
+            fop->seq.image.reset();
             delete fop->seq.last_cel;
             break;
           }
@@ -594,7 +594,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       render::Render render;
       for (frame_t frame(0); frame < sprite->totalFrames(); ++frame) {
         // Draw the "frame" in "fop->seq.image"
-        render.renderSprite(fop->seq.image, sprite, frame);
+        render.renderSprite(fop->seq.image.get(), sprite, frame);
 
         // Setup the palette.
         sprite->palette(frame)->copyColorsTo(fop->seq.palette);
@@ -702,7 +702,7 @@ void fop_post_load(FileOp* fop)
           frame_t(0), NULL));
 
       fop->document->sprite()->resetPalettes();
-      fop->document->sprite()->setPalette(palette, false);
+      fop->document->sprite()->setPalette(palette.get(), false);
     }
   }
 
@@ -711,7 +711,7 @@ void fop_post_load(FileOp* fop)
 
 void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOptions>& format_options)
 {
-  ASSERT(fop->seq.format_options == NULL);
+  ASSERT(!fop->seq.format_options);
   fop->seq.format_options = format_options;
 }
 

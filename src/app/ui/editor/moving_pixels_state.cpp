@@ -121,7 +121,7 @@ void MovingPixelsState::translate(const gfx::Point& delta)
 
 EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // If we are changing to another state, we've to drop the image.
@@ -153,7 +153,7 @@ EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* e
 
 void MovingPixelsState::onCurrentToolChange(Editor* editor)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   tools::Tool* current_tool = editor->getCurrentEditorTool();
@@ -170,7 +170,7 @@ void MovingPixelsState::onCurrentToolChange(Editor* editor)
 
 bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // Set this editor as the active one and setup the ContextBar for
@@ -246,7 +246,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
 
 bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // Drop the image temporarily in this location (where the user releases the mouse)
@@ -261,7 +261,7 @@ bool MovingPixelsState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // If there is a button pressed
@@ -305,7 +305,7 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
 bool MovingPixelsState::onSetCursor(Editor* editor)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // Move selection
@@ -321,7 +321,7 @@ bool MovingPixelsState::onSetCursor(Editor* editor)
 
 bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   if (!isActiveEditor())
     return false;
   ASSERT(editor == m_editor);
@@ -394,7 +394,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 
 bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   if (!isActiveEditor())
     return false;
   ASSERT(editor == m_editor);
@@ -405,7 +405,7 @@ bool MovingPixelsState::onKeyUp(Editor* editor, KeyMessage* msg)
 
 bool MovingPixelsState::onUpdateStatusBar(Editor* editor)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   const gfx::Transformation& transform(getTransformation(editor));
@@ -501,10 +501,10 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
 
 void MovingPixelsState::setTransparentColor(const app::Color& color)
 {
-  ASSERT(m_pixelsMovement != NULL);
+  ASSERT(m_pixelsMovement);
 
   Layer* layer = m_editor->layer();
-  ASSERT(layer != NULL);
+  ASSERT(layer);
 
   m_pixelsMovement->setMaskColor(
     color_utils::color_for_target_mask(color, ColorTarget(layer)));

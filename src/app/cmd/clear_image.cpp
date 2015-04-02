@@ -35,8 +35,8 @@ void ClearImage::onExecute()
 
 void ClearImage::onUndo()
 {
-  copy_image(image(), m_copy);
-  m_copy.reset(nullptr);
+  copy_image(image(), m_copy.get());
+  m_copy.reset();
 }
 
 } // namespace cmd

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,7 @@ using namespace base::serialization::little_endian;
 //       BYTE           8 pixels of the mask
 //       BYTE           for Indexed images
 
-void write_mask(std::ostream& os, Mask* mask)
+void write_mask(std::ostream& os, const Mask* mask)
 {
   const gfx::Rect& bounds = mask->bounds();
 

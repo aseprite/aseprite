@@ -29,7 +29,7 @@ void ReselectMask::onExecute()
 
   if (m_oldMask) {
     doc->setMask(m_oldMask);
-    m_oldMask.reset(nullptr);
+    m_oldMask.reset();
   }
 
   doc->setMaskVisible(true);

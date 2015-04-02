@@ -71,7 +71,8 @@ bool PngFormat::onLoad(FileOp* fop)
   png_bytep row_pointer;
   PixelFormat pixelFormat;
 
-  FileHandle fp(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,
@@ -321,7 +322,7 @@ bool PngFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PngFormat::onSave(FileOp* fop)
 {
-  Image *image = fop->seq.image;
+  Image* image = fop->seq.image.get();
   png_uint_32 width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
@@ -331,7 +332,8 @@ bool PngFormat::onSave(FileOp* fop)
   int pass, number_passes;
 
   /* open the file */
-  FileHandle fp(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
    * functions.  If you want to use the default stderr and longjump method,

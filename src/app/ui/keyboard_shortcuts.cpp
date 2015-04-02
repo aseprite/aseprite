@@ -454,7 +454,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
 void KeyboardShortcuts::importFile(const std::string& filename, KeySource source)
 {
   XmlDocumentRef doc = app::open_xml(filename);
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
   TiXmlElement* xmlKey = handle.FirstChild("keyboard").ToElement();
 
   importFile(xmlKey, source);

@@ -94,7 +94,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
     // With source image?
     if (src_image) {
       // No destination image
-      if (dst_image == NULL) {  // Only a transparent layer can have a null cel
+      if (!dst_image) {  // Only a transparent layer can have a null cel
         // Copy this cel to the destination layer...
 
         // Creating a copy of the image
@@ -122,13 +122,14 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
         doc::color_t bgcolor = app_get_color_to_clear_layer(dst_layer);
 
-        ImageRef new_image(doc::crop_image(dst_image,
+        ImageRef new_image(doc::crop_image(
+            dst_image.get(),
             bounds.x-dst_cel->x(),
             bounds.y-dst_cel->y(),
             bounds.w, bounds.h, bgcolor));
 
         // Merge src_image in new_image
-        render::composite_image(new_image, src_image,
+        render::composite_image(new_image.get(), src_image,
           src_cel->x()-bounds.x,
           src_cel->y()-bounds.y,
           src_cel->opacity(),

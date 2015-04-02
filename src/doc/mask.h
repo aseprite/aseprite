@@ -31,8 +31,8 @@ namespace doc {
     void setName(const char *name);
     const std::string& name() const { return m_name; }
 
-    const Image* bitmap() const { return m_bitmap; }
-    Image* bitmap() { return m_bitmap; }
+    const Image* bitmap() const { return m_bitmap.get(); }
+    Image* bitmap() { return m_bitmap.get(); }
 
     // Returns true if the mask is completely empty (i.e. nothing
     // selected)
@@ -42,10 +42,10 @@ namespace doc {
 
     // Returns true if the point is inside the mask
     bool containsPoint(int u, int v) const {
-      return (m_bitmap &&
+      return (m_bitmap.get() &&
               u >= m_bounds.x && u < m_bounds.x+m_bounds.w &&
               v >= m_bounds.y && v < m_bounds.y+m_bounds.h &&
-              get_pixel(m_bitmap, u-m_bounds.x, v-m_bounds.y));
+              get_pixel(m_bitmap.get(), u-m_bounds.x, v-m_bounds.y));
     }
 
     const gfx::Rect& bounds() const { return m_bounds; }

@@ -68,7 +68,8 @@ void ConvolutionMatrixStock::reloadStock()
 
     while (rf.next()) {
       // Open matrices stock file
-      base::FileHandle f = base::open_file(rf.filename(), "r");
+      base::FileHandle handle(base::open_file(rf.filename(), "r"));
+      FILE* f = handle.get();
       if (!f)
         continue;
 

@@ -57,8 +57,8 @@ void FlattenLayers::onExecute()
   // Copy all frames to the background.
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
     // Clear the image and render this frame.
-    clear_image(image, bgcolor);
-    render.renderSprite(image, sprite, frame);
+    clear_image(image.get(), bgcolor);
+    render.renderSprite(image.get(), sprite, frame);
 
     // TODO Keep cel links when possible
 
@@ -71,11 +71,11 @@ void FlattenLayers::onExecute()
       cel_image = cel->imageRef();
       ASSERT(cel_image);
 
-      executeAndAdd(new cmd::CopyRect(cel_image, image,
+      executeAndAdd(new cmd::CopyRect(cel_image.get(), image.get(),
           gfx::Clip(0, 0, image->bounds())));
     }
     else {
-      cel_image.reset(Image::createCopy(image));
+      cel_image.reset(Image::createCopy(image.get()));
       cel = new Cel(frame, cel_image);
       background->addCel(cel);
     }

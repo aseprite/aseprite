@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -61,7 +61,7 @@ Palette* create_palette_from_rgb(
   ImageRef flat_image(Image::create(sprite->pixelFormat(),
       sprite->width(), sprite->height()));
 
-  render::Render().renderSprite(flat_image, sprite, frameNumber);
+  render::Render().renderSprite(flat_image.get(), sprite, frameNumber);
 
   // Create an array of images
   std::vector<Image*> image_array;
@@ -76,7 +76,7 @@ Palette* create_palette_from_rgb(
       image_array.push_back(image);
     }
   }
-  image_array.push_back(flat_image);
+  image_array.push_back(flat_image.get());
 
   // Generate an optimized palette for all images
   create_palette_from_images(image_array, palette, has_background_layer);

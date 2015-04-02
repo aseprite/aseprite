@@ -74,7 +74,8 @@ bool FliFormat::onLoad(FileOp* fop)
 #endif
 
   // Open the file to read in binary mode
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   fli_read_header(f, &fli_header);
   fseek(f, 128, SEEK_SET);
@@ -201,7 +202,8 @@ bool FliFormat::onSave(FileOp* fop)
   fli_header.oframe1 = fli_header.oframe2 = 0;
 
   /* open the file to write in binary mode */
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   fseek(f, 128, SEEK_SET);
 

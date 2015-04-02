@@ -71,7 +71,7 @@ Tabs::Tabs(TabsDelegate* delegate)
 
 Tabs::~Tabs()
 {
-  m_removedTab.reset(nullptr);
+  m_removedTab.reset();
 
   // Stop animation
   stopAnimation();
@@ -104,7 +104,7 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
     return;
 
   if (m_hot == tab)
-    m_hot.reset(nullptr);
+    m_hot.reset();
 
   if (m_selected == tab) {
     if (tab == m_list.back())
@@ -113,7 +113,7 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
       selectNextTab();
 
     if (m_selected == tab)
-      m_selected.reset(nullptr);
+      m_selected.reset();
   }
 
   TabsListIterator it =
@@ -335,7 +335,7 @@ bool Tabs::onProcessMessage(Message* msg)
 
     case kMouseLeaveMessage:
       if (m_hot) {
-        m_hot.reset(nullptr);
+        m_hot.reset();
         invalidate();
       }
       return true;
@@ -756,8 +756,8 @@ void Tabs::stopDrag(DropTabResult result)
     case DropTabResult::DOCKED_IN_OTHER_PLACE: {
       TabPtr tab = m_floatingTab;
 
-      m_floatingTab.reset(nullptr);
-      m_removedTab.reset(nullptr);
+      m_floatingTab.reset();
+      m_removedTab.reset();
       destroyFloatingTab();
 
       //ASSERT(tab);      // TODO check this state
@@ -823,7 +823,7 @@ void Tabs::createFloatingTab(TabPtr& tab)
   resetOldPositions();
 
   m_floatingTab = tab;
-  m_removedTab.reset(nullptr);
+  m_removedTab.reset();
   startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
   updateTabs();
 }
@@ -832,12 +832,12 @@ void Tabs::destroyFloatingTab()
 {
   if (m_floatingOverlay) {
     OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
-    m_floatingOverlay.reset(nullptr);
+    m_floatingOverlay.reset();
   }
 
   if (m_floatingTab) {
     TabPtr tab(m_floatingTab);
-    m_floatingTab.reset(nullptr);
+    m_floatingTab.reset();
 
     resetOldPositions();
     startAnimation(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);

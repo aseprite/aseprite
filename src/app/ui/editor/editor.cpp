@@ -205,7 +205,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   // Fire before change state event, set the state, and fire after
   // change state event.
   EditorState::BeforeChangeAction beforeChangeAction =
-    m_state->onBeforeChangeState(this, newState);
+    m_state->onBeforeChangeState(this, newState.get());
 
   // Push a new state
   if (newState) {
@@ -223,7 +223,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
     m_state = m_statesHistory.top();
   }
 
-  ASSERT(m_state != NULL);
+  ASSERT(m_state);
 
   // Change to the new state.
   m_state->onAfterChangeState(this);
@@ -584,7 +584,7 @@ void Editor::drawSpriteClipped(const gfx::Region& updateRegion)
     for (const Rect& screenRect : screenRegion) {
       IntersectClip clip(&screenGraphics, screenRect);
       if (clip)
-        drawSpriteUnclippedRect(editorGraphics, updateRect);
+        drawSpriteUnclippedRect(editorGraphics.get(), updateRect);
     }
   }
 }
@@ -670,9 +670,9 @@ void Editor::drawMaskSafe()
     GraphicsPtr g = getGraphics(getClientBounds());
 
     for (const gfx::Rect& rc : region) {
-      IntersectClip clip(g, rc);
+      IntersectClip clip(g.get(), rc);
       if (clip)
-        drawMask(g);
+        drawMask(g.get());
     }
 
     // Draw the cursor

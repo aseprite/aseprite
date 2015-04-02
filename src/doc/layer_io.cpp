@@ -33,7 +33,7 @@ using namespace base::serialization::little_endian;
 
 // Serialized Layer data:
 
-void write_layer(std::ostream& os, Layer* layer)
+void write_layer(std::ostream& os, const Layer* layer)
 {
   std::string name = layer->name();
 
@@ -46,8 +46,8 @@ void write_layer(std::ostream& os, Layer* layer)
   switch (layer->type()) {
 
     case ObjectType::LayerImage: {
-      CelIterator it, begin = static_cast<LayerImage*>(layer)->getCelBegin();
-      CelIterator end = static_cast<LayerImage*>(layer)->getCelEnd();
+      CelConstIterator it, begin = static_cast<const LayerImage*>(layer)->getCelBegin();
+      CelConstIterator end = static_cast<const LayerImage*>(layer)->getCelEnd();
 
       // Images
       int images = 0;
@@ -71,24 +71,24 @@ void write_layer(std::ostream& os, Layer* layer)
       for (it=begin; it != end; ++it) {
         Cel* cel = *it;
         if (!cel->link())
-          write_celdata(os, cel->dataRef());
+          write_celdata(os, cel->dataRef().get());
       }
 
       // Cels
-      write16(os, static_cast<LayerImage*>(layer)->getCelsCount());
+      write16(os, static_cast<const LayerImage*>(layer)->getCelsCount());
       for (it=begin; it != end; ++it) {
-        Cel* cel = *it;
+        const Cel* cel = *it;
         write_cel(os, cel);
       }
       break;
     }
 
     case ObjectType::LayerFolder: {
-      LayerIterator it = static_cast<LayerFolder*>(layer)->getLayerBegin();
-      LayerIterator end = static_cast<LayerFolder*>(layer)->getLayerEnd();
+      LayerConstIterator it = static_cast<const LayerFolder*>(layer)->getLayerBegin();
+      LayerConstIterator end = static_cast<const LayerFolder*>(layer)->getLayerEnd();
 
       // Number of sub-layers
-      write16(os, static_cast<LayerFolder*>(layer)->getLayersCount());
+      write16(os, static_cast<const LayerFolder*>(layer)->getLayersCount());
 
       for (; it != end; ++it)
         write_layer(os, *it);

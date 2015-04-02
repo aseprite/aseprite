@@ -35,7 +35,7 @@ static void run(int argc, const char* argv[])
     base::FileHandle inputFile(base::open_file(inputFilename, "rb"));
     doc = new TiXmlDocument();
     doc->SetValue(inputFilename.c_str());
-    if (!doc->LoadFile(inputFile))
+    if (!doc->LoadFile(inputFile.get()))
       throw std::runtime_error("invalid input file");
   }
 

@@ -89,7 +89,7 @@ Widget* WidgetLoader::loadWidgetFromXmlFile(
   m_tooltipManager = NULL;
 
   XmlDocumentRef doc(open_xml(xmlFilename));
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
 
   // Search the requested widget.
   TiXmlElement* xmlElement = handle

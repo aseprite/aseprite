@@ -39,7 +39,7 @@ void SetCelData::onExecute()
     createCopy();
 
   cel->setDataRef(m_newData);
-  m_newData.reset(nullptr);
+  m_newData.reset();
 }
 
 void SetCelData::onUndo()
@@ -52,7 +52,7 @@ void SetCelData::onUndo()
     m_dataCopy->image()->setId(m_oldImageId);
 
     cel->setDataRef(m_dataCopy);
-    m_dataCopy.reset(nullptr);
+    m_dataCopy.reset();
   }
   else {
     CelDataRef oldData = cel->sprite()->getCelDataRef(m_oldDataId);

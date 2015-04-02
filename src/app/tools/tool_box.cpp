@@ -167,7 +167,7 @@ void ToolBox::loadTools()
   PRINTF("Loading Aseprite tools\n");
 
   XmlDocumentRef doc(GuiXml::instance()->doc());
-  TiXmlHandle handle(doc);
+  TiXmlHandle handle(doc.get());
 
   // For each group
   TiXmlElement* xmlGroup = handle.FirstChild("gui").FirstChild("tools").FirstChild("group").ToElement();

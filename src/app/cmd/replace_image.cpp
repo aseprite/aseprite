@@ -37,10 +37,10 @@ void ReplaceImage::onExecute()
   // modify/re-add this same image ID
   ImageRef oldImage = sprite()->getImageRef(m_oldImageId);
   ASSERT(oldImage);
-  m_copy.reset(Image::createCopy(oldImage));
+  m_copy.reset(Image::createCopy(oldImage.get()));
 
   sprite()->replaceImage(m_oldImageId, m_newImage);
-  m_newImage.reset(nullptr);
+  m_newImage.reset();
 }
 
 void ReplaceImage::onUndo()
@@ -51,7 +51,7 @@ void ReplaceImage::onUndo()
   m_copy->setId(m_oldImageId);
 
   sprite()->replaceImage(m_newImageId, m_copy);
-  m_copy.reset(Image::createCopy(newImage));
+  m_copy.reset(Image::createCopy(newImage.get()));
 }
 
 void ReplaceImage::onRedo()
@@ -62,7 +62,7 @@ void ReplaceImage::onRedo()
   m_copy->setId(m_newImageId);
 
   sprite()->replaceImage(m_oldImageId, m_copy);
-  m_copy.reset(Image::createCopy(oldImage));
+  m_copy.reset(Image::createCopy(oldImage.get()));
 }
 
 } // namespace cmd

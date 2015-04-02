@@ -197,7 +197,8 @@ bool TgaFormat::onLoad(FileOp* fop)
   unsigned int c, i, x, y, yc;
   int compressed;
 
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   id_length = fgetc(f);
   palette_type = fgetc(f);
@@ -381,13 +382,14 @@ bool TgaFormat::onLoad(FileOp* fop)
 // should be an array of at least 256 RGB structures).
 bool TgaFormat::onSave(FileOp* fop)
 {
-  Image *image = fop->seq.image;
+  Image* image = fop->seq.image.get();
   unsigned char image_palette[256][3];
   int x, y, c, r, g, b;
   int depth = (image->pixelFormat() == IMAGE_RGB) ? 32 : 8;
   bool need_pal = (image->pixelFormat() == IMAGE_INDEXED)? true: false;
 
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   fputc(0, f);                          /* id length (no id saved) */
   fputc((need_pal) ? 1 : 0, f);         /* palette type */

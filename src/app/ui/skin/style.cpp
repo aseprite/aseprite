@@ -39,7 +39,7 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
 {
   SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
 
-  if (m_part != NULL && m_part->size() > 0) {
+  if (m_part && m_part->size() > 0) {
     if (m_part->size() == 1) {
       if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);

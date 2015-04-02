@@ -113,7 +113,7 @@ void ClearMask::clear()
 
 void ClearMask::restore()
 {
-  copy_image(m_dstImage->image(), m_copy, m_offsetX, m_offsetY);
+  copy_image(m_dstImage->image(), m_copy.get(), m_offsetX, m_offsetY);
 }
 
 } // namespace cmd

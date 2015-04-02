@@ -105,7 +105,8 @@ bool JpegFormat::onLoad(FileOp* fop)
   JDIMENSION buffer_height;
   int c;
 
-  FileHandle file(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* file = handle.get();
 
   // Initialize the JPEG decompression object with error handling.
   jerr.fop = fop;
@@ -234,14 +235,15 @@ bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
   struct error_mgr jerr;
-  Image *image = fop->seq.image;
+  Image* image = fop->seq.image.get();
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
   base::SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
   int c;
 
   // Open the file for write in it.
-  FileHandle file(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* file = handle.get();
 
   // Allocate and initialize JPEG compression object.
   jerr.fop = fop;
@@ -350,7 +352,7 @@ bool JpegFormat::onSave(FileOp* fop)
 base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
   base::SharedPtr<JpegOptions> jpeg_options;
-  if (fop->document->getFormatOptions() != NULL)
+  if (fop->document->getFormatOptions())
     jpeg_options = base::SharedPtr<JpegOptions>(fop->document->getFormatOptions());
 
   if (!jpeg_options)

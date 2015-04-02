@@ -80,7 +80,8 @@ struct BITMAPINFOHEADER {
 
 bool IcoFormat::onLoad(FileOp* fop)
 {
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   // Read the icon header
   ICONDIR header;
@@ -132,7 +133,7 @@ bool IcoFormat::onLoad(FileOp* fop)
   ImageRef image(Image::create(pixelFormat, width, height));
   Cel* cel = new Cel(frame_t(0), image);
   layer->addCel(cel);
-  clear_image(image, 0);
+  clear_image(image.get(), 0);
 
   // Go to the entry start in the file
   fseek(f, entry.image_offset, SEEK_SET);
@@ -178,16 +179,16 @@ bool IcoFormat::onLoad(FileOp* fop)
           c = fgetc(f);
           ASSERT(c >= 0 && c < numcolors);
           if (c >= 0 && c < numcolors)
-            put_pixel(image, x, y, c);
+            put_pixel(image.get(), x, y, c);
           else
-            put_pixel(image, x, y, 0);
+            put_pixel(image.get(), x, y, 0);
           break;
 
         case 24:
           b = fgetc(f);
           g = fgetc(f);
           r = fgetc(f);
-          put_pixel(image, x, y, rgba(r, g, b, 255));
+          put_pixel(image.get(), x, y, rgba(r, g, b, 255));
           break;
       }
     }
@@ -207,7 +208,7 @@ bool IcoFormat::onLoad(FileOp* fop)
       v = 128;
       for (b=0; b<8; b++) {
         if ((m & v) == v)
-          put_pixel(image, x*8+b, y, 0); // TODO mask color
+          put_pixel(image.get(), x*8+b, y, 0); // TODO mask color
         v >>= 1;
       }
     }
@@ -232,7 +233,8 @@ bool IcoFormat::onSave(FileOp* fop)
   int c, x, y, b, m, v;
   frame_t n, num = sprite->totalFrames();
 
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs
 

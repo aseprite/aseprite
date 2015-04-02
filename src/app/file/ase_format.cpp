@@ -150,7 +150,8 @@ FileFormat* CreateAseFormat()
 
 bool AseFormat::onLoad(FileOp* fop)
 {
-  FileHandle f(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FILE* f = handle.get();
 
   ASE_Header header;
   if (!ase_file_read_header(f, &header)) {
@@ -295,7 +296,8 @@ bool AseFormat::onLoad(FileOp* fop)
 bool AseFormat::onSave(FileOp* fop)
 {
   Sprite* sprite = fop->document->sprite();
-  FileHandle f(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FILE* f = handle.get();
 
   // Write the header
   ASE_Header header;
@@ -1037,15 +1039,15 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
         switch (image->pixelFormat()) {
 
           case IMAGE_RGB:
-            read_raw_image<RgbTraits>(f, image, fop, header);
+            read_raw_image<RgbTraits>(f, image.get(), fop, header);
             break;
 
           case IMAGE_GRAYSCALE:
-            read_raw_image<GrayscaleTraits>(f, image, fop, header);
+            read_raw_image<GrayscaleTraits>(f, image.get(), fop, header);
             break;
 
           case IMAGE_INDEXED:
-            read_raw_image<IndexedTraits>(f, image, fop, header);
+            read_raw_image<IndexedTraits>(f, image.get(), fop, header);
             break;
         }
 
@@ -1096,15 +1098,15 @@ static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame,
           switch (image->pixelFormat()) {
 
             case IMAGE_RGB:
-              read_compressed_image<RgbTraits>(f, image, chunk_end, fop, header);
+              read_compressed_image<RgbTraits>(f, image.get(), chunk_end, fop, header);
               break;
 
             case IMAGE_GRAYSCALE:
-              read_compressed_image<GrayscaleTraits>(f, image, chunk_end, fop, header);
+              read_compressed_image<GrayscaleTraits>(f, image.get(), chunk_end, fop, header);
               break;
 
             case IMAGE_INDEXED:
-              read_compressed_image<IndexedTraits>(f, image, chunk_end, fop, header);
+              read_compressed_image<IndexedTraits>(f, image.get(), chunk_end, fop, header);
               break;
           }
         }

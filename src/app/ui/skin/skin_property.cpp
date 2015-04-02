@@ -37,7 +37,7 @@ SkinPropertyPtr get_skin_property(ui::Widget* widget)
   SkinPropertyPtr skinProp;
 
   skinProp = widget->getProperty(SkinProperty::Name);
-  if (skinProp == NULL) {
+  if (!skinProp) {
     skinProp.reset(new SkinProperty);
     widget->setProperty(skinProp);
   }

@@ -98,10 +98,10 @@ void MoveCel::onExecute()
       int blend = (srcLayer->isBackground() ?
         BLEND_MODE_COPY: BLEND_MODE_NORMAL);
 
-      ImageRef tmp(Image::createCopy(dstImage));
-      render::composite_image(tmp, srcImage,
+      ImageRef tmp(Image::createCopy(dstImage.get()));
+      render::composite_image(tmp.get(), srcImage,
         srcCel->x(), srcCel->y(), 255, blend);
-      executeAndAdd(new cmd::CopyRect(dstImage, tmp, gfx::Clip(tmp->bounds())));
+      executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
     executeAndAdd(new cmd::ClearCel(srcCel));
   }

@@ -29,7 +29,7 @@ EditorStatePtr EditorStatesHistory::top()
 
 void EditorStatesHistory::push(const EditorStatePtr& state)
 {
-  ASSERT(state != NULL);
+  ASSERT(state);
   m_states.push_back(state);
 }
 
