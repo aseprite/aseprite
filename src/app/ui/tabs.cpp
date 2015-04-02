@@ -307,7 +307,7 @@ bool Tabs::onProcessMessage(Message* msg)
           if (!m_floatingOverlay) {
             m_selected->x = m_dragTabX + delta.x;
 
-            int i = (mousePos.x-m_border*guiscale()) / m_selected->width;
+            int i = (mousePos.x - m_border*guiscale() - getBounds().x) / m_selected->width;
             i = MID(0, i, int(m_list.size())-1);
             if (i != m_dragTabIndex) {
               m_list.erase(m_list.begin()+m_dragTabIndex);
