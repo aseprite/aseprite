@@ -127,7 +127,7 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onAnimationFrame() override;
-    void onAnimationStop() override;
+    void onAnimationStop(int animation) override;
 
   private:
     void resetOldPositions();

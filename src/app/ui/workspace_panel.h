@@ -65,7 +65,7 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onAnimationFrame() override;
-    void onAnimationStop() override;
+    void onAnimationStop(int animation) override;
 
   private:
     int calculateDropArea(const gfx::Point& pos) const;

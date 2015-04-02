@@ -163,7 +163,7 @@ void WorkspacePanel::adjustActiveViewBounds()
   gfx::Rect rc = getChildrenBounds();
 
   // Preview to drop tabs in workspace
-  if (animation() == ANI_DROPAREA) {
+  if (m_leftTime+m_topTime+m_rightTime+m_bottomTime > 1e-4) {
     double left = double(m_leftTime) / double(ANI_DROPAREA_TICKS);
     double top = double(m_topTime) / double(ANI_DROPAREA_TICKS);
     double right = double(m_rightTime) / double(ANI_DROPAREA_TICKS);
@@ -198,9 +198,9 @@ void WorkspacePanel::removeDropViewPreview()
   }
 }
 
-void WorkspacePanel::onAnimationStop()
+void WorkspacePanel::onAnimationStop(int animation)
 {
-  if (animation() == ANI_DROPAREA)
+  if (animation == ANI_DROPAREA)
     layout();
 }
 

@@ -672,7 +672,7 @@ void Tabs::onAnimationFrame()
   invalidate();
 }
 
-void Tabs::onAnimationStop()
+void Tabs::onAnimationStop(int animation)
 {
   if (m_list.empty()) {
     Widget* root = getRoot();

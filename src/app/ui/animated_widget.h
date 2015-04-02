@@ -31,7 +31,7 @@ namespace app {
 
     // For each animation frame
     virtual void onAnimationStart() { }
-    virtual void onAnimationStop() { }
+    virtual void onAnimationStop(int animation) { }
     virtual void onAnimationFrame() { }
 
   protected:
@@ -49,10 +49,11 @@ namespace app {
     }
 
     void stopAnimation() {
-      onAnimationStop();
-
+      int animation = m_animation;
       m_animation = 0;
       m_timer.stop();
+
+      onAnimationStop(animation);
     }
 
     int animation() const {
