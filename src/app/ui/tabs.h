@@ -183,7 +183,6 @@ namespace app {
     base::UniquePtr<ui::Overlay> m_floatingOverlay;
 
     // Drop new tabs
-    gfx::Point m_dropNewPos;
     TabView* m_dropNewTab;
     int m_dropNewIndex;
   };

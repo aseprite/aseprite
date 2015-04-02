@@ -58,6 +58,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_floatingTab(nullptr)
   , m_floatingOverlay(nullptr)
   , m_dropNewTab(nullptr)
+  , m_dropNewIndex(-1)
 {
   setDoubleBuffered(true);
   initTheme();
@@ -147,22 +148,14 @@ void Tabs::updateTabs()
   double x = 0.0;
   int i = 0;
 
-  if (m_dropNewTab)
-    m_dropNewIndex = -1;
-
   for (auto& tab : m_list) {
     if (tab == m_floatingTab) {
       ++i;
       continue;
     }
 
-    if (m_dropNewTab) {
-      int dropX = m_dropNewPos.x - getBounds().x;
-      if (dropX >= x-tabWidth/2 && dropX < x+tabWidth/2) {
-        x += tabWidth;
-        m_dropNewIndex = i;
-      }
-    }
+    if (m_dropNewTab && m_dropNewIndex == i)
+      x += tabWidth;
 
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
@@ -238,7 +231,19 @@ void Tabs::setDockedStyle()
 
 void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
 {
-  m_dropNewPos = pos;
+  int newIndex = -1;
+
+  if (!m_list.empty()) {
+    newIndex = (pos.x - getBounds().x) / m_list[0]->width;
+    newIndex = MID(0, newIndex, (int)m_list.size());
+  }
+  else
+    newIndex = 0;
+
+  if (m_dropNewIndex == newIndex && m_dropNewTab == view)
+    return;
+
+  m_dropNewIndex = newIndex;
   m_dropNewTab = view;
 
   resetOldPositions(animationTime());
