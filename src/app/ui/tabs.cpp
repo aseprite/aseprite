@@ -277,7 +277,7 @@ bool Tabs::onProcessMessage(Message* msg)
         gfx::Point delta = mousePos - m_dragMousePos;
 
         if (!m_isDragging) {
-          if (!m_clickedCloseButton) {
+          if (!m_clickedCloseButton && mouseMsg->left()) {
             double dist = std::sqrt(delta.x*delta.x + delta.y*delta.y);
             if (dist > 4.0/ui::guiscale())
               startDrag();
@@ -341,7 +341,7 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
 
     case kMouseDownMessage:
-      if (m_hot) {
+      if (m_hot && !hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         m_dragMousePos = mouseMsg->position();
         m_dragOffset = mouseMsg->position() -
@@ -372,19 +372,25 @@ bool Tabs::onProcessMessage(Message* msg)
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-        if ((mouseMsg->middle()) ||
-            (mouseMsg->left() && m_hotCloseButton && m_clickedCloseButton)) {
-          if (m_hot && m_delegate)
-            m_delegate->onCloseTab(this, m_hot->view);
-        }
-        else if (mouseMsg->right() && m_hot) {
-          if (m_delegate)
-            m_delegate->onContextMenuTab(this, m_hot->view);
-        }
-
         releaseMouse();
 
-        if (m_isDragging) {
+        if (!m_isDragging) {
+          if ((mouseMsg->middle()) ||
+              (mouseMsg->left() && m_hotCloseButton && m_clickedCloseButton)) {
+            if (m_hot && m_delegate)
+              m_delegate->onCloseTab(this, m_hot->view);
+          }
+          else if (mouseMsg->right() && m_hot) {
+            if (m_delegate)
+              m_delegate->onContextMenuTab(this, m_hot->view);
+          }
+
+          if (m_clickedCloseButton) {
+            m_clickedCloseButton = false;
+            invalidate();
+          }
+        }
+        else {
           DropTabResult result = DropTabResult::IGNORE;
 
           if (m_delegate) {
@@ -394,11 +400,6 @@ bool Tabs::onProcessMessage(Message* msg)
           }
 
           stopDrag(result);
-        }
-
-        if (m_clickedCloseButton) {
-          m_clickedCloseButton = false;
-          invalidate();
         }
       }
       return true;
