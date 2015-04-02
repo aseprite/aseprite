@@ -273,16 +273,22 @@ bool WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, Wor
     ASSERT(false);
   }
 
+  double sideSpace;
+  if (m_panelType == MAIN_PANEL)
+    sideSpace = 30;
+  else
+    sideSpace = 50;
+
   switch (dropArea) {
     case JI_LEFT:
     case JI_TOP:
-      splitter->setPosition(30);
+      splitter->setPosition(sideSpace);
       splitter->addChild(side);
       splitter->addChild(self);
       break;
     case JI_RIGHT:
     case JI_BOTTOM:
-      splitter->setPosition(70);
+      splitter->setPosition(100-sideSpace);
       splitter->addChild(self);
       splitter->addChild(side);
       break;
