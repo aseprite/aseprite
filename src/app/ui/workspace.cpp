@@ -101,6 +101,7 @@ void Workspace::setMainPanelAsActive()
 
   removeDropViewPreview();
   m_dropPreviewPanel = nullptr;
+  m_dropPreviewTabs = nullptr;
 
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
