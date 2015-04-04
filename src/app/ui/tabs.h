@@ -162,7 +162,9 @@ namespace app {
     void startDrag();
     void stopDrag(DropTabResult result);
     gfx::Rect getTabBounds(Tab* tab);
-    void createFloatingTab(TabPtr& tab);
+    void startDockDragTabAnimation();
+    void startRemoveDragTabAnimation();
+    void createFloatingOverlay(Tab* tab);
     void destroyFloatingTab();
     void destroyFloatingOverlay();
 
@@ -186,6 +188,7 @@ namespace app {
 
     // Drag-and-drop
     bool m_isDragging;
+    TabPtr m_dragTab;
     int m_dragTabX;
     gfx::Point m_dragMousePos;
     gfx::Point m_dragOffset;

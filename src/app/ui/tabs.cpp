@@ -55,6 +55,7 @@ Tabs::Tabs(TabsDelegate* delegate)
   , m_delegate(delegate)
   , m_removedTab(nullptr)
   , m_isDragging(false)
+  , m_dragTab(nullptr)
   , m_floatingTab(nullptr)
   , m_floatingOverlay(nullptr)
   , m_dropNewTab(nullptr)
@@ -293,7 +294,6 @@ bool Tabs::onProcessMessage(Message* msg)
         // We are drag a tab...
         else {
           TabPtr justDocked(nullptr);
-          bool dockedInThisTabs = true;
 
           // Floating tab (to create a new window)
           if (!getBounds().contains(mousePos) &&
@@ -302,14 +302,19 @@ bool Tabs::onProcessMessage(Message* msg)
                 mousePos.x > getBounds().x2()+16*guiscale())) {
             DropViewPreviewResult result = DropViewPreviewResult::FLOATING;
 
+            if (!m_floatingTab) {
+              resetOldPositions();
+              m_floatingTab = m_selected;
+              startRemoveDragTabAnimation();
+            }
+
             if (m_delegate)
               result = m_delegate->onFloatingTab(this, m_selected->view, mousePos);
 
             if (result != DropViewPreviewResult::DROP_IN_TABS) {
               if (!m_floatingOverlay)
-                createFloatingTab(m_selected);
+                createFloatingOverlay(m_selected.get());
               m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
-              dockedInThisTabs = false;
             }
             else {
               destroyFloatingOverlay();
@@ -324,7 +329,7 @@ bool Tabs::onProcessMessage(Message* msg)
           }
 
           // Docked tab
-          if (dockedInThisTabs) {
+          if (!m_floatingTab) {
             m_selected->x = m_dragTabX + delta.x;
 
             int i = (mousePos.x - m_border*guiscale() - getBounds().x) / m_selected->width;
@@ -334,9 +339,7 @@ bool Tabs::onProcessMessage(Message* msg)
               m_list.insert(m_list.begin()+i, m_selected);
               m_dragTabIndex = i;
 
-              resetOldPositions(animationTime());
-              updateTabs();
-              startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+              startDockDragTabAnimation();
             }
 
             if (justDocked)
@@ -532,8 +535,8 @@ void Tabs::selectTabInternal(TabPtr& tab)
     m_delegate->onSelectTab(this, tab->view);
 }
 
-void Tabs::drawTab(Graphics* g, const gfx::Rect& _box, Tab* tab, int dy,
-  bool hover, bool selected)
+void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
+  Tab* tab, int dy, bool hover, bool selected)
 {
   gfx::Rect box = _box;
   if (box.w < ui::guiscale()*8)
@@ -758,6 +761,7 @@ void Tabs::startDrag()
   updateTabs();
 
   m_isDragging = true;
+  m_dragTab = m_selected;
   m_dragTabX = m_selected->x;
   m_dragTabIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
 }
@@ -782,7 +786,7 @@ void Tabs::stopDrag(DropTabResult result)
       break;
 
     case DropTabResult::DOCKED_IN_OTHER_PLACE: {
-      TabPtr tab = m_floatingTab;
+      TabPtr tab = m_dragTab;
 
       m_floatingTab.reset();
       m_removedTab.reset();
@@ -795,6 +799,8 @@ void Tabs::stopDrag(DropTabResult result)
     }
 
   }
+
+  m_dragTab.reset();
 }
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
@@ -818,7 +824,21 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   return box;
 }
 
-void Tabs::createFloatingTab(TabPtr& tab)
+void Tabs::startDockDragTabAnimation()
+{
+  resetOldPositions(animationTime());
+  updateTabs();
+  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+}
+
+void Tabs::startRemoveDragTabAnimation()
+{
+  m_removedTab.reset();
+  updateTabs();
+  startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
+}
+
+void Tabs::createFloatingOverlay(Tab* tab)
 {
   ASSERT(!m_floatingOverlay);
 
@@ -833,7 +853,7 @@ void Tabs::createFloatingTab(TabPtr& tab)
   {
     Graphics g(surface, 0, 0);
     g.setFont(getFont());
-    drawTab(&g, g.getClipBounds(), tab.get(), 0, true, true);
+    drawTab(&g, g.getClipBounds(), tab, 0, true, true);
   }
   // Make pink parts transparent (TODO remove this hack when we change the back-end to Skia)
   {
@@ -849,13 +869,6 @@ void Tabs::createFloatingTab(TabPtr& tab)
 
   m_floatingOverlay.reset(new Overlay(surface, gfx::Point(), Overlay::MouseZOrder-1));
   OverlayManager::instance()->addOverlay(m_floatingOverlay.get());
-
-  resetOldPositions();
-
-  m_floatingTab = tab;
-  m_removedTab.reset();
-  startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
-  updateTabs();
 }
 
 void Tabs::destroyFloatingTab()
