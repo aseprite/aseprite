@@ -33,6 +33,17 @@ static uint32_t get_shift_from_mask(uint32_t mask)
   return shift;
 }
 
+bool win32_open_clipboard(HWND hwnd)
+{
+  for (int i=0; i<5; ++i) {
+    if (OpenClipboard(hwnd))
+      return true;
+
+    Sleep(100);
+  }
+  return false;
+}
+
 /**
  * Returns true if the Windows clipboard contains a bitmap (CF_DIB
  * format).
@@ -49,7 +60,7 @@ static bool win32_clipboard_contains_bitmap()
 static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
 {
   HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
-  if (!OpenClipboard(hwnd))
+  if (!win32_open_clipboard(hwnd))
     return;
 
   if (!EmptyClipboard()) {
@@ -179,7 +190,7 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
     return;
 
   HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
-  if (!OpenClipboard(hwnd))
+  if (!win32_open_clipboard(hwnd))
     return;
 
   BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
@@ -337,7 +348,7 @@ static bool get_win32_clipboard_bitmap_size(gfx::Size& size)
 
   HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
 
-  if (win32_clipboard_contains_bitmap() && OpenClipboard(hwnd)) {
+  if (win32_clipboard_contains_bitmap() && win32_open_clipboard(hwnd)) {
     BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
     if (bi) {
       size.w = bi->bmiHeader.biWidth;
