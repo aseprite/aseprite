@@ -825,22 +825,24 @@ void Tabs::createFloatingTab(TabPtr& tab)
   she::Surface* surface = she::instance()->createRgbaSurface(
     tab->width, m_tabsHeight);
 
+  // Fill the surface with pink color
+  {
+    she::ScopedSurfaceLock lock(surface);
+    lock->fillRect(gfx::rgba(255, 0, 255), gfx::Rect(0, 0, surface->width(), surface->height()));
+  }
   {
     Graphics g(surface, 0, 0);
     g.setFont(getFont());
-    g.fillRect(gfx::ColorNone, g.getClipBounds());
     drawTab(&g, g.getClipBounds(), tab.get(), 0, true, true);
   }
-
-  // Make opaque (TODO this shouldn't be necessary)
+  // Make pink parts transparent (TODO remove this hack when we change the back-end to Skia)
   {
     she::ScopedSurfaceLock lock(surface);
-    gfx::Color mask = lock->getPixel(0, 0);
 
     for (int y=0; y<surface->height(); ++y)
       for (int x=0; x<surface->width(); ++x) {
         gfx::Color c = lock->getPixel(x, y);
-        c = (c != mask ? gfx::seta(c, 255): gfx::ColorNone);
+        c = (c != gfx::rgba(255, 0, 255) ? gfx::seta(c, 255): gfx::ColorNone);
         lock->putPixel(c, x, y);
       }
   }
