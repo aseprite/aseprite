@@ -8,29 +8,27 @@
 #define BASE_SHARED_PTR_H_INCLUDED
 #pragma once
 
+#include "base/debug.h"
+
 namespace base {
 
 // This class counts references for a SharedPtr.
-class SharedPtrRefCounterBase
-{
+class SharedPtrRefCounterBase {
 public:
   SharedPtrRefCounterBase() : m_count(0) { }
   virtual ~SharedPtrRefCounterBase() { }
 
-  void add_ref()
-  {
+  void add_ref() {
     ++m_count;
   }
 
-  void release()
-  {
+  void release() {
     --m_count;
     if (m_count == 0)
       delete this;
   }
 
-  long use_count() const
-  {
+  long use_count() const {
     return m_count;
   }
 
@@ -41,28 +39,23 @@ private:
 // Default deleter used by shared pointer (it calls "delete"
 // operator).
 template<class T>
-class DefaultSharedPtrDeleter
-{
+class DefaultSharedPtrDeleter {
 public:
-  void operator()(T* ptr)
-  {
+  void operator()(T* ptr) {
     delete ptr;
   }
 };
 
 // A reference counter with a custom deleter.
 template<class T, class Deleter>
-class SharedPtrRefCounterImpl : public SharedPtrRefCounterBase
-{
+class SharedPtrRefCounterImpl : public SharedPtrRefCounterBase {
 public:
   SharedPtrRefCounterImpl(T* ptr, Deleter deleter)
     : m_ptr(ptr)
-    , m_deleter(deleter)
-  {
+    , m_deleter(deleter) {
   }
 
-  ~SharedPtrRefCounterImpl()
-  {
+  ~SharedPtrRefCounterImpl() {
     if (m_ptr)
       m_deleter(m_ptr);
   }
@@ -75,28 +68,20 @@ private:
 // Wraps a pointer and keeps reference counting to automatically
 // delete the pointed object when it is no longer used.
 template<class T>
-class SharedPtr
-{
+class SharedPtr {
 public:
   typedef T element_type;
 
   SharedPtr()
-    : m_ptr(0)
-    , m_refCount(0)
+    : m_ptr(nullptr)
+    , m_refCount(nullptr)
   {
   }
 
   // Constructor with default deleter.
   explicit SharedPtr(T* ptr)
   {
-    try {
-      m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
-    }
-    catch (...) {
-      if (ptr)
-        DefaultSharedPtrDeleter<T>()(ptr);
-      throw;
-    }
+    create_refcount(ptr, DefaultSharedPtrDeleter<T>());
     m_ptr = ptr;
     add_ref();
   }
@@ -105,14 +90,7 @@ public:
   template<class Deleter>
   SharedPtr(T* ptr, Deleter deleter)
   {
-    try {
-      m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
-    }
-    catch (...) {
-      if (ptr)
-        deleter(ptr);
-      throw;
-    }
+    create_refcount(ptr, deleter);
     m_ptr = ptr;
     add_ref();
   }
@@ -140,22 +118,15 @@ public:
     release();
   }
 
-  void reset(T* ptr = 0)
+  void reset(T* ptr = nullptr)
   {
     if (m_ptr != ptr) {
       release();
-      m_ptr = 0;
-      m_refCount = 0;
+      m_ptr = nullptr;
+      m_refCount = nullptr;
 
       if (ptr) {
-        try {
-          m_refCount = new SharedPtrRefCounterImpl<T, DefaultSharedPtrDeleter<T> >(ptr, DefaultSharedPtrDeleter<T>());
-        }
-        catch (...) {
-          if (ptr)
-            DefaultSharedPtrDeleter<T>()(ptr);
-          throw;
-        }
+        create_refcount(ptr, DefaultSharedPtrDeleter<T>());
         m_ptr = ptr;
         add_ref();
       }
@@ -167,18 +138,11 @@ public:
   {
     if (m_ptr != ptr) {
       release();
-      m_ptr = 0;
-      m_refCount = 0;
+      m_ptr = nullptr;
+      m_refCount = nullptr;
 
       if (ptr) {
-        try {
-          m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
-        }
-        catch (...) {
-          if (ptr)
-            deleter(ptr);
-          throw;
-        }
+        create_refcount(ptr, deleter);
         m_ptr = ptr;
         add_ref();
       }
@@ -218,11 +182,29 @@ public:
 
 private:
 
+  template<typename Deleter>
+  void create_refcount(T* ptr, Deleter deleter) {
+    if (ptr) {
+      try {
+        m_refCount = new SharedPtrRefCounterImpl<T, Deleter>(ptr, deleter);
+      }
+      catch (...) {
+        if (ptr)
+          deleter(ptr);
+        throw;
+      }
+    }
+    else
+      m_refCount = nullptr;
+  }
+
   // Adds a reference to the pointee.
   void add_ref()
   {
     if (m_refCount)
       m_refCount->add_ref();
+
+    ASSERT((m_refCount && m_ptr) || (!m_refCount && !m_ptr));
   }
 
   // Removes the reference to the pointee.
@@ -230,8 +212,9 @@ private:
   {
     if (m_refCount)
       m_refCount->release();
-  }
 
+    ASSERT((m_refCount && m_ptr) || (!m_refCount && !m_ptr));
+  }
 
   T* m_ptr;                            // The pointee object.
   SharedPtrRefCounterBase* m_refCount; // Number of references.

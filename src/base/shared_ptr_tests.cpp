@@ -141,6 +141,30 @@ TEST(SharedPtr, ResetBugDoesntSetPtrToNull)
   EXPECT_EQ(5, *a);
 }
 
+struct CustomDeleter {
+  bool* flag;
+  CustomDeleter(bool* flag) : flag(flag) {
+    *flag = false;
+  }
+  void operator()(int* ptr) {
+    if (*ptr == 5) {
+      *flag = true;
+      delete ptr;
+    }
+  }
+};
+
+TEST(SharedPtr, CustomDeleter)
+{
+  bool flag = false;
+  {
+    SharedPtr<int> a(new int(0), CustomDeleter(&flag));
+    SharedPtr<int> b = a;
+    *b = 5;
+  }
+  EXPECT_EQ(true, flag);
+}
+
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
