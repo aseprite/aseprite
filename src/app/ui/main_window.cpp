@@ -298,9 +298,9 @@ void MainWindow::onMouseOverTab(Tabs* tabs, TabView* tabView)
   }
 }
 
-void MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
+DropViewPreviewResult MainWindow::onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
 {
-  m_workspace->setDropViewPreview(pos,
+  return m_workspace->setDropViewPreview(pos,
     dynamic_cast<WorkspaceView*>(tabView),
     static_cast<WorkspaceTabs*>(tabs));
 }

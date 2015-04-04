@@ -130,7 +130,7 @@ void Workspace::onResize(ui::ResizeEvent& ev)
     child->setBounds(rc);
 }
 
-void Workspace::setDropViewPreview(const gfx::Point& pos,
+DropViewPreviewResult Workspace::setDropViewPreview(const gfx::Point& pos,
   WorkspaceView* view, WorkspaceTabs* tabs)
 {
   TabView* tabView = dynamic_cast<TabView*>(view);
@@ -155,6 +155,13 @@ void Workspace::setDropViewPreview(const gfx::Point& pos,
     m_dropPreviewPanel->setDropViewPreview(pos, view);
   if (m_dropPreviewTabs)
     m_dropPreviewTabs->setDropViewPreview(pos, tabView);
+
+  if (panel)
+    return DropViewPreviewResult::DROP_IN_PANEL;
+  else if (newTabs)
+    return DropViewPreviewResult::DROP_IN_TABS;
+  else
+    return DropViewPreviewResult::FLOATING;
 }
 
 void Workspace::removeDropViewPreview()

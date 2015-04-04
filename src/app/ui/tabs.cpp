@@ -240,15 +240,19 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
   else
     newIndex = 0;
 
-  if (m_dropNewIndex == newIndex && m_dropNewTab == view)
-    return;
+  bool startAni = (m_dropNewIndex != newIndex || m_dropNewTab != view);
 
   m_dropNewIndex = newIndex;
+  m_dropNewPosX = (pos.x - getBounds().x);
   m_dropNewTab = view;
 
-  resetOldPositions(animationTime());
-  updateTabs();
-  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+  if (startAni) {
+    resetOldPositions(animationTime());
+    updateTabs();
+    startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+  }
+  else
+    invalidate();
 }
 
 void Tabs::removeDropViewPreview()
@@ -286,19 +290,27 @@ bool Tabs::onProcessMessage(Message* msg)
         // We are drag a tab...
         else {
           TabPtr justDocked(nullptr);
+          bool dockedInThisTabs = true;
 
           // Floating tab (to create a new window)
           if (!getBounds().contains(mousePos) &&
               (ABS(delta.y) > 16*guiscale() ||
                 mousePos.x < getBounds().x-16*guiscale() ||
                 mousePos.x > getBounds().x2()+16*guiscale())) {
-            if (!m_floatingOverlay)
-              createFloatingTab(m_selected);
-
-            m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
+            DropViewPreviewResult result = DropViewPreviewResult::FLOATING;
 
             if (m_delegate)
-              m_delegate->onFloatingTab(this, m_selected->view, mousePos);
+              result = m_delegate->onFloatingTab(this, m_selected->view, mousePos);
+
+            if (result != DropViewPreviewResult::DROP_IN_TABS) {
+              if (!m_floatingOverlay)
+                createFloatingTab(m_selected);
+              m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
+              dockedInThisTabs = false;
+            }
+            else {
+              destroyFloatingOverlay();
+            }
           }
           else {
             justDocked = m_floatingTab;
@@ -309,7 +321,7 @@ bool Tabs::onProcessMessage(Message* msg)
           }
 
           // Docked tab
-          if (!m_floatingOverlay) {
+          if (dockedInThisTabs) {
             m_selected->x = m_dragTabX + delta.x;
 
             int i = (mousePos.x - m_border*guiscale() - getBounds().x) / m_selected->width;
@@ -473,6 +485,19 @@ void Tabs::onPaint(PaintEvent& ev)
       dy = int(box.h - box.h * t);
 
     drawTab(g, box, m_selected.get(), dy, (tab == m_hot), true);
+  }
+
+  // New tab from other Tab that want to be dropped here.
+  if (m_dropNewTab) {
+    SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+    Tab newTab(m_dropNewTab);
+    newTab.text = m_dropNewTab->getTabText();
+    newTab.icon = m_dropNewTab->getTabIcon();
+    newTab.width = (!m_list.empty() ? m_list[0]->width:
+                    theme->dimensions.tabsWidth());
+    newTab.x = m_dropNewPosX - newTab.width/2;
+    box = getTabBounds(&newTab);
+    drawTab(g, box, &newTab, 0, true, true);
   }
 }
 
@@ -830,10 +855,7 @@ void Tabs::createFloatingTab(TabPtr& tab)
 
 void Tabs::destroyFloatingTab()
 {
-  if (m_floatingOverlay) {
-    OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
-    m_floatingOverlay.reset();
-  }
+  destroyFloatingOverlay();
 
   if (m_floatingTab) {
     TabPtr tab(m_floatingTab);
@@ -845,6 +867,14 @@ void Tabs::destroyFloatingTab()
 
     tab->oldX = tab->x;
     tab->oldWidth = 0;
+  }
+}
+
+void Tabs::destroyFloatingOverlay()
+{
+  if (m_floatingOverlay) {
+    OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
+    m_floatingOverlay.reset();
   }
 }
 

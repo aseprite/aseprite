@@ -9,6 +9,7 @@
 #define APP_UI_WORKSPACE_H_INCLUDED
 #pragma once
 
+#include "app/ui/tabs.h"
 #include "app/ui/workspace_panel.h"
 #include "base/signal.h"
 #include "ui/widget.h"
@@ -43,8 +44,9 @@ namespace app {
     void selectNextTab();
     void selectPreviousTab();
 
-    // Drop views into workspace
-    void setDropViewPreview(const gfx::Point& pos,
+    // Set the preview of what could happen if we drop the given
+    // "view" at the "pos"?
+    DropViewPreviewResult setDropViewPreview(const gfx::Point& pos,
       WorkspaceView* view, WorkspaceTabs* tabs);
     void removeDropViewPreview();
 

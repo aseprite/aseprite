@@ -49,6 +49,12 @@ namespace app {
     DOCKED_IN_OTHER_PLACE,
   };
 
+  enum class DropViewPreviewResult {
+    DROP_IN_PANEL,
+    DROP_IN_TABS,
+    FLOATING,
+  };
+
   // Interface used to control notifications from the Tabs widget.
   class TabsDelegate {
   public:
@@ -71,9 +77,13 @@ namespace app {
     // mouse just leave all tabs)
     virtual void onMouseOverTab(Tabs* tabs, TabView* tabView) = 0;
 
-    // Called when the user is dragging a tab outside the Tabs bar.
-    virtual void onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
+    // Called when the user is dragging a tab outside the Tabs
+    // bar.
+    virtual DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
+
+    // Called when the user is dragging a tab inside the Tabs bar.
     virtual void onDockingTab(Tabs* tabs, TabView* tabView) = 0;
+
     virtual DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) = 0;
   };
 
@@ -154,6 +164,7 @@ namespace app {
     gfx::Rect getTabBounds(Tab* tab);
     void createFloatingTab(TabPtr& tab);
     void destroyFloatingTab();
+    void destroyFloatingOverlay();
 
     int m_border;
     TabsList m_list;
@@ -185,6 +196,7 @@ namespace app {
     // Drop new tabs
     TabView* m_dropNewTab;
     int m_dropNewIndex;
+    int m_dropNewPosX;
   };
 
 } // namespace app
