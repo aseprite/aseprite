@@ -760,7 +760,7 @@ void Tabs::stopDrag(DropTabResult result)
       m_removedTab.reset();
       destroyFloatingTab();
 
-      //ASSERT(tab);      // TODO check this state
+      ASSERT(tab.get());
       if (tab)
         removeTab(tab->view, false);
       break;

@@ -159,23 +159,29 @@ void Workspace::setDropViewPreview(const gfx::Point& pos,
 
 void Workspace::removeDropViewPreview()
 {
-  if (m_dropPreviewPanel)
+  if (m_dropPreviewPanel) {
     m_dropPreviewPanel->removeDropViewPreview();
+    m_dropPreviewPanel = nullptr;
+  }
 
-  if (m_dropPreviewTabs)
+  if (m_dropPreviewTabs) {
     m_dropPreviewTabs->removeDropViewPreview();
+    m_dropPreviewTabs = nullptr;
+  }
 }
 
 bool Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
 {
-  if (m_dropPreviewPanel)
-    return m_dropPreviewPanel->dropViewAt(pos, getViewPanel(view), view);
-  else if (m_dropPreviewTabs) {
-    WorkspacePanel* dropPanel = m_dropPreviewTabs->panel();
+  WorkspaceTabs* tabs = getTabsAt(pos);
+  WorkspacePanel* panel = getPanelAt(pos);
+
+  if (panel)
+    return panel->dropViewAt(pos, getViewPanel(view), view);
+  else if (tabs && tabs != getViewPanel(view)->tabs()) {
+    WorkspacePanel* dropPanel = tabs->panel();
     ASSERT(dropPanel);
 
-    int pos = m_dropPreviewTabs->getDropTabIndex();
-    m_dropPreviewTabs->removeDropViewPreview();
+    int pos = tabs->getDropTabIndex();
 
     removeView(view);
     addViewToPanel(dropPanel, view, pos);
