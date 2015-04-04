@@ -23,6 +23,7 @@
 #include "base/bind.h"
 #include "base/exception.h"
 #include "ui/label.h"
+#include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/textbox.h"
 #include "ui/view.h"
@@ -105,6 +106,15 @@ void HomeView::onOpenFile()
 {
   Command* command = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
   UIContext::instance()->executeCommand(command);
+}
+
+void HomeView::onResize(ui::ResizeEvent& ev)
+{
+  headerPlaceholder()->setVisible(ev.getBounds().h > 200*ui::guiscale());
+  foldersPlaceholder()->setVisible(ev.getBounds().h > 150*ui::guiscale());
+  newsPlaceholder()->setVisible(ev.getBounds().w > 200*ui::guiscale());
+
+  ui::VBox::onResize(ev);
 }
 
 void HomeView::onCheckingUpdates()

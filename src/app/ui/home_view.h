@@ -50,6 +50,7 @@ namespace app {
     void onWorkspaceViewSelected() override;
 
   protected:
+    void onResize(ui::ResizeEvent& ev) override;
 #ifdef ENABLE_UPDATER
     // CheckUpdateDelegate impl
     void onCheckingUpdates() override;
