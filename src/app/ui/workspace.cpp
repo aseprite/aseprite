@@ -106,6 +106,16 @@ void Workspace::setMainPanelAsActive()
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
 
+void Workspace::selectNextTab()
+{
+  m_activePanel->tabs()->selectNextTab();
+}
+
+void Workspace::selectPreviousTab()
+{
+  m_activePanel->tabs()->selectPreviousTab();
+}
+
 void Workspace::onPaint(PaintEvent& ev)
 {
   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());

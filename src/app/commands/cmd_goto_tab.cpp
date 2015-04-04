@@ -13,7 +13,7 @@
 
 #include "app/app.h"
 #include "app/ui/main_window.h"
-#include "app/ui/workspace_tabs.h"
+#include "app/ui/workspace.h"
 
 namespace app {
 
@@ -35,7 +35,7 @@ GotoNextTabCommand::GotoNextTabCommand()
 
 void GotoNextTabCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getTabsBar()->selectNextTab();
+  App::instance()->getMainWindow()->getWorkspace()->selectNextTab();
 }
 
 class GotoPreviousTabCommand : public Command {
@@ -56,7 +56,7 @@ GotoPreviousTabCommand::GotoPreviousTabCommand()
 
 void GotoPreviousTabCommand::onExecute(Context* context)
 {
-  App::instance()->getMainWindow()->getTabsBar()->selectPreviousTab();
+  App::instance()->getMainWindow()->getWorkspace()->selectPreviousTab();
 }
 
 Command* CommandFactory::createGotoNextTabCommand()

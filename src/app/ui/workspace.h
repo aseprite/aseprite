@@ -40,6 +40,8 @@ namespace app {
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
     void setMainPanelAsActive();
+    void selectNextTab();
+    void selectPreviousTab();
 
     // Drop views into workspace
     void setDropViewPreview(const gfx::Point& pos,

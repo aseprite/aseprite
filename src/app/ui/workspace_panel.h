@@ -42,6 +42,7 @@ namespace app {
     ~WorkspacePanel();
 
     void setTabsBar(WorkspaceTabs* tabs);
+    WorkspaceTabs* tabs() const { return m_tabs; }
 
     iterator begin() { return m_views.begin(); }
     iterator end() { return m_views.end(); }
