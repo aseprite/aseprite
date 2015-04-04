@@ -49,7 +49,7 @@ namespace app {
 
     bool isEmpty() const { return m_views.empty(); }
 
-    void addView(WorkspaceView* view, int pos = -1);
+    void addView(WorkspaceView* view, bool from_drop, int pos = -1);
     void removeView(WorkspaceView* view);
 
     WorkspaceView* activeView();

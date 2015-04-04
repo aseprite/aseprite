@@ -122,7 +122,7 @@ namespace app {
 
     TabsDelegate* getDelegate() { return m_delegate; }
 
-    void addTab(TabView* tabView, int pos = -1);
+    void addTab(TabView* tabView, bool from_drop, int pos = -1);
     void removeTab(TabView* tabView, bool with_animation);
     void updateTabs();
 

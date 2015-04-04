@@ -64,7 +64,7 @@ void WorkspacePanel::setTabsBar(WorkspaceTabs* tabs)
   m_tabs->setPanel(this);
 }
 
-void WorkspacePanel::addView(WorkspaceView* view, int pos)
+void WorkspacePanel::addView(WorkspaceView* view, bool from_drop, int pos)
 {
   if (pos < 0)
     m_views.push_back(view);
@@ -72,7 +72,7 @@ void WorkspacePanel::addView(WorkspaceView* view, int pos)
     m_views.insert(m_views.begin()+pos, view);
 
   if (m_tabs)
-    m_tabs->addTab(dynamic_cast<TabView*>(view), pos);
+    m_tabs->addTab(dynamic_cast<TabView*>(view), from_drop, pos);
 
   // Insert the view content as a hidden widget.
   Widget* content = view->getContentWidget();
@@ -294,7 +294,7 @@ bool WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, Wor
       break;
   }
 
-  newPanel->addView(view);
+  newPanel->addView(view, true);
   parent->layout();
   return true;
 }

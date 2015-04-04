@@ -60,7 +60,7 @@ void Workspace::setTabsBar(WorkspaceTabs* tabs)
 
 void Workspace::addView(WorkspaceView* view, int pos)
 {
-  addViewToPanel(&m_mainPanel, view, pos);
+  addViewToPanel(&m_mainPanel, view, false, pos);
 }
 
 void Workspace::removeView(WorkspaceView* view)
@@ -182,25 +182,28 @@ bool Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
   WorkspaceTabs* tabs = getTabsAt(pos);
   WorkspacePanel* panel = getPanelAt(pos);
 
-  if (panel)
+  if (panel) {
+    // Create new panel
     return panel->dropViewAt(pos, getViewPanel(view), view);
+  }
   else if (tabs && tabs != getViewPanel(view)->tabs()) {
+    // Dock tab in other tabs
     WorkspacePanel* dropPanel = tabs->panel();
     ASSERT(dropPanel);
 
     int pos = tabs->getDropTabIndex();
 
     removeView(view);
-    addViewToPanel(dropPanel, view, pos);
+    addViewToPanel(dropPanel, view, true, pos);
     return true;
   }
   else
     return false;
 }
 
-void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, int pos)
+void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos)
 {
-  panel->addView(view, pos);
+  panel->addView(view, from_drop, pos);
 
   m_activePanel = panel;
   m_views.push_back(view);

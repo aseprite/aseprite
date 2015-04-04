@@ -60,7 +60,7 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
 
   private:
-    void addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, int pos);
+    void addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos);
     WorkspacePanel* getViewPanel(WorkspaceView* view);
     WorkspacePanel* getPanelAt(const gfx::Point& pos);
     WorkspaceTabs* getTabsAt(const gfx::Point& pos);
