@@ -19,7 +19,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
-#include "app/data_recovery.h"
+#include "app/crash/data_recovery.h"
 #include "app/document_exporter.h"
 #include "app/document_location.h"
 #include "app/document_undo.h"
@@ -94,7 +94,7 @@ public:
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
-  app::DataRecovery m_recovery;
+  app::crash::DataRecovery m_recovery;
   scripting::Engine m_scriptingEngine;
 
   Modules(bool console, bool verbose)

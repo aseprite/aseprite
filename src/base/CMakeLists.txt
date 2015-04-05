@@ -64,6 +64,7 @@ set(BASE_SOURCES
   memory_dump.cpp
   mutex.cpp
   path.cpp
+  process.cpp
   program_options.cpp
   replace_string.cpp
   serialization.cpp
@@ -72,7 +73,6 @@ set(BASE_SOURCES
   split_string.cpp
   string.cpp
   system_console.cpp
-  temp_dir.cpp
   thread.cpp
   time.cpp
   trim_string.cpp

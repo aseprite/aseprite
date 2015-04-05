@@ -60,7 +60,6 @@ add_library(app-lib
   app_menus.cpp
   app_options.cpp
   app_render.cpp
-  backup.cpp
   check_update.cpp
   cmd.cpp
   cmd/add_cel.cpp
@@ -226,7 +225,8 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
-  data_recovery.cpp
+  crash/data_recovery.cpp
+  crash/session.cpp
   document.cpp
   document_api.cpp
   document_exporter.cpp

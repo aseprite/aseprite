@@ -129,4 +129,20 @@ std::string get_user_docs_folder()
     return "";
 }
 
+std::vector<std::string> list_files(const std::string& path)
+{
+  WIN32_FIND_DATA fd;
+  std::vector<std::string> files;
+  HANDLE handle = FindFirstFile(base::from_utf8(base::join_path(path, "*")).c_str(), &fd);
+  if (handle) {
+    do {
+      std::string filename = base::to_utf8(fd.cFileName);
+      if (filename != "." && filename != "..")
+        files.push_back(filename);
+    } while (FindNextFile(handle, &fd));
+    FindClose(handle);
+  }
+  return files;
+}
+
 }
