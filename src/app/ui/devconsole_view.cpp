@@ -110,6 +110,7 @@ void DevConsoleView::onWorkspaceViewSelected()
 
 void DevConsoleView::onClonedFrom(WorkspaceView* from)
 {
+  // Do nothing
 }
 
 bool DevConsoleView::onCloseView(Workspace* workspace)

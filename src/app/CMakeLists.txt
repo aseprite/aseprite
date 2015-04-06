@@ -146,6 +146,7 @@ add_library(app-lib
   commands/cmd_developer_console.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
+  commands/cmd_duplicate_view.cpp
   commands/cmd_exit.cpp
   commands/cmd_export_sprite_sheet.cpp
   commands/cmd_eyedropper.cpp

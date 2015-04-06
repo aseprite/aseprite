@@ -43,6 +43,7 @@ namespace app {
     void setMainPanelAsActive();
     void selectNextTab();
     void selectPreviousTab();
+    void duplicateActiveView();
 
     // Set the preview of what could happen if we drop the given
     // "view" at the "pos"?

@@ -569,6 +569,8 @@
         <item command="SaveMask" text="&amp;Save to MSK file" />
       </menu>
       <menu text="&amp;View">
+	<item command="DuplicateView" text="Duplicate &amp;View" />
+        <separator />
         <item command="ShowPixelGrid" text="Show &amp;Pixel Grid" />
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
@@ -628,6 +630,7 @@
 
     <menu id="document_tab_popup">
       <item command="CloseFile" text="&amp;Close" />
+      <item command="DuplicateView" text="Duplicate &amp;View" />
       <separator />
       <item command="OpenWithApp" text="&amp;Open with OS" />
       <item command="OpenInFolder" text="Open in &amp;Folder" />

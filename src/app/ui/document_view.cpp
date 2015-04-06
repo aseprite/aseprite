@@ -231,6 +231,17 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 
 bool DocumentView::onCloseView(Workspace* workspace)
 {
+  // If there is another view for this document, just close the view.
+  for (auto view : *workspace) {
+    DocumentView* docView = dynamic_cast<DocumentView*>(view);
+    if (docView && docView != this &&
+        docView->getDocument() == getDocument()) {
+      workspace->removeView(this);
+      delete this;
+      return true;
+    }
+  }
+
   UIContext* ctx = UIContext::instance();
   bool save_it;
   bool try_again = true;

@@ -69,7 +69,7 @@ TabIcon HomeView::getTabIcon()
 
 WorkspaceView* HomeView::cloneWorkspaceView()
 {
-  return NULL;                  // This view cannot be cloned
+  return nullptr;               // This view cannot be cloned
 }
 
 void HomeView::onClonedFrom(WorkspaceView* from)

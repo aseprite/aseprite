@@ -116,6 +116,22 @@ void Workspace::selectPreviousTab()
   m_activePanel->tabs()->selectPreviousTab();
 }
 
+void Workspace::duplicateActiveView()
+{
+  WorkspaceView* view = activeView();
+  if (!view)
+    return;
+
+  WorkspaceView* clone = view->cloneWorkspaceView();
+  if (!clone)
+    return;
+
+  WorkspacePanel* panel = getViewPanel(view);
+  addViewToPanel(panel, clone, false, -1);
+  clone->onClonedFrom(view);
+  setActiveView(clone);
+}
+
 void Workspace::onPaint(PaintEvent& ev)
 {
   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
