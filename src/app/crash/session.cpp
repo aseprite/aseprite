@@ -15,8 +15,6 @@
 #include "base/path.h"
 #include "base/process.h"
 
-#include <windows.h>
-
 namespace app {
 namespace crash {
 

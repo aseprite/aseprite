@@ -23,8 +23,6 @@
 #include "base/thread.h"
 #include "base/time.h"
 
-#include <windows.h>
-
 namespace app {
 namespace crash {
 
