@@ -478,7 +478,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       app::Color::LongHumanReadableString);
     if (m_alpha < 255) {
       char buf[256];
-      sprintf(buf, ", Alpha %d", m_alpha);
+      sprintf(buf, " \xCE\xB1%d", m_alpha);
       str += buf;
     }
 
