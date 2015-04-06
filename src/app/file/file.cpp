@@ -108,7 +108,8 @@ int save_document(Context* context, doc::Document* document)
 
   int ret;
   FileOp* fop = fop_to_save_document(context,
-    static_cast<app::Document*>(document), "");
+    static_cast<app::Document*>(document),
+    document->filename().c_str(), "");
   if (!fop)
     return -1;
 
@@ -223,7 +224,8 @@ done:;
   return fop;
 }
 
-FileOp* fop_to_save_document(Context* context, Document* document, const char* fn_format_arg)
+FileOp* fop_to_save_document(Context* context, Document* document,
+  const char* filename, const char* fn_format_arg)
 {
   FileOp *fop;
   bool fatal;
@@ -236,9 +238,9 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
   fop->document = document;
 
   // Get the extension of the filename (in lower case)
-  std::string extension = base::string_to_lower(base::get_file_extension(fop->document->filename()));
+  std::string extension = base::string_to_lower(base::get_file_extension(filename));
 
-  PRINTF("Saving document \"%s\" (%s)\n", fop->document->filename().c_str(), extension.c_str());
+  PRINTF("Saving document \"%s\" (%s)\n", filename, extension.c_str());
 
   // Get the format through the extension of the filename
   fop->format = FileFormatsManager::instance()
@@ -363,7 +365,7 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
   if (fop->format->support(FILE_SUPPORT_SEQUENCES)) {
     fop_prepare_for_sequence(fop);
 
-    std::string fn = fop->document->filename();
+    std::string fn = filename;
     std::string fn_format = fn_format_arg;
     bool default_format = false;
 
@@ -415,7 +417,7 @@ FileOp* fop_to_save_document(Context* context, Document* document, const char* f
     }
   }
   else
-    fop->filename = fop->document->filename();
+    fop->filename = filename;
 
   // Configure output format?
   if (fop->format->support(FILE_SUPPORT_GET_FORMAT_OPTIONS)) {
