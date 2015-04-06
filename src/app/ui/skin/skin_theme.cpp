@@ -1057,7 +1057,10 @@ void SkinTheme::paintEntry(PaintEvent& ev)
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
   int textlen = base::utf8_length(textString);
 
-  for (c=scroll, utf8_it+=scroll; c<textlen; ++c, ++utf8_it) {
+  if (scroll < textlen)
+    utf8_it += scroll;
+
+  for (c=scroll; c<textlen; ++c, ++utf8_it) {
     ch = password ? '*': *utf8_it;
 
     // Normal text
@@ -1526,7 +1529,10 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
   int textlen = base::utf8_length(textString);
 
-  for (c=scroll, utf8_it+=scroll; c<textlen; ++c, ++utf8_it) {
+  if (scroll < textlen)
+    utf8_it += scroll;
+
+  for (c=scroll; c<textlen; ++c, ++utf8_it) {
     ch = password ? '*': *utf8_it;
 
     // Normal text
