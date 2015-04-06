@@ -18,6 +18,7 @@
 
 #include "app/app.h"
 #include "app/console.h"
+#include "app/context.h"
 #include "app/modules/gui.h"
 #include "app/ui/status_bar.h"
 
@@ -33,55 +34,64 @@ static int console_counter = 0;
 static bool console_locked;
 static bool want_close_flag = false;
 
-Console::Console()
+Console::Console(Context* ctx)
+  : m_withUI(false)
 {
-  console_counter++;
+  if (ctx)
+    m_withUI = (ctx->isUiAvailable());
+  else
+    m_withUI =
+      (App::instance()->isGui() &&
+       Manager::getDefault() &&
+       Manager::getDefault()->getDisplay());
 
-  if (!App::instance()->isGui() ||
-      !Manager::getDefault() ||
-      !Manager::getDefault()->getDisplay() ||
-      wid_console ||
-      console_counter > 1)
+  if (!m_withUI)
     return;
-  else {
-    Window* window = new Window(Window::WithTitleBar, "Errors Console");
-    Grid* grid = new Grid(1, false);
-    View* view = new View();
-    TextBox* textbox = new TextBox("", JI_WORDWRAP);
-    Button* button = new Button("&Cancel");
 
-    if (!grid || !textbox || !button)
-      return;
+  console_counter++;
+  if (wid_console || console_counter > 1)
+    return;
 
-    // The "button" closes the console
-    button->Click.connect(Bind<void>(&Window::closeWindow, window, button));
+  Window* window = new Window(Window::WithTitleBar, "Errors Console");
+  Grid* grid = new Grid(1, false);
+  View* view = new View();
+  TextBox* textbox = new TextBox("", JI_WORDWRAP);
+  Button* button = new Button("&Cancel");
 
-    view->attachToView(textbox);
+  if (!grid || !textbox || !button)
+    return;
 
-    button->setMinSize(gfx::Size(60, 0));
+  // The "button" closes the console
+  button->Click.connect(Bind<void>(&Window::closeWindow, window, button));
 
-    grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
-    grid->addChildInCell(button, 1, 1, JI_CENTER);
-    window->addChild(grid);
+  view->attachToView(textbox);
 
-    view->setVisible(false);
-    button->setFocusMagnet(true);
-    view->setExpansive(true);
+  button->setMinSize(gfx::Size(60, 0));
 
-    /* force foreground mode */
-/*     ji_find_widget(window)->in_foreground = true; */
+  grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
+  grid->addChildInCell(button, 1, 1, JI_CENTER);
+  window->addChild(grid);
 
-    wid_console = window;
-    wid_view = view;
-    wid_textbox = textbox;
-    wid_cancel = button;
-    console_locked = false;
-    want_close_flag = false;
-  }
+  view->setVisible(false);
+  button->setFocusMagnet(true);
+  view->setExpansive(true);
+
+  /* force foreground mode */
+  /*     ji_find_widget(window)->in_foreground = true; */
+
+  wid_console = window;
+  wid_view = view;
+  wid_textbox = textbox;
+  wid_cancel = button;
+  console_locked = false;
+  want_close_flag = false;
 }
 
 Console::~Console()
 {
+  if (!m_withUI)
+    return;
+
   console_counter--;
 
   if ((wid_console) && (console_counter == 0)) {
@@ -107,38 +117,38 @@ void Console::printf(const char* format, ...)
   vsprintf(buf, format, ap);
   va_end(ap);
 
-  if (wid_console) {
-    // Open the window
-    if (!wid_console->isVisible()) {
-      wid_console->openWindow();
-      ui::Manager::getDefault()->invalidate();
-    }
-
-    /* update the textbox */
-    if (!console_locked) {
-      console_locked = true;
-
-      wid_view->setVisible(true);
-
-      wid_console->remapWindow();
-      wid_console->setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
-      wid_console->centerWindow();
-      wid_console->invalidate();
-    }
-
-    const std::string& text = wid_textbox->getText();
-
-    std::string final;
-    if (!text.empty())
-      final += text;
-    final += buf;
-
-    wid_textbox->setText(final.c_str());
-  }
-  else {
+  if (!m_withUI || !wid_console) {
     fputs(buf, stdout);
     fflush(stdout);
+    return;
   }
+
+  // Open the window
+  if (!wid_console->isVisible()) {
+    wid_console->openWindow();
+    ui::Manager::getDefault()->invalidate();
+  }
+
+  /* update the textbox */
+  if (!console_locked) {
+    console_locked = true;
+
+    wid_view->setVisible(true);
+
+    wid_console->remapWindow();
+    wid_console->setBounds(gfx::Rect(0, 0, ui::display_w()*9/10, ui::display_h()*6/10));
+    wid_console->centerWindow();
+    wid_console->invalidate();
+  }
+
+  const std::string& text = wid_textbox->getText();
+
+  std::string final;
+  if (!text.empty())
+    final += text;
+  final += buf;
+
+  wid_textbox->setText(final.c_str());
 }
 
 // static

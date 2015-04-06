@@ -89,7 +89,7 @@ Document* load_document(Context* context, const char* filename)
   fop_post_load(fop);
 
   if (fop->has_error()) {
-    Console console;
+    Console console(context);
     console.printf(fop->error.c_str());
   }
 
@@ -117,7 +117,7 @@ int save_document(Context* context, doc::Document* document)
   fop_done(fop);
 
   if (fop->has_error()) {
-    Console console;
+    Console console(context);
     console.printf(fop->error.c_str());
   }
 
