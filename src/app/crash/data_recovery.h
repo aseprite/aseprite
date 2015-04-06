@@ -11,9 +11,6 @@
 
 #include "app/crash/session.h"
 #include "base/disable_copying.h"
-#include "doc/context_observer.h"
-#include "doc/document_observer.h"
-#include "doc/documents_observer.h"
 
 #include <vector>
 
@@ -23,10 +20,9 @@ namespace doc {
 
 namespace app {
 namespace crash {
+  class BackupObserver;
 
-  class DataRecovery : public doc::ContextObserver
-                     , public doc::DocumentsObserver
-                     , public doc::DocumentObserver {
+  class DataRecovery {
   public:
     typedef std::vector<SessionPtr> Sessions;
 
@@ -37,12 +33,9 @@ namespace crash {
     const Sessions& sessions() { return m_sessions; }
 
   private:
-    virtual void onAddDocument(doc::Document* document) override;
-    virtual void onRemoveDocument(doc::Document* document) override;
-
     Sessions m_sessions;
     SessionPtr m_inProgress;
-    doc::Context* m_context;
+    BackupObserver* m_backup;
 
     DISABLE_COPYING(DataRecovery);
   };

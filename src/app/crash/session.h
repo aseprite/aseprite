@@ -17,6 +17,8 @@
 #include <string>
 
 namespace app {
+  class Document;
+
 namespace crash {
 
   // A class to record/restore session information.
@@ -30,6 +32,8 @@ namespace crash {
 
     void create(base::pid pid);
     void removeFromDisk();
+
+    void saveDocumentChanges(app::Document* doc);
 
   private:
     void loadPid();

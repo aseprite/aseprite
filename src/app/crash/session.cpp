@@ -11,6 +11,12 @@
 
 #include "app/crash/session.h"
 
+#include "app/context.h"
+#include "app/document.h"
+#include "app/document_access.h"
+#include "app/file/file.h"
+#include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/process.h"
@@ -36,7 +42,11 @@ bool Session::isRunning()
 
 bool Session::isEmpty()
 {
-  return !base::is_file(dataFilename());
+  for (auto& item : base::list_files(m_path)) {
+    if (base::get_file_extension(item) == "ase")
+      return false;
+  }
+  return true;
 }
 
 void Session::create(base::pid pid)
@@ -51,6 +61,29 @@ void Session::removeFromDisk()
 {
   base::delete_file(pidFilename());
   base::remove_directory(m_path);
+}
+
+void Session::saveDocumentChanges(app::Document* doc)
+{
+  DocumentReader reader(doc);
+  DocumentWriter writer(reader);
+  app::Context ctx;
+  std::string fn = base::join_path(m_path,
+    base::convert_to<std::string>(doc->id()) + ".ase");
+  TRACE("DataRecovery: Saving document '%s'...\n", fn.c_str());
+
+  FileOp* fop = fop_to_save_document(&ctx,
+    static_cast<app::Document*>(doc), fn.c_str(), "");
+  if (!fop) {
+    TRACE("DataRecovery: Cannot create save file operation\n");
+    return;
+  }
+
+  fop_operate(fop, NULL);
+  fop_done(fop);
+  if (fop->has_error())
+    TRACE("DataRecovery: Error saving changes '%s'\n", fop->error.c_str());
+  fop_free(fop);
 }
 
 void Session::loadPid()

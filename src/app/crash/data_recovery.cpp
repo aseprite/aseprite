@@ -11,24 +11,19 @@
 
 #include "app/crash/data_recovery.h"
 
+#include "app/crash/backup_observer.h"
 #include "app/crash/session.h"
-#include "app/document.h"
 #include "app/resource_finder.h"
-#include "app/ui_context.h"
-#include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
-#include "base/process.h"
-#include "base/string.h"
-#include "base/thread.h"
 #include "base/time.h"
 
 namespace app {
 namespace crash {
 
-DataRecovery::DataRecovery(doc::Context* context)
+DataRecovery::DataRecovery(doc::Context* ctx)
   : m_inProgress(nullptr)
-  , m_context(context)
+  , m_backup(nullptr)
 {
   ResourceFinder rf;
   rf.includeUserDir(base::join_path("sessions", ".").c_str());
@@ -83,28 +78,15 @@ DataRecovery::DataRecovery(doc::Context* context)
   m_inProgress->create(pid);
   TRACE("DataRecovery: Session in progress '%s'\n", newSessionDir.c_str());
 
-  m_context->addObserver(this);
-  m_context->documents().addObserver(this);
+  m_backup = new BackupObserver(m_inProgress.get(), ctx);
 }
 
 DataRecovery::~DataRecovery()
 {
-  m_context->documents().removeObserver(this);
-  m_context->removeObserver(this);
+  m_backup->stop();
+  delete m_backup;
 
   m_inProgress.reset();
-}
-
-void DataRecovery::onAddDocument(doc::Document* document)
-{
-  TRACE("DataRecovery: Observe document %p\n", document);
-  document->addObserver(this);
-}
-
-void DataRecovery::onRemoveDocument(doc::Document* document)
-{
-  TRACE("DataRecovery:: Remove document %p\n", document);
-  document->removeObserver(this);
 }
 
 } // namespace crash

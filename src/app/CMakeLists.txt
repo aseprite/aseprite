@@ -225,6 +225,7 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
+  crash/backup_observer.cpp
   crash/data_recovery.cpp
   crash/session.cpp
   document.cpp
