@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,6 +25,15 @@ namespace base {
     ~concurrent_queue() {
     }
 
+    bool empty() const {
+      bool result;
+      {
+        scoped_lock hold(m_mutex);
+        result = m_queue.empty();
+      }
+      return result;
+    }
+
     void push(const T& value) {
       scoped_lock hold(m_mutex);
       m_queue.push(value);
@@ -45,7 +54,7 @@ namespace base {
 
   private:
     std::queue<T> m_queue;
-    mutex m_mutex;
+    mutable mutex m_mutex;
 
     DISABLE_COPYING(concurrent_queue);
   };
