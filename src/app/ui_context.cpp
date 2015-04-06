@@ -74,7 +74,10 @@ DocumentView* UIContext::activeView() const
 
 void UIContext::setActiveView(DocumentView* docView)
 {
-  if (m_lastSelectedView == docView)    // Do nothing case
+  // Do nothing cases: 1) the view is already selected, or 2) the view
+  // is the a preview.
+  if (m_lastSelectedView == docView ||
+      (docView && docView->isPreview()))
     return;
 
   setActiveDocument(docView ? docView->getDocument(): NULL);

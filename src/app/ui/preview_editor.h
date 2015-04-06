@@ -11,7 +11,6 @@
 
 #include "app/ui/document_view.h"
 #include "doc/frame.h"
-#include "ui/timer.h"
 #include "ui/window.h"
 
 namespace app {
@@ -37,21 +36,12 @@ namespace app {
   private:
     void onCenterClicked();
     void onPlayClicked();
-    void onPlaybackTick();
     void hideWindow();
 
     bool m_isEnabled;
     DocumentView* m_docView;
     MiniCenterButton* m_centerButton;
     MiniPlayButton* m_playButton;
-    ui::Timer m_playTimer;
-
-    // Number of milliseconds to go to the next frame if m_playTimer
-    // is activated.
-    int m_nextFrameTime;
-    int m_curFrameTick;
-
-    bool m_pingPongForward;
     doc::frame_t m_refFrame;
   };
 

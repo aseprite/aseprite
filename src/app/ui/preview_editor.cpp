@@ -13,7 +13,6 @@
 
 #include "app/app.h"
 #include "app/document.h"
-#include "app/handle_anidir.h"
 #include "app/ini_file.h"
 #include "app/loop_tag.h"
 #include "app/modules/editors.h"
@@ -101,7 +100,7 @@ public:
     setDecorative(true);
   }
 
-  bool isPlaying() { return m_isPlaying; }
+  bool isPlaying() const { return m_isPlaying; }
 
 protected:
   void onClick(Event& ev) override
@@ -158,8 +157,6 @@ PreviewEditorWindow::PreviewEditorWindow()
   , m_docView(NULL)
   , m_centerButton(new MiniCenterButton())
   , m_playButton(new MiniPlayButton())
-  , m_playTimer(10)
-  , m_pingPongForward(true)
   , m_refFrame(0)
 {
   child_spacing = 0;
@@ -173,8 +170,6 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   addChild(m_centerButton);
   addChild(m_playButton);
-
-  m_playTimer.Tick.connect(&PreviewEditorWindow::onPlaybackTick, this);
 }
 
 PreviewEditorWindow::~PreviewEditorWindow()
@@ -259,24 +254,15 @@ void PreviewEditorWindow::onCenterClicked()
 void PreviewEditorWindow::onPlayClicked()
 {
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): nullptr);
+  if (!miniEditor || !miniEditor->document())
+    return;
 
   if (m_playButton->isPlaying()) {
-    if (miniEditor && miniEditor->document())
-      m_nextFrameTime = miniEditor->sprite()->frameDuration(miniEditor->frame());
-    else
-      m_nextFrameTime = -1;
-
-    m_curFrameTick = ui::clock();
-    m_pingPongForward = true;
-
-    m_playTimer.start();
+    m_refFrame = miniEditor->frame();
+    miniEditor->play();
   }
-  else {
-    m_playTimer.stop();
-
-    if (miniEditor)
-      miniEditor->setFrame(m_refFrame);
-  }
+  else
+    miniEditor->stop();
 }
 
 void PreviewEditorWindow::updateUsingEditor(Editor* editor)
@@ -285,6 +271,9 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     hideWindow();
     return;
   }
+
+  if (editor != current_editor)
+    return;
 
   Document* document = editor->document();
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
@@ -304,6 +293,8 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 
     miniEditor = m_docView->getEditor();
     miniEditor->setZoom(render::Zoom(1, 1));
+    miniEditor->setLayer(editor->layer());
+    miniEditor->setFrame(editor->frame());
     miniEditor->setState(EditorStatePtr(new NavigateState));
     layout();
     center = true;
@@ -312,8 +303,24 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
   if (center)
     miniEditor->centerInSpritePoint(centerPoint);
 
-  miniEditor->setLayer(editor->layer());
-  miniEditor->setFrame(m_refFrame = editor->frame());
+  if (!m_playButton->isPlaying()) {
+    miniEditor->stop();
+    miniEditor->setLayer(editor->layer());
+    miniEditor->setFrame(editor->frame());
+  }
+  else {
+    if (miniEditor->isPlaying()) {
+      doc::FrameTag* tag = get_animation_tag(editor->sprite(), editor->frame());
+      doc::FrameTag* playingTag = get_animation_tag(editor->sprite(), m_refFrame);
+      if (tag != playingTag)
+        miniEditor->stop();
+    }
+
+    if (!miniEditor->isPlaying())
+      miniEditor->setFrame(m_refFrame = editor->frame());
+
+    miniEditor->play();
+  }
 }
 
 void PreviewEditorWindow::uncheckCenterButton()
@@ -329,43 +336,6 @@ void PreviewEditorWindow::hideWindow()
 
   if (isVisible())
     closeWindow(NULL);
-}
-
-void PreviewEditorWindow::onPlaybackTick()
-{
-  Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
-  if (!miniEditor)
-    return;
-
-  doc::Document* document = miniEditor->document();
-  doc::Sprite* sprite = miniEditor->sprite();
-  if (!document || !sprite)
-    return;
-
-  if (m_nextFrameTime >= 0) {
-    m_nextFrameTime -= (ui::clock() - m_curFrameTick);
-
-    // TODO get the frame tag in updateUsingEditor()
-    doc::FrameTag* tag = get_shortest_tag(sprite, m_refFrame);
-    if (!tag)
-      tag = get_loop_tag(sprite);
-
-    while (m_nextFrameTime <= 0) {
-      doc::frame_t frame = calculate_next_frame(
-        sprite,
-        miniEditor->frame(),
-        tag,
-        m_pingPongForward);
-
-      miniEditor->setFrame(frame);
-
-      m_nextFrameTime += miniEditor->sprite()->frameDuration(frame);
-    }
-
-    m_curFrameTick = ui::clock();
-  }
-
-  invalidate();
 }
 
 } // namespace app

@@ -169,6 +169,7 @@ private:
 
 DocumentView::DocumentView(Document* document, Type type)
   : Box(JI_VERTICAL)
+  , m_type(type)
   , m_document(document)
   , m_view(new EditorView(type == Normal ? EditorView::CurrentEditorMode:
                                            EditorView::AlwaysSelected))

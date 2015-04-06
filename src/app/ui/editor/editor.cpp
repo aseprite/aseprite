@@ -33,6 +33,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
+#include "app/ui/editor/play_state.h"
 #include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/main_window.h"
@@ -1495,6 +1496,23 @@ void Editor::startSelectionTransformation(const gfx::Point& move)
 void Editor::notifyScrollChanged()
 {
   m_observers.notifyScrollChanged(this);
+}
+
+void Editor::play()
+{
+  if (!dynamic_cast<PlayState*>(m_state.get()))
+    setState(EditorStatePtr(new PlayState));
+}
+
+void Editor::stop()
+{
+  if (dynamic_cast<PlayState*>(m_state.get()))
+    backToPreviousState();
+}
+
+bool Editor::isPlaying() const
+{
+  return (dynamic_cast<PlayState*>(m_state.get()) != nullptr);
 }
 
 // static

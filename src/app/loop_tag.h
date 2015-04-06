@@ -18,8 +18,9 @@ namespace doc {
 
 namespace app {
 
+  doc::FrameTag* get_animation_tag(const doc::Sprite* sprite, doc::frame_t frame);
+  doc::FrameTag* get_loop_tag(const doc::Sprite* sprite);
   doc::FrameTag* get_shortest_tag(const doc::Sprite* sprite, doc::frame_t frame);
-  doc::FrameTag* get_loop_tag(doc::Sprite* sprite);
   doc::FrameTag* create_loop_tag(doc::frame_t from, doc::frame_t to);
 
 } // namespace app

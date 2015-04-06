@@ -18,6 +18,14 @@ namespace app {
 
 const char* kLoopTagName = "Loop";
 
+doc::FrameTag* get_animation_tag(const doc::Sprite* sprite, doc::frame_t frame)
+{
+  doc::FrameTag* tag = get_shortest_tag(sprite, frame);
+  if (!tag)
+    tag = get_loop_tag(sprite);
+  return tag;
+}
+
 doc::FrameTag* get_shortest_tag(const doc::Sprite* sprite, doc::frame_t frame)
 {
   const doc::FrameTag* found = nullptr;
@@ -33,7 +41,7 @@ doc::FrameTag* get_shortest_tag(const doc::Sprite* sprite, doc::frame_t frame)
   return const_cast<doc::FrameTag*>(found);
 }
 
-doc::FrameTag* get_loop_tag(doc::Sprite* sprite)
+doc::FrameTag* get_loop_tag(const doc::Sprite* sprite)
 {
   // Get tag with special "Loop" name
   for (doc::FrameTag* tag : sprite->frameTags())

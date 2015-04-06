@@ -306,6 +306,7 @@ add_library(app-lib
   ui/editor/moving_pixels_state.cpp
   ui/editor/navigate_state.cpp
   ui/editor/pixels_movement.cpp
+  ui/editor/play_state.cpp
   ui/editor/scrolling_state.cpp
   ui/editor/select_box_state.cpp
   ui/editor/standby_state.cpp

@@ -40,6 +40,8 @@ namespace app {
     void getDocumentLocation(DocumentLocation* location) const;
     Editor* getEditor() { return m_editor; }
 
+    bool isPreview() { return m_type == Preview; }
+
     // TabView implementation
     std::string getTabText() override;
     TabIcon getTabIcon() override;
@@ -67,6 +69,7 @@ namespace app {
     bool onProcessMessage(ui::Message* msg) override;
 
   private:
+    Type m_type;
     Document* m_document;
     ui::View* m_view;
     Editor* m_editor;

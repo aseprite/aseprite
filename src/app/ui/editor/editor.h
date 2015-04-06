@@ -188,6 +188,11 @@ namespace app {
     // position.
     void notifyScrollChanged();
 
+    // Animation control
+    void play();
+    void stop();
+    bool isPlaying() const;
+
     // Returns the buffer used to render editor viewports.
     // E.g. It can be re-used by PreviewCommand
     static ImageBufferPtr getRenderImageBuffer();
