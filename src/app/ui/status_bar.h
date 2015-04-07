@@ -11,7 +11,6 @@
 
 #include "app/color.h"
 #include "base/observers.h"
-#include "doc/context_observer.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/link_label.h"
@@ -29,6 +28,8 @@ namespace ui {
 }
 
 namespace app {
+  class ButtonSet;
+  class Editor;
   class StatusBar;
 
   namespace tools {
@@ -50,8 +51,7 @@ namespace app {
     double m_pos;
   };
 
-  class StatusBar : public ui::Widget
-                  , public doc::ContextObserver {
+  class StatusBar : public ui::Widget {
     static StatusBar* m_instance;
   public:
     static StatusBar* instance() { return m_instance; }
@@ -66,6 +66,8 @@ namespace app {
     void showColor(int msecs, const char* text, const Color& color, int alpha);
     void showTool(int msecs, tools::Tool* tool);
 
+    void updateUsingEditor(Editor* editor);
+
     // Methods to add and remove progress bars
     Progress* addProgress();
     void removeProgress(Progress* progress);
@@ -75,15 +77,13 @@ namespace app {
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
-    // ContextObserver impl
-    void onSetActiveDocument(doc::Document* document) override;
-
   private:
     void onCurrentToolChange();
-    void updateFromDocument();
-    void updateFromLayer();
-    void updateCurrentFrame();
+    void updateFromDocument(Editor* editor);
+    void updateCurrentFrame(Editor* editor);
+    void updatePlayButton(Editor* editor);
     void newFrame();
+    void onPlayButton();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
@@ -107,11 +107,7 @@ namespace app {
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
-    ui::Button* m_b_first;            // Go to first frame
-    ui::Button* m_b_prev;             // Go to previous frame
-    ui::Button* m_b_play;             // Play animation
-    ui::Button* m_b_next;             // Go to next frame
-    ui::Button* m_b_last;             // Go to last frame
+    ButtonSet* m_buttonSet;
 
     // Tip window
     class CustomizedTipWindow;

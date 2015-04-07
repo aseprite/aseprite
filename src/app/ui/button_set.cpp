@@ -87,7 +87,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   if (m_icon) {
     g->drawRgbaSurface(m_icon,
       rc.x + rc.w/2 - m_icon->width()/2,
-      rc.y + rc.h/2 - m_icon->height()/2);
+      rc.y + rc.h/2 - m_icon->height()/2 - 1*guiscale());
   }
 }
 
@@ -98,12 +98,16 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseDownMessage:
       captureMouse();
       buttonSet()->setSelectedItem(this);
-      buttonSet()->onItemChange();
+      if (!buttonSet()->m_triggerOnMouseUp)
+        buttonSet()->onItemChange();
       break;
 
     case ui::kMouseUpMessage:
-      if (hasCapture())
+      if (hasCapture()) {
         releaseMouse();
+        if (buttonSet()->m_triggerOnMouseUp)
+          buttonSet()->onItemChange();
+      }
       break;
 
     case ui::kMouseMoveMessage:
@@ -135,6 +139,7 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
 ButtonSet::ButtonSet(int columns)
   : Grid(columns, false)
   , m_offerCapture(true)
+  , m_triggerOnMouseUp(false)
 {
   noBorderNoChildSpacing();
 }
@@ -193,6 +198,11 @@ void ButtonSet::deselectItems()
 void ButtonSet::setOfferCapture(bool state)
 {
   m_offerCapture = state;
+}
+
+void ButtonSet::setTriggerOnMouseUp(bool state)
+{
+  m_triggerOnMouseUp = state;
 }
 
 void ButtonSet::onItemChange()

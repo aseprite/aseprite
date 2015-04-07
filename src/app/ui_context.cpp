@@ -20,6 +20,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/preview_editor.h"
+#include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "app/ui/workspace.h"
 #include "app/ui/workspace_tabs.h"
@@ -97,6 +98,7 @@ void UIContext::setActiveView(DocumentView* docView)
 
   mainWin->getPreviewEditor()->updateUsingEditor(current_editor);
   mainWin->getTimeline()->updateUsingEditor(current_editor);
+  StatusBar::instance()->updateUsingEditor(current_editor);
 
   // Change the image-type of color bar.
   ColorBar::instance()->setPixelFormat(app_get_current_pixel_format());

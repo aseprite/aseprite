@@ -42,6 +42,7 @@ namespace app {
     void deselectItems();
 
     void setOfferCapture(bool state);
+    void setTriggerOnMouseUp(bool state);
 
     Signal0<void> ItemChange;
 
@@ -52,6 +53,7 @@ namespace app {
     Item* findSelectedItem() const;
 
     bool m_offerCapture;
+    bool m_triggerOnMouseUp;
   };
 
 } // namespace app

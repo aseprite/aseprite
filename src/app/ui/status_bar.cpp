@@ -13,6 +13,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
+#include "app/document_access.h"
 #include "app/document_range.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -20,6 +21,7 @@
 #include "app/modules/palettes.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -30,11 +32,11 @@
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
-#include "gfx/size.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
+#include "gfx/size.h"
 #include "she/font.h"
 #include "she/surface.h"
 #include "ui/ui.h"
@@ -90,7 +92,6 @@ private:
 };
 
 static void slider_change_hook(Slider* slider);
-static void ani_button_command(Button* widget, AniAction action);
 
 static WidgetType statusbar_type()
 {
@@ -153,19 +154,6 @@ StatusBar::StatusBar()
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   setBgColor(theme->getColorById(kStatusBarFace));
 
-#define BUTTON_NEW(name, text, action)                                  \
-  {                                                                     \
-    (name) = new Button(text);                                          \
-    setup_mini_look(name);                                              \
-    (name)->Click.connect(Bind<void>(&ani_button_command, (name), action)); \
-  }
-
-#define ICON_NEW(name, icon, action)                                    \
-  {                                                                     \
-    BUTTON_NEW((name), "", (action));                                   \
-    set_gfxicon_to_button((name), icon, icon##_SELECTED, icon##_DISABLED, JI_CENTER | JI_MIDDLE); \
-  }
-
   this->setFocusStop(true);
 
   m_timeout = 0;
@@ -191,29 +179,25 @@ StatusBar::StatusBar()
     setup_mini_look(m_currentFrame);
     setup_mini_look(m_newFrame);
 
-    ICON_NEW(m_b_first, PART_ANI_FIRST, ACTION_FIRST);
-    ICON_NEW(m_b_prev, PART_ANI_PREVIOUS, ACTION_PREV);
-    ICON_NEW(m_b_play, PART_ANI_PLAY, ACTION_PLAY);
-    ICON_NEW(m_b_next, PART_ANI_NEXT, ACTION_NEXT);
-    ICON_NEW(m_b_last, PART_ANI_LAST, ACTION_LAST);
+    m_buttonSet = new ButtonSet(5);
+    m_buttonSet->setTriggerOnMouseUp(true);
+    m_buttonSet->addItem(theme->get_part(PART_ANI_FIRST));
+    m_buttonSet->addItem(theme->get_part(PART_ANI_PREVIOUS));
+    m_buttonSet->addItem(theme->get_part(PART_ANI_PLAY));
+    m_buttonSet->addItem(theme->get_part(PART_ANI_NEXT));
+    m_buttonSet->addItem(theme->get_part(PART_ANI_LAST));
+    m_buttonSet->ItemChange.connect(Bind(&StatusBar::onPlayButton, this));
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
-    box2->noBorderNoChildSpacing();
 
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
 
-    box2->addChild(m_b_first);
-    box2->addChild(m_b_prev);
-    box2->addChild(m_b_play);
-    box2->addChild(m_b_next);
-    box2->addChild(m_b_last);
-
     box1->addChild(box4);
-    box1->addChild(box2);
+    box1->addChild(m_buttonSet);
     box1->addChild(m_slider);
 
     m_commandsBox = box1;
@@ -222,13 +206,10 @@ StatusBar::StatusBar()
   }
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
-  UIContext::instance()->addObserver(this);
 }
 
 StatusBar::~StatusBar()
 {
-  UIContext::instance()->removeObserver(this);
-
   for (Progress* bar : m_progress)
     delete bar;
 
@@ -255,7 +236,7 @@ void StatusBar::clearText()
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
   // TODO this call should be in an observer of the "current frame" property changes.
-  updateCurrentFrame();
+  updateCurrentFrame(current_editor);
 
   if ((ui::clock() > m_timeout) || (msecs > 0)) {
     char buf[256];              // TODO warning buffer overflow
@@ -491,10 +472,11 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   }
 }
 
-void StatusBar::onSetActiveDocument(doc::Document* document)
+void StatusBar::updateUsingEditor(Editor* editor)
 {
-  updateFromDocument();
-  updateCurrentFrame();
+  updateFromDocument(editor);
+  updateCurrentFrame(editor);
+  updatePlayButton(editor);
 }
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
@@ -535,37 +517,39 @@ static void slider_change_hook(Slider* slider)
   }
 }
 
-static void ani_button_command(Button* widget, AniAction action)
+void StatusBar::onPlayButton()
 {
-  Command* cmd = NULL;
+  int item = m_buttonSet->selectedItem();
+  m_buttonSet->deselectItems();
 
-  switch (action) {
-    //case ACTION_LAYER: cmd = CommandsModule::instance()->getCommandByName(CommandId::LayerProperties); break;
+  Command* cmd = nullptr;
+  switch (item) {
     case ACTION_FIRST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFirstFrame); break;
     case ACTION_PREV: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame); break;
     case ACTION_PLAY: cmd = CommandsModule::instance()->getCommandByName(CommandId::PlayAnimation); break;
     case ACTION_NEXT: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame); break;
     case ACTION_LAST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoLastFrame); break;
   }
-
-  if (cmd)
+  if (cmd) {
     UIContext::instance()->executeCommand(cmd);
+    updatePlayButton(current_editor);
+  }
 }
 
-void StatusBar::updateFromDocument()
+void StatusBar::updateFromDocument(Editor* editor)
 {
   try {
-    if (UIContext::instance()->activeDocument()) {
-      const ContextReader reader(UIContext::instance());
+    if (editor && editor->document()) {
+      const DocumentReader reader(editor->document());
       m_commandsBox->setVisible(true);
 
       // Cel opacity
       const Cel* cel;
-      if (reader.sprite()->supportAlpha() &&
-          reader.layer() &&
-          reader.layer()->isImage() &&
-          !reader.layer()->isBackground() &&
-          (cel = reader.cel())) {
+      if (editor->sprite()->supportAlpha() &&
+          editor->layer() &&
+          editor->layer()->isImage() &&
+          !editor->layer()->isBackground() &&
+          (cel = editor->layer()->cel(editor->frame()))) {
         m_slider->setValue(MID(0, cel->opacity(), 255));
         m_slider->setEnabled(true);
       }
@@ -584,18 +568,25 @@ void StatusBar::updateFromDocument()
   }
 }
 
-void StatusBar::updateCurrentFrame()
+void StatusBar::updateCurrentFrame(Editor* editor)
 {
-  DocumentLocation location = UIContext::instance()->activeLocation();
-  if (location.sprite())
-    m_currentFrame->setTextf("%d", location.frame()+1);
+  if (editor && editor->sprite())
+    m_currentFrame->setTextf("%d", editor->frame()+1);
+}
+
+void StatusBar::updatePlayButton(Editor* editor)
+{
+  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
+  m_buttonSet->getItem(ACTION_PLAY)->setIcon(
+    theme->get_part(
+      (editor && editor->isPlaying()) ? PART_ANI_STOP: PART_ANI_PLAY));
 }
 
 void StatusBar::newFrame()
 {
   Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
   UIContext::instance()->executeCommand(cmd);
-  updateCurrentFrame();
+  updateCurrentFrame(current_editor);
 }
 
 } // namespace app
