@@ -35,8 +35,6 @@ using namespace base::serialization::little_endian;
 
 void write_layer(std::ostream& os, const Layer* layer)
 {
-  std::string name = layer->name();
-
   write32(os, layer->id());
   write_string(os, layer->name());
 
