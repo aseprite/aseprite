@@ -190,6 +190,11 @@ StatusBar::StatusBar()
     m_commandsBox->setVisible(false);
   }
 
+  // Tooltips manager
+  TooltipManager* tooltipManager = new TooltipManager();
+  addChild(tooltipManager);
+  tooltipManager->addTooltipFor(m_slider, "Cel Opacity", JI_BOTTOM);
+
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
 }
 
