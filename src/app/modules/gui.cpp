@@ -446,6 +446,16 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
     case kKeyDownMessage: {
       Window* toplevel_window = getTopWindow();
 
+#if defined _WIN32 && defined _DEBUG
+      // Left Shift+Ctrl+Q generates a crash (useful to test the anticrash feature)
+      if (GetKeyState(VK_LSHIFT) & 0x8000 &&
+          GetKeyState(VK_LCONTROL) & 0x8000 &&
+          GetKeyState(0x51) & 0x8000) { // Q key
+        int* p = nullptr;
+        *p = 0;
+      }
+#endif
+
       // If there is a foreground window as top level...
       if (toplevel_window &&
           toplevel_window != App::instance()->getMainWindow() &&
