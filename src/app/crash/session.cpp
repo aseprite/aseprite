@@ -12,6 +12,7 @@
 #include "app/crash/session.h"
 
 #include "app/context.h"
+#include "app/crash/document_io.h"
 #include "app/document.h"
 #include "app/document_access.h"
 #include "app/file/file.h"
@@ -20,6 +21,7 @@
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/process.h"
+#include "base/string.h"
 
 namespace app {
 namespace crash {
@@ -43,7 +45,7 @@ bool Session::isRunning()
 bool Session::isEmpty()
 {
   for (auto& item : base::list_files(m_path)) {
-    if (base::get_file_extension(item) == "ase")
+    if (base::is_directory(item))
       return false;
   }
   return true;
@@ -63,8 +65,15 @@ void Session::create(base::pid pid)
 
 void Session::removeFromDisk()
 {
-  base::delete_file(pidFilename());
-  base::remove_directory(m_path);
+  if (base::is_file(pidFilename()))
+    base::delete_file(pidFilename());
+
+  try {
+    base::remove_directory(m_path);
+  }
+  catch (const std::exception&) {
+    // Is not empty
+  }
 }
 
 void Session::saveDocumentChanges(app::Document* doc)
@@ -72,22 +81,15 @@ void Session::saveDocumentChanges(app::Document* doc)
   DocumentReader reader(doc);
   DocumentWriter writer(reader);
   app::Context ctx;
-  std::string fn = base::join_path(m_path,
-    base::convert_to<std::string>(doc->id()) + ".ase");
-  TRACE("DataRecovery: Saving document '%s'...\n", fn.c_str());
+  std::string dir = base::join_path(m_path,
+    base::convert_to<std::string>(doc->id()));
+  TRACE("DataRecovery: Saving document '%s'...\n", dir.c_str());
 
-  FileOp* fop = fop_to_save_document(&ctx,
-    static_cast<app::Document*>(doc), fn.c_str(), "");
-  if (!fop) {
-    TRACE("DataRecovery: Cannot create save file operation\n");
-    return;
-  }
+  if (!base::is_directory(dir))
+    base::make_directory(dir);
 
-  fop_operate(fop, NULL);
-  fop_done(fop);
-  if (fop->has_error())
-    TRACE("DataRecovery: Error saving changes '%s'\n", fop->error.c_str());
-  fop_free(fop);
+  // Save document information
+  write_document(dir, doc);
 }
 
 void Session::loadPid()

@@ -227,6 +227,7 @@ add_library(app-lib
   context_flags.cpp
   crash/backup_observer.cpp
   crash/data_recovery.cpp
+  crash/document_io.cpp
   crash/session.cpp
   document.cpp
   document_api.cpp
