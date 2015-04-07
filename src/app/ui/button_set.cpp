@@ -70,8 +70,14 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     g->fillRect(getBgColor(), g->getClipBounds());
 
   if (isSelected() || hasMouseOver()) {
-    nw = PART_TOOLBUTTON_HOT_NW;
-    face = theme->colors.buttonHotFace();
+    if (hasCapture()) {
+      nw = PART_TOOLBUTTON_PUSHED_NW;
+      face = theme->colors.buttonSelectedFace();
+    }
+    else {
+      nw = PART_TOOLBUTTON_HOT_NW;
+      face = theme->colors.buttonHotFace();
+    }
   }
   else {
     nw = PART_TOOLBUTTON_LAST_NW;
@@ -85,9 +91,13 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   theme->draw_bounds_nw(g, rc, nw, face);
 
   if (m_icon) {
-    g->drawRgbaSurface(m_icon,
-      rc.x + rc.w/2 - m_icon->width()/2,
-      rc.y + rc.h/2 - m_icon->height()/2 - 1*guiscale());
+    int u = rc.x + rc.w/2 - m_icon->width()/2;
+    int v = rc.y + rc.h/2 - m_icon->height()/2 - 1*guiscale();
+
+    if (isSelected() && hasCapture())
+      g->drawColoredRgbaSurface(m_icon, theme->colors.buttonSelectedText(), u, v);
+    else
+      g->drawRgbaSurface(m_icon, u, v);
   }
 }
 
@@ -98,6 +108,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseDownMessage:
       captureMouse();
       buttonSet()->setSelectedItem(this);
+      invalidate();
+
       if (!buttonSet()->m_triggerOnMouseUp)
         buttonSet()->onItemChange();
       break;
@@ -105,6 +117,8 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
     case ui::kMouseUpMessage:
       if (hasCapture()) {
         releaseMouse();
+        invalidate();
+
         if (buttonSet()->m_triggerOnMouseUp)
           buttonSet()->onItemChange();
       }

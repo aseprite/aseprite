@@ -11,6 +11,7 @@
 #include "ui/graphics.h"
 
 #include "base/string.h"
+#include "gfx/clip.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
@@ -146,6 +147,14 @@ void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
   she::ScopedSurfaceLock src(surface);
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawRgbaSurface(src, m_dx+x, m_dy+y);
+}
+
+void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
+{
+  she::ScopedSurfaceLock src(surface);
+  she::ScopedSurfaceLock dst(m_surface);
+  dst->drawColoredRgbaSurface(src, color, gfx::ColorNone,
+    gfx::Clip(m_dx+x, m_dy+y, 0, 0, surface->width(), surface->height()));
 }
 
 void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)

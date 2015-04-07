@@ -1263,7 +1263,7 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 {
   if (hasCapture()) {
     Widget* pick = getManager()->pick(mouseMsg->position());
-    if (pick && pick->getType() == widget_type) {
+    if (pick && pick != this && pick->getType() == widget_type) {
       releaseMouse();
 
       MouseMessage* mouseMsg2 = new MouseMessage(
