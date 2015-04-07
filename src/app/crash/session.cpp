@@ -53,7 +53,11 @@ void Session::create(base::pid pid)
 {
   m_pid = pid;
 
+#ifdef _WIN32
+  std::ofstream of(base::from_utf8(pidFilename()));
+#else
   std::ofstream of(pidFilename());
+#endif
   of << m_pid;
 }
 
