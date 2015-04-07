@@ -47,3 +47,9 @@ because they don't depend on any other component.
 ## Level 5
 
   * [main](main/) (app, base, she, ui)
+
+# Debugging Tricks
+
+On Windows, you can use F5 to show the amount of used memory. Also
+`Ctrl+Shift+Q` crashes the application in case that you want to test
+the anticrash feature or your need a memory dump file.
