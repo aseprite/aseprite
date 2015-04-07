@@ -14,6 +14,7 @@
 #include "app/crash/session.h"
 #include "app/document.h"
 #include "base/bind.h"
+#include "base/chrono.h"
 #include "base/remove_from_container.h"
 #include "base/scoped_lock.h"
 #include "doc/context.h"
