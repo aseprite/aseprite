@@ -36,21 +36,6 @@ namespace app {
     class Tool;
   }
 
-  class Progress {
-    friend class StatusBar;
-
-  public:
-    ~Progress();
-    void setPos(double pos);
-    double getPos() const;
-
-  private:
-    Progress();
-    Progress(StatusBar* statusbar);
-    StatusBar* m_statusbar;
-    double m_pos;
-  };
-
   class StatusBar : public ui::Widget {
     static StatusBar* m_instance;
   public:
@@ -68,10 +53,6 @@ namespace app {
 
     void updateUsingEditor(Editor* editor);
 
-    // Methods to add and remove progress bars
-    Progress* addProgress();
-    void removeProgress(Progress* progress);
-
   protected:
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
@@ -85,8 +66,6 @@ namespace app {
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
-    typedef std::vector<Progress*> ProgressList;
-
     int m_timeout;
     State m_state;
 
@@ -96,9 +75,6 @@ namespace app {
     // Showing a color
     Color m_color;
     int m_alpha;
-
-    // Progress bar
-    ProgressList m_progress;
 
     // Box of main commands
     ui::Widget* m_commandsBox;

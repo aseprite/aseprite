@@ -13,6 +13,9 @@
 
 namespace ui {
 
+  class Box;
+  class Slider;
+
   class Alert;
   typedef base::SharedPtr<Alert> AlertPtr;
 
@@ -20,11 +23,17 @@ namespace ui {
   public:
     Alert();
 
+    void addProgress();
+    void setProgress(double progress);
+
     static AlertPtr create(const char* format, ...);
     static int show(const char* format, ...);
 
   private:
     void processString(char* buf, std::vector<Widget*>& labels, std::vector<Widget*>& buttons);
+
+    Slider* m_progress;
+    Box* m_progressPlaceholder;
   };
 
 } // namespace ui

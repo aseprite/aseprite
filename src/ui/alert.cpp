@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -40,6 +40,7 @@
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/separator.h"
+#include "ui/slider.h"
 #include "ui/theme.h"
 
 #include <cstdarg>
@@ -49,8 +50,24 @@ namespace ui {
 
 Alert::Alert()
   : Window(WithTitleBar)
+  , m_progress(nullptr)
+  , m_progressPlaceholder(nullptr)
 {
   // Do nothing
+}
+
+void Alert::addProgress()
+{
+  ASSERT(!m_progress);
+  m_progress = new Slider(0, 100, 0);
+  m_progressPlaceholder->addChild(m_progress);
+  m_progressPlaceholder->setVisible(true);
+}
+
+void Alert::setProgress(double progress)
+{
+  ASSERT(m_progress);
+  m_progress->setValue(int(MID(0.0, progress * 100.0, 100.0)));
 }
 
 AlertPtr Alert::create(const char* format, ...)
@@ -194,11 +211,13 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   // Pseudo separators (only to fill blank space)
   box4 = new Box(0);
   box5 = new Box(0);
+  m_progressPlaceholder = new Box(0);
 
   box4->setExpansive(true);
   box5->setExpansive(true);
   box4->noBorderNoChildSpacing();
   box5->noBorderNoChildSpacing();
+  m_progressPlaceholder->noBorderNoChildSpacing();
 
   // Setup parent <-> children relationship
 
@@ -206,6 +225,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
 
   box1->addChild(box4); // Filler
   box1->addChild(box2); // Labels
+  box1->addChild(m_progressPlaceholder);
   box1->addChild(box5); // Filler
   box1->addChild(grid); // Buttons
 

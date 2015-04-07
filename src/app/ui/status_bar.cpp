@@ -200,9 +200,6 @@ StatusBar::StatusBar()
 
 StatusBar::~StatusBar()
 {
-  for (Progress* bar : m_progress)
-    delete bar;
-
   delete m_tipwindow;           // widget
   delete m_commandsBox;
 }
@@ -317,55 +314,6 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Progress bars stuff
-
-Progress* StatusBar::addProgress()
-{
-  Progress* progress = new Progress(this);
-  m_progress.push_back(progress);
-  invalidate();
-  return progress;
-}
-
-void StatusBar::removeProgress(Progress* progress)
-{
-  ASSERT(progress->m_statusbar == this);
-
-  ProgressList::iterator it = std::find(m_progress.begin(), m_progress.end(), progress);
-  ASSERT(it != m_progress.end());
-
-  m_progress.erase(it);
-  invalidate();
-}
-
-Progress::Progress(StatusBar* statusbar)
-  : m_statusbar(statusbar)
-  , m_pos(0.0f)
-{
-}
-
-Progress::~Progress()
-{
-  if (m_statusbar) {
-    m_statusbar->removeProgress(this);
-    m_statusbar = NULL;
-  }
-}
-
-void Progress::setPos(double pos)
-{
-  if (m_pos != pos) {
-    m_pos = pos;
-    m_statusbar->invalidate();
-  }
-}
-
-double Progress::getPos() const
-{
-  return m_pos;
-}
-
-//////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
 void StatusBar::onResize(ResizeEvent& ev)
@@ -452,22 +400,6 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       gfx::Point(x, rc.y + rc.h/2 - getFont()->height()/2));
 
     x += getFont()->textLength(getText().c_str()) + 4*guiscale();
-  }
-
-  // Draw progress bar
-  if (!m_progress.empty()) {
-    int width = 64;
-    int x = rc.x2() - (width+4);
-
-    for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it) {
-      Progress* progress = *it;
-
-      theme->paintProgressBar(g,
-        gfx::Rect(x, rc.y, width, rc.h),
-        progress->getPos());
-
-      x -= width+4;
-    }
   }
 }
 

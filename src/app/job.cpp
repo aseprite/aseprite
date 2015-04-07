@@ -12,7 +12,6 @@
 #include "app/job.h"
 
 #include "app/app.h"
-#include "app/ui/status_bar.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -28,7 +27,6 @@ Job::Job(const char* jobName)
 {
   m_mutex = NULL;
   m_thread = NULL;
-  m_progress = NULL;
   m_last_progress = 0.0;
   m_done_flag = false;
   m_canceled_flag = false;
@@ -36,8 +34,8 @@ Job::Job(const char* jobName)
   m_mutex = new base::mutex();
 
   if (App::instance()->isGui()) {
-    m_progress = StatusBar::instance()->addProgress();
     m_alert_window = ui::Alert::create("%s<<Working...||&Cancel", jobName);
+    m_alert_window->addProgress();
 
     m_timer.reset(new ui::Timer(kMonitoringPeriod, m_alert_window.get()));
     m_timer->Tick.connect(&Job::onMonitoringTick, this);
@@ -53,9 +51,6 @@ Job::~Job()
 
     if (m_alert_window)
       m_alert_window->closeWindow(NULL);
-
-    if (m_progress)
-      delete m_progress;
   }
 
   if (m_mutex)
@@ -107,7 +102,7 @@ void Job::onMonitoringTick()
   base::scoped_lock hold(*m_mutex);
 
   // update progress
-  m_progress->setPos(m_last_progress);
+  m_alert_window->setProgress(m_last_progress);
 
   // is job done? we can close the monitor
   if (m_done_flag || m_canceled_flag) {

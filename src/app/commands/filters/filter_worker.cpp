@@ -16,7 +16,6 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
 #include "base/thread.h"
@@ -64,7 +63,6 @@ private:
   bool m_cancelled;             // Was the effect cancelled by the user?
   bool m_abort;                 // An exception was thrown
   ui::Timer m_timer;            // Monitoring timer to update the progress-bar
-  Progress* m_progressBar;      // The progress-bar.
   AlertPtr m_alertWindow;       // Alert for the user to cancel the filter-progress if he wants.
   std::string m_error;
 };
@@ -80,10 +78,9 @@ FilterWorker::FilterWorker(FilterManagerImpl* filterMgr)
   m_cancelled = false;
   m_abort = false;
 
-  m_progressBar = StatusBar::instance()->addProgress();
-
   m_alertWindow = ui::Alert::create(PACKAGE
     "<<Applying effect...||&Cancel");
+  m_alertWindow->addProgress();
 
   m_timer.Tick.connect(&FilterWorker::onMonitoringTick, this);
   m_timer.start();
@@ -93,8 +90,6 @@ FilterWorker::~FilterWorker()
 {
   if (m_alertWindow)
     m_alertWindow->closeWindow(NULL);
-
-  delete m_progressBar;
 }
 
 void FilterWorker::run()
@@ -173,8 +168,8 @@ void FilterWorker::onMonitoringTick()
 {
   scoped_lock lock(m_mutex);
 
-  if (m_progressBar)
-    m_progressBar->setPos(m_pos);
+  if (m_alertWindow)
+    m_alertWindow->setProgress(m_pos);
 
   if (m_done || m_abort)
     m_alertWindow->closeWindow(NULL);
