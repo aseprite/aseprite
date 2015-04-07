@@ -68,6 +68,7 @@ void BackupObserver::backgroundThread()
 
       base::scoped_lock hold(m_mutex);
       TRACE("DataRecovery: Start backup process for %d documents\n", m_documents.size());
+      base::Chrono chrono;
       for (doc::Document* doc : m_documents) {
         try {
           m_session->saveDocumentChanges(static_cast<app::Document*>(doc));
@@ -76,6 +77,7 @@ void BackupObserver::backgroundThread()
           TRACE("DataRecovery: Document '%d' is locked\n", doc->id());
         }
       }
+      TRACE("DataRecovery: Backup process done (%.16g)\n", chrono.elapsed());
     }
     base::this_thread::sleep_for(1.0);
   }
