@@ -26,11 +26,13 @@ SetFrameTagAniDir::SetFrameTagAniDir(FrameTag* tag, doc::AniDir anidir)
 void SetFrameTagAniDir::onExecute()
 {
   frameTag()->setAniDir(m_newAniDir);
+  frameTag()->incrementVersion();
 }
 
 void SetFrameTagAniDir::onUndo()
 {
   frameTag()->setAniDir(m_oldAniDir);
+  frameTag()->incrementVersion();
 }
 
 } // namespace cmd

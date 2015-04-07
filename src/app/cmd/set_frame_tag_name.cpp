@@ -26,11 +26,13 @@ SetFrameTagName::SetFrameTagName(FrameTag* tag, const std::string& name)
 void SetFrameTagName::onExecute()
 {
   frameTag()->setName(m_newName);
+  frameTag()->incrementVersion();
 }
 
 void SetFrameTagName::onUndo()
 {
   frameTag()->setName(m_oldName);
+  frameTag()->incrementVersion();
 }
 
 } // namespace cmd

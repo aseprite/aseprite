@@ -49,6 +49,7 @@ void UnlinkCel::onExecute()
   }
 
   cel->setDataRef(celDataCopy);
+  cel->incrementVersion();
 }
 
 void UnlinkCel::onUndo()
@@ -58,6 +59,7 @@ void UnlinkCel::onUndo()
   ASSERT(oldCelData);
 
   cel->setDataRef(oldCelData);
+  cel->incrementVersion();
 }
 
 } // namespace cmd

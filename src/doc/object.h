@@ -13,6 +13,8 @@
 
 namespace doc {
 
+  typedef uint32_t ObjectVersion;
+
   class Object {
   public:
     Object(ObjectType type);
@@ -21,8 +23,14 @@ namespace doc {
 
     const ObjectType type() const { return m_type; }
     const ObjectId id() const;
+    const ObjectVersion version() const { return m_version; }
 
     void setId(ObjectId id);
+    void setVersion(ObjectVersion version);
+
+    void incrementVersion() {
+      ++m_version;
+    }
 
     // Returns the approximate amount of memory (in bytes) which this
     // object use.
@@ -34,6 +42,8 @@ namespace doc {
     // Unique identifier for this object (it is assigned by
     // Objects class).
     mutable ObjectId m_id;
+
+    ObjectVersion m_version;
 
     // Disable copy assignment
     Object& operator=(const Object&);

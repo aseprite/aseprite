@@ -53,6 +53,8 @@ void FlipMaskedCel::swap()
   mask->offsetOrigin(-x, -y);
   doc::algorithm::flip_image_with_mask(image, mask, m_flipType, m_bgcolor);
   mask->offsetOrigin(x, y);
+
+  image->incrementVersion();
 }
 
 } // namespace cmd

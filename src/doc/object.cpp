@@ -25,12 +25,14 @@ static std::map<ObjectId, Object*> objects;
 Object::Object(ObjectType type)
   : m_type(type)
   , m_id(0)
+  , m_version(0)
 {
 }
 
 Object::Object(const Object& other)
   : m_type(other.m_type)
   , m_id(0) // We don't copy the ID
+  , m_version(0) // We don't copy the version
 {
 }
 
@@ -75,6 +77,11 @@ void Object::setId(ObjectId id)
     ASSERT(objects.find(m_id) == objects.end());
     objects.insert(std::make_pair(m_id, this));
   }
+}
+
+void Object::setVersion(ObjectVersion version)
+{
+  m_version = version;
 }
 
 Object* get_object(ObjectId id)

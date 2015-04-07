@@ -40,6 +40,8 @@ void FlipImage::swap()
 
   // Flip the portion of the bitmap.
   doc::algorithm::flip_image(image, m_bounds, m_flipType);
+
+  image->incrementVersion();
 }
 
 } // namespace cmd

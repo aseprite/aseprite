@@ -30,6 +30,8 @@ namespace cmd {
     }
 
   private:
+    void incrementVersions(Sprite* spr);
+
     Remap m_remap;
   };
 

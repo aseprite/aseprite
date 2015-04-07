@@ -24,11 +24,13 @@ SetLayerFlags::SetLayerFlags(Layer* layer, LayerFlags flags)
 void SetLayerFlags::onExecute()
 {
   layer()->setFlags(m_newFlags);
+  layer()->incrementVersion();
 }
 
 void SetLayerFlags::onUndo()
 {
   layer()->setFlags(m_oldFlags);
+  layer()->incrementVersion();
 }
 
 } // namespace cmd

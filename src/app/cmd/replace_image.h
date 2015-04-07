@@ -34,6 +34,8 @@ namespace cmd {
     }
 
   private:
+    void replaceImage(ObjectId oldId, const ImageRef& newImage);
+
     ObjectId m_oldImageId;
     ObjectId m_newImageId;
 

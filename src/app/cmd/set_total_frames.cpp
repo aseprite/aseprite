@@ -27,12 +27,16 @@ SetTotalFrames::SetTotalFrames(Sprite* sprite, frame_t frames)
 
 void SetTotalFrames::onExecute()
 {
-  sprite()->setTotalFrames(m_newFrames);
+  Sprite* spr = sprite();
+  spr->setTotalFrames(m_newFrames);
+  spr->incrementVersion();
 }
 
 void SetTotalFrames::onUndo()
 {
-  sprite()->setTotalFrames(m_oldFrames);
+  Sprite* spr = sprite();
+  spr->setTotalFrames(m_oldFrames);
+  spr->incrementVersion();
 }
 
 void SetTotalFrames::onFireNotifications()

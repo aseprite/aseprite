@@ -32,6 +32,7 @@ void AddPalette::onExecute()
   Palette* palette = this->palette();
 
   sprite->setPalette(palette, true);
+  sprite->incrementVersion();
 }
 
 void AddPalette::onUndo()
@@ -42,6 +43,7 @@ void AddPalette::onUndo()
   write_palette(m_stream, pal);
 
   sprite->deletePalette(pal);
+  sprite->incrementVersion();
   delete pal;
 }
 
@@ -51,6 +53,7 @@ void AddPalette::onRedo()
   Palette* pal = read_palette(m_stream);
 
   sprite->setPalette(pal, true);
+  sprite->incrementVersion();
 
   m_stream.str(std::string());
   m_stream.clear();

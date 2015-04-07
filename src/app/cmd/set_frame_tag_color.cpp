@@ -26,11 +26,13 @@ SetFrameTagColor::SetFrameTagColor(FrameTag* tag, doc::color_t color)
 void SetFrameTagColor::onExecute()
 {
   frameTag()->setColor(m_newColor);
+  frameTag()->incrementVersion();
 }
 
 void SetFrameTagColor::onUndo()
 {
   frameTag()->setColor(m_oldColor);
+  frameTag()->incrementVersion();
 }
 
 } // namespace cmd

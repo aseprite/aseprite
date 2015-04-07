@@ -81,6 +81,8 @@ void CopyRegion::swap()
   // TODO use m_stream.swap(tmp) when clang and gcc support it
   m_stream.str(tmp.str());
   m_stream.clear();
+
+  image->incrementVersion();
 }
 
 } // namespace cmd

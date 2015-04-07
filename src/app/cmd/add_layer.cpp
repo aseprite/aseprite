@@ -65,6 +65,7 @@ void AddLayer::addLayer(Layer* folder, Layer* newLayer, Layer* afterThis)
 {
   static_cast<LayerFolder*>(folder)->addLayer(newLayer);
   static_cast<LayerFolder*>(folder)->stackLayer(newLayer, afterThis);
+  folder->incrementVersion();
 
   Document* doc = folder->sprite()->document();
   DocumentEvent ev(doc);
@@ -82,6 +83,7 @@ void AddLayer::removeLayer(Layer* folder, Layer* layer)
   doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onBeforeRemoveLayer, ev);
 
   static_cast<LayerFolder*>(folder)->removeLayer(layer);
+  folder->incrementVersion();
 
   doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onAfterRemoveLayer, ev);
 

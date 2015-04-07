@@ -31,6 +31,7 @@
 #include "doc/string_io.h"
 
 #include <fstream>
+#include <map>
 
 namespace app {
 namespace crash {
@@ -47,102 +48,98 @@ using namespace doc;
     std::ofstream name(base::join_path(path, fn));
 #endif
 
-void write_document(const std::string& path, app::Document* doc)
+namespace {
+
+typedef std::map<ObjectId, ObjectVersion> Versions;
+static std::map<ObjectId, Versions> g_documentObjects;
+
+void write_sprite(std::ofstream& s, Sprite* spr)
 {
-  Sprite* spr = doc->sprite();
-  std::vector<Layer*> layers;
+  write32(s, spr->id());
+  write32(s, spr->version());
+  write32(s, spr->folder()->version());
+  write32(s, spr->pixelFormat());
+  write32(s, spr->width());
+  write32(s, spr->height());
+  write32(s, spr->transparentColor());
 
-  {
-    OFSTREAM(os, "spr-" + base::convert_to<std::string>(spr->id()));
+  // Frame durations
+  write32(s, spr->totalFrames());
+  for (frame_t fr = 0; fr < spr->totalFrames(); ++fr)
+    write32(s, spr->frameDuration(fr));
+}
 
-    write32(os, spr->id());
-    write8(os, spr->pixelFormat());
-    write32(os, spr->width());
-    write32(os, spr->height());
-    write32(os, spr->transparentColor());
+void write_layer_structure(std::ofstream& s, Layer* lay)
+{
+  write32(s, lay->id());
+  write_string(s, lay->name());
 
-    // Frame durations
-    write32(os, spr->totalFrames());
-    for (frame_t fr = 0; fr < spr->totalFrames(); ++fr)
-      write32(os, spr->frameDuration(fr));
+  write32(s, static_cast<int>(lay->flags())); // Flags
+  write16(s, static_cast<int>(lay->type()));  // Type
 
-    // Palettes
-    write32(os, spr->getPalettes().size());
-    for (Palette* pal : spr->getPalettes())
-      write32(os, pal->id());
-
-    // Frame tags
-    write32(os, spr->frameTags().size());
-    for (FrameTag* tag : spr->frameTags())
-      write32(os, tag->id());
-
-    // Layers
-    spr->getLayersList(layers);
-    write32(os, layers.size());
-    for (Layer* lay : layers)
-      write32(os, lay->id());
+  if (lay->type() == ObjectType::LayerImage) {
+    CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
+    CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
 
     // Cels
-    int celCount = 0;
-    for (Cel* cel : spr->cels())
-      ++celCount;
-    write32(os, celCount);
-    for (Cel* cel : spr->cels())
-      write32(os, cel->id());
-
-    // Images (CelData)
-    int uniqueCelCount = 0;
-    for (Cel* cel : spr->uniqueCels())
-      ++uniqueCelCount;
-    write32(os, uniqueCelCount);
-    for (Cel* cel : spr->uniqueCels())
-      write32(os, cel->data()->id());
+    write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
+    for (it=begin; it != end; ++it) {
+      const Cel* cel = *it;
+      write32(s, cel->id());
+    }
   }
+}
+
+template<typename T, typename WriteFunc>
+void save_object(T* obj, const char* prefix, WriteFunc write_func, Versions& versions, const std::string& path)
+{
+  if (!obj->version())
+    obj->incrementVersion();
+
+  if (versions[obj->id()] != obj->version()) {
+    OFSTREAM(s, prefix + base::convert_to<std::string>(obj->id()));
+    write_func(s, obj);
+    versions[obj->id()] = obj->version();
+
+    TRACE(" - %s %d saved with version %d\n",
+      prefix, obj->id(), obj->version());
+  }
+  else {
+    TRACE(" - Ignoring %s %d (version %d already saved)\n",
+      prefix, obj->id(), obj->version());
+  }
+}
+
+} // anonymous namespace
+
+void write_document(const std::string& path, app::Document* doc)
+{
+  Versions& versions = g_documentObjects[doc->id()];
+
+  Sprite* spr = doc->sprite();
+  save_object(spr, "spr", write_sprite, versions, path);
 
   //////////////////////////////////////////////////////////////////////
   // Create one stream for each object
 
-  for (Palette* pal : spr->getPalettes()) {
-    OFSTREAM(subos, "pal-" + base::convert_to<std::string>(pal->id()));
-    write_palette(subos, pal);
-  }
+  for (Palette* pal : spr->getPalettes())
+    save_object(pal, "pal", write_palette, versions, path);
 
-  for (FrameTag* tag : spr->frameTags()) {
-    OFSTREAM(subos, "frtag-" + base::convert_to<std::string>(tag->id()));
-    write_frame_tag(subos, tag);
-  }
+  for (FrameTag* frtag : spr->frameTags())
+    save_object(frtag, "frtag", write_frame_tag, versions, path);
 
-  for (Layer* lay : layers) {
-    OFSTREAM(os, "lay-" + base::convert_to<std::string>(lay->id()));
-    write32(os, lay->id());
-    write_string(os, lay->name());
+  std::vector<Layer*> layers;
+  spr->getLayersList(layers);
+  for (Layer* lay : layers)
+    save_object(lay, "lay", write_layer_structure, versions, path);
 
-    write32(os, static_cast<int>(lay->flags())); // Flags
-    write16(os, static_cast<int>(lay->type()));  // Type
-
-    if (lay->type() == ObjectType::LayerImage) {
-      CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
-      CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
-
-      // Cels
-      write32(os, static_cast<const LayerImage*>(lay)->getCelsCount());
-      for (it=begin; it != end; ++it) {
-        const Cel* cel = *it;
-        write32(os, cel->id());
-      }
-    }
-  }
-
-  for (Cel* cel : spr->cels()) {
-    OFSTREAM(os, "cel-" + base::convert_to<std::string>(cel->id()));
-    write_cel(os, cel);
-  }
+  for (Cel* cel : spr->cels())
+    save_object(cel, "cel", write_cel, versions, path);
 
   // Images (CelData)
   for (Cel* cel : spr->uniqueCels()) {
-    OFSTREAM(os, "img-" + base::convert_to<std::string>(cel->data()->id()));
-    write_celdata(os, cel->data());
-    write_image(os, cel->image());
+    save_object(cel->data(), "celdata", write_celdata, versions, path);
+    save_object(cel->image(), "img", write_image, versions, path);
   }
 }
 

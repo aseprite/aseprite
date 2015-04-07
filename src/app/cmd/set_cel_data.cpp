@@ -39,6 +39,7 @@ void SetCelData::onExecute()
     createCopy();
 
   cel->setDataRef(m_newData);
+  cel->incrementVersion();
   m_newData.reset();
 }
 
@@ -59,6 +60,8 @@ void SetCelData::onUndo()
     ASSERT(oldData);
     cel->setDataRef(oldData);
   }
+
+  cel->incrementVersion();
 }
 
 void SetCelData::onRedo()
@@ -70,6 +73,7 @@ void SetCelData::onRedo()
   CelDataRef newData = cel->sprite()->getCelDataRef(m_newDataId);
   ASSERT(newData);
   cel->setDataRef(newData);
+  cel->incrementVersion();
 }
 
 void SetCelData::createCopy()
