@@ -11,6 +11,7 @@
 
 #include "app/document_range.h"
 #include "app/pref/preferences.h"
+#include "app/ui/ani_controls.h"
 #include "app/ui/editor/editor_observer.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
@@ -96,6 +97,7 @@ namespace app {
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
     // DocumentObserver impl.
@@ -112,6 +114,7 @@ namespace app {
     void onRemoveDocument(doc::Document* document) override;
 
     // EditorObserver impl.
+    void onStateChanged(Editor* editor) override;
     void onAfterFrameChanged(Editor* editor) override;
     void onAfterLayerChanged(Editor* editor) override;
     void onDestroyEditor(Editor* editor) override;
@@ -253,6 +256,8 @@ namespace app {
 
     bool m_scroll;   // True if the drag-and-drop operation is a scroll operation.
     bool m_copy;     // True if the drag-and-drop operation is a copy.
+
+    AniControls m_aniControls;
   };
 
 } // namespace app

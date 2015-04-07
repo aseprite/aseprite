@@ -81,9 +81,7 @@ namespace app {
     void onCurrentToolChange();
     void updateFromDocument(Editor* editor);
     void updateCurrentFrame(Editor* editor);
-    void updatePlayButton(Editor* editor);
     void newFrame();
-    void onPlayButton();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
@@ -107,7 +105,6 @@ namespace app {
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
-    ButtonSet* m_buttonSet;
 
     // Tip window
     class CustomizedTipWindow;

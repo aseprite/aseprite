@@ -285,6 +285,7 @@ add_library(app-lib
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   transaction.cpp
+  ui/ani_controls.cpp
   ui/app_menuitem.cpp
   ui/button_set.cpp
   ui/color_bar.cpp

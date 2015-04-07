@@ -53,14 +53,6 @@ using namespace gfx;
 using namespace ui;
 using namespace doc;
 
-enum AniAction {
-  ACTION_FIRST,
-  ACTION_PREV,
-  ACTION_PLAY,
-  ACTION_NEXT,
-  ACTION_LAST,
-};
-
 static const char* kStatusBarText = "status_bar_text";
 static const char* kStatusBarFace = "status_bar_face";
 
@@ -175,18 +167,9 @@ StatusBar::StatusBar()
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
 
-    setup_mini_look(m_slider);
     setup_mini_look(m_currentFrame);
     setup_mini_look(m_newFrame);
-
-    m_buttonSet = new ButtonSet(5);
-    m_buttonSet->setTriggerOnMouseUp(true);
-    m_buttonSet->addItem(theme->get_part(PART_ANI_FIRST));
-    m_buttonSet->addItem(theme->get_part(PART_ANI_PREVIOUS));
-    m_buttonSet->addItem(theme->get_part(PART_ANI_PLAY));
-    m_buttonSet->addItem(theme->get_part(PART_ANI_NEXT));
-    m_buttonSet->addItem(theme->get_part(PART_ANI_LAST));
-    m_buttonSet->ItemChange.connect(Bind(&StatusBar::onPlayButton, this));
+    setup_mini_look(m_slider);
 
     m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
@@ -197,7 +180,6 @@ StatusBar::StatusBar()
     box4->addChild(m_newFrame);
 
     box1->addChild(box4);
-    box1->addChild(m_buttonSet);
     box1->addChild(m_slider);
 
     m_commandsBox = box1;
@@ -382,9 +364,16 @@ void StatusBar::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.getBounds());
 
+  Border border = getBorder();
   Rect rc = ev.getBounds();
-  rc.x += rc.w/2;
-  rc.w /= 2;
+  int w = rc.w/2 - border.getSize().w;
+  rc.x += w + border.left();
+  rc.w = w;
+
+  m_currentFrame->setVisible(w > 250*ui::guiscale());
+  m_newFrame->setVisible(w > 250*ui::guiscale());
+  m_slider->setVisible(w > 200*ui::guiscale());
+
   m_commandsBox->setBounds(rc);
 }
 
@@ -476,7 +465,6 @@ void StatusBar::updateUsingEditor(Editor* editor)
 {
   updateFromDocument(editor);
   updateCurrentFrame(editor);
-  updatePlayButton(editor);
 }
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
@@ -517,25 +505,6 @@ static void slider_change_hook(Slider* slider)
   }
 }
 
-void StatusBar::onPlayButton()
-{
-  int item = m_buttonSet->selectedItem();
-  m_buttonSet->deselectItems();
-
-  Command* cmd = nullptr;
-  switch (item) {
-    case ACTION_FIRST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFirstFrame); break;
-    case ACTION_PREV: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame); break;
-    case ACTION_PLAY: cmd = CommandsModule::instance()->getCommandByName(CommandId::PlayAnimation); break;
-    case ACTION_NEXT: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame); break;
-    case ACTION_LAST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoLastFrame); break;
-  }
-  if (cmd) {
-    UIContext::instance()->executeCommand(cmd);
-    updatePlayButton(current_editor);
-  }
-}
-
 void StatusBar::updateFromDocument(Editor* editor)
 {
   try {
@@ -572,14 +541,6 @@ void StatusBar::updateCurrentFrame(Editor* editor)
 {
   if (editor && editor->sprite())
     m_currentFrame->setTextf("%d", editor->frame()+1);
-}
-
-void StatusBar::updatePlayButton(Editor* editor)
-{
-  SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  m_buttonSet->getItem(ACTION_PLAY)->setIcon(
-    theme->get_part(
-      (editor && editor->isPlaying()) ? PART_ANI_STOP: PART_ANI_PLAY));
 }
 
 void StatusBar::newFrame()

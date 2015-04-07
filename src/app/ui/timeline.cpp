@@ -122,6 +122,7 @@ Timeline::Timeline()
   m_context->documents().addObserver(this);
 
   setDoubleBuffered(true);
+  addChild(&m_aniControls);
 }
 
 Timeline::~Timeline()
@@ -135,6 +136,8 @@ Timeline::~Timeline()
 
 void Timeline::updateUsingEditor(Editor* editor)
 {
+  m_aniControls.updateUsingEditor(editor);
+
   // As a sprite editor was selected, it looks like the user wants to
   // execute commands targetting the editor instead of the
   // timeline. Here we disable the selected range, so commands like
@@ -417,7 +420,7 @@ bool Timeline::onProcessMessage(Message* msg)
         // tracked to the mouse's released).
         if (m_clk.part == PART_SEPARATOR) {
           m_separator_x = MAX(0, mousePos.x);
-          invalidate();
+          layout();
           return true;
         }
       }
@@ -781,6 +784,18 @@ void Timeline::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(32, 32));
 }
 
+void Timeline::onResize(ui::ResizeEvent& ev)
+{
+  gfx::Rect rc = ev.getBounds();
+  setBoundsQuietly(rc);
+
+  gfx::Size sz = m_aniControls.getPreferredSize();
+  m_aniControls.setBounds(
+    gfx::Rect(rc.x, rc.y, MIN(sz.w, m_separator_x),
+      getFont()->height() +
+      skinTheme()->dimensions.timelineTagsAreaHeight()));
+}
+
 void Timeline::onPaint(ui::PaintEvent& ev)
 {
   Graphics* g = ev.getGraphics();
@@ -962,6 +977,11 @@ void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
 
   clearClipboardRange();
   invalidate();
+}
+
+void Timeline::onStateChanged(Editor* editor)
+{
+  m_aniControls.updateUsingEditor(editor);
 }
 
 void Timeline::onAfterFrameChanged(Editor* editor)
@@ -1333,13 +1353,11 @@ void Timeline::drawFrameTags(ui::Graphics* g)
   SkinTheme* theme = skinTheme();
   SkinTheme::Styles& styles = theme->styles;
 
-  if (!m_sprite->frameTags().empty()) {
-    g->fillRect(theme->colors.workspace(),
-      gfx::Rect(
-        0, getFont()->height(),
-        getClientBounds().w,
-        theme->dimensions.timelineTagsAreaHeight()));
-  }
+  g->fillRect(theme->colors.workspace(),
+    gfx::Rect(
+      0, getFont()->height(),
+      getClientBounds().w,
+      theme->dimensions.timelineTagsAreaHeight()));
 
   for (FrameTag* frameTag : m_sprite->frameTags()) {
     gfx::Rect bounds1 = getPartBounds(Hit(PART_HEADER_FRAME, firstLayer(), frameTag->fromFrame()));
@@ -2303,10 +2321,8 @@ int Timeline::topHeight() const
   int h = 0;
   if (m_document && m_sprite) {
     h += skinTheme()->dimensions.timelineTopBorder();
-    if (!m_sprite->frameTags().empty()) {
-      h += getFont()->height();
-      h += skinTheme()->dimensions.timelineTagsAreaHeight();
-    }
+    h += getFont()->height();
+    h += skinTheme()->dimensions.timelineTagsAreaHeight();
   }
   return h;
 }

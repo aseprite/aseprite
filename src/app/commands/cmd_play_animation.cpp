@@ -14,7 +14,6 @@
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/status_bar.h"
 
 namespace app {
 
@@ -61,9 +60,6 @@ void PlayAnimationCommand::onExecute(Context* context)
     current_editor->stop();
   else
     current_editor->play();
-
-  // TODO this is an ugly hack, StatusBar should observe Editor changes
-  StatusBar::instance()->updateUsingEditor(current_editor);
 }
 
 Command* CommandFactory::createPlayAnimationCommand()
