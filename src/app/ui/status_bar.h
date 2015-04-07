@@ -11,6 +11,7 @@
 
 #include "app/color.h"
 #include "base/observers.h"
+#include "doc/context_observer.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/link_label.h"
@@ -49,7 +50,8 @@ namespace app {
     double m_pos;
   };
 
-  class StatusBar : public ui::Widget {
+  class StatusBar : public ui::Widget
+                  , public doc::ContextObserver {
     static StatusBar* m_instance;
   public:
     static StatusBar* instance() { return m_instance; }
@@ -69,17 +71,19 @@ namespace app {
     void removeProgress(Progress* progress);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
+    // ContextObserver impl
+    void onSetActiveDocument(doc::Document* document) override;
+
   private:
     void onCurrentToolChange();
+    void updateFromDocument();
     void updateFromLayer();
     void updateCurrentFrame();
     void newFrame();
-    void updateSubwidgetsVisibility();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 

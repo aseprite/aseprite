@@ -154,28 +154,27 @@ void UIContext::onAddDocument(doc::Document* doc)
 
 void UIContext::onRemoveDocument(doc::Document* doc)
 {
-  Context::onRemoveDocument(doc);
-
   // We don't destroy views in batch mode.
-  if (!isUiAvailable())
-    return;
+  if (isUiAvailable()) {
+    Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+    DocumentViews docViews;
 
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-  DocumentViews docViews;
-
-  // Collect all views related to the document.
-  for (WorkspaceView* view : *workspace) {
-    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-      if (docView->getDocument() == doc) {
-        docViews.push_back(docView);
+    // Collect all views related to the document.
+    for (WorkspaceView* view : *workspace) {
+      if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+        if (docView->getDocument() == doc) {
+          docViews.push_back(docView);
+        }
       }
+    }
+
+    for (DocumentView* docView : docViews) {
+      workspace->removeView(docView);
+      delete docView;
     }
   }
 
-  for (DocumentView* docView : docViews) {
-    workspace->removeView(docView);
-    delete docView;
-  }
+  Context::onRemoveDocument(doc);
 }
 
 void UIContext::onGetActiveLocation(DocumentLocation* location) const

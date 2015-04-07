@@ -181,7 +181,6 @@ StatusBar::StatusBar()
   {
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
-    Box* box3 = new Box(JI_HORIZONTAL);
     Box* box4 = new Box(JI_HORIZONTAL);
     m_slider = new Slider(0, 255, 255);
     m_currentFrame = new GotoFrameEntry();
@@ -203,8 +202,6 @@ StatusBar::StatusBar()
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
     box2->noBorderNoChildSpacing();
-    box3->noBorderNoChildSpacing();
-    box3->setExpansive(true);
 
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
@@ -215,21 +212,25 @@ StatusBar::StatusBar()
     box2->addChild(m_b_next);
     box2->addChild(m_b_last);
 
-    box1->addChild(box3);
     box1->addChild(box4);
     box1->addChild(box2);
     box1->addChild(m_slider);
 
     m_commandsBox = box1;
+    addChild(m_commandsBox);
+    m_commandsBox->setVisible(false);
   }
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
+  UIContext::instance()->addObserver(this);
 }
 
 StatusBar::~StatusBar()
 {
-  for (ProgressList::iterator it = m_progress.begin(); it != m_progress.end(); ++it)
-    delete *it;
+  UIContext::instance()->removeObserver(this);
+
+  for (Progress* bar : m_progress)
+    delete bar;
 
   delete m_tipwindow;           // widget
   delete m_commandsBox;
@@ -396,46 +397,13 @@ double Progress::getPos() const
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
-bool StatusBar::onProcessMessage(Message* msg)
-{
-  switch (msg->type()) {
-
-    case kMouseEnterMessage: {
-      updateSubwidgetsVisibility();
-
-      const Document* document = UIContext::instance()->activeDocument();
-      if (document != NULL) {
-        updateFromLayer();
-        updateCurrentFrame();
-      }
-      break;
-    }
-
-    case kMouseLeaveMessage:
-      if (hasChild(m_commandsBox)) {
-        // If we want restore the state-bar and the slider doesn't have
-        // the capture...
-        if (getManager()->getCapture() != m_slider) {
-          // ...exit from command mode
-          getManager()->freeFocus();     // TODO Review this code
-
-          removeChild(m_commandsBox);
-          invalidate();
-        }
-      }
-      break;
-
-  }
-
-  return Widget::onProcessMessage(msg);
-}
-
 void StatusBar::onResize(ResizeEvent& ev)
 {
   setBoundsQuietly(ev.getBounds());
 
   Rect rc = ev.getBounds();
-  rc.w -= rc.w/4 + 4*guiscale();
+  rc.x += rc.w/2;
+  rc.w /= 2;
   m_commandsBox->setBounds(rc);
 }
 
@@ -521,8 +489,12 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
       x -= width+4;
     }
   }
+}
 
-  updateSubwidgetsVisibility();
+void StatusBar::onSetActiveDocument(doc::Document* document)
+{
+  updateFromDocument();
+  updateCurrentFrame();
 }
 
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
@@ -580,25 +552,30 @@ static void ani_button_command(Button* widget, AniAction action)
     UIContext::instance()->executeCommand(cmd);
 }
 
-void StatusBar::updateFromLayer()
+void StatusBar::updateFromDocument()
 {
   try {
-    const ContextReader reader(UIContext::instance());
-    const Cel* cel;
+    if (UIContext::instance()->activeDocument()) {
+      const ContextReader reader(UIContext::instance());
+      m_commandsBox->setVisible(true);
 
-    // Opacity layer
-    if (reader.sprite() &&
-        reader.sprite()->supportAlpha() &&
-        reader.layer() &&
-        reader.layer()->isImage() &&
-        !reader.layer()->isBackground() &&
-        (cel = reader.cel())) {
-      m_slider->setValue(MID(0, cel->opacity(), 255));
-      m_slider->setEnabled(true);
+      // Cel opacity
+      const Cel* cel;
+      if (reader.sprite()->supportAlpha() &&
+          reader.layer() &&
+          reader.layer()->isImage() &&
+          !reader.layer()->isBackground() &&
+          (cel = reader.cel())) {
+        m_slider->setValue(MID(0, cel->opacity(), 255));
+        m_slider->setEnabled(true);
+      }
+      else {
+        m_slider->setValue(255);
+        m_slider->setEnabled(false);
+      }
     }
     else {
-      m_slider->setValue(255);
-      m_slider->setEnabled(false);
+      m_commandsBox->setVisible(false);
     }
   }
   catch (LockedDocumentException&) {
@@ -619,25 +596,6 @@ void StatusBar::newFrame()
   Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
   UIContext::instance()->executeCommand(cmd);
   updateCurrentFrame();
-}
-
-void StatusBar::updateSubwidgetsVisibility()
-{
-  const Document* document = UIContext::instance()->activeDocument();
-  bool commandsVisible = (document != NULL && hasMouse());
-
-  if (commandsVisible) {
-    if (!hasChild(m_commandsBox)) {
-      addChild(m_commandsBox);
-      invalidate();
-    }
-  }
-  else {
-    if (hasChild(m_commandsBox)) {
-      removeChild(m_commandsBox);
-      invalidate();
-    }
-  }
 }
 
 } // namespace app
