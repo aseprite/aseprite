@@ -162,10 +162,12 @@ StatusBar::StatusBar()
     Box* box1 = new Box(JI_HORIZONTAL);
     Box* box2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
     Box* box4 = new Box(JI_HORIZONTAL);
-    m_slider = new Slider(0, 255, 255);
+
+    m_frameLabel = new Label("Frame:");
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
+    m_slider = new Slider(0, 255, 255);
 
     setup_mini_look(m_currentFrame);
     setup_mini_look(m_newFrame);
@@ -179,6 +181,7 @@ StatusBar::StatusBar()
     box4->addChild(m_currentFrame);
     box4->addChild(m_newFrame);
 
+    box1->addChild(m_frameLabel);
     box1->addChild(box4);
     box1->addChild(m_slider);
 
@@ -370,9 +373,11 @@ void StatusBar::onResize(ResizeEvent& ev)
   rc.x += w + border.left();
   rc.w = w;
 
-  m_currentFrame->setVisible(w > 250*ui::guiscale());
-  m_newFrame->setVisible(w > 250*ui::guiscale());
-  m_slider->setVisible(w > 200*ui::guiscale());
+  bool frameControls = (w > 200*ui::guiscale());
+  m_frameLabel->setVisible(frameControls);
+  m_currentFrame->setVisible(frameControls);
+  m_newFrame->setVisible(frameControls);
+  m_slider->setVisible(w > 250*ui::guiscale());
 
   m_commandsBox->setBounds(rc);
 }

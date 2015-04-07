@@ -13,7 +13,6 @@
 #include "base/observers.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
-#include "ui/link_label.h"
 #include "ui/widget.h"
 
 #include <string>
@@ -23,6 +22,7 @@ namespace ui {
   class Box;
   class Button;
   class Entry;
+  class Label;
   class Slider;
   class Window;
 }
@@ -102,6 +102,7 @@ namespace app {
 
     // Box of main commands
     ui::Widget* m_commandsBox;
+    ui::Label* m_frameLabel;
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
