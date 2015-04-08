@@ -46,7 +46,7 @@ void write_image(std::ostream& os, const Image* image)
     os.write((char*)image->getPixelAddress(0, c), size);
 }
 
-Image* read_image(std::istream& is)
+Image* read_image(std::istream& is, bool setId)
 {
   ObjectId id = read32(is);
   int pixelFormat = read8(is);          // Pixel format
@@ -61,7 +61,8 @@ Image* read_image(std::istream& is)
     is.read((char*)image->getPixelAddress(0, c), size);
 
   image->setMaskColor(maskColor);
-  image->setId(id);
+  if (setId)
+    image->setId(id);
   return image.release();
 }
 

@@ -16,6 +16,7 @@ class Document;
 namespace crash {
 
   void write_document(const std::string& dir, app::Document* doc);
+  void delete_document_internals(app::Document* doc);
 
 } // namespace crash
 } // namespace app

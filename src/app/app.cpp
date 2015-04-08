@@ -194,6 +194,10 @@ void App::initialize(const AppOptions& options)
     // Default window title bar.
     updateDisplayTitleBar();
 
+    // Recover data
+    if (!m_modules->m_recovery.sessions().empty())
+      m_mainWindow->showDataRecovery(&m_modules->m_recovery);
+
     m_mainWindow->openWindow();
 
     // Redraw the whole screen.

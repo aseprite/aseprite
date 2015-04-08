@@ -54,8 +54,11 @@ void BackupObserver::onAddDocument(doc::Document* document)
 void BackupObserver::onRemoveDocument(doc::Document* document)
 {
   TRACE("DataRecovery:: Remove document %p\n", document);
-  base::scoped_lock hold(m_mutex);
-  base::remove_from_container(m_documents, document);
+  {
+    base::scoped_lock hold(m_mutex);
+    base::remove_from_container(m_documents, document);
+  }
+  m_session->removeDocument(static_cast<app::Document*>(document));
 }
 
 void BackupObserver::backgroundThread()

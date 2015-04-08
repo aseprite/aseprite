@@ -15,6 +15,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 
 namespace app {
   class Document;
@@ -24,8 +25,22 @@ namespace crash {
   // A class to record/restore session information.
   class Session {
   public:
+    class Backup {
+    public:
+      Backup(const std::string& dir);
+      const std::string& dir() const { return m_dir; }
+      const std::string& description() const { return m_desc; }
+    private:
+      std::string m_dir;
+      std::string m_desc;
+    };
+    typedef std::vector<Backup*> Backups;
+
     Session(const std::string& path);
     ~Session();
+
+    std::string name() const;
+    const Backups& backups();
 
     bool isRunning();
     bool isEmpty();
@@ -34,16 +49,21 @@ namespace crash {
     void removeFromDisk();
 
     void saveDocumentChanges(app::Document* doc);
+    void removeDocument(app::Document* doc);
+
+    void restoreBackup(Backup* backup);
+    void deleteBackup(Backup* backup);
 
   private:
     void loadPid();
     std::string pidFilename() const;
-    std::string dataFilename() const;
+    void deleteDirectory(const std::string& dir);
 
     base::pid m_pid;
     std::string m_path;
     std::fstream m_log;
     std::fstream m_pidFile;
+    Backups m_backups;
 
     DISABLE_COPYING(Session);
   };

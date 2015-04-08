@@ -15,7 +15,7 @@ namespace doc {
   class Image;
 
   void write_image(std::ostream& os, const Image* image);
-  Image* read_image(std::istream& is);
+  Image* read_image(std::istream& is, bool setId = true);
 
 } // namespace doc
 

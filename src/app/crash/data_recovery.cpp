@@ -86,6 +86,9 @@ DataRecovery::~DataRecovery()
   m_backup->stop();
   delete m_backup;
 
+  if (m_inProgress)
+    m_inProgress->removeFromDisk();
+
   m_inProgress.reset();
 }
 

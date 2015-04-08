@@ -25,26 +25,26 @@ using namespace base::serialization::little_endian;
 void write_celdata(std::ostream& os, const CelData* celdata)
 {
   write32(os, celdata->id());
-  write16(os, (int16_t)celdata->position().x);
-  write16(os, (int16_t)celdata->position().y);
+  write32(os, (int16_t)celdata->position().x);
+  write32(os, (int16_t)celdata->position().y);
   write8(os, celdata->opacity());
   write32(os, celdata->image()->id());
 }
 
-CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects)
+CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId)
 {
   ObjectId id = read32(is);
-  int x = (int16_t)read16(is);
-  int y = (int16_t)read16(is);
+  int x = read32(is);
+  int y = read32(is);
   int opacity = read8(is);
-
   ObjectId imageId = read32(is);
   ImageRef image(subObjects->getImageRef(imageId));
 
   base::UniquePtr<CelData> celdata(new CelData(image));
   celdata->setPosition(x, y);
   celdata->setOpacity(opacity);
-  celdata->setId(id);
+  if (setId)
+    celdata->setId(id);
   return celdata.release();
 }
 

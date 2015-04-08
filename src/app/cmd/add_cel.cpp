@@ -63,7 +63,7 @@ void AddCel::onRedo()
 {
   Layer* layer = this->layer();
 
-  SubObjectsIO io(layer->sprite());
+  SubObjectsFromSprite io(layer->sprite());
   bool has_data = (read8(m_stream) != 0);
   if (has_data) {
     ImageRef image(read_image(m_stream));

@@ -51,7 +51,7 @@ void AddLayer::onUndo()
 void AddLayer::onRedo()
 {
   Layer* folder = m_folder.layer();
-  SubObjectsIO io(folder->sprite());
+  SubObjectsFromSprite io(folder->sprite());
   Layer* newLayer = read_layer(m_stream, &io);
   Layer* afterThis = m_afterThis.layer();
 

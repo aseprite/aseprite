@@ -2,6 +2,12 @@
 <!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
   <vbox noborders="true" id="home_view" border="4" childspacing="2" expansive="true">
+    <hbox noborders="true" id="recover_sprites_placeholder">
+      <boxfiller />
+      <button id="recover_sprites" text="Recover Lost Sprites" border="8" />
+      <boxfiller />
+    </hbox>
+
     <hbox noborders="true" id="header_placeholder">
       <image file="icons/ase48.png" align="center" />
       <vbox border="4" childspacing="4">
