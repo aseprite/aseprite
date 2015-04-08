@@ -94,13 +94,31 @@ public:
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
-  app::crash::DataRecovery m_recovery;
+  // This is a raw pointer because we want to delete this explicitly.
+  app::crash::DataRecovery* m_recovery;
   scripting::Engine m_scriptingEngine;
 
   Modules(bool console, bool verbose)
     : m_loggerModule(verbose)
-    , m_recovery(&m_ui_context) {
+    , m_recovery(nullptr) {
   }
+
+  app::crash::DataRecovery* recovery() {
+    return m_recovery;
+  }
+
+  bool hasRecoverySessions() const {
+    return m_recovery && !m_recovery->sessions().empty();
+  }
+
+  void createDataRecovery() {
+    m_recovery = new app::crash::DataRecovery(&m_ui_context);
+  }
+
+  void deleteDataRecovery() {
+    delete m_recovery;
+  }
+
 };
 
 App* App::m_instance = NULL;
@@ -132,6 +150,9 @@ void App::initialize(const AppOptions& options)
 
   if (options.hasExporterParams())
     m_exporter.reset(new DocumentExporter);
+
+  if (preferences().general.dataRecovery())
+    m_modules->createDataRecovery();
 
   // Register well-known image file types.
   FileFormatsManager::instance()->registerAllFormats();
@@ -195,8 +216,8 @@ void App::initialize(const AppOptions& options)
     updateDisplayTitleBar();
 
     // Recover data
-    if (!m_modules->m_recovery.sessions().empty())
-      m_mainWindow->showDataRecovery(&m_modules->m_recovery);
+    if (m_modules->hasRecoverySessions())
+      m_mainWindow->showDataRecovery(m_modules->recovery());
 
     m_mainWindow->openWindow();
 
@@ -539,6 +560,10 @@ void App::run()
     // Destroy the window.
     m_mainWindow.reset(NULL);
   }
+
+  // Delete backups (this is a normal shutdown, we are not handling
+  // exceptions, and we are not in a destructor).
+  m_modules->deleteDataRecovery();
 }
 
 // Finishes the Aseprite application.

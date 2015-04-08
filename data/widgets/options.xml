@@ -24,6 +24,7 @@
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
           <separator horizontal="true" />
+          <check text="Enable data recovery" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
           <link id="locate_file" text="Locate Configuration File" />
           <link id="locate_crash_folder" text="Locate Crash Folder" />
         </vbox>
