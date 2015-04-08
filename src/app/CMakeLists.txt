@@ -292,6 +292,7 @@ add_library(app-lib
   ui/color_button.cpp
   ui/color_selector.cpp
   ui/color_sliders.cpp
+  ui/color_spectrum.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
   ui/devconsole_view.cpp

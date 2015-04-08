@@ -23,6 +23,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
+#include "app/ui/color_spectrum.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -35,6 +36,7 @@
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/paint_event.h"
+#include "ui/splitter.h"
 #include "ui/system.h"
 
 #include <cstring>
@@ -106,8 +108,15 @@ ColorBar::ColorBar(int align)
 
   m_remapButton.setVisible(false);
 
+  ColorSpectrum* spectrum = new ColorSpectrum;
+  Splitter* splitter = new Splitter(Splitter::ByPercentage, JI_VERTICAL);
+  splitter->setPosition(80);
+  splitter->setExpansive(true);
+  splitter->addChild(&m_scrollableView);
+  splitter->addChild(spectrum);
+
   addChild(&m_paletteButton);
-  addChild(&m_scrollableView);
+  addChild(splitter);
   addChild(&m_remapButton);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
@@ -115,6 +124,7 @@ ColorBar::ColorBar(int align)
   m_remapButton.Click.connect(Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
+  spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
 
   // Set background color reading its value from the configuration.
   setBgColor(get_config_color("ColorBar", "BG", getBgColor()));
@@ -301,6 +311,18 @@ void ColorBar::onColorButtonChange(const app::Color& color)
 {
   if (color.getType() == app::Color::IndexType)
     m_paletteView.selectColor(color.getIndex());
+}
+
+void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
+{
+  m_lock = true;
+
+  if ((buttons & kButtonRight) == kButtonRight)
+    setBgColor(color);
+  else
+    setFgColor(color);
+
+  m_lock = false;
 }
 
 void ColorBar::destroyRemap()

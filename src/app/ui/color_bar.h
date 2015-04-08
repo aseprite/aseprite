@@ -65,6 +65,7 @@ namespace app {
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
+    void onPickSpectrum(const app::Color& color, ui::MouseButtons buttons);
 
     // PaletteViewDelegate impl
     void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
