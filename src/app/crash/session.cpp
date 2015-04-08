@@ -141,13 +141,18 @@ void Session::saveDocumentChanges(app::Document* doc)
 
 void Session::removeDocument(app::Document* doc)
 {
-  delete_document_internals(doc);
+  try {
+    delete_document_internals(doc);
 
-  // Delete document backup directory
-  std::string dir = base::join_path(m_path,
-    base::convert_to<std::string>(doc->id()));
-  if (base::is_directory(dir))
-    deleteDirectory(dir);
+    // Delete document backup directory
+    std::string dir = base::join_path(m_path,
+      base::convert_to<std::string>(doc->id()));
+    if (base::is_directory(dir))
+      deleteDirectory(dir);
+  }
+  catch (const std::exception&) {
+    // TODO Log this error
+  }
 }
 
 void Session::restoreBackup(Backup* backup)
@@ -199,6 +204,10 @@ std::string Session::pidFilename() const
 
 void Session::deleteDirectory(const std::string& dir)
 {
+  ASSERT(!dir.empty());
+  if (dir.empty())
+    return;
+
   for (auto& item : base::list_files(dir)) {
     std::string objfn = base::join_path(dir, item);
     if (base::is_file(objfn))
