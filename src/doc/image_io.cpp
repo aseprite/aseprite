@@ -120,7 +120,6 @@ Image* read_image(std::istream& is, bool setId)
     if (err != Z_OK)
       throw base::Exception("ZLib error %d in inflateInit().", err);
 
-    uint8_t* uncompressed = image->getPixelAddress(0, 0);
     int uncompressed_size = image->height() * rowSize;
     int uncompressed_offset = 0;
     int remain = avail_bytes;
