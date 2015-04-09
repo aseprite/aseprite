@@ -65,8 +65,14 @@ void BackupObserver::onRemoveDocument(doc::Document* document)
 
 void BackupObserver::backgroundThread()
 {
-  int period = App::instance()->preferences().general.dataRecoveryPeriod();
-  int waitUntil = period*60;
+  int normalPeriod = 60*App::instance()->preferences().general.dataRecoveryPeriod();
+  int lockedPeriod = 10;
+#if 0                           // Just for testing purposes
+  normalPeriod = 5;
+  lockedPeriod = 5;
+#endif
+
+  int waitUntil = normalPeriod;
   int seconds = 0;
 
   while (!m_done) {
@@ -90,10 +96,7 @@ void BackupObserver::backgroundThread()
       }
 
       seconds = 0;
-      if (somethingLocked)
-        waitUntil = 10;         // Wait 10 seconds for next round
-      else
-        waitUntil = period*60;
+      waitUntil = (somethingLocked ? lockedPeriod: normalPeriod);
 
       TRACE("DataRecovery: Backup process done (%.16g)\n", chrono.elapsed());
     }
