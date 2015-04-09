@@ -107,10 +107,6 @@ namespace app {
     // Returns true if this state accept the given quicktool.
     virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
 
-    // Returns true if this state supports changing the drawing cursor
-    // extra cel.
-    virtual bool regenerateDrawingCursor() { return true; }
-
   private:
     DISABLE_COPYING(EditorState);
   };

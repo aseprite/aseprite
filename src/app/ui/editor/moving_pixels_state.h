@@ -48,7 +48,7 @@ namespace app {
     virtual bool onKeyUp(Editor* editor, ui::KeyMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
     virtual bool acceptQuickTool(tools::Tool* tool) override;
-    virtual bool regenerateDrawingCursor() override { return false; }
+    virtual bool requireBrushPreview() override { return false; }
 
     // EditorObserver
     virtual void onBeforeFrameChanged(Editor* editor) override;

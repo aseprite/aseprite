@@ -27,6 +27,8 @@ namespace app {
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onUpdateStatusBar(Editor* editor) override;
 
+    virtual bool requireBrushPreview() override { return false; }
+
   private:
     Cel* m_cel;
     gfx::Point m_celStart;
