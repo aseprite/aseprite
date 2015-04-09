@@ -50,7 +50,7 @@ void BackupObserver::onAddDocument(doc::Document* document)
 {
   TRACE("DataRecovery: Observe document %p\n", document);
   base::scoped_lock hold(m_mutex);
-  m_documents.push_back(document);
+  m_documents.push_back(static_cast<app::Document*>(document));
 }
 
 void BackupObserver::onRemoveDocument(doc::Document* document)
@@ -58,7 +58,7 @@ void BackupObserver::onRemoveDocument(doc::Document* document)
   TRACE("DataRecovery:: Remove document %p\n", document);
   {
     base::scoped_lock hold(m_mutex);
-    base::remove_from_container(m_documents, document);
+    base::remove_from_container(m_documents, static_cast<app::Document*>(document));
   }
   m_session->removeDocument(static_cast<app::Document*>(document));
 }
@@ -78,9 +78,10 @@ void BackupObserver::backgroundThread()
       base::Chrono chrono;
       bool somethingLocked = false;
 
-      for (doc::Document* doc : m_documents) {
+      for (app::Document* doc : m_documents) {
         try {
-          m_session->saveDocumentChanges(static_cast<app::Document*>(doc));
+          if (doc->needsBackup())
+            m_session->saveDocumentChanges(doc);
         }
         catch (const std::exception&) {
           TRACE("DataRecovery: Document '%d' is locked\n", doc->id());

@@ -22,6 +22,7 @@ namespace doc {
 }
 
 namespace app {
+class Document;
 namespace crash {
   class Session;
 
@@ -43,7 +44,7 @@ namespace crash {
     Session* m_session;
     base::mutex m_mutex;
     doc::Context* m_ctx;
-    std::vector<doc::Document*> m_documents;
+    std::vector<app::Document*> m_documents;
     bool m_done;
     base::thread m_thread;
   };
