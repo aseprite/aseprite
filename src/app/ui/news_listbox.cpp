@@ -271,6 +271,19 @@ void NewsListBox::parseFile(const std::string& filename)
     std::string title = titleXml->GetText();
     std::string desc = parse_html(descXml->GetText());
 
+    // Limit the description text to 4 lines
+    std::string::size_type i = 0;
+    int j = 0;
+    while (true) {
+      i = desc.find('\n', i);
+      if (i == std::string::npos)
+        break;
+      i++;
+      j++;
+      if (j == 5)
+        desc = desc.substr(0, i);
+    }
+
     addChild(new NewsItem(link, title, desc));
 
     itemXml = itemXml->NextSiblingElement();
