@@ -24,8 +24,8 @@ using namespace ui;
 
 PlayState::PlayState()
   : m_playTimer(10)
-  , m_pingPongForward(true)
   , m_nextFrameTime(-1)
+  , m_pingPongForward(true)
 {
 }
 
