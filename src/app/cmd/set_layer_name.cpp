@@ -26,11 +26,13 @@ SetLayerName::SetLayerName(Layer* layer, const std::string& name)
 void SetLayerName::onExecute()
 {
   layer()->setName(m_newName);
+  layer()->incrementVersion();
 }
 
 void SetLayerName::onUndo()
 {
   layer()->setName(m_oldName);
+  layer()->incrementVersion();
 }
 
 } // namespace cmd

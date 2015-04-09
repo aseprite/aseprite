@@ -60,7 +60,6 @@ add_library(app-lib
   app_menus.cpp
   app_options.cpp
   app_render.cpp
-  backup.cpp
   check_update.cpp
   cmd.cpp
   cmd/add_cel.cpp
@@ -227,7 +226,11 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
-  data_recovery.cpp
+  crash/backup_observer.cpp
+  crash/data_recovery.cpp
+  crash/read_document.cpp
+  crash/session.cpp
+  crash/write_document.cpp
   document.cpp
   document_api.cpp
   document_exporter.cpp
@@ -295,6 +298,7 @@ add_library(app-lib
   ui/color_spectrum.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
+  ui/data_recovery_view.cpp
   ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp

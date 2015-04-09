@@ -80,8 +80,8 @@ namespace app {
     gfx::Point m_celPos;
     Flags m_flags;
     gfx::Rect m_bounds;
-    Image* m_srcImage;
-    Image* m_dstImage;
+    ImageRef m_srcImage;
+    ImageRef m_dstImage;
     bool m_closed;
     bool m_committed;
     Transaction& m_transaction;

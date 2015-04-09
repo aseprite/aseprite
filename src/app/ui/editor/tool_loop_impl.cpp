@@ -190,7 +190,16 @@ public:
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
-        m_expandCelCanvas.commit();
+      retry_commit:;
+        try {
+          ContextReader reader(m_context);
+          ContextWriter writer(reader);
+          m_expandCelCanvas.commit();
+        }
+        catch (const LockedDocumentException&) {
+          base::this_thread::sleep_for(0.25);
+          goto retry_commit;
+        }
       }
       // Selection ink
       else if (getInk()->isSelection()) {
@@ -205,7 +214,16 @@ public:
 
     // If the trace was canceled or it is not a 'paint' ink...
     if (m_canceled || !getInk()->isPaint()) {
-      m_expandCelCanvas.rollback();
+    retry_rollback:;
+      try {
+        ContextReader reader(m_context);
+        ContextWriter writer(reader);
+        m_expandCelCanvas.rollback();
+      }
+      catch (const LockedDocumentException&) {
+        base::this_thread::sleep_for(0.25);
+        goto retry_rollback;
+      }
     }
 
     delete m_brush;

@@ -583,6 +583,14 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
 
         grid->addChildInCell(child, hspan, vspan, align);
       }
+      // Attach the child in the view
+      else if (widget->type == kComboBoxWidget &&
+               child->type == kListItemWidget) {
+        ComboBox* combo = dynamic_cast<ComboBox*>(widget);
+        ASSERT(combo != NULL);
+
+        combo->addItem(dynamic_cast<ListItem*>(child));
+      }
       // Just add the child in any other kind of widget
       else
         widget->addChild(child);

@@ -28,15 +28,23 @@ ClearImage::ClearImage(Image* image, color_t color)
 
 void ClearImage::onExecute()
 {
+  Image* image = this->image();
+
   ASSERT(!m_copy);
-  m_copy.reset(Image::createCopy(image()));
-  clear_image(image(), m_color);
+  m_copy.reset(Image::createCopy(image));
+  clear_image(image, m_color);
+
+  image->incrementVersion();
 }
 
 void ClearImage::onUndo()
 {
-  copy_image(image(), m_copy.get());
+  Image* image = this->image();
+
+  copy_image(image, m_copy.get());
   m_copy.reset();
+
+  image->incrementVersion();
 }
 
 } // namespace cmd

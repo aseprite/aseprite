@@ -16,7 +16,7 @@ namespace doc {
   class SubObjectsIO;
 
   void write_celdata(std::ostream& os, const CelData* cel);
-  CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects);
+  CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId = true);
 
 } // namespace doc
 

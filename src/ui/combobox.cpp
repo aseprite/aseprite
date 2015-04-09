@@ -243,22 +243,27 @@ void ComboBox::setItemText(int itemIndex, const std::string& text)
   item->setText(text);
 }
 
-int ComboBox::findItemIndex(const std::string& text)
+int ComboBox::findItemIndex(const std::string& text) const
 {
-  int itemIndex = 0;
-
-  ListItems::iterator it, end = m_items.end();
-  for (it = m_items.begin(); it != end; ++it) {
-    ListItem* item = *it;
-
+  int i = 0;
+  for (const ListItem* item : m_items) {
     if ((m_casesensitive && item->getText() == text) ||
         (!m_casesensitive && item->getText() == text)) {
-      return itemIndex;
+      return i;
     }
-
-    itemIndex++;
+    i++;
   }
+  return -1;
+}
 
+int ComboBox::findItemIndexByValue(const std::string& value) const
+{
+  int i = 0;
+  for (const ListItem* item : m_items) {
+    if (item->getValue() == value)
+      return i;
+    i++;
+  }
   return -1;
 }
 
@@ -295,6 +300,22 @@ void ComboBox::setSelectedItemIndex(int itemIndex)
 
     onChange();
   }
+}
+
+std::string ComboBox::getValue() const
+{
+  int index = getSelectedItemIndex();
+  if (index >= 0)
+    return m_items[index]->getValue();
+  else
+    return std::string();
+}
+
+void ComboBox::setValue(const std::string& value)
+{
+  int index = findItemIndexByValue(value);
+  if (index >= 0)
+    setSelectedItemIndex(index);
 }
 
 Entry* ComboBox::getEntryWidget()

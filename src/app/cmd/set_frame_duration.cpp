@@ -29,11 +29,13 @@ SetFrameDuration::SetFrameDuration(Sprite* sprite, frame_t frame, int duration)
 void SetFrameDuration::onExecute()
 {
   sprite()->setFrameDuration(m_frame, m_newDuration);
+  sprite()->incrementVersion();
 }
 
 void SetFrameDuration::onUndo()
 {
   sprite()->setFrameDuration(m_frame, m_oldDuration);
+  sprite()->incrementVersion();
 }
 
 void SetFrameDuration::onFireNotifications()

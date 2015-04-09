@@ -222,6 +222,11 @@ void MainWindow::popTimeline()
     setTimelineVisibility(true);
 }
 
+void MainWindow::showDataRecovery(crash::DataRecovery* dataRecovery)
+{
+  getHomeView()->showDataRecovery(dataRecovery);
+}
+
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
   if (msg->type() == kOpenMessage)

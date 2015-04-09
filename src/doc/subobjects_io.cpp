@@ -22,19 +22,19 @@ namespace doc {
 
 using namespace doc;
 
-SubObjectsIO::SubObjectsIO(Sprite* sprite)
+SubObjectsFromSprite::SubObjectsFromSprite(Sprite* sprite)
   : m_sprite(sprite)
 {
 }
 
-void SubObjectsIO::addImageRef(const ImageRef& image)
+void SubObjectsFromSprite::addImageRef(const ImageRef& image)
 {
   ASSERT(image);
   ASSERT(!getImageRef(image->id()));
   m_images.insert(std::make_pair(image->id(), image));
 }
 
-ImageRef SubObjectsIO::getImageRef(ObjectId imageId)
+ImageRef SubObjectsFromSprite::getImageRef(ObjectId imageId)
 {
   auto it = m_images.find(imageId);
   if (it != m_images.end()) {
@@ -47,14 +47,14 @@ ImageRef SubObjectsIO::getImageRef(ObjectId imageId)
     return m_sprite->getImageRef(imageId);
 }
 
-void SubObjectsIO::addCelDataRef(const CelDataRef& celdata)
+void SubObjectsFromSprite::addCelDataRef(const CelDataRef& celdata)
 {
   ASSERT(celdata);
   ASSERT(!getCelDataRef(celdata->id()));
   m_celdatas.insert(std::make_pair(celdata->id(), celdata));
 }
 
-CelDataRef SubObjectsIO::getCelDataRef(ObjectId celdataId)
+CelDataRef SubObjectsFromSprite::getCelDataRef(ObjectId celdataId)
 {
   auto it = m_celdatas.find(celdataId);
   if (it != m_celdatas.end()) {

@@ -44,6 +44,7 @@ void RemoveFrame::onExecute()
     m_seq.redo();
 
   sprite->removeFrame(m_frame);
+  sprite->incrementVersion();
 
   // Notify observers.
   DocumentEvent ev(doc);
@@ -58,6 +59,7 @@ void RemoveFrame::onUndo()
   Document* doc = sprite->document();
 
   sprite->addFrame(m_frame);
+  sprite->incrementVersion();
   m_seq.undo();
 
   // Notify observers about the new frame.

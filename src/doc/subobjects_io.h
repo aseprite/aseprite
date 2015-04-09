@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -17,18 +17,25 @@
 namespace doc {
   class Sprite;
 
-  // Helper class used to read children-objects by layers and cels.
   class SubObjectsIO {
   public:
-    SubObjectsIO(Sprite* sprite);
+    virtual ~SubObjectsIO() { }
+    virtual ImageRef getImageRef(ObjectId imageId) = 0;
+    virtual CelDataRef getCelDataRef(ObjectId celdataId) = 0;
+  };
+
+  // Helper class used to read children-objects by layers and cels.
+  class SubObjectsFromSprite : public SubObjectsIO {
+  public:
+    SubObjectsFromSprite(Sprite* sprite);
 
     Sprite* sprite() const { return m_sprite; }
 
     void addImageRef(const ImageRef& image);
     void addCelDataRef(const CelDataRef& celdata);
 
-    ImageRef getImageRef(ObjectId imageId);
-    CelDataRef getCelDataRef(ObjectId celdataId);
+    ImageRef getImageRef(ObjectId imageId) override;
+    CelDataRef getCelDataRef(ObjectId celdataId) override;
 
   private:
     Sprite* m_sprite;

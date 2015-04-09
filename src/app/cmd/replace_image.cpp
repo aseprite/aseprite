@@ -11,6 +11,8 @@
 
 #include "app/cmd/replace_image.h"
 
+#include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/image_io.h"
 #include "doc/image_ref.h"
@@ -39,7 +41,7 @@ void ReplaceImage::onExecute()
   ASSERT(oldImage);
   m_copy.reset(Image::createCopy(oldImage.get()));
 
-  sprite()->replaceImage(m_oldImageId, m_newImage);
+  replaceImage(m_oldImageId, m_newImage);
   m_newImage.reset();
 }
 
@@ -50,7 +52,7 @@ void ReplaceImage::onUndo()
   ASSERT(!sprite()->getImageRef(m_oldImageId));
   m_copy->setId(m_oldImageId);
 
-  sprite()->replaceImage(m_newImageId, m_copy);
+  replaceImage(m_newImageId, m_copy);
   m_copy.reset(Image::createCopy(newImage.get()));
 }
 
@@ -61,8 +63,20 @@ void ReplaceImage::onRedo()
   ASSERT(!sprite()->getImageRef(m_newImageId));
   m_copy->setId(m_newImageId);
 
-  sprite()->replaceImage(m_oldImageId, m_copy);
+  replaceImage(m_oldImageId, m_copy);
   m_copy.reset(Image::createCopy(oldImage.get()));
+}
+
+void ReplaceImage::replaceImage(ObjectId oldId, const ImageRef& newImage)
+{
+  Sprite* spr = sprite();
+
+  for (Cel* cel : spr->uniqueCels()) {
+    if (cel->image()->id() == oldId)
+      cel->data()->incrementVersion();
+  }
+
+  spr->replaceImage(oldId, newImage);
 }
 
 } // namespace cmd

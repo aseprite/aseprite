@@ -37,6 +37,7 @@ void AddFrame::onExecute()
   app::Document* doc = static_cast<app::Document*>(sprite->document());
 
   sprite->addFrame(m_newFrame);
+  sprite->incrementVersion();
 
   if (m_addCel) {
     m_addCel->redo();
@@ -68,6 +69,7 @@ void AddFrame::onUndo()
     m_addCel->undo();
 
   sprite->removeFrame(m_newFrame);
+  sprite->incrementVersion();
 
   // Notify observers about the new frame.
   DocumentEvent ev(doc);

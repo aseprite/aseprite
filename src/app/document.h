@@ -100,6 +100,11 @@ namespace app {
     // back to the saved state using the UndoHistory.
     void impossibleToBackToSavedState();
 
+    // Returns true if it does make sense to create a backup in this
+    // document. For example, it doesn't make sense to create a backup
+    // for an unmodified document.
+    bool needsBackup() const;
+
     //////////////////////////////////////////////////////////////////////
     // Loaded options from file
 

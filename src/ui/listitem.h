@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,12 +12,11 @@
 
 namespace ui {
 
-  class ListItem : public Widget
-  {
+  class ListItem : public Widget {
   public:
     ListItem(const std::string& text);
 
-    const std::string& getValue() { return m_value; }
+    const std::string& getValue() const { return m_value; }
 
     void setValue(const std::string& value) {
       m_value = value;

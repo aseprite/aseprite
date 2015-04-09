@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace base {
 
@@ -35,6 +36,8 @@ namespace base {
   std::string get_temp_path();
   std::string get_user_docs_folder();
 
-}
+  std::vector<std::string> list_files(const std::string& path);
+
+} // namespace base
 
 #endif

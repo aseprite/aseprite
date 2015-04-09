@@ -28,11 +28,13 @@ SetFrameTagRange::SetFrameTagRange(FrameTag* tag, frame_t from, frame_t to)
 void SetFrameTagRange::onExecute()
 {
   frameTag()->setFrameRange(m_newFrom, m_newTo);
+  frameTag()->incrementVersion();
 }
 
 void SetFrameTagRange::onUndo()
 {
   frameTag()->setFrameRange(m_oldFrom, m_oldTo);
+  frameTag()->incrementVersion();
 }
 
 } // namespace cmd

@@ -31,12 +31,16 @@ SetSpriteSize::SetSpriteSize(Sprite* sprite, int newWidth, int newHeight)
 
 void SetSpriteSize::onExecute()
 {
-  sprite()->setSize(m_newWidth, m_newHeight);
+  Sprite* spr = sprite();
+  spr->setSize(m_newWidth, m_newHeight);
+  spr->incrementVersion();
 }
 
 void SetSpriteSize::onUndo()
 {
-  sprite()->setSize(m_oldWidth, m_oldHeight);
+  Sprite* spr = sprite();
+  spr->setSize(m_oldWidth, m_oldHeight);
+  spr->incrementVersion();
 }
 
 void SetSpriteSize::onFireNotifications()

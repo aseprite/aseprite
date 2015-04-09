@@ -35,8 +35,6 @@ using namespace base::serialization::little_endian;
 
 void write_layer(std::ostream& os, const Layer* layer)
 {
-  std::string name = layer->name();
-
   write32(os, layer->id());
   write_string(os, layer->name());
 
@@ -98,7 +96,7 @@ void write_layer(std::ostream& os, const Layer* layer)
   }
 }
 
-Layer* read_layer(std::istream& is, SubObjectsIO* subObjects)
+Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
 {
   ObjectId id = read32(is);
   std::string name = read_string(is);

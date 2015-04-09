@@ -12,16 +12,20 @@
 #include <exception>
 
 namespace app {
+  class Context;
 
-class Console {
-public:
-  Console();
-  ~Console();
+  class Console {
+  public:
+    Console(Context* ctx = nullptr);
+    ~Console();
 
-  void printf(const char *format, ...);
+    void printf(const char *format, ...);
 
-  static void showException(const std::exception& e);
-};
+    static void showException(const std::exception& e);
+
+  private:
+    bool m_withUI;
+  };
 
 } // namespace app
 

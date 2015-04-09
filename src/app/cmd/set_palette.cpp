@@ -49,6 +49,8 @@ void SetPalette::onExecute()
 
   for (size_t i=0; i<m_newColors.size(); ++i)
     palette->setEntry(m_from+i, m_newColors[i]);
+
+  palette->incrementVersion();
 }
 
 void SetPalette::onUndo()
@@ -58,6 +60,8 @@ void SetPalette::onUndo()
 
   for (size_t i=0; i<m_oldColors.size(); ++i)
     palette->setEntry(m_from+i, m_oldColors[i]);
+
+  palette->incrementVersion();
 }
 
 } // namespace cmd

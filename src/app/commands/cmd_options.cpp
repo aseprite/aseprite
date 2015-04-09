@@ -25,6 +25,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/path.h"
 #include "doc/image.h"
 #include "render/render.h"
@@ -69,6 +70,13 @@ public:
 
     if (m_preferences.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
+
+    if (m_preferences.general.dataRecovery())
+      enableDataRecovery()->setSelected(true);
+
+    dataRecoveryPeriod()->setSelectedItemIndex(
+      dataRecoveryPeriod()->findItemIndexByValue(
+        base::convert_to<std::string>(m_preferences.general.dataRecoveryPeriod())));
 
     if (m_settings->getCenterOnZoom())
       centerOnZoom()->setSelected(true);
@@ -151,6 +159,17 @@ public:
     m_preferences.general.expandMenubarOnMouseover(expandOnMouseover);
     ui::MenuBar::setExpandOnMouseover(expandOnMouseover);
 
+    std::string warnings;
+
+    int newPeriod = base::convert_to<int>(dataRecoveryPeriod()->getValue());
+    if (enableDataRecovery()->isSelected() != m_preferences.general.dataRecovery() ||
+        newPeriod != m_preferences.general.dataRecoveryPeriod()) {
+      m_preferences.general.dataRecovery(enableDataRecovery()->isSelected());
+      m_preferences.general.dataRecoveryPeriod(newPeriod);
+
+      warnings += "<<- Automatically save recovery data every";
+    }
+
     m_settings->setCenterOnZoom(centerOnZoom()->isSelected());
 
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
@@ -186,14 +205,17 @@ public:
     int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
     if (new_screen_scaling != get_screen_scaling()) {
       set_screen_scaling(new_screen_scaling);
-
-      ui::Alert::show(PACKAGE
-        "<<You must restart the program to see your changes to 'Screen Scale' setting."
-        "||&OK");
+      warnings += "<<- Screen Scale";
     }
 
     // Save configuration
     flush_config_file();
+
+    if (!warnings.empty()) {
+      ui::Alert::show(PACKAGE
+        "<<You must restart the program to see your changes to:%s"
+        "||&OK", warnings.c_str());
+    }
   }
 
 private:

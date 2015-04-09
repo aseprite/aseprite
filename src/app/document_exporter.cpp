@@ -20,6 +20,7 @@
 #include "base/convert_to.h"
 #include "base/path.h"
 #include "base/shared_ptr.h"
+#include "base/string.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
@@ -264,7 +265,11 @@ Document* DocumentExporter::exportSheet()
   if (m_dataFilename.empty())
     osbuf = std::cout.rdbuf();
   else {
+#ifdef _WIN32
+    fos.open(base::from_utf8(m_dataFilename).c_str(), std::ios::out);
+#else
     fos.open(m_dataFilename.c_str(), std::ios::out);
+#endif
     osbuf = fos.rdbuf();
   }
   std::ostream os(osbuf);

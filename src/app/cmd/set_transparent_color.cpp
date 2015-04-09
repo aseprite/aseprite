@@ -27,12 +27,16 @@ SetTransparentColor::SetTransparentColor(Sprite* sprite, color_t newMask)
 
 void SetTransparentColor::onExecute()
 {
-  sprite()->setTransparentColor(m_newMaskColor);
+  Sprite* spr = sprite();
+  spr->setTransparentColor(m_newMaskColor);
+  spr->incrementVersion();
 }
 
 void SetTransparentColor::onUndo()
 {
-  sprite()->setTransparentColor(m_oldMaskColor);
+  Sprite* spr = sprite();
+  spr->setTransparentColor(m_oldMaskColor);
+  spr->incrementVersion();
 }
 
 void SetTransparentColor::onFireNotifications()

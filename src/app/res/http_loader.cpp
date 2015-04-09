@@ -12,10 +12,11 @@
 #include "app/res/http_loader.h"
 
 #include "base/bind.h"
-#include "base/replace_string.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "base/replace_string.h"
 #include "base/scoped_value.h"
+#include "base/string.h"
 #include "net/http_request.h"
 #include "net/http_response.h"
 
@@ -58,7 +59,11 @@ void HttpLoader::threadHttpRequest()
     base::replace_string(fn, "&", "-");
     fn = base::join_path(dir, fn);
 
+#ifdef _WIN32
+    std::ofstream output(base::from_utf8(fn).c_str());
+#else
     std::ofstream output(fn.c_str());
+#endif
     net::HttpRequest http(m_url);
     net::HttpResponse response(&output);
     http.send(response);

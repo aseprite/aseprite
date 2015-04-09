@@ -73,8 +73,8 @@ private:
 static void save_document_in_background(Context* context, Document* document,
   bool mark_as_saved, const std::string& fn_format)
 {
-  base::UniquePtr<FileOp> fop(fop_to_save_document(context, document,
-      fn_format.c_str()));
+  base::UniquePtr<FileOp> fop(fop_to_save_document(context,
+      document, document->filename().c_str(), fn_format.c_str()));
   if (!fop)
     return;
 
@@ -189,6 +189,8 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
 
     if (documentWriter->isModified())
       documentWriter->setFilename(oldFilename);
+    else
+      documentWriter->incrementVersion();
 
     update_screen_for_document(documentWriter);
   }

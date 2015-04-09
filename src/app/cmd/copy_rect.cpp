@@ -77,6 +77,8 @@ void CopyRect::swap()
 
     it += lineSize;
   }
+
+  image->incrementVersion();
 }
 
 int CopyRect::lineSize()

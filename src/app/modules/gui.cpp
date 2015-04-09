@@ -51,10 +51,6 @@
 #include <list>
 #include <vector>
 
-#ifdef _WIN32
-  #include <windows.h>
-#endif
-
 namespace app {
 
 using namespace gfx;
@@ -445,6 +441,16 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 
     case kKeyDownMessage: {
       Window* toplevel_window = getTopWindow();
+
+#ifdef _DEBUG
+      // Left Shift+Ctrl+Q generates a crash (useful to test the anticrash feature)
+      if (msg->ctrlPressed() &&
+          msg->shiftPressed() &&
+          static_cast<KeyMessage*>(msg)->scancode() == kKeyQ) {
+        int* p = nullptr;
+        *p = 0;
+      }
+#endif
 
       // If there is a foreground window as top level...
       if (toplevel_window &&

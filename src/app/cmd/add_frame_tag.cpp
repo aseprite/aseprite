@@ -32,6 +32,7 @@ void AddFrameTag::onExecute()
   FrameTag* frameTag = this->frameTag();
 
   sprite->frameTags().add(frameTag);
+  sprite->incrementVersion();
 }
 
 void AddFrameTag::onUndo()
@@ -41,6 +42,7 @@ void AddFrameTag::onUndo()
   write_frame_tag(m_stream, frameTag);
 
   sprite->frameTags().remove(frameTag);
+  sprite->incrementVersion();
   delete frameTag;
 }
 
@@ -48,7 +50,9 @@ void AddFrameTag::onRedo()
 {
   Sprite* sprite = this->sprite();
   FrameTag* frameTag = read_frame_tag(m_stream);
+
   sprite->frameTags().add(frameTag);
+  sprite->incrementVersion();
 
   m_stream.str(std::string());
   m_stream.clear();

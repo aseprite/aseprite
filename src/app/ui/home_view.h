@@ -22,9 +22,14 @@ namespace ui {
 
 namespace app {
 
+  class DataRecoveryView;
   class NewsListBox;
   class RecentFilesListBox;
   class RecentFoldersListBox;
+
+  namespace crash {
+    class DataRecovery;
+  }
 
   class HomeView : public app::gen::HomeView
                  , public TabView
@@ -36,6 +41,8 @@ namespace app {
   public:
     HomeView();
     ~HomeView();
+
+    void showDataRecovery(crash::DataRecovery* dataRecovery);
 
     // TabView implementation
     std::string getTabText() override;
@@ -61,10 +68,13 @@ namespace app {
   private:
     void onNewFile();
     void onOpenFile();
+    void onRecoverSprites();
 
     RecentFilesListBox* m_files;
     RecentFoldersListBox* m_folders;
     NewsListBox* m_news;
+    crash::DataRecovery* m_dataRecovery;
+    DataRecoveryView* m_dataRecoveryView;
   };
 
 } // namespace app

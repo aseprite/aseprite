@@ -11,14 +11,18 @@
 
 #include "app/ui/home_view.h"
 
+#include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
+#include "app/ui/data_recovery_view.h"
+#include "app/ui/main_window.h"
 #include "app/ui/news_listbox.h"
 #include "app/ui/recent_listbox.h"
 #include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
+#include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/exception.h"
@@ -37,6 +41,8 @@ HomeView::HomeView()
   : m_files(new RecentFilesListBox)
   , m_folders(new RecentFoldersListBox)
   , m_news(new NewsListBox)
+  , m_dataRecovery(nullptr)
+  , m_dataRecoveryView(nullptr)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
@@ -45,16 +51,29 @@ HomeView::HomeView()
 
   newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));
+  recoverSprites()->Click.connect(Bind(&HomeView::onRecoverSprites, this));
 
   filesView()->attachToView(m_files);
   foldersView()->attachToView(m_folders);
   newsView()->attachToView(m_news);
 
   checkUpdate()->setVisible(false);
+  recoverSpritesPlaceholder()->setVisible(false);
 }
 
 HomeView::~HomeView()
 {
+  if (m_dataRecoveryView) {
+    if (m_dataRecoveryView->getParent())
+      App::instance()->getMainWindow()->getWorkspace()->removeView(m_dataRecoveryView);
+    delete m_dataRecoveryView;
+  }
+}
+
+void HomeView::showDataRecovery(crash::DataRecovery* dataRecovery)
+{
+  m_dataRecovery = dataRecovery;
+  recoverSpritesPlaceholder()->setVisible(true);
 }
 
 std::string HomeView::getTabText()
@@ -151,6 +170,17 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
   checkUpdate()->setVisible(true);
 
   layout();
+}
+
+void HomeView::onRecoverSprites()
+{
+  if (!m_dataRecoveryView)
+    m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
+
+  if (!m_dataRecoveryView->getParent())
+    App::instance()->getMainWindow()->getWorkspace()->addView(m_dataRecoveryView);
+
+  App::instance()->getMainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);
 }
 
 } // namespace app

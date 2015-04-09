@@ -23,6 +23,16 @@
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
+          <hbox>
+            <check text="Automatically save recovery data every" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
+            <combobox id="data_recovery_period">
+              <listitem text="2 Minutes" value="2" />
+              <listitem text="5 Minutes" value="5" />
+              <listitem text="10 Minutes" value="10" />
+              <listitem text="15 Minutes" value="15" />
+              <listitem text="30 Minutes" value="30" />
+            </combobox>
+          </hbox>
           <separator horizontal="true" />
           <link id="locate_file" text="Locate Configuration File" />
           <link id="locate_crash_folder" text="Locate Crash Folder" />

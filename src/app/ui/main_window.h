@@ -38,6 +38,10 @@ namespace app {
   class Workspace;
   class WorkspaceTabs;
 
+  namespace crash {
+    class DataRecovery;
+  }
+
   class MainWindow : public app::gen::MainWindow
                    , public TabsDelegate {
   public:
@@ -72,6 +76,8 @@ namespace app {
     bool getTimelineVisibility() const;
     void setTimelineVisibility(bool visible);
     void popTimeline();
+
+    void showDataRecovery(crash::DataRecovery* dataRecovery);
 
     // TabsDelegate implementation.
     bool onIsModified(Tabs* tabs, TabView* tabView) override;

@@ -33,6 +33,8 @@ void MoveLayer::onExecute()
   m_layer.layer()->parent()->stackLayer(
     m_layer.layer(),
     m_newAfterThis.layer());
+
+  m_layer.layer()->parent()->incrementVersion();
 }
 
 void MoveLayer::onUndo()
@@ -40,6 +42,8 @@ void MoveLayer::onUndo()
   m_layer.layer()->parent()->stackLayer(
     m_layer.layer(),
     m_oldAfterThis.layer());
+
+  m_layer.layer()->parent()->incrementVersion();
 }
 
 void MoveLayer::onFireNotifications()

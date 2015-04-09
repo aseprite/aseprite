@@ -33,12 +33,14 @@ void SetCelFrame::onExecute()
 {
   Cel* cel = this->cel();
   cel->layer()->moveCel(cel, m_newFrame);
+  cel->incrementVersion();
 }
 
 void SetCelFrame::onUndo()
 {
   Cel* cel = this->cel();
   cel->layer()->moveCel(cel, m_oldFrame);
+  cel->incrementVersion();
 }
 
 void SetCelFrame::onFireNotifications()

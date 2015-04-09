@@ -11,10 +11,12 @@
 
 #include "app/cmd/remap_colors.h"
 
+#include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
+#include "doc/image_bits.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
-#include "doc/image_bits.h"
 
 namespace app {
 namespace cmd {
@@ -30,15 +32,25 @@ RemapColors::RemapColors(Sprite* sprite, const Remap& remap)
 void RemapColors::onExecute()
 {
   Sprite* spr = sprite();
-  if (spr->pixelFormat() == IMAGE_INDEXED)
+  if (spr->pixelFormat() == IMAGE_INDEXED) {
     spr->remapImages(0, spr->lastFrame(), m_remap);
+    incrementVersions(spr);
+  }
 }
 
 void RemapColors::onUndo()
 {
   Sprite* spr = this->sprite();
-  if (spr->pixelFormat() == IMAGE_INDEXED)
+  if (spr->pixelFormat() == IMAGE_INDEXED) {
     spr->remapImages(0, spr->lastFrame(), m_remap.invert());
+    incrementVersions(spr);
+  }
+}
+
+void RemapColors::incrementVersions(Sprite* spr)
+{
+  for (const Cel* cel : spr->uniqueCels())
+    cel->image()->incrementVersion();
 }
 
 } // namespace cmd

@@ -29,7 +29,7 @@ void write_cel(std::ostream& os, const Cel* cel)
   write32(os, cel->dataRef()->id());
 }
 
-Cel* read_cel(std::istream& is, SubObjectsIO* subObjects)
+Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
 {
   ObjectId id = read32(is);
   frame_t frame(read16(is));
@@ -38,7 +38,8 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects)
   ASSERT(celData);
 
   base::UniquePtr<Cel> cel(new Cel(frame, celData));
-  cel->setId(id);
+  if (setId)
+    cel->setId(id);
   return cel.release();
 }
 

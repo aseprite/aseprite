@@ -119,6 +119,7 @@ void SetPixelFormat::setFormat(PixelFormat format)
   Sprite* sprite = this->sprite();
 
   sprite->setPixelFormat(format);
+  sprite->incrementVersion();
 
   // Regenerate extras
   static_cast<app::Document*>(sprite->document())

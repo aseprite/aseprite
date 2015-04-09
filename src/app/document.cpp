@@ -200,6 +200,13 @@ void Document::impossibleToBackToSavedState()
   m_undo->impossibleToBackToSavedState();
 }
 
+bool Document::needsBackup() const
+{
+  // If the undo history isn't empty, the user has modified the
+  // document, so we needs to backup those changes.
+  return m_undo->canUndo() || m_undo->canRedo();
+}
+
 //////////////////////////////////////////////////////////////////////
 // Loaded options from file
 
@@ -523,12 +530,15 @@ bool Document::lock(LockType lockType)
       if (m_read_locks == 0 && !m_write_lock) {
         // We can start writting the sprite...
         m_write_lock = true;
+        TRACE("Document::lock: Locked <%d> to write\n", id());
         return true;
       }
       break;
 
   }
 
+  TRACE("Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
+    id(), (lockType == ReadLock ? "read": "write"), m_read_locks, m_write_lock);
   return false;
 }
 
@@ -541,10 +551,14 @@ bool Document::lockToWrite()
     ASSERT(!m_write_lock);
     m_read_locks = 0;
     m_write_lock = true;
+    TRACE("Document::lockToWrite: Locked <%d> to write\n", id());
     return true;
   }
-  else
+  else {
+    TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
+      id(), m_read_locks, m_write_lock);
     return false;
+  }
 }
 
 void Document::unlockToRead()
