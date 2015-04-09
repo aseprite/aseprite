@@ -10,9 +10,11 @@
 
 #include "doc/image_io.h"
 
+#include "base/exception.h"
 #include "base/serialization.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"
+#include "zlib.h"
 
 #include <iostream>
 
@@ -21,17 +23,7 @@ namespace doc {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 
-// Serialized Image data:
-//
-//    DWORD             image ID
-//    BYTE              image type
-//    WORD[2]           w, h
-//    DWORD             mask color
-//    for each line     ("h" times)
-//      for each pixel  ("w" times)
-//        BYTE[4]       for RGB images, or
-//        BYTE[2]       for Grayscale images, or
-//        BYTE          for Indexed images
+// TODO Create a zlib wrapper for iostreams
 
 void write_image(std::ostream& os, const Image* image)
 {
@@ -41,9 +33,62 @@ void write_image(std::ostream& os, const Image* image)
   write16(os, image->height());        // Height
   write32(os, image->maskColor());     // Mask color
 
-  int size = image->getRowStrideSize();
-  for (int c=0; c<image->height(); c++)
-    os.write((char*)image->getPixelAddress(0, c), size);
+  int rowSize = image->getRowStrideSize();
+#if 0
+  {
+    for (int c=0; c<image->height(); c++)
+      os.write((char*)image->getPixelAddress(0, c), rowSize);
+  }
+#else
+  {
+    std::ostream::pos_type total_output_pos = os.tellp();
+    write32(os, 0);    // Compressed size (we update this value later)
+
+    z_stream zstream;
+    zstream.zalloc = (alloc_func)0;
+    zstream.zfree  = (free_func)0;
+    zstream.opaque = (voidpf)0;
+    int err = deflateInit(&zstream, Z_DEFAULT_COMPRESSION);
+    if (err != Z_OK)
+      throw base::Exception("ZLib error %d in deflateInit().", err);
+
+    std::vector<uint8_t> compressed(4096);
+    int total_output_bytes = 0;
+
+    for (int y=0; y<image->height(); y++) {
+      zstream.next_in = (Bytef*)image->getPixelAddress(0, y);
+      zstream.avail_in = rowSize;
+      int flush = (y == image->height()-1 ? Z_FINISH: Z_NO_FLUSH);
+
+      do {
+        zstream.next_out = (Bytef*)&compressed[0];
+        zstream.avail_out = compressed.size();
+
+        // Compress
+        err = deflate(&zstream, flush);
+        if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
+          throw base::Exception("ZLib error %d in deflate().", err);
+
+        int output_bytes = compressed.size() - zstream.avail_out;
+        if (output_bytes > 0) {
+          if (os.write((char*)&compressed[0], output_bytes).fail())
+            throw base::Exception("Error writing compressed image pixels.\n");
+
+          total_output_bytes += output_bytes;
+        }
+      } while (zstream.avail_out == 0);
+    }
+
+    err = deflateEnd(&zstream);
+    if (err != Z_OK)
+      throw base::Exception("ZLib error %d in deflateEnd().", err);
+
+    std::ostream::pos_type bak = os.tellp();
+    os.seekp(total_output_pos);
+    write32(os, total_output_bytes);
+    os.seekp(bak);
+  }
+#endif
 }
 
 Image* read_image(std::istream& is, bool setId)
@@ -55,10 +100,77 @@ Image* read_image(std::istream& is, bool setId)
   uint32_t maskColor = read32(is);      // Mask color
 
   base::UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
-  int size = image->getRowStrideSize();
+  int rowSize = image->getRowStrideSize();
 
-  for (int c=0; c<image->height(); c++)
-    is.read((char*)image->getPixelAddress(0, c), size);
+#if 0
+  {
+    for (int c=0; c<image->height(); c++)
+      is.read((char*)image->getPixelAddress(0, c), rowSize);
+  }
+#else
+  {
+    int avail_bytes = read32(is);
+
+    z_stream zstream;
+    zstream.zalloc = (alloc_func)0;
+    zstream.zfree  = (free_func)0;
+    zstream.opaque = (voidpf)0;
+
+    int err = inflateInit(&zstream);
+    if (err != Z_OK)
+      throw base::Exception("ZLib error %d in inflateInit().", err);
+
+    uint8_t* uncompressed = image->getPixelAddress(0, 0);
+    int uncompressed_size = image->height() * rowSize;
+    int uncompressed_offset = 0;
+    int remain = avail_bytes;
+
+    std::vector<uint8_t> compressed(4096);
+    uint8_t* address = image->getPixelAddress(0, 0);
+    uint8_t* address_end = image->getPixelAddress(0, 0) + uncompressed_size;
+
+    while (remain > 0) {
+      int len = MIN(remain, (int)compressed.size());
+      if (is.read((char*)&compressed[0], len).fail()) {
+        ASSERT(false);
+        throw base::Exception("Error reading stream to restore image");
+      }
+
+      int bytes_read = (int)is.gcount();
+      if (bytes_read == 0) {
+        ASSERT(remain == 0);
+        break;
+      }
+
+      remain -= bytes_read;
+
+      zstream.next_in = (Bytef*)&compressed[0];
+      zstream.avail_in = (uInt)bytes_read;
+
+      do {
+        zstream.next_out = (Bytef*)address;
+        zstream.avail_out = address_end - address;
+
+        err = inflate(&zstream, Z_NO_FLUSH);
+        if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR)
+          throw base::Exception("ZLib error %d in inflate().", err);
+
+        int uncompressed_bytes = (int)((address_end - address) - zstream.avail_out);
+        if (uncompressed_bytes > 0) {
+          if (uncompressed_offset+uncompressed_bytes > uncompressed_size)
+            throw base::Exception("Bad compressed image.");
+
+          uncompressed_offset += uncompressed_bytes;
+          address += uncompressed_bytes;
+        }
+      } while (zstream.avail_in != 0 && zstream.avail_out == 0);
+    }
+
+    err = inflateEnd(&zstream);
+    if (err != Z_OK)
+      throw base::Exception("ZLib error %d in inflateEnd().", err);
+  }
+#endif
 
   image->setMaskColor(maskColor);
   if (setId)
