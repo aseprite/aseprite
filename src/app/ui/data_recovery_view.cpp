@@ -138,6 +138,7 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   addChild(&m_view);
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
+  m_view.setProperty(SkinStylePropertyPtr(new SkinStyleProperty(theme->styles.workspaceView())));
 
   fillList();
 }
