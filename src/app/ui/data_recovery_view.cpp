@@ -84,6 +84,8 @@ protected:
   }
 
   void onDelete() {
+    Widget* parent = getParent();
+
     if (m_backup) {
       // Delete one backup
       if (Alert::show(PACKAGE
@@ -95,7 +97,6 @@ protected:
 
       Widget* parent = getParent();
       parent->removeChild(this);
-      View::getView(parent)->updateView();
       deferDelete();
     }
     else {
@@ -115,6 +116,9 @@ protected:
       m_session->removeFromDisk();
       Regenerate();
     }
+
+    parent->layout();
+    View::getView(parent)->updateView();
   }
 
 private:
@@ -144,10 +148,16 @@ DataRecoveryView::~DataRecoveryView()
 
 void DataRecoveryView::fillList()
 {
-  for (auto child : m_listBox.getChildren())
+  WidgetsList children = m_listBox.getChildren();
+  for (auto child : children) {
+    m_listBox.removeChild(child);
     child->deferDelete();
+  }
 
   for (auto& session : m_dataRecovery->sessions()) {
+    if (session->isEmpty())
+      continue;
+
     Item* item = new Item(session.get(), nullptr);
     item->Regenerate.connect(&DataRecoveryView::fillList, this);
     m_listBox.addChild(item);
