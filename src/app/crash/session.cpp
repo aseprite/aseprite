@@ -104,19 +104,26 @@ void Session::create(base::pid pid)
   m_pid = pid;
 
 #ifdef _WIN32
-  std::ofstream of(base::from_utf8(pidFilename()));
+  std::ofstream pidf(base::from_utf8(pidFilename()));
+  std::ofstream verf(base::from_utf8(verFilename()));
 #else
-  std::ofstream of(pidFilename());
+  std::ofstream pidf(pidFilename());
+  std::ofstream verf(verFilename());
 #endif
-  of << m_pid;
+
+  pidf << m_pid;
+  verf << VERSION;
 }
 
 void Session::removeFromDisk()
 {
-  if (base::is_file(pidFilename()))
-    base::delete_file(pidFilename());
-
   try {
+    if (base::is_file(pidFilename()))
+      base::delete_file(pidFilename());
+
+    if (base::is_file(verFilename()))
+      base::delete_file(verFilename());
+
     base::remove_directory(m_path);
   }
   catch (const std::exception& ex) {
@@ -202,6 +209,11 @@ void Session::loadPid()
 std::string Session::pidFilename() const
 {
   return base::join_path(m_path, "pid");
+}
+
+std::string Session::verFilename() const
+{
+  return base::join_path(m_path, "ver");
 }
 
 void Session::deleteDirectory(const std::string& dir)

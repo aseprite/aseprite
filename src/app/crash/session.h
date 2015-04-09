@@ -57,6 +57,7 @@ namespace crash {
   private:
     void loadPid();
     std::string pidFilename() const;
+    std::string verFilename() const;
     void deleteDirectory(const std::string& dir);
 
     base::pid m_pid;
