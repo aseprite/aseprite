@@ -189,6 +189,8 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
 
     if (documentWriter->isModified())
       documentWriter->setFilename(oldFilename);
+    else
+      documentWriter->incrementVersion();
 
     update_screen_for_document(documentWriter);
   }

@@ -62,7 +62,7 @@ void save_object(const char* prefix, T* obj, WriteFunc write_func, Versions& ver
     obj->incrementVersion();
 
   if (versions[obj->id()] != obj->version()) {
-    OFSTREAM(dir, s, prefix + base::convert_to<std::string>(obj->id()));
+    OFSTREAM(dir, s, prefix ? prefix + base::convert_to<std::string>(obj->id()): "doc");
     write_func(s, obj);
     versions[obj->id()] = obj->version();
 
@@ -73,6 +73,12 @@ void save_object(const char* prefix, T* obj, WriteFunc write_func, Versions& ver
     TRACE(" - Ignoring %s %d (version %d already saved)\n",
       prefix, obj->id(), obj->version());
   }
+}
+
+void write_document_file(std::ofstream& s, app::Document* doc)
+{
+  write32(s, doc->sprite()->id());
+  write_string(s, doc->filename());
 }
 
 void write_sprite(std::ofstream& s, Sprite* spr)
@@ -129,12 +135,7 @@ void write_document(const std::string& dir, app::Document* doc)
   Versions& versions = g_documentObjects[doc->id()];
   Sprite* spr = doc->sprite();
 
-  // Create a "doc" file with the main sprite ID
-  if (!base::is_file(base::join_path(dir, "doc"))) {
-    OFSTREAM(dir, s, "doc");
-    write32(s, spr->id());
-  }
-
+  save_object(nullptr, doc, write_document_file, versions, dir);
   save_object("spr", spr, write_sprite, versions, dir);
 
   //////////////////////////////////////////////////////////////////////

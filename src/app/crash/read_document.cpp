@@ -230,6 +230,7 @@ bool read_document_info(const std::string& dir, DocumentInfo& info)
   if (base::is_file(base::join_path(dir, "doc"))) {
     IFSTREAM(dir, s, "doc");
     sprId = read32(s);
+    info.filename = read_string(s);
   }
   else
     return false;
@@ -250,11 +251,16 @@ app::Document* read_document(const std::string& dir)
 
   IFSTREAM(dir, s, "doc");
   ObjectId sprId = read32(s);
+  std::string filename = read_string(s);
 
   Reader reader(dir);
   Sprite* spr = reader.loadSprite(sprId);
-  if (spr)
-    return new app::Document(spr);
+  if (spr) {
+    app::Document* doc = new app::Document(spr);
+    doc->setFilename(filename);
+    doc->impossibleToBackToSavedState();
+    return doc;
+  }
   else {
     Console().printf("Unable to load sprite #%d\n", sprId);
     return nullptr;

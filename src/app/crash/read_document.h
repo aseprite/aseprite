@@ -23,6 +23,7 @@ namespace crash {
     int width;
     int height;
     doc::frame_t frames;
+    std::string filename;
   };
 
   bool read_document_info(const std::string& dir, DocumentInfo& info);
