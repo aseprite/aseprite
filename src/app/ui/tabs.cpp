@@ -498,9 +498,14 @@ void Tabs::onPaint(PaintEvent& ev)
     Tab newTab(m_dropNewTab);
     newTab.text = m_dropNewTab->getTabText();
     newTab.icon = m_dropNewTab->getTabIcon();
-    newTab.width = (!m_list.empty() ? m_list[0]->width:
-                    theme->dimensions.tabsWidth());
-    newTab.x = m_dropNewPosX - newTab.width/2;
+
+    newTab.width = newTab.oldWidth =
+      (!m_list.empty() ? m_list[0]->width:
+        theme->dimensions.tabsWidth());
+
+    newTab.x = newTab.oldX =
+      m_dropNewPosX - newTab.width/2;
+
     box = getTabBounds(&newTab);
     drawTab(g, box, &newTab, 0, true, true);
   }
