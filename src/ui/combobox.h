@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -25,8 +25,7 @@ namespace ui {
   class ComboBoxEntry;
   class ComboBoxListBox;
 
-  class ComboBox : public Widget
-  {
+  class ComboBox : public Widget {
     friend class ComboBoxEntry;
     friend class ComboBoxListBox;
 
@@ -65,13 +64,17 @@ namespace ui {
     ListItem* getItem(int itemIndex);
     const std::string& getItemText(int itemIndex) const;
     void setItemText(int itemIndex, const std::string& text);
-    int findItemIndex(const std::string& text);
+    int findItemIndex(const std::string& text) const;
+    int findItemIndexByValue(const std::string& value) const;
 
     ListItem* getSelectedItem() const;
     void setSelectedItem(ListItem* item);
 
     int getSelectedItemIndex() const;
     void setSelectedItemIndex(int itemIndex);
+
+    std::string getValue() const;
+    void setValue(const std::string& value);
 
     Entry* getEntryWidget();
     Button* getButtonWidget();

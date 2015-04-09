@@ -11,8 +11,10 @@
 
 #include "app/crash/backup_observer.h"
 
+#include "app/app.h"
 #include "app/crash/session.h"
 #include "app/document.h"
+#include "app/pref/preferences.h"
 #include "base/bind.h"
 #include "base/chrono.h"
 #include "base/remove_from_container.h"
@@ -63,24 +65,35 @@ void BackupObserver::onRemoveDocument(doc::Document* document)
 
 void BackupObserver::backgroundThread()
 {
-  int counter = 0;
+  int period = App::instance()->preferences().general.dataRecoveryPeriod();
+  int waitUntil = period*60;
+  int seconds = 0;
 
   while (!m_done) {
-    counter++;
-    if (counter == 5*60) {      // Each 5 minutes
-      counter = 0;
+    seconds++;
+    if (seconds >= waitUntil) {
+      TRACE("DataRecovery: Start backup process for %d documents\n", m_documents.size());
 
       base::scoped_lock hold(m_mutex);
-      TRACE("DataRecovery: Start backup process for %d documents\n", m_documents.size());
       base::Chrono chrono;
+      bool somethingLocked = false;
+
       for (doc::Document* doc : m_documents) {
         try {
           m_session->saveDocumentChanges(static_cast<app::Document*>(doc));
         }
         catch (const std::exception&) {
           TRACE("DataRecovery: Document '%d' is locked\n", doc->id());
+          somethingLocked = true;
         }
       }
+
+      seconds = 0;
+      if (somethingLocked)
+        waitUntil = 10;         // Wait 10 seconds for next round
+      else
+        waitUntil = period*60;
+
       TRACE("DataRecovery: Backup process done (%.16g)\n", chrono.elapsed());
     }
     base::this_thread::sleep_for(1.0);

@@ -25,6 +25,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/path.h"
 #include "doc/image.h"
 #include "render/render.h"
@@ -72,6 +73,10 @@ public:
 
     if (m_preferences.general.dataRecovery())
       enableDataRecovery()->setSelected(true);
+
+    dataRecoveryPeriod()->setSelectedItemIndex(
+      dataRecoveryPeriod()->findItemIndexByValue(
+        base::convert_to<std::string>(m_preferences.general.dataRecoveryPeriod())));
 
     if (m_settings->getCenterOnZoom())
       centerOnZoom()->setSelected(true);
@@ -156,9 +161,13 @@ public:
 
     std::string warnings;
 
-    if (enableDataRecovery()->isSelected() != m_preferences.general.dataRecovery()) {
+    int newPeriod = base::convert_to<int>(dataRecoveryPeriod()->getValue());
+    if (enableDataRecovery()->isSelected() != m_preferences.general.dataRecovery() ||
+        newPeriod != m_preferences.general.dataRecoveryPeriod()) {
       m_preferences.general.dataRecovery(enableDataRecovery()->isSelected());
-      warnings += "<<- Enable Data Recovery";
+      m_preferences.general.dataRecoveryPeriod(newPeriod);
+
+      warnings += "<<- Automatically save recovery data every";
     }
 
     m_settings->setCenterOnZoom(centerOnZoom()->isSelected());
