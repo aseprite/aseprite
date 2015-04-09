@@ -15,6 +15,7 @@
 #include "app/cmd/set_mask.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_undo.h"
@@ -190,15 +191,20 @@ public:
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
-      retry_commit:;
-        try {
-          ContextReader reader(m_context);
-          ContextWriter writer(reader);
-          m_expandCelCanvas.commit();
-        }
-        catch (const LockedDocumentException&) {
-          base::this_thread::sleep_for(0.25);
-          goto retry_commit;
+        for (int i=0; ; ++i) {
+          // TODO add a "wait_n_seconds" parameter to ContextReader/Writer
+          try {
+            ContextReader reader(m_context);
+            ContextWriter writer(reader);
+            m_expandCelCanvas.commit();
+            break;
+          }
+          catch (const LockedDocumentException& ex) {
+            if (i == 10)
+              Console::showException(ex);
+            else
+              base::this_thread::sleep_for(0.10);
+          }
         }
       }
       // Selection ink
@@ -214,15 +220,19 @@ public:
 
     // If the trace was canceled or it is not a 'paint' ink...
     if (m_canceled || !getInk()->isPaint()) {
-    retry_rollback:;
-      try {
-        ContextReader reader(m_context);
-        ContextWriter writer(reader);
-        m_expandCelCanvas.rollback();
-      }
-      catch (const LockedDocumentException&) {
-        base::this_thread::sleep_for(0.25);
-        goto retry_rollback;
+      for (int i=0; ; ++i) {
+        try {
+          ContextReader reader(m_context);
+          ContextWriter writer(reader);
+          m_expandCelCanvas.rollback();
+          break;
+        }
+        catch (const LockedDocumentException& ex) {
+          if (i == 10)
+            Console::showException(ex);
+          else
+            base::this_thread::sleep_for(0.10);
+        }
       }
     }
 
