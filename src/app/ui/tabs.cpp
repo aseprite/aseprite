@@ -66,7 +66,7 @@ Tabs::Tabs(TabsDelegate* delegate)
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   m_tabsHeight = theme->dimensions.tabsHeight();
-  m_tabsEmptyHeight = theme->dimensions.tabsEmptyHeight();
+  m_tabsBottomHeight = theme->dimensions.tabsBottomHeight();
   setBgColor(theme->colors.windowFace());
 }
 
@@ -228,7 +228,7 @@ void Tabs::setDockedStyle()
 
   m_docked = true;
   m_tabsHeight = theme->dimensions.dockedTabsHeight();
-  m_tabsEmptyHeight = 0;
+  m_tabsBottomHeight = 0;
 
   setBgColor(theme->colors.workspace());
 }
@@ -450,8 +450,7 @@ void Tabs::onPaint(PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
-    (m_list.empty() && animation() == ANI_NONE ? 0:
-      m_tabsHeight - m_tabsEmptyHeight));
+    m_tabsHeight - m_tabsBottomHeight);
 
   g->fillRect(getBgColor(), g->getClipBounds());
 
@@ -515,14 +514,7 @@ void Tabs::onResize(ResizeEvent& ev)
 
 void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 {
-  gfx::Size reqsize(0, 0);
-
-  if (m_list.empty() && animation() == ANI_NONE)
-    reqsize.h = m_tabsEmptyHeight;
-  else
-    reqsize.h = m_tabsHeight;
-
-  ev.setPreferredSize(reqsize);
+  ev.setPreferredSize(gfx::Size(0, m_tabsHeight));
 }
 
 void Tabs::selectTabInternal(TabPtr& tab)
@@ -808,7 +800,7 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   gfx::Rect rect = getClientBounds();
   gfx::Rect box(rect.x, rect.y, rect.w,
     (m_list.empty() && animation() == ANI_NONE ? 0:
-      m_tabsHeight - m_tabsEmptyHeight));
+      m_tabsHeight - m_tabsBottomHeight));
   int startX = m_border*guiscale();
   double t = animationTime();
 

@@ -178,7 +178,7 @@ namespace app {
     // Style
     bool m_docked;
     int m_tabsHeight;
-    int m_tabsEmptyHeight;
+    int m_tabsBottomHeight;
 
     // Delegate of notifications
     TabsDelegate* m_delegate;
