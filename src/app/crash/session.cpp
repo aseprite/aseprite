@@ -49,8 +49,8 @@ Session::Backup::Backup(const std::string& dir)
 }
 
 Session::Session(const std::string& path)
-  : m_path(path)
-  , m_pid(0)
+  : m_pid(0)
+  , m_path(path)
 {
 }
 
@@ -107,8 +107,8 @@ void Session::create(base::pid pid)
   std::ofstream pidf(base::from_utf8(pidFilename()));
   std::ofstream verf(base::from_utf8(verFilename()));
 #else
-  std::ofstream pidf(pidFilename());
-  std::ofstream verf(verFilename());
+  std::ofstream pidf(pidFilename().c_str());
+  std::ofstream verf(verFilename().c_str());
 #endif
 
   pidf << m_pid;
@@ -200,7 +200,11 @@ void Session::loadPid()
 
   std::string pidfile = pidFilename();
   if (base::is_file(pidfile)) {
-    std::ifstream pf(pidfile);
+#ifdef _WIN32
+    std::ifstream pf(base::from_utf8(pidfile));
+#else
+    std::ifstream pf(pidfile.c_str());
+#endif
     if (pf)
       pf >> m_pid;
   }
@@ -224,8 +228,10 @@ void Session::deleteDirectory(const std::string& dir)
 
   for (auto& item : base::list_files(dir)) {
     std::string objfn = base::join_path(dir, item);
-    if (base::is_file(objfn))
+    if (base::is_file(objfn)) {
+      TRACE("DataRecovery: Deleting file '%s'\n", objfn.c_str());
       base::delete_file(objfn);
+    }
   }
   base::remove_directory(dir);
 }

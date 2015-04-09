@@ -47,7 +47,7 @@ using namespace doc;
     std::ofstream name(base::from_utf8(base::join_path(dir, fn)), std::ofstream::binary);
 #else
   #define OFSTREAM(dir, name, fn) \
-    std::ofstream name(base::join_path(dir, fn), std::ofstream::binary);
+    std::ofstream name(base::join_path(dir, fn).c_str(), std::ofstream::binary);
 #endif
 
 namespace {

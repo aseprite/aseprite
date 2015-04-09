@@ -50,7 +50,7 @@ using namespace doc;
     std::ifstream name(base::from_utf8(base::join_path(dir, fn)), std::ifstream::binary);
 #else
   #define IFSTREAM(dir, name, fn) \
-    std::ifstream name(base::join_path(dir, fn), std::ifstream::binary);
+    std::ifstream name(base::join_path(dir, fn).c_str(), std::ifstream::binary);
 #endif
 
 namespace {
@@ -191,7 +191,7 @@ private:
     }
     else {
       Console().printf("Unable to load layer named '%s', type #%d\n",
-        name, (int)type);
+        name.c_str(), (int)type);
       return nullptr;
     }
   }
