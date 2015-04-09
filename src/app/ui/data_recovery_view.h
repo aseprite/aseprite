@@ -40,6 +40,8 @@ namespace app {
     void onTabPopup(Workspace* workspace) override;
 
   private:
+    void fillList();
+
     crash::DataRecovery* m_dataRecovery;
     ui::View m_view;
     ui::ListBox m_listBox;

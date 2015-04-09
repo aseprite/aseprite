@@ -19,10 +19,12 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/bind.h"
+#include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
 #include "ui/listitem.h"
 #include "ui/message.h"
+#include "ui/preferred_size_event.h"
 #include "ui/resize_event.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -32,51 +34,87 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
-class BackupItem : public ListItem {
+class Item : public ListItem {
 public:
-  BackupItem(crash::Session* session, crash::Session::Backup* backup)
-    : ListItem(" - " + backup->description())
+  Item(crash::Session* session, crash::Session::Backup* backup)
+    : ListItem(backup ? " > " + backup->description(): session->name())
     , m_session(session)
     , m_backup(backup)
-    , m_openButton("Open")
-    , m_deleteButton("Delete")
-    , m_restored(false)
+    , m_openButton(backup ? "Open": "Open All")
+    , m_deleteButton(backup ? "Delete": "Delete All")
   {
     addChild(&m_openButton);
     addChild(&m_deleteButton);
 
-    m_openButton.Click.connect(Bind(&BackupItem::onOpen, this));
-    m_deleteButton.Click.connect(Bind(&BackupItem::onDelete, this));
+    m_openButton.Click.connect(Bind(&Item::onOpen, this));
+    m_deleteButton.Click.connect(Bind(&Item::onDelete, this));
 
     setup_mini_look(&m_openButton);
     setup_mini_look(&m_deleteButton);
   }
 
+  Signal0<void> Regenerate;
+
 protected:
+  void onPreferredSize(PreferredSizeEvent& ev) {
+    gfx::Size sz = m_deleteButton.getPreferredSize();
+    sz.h += 4*guiscale();
+    ev.setPreferredSize(sz);
+  }
+
   void onResize(ResizeEvent& ev) override {
     ListItem::onResize(ev);
 
     gfx::Rect rc = ev.getBounds();
     gfx::Size sz1 = m_openButton.getPreferredSize();
+    sz1.w *= 2*guiscale();
     gfx::Size sz2 = m_deleteButton.getPreferredSize();
-    m_openButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sz1.w, rc.y, sz1.w, rc.h));
-    m_deleteButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w, rc.y, sz2.w, rc.h));
+    int h = rc.h*3/4;
+    int sep = 8*guiscale();
+    m_openButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sz1.w-2*sep, rc.y+rc.h/2-h/2, sz1.w, h));
+    m_deleteButton.setBounds(gfx::Rect(rc.x+rc.w-sz2.w-sep, rc.y+rc.h/2-h/2, sz2.w, h));
   }
 
   void onOpen() {
-    if (!m_restored) {
-      m_restored = true;
-      setText("RESTORED: " + getText());
-    }
-
-    m_session->restoreBackup(m_backup);
+    if (m_backup)
+      m_session->restoreBackup(m_backup);
+    else
+      for (auto backup : m_session->backups())
+        m_session->restoreBackup(backup);
   }
 
   void onDelete() {
-    m_session->deleteBackup(m_backup);
+    if (m_backup) {
+      // Delete one backup
+      if (Alert::show(PACKAGE
+          "<<Do you really want to delete this backup?"
+          "||&Yes||&No") != 1)
+        return;
 
-    getParent()->invalidate();
-    deferDelete();
+      m_session->deleteBackup(m_backup);
+
+      Widget* parent = getParent();
+      parent->removeChild(this);
+      View::getView(parent)->updateView();
+      deferDelete();
+    }
+    else {
+      // Delete the whole session
+      if (!m_session->isEmpty()) {
+        if (Alert::show(PACKAGE
+            "<<Do you want to delete the whole session?"
+            "<<You will lost all backups related to this session."
+            "||&Yes||&No") != 1)
+          return;
+      }
+
+      crash::Session::Backups backups = m_session->backups();
+      for (auto backup : backups)
+        m_session->deleteBackup(backup);
+
+      m_session->removeFromDisk();
+      Regenerate();
+    }
   }
 
 private:
@@ -84,7 +122,6 @@ private:
   crash::Session::Backup* m_backup;
   ui::Button m_openButton;
   ui::Button m_deleteButton;
-  bool m_restored;
 };
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
@@ -98,16 +135,29 @@ DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   m_view.setExpansive(true);
   m_view.attachToView(&m_listBox);
 
-  for (auto& session : m_dataRecovery->sessions()) {
-    m_listBox.addChild(new ListItem(session->name()));
-
-    for (auto& backup : session->backups())
-      m_listBox.addChild(new BackupItem(session.get(), backup));
-  }
+  fillList();
 }
 
 DataRecoveryView::~DataRecoveryView()
 {
+}
+
+void DataRecoveryView::fillList()
+{
+  for (auto child : m_listBox.getChildren())
+    child->deferDelete();
+
+  for (auto& session : m_dataRecovery->sessions()) {
+    Item* item = new Item(session.get(), nullptr);
+    item->Regenerate.connect(&DataRecoveryView::fillList, this);
+    m_listBox.addChild(item);
+
+    for (auto& backup : session->backups()) {
+      item = new Item(session.get(), backup);
+      item->Regenerate.connect(&DataRecoveryView::fillList, this);
+      m_listBox.addChild(item);
+    }
+  }
 }
 
 std::string DataRecoveryView::getTabText()
