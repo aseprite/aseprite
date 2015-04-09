@@ -455,7 +455,6 @@ void PaletteView::onAppPaletteChange()
 gfx::Rect PaletteView::getPaletteEntryBounds(int index)
 {
   gfx::Rect bounds = getClientBounds();
-  div_t d = div(Palette::MaxColors, m_columns);
   int cols = m_columns;
   int col = index % cols;
   int row = index / cols;

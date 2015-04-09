@@ -68,13 +68,6 @@ namespace {
     return shortcut;
   }
 
-  bool bool_attr_is_true(const TiXmlElement* elem, const char* attribute_name)
-  {
-    const char* value = elem->Attribute(attribute_name);
-
-    return (value != NULL) && (strcmp(value, "true") == 0);
-  }
-
   std::string get_user_friendly_string_for_keyaction(app::KeyAction action)
   {
     for (int c=0; actions[c].name; ++c) {

@@ -160,7 +160,6 @@ StatusBar::StatusBar()
   // Construct the commands box
   {
     Box* box1 = new Box(JI_HORIZONTAL);
-    Box* box2 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
     Box* box4 = new Box(JI_HORIZONTAL);
 
     m_frameLabel = new Label("Frame:");
