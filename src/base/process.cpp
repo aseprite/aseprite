@@ -13,6 +13,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
+#include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
@@ -51,7 +52,7 @@ pid get_current_process_id()
 
 bool is_process_running(pid pid)
 {
-  // TODO
+  return (kill(pid, 0) == 0);
 }
 
 #endif
