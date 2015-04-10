@@ -3,7 +3,7 @@
 You should be able to compile Aseprite successfully on the following
 platforms:
 
-* Windows + MSVC 2012 + DirectX SDK
+* Windows + VS2013 + DirectX SDK
 * Mac OS X 10.8 Mountain Lion + Xcode 5.1.1 + Mac OS X 10.4 SDK universal
 * Linux + gcc with some C++11 support, this port is not compiled
   regularly so you can expect some errors in the master branch.
@@ -53,7 +53,6 @@ the repository clone in a directory called `aseprite-source`):
 
    If you have Visual Studio you can generate a solution:
 
-        C:\...\aseprite-source\build>cmake .. -G "Visual Studio 11 2012"
         C:\...\aseprite-source\build>cmake .. -G "Visual Studio 12 2013"
 
    If you are on Linux:
@@ -61,7 +60,7 @@ the repository clone in a directory called `aseprite-source`):
         /.../aseprite-source/build$ cmake .. -G "Unix Makefiles"
 
    For more information in [CMake wiki](http://www.vtk.org/Wiki/CMake_Generator_Specific_Information).
-    
+
 3. After you have executed one of the `cmake .. -G <generator>`
    commands, you have to compile the project executing make, nmake,
    opening the solution, etc.
