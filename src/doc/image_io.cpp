@@ -99,6 +99,14 @@ Image* read_image(std::istream& is, bool setId)
   int height = read16(is);              // Height
   uint32_t maskColor = read32(is);      // Mask color
 
+  if ((pixelFormat != IMAGE_RGB &&
+       pixelFormat != IMAGE_GRAYSCALE &&
+       pixelFormat != IMAGE_INDEXED &&
+       pixelFormat != IMAGE_BITMAP) ||
+      (width < 1 || height < 1) ||
+      (width > 0xfffff || height > 0xfffff))
+    return nullptr;
+
   base::UniquePtr<Image> image(Image::create(static_cast<PixelFormat>(pixelFormat), width, height));
   int rowSize = image->getRowStrideSize();
 
