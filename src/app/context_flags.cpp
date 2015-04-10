@@ -35,7 +35,7 @@ void ContextFlags::update(Context* context)
   if (document) {
     m_flags |= HasActiveDocument;
 
-    if (document->lock(Document::ReadLock)) {
+    if (document->lock(Document::ReadLock, 0)) {
       m_flags |= ActiveDocumentIsReadable;
 
       if (document->isMaskVisible())
@@ -75,7 +75,7 @@ void ContextFlags::update(Context* context)
         }
       }
 
-      if (document->lockToWrite())
+      if (document->lockToWrite(0))
         m_flags |= ActiveDocumentIsWritable;
 
       document->unlock();

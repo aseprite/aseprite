@@ -23,6 +23,7 @@
 #include "base/memory.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
+#include "base/thread.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/context.h"
@@ -510,31 +511,42 @@ Document* Document::duplicate(DuplicateType type) const
 //////////////////////////////////////////////////////////////////////
 // Multi-threading ("sprite wrappers" use this)
 
-bool Document::lock(LockType lockType)
+bool Document::lock(LockType lockType, int timeout)
 {
-  scoped_lock lock(*m_mutex);
+  while (timeout >= 0) {
+    {
+      scoped_lock lock(*m_mutex);
+      switch (lockType) {
 
-  switch (lockType) {
+        case ReadLock:
+          // If no body is writting the sprite...
+          if (!m_write_lock) {
+            // We can read it
+            ++m_read_locks;
+            return true;
+          }
+          break;
 
-    case ReadLock:
-      // If no body is writting the sprite...
-      if (!m_write_lock) {
-        // We can read it
-        ++m_read_locks;
-        return true;
+        case WriteLock:
+          // If no body is reading and writting...
+          if (m_read_locks == 0 && !m_write_lock) {
+            // We can start writting the sprite...
+            m_write_lock = true;
+            TRACE("Document::lock: Locked <%d> to write\n", id());
+            return true;
+          }
+          break;
+
       }
-      break;
+    }
 
-    case WriteLock:
-      // If no body is reading and writting...
-      if (m_read_locks == 0 && !m_write_lock) {
-        // We can start writting the sprite...
-        m_write_lock = true;
-        TRACE("Document::lock: Locked <%d> to write\n", id());
-        return true;
-      }
+    if (timeout > 0) {
+      int delay = MIN(100, timeout);
+      timeout -= delay;
+      base::this_thread::sleep_for(double(delay) / 1000.0);
+    }
+    else
       break;
-
   }
 
   TRACE("Document::lock: Cannot lock <%d> to %s (has %d read locks and %d write locks)\n",
@@ -542,23 +554,27 @@ bool Document::lock(LockType lockType)
   return false;
 }
 
-bool Document::lockToWrite()
+bool Document::lockToWrite(int timeout)
 {
-  scoped_lock lock(*m_mutex);
+  while (timeout >= 0) {
+    {
+      scoped_lock lock(*m_mutex);
+      // this only is possible if there are just one reader
+      if (m_read_locks == 1) {
+        ASSERT(!m_write_lock);
+        m_read_locks = 0;
+        m_write_lock = true;
+        TRACE("Document::lockToWrite: Locked <%d> to write\n", id());
+        return true;
+      }
+    }
+    timeout -= 100;
+    base::this_thread::sleep_for(0.100);
+  }
 
-  // this only is possible if there are just one reader
-  if (m_read_locks == 1) {
-    ASSERT(!m_write_lock);
-    m_read_locks = 0;
-    m_write_lock = true;
-    TRACE("Document::lockToWrite: Locked <%d> to write\n", id());
-    return true;
-  }
-  else {
-    TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
-      id(), m_read_locks, m_write_lock);
-    return false;
-  }
+  TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
+    id(), m_read_locks, m_write_lock);
+  return false;
 }
 
 void Document::unlockToRead()

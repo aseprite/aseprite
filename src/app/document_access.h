@@ -69,33 +69,18 @@ namespace app {
     {
     }
 
-    explicit DocumentReader(Document* document)
+    explicit DocumentReader(Document* document, int timeout)
       : DocumentAccess(document)
     {
-      if (m_document && !m_document->lock(Document::ReadLock))
+      if (m_document && !m_document->lock(Document::ReadLock, timeout))
         throw LockedDocumentException();
     }
 
-    explicit DocumentReader(const DocumentReader& copy)
+    explicit DocumentReader(const DocumentReader& copy, int timeout)
       : DocumentAccess(copy)
     {
-      if (m_document && !m_document->lock(Document::ReadLock))
+      if (m_document && !m_document->lock(Document::ReadLock, timeout))
         throw LockedDocumentException();
-    }
-
-    DocumentReader& operator=(const DocumentReader& copy)
-    {
-      // unlock old document
-      if (m_document)
-        m_document->unlock();
-
-      DocumentAccess::operator=(copy);
-
-      // relock the document
-      if (m_document && !m_document->lock(Document::ReadLock))
-        throw LockedDocumentException();
-
-      return *this;
     }
 
     ~DocumentReader()
@@ -105,6 +90,9 @@ namespace app {
         m_document->unlock();
     }
 
+  private:
+    // Disable operator=
+    DocumentReader& operator=(const DocumentReader&);
   };
 
   // Class to modify the document's state. Its constructor request a
@@ -120,13 +108,13 @@ namespace app {
     {
     }
 
-    explicit DocumentWriter(Document* document)
+    explicit DocumentWriter(Document* document, int timeout)
       : DocumentAccess(document)
       , m_from_reader(false)
       , m_locked(false)
     {
       if (m_document) {
-        if (!m_document->lock(Document::WriteLock))
+        if (!m_document->lock(Document::WriteLock, timeout))
           throw LockedDocumentException();
 
         m_locked = true;
@@ -135,13 +123,13 @@ namespace app {
 
     // Constructor that can be used to elevate the given reader-lock to
     // writer permission.
-    explicit DocumentWriter(const DocumentReader& document)
+    explicit DocumentWriter(const DocumentReader& document, int timeout)
       : DocumentAccess(document)
       , m_from_reader(true)
       , m_locked(false)
     {
       if (m_document) {
-        if (!m_document->lockToWrite())
+        if (!m_document->lockToWrite(timeout))
           throw LockedDocumentException();
 
         m_locked = true;
@@ -151,24 +139,6 @@ namespace app {
     ~DocumentWriter()
     {
       unlockWriter();
-    }
-
-    DocumentWriter& operator=(const DocumentReader& copy)
-    {
-      unlockWriter();
-
-      DocumentAccess::operator=(copy);
-
-      if (m_document) {
-        m_from_reader = true;
-
-        if (!m_document->lockToWrite())
-          throw LockedDocumentException();
-
-        m_locked = true;
-      }
-
-      return *this;
     }
 
   protected:
@@ -191,13 +161,14 @@ namespace app {
     // Non-copyable
     DocumentWriter(const DocumentWriter&);
     DocumentWriter& operator=(const DocumentWriter&);
+    DocumentWriter& operator=(const DocumentReader&);
   };
 
   // Used to destroy the active document in the context.
   class DocumentDestroyer : public DocumentWriter {
   public:
-    explicit DocumentDestroyer(Context* context, Document* document)
-      : DocumentWriter(document)
+    explicit DocumentDestroyer(Context* context, Document* document, int timeout)
+      : DocumentWriter(document, timeout)
     {
     }
 

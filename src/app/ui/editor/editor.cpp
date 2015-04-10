@@ -1318,7 +1318,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
   else {
     try {
       // Lock the sprite to read/render it.
-      DocumentReader documentReader(m_document);
+      DocumentReader documentReader(m_document, 250);
 
       // Draw the sprite in the editor
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));

@@ -45,17 +45,17 @@ namespace app {
     }
 
   protected:
-    ContextAccess(const Context* context)
+    ContextAccess(const Context* context, int timeout)
       : m_context(context)
-      , m_document(context->activeDocument())
+      , m_document(context->activeDocument(), timeout)
       , m_location(context->activeLocation())
     {
     }
 
     template<typename DocumentReaderT>
-    ContextAccess(const Context* context, const DocumentReaderT& documentReader)
+    ContextAccess(const Context* context, const DocumentReaderT& documentReader, int timeout)
       : m_context(context)
-      , m_document(documentReader)
+      , m_document(documentReader, timeout)
       , m_location(context->activeLocation())
     {
     }
@@ -70,8 +70,8 @@ namespace app {
   // active document.
   class ContextReader : public ContextAccess<DocumentReader> {
   public:
-    ContextReader(const Context* context)
-      : ContextAccess<DocumentReader>(context) {
+    ContextReader(const Context* context, int timeout = 0)
+      : ContextAccess<DocumentReader>(context, timeout) {
     }
   };
 
@@ -79,12 +79,12 @@ namespace app {
   // active document.
   class ContextWriter : public ContextAccess<DocumentWriter> {
   public:
-    ContextWriter(const Context* context)
-      : ContextAccess<DocumentWriter>(context) {
+    ContextWriter(const Context* context, int timeout = 0)
+      : ContextAccess<DocumentWriter>(context, timeout) {
     }
 
-    ContextWriter(const ContextReader& reader)
-      : ContextAccess<DocumentWriter>(reader.context(), reader.document()) {
+    ContextWriter(const ContextReader& reader, int timeout = 0)
+      : ContextAccess<DocumentWriter>(reader.context(), reader.document(), timeout) {
     }
   };
 

@@ -450,7 +450,7 @@ void StatusBar::updateFromDocument(Editor* editor)
 {
   try {
     if (editor && editor->document()) {
-      const DocumentReader reader(editor->document());
+      const DocumentReader reader(editor->document(), 100);
       m_commandsBox->setVisible(true);
 
       // Cel opacity

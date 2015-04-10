@@ -290,7 +290,7 @@ bool DocumentView::onCloseView(Workspace* workspace)
 
   // Destroy the sprite (locking it as writer)
   DocumentDestroyer destroyer(
-    static_cast<app::Context*>(m_document->context()), m_document);
+    static_cast<app::Context*>(m_document->context()), m_document, 250);
 
   StatusBar::instance()
     ->setStatusText(0, "Sprite '%s' closed.",

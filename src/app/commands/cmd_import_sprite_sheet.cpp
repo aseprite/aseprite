@@ -169,7 +169,7 @@ private:
       releaseEditor();
 
       if (m_fileOpened) {
-        DocumentDestroyer destroyer(m_context, oldDocument);
+        DocumentDestroyer destroyer(m_context, oldDocument, 100);
         destroyer.destroyDocument();
       }
     }

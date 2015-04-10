@@ -191,20 +191,13 @@ public:
     if (!m_canceled) {
       // Paint ink
       if (getInk()->isPaint()) {
-        for (int i=0; ; ++i) {
-          // TODO add a "wait_n_seconds" parameter to ContextReader/Writer
-          try {
-            ContextReader reader(m_context);
-            ContextWriter writer(reader);
-            m_expandCelCanvas.commit();
-            break;
-          }
-          catch (const LockedDocumentException& ex) {
-            if (i == 10)
-              Console::showException(ex);
-            else
-              base::this_thread::sleep_for(0.10);
-          }
+        try {
+          ContextReader reader(m_context, 500);
+          ContextWriter writer(reader, 500);
+          m_expandCelCanvas.commit();
+        }
+        catch (const LockedDocumentException& ex) {
+          Console::showException(ex);
         }
       }
       // Selection ink
@@ -220,19 +213,13 @@ public:
 
     // If the trace was canceled or it is not a 'paint' ink...
     if (m_canceled || !getInk()->isPaint()) {
-      for (int i=0; ; ++i) {
-        try {
-          ContextReader reader(m_context);
-          ContextWriter writer(reader);
-          m_expandCelCanvas.rollback();
-          break;
-        }
-        catch (const LockedDocumentException& ex) {
-          if (i == 10)
-            Console::showException(ex);
-          else
-            base::this_thread::sleep_for(0.10);
-        }
+      try {
+        ContextReader reader(m_context, 500);
+        ContextWriter writer(reader, 500);
+        m_expandCelCanvas.rollback();
+      }
+      catch (const LockedDocumentException& ex) {
+        Console::showException(ex);
       }
     }
 

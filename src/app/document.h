@@ -170,11 +170,11 @@ namespace app {
 
     // Locks the sprite to read or write on it, returning true if the
     // sprite can be accessed in the desired mode.
-    bool lock(LockType lockType);
+    bool lock(LockType lockType, int timeout);
 
     // If you've locked the sprite to read, using this method you can
     // raise your access level to write it.
-    bool lockToWrite();
+    bool lockToWrite(int timeout);
 
     // If you've locked the sprite to write, using this method you can
     // your access level to only read it.
