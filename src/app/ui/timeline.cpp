@@ -181,6 +181,10 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   setFocusStop(true);
   regenerateLayers();
+  setScroll(
+    m_scroll_x,
+    m_scroll_y);
+  showCurrentCel();
 }
 
 void Timeline::detachDocument()
