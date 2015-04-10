@@ -646,8 +646,8 @@ public:
 
   void setupTooltips(TooltipManager* tooltipManager) {
     tooltipManager->addTooltipFor(at(0), "Replace selection", JI_BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Add to selection (Shift key)", JI_BOTTOM);
-    tooltipManager->addTooltipFor(at(2), "Subtract from selection (Alt key)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Add to selection\n(Shift)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", JI_BOTTOM);
   }
 
   void setSelectionMode(SelectionMode mode) {
