@@ -29,6 +29,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
+#include "app/ui/toolbar.h"
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
@@ -321,17 +322,21 @@ void StatusBar::onResize(ResizeEvent& ev)
 
   Border border = getBorder();
   Rect rc = ev.getBounds();
-  int w = rc.w/2 - border.getSize().w;
-  rc.x += w + border.left();
-  rc.w = w;
+  bool frameControls = (rc.w > 300*ui::guiscale());
 
-  bool frameControls = (w > 200*ui::guiscale());
-  m_frameLabel->setVisible(frameControls);
-  m_currentFrame->setVisible(frameControls);
-  m_newFrame->setVisible(frameControls);
-  m_slider->setVisible(w > 250*ui::guiscale());
+  if (frameControls) {
+    m_slider->setVisible(rc.w > 400*ui::guiscale());
+    int prefWidth = m_commandsBox->getPreferredSize().w;
+    int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
 
-  m_commandsBox->setBounds(rc);
+    rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
+    rc.w = prefWidth;
+
+    m_commandsBox->setVisible(true);
+    m_commandsBox->setBounds(rc);
+  }
+  else
+    m_commandsBox->setVisible(false);
 }
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
