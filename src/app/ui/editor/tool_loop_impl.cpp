@@ -184,7 +184,8 @@ public:
     m_offset.y = -y1;
   }
 
-  ~ToolLoopImpl()
+  // IToolLoop interface
+  void dispose() override
   {
     bool redraw = false;
 
@@ -230,7 +231,6 @@ public:
       update_screen_for_document(m_document);
   }
 
-  // IToolLoop interface
   tools::Tool* getTool() override { return m_tool; }
   Brush* getBrush() override { return m_brush; }
   Document* getDocument() override { return m_document; }

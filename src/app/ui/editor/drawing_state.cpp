@@ -201,6 +201,9 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 
 void DrawingState::destroyLoop()
 {
+  if (m_toolLoop)
+    m_toolLoop->dispose();
+
   delete m_toolLoopManager;
   delete m_toolLoop;
   m_toolLoopManager = NULL;
