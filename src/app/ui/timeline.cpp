@@ -1059,11 +1059,11 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 
 void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer)
 {
-  int hpx = (getClientBounds().h - HDRSIZE);
+  int hpx = (getClientBounds().h - HDRSIZE - topHeight());
   LayerIndex i = lastLayer() - LayerIndex((m_scroll_y+hpx) / LAYSIZE);
   i = MID(firstLayer(), i, lastLayer());
 
-  LayerIndex j = i + LayerIndex(hpx / LAYSIZE);
+  LayerIndex j = i + LayerIndex(hpx / LAYSIZE + 1);
   if (!m_layers.empty())
     j = MID(firstLayer(), j, lastLayer());
   else
@@ -2013,38 +2013,30 @@ void Timeline::updateStatusBar(ui::Message* msg)
   sb->clearText();
 }
 
-void Timeline::centerCel(LayerIndex layer, frame_t frame)
-{
-  int target_x = (getBounds().x + m_separator_x + m_separator_w + getBounds().x2())/2 - FRMSIZE/2;
-  int target_y = (getBounds().y + HDRSIZE + getBounds().y2())/2 - LAYSIZE/2;
-  int scroll_x = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - target_x;
-  int scroll_y = getBounds().y + HDRSIZE + LAYSIZE*(lastLayer() - layer) - target_y;
-
-  setScroll(scroll_x, scroll_y);
-}
-
 void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
   int scroll_x, scroll_y;
   int x1, y1, x2, y2;
+  int left = getBounds().x + m_separator_x + m_separator_w;
+  int top = getBounds().y + topHeight() + HDRSIZE;
 
-  x1 = getBounds().x + m_separator_x + m_separator_w + FRMSIZE*frame - m_scroll_x;
-  y1 = getBounds().y + HDRSIZE + LAYSIZE*(lastLayer() - layer) - m_scroll_y;
+  x1 = left + FRMSIZE*frame - m_scroll_x;
+  y1 = top + LAYSIZE*(lastLayer() - layer) - m_scroll_y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
   scroll_x = m_scroll_x;
   scroll_y = m_scroll_y;
 
-  if (x1 < getBounds().x + m_separator_x + m_separator_w) {
-    scroll_x -= (getBounds().x + m_separator_x + m_separator_w) - (x1);
+  if (x1 < left) {
+    scroll_x -= left - (x1);
   }
   else if (x2 > getBounds().x2()-1) {
     scroll_x += (x2) - (getBounds().x2()-1);
   }
 
-  if (y1 < getBounds().y + HDRSIZE) {
-    scroll_y -= (getBounds().y + HDRSIZE) - (y1);
+  if (y1 < top) {
+    scroll_y -= top - (y1);
   }
   else if (y2 > getBounds().y2()-1) {
     scroll_y += (y2) - (getBounds().y2()-1);

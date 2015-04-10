@@ -194,7 +194,6 @@ namespace app {
     void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
     void setHot(const Hit& hit);
-    void centerCel(LayerIndex layer, frame_t frame);
     void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
     void cleanClk();
