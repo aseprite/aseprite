@@ -23,6 +23,9 @@ namespace app {
   public:
     enum Type { CurrentEditorMode, AlwaysSelected };
 
+    enum Method { KeepOrigin, KeepCenter };
+    static void SetScrollUpdateMethod(Method method);
+
     EditorView(Type type);
     ~EditorView();
 
@@ -39,6 +42,7 @@ namespace app {
     void setupScrollbars();
 
     Type m_type;
+    static Method g_scrollUpdateMethod;
   };
 
 } // namespace app

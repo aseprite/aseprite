@@ -1286,18 +1286,29 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
   if (m_sprite) {
     View* view = View::getView(this);
     Rect vp = view->getViewportBounds();
+    int offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
+    int offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
 
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
-
-    sz.w = m_zoom.apply(m_sprite->width()) + m_offset_x*2;
-    sz.h = m_zoom.apply(m_sprite->height()) + m_offset_y*2;
+    sz.w = m_zoom.apply(m_sprite->width()) + offset_x*2;
+    sz.h = m_zoom.apply(m_sprite->height()) + offset_y*2;
   }
   else {
     sz.w = 4;
     sz.h = 4;
   }
   ev.setPreferredSize(sz);
+}
+
+void Editor::onResize(ui::ResizeEvent& ev)
+{
+  Widget::onResize(ev);
+
+  View* view = View::getView(this);
+  if (view) {
+    Rect vp = view->getViewportBounds();
+    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
+    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
+  }
 }
 
 void Editor::onPaint(ui::PaintEvent& ev)

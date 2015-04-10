@@ -26,6 +26,15 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
+// static
+EditorView::Method EditorView::g_scrollUpdateMethod = Method::KeepOrigin;
+
+// static
+void EditorView::SetScrollUpdateMethod(Method method)
+{
+  g_scrollUpdateMethod = method;
+}
+
 EditorView::EditorView(EditorView::Type type)
   : View()
   , m_type(type)
@@ -78,16 +87,32 @@ void EditorView::onResize(ResizeEvent& ev)
 {
   Editor* editor = this->editor();
   gfx::Point oldPos;
-  if (editor)
-    oldPos = editor->editorToScreen(gfx::Point(0, 0));
+  if (editor) {
+    switch (g_scrollUpdateMethod) {
+      case KeepOrigin:
+        oldPos = editor->editorToScreen(gfx::Point(0, 0));
+        break;
+      case KeepCenter:
+        oldPos = editor->screenToEditor(getViewportBounds().getCenter());
+        break;
+    }
+  }
 
   View::onResize(ev);
 
   if (editor) {
-    // This keeps the same scroll position for the editor
-    gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
-    gfx::Point oldScroll = getViewScroll();
-    editor->setEditorScroll(oldScroll + newPos - oldPos, false);
+    switch (g_scrollUpdateMethod) {
+      case KeepOrigin: {
+        // This keeps the same scroll position for the editor
+        gfx::Point newPos = editor->editorToScreen(gfx::Point(0, 0));
+        gfx::Point oldScroll = getViewScroll();
+        editor->setEditorScroll(oldScroll + newPos - oldPos, false);
+        break;
+      }
+      case KeepCenter:
+        editor->centerInSpritePoint(oldPos);
+        break;
+    }
   }
 }
 

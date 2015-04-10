@@ -13,6 +13,7 @@
 
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/ui/editor/editor_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "she/font.h"
@@ -761,6 +762,8 @@ void Tabs::startDrag()
   m_dragTab = m_selected;
   m_dragTabX = m_selected->x;
   m_dragTabIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
+
+  EditorView::SetScrollUpdateMethod(EditorView::KeepCenter);
 }
 
 void Tabs::stopDrag(DropTabResult result)
@@ -798,6 +801,8 @@ void Tabs::stopDrag(DropTabResult result)
   }
 
   m_dragTab.reset();
+
+  EditorView::SetScrollUpdateMethod(EditorView::KeepOrigin);
 }
 
 gfx::Rect Tabs::getTabBounds(Tab* tab)
