@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
+#include "app/console.h"
 #include "app/document_access.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
@@ -36,6 +37,8 @@
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
+
+#include <typeinfo>
 
 namespace app {
 
@@ -132,7 +135,20 @@ protected:
         }
         break;
     }
-    return Editor::onProcessMessage(msg);
+
+    try {
+      return Editor::onProcessMessage(msg);
+    }
+    catch (const LockedDocumentException& ex) {
+      Console console;
+      Console::showException(ex);
+      console.printf("\nInternal details:\n"
+        "- Message type: %d\n"
+        "- Editor state: %s\n",
+        msg->type(),
+        getState() ? typeid(*getState().get()).name(): "None");
+      return false;
+    }
   }
 
 private:

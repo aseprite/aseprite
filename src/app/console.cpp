@@ -155,7 +155,7 @@ void Console::printf(const char* format, ...)
 void Console::showException(const std::exception& e)
 {
   Console console;
-  console.printf("A problem has occurred.\n\nDetails:\n%s", e.what());
+  console.printf("A problem has occurred.\n\nDetails:\n%s\n", e.what());
 }
 
 } // namespace app
