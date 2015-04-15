@@ -22,6 +22,7 @@
 #include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/snap_to_grid.h"
+#include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "base/vector2d.h"
@@ -618,6 +619,9 @@ void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
     rotAlgo = kFastRotationAlgorithm;
   }
 
+retry:;      // In case that we don't have enough memory for RotSprite
+             // we can try with the fast algorithm anyway.
+
   switch (rotAlgo) {
 
     case kFastRotationAlgorithm:
@@ -633,15 +637,24 @@ void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
       break;
 
     case kRotSpriteRotationAlgorithm:
-      doc::algorithm::rotsprite_image(dst, src,
-        int(corners.leftTop().x-leftTop.x),
-        int(corners.leftTop().y-leftTop.y),
-        int(corners.rightTop().x-leftTop.x),
-        int(corners.rightTop().y-leftTop.y),
-        int(corners.rightBottom().x-leftTop.x),
-        int(corners.rightBottom().y-leftTop.y),
-        int(corners.leftBottom().x-leftTop.x),
-        int(corners.leftBottom().y-leftTop.y));
+      try {
+        doc::algorithm::rotsprite_image(dst, src,
+          int(corners.leftTop().x-leftTop.x),
+          int(corners.leftTop().y-leftTop.y),
+          int(corners.rightTop().x-leftTop.x),
+          int(corners.rightTop().y-leftTop.y),
+          int(corners.rightBottom().x-leftTop.x),
+          int(corners.rightBottom().y-leftTop.y),
+          int(corners.leftBottom().x-leftTop.x),
+          int(corners.leftBottom().y-leftTop.y));
+      }
+      catch (const std::bad_alloc&) {
+        StatusBar::instance()->showTip(1000,
+          "Not enough memory for RotSprite");
+
+        rotAlgo = kFastRotationAlgorithm;
+        goto retry;
+      }
       break;
 
   }
