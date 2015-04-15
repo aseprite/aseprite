@@ -22,7 +22,6 @@ namespace cmd {
   protected:
     void onExecute() override;
     void onUndo() override;
-    void onRedo() override;
   };
 
 } // namespace cmd

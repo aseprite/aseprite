@@ -31,10 +31,5 @@ void RemovePalette::onUndo()
   AddPalette::onRedo();
 }
 
-void RemovePalette::onRedo()
-{
-  AddPalette::onUndo();
-}
-
 } // namespace cmd
 } // namespace app

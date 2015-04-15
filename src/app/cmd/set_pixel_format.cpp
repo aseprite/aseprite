@@ -11,10 +11,10 @@
 
 #include "app/cmd/set_pixel_format.h"
 
-#include "app/cmd/add_palette.h"
 #include "app/cmd/remove_palette.h"
 #include "app/cmd/replace_image.h"
 #include "app/cmd/set_cel_opacity.h"
+#include "app/cmd/set_palette.h"
 #include "app/document.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
@@ -85,14 +85,14 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   // all palettes and put only one grayscaled-palette at the first
   // frame.
   if (newFormat == IMAGE_GRAYSCALE) {
-    // Add undoers to revert all palette changes.
+    // Add cmds to revert all palette changes.
     PalettesList palettes = sprite->getPalettes();
     for (Palette* pal : palettes)
-      m_seq.add(new cmd::RemovePalette(sprite, pal));
+      if (pal->frame() != 0)
+        m_seq.add(new cmd::RemovePalette(sprite, pal));
 
     base::UniquePtr<Palette> graypal(Palette::createGrayscale());
-    graypal->setFrame(0);
-    m_seq.add(new cmd::AddPalette(sprite, graypal));
+    m_seq.add(new cmd::SetPalette(sprite, 0, graypal));
   }
 }
 

@@ -329,12 +329,18 @@ void Sprite::resetPalettes()
   }
 }
 
-void Sprite::deletePalette(Palette* pal)
+void Sprite::deletePalette(frame_t frame)
 {
-  ASSERT(pal != NULL);
+  auto it = m_palettes.begin(), end = m_palettes.end();
+  for (; it != end; ++it) {
+    Palette* pal = *it;
 
-  base::remove_from_container(m_palettes, pal);
-  delete pal;                   // palette
+    if (pal->frame() == frame) {
+      delete pal;                   // delete palette
+      m_palettes.erase(it);
+      break;
+    }
+  }
 }
 
 RgbMap* Sprite::rgbMap(frame_t frame) const

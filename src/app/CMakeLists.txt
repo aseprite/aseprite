@@ -116,7 +116,6 @@ add_library(app-lib
   cmd/with_frame_tag.cpp
   cmd/with_image.cpp
   cmd/with_layer.cpp
-  cmd/with_palette.cpp
   cmd/with_sprite.cpp
   cmd_sequence.cpp
   cmd_transaction.cpp

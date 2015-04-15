@@ -22,41 +22,28 @@ using namespace doc;
 
 AddPalette::AddPalette(Sprite* sprite, Palette* pal)
   : WithSprite(sprite)
-  , WithPalette(pal)
+  , m_frame(pal->frame())
 {
+  write_palette(m_stream, pal);
 }
 
 void AddPalette::onExecute()
 {
-  Sprite* sprite = this->sprite();
-  Palette* palette = this->palette();
+  m_stream.seekp(0);
 
-  sprite->setPalette(palette, true);
+  Sprite* sprite = this->sprite();
+  Palette* pal = read_palette(m_stream);
+
+  sprite->setPalette(pal, true);
   sprite->incrementVersion();
 }
 
 void AddPalette::onUndo()
 {
   Sprite* sprite = this->sprite();
-  Palette* pal = this->palette();
 
-  write_palette(m_stream, pal);
-
-  sprite->deletePalette(pal);
+  sprite->deletePalette(m_frame);
   sprite->incrementVersion();
-  delete pal;
-}
-
-void AddPalette::onRedo()
-{
-  Sprite* sprite = this->sprite();
-  Palette* pal = read_palette(m_stream);
-
-  sprite->setPalette(pal, true);
-  sprite->incrementVersion();
-
-  m_stream.str(std::string());
-  m_stream.clear();
 }
 
 } // namespace cmd

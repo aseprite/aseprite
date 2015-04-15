@@ -102,7 +102,7 @@ namespace doc {
     // Removes all palettes from the sprites except the first one.
     void resetPalettes();
 
-    void deletePalette(Palette* pal);
+    void deletePalette(frame_t frame);
 
     RgbMap* rgbMap(frame_t frame) const;
 
