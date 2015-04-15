@@ -15,6 +15,7 @@
 #include "app/cmd/clear_mask.h"
 #include "app/cmd/deselect_mask.h"
 #include "app/cmd/set_mask.h"
+#include "app/console.h"
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
@@ -648,11 +649,16 @@ void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
 
 void PixelsMovement::onSetRotationAlgorithm(RotationAlgorithm algorithm)
 {
-  redrawExtraImage();
-  redrawCurrentMask();
-  updateDocumentMask();
+  try {
+    redrawExtraImage();
+    redrawCurrentMask();
+    updateDocumentMask();
 
-  update_screen_for_document(m_document);
+    update_screen_for_document(m_document);
+  }
+  catch (const std::exception& ex) {
+    Console::showException(ex);
+  }
 }
 
 void PixelsMovement::updateDocumentMask()
