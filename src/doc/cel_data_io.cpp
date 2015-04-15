@@ -39,6 +39,8 @@ CelData* read_celdata(std::istream& is, SubObjectsIO* subObjects, bool setId)
   int opacity = read8(is);
   ObjectId imageId = read32(is);
   ImageRef image(subObjects->getImageRef(imageId));
+  if (!image)
+    return nullptr;
 
   base::UniquePtr<CelData> celdata(new CelData(image));
   celdata->setPosition(x, y);

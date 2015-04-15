@@ -99,8 +99,8 @@ private:
     }
     else {
       TRACE(" - %s%d was not restored\n", prefix, id);
-      throw base::Exception(std::string("Error loading object ")
-        + prefix + base::convert_to<std::string>(id));
+      Console().printf("Error loading object %s%d\n", prefix, id);
+      return nullptr;
     }
   }
 

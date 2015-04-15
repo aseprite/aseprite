@@ -35,7 +35,8 @@ Cel* read_cel(std::istream& is, SubObjectsIO* subObjects, bool setId)
   frame_t frame(read16(is));
   ObjectId celDataId = read32(is);
   CelDataRef celData(subObjects->getCelDataRef(celDataId));
-  ASSERT(celData);
+  if (!celData)
+    return nullptr;
 
   base::UniquePtr<Cel> cel(new Cel(frame, celData));
   if (setId)
