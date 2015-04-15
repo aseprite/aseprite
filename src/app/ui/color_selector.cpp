@@ -218,7 +218,7 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
 
     int lastUsed = -1;
 
-    ContextWriter writer(UIContext::instance());
+    ContextWriter writer(UIContext::instance(), 500);
     Document* document(writer.document());
     Sprite* sprite = NULL;
     if (document) {

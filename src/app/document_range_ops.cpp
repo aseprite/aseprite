@@ -87,7 +87,7 @@ static DocumentRange drop_range_op(
   {
     const app::Context* context = static_cast<app::Context*>(doc->context());
     const ContextReader reader(context);
-    ContextWriter writer(reader);
+    ContextWriter writer(reader, 500);
     Transaction transaction(writer.context(), undoLabel, ModifyDocument);
     DocumentApi api = doc->getApi(transaction);
 
@@ -342,7 +342,7 @@ void reverse_frames(Document* doc, const DocumentRange& range)
 {
   const app::Context* context = static_cast<app::Context*>(doc->context());
   const ContextReader reader(context);
-  ContextWriter writer(reader);
+  ContextWriter writer(reader, 500);
   Transaction transaction(writer.context(), "Reverse Frames");
   DocumentApi api = doc->getApi(transaction);
   Sprite* sprite = doc->sprite();

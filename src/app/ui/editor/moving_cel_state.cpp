@@ -76,7 +76,7 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
     // If the user didn't cancel the operation...
     if (!m_canceled) {
-      ContextWriter writer(UIContext::instance());
+      ContextWriter writer(UIContext::instance(), 500);
       Transaction transaction(writer.context(), "Cel Movement", ModifyDocument);
       DocumentApi api = document->getApi(transaction);
 

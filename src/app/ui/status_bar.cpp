@@ -429,7 +429,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 static void slider_change_hook(Slider* slider)
 {
   try {
-    ContextWriter writer(UIContext::instance());
+    ContextWriter writer(UIContext::instance(), 500);
 
     DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {

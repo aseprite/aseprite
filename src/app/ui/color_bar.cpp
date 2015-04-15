@@ -229,7 +229,7 @@ void ColorBar::onRemapButtonClick()
   ASSERT(m_remap);
 
   try {
-    ContextWriter writer(UIContext::instance());
+    ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     if (sprite) {
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
@@ -270,7 +270,7 @@ void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPa
   }
 
   try {
-    ContextWriter writer(UIContext::instance());
+    ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
     if (sprite) {
