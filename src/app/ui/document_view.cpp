@@ -139,7 +139,7 @@ protected:
     try {
       return Editor::onProcessMessage(msg);
     }
-    catch (const LockedDocumentException& ex) {
+    catch (const std::exception& ex) {
       Console console;
       Console::showException(ex);
       console.printf("\nInternal details:\n"
