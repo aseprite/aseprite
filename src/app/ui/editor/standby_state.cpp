@@ -440,6 +440,10 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
     ui::set_mouse_cursor(kForbiddenCursor);
   }
+  catch (const std::bad_alloc&) {
+    StatusBar::instance()->showTip(1000, "Not enough memory to transform the selection");
+    ui::set_mouse_cursor(kForbiddenCursor);
+  }
 }
 
 void StandbyState::callEyedropper(Editor* editor)

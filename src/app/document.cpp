@@ -278,19 +278,19 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
 {
   ASSERT(sprite() != NULL);
 
+  if (!m_extraImage ||
+      m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
+      m_extraImage->width() != bounds.w ||
+      m_extraImage->height() != bounds.h) {
+    Image* newImage = Image::create(sprite()->pixelFormat(), bounds.w, bounds.h);
+    m_extraImage.reset(newImage);
+  }
+
   if (!m_extraCel)
     m_extraCel = new Cel(frame_t(0), ImageRef(NULL)); // Ignored fields for this cel (frame, and image index)
 
   m_extraCel->setPosition(bounds.getOrigin());
   m_extraCel->setOpacity(opacity);
-
-  if (!m_extraImage ||
-      m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
-      m_extraImage->width() != bounds.w ||
-      m_extraImage->height() != bounds.h) {
-    m_extraImage.reset(Image::create(sprite()->pixelFormat(),
-        bounds.w, bounds.h));
-  }
 }
 
 Cel* Document::getExtraCel() const
