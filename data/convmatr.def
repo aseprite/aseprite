@@ -1,5 +1,5 @@
-# Allegro Sprite Editor convolution matrices            -*- Shell-script -*-
-# Copyright (C) 2001-2011 by David Capello
+# Aseprite convolution matrices            -*- Shell-script -*-
+# Copyright (C) 2001-2011, 2015 by David Capello
 #
 # Parser in "src/effect/convmatr.c"
 #
@@ -320,3 +320,13 @@ drunk-17x17_o 17 17 8 8
      0  0  0  0  1  0  0  0  0  0  0  0  1  0  0  0  0
      0  0  0  0  0  1  1  0  0  0  1  1  0  0  0  0  0
      0  0  0  0  0  0  0  1  1  1  0  0  0  0  0  0  0 } auto auto rgba
+
+outline-transparent-layer-(cross) 3 3 1 1
+  { 0 255 0
+    255 255 255
+    0 255 0 } 1 0 a
+
+outline-transparent-layer-(square) 3 3 1 1
+  { 255 255 255
+    255 255 255
+    255 255 255 } 1 0 a
