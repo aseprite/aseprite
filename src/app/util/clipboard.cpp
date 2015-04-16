@@ -37,6 +37,10 @@
 #include "render/quantization.h"
 
 #ifdef _WIN32
+  #define USE_NATIVE_WIN32_CLIPBOARD
+#endif
+
+#ifdef USE_NATIVE_WIN32_CLIPBOARD
   #include <windows.h>
 
   #include "app/util/clipboard_win32.h"
@@ -108,7 +112,7 @@ static void set_clipboard_image(Image* image, Palette* palette, bool set_system_
   clipboard_image = image;
 
   // copy to the Windows clipboard
-#ifdef _WIN32
+#ifdef USE_NATIVE_WIN32_CLIPBOARD
   if (set_system_clipboard)
     set_win32_clipboard_bitmap(image, palette);
 #endif
@@ -136,7 +140,7 @@ static bool copy_from_document(const DocumentLocation& location)
 
 clipboard::ClipboardFormat clipboard::get_current_format()
 {
-#ifdef _WIN32
+#ifdef USE_NATIVE_WIN32_CLIPBOARD
   if (win32_clipboard_contains_bitmap())
     return ClipboardImage;
 #endif
@@ -233,7 +237,7 @@ void clipboard::paste()
   switch (get_current_format()) {
 
     case clipboard::ClipboardImage: {
-#ifdef _WIN32
+#ifdef USE_NATIVE_WIN32_CLIPBOARD
       // Get the image from the clipboard.
       {
         Image* win32_image = NULL;
@@ -405,7 +409,7 @@ void clipboard::paste()
 
 bool clipboard::get_image_size(gfx::Size& size)
 {
-#ifdef _WIN32
+#ifdef USE_NATIVE_WIN32_CLIPBOARD
   // Get the image from the clipboard.
   return get_win32_clipboard_bitmap_size(size);
 #else
