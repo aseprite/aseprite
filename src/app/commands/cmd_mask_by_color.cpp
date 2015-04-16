@@ -67,7 +67,8 @@ MaskByColorCommand::MaskByColorCommand()
 bool MaskByColorCommand::onEnabled(Context* context)
 {
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+                             ContextFlags::HasActiveSprite |
+                             ContextFlags::HasActiveImage);
 }
 
 void MaskByColorCommand::onExecute(Context* context)
