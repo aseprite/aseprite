@@ -60,6 +60,7 @@ namespace app {
 
   private:
     void onCurrentToolChange();
+    void onCelOpacityChange();
     void updateFromDocument(Editor* editor);
     void updateCurrentFrame(Editor* editor);
     void newFrame();

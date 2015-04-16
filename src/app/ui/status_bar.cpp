@@ -84,8 +84,6 @@ private:
   base::UniquePtr<ui::Timer> m_timer;
 };
 
-static void slider_change_hook(Slider* slider);
-
 static WidgetType statusbar_type()
 {
   static WidgetType type = kGenericWidget;
@@ -173,7 +171,7 @@ StatusBar::StatusBar()
     setup_mini_look(m_newFrame);
     setup_mini_look(m_slider);
 
-    m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
+    m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacityChange, this));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
@@ -426,7 +424,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
   return ui::TipWindow::onProcessMessage(msg);
 }
 
-static void slider_change_hook(Slider* slider)
+void StatusBar::onCelOpacityChange()
 {
   try {
     ContextWriter writer(UIContext::instance(), 500);
@@ -434,13 +432,13 @@ static void slider_change_hook(Slider* slider)
     DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       for (Cel* cel : get_unique_cels(writer.sprite(), range))
-        cel->setOpacity(slider->getValue());
+        cel->setOpacity(m_slider->getValue());
     }
     else {
       Cel* cel = writer.cel();
       if (cel) {
         // Update the opacity
-        cel->setOpacity(slider->getValue());
+        cel->setOpacity(m_slider->getValue());
       }
     }
 
