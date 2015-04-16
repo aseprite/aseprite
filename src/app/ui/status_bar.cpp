@@ -137,6 +137,7 @@ StatusBar* StatusBar::m_instance = NULL;
 StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(app::Color::fromMask())
+  , m_hasDoc(false)
 {
   m_instance = this;
 
@@ -331,7 +332,7 @@ void StatusBar::onResize(ResizeEvent& ev)
     rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
     rc.w = prefWidth;
 
-    m_commandsBox->setVisible(true);
+    m_commandsBox->setVisible(true && m_hasDoc);
     m_commandsBox->setBounds(rc);
   }
   else
@@ -455,6 +456,7 @@ void StatusBar::updateFromDocument(Editor* editor)
   try {
     if (editor && editor->document()) {
       const DocumentReader reader(editor->document(), 100);
+      m_hasDoc = true;
       m_commandsBox->setVisible(true);
 
       // Cel opacity
@@ -473,11 +475,11 @@ void StatusBar::updateFromDocument(Editor* editor)
       }
     }
     else {
+      m_hasDoc = false;
       m_commandsBox->setVisible(false);
     }
   }
-  catch (LockedDocumentException&) {
-    // Disable all
+  catch (const LockedDocumentException&) {
     m_slider->setEnabled(false);
   }
 }
