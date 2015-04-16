@@ -60,7 +60,7 @@ public:
     SkAutoTDelete<SkStreamAsset> stream(SkNEW_ARGS(SkFILEStream, (fp.get(), SkFILEStream::kCallerRetains_Ownership)));
 
     SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(stream));
-    decoder->setRequireUnpremultipliedColors(true);
+    // decoder->setRequireUnpremultipliedColors(true);
 
     if (decoder) {
       stream->rewind();
