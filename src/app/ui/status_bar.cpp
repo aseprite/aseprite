@@ -84,8 +84,6 @@ private:
   base::UniquePtr<ui::Timer> m_timer;
 };
 
-static void slider_change_hook(Slider* slider);
-
 static WidgetType statusbar_type()
 {
   static WidgetType type = kGenericWidget;
@@ -139,6 +137,7 @@ StatusBar* StatusBar::m_instance = NULL;
 StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(app::Color::fromMask())
+  , m_hasDoc(false)
 {
   m_instance = this;
 
@@ -173,7 +172,7 @@ StatusBar::StatusBar()
     setup_mini_look(m_newFrame);
     setup_mini_look(m_slider);
 
-    m_slider->Change.connect(Bind<void>(&slider_change_hook, m_slider));
+    m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacityChange, this));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
@@ -333,7 +332,7 @@ void StatusBar::onResize(ResizeEvent& ev)
     rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
     rc.w = prefWidth;
 
-    m_commandsBox->setVisible(true);
+    m_commandsBox->setVisible(true && m_hasDoc);
     m_commandsBox->setBounds(rc);
   }
   else
@@ -426,7 +425,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
   return ui::TipWindow::onProcessMessage(msg);
 }
 
-static void slider_change_hook(Slider* slider)
+void StatusBar::onCelOpacityChange()
 {
   try {
     ContextWriter writer(UIContext::instance(), 500);
@@ -434,13 +433,13 @@ static void slider_change_hook(Slider* slider)
     DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       for (Cel* cel : get_unique_cels(writer.sprite(), range))
-        cel->setOpacity(slider->getValue());
+        cel->setOpacity(m_slider->getValue());
     }
     else {
       Cel* cel = writer.cel();
       if (cel) {
         // Update the opacity
-        cel->setOpacity(slider->getValue());
+        cel->setOpacity(m_slider->getValue());
       }
     }
 
@@ -457,6 +456,7 @@ void StatusBar::updateFromDocument(Editor* editor)
   try {
     if (editor && editor->document()) {
       const DocumentReader reader(editor->document(), 100);
+      m_hasDoc = true;
       m_commandsBox->setVisible(true);
 
       // Cel opacity
@@ -475,11 +475,11 @@ void StatusBar::updateFromDocument(Editor* editor)
       }
     }
     else {
+      m_hasDoc = false;
       m_commandsBox->setVisible(false);
     }
   }
-  catch (LockedDocumentException&) {
-    // Disable all
+  catch (const LockedDocumentException&) {
     m_slider->setEnabled(false);
   }
 }

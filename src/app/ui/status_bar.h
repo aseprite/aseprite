@@ -60,6 +60,7 @@ namespace app {
 
   private:
     void onCurrentToolChange();
+    void onCelOpacityChange();
     void updateFromDocument(Editor* editor);
     void updateCurrentFrame(Editor* editor);
     void newFrame();
@@ -82,6 +83,7 @@ namespace app {
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
+    bool m_hasDoc;
 
     // Tip window
     class CustomizedTipWindow;
