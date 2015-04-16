@@ -127,6 +127,7 @@ void Session::removeFromDisk()
     base::remove_directory(m_path);
   }
   catch (const std::exception& ex) {
+    (void)ex;
     TRACE("Session directory cannot be removed, it's not empty\nError: '%s'\n",
       ex.what());
   }
