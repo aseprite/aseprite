@@ -76,7 +76,7 @@ public:
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, result.width(), result.height()));
     canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect);
 
-    m_bitmap.swap(result);
+    swapBitmap(result);
   }
 
   void* nativeHandle() override {
@@ -202,6 +202,10 @@ public:
 
   SkBitmap& bitmap() {
     return m_bitmap;
+  }
+
+  void swapBitmap(SkBitmap& other) {
+    m_bitmap.swap(other);
   }
 
 private:

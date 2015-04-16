@@ -72,7 +72,7 @@ public:
         bm.pixelRef()->setURI(filename);
 
         SkiaSurface* sur = new SkiaSurface();
-        sur->bitmap().swap(bm);
+        sur->swapBitmap(bm);
         return sur;
       }
     }
