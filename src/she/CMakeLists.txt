@@ -87,6 +87,11 @@ if(USE_SKIA_BACKEND)
 
   list(APPEND SHE_SOURCES
     skia/she.cpp)
+
+  if(WIN32)
+    list(APPEND SHE_SOURCES
+      win/vk.cpp)
+  endif()
 endif()
 
 if(WIN32)
