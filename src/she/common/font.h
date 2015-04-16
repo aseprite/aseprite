@@ -10,6 +10,9 @@
 
 #include "base/string.h"
 #include "she/font.h"
+#include "she/locked_surface.h"
+#include "she/scoped_surface_lock.h"
+#include "she/surface.h"
 
 namespace she {
 

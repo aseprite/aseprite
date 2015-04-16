@@ -4,7 +4,16 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#ifndef SHE_SKIA_SKIA_EVENT_QUEUE_INCLUDED
+#define SHE_SKIA_SKIA_EVENT_QUEUE_INCLUDED
+#pragma once
+
 #include <queue>
+
+#include <windows.h>
+
+#include "she/event.h"
+#include "she/event_queue.h"
 
 namespace she {
 
@@ -56,3 +65,5 @@ private:
 };
 
 } // namespace she
+
+#endif

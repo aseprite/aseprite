@@ -4,11 +4,18 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
+#ifndef SHE_SKIA_SKIA_SYSTEM_INCLUDED
+#define SHE_SKIA_SKIA_SYSTEM_INCLUDED
+#pragma once
+
 #include "base/file_handle.h"
 
 #include "SkImageDecoder.h"
 #include "SkPixelRef.h"
 #include "SkStream.h"
+
+#include "she/skia/skia_display.h"
+#include "she/skia/skia_surface.h"
 
 namespace she {
 
@@ -88,3 +95,5 @@ private:
 };
 
 } // namespace she
+
+#endif

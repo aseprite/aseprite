@@ -86,6 +86,8 @@ if(USE_SKIA_BACKEND)
     CACHE INTERNAL "Skia libraries")
 
   list(APPEND SHE_SOURCES
+    skia/skia_display.cpp
+    skia/skia_window.cpp
     skia/she.cpp)
 
   if(WIN32)

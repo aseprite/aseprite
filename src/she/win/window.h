@@ -12,6 +12,8 @@
 #include <windowsx.h>
 #include <commctrl.h>
 
+#include "gfx/size.h"
+#include "she/event.h"
 #include "she/keys.h"
 
 #ifndef WM_MOUSEHWHEEL
@@ -118,6 +120,8 @@ namespace she {
             case SIZE_RESTORED:
               m_clientSize.w = GET_X_LPARAM(lparam);
               m_clientSize.h = GET_Y_LPARAM(lparam);
+
+              static_cast<T*>(this)->resizeImpl(m_clientSize);
               break;
           }
 

@@ -14,18 +14,6 @@
 
 #include "she/common/system.h"
 
-#ifdef _WIN32
-  #include <windows.h>
-
-  #include "she/win/window.h"
-#else
-  #error There is no Window implementation
-#endif
-
-#include "she/skia/skia_surface.h"
-#include "she/skia/skia_event_queue.h"
-#include "she/skia/skia_window.h"
-#include "she/skia/skia_display.h"
 #include "she/skia/skia_system.h"
 
 namespace she {
