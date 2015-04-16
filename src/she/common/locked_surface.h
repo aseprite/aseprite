@@ -59,7 +59,11 @@ gfx::Color blend(const gfx::Color back, gfx::Color front)
 class CommonLockedSurface : public LockedSurface {
 public:
 
-  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clip) override {
+  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
+    gfx::Clip clip(clipbase);
+    if (!clip.clip(lockedWidth(), lockedHeight(), src->lockedWidth(), src->lockedHeight()))
+      return;
+
     SurfaceFormatData format;
     src->getFormat(&format);
 
