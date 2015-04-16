@@ -85,6 +85,14 @@ public:
 
   // LockedSurface impl
 
+  int lockedWidth() const override {
+    return m_bitmap.width();
+  }
+
+  int lockedHeight() const override {
+    return m_bitmap.height();
+  }
+
   void unlock() override {
     m_bitmap.unlockPixels();
   }

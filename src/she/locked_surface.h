@@ -25,6 +25,8 @@ namespace she {
   class LockedSurface {
   public:
     virtual ~LockedSurface() { }
+    virtual int lockedWidth() const = 0;
+    virtual int lockedHeight() const = 0;
     virtual void unlock() = 0;
     virtual void clear() = 0;
 

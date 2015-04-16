@@ -191,6 +191,14 @@ namespace she {
 
     // LockedSurface implementation
 
+    int lockedWidth() const override {
+      return m_bmp->w;
+    }
+
+    int lockedHeight() const override {
+      return m_bmp->h;
+    }
+
     void unlock() override {
       release_bitmap(m_bmp);
     }
