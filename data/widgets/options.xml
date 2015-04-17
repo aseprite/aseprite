@@ -19,7 +19,19 @@
           <separator text="General" horizontal="true" />
           <hbox>
             <label text="Screen Scale:" />
-            <combobox id="screen_scale" />
+            <combobox id="screen_scale">
+              <listitem text="1:1" value="1" />
+              <listitem text="2:1" value="2" />
+              <listitem text="3:1" value="3" />
+              <listitem text="4:1" value="4" />
+            </combobox>
+            <label text="UI Elements Scale:" />
+            <combobox id="ui_scale">
+              <listitem text="1:1" value="1" />
+              <listitem text="2:1" value="2" />
+              <listitem text="3:1" value="3" />
+              <listitem text="4:1" value="4" />
+            </combobox>
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />

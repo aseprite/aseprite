@@ -101,12 +101,14 @@ public:
       gridScope()->Change.connect(Bind<void>(&OptionsWindow::onChangeGridScope, this));
     }
 
-    // Checked background size
-    screenScale()->addItem("1:1");
-    screenScale()->addItem("2:1");
-    screenScale()->addItem("3:1");
-    screenScale()->addItem("4:1");
-    screenScale()->setSelectedItemIndex(get_screen_scaling()-1);
+    // Screen/UI Scale
+    screenScale()->setSelectedItemIndex(
+      screenScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_preferences.general.screenScale())));
+
+    uiScale()->setSelectedItemIndex(
+      uiScale()->findItemIndexByValue(
+        base::convert_to<std::string>(m_preferences.general.uiScale())));
 
     // Right-click
     rightClickBehavior()->addItem("Paint with background color");
@@ -202,10 +204,19 @@ public:
     ui::set_use_native_cursors(
       m_preferences.experimental.useNativeCursor());
 
-    int new_screen_scaling = screenScale()->getSelectedItemIndex()+1;
-    if (new_screen_scaling != get_screen_scaling()) {
-      set_screen_scaling(new_screen_scaling);
+    bool reset_screen = false;
+    int newScreenScale = base::convert_to<int>(screenScale()->getValue());
+    if (newScreenScale != m_preferences.general.screenScale()) {
+      m_preferences.general.screenScale(newScreenScale);
       warnings += "<<- Screen Scale";
+      reset_screen = true;
+    }
+
+    int newUIScale = base::convert_to<int>(uiScale()->getValue());
+    if (newUIScale != m_preferences.general.uiScale()) {
+      m_preferences.general.uiScale(newUIScale);
+      warnings += "<<- UI Elements Scale";
+      reset_screen = true;
     }
 
     // Save configuration
@@ -216,6 +227,9 @@ public:
         "<<You must restart the program to see your changes to:%s"
         "||&OK", warnings.c_str());
     }
+
+    if (reset_screen)
+      gui_setup_screen(false);
   }
 
 private:

@@ -21,6 +21,7 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
@@ -86,9 +87,7 @@ static she::Display* main_display = NULL;
 static she::Clipboard* main_clipboard = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* ase_theme = NULL;
-
-// Default GUI screen configuration
-static int screen_scaling;
+static int screen_scale;
 
 static void reload_default_font();
 
@@ -105,7 +104,7 @@ int init_module_gui()
 
   try {
     if (w > 0 && h > 0)
-      main_display = she::instance()->createDisplay(w, h, screen_scaling);
+      main_display = she::instance()->createDisplay(w, h, screen_scale);
   }
   catch (const she::DisplayCreationException&) {
     // Do nothing, the display wasn't created.
@@ -119,7 +118,7 @@ int init_module_gui()
                                          try_resolutions[c].height,
                                          try_resolutions[c].scale);
 
-        screen_scaling = try_resolutions[c].scale;
+        screen_scale = try_resolutions[c].scale;
         break;
       }
       catch (const she::DisplayCreationException&) {
@@ -172,8 +171,8 @@ static void load_gui_config(int& w, int& h, bool& maximized)
 {
   w = get_config_int("GfxMode", "Width", 0);
   h = get_config_int("GfxMode", "Height", 0);
-  screen_scaling = get_config_int("GfxMode", "ScreenScale", 2);
-  screen_scaling = MID(1, screen_scaling, 4);
+  screen_scale = App::instance()->preferences().general.screenScale();
+  screen_scale = MID(1, screen_scale, 4);
   maximized = get_config_bool("GfxMode", "Maximized", false);
 }
 
@@ -185,17 +184,6 @@ static void save_gui_config()
     set_config_int("GfxMode", "Width", display->originalWidth());
     set_config_int("GfxMode", "Height", display->originalHeight());
   }
-  set_config_int("GfxMode", "ScreenScale", screen_scaling);
-}
-
-int get_screen_scaling()
-{
-  return screen_scaling;
-}
-
-void set_screen_scaling(int scaling)
-{
-  screen_scaling = scaling;
 }
 
 void update_screen_for_document(Document* document)
@@ -258,15 +246,13 @@ void gui_setup_screen(bool reload_font)
   bool regen = false;
   bool reinit = false;
 
-  main_display->setScale(screen_scaling);
+  main_display->setScale(screen_scale);
   ui::set_display(main_display);
 
   // Update guiscale factor
   int old_guiscale = guiscale();
   CurrentTheme::get()->setScale(
-    (screen_scaling == 1 &&
-      ui::display_w() > 512 &&
-      ui::display_h() > 256) ? 2: 1);
+    App::instance()->preferences().general.uiScale());
 
   // If the guiscale have changed
   if (old_guiscale != guiscale()) {

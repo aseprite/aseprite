@@ -34,9 +34,6 @@ namespace app {
   int init_module_gui();
   void exit_module_gui();
 
-  int get_screen_scaling();
-  void set_screen_scaling(int scaling);
-
   void update_screen_for_document(Document* document);
 
   void gui_run();
