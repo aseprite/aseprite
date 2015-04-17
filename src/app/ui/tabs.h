@@ -126,6 +126,9 @@ namespace app {
     void removeTab(TabView* tabView, bool with_animation);
     void updateTabs();
 
+    // Returns true if the user can select other tab.
+    bool canSelectOtherTab() const;
+
     void selectTab(TabView* tabView);
     void selectNextTab();
     void selectPreviousTab();

@@ -172,6 +172,12 @@ void Tabs::updateTabs()
   invalidate();
 }
 
+// Returns true if the user can select other tab.
+bool Tabs::canSelectOtherTab() const
+{
+  return (m_selected && !m_isDragging);
+}
+
 void Tabs::selectTab(TabView* tabView)
 {
   ASSERT(tabView != NULL);

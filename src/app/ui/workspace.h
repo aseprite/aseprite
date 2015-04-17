@@ -41,6 +41,7 @@ namespace app {
     WorkspaceView* activeView();
     void setActiveView(WorkspaceView* view);
     void setMainPanelAsActive();
+    bool canSelectOtherTab() const;
     void selectNextTab();
     void selectPreviousTab();
     void duplicateActiveView();

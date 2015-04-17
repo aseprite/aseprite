@@ -23,7 +23,8 @@ public:
   Command* clone() const override { return new GotoNextTabCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 GotoNextTabCommand::GotoNextTabCommand()
@@ -31,6 +32,11 @@ GotoNextTabCommand::GotoNextTabCommand()
             "Go to Next Tab",
             CmdUIOnlyFlag)
 {
+}
+
+bool GotoNextTabCommand::onEnabled(Context* context)
+{
+  return App::instance()->getMainWindow()->getWorkspace()->canSelectOtherTab();
 }
 
 void GotoNextTabCommand::onExecute(Context* context)
@@ -44,7 +50,8 @@ public:
   Command* clone() const override { return new GotoPreviousTabCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 GotoPreviousTabCommand::GotoPreviousTabCommand()
@@ -52,6 +59,11 @@ GotoPreviousTabCommand::GotoPreviousTabCommand()
             "Go to Previous tab",
             CmdRecordableFlag)
 {
+}
+
+bool GotoPreviousTabCommand::onEnabled(Context* context)
+{
+  return App::instance()->getMainWindow()->getWorkspace()->canSelectOtherTab();
 }
 
 void GotoPreviousTabCommand::onExecute(Context* context)

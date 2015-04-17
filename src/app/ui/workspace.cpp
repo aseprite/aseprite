@@ -106,6 +106,11 @@ void Workspace::setMainPanelAsActive()
   ActiveViewChanged();          // Fire ActiveViewChanged event
 }
 
+bool Workspace::canSelectOtherTab() const
+{
+  return m_activePanel->tabs()->canSelectOtherTab();
+}
+
 void Workspace::selectNextTab()
 {
   m_activePanel->tabs()->selectNextTab();
