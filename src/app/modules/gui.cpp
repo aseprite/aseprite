@@ -86,25 +86,30 @@ protected:
 static she::Display* main_display = NULL;
 static she::Clipboard* main_clipboard = NULL;
 static CustomizedGuiManager* manager = NULL;
-static Theme* ase_theme = NULL;
-static int screen_scale;
-
-static void reload_default_font();
+static Theme* gui_theme = NULL;
 
 // Load & save graphics configuration
 static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
+
+static int get_screen_scale()
+{
+  int scale = App::instance()->preferences().general.screenScale();
+  scale = MID(1, scale, 4);
+  return scale;
+}
 
 // Initializes GUI.
 int init_module_gui()
 {
   int w, h;
   bool maximized;
+  int scale = get_screen_scale();
   load_gui_config(w, h, maximized);
 
   try {
     if (w > 0 && h > 0)
-      main_display = she::instance()->createDisplay(w, h, screen_scale);
+      main_display = she::instance()->createDisplay(w, h, scale);
   }
   catch (const she::DisplayCreationException&) {
     // Do nothing, the display wasn't created.
@@ -118,7 +123,8 @@ int init_module_gui()
                                          try_resolutions[c].height,
                                          try_resolutions[c].scale);
 
-        screen_scale = try_resolutions[c].scale;
+        scale = try_resolutions[c].scale;
+        App::instance()->preferences().general.screenScale(scale);
         break;
       }
       catch (const she::DisplayCreationException&) {
@@ -140,12 +146,14 @@ int init_module_gui()
   manager->setClipboard(main_clipboard);
 
   // Setup the GUI theme for all widgets
-  CurrentTheme::set(ase_theme = new SkinTheme());
+  gui_theme = new SkinTheme();
+  gui_theme->setScale(App::instance()->preferences().experimental.uiScale());
+  CurrentTheme::set(gui_theme);
 
   if (maximized)
     main_display->maximize();
 
-  gui_setup_screen(true);
+  gui_setup_screen();
 
   // Set graphics options for next time
   save_gui_config();
@@ -161,7 +169,7 @@ void exit_module_gui()
 
   // Now we can destroy theme
   CurrentTheme::set(NULL);
-  delete ase_theme;
+  delete gui_theme;
 
   main_clipboard->dispose();
   main_display->dispose();
@@ -171,14 +179,12 @@ static void load_gui_config(int& w, int& h, bool& maximized)
 {
   w = get_config_int("GfxMode", "Width", 0);
   h = get_config_int("GfxMode", "Height", 0);
-  screen_scale = App::instance()->preferences().general.screenScale();
-  screen_scale = MID(1, screen_scale, 4);
   maximized = get_config_bool("GfxMode", "Maximized", false);
 }
 
 static void save_gui_config()
 {
-  she::Display* display = Manager::getDefault()->getDisplay();
+  she::Display* display = manager->getDisplay();
   if (display) {
     set_config_bool("GfxMode", "Maximized", display->isMaximized());
     set_config_int("GfxMode", "Width", display->originalWidth());
@@ -193,8 +199,8 @@ void update_screen_for_document(Document* document)
     // Well, change to the default palette.
     if (set_current_palette(NULL, false)) {
       // If the palette changes, refresh the whole screen.
-      if (Manager::getDefault())
-        Manager::getDefault()->invalidate();
+      if (manager)
+        manager->invalidate();
     }
   }
   // With a document.
@@ -213,7 +219,6 @@ void gui_run()
 
 void gui_feedback()
 {
-  Manager* manager = Manager::getDefault();
   OverlayManager* overlays = OverlayManager::instance();
 
   ui::update_cursor_overlay();
@@ -230,9 +235,7 @@ void gui_feedback()
 
   if (!manager->getDisplay()->flip()) {
     // In case that the display was resized.
-    gui_setup_screen(false);
-    App::instance()->getMainWindow()->remapWindow();
-    manager->invalidate();
+    gui_setup_screen();
   }
   else
     overlays->restoreOverlappedAreas();
@@ -241,53 +244,13 @@ void gui_feedback()
 }
 
 // Refresh the UI display, font, etc.
-void gui_setup_screen(bool reload_font)
+void gui_setup_screen()
 {
-  bool regen = false;
-  bool reinit = false;
-
-  main_display->setScale(screen_scale);
+  main_display->setScale(get_screen_scale());
   ui::set_display(main_display);
+  manager->layout();
 
-  // Update guiscale factor
-  int old_guiscale = guiscale();
-  CurrentTheme::get()->setScale(
-    App::instance()->preferences().general.uiScale());
-
-  // If the guiscale have changed
-  if (old_guiscale != guiscale()) {
-    reload_font = true;
-    regen = true;
-  }
-
-  if (reload_font) {
-    reload_default_font();
-    reinit = true;
-  }
-
-  // Regenerate the theme
-  if (regen) {
-    CurrentTheme::get()->regenerate();
-    reinit = true;
-  }
-
-  if (reinit)
-    reinitThemeForAllWidgets();
-
-  // Set the configuration
   save_gui_config();
-}
-
-static void reload_default_font()
-{
-  Theme* theme = CurrentTheme::get();
-  SkinTheme* skin_theme = static_cast<SkinTheme*>(theme);
-
-  // Reload theme fonts
-  skin_theme->reload_fonts();
-
-  // Set all widgets fonts
-  setFontOfAllWidgets(theme->getDefaultFont());
 }
 
 void load_window_pos(Widget* window, const char *section)

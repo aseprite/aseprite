@@ -108,7 +108,7 @@ public:
 
     uiScale()->setSelectedItemIndex(
       uiScale()->findItemIndexByValue(
-        base::convert_to<std::string>(m_preferences.general.uiScale())));
+        base::convert_to<std::string>(m_preferences.experimental.uiScale())));
 
     // Right-click
     rightClickBehavior()->addItem("Paint with background color");
@@ -208,15 +208,13 @@ public:
     int newScreenScale = base::convert_to<int>(screenScale()->getValue());
     if (newScreenScale != m_preferences.general.screenScale()) {
       m_preferences.general.screenScale(newScreenScale);
-      warnings += "<<- Screen Scale";
       reset_screen = true;
     }
 
     int newUIScale = base::convert_to<int>(uiScale()->getValue());
-    if (newUIScale != m_preferences.general.uiScale()) {
-      m_preferences.general.uiScale(newUIScale);
+    if (newUIScale != m_preferences.experimental.uiScale()) {
+      m_preferences.experimental.uiScale(newUIScale);
       warnings += "<<- UI Elements Scale";
-      reset_screen = true;
     }
 
     // Save configuration
@@ -229,7 +227,7 @@ public:
     }
 
     if (reset_screen)
-      gui_setup_screen(false);
+      gui_setup_screen();
   }
 
 private:

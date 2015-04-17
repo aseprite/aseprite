@@ -11,13 +11,13 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 
 #if defined _WIN32 && defined _DEBUG
   #include <windows.h>
+
   #include <psapi.h>
 #endif
 
@@ -41,12 +41,7 @@ RefreshCommand::RefreshCommand()
 
 void RefreshCommand::onExecute(Context* context)
 {
-  // Reload skin
-  {
-    skin::SkinTheme* theme = (skin::SkinTheme*)ui::CurrentTheme::get();
-    theme->reload_skin();
-    theme->regenerate();
-  }
+  ui::CurrentTheme::get()->regenerate();
 
   app_refresh_screen();
 

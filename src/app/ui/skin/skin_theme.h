@@ -50,9 +50,6 @@ namespace app {
       she::Font* getDefaultFont() const { return m_defaultFont; }
       she::Font* getMiniFont() const { return m_miniFont; }
 
-      void reload_skin();
-      void reload_fonts();
-
       ui::Cursor* getCursor(ui::CursorType type);
       void initWidget(ui::Widget* widget);
       void getWindowMask(ui::Widget* widget, gfx::Region& region);
@@ -122,6 +119,8 @@ namespace app {
       void onRegenerate() override;
 
     private:
+      void loadSheet();
+      void loadFonts();
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
                                 int nw, int n, int ne, int e, int se, int s, int sw, int w);
       void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);

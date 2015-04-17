@@ -38,7 +38,7 @@ namespace app {
 
   void gui_run();
   void gui_feedback();
-  void gui_setup_screen(bool reload_font);
+  void gui_setup_screen();
 
   void load_window_pos(ui::Widget* window, const char *section);
   void save_window_pos(ui::Widget* window, const char *section);

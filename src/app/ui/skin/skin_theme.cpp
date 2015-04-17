@@ -278,8 +278,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["freehand_algo_pixel_perfect_selected"] = PART_FREEHAND_ALGO_PIXEL_PERFECT_SELECTED;
   sheet_mapping["freehand_algo_dots"] = PART_FREEHAND_ALGO_DOTS;
   sheet_mapping["freehand_algo_dots_selected"] = PART_FREEHAND_ALGO_DOTS_SELECTED;
-
-  reload_skin();
 }
 
 SkinTheme::~SkinTheme()
@@ -305,9 +303,10 @@ SkinTheme::~SkinTheme()
     m_miniFont->dispose();
 }
 
-// Call Theme::regenerate() after this.
-void SkinTheme::reload_skin()
+void SkinTheme::loadSheet()
 {
+  TRACE("SkinTheme::loadSheet()\n");
+
   if (m_sheet) {
     m_sheet->dispose();
     m_sheet = NULL;
@@ -329,8 +328,10 @@ void SkinTheme::reload_skin()
   }
 }
 
-void SkinTheme::reload_fonts()
+void SkinTheme::loadFonts()
 {
+  TRACE("SkinTheme::loadFonts()\n");
+
   if (m_defaultFont) m_defaultFont->dispose();
   if (m_miniFont) m_miniFont->dispose();
 
@@ -347,6 +348,9 @@ gfx::Size SkinTheme::get_part_size(int part_i) const
 
 void SkinTheme::onRegenerate()
 {
+  loadSheet();
+  loadFonts();
+
   scrollbar_size = 12 * guiscale();
 
   m_part.clear();

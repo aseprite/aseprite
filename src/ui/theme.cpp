@@ -45,6 +45,14 @@ void Theme::regenerate()
 
   onRegenerate();
 
+  setFontOfAllWidgets(getDefaultFont());
+
+  // TODO We cannot reinitialize all widgets because this mess all
+  // child spacing, border, etc. But it could be good to change the
+  // uiscale() and get the new look without the need to restart the
+  // whole app.
+  //reinitThemeForAllWidgets();
+
   set_mouse_cursor(type);
 }
 
