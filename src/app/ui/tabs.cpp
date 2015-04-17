@@ -379,14 +379,7 @@ bool Tabs::onProcessMessage(Message* msg)
           }
         }
         else if (mouseMsg->left() && m_selected != m_hot) {
-          m_selected = m_hot;
-
-          // Left-click is processed in mouse down message,
-          // right-click is processed in mouse up.
-          if (m_selected && m_delegate)
-            m_delegate->onSelectTab(this, m_selected->view);
-
-          invalidate();
+          selectTabInternal(m_hot);
         }
 
         captureMouse();
