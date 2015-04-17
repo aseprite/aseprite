@@ -183,6 +183,9 @@ void Tabs::selectTab(TabView* tabView)
 
 void Tabs::selectNextTab()
 {
+  if (!m_selected)
+    return;
+
   TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
   if (it != m_list.end()) {
@@ -200,6 +203,9 @@ void Tabs::selectNextTab()
 
 void Tabs::selectPreviousTab()
 {
+  if (!m_selected)
+    return;
+
   TabsListIterator currentTabIt = getTabIteratorByView(m_selected->view);
   TabsListIterator it = currentTabIt;
   if (it != m_list.end()) {
