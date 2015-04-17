@@ -85,6 +85,12 @@ cmake with the following parameters:
     -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.4
     -DCMAKE_OSX_SYSROOT:STRING=/SDKs/MacOSX10.4u.sdk
 
+### Issues with Retina displays
+
+If you have a Retina display, check this issue:
+
+  https://github.com/aseprite/aseprite/issues/589
+
 # Using shared third party libraries
 
 If you don't want to use the embedded code of third party libraries
