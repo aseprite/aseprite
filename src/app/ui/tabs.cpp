@@ -860,9 +860,7 @@ void Tabs::stopDrag(DropTabResult result)
 gfx::Rect Tabs::getTabBounds(Tab* tab)
 {
   gfx::Rect rect = getClientBounds();
-  gfx::Rect box(rect.x, rect.y, rect.w,
-    (m_list.empty() && animation() == ANI_NONE ? 0:
-      m_tabsHeight - m_tabsBottomHeight));
+  gfx::Rect box(rect.x, rect.y, rect.w, m_tabsHeight - m_tabsBottomHeight);
   int startX = m_border*guiscale();
   double t = animationTime();
 
