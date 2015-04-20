@@ -48,6 +48,7 @@ namespace app {
 
     // WorkspaceView implementation
     ui::Widget* getContentWidget() override { return this; }
+    bool canCloneWorkspaceView() override { return true; }
     WorkspaceView* cloneWorkspaceView() override;
     void onWorkspaceViewSelected() override;
     void onClonedFrom(WorkspaceView* from) override;

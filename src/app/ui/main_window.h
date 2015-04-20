@@ -80,14 +80,16 @@ namespace app {
     void showDataRecovery(crash::DataRecovery* dataRecovery);
 
     // TabsDelegate implementation.
-    bool onIsModified(Tabs* tabs, TabView* tabView) override;
+    bool isModifiedTab(Tabs* tabs, TabView* tabView) override;
+    bool canCloneTab(Tabs* tabs, TabView* tabView) override;
     void onSelectTab(Tabs* tabs, TabView* tabView) override;
     void onCloseTab(Tabs* tabs, TabView* tabView) override;
+    void onCloneTab(Tabs* tabs, TabView* tabView, int pos) override;
     void onContextMenuTab(Tabs* tabs, TabView* tabView) override;
     void onMouseOverTab(Tabs* tabs, TabView* tabView) override;
     DropViewPreviewResult onFloatingTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
     void onDockingTab(Tabs* tabs, TabView* tabView) override;
-    DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos) override;
+    DropTabResult onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

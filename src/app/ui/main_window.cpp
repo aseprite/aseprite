@@ -253,7 +253,7 @@ void MainWindow::onActiveViewChange()
   configureWorkspaceLayout();
 }
 
-bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
+bool MainWindow::isModifiedTab(Tabs* tabs, TabView* tabView)
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->getDocument();
@@ -262,6 +262,14 @@ bool MainWindow::onIsModified(Tabs* tabs, TabView* tabView)
   else {
     return false;
   }
+}
+
+bool MainWindow::canCloneTab(Tabs* tabs, TabView* tabView)
+{
+  ASSERT(tabView)
+
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  return view->canCloneWorkspaceView();
 }
 
 void MainWindow::onSelectTab(Tabs* tabs, TabView* tabView)
@@ -280,6 +288,15 @@ void MainWindow::onCloseTab(Tabs* tabs, TabView* tabView)
   ASSERT(view);
   if (view)
     m_workspace->closeView(view);
+}
+
+void MainWindow::onCloneTab(Tabs* tabs, TabView* tabView, int pos)
+{
+  WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
+  WorkspaceView* copy = view->cloneWorkspaceView();
+  ASSERT(copy);
+  m_workspace->addViewToPanel(
+    static_cast<WorkspaceTabs*>(tabs)->panel(), copy, true, pos);
 }
 
 void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)
@@ -315,14 +332,19 @@ void MainWindow::onDockingTab(Tabs* tabs, TabView* tabView)
   m_workspace->removeDropViewPreview();
 }
 
-DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos)
+DropTabResult MainWindow::onDropTab(Tabs* tabs, TabView* tabView, const gfx::Point& pos, bool clone)
 {
   m_workspace->removeDropViewPreview();
 
-  if (m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView)))
-    return DropTabResult::DOCKED_IN_OTHER_PLACE;
+  DropViewAtResult result =
+    m_workspace->dropViewAt(pos, dynamic_cast<WorkspaceView*>(tabView), clone);
+
+  if (result == DropViewAtResult::MOVED_TO_OTHER_PANEL)
+    return DropTabResult::REMOVE;
+  else if (result == DropViewAtResult::CLONED_VIEW)
+    return DropTabResult::DONT_REMOVE;
   else
-    return DropTabResult::IGNORE;
+    return DropTabResult::NOT_HANDLED;
 }
 
 void MainWindow::configureWorkspaceLayout()

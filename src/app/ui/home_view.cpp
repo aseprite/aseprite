@@ -86,16 +86,6 @@ TabIcon HomeView::getTabIcon()
   return TabIcon::HOME;
 }
 
-WorkspaceView* HomeView::cloneWorkspaceView()
-{
-  return nullptr;               // This view cannot be cloned
-}
-
-void HomeView::onClonedFrom(WorkspaceView* from)
-{
-  ASSERT(false);                // Never called
-}
-
 bool HomeView::onCloseView(Workspace* workspace)
 {
   workspace->removeView(this);

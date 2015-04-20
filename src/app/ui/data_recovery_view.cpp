@@ -181,18 +181,8 @@ TabIcon DataRecoveryView::getTabIcon()
   return TabIcon::NONE;
 }
 
-WorkspaceView* DataRecoveryView::cloneWorkspaceView()
-{
-  return nullptr;               // This view cannot be cloned
-}
-
 void DataRecoveryView::onWorkspaceViewSelected()
 {
-}
-
-void DataRecoveryView::onClonedFrom(WorkspaceView* from)
-{
-  ASSERT(false);                // Never called
 }
 
 bool DataRecoveryView::onCloseView(Workspace* workspace)

@@ -21,6 +21,12 @@ namespace app {
   class Workspace;
   class WorkspaceTabs;
 
+  enum class DropViewAtResult {
+    NOTHING,
+    MOVED_TO_OTHER_PANEL,
+    CLONED_VIEW,
+  };
+
   class WorkspacePanel : public ui::Widget
                        , public AnimatedWidget {
     enum Ani : int {
@@ -60,7 +66,7 @@ namespace app {
     void removeDropViewPreview();
 
     // Returns true if the view was docked inside the panel.
-    bool dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view);
+    DropViewAtResult dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view, bool clone);
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;

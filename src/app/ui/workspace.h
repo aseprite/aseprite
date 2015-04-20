@@ -32,6 +32,7 @@ namespace app {
     iterator end() { return m_views.end(); }
 
     void addView(WorkspaceView* view, int pos = -1);
+    void addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos);
     void removeView(WorkspaceView* view);
 
     // Closes the given view. Returns false if the user cancels the
@@ -53,7 +54,7 @@ namespace app {
     void removeDropViewPreview();
 
     // Returns true if the view was docked inside the workspace.
-    bool dropViewAt(const gfx::Point& pos, WorkspaceView* view);
+    DropViewAtResult dropViewAt(const gfx::Point& pos, WorkspaceView* view, bool clone);
 
     Signal0<void> ActiveViewChanged;
 
@@ -62,7 +63,6 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
 
   private:
-    void addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos);
     WorkspacePanel* getViewPanel(WorkspaceView* view);
     WorkspacePanel* getPanelAt(const gfx::Point& pos);
     WorkspaceTabs* getTabsAt(const gfx::Point& pos);

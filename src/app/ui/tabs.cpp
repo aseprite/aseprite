@@ -48,14 +48,15 @@ WidgetType Tabs::Type()
 Tabs::Tabs(TabsDelegate* delegate)
   : Widget(Tabs::Type())
   , m_border(2)
+  , m_docked(false)
   , m_hot(nullptr)
   , m_hotCloseButton(false)
   , m_clickedCloseButton(false)
   , m_selected(nullptr)
-  , m_docked(false)
   , m_delegate(delegate)
   , m_removedTab(nullptr)
   , m_isDragging(false)
+  , m_dragCopy(false)
   , m_dragTab(nullptr)
   , m_floatingTab(nullptr)
   , m_floatingOverlay(nullptr)
@@ -99,7 +100,7 @@ void Tabs::addTab(TabView* tabView, bool from_drop, int pos)
 
   tab->oldX = (from_drop ? m_dropNewPosX-tab->width/2: tab->x);
   tab->oldWidth = tab->width;
-  tab->modified = (m_delegate ? m_delegate->onIsModified(this, tabView): false);
+  tab->modified = (m_delegate ? m_delegate->isModifiedTab(this, tabView): false);
 }
 
 void Tabs::removeTab(TabView* tabView, bool with_animation)
@@ -130,7 +131,7 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
 
   if (with_animation) {
     if (m_delegate)
-      tab->modified = m_delegate->onIsModified(this, tabView);
+      tab->modified = m_delegate->isModifiedTab(this, tabView);
     tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
     resetOldPositions();
@@ -154,13 +155,17 @@ void Tabs::updateTabs()
   int i = 0;
 
   for (auto& tab : m_list) {
-    if (tab == m_floatingTab) {
+    if (tab == m_floatingTab && !m_dragCopy) {
       ++i;
       continue;
     }
 
-    if (m_dropNewTab && m_dropNewIndex == i)
+    if ((m_dropNewTab && m_dropNewIndex == i) ||
+        (m_dragTab && !m_floatingTab &&
+         m_dragCopy &&
+         m_dragCopyIndex == i)) {
       x += tabWidth;
+    }
 
     tab->text = tab->view->getTabText();
     tab->icon = tab->view->getTabIcon();
@@ -257,17 +262,15 @@ void Tabs::setDropViewPreview(const gfx::Point& pos, TabView* view)
   else
     newIndex = 0;
 
-  bool startAni = (m_dropNewIndex != newIndex || m_dropNewTab != view);
+  bool startAni = (m_dropNewIndex != newIndex ||
+                   m_dropNewTab != view);
 
   m_dropNewIndex = newIndex;
   m_dropNewPosX = (pos.x - getBounds().x);
   m_dropNewTab = view;
 
-  if (startAni) {
-    resetOldPositions(animationTime());
-    updateTabs();
-    startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
-  }
+  if (startAni)
+    startReorderTabsAnimation();
   else
     invalidate();
 }
@@ -276,9 +279,7 @@ void Tabs::removeDropViewPreview()
 {
   m_dropNewTab = nullptr;
 
-  resetOldPositions(animationTime());
-  updateTabs();
-  startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
+  startReorderTabsAnimation();
 }
 
 bool Tabs::onProcessMessage(Message* msg)
@@ -327,7 +328,7 @@ bool Tabs::onProcessMessage(Message* msg)
             if (result != DropViewPreviewResult::DROP_IN_TABS) {
               if (!m_floatingOverlay)
                 createFloatingOverlay(m_selected.get());
-              m_floatingOverlay->moveOverlay(mousePos - m_dragOffset);
+              m_floatingOverlay->moveOverlay(mousePos - m_floatingOffset);
             }
             else {
               destroyFloatingOverlay();
@@ -343,18 +344,8 @@ bool Tabs::onProcessMessage(Message* msg)
 
           // Docked tab
           if (!m_floatingTab) {
-            m_selected->x = m_dragTabX + delta.x;
-
-            int i = (mousePos.x - m_border*guiscale() - getBounds().x) / m_selected->width;
-            i = MID(0, i, int(m_list.size())-1);
-            if (i != m_dragTabIndex) {
-              m_list.erase(m_list.begin()+m_dragTabIndex);
-              m_list.insert(m_list.begin()+i, m_selected);
-              m_dragTabIndex = i;
-
-              startDockDragTabAnimation();
-            }
-
+            m_dragTab->x = m_dragTabX + delta.x;
+            updateDragTabIndexes(mousePos.x, false);
             if (justDocked)
               justDocked->oldX = m_dragTabX + delta.x;
           }
@@ -375,7 +366,7 @@ bool Tabs::onProcessMessage(Message* msg)
       if (m_hot && !hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         m_dragMousePos = mouseMsg->position();
-        m_dragOffset = mouseMsg->position() -
+        m_floatingOffset = mouseMsg->position() -
           (getBounds().getOrigin() + getTabBounds(m_hot.get()).getOrigin());
 
         if (m_hotCloseButton) {
@@ -415,13 +406,13 @@ bool Tabs::onProcessMessage(Message* msg)
           }
         }
         else {
-          DropTabResult result = DropTabResult::IGNORE;
+          DropTabResult result = DropTabResult::NOT_HANDLED;
 
           if (m_delegate) {
             ASSERT(m_selected);
-            result =
-              m_delegate->onDropTab(this, m_selected->view,
-                mouseMsg->position());
+            result = m_delegate->onDropTab(
+              this, m_selected->view,
+              mouseMsg->position(), m_dragCopy);
           }
 
           stopDrag(result);
@@ -446,6 +437,25 @@ bool Tabs::onProcessMessage(Message* msg)
       return true;
     }
 
+    case kKeyDownMessage:
+    case kKeyUpMessage: {
+      TabPtr tab = (m_isDragging ? m_dragTab: m_hot);
+
+      bool oldDragCopy = m_dragCopy;
+      m_dragCopy = ((msg->ctrlPressed() || msg->altPressed()) &&
+                    (tab && m_delegate && m_delegate->canCloneTab(this, tab->view)));
+
+      if (oldDragCopy != m_dragCopy) {
+        updateDragTabIndexes(get_mouse_position().x, true);
+        updateMouseCursor();
+      }
+      break;
+    }
+
+    case kSetCursorMessage:
+      updateMouseCursor();
+      return true;
+
   }
 
   return Widget::onProcessMessage(msg);
@@ -465,13 +475,24 @@ void Tabs::onPaint(PaintEvent& ev)
 
   // For each tab...
   for (TabPtr& tab : m_list) {
-    if (tab == m_floatingTab)
+    if (tab == m_floatingTab && !m_dragCopy)
       continue;
 
     box = getTabBounds(tab.get());
 
-    if (tab != m_selected)
-      drawTab(g, box, tab.get(), 0, (tab == m_hot), false);
+    if ((!m_dragTab) ||
+        (tab->view != m_dragTab->view) ||
+        (m_dragCopy)) {
+      int dy = 0;
+      if (animation() == ANI_ADDING_TAB && tab == m_selected) {
+        double t = animationTime();
+        dy = int(box.h - box.h * t);
+      }
+
+      drawTab(g, box, tab.get(), dy,
+              (tab == m_hot),
+              (tab == m_selected));
+    }
 
     box.x = box.x2();
   }
@@ -486,24 +507,16 @@ void Tabs::onPaint(PaintEvent& ev)
   }
 
   // Tab that is being dragged
-  if (m_selected && m_selected != m_floatingTab) {
-    double t = animationTime();
-    TabPtr tab(m_selected);
+  if (m_dragTab && !m_floatingTab) {
+    TabPtr tab(m_dragTab);
     box = getTabBounds(tab.get());
-
-    int dy = 0;
-    if (animation() == ANI_ADDING_TAB)
-      dy = int(box.h - box.h * t);
-
-    drawTab(g, box, m_selected.get(), dy, (tab == m_hot), true);
+    drawTab(g, box, tab.get(), 0, true, true);
   }
 
   // New tab from other Tab that want to be dropped here.
   if (m_dropNewTab) {
     SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
     Tab newTab(m_dropNewTab);
-    newTab.text = m_dropNewTab->getTabText();
-    newTab.icon = m_dropNewTab->getTabIcon();
 
     newTab.width = newTab.oldWidth =
       (!m_list.empty() ? m_list[0]->width:
@@ -608,7 +621,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
     if (m_delegate) {
       if (tab->view)
-        tab->modified = m_delegate->onIsModified(this, tab->view);
+        tab->modified = m_delegate->isModifiedTab(this, tab->view);
 
       if (tab->modified &&
           (!hover || !m_hotCloseButton)) {
@@ -764,9 +777,13 @@ void Tabs::startDrag()
   updateTabs();
 
   m_isDragging = true;
-  m_dragTab = m_selected;
+  m_dragCopy = false;
+  m_dragTab.reset(new Tab(m_selected->view));
+  m_dragTab->x = m_selected->x;
+  m_dragTab->width = m_selected->width;
   m_dragTabX = m_selected->x;
-  m_dragTabIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
+  m_dragTabIndex =
+  m_dragCopyIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
 
   EditorView::SetScrollUpdateMethod(EditorView::KeepCenter);
 }
@@ -774,34 +791,64 @@ void Tabs::startDrag()
 void Tabs::stopDrag(DropTabResult result)
 {
   m_isDragging = false;
+  ASSERT(m_dragTab);
 
   switch (result) {
 
-    case DropTabResult::IGNORE:
+    case DropTabResult::NOT_HANDLED:
+    case DropTabResult::DONT_REMOVE: {
       destroyFloatingTab();
 
-      ASSERT(m_selected);
-      if (m_selected) {
-        m_selected->oldX = m_selected->x;
-        m_selected->oldWidth = m_selected->width;
+      bool localCopy = false;
+      if (result == DropTabResult::NOT_HANDLED &&
+          m_dragTab && m_dragCopy && m_delegate) {
+        ASSERT(m_dragCopyIndex >= 0);
+
+        m_delegate->onCloneTab(this, m_dragTab->view, m_dragCopyIndex);
+
+        // To animate the new tab created by onCloneTab() from the
+        // m_dragTab position.
+        m_list[m_dragCopyIndex]->oldX = m_dragTab->x;
+        m_list[m_dragCopyIndex]->oldWidth = m_dragTab->width;
+        localCopy = true;
       }
-      resetOldPositions(animationTime());
-      updateTabs();
-      startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
-      break;
 
-    case DropTabResult::DOCKED_IN_OTHER_PLACE: {
-      TabPtr tab = m_dragTab;
+      m_dragCopy = false;
+      m_dragCopyIndex = -1;
 
-      m_floatingTab.reset();
-      m_removedTab.reset();
-      destroyFloatingTab();
+      startReorderTabsAnimation();
 
-      ASSERT(tab.get());
-      if (tab)
-        removeTab(tab->view, false);
+      if (m_selected && m_dragTab && !localCopy) {
+        if (result == DropTabResult::NOT_HANDLED) {
+          // To animate m_selected tab from the m_dragTab position
+          // when we drop the tab in the same Tabs (with no copy)
+          m_selected->oldX = m_dragTab->x;
+          m_selected->oldWidth = m_dragTab->width;
+        }
+        else {
+          ASSERT(result == DropTabResult::DONT_REMOVE);
+
+          // In this case the tab was copied to other Tabs, so we
+          // avoid any kind of animation for the m_selected (it stays
+          // were it's).
+          m_selected->oldX = m_selected->x;
+          m_selected->oldWidth = m_selected->width;
+        }
+      }
       break;
     }
+
+    case DropTabResult::REMOVE:
+      m_floatingTab.reset();
+      m_removedTab.reset();
+      m_dragCopy = false;
+      m_dragCopyIndex = -1;
+      destroyFloatingTab();
+
+      ASSERT(m_dragTab.get());
+      if (m_dragTab)
+        removeTab(m_dragTab->view, false);
+      break;
 
   }
 
@@ -831,7 +878,7 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
   return box;
 }
 
-void Tabs::startDockDragTabAnimation()
+void Tabs::startReorderTabsAnimation()
 {
   resetOldPositions(animationTime());
   updateTabs();
@@ -901,6 +948,41 @@ void Tabs::destroyFloatingOverlay()
     OverlayManager::instance()->removeOverlay(m_floatingOverlay.get());
     m_floatingOverlay.reset();
   }
+}
+
+void Tabs::updateMouseCursor()
+{
+  if (m_dragCopy)
+    ui::set_mouse_cursor(kArrowPlusCursor);
+  else
+    ui::set_mouse_cursor(kArrowCursor);
+}
+
+void Tabs::updateDragTabIndexes(int mouseX, bool startAni)
+{
+  if (m_dragTab) {
+    int i = (mouseX - m_border*guiscale() - getBounds().x) / m_dragTab->width;
+
+    if (m_dragCopy) {
+      i = MID(0, i, int(m_list.size()));
+      if (i != m_dragCopyIndex) {
+        m_dragCopyIndex = i;
+        startAni = true;
+      }
+    }
+    else if (hasMouseOver()) {
+      i = MID(0, i, int(m_list.size())-1);
+      if (i != m_dragTabIndex) {
+        m_list.erase(m_list.begin()+m_dragTabIndex);
+        m_list.insert(m_list.begin()+i, m_selected);
+        m_dragTabIndex = i;
+        startAni = true;
+      }
+    }
+  }
+
+  if (startAni)
+    startReorderTabsAnimation();
 }
 
 } // namespace app

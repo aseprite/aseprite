@@ -225,24 +225,33 @@ void WorkspacePanel::adjustTime(int& time, int flag)
     --time;
 }
 
-bool WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view)
+DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, WorkspaceView* view, bool clone)
 {
   int dropArea = calculateDropArea(pos);
   if (!dropArea)
-    return false;
+    return DropViewAtResult::NOTHING;
 
   // If we're dropping the view in the same panel, and it's the only
   // view in the panel: We cannot drop the view in the panel (because
   // if we remove the last view, the panel will be destroyed).
-  if (from == this && m_views.size() == 1)
-    return false;
+  if (!clone && from == this && m_views.size() == 1)
+    return DropViewAtResult::NOTHING;
 
   int splitterAlign = 0;
   if (dropArea & (JI_LEFT | JI_RIGHT)) splitterAlign = JI_HORIZONTAL;
   else if (dropArea & (JI_TOP | JI_BOTTOM)) splitterAlign = JI_VERTICAL;
 
   ASSERT(from);
-  from->removeView(view);
+  DropViewAtResult result;
+  Workspace* workspace = getWorkspace();
+  if (clone) {
+    view = view->cloneWorkspaceView();
+    result = DropViewAtResult::CLONED_VIEW;
+  }
+  else {
+    workspace->removeView(view);
+    result = DropViewAtResult::MOVED_TO_OTHER_PANEL;
+  }
 
   WorkspaceTabs* newTabs = new WorkspaceTabs(m_tabs->getDelegate());
   WorkspacePanel* newPanel = new WorkspacePanel(SUB_PANEL);
@@ -294,9 +303,9 @@ bool WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePanel* from, Wor
       break;
   }
 
-  newPanel->addView(view, true);
+  workspace->addViewToPanel(newPanel, view, true, -1);
   parent->layout();
-  return true;
+  return result;
 }
 
 int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const

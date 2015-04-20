@@ -108,11 +108,6 @@ void DevConsoleView::onWorkspaceViewSelected()
   m_entry->requestFocus();
 }
 
-void DevConsoleView::onClonedFrom(WorkspaceView* from)
-{
-  // Do nothing
-}
-
 bool DevConsoleView::onCloseView(Workspace* workspace)
 {
   workspace->removeView(this);

@@ -198,14 +198,14 @@ void Workspace::removeDropViewPreview()
   }
 }
 
-bool Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
+DropViewAtResult Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view, bool clone)
 {
   WorkspaceTabs* tabs = getTabsAt(pos);
   WorkspacePanel* panel = getPanelAt(pos);
 
   if (panel) {
     // Create new panel
-    return panel->dropViewAt(pos, getViewPanel(view), view);
+    return panel->dropViewAt(pos, getViewPanel(view), view, clone);
   }
   else if (tabs && tabs != getViewPanel(view)->tabs()) {
     // Dock tab in other tabs
@@ -213,13 +213,22 @@ bool Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* view)
     ASSERT(dropPanel);
 
     int pos = tabs->getDropTabIndex();
+    DropViewAtResult result;
 
-    removeView(view);
+    if (clone) {
+      view = view->cloneWorkspaceView();
+      result = DropViewAtResult::CLONED_VIEW;
+    }
+    else {
+      removeView(view);
+      result = DropViewAtResult::MOVED_TO_OTHER_PANEL;
+    }
+
     addViewToPanel(dropPanel, view, true, pos);
-    return true;
+    return result;
   }
   else
-    return false;
+    return DropViewAtResult::NOTHING;
 }
 
 void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool from_drop, int pos)
