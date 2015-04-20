@@ -74,14 +74,7 @@ void ZoomCommand::onExecute(Context* context)
       zoom.out();
       break;
     case Set:
-      switch (m_percentage) {
-        case 3200: zoom = render::Zoom(32, 1); break;
-        case 1600: zoom = render::Zoom(16, 1); break;
-        case 800: zoom = render::Zoom(8, 1); break;
-        case 400: zoom = render::Zoom(4, 1); break;
-        case 200: zoom = render::Zoom(2, 1); break;
-        default: zoom = render::Zoom(1, 1); break;
-      }
+      zoom = render::Zoom::fromScale(double(m_percentage) / 100.0);
       break;
   }
 
