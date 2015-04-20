@@ -87,13 +87,11 @@ void Job::waitJob()
 
 void Job::jobProgress(double f)
 {
-  base::scoped_lock hold(*m_mutex);
   m_last_progress = f;
 }
 
 bool Job::isCanceled()
 {
-  base::scoped_lock hold(*m_mutex);
   return m_canceled_flag;
 }
 
