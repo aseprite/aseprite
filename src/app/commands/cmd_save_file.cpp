@@ -70,8 +70,9 @@ private:
   FileOp* m_fop;
 };
 
-static void save_document_in_background(Context* context, Document* document,
-  bool mark_as_saved, const std::string& fn_format)
+static void save_document_in_background(const Context* context,
+  const Document* document, bool mark_as_saved,
+  const std::string& fn_format)
 {
   base::UniquePtr<FileOp> fop(fop_to_save_document(context,
       document, document->filename().c_str(), fn_format.c_str()));
@@ -87,16 +88,16 @@ static void save_document_in_background(Context* context, Document* document,
 
     // We don't know if the file was saved correctly or not. So mark
     // it as it should be saved again.
-    document->impossibleToBackToSavedState();
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
   // If the job was cancelled, mark the document as modified.
   else if (fop_is_stop(fop)) {
-    document->impossibleToBackToSavedState();
+    const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
   else if (context->isUiAvailable()) {
     App::instance()->getRecentFiles()->addRecentFile(document->filename().c_str());
     if (mark_as_saved)
-      document->markAsSaved();
+      const_cast<Document*>(document)->markAsSaved();
 
     StatusBar::instance()
       ->setStatusText(2000, "File %s, saved.",
@@ -174,26 +175,33 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     }
   }
 
+  std::string oldFilename;
   {
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
-    std::string oldFilename = documentWriter->filename();
+    oldFilename = documentWriter->filename();
 
     // Change the document file name
     documentWriter->setFilename(filename.c_str());
     m_selectedFilename = filename;
+  }
 
-    // Save the document
-    save_document_in_background(writer.context(), documentWriter,
-      markAsSaved, m_filenameFormat);
+  // Save the document
+  save_document_in_background(
+    reader.context(), const_cast<Document*>(document),
+    markAsSaved, m_filenameFormat);
+
+  {
+    ContextWriter writer(reader);
+    Document* documentWriter = writer.document();
 
     if (documentWriter->isModified())
       documentWriter->setFilename(oldFilename);
     else
       documentWriter->incrementVersion();
-
-    update_screen_for_document(documentWriter);
   }
+
+  update_screen_for_document(document);
 }
 
 //static

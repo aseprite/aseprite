@@ -224,18 +224,18 @@ done:;
   return fop;
 }
 
-FileOp* fop_to_save_document(Context* context, Document* document,
+FileOp* fop_to_save_document(const Context* context, const Document* document,
   const char* filename, const char* fn_format_arg)
 {
   FileOp *fop;
   bool fatal;
 
-  fop = fop_new(FileOpSave, context);
+  fop = fop_new(FileOpSave, const_cast<Context*>(context));
   if (!fop)
     return NULL;
 
   // Document to save
-  fop->document = document;
+  fop->document = const_cast<Document*>(document);
 
   // Get the extension of the filename (in lower case)
   std::string extension = base::string_to_lower(base::get_file_extension(filename));

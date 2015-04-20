@@ -34,7 +34,7 @@ namespace app {
   int init_module_gui();
   void exit_module_gui();
 
-  void update_screen_for_document(Document* document);
+  void update_screen_for_document(const Document* document);
 
   void gui_run();
   void gui_feedback();

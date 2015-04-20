@@ -191,7 +191,7 @@ static void save_gui_config()
   }
 }
 
-void update_screen_for_document(Document* document)
+void update_screen_for_document(const Document* document)
 {
   // Without document.
   if (!document) {
@@ -204,7 +204,7 @@ void update_screen_for_document(Document* document)
   }
   // With a document.
   else {
-    document->notifyGeneralUpdate();
+    const_cast<Document*>(document)->notifyGeneralUpdate();
 
     // Update the tabs (maybe the modified status has been changed).
     app_rebuild_documents_tabs();
