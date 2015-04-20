@@ -15,7 +15,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
-#include "app/document_location.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"

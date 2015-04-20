@@ -14,7 +14,6 @@
 #include "app/color_picker.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
-#include "app/document_location.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool.h"
@@ -23,6 +22,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
 #include "doc/image.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/manager.h"
 #include "ui/system.h"
@@ -80,7 +80,7 @@ void EyedropperCommand::onExecute(Context* context)
   bool grabAlpha = settings->getGrabAlpha();
 
   ColorPicker picker;
-  picker.pickColor(editor->getDocumentLocation(),
+  picker.pickColor(editor->getSite(),
     pixelPos,
     grabAlpha ?
     ColorPicker::FromActiveLayer:

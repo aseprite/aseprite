@@ -14,6 +14,7 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/context_access.h"
+#include "app/document.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/transaction.h"
@@ -23,6 +24,7 @@
 #include "doc/images_collector.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "filters/filter.h"
 #include "ui/manager.h"
@@ -40,7 +42,7 @@ using namespace ui;
 
 FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   : m_context(context)
-  , m_location(context->activeLocation())
+  , m_site(context->activeSite())
   , m_filter(filter)
   , m_dst(NULL)
   , m_preview_mask(NULL)
@@ -56,15 +58,20 @@ FilterManagerImpl::FilterManagerImpl(Context* context, Filter* filter)
   m_targetOrig = TARGET_ALL_CHANNELS;
   m_target = TARGET_ALL_CHANNELS;
 
-  Image* image = m_location.image(&offset_x, &offset_y);
+  Image* image = m_site.image(&offset_x, &offset_y);
   if (image == NULL)
     throw NoImageException();
 
-  init(m_location.layer(), image, offset_x, offset_y);
+  init(m_site.layer(), image, offset_x, offset_y);
 }
 
 FilterManagerImpl::~FilterManagerImpl()
 {
+}
+
+app::Document* FilterManagerImpl::document()
+{
+  return static_cast<app::Document*>(m_site.document());
 }
 
 void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
@@ -74,7 +81,7 @@ void FilterManagerImpl::setProgressDelegate(IProgressDelegate* progressDelegate)
 
 PixelFormat FilterManagerImpl::pixelFormat() const
 {
-  return m_location.sprite()->pixelFormat();
+  return m_site.sprite()->pixelFormat();
 }
 
 void FilterManagerImpl::setTarget(int target)
@@ -83,14 +90,14 @@ void FilterManagerImpl::setTarget(int target)
   m_target = target;
 
   // The alpha channel of the background layer can't be modified.
-  if (m_location.layer() &&
-      m_location.layer()->isBackground())
+  if (m_site.layer() &&
+      m_site.layer()->isBackground())
     m_target &= ~TARGET_ALPHA_CHANNEL;
 }
 
 void FilterManagerImpl::begin()
 {
-  Document* document = m_location.document();
+  Document* document = static_cast<app::Document*>(m_site.document());
 
   m_row = 0;
   m_mask = (document->isMaskVisible() ? document->mask(): NULL);
@@ -100,7 +107,7 @@ void FilterManagerImpl::begin()
 
 void FilterManagerImpl::beginForPreview()
 {
-  Document* document = m_location.document();
+  Document* document = static_cast<app::Document*>(m_site.document());
 
   if (document->isMaskVisible())
     m_preview_mask.reset(new Mask(*document->mask()));
@@ -117,7 +124,7 @@ void FilterManagerImpl::beginForPreview()
 
   {
     Editor* editor = current_editor;
-    Sprite* sprite = m_location.sprite();
+    Sprite* sprite = m_site.sprite();
     gfx::Rect vp = View::getView(editor)->getViewportBounds();
     vp = editor->screenToEditor(vp);
     vp = vp.createIntersect(sprite->bounds());
@@ -162,7 +169,7 @@ bool FilterManagerImpl::applyStep()
     m_maskIterator = m_maskBits.begin();
   }
 
-  switch (m_location.sprite()->pixelFormat()) {
+  switch (m_site.sprite()->pixelFormat()) {
     case IMAGE_RGB:       m_filter->applyToRgba(this); break;
     case IMAGE_GRAYSCALE: m_filter->applyToGrayscale(this); break;
     case IMAGE_INDEXED:   m_filter->applyToIndexed(this); break;
@@ -199,9 +206,9 @@ void FilterManagerImpl::applyToTarget()
   bool cancelled = false;
 
   ImagesCollector images((m_target & TARGET_ALL_LAYERS ?
-                          m_location.sprite()->folder():
-                          m_location.layer()),
-                         m_location.frame(),
+                          m_site.sprite()->folder():
+                          m_site.layer()),
+                         m_site.frame(),
                          (m_target & TARGET_ALL_FRAMES) == TARGET_ALL_FRAMES,
                          true); // we will write in each image
   if (images.empty())
@@ -289,12 +296,12 @@ bool FilterManagerImpl::skipPixel()
 
 Palette* FilterManagerImpl::getPalette()
 {
-  return m_location.sprite()->palette(m_location.frame());
+  return m_site.sprite()->palette(m_site.frame());
 }
 
 RgbMap* FilterManagerImpl::getRgbMap()
 {
-  return m_location.sprite()->rgbMap(m_location.frame());
+  return m_site.sprite()->rgbMap(m_site.frame());
 }
 
 void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int offset_y)
@@ -302,7 +309,7 @@ void FilterManagerImpl::init(const Layer* layer, Image* image, int offset_x, int
   m_offset_x = offset_x;
   m_offset_y = offset_y;
 
-  if (!updateMask(m_location.document()->mask(), image))
+  if (!updateMask(static_cast<app::Document*>(m_site.document())->mask(), image))
     throw InvalidAreaException();
 
   m_src = image;

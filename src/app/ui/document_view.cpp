@@ -208,9 +208,9 @@ DocumentView::~DocumentView()
   delete m_editor;
 }
 
-void DocumentView::getDocumentLocation(DocumentLocation* location) const
+void DocumentView::getSite(Site* site) const
 {
-  m_editor->getDocumentLocation(location);
+  m_editor->getSite(site);
 }
 
 std::string DocumentView::getTabText()

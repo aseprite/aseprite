@@ -32,6 +32,7 @@
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/mask.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "gfx/region.h"
 #include "render/render.h"
@@ -44,14 +45,14 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
 }
 
 PixelsMovement::PixelsMovement(Context* context,
-  DocumentLocation location,
+  Site site,
   const Image* moveThis, const gfx::Point& initialPos, int opacity,
   const char* operationName)
   : m_reader(context)
-  , m_location(location)
-  , m_document(location.document())
-  , m_sprite(location.sprite())
-  , m_layer(location.layer())
+  , m_site(site)
+  , m_document(static_cast<app::Document*>(site.document()))
+  , m_sprite(site.sprite())
+  , m_layer(site.layer())
   , m_transaction(context, operationName)
   , m_setMaskCmd(nullptr)
   , m_isDragging(false)
@@ -443,7 +444,7 @@ void PixelsMovement::stampImage()
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
-      ExpandCelCanvas expand(m_location,
+      ExpandCelCanvas expand(m_site,
         TiledMode::NONE, m_transaction,
         ExpandCelCanvas::None);
 
@@ -473,7 +474,7 @@ void PixelsMovement::dropImageTemporarily()
 
     // TODO Add undo information so the user can undo each transformation step.
 
-    // Displace the pivot to the new location:
+    // Displace the pivot to the new site:
     if (m_adjustPivot) {
       m_adjustPivot = false;
 

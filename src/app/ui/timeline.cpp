@@ -157,24 +157,24 @@ void Timeline::updateUsingEditor(Editor* editor)
   else
     return;                // No editor specified.
 
-  DocumentLocation location;
+  Site site;
   DocumentView* view = m_editor->getDocumentView();
-  view->getDocumentLocation(&location);
+  view->getSite(&site);
 
-  location.document()->addObserver(this);
+  site.document()->addObserver(this);
 
   // If we are already in the same position as the "editor", we don't
   // need to update the at all timeline.
-  if (m_document == location.document() &&
-      m_sprite == location.sprite() &&
-      m_layer == location.layer() &&
-      m_frame == location.frame())
+  if (m_document == site.document() &&
+      m_sprite == site.sprite() &&
+      m_layer == site.layer() &&
+      m_frame == site.frame())
     return;
 
-  m_document = location.document();
-  m_sprite = location.sprite();
-  m_layer = location.layer();
-  m_frame = location.frame();
+  m_document = static_cast<app::Document*>(site.document());
+  m_sprite = site.sprite();
+  m_layer = site.layer();
+  m_frame = site.frame();
   m_state = STATE_STANDBY;
   m_hot.part = PART_NOTHING;
   m_clk.part = PART_NOTHING;

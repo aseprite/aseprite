@@ -1,36 +1,31 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Aseprite Document Library
+// Copyright (c) 2001-2015 David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
-#ifndef APP_DOCUMENT_LOCATION_H_INCLUDED
-#define APP_DOCUMENT_LOCATION_H_INCLUDED
+#ifndef DOC_SITE_H_INCLUDED
+#define DOC_SITE_H_INCLUDED
 #pragma once
 
 #include "doc/frame.h"
 #include "doc/layer_index.h"
 
 namespace doc {
+
   class Cel;
+  class Document;
   class Image;
   class Layer;
   class Palette;
   class Sprite;
-}
 
-namespace app {
-  class Document;
-
-  using namespace doc;
-
-  // Specifies the current location in a context. If we are in the
-  // UIContext, it means the location in the current Editor (current
-  // document, sprite, layer, frame, etc.).
-  class DocumentLocation {
+  // Specifies the current location in a context. E.g. the location in
+  // the current Editor (current document, sprite, layer, frame,
+  // etc.).
+  class Site {
   public:
-    DocumentLocation()
+    Site()
       : m_document(NULL)
       , m_sprite(NULL)
       , m_layer(NULL)

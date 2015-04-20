@@ -14,13 +14,16 @@
 #include "doc/document_observer.h"
 #include "ui/box.h"
 
+namespace doc {
+  class Site;
+}
+
 namespace ui {
   class View;
 }
 
 namespace app {
   class Document;
-  class DocumentLocation;
   class Editor;
 
   class DocumentView : public ui::Box
@@ -37,7 +40,7 @@ namespace app {
     ~DocumentView();
 
     Document* getDocument() const { return m_document; }
-    void getDocumentLocation(DocumentLocation* location) const;
+    void getSite(doc::Site* site) const;
     Editor* getEditor() { return m_editor; }
 
     bool isPreview() { return m_type == Preview; }

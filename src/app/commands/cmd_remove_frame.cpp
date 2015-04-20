@@ -57,7 +57,7 @@ void RemoveFrameCommand::onExecute(Context* context)
     Transaction transaction(writer.context(), "Remove Frame");
     DocumentApi api = document->getApi(transaction);
 
-    // TODO the range of selected frames should be in the DocumentLocation.
+    // TODO the range of selected frames should be in doc::Site.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       for (frame_t frame = range.frameEnd(),

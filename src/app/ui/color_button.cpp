@@ -13,7 +13,6 @@
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/color_utils.h"
-#include "app/document_location.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
@@ -22,6 +21,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/preferred_size_event.h"
 #include "ui/ui.h"
@@ -120,12 +120,12 @@ bool ColorButton::onProcessMessage(Message* msg)
           // Pick a color from a editor
           else if (picked->type == editor_type()) {
             Editor* editor = static_cast<Editor*>(picked);
-            DocumentLocation location = editor->getDocumentLocation();
-            if (location.sprite()) {
+            Site site = editor->getSite();
+            if (site.sprite()) {
               gfx::Point editorPos = editor->screenToEditor(mousePos);
 
               ColorPicker picker;
-              picker.pickColor(location, editorPos, ColorPicker::FromComposition);
+              picker.pickColor(site, editorPos, ColorPicker::FromComposition);
               color = picker.color();
             }
           }

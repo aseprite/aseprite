@@ -13,9 +13,9 @@
 
 #include "app/context.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace app {
@@ -27,8 +27,8 @@ ContextFlags::ContextFlags()
 
 void ContextFlags::update(Context* context)
 {
-  DocumentLocation location = context->activeLocation();
-  Document* document = location.document();
+  Site site = context->activeSite();
+  Document* document = static_cast<Document*>(site.document());
 
   m_flags = 0;
 
@@ -41,14 +41,14 @@ void ContextFlags::update(Context* context)
       if (document->isMaskVisible())
         m_flags |= HasVisibleMask;
 
-      Sprite* sprite = location.sprite();
+      Sprite* sprite = site.sprite();
       if (sprite) {
         m_flags |= HasActiveSprite;
 
         if (sprite->backgroundLayer())
           m_flags |= HasBackgroundLayer;
 
-        Layer* layer = location.layer();
+        Layer* layer = site.layer();
         if (layer) {
           m_flags |= HasActiveLayer;
 
@@ -64,7 +64,7 @@ void ContextFlags::update(Context* context)
           if (layer->isImage()) {
             m_flags |= ActiveLayerIsImage;
 
-            Cel* cel = layer->cel(location.frame());
+            Cel* cel = layer->cel(site.frame());
             if (cel) {
               m_flags |= HasActiveCel;
 

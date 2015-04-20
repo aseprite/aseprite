@@ -28,10 +28,14 @@ namespace doc {
     const Documents& documents() const { return m_docs; }
     Documents& documents() { return m_docs; }
 
+    Site activeSite() const;
     Document* activeDocument() const;
-    void setActiveDocument(Document* doc);
 
-    // DocumentsObserver impl
+  protected:
+    void notifyActiveDocumentChanged(Document* doc);
+    void notifyActiveSiteChanged(Site* site);
+
+    virtual void onGetActiveSite(Site* site) const;
     virtual void onAddDocument(Document* doc) override;
     virtual void onRemoveDocument(Document* doc) override;
 

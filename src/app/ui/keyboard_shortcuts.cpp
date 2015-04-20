@@ -17,7 +17,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -635,8 +634,7 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel, KeyContext ke
 KeyContext KeyboardShortcuts::getCurrentKeyContext()
 {
   app::Context* ctx = UIContext::instance();
-  DocumentLocation location = ctx->activeLocation();
-  Document* doc = location.document();
+  Document* doc = ctx->activeDocument();
 
   if (doc &&
       doc->isMaskVisible() &&

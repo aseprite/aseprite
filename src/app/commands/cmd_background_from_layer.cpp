@@ -12,7 +12,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
-#include "app/document_location.h"
 #include "app/modules/gui.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"

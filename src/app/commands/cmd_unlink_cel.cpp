@@ -54,7 +54,7 @@ void UnlinkCelCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "Unlink Cel");
 
-    // TODO the range of selected frames should be in the DocumentLocation.
+    // TODO the range of selected frames should be in doc::Site.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       Sprite* sprite = writer.sprite();

@@ -27,6 +27,7 @@
 #include "filters/replace_color_filter.h"
 #include "doc/image.h"
 #include "doc/mask.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -134,9 +135,9 @@ bool ReplaceColorCommand::onEnabled(Context* context)
 
 void ReplaceColorCommand::onExecute(Context* context)
 {
-  DocumentLocation location = context->activeLocation();
+  Site site = context->activeSite();
 
-  ReplaceColorFilterWrapper filter(location.layer());
+  ReplaceColorFilterWrapper filter(site.layer());
   filter.setFrom(get_config_color(ConfigSection, "Color1", ColorBar::instance()->getFgColor()));
   filter.setTo(get_config_color(ConfigSection, "Color2", ColorBar::instance()->getBgColor()));
   filter.setTolerance(get_config_int(ConfigSection, "Tolerance", 0));

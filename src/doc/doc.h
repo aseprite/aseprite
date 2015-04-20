@@ -28,6 +28,7 @@
 #include "doc/primitives_fast.h"
 #include "doc/remap.h"
 #include "doc/rgbmap.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 
 #endif

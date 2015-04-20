@@ -62,7 +62,7 @@ void RemoveLayerCommand::onExecute(Context* context)
     Transaction transaction(writer.context(), "Remove Layer");
     DocumentApi api = document->getApi(transaction);
 
-    // TODO the range of selected layer should be in the DocumentLocation.
+    // TODO the range of selected layer should be in doc::Site.
     Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
     if (range.enabled()) {
       if (range.layers() == sprite->countLayers()) {

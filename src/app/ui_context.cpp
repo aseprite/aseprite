@@ -11,7 +11,6 @@
 
 #include "app/app.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/settings/ui_settings_impl.h"
@@ -26,15 +25,17 @@
 #include "app/ui/workspace_tabs.h"
 #include "app/ui_context.h"
 #include "base/mutex.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace app {
 
-UIContext* UIContext::m_instance = NULL;
+UIContext* UIContext::m_instance = nullptr;
 
 UIContext::UIContext()
   : Context(new UISettingsImpl)
-  , m_lastSelectedView(NULL)
+  , m_lastSelectedDoc(nullptr)
+  , m_lastSelectedView(nullptr)
 {
   documents().addObserver(&App::instance()->preferences());
 
@@ -81,8 +82,6 @@ void UIContext::setActiveView(DocumentView* docView)
       (docView && docView->isPreview()))
     return;
 
-  setActiveDocument(docView ? docView->getDocument(): NULL);
-
   MainWindow* mainWin = App::instance()->getMainWindow();
   if (docView) {
     mainWin->getTabsBar()->selectTab(docView);
@@ -112,6 +111,16 @@ void UIContext::setActiveView(DocumentView* docView)
   m_lastSelectedView = docView;
 }
 
+void UIContext::setActiveDocument(Document* document)
+{
+  m_lastSelectedDoc = document;
+
+  DocumentView* docView = getFirstDocumentView(document);
+  ASSERT(docView);
+  if (docView)
+    setActiveView(docView);
+}
+
 DocumentView* UIContext::getFirstDocumentView(Document* document) const
 {
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
@@ -138,14 +147,14 @@ Editor* UIContext::activeEditor()
 
 void UIContext::onAddDocument(doc::Document* doc)
 {
-  Context::onAddDocument(doc);
+  m_lastSelectedDoc = static_cast<app::Document*>(doc);
 
   // We don't create views in batch mode.
   if (!App::instance()->isGui())
     return;
 
   // Add a new view for this document
-  DocumentView* view = new DocumentView(static_cast<app::Document*>(doc), DocumentView::Normal);
+  DocumentView* view = new DocumentView(m_lastSelectedDoc, DocumentView::Normal);
 
   // Add a tab with the new view for the document
   App::instance()->getMainWindow()->getWorkspace()->addView(view);
@@ -156,6 +165,9 @@ void UIContext::onAddDocument(doc::Document* doc)
 
 void UIContext::onRemoveDocument(doc::Document* doc)
 {
+  if (doc == m_lastSelectedDoc)
+    m_lastSelectedDoc = nullptr;
+
   // We don't destroy views in batch mode.
   if (isUiAvailable()) {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
@@ -175,22 +187,20 @@ void UIContext::onRemoveDocument(doc::Document* doc)
       delete docView;
     }
   }
-
-  Context::onRemoveDocument(doc);
 }
 
-void UIContext::onGetActiveLocation(DocumentLocation* location) const
+void UIContext::onGetActiveSite(Site* site) const
 {
   DocumentView* view = activeView();
   if (view) {
-    view->getDocumentLocation(location);
+    view->getSite(site);
   }
-  // Default/dummy location (maybe for batch/command line mode)
-  else if (Document* doc = activeDocument()) {
-    location->document(doc);
-    location->sprite(doc->sprite());
-    location->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
-    location->frame(0);
+  // Default/dummy site (maybe for batch/command line mode)
+  else if (Document* doc = m_lastSelectedDoc) {
+    site->document(doc);
+    site->sprite(doc->sprite());
+    site->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
+    site->frame(0);
   }
 }
 

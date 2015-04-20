@@ -257,7 +257,7 @@ retry:;
 
   try {
     Sprite* sprite = document->sprite();
-    frame_t currentFrame = context->activeLocation().frame();
+    frame_t currentFrame = context->activeSite().frame();
     render::Render render;
 
     // As first step, we cut each tile and add them into "animation" list.

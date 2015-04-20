@@ -13,8 +13,11 @@
 #include "doc/layer.h"
 #include "gfx/point.h"
 
+namespace doc {
+  class Site;
+}
+
 namespace app {
-  class DocumentLocation;
 
   class ColorPicker {
   public:
@@ -22,7 +25,7 @@ namespace app {
 
     ColorPicker();
 
-    void pickColor(const DocumentLocation& location,
+    void pickColor(const doc::Site& site,
       const gfx::Point& pos, Mode mode);
 
     app::Color color() const { return m_color; }

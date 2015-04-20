@@ -11,12 +11,12 @@
 
 namespace doc {
   class Image;
+  class Site;
 }
 
 namespace app {
-  class DocumentLocation;
 
-  doc::Image* new_image_from_mask(const DocumentLocation& location);
+  doc::Image* new_image_from_mask(const doc::Site& site);
 
 } // namespace app
 

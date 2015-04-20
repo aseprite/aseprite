@@ -1,42 +1,39 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Aseprite Document Library
+// Copyright (c) 2001-2015 David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "app/document_location.h"
+#include "doc/site.h"
 
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
 
-namespace app {
+namespace doc {
 
-using namespace doc;
-
-LayerIndex DocumentLocation::layerIndex() const
+LayerIndex Site::layerIndex() const
 {
   return (m_sprite && m_layer ?
           m_sprite->layerToIndex(m_layer): LayerIndex());
 }
 
-void DocumentLocation::layerIndex(LayerIndex layerIndex)
+void Site::layerIndex(LayerIndex layerIndex)
 {
   ASSERT(m_sprite != NULL);
   m_layer = m_sprite->indexToLayer(layerIndex);
 }
 
-Palette* DocumentLocation::palette()
+Palette* Site::palette()
 {
   return (m_sprite ? m_sprite->palette(m_frame): NULL);
 }
 
-const Cel* DocumentLocation::cel() const
+const Cel* Site::cel() const
 {
   if (m_layer)
     return m_layer->cel(m_frame);
@@ -44,7 +41,7 @@ const Cel* DocumentLocation::cel() const
     return NULL;
 }
 
-Cel* DocumentLocation::cel()
+Cel* Site::cel()
 {
   if (m_layer)
     return m_layer->cel(m_frame);
@@ -52,7 +49,7 @@ Cel* DocumentLocation::cel()
     return NULL;
 }
 
-Image* DocumentLocation::image(int* x, int* y, int* opacity) const
+Image* Site::image(int* x, int* y, int* opacity) const
 {
   Image* image = NULL;
 
@@ -68,9 +65,9 @@ Image* DocumentLocation::image(int* x, int* y, int* opacity) const
   return image;
 }
 
-Palette* DocumentLocation::palette() const
+Palette* Site::palette() const
 {
   return (m_sprite ? m_sprite->palette(m_frame): NULL);
 }
 
-} // namespace app
+} // namespace doc

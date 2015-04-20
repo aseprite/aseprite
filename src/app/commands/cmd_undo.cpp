@@ -70,8 +70,8 @@ void UndoCommand::onExecute(Context* context)
     App::instance()->preferences().undo.gotoModified();
 
   if (gotoModified) {
-    SpritePosition currentPosition(writer.location()->layerIndex(),
-                                   writer.location()->frame());
+    SpritePosition currentPosition(writer.site()->layerIndex(),
+                                   writer.site()->frame());
 
     if (m_type == Undo)
       spritePosition = undo->nextUndoSpritePosition();
@@ -113,8 +113,8 @@ void UndoCommand::onExecute(Context* context)
   // weren't able to reach before the undo).
   if (gotoModified) {
     SpritePosition currentPosition(
-      writer.location()->layerIndex(),
-      writer.location()->frame());
+      writer.site()->layerIndex(),
+      writer.site()->frame());
 
     if (spritePosition != currentPosition) {
       current_editor->setLayer(sprite->indexToLayer(spritePosition.layerIndex()));

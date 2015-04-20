@@ -58,7 +58,7 @@ public:
     centerWindow();
     load_window_pos(this, "ConfigureTool");
 
-    onSetActiveDocument(m_ctx->activeDocument());
+    onActiveDocumentChange(m_ctx->activeDocument());
   }
 
   ~ToolsConfigurationWindow() {
@@ -79,7 +79,7 @@ private:
     return preferences().document(m_ctx->activeDocument());
   }
 
-  void onSetActiveDocument(doc::Document* document) override {
+  void onActiveDocumentChange(doc::Document* document) override {
     DocumentPreferences& docPref = this->docPref();
 
     tiled()->setSelected(docPref.tiled.mode() != filters::TiledMode::NONE);

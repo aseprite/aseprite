@@ -20,12 +20,12 @@ namespace doc {
   class Cel;
   class Image;
   class Layer;
+  class Site;
   class Sprite;
 }
 
 namespace app {
   class Document;
-  class DocumentLocation;
   class Transaction;
 
   using namespace filters;
@@ -45,7 +45,7 @@ namespace app {
       UseModifiedRegionAsUndoInfo = 2,
     };
 
-    ExpandCelCanvas(DocumentLocation location,
+    ExpandCelCanvas(Site site,
       TiledMode tiledMode, Transaction& undo, Flags flags);
     ~ExpandCelCanvas();
 

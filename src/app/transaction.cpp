@@ -25,9 +25,7 @@ Transaction::Transaction(Context* ctx, const std::string& label, Modification mo
   : m_ctx(ctx)
   , m_cmds(NULL)
 {
-  DocumentLocation location = m_ctx->activeLocation();
-
-  m_undo = location.document()->undoHistory();
+  m_undo = m_ctx->activeDocument()->undoHistory();
   m_cmds = new CmdTransaction(label,
     modification == Modification::ModifyDocument,
     m_undo->savedCounter());

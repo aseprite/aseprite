@@ -12,25 +12,25 @@
 #include "app/util/new_image_from_mask.h"
 
 #include "app/document.h"
-#include "app/document_location.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/image_traits.h"
 #include "doc/mask.h"
+#include "doc/site.h"
 
 namespace app {
 
 using namespace doc;
 
-Image* new_image_from_mask(const DocumentLocation& location)
+Image* new_image_from_mask(const Site& site)
 {
-  const Sprite* srcSprite = location.sprite();
-  const Mask* srcMask = location.document()->mask();
+  const Sprite* srcSprite = site.sprite();
+  const Mask* srcMask = static_cast<const app::Document*>(site.document())->mask();
   const Image* srcMaskBitmap = srcMask->bitmap();
   const gfx::Rect& srcBounds = srcMask->bounds();
   int x, y, u, v, getx, gety;
   Image *dst;
-  const Image *src = location.image(&x, &y);
+  const Image *src = site.image(&x, &y);
 
   ASSERT(srcSprite);
   ASSERT(srcMask);

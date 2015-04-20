@@ -21,7 +21,6 @@
 namespace app {
   class Command;
   class Document;
-  class DocumentLocation;
   class ISettings;
 
   class CommandPreconditionException : public base::Exception {
@@ -50,7 +49,6 @@ namespace app {
     void sendDocumentToTop(doc::Document* document);
 
     app::Document* activeDocument() const;
-    DocumentLocation activeLocation() const;
 
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
@@ -60,7 +58,6 @@ namespace app {
 
   protected:
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;
-    virtual void onGetActiveLocation(DocumentLocation* location) const;
 
   private:
     // Settings in this context.

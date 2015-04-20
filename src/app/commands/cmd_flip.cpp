@@ -79,7 +79,7 @@ void FlipCommand::onExecute(Context* context)
       Mask* mask = document->mask();
       CelList cels;
 
-      DocumentLocation loc = *writer.location();
+      Site site = *writer.site();
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled())
         cels = get_unique_cels(sprite, range);
@@ -87,11 +87,11 @@ void FlipCommand::onExecute(Context* context)
         cels.push_back(writer.cel());
 
       for (Cel* cel : cels) {
-        loc.frame(cel->frame());
-        loc.layer(cel->layer());
+        site.frame(cel->frame());
+        site.layer(cel->layer());
 
         int x, y;
-        Image* image = loc.image(&x, &y);
+        Image* image = site.image(&x, &y);
         if (!image)
           continue;
 

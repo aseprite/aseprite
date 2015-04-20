@@ -11,11 +11,12 @@
 
 #include "app/context_access.h"
 #include "app/settings/settings_observers.h"
-#include "app/ui/editor/handle_type.h"
 #include "app/transaction.h"
+#include "app/ui/editor/handle_type.h"
 #include "base/shared_ptr.h"
-#include "gfx/size.h"
 #include "doc/algorithm/flip_type.h"
+#include "doc/site.h"
+#include "gfx/size.h"
 
 namespace doc {
   class Image;
@@ -47,7 +48,7 @@ namespace app {
     // The "moveThis" image specifies the chunk of pixels to be moved.
     // The "x" and "y" parameters specify the initial position of the image.
     PixelsMovement(Context* context,
-      DocumentLocation location,
+      Site site,
       const Image* moveThis,
       const gfx::Point& initialPos, int opacity,
       const char* operationName);
@@ -104,7 +105,7 @@ namespace app {
     void updateDocumentMask();
 
     const ContextReader m_reader;
-    DocumentLocation m_location;
+    Site m_site;
     Document* m_document;
     Sprite* m_sprite;
     Layer* m_layer;

@@ -28,11 +28,11 @@ public:
   }
 
 protected:
-  void updateStatusBar(DocumentLocation& location) {
-    if (location.layer() != NULL)
+  void updateStatusBar(Site& site) {
+    if (site.layer() != NULL)
       StatusBar::instance()
         ->setStatusText(1000, "Layer `%s' selected",
-          location.layer()->name().c_str());
+          site.layer()->name().c_str());
   }
 };
 
@@ -63,19 +63,19 @@ void GotoPreviousLayerCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-  DocumentLocation location = *reader.location();
+  Site site = *reader.site();
 
-  if (location.layerIndex() > 0)
-    location.layerIndex(location.layerIndex().previous());
+  if (site.layerIndex() > 0)
+    site.layerIndex(site.layerIndex().previous());
   else
-    location.layerIndex(LayerIndex(sprite->countLayers()-1));
+    site.layerIndex(LayerIndex(sprite->countLayers()-1));
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
-  current_editor->setLayer(location.layer());
+  current_editor->setLayer(site.layer());
   current_editor->flashCurrentLayer();
 
-  updateStatusBar(location);
+  updateStatusBar(site);
 }
 
 class GotoNextLayerCommand : public GotoCommand {
@@ -105,19 +105,19 @@ void GotoNextLayerCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
   const Sprite* sprite = reader.sprite();
-  DocumentLocation location = *reader.location();
+  Site site = *reader.site();
 
-  if (location.layerIndex() < sprite->countLayers()-1)
-    location.layerIndex(location.layerIndex().next());
+  if (site.layerIndex() < sprite->countLayers()-1)
+    site.layerIndex(site.layerIndex().next());
   else
-    location.layerIndex(LayerIndex(0));
+    site.layerIndex(LayerIndex(0));
 
   // Flash the current layer
   ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
-  current_editor->setLayer(location.layer());
+  current_editor->setLayer(site.layer());
   current_editor->flashCurrentLayer();
 
-  updateStatusBar(location);
+  updateStatusBar(site);
 }
 
 Command* CommandFactory::createGotoPreviousLayerCommand()

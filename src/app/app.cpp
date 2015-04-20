@@ -21,7 +21,6 @@
 #include "app/console.h"
 #include "app/crash/data_recovery.h"
 #include "app/document_exporter.h"
-#include "app/document_location.h"
 #include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
@@ -65,6 +64,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "render/render.h"
 #include "scripting/engine.h"
@@ -424,7 +424,7 @@ void App::initialize(const AppOptions& options)
 
           // Scale all sprites
           for (auto doc : ctx->documents()) {
-            ctx->setActiveDocument(doc);
+            ctx->setActiveDocument(static_cast<app::Document*>(doc));
             ctx->executeCommand(command);
           }
         }
@@ -664,9 +664,9 @@ void app_refresh_screen()
   Context* context = UIContext::instance();
   ASSERT(context != NULL);
 
-  DocumentLocation location = context->activeLocation();
+  Site site = context->activeSite();
 
-  if (Palette* pal = location.palette())
+  if (Palette* pal = site.palette())
     set_current_palette(pal, false);
   else
     set_current_palette(NULL, false);

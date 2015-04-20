@@ -12,8 +12,8 @@
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "app/file/gif_options.h"
-#include "app/test_context.h"
 #include "doc/doc.h"
+#include "doc/test_context.h"
 #include "she/scoped_handle.h"
 #include "she/system.h"
 
@@ -26,7 +26,7 @@ public:
   }
 
 protected:
-  app::TestContext m_ctx;
+  doc::TestContextT<app::Context> m_ctx;
   she::ScopedHandle<she::System> m_system;
 };
 

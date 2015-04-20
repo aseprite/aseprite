@@ -95,7 +95,7 @@ void FramePropertiesCommand::onExecute(Context* context)
       break;
 
     case CURRENT_RANGE: {
-      // TODO the range of selected frames should be in the DocumentLocation.
+      // TODO the range of selected frames should be in doc::Site.
       Timeline::Range range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled()) {
         firstFrame = range.frameBegin();

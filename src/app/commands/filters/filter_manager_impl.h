@@ -9,14 +9,14 @@
 #define APP_COMMANDS_FILTERS_FILTER_MANAGER_IMPL_H_INCLUDED
 #pragma once
 
-#include "app/document_location.h"
 #include "base/exception.h"
 #include "base/unique_ptr.h"
-#include "filters/filter_indexed_data.h"
-#include "filters/filter_manager.h"
 #include "doc/image_bits.h"
 #include "doc/image_traits.h"
 #include "doc/pixel_format.h"
+#include "doc/site.h"
+#include "filters/filter_indexed_data.h"
+#include "filters/filter_manager.h"
 
 #include <cstring>
 
@@ -72,7 +72,7 @@ namespace app {
 
     void setProgressDelegate(IProgressDelegate* progressDelegate);
 
-    PixelFormat pixelFormat() const;
+    doc::PixelFormat pixelFormat() const;
 
     void setTarget(Target target);
 
@@ -82,11 +82,11 @@ namespace app {
     bool applyStep();
     void applyToTarget();
 
-    Document* document() { return m_location.document(); }
-    Sprite* sprite() { return m_location.sprite(); }
-    Layer* layer() { return m_location.layer(); }
-    frame_t frame() { return m_location.frame(); }
-    Image* destinationImage() const { return m_dst; }
+    app::Document* document();
+    doc::Sprite* sprite() { return m_site.sprite(); }
+    doc::Layer* layer() { return m_site.layer(); }
+    doc::frame_t frame() { return m_site.frame(); }
+    doc::Image* destinationImage() const { return m_dst; }
 
     // Updates the current editor to show the progress of the preview.
     void flush();
@@ -98,30 +98,30 @@ namespace app {
     Target getTarget() { return m_target; }
     FilterIndexedData* getIndexedData() { return this; }
     bool skipPixel();
-    const Image* getSourceImage() { return m_src; }
+    const doc::Image* getSourceImage() { return m_src; }
     int x() { return m_x; }
     int y() { return m_y+m_row; }
 
     // FilterIndexedData implementation
-    Palette* getPalette();
-    RgbMap* getRgbMap();
+    doc::Palette* getPalette();
+    doc::RgbMap* getRgbMap();
 
   private:
-    void init(const Layer* layer, Image* image, int offset_x, int offset_y);
+    void init(const doc::Layer* layer, doc::Image* image, int offset_x, int offset_y);
     void apply(Transaction& transaction);
-    void applyToImage(Transaction& transaction, Layer* layer, Image* image, int x, int y);
-    bool updateMask(Mask* mask, const Image* image);
+    void applyToImage(Transaction& transaction, doc::Layer* layer, doc::Image* image, int x, int y);
+    bool updateMask(doc::Mask* mask, const doc::Image* image);
 
     Context* m_context;
-    DocumentLocation m_location;
+    doc::Site m_site;
     Filter* m_filter;
-    Image* m_src;
-    base::UniquePtr<Image> m_dst;
+    doc::Image* m_src;
+    base::UniquePtr<doc::Image> m_dst;
     int m_row;
     int m_x, m_y, m_w, m_h;
     int m_offset_x, m_offset_y;
-    Mask* m_mask;
-    base::UniquePtr<Mask> m_preview_mask;
+    doc::Mask* m_mask;
+    base::UniquePtr<doc::Mask> m_preview_mask;
     doc::ImageBits<doc::BitmapTraits> m_maskBits;
     doc::ImageBits<doc::BitmapTraits>::iterator m_maskIterator;
     Target m_targetOrig;          // Original targets

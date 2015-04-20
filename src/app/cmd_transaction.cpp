@@ -12,7 +12,7 @@
 #include "app/cmd_transaction.h"
 
 #include "app/context.h"
-#include "app/document_location.h"
+#include "doc/site.h"
 
 namespace app {
 
@@ -64,8 +64,8 @@ std::string CmdTransaction::onLabel() const
 
 doc::SpritePosition CmdTransaction::calcSpritePosition()
 {
-  app::DocumentLocation loc = context()->activeLocation();
-  return doc::SpritePosition(loc.layerIndex(), loc.frame());
+  doc::Site site = context()->activeSite();
+  return doc::SpritePosition(site.layerIndex(), site.frame());
 }
 
 } // namespace app

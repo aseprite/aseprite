@@ -16,7 +16,6 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "app/settings/settings.h"
 
 #include <algorithm>
@@ -50,14 +49,6 @@ void Context::sendDocumentToTop(doc::Document* document)
 app::Document* Context::activeDocument() const
 {
   return static_cast<app::Document*>(doc::Context::activeDocument());
-}
-
-DocumentLocation Context::activeLocation() const
-{
-  DocumentLocation location;
-  onGetActiveLocation(&location);
-  ASSERT(location.document() == doc::Context::activeDocument());
-  return location;
 }
 
 void Context::executeCommand(const char* commandName)
@@ -122,11 +113,6 @@ void Context::executeCommand(Command* command, const Params& params)
 void Context::onCreateDocument(doc::CreateDocumentArgs* args)
 {
   args->setDocument(new app::Document(NULL));
-}
-
-void Context::onGetActiveLocation(DocumentLocation* location) const
-{
-  // Without active location
 }
 
 } // namespace app

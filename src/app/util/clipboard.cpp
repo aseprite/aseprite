@@ -16,7 +16,6 @@
 #include "app/context_access.h"
 #include "app/document.h"
 #include "app/document_api.h"
-#include "app/document_location.h"
 #include "app/document_range.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
@@ -83,7 +82,7 @@ namespace {
 using namespace doc;
 
 static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard);
-static bool copy_from_document(const DocumentLocation& location);
+static bool copy_from_document(const Site& site);
 
 static bool first_time = true;
 
@@ -120,20 +119,20 @@ static void set_clipboard_image(Image* image, Palette* palette, bool set_system_
   clipboard_range.invalidate();
 }
 
-static bool copy_from_document(const DocumentLocation& location)
+static bool copy_from_document(const Site& site)
 {
-  const Document* document = location.document();
+  const app::Document* document = static_cast<const app::Document*>(site.document());
 
   ASSERT(document != NULL);
   ASSERT(document->isMaskVisible());
 
-  Image* image = new_image_from_mask(location);
+  Image* image = new_image_from_mask(site);
   if (!image)
     return false;
 
   clipboard_pos = document->mask()->bounds().getOrigin();
 
-  const Palette* pal = document->sprite()->palette(location.frame());
+  const Palette* pal = document->sprite()->palette(site.frame());
   set_clipboard_image(image, pal ? new Palette(*pal): NULL, true);
   return true;
 }
@@ -175,7 +174,7 @@ void clipboard::cut(ContextWriter& writer)
   ASSERT(writer.sprite() != NULL);
   ASSERT(writer.layer() != NULL);
 
-  if (!copy_from_document(*writer.location())) {
+  if (!copy_from_document(*writer.site())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
   }
@@ -195,7 +194,7 @@ void clipboard::copy(const ContextReader& reader)
 {
   ASSERT(reader.document() != NULL);
 
-  if (!copy_from_document(*reader.location())) {
+  if (!copy_from_document(*reader.site())) {
     Console console;
     console.printf("Can't copying an image portion from the current layer\n");
     return;

@@ -64,7 +64,7 @@ void MaskContentCommand::onExecute(Context* context)
   gfx::Color color;
   if (writer.layer()->isBackground()) {
     ColorPicker picker;
-    picker.pickColor(*writer.location(), gfx::Point(0, 0), ColorPicker::FromComposition);
+    picker.pickColor(*writer.site(), gfx::Point(0, 0), ColorPicker::FromComposition);
     color = color_utils::color_for_layer(picker.color(), writer.layer());
   }
   else

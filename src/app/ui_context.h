@@ -29,6 +29,7 @@ namespace app {
 
     DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);
+    void setActiveDocument(Document* document);
 
     DocumentView* getFirstDocumentView(Document* document) const;
 
@@ -40,11 +41,12 @@ namespace app {
     Editor* getEditorFor(Document* document);
 
   protected:
-    virtual void onAddDocument(doc::Document* doc) override;
-    virtual void onRemoveDocument(doc::Document* doc) override;
-    virtual void onGetActiveLocation(DocumentLocation* location) const override;
+    void onAddDocument(doc::Document* doc) override;
+    void onRemoveDocument(doc::Document* doc) override;
+    void onGetActiveSite(doc::Site* site) const override;
 
   private:
+    Document* m_lastSelectedDoc;
     DocumentView* m_lastSelectedView;
     static UIContext* m_instance;
   };

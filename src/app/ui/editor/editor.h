@@ -28,8 +28,9 @@
 #include "ui/widget.h"
 
 namespace doc {
-  class Sprite;
   class Layer;
+  class Site;
+  class Sprite;
 }
 namespace gfx {
   class Region;
@@ -41,7 +42,6 @@ namespace ui {
 
 namespace app {
   class Context;
-  class DocumentLocation;
   class DocumentView;
   class EditorCustomizationDelegate;
   class PixelsMovement;
@@ -106,8 +106,8 @@ namespace app {
     Layer* layer() { return m_layer; }
     frame_t frame() { return m_frame; }
 
-    void getDocumentLocation(DocumentLocation* location) const;
-    DocumentLocation getDocumentLocation() const;
+    void getSite(Site* site) const;
+    Site getSite() const;
 
     void setLayer(const Layer* layer);
     void setFrame(frame_t frame);

@@ -7,13 +7,15 @@
 
 #include "tests/test.h"
 
+#include "app/context.h"
+#include "app/document.h"
 #include "app/document_api.h"
-#include "app/test_context.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
+#include "doc/test_context.h"
 
 using namespace app;
 using namespace doc;
@@ -21,7 +23,7 @@ using namespace doc;
 typedef base::UniquePtr<app::Document> DocumentPtr;
 
 TEST(DocumentApi, MoveCel) {
-  TestContext ctx;
+  TestContextT<app::Context> ctx;
   DocumentPtr doc(static_cast<app::Document*>(ctx.documents().add(32, 16)));
   Sprite* sprite = doc->sprite();
   LayerImage* layer1 = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());

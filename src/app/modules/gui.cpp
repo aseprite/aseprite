@@ -15,7 +15,6 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"

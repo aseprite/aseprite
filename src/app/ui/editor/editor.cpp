@@ -17,7 +17,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
-#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -269,19 +268,19 @@ void Editor::setFrame(frame_t frame)
   }
 }
 
-void Editor::getDocumentLocation(DocumentLocation* location) const
+void Editor::getSite(Site* site) const
 {
-  location->document(m_document);
-  location->sprite(m_sprite);
-  location->layer(m_layer);
-  location->frame(m_frame);
+  site->document(m_document);
+  site->sprite(m_sprite);
+  site->layer(m_layer);
+  site->frame(m_frame);
 }
 
-DocumentLocation Editor::getDocumentLocation() const
+Site Editor::getSite() const
 {
-  DocumentLocation location;
-  getDocumentLocation(&location);
-  return location;
+  Site site;
+  getSite(&site);
+  return site;
 }
 
 void Editor::setDefaultScroll()
@@ -745,10 +744,10 @@ void Editor::flashCurrentLayer()
   if (!App::instance()->preferences().experimental.flashLayer())
     return;
 
-  DocumentLocation loc = getDocumentLocation();
+  Site site = getSite();
 
   int x, y;
-  const Image* src_image = loc.image(&x, &y);
+  const Image* src_image = site.image(&x, &y);
   if (src_image) {
     m_renderEngine.removePreviewImage();
 
@@ -1484,8 +1483,7 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
-      getDocumentLocation(),
-      image, gfx::Point(x, y), opacity, "Paste"));
+      getSite(), image, gfx::Point(x, y), opacity, "Paste"));
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image);

@@ -12,11 +12,13 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
+#include "app/document.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/util/clipboard.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/base.h"
 
@@ -53,9 +55,9 @@ void CopyCommand::onExecute(Context* context)
   if (range.enabled()) {
     clipboard::copy_range(reader, range);
   }
-  else if (reader.location()->document() &&
-           reader.location()->document()->isMaskVisible() &&
-           reader.location()->image()) {
+  else if (reader.site()->document() &&
+           static_cast<const app::Document*>(reader.site()->document())->isMaskVisible() &&
+           reader.site()->image()) {
     clipboard::copy(reader);
   }
 }

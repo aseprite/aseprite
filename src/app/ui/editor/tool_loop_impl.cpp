@@ -112,7 +112,7 @@ public:
                       getInk()->isSlice() ||
                       getInk()->isZoom()) ? DoesntModifyDocument:
                                             ModifyDocument))
-    , m_expandCelCanvas(editor->getDocumentLocation(),
+    , m_expandCelCanvas(editor->getSite(),
         m_docPref.tiled.mode(),
         m_transaction,
         ExpandCelCanvas::Flags(

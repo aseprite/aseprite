@@ -10,7 +10,7 @@
 
 #include "doc/context.h"
 
-#include <algorithm>
+#include "doc/site.h"
 
 namespace doc {
 
@@ -23,30 +23,46 @@ Context::Context()
 
 Context::~Context()
 {
-  setActiveDocument(NULL);
   m_docs.removeObserver(this);
+}
+
+Site Context::activeSite() const
+{
+  Site site;
+  onGetActiveSite(&site);
+  return site;
 }
 
 Document* Context::activeDocument() const
 {
-  return m_activeDoc;
+  Site site;
+  onGetActiveSite(&site);
+  return site.document();
 }
 
-void Context::setActiveDocument(Document* doc)
+void Context::notifyActiveDocumentChanged(Document* doc)
 {
-  m_activeDoc = doc;
-  notifyObservers(&ContextObserver::onSetActiveDocument, doc);
+  notifyObservers(&ContextObserver::onActiveDocumentChange, doc);
+}
+
+void Context::notifyActiveSiteChanged(Site* site)
+{
+  notifyObservers(&ContextObserver::onActiveSiteChange, site);
+}
+
+void Context::onGetActiveSite(Site* site) const
+{
+  ASSERT(false);
 }
 
 void Context::onAddDocument(Document* doc)
 {
-  m_activeDoc = doc;
+  // Do nothing
 }
 
 void Context::onRemoveDocument(Document* doc)
 {
-  if (m_activeDoc == doc)
-    setActiveDocument(!m_docs.empty() ? m_docs.back() : NULL);
+  // Do nothing
 }
 
 } // namespace doc

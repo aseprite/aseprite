@@ -195,7 +195,7 @@ void ColorBar::setPaletteEditorButtonState(bool state)
   m_paletteButton.setSelected(state);
 }
 
-void ColorBar::onSetActiveDocument(doc::Document* document)
+void ColorBar::onActiveDocumentChange(doc::Document* document)
 {
   destroyRemap();
 }

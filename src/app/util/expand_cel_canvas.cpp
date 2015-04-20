@@ -18,7 +18,6 @@
 #include "app/cmd/set_cel_position.h"
 #include "app/context.h"
 #include "app/document.h"
-#include "app/document_location.h"
 #include "app/transaction.h"
 #include "app/util/range_utils.h"
 #include "base/unique_ptr.h"
@@ -26,6 +25,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 
 namespace {
@@ -53,11 +53,11 @@ static void create_buffers()
 
 namespace app {
 
-ExpandCelCanvas::ExpandCelCanvas(DocumentLocation location,
+ExpandCelCanvas::ExpandCelCanvas(Site site,
   TiledMode tiledMode, Transaction& transaction, Flags flags)
-  : m_document(location.document())
-  , m_sprite(location.sprite())
-  , m_layer(location.layer())
+  : m_document(static_cast<app::Document*>(site.document()))
+  , m_sprite(site.sprite())
+  , m_layer(site.layer())
   , m_cel(NULL)
   , m_celImage(NULL)
   , m_celCreated(false)
@@ -71,7 +71,7 @@ ExpandCelCanvas::ExpandCelCanvas(DocumentLocation location,
   create_buffers();
 
   if (m_layer->isImage()) {
-    m_cel = m_layer->cel(location.frame());
+    m_cel = m_layer->cel(site.frame());
     if (m_cel)
       m_celImage = m_cel->imageRef();
   }
@@ -79,7 +79,7 @@ ExpandCelCanvas::ExpandCelCanvas(DocumentLocation location,
   // Create a new cel
   if (m_cel == NULL) {
     m_celCreated = true;
-    m_cel = new Cel(location.frame(), ImageRef(NULL));
+    m_cel = new Cel(site.frame(), ImageRef(NULL));
   }
 
   m_origCelPos = m_cel->position();

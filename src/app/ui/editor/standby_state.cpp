@@ -15,7 +15,6 @@
 #include "app/color_picker.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
-#include "app/document_location.h"
 #include "app/ini_file.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
@@ -145,10 +144,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   UIContext* context = UIContext::instance();
   tools::Ink* clickedInk = editor->getCurrentEditorInk();
-  DocumentLocation location;
-  editor->getDocumentLocation(&location);
-  Document* document = location.document();
-  Layer* layer = location.layer();
+  Site site;
+  editor->getSite(&site);
+  app::Document* document = static_cast<app::Document*>(site.document());
+  Layer* layer = site.layer();
 
   // When an editor is clicked the current view is changed.
   context->setActiveView(editor->getDocumentView());
@@ -164,7 +163,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       gfx::Point cursor = editor->screenToEditor(msg->position());
 
       ColorPicker picker;
-      picker.pickColor(location, cursor, ColorPicker::FromComposition);
+      picker.pickColor(site, cursor, ColorPicker::FromComposition);
 
       if (layer != picker.layer()) {
         layer = picker.layer();
@@ -217,7 +216,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
       if (handle != NoHandle) {
         int x, y, opacity;
-        Image* image = location.image(&x, &y, &opacity);
+        Image* image = site.image(&x, &y, &opacity);
         if (layer && image) {
           if (!layer->isEditable()) {
             StatusBar::instance()->showTip(1000,
@@ -370,7 +369,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   else if (ink->isEyedropper()) {
     bool grabAlpha = UIContext::instance()->settings()->getGrabAlpha();
     ColorPicker picker;
-    picker.pickColor(editor->getDocumentLocation(),
+    picker.pickColor(editor->getSite(),
       spritePos,
       grabAlpha ?
       ColorPicker::FromActiveLayer:
@@ -416,12 +415,12 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   try {
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
-    base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getDocumentLocation()));
+    base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));
     gfx::Point origin = document->mask()->bounds().getOrigin();
     int opacity = 255;
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-        editor->getDocumentLocation(),
+        editor->getSite(),
         tmpImage, origin, opacity,
         "Transformation"));
 

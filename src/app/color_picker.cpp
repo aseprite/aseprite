@@ -11,10 +11,10 @@
 
 #include "app/color_picker.h"
 
-#include "app/document_location.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
 #include "gfx/point.h"
 #include "render/get_sprite_pixel.h"
@@ -27,7 +27,7 @@ ColorPicker::ColorPicker()
 {
 }
 
-void ColorPicker::pickColor(const DocumentLocation& location,
+void ColorPicker::pickColor(const doc::Site& site,
   const gfx::Point& pos, Mode mode)
 {
   m_alpha = 255;
@@ -36,17 +36,17 @@ void ColorPicker::pickColor(const DocumentLocation& location,
   // Get the color from the image
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
-      location.sprite()->pixelFormat(),
-      render::get_sprite_pixel(location.sprite(), pos.x, pos.y, location.frame()));
+      site.sprite()->pixelFormat(),
+      render::get_sprite_pixel(site.sprite(), pos.x, pos.y, site.frame()));
 
     doc::CelList cels;
-    location.sprite()->pickCels(pos.x, pos.y, location.frame(), 128, cels);
+    site.sprite()->pickCels(pos.x, pos.y, site.frame(), 128, cels);
     if (!cels.empty())
       m_layer = cels.front()->layer();
   }
   else {                        // Pick from the current layer
     int u, v;
-    doc::Image* image = location.image(&u, &v, NULL);
+    doc::Image* image = site.image(&u, &v, NULL);
     gfx::Point pt(pos.x-u, pos.y-v);
 
     if (image && image->bounds().contains(pt)) {
@@ -62,7 +62,7 @@ void ColorPicker::pickColor(const DocumentLocation& location,
       }
 
       m_color = app::Color::fromImage(image->pixelFormat(), imageColor);
-      m_layer = const_cast<Layer*>(location.layer());
+      m_layer = const_cast<Layer*>(site.layer());
     }
   }
 }
