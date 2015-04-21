@@ -55,75 +55,138 @@ namespace {
 typedef std::map<ObjectId, ObjectVersion> Versions;
 static std::map<ObjectId, Versions> g_documentObjects;
 
-template<typename T, typename WriteFunc>
-void save_object(const char* prefix, T* obj, WriteFunc write_func, Versions& versions, const std::string& dir)
-{
-  if (!obj->version())
-    obj->incrementVersion();
-
-  if (versions[obj->id()] != obj->version()) {
-    OFSTREAM(dir, s, prefix ? prefix + base::convert_to<std::string>(obj->id()): "doc");
-    write_func(s, obj);
-    versions[obj->id()] = obj->version();
-
-    TRACE(" - %s %d saved with version %d\n",
-      prefix, obj->id(), obj->version());
+class Writer {
+public:
+  Writer(const std::string& dir, app::Document* doc)
+    : m_dir(dir)
+    , m_doc(doc)
+    , m_versions(g_documentObjects[doc->id()]) {
   }
-  else {
-    TRACE(" - Ignoring %s %d (version %d already saved)\n",
-      prefix, obj->id(), obj->version());
-  }
-}
 
-void write_document_file(std::ofstream& s, app::Document* doc)
-{
-  write32(s, doc->sprite()->id());
-  write_string(s, doc->filename());
-}
+  void saveDocument() {
+    Sprite* spr = m_doc->sprite();
 
-void write_sprite(std::ofstream& s, Sprite* spr)
-{
-  write8(s, spr->pixelFormat());
-  write16(s, spr->width());
-  write16(s, spr->height());
-  write32(s, spr->transparentColor());
+    saveObject(nullptr, m_doc, &Writer::writeDocumentFile);
+    saveObject("spr", spr, &Writer::writeSprite);
 
-  // Frame durations
-  write32(s, spr->totalFrames());
-  for (frame_t fr = 0; fr < spr->totalFrames(); ++fr)
-    write32(s, spr->frameDuration(fr));
+    //////////////////////////////////////////////////////////////////////
+    // Create one stream for each object
 
-  // IDs of all main layers
-  std::vector<Layer*> layers;
-  spr->getLayersList(layers);
-  write32(s, layers.size());
-  for (Layer* lay : layers)
-    write32(s, lay->id());
+    for (Palette* pal : spr->getPalettes())
+      saveObject("pal", pal, &Writer::writePalette);
 
-  // IDs of all palettes
-  write32(s, spr->getPalettes().size());
-  for (Palette* pal : spr->getPalettes())
-    write32(s, pal->id());
-}
+    for (FrameTag* frtag : spr->frameTags())
+      saveObject("frtag", frtag, &Writer::writeFrameTag);
 
-void write_layer_structure(std::ofstream& s, Layer* lay)
-{
-  write32(s, static_cast<int>(lay->flags())); // Flags
-  write16(s, static_cast<int>(lay->type()));  // Type
-  write_string(s, lay->name());
+    std::vector<Layer*> layers;
+    spr->getLayersList(layers);
+    for (Layer* lay : layers)
+      saveObject("lay", lay, &Writer::writeLayerStructure);
 
-  if (lay->type() == ObjectType::LayerImage) {
-    CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
-    CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+    for (Cel* cel : spr->cels())
+      saveObject("cel", cel, &Writer::writeCel);
 
-    // Cels
-    write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
-    for (it=begin; it != end; ++it) {
-      const Cel* cel = *it;
-      write32(s, cel->id());
+    // Images (CelData)
+    for (Cel* cel : spr->uniqueCels()) {
+      saveObject("celdata", cel->data(), &Writer::writeCelData);
+      saveObject("img", cel->image(), &Writer::writeImage);
     }
   }
-}
+
+private:
+
+  void writeDocumentFile(std::ofstream& s, app::Document* doc) {
+    write32(s, doc->sprite()->id());
+    write_string(s, doc->filename());
+  }
+
+  void writeSprite(std::ofstream& s, Sprite* spr) {
+    write8(s, spr->pixelFormat());
+    write16(s, spr->width());
+    write16(s, spr->height());
+    write32(s, spr->transparentColor());
+
+    // Frame durations
+    write32(s, spr->totalFrames());
+    for (frame_t fr = 0; fr < spr->totalFrames(); ++fr)
+      write32(s, spr->frameDuration(fr));
+
+    // IDs of all main layers
+    std::vector<Layer*> layers;
+    spr->getLayersList(layers);
+    write32(s, layers.size());
+    for (Layer* lay : layers)
+      write32(s, lay->id());
+
+    // IDs of all palettes
+    write32(s, spr->getPalettes().size());
+    for (Palette* pal : spr->getPalettes())
+      write32(s, pal->id());
+  }
+
+  void writeLayerStructure(std::ofstream& s, Layer* lay) {
+    write32(s, static_cast<int>(lay->flags())); // Flags
+    write16(s, static_cast<int>(lay->type()));  // Type
+    write_string(s, lay->name());
+
+    if (lay->type() == ObjectType::LayerImage) {
+      CelConstIterator it, begin = static_cast<const LayerImage*>(lay)->getCelBegin();
+      CelConstIterator end = static_cast<const LayerImage*>(lay)->getCelEnd();
+
+      // Cels
+      write32(s, static_cast<const LayerImage*>(lay)->getCelsCount());
+      for (it=begin; it != end; ++it) {
+        const Cel* cel = *it;
+        write32(s, cel->id());
+      }
+    }
+  }
+
+  void writeCel(std::ofstream& s, Cel* cel) {
+    write_cel(s, cel);
+  }
+
+  void writeCelData(std::ofstream& s, CelData* celdata) {
+    write_celdata(s, celdata);
+  }
+
+  void writeImage(std::ofstream& s, Image* img) {
+    write_image(s, img);
+  }
+
+  void writePalette(std::ofstream& s, Palette* pal) {
+    write_palette(s, pal);
+  }
+
+  void writeFrameTag(std::ofstream& s, FrameTag* frameTag) {
+    write_frame_tag(s, frameTag);
+  }
+
+  template<typename T>
+  void saveObject(const char* prefix, T* obj, void (Writer::*writeMember)(std::ofstream&, T*)) {
+    if (!obj->version())
+      obj->incrementVersion();
+
+    if (m_versions[obj->id()] != obj->version()) {
+      std::string fn = (prefix ? prefix + base::convert_to<std::string>(obj->id()): "doc");
+
+      OFSTREAM(m_dir, s, fn);
+      (this->*writeMember)(s, obj);
+      m_versions[obj->id()] = obj->version();
+
+      TRACE(" - %s %d saved with version %d\n",
+            prefix, obj->id(), obj->version());
+    }
+    else {
+      TRACE(" - Ignoring %s %d (version %d already saved)\n",
+            prefix, obj->id(), obj->version());
+    }
+  }
+
+  std::string m_dir;
+  app::Document* m_doc;
+  Versions& m_versions;
+};
 
 } // anonymous namespace
 
@@ -132,34 +195,8 @@ void write_layer_structure(std::ofstream& s, Layer* lay)
 
 void write_document(const std::string& dir, app::Document* doc)
 {
-  Versions& versions = g_documentObjects[doc->id()];
-  Sprite* spr = doc->sprite();
-
-  save_object(nullptr, doc, write_document_file, versions, dir);
-  save_object("spr", spr, write_sprite, versions, dir);
-
-  //////////////////////////////////////////////////////////////////////
-  // Create one stream for each object
-
-  for (Palette* pal : spr->getPalettes())
-    save_object("pal", pal, write_palette, versions, dir);
-
-  for (FrameTag* frtag : spr->frameTags())
-    save_object("frtag", frtag, write_frame_tag, versions, dir);
-
-  std::vector<Layer*> layers;
-  spr->getLayersList(layers);
-  for (Layer* lay : layers)
-    save_object("lay", lay, write_layer_structure, versions, dir);
-
-  for (Cel* cel : spr->cels())
-    save_object("cel", cel, write_cel, versions, dir);
-
-  // Images (CelData)
-  for (Cel* cel : spr->uniqueCels()) {
-    save_object("celdata", cel->data(), write_celdata, versions, dir);
-    save_object("img", cel->image(), write_image, versions, dir);
-  }
+  Writer writer(dir, doc);
+  writer.saveDocument();
 }
 
 void delete_document_internals(app::Document* doc)
