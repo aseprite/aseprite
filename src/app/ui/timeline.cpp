@@ -809,7 +809,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
 
   try {
     // Lock the sprite to read/render it.
-    const DocumentReader documentReader(m_document, 250);
+    const DocumentReader documentReader(m_document, 0);
 
     LayerIndex layer, first_layer, last_layer;
     frame_t frame, first_frame, last_frame;
