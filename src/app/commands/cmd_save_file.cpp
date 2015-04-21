@@ -200,8 +200,6 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     else
       documentWriter->incrementVersion();
   }
-
-  update_screen_for_document(document);
 }
 
 //static
@@ -255,7 +253,6 @@ void SaveFileCommand::onExecute(Context* context)
 
     save_document_in_background(context, documentWriter, true,
       m_filenameFormat.c_str());
-    update_screen_for_document(documentWriter);
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
@@ -312,7 +309,6 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
   {
     ContextWriter writer(reader);
     writer.document()->setFilename(old_filename.c_str());
-    update_screen_for_document(writer.document());
   }
 }
 
