@@ -150,8 +150,10 @@ bool Sprite::needAlpha() const
 {
   switch (m_format) {
     case IMAGE_RGB:
-    case IMAGE_GRAYSCALE:
-      return (backgroundLayer() == NULL);
+    case IMAGE_GRAYSCALE: {
+      Layer* bg = backgroundLayer();
+      return (!bg || !bg->isVisible());
+    }
   }
   return false;
 }

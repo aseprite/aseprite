@@ -33,13 +33,14 @@ protected:
 
 private:
   Action m_action;
-  int m_percentage;
+  render::Zoom m_zoom;
 };
 
 ZoomCommand::ZoomCommand()
   : Command("Zoom",
             "Zoom",
             CmdUIOnlyFlag)
+  , m_zoom(1, 1)
 {
 }
 
@@ -52,7 +53,8 @@ void ZoomCommand::onLoadParams(const Params& params)
 
   std::string percentage = params.get("percentage");
   if (!percentage.empty()) {
-    m_percentage = std::strtol(percentage.c_str(), NULL, 10);
+    m_zoom = render::Zoom::fromScale(
+      std::strtod(percentage.c_str(), NULL) / 100.0);
     m_action = Set;
   }
 }
@@ -74,7 +76,7 @@ void ZoomCommand::onExecute(Context* context)
       zoom.out();
       break;
     case Set:
-      zoom = render::Zoom::fromScale(double(m_percentage) / 100.0);
+      zoom = m_zoom;
       break;
   }
 
@@ -93,7 +95,7 @@ std::string ZoomCommand::onGetFriendlyName() const
       text += " out";
       break;
     case Set:
-      text += " " + base::convert_to<std::string>(m_percentage) + "%";
+      text += " " + base::convert_to<std::string>(int(100.0*m_zoom.scale())) + "%";
       break;
   }
 
