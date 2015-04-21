@@ -244,6 +244,7 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
   ASSERT(from);
   DropViewAtResult result;
   Workspace* workspace = getWorkspace();
+  WorkspaceView* originalView = view;
   if (clone) {
     view = view->cloneWorkspaceView();
     result = DropViewAtResult::CLONED_VIEW;
@@ -305,6 +306,10 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
 
   workspace->addViewToPanel(newPanel, view, true, -1);
   parent->layout();
+
+  if (result == DropViewAtResult::CLONED_VIEW)
+    view->onClonedFrom(originalView);
+
   return result;
 }
 

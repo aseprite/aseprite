@@ -292,11 +292,16 @@ void MainWindow::onCloseTab(Tabs* tabs, TabView* tabView)
 
 void MainWindow::onCloneTab(Tabs* tabs, TabView* tabView, int pos)
 {
+  EditorView::SetScrollUpdateMethod(EditorView::KeepOrigin);
+
   WorkspaceView* view = dynamic_cast<WorkspaceView*>(tabView);
-  WorkspaceView* copy = view->cloneWorkspaceView();
-  ASSERT(copy);
+  WorkspaceView* clone = view->cloneWorkspaceView();
+  ASSERT(clone);
+
   m_workspace->addViewToPanel(
-    static_cast<WorkspaceTabs*>(tabs)->panel(), copy, true, pos);
+    static_cast<WorkspaceTabs*>(tabs)->panel(), clone, true, pos);
+
+  clone->onClonedFrom(view);
 }
 
 void MainWindow::onContextMenuTab(Tabs* tabs, TabView* tabView)

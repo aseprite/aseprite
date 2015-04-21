@@ -215,6 +215,7 @@ DropViewAtResult Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* vie
     int pos = tabs->getDropTabIndex();
     DropViewAtResult result;
 
+    WorkspaceView* originalView = view;
     if (clone) {
       view = view->cloneWorkspaceView();
       result = DropViewAtResult::CLONED_VIEW;
@@ -225,6 +226,10 @@ DropViewAtResult Workspace::dropViewAt(const gfx::Point& pos, WorkspaceView* vie
     }
 
     addViewToPanel(dropPanel, view, true, pos);
+
+    if (result == DropViewAtResult::CLONED_VIEW)
+      view->onClonedFrom(originalView);
+
     return result;
   }
   else
@@ -239,6 +244,7 @@ void Workspace::addViewToPanel(WorkspacePanel* panel, WorkspaceView* view, bool 
   m_views.push_back(view);
 
   setActiveView(view);
+  layout();
 }
 
 WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
