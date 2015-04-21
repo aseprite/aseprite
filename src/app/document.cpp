@@ -543,6 +543,8 @@ bool Document::lock(LockType lockType, int timeout)
     if (timeout > 0) {
       int delay = MIN(100, timeout);
       timeout -= delay;
+
+      TRACE("Document::lock: wait 100 msecs for <%d>\n", id());
       base::this_thread::sleep_for(double(delay) / 1000.0);
     }
     else
@@ -569,6 +571,7 @@ bool Document::lockToWrite(int timeout)
       }
     }
     timeout -= 100;
+    TRACE("Document::lockToWrite: wait 100 msecs for <%d>\n", id());
     base::this_thread::sleep_for(0.100);
   }
 
