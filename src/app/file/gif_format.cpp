@@ -535,7 +535,7 @@ bool GifFormat::onSave(FileOp* fop)
   PixelFormat sprite_format = sprite->pixelFormat();
   bool interlaced = gif_options->interlaced();
   int loop = (gif_options->loop() ? 0: -1);
-  bool has_background = (sprite->backgroundLayer() ? true: false);
+  bool has_background = (sprite->backgroundLayer() && sprite->backgroundLayer()->isVisible());
   int background_color = (sprite_format == IMAGE_INDEXED ? sprite->transparentColor(): 0);
   int transparent_index = (has_background ? -1: sprite->transparentColor());
 

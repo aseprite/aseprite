@@ -414,10 +414,11 @@ bool PngFormat::onSave(FileOp* fop)
 
     png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
 
-    // If the sprite does not have a background layer, we include the
-    // alpha information of palette entries to indicate which is the
-    // transparent color.
-    if (fop->document->sprite()->backgroundLayer() == NULL) {
+    // If the sprite does not have a (visible) background layer, we
+    // include the alpha information of palette entries to indicate
+    // which is the transparent color.
+    if (fop->document->sprite()->backgroundLayer() == NULL ||
+        !fop->document->sprite()->backgroundLayer()->isVisible()) {
       int mask_entry = fop->document->sprite()->transparentColor();
       int num_trans = mask_entry+1;
       png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
