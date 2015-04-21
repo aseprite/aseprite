@@ -1351,6 +1351,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       // The sprite is locked to be read, so we can draw an opaque
       // background only.
       g->fillRect(theme->colors.editorFace(), rc);
+      defer_invalid_rect(g->getClipBounds().offset(getBounds().getOrigin()));
     }
   }
 }

@@ -885,6 +885,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
   }
   catch (const LockedDocumentException&) {
     noDoc = true;
+    defer_invalid_rect(g->getClipBounds().offset(getBounds().getOrigin()));
   }
 
 paintNoDoc:;

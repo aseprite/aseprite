@@ -87,6 +87,9 @@ static she::Clipboard* main_clipboard = NULL;
 static CustomizedGuiManager* manager = NULL;
 static Theme* gui_theme = NULL;
 
+static ui::Timer* defered_invalid_timer = nullptr;
+static gfx::Region defered_invalid_region;
+
 // Load & save graphics configuration
 static void load_gui_config(int& w, int& h, bool& maximized);
 static void save_gui_config();
@@ -164,6 +167,7 @@ void exit_module_gui()
 {
   save_gui_config();
 
+  delete defered_invalid_timer;
   delete manager;
 
   // Now we can destroy theme
@@ -334,6 +338,16 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
   return widget;
 }
 
+void defer_invalid_rect(const gfx::Rect& rc)
+{
+  if (!defered_invalid_timer)
+    defered_invalid_timer = new ui::Timer(250, manager);
+
+  defered_invalid_timer->stop();
+  defered_invalid_timer->start();
+  defered_invalid_region.createUnion(defered_invalid_region, gfx::Region(rc));
+}
+
 // Manager event handler.
 bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
@@ -492,6 +506,14 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
     }
+
+    case kTimerMessage:
+      if (static_cast<TimerMessage*>(msg)->timer() == defered_invalid_timer) {
+        invalidateDisplayRegion(defered_invalid_region);
+        defered_invalid_region.clear();
+        defered_invalid_timer->stop();
+      }
+      break;
 
   }
 

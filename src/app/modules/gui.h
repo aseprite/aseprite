@@ -11,6 +11,7 @@
 
 #include "app/ui/skin/skin_property.h"
 #include "base/exception.h"
+#include "gfx/rect.h"
 #include "ui/base.h"
 
 namespace ui {
@@ -54,6 +55,11 @@ namespace app {
                              int disabled_part_id, int icon_align);
 
   ui::CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
+
+  // This function can be used to reinvalidate a specific rectangle if
+  // we weren't able to validate it on a onPaint() event. E.g. Because
+  // the current document was locked.
+  void defer_invalid_rect(const gfx::Rect& rc);
 
 } // namespace app
 
