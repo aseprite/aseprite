@@ -257,8 +257,7 @@ void SpriteSizeCommand::onExecute(Context* context)
     job.waitJob();
   }
 
-  ContextWriter writer(reader);
-  update_screen_for_document(writer.document());
+  update_screen_for_document(reader.document());
 }
 
 void SpriteSizeCommand::onLockRatioClick()
