@@ -136,7 +136,6 @@ void Session::removeFromDisk()
 void Session::saveDocumentChanges(app::Document* doc)
 {
   DocumentReader reader(doc, 250);
-  DocumentWriter writer(reader, 250);
   app::Context ctx;
   std::string dir = base::join_path(m_path,
     base::convert_to<std::string>(doc->id()));
