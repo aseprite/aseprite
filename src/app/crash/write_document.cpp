@@ -11,6 +11,7 @@
 
 #include "app/crash/write_document.h"
 
+#include "app/crash/internals.h"
 #include "app/document.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
@@ -43,34 +44,30 @@ using namespace base::serialization::little_endian;
 using namespace doc;
 
 #ifdef _WIN32
-  #define OFSTREAM(dir, name, fn) \
-    std::ofstream name(base::from_utf8(base::join_path(dir, fn)), std::ofstream::binary);
+  #define OFSTREAM(name, fullfn) \
+    std::ofstream name(base::from_utf8(fullfn), std::ofstream::binary);
 #else
-  #define OFSTREAM(dir, name, fn) \
-    std::ofstream name(base::join_path(dir, fn).c_str(), std::ofstream::binary);
+  #define OFSTREAM(name, fullfn) \
+    std::ofstream name(fullfn.c_str(), std::ofstream::binary);
 #endif
 
 namespace {
 
-typedef std::map<ObjectId, ObjectVersion> Versions;
-static std::map<ObjectId, Versions> g_documentObjects;
+static std::map<ObjectId, ObjVersionsMap> g_docVersions;
 
 class Writer {
 public:
   Writer(const std::string& dir, app::Document* doc)
     : m_dir(dir)
     , m_doc(doc)
-    , m_versions(g_documentObjects[doc->id()]) {
+    , m_objVersions(g_docVersions[doc->id()]) {
   }
 
   void saveDocument() {
     Sprite* spr = m_doc->sprite();
 
-    saveObject(nullptr, m_doc, &Writer::writeDocumentFile);
-    saveObject("spr", spr, &Writer::writeSprite);
-
-    //////////////////////////////////////////////////////////////////////
-    // Create one stream for each object
+    // Save from objects without children (e.g. images), to aggregated
+    // objects (e.g. cels, layers, etc.)
 
     for (Palette* pal : spr->getPalettes())
       saveObject("pal", pal, &Writer::writePalette);
@@ -78,19 +75,21 @@ public:
     for (FrameTag* frtag : spr->frameTags())
       saveObject("frtag", frtag, &Writer::writeFrameTag);
 
+    for (Cel* cel : spr->uniqueCels()) {
+      saveObject("img", cel->image(), &Writer::writeImage);
+      saveObject("celdata", cel->data(), &Writer::writeCelData);
+    }
+
+    for (Cel* cel : spr->cels())
+      saveObject("cel", cel, &Writer::writeCel);
+
     std::vector<Layer*> layers;
     spr->getLayersList(layers);
     for (Layer* lay : layers)
       saveObject("lay", lay, &Writer::writeLayerStructure);
 
-    for (Cel* cel : spr->cels())
-      saveObject("cel", cel, &Writer::writeCel);
-
-    // Images (CelData)
-    for (Cel* cel : spr->uniqueCels()) {
-      saveObject("celdata", cel->data(), &Writer::writeCelData);
-      saveObject("img", cel->image(), &Writer::writeImage);
-    }
+    saveObject("spr", spr, &Writer::writeSprite);
+    saveObject("doc", m_doc, &Writer::writeDocumentFile);
   }
 
 private:
@@ -167,25 +166,44 @@ private:
     if (!obj->version())
       obj->incrementVersion();
 
-    if (m_versions[obj->id()] != obj->version()) {
-      std::string fn = (prefix ? prefix + base::convert_to<std::string>(obj->id()): "doc");
+    ObjVersions& versions = m_objVersions[obj->id()];
+    if (versions.newer() == obj->version())
+      return;
 
-      OFSTREAM(m_dir, s, fn);
-      (this->*writeMember)(s, obj);
-      m_versions[obj->id()] = obj->version();
+    std::string fn = prefix;
+    fn.push_back('-');
+    fn += base::convert_to<std::string>(obj->id());
 
-      TRACE(" - %s %d saved with version %d\n",
-            prefix, obj->id(), obj->version());
+    std::string fullfn = base::join_path(m_dir, fn);
+    std::string oldfn = fullfn + "." + base::convert_to<std::string>(versions.older());
+    fullfn += "." + base::convert_to<std::string>(obj->version());
+
+    OFSTREAM(s, fullfn);
+    write32(s, 0);                // Leave a room for the magic number
+    (this->*writeMember)(s, obj); // Write the object
+
+    // Write the magic number
+    s.seekp(0);
+    write32(s, MAGIC_NUMBER);
+
+    // Remove the older version
+    try {
+      if (versions.older() && base::is_file(oldfn))
+        base::delete_file(oldfn);
     }
-    else {
-      TRACE(" - Ignoring %s %d (version %d already saved)\n",
-            prefix, obj->id(), obj->version());
+    catch (const std::exception&) {
+      TRACE(" - Cannot delete %s #%d v%d\n", prefix, obj->id(), versions.older());
     }
+
+    // Rotate versions and add the latest one
+    versions.rotateRevisions(obj->version());
+
+    TRACE(" - Saved %s #%d v%d\n", prefix, obj->id(), obj->version());
   }
 
   std::string m_dir;
   app::Document* m_doc;
-  Versions& m_versions;
+  ObjVersionsMap& m_objVersions;
 };
 
 } // anonymous namespace
@@ -202,12 +220,12 @@ void write_document(const std::string& dir, app::Document* doc)
 void delete_document_internals(app::Document* doc)
 {
   ASSERT(doc);
-  auto it = g_documentObjects.find(doc->id());
+  auto it = g_docVersions.find(doc->id());
 
   // The document could not be inside g_documentObjects in case it was
   // never saved by the backup process.
-  if (it != g_documentObjects.end())
-    g_documentObjects.erase(it);
+  if (it != g_docVersions.end())
+    g_docVersions.erase(it);
 }
 
 } // namespace crash

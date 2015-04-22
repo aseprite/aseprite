@@ -24,6 +24,13 @@ namespace crash {
     int height;
     doc::frame_t frames;
     std::string filename;
+
+    DocumentInfo() :
+      format(doc::IMAGE_RGB),
+      width(0),
+      height(0),
+      frames(0) {
+    }
   };
 
   bool read_document_info(const std::string& dir, DocumentInfo& info);

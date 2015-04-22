@@ -12,6 +12,7 @@
 #include "app/crash/read_document.h"
 
 #include "app/console.h"
+#include "app/crash/internals.h"
 #include "app/document.h"
 #include "base/convert_to.h"
 #include "base/exception.h"
@@ -59,7 +60,61 @@ class Reader : public SubObjectsIO {
 public:
   Reader(const std::string& dir)
     : m_sprite(nullptr)
-    , m_dir(dir) {
+    , m_dir(dir)
+    , m_docId(0)
+    , m_docVersions(nullptr)
+    , m_loadInfo(nullptr) {
+    for (const auto& fn : base::list_files(dir)) {
+      auto i = fn.find('-');
+      if (i == std::string::npos)
+        continue;               // Has no ID
+
+      auto j = fn.find('.', ++i);
+      if (j == std::string::npos)
+        continue;               // Has no version
+
+      ObjectId id = base::convert_to<int>(fn.substr(i, j - i));
+      ObjectVersion ver = base::convert_to<int>(fn.substr(j+1));
+      if (!id || !ver)
+        continue;               // Error converting strings to ID/ver
+
+      ObjVersions& versions = m_objVersions[id];
+      versions.add(ver);
+
+      if (fn.compare(0, 3, "doc") == 0) {
+        if (!m_docId)
+          m_docId = id;
+        else {
+          ASSERT(m_docId == id);
+        }
+
+        m_docVersions = &versions;
+      }
+    }
+  }
+
+  app::Document* loadDocument() {
+    app::Document* doc = loadObject<app::Document*>("doc", m_docId, &Reader::readDocument);
+    if (!doc)
+      Console().printf("Error recovering the document\n");
+    return doc;
+  }
+
+  bool loadDocumentInfo(DocumentInfo& info) {
+    m_loadInfo = &info;
+    return
+      loadObject<app::Document*>("doc", m_docId, &Reader::readDocument)
+      == (app::Document*)1;
+  }
+
+private:
+
+  const ObjectVersion docId() const {
+    return m_docId;
+  }
+
+  const ObjVersions* docVersions() const {
+    return m_docVersions;
   }
 
   Sprite* loadSprite(ObjectId sprId) {
@@ -82,24 +137,61 @@ public:
     return m_celdatas[celdataId] = celData;
   }
 
-private:
   template<typename T>
   T loadObject(const char* prefix, ObjectId id, T (Reader::*readMember)(std::ifstream&)) {
-    TRACE(" - Restoring %s%d\n", prefix, id);
+    const ObjVersions& versions = m_objVersions[id];
 
-    IFSTREAM(m_dir, s, prefix + base::convert_to<std::string>(id));
+    for (size_t i=0; i<versions.size(); ++i) {
+      ObjectVersion ver = versions[i];
+      if (!ver)
+        continue;
 
-    T obj = nullptr;
-    if (s.good())
-      obj = (this->*readMember)(s);
+      TRACE(" - Restoring %s #%d v%d\n", prefix, id, ver);
 
-    if (obj) {
-      TRACE(" - %s%d restored successfully\n", prefix, id);
-      return obj;
+      std::string fn = prefix;
+      fn.push_back('-');
+      fn += base::convert_to<std::string>(id);
+      fn.push_back('.');
+      fn += base::convert_to<std::string>(ver);
+
+      IFSTREAM(m_dir, s, fn);
+      T obj = nullptr;
+      if (read32(s) == MAGIC_NUMBER)
+        obj = (this->*readMember)(s);
+
+      if (obj) {
+        TRACE(" - %s #%d v%d restored successfully\n", prefix, id, ver);
+        return obj;
+      }
+      else {
+        TRACE(" - %s #%d v%d was not restored\n", prefix, id, ver);
+        if (!m_loadInfo)
+          Console().printf("Error loading object %s #%d v%d\n", prefix, id, ver);
+      }
+    }
+
+    return nullptr;
+  }
+
+  app::Document* readDocument(std::ifstream& s) {
+    ObjectId sprId = read32(s);
+    std::string filename = read_string(s);
+
+    // Load DocumentInfo only
+    if (m_loadInfo) {
+      m_loadInfo->filename = filename;
+      return (app::Document*)loadSprite(sprId);
+    }
+
+    Sprite* spr = loadSprite(sprId);
+    if (spr) {
+      app::Document* doc = new app::Document(spr);
+      doc->setFilename(filename);
+      doc->impossibleToBackToSavedState();
+      return doc;
     }
     else {
-      TRACE(" - %s%d was not restored\n", prefix, id);
-      Console().printf("Error loading object %s%d\n", prefix, id);
+      Console().printf("Unable to load sprite #%d\n", sprId);
       return nullptr;
     }
   }
@@ -109,25 +201,34 @@ private:
     int w = read16(s);
     int h = read16(s);
     color_t transparentColor = read32(s);
+    frame_t nframes = read32(s);
 
     if (format != IMAGE_RGB &&
         format != IMAGE_INDEXED &&
         format != IMAGE_GRAYSCALE) {
-      Console().printf("Invalid sprite format #%d\n", (int)format);
+      if (!m_loadInfo)
+        Console().printf("Invalid sprite format #%d\n", (int)format);
       return nullptr;
     }
 
     if (w < 1 || h < 1 || w > 0xfffff || h > 0xfffff) {
-      Console().printf("Invalid sprite dimension %dx%d\n", w, h);
+      if (!m_loadInfo)
+        Console().printf("Invalid sprite dimension %dx%d\n", w, h);
       return nullptr;
+    }
+
+    if (m_loadInfo) {
+      m_loadInfo->format = format;
+      m_loadInfo->width = w;
+      m_loadInfo->height = w;
+      m_loadInfo->frames = nframes;
+      return (Sprite*)1;
     }
 
     base::UniquePtr<Sprite> spr(new Sprite(format, w, h, 256));
     m_sprite = spr.get();
     spr->setTransparentColor(transparentColor);
 
-    // Frame durations
-    frame_t nframes = read32(s);
     if (nframes >= 1) {
       spr->setTotalFrames(nframes);
       for (frame_t fr=0; fr<nframes; ++fr) {
@@ -214,6 +315,10 @@ private:
 
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
   std::string m_dir;
+  ObjectVersion m_docId;
+  ObjVersionsMap m_objVersions;
+  ObjVersions* m_docVersions;
+  DocumentInfo* m_loadInfo;
   std::map<ObjectId, ImageRef> m_images;
   std::map<ObjectId, CelDataRef> m_celdatas;
 };
@@ -225,46 +330,12 @@ private:
 
 bool read_document_info(const std::string& dir, DocumentInfo& info)
 {
-  ObjectId sprId;
-
-  if (base::is_file(base::join_path(dir, "doc"))) {
-    IFSTREAM(dir, s, "doc");
-    sprId = read32(s);
-    info.filename = read_string(s);
-  }
-  else
-    return false;
-
-  IFSTREAM(dir, s, "spr" + base::convert_to<std::string>(sprId));
-  info.format = (PixelFormat)read8(s);
-  info.width = read16(s);
-  info.height = read16(s);
-  read32(s);                    // Ignore transparent color
-  info.frames = read32(s);
-  return true;
+  return Reader(dir).loadDocumentInfo(info);
 }
 
 app::Document* read_document(const std::string& dir)
 {
-  if (!base::is_file(base::join_path(dir, "doc")))
-    return nullptr;
-
-  IFSTREAM(dir, s, "doc");
-  ObjectId sprId = read32(s);
-  std::string filename = read_string(s);
-
-  Reader reader(dir);
-  Sprite* spr = reader.loadSprite(sprId);
-  if (spr) {
-    app::Document* doc = new app::Document(spr);
-    doc->setFilename(filename);
-    doc->impossibleToBackToSavedState();
-    return doc;
-  }
-  else {
-    Console().printf("Unable to load sprite #%d\n", sprId);
-    return nullptr;
-  }
+  return Reader(dir).loadDocument();
 }
 
 } // namespace crash
