@@ -395,10 +395,13 @@ void DocumentExporter::captureSamples(Samples& samples)
         doc::color_t refColor = 0;
 
         if (m_trimCels) {
-          if (layer->isBackground())
+          if (sprite->backgroundLayer() &&
+              sprite->backgroundLayer()->isVisible()) {
             refColor = get_pixel(sampleRender, 0, 0);
-          else
+          }
+          else {
             refColor = sprite->transparentColor();
+          }
         }
         else if (m_ignoreEmptyCels)
           refColor = sprite->transparentColor();
