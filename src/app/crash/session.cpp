@@ -169,8 +169,21 @@ void Session::restoreBackup(Backup* backup)
   Console console;
   try {
     app::Document* doc = read_document(backup->dir());
-    if (doc)
+    if (doc) {
+      std::string fn = doc->filename();
+      if (!fn.empty()) {
+        std::string ext = base::get_file_extension(fn);
+        if (!ext.empty())
+          ext = "." + ext;
+
+        doc->setFilename(
+          base::join_path(
+            base::get_file_path(fn),
+            base::get_file_title(fn) + "-Recovered" + ext));
+      }
+
       UIContext::instance()->documents().add(doc);
+    }
   }
   catch (const std::exception& ex) {
     Console::showException(ex);
