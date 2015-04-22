@@ -98,7 +98,7 @@ public:
   app::crash::DataRecovery* m_recovery;
   scripting::Engine m_scriptingEngine;
 
-  Modules(bool console, bool verbose)
+  Modules(bool verbose)
     : m_loggerModule(verbose)
     , m_recovery(nullptr) {
   }
@@ -137,21 +137,22 @@ App::App()
 
 void App::initialize(const AppOptions& options)
 {
-  if (options.startUI())
+  m_isGui = options.startUI();
+  m_isShell = options.startShell();
+  if (m_isGui)
     m_guiSystem.reset(new ui::GuiSystem);
 
   // Initializes the application loading the modules, setting the
   // graphics mode, loading the configuration and resources, etc.
   m_coreModules = new CoreModules;
-  m_modules = new Modules(!options.startUI(), options.verbose());
-  m_isGui = options.startUI();
-  m_isShell = options.startShell();
+  m_modules = new Modules(options.verbose());
   m_legacy = new LegacyModules(isGui() ? REQUIRE_INTERFACE: 0);
 
   if (options.hasExporterParams())
     m_exporter.reset(new DocumentExporter);
 
-  if (preferences().general.dataRecovery())
+  // Data recovery is enabled only in GUI mode
+  if (isGui() && preferences().general.dataRecovery())
     m_modules->createDataRecovery();
 
   // Register well-known image file types.
