@@ -304,19 +304,24 @@ bool DocumentView::onCloseView(Workspace* workspace)
       try_again = false;
   }
 
-  // Destroy the sprite (locking it as writer)
-  DocumentDestroyer destroyer(
-    static_cast<app::Context*>(m_document->context()), m_document, 250);
+  try {
+    // Destroy the sprite (locking it as writer)
+    DocumentDestroyer destroyer(
+      static_cast<app::Context*>(m_document->context()), m_document, 500);
 
-  StatusBar::instance()
-    ->setStatusText(0, "Sprite '%s' closed.",
-      m_document->name().c_str());
+    StatusBar::instance()
+      ->setStatusText(0, "Sprite '%s' closed.",
+                      m_document->name().c_str());
 
-  destroyer.destroyDocument();
+    destroyer.destroyDocument();
 
-  // At this point the view is already destroyed
-
-  return true;
+    // At this point the view is already destroyed
+    return true;
+  }
+  catch (const LockedDocumentException& ex) {
+    Console::showException(ex);
+    return false;
+  }
 }
 
 void DocumentView::onTabPopup(Workspace* workspace)
