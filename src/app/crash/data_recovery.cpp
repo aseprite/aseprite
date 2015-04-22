@@ -39,16 +39,16 @@ DataRecovery::DataRecovery(doc::Context* ctx)
       SessionPtr session(new Session(itempath));
       if (!session->isRunning()) {
         if (!session->isEmpty()) {
-          TRACE("to be loaded\n", itempath.c_str());
+          TRACE("to be loaded\n");
           m_sessions.push_back(session);
         }
         else {
-          TRACE("to be deleted\n", itempath.c_str());
+          TRACE("to be deleted\n");
           session->removeFromDisk();
         }
       }
       else
-        TRACE("is running\n", itempath.c_str());
+        TRACE("is running\n");
     }
   }
 
