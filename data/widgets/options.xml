@@ -18,12 +18,12 @@
         <vbox id="section_general">
           <separator text="General" horizontal="true" />
           <hbox>
-            <label text="Screen Scale:" />
+            <label text="Screen Scaling:" />
             <combobox id="screen_scale">
-              <listitem text="1:1" value="1" />
-              <listitem text="2:1" value="2" />
-              <listitem text="3:1" value="3" />
-              <listitem text="4:1" value="4" />
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
             </combobox>
           </hbox>
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
@@ -118,12 +118,12 @@
         <vbox id="section_experimental">
           <separator text="User Interface" horizontal="true" />
           <hbox>
-            <label text="UI Elements Scale:" />
+            <label text="UI Elements Scaling:" />
             <combobox id="ui_scale">
-              <listitem text="1:1" value="1" />
-              <listitem text="2:1" value="2" />
-              <listitem text="3:1" value="3" />
-              <listitem text="4:1" value="4" />
+              <listitem text="100%" value="1" />
+              <listitem text="200%" value="2" />
+              <listitem text="300%" value="3" />
+              <listitem text="400%" value="4" />
             </combobox>
           </hbox>
           <check id="native_cursor" text="Use native mouse cursor" />
