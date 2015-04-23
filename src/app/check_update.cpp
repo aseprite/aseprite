@@ -14,7 +14,7 @@
 #include "app/check_update.h"
 
 #include "app/check_update_delegate.h"
-#include "app/ini_file.h"
+#include "app/pref/preferences.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/launcher.h"
@@ -77,22 +77,23 @@ private:
 
 CheckUpdateThreadLauncher::CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate)
   : m_delegate(delegate)
+  , m_preferences(delegate->getPreferences())
   , m_doCheck(true)
   , m_received(false)
-  , m_inits(get_config_int("Updater", "Inits", 0))
-  , m_exits(get_config_int("Updater", "Exits", 0))
+  , m_inits(m_preferences.updater.inits())
+  , m_exits(m_preferences.updater.exits())
 #ifdef _DEBUG
   , m_isDeveloper(true)
 #else
-  , m_isDeveloper(get_config_bool("Updater", "IsDeveloper", false))
+  , m_isDeveloper(m_preferences.updater.isDeveloper())
 #endif
   , m_timer(kMonitoringPeriod, NULL)
 {
   // Get how many days we have to wait for the next "check for update"
-  double waitDays = get_config_double("Updater", "WaitDays", 0.0);
+  double waitDays = m_preferences.updater.waitDays();
   if (waitDays > 0.0) {
     // Get the date of the last "check for updates"
-    time_t lastCheck = (time_t)get_config_int("Updater", "LastCheck", 0);
+    time_t lastCheck = (time_t)m_preferences.updater.lastCheck();
     time_t now = std::time(NULL);
 
     // Verify if we are in the "WaitDays" period...
@@ -104,8 +105,8 @@ CheckUpdateThreadLauncher::CheckUpdateThreadLauncher(CheckUpdateDelegate* delega
   }
 
   // Minimal stats: number of initializations
-  set_config_int("Updater", "Inits", get_config_int("Updater", "Inits", 0)+1);
-  flush_config_file();
+  m_preferences.updater.inits(m_inits+1);
+  m_preferences.save();
 }
 
 CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
@@ -121,8 +122,8 @@ CheckUpdateThreadLauncher::~CheckUpdateThreadLauncher()
   }
 
   // Minimal stats: number of exits
-  set_config_int("Updater", "Exits", get_config_int("Updater", "Exits", 0)+1);
-  flush_config_file();
+  m_preferences.updater.exits(m_exits+1);
+  m_preferences.save();
 }
 
 void CheckUpdateThreadLauncher::launch()
@@ -133,7 +134,7 @@ void CheckUpdateThreadLauncher::launch()
     return;
 
   if (m_uuid.empty())
-    m_uuid = get_config_string("Updater", "Uuid", "");
+    m_uuid = m_preferences.updater.uuid();
 
   m_delegate->onCheckingUpdates();
 
@@ -176,15 +177,15 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
   // Save the new UUID
   if (!m_response.getUuid().empty()) {
     m_uuid = m_response.getUuid();
-    set_config_string("Updater", "Uuid", m_uuid.c_str());
+    m_preferences.updater.uuid(m_uuid);
   }
 
   // Set the date of the last "check for updates" and the "WaitDays" parameter.
-  set_config_int("Updater", "LastCheck", (int)std::time(NULL));
-  set_config_double("Updater", "WaitDays", m_response.getWaitDays());
+  m_preferences.updater.lastCheck((int)std::time(NULL));
+  m_preferences.updater.waitDays(m_response.getWaitDays());
 
   // Save the config file right now
-  flush_config_file();
+  m_preferences.save();
 
   // Stop the monitoring timer.
   m_timer.stop();

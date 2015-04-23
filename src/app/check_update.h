@@ -20,6 +20,7 @@ namespace app {
 
   class CheckUpdateDelegate;
   class CheckUpdateBackgroundJob;
+  class Preferences;
 
   class CheckUpdateThreadLauncher {
   public:
@@ -40,6 +41,7 @@ namespace app {
     void checkForUpdates();
 
     CheckUpdateDelegate* m_delegate;
+    Preferences& m_preferences;
     updater::Uuid m_uuid;
     base::UniquePtr<base::thread> m_thread;
     base::UniquePtr<CheckUpdateBackgroundJob> m_bgJob;

@@ -61,6 +61,7 @@ namespace app {
     void onCheckingUpdates() override;
     void onUpToDate() override;
     void onNewUpdate(const std::string& url, const std::string& version) override;
+    Preferences& getPreferences() override;
 #endif
 
   private:

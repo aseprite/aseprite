@@ -88,6 +88,14 @@
     <section id="color_bar">
       <option id="box_size" type="int" default="7" />
     </section>
+    <section id="updater">
+      <option id="inits" type="int" default="0" migrate="Updater.Inits" />
+      <option id="exits" type="int" default="0" migrate="Updater.Exits" />
+      <option id="is_developer" type="bool" default="false" migrate="Updater.IsDeveloper" />
+      <option id="wait_days" type="double" default="0.0" migrate="Updater.WaitDays" />
+      <option id="last_check" type="int" default="0" migrate="Updater.LastCheck" />
+      <option id="uuid" type="std::string" migrate="Updater.Uuid" />
+    </section>
   </global>
 
   <tool>

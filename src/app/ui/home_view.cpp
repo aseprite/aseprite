@@ -164,6 +164,11 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
   layout();
 }
 
+Preferences& HomeView::getPreferences()
+{
+  return App::instance()->preferences();
+}
+
 #endif // ENABLE_UPDATER
 
 void HomeView::onRecoverSprites()
