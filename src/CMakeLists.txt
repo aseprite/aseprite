@@ -154,7 +154,7 @@ if(UNIX)
 endif()
 
 ######################################################################
-# Updater
+# Liburl
 
 if (CMAKE_USE_PTHREADS_INIT)
   set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
@@ -164,22 +164,24 @@ if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
   add_definitions(-DCUSTOM_WEBSITE_URL="${CUSTOM_WEBSITE_URL}")
 endif()
 
-if(ENABLE_UPDATER)
-  if(USE_SHARED_CURL)
-    find_library(LIBCURL_LIBRARY NAMES curl)
-    find_path(LIBCURL_INCLUDE_DIR NAMES curl/curl.h)
+if(USE_SHARED_CURL)
+  find_library(LIBCURL_LIBRARY NAMES curl)
+  find_path(LIBCURL_INCLUDE_DIR NAMES curl/curl.h)
 
-    set(libs3rdparty ${libs3rdparty} ${LIBCURL_LIBRARY})
-    include_directories(${LIBCURL_INCLUDE_DIR})
-  else()
-    set(libs3rdparty ${libs3rdparty} libcurl)
-    include_directories(${CURL_DIR}/include)
-    if(CURL_STATICLIB)
-      add_definitions(-DCURL_STATICLIB)
-    endif()
+  set(libs3rdparty ${libs3rdparty} ${LIBCURL_LIBRARY})
+  include_directories(${LIBCURL_INCLUDE_DIR})
+else()
+  set(libs3rdparty ${libs3rdparty} libcurl)
+  include_directories(${CURL_DIR}/include)
+  if(CURL_STATICLIB)
+    add_definitions(-DCURL_STATICLIB)
   endif()
 
-  set(aseprite_libraries ${aseprite_libraries} updater-lib net-lib)
+  set(aseprite_libraries ${aseprite_libraries} net-lib)
+endif()
+
+if(ENABLE_UPDATER)
+  set(aseprite_libraries ${aseprite_libraries} updater-lib)
   add_definitions(-DENABLE_UPDATER)
 endif()
 
@@ -217,9 +219,9 @@ add_subdirectory(scripting)
 add_subdirectory(she)
 add_subdirectory(ui)
 add_subdirectory(undo)
+add_subdirectory(net)
 
 if(ENABLE_UPDATER)
-  add_subdirectory(net)
   add_subdirectory(updater)
 endif()
 

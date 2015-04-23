@@ -32,7 +32,7 @@ if(NOT USE_SHARED_GTEST)
   add_subdirectory(gtest)
 endif()
 
-if(ENABLE_UPDATER AND NOT USE_SHARED_CURL)
+if(NOT USE_SHARED_CURL)
   set(BUILD_RELEASE_DEBUG_DIRS ON BOOL)
   add_subdirectory(curl)
 endif()
