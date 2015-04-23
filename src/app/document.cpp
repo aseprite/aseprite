@@ -570,9 +570,16 @@ bool Document::lockToWrite(int timeout)
         return true;
       }
     }
-    timeout -= 100;
-    TRACE("Document::lockToWrite: wait 100 msecs for <%d>\n", id());
-    base::this_thread::sleep_for(0.100);
+
+    if (timeout > 0) {
+      int delay = MIN(100, timeout);
+      timeout -= delay;
+
+      TRACE("Document::lockToWrite: wait 100 msecs for <%d>\n", id());
+      base::this_thread::sleep_for(double(delay) / 1000.0);
+    }
+    else
+      break;
   }
 
   TRACE("Document::lockToWrite: Cannot lock <%d> to write (has %d read locks and %d write locks)\n",
