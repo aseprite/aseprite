@@ -126,6 +126,8 @@ void HomeView::onResize(ui::ResizeEvent& ev)
   ui::VBox::onResize(ev);
 }
 
+#ifdef ENABLE_UPDATER
+
 void HomeView::onCheckingUpdates()
 {
   checkUpdate()->setText("Checking Updates...");
@@ -161,6 +163,8 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 
   layout();
 }
+
+#endif // ENABLE_UPDATER
 
 void HomeView::onRecoverSprites()
 {
