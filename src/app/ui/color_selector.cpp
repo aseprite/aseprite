@@ -261,7 +261,7 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
       if (index < 0) {
         Alert::show(
           "Error<<The palette is full."
-          "<<You cannot have more than %d colors.<<&OK",
+          "<<You cannot have more than %d colors.||&OK",
           Palette::MaxColors);
         return;
       }
