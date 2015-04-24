@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/launcher.h"
+#include "base/version.h"
 
 #include <ctime>
 #include <sstream>
@@ -130,8 +131,10 @@ void CheckUpdateThreadLauncher::launch()
 {
   // In this case we are in the "wait days" period, so we don't check
   // for updates.
-  if (!m_doCheck)
+  if (!m_doCheck) {
+    showUI();
     return;
+  }
 
   if (m_uuid.empty())
     m_uuid = m_preferences.updater.uuid();
@@ -163,16 +166,19 @@ void CheckUpdateThreadLauncher::onMonitoringTick()
   switch (m_response.getUpdateType()) {
 
     case updater::CheckUpdateResponse::NoUpdate:
-      m_delegate->onUpToDate();
+      // Clear
+      m_preferences.updater.newVersion("");
+      m_preferences.updater.newUrl("");
       break;
 
     case updater::CheckUpdateResponse::Critical:
     case updater::CheckUpdateResponse::Major:
-      m_delegate->onNewUpdate(
-        m_response.getUrl(),
-        base::convert_to<std::string>(m_response.getLatestVersion()));
+      m_preferences.updater.newVersion(m_response.getLatestVersion());
+      m_preferences.updater.newUrl(m_response.getUrl());
       break;
   }
+
+  showUI();
 
   // Save the new UUID
   if (!m_response.getUuid().empty()) {
@@ -208,6 +214,25 @@ void CheckUpdateThreadLauncher::checkForUpdates()
   if (m_bgJob->isReceived()) {
     m_received = true;
     m_response = m_bgJob->getResponse();
+  }
+}
+
+void CheckUpdateThreadLauncher::showUI()
+{
+  bool newVer = false;
+
+  if (!m_preferences.updater.newVersion().empty()) {
+    base::Version serverVersion(m_preferences.updater.newVersion());
+    base::Version localVersion(VERSION);
+    newVer = (localVersion < serverVersion);
+  }
+
+  if (newVer) {
+    m_delegate->onNewUpdate(m_preferences.updater.newUrl(),
+                            m_preferences.updater.newVersion());
+  }
+  else {
+    m_delegate->onUpToDate();
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,139 +14,42 @@ using namespace base;
 namespace base {
 
   std::ostream& operator<<(std::ostream& os, const Version& ver) {
-    return os << convert_to<std::string>(ver);
+    return os << ver.str();
   }
-  
+
 }
 
 TEST(Version, Ctor)
 {
-  Version v0;
-  EXPECT_EQ(0, v0[0]);
-  EXPECT_EQ(0, v0[1]);
-  EXPECT_EQ(0, v0[2]);
-  EXPECT_EQ(0, v0[3]);
-  EXPECT_EQ(0, v0[4]);
-
-  Version v1(1);
-  EXPECT_EQ(1, v1[0]);
-  EXPECT_EQ(0, v1[1]);
-
-  Version v2(1, 2);
-  EXPECT_EQ(1, v2[0]);
-  EXPECT_EQ(2, v2[1]);
-  EXPECT_EQ(0, v2[2]);
-
-  Version v3(1, 2, 3);
-  EXPECT_EQ(1, v3[0]);
-  EXPECT_EQ(2, v3[1]);
-  EXPECT_EQ(3, v3[2]);
-  EXPECT_EQ(0, v3[3]);
-
-  Version v4(1, 2, 3, 4);
-  EXPECT_EQ(1, v4[0]);
-  EXPECT_EQ(2, v4[1]);
-  EXPECT_EQ(3, v4[2]);
-  EXPECT_EQ(4, v4[3]);
-  EXPECT_EQ(0, v4[4]);
-}
-
-TEST(Version, StringToVersion)
-{
-  EXPECT_EQ(Version(), convert_to<Version>(std::string("")));
-  EXPECT_EQ(Version(1), convert_to<Version>(std::string("1")));
-  EXPECT_EQ(Version(1, 2), convert_to<Version>(std::string("1.2")));
-  EXPECT_EQ(Version(1, 2, 3), convert_to<Version>(std::string("1.2.3")));
-  EXPECT_EQ(Version(1, 2, 3, 4), convert_to<Version>(std::string("1.2.3.4")));
-}
-
-TEST(Version, VersionToString)
-{
-  EXPECT_EQ("", convert_to<std::string>(Version()));
-  EXPECT_EQ("0", convert_to<std::string>(Version(0)));
-  EXPECT_EQ("1", convert_to<std::string>(Version(1)));
-  EXPECT_EQ("1.0", convert_to<std::string>(Version(1, 0)));
-  EXPECT_EQ("0.0", convert_to<std::string>(Version(0, 0)));
-  EXPECT_EQ("1.0.2", convert_to<std::string>(Version(1, 0, 2)));
-}
-
-TEST(Version, Equal)
-{
-  EXPECT_EQ(Version(), Version());
-  EXPECT_EQ(Version(0), Version());
-  EXPECT_EQ(Version(1), Version(1));
-  EXPECT_EQ(Version(1), Version(1, 0));
-  EXPECT_EQ(Version(1, 0), Version(1));
-  EXPECT_EQ(Version(1, 2), Version(1, 2));
-  EXPECT_EQ(Version(1, 2, 3), Version(1, 2, 3));
-  EXPECT_EQ(Version(1, 0, 0), Version(1));
-}
-
-TEST(Version, NotEqual)
-{
-  EXPECT_FALSE(Version() != Version());
-  EXPECT_TRUE(Version(1) != Version(1, 2));
-  EXPECT_TRUE(Version() != Version(0, 1));
-  EXPECT_TRUE(Version(1, 0) != Version(1, 0, 1));
-  EXPECT_TRUE(Version(1, 2) != Version(1, 3));
-  EXPECT_TRUE(Version(1, 2, 3) != Version(1, 2, 3, 4));
+  EXPECT_EQ("1", Version("1").str());
+  EXPECT_EQ("1.2", Version("1.2").str());
+  EXPECT_EQ("1.2-rc3", Version("1.2-rc3").str());
+  EXPECT_EQ("1.2-beta3", Version("1.2-beta3").str());
+  EXPECT_EQ("1.2-beta", Version("1.2-beta").str());
+  EXPECT_EQ("1.2-beta", Version("1.2-beta0").str());
 }
 
 TEST(Version, LessThan)
 {
-  EXPECT_FALSE(Version() < Version(0));
-  EXPECT_TRUE(Version(0) < Version(1));
-  EXPECT_TRUE(Version(1, 2) < Version(1, 3));
-  EXPECT_TRUE(Version(1, 2, 3) < Version(1, 2, 4));
-  EXPECT_TRUE(Version(1, 2, 0, 4) < Version(1, 2, 3));
-  EXPECT_FALSE(Version(1, 3) < Version(1, 2));
-}
+  EXPECT_TRUE(Version("0") < Version("1"));
+  EXPECT_TRUE(Version("1.2") < Version("1.3"));
+  EXPECT_TRUE(Version("1.2.3") < Version("1.2.4"));
+  EXPECT_TRUE(Version("1.2.0.4") < Version("1.2.3"));
+  EXPECT_TRUE(Version("1.3-dev") < Version("1.3"));
+  EXPECT_TRUE(Version("1.3-dev") < Version("1.4"));
+  EXPECT_TRUE(Version("1.1-beta") < Version("1.1-beta1"));
+  EXPECT_TRUE(Version("1.1-beta1") < Version("1.1-beta2"));
+  EXPECT_TRUE(Version("1.1-beta2") < Version("1.1-rc1"));
 
-TEST(Version, AllComparisons)
-{
-  EXPECT_TRUE(Version(1, 2, 3) == Version(1, 2, 3));
-  EXPECT_FALSE(Version(1, 2, 3) < Version(1, 2, 3));
-  EXPECT_FALSE(Version(1, 2, 3) > Version(1, 2, 3));
-  EXPECT_FALSE(Version(1, 2, 3) != Version(1, 2, 3));
-  EXPECT_TRUE(Version(1, 2, 3) <= Version(1, 2, 3));
-  EXPECT_TRUE(Version(1, 2, 3) >= Version(1, 2, 3));
-
-  EXPECT_FALSE(Version(1, 2, 3) == Version(2));
-  EXPECT_TRUE(Version(1, 2, 3) < Version(2));
-  EXPECT_FALSE(Version(1, 2, 3) > Version(2));
-  EXPECT_TRUE(Version(1, 2, 3) != Version(2));
-  EXPECT_TRUE(Version(1, 2, 3) <= Version(2));
-  EXPECT_FALSE(Version(1, 2, 3) >= Version(2));
-}
-
-TEST(Version, SimpleGetters)
-{
-  Version v0;
-  EXPECT_EQ(0, v0.major());
-  EXPECT_EQ(0, v0.minor());
-  EXPECT_EQ(0, v0.revision());
-  EXPECT_EQ(0, v0.build());
-
-  Version v2(1, 2);
-  EXPECT_EQ(1, v2.major());
-  EXPECT_EQ(2, v2.minor());
-  EXPECT_EQ(0, v2.revision());
-
-  Version v4(1, 2, 3, 4);
-  EXPECT_EQ(1, v4.major());
-  EXPECT_EQ(2, v4.minor());
-  EXPECT_EQ(3, v4.revision());
-  EXPECT_EQ(4, v4.build());
-}
-
-TEST(Version, SimpleSetters)
-{
-  EXPECT_EQ(Version(1), Version().major(1));
-  EXPECT_EQ(Version(1, 2), Version().major(1).minor(2));
-  EXPECT_EQ(Version(1, 2), Version().minor(2).major(1));
-  EXPECT_EQ(Version(1, 2, 3, 4), Version().major(1).minor(2).revision(3).build(4));
-  EXPECT_EQ(Version(1, 2, 3, 4), Version().build(4).revision(3).minor(2).major(1));
-  EXPECT_EQ(Version(0, 0, 0, 4), Version().build(4));
+  EXPECT_FALSE(Version("1") < Version("0"));
+  EXPECT_FALSE(Version("1.3") < Version("1.2"));
+  EXPECT_FALSE(Version("1.2.4") < Version("1.2.3"));
+  EXPECT_FALSE(Version("1.2.3") < Version("1.2.0.4"));
+  EXPECT_FALSE(Version("1.3") < Version("1.3-dev"));
+  EXPECT_FALSE(Version("1.4") < Version("1.3-dev"));
+  EXPECT_FALSE(Version("1.1-beta1") < Version("1.1-beta"));
+  EXPECT_FALSE(Version("1.1-beta2") < Version("1.1-beta1"));
+  EXPECT_FALSE(Version("1.1-rc1") < Version("1.1-beta2"));
 }
 
 int main(int argc, char** argv)

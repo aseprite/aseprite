@@ -10,7 +10,6 @@
 
 #include "base/convert_to.h"
 #include "base/sha1.h"
-#include "base/version.h"
 #include <cstdio>
 #include <cstdlib>
 
@@ -78,35 +77,6 @@ template<> std::string convert_to(const Sha1& from)
   }
 
   return res;
-}
-
-template<> Version convert_to(const std::string& from)
-{
-  Version result;
-  std::string::size_type i = 0;
-  std::string::size_type j = 0;
-  while (j != std::string::npos) {
-    j = from.find('.', i);
-    std::string digitString = from.substr(i, j - i);
-    int digit = convert_to<int>(digitString);
-    result.addDigit(digit);
-    i = j+1;
-  }
-  return result;
-}
-
-template<> std::string convert_to(const Version& from)
-{
-  std::string result;
-  result.reserve(3*from.size());
-
-  for (size_t i=0; i<from.size(); ++i) {
-    result += convert_to<std::string>(from[i]);
-    if (i < from.size()-1)
-      result += ".";
-  }
-
-  return result;
 }
 
 } // namespace base

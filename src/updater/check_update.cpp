@@ -70,7 +70,7 @@ CheckUpdateResponse::CheckUpdateResponse(const std::string& responseBody)
   }
 
   if (version_attr)
-    m_version = base::convert_to<base::Version>(std::string(version_attr));
+    m_version = version_attr;
 
   if (url_attr)
     m_url = url_attr;

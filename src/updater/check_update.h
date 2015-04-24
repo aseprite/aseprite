@@ -10,7 +10,8 @@
 #pragma once
 
 #include "base/disable_copying.h"
-#include "base/version.h"
+
+#include <string>
 
 namespace updater {
 
@@ -34,7 +35,7 @@ namespace updater {
     Type getUpdateType() const { return m_type; }
 
     // Returns the latest version available to be downloaded.
-    base::Version getLatestVersion() const { return m_version; }
+    std::string getLatestVersion() const { return m_version; }
 
     // Returns the URL to download the new version.
     std::string getUrl() const { return m_url; }
@@ -50,7 +51,7 @@ namespace updater {
 
   private:
     Type m_type;
-    base::Version m_version;
+    std::string m_version;
     std::string m_url;
     Uuid m_uuid;
     double m_waitDays;

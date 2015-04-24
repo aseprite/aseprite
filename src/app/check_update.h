@@ -39,6 +39,7 @@ namespace app {
   private:
     void onMonitoringTick();
     void checkForUpdates();
+    void showUI();
 
     CheckUpdateDelegate* m_delegate;
     Preferences& m_preferences;
