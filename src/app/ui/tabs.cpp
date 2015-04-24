@@ -420,22 +420,24 @@ bool Tabs::onProcessMessage(Message* msg)
       }
       return true;
 
-    case kMouseWheelMessage: {
-      int dz =
-        (static_cast<MouseMessage*>(msg)->wheelDelta().x +
-         static_cast<MouseMessage*>(msg)->wheelDelta().y);
+    case kMouseWheelMessage:
+      if (!m_isDragging) {
+        int dz =
+          (static_cast<MouseMessage*>(msg)->wheelDelta().x +
+           static_cast<MouseMessage*>(msg)->wheelDelta().y);
 
-      auto it = std::find(m_list.begin(), m_list.end(), m_selected);
-      if (it != m_list.end()) {
-        int index = (it - m_list.begin());
-        int newIndex = index + dz;
-        newIndex = MID(0, newIndex, int(m_list.size())-1);
-        if (newIndex != index) {
-          selectTabInternal(m_list[newIndex]);
+        auto it = std::find(m_list.begin(), m_list.end(), m_selected);
+        if (it != m_list.end()) {
+          int index = (it - m_list.begin());
+          int newIndex = index + dz;
+          newIndex = MID(0, newIndex, int(m_list.size())-1);
+          if (newIndex != index) {
+            selectTabInternal(m_list[newIndex]);
+          }
         }
+        return true;
       }
-      return true;
-    }
+      break;
 
     case kKeyDownMessage:
     case kKeyUpMessage: {
