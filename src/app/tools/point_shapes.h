@@ -10,24 +10,22 @@ namespace tools {
 
 class NonePointShape : public PointShape {
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     // Do nothing
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     // Do nothing
   }
 };
 
 class PixelPointShape : public PointShape {
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     doInkHline(x, y, x, loop);
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     area = Rect(x, y, 1, 1);
   }
 };
@@ -65,10 +63,9 @@ public:
 
 class FloodFillPointShape : public PointShape {
 public:
-  bool isFloodFill() { return true; }
+  bool isFloodFill() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     doc::algorithm::floodfill(
       const_cast<Image*>(loop->getSrcImage()), x, y,
       paintBounds(loop, x, y),
@@ -77,8 +74,7 @@ public:
       loop, (AlgoHLine)doInkHline);
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     area = paintBounds(loop, x, y);
   }
 
@@ -117,10 +113,9 @@ class SprayPointShape : public PointShape {
 
 public:
 
-  bool isSpray() { return true; }
+  bool isSpray() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
     int c, u, v, times = (spray_width*spray_width/4) * spray_speed / 100;
@@ -150,8 +145,7 @@ public:
 #endif
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     int spray_width = loop->getSprayWidth();
     Point p1(x-spray_width, y-spray_width);
     Point p2(x+spray_width, y+spray_width);
