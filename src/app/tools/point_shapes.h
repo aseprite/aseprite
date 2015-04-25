@@ -33,29 +33,34 @@ public:
 };
 
 class BrushPointShape : public PointShape {
+  Brush* m_brush;
+  base::SharedPtr<CompressedImage> m_compressedImage;
+
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
-    Brush* brush = loop->getBrush();
-    std::vector<BrushScanline>::const_iterator scanline = brush->scanline().begin();
-    int v, h = brush->bounds().h;
 
-    x += brush->bounds().x;
-    y += brush->bounds().y;
+  void preparePointShape(ToolLoop* loop) override {
+    m_brush = loop->getBrush();
+    m_compressedImage.reset(new CompressedImage(m_brush->image()));
+  }
 
-    for (v=0; v<h; ++v) {
-      if (scanline->state)
-        doInkHline(x+scanline->x1, y+v, x+scanline->x2, loop);
-      ++scanline;
+  void transformPoint(ToolLoop* loop, int x, int y) override {
+    int h = m_brush->bounds().h;
+
+    x += m_brush->bounds().x;
+    y += m_brush->bounds().y;
+
+    for (auto scanline : *m_compressedImage) {
+      int u = x+scanline.x;
+      doInkHline(u, y+scanline.y, u+scanline.w, loop);
     }
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
-    Brush* brush = loop->getBrush();
-    area = brush->bounds();
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+    area = m_brush->bounds();
     area.x += x;
     area.y += y;
   }
+
 };
 
 class FloodFillPointShape : public PointShape {

@@ -73,7 +73,6 @@ void Brush::setAngle(int angle)
 void Brush::clean()
 {
   m_image.reset();
-  m_scanline.clear();
 }
 
 static void algo_hline(int x1, int y, int x2, void *data)
@@ -139,25 +138,6 @@ void Brush::regenerate()
         int y2 = int(y1 - d*sin(a));
 
         draw_line(m_image.get(), x1, y1, x2, y2, BitmapTraits::max_value);
-        break;
-      }
-    }
-  }
-
-  m_scanline.resize(m_image->height());
-  for (int y=0; y<m_image->height(); y++) {
-    m_scanline[y].state = false;
-
-    for (int x=0; x<m_image->width(); x++) {
-      if (get_pixel(m_image.get(), x, y)) {
-        m_scanline[y].x1 = x;
-
-        for (; x<m_image->width(); x++)
-          if (!get_pixel(m_image.get(), x, y))
-            break;
-
-        m_scanline[y].x2 = x-1;
-        m_scanline[y].state = true;
         break;
       }
     }

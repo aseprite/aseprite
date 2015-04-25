@@ -17,10 +17,6 @@
 
 namespace doc {
 
-  struct BrushScanline {
-    int state, x1, x2;
-  };
-
   class Brush {
   public:
     static const int kMinBrushSize = 1;
@@ -35,7 +31,6 @@ namespace doc {
     int size() const { return m_size; }
     int angle() const { return m_angle; }
     Image* image() { return m_image.get(); }
-    const std::vector<BrushScanline>& scanline() const { return m_scanline; }
 
     const gfx::Rect& bounds() const { return m_bounds; }
 
@@ -51,7 +46,6 @@ namespace doc {
     int m_size;                           // Size (diameter)
     int m_angle;                          // Angle in degrees 0-360
     ImageRef m_image;                     // Image of the brush
-    std::vector<BrushScanline> m_scanline;
     gfx::Rect m_bounds;
   };
 
