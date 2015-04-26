@@ -74,6 +74,10 @@ public:
     set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
 
+  void onAfterLayerChanged(Editor* editor) override {
+    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
+  }
+
   // EditorCustomizationDelegate implementation
   tools::Tool* getQuickTool(tools::Tool* currentTool) override {
     return KeyboardShortcuts::instance()

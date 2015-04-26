@@ -57,6 +57,14 @@ namespace app {
       extern const char* AsPixelPerfect;
     };
 
+    namespace WellKnownPointShapes {
+      extern const char* None;
+      extern const char* Pixel;
+      extern const char* Brush;
+      extern const char* FloodFill;
+      extern const char* Spray;
+    };
+
     typedef std::list<Tool*> ToolList;
     typedef ToolList::iterator ToolIterator;
     typedef ToolList::const_iterator ToolConstIterator;
@@ -80,6 +88,7 @@ namespace app {
       Tool* getToolById(const std::string& id);
       Ink* getInkById(const std::string& id);
       Intertwine* getIntertwinerById(const std::string& id);
+      PointShape* getPointShapeById(const std::string& id);
       int getGroupsCount() const { return m_groups.size(); }
 
     private:

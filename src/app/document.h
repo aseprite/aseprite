@@ -21,6 +21,7 @@
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "gfx/transformation.h"
+#include "render/extra_type.h"
 
 #include <string>
 
@@ -123,10 +124,11 @@ namespace app {
     // Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
 
     void prepareExtraCel(const gfx::Rect& bounds, int opacity);
+    void setExtraCelType(render::ExtraType type);
     void destroyExtraCel();
     Cel* getExtraCel() const;
     Image* getExtraCelImage() const;
-
+    render::ExtraType getExtraCelType() const { return m_extraCelType; }
     int getExtraCelBlendMode() const { return m_extraCelBlendMode; }
     void setExtraCelBlendMode(int mode) { m_extraCelBlendMode = mode; }
 
@@ -216,6 +218,7 @@ namespace app {
     // Image of the extra cel.
     ImageRef m_extraImage;
     int m_extraCelBlendMode;
+    render::ExtraType m_extraCelType;
 
     // Current mask.
     base::UniquePtr<Mask> m_mask;

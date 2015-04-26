@@ -415,11 +415,16 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       }
     }
 
-    m_renderEngine.setExtraImage(
-      m_document->getExtraCel(),
-      m_document->getExtraCelImage(),
-      m_document->getExtraCelBlendMode(),
-      m_layer, m_frame);
+    if (m_document->getExtraCelType() != render::ExtraType::NONE) {
+      ASSERT(m_document->getExtraCel());
+
+      m_renderEngine.setExtraImage(
+        m_document->getExtraCelType(),
+        m_document->getExtraCel(),
+        m_document->getExtraCelImage(),
+        m_document->getExtraCelBlendMode(),
+        m_layer, m_frame);
+    }
 
     m_renderEngine.renderSprite(rendered, m_sprite, m_frame,
       gfx::Clip(0, 0, rc), m_zoom);
@@ -752,6 +757,8 @@ void Editor::flashCurrentLayer()
     m_renderEngine.removePreviewImage();
 
     m_document->prepareExtraCel(m_sprite->bounds(), 255);
+    m_document->setExtraCelType(render::ExtraType::COMPOSITE);
+
     Image* flash_image = m_document->getExtraCelImage();
 
     clear_image(flash_image, flash_image->maskColor());

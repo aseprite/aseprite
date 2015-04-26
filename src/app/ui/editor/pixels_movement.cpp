@@ -31,6 +31,7 @@
 #include "doc/algorithm/rotsprite.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
@@ -66,6 +67,9 @@ PixelsMovement::PixelsMovement(Context* context,
 
   ContextWriter writer(m_reader, 500);
   m_document->prepareExtraCel(m_sprite->bounds(), opacity);
+  m_document->setExtraCelType(render::ExtraType::COMPOSITE);
+  m_document->setExtraCelBlendMode(
+    static_cast<LayerImage*>(m_layer)->getBlendMode());
 
   redrawExtraImage();
 

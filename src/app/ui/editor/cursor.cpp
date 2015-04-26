@@ -17,17 +17,25 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/intertwine.h"
+#include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
+#include "app/tools/tool_loop.h"
+#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
 #include "doc/algo.h"
 #include "doc/brush.h"
+#include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "ui/base.h"
 #include "ui/system.h"
 #include "ui/widget.h"
@@ -246,11 +254,22 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
 
     Brush* brush = editor_get_current_brush(this);
     gfx::Rect brushBounds = brush->bounds();
+    brushBounds.offset(spritePos);
+    // brushBounds.x = m_zoom.remove(m_zoom.apply(brushBounds.x));
+    // brushBounds.y = m_zoom.remove(m_zoom.apply(brushBounds.y));
+    // brushBounds = m_zoom.remove(m_zoom.apply(brushBounds));
+    // brushBounds.enlarge(1);
 
     // Create the extra cel to show the brush preview
+    Site site = getSite();
+    Cel* cel = site.cel();
+
     m_document->prepareExtraCel(
-      gfx::Rect(brushBounds).offset(spritePos),
-      tool_settings->getOpacity());
+      brushBounds,
+      cel ? cel->opacity(): 255);
+    m_document->setExtraCelType(render::ExtraType::NONE);
+    m_document->setExtraCelBlendMode(
+      m_layer ? static_cast<LayerImage*>(m_layer)->getBlendMode(): BLEND_MODE_NORMAL);
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
@@ -259,16 +278,35 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
 
     Image* extraImage = m_document->getExtraCelImage();
     extraImage->setMaskColor(mask_color);
-    draw_brush(extraImage, brush, -brushBounds.x, -brushBounds.y,
-      brush_color, extraImage->maskColor());
+    clear_image(extraImage, mask_color);
+
+    if (m_layer) {
+      render::Render().renderLayer(
+        extraImage, m_layer, m_frame,
+        gfx::Clip(0, 0, brushBounds),
+        BLEND_MODE_COPY);
+
+      // This extra cel is a patch for the current layer/frame
+      m_document->setExtraCelType(render::ExtraType::PATCH);
+    }
+
+    tools::ToolLoop* loop = create_tool_loop_preview(
+      this, UIContext::instance(), extraImage,
+      -gfx::Point(brushBounds.x,
+                  brushBounds.y));
+    if (loop) {
+      loop->getInk()->prepareInk(loop);
+      loop->getIntertwine()->prepareIntertwine();
+      loop->getController()->prepareController();
+      loop->getPointShape()->preparePointShape(loop);
+      loop->getPointShape()->transformPoint(
+        loop, -brush->bounds().x, -brush->bounds().y);
+      delete loop;
+    }
 
     if (refresh) {
       m_document->notifySpritePixelsModified
-        (m_sprite,
-         gfx::Region(gfx::Rect(
-             spritePos.x+brushBounds.x,
-             spritePos.y+brushBounds.y,
-             brushBounds.w, brushBounds.h)));
+        (m_sprite, gfx::Region(brushBounds));
     }
   }
 
@@ -363,9 +401,7 @@ void Editor::clearBrushPreview(bool refresh)
     Brush* brush = editor_get_current_brush(this);
     gfx::Rect brushBounds = brush->bounds();
 
-    m_document->prepareExtraCel(
-      gfx::Rect(brushBounds).offset(pos),
-      0); // Opacity = 0
+    m_document->destroyExtraCel();
 
     if (refresh) {
       m_document->notifySpritePixelsModified

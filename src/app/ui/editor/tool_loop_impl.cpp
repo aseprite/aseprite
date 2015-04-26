@@ -24,6 +24,7 @@
 #include "app/settings/settings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/point_shape.h"
 #include "app/tools/shade_table.h"
 #include "app/tools/shading_options.h"
 #include "app/tools/tool.h"
@@ -36,6 +37,7 @@
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
+#include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
@@ -44,6 +46,9 @@
 namespace app {
 
 using namespace ui;
+
+//////////////////////////////////////////////////////////////////////
+// For ToolLoopController
 
 class ToolLoopImpl : public tools::ToolLoop,
                      public tools::ShadingOptions {
@@ -390,5 +395,218 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
     return NULL;
   }
 }
+
+//////////////////////////////////////////////////////////////////////
+// For preview
+
+class PreviewToolLoopImpl : public tools::ToolLoop,
+                            public tools::ShadingOptions {
+  Editor* m_editor;
+  Context* m_context;
+  tools::Tool* m_tool;
+  Brush* m_brush;
+  Document* m_document;
+  Sprite* m_sprite;
+  Layer* m_layer;
+  frame_t m_frame;
+  ISettings* m_settings;
+  DocumentPreferences& m_docPref;
+  IToolSettings* m_toolSettings;
+  int m_opacity;
+  int m_tolerance;
+  bool m_contiguous;
+  gfx::Point m_offset;
+  gfx::Point m_speed;
+  bool m_canceled;
+  tools::ToolLoop::Button m_button;
+  tools::Ink* m_ink;
+  int m_primary_color;
+  int m_secondary_color;
+  gfx::Region m_dirtyArea;
+  tools::ShadeTable8* m_shadeTable;
+  Image* m_image;
+  tools::PointShape* m_pointShape;
+
+public:
+  PreviewToolLoopImpl(
+    Editor* editor,
+    Context* context,
+    tools::Tool* tool,
+    tools::Ink* ink,
+    Document* document,
+    tools::ToolLoop::Button button,
+    const app::Color& primary_color,
+    const app::Color& secondary_color,
+    Image* image,
+    const gfx::Point& offset)
+    : m_editor(editor)
+    , m_context(context)
+    , m_tool(tool)
+    , m_document(document)
+    , m_sprite(editor->sprite())
+    , m_layer(editor->layer())
+    , m_frame(editor->frame())
+    , m_settings(m_context->settings())
+    , m_docPref(App::instance()->preferences().document(m_document))
+    , m_toolSettings(m_settings->getToolSettings(m_tool))
+    , m_offset(offset)
+    , m_canceled(false)
+    , m_button(button)
+    , m_ink(ink)
+    , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
+    , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
+    , m_shadeTable(NULL)
+    , m_image(image)
+  {
+    // Create the brush
+    IBrushSettings* brush_settings = m_toolSettings->getBrush();
+    ASSERT(brush_settings != NULL);
+
+    m_brush = new Brush(
+      brush_settings->getType(),
+      brush_settings->getSize(),
+      brush_settings->getAngle());
+
+    m_opacity = m_toolSettings->getOpacity();
+    m_tolerance = m_toolSettings->getTolerance();
+    m_contiguous = m_toolSettings->getContiguous();
+    m_speed.x = 0;
+    m_speed.y = 0;
+
+    // Avoid preview for spray and flood fill like tools
+    m_pointShape = m_tool->getPointShape(m_button);
+    if (m_pointShape->isSpray()) {
+      m_pointShape = App::instance()->getToolBox()->getPointShapeById(
+        tools::WellKnownPointShapes::Brush);
+    }
+    else if (m_pointShape->isFloodFill()) {
+      m_pointShape = App::instance()->getToolBox()->getPointShapeById(
+        tools::WellKnownPointShapes::Pixel);
+    }
+  }
+
+  // IToolLoop interface
+  void dispose() override { }
+  tools::Tool* getTool() override { return m_tool; }
+  Brush* getBrush() override { return m_brush; }
+  Document* getDocument() override { return m_document; }
+  Sprite* sprite() override { return m_sprite; }
+  Layer* getLayer() override { return m_layer; }
+  frame_t getFrame() override { return m_frame; }
+  const Image* getSrcImage() override { return m_image; }
+  Image* getDstImage() override { return m_image; }
+  void validateSrcImage(const gfx::Region& rgn) override { }
+  void validateDstImage(const gfx::Region& rgn) override { }
+  void invalidateDstImage() override { }
+  void invalidateDstImage(const gfx::Region& rgn) override { }
+  void copyValidDstToSrcImage(const gfx::Region& rgn) override { }
+
+  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
+  bool useMask() override { return false; // m_useMask;
+  }
+  Mask* getMask() override { return nullptr; // m_mask;
+  }
+  void setMask(Mask* newMask) override { }
+  gfx::Point getMaskOrigin() override { return gfx::Point(0, 0); // m_maskOrigin;
+  }
+  const render::Zoom& zoom() override { return m_editor->zoom(); }
+  ToolLoop::Button getMouseButton() override { return m_button; }
+  int getPrimaryColor() override { return m_primary_color; }
+  void setPrimaryColor(int color) override { m_primary_color = color; }
+  int getSecondaryColor() override { return m_secondary_color; }
+  void setSecondaryColor(int color) override { m_secondary_color = color; }
+  int getOpacity() override { return m_opacity; }
+  int getTolerance() override { return m_tolerance; }
+  bool getContiguous() override { return m_contiguous; }
+  SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
+  ISettings* settings() override { return m_settings; }
+  filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
+  bool getGridVisible() override { return m_docPref.grid.visible(); }
+  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
+  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
+  bool getFilled() override { return false; }
+  bool getPreviewFilled() override { return false; }
+  int getSprayWidth() override { return 0; }
+  int getSpraySpeed() override { return 0; }
+  gfx::Point getOffset() override { return m_offset; }
+  void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
+  gfx::Point getSpeed() override { return m_speed; }
+  tools::Ink* getInk() override { return m_ink; }
+  tools::Controller* getController() override { return m_tool->getController(m_button); }
+  tools::PointShape* getPointShape() override { return m_pointShape; }
+  tools::Intertwine* getIntertwine() override { return m_tool->getIntertwine(m_button); }
+  tools::TracePolicy getTracePolicy() override { return m_tool->getTracePolicy(m_button); }
+  tools::ShadingOptions* getShadingOptions() override { return this; }
+
+  void cancel() override { }
+  bool isCanceled() override { return true; }
+
+  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
+    return m_editor->screenToEditor(screenPoint);
+  }
+
+  gfx::Region& getDirtyArea() override {
+    return m_dirtyArea;
+  }
+
+  void updateDirtyArea() override {
+  }
+
+  void updateStatusBar(const char* text) override {
+    StatusBar::instance()->setStatusText(0, text);
+  }
+
+  // ShadingOptions implementation
+  tools::ShadeTable8* getShadeTable() override {
+    if (m_shadeTable == NULL) {
+      app::ColorSwatches* colorSwatches = m_settings->getColorSwatches();
+      ASSERT(colorSwatches != NULL);
+      m_shadeTable = new tools::ShadeTable8(*colorSwatches,
+                                            tools::kRotateShadingMode);
+    }
+    return m_shadeTable;
+  }
+
+};
+
+tools::ToolLoop* create_tool_loop_preview(
+  Editor* editor, Context* context, Image* image,
+  const gfx::Point& offset)
+{
+  tools::Tool* current_tool = editor->getCurrentEditorTool();
+  tools::Ink* current_ink = editor->getCurrentEditorInk();
+  if (!current_tool || !current_ink)
+    return NULL;
+
+  Layer* layer = editor->layer();
+  if (!layer ||
+      !layer->isVisible() ||
+      !layer->isEditable()) {
+    return nullptr;
+  }
+
+  // Get fg/bg colors
+  ColorBar* colorbar = ColorBar::instance();
+  app::Color fg = colorbar->getFgColor();
+  app::Color bg = colorbar->getBgColor();
+  if (!fg.isValid() || !bg.isValid())
+    return nullptr;
+
+  // Create the new tool loop
+  try {
+    return new PreviewToolLoopImpl(
+      editor, context,
+      current_tool,
+      current_ink,
+      editor->document(),
+      tools::ToolLoop::Left,
+      fg, bg, image, offset);
+  }
+  catch (const std::exception&) {
+    return nullptr;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////
 
 } // namespace app

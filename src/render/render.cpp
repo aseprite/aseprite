@@ -11,6 +11,8 @@
 #include "render/render.h"
 
 #include "doc/doc.h"
+#include "gfx/clip.h"
+#include "gfx/region.h"
 
 namespace render {
 
@@ -320,6 +322,7 @@ Render::Render()
   : m_sprite(NULL)
   , m_currentLayer(NULL)
   , m_currentFrame(0)
+  , m_extraType(ExtraType::NONE)
   , m_extraCel(NULL)
   , m_extraImage(NULL)
   , m_bgType(BgType::TRANSPARENT)
@@ -362,10 +365,12 @@ void Render::setPreviewImage(const Layer* layer, frame_t frame, Image* image)
 }
 
 void Render::setExtraImage(
+  ExtraType type,
   const Cel* cel, const Image* image, int blendMode,
   const Layer* currentLayer,
   frame_t currentFrame)
 {
+  m_extraType = type;
   m_extraCel = cel;
   m_extraImage = image;
   m_extraBlendMode = blendMode;
@@ -380,6 +385,7 @@ void Render::removePreviewImage()
 
 void Render::removeExtraImage()
 {
+  m_extraType = ExtraType::NONE;
   m_extraCel = NULL;
 }
 
@@ -428,7 +434,8 @@ void Render::renderLayer(
   Image* dstImage,
   const Layer* layer,
   frame_t frame,
-  const gfx::Clip& area)
+  const gfx::Clip& area,
+  int blend_mode)
 {
   m_sprite = layer->sprite();
 
@@ -442,7 +449,7 @@ void Render::renderLayer(
   m_globalOpacity = 255;
   renderLayer(layer, dstImage, area,
     frame, Zoom(1, 1), scaled_func,
-    true, true, -1);
+    true, true, blend_mode);
 }
 
 void Render::renderSprite(
@@ -603,6 +610,26 @@ void Render::renderLayer(
   if (!layer->isVisible())
     return;
 
+  gfx::Rect extraArea;
+  bool drawExtra = (m_extraCel &&
+                    m_extraImage &&
+                    layer == m_currentLayer &&
+                    frame == m_currentFrame);
+  if (drawExtra) {
+    extraArea = gfx::Rect(
+      m_extraCel->x(),
+      m_extraCel->y(),
+      m_extraImage->width(),
+      m_extraImage->height());
+    extraArea = zoom.apply(extraArea);
+    if (zoom.scale() < 1.0) {
+      extraArea.w--;
+      extraArea.h--;
+    }
+    if (extraArea.w < 1) extraArea.w = 1;
+    if (extraArea.h < 1) extraArea.h = 1;
+  }
+
   switch (layer->type()) {
 
     case ObjectType::LayerImage: {
@@ -612,6 +639,7 @@ void Render::renderLayer(
 
       const Cel* cel = layer->cel(frame);
       if (cel != NULL) {
+        Palette* pal = m_sprite->palette(frame);
         Image* src_image;
 
         // Is the 'm_previewImage' set to be used with this layer?
@@ -633,14 +661,34 @@ void Render::renderLayer(
 
           ASSERT(src_image->maskColor() == m_sprite->transparentColor());
 
-          renderCel(image, src_image,
-            m_sprite->palette(frame),
-            cel, area, scaled_func,
-            output_opacity,
+          int layer_blend_mode =
             (blend_mode < 0 ?
-              static_cast<const LayerImage*>(layer)->getBlendMode():
-              blend_mode),
-            zoom);
+                          static_cast<const LayerImage*>(layer)->getBlendMode():
+                          blend_mode);
+
+          // Draw parts outside the "m_extraCel" area
+          if (drawExtra && m_extraType == ExtraType::PATCH) {
+            gfx::Region originalAreas(area.srcBounds());
+            originalAreas.createSubtraction(
+              originalAreas, gfx::Region(extraArea));
+
+            for (auto rc : originalAreas) {
+              renderCel(
+                image, src_image, pal,
+                cel, gfx::Clip(area.dst.x+rc.x-area.src.x,
+                               area.dst.y+rc.y-area.src.y, rc), scaled_func,
+                output_opacity,
+                layer_blend_mode, zoom);
+            }
+          }
+          // Draw the whole cel
+          else {
+            renderCel(
+              image, src_image, pal,
+              cel, area, scaled_func,
+              output_opacity,
+              layer_blend_mode, zoom);
+          }
         }
       }
       break;
@@ -663,14 +711,16 @@ void Render::renderLayer(
   }
 
   // Draw extras
-  if (m_extraCel &&
-      m_extraImage &&
-      layer == m_currentLayer &&
-      frame == m_currentFrame) {
+  if (drawExtra && m_extraType != ExtraType::NONE) {
     if (m_extraCel->opacity() > 0) {
-      renderCel(image, m_extraImage,
+      renderCel(
+        image, m_extraImage,
         m_sprite->palette(frame),
-        m_extraCel, area, scaled_func,
+        m_extraCel,
+        gfx::Clip(area.dst.x+extraArea.x-area.src.x,
+                  area.dst.y+extraArea.y-area.src.y,
+                  extraArea),
+        scaled_func,
         m_extraCel->opacity(),
         m_extraBlendMode, zoom);
     }
