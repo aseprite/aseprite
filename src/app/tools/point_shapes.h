@@ -115,6 +115,10 @@ public:
 
   bool isSpray() override { return true; }
 
+  void preparePointShape(ToolLoop* loop) override {
+    m_subPointShape.preparePointShape(loop);
+  }
+
   void transformPoint(ToolLoop* loop, int x, int y) override {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
