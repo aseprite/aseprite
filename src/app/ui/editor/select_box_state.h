@@ -29,6 +29,7 @@ namespace app {
     // Called only in QUICKBOX mode, when the user released the mouse
     // button.
     virtual void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) { }
+    virtual void onQuickboxCancel() { }
   };
 
   class SelectBoxState : public StandbyState
@@ -77,6 +78,7 @@ namespace app {
     Rulers m_rulers;
     int m_movingRuler;
     bool m_selectingBox;
+    ui::MouseButtons m_selectingButtons;
     gfx::Point m_startingPos;
     Flags m_flags;
   };

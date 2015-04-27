@@ -80,6 +80,7 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
 
     if (hasFlag(QUICKBOX) && m_movingRuler == -1) {
       m_selectingBox = true;
+      m_selectingButtons = msg->buttons();
       m_startingPos = editor->screenToEditor(msg->position());
       setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
     }
@@ -96,8 +97,13 @@ bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 
   if (m_selectingBox) {
     m_selectingBox = false;
-    if (m_delegate)
-      m_delegate->onQuickboxEnd(getBoxBounds(), msg->buttons());
+
+    if (m_delegate) {
+      if (m_selectingButtons == msg->buttons())
+        m_delegate->onQuickboxEnd(getBoxBounds(), msg->buttons());
+      else
+        m_delegate->onQuickboxCancel();
+    }
   }
 
   return StandbyState::onMouseUp(editor, msg);

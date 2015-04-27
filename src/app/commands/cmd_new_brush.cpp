@@ -42,6 +42,7 @@ protected:
 
   // SelectBoxDelegate impl
   void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) override;
+  void onQuickboxCancel() override;
 
 private:
   void createBrush(const Mask* mask);
@@ -113,6 +114,11 @@ void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons butt
   App::instance()->getMainWindow()->getContextBar()
     ->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
 
+  current_editor->backToPreviousState();
+}
+
+void NewBrushCommand::onQuickboxCancel()
+{
   current_editor->backToPreviousState();
 }
 
