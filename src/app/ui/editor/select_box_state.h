@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"
 #include "app/ui/editor/standby_state.h"
+#include "ui/mouse_buttons.h"
 
 #include <vector>
 
@@ -27,7 +28,7 @@ namespace app {
 
     // Called only in QUICKBOX mode, when the user released the mouse
     // button.
-    virtual void onQuickboxEnd(const gfx::Rect& rect) { }
+    virtual void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) { }
   };
 
   class SelectBoxState : public StandbyState

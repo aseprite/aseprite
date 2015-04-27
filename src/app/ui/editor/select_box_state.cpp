@@ -97,7 +97,7 @@ bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
   if (m_selectingBox) {
     m_selectingBox = false;
     if (m_delegate)
-      m_delegate->onQuickboxEnd(getBoxBounds());
+      m_delegate->onQuickboxEnd(getBoxBounds(), msg->buttons());
   }
 
   return StandbyState::onMouseUp(editor, msg);

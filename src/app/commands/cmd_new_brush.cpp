@@ -10,12 +10,15 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/clear_rect.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/console.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool_box.h"
+#include "app/transaction.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
@@ -38,7 +41,7 @@ protected:
   void onExecute(Context* context) override;
 
   // SelectBoxDelegate impl
-  void onQuickboxEnd(const gfx::Rect& rect) override;
+  void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) override;
 
 private:
   void createBrush(const Mask* mask);
@@ -82,15 +85,27 @@ void NewBrushCommand::onExecute(Context* context)
     Command* cmd =
       CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
     UIContext::instance()->executeCommand(cmd);
-
   }
 }
 
-void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect)
+void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons)
 {
   Mask mask;
   mask.replace(rect);
   createBrush(&mask);
+
+  // If the right-button was used, we clear the selected area.
+  if (buttons & ui::kButtonRight) {
+    try {
+      ContextWriter writer(UIContext::instance(), 250);
+      Transaction transaction(writer.context(), "Clear");
+      transaction.execute(new cmd::ClearRect(writer.cel(), rect));
+      transaction.commit();
+    }
+    catch (const std::exception& ex) {
+      Console::showException(ex);
+    }
+  }
 
   // Update the context bar
   // TODO find a way to avoid all these singletons. Maybe a simple

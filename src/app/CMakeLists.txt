@@ -71,6 +71,7 @@ add_library(app-lib
   cmd/clear_cel.cpp
   cmd/clear_image.cpp
   cmd/clear_mask.cpp
+  cmd/clear_rect.cpp
   cmd/configure_background.cpp
   cmd/copy_cel.cpp
   cmd/copy_frame.cpp
