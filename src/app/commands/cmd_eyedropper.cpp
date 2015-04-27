@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
@@ -72,7 +73,13 @@ void EyedropperCommand::onExecute(Context* context)
   if (!sprite)
     return;
 
-  // pixel position to get
+  // Discard current image brush
+  {
+    Command* discardBrush = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
+    context->executeCommand(discardBrush);
+  }
+
+  // Pixel position to get
   gfx::Point pixelPos = editor->screenToEditor(ui::get_mouse_position());
 
   // Check if we've to grab alpha channel or the merged color.

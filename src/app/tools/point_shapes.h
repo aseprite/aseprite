@@ -33,12 +33,14 @@ public:
 class BrushPointShape : public PointShape {
   Brush* m_brush;
   base::SharedPtr<CompressedImage> m_compressedImage;
+  bool m_firstPoint;
 
 public:
 
   void preparePointShape(ToolLoop* loop) override {
     m_brush = loop->getBrush();
     m_compressedImage.reset(new CompressedImage(m_brush->image()));
+    m_firstPoint = true;
   }
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
@@ -46,6 +48,22 @@ public:
 
     x += m_brush->bounds().x;
     y += m_brush->bounds().y;
+
+    if (m_firstPoint) {
+      m_firstPoint = false;
+      if (m_brush->type() == kImageBrushType) {
+        if (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
+            m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+          m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+        }
+      }
+    }
+    else {
+      if (m_brush->type() == kImageBrushType &&
+          m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+        m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+      }
+    }
 
     for (auto scanline : *m_compressedImage) {
       int u = x+scanline.x;

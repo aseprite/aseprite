@@ -119,7 +119,7 @@ void Editor::set_cursor_color(const app::Color& color)
 //////////////////////////////////////////////////////////////////////
 
 static int brush_size_thick = 0;
-static Brush* current_brush = NULL;
+static base::SharedPtr<Brush> current_brush;
 
 static void on_palette_change_update_cursor_color()
 {
@@ -158,15 +158,12 @@ static Brush* editor_get_current_brush(Editor* editor)
   if (!current_brush ||
       current_brush->type() != brush_settings->getType() ||
       current_brush->size() != brush_settings->getSize() ||
-      current_brush->angle() != brush_settings->getAngle()) {
-    delete current_brush;
-    current_brush = new Brush(
-      brush_settings->getType(),
-      brush_settings->getSize(),
-      brush_settings->getAngle());
+      current_brush->angle() != brush_settings->getAngle() ||
+      is_tool_loop_brush_image()) {
+    current_brush = get_tool_loop_brush(brush_settings);
   }
 
-  return current_brush;
+  return current_brush.get();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -192,8 +189,7 @@ void Editor::editor_cursor_exit()
   if (cursor_bound.seg != NULL)
     base_free(cursor_bound.seg);
 
-  delete current_brush;
-  current_brush = NULL;
+  current_brush.reset();
 }
 
 // Draws the brush cursor inside the specified editor.
@@ -255,10 +251,6 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
     Brush* brush = editor_get_current_brush(this);
     gfx::Rect brushBounds = brush->bounds();
     brushBounds.offset(spritePos);
-    // brushBounds.x = m_zoom.remove(m_zoom.apply(brushBounds.x));
-    // brushBounds.y = m_zoom.remove(m_zoom.apply(brushBounds.y));
-    // brushBounds = m_zoom.remove(m_zoom.apply(brushBounds));
-    // brushBounds.enlarge(1);
 
     // Create the extra cel to show the brush preview
     Site site = getSite();
@@ -294,6 +286,7 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
       this, UIContext::instance(), extraImage,
       -gfx::Point(brushBounds.x,
                   brushBounds.y));
+
     if (loop) {
       loop->getInk()->prepareInk(loop);
       loop->getIntertwine()->prepareIntertwine();

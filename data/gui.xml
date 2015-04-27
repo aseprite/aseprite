@@ -309,6 +309,7 @@
         <param name="quantity" value="1" />
       </key>
 
+      <key command="NewBrush" shortcut="Ctrl+B" mac="Cmd+B" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->

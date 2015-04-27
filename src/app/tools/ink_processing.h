@@ -700,6 +700,63 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
+// Brush Ink
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class BrushInkProcessing : public DoubleInkProcessing<BrushInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  BrushInkProcessing(ToolLoop* loop) {
+    m_brush = loop->getBrush();
+    m_opacity = loop->getOpacity();
+    m_width = m_brush->bounds().w;
+    m_height = m_brush->bounds().h;
+    m_u = (loop->getOffset().x + m_brush->patternOrigin().x) % m_width;
+    m_v = (loop->getOffset().y + m_brush->patternOrigin().y) % m_height;
+  }
+
+  void processPixel(int x, int y) {
+    // Do nothing
+  }
+
+private:
+  void alignPixelPoint(int& x, int& y) {
+    x = (x - m_u) % m_width;
+    y = (y - m_v) % m_height;
+    if (x < 0) x = m_width - ((-x) % m_width);
+    if (y < 0) y = m_height - ((-y) % m_height);
+  }
+
+  Brush* m_brush;
+  int m_opacity;
+  int m_u, m_v, m_width, m_height;
+};
+
+template<>
+void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  alignPixelPoint(x, y);
+  // TODO convert brush image to RGB
+  color_t c = get_pixel(m_brush->image(), x, y);
+  *m_dstAddress = rgba_blend_normal(*m_srcAddress, c, m_opacity);
+}
+
+template<>
+void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  alignPixelPoint(x, y);
+  // TODO convert brush image to grayscale
+  color_t c = get_pixel(m_brush->image(), x, y);
+  *m_dstAddress = graya_blend_normal(*m_srcAddress, c, m_opacity);
+}
+
+template<>
+void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
+  alignPixelPoint(x, y);
+  // TODO convert brush image to indexed
+  color_t c = get_pixel(m_brush->image(), x, y);
+  *m_dstAddress = c;
+}
+
+//////////////////////////////////////////////////////////////////////
 
 enum {
   INK_OPAQUE,
@@ -711,6 +768,7 @@ enum {
   INK_JUMBLE,
   INK_SHADING,
   INK_XOR,
+  INK_BRUSH,
   MAX_INKS
 };
 
@@ -737,7 +795,8 @@ AlgoHLine ink_processing[][3] =
   DEFINE_INK(ReplaceInkProcessing),
   DEFINE_INK(JumbleInkProcessing),
   DEFINE_INK(ShadingInkProcessing),
-  DEFINE_INK(XorInkProcessing)
+  DEFINE_INK(XorInkProcessing),
+  DEFINE_INK(BrushInkProcessing)
 };
 
 } // anonymous namespace

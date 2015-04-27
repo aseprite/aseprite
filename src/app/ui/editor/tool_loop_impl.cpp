@@ -47,6 +47,57 @@ namespace app {
 
 using namespace ui;
 
+// TODO improve the design of the brush image
+
+static base::SharedPtr<Brush> special_brush;
+static base::SharedPtr<Brush> last_brush;
+static gfx::Point brush_origin;
+
+void set_tool_loop_brush_image(doc::ImageRef& image,
+                               const gfx::Point& origin)
+{
+  special_brush.reset(new Brush());
+  special_brush->setImage(image.get());
+  special_brush->setPatternOrigin(brush_origin = origin);
+}
+
+bool is_tool_loop_brush_image()
+{
+  return (special_brush ? true: false);
+}
+
+void discard_tool_loop_brush_image()
+{
+  special_brush.reset();
+}
+
+Image* get_tool_loop_brush_image()
+{
+  if (special_brush)
+    return special_brush->image();
+  else
+    return nullptr;
+}
+
+base::SharedPtr<Brush> get_tool_loop_brush(IBrushSettings* brushSettings)
+{
+  base::SharedPtr<Brush> brush;
+
+  if (special_brush) {
+    brush = special_brush;
+    brush->setPattern(App::instance()->preferences().brush.pattern());
+    brush->setPatternOrigin(brush_origin);
+  }
+  else {
+    brush.reset(
+      new Brush(
+        brushSettings->getType(),
+        brushSettings->getSize(),
+        brushSettings->getAngle()));
+  }
+  return brush;
+}
+
 //////////////////////////////////////////////////////////////////////
 // For ToolLoopController
 
@@ -55,7 +106,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   Editor* m_editor;
   Context* m_context;
   tools::Tool* m_tool;
-  Brush* m_brush;
+  base::SharedPtr<Brush> m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -153,10 +204,7 @@ public:
     IBrushSettings* brush_settings = m_toolSettings->getBrush();
     ASSERT(brush_settings != NULL);
 
-    m_brush = new Brush(
-      brush_settings->getType(),
-      brush_settings->getSize(),
-      brush_settings->getAngle());
+    m_brush = get_tool_loop_brush(brush_settings);
 
     if (m_ink->isSelection())
       m_useMask = false;
@@ -229,7 +277,6 @@ public:
       }
     }
 
-    delete m_brush;
     delete m_shadeTable;
 
     if (redraw)
@@ -237,7 +284,7 @@ public:
   }
 
   tools::Tool* getTool() override { return m_tool; }
-  Brush* getBrush() override { return m_brush; }
+  Brush* getBrush() override { return m_brush.get(); }
   Document* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }
@@ -404,7 +451,7 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   Editor* m_editor;
   Context* m_context;
   tools::Tool* m_tool;
-  Brush* m_brush;
+  base::SharedPtr<Brush> m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -462,11 +509,7 @@ public:
     IBrushSettings* brush_settings = m_toolSettings->getBrush();
     ASSERT(brush_settings != NULL);
 
-    m_brush = new Brush(
-      brush_settings->getType(),
-      brush_settings->getSize(),
-      brush_settings->getAngle());
-
+    m_brush = get_tool_loop_brush(brush_settings);
     m_opacity = m_toolSettings->getOpacity();
     m_tolerance = m_toolSettings->getTolerance();
     m_contiguous = m_toolSettings->getContiguous();
@@ -488,7 +531,7 @@ public:
   // IToolLoop interface
   void dispose() override { }
   tools::Tool* getTool() override { return m_tool; }
-  Brush* getBrush() override { return m_brush; }
+  Brush* getBrush() override { return m_brush.get(); }
   Document* getDocument() override { return m_document; }
   Sprite* sprite() override { return m_sprite; }
   Layer* getLayer() override { return m_layer; }

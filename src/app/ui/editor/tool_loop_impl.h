@@ -9,19 +9,33 @@
 #define APP_UI_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 #pragma once
 
+#include "base/shared_ptr.h"
+#include "doc/image_ref.h"
 #include "gfx/fwd.h"
 
 namespace doc {
+  class Brush;
   class Image;
 }
 
 namespace app {
   class Context;
   class Editor;
+  class IBrushSettings;
 
   namespace tools {
     class ToolLoop;
   }
+
+  void set_tool_loop_brush_image(
+    doc::ImageRef& image,
+    const gfx::Point& origin);
+  bool is_tool_loop_brush_image();
+  void discard_tool_loop_brush_image();
+  doc::Image* get_tool_loop_brush_image();
+
+  base::SharedPtr<doc::Brush> get_tool_loop_brush(
+    IBrushSettings* brushSettings);
 
   tools::ToolLoop* create_tool_loop(
     Editor* editor, Context* context);

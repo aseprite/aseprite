@@ -22,6 +22,7 @@ namespace app {
 
     namespace WellKnownTools {
       extern const char* RectangularMarquee;
+      extern const char* Pencil;
       extern const char* Eraser;
       extern const char* Eyedropper;
     };

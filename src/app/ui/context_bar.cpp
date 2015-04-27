@@ -12,7 +12,9 @@
 #include "app/ui/context_bar.h"
 
 #include "app/app.h"
+#include "app/commands/commands.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/selection_mode.h"
 #include "app/settings/settings.h"
@@ -24,6 +26,7 @@
 #include "app/tools/tool_box.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -215,6 +218,52 @@ protected:
 
 private:
   BrushTypeField* m_brushType;
+};
+
+class ContextBar::BrushPatternField : public ComboBox
+{
+public:
+  BrushPatternField() : m_lock(false) {
+    addItem("Pattern aligned from source");
+    addItem("Pattern aligned to destination");
+    addItem("Paint brush");
+  }
+
+  void setBrushPattern(BrushPattern type) {
+    int index = 0;
+
+    switch (type) {
+      case BrushPattern::ALIGNED_FROM_SRC: index = 0; break;
+      case BrushPattern::ALIGNED_TO_DST: index = 1; break;
+      case BrushPattern::PAINT_BRUSH: index = 2; break;
+    }
+
+    m_lock = true;
+    setSelectedItemIndex(index);
+    m_lock = false;
+  }
+
+protected:
+  void onChange() override {
+    ComboBox::onChange();
+
+    if (m_lock)
+      return;
+
+    BrushPattern type = BrushPattern::ALIGNED_FROM_SRC;
+
+    switch (getSelectedItemIndex()) {
+      case 0: type = BrushPattern::ALIGNED_FROM_SRC; break;
+      case 1: type = BrushPattern::ALIGNED_TO_DST; break;
+      case 2: type = BrushPattern::PAINT_BRUSH; break;
+    }
+
+    ISettings* settings = UIContext::instance()->settings();
+    Tool* currentTool = settings->getCurrentTool();
+    App::instance()->preferences().brush.pattern(type);
+  }
+
+  bool m_lock;
 };
 
 class ContextBar::ToleranceField : public IntEntry
@@ -745,6 +794,8 @@ ContextBar::ContextBar()
   addChild(m_brushType = new BrushTypeField());
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
+  addChild(m_discardBrush = new Button("Discard Brush"));
+  addChild(m_brushPatternField = new BrushPatternField());
 
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
@@ -776,6 +827,8 @@ ContextBar::ContextBar()
 #endif
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
+  addChild(m_newBrush = new Button("New Brush"));
+
   setup_mini_font(m_toleranceLabel);
   setup_mini_font(m_opacityLabel);
 
@@ -796,6 +849,8 @@ ContextBar::ContextBar()
     "component is used to setup the opacity level of all drawing tools.\n\n"
     "When unchecked -the default behavior- the color is picked\n"
     "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
+  tooltipManager->addTooltipFor(m_newBrush,
+    "Create a brush from the selection.", JI_BOTTOM);
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
@@ -804,6 +859,8 @@ ContextBar::ContextBar()
   App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
+  m_newBrush->Click.connect(Bind<void>(&ContextBar::onNewBrush, this));
+  m_discardBrush->Click.connect(Bind<void>(&ContextBar::onDiscardBrush, this));
 
   onCurrentToolChange();
 }
@@ -878,6 +935,8 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_brushType->setBrushSettings(brushSettings);
   m_brushSize->setTextf("%d", brushSettings->getSize());
   m_brushAngle->setTextf("%d", brushSettings->getAngle());
+  m_brushPatternField->setBrushPattern(
+    App::instance()->preferences().brush.pattern());
 
   m_tolerance->setTextf("%d", toolSettings->getTolerance());
   m_contiguous->setSelected(toolSettings->getContiguous());
@@ -897,6 +956,9 @@ void ContextBar::updateFromTool(tools::Tool* tool)
                      tool->getInk(0)->isEffect() ||
                      tool->getInk(1)->isPaint() ||
                      tool->getInk(1)->isEffect());
+
+  // True if we have an image as brush
+  bool hasImageBrush = (is_tool_loop_brush_image() ? true: false);
 
   // True if the current tool is eyedropper.
   bool isEyedropper =
@@ -928,11 +990,13 @@ void ContextBar::updateFromTool(tools::Tool* tool)
      tool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushType->setVisible(hasOpacity);
-  m_brushSize->setVisible(hasOpacity);
-  m_brushAngle->setVisible(hasOpacity);
+  m_brushType->setVisible(hasOpacity && !hasImageBrush);
+  m_brushSize->setVisible(hasOpacity && !hasImageBrush);
+  m_brushAngle->setVisible(hasOpacity && !hasImageBrush);
+  m_discardBrush->setVisible(hasOpacity && hasImageBrush);
+  m_brushPatternField->setVisible(hasOpacity && hasImageBrush);
   m_opacityLabel->setVisible(hasOpacity);
-  m_inkType->setVisible(hasInk);
+  m_inkType->setVisible(hasInk && !hasImageBrush);
   m_inkOpacity->setVisible(hasOpacity);
   m_grabAlpha->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
@@ -944,6 +1008,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);
   m_dropPixels->setVisible(false);
+  m_newBrush->setVisible(hasSelectOptions);
 
   layout();
 }
@@ -975,6 +1040,18 @@ void ContextBar::updateAutoSelectLayer(bool state)
     return;
 
   m_autoSelectLayer->setSelected(state);
+}
+
+void ContextBar::onNewBrush()
+{
+  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewBrush);
+  UIContext::instance()->executeCommand(cmd);
+}
+
+void ContextBar::onDiscardBrush()
+{
+  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
+  UIContext::instance()->executeCommand(cmd);
 }
 
 } // namespace app

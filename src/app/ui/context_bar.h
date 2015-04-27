@@ -16,6 +16,7 @@
 
 namespace ui {
   class Box;
+  class Button;
   class Label;
 }
 
@@ -51,6 +52,8 @@ namespace app {
     void onBrushAngleChange();
     void onCurrentToolChange();
     void onDropPixels(ContextBarObserver::DropAction action);
+    void onNewBrush();
+    void onDiscardBrush();
 
     class BrushTypeField;
     class BrushAngleField;
@@ -65,6 +68,7 @@ namespace app {
     class TransparentColorField;
     class RotAlgorithmField;
     class FreehandAlgorithmField;
+    class BrushPatternField;
     class GrabAlphaField;
     class DropPixelsField;
     class AutoSelectLayerField;
@@ -83,6 +87,9 @@ namespace app {
     AutoSelectLayerField* m_autoSelectLayer;
     ui::Box* m_freehandBox;
     FreehandAlgorithmField* m_freehandAlgo;
+    ui::Button* m_newBrush;
+    ui::Button* m_discardBrush;
+    BrushPatternField* m_brushPatternField;
     ui::Box* m_sprayBox;
     SprayWidthField* m_sprayWidth;
     SpraySpeedField* m_spraySpeed;

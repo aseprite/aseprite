@@ -60,7 +60,10 @@ public:
 
     switch (m_type) {
       case Opaque:
-        m_proc = ink_processing[INK_OPAQUE][depth];
+        if (loop->getBrush()->type() == doc::kImageBrushType)
+          m_proc = ink_processing[INK_BRUSH][depth];
+        else
+          m_proc = ink_processing[INK_OPAQUE][depth];
         break;
       case SetAlpha:
         m_proc = ink_processing[INK_SETALPHA][depth];
@@ -69,9 +72,12 @@ public:
         m_proc = ink_processing[INK_LOCKALPHA][depth];
         break;
       default:
-        m_proc = (loop->getOpacity() == 255 ?
-                  ink_processing[INK_OPAQUE][depth]:
-                  ink_processing[INK_TRANSPARENT][depth]);
+        if (loop->getBrush()->type() == doc::kImageBrushType)
+          m_proc = ink_processing[INK_BRUSH][depth];
+        else
+          m_proc = (loop->getOpacity() == 255 ?
+                    ink_processing[INK_OPAQUE][depth]:
+                    ink_processing[INK_TRANSPARENT][depth]);
         break;
     }
   }

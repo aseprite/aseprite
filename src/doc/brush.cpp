@@ -24,6 +24,7 @@ Brush::Brush()
   m_type = kCircleBrushType;
   m_size = 1;
   m_angle = 0;
+  m_pattern = BrushPattern::DEFAULT;
 
   regenerate();
 }
@@ -33,6 +34,7 @@ Brush::Brush(BrushType type, int size, int angle)
   m_type = type;
   m_size = size;
   m_angle = angle;
+  m_pattern = BrushPattern::DEFAULT;
 
   regenerate();
 }
@@ -42,6 +44,8 @@ Brush::Brush(const Brush& brush)
   m_type = brush.m_type;
   m_size = brush.m_size;
   m_angle = brush.m_angle;
+  m_pattern = brush.m_pattern;
+  m_patternOrigin = brush.m_patternOrigin;
 
   regenerate();
 }
@@ -54,7 +58,10 @@ Brush::~Brush()
 void Brush::setType(BrushType type)
 {
   m_type = type;
-  regenerate();
+  if (m_type != kImageBrushType)
+    regenerate();
+  else
+    clean();
 }
 
 void Brush::setSize(int size)
@@ -67,6 +74,15 @@ void Brush::setAngle(int angle)
 {
   m_angle = angle;
   regenerate();
+}
+
+void Brush::setImage(const Image* image)
+{
+  m_type = kImageBrushType;
+  m_image.reset(Image::createCopy(image));
+  m_bounds = gfx::Rect(
+    -m_image.get()->width()/2, -m_image.get()->height()/2,
+    m_image.get()->width(), m_image.get()->height());
 }
 
 // Cleans the brush's data (image and region).

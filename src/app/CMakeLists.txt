@@ -142,6 +142,7 @@ add_library(app-lib
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp
   commands/cmd_developer_console.cpp
+  commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_duplicate_view.cpp
@@ -173,6 +174,7 @@ add_library(app-lib
   commands/cmd_merge_down_layer.cpp
   commands/cmd_move_cel.cpp
   commands/cmd_move_mask.cpp
+  commands/cmd_new_brush.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_frame_tag.cpp

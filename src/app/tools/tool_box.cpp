@@ -41,6 +41,7 @@ namespace tools {
 using namespace gfx;
 
 const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
+const char* WellKnownTools::Pencil = "pencil";
 const char* WellKnownTools::Eraser = "eraser";
 const char* WellKnownTools::Eyedropper = "eyedropper";
 

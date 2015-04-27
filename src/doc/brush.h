@@ -8,6 +8,7 @@
 #define DOC_BRUSH_H_INCLUDED
 #pragma once
 
+#include "doc/brush_pattern.h"
 #include "doc/brush_type.h"
 #include "doc/image_ref.h"
 #include "gfx/point.h"
@@ -32,21 +33,33 @@ namespace doc {
     int angle() const { return m_angle; }
     Image* image() { return m_image.get(); }
 
+    BrushPattern pattern() { return m_pattern; }
+    gfx::Point patternOrigin() { return m_patternOrigin; }
+
     const gfx::Rect& bounds() const { return m_bounds; }
 
     void setType(BrushType type);
     void setSize(int size);
     void setAngle(int angle);
+    void setImage(const Image* image);
+    void setPattern(BrushPattern pattern) {
+      m_pattern = pattern;
+    }
+    void setPatternOrigin(const gfx::Point& patternOrigin) {
+      m_patternOrigin = patternOrigin;
+    }
 
   private:
     void clean();
     void regenerate();
 
-    BrushType m_type;                       // Type of brush
+    BrushType m_type;                     // Type of brush
     int m_size;                           // Size (diameter)
     int m_angle;                          // Angle in degrees 0-360
     ImageRef m_image;                     // Image of the brush
     gfx::Rect m_bounds;
+    BrushPattern m_pattern;               // How the image should be replicated
+    gfx::Point m_patternOrigin;           // From what position the brush was taken
   };
 
 } // namespace doc
