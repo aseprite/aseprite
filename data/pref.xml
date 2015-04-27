@@ -99,7 +99,7 @@
       <option id="new_url" type="std::string" />
     </section>
     <section id="brush">
-      <option id="pattern" type="doc::BrushPattern" default="doc::BrushPattern::ALIGNED_FROM_SRC" />
+      <option id="pattern" type="doc::BrushPattern" default="doc::BrushPattern::DEFAULT" />
     </section>
   </global>
 

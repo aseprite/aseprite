@@ -224,7 +224,7 @@ class ContextBar::BrushPatternField : public ComboBox
 {
 public:
   BrushPatternField() : m_lock(false) {
-    addItem("Pattern aligned from source");
+    addItem("Pattern aligned to source");
     addItem("Pattern aligned to destination");
     addItem("Paint brush");
   }
@@ -233,7 +233,7 @@ public:
     int index = 0;
 
     switch (type) {
-      case BrushPattern::ALIGNED_FROM_SRC: index = 0; break;
+      case BrushPattern::ALIGNED_TO_SRC: index = 0; break;
       case BrushPattern::ALIGNED_TO_DST: index = 1; break;
       case BrushPattern::PAINT_BRUSH: index = 2; break;
     }
@@ -250,10 +250,10 @@ protected:
     if (m_lock)
       return;
 
-    BrushPattern type = BrushPattern::ALIGNED_FROM_SRC;
+    BrushPattern type = BrushPattern::ALIGNED_TO_SRC;
 
     switch (getSelectedItemIndex()) {
-      case 0: type = BrushPattern::ALIGNED_FROM_SRC; break;
+      case 0: type = BrushPattern::ALIGNED_TO_SRC; break;
       case 1: type = BrushPattern::ALIGNED_TO_DST; break;
       case 2: type = BrushPattern::PAINT_BRUSH; break;
     }

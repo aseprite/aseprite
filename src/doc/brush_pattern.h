@@ -12,7 +12,7 @@ namespace doc {
 
   enum class BrushPattern {
     DEFAULT = 0,
-    ALIGNED_FROM_SRC = 0,
+    ALIGNED_TO_SRC = 0,
     ALIGNED_TO_DST = 1,
     PAINT_BRUSH = 2,
   };
