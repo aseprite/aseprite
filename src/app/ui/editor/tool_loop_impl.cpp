@@ -53,11 +53,11 @@ static base::SharedPtr<Brush> special_brush;
 static base::SharedPtr<Brush> last_brush;
 static gfx::Point brush_origin;
 
-void set_tool_loop_brush_image(doc::ImageRef& image,
+void set_tool_loop_brush_image(const doc::Image* image,
                                const gfx::Point& origin)
 {
   special_brush.reset(new Brush());
-  special_brush->setImage(image.get());
+  special_brush->setImage(image);
   special_brush->setPatternOrigin(brush_origin = origin);
 }
 

@@ -11,10 +11,12 @@
 
 #include "app/ui/editor/select_box_state.h"
 
+#include "app/app.h"
+#include "app/tools/tool_box.h"
 #include "app/ui/editor/editor.h"
-#include "gfx/rect.h"
 #include "doc/image.h"
 #include "doc/sprite.h"
+#include "gfx/rect.h"
 #include "ui/message.h"
 #include "ui/system.h"
 #include "ui/view.h"
@@ -27,6 +29,7 @@ SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc,
   : m_delegate(delegate)
   , m_rulers(4)
   , m_movingRuler(-1)
+  , m_selectingBox(false)
   , m_flags(flags)
 {
   setBoxBounds(rc);
@@ -66,29 +69,45 @@ bool SelectBoxState::onMouseDown(Editor* editor, MouseMessage* msg)
   if (msg->left() || msg->right()) {
     m_movingRuler = -1;
 
-    for (int i=0; i<(int)m_rulers.size(); ++i) {
-      if (touchRuler(editor, m_rulers[i], msg->position().x, msg->position().y)) {
-        m_movingRuler = i;
-        break;
+    if (hasFlag(RULERS)) {
+      for (int i=0; i<(int)m_rulers.size(); ++i) {
+        if (touchRuler(editor, m_rulers[i], msg->position().x, msg->position().y)) {
+          m_movingRuler = i;
+          break;
+        }
       }
+    }
+
+    if (hasFlag(QUICKBOX) && m_movingRuler == -1) {
+      m_selectingBox = true;
+      m_startingPos = editor->screenToEditor(msg->position());
+      setBoxBounds(gfx::Rect(m_startingPos, gfx::Size(1, 1)));
     }
 
     editor->captureMouse();
     return true;
   }
-
   return StandbyState::onMouseDown(editor, msg);
 }
 
 bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 {
   m_movingRuler = -1;
+
+  if (m_selectingBox) {
+    m_selectingBox = false;
+    if (m_delegate)
+      m_delegate->onQuickboxEnd(getBoxBounds());
+  }
+
   return StandbyState::onMouseUp(editor, msg);
 }
 
 bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  if (m_movingRuler >= 0) {
+  bool used = false;
+
+  if (hasFlag(RULERS) && m_movingRuler >= 0) {
     gfx::Point pt = editor->screenToEditor(msg->position());
 
     switch (m_rulers[m_movingRuler].getOrientation()) {
@@ -101,42 +120,79 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
         m_rulers[m_movingRuler].setPosition(pt.x);
         break;
     }
+    used = true;
+  }
 
+  if (hasFlag(QUICKBOX) && m_selectingBox) {
+    gfx::Point p1 = m_startingPos;
+    gfx::Point p2 = editor->screenToEditor(msg->position());
+
+    if (p2.x < p1.x) std::swap(p1.x, p2.x);
+    if (p2.y < p1.y) std::swap(p1.y, p2.y);
+    ++p2.x;
+    ++p2.y;
+
+    setBoxBounds(gfx::Rect(p1, p2));
+    used = true;
+  }
+
+  if (used) {
     if (m_delegate)
       m_delegate->onChangeRectangle(getBoxBounds());
 
     editor->invalidate();
     return true;
   }
-  return StandbyState::onMouseMove(editor, msg);
+  else
+    return StandbyState::onMouseMove(editor, msg);
 }
 
 bool SelectBoxState::onSetCursor(Editor* editor)
 {
-  if (m_movingRuler >= 0) {
-    switch (m_rulers[m_movingRuler].getOrientation()) {
-      case Ruler::Horizontal: ui::set_mouse_cursor(kSizeNSCursor); return true;
-      case Ruler::Vertical: ui::set_mouse_cursor(kSizeWECursor); return true;
+  if (hasFlag(RULERS)) {
+    if (m_movingRuler >= 0) {
+      switch (m_rulers[m_movingRuler].getOrientation()) {
+        case Ruler::Horizontal: ui::set_mouse_cursor(kSizeNSCursor); return true;
+        case Ruler::Vertical: ui::set_mouse_cursor(kSizeWECursor); return true;
+      }
     }
-  }
 
-  int x = ui::get_mouse_position().x;
-  int y = ui::get_mouse_position().y;
+    int x = ui::get_mouse_position().x;
+    int y = ui::get_mouse_position().y;
 
-  for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
-    if (touchRuler(editor, *it, x, y)) {
-      switch (it->getOrientation()) {
-        case Ruler::Horizontal:
-          ui::set_mouse_cursor(kSizeNSCursor);
-          return true;
-        case Ruler::Vertical:
-          ui::set_mouse_cursor(kSizeWECursor);
-          return true;
+    for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
+      if (touchRuler(editor, *it, x, y)) {
+        switch (it->getOrientation()) {
+          case Ruler::Horizontal:
+            ui::set_mouse_cursor(kSizeNSCursor);
+            return true;
+          case Ruler::Vertical:
+            ui::set_mouse_cursor(kSizeWECursor);
+            return true;
+        }
       }
     }
   }
+  return StandbyState::onSetCursor(editor);
+}
 
+bool SelectBoxState::requireBrushPreview()
+{
+  if (hasFlag(QUICKBOX))
+    return true;
+
+  // Returns false as it overrides default standby state behavior &
+  // look. This state uses normal arrow cursors.
   return false;
+}
+
+tools::Ink* SelectBoxState::getStateInk()
+{
+  if (hasFlag(QUICKBOX))
+    return App::instance()->getToolBox()->getInkById(
+      tools::WellKnownInks::Selection);
+  else
+    return nullptr;
 }
 
 void SelectBoxState::preRenderDecorator(EditorPreRender* render)

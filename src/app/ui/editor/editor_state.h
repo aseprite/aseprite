@@ -26,6 +26,7 @@ namespace app {
   class EditorDecorator;
 
   namespace tools {
+    class Ink;
     class Tool;
   }
 
@@ -106,6 +107,9 @@ namespace app {
 
     // Returns true if this state accept the given quicktool.
     virtual bool acceptQuickTool(tools::Tool* tool) { return true; }
+
+    // Custom ink in this state.
+    virtual tools::Ink* getStateInk() { return nullptr; }
 
   private:
     DISABLE_COPYING(EditorState);

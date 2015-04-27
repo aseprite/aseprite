@@ -28,7 +28,7 @@ namespace app {
   }
 
   void set_tool_loop_brush_image(
-    doc::ImageRef& image,
+    const doc::Image* image,
     const gfx::Point& origin);
   bool is_tool_loop_brush_image();
   void discard_tool_loop_brush_image();

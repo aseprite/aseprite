@@ -439,6 +439,7 @@
           <param name="orientation" value="vertical" />
         </item>
         <item command="MaskContent" text="Transfor&amp;m" />
+        <item command="NewBrush" text="New &amp;Brush" />
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert" />

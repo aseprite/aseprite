@@ -20,7 +20,14 @@ namespace app {
   class SelectBoxDelegate {
   public:
     virtual ~SelectBoxDelegate() { }
-    virtual void onChangeRectangle(const gfx::Rect& rect) = 0;
+
+    // Called each time the selected box is modified (e.g. rulers are
+    // moved).
+    virtual void onChangeRectangle(const gfx::Rect& rect) { }
+
+    // Called only in QUICKBOX mode, when the user released the mouse
+    // button.
+    virtual void onQuickboxEnd(const gfx::Rect& rect) { }
   };
 
   class SelectBoxState : public StandbyState
@@ -29,9 +36,10 @@ namespace app {
 
   public:
     typedef int Flags;
-    static const int RULERS = 1;
-    static const int DARKOUTSIDE = 2;
-    static const int GRID = 4;
+    static const int RULERS = 1;      // Draw rulers at each edge of the current box
+    static const int DARKOUTSIDE = 2; // The outside of the box must be darker
+    static const int GRID = 4;        // Draw a grid
+    static const int QUICKBOX = 8;    // Select the box as in selection tool, drawing a boxu
 
     SelectBoxState(SelectBoxDelegate* delegate,
                    const gfx::Rect& rc,
@@ -48,10 +56,8 @@ namespace app {
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onSetCursor(Editor* editor) override;
-
-    // Returns false as it overrides default standby state behavior &
-    // look. This state uses normal arrow cursors.
-    virtual bool requireBrushPreview() override { return false; }
+    virtual bool requireBrushPreview() override;
+    virtual tools::Ink* getStateInk() override;
 
     // EditorDecorator overrides
     virtual void preRenderDecorator(EditorPreRender* render) override;
@@ -69,6 +75,8 @@ namespace app {
     SelectBoxDelegate* m_delegate;
     Rulers m_rulers;
     int m_movingRuler;
+    bool m_selectingBox;
+    gfx::Point m_startingPos;
     Flags m_flags;
   };
 

@@ -13,9 +13,12 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
+#include "app/modules/editors.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/editor/select_box_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
@@ -24,7 +27,8 @@
 
 namespace app {
 
-class NewBrushCommand : public Command {
+class NewBrushCommand : public Command
+                      , public SelectBoxDelegate {
 public:
   NewBrushCommand();
   Command* clone() const override { return new NewBrushCommand(*this); }
@@ -32,6 +36,12 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+
+  // SelectBoxDelegate impl
+  void onQuickboxEnd(const gfx::Rect& rect) override;
+
+private:
+  void createBrush(const Mask* mask);
 };
 
 NewBrushCommand::NewBrushCommand()
@@ -43,34 +53,64 @@ NewBrushCommand::NewBrushCommand()
 
 bool NewBrushCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasVisibleMask);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void NewBrushCommand::onExecute(Context* context)
 {
-  // TODO if there is no mask available, create a new Editor state to select the brush bounds
-
-  doc::ImageRef image(new_image_from_mask(UIContext::instance()->activeSite()));
-  if (!image) {
-    ui::Alert::show("Error<<There is no selected area to create a brush.||&OK");
-    return;
+  // If there is no visible mask, the brush must be selected from the
+  // current editor.
+  if (!context->activeDocument()->isMaskVisible()) {
+    current_editor->setState(
+      EditorStatePtr(
+        new SelectBoxState(
+          this, current_editor->sprite()->bounds(),
+          SelectBoxState::DARKOUTSIDE |
+          SelectBoxState::QUICKBOX)));
   }
+  // Create a brush from the active selection
+  else {
+    createBrush(context->activeDocument()->mask());
+
+    // Set pencil as current tool
+    ISettings* settings = UIContext::instance()->settings();
+    tools::Tool* pencil =
+      App::instance()->getToolBox()->getToolById(tools::WellKnownTools::Pencil);
+    settings->setCurrentTool(pencil);
+
+    // Deselect mask
+    Command* cmd =
+      CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+    UIContext::instance()->executeCommand(cmd);
+
+  }
+}
+
+void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect)
+{
+  Mask mask;
+  mask.replace(rect);
+  createBrush(&mask);
+
+  // Update the context bar
+  // TODO find a way to avoid all these singletons. Maybe a simple
+  // signal in the context like "brush has changed" could be enough.
+  App::instance()->getMainWindow()->getContextBar()
+    ->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
+
+  current_editor->backToPreviousState();
+}
+
+void NewBrushCommand::createBrush(const Mask* mask)
+{
+  doc::ImageRef image(new_image_from_mask(
+                        UIContext::instance()->activeSite(), mask));
+  if (!image)
+    return;
 
   // Set brush
   set_tool_loop_brush_image(
-    image, context->activeDocument()->mask()->bounds().getOrigin());
-
-  // Set pencil as current tool
-  ISettings* settings = UIContext::instance()->settings();
-  tools::Tool* pencil =
-    App::instance()->getToolBox()->getToolById(tools::WellKnownTools::Pencil);
-  settings->setCurrentTool(pencil);
-
-  // Deselect mask
-  Command* cmd =
-    CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
-  UIContext::instance()->executeCommand(cmd);
+    image.get(), mask->bounds().getOrigin());
 }
 
 Command* CommandFactory::createNewBrushCommand()

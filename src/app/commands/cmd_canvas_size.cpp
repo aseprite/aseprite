@@ -92,7 +92,7 @@ public:
 protected:
 
   // SelectBoxDelegate impleentation
-  virtual void onChangeRectangle(const gfx::Rect& rect) override {
+  void onChangeRectangle(const gfx::Rect& rect) override {
     m_rect = rect;
 
     updateSizeFromRect();
