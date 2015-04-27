@@ -67,7 +67,7 @@ void EditorView::onPaint(PaintEvent& ev)
 
     // Only show the view selected if it is the current editor
     case CurrentEditorMode:
-      selected = (editor() == current_editor);
+      selected = (editor()->isActive());
       break;
 
       // Always show selected

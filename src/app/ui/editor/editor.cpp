@@ -18,6 +18,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/ini_file.h"
+#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -188,6 +189,11 @@ Editor::~Editor()
   setCustomizationDelegate(NULL);
 
   m_mask_timer.stop();
+}
+
+bool Editor::isActive() const
+{
+  return (current_editor == this);
 }
 
 WidgetType editor_type()

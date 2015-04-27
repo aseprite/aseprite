@@ -206,7 +206,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   if (clickedInk->isSelection()) {
     // Transform selected pixels
-    if (document->isMaskVisible() && m_decorator->getTransformHandles(editor)) {
+    if (editor->isActive() && document->isMaskVisible() && m_decorator->getTransformHandles(editor)) {
       TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
 
       // Get the handle covered by the mouse.
@@ -485,7 +485,8 @@ TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
 
 bool StandbyState::Decorator::onSetCursor(Editor* editor)
 {
-  if (!editor->document()->isMaskVisible())
+  if (!editor->isActive() ||
+      !editor->document()->isMaskVisible())
     return false;
 
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
@@ -559,7 +560,8 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
   Editor* editor = render->getEditor();
 
   // Draw transformation handles (if the mask is visible and isn't frozen).
-  if (editor->editorFlags() & Editor::kShowMask &&
+  if (editor->isActive() &&
+      editor->editorFlags() & Editor::kShowMask &&
       editor->document()->isMaskVisible() &&
       !editor->document()->mask()->isFrozen()) {
     // And draw only when the user has a selection tool as active tool.

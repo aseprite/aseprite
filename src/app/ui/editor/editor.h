@@ -81,6 +81,8 @@ namespace app {
     Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
+    bool isActive() const;
+
     DocumentView* getDocumentView() { return m_docView; }
     void setDocumentView(DocumentView* docView) { m_docView = docView; }
 
