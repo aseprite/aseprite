@@ -827,8 +827,6 @@ ContextBar::ContextBar()
 #endif
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
-  addChild(m_newBrush = new Button("New Brush"));
-
   setup_mini_font(m_toleranceLabel);
   setup_mini_font(m_opacityLabel);
 
@@ -849,8 +847,6 @@ ContextBar::ContextBar()
     "component is used to setup the opacity level of all drawing tools.\n\n"
     "When unchecked -the default behavior- the color is picked\n"
     "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
-  tooltipManager->addTooltipFor(m_newBrush,
-    "Create a brush from the selection.", JI_BOTTOM);
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
@@ -859,7 +855,6 @@ ContextBar::ContextBar()
   App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
-  m_newBrush->Click.connect(Bind<void>(&ContextBar::onNewBrush, this));
   m_discardBrush->Click.connect(Bind<void>(&ContextBar::onDiscardBrush, this));
 
   onCurrentToolChange();
@@ -1008,7 +1003,6 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);
   m_dropPixels->setVisible(false);
-  m_newBrush->setVisible(hasSelectOptions);
 
   layout();
 }
@@ -1040,12 +1034,6 @@ void ContextBar::updateAutoSelectLayer(bool state)
     return;
 
   m_autoSelectLayer->setSelected(state);
-}
-
-void ContextBar::onNewBrush()
-{
-  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewBrush);
-  UIContext::instance()->executeCommand(cmd);
 }
 
 void ContextBar::onDiscardBrush()
