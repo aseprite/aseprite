@@ -147,6 +147,10 @@ if(NOT USE_SHARED_GTEST)
   endif()
 endif()
 
+if(NOT USE_SHARED_CURL)
+  set(CURL_STATICLIB ON BOOL)
+endif()
+
 ######################################################################
 # Allegro 4 backend
 
