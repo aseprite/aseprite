@@ -120,7 +120,7 @@ static void on_palette_change_update_cursor_color()
 
 static void on_brush_before_change()
 {
-  if (current_editor != NULL) {
+  if (current_editor) {
     brush_size_thick = current_editor->cursorThick();
     if (brush_size_thick)
       current_editor->hideDrawingCursor();
@@ -129,7 +129,7 @@ static void on_brush_before_change()
 
 static void on_brush_after_change()
 {
-  if (current_editor != NULL) {
+  if (current_editor) {
     // Show drawing cursor
     if (current_editor->sprite() && brush_size_thick > 0)
       current_editor->showDrawingCursor();
