@@ -53,8 +53,8 @@ public:
     : m_editor(current_editor)
     , m_rect(0, 0, current_editor->sprite()->width(), current_editor->sprite()->height())
     , m_selectBoxState(new SelectBoxState(this, m_rect,
-        SelectBoxState::PaintRulers |
-        SelectBoxState::PaintDarkOutside)) {
+        SelectBoxState::RULERS |
+        SelectBoxState::DARKOUTSIDE)) {
     setWidth(m_rect.w);
     setHeight(m_rect.h);
     setLeft(0);

@@ -28,14 +28,14 @@ namespace app {
     enum { H1, H2, V1, V2 };
 
   public:
-    typedef int PaintFlags;
-    static const int PaintRulers = 1;
-    static const int PaintDarkOutside = 2;
-    static const int PaintGrid = 4;
+    typedef int Flags;
+    static const int RULERS = 1;
+    static const int DARKOUTSIDE = 2;
+    static const int GRID = 4;
 
     SelectBoxState(SelectBoxDelegate* delegate,
                    const gfx::Rect& rc,
-                   PaintFlags paintFlags);
+                   Flags flags);
 
     // Returns the bounding box arranged by the rulers.
     gfx::Rect getBoxBounds() const;
@@ -64,12 +64,12 @@ namespace app {
     // the given ruler.
     bool touchRuler(Editor* editor, Ruler& ruler, int x, int y);
 
-    bool hasPaintFlag(PaintFlags flag) const;
+    bool hasFlag(Flags flag) const;
 
     SelectBoxDelegate* m_delegate;
     Rulers m_rulers;
     int m_movingRuler;
-    PaintFlags m_paintFlags;
+    Flags m_flags;
   };
 
 } // namespace app
