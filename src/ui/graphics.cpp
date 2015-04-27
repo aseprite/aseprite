@@ -67,6 +67,9 @@ void Graphics::setDrawMode(DrawMode mode, int param)
     case DrawMode::Solid:
       m_surface->setDrawMode(she::DrawMode::Solid);
       break;
+    case DrawMode::Xor:
+      m_surface->setDrawMode(she::DrawMode::Xor);
+      break;
     case DrawMode::Checked:
       m_surface->setDrawMode(she::DrawMode::Checked, param);
       break;

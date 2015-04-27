@@ -263,6 +263,10 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
       }
     }
   }
+
+  if (hasFlag(QUICKBOX)) {
+    render->drawRectXor(getBoxBounds());
+  }
 }
 
 bool SelectBoxState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)

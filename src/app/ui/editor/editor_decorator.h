@@ -38,6 +38,7 @@ namespace app {
     virtual ~EditorPostRender() { }
     virtual Editor* getEditor() = 0;
     virtual void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor) = 0;
+    virtual void drawRectXor(const gfx::Rect& rc) = 0;
   };
 
   // Used by editor's states to pre- and post-render customized

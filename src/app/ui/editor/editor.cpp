@@ -99,17 +99,14 @@ class EditorPostRenderImpl : public EditorPostRender {
 public:
   EditorPostRenderImpl(Editor* editor, Graphics* g)
     : m_editor(editor)
-    , m_g(g)
-  {
+    , m_g(g) {
   }
 
-  Editor* getEditor()
-  {
+  Editor* getEditor() {
     return m_editor;
   }
 
-  void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor)
-  {
+  void drawLine(int x1, int y1, int x2, int y2, gfx::Color screenColor) override {
     gfx::Point a(x1, y1);
     gfx::Point b(x2, y2);
     a = m_editor->editorToScreen(a);
@@ -120,6 +117,17 @@ public:
     b.x -= bounds.x;
     b.y -= bounds.y;
     m_g->drawLine(screenColor, a, b);
+  }
+
+  void drawRectXor(const gfx::Rect& rc) override {
+    gfx::Rect rc2 = m_editor->editorToScreen(rc);
+    gfx::Rect bounds = m_editor->getBounds();
+    rc2.x -= bounds.x;
+    rc2.y -= bounds.y;
+
+    m_g->setDrawMode(Graphics::DrawMode::Xor);
+    m_g->drawRect(gfx::rgba(255, 255, 255), rc2);
+    m_g->setDrawMode(Graphics::DrawMode::Solid);
   }
 
 private:
