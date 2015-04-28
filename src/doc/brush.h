@@ -62,6 +62,8 @@ namespace doc {
     gfx::Point m_patternOrigin;           // From what position the brush was taken
   };
 
+  typedef base::SharedPtr<Brush> BrushRef;
+
 } // namespace doc
 
 #endif

@@ -22,7 +22,6 @@
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
-#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
@@ -136,9 +135,14 @@ void NewBrushCommand::createBrush(const Mask* mask)
   if (!image)
     return;
 
-  // Set brush
-  set_tool_loop_brush_image(
-    image.get(), mask->bounds().getOrigin());
+  // New brush
+  doc::BrushRef brush(new doc::Brush());
+  brush->setImage(image.get());
+  brush->setPatternOrigin(mask->bounds().getOrigin());
+
+  // TODO add a active stock property in app::Context
+  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ctxBar->setActiveBrush(brush);
 }
 
 Command* CommandFactory::createNewBrushCommand()

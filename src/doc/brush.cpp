@@ -44,6 +44,7 @@ Brush::Brush(const Brush& brush)
   m_type = brush.m_type;
   m_size = brush.m_size;
   m_angle = brush.m_angle;
+  m_image = brush.m_image;
   m_pattern = brush.m_pattern;
   m_patternOrigin = brush.m_patternOrigin;
 

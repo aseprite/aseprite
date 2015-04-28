@@ -28,7 +28,6 @@
 #include "app/ui/brush_popup.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
-#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
@@ -62,8 +61,9 @@ static bool g_updatingFromTool = false;
 
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
-  BrushTypeField()
-    : ButtonSet(1) {
+  BrushTypeField(ContextBar* owner)
+    : ButtonSet(1)
+    , m_owner(owner) {
     m_bitmap = she::instance()->createRgbaSurface(8, 8);
     she::ScopedSurfaceLock lock(m_bitmap);
     lock->clear();
@@ -77,15 +77,16 @@ public:
     m_bitmap->dispose();
   }
 
-  void setBrushSettings(IBrushSettings* brushSettings) {
-    base::SharedPtr<doc::Brush> brush = get_tool_loop_brush(
-      brushSettings, 10);
+  void updateBrush(tools::Tool* tool = nullptr) {
+    doc::BrushRef brush = m_owner->activeBrush(tool);
+    if (brush->type() != kImageBrushType && brush->size() > 10) {
+      brush.reset(new Brush(*brush));
+      brush->setSize(10);
+    }
 
     Image* image = brush->image();
-
     if (m_bitmap)
       m_bitmap->dispose();
-
     m_bitmap = she::instance()->createRgbaSurface(
       std::min(10, image->width()),
       std::min(10, image->height()));
@@ -130,7 +131,7 @@ private:
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
-    base::SharedPtr<doc::Brush> brush = get_tool_loop_brush(brushSettings);
+    doc::BrushRef brush = m_owner->activeBrush();
 
     m_popupWindow.setBounds(rc);
     m_popupWindow.setBrush(brush.get());
@@ -154,14 +155,11 @@ private:
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     brushSettings->setType(m_brushType);
 
-    setBrushSettings(brushSettings);
-
-    {
-      Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
-      UIContext::instance()->executeCommand(cmd);
-    }
+    m_owner->setActiveBrush(ContextBar::createBrushFromSettings(
+                              brushSettings));
   }
 
+  ContextBar* m_owner;
   she::Surface* m_bitmap;
   BrushType m_brushType;
   BrushPopup m_popupWindow;
@@ -209,9 +207,7 @@ protected:
       ->getBrush()
       ->setAngle(getValue());
 
-    IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-    IBrushSettings* brushSettings = toolSettings->getBrush();
-    m_brushType->setBrushSettings(brushSettings);
+    m_brushType->updateBrush();
   }
 
 private:
@@ -789,7 +785,7 @@ ContextBar::ContextBar()
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
-  addChild(m_brushType = new BrushTypeField());
+  addChild(m_brushType = new BrushTypeField(this));
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
   addChild(m_brushPatternField = new BrushPatternField());
@@ -853,7 +849,7 @@ ContextBar::ContextBar()
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
-  onCurrentToolChange();
+  setActiveBrush(createBrushFromSettings());
 }
 
 ContextBar::~ContextBar()
@@ -879,30 +875,24 @@ void ContextBar::onSetOpacity(int newOpacity)
 
 void ContextBar::onBrushSizeChange()
 {
-  ISettings* settings = UIContext::instance()->settings();
-  Tool* currentTool = settings->getCurrentTool();
-  IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-  IBrushSettings* brushSettings = toolSettings->getBrush();
-
-  m_brushType->setBrushSettings(brushSettings);
-  m_brushSize->setTextf("%d", brushSettings->getSize());
+  if (m_activeBrush->type() != kImageBrushType)
+    discardActiveBrush();
 }
 
 void ContextBar::onBrushAngleChange()
 {
-  ISettings* settings = UIContext::instance()->settings();
-  Tool* currentTool = settings->getCurrentTool();
-  IToolSettings* toolSettings = settings->getToolSettings(currentTool);
-  IBrushSettings* brushSettings = toolSettings->getBrush();
-
-  m_brushType->setBrushSettings(brushSettings);
-  m_brushAngle->setTextf("%d", brushSettings->getAngle());
+  if (m_activeBrush->type() != kImageBrushType)
+    discardActiveBrush();
 }
 
 void ContextBar::onCurrentToolChange()
 {
-  ISettings* settings = UIContext::instance()->settings();
-  updateFromTool(settings->getCurrentTool());
+  if (m_activeBrush->type() != kImageBrushType)
+    setActiveBrush(ContextBar::createBrushFromSettings());
+  else {
+    ISettings* settings = UIContext::instance()->settings();
+    updateFromTool(settings->getCurrentTool());
+  }
 }
 
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
@@ -923,7 +913,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
   m_toolSettings = toolSettings;
   m_toolSettings->addObserver(this);
 
-  m_brushType->setBrushSettings(brushSettings);
+  m_brushType->updateBrush(tool);
   m_brushSize->setTextf("%d", brushSettings->getSize());
   m_brushAngle->setTextf("%d", brushSettings->getAngle());
   m_brushPatternField->setBrushPattern(
@@ -949,7 +939,7 @@ void ContextBar::updateFromTool(tools::Tool* tool)
                      tool->getInk(1)->isEffect());
 
   // True if we have an image as brush
-  bool hasImageBrush = (is_tool_loop_brush_image() ? true: false);
+  bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
 
   // True if the current tool is eyedropper.
   bool isEyedropper =
@@ -1029,6 +1019,52 @@ void ContextBar::updateAutoSelectLayer(bool state)
     return;
 
   m_autoSelectLayer->setSelected(state);
+}
+
+void ContextBar::setActiveBrush(const doc::BrushRef& brush)
+{
+  m_activeBrush = brush;
+
+  ISettings* settings = UIContext::instance()->settings();
+  updateFromTool(settings->getCurrentTool());
+}
+
+doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const
+{
+  if (!tool ||
+      (tool->getInk(0)->isPaint() &&
+       m_activeBrush->type() == kImageBrushType)) {
+    m_activeBrush->setPattern(App::instance()->preferences().brush.pattern());
+    return m_activeBrush;
+  }
+
+  ISettings* settings = UIContext::instance()->settings();
+  IToolSettings* toolSettings = settings->getToolSettings(tool);
+  return ContextBar::createBrushFromSettings(toolSettings->getBrush());
+}
+
+void ContextBar::discardActiveBrush()
+{
+  setActiveBrush(ContextBar::createBrushFromSettings());
+}
+
+// static
+doc::BrushRef ContextBar::createBrushFromSettings(IBrushSettings* brushSettings)
+{
+  if (brushSettings == nullptr) {
+    ISettings* settings = UIContext::instance()->settings();
+    tools::Tool* tool = settings->getCurrentTool();
+    IToolSettings* toolSettings = settings->getToolSettings(tool);
+    brushSettings = toolSettings->getBrush();
+  }
+
+  doc::BrushRef brush;
+  brush.reset(
+    new Brush(
+      brushSettings->getType(),
+      brushSettings->getSize(),
+      brushSettings->getAngle()));
+  return brush;
 }
 
 } // namespace app

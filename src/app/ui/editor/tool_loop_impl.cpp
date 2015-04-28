@@ -32,7 +32,9 @@
 #include "app/tools/tool_loop.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/util/expand_cel_canvas.h"
 #include "doc/brush.h"
@@ -47,57 +49,6 @@ namespace app {
 
 using namespace ui;
 
-// TODO improve the design of the brush image
-
-static base::SharedPtr<Brush> special_brush;
-static base::SharedPtr<Brush> last_brush;
-static gfx::Point brush_origin;
-
-void set_tool_loop_brush_image(const doc::Image* image,
-                               const gfx::Point& origin)
-{
-  special_brush.reset(new Brush());
-  special_brush->setImage(image);
-  special_brush->setPatternOrigin(brush_origin = origin);
-}
-
-bool is_tool_loop_brush_image()
-{
-  return (special_brush ? true: false);
-}
-
-void discard_tool_loop_brush_image()
-{
-  special_brush.reset();
-}
-
-Image* get_tool_loop_brush_image()
-{
-  if (special_brush)
-    return special_brush->image();
-  else
-    return nullptr;
-}
-
-base::SharedPtr<Brush> get_tool_loop_brush(IBrushSettings* brushSettings, int sizeLimit)
-{
-  base::SharedPtr<Brush> brush;
-
-  if (special_brush) {
-    brush = special_brush;
-    brush->setPattern(App::instance()->preferences().brush.pattern());
-    brush->setPatternOrigin(brush_origin);
-  }
-  else {
-    brush.reset(
-      new Brush(
-        brushSettings->getType(),
-        std::min(sizeLimit, brushSettings->getSize()),
-        brushSettings->getAngle()));
-  }
-  return brush;
-}
-
 //////////////////////////////////////////////////////////////////////
 // For ToolLoopController
 
@@ -106,7 +57,7 @@ class ToolLoopImpl : public tools::ToolLoop,
   Editor* m_editor;
   Context* m_context;
   tools::Tool* m_tool;
-  base::SharedPtr<Brush> m_brush;
+  BrushRef m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -196,15 +147,9 @@ public:
     }
 
     m_previewFilled = m_toolSettings->getPreviewFilled();
-
     m_sprayWidth = m_toolSettings->getSprayWidth();
     m_spraySpeed = m_toolSettings->getSpraySpeed();
-
-    // Create the brush
-    IBrushSettings* brush_settings = m_toolSettings->getBrush();
-    ASSERT(brush_settings != NULL);
-
-    m_brush = get_tool_loop_brush(brush_settings);
+    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
 
     if (m_ink->isSelection())
       m_useMask = false;
@@ -451,7 +396,7 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   Editor* m_editor;
   Context* m_context;
   tools::Tool* m_tool;
-  base::SharedPtr<Brush> m_brush;
+  BrushRef m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
@@ -505,11 +450,7 @@ public:
     , m_shadeTable(NULL)
     , m_image(image)
   {
-    // Create the brush
-    IBrushSettings* brush_settings = m_toolSettings->getBrush();
-    ASSERT(brush_settings != NULL);
-
-    m_brush = get_tool_loop_brush(brush_settings);
+    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
     m_opacity = m_toolSettings->getOpacity();
     m_tolerance = m_toolSettings->getTolerance();
     m_contiguous = m_toolSettings->getContiguous();

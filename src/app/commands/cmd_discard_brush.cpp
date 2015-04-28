@@ -16,7 +16,6 @@
 #include "app/settings/settings.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
-#include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
@@ -42,17 +41,14 @@ DiscardBrushCommand::DiscardBrushCommand()
 
 bool DiscardBrushCommand::onEnabled(Context* context)
 {
-  return is_tool_loop_brush_image();
+  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  return (ctxBar->activeBrush()->type() == kImageBrushType);
 }
 
 void DiscardBrushCommand::onExecute(Context* context)
 {
-  discard_tool_loop_brush_image();
-
-  // Update context bar
-  ISettings* settings = UIContext::instance()->settings();
-  App::instance()->getMainWindow()->getContextBar()
-    ->updateFromTool(settings->getCurrentTool());
+  ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  ctxBar->discardActiveBrush();
 }
 
 Command* CommandFactory::createDiscardBrushCommand()

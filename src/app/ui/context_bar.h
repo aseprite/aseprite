@@ -12,6 +12,7 @@
 #include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
 #include "base/observable.h"
+#include "doc/brush.h"
 #include "ui/box.h"
 
 namespace ui {
@@ -26,6 +27,7 @@ namespace tools {
 
 namespace app {
 
+  class IBrushSettings;
   class IToolSettings;
 
   class ContextBar : public ui::Box,
@@ -39,6 +41,13 @@ namespace app {
     void updateForMovingPixels();
     void updateSelectionMode(SelectionMode mode);
     void updateAutoSelectLayer(bool state);
+
+    void setActiveBrush(const doc::BrushRef& brush);
+    doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
+    void discardActiveBrush();
+
+    static doc::BrushRef createBrushFromSettings(
+      IBrushSettings* brushSettings = nullptr);
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -94,6 +103,7 @@ namespace app {
     TransparentColorField* m_transparentColor;
     RotAlgorithmField* m_rotAlgo;
     DropPixelsField* m_dropPixels;
+    doc::BrushRef m_activeBrush;
   };
 
 } // namespace app
