@@ -22,14 +22,13 @@ namespace app {
 using namespace app::skin;
 using namespace ui;
 
-BrushPopup::BrushPopup(const gfx::Rect& rc, doc::Brush* brush)
+BrushPopup::BrushPopup()
   : PopupWindow("", kCloseOnClickInOtherWindow)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
   setAutoRemap(false);
   setBorder(gfx::Border(0));
-  setBounds(rc);
   child_spacing = 0;
 
   m_brushTypeButton = new ButtonSet(3);
@@ -40,7 +39,10 @@ BrushPopup::BrushPopup(const gfx::Rect& rc, doc::Brush* brush)
   m_brushTypeButton->setTransparent(true);
   m_brushTypeButton->setBgColor(gfx::ColorNone);
   addChild(m_brushTypeButton);
+}
 
+void BrushPopup::setBrush(doc::Brush* brush)
+{
   m_brushTypeButton->setSelectedItem(brush->type());
 }
 

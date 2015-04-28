@@ -21,7 +21,9 @@ namespace app {
 
   class BrushPopup : public ui::PopupWindow {
   public:
-    BrushPopup(const gfx::Rect& rc, doc::Brush* brush);
+    BrushPopup();
+
+    void setBrush(doc::Brush* brush);
 
     Signal1<void, doc::Brush*> BrushChange;
 

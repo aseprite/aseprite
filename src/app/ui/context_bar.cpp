@@ -63,8 +63,7 @@ static bool g_updatingFromTool = false;
 class ContextBar::BrushTypeField : public ButtonSet {
 public:
   BrushTypeField()
-    : ButtonSet(1)
-    , m_popupWindow(NULL) {
+    : ButtonSet(1) {
     m_bitmap = she::instance()->createRgbaSurface(8, 8);
     she::ScopedSurfaceLock lock(m_bitmap);
     lock->clear();
@@ -111,7 +110,7 @@ protected:
   void onItemChange() override {
     ButtonSet::onItemChange();
 
-    if (!m_popupWindow || !m_popupWindow->isVisible())
+    if (!m_popupWindow.isVisible())
       openPopup();
     else
       closePopup();
@@ -133,21 +132,18 @@ private:
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     base::SharedPtr<doc::Brush> brush = get_tool_loop_brush(brushSettings);
 
-    m_popupWindow = new BrushPopup(rc, brush.get());
+    m_popupWindow.setBounds(rc);
+    m_popupWindow.setBrush(brush.get());
 
-    Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
-    m_popupWindow->setHotRegion(rgn);
+    Region rgn(m_popupWindow.getBounds().createUnion(getBounds()));
+    m_popupWindow.setHotRegion(rgn);
 
-    m_popupWindow->openWindow();
-    m_popupWindow->BrushChange.connect(&BrushTypeField::onBrushTypeChange, this);
+    m_popupWindow.openWindow();
+    m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushTypeChange, this);
   }
 
   void closePopup() {
-    if (m_popupWindow) {
-      m_popupWindow->closeWindow(NULL);
-      delete m_popupWindow;
-      m_popupWindow = nullptr;
-    }
+    m_popupWindow.closeWindow(NULL);
   }
 
   void onBrushTypeChange(Brush* brush) {
@@ -168,7 +164,7 @@ private:
 
   she::Surface* m_bitmap;
   BrushType m_brushType;
-  BrushPopup* m_popupWindow;
+  BrushPopup m_popupWindow;
 };
 
 class ContextBar::BrushSizeField : public IntEntry
