@@ -291,6 +291,7 @@ add_library(app-lib
   transaction.cpp
   ui/ani_controls.cpp
   ui/app_menuitem.cpp
+  ui/brush_popup.cpp
   ui/button_set.cpp
   ui/color_bar.cpp
   ui/color_button.cpp

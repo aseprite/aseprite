@@ -79,7 +79,7 @@ Image* get_tool_loop_brush_image()
     return nullptr;
 }
 
-base::SharedPtr<Brush> get_tool_loop_brush(IBrushSettings* brushSettings)
+base::SharedPtr<Brush> get_tool_loop_brush(IBrushSettings* brushSettings, int sizeLimit)
 {
   base::SharedPtr<Brush> brush;
 
@@ -92,7 +92,7 @@ base::SharedPtr<Brush> get_tool_loop_brush(IBrushSettings* brushSettings)
     brush.reset(
       new Brush(
         brushSettings->getType(),
-        brushSettings->getSize(),
+        std::min(sizeLimit, brushSettings->getSize()),
         brushSettings->getAngle()));
   }
   return brush;

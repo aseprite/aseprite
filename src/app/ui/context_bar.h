@@ -52,7 +52,6 @@ namespace app {
     void onBrushAngleChange();
     void onCurrentToolChange();
     void onDropPixels(ContextBarObserver::DropAction action);
-    void onDiscardBrush();
 
     class BrushTypeField;
     class BrushAngleField;
@@ -86,7 +85,6 @@ namespace app {
     AutoSelectLayerField* m_autoSelectLayer;
     ui::Box* m_freehandBox;
     FreehandAlgorithmField* m_freehandAlgo;
-    ui::Button* m_discardBrush;
     BrushPatternField* m_brushPatternField;
     ui::Box* m_sprayBox;
     SprayWidthField* m_sprayWidth;

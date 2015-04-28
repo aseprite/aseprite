@@ -35,7 +35,7 @@ namespace app {
   doc::Image* get_tool_loop_brush_image();
 
   base::SharedPtr<doc::Brush> get_tool_loop_brush(
-    IBrushSettings* brushSettings);
+    IBrushSettings* brushSettings, int sizeLimit = 0xffff);
 
   tools::ToolLoop* create_tool_loop(
     Editor* editor, Context* context);

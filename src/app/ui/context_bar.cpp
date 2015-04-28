@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/commands/commands.h"
 #include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/settings/ink_type.h"
 #include "app/settings/selection_mode.h"
@@ -24,6 +25,7 @@
 #include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
+#include "app/ui/brush_popup.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/tool_loop_impl.h"
@@ -62,8 +64,7 @@ class ContextBar::BrushTypeField : public ButtonSet {
 public:
   BrushTypeField()
     : ButtonSet(1)
-    , m_popupWindow(NULL)
-    , m_brushTypeButton(NULL) {
+    , m_popupWindow(NULL) {
     m_bitmap = she::instance()->createRgbaSurface(8, 8);
     she::ScopedSurfaceLock lock(m_bitmap);
     lock->clear();
@@ -78,24 +79,30 @@ public:
   }
 
   void setBrushSettings(IBrushSettings* brushSettings) {
-    base::UniquePtr<Palette> palette(new Palette(frame_t(0), 2));
-    palette->setEntry(0, doc::rgba(0, 0, 0, 0));
-    palette->setEntry(1, doc::rgba(0, 0, 0, 255));
-
-    base::UniquePtr<Brush> brush(
-      new Brush(
-        m_brushType = brushSettings->getType(),
-        std::min(10, brushSettings->getSize()),
-        brushSettings->getAngle()));
+    base::SharedPtr<doc::Brush> brush = get_tool_loop_brush(
+      brushSettings, 10);
 
     Image* image = brush->image();
 
     if (m_bitmap)
       m_bitmap->dispose();
 
-    m_bitmap = she::instance()->createRgbaSurface(image->width(), image->height());
+    m_bitmap = she::instance()->createRgbaSurface(
+      std::min(10, image->width()),
+      std::min(10, image->height()));
+
+    Palette* palette = get_current_palette();
+    if (image->pixelFormat() == IMAGE_BITMAP) {
+      palette = new Palette(frame_t(0), 2);
+      palette->setEntry(0, doc::rgba(0, 0, 0, 0));
+      palette->setEntry(1, doc::rgba(0, 0, 0, 255));
+    }
+
     convert_image_to_surface(image, palette, m_bitmap,
       0, 0, 0, 0, image->width(), image->height());
+
+    if (image->pixelFormat() == IMAGE_BITMAP)
+      delete palette;
 
     getItem(0)->setIcon(m_bitmap);
   }
@@ -116,44 +123,35 @@ protected:
 
 private:
   void openPopup() {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-
     Rect rc = getBounds();
     rc.y += rc.h - 2*guiscale();
     rc.setSize(getPreferredSize());
     rc.w *= 3;
-    m_popupWindow = new PopupWindow("", PopupWindow::kCloseOnClickInOtherWindow);
-    m_popupWindow->setAutoRemap(false);
-    m_popupWindow->setBorder(Border(0));
-    m_popupWindow->setBounds(rc);
-    m_popupWindow->child_spacing = 0;
+
+    ISettings* settings = UIContext::instance()->settings();
+    Tool* currentTool = settings->getCurrentTool();
+    IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
+    base::SharedPtr<doc::Brush> brush = get_tool_loop_brush(brushSettings);
+
+    m_popupWindow = new BrushPopup(rc, brush.get());
 
     Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
-    m_brushTypeButton = new ButtonSet(3);
-    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_CIRCLE));
-    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_SQUARE));
-    m_brushTypeButton->addItem(theme->get_part(PART_BRUSH_LINE));
-    m_brushTypeButton->setSelectedItem(m_brushType);
-    m_brushTypeButton->ItemChange.connect(&BrushTypeField::onBrushTypeChange, this);
-    m_brushTypeButton->setTransparent(true);
-    m_brushTypeButton->setBgColor(gfx::ColorNone);
 
-    m_popupWindow->addChild(m_brushTypeButton);
     m_popupWindow->openWindow();
+    m_popupWindow->BrushChange.connect(&BrushTypeField::onBrushTypeChange, this);
   }
 
   void closePopup() {
     if (m_popupWindow) {
       m_popupWindow->closeWindow(NULL);
       delete m_popupWindow;
-      m_popupWindow = NULL;
-      m_brushTypeButton = NULL;
+      m_popupWindow = nullptr;
     }
   }
 
-  void onBrushTypeChange() {
-    m_brushType = (BrushType)m_brushTypeButton->selectedItem();
+  void onBrushTypeChange(Brush* brush) {
+    m_brushType = brush->type();
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
@@ -161,12 +159,16 @@ private:
     brushSettings->setType(m_brushType);
 
     setBrushSettings(brushSettings);
+
+    {
+      Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
+      UIContext::instance()->executeCommand(cmd);
+    }
   }
 
   she::Surface* m_bitmap;
   BrushType m_brushType;
-  PopupWindow* m_popupWindow;
-  ButtonSet* m_brushTypeButton;
+  BrushPopup* m_popupWindow;
 };
 
 class ContextBar::BrushSizeField : public IntEntry
@@ -794,7 +796,6 @@ ContextBar::ContextBar()
   addChild(m_brushType = new BrushTypeField());
   addChild(m_brushSize = new BrushSizeField());
   addChild(m_brushAngle = new BrushAngleField(m_brushType));
-  addChild(m_discardBrush = new Button("Discard Brush"));
   addChild(m_brushPatternField = new BrushPatternField());
 
   addChild(m_toleranceLabel = new Label("Tolerance:"));
@@ -855,7 +856,6 @@ ContextBar::ContextBar()
   App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
   App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
-  m_discardBrush->Click.connect(Bind<void>(&ContextBar::onDiscardBrush, this));
 
   onCurrentToolChange();
 }
@@ -985,10 +985,9 @@ void ContextBar::updateFromTool(tools::Tool* tool)
      tool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushType->setVisible(hasOpacity && !hasImageBrush);
+  m_brushType->setVisible(hasOpacity);
   m_brushSize->setVisible(hasOpacity && !hasImageBrush);
   m_brushAngle->setVisible(hasOpacity && !hasImageBrush);
-  m_discardBrush->setVisible(hasOpacity && hasImageBrush);
   m_brushPatternField->setVisible(hasOpacity && hasImageBrush);
   m_opacityLabel->setVisible(hasOpacity);
   m_inkType->setVisible(hasInk && !hasImageBrush);
@@ -1034,12 +1033,6 @@ void ContextBar::updateAutoSelectLayer(bool state)
     return;
 
   m_autoSelectLayer->setSelected(state);
-}
-
-void ContextBar::onDiscardBrush()
-{
-  Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
-  UIContext::instance()->executeCommand(cmd);
 }
 
 } // namespace app
