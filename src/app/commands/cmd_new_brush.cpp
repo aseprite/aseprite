@@ -65,6 +65,13 @@ void NewBrushCommand::onExecute(Context* context)
   // If there is no visible mask, the brush must be selected from the
   // current editor.
   if (!context->activeDocument()->isMaskVisible()) {
+    EditorStatePtr state = current_editor->getState();
+    if (dynamic_cast<SelectBoxState*>(state.get())) {
+      // If already are in "SelectBoxState" state, in this way we
+      // avoid creating a stack of several "SelectBoxState" states.
+      return;
+    }
+
     current_editor->setState(
       EditorStatePtr(
         new SelectBoxState(
