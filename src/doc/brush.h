@@ -31,10 +31,10 @@ namespace doc {
     BrushType type() const { return m_type; }
     int size() const { return m_size; }
     int angle() const { return m_angle; }
-    Image* image() { return m_image.get(); }
+    Image* image() const { return m_image.get(); }
 
-    BrushPattern pattern() { return m_pattern; }
-    gfx::Point patternOrigin() { return m_patternOrigin; }
+    BrushPattern pattern() const { return m_pattern; }
+    gfx::Point patternOrigin() const { return m_patternOrigin; }
 
     const gfx::Rect& bounds() const { return m_bounds; }
 

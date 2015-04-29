@@ -9,6 +9,7 @@
 #include "app/tools/shade_table.h"
 #include "app/tools/shading_options.h"
 #include "doc/palette.h"
+#include "doc/primitives_fast.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "filters/neighboring_pixels.h"
@@ -707,7 +708,11 @@ template<typename ImageTraits>
 class BrushInkProcessing : public DoubleInkProcessing<BrushInkProcessing<ImageTraits>, ImageTraits> {
 public:
   BrushInkProcessing(ToolLoop* loop) {
+    m_fgColor = loop->getPrimaryColor();
+    m_bgColor = loop->getSecondaryColor();
+    m_palette = get_current_palette();
     m_brush = loop->getBrush();
+    m_brushImage = m_brush->image();
     m_opacity = loop->getOpacity();
     m_width = m_brush->bounds().w;
     m_height = m_brush->bounds().h;
@@ -727,7 +732,11 @@ private:
     if (y < 0) y = m_height - ((-y) % m_height);
   }
 
-  Brush* m_brush;
+  color_t m_fgColor;
+  color_t m_bgColor;
+  const Palette* m_palette;
+  const Brush* m_brush;
+  const Image* m_brushImage;
   int m_opacity;
   int m_u, m_v, m_width, m_height;
 };
@@ -735,24 +744,103 @@ private:
 template<>
 void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
-  // TODO convert brush image to RGB
-  color_t c = get_pixel(m_brush->image(), x, y);
+
+  color_t c;
+  switch (m_brushImage->pixelFormat()) {
+    case IMAGE_RGB: {
+      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      break;
+    }
+    case IMAGE_INDEXED: {
+      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = m_palette->getEntry(c);
+      break;
+    }
+    case IMAGE_GRAYSCALE: {
+      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = graya(m_palette->getEntry(c), graya_geta(c));
+      break;
+    }
+    case IMAGE_BITMAP: {
+      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = c ? m_fgColor: m_bgColor;
+      break;
+    }
+    default:
+      ASSERT(false);
+      return;
+  }
+
   *m_dstAddress = rgba_blend_normal(*m_srcAddress, c, m_opacity);
 }
 
 template<>
 void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
-  // TODO convert brush image to grayscale
-  color_t c = get_pixel(m_brush->image(), x, y);
+
+  color_t c;
+  switch (m_brushImage->pixelFormat()) {
+    case IMAGE_RGB: {
+      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = graya(int(rgba_getr(c)) + int(rgba_getg(c)) + int(rgba_getb(c)) / 3,
+                rgba_geta(c));
+      break;
+    }
+    case IMAGE_INDEXED: {
+      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      c = m_palette->getEntry(c);
+      c = graya(int(rgba_getr(c)) + int(rgba_getg(c)) + int(rgba_getb(c)) / 3,
+                rgba_geta(c));
+      break;
+    }
+    case IMAGE_GRAYSCALE: {
+      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      break;
+    }
+    case IMAGE_BITMAP: {
+      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = c ? m_fgColor: m_bgColor;
+      break;
+    }
+    default:
+      ASSERT(false);
+      return;
+  }
+
   *m_dstAddress = graya_blend_normal(*m_srcAddress, c, m_opacity);
 }
 
 template<>
 void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   alignPixelPoint(x, y);
-  // TODO convert brush image to indexed
-  color_t c = get_pixel(m_brush->image(), x, y);
+
+  color_t c;
+  switch (m_brushImage->pixelFormat()) {
+    case IMAGE_RGB: {
+      c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
+      c = m_palette->findBestfit(rgba_getr(c), rgba_getg(c), rgba_getb(c));
+      break;
+    }
+    case IMAGE_INDEXED: {
+      c = get_pixel_fast<IndexedTraits>(m_brushImage, x, y);
+      break;
+    }
+    case IMAGE_GRAYSCALE: {
+      c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
+      c = graya_getv(c);
+      c = m_palette->findBestfit(c, c, c);
+      break;
+    }
+    case IMAGE_BITMAP: {
+      c = get_pixel_fast<BitmapTraits>(m_brushImage, x, y);
+      c = c ? m_fgColor: m_bgColor;
+      break;
+    }
+    default:
+      ASSERT(false);
+      return;
+  }
+
   *m_dstAddress = c;
 }
 
