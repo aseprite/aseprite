@@ -67,6 +67,7 @@ public:
     , m_bitmap(BrushPopup::createSurfaceForBrush(BrushRef(nullptr)))
     , m_popupWindow(this) {
     addItem(m_bitmap);
+    m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushChange, this);
   }
 
   ~BrushTypeField() {
@@ -131,7 +132,6 @@ private:
     m_popupWindow.setHotRegion(rgn);
 
     m_popupWindow.openWindow();
-    m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushChange, this);
   }
 
   void closePopup() {
