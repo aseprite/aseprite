@@ -26,7 +26,11 @@ namespace doc {
     typedef std::vector<Scanline> Scanlines;
     typedef Scanlines::const_iterator const_iterator;
 
-    CompressedImage(const Image* image);
+    // If diffColors is true, it generates one Scanline instance for
+    // each different color. If it's false, it generates a scanline
+    // for each row of consecutive pixels different than the mask
+    // color.
+    CompressedImage(const Image* image, bool diffColors);
 
     const_iterator begin() const { return m_scanlines.begin(); }
     const_iterator end() const { return m_scanlines.end(); }
