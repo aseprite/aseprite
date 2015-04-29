@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -45,6 +45,13 @@ TooltipManager::~TooltipManager()
 void TooltipManager::addTooltipFor(Widget* widget, const std::string& text, int arrowAlign)
 {
   m_tips[widget] = TipInfo(text, arrowAlign);
+}
+
+void TooltipManager::removeTooltipFor(Widget* widget)
+{
+  auto it = m_tips.find(widget);
+  if (it != m_tips.end())
+    m_tips.erase(it);
 }
 
 bool TooltipManager::onProcessMessage(Message* msg)

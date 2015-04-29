@@ -22,9 +22,12 @@
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/select_box_state.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
+#include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
+#include "base/convert_to.h"
 #include "doc/mask.h"
 
 namespace app {
@@ -142,7 +145,21 @@ void NewBrushCommand::createBrush(const Mask* mask)
 
   // TODO add a active stock property in app::Context
   ContextBar* ctxBar = App::instance()->getMainWindow()->getContextBar();
+  int slot = ctxBar->addBrush(brush);
   ctxBar->setActiveBrush(brush);
+
+  // Get the shortcut for this brush and show it to the user
+  Params params;
+  params.set("change", "custom");
+  params.set("slot", base::convert_to<std::string>(slot).c_str());
+  Key* key = KeyboardShortcuts::instance()->command(
+    CommandId::ChangeBrush, params);
+  if (key && !key->accels().empty()) {
+    std::string tooltip;
+    tooltip += "Shortcut: ";
+    tooltip += key->accels().front().toString();
+    StatusBar::instance()->showTip(2000, tooltip.c_str());
+  }
 }
 
 Command* CommandFactory::createNewBrushCommand()

@@ -13,7 +13,10 @@
 #include "app/ui/context_bar_observer.h"
 #include "base/observable.h"
 #include "doc/brush.h"
+#include "doc/brushes.h"
 #include "ui/box.h"
+
+#include <vector>
 
 namespace ui {
   class Box;
@@ -45,6 +48,12 @@ namespace app {
     void setActiveBrush(const doc::BrushRef& brush);
     doc::BrushRef activeBrush(tools::Tool* tool = nullptr) const;
     void discardActiveBrush();
+
+    // Adds a new brush and returns the slot number where the brush
+    // is now available.
+    int addBrush(const doc::BrushRef& brush);
+    const doc::Brushes& brushes() const { return m_brushes; }
+    void setActiveBrushBySlot(int slot);
 
     static doc::BrushRef createBrushFromSettings(
       IBrushSettings* brushSettings = nullptr);
@@ -104,6 +113,7 @@ namespace app {
     RotAlgorithmField* m_rotAlgo;
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;
+    doc::Brushes m_brushes;
   };
 
 } // namespace app

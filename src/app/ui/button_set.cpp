@@ -162,6 +162,11 @@ void ButtonSet::addItem(she::Surface* icon, int hspan, int vspan)
 {
   Item* item = new Item();
   item->setIcon(icon);
+  addItem(item, hspan, vspan);
+}
+
+void ButtonSet::addItem(Item* item, int hspan, int vspan)
+{
   addChildInCell(item, hspan, vspan, JI_CENTER | JI_MIDDLE);
 }
 

@@ -78,33 +78,17 @@ public:
   }
 
   void updateBrush(tools::Tool* tool = nullptr) {
-    doc::BrushRef brush = m_owner->activeBrush(tool);
-    if (brush->type() != kImageBrushType && brush->size() > 10) {
-      brush.reset(new Brush(*brush));
-      brush->setSize(10);
-    }
-
-    Image* image = brush->image();
     if (m_bitmap)
       m_bitmap->dispose();
-    m_bitmap = she::instance()->createRgbaSurface(
-      std::min(10, image->width()),
-      std::min(10, image->height()));
 
-    Palette* palette = get_current_palette();
-    if (image->pixelFormat() == IMAGE_BITMAP) {
-      palette = new Palette(frame_t(0), 2);
-      palette->setEntry(0, doc::rgba(0, 0, 0, 0));
-      palette->setEntry(1, doc::rgba(0, 0, 0, 255));
-    }
-
-    convert_image_to_surface(image, palette, m_bitmap,
-      0, 0, 0, 0, image->width(), image->height());
-
-    if (image->pixelFormat() == IMAGE_BITMAP)
-      delete palette;
+    m_bitmap = BrushPopup::createSurfaceForBrush(
+      m_owner->activeBrush(tool));
 
     getItem(0)->setIcon(m_bitmap);
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    m_popupWindow.setupTooltips(tooltipManager);
   }
 
 protected:
@@ -126,42 +110,42 @@ private:
     Rect rc = getBounds();
     rc.y += rc.h - 2*guiscale();
     rc.setSize(getPreferredSize());
-    rc.w *= 3;
 
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     doc::BrushRef brush = m_owner->activeBrush();
 
-    m_popupWindow.setBounds(rc);
+    m_popupWindow.regenerate(rc, m_owner->brushes());
     m_popupWindow.setBrush(brush.get());
 
     Region rgn(m_popupWindow.getBounds().createUnion(getBounds()));
     m_popupWindow.setHotRegion(rgn);
 
     m_popupWindow.openWindow();
-    m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushTypeChange, this);
+    m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushChange, this);
   }
 
   void closePopup() {
     m_popupWindow.closeWindow(NULL);
   }
 
-  void onBrushTypeChange(Brush* brush) {
-    m_brushType = brush->type();
+  void onBrushChange(const BrushRef& brush) {
+    if (brush->type() == kImageBrushType)
+      m_owner->setActiveBrush(brush);
+    else {
+      ISettings* settings = UIContext::instance()->settings();
+      Tool* currentTool = settings->getCurrentTool();
+      IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
+      brushSettings->setType(brush->type());
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
-    brushSettings->setType(m_brushType);
-
-    m_owner->setActiveBrush(ContextBar::createBrushFromSettings(
-                              brushSettings));
+      m_owner->setActiveBrush(
+        ContextBar::createBrushFromSettings(brushSettings));
+    }
   }
 
   ContextBar* m_owner;
   she::Surface* m_bitmap;
-  BrushType m_brushType;
   BrushPopup m_popupWindow;
 };
 
@@ -840,6 +824,8 @@ ContextBar::ContextBar()
     "component is used to setup the opacity level of all drawing tools.\n\n"
     "When unchecked -the default behavior- the color is picked\n"
     "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
+
+  m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
@@ -1019,6 +1005,19 @@ void ContextBar::updateAutoSelectLayer(bool state)
     return;
 
   m_autoSelectLayer->setSelected(state);
+}
+
+int ContextBar::addBrush(const doc::BrushRef& brush)
+{
+  m_brushes.push_back(brush);
+  return (int)m_brushes.size(); // Returns the slot
+}
+
+void ContextBar::setActiveBrushBySlot(int slot)
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_brushes.size())
+    setActiveBrush(m_brushes[slot]);
 }
 
 void ContextBar::setActiveBrush(const doc::BrushRef& brush)

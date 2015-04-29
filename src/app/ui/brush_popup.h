@@ -9,11 +9,17 @@
 #define APP_UI_BRUSH_POPUP_H_INCLUDED
 #pragma once
 
+#include "base/shared_ptr.h"
 #include "base/signal.h"
+#include "doc/brushes.h"
 #include "ui/popup_window.h"
 
 namespace doc {
   class Brush;
+}
+
+namespace ui {
+  class TooltipManager;
 }
 
 namespace app {
@@ -24,13 +30,21 @@ namespace app {
     BrushPopup();
 
     void setBrush(doc::Brush* brush);
+    void regenerate(const gfx::Rect& box, const doc::Brushes& brushes);
 
-    Signal1<void, doc::Brush*> BrushChange;
+    void setupTooltips(ui::TooltipManager* tooltipManager) {
+      m_tooltipManager = tooltipManager;
+    }
+
+    Signal1<void, const doc::BrushRef&> BrushChange;
+
+    static she::Surface* createSurfaceForBrush(const doc::BrushRef& brush);
 
   private:
-    void onBrushTypeChange();
+    void onButtonChange();
 
-    ButtonSet* m_brushTypeButton;
+    base::SharedPtr<ButtonSet> m_buttons;
+    ui::TooltipManager* m_tooltipManager;
   };
 
 } // namespace app
