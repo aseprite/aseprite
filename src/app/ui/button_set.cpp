@@ -145,7 +145,7 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.row == info.grid_rows-1)
-    sz.h += 3;
+    sz.h += 3*guiscale();
 
   ev.setPreferredSize(sz*guiscale());
 }
