@@ -52,6 +52,7 @@ namespace app {
     // Adds a new brush and returns the slot number where the brush
     // is now available.
     int addBrush(const doc::BrushRef& brush);
+    void removeBrush(int slot);
     const doc::Brushes& brushes() const { return m_brushes; }
     void setActiveBrushBySlot(int slot);
 

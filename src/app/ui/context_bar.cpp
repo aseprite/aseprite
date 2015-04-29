@@ -37,7 +37,6 @@
 #include "doc/conversion_she.h"
 #include "doc/image.h"
 #include "doc/palette.h"
-#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/button.h"
@@ -59,15 +58,14 @@ using namespace tools;
 
 static bool g_updatingFromTool = false;
 
-class ContextBar::BrushTypeField : public ButtonSet {
+class ContextBar::BrushTypeField : public ButtonSet
+                                 , public BrushPopupDelegate {
 public:
   BrushTypeField(ContextBar* owner)
     : ButtonSet(1)
-    , m_owner(owner) {
-    m_bitmap = she::instance()->createRgbaSurface(8, 8);
-    she::ScopedSurfaceLock lock(m_bitmap);
-    lock->clear();
-
+    , m_owner(owner)
+    , m_bitmap(BrushPopup::createSurfaceForBrush(BrushRef(nullptr)))
+    , m_popupWindow(this) {
     addItem(m_bitmap);
   }
 
@@ -105,18 +103,28 @@ protected:
     ev.setPreferredSize(Size(16, 18)*guiscale());
   }
 
+  // BrushPopupDelegate impl
+  void onDeleteBrushSlot(int slot) override {
+    m_owner->removeBrush(slot);
+  }
+
 private:
-  void openPopup() {
+  // Returns a little rectangle that can be used by the popup as the
+  // first brush position.
+  gfx::Rect getPopupBox() {
     Rect rc = getBounds();
     rc.y += rc.h - 2*guiscale();
     rc.setSize(getPreferredSize());
+    return rc;
+  }
 
+  void openPopup() {
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     doc::BrushRef brush = m_owner->activeBrush();
 
-    m_popupWindow.regenerate(rc, m_owner->brushes());
+    m_popupWindow.regenerate(getPopupBox(), m_owner->brushes());
     m_popupWindow.setBrush(brush.get());
 
     Region rgn(m_popupWindow.getBounds().createUnion(getBounds()));
@@ -1009,15 +1017,32 @@ void ContextBar::updateAutoSelectLayer(bool state)
 
 int ContextBar::addBrush(const doc::BrushRef& brush)
 {
+  // Use an empty slot
+  for (size_t i=0; i<m_brushes.size(); ++i) {
+    if (!m_brushes[i]) {
+      m_brushes[i] = brush;
+      return i+1;
+    }
+  }
+
   m_brushes.push_back(brush);
   return (int)m_brushes.size(); // Returns the slot
+}
+
+void ContextBar::removeBrush(int slot)
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_brushes.size())
+    m_brushes[slot].reset();
 }
 
 void ContextBar::setActiveBrushBySlot(int slot)
 {
   --slot;
-  if (slot >= 0 && slot < (int)m_brushes.size())
+  if (slot >= 0 && slot < (int)m_brushes.size() &&
+      m_brushes[slot]) {
     setActiveBrush(m_brushes[slot]);
+  }
 }
 
 void ContextBar::setActiveBrush(const doc::BrushRef& brush)

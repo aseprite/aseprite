@@ -13,6 +13,7 @@
 
 #include "app/commands/commands.h"
 #include "app/modules/palettes.h"
+#include "app/ui/app_menuitem.h"
 #include "app/ui/button_set.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
@@ -23,8 +24,11 @@
 #include "doc/palette.h"
 #include "gfx/border.h"
 #include "gfx/region.h"
+#include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
+#include "ui/menu.h"
+#include "ui/message.h"
 #include "ui/tooltips.h"
 
 namespace app {
@@ -35,8 +39,11 @@ using namespace ui;
 
 class Item : public ButtonSet::Item {
 public:
-  Item(const BrushRef& brush)
-    : m_brush(brush) {
+  Item(BrushPopup* popup, BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
+    : m_popup(popup)
+    , m_delegate(delegate)
+    , m_brush(brush)
+    , m_slot(slot) {
     setIcon(BrushPopup::createSurfaceForBrush(brush));
   }
 
@@ -44,16 +51,47 @@ public:
     icon()->dispose();
   }
 
-  const BrushRef& brush() const { return m_brush; }
+  const BrushRef& brush() const {
+    return m_brush;
+  }
+
+protected:
+  bool onProcessMessage(Message* msg) override {
+    if (msg->type() == kMouseUpMessage && m_slot > 0) {
+      MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+      if (mouseMsg->buttons() == kButtonRight) {
+        Menu menu;
+        AppMenuItem deleteItem("Delete");
+        deleteItem.Click.connect(&Item::onDeleteBrush, this);
+        menu.addChild(&deleteItem);
+
+        // Here we make the popup window temporaly floating, so it's
+        // not closed by the popup menu.
+        m_popup->makeFloating();
+        menu.showPopup(mouseMsg->position());
+        m_popup->makeFixed();
+        m_popup->closeWindow(nullptr);
+      }
+    }
+    return ButtonSet::Item::onProcessMessage(msg);
+  }
 
 private:
+  void onDeleteBrush() {
+    m_delegate->onDeleteBrushSlot(m_slot);
+  }
+
+  BrushPopup* m_popup;
+  BrushPopupDelegate* m_delegate;
   BrushRef m_brush;
+  int m_slot;
 };
 
 static BrushRef defBrushes[3];
 
-BrushPopup::BrushPopup()
+BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
   : PopupWindow("", kCloseOnClickInOtherWindow)
+  , m_delegate(delegate)
 {
   setAutoRemap(false);
   setBorder(gfx::Border(0));
@@ -66,7 +104,8 @@ void BrushPopup::setBrush(Brush* brush)
     Item* item = static_cast<Item*>(child);
 
     // Same type and same image
-    if (item->brush()->type() == brush->type() &&
+    if (item->brush() &&
+        item->brush()->type() == brush->type() &&
         (brush->type() != kImageBrushType ||
          item->brush()->image() == brush->image())) {
       m_buttons->setSelectedItem(item);
@@ -93,13 +132,13 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   }
 
   m_buttons.reset(new ButtonSet(3 + brushes.size()));
-  m_buttons->addItem(new Item(defBrushes[0]));
-  m_buttons->addItem(new Item(defBrushes[1]));
-  m_buttons->addItem(new Item(defBrushes[2]));
+  m_buttons->addItem(new Item(this, m_delegate, defBrushes[0]));
+  m_buttons->addItem(new Item(this, m_delegate, defBrushes[1]));
+  m_buttons->addItem(new Item(this, m_delegate, defBrushes[2]));
 
   int slot = 1;
   for (const auto& brush : brushes) {
-    Item* item = new Item(brush);
+    Item* item = new Item(this, m_delegate, brush, slot);
     m_buttons->addItem(item);
 
     Params params;
@@ -129,38 +168,46 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
 void BrushPopup::onButtonChange()
 {
   Item* item = static_cast<Item*>(m_buttons->getItem(m_buttons->selectedItem()));
-  BrushChange(item->brush());
+  if (item->brush())
+    BrushChange(item->brush());
 }
 
 // static
 she::Surface* BrushPopup::createSurfaceForBrush(const BrushRef& origBrush)
 {
+  Image* image = nullptr;
   BrushRef brush = origBrush;
-
-  if (brush->type() != kImageBrushType && brush->size() > 10) {
-    brush.reset(new Brush(*brush));
-    brush->setSize(10);
+  if (brush) {
+    if (brush->type() != kImageBrushType && brush->size() > 10) {
+      brush.reset(new Brush(*brush));
+      brush->setSize(10);
+    }
+    image = brush->image();
   }
-
-  Image* image = brush->image();
 
   she::Surface* surface = she::instance()->createRgbaSurface(
-    std::min(10, image->width()),
-    std::min(10, image->height()));
+    std::min(10, image ? image->width(): 4),
+    std::min(10, image ? image->height(): 4));
 
-  Palette* palette = get_current_palette();
-  if (image->pixelFormat() == IMAGE_BITMAP) {
-    palette = new Palette(frame_t(0), 2);
-    palette->setEntry(0, rgba(0, 0, 0, 0));
-    palette->setEntry(1, rgba(0, 0, 0, 255));
+  if (image) {
+    Palette* palette = get_current_palette();
+    if (image->pixelFormat() == IMAGE_BITMAP) {
+      palette = new Palette(frame_t(0), 2);
+      palette->setEntry(0, rgba(0, 0, 0, 0));
+      palette->setEntry(1, rgba(0, 0, 0, 255));
+    }
+
+    convert_image_to_surface(
+      image, palette, surface,
+      0, 0, 0, 0, image->width(), image->height());
+
+    if (image->pixelFormat() == IMAGE_BITMAP)
+      delete palette;
   }
-
-  convert_image_to_surface(
-    image, palette, surface,
-    0, 0, 0, 0, image->width(), image->height());
-
-  if (image->pixelFormat() == IMAGE_BITMAP)
-    delete palette;
+  else {
+    she::ScopedSurfaceLock lock(surface);
+    lock->clear();
+  }
 
   return surface;
 }

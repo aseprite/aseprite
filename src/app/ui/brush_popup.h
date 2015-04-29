@@ -19,15 +19,22 @@ namespace doc {
 }
 
 namespace ui {
+  class Menu;
   class TooltipManager;
 }
 
 namespace app {
   class ButtonSet;
 
+  class BrushPopupDelegate {
+  public:
+    virtual ~BrushPopupDelegate() { }
+    virtual void onDeleteBrushSlot(int slot) = 0;
+  };
+
   class BrushPopup : public ui::PopupWindow {
   public:
-    BrushPopup();
+    BrushPopup(BrushPopupDelegate* delegate);
 
     void setBrush(doc::Brush* brush);
     void regenerate(const gfx::Rect& box, const doc::Brushes& brushes);
@@ -45,6 +52,7 @@ namespace app {
 
     base::SharedPtr<ButtonSet> m_buttons;
     ui::TooltipManager* m_tooltipManager;
+    BrushPopupDelegate* m_delegate;
   };
 
 } // namespace app
