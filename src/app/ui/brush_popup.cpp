@@ -29,6 +29,7 @@
 #include "she/system.h"
 #include "ui/menu.h"
 #include "ui/message.h"
+#include "ui/separator.h"
 #include "ui/tooltips.h"
 
 namespace app {
@@ -62,8 +63,12 @@ protected:
       if (mouseMsg->buttons() == kButtonRight) {
         Menu menu;
         AppMenuItem deleteItem("Delete");
+        AppMenuItem deleteAllItem("Delete All");
         deleteItem.Click.connect(&Item::onDeleteBrush, this);
+        deleteAllItem.Click.connect(&Item::onDeleteAllBrushes, this);
         menu.addChild(&deleteItem);
+        menu.addChild(new Separator("", JI_HORIZONTAL));
+        menu.addChild(&deleteAllItem);
 
         // Here we make the popup window temporaly floating, so it's
         // not closed by the popup menu.
@@ -79,6 +84,10 @@ protected:
 private:
   void onDeleteBrush() {
     m_delegate->onDeleteBrushSlot(m_slot);
+  }
+
+  void onDeleteAllBrushes() {
+    m_delegate->onDeleteAllBrushes();
   }
 
   BrushPopup* m_popup;

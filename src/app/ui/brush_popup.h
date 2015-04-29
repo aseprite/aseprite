@@ -30,6 +30,7 @@ namespace app {
   public:
     virtual ~BrushPopupDelegate() { }
     virtual void onDeleteBrushSlot(int slot) = 0;
+    virtual void onDeleteAllBrushes() = 0;
   };
 
   class BrushPopup : public ui::PopupWindow {

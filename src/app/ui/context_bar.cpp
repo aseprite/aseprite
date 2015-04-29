@@ -109,6 +109,11 @@ protected:
     m_owner->removeBrush(slot);
   }
 
+  void onDeleteAllBrushes() override {
+    while (!m_owner->brushes().empty())
+      m_owner->removeBrush(m_owner->brushes().size());
+  }
+
 private:
   // Returns a little rectangle that can be used by the popup as the
   // first brush position.
@@ -1032,8 +1037,14 @@ int ContextBar::addBrush(const doc::BrushRef& brush)
 void ContextBar::removeBrush(int slot)
 {
   --slot;
-  if (slot >= 0 && slot < (int)m_brushes.size())
+  if (slot >= 0 && slot < (int)m_brushes.size()) {
     m_brushes[slot].reset();
+
+    // Erase empty trailing slots
+    while (!m_brushes.empty() &&
+           !m_brushes[m_brushes.size()-1])
+      m_brushes.erase(--m_brushes.end());
+  }
 }
 
 void ContextBar::setActiveBrushBySlot(int slot)
