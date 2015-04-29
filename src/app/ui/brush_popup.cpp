@@ -117,6 +117,7 @@ void BrushPopup::setBrush(Brush* brush)
 void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  int columns = 3;
 
   if (m_buttons) {
     for (auto child : m_buttons->getChildren())
@@ -131,7 +132,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
     defBrushes[2].reset(new Brush(kLineBrushType, 7, 44));
   }
 
-  m_buttons.reset(new ButtonSet(3 + brushes.size()));
+  m_buttons.reset(new ButtonSet(columns));
   m_buttons->addItem(new Item(this, m_delegate, defBrushes[0]));
   m_buttons->addItem(new Item(this, m_delegate, defBrushes[1]));
   m_buttons->addItem(new Item(this, m_delegate, defBrushes[2]));
@@ -154,6 +155,9 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
     }
     slot++;
   }
+  // Add empty spaces
+  while (((slot-1) % columns) > 0)
+    m_buttons->addItem(new Item(this, m_delegate, BrushRef(nullptr), slot++));
 
   m_buttons->ItemChange.connect(&BrushPopup::onButtonChange, this);
   m_buttons->setTransparent(true);
@@ -161,7 +165,11 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   addChild(m_buttons.get());
 
   gfx::Rect rc = box;
-  rc.w *= m_buttons->getChildren().size();
+  int buttons = m_buttons->getChildren().size();
+  int rows = (buttons/columns + ((buttons%columns) > 0 ? 1: 0));
+  rc.w *= columns;
+  rc.h = rows * (rc.h-2*guiscale()) + 2*guiscale();
+
   setBounds(rc);
 }
 
