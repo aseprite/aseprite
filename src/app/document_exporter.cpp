@@ -402,8 +402,11 @@ void DocumentExporter::captureSamples(Samples& samples)
         doc::color_t refColor = 0;
 
         if (m_trimCels) {
-          if (sprite->backgroundLayer() &&
-              sprite->backgroundLayer()->isVisible()) {
+          if ((layer &&
+               layer->isBackground()) ||
+              (!layer &&
+               sprite->backgroundLayer() &&
+               sprite->backgroundLayer()->isVisible())) {
             refColor = get_pixel(sampleRender, 0, 0);
           }
           else {
