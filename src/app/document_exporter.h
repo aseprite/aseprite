@@ -28,8 +28,9 @@ namespace app {
   class DocumentExporter {
   public:
     enum DataFormat {
-      JsonDataFormat,
-      DefaultDataFormat = JsonDataFormat
+      JsonHashDataFormat,
+      JsonArrayDataFormat,
+      DefaultDataFormat = JsonHashDataFormat
     };
 
     enum TextureFormat {

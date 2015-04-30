@@ -252,6 +252,19 @@ void App::initialize(const AppOptions& options)
           if (m_exporter)
             m_exporter->setDataFilename(value.value());
         }
+        // --format <format>
+        else if (opt == &options.format()) {
+          if (m_exporter) {
+            DocumentExporter::DataFormat format = DocumentExporter::DefaultDataFormat;
+
+            if (value.value() == "json-hash")
+              format = DocumentExporter::JsonHashDataFormat;
+            else if (value.value() == "json-array")
+              format = DocumentExporter::JsonArrayDataFormat;
+
+            m_exporter->setDataFormat(format);
+          }
+        }
         // --sheet <file.png>
         else if (opt == &options.sheet()) {
           if (m_exporter)

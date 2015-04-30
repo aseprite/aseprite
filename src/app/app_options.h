@@ -39,6 +39,7 @@ public:
   const Option& saveAs() const { return m_saveAs; }
   const Option& scale() const { return m_scale; }
   const Option& data() const { return m_data; }
+  const Option& format() const { return m_format; }
   const Option& sheet() const { return m_sheet; }
   const Option& sheetWidth() const { return m_sheetWidth; }
   const Option& sheetHeight() const { return m_sheetHeight; }
@@ -72,6 +73,7 @@ private:
   Option& m_saveAs;
   Option& m_scale;
   Option& m_data;
+  Option& m_format;
   Option& m_sheet;
   Option& m_sheetWidth;
   Option& m_sheetHeight;

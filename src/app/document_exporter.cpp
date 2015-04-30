@@ -490,7 +490,28 @@ void DocumentExporter::renderTexture(const Samples& samples, Image* textureImage
 
 void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, Image* textureImage)
 {
-  os << "{ \"frames\": {\n";
+  std::string frames_begin;
+  std::string frames_end;
+  bool filename_as_key = false;
+  bool filename_as_attr = false;
+
+  // TODO we should use some string templates system here
+  switch (m_dataFormat) {
+    case JsonHashDataFormat:
+      frames_begin = "{";
+      frames_end = "}";
+      filename_as_key = true;
+      filename_as_attr = false;
+      break;
+    case JsonArrayDataFormat:
+      frames_begin = "[";
+      frames_end = "]";
+      filename_as_key = false;
+      filename_as_attr = true;
+      break;
+  }
+
+  os << "{ \"frames\": " << frames_begin << "\n";
   for (Samples::const_iterator
          it = samples.begin(),
          end = samples.end(); it != end; ) {
@@ -499,8 +520,13 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
     gfx::Rect spriteSourceBounds = sample.trimmedBounds();
     gfx::Rect frameBounds = sample.inTextureBounds();
 
-    os << "   \"" << sample.filename() << "\": {\n"
-       << "    \"frame\": { "
+    if (filename_as_key)
+      os << "   \"" << sample.filename() << "\": {\n";
+    else if (filename_as_attr)
+      os << "   {\n"
+         << "    \"filename\": \"" << sample.filename() << "\",\n";
+
+    os << "    \"frame\": { "
        << "\"x\": " << frameBounds.x << ", "
        << "\"y\": " << frameBounds.y << ", "
        << "\"w\": " << frameBounds.w << ", "
@@ -524,7 +550,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
       os << "\n";
   }
 
-  os << " },\n"
+  os << " " << frames_end << ",\n"
      << " \"meta\": {\n"
      << "  \"app\": \"" << WEBSITE << "\",\n"
      << "  \"version\": \"" << VERSION << "\",\n";
