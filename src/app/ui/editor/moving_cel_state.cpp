@@ -40,6 +40,7 @@ MovingCelState::MovingCelState(Editor* editor, MouseMessage* msg)
   ASSERT(layer->isImage());
 
   m_cel = layer->cel(editor->frame());
+  ASSERT(m_cel); // The cel cannot be null
   if (m_cel) {
     m_celStart = m_cel->position();
   }

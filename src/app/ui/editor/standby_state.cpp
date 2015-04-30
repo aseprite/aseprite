@@ -189,6 +189,10 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
         StatusBar::instance()->showTip(1000,
           "Layer '%s' is locked", layer->name().c_str());
       }
+      else if (!layer->cel(editor->frame())) {
+        StatusBar::instance()->showTip(1000,
+          "Cel is empty, nothing to move");
+      }
       else {
         // Change to MovingCelState
         editor->setState(EditorStatePtr(new MovingCelState(editor, msg)));
