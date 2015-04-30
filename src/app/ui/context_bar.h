@@ -53,8 +53,9 @@ namespace app {
     // is now available.
     int addBrush(const doc::BrushRef& brush);
     void removeBrush(int slot);
-    const doc::Brushes& brushes() const { return m_brushes; }
+    void removeAllBrushes();
     void setActiveBrushBySlot(int slot);
+    doc::Brushes getBrushes();
 
     static doc::BrushRef createBrushFromSettings(
       IBrushSettings* brushSettings = nullptr);
@@ -71,6 +72,21 @@ namespace app {
     void onBrushAngleChange();
     void onCurrentToolChange();
     void onDropPixels(ContextBarObserver::DropAction action);
+
+    struct BrushSlot {
+      // True if the user locked the brush using the shortcut key to
+      // access it.
+      bool locked;
+
+      // Can be null if the user deletes the brush.
+      doc::BrushRef brush;
+
+      BrushSlot(const doc::BrushRef& brush)
+        : locked(false), brush(brush) {
+      }
+    };
+
+    typedef std::vector<BrushSlot> BrushSlots;
 
     class BrushTypeField;
     class BrushAngleField;
@@ -114,7 +130,7 @@ namespace app {
     RotAlgorithmField* m_rotAlgo;
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;
-    doc::Brushes m_brushes;
+    BrushSlots m_brushes;
   };
 
 } // namespace app

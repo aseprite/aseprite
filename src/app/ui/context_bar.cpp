@@ -110,8 +110,7 @@ protected:
   }
 
   void onDeleteAllBrushes() override {
-    while (!m_owner->brushes().empty())
-      m_owner->removeBrush(m_owner->brushes().size());
+    m_owner->removeAllBrushes();
   }
 
 private:
@@ -130,7 +129,7 @@ private:
     IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     doc::BrushRef brush = m_owner->activeBrush();
 
-    m_popupWindow.regenerate(getPopupBox(), m_owner->brushes());
+    m_popupWindow.regenerate(getPopupBox(), m_owner->getBrushes());
     m_popupWindow.setBrush(brush.get());
 
     Region rgn(m_popupWindow.getBounds().createUnion(getBounds()));
@@ -1024,13 +1023,14 @@ int ContextBar::addBrush(const doc::BrushRef& brush)
 {
   // Use an empty slot
   for (size_t i=0; i<m_brushes.size(); ++i) {
-    if (!m_brushes[i]) {
-      m_brushes[i] = brush;
+    if (!m_brushes[i].locked ||
+        !m_brushes[i].brush) {
+      m_brushes[i].brush = brush;
       return i+1;
     }
   }
 
-  m_brushes.push_back(brush);
+  m_brushes.push_back(BrushSlot(brush));
   return (int)m_brushes.size(); // Returns the slot
 }
 
@@ -1038,22 +1038,37 @@ void ContextBar::removeBrush(int slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_brushes.size()) {
-    m_brushes[slot].reset();
+    m_brushes[slot].brush.reset();
 
     // Erase empty trailing slots
     while (!m_brushes.empty() &&
-           !m_brushes[m_brushes.size()-1])
+           !m_brushes[m_brushes.size()-1].brush)
       m_brushes.erase(--m_brushes.end());
   }
+}
+
+void ContextBar::removeAllBrushes()
+{
+  while (!m_brushes.empty())
+    m_brushes.erase(--m_brushes.end());
 }
 
 void ContextBar::setActiveBrushBySlot(int slot)
 {
   --slot;
   if (slot >= 0 && slot < (int)m_brushes.size() &&
-      m_brushes[slot]) {
-    setActiveBrush(m_brushes[slot]);
+      m_brushes[slot].brush) {
+    m_brushes[slot].locked = true;
+    setActiveBrush(m_brushes[slot].brush);
   }
+}
+
+Brushes ContextBar::getBrushes()
+{
+  Brushes brushes;
+  for (const auto& slot : m_brushes)
+    brushes.push_back(slot.brush);
+  return brushes;
 }
 
 void ContextBar::setActiveBrush(const doc::BrushRef& brush)
