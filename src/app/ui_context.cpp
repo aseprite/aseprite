@@ -116,14 +116,17 @@ void UIContext::setActiveDocument(Document* document)
   m_lastSelectedDoc = document;
 
   DocumentView* docView = getFirstDocumentView(document);
-  ASSERT(docView);
-  if (docView)
+  if (docView)    // The view can be null if we are in --batch mode
     setActiveView(docView);
 }
 
 DocumentView* UIContext::getFirstDocumentView(Document* document) const
 {
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  MainWindow* mainWindow = App::instance()->getMainWindow();
+  if (!mainWindow) // Main window can be null if we are in --batch mode
+    return nullptr;
+
+  Workspace* workspace = mainWindow->getWorkspace();
 
   for (WorkspaceView* view : *workspace) {
     if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
@@ -133,7 +136,7 @@ DocumentView* UIContext::getFirstDocumentView(Document* document) const
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 Editor* UIContext::activeEditor()

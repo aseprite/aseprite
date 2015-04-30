@@ -20,25 +20,10 @@ const char* kLoopTagName = "Loop";
 
 doc::FrameTag* get_animation_tag(const doc::Sprite* sprite, doc::frame_t frame)
 {
-  doc::FrameTag* tag = get_shortest_tag(sprite, frame);
+  doc::FrameTag* tag = sprite->frameTags().innerTag(frame);
   if (!tag)
     tag = get_loop_tag(sprite);
   return tag;
-}
-
-doc::FrameTag* get_shortest_tag(const doc::Sprite* sprite, doc::frame_t frame)
-{
-  const doc::FrameTag* found = nullptr;
-  for (const doc::FrameTag* tag : sprite->frameTags()) {
-    if (frame >= tag->fromFrame() &&
-        frame <= tag->toFrame()) {
-      if (!found ||
-          (tag->toFrame() - tag->fromFrame()) < (found->toFrame() - found->fromFrame())) {
-        found = tag;
-      }
-    }
-  }
-  return const_cast<doc::FrameTag*>(found);
 }
 
 doc::FrameTag* get_loop_tag(const doc::Sprite* sprite)

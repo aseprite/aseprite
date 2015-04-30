@@ -369,10 +369,13 @@ void App::initialize(const AppOptions& options)
                 for (Layer* hide : layers)
                   hide->setVisible(hide == show);
 
-                fn = filename_formatter(format,
-                  value.value(), show->name());
-                fmt = filename_formatter(format,
-                  value.value(), show->name(), -1, false);
+                FilenameInfo fnInfo;
+                fnInfo
+                  .filename(value.value())
+                  .layerName(show->name());
+
+                fn = filename_formatter(format, fnInfo);
+                fmt = filename_formatter(format, fnInfo, false);
 
                 if (!cropParams.empty())
                   ctx->executeCommand(cropCommand, cropParams);

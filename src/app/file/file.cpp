@@ -380,7 +380,10 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
 
     // Save one frame
     if (fop->document->sprite()->totalFrames() == 1) {
-      fn = filename_formatter(fn_format, fn);
+      FilenameInfo fnInfo;
+      fnInfo.filename(fn);
+
+      fn = filename_formatter(fn_format, fnInfo);
       fop->seq.filename_list.push_back(fn);
     }
     // Save multiple frames
@@ -401,16 +404,26 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
         }
       }
 
+      Sprite* spr = fop->document->sprite();
       std::vector<char> buf(32);
       std::sprintf(&buf[0], "{frame%0*d}", width, 0);
       if (default_format)
         fn_format = set_frame_format(fn_format, &buf[0]);
-      else if (fop->document->sprite()->totalFrames() > 1)
+      else if (spr->totalFrames() > 1)
         fn_format = add_frame_format(fn_format, &buf[0]);
 
-      for (frame_t frame(0); frame<fop->document->sprite()->totalFrames(); ++frame) {
+      for (frame_t frame(0); frame<spr->totalFrames(); ++frame) {
+        FrameTag* innerTag = spr->frameTags().innerTag(frame);
+        FrameTag* outerTag = spr->frameTags().outerTag(frame);
+        FilenameInfo fnInfo;
+        fnInfo
+          .filename(fn)
+          .innerTagName(innerTag ? innerTag->name(): "")
+          .outerTagName(outerTag ? outerTag->name(): "")
+          .frame(start_from+frame);
+
         std::string frame_fn =
-          filename_formatter(fn_format, fn, "", start_from+frame);
+          filename_formatter(fn_format, fnInfo);
 
         fop->seq.filename_list.push_back(frame_fn);
       }

@@ -68,4 +68,34 @@ FrameTag* FrameTags::getById(ObjectId id) const
   return nullptr;
 }
 
+FrameTag* FrameTags::innerTag(frame_t frame) const
+{
+  const FrameTag* found = nullptr;
+  for (const FrameTag* tag : *this) {
+    if (frame >= tag->fromFrame() &&
+        frame <= tag->toFrame()) {
+      if (!found ||
+          (tag->toFrame() - tag->fromFrame()) < (found->toFrame() - found->fromFrame())) {
+        found = tag;
+      }
+    }
+  }
+  return const_cast<FrameTag*>(found);
+}
+
+FrameTag* FrameTags::outerTag(frame_t frame) const
+{
+  const FrameTag* found = nullptr;
+  for (const FrameTag* tag : *this) {
+    if (frame >= tag->fromFrame() &&
+        frame <= tag->toFrame()) {
+      if (!found ||
+          (tag->toFrame() - tag->fromFrame()) > (found->toFrame() - found->fromFrame())) {
+        found = tag;
+      }
+    }
+  }
+  return const_cast<FrameTag*>(found);
+}
+
 } // namespace doc

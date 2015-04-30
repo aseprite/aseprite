@@ -21,10 +21,10 @@ namespace app {
 
 std::string filename_formatter(
   const std::string& format,
-  const std::string& filename,
-  const std::string& layerName,
-  int frame, bool replaceFrame)
+  FilenameInfo& info,
+  bool replaceFrame)
 {
+  const std::string& filename = info.filename();
   std::string path = base::get_file_path(filename);
   if (path.empty())
     path = ".";
@@ -35,7 +35,10 @@ std::string filename_formatter(
   base::replace_string(output, "{name}", base::get_file_name(filename));
   base::replace_string(output, "{title}", base::get_file_title(filename));
   base::replace_string(output, "{extension}", base::get_file_extension(filename));
-  base::replace_string(output, "{layer}", layerName);
+  base::replace_string(output, "{layer}", info.layerName());
+  base::replace_string(output, "{tag}", info.innerTagName());
+  base::replace_string(output, "{innertag}", info.innerTagName());
+  base::replace_string(output, "{outertag}", info.outerTagName());
 
   if (replaceFrame) {
     size_t i = output.find("{frame");
@@ -43,11 +46,11 @@ std::string filename_formatter(
       size_t j = output.find("}", i+6);
       if (j != std::string::npos) {
         std::string from = output.substr(i, j - i + 1);
-        if (frame >= 0) {
+        if (info.frame() >= 0) {
           std::vector<char> to(32);
           int offset = std::strtol(from.c_str()+6, NULL, 10);
 
-          std::sprintf(&to[0], "%0*d", (int(j)-int(i+6)), frame + offset);
+          std::sprintf(&to[0], "%0*d", (int(j)-int(i+6)), info.frame() + offset);
           base::replace_string(output, from, &to[0]);
         }
         else

@@ -25,6 +25,7 @@
 #include "doc/algorithm/shrink_bounds.h"
 #include "doc/cel.h"
 #include "doc/dithering_method.h"
+#include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -343,11 +344,17 @@ void DocumentExporter::captureSamples(Samples& samples)
 
     for (frame_t frame=frame_t(0);
          frame<sprite->totalFrames(); ++frame) {
-      std::string filename =
-        filename_formatter(format,
-          doc->filename(),
-          layer ? layer->name(): "",
-          (sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
+      FrameTag* innerTag = sprite->frameTags().innerTag(frame);
+      FrameTag* outerTag = sprite->frameTags().outerTag(frame);
+      FilenameInfo fnInfo;
+      fnInfo
+        .filename(doc->filename())
+        .layerName(layer ? layer->name(): "")
+        .innerTagName(innerTag ? innerTag->name(): "")
+        .outerTagName(outerTag ? outerTag->name(): "")
+        .frame((sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
+
+      std::string filename = filename_formatter(format, fnInfo);
 
       Sample sample(doc, sprite, layer, frame, filename, m_innerPadding);
       Cel* cel = nullptr;

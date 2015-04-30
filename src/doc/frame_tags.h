@@ -9,10 +9,11 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "doc/frame.h"
 #include "doc/object_id.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace doc {
 
@@ -44,6 +45,9 @@ namespace doc {
 
     std::size_t size() const { return m_tags.size(); }
     bool empty() const { return m_tags.empty(); }
+
+    FrameTag* innerTag(frame_t frame) const;
+    FrameTag* outerTag(frame_t frame) const;
 
   private:
     Sprite* m_sprite;

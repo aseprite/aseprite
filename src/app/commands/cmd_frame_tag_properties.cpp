@@ -80,7 +80,7 @@ void FrameTagPropertiesCommand::onExecute(Context* context)
   else if (m_tagId != NullId)
     foundTag = sprite->frameTags().getById(m_tagId);
   else
-    foundTag = get_shortest_tag(sprite, frame);
+    foundTag = sprite->frameTags().innerTag(frame);
 
   if (!foundTag)
     return;
