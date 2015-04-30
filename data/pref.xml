@@ -98,6 +98,9 @@
       <option id="new_version" type="std::string" />
       <option id="new_url" type="std::string" />
     </section>
+    <section id="brush">
+      <option id="pattern" type="doc::BrushPattern" default="doc::BrushPattern::DEFAULT" />
+    </section>
   </global>
 
   <tool>
@@ -109,9 +112,9 @@
     <option id="ink" type="InkType" />
     <option id="freehand_algorithm" type="FreehandAlgorithm" />
     <section id="brush">
-      <option id="type" type="BrushType" />
-      <option id="size" type="int" />
-      <option id="angle" type="int" />
+      <option id="type" type="BrushType" default="BrushType::CIRCLE" />
+      <option id="size" type="int" default="1" />
+      <option id="angle" type="int" default="0" />
     </section>
     <section id="spray">
       <option id="width" type="int" default="16" />

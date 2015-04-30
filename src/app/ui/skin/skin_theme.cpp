@@ -238,12 +238,6 @@ SkinTheme::SkinTheme()
   sheet_mapping["target_layers_selected"] = PART_TARGET_LAYERS_SELECTED;
   sheet_mapping["target_frames_layers"] = PART_TARGET_FRAMES_LAYERS;
   sheet_mapping["target_frames_layers_selected"] = PART_TARGET_FRAMES_LAYERS_SELECTED;
-  sheet_mapping["brush_circle"] = PART_BRUSH_CIRCLE;
-  sheet_mapping["brush_circle_selected"] = PART_BRUSH_CIRCLE_SELECTED;
-  sheet_mapping["brush_square"] = PART_BRUSH_SQUARE;
-  sheet_mapping["brush_square_selected"] = PART_BRUSH_SQUARE_SELECTED;
-  sheet_mapping["brush_line"] = PART_BRUSH_LINE;
-  sheet_mapping["brush_line_selected"] = PART_BRUSH_LINE_SELECTED;
   sheet_mapping["scale_arrow_1"] = PART_SCALE_ARROW_1;
   sheet_mapping["scale_arrow_2"] = PART_SCALE_ARROW_2;
   sheet_mapping["scale_arrow_3"] = PART_SCALE_ARROW_3;

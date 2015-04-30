@@ -22,6 +22,7 @@ namespace app {
     public:
       Item();
       void setIcon(she::Surface* icon);
+      she::Surface* icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
       void onPaint(ui::PaintEvent& ev) override;
@@ -34,6 +35,7 @@ namespace app {
     ButtonSet(int columns);
 
     void addItem(she::Surface* icon, int hspan = 1, int vspan = 1);
+    void addItem(Item* item, int hspan = 1, int vspan = 1);
     Item* getItem(int index);
 
     int selectedItem() const;

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,7 +19,6 @@ namespace doc {
 
   color_t get_pixel(const Image* image, int x, int y);
   void put_pixel(Image* image, int x, int y, color_t c);
-  void draw_brush(Image* image, Brush* brush, int x, int y, color_t fg, color_t bg);
 
   void clear_image(Image* image, color_t bg);
 

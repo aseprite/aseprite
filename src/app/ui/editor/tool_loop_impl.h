@@ -9,6 +9,13 @@
 #define APP_UI_EDITOR_TOOL_LOOP_IMPL_H_INCLUDED
 #pragma once
 
+#include "doc/image_ref.h"
+#include "gfx/fwd.h"
+
+namespace doc {
+  class Image;
+}
+
 namespace app {
   class Context;
   class Editor;
@@ -17,7 +24,12 @@ namespace app {
     class ToolLoop;
   }
 
-  tools::ToolLoop* create_tool_loop(Editor* editor, Context* context);
+  tools::ToolLoop* create_tool_loop(
+    Editor* editor, Context* context);
+
+  tools::ToolLoop* create_tool_loop_preview(
+    Editor* editor, Context* context, doc::Image* image,
+    const gfx::Point& offset);
 
 } // namespace app
 

@@ -33,6 +33,7 @@ namespace ui {
   public:
     enum class DrawMode {
       Solid,
+      Xor,
       Checked,
     };
 

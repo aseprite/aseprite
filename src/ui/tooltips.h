@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,6 +8,7 @@
 #define UI_TOOLTIPS_H_INCLUDED
 #pragma once
 
+#include "base/unique_ptr.h"
 #include "ui/base.h"
 #include "ui/popup_window.h"
 #include "ui/window.h"
@@ -25,6 +26,7 @@ namespace ui {
     ~TooltipManager();
 
     void addTooltipFor(Widget* widget, const std::string& text, int arrowAlign = 0);
+    void removeTooltipFor(Widget* widget);
 
   protected:
     bool onProcessMessage(Message* msg) override;

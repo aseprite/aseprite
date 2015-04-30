@@ -14,6 +14,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
+#include "ui/manager.h"
 
 namespace app {
 
@@ -59,11 +60,20 @@ void CancelCommand::onExecute(Context* context)
       break;
 
     case All:
+      // Discard brush
+      {
+        Command* discardBrush = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
+        context->executeCommand(discardBrush);
+      }
+
+      // Deselect mask
       if (context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
           ContextFlags::HasVisibleMask)) {
-        Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
-        context->executeCommand(cmd);
+        Command* deselectMask = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+        context->executeCommand(deselectMask);
       }
+
+      ui::Manager::getDefault()->invalidate();
       break;
   }
 }

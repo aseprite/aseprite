@@ -149,6 +149,44 @@
         <param name="change" value="decrement-size" />
       </key>
 
+      <!-- Custom brushes -->
+      <key command="ChangeBrush" shortcut="Alt+1">
+        <param name="change" value="custom" />
+        <param name="slot" value="1" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+2">
+        <param name="change" value="custom" />
+        <param name="slot" value="2" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+3">
+        <param name="change" value="custom" />
+        <param name="slot" value="3" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+4">
+        <param name="change" value="custom" />
+        <param name="slot" value="4" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+5">
+        <param name="change" value="custom" />
+        <param name="slot" value="5" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+6">
+        <param name="change" value="custom" />
+        <param name="slot" value="6" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+7">
+        <param name="change" value="custom" />
+        <param name="slot" value="7" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+8">
+        <param name="change" value="custom" />
+        <param name="slot" value="8" />
+      </key>
+      <key command="ChangeBrush" shortcut="Alt+9">
+        <param name="change" value="custom" />
+        <param name="slot" value="9" />
+      </key>
+
       <!-- Zoom -->
       <key command="Zoom" shortcut="~"><param name="percentage" value="50" /></key>
       <key command="Zoom" shortcut="1"><param name="percentage" value="100" /></key>
@@ -309,6 +347,7 @@
         <param name="quantity" value="1" />
       </key>
 
+      <key command="NewBrush" shortcut="Ctrl+B" mac="Cmd+B" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -438,6 +477,7 @@
           <param name="orientation" value="vertical" />
         </item>
         <item command="MaskContent" text="Transfor&amp;m" />
+        <item command="NewBrush" text="New &amp;Brush" />
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert" />

@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,7 @@
 #include "doc/pixel_format.h"
 #include "gfx/fwd.h"
 #include "gfx/size.h"
+#include "render/extra_type.h"
 #include "render/zoom.h"
 
 namespace gfx {
@@ -45,7 +46,7 @@ namespace render {
   class Render {
   public:
     Render();
-  
+
     // Background configuration
     void setBgType(BgType type);
     void setBgZoom(bool state);
@@ -61,6 +62,7 @@ namespace render {
     // Sets an extra cel/image to be drawn after the current
     // layer/frame.
     void setExtraImage(
+      ExtraType type,
       const Cel* cel, const Image* image, int blendMode,
       const Layer* currentLayer,
       frame_t currentFrame);
@@ -90,7 +92,8 @@ namespace render {
       Image* dstImage,
       const Layer* layer,
       frame_t frame,
-      const gfx::Clip& area);
+      const gfx::Clip& area,
+      int blend_mode = -1);
 
     // Main function used to render the sprite. Draws the given sprite
     // frame in a new image and return it. Note: zoomedRect must have
@@ -143,6 +146,7 @@ namespace render {
     const Sprite* m_sprite;
     const Layer* m_currentLayer;
     frame_t m_currentFrame;
+    ExtraType m_extraType;
     const Cel* m_extraCel;
     const Image* m_extraImage;
     int m_extraBlendMode;

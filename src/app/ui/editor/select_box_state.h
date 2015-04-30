@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/ruler.h"
 #include "app/ui/editor/standby_state.h"
+#include "ui/mouse_buttons.h"
 
 #include <vector>
 
@@ -20,7 +21,15 @@ namespace app {
   class SelectBoxDelegate {
   public:
     virtual ~SelectBoxDelegate() { }
-    virtual void onChangeRectangle(const gfx::Rect& rect) = 0;
+
+    // Called each time the selected box is modified (e.g. rulers are
+    // moved).
+    virtual void onChangeRectangle(const gfx::Rect& rect) { }
+
+    // Called only in QUICKBOX mode, when the user released the mouse
+    // button.
+    virtual void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) { }
+    virtual void onQuickboxCancel() { }
   };
 
   class SelectBoxState : public StandbyState
@@ -28,14 +37,15 @@ namespace app {
     enum { H1, H2, V1, V2 };
 
   public:
-    typedef int PaintFlags;
-    static const int PaintRulers = 1;
-    static const int PaintDarkOutside = 2;
-    static const int PaintGrid = 4;
+    typedef int Flags;
+    static const int RULERS = 1;      // Draw rulers at each edge of the current box
+    static const int DARKOUTSIDE = 2; // The outside of the box must be darker
+    static const int GRID = 4;        // Draw a grid
+    static const int QUICKBOX = 8;    // Select the box as in selection tool, drawing a boxu
 
     SelectBoxState(SelectBoxDelegate* delegate,
                    const gfx::Rect& rc,
-                   PaintFlags paintFlags);
+                   Flags flags);
 
     // Returns the bounding box arranged by the rulers.
     gfx::Rect getBoxBounds() const;
@@ -48,10 +58,8 @@ namespace app {
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onSetCursor(Editor* editor) override;
-
-    // Returns false as it overrides default standby state behavior &
-    // look. This state uses normal arrow cursors.
-    virtual bool requireBrushPreview() override { return false; }
+    virtual bool requireBrushPreview() override;
+    virtual tools::Ink* getStateInk() override;
 
     // EditorDecorator overrides
     virtual void preRenderDecorator(EditorPreRender* render) override;
@@ -64,12 +72,15 @@ namespace app {
     // the given ruler.
     bool touchRuler(Editor* editor, Ruler& ruler, int x, int y);
 
-    bool hasPaintFlag(PaintFlags flag) const;
+    bool hasFlag(Flags flag) const;
 
     SelectBoxDelegate* m_delegate;
     Rulers m_rulers;
     int m_movingRuler;
-    PaintFlags m_paintFlags;
+    bool m_selectingBox;
+    ui::MouseButtons m_selectingButtons;
+    gfx::Point m_startingPos;
+    Flags m_flags;
   };
 
 } // namespace app

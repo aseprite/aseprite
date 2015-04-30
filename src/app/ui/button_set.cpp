@@ -145,7 +145,7 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.row == info.grid_rows-1)
-    sz.h += 3;
+    sz.h += 3*guiscale();
 
   ev.setPreferredSize(sz*guiscale());
 }
@@ -162,6 +162,11 @@ void ButtonSet::addItem(she::Surface* icon, int hspan, int vspan)
 {
   Item* item = new Item();
   item->setIcon(icon);
+  addItem(item, hspan, vspan);
+}
+
+void ButtonSet::addItem(Item* item, int hspan, int vspan)
+{
   addChildInCell(item, hspan, vspan, JI_CENTER | JI_MIDDLE);
 }
 

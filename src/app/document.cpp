@@ -54,6 +54,7 @@ Document::Document(Sprite* sprite)
   , m_extraCel(NULL)
   , m_extraImage(NULL)
   , m_extraCelBlendMode(BLEND_MODE_NORMAL)
+  , m_extraCelType(render::ExtraType::NONE)
   // Mask
   , m_mask(new Mask())
   , m_maskVisible(true)
@@ -272,6 +273,7 @@ void Document::destroyExtraCel()
 
   m_extraCel = NULL;
   m_extraImage.reset(NULL);
+  m_extraCelType = render::ExtraType::NONE;
 }
 
 void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
@@ -291,6 +293,11 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
 
   m_extraCel->setPosition(bounds.getOrigin());
   m_extraCel->setOpacity(opacity);
+}
+
+void Document::setExtraCelType(render::ExtraType type)
+{
+  m_extraCelType = type;
 }
 
 Cel* Document::getExtraCel() const

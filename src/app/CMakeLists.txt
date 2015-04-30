@@ -71,6 +71,7 @@ add_library(app-lib
   cmd/clear_cel.cpp
   cmd/clear_image.cpp
   cmd/clear_mask.cpp
+  cmd/clear_rect.cpp
   cmd/configure_background.cpp
   cmd/copy_cel.cpp
   cmd/copy_frame.cpp
@@ -142,6 +143,7 @@ add_library(app-lib
   commands/cmd_cut.cpp
   commands/cmd_deselect_mask.cpp
   commands/cmd_developer_console.cpp
+  commands/cmd_discard_brush.cpp
   commands/cmd_duplicate_layer.cpp
   commands/cmd_duplicate_sprite.cpp
   commands/cmd_duplicate_view.cpp
@@ -173,6 +175,7 @@ add_library(app-lib
   commands/cmd_merge_down_layer.cpp
   commands/cmd_move_cel.cpp
   commands/cmd_move_mask.cpp
+  commands/cmd_new_brush.cpp
   commands/cmd_new_file.cpp
   commands/cmd_new_frame.cpp
   commands/cmd_new_frame_tag.cpp
@@ -288,6 +291,7 @@ add_library(app-lib
   transaction.cpp
   ui/ani_controls.cpp
   ui/app_menuitem.cpp
+  ui/brush_popup.cpp
   ui/button_set.cpp
   ui/color_bar.cpp
   ui/color_button.cpp

@@ -17,17 +17,27 @@
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
+#include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/intertwine.h"
+#include "app/tools/point_shape.h"
 #include "app/tools/tool.h"
+#include "app/tools/tool_loop.h"
+#include "app/ui/context_bar.h"
+#include "app/ui/editor/tool_loop_impl.h"
+#include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
 #include "doc/algo.h"
 #include "doc/brush.h"
+#include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
+#include "doc/site.h"
 #include "doc/sprite.h"
+#include "render/render.h"
 #include "ui/base.h"
 #include "ui/system.h"
 #include "ui/widget.h"
@@ -110,8 +120,8 @@ void Editor::set_cursor_color(const app::Color& color)
 // Slots for App signals
 //////////////////////////////////////////////////////////////////////
 
+static gfx::Rect lastBrushBounds;
 static int brush_size_thick = 0;
-static Brush* current_brush = NULL;
 
 static void on_palette_change_update_cursor_color()
 {
@@ -136,29 +146,9 @@ static void on_brush_after_change()
   }
 }
 
-static Brush* editor_get_current_brush(Editor* editor)
+static Brush* get_current_brush()
 {
-  // Create the current brush from settings
-  tools::Tool* tool = editor->getCurrentEditorTool();
-  IBrushSettings* brush_settings = UIContext::instance()
-    ->settings()
-    ->getToolSettings(tool)
-    ->getBrush();
-
-  ASSERT(brush_settings != NULL);
-
-  if (!current_brush ||
-      current_brush->type() != brush_settings->getType() ||
-      current_brush->size() != brush_settings->getSize() ||
-      current_brush->angle() != brush_settings->getAngle()) {
-    delete current_brush;
-    current_brush = new Brush(
-      brush_settings->getType(),
-      brush_settings->getSize(),
-      brush_settings->getAngle());
-  }
-
-  return current_brush;
+  return App::instance()->getMainWindow()->getContextBar()->activeBrush().get();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -183,9 +173,6 @@ void Editor::editor_cursor_exit()
 
   if (cursor_bound.seg != NULL)
     base_free(cursor_bound.seg);
-
-  delete current_brush;
-  current_brush = NULL;
 }
 
 // Draws the brush cursor inside the specified editor.
@@ -244,13 +231,20 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
       ->settings()
       ->getToolSettings(tool);
 
-    Brush* brush = editor_get_current_brush(this);
+    Brush* brush = get_current_brush();
     gfx::Rect brushBounds = brush->bounds();
+    brushBounds.offset(spritePos);
 
     // Create the extra cel to show the brush preview
+    Site site = getSite();
+    Cel* cel = site.cel();
+
     m_document->prepareExtraCel(
-      gfx::Rect(brushBounds).offset(spritePos),
-      tool_settings->getOpacity());
+      brushBounds,
+      cel ? cel->opacity(): 255);
+    m_document->setExtraCelType(render::ExtraType::NONE);
+    m_document->setExtraCelBlendMode(
+      m_layer ? static_cast<LayerImage*>(m_layer)->getBlendMode(): BLEND_MODE_NORMAL);
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
@@ -259,16 +253,36 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
 
     Image* extraImage = m_document->getExtraCelImage();
     extraImage->setMaskColor(mask_color);
-    draw_brush(extraImage, brush, -brushBounds.x, -brushBounds.y,
-      brush_color, extraImage->maskColor());
+    clear_image(extraImage, mask_color);
+
+    if (m_layer) {
+      render::Render().renderLayer(
+        extraImage, m_layer, m_frame,
+        gfx::Clip(0, 0, brushBounds),
+        BLEND_MODE_COPY);
+
+      // This extra cel is a patch for the current layer/frame
+      m_document->setExtraCelType(render::ExtraType::PATCH);
+    }
+
+    tools::ToolLoop* loop = create_tool_loop_preview(
+      this, UIContext::instance(), extraImage,
+      -gfx::Point(brushBounds.x,
+                  brushBounds.y));
+
+    if (loop) {
+      loop->getInk()->prepareInk(loop);
+      loop->getIntertwine()->prepareIntertwine();
+      loop->getController()->prepareController();
+      loop->getPointShape()->preparePointShape(loop);
+      loop->getPointShape()->transformPoint(
+        loop, -brush->bounds().x, -brush->bounds().y);
+      delete loop;
+    }
 
     if (refresh) {
       m_document->notifySpritePixelsModified
-        (m_sprite,
-         gfx::Region(gfx::Rect(
-             spritePos.x+brushBounds.x,
-             spritePos.y+brushBounds.y,
-             brushBounds.w, brushBounds.h)));
+        (m_sprite, gfx::Region(lastBrushBounds = brushBounds));
     }
   }
 
@@ -313,12 +327,14 @@ void Editor::moveBrushPreview(const gfx::Point& pos, bool refresh)
     }
 
     if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-      Brush* brush = editor_get_current_brush(this);
-      gfx::Rect brushBounds = brush->bounds();
-      gfx::Rect rc1(oldEditorPos.x+brushBounds.x, oldEditorPos.y+brushBounds.y, brushBounds.w, brushBounds.h);
-      gfx::Rect rc2(newEditorPos.x+brushBounds.x, newEditorPos.y+brushBounds.y, brushBounds.w, brushBounds.h);
+      Brush* brush = get_current_brush();
+
+      gfx::Rect newBrushBounds = brush->bounds();
+      newBrushBounds.offset(newEditorPos);
+
       m_document->notifySpritePixelsModified
-        (m_sprite, gfx::Region(rc1.createUnion(rc2)));
+        (m_sprite, gfx::Region(lastBrushBounds.createUnion(newBrushBounds)));
+      lastBrushBounds = newBrushBounds;
     }
 
     // Save area and draw the cursor
@@ -360,20 +376,10 @@ void Editor::clearBrushPreview(bool refresh)
 
   // Clean pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-    Brush* brush = editor_get_current_brush(this);
-    gfx::Rect brushBounds = brush->bounds();
-
-    m_document->prepareExtraCel(
-      gfx::Rect(brushBounds).offset(pos),
-      0); // Opacity = 0
-
+    m_document->destroyExtraCel();
     if (refresh) {
       m_document->notifySpritePixelsModified
-        (m_sprite,
-         gfx::Region(gfx::Rect(
-             pos.x+brushBounds.x,
-             pos.y+brushBounds.y,
-             brushBounds.w, brushBounds.h)));
+        (m_sprite, gfx::Region(lastBrushBounds));
     }
   }
 

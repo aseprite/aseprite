@@ -261,7 +261,6 @@ Widget* AppMenus::createInvalidVersionMenuitem()
 {
   AppMenuItem* menuitem = new AppMenuItem("WARNING!");
   Menu* subMenu = new Menu();
-  Params params;
   subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory)."));
   subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get"));
   subMenu->addChild(new AppMenuItem("the latest commands available."));

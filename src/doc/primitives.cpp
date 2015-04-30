@@ -40,33 +40,6 @@ void put_pixel(Image* image, int x, int y, color_t color)
     image->putPixel(x, y, color);
 }
 
-void draw_brush(Image* image, Brush* brush, int x, int y, color_t fg, color_t bg)
-{
-  ASSERT(image);
-  ASSERT(brush);
-
-  Image* brush_image = brush->image();
-  const gfx::Rect& brushBounds = brush->bounds();
-
-  x += brushBounds.x;
-  y += brushBounds.y;
-
-  if (fg == bg) {
-    fill_rect(image, x, y, x+brushBounds.w-1, y+brushBounds.h-1, bg);
-  }
-  else {
-    int u, v;
-    for (v=0; v<brushBounds.h; v++) {
-      for (u=0; u<brushBounds.w; u++) {
-        if (get_pixel(brush_image, u, v))
-          put_pixel(image, x+u, y+v, fg);
-        else
-          put_pixel(image, x+u, y+v, bg);
-      }
-    }
-  }
-}
-
 void clear_image(Image* image, color_t color)
 {
   ASSERT(image);

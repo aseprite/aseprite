@@ -161,6 +161,7 @@ namespace she {
     void setDrawMode(DrawMode mode, int param) {
       switch (mode) {
         case DrawMode::Solid: checked_mode(-1); break;
+        case DrawMode::Xor: xor_mode(TRUE); break;
         case DrawMode::Checked: checked_mode(param); break;
       }
     }

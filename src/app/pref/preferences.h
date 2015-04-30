@@ -12,10 +12,6 @@
 #include "app/pref/option.h"
 #include "doc/documents_observer.h"
 
-namespace filters {
-  enum class TiledMode;
-}
-
 #include "generated_pref_types.h"
 
 #include <map>

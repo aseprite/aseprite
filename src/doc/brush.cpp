@@ -24,7 +24,7 @@ Brush::Brush()
   m_type = kCircleBrushType;
   m_size = 1;
   m_angle = 0;
-  m_image = NULL;
+  m_pattern = BrushPattern::DEFAULT;
 
   regenerate();
 }
@@ -34,7 +34,7 @@ Brush::Brush(BrushType type, int size, int angle)
   m_type = type;
   m_size = size;
   m_angle = angle;
-  m_image = NULL;
+  m_pattern = BrushPattern::DEFAULT;
 
   regenerate();
 }
@@ -44,6 +44,9 @@ Brush::Brush(const Brush& brush)
   m_type = brush.m_type;
   m_size = brush.m_size;
   m_angle = brush.m_angle;
+  m_image = brush.m_image;
+  m_pattern = brush.m_pattern;
+  m_patternOrigin = brush.m_patternOrigin;
 
   regenerate();
 }
@@ -56,7 +59,10 @@ Brush::~Brush()
 void Brush::setType(BrushType type)
 {
   m_type = type;
-  regenerate();
+  if (m_type != kImageBrushType)
+    regenerate();
+  else
+    clean();
 }
 
 void Brush::setSize(int size)
@@ -71,15 +77,19 @@ void Brush::setAngle(int angle)
   regenerate();
 }
 
+void Brush::setImage(const Image* image)
+{
+  m_type = kImageBrushType;
+  m_image.reset(Image::createCopy(image));
+  m_bounds = gfx::Rect(
+    -m_image.get()->width()/2, -m_image.get()->height()/2,
+    m_image.get()->width(), m_image.get()->height());
+}
+
 // Cleans the brush's data (image and region).
 void Brush::clean()
 {
-  if (m_image) {
-    delete m_image;
-    m_image = NULL;
-  }
-
-  m_scanline.clear();
+  m_image.reset();
 }
 
 static void algo_hline(int x1, int y, int x2, void *data)
@@ -98,23 +108,23 @@ void Brush::regenerate()
   if (m_type == kSquareBrushType && m_angle != 0 && m_size > 2)
     size = (int)std::sqrt((double)2*m_size*m_size)+2;
 
-  m_image = Image::create(IMAGE_BITMAP, size, size);
+  m_image.reset(Image::create(IMAGE_BITMAP, size, size));
 
   if (size == 1) {
-    clear_image(m_image, BitmapTraits::max_value);
+    clear_image(m_image.get(), BitmapTraits::max_value);
   }
   else {
-    clear_image(m_image, BitmapTraits::min_value);
+    clear_image(m_image.get(), BitmapTraits::min_value);
 
     switch (m_type) {
 
       case kCircleBrushType:
-        fill_ellipse(m_image, 0, 0, size-1, size-1, BitmapTraits::max_value);
+        fill_ellipse(m_image.get(), 0, 0, size-1, size-1, BitmapTraits::max_value);
         break;
 
       case kSquareBrushType:
         if (m_angle == 0 || size <= 2) {
-          clear_image(m_image, BitmapTraits::max_value);
+          clear_image(m_image.get(), BitmapTraits::max_value);
         }
         else {
           double a = PI * m_angle / 180;
@@ -131,7 +141,7 @@ void Brush::regenerate()
           int y4 = int(y3 - d*sin(a+PI));
           int points[8] = { x1, y1, x2, y2, x3, y3, x4, y4 };
 
-          doc::algorithm::polygon(4, points, m_image, algo_hline);
+          doc::algorithm::polygon(4, points, m_image.get(), algo_hline);
         }
         break;
 
@@ -144,26 +154,7 @@ void Brush::regenerate()
         int x2 = int(x1 + d*cos(a));
         int y2 = int(y1 - d*sin(a));
 
-        draw_line(m_image, x1, y1, x2, y2, BitmapTraits::max_value);
-        break;
-      }
-    }
-  }
-
-  m_scanline.resize(m_image->height());
-  for (int y=0; y<m_image->height(); y++) {
-    m_scanline[y].state = false;
-
-    for (int x=0; x<m_image->width(); x++) {
-      if (get_pixel(m_image, x, y)) {
-        m_scanline[y].x1 = x;
-
-        for (; x<m_image->width(); x++)
-          if (!get_pixel(m_image, x, y))
-            break;
-
-        m_scanline[y].x2 = x-1;
-        m_scanline[y].state = true;
+        draw_line(m_image.get(), x1, y1, x2, y2, BitmapTraits::max_value);
         break;
       }
     }

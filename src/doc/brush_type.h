@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,9 +14,10 @@ namespace doc {
     kCircleBrushType = 0,
     kSquareBrushType = 1,
     kLineBrushType = 2,
+    kImageBrushType = 3,
 
     kFirstBrushType = kCircleBrushType,
-    kLastBrushType = kLineBrushType,
+    kLastBrushType = kImageBrushType,
   };
 
 } // namespace doc

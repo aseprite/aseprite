@@ -10,60 +10,80 @@ namespace tools {
 
 class NonePointShape : public PointShape {
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     // Do nothing
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     // Do nothing
   }
 };
 
 class PixelPointShape : public PointShape {
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     doInkHline(x, y, x, loop);
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     area = Rect(x, y, 1, 1);
   }
 };
 
 class BrushPointShape : public PointShape {
+  Brush* m_brush;
+  base::SharedPtr<CompressedImage> m_compressedImage;
+  bool m_firstPoint;
+
 public:
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
-    Brush* brush = loop->getBrush();
-    std::vector<BrushScanline>::const_iterator scanline = brush->scanline().begin();
-    int v, h = brush->bounds().h;
 
-    x += brush->bounds().x;
-    y += brush->bounds().y;
+  void preparePointShape(ToolLoop* loop) override {
+    m_brush = loop->getBrush();
+    m_compressedImage.reset(new CompressedImage(m_brush->image(), false));
+    m_firstPoint = true;
+  }
 
-    for (v=0; v<h; ++v) {
-      if (scanline->state)
-        doInkHline(x+scanline->x1, y+v, x+scanline->x2, loop);
-      ++scanline;
+  void transformPoint(ToolLoop* loop, int x, int y) override {
+    int h = m_brush->bounds().h;
+
+    x += m_brush->bounds().x;
+    y += m_brush->bounds().y;
+
+    if (m_firstPoint) {
+      m_firstPoint = false;
+      if (m_brush->type() == kImageBrushType) {
+        if (m_brush->pattern() == BrushPattern::ALIGNED_TO_DST ||
+            m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+          m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+        }
+      }
+    }
+    else {
+      if (m_brush->type() == kImageBrushType &&
+          m_brush->pattern() == BrushPattern::PAINT_BRUSH) {
+        m_brush->setPatternOrigin(gfx::Point(x, y)-loop->getOffset());
+      }
+    }
+
+    for (auto scanline : *m_compressedImage) {
+      int u = x+scanline.x;
+      doInkHline(u, y+scanline.y, u+scanline.w-1, loop);
     }
   }
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
-    Brush* brush = loop->getBrush();
-    area = brush->bounds();
+
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
+    area = m_brush->bounds();
     area.x += x;
     area.y += y;
   }
+
 };
 
 class FloodFillPointShape : public PointShape {
 public:
-  bool isFloodFill() { return true; }
+  bool isFloodFill() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     doc::algorithm::floodfill(
       const_cast<Image*>(loop->getSrcImage()), x, y,
       paintBounds(loop, x, y),
@@ -72,8 +92,7 @@ public:
       loop, (AlgoHLine)doInkHline);
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     area = paintBounds(loop, x, y);
   }
 
@@ -112,10 +131,13 @@ class SprayPointShape : public PointShape {
 
 public:
 
-  bool isSpray() { return true; }
+  bool isSpray() override { return true; }
 
-  void transformPoint(ToolLoop* loop, int x, int y)
-  {
+  void preparePointShape(ToolLoop* loop) override {
+    m_subPointShape.preparePointShape(loop);
+  }
+
+  void transformPoint(ToolLoop* loop, int x, int y) override {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
     int c, u, v, times = (spray_width*spray_width/4) * spray_speed / 100;
@@ -145,8 +167,7 @@ public:
 #endif
   }
 
-  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area)
-  {
+  void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
     int spray_width = loop->getSprayWidth();
     Point p1(x-spray_width, y-spray_width);
     Point p2(x+spray_width, y+spray_width);

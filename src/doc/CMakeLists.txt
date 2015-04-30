@@ -18,6 +18,7 @@ add_library(doc-lib
   cel_io.cpp
   cels_range.cpp
   color_scales.cpp
+  compressed_image.cpp
   context.cpp
   conversion_she.cpp
   document.cpp

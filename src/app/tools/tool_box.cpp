@@ -23,6 +23,7 @@
 #include "doc/algorithm/floodfill.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/brush.h"
+#include "doc/compressed_image.h"
 #include "doc/image.h"
 #include "doc/mask.h"
 #include "fixmath/fixmath.h"
@@ -40,6 +41,7 @@ namespace tools {
 using namespace gfx;
 
 const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
+const char* WellKnownTools::Pencil = "pencil";
 const char* WellKnownTools::Eraser = "eraser";
 const char* WellKnownTools::Eyedropper = "eyedropper";
 
@@ -69,6 +71,12 @@ const char* WellKnownIntertwiners::AsRectangles = "as_rectangles";
 const char* WellKnownIntertwiners::AsEllipses = "as_ellipses";
 const char* WellKnownIntertwiners::AsBezier = "as_bezier";
 const char* WellKnownIntertwiners::AsPixelPerfect = "as_pixel_perfect";
+
+const char* WellKnownPointShapes::None = "none";
+const char* WellKnownPointShapes::Pixel = "pixel";
+const char* WellKnownPointShapes::Brush = "brush";
+const char* WellKnownPointShapes::FloodFill = "floodfill";
+const char* WellKnownPointShapes::Spray = "spray";
 
 ToolBox::ToolBox()
 {
@@ -100,11 +108,11 @@ ToolBox::ToolBox()
   m_controllers["two_points"]            = new TwoPointsController();
   m_controllers["four_points"]           = new FourPointsController();
 
-  m_pointshapers["none"]                 = new NonePointShape();
-  m_pointshapers["pixel"]                = new PixelPointShape();
-  m_pointshapers["brush"]                = new BrushPointShape();
-  m_pointshapers["floodfill"]            = new FloodFillPointShape();
-  m_pointshapers["spray"]                = new SprayPointShape();
+  m_pointshapers[WellKnownPointShapes::None] = new NonePointShape();
+  m_pointshapers[WellKnownPointShapes::Pixel] = new PixelPointShape();
+  m_pointshapers[WellKnownPointShapes::Brush] = new BrushPointShape();
+  m_pointshapers[WellKnownPointShapes::FloodFill] = new FloodFillPointShape();
+  m_pointshapers[WellKnownPointShapes::Spray] = new SprayPointShape();
 
   m_intertwiners[WellKnownIntertwiners::None] = new IntertwineNone();
   m_intertwiners[WellKnownIntertwiners::AsLines] = new IntertwineAsLines();
@@ -160,6 +168,11 @@ Ink* ToolBox::getInkById(const std::string& id)
 Intertwine* ToolBox::getIntertwinerById(const std::string& id)
 {
   return m_intertwiners[id];
+}
+
+PointShape* ToolBox::getPointShapeById(const std::string& id)
+{
+  return m_pointshapers[id];
 }
 
 void ToolBox::loadTools()

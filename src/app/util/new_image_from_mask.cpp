@@ -24,8 +24,13 @@ using namespace doc;
 
 Image* new_image_from_mask(const Site& site)
 {
-  const Sprite* srcSprite = site.sprite();
   const Mask* srcMask = static_cast<const app::Document*>(site.document())->mask();
+  return new_image_from_mask(site, srcMask);
+}
+
+doc::Image* new_image_from_mask(const doc::Site& site, const doc::Mask* srcMask)
+{
+  const Sprite* srcSprite = site.sprite();
   const Image* srcMaskBitmap = srcMask->bitmap();
   const gfx::Rect& srcBounds = srcMask->bounds();
   int x, y, u, v, getx, gety;
@@ -38,7 +43,7 @@ Image* new_image_from_mask(const Site& site)
 
   dst = Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h);
   if (!dst)
-    return NULL;
+    return nullptr;
 
   // Clear the new image
   dst->setMaskColor(src ? src->maskColor(): srcSprite->transparentColor());

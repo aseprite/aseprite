@@ -192,8 +192,8 @@ private:
       m_editor = current_editor;
 
       EditorStatePtr newState(new SelectBoxState(this, m_rect,
-                                                 SelectBoxState::PaintRulers |
-                                                 SelectBoxState::PaintGrid));
+                                                 SelectBoxState::RULERS |
+                                                 SelectBoxState::GRID));
       m_editor->setState(newState);
     }
   }

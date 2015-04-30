@@ -17,6 +17,9 @@
 #include "app/context.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool.h"
+#include "app/ui/context_bar.h"
+#include "app/ui/main_window.h"
+#include "base/convert_to.h"
 #include "doc/brush.h"
 
 namespace app {
@@ -28,9 +31,8 @@ class ChangeBrushCommand : public Command {
     DecrementSize,
     IncrementAngle,
     DecrementAngle,
+    CustomBrush,
   };
-
-  Change m_change;
 
 public:
   ChangeBrushCommand();
@@ -39,6 +41,10 @@ protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
   std::string onGetFriendlyName() const override;
+
+private:
+  Change m_change;
+  int m_slot;
 };
 
 ChangeBrushCommand::ChangeBrushCommand()
@@ -47,6 +53,7 @@ ChangeBrushCommand::ChangeBrushCommand()
             CmdUIOnlyFlag)
 {
   m_change = None;
+  m_slot = 0;
 }
 
 void ChangeBrushCommand::onLoadParams(const Params& params)
@@ -56,6 +63,12 @@ void ChangeBrushCommand::onLoadParams(const Params& params)
   else if (change == "decrement-size") m_change = DecrementSize;
   else if (change == "increment-angle") m_change = IncrementAngle;
   else if (change == "decrement-angle") m_change = DecrementAngle;
+  else if (change == "custom") m_change = CustomBrush;
+
+  if (m_change == CustomBrush)
+    m_slot = params.get_as<int>("slot");
+  else
+    m_slot = 0;
 }
 
 void ChangeBrushCommand::onExecute(Context* context)
@@ -84,6 +97,10 @@ void ChangeBrushCommand::onExecute(Context* context)
       if (brush->getAngle() > 0)
         brush->setAngle(brush->getAngle()-1);
       break;
+    case CustomBrush:
+      App::instance()->getMainWindow()->getContextBar()
+        ->setActiveBrushBySlot(m_slot);
+      break;
   }
 }
 
@@ -105,6 +122,10 @@ std::string ChangeBrushCommand::onGetFriendlyName() const
       break;
     case DecrementAngle:
       text += ": Decrement Angle";
+      break;
+    case CustomBrush:
+      text += ": Custom Brush #";
+      text += base::convert_to<std::string>(m_slot);
       break;
   }
 
