@@ -36,12 +36,12 @@ namespace doc {
     }
 
     void onAddDocument(Document* doc) override {
-      notifyActiveDocumentChanged(m_activeDoc = doc);
+      this->notifyActiveDocumentChanged(m_activeDoc = doc);
     }
 
     void onRemoveDocument(Document* doc) override {
       if (m_activeDoc == doc)
-        notifyActiveDocumentChanged(m_activeDoc = nullptr);
+        this->notifyActiveDocumentChanged(m_activeDoc = nullptr);
     }
 
   private:
