@@ -15,6 +15,8 @@
 
 namespace app {
 
+  class Command;
+
   class PlayState : public StateWithWheelBehavior {
   public:
     PlayState();
@@ -30,6 +32,9 @@ namespace app {
   private:
     void onPlaybackTick();
 
+    // ContextObserver
+    void onBeforeCommandExecution(Command* command);
+
     Editor* m_editor;
     ui::Timer m_playTimer;
 
@@ -40,6 +45,8 @@ namespace app {
 
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
+
+    Connection m_ctxConn;
   };
 
 } // namespace app

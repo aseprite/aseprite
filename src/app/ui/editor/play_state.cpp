@@ -11,6 +11,8 @@
 
 #include "app/ui/editor/play_state.h"
 
+#include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/handle_anidir.h"
 #include "app/loop_tag.h"
 #include "app/ui/editor/editor.h"
@@ -27,6 +29,10 @@ PlayState::PlayState()
   , m_nextFrameTime(-1)
   , m_pingPongForward(true)
 {
+  // Hook BeforeCommandExecution signal so we know if the user wants
+  // to execute other command, so we can stop the animation.
+  m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
+    &PlayState::onBeforeCommandExecution, this);
 }
 
 void PlayState::onAfterChangeState(Editor* editor)
@@ -111,6 +117,30 @@ void PlayState::onPlaybackTick()
 
   m_curFrameTick = ui::clock();
   m_editor->invalidate();
+}
+
+// Before executing any command, we stop the animation
+void PlayState::onBeforeCommandExecution(Command* command)
+{
+  // If the command is for other editor, we don't stop the animation.
+  if (!m_editor->isActive())
+    return;
+
+  // If we're executing PlayAnimation command, it means that the
+  // user wants to stop the animation. We cannot stop the animation
+  // here, because if it's stopped, PlayAnimation will re-play it
+  // (so it would be impossible to stop the animation using
+  // PlayAnimation command/Enter key).
+  //
+  // There are other commands that just doesn't stop the animation
+  // (zoom, scroll, etc.)
+  if (strcmp(command->short_name(), CommandId::PlayAnimation) == 0 ||
+      strcmp(command->short_name(), CommandId::Zoom) == 0 ||
+      strcmp(command->short_name(), CommandId::Scroll) == 0) {
+    return;
+  }
+
+  m_editor->stop();
 }
 
 } // namespace app
