@@ -18,6 +18,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
+#include "ui/message.h"
 #include "ui/system.h"
 
 namespace app {
@@ -64,6 +65,12 @@ bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)
   // When an editor is clicked the current view is changed.
   UIContext* context = UIContext::instance();
   context->setActiveView(editor->getDocumentView());
+
+  // A click with right-button stops the animation
+  if (msg->buttons() == kButtonRight) {
+    editor->stop();
+    return true;
+  }
 
   // Start scroll loop
   EditorStatePtr newState(new ScrollingState());
