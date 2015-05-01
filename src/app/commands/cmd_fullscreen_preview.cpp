@@ -123,10 +123,10 @@ protected:
 
         // Change frame
         if (command != NULL &&
-            (std::strcmp(command->short_name(), CommandId::GotoFirstFrame) == 0 ||
-             std::strcmp(command->short_name(), CommandId::GotoPreviousFrame) == 0 ||
-             std::strcmp(command->short_name(), CommandId::GotoNextFrame) == 0 ||
-             std::strcmp(command->short_name(), CommandId::GotoLastFrame) == 0)) {
+            (command->id() == CommandId::GotoFirstFrame ||
+             command->id() == CommandId::GotoPreviousFrame ||
+             command->id() == CommandId::GotoNextFrame ||
+             command->id() == CommandId::GotoLastFrame)) {
           m_context->executeCommand(command, params);
           invalidate();
           m_render.reset(NULL); // Re-render

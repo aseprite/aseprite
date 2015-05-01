@@ -22,18 +22,13 @@ namespace app {
   };
 
   class Command {
-    const char* m_short_name;
-    const char* m_friendly_name;
-    CommandFlags m_flags;
-
   public:
-
-    Command(const char* short_name, const char* friendly_name, CommandFlags flags);
+    Command(const char* id, const char* friendlyName, CommandFlags flags);
     virtual ~Command();
 
     virtual Command* clone() const { return new Command(*this); }
 
-    const char* short_name() const { return m_short_name; }
+    const std::string& id() const { return m_id; }
     std::string friendlyName() const;
 
     void loadParams(const Params& params);
@@ -47,6 +42,11 @@ namespace app {
     virtual bool onChecked(Context* context);
     virtual void onExecute(Context* context);
     virtual std::string onGetFriendlyName() const;
+
+  private:
+    std::string m_id;
+    std::string m_friendlyName;
+    CommandFlags m_flags;
   };
 
 } // namespace app

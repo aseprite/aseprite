@@ -171,9 +171,8 @@ bool DrawingState::onKeyDown(Editor* editor, KeyMessage* msg)
   if (KeyboardShortcuts::instance()
         ->getCommandFromKeyMessage(msg, &command, &params)) {
     // We accept zoom commands.
-    if (std::strcmp(command->short_name(), CommandId::Zoom) == 0) {
+    if (command->id() == CommandId::Zoom)
       UIContext::instance()->executeCommand(command, params);
-    }
   }
 
   // When we are drawing, we "eat" all pressed keys.

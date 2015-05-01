@@ -66,7 +66,7 @@ Command* CommandsModule::getCommandByName(const char* name)
 
   std::string lname = base::string_to_lower(name);
   for (Command* cmd : m_commands) {
-    if (base::string_to_lower(cmd->short_name()) == lname)
+    if (base::utf8_icmp(cmd->id(), lname) == 0)
       return cmd;
   }
 

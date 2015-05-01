@@ -141,9 +141,9 @@ void PlayState::onBeforeCommandExecution(Command* command)
   //
   // There are other commands that just doesn't stop the animation
   // (zoom, scroll, etc.)
-  if (strcmp(command->short_name(), CommandId::PlayAnimation) == 0 ||
-      strcmp(command->short_name(), CommandId::Zoom) == 0 ||
-      strcmp(command->short_name(), CommandId::Scroll) == 0) {
+  if (command->id() == CommandId::PlayAnimation ||
+      command->id() == CommandId::Zoom ||
+      command->id() == CommandId::Scroll) {
     return;
   }
 

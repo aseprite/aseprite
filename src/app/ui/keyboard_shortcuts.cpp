@@ -501,7 +501,7 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
     case KeyType::Command: {
       const char* keycontextStr = NULL;
 
-      elem.SetAttribute("command", key->command()->short_name());
+      elem.SetAttribute("command", key->command()->id().c_str());
 
       switch (key->keycontext()) {
         case KeyContext::Any:

@@ -66,7 +66,7 @@ void Context::executeCommand(Command* command, const Params& params)
 
   ASSERT(command != NULL);
 
-  PRINTF("Executing '%s' command.\n", command->short_name());
+  PRINTF("Executing '%s' command.\n", command->id().c_str());
   BeforeCommandExecution(command);
 
   try {
@@ -86,13 +86,13 @@ void Context::executeCommand(Command* command, const Params& params)
   }
   catch (base::Exception& e) {
     PRINTF("Exception caught executing '%s' command\n%s\n",
-           command->short_name(), e.what());
+           command->id().c_str(), e.what());
 
     Console::showException(e);
   }
   catch (std::exception& e) {
     PRINTF("std::exception caught executing '%s' command\n%s\n",
-           command->short_name(), e.what());
+           command->id().c_str(), e.what());
 
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }

@@ -106,7 +106,7 @@ private:
           return;
 
         m_key = app::KeyboardShortcuts::instance()->command(
-          m_menuitem->getCommand()->short_name(),
+          m_menuitem->getCommand()->id().c_str(),
           m_menuitem->getParams());
 
         m_menuitem->setKey(m_key);

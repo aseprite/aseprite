@@ -63,7 +63,7 @@ void AdvancedModeCommand::onExecute(Context* context)
 
   if (oldMode == MainWindow::NormalMode &&
       get_config_bool("AdvancedMode", "Warning", true)) {
-    Key* key = KeyboardShortcuts::instance()->command(short_name());
+    Key* key = KeyboardShortcuts::instance()->command(this->id().c_str());
     if (!key->accels().empty()) {
       base::UniquePtr<Window> window(app::load_widget<Window>("advanced_mode.xml", "advanced_mode_warning"));
       Widget* warning_label = app::find_widget<Widget>(window, "warning_label");

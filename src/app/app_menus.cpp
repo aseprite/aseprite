@@ -290,8 +290,7 @@ void AppMenus::applyShortcutToMenuitemsWithCommand(Menu* menu, Command* command,
       const Params& mi_params = menuitem->getParams();
 
       if ((mi_command) &&
-          (base::string_to_lower(mi_command->short_name()) ==
-           base::string_to_lower(command->short_name())) &&
+          (base::utf8_icmp(mi_command->id(), command->id()) == 0) &&
           (mi_params == params)) {
         // Set the keyboard shortcut to be shown in this menu-item
         menuitem->setKey(key);

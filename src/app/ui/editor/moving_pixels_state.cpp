@@ -345,14 +345,14 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
     if (KeyboardShortcuts::instance()
           ->getCommandFromKeyMessage(msg, &command, &params)) {
       // We accept zoom commands.
-      if (std::strcmp(command->short_name(), CommandId::Zoom) == 0) {
+      if (command->id() == CommandId::Zoom) {
         UIContext::instance()->executeCommand(command, params);
         return true;
       }
       // Intercept the "Cut" or "Copy" command to handle them locally
       // with the current m_pixelsMovement data.
-      else if (std::strcmp(command->short_name(), CommandId::Cut) == 0 ||
-               std::strcmp(command->short_name(), CommandId::Copy) == 0) {
+      else if (command->id() == CommandId::Cut ||
+               command->id() == CommandId::Copy) {
         // Copy the floating image to the clipboard.
         {
           Document* document = editor->document();
@@ -364,7 +364,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
         }
 
         // In case of "Cut" command.
-        if (std::strcmp(command->short_name(), CommandId::Cut) == 0) {
+        if (command->id() == CommandId::Cut) {
           // Discard the dragged image.
           m_pixelsMovement->discardImage();
           m_discarded = true;
@@ -378,7 +378,7 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
       }
       // Flip Horizontally/Vertically commands are handled manually to
       // avoid dropping the floating region of pixels.
-      else if (std::strcmp(command->short_name(), CommandId::Flip) == 0) {
+      else if (command->id() == CommandId::Flip) {
         if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
           flipCommand->loadParams(params);
           m_pixelsMovement->flipImage(flipCommand->getFlipType());
@@ -445,8 +445,8 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
     if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
       return;
   }
-  else if ((std::strcmp(command->short_name(), CommandId::Zoom) == 0) ||
-           (std::strcmp(command->short_name(), CommandId::Scroll) == 0)) {
+  else if ((command->id() == CommandId::Zoom) ||
+           (command->id() == CommandId::Scroll)) {
     return;
   }
 

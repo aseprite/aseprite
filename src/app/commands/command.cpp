@@ -15,11 +15,11 @@
 
 namespace app {
 
-Command::Command(const char* short_name, const char* friendly_name, CommandFlags flags)
+Command::Command(const char* id, const char* friendlyName, CommandFlags flags)
+  : m_id(id)
+  , m_friendlyName(friendlyName)
+  , m_flags(flags)
 {
-  m_short_name = short_name;
-  m_friendly_name = friendly_name;
-  m_flags = flags;
 }
 
 Command::~Command()
@@ -97,7 +97,7 @@ void Command::onExecute(Context* context)
 
 std::string Command::onGetFriendlyName() const
 {
-  return m_friendly_name;
+  return m_friendlyName;
 }
 
 } // namespace app
