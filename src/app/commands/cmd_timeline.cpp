@@ -28,7 +28,7 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
-  bool onChecked(Context* ctx);
+  bool onChecked(Context* ctx) override;
   
   bool m_open;
   bool m_close;
