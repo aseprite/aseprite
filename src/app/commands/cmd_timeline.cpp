@@ -28,7 +28,8 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
-
+  bool onChecked(Context* ctx);
+  
   bool m_open;
   bool m_close;
   bool m_switch;
@@ -73,6 +74,15 @@ void TimelineCommand::onExecute(Context* context)
 
   if (visible != newVisible)
     App::instance()->getMainWindow()->setTimelineVisibility(newVisible);
+}
+
+bool TimelineCommand::onChecked(Context* ctx) {
+    MainWindow* mainWin = App::instance()->getMainWindow();
+    if (!mainWin)
+      return false;
+
+    Timeline* timelineWin = mainWin->getTimeline();
+    return (timelineWin && timelineWin->isVisible());
 }
 
 Command* CommandFactory::createTimelineCommand()
