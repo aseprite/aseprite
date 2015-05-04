@@ -42,9 +42,9 @@ namespace ui {
     void setClickOpen(bool state);
     void setCaseSensitive(bool state);
 
-    bool isEditable();
-    bool isClickOpen();
-    bool isCaseSensitive();
+    bool isEditable() const { return m_editable; }
+    bool isClickOpen() const { return m_clickopen; }
+    bool isCaseSensitive() const { return m_casesensitive; }
 
     int addItem(ListItem* item);
     int addItem(const std::string& text);

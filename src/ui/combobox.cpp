@@ -130,21 +130,6 @@ void ComboBox::setCaseSensitive(bool state)
   m_casesensitive = state;
 }
 
-bool ComboBox::isEditable()
-{
-  return m_editable;
-}
-
-bool ComboBox::isClickOpen()
-{
-  return m_clickopen;
-}
-
-bool ComboBox::isCaseSensitive()
-{
-  return m_casesensitive;
-}
-
 int ComboBox::addItem(ListItem* item)
 {
   bool sel_first = m_items.empty();
