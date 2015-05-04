@@ -705,7 +705,11 @@ bool Timeline::onProcessMessage(Message* msg)
           else {
             m_state = STATE_STANDBY;
           }
-          used = true;
+
+          // Don't use this key, so it's caught by CancelCommand.
+          // TODO The deselection of the current range should be
+          // handled in CancelCommand itself.
+          //used = true;
           break;
 
         case kKeySpace: {

@@ -920,24 +920,28 @@ bool Manager::onProcessMessage(Message* msg)
 
       // Continue sending the message to the children of all windows
       // (until a desktop or foreground window).
-      UI_FOREACH_WIDGET(getChildren(), it) {
-        Window* w = static_cast<Window*>(*it);
+      Window* win = nullptr;
+      for (Widget* manchild : getChildren()) {
+        win = static_cast<Window*>(manchild);
 
         // Send to the window.
-        UI_FOREACH_WIDGET(w->getChildren(), it2)
-          if ((*it2)->sendMessage(msg))
+        for (auto winchild : win->getChildren())
+          if (winchild->sendMessage(msg))
             return true;
 
-        if (w->isForeground() ||
-            w->isDesktop())
+        if (win->isForeground() ||
+            win->isDesktop())
           break;
       }
 
-      // Check the focus movement.
-      if (msg->type() == kKeyDownMessage)
-        move_focus(this, msg);
-
-      return true;
+      // Check the focus movement for foreground (non-desktop) windows.
+      if (win->isForeground()) {
+        if (msg->type() == kKeyDownMessage)
+          move_focus(this, msg);
+        return true;
+      }
+      else
+        return false;
     }
 
   }

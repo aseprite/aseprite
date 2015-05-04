@@ -402,8 +402,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage: {
-      Window* toplevel_window = getTopWindow();
-
 #ifdef _DEBUG
       // Left Shift+Ctrl+Q generates a crash (useful to test the anticrash feature)
       if (msg->ctrlPressed() &&
@@ -414,13 +412,11 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
 #endif
 
-      // If there is a foreground window as top level...
-      if (toplevel_window &&
-          toplevel_window != App::instance()->getMainWindow() &&
-          toplevel_window->isForeground()) {
-        // We just do not process keyboard shortcuts for menus and tools
-        break;
-      }
+      // Call base impl to check if there is a foreground window as
+      // top level that needs keys. (In this way we just do not
+      // process keyboard shortcuts for menus and tools).
+      if (Manager::onProcessMessage(msg))
+        return true;
 
       for (const Key* key : *KeyboardShortcuts::instance()) {
         if (key->isPressed(msg)) {

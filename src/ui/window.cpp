@@ -241,12 +241,11 @@ void Window::openWindow()
 
 void Window::openWindowInForeground()
 {
+  m_isForeground = true;
+
   openWindow();
 
   MessageLoop loop(getManager());
-
-  m_isForeground = true;
-
   while (!(this->flags & JI_HIDDEN))
     loop.pumpMessages();
 
