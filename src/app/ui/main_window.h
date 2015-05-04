@@ -68,6 +68,7 @@ namespace app {
     void reloadMenus();
     void showNotification(INotificationDelegate* del);
     void showHome();
+    bool isHomeSelected();
     void showDevConsole();
 
     Mode getMode() const { return m_mode; }
