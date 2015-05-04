@@ -194,7 +194,7 @@ bool Manager::generateMessages()
       if (magnet && !magnet->hasFocus())
         setFocus(magnet);
       // 3) if not, put the focus in the first child
-      else
+      else if (static_cast<Window*>(window)->isWantFocus())
         focusFirstChild(window);
     }
 
