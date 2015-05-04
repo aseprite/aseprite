@@ -1339,8 +1339,10 @@ bool Widget::onProcessMessage(Message* msg)
       }
 
       // Propagate the message to the parent.
-      if (static_cast<KeyMessage*>(msg)->propagateToParent() && getParent() != NULL)
+      if (static_cast<KeyMessage*>(msg)->propagateToParent() &&
+          getParent()) {
         return getParent()->sendMessage(msg);
+      }
       else
         break;
 
