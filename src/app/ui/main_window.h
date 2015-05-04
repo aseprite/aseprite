@@ -82,7 +82,7 @@ namespace app {
     void showDataRecovery(crash::DataRecovery* dataRecovery);
 
     // TabsDelegate implementation.
-    bool isModifiedTab(Tabs* tabs, TabView* tabView) override;
+    bool isTabModified(Tabs* tabs, TabView* tabView) override;
     bool canCloneTab(Tabs* tabs, TabView* tabView) override;
     void onSelectTab(Tabs* tabs, TabView* tabView) override;
     void onCloseTab(Tabs* tabs, TabView* tabView) override;

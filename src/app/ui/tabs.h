@@ -72,7 +72,7 @@ namespace app {
     virtual ~TabsDelegate() { }
 
     // Returns true if the tab represent a modified document.
-    virtual bool isModifiedTab(Tabs* tabs, TabView* tabView) = 0;
+    virtual bool isTabModified(Tabs* tabs, TabView* tabView) = 0;
 
     // Returns true if the tab can be cloned.
     virtual bool canCloneTab(Tabs* tabs, TabView* tabView) = 0;

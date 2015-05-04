@@ -100,7 +100,7 @@ void Tabs::addTab(TabView* tabView, bool from_drop, int pos)
 
   tab->oldX = (from_drop ? m_dropNewPosX-tab->width/2: tab->x);
   tab->oldWidth = tab->width;
-  tab->modified = (m_delegate ? m_delegate->isModifiedTab(this, tabView): false);
+  tab->modified = (m_delegate ? m_delegate->isTabModified(this, tabView): false);
 }
 
 void Tabs::removeTab(TabView* tabView, bool with_animation)
@@ -131,7 +131,7 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
 
   if (with_animation) {
     if (m_delegate)
-      tab->modified = m_delegate->isModifiedTab(this, tabView);
+      tab->modified = m_delegate->isTabModified(this, tabView);
     tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
     resetOldPositions();
@@ -623,7 +623,7 @@ void Tabs::drawTab(Graphics* g, const gfx::Rect& _box,
 
     if (m_delegate) {
       if (tab->view)
-        tab->modified = m_delegate->isModifiedTab(this, tab->view);
+        tab->modified = m_delegate->isTabModified(this, tab->view);
 
       if (tab->modified &&
           (!hover || !m_hotCloseButton)) {

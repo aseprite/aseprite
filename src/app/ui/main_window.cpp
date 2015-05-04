@@ -179,7 +179,7 @@ void MainWindow::showHomeOnOpen()
 }
 
 void MainWindow::showHome()
-{  
+{
   if (!getHomeView()->getParent()) {
     m_workspace->addView(m_homeView, 0);
   }
@@ -266,7 +266,7 @@ void MainWindow::onActiveViewChange()
   configureWorkspaceLayout();
 }
 
-bool MainWindow::isModifiedTab(Tabs* tabs, TabView* tabView)
+bool MainWindow::isTabModified(Tabs* tabs, TabView* tabView)
 {
   if (DocumentView* docView = dynamic_cast<DocumentView*>(tabView)) {
     Document* document = docView->getDocument();
