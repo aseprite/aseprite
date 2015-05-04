@@ -55,4 +55,4 @@ namespace app {
   } // namespace tools
 } // namespace app
 
-#endif  // TOOLS_TOOL_INK_H_INCLUDED
+#endif  // APP_TOOLS_CONTROLLER_H_INCLUDED
