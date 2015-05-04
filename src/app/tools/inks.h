@@ -58,27 +58,19 @@ public:
 
     int depth = MID(0, loop->sprite()->pixelFormat(), 2);
 
-    switch (m_type) {
-      case Opaque:
-        if (loop->getBrush()->type() == doc::kImageBrushType)
-          m_proc = ink_processing[INK_BRUSH][depth];
-        else
-          m_proc = ink_processing[INK_OPAQUE][depth];
-        break;
-      case SetAlpha:
-        m_proc = ink_processing[INK_SETALPHA][depth];
-        break;
-      case LockAlpha:
-        m_proc = ink_processing[INK_LOCKALPHA][depth];
-        break;
-      default:
-        if (loop->getBrush()->type() == doc::kImageBrushType)
-          m_proc = ink_processing[INK_BRUSH][depth];
-        else
+    if (loop->getBrush()->type() == doc::kImageBrushType)
+      m_proc = ink_processing[INK_BRUSH][depth];
+    else {
+      switch (m_type) {
+        case Opaque: m_proc = ink_processing[INK_OPAQUE][depth]; break;
+        case SetAlpha: m_proc = ink_processing[INK_SETALPHA][depth]; break;
+        case LockAlpha: m_proc = ink_processing[INK_LOCKALPHA][depth]; break;
+        default:
           m_proc = (loop->getOpacity() == 255 ?
                     ink_processing[INK_OPAQUE][depth]:
                     ink_processing[INK_TRANSPARENT][depth]);
-        break;
+          break;
+      }
     }
   }
 
