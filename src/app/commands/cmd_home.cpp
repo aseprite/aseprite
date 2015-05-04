@@ -23,7 +23,8 @@ public:
   ~HomeCommand();
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
+  bool onEnabled(Context* context) override;
 };
 
 HomeCommand::HomeCommand()
@@ -40,6 +41,11 @@ HomeCommand::~HomeCommand()
 void HomeCommand::onExecute(Context* context)
 {
   App::instance()->getMainWindow()->showHome();
+}
+
+bool HomeCommand::onEnabled(Context* context)
+{
+  return !App::instance()->getMainWindow()->isHomeSelected();
 }
 
 Command* CommandFactory::createHomeCommand()
