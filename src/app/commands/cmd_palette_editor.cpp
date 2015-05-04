@@ -138,6 +138,7 @@ public:
 protected:
   void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+  bool onChecked(Context* context) override;
 
 private:
   bool m_open;
@@ -223,6 +224,15 @@ void PaletteEditorCommand::onExecute(Context* context)
 
     g_window->setColor(color);
   }
+}
+
+bool PaletteEditorCommand::onChecked(Context* context)
+{
+  if(!g_window)
+  {
+    return false;
+  }
+  return g_window->isVisible();
 }
 
 //////////////////////////////////////////////////////////////////////

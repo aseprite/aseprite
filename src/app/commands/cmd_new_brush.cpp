@@ -64,6 +64,10 @@ bool NewBrushCommand::onEnabled(Context* context)
 
 void NewBrushCommand::onExecute(Context* context)
 {
+  ASSERT(current_editor);
+  if (!current_editor)
+    return;
+
   // If there is no visible mask, the brush must be selected from the
   // current editor.
   if (!context->activeDocument()->isMaskVisible()) {
