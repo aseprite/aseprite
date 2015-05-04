@@ -199,11 +199,13 @@ void UIContext::onGetActiveSite(Site* site) const
     view->getSite(site);
   }
   // Default/dummy site (maybe for batch/command line mode)
-  else if (Document* doc = m_lastSelectedDoc) {
-    site->document(doc);
-    site->sprite(doc->sprite());
-    site->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
-    site->frame(0);
+  else if (!isUiAvailable()) {
+    if (Document* doc = m_lastSelectedDoc) {
+      site->document(doc);
+      site->sprite(doc->sprite());
+      site->layer(doc->sprite()->indexToLayer(LayerIndex(0)));
+      site->frame(0);
+    }
   }
 }
 
