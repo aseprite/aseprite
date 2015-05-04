@@ -51,7 +51,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
-#include "app/ui/workspace_tabs.h"
+#include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "app/webserver.h"
@@ -692,10 +692,13 @@ void app_refresh_screen()
   ui::Manager::getDefault()->invalidate();
 }
 
+// TODO remove app_rebuild_documents_tabs() and replace it by
+// observable events in the document (so a tab can observe if the
+// document is modified).
 void app_rebuild_documents_tabs()
 {
   if (App::instance()->isGui())
-    App::instance()->getMainWindow()->getTabsBar()->updateTabs();
+    App::instance()->getMainWindow()->getWorkspace()->updateTabs();
 }
 
 PixelFormat app_get_current_pixel_format()

@@ -47,6 +47,8 @@ namespace app {
     void selectPreviousTab();
     void duplicateActiveView();
 
+    void updateTabs();
+
     // Set the preview of what could happen if we drop the given
     // "view" at the "pos"?
     DropViewPreviewResult setDropViewPreview(const gfx::Point& pos,

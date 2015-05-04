@@ -137,6 +137,21 @@ void Workspace::duplicateActiveView()
   setActiveView(clone);
 }
 
+void Workspace::updateTabs()
+{
+  WidgetsList children = getChildren();
+  while (!children.empty()) {
+    Widget* child = children.back();
+    children.erase(--children.end());
+
+    if (child->getType() == WorkspacePanel::Type())
+      static_cast<WorkspacePanel*>(child)->tabs()->updateTabs();
+
+    for (auto subchild : child->getChildren())
+      children.push_back(subchild);
+  }
+}
+
 void Workspace::onPaint(PaintEvent& ev)
 {
   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
