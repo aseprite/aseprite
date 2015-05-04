@@ -43,6 +43,7 @@ protected:
 
 private:
   bool m_ask;
+  bool m_top;
   std::string m_name;
 };
 
@@ -55,14 +56,14 @@ NewLayerCommand::NewLayerCommand()
             CmdRecordableFlag)
 {
   m_ask = false;
+  m_top = false;
   m_name = "";
 }
 
 void NewLayerCommand::onLoadParams(const Params& params)
 {
-  std::string ask = params.get("ask");
-  if (ask == "true") m_ask = true;
-
+  m_ask = (params.get("ask") == "true");
+  m_top = (params.get("top") == "true");
   m_name = params.get("name");
 }
 
@@ -101,10 +102,18 @@ void NewLayerCommand::onExecute(Context* context)
     name = window->findChild("name")->getText();
   }
 
+  Layer* activeLayer = writer.layer();
   Layer* layer;
   {
     Transaction transaction(writer.context(), "New Layer");
-    layer = document->getApi(transaction).newLayer(sprite);
+    DocumentApi api = document->getApi(transaction);
+    layer = api.newLayer(sprite);
+
+    // If "top" parameter is false, create the layer above the active
+    // one.
+    if (activeLayer && !m_top)
+      api.restackLayerAfter(layer, activeLayer);
+
     transaction.commit();
   }
   layer->setName(name);
