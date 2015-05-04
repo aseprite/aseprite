@@ -210,7 +210,13 @@ bool ListBox::onProcessMessage(Message* msg)
 
         switch (keymsg->scancode()) {
           case kKeyUp:
-            select--;
+            // Select previous element.
+            if (select >= 0)
+              select--;
+            // Or select the bottom of the list if there is no
+            // selected item.
+            else
+              select = bottom;
             break;
           case kKeyDown:
             select++;

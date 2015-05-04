@@ -84,14 +84,13 @@ static void on_exit_delete_navigation_history()
   delete navigation_history;
 }
 
-class CustomFileNameEntry : public Entry
+class CustomFileNameEntry : public ComboBox
 {
 public:
-  CustomFileNameEntry() :
-    Entry(256, ""),
-    m_fileList(NULL),
-    m_timer(250, this) {
-    m_timer.Tick.connect(&CustomFileNameEntry::onTick, this);
+  CustomFileNameEntry()
+    : m_fileList(nullptr) {
+    setEditable(true);
+    getEntryWidget()->EntryChange.connect(&CustomFileNameEntry::onEntryChange, this);
   }
 
   void setAssociatedFileList(FileList* fileList) {
@@ -99,26 +98,20 @@ public:
   }
 
 protected:
-  virtual void onEntryChange() override {
-    Entry::onEntryChange();
 
-    // Start timer to autocomplete again.
-    m_timer.start();
-  }
-
-  void onTick() {
-    m_timer.stop();
+  void onEntryChange() {
+    removeAllItems();
 
     // String to be autocompleted
-    std::string left_part = getText();
+    std::string left_part = getEntryWidget()->getText();
+    closeListBox();
+
     if (left_part.empty())
       return;
 
-    const FileItemList& children = m_fileList->getFileList();
-
-    for (IFileItem* child : children) {
+    for (const IFileItem* child : m_fileList->getFileList()) {
       std::string child_name = child->getDisplayName();
-      std::string::iterator it1, it2;
+      std::string::const_iterator it1, it2;
 
       for (it1 = child_name.begin(), it2 = left_part.begin();
            it1 != child_name.end() && it2 != left_part.end();
@@ -128,17 +121,16 @@ protected:
       }
 
       // Is the pattern (left_part) in the child_name's beginning?
-      if (it2 == left_part.end()) {
-        setText(left_part + child_name.substr(left_part.size()));
-        selectText(child_name.size(), left_part.size());
-        return;
-      }
+      if (it1 != child_name.end() && it2 == left_part.end())
+        addItem(child_name);
     }
+
+    if (getItemCount() > 0)
+      openListBox();
   }
 
 private:
   FileList* m_fileList;
-  Timer m_timer;
 };
 
 // Class to create CustomFileNameEntries.
@@ -317,9 +309,9 @@ std::string FileSelector::show(const std::string& title,
     m_fileType->addItem(tok.c_str());
 
   // file name entry field
-  m_fileName->setText(base::get_file_name(initialPath).c_str());
+  m_fileName->setValue(base::get_file_name(initialPath).c_str());
   selectFileTypeFromFileName();
-  m_fileName->selectText(0, -1);
+  m_fileName->getEntryWidget()->selectText(0, -1);
 
   // setup the title of the window
   setText(title.c_str());
@@ -339,7 +331,7 @@ again:
     IFileItem* folder = m_fileList->getCurrentFolder();
     ASSERT(folder);
 
-    std::string fn = m_fileName->getText();
+    std::string fn = m_fileName->getValue();
     std::string buf;
     IFileItem* enter_folder = NULL;
 
@@ -423,7 +415,7 @@ again:
       m_fileList->setCurrentFolder(enter_folder);
 
       // clear the text of the entry widget
-      m_fileName->setText("");
+      m_fileName->setValue("");
 
       // show the window again
       setVisible(true);
@@ -578,7 +570,7 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
 
 void FileSelector::selectFileTypeFromFileName()
 {
-  std::string ext = base::get_file_extension(m_fileName->getText());
+  std::string ext = base::get_file_extension(m_fileName->getValue());
 
   if (!ext.empty()) {
     ext = base::string_to_lower(ext);
@@ -692,13 +684,11 @@ void FileSelector::onLocationCloseListBox()
 void FileSelector::onFileTypeChange()
 {
   std::string newExtension = m_fileType->getItemText(m_fileType->getSelectedItemIndex());
-  std::string fileName = m_fileName->getText();
+  std::string fileName = m_fileName->getValue();
   std::string currentExtension = base::get_file_extension(fileName);
 
-  if (!currentExtension.empty()) {
-    m_fileName->setText((fileName.substr(0, fileName.size()-currentExtension.size())+newExtension).c_str());
-    m_fileName->selectAllText();
-  }
+  if (!currentExtension.empty())
+    m_fileName->setValue((fileName.substr(0, fileName.size()-currentExtension.size())+newExtension).c_str());
 }
 
 void FileSelector::onFileListFileSelected()
@@ -708,8 +698,7 @@ void FileSelector::onFileListFileSelected()
   if (!fileitem->isFolder()) {
     std::string filename = base::get_file_name(fileitem->getFileName());
 
-    m_fileName->setText(filename.c_str());
-    m_fileName->selectAllText();
+    m_fileName->setValue(filename.c_str());
     selectFileTypeFromFileName();
   }
 }

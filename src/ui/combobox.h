@@ -106,9 +106,9 @@ namespace ui {
     ComboBoxListBox* m_listbox;
     ListItems m_items;
     int m_selected;
-    bool m_editable : 1;
-    bool m_clickopen : 1;
-    bool m_casesensitive : 1;
+    bool m_editable;
+    bool m_clickopen;
+    bool m_casesensitive;
   };
 
 } // namespace ui
