@@ -99,7 +99,7 @@ void Context::executeCommand(Command* command, const Params& params)
 #ifndef DEBUGMODE
   catch (...) {
     PRINTF("unknown exception executing '%s' command\n",
-           command->short_name());
+           command->id().c_str());
 
     console.printf("An unknown error ocurred executing the command.\n"
                    "Please save your work, close the program, try it\n"
