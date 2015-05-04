@@ -119,6 +119,15 @@ namespace app {
         ASSERT(view);
         text = view->getTabText();
         icon = view->getTabIcon();
+
+        x = width = oldX = oldWidth =
+#if _DEBUG
+          0xfefefefe;
+#else
+          0;
+#endif
+
+        modified = false;
       }
     };
 

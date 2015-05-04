@@ -307,8 +307,6 @@ bool Tabs::onProcessMessage(Message* msg)
         }
         // We are drag a tab...
         else {
-          TabPtr justDocked(nullptr);
-
           // Floating tab (to create a new window)
           if (!getBounds().contains(mousePos) &&
               (ABS(delta.y) > 16*guiscale() ||
@@ -335,7 +333,6 @@ bool Tabs::onProcessMessage(Message* msg)
             }
           }
           else {
-            justDocked = m_floatingTab;
             destroyFloatingTab();
 
             if (m_delegate)
@@ -344,10 +341,8 @@ bool Tabs::onProcessMessage(Message* msg)
 
           // Docked tab
           if (!m_floatingTab) {
-            m_dragTab->x = m_dragTabX + delta.x;
+            m_dragTab->oldX = m_dragTab->x = m_dragTabX + delta.x;
             updateDragTabIndexes(mousePos.x, false);
-            if (justDocked)
-              justDocked->oldX = m_dragTabX + delta.x;
           }
 
           invalidate();
@@ -753,6 +748,11 @@ void Tabs::resetOldPositions(double t)
     if (tab == m_floatingTab)
       continue;
 
+    ASSERT(tab->x != 0xfefefefe);
+    ASSERT(tab->width != 0xfefefefe);
+    ASSERT(tab->oldX != 0xfefefefe);
+    ASSERT(tab->oldWidth != 0xfefefefe);
+
     tab->oldX = int(inbetween(tab->oldX, tab->x, t));
     tab->oldWidth = int(inbetween(tab->oldWidth, tab->width, t));
   }
@@ -781,9 +781,9 @@ void Tabs::startDrag()
   m_isDragging = true;
   m_dragCopy = false;
   m_dragTab.reset(new Tab(m_selected->view));
-  m_dragTab->x = m_selected->x;
-  m_dragTab->width = m_selected->width;
-  m_dragTabX = m_selected->x;
+  m_dragTab->oldX = m_dragTab->x = m_dragTabX = m_selected->x;
+  m_dragTab->oldWidth = m_dragTab->width = m_selected->width;
+
   m_dragTabIndex =
   m_dragCopyIndex = std::find(m_list.begin(), m_list.end(), m_selected) - m_list.begin();
 
@@ -871,6 +871,11 @@ gfx::Rect Tabs::getTabBounds(Tab* tab)
     box.w = tab->width;
   }
   else {
+    ASSERT(tab->x != 0xfefefefe);
+    ASSERT(tab->width != 0xfefefefe);
+    ASSERT(tab->oldX != 0xfefefefe);
+    ASSERT(tab->oldWidth != 0xfefefefe);
+
     box.x = startX + int(inbetween(tab->oldX, tab->x, t));
     box.w = int(inbetween(tab->oldWidth, tab->width, t));
   }
