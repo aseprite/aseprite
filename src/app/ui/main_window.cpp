@@ -163,7 +163,7 @@ void MainWindow::showNotification(INotificationDelegate* del)
   m_notifications->getParent()->layout();
 }
 
-void MainWindow::showHome()
+void MainWindow::showHomeOnOpen()
 {
   if (!getHomeView()->getParent()) {
     TabView* selectedTab = m_tabsBar->getSelectedTab();
@@ -176,6 +176,19 @@ void MainWindow::showHome()
     else
       m_tabsBar->selectTab(m_homeView);
   }
+}
+
+void MainWindow::showHome()
+{  
+  if (!getHomeView()->getParent()) {
+    m_workspace->addView(m_homeView, 0);
+  }
+  m_tabsBar->selectTab(m_homeView);
+}
+
+bool MainWindow::isHomeSelected()
+{
+  return (m_tabsBar->getSelectedTab() == m_homeView && m_homeView);
 }
 
 void MainWindow::showDevConsole()
@@ -230,7 +243,7 @@ void MainWindow::showDataRecovery(crash::DataRecovery* dataRecovery)
 bool MainWindow::onProcessMessage(ui::Message* msg)
 {
   if (msg->type() == kOpenMessage)
-    showHome();
+    showHomeOnOpen();
 
   return Window::onProcessMessage(msg);
 }
