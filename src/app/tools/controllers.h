@@ -79,12 +79,12 @@ public:
   }
 
   void pressKey(ui::KeyScancode key) override {
-    PRINTF("pressKey(%d)\n", key);
+    TRACE("pressKey(%d)\n", key);
     processKey(key, true);
   }
 
   void releaseKey(ui::KeyScancode key) override {
-    PRINTF("releaseKey(%d)\n", key);
+    TRACE("releaseKey(%d)\n", key);
     processKey(key, false);
   }
 
