@@ -31,10 +31,9 @@ namespace doc {
     Site activeSite() const;
     Document* activeDocument() const;
 
-  protected:
-    void notifyActiveDocumentChanged(Document* doc);
-    void notifyActiveSiteChanged(Site* site);
+    void notifyActiveSiteChanged();
 
+  protected:
     virtual void onGetActiveSite(Site* site) const;
     virtual void onAddDocument(Document* doc) override;
     virtual void onRemoveDocument(Document* doc) override;

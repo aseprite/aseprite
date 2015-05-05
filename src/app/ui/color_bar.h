@@ -51,7 +51,7 @@ namespace app {
     void setPaletteEditorButtonState(bool state);
 
     // ContextObserver impl
-    void onActiveDocumentChange(doc::Document* document) override;
+    void onActiveSiteChange(const doc::Site& site) override;
 
     // Signals
     Signal1<void, const app::Color&> FgColorChange;
@@ -91,6 +91,7 @@ namespace app {
     ColorButton m_bgColor;
     bool m_lock;
     doc::Remap* m_remap;
+    const doc::Document* m_lastDocument;
   };
 
 } // namespace app

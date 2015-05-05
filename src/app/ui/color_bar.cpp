@@ -86,6 +86,7 @@ ColorBar::ColorBar(int align)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
   , m_remap(nullptr)
+  , m_lastDocument(nullptr)
 {
   m_instance = this;
 
@@ -195,9 +196,12 @@ void ColorBar::setPaletteEditorButtonState(bool state)
   m_paletteButton.setSelected(state);
 }
 
-void ColorBar::onActiveDocumentChange(doc::Document* document)
+void ColorBar::onActiveSiteChange(const doc::Site& site)
 {
-  destroyRemap();
+  if (m_lastDocument != site.document()) {
+    m_lastDocument = site.document();
+    destroyRemap();
+  }
 }
 
 // Switches the palette-editor

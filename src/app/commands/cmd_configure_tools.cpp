@@ -41,7 +41,9 @@ using namespace app::tools;
 class ToolsConfigurationWindow : public app::gen::ToolsConfiguration,
                                  public doc::ContextObserver {
 public:
-  ToolsConfigurationWindow(Context* ctx) : m_ctx(ctx) {
+  ToolsConfigurationWindow(Context* ctx)
+    : m_ctx(ctx)
+    , m_lastDocument(nullptr) {
     m_ctx->addObserver(this);
 
     // Slots
@@ -58,7 +60,7 @@ public:
     centerWindow();
     load_window_pos(this, "ConfigureTool");
 
-    onActiveDocumentChange(m_ctx->activeDocument());
+    updateUI();
   }
 
   ~ToolsConfigurationWindow() {
@@ -79,7 +81,12 @@ private:
     return preferences().document(m_ctx->activeDocument());
   }
 
-  void onActiveDocumentChange(doc::Document* document) override {
+  void onActiveSiteChange(const doc::Site& site) override {
+    if (m_lastDocument != site.document())
+      updateUI();
+  }
+
+  void updateUI() {
     DocumentPreferences& docPref = this->docPref();
 
     tiled()->setSelected(docPref.tiled.mode() != filters::TiledMode::NONE);
@@ -88,6 +95,8 @@ private:
     snapToGrid()->setSelected(docPref.grid.snap());
     viewGrid()->setSelected(docPref.grid.visible());
     pixelGrid()->setSelected(docPref.pixelGrid.visible());
+
+  m_lastDocument = m_ctx->activeDocument();
   }
 
   void onWindowClose() {
@@ -155,6 +164,7 @@ private:
   }
 
   Context* m_ctx;
+  Document* m_lastDocument;
 };
 
 class ConfigureTools : public Command {

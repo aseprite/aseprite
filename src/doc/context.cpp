@@ -40,14 +40,10 @@ Document* Context::activeDocument() const
   return site.document();
 }
 
-void Context::notifyActiveDocumentChanged(Document* doc)
+void Context::notifyActiveSiteChanged()
 {
-  notifyObservers(&ContextObserver::onActiveDocumentChange, doc);
-}
-
-void Context::notifyActiveSiteChanged(Site* site)
-{
-  notifyObservers(&ContextObserver::onActiveSiteChange, site);
+  Site site = activeSite();
+  notifyObservers<const Site&>(&ContextObserver::onActiveSiteChange, site);
 }
 
 void Context::onGetActiveSite(Site* site) const

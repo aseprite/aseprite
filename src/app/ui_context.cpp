@@ -109,15 +109,27 @@ void UIContext::setActiveView(DocumentView* docView)
   App::instance()->updateDisplayTitleBar();
 
   m_lastSelectedView = docView;
+
+  // TODO all the calls to functions like updateUsingEditor(),
+  // setPixelFormat(), app_refresh_screen(), updateDisplayTitleBar()
+  // Can be replaced with a ContextObserver listening to the
+  // onActiveSiteChange() event.
+  notifyActiveSiteChanged();
 }
 
 void UIContext::setActiveDocument(Document* document)
 {
+  bool notify = (m_lastSelectedDoc != document);
   m_lastSelectedDoc = document;
 
   DocumentView* docView = getFirstDocumentView(document);
-  if (docView)    // The view can be null if we are in --batch mode
+  if (docView) {     // The view can be null if we are in --batch mode
     setActiveView(docView);
+    notify = false;
+  }
+
+  if (notify)
+    notifyActiveSiteChanged();
 }
 
 DocumentView* UIContext::getFirstDocumentView(Document* document) const

@@ -16,8 +16,7 @@ namespace doc {
   class ContextObserver {
   public:
     virtual ~ContextObserver() { }
-    virtual void onActiveDocumentChange(Document* document) { }
-    virtual void onActiveSiteChange(Site* site) { }
+    virtual void onActiveSiteChange(const Site& site) { }
   };
 
 } // namespace doc
