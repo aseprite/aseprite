@@ -111,8 +111,9 @@ public:
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keymsg->scancode();
 
-        if (scancode == kKeyEnter || // TODO customizable keys
-            scancode == kKeyEnterPad) {
+        if (hasFocus() &&
+            (scancode == kKeyEnter || // TODO customizable keys
+             scancode == kKeyEnterPad)) {
           Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFrame);
           Params params;
           int frame = getTextInt();
