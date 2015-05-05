@@ -61,7 +61,6 @@ namespace app {
       IBrushSettings* brushSettings = nullptr);
 
   protected:
-    bool onProcessMessage(ui::Message* msg) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
 
     // ToolSettingsObserver impl
@@ -122,6 +121,7 @@ namespace app {
     FreehandAlgorithmField* m_freehandAlgo;
     BrushPatternField* m_brushPatternField;
     ui::Box* m_sprayBox;
+    ui::Label* m_sprayLabel;
     SprayWidthField* m_sprayWidth;
     SpraySpeedField* m_spraySpeed;
     ui::Box* m_selectionOptionsBox;

@@ -47,7 +47,7 @@ ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
 {
   this->setFocusStop(true);
 
-  setFont(static_cast<SkinTheme*>(getTheme())->getMiniFont());
+  setup_mini_font(this);
 }
 
 ColorButton::~ColorButton()

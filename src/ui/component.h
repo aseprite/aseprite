@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,10 +27,10 @@ namespace ui {
     Component();
     virtual ~Component();
 
-    PropertyPtr getProperty(const std::string& name);
+    PropertyPtr getProperty(const std::string& name) const;
     void setProperty(PropertyPtr property);
 
-    bool hasProperty(const std::string& name);
+    bool hasProperty(const std::string& name) const;
     void removeProperty(const std::string& name);
 
     const Properties& getProperties() const;

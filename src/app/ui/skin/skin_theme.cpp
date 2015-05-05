@@ -627,6 +627,15 @@ she::Surface* SkinTheme::sliceSheet(she::Surface* sur, const gfx::Rect& bounds)
   return sur;
 }
 
+she::Font* SkinTheme::getWidgetFont(const Widget* widget) const
+{
+  SkinPropertyPtr skinPropery = widget->getProperty(SkinProperty::Name);
+  if (skinPropery && skinPropery->hasMiniFont())
+    return getMiniFont();
+  else
+    return getDefaultFont();
+}
+
 Cursor* SkinTheme::getCursor(CursorType type)
 {
   if (type == kNoCursor) {

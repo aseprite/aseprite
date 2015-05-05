@@ -38,6 +38,9 @@ namespace app {
       LookType getLook() const { return m_look; }
       void setLook(LookType look) { m_look = look; }
 
+      bool hasMiniFont() const { return m_miniFont; }
+      void setMiniFont() { m_miniFont = true; }
+
       int getUpperLeft() const { return m_upperLeft; }
       int getUpperRight() const { return m_upperRight; }
       int getLowerLeft() const { return m_lowerLeft; }
@@ -50,6 +53,7 @@ namespace app {
 
     private:
       LookType m_look;
+      bool m_miniFont;
       int m_upperLeft;
       int m_upperRight;
       int m_lowerLeft;

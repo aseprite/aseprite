@@ -80,7 +80,7 @@ Widget::Widget(WidgetType type)
   this->m_theme = CurrentTheme::get();
 
   this->m_align = 0;
-  this->m_font = (this->m_theme ? this->m_theme->getDefaultFont(): nullptr);
+  this->m_font = nullptr;
   this->m_bgColor = gfx::ColorNone;
 
   m_preferredSize = NULL;
@@ -167,13 +167,16 @@ void Widget::setTextQuiet(const std::string& text)
 
 she::Font* Widget::getFont() const
 {
+  if (!m_font) {
+    ASSERT(m_theme);
+    m_font = m_theme->getWidgetFont(this);
+  }
   return m_font;
 }
 
-void Widget::setFont(she::Font* font)
+void Widget::resetFont()
 {
-  m_font = font;
-  invalidate();
+  m_font = nullptr;
 }
 
 void Widget::setBgColor(gfx::Color color)
@@ -185,9 +188,7 @@ void Widget::setBgColor(gfx::Color color)
 void Widget::setTheme(Theme* theme)
 {
   m_theme = theme;
-
-  // TODO maybe some Style in Widget should be great
-  setFont(m_theme ? m_theme->getDefaultFont(): nullptr);
+  m_font = nullptr;
 }
 
 // ===============================================================

@@ -281,7 +281,8 @@ void save_window_pos(Widget* window, const char *section)
 
 Widget* setup_mini_font(Widget* widget)
 {
-  widget->setFont(((SkinTheme*)widget->getTheme())->getMiniFont());
+  SkinPropertyPtr skinProp = get_skin_property(widget);
+  skinProp->setMiniFont();
   return widget;
 }
 

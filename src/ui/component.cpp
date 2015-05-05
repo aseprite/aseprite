@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,9 +22,9 @@ Component::~Component()
 {
 }
 
-PropertyPtr Component::getProperty(const std::string& name)
+PropertyPtr Component::getProperty(const std::string& name) const
 {
-  Properties::iterator it = m_properties.find(name);
+  auto it = m_properties.find(name);
   if (it != m_properties.end())
     return it->second;
   else
@@ -36,10 +36,9 @@ void Component::setProperty(PropertyPtr property)
   m_properties[property->getName()] = property;
 }
 
-bool Component::hasProperty(const std::string& name)
+bool Component::hasProperty(const std::string& name) const
 {
-  Properties::iterator it = m_properties.find(name);
-  return it != m_properties.end();
+  return (m_properties.find(name) != m_properties.end());
 }
 
 void Component::removeProperty(const std::string& name)

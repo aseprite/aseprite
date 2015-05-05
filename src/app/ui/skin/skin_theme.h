@@ -47,40 +47,41 @@ namespace app {
       SkinTheme();
       ~SkinTheme();
 
-      she::Font* getDefaultFont() const { return m_defaultFont; }
+      she::Font* getDefaultFont() const override { return m_defaultFont; }
+      she::Font* getWidgetFont(const ui::Widget* widget) const override;
       she::Font* getMiniFont() const { return m_miniFont; }
 
-      ui::Cursor* getCursor(ui::CursorType type);
-      void initWidget(ui::Widget* widget);
-      void getWindowMask(ui::Widget* widget, gfx::Region& region);
-      void setDecorativeWidgetBounds(ui::Widget* widget);
+      ui::Cursor* getCursor(ui::CursorType type) override;
+      void initWidget(ui::Widget* widget) override;
+      void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
+      void setDecorativeWidgetBounds(ui::Widget* widget) override;
 
-      void paintDesktop(ui::PaintEvent& ev);
-      void paintBox(ui::PaintEvent& ev);
-      void paintButton(ui::PaintEvent& ev);
-      void paintCheckBox(ui::PaintEvent& ev);
-      void paintEntry(ui::PaintEvent& ev);
-      void paintGrid(ui::PaintEvent& ev);
-      void paintLabel(ui::PaintEvent& ev);
-      void paintLinkLabel(ui::PaintEvent& ev);
-      void paintListBox(ui::PaintEvent& ev);
-      void paintListItem(ui::PaintEvent& ev);
-      void paintMenu(ui::PaintEvent& ev);
-      void paintMenuItem(ui::PaintEvent& ev);
-      void paintSplitter(ui::PaintEvent& ev);
-      void paintRadioButton(ui::PaintEvent& ev);
-      void paintSeparator(ui::PaintEvent& ev);
-      void paintSlider(ui::PaintEvent& ev);
-      void paintComboBoxEntry(ui::PaintEvent& ev);
-      void paintComboBoxButton(ui::PaintEvent& ev);
-      void paintTextBox(ui::PaintEvent& ev);
-      void paintView(ui::PaintEvent& ev);
-      void paintViewScrollbar(ui::PaintEvent& ev);
-      void paintViewViewport(ui::PaintEvent& ev);
-      void paintWindow(ui::PaintEvent& ev);
-      void paintPopupWindow(ui::PaintEvent& ev);
+      void paintDesktop(ui::PaintEvent& ev) override;
+      void paintBox(ui::PaintEvent& ev) override;
+      void paintButton(ui::PaintEvent& ev) override;
+      void paintCheckBox(ui::PaintEvent& ev) override;
+      void paintEntry(ui::PaintEvent& ev) override;
+      void paintGrid(ui::PaintEvent& ev) override;
+      void paintLabel(ui::PaintEvent& ev) override;
+      void paintLinkLabel(ui::PaintEvent& ev) override;
+      void paintListBox(ui::PaintEvent& ev) override;
+      void paintListItem(ui::PaintEvent& ev) override;
+      void paintMenu(ui::PaintEvent& ev) override;
+      void paintMenuItem(ui::PaintEvent& ev) override;
+      void paintSplitter(ui::PaintEvent& ev) override;
+      void paintRadioButton(ui::PaintEvent& ev) override;
+      void paintSeparator(ui::PaintEvent& ev) override;
+      void paintSlider(ui::PaintEvent& ev) override;
+      void paintComboBoxEntry(ui::PaintEvent& ev) override;
+      void paintComboBoxButton(ui::PaintEvent& ev) override;
+      void paintTextBox(ui::PaintEvent& ev) override;
+      void paintView(ui::PaintEvent& ev) override;
+      void paintViewScrollbar(ui::PaintEvent& ev) override;
+      void paintViewViewport(ui::PaintEvent& ev) override;
+      void paintWindow(ui::PaintEvent& ev) override;
+      void paintPopupWindow(ui::PaintEvent& ev) override;
+      void paintTooltip(ui::PaintEvent& ev) override;
       void paintWindowButton(ui::PaintEvent& ev);
-      void paintTooltip(ui::PaintEvent& ev);
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 

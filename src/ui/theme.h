@@ -39,6 +39,7 @@ namespace ui {
     void setScale(int value) { m_guiscale = value; }
 
     virtual she::Font* getDefaultFont() const = 0;
+    virtual she::Font* getWidgetFont(const Widget* widget) const = 0;
 
     virtual Cursor* getCursor(CursorType type) = 0;
     virtual void initWidget(Widget* widget) = 0;

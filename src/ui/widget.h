@@ -142,7 +142,7 @@ namespace ui {
     // ===============================================================
 
     she::Font* getFont() const;
-    void setFont(she::Font* font);
+    void resetFont();
 
     // Gets the background color of the widget.
     gfx::Color getBgColor() const {
@@ -382,7 +382,7 @@ namespace ui {
     Theme* m_theme;              // Widget's theme
     int m_align;                 // Widget alignment
     std::string m_text;          // Widget text
-    she::Font* m_font;           // Text font type
+    mutable she::Font* m_font;   // Cached font returned by the theme
     gfx::Color m_bgColor;        // Background color
     gfx::Rect m_bounds;
     gfx::Region m_updateRegion;   // Region to be redrawed.

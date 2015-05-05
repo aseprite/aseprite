@@ -651,7 +651,6 @@ public:
   }
 
 protected:
-
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
@@ -804,15 +803,16 @@ ContextBar::ContextBar()
   // addChild(new InkSelectionField());
 
   addChild(m_sprayBox = new HBox());
-  m_sprayBox->addChild(setup_mini_font(new Label("Spray:")));
+  m_sprayBox->addChild(m_sprayLabel = new Label("Spray:"));
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
+  setup_mini_font(m_sprayLabel);
+
   addChild(m_freehandBox = new HBox());
 #if 0                           // TODO for v1.1
-  Label* freehandLabel;
-  m_freehandBox->addChild(freehandLabel = new Label("Freehand:"));
-  setup_mini_font(freehandLabel);
+  m_freehandBox->addChild(m_freehandLabel = new Label("Freehand:"));
+  setup_mini_font(m_freehandLabel);
 #endif
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
@@ -854,11 +854,6 @@ ContextBar::~ContextBar()
 {
   if (m_toolSettings)
     m_toolSettings->removeObserver(this);
-}
-
-bool ContextBar::onProcessMessage(Message* msg)
-{
-  return Box::onProcessMessage(msg);
 }
 
 void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
