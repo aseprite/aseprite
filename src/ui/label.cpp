@@ -8,6 +8,7 @@
 #include "config.h"
 #endif
 
+#include "she/font.h"
 #include "ui/label.h"
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
@@ -27,8 +28,11 @@ void Label::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Size sz(0, 0);
 
-  if (hasText())
-    sz = getTextSize();
+  if (hasText()) {
+    // Labels are not UIString
+    sz.w = getFont()->textLength(getText().c_str());
+    sz.h = getTextHeight();
+  }
 
   sz.w += this->border_width.l + this->border_width.r;
   sz.h += this->border_width.t + this->border_width.b;

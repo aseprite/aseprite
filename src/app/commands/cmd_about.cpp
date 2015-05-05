@@ -40,13 +40,13 @@ void AboutCommand::onExecute(Context* context)
   Box* box1 = new Box(JI_VERTICAL);
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
-  Label* subtitle = new Label("Animated sprite editor && pixel art tool");
+  Label* subtitle = new Label("Animated sprite editor & pixel art tool");
   Separator* authors_separator1 = new Separator("Authors:", JI_HORIZONTAL | JI_TOP);
   Separator* authors_separator2 = new Separator("", JI_HORIZONTAL);
   Label* author1 = new LinkLabel("http://davidcapello.com/", "David Capello");
-  Label* author1_desc = new Label("- Lead developer, graphics && maintainer");
+  Label* author1_desc = new Label("- Lead developer, graphics & maintainer");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
-  Label* author2_desc = new Label("- Default skin && graphics introduced in v0.8");
+  Label* author2_desc = new Label("- Default skin & graphics introduced in v0.8");
   Label* author3 = new LinkLabel(WEBSITE_CONTRIBUTORS, "Contributors");
   Box* bottom_box1 = new Box(JI_HORIZONTAL);
   Box* bottom_box2 = new Box(JI_HORIZONTAL);
