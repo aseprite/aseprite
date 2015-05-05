@@ -267,19 +267,28 @@ void Editor::setLayer(const Layer* layer)
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
 
+  // The active layer has changed.
+  if (isActive())
+    UIContext::instance()->notifyActiveSiteChanged();
+
   updateStatusBar();
 }
 
 void Editor::setFrame(frame_t frame)
 {
-  if (m_frame != frame) {
-    m_observers.notifyBeforeFrameChanged(this);
-    m_frame = frame;
-    m_observers.notifyAfterFrameChanged(this);
+  if (m_frame == frame)
+    return;
 
-    invalidate();
-    updateStatusBar();
-  }
+  m_observers.notifyBeforeFrameChanged(this);
+  m_frame = frame;
+  m_observers.notifyAfterFrameChanged(this);
+
+  // The active frame has changed.
+  if (isActive())
+    UIContext::instance()->notifyActiveSiteChanged();
+
+  invalidate();
+  updateStatusBar();
 }
 
 void Editor::getSite(Site* site) const

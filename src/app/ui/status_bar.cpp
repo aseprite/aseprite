@@ -197,10 +197,13 @@ StatusBar::StatusBar()
   tooltipManager->addTooltipFor(m_slider, "Cel Opacity", JI_BOTTOM);
 
   App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
+  UIContext::instance()->addObserver(this);
 }
 
 StatusBar::~StatusBar()
 {
+  UIContext::instance()->removeObserver(this);
+
   delete m_tipwindow;           // widget
   delete m_commandsBox;
 }
@@ -223,9 +226,6 @@ void StatusBar::clearText()
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
 {
-  // TODO this call should be in an observer of the "current frame" property changes.
-  updateCurrentFrame(current_editor);
-
   if ((ui::clock() > m_timeout) || (msecs > 0)) {
     char buf[256];              // TODO warning buffer overflow
     va_list ap;
@@ -408,12 +408,6 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   }
 }
 
-void StatusBar::updateUsingEditor(Editor* editor)
-{
-  updateFromDocument(editor);
-  updateCurrentFrame(editor);
-}
-
 bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -452,50 +446,40 @@ void StatusBar::onCelOpacityChange()
   }
 }
 
-void StatusBar::updateFromDocument(Editor* editor)
+void StatusBar::onActiveSiteChange(const doc::Site& site)
 {
-  try {
-    if (editor && editor->document()) {
-      const DocumentReader reader(editor->document(), 100);
-      m_hasDoc = true;
-      m_commandsBox->setVisible(true);
+  if (site.document() && site.sprite()) {
+    m_hasDoc = true;
+    m_commandsBox->setVisible(true);
 
-      // Cel opacity
-      const Cel* cel;
-      if (editor->sprite()->supportAlpha() &&
-          editor->layer() &&
-          editor->layer()->isImage() &&
-          !editor->layer()->isBackground() &&
-          (cel = editor->layer()->cel(editor->frame()))) {
-        m_slider->setValue(MID(0, cel->opacity(), 255));
-        m_slider->setEnabled(true);
-      }
-      else {
-        m_slider->setValue(255);
-        m_slider->setEnabled(false);
-      }
+    // Current frame
+    m_currentFrame->setTextf("%d", site.frame()+1);
+
+    // Cel opacity
+    const Cel* cel;
+    if (site.sprite()->supportAlpha() &&
+        site.layer() &&
+        site.layer()->isImage() &&
+        !site.layer()->isBackground() &&
+        (cel = site.layer()->cel(site.frame()))) {
+      m_slider->setValue(MID(0, cel->opacity(), 255));
+      m_slider->setEnabled(true);
     }
     else {
-      m_hasDoc = false;
-      m_commandsBox->setVisible(false);
+      m_slider->setValue(255);
+      m_slider->setEnabled(false);
     }
   }
-  catch (const LockedDocumentException&) {
-    m_slider->setEnabled(false);
+  else {
+    m_hasDoc = false;
+    m_commandsBox->setVisible(false);
   }
-}
-
-void StatusBar::updateCurrentFrame(Editor* editor)
-{
-  if (editor && editor->sprite())
-    m_currentFrame->setTextf("%d", editor->frame()+1);
 }
 
 void StatusBar::newFrame()
 {
   Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
   UIContext::instance()->executeCommand(cmd);
-  updateCurrentFrame(current_editor);
 }
 
 } // namespace app

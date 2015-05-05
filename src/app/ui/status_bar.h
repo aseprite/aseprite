@@ -11,6 +11,7 @@
 
 #include "app/color.h"
 #include "base/observers.h"
+#include "doc/context_observer.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/widget.h"
@@ -36,7 +37,8 @@ namespace app {
     class Tool;
   }
 
-  class StatusBar : public ui::Widget {
+  class StatusBar : public ui::Widget
+                  , public doc::ContextObserver {
     static StatusBar* m_instance;
   public:
     static StatusBar* instance() { return m_instance; }
@@ -51,18 +53,17 @@ namespace app {
     void showColor(int msecs, const char* text, const Color& color, int alpha);
     void showTool(int msecs, tools::Tool* tool);
 
-    void updateUsingEditor(Editor* editor);
-
   protected:
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
 
+    // ContextObserver impl
+    void onActiveSiteChange(const doc::Site& site) override;
+
   private:
     void onCurrentToolChange();
     void onCelOpacityChange();
-    void updateFromDocument(Editor* editor);
-    void updateCurrentFrame(Editor* editor);
     void newFrame();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
