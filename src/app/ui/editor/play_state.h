@@ -36,6 +36,7 @@ namespace app {
     void onBeforeCommandExecution(Command* command);
 
     Editor* m_editor;
+    bool m_toScroll;
     ui::Timer m_playTimer;
 
     // Number of milliseconds to go to the next frame if m_playTimer

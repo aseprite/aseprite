@@ -26,10 +26,14 @@ namespace app {
 using namespace ui;
 
 PlayState::PlayState()
-  : m_playTimer(10)
+  : m_editor(nullptr)
+  , m_toScroll(false)
+  , m_playTimer(10)
   , m_nextFrameTime(-1)
   , m_pingPongForward(true)
 {
+  m_playTimer.Tick.connect(&PlayState::onPlaybackTick, this);
+
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can stop the animation.
   m_ctxConn = UIContext::instance()->BeforeCommandExecution.connect(
@@ -40,20 +44,31 @@ void PlayState::onAfterChangeState(Editor* editor)
 {
   StateWithWheelBehavior::onAfterChangeState(editor);
 
-  m_editor = editor;
+  if (!m_editor) {
+    m_editor = editor;
+    m_refFrame = editor->frame();
+  }
+
+  m_toScroll = false;
   m_nextFrameTime = editor->sprite()->frameDuration(editor->frame());
   m_curFrameTick = ui::clock();
   m_pingPongForward = true;
-  m_refFrame = editor->frame();
 
-  m_playTimer.Tick.connect(&PlayState::onPlaybackTick, this);
-  m_playTimer.start();
+  // Maybe we came from ScrollingState and the timer is already
+  // running.
+  if (!m_playTimer.isRunning())
+    m_playTimer.start();
 }
 
 EditorState::BeforeChangeAction PlayState::onBeforeChangeState(Editor* editor, EditorState* newState)
 {
-  m_editor->setFrame(m_refFrame);
-  m_playTimer.stop();
+  if (!m_toScroll) {
+    m_editor->setFrame(m_refFrame);
+
+    // We don't stop the timer if we are going to the ScrollingState
+    // (we keep playing the animation).
+    m_playTimer.stop();
+  }
   return KeepState;
 }
 
@@ -71,6 +86,10 @@ bool PlayState::onMouseDown(Editor* editor, MouseMessage* msg)
     editor->stop();
     return true;
   }
+
+  // Set this flag to indicate that we are going to ScrollingState for
+  // some time, so we don't change the current frame.
+  m_toScroll = true;
 
   // Start scroll loop
   EditorStatePtr newState(new ScrollingState());
