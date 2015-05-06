@@ -436,7 +436,9 @@ bool ComboBoxEntry::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (m_comboBox->isClickOpen()) {
+      if (m_comboBox->isClickOpen() &&
+          (!m_comboBox->isEditable() ||
+           !m_comboBox->m_items.empty())) {
         m_comboBox->switchListBox();
       }
 
