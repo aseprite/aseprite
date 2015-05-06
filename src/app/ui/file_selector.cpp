@@ -167,6 +167,50 @@ public:
   }
 };
 
+// We have this dummy/hidden widget only to handle special navigation
+// with arrow keys. In the past this code was in the same FileSelector
+// itself, but there were problems adding that window as a message
+// filter. Mainly there is a special combination of widgets
+// (comboboxes) that need to filter Esc key (e.g. to close the
+// combobox popup). And we cannot pre-add a filter that send that key
+// to the Manager before it's processed by the combobox filter.
+class ArrowNavigator : public Widget {
+public:
+  ArrowNavigator(FileSelector* filesel)
+    : Widget(kGenericWidget)
+    , m_filesel(filesel) {
+    setVisible(false);
+  }
+
+protected:
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+      case kOpenMessage:
+        getManager()->addMessageFilter(kKeyDownMessage, this);
+        break;
+      case kCloseMessage:
+        getManager()->removeMessageFilter(kKeyDownMessage, this);
+        break;
+      case kKeyDownMessage:
+        if (msg->ctrlPressed() || msg->cmdPressed()) {
+          KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+          KeyScancode scancode = keyMsg->scancode();
+          switch (scancode) {
+            case kKeyUp: m_filesel->goUp(); return true;
+            case kKeyLeft: m_filesel->goBack(); return true;
+            case kKeyRight: m_filesel->goForward(); return true;
+            case kKeyDown: m_filesel->goInsideFolder(); return true;
+          }
+        }
+        return false;
+    }
+    return Widget::onProcessMessage(msg);
+  }
+
+private:
+  FileSelector* m_filesel;
+};
+
 FileSelector::FileSelector()
   : Window(WithTitleBar, "")
   , m_navigationLocked(false)
@@ -177,6 +221,7 @@ FileSelector::FileSelector()
   // Load the main widget.
   Box* box = loader.loadWidgetT<Box>("file_selector.xml", "main");
   addChild(box);
+  addChild(new ArrowNavigator(this));
 
   View* view;
   app::finder(this)
@@ -234,13 +279,30 @@ FileSelector::FileSelector()
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
   m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
-
-  getManager()->addMessageFilter(kKeyDownMessage, this);
 }
 
-FileSelector::~FileSelector()
+void FileSelector::goBack()
 {
-  getManager()->removeMessageFilter(kKeyDownMessage, this);
+  onGoBack();
+}
+
+void FileSelector::goForward()
+{
+  onGoForward();
+}
+
+void FileSelector::goUp()
+{
+  onGoUp();
+}
+
+void FileSelector::goInsideFolder()
+{
+  if (m_fileList->getSelectedFileItem() &&
+      m_fileList->getSelectedFileItem()->isBrowsable()) {
+    m_fileList->setCurrentFolder(
+      m_fileList->getSelectedFileItem());
+  }
 }
 
 std::string FileSelector::show(const std::string& title,
@@ -440,31 +502,6 @@ again:
   }
 
   return result;
-}
-
-bool FileSelector::onProcessMessage(ui::Message* msg)
-{
-  switch (msg->type()) {
-    case kKeyDownMessage:
-      if (msg->ctrlPressed() || msg->cmdPressed()) {
-        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
-        KeyScancode scancode = keyMsg->scancode();
-        switch (scancode) {
-          case kKeyUp: onGoUp(); return true;
-          case kKeyLeft: onGoBack(); return true;
-          case kKeyRight: onGoForward(); return true;
-          case kKeyDown:
-            if (m_fileList->getSelectedFileItem() &&
-                m_fileList->getSelectedFileItem()->isBrowsable()) {
-              m_fileList->setCurrentFolder(
-                m_fileList->getSelectedFileItem());
-            }
-            return true;
-        }
-      }
-      break;
-  }
-  return Window::onProcessMessage(msg);
 }
 
 // Updates the content of the combo-box that shows the current

@@ -28,15 +28,16 @@ namespace app {
   class FileSelector : public ui::Window {
   public:
     FileSelector();
-    ~FileSelector();
+
+    void goBack();
+    void goForward();
+    void goUp();
+    void goInsideFolder();
 
     // Shows the dialog to select a file in the program.
     std::string show(const std::string& title,
       const std::string& initialPath,
       const std::string& showExtensions);
-
-  protected:
-    bool onProcessMessage(ui::Message* msg) override;
 
   private:
     void updateLocation();

@@ -338,6 +338,19 @@ bool ComboBox::onProcessMessage(Message* msg)
         m_window->moveWindow(getListBoxPos());
       break;
 
+    case kKeyDownMessage:
+      if (m_window) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keymsg->scancode();
+
+        // If the popup is opened
+        if (scancode == kKeyEsc) {
+          closeListBox();
+          return true;
+        }
+      }
+      break;
+
     case kMouseDownMessage:
       if (m_window) {
         if (!View::getView(m_listbox)->hasMouse()) {
@@ -577,10 +590,10 @@ void ComboBox::openListBox()
 
   gfx::Rect rc = getListBoxPos();
   m_window->positionWindow(rc.x, rc.y);
+  m_window->openWindow();
 
   getManager()->addMessageFilter(kMouseDownMessage, this);
-
-  m_window->openWindow();
+  getManager()->addMessageFilter(kKeyDownMessage, this);
 
   if (isEditable())
     m_entry->requestFocus();
@@ -601,6 +614,7 @@ void ComboBox::closeListBox()
     m_listbox = nullptr;
 
     getManager()->removeMessageFilter(kMouseDownMessage, this);
+    getManager()->removeMessageFilter(kKeyDownMessage, this);
     m_entry->requestFocus();
 
     onCloseListBox();
