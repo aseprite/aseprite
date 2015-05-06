@@ -67,6 +67,16 @@ bool PopupWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
+    // There are cases where startFilteringMessages() is called when a
+    // kCloseMessage for this same PopupWindow is enqueued. Processing
+    // the kOpenMessage we ensure that the popup will be filtering
+    // messages if it's needed when it's visible (as kCloseMessage and
+    // kOpenMessage must be enqueued in the correct order).
+    case kOpenMessage:
+      if (!isMoveable())
+        startFilteringMessages();
+      break;
+
     case kCloseMessage:
       stopFilteringMessages();
       break;
@@ -80,7 +90,7 @@ bool PopupWindow::onProcessMessage(Message* msg)
       if (m_filtering) {
         KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keymsg->scancode();
-        
+
         if (scancode == kKeyEsc ||
             scancode == kKeyEnter ||
             scancode == kKeyEnterPad) {
