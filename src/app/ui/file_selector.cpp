@@ -191,18 +191,41 @@ protected:
       case kCloseMessage:
         getManager()->removeMessageFilter(kKeyDownMessage, this);
         break;
-      case kKeyDownMessage:
-        if (msg->ctrlPressed() || msg->cmdPressed()) {
-          KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
-          KeyScancode scancode = keyMsg->scancode();
-          switch (scancode) {
-            case kKeyUp: m_filesel->goUp(); return true;
-            case kKeyLeft: m_filesel->goBack(); return true;
-            case kKeyRight: m_filesel->goForward(); return true;
-            case kKeyDown: m_filesel->goInsideFolder(); return true;
-          }
+      case kKeyDownMessage: {
+        KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
+        KeyScancode scancode = keyMsg->scancode();
+        int unicode = keyMsg->unicodeChar();
+
+#ifdef __APPLE__
+        bool up = (msg->cmdPressed() && scancode == kKeyUp);
+        bool enter = (msg->cmdPressed() && scancode == kKeyDown);
+        bool back = (msg->cmdPressed() && msg->shiftPressed() && unicode == '[');
+        bool forward = (msg->cmdPressed() && msg->shiftPressed() && unicode == ']');
+#else
+        bool up = (msg->altPressed() && scancode == kKeyUp);
+        bool enter = (msg->altPressed() && scancode == kKeyDown);
+        bool back = (msg->altPressed() && scancode == kKeyLeft);
+        bool forward = (msg->altPressed() && scancode == kKeyRight);
+#endif
+
+        if (up) {
+          m_filesel->goUp();
+          return true;
+        }
+        if (enter) {
+          m_filesel->goInsideFolder();
+          return true;
+        }
+        if (back) {
+          m_filesel->goBack();
+          return true;
+        }
+        if (forward) {
+          m_filesel->goForward();
+          return true;
         }
         return false;
+      }
     }
     return Widget::onProcessMessage(msg);
   }
