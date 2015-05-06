@@ -48,15 +48,8 @@ public:
     , m_keyOrig(key ? new Key(*key): NULL)
     , m_menuitem(menuitem)
     , m_level(level)
-    , m_changeButton(NULL)
-    , m_deleteButton(NULL)
-    , m_addButton(NULL)
     , m_hotAccel(-1) {
     this->border_width.t = this->border_width.b = 0;
-  }
-
-  ~KeyItem() {
-    destroyButtons();
   }
 
   void restoreKeys() {
@@ -176,7 +169,6 @@ private:
 
   void onResize(ResizeEvent& ev) override {
     ListItem::onResize(ev);
-
     destroyButtons();
   }
 
@@ -184,7 +176,6 @@ private:
     switch (msg->type()) {
 
       case kMouseLeaveMessage: {
-        m_hotAccel = -1;
         destroyButtons();
         invalidate();
         break;
@@ -205,32 +196,29 @@ private:
             (accels && i < (int)accels->size() ? (*accels)[i].toString().c_str(): ""),
             getFont());
           gfx::Rect itemBounds(bounds.x + g_sep, y, w, dh);
+          itemBounds = itemBounds.enlarge(
+            gfx::Border(
+              4*guiscale(), 0,
+              6*guiscale(), 1*guiscale()));
 
-          if (mouseMsg->position().y >= bounds.y &&
-              mouseMsg->position().y < bounds.y+bounds.h) {
-            itemBounds = itemBounds.enlarge(
-              gfx::Border(
-                4*guiscale(), 0,
-                6*guiscale(), 1*guiscale()));
+          if (accels &&
+              i < (int)accels->size() &&
+              mouseMsg->position().y >= itemBounds.y &&
+              mouseMsg->position().y < itemBounds.y+itemBounds.h) {
+            hotAccel = i;
 
-            if (accels && i < (int)accels->size() &&
-                mouseMsg->position().y >= itemBounds.y &&
-                mouseMsg->position().y < itemBounds.y+itemBounds.h) {
-              hotAccel = i;
+            if (m_hotAccel != i) {
+              m_hotAccel = i;
 
-              if (!m_changeButton) {
-                m_changeButton = new Button("");
-                m_changeButton->Click.connect(Bind<void>(&KeyItem::onChangeAccel, this, i));
-                setup_mini_look(m_changeButton);
-                addChild(m_changeButton);
-              }
+              m_changeButton.reset(new Button(""));
+              m_changeButton->Click.connect(Bind<void>(&KeyItem::onChangeAccel, this, i));
+              setup_mini_look(m_changeButton.get());
+              addChild(m_changeButton.get());
 
-              if (!m_deleteButton) {
-                m_deleteButton = new Button("");
-                m_deleteButton->Click.connect(Bind<void>(&KeyItem::onDeleteAccel, this, i));
-                setup_mini_look(m_deleteButton);
-                addChild(m_deleteButton);
-              }
+              m_deleteButton.reset(new Button(""));
+              m_deleteButton->Click.connect(Bind<void>(&KeyItem::onDeleteAccel, this, i));
+              setup_mini_look(m_deleteButton.get());
+              addChild(m_deleteButton.get());
 
               m_changeButton->setBgColor(gfx::ColorNone);
               m_changeButton->setBounds(itemBounds);
@@ -239,41 +227,33 @@ private:
               const char* label = "x";
               m_deleteButton->setBgColor(gfx::ColorNone);
               m_deleteButton->setBounds(gfx::Rect(
-                  itemBounds.x + itemBounds.w + 2*guiscale(),
-                  itemBounds.y,
-                  Graphics::measureUIStringLength(
-                    label, getFont()) + 4*guiscale(),
-                  itemBounds.h));
+                                          itemBounds.x + itemBounds.w + 2*guiscale(),
+                                          itemBounds.y,
+                                          Graphics::measureUIStringLength(
+                                            label, getFont()) + 4*guiscale(),
+                                          itemBounds.h));
               m_deleteButton->setText(label);
 
               invalidate();
             }
-
-            if (i == 0 && (!m_menuitem || m_menuitem->getCommand())) {
-              if (!m_addButton) {
-                m_addButton = new Button("");
-                m_addButton->Click.connect(Bind<void>(&KeyItem::onAddAccel, this));
-                setup_mini_look(m_addButton);
-                addChild(m_addButton);
-              }
-
-              itemBounds.w = 8*guiscale() + Graphics::measureUIStringLength("Add", getFont());
-              itemBounds.x -= itemBounds.w + 2*guiscale();
-
-              m_addButton->setBgColor(gfx::ColorNone);
-              m_addButton->setBounds(itemBounds);
-              m_addButton->setText("Add");
-
-              invalidate();
-            }
           }
-        }
 
-        if (m_hotAccel != hotAccel) {
-          if (hotAccel == -1)
-            destroyButtons();
-          m_hotAccel = hotAccel;
-          invalidate();
+          if (i == 0 && !m_addButton &&
+              (!m_menuitem || m_menuitem->getCommand())) {
+            m_addButton.reset(new Button(""));
+            m_addButton->Click.connect(Bind<void>(&KeyItem::onAddAccel, this));
+            setup_mini_look(m_addButton.get());
+            addChild(m_addButton.get());
+
+            itemBounds.w = 8*guiscale() + Graphics::measureUIStringLength("Add", getFont());
+            itemBounds.x -= itemBounds.w + 2*guiscale();
+
+            m_addButton->setBgColor(gfx::ColorNone);
+            m_addButton->setBounds(itemBounds);
+            m_addButton->setText("Add");
+
+            invalidate();
+          }
         }
         break;
       }
@@ -282,12 +262,10 @@ private:
   }
 
   void destroyButtons() {
-    delete m_changeButton;
-    delete m_deleteButton;
-    delete m_addButton;
-    m_changeButton = NULL;
-    m_deleteButton = NULL;
-    m_addButton = NULL;
+    m_changeButton.reset();
+    m_deleteButton.reset();
+    m_addButton.reset();
+    m_hotAccel = -1;
   }
 
   Key* m_key;
@@ -295,9 +273,9 @@ private:
   AppMenuItem* m_menuitem;
   int m_level;
   ui::Accelerators m_newAccels;
-  ui::Button* m_changeButton;
-  ui::Button* m_deleteButton;
-  ui::Button* m_addButton;
+  base::SharedPtr<ui::Button> m_changeButton;
+  base::SharedPtr<ui::Button> m_deleteButton;
+  base::SharedPtr<ui::Button> m_addButton;
   int m_hotAccel;
 };
 
