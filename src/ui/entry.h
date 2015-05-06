@@ -70,6 +70,7 @@ namespace ui {
       Cut,
       Copy,
       Paste,
+      SelectAll,
     };
 
     int getCaretFromMouse(MouseMessage* mousemsg);

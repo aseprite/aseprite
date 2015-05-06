@@ -277,6 +277,7 @@ bool Entry::onProcessMessage(Message* msg)
                 case kKeyX: cmd = EntryCmd::Cut; break;
                 case kKeyC: cmd = EntryCmd::Copy; break;
                 case kKeyV: cmd = EntryCmd::Paste; break;
+                case kKeyA: cmd = EntryCmd::SelectAll; break;
               }
             }
             else if (getManager()->isFocusMovementKey(msg)) {
@@ -652,6 +653,10 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       }
 
       m_select = -1;
+      break;
+
+    case EntryCmd::SelectAll:
+      selectAllText();
       break;
   }
 
