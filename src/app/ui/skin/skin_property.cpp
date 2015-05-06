@@ -22,6 +22,7 @@ SkinProperty::SkinProperty()
   : Property(Name)
 {
   m_look = NormalLook;
+  m_miniFont = false;
   m_upperLeft = 0;
   m_upperRight = 0;
   m_lowerLeft = 0;
