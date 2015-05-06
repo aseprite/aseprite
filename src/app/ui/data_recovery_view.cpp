@@ -34,6 +34,8 @@ namespace app {
 using namespace ui;
 using namespace app::skin;
 
+namespace {
+
 class Item : public ListItem {
 public:
   Item(crash::Session* session, crash::Session::Backup* backup)
@@ -127,6 +129,8 @@ private:
   ui::Button m_openButton;
   ui::Button m_deleteButton;
 };
+
+} // anonymous namespace
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
   : Box(JI_VERTICAL)

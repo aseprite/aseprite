@@ -38,6 +38,8 @@ using namespace app::skin;
 using namespace doc;
 using namespace ui;
 
+namespace {
+
 class Item : public ButtonSet::Item {
 public:
   Item(BrushPopup* popup, BrushPopupDelegate* delegate, const BrushRef& brush, int slot = -1)
@@ -95,6 +97,8 @@ private:
   BrushRef m_brush;
   int m_slot;
 };
+
+} // anonymous namespace
 
 static BrushRef defBrushes[3];
 
