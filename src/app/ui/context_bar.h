@@ -57,6 +57,10 @@ namespace app {
     void setActiveBrushBySlot(int slot);
     doc::Brushes getBrushes();
 
+    void lockBrushSlot(int slot);
+    void unlockBrushSlot(int slot);
+    bool isBrushSlotLocked(int slot) const;
+
     static doc::BrushRef createBrushFromSettings(
       IBrushSettings* brushSettings = nullptr);
 

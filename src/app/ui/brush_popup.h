@@ -31,6 +31,9 @@ namespace app {
     virtual ~BrushPopupDelegate() { }
     virtual void onDeleteBrushSlot(int slot) = 0;
     virtual void onDeleteAllBrushes() = 0;
+    virtual bool onIsBrushSlotLocked(int slot) const = 0;
+    virtual void onLockBrushSlot(int slot) = 0;
+    virtual void onUnlockBrushSlot(int slot) = 0;
   };
 
   class BrushPopup : public ui::PopupWindow {

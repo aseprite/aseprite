@@ -113,6 +113,18 @@ protected:
     m_owner->removeAllBrushes();
   }
 
+  bool onIsBrushSlotLocked(int slot) const override {
+    return m_owner->isBrushSlotLocked(slot);
+  }
+
+  void onLockBrushSlot(int slot) override {
+    m_owner->lockBrushSlot(slot);
+  }
+
+  void onUnlockBrushSlot(int slot) override {
+    m_owner->unlockBrushSlot(slot);
+  }
+
 private:
   // Returns a little rectangle that can be used by the popup as the
   // first brush position.
@@ -1064,6 +1076,35 @@ Brushes ContextBar::getBrushes()
   for (const auto& slot : m_brushes)
     brushes.push_back(slot.brush);
   return brushes;
+}
+
+void ContextBar::lockBrushSlot(int slot)
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_brushes.size() &&
+      m_brushes[slot].brush) {
+    m_brushes[slot].locked = true;
+  }
+}
+
+void ContextBar::unlockBrushSlot(int slot)
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_brushes.size() &&
+      m_brushes[slot].brush) {
+    m_brushes[slot].locked = false;
+  }
+}
+
+bool ContextBar::isBrushSlotLocked(int slot) const
+{
+  --slot;
+  if (slot >= 0 && slot < (int)m_brushes.size() &&
+      m_brushes[slot].brush) {
+    return m_brushes[slot].locked;
+  }
+  else
+    return false;
 }
 
 void ContextBar::setActiveBrush(const doc::BrushRef& brush)

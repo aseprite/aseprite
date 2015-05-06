@@ -64,10 +64,13 @@ protected:
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
       if (mouseMsg->buttons() == kButtonRight) {
         Menu menu;
+        AppMenuItem lockItem(m_delegate->onIsBrushSlotLocked(m_slot) ? "Unlock Brush": "Lock Brush");
         AppMenuItem deleteItem("Delete");
         AppMenuItem deleteAllItem("Delete All");
+        lockItem.Click.connect(&Item::onLockBrush, this);
         deleteItem.Click.connect(&Item::onDeleteBrush, this);
         deleteAllItem.Click.connect(&Item::onDeleteAllBrushes, this);
+        menu.addChild(&lockItem);
         menu.addChild(&deleteItem);
         menu.addChild(new Separator("", JI_HORIZONTAL));
         menu.addChild(&deleteAllItem);
@@ -84,6 +87,13 @@ protected:
   }
 
 private:
+  void onLockBrush() {
+    if (m_delegate->onIsBrushSlotLocked(m_slot))
+      m_delegate->onUnlockBrushSlot(m_slot);
+    else
+      m_delegate->onLockBrushSlot(m_slot);
+  }
+
   void onDeleteBrush() {
     m_delegate->onDeleteBrushSlot(m_slot);
   }
