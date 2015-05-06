@@ -775,6 +775,9 @@ void FileSelector::onFileListCurrentFolderChanged()
 
   updateLocation();
   updateNavigationButtons();
+
+  // Close the autocomplete popup just in case it's open.
+  m_fileName->closeListBox();
 }
 
 } // namespace app
