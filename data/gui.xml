@@ -139,6 +139,9 @@
       <key command="ChangeBrush" shortcut="+">
         <param name="change" value="increment-size" />
       </key>
+      <key command="ChangeBrush" shortcut="="> <!-- As US keyboard layout needs Shift+'=' to do a '+' -->
+        <param name="change" value="increment-size" />
+      </key>
       <key command="ChangeBrush" shortcut="-">
         <param name="change" value="decrement-size" />
       </key>
