@@ -22,6 +22,7 @@ namespace app {
       name##_SW,             \
       name##_W
 
+    // TODO remove this enum, we use skin::Style now.
     // Available parts in the skin sheet
     enum SkinParts {
 
