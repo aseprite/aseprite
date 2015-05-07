@@ -53,8 +53,8 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
     else if (msg->right())
       zoom.out();
 
-    editor->setZoomAndCenterInMouse(zoom,
-      msg->position(), Editor::kCofiguredZoomBehavior);
+    editor->setZoomAndCenterInMouse(
+      zoom, msg->position(), Editor::ZoomBehavior::MOUSE);
   }
 
   editor->backToPreviousState();
@@ -71,8 +71,8 @@ bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
     scale = 1.0 / -(scale-2.0);
   zoom = render::Zoom::fromScale(scale);
 
-  editor->setZoomAndCenterInMouse(zoom,
-    m_startPos, Editor::kDontCenterOnZoom);
+  editor->setZoomAndCenterInMouse(
+    zoom, m_startPos, Editor::ZoomBehavior::MOUSE);
 
   m_moved = true;
   return true;

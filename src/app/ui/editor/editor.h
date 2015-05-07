@@ -72,10 +72,9 @@ namespace app {
         kShowOnionskin | kShowOutside | kShowDecorators),
     };
 
-    enum ZoomBehavior {
-      kCofiguredZoomBehavior,
-      kCenterOnZoom,
-      kDontCenterOnZoom,
+    enum class ZoomBehavior {
+      CENTER,                   // Zoom from center (don't change center of the editor)
+      MOUSE,                    // Zoom from cursor
     };
 
     Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);

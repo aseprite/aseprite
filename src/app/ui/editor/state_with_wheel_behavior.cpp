@@ -114,8 +114,9 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       }
 
       if (editor->zoom() != zoom) {
-        editor->setZoomAndCenterInMouse(zoom,
-          mouseMsg->position(), Editor::kDontCenterOnZoom);
+        editor->setZoomAndCenterInMouse(
+          zoom, mouseMsg->position(),
+          Editor::ZoomBehavior::CENTER);
       }
       break;
     }

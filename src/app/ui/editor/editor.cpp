@@ -347,8 +347,9 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
 
 void Editor::setEditorZoom(Zoom zoom)
 {
-  setZoomAndCenterInMouse(zoom,
-    ui::get_mouse_position(), Editor::kCofiguredZoomBehavior);
+  setZoomAndCenterInMouse(
+    zoom, ui::get_mouse_position(),
+    Editor::ZoomBehavior::CENTER);
 }
 
 void Editor::updateEditor()
@@ -1445,43 +1446,33 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-  bool centerMouse = false;
-
-  switch (zoomBehavior) {
-    case kCofiguredZoomBehavior:
-      centerMouse = UIContext::instance()->settings()->getCenterOnZoom();
-      break;
-    case kCenterOnZoom:
-      centerMouse = true;
-      break;
-    case kDontCenterOnZoom:
-      centerMouse = false;
-      break;
-  }
 
   hideDrawingCursor();
-  gfx::Point spritePos = screenToEditor(mousePos);
-  gfx::Point mid;
 
-  if (centerMouse) {
-    mid.x = vp.x+vp.w/2;
-    mid.y = vp.y+vp.h/2;
+  gfx::Point screenPos;
+  gfx::Point spritePos;
+  switch (zoomBehavior) {
+    case ZoomBehavior::CENTER:
+      screenPos = gfx::Point(vp.x + vp.w/2,
+                             vp.y + vp.h/2);
+      break;
+    case ZoomBehavior::MOUSE:
+      screenPos = mousePos;
+      break;
   }
-  else {
-    mid.x = mousePos.x;
-    mid.y = mousePos.y;
-  }
+  spritePos = screenToEditor(screenPos);
 
-  spritePos.x = m_offset_x - (mid.x - vp.x) + (zoom.apply(1)/2) + zoom.apply(spritePos.x);
-  spritePos.y = m_offset_y - (mid.y - vp.y) + (zoom.apply(1)/2) + zoom.apply(spritePos.y);
+  gfx::Point scrollPos(
+    m_offset_x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + zoom.apply(1)/2,
+    m_offset_y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + zoom.apply(1)/2);
 
-  if ((m_zoom != zoom) || (m_cursorEditor != mid)) {
+  if ((m_zoom != zoom) || (screenPos != view->getViewScroll())) {
     bool blit_valid_rgn = (m_zoom == zoom);
 
     m_zoom = zoom;
 
     updateEditor();
-    setEditorScroll(spritePos, blit_valid_rgn);
+    setEditorScroll(scrollPos, blit_valid_rgn);
   }
   showDrawingCursor();
 }
