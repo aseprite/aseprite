@@ -337,7 +337,8 @@ void Splitter::limitPos()
         m_pos = MID(0, m_pos, 100);
         break;
       case ByPixel:
-        m_pos = MID(0, m_pos, getBounds().w);
+        if (isVisible())
+          m_pos = MID(0, m_pos, getBounds().w);
         break;
     }
   }
@@ -347,7 +348,8 @@ void Splitter::limitPos()
         m_pos = MID(0, m_pos, 100);
         break;
       case ByPixel:
-        m_pos = MID(0, m_pos, getBounds().h);
+        if (isVisible())
+          m_pos = MID(0, m_pos, getBounds().h);
         break;
     }
   }
