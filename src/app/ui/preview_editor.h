@@ -36,6 +36,7 @@ namespace app {
   private:
     void onCenterClicked();
     void onPlayClicked();
+    void onPopupSpeed();
     void hideWindow();
 
     bool m_isEnabled;
@@ -43,6 +44,7 @@ namespace app {
     MiniCenterButton* m_centerButton;
     MiniPlayButton* m_playButton;
     doc::frame_t m_refFrame;
+    double m_aniSpeed;
   };
 
 } // namespace app

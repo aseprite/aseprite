@@ -47,9 +47,11 @@ namespace app {
     void setTriggerOnMouseUp(bool state);
 
     Signal0<void> ItemChange;
+    Signal1<void, Item*> RightClick;
 
   protected:
     virtual void onItemChange();
+    virtual void onRightClick(Item* item);
 
   private:
     Item* findSelectedItem() const;

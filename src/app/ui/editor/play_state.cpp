@@ -50,7 +50,7 @@ void PlayState::onAfterChangeState(Editor* editor)
   }
 
   m_toScroll = false;
-  m_nextFrameTime = editor->sprite()->frameDuration(editor->frame());
+  m_nextFrameTime = getNextFrameTime();
   m_curFrameTick = ui::clock();
   m_pingPongForward = true;
 
@@ -138,7 +138,7 @@ void PlayState::onPlaybackTick()
       m_pingPongForward);
 
     m_editor->setFrame(frame);
-    m_nextFrameTime += m_editor->sprite()->frameDuration(frame);
+    m_nextFrameTime += getNextFrameTime();
   }
 
   m_curFrameTick = ui::clock();
@@ -167,6 +167,13 @@ void PlayState::onBeforeCommandExecution(Command* command)
   }
 
   m_editor->stop();
+}
+
+double PlayState::getNextFrameTime()
+{
+  return
+    m_editor->sprite()->frameDuration(m_editor->frame())
+    / m_editor->getAnimationSpeedMultiplier(); // The "speed multiplier" is a "duration divider"
 }
 
 } // namespace app

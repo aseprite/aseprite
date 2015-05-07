@@ -24,6 +24,9 @@ namespace app {
 
     void updateUsingEditor(Editor* editor);
 
+  protected:
+    void onRightClick(Item* item) override;
+
   private:
     void onPlayButton();
   };

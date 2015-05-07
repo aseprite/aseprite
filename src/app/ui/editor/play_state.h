@@ -35,13 +35,15 @@ namespace app {
     // ContextObserver
     void onBeforeCommandExecution(Command* command);
 
+    double getNextFrameTime();
+
     Editor* m_editor;
     bool m_toScroll;
     ui::Timer m_playTimer;
 
     // Number of milliseconds to go to the next frame if m_playTimer
     // is activated.
-    int m_nextFrameTime;
+    double m_nextFrameTime;
     int m_curFrameTick;
 
     bool m_pingPongForward;

@@ -105,4 +105,12 @@ void AniControls::onPlayButton()
   }
 }
 
+void AniControls::onRightClick(Item* item)
+{
+  ButtonSet::onRightClick(item);
+
+  if (item == getItem(ACTION_PLAY) && current_editor)
+    current_editor->showAnimationSpeedMultiplierPopup();
+}
+
 } // namespace app

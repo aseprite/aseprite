@@ -102,6 +102,8 @@ public:
 
   bool isPlaying() const { return m_isPlaying; }
 
+  Signal0<void> Popup;
+
 protected:
   void onClick(Event& ev) override
   {
@@ -143,6 +145,20 @@ protected:
       case kSetCursorMessage:
         ui::set_mouse_cursor(kArrowCursor);
         return true;
+
+      case kMouseUpMessage: {
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        if (mouseMsg->right()) {
+          if (hasCapture()) {
+            releaseMouse();
+            Popup();
+
+            setSelected(false);
+            return true;
+          }
+        }
+        break;
+      }
     }
 
     return SkinButton<Button>::onProcessMessage(msg);
@@ -158,6 +174,7 @@ PreviewEditorWindow::PreviewEditorWindow()
   , m_centerButton(new MiniCenterButton())
   , m_playButton(new MiniPlayButton())
   , m_refFrame(0)
+  , m_aniSpeed(1.0)
 {
   child_spacing = 0;
   setAutoRemap(false);
@@ -167,6 +184,7 @@ PreviewEditorWindow::PreviewEditorWindow()
 
   m_centerButton->Click.connect(Bind<void>(&PreviewEditorWindow::onCenterClicked, this));
   m_playButton->Click.connect(Bind<void>(&PreviewEditorWindow::onPlayClicked, this));
+  m_playButton->Popup.connect(Bind<void>(&PreviewEditorWindow::onPopupSpeed, this));
 
   addChild(m_centerButton);
   addChild(m_playButton);
@@ -265,6 +283,16 @@ void PreviewEditorWindow::onPlayClicked()
     miniEditor->stop();
 }
 
+void PreviewEditorWindow::onPopupSpeed()
+{
+  Editor* miniEditor = (m_docView ? m_docView->getEditor(): nullptr);
+  if (!miniEditor || !miniEditor->document())
+    return;
+
+  miniEditor->showAnimationSpeedMultiplierPopup();
+  m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
+}
+
 void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 {
   if (!m_isEnabled || !editor) {
@@ -296,6 +324,7 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
     miniEditor->setLayer(editor->layer());
     miniEditor->setFrame(editor->frame());
     miniEditor->setState(EditorStatePtr(new NavigateState));
+    miniEditor->setAnimationSpeedMultiplier(m_aniSpeed);
     layout();
     center = true;
   }

@@ -194,6 +194,11 @@ namespace app {
     void stop();
     bool isPlaying() const;
 
+    // Shows a popup menu to change the editor animation speed.
+    void showAnimationSpeedMultiplierPopup();
+    double getAnimationSpeedMultiplier() const;
+    void setAnimationSpeedMultiplier(double speed);
+
     // Returns the buffer used to render editor viewports.
     // E.g. It can be re-used by PreviewCommand
     static ImageBufferPtr getRenderImageBuffer();
@@ -310,6 +315,9 @@ namespace app {
     EditorFlags m_flags;
 
     bool m_secondaryButton;
+
+    // Animation speed multiplier.
+    double m_aniSpeed;
 
     static doc::ImageBufferPtr m_renderBuffer;
     static AppRender m_renderEngine;

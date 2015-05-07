@@ -110,8 +110,10 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
       buttonSet()->setSelectedItem(this);
       invalidate();
 
-      if (!buttonSet()->m_triggerOnMouseUp)
+      if (static_cast<MouseMessage*>(msg)->left() &&
+          !buttonSet()->m_triggerOnMouseUp) {
         buttonSet()->onItemChange();
+      }
       break;
 
     case ui::kMouseUpMessage:
@@ -119,8 +121,13 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         releaseMouse();
         invalidate();
 
-        if (buttonSet()->m_triggerOnMouseUp)
-          buttonSet()->onItemChange();
+        if (static_cast<MouseMessage*>(msg)->left()) {
+          if (buttonSet()->m_triggerOnMouseUp)
+            buttonSet()->onItemChange();
+        }
+        else if (static_cast<MouseMessage*>(msg)->right()) {
+          buttonSet()->onRightClick(this);
+        }
       }
       break;
 
@@ -227,6 +234,11 @@ void ButtonSet::setTriggerOnMouseUp(bool state)
 void ButtonSet::onItemChange()
 {
   ItemChange();
+}
+
+void ButtonSet::onRightClick(Item* item)
+{
+  RightClick(item);
 }
 
 ButtonSet::Item* ButtonSet::findSelectedItem() const

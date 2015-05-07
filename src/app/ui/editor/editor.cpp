@@ -43,6 +43,7 @@
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
@@ -164,6 +165,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_docView(NULL)
   , m_flags(flags)
   , m_secondaryButton(false)
+  , m_aniSpeed(1.0)
 {
   // Add the first state into the history.
   m_statesHistory.push(m_state);
@@ -1559,6 +1561,31 @@ void Editor::stop()
 bool Editor::isPlaying() const
 {
   return (dynamic_cast<PlayState*>(m_state.get()) != nullptr);
+}
+
+void Editor::showAnimationSpeedMultiplierPopup()
+{
+  double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
+  Menu menu;
+
+  for (double option : options) {
+    MenuItem* item = new MenuItem("x" + base::convert_to<std::string>(option));
+    item->Click.connect(Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
+    item->setSelected(m_aniSpeed == option);
+    menu.addChild(item);
+  }
+
+  menu.showPopup(ui::get_mouse_position());
+}
+
+double Editor::getAnimationSpeedMultiplier() const
+{
+  return m_aniSpeed;
+}
+
+void Editor::setAnimationSpeedMultiplier(double speed)
+{
+  m_aniSpeed = speed;
 }
 
 // static
