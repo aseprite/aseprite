@@ -1451,6 +1451,8 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
 
   gfx::Point screenPos;
   gfx::Point spritePos;
+  gfx::PointT<double> subpixelPos(0.5, 0.5);
+
   switch (zoomBehavior) {
     case ZoomBehavior::CENTER:
       screenPos = gfx::Point(vp.x + vp.w/2,
@@ -1462,9 +1464,19 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
   }
   spritePos = screenToEditor(screenPos);
 
+  if (zoomBehavior == ZoomBehavior::MOUSE &&
+      m_zoom.scale() > 1.0) {
+    gfx::Point screenPos2 = editorToScreen(spritePos);
+    subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_zoom.scale();
+    subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_zoom.scale();
+
+    ASSERT(subpixelPos.x >= 0.0 && subpixelPos.x <= 1.0);
+    ASSERT(subpixelPos.y >= 0.0 && subpixelPos.y <= 1.0);
+  }
+
   gfx::Point scrollPos(
-    m_offset_x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + zoom.apply(1)/2,
-    m_offset_y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + zoom.apply(1)/2);
+    m_offset_x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.x)),
+    m_offset_y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
   if ((m_zoom != zoom) || (screenPos != view->getViewScroll())) {
     bool blit_valid_rgn = (m_zoom == zoom);
