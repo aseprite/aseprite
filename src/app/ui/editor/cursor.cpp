@@ -33,6 +33,7 @@
 #include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image.h"
+#include "doc/image_bits.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
 #include "doc/site.h"
@@ -55,12 +56,10 @@ using namespace ui;
 #define MAX_SAVED   4096
 
 static struct {
-  int brush_type;
-  int brush_size;
-  int brush_angle;
   int nseg;
   BoundSeg* seg;
-} cursor_bound = { 0, 0, 0, 0, NULL };
+  Image* brush_image;
+} cursor_bound = { 0, nullptr, nullptr };
 
 enum {
   CURSOR_THINCROSS   = 1,
@@ -83,7 +82,7 @@ static void generate_cursor_boundaries(Editor* editor);
 
 static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, Editor::PixelDelegate pixel);
 static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, int thickness, Editor::PixelDelegate pixel);
-static void trace_brush_bounds(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, Editor::PixelDelegate pixel);
+static void trace_brush_bounds(ui::Graphics* g, Editor* editor, gfx::Point pos, gfx::Color color, Editor::PixelDelegate pixel);
 
 static void savepixel(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
 static void drawpixel(ui::Graphics* g, const gfx::Point& pt, gfx::Color color);
@@ -227,10 +226,6 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
 
   // Draw pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-    IToolSettings* tool_settings = UIContext::instance()
-      ->settings()
-      ->getToolSettings(tool);
-
     Brush* brush = get_current_brush();
     gfx::Rect brushBounds = brush->bounds();
     brushBounds.offset(spritePos);
@@ -402,39 +397,37 @@ bool Editor::doesBrushPreviewNeedSubpixel()
 static void generate_cursor_boundaries(Editor* editor)
 {
   tools::Tool* tool = editor->getCurrentEditorTool();
+  Brush* brush = get_current_brush();
 
-  IBrushSettings* brush_settings = NULL;
-  if (tool)
-    brush_settings = UIContext::instance()
-      ->settings()
-      ->getToolSettings(tool)
-      ->getBrush();
+  if (!cursor_bound.seg || cursor_bound.brush_image != brush->image()) {
+    Image* brush_image = brush->image();
 
-  if (cursor_bound.seg == NULL ||
-      cursor_bound.brush_type != brush_settings->getType() ||
-      cursor_bound.brush_size != brush_settings->getSize() ||
-      cursor_bound.brush_angle != brush_settings->getAngle()) {
-    cursor_bound.brush_type = brush_settings->getType();
-    cursor_bound.brush_size = brush_settings->getSize();
-    cursor_bound.brush_angle = brush_settings->getAngle();
+    cursor_bound.brush_image = brush_image;
 
-    if (cursor_bound.seg != NULL)
+    if (cursor_bound.seg)
       base_free(cursor_bound.seg);
 
-    Brush* brush;
+    ImageRef mask;
+    if (brush_image->pixelFormat() != IMAGE_BITMAP) {
+      int w = brush_image->width();
+      int h = brush_image->height();
 
-    if (brush_settings) {
-      brush = new Brush(brush_settings->getType(),
-                    brush_settings->getSize(),
-                    brush_settings->getAngle());
+      mask.reset(Image::create(IMAGE_BITMAP, w, h));
+
+      LockImageBits<BitmapTraits> bits(mask.get());
+      auto pos = bits.begin();
+      for (int v=0; v<h; ++v) {
+        for (int u=0; u<w; ++u) {
+          *pos = get_pixel(brush_image, u, v);
+          ++pos;
+        }
+      }
     }
-    else
-      brush = new Brush();
 
-    cursor_bound.seg = find_mask_boundary(brush->image(),
-                                          &cursor_bound.nseg,
-                                          IgnoreBounds, 0, 0, 0, 0);
-    delete brush;
+    cursor_bound.seg = find_mask_boundary(
+      (mask ? mask.get(): brush_image),
+      &cursor_bound.nseg,
+      IgnoreBounds, 0, 0, 0, 0);
   }
 }
 
@@ -540,20 +533,23 @@ static void algo_line_proxy(int x, int y, void* _data)
 }
 
 static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
-  const gfx::Point& pos, gfx::Color color, Editor::PixelDelegate pixelDelegate)
+  gfx::Point pos, gfx::Color color, Editor::PixelDelegate pixelDelegate)
 {
   Data data = { g, color, pixelDelegate };
   gfx::Point pt1, pt2;
   BoundSeg* seg;
   int c;
 
+  pos.x -= cursor_bound.brush_image->width()/2;
+  pos.y -= cursor_bound.brush_image->height()/2;
+
   for (c=0; c<cursor_bound.nseg; c++) {
     seg = cursor_bound.seg+c;
 
-    pt1.x = pos.x + seg->x1 - cursor_bound.brush_size/2;
-    pt1.y = pos.y + seg->y1 - cursor_bound.brush_size/2;
-    pt2.x = pos.x + seg->x2 - cursor_bound.brush_size/2;
-    pt2.y = pos.y + seg->y2 - cursor_bound.brush_size/2;
+    pt1.x = pos.x + seg->x1;
+    pt1.y = pos.y + seg->y1;
+    pt2.x = pos.x + seg->x2;
+    pt2.y = pos.y + seg->y2;
 
     pt1 = editor->editorToScreen(pt1);
     pt2 = editor->editorToScreen(pt2);
