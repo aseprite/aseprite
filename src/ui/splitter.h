@@ -34,6 +34,7 @@ namespace ui {
   private:
     Widget* panel1() const;
     Widget* panel2() const;
+    void limitPos();
 
     Type m_type;
     double m_pos;

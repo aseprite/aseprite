@@ -36,10 +36,8 @@ Splitter::Splitter(Type type, int align)
 
 void Splitter::setPosition(double pos)
 {
-  if (m_type == ByPercentage)
-    m_pos = MID(0, pos, 100);
-  else
-    m_pos = pos;
+  m_pos = pos;
+  limitPos();
 
   invalidate();
 }
@@ -101,7 +99,6 @@ bool Splitter::onProcessMessage(Message* msg)
           switch (m_type) {
             case ByPercentage:
               m_pos = 100.0 * (mousePos.x - getBounds().x) / getBounds().w;
-              m_pos = MID(0, m_pos, 100);
               break;
             case ByPixel:
               m_pos = mousePos.x - getBounds().x;
@@ -111,15 +108,15 @@ bool Splitter::onProcessMessage(Message* msg)
         else {
           switch (m_type) {
             case ByPercentage:
-              m_pos = 100.0 * (mousePos.y-getBounds().y) / getBounds().h;
-              m_pos = MID(0, m_pos, 100);
+              m_pos = 100.0 * (mousePos.y - getBounds().y) / getBounds().h;
               break;
             case ByPixel:
-              m_pos = (mousePos.y-getBounds().y);
+              m_pos = mousePos.y - getBounds().y;
               break;
           }
         }
 
+        limitPos();
         layout();
         return true;
       }
@@ -217,6 +214,7 @@ void Splitter::onResize(ResizeEvent& ev)
   int avail;
 
   setBoundsQuietly(rc);
+  limitPos();
 
   Widget* child1 = panel1();
   Widget* child2 = panel2();
@@ -329,6 +327,30 @@ Widget* Splitter::panel2() const
     return list[1];
   else
     return nullptr;
+}
+
+void Splitter::limitPos()
+{
+  if (getAlign() & JI_HORIZONTAL) {
+    switch (m_type) {
+      case ByPercentage:
+        m_pos = MID(0, m_pos, 100);
+        break;
+      case ByPixel:
+        m_pos = MID(0, m_pos, getBounds().w);
+        break;
+    }
+  }
+  else {
+    switch (m_type) {
+      case ByPercentage:
+        m_pos = MID(0, m_pos, 100);
+        break;
+      case ByPixel:
+        m_pos = MID(0, m_pos, getBounds().h);
+        break;
+    }
+  }
 }
 
 } // namespace ui
