@@ -15,6 +15,8 @@
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
 #include "render/zoom.h"
+#include "ui/manager.h"
+#include "ui/system.h"
 
 namespace app {
 
@@ -61,12 +63,20 @@ void ZoomCommand::onLoadParams(const Params& params)
 
 bool ZoomCommand::onEnabled(Context* context)
 {
-  return current_editor != NULL;
+  return (current_editor != NULL);
 }
 
 void ZoomCommand::onExecute(Context* context)
 {
-  render::Zoom zoom = current_editor->zoom();
+  // Use the current editor by default.
+  Editor* editor = current_editor;
+
+  // Try to use the editor above the mouse.
+  ui::Widget* pick = ui::Manager::getDefault()->pick(ui::get_mouse_position());
+  if (pick && pick->getType() == editor_type())
+    editor = static_cast<Editor*>(pick);
+
+  render::Zoom zoom = editor->zoom();
 
   switch (m_action) {
     case In:
@@ -80,7 +90,7 @@ void ZoomCommand::onExecute(Context* context)
       break;
   }
 
-  current_editor->setEditorZoom(zoom);
+  editor->setEditorZoom(zoom);
 }
 
 std::string ZoomCommand::onGetFriendlyName() const
