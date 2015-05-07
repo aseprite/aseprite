@@ -81,6 +81,9 @@ public:
     if (m_preferences.editor.zoomFromCenterWithWheel())
       zoomFromCenterWithWheel()->setSelected(true);
 
+    if (m_preferences.editor.zoomFromCenterWithKeys())
+      zoomFromCenterWithKeys()->setSelected(true);
+
     if (m_preferences.experimental.useNativeCursor())
       nativeCursor()->setSelected(true);
 
@@ -173,6 +176,7 @@ public:
     }
 
     m_preferences.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
+    m_preferences.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));

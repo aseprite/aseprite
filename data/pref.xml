@@ -68,6 +68,7 @@
     <section id="editor" text="Editor">
       <option id="zoom_with_wheel" type="bool" default="true" migrate="Options.ZoomWithMouseWheel" />
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
+      <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
       <option id="grab_alpha" type="bool" default="false" />

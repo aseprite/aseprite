@@ -9,9 +9,11 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "base/convert_to.h"
 #include "render/zoom.h"
@@ -70,9 +72,10 @@ void ZoomCommand::onExecute(Context* context)
 {
   // Use the current editor by default.
   Editor* editor = current_editor;
+  gfx::Point mousePos = ui::get_mouse_position();
 
   // Try to use the editor above the mouse.
-  ui::Widget* pick = ui::Manager::getDefault()->pick(ui::get_mouse_position());
+  ui::Widget* pick = ui::Manager::getDefault()->pick(mousePos);
   if (pick && pick->getType() == editor_type())
     editor = static_cast<Editor*>(pick);
 
@@ -90,7 +93,12 @@ void ZoomCommand::onExecute(Context* context)
       break;
   }
 
-  editor->setEditorZoom(zoom);
+  bool center = App::instance()->preferences().editor.zoomFromCenterWithKeys();
+
+  editor->setZoomAndCenterInMouse(
+    zoom, mousePos,
+    (center ? Editor::ZoomBehavior::CENTER:
+              Editor::ZoomBehavior::MOUSE));
 }
 
 std::string ZoomCommand::onGetFriendlyName() const
