@@ -78,8 +78,8 @@ public:
       dataRecoveryPeriod()->findItemIndexByValue(
         base::convert_to<std::string>(m_preferences.general.dataRecoveryPeriod())));
 
-    if (m_settings->getCenterOnZoom())
-      centerOnZoom()->setSelected(true);
+    if (m_preferences.editor.zoomFromCenterWithWheel())
+      zoomFromCenterWithWheel()->setSelected(true);
 
     if (m_preferences.experimental.useNativeCursor())
       nativeCursor()->setSelected(true);
@@ -172,8 +172,7 @@ public:
       warnings += "<<- Automatically save recovery data every";
     }
 
-    m_settings->setCenterOnZoom(centerOnZoom()->isSelected());
-
+    m_preferences.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
     m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));

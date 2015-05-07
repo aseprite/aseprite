@@ -11,7 +11,9 @@
 
 #include "app/ui/editor/state_with_wheel_behavior.h"
 
+#include "app/app.h"
 #include "app/commands/commands.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
@@ -114,9 +116,12 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       }
 
       if (editor->zoom() != zoom) {
+        bool center = App::instance()->preferences().editor.zoomFromCenterWithWheel();
+
         editor->setZoomAndCenterInMouse(
           zoom, mouseMsg->position(),
-          Editor::ZoomBehavior::CENTER);
+          (center ? Editor::ZoomBehavior::CENTER:
+                    Editor::ZoomBehavior::MOUSE));
       }
       break;
     }
