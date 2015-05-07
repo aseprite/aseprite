@@ -300,15 +300,13 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL: {
-      RECT rc;
-      ::GetWindowRect(hwnd, &rc);
+      POINT pos = { GET_X_LPARAM(lparam),
+                    GET_Y_LPARAM(lparam) };
+      ScreenToClient(hwnd, &pos);
 
       Event ev;
       ev.setType(Event::MouseWheel);
-      ev.setPosition((gfx::Point(
-            GET_X_LPARAM(lparam),
-            GET_Y_LPARAM(lparam)) - gfx::Point(rc.left, rc.top))
-        / display_scale);
+      ev.setPosition(gfx::Point(pos.x, pos.y) / display_scale);
 
       int z = ((short)HIWORD(wparam)) / WHEEL_DELTA;
       gfx::Point delta(
@@ -324,16 +322,13 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 
     case WM_HSCROLL:
     case WM_VSCROLL: {
-      RECT rc;
-      ::GetWindowRect(hwnd, &rc);
-
       POINT pos;
-      ::GetCursorPos(&pos);
+      GetCursorPos(&pos);
+      ScreenToClient(hwnd, &pos);
 
       Event ev;
       ev.setType(Event::MouseWheel);
-      ev.setPosition((gfx::Point(pos.x, pos.y) - gfx::Point(rc.left, rc.top))
-        / display_scale);
+      ev.setPosition(gfx::Point(pos.x, pos.y) / display_scale);
 
       int bar = (msg == WM_HSCROLL ? SB_HORZ: SB_VERT);
       int z = GetScrollPos(hwnd, bar);
