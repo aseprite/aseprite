@@ -1139,7 +1139,7 @@ void Editor::updateQuicktool()
       updateStatusBar();
 
       App::instance()->getMainWindow()->getContextBar()
-        ->updateFromTool(getCurrentEditorTool());
+        ->updateForTool(getCurrentEditorTool());
     }
   }
 }

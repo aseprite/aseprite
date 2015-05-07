@@ -40,7 +40,8 @@ namespace app {
     ContextBar();
     ~ContextBar();
 
-    void updateFromTool(tools::Tool* tool);
+    void updateForCurrentTool();
+    void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
     void updateSelectionMode(SelectionMode mode);
     void updateAutoSelectLayer(bool state);

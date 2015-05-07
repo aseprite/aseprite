@@ -125,7 +125,7 @@ void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons butt
   // TODO find a way to avoid all these singletons. Maybe a simple
   // signal in the context like "brush has changed" could be enough.
   App::instance()->getMainWindow()->getContextBar()
-    ->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
+    ->updateForCurrentTool();
 
   current_editor->backToPreviousState();
 }

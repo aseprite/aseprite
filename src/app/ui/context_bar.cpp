@@ -895,8 +895,7 @@ void ContextBar::onCurrentToolChange()
   if (m_activeBrush->type() != kImageBrushType)
     setActiveBrush(ContextBar::createBrushFromSettings());
   else {
-    ISettings* settings = UIContext::instance()->settings();
-    updateFromTool(settings->getCurrentTool());
+    updateForCurrentTool();
   }
 }
 
@@ -905,7 +904,12 @@ void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
   notifyObservers(&ContextBarObserver::onDropPixels, action);
 }
 
-void ContextBar::updateFromTool(tools::Tool* tool)
+void ContextBar::updateForCurrentTool()
+{
+  updateForTool(UIContext::instance()->settings()->getCurrentTool());
+}
+
+void ContextBar::updateForTool(tools::Tool* tool)
 {
   base::ScopedValue<bool> lockFlag(g_updatingFromTool, true, false);
 
@@ -1002,7 +1006,7 @@ void ContextBar::updateForMovingPixels()
   tools::Tool* tool = App::instance()->getToolBox()->getToolById(
     tools::WellKnownTools::RectangularMarquee);
   if (tool)
-    updateFromTool(tool);
+    updateForTool(tool);
 
   m_dropPixels->deselectItems();
   m_dropPixels->setVisible(true);
@@ -1111,8 +1115,7 @@ void ContextBar::setActiveBrush(const doc::BrushRef& brush)
 {
   m_activeBrush = brush;
 
-  ISettings* settings = UIContext::instance()->settings();
-  updateFromTool(settings->getCurrentTool());
+  updateForCurrentTool();
 }
 
 doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const

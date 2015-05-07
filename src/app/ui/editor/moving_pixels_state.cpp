@@ -95,7 +95,7 @@ MovingPixelsState::~MovingPixelsState()
 {
   ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
   contextBar->removeObserver(this);
-  contextBar->updateFromTool(UIContext::instance()->settings()->getCurrentTool());
+  contextBar->updateForCurrentTool();
 
   m_ctxConn.disconnect();
   UIContext::instance()->settings()->selection()->removeObserver(this);
