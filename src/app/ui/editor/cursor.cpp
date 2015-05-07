@@ -52,9 +52,6 @@ using namespace ui;
 // Returns true if the cursor of the editor needs subpixel movement.
 #define IS_SUBPIXEL(editor)     ((editor)->m_zoom.scale() >= 4.0)
 
-// Maximum quantity of colors to save pixels overlapped by the cursor.
-#define MAX_SAVED   4096
-
 static struct {
   int nseg;
   BoundSeg* seg;
@@ -70,7 +67,7 @@ enum {
 static int cursor_type = CURSOR_THINCROSS;
 static int cursor_negative;
 
-static gfx::Color saved_pixel[MAX_SAVED];
+static std::vector<gfx::Color> saved_pixel;
 static int saved_pixel_n;
 
 // These clipping regions are shared between all editors, so we cannot
@@ -584,13 +581,21 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
 
 static void savepixel(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
 {
-  if (saved_pixel_n < MAX_SAVED && clipping_region.contains(pt))
-    saved_pixel[saved_pixel_n++] = g->getPixel(pt.x, pt.y);
+  if (clipping_region.contains(pt)) {
+    color_t c = g->getPixel(pt.x, pt.y);
+
+    if (saved_pixel_n < (int)saved_pixel.size())
+      saved_pixel[saved_pixel_n] = c;
+    else
+      saved_pixel.push_back(c);
+
+    ++saved_pixel_n;
+  }
 }
 
 static void drawpixel(ui::Graphics* graphics, const gfx::Point& pt, gfx::Color color)
 {
-  if (saved_pixel_n < MAX_SAVED && clipping_region.contains(pt)) {
+  if (saved_pixel_n < (int)saved_pixel.size() && clipping_region.contains(pt)) {
     if (cursor_negative) {
       int c = saved_pixel[saved_pixel_n++];
       int r = gfx::getr(c);
@@ -607,7 +612,7 @@ static void drawpixel(ui::Graphics* graphics, const gfx::Point& pt, gfx::Color c
 
 static void clearpixel(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
 {
-  if (saved_pixel_n < MAX_SAVED) {
+  if (saved_pixel_n < (int)saved_pixel.size()) {
     if (clipping_region.contains(pt))
       g->putPixel(saved_pixel[saved_pixel_n++], pt.x, pt.y);
     else if (!old_clipping_region.isEmpty() &&
