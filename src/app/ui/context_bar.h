@@ -43,6 +43,7 @@ namespace app {
     void updateForCurrentTool();
     void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
+    void updateForSelectingBox(const std::string& text);
     void updateSelectionMode(SelectionMode mode);
     void updateAutoSelectLayer(bool state);
 
@@ -136,6 +137,7 @@ namespace app {
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;
     BrushSlots m_brushes;
+    ui::Label* m_selectBoxHelp;
   };
 
 } // namespace app

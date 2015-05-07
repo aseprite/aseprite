@@ -158,6 +158,10 @@ protected:
     height()->setTextf("%d", m_rect.h);
   }
 
+  std::string onGetContextBarHelp() override {
+    return "Select bounds to identify sprite frames";
+  }
+
 private:
   void selectActiveDocument() {
     Document* oldDocument = m_document;

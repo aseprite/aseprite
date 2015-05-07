@@ -100,6 +100,10 @@ protected:
     updateIcons();
   }
 
+  std::string onGetContextBarHelp() override {
+    return "Select new canvas size";
+  }
+
   void onSizeChange() {
     updateBorderFromSize();
     updateRectFromBorder();

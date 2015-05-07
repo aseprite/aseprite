@@ -30,6 +30,9 @@ namespace app {
     // button.
     virtual void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) { }
     virtual void onQuickboxCancel() { }
+
+    // Help text to be shown in the ContextBar
+    virtual std::string onGetContextBarHelp() { return ""; }
   };
 
   class SelectBoxState : public StandbyState
@@ -46,6 +49,7 @@ namespace app {
     SelectBoxState(SelectBoxDelegate* delegate,
                    const gfx::Rect& rc,
                    Flags flags);
+    ~SelectBoxState();
 
     // Returns the bounding box arranged by the rulers.
     gfx::Rect getBoxBounds() const;
@@ -58,6 +62,7 @@ namespace app {
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onSetCursor(Editor* editor) override;
+    virtual bool acceptQuickTool(tools::Tool* tool) override;
     virtual bool requireBrushPreview() override;
     virtual tools::Ink* getStateInk() override;
 
@@ -67,6 +72,8 @@ namespace app {
 
   private:
     typedef std::vector<Ruler> Rulers;
+
+    void updateContextBar();
 
     // Returns true if the position screen position (x, y) is touching
     // the given ruler.

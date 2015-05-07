@@ -819,6 +819,8 @@ ContextBar::ContextBar()
   m_sprayBox->addChild(m_sprayWidth = new SprayWidthField());
   m_sprayBox->addChild(m_spraySpeed = new SpraySpeedField());
 
+  addChild(m_selectBoxHelp = new Label(""));
+
   setup_mini_font(m_sprayLabel);
 
   addChild(m_freehandBox = new HBox());
@@ -914,49 +916,66 @@ void ContextBar::updateForTool(tools::Tool* tool)
   base::ScopedValue<bool> lockFlag(g_updatingFromTool, true, false);
 
   ISettings* settings = UIContext::instance()->settings();
-  IToolSettings* toolSettings = settings->getToolSettings(tool);
-  IBrushSettings* brushSettings = toolSettings->getBrush();
+  IToolSettings* toolSettings = nullptr;
+  IBrushSettings* brushSettings = nullptr;
+
+  if (tool) {
+    toolSettings = settings->getToolSettings(tool);
+    brushSettings = toolSettings->getBrush();
+  }
 
   if (m_toolSettings)
     m_toolSettings->removeObserver(this);
   m_toolSettings = toolSettings;
-  m_toolSettings->addObserver(this);
+  if (m_toolSettings)
+    m_toolSettings->addObserver(this);
 
-  m_brushType->updateBrush(tool);
-  m_brushSize->setTextf("%d", brushSettings->getSize());
-  m_brushAngle->setTextf("%d", brushSettings->getAngle());
+  if (tool)
+    m_brushType->updateBrush(tool);
+
+  if (brushSettings) {
+    m_brushSize->setTextf("%d", brushSettings->getSize());
+    m_brushAngle->setTextf("%d", brushSettings->getAngle());
+  }
+
   m_brushPatternField->setBrushPattern(
     App::instance()->preferences().brush.pattern());
 
-  m_tolerance->setTextf("%d", toolSettings->getTolerance());
-  m_contiguous->setSelected(toolSettings->getContiguous());
+  if (toolSettings) {
+    m_tolerance->setTextf("%d", toolSettings->getTolerance());
+    m_contiguous->setSelected(toolSettings->getContiguous());
 
-  m_inkType->setInkType(toolSettings->getInkType());
-  m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
+    m_inkType->setInkType(toolSettings->getInkType());
+    m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
 
-  m_grabAlpha->setSelected(settings->getGrabAlpha());
-  m_autoSelectLayer->setSelected(settings->getAutoSelectLayer());
-  m_freehandAlgo->setFreehandAlgorithm(toolSettings->getFreehandAlgorithm());
+    m_freehandAlgo->setFreehandAlgorithm(toolSettings->getFreehandAlgorithm());
 
-  m_sprayWidth->setValue(toolSettings->getSprayWidth());
-  m_spraySpeed->setValue(toolSettings->getSpraySpeed());
+    m_sprayWidth->setValue(toolSettings->getSprayWidth());
+    m_spraySpeed->setValue(toolSettings->getSpraySpeed());
+  }
+
+  if (settings) {
+    m_grabAlpha->setSelected(settings->getGrabAlpha());
+    m_autoSelectLayer->setSelected(settings->getAutoSelectLayer());
+  }
 
   // True if the current tool needs opacity options
-  bool hasOpacity = (tool->getInk(0)->isPaint() ||
-                     tool->getInk(0)->isEffect() ||
-                     tool->getInk(1)->isPaint() ||
-                     tool->getInk(1)->isEffect());
+  bool hasOpacity = tool &&
+    (tool->getInk(0)->isPaint() ||
+     tool->getInk(0)->isEffect() ||
+     tool->getInk(1)->isPaint() ||
+     tool->getInk(1)->isEffect());
 
   // True if we have an image as brush
   bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
 
   // True if the current tool is eyedropper.
-  bool isEyedropper =
+  bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
      tool->getInk(1)->isEyedropper());
 
   // True if the current tool is move tool.
-  bool isMove =
+  bool isMove = tool &&
     (tool->getInk(0)->isCelMovement() ||
      tool->getInk(1)->isCelMovement());
 
@@ -965,17 +984,20 @@ void ContextBar::updateForTool(tools::Tool* tool)
   bool hasInk = hasOpacity;
 
   // True if the current tool needs tolerance options
-  bool hasTolerance = (tool->getPointShape(0)->isFloodFill() ||
-                       tool->getPointShape(1)->isFloodFill());
+  bool hasTolerance = tool &&
+    (tool->getPointShape(0)->isFloodFill() ||
+     tool->getPointShape(1)->isFloodFill());
 
   // True if the current tool needs spray options
-  bool hasSprayOptions = (tool->getPointShape(0)->isSpray() ||
-                          tool->getPointShape(1)->isSpray());
+  bool hasSprayOptions = tool &&
+    (tool->getPointShape(0)->isSpray() ||
+     tool->getPointShape(1)->isSpray());
 
-  bool hasSelectOptions = (tool->getInk(0)->isSelection() ||
-                           tool->getInk(1)->isSelection());
+  bool hasSelectOptions = tool &&
+    (tool->getInk(0)->isSelection() ||
+     tool->getInk(1)->isSelection());
 
-  bool isFreehand =
+  bool isFreehand = tool &&
     (tool->getController(0)->isFreehand() ||
      tool->getController(1)->isFreehand());
 
@@ -997,6 +1019,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);
   m_dropPixels->setVisible(false);
+  m_selectBoxHelp->setVisible(false);
 
   layout();
 }
@@ -1011,6 +1034,17 @@ void ContextBar::updateForMovingPixels()
   m_dropPixels->deselectItems();
   m_dropPixels->setVisible(true);
   m_selectionMode->setVisible(false);
+  layout();
+}
+
+void ContextBar::updateForSelectingBox(const std::string& text)
+{
+  if (m_selectBoxHelp->isVisible() && m_selectBoxHelp->getText() == text)
+    return;
+
+  updateForTool(nullptr);
+  m_selectBoxHelp->setText(text);
+  m_selectBoxHelp->setVisible(true);
   layout();
 }
 

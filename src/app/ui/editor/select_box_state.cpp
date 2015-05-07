@@ -12,6 +12,8 @@
 #include "app/ui/editor/select_box_state.h"
 
 #include "app/app.h"
+#include "app/ui/main_window.h"
+#include "app/ui/context_bar.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/editor/editor.h"
 #include "doc/image.h"
@@ -35,6 +37,12 @@ SelectBoxState::SelectBoxState(SelectBoxDelegate* delegate, const gfx::Rect& rc,
   setBoxBounds(rc);
 }
 
+SelectBoxState::~SelectBoxState()
+{
+  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  contextBar->updateForCurrentTool();
+}
+
 gfx::Rect SelectBoxState::getBoxBounds() const
 {
   int x1 = std::min(m_rulers[V1].getPosition(), m_rulers[V2].getPosition());
@@ -54,6 +62,8 @@ void SelectBoxState::setBoxBounds(const gfx::Rect& box)
 
 void SelectBoxState::onAfterChangeState(Editor* editor)
 {
+  updateContextBar();
+
   editor->setDecorator(this);
   editor->invalidate();
 }
@@ -112,6 +122,8 @@ bool SelectBoxState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   bool used = false;
+
+  updateContextBar();
 
   if (hasFlag(RULERS) && m_movingRuler >= 0) {
     gfx::Point pt = editor->screenToEditor(msg->position());
@@ -180,6 +192,11 @@ bool SelectBoxState::onSetCursor(Editor* editor)
     }
   }
   return StandbyState::onSetCursor(editor);
+}
+
+bool SelectBoxState::acceptQuickTool(tools::Tool* tool)
+{
+  return false;
 }
 
 bool SelectBoxState::requireBrushPreview()
@@ -273,6 +290,12 @@ void SelectBoxState::postRenderDecorator(EditorPostRender* render)
   if (hasFlag(QUICKBOX)) {
     render->drawRectXor(getBoxBounds());
   }
+}
+
+void SelectBoxState::updateContextBar()
+{
+  ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
+  contextBar->updateForSelectingBox(m_delegate->onGetContextBarHelp());
 }
 
 bool SelectBoxState::touchRuler(Editor* editor, Ruler& ruler, int x, int y)

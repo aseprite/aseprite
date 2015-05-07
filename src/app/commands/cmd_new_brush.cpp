@@ -46,6 +46,10 @@ protected:
   void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) override;
   void onQuickboxCancel() override;
 
+  std::string onGetContextBarHelp() override {
+    return "Select brush bounds | Right-click to cut";
+  }
+
 private:
   void createBrush(const Mask* mask);
 };
