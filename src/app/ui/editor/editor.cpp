@@ -1472,8 +1472,8 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
     subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_zoom.scale();
     subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_zoom.scale();
 
-    ASSERT(subpixelPos.x >= 0.0 && subpixelPos.x <= 1.0);
-    ASSERT(subpixelPos.y >= 0.0 && subpixelPos.y <= 1.0);
+    ASSERT(subpixelPos.x >= -1.0 && subpixelPos.x <= 1.0);
+    ASSERT(subpixelPos.y >= -1.0 && subpixelPos.y <= 1.0);
   }
 
   gfx::Point scrollPos(
