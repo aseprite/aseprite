@@ -388,7 +388,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
 
 void ColorBar::onPaletteViewChangeSize(int boxsize)
 {
-  App::instance()->preferences().colorBar.boxSize(boxsize / guiscale());
+  App::instance()->preferences().colorBar.boxSize(boxsize);
 }
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)

@@ -179,15 +179,13 @@ int PaletteView::getBoxSize() const
 void PaletteView::setBoxSize(int boxsize)
 {
   m_boxsize = MID(4*guiscale(), boxsize, 32*guiscale());
-  m_boxsize = boxsize * guiscale();
 
   if (m_delegate)
-    m_delegate->onPaletteViewChangeSize(m_boxsize);
+    m_delegate->onPaletteViewChangeSize(m_boxsize / guiscale());
 
   View* view = View::getView(this);
   if (view)
     view->layout();
-
 }
 
 bool PaletteView::onProcessMessage(Message* msg)
@@ -265,7 +263,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       if (msg->onlyCtrlPressed()) {
         int z = delta.x - delta.y;
-        setBoxSize(m_boxsize + z * guiscale());
+        setBoxSize(m_boxsize / guiscale() + z);
       }
       else {
         gfx::Point scroll = view->getViewScroll();
