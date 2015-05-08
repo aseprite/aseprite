@@ -17,12 +17,15 @@
 
 namespace doc {
 
+  class Remap;
+
   class Palette : public Object {
   public:
     enum { MaxColors = 256 };
 
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
+    Palette(const Palette& palette, const Remap& remap);
     ~Palette();
 
     static Palette* createGrayscale();

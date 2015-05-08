@@ -11,6 +11,7 @@
 #include "doc/palette.h"
 
 #include "doc/image.h"
+#include "doc/remap.h"
 
 #include <algorithm>
 #include <limits>
@@ -36,6 +37,18 @@ Palette::Palette(const Palette& palette)
 {
   m_frame = palette.m_frame;
   m_colors = palette.m_colors;
+  m_modifications = 0;
+}
+
+Palette::Palette(const Palette& palette, const Remap& remap)
+  : Object(palette)
+{
+  m_frame = palette.m_frame;
+
+  resize(palette.size());
+  for (int i=0; i<size(); ++i)
+    setEntry(remap[i], palette.getEntry(i));
+
   m_modifications = 0;
 }
 

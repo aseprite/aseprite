@@ -245,12 +245,15 @@ void ColorBar::onPaletteButtonClick()
 
       Menu menu;
       MenuItem
+        rev("Reverse Colors"),
         hue("Sort by Hue"),
         sat("Sort by Saturation"),
         bri("Sort by Brightness"),
         lum("Sort by Luminance"),
         asc("Ascending"),
         des("Descending");
+      menu.addChild(&rev);
+      menu.addChild(new ui::Separator("", JI_HORIZONTAL));
       menu.addChild(&hue);
       menu.addChild(&sat);
       menu.addChild(&bri);
@@ -262,6 +265,7 @@ void ColorBar::onPaletteButtonClick()
       if (m_ascending) asc.setSelected(true);
       else des.setSelected(true);
 
+      rev.Click.connect(Bind<void>(&ColorBar::onReverseColors, this));
       hue.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
       sat.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
       bri.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
@@ -396,6 +400,53 @@ void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
   m_lock = false;
 }
 
+void ColorBar::onReverseColors()
+{
+  PaletteView::SelectedEntries entries;
+  m_paletteView.getSelectedEntries(entries);
+
+  // Count the number of selected entries.
+  int n = 0;
+  for (bool state : entries) {
+    if (state)
+      ++n;
+  }
+
+  // If there is just one selected color, we select sort them all.
+  if (n < 2) {
+    n = 0;
+    for (auto& state : entries) {
+      state = true;
+      ++n;
+    }
+  }
+
+  std::vector<int> mapToOriginal(n); // Maps index from selectedPalette -> palette
+  int i = 0, j = 0;
+  for (bool state : entries) {
+    if (state)
+      mapToOriginal[j++] = i;
+    ++i;
+  }
+
+  Remap remap(Palette::MaxColors);
+  i = 0;
+  j = n;
+  for (bool state : entries) {
+    if (state)
+      remap.map(i, mapToOriginal[--j]);
+    else
+      remap.map(i, i);
+    ++i;
+  }
+
+  Palette newPalette(*get_current_palette(), remap);
+  applyRemap(remap, &newPalette, "Reverse Colors");
+
+  set_current_palette(&newPalette, false);
+  getManager()->invalidate();
+}
+
 void ColorBar::onSortBy(SortPaletteBy channel)
 {
   PaletteView::SelectedEntries entries;
@@ -449,11 +500,9 @@ void ColorBar::onSortBy(SortPaletteBy channel)
 
   // Create a new palette and apply the remap. This is the final new
   // palette for the sprite.
-  Palette newPalette(palette);
-  for (int i=0; i<palette.size(); ++i)
-    newPalette.setEntry(remapOrig[i], palette.getEntry(i));
+  Palette newPalette(palette, remapOrig);
 
-  applyRemap(remapOrig, &newPalette, "Sort Palette");
+  applyRemap(remapOrig, &newPalette, "Sort Colors");
 
   set_current_palette(&newPalette, false);
   getManager()->invalidate();
