@@ -68,6 +68,7 @@ namespace app {
     void onPickSpectrum(const app::Color& color, ui::MouseButtons buttons);
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
+    void onGradient();
     void setAscending(bool ascending);
 
     // PaletteViewDelegate impl
@@ -78,6 +79,7 @@ namespace app {
   private:
     void destroyRemap();
     void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
+    void setPalette(const doc::Palette* newPalette, const std::string& actionText);
 
     class ScrollableView : public ui::View {
     public:

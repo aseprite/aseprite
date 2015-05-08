@@ -252,6 +252,7 @@ void ColorBar::onPaletteButtonClick()
       Menu menu;
       MenuItem
         rev("Reverse Colors"),
+        grd("Gradient"),
         hue("Sort by Hue"),
         sat("Sort by Saturation"),
         bri("Sort by Brightness"),
@@ -259,6 +260,7 @@ void ColorBar::onPaletteButtonClick()
         asc("Ascending"),
         des("Descending");
       menu.addChild(&rev);
+      menu.addChild(&grd);
       menu.addChild(new ui::Separator("", JI_HORIZONTAL));
       menu.addChild(&hue);
       menu.addChild(&sat);
@@ -272,6 +274,7 @@ void ColorBar::onPaletteButtonClick()
       else des.setSelected(true);
 
       rev.Click.connect(Bind<void>(&ColorBar::onReverseColors, this));
+      grd.Click.connect(Bind<void>(&ColorBar::onGradient, this));
       hue.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
       sat.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
       bri.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
@@ -360,6 +363,11 @@ void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalett
     m_remap->merge(remap);
   }
 
+  setPalette(newPalette, actionText);
+}
+
+void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& actionText)
+{
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
@@ -373,6 +381,9 @@ void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalett
   catch (base::Exception& e) {
     Console::showException(e);
   }
+
+  set_current_palette(newPalette, false);
+  getManager()->invalidate();
 }
 
 void ColorBar::onPaletteViewChangeSize(int boxsize)
@@ -458,9 +469,6 @@ void ColorBar::onReverseColors()
 
   Palette newPalette(*get_current_palette(), remap);
   applyRemap(remap, &newPalette, "Reverse Colors");
-
-  set_current_palette(&newPalette, false);
-  getManager()->invalidate();
 }
 
 void ColorBar::onSortBy(SortPaletteBy channel)
@@ -517,11 +525,19 @@ void ColorBar::onSortBy(SortPaletteBy channel)
   // Create a new palette and apply the remap. This is the final new
   // palette for the sprite.
   Palette newPalette(palette, remapOrig);
-
   applyRemap(remapOrig, &newPalette, "Sort Colors");
+}
 
-  set_current_palette(&newPalette, false);
-  getManager()->invalidate();
+void ColorBar::onGradient()
+{
+  int index1, index2;
+  if (!m_paletteView.getSelectedRange(index1, index2))
+    return;
+
+  Palette newPalette(*get_current_palette());
+  newPalette.makeHorzRamp(index1, index2);
+
+  setPalette(&newPalette, "Gradient");
 }
 
 void ColorBar::setAscending(bool ascending)
