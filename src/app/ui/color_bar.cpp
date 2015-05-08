@@ -124,20 +124,23 @@ ColorBar::ColorBar(int align)
 
   m_remapButton.setVisible(false);
 
+  Box* palViewBox = new VBox();
+  palViewBox->addChild(&m_scrollableView);
+  palViewBox->addChild(&m_remapButton);
+
   ColorSpectrum* spectrum = new ColorSpectrum;
   Splitter* splitter = new Splitter(Splitter::ByPercentage, JI_VERTICAL);
   splitter->setPosition(80);
   splitter->setExpansive(true);
-  splitter->addChild(&m_scrollableView);
+  splitter->addChild(palViewBox);
   splitter->addChild(spectrum);
 
-  Box* topBox = new HBox();
-  topBox->addChild(&m_buttons);
+  Box* buttonsBox = new HBox();
+  buttonsBox->addChild(&m_buttons);
   m_buttons.max_h = 15*ui::guiscale();
 
-  addChild(topBox);
+  addChild(buttonsBox);
   addChild(splitter);
-  addChild(&m_remapButton);
   addChild(&m_fgColor);
   addChild(&m_bgColor);
 
