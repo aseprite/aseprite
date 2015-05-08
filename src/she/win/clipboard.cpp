@@ -42,10 +42,23 @@ std::string ClipboardWin32::getText(DisplayHandle hwnd)
   if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
     if (open_clipboard((HWND)hwnd)) {
       HGLOBAL hglobal = GetClipboardData(CF_UNICODETEXT);
-      if (hglobal != NULL) {
+      if (hglobal) {
         LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
-        if (lpstr != NULL) {
+        if (lpstr) {
           text = base::to_utf8(lpstr).c_str();
+          GlobalUnlock(hglobal);
+        }
+      }
+      CloseClipboard();
+    }
+  }
+  else if (IsClipboardFormatAvailable(CF_TEXT)) {
+    if (open_clipboard((HWND)hwnd)) {
+      HGLOBAL hglobal = GetClipboardData(CF_TEXT);
+      if (hglobal) {
+        LPSTR lpstr = static_cast<LPSTR>(GlobalLock(hglobal));
+        if (lpstr) {
+          text = lpstr;
           GlobalUnlock(hglobal);
         }
       }
