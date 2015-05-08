@@ -10,14 +10,15 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
-#include "app/ui/drop_down_button.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "doc/context_observer.h"
 #include "doc/pixel_format.h"
+#include "doc/sort_palette.h"
 #include "ui/box.h"
 #include "ui/button.h"
 #include "ui/view.h"
@@ -59,13 +60,14 @@ namespace app {
 
   protected:
     void onPaletteButtonClick();
-    void onPaletteButtonDropDownClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
     void onPickSpectrum(const app::Color& color, ui::MouseButtons buttons);
+    void onSortBy(doc::SortPaletteBy channel);
+    void setAscending(bool ascending);
 
     // PaletteViewDelegate impl
     void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
@@ -74,6 +76,7 @@ namespace app {
 
   private:
     void destroyRemap();
+    void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
 
     class ScrollableView : public ui::View {
     public:
@@ -82,7 +85,7 @@ namespace app {
       void onPaint(ui::PaintEvent& ev) override;
     };
 
-    DropDownButton m_paletteButton;
+    ButtonSet m_buttons;
     PalettePopup m_palettePopup;
     ScrollableView m_scrollableView;
     PaletteView m_paletteView;
@@ -92,6 +95,7 @@ namespace app {
     bool m_lock;
     doc::Remap* m_remap;
     const doc::Document* m_lastDocument;
+    bool m_ascending;
   };
 
 } // namespace app

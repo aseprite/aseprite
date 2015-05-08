@@ -17,6 +17,7 @@
 #include "app/context_access.h"
 #include "app/modules/editors.h"
 #include "app/settings/settings.h"
+#include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/transaction.h"
 #include "app/ui/context_bar.h"
@@ -52,6 +53,7 @@ protected:
 
 private:
   void createBrush(const Mask* mask);
+  void selectPencilTool();
 };
 
 NewBrushCommand::NewBrushCommand()
@@ -92,12 +94,7 @@ void NewBrushCommand::onExecute(Context* context)
   // Create a brush from the active selection
   else {
     createBrush(context->activeDocument()->mask());
-
-    // Set pencil as current tool
-    ISettings* settings = UIContext::instance()->settings();
-    tools::Tool* pencil =
-      App::instance()->getToolBox()->getToolById(tools::WellKnownTools::Pencil);
-    settings->setCurrentTool(pencil);
+    selectPencilTool();
 
     // Deselect mask
     Command* cmd =
@@ -111,6 +108,7 @@ void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons butt
   Mask mask;
   mask.replace(rect);
   createBrush(&mask);
+  selectPencilTool();
 
   // If the right-button was used, we clear the selected area.
   if (buttons & ui::kButtonRight) {
@@ -167,6 +165,16 @@ void NewBrushCommand::createBrush(const Mask* mask)
     tooltip += "Shortcut: ";
     tooltip += key->accels().front().toString();
     StatusBar::instance()->showTip(2000, tooltip.c_str());
+  }
+}
+
+void NewBrushCommand::selectPencilTool()
+{
+  ISettings* settings = UIContext::instance()->settings();
+  if (settings->getCurrentTool()->getInk(0)->isSelection()) {
+    tools::Tool* pencil = App::instance()->getToolBox()
+      ->getToolById(tools::WellKnownTools::Pencil);
+    settings->setCurrentTool(pencil);
   }
 }
 

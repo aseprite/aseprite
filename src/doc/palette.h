@@ -17,32 +17,6 @@
 
 namespace doc {
 
-  class SortPalette {
-  public:
-    enum Channel {
-      RGB_Red,
-      RGB_Green,
-      RGB_Blue,
-      HSV_Hue,
-      HSV_Saturation,
-      HSV_Value,
-      HSL_Lightness,
-      YUV_Luma,
-    };
-
-    SortPalette(Channel channel, bool ascending);
-    ~SortPalette();
-
-    void addChain(SortPalette* chain);
-
-    bool operator()(color_t c1, color_t c2);
-
-  private:
-    Channel m_channel;
-    bool m_ascending;
-    SortPalette* m_chain;
-  };
-
   class Palette : public Object {
   public:
     enum { MaxColors = 256 };
@@ -88,7 +62,6 @@ namespace doc {
     void makeHorzRamp(int from, int to);
     void makeVertRamp(int from, int to, int columns);
     void makeRectRamp(int from, int to, int columns);
-    void sort(int from, int to, SortPalette* sort_palette, std::vector<int>& mapping);
 
     int findExactMatch(int r, int g, int b) const;
     int findBestfit(int r, int g, int b, int mask_index = 0) const;

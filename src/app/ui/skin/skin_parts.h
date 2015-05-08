@@ -121,6 +121,10 @@ namespace app {
       PART_ANI_NEXT,
       PART_ANI_LAST,
 
+      PART_PAL_EDIT,
+      PART_PAL_SORT,
+      PART_PAL_OPTIONS,
+
       PART_TARGET_ONE,
       PART_TARGET_ONE_SELECTED,
       PART_TARGET_FRAMES,

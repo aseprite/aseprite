@@ -44,6 +44,7 @@ add_library(doc-lib
   remap.cpp
   rgbmap.cpp
   site.cpp
+  sort_palette.cpp
   sprite.cpp
   sprites.cpp
   string_io.cpp

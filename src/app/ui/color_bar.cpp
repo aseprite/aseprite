@@ -21,6 +21,7 @@
 #include "app/context_access.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_spectrum.h"
@@ -32,16 +33,25 @@
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
+#include "doc/sort_palette.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/paint_event.h"
+#include "ui/separator.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
 
 #include <cstring>
 
 namespace app {
+
+enum class PalButton {
+  EDIT,
+  SORT,
+  OPTIONS,
+  MAX
+};
 
 using namespace app::skin;
 using namespace ui;
@@ -78,7 +88,7 @@ ColorBar* ColorBar::m_instance = NULL;
 
 ColorBar::ColorBar(int align)
   : Box(align)
-  , m_paletteButton("Edit Palette")
+  , m_buttons(int(PalButton::MAX))
   , m_paletteView(true, this,
       App::instance()->preferences().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
@@ -87,8 +97,11 @@ ColorBar::ColorBar(int align)
   , m_lock(false)
   , m_remap(nullptr)
   , m_lastDocument(nullptr)
+  , m_ascending(true)
 {
   m_instance = this;
+
+  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
   setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
   child_spacing = 2*guiscale();
@@ -116,7 +129,11 @@ ColorBar::ColorBar(int align)
   splitter->addChild(&m_scrollableView);
   splitter->addChild(spectrum);
 
-  addChild(&m_paletteButton);
+  Box* topBox = new HBox();
+  topBox->addChild(&m_buttons);
+  m_buttons.max_h = 15*ui::guiscale();
+
+  addChild(topBox);
   addChild(splitter);
   addChild(&m_remapButton);
   addChild(&m_fgColor);
@@ -137,13 +154,15 @@ ColorBar::ColorBar(int align)
   setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
 
   // Change color-bar background color (not ColorBar::setBgColor)
-  Widget::setBgColor(((SkinTheme*)getTheme())->colors.tabActiveFace());
-  m_paletteView.setBgColor(((SkinTheme*)getTheme())->colors.tabActiveFace());
+  Widget::setBgColor(theme->colors.tabActiveFace());
+  m_paletteView.setBgColor(theme->colors.tabActiveFace());
 
   // Change labels foreground color
-  setup_mini_font(m_paletteButton.mainButton());
-  m_paletteButton.Click.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
-  m_paletteButton.DropDownClick.connect(Bind<void>(&ColorBar::onPaletteButtonDropDownClick, this));
+  m_buttons.ItemChange.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
+
+  m_buttons.addItem(theme->get_part(PART_PAL_EDIT));
+  m_buttons.addItem(theme->get_part(PART_PAL_SORT));
+  m_buttons.addItem(theme->get_part(PART_PAL_OPTIONS));
 
   onColorButtonChange(getFgColor());
 
@@ -193,7 +212,7 @@ PaletteView* ColorBar::getPaletteView()
 
 void ColorBar::setPaletteEditorButtonState(bool state)
 {
-  m_paletteButton.setSelected(state);
+  m_buttons.getItem(int(PalButton::EDIT))->setSelected(state);
 }
 
 void ColorBar::onActiveSiteChange(const doc::Site& site)
@@ -207,24 +226,67 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
 // Switches the palette-editor
 void ColorBar::onPaletteButtonClick()
 {
-  Command* cmd_show_palette_editor = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
-  Params params;
-  params.set("switch", "true");
+  int item = m_buttons.selectedItem();
+  m_buttons.deselectItems();
 
-  UIContext::instance()->executeCommand(cmd_show_palette_editor, params);
-}
+  switch (item) {
 
-void ColorBar::onPaletteButtonDropDownClick()
-{
-  if (!m_palettePopup.isVisible()) {
-    gfx::Rect bounds = m_paletteButton.getBounds();
+    case PalButton::EDIT: {
+      Command* cmd_show_palette_editor = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
+      Params params;
+      params.set("switch", "true");
 
-    m_palettePopup.showPopup(
-      gfx::Rect(bounds.x+bounds.w, bounds.y,
-        ui::display_w()/2, ui::display_h()/2));
-  }
-  else {
-    m_palettePopup.closeWindow(NULL);
+      UIContext::instance()->executeCommand(cmd_show_palette_editor, params);
+      break;
+    }
+
+    case PalButton::SORT: {
+      gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+
+      Menu menu;
+      MenuItem
+        hue("Sort by Hue"),
+        sat("Sort by Saturation"),
+        bri("Sort by Brightness"),
+        lum("Sort by Luminance"),
+        asc("Ascending"),
+        des("Descending");
+      menu.addChild(&hue);
+      menu.addChild(&sat);
+      menu.addChild(&bri);
+      menu.addChild(&lum);
+      menu.addChild(new ui::Separator("", JI_HORIZONTAL));
+      menu.addChild(&asc);
+      menu.addChild(&des);
+
+      if (m_ascending) asc.setSelected(true);
+      else des.setSelected(true);
+
+      hue.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::HUE));
+      sat.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
+      bri.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
+      lum.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
+      asc.Click.connect(Bind<void>(&ColorBar::setAscending, this, true));
+      des.Click.connect(Bind<void>(&ColorBar::setAscending, this, false));
+
+      menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+      break;
+    }
+
+    case PalButton::OPTIONS: {
+      if (!m_palettePopup.isVisible()) {
+        gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+
+        m_palettePopup.showPopup(
+          gfx::Rect(bounds.x, bounds.y+bounds.h,
+                    ui::display_w()/2, ui::display_h()/2));
+      }
+      else {
+        m_palettePopup.closeWindow(NULL);
+      }
+      break;
+    }
+
   }
 }
 
@@ -264,6 +326,11 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 
 void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPalette)
 {
+  applyRemap(remap, newPalette, "Drag-and-Drop Colors");
+}
+
+void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText)
+{
   if (!m_remap) {
     m_remap = new doc::Remap(remap);
     m_remapButton.setVisible(true);
@@ -278,7 +345,7 @@ void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPa
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
     if (sprite) {
-      Transaction transaction(writer.context(), "Move Colors", ModifyDocument);
+      Transaction transaction(writer.context(), actionText, ModifyDocument);
       transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
       transaction.commit();
     }
@@ -327,6 +394,74 @@ void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
     setFgColor(color);
 
   m_lock = false;
+}
+
+void ColorBar::onSortBy(SortPaletteBy channel)
+{
+  PaletteView::SelectedEntries entries;
+  m_paletteView.getSelectedEntries(entries);
+
+  // Count the number of selected entries.
+  int n = 0;
+  for (bool state : entries) {
+    if (state)
+      ++n;
+  }
+
+  // If there is just one selected color, we select sort them all.
+  if (n < 2) {
+    n = 0;
+    for (auto& state : entries) {
+      state = true;
+      ++n;
+    }
+  }
+
+  // Create a "subpalette" with selected entries only.
+  Palette palette(*get_current_palette());
+  Palette selectedPalette(0, n);
+  std::vector<int> mapToOriginal(n); // Maps index from selectedPalette -> palette
+  int i = 0, j = 0;
+  for (bool state : entries) {
+    if (state) {
+      selectedPalette.setEntry(j, palette.getEntry(i));
+      mapToOriginal[j] = i;
+      ++j;
+    }
+    ++i;
+  }
+
+  // Create a remap to sort the selected entries with the given color
+  // component/channel.
+  Remap remap = doc::sort_palette(&selectedPalette, channel, m_ascending);
+
+  // Create a bigger new remap for the original palette (with all
+  // entries, selected and deselected).
+  Remap remapOrig(Palette::MaxColors);
+  i = j = 0;
+  for (bool state : entries) {
+    if (state)
+      remapOrig.map(i, mapToOriginal[remap[j++]]);
+    else
+      remapOrig.map(i, i);
+    ++i;
+  }
+
+  // Create a new palette and apply the remap. This is the final new
+  // palette for the sprite.
+  Palette newPalette(palette);
+  for (int i=0; i<palette.size(); ++i)
+    newPalette.setEntry(remapOrig[i], palette.getEntry(i));
+
+  applyRemap(remapOrig, &newPalette, "Sort Palette");
+
+  set_current_palette(&newPalette, false);
+  getManager()->invalidate();
+}
+
+void ColorBar::setAscending(bool ascending)
+{
+  m_ascending = ascending;
 }
 
 void ColorBar::destroyRemap()
