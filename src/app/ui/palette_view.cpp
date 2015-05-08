@@ -171,6 +171,25 @@ app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
   return app::Color::fromMask();
 }
 
+int PaletteView::getBoxSize() const
+{
+  return m_boxsize / guiscale();
+}
+
+void PaletteView::setBoxSize(int boxsize)
+{
+  m_boxsize = MID(4*guiscale(), boxsize, 32*guiscale());
+  m_boxsize = boxsize * guiscale();
+
+  if (m_delegate)
+    m_delegate->onPaletteViewChangeSize(m_boxsize);
+
+  View* view = View::getView(this);
+  if (view)
+    view->layout();
+
+}
+
 bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
@@ -246,12 +265,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       if (msg->onlyCtrlPressed()) {
         int z = delta.x - delta.y;
-        m_boxsize += z * guiscale();
-        m_boxsize = MID(4*guiscale(), m_boxsize, 32*guiscale());
-        if (m_delegate)
-          m_delegate->onPaletteViewChangeSize(m_boxsize);
-
-        view->layout();
+        setBoxSize(m_boxsize + z * guiscale());
       }
       else {
         gfx::Point scroll = view->getViewScroll();

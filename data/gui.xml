@@ -726,6 +726,16 @@
         <param name="switch" value="true" />
       </item>
       <separator />
+      <item command="SetPaletteEntrySize" text="&amp;Small Size">
+        <param name="size" value="7" />
+      </item>
+      <item command="SetPaletteEntrySize" text="&amp;Medium Size">
+        <param name="size" value="11" />
+      </item>
+      <item command="SetPaletteEntrySize" text="&amp;Large Size">
+        <param name="size" value="17" />
+      </item>
+      <separator />
       <item command="LoadPalette" text="&amp;Load Palette" />
       <item command="SavePalette" text="&amp;Save Palette" />
     </menu>

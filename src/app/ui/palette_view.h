@@ -50,6 +50,9 @@ namespace app {
 
     app::Color getColorByPosition(const gfx::Point& pos);
 
+    int getBoxSize() const;
+    void setBoxSize(int boxsize);
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
