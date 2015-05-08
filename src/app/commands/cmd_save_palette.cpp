@@ -9,7 +9,10 @@
 #include "config.h"
 #endif
 
-#include "app/commands/command.h"
+#include "app/commands/cmd_set_palette.h"
+#include "app/commands/commands.h"
+#include "app/commands/params.h"
+#include "app/context.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/modules/palettes.h"
@@ -28,7 +31,11 @@ public:
   Command* clone() const override { return new SavePaletteCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+
+private:
+  std::string m_preset;
 };
 
 SavePaletteCommand::SavePaletteCommand()
@@ -38,16 +45,29 @@ SavePaletteCommand::SavePaletteCommand()
 {
 }
 
+void SavePaletteCommand::onLoadParams(const Params& params)
+{
+  m_preset = params.get("preset");
+}
+
 void SavePaletteCommand::onExecute(Context* context)
 {
-  std::string exts = get_writable_palette_extensions();
+  const doc::Palette* palette = get_current_palette();
   std::string filename;
-  int ret;
 
-again:
-  filename = app::show_file_selector("Save Palette", "", exts,
-    FileSelectorType::Save);
-  if (!filename.empty()) {
+  if (!m_preset.empty()) {
+    filename = get_preset_palette_filename(m_preset);
+  }
+  else {
+    std::string exts = get_writable_palette_extensions();
+    int ret;
+
+  again:
+    filename = app::show_file_selector("Save Palette", "", exts,
+                                       FileSelectorType::Save);
+    if (filename.empty())
+      return;
+
     if (base::is_file(filename)) {
       ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
                         base::get_file_name(filename).c_str());
@@ -57,11 +77,15 @@ again:
       else if (ret != 1)
         return;
     }
+  }
 
-    doc::Palette* palette = get_current_palette();
-    if (!save_palette(filename.c_str(), palette)) {
-      Alert::show("Error<<Saving palette file||&Close");
-    }
+  if (!save_palette(filename.c_str(), palette))
+    Alert::show("Error<<Saving palette file||&Close");
+
+  if (m_preset == get_default_palette_preset_name()) {
+    set_default_palette(palette);
+    if (!context->activeDocument())
+      set_current_palette(palette, false);
   }
 }
 

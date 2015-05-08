@@ -31,7 +31,7 @@ namespace app {
 
   protected:
     void onPalChange(doc::Palette* palette);
-    void onLoadPal(bool asDefault);
+    void onLoadPal();
     void onOpenFolder();
 
   private:

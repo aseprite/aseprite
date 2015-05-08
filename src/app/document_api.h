@@ -101,7 +101,7 @@ namespace app {
     void setMaskPosition(int x, int y);
 
     // Palette API
-    void setPalette(Sprite* sprite, frame_t frame, Palette* newPalette);
+    void setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette);
 
   private:
     void setCelFramePosition(Cel* cel, frame_t frame);

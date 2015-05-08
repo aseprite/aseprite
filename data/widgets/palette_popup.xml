@@ -7,7 +7,6 @@
     <hbox>
       <button id="load_pal" text="Load" width="80" />
       <hbox expansive="true" />
-      <button id="set_default" text="Set as Default" width="80" />
       <button id="open_folder" text="Open Folder" width="60" />
     </hbox>
   </vbox>

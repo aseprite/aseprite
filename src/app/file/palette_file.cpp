@@ -88,7 +88,7 @@ Palette* load_palette(const char *filename)
   return pal;
 }
 
-bool save_palette(const char *filename, Palette* pal)
+bool save_palette(const char *filename, const Palette* pal)
 {
   std::string ext = base::string_to_lower(base::get_file_extension(filename));
   bool success = false;

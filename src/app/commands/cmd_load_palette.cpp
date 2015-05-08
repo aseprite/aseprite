@@ -15,6 +15,7 @@
 #include "app/context.h"
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
+#include "app/modules/palettes.h"
 #include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "ui/alert.h"
@@ -29,7 +30,11 @@ public:
   Command* clone() const override { return new LoadPaletteCommand(*this); }
 
 protected:
+  void onLoadParams(const Params& params) override;
   void onExecute(Context* context) override;
+
+private:
+  std::string m_preset;
 };
 
 LoadPaletteCommand::LoadPaletteCommand()
@@ -39,12 +44,23 @@ LoadPaletteCommand::LoadPaletteCommand()
 {
 }
 
+void LoadPaletteCommand::onLoadParams(const Params& params)
+{
+  m_preset = params.get("preset");
+}
+
 void LoadPaletteCommand::onExecute(Context* context)
 {
-  std::string exts = get_readable_palette_extensions();
-  std::string filename =
-    app::show_file_selector("Load Palette", "", exts,
-      FileSelectorType::Open);
+  std::string filename;
+
+  if (!m_preset.empty()) {
+    filename = get_preset_palette_filename(m_preset);
+  }
+  else {
+    std::string exts = get_readable_palette_extensions();
+    filename = app::show_file_selector("Load Palette", "", exts,
+                                       FileSelectorType::Open);
+  }
 
   if (!filename.empty()) {
     base::UniquePtr<doc::Palette> palette(load_palette(filename.c_str()));

@@ -30,7 +30,6 @@ SetPaletteCommand::SetPaletteCommand()
             "Set Palette",
             CmdRecordableFlag)
   , m_palette(NULL)
-  , m_target(Target::Document)
 {
 }
 
@@ -40,31 +39,14 @@ void SetPaletteCommand::onExecute(Context* context)
   if (!m_palette)
     return;
 
-  switch (m_target) {
-
-    case Target::Document: {
-      ContextWriter writer(context);
-      if (writer.document()) {
-        Transaction transaction(writer.context(), "Set Palette");
-        writer.document()->getApi(transaction)
-          .setPalette(writer.sprite(), writer.frame(), m_palette);
-        transaction.commit();
-      }
-      set_current_palette(m_palette, false);
-      break;
-    }
-
-    // Set default palette
-    case Target::App: {
-      set_default_palette(m_palette);
-      set_config_string("GfxMode", "Palette", m_palette->filename().c_str());
-
-      if (!context->activeDocument())
-        set_current_palette(m_palette, false);
-      break;
-    }
-
+  ContextWriter writer(context);
+  if (writer.document()) {
+    Transaction transaction(writer.context(), "Set Palette");
+    writer.document()->getApi(transaction)
+      .setPalette(writer.sprite(), writer.frame(), m_palette);
+    transaction.commit();
   }
+  set_current_palette(m_palette, false);
 
   // Redraw the entire screen
   ui::Manager::getDefault()->invalidate();

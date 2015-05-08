@@ -24,15 +24,13 @@ namespace app {
     SetPaletteCommand();
     Command* clone() const override { return new SetPaletteCommand(*this); }
 
-    void setPalette(doc::Palette* palette) { m_palette = palette; }
-    void setTarget(Target target) { m_target = target; }
+    void setPalette(const doc::Palette* palette) { m_palette = palette; }
 
   protected:
     virtual void onExecute(Context* context) override;
 
   private:
-    doc::Palette* m_palette;
-    Target m_target;
+    const doc::Palette* m_palette;
   };
 
 } // namespace app

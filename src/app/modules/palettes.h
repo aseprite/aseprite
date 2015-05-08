@@ -9,6 +9,8 @@
 #define APP_MODULES_PALETTES_H_INCLUDED
 #pragma once
 
+#include <string>
+
 namespace doc {
   class Palette;
 }
@@ -22,9 +24,12 @@ namespace app {
   Palette* get_default_palette();
   Palette* get_current_palette();
 
-  void set_default_palette(Palette* palette);
+  void set_default_palette(const Palette* palette);
   bool set_current_palette(const Palette* palette, bool forced);
   void set_black_palette();
+
+  std::string get_preset_palette_filename(const std::string& preset);
+  std::string get_default_palette_preset_name();
 
 } // namespace app
 

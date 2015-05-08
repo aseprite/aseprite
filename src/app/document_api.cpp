@@ -501,7 +501,7 @@ void DocumentApi::setMaskPosition(int x, int y)
   m_transaction.execute(new cmd::SetMaskPosition(m_document, gfx::Point(x, y)));
 }
 
-void DocumentApi::setPalette(Sprite* sprite, frame_t frame, Palette* newPalette)
+void DocumentApi::setPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
 {
   Palette* currentSpritePalette = sprite->palette(frame); // Sprite current pal
   int from, to;

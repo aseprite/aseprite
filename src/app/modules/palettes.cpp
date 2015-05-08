@@ -9,8 +9,12 @@
 #include "config.h"
 #endif
 
-#include "app/app.h"
 #include "app/modules/palettes.h"
+
+#include "app/app.h"
+#include "app/resource_finder.h"
+#include "base/fs.h"
+#include "base/path.h"
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -54,7 +58,7 @@ Palette* get_default_palette()
   return ase_default_palette;
 }
 
-void set_default_palette(Palette* palette)
+void set_default_palette(const Palette* palette)
 {
   palette->copyColorsTo(ase_default_palette);
 }
@@ -90,6 +94,23 @@ void set_black_palette()
   Palette* p = new Palette(frame_t(0), 256);
   set_current_palette(p, true);
   delete p;
+}
+
+std::string get_preset_palette_filename(const std::string& preset)
+{
+  ResourceFinder rf;
+  rf.includeUserDir(base::join_path("palettes", ".").c_str());
+  std::string palettesDir = rf.getFirstOrCreateDefault();
+
+  if (!base::is_directory(palettesDir))
+    base::make_directory(palettesDir);
+
+  return base::join_path(palettesDir, preset + ".gpl");
+}
+
+std::string get_default_palette_preset_name()
+{
+  return "default";
 }
 
 } // namespace app

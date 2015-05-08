@@ -164,28 +164,36 @@ void App::initialize(const AppOptions& options)
   if (isPortable())
     PRINTF("Running in portable mode\n");
 
-  // Default palette.
-  std::string palFile(!options.paletteFileName().empty() ?
-    options.paletteFileName():
-    std::string(get_config_string("GfxMode", "Palette", "")));
-
+  // Default palette from command line.
+  std::string palFile = options.paletteFileName();
   if (palFile.empty()) {
-    // Try to use a default pixel art palette.
-    ResourceFinder rf;
-    rf.includeDataDir("palettes/db32.gpl");
-    if (rf.findFirst())
-      palFile = rf.filename();
+    // If there is no palette in command line, we use the default one.
+    palFile = get_preset_palette_filename(get_default_palette_preset_name());
+
+    // If the default palette file doesn't exist, we copy db32.gpl as
+    // the default one.
+    if (!base::is_file(palFile)) {
+      ResourceFinder rf;
+      rf.includeDataDir("palettes/db32.gpl");
+      if (rf.findFirst()) {
+        // Copy db32.gpl as the default palette file.
+        base::UniquePtr<Palette> pal(load_palette(rf.filename().c_str()));
+        if (pal)
+          save_palette(palFile.c_str(), pal.get());
+      }
+    }
   }
 
+  // Load default palette file.
   if (!palFile.empty()) {
-    PRINTF("Loading custom palette file: %s\n", palFile.c_str());
+    PRINTF("Loading default palette file: %s\n", palFile.c_str());
 
     base::UniquePtr<Palette> pal(load_palette(palFile.c_str()));
-    if (pal.get() != NULL) {
+    if (pal) {
       set_default_palette(pal.get());
     }
     else {
-      PRINTF("Error loading custom palette file\n");
+      PRINTF("Error loading default palette file\n");
     }
   }
 

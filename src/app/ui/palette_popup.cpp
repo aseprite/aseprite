@@ -39,8 +39,7 @@ PalettePopup::PalettePopup()
 
   addChild(m_popup);
 
-  m_popup->loadPal()->Click.connect(Bind<void>(&PalettePopup::onLoadPal, this, false));
-  m_popup->setDefault()->Click.connect(Bind<void>(&PalettePopup::onLoadPal, this, true));
+  m_popup->loadPal()->Click.connect(Bind<void>(&PalettePopup::onLoadPal, this));
   m_popup->openFolder()->Click.connect(Bind<void>(&PalettePopup::onOpenFolder, this));
 
   m_popup->view()->attachToView(&m_paletteListBox);
@@ -51,7 +50,6 @@ PalettePopup::PalettePopup()
 void PalettePopup::showPopup(const gfx::Rect& bounds)
 {
   m_popup->loadPal()->setEnabled(false);
-  m_popup->setDefault()->setEnabled(false);
   m_paletteListBox.selectChild(NULL);
 
   moveWindow(bounds);
@@ -67,11 +65,9 @@ void PalettePopup::onPalChange(doc::Palette* palette)
   m_popup->loadPal()->setEnabled(
     UIContext::instance()->activeDocument() &&
     palette != NULL);
-
-  m_popup->setDefault()->setEnabled(palette != NULL);
 }
 
-void PalettePopup::onLoadPal(bool asDefault)
+void PalettePopup::onLoadPal()
 {
   doc::Palette* palette = m_paletteListBox.selectedPalette();
   if (!palette)
@@ -79,13 +75,7 @@ void PalettePopup::onLoadPal(bool asDefault)
 
   SetPaletteCommand* cmd = static_cast<SetPaletteCommand*>(
     CommandsModule::instance()->getCommandByName(CommandId::SetPalette));
-
   cmd->setPalette(palette);
-  if (asDefault)
-    cmd->setTarget(SetPaletteCommand::Target::App);
-  else
-    cmd->setTarget(SetPaletteCommand::Target::Document);
-
   UIContext::instance()->executeCommand(cmd);
 }
 
