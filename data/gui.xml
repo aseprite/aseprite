@@ -745,6 +745,8 @@
       <item command="SavePalette" text="Save as Default Palette">
         <param name="preset" value="default" />
       </item>
+      <separator />
+      <item command="ColorQuantization" text="Create Palette from RGB Image" />
     </menu>
 
   </menus>

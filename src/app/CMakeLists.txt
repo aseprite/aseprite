@@ -136,6 +136,7 @@ add_library(app-lib
   commands/cmd_clear.cpp
   commands/cmd_clear_cel.cpp
   commands/cmd_close_file.cpp
+  commands/cmd_color_quantization.cpp
   commands/cmd_configure_tools.cpp
   commands/cmd_copy.cpp
   commands/cmd_copy_cel.cpp

@@ -47,7 +47,7 @@ Palette* create_palette_from_rgb(
   Palette* palette)
 {
   if (!palette)
-    palette = new Palette(frame_t(0), 256);
+    palette = new Palette(frame_t(0), Palette::MaxColors);
 
   bool has_background_layer = (sprite->backgroundLayer() != NULL);
 
@@ -481,7 +481,7 @@ void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
   // Indexed).
   int first_usable_entry = (has_background_layer ? 0: 1);
   //int used_colors =
-  m_histogram.createOptimizedPalette(palette, first_usable_entry, 255);
+  m_histogram.createOptimizedPalette(palette, first_usable_entry, palette->size()-1);
   //palette->resize(first_usable_entry+used_colors);   // TODO
 }
 
