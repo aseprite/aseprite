@@ -45,7 +45,6 @@
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
 #include "gfx/size.h"
-#include "render/quantization.h"
 #include "ui/graphics.h"
 #include "ui/ui.h"
 
@@ -76,14 +75,11 @@ protected:
   void onMoreOptionsClick(Event& ev);
   void onCopyColorsClick(Event& ev);
   void onPasteColorsClick(Event& ev);
-  void onRampClick(Event& ev);
-  void onQuantizeClick(Event& ev);
 
 private:
   void selectColorType(app::Color::Type type);
   void setPaletteEntry(const app::Color& color);
   void setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel);
-  void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
   void onPalChange();
@@ -100,8 +96,6 @@ private:
   HsvSliders m_hsvSliders;
   Button m_copyButton;
   Button m_pasteButton;
-  Button m_rampButton;
-  Button m_quantizeButton;
 
   // This variable is used to avoid updating the m_hexColorEntry text
   // when the color change is generated from a
@@ -251,8 +245,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_moreOptions("+")
   , m_copyButton("Copy")
   , m_pasteButton("Paste")
-  , m_rampButton("Ramp")
-  , m_quantizeButton("Quantize")
   , m_disableHexUpdate(false)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
@@ -268,8 +260,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   setup_mini_look(&m_moreOptions);
   setup_mini_look(&m_copyButton);
   setup_mini_look(&m_pasteButton);
-  setup_mini_look(&m_rampButton);
-  setup_mini_look(&m_quantizeButton);
 
   // Top box
   m_topBox.addChild(&m_rgbButton);
@@ -287,8 +277,6 @@ PaletteEntryEditor::PaletteEntryEditor()
     box->addChild(&m_pasteButton);
     m_bottomBox.addChild(box);
   }
-  m_bottomBox.addChild(&m_rampButton);
-  m_bottomBox.addChild(&m_quantizeButton);
 
   // Main vertical box
   m_vbox.addChild(&m_topBox);
@@ -305,8 +293,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
   m_copyButton.Click.connect(&PaletteEntryEditor::onCopyColorsClick, this);
   m_pasteButton.Click.connect(&PaletteEntryEditor::onPasteColorsClick, this);
-  m_rampButton.Click.connect(&PaletteEntryEditor::onRampClick, this);
-  m_quantizeButton.Click.connect(&PaletteEntryEditor::onQuantizeClick, this);
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
@@ -550,50 +536,6 @@ void PaletteEntryEditor::onPasteColorsClick(Event& ev)
   onPalChange();
 }
 
-void PaletteEntryEditor::onRampClick(Event& ev)
-{
-  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
-  int index1, index2;
-
-  if (!palette_editor->getSelectedRange(index1, index2))
-    return;
-
-  Palette* src_palette = get_current_palette();
-  Palette* dst_palette = new Palette(frame_t(0), 256);
-
-  src_palette->copyColorsTo(dst_palette);
-  dst_palette->makeHorzRamp(index1, index2);
-
-  setNewPalette(dst_palette, "Color Ramp");
-  delete dst_palette;
-}
-
-void PaletteEntryEditor::onQuantizeClick(Event& ev)
-{
-  Palette* palette = NULL;
-
-  {
-    const ContextReader reader(UIContext::instance());
-    const Sprite* sprite(reader.sprite());
-
-    if (sprite == NULL) {
-      Alert::show("Error<<There is no sprite selected to quantize.||&OK");
-      return;
-    }
-
-    if (sprite->pixelFormat() != IMAGE_RGB) {
-      Alert::show("Error<<You can use this command only for RGB sprites||&OK");
-      return;
-    }
-
-    palette = render::create_palette_from_rgb(
-      sprite, reader.frame(), NULL);
-  }
-
-  setNewPalette(palette, "Quantize Palette");
-  delete palette;
-}
-
 void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
@@ -713,21 +655,6 @@ void PaletteEntryEditor::selectColorType(app::Color::Type type)
 
   m_vbox.layout();
   m_vbox.invalidate();
-}
-
-void PaletteEntryEditor::setNewPalette(Palette* palette, const char* operationName)
-{
-  // Copy the palette
-  palette->copyColorsTo(get_current_palette());
-
-  // Set the palette calling the hooks
-  set_current_palette(palette, false);
-
-  // Update the sprite palette
-  updateCurrentSpritePalette(operationName);
-
-  // Redraw the entire screen
-  ui::Manager::getDefault()->invalidate();
 }
 
 void PaletteEntryEditor::updateCurrentSpritePalette(const char* operationName)
