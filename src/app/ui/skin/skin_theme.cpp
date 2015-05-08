@@ -232,6 +232,7 @@ SkinTheme::SkinTheme()
   sheet_mapping["ani_last"] = PART_ANI_LAST;
   sheet_mapping["pal_edit"] = PART_PAL_EDIT;
   sheet_mapping["pal_sort"] = PART_PAL_SORT;
+  sheet_mapping["pal_presets"] = PART_PAL_PRESETS;
   sheet_mapping["pal_options"] = PART_PAL_OPTIONS;
   sheet_mapping["target_one"] = PART_TARGET_ONE;
   sheet_mapping["target_one_selected"] = PART_TARGET_ONE_SELECTED;

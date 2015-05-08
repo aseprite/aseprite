@@ -123,6 +123,7 @@ namespace app {
 
       PART_PAL_EDIT,
       PART_PAL_SORT,
+      PART_PAL_PRESETS,
       PART_PAL_OPTIONS,
 
       PART_TARGET_ONE,

@@ -46,6 +46,7 @@ namespace app {
     Menu* getCelPopupMenu() { return m_celPopupMenu; }
     Menu* getCelMovementPopupMenu() { return m_celMovementPopupMenu; }
     Menu* getFrameTagPopupMenu() { return m_frameTagPopupMenu; }
+    Menu* getPalettePopupMenu() { return m_palettePopupMenu; }
 
     void applyShortcutToMenuitemsWithCommand(Command* command, const Params& params, Key* key);
 
@@ -65,6 +66,7 @@ namespace app {
     base::UniquePtr<Menu> m_celPopupMenu;
     base::UniquePtr<Menu> m_celMovementPopupMenu;
     base::UniquePtr<Menu> m_frameTagPopupMenu;
+    base::UniquePtr<Menu> m_palettePopupMenu;
     ScopedConnection m_recentFilesConn;
   };
 

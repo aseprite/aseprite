@@ -593,14 +593,6 @@
         </item>
         <item command="ReverseFrames" text="Re&amp;verse Frames" />
       </menu>
-      <menu text="&amp;Palette">
-        <item command="PaletteEditor" text="&amp;Palette Editor">
-          <param name="switch" value="true" />
-        </item>
-        <separator />
-        <item command="LoadPalette" text="&amp;Load Palette" />
-        <item command="SavePalette" text="&amp;Save Palette" />
-      </menu>
       <menu text="Selec&amp;t">
         <item command="MaskAll" text="&amp;All" />
         <item command="DeselectMask" text="&amp;Deselect" />
@@ -727,6 +719,15 @@
     <menu id="frame_tag_popup">
       <item command="FrameTagProperties" text="Tag &amp;Properties..." />
       <item command="RemoveFrameTag" text="&amp;Remove Tag" />
+    </menu>
+
+    <menu id="palette_popup">
+      <item command="PaletteEditor" text="&amp;Palette Editor">
+        <param name="switch" value="true" />
+      </item>
+      <separator />
+      <item command="LoadPalette" text="&amp;Load Palette" />
+      <item command="SavePalette" text="&amp;Save Palette" />
     </menu>
 
   </menus>

@@ -12,6 +12,7 @@
 #include "app/ui/color_bar.h"
 
 #include "app/app.h"
+#include "app/app_menus.h"
 #include "app/cmd/remap_colors.h"
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
@@ -49,6 +50,7 @@ namespace app {
 enum class PalButton {
   EDIT,
   SORT,
+  PRESETS,
   OPTIONS,
   MAX
 };
@@ -162,6 +164,7 @@ ColorBar::ColorBar(int align)
 
   m_buttons.addItem(theme->get_part(PART_PAL_EDIT));
   m_buttons.addItem(theme->get_part(PART_PAL_SORT));
+  m_buttons.addItem(theme->get_part(PART_PAL_PRESETS));
   m_buttons.addItem(theme->get_part(PART_PAL_OPTIONS));
 
   onColorButtonChange(getFgColor());
@@ -277,7 +280,7 @@ void ColorBar::onPaletteButtonClick()
       break;
     }
 
-    case PalButton::OPTIONS: {
+    case PalButton::PRESETS: {
       if (!m_palettePopup.isVisible()) {
         gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
 
@@ -287,6 +290,16 @@ void ColorBar::onPaletteButtonClick()
       }
       else {
         m_palettePopup.closeWindow(NULL);
+      }
+      break;
+    }
+
+    case PalButton::OPTIONS: {
+      Menu* menu = AppMenus::instance()->getPalettePopupMenu();
+      if (menu) {
+        gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
+
+        menu->showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
       }
       break;
     }
