@@ -549,12 +549,13 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   else
     return;
 
-  m_tipWindow = new TipWindow(tooltip.c_str());
+  Rect toolrc = getToolGroupBounds(group_index);
+  Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
+
+  m_tipWindow = new TipWindow(tooltip.c_str(), gfx::Rect(arrow, toolrc.getSize()));
   m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
   m_tipWindow->remapWindow();
 
-  Rect toolrc = getToolGroupBounds(group_index);
-  Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
   int w = m_tipWindow->getBounds().w;
   int h = m_tipWindow->getBounds().h;
   int x = toolrc.x - w + (tool && m_popupWindow && m_popupWindow->isVisible() ? arrow.x-m_popupWindow->getBounds().w: 0);

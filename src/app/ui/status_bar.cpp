@@ -60,7 +60,7 @@ static const char* kStatusBarFace = "status_bar_face";
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const char* text)
-    : ui::TipWindow(text)
+    : ui::TipWindow(text, gfx::Rect())
   {
   }
 

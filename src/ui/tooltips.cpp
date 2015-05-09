@@ -96,67 +96,95 @@ bool TooltipManager::onProcessMessage(Message* msg)
 void TooltipManager::onTick()
 {
   if (!m_tipWindow) {
-    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str()));
     gfx::Rect bounds = m_target.widget->getBounds();
+
+    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str(), bounds));
     int x = get_mouse_position().x+12*guiscale();
     int y = get_mouse_position().y+12*guiscale();
-    int w, h;
 
-    m_tipWindow->setArrowAlign(m_target.tipInfo.arrowAlign);
     m_tipWindow->remapWindow();
+    int w = m_tipWindow->getBounds().w;
+    int h = m_tipWindow->getBounds().h;
 
-    w = m_tipWindow->getBounds().w;
-    h = m_tipWindow->getBounds().h;
+    int arrowAlign = m_target.tipInfo.arrowAlign;
+    int trycount = 0;
+    for (; trycount < 4; ++trycount) {
+      switch (arrowAlign) {
+        case JI_TOP | JI_LEFT:
+          x = bounds.x + bounds.w;
+          y = bounds.y + bounds.h;
+          break;
+        case JI_TOP | JI_RIGHT:
+          x = bounds.x - w;
+          y = bounds.y + bounds.h;
+          break;
+        case JI_BOTTOM | JI_LEFT:
+          x = bounds.x + bounds.w;
+          y = bounds.y - h;
+          break;
+        case JI_BOTTOM | JI_RIGHT:
+          x = bounds.x - w;
+          y = bounds.y - h;
+          break;
+        case JI_TOP:
+          x = bounds.x + bounds.w/2 - w/2;
+          y = bounds.y + bounds.h;
+          break;
+        case JI_BOTTOM:
+          x = bounds.x + bounds.w/2 - w/2;
+          y = bounds.y - h;
+          break;
+        case JI_LEFT:
+          x = bounds.x + bounds.w;
+          y = bounds.y + bounds.h/2 - h/2;
+          break;
+        case JI_RIGHT:
+          x = bounds.x - w;
+          y = bounds.y + bounds.h/2 - h/2;
+          break;
+      }
 
-    switch (m_target.tipInfo.arrowAlign) {
-      case JI_TOP | JI_LEFT:
-        x = bounds.x + bounds.w;
-        y = bounds.y + bounds.h;
+      x = MID(0, x, ui::display_w()-w);
+      y = MID(0, y, ui::display_h()-h);
+
+      if (bounds.intersects(gfx::Rect(x, y, w, h))) {
+        switch (trycount) {
+          case 0:
+          case 2:
+            // Switch position
+            if (arrowAlign & (JI_TOP | JI_BOTTOM)) arrowAlign ^= JI_TOP | JI_BOTTOM;
+            if (arrowAlign & (JI_LEFT | JI_RIGHT)) arrowAlign ^= JI_LEFT | JI_RIGHT;
+            break;
+          case 1:
+            // Rotate positions
+            if (arrowAlign & (JI_TOP | JI_LEFT)) arrowAlign ^= JI_TOP | JI_LEFT;
+            if (arrowAlign & (JI_BOTTOM | JI_RIGHT)) arrowAlign ^= JI_BOTTOM | JI_RIGHT;
+            break;
+        }
+      }
+      else {
+        m_tipWindow->setArrowAlign(arrowAlign);
+        m_tipWindow->positionWindow(x, y);
+        m_tipWindow->openWindow();
         break;
-      case JI_TOP | JI_RIGHT:
-        x = bounds.x - w;
-        y = bounds.y + bounds.h;
-        break;
-      case JI_BOTTOM | JI_LEFT:
-        x = bounds.x + bounds.w;
-        y = bounds.y - h;
-        break;
-      case JI_BOTTOM | JI_RIGHT:
-        x = bounds.x - w;
-        y = bounds.y - h;
-        break;
-      case JI_TOP:
-        x = bounds.x + bounds.w/2 - w/2;
-        y = bounds.y + bounds.h;
-        break;
-      case JI_BOTTOM:
-        x = bounds.x + bounds.w/2 - w/2;
-        y = bounds.y - h;
-        break;
-      case JI_LEFT:
-        x = bounds.x + bounds.w;
-        y = bounds.y + bounds.h/2 - h/2;
-        break;
-      case JI_RIGHT:
-        x = bounds.x - w;
-        y = bounds.y + bounds.h/2 - h/2;
-        break;
+      }
     }
 
-    m_tipWindow->positionWindow(
-      MID(0, x, ui::display_w()-w),
-      MID(0, y, ui::display_h()-h));
-
-    m_tipWindow->openWindow();
+    // No enough room for the tooltip
+    if (trycount == 4) {
+      m_tipWindow.reset();
+      m_timer->stop();
+    }
   }
   m_timer->stop();
 }
 
 // TipWindow
 
-TipWindow::TipWindow(const char *text)
+TipWindow::TipWindow(const char* text, gfx::Rect& target)
   : PopupWindow(text, kCloseOnClickInOtherWindow)
   , m_arrowAlign(0)
+  , m_target(target)
 {
   setTransparent(true);
 

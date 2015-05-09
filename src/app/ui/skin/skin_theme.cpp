@@ -1764,6 +1764,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 {
   ui::TipWindow* widget = static_cast<ui::TipWindow*>(ev.getSource());
   Graphics* g = ev.getGraphics();
+  Rect absRc = widget->getBounds();
   Rect rc = widget->getClientBounds();
   gfx::Color fg = colors.tooltipText();
   gfx::Color bg = colors.tooltipFace();
@@ -1788,26 +1789,34 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 
   // Draw arrow in sides
   she::Surface* arrow = NULL;
+  gfx::Rect target(widget->target());
+  target = target.createIntersect(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
+  target.offset(-absRc.getOrigin());
+
   switch (widget->getArrowAlign()) {
     case JI_TOP:
       arrow = m_part[PART_TOOLTIP_ARROW_N];
-      g->drawRgbaSurface(arrow, rc.x+rc.w/2-arrow->width()/2, rc.y);
+      g->drawRgbaSurface(arrow,
+                         target.x+target.w/2-arrow->width()/2,
+                         rc.y);
       break;
     case JI_BOTTOM:
       arrow = m_part[PART_TOOLTIP_ARROW_S];
       g->drawRgbaSurface(arrow,
-        rc.x+rc.w/2-arrow->width()/2,
-        rc.y+rc.h-arrow->height());
+                         target.x+target.w/2-arrow->width()/2,
+                         rc.y+rc.h-arrow->height());
       break;
     case JI_LEFT:
       arrow = m_part[PART_TOOLTIP_ARROW_W];
-      g->drawRgbaSurface(arrow, rc.x, rc.y+rc.h/2-arrow->height()/2);
+      g->drawRgbaSurface(arrow,
+                         rc.x,
+                         target.y+target.h/2-arrow->height()/2);
       break;
     case JI_RIGHT:
       arrow = m_part[PART_TOOLTIP_ARROW_E];
       g->drawRgbaSurface(arrow,
-        rc.x+rc.w-arrow->width(),
-        rc.y+rc.h/2-arrow->height()/2);
+                         rc.x+rc.w-arrow->width(),
+                         target.y+target.h/2-arrow->height()/2);
       break;
   }
 

@@ -215,8 +215,8 @@ public:
       return false;
 
     return
-      rc.x <= x+w && rc.x+rc.w > x &&
-      rc.y <= y+h && rc.y+rc.h > y;
+      rc.x < x+w && rc.x+rc.w > x &&
+      rc.y < y+h && rc.y+rc.h > y;
   }
 
   // Returns the union rectangle between this and rc rectangle.
