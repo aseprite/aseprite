@@ -16,6 +16,7 @@
 #include "app/cmd/remap_colors.h"
 #include "app/cmd/set_palette.h"
 #include "app/color.h"
+#include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
@@ -185,6 +186,7 @@ ColorBar::ColorBar(int align)
   onColorButtonChange(getFgColor());
 
   UIContext::instance()->addObserver(this);
+  m_conn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
 }
 
 ColorBar::~ColorBar()
@@ -239,6 +241,13 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
     m_lastDocument = site.document();
     destroyRemap();
   }
+}
+
+void ColorBar::onBeforeExecuteCommand(Command* command)
+{
+  if (command->id() == CommandId::Undo ||
+      command->id() == CommandId::Redo)
+    destroyRemap();
 }
 
 // Switches the palette-editor

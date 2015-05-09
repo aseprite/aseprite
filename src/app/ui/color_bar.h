@@ -14,6 +14,7 @@
 #include "app/ui/color_button.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
+#include "base/connection.h"
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "doc/context_observer.h"
@@ -25,6 +26,7 @@
 
 namespace app {
   class ColorButton;
+  class Command;
   class PalettesLoader;
   class PaletteIndexChangeEvent;
 
@@ -59,6 +61,7 @@ namespace app {
     Signal1<void, const app::Color&> BgColorChange;
 
   protected:
+    void onBeforeExecuteCommand(Command* command);
     void onPaletteButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
@@ -100,6 +103,7 @@ namespace app {
     doc::Remap* m_remap;
     const doc::Document* m_lastDocument;
     bool m_ascending;
+    ScopedConnection m_conn;
   };
 
 } // namespace app
