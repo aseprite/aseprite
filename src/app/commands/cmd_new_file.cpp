@@ -20,7 +20,6 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
-#include "app/ui/color_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -69,8 +68,7 @@ void NewFileCommand::onExecute(Context* context)
     app::Color::fromMask(),
     app::Color::fromRgb(0, 0, 0),
     app::Color::fromRgb(255, 255, 255),
-    app::Color::fromRgb(255, 0, 255),
-    ColorBar::instance()->getBgColor()
+    app::Color::fromRgb(255, 0, 255)
   };
 
   // Load the window widget
@@ -84,8 +82,12 @@ void NewFileCommand::onExecute(Context* context)
   }
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
-  bg = get_config_int("NewSprite", "Background", 4); // Default = Background color
+  bg = get_config_int("NewSprite", "Background", 1); // Default = Black
   // ncolors = get_config_int("NewSprite", "Colors", 256);
+
+  if (bg == 4) // Convert old default (Background color) to new default (Black)
+    bg = 1;
+  bg = MID(0, bg, 3);
 
   // If the clipboard contains an image, we can show the size of the
   // clipboard as default image size.
@@ -135,7 +137,7 @@ void NewFileCommand::onExecute(Context* context)
     // Select the color
     app::Color color = app::Color::fromMask();
 
-    if (bg >= 0 && bg <= 4) {
+    if (bg >= 0 && bg <= 3) {
       color = bg_table[bg];
       ok = true;
     }

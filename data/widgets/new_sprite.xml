@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
 <gui>
   <window text="New Sprite" id="new_sprite">
     <box vertical="true">
@@ -30,7 +30,6 @@
           <listitem text="Black" />
           <listitem text="White" />
           <listitem text="Magenta" />
-          <listitem text="Background Color" />
         </listbox>
       </view>
 
