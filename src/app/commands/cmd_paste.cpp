@@ -9,11 +9,9 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context.h"
-#include "app/util/clipboard.h"
-#include "doc/layer.h"
-#include "doc/sprite.h"
+#include "app/ui/input_chain.h"
 
 namespace app {
 
@@ -23,8 +21,8 @@ public:
   Command* clone() const override { return new PasteCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 PasteCommand::PasteCommand()
@@ -34,21 +32,14 @@ PasteCommand::PasteCommand()
 {
 }
 
-bool PasteCommand::onEnabled(Context* context)
+bool PasteCommand::onEnabled(Context* ctx)
 {
-  return
-    (clipboard::get_current_format() == clipboard::ClipboardImage &&
-      context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-        ContextFlags::ActiveLayerIsVisible |
-        ContextFlags::ActiveLayerIsEditable |
-        ContextFlags::ActiveLayerIsImage)) ||
-    (clipboard::get_current_format() == clipboard::ClipboardDocumentRange &&
-      context->checkFlags(ContextFlags::ActiveDocumentIsWritable));
+  return App::instance()->inputChain().canPaste(ctx);
 }
 
-void PasteCommand::onExecute(Context* context)
+void PasteCommand::onExecute(Context* ctx)
 {
-  clipboard::paste();
+  App::instance()->inputChain().paste(ctx);
 }
 
 Command* CommandFactory::createPasteCommand()

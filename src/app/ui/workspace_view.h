@@ -14,6 +14,7 @@ namespace ui {
 }
 
 namespace app {
+  class InputChainElement;
   class Workspace;
 
   class WorkspaceView {
@@ -39,6 +40,8 @@ namespace app {
     virtual bool onCloseView(Workspace* workspace) = 0;
 
     virtual void onTabPopup(Workspace* workspace) = 0;
+
+    virtual InputChainElement* onGetInputChainElement() { return nullptr; }
   };
 
 } // namespace app

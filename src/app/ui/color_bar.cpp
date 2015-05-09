@@ -28,6 +28,7 @@
 #include "app/transaction.h"
 #include "app/ui/color_spectrum.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -41,6 +42,7 @@
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
+#include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/separator.h"
 #include "ui/splitter.h"
@@ -187,6 +189,7 @@ ColorBar::ColorBar(int align)
 
   UIContext::instance()->addObserver(this);
   m_conn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
+  m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
 }
 
 ColorBar::~ColorBar()
@@ -241,6 +244,11 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
     m_lastDocument = site.document();
     destroyRemap();
   }
+}
+
+void ColorBar::onFocusPaletteView()
+{
+  App::instance()->inputChain().prioritize(this);
 }
 
 void ColorBar::onBeforeExecuteCommand(Command* command)
@@ -474,7 +482,7 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
 void ColorBar::onColorButtonChange(const app::Color& color)
 {
   if (color.getType() == app::Color::IndexType)
-    m_paletteView.selectColor(color.getIndex());
+    m_paletteView.selectColor(color.getIndex(), false);
 }
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
@@ -591,6 +599,60 @@ void ColorBar::destroyRemap()
 
   m_remapButton.setVisible(false);
   layout();
+}
+
+void ColorBar::onNewInputPriority(InputChainElement* element)
+{
+  m_paletteView.clearSelection();
+}
+
+bool ColorBar::onCanCut(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+bool ColorBar::onCanCopy(Context* ctx)
+{
+  return (m_paletteView.getSelectedEntriesCount() > 0);
+}
+
+bool ColorBar::onCanPaste(Context* ctx)
+{
+  return m_paletteView.areColorsInClipboard();
+}
+
+bool ColorBar::onCanClear(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+bool ColorBar::onCut(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+bool ColorBar::onCopy(Context* ctx)
+{
+  m_paletteView.copyToClipboard();
+  return true;
+}
+
+bool ColorBar::onPaste(Context* ctx)
+{
+  m_paletteView.pasteFromClipboard();
+  return true;
+}
+
+bool ColorBar::onClear(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+void ColorBar::onCancel(Context* ctx)
+{
+  m_paletteView.clearSelection();
+  m_paletteView.discardClipboardSelection();
+  invalidate();
 }
 
 } // namespace app

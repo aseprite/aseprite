@@ -9,6 +9,7 @@
 #define APP_UI_DOCUMENT_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/ui/input_chain_element.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
 #include "doc/document_observer.h"
@@ -29,7 +30,8 @@ namespace app {
   class DocumentView : public ui::Box
                      , public TabView
                      , public doc::DocumentObserver
-                     , public WorkspaceView {
+                     , public WorkspaceView
+                     , public app::InputChainElement {
   public:
     enum Type {
       Normal,
@@ -57,6 +59,7 @@ namespace app {
     void onClonedFrom(WorkspaceView* from) override;
     bool onCloseView(Workspace* workspace) override;
     void onTabPopup(Workspace* workspace) override;
+    InputChainElement* onGetInputChainElement() override { return this; }
 
     // DocumentObserver implementation
     void onGeneralUpdate(doc::DocumentEvent& ev) override;
@@ -68,6 +71,18 @@ namespace app {
     void onRemoveFrame(doc::DocumentEvent& ev) override;
     void onTotalFramesChanged(doc::DocumentEvent& ev) override;
     void onLayerRestacked(doc::DocumentEvent& ev) override;
+
+    // InputChainElement impl
+    void onNewInputPriority(InputChainElement* element) override;
+    bool onCanCut(Context* ctx) override;
+    bool onCanCopy(Context* ctx) override;
+    bool onCanPaste(Context* ctx) override;
+    bool onCanClear(Context* ctx) override;
+    bool onCut(Context* ctx) override;
+    bool onCopy(Context* ctx) override;
+    bool onPaste(Context* ctx) override;
+    bool onClear(Context* ctx) override;
+    void onCancel(Context* ctx) override;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

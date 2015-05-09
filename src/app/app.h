@@ -31,6 +31,7 @@ namespace app {
   class Document;
   class DocumentExporter;
   class INotificationDelegate;
+  class InputChain;
   class LegacyModules;
   class LoggerModule;
   class MainWindow;
@@ -69,6 +70,8 @@ namespace app {
 
     void showNotification(INotificationDelegate* del);
     void updateDisplayTitleBar();
+
+    InputChain& inputChain();
 
     // App Signals
     Signal0<void> Exit;

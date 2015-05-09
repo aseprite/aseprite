@@ -9,13 +9,9 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context_access.h"
-#include "app/util/clipboard.h"
-#include "doc/layer.h"
-#include "doc/mask.h"
-#include "doc/sprite.h"
-#include "ui/base.h"
+#include "app/ui/input_chain.h"
 
 namespace app {
 
@@ -25,8 +21,8 @@ public:
   Command* clone() const override { return new CutCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 CutCommand::CutCommand()
@@ -36,19 +32,14 @@ CutCommand::CutCommand()
 {
 }
 
-bool CutCommand::onEnabled(Context* context)
+bool CutCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsVisible |
-                             ContextFlags::ActiveLayerIsEditable |
-                             ContextFlags::HasVisibleMask |
-                             ContextFlags::HasActiveImage);
+  return App::instance()->inputChain().canCut(ctx);
 }
 
-void CutCommand::onExecute(Context* context)
+void CutCommand::onExecute(Context* ctx)
 {
-  ContextWriter writer(context);
-  clipboard::cut(writer);
+  App::instance()->inputChain().cut(ctx);
 }
 
 Command* CommandFactory::createCutCommand()

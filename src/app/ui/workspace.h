@@ -9,6 +9,7 @@
 #define APP_UI_WORKSPACE_H_INCLUDED
 #pragma once
 
+#include "app/ui/input_chain_element.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_panel.h"
 #include "base/signal.h"
@@ -17,7 +18,8 @@
 namespace app {
   class WorkspaceTabs;
 
-  class Workspace : public ui::Widget {
+  class Workspace : public ui::Widget
+                  , public app::InputChainElement {
   public:
     typedef WorkspaceViews::iterator iterator;
 
@@ -57,6 +59,18 @@ namespace app {
 
     // Returns true if the view was docked inside the workspace.
     DropViewAtResult dropViewAt(const gfx::Point& pos, WorkspaceView* view, bool clone);
+
+    // InputChainElement impl
+    void onNewInputPriority(InputChainElement* element) override;
+    bool onCanCut(Context* ctx) override;
+    bool onCanCopy(Context* ctx) override;
+    bool onCanPaste(Context* ctx) override;
+    bool onCanClear(Context* ctx) override;
+    bool onCut(Context* ctx) override;
+    bool onCopy(Context* ctx) override;
+    bool onPaste(Context* ctx) override;
+    bool onClear(Context* ctx) override;
+    void onCancel(Context* ctx) override;
 
     Signal0<void> ActiveViewChanged;
 

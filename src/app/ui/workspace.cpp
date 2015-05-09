@@ -11,6 +11,8 @@
 
 #include "app/ui/workspace.h"
 
+#include "app/app.h"
+#include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace_tabs.h"
 #include "app/ui/workspace_view.h"
@@ -296,6 +298,102 @@ WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
     widget = widget->getParent();
   }
   return nullptr;
+}
+
+void Workspace::onNewInputPriority(InputChainElement* newElement)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    activeElement->onNewInputPriority(newElement);
+}
+
+bool Workspace::onCanCut(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCanCut(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onCanCopy(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCanCopy(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onCanPaste(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCanPaste(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onCanClear(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCanClear(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onCut(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCut(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onCopy(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onCopy(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onPaste(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onPaste(ctx);
+  else
+    return false;
+}
+
+bool Workspace::onClear(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    return activeElement->onClear(ctx);
+  else
+    return false;
+}
+
+void Workspace::onCancel(Context* ctx)
+{
+  WorkspaceView* view = activeView();
+  InputChainElement* activeElement = (view ? view->onGetInputChainElement(): nullptr);
+  if (activeElement)
+    activeElement->onCancel(ctx);
 }
 
 } // namespace app

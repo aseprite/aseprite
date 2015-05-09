@@ -47,6 +47,7 @@
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_view.h"
+#include "app/ui/input_chain.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
@@ -94,6 +95,7 @@ public:
   CommandsModule m_commands_modules;
   UIContext m_ui_context;
   RecentFiles m_recent_files;
+  InputChain m_inputChain;
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
   scripting::Engine m_scriptingEngine;
@@ -681,6 +683,11 @@ void App::updateDisplayTitleBar()
 
   title += defaultTitle;
   she::instance()->defaultDisplay()->setTitleBar(title);
+}
+
+InputChain& App::inputChain()
+{
+  return m_modules->m_inputChain;
 }
 
 // Updates palette and redraw the screen.

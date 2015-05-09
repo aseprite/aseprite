@@ -12,6 +12,7 @@
 #include "app/color.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
+#include "app/ui/input_chain_element.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
 #include "base/connection.h"
@@ -32,7 +33,8 @@ namespace app {
 
   class ColorBar : public ui::Box
                  , public PaletteViewDelegate
-                 , public doc::ContextObserver {
+                 , public doc::ContextObserver
+                 , public app::InputChainElement {
     static ColorBar* m_instance;
   public:
     static ColorBar* instance() { return m_instance; }
@@ -56,11 +58,24 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
 
+    // InputChainElement impl
+    void onNewInputPriority(InputChainElement* element) override;
+    bool onCanCut(Context* ctx) override;
+    bool onCanCopy(Context* ctx) override;
+    bool onCanPaste(Context* ctx) override;
+    bool onCanClear(Context* ctx) override;
+    bool onCut(Context* ctx) override;
+    bool onCopy(Context* ctx) override;
+    bool onPaste(Context* ctx) override;
+    bool onClear(Context* ctx) override;
+    void onCancel(Context* ctx) override;
+
     // Signals
     Signal1<void, const app::Color&> FgColorChange;
     Signal1<void, const app::Color&> BgColorChange;
 
   protected:
+    void onFocusPaletteView();
     void onBeforeExecuteCommand(Command* command);
     void onPaletteButtonClick();
     void onRemapButtonClick();

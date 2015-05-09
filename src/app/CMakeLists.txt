@@ -329,6 +329,7 @@ add_library(app-lib
   ui/frame_tag_window.cpp
   ui/hex_color_entry.cpp
   ui/home_view.cpp
+  ui/input_chain.cpp
   ui/keyboard_shortcuts.cpp
   ui/main_menu_bar.cpp
   ui/main_window.cpp

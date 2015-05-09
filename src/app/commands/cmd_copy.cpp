@@ -11,16 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/context_access.h"
-#include "app/document.h"
-#include "app/ui/main_window.h"
-#include "app/ui/timeline.h"
-#include "app/util/clipboard.h"
-#include "doc/layer.h"
-#include "doc/mask.h"
-#include "doc/site.h"
-#include "doc/sprite.h"
-#include "ui/base.h"
+#include "app/ui/input_chain.h"
 
 namespace app {
 
@@ -30,8 +21,8 @@ public:
   Command* clone() const override { return new CopyCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 CopyCommand::CopyCommand()
@@ -41,25 +32,14 @@ CopyCommand::CopyCommand()
 {
 }
 
-bool CopyCommand::onEnabled(Context* context)
+bool CopyCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::HasActiveDocument);
+  return App::instance()->inputChain().canCopy(ctx);
 }
 
-void CopyCommand::onExecute(Context* context)
+void CopyCommand::onExecute(Context* ctx)
 {
-  const ContextReader reader(context);
-
-  // Copy a range from the timeline.
-  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
-  if (range.enabled()) {
-    clipboard::copy_range(reader, range);
-  }
-  else if (reader.site()->document() &&
-           static_cast<const app::Document*>(reader.site()->document())->isMaskVisible() &&
-           reader.site()->image()) {
-    clipboard::copy(reader);
-  }
+  App::instance()->inputChain().copy(ctx);
 }
 
 Command* CommandFactory::createCopyCommand()

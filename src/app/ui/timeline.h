@@ -13,6 +13,7 @@
 #include "app/pref/preferences.h"
 #include "app/ui/ani_controls.h"
 #include "app/ui/editor/editor_observer.h"
+#include "app/ui/input_chain_element.h"
 #include "base/connection.h"
 #include "doc/document_observer.h"
 #include "doc/documents_observer.h"
@@ -53,7 +54,8 @@ namespace app {
   class Timeline : public ui::Widget
                  , public doc::DocumentsObserver
                  , public doc::DocumentObserver
-                 , public app::EditorObserver {
+                 , public app::EditorObserver
+                 , public app::InputChainElement {
   public:
     typedef DocumentRange Range;
 
@@ -118,6 +120,18 @@ namespace app {
     void onAfterFrameChanged(Editor* editor) override;
     void onAfterLayerChanged(Editor* editor) override;
     void onDestroyEditor(Editor* editor) override;
+
+    // InputChainElement impl
+    void onNewInputPriority(InputChainElement* element) override;
+    bool onCanCut(Context* ctx) override;
+    bool onCanCopy(Context* ctx) override;
+    bool onCanPaste(Context* ctx) override;
+    bool onCanClear(Context* ctx) override;
+    bool onCut(Context* ctx) override;
+    bool onCopy(Context* ctx) override;
+    bool onPaste(Context* ctx) override;
+    bool onClear(Context* ctx) override;
+    void onCancel(Context* ctx) override;
 
   private:
     struct Hit {

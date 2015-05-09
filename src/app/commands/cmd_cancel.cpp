@@ -11,10 +11,11 @@
 
 #include "app/commands/command.h"
 
+#include "app/app.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context.h"
-#include "ui/manager.h"
+#include "app/ui/input_chain.h"
 
 namespace app {
 
@@ -60,20 +61,14 @@ void CancelCommand::onExecute(Context* context)
       break;
 
     case All:
+      // TODO should the ContextBar be a InputChainElement to intercept onCancel()?
       // Discard brush
       {
         Command* discardBrush = CommandsModule::instance()->getCommandByName(CommandId::DiscardBrush);
         context->executeCommand(discardBrush);
       }
 
-      // Deselect mask
-      if (context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-          ContextFlags::HasVisibleMask)) {
-        Command* deselectMask = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
-        context->executeCommand(deselectMask);
-      }
-
-      ui::Manager::getDefault()->invalidate();
+      App::instance()->inputChain().cancel(context);
       break;
   }
 }

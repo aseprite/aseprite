@@ -17,6 +17,7 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/input_chain.h"
 #include "app/ui/main_window.h"
 #include "app/ui/preview_editor.h"
 #include "app/ui/status_bar.h"
@@ -76,13 +77,17 @@ DocumentView* UIContext::activeView() const
 
 void UIContext::setActiveView(DocumentView* docView)
 {
+  MainWindow* mainWin = App::instance()->getMainWindow();
+
+  // Prioritize workspace for user input.
+  App::instance()->inputChain().prioritize(mainWin->getWorkspace());
+
   // Do nothing cases: 1) the view is already selected, or 2) the view
   // is the a preview.
   if (m_lastSelectedView == docView ||
       (docView && docView->isPreview()))
     return;
 
-  MainWindow* mainWin = App::instance()->getMainWindow();
   if (docView) {
     mainWin->getTabsBar()->selectTab(docView);
 

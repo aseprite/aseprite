@@ -10,18 +10,8 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/clear_mask.h"
-#include "app/cmd/deselect_mask.h"
 #include "app/commands/command.h"
-#include "app/commands/commands.h"
-#include "app/context_access.h"
-#include "app/modules/gui.h"
-#include "app/transaction.h"
-#include "app/ui/color_bar.h"
-#include "app/ui/main_window.h"
-#include "app/ui/timeline.h"
-#include "doc/layer.h"
-#include "doc/mask.h"
+#include "app/ui/input_chain.h"
 
 namespace app {
 
@@ -31,8 +21,8 @@ public:
   Command* clone() const override { return new ClearCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* ctx) override;
+  void onExecute(Context* ctx) override;
 };
 
 ClearCommand::ClearCommand()
@@ -42,58 +32,14 @@ ClearCommand::ClearCommand()
 {
 }
 
-bool ClearCommand::onEnabled(Context* context)
+bool ClearCommand::onEnabled(Context* ctx)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::ActiveLayerIsVisible |
-                             ContextFlags::ActiveLayerIsEditable |
-                             ContextFlags::ActiveLayerIsImage);
+  return App::instance()->inputChain().canClear(ctx);
 }
 
-void ClearCommand::onExecute(Context* context)
+void ClearCommand::onExecute(Context* ctx)
 {
-  // Clear of several frames is handled with ClearCel command.
-  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
-  if (range.enabled()) {
-    Command* subCommand = NULL;
-
-    switch (range.type()) {
-      case DocumentRange::kCels:
-        subCommand = CommandsModule::instance()->getCommandByName(CommandId::ClearCel);
-        break;
-      case DocumentRange::kFrames:
-        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveFrame);
-        break;
-      case DocumentRange::kLayers:
-        subCommand = CommandsModule::instance()->getCommandByName(CommandId::RemoveLayer);
-        break;
-    }
-
-    if (subCommand) {
-      context->executeCommand(subCommand);
-      return;
-    }
-  }
-
-  // TODO add support to clear the mask in the selected range of frames.
-
-  ContextWriter writer(context);
-  Document* document = writer.document();
-  bool visibleMask = document->isMaskVisible();
-
-  if (!writer.cel())
-    return;
-
-  {
-    Transaction transaction(writer.context(), "Clear");
-    transaction.execute(new cmd::ClearMask(writer.cel()));
-    if (visibleMask)
-      transaction.execute(new cmd::DeselectMask(document));
-    transaction.commit();
-  }
-  if (visibleMask)
-    document->generateMaskBoundaries();
-  update_screen_for_document(document);
+  App::instance()->inputChain().clear(ctx);
 }
 
 Command* CommandFactory::createClearCommand()

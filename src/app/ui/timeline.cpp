@@ -32,6 +32,7 @@
 #include "app/ui/configure_timeline_popup.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/input_chain.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
@@ -138,14 +139,6 @@ void Timeline::updateUsingEditor(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);
 
-  // As a sprite editor was selected, it looks like the user wants to
-  // execute commands targetting the editor instead of the
-  // timeline. Here we disable the selected range, so commands like
-  // Clear, Copy, Cut, etc. don't target the Timeline and they are
-  // sent to the active sprite editor.
-  m_range.disableRange();
-  invalidate();
-
   detachDocument();
 
   // We always update the editor. In this way the timeline keeps in
@@ -245,6 +238,10 @@ void Timeline::activateClipboardRange()
 bool Timeline::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
+
+    case kFocusEnterMessage:
+      App::instance()->inputChain().prioritize(this);
+      break;
 
     case kTimerMessage:
       if (static_cast<TimerMessage*>(msg)->timer() == &m_clipboard_timer) {
@@ -2331,6 +2328,103 @@ int Timeline::topHeight() const
 FrameTag* Timeline::Hit::getFrameTag() const
 {
   return get<FrameTag>(frameTag);
+}
+
+void Timeline::onNewInputPriority(InputChainElement* element)
+{
+  // As a another input element has priority (e.g. Timeline or
+  // Editor), it looks like the user wants to execute commands
+  // targetting the editor instead of the timeline. Here we disable
+  // the selected range, so commands like Clear, Copy, Cut, etc. don't
+  // target the Timeline and they are sent to the active sprite
+  // editor.
+  m_range.disableRange();
+  invalidate();
+}
+
+bool Timeline::onCanCut(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+bool Timeline::onCanCopy(Context* ctx)
+{
+  return
+    m_range.enabled() &&
+    ctx->checkFlags(ContextFlags::HasActiveDocument);
+}
+
+bool Timeline::onCanPaste(Context* ctx)
+{
+  return
+    (clipboard::get_current_format() == clipboard::ClipboardDocumentRange &&
+     ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable));
+}
+
+bool Timeline::onCanClear(Context* ctx)
+{
+  return (m_document && m_sprite && m_range.enabled());
+}
+
+bool Timeline::onCut(Context* ctx)
+{
+  return false;                 // TODO
+}
+
+bool Timeline::onCopy(Context* ctx)
+{
+  if (m_range.enabled()) {
+    const ContextReader reader(ctx);
+    if (reader.document()) {
+      clipboard::copy_range(reader, m_range);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Timeline::onPaste(Context* ctx)
+{
+  if (clipboard::get_current_format() == clipboard::ClipboardDocumentRange) {
+    clipboard::paste();
+    return true;
+  }
+  else
+    return false;
+}
+
+bool Timeline::onClear(Context* ctx)
+{
+  if (!m_document || !m_sprite || !m_range.enabled())
+    return false;
+
+  Command* cmd = nullptr;
+
+  switch (m_range.type()) {
+    case DocumentRange::kCels:
+      cmd = CommandsModule::instance()->getCommandByName(CommandId::ClearCel);
+      break;
+    case DocumentRange::kFrames:
+      cmd = CommandsModule::instance()->getCommandByName(CommandId::RemoveFrame);
+      break;
+    case DocumentRange::kLayers:
+      cmd = CommandsModule::instance()->getCommandByName(CommandId::RemoveLayer);
+      break;
+  }
+
+  if (cmd) {
+    ctx->executeCommand(cmd);
+    return true;
+  }
+  else
+    return false;
+}
+
+void Timeline::onCancel(Context* ctx)
+{
+  m_range.disableRange();
+  clearClipboardRange();
+  invalidate();
 }
 
 } // namespace app

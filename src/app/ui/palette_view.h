@@ -52,12 +52,13 @@ namespace app {
     void setColumns(int columns);
 
     void clearSelection();
-    void selectColor(int index);
+    void selectColor(int index, bool startRange);
     void selectRange(int index1, int index2);
 
     int getSelectedEntry() const;
     bool getSelectedRange(int& index1, int& index2) const;
     void getSelectedEntries(doc::PalettePicks& entries) const;
+    int getSelectedEntriesCount() const;
 
     app::Color getColorByPosition(const gfx::Point& pos);
 
@@ -66,7 +67,10 @@ namespace app {
 
     void copyToClipboard();
     void pasteFromClipboard();
+    void discardClipboardSelection();
     bool areColorsInClipboard() const;
+
+    Signal0<void> FocusEnter;
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

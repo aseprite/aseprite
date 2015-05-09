@@ -17,7 +17,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
@@ -104,18 +103,25 @@ void PaletteView::setColumns(int columns)
 
 void PaletteView::clearSelection()
 {
+  bool invalidate = (m_selectedEntries.picks() > 0);
+
   std::fill(m_selectedEntries.begin(),
             m_selectedEntries.end(), false);
+
+  if (invalidate)
+    this->invalidate();
 }
 
-void PaletteView::selectColor(int index)
+void PaletteView::selectColor(int index, bool startRange)
 {
   ASSERT(index >= 0 && index < Palette::MaxColors);
 
   if (m_currentEntry != index || !m_selectedEntries[index]) {
     m_currentEntry = index;
     m_rangeAnchor = index;
-    m_selectedEntries[index] = true;
+
+    if (startRange)
+      m_selectedEntries[index] = true;
 
     update_scroll(m_currentEntry);
     invalidate();
@@ -172,6 +178,11 @@ void PaletteView::getSelectedEntries(PalettePicks& entries) const
   entries = m_selectedEntries;
 }
 
+int PaletteView::getSelectedEntriesCount() const
+{
+  return m_selectedEntries.picks();
+}
+
 app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Point relPos = pos - getBounds().getOrigin();
@@ -218,8 +229,29 @@ void PaletteView::pasteFromClipboard()
       m_delegate->onPaletteViewPasteColors(
         m_clipboardEditor, m_clipboardEntries, m_selectedEntries);
 
+    // We just hide the marching ants, the user can paste multiple
+    // times.
     stopMarchingAnts();
+    invalidate();
   }
+}
+
+void PaletteView::discardClipboardSelection()
+{
+  bool redraw = false;
+
+  if (m_clipboardEditor) {
+    setClipboardEditor(nullptr);
+    redraw = true;
+  }
+
+  if (areColorsInClipboard()) {
+    stopMarchingAnts();
+    redraw = true;
+  }
+
+  if (redraw)
+    invalidate();
 }
 
 bool PaletteView::areColorsInClipboard() const
@@ -231,36 +263,13 @@ bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kKeyDownMessage: {
-      Key* key = KeyboardShortcuts::instance()->command(CommandId::Copy);
-      if (key && key->isPressed(msg)) {
-        copyToClipboard();
-        return true;
-      }
-
-      key = KeyboardShortcuts::instance()->command(CommandId::Paste);
-      if (key && key->isPressed(msg)) {
-        pasteFromClipboard();
-        return true;
-      }
-
-      if (isMarchingAntsRunning()) {
-        key = KeyboardShortcuts::instance()->command(CommandId::DeselectMask);
-        Key* esc = KeyboardShortcuts::instance()->command(CommandId::Cancel);
-        if ((key && key->isPressed(msg)) ||
-            (esc && esc->isPressed(msg))) {
-          stopMarchingAnts();
-          invalidate();
-          return true;
-        }
-      }
-
-      updateCopyFlag(msg);
+    case kFocusEnterMessage:
+      FocusEnter();
       break;
-    }
 
-    case kMouseEnterMessage:
+    case kKeyDownMessage:
     case kKeyUpMessage:
+    case kMouseEnterMessage:
       updateCopyFlag(msg);
       break;
 
@@ -297,7 +306,7 @@ bool PaletteView::onProcessMessage(Message* msg)
             if (msg->type() == kMouseMoveMessage)
               selectRange(m_rangeAnchor, idx);
             else
-              selectColor(idx);
+              selectColor(idx, true);
 
             // Emit signal
             if (m_delegate)
@@ -478,10 +487,8 @@ void PaletteView::onDrawMarchingAnts()
 
 void PaletteView::onDestroyEditor(Editor* editor)
 {
-  if (m_clipboardEditor == editor) {
-    setClipboardEditor(nullptr);
-    stopMarchingAnts();
-  }
+  if (m_clipboardEditor == editor)
+    discardClipboardSelection();
 }
 
 void PaletteView::request_size(int* w, int* h)

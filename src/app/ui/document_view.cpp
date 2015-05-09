@@ -13,11 +13,15 @@
 
 #include "app/app.h"
 #include "app/app_menus.h"
+#include "app/cmd/clear_mask.h"
+#include "app/cmd/deselect_mask.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
+#include "app/context_access.h"
 #include "app/document_access.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
+#include "app/transaction.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/editor_view.h"
@@ -27,6 +31,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
+#include "app/util/clipboard.h"
 #include "base/path.h"
 #include "doc/document_event.h"
 #include "doc/layer.h"
@@ -432,6 +437,111 @@ void DocumentView::onTotalFramesChanged(doc::DocumentEvent& ev)
 void DocumentView::onLayerRestacked(doc::DocumentEvent& ev)
 {
   m_editor->invalidate();
+}
+
+void DocumentView::onNewInputPriority(InputChainElement* element)
+{
+  // Do nothing
+}
+
+bool DocumentView::onCanCut(Context* ctx)
+{
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::ActiveLayerIsVisible |
+                         ContextFlags::ActiveLayerIsEditable |
+                         ContextFlags::HasVisibleMask |
+                         ContextFlags::HasActiveImage);
+}
+
+bool DocumentView::onCanCopy(Context* ctx)
+{
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::ActiveLayerIsVisible |
+                         ContextFlags::ActiveLayerIsEditable |
+                         ContextFlags::HasVisibleMask |
+                         ContextFlags::HasActiveImage);
+}
+
+bool DocumentView::onCanPaste(Context* ctx)
+{
+  return
+    (clipboard::get_current_format() == clipboard::ClipboardImage &&
+     ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                     ContextFlags::ActiveLayerIsVisible |
+                     ContextFlags::ActiveLayerIsEditable |
+                     ContextFlags::ActiveLayerIsImage));
+}
+
+bool DocumentView::onCanClear(Context* ctx)
+{
+  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                         ContextFlags::ActiveLayerIsVisible |
+                         ContextFlags::ActiveLayerIsEditable |
+                         ContextFlags::ActiveLayerIsImage);
+}
+
+bool DocumentView::onCut(Context* ctx)
+{
+  ContextWriter writer(ctx);
+  clipboard::cut(writer);
+  return true;
+}
+
+bool DocumentView::onCopy(Context* ctx)
+{
+  const ContextReader reader(ctx);
+  if (reader.site()->document() &&
+      static_cast<const app::Document*>(reader.site()->document())->isMaskVisible() &&
+      reader.site()->image()) {
+    clipboard::copy(reader);
+    return true;
+  }
+  else
+    return false;
+}
+
+bool DocumentView::onPaste(Context* ctx)
+{
+  if (clipboard::get_current_format() == clipboard::ClipboardImage) {
+    clipboard::paste();
+    return true;
+  }
+  else
+    return false;
+}
+
+bool DocumentView::onClear(Context* ctx)
+{
+  ContextWriter writer(ctx);
+  Document* document = writer.document();
+  bool visibleMask = document->isMaskVisible();
+
+  if (!writer.cel())
+    return false;
+
+  {
+    Transaction transaction(writer.context(), "Clear");
+    transaction.execute(new cmd::ClearMask(writer.cel()));
+    if (visibleMask)
+      transaction.execute(new cmd::DeselectMask(document));
+    transaction.commit();
+  }
+
+  if (visibleMask)
+    document->generateMaskBoundaries();
+
+  document->notifyGeneralUpdate();
+  return true;
+}
+
+void DocumentView::onCancel(Context* ctx)
+{
+  // Deselect mask
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                      ContextFlags::HasVisibleMask)) {
+    Command* deselectMask = CommandsModule::instance()->getCommandByName(CommandId::DeselectMask);
+    ctx->executeCommand(deselectMask);
+  }
 }
 
 } // namespace app
