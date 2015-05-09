@@ -195,7 +195,7 @@ endif()
 
 # Full-version or trial-mode?
 if(NOT ENABLE_TRIAL_MODE)
-  add_definitions(-DENABLE_SAVE)
+  add_definitions(-DENABLE_SAVE -DENABLE_DATA_RECOVERY)
 else()
   add_definitions(-DENABLE_TRIAL_MODE)
 endif()

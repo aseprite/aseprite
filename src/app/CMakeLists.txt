@@ -55,6 +55,17 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 ######################################################################
 # app-lib target
 
+set(data_recovery_files)
+if(NOT ENABLE_TRIAL_MODE)
+  set(data_recovery_files
+    crash/backup_observer.cpp
+    crash/data_recovery.cpp
+    crash/read_document.cpp
+    crash/session.cpp
+    crash/write_document.cpp
+    ui/data_recovery_view.cpp)
+endif()
+
 add_library(app-lib
   app.cpp
   app_menus.cpp
@@ -230,11 +241,6 @@ add_library(app-lib
   console.cpp
   context.cpp
   context_flags.cpp
-  crash/backup_observer.cpp
-  crash/data_recovery.cpp
-  crash/read_document.cpp
-  crash/session.cpp
-  crash/write_document.cpp
   document.cpp
   document_api.cpp
   document_exporter.cpp
@@ -302,7 +308,6 @@ add_library(app-lib
   ui/color_spectrum.cpp
   ui/configure_timeline_popup.cpp
   ui/context_bar.cpp
-  ui/data_recovery_view.cpp
   ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
@@ -373,4 +378,5 @@ add_library(app-lib
   widget_loader.cpp
   xml_document.cpp
   xml_exception.cpp
+  ${data_recovery_files}
   ${generated_files})

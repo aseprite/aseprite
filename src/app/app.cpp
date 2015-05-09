@@ -114,11 +114,15 @@ public:
   }
 
   void createDataRecovery() {
+#ifdef ENABLE_DATA_RECOVERY
     m_recovery = new app::crash::DataRecovery(&m_ui_context);
+#endif
   }
 
   void deleteDataRecovery() {
+#ifdef ENABLE_DATA_RECOVERY
     delete m_recovery;
+#endif
   }
 
 };

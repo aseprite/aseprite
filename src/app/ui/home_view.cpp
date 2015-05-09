@@ -63,17 +63,21 @@ HomeView::HomeView()
 
 HomeView::~HomeView()
 {
+#ifdef ENABLE_DATA_RECOVERY
   if (m_dataRecoveryView) {
     if (m_dataRecoveryView->getParent())
       App::instance()->getMainWindow()->getWorkspace()->removeView(m_dataRecoveryView);
     delete m_dataRecoveryView;
   }
+#endif
 }
 
 void HomeView::showDataRecovery(crash::DataRecovery* dataRecovery)
 {
+#ifdef ENABLE_DATA_RECOVERY
   m_dataRecovery = dataRecovery;
   recoverSpritesPlaceholder()->setVisible(true);
+#endif
 }
 
 std::string HomeView::getTabText()
@@ -173,6 +177,7 @@ Preferences& HomeView::getPreferences()
 
 void HomeView::onRecoverSprites()
 {
+#ifdef ENABLE_DATA_RECOVERY
   if (!m_dataRecoveryView)
     m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
 
@@ -180,6 +185,7 @@ void HomeView::onRecoverSprites()
     App::instance()->getMainWindow()->getWorkspace()->addView(m_dataRecoveryView);
 
   App::instance()->getMainWindow()->getTabsBar()->selectTab(m_dataRecoveryView);
+#endif
 }
 
 } // namespace app
