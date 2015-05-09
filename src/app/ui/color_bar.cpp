@@ -44,6 +44,7 @@
 #include "ui/separator.h"
 #include "ui/splitter.h"
 #include "ui/system.h"
+#include "ui/tooltips.h"
 
 #include <cstring>
 
@@ -171,6 +172,15 @@ ColorBar::ColorBar(int align)
   m_buttons.addItem(theme->get_part(PART_PAL_SORT));
   m_buttons.addItem(theme->get_part(PART_PAL_PRESETS));
   m_buttons.addItem(theme->get_part(PART_PAL_OPTIONS));
+
+  // Tooltips
+  TooltipManager* tooltipManager = new TooltipManager();
+  addChild(tooltipManager);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::EDIT), "Edit Color", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", JI_BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", JI_BOTTOM);
 
   onColorButtonChange(getFgColor());
 
