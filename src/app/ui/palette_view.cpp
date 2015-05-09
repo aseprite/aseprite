@@ -245,7 +245,12 @@ void PaletteView::discardClipboardSelection()
     redraw = true;
   }
 
-  if (areColorsInClipboard()) {
+  if (m_clipboardEntries.picks() > 0) {
+    m_clipboardEntries.clear();
+    redraw = true;
+  }
+
+  if (isMarchingAntsRunning()) {
     stopMarchingAnts();
     redraw = true;
   }
@@ -256,7 +261,7 @@ void PaletteView::discardClipboardSelection()
 
 bool PaletteView::areColorsInClipboard() const
 {
-  return isMarchingAntsRunning();
+  return (m_clipboardEditor && m_clipboardEntries.picks());
 }
 
 bool PaletteView::onProcessMessage(Message* msg)

@@ -36,6 +36,10 @@ namespace doc {
     const_reference operator[](int idx) const { return m_items[idx]; }
     reference operator[](int idx) { return m_items[idx]; }
 
+    void clear() {
+      std::fill(m_items.begin(), m_items.end(), false);
+    }
+
     // If there is just one selected color (or none), we select them all.
     void pickAllIfNeeded() {
       if (picks() < 2)
