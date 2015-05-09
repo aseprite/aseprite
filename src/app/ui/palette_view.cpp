@@ -68,6 +68,7 @@ PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsi
   , m_clipboardEntries(Palette::MaxColors)
   , m_isUpdatingColumns(false)
   , m_hot(Hit::NONE)
+  , m_copy(false)
   , m_clipboardEditor(nullptr)
 {
   setFocusStop(true);
@@ -253,8 +254,15 @@ bool PaletteView::onProcessMessage(Message* msg)
           return true;
         }
       }
+
+      updateCopyFlag(msg);
       break;
     }
+
+    case kMouseEnterMessage:
+    case kKeyUpMessage:
+      updateCopyFlag(msg);
+      break;
 
     case kMouseDownMessage:
       switch (m_hot.part) {
@@ -350,10 +358,7 @@ bool PaletteView::onProcessMessage(Message* msg)
         m_hot = hit;
         invalidate();
       }
-      if (m_hot.part == Hit::OUTLINE)
-        ui::set_mouse_cursor(kMoveCursor);
-      else
-        ui::set_mouse_cursor(kArrowCursor);
+      setCursor();
       return true;
     }
 
@@ -588,24 +593,55 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 
 void PaletteView::dropColors(int beforeIndex)
 {
-  Palette* palette = get_current_palette();
-  Remap remap = Remap::moveSelectedEntriesTo(m_selectedEntries, beforeIndex);
+  Palette palette(*get_current_palette());
+  Palette newPalette(palette);
+  Remap remap(palette.size());
 
-  auto oldSelectedCopies = m_selectedEntries;
-  Palette oldPalCopy(*palette);
-  for (int i=0; i<palette->size(); ++i) {
-    palette->setEntry(remap[i], oldPalCopy.getEntry(i));
-    m_selectedEntries[remap[i]] = oldSelectedCopies[i];
+  // Copy colors
+  if (m_copy) {
+    int picks = m_selectedEntries.picks();
+    remap = create_remap_to_expand_palette(palette.size(), picks, beforeIndex);
+
+    for (int i=0; i<palette.size(); ++i)
+      newPalette.setEntry(remap[i], palette.getEntry(i));
+
+    for (int i=0, j=0; i<palette.size(); ++i) {
+      if (m_selectedEntries[i])
+        newPalette.setEntry(beforeIndex + (j++), palette.getEntry(i));
+    }
+
+    for (int i=0, j=0; i<palette.size(); ++i) {
+      if (m_selectedEntries[i]) {
+        if (m_currentEntry == i) {
+          m_currentEntry = beforeIndex + j;
+          break;
+        }
+        ++j;
+      }
+    }
+
+    for (int i=0; i<palette.size(); ++i)
+      m_selectedEntries[i] = (i >= beforeIndex && i < beforeIndex + picks);
+  }
+  // Move colors
+  else {
+    remap = create_remap_to_move_picks(m_selectedEntries, beforeIndex);
+
+    auto oldSelectedCopies = m_selectedEntries;
+    for (int i=0; i<palette.size(); ++i) {
+      newPalette.setEntry(remap[i], palette.getEntry(i));
+      m_selectedEntries[remap[i]] = oldSelectedCopies[i];
+    }
+
+    m_currentEntry = remap[m_currentEntry];
   }
 
-  m_currentEntry = remap[m_currentEntry];
-
   if (m_delegate) {
-    m_delegate->onPaletteViewRemapColors(remap, palette);
+    m_delegate->onPaletteViewRemapColors(remap, &newPalette);
     m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
   }
 
-  set_current_palette(palette, false);
+  set_current_palette(&newPalette, false);
   getManager()->invalidate();
 }
 
@@ -669,6 +705,27 @@ void PaletteView::setClipboardEditor(Editor* editor)
 
   if (m_clipboardEditor)
     m_clipboardEditor->addObserver(this);
+}
+
+void PaletteView::updateCopyFlag(ui::Message* msg)
+{
+  bool oldCopy = m_copy;
+  m_copy = (msg->ctrlPressed() || msg->altPressed());
+  if (oldCopy != m_copy)
+    setCursor();
+}
+
+void PaletteView::setCursor()
+{
+  if (m_state == State::DRAGGING_OUTLINE ||
+      m_hot.part == Hit::OUTLINE) {
+    if (m_copy)
+      ui::set_mouse_cursor(kArrowPlusCursor);
+    else
+      ui::set_mouse_cursor(kMoveCursor);
+  }
+  else
+    ui::set_mouse_cursor(kArrowCursor);
 }
 
 } // namespace app

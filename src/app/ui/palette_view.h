@@ -121,6 +121,8 @@ namespace app {
                                int outlineWidth) const;
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void setClipboardEditor(Editor* editor);
+    void updateCopyFlag(ui::Message* msg);
+    void setCursor();
 
     State m_state;
     bool m_editable;
@@ -134,6 +136,7 @@ namespace app {
     bool m_isUpdatingColumns;
     ScopedConnection m_conn;
     Hit m_hot;
+    bool m_copy;
     Editor* m_clipboardEditor;
   };
 

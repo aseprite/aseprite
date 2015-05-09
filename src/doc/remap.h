@@ -18,11 +18,6 @@ namespace doc {
   public:
     Remap(int entries) : m_map(entries, 0) { }
 
-    // Creates a map to move a set of selected entries before the
-    // given index "beforeIndex".
-    static Remap moveSelectedEntriesTo(
-      const PalettePicks& picks, int beforeIndex);
-
     int size() const {
       return (int)m_map.size();
     }
@@ -49,6 +44,12 @@ namespace doc {
   private:
     std::vector<int> m_map;
   };
+
+  // Creates a map to move a set of selected entries before the given
+  // index "beforeIndex".
+  Remap create_remap_to_move_picks(const PalettePicks& picks, int beforeIndex);
+
+  Remap create_remap_to_expand_palette(int size, int count, int beforeIndex);
 
 } // namespace doc
 

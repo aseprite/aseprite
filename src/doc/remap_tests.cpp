@@ -11,18 +11,19 @@
 #include <gtest/gtest.h>
 
 #include "doc/remap.h"
+#include "doc/palette_picks.h"
 
 using namespace doc;
 
-TEST(Remap, Basics)
+TEST(Remap, RemapToMovePicks)
 {
-  std::vector<bool> entries(20);
+  PalettePicks entries(20);
   std::fill(entries.begin(), entries.end(), false);
   entries[6] =
     entries[7] =
     entries[14] = true;
 
-  Remap map = Remap::moveSelectedEntriesTo(entries, 1);
+  Remap map = create_remap_to_move_picks(entries, 1);
 
   EXPECT_EQ(0, map[0]);
   EXPECT_EQ(4, map[1]);
@@ -45,7 +46,7 @@ TEST(Remap, Basics)
   EXPECT_EQ(18, map[18]);
   EXPECT_EQ(19, map[19]);
 
-  map = Remap::moveSelectedEntriesTo(entries, 18);
+  map = create_remap_to_move_picks(entries, 18);
 
   EXPECT_EQ(0, map[0]);
   EXPECT_EQ(1, map[1]);
@@ -67,6 +68,35 @@ TEST(Remap, Basics)
   EXPECT_EQ(14, map[17]);
   EXPECT_EQ(18, map[18]);
   EXPECT_EQ(19, map[19]);
+}
+
+TEST(Remap, RemapToExpandPalette)
+{
+  Remap map = create_remap_to_expand_palette(10, 3, 1);
+
+  EXPECT_EQ(0, map[0]);
+  EXPECT_EQ(4, map[1]);
+  EXPECT_EQ(5, map[2]);
+  EXPECT_EQ(6, map[3]);
+  EXPECT_EQ(7, map[4]);
+  EXPECT_EQ(8, map[5]);
+  EXPECT_EQ(9, map[6]);
+  EXPECT_EQ(1, map[7]);
+  EXPECT_EQ(2, map[8]);
+  EXPECT_EQ(3, map[9]);
+
+  map = create_remap_to_expand_palette(10, 3, 8);
+
+  EXPECT_EQ(0, map[0]);
+  EXPECT_EQ(1, map[1]);
+  EXPECT_EQ(2, map[2]);
+  EXPECT_EQ(3, map[3]);
+  EXPECT_EQ(4, map[4]);
+  EXPECT_EQ(5, map[5]);
+  EXPECT_EQ(6, map[6]);
+  EXPECT_EQ(7, map[7]);
+  EXPECT_EQ(8, map[8]);
+  EXPECT_EQ(9, map[9]);
 }
 
 int main(int argc, char** argv)

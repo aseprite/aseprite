@@ -14,10 +14,7 @@
 
 namespace doc {
 
-// TODO this should be a non-member function, it's related to PalettePicks and Remap
-
-// static
-Remap Remap::moveSelectedEntriesTo(const PalettePicks& picks, int beforeIndex)
+Remap create_remap_to_move_picks(const PalettePicks& picks, int beforeIndex)
 {
   Remap map(picks.size());
 
@@ -45,6 +42,24 @@ Remap Remap::moveSelectedEntriesTo(const PalettePicks& picks, int beforeIndex)
     }
   }
 
+  return map;
+}
+
+Remap create_remap_to_expand_palette(int size, int count, int beforeIndex)
+{
+  Remap map(size);
+
+  int j, k = 0;
+  for (int i=0; i<size; ++i) {
+    if (i < beforeIndex)
+      j = i;
+    else if (i + count < size)
+      j = i + count;
+    else
+      j = beforeIndex + (k++);
+
+    map.map(i, j);
+  }
   return map;
 }
 
