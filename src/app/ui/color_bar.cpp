@@ -26,6 +26,7 @@
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_spectrum.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -35,6 +36,7 @@
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "doc/sort_palette.h"
+#include "doc/sprite.h"
 #include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
@@ -391,6 +393,47 @@ void ColorBar::onPaletteViewChangeSize(int boxsize)
   App::instance()->preferences().colorBar.boxSize(boxsize);
 }
 
+void ColorBar::onPaletteViewPasteColors(
+  Editor* editor, const doc::PalettePicks& from, const doc::PalettePicks& _to)
+{
+  if (!from.picks() || !_to.picks()) // Nothing to do
+    return;
+
+  doc::PalettePicks to = _to;
+  int to_first = to.firstPick();
+  int to_last = to.lastPick();
+
+  // Add extra picks in to range if it's needed to paste more colors.
+    int from_picks = from.picks();
+    int to_picks = to.picks();
+  if (to_picks < from_picks) {
+    for (int j=to_last+1; j<to.size() && to_picks<from_picks; ++j) {
+      to[j] = true;
+      ++to_picks;
+    }
+  }
+
+  Palette* copyFromPalette = editor->sprite()->palette(editor->frame());
+  Palette newPalette(*get_current_palette());
+
+  int i = 0;
+  int j = to_first;
+
+  for (auto state : from) {
+    if (state) {
+      if (j < newPalette.size()) {
+        newPalette.setEntry(j, copyFromPalette->getEntry(i));
+        for (++j; j<to.size(); ++j)
+          if (to[j])
+            break;
+      }
+    }
+    ++i;
+  }
+
+  setPalette(&newPalette, "Paste Colors");
+}
+
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
   if (!m_lock)
@@ -429,24 +472,11 @@ void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
 
 void ColorBar::onReverseColors()
 {
-  PaletteView::SelectedEntries entries;
+  doc::PalettePicks entries;
   m_paletteView.getSelectedEntries(entries);
 
-  // Count the number of selected entries.
-  int n = 0;
-  for (bool state : entries) {
-    if (state)
-      ++n;
-  }
-
-  // If there is just one selected color, we select sort them all.
-  if (n < 2) {
-    n = 0;
-    for (auto& state : entries) {
-      state = true;
-      ++n;
-    }
-  }
+  entries.pickAllIfNeeded();
+  int n = entries.picks();
 
   std::vector<int> mapToOriginal(n); // Maps index from selectedPalette -> palette
   int i = 0, j = 0;
@@ -473,24 +503,11 @@ void ColorBar::onReverseColors()
 
 void ColorBar::onSortBy(SortPaletteBy channel)
 {
-  PaletteView::SelectedEntries entries;
+  PalettePicks entries;
   m_paletteView.getSelectedEntries(entries);
 
-  // Count the number of selected entries.
-  int n = 0;
-  for (bool state : entries) {
-    if (state)
-      ++n;
-  }
-
-  // If there is just one selected color, we select sort them all.
-  if (n < 2) {
-    n = 0;
-    for (auto& state : entries) {
-      state = true;
-      ++n;
-    }
-  }
+  entries.pickAllIfNeeded();
+  int n = entries.picks();
 
   // Create a "subpalette" with selected entries only.
   Palette palette(*get_current_palette());

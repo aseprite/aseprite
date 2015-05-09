@@ -72,14 +72,12 @@ protected:
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const app::Color& color);
   void onColorTypeButtonClick(Event& ev);
-  void onMoreOptionsClick(Event& ev);
-  void onCopyColorsClick(Event& ev);
-  void onPasteColorsClick(Event& ev);
 
 private:
   void selectColorType(app::Color::Type type);
   void setPaletteEntry(const app::Color& color);
   void setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel);
+  void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
   void onPalChange();
@@ -91,11 +89,8 @@ private:
   RadioButton m_hsvButton;
   HexColorEntry m_hexColorEntry;
   Label m_entryLabel;
-  Button m_moreOptions;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
-  Button m_copyButton;
-  Button m_pasteButton;
 
   // This variable is used to avoid updating the m_hexColorEntry text
   // when the color change is generated from a
@@ -116,10 +111,6 @@ private:
   bool m_selfPalChange;
 
   ScopedConnection m_palChangeConn;
-
-  // Internal-clipboard to copy & paste colors between palettes. It's
-  // used in onCopy/PasteColorsClick.
-  std::vector<uint32_t> m_clipboardColors;
 };
 
 static PaletteEntryEditor* g_window = NULL;
@@ -242,9 +233,6 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_rgbButton("RGB", 1, kButtonWidget)
   , m_hsvButton("HSB", 1, kButtonWidget)
   , m_entryLabel("")
-  , m_moreOptions("+")
-  , m_copyButton("Copy")
-  , m_pasteButton("Paste")
   , m_disableHexUpdate(false)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
@@ -257,26 +245,12 @@ PaletteEntryEditor::PaletteEntryEditor()
 
   setup_mini_look(&m_rgbButton);
   setup_mini_look(&m_hsvButton);
-  setup_mini_look(&m_moreOptions);
-  setup_mini_look(&m_copyButton);
-  setup_mini_look(&m_pasteButton);
 
   // Top box
   m_topBox.addChild(&m_rgbButton);
   m_topBox.addChild(&m_hsvButton);
   m_topBox.addChild(&m_hexColorEntry);
   m_topBox.addChild(&m_entryLabel);
-  m_topBox.addChild(new BoxFiller);
-  m_topBox.addChild(&m_moreOptions);
-
-  // Bottom box
-  {
-    Box* box = new Box(JI_HORIZONTAL);
-    box->child_spacing = 0;
-    box->addChild(&m_copyButton);
-    box->addChild(&m_pasteButton);
-    m_bottomBox.addChild(box);
-  }
 
   // Main vertical box
   m_vbox.addChild(&m_topBox);
@@ -285,14 +259,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_vbox.addChild(&m_bottomBox);
   addChild(&m_vbox);
 
-  // Hide (or show) the "More Options" depending the saved value in .cfg file
-  m_bottomBox.setVisible(get_config_bool("PaletteEditor", "ShowMoreOptions", false));
-
   m_rgbButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
   m_hsvButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
-  m_moreOptions.Click.connect(&PaletteEntryEditor::onMoreOptionsClick, this);
-  m_copyButton.Click.connect(&PaletteEntryEditor::onCopyColorsClick, this);
-  m_pasteButton.Click.connect(&PaletteEntryEditor::onPasteColorsClick, this);
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
@@ -325,7 +293,7 @@ void PaletteEntryEditor::setColor(const app::Color& color)
     m_hexColorEntry.setColor(color);
 
   PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
-  PaletteView::SelectedEntries entries;
+  PalettePicks entries;
   palette_editor->getSelectedEntries(entries);
   int i, j, i2;
 
@@ -447,99 +415,10 @@ void PaletteEntryEditor::onColorTypeButtonClick(Event& ev)
   else if (source == &m_hsvButton) selectColorType(app::Color::HsvType);
 }
 
-void PaletteEntryEditor::onMoreOptionsClick(Event& ev)
-{
-  Size reqSize;
-
-  if (m_bottomBox.isVisible()) {
-    set_config_bool("PaletteEditor", "ShowMoreOptions", false);
-    m_bottomBox.setVisible(false);
-
-    // Get the required size of the "More options" panel
-    reqSize = m_bottomBox.getPreferredSize();
-    reqSize.h += 4;
-
-    // Remove the space occupied by the "More options" panel
-    moveWindow(gfx::Rect(getOrigin(), getSize() - gfx::Size(0, reqSize.h)));
-  }
-  else {
-    set_config_bool("PaletteEditor", "ShowMoreOptions", true);
-    m_bottomBox.setVisible(true);
-
-    // Get the required size of the whole window
-    reqSize = getPreferredSize();
-
-    // Add space for the "more_options" panel
-    if (getBounds().h < reqSize.h) {
-      gfx::Rect rect(getOrigin(), gfx::Size(getBounds().w, reqSize.h));
-
-      // Show the expanded area inside the screen
-      if (rect.y2() > ui::display_h())
-        rect.offset(0, ui::display_h() - rect.y2());
-
-      moveWindow(rect);
-    }
-    else
-      setBounds(getBounds()); // TODO layout() method is missing
-  }
-
-  // Redraw the window
-  invalidate();
-}
-
-void PaletteEntryEditor::onCopyColorsClick(Event& ev)
-{
-  // Get the selected entries in the palette view.
-  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
-  PaletteView::SelectedEntries selectedEntries;
-  palette_editor->getSelectedEntries(selectedEntries);
-
-  // Copy all selected entries into "m_clipboardColors" vector. These
-  // entries then are copied back to the palette in the "paste"
-  // operation (onPasteColorsClick).
-  Palette* palette = get_current_palette();
-  m_clipboardColors.clear();
-  for (int i=0; i<(int)selectedEntries.size(); ++i)
-    if (selectedEntries[i])
-      m_clipboardColors.push_back(palette->getEntry(i));
-}
-
-void PaletteEntryEditor::onPasteColorsClick(Event& ev)
-{
-  // Get the selected entries in the palette view.
-  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
-  PaletteView::SelectedEntries selectedEntries;
-  palette_editor->getSelectedEntries(selectedEntries);
-
-  // Count how many colors are selected so we can continue pasting
-  // colors even if the current number of selected colors is less than
-  // the number of colors into the clipboard.
-  int selectedEntriesCount = 0;
-  for (int i=0; i<(int)selectedEntries.size(); ++i)
-    if (selectedEntries[i])
-      selectedEntriesCount++;
-
-  Palette* palette = get_current_palette();
-  for (int i=0, j=0; i<(int)selectedEntries.size() && j<(int)m_clipboardColors.size(); ++i) {
-    // The color is pasted if the entry is selected or if the
-    // clipboard contains more entries than the current number of
-    // selected palette entries.
-    if (selectedEntries[i] || j >= selectedEntriesCount)
-      palette->setEntry(i, m_clipboardColors[j++]);
-  }
-
-  updateCurrentSpritePalette("Paste Colors");
-  updateColorBar();
-
-  // Generate onPalChange() event so we update all sliders to the new
-  // values.
-  onPalChange();
-}
-
 void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
-  PaletteView::SelectedEntries entries;
+  PalettePicks entries;
   palView->getSelectedEntries(entries);
 
   color_t new_pal_color = doc::rgba(color.getRed(),
@@ -556,7 +435,7 @@ void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 void PaletteEntryEditor::setPaletteEntryChannel(const app::Color& color, ColorSliders::Channel channel)
 {
   PaletteView* palView = ColorBar::instance()->getPaletteView();
-  PaletteView::SelectedEntries entries;
+  PalettePicks entries;
   palView->getSelectedEntries(entries);
 
   int begSel, endSel;

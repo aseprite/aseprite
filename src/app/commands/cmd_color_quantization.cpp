@@ -57,26 +57,11 @@ void ColorQuantizationCommand::onExecute(Context* context)
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
     if (sprite) {
-      PaletteView::SelectedEntries entries;
+      PalettePicks entries;
       ColorBar::instance()->getPaletteView()->getSelectedEntries(entries);
 
-      // TODO convert SelectedEntries into a class, and put the
-      // following lines in that class it is used several times (here
-      // and in ColorBar)
-
-      int n = 0;
-      for (bool state : entries) {
-        if (state)
-          ++n;
-      }
-
-      if (n < 2) {
-        n = 0;
-        for (auto& state : entries) {
-          state = true;
-          ++n;
-        }
-      }
+      entries.pickAllIfNeeded();
+      int n = entries.picks();
 
       Palette palette(frame, n);
       render::create_palette_from_rgb(sprite, frame, &palette);

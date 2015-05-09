@@ -75,6 +75,7 @@ namespace app {
     void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
     void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) override;
     void onPaletteViewChangeSize(int boxsize) override;
+    void onPaletteViewPasteColors(Editor* editor, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
 
   private:
     void destroyRemap();

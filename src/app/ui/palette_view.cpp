@@ -12,8 +12,12 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_utils.h"
+#include "app/commands/commands.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
@@ -60,9 +64,11 @@ PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsi
   , m_boxsize(boxsize)
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
-  , m_selectedEntries(Palette::MaxColors, false)
+  , m_selectedEntries(Palette::MaxColors)
+  , m_clipboardEntries(Palette::MaxColors)
   , m_isUpdatingColumns(false)
   , m_hot(Hit::NONE)
+  , m_clipboardEditor(nullptr)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
@@ -72,6 +78,11 @@ PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsi
   this->child_spacing = 1 * guiscale();
 
   m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
+}
+
+PaletteView::~PaletteView()
+{
+  setClipboardEditor(nullptr);
 }
 
 void PaletteView::setColumns(int columns)
@@ -155,7 +166,7 @@ bool PaletteView::getSelectedRange(int& index1, int& index2) const
     return false;
 }
 
-void PaletteView::getSelectedEntries(SelectedEntries& entries) const
+void PaletteView::getSelectedEntries(PalettePicks& entries) const
 {
   entries = m_selectedEntries;
 }
@@ -188,9 +199,62 @@ void PaletteView::setBoxSize(int boxsize)
     view->layout();
 }
 
+void PaletteView::copyToClipboard()
+{
+  if (current_editor) {
+    setClipboardEditor(current_editor);
+    m_clipboardEntries = m_selectedEntries;
+
+    startMarchingAnts();
+    invalidate();
+  }
+}
+
+void PaletteView::pasteFromClipboard()
+{
+  if (m_clipboardEditor && m_clipboardEntries.picks()) {
+    if (m_delegate)
+      m_delegate->onPaletteViewPasteColors(
+        m_clipboardEditor, m_clipboardEntries, m_selectedEntries);
+
+    stopMarchingAnts();
+  }
+}
+
+bool PaletteView::areColorsInClipboard() const
+{
+  return isMarchingAntsRunning();
+}
+
 bool PaletteView::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
+
+    case kKeyDownMessage: {
+      Key* key = KeyboardShortcuts::instance()->command(CommandId::Copy);
+      if (key && key->isPressed(msg)) {
+        copyToClipboard();
+        return true;
+      }
+
+      key = KeyboardShortcuts::instance()->command(CommandId::Paste);
+      if (key && key->isPressed(msg)) {
+        pasteFromClipboard();
+        return true;
+      }
+
+      if (isMarchingAntsRunning()) {
+        key = KeyboardShortcuts::instance()->command(CommandId::DeselectMask);
+        Key* esc = KeyboardShortcuts::instance()->command(CommandId::Cancel);
+        if ((key && key->isPressed(msg)) ||
+            (esc && esc->isPressed(msg))) {
+          stopMarchingAnts();
+          invalidate();
+          return true;
+        }
+      }
+      break;
+    }
 
     case kMouseDownMessage:
       switch (m_hot.part) {
@@ -331,44 +395,32 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
     if (!m_selectedEntries[i])
       continue;
 
-    const int max = Palette::MaxColors;
-    bool top    = (i >= m_columns            && i-m_columns >= 0  ? m_selectedEntries[i-m_columns]: false);
-    bool bottom = (i < max-m_columns         && i+m_columns < max ? m_selectedEntries[i+m_columns]: false);
-    bool left   = ((i%m_columns)>0           && i-1         >= 0  ? m_selectedEntries[i-1]: false);
-    bool right  = ((i%m_columns)<m_columns-1 && i+1         < max ? m_selectedEntries[i+1]: false);
-
-    gfx::Rect box = getPaletteEntryBounds(i);
-    gfx::Rect clipR = box;
-    box.enlarge(outlineWidth);
-
-    if (!left) {
-      clipR.x -= outlineWidth;
-      clipR.w += outlineWidth;
-    }
-
-    if (!top) {
-      clipR.y -= outlineWidth;
-      clipR.h += outlineWidth;
-    }
-
-    if (!right)
-      clipR.w += outlineWidth;
-    else {
-      clipR.w += guiscale();
-      box.w += outlineWidth;
-    }
-
-    if (!bottom)
-      clipR.h += outlineWidth;
-    else {
-      clipR.h += guiscale();
-      box.h += outlineWidth;
-    }
+    gfx::Rect box, clipR;
+    getEntryBoundsAndClip(i, m_selectedEntries, box, clipR, outlineWidth);
 
     IntersectClip clip(g, clipR);
     if (clip) {
       theme->styles.timelineRangeOutline()->paint(g, box,
         NULL, state);
+    }
+  }
+
+  // Draw marching ants
+  if (isMarchingAntsRunning() &&
+      m_clipboardEditor &&
+      m_clipboardEditor == current_editor) {
+    for (int i=0; i<palette->size(); ++i) {
+      if (!m_clipboardEntries[i])
+        continue;
+
+      gfx::Rect box, clipR;
+      getEntryBoundsAndClip(i, m_clipboardEntries, box, clipR, outlineWidth);
+
+      IntersectClip clip(g, clipR);
+      if (clip) {
+        CheckedDrawMode checked(g, getMarchingAntsOffset());
+        g->drawRect(gfx::rgba(0, 0, 0), box);
+      }
     }
   }
 
@@ -412,6 +464,19 @@ void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
   gfx::Size sz;
   request_size(&sz.w, &sz.h);
   ev.setPreferredSize(sz);
+}
+
+void PaletteView::onDrawMarchingAnts()
+{
+  invalidate();
+}
+
+void PaletteView::onDestroyEditor(Editor* editor)
+{
+  if (m_clipboardEditor == editor) {
+    setClipboardEditor(nullptr);
+    stopMarchingAnts();
+  }
 }
 
 void PaletteView::request_size(int* w, int* h)
@@ -464,7 +529,7 @@ void PaletteView::onAppPaletteChange()
   invalidate();
 }
 
-gfx::Rect PaletteView::getPaletteEntryBounds(int index)
+gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
 {
   gfx::Rect bounds = getClientBounds();
   int cols = m_columns;
@@ -542,6 +607,68 @@ void PaletteView::dropColors(int beforeIndex)
 
   set_current_palette(palette, false);
   getManager()->invalidate();
+}
+
+void PaletteView::getEntryBoundsAndClip(int i, const PalettePicks& entries,
+                                        gfx::Rect& box, gfx::Rect& clip,
+                                        int outlineWidth) const
+{
+  box = clip = getPaletteEntryBounds(i);
+  box.enlarge(outlineWidth);
+
+  // Left
+  if (!pickedXY(entries, i, -1, 0)) {
+    clip.x -= outlineWidth;
+    clip.w += outlineWidth;
+  }
+
+  // Top
+  if (!pickedXY(entries, i, 0, -1)) {
+    clip.y -= outlineWidth;
+    clip.h += outlineWidth;
+  }
+
+  // Right
+  if (!pickedXY(entries, i, +1, 0))
+    clip.w += outlineWidth;
+  else {
+    clip.w += guiscale();
+    box.w += outlineWidth;
+  }
+
+  // Bottom
+  if (!pickedXY(entries, i, 0, +1))
+    clip.h += outlineWidth;
+  else {
+    clip.h += guiscale();
+    box.h += outlineWidth;
+  }
+}
+
+bool PaletteView::pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const
+{
+  int x = (i % m_columns) + dx;
+  int y = (i / m_columns) + dy;
+
+  if (x < 0 || x >= m_columns || y < 0 || y > (Palette::MaxColors-1)/m_columns)
+    return false;
+
+  i = x + y*m_columns;
+  if (i >= 0 && i < entries.size())
+    return entries[i];
+  else
+    return false;
+}
+
+void PaletteView::setClipboardEditor(Editor* editor)
+{
+  if (m_clipboardEditor)
+    m_clipboardEditor->removeObserver(this);
+
+  m_clipboardEditor = editor;
+
+  if (m_clipboardEditor)
+    m_clipboardEditor->addObserver(this);
 }
 
 } // namespace app

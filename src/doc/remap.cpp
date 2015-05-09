@@ -10,18 +10,22 @@
 
 #include "doc/remap.h"
 
+#include "doc/palette_picks.h"
+
 namespace doc {
 
+// TODO this should be a non-member function, it's related to PalettePicks and Remap
+
 // static
-Remap Remap::moveSelectedEntriesTo(const std::vector<bool>& selectedEntries, int beforeIndex)
+Remap Remap::moveSelectedEntriesTo(const PalettePicks& picks, int beforeIndex)
 {
-  Remap map(selectedEntries.size());
+  Remap map(picks.size());
 
   int selectedTotal = 0;
   int selectedBeforeIndex = 0;
 
   for (int i=0; i<map.size(); ++i) {
-    if (selectedEntries[i]) {
+    if (picks[i]) {
       ++selectedTotal;
       if (i < beforeIndex)
         ++selectedBeforeIndex;
@@ -32,7 +36,7 @@ Remap Remap::moveSelectedEntriesTo(const std::vector<bool>& selectedEntries, int
     if (k == beforeIndex - selectedBeforeIndex)
       k += selectedTotal;
 
-    if (selectedEntries[i]) {
+    if (picks[i]) {
       map.map(i, beforeIndex - selectedBeforeIndex + j);
       ++j;
     }

@@ -9,7 +9,11 @@
 #define APP_UI_PALETTE_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/color.h"
+#include "app/ui/editor/editor_observer.h"
+#include "app/ui/marching_ants.h"
 #include "base/connection.h"
+#include "doc/palette_picks.h"
 #include "ui/event.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
@@ -23,19 +27,26 @@ namespace doc {
 
 namespace app {
 
+  class Editor;
+
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
     virtual void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) { }
     virtual void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) { }
     virtual void onPaletteViewChangeSize(int boxsize) { }
+    virtual void onPaletteViewPasteColors(
+      Editor* editor, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
   };
 
-  class PaletteView : public ui::Widget {
+  class PaletteView : public ui::Widget
+                    , public MarchingAnts
+                    , public EditorObserver {
   public:
-    typedef std::vector<bool> SelectedEntries;
-
     PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize);
+    ~PaletteView();
+
+    bool isEditable() const { return m_editable; }
 
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
@@ -46,18 +57,26 @@ namespace app {
 
     int getSelectedEntry() const;
     bool getSelectedRange(int& index1, int& index2) const;
-    void getSelectedEntries(SelectedEntries& entries) const;
+    void getSelectedEntries(doc::PalettePicks& entries) const;
 
     app::Color getColorByPosition(const gfx::Point& pos);
 
     int getBoxSize() const;
     void setBoxSize(int boxsize);
 
+    void copyToClipboard();
+    void pasteFromClipboard();
+    bool areColorsInClipboard() const;
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
+    void onDrawMarchingAnts() override;
+
+    // EditorObserver impl
+    void onDestroyEditor(Editor* editor) override;
 
   private:
 
@@ -94,9 +113,14 @@ namespace app {
     void request_size(int* w, int* h);
     void update_scroll(int color);
     void onAppPaletteChange();
-    gfx::Rect getPaletteEntryBounds(int index);
+    gfx::Rect getPaletteEntryBounds(int index) const;
     Hit hitTest(const gfx::Point& pos);
     void dropColors(int beforeIndex);
+    void getEntryBoundsAndClip(int i, const doc::PalettePicks& entries,
+                               gfx::Rect& box, gfx::Rect& clip,
+                               int outlineWidth) const;
+    bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
+    void setClipboardEditor(Editor* editor);
 
     State m_state;
     bool m_editable;
@@ -105,10 +129,12 @@ namespace app {
     int m_boxsize;
     int m_currentEntry;
     int m_rangeAnchor;
-    SelectedEntries m_selectedEntries;
+    doc::PalettePicks m_selectedEntries;
+    doc::PalettePicks m_clipboardEntries;
     bool m_isUpdatingColumns;
     ScopedConnection m_conn;
     Hit m_hot;
+    Editor* m_clipboardEditor;
   };
 
   ui::WidgetType palette_view_type();
