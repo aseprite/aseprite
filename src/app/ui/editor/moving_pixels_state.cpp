@@ -119,7 +119,7 @@ void MovingPixelsState::translate(const gfx::Point& delta)
   m_pixelsMovement->dropImageTemporarily();
 }
 
-EditorState::BeforeChangeAction MovingPixelsState::onBeforeChangeState(Editor* editor, EditorState* newState)
+EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
 {
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
@@ -513,7 +513,7 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
 void MovingPixelsState::dropPixels()
 {
   // Just change to default state (StandbyState generally). We'll
-  // receive an onBeforeChangeState() event after this call.
+  // receive an onLeaveState() event after this call.
   m_editor->backToPreviousState();
 }
 

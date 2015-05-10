@@ -37,7 +37,7 @@ namespace app {
   // drawing in the active sprite, etc.).
   class EditorState {
   public:
-    enum BeforeChangeAction {
+    enum LeaveAction {
       DiscardState,
       KeepState
     };
@@ -52,13 +52,13 @@ namespace app {
     // Called just before this state is replaced by a new state in the
     // Editor::setState() method.  Returns true if this state should be
     // kept in the EditorStatesHistory.
-    virtual BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) {
+    virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) {
       return KeepState;
     }
 
     // Called when this instance is set as the new Editor's state when
     // Editor::setState() method is used.
-    virtual void onAfterChangeState(Editor* editor) { }
+    virtual void onEnterState(Editor* editor) { }
 
     // Called just before the state will be removed from the
     // EditorStatesHistory.  This event is useful to remove the

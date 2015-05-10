@@ -40,9 +40,9 @@ PlayState::PlayState()
     &PlayState::onBeforeCommandExecution, this);
 }
 
-void PlayState::onAfterChangeState(Editor* editor)
+void PlayState::onEnterState(Editor* editor)
 {
-  StateWithWheelBehavior::onAfterChangeState(editor);
+  StateWithWheelBehavior::onEnterState(editor);
 
   if (!m_editor) {
     m_editor = editor;
@@ -60,7 +60,7 @@ void PlayState::onAfterChangeState(Editor* editor)
     m_playTimer.start();
 }
 
-EditorState::BeforeChangeAction PlayState::onBeforeChangeState(Editor* editor, EditorState* newState)
+EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
 {
   if (!m_toScroll) {
     m_editor->setFrame(m_refFrame);

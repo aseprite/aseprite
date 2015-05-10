@@ -188,7 +188,7 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   m_document->addObserver(this);
 
-  m_state->onAfterChangeState(this);
+  m_state->onEnterState(this);
 }
 
 Editor::~Editor()
@@ -220,12 +220,12 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
 
   // Fire before change state event, set the state, and fire after
   // change state event.
-  EditorState::BeforeChangeAction beforeChangeAction =
-    m_state->onBeforeChangeState(this, newState.get());
+  EditorState::LeaveAction leaveAction =
+    m_state->onLeaveState(this, newState.get());
 
   // Push a new state
   if (newState) {
-    if (beforeChangeAction == EditorState::DiscardState)
+    if (leaveAction == EditorState::DiscardState)
       m_statesHistory.pop();
 
     m_statesHistory.push(newState);
@@ -242,7 +242,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   ASSERT(m_state);
 
   // Change to the new state.
-  m_state->onAfterChangeState(this);
+  m_state->onEnterState(this);
 
   // Notify observers
   m_observers.notifyStateChanged(this);

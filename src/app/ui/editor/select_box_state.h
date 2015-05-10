@@ -56,7 +56,7 @@ namespace app {
     void setBoxBounds(const gfx::Rect& rc);
 
     // EditorState overrides
-    virtual void onAfterChangeState(Editor* editor) override;
+    virtual void onEnterState(Editor* editor) override;
     virtual void onBeforePopState(Editor* editor) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;

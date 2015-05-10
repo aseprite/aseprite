@@ -84,7 +84,7 @@ StandbyState::~StandbyState()
   delete m_decorator;
 }
 
-void StandbyState::onAfterChangeState(Editor* editor)
+void StandbyState::onEnterState(Editor* editor)
 {
   editor->setDecorator(m_decorator);
 }

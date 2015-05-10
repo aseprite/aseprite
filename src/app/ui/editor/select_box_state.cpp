@@ -60,7 +60,7 @@ void SelectBoxState::setBoxBounds(const gfx::Rect& box)
   m_rulers[V2] = Ruler(Ruler::Vertical, box.x+box.w);
 }
 
-void SelectBoxState::onAfterChangeState(Editor* editor)
+void SelectBoxState::onEnterState(Editor* editor)
 {
   updateContextBar();
 

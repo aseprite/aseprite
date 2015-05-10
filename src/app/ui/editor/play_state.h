@@ -21,8 +21,8 @@ namespace app {
   public:
     PlayState();
 
-    void onAfterChangeState(Editor* editor) override;
-    BeforeChangeAction onBeforeChangeState(Editor* editor, EditorState* newState) override;
+    void onEnterState(Editor* editor) override;
+    LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
     bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
