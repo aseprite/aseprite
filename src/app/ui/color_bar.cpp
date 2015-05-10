@@ -623,7 +623,7 @@ bool ColorBar::onCanPaste(Context* ctx)
 
 bool ColorBar::onCanClear(Context* ctx)
 {
-  return false;                 // TODO
+  return (m_paletteView.getSelectedEntriesCount() > 0);
 }
 
 bool ColorBar::onCut(Context* ctx)
@@ -645,7 +645,19 @@ bool ColorBar::onPaste(Context* ctx)
 
 bool ColorBar::onClear(Context* ctx)
 {
-  return false;                 // TODO
+  PalettePicks picks;
+  m_paletteView.getSelectedEntries(picks);
+
+  Palette newPalette(*get_current_palette());
+  int i = 0;
+  for (auto state : picks) {
+    if (state)
+      newPalette.setEntry(i, doc::rgba(0, 0, 0, 255));
+    ++i;
+  }
+
+  setPalette(&newPalette, "Clear");
+  return true;
 }
 
 void ColorBar::onCancel(Context* ctx)
