@@ -159,7 +159,7 @@ ColorBar::ColorBar(int align)
   setBgColor(get_config_color("ColorBar", "BG", getBgColor()));
 
   // Clear the selection of the BG color in the palette.
-  m_paletteView.clearSelection();
+  m_paletteView.deselect();
 
   // Set foreground color reading its value from the configuration.
   setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
@@ -464,7 +464,7 @@ void ColorBar::onPaletteViewPasteColors(
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
   if (!m_lock)
-    m_paletteView.clearSelection();
+    m_paletteView.deselect();
 
   FgColorChange(color);
   onColorButtonChange(color);
@@ -473,7 +473,7 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
 void ColorBar::onBgColorButtonChange(const app::Color& color)
 {
   if (!m_lock)
-    m_paletteView.clearSelection();
+    m_paletteView.deselect();
 
   BgColorChange(color);
   onColorButtonChange(color);
@@ -603,7 +603,7 @@ void ColorBar::destroyRemap()
 
 void ColorBar::onNewInputPriority(InputChainElement* element)
 {
-  m_paletteView.clearSelection();
+  m_paletteView.deselect();
 }
 
 bool ColorBar::onCanCut(Context* ctx)
@@ -662,7 +662,7 @@ bool ColorBar::onClear(Context* ctx)
 
 void ColorBar::onCancel(Context* ctx)
 {
-  m_paletteView.clearSelection();
+  m_paletteView.deselect();
   m_paletteView.discardClipboardSelection();
   invalidate();
 }

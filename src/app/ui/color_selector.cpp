@@ -132,7 +132,7 @@ void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
   m_color = color;
 
   if (color.getType() == app::Color::IndexType) {
-    m_colorPalette.clearSelection();
+    m_colorPalette.deselect();
     m_colorPalette.selectColor(color.getIndex(), false);
   }
 
@@ -305,7 +305,7 @@ void ColorSelector::findBestfitIndex(const app::Color& color)
   // Search for the closest color to the RGB values
   int i = get_current_palette()->findBestfit(r, g, b);
   if (i >= 0 && i < 256) {
-    m_colorPalette.clearSelection();
+    m_colorPalette.deselect();
     m_colorPalette.selectColor(i, false);
   }
 }

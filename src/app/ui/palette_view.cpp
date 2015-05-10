@@ -101,7 +101,7 @@ void PaletteView::setColumns(int columns)
   }
 }
 
-void PaletteView::clearSelection()
+void PaletteView::deselect()
 {
   bool invalidate = (m_selectedEntries.picks() > 0);
 
@@ -306,7 +306,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
           if (hasCapture() && (idx != m_currentEntry || msg->type() == kMouseDownMessage)) {
             if (!msg->ctrlPressed())
-              clearSelection();
+              deselect();
 
             if (msg->type() == kMouseMoveMessage)
               selectRange(m_rangeAnchor, idx);

@@ -51,7 +51,7 @@ namespace app {
     int getColumns() const { return m_columns; }
     void setColumns(int columns);
 
-    void clearSelection();
+    void deselect();
     void selectColor(int index, bool startRange);
     void selectRange(int index1, int index2);
 
