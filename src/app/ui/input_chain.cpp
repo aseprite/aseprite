@@ -71,7 +71,7 @@ bool InputChain::canClear(Context* ctx)
 void InputChain::cut(Context* ctx)
 {
   for (auto e : m_elements) {
-    if (e->onCut(ctx))
+    if (e->onCanCut(ctx) && e->onCut(ctx))
       break;
   }
 }
@@ -79,7 +79,7 @@ void InputChain::cut(Context* ctx)
 void InputChain::copy(Context* ctx)
 {
   for (auto e : m_elements) {
-    if (e->onCopy(ctx))
+    if (e->onCanCopy(ctx) && e->onCopy(ctx))
       break;
   }
 }
@@ -87,7 +87,7 @@ void InputChain::copy(Context* ctx)
 void InputChain::paste(Context* ctx)
 {
   for (auto e : m_elements) {
-    if (e->onPaste(ctx))
+    if (e->onCanPaste(ctx) && e->onPaste(ctx))
       break;
   }
 }
@@ -95,7 +95,7 @@ void InputChain::paste(Context* ctx)
 void InputChain::clear(Context* ctx)
 {
   for (auto e : m_elements) {
-    if (e->onClear(ctx))
+    if (e->onCanClear(ctx) && e->onClear(ctx))
       break;
   }
 }
