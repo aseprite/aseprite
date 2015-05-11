@@ -421,7 +421,7 @@ bool clipboard::get_image_size(gfx::Size& size)
   // Get the image from the clipboard.
   return get_win32_clipboard_bitmap_size(size);
 #else
-  if (clipboard_image != NULL) {
+  if (clipboard_image) {
     size.w = clipboard_image->width();
     size.h = clipboard_image->height();
     return true;
