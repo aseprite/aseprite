@@ -84,6 +84,7 @@ public:
 
   bool isFolder() const;
   bool isBrowsable() const;
+  bool isHidden() const;
 
   std::string getKeyName() const;
   std::string getFileName() const;
@@ -311,6 +312,17 @@ bool FileItem::isBrowsable() const
   ASSERT(this->filename != NOTINITIALIZED);
 
   return is_folder;
+}
+
+bool FileItem::isHidden() const
+{
+  ASSERT(this->displayname != NOTINITIALIZED);
+
+#ifdef _WIN32
+  return false;
+#else
+  return this->displayname[0] == '.';
+#endif
 }
 
 std::string FileItem::getKeyName() const
