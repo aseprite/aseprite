@@ -98,7 +98,7 @@ ColorBar* ColorBar::m_instance = NULL;
 ColorBar::ColorBar(int align)
   : Box(align)
   , m_buttons(int(PalButton::MAX))
-  , m_paletteView(true, this,
+  , m_paletteView(true, PaletteView::FgBgColors, this,
       App::instance()->preferences().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
@@ -220,12 +220,14 @@ app::Color ColorBar::getBgColor()
 void ColorBar::setFgColor(const app::Color& color)
 {
   m_fgColor.setColor(color);
+  m_paletteView.invalidate();
   FgColorChange(color);
 }
 
 void ColorBar::setBgColor(const app::Color& color)
 {
   m_bgColor.setColor(color);
+  m_paletteView.invalidate();
   BgColorChange(color);
 }
 
@@ -463,8 +465,10 @@ void ColorBar::onPaletteViewPasteColors(
 
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
-  if (!m_lock)
+  if (!m_lock) {
     m_paletteView.deselect();
+    m_paletteView.invalidate();
+  }
 
   FgColorChange(color);
   onColorButtonChange(color);
@@ -472,8 +476,10 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
 
 void ColorBar::onBgColorButtonChange(const app::Color& color)
 {
-  if (!m_lock)
+  if (!m_lock) {
     m_paletteView.deselect();
+    m_paletteView.invalidate();
+  }
 
   BgColorChange(color);
   onColorButtonChange(color);

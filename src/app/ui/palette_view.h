@@ -39,7 +39,12 @@ namespace app {
   class PaletteView : public ui::Widget
                     , public MarchingAnts {
   public:
-    PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize);
+    enum PaletteViewStyle {
+      SelectOneColor,
+      FgBgColors
+    };
+
+    PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize);
 
     bool isEditable() const { return m_editable; }
 
@@ -118,9 +123,11 @@ namespace app {
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
+    int findExactIndex(const app::Color& color) const;
 
     State m_state;
     bool m_editable;
+    PaletteViewStyle m_style;
     PaletteViewDelegate* m_delegate;
     int m_columns;
     int m_boxsize;

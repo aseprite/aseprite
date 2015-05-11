@@ -16,6 +16,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/ui/color_bar.h"   // TODO avoid depending on ColorBar
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
@@ -55,10 +56,11 @@ WidgetType palette_view_type()
   return type;
 }
 
-PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize)
+PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDelegate* delegate, int boxsize)
   : Widget(palette_view_type())
   , m_state(State::WAITING)
   , m_editable(editable)
+  , m_style(style)
   , m_delegate(delegate)
   , m_columns(16)
   , m_boxsize(boxsize)
@@ -395,6 +397,13 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   ui::Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
   Palette* palette = get_current_palette();
+  int fgIndex = -1;
+  int bgIndex = -1;
+
+  if (m_style == FgBgColors) {
+    fgIndex = findExactIndex(ColorBar::instance()->getFgColor());
+    bgIndex = findExactIndex(ColorBar::instance()->getBgColor());
+  }
 
   g->fillRect(gfx::rgba(0, 0, 0), bounds);
 
@@ -408,9 +417,28 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
 
     g->fillRect(color, box);
 
-    if (m_currentEntry == i)
-      g->fillRect(color_utils::blackandwhite_neg(color),
-        gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
+    switch (m_style) {
+
+      case SelectOneColor:
+        if (m_currentEntry == i)
+          g->fillRect(color_utils::blackandwhite_neg(color),
+                      gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
+        break;
+
+      case FgBgColors:
+        if (fgIndex == i) {
+          gfx::Color neg = color_utils::blackandwhite_neg(color);
+          for (int i=0; i<m_boxsize/2; ++i)
+            g->drawHLine(neg, box.x, box.y+i, m_boxsize/2-i);
+        }
+
+        if (bgIndex == i) {
+          gfx::Color neg = color_utils::blackandwhite_neg(color);
+          for (int i=0; i<m_boxsize/4; ++i)
+            g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-m_boxsize/4+i, i+1);
+        }
+        break;
+    }
   }
 
   // Draw selected entries
@@ -733,6 +761,26 @@ void PaletteView::setCursor()
   }
   else
     ui::set_mouse_cursor(kArrowCursor);
+}
+
+int PaletteView::findExactIndex(const app::Color& color) const
+{
+  switch (color.getType()) {
+
+    case Color::MaskType:
+      return (current_editor ? current_editor->sprite()->transparentColor(): -1);
+
+    case Color::RgbType:
+    case Color::HsvType:
+    case Color::GrayType:
+      return get_current_palette()->findExactMatch(color.getRed(), color.getGreen(), color.getBlue());
+
+    case Color::IndexType:
+      return color.getIndex();
+  }
+
+  ASSERT(false);
+  return -1;
 }
 
 } // namespace app
