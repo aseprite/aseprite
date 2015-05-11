@@ -265,7 +265,7 @@ void ColorBar::onPaletteButtonClick()
   int item = m_buttons.selectedItem();
   m_buttons.deselectItems();
 
-  switch (item) {
+  switch (static_cast<PalButton>(item)) {
 
     case PalButton::EDIT: {
       Command* cmd_show_palette_editor = CommandsModule::instance()->getCommandByName(CommandId::PaletteEditor);
