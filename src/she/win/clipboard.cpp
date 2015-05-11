@@ -71,25 +71,23 @@ std::string ClipboardWin32::getText(DisplayHandle hwnd)
 
 void ClipboardWin32::setText(DisplayHandle hwnd, const std::string& text)
 {
-  if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-    if (open_clipboard((HWND)hwnd)) {
-      EmptyClipboard();
+  if (open_clipboard((HWND)hwnd)) {
+    EmptyClipboard();
 
-      if (!text.empty()) {
-        std::wstring wstr = base::from_utf8(text);
-        int len = wstr.size();
+    if (!text.empty()) {
+      std::wstring wstr = base::from_utf8(text);
+      int len = wstr.size();
 
-        HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
-          GMEM_ZEROINIT, sizeof(WCHAR)*(len+1));
+      HGLOBAL hglobal = GlobalAlloc(GMEM_MOVEABLE |
+                                    GMEM_ZEROINIT, sizeof(WCHAR)*(len+1));
 
-        LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
-        std::copy(wstr.begin(), wstr.end(), lpstr);
-        GlobalUnlock(hglobal);
+      LPWSTR lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
+      std::copy(wstr.begin(), wstr.end(), lpstr);
+      GlobalUnlock(hglobal);
 
-        SetClipboardData(CF_UNICODETEXT, hglobal);
-      }
-      CloseClipboard();
+      SetClipboardData(CF_UNICODETEXT, hglobal);
     }
+    CloseClipboard();
   }
 }
 
