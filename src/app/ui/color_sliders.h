@@ -32,11 +32,14 @@ namespace app {
     enum Channel { Red, Green, Blue,
                    Hue, Saturation, Value,
                    Gray };
+    enum Mode { Absolute, Relative };
 
     ColorSliders();
     ~ColorSliders();
 
     void setColor(const app::Color& color);
+    void setMode(Mode mode);
+    void resetRelativeSliders();
 
     // Signals
     Signal1<void, ColorSlidersChangeEvent&> ColorChange;
@@ -46,8 +49,9 @@ namespace app {
 
     // For derived classes
     void addSlider(Channel channel, const char* labelText, int min, int max);
-    void setSliderValue(int sliderIndex, int value);
-    int getSliderValue(int sliderIndex) const;
+    void setAbsSliderValue(int sliderIndex, int value);
+    int getAbsSliderValue(int sliderIndex) const;
+    int getRelSliderValue(int sliderIndex) const;
 
     virtual void onSetColor(const app::Color& color) = 0;
     virtual app::Color getColorFromSliders() = 0;
@@ -62,17 +66,18 @@ namespace app {
     void updateSliderBgColor(ui::Slider* slider, const app::Color& color);
 
     std::vector<ui::Label*> m_label;
-    std::vector<ui::Slider*> m_slider;
+    std::vector<ui::Slider*> m_absSlider;
+    std::vector<ui::Slider*> m_relSlider;
     std::vector<ui::Entry*> m_entry;
     std::vector<Channel> m_channel;
     ui::Grid m_grid;
+    Mode m_mode;
   };
 
   //////////////////////////////////////////////////////////////////////
   // Derived-classes
 
-  class RgbSliders : public ColorSliders
-  {
+  class RgbSliders : public ColorSliders {
   public:
     RgbSliders();
 
@@ -81,8 +86,7 @@ namespace app {
     virtual app::Color getColorFromSliders() override;
   };
 
-  class HsvSliders : public ColorSliders
-  {
+  class HsvSliders : public ColorSliders {
   public:
     HsvSliders();
 
@@ -91,8 +95,7 @@ namespace app {
     virtual app::Color getColorFromSliders() override;
   };
 
-  class GraySlider : public ColorSliders
-  {
+  class GraySlider : public ColorSliders {
   public:
     GraySlider();
 
@@ -104,21 +107,30 @@ namespace app {
   //////////////////////////////////////////////////////////////////////
   // Events
 
-  class ColorSlidersChangeEvent : public ui::Event
-  {
+  class ColorSlidersChangeEvent : public ui::Event {
   public:
-    ColorSlidersChangeEvent(const app::Color& color, ColorSliders::Channel channel, ui::Component* source)
+    ColorSlidersChangeEvent(ColorSliders::Channel channel,
+                            ColorSliders::Mode mode,
+                            const app::Color& color,
+                            int delta,
+                            ui::Component* source)
       : Event(source)
+      , m_channel(channel)
+      , m_mode(mode)
       , m_color(color)
-      , m_channel(channel) { }
+      , m_delta(delta) {
+    }
 
-    app::Color getColor() const { return m_color; }
-
-    ColorSliders::Channel getModifiedChannel() const { return m_channel; }
+    ColorSliders::Channel channel() const { return m_channel; }
+    ColorSliders::Mode mode() const { return m_mode; }
+    app::Color color() const { return m_color; }
+    int delta() const { return m_delta; }
 
   private:
-    app::Color m_color;
     ColorSliders::Channel m_channel;
+    ColorSliders::Mode m_mode;
+    app::Color m_color;
+    int m_delta;
   };
 
 } // namespace app

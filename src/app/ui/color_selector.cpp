@@ -166,8 +166,8 @@ void ColorSelector::onPaletteViewIndexChange(int index, ui::MouseButtons buttons
 
 void ColorSelector::onColorSlidersChange(ColorSlidersChangeEvent& ev)
 {
-  setColorWithSignal(ev.getColor());
-  findBestfitIndex(ev.getColor());
+  setColorWithSignal(ev.color());
+  findBestfitIndex(ev.color());
 }
 
 void ColorSelector::onColorHexEntryChange(const app::Color& color)
