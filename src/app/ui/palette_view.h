@@ -53,6 +53,7 @@ namespace app {
 
     void deselect();
     void selectColor(int index);
+    void selectExactMatchColor(const app::Color& color);
     void selectRange(int index1, int index2);
 
     int getSelectedEntry() const;
@@ -123,7 +124,7 @@ namespace app {
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
-    int findExactIndex(const app::Color& color) const;
+    static int findExactIndex(const app::Color& color);
 
     State m_state;
     bool m_editable;

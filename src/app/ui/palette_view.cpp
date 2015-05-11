@@ -121,6 +121,13 @@ void PaletteView::selectColor(int index)
   }
 }
 
+void PaletteView::selectExactMatchColor(const app::Color& color)
+{
+  int index = findExactIndex(color);
+  if (index >= 0)
+    selectColor(index);
+}
+
 void PaletteView::selectRange(int index1, int index2)
 {
   m_rangeAnchor = index1;
@@ -763,7 +770,8 @@ void PaletteView::setCursor()
     ui::set_mouse_cursor(kArrowCursor);
 }
 
-int PaletteView::findExactIndex(const app::Color& color) const
+// static
+int PaletteView::findExactIndex(const app::Color& color)
 {
   switch (color.getType()) {
 

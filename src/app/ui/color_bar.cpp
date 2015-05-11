@@ -220,14 +220,20 @@ app::Color ColorBar::getBgColor()
 void ColorBar::setFgColor(const app::Color& color)
 {
   m_fgColor.setColor(color);
-  m_paletteView.invalidate();
+
+  if (!m_lock)
+    onColorButtonChange(color);
+
   FgColorChange(color);
 }
 
 void ColorBar::setBgColor(const app::Color& color)
 {
   m_bgColor.setColor(color);
-  m_paletteView.invalidate();
+
+  if (!m_lock)
+    onColorButtonChange(color);
+
   BgColorChange(color);
 }
 
@@ -470,8 +476,8 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
     m_paletteView.invalidate();
   }
 
-  FgColorChange(color);
   onColorButtonChange(color);
+  FgColorChange(color);
 }
 
 void ColorBar::onBgColorButtonChange(const app::Color& color)
@@ -481,26 +487,29 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
     m_paletteView.invalidate();
   }
 
-  BgColorChange(color);
   onColorButtonChange(color);
+  BgColorChange(color);
 }
 
 void ColorBar::onColorButtonChange(const app::Color& color)
 {
   if (color.getType() == app::Color::IndexType)
     m_paletteView.selectColor(color.getIndex());
+  else {
+    m_paletteView.selectExactMatchColor(color);
+
+    // As foreground or background color changed, we've to redraw the
+    // palette view fg/bg indicators.
+    m_paletteView.invalidate();
+  }
 }
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
 {
-  m_lock = true;
-
   if ((buttons & kButtonRight) == kButtonRight)
     setBgColor(color);
   else
     setFgColor(color);
-
-  m_lock = false;
 }
 
 void ColorBar::onReverseColors()

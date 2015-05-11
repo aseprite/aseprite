@@ -401,9 +401,23 @@ void PaletteEntryEditor::onCloseWindow()
   ColorBar::instance()->setPaletteEditorButtonState(false);
 }
 
-void PaletteEntryEditor::onFgBgColorChange(const app::Color& color)
+void PaletteEntryEditor::onFgBgColorChange(const app::Color& _color)
 {
-  if (color.isValid() && color.getType() == app::Color::IndexType) {
+  app::Color color = _color;
+
+  if (!color.isValid())
+    return;
+
+  if (color.getType() != app::Color::IndexType) {
+    PaletteView* paletteView = ColorBar::instance()->getPaletteView();
+    int index = paletteView->getSelectedEntry();
+    if (index < 0)
+      return;
+
+    color = app::Color::fromIndex(index);
+  }
+
+  if (color.getType() == app::Color::IndexType) {
     setColor(color);
     resetRelativeInfo();
   }
