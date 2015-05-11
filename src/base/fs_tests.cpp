@@ -41,12 +41,6 @@ TEST(FileSystem, MakeAllDirectories)
 
   remove_directory("a");
   EXPECT_FALSE(is_directory("a"));
-
-#ifndef _WIN32
-  EXPECT_FALSE(is_directory("/Users/david/.config/aseprite/"));
-  make_all_directories("/Users/david/.config/aseprite/");
-  EXPECT_TRUE(is_directory("/Users/david/.config/aseprite/"));
-#endif
 }
 
 int main(int argc, char** argv)
