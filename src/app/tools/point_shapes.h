@@ -44,8 +44,6 @@ public:
   }
 
   void transformPoint(ToolLoop* loop, int x, int y) override {
-    int h = m_brush->bounds().h;
-
     x += m_brush->bounds().x;
     y += m_brush->bounds().y;
 

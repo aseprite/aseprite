@@ -194,7 +194,6 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
   gfx::Point spritePos = screenToEditor(pos);
 
   // Get the current tool
-  tools::Tool* tool = getCurrentEditorTool();
   tools::Ink* ink = getCurrentEditorInk();
 
   // Setup the cursor type debrushding of several factors (current tool,
@@ -393,7 +392,6 @@ bool Editor::doesBrushPreviewNeedSubpixel()
 
 static void generate_cursor_boundaries(Editor* editor)
 {
-  tools::Tool* tool = editor->getCurrentEditorTool();
   Brush* brush = get_current_brush();
 
   if (!cursor_bound.seg || cursor_bound.brush_image != brush->image()) {

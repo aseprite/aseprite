@@ -139,7 +139,6 @@ void BrushPopup::setBrush(Brush* brush)
 
 void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
 {
-  SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   int columns = 3;
 
   if (m_buttons) {

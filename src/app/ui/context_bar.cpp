@@ -138,7 +138,6 @@ private:
   void openPopup() {
     ISettings* settings = UIContext::instance()->settings();
     Tool* currentTool = settings->getCurrentTool();
-    IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
     doc::BrushRef brush = m_owner->activeBrush();
 
     m_popupWindow.regenerate(getPopupBox(), m_owner->getBrushes());
@@ -260,8 +259,6 @@ protected:
       case 2: type = BrushPattern::PAINT_BRUSH; break;
     }
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
     App::instance()->preferences().brush.pattern(type);
   }
 
