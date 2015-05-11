@@ -33,6 +33,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
+#include "app/util/clipboard.h"
 #include "base/bind.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -421,7 +422,7 @@ void ColorBar::onPaletteViewChangeSize(int boxsize)
 }
 
 void ColorBar::onPaletteViewPasteColors(
-  Editor* editor, const doc::PalettePicks& from, const doc::PalettePicks& _to)
+  const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& _to)
 {
   if (!from.picks() || !_to.picks()) // Nothing to do
     return;
@@ -440,7 +441,6 @@ void ColorBar::onPaletteViewPasteColors(
     }
   }
 
-  Palette* copyFromPalette = editor->sprite()->palette(editor->frame());
   Palette newPalette(*get_current_palette());
 
   int i = 0;
@@ -449,7 +449,7 @@ void ColorBar::onPaletteViewPasteColors(
   for (auto state : from) {
     if (state) {
       if (j < newPalette.size()) {
-        newPalette.setEntry(j, copyFromPalette->getEntry(i));
+        newPalette.setEntry(j, fromPal->getEntry(i));
         for (++j; j<to.size(); ++j)
           if (to[j])
             break;
@@ -608,7 +608,7 @@ void ColorBar::onNewInputPriority(InputChainElement* element)
 
 bool ColorBar::onCanCut(Context* ctx)
 {
-  return false;                 // TODO
+  return (m_paletteView.getSelectedEntriesCount() > 0);
 }
 
 bool ColorBar::onCanCopy(Context* ctx)
@@ -618,7 +618,7 @@ bool ColorBar::onCanCopy(Context* ctx)
 
 bool ColorBar::onCanPaste(Context* ctx)
 {
-  return m_paletteView.areColorsInClipboard();
+  return (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries);
 }
 
 bool ColorBar::onCanClear(Context* ctx)
@@ -628,7 +628,8 @@ bool ColorBar::onCanClear(Context* ctx)
 
 bool ColorBar::onCut(Context* ctx)
 {
-  return false;                 // TODO
+  m_paletteView.cutToClipboard();
+  return true;
 }
 
 bool ColorBar::onCopy(Context* ctx)

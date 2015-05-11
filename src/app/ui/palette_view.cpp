@@ -21,6 +21,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
+#include "app/util/clipboard.h"
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
@@ -64,11 +65,9 @@ PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsi
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
   , m_selectedEntries(Palette::MaxColors)
-  , m_clipboardEntries(Palette::MaxColors)
   , m_isUpdatingColumns(false)
   , m_hot(Hit::NONE)
   , m_copy(false)
-  , m_clipboardEditor(nullptr)
 {
   setFocusStop(true);
   setDoubleBuffered(true);
@@ -78,11 +77,6 @@ PaletteView::PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsi
   this->child_spacing = 1 * guiscale();
 
   m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
-}
-
-PaletteView::~PaletteView()
-{
-  setClipboardEditor(nullptr);
 }
 
 void PaletteView::setColumns(int columns)
@@ -211,23 +205,57 @@ void PaletteView::setBoxSize(int boxsize)
     view->layout();
 }
 
+void PaletteView::cutToClipboard()
+{
+  if (!m_selectedEntries.picks())
+    return;
+
+  clipboard::copy_palette(get_current_palette(), m_selectedEntries);
+
+  // Convert selected colors to black and send them to the back of the
+  // palette.
+  Palette palette(*get_current_palette());
+  Palette newPalette(palette);
+  Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
+  for (int i=0; i<palette.size(); ++i) {
+    if (m_selectedEntries[i])
+      newPalette.setEntry(remap[i], rgba(0, 0, 0, 255));
+    else
+      newPalette.setEntry(remap[i], palette.getEntry(i));
+  }
+
+  m_currentEntry = m_selectedEntries.firstPick();
+  m_selectedEntries.clear();
+  stopMarchingAnts();
+
+  if (m_delegate) {
+    m_delegate->onPaletteViewRemapColors(remap, &newPalette);
+    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
+  }
+
+  set_current_palette(&newPalette, false);
+  getManager()->invalidate();
+}
+
 void PaletteView::copyToClipboard()
 {
-  if (current_editor) {
-    setClipboardEditor(current_editor);
-    m_clipboardEntries = m_selectedEntries;
+  if (!m_selectedEntries.picks())
+    return;
 
-    startMarchingAnts();
-    invalidate();
-  }
+  clipboard::copy_palette(get_current_palette(), m_selectedEntries);
+
+  startMarchingAnts();
+  invalidate();
 }
 
 void PaletteView::pasteFromClipboard()
 {
-  if (m_clipboardEditor && m_clipboardEntries.picks()) {
+  if (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries) {
     if (m_delegate)
       m_delegate->onPaletteViewPasteColors(
-        m_clipboardEditor, m_clipboardEntries, m_selectedEntries);
+        clipboard::get_palette(),
+        clipboard::get_palette_picks(),
+        m_selectedEntries);
 
     // We just hide the marching ants, the user can paste multiple
     // times.
@@ -238,30 +266,10 @@ void PaletteView::pasteFromClipboard()
 
 void PaletteView::discardClipboardSelection()
 {
-  bool redraw = false;
-
-  if (m_clipboardEditor) {
-    setClipboardEditor(nullptr);
-    redraw = true;
-  }
-
-  if (m_clipboardEntries.picks() > 0) {
-    m_clipboardEntries.clear();
-    redraw = true;
-  }
-
   if (isMarchingAntsRunning()) {
     stopMarchingAnts();
-    redraw = true;
-  }
-
-  if (redraw)
     invalidate();
-}
-
-bool PaletteView::areColorsInClipboard() const
-{
-  return (m_clipboardEditor && m_clipboardEntries.picks());
+  }
 }
 
 bool PaletteView::onProcessMessage(Message* msg)
@@ -425,20 +433,25 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   }
 
   // Draw marching ants
-  if (isMarchingAntsRunning() &&
-      m_clipboardEditor &&
-      m_clipboardEditor == current_editor) {
-    for (int i=0; i<palette->size(); ++i) {
-      if (!m_clipboardEntries[i])
-        continue;
+  if ((isMarchingAntsRunning()) &&
+      (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries)) {
+    Palette* clipboardPalette = clipboard::get_palette();
+    const PalettePicks& clipboardPicks = clipboard::get_palette_picks();
 
-      gfx::Rect box, clipR;
-      getEntryBoundsAndClip(i, m_clipboardEntries, box, clipR, outlineWidth);
+    if (clipboardPalette &&
+        clipboardPalette->countDiff(palette, nullptr, nullptr) == 0) {
+      for (int i=0; i<clipboardPicks.size(); ++i) {
+        if (!clipboardPicks[i])
+          continue;
 
-      IntersectClip clip(g, clipR);
-      if (clip) {
-        CheckedDrawMode checked(g, getMarchingAntsOffset());
-        g->drawRect(gfx::rgba(0, 0, 0), box);
+        gfx::Rect box, clipR;
+        getEntryBoundsAndClip(i, clipboardPicks, box, clipR, outlineWidth);
+
+        IntersectClip clip(g, clipR);
+        if (clip) {
+          CheckedDrawMode checked(g, getMarchingAntsOffset());
+          g->drawRect(gfx::rgba(0, 0, 0), box);
+        }
       }
     }
   }
@@ -488,12 +501,6 @@ void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
 void PaletteView::onDrawMarchingAnts()
 {
   invalidate();
-}
-
-void PaletteView::onDestroyEditor(Editor* editor)
-{
-  if (m_clipboardEditor == editor)
-    discardClipboardSelection();
 }
 
 void PaletteView::request_size(int* w, int* h)
@@ -706,17 +713,6 @@ bool PaletteView::pickedXY(const doc::PalettePicks& entries, int i, int dx, int 
     return entries[i];
   else
     return false;
-}
-
-void PaletteView::setClipboardEditor(Editor* editor)
-{
-  if (m_clipboardEditor)
-    m_clipboardEditor->removeObserver(this);
-
-  m_clipboardEditor = editor;
-
-  if (m_clipboardEditor)
-    m_clipboardEditor->addObserver(this);
 }
 
 void PaletteView::updateCopyFlag(ui::Message* msg)

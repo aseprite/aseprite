@@ -10,7 +10,6 @@
 #pragma once
 
 #include "app/color.h"
-#include "app/ui/editor/editor_observer.h"
 #include "app/ui/marching_ants.h"
 #include "base/connection.h"
 #include "doc/palette_picks.h"
@@ -27,8 +26,6 @@ namespace doc {
 
 namespace app {
 
-  class Editor;
-
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
@@ -36,15 +33,13 @@ namespace app {
     virtual void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) { }
     virtual void onPaletteViewChangeSize(int boxsize) { }
     virtual void onPaletteViewPasteColors(
-      Editor* editor, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
+      const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
   };
 
   class PaletteView : public ui::Widget
-                    , public MarchingAnts
-                    , public EditorObserver {
+                    , public MarchingAnts {
   public:
     PaletteView(bool editable, PaletteViewDelegate* delegate, int boxsize);
-    ~PaletteView();
 
     bool isEditable() const { return m_editable; }
 
@@ -65,10 +60,10 @@ namespace app {
     int getBoxSize() const;
     void setBoxSize(int boxsize);
 
+    void cutToClipboard();
     void copyToClipboard();
     void pasteFromClipboard();
     void discardClipboardSelection();
-    bool areColorsInClipboard() const;
 
     Signal0<void> FocusEnter;
 
@@ -78,9 +73,6 @@ namespace app {
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onDrawMarchingAnts() override;
-
-    // EditorObserver impl
-    void onDestroyEditor(Editor* editor) override;
 
   private:
 
@@ -124,7 +116,6 @@ namespace app {
                                gfx::Rect& box, gfx::Rect& clip,
                                int outlineWidth) const;
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
-    void setClipboardEditor(Editor* editor);
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
 
@@ -136,12 +127,10 @@ namespace app {
     int m_currentEntry;
     int m_rangeAnchor;
     doc::PalettePicks m_selectedEntries;
-    doc::PalettePicks m_clipboardEntries;
     bool m_isUpdatingColumns;
     ScopedConnection m_conn;
     Hit m_hot;
     bool m_copy;
-    Editor* m_clipboardEditor;
   };
 
   ui::WidgetType palette_view_type();

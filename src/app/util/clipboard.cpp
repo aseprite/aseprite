@@ -10,8 +10,8 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd/deselect_mask.h"
 #include "app/cmd/clear_mask.h"
+#include "app/cmd/deselect_mask.h"
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document.h"
@@ -32,6 +32,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "app/util/new_image_from_mask.h"
+#include "base/shared_ptr.h"
 #include "doc/doc.h"
 #include "render/quantization.h"
 
@@ -86,15 +87,16 @@ static bool copy_from_document(const Site& site);
 
 static bool first_time = true;
 
-static Palette* clipboard_palette = NULL;
-static Image* clipboard_image = NULL;
+static base::SharedPtr<Palette> clipboard_palette;
+static PalettePicks clipboard_picks(Palette::MaxColors);
+static ImageRef clipboard_image;
 static ClipboardRange clipboard_range;
 static gfx::Point clipboard_pos(0, 0);
 
 static void on_exit_delete_clipboard()
 {
-  delete clipboard_palette;
-  delete clipboard_image;
+  clipboard_palette.reset();
+  clipboard_image.reset();
 }
 
 static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard)
@@ -104,11 +106,9 @@ static void set_clipboard_image(Image* image, Palette* palette, bool set_system_
     App::instance()->Exit.connect(&on_exit_delete_clipboard);
   }
 
-  delete clipboard_palette;
-  delete clipboard_image;
-
-  clipboard_palette = palette;
-  clipboard_image = image;
+  clipboard_palette.reset(palette);
+  clipboard_picks.clear();
+  clipboard_image.reset(image);
 
   // copy to the Windows clipboard
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
@@ -144,10 +144,12 @@ clipboard::ClipboardFormat clipboard::get_current_format()
     return ClipboardImage;
 #endif
 
-  if (clipboard_image != NULL)
+  if (clipboard_image)
     return ClipboardImage;
   else if (clipboard_range.valid())
     return ClipboardDocumentRange;
+  else if (clipboard_palette && clipboard_picks.picks())
+    return ClipboardPaletteEntries;
   else
     return ClipboardNone;
 }
@@ -224,6 +226,15 @@ void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
   clipboard_pos = point;
 }
 
+void clipboard::copy_palette(const Palette* palette, const doc::PalettePicks& picks)
+{
+  if (!picks.picks())
+    return;                     // Do nothing case
+
+  set_clipboard_image(nullptr, new Palette(*palette), true);
+  clipboard_picks = picks;
+}
+
 void clipboard::paste()
 {
   Editor* editor = current_editor;
@@ -247,13 +258,13 @@ void clipboard::paste()
       }
 #endif
 
-      if (clipboard_image == NULL)
+      if (!clipboard_image)
         return;
 
       Palette* dst_palette = dstSpr->palette(editor->frame());
 
       // Source image (clipboard or a converted copy to the destination 'imgtype')
-      Image* src_image;
+      ImageRef src_image;
       if (clipboard_image->pixelFormat() == dstSpr->pixelFormat() &&
         // Indexed images can be copied directly only if both images
         // have the same palette.
@@ -264,17 +275,15 @@ void clipboard::paste()
       else {
         RgbMap* dst_rgbmap = dstSpr->rgbMap(editor->frame());
 
-        src_image = render::convert_pixel_format(
-          clipboard_image, NULL, dstSpr->pixelFormat(),
-          DitheringMethod::NONE, dst_rgbmap, clipboard_palette,
-          false);
+        src_image.reset(
+          render::convert_pixel_format(
+            clipboard_image.get(), NULL, dstSpr->pixelFormat(),
+            DitheringMethod::NONE, dst_rgbmap, clipboard_palette.get(),
+            false));
       }
 
       // Change to MovingPixelsState
-      editor->pasteImage(src_image, clipboard_pos);
-
-      if (src_image != clipboard_image)
-        delete src_image;
+      editor->pasteImage(src_image.get(), clipboard_pos);
       break;
     }
 
@@ -420,6 +429,21 @@ bool clipboard::get_image_size(gfx::Size& size)
   else
     return false;
 #endif
+}
+
+Palette* clipboard::get_palette()
+{
+  if (clipboard::get_current_format() == ClipboardPaletteEntries) {
+    ASSERT(clipboard_palette);
+    return clipboard_palette.get();
+  }
+  else
+    return nullptr;
+}
+
+const PalettePicks& clipboard::get_palette_picks()
+{
+  return clipboard_picks;
 }
 
 } // namespace app
