@@ -15,6 +15,7 @@
 #include "ui/mouse_buttons.h"
 
 #include <vector>
+#include <string>
 
 namespace app {
 
