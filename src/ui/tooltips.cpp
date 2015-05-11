@@ -181,7 +181,7 @@ void TooltipManager::onTick()
 
 // TipWindow
 
-TipWindow::TipWindow(const char* text, gfx::Rect& target)
+TipWindow::TipWindow(const char* text, const gfx::Rect& target)
   : PopupWindow(text, kCloseOnClickInOtherWindow)
   , m_arrowAlign(0)
   , m_target(target)

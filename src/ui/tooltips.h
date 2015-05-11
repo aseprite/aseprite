@@ -56,7 +56,7 @@ namespace ui {
 
   class TipWindow : public PopupWindow {
   public:
-    TipWindow(const char* text, gfx::Rect& target);
+    TipWindow(const char* text, const gfx::Rect& target);
     ~TipWindow();
 
     int getArrowAlign() const;
