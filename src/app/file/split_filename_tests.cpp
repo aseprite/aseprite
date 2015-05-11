@@ -9,6 +9,8 @@
 
 #include "app/file/split_filename.h"
 
+#include "base/path.h"
+
 using namespace app;
 
 TEST(SplitFilename, Common)
@@ -17,7 +19,7 @@ TEST(SplitFilename, Common)
   int width;
 
   EXPECT_EQ(1, split_filename("C:\\test\\a1.png", left, right, width));
-  EXPECT_EQ("C:\\test\\a", left);
+  EXPECT_EQ(base::fix_path_separators("C:\\test\\a"), base::fix_path_separators(left));
   EXPECT_EQ(".png", right);
   EXPECT_EQ(1, width);
 
