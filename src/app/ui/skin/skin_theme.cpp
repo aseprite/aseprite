@@ -80,14 +80,16 @@ protected:
         return true;
 
       case kKeyDownMessage:
-        if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
+        if (getRoot()->isForeground() &&
+            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           setSelected(true);
           return true;
         }
         break;
 
       case kKeyUpMessage:
-        if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
+        if (getRoot()->isForeground() &&
+            static_cast<KeyMessage*>(msg)->scancode() == kKeyEsc) {
           if (isSelected()) {
             setSelected(false);
             closeWindow();
