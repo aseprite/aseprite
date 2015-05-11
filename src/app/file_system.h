@@ -68,6 +68,7 @@ namespace app {
 
     virtual bool isFolder() const = 0;
     virtual bool isBrowsable() const = 0;
+    virtual bool isHidden() const = 0;
 
     virtual std::string getKeyName() const = 0;
     virtual std::string getFileName() const = 0;

@@ -497,7 +497,9 @@ void FileList::regenerateList()
            it=m_list.begin();
          it!=m_list.end(); ) {
       IFileItem* fileitem = *it;
-      if (!fileitem->isFolder() &&
+      if (fileitem->isHidden())
+        it = m_list.erase(it);
+      else if (!fileitem->isFolder() &&
           !fileitem->hasExtension(m_exts.c_str())) {
         it = m_list.erase(it);
       }
