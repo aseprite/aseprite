@@ -226,15 +226,19 @@ bool Entry::onProcessMessage(Message* msg)
         switch (scancode) {
 
           case kKeyLeft:
-            if (msg->ctrlPressed())
+            if (msg->ctrlPressed() || msg->altPressed())
               cmd = EntryCmd::BackwardWord;
+            else if (msg->cmdPressed())
+              cmd = EntryCmd::BeginningOfLine;
             else
               cmd = EntryCmd::BackwardChar;
             break;
 
           case kKeyRight:
-            if (msg->ctrlPressed())
+            if (msg->ctrlPressed() || msg->altPressed())
               cmd = EntryCmd::ForwardWord;
+            else if (msg->cmdPressed())
+              cmd = EntryCmd::EndOfLine;
             else
               cmd = EntryCmd::ForwardChar;
             break;
