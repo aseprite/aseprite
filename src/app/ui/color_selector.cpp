@@ -133,7 +133,7 @@ void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
 
   if (color.getType() == app::Color::IndexType) {
     m_colorPalette.deselect();
-    m_colorPalette.selectColor(color.getIndex(), false);
+    m_colorPalette.selectColor(color.getIndex());
   }
 
   m_rgbSliders.setColor(m_color);
@@ -306,7 +306,7 @@ void ColorSelector::findBestfitIndex(const app::Color& color)
   int i = get_current_palette()->findBestfit(r, g, b);
   if (i >= 0 && i < 256) {
     m_colorPalette.deselect();
-    m_colorPalette.selectColor(i, false);
+    m_colorPalette.selectColor(i);
   }
 }
 

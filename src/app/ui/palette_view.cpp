@@ -106,16 +106,13 @@ void PaletteView::deselect()
     this->invalidate();
 }
 
-void PaletteView::selectColor(int index, bool startRange)
+void PaletteView::selectColor(int index)
 {
   ASSERT(index >= 0 && index < Palette::MaxColors);
 
   if (m_currentEntry != index || !m_selectedEntries[index]) {
     m_currentEntry = index;
     m_rangeAnchor = index;
-
-    if (startRange)
-      m_selectedEntries[index] = true;
 
     update_scroll(m_currentEntry);
     invalidate();
@@ -318,8 +315,10 @@ bool PaletteView::onProcessMessage(Message* msg)
 
             if (msg->type() == kMouseMoveMessage)
               selectRange(m_rangeAnchor, idx);
-            else
-              selectColor(idx, true);
+            else {
+              selectColor(idx);
+              m_selectedEntries[idx] = true;
+            }
 
             // Emit signal
             if (m_delegate)

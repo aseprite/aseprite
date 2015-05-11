@@ -47,7 +47,7 @@ namespace app {
     void setColumns(int columns);
 
     void deselect();
-    void selectColor(int index, bool startRange);
+    void selectColor(int index);
     void selectRange(int index1, int index2);
 
     int getSelectedEntry() const;

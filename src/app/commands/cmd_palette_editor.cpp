@@ -85,6 +85,7 @@ private:
   void updateColorBar();
   void onPalChange();
   void resetRelativeInfo();
+  void getPicks(PalettePicks& picks);
 
   app::Color::Type m_type;
   Box m_vbox;
@@ -315,9 +316,8 @@ void PaletteEntryEditor::setColor(const app::Color& color)
   if (!m_disableHexUpdate)
     m_hexColorEntry.setColor(color);
 
-  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
   PalettePicks entries;
-  palette_editor->getSelectedEntries(entries);
+  getPicks(entries);
   int i, j, i2;
 
   // Find the first selected entry
@@ -459,9 +459,8 @@ void PaletteEntryEditor::onRelativeButtonClick(Event& ev)
 
 void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 {
-  PaletteView* palView = ColorBar::instance()->getPaletteView();
   PalettePicks entries;
-  palView->getSelectedEntries(entries);
+  getPicks(entries);
 
   color_t new_pal_color = doc::rgba(color.getRed(),
                                     color.getGreen(),
@@ -476,13 +475,9 @@ void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
 
 void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel channel, const app::Color& color)
 {
-  PaletteView* palView = ColorBar::instance()->getPaletteView();
   PalettePicks entries;
-  palView->getSelectedEntries(entries);
-
-  int begSel, endSel;
-  if (!palView->getSelectedRange(begSel, endSel))
-    return;
+  getPicks(entries);
+  int picksCount = entries.picks();
 
   uint32_t src_color;
   int r, g, b;
@@ -502,7 +497,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
 
       case app::Color::RgbType:
         // Modify one entry
-        if (begSel == endSel) {
+        if (picksCount == 1) {
           r = color.getRed();
           g = color.getGreen();
           b = color.getBlue();
@@ -528,7 +523,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
           Hsv hsv;
 
           // Modify one entry
-          if (begSel == endSel) {
+          if (picksCount == 1) {
             hsv.hue(color.getHue());
             hsv.saturation(double(color.getSaturation()) / 100.0);
             hsv.value(double(color.getValue()) / 100.0);
@@ -567,9 +562,8 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
 
 void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel channel, int delta)
 {
-  PaletteView* palView = ColorBar::instance()->getPaletteView();
   PalettePicks entries;
-  palView->getSelectedEntries(entries);
+  getPicks(entries);
 
   // Update modified delta
   m_relDeltas[channel] = delta;
@@ -721,6 +715,17 @@ void PaletteEntryEditor::resetRelativeInfo()
   m_hsvSliders.resetRelativeSliders();
   get_current_palette()->copyColorsTo(&m_fromPalette);
   m_relDeltas.clear();
+}
+
+void PaletteEntryEditor::getPicks(PalettePicks& picks)
+{
+  PaletteView* palView = ColorBar::instance()->getPaletteView();
+  palView->getSelectedEntries(picks);
+  if (picks.picks() == 0) {
+    int i = palView->getSelectedEntry();
+    if (i >= 0 && i < picks.size())
+      picks[i] = true;
+  }
 }
 
 Command* CommandFactory::createPaletteEditorCommand()

@@ -482,7 +482,7 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
 void ColorBar::onColorButtonChange(const app::Color& color)
 {
   if (color.getType() == app::Color::IndexType)
-    m_paletteView.selectColor(color.getIndex(), false);
+    m_paletteView.selectColor(color.getIndex());
 }
 
 void ColorBar::onPickSpectrum(const app::Color& color, ui::MouseButtons buttons)
