@@ -72,7 +72,7 @@
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
-      <option id="grab_alpha" type="bool" default="false" />
+      <option id="grab_alpha" type="bool" default="false" migrate="Options.GrabAlpha" />
       <option id="auto_select_layer" type="bool" default="false" />
       <option id="fg_color" type="app::Color" />
       <option id="bg_color" type="app::Color" />

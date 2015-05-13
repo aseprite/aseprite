@@ -16,6 +16,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -84,7 +85,7 @@ void EyedropperCommand::onExecute(Context* context)
 
   // Check if we've to grab alpha channel or the merged color.
   ISettings* settings = UIContext::instance()->settings();
-  bool grabAlpha = settings->getGrabAlpha();
+  bool grabAlpha = App::instance()->preferences().editor.grabAlpha();
 
   ColorPicker picker;
   picker.pickColor(editor->getSite(),

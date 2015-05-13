@@ -751,7 +751,7 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    UIContext::instance()->settings()->setGrabAlpha(isSelected());
+    App::instance()->preferences().editor.grabAlpha(isSelected());
 
     releaseFocus();
   }
@@ -915,6 +915,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   ISettings* settings = UIContext::instance()->settings();
   IToolSettings* toolSettings = nullptr;
   IBrushSettings* brushSettings = nullptr;
+  Preferences& preferences = App::instance()->preferences();
 
   if (tool) {
     toolSettings = settings->getToolSettings(tool);
@@ -936,7 +937,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   }
 
   m_brushPatternField->setBrushPattern(
-    App::instance()->preferences().brush.pattern());
+    preferences.brush.pattern());
 
   if (toolSettings) {
     m_tolerance->setTextf("%d", toolSettings->getTolerance());
@@ -952,7 +953,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   }
 
   if (settings) {
-    m_grabAlpha->setSelected(settings->getGrabAlpha());
+    m_grabAlpha->setSelected(preferences.editor.grabAlpha());
     m_autoSelectLayer->setSelected(settings->getAutoSelectLayer());
   }
 

@@ -42,14 +42,12 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
-    virtual bool getGrabAlpha() = 0;
     virtual bool getAutoSelectLayer() = 0;
     virtual app::Color getFgColor() = 0;
     virtual app::Color getBgColor() = 0;
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
-    virtual void setGrabAlpha(bool state) = 0;
     virtual void setAutoSelectLayer(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;
     virtual void setBgColor(const app::Color& color) = 0;

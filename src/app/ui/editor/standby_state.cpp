@@ -16,6 +16,7 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/ini_file.h"
+#include "app/pref/preferences.h"
 #include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/pick_ink.h"
@@ -371,7 +372,7 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (ink->isEyedropper()) {
-    bool grabAlpha = UIContext::instance()->settings()->getGrabAlpha();
+    bool grabAlpha = App::instance()->preferences().editor.grabAlpha();
     ColorPicker picker;
     picker.pickColor(editor->getSite(),
       spritePos,

@@ -29,14 +29,12 @@ namespace app {
     ~UISettingsImpl();
 
     // ISettings implementation
-    bool getGrabAlpha() override;
     bool getAutoSelectLayer() override;
     app::Color getFgColor() override;
     app::Color getBgColor() override;
     tools::Tool* getCurrentTool() override;
     app::ColorSwatches* getColorSwatches() override;
 
-    void setGrabAlpha(bool state) override;
     void setAutoSelectLayer(bool state) override;
     void setFgColor(const app::Color& color) override;
     void setBgColor(const app::Color& color) override;

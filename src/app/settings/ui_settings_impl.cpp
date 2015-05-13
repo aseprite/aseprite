@@ -78,7 +78,6 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
-  , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
   , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
@@ -90,7 +89,6 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
-  set_config_bool("Options", "GrabAlpha", m_grabAlpha);
   set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
 
   for (auto it : m_toolSettings)
@@ -102,11 +100,6 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
-
-bool UISettingsImpl::getGrabAlpha()
-{
-  return m_grabAlpha;
-}
 
 bool UISettingsImpl::getAutoSelectLayer()
 {
@@ -136,11 +129,6 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
-}
-
-void UISettingsImpl::setGrabAlpha(bool state)
-{
-  m_grabAlpha = state;
 }
 
 void UISettingsImpl::setAutoSelectLayer(bool state)
