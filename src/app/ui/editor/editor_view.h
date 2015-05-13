@@ -9,8 +9,9 @@
 #define APP_UI_EDITOR_VIEW_H_INCLUDED
 #pragma once
 
-#include "ui/view.h"
 #include "app/settings/settings_observers.h"
+#include "base/connection.h"
+#include "ui/view.h"
 
 namespace app {
   class Editor;
@@ -18,8 +19,7 @@ namespace app {
   // TODO hardcoded scroll bar width should be get from skin.xml file
   const int kEditorViewScrollbarWidth = 6;
 
-  class EditorView : public ui::View,
-                     public GlobalSettingsObserver {
+  class EditorView : public ui::View {
   public:
     enum Type { CurrentEditorMode, AlwaysSelected };
 
@@ -27,21 +27,18 @@ namespace app {
     static void SetScrollUpdateMethod(Method method);
 
     EditorView(Type type);
-    ~EditorView();
 
   protected:
     void onPaint(ui::PaintEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onScrollChange() override;
 
-    // GlobalSettingsObserver impl
-    void onSetShowSpriteEditorScrollbars(bool state) override;
-
   private:
     Editor* editor();
     void setupScrollbars();
 
     Type m_type;
+    ScopedConnection m_scrollSettingsConn;
     static Method g_scrollUpdateMethod;
   };
 

@@ -62,7 +62,6 @@ namespace app {
   public:
     virtual ~GlobalSettingsObserver() {}
 
-    virtual void onSetShowSpriteEditorScrollbars(bool state) {}
     virtual void onSetGrabAlpha(bool state) {}
     virtual void onSetAutoSelectLayer(bool state) {}
     virtual void onSetFgColor(app::Color newColor) {}

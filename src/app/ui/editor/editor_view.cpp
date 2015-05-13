@@ -11,12 +11,13 @@
 
 #include "app/ui/editor/editor_view.h"
 
+#include "app/app.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
-#include "app/ui_context.h"
+#include "base/bind.h"
 #include "she/surface.h"
 #include "ui/paint_event.h"
 #include "ui/resize_event.h"
@@ -49,12 +50,9 @@ EditorView::EditorView(EditorView::Type type)
   setBgColor(gfx::rgba(0, 0, 0));
   setupScrollbars();
 
-  UIContext::instance()->settings()->addObserver(this);
-}
-
-EditorView::~EditorView()
-{
-  UIContext::instance()->settings()->removeObserver(this);
+  m_scrollSettingsConn =
+    App::instance()->preferences().editor.showScrollbars.AfterChange.connect(
+      Bind(&EditorView::setupScrollbars, this));
 }
 
 void EditorView::onPaint(PaintEvent& ev)
@@ -126,16 +124,12 @@ void EditorView::onScrollChange()
     editor->notifyScrollChanged();
 }
 
-void EditorView::onSetShowSpriteEditorScrollbars(bool state)
-{
-  setupScrollbars();
-}
-
 void EditorView::setupScrollbars()
 {
   if (m_type == AlwaysSelected ||
-      !UIContext::instance()->settings()->getShowSpriteEditorScrollbars())
+      !App::instance()->preferences().editor.showScrollbars()) {
     hideScrollBars();
+  }
   else {
     getHorizontalBar()->setBarWidth(kEditorViewScrollbarWidth*guiscale());
     getVerticalBar()->setBarWidth(kEditorViewScrollbarWidth*guiscale());

@@ -93,7 +93,7 @@ public:
     if (m_preferences.experimental.flashLayer())
       flashLayer()->setSelected(true);
 
-    if (m_settings->getShowSpriteEditorScrollbars())
+    if (m_preferences.editor.showScrollbars())
       showScrollbars()->setSelected(true);
 
     // Scope
@@ -177,7 +177,7 @@ public:
 
     m_preferences.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
     m_preferences.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
-    m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
+    m_preferences.editor.showScrollbars(showScrollbars()->isSelected());
     m_preferences.editor.zoomWithWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 

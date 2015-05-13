@@ -30,7 +30,6 @@ namespace app {
     ~UISettingsImpl();
 
     // ISettings implementation
-    bool getShowSpriteEditorScrollbars() override;
     RightClickMode getRightClickMode() override;
     bool getGrabAlpha() override;
     bool getAutoSelectLayer() override;
@@ -39,7 +38,6 @@ namespace app {
     tools::Tool* getCurrentTool() override;
     app::ColorSwatches* getColorSwatches() override;
 
-    void setShowSpriteEditorScrollbars(bool state) override;
     void setRightClickMode(RightClickMode mode) override;
     void setGrabAlpha(bool state) override;
     void setAutoSelectLayer(bool state) override;
@@ -67,7 +65,6 @@ namespace app {
     app::ColorSwatches* m_colorSwatches;
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
-    bool m_showSpriteEditorScrollbars;
     bool m_grabAlpha;
     bool m_autoSelectLayer;
     RightClickMode m_rightClickMode;

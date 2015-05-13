@@ -44,7 +44,6 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
-    virtual bool getShowSpriteEditorScrollbars() = 0;
     virtual RightClickMode getRightClickMode() = 0;
     virtual bool getGrabAlpha() = 0;
     virtual bool getAutoSelectLayer() = 0;
@@ -53,7 +52,6 @@ namespace app {
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
-    virtual void setShowSpriteEditorScrollbars(bool state) = 0;
     virtual void setRightClickMode(RightClickMode mode) = 0;
     virtual void setGrabAlpha(bool state) = 0;
     virtual void setAutoSelectLayer(bool state) = 0;

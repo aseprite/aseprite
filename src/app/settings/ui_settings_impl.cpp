@@ -78,7 +78,6 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
-  , m_showSpriteEditorScrollbars(get_config_bool("Options", "ShowScrollbars", true))
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
   , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
   , m_rightClickMode(static_cast<RightClickMode>(get_config_int("Options", "RightClickMode",
@@ -93,7 +92,6 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
-  set_config_bool("Options", "ShowScrollbars", m_showSpriteEditorScrollbars);
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
   set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
   set_config_int("Options", "RightClickMode", static_cast<int>(m_rightClickMode));
@@ -107,11 +105,6 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
-
-bool UISettingsImpl::getShowSpriteEditorScrollbars()
-{
-  return m_showSpriteEditorScrollbars;
-}
 
 RightClickMode UISettingsImpl::getRightClickMode()
 {
@@ -151,13 +144,6 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
-}
-
-void UISettingsImpl::setShowSpriteEditorScrollbars(bool state)
-{
-  m_showSpriteEditorScrollbars = state;
-
-  notifyObservers<bool>(&GlobalSettingsObserver::onSetShowSpriteEditorScrollbars, state);
 }
 
 void UISettingsImpl::setRightClickMode(RightClickMode mode)
