@@ -44,7 +44,6 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
-    virtual bool getZoomWithScrollWheel() = 0;
     virtual bool getCenterOnZoom() = 0;
     virtual bool getShowSpriteEditorScrollbars() = 0;
     virtual RightClickMode getRightClickMode() = 0;
@@ -55,7 +54,6 @@ namespace app {
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
-    virtual void setZoomWithScrollWheel(bool state) = 0;
     virtual void setCenterOnZoom(bool state) = 0;
     virtual void setShowSpriteEditorScrollbars(bool state) = 0;
     virtual void setRightClickMode(RightClickMode mode) = 0;

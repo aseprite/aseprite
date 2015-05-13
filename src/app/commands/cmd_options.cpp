@@ -120,7 +120,7 @@ public:
     rightClickBehavior()->setSelectedItemIndex((int)m_settings->getRightClickMode());
 
     // Zoom with Scroll Wheel
-    wheelZoom()->setSelected(m_settings->getZoomWithScrollWheel());
+    wheelZoom()->setSelected(m_preferences.editor.zoomWithWheel());
 
     // Checked background size
     checkedBgSize()->addItem("16x16");
@@ -178,7 +178,7 @@ public:
     m_preferences.editor.zoomFromCenterWithWheel(zoomFromCenterWithWheel()->isSelected());
     m_preferences.editor.zoomFromCenterWithKeys(zoomFromCenterWithKeys()->isSelected());
     m_settings->setShowSpriteEditorScrollbars(showScrollbars()->isSelected());
-    m_settings->setZoomWithScrollWheel(wheelZoom()->isSelected());
+    m_preferences.editor.zoomWithWheel(wheelZoom()->isSelected());
     m_settings->setRightClickMode(static_cast<RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
 
     m_curPref->grid.color(m_gridColor->getColor());

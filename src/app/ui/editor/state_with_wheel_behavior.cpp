@@ -46,7 +46,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       wheelAction = WHEEL_FG;
   }
   // Normal behavior: mouse wheel zooms
-  else if (UIContext::instance()->settings()->getZoomWithScrollWheel()) {
+  else if (App::instance()->preferences().editor.zoomWithWheel()) {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_FRAME;
     else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
