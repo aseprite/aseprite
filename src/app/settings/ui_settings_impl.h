@@ -23,8 +23,7 @@ namespace app {
 
   class UISettingsImpl
       : public ISettings
-      , public IColorSwatchesStore
-      , base::Observable<GlobalSettingsObserver> {
+      , public IColorSwatchesStore {
   public:
     UISettingsImpl();
     ~UISettingsImpl();
@@ -53,9 +52,6 @@ namespace app {
 
     void addColorSwatches(app::ColorSwatches* colorSwatches) override;
     void removeColorSwatches(app::ColorSwatches* colorSwatches) override;
-
-    void addObserver(GlobalSettingsObserver* observer) override;
-    void removeObserver(GlobalSettingsObserver* observer) override;
 
   private:
     tools::Tool* m_currentTool;

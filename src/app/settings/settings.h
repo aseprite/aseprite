@@ -32,7 +32,6 @@ namespace app {
   class ToolSettingsObserver;
   class ISelectionSettings;
   class SelectionSettingsObserver;
-  class GlobalSettingsObserver;
 
   namespace tools {
     class Tool;
@@ -64,9 +63,6 @@ namespace app {
     virtual ISelectionSettings* selection() = 0;
 
     virtual IColorSwatchesStore* getColorSwatchesStore() = 0;
-
-    virtual void addObserver(GlobalSettingsObserver* observer) = 0;
-    virtual void removeObserver(GlobalSettingsObserver* observer) = 0;
   };
 
   // Tool's settings

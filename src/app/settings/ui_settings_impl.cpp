@@ -141,15 +141,11 @@ app::ColorSwatches* UISettingsImpl::getColorSwatches()
 void UISettingsImpl::setGrabAlpha(bool state)
 {
   m_grabAlpha = state;
-
-  notifyObservers<bool>(&GlobalSettingsObserver::onSetGrabAlpha, state);
 }
 
 void UISettingsImpl::setAutoSelectLayer(bool state)
 {
   m_autoSelectLayer = state;
-
-  notifyObservers<bool>(&GlobalSettingsObserver::onSetAutoSelectLayer, state);
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
@@ -181,7 +177,6 @@ void UISettingsImpl::setCurrentTool(tools::Tool* tool)
 void UISettingsImpl::setColorSwatches(app::ColorSwatches* colorSwatches)
 {
   m_colorSwatches = colorSwatches;
-  notifyObservers<app::ColorSwatches*>(&GlobalSettingsObserver::onSetColorSwatches, colorSwatches);
 }
 
 IColorSwatchesStore* UISettingsImpl::getColorSwatchesStore()
@@ -205,14 +200,6 @@ void UISettingsImpl::removeColorSwatches(app::ColorSwatches* colorSwatches)
 
   if (it != m_colorSwatchesStore.end())
     m_colorSwatchesStore.erase(it);
-}
-
-void UISettingsImpl::addObserver(GlobalSettingsObserver* observer) {
-  base::Observable<GlobalSettingsObserver>::addObserver(observer);
-}
-
-void UISettingsImpl::removeObserver(GlobalSettingsObserver* observer) {
-  base::Observable<GlobalSettingsObserver>::removeObserver(observer);
 }
 
 ISelectionSettings* UISettingsImpl::selection()

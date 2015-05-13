@@ -58,18 +58,6 @@ namespace app {
     virtual void onSetRotationAlgorithm(RotationAlgorithm algorithm) {}
   };
 
-  class GlobalSettingsObserver {
-  public:
-    virtual ~GlobalSettingsObserver() {}
-
-    virtual void onSetGrabAlpha(bool state) {}
-    virtual void onSetAutoSelectLayer(bool state) {}
-    virtual void onSetFgColor(app::Color newColor) {}
-    virtual void onSetBgColor(app::Color newColor) {}
-    virtual void onSetCurrentTool(tools::Tool* newTool) {}
-    virtual void onSetColorSwatches(ColorSwatches* swaches) {}
-  };
-
 } // namespace app
 
 #endif // APP_SETTINGS_SETTINGS_OBSERVERS_H_INCLUDED
