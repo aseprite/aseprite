@@ -14,7 +14,6 @@
 #include "app/settings/ink_type.h"
 #include "app/settings/rotation_algorithm.h"
 #include "app/settings/selection_mode.h"
-#include "app/settings/right_click_mode.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "doc/brush_type.h"
@@ -44,7 +43,6 @@ namespace app {
     virtual ~ISettings() { }
 
     // General settings
-    virtual RightClickMode getRightClickMode() = 0;
     virtual bool getGrabAlpha() = 0;
     virtual bool getAutoSelectLayer() = 0;
     virtual app::Color getFgColor() = 0;
@@ -52,7 +50,6 @@ namespace app {
     virtual tools::Tool* getCurrentTool() = 0;
     virtual app::ColorSwatches* getColorSwatches() = 0;
 
-    virtual void setRightClickMode(RightClickMode mode) = 0;
     virtual void setGrabAlpha(bool state) = 0;
     virtual void setAutoSelectLayer(bool state) = 0;
     virtual void setFgColor(const app::Color& color) = 0;

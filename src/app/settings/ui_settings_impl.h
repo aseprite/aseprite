@@ -30,7 +30,6 @@ namespace app {
     ~UISettingsImpl();
 
     // ISettings implementation
-    RightClickMode getRightClickMode() override;
     bool getGrabAlpha() override;
     bool getAutoSelectLayer() override;
     app::Color getFgColor() override;
@@ -38,7 +37,6 @@ namespace app {
     tools::Tool* getCurrentTool() override;
     app::ColorSwatches* getColorSwatches() override;
 
-    void setRightClickMode(RightClickMode mode) override;
     void setGrabAlpha(bool state) override;
     void setAutoSelectLayer(bool state) override;
     void setFgColor(const app::Color& color) override;
@@ -67,7 +65,6 @@ namespace app {
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
     bool m_grabAlpha;
     bool m_autoSelectLayer;
-    RightClickMode m_rightClickMode;
   };
 
 } // namespace app

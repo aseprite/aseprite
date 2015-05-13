@@ -867,14 +867,14 @@ tools::Tool* Editor::getCurrentEditorTool()
   if (m_secondaryButton && isCurrentToolAffectedByRightClickMode()) {
     tools::ToolBox* toolbox = App::instance()->getToolBox();
 
-    switch (context->settings()->getRightClickMode()) {
-      case RightClickMode::PaintBgColor:
+    switch (App::instance()->preferences().editor.rightClickMode()) {
+      case app::gen::RightClickMode::PAINT_BGCOLOR:
         // Do nothing, use the current tool
         break;
-      case RightClickMode::PickFgColor:
+      case app::gen::RightClickMode::PICK_FGCOLOR:
         tool = toolbox->getToolById(tools::WellKnownTools::Eyedropper);
         break;
-      case RightClickMode::Erase:
+      case app::gen::RightClickMode::ERASE:
         tool = toolbox->getToolById(tools::WellKnownTools::Eraser);
         break;
     }
@@ -896,21 +896,21 @@ tools::Ink* Editor::getCurrentEditorInk()
   if (m_quicktool)
     return ink;
 
-  RightClickMode rightClickMode = context->settings()->getRightClickMode();
+  app::gen::RightClickMode rightClickMode = App::instance()->preferences().editor.rightClickMode();
 
   if (m_secondaryButton &&
-      rightClickMode != RightClickMode::Default &&
+      rightClickMode != app::gen::RightClickMode::DEFAULT &&
       isCurrentToolAffectedByRightClickMode()) {
     tools::ToolBox* toolbox = App::instance()->getToolBox();
 
     switch (rightClickMode) {
-      case RightClickMode::Default:
+      case app::gen::RightClickMode::DEFAULT:
         // Do nothing
         break;
-      case RightClickMode::PickFgColor:
+      case app::gen::RightClickMode::PICK_FGCOLOR:
         ink = toolbox->getInkById(tools::WellKnownInks::PickFg);
         break;
-      case RightClickMode::Erase:
+      case app::gen::RightClickMode::ERASE:
         ink = toolbox->getInkById(tools::WellKnownInks::Eraser);
         break;
     }

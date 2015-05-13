@@ -80,8 +80,6 @@ UISettingsImpl::UISettingsImpl()
   , m_selectionSettings(new UISelectionSettingsImpl)
   , m_grabAlpha(get_config_bool("Options", "GrabAlpha", false))
   , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
-  , m_rightClickMode(static_cast<RightClickMode>(get_config_int("Options", "RightClickMode",
-        static_cast<int>(RightClickMode::Default))))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -94,7 +92,6 @@ UISettingsImpl::~UISettingsImpl()
 {
   set_config_bool("Options", "GrabAlpha", m_grabAlpha);
   set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
-  set_config_int("Options", "RightClickMode", static_cast<int>(m_rightClickMode));
 
   for (auto it : m_toolSettings)
     delete it.second;
@@ -105,11 +102,6 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
-
-RightClickMode UISettingsImpl::getRightClickMode()
-{
-  return m_rightClickMode;
-}
 
 bool UISettingsImpl::getGrabAlpha()
 {
@@ -144,11 +136,6 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
-}
-
-void UISettingsImpl::setRightClickMode(RightClickMode mode)
-{
-  m_rightClickMode = mode;
 }
 
 void UISettingsImpl::setGrabAlpha(bool state)

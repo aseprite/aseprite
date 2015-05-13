@@ -10,6 +10,7 @@
       <value id="LOCK_ALPHA" value="2" />
     </enum>
     <enum id="RightClickMode">
+      <value id="DEFAULT" value="0" />
       <value id="PAINT_BGCOLOR" value="0" />
       <value id="PICK_FGCOLOR" value="1" />
       <value id="ERASE" value="2" />
@@ -70,7 +71,7 @@
       <option id="zoom_from_center_with_wheel" type="bool" default="false" />
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
-      <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" />
+      <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="grab_alpha" type="bool" default="false" />
       <option id="auto_select_layer" type="bool" default="false" />
       <option id="fg_color" type="app::Color" />
