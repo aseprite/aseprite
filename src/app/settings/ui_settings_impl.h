@@ -29,13 +29,11 @@ namespace app {
     ~UISettingsImpl();
 
     // ISettings implementation
-    bool getAutoSelectLayer() override;
     app::Color getFgColor() override;
     app::Color getBgColor() override;
     tools::Tool* getCurrentTool() override;
     app::ColorSwatches* getColorSwatches() override;
 
-    void setAutoSelectLayer(bool state) override;
     void setFgColor(const app::Color& color) override;
     void setBgColor(const app::Color& color) override;
     void setCurrentTool(tools::Tool* tool) override;
@@ -58,7 +56,6 @@ namespace app {
     std::vector<app::ColorSwatches*> m_colorSwatchesStore;
     base::UniquePtr<ISelectionSettings> m_selectionSettings;
     bool m_grabAlpha;
-    bool m_autoSelectLayer;
   };
 
 } // namespace app

@@ -1173,7 +1173,7 @@ void Editor::updateContextBarFromModifiers()
 
   // Move tool options
 
-  bool autoSelectLayer = UIContext::instance()->settings()->getAutoSelectLayer();
+  bool autoSelectLayer = App::instance()->preferences().editor.autoSelectLayer();
 
   if (m_customizationDelegate && m_customizationDelegate->isAutoSelectLayerPressed())
     autoSelectLayer = true;

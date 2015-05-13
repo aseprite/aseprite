@@ -768,7 +768,7 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    UIContext::instance()->settings()->setAutoSelectLayer(isSelected());
+    App::instance()->preferences().editor.autoSelectLayer(isSelected());
 
     releaseFocus();
   }
@@ -954,7 +954,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
 
   if (settings) {
     m_grabAlpha->setSelected(preferences.editor.grabAlpha());
-    m_autoSelectLayer->setSelected(settings->getAutoSelectLayer());
+    m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
   }
 
   // True if the current tool needs opacity options

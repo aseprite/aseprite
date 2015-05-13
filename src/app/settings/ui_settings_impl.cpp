@@ -78,7 +78,6 @@ UISettingsImpl::UISettingsImpl()
   : m_currentTool(NULL)
   , m_colorSwatches(NULL)
   , m_selectionSettings(new UISelectionSettingsImpl)
-  , m_autoSelectLayer(get_config_bool("Options", "AutoSelectLayer", false))
 {
   m_colorSwatches = new app::ColorSwatches("Default");
   for (size_t i=0; i<16; ++i)
@@ -89,8 +88,6 @@ UISettingsImpl::UISettingsImpl()
 
 UISettingsImpl::~UISettingsImpl()
 {
-  set_config_bool("Options", "AutoSelectLayer", m_autoSelectLayer);
-
   for (auto it : m_toolSettings)
     delete it.second;
 
@@ -100,11 +97,6 @@ UISettingsImpl::~UISettingsImpl()
 
 //////////////////////////////////////////////////////////////////////
 // General settings
-
-bool UISettingsImpl::getAutoSelectLayer()
-{
-  return m_autoSelectLayer;
-}
 
 app::Color UISettingsImpl::getFgColor()
 {
@@ -129,11 +121,6 @@ tools::Tool* UISettingsImpl::getCurrentTool()
 app::ColorSwatches* UISettingsImpl::getColorSwatches()
 {
   return m_colorSwatches;
-}
-
-void UISettingsImpl::setAutoSelectLayer(bool state)
-{
-  m_autoSelectLayer = state;
 }
 
 void UISettingsImpl::setFgColor(const app::Color& color)
