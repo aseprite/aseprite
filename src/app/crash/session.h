@@ -40,6 +40,7 @@ namespace crash {
     ~Session();
 
     std::string name() const;
+    std::string path() const;
     const Backups& backups();
 
     bool isRunning();

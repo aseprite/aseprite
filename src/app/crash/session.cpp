@@ -71,6 +71,11 @@ std::string Session::name() const
     return name;
 }
 
+std::string Session::path() const
+{
+  return m_path;
+}
+
 const Session::Backups& Session::backups()
 {
   if (m_backups.empty()) {
