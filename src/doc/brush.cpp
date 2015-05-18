@@ -19,12 +19,15 @@
 
 namespace doc {
 
+static int generation = 0;
+
 Brush::Brush()
 {
   m_type = kCircleBrushType;
   m_size = 1;
   m_angle = 0;
   m_pattern = BrushPattern::DEFAULT;
+  m_gen = 0;
 
   regenerate();
 }
@@ -35,6 +38,7 @@ Brush::Brush(BrushType type, int size, int angle)
   m_size = size;
   m_angle = angle;
   m_pattern = BrushPattern::DEFAULT;
+  m_gen = 0;
 
   regenerate();
 }
@@ -47,6 +51,7 @@ Brush::Brush(const Brush& brush)
   m_image = brush.m_image;
   m_pattern = brush.m_pattern;
   m_patternOrigin = brush.m_patternOrigin;
+  m_gen = 0;
 
   regenerate();
 }
@@ -89,6 +94,7 @@ void Brush::setImage(const Image* image)
 // Cleans the brush's data (image and region).
 void Brush::clean()
 {
+  m_gen = ++generation;
   m_image.reset();
 }
 

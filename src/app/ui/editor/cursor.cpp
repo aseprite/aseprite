@@ -55,10 +55,10 @@ using namespace ui;
 static struct {
   int nseg;
   BoundSeg* seg;
-  Image* brush_image;
+  int brush_gen;
   int brush_width;
   int brush_height;
-} cursor_bound = { 0, nullptr, nullptr, 0, 0 };
+} cursor_bound = { 0, nullptr, 0, 0, 0 };
 
 enum {
   CURSOR_THINCROSS   = 1,
@@ -79,7 +79,7 @@ static gfx::Region old_clipping_region;
 
 static gfx::Rect lastBrushBounds;
 
-static void generate_cursor_boundaries(Editor* editor);
+static void generate_cursor_boundaries();
 
 static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, Editor::PixelDelegate pixel);
 static void trace_thickcross_pixels(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, int thickness, Editor::PixelDelegate pixel);
@@ -172,7 +172,7 @@ void Editor::drawBrushPreview(const gfx::Point& pos)
 
   // For cursor type 'bounds' we have to generate cursor boundaries
   if (cursor_type & CURSOR_BRUSHBOUNDS)
-    generate_cursor_boundaries(this);
+    generate_cursor_boundaries();
 
   // Draw pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
@@ -292,41 +292,40 @@ bool Editor::doesBrushPreviewNeedSubpixel()
 
 //////////////////////////////////////////////////////////////////////
 
-static void generate_cursor_boundaries(Editor* editor)
+static void generate_cursor_boundaries()
 {
   Brush* brush = get_current_brush();
 
-  if (!cursor_bound.seg || cursor_bound.brush_image != brush->image()) {
-    Image* brush_image = brush->image();
-    int w = brush_image->width();
-    int h = brush_image->height();
+  if (cursor_bound.seg &&
+      cursor_bound.brush_gen == brush->gen())
+    return;
 
-    cursor_bound.brush_image = brush_image;
-    cursor_bound.brush_width = w;
-    cursor_bound.brush_height = h;
+  Image* brush_image = brush->image();
+  int w = brush_image->width();
+  int h = brush_image->height();
 
-    if (cursor_bound.seg)
-      base_free(cursor_bound.seg);
+  cursor_bound.brush_gen = brush->gen();
+  cursor_bound.brush_width = w;
+  cursor_bound.brush_height = h;
 
-    ImageRef mask;
-    if (brush_image->pixelFormat() != IMAGE_BITMAP) {
-      mask.reset(Image::create(IMAGE_BITMAP, w, h));
+  ImageRef mask;
+  if (brush_image->pixelFormat() != IMAGE_BITMAP) {
+    mask.reset(Image::create(IMAGE_BITMAP, w, h));
 
-      LockImageBits<BitmapTraits> bits(mask.get());
-      auto pos = bits.begin();
-      for (int v=0; v<h; ++v) {
-        for (int u=0; u<w; ++u) {
-          *pos = get_pixel(brush_image, u, v);
-          ++pos;
-        }
+    LockImageBits<BitmapTraits> bits(mask.get());
+    auto pos = bits.begin();
+    for (int v=0; v<h; ++v) {
+      for (int u=0; u<w; ++u) {
+        *pos = get_pixel(brush_image, u, v);
+        ++pos;
       }
     }
-
-    cursor_bound.seg = find_mask_boundary(
-      (mask ? mask.get(): brush_image),
-      &cursor_bound.nseg,
-      IgnoreBounds, 0, 0, 0, 0);
   }
+
+  cursor_bound.seg = find_mask_boundary(
+    (mask ? mask.get(): brush_image),
+    &cursor_bound.nseg,
+    IgnoreBounds, 0, 0, 0, 0);
 }
 
 void Editor::forEachBrushPixel(

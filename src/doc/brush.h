@@ -32,6 +32,7 @@ namespace doc {
     int size() const { return m_size; }
     int angle() const { return m_angle; }
     Image* image() const { return m_image.get(); }
+    int gen() const { return m_gen; }
 
     BrushPattern pattern() const { return m_pattern; }
     gfx::Point patternOrigin() const { return m_patternOrigin; }
@@ -60,6 +61,7 @@ namespace doc {
     gfx::Rect m_bounds;
     BrushPattern m_pattern;               // How the image should be replicated
     gfx::Point m_patternOrigin;           // From what position the brush was taken
+    int m_gen;
   };
 
   typedef base::SharedPtr<Brush> BrushRef;
