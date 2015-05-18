@@ -31,12 +31,8 @@ void open_file(const std::string& file)
 
 void open_folder(const std::string& file)
 {
-  if (base::launcher::support_open_folder()) {
-    if (!base::launcher::open_folder(file))
-      ui::Alert::show("Problem<<Cannot open folder:<<%s||&Close", file.c_str());
-  }
-  else
-    ui::Alert::show("Problem<<This command is not supported on your platform||&Close");
+  if (!base::launcher::open_folder(file))
+    ui::Alert::show("Problem<<Cannot open folder:<<%s||&Close", file.c_str());
 }
 
 } // namespace launcher

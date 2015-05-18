@@ -17,8 +17,6 @@ namespace base {
     bool open_file(const std::string& file);
     bool open_folder(const std::string& file);
 
-    bool support_open_folder();
-
   } // namespace launcher
 } // namespace base
 

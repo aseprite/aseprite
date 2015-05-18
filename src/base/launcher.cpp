@@ -116,17 +116,10 @@ bool open_folder(const std::string& file)
 
 #else
 
-  return false;
+  int ret;
+  ret = system(("xdg-open \"" + file + "\"").c_str());
+  return (ret == 0);
 
-#endif
-}
-
-bool support_open_folder()
-{
-#if defined(_WIN32) || defined(__APPLE__)
-  return true;
-#else
-  return false;
 #endif
 }
 
