@@ -11,28 +11,22 @@
 
 namespace app {
 
-  class ShowHideDrawingCursor {
-  public:
-    ShowHideDrawingCursor(Editor* editor) : m_editor(editor) {
-      m_editor->showDrawingCursor();
-    }
-    ~ShowHideDrawingCursor() {
-      m_editor->hideDrawingCursor();
-    }
-  private:
-    Editor* m_editor;
-  };
-
   class HideShowDrawingCursor {
   public:
-    HideShowDrawingCursor(Editor* editor) : m_editor(editor) {
-      m_editor->hideDrawingCursor();
+    HideShowDrawingCursor(Editor* editor)
+      : m_editor(editor)
+      , m_cursorOnScreen(m_editor->cursorOnScreen())
+    {
+      if (m_cursorOnScreen)
+        m_editor->hideDrawingCursor();
     }
     ~HideShowDrawingCursor() {
-      m_editor->showDrawingCursor();
+      if (m_cursorOnScreen)
+        m_editor->showDrawingCursor();
     }
   private:
     Editor* m_editor;
+    bool m_cursorOnScreen;
   };
 
 } // namespace app

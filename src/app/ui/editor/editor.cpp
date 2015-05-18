@@ -1028,11 +1028,12 @@ void Editor::moveDrawingCursor()
   if (m_cursorOnScreen) {
     gfx::Point mousePos = ui::get_mouse_position();
 
-    // Redraw it only when the mouse change to other pixel (not
-    // when the mouse moves only).
+    // Redraw it only when the mouse change to other pixel (not when
+    // the mouse just moves).
     if (m_cursorScreen != mousePos) {
       ui::hide_mouse_cursor();
-      moveBrushPreview(mousePos);
+      clearBrushPreview();
+      drawBrushPreview(mousePos);
       ui::show_mouse_cursor();
     }
   }
@@ -1448,8 +1449,7 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-
-  hideDrawingCursor();
+  HideShowDrawingCursor hideShow(this);
 
   gfx::Point screenPos;
   gfx::Point spritePos;
@@ -1488,7 +1488,6 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
     updateEditor();
     setEditorScroll(scrollPos, blit_valid_rgn);
   }
-  showDrawingCursor();
 }
 
 void Editor::pasteImage(const Image* image, const gfx::Point& pos)

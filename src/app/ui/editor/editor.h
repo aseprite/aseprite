@@ -227,9 +227,8 @@ namespace app {
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateContextBarFromModifiers();
-    void drawBrushPreview(const gfx::Point& pos, bool refresh = true);
-    void moveBrushPreview(const gfx::Point& pos, bool refresh = true);
-    void clearBrushPreview(bool refresh = true);
+    void drawBrushPreview(const gfx::Point& pos);
+    void clearBrushPreview();
     bool doesBrushPreviewNeedSubpixel();
     bool isCurrentToolAffectedByRightClickMode();
 

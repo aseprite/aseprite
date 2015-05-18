@@ -56,7 +56,9 @@ static struct {
   int nseg;
   BoundSeg* seg;
   Image* brush_image;
-} cursor_bound = { 0, nullptr, nullptr };
+  int brush_width;
+  int brush_height;
+} cursor_bound = { 0, nullptr, nullptr, 0, 0 };
 
 enum {
   CURSOR_THINCROSS   = 1,
@@ -65,7 +67,7 @@ enum {
 };
 
 static int cursor_type = CURSOR_THINCROSS;
-static int cursor_negative;
+static bool cursor_negative;
 
 static std::vector<gfx::Color> saved_pixel;
 static int saved_pixel_n;
@@ -171,12 +173,10 @@ void Editor::editor_cursor_exit()
     base_free(cursor_bound.seg);
 }
 
-// Draws the brush cursor inside the specified editor.
-// Warning: You should clean the cursor before to use
-// this routine with other editor.
-//
-// Note: x and y params are absolute positions of the mouse.
-void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
+// Draws the brush cursor in the specified absolute mouse position
+// given in 'pos' param.  Warning: You should clean the cursor before
+// to use this routine with other editor.
+void Editor::drawBrushPreview(const gfx::Point& pos)
 {
   ASSERT(!m_cursorOnScreen);
   ASSERT(m_sprite);
@@ -271,14 +271,13 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
       delete loop;
     }
 
-    if (refresh) {
-      m_document->notifySpritePixelsModified
-        (m_sprite, gfx::Region(lastBrushBounds = brushBounds));
-    }
+    m_document->notifySpritePixelsModified(
+      m_sprite,
+      gfx::Region(lastBrushBounds = brushBounds));
   }
 
   // Save area and draw the cursor
-  if (refresh) {
+  {
     ScreenGraphics g;
     SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
 
@@ -294,59 +293,12 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
   old_clipping_region = clipping_region;
 }
 
-void Editor::moveBrushPreview(const gfx::Point& pos, bool refresh)
-{
-  ASSERT(m_sprite != NULL);
-
-  gfx::Point oldScreenPos = m_cursorScreen;
-  gfx::Point oldEditorPos = m_cursorEditor;
-
-  clearBrushPreview(false);
-  drawBrushPreview(pos, false);
-
-  gfx::Point newEditorPos = m_cursorEditor;
-
-  if (refresh) {
-    // Restore pixels
-    {
-      ScreenGraphics g;
-      SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
-
-      forEachBrushPixel(&g, oldScreenPos, oldEditorPos, gfx::ColorNone, clearpixel);
-    }
-
-    if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
-      Brush* brush = get_current_brush();
-
-      gfx::Rect newBrushBounds = brush->bounds();
-      newBrushBounds.offset(newEditorPos);
-
-      m_document->notifySpritePixelsModified
-        (m_sprite, gfx::Region(lastBrushBounds.createUnion(newBrushBounds)));
-      lastBrushBounds = newBrushBounds;
-    }
-
-    // Save area and draw the cursor
-    ScreenGraphics g;
-    forEachBrushPixel(&g, m_cursorScreen, newEditorPos, ui_cursor_color, savepixel);
-    forEachBrushPixel(&g, m_cursorScreen, newEditorPos, ui_cursor_color, drawpixel);
-  }
-}
-
-/**
- * Cleans the brush cursor from the specified editor.
- *
- * The mouse position is got from the last
- * call to @c drawBrushPreview. So you must
- * to use this routine only if you called
- * @c drawBrushPreview before with the specified
- * editor @a widget.
- *
- * @param widget The editor widget
- *
- * @see drawBrushPreview
- */
-void Editor::clearBrushPreview(bool refresh)
+// Cleans the brush cursor from the specified editor.
+//
+// The mouse position is got from the last call to drawBrushPreview()
+// (m_cursorEditor). So you must to use this routine only if you
+// called drawBrushPreview() before.
+void Editor::clearBrushPreview()
 {
   ASSERT(m_cursorOnScreen);
   ASSERT(m_sprite);
@@ -355,7 +307,7 @@ void Editor::clearBrushPreview(bool refresh)
 
   gfx::Point pos = m_cursorEditor;
 
-  if (refresh) {
+  {
     // Restore pixels
     ScreenGraphics g;
     SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
@@ -366,10 +318,8 @@ void Editor::clearBrushPreview(bool refresh)
   // Clean pixel/brush preview
   if (cursor_type & CURSOR_THINCROSS && m_state->requireBrushPreview()) {
     m_document->destroyExtraCel();
-    if (refresh) {
-      m_document->notifySpritePixelsModified
-        (m_sprite, gfx::Region(lastBrushBounds));
-    }
+    m_document->notifySpritePixelsModified(
+      m_sprite, gfx::Region(lastBrushBounds));
   }
 
   m_cursorOnScreen = false;
@@ -394,17 +344,18 @@ static void generate_cursor_boundaries(Editor* editor)
 
   if (!cursor_bound.seg || cursor_bound.brush_image != brush->image()) {
     Image* brush_image = brush->image();
+    int w = brush_image->width();
+    int h = brush_image->height();
 
     cursor_bound.brush_image = brush_image;
+    cursor_bound.brush_width = w;
+    cursor_bound.brush_height = h;
 
     if (cursor_bound.seg)
       base_free(cursor_bound.seg);
 
     ImageRef mask;
     if (brush_image->pixelFormat() != IMAGE_BITMAP) {
-      int w = brush_image->width();
-      int h = brush_image->height();
-
       mask.reset(Image::create(IMAGE_BITMAP, w, h));
 
       LockImageBits<BitmapTraits> bits(mask.get());
@@ -533,8 +484,8 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
   BoundSeg* seg;
   int c;
 
-  pos.x -= cursor_bound.brush_image->width()/2;
-  pos.y -= cursor_bound.brush_image->height()/2;
+  pos.x -= cursor_bound.brush_width/2;
+  pos.y -= cursor_bound.brush_height/2;
 
   for (c=0; c<cursor_bound.nseg; c++) {
     seg = cursor_bound.seg+c;
