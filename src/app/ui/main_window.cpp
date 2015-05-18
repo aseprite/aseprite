@@ -18,7 +18,6 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/devconsole_view.h"
@@ -214,19 +213,19 @@ void MainWindow::setMode(Mode mode)
 
 bool MainWindow::getTimelineVisibility() const
 {
-  return App::instance()->preferences().general.visibleTimeline();
+  return Preferences::instance().general.visibleTimeline();
 }
 
 void MainWindow::setTimelineVisibility(bool visible)
 {
-  App::instance()->preferences().general.visibleTimeline(visible);
+  Preferences::instance().general.visibleTimeline(visible);
 
   configureWorkspaceLayout();
 }
 
 void MainWindow::popTimeline()
 {
-  Preferences& preferences = App::instance()->preferences();
+  Preferences& preferences = Preferences::instance();
 
   if (!preferences.general.autoshowTimeline())
     return;
@@ -383,7 +382,7 @@ void MainWindow::configureWorkspaceLayout()
     isDoc &&
     (m_mode == NormalMode ||
      m_mode == ContextBarAndTimelineMode) &&
-    App::instance()->preferences().general.visibleTimeline());
+    Preferences::instance().general.visibleTimeline());
 
   if (m_contextBar->isVisible()) {
     m_contextBar->updateForCurrentTool();

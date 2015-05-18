@@ -16,7 +16,6 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/modules/editors.h"
-#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/transaction.h"
@@ -170,12 +169,8 @@ void NewBrushCommand::createBrush(const Mask* mask)
 
 void NewBrushCommand::selectPencilTool()
 {
-  ISettings* settings = UIContext::instance()->settings();
-  if (settings->getCurrentTool()->getInk(0)->isSelection()) {
-    tools::Tool* pencil = App::instance()->getToolBox()
-      ->getToolById(tools::WellKnownTools::Pencil);
-    settings->setCurrentTool(pencil);
-  }
+  if (App::instance()->activeTool()->getInk(0)->isSelection())
+    Preferences::instance().toolBox.activeTool(tools::WellKnownTools::Pencil);
 }
 
 Command* CommandFactory::createNewBrushCommand()

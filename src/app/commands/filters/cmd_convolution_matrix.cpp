@@ -176,8 +176,8 @@ void ConvolutionMatrixCommand::onExecute(Context* context)
     m_stock.getByName(get_config_string(ConfigSection, "Selected", ""));
 
   // Create the filter and setup initial settings
-  DocumentPreferences& docPref = App::instance()
-    ->preferences().document(context->activeDocument());
+  DocumentPreferences& docPref = Preferences::instance()
+    .document(context->activeDocument());
 
   ConvolutionMatrixFilter filter;
   filter.setTiledMode(docPref.tiled.mode());

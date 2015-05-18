@@ -50,7 +50,7 @@ void RepeatLastExportCommand::onExecute(Context* context)
     const ContextReader reader(context);
     const Document* document(reader.document());
     DocumentPreferences& docPref =
-      App::instance()->preferences().document(document);
+      Preferences::instance().document(document);
 
     params.set("ui",
       (docPref.spriteSheet.type() == app::gen::SpriteSheetType::NONE ? "1": "0"));

@@ -16,7 +16,7 @@
 #include "app/commands/commands.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
@@ -321,8 +321,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     gfx::Color face;
     int nw;
 
-    if (UIContext::instance()->settings()->getCurrentTool() == tool ||
-      m_hotIndex == c) {
+    if (App::instance()->activeTool() == tool || m_hotIndex == c) {
       nw = PART_TOOLBUTTON_HOT_NW;
       face = hotFace;
     }
@@ -583,11 +582,12 @@ void ToolBar::closeTipWindow()
 
 void ToolBar::selectTool(Tool* tool)
 {
-  ASSERT(tool != NULL);
+  ASSERT(tool);
 
   m_selectedInGroup[tool->getGroup()] = tool;
 
-  UIContext::instance()->settings()->setCurrentTool(tool);
+  // Set active tool in preferences.
+  Preferences::instance().toolBox.activeTool(tool->getId());
 
   if (m_currentStrip)
     m_currentStrip->invalidate();
@@ -731,8 +731,8 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
       gfx::Color face;
       int nw;
 
-      if (UIContext::instance()->settings()->getCurrentTool() == tool ||
-        m_hotTool == tool) {
+      if (App::instance()->activeTool() == tool ||
+          m_hotTool == tool) {
         nw = PART_TOOLBUTTON_HOT_NW;
         face = theme->colors.buttonHotFace();
       }

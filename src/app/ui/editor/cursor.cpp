@@ -16,7 +16,6 @@
 #include "app/color_utils.h"
 #include "app/ini_file.h"
 #include "app/modules/editors.h"
-#include "app/settings/settings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
@@ -77,6 +76,8 @@ static int saved_pixel_n;
 static gfx::Region clipping_region;
 static gfx::Region old_clipping_region;
 
+static gfx::Rect lastBrushBounds;
+
 static void generate_cursor_boundaries(Editor* editor);
 
 static void trace_thincross_pixels(ui::Graphics* g, Editor* editor, const gfx::Point& pt, gfx::Color color, Editor::PixelDelegate pixel);
@@ -114,36 +115,6 @@ void Editor::set_cursor_color(const app::Color& color)
   update_cursor_color();
 }
 
-//////////////////////////////////////////////////////////////////////
-// Slots for App signals
-//////////////////////////////////////////////////////////////////////
-
-static gfx::Rect lastBrushBounds;
-static bool brush_on_screen = false;
-
-static void on_palette_change_update_cursor_color()
-{
-  update_cursor_color();
-}
-
-static void on_brush_before_change()
-{
-  if (current_editor) {
-    brush_on_screen = current_editor->cursorOnScreen();
-    if (brush_on_screen)
-      current_editor->hideDrawingCursor();
-  }
-}
-
-static void on_brush_after_change()
-{
-  if (current_editor) {
-    // Show drawing cursor
-    if (current_editor->sprite() && brush_on_screen)
-      current_editor->showDrawingCursor();
-  }
-}
-
 static Brush* get_current_brush()
 {
   return App::instance()->getMainWindow()->getContextBar()->activeBrush().get();
@@ -158,11 +129,8 @@ void Editor::editor_cursor_init()
   // Cursor color
   set_cursor_color(get_config_color("Tools", "CursorColor", app::Color::fromMask()));
 
-  App::instance()->PaletteChange.connect(&on_palette_change_update_cursor_color);
-  App::instance()->BrushSizeBeforeChange.connect(&on_brush_before_change);
-  App::instance()->BrushSizeAfterChange.connect(&on_brush_after_change);
-  App::instance()->BrushAngleBeforeChange.connect(&on_brush_before_change);
-  App::instance()->BrushAngleAfterChange.connect(&on_brush_after_change);
+  App::instance()->PaletteChange.connect(&update_cursor_color);
+  update_cursor_color();
 }
 
 void Editor::editor_cursor_exit()
@@ -570,7 +538,7 @@ static void clearpixel(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
 
 static color_t get_brush_color(Sprite* sprite, Layer* layer)
 {
-  app::Color c = UIContext::instance()->settings()->getFgColor();
+  app::Color c = Preferences::instance().colorBar.fgColor();
   ASSERT(sprite != NULL);
 
   // Avoid using invalid colors

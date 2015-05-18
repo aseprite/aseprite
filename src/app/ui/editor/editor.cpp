@@ -23,7 +23,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -156,7 +155,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_cursorScreen(0, 0)
   , m_cursorEditor(0, 0)
   , m_quicktool(NULL)
-  , m_selectionMode(kDefaultSelectionMode)
+  , m_selectionMode(tools::SelectionMode::DEFAULT)
   , m_offset_x(0)
   , m_offset_y(0)
   , m_mask_timer(100, this)
@@ -173,13 +172,14 @@ Editor::Editor(Document* document, EditorFlags flags)
   this->setFocusStop(true);
 
   m_currentToolChangeConn =
-    App::instance()->CurrentToolChange.connect(&Editor::onCurrentToolChange, this);
+    Preferences::instance().toolBox.activeTool.AfterChange.connect(
+      Bind<void>(&Editor::onCurrentToolChange, this));
 
   m_fgColorChangeConn =
-    ColorBar::instance()->FgColorChange.connect(Bind<void>(&Editor::onFgColorChange, this));
+    Preferences::instance().colorBar.fgColor.AfterChange.connect(
+      Bind<void>(&Editor::onFgColorChange, this));
 
-  DocumentPreferences& docPref = App::instance()
-    ->preferences().document(m_document);
+  DocumentPreferences& docPref = Preferences::instance().document(m_document);
 
   m_tiledConn = docPref.tiled.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_gridConn = docPref.grid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
@@ -248,7 +248,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   m_observers.notifyStateChanged(this);
 
   // Setup the new mouse cursor
-  editor_setcursor();
+  setCursor();
 
   updateStatusBar();
 }
@@ -424,8 +424,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     m_renderEngine.setOnionskin(render::OnionskinType::NONE, 0, 0, 0, 0);
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
-      DocumentPreferences& docPref = App::instance()
-        ->preferences().document(m_document);
+      DocumentPreferences& docPref = Preferences::instance()
+        .document(m_document);
 
       if (docPref.onionskin.active()) {
         m_renderEngine.setOnionskin(
@@ -502,9 +502,9 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   gfx::Region outside(client);
   outside.createSubtraction(outside, gfx::Region(spriteRect));
 
-  // Document settings
+  // Document preferences
   DocumentPreferences& docPref =
-      App::instance()->preferences().document(m_document);
+      Preferences::instance().document(m_document);
 
   if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS)) {
     drawOneSpriteUnclippedRect(g, rc, -spriteRect.w, 0);
@@ -772,7 +772,7 @@ void Editor::drawGrid(Graphics* g, const gfx::Rect& spriteBounds, const Rect& gr
 
 void Editor::flashCurrentLayer()
 {
-  if (!App::instance()->preferences().experimental.flashLayer())
+  if (!Preferences::instance().experimental.flashLayer())
     return;
 
   Site site = getSite();
@@ -848,9 +848,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
 
 bool Editor::isCurrentToolAffectedByRightClickMode()
 {
-  Context* context = UIContext::instance();
-  tools::Tool* tool = context->settings()->getCurrentTool();
-
+  tools::Tool* tool = App::instance()->activeTool();
   return
     (tool->getInk(0)->isPaint() || tool->getInk(0)->isEffect()) &&
     (!tool->getInk(0)->isEraser());
@@ -861,13 +859,12 @@ tools::Tool* Editor::getCurrentEditorTool()
   if (m_quicktool)
     return m_quicktool;
 
-  Context* context = UIContext::instance();
-  tools::Tool* tool = context->settings()->getCurrentTool();
+  tools::Tool* tool = App::instance()->activeTool();
 
   if (m_secondaryButton && isCurrentToolAffectedByRightClickMode()) {
     tools::ToolBox* toolbox = App::instance()->getToolBox();
 
-    switch (App::instance()->preferences().editor.rightClickMode()) {
+    switch (Preferences::instance().editor.rightClickMode()) {
       case app::gen::RightClickMode::PAINT_BGCOLOR:
         // Do nothing, use the current tool
         break;
@@ -896,7 +893,7 @@ tools::Ink* Editor::getCurrentEditorInk()
   if (m_quicktool)
     return ink;
 
-  app::gen::RightClickMode rightClickMode = App::instance()->preferences().editor.rightClickMode();
+  app::gen::RightClickMode rightClickMode = Preferences::instance().editor.rightClickMode();
 
   if (m_secondaryButton &&
       rightClickMode != app::gen::RightClickMode::DEFAULT &&
@@ -916,47 +913,48 @@ tools::Ink* Editor::getCurrentEditorInk()
     }
   }
   else {
-    IToolSettings* toolSettings = context->settings()->getToolSettings(tool);
-    InkType inkType = toolSettings->getInkType();
+    tools::InkType inkType = Preferences::instance().tool(tool).ink();
     const char* id = NULL;
 
     switch (inkType) {
-      case kDefaultInk:
+      case tools::InkType::DEFAULT:
         // Do nothing
         break;
-      case kOpaqueInk:
-        id = tools::WellKnownInks::PaintOpaque;
-        break;
-      case kSetAlphaInk:
+      case tools::InkType::SET_ALPHA:
         id = tools::WellKnownInks::PaintSetAlpha;
         break;
-      case kLockAlphaInk:
+      case tools::InkType::LOCK_ALPHA:
         id = tools::WellKnownInks::PaintLockAlpha;
         break;
-      case kMergeInk:
+#if 0
+      case tools::InkType::OPAQUE:
+        id = tools::WellKnownInks::PaintOpaque;
+        break;
+      case tools::InkType::MERGE:
         id = tools::WellKnownInks::Paint;
         break;
-      case kShadingInk:
+      case tools::InkType::SHADING:
         id = tools::WellKnownInks::Shading;
         break;
-      case kReplaceInk:
+      case tools::InkType::REPLACE:
         if (!m_secondaryButton)
           id = tools::WellKnownInks::ReplaceBgWithFg;
         else
           id = tools::WellKnownInks::ReplaceFgWithBg;
         break;
-      case kEraseInk:
+      case tools::InkType::ERASER:
         id = tools::WellKnownInks::Eraser;
         break;
-      case kSelectionInk:
+      case tools::InkType::SELECTION:
         id = tools::WellKnownInks::Selection;
         break;
-      case kBlurInk:
+      case tools::InkType::BLUR:
         id = tools::WellKnownInks::Blur;
         break;
-      case kJumbleInk:
+      case tools::InkType::JUMBLE:
         id = tools::WellKnownInks::Jumble;
         break;
+#endif
     }
 
     if (id)
@@ -1101,8 +1099,7 @@ void Editor::updateStatusBar()
 void Editor::updateQuicktool()
 {
   if (m_customizationDelegate) {
-    UIContext* context = UIContext::instance();
-    tools::Tool* current_tool = context->settings()->getCurrentTool();
+    tools::Tool* current_tool = App::instance()->activeTool();
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
@@ -1158,14 +1155,14 @@ void Editor::updateContextBarFromModifiers()
 
   // Selection mode
 
-  SelectionMode mode = UIContext::instance()->settings()->selection()->getSelectionMode();
+  tools::SelectionMode mode = Preferences::instance().selection.mode();
 
   if (m_customizationDelegate && m_customizationDelegate->isAddSelectionPressed())
-    mode = kAddSelectionMode;
+    mode = tools::SelectionMode::ADD;
   else if (m_customizationDelegate && m_customizationDelegate->isSubtractSelectionPressed())
-    mode = kSubtractSelectionMode;
+    mode = tools::SelectionMode::SUBTRACT;
   else if (m_secondaryButton)
-    mode = kSubtractSelectionMode;
+    mode = tools::SelectionMode::SUBTRACT;
 
   if (mode != m_selectionMode) {
     m_selectionMode = mode;
@@ -1174,7 +1171,7 @@ void Editor::updateContextBarFromModifiers()
 
   // Move tool options
 
-  bool autoSelectLayer = App::instance()->preferences().editor.autoSelectLayer();
+  bool autoSelectLayer = Preferences::instance().editor.autoSelectLayer();
 
   if (m_customizationDelegate && m_customizationDelegate->isAutoSelectLayerPressed())
     autoSelectLayer = true;
@@ -1229,7 +1226,7 @@ bool Editor::onProcessMessage(Message* msg)
 
           updateQuicktool();
           updateContextBarFromModifiers();
-          editor_setcursor();
+          setCursor();
         }
 
         EditorStatePtr holdState(m_state);
@@ -1254,7 +1251,7 @@ bool Editor::onProcessMessage(Message* msg)
 
           updateQuicktool();
           updateContextBarFromModifiers();
-          editor_setcursor();
+          setCursor();
         }
 
         if (result)
@@ -1270,7 +1267,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateQuicktool();
           updateContextBarFromModifiers();
-          editor_setcursor();
+          setCursor();
         }
 
         if (used)
@@ -1286,7 +1283,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateQuicktool();
           updateContextBarFromModifiers();
-          editor_setcursor();
+          setCursor();
         }
 
         if (used)
@@ -1309,7 +1306,7 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kSetCursorMessage:
-      editor_setcursor();
+      setCursor();
       return true;
   }
 
@@ -1398,9 +1395,23 @@ void Editor::onPaint(ui::PaintEvent& ev)
 void Editor::onCurrentToolChange()
 {
   m_state->onCurrentToolChange(this);
+
+  ToolPreferences::Brush& brushPref =
+    Preferences::instance().tool(App::instance()->activeTool()).brush;
+
+  m_sizeConn = brushPref.size.AfterChange.connect(Bind<void>(&Editor::onBrushSizeOrAngleChange, this));
+  m_angleConn = brushPref.angle.AfterChange.connect(Bind<void>(&Editor::onBrushSizeOrAngleChange, this));
 }
 
 void Editor::onFgColorChange()
+{
+  if (m_cursorOnScreen) {
+    hideDrawingCursor();
+    showDrawingCursor();
+  }
+}
+
+void Editor::onBrushSizeOrAngleChange()
 {
   if (m_cursorOnScreen) {
     hideDrawingCursor();
@@ -1414,7 +1425,7 @@ void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
     m_state->onExposeSpritePixels(ev.region());
 }
 
-void Editor::editor_setcursor()
+void Editor::setCursor()
 {
   bool used = false;
   if (m_sprite)
@@ -1438,7 +1449,7 @@ bool Editor::isInsideSelection()
 {
   gfx::Point spritePos = screenToEditor(ui::get_mouse_position());
   return
-    (m_selectionMode != kSubtractSelectionMode) &&
+    (m_selectionMode != tools::SelectionMode::SUBTRACT) &&
      m_document != NULL &&
      m_document->isMaskVisible() &&
      m_document->mask()->containsPoint(spritePos.x, spritePos.y);

@@ -19,7 +19,6 @@
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/loop_tag.h"
-#include "app/settings/settings.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
@@ -62,7 +61,7 @@ app::Document* ConfigureTimelinePopup::doc()
 
 DocumentPreferences& ConfigureTimelinePopup::docPref()
 {
-  return App::instance()->preferences().document(doc());
+  return Preferences::instance().document(doc());
 }
 
 void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()

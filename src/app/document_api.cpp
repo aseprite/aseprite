@@ -45,7 +45,6 @@
 #include "app/color_utils.h"
 #include "app/document.h"
 #include "app/document_undo.h"
-#include "app/settings/settings.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/flip_image.h"

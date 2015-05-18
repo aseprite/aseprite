@@ -93,7 +93,7 @@ void ZoomCommand::onExecute(Context* context)
       break;
   }
 
-  bool center = App::instance()->preferences().editor.zoomFromCenterWithKeys();
+  bool center = Preferences::instance().editor.zoomFromCenterWithKeys();
 
   editor->setZoomAndCenterInMouse(
     zoom, mousePos,

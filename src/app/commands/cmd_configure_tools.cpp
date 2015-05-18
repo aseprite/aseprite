@@ -19,7 +19,6 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
@@ -68,13 +67,8 @@ public:
   }
 
 private:
-  ISettings* settings() {
-    ASSERT(m_ctx);
-    return m_ctx->settings();
-  }
-
   Preferences& preferences() {
-    return App::instance()->preferences();
+    return Preferences::instance();
   }
 
   DocumentPreferences& docPref() {

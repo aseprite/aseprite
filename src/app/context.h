@@ -21,7 +21,6 @@
 namespace app {
   class Command;
   class Document;
-  class ISettings;
 
   class CommandPreconditionException : public base::Exception {
   public:
@@ -32,16 +31,11 @@ namespace app {
   class Context : public doc::Context {
   public:
     Context();
-    // The "settings" are deleted automatically in the ~Context destructor
-    Context(ISettings* settings);
-    virtual ~Context();
 
     virtual bool isUiAvailable() const     { return false; }
     virtual bool isRecordingMacro() const  { return false; }
     virtual bool isExecutingMacro() const  { return false; }
     virtual bool isExecutingScript() const { return false; }
-
-    app::ISettings* settings() { return m_settings; }
 
     bool checkFlags(uint32_t flags) const { return m_flags.check(flags); }
     void updateFlags() { m_flags.update(this); }
@@ -60,9 +54,6 @@ namespace app {
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;
 
   private:
-    // Settings in this context.
-    ISettings* m_settings;
-
     // Last updated flags.
     ContextFlags m_flags;
 

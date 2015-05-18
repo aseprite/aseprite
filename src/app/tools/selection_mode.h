@@ -5,20 +5,20 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_SETTINGS_ROTATION_ALGORITHM_H_INCLUDED
-#define APP_SETTINGS_ROTATION_ALGORITHM_H_INCLUDED
+#ifndef APP_TOOLS_SELECTION_MODE_H_INCLUDED
+#define APP_TOOLS_SELECTION_MODE_H_INCLUDED
 #pragma once
 
 namespace app {
+namespace tools {
 
-  enum RotationAlgorithm {
-    kFastRotationAlgorithm,
-    kRotSpriteRotationAlgorithm,
-
-    kFirstRotationAlgorithm = kFastRotationAlgorithm,
-    kLastRotationAlgorithm = kRotSpriteRotationAlgorithm
+  enum class SelectionMode {
+    DEFAULT = 0,
+    ADD = 1,
+    SUBTRACT = 2,
   };
 
+} // namespace tools
 } // namespace app
 
 #endif

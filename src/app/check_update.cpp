@@ -78,7 +78,7 @@ private:
 
 CheckUpdateThreadLauncher::CheckUpdateThreadLauncher(CheckUpdateDelegate* delegate)
   : m_delegate(delegate)
-  , m_preferences(delegate->getPreferences())
+  , m_preferences(Preferences::instance())
   , m_doCheck(true)
   , m_received(false)
   , m_inits(m_preferences.updater.inits())

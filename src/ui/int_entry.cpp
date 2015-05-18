@@ -10,6 +10,7 @@
 
 #include "ui/int_entry.h"
 
+#include "base/scoped_value.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
 #include "ui/manager.h"
@@ -31,6 +32,7 @@ IntEntry::IntEntry(int min, int max)
   , m_max(max)
   , m_popupWindow(NULL)
   , m_slider(NULL)
+  , m_changeFromSlider(false)
 {
 }
 
@@ -51,7 +53,7 @@ void IntEntry::setValue(int value)
 
   setTextf("%d", value);
 
-  if (m_slider != NULL)
+  if (m_slider && !m_changeFromSlider)
     m_slider->setValue(value);
 
   onValueChange();
@@ -171,6 +173,7 @@ void IntEntry::closePopup()
 
 void IntEntry::onChangeSlider()
 {
+  base::ScopedValue<bool> lockFlag(m_changeFromSlider, true, false);
   setValue(m_slider->getValue());
   selectAllText();
 }

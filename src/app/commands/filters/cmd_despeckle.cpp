@@ -106,7 +106,8 @@ bool DespeckleCommand::onEnabled(Context* context)
 
 void DespeckleCommand::onExecute(Context* context)
 {
-  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+  DocumentPreferences& docPref = Preferences::instance()
+    .document(context->activeDocument());
 
   MedianFilter filter;
   filter.setTiledMode((filters::TiledMode)docPref.tiled.mode());

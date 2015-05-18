@@ -21,7 +21,6 @@
 #include "app/document_undo.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
@@ -66,9 +65,8 @@ class ToolLoopImpl : public tools::ToolLoop,
   bool m_previewFilled;
   int m_sprayWidth;
   int m_spraySpeed;
-  ISettings* m_settings;
   DocumentPreferences& m_docPref;
-  IToolSettings* m_toolSettings;
+  ToolPreferences& m_toolPref;
   bool m_useMask;
   Mask* m_mask;
   gfx::Point m_maskOrigin;
@@ -80,12 +78,13 @@ class ToolLoopImpl : public tools::ToolLoop,
   bool m_canceled;
   tools::ToolLoop::Button m_button;
   tools::Ink* m_ink;
-  int m_primary_color;
-  int m_secondary_color;
+  doc::color_t m_fgColor;
+  doc::color_t m_bgColor;
+  doc::color_t m_primaryColor;
+  doc::color_t m_secondaryColor;
   Transaction m_transaction;
   ExpandCelCanvas m_expandCelCanvas;
   gfx::Region m_dirtyArea;
-  tools::ShadeTable8* m_shadeTable;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -94,8 +93,8 @@ public:
                tools::Ink* ink,
                Document* document,
                tools::ToolLoop::Button button,
-               const app::Color& primary_color,
-               const app::Color& secondary_color)
+               const app::Color& fgColor,
+               const app::Color& bgColor)
     : m_editor(editor)
     , m_context(context)
     , m_tool(tool)
@@ -103,14 +102,15 @@ public:
     , m_sprite(editor->sprite())
     , m_layer(editor->layer())
     , m_frame(editor->frame())
-    , m_settings(m_context->settings())
-    , m_docPref(App::instance()->preferences().document(m_document))
-    , m_toolSettings(m_settings->getToolSettings(m_tool))
+    , m_docPref(Preferences::instance().document(m_document))
+    , m_toolPref(Preferences::instance().tool(m_tool))
     , m_canceled(false)
     , m_button(button)
     , m_ink(ink)
-    , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
-    , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
+    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
+    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
+    , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
+    , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
     , m_transaction(m_context,
                     m_tool->getText().c_str(),
                     ((getInk()->isSelection() ||
@@ -131,7 +131,6 @@ public:
           (getController()->isFreehand() ?
             ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
             ExpandCelCanvas::None)))
-    , m_shadeTable(NULL)
   {
     // Settings
     switch (tool->getFill(m_button)) {
@@ -142,13 +141,13 @@ public:
         m_filled = true;
         break;
       case tools::FillOptional:
-        m_filled = m_toolSettings->getFilled();
+        m_filled = m_toolPref.filled();
         break;
     }
 
-    m_previewFilled = m_toolSettings->getPreviewFilled();
-    m_sprayWidth = m_toolSettings->getSprayWidth();
-    m_spraySpeed = m_toolSettings->getSpraySpeed();
+    m_previewFilled = m_toolPref.filledPreview();
+    m_sprayWidth = m_toolPref.spray.width();
+    m_spraySpeed = m_toolPref.spray.speed();
     m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
 
     if (m_ink->isSelection())
@@ -159,7 +158,7 @@ public:
     // Start with an empty mask if the user is selecting with "default selection mode"
     if (getInk()->isSelection() &&
         (!m_document->isMaskVisible() ||
-          getSelectionMode() == kDefaultSelectionMode)) {
+         getSelectionMode() == tools::SelectionMode::DEFAULT)) {
       Mask emptyMask;
       m_transaction.execute(new cmd::SetMask(m_document, &emptyMask));
     }
@@ -172,9 +171,9 @@ public:
                                                     m_mask->bounds().y-y1):
                                          gfx::Point(0, 0));
 
-    m_opacity = m_toolSettings->getOpacity();
-    m_tolerance = m_toolSettings->getTolerance();
-    m_contiguous = m_toolSettings->getContiguous();
+    m_opacity = m_toolPref.opacity();
+    m_tolerance = m_toolPref.tolerance();
+    m_contiguous = m_toolPref.contiguous();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -222,8 +221,6 @@ public:
       }
     }
 
-    delete m_shadeTable;
-
     if (redraw)
       update_screen_for_document(m_document);
   }
@@ -262,15 +259,16 @@ public:
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
   const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
-  int getPrimaryColor() override { return m_primary_color; }
-  void setPrimaryColor(int color) override { m_primary_color = color; }
-  int getSecondaryColor() override { return m_secondary_color; }
-  void setSecondaryColor(int color) override { m_secondary_color = color; }
+  doc::color_t getFgColor() override { return m_fgColor; }
+  doc::color_t getBgColor() override { return m_bgColor; }
+  doc::color_t getPrimaryColor() override { return m_primaryColor; }
+  void setPrimaryColor(doc::color_t color) override { m_primaryColor = color; }
+  doc::color_t getSecondaryColor() override { return m_secondaryColor; }
+  void setSecondaryColor(doc::color_t color) override { m_secondaryColor = color; }
   int getOpacity() override { return m_opacity; }
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
-  SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
-  ISettings* settings() override { return m_settings; }
+  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.grid.visible(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
@@ -292,38 +290,27 @@ public:
   void cancel() override { m_canceled = true; }
   bool isCanceled() override { return m_canceled; }
 
-  gfx::Point screenToSprite(const gfx::Point& screenPoint) override
-  {
+  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
     return m_editor->screenToEditor(screenPoint);
   }
 
-  gfx::Region& getDirtyArea() override
-  {
+  gfx::Region& getDirtyArea() override {
     return m_dirtyArea;
   }
 
-  void updateDirtyArea() override
-  {
+  void updateDirtyArea() override {
     m_editor->hideDrawingCursor();
     m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
     m_editor->showDrawingCursor();
   }
 
-  void updateStatusBar(const char* text) override
-  {
+  void updateStatusBar(const char* text) override {
     StatusBar::instance()->setStatusText(0, text);
   }
 
   // ShadingOptions implementation
-  tools::ShadeTable8* getShadeTable() override
-  {
-    if (m_shadeTable == NULL) {
-      app::ColorSwatches* colorSwatches = m_settings->getColorSwatches();
-      ASSERT(colorSwatches != NULL);
-      m_shadeTable = new tools::ShadeTable8(*colorSwatches,
-                                            tools::kRotateShadingMode);
-    }
-    return m_shadeTable;
+  tools::ShadeTable8* getShadeTable() override {
+    return nullptr;
   }
 
 };
@@ -370,13 +357,13 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 
   // Create the new tool loop
   try {
-    return new ToolLoopImpl(editor, context,
+    return new ToolLoopImpl(
+      editor, context,
       current_tool,
       current_ink,
       editor->document(),
       !editor->isSecondaryButton() ? tools::ToolLoop::Left: tools::ToolLoop::Right,
-      !editor->isSecondaryButton() ? fg: bg,
-      !editor->isSecondaryButton() ? bg: fg);
+      fg, bg);
   }
   catch (const std::exception& ex) {
     Alert::show(PACKAGE
@@ -401,9 +388,8 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   Sprite* m_sprite;
   Layer* m_layer;
   frame_t m_frame;
-  ISettings* m_settings;
   DocumentPreferences& m_docPref;
-  IToolSettings* m_toolSettings;
+  ToolPreferences& m_toolPref;
   int m_opacity;
   int m_tolerance;
   bool m_contiguous;
@@ -412,8 +398,10 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   bool m_canceled;
   tools::ToolLoop::Button m_button;
   tools::Ink* m_ink;
-  int m_primary_color;
-  int m_secondary_color;
+  doc::color_t m_fgColor;
+  doc::color_t m_bgColor;
+  doc::color_t m_primaryColor;
+  doc::color_t m_secondaryColor;
   gfx::Region m_dirtyArea;
   tools::ShadeTable8* m_shadeTable;
   Image* m_image;
@@ -426,9 +414,8 @@ public:
     tools::Tool* tool,
     tools::Ink* ink,
     Document* document,
-    tools::ToolLoop::Button button,
-    const app::Color& primary_color,
-    const app::Color& secondary_color,
+    const app::Color& fgColor,
+    const app::Color& bgColor,
     Image* image,
     const gfx::Point& offset)
     : m_editor(editor)
@@ -438,22 +425,22 @@ public:
     , m_sprite(editor->sprite())
     , m_layer(editor->layer())
     , m_frame(editor->frame())
-    , m_settings(m_context->settings())
-    , m_docPref(App::instance()->preferences().document(m_document))
-    , m_toolSettings(m_settings->getToolSettings(m_tool))
+    , m_docPref(Preferences::instance().document(m_document))
+    , m_toolPref(Preferences::instance().tool(m_tool))
     , m_offset(offset)
     , m_canceled(false)
-    , m_button(button)
+    , m_button(tools::ToolLoop::Left)
     , m_ink(ink)
-    , m_primary_color(color_utils::color_for_layer(primary_color, m_layer))
-    , m_secondary_color(color_utils::color_for_layer(secondary_color, m_layer))
-    , m_shadeTable(NULL)
+    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
+    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
+    , m_primaryColor(m_fgColor)
+    , m_secondaryColor(m_bgColor)
     , m_image(image)
   {
     m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
-    m_opacity = m_toolSettings->getOpacity();
-    m_tolerance = m_toolSettings->getTolerance();
-    m_contiguous = m_toolSettings->getContiguous();
+    m_opacity = m_toolPref.opacity();
+    m_tolerance = m_toolPref.tolerance();
+    m_contiguous = m_toolPref.contiguous();
     m_speed.x = 0;
     m_speed.y = 0;
 
@@ -495,15 +482,16 @@ public:
   }
   const render::Zoom& zoom() override { return m_editor->zoom(); }
   ToolLoop::Button getMouseButton() override { return m_button; }
-  int getPrimaryColor() override { return m_primary_color; }
-  void setPrimaryColor(int color) override { m_primary_color = color; }
-  int getSecondaryColor() override { return m_secondary_color; }
-  void setSecondaryColor(int color) override { m_secondary_color = color; }
+  doc::color_t getFgColor() override { return m_fgColor; }
+  doc::color_t getBgColor() override { return m_bgColor; }
+  doc::color_t getPrimaryColor() override { return m_primaryColor; }
+  void setPrimaryColor(doc::color_t color) override { m_primaryColor = color; }
+  doc::color_t getSecondaryColor() override { return m_secondaryColor; }
+  void setSecondaryColor(doc::color_t color) override { m_secondaryColor = color; }
   int getOpacity() override { return m_opacity; }
   int getTolerance() override { return m_tolerance; }
   bool getContiguous() override { return m_contiguous; }
-  SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
-  ISettings* settings() override { return m_settings; }
+  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.grid.visible(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
@@ -542,13 +530,7 @@ public:
 
   // ShadingOptions implementation
   tools::ShadeTable8* getShadeTable() override {
-    if (m_shadeTable == NULL) {
-      app::ColorSwatches* colorSwatches = m_settings->getColorSwatches();
-      ASSERT(colorSwatches != NULL);
-      m_shadeTable = new tools::ShadeTable8(*colorSwatches,
-                                            tools::kRotateShadingMode);
-    }
-    return m_shadeTable;
+    return nullptr;
   }
 
 };
@@ -583,7 +565,6 @@ tools::ToolLoop* create_tool_loop_preview(
       current_tool,
       current_ink,
       editor->document(),
-      tools::ToolLoop::Left,
       fg, bg, image, offset);
   }
   catch (const std::exception&) {

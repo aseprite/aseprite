@@ -20,11 +20,11 @@
 #include "app/document_api.h"
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/snap_to_grid.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
+#include "base/bind.h"
 #include "base/vector2d.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
@@ -76,13 +76,13 @@ PixelsMovement::PixelsMovement(Context* context,
   m_initialMask = new Mask(*m_document->mask());
   m_currentMask = new Mask(*m_document->mask());
 
-  UIContext::instance()->settings()->selection()->addObserver(this);
+  m_rotAlgoConn =
+    Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
+      Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
 }
 
 PixelsMovement::~PixelsMovement()
 {
-  UIContext::instance()->settings()->selection()->removeObserver(this);
-
   delete m_originalImage;
   delete m_initialMask;
   delete m_currentMask;
@@ -614,14 +614,14 @@ void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
-  RotationAlgorithm rotAlgo = UIContext::instance()->settings()->selection()->getRotationAlgorithm();
+  tools::RotationAlgorithm rotAlgo = Preferences::instance().selection.rotationAlgorithm();
 
   // If the angle and the scale weren't modified, we should use the
   // fast rotation algorithm, as it's pixel-perfect match with the
   // original selection when just a translation is applied.
   if (m_currentData.angle() == 0.0 &&
       m_currentData.bounds().getSize() == src->size()) {
-    rotAlgo = kFastRotationAlgorithm;
+    rotAlgo = tools::RotationAlgorithm::FAST;
   }
 
 retry:;      // In case that we don't have enough memory for RotSprite
@@ -629,7 +629,7 @@ retry:;      // In case that we don't have enough memory for RotSprite
 
   switch (rotAlgo) {
 
-    case kFastRotationAlgorithm:
+    case tools::RotationAlgorithm::FAST:
       doc::algorithm::parallelogram(dst, src,
         int(corners.leftTop().x-leftTop.x),
         int(corners.leftTop().y-leftTop.y),
@@ -641,7 +641,7 @@ retry:;      // In case that we don't have enough memory for RotSprite
         int(corners.leftBottom().y-leftTop.y));
       break;
 
-    case kRotSpriteRotationAlgorithm:
+    case tools::RotationAlgorithm::ROTSPRITE:
       try {
         doc::algorithm::rotsprite_image(dst, src,
           int(corners.leftTop().x-leftTop.x),
@@ -657,7 +657,7 @@ retry:;      // In case that we don't have enough memory for RotSprite
         StatusBar::instance()->showTip(1000,
           "Not enough memory for RotSprite");
 
-        rotAlgo = kFastRotationAlgorithm;
+        rotAlgo = tools::RotationAlgorithm::FAST;
         goto retry;
       }
       break;
@@ -665,7 +665,7 @@ retry:;      // In case that we don't have enough memory for RotSprite
   }
 }
 
-void PixelsMovement::onSetRotationAlgorithm(RotationAlgorithm algorithm)
+void PixelsMovement::onRotationAlgorithmChange()
 {
   try {
     redrawExtraImage();

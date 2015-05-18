@@ -17,7 +17,6 @@
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/document.h"
-#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
@@ -633,12 +632,11 @@ void KeyboardShortcuts::disableAccel(const ui::Accelerator& accel, KeyContext ke
 
 KeyContext KeyboardShortcuts::getCurrentKeyContext()
 {
-  app::Context* ctx = UIContext::instance();
-  Document* doc = ctx->activeDocument();
+  Document* doc = UIContext::instance()->activeDocument();
 
   if (doc &&
       doc->isMaskVisible() &&
-      ctx->settings()->getCurrentTool()->getInk(0)->isSelection())
+      App::instance()->activeTool()->getInk(0)->isSelection())
     return KeyContext::Selection;
   else
     return KeyContext::Normal;

@@ -9,7 +9,6 @@
 #define APP_UI_EDITOR_VIEW_H_INCLUDED
 #pragma once
 
-#include "app/settings/settings_observers.h"
 #include "base/connection.h"
 #include "ui/view.h"
 

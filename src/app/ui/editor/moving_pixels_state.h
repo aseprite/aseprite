@@ -9,7 +9,6 @@
 #define APP_UI_EDITOR_MOVING_PIXELS_STATE_H_INCLUDED
 #pragma once
 
-#include "app/settings/settings_observers.h"
 #include "app/ui/context_bar_observer.h"
 #include "app/ui/editor/editor_observer.h"
 #include "app/ui/editor/handle_type.h"
@@ -29,7 +28,6 @@ namespace app {
   class MovingPixelsState
     : public StandbyState
     , EditorObserver
-    , SelectionSettingsObserver
     , ContextBarObserver {
   public:
     MovingPixelsState(Editor* editor, ui::MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle);
@@ -54,15 +52,14 @@ namespace app {
     virtual void onBeforeFrameChanged(Editor* editor) override;
     virtual void onBeforeLayerChanged(Editor* editor) override;
 
-    // SettingsObserver
-    virtual void onSetMoveTransparentColor(app::Color newColor) override;
-
     // ContextBarObserver
     virtual void onDropPixels(ContextBarObserver::DropAction action) override;
 
     virtual gfx::Transformation getTransformation(Editor* editor) override;
 
   private:
+    void onTransparentColorChange();
+
     // ContextObserver
     void onBeforeCommandExecution(Command* command);
 
@@ -81,6 +78,7 @@ namespace app {
     bool m_discarded;
 
     Connection m_ctxConn;
+    Connection m_transparentConn;
   };
 
 } // namespace app

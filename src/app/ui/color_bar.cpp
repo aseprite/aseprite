@@ -35,6 +35,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/bind.h"
+#include "base/scoped_value.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
@@ -99,11 +100,12 @@ ColorBar::ColorBar(int align)
   : Box(align)
   , m_buttons(int(PalButton::MAX))
   , m_paletteView(true, PaletteView::FgBgColors, this,
-      App::instance()->preferences().colorBar.boxSize() * guiscale())
+      Preferences::instance().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
+  , m_syncingWithPref(false)
   , m_remap(nullptr)
   , m_lastDocument(nullptr)
   , m_ascending(true)
@@ -157,13 +159,13 @@ ColorBar::ColorBar(int align)
   spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
 
   // Set background color reading its value from the configuration.
-  setBgColor(get_config_color("ColorBar", "BG", getBgColor()));
+  setBgColor(Preferences::instance().colorBar.bgColor());
 
   // Clear the selection of the BG color in the palette.
   m_paletteView.deselect();
 
   // Set foreground color reading its value from the configuration.
-  setFgColor(get_config_color("ColorBar", "FG", getFgColor()));
+  setFgColor(Preferences::instance().colorBar.fgColor());
 
   // Change color-bar background color (not ColorBar::setBgColor)
   Widget::setBgColor(theme->colors.tabActiveFace());
@@ -190,15 +192,14 @@ ColorBar::ColorBar(int align)
 
   UIContext::instance()->addObserver(this);
   m_conn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
+  m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
+  m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
 }
 
 ColorBar::~ColorBar()
 {
   UIContext::instance()->removeObserver(this);
-
-  set_config_color("ColorBar", "FG", getFgColor());
-  set_config_color("ColorBar", "BG", getBgColor());
 }
 
 void ColorBar::setPixelFormat(PixelFormat pixelFormat)
@@ -223,8 +224,6 @@ void ColorBar::setFgColor(const app::Color& color)
 
   if (!m_lock)
     onColorButtonChange(color);
-
-  FgColorChange(color);
 }
 
 void ColorBar::setBgColor(const app::Color& color)
@@ -233,8 +232,6 @@ void ColorBar::setBgColor(const app::Color& color)
 
   if (!m_lock)
     onColorButtonChange(color);
-
-  BgColorChange(color);
 }
 
 PaletteView* ColorBar::getPaletteView()
@@ -426,7 +423,7 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
 
 void ColorBar::onPaletteViewChangeSize(int boxsize)
 {
-  App::instance()->preferences().colorBar.boxSize(boxsize);
+  Preferences::instance().colorBar.boxSize(boxsize);
 }
 
 void ColorBar::onPaletteViewPasteColors(
@@ -469,6 +466,24 @@ void ColorBar::onPaletteViewPasteColors(
   setPalette(&newPalette, "Paste Colors");
 }
 
+void ColorBar::onFgColorChangeFromPreferences()
+{
+  if (m_syncingWithPref)
+    return;
+
+  base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+  setFgColor(Preferences::instance().colorBar.fgColor());
+}
+
+void ColorBar::onBgColorChangeFromPreferences()
+{
+  if (m_syncingWithPref)
+    return;
+
+  base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+  setBgColor(Preferences::instance().colorBar.bgColor());
+}
+
 void ColorBar::onFgColorButtonChange(const app::Color& color)
 {
   if (!m_lock) {
@@ -476,8 +491,12 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
     m_paletteView.invalidate();
   }
 
+  if (!m_syncingWithPref) {
+    base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+    Preferences::instance().colorBar.fgColor(color);
+  }
+
   onColorButtonChange(color);
-  FgColorChange(color);
 }
 
 void ColorBar::onBgColorButtonChange(const app::Color& color)
@@ -487,8 +506,12 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
     m_paletteView.invalidate();
   }
 
+  if (!m_syncingWithPref) {
+    base::ScopedValue<bool> sync(m_syncingWithPref, true, false);
+    Preferences::instance().colorBar.bgColor(color);
+  }
+
   onColorButtonChange(color);
-  BgColorChange(color);
 }
 
 void ColorBar::onColorButtonChange(const app::Color& color)

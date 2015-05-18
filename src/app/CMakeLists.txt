@@ -286,7 +286,6 @@ add_library(app-lib
   res/resources_loader.cpp
   resource_finder.cpp
   send_crash.cpp
-  settings/ui_settings_impl.cpp
   shell.cpp
   snap_to_grid.cpp
   thumbnail_generator.cpp

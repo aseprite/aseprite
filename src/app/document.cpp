@@ -11,6 +11,7 @@
 
 #include "app/document.h"
 
+#include "app/app.h"
 #include "app/color_target.h"
 #include "app/color_utils.h"
 #include "app/context.h"
@@ -18,7 +19,7 @@
 #include "app/document_undo.h"
 #include "app/file/format_options.h"
 #include "app/flatten.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/util/boundary.h"
 #include "base/memory.h"
 #include "base/mutex.h"
@@ -94,26 +95,18 @@ DocumentApi Document::getApi(Transaction& transaction)
 
 color_t Document::bgColor() const
 {
-  app::ISettings* appSettings = nullptr;
-  if (app::Context* ctx = dynamic_cast<app::Context*>(context()))
-    appSettings = ctx->settings();
-
   return color_utils::color_for_target(
-    (appSettings ? appSettings->getBgColor(): Color::fromMask()),
+    Preferences::instance().colorBar.bgColor(),
     ColorTarget(ColorTarget::BackgroundLayer,
-      sprite()->pixelFormat(),
-      sprite()->transparentColor()));
+                sprite()->pixelFormat(),
+                sprite()->transparentColor()));
 }
 
 color_t Document::bgColor(Layer* layer) const
 {
-  app::ISettings* appSettings = nullptr;
-  if (app::Context* ctx = dynamic_cast<app::Context*>(context()))
-    appSettings = ctx->settings();
-
   if (layer->isBackground())
     return color_utils::color_for_layer(
-      appSettings ? appSettings->getBgColor(): Color::fromMask(),
+      Preferences::instance().colorBar.bgColor(),
       layer);
   else
     return layer->sprite()->transparentColor();

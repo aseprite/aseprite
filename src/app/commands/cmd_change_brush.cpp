@@ -15,7 +15,7 @@
 #include "app/commands/command.h"
 #include "app/commands/params.h"
 #include "app/context.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/tools/tool.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/main_window.h"
@@ -73,29 +73,29 @@ void ChangeBrushCommand::onLoadParams(const Params& params)
 
 void ChangeBrushCommand::onExecute(Context* context)
 {
-  tools::Tool* current_tool = context->settings()->getCurrentTool();
-  IToolSettings* tool_settings = context->settings()->getToolSettings(current_tool);
-  IBrushSettings* brush = tool_settings->getBrush();
+  tools::Tool* tool = App::instance()->activeTool();
+  ToolPreferences::Brush& brush =
+    Preferences::instance().tool(tool).brush;
 
   switch (m_change) {
     case None:
       // Do nothing
       break;
     case IncrementSize:
-      if (brush->getSize() < doc::Brush::kMaxBrushSize)
-        brush->setSize(brush->getSize()+1);
+      if (brush.size() < doc::Brush::kMaxBrushSize)
+        brush.size(brush.size()+1);
       break;
     case DecrementSize:
-      if (brush->getSize() > doc::Brush::kMinBrushSize)
-        brush->setSize(brush->getSize()-1);
+      if (brush.size() > doc::Brush::kMinBrushSize)
+        brush.size(brush.size()-1);
       break;
     case IncrementAngle:
-      if (brush->getAngle() < 180)
-        brush->setAngle(brush->getAngle()+1);
+      if (brush.angle() < 180)
+        brush.angle(brush.angle()+1);
       break;
     case DecrementAngle:
-      if (brush->getAngle() > 0)
-        brush->setAngle(brush->getAngle()-1);
+      if (brush.angle() > 0)
+        brush.angle(brush.angle()-1);
       break;
     case CustomBrush:
       App::instance()->getMainWindow()->getContextBar()

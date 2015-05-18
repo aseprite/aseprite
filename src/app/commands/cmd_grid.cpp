@@ -38,12 +38,12 @@ public:
 
 protected:
   bool onChecked(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.grid.visible();
   }
 
   void onExecute(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.grid.visible(!docPref.grid.visible());
   }
 };
@@ -60,12 +60,12 @@ public:
 
 protected:
   bool onChecked(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.pixelGrid.visible();
   }
 
   void onExecute(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.pixelGrid.visible(!docPref.pixelGrid.visible());
   }
 };
@@ -82,12 +82,12 @@ public:
 
 protected:
   bool onChecked(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.grid.snap();
   }
 
   void onExecute(Context* ctx) {
-    DocumentPreferences& docPref = App::instance()->preferences().document(ctx->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.grid.snap(!docPref.grid.snap());
 
     char buf[512];
@@ -129,7 +129,7 @@ void GridSettingsCommand::onExecute(Context* context)
   Widget* grid_w = app::find_widget<Widget>(window, "grid_w");
   Widget* grid_h = app::find_widget<Widget>(window, "grid_h");
 
-  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+  DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
   Rect bounds = docPref.grid.bounds();
 
   grid_x->setTextf("%d", bounds.x);

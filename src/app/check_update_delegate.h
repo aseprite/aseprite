@@ -15,15 +15,12 @@
 
 namespace app {
 
-  class Preferences;
-
   class CheckUpdateDelegate {
   public:
     virtual ~CheckUpdateDelegate() { }
     virtual void onCheckingUpdates() = 0;
     virtual void onUpToDate() = 0;
     virtual void onNewUpdate(const std::string& url, const std::string& version) = 0;
-    virtual Preferences& getPreferences() = 0;
   };
 
 } // namespace app

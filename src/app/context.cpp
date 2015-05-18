@@ -16,7 +16,6 @@
 #include "app/commands/commands.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/settings/settings.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -24,19 +23,7 @@
 namespace app {
 
 Context::Context()
-  : m_settings(NULL)
 {
-}
-
-Context::Context(ISettings* settings)
-  : m_settings(settings)
-{
-}
-
-Context::~Context()
-{
-  delete m_settings;
-  m_settings = NULL;
 }
 
 void Context::sendDocumentToTop(doc::Document* document)

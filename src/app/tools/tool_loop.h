@@ -9,8 +9,9 @@
 #define APP_TOOLS_TOOL_LOOP_H_INCLUDED
 #pragma once
 
-#include "app/settings/selection_mode.h"
+#include "app/tools/selection_mode.h"
 #include "app/tools/trace_policy.h"
+#include "doc/color.h"
 #include "doc/frame.h"
 #include "filters/tiled_mode.h"
 #include "gfx/point.h"
@@ -35,7 +36,6 @@ namespace render {
 namespace app {
   class Context;
   class Document;
-  class ISettings;
 
   namespace tools {
     class Controller;
@@ -130,17 +130,23 @@ namespace app {
       // tools).
       virtual Button getMouseButton() = 0;
 
+      // Returns active foreground/background color (certain tools
+      // needs to know the exact foreground/background color, they
+      // cannot used the primary/secondary).
+      virtual doc::color_t getFgColor() = 0;
+      virtual doc::color_t getBgColor() = 0;
+
       // Primary color to draw (e.g. foreground if the user start drawing
       // with the left button, or background color if he used the right
       // button)
-      virtual int getPrimaryColor() = 0;
-      virtual void setPrimaryColor(int color) = 0;
+      virtual doc::color_t getPrimaryColor() = 0;
+      virtual void setPrimaryColor(doc::color_t color) = 0;
 
       // Secondary color to draw (e.g. background if the user start drawing
       // with the left button, or foreground color if he used the right
       // button)
-      virtual int getSecondaryColor() = 0;
-      virtual void setSecondaryColor(int color) = 0;
+      virtual doc::color_t getSecondaryColor() = 0;
+      virtual void setSecondaryColor(doc::color_t color) = 0;
 
       // Returns the opacity to be used by the ink (Ink).
       virtual int getOpacity() = 0;
@@ -153,13 +159,7 @@ namespace app {
       virtual bool getContiguous() = 0;
 
       // Returns the selection mode (if the ink is of selection type).
-      virtual SelectionMode getSelectionMode() = 0;
-
-      // Returns the current settings. Used to know current
-      // foreground/background color (certain tools needs to know the
-      // exact foreground/background color, they cannot used the
-      // primary/secondary).
-      virtual ISettings* settings() = 0;
+      virtual tools::SelectionMode getSelectionMode() = 0;
 
       // Returns the preferred "tiled" mode of the document.
       // See the method PointShape::doInkHline to check how this member is

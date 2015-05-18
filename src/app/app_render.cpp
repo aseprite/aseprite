@@ -11,7 +11,6 @@
 
 #include "app/app_render.h"
 
-#include "app/app.h"
 #include "app/color_utils.h"
 #include "app/pref/preferences.h"
 #include "render/render.h"
@@ -29,7 +28,7 @@ AppRender::AppRender(app::Document* doc, doc::PixelFormat pixelFormat)
 
 void AppRender::setupBackground(app::Document* doc, doc::PixelFormat pixelFormat)
 {
-  DocumentPreferences& docPref = App::instance()->preferences().document(doc);
+  DocumentPreferences& docPref = Preferences::instance().document(doc);
   render::BgType bgType;
 
   gfx::Size tile;

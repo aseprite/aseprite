@@ -67,7 +67,7 @@ void UndoCommand::onExecute(Context* context)
   Sprite* sprite = document->sprite();
   SpritePosition spritePosition;
   const bool gotoModified =
-    App::instance()->preferences().undo.gotoModified();
+    Preferences::instance().undo.gotoModified();
 
   if (gotoModified) {
     SpritePosition currentPosition(writer.site()->layerIndex(),

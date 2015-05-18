@@ -21,7 +21,6 @@
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
-#include "app/settings/settings.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "base/bind.h"
@@ -41,8 +40,7 @@ using namespace ui;
 class OptionsWindow : public app::gen::Options {
 public:
   OptionsWindow(Context* context, int& curSection)
-    : m_settings(context->settings())
-    , m_preferences(App::instance()->preferences())
+    : m_preferences(Preferences::instance())
     , m_globPref(m_preferences.document(nullptr))
     , m_docPref(m_preferences.document(context->activeDocument()))
     , m_curPref(&m_docPref)
@@ -266,7 +264,7 @@ private:
   }
 
   void onReset() {
-    // Reset global settings (use default values specified in pref.xml)
+    // Reset global preferences (use default values specified in pref.xml)
     if (m_curPref == &m_globPref) {
       DocumentPreferences& pref = m_globPref;
 
@@ -283,7 +281,7 @@ private:
       m_checked_bg_color1->setColor(pref.bg.color1.defaultValue());
       m_checked_bg_color2->setColor(pref.bg.color2.defaultValue());
     }
-    // Reset document settings with global settings
+    // Reset document preferences with global settings
     else {
       DocumentPreferences& pref = m_globPref;
 
@@ -310,7 +308,6 @@ private:
     app::launcher::open_folder(app::main_config_filename());
   }
 
-  ISettings* m_settings;
   Preferences& m_preferences;
   DocumentPreferences& m_globPref;
   DocumentPreferences& m_docPref;
@@ -337,7 +334,7 @@ OptionsCommand::OptionsCommand()
             "Options",
             CmdUIOnlyFlag)
 {
-  Preferences& preferences = App::instance()->preferences();
+  Preferences& preferences = Preferences::instance();
 
   ui::MenuBar::setExpandOnMouseover(
     preferences.general.expandMenubarOnMouseover());

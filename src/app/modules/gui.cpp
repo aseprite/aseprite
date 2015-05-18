@@ -21,7 +21,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/editor/editor.h"
@@ -96,7 +95,7 @@ static void save_gui_config();
 
 static int get_screen_scale()
 {
-  int scale = App::instance()->preferences().general.screenScale();
+  int scale = Preferences::instance().general.screenScale();
   scale = MID(1, scale, 4);
   return scale;
 }
@@ -126,7 +125,7 @@ int init_module_gui()
                                          try_resolutions[c].scale);
 
         scale = try_resolutions[c].scale;
-        App::instance()->preferences().general.screenScale(scale);
+        Preferences::instance().general.screenScale(scale);
         break;
       }
       catch (const she::DisplayCreationException&) {
@@ -149,7 +148,7 @@ int init_module_gui()
 
   // Setup the GUI theme for all widgets
   gui_theme = new SkinTheme();
-  gui_theme->setScale(App::instance()->preferences().experimental.uiScale());
+  gui_theme->setScale(Preferences::instance().experimental.uiScale());
   CurrentTheme::set(gui_theme);
 
   if (maximized)
@@ -427,7 +426,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
           switch (key->type()) {
 
             case KeyType::Tool: {
-              tools::Tool* current_tool = UIContext::instance()->settings()->getCurrentTool();
+              tools::Tool* current_tool = App::instance()->activeTool();
               tools::Tool* select_this_tool = key->tool();
               tools::ToolBox* toolbox = App::instance()->getToolBox();
               std::vector<tools::Tool*> possibles;

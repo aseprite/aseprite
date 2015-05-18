@@ -17,7 +17,7 @@
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
 #include "app/ui/context_bar.h"
@@ -31,11 +31,12 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
+#include "base/bind.h"
 #include "base/unique_ptr.h"
-#include "gfx/rect.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"
+#include "gfx/rect.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -68,16 +69,17 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   }
 
   // Setup mask color
-  setTransparentColor(context->settings()->selection()->getMoveTransparentColor());
+  setTransparentColor(Preferences::instance().selection.transparentColor());
 
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can drop pixels.
   m_ctxConn =
     context->BeforeCommandExecution.connect(&MovingPixelsState::onBeforeCommandExecution, this);
 
-  // Observe SelectionSettings to be informed of changes to
-  // Transparent Color from Context Bar.
-  context->settings()->selection()->addObserver(this);
+  // Listen to any change to the transparent color from the ContextBar.
+  m_transparentConn =
+    Preferences::instance().selection.transparentColor.AfterChange.connect(
+      Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
 
   // Add the current editor as filter for key message of the manager
   // so we can catch the Enter key, and avoid to execute the
@@ -98,7 +100,7 @@ MovingPixelsState::~MovingPixelsState()
   contextBar->updateForCurrentTool();
 
   m_ctxConn.disconnect();
-  UIContext::instance()->settings()->selection()->removeObserver(this);
+  m_transparentConn.disconnect();
 
   m_pixelsMovement.reset(NULL);
 
@@ -472,9 +474,9 @@ void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
     dropPixels();
 }
 
-void MovingPixelsState::onSetMoveTransparentColor(app::Color newColor)
+void MovingPixelsState::onTransparentColorChange()
 {
-  app::Color color = UIContext::instance()->settings()->selection()->getMoveTransparentColor();
+  app::Color color = Preferences::instance().selection.transparentColor();
   setTransparentColor(color);
 }
 

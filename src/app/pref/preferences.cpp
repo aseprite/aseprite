@@ -17,9 +17,21 @@
 
 namespace app {
 
+static Preferences* singleton = nullptr;
+
+// static
+Preferences& Preferences::instance()
+{
+  ASSERT(singleton);
+  return *singleton;
+}
+
 Preferences::Preferences()
   : app::gen::GlobalPref("")
 {
+  ASSERT(!singleton);
+  singleton = this;
+
   load();
 }
 
@@ -32,6 +44,9 @@ Preferences::~Preferences()
 
   for (auto& pair : m_docs)
     delete pair.second;
+
+  ASSERT(singleton == this);
+  singleton = nullptr;
 }
 
 void Preferences::load()

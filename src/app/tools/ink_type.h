@@ -5,18 +5,20 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifndef APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
-#define APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
+#ifndef APP_TOOLS_INK_TYPE_H_INCLUDED
+#define APP_TOOLS_INK_TYPE_H_INCLUDED
 #pragma once
 
 namespace app {
+namespace tools {
 
-  enum FreehandAlgorithm {
-    kDefaultFreehandAlgorithm,
-    kPixelPerfectFreehandAlgorithm,
-    kDotsFreehandAlgorithm,
+  enum class InkType {
+    DEFAULT = 0,
+    SET_ALPHA = 1,
+    LOCK_ALPHA = 2,
   };
 
+} // namespace tools
 } // namespace app
 
-#endif // APP_SETTINGS_FREEHAND_ALGORITHM_H_INCLUDED
+#endif

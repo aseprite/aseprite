@@ -40,7 +40,6 @@
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
-#include "app/settings/settings.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -655,6 +654,11 @@ tools::ToolBox* App::getToolBox() const
 {
   ASSERT(m_modules != NULL);
   return &m_modules->m_toolbox;
+}
+
+tools::Tool* App::activeTool() const
+{
+  return getToolBox()->getToolById(preferences().toolBox.activeTool());
 }
 
 RecentFiles* App::getRecentFiles() const

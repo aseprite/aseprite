@@ -9,8 +9,10 @@
 #define APP_UI_CONTEXT_BAR_H_INCLUDED
 #pragma once
 
-#include "app/settings/settings_observers.h"
+#include "app/pref/preferences.h"
+#include "app/tools/selection_mode.h"
 #include "app/ui/context_bar_observer.h"
+#include "base/connection.h"
 #include "base/observable.h"
 #include "doc/brush.h"
 #include "doc/brushes.h"
@@ -34,17 +36,15 @@ namespace app {
   class IToolSettings;
 
   class ContextBar : public ui::Box,
-                     public ToolSettingsObserver,
                      public base::Observable<ContextBarObserver> {
   public:
     ContextBar();
-    ~ContextBar();
 
     void updateForCurrentTool();
     void updateForTool(tools::Tool* tool);
     void updateForMovingPixels();
     void updateForSelectingBox(const std::string& text);
-    void updateSelectionMode(SelectionMode mode);
+    void updateSelectionMode(app::tools::SelectionMode mode);
     void updateAutoSelectLayer(bool state);
 
     void setActiveBrush(const doc::BrushRef& brush);
@@ -63,14 +63,12 @@ namespace app {
     void unlockBrushSlot(int slot);
     bool isBrushSlotLocked(int slot) const;
 
-    static doc::BrushRef createBrushFromSettings(
-      IBrushSettings* brushSettings = nullptr);
+    static doc::BrushRef createBrushFromPreferences(
+      ToolPreferences::Brush* brushPref = nullptr);
 
   protected:
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
-
-    // ToolSettingsObserver impl
-    void onSetOpacity(int newOpacity) override;
+    void onToolSetOpacity(const int& newOpacity);
 
   private:
     void onBrushSizeChange();
@@ -111,7 +109,6 @@ namespace app {
     class DropPixelsField;
     class AutoSelectLayerField;
 
-    IToolSettings* m_toolSettings;
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
     BrushSizeField* m_brushSize;
@@ -138,6 +135,9 @@ namespace app {
     doc::BrushRef m_activeBrush;
     BrushSlots m_brushes;
     ui::Label* m_selectBoxHelp;
+    ScopedConnection m_sizeConn;
+    ScopedConnection m_angleConn;
+    ScopedConnection m_opacityConn;
   };
 
 } // namespace app

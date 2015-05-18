@@ -2306,7 +2306,7 @@ bool Timeline::isCopyKeyPressed(ui::Message* msg)
 
 DocumentPreferences& Timeline::docPref() const
 {
-  return App::instance()->preferences().document(m_document);
+  return Preferences::instance().document(m_document);
 }
 
 skin::SkinTheme* Timeline::skinTheme() const

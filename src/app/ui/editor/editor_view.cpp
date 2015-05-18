@@ -51,7 +51,7 @@ EditorView::EditorView(EditorView::Type type)
   setupScrollbars();
 
   m_scrollSettingsConn =
-    App::instance()->preferences().editor.showScrollbars.AfterChange.connect(
+    Preferences::instance().editor.showScrollbars.AfterChange.connect(
       Bind(&EditorView::setupScrollbars, this));
 }
 
@@ -127,7 +127,7 @@ void EditorView::onScrollChange()
 void EditorView::setupScrollbars()
 {
   if (m_type == AlwaysSelected ||
-      !App::instance()->preferences().editor.showScrollbars()) {
+      !Preferences::instance().editor.showScrollbars()) {
     hideScrollBars();
   }
   else {

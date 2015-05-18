@@ -12,7 +12,7 @@
 #include "app/app_render.h"
 #include "app/color.h"
 #include "app/document.h"
-#include "app/settings/selection_mode.h"
+#include "app/tools/selection_mode.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
@@ -167,7 +167,7 @@ namespace app {
     tools::Tool* getCurrentEditorTool();
     tools::Ink* getCurrentEditorInk();
 
-    SelectionMode getSelectionMode() const { return m_selectionMode; }
+    tools::SelectionMode getSelectionMode() const { return m_selectionMode; }
     bool isAutoSelectLayer() const { return m_autoSelectLayer; }
 
     bool isSecondaryButton() const { return m_secondaryButton; }
@@ -220,7 +220,7 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
     void onCurrentToolChange();
     void onFgColorChange();
-
+    void onBrushSizeOrAngleChange();
     void onExposeSpritePixels(doc::DocumentEvent& ev);
 
   private:
@@ -237,7 +237,7 @@ namespace app {
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
       const app::Color& color, int alpha);
 
-    void editor_setcursor();
+    void setCursor();
 
     void forEachBrushPixel(
       ui::Graphics* g,
@@ -276,7 +276,7 @@ namespace app {
     // the user is not pressing any keyboard key).
     tools::Tool* m_quicktool;
 
-    SelectionMode m_selectionMode;
+    tools::SelectionMode m_selectionMode;
     bool m_autoSelectLayer;
 
     // Offset for the sprite
@@ -293,6 +293,8 @@ namespace app {
     // signals).
     ScopedConnection m_currentToolChangeConn;
     ScopedConnection m_fgColorChangeConn;
+    ScopedConnection m_sizeConn;
+    ScopedConnection m_angleConn;
 
     // Slots listeing document preferences.
     ScopedConnection m_tiledConn;

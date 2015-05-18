@@ -181,7 +181,7 @@ private:
     captureEditor();
 
     if (m_document) {
-      m_docPref = &App::instance()->preferences().document(m_document);
+      m_docPref = &Preferences::instance().document(m_document);
 
       onChangeRectangle(m_docPref->importSpriteSheet.bounds());
       onEntriesChange();

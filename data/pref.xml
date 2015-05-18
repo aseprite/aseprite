@@ -4,11 +4,6 @@
 <preferences>
 
   <types>
-    <enum id="InkType">
-      <value id="DEFAULT" value="0" />
-      <value id="SET_ALPHA" value="1" />
-      <value id="LOCK_ALPHA" value="2" />
-    </enum>
     <enum id="RightClickMode">
       <value id="DEFAULT" value="0" />
       <value id="PAINT_BGCOLOR" value="0" />
@@ -19,24 +14,10 @@
       <value id="MERGE" value="0" />
       <value id="RED_BLUE_TINT" value="1" />
     </enum>
-    <enum id="FreehandAlgorithm">
-      <value id="REGULAR" value="0" />
-      <value id="PIXEL_PERFECT" value="1" />
-      <value id="DOTS" value="2" />
-    </enum>
     <enum id="BrushType">
       <value id="CIRCLE" value="0" />
       <value id="SQUARE" value="1" />
       <value id="LINE" value="2" />
-    </enum>
-    <enum id="SelectionMode">
-      <value id="DEFAULT" value="0" />
-      <value id="ADD" value="1" />
-      <value id="SUBTRACT" value="2" />
-    </enum>
-    <enum id="RotationAlgorithm">
-      <value id="FAST" value="0" />
-      <value id="ROTSPRITE" value="1" />
     </enum>
     <enum id="BgType">
       <value id="CHECKED_16x16" value="0" />
@@ -74,9 +55,6 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="grab_alpha" type="bool" default="false" migrate="Options.GrabAlpha" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
-      <option id="fg_color" type="app::Color" />
-      <option id="bg_color" type="app::Color" />
-      <option id="current_tool" type="std::string" default="&quot;pencil&quot;" />
     </section>
     <section id="experimental" text="Experimental">
       <option id="ui_scale" type="int" default="1" />
@@ -89,6 +67,11 @@
     </section>
     <section id="color_bar">
       <option id="box_size" type="int" default="11" />
+      <option id="fg_color" type="app::Color" />
+      <option id="bg_color" type="app::Color" />
+    </section>
+    <section id="tool_box">
+      <option id="active_tool" type="std::string" default="&quot;pencil&quot;" />
     </section>
     <section id="updater">
       <option id="inits" type="int" default="0" migrate="Updater.Inits" />
@@ -103,6 +86,11 @@
     <section id="brush">
       <option id="pattern" type="doc::BrushPattern" default="doc::BrushPattern::DEFAULT" />
     </section>
+    <section id="selection">
+      <option id="mode" type="app::tools::SelectionMode" default="app::tools::SelectionMode::DEFAULT" />
+      <option id="transparent_color" type="app::Color" />
+      <option id="rotation_algorithm" type="app::tools::RotationAlgorithm" default="app::tools::RotationAlgorithm::DEFAULT" />
+    </section>
   </global>
 
   <tool>
@@ -111,8 +99,8 @@
     <option id="contiguous" type="bool" default="true" />
     <option id="filled" type="bool" default="false" />
     <option id="filled_preview" type="bool" default="false" />
-    <option id="ink" type="InkType" />
-    <option id="freehand_algorithm" type="FreehandAlgorithm" />
+    <option id="ink" type="app::tools::InkType" default="app::tools::InkType::DEFAULT" />
+    <option id="freehand_algorithm" type="app::tools::FreehandAlgorithm" default="app::tools::FreehandAlgorithm::DEFAULT" />
     <section id="brush">
       <option id="type" type="BrushType" default="BrushType::CIRCLE" />
       <option id="size" type="int" default="1" />
@@ -121,11 +109,6 @@
     <section id="spray">
       <option id="width" type="int" default="16" />
       <option id="speed" type="int" default="32" />
-    </section>
-    <section id="selection">
-      <option id="mode" type="SelectionMode" />
-      <option id="transparent_color" type="app::Color" />
-      <option id="rotation_algorithm" type="RotationAlgorithm" />
     </section>
   </tool>
 

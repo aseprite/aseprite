@@ -13,7 +13,6 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/modules/gui.h"
-#include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/transaction.h"
 #include "doc/layer.h"

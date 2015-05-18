@@ -39,6 +39,7 @@ namespace app {
   class RecentFiles;
 
   namespace tools {
+    class Tool;
     class ToolBox;
   }
 
@@ -64,6 +65,7 @@ namespace app {
     void run();
 
     tools::ToolBox* getToolBox() const;
+    tools::Tool* activeTool() const;
     RecentFiles* getRecentFiles() const;
     MainWindow* getMainWindow() const { return m_mainWindow; }
     Preferences& preferences() const;
@@ -76,11 +78,6 @@ namespace app {
     // App Signals
     Signal0<void> Exit;
     Signal0<void> PaletteChange;
-    Signal0<void> BrushSizeBeforeChange;
-    Signal0<void> BrushSizeAfterChange;
-    Signal0<void> BrushAngleBeforeChange;
-    Signal0<void> BrushAngleAfterChange;
-    Signal0<void> CurrentToolChange;
 
   private:
     typedef std::vector<std::string> FileList;

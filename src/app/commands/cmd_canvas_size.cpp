@@ -16,7 +16,6 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
-#include "app/settings/settings.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"

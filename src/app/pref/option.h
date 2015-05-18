@@ -58,7 +58,7 @@ namespace app {
       if (m_value == newValue)
         return m_value;
 
-      BeforeChange(*this, newValue);
+      BeforeChange(newValue);
       if (m_section)
         m_section->BeforeChange();
 
@@ -66,15 +66,15 @@ namespace app {
       m_value = newValue;
       m_dirty = true;
 
-      AfterChange(*this, oldValue);
+      AfterChange(oldValue);
       if (m_section)
         m_section->AfterChange();
 
       return m_value;
     }
 
-    Signal2<void, Option&, const T&> BeforeChange;
-    Signal2<void, Option&, const T&> AfterChange;
+    Signal1<void, const T&> BeforeChange;
+    Signal1<void, const T&> AfterChange;
 
   private:
     Section* m_section;

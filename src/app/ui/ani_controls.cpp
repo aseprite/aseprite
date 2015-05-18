@@ -19,7 +19,6 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/settings/settings.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"

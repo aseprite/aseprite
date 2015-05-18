@@ -14,7 +14,6 @@
 #include "app/app.h"
 #include "app/commands/commands.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
@@ -46,7 +45,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       wheelAction = WHEEL_FG;
   }
   // Normal behavior: mouse wheel zooms
-  else if (App::instance()->preferences().editor.zoomWithWheel()) {
+  else if (Preferences::instance().editor.zoomWithWheel()) {
     if (msg->ctrlPressed())
       wheelAction = WHEEL_FRAME;
     else if (msg->wheelDelta().x != 0 || msg->shiftPressed())
@@ -116,7 +115,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       }
 
       if (editor->zoom() != zoom) {
-        bool center = App::instance()->preferences().editor.zoomFromCenterWithWheel();
+        bool center = Preferences::instance().editor.zoomFromCenterWithWheel();
 
         editor->setZoomAndCenterInMouse(
           zoom, mouseMsg->position(),

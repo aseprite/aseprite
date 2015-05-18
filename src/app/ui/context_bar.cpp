@@ -16,13 +16,11 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
-#include "app/settings/ink_type.h"
-#include "app/settings/selection_mode.h"
-#include "app/settings/settings.h"
-#include "app/settings/settings_observers.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
+#include "app/tools/ink_type.h"
 #include "app/tools/point_shape.h"
+#include "app/tools/selection_mode.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/brush_popup.h"
@@ -56,7 +54,7 @@ using namespace gfx;
 using namespace ui;
 using namespace tools;
 
-static bool g_updatingFromTool = false;
+static bool g_updatingFromCode = false;
 
 class ContextBar::BrushTypeField : public ButtonSet
                                  , public BrushPopupDelegate {
@@ -136,8 +134,6 @@ private:
   }
 
   void openPopup() {
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
     doc::BrushRef brush = m_owner->activeBrush();
 
     m_popupWindow.regenerate(getPopupBox(), m_owner->getBrushes());
@@ -157,13 +153,13 @@ private:
     if (brush->type() == kImageBrushType)
       m_owner->setActiveBrush(brush);
     else {
-      ISettings* settings = UIContext::instance()->settings();
-      Tool* currentTool = settings->getCurrentTool();
-      IBrushSettings* brushSettings = settings->getToolSettings(currentTool)->getBrush();
-      brushSettings->setType(brush->type());
+      Tool* tool = App::instance()->activeTool();
+      ToolPreferences::Brush& brushPref = Preferences::instance().tool(tool).brush;
+
+      brushPref.type(static_cast<app::gen::BrushType>(brush->type()));
 
       m_owner->setActiveBrush(
-        ContextBar::createBrushFromSettings(brushSettings));
+        ContextBar::createBrushFromPreferences(&brushPref));
     }
   }
 
@@ -181,15 +177,14 @@ public:
 
 private:
   void onValueChange() override {
-    IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->getBrush()
-      ->setSize(getValue());
+    IntEntry::onValueChange();
+    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).brush.size(getValue());
   }
 };
 
@@ -204,15 +199,14 @@ public:
 
 protected:
   void onValueChange() override {
-    IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->getBrush()
-      ->setAngle(getValue());
+    IntEntry::onValueChange();
+    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).brush.angle(getValue());
 
     m_brushType->updateBrush();
   }
@@ -259,7 +253,7 @@ protected:
       case 2: type = BrushPattern::PAINT_BRUSH; break;
     }
 
-    App::instance()->preferences().brush.pattern(type);
+    Preferences::instance().brush.pattern(type);
   }
 
   bool m_lock;
@@ -273,14 +267,13 @@ public:
 
 protected:
   void onValueChange() override {
-    IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setTolerance(getValue());
+    IntEntry::onValueChange();
+
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).tolerance(getValue());
   }
 };
 
@@ -299,10 +292,8 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setContiguous(isSelected());
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).contiguous(isSelected());
 
     releaseFocus();
   }
@@ -334,9 +325,9 @@ public:
     int index = 0;
 
     switch (inkType) {
-      case kDefaultInk: index = 0; break;
-      case kSetAlphaInk: index = 1; break;
-      case kLockAlphaInk: index = 2; break;
+      case InkType::DEFAULT: index = 0; break;
+      case InkType::SET_ALPHA: index = 1; break;
+      case InkType::LOCK_ALPHA: index = 2; break;
     }
 
     m_lock = true;
@@ -351,17 +342,16 @@ protected:
     if (m_lock)
       return;
 
-    InkType inkType = kDefaultInk;
+    InkType inkType = InkType::DEFAULT;
 
     switch (getSelectedItemIndex()) {
-      case 0: inkType = kDefaultInk; break;
-      case 1: inkType = kSetAlphaInk; break;
-      case 2: inkType = kLockAlphaInk; break;
+      case 0: inkType = InkType::DEFAULT; break;
+      case 1: inkType = InkType::SET_ALPHA; break;
+      case 2: inkType = InkType::LOCK_ALPHA; break;
     }
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)->setInkType(inkType);
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).ink(inkType);
   }
 
   void onCloseListBox() override {
@@ -379,14 +369,15 @@ public:
 
 protected:
   void onValueChange() override {
-    IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setOpacity(getValue());
+    IntEntry::onValueChange();
+    base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
+
+    int newValue = getValue();
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).opacity(newValue);
   }
 };
 
@@ -399,13 +390,11 @@ public:
 protected:
   void onValueChange() override {
     IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setSprayWidth(getValue());
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).spray.width(getValue());
   }
 };
 
@@ -417,14 +406,13 @@ public:
 
 protected:
   void onValueChange() override {
-    IntEntry::onValueChange();
-    if (g_updatingFromTool)
+    if (g_updatingFromCode)
       return;
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setSpraySpeed(getValue());
+    IntEntry::onValueChange();
+
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).spray.speed(getValue());
   }
 };
 
@@ -438,7 +426,7 @@ public:
 
 protected:
   void onChange() {
-    UIContext::instance()->settings()->selection()->setMoveTransparentColor(getColor());
+    Preferences::instance().selection.transparentColor(getColor());
   }
 };
 
@@ -450,12 +438,11 @@ public:
     // algorithm when we call ComboBox::addItem() (because the first
     // addItem() generates an onChange() event).
     m_lockChange = true;
-    addItem(new Item("Fast Rotation", kFastRotationAlgorithm));
-    addItem(new Item("RotSprite", kRotSpriteRotationAlgorithm));
+    addItem(new Item("Fast Rotation", tools::RotationAlgorithm::FAST));
+    addItem(new Item("RotSprite", tools::RotationAlgorithm::ROTSPRITE));
     m_lockChange = false;
 
-    setSelectedItemIndex((int)UIContext::instance()->settings()
-      ->selection()->getRotationAlgorithm());
+    setSelectedItemIndex((int)Preferences::instance().selection.rotationAlgorithm());
   }
 
 protected:
@@ -463,8 +450,8 @@ protected:
     if (m_lockChange)
       return;
 
-    UIContext::instance()->settings()->selection()
-      ->setRotationAlgorithm(static_cast<Item*>(getSelectedItem())->algo());
+    Preferences::instance().selection.rotationAlgorithm(
+      static_cast<Item*>(getSelectedItem())->algo());
   }
 
   void onCloseListBox() override {
@@ -474,15 +461,15 @@ protected:
 private:
   class Item : public ListItem {
   public:
-    Item(const std::string& text, RotationAlgorithm algo) :
+    Item(const std::string& text, tools::RotationAlgorithm algo) :
       ListItem(text),
       m_algo(algo) {
     }
 
-    RotationAlgorithm algo() const { return m_algo; }
+    tools::RotationAlgorithm algo() const { return m_algo; }
 
   private:
-    RotationAlgorithm m_algo;
+    tools::RotationAlgorithm m_algo;
   };
 
   bool m_lockChange;
@@ -619,10 +606,8 @@ private:
     setFreehandAlgorithm(
       (FreehandAlgorithm)m_freehandAlgoButton->getSelectedItem());
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setFreehandAlgorithm(m_freehandAlgo);
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).freehandAlgorithm(m_freehandAlgo);
   }
 
   she::Surface* m_bitmap;
@@ -645,15 +630,15 @@ public:
     // Do nothing
   }
 
-  void setFreehandAlgorithm(FreehandAlgorithm algo) {
+  void setFreehandAlgorithm(tools::FreehandAlgorithm algo) {
     switch (algo) {
-      case kDefaultFreehandAlgorithm:
+      case tools::FreehandAlgorithm::DEFAULT:
         setSelected(false);
         break;
-      case kPixelPerfectFreehandAlgorithm:
+      case tools::FreehandAlgorithm::PIXEL_PERFECT:
         setSelected(true);
         break;
-      case kDotsFreehandAlgorithm:
+      case tools::FreehandAlgorithm::DOTS:
         // Not available
         break;
     }
@@ -663,12 +648,11 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    ISettings* settings = UIContext::instance()->settings();
-    Tool* currentTool = settings->getCurrentTool();
-    settings->getToolSettings(currentTool)
-      ->setFreehandAlgorithm(isSelected() ?
-        kPixelPerfectFreehandAlgorithm:
-        kDefaultFreehandAlgorithm);
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).freehandAlgorithm(
+      isSelected() ?
+        tools::FreehandAlgorithm::PIXEL_PERFECT:
+        tools::FreehandAlgorithm::DEFAULT);
 
     releaseFocus();
   }
@@ -686,9 +670,7 @@ public:
     addItem(theme->get_part(PART_SELECTION_ADD));
     addItem(theme->get_part(PART_SELECTION_SUBTRACT));
 
-    setSelectedItem(
-      (int)UIContext::instance()->settings()
-      ->selection()->getSelectionMode());
+    setSelectedItem((int)Preferences::instance().selection.mode());
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
@@ -706,8 +688,8 @@ protected:
   void onItemChange() override {
     ButtonSet::onItemChange();
 
-    UIContext::instance()->settings()->selection()
-      ->setSelectionMode((SelectionMode)selectedItem());
+    Preferences::instance().selection.mode(
+      (tools::SelectionMode)selectedItem());
   }
 };
 
@@ -751,7 +733,7 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    App::instance()->preferences().editor.grabAlpha(isSelected());
+    Preferences::instance().editor.grabAlpha(isSelected());
 
     releaseFocus();
   }
@@ -768,7 +750,7 @@ protected:
   void onClick(Event& ev) override {
     CheckBox::onClick(ev);
 
-    App::instance()->preferences().editor.autoSelectLayer(isSelected());
+    Preferences::instance().editor.autoSelectLayer(isSelected());
 
     releaseFocus();
   }
@@ -776,7 +758,6 @@ protected:
 
 ContextBar::ContextBar()
   : Box(JI_HORIZONTAL)
-  , m_toolSettings(NULL)
 {
   border_width.b = 2*guiscale();
 
@@ -853,18 +834,12 @@ ContextBar::ContextBar()
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
 
-  App::instance()->BrushSizeAfterChange.connect(&ContextBar::onBrushSizeChange, this);
-  App::instance()->BrushAngleAfterChange.connect(&ContextBar::onBrushAngleChange, this);
-  App::instance()->CurrentToolChange.connect(&ContextBar::onCurrentToolChange, this);
+  Preferences::instance().toolBox.activeTool.AfterChange.connect(
+    Bind<void>(&ContextBar::onCurrentToolChange, this));
+
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
-  setActiveBrush(createBrushFromSettings());
-}
-
-ContextBar::~ContextBar()
-{
-  if (m_toolSettings)
-    m_toolSettings->removeObserver(this);
+  setActiveBrush(createBrushFromPreferences());
 }
 
 void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
@@ -872,8 +847,11 @@ void ContextBar::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(gfx::Size(0, 18*guiscale())); // TODO calculate height
 }
 
-void ContextBar::onSetOpacity(int newOpacity)
+void ContextBar::onToolSetOpacity(const int& newOpacity)
 {
+  if (g_updatingFromCode)
+    return;
+
   m_inkOpacity->setTextf("%d", newOpacity);
 }
 
@@ -892,7 +870,7 @@ void ContextBar::onBrushAngleChange()
 void ContextBar::onCurrentToolChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
-    setActiveBrush(ContextBar::createBrushFromSettings());
+    setActiveBrush(ContextBar::createBrushFromPreferences());
   else {
     updateForCurrentTool();
   }
@@ -905,57 +883,54 @@ void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
 
 void ContextBar::updateForCurrentTool()
 {
-  updateForTool(UIContext::instance()->settings()->getCurrentTool());
+  updateForTool(App::instance()->activeTool());
 }
 
 void ContextBar::updateForTool(tools::Tool* tool)
 {
-  base::ScopedValue<bool> lockFlag(g_updatingFromTool, true, false);
+  base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
 
-  ISettings* settings = UIContext::instance()->settings();
-  IToolSettings* toolSettings = nullptr;
-  IBrushSettings* brushSettings = nullptr;
-  Preferences& preferences = App::instance()->preferences();
+  ToolPreferences* toolPref = nullptr;
+  ToolPreferences::Brush* brushPref = nullptr;
+  Preferences& preferences = Preferences::instance();
 
   if (tool) {
-    toolSettings = settings->getToolSettings(tool);
-    brushSettings = toolSettings->getBrush();
+    toolPref = &preferences.tool(tool);
+    brushPref = &toolPref->brush;
   }
 
-  if (m_toolSettings)
-    m_toolSettings->removeObserver(this);
-  m_toolSettings = toolSettings;
-  if (m_toolSettings)
-    m_toolSettings->addObserver(this);
+  if (toolPref) {
+    m_sizeConn = brushPref->size.AfterChange.connect(Bind<void>(&ContextBar::onBrushSizeChange, this));
+    m_angleConn = brushPref->angle.AfterChange.connect(Bind<void>(&ContextBar::onBrushAngleChange, this));
+    m_opacityConn = toolPref->opacity.AfterChange.connect(&ContextBar::onToolSetOpacity, this);
+  }
 
   if (tool)
     m_brushType->updateBrush(tool);
 
-  if (brushSettings) {
-    m_brushSize->setTextf("%d", brushSettings->getSize());
-    m_brushAngle->setTextf("%d", brushSettings->getAngle());
+  if (brushPref) {
+    m_brushSize->setTextf("%d", brushPref->size());
+    m_brushAngle->setTextf("%d", brushPref->angle());
   }
 
   m_brushPatternField->setBrushPattern(
     preferences.brush.pattern());
 
-  if (toolSettings) {
-    m_tolerance->setTextf("%d", toolSettings->getTolerance());
-    m_contiguous->setSelected(toolSettings->getContiguous());
+  if (toolPref) {
+    m_tolerance->setTextf("%d", toolPref->tolerance());
+    m_contiguous->setSelected(toolPref->contiguous());
 
-    m_inkType->setInkType(toolSettings->getInkType());
-    m_inkOpacity->setTextf("%d", toolSettings->getOpacity());
+    m_inkType->setInkType(toolPref->ink());
+    m_inkOpacity->setTextf("%d", toolPref->opacity());
 
-    m_freehandAlgo->setFreehandAlgorithm(toolSettings->getFreehandAlgorithm());
+    m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
 
-    m_sprayWidth->setValue(toolSettings->getSprayWidth());
-    m_spraySpeed->setValue(toolSettings->getSpraySpeed());
+    m_sprayWidth->setValue(toolPref->spray.width());
+    m_spraySpeed->setValue(toolPref->spray.speed());
   }
 
-  if (settings) {
-    m_grabAlpha->setSelected(preferences.editor.grabAlpha());
-    m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
-  }
+  m_grabAlpha->setSelected(preferences.editor.grabAlpha());
+  m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
 
   // True if the current tool needs opacity options
   bool hasOpacity = tool &&
@@ -1155,36 +1130,33 @@ doc::BrushRef ContextBar::activeBrush(tools::Tool* tool) const
   if (!tool ||
       (tool->getInk(0)->isPaint() &&
        m_activeBrush->type() == kImageBrushType)) {
-    m_activeBrush->setPattern(App::instance()->preferences().brush.pattern());
+    m_activeBrush->setPattern(Preferences::instance().brush.pattern());
     return m_activeBrush;
   }
 
-  ISettings* settings = UIContext::instance()->settings();
-  IToolSettings* toolSettings = settings->getToolSettings(tool);
-  return ContextBar::createBrushFromSettings(toolSettings->getBrush());
+  return ContextBar::createBrushFromPreferences(
+    &Preferences::instance().tool(tool).brush);
 }
 
 void ContextBar::discardActiveBrush()
 {
-  setActiveBrush(ContextBar::createBrushFromSettings());
+  setActiveBrush(ContextBar::createBrushFromPreferences());
 }
 
 // static
-doc::BrushRef ContextBar::createBrushFromSettings(IBrushSettings* brushSettings)
+doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* brushPref)
 {
-  if (brushSettings == nullptr) {
-    ISettings* settings = UIContext::instance()->settings();
-    tools::Tool* tool = settings->getCurrentTool();
-    IToolSettings* toolSettings = settings->getToolSettings(tool);
-    brushSettings = toolSettings->getBrush();
+  if (brushPref == nullptr) {
+    tools::Tool* tool = App::instance()->activeTool();
+    brushPref = &Preferences::instance().tool(tool).brush;
   }
 
   doc::BrushRef brush;
   brush.reset(
     new Brush(
-      brushSettings->getType(),
-      brushSettings->getSize(),
-      brushSettings->getAngle()));
+      static_cast<doc::BrushType>(brushPref->type()),
+      brushPref->size(),
+      brushPref->angle()));
   return brush;
 }
 

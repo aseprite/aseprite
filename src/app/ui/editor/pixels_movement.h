@@ -10,9 +10,9 @@
 #pragma once
 
 #include "app/context_access.h"
-#include "app/settings/settings_observers.h"
 #include "app/transaction.h"
 #include "app/ui/editor/handle_type.h"
+#include "base/connection.h"
 #include "base/shared_ptr.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/site.h"
@@ -35,7 +35,7 @@ namespace app {
   // feedback, drag, and drop the specified image in the constructor
   // (which generally would be the selected region or the clipboard
   // content).
-  class PixelsMovement : public SelectionSettingsObserver {
+  class PixelsMovement {
   public:
     enum MoveModifier {
       NormalMovement = 1,
@@ -92,10 +92,8 @@ namespace app {
 
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
-  protected:
-    void onSetRotationAlgorithm(RotationAlgorithm algorithm) override;
-
   private:
+    void onRotationAlgorithmChange();
     void redrawExtraImage();
     void redrawCurrentMask();
     void drawImage(doc::Image* dst, const gfx::Point& pos);
@@ -121,6 +119,7 @@ namespace app {
     Mask* m_initialMask;
     Mask* m_currentMask;
     color_t m_maskColor;
+    ScopedConnection m_rotAlgoConn;
   };
 
   inline PixelsMovement::MoveModifier& operator|=(PixelsMovement::MoveModifier& a,

@@ -59,7 +59,7 @@ public:
     // will call other sub-commands (e.g. previous frame, next frame,
     // etc.).
     View* view = View::getView(editor);
-    DocumentPreferences& docPref = App::instance()->preferences().document(m_doc);
+    DocumentPreferences& docPref = Preferences::instance().document(m_doc);
     m_tiled = (filters::TiledMode)docPref.tiled.mode();
 
     // Free mouse

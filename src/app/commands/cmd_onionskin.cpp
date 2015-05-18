@@ -33,13 +33,13 @@ public:
 protected:
   bool onChecked(Context* context)
   {
-    DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     return docPref.onionskin.active();
   }
 
   void onExecute(Context* context)
   {
-    DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+    DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     docPref.onionskin.active(!docPref.onionskin.active());
   }
 };

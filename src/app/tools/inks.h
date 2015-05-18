@@ -12,7 +12,6 @@
 #include "app/context.h"
 #include "app/document.h"
 #include "app/document_undo.h"
-#include "app/settings/settings.h"
 #include "app/tools/pick_ink.h"
 #include "doc/mask.h"
 #include "gfx/region.h"
@@ -46,10 +45,8 @@ public:
       case WithFg:
       case WithBg:
         {
-          int color = color_utils::color_for_layer(m_type == WithFg ?
-                                                   loop->settings()->getFgColor():
-                                                   loop->settings()->getBgColor(),
-                                                   loop->getLayer());
+          int color = (m_type == WithFg ? loop->getFgColor():
+                                          loop->getBgColor());
           loop->setPrimaryColor(color);
           loop->setSecondaryColor(color);
         }
@@ -177,19 +174,15 @@ public:
       case ReplaceFgWithBg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
-                                                           loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
-                                                             loop->getLayer()));
+        loop->setPrimaryColor(loop->getFgColor());
+        loop->setSecondaryColor(loop->getBgColor());
         break;
 
       case ReplaceBgWithFg:
         m_proc = ink_processing[INK_REPLACE][MID(0, loop->sprite()->pixelFormat(), 2)];
 
-        loop->setPrimaryColor(color_utils::color_for_layer(loop->settings()->getBgColor(),
-                                                           loop->getLayer()));
-        loop->setSecondaryColor(color_utils::color_for_layer(loop->settings()->getFgColor(),
-                                                             loop->getLayer()));
+        loop->setPrimaryColor(loop->getBgColor());
+        loop->setSecondaryColor(loop->getFgColor());
         break;
     }
   }
@@ -273,11 +266,11 @@ public:
       Point offset = loop->getOffset();
 
       switch (loop->getSelectionMode()) {
-        case kDefaultSelectionMode:
-        case kAddSelectionMode:
+        case SelectionMode::DEFAULT:
+        case SelectionMode::ADD:
           m_mask.add(gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
-        case kSubtractSelectionMode:
+        case SelectionMode::SUBTRACT:
           m_mask.subtract(gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
       }

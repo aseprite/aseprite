@@ -10,8 +10,8 @@
 #endif
 
 #include "app/app.h"
-#include "app/cmd_sequence.h"
 #include "app/cmd/set_palette.h"
+#include "app/cmd_sequence.h"
 #include "app/color.h"
 #include "app/color_utils.h"
 #include "app/commands/command.h"
@@ -24,8 +24,7 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/settings/settings.h"
-#include "app/settings/settings.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/color_sliders.h"
@@ -68,7 +67,7 @@ protected:
 
   void onExit();
   void onCloseWindow();
-  void onFgBgColorChange(const app::Color& color);
+  void onFgBgColorChange(const app::Color& _color);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const app::Color& color);
   void onColorTypeButtonClick(Event& ev);
@@ -216,8 +215,8 @@ void PaletteEditorCommand::onExecute(Context* context)
   // Show the specified target color
   {
     app::Color color =
-      (m_background ? context->settings()->getBgColor():
-                      context->settings()->getFgColor());
+      (m_background ? Preferences::instance().colorBar.bgColor():
+                      Preferences::instance().colorBar.fgColor());
 
     g_window->setColor(color);
   }
@@ -293,8 +292,10 @@ PaletteEntryEditor::PaletteEntryEditor()
   selectColorType(app::Color::RgbType);
 
   // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
-  ColorBar::instance()->FgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
-  ColorBar::instance()->BgColorChange.connect(&PaletteEntryEditor::onFgBgColorChange, this);
+  Preferences::instance().colorBar.fgColor.AfterChange.connect(
+    &PaletteEntryEditor::onFgBgColorChange, this);
+  Preferences::instance().colorBar.bgColor.AfterChange.connect(
+    &PaletteEntryEditor::onFgBgColorChange, this);
 
   // We hook the Window::Close event to save the frame position before closing it.
   this->Close.connect(Bind<void>(&PaletteEntryEditor::onCloseWindow, this));

@@ -13,7 +13,6 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/context_access.h"
-#include "app/settings/settings.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/main_window.h"

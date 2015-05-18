@@ -187,7 +187,7 @@ NewsListBox::NewsListBox()
 {
   m_timer.Tick.connect(&NewsListBox::onTick, this);
 
-  std::string cache = App::instance()->preferences().news.cacheFile();
+  std::string cache = Preferences::instance().news.cacheFile();
   if (!cache.empty() && base::is_file(cache) && validCache(cache))
     parseFile(cache);
   else
@@ -302,7 +302,7 @@ void NewsListBox::parseFile(const std::string& filename)
     view->updateView();
 
   // Save as cached news
-  App::instance()->preferences().news.cacheFile(filename);
+  Preferences::instance().news.cacheFile(filename);
 }
 
 bool NewsListBox::validCache(const std::string& filename)

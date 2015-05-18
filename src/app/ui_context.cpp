@@ -13,7 +13,6 @@
 #include "app/document.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
-#include "app/settings/ui_settings_impl.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/document_view.h"
 #include "app/ui/editor/editor.h"
@@ -34,11 +33,10 @@ namespace app {
 UIContext* UIContext::m_instance = nullptr;
 
 UIContext::UIContext()
-  : Context(new UISettingsImpl)
-  , m_lastSelectedDoc(nullptr)
+  : m_lastSelectedDoc(nullptr)
   , m_lastSelectedView(nullptr)
 {
-  documents().addObserver(&App::instance()->preferences());
+  documents().addObserver(&Preferences::instance());
 
   ASSERT(m_instance == NULL);
   m_instance = this;
@@ -49,7 +47,7 @@ UIContext::~UIContext()
   ASSERT(m_instance == this);
   m_instance = NULL;
 
-  documents().removeObserver(&App::instance()->preferences());
+  documents().removeObserver(&Preferences::instance());
 
   // The context must be empty at this point. (It's to check if the UI
   // is working correctly, i.e. closing all files when the user can

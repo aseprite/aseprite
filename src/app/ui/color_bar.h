@@ -70,16 +70,14 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
-    // Signals
-    Signal1<void, const app::Color&> FgColorChange;
-    Signal1<void, const app::Color&> BgColorChange;
-
   protected:
     void onFocusPaletteView();
     void onBeforeExecuteCommand(Command* command);
     void onPaletteButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
+    void onFgColorChangeFromPreferences();
+    void onBgColorChangeFromPreferences();
     void onFgColorButtonChange(const app::Color& color);
     void onBgColorButtonChange(const app::Color& color);
     void onColorButtonChange(const app::Color& color);
@@ -115,10 +113,13 @@ namespace app {
     ColorButton m_fgColor;
     ColorButton m_bgColor;
     bool m_lock;
+    bool m_syncingWithPref;
     doc::Remap* m_remap;
     const doc::Document* m_lastDocument;
     bool m_ascending;
     ScopedConnection m_conn;
+    ScopedConnection m_fgConn;
+    ScopedConnection m_bgConn;
   };
 
 } // namespace app

@@ -19,7 +19,6 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/settings/settings.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
@@ -196,7 +195,9 @@ StatusBar::StatusBar()
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", JI_BOTTOM);
   tooltipManager->addTooltipFor(m_slider, "Cel Opacity", JI_BOTTOM);
 
-  App::instance()->CurrentToolChange.connect(&StatusBar::onCurrentToolChange, this);
+  Preferences::instance().toolBox.activeTool.AfterChange.connect(
+    Bind<void>(&StatusBar::onCurrentToolChange, this));
+
   UIContext::instance()->addObserver(this);
 }
 
@@ -211,10 +212,10 @@ StatusBar::~StatusBar()
 void StatusBar::onCurrentToolChange()
 {
   if (isVisible()) {
-    tools::Tool* currentTool = UIContext::instance()->settings()->getCurrentTool();
-    if (currentTool) {
-      showTool(500, currentTool);
-      setTextf("%s Selected", currentTool->getText().c_str());
+    tools::Tool* tool = App::instance()->activeTool();
+    if (tool) {
+      showTool(500, tool);
+      setTextf("%s Selected", tool->getText().c_str());
     }
   }
 }

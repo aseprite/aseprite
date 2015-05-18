@@ -68,7 +68,7 @@ bool MoveMaskCommand::onEnabled(Context* context)
 
 void MoveMaskCommand::onExecute(Context* context)
 {
-  DocumentPreferences& docPref = App::instance()->preferences().document(context->activeDocument());
+  DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
   ui::View* view = ui::View::getView(current_editor);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Rect gridBounds = docPref.grid.bounds();

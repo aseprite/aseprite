@@ -9,8 +9,18 @@
 #define APP_PREF_PREFERENCES_H_INCLUDED
 #pragma once
 
+#include "app/color.h"
 #include "app/pref/option.h"
+#include "app/tools/freehand_algorithm.h"
+#include "app/tools/ink_type.h"
+#include "app/tools/rotation_algorithm.h"
+#include "app/tools/selection_mode.h"
+#include "doc/anidir.h"
+#include "doc/brush_pattern.h"
 #include "doc/documents_observer.h"
+#include "doc/frame.h"
+#include "filters/tiled_mode.h"
+#include "gfx/rect.h"
 
 #include "generated_pref_types.h"
 
@@ -31,6 +41,8 @@ namespace app {
   class Preferences : public app::gen::GlobalPref
                     , public doc::DocumentsObserver {
   public:
+    static Preferences& instance();
+
     Preferences();
     ~Preferences();
 

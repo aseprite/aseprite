@@ -17,7 +17,6 @@
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
-#include "app/settings/settings.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/ui/color_bar.h"
@@ -84,8 +83,8 @@ void EyedropperCommand::onExecute(Context* context)
   gfx::Point pixelPos = editor->screenToEditor(ui::get_mouse_position());
 
   // Check if we've to grab alpha channel or the merged color.
-  ISettings* settings = UIContext::instance()->settings();
-  bool grabAlpha = App::instance()->preferences().editor.grabAlpha();
+  Preferences& pref = Preferences::instance();
+  bool grabAlpha = pref.editor.grabAlpha();
 
   ColorPicker picker;
   picker.pickColor(editor->getSite(),
@@ -96,15 +95,14 @@ void EyedropperCommand::onExecute(Context* context)
 
   if (grabAlpha) {
     tools::ToolBox* toolBox = App::instance()->getToolBox();
-    for (tools::ToolIterator it=toolBox->begin(), end=toolBox->end(); it!=end; ++it) {
-      settings->getToolSettings(*it)->setOpacity(picker.alpha());
-    }
+    for (auto tool : *toolBox)
+      pref.tool(tool).opacity(picker.alpha());
   }
 
   if (m_background)
-    settings->setBgColor(picker.color());
+    pref.colorBar.bgColor(picker.color());
   else
-    settings->setFgColor(picker.color());
+    pref.colorBar.fgColor(picker.color());
 }
 
 Command* CommandFactory::createEyedropperCommand()
