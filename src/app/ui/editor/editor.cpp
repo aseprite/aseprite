@@ -152,7 +152,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(frame_t(0))
   , m_zoom(1, 1)
-  , m_cursorThick(0)
+  , m_cursorOnScreen(false)
   , m_cursorScreen(0, 0)
   , m_cursorEditor(0, 0)
   , m_quicktool(NULL)
@@ -325,9 +325,9 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
   View* view = View::getView(this);
   Point oldScroll;
   Region region;
-  int thick = m_cursorThick;
+  bool onScreen = m_cursorOnScreen;
 
-  if (thick)
+  if (onScreen)
     clearBrushPreview();
 
   if (blit_valid_rgn) {
@@ -343,7 +343,7 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
     scrollRegion(region, oldScroll - newScroll);
   }
 
-  if (thick)
+  if (onScreen)
     drawBrushPreview(m_cursorScreen);
 }
 
@@ -687,13 +687,13 @@ void Editor::drawMaskSafe()
   if (isVisible() &&
       m_document &&
       m_document->getBoundariesSegments()) {
-    int thick = m_cursorThick;
+    bool onScreen = m_cursorOnScreen;
 
     Region region;
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-getBounds().getOrigin());
 
-    if (thick)
+    if (onScreen)
       clearBrushPreview();
     else
       ui::hide_mouse_cursor();
@@ -707,7 +707,7 @@ void Editor::drawMaskSafe()
     }
 
     // Draw the cursor
-    if (thick)
+    if (onScreen)
       drawBrushPreview(m_cursorScreen);
     else
       ui::show_mouse_cursor();
@@ -1006,7 +1006,7 @@ void Editor::showDrawingCursor()
 {
   ASSERT(m_sprite != NULL);
 
-  if (!m_cursorThick && canDraw()) {
+  if (!m_cursorOnScreen && canDraw()) {
     ui::hide_mouse_cursor();
     drawBrushPreview(ui::get_mouse_position());
     ui::show_mouse_cursor();
@@ -1015,7 +1015,7 @@ void Editor::showDrawingCursor()
 
 void Editor::hideDrawingCursor()
 {
-  if (m_cursorThick) {
+  if (m_cursorOnScreen) {
     ui::hide_mouse_cursor();
     clearBrushPreview();
     ui::show_mouse_cursor();
@@ -1025,7 +1025,7 @@ void Editor::hideDrawingCursor()
 void Editor::moveDrawingCursor()
 {
   // Draw cursor
-  if (m_cursorThick) {
+  if (m_cursorOnScreen) {
     gfx::Point mousePos = ui::get_mouse_position();
 
     // Redraw it only when the mouse change to other pixel (not
@@ -1353,8 +1353,8 @@ void Editor::onPaint(ui::PaintEvent& ev)
   gfx::Rect rc = getClientBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
-  int old_cursor_thick = m_cursorThick;
-  if (m_cursorThick)
+  bool onScreen = m_cursorOnScreen;
+  if (onScreen)
     clearBrushPreview();
 
   // Editor without sprite
@@ -1380,7 +1380,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       }
 
       // Draw the cursor again
-      if (old_cursor_thick != 0) {
+      if (onScreen) {
         drawBrushPreview(ui::get_mouse_position());
       }
     }
@@ -1401,7 +1401,7 @@ void Editor::onCurrentToolChange()
 
 void Editor::onFgColorChange()
 {
-  if (m_cursorThick) {
+  if (m_cursorOnScreen) {
     hideDrawingCursor();
     showDrawingCursor();
   }

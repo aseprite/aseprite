@@ -116,7 +116,7 @@ namespace app {
     const render::Zoom& zoom() const { return m_zoom; }
     int offsetX() const { return m_offset_x; }
     int offsetY() const { return m_offset_y; }
-    int cursorThick() { return m_cursorThick; }
+    bool cursorOnScreen() const { return m_cursorOnScreen; }
 
     void setZoom(render::Zoom zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }
@@ -269,7 +269,7 @@ namespace app {
     render::Zoom m_zoom;          // Zoom in the editor
 
     // Drawing cursor
-    int m_cursorThick;
+    bool m_cursorOnScreen;
     gfx::Point m_cursorScreen; // Position in the screen (view)
     gfx::Point m_cursorEditor; // Position in the editor (model)
 

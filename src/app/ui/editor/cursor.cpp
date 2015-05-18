@@ -117,7 +117,7 @@ void Editor::set_cursor_color(const app::Color& color)
 //////////////////////////////////////////////////////////////////////
 
 static gfx::Rect lastBrushBounds;
-static int brush_size_thick = 0;
+static bool brush_on_screen = false;
 
 static void on_palette_change_update_cursor_color()
 {
@@ -127,8 +127,8 @@ static void on_palette_change_update_cursor_color()
 static void on_brush_before_change()
 {
   if (current_editor) {
-    brush_size_thick = current_editor->cursorThick();
-    if (brush_size_thick)
+    brush_on_screen = current_editor->cursorOnScreen();
+    if (brush_on_screen)
       current_editor->hideDrawingCursor();
   }
 }
@@ -137,7 +137,7 @@ static void on_brush_after_change()
 {
   if (current_editor) {
     // Show drawing cursor
-    if (current_editor->sprite() && brush_size_thick > 0)
+    if (current_editor->sprite() && brush_on_screen)
       current_editor->showDrawingCursor();
   }
 }
@@ -167,7 +167,7 @@ void Editor::editor_cursor_exit()
 {
   set_config_color("Tools", "CursorColor", cursor_color);
 
-  if (cursor_bound.seg != NULL)
+  if (cursor_bound.seg)
     base_free(cursor_bound.seg);
 }
 
@@ -178,8 +178,8 @@ void Editor::editor_cursor_exit()
 // Note: x and y params are absolute positions of the mouse.
 void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
 {
-  ASSERT(m_cursorThick == 0);
-  ASSERT(m_sprite != NULL);
+  ASSERT(!m_cursorOnScreen);
+  ASSERT(m_sprite);
 
   // Get drawable region
   getDrawableRegion(clipping_region, kCutTopWindows);
@@ -286,10 +286,8 @@ void Editor::drawBrushPreview(const gfx::Point& pos, bool refresh)
     forEachBrushPixel(&g, m_cursorScreen, spritePos, ui_cursor_color, drawpixel);
   }
 
-  // Cursor thickness
-  m_cursorThick = 1;
-
   // Cursor in the editor (model)
+  m_cursorOnScreen = true;
   m_cursorEditor = spritePos;
 
   // Save the clipping-region to know where to clean the pixels
@@ -350,8 +348,8 @@ void Editor::moveBrushPreview(const gfx::Point& pos, bool refresh)
  */
 void Editor::clearBrushPreview(bool refresh)
 {
-  ASSERT(m_cursorThick != 0);
-  ASSERT(m_sprite != NULL);
+  ASSERT(m_cursorOnScreen);
+  ASSERT(m_sprite);
 
   getDrawableRegion(clipping_region, kCutTopWindows);
 
@@ -374,7 +372,7 @@ void Editor::clearBrushPreview(bool refresh)
     }
   }
 
-  m_cursorThick = 0;
+  m_cursorOnScreen = false;
 
   clipping_region.clear();
   old_clipping_region.clear();
