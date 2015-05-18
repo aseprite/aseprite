@@ -207,11 +207,8 @@ namespace app {
 
     // in cursor.cpp
 
-    static app::Color get_cursor_color();
-    static void set_cursor_color(const app::Color& color);
-
-    static void editor_cursor_init();
-    static void editor_cursor_exit();
+    static void initEditorCursor();
+    static void exitEditorCursor();
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;

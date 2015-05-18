@@ -55,6 +55,7 @@
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
       <option id="grab_alpha" type="bool" default="false" migrate="Options.GrabAlpha" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
+      <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
     </section>
     <section id="experimental" text="Experimental">
       <option id="ui_scale" type="int" default="1" />

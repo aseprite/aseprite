@@ -22,7 +22,6 @@
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
 #include "app/ui/color_button.h"
-#include "app/ui/editor/editor.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/path.h"
@@ -48,7 +47,7 @@ public:
     , m_checked_bg_color2(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_pixelGridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
     , m_gridColor(new ColorButton(app::Color::fromMask(), IMAGE_RGB))
-    , m_cursorColor(new ColorButton(Editor::get_cursor_color(), IMAGE_RGB))
+    , m_cursorColor(new ColorButton(m_preferences.editor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
     sectionListbox()->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
@@ -155,7 +154,6 @@ public:
   }
 
   void saveConfig() {
-    Editor::set_cursor_color(m_cursorColor->getColor());
     m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
@@ -178,6 +176,7 @@ public:
     m_preferences.editor.showScrollbars(showScrollbars()->isSelected());
     m_preferences.editor.zoomWithWheel(wheelZoom()->isSelected());
     m_preferences.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
+    m_preferences.editor.cursorColor(m_cursorColor->getColor());
 
     m_curPref->grid.color(m_gridColor->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());

@@ -27,6 +27,7 @@
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
 #include "app/util/boundary.h"
+#include "base/bind.h"
 #include "base/memory.h"
 #include "doc/algo.h"
 #include "doc/brush.h"
@@ -94,25 +95,15 @@ static color_t get_brush_color(Sprite* sprite, Layer* layer);
 // CURSOR COLOR
 //////////////////////////////////////////////////////////////////////
 
-static app::Color cursor_color;
 static gfx::Color ui_cursor_color;
 static bool is_cursor_mask;
 
 static void update_cursor_color()
 {
-  ui_cursor_color = color_utils::color_for_ui(cursor_color);
-  is_cursor_mask = (cursor_color.getType() == app::Color::MaskType);
-}
+  app::Color color = Preferences::instance().editor.cursorColor();
 
-app::Color Editor::get_cursor_color()
-{
-  return cursor_color;
-}
-
-void Editor::set_cursor_color(const app::Color& color)
-{
-  cursor_color = color;
-  update_cursor_color();
+  ui_cursor_color = color_utils::color_for_ui(color);
+  is_cursor_mask = (color.getType() == app::Color::MaskType);
 }
 
 static Brush* get_current_brush()
@@ -120,23 +111,18 @@ static Brush* get_current_brush()
   return App::instance()->getMainWindow()->getContextBar()->activeBrush().get();
 }
 
-//////////////////////////////////////////////////////////////////////
-// CURSOR
-//////////////////////////////////////////////////////////////////////
-
-void Editor::editor_cursor_init()
+void Editor::initEditorCursor()
 {
-  // Cursor color
-  set_cursor_color(get_config_color("Tools", "CursorColor", app::Color::fromMask()));
+  update_cursor_color();
+
+  Preferences::instance().editor.cursorColor.AfterChange.connect(
+    Bind<void>(&update_cursor_color));
 
   App::instance()->PaletteChange.connect(&update_cursor_color);
-  update_cursor_color();
 }
 
-void Editor::editor_cursor_exit()
+void Editor::exitEditorCursor()
 {
-  set_config_color("Tools", "CursorColor", cursor_color);
-
   if (cursor_bound.seg)
     base_free(cursor_bound.seg);
 }

@@ -164,7 +164,7 @@ void App::initialize(const AppOptions& options)
   FileFormatsManager::instance()->registerAllFormats();
 
   // init editor cursor
-  Editor::editor_cursor_init();
+  Editor::initEditorCursor();
 
   if (isPortable())
     PRINTF("Running in portable mode\n");
@@ -609,7 +609,7 @@ App::~App()
     App::instance()->Exit();
 
     // Finalize modules, configuration and core.
-    Editor::editor_cursor_exit();
+    Editor::exitEditorCursor();
     boundary_exit();
 
     delete m_legacy;
