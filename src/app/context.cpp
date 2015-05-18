@@ -68,7 +68,7 @@ void Context::executeCommand(Command* command, const Params& params)
     }
 
     // TODO move this code to another place (e.g. a Workplace/Tabs widget)
-    if (isUiAvailable())
+    if (isUIAvailable())
       app_rebuild_documents_tabs();
   }
   catch (base::Exception& e) {

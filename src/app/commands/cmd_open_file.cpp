@@ -108,7 +108,7 @@ void OpenFileCommand::onExecute(Context* context)
   Console console;
 
   // interactive
-  if (context->isUiAvailable() && m_filename.empty()) {
+  if (context->isUIAvailable() && m_filename.empty()) {
     std::string exts = get_readable_extensions();
 
     // Add backslash as show_file_selector() expected a filename as

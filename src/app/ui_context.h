@@ -25,7 +25,7 @@ namespace app {
     UIContext();
     virtual ~UIContext();
 
-    bool isUiAvailable() const override;
+    bool isUIAvailable() const override;
 
     DocumentView* activeView() const;
     void setActiveView(DocumentView* documentView);

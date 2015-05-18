@@ -192,7 +192,7 @@ FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
       }
 
       /* TODO add a better dialog to edit file-names */
-      if ((flags & FILE_LOAD_SEQUENCE_ASK) && context && context->isUiAvailable()) {
+      if ((flags & FILE_LOAD_SEQUENCE_ASK) && context && context->isUIAvailable()) {
         /* really want load all files? */
         if ((fop->seq.filename_list.size() > 1) &&
             (ui::Alert::show("Notice"
@@ -325,7 +325,7 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
   // Show the confirmation alert
   if (!warnings.empty()) {
     // Interative
-    if (context && context->isUiAvailable()) {
+    if (context && context->isUIAvailable()) {
       warnings += "<<You can use \".ase\" format to keep all this information.";
 
       std::string title, buttons;

@@ -783,7 +783,7 @@ base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
     gif_options.reset(new GifOptions);
 
   // Non-interactive mode
-  if (!fop->context || !fop->context->isUiAvailable())
+  if (!fop->context || !fop->context->isUIAvailable())
     return gif_options;
 
   try {

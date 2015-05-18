@@ -299,7 +299,7 @@ void CanvasSizeCommand::onExecute(Context* context)
   const ContextReader reader(context);
   const Sprite* sprite(reader.sprite());
 
-  if (context->isUiAvailable()) {
+  if (context->isUIAvailable()) {
     // load the window widget
     base::UniquePtr<CanvasSizeWindow> window(new CanvasSizeWindow());
 

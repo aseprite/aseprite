@@ -60,7 +60,7 @@ void LoadMaskCommand::onExecute(Context* context)
 
   std::string filename = m_filename;
 
-  if (context->isUiAvailable()) {
+  if (context->isUIAvailable()) {
     filename = app::show_file_selector(
       "Load .msk File", filename, "msk",
       FileSelectorType::Open);

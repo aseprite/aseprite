@@ -55,14 +55,14 @@ UIContext::~UIContext()
   ASSERT(documents().empty());
 }
 
-bool UIContext::isUiAvailable() const
+bool UIContext::isUIAvailable() const
 {
   return App::instance()->isGui();
 }
 
 DocumentView* UIContext::activeView() const
 {
-  if (!isUiAvailable())
+  if (!isUIAvailable())
     return NULL;
 
   Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
@@ -186,7 +186,7 @@ void UIContext::onRemoveDocument(doc::Document* doc)
     m_lastSelectedDoc = nullptr;
 
   // We don't destroy views in batch mode.
-  if (isUiAvailable()) {
+  if (isUIAvailable()) {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
     DocumentViews docViews;
 
@@ -213,7 +213,7 @@ void UIContext::onGetActiveSite(Site* site) const
     view->getSite(site);
   }
   // Default/dummy site (maybe for batch/command line mode)
-  else if (!isUiAvailable()) {
+  else if (!isUIAvailable()) {
     if (Document* doc = m_lastSelectedDoc) {
       site->document(doc);
       site->sprite(doc->sprite());

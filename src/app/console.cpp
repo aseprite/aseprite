@@ -38,7 +38,7 @@ Console::Console(Context* ctx)
   : m_withUI(false)
 {
   if (ctx)
-    m_withUI = (ctx->isUiAvailable());
+    m_withUI = (ctx->isUIAvailable());
   else
     m_withUI =
       (App::instance()->isGui() &&

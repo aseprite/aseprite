@@ -32,7 +32,7 @@ namespace app {
   public:
     Context();
 
-    virtual bool isUiAvailable() const     { return false; }
+    virtual bool isUIAvailable() const     { return false; }
     virtual bool isRecordingMacro() const  { return false; }
     virtual bool isExecutingMacro() const  { return false; }
     virtual bool isExecutingScript() const { return false; }

@@ -359,7 +359,7 @@ base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
     jpeg_options.reset(new JpegOptions);
 
   // Non-interactive mode
-  if (!fop->context || !fop->context->isUiAvailable())
+  if (!fop->context || !fop->context->isUIAvailable())
     return jpeg_options;
 
   try {

@@ -424,7 +424,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   Sprite* sprite = document->sprite();
   DocumentPreferences& docPref(Preferences::instance().document(document));
 
-  if (m_useUI && context->isUiAvailable()) {
+  if (m_useUI && context->isUIAvailable()) {
     ExportSpriteSheetWindow window(document, sprite, docPref);
     window.openWindowInForeground();
     if (!window.ok())

@@ -94,7 +94,7 @@ static void save_document_in_background(const Context* context,
   else if (fop_is_stop(fop)) {
     const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
-  else if (context->isUiAvailable()) {
+  else if (context->isUIAvailable()) {
     App::instance()->getRecentFiles()->addRecentFile(document->filename().c_str());
     if (mark_as_saved)
       const_cast<Document*>(document)->markAsSaved();

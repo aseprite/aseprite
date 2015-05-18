@@ -208,7 +208,7 @@ void SpriteSizeCommand::onExecute(Context* context)
   int new_height = (m_height ? m_height: int(sprite->height()*m_scaleY));
   ResizeMethod resize_method = m_resizeMethod;
 
-  if (context->isUiAvailable()) {
+  if (context->isUIAvailable()) {
     // load the window widget
     base::UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
     m_widthPx = app::find_widget<Entry>(window, "width_px");
