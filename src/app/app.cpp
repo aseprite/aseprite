@@ -226,9 +226,6 @@ void App::initialize(const AppOptions& options)
     app_rebuild_documents_tabs();
     app_default_statusbar_message();
 
-    // Default window title bar.
-    updateDisplayTitleBar();
-
     // Recover data
     if (m_modules->hasRecoverySessions())
       m_mainWindow->showDataRecovery(m_modules->recovery());
@@ -722,6 +719,8 @@ void app_rebuild_documents_tabs()
 {
   if (App::instance()->isGui())
     App::instance()->getMainWindow()->getWorkspace()->updateTabs();
+
+  App::instance()->updateDisplayTitleBar();
 }
 
 PixelFormat app_get_current_pixel_format()
