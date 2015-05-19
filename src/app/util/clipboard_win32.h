@@ -90,6 +90,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       color_depth = 32;
       break;
     case IMAGE_INDEXED:
+      ASSERT(palette);
       padding = (4-(image->width()&3))&3;
       scanline = sizeof(uint8_t) * image->width();
       scanline += padding;
@@ -150,7 +151,7 @@ static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
       break;
     }
     case IMAGE_INDEXED: {
-      Palette* palette = app::get_current_palette();
+      ASSERT(palette);
       RGBQUAD* rgbquad = (RGBQUAD*)(((uint8_t*)bi)+bi->bV5Size);
       for (int i=0; i<palette->size(); ++i) {
         rgbquad->rgbRed   = rgba_getr(palette->getEntry(i));
