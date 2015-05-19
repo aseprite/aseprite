@@ -310,12 +310,35 @@ namespace she {
         }
 
         case WM_KEYDOWN: {
+          int vk = wparam;
+          int scancode = (lparam >> 16) & 0xff;
+          BYTE keystate[256];
+          WCHAR buffer[8];
+          int charsInBuffer = 0;
+
+          if (GetKeyboardState(&keystate[0])) {
+            // ToUnicode can return several characters inside the
+            // buffer in case that a dead-key wasn't combined with the
+            // next pressed character.
+            charsInBuffer = ToUnicode(vk, scancode, keystate, buffer,
+                                      sizeof(buffer)/sizeof(buffer[0]), 0);
+          }
+
           Event ev;
           ev.setType(Event::KeyDown);
-          ev.setScancode(win32vk_to_scancode(wparam));
-          ev.setUnicodeChar(0);  // TODO
+          ev.setScancode(win32vk_to_scancode(vk));
           ev.setRepeat(lparam & 15);
-          queueEvent(ev);
+
+          if (charsInBuffer < 1) {
+            ev.setUnicodeChar(0);
+            queueEvent(ev);
+          }
+          else {
+            for (int i=0; i<charsInBuffer; ++i) {
+              ev.setUnicodeChar(buffer[i]);
+              queueEvent(ev);
+            }
+          }
           break;
         }
 
@@ -323,17 +346,7 @@ namespace she {
           Event ev;
           ev.setType(Event::KeyUp);
           ev.setScancode(win32vk_to_scancode(wparam));
-          ev.setUnicodeChar(0);  // TODO
-          ev.setRepeat(lparam & 15);
-          queueEvent(ev);
-          break;
-        }
-
-        case WM_UNICHAR: {
-          Event ev;
-          ev.setType(Event::KeyUp);
-          ev.setScancode(kKeyNil);    // TODO
-          ev.setUnicodeChar(wparam);
+          ev.setUnicodeChar(0);
           ev.setRepeat(lparam & 15);
           queueEvent(ev);
           break;
