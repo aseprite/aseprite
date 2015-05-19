@@ -294,4 +294,34 @@ KeyScancode win32vk_to_scancode(int vk) {
   return keymap[vk];
 }
 
+static int scancode_to_win32vk(KeyScancode scancode) {
+  static int initialized = false;
+  static int keymap[kKeyScancodes];
+
+  if (!initialized) {
+    initialized = true;
+    for (int i=0; i<kKeyScancodes; ++i)
+      keymap[i] = 0;
+    for (int vk=0; vk<256; ++vk) {
+      KeyScancode sc = win32vk_to_scancode(vk);
+      if (sc != kKeyNil)
+        keymap[sc] = vk;
+    }
+  }
+
+  if (scancode < kKeyNil || scancode > kKeyScancodes)
+    scancode = kKeyNil;
+
+  return keymap[scancode];
+}
+
+bool is_key_pressed(KeyScancode scancode)
+{
+  int vk = scancode_to_win32vk(scancode);
+  if (vk)
+    return (GetKeyState(vk) & 0xf000 ? true: false);
+  else
+    return false;
+}
+
 } // namespace she
