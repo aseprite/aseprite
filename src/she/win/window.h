@@ -339,9 +339,10 @@ namespace she {
               queueEvent(ev);
             }
           }
-          break;
+          return 0;
         }
 
+        case WM_SYSKEYUP:
         case WM_KEYUP: {
           Event ev;
           ev.setType(Event::KeyUp);
@@ -349,7 +350,10 @@ namespace she {
           ev.setUnicodeChar(0);
           ev.setRepeat(lparam & 15);
           queueEvent(ev);
-          break;
+
+          // TODO If we use native menus, this message should be given
+          // to the DefWindowProc() in some cases (e.g. F10 or Alt keys)
+          return 0;
         }
 
         case WM_DROPFILES: {
