@@ -89,13 +89,6 @@ bool set_current_palette(const Palette *_palette, bool forced)
   return ret;
 }
 
-void set_black_palette()
-{
-  Palette* p = new Palette(frame_t(0), 256);
-  set_current_palette(p, true);
-  delete p;
-}
-
 std::string get_preset_palette_filename(const std::string& preset)
 {
   ResourceFinder rf;

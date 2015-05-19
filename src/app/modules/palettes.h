@@ -26,7 +26,6 @@ namespace app {
 
   void set_default_palette(const Palette* palette);
   bool set_current_palette(const Palette* palette, bool forced);
-  void set_black_palette();
 
   std::string get_preset_palette_filename(const std::string& preset);
   std::string get_default_palette_preset_name();
