@@ -20,6 +20,7 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/document.h"
+#include "doc/document_event.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
@@ -124,6 +125,11 @@ void SetPixelFormat::setFormat(PixelFormat format)
   // Regenerate extras
   static_cast<app::Document*>(sprite->document())
     ->destroyExtraCel();
+
+  // Generate notification
+  DocumentEvent ev(sprite->document());
+  ev.sprite(sprite);
+  sprite->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onPixelFormatChanged, ev);
 }
 
 } // namespace cmd

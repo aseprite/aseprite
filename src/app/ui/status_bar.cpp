@@ -33,6 +33,7 @@
 #include "app/util/range_utils.h"
 #include "base/bind.h"
 #include "doc/cel.h"
+#include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -137,7 +138,7 @@ StatusBar* StatusBar::m_instance = NULL;
 StatusBar::StatusBar()
   : Widget(statusbar_type())
   , m_color(app::Color::fromMask())
-  , m_hasDoc(false)
+  , m_doc(nullptr)
 {
   m_instance = this;
 
@@ -172,7 +173,7 @@ StatusBar::StatusBar()
     setup_mini_look(m_newFrame);
     setup_mini_look(m_slider);
 
-    m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacityChange, this));
+    m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacitySliderChange, this));
     m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
@@ -199,10 +200,12 @@ StatusBar::StatusBar()
     Bind<void>(&StatusBar::onCurrentToolChange, this));
 
   UIContext::instance()->addObserver(this);
+  UIContext::instance()->documents().addObserver(this);
 }
 
 StatusBar::~StatusBar()
 {
+  UIContext::instance()->documents().removeObserver(this);
   UIContext::instance()->removeObserver(this);
 
   delete m_tipwindow;           // widget
@@ -334,7 +337,7 @@ void StatusBar::onResize(ResizeEvent& ev)
     rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
     rc.w = prefWidth;
 
-    m_commandsBox->setVisible(true && m_hasDoc);
+    m_commandsBox->setVisible(m_doc != nullptr);
     m_commandsBox->setBounds(rc);
   }
   else
@@ -421,7 +424,7 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
   return ui::TipWindow::onProcessMessage(msg);
 }
 
-void StatusBar::onCelOpacityChange()
+void StatusBar::onCelOpacitySliderChange()
 {
   try {
     ContextWriter writer(UIContext::instance(), 500);
@@ -449,8 +452,20 @@ void StatusBar::onCelOpacityChange()
 
 void StatusBar::onActiveSiteChange(const doc::Site& site)
 {
+  if (m_doc && site.document() != m_doc) {
+    m_doc->removeObserver(this);
+    m_doc = nullptr;
+  }
+
   if (site.document() && site.sprite()) {
-    m_hasDoc = true;
+    if (!m_doc) {
+      m_doc = const_cast<doc::Document*>(site.document());
+      m_doc->addObserver(this);
+    }
+    else {
+      ASSERT(m_doc == site.document());
+    }
+
     m_commandsBox->setVisible(true);
 
     // Current frame
@@ -472,9 +487,36 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
     }
   }
   else {
-    m_hasDoc = false;
+    ASSERT(m_doc == nullptr);
     m_commandsBox->setVisible(false);
   }
+}
+
+void StatusBar::onRemoveDocument(doc::Document* doc)
+{
+  if (m_doc &&
+      m_doc == doc) {
+    m_doc->removeObserver(this);
+    m_doc = nullptr;
+  }
+}
+
+void StatusBar::onCelOpacityChanged(doc::DocumentEvent& ev)
+{
+  ASSERT(m_doc);
+  ASSERT(m_doc == const_cast<doc::Document*>(ev.document()));
+  ASSERT(ev.cel());
+
+  if (m_doc &&
+      m_doc == const_cast<doc::Document*>(ev.document()) &&
+      ev.cel()) {
+    m_slider->setValue(MID(0, ev.cel()->opacity(), 255));
+  }
+}
+
+void StatusBar::onPixelFormatChanged(DocumentEvent& ev)
+{
+  onActiveSiteChange(UIContext::instance()->activeSite());
 }
 
 void StatusBar::newFrame()

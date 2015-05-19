@@ -12,6 +12,8 @@
 #include "app/color.h"
 #include "base/observers.h"
 #include "doc/context_observer.h"
+#include "doc/document_observer.h"
+#include "doc/documents_observer.h"
 #include "doc/layer_index.h"
 #include "ui/base.h"
 #include "ui/widget.h"
@@ -38,7 +40,9 @@ namespace app {
   }
 
   class StatusBar : public ui::Widget
-                  , public doc::ContextObserver {
+                  , public doc::ContextObserver
+                  , public doc::DocumentsObserver
+                  , public doc::DocumentObserver {
     static StatusBar* m_instance;
   public:
     static StatusBar* instance() { return m_instance; }
@@ -61,9 +65,16 @@ namespace app {
     // ContextObserver impl
     void onActiveSiteChange(const doc::Site& site) override;
 
+    // DocumentObservers impl
+    void onRemoveDocument(doc::Document* doc) override;
+
+    // DocumentObserver impl
+    void onCelOpacityChanged(doc::DocumentEvent& ev) override;
+    void onPixelFormatChanged(DocumentEvent& ev) override;
+
   private:
     void onCurrentToolChange();
-    void onCelOpacityChange();
+    void onCelOpacitySliderChange();
     void newFrame();
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
@@ -84,7 +95,7 @@ namespace app {
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
-    bool m_hasDoc;
+    doc::Document* m_doc;      // Document used to show the cel slider
 
     // Tip window
     class CustomizedTipWindow;

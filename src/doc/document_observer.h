@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,6 +21,8 @@ namespace doc {
     // General update. If an observer receives this event, it's because
     // anything in the document could be changed.
     virtual void onGeneralUpdate(DocumentEvent& ev) { }
+
+    virtual void onPixelFormatChanged(DocumentEvent& ev) { }
 
     virtual void onAddLayer(DocumentEvent& ev) { }
     virtual void onAddFrame(DocumentEvent& ev) { }
