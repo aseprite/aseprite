@@ -48,7 +48,11 @@ void clear_keyboard_buffer()
 int clock_value()
 {
   // TODO
+#if _WIN32
+  return (int)GetTickCount();
+#else
   return 0; // clock_var;
+#endif
 }
 
 } // namespace she
