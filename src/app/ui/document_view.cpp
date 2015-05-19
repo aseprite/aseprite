@@ -79,7 +79,8 @@ public:
   void onAfterFrameChanged(Editor* editor) override {
     updatePreviewEditor(this);
 
-    set_current_palette(editor->sprite()->palette(editor->frame()), true);
+    if (isActive())
+      set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
 
   void onAfterLayerChanged(Editor* editor) override {
