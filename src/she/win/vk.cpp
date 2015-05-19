@@ -15,9 +15,9 @@
 namespace she {
 
 KeyScancode win32vk_to_scancode(int vk) {
-  static KeyScancode keymap[0xFF] = {
+  static KeyScancode keymap[256] = {
     // 0x00
-    kKeyNil,
+    kKeyNil, // 0x00
     kKeyNil, // 0x01 - VK_LBUTTON
     kKeyNil, // 0x02 - VK_RBUTTON
     kKeyNil, // 0x03 - VK_CANCEL
@@ -34,12 +34,13 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0x0E - Undefined
     kKeyNil, // 0x0F - Undefined
     // 0x10
-    kKeyLShift, // 0x10 - VK_SHIFT
-    kKeyLControl, // 0x11 - VK_CONTROL
-    kKeyMenu, // 0x12 - VK_MENU
+    kKeyNil, // 0x10 - VK_SHIFT
+    kKeyNil, // 0x11 - VK_CONTROL
+    kKeyNil, // 0x12 - VK_MENU
     kKeyPause, // 0x13 - VK_PAUSE
     kKeyCapsLock, // 0x14 - VK_CAPITAL
-    kKeyNil, // 0x15 - VK_KANA
+    kKeyKana, // 0x15 - VK_KANA
+    kKeyNil, // 0x16 - Undefined
     kKeyNil, // 0x17 - VK_JUNJA
     kKeyNil, // 0x18 - VK_FINAL
     kKeyKanji, // 0x19 - VK_KANJI
@@ -60,9 +61,9 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyRight, // 0x27 - VK_RIGHT
     kKeyDown, // 0x28 - VK_DOWN
     kKeyNil, // 0x29 - VK_SELECT
-    kKeyPrtscr, // 0x2A - VK_PRINT
+    kKeyNil, // 0x2A - VK_PRINT
     kKeyNil, // 0x2B - VK_EXECUTE
-    kKeyNil, // 0x2C - VK_SNAPSHOT
+    kKeyPrtscr, // 0x2C - VK_SNAPSHOT
     kKeyInsert, // 0x2D - VK_INSERT
     kKeyDel, // 0x2E - VK_DELETE
     kKeyNil, // 0x2F - VK_HELP
@@ -77,6 +78,12 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKey7, // 0x37 - VK_7
     kKey8, // 0x38 - VK_8
     kKey9, // 0x39 - VK_9
+    kKeyNil, // 0x3A - Unassigned
+    kKeyNil, // 0x3B - Unassigned
+    kKeyNil, // 0x3C - Unassigned
+    kKeyNil, // 0x3D - Unassigned
+    kKeyNil, // 0x3E - Unassigned
+    kKeyNil, // 0x3F - Unassigned
     // 0x40
     kKeyNil, // 0x40 - Unassigned
     kKeyA, // 0x41 - VK_A
@@ -127,20 +134,20 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0x6C - VK_SEPARATOR
     kKeyMinusPad, // 0x6D - VK_SUBTRACT
     kKeyNil, // 0x6E - VK_DECIMAL
-    kKeyNil, // 0x6F - VK_DIVIDE
+    kKeySlashPad, // 0x6F - VK_DIVIDE
     // 0x70
-    kKeyNil, // 0x70 - VK_F1
-    kKeyNil, // 0x71 - VK_F2
-    kKeyNil, // 0x72 - VK_F3
-    kKeyNil, // 0x73 - VK_F4
-    kKeyNil, // 0x74 - VK_F5
-    kKeyNil, // 0x75 - VK_F6
-    kKeyNil, // 0x76 - VK_F7
-    kKeyNil, // 0x77 - VK_F8
-    kKeyNil, // 0x78 - VK_F9
-    kKeyNil, // 0x79 - VK_F10
-    kKeyNil, // 0x7A - VK_F11
-    kKeyNil, // 0x7B - VK_F12
+    kKeyF1, // 0x70 - VK_F1
+    kKeyF2, // 0x71 - VK_F2
+    kKeyF3, // 0x72 - VK_F3
+    kKeyF4, // 0x73 - VK_F4
+    kKeyF5, // 0x74 - VK_F5
+    kKeyF6, // 0x75 - VK_F6
+    kKeyF7, // 0x76 - VK_F7
+    kKeyF8, // 0x77 - VK_F8
+    kKeyF9, // 0x78 - VK_F9
+    kKeyF10, // 0x79 - VK_F10
+    kKeyF11, // 0x7A - VK_F11
+    kKeyF12, // 0x7B - VK_F12
     kKeyNil, // 0x7C - VK_F13
     kKeyNil, // 0x7D - VK_F14
     kKeyNil, // 0x7E - VK_F15
@@ -163,9 +170,9 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0x8E - Unassigned
     kKeyNil, // 0x8F - Unassigned
     // 0x90
-    kKeyNil, // 0x90 - VK_NUMLOCK
-    kKeyNil, // 0x91 - VK_SCROLL
-    kKeyEqualsPad, // 0x92 - VK_OEM_NEC_EQUAL / VK_OEM_FJ_JISHO
+    kKeyNumLock, // 0x90 - VK_NUMLOCK
+    kKeyScrLock, // 0x91 - VK_SCROLL
+    kKeyNil, // 0x92 - VK_OEM_NEC_EQUAL / VK_OEM_FJ_JISHO
     kKeyNil, // 0x93- VK_OEM_FJ_MASSHOU
     kKeyNil, // 0x94- VK_OEM_FJ_TOUROKU
     kKeyNil, // 0x95 - VK_OEM_FJ_LOYA
@@ -180,12 +187,12 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0x9E - Unassigned
     kKeyNil, // 0x9F - Unassigned
     // 0xA0
-    kKeyNil, // 0xA0 - VK_LSHIFT
-    kKeyNil, // 0xA1 - VK_RSHIFT
-    kKeyNil, // 0xA2 - VK_LCONTROL
-    kKeyNil, // 0xA3 - VK_RCONTROL
-    kKeyNil, // 0xA4 - VK_LMENU
-    kKeyNil, // 0xA5 - VK_RMENU
+    kKeyLShift, // 0xA0 - VK_LSHIFT
+    kKeyRShift, // 0xA1 - VK_RSHIFT
+    kKeyLControl, // 0xA2 - VK_LCONTROL
+    kKeyRControl, // 0xA3 - VK_RCONTROL
+    kKeyAlt, // 0xA4 - VK_LMENU
+    kKeyAltGr, // 0xA5 - VK_RMENU
     kKeyNil, // 0xA6 - VK_BROWSER_BACK
     kKeyNil, // 0xA7 - VK_BROWSER_FORWARD
     kKeyNil, // 0xA8 - VK_BROWSER_REFRESH
@@ -207,14 +214,14 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0xB7 - VK_LAUNCH_APP2
     kKeyNil, // 0xB8 - Reserved
     kKeyNil, // 0xB9 - Reserved
-    kKeyNil, // 0xBA - VK_OEM_1
-    kKeyNil, // 0xBB - VK_OEM_PLUS
-    kKeyNil, // 0xBC - VK_OEM_COMMA
-    kKeyNil, // 0xBD - VK_OEM_MINUS
-    kKeyNil, // 0xBE - VK_OEM_PERIOD
-    kKeyNil, // 0xBF - VK_OEM_2
+    kKeySemicolon, // 0xBA - VK_OEM_1
+    kKeyEquals, // 0xBB - VK_OEM_PLUS
+    kKeyComma, // 0xBC - VK_OEM_COMMA
+    kKeyMinus, // 0xBD - VK_OEM_MINUS
+    kKeyStop, // 0xBE - VK_OEM_PERIOD
+    kKeySlash, // 0xBF - VK_OEM_2
     // 0xC0
-    kKeyNil, // 0xC0 - VK_OEM_3
+    kKeyTilde, // 0xC0 - VK_OEM_3
     kKeyNil, // 0xC1 - Reserved
     kKeyNil, // 0xC2 - Reserved
     kKeyNil, // 0xC3 - Reserved
@@ -242,15 +249,15 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0xD8 - Unassigned
     kKeyNil, // 0xD9 - Unassigned
     kKeyNil, // 0xDA - Unassigned
-    kKeyNil, // 0xDB - VK_OEM_4
-    kKeyNil, // 0xDC - VK_OEM_5
-    kKeyNil, // 0xDD - VK_OEM_6
-    kKeyNil, // 0xDE - VK_OEM_7
+    kKeyOpenbrace, // 0xDB - VK_OEM_4
+    kKeyBackslash, // 0xDC - VK_OEM_5
+    kKeyClosebrace, // 0xDD - VK_OEM_6
+    kKeyQuote, // 0xDE - VK_OEM_7
     kKeyNil, // 0xDF - VK_OEM_8
     // 0xE0
     kKeyNil, // 0xE0 - Reserved
     kKeyNil, // 0xE1 - VK_OEM_AX
-    kKeyNil, // 0xE2 - VK_OEM_102
+    kKeyBackslash2, // 0xE2 - VK_OEM_102
     kKeyNil, // 0xE3 - VK_ICO_HELP
     kKeyNil, // 0xE4 - VK_ICO_00
     kKeyNil, // 0xE5 - VK_PROCESSKEY
@@ -283,7 +290,7 @@ KeyScancode win32vk_to_scancode(int vk) {
     kKeyNil, // 0xFF - Reserved
   };
   if (vk < 0 || vk > 255)
-    vk = kKeyNil;
+    vk = 0;
   return keymap[vk];
 }
 
