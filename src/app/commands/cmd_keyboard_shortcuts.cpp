@@ -184,7 +184,6 @@ private:
       case kMouseMoveMessage: {
         gfx::Rect bounds = getBounds();
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-        int hotAccel = -1;
 
         const Accelerators* accels = (m_key ? &m_key->accels() : NULL);
         int y = bounds.y;
@@ -205,8 +204,6 @@ private:
               i < (int)accels->size() &&
               mouseMsg->position().y >= itemBounds.y &&
               mouseMsg->position().y < itemBounds.y+itemBounds.h) {
-            hotAccel = i;
-
             if (m_hotAccel != i) {
               m_hotAccel = i;
 

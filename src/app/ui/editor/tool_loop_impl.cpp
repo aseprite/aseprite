@@ -381,7 +381,6 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 class PreviewToolLoopImpl : public tools::ToolLoop,
                             public tools::ShadingOptions {
   Editor* m_editor;
-  Context* m_context;
   tools::Tool* m_tool;
   BrushRef m_brush;
   Document* m_document;
@@ -395,7 +394,6 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   bool m_contiguous;
   gfx::Point m_offset;
   gfx::Point m_speed;
-  bool m_canceled;
   tools::ToolLoop::Button m_button;
   tools::Ink* m_ink;
   doc::color_t m_fgColor;
@@ -403,7 +401,6 @@ class PreviewToolLoopImpl : public tools::ToolLoop,
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
   gfx::Region m_dirtyArea;
-  tools::ShadeTable8* m_shadeTable;
   Image* m_image;
   tools::PointShape* m_pointShape;
 
@@ -419,7 +416,6 @@ public:
     Image* image,
     const gfx::Point& offset)
     : m_editor(editor)
-    , m_context(context)
     , m_tool(tool)
     , m_document(document)
     , m_sprite(editor->sprite())
@@ -428,7 +424,6 @@ public:
     , m_docPref(Preferences::instance().document(m_document))
     , m_toolPref(Preferences::instance().tool(m_tool))
     , m_offset(offset)
-    , m_canceled(false)
     , m_button(tools::ToolLoop::Left)
     , m_ink(ink)
     , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))

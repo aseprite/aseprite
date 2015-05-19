@@ -886,7 +886,6 @@ tools::Ink* Editor::getCurrentEditorInk()
   if (ink)
     return ink;
 
-  Context* context = UIContext::instance();
   tools::Tool* tool = getCurrentEditorTool();
   ink = tool->getInk(m_secondaryButton ? 1: 0);
 
