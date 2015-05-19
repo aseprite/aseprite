@@ -28,6 +28,8 @@ namespace app {
     void updateUsingEditor(Editor* editor);
     void uncheckCenterButton();
 
+    Editor* relatedEditor() const { return m_relatedEditor; }
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onClose(ui::CloseEvent& ev) override;
@@ -45,6 +47,7 @@ namespace app {
     MiniPlayButton* m_playButton;
     doc::frame_t m_refFrame;
     double m_aniSpeed;
+    Editor* m_relatedEditor;
   };
 
 } // namespace app

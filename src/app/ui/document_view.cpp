@@ -65,22 +65,25 @@ public:
 
   // EditorObserver implementation
   void dispose() override {
-    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(NULL);
+    PreviewEditorWindow* preview =
+      App::instance()->getMainWindow()->getPreviewEditor();
+
+    if (preview->relatedEditor() == this)
+      updatePreviewEditor(nullptr);
   }
 
   void onScrollChanged(Editor* editor) override {
-    if (current_editor == this)
-      App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
+    updatePreviewEditor(this);
   }
 
   void onAfterFrameChanged(Editor* editor) override {
-    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
+    updatePreviewEditor(this);
 
     set_current_palette(editor->sprite()->palette(editor->frame()), true);
   }
 
   void onAfterLayerChanged(Editor* editor) override {
-    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(this);
+    updatePreviewEditor(this);
   }
 
   // EditorCustomizationDelegate implementation
@@ -161,6 +164,11 @@ protected:
   }
 
 private:
+
+  void updatePreviewEditor(Editor* editor) {
+    App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(editor);
+  }
+
   bool isKeyActionPressed(KeyAction action) {
     if (Key* key = KeyboardShortcuts::instance()->action(action))
       return key->checkFromAllegroKeyArray();

@@ -175,6 +175,7 @@ PreviewEditorWindow::PreviewEditorWindow()
   , m_playButton(new MiniPlayButton())
   , m_refFrame(0)
   , m_aniSpeed(1.0)
+  , m_relatedEditor(nullptr)
 {
   child_spacing = 0;
   setAutoRemap(false);
@@ -297,11 +298,14 @@ void PreviewEditorWindow::updateUsingEditor(Editor* editor)
 {
   if (!m_isEnabled || !editor) {
     hideWindow();
+    m_relatedEditor = nullptr;
     return;
   }
 
-  if (editor != current_editor)
+  if (!editor->isActive())
     return;
+
+  m_relatedEditor = editor;
 
   Document* document = editor->document();
   Editor* miniEditor = (m_docView ? m_docView->getEditor(): NULL);
