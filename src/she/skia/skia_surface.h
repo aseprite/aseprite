@@ -158,22 +158,23 @@ public:
         formatData->greenShift = SK_RGBA_G32_SHIFT;
         formatData->blueShift  = SK_RGBA_B32_SHIFT;
         formatData->alphaShift = SK_RGBA_A32_SHIFT;
-        formatData->redMask    = ((1 << SK_RGBA_R32_SHIFT) - 1);
-        formatData->greenMask  = ((1 << SK_RGBA_G32_SHIFT) - 1);
-        formatData->blueMask   = ((1 << SK_RGBA_B32_SHIFT) - 1);
-        formatData->alphaMask  = ((1 << SK_RGBA_A32_SHIFT) - 1);
+        formatData->redMask    = (255 << SK_RGBA_R32_SHIFT);
+        formatData->greenMask  = (255 << SK_RGBA_G32_SHIFT);
+        formatData->blueMask   = (255 << SK_RGBA_B32_SHIFT);
+        formatData->alphaMask  = (255 << SK_RGBA_A32_SHIFT);
         break;
       case kBGRA_8888_SkColorType:
         formatData->redShift   = SK_BGRA_R32_SHIFT;
         formatData->greenShift = SK_BGRA_G32_SHIFT;
         formatData->blueShift  = SK_BGRA_B32_SHIFT;
         formatData->alphaShift = SK_BGRA_A32_SHIFT;
-        formatData->redMask    = ((1 << SK_BGRA_R32_SHIFT) - 1);
-        formatData->greenMask  = ((1 << SK_BGRA_G32_SHIFT) - 1);
-        formatData->blueMask   = ((1 << SK_BGRA_B32_SHIFT) - 1);
-        formatData->alphaMask  = ((1 << SK_BGRA_A32_SHIFT) - 1);
+        formatData->redMask    = (255 << SK_BGRA_R32_SHIFT);
+        formatData->greenMask  = (255 << SK_BGRA_G32_SHIFT);
+        formatData->blueMask   = (255 << SK_BGRA_B32_SHIFT);
+        formatData->alphaMask  = (255 << SK_BGRA_A32_SHIFT);
         break;
       default:
+        ASSERT(false);
         formatData->redShift   = 0;
         formatData->greenShift = 0;
         formatData->blueShift  = 0;
