@@ -466,6 +466,16 @@ void ColorBar::onPaletteViewPasteColors(
   setPalette(&newPalette, "Paste Colors");
 }
 
+app::Color ColorBar::onPaletteViewGetForegroundIndex()
+{
+  return getFgColor();
+}
+
+app::Color ColorBar::onPaletteViewGetBackgroundIndex()
+{
+  return getBgColor();
+}
+
 void ColorBar::onFgColorChangeFromPreferences()
 {
   if (m_syncingWithPref)

@@ -34,6 +34,8 @@ namespace app {
     virtual void onPaletteViewChangeSize(int boxsize) { }
     virtual void onPaletteViewPasteColors(
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
+    virtual app::Color onPaletteViewGetForegroundIndex() { return app::Color::fromMask(); }
+    virtual app::Color onPaletteViewGetBackgroundIndex() { return app::Color::fromMask(); }
   };
 
   class PaletteView : public ui::Widget

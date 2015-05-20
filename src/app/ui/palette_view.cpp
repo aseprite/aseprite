@@ -16,7 +16,6 @@
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
-#include "app/ui/color_bar.h"   // TODO avoid depending on ColorBar
 #include "app/ui/editor/editor.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
@@ -407,9 +406,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int fgIndex = -1;
   int bgIndex = -1;
 
-  if (m_style == FgBgColors) {
-    fgIndex = findExactIndex(ColorBar::instance()->getFgColor());
-    bgIndex = findExactIndex(ColorBar::instance()->getBgColor());
+  if (m_style == FgBgColors && m_delegate) {
+    fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
+    bgIndex = findExactIndex(m_delegate->onPaletteViewGetBackgroundIndex());
   }
 
   g->fillRect(gfx::rgba(0, 0, 0), bounds);

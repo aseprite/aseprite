@@ -92,6 +92,8 @@ namespace app {
     void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) override;
     void onPaletteViewChangeSize(int boxsize) override;
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
+    app::Color onPaletteViewGetForegroundIndex() override;
+    app::Color onPaletteViewGetBackgroundIndex() override;
 
   private:
     void destroyRemap();
