@@ -298,7 +298,10 @@ SkinTheme::~SkinTheme()
   m_parts_by_id.clear();
   sheet_mapping.clear();
 
-  // Destroy the minifont
+  // Destroy fonts
+  if (m_defaultFont)
+    m_defaultFont->dispose();
+
   if (m_miniFont)
     m_miniFont->dispose();
 }
