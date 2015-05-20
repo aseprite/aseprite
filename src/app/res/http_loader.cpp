@@ -60,7 +60,7 @@ void HttpLoader::threadHttpRequest()
     base::replace_string(fn, "&", "-");
     fn = base::join_path(dir, fn);
 
-    std::ofstream output(FSTREAM_PATH(fn));
+    std::ofstream output(FSTREAM_PATH(fn), std::ofstream::binary);
     net::HttpRequest http(m_url);
     net::HttpResponse response(&output);
     http.send(response);
