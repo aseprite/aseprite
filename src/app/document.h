@@ -11,6 +11,7 @@
 
 #include "app/file/format_options.h"
 #include "base/disable_copying.h"
+#include "base/mutex.h"
 #include "base/observable.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
@@ -24,10 +25,6 @@
 #include "render/extra_type.h"
 
 #include <string>
-
-namespace base {
-  class mutex;
-}
 
 namespace doc {
   class Cel;
@@ -201,7 +198,7 @@ namespace app {
     } m_bound;
 
     // Mutex to modify the 'locked' flag.
-    base::mutex* m_mutex;
+    base::mutex m_mutex;
 
     // True if some thread is writing the sprite.
     bool m_write_lock;

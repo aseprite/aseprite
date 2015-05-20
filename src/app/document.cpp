@@ -46,7 +46,6 @@ using namespace doc;
 Document::Document(Sprite* sprite)
   : m_undo(new DocumentUndo)
   , m_associated_to_file(false)
-  , m_mutex(new mutex)
   , m_write_lock(false)
   , m_read_locks(0)
     // Information about the file format used to load/save this document
@@ -515,7 +514,7 @@ bool Document::lock(LockType lockType, int timeout)
 {
   while (timeout >= 0) {
     {
-      scoped_lock lock(*m_mutex);
+      scoped_lock lock(m_mutex);
       switch (lockType) {
 
         case ReadLock:
@@ -560,7 +559,7 @@ bool Document::lockToWrite(int timeout)
 {
   while (timeout >= 0) {
     {
-      scoped_lock lock(*m_mutex);
+      scoped_lock lock(m_mutex);
       // this only is possible if there are just one reader
       if (m_read_locks == 1) {
         ASSERT(!m_write_lock);
@@ -589,7 +588,7 @@ bool Document::lockToWrite(int timeout)
 
 void Document::unlockToRead()
 {
-  scoped_lock lock(*m_mutex);
+  scoped_lock lock(m_mutex);
 
   ASSERT(m_read_locks == 0);
   ASSERT(m_write_lock);
@@ -600,7 +599,7 @@ void Document::unlockToRead()
 
 void Document::unlock()
 {
-  scoped_lock lock(*m_mutex);
+  scoped_lock lock(m_mutex);
 
   if (m_write_lock) {
     m_write_lock = false;
