@@ -80,7 +80,7 @@ namespace app {
 
     void add(const ui::Accelerator& accel, KeySource source);
     bool isPressed(ui::Message* msg) const;
-    bool checkFromAllegroKeyArray();
+    bool isPressed() const;
 
     bool hasAccel(const ui::Accelerator& accel) const;
     void disableAccel(const ui::Accelerator& accel);

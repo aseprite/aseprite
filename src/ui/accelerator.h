@@ -25,8 +25,8 @@ namespace ui {
     bool isEmpty() const;
     std::string toString() const;
 
-    bool check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const;
-    bool checkFromAllegroKeyArray() const;
+    bool isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const;
+    bool isPressed() const;
 
     bool operator==(const Accelerator& other) const;
     bool operator!=(const Accelerator& other) const {

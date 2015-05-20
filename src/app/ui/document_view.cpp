@@ -172,7 +172,7 @@ private:
 
   bool isKeyActionPressed(KeyAction action) {
     if (Key* key = KeyboardShortcuts::instance()->action(action))
-      return key->checkFromAllegroKeyArray();
+      return key->isPressed();
     else
       return false;
   }

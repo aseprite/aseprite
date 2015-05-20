@@ -349,7 +349,7 @@ std::string Accelerator::toString() const
   return buf;
 }
 
-bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
+bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const
 {
   // Preprocess the character to be compared with the accelerator
 #ifdef PREPROCESS_KEYS
@@ -428,7 +428,7 @@ bool Accelerator::check(KeyModifiers modifiers, KeyScancode scancode, int unicod
   return false;
 }
 
-bool Accelerator::checkFromAllegroKeyArray() const
+bool Accelerator::isPressed() const
 {
   KeyModifiers modifiers = kKeyNoneModifier;
 

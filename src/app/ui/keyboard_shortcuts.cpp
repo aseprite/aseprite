@@ -194,7 +194,7 @@ bool Key::isPressed(Message* msg) const
   ASSERT(dynamic_cast<KeyMessage*>(msg) != NULL);
 
   for (const Accelerator& accel : accels()) {
-    if (accel.check(msg->keyModifiers(),
+    if (accel.isPressed(msg->keyModifiers(),
           static_cast<KeyMessage*>(msg)->scancode(),
           static_cast<KeyMessage*>(msg)->unicodeChar()) &&
         (m_keycontext == KeyContext::Any ||
@@ -206,10 +206,10 @@ bool Key::isPressed(Message* msg) const
   return false;
 }
 
-bool Key::checkFromAllegroKeyArray()
+bool Key::isPressed() const
 {
   for (const Accelerator& accel : this->accels()) {
-    if (accel.checkFromAllegroKeyArray())
+    if (accel.isPressed())
       return true;
   }
   return false;
@@ -658,7 +658,7 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
 {
   if (currentTool && currentTool->getInk(0)->isSelection()) {
     Key* key = action(KeyAction::CopySelection);
-    if (key && key->checkFromAllegroKeyArray())
+    if (key && key->isPressed())
       return NULL;
   }
 
@@ -669,7 +669,7 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
     Key* key = quicktool(tool);
 
     // Collect all tools with the pressed keyboard-shortcut
-    if (key && key->checkFromAllegroKeyArray()) {
+    if (key && key->isPressed()) {
       return tool;
     }
   }
