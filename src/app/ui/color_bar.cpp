@@ -21,6 +21,7 @@
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
+#include "app/document_api.h"
 #include "app/ini_file.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -376,8 +377,10 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 
   if ((buttons & kButtonRight) == kButtonRight)
     setBgColor(color);
-  else
+  else if ((buttons & kButtonLeft) == kButtonLeft)
     setFgColor(color);
+  else if ((buttons & kButtonMiddle) == kButtonMiddle)
+    setTransparentIndex(index);
 
   m_lock = false;
 }
@@ -419,6 +422,29 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
 
   set_current_palette(newPalette, false);
   getManager()->invalidate();
+}
+
+void ColorBar::setTransparentIndex(int index)
+{
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    Sprite* sprite = writer.sprite();
+    frame_t frame = writer.frame();
+    if (sprite &&
+        sprite->pixelFormat() == IMAGE_INDEXED &&
+        sprite->transparentColor() != index) {
+      // TODO merge this code with SpritePropertiesCommand
+      Transaction transaction(writer.context(), "Set Transparent Color");
+      DocumentApi api = writer.document()->getApi(transaction);
+      api.setSpriteTransparentColor(sprite, index);
+      transaction.commit();
+
+      update_screen_for_document(writer.document());
+    }
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
 }
 
 void ColorBar::onPaletteViewChangeSize(int boxsize)

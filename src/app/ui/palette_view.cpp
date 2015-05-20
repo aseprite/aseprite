@@ -318,19 +318,23 @@ bool PaletteView::onProcessMessage(Message* msg)
             app::Color::fromIndex(idx), 255);
 
           if (hasCapture() && (idx != m_currentEntry || msg->type() == kMouseDownMessage)) {
-            if (!msg->ctrlPressed())
-              deselect();
+            MouseButtons buttons = mouseMsg->buttons();
 
-            if (msg->type() == kMouseMoveMessage)
-              selectRange(m_rangeAnchor, idx);
-            else {
-              selectColor(idx);
-              m_selectedEntries[idx] = true;
+            if ((buttons & kButtonMiddle) == 0) {
+              if (!msg->ctrlPressed())
+                deselect();
+
+              if (msg->type() == kMouseMoveMessage)
+                selectRange(m_rangeAnchor, idx);
+              else {
+                selectColor(idx);
+                m_selectedEntries[idx] = true;
+              }
             }
 
             // Emit signal
             if (m_delegate)
-              m_delegate->onPaletteViewIndexChange(idx, mouseMsg->buttons());
+              m_delegate->onPaletteViewIndexChange(idx, buttons);
           }
         }
       }

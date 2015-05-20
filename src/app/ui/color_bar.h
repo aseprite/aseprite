@@ -99,6 +99,7 @@ namespace app {
     void destroyRemap();
     void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
     void setPalette(const doc::Palette* newPalette, const std::string& actionText);
+    void setTransparentIndex(int index);
 
     class ScrollableView : public ui::View {
     public:
