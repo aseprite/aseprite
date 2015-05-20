@@ -8,11 +8,12 @@
 #include "config.h"
 #endif
 
+#include "base/fstream_path.h"
 #include "base/sha1.h"
 #include "base/sha1_rfc3174.h"
 
-#include <fstream>
 #include <cassert>
+#include <fstream>
 
 namespace base {
 
@@ -32,7 +33,7 @@ Sha1 Sha1::calculateFromFile(const std::string& fileName)
 {
   using namespace std;
 
-  ifstream file(fileName.c_str(), ios::in | ios::binary);
+  ifstream file(FSTREAM_PATH(fileName), ios::in | ios::binary);
   if (!file.good())
     return Sha1();
 

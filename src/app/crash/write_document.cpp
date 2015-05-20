@@ -15,6 +15,7 @@
 #include "app/document.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/fstream_path.h"
 #include "base/path.h"
 #include "base/serialization.h"
 #include "base/string.h"
@@ -42,14 +43,6 @@ namespace crash {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 using namespace doc;
-
-#ifdef _WIN32
-  #define OFSTREAM(name, fullfn) \
-    std::ofstream name(base::from_utf8(fullfn), std::ofstream::binary);
-#else
-  #define OFSTREAM(name, fullfn) \
-    std::ofstream name(fullfn.c_str(), std::ofstream::binary);
-#endif
 
 namespace {
 
@@ -178,7 +171,7 @@ private:
     std::string oldfn = fullfn + "." + base::convert_to<std::string>(versions.older());
     fullfn += "." + base::convert_to<std::string>(obj->version());
 
-    OFSTREAM(s, fullfn);
+    std::ofstream s(FSTREAM_PATH(fullfn), std::ofstream::binary);
     write32(s, 0);                // Leave a room for the magic number
     (this->*writeMember)(s, obj); // Write the object
 

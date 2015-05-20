@@ -22,6 +22,7 @@
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
+#include "base/fstream_path.h"
 #include "base/path.h"
 #include "base/process.h"
 #include "base/split_string.h"
@@ -103,13 +104,8 @@ void Session::create(base::pid pid)
 {
   m_pid = pid;
 
-#ifdef _WIN32
-  std::ofstream pidf(base::from_utf8(pidFilename()));
-  std::ofstream verf(base::from_utf8(verFilename()));
-#else
-  std::ofstream pidf(pidFilename().c_str());
-  std::ofstream verf(verFilename().c_str());
-#endif
+  std::ofstream pidf(FSTREAM_PATH(pidFilename()));
+  std::ofstream verf(FSTREAM_PATH(verFilename()));
 
   pidf << m_pid;
   verf << VERSION;
@@ -213,11 +209,7 @@ void Session::loadPid()
 
   std::string pidfile = pidFilename();
   if (base::is_file(pidfile)) {
-#ifdef _WIN32
-    std::ifstream pf(base::from_utf8(pidfile));
-#else
-    std::ifstream pf(pidfile.c_str());
-#endif
+    std::ifstream pf(FSTREAM_PATH(pidfile));
     if (pf)
       pf >> m_pid;
   }

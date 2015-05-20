@@ -17,6 +17,7 @@
 #include "base/convert_to.h"
 #include "base/exception.h"
 #include "base/fs.h"
+#include "base/fstream_path.h"
 #include "base/path.h"
 #include "base/serialization.h"
 #include "base/string.h"
@@ -45,14 +46,6 @@ namespace crash {
 using namespace base::serialization;
 using namespace base::serialization::little_endian;
 using namespace doc;
-
-#ifdef _WIN32
-  #define IFSTREAM(dir, name, fn) \
-    std::ifstream name(base::from_utf8(base::join_path(dir, fn)), std::ifstream::binary);
-#else
-  #define IFSTREAM(dir, name, fn) \
-    std::ifstream name(base::join_path(dir, fn).c_str(), std::ifstream::binary);
-#endif
 
 namespace {
 
@@ -154,7 +147,7 @@ private:
       fn.push_back('.');
       fn += base::convert_to<std::string>(ver);
 
-      IFSTREAM(m_dir, s, fn);
+      std::ifstream s(FSTREAM_PATH(base::join_path(m_dir, fn)), std::ifstream::binary);
       T obj = nullptr;
       if (read32(s) == MAGIC_NUMBER)
         obj = (this->*readMember)(s);
