@@ -8,6 +8,8 @@
 #define UNDO_UNDO_STATE_H_INCLUDED
 #pragma once
 
+#include "undo/undo_command.h"
+
 namespace undo {
 
   class UndoCommand;
@@ -18,6 +20,15 @@ namespace undo {
   class UndoState {
     friend class UndoHistory;
   public:
+    UndoState(UndoCommand* cmd)
+      : m_prev(nullptr)
+      , m_next(nullptr)
+      , m_parent(nullptr)
+      , m_cmd(cmd) {
+    }
+    ~UndoState() {
+      delete m_cmd;
+    }
     UndoState* prev() const { return m_prev; }
     UndoState* next() const { return m_next; }
     UndoCommand* cmd() const { return m_cmd; }

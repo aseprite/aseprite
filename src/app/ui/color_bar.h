@@ -13,7 +13,6 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/input_chain_element.h"
-#include "app/ui/palette_popup.h"
 #include "app/ui/palette_view.h"
 #include "base/connection.h"
 #include "base/signal.h"
@@ -28,8 +27,9 @@
 namespace app {
   class ColorButton;
   class Command;
-  class PalettesLoader;
   class PaletteIndexChangeEvent;
+  class PalettePopup;
+  class PalettesLoader;
 
   class ColorBar : public ui::Box
                  , public PaletteViewDelegate
@@ -109,7 +109,7 @@ namespace app {
     };
 
     ButtonSet m_buttons;
-    PalettePopup m_palettePopup;
+    base::UniquePtr<PalettePopup> m_palettePopup;
     ScrollableView m_scrollableView;
     PaletteView m_paletteView;
     ui::Button m_remapButton;

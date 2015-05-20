@@ -82,11 +82,10 @@ void UndoHistory::clearRedo()
 
 void UndoHistory::add(UndoCommand* cmd)
 {
-  UndoState* state = new UndoState;
+  UndoState* state = new UndoState(cmd);
   state->m_prev = m_last;
   state->m_next = nullptr;
   state->m_parent = m_cur;
-  state->m_cmd = cmd;
 
   if (!m_first)
     m_first = state;

@@ -30,7 +30,10 @@ public:
   typedef std::vector<SlotType*> SlotList;
 
   Signal0_base() { }
-  ~Signal0_base() { }
+  ~Signal0_base() {
+    for (SlotType* slot : m_slots)
+      delete slot;
+  }
 
   Signal0_base(const Signal0_base&) { }
   Signal0_base operator=(const Signal0_base&) {
@@ -127,7 +130,10 @@ public:
   typedef std::vector<SlotType*> SlotList;
 
   Signal1_base() { }
-  ~Signal1_base() { }
+  ~Signal1_base() {
+    for (SlotType* slot : m_slots)
+      delete slot;
+  }
 
   Signal1_base(const Signal1_base&) { }
   Signal1_base operator=(const Signal1_base&) {
@@ -225,7 +231,10 @@ public:
   typedef std::vector<SlotType*> SlotList;
 
   Signal2_base() { }
-  ~Signal2_base() { }
+  ~Signal2_base() {
+    for (SlotType* slot : m_slots)
+      delete slot;
+  }
 
   Signal2_base(const Signal2_base&) { }
   Signal2_base operator=(const Signal2_base&) {

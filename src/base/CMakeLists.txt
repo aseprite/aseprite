@@ -84,3 +84,7 @@ if(WIN32)
 endif()
 
 add_library(base-lib ${BASE_SOURCES})
+
+if(ENABLE_MEMLEAK AND MSVC)
+  target_link_libraries(base-lib dbghelp)
+endif()
