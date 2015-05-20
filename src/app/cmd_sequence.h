@@ -18,6 +18,7 @@ namespace app {
   class CmdSequence : public Cmd {
   public:
     CmdSequence();
+    ~CmdSequence();
 
     void add(Cmd* cmd);
 

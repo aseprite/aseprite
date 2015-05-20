@@ -17,6 +17,12 @@ CmdSequence::CmdSequence()
 {
 }
 
+CmdSequence::~CmdSequence()
+{
+  for (Cmd* cmd : m_cmds)
+    delete cmd;
+}
+
 void CmdSequence::add(Cmd* cmd)
 {
   m_cmds.push_back(cmd);
