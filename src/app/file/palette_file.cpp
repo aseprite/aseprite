@@ -19,6 +19,7 @@
 #include "doc/cel.h"
 #include "doc/file/col_file.h"
 #include "doc/file/gpl_file.h"
+#include "doc/file/pal_file.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -33,14 +34,14 @@ using namespace doc;
 std::string get_readable_palette_extensions()
 {
   std::string buf = get_readable_extensions();
-  buf += ",col,gpl";
+  buf += ",col,gpl,pal";
   return buf;
 }
 
 std::string get_writable_palette_extensions()
 {
   std::string buf = get_writable_extensions();
-  buf += ",col,gpl";
+  buf += ",col,gpl,pal";
   return buf;
 }
 
@@ -54,6 +55,9 @@ Palette* load_palette(const char *filename)
   }
   else if (ext == "gpl") {
     pal = doc::file::load_gpl_file(filename);
+  }
+  else if (ext == "pal") {
+    pal = doc::file::load_pal_file(filename);
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
@@ -98,6 +102,9 @@ bool save_palette(const char *filename, const Palette* pal)
   }
   else if (ext == "gpl") {
     success = doc::file::save_gpl_file(pal, filename);
+  }
+  else if (ext == "pal") {
+    success = doc::file::save_pal_file(pal, filename);
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
