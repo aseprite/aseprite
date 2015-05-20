@@ -405,10 +405,14 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   Palette* palette = get_current_palette();
   int fgIndex = -1;
   int bgIndex = -1;
+  int transparentIndex = -1;
 
   if (m_style == FgBgColors && m_delegate) {
     fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
     bgIndex = findExactIndex(m_delegate->onPaletteViewGetBackgroundIndex());
+
+    if (current_editor && current_editor->sprite()->pixelFormat() == IMAGE_INDEXED)
+      transparentIndex = current_editor->sprite()->transparentColor();
   }
 
   g->fillRect(gfx::rgba(0, 0, 0), bounds);
@@ -443,6 +447,10 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
           for (int i=0; i<m_boxsize/4; ++i)
             g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-m_boxsize/4+i, i+1);
         }
+
+        if (transparentIndex == i)
+          g->fillRect(color_utils::blackandwhite_neg(color),
+                      gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
         break;
     }
   }
