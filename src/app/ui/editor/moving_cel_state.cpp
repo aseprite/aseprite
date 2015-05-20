@@ -16,6 +16,7 @@
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
@@ -119,8 +120,18 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point newCursorPos = editor->screenToEditor(msg->position());
+  gfx::Point delta = newCursorPos - m_mouseStart;
 
-  m_celNew = m_celStart - m_mouseStart + newCursorPos;
+  if (editor->getCustomizationDelegate()->isLockAxisKeyPressed()) {
+    if (ABS(delta.x) < ABS(delta.y)) {
+      delta.x = 0;
+    }
+    else {
+      delta.y = 0;
+    }
+  }
+
+  m_celNew = m_celStart + delta;
   if (m_cel)
     m_cel->setPosition(m_celNew);
 
