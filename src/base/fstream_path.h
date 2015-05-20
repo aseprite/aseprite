@@ -1,0 +1,19 @@
+// Aseprite Base Library
+// Copyright (c) 2001-2015 David Capello
+//
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
+
+#ifndef BASE_FSTREAM_PATH_H_INCLUDED
+#define BASE_FSTREAM_PATH_H_INCLUDED
+#pragma once
+
+#include "base/string.h"
+
+#ifdef _WIN32
+  #define FSTREAM_PATH(path) (base::from_utf8(path).c_str())
+#else
+  #define FSTREAM_PATH(path) ((path).c_str())
+#endif
+
+#endif

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,24 +8,25 @@
 #include "config.h"
 #endif
 
+#include "base/fstream_path.h"
 #include "base/split_string.h"
 #include "base/trim_string.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 
+#include <cctype>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <iomanip>
-#include <cctype>
 
 namespace doc {
 namespace file {
 
 Palette* load_gpl_file(const char *filename)
 {
-  std::ifstream f(filename);
+  std::ifstream f(FSTREAM_PATH(filename));
   if (f.bad()) return NULL;
 
   // Read first line, it must be "GIMP Palette"
@@ -68,7 +69,7 @@ Palette* load_gpl_file(const char *filename)
 
 bool save_gpl_file(const Palette *pal, const char *filename)
 {
-  std::ofstream f(filename);
+  std::ofstream f(FSTREAM_PATH(filename));
   if (f.bad()) return false;
 
   f << "GIMP Palette\n"
