@@ -29,6 +29,7 @@
 #include "app/ui/color_spectrum.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/input_chain.h"
+#include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
@@ -322,15 +323,18 @@ void ColorBar::onPaletteButtonClick()
     }
 
     case PalButton::PRESETS: {
-      if (!m_palettePopup.isVisible()) {
+      if (!m_palettePopup)
+        m_palettePopup.reset(new PalettePopup());
+
+      if (!m_palettePopup->isVisible()) {
         gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
 
-        m_palettePopup.showPopup(
+        m_palettePopup->showPopup(
           gfx::Rect(bounds.x, bounds.y+bounds.h,
                     ui::display_w()/2, ui::display_h()/2));
       }
       else {
-        m_palettePopup.closeWindow(NULL);
+        m_palettePopup->closeWindow(NULL);
       }
       break;
     }
