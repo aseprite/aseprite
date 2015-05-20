@@ -609,7 +609,7 @@ App::~App()
     App::instance()->Exit();
 
     // Finalize modules, configuration and core.
-    Editor::exitEditorCursor();
+    Editor::destroyEditorSharedInternals();
     boundary_exit();
 
     delete m_legacy;

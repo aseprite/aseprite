@@ -201,6 +201,12 @@ Editor::~Editor()
   m_mask_timer.stop();
 }
 
+void Editor::destroyEditorSharedInternals()
+{
+  m_renderBuffer.reset();
+  exitEditorCursor();
+}
+
 bool Editor::isActive() const
 {
   return (current_editor == this);

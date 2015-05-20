@@ -80,6 +80,8 @@ namespace app {
     Editor(Document* document, EditorFlags flags = kDefaultEditorFlags);
     ~Editor();
 
+    static void destroyEditorSharedInternals();
+
     bool isActive() const;
 
     DocumentView* getDocumentView() { return m_docView; }
@@ -208,7 +210,6 @@ namespace app {
     // in cursor.cpp
 
     static void initEditorCursor();
-    static void exitEditorCursor();
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -221,6 +222,7 @@ namespace app {
     void onExposeSpritePixels(doc::DocumentEvent& ev);
 
   private:
+    static void exitEditorCursor();
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateContextBarFromModifiers();
