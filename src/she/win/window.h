@@ -392,7 +392,7 @@ namespace she {
         return;                 // Already registered
 
       wcex.cbSize        = sizeof(WNDCLASSEX);
-      wcex.style         = 0;
+      wcex.style         = CS_DBLCLKS;
       wcex.lpfnWndProc   = &Window::staticWndProc;
       wcex.cbClsExtra    = 0;
       wcex.cbWndExtra    = 0;
