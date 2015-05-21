@@ -34,6 +34,7 @@ namespace app {
 
     ButtonSet(int columns);
 
+    void addItem(const std::string& text, int hspan = 1, int vspan = 1);
     void addItem(she::Surface* icon, int hspan = 1, int vspan = 1);
     void addItem(Item* item, int hspan = 1, int vspan = 1);
     Item* getItem(int index);

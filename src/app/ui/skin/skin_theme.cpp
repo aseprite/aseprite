@@ -780,18 +780,18 @@ void SkinTheme::initWidget(Widget* widget)
       break;
 
     case kSeparatorWidget:
-      /* frame */
+      // Frame
       if ((widget->getAlign() & JI_HORIZONTAL) &&
           (widget->getAlign() & JI_VERTICAL)) {
         BORDER(4 * scale);
       }
-      /* horizontal bar */
+      // Horizontal bar
       else if (widget->getAlign() & JI_HORIZONTAL) {
         BORDER4(2 * scale, 4 * scale, 2 * scale, 0);
       }
-      /* vertical bar */
+      // Vertical bar
       else {
-        BORDER4(4 * scale, 2 * scale, 0, 2 * scale);
+        BORDER4(4 * scale, 2 * scale, 1 * scale, 2 * scale);
       }
 
       if (widget->hasText()) {

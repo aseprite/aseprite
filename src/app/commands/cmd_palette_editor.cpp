@@ -56,6 +56,9 @@ namespace app {
 using namespace gfx;
 using namespace ui;
 
+enum { RGB_MODE, HSV_MODE };
+enum { ABS_MODE, REL_MODE };
+
 class PaletteEntryEditor : public Window {
 public:
   PaletteEntryEditor();
@@ -70,9 +73,8 @@ protected:
   void onFgBgColorChange(const app::Color& _color);
   void onColorSlidersChange(ColorSlidersChangeEvent& ev);
   void onColorHexEntryChange(const app::Color& color);
-  void onColorTypeButtonClick(Event& ev);
-  void onAbsoluteButtonClick(Event& ev);
-  void onRelativeButtonClick(Event& ev);
+  void onColorTypeClick();
+  void onChangeModeClick();
 
 private:
   void selectColorType(app::Color::Type type);
@@ -90,12 +92,10 @@ private:
   Box m_vbox;
   Box m_topBox;
   Box m_bottomBox;
-  RadioButton m_rgbButton;
-  RadioButton m_hsvButton;
+  ButtonSet m_colorType;
+  ButtonSet m_changeMode;
   HexColorEntry m_hexColorEntry;
   Label m_entryLabel;
-  RadioButton m_absButton;
-  RadioButton m_relButton;
   RgbSliders m_rgbSliders;
   HsvSliders m_hsvSliders;
 
@@ -242,11 +242,9 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_vbox(JI_VERTICAL)
   , m_topBox(JI_HORIZONTAL)
   , m_bottomBox(JI_HORIZONTAL)
-  , m_rgbButton("RGB", 1, kButtonWidget)
-  , m_hsvButton("HSB", 1, kButtonWidget)
+  , m_colorType(2)
   , m_entryLabel("")
-  , m_absButton("Abs", 2, kButtonWidget)
-  , m_relButton("Rel", 2, kButtonWidget)
+  , m_changeMode(2)
   , m_disableHexUpdate(false)
   , m_redrawTimer(250, this)
   , m_redrawAll(false)
@@ -254,23 +252,23 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_selfPalChange(false)
   , m_fromPalette(0, Palette::MaxColors)
 {
+  m_colorType.addItem("RGB");
+  m_colorType.addItem("HSB");
+  m_changeMode.addItem("Abs");
+  m_changeMode.addItem("Rel");
+
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;
   m_bottomBox.setBorder(gfx::Border(0));
 
-  setup_mini_look(&m_rgbButton);
-  setup_mini_look(&m_hsvButton);
-  setup_mini_look(&m_absButton);
-  setup_mini_look(&m_relButton);
-
   // Top box
-  m_topBox.addChild(&m_rgbButton);
-  m_topBox.addChild(&m_hsvButton);
+  m_topBox.addChild(&m_colorType);
+  m_topBox.addChild(new Separator("", JI_VERTICAL));
+  m_topBox.addChild(&m_changeMode);
+  m_topBox.addChild(new Separator("", JI_VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
   m_topBox.addChild(&m_entryLabel);
   m_topBox.addChild(new BoxFiller);
-  m_topBox.addChild(&m_absButton);
-  m_topBox.addChild(&m_relButton);
 
   // Main vertical box
   m_vbox.addChild(&m_topBox);
@@ -279,16 +277,14 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_vbox.addChild(&m_bottomBox);
   addChild(&m_vbox);
 
-  m_rgbButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
-  m_hsvButton.Click.connect(&PaletteEntryEditor::onColorTypeButtonClick, this);
-  m_absButton.Click.connect(&PaletteEntryEditor::onAbsoluteButtonClick, this);
-  m_relButton.Click.connect(&PaletteEntryEditor::onRelativeButtonClick, this);
+  m_colorType.ItemChange.connect(&PaletteEntryEditor::onColorTypeClick, this);
+  m_changeMode.ItemChange.connect(&PaletteEntryEditor::onChangeModeClick, this);
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hexColorEntry.ColorChange.connect(&PaletteEntryEditor::onColorHexEntryChange, this);
 
-  m_absButton.setSelected(true);
+  m_changeMode.setSelectedItem(ABS_MODE);
   selectColorType(app::Color::RgbType);
 
   // We hook fg/bg color changes (by eyedropper mainly) to update the selected entry color
@@ -451,25 +447,31 @@ void PaletteEntryEditor::onColorHexEntryChange(const app::Color& color)
   m_disableHexUpdate = false;
 }
 
-void PaletteEntryEditor::onColorTypeButtonClick(Event& ev)
+void PaletteEntryEditor::onColorTypeClick()
 {
-  RadioButton* source = static_cast<RadioButton*>(ev.getSource());
-
-  if (source == &m_rgbButton) selectColorType(app::Color::RgbType);
-  else if (source == &m_hsvButton) selectColorType(app::Color::HsvType);
+  switch (m_colorType.selectedItem()) {
+    case RGB_MODE:
+      selectColorType(app::Color::RgbType);
+      break;
+    case HSV_MODE:
+      selectColorType(app::Color::HsvType);
+      break;
+  }
 }
 
-void PaletteEntryEditor::onAbsoluteButtonClick(Event& ev)
+void PaletteEntryEditor::onChangeModeClick()
 {
-  m_rgbSliders.setMode(ColorSliders::Absolute);
-  m_hsvSliders.setMode(ColorSliders::Absolute);
-}
-
-void PaletteEntryEditor::onRelativeButtonClick(Event& ev)
-{
-  m_rgbSliders.setMode(ColorSliders::Relative);
-  m_hsvSliders.setMode(ColorSliders::Relative);
-  resetRelativeInfo();
+  switch (m_changeMode.selectedItem()) {
+    case ABS_MODE:
+      m_rgbSliders.setMode(ColorSliders::Absolute);
+      m_hsvSliders.setMode(ColorSliders::Absolute);
+      break;
+    case REL_MODE:
+      m_rgbSliders.setMode(ColorSliders::Relative);
+      m_hsvSliders.setMode(ColorSliders::Relative);
+      resetRelativeInfo();
+      break;
+  }
 }
 
 void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
@@ -643,8 +645,8 @@ void PaletteEntryEditor::selectColorType(app::Color::Type type)
   resetRelativeInfo();
 
   switch (type) {
-    case app::Color::RgbType: m_rgbButton.setSelected(true); break;
-    case app::Color::HsvType: m_hsvButton.setSelected(true); break;
+    case app::Color::RgbType: m_colorType.setSelectedItem(RGB_MODE); break;
+    case app::Color::HsvType: m_colorType.setSelectedItem(HSV_MODE); break;
   }
 
   m_vbox.layout();

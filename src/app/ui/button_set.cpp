@@ -45,6 +45,7 @@ ButtonSet::Item::Item()
   : Widget(buttonset_item_type())
   , m_icon(NULL)
 {
+  setup_mini_font(this);
 }
 
 void ButtonSet::Item::setIcon(she::Surface* icon)
@@ -63,7 +64,7 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   Graphics* g = ev.getGraphics();
   gfx::Rect rc = getClientBounds();
-  gfx::Color face;
+  gfx::Color fg, bg;
   int nw;
 
   if (!gfx::is_transparent(getBgColor()))
@@ -72,23 +73,26 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   if (isSelected() || hasMouseOver()) {
     if (hasCapture()) {
       nw = PART_TOOLBUTTON_PUSHED_NW;
-      face = theme->colors.buttonSelectedFace();
+      fg = theme->colors.buttonSelectedText();
+      bg = theme->colors.buttonSelectedFace();
     }
     else {
       nw = PART_TOOLBUTTON_HOT_NW;
-      face = theme->colors.buttonHotFace();
+      fg = theme->colors.buttonHotText();
+      bg = theme->colors.buttonHotFace();
     }
   }
   else {
     nw = PART_TOOLBUTTON_LAST_NW;
-    face = theme->colors.buttonNormalFace();
+    fg = theme->colors.buttonNormalText();
+    bg = theme->colors.buttonNormalFace();
   }
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.col < info.grid_cols-1) rc.w+=1*guiscale();
   if (info.row < info.grid_rows-1) rc.h+=3*guiscale();
 
-  theme->draw_bounds_nw(g, rc, nw, face);
+  theme->draw_bounds_nw(g, rc, nw, bg);
 
   if (m_icon) {
     int u = rc.x + rc.w/2 - m_icon->width()/2;
@@ -98,6 +102,15 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
       g->drawColoredRgbaSurface(m_icon, theme->colors.buttonSelectedText(), u, v);
     else
       g->drawRgbaSurface(m_icon, u, v);
+  }
+
+  if (!getText().empty()) {
+    gfx::Size sz(getTextSize());
+    gfx::Point pt(rc.x + rc.w/2 - sz.w/2,
+                  rc.y + rc.h/2 - sz.h/2 - 1*guiscale());
+
+    g->setFont(getFont());
+    g->drawString(getText(), fg, gfx::ColorNone, pt);
   }
 }
 
@@ -148,7 +161,14 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
 void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
 {
-  gfx::Size sz(16, 16); // TODO Calculate from icon
+  gfx::Size sz;
+
+  if (m_icon) {
+    sz.w = 16*guiscale();
+    sz.h = 16*guiscale();
+  }
+  else if (!getText().empty())
+    sz += getTextSize() + 8*guiscale();;
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.row == info.grid_rows-1)
@@ -163,6 +183,13 @@ ButtonSet::ButtonSet(int columns)
   , m_triggerOnMouseUp(false)
 {
   noBorderNoChildSpacing();
+}
+
+void ButtonSet::addItem(const std::string& text, int hspan, int vspan)
+{
+  Item* item = new Item();
+  item->setText(text);
+  addItem(item, hspan, vspan);
 }
 
 void ButtonSet::addItem(she::Surface* icon, int hspan, int vspan)
