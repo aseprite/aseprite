@@ -43,6 +43,14 @@ namespace app {
 using namespace ui;
 using namespace doc;
 
+enum {
+  INDEX_MODE,
+  RGB_MODE,
+  HSB_MODE,
+  GRAY_MODE,
+  MASK_MODE
+};
+
 class ColorSelector::WarningIcon : public StyledButton {
 public:
   WarningIcon()
@@ -56,15 +64,17 @@ ColorSelector::ColorSelector()
   , m_topBox(JI_HORIZONTAL)
   , m_color(app::Color::fromMask())
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
-  , m_indexButton("Index", 1, kButtonWidget)
-  , m_rgbButton("RGB", 1, kButtonWidget)
-  , m_hsvButton("HSB", 1, kButtonWidget)
-  , m_grayButton("Gray", 1, kButtonWidget)
-  , m_maskButton("Mask", 1, kButtonWidget)
+  , m_colorType(5)
   , m_maskLabel("Transparent Color Selected")
   , m_warningIcon(new WarningIcon)
   , m_disableHexUpdate(false)
 {
+  m_colorType.addItem("Index");
+  m_colorType.addItem("RGB");
+  m_colorType.addItem("HSB");
+  m_colorType.addItem("Gray");
+  m_colorType.addItem("Mask");
+
   m_topBox.setBorder(gfx::Border(0));
   m_topBox.child_spacing = 0;
 
@@ -72,17 +82,8 @@ ColorSelector::ColorSelector()
 
   m_colorPaletteContainer.setExpansive(true);
 
-  setup_mini_look(&m_indexButton);
-  setup_mini_look(&m_rgbButton);
-  setup_mini_look(&m_hsvButton);
-  setup_mini_look(&m_grayButton);
-  setup_mini_look(&m_maskButton);
-
-  m_topBox.addChild(&m_indexButton);
-  m_topBox.addChild(&m_rgbButton);
-  m_topBox.addChild(&m_hsvButton);
-  m_topBox.addChild(&m_grayButton);
-  m_topBox.addChild(&m_maskButton);
+  m_topBox.addChild(&m_colorType);
+  m_topBox.addChild(new Separator("", JI_VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
   m_topBox.addChild(m_warningIcon);
   {
@@ -99,11 +100,7 @@ ColorSelector::ColorSelector()
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
 
-  m_indexButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
-  m_rgbButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
-  m_hsvButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
-  m_grayButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
-  m_maskButton.Click.connect(&ColorSelector::onColorTypeButtonClick, this);
+  m_colorType.ItemChange.connect(&ColorSelector::onColorTypeClick, this);
   m_warningIcon->Click.connect(&ColorSelector::onFixWarningClick, this);
 
   m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
@@ -182,16 +179,27 @@ void ColorSelector::onColorHexEntryChange(const app::Color& color)
   m_disableHexUpdate = false;
 }
 
-void ColorSelector::onColorTypeButtonClick(Event& ev)
+void ColorSelector::onColorTypeClick()
 {
-  RadioButton* source = static_cast<RadioButton*>(ev.getSource());
   app::Color newColor;
 
-  if (source == &m_indexButton) newColor = app::Color::fromIndex(getColor().getIndex());
-  else if (source == &m_rgbButton) newColor = app::Color::fromRgb(getColor().getRed(), getColor().getGreen(), getColor().getBlue());
-  else if (source == &m_hsvButton) newColor = app::Color::fromHsv(getColor().getHue(), getColor().getSaturation(), getColor().getValue());
-  else if (source == &m_grayButton) newColor = app::Color::fromGray(getColor().getGray());
-  else if (source == &m_maskButton) newColor = app::Color::fromMask();
+  switch (m_colorType.selectedItem()) {
+    case INDEX_MODE:
+      newColor = app::Color::fromIndex(getColor().getIndex());
+      break;
+    case RGB_MODE:
+      newColor = app::Color::fromRgb(getColor().getRed(), getColor().getGreen(), getColor().getBlue());
+      break;
+    case HSB_MODE:
+      newColor = app::Color::fromHsv(getColor().getHue(), getColor().getSaturation(), getColor().getValue());
+      break;
+    case GRAY_MODE:
+      newColor = app::Color::fromGray(getColor().getGray());
+      break;
+    case MASK_MODE:
+      newColor = app::Color::fromMask();
+      break;
+  }
 
   setColorWithSignal(newColor);
 }
@@ -327,11 +335,11 @@ void ColorSelector::selectColorType(app::Color::Type type)
   m_maskLabel.setVisible(type == app::Color::MaskType);
 
   switch (type) {
-    case app::Color::IndexType: m_indexButton.setSelected(true); break;
-    case app::Color::RgbType:   m_rgbButton.setSelected(true); break;
-    case app::Color::HsvType:   m_hsvButton.setSelected(true); break;
-    case app::Color::GrayType:  m_grayButton.setSelected(true); break;
-    case app::Color::MaskType:  m_maskButton.setSelected(true); break;
+    case app::Color::IndexType: m_colorType.setSelectedItem(INDEX_MODE); break;
+    case app::Color::RgbType:   m_colorType.setSelectedItem(RGB_MODE); break;
+    case app::Color::HsvType:   m_colorType.setSelectedItem(HSB_MODE); break;
+    case app::Color::GrayType:  m_colorType.setSelectedItem(GRAY_MODE); break;
+    case app::Color::MaskType:  m_colorType.setSelectedItem(MASK_MODE); break;
   }
 
   m_vbox.layout();

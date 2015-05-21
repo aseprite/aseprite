@@ -10,13 +10,13 @@
 #pragma once
 
 #include "app/color.h"
+#include "app/ui/button_set.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/hex_color_entry.h"
 #include "app/ui/palette_view.h"
 #include "app/ui/popup_window_pin.h"
 #include "base/connection.h"
 #include "base/signal.h"
-#include "ui/button.h"
 #include "ui/grid.h"
 #include "ui/label.h"
 #include "ui/tooltips.h"
@@ -45,7 +45,7 @@ namespace app {
   protected:
     void onColorSlidersChange(ColorSlidersChangeEvent& ev);
     void onColorHexEntryChange(const app::Color& color);
-    void onColorTypeButtonClick(ui::Event& ev);
+    void onColorTypeClick();
     void onFixWarningClick(ui::Event& ev);
     void onPaletteChange();
 
@@ -65,11 +65,7 @@ namespace app {
     app::Color m_color;
     ui::View m_colorPaletteContainer;
     PaletteView m_colorPalette;
-    ui::RadioButton m_indexButton;
-    ui::RadioButton m_rgbButton;
-    ui::RadioButton m_hsvButton;
-    ui::RadioButton m_grayButton;
-    ui::RadioButton m_maskButton;
+    ButtonSet m_colorType;
     HexColorEntry m_hexColorEntry;
     RgbSliders m_rgbSliders;
     HsvSliders m_hsvSliders;
