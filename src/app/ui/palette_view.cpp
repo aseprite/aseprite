@@ -316,10 +316,11 @@ bool PaletteView::onProcessMessage(Message* msg)
 
           StatusBar::instance()->showColor(0, "",
             app::Color::fromIndex(idx), 255);
+          MouseButtons buttons = mouseMsg->buttons();
 
-          if (hasCapture() && (idx != m_currentEntry || msg->type() == kMouseDownMessage)) {
-            MouseButtons buttons = mouseMsg->buttons();
-
+          if (hasCapture() && ((idx != m_currentEntry) ||
+                               (msg->type() == kMouseDownMessage) ||
+                               ((buttons & kButtonMiddle) == kButtonMiddle))) {
             if ((buttons & kButtonMiddle) == 0) {
               if (!msg->ctrlPressed())
                 deselect();
