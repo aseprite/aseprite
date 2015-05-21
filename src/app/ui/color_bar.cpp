@@ -15,6 +15,7 @@
 #include "app/app_menus.h"
 #include "app/cmd/remap_colors.h"
 #include "app/cmd/set_palette.h"
+#include "app/cmd/set_transparent_color.h"
 #include "app/color.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
@@ -361,8 +362,16 @@ void ColorBar::onRemapButtonClick()
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     if (sprite) {
+      ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
+
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
       transaction.execute(new cmd::RemapColors(sprite, *m_remap));
+
+      color_t oldTransparent = sprite->transparentColor();
+      color_t newTransparent = (*m_remap)[oldTransparent];
+      if (oldTransparent != newTransparent)
+        transaction.execute(new cmd::SetTransparentColor(sprite, newTransparent));
+
       transaction.commit();
     }
     update_screen_for_document(writer.document());
