@@ -109,7 +109,6 @@ ColorBar::ColorBar(int align)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_lock(false)
   , m_syncingWithPref(false)
-  , m_remap(nullptr)
   , m_lastDocument(nullptr)
   , m_ascending(true)
 {
@@ -406,7 +405,7 @@ void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPa
 void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText)
 {
   if (!m_remap) {
-    m_remap = new doc::Remap(remap);
+    m_remap.reset(new doc::Remap(remap));
     m_remapButton.setVisible(true);
     layout();
   }
@@ -681,9 +680,7 @@ void ColorBar::destroyRemap()
   if (!m_remap)
     return;
 
-  delete m_remap;
-  m_remap = nullptr;
-
+  m_remap.reset();
   m_remapButton.setVisible(false);
   layout();
 }

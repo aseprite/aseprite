@@ -117,7 +117,7 @@ namespace app {
     ColorButton m_bgColor;
     bool m_lock;
     bool m_syncingWithPref;
-    doc::Remap* m_remap;
+    base::UniquePtr<doc::Remap> m_remap;
     const doc::Document* m_lastDocument;
     bool m_ascending;
     ScopedConnection m_conn;
