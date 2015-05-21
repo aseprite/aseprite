@@ -73,8 +73,6 @@ namespace app {
 
     typedef std::list<ToolGroup*> ToolGroupList;
 
-    class PreferencesGlue;
-
     // Loads and maintains the group of tools specified in the gui.xml file
     class ToolBox {
     public:
@@ -106,7 +104,6 @@ namespace app {
 
       ToolGroupList m_groups;
       ToolList m_tools;
-      base::UniquePtr<PreferencesGlue> m_preferencesGlue;
     };
 
   } // namespace tools

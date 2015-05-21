@@ -22,6 +22,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tools/controller.h"
+#include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/shade_table.h"
@@ -71,6 +72,10 @@ protected:
   gfx::Point m_speed;
   tools::ToolLoop::Button m_button;
   tools::Ink* m_ink;
+  tools::Controller* m_controller;
+  tools::PointShape* m_pointShape;
+  tools::Intertwine* m_intertwine;
+  tools::TracePolicy m_tracePolicy;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
@@ -87,23 +92,48 @@ public:
                const app::Color& bgColor)
     : m_editor(editor)
     , m_tool(tool)
+    , m_brush(App::instance()->getMainWindow()->getContextBar()->activeBrush())
     , m_document(document)
     , m_sprite(editor->sprite())
     , m_layer(editor->layer())
     , m_frame(editor->frame())
     , m_docPref(Preferences::instance().document(m_document))
     , m_toolPref(Preferences::instance().tool(m_tool))
+    , m_opacity(m_toolPref.opacity())
+    , m_tolerance(m_toolPref.tolerance())
+    , m_contiguous(m_toolPref.contiguous())
     , m_button(button)
     , m_ink(ink)
+    , m_controller(m_tool->getController(m_button))
+    , m_pointShape(m_tool->getPointShape(m_button))
+    , m_intertwine(m_tool->getIntertwine(m_button))
+    , m_tracePolicy(m_tool->getTracePolicy(m_button))
     , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
     , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
-    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
-    m_opacity = m_toolPref.opacity();
-    m_tolerance = m_toolPref.tolerance();
-    m_contiguous = m_toolPref.contiguous();
+    tools::FreehandAlgorithm algorithm = m_toolPref.freehandAlgorithm();
+
+    if (m_tracePolicy == tools::TracePolicy::Accumulate ||
+        m_tracePolicy == tools::TracePolicy::AccumulateUpdateLast) {
+      tools::ToolBox* toolbox = App::instance()->getToolBox();
+
+      switch (algorithm) {
+        case tools::FreehandAlgorithm::DEFAULT:
+          m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsLines);
+          m_tracePolicy = tools::TracePolicy::Accumulate;
+          break;
+        case tools::FreehandAlgorithm::PIXEL_PERFECT:
+          m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::AsPixelPerfect);
+          m_tracePolicy = tools::TracePolicy::AccumulateUpdateLast;
+          break;
+        case tools::FreehandAlgorithm::DOTS:
+          m_intertwine = toolbox->getIntertwinerById(tools::WellKnownIntertwiners::None);
+          m_tracePolicy = tools::TracePolicy::Accumulate;
+          break;
+      }
+    }
   }
 
   // IToolLoop interface
@@ -134,10 +164,10 @@ public:
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
   gfx::Point getSpeed() override { return m_speed; }
   tools::Ink* getInk() override { return m_ink; }
-  tools::Controller* getController() override { return m_tool->getController(m_button); }
-  tools::PointShape* getPointShape() override { return m_tool->getPointShape(m_button); }
-  tools::Intertwine* getIntertwine() override { return m_tool->getIntertwine(m_button); }
-  tools::TracePolicy getTracePolicy() override { return m_tool->getTracePolicy(m_button); }
+  tools::Controller* getController() override { return m_controller; }
+  tools::PointShape* getPointShape() override { return m_pointShape; }
+  tools::Intertwine* getIntertwine() override { return m_intertwine; }
+  tools::TracePolicy getTracePolicy() override { return m_tracePolicy; }
   tools::ShadingOptions* getShadingOptions() override { return this; }
 
   gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
@@ -399,7 +429,6 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 
 class PreviewToolLoopImpl : public ToolLoopBase {
   Image* m_image;
-  tools::PointShape* m_pointShape;
 
 public:
   PreviewToolLoopImpl(
@@ -419,7 +448,6 @@ public:
     m_offset = offset;
 
     // Avoid preview for spray and flood fill like tools
-    m_pointShape = m_tool->getPointShape(m_button);
     if (m_pointShape->isSpray()) {
       m_pointShape = App::instance()->getToolBox()->getPointShapeById(
         tools::WellKnownPointShapes::Brush);

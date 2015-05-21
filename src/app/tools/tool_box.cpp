@@ -12,7 +12,6 @@
 #include "app/tools/tool_box.h"
 
 #include "app/gui_xml.h"
-#include "app/pref/preferences.h"
 #include "app/tools/controller.h"
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
@@ -80,50 +79,7 @@ const char* WellKnownPointShapes::Brush = "brush";
 const char* WellKnownPointShapes::FloodFill = "floodfill";
 const char* WellKnownPointShapes::Spray = "spray";
 
-// Observes changes in the freehand algorithm of each tool to adjust
-// the intertwiner and trace policy of each tool depending on the
-// selected value.
-class PreferencesGlue {
-public:
-  PreferencesGlue(ToolBox* toolBox) : m_toolBox(toolBox) {
-    for (Tool* tool : *m_toolBox)
-      Preferences::instance().tool(tool).freehandAlgorithm.AfterChange.connect(
-        Bind<void>(&PreferencesGlue::onFreehandAlgorithmChange, this, tool));
-  }
-
-private:
-  void onFreehandAlgorithmChange(Tool* tool) {
-    FreehandAlgorithm algorithm = Preferences::instance().tool(tool).freehandAlgorithm();
-
-    for (int i=0; i<2; ++i) {
-      if (tool->getTracePolicy(i) != TracePolicy::Accumulate &&
-          tool->getTracePolicy(i) != TracePolicy::AccumulateUpdateLast) {
-        continue;
-      }
-
-      switch (algorithm) {
-        case FreehandAlgorithm::DEFAULT:
-          tool->setIntertwine(i, m_toolBox->getIntertwinerById(WellKnownIntertwiners::AsLines));
-          tool->setTracePolicy(i, TracePolicy::Accumulate);
-          break;
-        case FreehandAlgorithm::PIXEL_PERFECT:
-          tool->setIntertwine(i, m_toolBox->getIntertwinerById(WellKnownIntertwiners::AsPixelPerfect));
-          tool->setTracePolicy(i, TracePolicy::AccumulateUpdateLast);
-          break;
-        case FreehandAlgorithm::DOTS:
-          tool->setIntertwine(i, m_toolBox->getIntertwinerById(WellKnownIntertwiners::None));
-          tool->setTracePolicy(i, TracePolicy::Accumulate);
-          break;
-      }
-    }
-  }
-
-private:
-  ToolBox* m_toolBox;
-};
-
 ToolBox::ToolBox()
-  : m_preferencesGlue(nullptr)
 {
   PRINTF("Toolbox module: installing\n");
 
@@ -167,8 +123,6 @@ ToolBox::ToolBox()
   m_intertwiners[WellKnownIntertwiners::AsPixelPerfect] = new IntertwineAsPixelPerfect();
 
   loadTools();
-
-  m_preferencesGlue.reset(new PreferencesGlue(this));
 
   PRINTF("Toolbox module: installed\n");
 }
