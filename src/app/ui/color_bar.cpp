@@ -404,13 +404,17 @@ void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPa
 
 void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText)
 {
-  if (!m_remap) {
-    m_remap.reset(new doc::Remap(remap));
-    m_remapButton.setVisible(true);
-    layout();
-  }
-  else {
-    m_remap->merge(remap);
+  doc::Site site = UIContext::instance()->activeSite();
+  if (site.sprite() &&
+      site.sprite()->pixelFormat() == IMAGE_INDEXED) {
+    if (!m_remap) {
+      m_remap.reset(new doc::Remap(remap));
+      m_remapButton.setVisible(true);
+      layout();
+    }
+    else {
+      m_remap->merge(remap);
+    }
   }
 
   setPalette(newPalette, actionText);
