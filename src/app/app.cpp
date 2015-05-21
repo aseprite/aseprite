@@ -84,6 +84,12 @@ class App::CoreModules {
 public:
   ConfigModule m_configModule;
   Preferences m_preferences;
+
+  CoreModules() {
+    // Reset the active tool ("pencil" is the default one).
+    // We don't want to keep the selected tool from previous session.
+    m_preferences.toolBox.activeTool(tools::WellKnownTools::Pencil);
+  }
 };
 
 class App::Modules {
