@@ -49,42 +49,136 @@ namespace app {
 using namespace ui;
 
 //////////////////////////////////////////////////////////////////////
-// For ToolLoopController
+// Common properties between drawing/preview ToolLoop impl
 
-class ToolLoopImpl : public tools::ToolLoop,
+class ToolLoopBase : public tools::ToolLoop,
                      public tools::ShadingOptions {
+
+protected:
   Editor* m_editor;
-  Context* m_context;
   tools::Tool* m_tool;
   BrushRef m_brush;
   Document* m_document;
   Sprite* m_sprite;
   Layer* m_layer;
   frame_t m_frame;
-  bool m_filled;
-  bool m_previewFilled;
-  int m_sprayWidth;
-  int m_spraySpeed;
   DocumentPreferences& m_docPref;
   ToolPreferences& m_toolPref;
-  bool m_useMask;
-  Mask* m_mask;
-  gfx::Point m_maskOrigin;
   int m_opacity;
   int m_tolerance;
   bool m_contiguous;
   gfx::Point m_offset;
   gfx::Point m_speed;
-  bool m_canceled;
   tools::ToolLoop::Button m_button;
   tools::Ink* m_ink;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
   doc::color_t m_secondaryColor;
+  gfx::Region m_dirtyArea;
+
+public:
+  ToolLoopBase(Editor* editor,
+               tools::Tool* tool,
+               tools::Ink* ink,
+               Document* document,
+               tools::ToolLoop::Button button,
+               const app::Color& fgColor,
+               const app::Color& bgColor)
+    : m_editor(editor)
+    , m_tool(tool)
+    , m_document(document)
+    , m_sprite(editor->sprite())
+    , m_layer(editor->layer())
+    , m_frame(editor->frame())
+    , m_docPref(Preferences::instance().document(m_document))
+    , m_toolPref(Preferences::instance().tool(m_tool))
+    , m_button(button)
+    , m_ink(ink)
+    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
+    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
+    , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
+    , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
+  {
+    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
+    m_opacity = m_toolPref.opacity();
+    m_tolerance = m_toolPref.tolerance();
+    m_contiguous = m_toolPref.contiguous();
+  }
+
+  // IToolLoop interface
+  tools::Tool* getTool() override { return m_tool; }
+  Brush* getBrush() override { return m_brush.get(); }
+  Document* getDocument() override { return m_document; }
+  Sprite* sprite() override { return m_sprite; }
+  Layer* getLayer() override { return m_layer; }
+  frame_t getFrame() override { return m_frame; }
+  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
+  const render::Zoom& zoom() override { return m_editor->zoom(); }
+  ToolLoop::Button getMouseButton() override { return m_button; }
+  doc::color_t getFgColor() override { return m_fgColor; }
+  doc::color_t getBgColor() override { return m_bgColor; }
+  doc::color_t getPrimaryColor() override { return m_primaryColor; }
+  void setPrimaryColor(doc::color_t color) override { m_primaryColor = color; }
+  doc::color_t getSecondaryColor() override { return m_secondaryColor; }
+  void setSecondaryColor(doc::color_t color) override { m_secondaryColor = color; }
+  int getOpacity() override { return m_opacity; }
+  int getTolerance() override { return m_tolerance; }
+  bool getContiguous() override { return m_contiguous; }
+  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
+  filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
+  bool getGridVisible() override { return m_docPref.grid.visible(); }
+  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
+  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
+  gfx::Point getOffset() override { return m_offset; }
+  void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
+  gfx::Point getSpeed() override { return m_speed; }
+  tools::Ink* getInk() override { return m_ink; }
+  tools::Controller* getController() override { return m_tool->getController(m_button); }
+  tools::PointShape* getPointShape() override { return m_tool->getPointShape(m_button); }
+  tools::Intertwine* getIntertwine() override { return m_tool->getIntertwine(m_button); }
+  tools::TracePolicy getTracePolicy() override { return m_tool->getTracePolicy(m_button); }
+  tools::ShadingOptions* getShadingOptions() override { return this; }
+
+  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
+    return m_editor->screenToEditor(screenPoint);
+  }
+
+  gfx::Region& getDirtyArea() override {
+    return m_dirtyArea;
+  }
+
+  void updateDirtyArea() override {
+    m_editor->hideDrawingCursor();
+    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
+    m_editor->showDrawingCursor();
+  }
+
+  void updateStatusBar(const char* text) override {
+    StatusBar::instance()->setStatusText(0, text);
+  }
+
+  // ShadingOptions implementation
+  tools::ShadeTable8* getShadeTable() override {
+    return nullptr;
+  }
+};
+
+//////////////////////////////////////////////////////////////////////
+// For drawing
+
+class ToolLoopImpl : public ToolLoopBase {
+  Context* m_context;
+  bool m_filled;
+  bool m_previewFilled;
+  int m_sprayWidth;
+  int m_spraySpeed;
+  bool m_useMask;
+  Mask* m_mask;
+  gfx::Point m_maskOrigin;
+  bool m_canceled;
   Transaction m_transaction;
   ExpandCelCanvas m_expandCelCanvas;
-  gfx::Region m_dirtyArea;
 
 public:
   ToolLoopImpl(Editor* editor,
@@ -95,22 +189,10 @@ public:
                tools::ToolLoop::Button button,
                const app::Color& fgColor,
                const app::Color& bgColor)
-    : m_editor(editor)
+    : ToolLoopBase(editor, tool, ink, document,
+                   button,fgColor, bgColor)
     , m_context(context)
-    , m_tool(tool)
-    , m_document(document)
-    , m_sprite(editor->sprite())
-    , m_layer(editor->layer())
-    , m_frame(editor->frame())
-    , m_docPref(Preferences::instance().document(m_document))
-    , m_toolPref(Preferences::instance().tool(m_tool))
     , m_canceled(false)
-    , m_button(button)
-    , m_ink(ink)
-    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
-    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
-    , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
-    , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
     , m_transaction(m_context,
                     m_tool->getText().c_str(),
                     ((getInk()->isSelection() ||
@@ -148,7 +230,6 @@ public:
     m_previewFilled = m_toolPref.filledPreview();
     m_sprayWidth = m_toolPref.spray.width();
     m_spraySpeed = m_toolPref.spray.speed();
-    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
 
     if (m_ink->isSelection())
       m_useMask = false;
@@ -170,12 +251,6 @@ public:
     m_maskOrigin = (!m_mask->isEmpty() ? gfx::Point(m_mask->bounds().x-x1,
                                                     m_mask->bounds().y-y1):
                                          gfx::Point(0, 0));
-
-    m_opacity = m_toolPref.opacity();
-    m_tolerance = m_toolPref.tolerance();
-    m_contiguous = m_toolPref.contiguous();
-    m_speed.x = 0;
-    m_speed.y = 0;
 
     m_offset.x = -x1;
     m_offset.y = -y1;
@@ -225,13 +300,6 @@ public:
       update_screen_for_document(m_document);
   }
 
-  tools::Tool* getTool() override { return m_tool; }
-  Brush* getBrush() override { return m_brush.get(); }
-  Document* getDocument() override { return m_document; }
-  Sprite* sprite() override { return m_sprite; }
-  Layer* getLayer() override { return m_layer; }
-  frame_t getFrame() override { return m_frame; }
-
   const Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
   void validateSrcImage(const gfx::Region& rgn) override {
@@ -250,68 +318,19 @@ public:
     return m_expandCelCanvas.copyValidDestToSourceCanvas(rgn);
   }
 
-  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
   bool useMask() override { return m_useMask; }
   Mask* getMask() override { return m_mask; }
   void setMask(Mask* newMask) override {
     m_transaction.execute(new cmd::SetMask(m_document, newMask));
   }
   gfx::Point getMaskOrigin() override { return m_maskOrigin; }
-  const render::Zoom& zoom() override { return m_editor->zoom(); }
-  ToolLoop::Button getMouseButton() override { return m_button; }
-  doc::color_t getFgColor() override { return m_fgColor; }
-  doc::color_t getBgColor() override { return m_bgColor; }
-  doc::color_t getPrimaryColor() override { return m_primaryColor; }
-  void setPrimaryColor(doc::color_t color) override { m_primaryColor = color; }
-  doc::color_t getSecondaryColor() override { return m_secondaryColor; }
-  void setSecondaryColor(doc::color_t color) override { m_secondaryColor = color; }
-  int getOpacity() override { return m_opacity; }
-  int getTolerance() override { return m_tolerance; }
-  bool getContiguous() override { return m_contiguous; }
-  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
-  filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
-  bool getGridVisible() override { return m_docPref.grid.visible(); }
-  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
-  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
   bool getFilled() override { return m_filled; }
   bool getPreviewFilled() override { return m_previewFilled; }
   int getSprayWidth() override { return m_sprayWidth; }
   int getSpraySpeed() override { return m_spraySpeed; }
-  gfx::Point getOffset() override { return m_offset; }
-  void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
-  gfx::Point getSpeed() override { return m_speed; }
-  tools::Ink* getInk() override { return m_ink; }
-  tools::Controller* getController() override { return m_tool->getController(m_button); }
-  tools::PointShape* getPointShape() override { return m_tool->getPointShape(m_button); }
-  tools::Intertwine* getIntertwine() override { return m_tool->getIntertwine(m_button); }
-  tools::TracePolicy getTracePolicy() override { return m_tool->getTracePolicy(m_button); }
-  tools::ShadingOptions* getShadingOptions() override { return this; }
 
   void cancel() override { m_canceled = true; }
   bool isCanceled() override { return m_canceled; }
-
-  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
-    return m_editor->screenToEditor(screenPoint);
-  }
-
-  gfx::Region& getDirtyArea() override {
-    return m_dirtyArea;
-  }
-
-  void updateDirtyArea() override {
-    m_editor->hideDrawingCursor();
-    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
-    m_editor->showDrawingCursor();
-  }
-
-  void updateStatusBar(const char* text) override {
-    StatusBar::instance()->setStatusText(0, text);
-  }
-
-  // ShadingOptions implementation
-  tools::ShadeTable8* getShadeTable() override {
-    return nullptr;
-  }
 
 };
 
@@ -378,29 +397,7 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
 //////////////////////////////////////////////////////////////////////
 // For preview
 
-class PreviewToolLoopImpl : public tools::ToolLoop,
-                            public tools::ShadingOptions {
-  Editor* m_editor;
-  tools::Tool* m_tool;
-  BrushRef m_brush;
-  Document* m_document;
-  Sprite* m_sprite;
-  Layer* m_layer;
-  frame_t m_frame;
-  DocumentPreferences& m_docPref;
-  ToolPreferences& m_toolPref;
-  int m_opacity;
-  int m_tolerance;
-  bool m_contiguous;
-  gfx::Point m_offset;
-  gfx::Point m_speed;
-  tools::ToolLoop::Button m_button;
-  tools::Ink* m_ink;
-  doc::color_t m_fgColor;
-  doc::color_t m_bgColor;
-  doc::color_t m_primaryColor;
-  doc::color_t m_secondaryColor;
-  gfx::Region m_dirtyArea;
+class PreviewToolLoopImpl : public ToolLoopBase {
   Image* m_image;
   tools::PointShape* m_pointShape;
 
@@ -415,29 +412,11 @@ public:
     const app::Color& bgColor,
     Image* image,
     const gfx::Point& offset)
-    : m_editor(editor)
-    , m_tool(tool)
-    , m_document(document)
-    , m_sprite(editor->sprite())
-    , m_layer(editor->layer())
-    , m_frame(editor->frame())
-    , m_docPref(Preferences::instance().document(m_document))
-    , m_toolPref(Preferences::instance().tool(m_tool))
-    , m_offset(offset)
-    , m_button(tools::ToolLoop::Left)
-    , m_ink(ink)
-    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
-    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
-    , m_primaryColor(m_fgColor)
-    , m_secondaryColor(m_bgColor)
+    : ToolLoopBase(editor, tool, ink, document,
+                   tools::ToolLoop::Left, fgColor, bgColor)
     , m_image(image)
   {
-    m_brush = App::instance()->getMainWindow()->getContextBar()->activeBrush();
-    m_opacity = m_toolPref.opacity();
-    m_tolerance = m_toolPref.tolerance();
-    m_contiguous = m_toolPref.contiguous();
-    m_speed.x = 0;
-    m_speed.y = 0;
+    m_offset = offset;
 
     // Avoid preview for spray and flood fill like tools
     m_pointShape = m_tool->getPointShape(m_button);
@@ -453,12 +432,6 @@ public:
 
   // IToolLoop interface
   void dispose() override { }
-  tools::Tool* getTool() override { return m_tool; }
-  Brush* getBrush() override { return m_brush.get(); }
-  Document* getDocument() override { return m_document; }
-  Sprite* sprite() override { return m_sprite; }
-  Layer* getLayer() override { return m_layer; }
-  frame_t getFrame() override { return m_frame; }
   const Image* getSrcImage() override { return m_image; }
   Image* getDstImage() override { return m_image; }
   void validateSrcImage(const gfx::Region& rgn) override { }
@@ -467,66 +440,17 @@ public:
   void invalidateDstImage(const gfx::Region& rgn) override { }
   void copyValidDstToSrcImage(const gfx::Region& rgn) override { }
 
-  RgbMap* getRgbMap() override { return m_sprite->rgbMap(m_frame); }
-  bool useMask() override { return false; // m_useMask;
-  }
-  Mask* getMask() override { return nullptr; // m_mask;
-  }
+  bool useMask() override { return false; }
+  Mask* getMask() override { return nullptr; }
   void setMask(Mask* newMask) override { }
-  gfx::Point getMaskOrigin() override { return gfx::Point(0, 0); // m_maskOrigin;
-  }
-  const render::Zoom& zoom() override { return m_editor->zoom(); }
-  ToolLoop::Button getMouseButton() override { return m_button; }
-  doc::color_t getFgColor() override { return m_fgColor; }
-  doc::color_t getBgColor() override { return m_bgColor; }
-  doc::color_t getPrimaryColor() override { return m_primaryColor; }
-  void setPrimaryColor(doc::color_t color) override { m_primaryColor = color; }
-  doc::color_t getSecondaryColor() override { return m_secondaryColor; }
-  void setSecondaryColor(doc::color_t color) override { m_secondaryColor = color; }
-  int getOpacity() override { return m_opacity; }
-  int getTolerance() override { return m_tolerance; }
-  bool getContiguous() override { return m_contiguous; }
-  tools::SelectionMode getSelectionMode() override { return m_editor->getSelectionMode(); }
-  filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
-  bool getGridVisible() override { return m_docPref.grid.visible(); }
-  bool getSnapToGrid() override { return m_docPref.grid.snap(); }
-  gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
+  gfx::Point getMaskOrigin() override { return gfx::Point(0, 0); }
   bool getFilled() override { return false; }
   bool getPreviewFilled() override { return false; }
   int getSprayWidth() override { return 0; }
   int getSpraySpeed() override { return 0; }
-  gfx::Point getOffset() override { return m_offset; }
-  void setSpeed(const gfx::Point& speed) override { m_speed = speed; }
-  gfx::Point getSpeed() override { return m_speed; }
-  tools::Ink* getInk() override { return m_ink; }
-  tools::Controller* getController() override { return m_tool->getController(m_button); }
-  tools::PointShape* getPointShape() override { return m_pointShape; }
-  tools::Intertwine* getIntertwine() override { return m_tool->getIntertwine(m_button); }
-  tools::TracePolicy getTracePolicy() override { return m_tool->getTracePolicy(m_button); }
-  tools::ShadingOptions* getShadingOptions() override { return this; }
 
   void cancel() override { }
   bool isCanceled() override { return true; }
-
-  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
-    return m_editor->screenToEditor(screenPoint);
-  }
-
-  gfx::Region& getDirtyArea() override {
-    return m_dirtyArea;
-  }
-
-  void updateDirtyArea() override {
-  }
-
-  void updateStatusBar(const char* text) override {
-    StatusBar::instance()->setStatusText(0, text);
-  }
-
-  // ShadingOptions implementation
-  tools::ShadeTable8* getShadeTable() override {
-    return nullptr;
-  }
 
 };
 
