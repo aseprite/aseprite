@@ -66,7 +66,7 @@ namespace app {
       m_value = newValue;
       m_dirty = true;
 
-      AfterChange(oldValue);
+      AfterChange(newValue);
       if (m_section)
         m_section->AfterChange();
 
