@@ -64,7 +64,7 @@ void ColorQuantizationCommand::onExecute(Context* context)
       int n = entries.picks();
 
       Palette palette(frame, n);
-      render::create_palette_from_rgb(sprite, frame, &palette);
+      render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(), &palette);
 
       Palette newPalette(*get_current_palette());
 

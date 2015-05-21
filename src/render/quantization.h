@@ -1,5 +1,5 @@
 // Aseprite Rener Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -43,7 +43,8 @@ namespace render {
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
   Palette* create_palette_from_rgb(
     const Sprite* sprite,
-    frame_t frameNumber,
+    frame_t fromFrame,
+    frame_t toFrame,
     Palette* newPalette);     // Can be NULL to create a new palette
 
   // Changes the image pixel format. The dithering method is used only

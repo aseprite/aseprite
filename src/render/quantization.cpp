@@ -43,43 +43,30 @@ static Image* ordered_dithering(
 
 Palette* create_palette_from_rgb(
   const Sprite* sprite,
-  frame_t frameNumber,
+  frame_t fromFrame,
+  frame_t toFrame,
   Palette* palette)
 {
+  PaletteOptimizer optimizer;
+
   if (!palette)
-    palette = new Palette(frame_t(0), Palette::MaxColors);
+    palette = new Palette(fromFrame, Palette::MaxColors);
 
-  bool has_background_layer = (sprite->backgroundLayer() != NULL);
-
-  ImagesCollector images(
-    sprite->folder(),           // All layers
-    frameNumber,                // Ignored, we'll use all frames
-    true,                       // All frames,
-    false);                     // forWrite=false, read only
+  bool has_background_layer = (sprite->backgroundLayer() != nullptr);
 
   // Add a flat image with the current sprite's frame rendered
-  ImageRef flat_image(Image::create(sprite->pixelFormat(),
+  ImageRef flat_image(Image::create(IMAGE_RGB,
       sprite->width(), sprite->height()));
 
-  render::Render().renderSprite(flat_image.get(), sprite, frameNumber);
-
-  // Create an array of images
-  std::vector<Image*> image_array;
-  std::map<ObjectId, Image*> used_images;
-
-  for (auto it=images.begin(); it!=images.end(); ++it) {
-    Image* image = it->image();
-    ObjectId imageId = image->id();
-
-    if (used_images.find(imageId) == used_images.end()) {
-      used_images.insert(std::make_pair(imageId, image));
-      image_array.push_back(image);
-    }
+  // Feed the optimizer with all rendered frames
+  render::Render render;
+  for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
+    render.renderSprite(flat_image.get(), sprite, frame);
+    optimizer.feedWithImage(flat_image.get());
   }
-  image_array.push_back(flat_image.get());
 
-  // Generate an optimized palette for all images
-  create_palette_from_images(image_array, palette, has_background_layer);
+  // Generate an optimized palette
+  optimizer.calculate(palette, has_background_layer);
 
   return palette;
 }

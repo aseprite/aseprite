@@ -706,18 +706,18 @@ void fop_post_load(FileOp* fop)
     return;
   }
 
-  if (fop->document->sprite() != NULL) {
+  Sprite* sprite = fop->document->sprite();
+  if (sprite) {
     // Creates a suitable palette for RGB images
-    if (fop->document->sprite()->pixelFormat() == IMAGE_RGB &&
-        fop->document->sprite()->getPalettes().size() <= 1 &&
-        fop->document->sprite()->palette(frame_t(0))->isBlack()) {
-      base::SharedPtr<Palette> palette
-        (render::create_palette_from_rgb(
-          fop->document->sprite(),
-          frame_t(0), NULL));
+    if (sprite->pixelFormat() == IMAGE_RGB &&
+        sprite->getPalettes().size() <= 1 &&
+        sprite->palette(frame_t(0))->isBlack()) {
+      base::SharedPtr<Palette> palette(
+        render::create_palette_from_rgb(
+          sprite, frame_t(0), sprite->lastFrame(), nullptr));
 
-      fop->document->sprite()->resetPalettes();
-      fop->document->sprite()->setPalette(palette.get(), false);
+      sprite->resetPalettes();
+      sprite->setPalette(palette.get(), false);
     }
   }
 
