@@ -285,7 +285,7 @@ public:
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrcATop_Mode);
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
     m_canvas->drawBitmapRectToRect(
       ((SkiaSurface*)src)->m_bitmap, &srcRect, dstRect, &paint);
