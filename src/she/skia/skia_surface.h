@@ -37,6 +37,7 @@ public:
   void create(int width, int height) {
     m_bitmap.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width, height));
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
     rebuild();
   }
@@ -44,6 +45,7 @@ public:
   void createRgba(int width, int height) {
     m_bitmap.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width, height));
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
     rebuild();
   }
@@ -95,10 +97,13 @@ public:
     result.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor));
 
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
     SkCanvas canvas(result);
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, m_bitmap.width(), m_bitmap.height()));
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, result.width(), result.height()));
-    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect);
+    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
 
     swapBitmap(result);
   }
