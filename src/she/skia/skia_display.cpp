@@ -10,10 +10,20 @@
 
 #include "she/skia/skia_display.h"
 
+#ifdef _WIN32
+  #include "she/win/event_queue.h"
+#else
+  #error Your platform does not have a EventQueue implementation
+#endif
+
 namespace she {
 
 SkiaDisplay::SkiaDisplay(int width, int height, int scale)
-  : m_window(&m_queue, this)
+  :
+#ifdef _WIN32
+  m_queue(new WinEventQueue)
+#endif
+  , m_window(m_queue, this)
   , m_surface(new SkiaSurface)
 {
   m_surface->create(width, height);
@@ -101,7 +111,7 @@ void SkiaDisplay::setTitleBar(const std::string& title)
 
 EventQueue* SkiaDisplay::getEventQueue()
 {
-  return &m_queue;
+  return m_queue;
 }
 
 bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)

@@ -135,7 +135,7 @@ public:
       event.setType(Event::None);
   }
 
-  void queueEvent(const Event& event) {
+  void queueEvent(const Event& event) override {
     m_events.push(event);
   }
 

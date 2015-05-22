@@ -4,8 +4,8 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#ifndef SHE_SKIA_SKIA_EVENT_QUEUE_INCLUDED
-#define SHE_SKIA_SKIA_EVENT_QUEUE_INCLUDED
+#ifndef SHE_WIN_EVENT_QUEUE_INCLUDED
+#define SHE_WIN_EVENT_QUEUE_INCLUDED
 #pragma once
 
 #include <queue>
@@ -17,9 +17,9 @@
 
 namespace she {
 
-class SkiaEventQueue : public EventQueue {
+class WinEventQueue : public EventQueue {
 public:
-  SkiaEventQueue() : m_stop(false) {
+  WinEventQueue() : m_stop(false) {
   }
 
   void getEvent(Event& ev, bool canWait) override {
@@ -52,7 +52,7 @@ public:
     }
   }
 
-  void queueEvent(Event& ev) {
+  void queueEvent(const Event& ev) override {
     if (ev.type() == Event::CloseDisplay)
       m_stop = true;
 

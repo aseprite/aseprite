@@ -10,11 +10,12 @@
 
 #include "she/skia/skia_window.h"
 
+#include "she/event_queue.h"
 #include "she/skia/skia_display.h"
 
 namespace she {
 
-SkiaWindow::SkiaWindow(SkiaEventQueue* queue, SkiaDisplay* display)
+SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display)
   : m_queue(queue)
   , m_display(display)
 {

@@ -16,6 +16,7 @@ namespace she {
   public:
     virtual ~EventQueue() { }
     virtual void getEvent(Event& ev, bool canWait) = 0;
+    virtual void queueEvent(const Event& ev) = 0;
   };
 
 } // namespace she

@@ -9,7 +9,6 @@
 #pragma once
 
 #include "she/display.h"
-#include "she/skia/skia_event_queue.h"
 #include "she/skia/skia_window.h"
 
 namespace she {
@@ -55,7 +54,7 @@ public:
   DisplayHandle nativeHandle() override;
 
 private:
-  SkiaEventQueue m_queue;
+  EventQueue* m_queue;
   SkiaWindow m_window;
   SkiaSurface* m_surface;
   bool m_recreated;

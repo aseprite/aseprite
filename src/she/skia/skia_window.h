@@ -14,22 +14,22 @@
   #error There is no Window implementation
 #endif
 
-#include "she/skia/skia_event_queue.h"
 #include "she/skia/skia_surface.h"
 
 namespace she {
 
+class EventQueue;
 class SkiaDisplay;
 
 class SkiaWindow : public Window<SkiaWindow> {
 public:
-  SkiaWindow(SkiaEventQueue* queue, SkiaDisplay* display);
+  SkiaWindow(EventQueue* queue, SkiaDisplay* display);
   void queueEventImpl(Event& ev);
   void paintImpl(HDC hdc);
   void resizeImpl(const gfx::Size& size);
 
 private:
-  SkiaEventQueue* m_queue;
+  EventQueue* m_queue;
   SkiaDisplay* m_display;
 };
 
