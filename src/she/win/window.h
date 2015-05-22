@@ -373,6 +373,7 @@ namespace she {
           break;
         }
 
+        case WM_SYSKEYDOWN:
         case WM_KEYDOWN: {
           int vk = wparam;
           int scancode = (lparam >> 16) & 0xff;
