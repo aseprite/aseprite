@@ -121,6 +121,7 @@ bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
 
 void SkiaDisplay::setMousePosition(const gfx::Point& position)
 {
+  m_window.setMousePosition(position);
 }
 
 void SkiaDisplay::captureMouse()

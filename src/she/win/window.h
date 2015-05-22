@@ -87,6 +87,13 @@ namespace she {
       m_captureMouse = false;
     }
 
+    void setMousePosition(const gfx::Point& position) {
+      POINT pos = { position.x * m_scale,
+                    position.y * m_scale };
+      ClientToScreen(m_hwnd, &pos);
+      SetCursorPos(pos.x, pos.y);
+    }
+
     void invalidate() {
       InvalidateRect(m_hwnd, NULL, FALSE);
     }
