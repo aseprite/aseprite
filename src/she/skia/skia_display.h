@@ -9,7 +9,12 @@
 #pragma once
 
 #include "she/display.h"
-#include "she/skia/skia_window.h"
+
+#ifdef _WIN32
+  #include "she/skia/skia_window_win.h"
+#else
+  #error There is no SkiaWindow implementation for your platform
+#endif
 
 namespace she {
 
@@ -17,7 +22,7 @@ class SkiaSurface;
 
 class SkiaDisplay : public Display {
 public:
-  SkiaDisplay(int width, int height, int scale);
+  SkiaDisplay(EventQueue* queue, int width, int height, int scale);
 
   void resize(const gfx::Size& size);
   void dispose() override;

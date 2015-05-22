@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/skia/skia_window.h"
+#include "she/skia/skia_window_win.h"
 
 #include "she/event_queue.h"
 #include "she/skia/skia_display.h"

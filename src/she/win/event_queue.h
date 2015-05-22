@@ -17,7 +17,7 @@
 
 namespace she {
 
-class WinEventQueue : public EventQueue {
+class EventQueueImpl : public EventQueue {
 public:
   void getEvent(Event& ev, bool canWait) override {
     MSG msg;

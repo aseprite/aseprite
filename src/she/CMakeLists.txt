@@ -87,11 +87,11 @@ if(USE_SKIA_BACKEND)
 
   list(APPEND SHE_SOURCES
     skia/skia_display.cpp
-    skia/skia_window.cpp
     skia/she.cpp)
 
   if(WIN32)
     list(APPEND SHE_SOURCES
+      skia/skia_window_win.cpp
       win/vk.cpp)
   endif()
 endif()
