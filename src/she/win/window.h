@@ -148,8 +148,9 @@ namespace she {
       m_hcursor = hcursor;
     }
 
-    void invalidate() {
+    void updateWindow() {
       InvalidateRect(m_hwnd, NULL, FALSE);
+      UpdateWindow(m_hwnd);
     }
 
     HWND handle() {

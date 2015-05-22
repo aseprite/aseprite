@@ -90,7 +90,7 @@ bool SkiaDisplay::flip()
     return false;
   }
 
-  m_window.invalidate();
+  m_window.updateWindow();
   return true;
 }
 
