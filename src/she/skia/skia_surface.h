@@ -8,12 +8,15 @@
 #define SHE_SKIA_SKIA_SURFACE_INCLUDED
 #pragma once
 
-#include "she/common/locked_surface.h"
-
 #include "base/unique_ptr.h"
+#include "gfx/clip.h"
+#include "she/common/font.h"
+#include "she/locked_surface.h"
+#include "she/scoped_surface_lock.h"
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "SkColorFilter.h"
 #include "SkColorPriv.h"
 #include "SkImageInfo.h"
 #include "SkRegion.h"
@@ -29,7 +32,7 @@ inline SkRect to_skia(const gfx::Rect& rc) {
 }
 
 class SkiaSurface : public NonDisposableSurface
-                  , public CommonLockedSurface {
+                  , public LockedSurface {
 public:
   SkiaSurface() {
   }
@@ -289,6 +292,52 @@ public:
 
     m_canvas->drawBitmapRectToRect(
       ((SkiaSurface*)src)->m_bitmap, &srcRect, dstRect, &paint);
+  }
+
+  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
+    gfx::Clip clip(clipbase);
+    if (!clip.clip(lockedWidth(), lockedHeight(), src->lockedWidth(), src->lockedHeight()))
+      return;
+
+    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(clip.src.x, clip.src.y, clip.size.w, clip.size.h));
+    SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+
+    if (gfx::geta(bg) > 0) {
+      SkPaint paint;
+      paint.setColor(to_skia(bg));
+      paint.setStyle(SkPaint::kFill_Style);
+      m_canvas->drawRect(dstRect, paint);
+    }
+
+    SkAutoTUnref<SkColorFilter> colorFilter(
+      SkColorFilter::CreateModeFilter(to_skia(fg), SkXfermode::kSrcIn_Mode));
+    paint.setColorFilter(colorFilter);
+
+    m_canvas->drawBitmapRectToRect(
+      ((SkiaSurface*)src)->m_bitmap,
+      &srcRect, dstRect, &paint);
+  }
+
+  void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
+    CommonFont* commonFont = static_cast<CommonFont*>(font);
+
+    gfx::Rect charBounds = commonFont->getCharBounds(chr);
+    if (!charBounds.isEmpty()) {
+      ScopedSurfaceLock lock(commonFont->getSurfaceSheet());
+      drawColoredRgbaSurface(lock, fg, bg, gfx::Clip(x, y, charBounds));
+    }
+  }
+
+  void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
+    base::utf8_const_iterator it(str.begin()), end(str.end());
+    while (it != end) {
+      drawChar(font, fg, bg, x, y, *it);
+      x += font->charWidth(*it);
+      ++it;
+    }
   }
 
   SkBitmap& bitmap() {
