@@ -19,16 +19,14 @@ namespace she {
 
 class WinEventQueue : public EventQueue {
 public:
-  WinEventQueue() : m_stop(false) {
-  }
-
   void getEvent(Event& ev, bool canWait) override {
     MSG msg;
 
-    while (!m_stop && m_events.empty()) {
+    while (m_events.empty()) {
       BOOL res;
 
       if (canWait) {
+        ASSERT(false);          // Not yet supported
         res = GetMessage(&msg, nullptr, 0, 0);
       }
       else {
@@ -53,15 +51,11 @@ public:
   }
 
   void queueEvent(const Event& ev) override {
-    if (ev.type() == Event::CloseDisplay)
-      m_stop = true;
-
     m_events.push(ev);
   }
 
 private:
   std::queue<Event> m_events;
-  bool m_stop;
 };
 
 } // namespace she
