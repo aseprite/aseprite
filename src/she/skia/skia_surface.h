@@ -215,7 +215,7 @@ public:
     paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x+w-1), SkIntToScalar(y), paint);
+      SkIntToScalar(x+w), SkIntToScalar(y), paint);
   }
 
   void drawVLine(gfx::Color color, int x, int y, int h) override {
@@ -223,7 +223,7 @@ public:
     paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x), SkIntToScalar(y+h-1), paint);
+      SkIntToScalar(x), SkIntToScalar(y+h), paint);
   }
 
   void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override {
