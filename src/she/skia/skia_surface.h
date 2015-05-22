@@ -258,6 +258,39 @@ public:
     ((SkiaSurface*)dest)->m_canvas->drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
   }
 
+  void scrollTo(const gfx::Rect& rc, int dx, int dy) override {
+    int w = m_bitmap.width();
+    int h = m_bitmap.height();
+    gfx::Clip clip(rc.x+dx, rc.y+dy, rc);
+    if (!clip.clip(w, h, w, h))
+      return;
+
+    int bytesPerPixel = m_bitmap.bytesPerPixel();
+    int rowBytes = (int)m_bitmap.rowBytes();
+    int rowDelta;
+
+    if (dy > 0) {
+      clip.src.y += clip.size.h-1;
+      clip.dst.y += clip.size.h-1;
+      rowDelta = -rowBytes;
+    }
+    else
+      rowDelta = rowBytes;
+
+    char* dst = (char*)m_bitmap.getPixels();
+    const char* src = dst;
+    dst += rowBytes*clip.dst.y + bytesPerPixel*clip.dst.x;
+    src += rowBytes*clip.src.y + bytesPerPixel*clip.src.x;
+    w = bytesPerPixel*clip.size.w;
+    h = clip.size.h;
+
+    while (--h >= 0) {
+      memmove(dst, src, w);
+      dst += rowDelta;
+      src += rowDelta;
+    }
+  }
+
   void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
     gfx::Clip clip(dstx, dsty, 0, 0,
       ((SkiaSurface*)src)->m_bitmap.width(),

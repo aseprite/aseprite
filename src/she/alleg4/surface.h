@@ -349,6 +349,13 @@ namespace she {
         width, height);
     }
 
+    void scrollTo(const gfx::Rect& rc, int dx, int dy) override {
+      blit(m_bmp, m_bmp,
+        rc.x, rc.y,
+        rc.x+dx, rc.y+dy,
+        rc.w, rc.h);
+    }
+
     void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
       draw_sprite(m_bmp, static_cast<const Alleg4Surface*>(src)->m_bmp, dstx, dsty);
     }

@@ -577,7 +577,7 @@ void Window::moveWindow(const gfx::Rect& rect, bool use_blit)
     {
       IntersectClip clip(&g, man_pos);
       if (clip) {
-        ui::move_region(moveableRegion, dx, dy);
+        ui::move_region(manager, moveableRegion, dx, dy);
       }
     }
     show_mouse_cursor();
