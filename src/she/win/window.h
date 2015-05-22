@@ -15,6 +15,7 @@
 #include "gfx/size.h"
 #include "she/event.h"
 #include "she/keys.h"
+#include "she/native_cursor.h"
 
 #ifndef WM_MOUSEHWHEEL
   #define WM_MOUSEHWHEEL 0x020E
@@ -32,6 +33,7 @@ namespace she {
     Window() {
       registerClass();
       m_hwnd = createHwnd(this);
+      m_hcursor = NULL;
       m_hasMouse = false;
       m_captureMouse = false;
       m_scale = 1;
@@ -94,6 +96,58 @@ namespace she {
       SetCursorPos(pos.x, pos.y);
     }
 
+    void setNativeMouseCursor(NativeCursor cursor) {
+      HCURSOR hcursor = NULL;
+
+      switch (cursor) {
+        case kNoCursor:
+          // Do nothing, just set to null
+          break;
+        case kArrowCursor:
+          hcursor = LoadCursor(NULL, IDC_ARROW);
+          break;
+        case kIBeamCursor:
+          hcursor = LoadCursor(NULL, IDC_IBEAM);
+          break;
+        case kWaitCursor:
+          hcursor = LoadCursor(NULL, IDC_WAIT);
+          break;
+        case kLinkCursor:
+          hcursor = LoadCursor(NULL, IDC_HAND);
+          break;
+        case kHelpCursor:
+          hcursor = LoadCursor(NULL, IDC_HELP);
+          break;
+        case kForbiddenCursor:
+          hcursor = LoadCursor(NULL, IDC_NO);
+          break;
+        case kMoveCursor:
+          hcursor = LoadCursor(NULL, IDC_SIZEALL);
+          break;
+        case kSizeNCursor:
+        case kSizeNSCursor:
+        case kSizeSCursor:
+          hcursor = LoadCursor(NULL, IDC_SIZENS);
+          break;
+        case kSizeECursor:
+        case kSizeWCursor:
+        case kSizeWECursor:
+          hcursor = LoadCursor(NULL, IDC_SIZEWE);
+          break;
+        case kSizeNWCursor:
+        case kSizeSECursor:
+          hcursor = LoadCursor(NULL, IDC_SIZENWSE);
+          break;
+        case kSizeNECursor:
+        case kSizeSWCursor:
+          hcursor = LoadCursor(NULL, IDC_SIZENESW);
+          break;
+      }
+
+      SetCursor(hcursor);
+      m_hcursor = hcursor;
+    }
+
     void invalidate() {
       InvalidateRect(m_hwnd, NULL, FALSE);
     }
@@ -105,6 +159,13 @@ namespace she {
   private:
     LRESULT wndProc(UINT msg, WPARAM wparam, LPARAM lparam) {
       switch (msg) {
+
+        case WM_SETCURSOR:
+          if (LOWORD(lparam) == HTCLIENT) {
+            SetCursor(m_hcursor);
+            return TRUE;
+          }
+          break;
 
         case WM_CLOSE: {
           Event ev;
@@ -400,7 +461,7 @@ namespace she {
       wcex.cbWndExtra    = 0;
       wcex.hInstance     = instance;
       wcex.hIcon         = nullptr;
-      wcex.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+      wcex.hCursor       = NULL;
       wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
       wcex.lpszMenuName  = nullptr;
       wcex.lpszClassName = SHE_WND_CLASS_NAME;
@@ -444,6 +505,7 @@ namespace she {
     }
 
     mutable HWND m_hwnd;
+    HCURSOR m_hcursor;
     gfx::Size m_clientSize;
     gfx::Size m_restoredSize;
     int m_scale;

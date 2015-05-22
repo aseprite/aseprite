@@ -116,6 +116,7 @@ EventQueue* SkiaDisplay::getEventQueue()
 
 bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
 {
+  m_window.setNativeMouseCursor(cursor);
   return true;
 }
 
