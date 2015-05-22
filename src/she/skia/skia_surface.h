@@ -242,6 +242,7 @@ public:
     SkPaint paint;
     paint.setColor(to_skia(color));
     paint.setStyle(SkPaint::kFill_Style);
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     m_canvas->drawRect(to_skia(rc), paint);
   }
 
