@@ -236,15 +236,13 @@ namespace she {
 
         case WM_MOUSEWHEEL:
         case WM_MOUSEHWHEEL: {
-          RECT rc;
-          ::GetWindowRect(m_hwnd, &rc);
+          POINT pos = { GET_X_LPARAM(lparam),
+                        GET_Y_LPARAM(lparam) };
+          ScreenToClient(m_hwnd, &pos);
 
           Event ev;
           ev.setType(Event::MouseWheel);
-          ev.setPosition((gfx::Point(
-                GET_X_LPARAM(lparam),
-                GET_Y_LPARAM(lparam)) - gfx::Point(rc.left, rc.top))
-            / m_scale);
+          ev.setPosition(gfx::Point(pos.x, pos.y) / m_scale);
 
           int z = ((short)HIWORD(wparam)) / WHEEL_DELTA;
           gfx::Point delta(
@@ -260,16 +258,13 @@ namespace she {
 
         case WM_HSCROLL:
         case WM_VSCROLL: {
-          RECT rc;
-          ::GetWindowRect(m_hwnd, &rc);
-
           POINT pos;
-          ::GetCursorPos(&pos);
+          GetCursorPos(&pos);
+          ScreenToClient(m_hwnd, &pos);
 
           Event ev;
           ev.setType(Event::MouseWheel);
-          ev.setPosition((gfx::Point(pos.x, pos.y) - gfx::Point(rc.left, rc.top))
-            / m_scale);
+          ev.setPosition(gfx::Point(pos.x, pos.y) / m_scale);
 
           int bar = (msg == WM_HSCROLL ? SB_HORZ: SB_VERT);
           int z = GetScrollPos(m_hwnd, bar);
