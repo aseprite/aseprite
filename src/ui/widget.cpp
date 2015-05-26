@@ -1068,7 +1068,7 @@ void Widget::scrollRegion(const Region& region, const Point& delta)
   reg2.offset(-delta);
 
   // Move screen pixels
-  ui::move_region(reg2, delta.x, delta.y);
+  ui::move_region(getManager(), reg2, delta.x, delta.y);
 
   reg2.offset(delta);
 

@@ -22,12 +22,8 @@ namespace ui {
 
 using namespace gfx;
 
-void move_region(const Region& region, int dx, int dy)
+void move_region(Manager* manager, const Region& region, int dx, int dy)
 {
-  ASSERT(Manager::getDefault());
-  if (!Manager::getDefault())
-    return;
-
   she::System* system = she::instance();
   she::Display* display = Manager::getDefault()->getDisplay();
   ASSERT(display);
@@ -40,7 +36,7 @@ void move_region(const Region& region, int dx, int dy)
   // Blit directly screen to screen.
   if (nrects == 1) {
     Rect rc = region[0];
-    lock->blitTo(lock, rc.x, rc.y, rc.x+dx, rc.y+dy, rc.w, rc.h);
+    lock->scrollTo(rc, dx, dy);
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {

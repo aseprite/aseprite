@@ -12,9 +12,11 @@
 
 namespace she {
 
-SkiaDisplay::SkiaDisplay(int width, int height, int scale)
-  : m_window(&m_queue, this)
+SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
+  : m_queue(queue)
+  , m_window(m_queue, this)
   , m_surface(new SkiaSurface)
+  , m_customSurface(false)
 {
   m_surface->create(width, height);
   m_window.setScale(scale);
@@ -22,8 +24,18 @@ SkiaDisplay::SkiaDisplay(int width, int height, int scale)
   m_recreated = false;
 }
 
+void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
+{
+  m_surface->dispose();
+  m_surface = surface;
+  m_customSurface = true;
+}
+
 void SkiaDisplay::resize(const gfx::Size& size)
 {
+  if (m_customSurface)
+    return;
+
   m_surface->dispose();
   m_surface = new SkiaSurface;
   m_surface->create(size.w, size.h);
@@ -80,7 +92,7 @@ bool SkiaDisplay::flip()
     return false;
   }
 
-  m_window.invalidate();
+  m_window.updateWindow();
   return true;
 }
 
@@ -101,16 +113,18 @@ void SkiaDisplay::setTitleBar(const std::string& title)
 
 EventQueue* SkiaDisplay::getEventQueue()
 {
-  return &m_queue;
+  return m_queue;
 }
 
 bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
 {
+  m_window.setNativeMouseCursor(cursor);
   return true;
 }
 
 void SkiaDisplay::setMousePosition(const gfx::Point& position)
 {
+  m_window.setMousePosition(position);
 }
 
 void SkiaDisplay::captureMouse()

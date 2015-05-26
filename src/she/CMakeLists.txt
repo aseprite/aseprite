@@ -19,9 +19,19 @@ if(USE_ALLEG4_BACKEND)
 endif()
 
 if(USE_SKIA_BACKEND)
-  set(SKIA_BUILD_DIR "" CACHE PATH "Skia build directory")
+  set(SKIA_DIR "" CACHE PATH "Skia source code directory")
 
-  add_definitions(-DSK_INTERNAL -DSK_GAMMA_SRGB -DSK_GAMMA_APPLY_TO_A8 -DSK_SCALAR_TO_FLOAT_EXCLUDED -DSK_ALLOW_STATIC_GLOBAL_INITIALIZERS=1 -DSK_SUPPORT_GPU=1 -DSK_SUPPORT_OPENCL=0 -DSK_FORCE_DISTANCE_FIELD_TEXT=0 -DGR_GL_FUNCTION_TYPE=__stdcall)
+  add_definitions(
+    -DSK_INTERNAL
+    -DSK_GAMMA_SRGB
+    -DSK_GAMMA_APPLY_TO_A8
+    -DSK_SCALAR_TO_FLOAT_EXCLUDED
+    -DSK_ALLOW_STATIC_GLOBAL_INITIALIZERS=1
+    -DSK_SUPPORT_GPU=1
+    -DSK_SUPPORT_OPENCL=0
+    -DSK_FORCE_DISTANCE_FIELD_TEXT=0
+    -DGR_GL_FUNCTION_TYPE=__stdcall)
+
   if(WIN32)
     add_definitions(-DSK_BUILD_FOR_WIN32)
   elseif(APPLE)
@@ -29,10 +39,10 @@ if(USE_SKIA_BACKEND)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(SKIA_BUILD_OUT_DIR "${SKIA_BUILD_DIR}/out/Debug")
+    set(SKIA_BUILD_OUT_DIR "${SKIA_DIR}/out/Debug")
     add_definitions(-DSK_DEVELOPER=1)
   else()
-    set(SKIA_BUILD_OUT_DIR "${SKIA_BUILD_DIR}/out/Release")
+    set(SKIA_BUILD_OUT_DIR "${SKIA_DIR}/out/Release")
   endif()
 
   find_library(SKIA_CORE_LIBRARY skia_core PATH "${SKIA_BUILD_OUT_DIR}")
@@ -46,34 +56,46 @@ if(USE_SKIA_BACKEND)
   find_library(SKIA_GPU_LIBRARY skia_skgpu PATH "${SKIA_BUILD_OUT_DIR}")
   find_library(SKIA_UTILS_LIBRARY skia_utils PATH "${SKIA_BUILD_OUT_DIR}")
 
+  set(SKIA_LIBEGL_LIBRARY "")
   if(WIN32)
-    find_library(ETC1_LIBRARY libetc1 PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
-    find_library(LIBSKKTX_LIBRARY libSkKTX PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
-    find_library(OPENGL32_LIBRARY opengl32)
+    find_library(SKIA_ETC1_LIBRARY libetc1 PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
+    find_library(SKIA_LIBSKKTX_LIBRARY libSkKTX PATH "${SKIA_BUILD_OUT_DIR}/obj/gyp")
+    find_library(SKIA_OPENGL32_LIBRARY opengl32)
+    find_library(SKIA_LIBEGL_LIBRARY libEGL.dll.lib PATH "${SKIA_BUILD_OUT_DIR}")
+    if(SKIA_LIBEGL_LIBRARY)
+      add_definitions(-DSK_ANGLE=1)
+    endif()
   else()
-    set(ETC1_LIBRARY)
-    set(LIBSKKTX_LIBRARY)
-    # find_library(OPENGL32_LIBRARY glapi)
-    set(OPENGL32_LIBRARY)
+    set(SKIA_ETC1_LIBRARY)
+    set(SKIA_LIBSKKTX_LIBRARY)
+    # find_library(SKIA_OPENGL32_LIBRARY glapi)
+    set(SKIA_OPENGL32_LIBRARY)
   endif()
 
-  find_path(SKIA_CONFIG_INCLUDE_DIR SkUserConfig.h HINTS "${SKIA_BUILD_DIR}/include/config")
-  find_path(SKIA_CORE_INCLUDE_DIR SkCanvas.h HINTS "${SKIA_BUILD_DIR}/include/core")
-  find_path(SKIA_EFFECTS_INCLUDE_DIR SkBitmapSource.h HINTS "${SKIA_BUILD_DIR}/include/effects")
-  find_path(SKIA_GPU_INCLUDE_DIR SkGr.h HINTS "${SKIA_BUILD_DIR}/include/gpu")
-  find_path(SKIA_UTILS_INCLUDE_DIR SkRandom.h HINTS "${SKIA_BUILD_DIR}/include/utils")
+  find_path(SKIA_CONFIG_INCLUDE_DIR SkUserConfig.h HINTS "${SKIA_DIR}/include/config")
+  find_path(SKIA_CORE_INCLUDE_DIR SkCanvas.h HINTS "${SKIA_DIR}/include/core")
+  find_path(SKIA_EFFECTS_INCLUDE_DIR SkBitmapSource.h HINTS "${SKIA_DIR}/include/effects")
+  find_path(SKIA_GPU_INCLUDE_DIR SkGr.h HINTS "${SKIA_DIR}/include/gpu")
+  find_path(SKIA_UTILS_INCLUDE_DIR SkRandom.h HINTS "${SKIA_DIR}/include/utils")
+
+  set(SKIA_ANGLE_INCLUDE_DIR "")
+  if(WIN32)
+    find_path(SKIA_ANGLE_INCLUDE_DIR angle_gl.h HINTS "${SKIA_DIR}/third_party/externals/angle2/include")
+  endif()
 
   include_directories(
     ${SKIA_CONFIG_INCLUDE_DIR}
     ${SKIA_CORE_INCLUDE_DIR}
     ${SKIA_GPU_INCLUDE_DIR}
     ${SKIA_PORTS_INCLUDE_DIR}
-    ${SKIA_UTILS_INCLUDE_DIR})
+    ${SKIA_UTILS_INCLUDE_DIR}
+    ${SKIA_ANGLE_INCLUDE_DIR})
 
   set(SKIA_LIBRARIES
-    ${ETC1_LIBRARY}
-    ${LIBSKKTX_LIBRARY}
-    ${OPENGL32_LIBRARY}
+    ${SKIA_ETC1_LIBRARY}
+    ${SKIA_LIBSKKTX_LIBRARY}
+    ${SKIA_OPENGL32_LIBRARY}
+    ${SKIA_LIBEGL_LIBRARY}
     ${SKIA_CORE_LIBRARY}
     ${SKIA_EFFECTS_LIBRARY}
     ${SKIA_GPU_LIBRARY}
@@ -87,11 +109,11 @@ if(USE_SKIA_BACKEND)
 
   list(APPEND SHE_SOURCES
     skia/skia_display.cpp
-    skia/skia_window.cpp
     skia/she.cpp)
 
   if(WIN32)
     list(APPEND SHE_SOURCES
+      skia/skia_window_win.cpp
       win/vk.cpp)
   endif()
 endif()

@@ -17,6 +17,12 @@
 #include "she/skia/skia_display.h"
 #include "she/skia/skia_surface.h"
 
+#ifdef _WIN32
+  #include "she/win/event_queue.h"
+#else
+  #error There is no EventQueue implementation for your platform
+#endif
+
 namespace she {
 
 class SkiaSystem : public CommonSystem {
@@ -44,7 +50,7 @@ public:
   }
 
   Display* createDisplay(int width, int height, int scale) override {
-    SkiaDisplay* display = new SkiaDisplay(width, height, scale);
+    SkiaDisplay* display = new SkiaDisplay(&m_queue, width, height, scale);
     if (!m_defaultDisplay)
       m_defaultDisplay = display;
     return display;
@@ -67,8 +73,6 @@ public:
     SkAutoTDelete<SkStreamAsset> stream(SkNEW_ARGS(SkFILEStream, (fp.get(), SkFILEStream::kCallerRetains_Ownership)));
 
     SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(stream));
-    // decoder->setRequireUnpremultipliedColors(true);
-
     if (decoder) {
       stream->rewind();
       SkBitmap bm;
@@ -92,6 +96,7 @@ public:
 
 private:
   SkiaDisplay* m_defaultDisplay;
+  EventQueueImpl m_queue;
 };
 
 } // namespace she

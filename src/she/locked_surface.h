@@ -44,6 +44,7 @@ namespace she {
     virtual void fillRect(gfx::Color color, const gfx::Rect& rc) = 0;
 
     virtual void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const = 0;
+    virtual void scrollTo(const gfx::Rect& rc, int dx, int dy) = 0;
     virtual void drawSurface(const LockedSurface* src, int dstx, int dsty) = 0;
     virtual void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) = 0;
     virtual void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clip) = 0;

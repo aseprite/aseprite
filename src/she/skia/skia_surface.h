@@ -8,15 +8,18 @@
 #define SHE_SKIA_SKIA_SURFACE_INCLUDED
 #pragma once
 
-#include "she/common/locked_surface.h"
-
-#include "base/unique_ptr.h"
+#include "gfx/clip.h"
+#include "she/common/font.h"
+#include "she/locked_surface.h"
+#include "she/scoped_surface_lock.h"
 
 #include "SkBitmap.h"
 #include "SkCanvas.h"
+#include "SkColorFilter.h"
 #include "SkColorPriv.h"
 #include "SkImageInfo.h"
 #include "SkRegion.h"
+#include "SkSurface.h"
 
 namespace she {
 
@@ -29,23 +32,47 @@ inline SkRect to_skia(const gfx::Rect& rc) {
 }
 
 class SkiaSurface : public NonDisposableSurface
-                  , public CommonLockedSurface {
+                  , public LockedSurface {
 public:
-  SkiaSurface() {
+  SkiaSurface() : m_surface(nullptr)
+                , m_canvas(nullptr) {
+  }
+
+  SkiaSurface(SkSurface* surface)
+    : m_surface(surface)
+    , m_canvas(m_surface->getCanvas())
+    , m_clip(0, 0, width(), height())
+  {
+  }
+
+  ~SkiaSurface() {
+    if (!m_surface)
+      delete m_canvas;
   }
 
   void create(int width, int height) {
+    ASSERT(!m_surface);
+
     m_bitmap.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width, height));
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
     rebuild();
   }
 
   void createRgba(int width, int height) {
+    ASSERT(!m_surface);
+
     m_bitmap.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width, height));
+    m_bitmap.eraseColor(SK_ColorTRANSPARENT);
 
     rebuild();
+  }
+
+  void flush() {
+    if (m_canvas)
+      m_canvas->flush();
   }
 
   // Surface impl
@@ -55,11 +82,17 @@ public:
   }
 
   int width() const override {
-    return m_bitmap.width();
+    if (m_surface)
+      return m_surface->width();
+    else
+      return m_bitmap.width();
   }
 
   int height() const override {
-    return m_bitmap.height();
+    if (m_surface)
+      return m_surface->height();
+    else
+      return m_bitmap.height();
   }
 
   bool isDirectToScreen() const override {
@@ -91,14 +124,19 @@ public:
   }
 
   void applyScale(int scaleFactor) override {
+    ASSERT(!m_surface);
+
     SkBitmap result;
     result.tryAllocPixels(
       SkImageInfo::MakeN32Premul(width()*scaleFactor, height()*scaleFactor));
 
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
     SkCanvas canvas(result);
-    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, m_bitmap.width(), m_bitmap.height()));
+    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, width(), height()));
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, result.width(), result.height()));
-    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect);
+    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
 
     swapBitmap(result);
   }
@@ -110,11 +148,11 @@ public:
   // LockedSurface impl
 
   int lockedWidth() const override {
-    return m_bitmap.width();
+    return width();
   }
 
   int lockedHeight() const override {
-    return m_bitmap.height();
+    return height();
   }
 
   void unlock() override {
@@ -122,6 +160,7 @@ public:
   }
 
   void clear() override {
+    // TODO
   }
 
   uint8_t* getData(int x, int y) const override {
@@ -188,7 +227,19 @@ public:
   }
 
   gfx::Color getPixel(int x, int y) const override {
-    SkColor c = m_bitmap.getColor(x, y);
+    SkColor c = 0;
+
+    if (m_surface) {
+      // m_canvas->flush();
+
+      SkImageInfo dstInfo = SkImageInfo::MakeN32Premul(1, 1);
+      uint32_t dstPixels;
+      if (m_canvas->readPixels(dstInfo, &dstPixels, 4, x, y))
+        c = dstPixels;
+    }
+    else
+      c = m_bitmap.getColor(x, y);
+
     return gfx::rgba(
       SkColorGetR(c),
       SkColorGetG(c),
@@ -207,7 +258,7 @@ public:
     paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x+w-1), SkIntToScalar(y), paint);
+      SkIntToScalar(x+w), SkIntToScalar(y), paint);
   }
 
   void drawVLine(gfx::Color color, int x, int y, int h) override {
@@ -215,7 +266,7 @@ public:
     paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x), SkIntToScalar(y+h-1), paint);
+      SkIntToScalar(x), SkIntToScalar(y+h), paint);
   }
 
   void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override {
@@ -237,24 +288,73 @@ public:
     SkPaint paint;
     paint.setColor(to_skia(color));
     paint.setStyle(SkPaint::kFill_Style);
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
     m_canvas->drawRect(to_skia(rc), paint);
   }
 
   void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
-    SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    if (m_surface) {
+      // m_canvas->flush();
 
-    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(srcx, srcy, width, height));
-    SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(dstx, dsty, width, height));
-    ((SkiaSurface*)dest)->m_canvas->drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
+      SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+      std::vector<uint32_t> pixels(width * height * 4);
+      m_canvas->readPixels(info, (void*)&pixels[0], 4*width, srcx, srcy);
+      ((SkiaSurface*)dest)->m_canvas->writePixels(info, (void*)&pixels[0], 4*width, dstx, dsty);
+    }
+    else {
+      SkPaint paint;
+      paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+
+      SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(srcx, srcy, width, height));
+      SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(dstx, dsty, width, height));
+      ((SkiaSurface*)dest)->m_canvas->drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
+    }
+  }
+
+  void scrollTo(const gfx::Rect& rc, int dx, int dy) override {
+    int w = width();
+    int h = height();
+    gfx::Clip clip(rc.x+dx, rc.y+dy, rc);
+    if (!clip.clip(w, h, w, h))
+      return;
+
+    if (m_surface) {
+      blitTo(this, clip.src.x, clip.src.y, clip.dst.x, clip.dst.y, clip.size.w, clip.size.h);
+      return;
+    }
+
+    int bytesPerPixel = m_bitmap.bytesPerPixel();
+    int rowBytes = (int)m_bitmap.rowBytes();
+    int rowDelta;
+
+    if (dy > 0) {
+      clip.src.y += clip.size.h-1;
+      clip.dst.y += clip.size.h-1;
+      rowDelta = -rowBytes;
+    }
+    else
+      rowDelta = rowBytes;
+
+    char* dst = (char*)m_bitmap.getPixels();
+    const char* src = dst;
+    dst += rowBytes*clip.dst.y + bytesPerPixel*clip.dst.x;
+    src += rowBytes*clip.src.y + bytesPerPixel*clip.src.x;
+    w = bytesPerPixel*clip.size.w;
+    h = clip.size.h;
+
+    while (--h >= 0) {
+      memmove(dst, src, w);
+      dst += rowDelta;
+      src += rowDelta;
+    }
   }
 
   void drawSurface(const LockedSurface* src, int dstx, int dsty) override {
     gfx::Clip clip(dstx, dsty, 0, 0,
-      ((SkiaSurface*)src)->m_bitmap.width(),
-      ((SkiaSurface*)src)->m_bitmap.height());
+      ((SkiaSurface*)src)->width(),
+      ((SkiaSurface*)src)->height());
 
-    if (!clip.clip(m_bitmap.width(), m_bitmap.height(), clip.size.w, clip.size.h))
+    if (!clip.clip(width(), height(), clip.size.w, clip.size.h))
       return;
 
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(clip.src.x, clip.src.y, clip.size.w, clip.size.h));
@@ -269,20 +369,66 @@ public:
 
   void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
     gfx::Clip clip(dstx, dsty, 0, 0,
-      ((SkiaSurface*)src)->m_bitmap.width(),
-      ((SkiaSurface*)src)->m_bitmap.height());
+      ((SkiaSurface*)src)->width(),
+      ((SkiaSurface*)src)->height());
 
-    if (!clip.clip(m_bitmap.width(), m_bitmap.height(), clip.size.w, clip.size.h))
+    if (!clip.clip(width(), height(), clip.size.w, clip.size.h))
       return;
 
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(clip.src.x, clip.src.y, clip.size.w, clip.size.h));
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
 
     SkPaint paint;
-    paint.setXfermodeMode(SkXfermode::kSrcATop_Mode);
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
     m_canvas->drawBitmapRectToRect(
       ((SkiaSurface*)src)->m_bitmap, &srcRect, dstRect, &paint);
+  }
+
+  void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
+    gfx::Clip clip(clipbase);
+    if (!clip.clip(lockedWidth(), lockedHeight(), src->lockedWidth(), src->lockedHeight()))
+      return;
+
+    SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(clip.src.x, clip.src.y, clip.size.w, clip.size.h));
+    SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(clip.dst.x, clip.dst.y, clip.size.w, clip.size.h));
+
+    SkPaint paint;
+    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+
+    if (gfx::geta(bg) > 0) {
+      SkPaint paint;
+      paint.setColor(to_skia(bg));
+      paint.setStyle(SkPaint::kFill_Style);
+      m_canvas->drawRect(dstRect, paint);
+    }
+
+    SkAutoTUnref<SkColorFilter> colorFilter(
+      SkColorFilter::CreateModeFilter(to_skia(fg), SkXfermode::kSrcIn_Mode));
+    paint.setColorFilter(colorFilter);
+
+    m_canvas->drawBitmapRectToRect(
+      ((SkiaSurface*)src)->m_bitmap,
+      &srcRect, dstRect, &paint);
+  }
+
+  void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {
+    CommonFont* commonFont = static_cast<CommonFont*>(font);
+
+    gfx::Rect charBounds = commonFont->getCharBounds(chr);
+    if (!charBounds.isEmpty()) {
+      ScopedSurfaceLock lock(commonFont->getSurfaceSheet());
+      drawColoredRgbaSurface(lock, fg, bg, gfx::Clip(x, y, charBounds));
+    }
+  }
+
+  void drawString(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, const std::string& str) override {
+    base::utf8_const_iterator it(str.begin()), end(str.end());
+    while (it != end) {
+      drawChar(font, fg, bg, x, y, *it);
+      x += font->charWidth(*it);
+      ++it;
+    }
   }
 
   SkBitmap& bitmap() {
@@ -290,18 +436,24 @@ public:
   }
 
   void swapBitmap(SkBitmap& other) {
+    ASSERT(!m_surface);
+
     m_bitmap.swap(other);
     rebuild();
   }
 
 private:
   void rebuild() {
-    m_canvas.reset(new SkCanvas(m_bitmap));
+    ASSERT(!m_surface);
+
+    delete m_canvas;
+    m_canvas = new SkCanvas(m_bitmap);
     m_clip = gfx::Rect(0, 0, width(), height());
   }
 
   SkBitmap m_bitmap;
-  base::UniquePtr<SkCanvas> m_canvas;
+  SkSurface* m_surface;
+  SkCanvas* m_canvas;
   gfx::Rect m_clip;
 };
 

@@ -14,6 +14,8 @@
 #include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 
+#include <vector>
+
 namespace she {
 
 class CommonFont : public Font {
