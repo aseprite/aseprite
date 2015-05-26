@@ -24,6 +24,8 @@ class SkiaDisplay : public Display {
 public:
   SkiaDisplay(EventQueue* queue, int width, int height, int scale);
 
+  void setSkiaSurface(SkiaSurface* surface);
+
   void resize(const gfx::Size& size);
   void dispose() override;
 
@@ -63,6 +65,7 @@ private:
   SkiaWindow m_window;
   SkiaSurface* m_surface;
   bool m_recreated;
+  bool m_customSurface;
 };
 
 } // namespace she

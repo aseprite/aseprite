@@ -16,6 +16,7 @@ SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
   : m_queue(queue)
   , m_window(m_queue, this)
   , m_surface(new SkiaSurface)
+  , m_customSurface(false)
 {
   m_surface->create(width, height);
   m_window.setScale(scale);
@@ -23,8 +24,18 @@ SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
   m_recreated = false;
 }
 
+void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
+{
+  m_surface->dispose();
+  m_surface = surface;
+  m_customSurface = true;
+}
+
 void SkiaDisplay::resize(const gfx::Size& size)
 {
+  if (m_customSurface)
+    return;
+
   m_surface->dispose();
   m_surface = new SkiaSurface;
   m_surface->create(size.w, size.h);
