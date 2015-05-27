@@ -144,6 +144,7 @@
       <option id="opacity_base" type="int" default="68" migrate="Onionskin.OpacityBase" />
       <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
       <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
+      <option id="loop_tag" type="bool" default="true" />
     </section>
     <section id="sprite_sheet">
       <option id="type" type="SpriteSheetType" default="SpriteSheetType::NONE" />

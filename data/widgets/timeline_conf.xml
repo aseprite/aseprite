@@ -15,6 +15,8 @@
 
     <label text="Opacity Step:" />
     <slider min="0" max="255" id="opacity_step" cell_align="horizontal" width="128" />
+
+    <check id="loop_tag" text="Loop through tag frames" cell_hspan="2" />
   </grid>
 </vbox>
 </gui>

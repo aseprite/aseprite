@@ -11,6 +11,7 @@
 #include "render/render.h"
 
 #include "doc/doc.h"
+#include "doc/handle_anidir.h"
 #include "gfx/clip.h"
 #include "gfx/region.h"
 
@@ -504,14 +505,35 @@ void Render::renderSprite(
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
   if (m_onionskin.type() != OnionskinType::NONE) {
-    for (frame_t f = frame - m_onionskin.prevFrames();
-         f <= frame + m_onionskin.nextFrames(); ++f) {
-      if (f == frame || f < 0 || f > m_sprite->lastFrame())
+    FrameTag* loop = m_onionskin.loopTag();
+    frame_t frameIn;
+
+    for (frame_t frameOut = frame - m_onionskin.prevFrames();
+         frameOut <= frame + m_onionskin.nextFrames();
+         ++frameOut) {
+      if (loop) {
+        bool pingPongForward = true;
+        frameIn =
+          calculate_next_frame(m_sprite,
+                               frame, frameOut - frame,
+                               loop, pingPongForward);
+      }
+      else {
+        frameIn = frameOut;
+      }
+
+      if (frameIn == frame ||
+          frameIn < 0 ||
+          frameIn > m_sprite->lastFrame()) {
         continue;
-      else if (f < frame)
-        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frame - f)-1);
-      else
-        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((f - frame)-1);
+      }
+
+      if (frameOut < frame) {
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frame - frameOut)-1);
+      }
+      else {
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frameOut - frame)-1);
+      }
 
       if (m_globalOpacity > 0) {
         m_globalOpacity = MID(0, m_globalOpacity, 255);
@@ -520,10 +542,10 @@ void Render::renderSprite(
         if (m_onionskin.type() == OnionskinType::MERGE)
           blend_mode = BLEND_MODE_NORMAL;
         else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
-          blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
+          blend_mode = (frameOut < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
         renderLayer(m_sprite->folder(), dstImage,
-          area, f, zoom, scaled_func,
+          area, frameIn, zoom, scaled_func,
           true, true, blend_mode);
       }
     }

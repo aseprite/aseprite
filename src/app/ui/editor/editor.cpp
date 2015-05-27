@@ -446,6 +446,11 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         opts.opacityBase(docPref.onionskin.opacityBase());
         opts.opacityBase(docPref.onionskin.opacityStep());
 
+        FrameTag* tag = nullptr;
+        if (docPref.onionskin.loopTag())
+          tag = m_sprite->frameTags().innerTag(m_frame);
+        opts.loopTag(tag);
+
         m_renderEngine.setOnionskin(opts);
       }
     }
