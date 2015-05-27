@@ -13,7 +13,7 @@
 #ifdef _WIN32
   #define FSTREAM_PATH(path) (base::from_utf8(path).c_str())
 #else
-  #define FSTREAM_PATH(path) ((path).c_str())
+  #define FSTREAM_PATH(path) (std::string(path).c_str())
 #endif
 
 #endif
