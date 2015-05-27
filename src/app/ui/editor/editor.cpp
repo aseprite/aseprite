@@ -427,23 +427,26 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     // Create a temporary RGB bitmap to draw all to it
     rendered.reset(Image::create(IMAGE_RGB, rc.w, rc.h, m_renderBuffer));
     m_renderEngine.setupBackground(m_document, rendered->pixelFormat());
-    m_renderEngine.setOnionskin(render::OnionskinType::NONE, 0, 0, 0, 0);
+    m_renderEngine.disableOnionskin();
 
     if ((m_flags & kShowOnionskin) == kShowOnionskin) {
       DocumentPreferences& docPref = Preferences::instance()
         .document(m_document);
 
       if (docPref.onionskin.active()) {
-        m_renderEngine.setOnionskin(
+        OnionskinOptions opts(
           (docPref.onionskin.type() == app::gen::OnionskinType::MERGE ?
-            render::OnionskinType::MERGE:
-            (docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
-              render::OnionskinType::RED_BLUE_TINT:
-              render::OnionskinType::NONE)),
-          docPref.onionskin.prevFrames(),
-          docPref.onionskin.nextFrames(),
-          docPref.onionskin.opacityBase(),
-          docPref.onionskin.opacityStep());
+           render::OnionskinType::MERGE:
+           (docPref.onionskin.type() == app::gen::OnionskinType::RED_BLUE_TINT ?
+            render::OnionskinType::RED_BLUE_TINT:
+            render::OnionskinType::NONE)));
+
+        opts.prevFrames(docPref.onionskin.prevFrames());
+        opts.nextFrames(docPref.onionskin.nextFrames());
+        opts.opacityBase(docPref.onionskin.opacityBase());
+        opts.opacityBase(docPref.onionskin.opacityStep());
+
+        m_renderEngine.setOnionskin(opts);
       }
     }
 

@@ -328,7 +328,7 @@ Render::Render()
   , m_bgType(BgType::TRANSPARENT)
   , m_bgCheckedSize(16, 16)
   , m_globalOpacity(255)
-  , m_onionskinType(OnionskinType::NONE)
+  , m_onionskin(OnionskinType::NONE)
 {
 }
 
@@ -389,18 +389,14 @@ void Render::removeExtraImage()
   m_extraCel = NULL;
 }
 
-void Render::setOnionskin(OnionskinType type, int prevs, int nexts, int opacityBase, int opacityStep)
+void Render::setOnionskin(const OnionskinOptions& options)
 {
-  m_onionskinType = type;
-  m_onionskinPrevs = prevs;
-  m_onionskinNexts = nexts;
-  m_onionskinOpacityBase = opacityBase;
-  m_onionskinOpacityStep = opacityStep;
+  m_onionskin = options;
 }
 
 void Render::disableOnionskin()
 {
-  m_onionskinType = OnionskinType::NONE;
+  m_onionskin.type(OnionskinType::NONE);
 }
 
 void Render::renderSprite(
@@ -507,23 +503,23 @@ void Render::renderSprite(
 
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
-  if (m_onionskinType != OnionskinType::NONE) {
-    for (frame_t f = frame - m_onionskinPrevs;
-         f <= frame + m_onionskinNexts; ++f) {
+  if (m_onionskin.type() != OnionskinType::NONE) {
+    for (frame_t f = frame - m_onionskin.prevFrames();
+         f <= frame + m_onionskin.nextFrames(); ++f) {
       if (f == frame || f < 0 || f > m_sprite->lastFrame())
         continue;
       else if (f < frame)
-        m_globalOpacity = m_onionskinOpacityBase - m_onionskinOpacityStep * ((frame - f)-1);
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frame - f)-1);
       else
-        m_globalOpacity = m_onionskinOpacityBase - m_onionskinOpacityStep * ((f - frame)-1);
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((f - frame)-1);
 
       if (m_globalOpacity > 0) {
         m_globalOpacity = MID(0, m_globalOpacity, 255);
 
         int blend_mode = -1;
-        if (m_onionskinType == OnionskinType::MERGE)
+        if (m_onionskin.type() == OnionskinType::MERGE)
           blend_mode = BLEND_MODE_NORMAL;
-        else if (m_onionskinType == OnionskinType::RED_BLUE_TINT)
+        else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
           blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
         renderLayer(m_sprite->folder(), dstImage,
