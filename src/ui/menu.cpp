@@ -368,9 +368,7 @@ bool MenuBox::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseMoveMessage:
-      // Isn't pressing a button?
-      if (static_cast<MouseMessage*>(msg)->buttons() == kButtonNone &&
-          !get_base(this)->was_clicked)
+      if (!get_base(this)->was_clicked)
         break;
 
       // Fall through
@@ -434,8 +432,13 @@ bool MenuBox::onProcessMessage(Message* msg)
               // If the submenu is closed, open it
               if (!pickedItem->hasSubmenuOpened())
                 pickedItem->openSubmenu(false);
-              else if (pickedItem->inBar())
+              else if (pickedItem->inBar()) {
                 pickedItem->getSubmenu()->closeAll();
+
+                // Set this flag to false so the submenu is not open
+                // again on kMouseMoveMessage.
+                get_base(this)->was_clicked = false;
+              }
             }
           }
           else if (!get_base(this)->was_clicked) {
