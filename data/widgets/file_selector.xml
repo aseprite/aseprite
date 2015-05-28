@@ -13,10 +13,10 @@
     </box>
     <view id="fileview_container" expansive="true"></view>
     <grid columns="2">
-      <label text="Name:" />
+      <label text="File name:" />
       <filenameentry id="filename" cell_align="horizontal" magnet="true" />
 
-      <label text="Type:" />
+      <label text="File type:" />
       <hbox cell_align="horizontal">
         <combobox id="filetype" minwidth="70" />
         <boxfiller />

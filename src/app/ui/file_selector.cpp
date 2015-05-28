@@ -78,6 +78,13 @@ private:
 static FileItemList* navigation_history = NULL; // Set of FileItems navigated
 static NullableIterator<FileItemList> navigation_position; // Current position in the navigation history
 
+// This map acts like a temporal customization by the user when he/she
+// wants to open files.  The key (first) is the real "showExtensions"
+// parameter given to the FileSelector::show() function. The value
+// (second) is the selected extension by the user. It's used only in
+// FileSelector::Open type of dialogs.
+static std::map<std::string, std::string> preferred_open_extensions;
+
 // Slot for App::Exit signal
 static void on_exit_delete_navigation_history()
 {
@@ -234,8 +241,9 @@ private:
   FileSelector* m_filesel;
 };
 
-FileSelector::FileSelector()
+FileSelector::FileSelector(Type type)
   : Window(WithTitleBar, "")
+  , m_type(type)
   , m_navigationLocked(false)
 {
   app::WidgetLoader loader;
@@ -331,8 +339,7 @@ void FileSelector::goInsideFolder()
 std::string FileSelector::show(
   const std::string& title,
   const std::string& initialPath,
-  const std::string& showExtensions,
-  Type type)
+  const std::string& showExtensions)
 {
   std::string result;
 
@@ -375,7 +382,22 @@ std::string FileSelector::show(
   remapWindow();
   centerWindow();
 
-  m_fileList->setExtensions(showExtensions.c_str());
+  // Change the file formats/extensions to be shown
+  std::string initialExtension = base::get_file_extension(initialPath);
+  std::string exts = showExtensions;
+  if (m_type == Open) {
+    auto it = preferred_open_extensions.find(exts);
+    if (it == preferred_open_extensions.end())
+      exts = showExtensions;
+    else
+      exts = preferred_open_extensions[exts];
+  }
+  else {
+    ASSERT(m_type == Save);
+    if (!initialExtension.empty())
+      exts = initialExtension;
+  }
+  m_fileList->setExtensions(exts.c_str());
   if (start_folder)
     m_fileList->setCurrentFolder(start_folder);
 
@@ -390,15 +412,38 @@ std::string FileSelector::show(
   // fill file-type combo-box
   m_fileType->removeAllItems();
 
+  // Get the default extension from the given initial file name
+  m_defExtension = initialExtension;
+
+  // File type for all formats
+  {
+    ListItem* item = new ListItem("All formats");
+    item->setValue(showExtensions);
+    m_fileType->addItem(item);
+  }
+  // One file type for each supported image format
   std::vector<std::string> tokens;
   base::split_string(showExtensions, tokens, ",");
-  for (const auto& tok : tokens)
-    m_fileType->addItem(tok.c_str());
+  for (const auto& tok : tokens) {
+    // If the default extension is empty, use the first filter
+    if (m_defExtension.empty())
+      m_defExtension = tok;
+
+    ListItem* item = new ListItem(tok + " files");
+    item->setValue(tok);
+    m_fileType->addItem(item);
+  }
+  // All files
+  {
+    ListItem* item = new ListItem("All files");
+    item->setValue("");         // Empty extensions means "*.*"
+    m_fileType->addItem(item);
+  }
 
   // file name entry field
   m_fileName->setValue(base::get_file_name(initialPath).c_str());
-  selectFileTypeFromFileName();
   m_fileName->getEntryWidget()->selectText(0, -1);
+  m_fileType->setValue(exts);
 
   // setup the title of the window
   setText(title.c_str());
@@ -514,10 +559,10 @@ again:
     // selected in the filetype combo-box
     if (base::get_file_extension(buf).empty()) {
       buf += '.';
-      buf += m_fileType->getItemText(m_fileType->getSelectedItemIndex());
+      buf += getSelectedExtension();
     }
 
-    if (type == Save && base::is_file(buf)) {
+    if (m_type == Save && base::is_file(buf)) {
       int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
                             base::get_file_name(buf).c_str());
       if (ret == 2) {
@@ -653,16 +698,6 @@ void FileSelector::addInNavigationHistory(IFileItem* folder)
   }
 }
 
-void FileSelector::selectFileTypeFromFileName()
-{
-  std::string ext = base::get_file_extension(m_fileName->getValue());
-
-  if (!ext.empty()) {
-    ext = base::string_to_lower(ext);
-    m_fileType->setSelectedItemIndex(m_fileType->findItemIndex(ext.c_str()));
-  }
-}
-
 void FileSelector::onGoBack()
 {
   if (navigation_history->size() > 1) {
@@ -768,12 +803,26 @@ void FileSelector::onLocationCloseListBox()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
-  std::string newExtension = m_fileType->getItemText(m_fileType->getSelectedItemIndex());
-  std::string fileName = m_fileName->getValue();
-  std::string currentExtension = base::get_file_extension(fileName);
+  std::string exts = m_fileType->getValue();
+  if (exts != m_fileList->extensions()) {
+    m_navigationLocked = true;
+    m_fileList->setExtensions(exts.c_str());
+    m_navigationLocked = false;
 
-  if (!currentExtension.empty())
-    m_fileName->setValue((fileName.substr(0, fileName.size()-currentExtension.size())+newExtension).c_str());
+    if (m_type == Open) {
+      std::string origShowExtensions = m_fileType->getItem(0)->getValue();
+      preferred_open_extensions[origShowExtensions] = m_fileType->getValue();
+    }
+  }
+
+  if (m_type == Save) {
+    std::string newExtension = getSelectedExtension();
+    std::string fileName = m_fileName->getValue();
+    std::string currentExtension = base::get_file_extension(fileName);
+
+    if (!currentExtension.empty())
+      m_fileName->setValue((fileName.substr(0, fileName.size()-currentExtension.size())+newExtension).c_str());
+  }
 }
 
 void FileSelector::onFileListFileSelected()
@@ -784,7 +833,6 @@ void FileSelector::onFileListFileSelected()
     std::string filename = base::get_file_name(fileitem->getFileName());
 
     m_fileName->setValue(filename.c_str());
-    selectFileTypeFromFileName();
   }
 }
 
@@ -803,6 +851,14 @@ void FileSelector::onFileListCurrentFolderChanged()
 
   // Close the autocomplete popup just in case it's open.
   m_fileName->closeListBox();
+}
+
+std::string FileSelector::getSelectedExtension() const
+{
+  std::string ext = m_fileType->getValue();
+  if (ext.empty() || ext.find(',') != std::string::npos)
+    ext = m_defExtension;
+  return ext;
 }
 
 } // namespace app

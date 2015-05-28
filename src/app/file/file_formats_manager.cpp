@@ -57,6 +57,7 @@ FileFormatsManager::~FileFormatsManager()
 
 void FileFormatsManager::registerAllFormats()
 {
+  // The first format is the default image format in FileSelector
   registerFormat(CreateAseFormat());
   registerFormat(CreateBmpFormat());
   registerFormat(CreateFliFormat());

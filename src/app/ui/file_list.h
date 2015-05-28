@@ -23,6 +23,7 @@ namespace app {
     FileList();
     virtual ~FileList();
 
+    const std::string& extensions() const { return m_exts; }
     void setExtensions(const char* extensions);
 
     IFileItem* getCurrentFolder() const { return m_currentFolder; }

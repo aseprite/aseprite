@@ -55,11 +55,9 @@ std::string show_file_selector(const std::string& title,
     }
   }
 
-  FileSelector fileSelector;
-  return fileSelector.show(
-    title, initialPath, showExtensions,
-    (type == FileSelectorType::Open ? FileSelector::Open:
-                                      FileSelector::Save));
+  FileSelector fileSelector(type == FileSelectorType::Open ? FileSelector::Open:
+                                                             FileSelector::Save);
+  return fileSelector.show(title, initialPath, showExtensions);
 }
 
 } // namespace app

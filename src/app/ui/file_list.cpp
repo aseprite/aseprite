@@ -66,6 +66,10 @@ FileList::~FileList()
 void FileList::setExtensions(const char* extensions)
 {
   m_exts = extensions;
+
+  // Refresh
+  if (isVisible())
+    setCurrentFolder(m_currentFolder);
 }
 
 void FileList::setCurrentFolder(IFileItem* folder)

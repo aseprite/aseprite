@@ -29,7 +29,7 @@ namespace app {
   public:
     enum Type { Open, Save };
 
-    FileSelector();
+    FileSelector(Type type);
 
     void goBack();
     void goForward();
@@ -39,14 +39,12 @@ namespace app {
     // Shows the dialog to select a file in the program.
     std::string show(const std::string& title,
                      const std::string& initialPath,
-                     const std::string& showExtensions,
-                     Type type);
+                     const std::string& showExtensions);
 
   private:
     void updateLocation();
     void updateNavigationButtons();
     void addInNavigationHistory(IFileItem* folder);
-    void selectFileTypeFromFileName();
     void onGoBack();
     void onGoForward();
     void onGoUp();
@@ -56,7 +54,10 @@ namespace app {
     void onFileListFileSelected();
     void onFileListFileAccepted();
     void onFileListCurrentFolderChanged();
+    std::string getSelectedExtension() const;
 
+    Type m_type;
+    std::string m_defExtension;
     ui::Button* m_goBack;
     ui::Button* m_goForward;
     ui::Button* m_goUp;

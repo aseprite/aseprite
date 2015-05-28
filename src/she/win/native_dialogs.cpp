@@ -121,7 +121,7 @@ private:
     std::wstring filters;
 
     // A filter for all known types
-    filters.append(L"All known file types");
+    filters.append(L"All formats");
     filters.push_back('\0');
     bool first = true;
     for (const auto& filter : m_filters) {
