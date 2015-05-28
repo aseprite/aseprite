@@ -27,6 +27,8 @@ namespace app {
 
   class FileSelector : public ui::Window {
   public:
+    enum Type { Open, Save };
+
     FileSelector();
 
     void goBack();
@@ -36,8 +38,9 @@ namespace app {
 
     // Shows the dialog to select a file in the program.
     std::string show(const std::string& title,
-      const std::string& initialPath,
-      const std::string& showExtensions);
+                     const std::string& initialPath,
+                     const std::string& showExtensions,
+                     Type type);
 
   private:
     void updateLocation();

@@ -328,9 +328,11 @@ void FileSelector::goInsideFolder()
   }
 }
 
-std::string FileSelector::show(const std::string& title,
+std::string FileSelector::show(
+  const std::string& title,
   const std::string& initialPath,
-  const std::string& showExtensions)
+  const std::string& showExtensions,
+  Type type)
 {
   std::string result;
 
@@ -513,6 +515,29 @@ again:
     if (base::get_file_extension(buf).empty()) {
       buf += '.';
       buf += m_fileType->getItemText(m_fileType->getSelectedItemIndex());
+    }
+
+    if (type == Save && base::is_file(buf)) {
+      int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
+                            base::get_file_name(buf).c_str());
+      if (ret == 2) {
+        setVisible(true);
+        goto again;
+      }
+      else if (ret == 1) {
+        // Check for read-only attribute
+        if (base::has_readonly_attr(buf)) {
+          ui::Alert::show(
+            "Problem<<The selected file is read-only. Try with other file.||&Go back");
+
+          setVisible(true);
+          goto again;
+        }
+      }
+      // Cancel
+      else if (ret != 1) {
+        return "";
+      }
     }
 
     // duplicate the buffer to return a new string

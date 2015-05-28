@@ -134,45 +134,15 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     filename = m_filename;
   }
   else {
+    std::string exts = get_writable_extensions();
     filename = document->filename();
 
-    std::string exts = get_writable_extensions();
+    std::string newfilename = app::show_file_selector(
+      dlgTitle, filename, exts, FileSelectorType::Save);
+    if (newfilename.empty())
+      return;
 
-    for (;;) {
-      std::string newfilename = app::show_file_selector(
-        dlgTitle, filename, exts, FileSelectorType::Save);
-      if (newfilename.empty())
-        return;
-
-      filename = newfilename;
-
-      // Ask if the user wants overwrite the existent file.
-      int ret = 0;
-      if (base::is_file(filename)) {
-        ret = ui::Alert::show("Warning<<The file already exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-          base::get_file_name(filename).c_str());
-
-        // Check for read-only attribute.
-        if (ret == 1) {
-          if (!confirmReadonly(filename))
-            ret = 2;              // Select file again.
-          else
-            break;
-        }
-      }
-      else
-        break;
-
-      // "yes": we must continue with the operation...
-      if (ret == 1) {
-        break;
-      }
-      // "cancel" or <esc> per example: we back doing nothing
-      else if (ret != 2)
-        return;
-
-      // "no": we must back to select other file-name
-    }
+    filename = newfilename;
   }
 
   std::string oldFilename;
@@ -200,23 +170,6 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     else
       documentWriter->incrementVersion();
   }
-}
-
-//static
-bool SaveFileBaseCommand::confirmReadonly(const std::string& filename)
-{
-  if (!base::has_readonly_attr(filename))
-    return true;
-
-  int ret = ui::Alert::show("Warning<<The file is read-only, do you really want to overwrite it?<<%s||&Yes||&No",
-    base::get_file_name(filename).c_str());
-
-  if (ret == 1) {
-    base::remove_readonly_attr(filename);
-    return true;
-  }
-  else
-    return false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -247,9 +200,6 @@ void SaveFileCommand::onExecute(Context* context)
   if (document->isAssociatedToFile()) {
     ContextWriter writer(reader);
     Document* documentWriter = writer.document();
-
-    if (!confirmReadonly(documentWriter->filename()))
-      return;
 
     save_document_in_background(context, documentWriter, true,
       m_filenameFormat.c_str());

@@ -93,10 +93,8 @@ public:
 
     if (!m_save)
       ofn.Flags |= OFN_FILEMUSTEXIST;
-#if 0                           // This is asked in custom UI
     else
       ofn.Flags |= OFN_OVERWRITEPROMPT;
-#endif
 
     BOOL res;
     if (m_save)

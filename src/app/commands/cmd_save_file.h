@@ -30,8 +30,6 @@ namespace app {
 
     void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved);
 
-    static bool confirmReadonly(const std::string& filename);
-
     std::string m_filename;
     std::string m_filenameFormat;
     std::string m_selectedFilename;

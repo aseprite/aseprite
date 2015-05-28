@@ -60,23 +60,10 @@ void SavePaletteCommand::onExecute(Context* context)
   }
   else {
     std::string exts = get_writable_palette_extensions();
-    int ret;
-
-  again:
     filename = app::show_file_selector("Save Palette", "", exts,
                                        FileSelectorType::Save);
     if (filename.empty())
       return;
-
-    if (base::is_file(filename)) {
-      ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-                        base::get_file_name(filename).c_str());
-
-      if (ret == 2)
-        goto again;
-      else if (ret != 1)
-        return;
-    }
   }
 
   if (!save_palette(filename.c_str(), palette))

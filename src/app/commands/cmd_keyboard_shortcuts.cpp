@@ -388,21 +388,13 @@ private:
   }
 
   void onExport() {
-  again:
-    std::string filename = app::show_file_selector("Export Keyboard Shortcuts", "",
+    std::string filename = app::show_file_selector(
+      "Export Keyboard Shortcuts", "",
       KEYBOARD_FILENAME_EXTENSION, FileSelectorType::Save);
-    if (!filename.empty()) {
-      if (base::is_file(filename)) {
-        int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
-          base::get_file_name(filename).c_str());
-        if (ret == 2)
-          goto again;
-        else if (ret != 1)
-          return;
-      }
+    if (filename.empty())
+      return;
 
-      app::KeyboardShortcuts::instance()->exportFile(filename.c_str());
-    }
+    app::KeyboardShortcuts::instance()->exportFile(filename.c_str());
   }
 
   void onReset() {
