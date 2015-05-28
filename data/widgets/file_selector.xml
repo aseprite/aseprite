@@ -1,7 +1,7 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
 <gui>
-  <box id="main" vertical="true">
+  <vbox id="main">
     <box horizontal="true">
       <box horizontal="true" noborders="true">
         <button text="" id="goback" bevel="2 0 2 0" tooltip="Go back one folder" />
@@ -12,19 +12,21 @@
       <combobox id="location" expansive="true" />
     </box>
     <view id="fileview_container" expansive="true"></view>
-    <box horizontal="true">
+    <grid columns="2">
       <label text="Name:" />
-      <filenameentry id="filename" expansive="true" magnet="true" />
-      <combobox id="filetype" minwidth="70" />
-    </box>
-    <box horizontal="true">
-      <box horizontal="true" expansive="true" />
-      <box horizontal="true" homogeneous="true">
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-        <button text="&amp;Cancel" closewindow="true" id="cancel" />
-      </box>
-    </box>
-  </box>
+      <filenameentry id="filename" cell_align="horizontal" magnet="true" />
+
+      <label text="Type:" />
+      <hbox cell_align="horizontal">
+        <combobox id="filetype" minwidth="70" />
+        <boxfiller />
+        <box horizontal="true" homogeneous="true">
+          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
+          <button text="&amp;Cancel" closewindow="true" id="cancel" />
+        </box>
+      </hbox>
+    </grid>
+  </vbox>
 
   <window text="New Folder" id="newfolder_dialog">
     <vbox>
