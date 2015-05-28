@@ -62,7 +62,6 @@ namespace app {
       if (m_section)
         m_section->BeforeChange();
 
-      T oldValue = m_value;
       m_value = newValue;
       m_dirty = true;
 
