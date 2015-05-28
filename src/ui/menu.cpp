@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -412,27 +412,30 @@ bool MenuBox::onProcessMessage(Message* msg)
         if (picked) {
           if ((picked->type == kMenuItemWidget) &&
               !(picked->flags & JI_DISABLED)) {
+            MenuItem* pickedItem = static_cast<MenuItem*>(picked);
 
             // If the picked menu-item is not highlighted...
-            if (!static_cast<MenuItem*>(picked)->isHighlighted()) {
+            if (!pickedItem->isHighlighted()) {
               // In menu-bar always open the submenu, in other popup-menus
               // open the submenu only if the user does click
               bool open_submenu =
                 (this->type == kMenuBarWidget) ||
                 (msg->type() == kMouseDownMessage);
 
-              menu->highlightItem(static_cast<MenuItem*>(picked), false, open_submenu, false);
+              menu->highlightItem(pickedItem, false, open_submenu, false);
             }
             // If the user pressed in a highlighted menu-item (maybe
             // the user was waiting for the timer to open the
             // submenu...)
             else if (msg->type() == kMouseDownMessage &&
-                     static_cast<MenuItem*>(picked)->hasSubmenu()) {
-              static_cast<MenuItem*>(picked)->stopTimer();
+                     pickedItem->hasSubmenu()) {
+              pickedItem->stopTimer();
 
               // If the submenu is closed, open it
-              if (!static_cast<MenuItem*>(picked)->hasSubmenuOpened())
-                static_cast<MenuItem*>(picked)->openSubmenu(false);
+              if (!pickedItem->hasSubmenuOpened())
+                pickedItem->openSubmenu(false);
+              else if (pickedItem->inBar())
+                pickedItem->getSubmenu()->closeAll();
             }
           }
           else if (!get_base(this)->was_clicked) {
