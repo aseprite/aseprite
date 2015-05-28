@@ -217,8 +217,7 @@ public:
       warnings += "<<- UI Elements Scale";
     }
 
-    // Save configuration
-    flush_config_file();
+    m_preferences.save();
 
     if (!warnings.empty()) {
       ui::Alert::show(PACKAGE
