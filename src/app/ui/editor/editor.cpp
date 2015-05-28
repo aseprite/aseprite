@@ -1563,12 +1563,20 @@ void Editor::notifyScrollChanged()
 
 void Editor::play()
 {
+  ASSERT(m_state);
+  if (!m_state)
+    return;
+
   if (!dynamic_cast<PlayState*>(m_state.get()))
     setState(EditorStatePtr(new PlayState));
 }
 
 void Editor::stop()
 {
+  ASSERT(m_state);
+  if (!m_state)
+    return;
+
   if (dynamic_cast<PlayState*>(m_state.get()))
     backToPreviousState();
 }
