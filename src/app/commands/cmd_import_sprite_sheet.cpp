@@ -52,6 +52,8 @@ public:
     , m_editor(NULL)
     , m_fileOpened(false)
     , m_docPref(nullptr) {
+    import()->setEnabled(false);
+
     x()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     y()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     width()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
@@ -180,6 +182,8 @@ private:
 
     captureEditor();
 
+    import()->setEnabled(m_document ? true: false);
+
     if (m_document) {
       m_docPref = &Preferences::instance().document(m_document);
 
@@ -241,7 +245,6 @@ void ImportSpriteSheetCommand::onExecute(Context* context)
 {
   ImportSpriteSheetWindow window(context);
 
-retry:;
   window.openWindowInForeground();
   if (!window.ok())
     return;
@@ -250,11 +253,9 @@ retry:;
   DocumentPreferences* docPref = window.docPref();
   gfx::Rect frameBounds = window.frameBounds();
 
-  // The user don't select a sheet yet.
-  if (!document) {
-    Alert::show("Import Sprite Sheet<<Select a sprite first.||&Close");
-    goto retry;
-  }
+  ASSERT(document);
+  if (!document)
+    return;
 
   // The list of frames imported from the sheet
   std::vector<ImageRef> animation;
