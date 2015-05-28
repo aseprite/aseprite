@@ -55,7 +55,7 @@ std::string show_file_selector(const std::string& title,
         dlg->addFilter("*." + tok, tok + " files (*." + tok + ")");
       dlg->addFilter("*.*", "All files (*.*)");
 
-      if (dlg->show(she::instance()->defaultDisplay()->nativeHandle()))
+      if (dlg->show(she::instance()->defaultDisplay()))
         res = dlg->getFileName();
 
       dlg->dispose();

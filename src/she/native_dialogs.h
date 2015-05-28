@@ -8,11 +8,10 @@
 #define SHE_NATIVE_DIALOGS_H_INCLUDED
 #pragma once
 
-#include "she/display_handle.h"
-
 #include <string>
 
 namespace she {
+  class Display;
 
   class FileDialog {
   public:
@@ -25,7 +24,7 @@ namespace she {
     virtual void addFilter(const std::string& extension, const std::string& description) = 0;
     virtual std::string getFileName() = 0;
     virtual void setFileName(const std::string& filename) = 0;
-    virtual bool show(DisplayHandle parent) = 0;
+    virtual bool show(Display* parent) = 0;
   };
 
   class NativeDialogs {

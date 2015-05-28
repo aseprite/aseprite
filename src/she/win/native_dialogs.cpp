@@ -12,6 +12,7 @@
 
 #include "base/path.h"
 #include "base/string.h"
+#include "she/display.h"
 #include "she/error.h"
 
 #include <windows.h>
@@ -68,13 +69,13 @@ public:
     m_initialDir = base::from_utf8(base::get_file_path(filename));
   }
 
-  bool show(DisplayHandle parent) override {
+  bool show(Display* parent) override {
     std::wstring filtersWStr = getFiltersForGetOpenFileName();
 
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(ofn));
     ofn.lStructSize = sizeof(OPENFILENAME);
-    ofn.hwndOwner = (HWND)parent;
+    ofn.hwndOwner = (HWND)parent->nativeHandle();
     ofn.hInstance = GetModuleHandle(NULL);
     ofn.lpstrFilter = filtersWStr.c_str();
     ofn.nFilterIndex = m_defFilter;
