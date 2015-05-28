@@ -716,7 +716,8 @@ bool MenuItem::onProcessMessage(Message* msg)
         ASSERT(base->is_processing);
         ASSERT(hasSubmenu());
 
-        Rect old_pos = getParent()->getParent()->getBounds();
+        Rect old_pos = getRoot()->getBounds();
+        old_pos.w -= 1*guiscale();
 
         MenuBox* menubox = new MenuBox();
         m_submenu_menubox = menubox;
@@ -733,9 +734,9 @@ bool MenuItem::onProcessMessage(Message* msg)
           pos.y = MID(0, getBounds().y2(), ui::display_h()-pos.h);
         }
         else {
-          int x_left = getBounds().x - pos.w;
-          int x_right = getBounds().x2();
-          int x, y = getBounds().y;
+          int x_left = old_pos.x - pos.w;
+          int x_right = old_pos.x2();
+          int x, y = getBounds().y-3*guiscale();
           Rect r1(0, 0, pos.w, pos.h), r2(0, 0, pos.w, pos.h);
 
           r1.x = x_left = MID(0, x_left, ui::display_w()-pos.w);
