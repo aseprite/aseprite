@@ -67,17 +67,17 @@ private:
 struct MenuBaseData
 {
   // True when the menu-items must be opened with the cursor movement
-  bool was_clicked : 1;
+  bool was_clicked;
 
   // True when there's kOpen/CloseMenuItemMessage messages in queue, to
   // avoid start processing another menuitem-request when we're
   // already working in one
-  bool is_processing : 1;
+  bool is_processing;
 
   // True when the kMouseDownMessage is being filtered
-  bool is_filtering : 1;
+  bool is_filtering;
 
-  bool close_all : 1;
+  bool close_all;
 
   MenuBaseData()
   {
