@@ -57,6 +57,7 @@ namespace she {
 
     virtual EventQueue* getEventQueue() = 0;
 
+    virtual NativeCursor nativeMouseCursor() = 0;
     virtual bool setNativeMouseCursor(NativeCursor cursor) = 0;
     virtual void setMousePosition(const gfx::Point& position) = 0;
     virtual void captureMouse() = 0;

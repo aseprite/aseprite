@@ -41,7 +41,7 @@
     #define WM_MOUSEHWHEEL 0x020E
   #endif
 
-#elif defined(ALLEGRO_UNIX)
+#elif defined ALLEGRO_UNIX
 
   #include <xalleg.h>
   #ifdef None
@@ -96,6 +96,8 @@ static void resize_callback(RESIZE_DISPLAY_EVENT* ev)
 #endif // ALLEGRO4_WITH_RESIZE_PATCH
 
 static she::System* g_instance = nullptr;
+
+void* get_osx_window();
 
 namespace she {
 
@@ -446,7 +448,8 @@ class Alleg4Display : public Display {
 public:
   Alleg4Display(int width, int height, int scale)
     : m_surface(NULL)
-    , m_scale(0) {
+    , m_scale(0)
+    , m_nativeCursor(kNoCursor) {
     unique_display = this;
 
     if (install_mouse() < 0) throw DisplayCreationException(allegro_error);
@@ -607,6 +610,10 @@ public:
     return m_queue;
   }
 
+  NativeCursor nativeMouseCursor() override {
+    return m_nativeCursor;
+  }
+
   bool setNativeMouseCursor(NativeCursor cursor) override {
     int newCursor = MOUSE_CURSOR_NONE;
 
@@ -645,6 +652,7 @@ public:
         return false;
     }
 
+    m_nativeCursor = cursor;
     return (show_os_cursor(newCursor) == 0);
   }
 
@@ -684,8 +692,10 @@ public:
   void* nativeHandle() override {
 #ifdef _WIN32
     return reinterpret_cast<void*>(win_get_window());
+#elif defined __APPLE__
+    return get_osx_window();
 #else
-    return NULL;
+    return nullptr;
 #endif
   }
 
@@ -693,6 +703,7 @@ private:
   Surface* m_surface;
   int m_scale;
   Alleg4EventQueue* m_queue;
+  NativeCursor m_nativeCursor;
 };
 
 class Alleg4System : public CommonSystem {

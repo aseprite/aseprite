@@ -44,16 +44,8 @@ std::string show_file_selector(const std::string& title,
 
       std::vector<std::string> tokens;
       base::split_string(showExtensions, tokens, ",");
-      std::string known;
-      for (const auto& tok : tokens) {
-        if (!known.empty())
-          known.push_back(';');
-        known += "*." + tok;
-      }
-      dlg->addFilter(known, "Known file types (" + known + ")");
       for (const auto& tok : tokens)
-        dlg->addFilter("*." + tok, tok + " files (*." + tok + ")");
-      dlg->addFilter("*.*", "All files (*.*)");
+        dlg->addFilter(tok, tok + " files (*." + tok + ")");
 
       if (dlg->show(she::instance()->defaultDisplay()))
         res = dlg->getFileName();

@@ -244,6 +244,9 @@ static void prepare_window_for_animation(int refresh_view)
    _unix_lock_mutex(osx_skip_events_processing_mutex);
    osx_skip_events_processing = FALSE;
    _unix_unlock_mutex(osx_skip_events_processing_mutex);
+
+   if (_keyboard_installed)
+      osx_keyboard_focused(TRUE, 0);
 }
 
 
@@ -257,6 +260,11 @@ static void prepare_window_for_animation(int refresh_view)
    _unix_lock_mutex(osx_skip_events_processing_mutex);
    osx_skip_events_processing = TRUE;
    _unix_unlock_mutex(osx_skip_events_processing_mutex);
+
+   if (_keyboard_installed) {
+      osx_keyboard_focused(FALSE, 0);
+      osx_keyboard_modifiers(0);
+   }
 }
 
 @end

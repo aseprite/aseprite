@@ -17,6 +17,7 @@ SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
   , m_window(m_queue, this)
   , m_surface(new SkiaSurface)
   , m_customSurface(false)
+  , m_nativeCursor(kArrowCursor)
 {
   m_surface->create(width, height);
   m_window.setScale(scale);
@@ -116,8 +117,14 @@ EventQueue* SkiaDisplay::getEventQueue()
   return m_queue;
 }
 
+NativeCursor SkiaDisplay::nativeMouseCursor()
+{
+  return m_nativeCursor;
+}
+
 bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
 {
+  m_nativeCursor = cursor;
   m_window.setNativeMouseCursor(cursor);
   return true;
 }

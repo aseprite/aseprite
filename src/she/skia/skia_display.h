@@ -52,6 +52,7 @@ public:
   bool isMaximized() const override;
   void setTitleBar(const std::string& title) override;
   EventQueue* getEventQueue() override;
+  NativeCursor nativeMouseCursor() override;
   bool setNativeMouseCursor(NativeCursor cursor) override;
   void setMousePosition(const gfx::Point& position) override;
   void captureMouse() override;

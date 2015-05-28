@@ -57,7 +57,7 @@ public:
       m_defExtension = base::from_utf8(extension);
       m_defFilter = 0;
     }
-    m_filters.push_back(std::make_pair(description, extension));
+    m_filters.push_back(std::make_pair(extension, description));
   }
 
   std::string getFileName() override {
@@ -119,12 +119,37 @@ private:
 
   std::wstring getFiltersForGetOpenFileName() const {
     std::wstring filters;
+
+    // A filter for all known types
+    filters.append(L"All known file types");
+    filters.push_back('\0');
+    bool first = true;
     for (const auto& filter : m_filters) {
+      if (first)
+        first = false;
+      else
+        filters.push_back(';');
+      filters.append(L"*.");
       filters.append(base::from_utf8(filter.first));
-      filters.push_back('\0');
+    }
+    filters.push_back('\0');
+
+    // A specific filter for each type
+    for (const auto& filter : m_filters) {
       filters.append(base::from_utf8(filter.second));
       filters.push_back('\0');
+      filters.append(L"*.");
+      filters.append(base::from_utf8(filter.first));
+      filters.push_back('\0');
     }
+
+    // A filter for all files
+    filters.append(L"All files");
+    filters.push_back('\0');
+    filters.append(L"*.*");
+    filters.push_back('\0');
+
+    // End of filter string (two zeros at the end)
     filters.push_back('\0');
     return filters;
   }
