@@ -24,8 +24,12 @@ namespace app {
     virtual ~Cmd();
 
     void execute(Context* ctx);
+
+    // undo::UndoCommand impl
     void undo() override;
     void redo() override;
+    void dispose() override;
+
     std::string label() const;
     size_t memSize() const;
 

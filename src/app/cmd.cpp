@@ -62,6 +62,11 @@ void Cmd::redo()
 #endif
 }
 
+void Cmd::dispose()
+{
+  delete this;
+}
+
 std::string Cmd::label() const
 {
   return onLabel();

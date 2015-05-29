@@ -27,7 +27,8 @@ namespace undo {
       , m_cmd(cmd) {
     }
     ~UndoState() {
-      delete m_cmd;
+      if (m_cmd)
+        m_cmd->dispose();
     }
     UndoState* prev() const { return m_prev; }
     UndoState* next() const { return m_next; }

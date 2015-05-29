@@ -13,42 +13,29 @@
 #include "undo/undo_command.h"
 #include "undo/undo_history.h"
 
-#ifdef _WIN32
-  #include <functional>
-  using namespace std;
-#else
-  #include <tr1/functional>
-  using namespace std::tr1;
-#endif
-
 using namespace undo;
 
 class Cmd : public UndoCommand {
 public:
-  template<typename UndoT, typename RedoT>
-  Cmd(RedoT redoFunc, UndoT undoFunc)
-    : m_redo(redoFunc), m_undo(undoFunc) {
+  Cmd(int& model, int redo_value, int undo_value)
+    : m_model(model)
+    , m_redo_value(redo_value)
+    , m_undo_value(undo_value) {
   }
-  void redo() override { m_redo(); }
-  void undo() override { m_undo(); }
+  void redo() override { m_model = m_redo_value; }
+  void undo() override { m_model = m_undo_value; }
+  void dispose() override { }
 private:
-  function<void()> m_redo;
-  function<void()> m_undo;
+  int& m_model;
+  int m_redo_value;
+  int m_undo_value;
 };
 
 TEST(Undo, Basics)
 {
-  UndoHistory history;
-
   int model = 0;
-  EXPECT_EQ(0, model);
-
-  Cmd cmd1(
-    [&]{ model = 1; },          // redo
-    [&]{ model = 0; });         // undo
-  Cmd cmd2(
-    [&]{ model = 2; },          // redo
-    [&]{ model = 1; });         // undo
+  Cmd cmd1(model, 1, 0);
+  Cmd cmd2(model, 2, 1);
 
   EXPECT_EQ(0, model);
   cmd1.redo();
@@ -56,6 +43,7 @@ TEST(Undo, Basics)
   cmd2.redo();
   EXPECT_EQ(2, model);
 
+  UndoHistory history;
   EXPECT_FALSE(history.canUndo());
   EXPECT_FALSE(history.canRedo());
   history.add(&cmd1);
@@ -86,17 +74,16 @@ TEST(Undo, Basics)
 
 TEST(Undo, Tree)
 {
-  UndoHistory history;
-  int model = 0;
-
   // 1 --- 2
   //  \
   //   ------ 3 --- 4
-  Cmd cmd1([&]{ model = 1; }, [&]{ model = 0; });
-  Cmd cmd2([&]{ model = 2; }, [&]{ model = 1; });
-  Cmd cmd3([&]{ model = 3; }, [&]{ model = 1; });
-  Cmd cmd4([&]{ model = 4; }, [&]{ model = 3; });
+  int model = 0;
+  Cmd cmd1(model, 1, 0);
+  Cmd cmd2(model, 2, 1);
+  Cmd cmd3(model, 3, 1);
+  Cmd cmd4(model, 4, 3);
 
+  UndoHistory history;
   cmd1.redo(); history.add(&cmd1);
   cmd2.redo(); history.add(&cmd2);
   history.undo();
@@ -126,21 +113,20 @@ TEST(Undo, Tree)
 
 TEST(Undo, ComplexTree)
 {
-  UndoHistory history;
-  int model = 0;
-
   // 1 --- 2 --- 3 --- 4      ------ 7 --- 8
   //        \                /
   //         ------------- 5 --- 6
-  Cmd cmd1([&]{ model = 1; }, [&]{ model = 0; });
-  Cmd cmd2([&]{ model = 2; }, [&]{ model = 1; });
-  Cmd cmd3([&]{ model = 3; }, [&]{ model = 2; });
-  Cmd cmd4([&]{ model = 4; }, [&]{ model = 3; });
-  Cmd cmd5([&]{ model = 5; }, [&]{ model = 2; });
-  Cmd cmd6([&]{ model = 6; }, [&]{ model = 5; });
-  Cmd cmd7([&]{ model = 7; }, [&]{ model = 5; });
-  Cmd cmd8([&]{ model = 8; }, [&]{ model = 7; });
+  int model = 0;
+  Cmd cmd1(model, 1, 0);
+  Cmd cmd2(model, 2, 1);
+  Cmd cmd3(model, 3, 2);
+  Cmd cmd4(model, 4, 3);
+  Cmd cmd5(model, 5, 2);
+  Cmd cmd6(model, 6, 5);
+  Cmd cmd7(model, 7, 5);
+  Cmd cmd8(model, 8, 7);
 
+  UndoHistory history;
   cmd1.redo(); history.add(&cmd1);
   cmd2.redo(); history.add(&cmd2);
   cmd3.redo(); history.add(&cmd3);
