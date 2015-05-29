@@ -9,6 +9,7 @@
 #pragma once
 
 #include "she/display.h"
+#include "she/native_cursor.h"
 
 #ifdef _WIN32
   #include "she/skia/skia_window_win.h"
@@ -67,6 +68,7 @@ private:
   SkiaSurface* m_surface;
   bool m_recreated;
   bool m_customSurface;
+  NativeCursor m_nativeCursor;
 };
 
 } // namespace she
