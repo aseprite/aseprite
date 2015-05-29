@@ -445,7 +445,6 @@ void ColorBar::setTransparentIndex(int index)
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
-    frame_t frame = writer.frame();
     if (sprite &&
         sprite->pixelFormat() == IMAGE_INDEXED &&
         sprite->transparentColor() != index) {
