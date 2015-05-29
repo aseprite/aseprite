@@ -13,6 +13,8 @@
 #include "base/launcher.h"
 #include "base/string.h"
 
+#include <cstdlib>
+
 #ifdef _WIN32
 #include <windows.h>
 #ifndef SEE_MASK_DEFAULT
@@ -77,11 +79,11 @@ bool open_file(const std::string& file)
 
 #elif __APPLE__
 
-  ret = system(("open \"" + file + "\"").c_str());
+  ret = std::system(("open \"" + file + "\"").c_str());
 
 #else
 
-  ret = system(("xdg-open \"" + file + "\"").c_str());
+  ret = std::system(("xdg-open \"" + file + "\"").c_str());
 
 #endif
 
@@ -107,17 +109,17 @@ bool open_folder(const std::string& file)
 
   int ret;
   if (base::is_directory(file)) {
-    ret = system(("open \"" + file + "\"").c_str());
+    ret = std::system(("open \"" + file + "\"").c_str());
   }
   else {
-    ret = system(("open --reveal \"" + file + "\"").c_str());
+    ret = std::system(("open --reveal \"" + file + "\"").c_str());
   }
   return (ret == 0);
 
 #else
 
   int ret;
-  ret = system(("xdg-open \"" + file + "\"").c_str());
+  ret = std::system(("xdg-open \"" + file + "\"").c_str());
   return (ret == 0);
 
 #endif

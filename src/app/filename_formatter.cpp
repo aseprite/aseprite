@@ -15,6 +15,7 @@
 #include "base/path.h"
 #include "base/replace_string.h"
 
+#include <cstdlib>
 #include <vector>
 
 namespace app {

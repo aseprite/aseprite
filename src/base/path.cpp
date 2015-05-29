@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <iterator>
 
 namespace base {

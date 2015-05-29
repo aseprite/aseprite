@@ -15,6 +15,7 @@
 #include "doc/palette.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 #define PROCOL_MAGIC_NUMBER     0xB123
 

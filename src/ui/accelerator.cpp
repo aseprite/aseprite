@@ -15,6 +15,7 @@
 #include "base/string.h"
 
 #include <cctype>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -121,7 +122,7 @@ Accelerator::Accelerator(const std::string& str)
     else {
       // F1, F2, ..., F11, F12
       if (tok[0] == 'f' && (tok.size() <= 3)) {
-        int num = strtol(tok.c_str()+1, NULL, 10);
+        int num = std::strtol(tok.c_str()+1, NULL, 10);
         if ((num >= 1) && (num <= 12))
           m_scancode = (KeyScancode)((int)kKeyF1 + num - 1);
       }

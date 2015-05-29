@@ -17,6 +17,7 @@
 #include "base/string.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace app {
 
@@ -126,7 +127,7 @@ void ResourceFinder::includeHomeDir(const char* filename)
 
 #else
 
-  char* env = getenv("HOME");
+  char* env = std::getenv("HOME");
   char buf[4096];
 
   if ((env) && (*env)) {

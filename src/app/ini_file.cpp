@@ -20,6 +20,7 @@
   #include "base/fs.h"
 #endif
 
+#include <cstdlib>
 #include <vector>
 
 namespace app {
