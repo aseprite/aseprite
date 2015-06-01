@@ -271,22 +271,12 @@ if(APPLE)
   find_library(COCOA_LIBRARY Cocoa)
   find_library(CARBON_LIBRARY Carbon)
   find_library(IOKIT_LIBRARY IOKit)
-  find_library(COREAUDIO_LIBRARY CoreAudio)
-  find_library(AUDIOUNIT_LIBRARY AudioUnit)
-  find_library(AUDIOTOOLBOX_LIBRARY AudioToolbox)
-  find_package(QuickTime)
   mark_as_advanced(COCOA_LIBRARY CARBON_LIBRARY IOKIT_LIBRARY)
-  mark_as_advanced(COREAUDIO_LIBRARY AUDIOUNIT_LIBRARY AUDIOTOOLBOX_LIBRARY)
-  mark_as_advanced(QUICKTIME_INCLUDE_DIR QUICKTIME_LIBRARY)
 
   list(APPEND PLATFORM_LIBS
     ${COCOA_LIBRARY}
     ${CARBON_LIBRARY}
-    ${IOKIT_LIBRARY}
-    ${COREAUDIO_LIBRARY}
-    ${AUDIOUNIT_LIBRARY}
-    ${AUDIOTOOLBOX_LIBRARY}
-    ${QUICKTIME_LIBRARY})
+    ${IOKIT_LIBRARY})
 
     # Hack to deal with Mac OS X 10.6.  NSQuickDrawView is not defined by
     # NSQuickDrawView.h when compiling in 64-bit mode, and 64-bit mode is the
