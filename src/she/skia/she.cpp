@@ -70,13 +70,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 int main(int argc, char* argv[])
 {
 #endif
-  // SkGraphics::Init();
-  // SkEvent::Init();
 
-  int res = app_main(argc, argv);
-
-  // SkEvent::Term();
-  // SkGraphics::Term();
-
-  return res;
+  return app_main(argc, argv);
 }
