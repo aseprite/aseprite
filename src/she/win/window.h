@@ -78,8 +78,8 @@ namespace she {
       return m_restoredSize;
     }
 
-    void setText(const std::string& text) {
-      SetWindowText(m_hwnd, base::from_utf8(text).c_str());
+    void setTitle(const std::string& title) {
+      SetWindowText(m_hwnd, base::from_utf8(title).c_str());
     }
 
     void captureMouse() {

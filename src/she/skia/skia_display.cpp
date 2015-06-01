@@ -110,7 +110,7 @@ bool SkiaDisplay::isMaximized() const
 
 void SkiaDisplay::setTitleBar(const std::string& title)
 {
-  m_window.setText(title);
+  m_window.setTitle(title);
 }
 
 NativeCursor SkiaDisplay::nativeMouseCursor()
