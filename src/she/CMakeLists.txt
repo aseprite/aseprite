@@ -67,10 +67,8 @@ if(USE_SKIA_BACKEND)
       add_definitions(-DSK_ANGLE=1)
     endif()
   else()
-    set(SKIA_ETC1_LIBRARY)
-    set(SKIA_LIBSKKTX_LIBRARY)
-    # find_library(SKIA_OPENGL32_LIBRARY glapi)
-    set(SKIA_OPENGL32_LIBRARY)
+    find_library(SKIA_ETC1_LIBRARY etc1 PATH "${SKIA_BUILD_OUT_DIR}")
+    find_library(SKIA_LIBSKKTX_LIBRARY SkKTX PATH "${SKIA_BUILD_OUT_DIR}")
   endif()
 
   find_path(SKIA_CONFIG_INCLUDE_DIR SkUserConfig.h HINTS "${SKIA_DIR}/include/config")
@@ -105,6 +103,7 @@ if(USE_SKIA_BACKEND)
     ${SKIA_OPTS_SSE41_LIBRARY}
     ${SKIA_OPTS_SSSE3_LIBRARY}
     ${SKIA_PORTS_LIBRARY}
+    ${SKIA_SFNT_LIBRARY}
     ${SKIA_UTILS_LIBRARY}
     CACHE INTERNAL "Skia libraries")
 
