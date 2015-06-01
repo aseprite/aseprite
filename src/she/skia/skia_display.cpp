@@ -10,11 +10,12 @@
 
 #include "she/skia/skia_display.h"
 
+#include "she/system.h"
+
 namespace she {
 
 SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
-  : m_queue(queue)
-  , m_window(m_queue, this)
+  : m_window(instance()->eventQueue(), this)
   , m_surface(new SkiaSurface)
   , m_customSurface(false)
   , m_nativeCursor(kArrowCursor)
@@ -110,11 +111,6 @@ bool SkiaDisplay::isMaximized() const
 void SkiaDisplay::setTitleBar(const std::string& title)
 {
   m_window.setText(title);
-}
-
-EventQueue* SkiaDisplay::getEventQueue()
-{
-  return m_queue;
 }
 
 NativeCursor SkiaDisplay::nativeMouseCursor()

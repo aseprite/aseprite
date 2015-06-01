@@ -45,6 +45,10 @@ public:
       int(kDisplayScaleCapability));
   }
 
+  EventQueue* eventQueue() override {
+    return &m_queue;
+  }
+
   Display* defaultDisplay() override {
     return m_defaultDisplay;
   }

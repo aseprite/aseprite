@@ -12,6 +12,7 @@
 
 #include "base/concurrent_queue.h"
 #include "base/string.h"
+#include "base/unique_ptr.h"
 #include "she/alleg4/surface.h"
 #include "she/common/system.h"
 #include "she/logger.h"
@@ -148,19 +149,8 @@ private:
   base::concurrent_queue<Event> m_events;
 };
 
-base::mutex unique_display_mutex;
-base::concurrent_queue<Event> initial_queue; // Events generated when "unique_display" is NULL
 Display* unique_display = NULL;
 int display_scale;
-
-void queue_event(const Event& ev)
-{
-  base::scoped_lock hold(unique_display_mutex);
-  if (unique_display)
-    static_cast<Alleg4EventQueue*>(unique_display->getEventQueue())->queueEvent(ev);
-  else
-    initial_queue.push(ev);
-}
 
 namespace {
 
@@ -473,16 +463,6 @@ public:
     show_mouse(NULL);
     setScale(scale);
 
-    m_queue = new Alleg4EventQueue();
-
-    // Copy the initial queue to the display queue
-    {
-      base::scoped_lock hold(unique_display_mutex);
-      Event ev;
-      while (initial_queue.try_pop(ev))
-        m_queue->queueEvent(ev);
-    }
-
     // Add a hook to display-switch so when the user returns to the
     // screen it's completelly refreshed/redrawn.
     LOCK_VARIABLE(display_flags);
@@ -500,18 +480,11 @@ public:
   }
 
   ~Alleg4Display() {
-    // Put "unique_display" to null so queue_event() doesn't use
-    // "m_queue" anymore.
-    {
-      base::scoped_lock hold(unique_display_mutex);
-      unique_display = NULL;
-    }
+    unique_display = NULL;
 
 #if _WIN32
     unsubclass_hwnd((HWND)nativeHandle());
 #endif
-
-    delete m_queue;
 
     m_surface->dispose();
     set_gfx_mode(GFX_TEXT, 0, 0, 0, 0);
@@ -606,10 +579,6 @@ public:
     set_window_title(title.c_str());
   }
 
-  EventQueue* getEventQueue() override {
-    return m_queue;
-  }
-
   NativeCursor nativeMouseCursor() override {
     return m_nativeCursor;
   }
@@ -702,7 +671,6 @@ public:
 private:
   Surface* m_surface;
   int m_scale;
-  Alleg4EventQueue* m_queue;
   NativeCursor m_nativeCursor;
 };
 
@@ -721,9 +689,11 @@ public:
     register_bitmap_file_type("png", load_png, save_png);
 
     g_instance = this;
+    m_queue.reset(new Alleg4EventQueue);
   }
 
   ~Alleg4System() {
+    m_queue.reset();
     g_instance = nullptr;
 
     remove_timer();
@@ -736,6 +706,10 @@ public:
 
   Capabilities capabilities() const override {
     return (Capabilities)(kCanResizeDisplayCapability);
+  }
+
+  EventQueue* eventQueue() override {
+    return m_queue;
   }
 
   Display* defaultDisplay() override {
@@ -772,6 +746,8 @@ public:
     return sur;
   }
 
+private:
+  base::UniquePtr<Alleg4EventQueue> m_queue;
 };
 
 System* create_system() {

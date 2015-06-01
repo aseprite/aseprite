@@ -12,6 +12,7 @@
 #include "she/clock.h"
 #include "she/display.h"
 #include "she/event.h"
+#include "she/system.h"
 
 #include <allegro.h>
 

@@ -146,7 +146,7 @@ Manager::~Manager()
 void Manager::setDisplay(she::Display* display)
 {
   m_display = display;
-  m_eventQueue = m_display->getEventQueue();
+  m_eventQueue = she::instance()->eventQueue();
 }
 
 void Manager::setClipboard(she::Clipboard* clipboard)

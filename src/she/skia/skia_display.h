@@ -52,7 +52,6 @@ public:
   void maximize() override;
   bool isMaximized() const override;
   void setTitleBar(const std::string& title) override;
-  EventQueue* getEventQueue() override;
   NativeCursor nativeMouseCursor() override;
   bool setNativeMouseCursor(NativeCursor cursor) override;
   void setMousePosition(const gfx::Point& position) override;
@@ -63,7 +62,6 @@ public:
   DisplayHandle nativeHandle() override;
 
 private:
-  EventQueue* m_queue;
   SkiaWindow m_window;
   SkiaSurface* m_surface;
   bool m_recreated;

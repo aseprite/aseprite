@@ -9,13 +9,14 @@
 #pragma once
 
 #include "she/capabilities.h"
+#include "she/event_queue.h"
+
 #include <stdexcept>
 
 namespace she {
 
   class Clipboard;
   class Display;
-  class EventLoop;
   class Font;
   class Logger;
   class NativeDialogs;
@@ -34,6 +35,7 @@ namespace she {
     virtual Capabilities capabilities() const = 0;
     virtual Logger* logger() = 0;
     virtual NativeDialogs* nativeDialogs() = 0;
+    virtual EventQueue* eventQueue() = 0;
     virtual Display* defaultDisplay() = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;
     virtual Surface* createSurface(int width, int height) = 0;
@@ -46,6 +48,10 @@ namespace she {
 
   System* create_system();
   System* instance();
+
+  inline void queue_event(const Event& ev) {
+    instance()->eventQueue()->queueEvent(ev);
+  }
 
 } // namespace she
 

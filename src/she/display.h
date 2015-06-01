@@ -16,7 +16,6 @@
 
 namespace she {
 
-  class EventQueue;
   class NonDisposableSurface;
   class Surface;
   class Font;
@@ -54,8 +53,6 @@ namespace she {
     virtual bool isMaximized() const = 0;
 
     virtual void setTitleBar(const std::string& title) = 0;
-
-    virtual EventQueue* getEventQueue() = 0;
 
     virtual NativeCursor nativeMouseCursor() = 0;
     virtual bool setNativeMouseCursor(NativeCursor cursor) = 0;
