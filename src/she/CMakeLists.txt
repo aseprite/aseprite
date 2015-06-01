@@ -36,6 +36,7 @@ if(USE_SKIA_BACKEND)
     add_definitions(-DSK_BUILD_FOR_WIN32)
   elseif(APPLE)
     add_definitions(-DSK_BUILD_FOR_MAC)
+    add_definitions(-Wno-ignored-attributes -Wno-unused-result)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
