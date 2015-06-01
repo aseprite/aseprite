@@ -17,7 +17,7 @@
 
 namespace she {
 
-class EventQueueImpl : public EventQueue {
+class WinEventQueue : public EventQueue {
 public:
   void getEvent(Event& ev, bool canWait) override {
     MSG msg;
@@ -57,6 +57,8 @@ public:
 private:
   std::queue<Event> m_events;
 };
+
+typedef WinEventQueue EventQueueImpl;
 
 } // namespace she
 
