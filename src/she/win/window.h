@@ -29,9 +29,9 @@ namespace she {
   #define SHE_WND_CLASS_NAME L"Aseprite.Window"
 
   template<typename T>
-  class Window {
+  class WinWindow {
   public:
-    Window() {
+    WinWindow() {
       registerClass();
       m_hwnd = createHwnd(this);
       m_hcursor = NULL;
@@ -459,7 +459,7 @@ namespace she {
 
       wcex.cbSize        = sizeof(WNDCLASSEX);
       wcex.style         = CS_DBLCLKS;
-      wcex.lpfnWndProc   = &Window::staticWndProc;
+      wcex.lpfnWndProc   = &WinWindow::staticWndProc;
       wcex.cbClsExtra    = 0;
       wcex.cbWndExtra    = 0;
       wcex.hInstance     = instance;
@@ -474,7 +474,7 @@ namespace she {
         throw std::runtime_error("Error registering window class");
     }
 
-    static HWND createHwnd(Window* self) {
+    static HWND createHwnd(WinWindow* self) {
       HWND hwnd = CreateWindowEx(
         WS_EX_APPWINDOW | WS_EX_ACCEPTFILES,
         SHE_WND_CLASS_NAME,
@@ -494,12 +494,12 @@ namespace she {
     }
 
     static LRESULT CALLBACK staticWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-      Window* wnd;
+      WinWindow* wnd;
 
       if (msg == WM_CREATE)
-        wnd = (Window*)lparam;
+        wnd = (WinWindow*)lparam;
       else
-        wnd = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+        wnd = (WinWindow*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
       if (wnd)
         return wnd->wndProc(msg, wparam, lparam);

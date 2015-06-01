@@ -21,7 +21,7 @@ namespace she {
 class EventQueue;
 class SkiaDisplay;
 
-class SkiaWindow : public Window<SkiaWindow> {
+class SkiaWindow : public WinWindow<SkiaWindow> {
 public:
   enum class Backend { NONE, GL, ANGLE };
 
