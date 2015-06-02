@@ -17,6 +17,7 @@
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
+#include "app/console.h"
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -130,8 +131,23 @@ EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorS
   // Drop pixels if we are changing to a non-temporary state (a
   // temporary state is something like ScrollingState).
   if (!newState || !newState->isTemporalState()) {
-    if (!m_discarded)
-      m_pixelsMovement->dropImage();
+    if (!m_discarded) {
+      try {
+        m_pixelsMovement->dropImage();
+      }
+      catch (const LockedDocumentException& ex) {
+        // This is one of the worst possible scenarios. We want to
+        // drop pixels because we're leaving this state (e.g. the user
+        // changed the current frame/layer, so we came from
+        // onBeforeFrameChanged) and we weren't able to drop those
+        // pixels.
+        //
+        // TODO this problem should be caught before we reach this
+        // state, or this problem should cancel the frame/layer
+        // change.
+        Console::showException(ex);
+      }
+    }
 
     editor->document()->resetTransformation();
 

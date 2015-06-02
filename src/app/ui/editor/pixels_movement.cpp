@@ -103,7 +103,7 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
     flipType);
 
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
 
     // Regenerate the transformed (rotated, scaled, etc.) image and
     // mask.
@@ -119,7 +119,7 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
 void PixelsMovement::cutMask()
 {
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
     if (writer.cel())
       m_transaction.execute(new cmd::ClearMask(writer.cel()));
   }
@@ -133,7 +133,7 @@ void PixelsMovement::copyMask()
   // m_transaction.setMaskPosition)
   Mask emptyMask;
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
     m_document->generateMaskBoundaries(&emptyMask);
     update_screen_for_document(m_document);
   }
@@ -160,7 +160,7 @@ void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
   // m_transaction.setMaskPosition)
   Mask emptyMask;
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
     m_document->generateMaskBoundaries(&emptyMask);
     update_screen_for_document(m_document);
   }
@@ -181,7 +181,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   gfx::Transformation::Corners oldCorners;
   m_currentData.transformBox(oldCorners);
 
-  ContextWriter writer(m_reader, 500);
+  ContextWriter writer(m_reader, 5000);
   int x1, y1, x2, y2;
 
   x1 = m_initialData.bounds().x;
@@ -444,7 +444,7 @@ void PixelsMovement::stampImage()
   ASSERT(cel && image);
 
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
     {
       // Expand the canvas to paste the image in the fully visible
       // portion of sprite.
@@ -474,7 +474,7 @@ void PixelsMovement::dropImageTemporarily()
   m_isDragging = false;
 
   {
-    ContextWriter writer(m_reader, 500);
+    ContextWriter writer(m_reader, 5000);
 
     // TODO Add undo information so the user can undo each transformation step.
 
@@ -523,7 +523,7 @@ void PixelsMovement::dropImage()
 
   // Destroy the extra cel (this cel will be used by the drawing
   // cursor surely).
-  ContextWriter writer(m_reader, 500);
+  ContextWriter writer(m_reader, 5000);
   m_document->destroyExtraCel();
 }
 
@@ -539,7 +539,7 @@ void PixelsMovement::discardImage(bool commit)
 
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).
-  ContextWriter writer(m_reader, 500);
+  ContextWriter writer(m_reader, 5000);
   m_document->destroyExtraCel();
   m_document->generateMaskBoundaries();
 }
@@ -567,7 +567,7 @@ gfx::Size PixelsMovement::getInitialImageSize() const
 
 void PixelsMovement::setMaskColor(color_t mask_color)
 {
-  ContextWriter writer(m_reader, 500);
+  ContextWriter writer(m_reader, 5000);
 
   m_maskColor = mask_color;
 
