@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/ui/editor/state_with_wheel_behavior.h"
+#include "base/connection.h"
 #include "doc/frame.h"
 #include "ui/timer.h"
 
@@ -49,7 +50,7 @@ namespace app {
     bool m_pingPongForward;
     doc::frame_t m_refFrame;
 
-    Connection m_ctxConn;
+    ScopedConnection m_ctxConn;
   };
 
 } // namespace app

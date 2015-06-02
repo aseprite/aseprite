@@ -21,6 +21,8 @@
 #include "ui/message.h"
 #include "ui/system.h"
 
+#include "ui/manager.h"
+
 namespace app {
 
 using namespace ui;
@@ -148,6 +150,11 @@ void PlayState::onPlaybackTick()
 // Before executing any command, we stop the animation
 void PlayState::onBeforeCommandExecution(Command* command)
 {
+  // This check just in case we stay connected to context signals when
+  // the editor is already deleted.
+  ASSERT(m_editor);
+  ASSERT(m_editor->getManager() == ui::Manager::getDefault());
+
   // If the command is for other editor, we don't stop the animation.
   if (!m_editor->isActive())
     return;
