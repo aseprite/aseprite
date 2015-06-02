@@ -18,10 +18,9 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"
-
-#include "ui/manager.h"
 
 namespace app {
 
