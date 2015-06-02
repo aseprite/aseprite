@@ -10,12 +10,7 @@
 
 #include "she/display.h"
 #include "she/native_cursor.h"
-
-#ifdef _WIN32
-  #include "she/skia/skia_window_win.h"
-#else
-  #error There is no SkiaWindow implementation for your platform
-#endif
+#include "she/skia/skia_window.h"
 
 namespace she {
 

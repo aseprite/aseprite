@@ -16,6 +16,10 @@
 
 #include "she/skia/skia_system.h"
 
+#if __APPLE__
+#include "she/osx/app.h"
+#endif
+
 namespace she {
 
 static System* g_instance;
@@ -71,5 +75,10 @@ int main(int argc, char* argv[])
 {
 #endif
 
+#if __APPLE__
+  she::OSXApp app;
+  return app.run(argc, argv);
+#else
   return app_main(argc, argv);
+#endif
 }

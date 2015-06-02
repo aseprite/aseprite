@@ -19,6 +19,9 @@
 
 #ifdef _WIN32
   #include "she/win/event_queue.h"
+#elif __APPLE__
+  #include "she/osx/app.h"
+  #include "she/osx/event_queue.h"
 #else
   #error There is no EventQueue implementation for your platform
 #endif
@@ -32,6 +35,9 @@ public:
   }
 
   ~SkiaSystem() {
+#if __APPLE__
+    OSXApp::instance()->stopUIEventLoop();
+#endif
   }
 
   void dispose() override {
@@ -84,7 +90,8 @@ public:
         kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
 
       if (res == SkImageDecoder::kSuccess) {
-        bm.pixelRef()->setURI(filename);
+        // TODO Check why this line crashes on OS X
+        //bm.pixelRef()->setURI(filename);
 
         SkiaSurface* sur = new SkiaSurface();
         sur->swapBitmap(bm);

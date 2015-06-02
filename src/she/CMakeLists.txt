@@ -116,6 +116,15 @@ if(USE_SKIA_BACKEND)
       skia/skia_window_win.cpp
       win/vk.cpp)
   endif()
+
+  if(APPLE)
+    list(APPEND SHE_SOURCES
+      osx/app.mm
+      osx/app_delegate.mm
+      osx/event_queue.mm
+      osx/window.mm
+      skia/skia_window_osx.mm)
+  endif()
 endif()
 
 if(WIN32)

@@ -10,6 +10,7 @@
 
 #include "she/skia/skia_display.h"
 
+#include "she/skia/skia_surface.h"
 #include "she/system.h"
 
 namespace she {
