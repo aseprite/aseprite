@@ -21,11 +21,13 @@
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
+#include "base/fs.h"
 #include "base/path.h"
 
 #include "generated_export_sprite_sheet.h"
 
 #include <limits>
+#include <sstream>
 
 namespace app {
 
@@ -111,6 +113,29 @@ namespace {
       columns, 0);
   }
 
+  bool ask_overwrite(bool askFilename, std::string filename,
+                     bool askDataname, std::string dataname) {
+    if ((askFilename &&
+         base::is_file(filename)) ||
+        (askDataname &&
+         !dataname.empty() &&
+         base::is_file(dataname))) {
+      std::stringstream text;
+      text << "Export Sprite Sheet Warning<<Do you want to overwrite the following file(s)?";
+
+      if (base::is_file(filename))
+        text << "<<" << base::get_file_name(filename).c_str();
+
+      if (base::is_file(dataname))
+        text << "<<" << base::get_file_name(dataname).c_str();
+
+      text << "||&Yes||&No";
+      if (Alert::show(text.str().c_str()) != 1)
+        return false;
+    }
+    return true;
+  }
+
 }
 
 class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
@@ -119,6 +144,8 @@ public:
     DocumentPreferences& docPref)
     : m_sprite(sprite)
     , m_docPref(docPref)
+    , m_filenameAskOverwrite(true)
+    , m_dataFilenameAskOverwrite(true)
   {
     static_assert(
       (int)app::gen::SpriteSheetType::NONE == 0 &&
@@ -185,6 +212,7 @@ public:
     if (m_dataFilename.empty())
       m_dataFilename = base + ".json";
 
+    exportButton()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
     sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
     columns()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
     fitWidth()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
@@ -270,6 +298,14 @@ public:
 
 protected:
 
+  void onExport() {
+    if (!ask_overwrite(m_filenameAskOverwrite, filenameValue(),
+                       m_dataFilenameAskOverwrite, dataFilenameValue()))
+      return;
+
+    closeWindow(exportButton());
+  }
+
   void onSheetTypeChange() {
     bool state = false;
     switch (spriteSheetTypeValue()) {
@@ -318,6 +354,7 @@ protected:
       return;
 
     m_filename = newFilename;
+    m_filenameAskOverwrite = false; // Already asked in file selector
     onFileNamesChange();
   }
 
@@ -329,10 +366,13 @@ protected:
       return;
 
     m_dataFilename = newFilename;
+    m_dataFilenameAskOverwrite = false; // Already asked in file selector
     onFileNamesChange();
   }
 
   void onDataEnabledChange() {
+    m_dataFilenameAskOverwrite = true;
+
     dataFilename()->setVisible(dataEnabled()->isSelected());
     resize();
   }
@@ -379,6 +419,8 @@ private:
   DocumentPreferences& m_docPref;
   std::string m_filename;
   std::string m_dataFilename;
+  bool m_filenameAskOverwrite;
+  bool m_dataFilenameAskOverwrite;
 };
 
 class ExportSpriteSheetCommand : public Command {
@@ -395,6 +437,7 @@ protected:
 
 private:
   bool m_useUI;
+  bool m_askOverwrite;
 };
 
 ExportSpriteSheetCommand::ExportSpriteSheetCommand()
@@ -402,6 +445,7 @@ ExportSpriteSheetCommand::ExportSpriteSheetCommand()
             "Export Sprite Sheet",
             CmdRecordableFlag)
   , m_useUI(true)
+  , m_askOverwrite(true)
 {
 }
 
@@ -411,6 +455,11 @@ void ExportSpriteSheetCommand::onLoadParams(const Params& params)
     m_useUI = params.get_as<bool>("ui");
   else
     m_useUI = true;
+
+  if (params.has_param("ask-overwrite"))
+    m_askOverwrite = params.get_as<bool>("ask-overwrite");
+  else
+    m_askOverwrite = true;
 }
 
 bool ExportSpriteSheetCommand::onEnabled(Context* context)
@@ -423,6 +472,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   Document* document(context->activeDocument());
   Sprite* sprite = document->sprite();
   DocumentPreferences& docPref(Preferences::instance().document(document));
+  bool askOverwrite = m_askOverwrite;
 
   if (m_useUI && context->isUIAvailable()) {
     ExportSpriteSheetWindow window(document, sprite, docPref);
@@ -441,6 +491,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.shapePadding(window.shapePaddingValue());
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
+
+    askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
 
   app::gen::SpriteSheetType type = docPref.spriteSheet.type();
@@ -456,6 +508,12 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   borderPadding = MID(0, borderPadding, 100);
   shapePadding = MID(0, shapePadding, 100);
   innerPadding = MID(0, innerPadding, 100);
+
+  if (context->isUIAvailable() && askOverwrite) {
+    if (!ask_overwrite(true, filename,
+                       true, dataFilename))
+      return;                   // Do not overwrite
+  }
 
   if (bestFit) {
     Fit fit = best_fit(sprite, borderPadding, shapePadding, innerPadding);

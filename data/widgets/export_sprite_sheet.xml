@@ -42,7 +42,7 @@
     <hbox cell_hspan="4">
       <boxfiller />
       <hbox homogeneous="true">
-        <button id="export_button" text="&amp;Export" minwidth="60" magnet="true" closewindow="true" />
+        <button id="export_button" text="&amp;Export" minwidth="60" magnet="true" />
         <button text="&amp;Cancel" minwidth="60" closewindow="true" />
       </hbox>
     </hbox>
