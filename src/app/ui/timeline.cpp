@@ -36,6 +36,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/convert_to.h"
@@ -2332,14 +2333,19 @@ FrameTag* Timeline::Hit::getFrameTag() const
 
 void Timeline::onNewInputPriority(InputChainElement* element)
 {
-  // As a another input element has priority (e.g. Timeline or
-  // Editor), it looks like the user wants to execute commands
-  // targetting the editor instead of the timeline. Here we disable
-  // the selected range, so commands like Clear, Copy, Cut, etc. don't
-  // target the Timeline and they are sent to the active sprite
-  // editor.
-  m_range.disableRange();
-  invalidate();
+  // It looks like the user wants to execute commands targetting the
+  // ColorBar instead of the Timeline. Here we disable the selected
+  // range, so commands like Clear, Copy, Cut, etc. don't target the
+  // Timeline and they are sent to the active sprite editor.
+  //
+  // If the Workspace is selected (an sprite Editor), maybe the user
+  // want to move the X/Y position of all cels in the Timeline range.
+  // That is why we don't disable the range in this case.
+  Workspace* workspace = dynamic_cast<Workspace*>(element);
+  if (!workspace) {
+    m_range.disableRange();
+    invalidate();
+  }
 }
 
 bool Timeline::onCanCut(Context* ctx)
