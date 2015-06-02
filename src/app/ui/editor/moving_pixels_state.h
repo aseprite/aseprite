@@ -77,8 +77,8 @@ namespace app {
     // used to remove the dragged image).
     bool m_discarded;
 
-    Connection m_ctxConn;
-    Connection m_transparentConn;
+    ScopedConnection m_ctxConn;
+    ScopedConnection m_transparentConn;
   };
 
 } // namespace app

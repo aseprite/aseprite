@@ -99,9 +99,6 @@ MovingPixelsState::~MovingPixelsState()
   contextBar->removeObserver(this);
   contextBar->updateForCurrentTool();
 
-  m_ctxConn.disconnect();
-  m_transparentConn.disconnect();
-
   m_pixelsMovement.reset(NULL);
 
   m_editor->removeObserver(this);
