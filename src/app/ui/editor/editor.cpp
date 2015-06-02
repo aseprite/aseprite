@@ -476,13 +476,20 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
     }
 
     // Convert the render to a she::Surface
-    she::Surface* tmp(she::instance()->createRgbaSurface(rc.w, rc.h));
+    static she::Surface* tmp;
+    if (!tmp || tmp->width() < rc.w || tmp->height() < rc.h) {
+      if (tmp)
+        tmp->dispose();
+
+      tmp = she::instance()->createRgbaSurface(rc.w, rc.h);
+    }
+
     if (tmp->nativeHandle()) {
       convert_image_to_surface(rendered, m_sprite->palette(m_frame),
         tmp, 0, 0, 0, 0, rc.w, rc.h);
+
       g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
     }
-    tmp->dispose();
   }
 }
 
