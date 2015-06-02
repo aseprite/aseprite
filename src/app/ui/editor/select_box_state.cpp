@@ -191,6 +191,12 @@ bool SelectBoxState::onSetCursor(Editor* editor)
       }
     }
   }
+
+  if (!requireBrushPreview()) {
+    ui::set_mouse_cursor(kArrowCursor);
+    return true;
+  }
+
   return StandbyState::onSetCursor(editor);
 }
 
