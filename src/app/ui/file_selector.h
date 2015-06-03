@@ -30,7 +30,7 @@ namespace app {
 
   class FileSelector : public app::gen::FileSelector {
   public:
-    FileSelector(FileSelectorType type);
+    FileSelector(FileSelectorType type, FileSelectorDelegate* delegate);
 
     void goBack();
     void goForward();
@@ -58,6 +58,7 @@ namespace app {
     std::string getSelectedExtension() const;
 
     FileSelectorType m_type;
+    FileSelectorDelegate* m_delegate;
     std::string m_defExtension;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;

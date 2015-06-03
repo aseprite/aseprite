@@ -14,7 +14,7 @@
 #include <string>
 
 namespace app {
-  class ContextReader;
+  class FileSelectorDelegate;
 
   class SaveFileBaseCommand : public Command {
   public:
@@ -28,7 +28,8 @@ namespace app {
     void onLoadParams(const Params& params) override;
     bool onEnabled(Context* context) override;
 
-    void saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved);
+    bool saveAsDialog(Context* context, const char* dlgTitle,
+                      FileSelectorDelegate* delegate = nullptr);
 
     std::string m_filename;
     std::string m_filenameFormat;

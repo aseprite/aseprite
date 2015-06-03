@@ -145,6 +145,10 @@
       <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
       <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
     </section>
+    <section id="save_copy">
+      <option id="filename" type="std::string" />
+      <option id="resize_scale" type="double" default="1" />
+    </section>
     <section id="sprite_sheet">
       <option id="type" type="SpriteSheetType" default="SpriteSheetType::NONE" />
       <option id="columns" type="int" default="0" />

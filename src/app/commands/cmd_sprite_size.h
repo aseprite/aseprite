@@ -49,6 +49,7 @@ namespace app {
     ui::Entry* m_widthPerc;
     ui::Entry* m_heightPerc;
 
+    bool m_useUI;
     int m_width;
     int m_height;
     double m_scaleX;

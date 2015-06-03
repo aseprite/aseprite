@@ -15,11 +15,20 @@ namespace app {
 
   enum class FileSelectorType { Open, Save };
 
+  class FileSelectorDelegate {
+  public:
+    virtual ~FileSelectorDelegate() { }
+    virtual bool hasResizeCombobox() = 0;
+    virtual double getResizeScale() = 0;
+    virtual void setResizeScale(double scale) = 0;
+  };
+
   std::string show_file_selector(
     const std::string& title,
     const std::string& initialPath,
     const std::string& showExtensions,
-    FileSelectorType type);
+    FileSelectorType type,
+    FileSelectorDelegate* delegate = nullptr);
 
 } // namespace app
 

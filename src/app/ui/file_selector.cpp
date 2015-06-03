@@ -24,6 +24,7 @@
 #include "app/ui/skin/skin_parts.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/split_string.h"
@@ -233,10 +234,13 @@ private:
   FileSelector* m_filesel;
 };
 
-FileSelector::FileSelector(FileSelectorType type)
+FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate)
   : m_type(type)
+  , m_delegate(delegate)
   , m_navigationLocked(false)
 {
+  bool withResizeOptions = (delegate && delegate->hasResizeCombobox());
+
   addChild(new ArrowNavigator(this));
 
   m_fileName = new CustomFileNameEntry;
@@ -288,6 +292,12 @@ FileSelector::FileSelector(FileSelectorType type)
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
   m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
+
+  resizeOptions()->setVisible(withResizeOptions);
+  if (withResizeOptions) {
+    resize()->setValue("1");    // 100% is default
+    resize()->setValue(base::convert_to<std::string>(m_delegate->getResizeScale()));
+  }
 }
 
 void FileSelector::goBack()
@@ -570,6 +580,10 @@ again:
     std::string lastpath = folder->getKeyName();
     set_config_string("FileSelect", "CurrentDirectory",
                       lastpath.c_str());
+
+    if (m_delegate && m_delegate->hasResizeCombobox()) {
+      m_delegate->setResizeScale(base::convert_to<double>(resize()->getValue()));
+    }
   }
 
   return result;

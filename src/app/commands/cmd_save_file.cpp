@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/console.h"
 #include "app/context_access.h"
@@ -20,9 +21,11 @@
 #include "app/file_selector.h"
 #include "app/job.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
+#include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
 #include "base/thread.h"
@@ -31,6 +34,28 @@
 #include "ui/ui.h"
 
 namespace app {
+
+class SaveAsCopyDelegate : public FileSelectorDelegate {
+public:
+  SaveAsCopyDelegate(const app::Document* doc, double scale)
+    : m_doc(doc), m_resizeScale(scale) { }
+
+  bool hasResizeCombobox() override {
+    return true;
+  }
+
+  double getResizeScale() override {
+    return m_resizeScale;
+  }
+
+  void setResizeScale(double scale) override {
+    m_resizeScale = scale;
+  }
+
+private:
+  const app::Document* m_doc;
+  double m_resizeScale;
+};
 
 class SaveFileJob : public Job, public IFileOpProgress {
 public:
@@ -71,8 +96,8 @@ private:
 };
 
 static void save_document_in_background(const Context* context,
-  const Document* document, bool mark_as_saved,
-  const std::string& fn_format)
+                                        const Document* document, bool mark_as_saved,
+                                        const std::string& fn_format)
 {
   base::UniquePtr<FileOp> fop(fop_to_save_document(context,
       document, document->filename().c_str(), fn_format.c_str()));
@@ -125,10 +150,18 @@ bool SaveFileBaseCommand::onEnabled(Context* context)
   return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
-void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* dlgTitle, bool markAsSaved)
+bool SaveFileBaseCommand::saveAsDialog(Context* context,
+                                       const char* dlgTitle,
+                                       FileSelectorDelegate* delegate)
 {
-  const Document* document = reader.document();
+  const Document* document = context->activeDocument();
   std::string filename;
+
+  // If there is a delegate, we're doing a "Save Copy As", so we don't
+  // have to mark the file as saved.
+  bool saveCopyAs = (delegate != nullptr);
+  bool markAsSaved = (!saveCopyAs);
+  double scale = 1.0;
 
   if (!m_filename.empty()) {
     filename = m_filename;
@@ -138,16 +171,23 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     filename = document->filename();
 
     std::string newfilename = app::show_file_selector(
-      dlgTitle, filename, exts, FileSelectorType::Save);
+      dlgTitle, filename, exts,
+      FileSelectorType::Save,
+      delegate);
+
     if (newfilename.empty())
-      return;
+      return false;
 
     filename = newfilename;
+    if (delegate &&
+        delegate->hasResizeCombobox()) {
+      scale = delegate->getResizeScale();
+    }
   }
 
   std::string oldFilename;
   {
-    ContextWriter writer(reader);
+    ContextWriter writer(context);
     Document* documentWriter = writer.document();
     oldFilename = documentWriter->filename();
 
@@ -156,20 +196,53 @@ void SaveFileBaseCommand::saveAsDialog(const ContextReader& reader, const char* 
     m_selectedFilename = filename;
   }
 
+  // Apply scale
+  bool undoResize = false;
+  if (scale != 1.0) {
+    Command* resizeCmd = CommandsModule::instance()->getCommandByName(CommandId::SpriteSize);
+    ASSERT(resizeCmd);
+    if (resizeCmd) {
+      int width = document->sprite()->width();
+      int height = document->sprite()->height();
+      int newWidth = int(double(width) * scale);
+      int newHeight = int(double(height) * scale);
+      if (newWidth < 1) newWidth = 1;
+      if (newHeight < 1) newHeight = 1;
+      if (width != newWidth || height != newHeight) {
+        Params params;
+        params.set("use-ui", "false");
+        params.set("width", base::convert_to<std::string>(newWidth).c_str());
+        params.set("height", base::convert_to<std::string>(newHeight).c_str());
+        params.set("resize-method", "nearest-neighbor"); // TODO add algorithm in the UI?
+        context->executeCommand(resizeCmd, params);
+        undoResize = true;
+      }
+    }
+  }
+
   // Save the document
   save_document_in_background(
-    reader.context(), const_cast<Document*>(document),
+    context, const_cast<Document*>(document),
     markAsSaved, m_filenameFormat);
 
+  // Undo resize
+  if (undoResize) {
+    Command* undoCmd = CommandsModule::instance()->getCommandByName(CommandId::Undo);
+    if (undoCmd)
+      context->executeCommand(undoCmd);
+  }
+
   {
-    ContextWriter writer(reader);
+    ContextWriter writer(context);
     Document* documentWriter = writer.document();
 
-    if (documentWriter->isModified())
+    if (document->isModified())
       documentWriter->setFilename(oldFilename);
     else
       documentWriter->incrementVersion();
   }
+
+  return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -192,23 +265,23 @@ SaveFileCommand::SaveFileCommand()
 // [main thread]
 void SaveFileCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  const Document* document(reader.document());
+  Document* document = context->activeDocument();
 
   // If the document is associated to a file in the file-system, we can
   // save it directly without user interaction.
   if (document->isAssociatedToFile()) {
-    ContextWriter writer(reader);
+    ContextWriter writer(context);
     Document* documentWriter = writer.document();
 
-    save_document_in_background(context, documentWriter, true,
+    save_document_in_background(
+      context, documentWriter, true,
       m_filenameFormat.c_str());
   }
   // If the document isn't associated to a file, we must to show the
   // save-as dialog to the user to select for first time the file-name
   // for this document.
   else {
-    saveAsDialog(reader, "Save File", true);
+    saveAsDialog(context, "Save File");
   }
 }
 
@@ -228,8 +301,7 @@ SaveFileAsCommand::SaveFileAsCommand()
 
 void SaveFileAsCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  saveAsDialog(reader, "Save As", true);
+  saveAsDialog(context, "Save As");
 }
 
 class SaveFileCopyAsCommand : public SaveFileBaseCommand {
@@ -248,17 +320,29 @@ SaveFileCopyAsCommand::SaveFileCopyAsCommand()
 
 void SaveFileCopyAsCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  const Document* document(reader.document());
-  std::string old_filename = document->filename();
+  const Document* document = context->activeDocument();
+  std::string oldFilename = document->filename();
 
   // show "Save As" dialog
-  saveAsDialog(reader, "Save Copy As", false);
+  DocumentPreferences& docPref = Preferences::instance().document(document);
+  SaveAsCopyDelegate delegate(document, docPref.saveCopy.resizeScale());
+
+  // Is a default output filename in the preferences?
+  if (!docPref.saveCopy.filename().empty()) {
+    ContextWriter writer(context);
+    writer.document()->setFilename(
+      docPref.saveCopy.filename());
+  }
+
+  if (saveAsDialog(context, "Save Copy As", &delegate)) {
+    docPref.saveCopy.filename(document->filename());
+    docPref.saveCopy.resizeScale(delegate.getResizeScale());
+  }
 
   // Restore the file name.
   {
-    ContextWriter writer(reader);
-    writer.document()->setFilename(old_filename.c_str());
+    ContextWriter writer(context);
+    writer.document()->setFilename(oldFilename.c_str());
   }
 }
 
