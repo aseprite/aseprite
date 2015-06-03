@@ -9,6 +9,7 @@
 #define APP_UI_FILE_SELECTOR_H_INCLUDED
 #pragma once
 
+#include "app/file_selector.h"
 #include "base/unique_ptr.h"
 #include "ui/window.h"
 
@@ -27,9 +28,7 @@ namespace app {
 
   class FileSelector : public ui::Window {
   public:
-    enum Type { Open, Save };
-
-    FileSelector(Type type);
+    FileSelector(FileSelectorType type);
 
     void goBack();
     void goForward();
@@ -56,7 +55,7 @@ namespace app {
     void onFileListCurrentFolderChanged();
     std::string getSelectedExtension() const;
 
-    Type m_type;
+    FileSelectorType m_type;
     std::string m_defExtension;
     ui::Button* m_goBack;
     ui::Button* m_goForward;

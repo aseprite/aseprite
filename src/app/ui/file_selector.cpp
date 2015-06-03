@@ -241,7 +241,7 @@ private:
   FileSelector* m_filesel;
 };
 
-FileSelector::FileSelector(Type type)
+FileSelector::FileSelector(FileSelectorType type)
   : Window(WithTitleBar, "")
   , m_type(type)
   , m_navigationLocked(false)
@@ -385,7 +385,7 @@ std::string FileSelector::show(
   // Change the file formats/extensions to be shown
   std::string initialExtension = base::get_file_extension(initialPath);
   std::string exts = showExtensions;
-  if (m_type == Open) {
+  if (m_type == FileSelectorType::Open) {
     auto it = preferred_open_extensions.find(exts);
     if (it == preferred_open_extensions.end())
       exts = showExtensions;
@@ -393,7 +393,7 @@ std::string FileSelector::show(
       exts = preferred_open_extensions[exts];
   }
   else {
-    ASSERT(m_type == Save);
+    ASSERT(m_type == FileSelectorType::Save);
     if (!initialExtension.empty())
       exts = initialExtension;
   }
@@ -562,7 +562,7 @@ again:
       buf += getSelectedExtension();
     }
 
-    if (m_type == Save && base::is_file(buf)) {
+    if (m_type == FileSelectorType::Save && base::is_file(buf)) {
       int ret = Alert::show("Warning<<File exists, overwrite it?<<%s||&Yes||&No||&Cancel",
                             base::get_file_name(buf).c_str());
       if (ret == 2) {
@@ -809,13 +809,13 @@ void FileSelector::onFileTypeChange()
     m_fileList->setExtensions(exts.c_str());
     m_navigationLocked = false;
 
-    if (m_type == Open) {
+    if (m_type == FileSelectorType::Open) {
       std::string origShowExtensions = m_fileType->getItem(0)->getValue();
       preferred_open_extensions[origShowExtensions] = m_fileType->getValue();
     }
   }
 
-  if (m_type == Save) {
+  if (m_type == FileSelectorType::Save) {
     std::string newExtension = getSelectedExtension();
     std::string fileName = m_fileName->getValue();
     std::string currentExtension = base::get_file_extension(fileName);

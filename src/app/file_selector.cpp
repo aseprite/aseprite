@@ -55,8 +55,7 @@ std::string show_file_selector(const std::string& title,
     }
   }
 
-  FileSelector fileSelector(type == FileSelectorType::Open ? FileSelector::Open:
-                                                             FileSelector::Save);
+  FileSelector fileSelector(type);
   return fileSelector.show(title, initialPath, showExtensions);
 }
 
