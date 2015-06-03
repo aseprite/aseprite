@@ -140,16 +140,6 @@ private:
   FileList* m_fileList;
 };
 
-// Class to create CustomFileNameEntries.
-class CustomFileNameEntryCreator : public app::WidgetLoader::IWidgetTypeCreator {
-public:
-  ~CustomFileNameEntryCreator() { }
-  void dispose() override { delete this; }
-  Widget* createWidgetFromXml(const TiXmlElement* xmlElem) override {
-    return new CustomFileNameEntry();
-  }
-};
-
 class CustomFileNameItem : public ListItem
 {
 public:
@@ -242,71 +232,57 @@ private:
 };
 
 FileSelector::FileSelector(FileSelectorType type)
-  : Window(WithTitleBar, "")
-  , m_type(type)
+  : m_type(type)
   , m_navigationLocked(false)
 {
-  app::WidgetLoader loader;
-  loader.addWidgetType("filenameentry", new CustomFileNameEntryCreator);
-
-  // Load the main widget.
-  Box* box = loader.loadWidgetT<Box>("file_selector.xml", "main");
-  addChild(box);
   addChild(new ArrowNavigator(this));
 
-  View* view;
-  app::finder(this)
-    >> "fileview_container" >> view
-    >> "goback" >> m_goBack
-    >> "goforward" >> m_goForward
-    >> "goup" >> m_goUp
-    >> "newfolder" >> m_newFolder
-    >> "location" >> m_location
-    >> "filetype" >> m_fileType
-    >> "filename" >> m_fileName;
+  m_fileName = new CustomFileNameEntry;
+  m_fileName->setFocusMagnet(true);
+  fileNamePlaceholder()->addChild(m_fileName);
 
-  m_goBack->setFocusStop(false);
-  m_goForward->setFocusStop(false);
-  m_goUp->setFocusStop(false);
-  m_newFolder->setFocusStop(false);
+  goBackButton()->setFocusStop(false);
+  goForwardButton()->setFocusStop(false);
+  goUpButton()->setFocusStop(false);
+  newFolderButton()->setFocusStop(false);
 
-  set_gfxicon_to_button(m_goBack,
+  set_gfxicon_to_button(goBackButton(),
                         PART_COMBOBOX_ARROW_LEFT,
                         PART_COMBOBOX_ARROW_LEFT_SELECTED,
                         PART_COMBOBOX_ARROW_LEFT_DISABLED,
                         JI_CENTER | JI_MIDDLE);
-  set_gfxicon_to_button(m_goForward,
+  set_gfxicon_to_button(goForwardButton(),
                         PART_COMBOBOX_ARROW_RIGHT,
                         PART_COMBOBOX_ARROW_RIGHT_SELECTED,
                         PART_COMBOBOX_ARROW_RIGHT_DISABLED,
                         JI_CENTER | JI_MIDDLE);
-  set_gfxicon_to_button(m_goUp,
+  set_gfxicon_to_button(goUpButton(),
                         PART_COMBOBOX_ARROW_UP,
                         PART_COMBOBOX_ARROW_UP_SELECTED,
                         PART_COMBOBOX_ARROW_UP_DISABLED,
                         JI_CENTER | JI_MIDDLE);
-  set_gfxicon_to_button(m_newFolder,
+  set_gfxicon_to_button(newFolderButton(),
                         PART_NEWFOLDER,
                         PART_NEWFOLDER_SELECTED,
                         PART_NEWFOLDER,
                         JI_CENTER | JI_MIDDLE);
 
-  setup_mini_look(m_goBack);
-  setup_mini_look(m_goForward);
-  setup_mini_look(m_goUp);
-  setup_mini_look(m_newFolder);
+  setup_mini_look(goBackButton());
+  setup_mini_look(goForwardButton());
+  setup_mini_look(goUpButton());
+  setup_mini_look(newFolderButton());
 
   m_fileList = new FileList();
   m_fileList->setId("fileview");
-  view->attachToView(m_fileList);
+  fileView()->attachToView(m_fileList);
   m_fileName->setAssociatedFileList(m_fileList);
 
-  m_goBack->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
-  m_goForward->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
-  m_goUp->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
-  m_newFolder->Click.connect(Bind<void>(&FileSelector::onNewFolder, this));
-  m_location->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
-  m_fileType->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
+  goBackButton()->Click.connect(Bind<void>(&FileSelector::onGoBack, this));
+  goForwardButton()->Click.connect(Bind<void>(&FileSelector::onGoForward, this));
+  goUpButton()->Click.connect(Bind<void>(&FileSelector::onGoUp, this));
+  newFolderButton()->Click.connect(Bind<void>(&FileSelector::onNewFolder, this));
+  location()->CloseListBox.connect(Bind<void>(&FileSelector::onLocationCloseListBox, this));
+  fileType()->Change.connect(Bind<void>(&FileSelector::onFileTypeChange, this));
   m_fileList->FileSelected.connect(Bind<void>(&FileSelector::onFileListFileSelected, this));
   m_fileList->FileAccepted.connect(Bind<void>(&FileSelector::onFileListFileAccepted, this));
   m_fileList->CurrentFolderChanged.connect(Bind<void>(&FileSelector::onFileListCurrentFolderChanged, this));
@@ -410,7 +386,7 @@ std::string FileSelector::show(
   updateNavigationButtons();
 
   // fill file-type combo-box
-  m_fileType->removeAllItems();
+  fileType()->removeAllItems();
 
   // Get the default extension from the given initial file name
   m_defExtension = initialExtension;
@@ -419,7 +395,7 @@ std::string FileSelector::show(
   {
     ListItem* item = new ListItem("All formats");
     item->setValue(showExtensions);
-    m_fileType->addItem(item);
+    fileType()->addItem(item);
   }
   // One file type for each supported image format
   std::vector<std::string> tokens;
@@ -431,19 +407,19 @@ std::string FileSelector::show(
 
     ListItem* item = new ListItem(tok + " files");
     item->setValue(tok);
-    m_fileType->addItem(item);
+    fileType()->addItem(item);
   }
   // All files
   {
     ListItem* item = new ListItem("All files");
     item->setValue("");         // Empty extensions means "*.*"
-    m_fileType->addItem(item);
+    fileType()->addItem(item);
   }
 
   // file name entry field
   m_fileName->setValue(base::get_file_name(initialPath).c_str());
   m_fileName->getEntryWidget()->selectText(0, -1);
-  m_fileType->setValue(exts);
+  fileType()->setValue(exts);
 
   // setup the title of the window
   setText(title.c_str());
@@ -612,7 +588,7 @@ void FileSelector::updateLocation()
   }
 
   // Clear all the items from the combo-box
-  m_location->removeAllItems();
+  location()->removeAllItems();
 
   // Add item by item (from root to the specific current folder)
   int level = 0;
@@ -629,7 +605,7 @@ void FileSelector::updateLocation()
     buf += fileItem->getDisplayName();
 
     // Add the new location to the combo-box
-    m_location->addItem(new CustomFileNameItem(buf.c_str(), fileItem));
+    location()->addItem(new CustomFileNameItem(buf.c_str(), fileItem));
 
     if (fileItem == currentFolder)
       selected_index = level;
@@ -639,20 +615,20 @@ void FileSelector::updateLocation()
 
   // Add paths from recent files list
   {
-    m_location->addItem("");
-    m_location->addItem("-------- Recent Paths --------");
+    location()->addItem("");
+    location()->addItem("-------- Recent Paths --------");
 
     RecentFiles::const_iterator it = App::instance()->getRecentFiles()->paths_begin();
     RecentFiles::const_iterator end = App::instance()->getRecentFiles()->paths_end();
     for (; it != end; ++it)
-      m_location->addItem(new CustomFolderNameItem(it->c_str()));
+      location()->addItem(new CustomFolderNameItem(it->c_str()));
   }
 
   // Select the location
   {
-    m_location->setSelectedItemIndex(selected_index);
-    m_location->getEntryWidget()->setText(currentFolder->getDisplayName().c_str());
-    m_location->getEntryWidget()->deselectText();
+    location()->setSelectedItemIndex(selected_index);
+    location()->getEntryWidget()->setText(currentFolder->getDisplayName().c_str());
+    location()->getEntryWidget()->deselectText();
   }
 }
 
@@ -660,21 +636,21 @@ void FileSelector::updateNavigationButtons()
 {
   // Update the state of the go back button: if the navigation-history
   // has two elements and the navigation-position isn't the first one.
-  m_goBack->setEnabled(navigation_history->size() > 1 &&
-                       (navigation_position.isNull() ||
-                        navigation_position.getIterator() != navigation_history->begin()));
+  goBackButton()->setEnabled(navigation_history->size() > 1 &&
+                             (navigation_position.isNull() ||
+                              navigation_position.getIterator() != navigation_history->begin()));
 
   // Update the state of the go forward button: if the
   // navigation-history has two elements and the navigation-position
   // isn't the last one.
-  m_goForward->setEnabled(navigation_history->size() > 1 &&
-                          (navigation_position.isNull() ||
-                           navigation_position.getIterator() != navigation_history->end()-1));
+  goForwardButton()->setEnabled(navigation_history->size() > 1 &&
+                                (navigation_position.isNull() ||
+                                 navigation_position.getIterator() != navigation_history->end()-1));
 
   // Update the state of the go up button: if the current-folder isn't
   // the root-item.
   IFileItem* currentFolder = m_fileList->getCurrentFolder();
-  m_goUp->setEnabled(currentFolder != FileSystemModule::instance()->getRootFileItem());
+  goUpButton()->setEnabled(currentFolder != FileSystemModule::instance()->getRootFileItem());
 }
 
 void FileSelector::addInNavigationHistory(IFileItem* folder)
@@ -776,13 +752,13 @@ void FileSelector::onLocationCloseListBox()
 {
   // When the user change the location we have to set the
   // current-folder in the 'fileview' widget
-  CustomFileNameItem* comboFileItem = dynamic_cast<CustomFileNameItem*>(m_location->getSelectedItem());
+  CustomFileNameItem* comboFileItem = dynamic_cast<CustomFileNameItem*>(location()->getSelectedItem());
   IFileItem* fileItem = (comboFileItem != NULL ? comboFileItem->getFileItem(): NULL);
 
   // Maybe the user selected a recent file path
   if (fileItem == NULL) {
     CustomFolderNameItem* comboFolderItem =
-      dynamic_cast<CustomFolderNameItem*>(m_location->getSelectedItem());
+      dynamic_cast<CustomFolderNameItem*>(location()->getSelectedItem());
 
     if (comboFolderItem != NULL) {
       std::string path = comboFolderItem->getText();
@@ -803,15 +779,15 @@ void FileSelector::onLocationCloseListBox()
 // change the file-extension in the 'filename' entry widget
 void FileSelector::onFileTypeChange()
 {
-  std::string exts = m_fileType->getValue();
+  std::string exts = fileType()->getValue();
   if (exts != m_fileList->extensions()) {
     m_navigationLocked = true;
     m_fileList->setExtensions(exts.c_str());
     m_navigationLocked = false;
 
     if (m_type == FileSelectorType::Open) {
-      std::string origShowExtensions = m_fileType->getItem(0)->getValue();
-      preferred_open_extensions[origShowExtensions] = m_fileType->getValue();
+      std::string origShowExtensions = fileType()->getItem(0)->getValue();
+      preferred_open_extensions[origShowExtensions] = fileType()->getValue();
     }
   }
 
@@ -855,7 +831,7 @@ void FileSelector::onFileListCurrentFolderChanged()
 
 std::string FileSelector::getSelectedExtension() const
 {
-  std::string ext = m_fileType->getValue();
+  std::string ext = fileType()->getValue();
   if (ext.empty() || ext.find(',') != std::string::npos)
     ext = m_defExtension;
   return ext;

@@ -13,6 +13,8 @@
 #include "base/unique_ptr.h"
 #include "ui/window.h"
 
+#include "generated_file_selector.h"
+
 #include <string>
 
 namespace ui {
@@ -26,7 +28,7 @@ namespace app {
   class FileList;
   class IFileItem;
 
-  class FileSelector : public ui::Window {
+  class FileSelector : public app::gen::FileSelector {
   public:
     FileSelector(FileSelectorType type);
 
@@ -57,12 +59,6 @@ namespace app {
 
     FileSelectorType m_type;
     std::string m_defExtension;
-    ui::Button* m_goBack;
-    ui::Button* m_goForward;
-    ui::Button* m_goUp;
-    ui::Button* m_newFolder;
-    ui::ComboBox* m_location;
-    ui::ComboBox* m_fileType;
     CustomFileNameEntry* m_fileName;
     FileList* m_fileList;
 
