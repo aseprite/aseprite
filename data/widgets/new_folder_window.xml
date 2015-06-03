@@ -1,0 +1,19 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<gui>
+  <window text="New Folder" id="new_folder_window">
+    <vbox>
+      <hbox>
+        <label text="Folder Name:" />
+        <entry text="New Folder" id="name" maxsize="256" magnet="true" expansive="true" />
+      </hbox>
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
+          <button text="&amp;Cancel" closewindow="true" id="cancel" />
+        </hbox>
+      </hbox>
+    </vbox>
+  </window>
+</gui>

@@ -29,20 +29,4 @@
     </grid>
   </vbox>
   </window>
-
-  <window text="New Folder" id="newfolder_dialog">
-    <vbox>
-      <hbox>
-        <label text="Folder Name:" />
-        <entry text="New Folder" id="name" maxsize="256" magnet="true" expansive="true" />
-      </hbox>
-      <hbox>
-        <boxfiller />
-        <hbox homogeneous="true">
-          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-          <button text="&amp;Cancel" closewindow="true" id="cancel" />
-        </hbox>
-      </hbox>
-    </vbox>
-  </window>
 </gui>

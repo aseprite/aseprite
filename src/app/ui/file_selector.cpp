@@ -30,6 +30,8 @@
 #include "base/unique_ptr.h"
 #include "ui/ui.h"
 
+#include "generated_new_folder_window.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
@@ -713,19 +715,13 @@ void FileSelector::onGoUp()
 
 void FileSelector::onNewFolder()
 {
-  base::UniquePtr<Window> window(load_widget<Window>("file_selector.xml", "newfolder_dialog"));
-  Button* ok;
-  Entry* name;
+  app::gen::NewFolderWindow window;
 
-  app::finder(window)
-    >> "ok" >> ok
-    >> "name" >> name;
-
-  window->openWindowInForeground();
-  if (window->getKiller() == ok) {
+  window.openWindowInForeground();
+  if (window.getKiller() == window.ok()) {
     IFileItem* currentFolder = m_fileList->getCurrentFolder();
     if (currentFolder) {
-      std::string dirname = name->getText();
+      std::string dirname = window.name()->getText();
 
       // Create the new directory
       try {
