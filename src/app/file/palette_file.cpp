@@ -61,7 +61,7 @@ Palette* load_palette(const char *filename)
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
-    if (ff->support(FILE_SUPPORT_LOAD)) {
+    if (ff && ff->support(FILE_SUPPORT_LOAD)) {
       FileOp* fop = fop_to_load_document(NULL, filename,
         FILE_LOAD_SEQUENCE_NONE |
         FILE_LOAD_ONE_FRAME);
@@ -108,7 +108,7 @@ bool save_palette(const char *filename, const Palette* pal)
   }
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
-    if (ff->support(FILE_SUPPORT_SAVE)) {
+    if (ff && ff->support(FILE_SUPPORT_SAVE)) {
       app::Context tmpContext;
       doc::Document* doc = tmpContext.documents().add(
         16, 16, doc::ColorMode::INDEXED,
