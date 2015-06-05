@@ -328,6 +328,9 @@ Render::Render()
   , m_bgType(BgType::TRANSPARENT)
   , m_bgCheckedSize(16, 16)
   , m_globalOpacity(255)
+  , m_selectedLayer(nullptr)
+  , m_selectedFrame(-1)
+  , m_previewImage(nullptr)
   , m_onionskinType(OnionskinType::NONE)
 {
 }
