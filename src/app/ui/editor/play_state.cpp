@@ -13,11 +13,11 @@
 
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
-#include "app/handle_anidir.h"
 #include "app/loop_tag.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
+#include "doc/handle_anidir.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -134,8 +134,7 @@ void PlayState::onPlaybackTick()
 
   while (m_nextFrameTime <= 0) {
     doc::frame_t frame = calculate_next_frame(
-      sprite,
-      m_editor->frame(), tag,
+      sprite, m_editor->frame(), frame_t(1), tag,
       m_pingPongForward);
 
     m_editor->setFrame(frame);

@@ -37,6 +37,7 @@ namespace app {
     void onOpacity();
     void onOpacityStep();
     void onResetOnionskin();
+    void onLoopTagChange();
 
   private:
     void updateWidgetsFromCurrentSettings();

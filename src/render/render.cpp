@@ -11,6 +11,7 @@
 #include "render/render.h"
 
 #include "doc/doc.h"
+#include "doc/handle_anidir.h"
 #include "gfx/clip.h"
 #include "gfx/region.h"
 
@@ -331,7 +332,7 @@ Render::Render()
   , m_selectedLayer(nullptr)
   , m_selectedFrame(-1)
   , m_previewImage(nullptr)
-  , m_onionskinType(OnionskinType::NONE)
+  , m_onionskin(OnionskinType::NONE)
 {
 }
 
@@ -392,18 +393,14 @@ void Render::removeExtraImage()
   m_extraCel = NULL;
 }
 
-void Render::setOnionskin(OnionskinType type, int prevs, int nexts, int opacityBase, int opacityStep)
+void Render::setOnionskin(const OnionskinOptions& options)
 {
-  m_onionskinType = type;
-  m_onionskinPrevs = prevs;
-  m_onionskinNexts = nexts;
-  m_onionskinOpacityBase = opacityBase;
-  m_onionskinOpacityStep = opacityStep;
+  m_onionskin = options;
 }
 
 void Render::disableOnionskin()
 {
-  m_onionskinType = OnionskinType::NONE;
+  m_onionskin.type(OnionskinType::NONE);
 }
 
 void Render::renderSprite(
@@ -510,27 +507,48 @@ void Render::renderSprite(
 
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
-  if (m_onionskinType != OnionskinType::NONE) {
-    for (frame_t f = frame - m_onionskinPrevs;
-         f <= frame + m_onionskinNexts; ++f) {
-      if (f == frame || f < 0 || f > m_sprite->lastFrame())
+  if (m_onionskin.type() != OnionskinType::NONE) {
+    FrameTag* loop = m_onionskin.loopTag();
+    frame_t frameIn;
+
+    for (frame_t frameOut = frame - m_onionskin.prevFrames();
+         frameOut <= frame + m_onionskin.nextFrames();
+         ++frameOut) {
+      if (loop) {
+        bool pingPongForward = true;
+        frameIn =
+          calculate_next_frame(m_sprite,
+                               frame, frameOut - frame,
+                               loop, pingPongForward);
+      }
+      else {
+        frameIn = frameOut;
+      }
+
+      if (frameIn == frame ||
+          frameIn < 0 ||
+          frameIn > m_sprite->lastFrame()) {
         continue;
-      else if (f < frame)
-        m_globalOpacity = m_onionskinOpacityBase - m_onionskinOpacityStep * ((frame - f)-1);
-      else
-        m_globalOpacity = m_onionskinOpacityBase - m_onionskinOpacityStep * ((f - frame)-1);
+      }
+
+      if (frameOut < frame) {
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frame - frameOut)-1);
+      }
+      else {
+        m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frameOut - frame)-1);
+      }
 
       if (m_globalOpacity > 0) {
         m_globalOpacity = MID(0, m_globalOpacity, 255);
 
         int blend_mode = -1;
-        if (m_onionskinType == OnionskinType::MERGE)
+        if (m_onionskin.type() == OnionskinType::MERGE)
           blend_mode = BLEND_MODE_NORMAL;
-        else if (m_onionskinType == OnionskinType::RED_BLUE_TINT)
-          blend_mode = (f < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
+        else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
+          blend_mode = (frameOut < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
 
         renderLayer(m_sprite->folder(), dstImage,
-          area, f, zoom, scaled_func,
+          area, frameIn, zoom, scaled_func,
           true, true, blend_mode);
       }
     }

@@ -267,7 +267,6 @@ add_library(app-lib
   filename_formatter.cpp
   flatten.cpp
   gui_xml.cpp
-  handle_anidir.cpp
   ini_file.cpp
   job.cpp
   launcher.cpp

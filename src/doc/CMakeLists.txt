@@ -29,6 +29,7 @@ add_library(doc-lib
   frame_tag.cpp
   frame_tag_io.cpp
   frame_tags.cpp
+  handle_anidir.cpp
   image.cpp
   image_io.cpp
   images_collector.cpp

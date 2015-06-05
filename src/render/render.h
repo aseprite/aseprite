@@ -8,6 +8,7 @@
 #define RENDER_RENDER_H_INCLUDED
 #pragma once
 
+#include "doc/anidir.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
@@ -22,6 +23,7 @@ namespace gfx {
 
 namespace doc {
   class Cel;
+  class FrameTag;
   class Image;
   class Layer;
   class Palette;
@@ -41,6 +43,40 @@ namespace render {
     NONE,
     MERGE,
     RED_BLUE_TINT,
+  };
+
+  class OnionskinOptions {
+  public:
+    OnionskinOptions(OnionskinType type)
+      : m_type(type)
+      , m_prevFrames(0)
+      , m_nextFrames(0)
+      , m_opacityBase(0)
+      , m_opacityStep(0)
+      , m_loopTag(nullptr) {
+    }
+
+    OnionskinType type() const { return m_type; }
+    int prevFrames() const { return m_prevFrames; }
+    int nextFrames() const { return m_nextFrames; }
+    int opacityBase() const { return m_opacityBase; }
+    int opacityStep() const { return m_opacityStep; }
+    FrameTag* loopTag() const { return m_loopTag; }
+
+    void type(OnionskinType type) { m_type = type; }
+    void prevFrames(int prevFrames) { m_prevFrames = prevFrames; }
+    void nextFrames(int nextFrames) { m_nextFrames = nextFrames; }
+    void opacityBase(int base) { m_opacityBase = base; }
+    void opacityStep(int step) { m_opacityStep = step; }
+    void loopTag(FrameTag* loopTag) { m_loopTag = loopTag; }
+
+  private:
+    OnionskinType m_type;
+    int m_prevFrames;
+    int m_nextFrames;
+    int m_opacityBase;
+    int m_opacityStep;
+    FrameTag* m_loopTag;
   };
 
   class Render {
@@ -68,8 +104,7 @@ namespace render {
       frame_t currentFrame);
     void removeExtraImage();
 
-    void setOnionskin(OnionskinType type,
-      int prevs, int nexts, int opacityBase, int opacityStep);
+    void setOnionskin(const OnionskinOptions& options);
     void disableOnionskin();
 
     void renderSprite(
@@ -160,12 +195,7 @@ namespace render {
     const Layer* m_selectedLayer;
     frame_t m_selectedFrame;
     Image* m_previewImage;
-
-    OnionskinType m_onionskinType;
-    int m_onionskinPrevs;
-    int m_onionskinNexts;
-    int m_onionskinOpacityBase;
-    int m_onionskinOpacityStep;
+    OnionskinOptions m_onionskin;
   };
 
   void composite_image(Image* dst, const Image* src,
