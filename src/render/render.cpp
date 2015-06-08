@@ -70,11 +70,13 @@ template<>
 class BlenderHelper<RgbTraits, IndexedTraits> {
   const Palette* m_pal;
   int m_blend_mode;
+  BLEND_COLOR m_blend_color;
   color_t m_mask_color;
 public:
   BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
   {
     m_blend_mode = blend_mode;
+    m_blend_color = RgbTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
     m_pal = pal;
   }
@@ -88,7 +90,7 @@ public:
     }
     else {
       if (src != m_mask_color) {
-        scanline = rgba_blend_normal(dst, m_pal->getEntry(src), opacity);
+        scanline = (*m_blend_color)(dst, m_pal->getEntry(src), opacity);
       }
       else
         scanline = dst;
