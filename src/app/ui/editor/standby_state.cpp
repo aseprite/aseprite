@@ -417,6 +417,10 @@ void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
   try {
+    // Clear brush preview, as the extra cel will be replaced with the
+    // transformed image.
+    editor->hideDrawingCursor();
+
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));

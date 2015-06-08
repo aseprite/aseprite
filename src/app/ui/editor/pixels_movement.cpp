@@ -65,6 +65,11 @@ PixelsMovement::PixelsMovement(Context* context,
   m_initialData = gfx::Transformation(gfx::Rect(initialPos, gfx::Size(moveThis->width(), moveThis->height())));
   m_currentData = m_initialData;
 
+  // The extra cel must be null, because if it's not null, it means
+  // that someone else is using it (e.g. the editor brush preview),
+  // and its owner could destroy our new "extra cel".
+  ASSERT(!m_document->getExtraCel());
+
   ContextWriter writer(m_reader, 500);
   m_document->prepareExtraCel(m_sprite->bounds(), opacity);
   m_document->setExtraCelType(render::ExtraType::COMPOSITE);
@@ -577,6 +582,8 @@ void PixelsMovement::setMaskColor(color_t mask_color)
 
 void PixelsMovement::redrawExtraImage()
 {
+  ASSERT(m_document->getExtraCelImage());
+
   // Draw the transformed pixels in the extra-cel which is the chunk
   // of pixels that the user is moving.
   drawImage(m_document->getExtraCelImage(), gfx::Point(0, 0));
@@ -600,6 +607,8 @@ void PixelsMovement::redrawCurrentMask()
 
 void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt)
 {
+  ASSERT(dst);
+
   gfx::Transformation::Corners corners;
   m_currentData.transformBox(corners);
 

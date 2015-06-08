@@ -1551,6 +1551,10 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
     y = MID(0, y, sprite->height() - image->height());
   }
 
+  // Clear brush preview, as the extra cel will be replaced with the
+  // pasted image.
+  hideDrawingCursor();
+
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
       getSite(), image, gfx::Point(x, y), opacity, "Paste"));
