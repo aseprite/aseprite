@@ -132,7 +132,7 @@ if(USE_ALLEG4_BACKEND)
 endif()
 
 if(USE_SHARED_PIXMAN)
-  find_library(LIBPIXMAN_LIBRARY NAMES pixman)
+  find_library(LIBPIXMAN_LIBRARY NAMES pixman pixman-1)
   find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h)
 
   set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
