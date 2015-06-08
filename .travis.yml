@@ -11,7 +11,7 @@ env:
 
 before_install:
   - sudo apt-get update -qq
-  - if [ "$SHARED" == "ON" ]; then sudo apt-get install -y libcurl-dev libgif-dev libjpeg-dev libz-dev libpng-dev libtinyxml-dev libgtest-dev libpixman-1-dev liballegro4.2-dev ; fi
+  - if [ "$SHARED" == "ON" ]; then sudo apt-get install -y libcurl4-openssl-dev libgif-dev libjpeg-dev libz-dev libpng-dev libtinyxml-dev libgtest-dev libpixman-1-dev liballegro4.2-dev ; fi
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -y -qq g++-4.8; fi
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
   - if [ "$CXX" == "clang++" ]; then sudo apt-get install -y clang-3.4; fi
