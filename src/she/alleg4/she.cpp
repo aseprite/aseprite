@@ -11,6 +11,7 @@
 #include "she/she.h"
 
 #include "base/concurrent_queue.h"
+#include "base/exception.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
 #include "she/alleg4/surface.h"
@@ -679,7 +680,7 @@ public:
   Alleg4System()
   {
     if (allegro_init() < 0)
-      throw std::runtime_error("Cannot initialize Allegro library");
+      throw base::Exception("Cannot initialize Allegro library: %s", allegro_error);
 
     set_uformat(U_UTF8);
 #if MAKE_VERSION(ALLEGRO_VERSION, ALLEGRO_SUB_VERSION, ALLEGRO_WIP_VERSION) >= MAKE_VERSION(4, 4, 0)
