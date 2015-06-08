@@ -11,4 +11,4 @@ before_script:
 
 script:
   - "make"
-  - "make run_all_tests"
+  - "make run_non_ui_tests"
