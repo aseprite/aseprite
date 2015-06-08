@@ -35,20 +35,6 @@ if(NOT USE_SHARED_GTEST AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.
   # CMakeLists.txt modifies some MSVC flags.
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include)
   add_library(gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/gtest-all.cc)
-else()
-  find_library(LIBGTEST_LIBRARY NAMES gtest)
-  find_path(LIBGTEST_INCLUDE_DIR NAMES "gtest/gtest.h")
-
-  set(libs3rdparty ${libs3rdparty} ${LIBGTEST_LIBRARY})
-  include_directories(${LIBGTEST_INCLUDE_DIR})
-
-  check_cxx_source_compiles("
-    #include <gtest/gtest.h>
-    int main() { }
-    " HAVE_GTEST_GTEST_H)
-  if(NOT HAVE_GTEST_GTEST_H)
-    message(FATAL_ERROR "gtest/gtest.h is missing. Set USE_SHARED_GTEST=OFF and initialize submodules: git submodule update --init --recursive")
-  endif()
 endif()
 
 if(NOT USE_SHARED_CURL)
