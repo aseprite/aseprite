@@ -36,7 +36,12 @@ if(NOT USE_SHARED_GTEST AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include)
   add_library(gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/gtest-all.cc)
 else()
-  find_library(gtest)
+  find_library(LIBGTEST_LIBRARY NAMES gtest)
+  find_path(LIBGTEST_INCLUDE_DIR NAMES "gtest/gtest.h")
+
+  set(libs3rdparty ${libs3rdparty} ${LIBGTEST_LIBRARY})
+  include_directories(${LIBGTEST_INCLUDE_DIR})
+
   check_cxx_source_compiles("
     #include <gtest/gtest.h>
     int main() { }
