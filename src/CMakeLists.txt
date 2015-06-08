@@ -1,8 +1,6 @@
 # Aseprite
 # Copyright (C) 2001-2015  David Capello
 
-include(CheckCXXSourceCompiles)
-
 ######################################################################
 # Common definitions for all Aseprite libraries/projects
 
@@ -143,22 +141,6 @@ else()
   set(libs3rdparty ${libs3rdparty} pixman)
   include_directories(${PIXMAN_DIR}/pixman)
   include_directories(${CMAKE_BINARY_DIR})
-endif()
-
-if(USE_SHARED_GTEST)
-  find_library(LIBGTEST_LIBRARY NAMES gtest)
-  find_path(LIBGTEST_INCLUDE_DIR NAMES "gtest/gtest.h")
-
-  set(libs3rdparty ${libs3rdparty} ${LIBGTEST_LIBRARY})
-  include_directories(${LIBGTEST_INCLUDE_DIR})
-
-  check_cxx_source_compiles("
-    #include <gtest/gtest.h>
-    int main() { }
-    " HAVE_GTEST_GTEST_H)
-  if(NOT HAVE_GTEST_GTEST_H)
-    message(FATAL_ERROR "gtest/gtest.h is missing. Set USE_SHARED_GTEST=OFF and initialize submodules: git submodule update --init --recursive")
-  endif()
 endif()
 
 set(libs3rdparty simpleini ${libs3rdparty})

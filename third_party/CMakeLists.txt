@@ -28,11 +28,13 @@ if(NOT USE_SHARED_TINYXML)
   add_subdirectory(tinyxml)
 endif()
 
-if(NOT USE_SHARED_GTEST AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.txt)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/gtest/CMakeLists.txt)
   # We don't use add_subdirectory(gtest) because the gtest
   # CMakeLists.txt modifies some MSVC flags.
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/include)
   add_library(gtest ${CMAKE_CURRENT_SOURCE_DIR}/gtest/src/gtest-all.cc)
+else()
+  message(FATAL_ERROR "gtest/gtest.h is missing. Initialize submodules: git submodule update --init --recursive")
 endif()
 
 if(NOT USE_SHARED_CURL)
