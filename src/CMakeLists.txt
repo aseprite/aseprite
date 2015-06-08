@@ -133,7 +133,7 @@ endif()
 
 if(USE_SHARED_PIXMAN)
   find_library(LIBPIXMAN_LIBRARY NAMES pixman pixman-1)
-  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h)
+  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
 
   set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
   include_directories(${LIBPIXMAN_INCLUDE_DIR})
