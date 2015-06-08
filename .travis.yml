@@ -9,10 +9,18 @@ env:
     - SHARED=OFF
     - SHARED=ON
 
+before_install:
+  - sudo apt-get update -qq
+  - if [ "$SHARED" == "ON" ]; then sudo apt-get install -y libcurl-dev libgif-dev libjpeg-dev libz-dev libpng-dev libtinyxml-dev libgtest-dev libpixman-1-dev liballegro4.2-dev ; fi
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -y -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+  - if [ "$CXX" == "clang++" ]; then sudo apt-get install -y clang-3.4; fi
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.4"; fi
+
 before_script:
   - mkdir build
   - cd build
-  - cmake .. -DUSE_SHARED_CURL=$SHARED -DUSE_SHARED_GIFLIB=$SHARED -DUSE_SHARED_JPEGLIB=$SHARED -DUSE_SHARED_ZLIB=$SHARED -DUSE_SHARED_LIBPNG=$SHARED -DUSE_SHARED_LIBLOADPNG=$SHARED -DUSE_SHARED_TINYXML=$SHARED -DUSE_SHARED_GTEST=$SHARED -DUSE_SHARED_PIXMAN=$SHARED -DUSE_SHARED_ALLEGRO4=$SHARED
+  - cmake .. -DUSE_SHARED_CURL=$SHARED -DUSE_SHARED_GIFLIB=$SHARED -DUSE_SHARED_JPEGLIB=$SHARED -DUSE_SHARED_ZLIB=$SHARED -DUSE_SHARED_LIBPNG=$SHARED -DUSE_SHARED_TINYXML=$SHARED -DUSE_SHARED_GTEST=$SHARED -DUSE_SHARED_PIXMAN=$SHARED -DUSE_SHARED_ALLEGRO4=$SHARED
 
 script:
   - "make"
