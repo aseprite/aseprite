@@ -1,8 +1,6 @@
 # ASEPRITE
 # Copyright (C) 2001-2015  David Capello
 
-include(CheckCXXSourceCompiles)
-
 include_directories(.)
 
 if(MSVC)

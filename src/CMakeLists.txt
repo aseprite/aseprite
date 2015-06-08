@@ -1,6 +1,8 @@
 # Aseprite
 # Copyright (C) 2001-2015  David Capello
 
+include(CheckCXXSourceCompiles)
+
 ######################################################################
 # Common definitions for all Aseprite libraries/projects
 
