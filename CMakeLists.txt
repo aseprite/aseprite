@@ -41,7 +41,6 @@ option(USE_SHARED_ZLIB    "Use your installed copy of zlib" off)
 option(USE_SHARED_LIBPNG  "Use your installed copy of libpng" off)
 option(USE_SHARED_LIBLOADPNG "Use your installed copy of libloadpng" off)
 option(USE_SHARED_TINYXML "Use your installed copy of tinyxml" off)
-option(USE_SHARED_GTEST   "Use your installed copy of gtest" off)
 option(USE_SHARED_PIXMAN  "Use your installed copy of pixman" off)
 option(USE_SHARED_ALLEGRO4 "Use shared Allegro 4 library (without resize support)" off)
 option(USE_ALLEG4_BACKEND "Use Allegro 4 backend" on)
@@ -113,14 +112,6 @@ set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
 
-# Zlib generated zconf.h file
-include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
-
-# We need private libpng header files so it doesn't matter if we use
-# the shared version of libpng or not, we need to find header files in
-# "third_party/libpng"" directory.
-include_directories(${LIBPNG_DIR})
-
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -128,10 +119,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
 ######################################################################
-# Common definitions to compile all sources
-
-# Do not use MMX optimizations in PNG code
-add_definitions(-DPNG_NO_MMX_CODE)
+# Common definitions to compile all sources (app code and third party)
 
 # Debug C/C++ flags
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -141,15 +129,36 @@ else()
 endif()
 
 # Fix to compile gtest with VC11 (2012)
-if(NOT USE_SHARED_GTEST)
-  if (MSVC_VERSION EQUAL 1700)
-    add_definitions(-D_VARIADIC_MAX=10)
-  endif()
+if(MSVC_VERSION EQUAL 1700)
+  add_definitions(-D_VARIADIC_MAX=10)
+endif()
+
+if(NOT WIN32 AND NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
 endif()
 
 if(NOT USE_SHARED_CURL)
   set(CURL_STATICLIB ON BOOL)
 endif()
+
+if(NOT USE_SHARED_ZLIB)
+  # Zlib generated zconf.h file
+  include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
+endif()
+
+if(USE_SHARED_LIBPNG)
+  find_package(PNG)
+  if(NOT PNG_FOUND)
+    message(FATAL_ERROR "libpng not found")
+  endif()
+  add_definitions(${PNG_DEFINITIONS})
+  include_directories(${PNG_INCLUDE_DIR})
+else()
+  include_directories(${LIBPNG_DIR})
+endif()
+
+# Do not use MMX optimizations in PNG code
+add_definitions(-DPNG_NO_MMX_CODE)
 
 ######################################################################
 # Allegro 4 backend

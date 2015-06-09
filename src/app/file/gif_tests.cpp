@@ -14,20 +14,17 @@
 #include "app/file/gif_options.h"
 #include "doc/doc.h"
 #include "doc/test_context.h"
-#include "she/scoped_handle.h"
-#include "she/system.h"
 
 using namespace app;
 
 class GifFormat : public ::testing::Test {
 public:
-  GifFormat() : m_system(she::create_system()) {
+  GifFormat() {
     FileFormatsManager::instance()->registerAllFormats();
   }
 
 protected:
   doc::TestContextT<app::Context> m_ctx;
-  she::ScopedHandle<she::System> m_system;
 };
 
 TEST_F(GifFormat, Dimensions)

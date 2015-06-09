@@ -13,7 +13,6 @@
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
 #include "doc/doc.h"
-#include "she/she.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -23,7 +22,6 @@ using namespace app;
 
 TEST(File, SeveralSizes)
 {
-  she::ScopedHandle<she::System> system(she::create_system());
   // Register all possible image formats.
   FileFormatsManager::instance()->registerAllFormats();
   std::vector<char> fn(256);

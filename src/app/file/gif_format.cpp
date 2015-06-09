@@ -31,6 +31,10 @@
 
 #include <gif_lib.h>
 
+#if GIFLIB_MAJOR < 5
+#define GifMakeMapObject MakeMapObject
+#endif
+
 namespace app {
 
 using namespace base;
@@ -106,15 +110,23 @@ static int interlaced_jumps[] = { 8, 8, 4, 2 };
 
 struct GifFilePtr {
 public:
+#if GIFLIB_MAJOR >= 5
   typedef int (*CloseFunc)(GifFileType*, int*);
+#else
+  typedef int (*CloseFunc)(GifFileType*);
+#endif
 
   GifFilePtr(GifFileType* ptr, CloseFunc closeFunc) :
     m_ptr(ptr), m_closeFunc(closeFunc) {
   }
 
   ~GifFilePtr() {
+#if GIFLIB_MAJOR >= 5
     int errCode;
     m_closeFunc(m_ptr, &errCode);
+#else
+    m_closeFunc(m_ptr);
+#endif
   }
 
   operator GifFileType*() {
@@ -132,8 +144,14 @@ private:
 
 bool GifFormat::onLoad(FileOp* fop)
 {
-  int errCode;
-  GifFilePtr gif_file(DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb"), &errCode), &DGifCloseFile);
+#if GIFLIB_MAJOR >= 5
+  int errCode = 0;
+#endif
+  GifFilePtr gif_file(DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb")
+#if GIFLIB_MAJOR >= 5
+                                         , &errCode
+#endif
+                                         ), &DGifCloseFile);
 
   if (!gif_file) {
     fop_error(fop, "Error loading GIF header.\n");
@@ -244,7 +262,13 @@ bool GifFormat::onLoad(FileOp* fop)
           for (int y = 0; y < frame_h; ++y) {
             addr = frame_image->getPixelAddress(0, y);
             if (DGifGetLine(gif_file, addr, frame_w) == GIF_ERROR)
-              throw Exception("Invalid image data (%d).\n", gif_file->Error);
+              throw Exception("Invalid image data (%d).\n"
+#if GIFLIB_MAJOR >= 5
+                              , gif_file->Error
+#else
+                              , GifLastError()
+#endif
+                              );
           }
         }
 
@@ -522,8 +546,14 @@ void GifFormat::onDestroyData(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool GifFormat::onSave(FileOp* fop)
 {
-  int errCode;
-  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb"), &errCode), &EGifCloseFile);
+#if GIFLIB_MAJOR >= 5
+  int errCode = 0;
+#endif
+  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb")
+#if GIFLIB_MAJOR >= 5
+                                         , &errCode
+#endif
+                                         ), &EGifCloseFile);
 
   if (!gif_file)
     throw Exception("Error creating GIF file.\n");
@@ -682,6 +712,7 @@ bool GifFormat::onSave(FileOp* fop)
 
     // Specify loop extension.
     if (frame_num == 0 && loop >= 0) {
+#if GIFLIB_MAJOR >= 5
       if (EGifPutExtensionLeader(gif_file, APPLICATION_EXT_FUNC_CODE) == GIF_ERROR)
         throw Exception("Error writing GIF graphics extension record (header section).");
 
@@ -698,6 +729,23 @@ bool GifFormat::onSave(FileOp* fop)
 
       if (EGifPutExtensionTrailer(gif_file) == GIF_ERROR)
         throw Exception("Error writing GIF graphics extension record (trailer section).");
+
+#else
+      unsigned char extension_bytes[11];
+
+      memcpy(extension_bytes, "NETSCAPE2.0", 11);
+      if (EGifPutExtensionFirst(gif_file, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+
+      extension_bytes[0] = 1;
+      extension_bytes[1] = (loop & 0xff);
+      extension_bytes[2] = (loop >> 8) & 0xff;
+      if (EGifPutExtensionNext(gif_file, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+
+      if (EGifPutExtensionLast(gif_file, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
+        throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+#endif
     }
 
     // Write graphics extension record (to save the duration of the
@@ -770,8 +818,8 @@ bool GifFormat::onSave(FileOp* fop)
   }
 
   return true;
-}
 #endif
+}
 
 base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 {

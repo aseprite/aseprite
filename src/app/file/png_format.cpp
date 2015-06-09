@@ -404,7 +404,7 @@ bool PngFormat::onSave(FileOp* fop)
 #endif
 
     // Save the color palette.
-    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * png_sizeof(png_color));
+    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
     for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
       palette[c].red   = r;

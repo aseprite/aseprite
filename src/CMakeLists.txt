@@ -86,12 +86,7 @@ else()
 endif()
 
 if(USE_SHARED_LIBPNG)
-  find_package(PNG)
-  if(PNG_FOUND)
-    set(libs3rdparty ${libs3rdparty} ${PNG_LIBRARIES})
-    add_definitions(${PNG_DEFINITIONS})
-    include_directories(${PNG_INCLUDE_DIR})
-  endif(PNG_FOUND)
+  set(libs3rdparty ${libs3rdparty} ${PNG_LIBRARIES})
 else()
   set(libs3rdparty ${libs3rdparty} libpng)
 endif()
@@ -132,8 +127,8 @@ if(USE_ALLEG4_BACKEND)
 endif()
 
 if(USE_SHARED_PIXMAN)
-  find_library(LIBPIXMAN_LIBRARY NAMES pixman)
-  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h)
+  find_library(LIBPIXMAN_LIBRARY NAMES pixman pixman-1)
+  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
 
   set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
   include_directories(${LIBPIXMAN_INCLUDE_DIR})
@@ -293,10 +288,8 @@ function(find_tests dir dependencies)
   file(GLOB tests ${CMAKE_CURRENT_SOURCE_DIR}/${dir}/*_tests.cpp)
   list(REMOVE_AT ARGV 0)
 
-  if(NOT USE_SHARED_GTEST)
-    # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
-    include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
-  endif()
+  # Add gtest include directory so we can #include <gtest/gtest.h> in tests source code
+  include_directories(${CMAKE_SOURCE_DIR}/third_party/gtest/include)
 
   # See if the test is linked with "she" library.
   list(FIND dependencies she link_with_she)
