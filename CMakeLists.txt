@@ -129,8 +129,12 @@ else()
 endif()
 
 # Fix to compile gtest with VC11 (2012)
-if (MSVC_VERSION EQUAL 1700)
+if(MSVC_VERSION EQUAL 1700)
   add_definitions(-D_VARIADIC_MAX=10)
+endif()
+
+if(NOT WIN32 AND NOT APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu89")
 endif()
 
 if(NOT USE_SHARED_CURL)
