@@ -157,7 +157,7 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             r = g = b = 0;
 
-            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->bounds());
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersection(image->bounds());
             LockImageBits<RgbTraits>::iterator it2 = bits.begin_area(area);
             LockImageBits<RgbTraits>::iterator end2 = bits.end_area(area);
 
@@ -197,7 +197,7 @@ void fixup_image_transparent_colors(Image* image)
             count = 0;
             k = 0;
 
-            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersect(image->bounds());
+            gfx::Rect area = gfx::Rect(x-1, y-1, 3, 3).createIntersection(image->bounds());
             LockImageBits<GrayscaleTraits>::iterator it2 = bits.begin_area(area);
             LockImageBits<GrayscaleTraits>::iterator end2 = bits.end_area(area);
 

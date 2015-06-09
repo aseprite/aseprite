@@ -46,7 +46,7 @@ ClearMask::ClearMask(Cel* cel)
   m_offsetY = mask->bounds().y - cel->y();
 
   gfx::Rect bounds =
-    image->bounds().createIntersect(
+    image->bounds().createIntersection(
       gfx::Rect(
         m_offsetX, m_offsetY,
         mask->bounds().w, mask->bounds().h));

@@ -107,7 +107,7 @@ void FlipCommand::onExecute(Context* context)
           // Intersect the full area of the image with the mask's
           // bounds, so we don't request to flip an area outside the
           // image's bounds.
-          bounds = bounds.createIntersect(gfx::Rect(mask->bounds()).offset(-x, -y));
+          bounds = bounds.createIntersection(gfx::Rect(mask->bounds()).offset(-x, -y));
 
           // If the mask isn't a rectangular area, we've to flip the mask too.
           if (mask->bitmap() && !mask->isRectangular()) {

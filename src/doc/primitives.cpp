@@ -222,7 +222,7 @@ void fill_rect(Image* image, const gfx::Rect& rc, color_t c)
 {
   ASSERT(image);
 
-  gfx::Rect clip = rc.createIntersect(image->bounds());
+  gfx::Rect clip = rc.createIntersection(image->bounds());
   if (!clip.isEmpty())
     image->fillRect(clip.x, clip.y,
       clip.x+clip.w-1, clip.y+clip.h-1, c);

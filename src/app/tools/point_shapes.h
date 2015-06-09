@@ -101,7 +101,7 @@ private:
       offset.x, offset.y,
       loop->sprite()->width(), loop->sprite()->height());
 
-    bounds = bounds.createIntersect(loop->getSrcImage()->bounds());
+    bounds = bounds.createIntersection(loop->getSrcImage()->bounds());
 
     // Limit the flood-fill to the current tile if the grid is visible.
     if (loop->getGridVisible()) {
@@ -117,7 +117,7 @@ private:
       d = div(y-dy.rem, grid.h);
       y = dy.rem + d.quot*grid.h;
 
-      bounds = bounds.createIntersect(gfx::Rect(x, y, grid.w, grid.h));
+      bounds = bounds.createIntersection(gfx::Rect(x, y, grid.w, grid.h));
     }
 
     return bounds;

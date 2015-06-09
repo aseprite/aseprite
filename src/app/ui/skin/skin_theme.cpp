@@ -1795,7 +1795,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   // Draw arrow in sides
   she::Surface* arrow = NULL;
   gfx::Rect target(widget->target());
-  target = target.createIntersect(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
+  target = target.createIntersection(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
   target.offset(-absRc.getOrigin());
 
   switch (widget->getArrowAlign()) {
@@ -1902,7 +1902,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     }
 
     // Text
-    Rect textWrap = textrc.createIntersect(
+    Rect textWrap = textrc.createIntersection(
       // TODO add ui::Widget::getPadding() property
       // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
       widget->getClientBounds()).inflate(0, 1*guiscale());

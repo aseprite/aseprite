@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -55,7 +55,7 @@ uint32_t convert_color_to_surface<GrayscaleTraits, she::kRgbaSurfaceFormat>(colo
 template<>
 uint32_t convert_color_to_surface<IndexedTraits, she::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const she::SurfaceFormatData* fd) {
   color_t c = palette->getEntry(c0);
-  return 
+  return
     ((rgba_getr(c) << fd->redShift  ) & fd->redMask  ) |
     ((rgba_getg(c) << fd->greenShift) & fd->greenMask) |
     ((rgba_getb(c) << fd->blueShift ) & fd->blueMask ) |
@@ -65,7 +65,7 @@ uint32_t convert_color_to_surface<IndexedTraits, she::kRgbaSurfaceFormat>(color_
 template<>
 uint32_t convert_color_to_surface<BitmapTraits, she::kRgbaSurfaceFormat>(color_t c0, const Palette* palette, const she::SurfaceFormatData* fd) {
   color_t c = palette->getEntry(c0);
-  return 
+  return
     ((rgba_getr(c) << fd->redShift  ) & fd->redMask  ) |
     ((rgba_getg(c) << fd->greenShift) & fd->greenMask) |
     ((rgba_getb(c) << fd->blueShift ) & fd->blueMask ) |
@@ -137,7 +137,7 @@ void convert_image_to_surface(const Image* image, const Palette* palette,
   she::Surface* surface, int src_x, int src_y, int dst_x, int dst_y, int w, int h)
 {
   gfx::Rect srcBounds(src_x, src_y, w, h);
-  srcBounds = srcBounds.createIntersect(image->bounds());
+  srcBounds = srcBounds.createIntersection(image->bounds());
   if (srcBounds.isEmpty())
     return;
 
@@ -147,7 +147,7 @@ void convert_image_to_surface(const Image* image, const Palette* palette,
   h = srcBounds.h;
 
   gfx::Rect dstBounds(dst_x, dst_y, w, h);
-  dstBounds = dstBounds.createIntersect(surface->getClipBounds());
+  dstBounds = dstBounds.createIntersection(surface->getClipBounds());
   if (dstBounds.isEmpty())
     return;
 

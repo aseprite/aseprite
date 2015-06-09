@@ -591,7 +591,7 @@ void Render::renderBackground(Image* image,
   int u_start = u;
   for (y=y_start-tile_h; y<image->height()+tile_h; y+=tile_h) {
     for (x=x_start-tile_w; x<image->width()+tile_w; x+=tile_w) {
-      gfx::Rect fillRc = dstBounds.createIntersect(gfx::Rect(x, y, tile_w, tile_h));
+      gfx::Rect fillRc = dstBounds.createIntersection(gfx::Rect(x, y, tile_w, tile_h));
       if (!fillRc.isEmpty())
         fill_rect(
           image, fillRc.x, fillRc.y, fillRc.x+fillRc.w-1, fillRc.y+fillRc.h-1,
@@ -763,7 +763,7 @@ void Render::renderCel(
   int cel_y = zoom.apply(cel->y());
 
   gfx::Rect src_bounds =
-    area.srcBounds().createIntersect(
+    area.srcBounds().createIntersection(
       gfx::Rect(
         cel_x, cel_y,
         zoom.apply(cel_image->width()),

@@ -747,8 +747,8 @@ bool MenuItem::onProcessMessage(Message* msg)
           r1.y = r2.y = y = MID(0, y, ui::display_h()-pos.h);
 
           // Calculate both intersections
-          gfx::Rect s1 = r1.createIntersect(old_pos);
-          gfx::Rect s2 = r2.createIntersect(old_pos);
+          gfx::Rect s1 = r1.createIntersection(old_pos);
+          gfx::Rect s2 = r2.createIntersection(old_pos);
 
           if (s2.isEmpty())
             x = x_right;        // Use the right because there aren't intersection with it

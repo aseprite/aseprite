@@ -368,7 +368,7 @@ void Editor::updateEditor()
 void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& spriteRectToDraw, int dx, int dy)
 {
   // Clip from sprite and apply zoom
-  gfx::Rect rc = m_sprite->bounds().createIntersect(spriteRectToDraw);
+  gfx::Rect rc = m_sprite->bounds().createIntersection(spriteRectToDraw);
   rc = m_zoom.apply(rc);
 
   int dest_x = dx + m_offset_x + rc.x;
@@ -566,7 +566,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   {
     // Clipping
     gfx::Rect cliprc = editorToScreen(rc).offset(-getBounds().getOrigin());
-    cliprc = cliprc.createIntersect(spriteRect);
+    cliprc = cliprc.createIntersection(spriteRect);
     if (!cliprc.isEmpty()) {
       IntersectClip clip(g, cliprc);
 
@@ -1085,7 +1085,7 @@ Rect Editor::getVisibleSpriteBounds()
   Rect vp = view->getViewportBounds();
   vp = screenToEditor(vp);
 
-  return vp.createIntersect(m_sprite->bounds());
+  return vp.createIntersection(m_sprite->bounds());
 }
 
 // Changes the scroll to see the given point as the center of the editor.

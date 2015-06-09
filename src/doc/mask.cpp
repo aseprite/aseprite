@@ -163,7 +163,7 @@ void Mask::intersect(const gfx::Rect& bounds)
   if (!m_bitmap)
     return;
 
-  gfx::Rect newBounds = m_bounds.createIntersect(bounds);
+  gfx::Rect newBounds = m_bounds.createIntersection(bounds);
 
   Image* image = NULL;
 

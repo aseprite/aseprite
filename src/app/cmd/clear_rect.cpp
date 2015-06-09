@@ -34,7 +34,7 @@ ClearRect::ClearRect(Cel* cel, const gfx::Rect& bounds)
   m_offsetY = bounds.y - cel->y();
 
   gfx::Rect bounds2 =
-    image->bounds().createIntersect(
+    image->bounds().createIntersection(
       gfx::Rect(
         m_offsetX, m_offsetY,
         bounds.w, bounds.h));

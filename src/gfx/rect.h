@@ -233,7 +233,7 @@ public:
   }
 
   // Returns the intersection rectangle between this and rc rectangles.
-  RectT createIntersect(const RectT& rc) const {
+  RectT createIntersection(const RectT& rc) const {
     if (intersects(rc))
       return RectT(PointT<T>(x > rc.x ? x: rc.x,
                              y > rc.y ? y: rc.y),
@@ -258,7 +258,7 @@ public:
   }
 
   const RectT& operator&=(const RectT& rc) {
-    return *this = createIntersect(rc);
+    return *this = createIntersection(rc);
   }
 
   RectT operator+(const BorderT<T>& br) const {
@@ -274,7 +274,7 @@ public:
   }
 
   RectT operator&(const RectT& other) const {
-    return createIntersect(other);
+    return createIntersection(other);
   }
 
   bool operator==(const RectT& rc) const {
