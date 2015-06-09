@@ -144,7 +144,9 @@ private:
 
 bool GifFormat::onLoad(FileOp* fop)
 {
+#if GIFLIB_MAJOR >= 5
   int errCode = 0;
+#endif
   GifFilePtr gif_file(DGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "rb")
 #if GIFLIB_MAJOR >= 5
                                          , &errCode
@@ -544,7 +546,9 @@ void GifFormat::onDestroyData(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool GifFormat::onSave(FileOp* fop)
 {
+#if GIFLIB_MAJOR >= 5
   int errCode = 0;
+#endif
   GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb")
 #if GIFLIB_MAJOR >= 5
                                          , &errCode
