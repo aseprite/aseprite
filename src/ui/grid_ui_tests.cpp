@@ -13,7 +13,7 @@ using namespace gfx;
 using namespace ui;
 
 // Tests two widgets in a row, each one of 10x10 pixels.
-TEST(JGrid, Simple2x1Grid)
+TEST(Grid, Simple2x1Grid)
 {
   Grid* grid = new Grid(2, false);
   Widget* w1 = new Widget(kGenericWidget);
@@ -52,7 +52,7 @@ TEST(JGrid, Simple2x1Grid)
   delete grid;
 }
 
-TEST(JGrid, Expand2ndWidget)
+TEST(Grid, Expand2ndWidget)
 {
   Grid* grid = new Grid(2, false);
   Widget* w1 = new Widget(kGenericWidget);
@@ -85,7 +85,7 @@ TEST(JGrid, Expand2ndWidget)
   delete grid;
 }
 
-TEST(JGrid, SameWidth2x1Grid)
+TEST(Grid, SameWidth2x1Grid)
 {
   Grid* grid = new Grid(2, true);
   Widget* w1 = new Widget(kGenericWidget);
@@ -147,7 +147,7 @@ TEST(JGrid, SameWidth2x1Grid)
 //  |                            |   |
 //  +----------------------------+---+
 //
-TEST(JGrid, Intrincate3x3Grid)
+TEST(Grid, Intrincate3x3Grid)
 {
   Grid* grid = new Grid(3, false);
   Widget* w1 = new Widget(kGenericWidget);
