@@ -174,7 +174,6 @@ StatusBar::StatusBar()
     setup_mini_look(m_slider);
 
     m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacitySliderChange, this));
-    m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
 
@@ -323,6 +322,8 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
 
 void StatusBar::onResize(ResizeEvent& ev)
 {
+  m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
+
   setBoundsQuietly(ev.getBounds());
 
   Border border = getBorder();
