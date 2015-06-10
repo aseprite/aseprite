@@ -88,7 +88,9 @@ public:
 
   app::Document* loadDocument() {
     app::Document* doc = loadObject<app::Document*>("doc", m_docId, &Reader::readDocument);
-    if (!doc)
+    if (doc)
+      fixUndetectedDocumentIssues(doc);
+    else
       Console().printf("Error recovering the document\n");
     return doc;
   }
@@ -291,8 +293,13 @@ private:
       for (int i=0; i<ncels; ++i) {
         ObjectId celId = read32(s);
         Cel* cel = loadObject<Cel*>("cel", celId, &Reader::readCel);
-        if (cel)
+        if (cel) {
+          // Expand sprite size
+          if (cel->frame() > m_sprite->lastFrame())
+            m_sprite->setTotalFrames(cel->frame()+1);
+
           lay->addCel(cel);
+        }
       }
       return lay.release();
     }
@@ -321,6 +328,29 @@ private:
 
   FrameTag* readFrameTag(std::ifstream& s) {
     return read_frame_tag(s, false);
+  }
+
+  // Fix issues that the restoration process could produce.
+  void fixUndetectedDocumentIssues(app::Document* doc) {
+    Sprite* spr = doc->sprite();
+    ASSERT(spr);
+    if (!spr)
+      return;                   // TODO create an empty sprite
+
+    // Fill the background layer with empty cels if they are missing
+    if (LayerImage* bg = spr->backgroundLayer()) {
+      for (frame_t fr=0; fr<spr->totalFrames(); ++fr) {
+        Cel* cel = bg->cel(fr);
+        if (!cel) {
+          ImageRef image(Image::create(spr->pixelFormat(),
+                                       spr->width(),
+                                       spr->height()));
+          image->clear(spr->transparentColor());
+          cel = new Cel(fr, image);
+          bg->addCel(cel);
+        }
+      }
+    }
   }
 
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
