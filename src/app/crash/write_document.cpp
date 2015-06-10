@@ -180,6 +180,10 @@ private:
     write32(s, 0);                // Leave a room for the magic number
     (this->*writeMember)(s, obj); // Write the object
 
+    // Flush all data. In this way we ensure that the magic number is
+    // the last thing being written in the file.
+    s.flush();
+
     // Write the magic number
     s.seekp(0);
     write32(s, MAGIC_NUMBER);
