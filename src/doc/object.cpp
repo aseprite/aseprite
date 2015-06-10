@@ -19,7 +19,7 @@ namespace doc {
 
 static base::mutex mutex;
 static ObjectId newId = 0;
-// TODO Profile this and see if an unordered_map works best.
+// TODO Profile this and see if an unordered_map is better
 static std::map<ObjectId, Object*> objects;
 
 Object::Object(ObjectType type)
