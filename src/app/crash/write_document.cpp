@@ -114,6 +114,11 @@ private:
     write32(s, spr->getPalettes().size());
     for (Palette* pal : spr->getPalettes())
       write32(s, pal->id());
+
+    // IDs of all frame tags
+    write32(s, spr->frameTags().size());
+    for (FrameTag* frtag : spr->frameTags())
+      write32(s, frtag->id());
   }
 
   void writeLayerStructure(std::ofstream& s, Layer* lay) {

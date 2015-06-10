@@ -258,6 +258,17 @@ private:
       }
     }
 
+    // Read frame tags
+    int nfrtags = read32(s);
+    if (nfrtags >= 1 && nfrtags < 0xfffff) {
+      for (int i = 0; i < nfrtags; ++i) {
+        ObjectId tagId = read32(s);
+        FrameTag* tag = loadObject<FrameTag*>("frtag", tagId, &Reader::readFrameTag);
+        if (tag)
+          spr->frameTags().add(tag);
+      }
+    }
+
     return spr.release();
   }
 
@@ -304,6 +315,10 @@ private:
 
   Palette* readPalette(std::ifstream& s) {
     return read_palette(s);
+  }
+
+  FrameTag* readFrameTag(std::ifstream& s) {
+    return read_frame_tag(s);
   }
 
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor
