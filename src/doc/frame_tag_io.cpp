@@ -30,6 +30,7 @@ void write_frame_tag(std::ostream& os, const FrameTag* tag)
   write32(os, tag->fromFrame());
   write32(os, tag->toFrame());
   write32(os, tag->color());
+  write8(os, (int)tag->aniDir());
   write_string(os, tag->name());
 }
 
@@ -39,10 +40,12 @@ FrameTag* read_frame_tag(std::istream& is)
   frame_t from = read32(is);
   frame_t to = read32(is);
   color_t color = read32(is);
+  AniDir aniDir = (AniDir)read8(is);
   std::string name = read_string(is);
 
   base::UniquePtr<FrameTag> tag(new FrameTag(from, to));
   tag->setColor(color);
+  tag->setAniDir(aniDir);
   tag->setName(name);
   tag->setId(id);
   return tag.release();
