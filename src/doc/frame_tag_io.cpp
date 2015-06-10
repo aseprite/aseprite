@@ -34,7 +34,7 @@ void write_frame_tag(std::ostream& os, const FrameTag* tag)
   write_string(os, tag->name());
 }
 
-FrameTag* read_frame_tag(std::istream& is)
+FrameTag* read_frame_tag(std::istream& is, bool setId)
 {
   ObjectId id = read32(is);
   frame_t from = read32(is);
@@ -47,7 +47,8 @@ FrameTag* read_frame_tag(std::istream& is)
   tag->setColor(color);
   tag->setAniDir(aniDir);
   tag->setName(name);
-  tag->setId(id);
+  if (setId)
+    tag->setId(id);
   return tag.release();
 }
 

@@ -318,7 +318,7 @@ private:
   }
 
   FrameTag* readFrameTag(std::ifstream& s) {
-    return read_frame_tag(s);
+    return read_frame_tag(s, false);
   }
 
   Sprite* m_sprite;    // Used to pass the sprite in LayerImage() ctor

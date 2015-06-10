@@ -15,7 +15,7 @@ namespace doc {
   class FrameTag;
 
   void write_frame_tag(std::ostream& os, const FrameTag* tag);
-  FrameTag* read_frame_tag(std::istream& is);
+  FrameTag* read_frame_tag(std::istream& is, bool setId = true);
 
 } // namespace doc
 
