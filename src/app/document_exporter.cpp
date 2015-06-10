@@ -336,7 +336,7 @@ void DocumentExporter::captureSamples(Samples& samples)
       else if (hasLayer)
         format = "{title} ({layer}).{extension}";
       else
-        format = "{fullname}";
+        format = "{name}";
     }
 
     for (frame_t frame=frame_t(0);
