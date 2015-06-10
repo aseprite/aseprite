@@ -158,10 +158,12 @@ private:
       }
       else {
         TRACE(" - %s #%d v%d was not restored\n", prefix, id, ver);
-        if (!m_loadInfo)
-          Console().printf("Error loading object %s #%d v%d\n", prefix, id, ver);
       }
     }
+
+    // Show error only if we've failed to load all versions
+    if (!m_loadInfo)
+      Console().printf("Error loading object %s #%d\n", prefix, id);
 
     return nullptr;
   }
