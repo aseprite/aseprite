@@ -20,6 +20,7 @@
 #include "base/convert_to.h"
 #include "base/fstream_path.h"
 #include "base/path.h"
+#include "base/replace_string.h"
 #include "base/shared_ptr.h"
 #include "base/string.h"
 #include "base/unique_ptr.h"
@@ -41,6 +42,17 @@
 #include <iostream>
 
 using namespace doc;
+
+namespace {
+
+std::string escape_path_for_json(const std::string& path)
+{
+  std::string res = path;
+  base::replace_string(res, "\\", "\\\\");
+  return res;
+}
+
+} // anonymous namespace
 
 namespace app {
 
@@ -528,10 +540,10 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
     gfx::Rect frameBounds = sample.inTextureBounds();
 
     if (filename_as_key)
-      os << "   \"" << sample.filename() << "\": {\n";
+      os << "   \"" << escape_path_for_json(sample.filename()) << "\": {\n";
     else if (filename_as_attr)
       os << "   {\n"
-         << "    \"filename\": \"" << sample.filename() << "\",\n";
+         << "    \"filename\": \"" << escape_path_for_json(sample.filename()) << "\",\n";
 
     os << "    \"frame\": { "
        << "\"x\": " << frameBounds.x << ", "
@@ -562,7 +574,7 @@ void DocumentExporter::createDataFile(const Samples& samples, std::ostream& os, 
      << "  \"app\": \"" << WEBSITE << "\",\n"
      << "  \"version\": \"" << VERSION << "\",\n";
   if (!m_textureFilename.empty())
-    os << "  \"image\": \"" << m_textureFilename.c_str() << "\",\n";
+    os << "  \"image\": \"" << escape_path_for_json(m_textureFilename).c_str() << "\",\n";
   os << "  \"format\": \"" << (textureImage->pixelFormat() == IMAGE_RGB ? "RGBA8888": "I8") << "\",\n"
      << "  \"size\": { "
      << "\"w\": " << textureImage->width() << ", "
