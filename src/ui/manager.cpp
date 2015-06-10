@@ -468,12 +468,24 @@ void Manager::addToGarbage(Widget* widget)
  */
 void Manager::enqueueMessage(Message* msg)
 {
-  int c;
-
   ASSERT(msg != NULL);
 
+#ifdef REPORT_EVENTS
+  if (msg->type() == kKeyDownMessage ||
+      msg->type() == kKeyUpMessage) {
+    int mods = (int)static_cast<KeyMessage*>(msg)->keyModifiers();
+    TRACE("Key%s scancode=%d unicode=%d mods=%s%s%s\n",
+          (msg->type() == kKeyDownMessage ? "Down": "Up"),
+          static_cast<KeyMessage*>(msg)->scancode(),
+          static_cast<KeyMessage*>(msg)->unicodeChar(),
+          mods & kKeyShiftModifier ? " Shift": "",
+          mods & kKeyCtrlModifier ? " Ctrl": "",
+          mods & kKeyAltModifier ? " Alt": "");
+  }
+#endif
+
   // Check if this message must be filtered by some widget before
-  c = msg->type();
+  int c = msg->type();
   if (c >= kFirstRegisteredMessage)
     c = kFirstRegisteredMessage;
 

@@ -10,9 +10,10 @@
 
 #include "ui/accelerator.h"
 
-#include "base/unique_ptr.h"
+#include "base/replace_string.h"
 #include "base/split_string.h"
 #include "base/string.h"
+#include "base/unique_ptr.h"
 
 #include <cctype>
 #include <cstdlib>
@@ -54,10 +55,12 @@ Accelerator::Accelerator(const std::string& str)
     return;
   }
 
-  std::vector<std::string> tokens;
-  base::split_string(str, tokens, "+");
-  for (std::string tok : tokens) {
-    tok = base::string_to_lower(tok);
+  std::size_t i, j;
+  for (i=0; i<str.size(); i=j+1) {
+    // i+1 because the first character can be '+' sign
+    for (j=i+1; j<str.size() && str[j] != '+'; ++j)
+      ;
+    std::string tok = base::string_to_lower(str.substr(i, j - i));
 
     if (m_scancode == kKeySpace) {
       m_modifiers = (KeyModifiers)((int)m_modifiers | (int)kKeySpaceModifier);
@@ -176,15 +179,15 @@ Accelerator::Accelerator(const std::string& str)
         m_scancode = kKey8Pad;
       else if (tok == "9 pad")
         m_scancode = kKey9Pad;
-      else if (tok == "slash pad")
+      else if (tok == "/ pad" || tok == "slash pad")
         m_scancode = kKeySlashPad;
-      else if (tok == "asterisk")
+      else if (tok == "* pad" || tok == "asterisk pad" || tok == "asterisk")
         m_scancode = kKeyAsterisk;
-      else if (tok == "minus pad")
+      else if (tok == "- pad" || tok == "minus pad")
         m_scancode = kKeyMinusPad;
-      else if (tok == "plus pad")
+      else if (tok == "+ pad" || tok == "plus pad")
         m_scancode = kKeyPlusPad;
-      else if (tok == "del pad")
+      else if (tok == "del pad" || tok == "delete pad")
         m_scancode = kKeyDelPad;
       else if (tok == "enter pad")
         m_scancode = kKeyEnterPad;
@@ -219,7 +222,7 @@ bool Accelerator::isEmpty() const
 
 std::string Accelerator::toString() const
 {
-  // Same order that Allegro scancodes
+  // Same order that she::KeyScancode
   static const char* table[] = {
     NULL,
     "A",
@@ -311,7 +314,7 @@ std::string Accelerator::toString() const
     "* Pad",
     "- Pad",
     "+ Pad",
-    "Delete Pad",
+    "Del Pad",
     "Enter Pad",
     "PrtScr",
     "Pause",
