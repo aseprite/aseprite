@@ -5,7 +5,7 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#include <gtest/gtest.h>
+#include "tests/test.h"
 
 #include <errno.h>
 #include "base/thread.h"
@@ -28,10 +28,4 @@ TEST(Errno, ThreadSafe)
 
   // See if errno was not modified in this thread.
   EXPECT_EQ(33, errno);
-}
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

@@ -5,11 +5,7 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#include <gtest/gtest.h>
+#include "tests/test.h"
 
 #include "app/filename_formatter.h"
 
@@ -168,10 +164,4 @@ TEST(AddFrameFormat, Tests)
     add_frame_format(
       "{path}/{title}{frame1}.{extension}",
       "{frame001}"));
-}
-
-int main(int argc, char** argv)
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }
