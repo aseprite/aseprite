@@ -24,6 +24,8 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/color_button.h"
 #include "base/bind.h"
+#include "base/chrono.h"
+#include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/image.h"
 #include "doc/mask.h"
@@ -34,6 +36,9 @@
 #include "ui/slider.h"
 #include "ui/widget.h"
 #include "ui/window.h"
+
+// Uncomment to see the performance of doc::MaskBoundaries ctor
+//#define SHOW_BOUNDARIES_GEN_PERFORMANCE
 
 namespace app {
 
@@ -52,6 +57,7 @@ private:
   Mask* generateMask(const Sprite* sprite, const Image* image, int xpos, int ypos);
   void maskPreview(const ContextReader& reader);
 
+  Window* m_window; // TODO we cannot use a UniquePtr because clone() needs a copy ctor
   ColorButton* m_buttonColor;
   CheckBox* m_checkPreview;
   Slider* m_sliderTolerance;
@@ -89,7 +95,7 @@ void MaskByColorCommand::onExecute(Context* context)
   if (!image)
     return;
 
-  base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "Mask by Color"));
+  m_window = new Window(Window::WithTitleBar, "Mask by Color");
   box1 = new Box(JI_VERTICAL);
   box2 = new Box(JI_HORIZONTAL);
   box3 = new Box(JI_HORIZONTAL);
@@ -108,8 +114,8 @@ void MaskByColorCommand::onExecute(Context* context)
   if (get_config_bool("MaskColor", "Preview", true))
     m_checkPreview->setSelected(true);
 
-  button_ok->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_ok));
-  button_cancel->Click.connect(Bind<void>(&Window::closeWindow, window.get(), button_cancel));
+  button_ok->Click.connect(Bind<void>(&Window::closeWindow, m_window, button_ok));
+  button_cancel->Click.connect(Bind<void>(&Window::closeWindow, m_window, button_cancel));
 
   m_buttonColor->Change.connect(Bind<void>(&MaskByColorCommand::maskPreview, this, Ref(reader)));
   m_sliderTolerance->Change.connect(Bind<void>(&MaskByColorCommand::maskPreview, this, Ref(reader)));
@@ -120,7 +126,7 @@ void MaskByColorCommand::onExecute(Context* context)
   m_sliderTolerance->setExpansive(true);
   box2->setExpansive(true);
 
-  window->addChild(box1);
+  m_window->addChild(box1);
   box1->addChild(box2);
   box1->addChild(box3);
   box1->addChild(m_checkPreview);
@@ -133,19 +139,19 @@ void MaskByColorCommand::onExecute(Context* context)
   box4->addChild(button_cancel);
 
   // Default position
-  window->remapWindow();
-  window->centerWindow();
+  m_window->remapWindow();
+  m_window->centerWindow();
 
   // Mask first preview
   maskPreview(reader);
 
   // Load window configuration
-  load_window_pos(window, "MaskColor");
+  load_window_pos(m_window, "MaskColor");
 
   // Open the window
-  window->openWindowInForeground();
+  m_window->openWindowInForeground();
 
-  bool apply = (window->getKiller() == button_ok);
+  bool apply = (m_window->getKiller() == button_ok);
 
   ContextWriter writer(reader);
   Document* document(writer.document());
@@ -166,7 +172,8 @@ void MaskByColorCommand::onExecute(Context* context)
   update_screen_for_document(document);
 
   // Save window configuration.
-  save_window_pos(window, "MaskColor");
+  save_window_pos(m_window, "MaskColor");
+  delete m_window;
 }
 
 Mask* MaskByColorCommand::generateMask(const Sprite* sprite, const Image* image, int xpos, int ypos)
@@ -191,7 +198,18 @@ void MaskByColorCommand::maskPreview(const ContextReader& reader)
     base::UniquePtr<Mask> mask(generateMask(reader.sprite(), image, xpos, ypos));
     {
       ContextWriter writer(reader);
+
+#ifdef SHOW_BOUNDARIES_GEN_PERFORMANCE
+      base::Chrono chrono;
+#endif
+
       writer.document()->generateMaskBoundaries(mask);
+
+#ifdef SHOW_BOUNDARIES_GEN_PERFORMANCE
+      double time = chrono.elapsed();
+      m_window->setText("Mask by Color (" + base::convert_to<std::string>(time) + ")");
+#endif
+
       update_screen_for_document(writer.document());
     }
   }
