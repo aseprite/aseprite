@@ -436,25 +436,19 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
   pos.y -= cursor_bound.brush_height/2;
 
   for (const auto& seg : *cursor_bound.boundaries) {
-    gfx::Rect bounds = editor->editorToScreen(seg.bounds());
+    gfx::Rect bounds = seg.bounds();
+    bounds.offset(pos);
+    bounds = editor->editorToScreen(bounds);
 
-    if (seg.vertical()) {
-      if (seg.open())
-        bounds.x--;
-      bounds.y--;
-      bounds.h++;
-    }
-    else {
-      if (seg.open())
-        bounds.y--;
-      bounds.x--;
-      bounds.w++;
+    if (seg.open()) {
+      if (seg.vertical()) --bounds.x;
+      else --bounds.y;
     }
 
     if (seg.vertical())
       doc::algo_line(bounds.x, bounds.y, bounds.x, bounds.y+bounds.h-1, (void*)&data, algo_line_proxy);
     else
-      doc::algo_line(bounds.x, bounds.y, bounds.x, bounds.x+bounds.w-1, (void*)&data, algo_line_proxy);
+      doc::algo_line(bounds.x, bounds.y, bounds.x+bounds.w-1, bounds.y, (void*)&data, algo_line_proxy);
   }
 }
 
