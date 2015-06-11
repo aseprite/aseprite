@@ -21,7 +21,9 @@ MaskBoundaries::MaskBoundaries(const Image* bitmap)
 
   const LockImageBits<BitmapTraits> bits(bitmap);
   auto it = bits.begin();       // Current pixel iterator
+#if _DEBUG
   auto prevIt = bits.begin();   // Previous row iterator (same X pos)
+#endif
 
   // Vertical segments being expanded from the previous row.
   std::vector<int> vertSegs(w+1, -1);
@@ -58,7 +60,9 @@ MaskBoundaries::MaskBoundaries(const Image* bitmap)
 
     for (x=0; x<=w; ++x) {
       bool color = (x < w && y < h && *it ? true: false);
+#if _DEBUG
       bool prevRowColor = (x < w && y > 0 && *prevIt ? true: false);
+#endif
       Segment* hseg = (horzSeg >= 0 ? &m_segs[horzSeg]: nullptr);
       Segment* vseg = (vertSegs[x] >= 0 ? &m_segs[vertSegs[x]]: nullptr);
 
@@ -315,7 +319,9 @@ MaskBoundaries::MaskBoundaries(const Image* bitmap)
 
       prevColor = color;
       if (x < w) {
+#if _DEBUG
         if (y > 0) ++prevIt;
+#endif
         if (y < h) ++it;
       }
     }
