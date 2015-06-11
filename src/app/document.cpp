@@ -20,7 +20,6 @@
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
-#include "app/util/boundary.h"
 #include "base/memory.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
@@ -33,6 +32,7 @@
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/mask_boundaries.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
@@ -61,10 +61,6 @@ Document::Document(Sprite* sprite)
 {
   setFilename("Sprite");
 
-  // Boundary stuff
-  m_bound.nseg = 0;
-  m_bound.seg = NULL;
-
   if (sprite)
     sprites().add(sprite);
 }
@@ -77,9 +73,6 @@ Document::~Document()
   // which could result in serious problems for observers expecting a
   // fully created app::Document.
   ASSERT(context() == NULL);
-
-  if (m_bound.seg)
-    base_free(m_bound.seg);
 
   destroyExtraCel();
 }
@@ -212,23 +205,9 @@ void Document::setFormatOptions(const base::SharedPtr<FormatOptions>& format_opt
 //////////////////////////////////////////////////////////////////////
 // Boundaries
 
-int Document::getBoundariesSegmentsCount() const
+void Document::generateMaskBoundaries(const Mask* mask)
 {
-  return m_bound.nseg;
-}
-
-const BoundSeg* Document::getBoundariesSegments() const
-{
-  return m_bound.seg;
-}
-
-void Document::generateMaskBoundaries(Mask* mask)
-{
-  if (m_bound.seg) {
-    base_free(m_bound.seg);
-    m_bound.seg = NULL;
-    m_bound.nseg = 0;
-  }
+  m_maskBoundaries.reset();
 
   // No mask specified? Use the current one in the document
   if (!mask) {
@@ -238,18 +217,12 @@ void Document::generateMaskBoundaries(Mask* mask)
       mask = this->mask();      // Use the document mask
   }
 
-  ASSERT(mask != NULL);
+  ASSERT(mask);
 
   if (!mask->isEmpty()) {
-    m_bound.seg = find_mask_boundary(mask->bitmap(),
-                                     &m_bound.nseg,
-                                     IgnoreBounds, 0, 0, 0, 0);
-    for (int c=0; c<m_bound.nseg; c++) {
-      m_bound.seg[c].x1 += mask->bounds().x;
-      m_bound.seg[c].y1 += mask->bounds().y;
-      m_bound.seg[c].x2 += mask->bounds().x;
-      m_bound.seg[c].y2 += mask->bounds().y;
-    }
+    m_maskBoundaries.reset(new MaskBoundaries(mask->bitmap()));
+    m_maskBoundaries->offset(mask->bounds().x,
+                             mask->bounds().y);
   }
 
   // TODO move this to the exact place where selection is modified.

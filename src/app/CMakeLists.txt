@@ -364,7 +364,6 @@ add_library(app-lib
   ui/workspace_tabs.cpp
   ui_context.cpp
   util/autocrop.cpp
-  util/boundary.cpp
   util/clipboard.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp

@@ -53,7 +53,6 @@
 #include "app/ui/toolbar.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
-#include "app/util/boundary.h"
 #include "app/webserver.h"
 #include "base/exception.h"
 #include "base/fs.h"
@@ -616,7 +615,6 @@ App::~App()
 
     // Finalize modules, configuration and core.
     Editor::destroyEditorSharedInternals();
-    boundary_exit();
 
     delete m_legacy;
     delete m_modules;

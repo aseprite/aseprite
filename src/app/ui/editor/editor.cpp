@@ -40,13 +40,13 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/toolbar.h"
 #include "app/ui_context.h"
-#include "app/util/boundary.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/unique_ptr.h"
 #include "doc/conversion_she.h"
 #include "doc/doc.h"
 #include "doc/document_event.h"
+#include "doc/mask_boundaries.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/ui.h"
@@ -614,7 +614,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Draw the mask
-  if (m_document->getBoundariesSegments())
+  if (m_document->getMaskBoundaries())
     drawMask(g);
 
   // Post-render decorator.
@@ -653,50 +653,25 @@ void Editor::drawMask(Graphics* g)
   if ((m_flags & kShowMask) == 0)
     return;
 
-  int x1, y1, x2, y2;
+  ASSERT(m_document->getMaskBoundaries());
+
   int x = m_offset_x;
   int y = m_offset_y;
 
-  int nseg = m_document->getBoundariesSegmentsCount();
-  const BoundSeg* seg = m_document->getBoundariesSegments();
-
-  for (int c=0; c<nseg; ++c, ++seg) {
+  for (const auto& seg : *m_document->getMaskBoundaries()) {
     CheckedDrawMode checked(g, m_offset_count);
+    gfx::Rect bounds = m_zoom.apply(seg.bounds());
 
-    x1 = m_zoom.apply(seg->x1);
-    y1 = m_zoom.apply(seg->y1);
-    x2 = m_zoom.apply(seg->x2);
-    y2 = m_zoom.apply(seg->y2);
-
-#if 1                           // Bounds inside mask
-    if (!seg->open)
-#else                           // Bounds outside mask
-    if (seg->open)
-#endif
-    {
-      if (x1 == x2) {
-        x1--;
-        x2--;
-        y2--;
-      }
-      else {
-        y1--;
-        y2--;
-        x2--;
-      }
-    }
-    else {
-      if (x1 == x2) {
-        y2--;
-      }
-      else {
-        x2--;
-      }
+    if (!seg.open()) {
+      if (seg.vertical()) --bounds.x;
+      else --bounds.y;
     }
 
     // The color doesn't matter, we are using CheckedDrawMode
-    g->drawLine(gfx::rgba(0, 0, 0),
-      gfx::Point(x+x1, y+y1), gfx::Point(x+x2, y+y2));
+    if (seg.vertical())
+      g->drawVLine(gfx::rgba(0, 0, 0), x+bounds.x, y+bounds.y, bounds.h);
+    else
+      g->drawHLine(gfx::rgba(0, 0, 0), x+bounds.x, y+bounds.y, bounds.w);
   }
 }
 
@@ -707,7 +682,7 @@ void Editor::drawMaskSafe()
 
   if (isVisible() &&
       m_document &&
-      m_document->getBoundariesSegments()) {
+      m_document->getMaskBoundaries()) {
     bool onScreen = m_cursorOnScreen;
 
     Region region;
@@ -1389,7 +1364,7 @@ void Editor::onPaint(ui::PaintEvent& ev)
       drawSpriteUnclippedRect(g, gfx::Rect(0, 0, m_sprite->width(), m_sprite->height()));
 
       // Draw the mask boundaries
-      if (m_document->getBoundariesSegments()) {
+      if (m_document->getMaskBoundaries()) {
         drawMask(g);
         m_mask_timer.start();
       }

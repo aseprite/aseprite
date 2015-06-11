@@ -26,7 +26,6 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/main_window.h"
 #include "app/ui_context.h"
-#include "app/util/boundary.h"
 #include "base/bind.h"
 #include "base/memory.h"
 #include "doc/algo.h"
@@ -35,6 +34,7 @@
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/layer.h"
+#include "doc/mask_boundaries.h"
 #include "doc/primitives.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
@@ -53,12 +53,11 @@ using namespace ui;
 #define IS_SUBPIXEL(editor)     ((editor)->m_zoom.scale() >= 4.0)
 
 static struct {
-  int nseg;
-  BoundSeg* seg;
+  MaskBoundaries* boundaries;
   int brush_gen;
   int brush_width;
   int brush_height;
-} cursor_bound = { 0, nullptr, 0, 0, 0 };
+} cursor_bound = { nullptr, 0, 0, 0 };
 
 enum {
   CURSOR_THINCROSS   = 1,
@@ -123,8 +122,8 @@ void Editor::initEditorCursor()
 
 void Editor::exitEditorCursor()
 {
-  if (cursor_bound.seg)
-    base_free(cursor_bound.seg);
+  delete cursor_bound.boundaries;
+  cursor_bound.boundaries = nullptr;
 }
 
 // Draws the brush cursor in the specified absolute mouse position
@@ -296,7 +295,7 @@ static void generate_cursor_boundaries()
 {
   Brush* brush = get_current_brush();
 
-  if (cursor_bound.seg &&
+  if (cursor_bound.boundaries &&
       cursor_bound.brush_gen == brush->gen())
     return;
 
@@ -322,10 +321,9 @@ static void generate_cursor_boundaries()
     }
   }
 
-  cursor_bound.seg = find_mask_boundary(
-    (mask ? mask.get(): brush_image),
-    &cursor_bound.nseg,
-    IgnoreBounds, 0, 0, 0, 0);
+  delete cursor_bound.boundaries;
+  cursor_bound.boundaries = new MaskBoundaries(
+    (mask ? mask.get(): brush_image));
 }
 
 void Editor::forEachBrushPixel(
@@ -433,46 +431,30 @@ static void trace_brush_bounds(ui::Graphics* g, Editor* editor,
   gfx::Point pos, gfx::Color color, Editor::PixelDelegate pixelDelegate)
 {
   Data data = { g, color, pixelDelegate };
-  gfx::Point pt1, pt2;
-  BoundSeg* seg;
-  int c;
 
   pos.x -= cursor_bound.brush_width/2;
   pos.y -= cursor_bound.brush_height/2;
 
-  for (c=0; c<cursor_bound.nseg; c++) {
-    seg = cursor_bound.seg+c;
+  for (const auto& seg : *cursor_bound.boundaries) {
+    gfx::Rect bounds = editor->editorToScreen(seg.bounds());
 
-    pt1.x = pos.x + seg->x1;
-    pt1.y = pos.y + seg->y1;
-    pt2.x = pos.x + seg->x2;
-    pt2.y = pos.y + seg->y2;
-
-    pt1 = editor->editorToScreen(pt1);
-    pt2 = editor->editorToScreen(pt2);
-
-    if (seg->open) {            // Outside
-      if (pt1.x == pt2.x) {
-        pt1.x--;
-        pt2.x--;
-        pt2.y--;
-      }
-      else {
-        pt1.y--;
-        pt2.y--;
-        pt2.x--;
-      }
+    if (seg.vertical()) {
+      if (seg.open())
+        bounds.x--;
+      bounds.y--;
+      bounds.h++;
     }
     else {
-      if (pt1.x == pt2.x) {
-        pt2.y--;
-      }
-      else {
-        pt2.x--;
-      }
+      if (seg.open())
+        bounds.y--;
+      bounds.x--;
+      bounds.w++;
     }
 
-    doc::algo_line(pt1.x, pt1.y, pt2.x, pt2.y, (void*)&data, algo_line_proxy);
+    if (seg.vertical())
+      doc::algo_line(bounds.x, bounds.y, bounds.x, bounds.y+bounds.h-1, (void*)&data, algo_line_proxy);
+    else
+      doc::algo_line(bounds.x, bounds.y, bounds.x, bounds.x+bounds.w-1, (void*)&data, algo_line_proxy);
   }
 }
 

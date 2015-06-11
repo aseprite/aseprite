@@ -30,6 +30,7 @@ namespace doc {
   class Cel;
   class Layer;
   class Mask;
+  class MaskBoundaries;
   class Sprite;
 }
 
@@ -41,7 +42,6 @@ namespace app {
   class DocumentApi;
   class DocumentUndo;
   class Transaction;
-  struct BoundSeg;
 
   using namespace doc;
 
@@ -112,10 +112,11 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Boundaries
 
-    int getBoundariesSegmentsCount() const;
-    const BoundSeg* getBoundariesSegments() const;
+    void generateMaskBoundaries(const Mask* mask = nullptr);
 
-    void generateMaskBoundaries(Mask* mask = NULL);
+    const MaskBoundaries* getMaskBoundaries() const {
+     return m_maskBoundaries.get();
+    }
 
     //////////////////////////////////////////////////////////////////////
     // Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
@@ -192,10 +193,7 @@ namespace app {
     bool m_associated_to_file;
 
     // Selected mask region boundaries
-    struct {
-      int nseg;
-      BoundSeg* seg;
-    } m_bound;
+    base::UniquePtr<doc::MaskBoundaries> m_maskBoundaries;
 
     // Mutex to modify the 'locked' flag.
     base::mutex m_mutex;
