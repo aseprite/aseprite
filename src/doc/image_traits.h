@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -29,7 +29,7 @@ namespace doc {
 
     static const pixel_t min_value = 0x00000000l;
     static const pixel_t max_value = 0xffffffffl;
-    
+
     static inline int getRowStrideBytes(int pixels_per_row)
     {
       return bytes_per_pixel * pixels_per_row;

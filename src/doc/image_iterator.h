@@ -8,11 +8,13 @@
 #define DOC_IMAGE_ITERATOR_H_INCLUDED
 #pragma once
 
-#include "gfx/point.h"
-#include "gfx/rect.h"
 #include "doc/color.h"
 #include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/image_traits.h"
+#include "doc/primitives_fast.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 
 #include <cstdlib>
 #include <iterator>
@@ -50,7 +52,7 @@ namespace doc {
 
     ImageIteratorT(const Image* image, const gfx::Rect& bounds, int x, int y) :
       m_image(const_cast<Image*>(image)),
-      m_ptr((pointer)image->getPixelAddress(x, y)),
+      m_ptr(get_pixel_address_fast<ImageTraits>(image, x, y)),
       m_x(x),
       m_y(y),
       m_xbegin(bounds.x),
@@ -104,7 +106,7 @@ namespace doc {
         ++m_y;
 
         if (m_y < m_image->height())
-          m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
+          m_ptr = get_pixel_address_fast<ImageTraits>(m_image, m_x, m_y);
       }
 
       return *this;
@@ -287,7 +289,7 @@ namespace doc {
 
     ImageIteratorT(const Image* image, const gfx::Rect& bounds, int x, int y) :
       m_image(const_cast<Image*>(image)),
-      m_ptr((pointer)image->getPixelAddress(x, y)),
+      m_ptr(get_pixel_address_fast<BitmapTraits>(image, x, y)),
       m_x(x),
       m_y(y),
       m_subPixel(x % 8),
@@ -341,7 +343,7 @@ namespace doc {
         ++m_y;
 
         if (m_y < m_image->height())
-          m_ptr = (pointer)m_image->getPixelAddress(m_x, m_y);
+          m_ptr = get_pixel_address_fast<BitmapTraits>(m_image, m_x, m_y);
         else
           ++m_ptr;
       }

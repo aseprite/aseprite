@@ -31,6 +31,7 @@ add_library(doc-lib
   frame_tags.cpp
   handle_anidir.cpp
   image.cpp
+  image_impl.cpp
   image_io.cpp
   images_collector.cpp
   layer.cpp

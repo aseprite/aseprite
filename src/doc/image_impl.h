@@ -14,7 +14,6 @@
 #include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
-#include "doc/image_iterator.h"
 #include "doc/palette.h"
 
 namespace doc {
@@ -252,26 +251,10 @@ namespace doc {
     }
   }
 
+  void copy_bitmaps(Image* dst, const Image* src, gfx::Clip area);
   template<>
   inline void ImageImpl<BitmapTraits>::copy(const Image* src, gfx::Clip area) {
-    if (!area.clip(width(), height(), src->width(), src->height()))
-      return;
-
-    // Copy process
-    ImageConstIterator<BitmapTraits> src_it(src, area.srcBounds(), area.src.x, area.src.y);
-    ImageIterator<BitmapTraits> dst_it(this, area.dstBounds(), area.dst.x, area.dst.y);
-
-    int end_x = area.dst.x+area.size.w;
-
-    for (int end_y=area.dst.y+area.size.h;
-         area.dst.y<end_y;
-         ++area.dst.y, ++area.src.y) {
-      for (int x=area.dst.x; x<end_x; ++x) {
-        *dst_it = *src_it;
-        ++src_it;
-        ++dst_it;
-      }
-    }
+    copy_bitmaps(this, src, area);
   }
 
 } // namespace doc

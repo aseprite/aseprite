@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,6 +13,13 @@
 
 namespace doc {
   class Image;
+
+  template<class Traits>
+  inline typename Traits::address_t get_pixel_address_fast(const Image* image, int x, int y) {
+    ASSERT(x >= 0 && x < image->width());
+    ASSERT(y >= 0 && y < image->height());
+    return (((ImageImpl<Traits>*)image)->address(x, y));
+  }
 
   template<class Traits>
   inline typename Traits::pixel_t get_pixel_fast(const Image* image, int x, int y) {
