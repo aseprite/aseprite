@@ -30,7 +30,19 @@ if(MSVC)
   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
 endif(MSVC)
 
-# Libraries in this directory
+if(ENABLE_UPDATER)
+  set(updater_lib updater-lib)
+  add_definitions(-DENABLE_UPDATER)
+else()
+  set(updater_lib)
+endif()
+
+# Aseprite libraries
+#
+# TODO These libraries are in a specific order to avoid linking errors
+#      on Unix-like platforms. We could avoid this specific order if for
+#      each library we specify its dependencies using target_link_libraries()
+#
 set(aseprite_libraries
   app-lib
   fixmath-lib
@@ -44,6 +56,7 @@ set(aseprite_libraries
   ui-lib
   she
   gfx-lib
+  ${updater_lib}
   net-lib
   base-lib)
 
@@ -172,13 +185,6 @@ else()
   if(CURL_STATICLIB)
     add_definitions(-DCURL_STATICLIB)
   endif()
-
-  set(aseprite_libraries ${aseprite_libraries} net-lib)
-endif()
-
-if(ENABLE_UPDATER)
-  set(aseprite_libraries ${aseprite_libraries} updater-lib)
-  add_definitions(-DENABLE_UPDATER)
 endif()
 
 if(ENABLE_WEBSERVER)
