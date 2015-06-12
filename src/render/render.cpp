@@ -12,6 +12,7 @@
 
 #include "doc/doc.h"
 #include "doc/handle_anidir.h"
+#include "doc/image_impl.h"
 #include "gfx/clip.h"
 #include "gfx/region.h"
 

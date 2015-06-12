@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,10 +11,8 @@
 #include "base/unique_ptr.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/blend.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 #include "doc/primitives.h"
-#include "doc/primitives_fast.h"
 
 namespace doc {
 namespace algorithm {
@@ -152,7 +150,7 @@ static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
     case IMAGE_BITMAP:    image_scale2x_tpl<BitmapTraits>(dst, src, src_w, src_h); break;
   }
 }
-  
+
 void rotsprite_image(Image* bmp, Image* spr,
   int x1, int y1, int x2, int y2,
   int x3, int y3, int x4, int y4)

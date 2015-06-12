@@ -9,15 +9,16 @@
 #pragma once
 
 #include "doc/color.h"
-#include "doc/image_impl.h"
 
 namespace doc {
   class Image;
+  template<typename ImageTraits> class ImageImpl;
 
   template<class Traits>
   inline typename Traits::address_t get_pixel_address_fast(const Image* image, int x, int y) {
     ASSERT(x >= 0 && x < image->width());
     ASSERT(y >= 0 && y < image->height());
+
     return (((ImageImpl<Traits>*)image)->address(x, y));
   }
 

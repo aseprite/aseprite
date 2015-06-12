@@ -15,9 +15,8 @@
 #include "filters/filter_indexed_data.h"
 #include "filters/filter_manager.h"
 #include "filters/neighboring_pixels.h"
-#include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/palette.h"
-#include "doc/primitives_fast.h"
 #include "doc/rgbmap.h"
 
 namespace filters {

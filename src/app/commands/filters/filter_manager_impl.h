@@ -11,8 +11,7 @@
 
 #include "base/exception.h"
 #include "base/unique_ptr.h"
-#include "doc/image_bits.h"
-#include "doc/image_traits.h"
+#include "doc/image_impl.h"
 #include "doc/pixel_format.h"
 #include "doc/site.h"
 #include "filters/filter_indexed_data.h"

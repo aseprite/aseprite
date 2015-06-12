@@ -25,7 +25,7 @@
 #include "doc/algorithm/polygon.h"
 #include "doc/brush.h"
 #include "doc/compressed_image.h"
-#include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/mask.h"
 #include "fixmath/fixmath.h"
 

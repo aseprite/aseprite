@@ -16,7 +16,7 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/frame_tag.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"

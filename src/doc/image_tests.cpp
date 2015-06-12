@@ -11,8 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "base/unique_ptr.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 #include "doc/primitives.h"
 
 using namespace base;

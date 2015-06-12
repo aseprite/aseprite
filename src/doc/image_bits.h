@@ -8,10 +8,11 @@
 #define DOC_IMAGE_BITS_H_INCLUDED
 #pragma once
 
-#include "doc/image.h"
-#include "doc/image_iterator.h"
-
 namespace doc {
+
+  class Image;
+  template<typename ImageTraits> class ImageIterator;
+  template<typename ImageTraits> class ImageConstIterator;
 
   template<typename ImageTraits>
   class ImageBits {
@@ -144,7 +145,7 @@ namespace doc {
     const gfx::Rect& bounds() const { return m_bits.bounds(); }
 
     Image* image() { return m_bits.image(); }
-    
+
   private:
     Bits m_bits;
 

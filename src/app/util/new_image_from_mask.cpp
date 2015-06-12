@@ -12,9 +12,7 @@
 #include "app/util/new_image_from_mask.h"
 
 #include "app/document.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
-#include "doc/image_traits.h"
+#include "doc/image_impl.h"
 #include "doc/mask.h"
 #include "doc/site.h"
 

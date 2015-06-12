@@ -14,7 +14,6 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/image.h"
-#include "doc/image_bits.h"
 #include "doc/remap.h"
 #include "doc/sprite.h"
 

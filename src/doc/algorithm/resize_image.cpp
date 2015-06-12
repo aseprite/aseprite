@@ -10,11 +10,10 @@
 
 #include "doc/algorithm/resize_image.h"
 
-#include "gfx/point.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
+#include "gfx/point.h"
 
 namespace doc {
 namespace algorithm {

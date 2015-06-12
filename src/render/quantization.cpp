@@ -11,8 +11,7 @@
 #include "render/quantization.h"
 
 #include "doc/blend.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 #include "doc/images_collector.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -25,8 +24,8 @@
 
 #include <algorithm>
 #include <limits>
-#include <vector>
 #include <map>
+#include <vector>
 
 namespace render {
 

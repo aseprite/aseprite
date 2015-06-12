@@ -11,8 +11,7 @@
 #include "doc/mask.h"
 
 #include "base/memory.h"
-#include "doc/image.h"
-#include "doc/image_bits.h"
+#include "doc/image_impl.h"
 
 #include <cstdlib>
 #include <cstring>
