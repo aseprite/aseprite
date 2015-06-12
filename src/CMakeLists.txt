@@ -44,6 +44,7 @@ set(aseprite_libraries
   ui-lib
   she
   gfx-lib
+  net-lib
   base-lib)
 
 # Directories where .h files can be found
