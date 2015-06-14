@@ -22,7 +22,6 @@
 #include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
-#include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"

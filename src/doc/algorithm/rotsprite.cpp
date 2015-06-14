@@ -10,7 +10,6 @@
 
 #include "base/unique_ptr.h"
 #include "doc/algorithm/rotate.h"
-#include "doc/blend.h"
 #include "doc/image_impl.h"
 #include "doc/primitives.h"
 
@@ -177,7 +176,7 @@ void rotsprite_image(Image* bmp, Image* spr,
   spr_copy->copy(spr, gfx::Clip(spr->bounds()));
 
   for (int i=0; i<3; ++i) {
-    tmp_copy->clear(maskColor);
+    clear_image(tmp_copy, maskColor);
     image_scale2x(tmp_copy, spr_copy, spr->width()*(1<<i), spr->height()*(1<<i));
     spr_copy->copy(tmp_copy, gfx::Clip(tmp_copy->bounds()));
   }

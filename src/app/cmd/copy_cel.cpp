@@ -92,12 +92,13 @@ void CopyCel::onExecute()
       executeAndAdd(new cmd::SetCelData(dstCel, srcCel->dataRef()));
     }
     else {
-      int blend = (srcLayer->isBackground() ?
-        BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+      BlendMode blend = (srcLayer->isBackground() ?
+                         BlendMode::SRC:
+                         BlendMode::NORMAL);
 
       ImageRef tmp(Image::createCopy(dstImage.get()));
       render::composite_image(tmp.get(), srcImage,
-        srcCel->x(), srcCel->y(), 255, blend);
+                              srcCel->x(), srcCel->y(), 255, blend);
       executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
   }

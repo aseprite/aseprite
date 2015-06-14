@@ -61,7 +61,7 @@ void BackgroundFromLayer::onExecute()
     render::composite_image(bg_image.get(), cel_image,
       cel->x(), cel->y(),
       MID(0, cel->opacity(), 255),
-      static_cast<LayerImage*>(layer)->getBlendMode());
+      static_cast<LayerImage*>(layer)->blendMode());
 
     // now we have to copy the new image (bg_image) to the cel...
     executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));

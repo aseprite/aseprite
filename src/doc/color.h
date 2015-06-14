@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -51,8 +51,12 @@ namespace doc {
             (a << rgba_a_shift));
   }
 
-  inline uint32_t rgb(uint8_t r, uint8_t g, uint8_t b) {
-    return rgba(0, 0, 0, 255);
+  inline int rgb_luma(int r, int g, int b) {
+    return (r*2126 + g*7152 + b*722) / 10000;
+  }
+
+  inline uint8_t rgba_luma(uint32_t c) {
+    return rgb_luma(rgba_getr(c), rgba_getg(c), rgba_getb(c));
   }
 
   //////////////////////////////////////////////////////////////////////

@@ -100,8 +100,8 @@ struct PalEntryWithIndexPredicate {
       }
 
       case SortPaletteBy::LUMA: {
-        value1 = (rgba_getr(c1)*299 + rgba_getg(c1)*587 + rgba_getb(c1)*114); // do not /1000 (so we get more precission)
-        value2 = (rgba_getr(c2)*299 + rgba_getg(c2)*587 + rgba_getb(c2)*114);
+        value1 = rgb_luma(rgba_getr(c1), rgba_getg(c1), rgba_getb(c1));
+        value2 = rgb_luma(rgba_getr(c2), rgba_getg(c2), rgba_getb(c2));
         break;
       }
 

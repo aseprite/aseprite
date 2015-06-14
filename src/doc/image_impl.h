@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "doc/blend.h"
+#include "doc/blend_funcs.h"
 #include "doc/image.h"
 #include "doc/image_bits.h"
 #include "doc/image_iterator.h"
@@ -248,7 +248,7 @@ namespace doc {
     for (y=y1; y<=y2; ++y) {
       addr = (address_t)getPixelAddress(x1, y);
       for (x=x1; x<=x2; ++x) {
-        *addr = rgba_blend_normal(*addr, color, opacity);
+        *addr = rgba_blender_normal(*addr, color, opacity);
         ++addr;
       }
     }

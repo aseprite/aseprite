@@ -8,6 +8,7 @@
 #include "app/modules/palettes.h"
 #include "app/tools/shade_table.h"
 #include "app/tools/shading_options.h"
+#include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
@@ -181,7 +182,7 @@ private:
 
 template<>
 void LockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  color_t result = rgba_blend_normal(*m_srcAddress, m_color, m_opacity);
+  color_t result = rgba_blender_normal(*m_srcAddress, m_color, m_opacity);
   *m_dstAddress = rgba(
     rgba_getr(result),
     rgba_getg(result),
@@ -191,7 +192,7 @@ void LockAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
 
 template<>
 void LockAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  color_t result = graya_blend_normal(*m_srcAddress, m_color, m_opacity);
+  color_t result = graya_blender_normal(*m_srcAddress, m_color, m_opacity);
   *m_dstAddress = graya(
     graya_getv(result),
     graya_geta(*m_srcAddress));
@@ -225,12 +226,12 @@ private:
 
 template<>
 void TransparentInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba_blend_normal(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = rgba_blender_normal(*m_srcAddress, m_color, m_opacity);
 }
 
 template<>
 void TransparentInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya_blend_normal(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = graya_blender_normal(*m_srcAddress, m_color, m_opacity);
 }
 
 template<>
@@ -244,7 +245,7 @@ public:
   }
 
   void processPixel(int x, int y) {
-    color_t c = rgba_blend_normal(m_palette->getEntry(*m_srcAddress), m_color, m_opacity);
+    color_t c = rgba_blender_normal(m_palette->getEntry(*m_srcAddress), m_color, m_opacity);
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
                                        rgba_getg(c),
                                        rgba_getb(c));
@@ -472,7 +473,7 @@ void ReplaceInkProcessing<RgbTraits>::processPixel(int x, int y) {
   if ((rgba_geta(src) == 0 && rgba_geta(m_color1) == 0) ||
       (rgba_geta(src) > 0 && rgba_geta(m_color1) > 0 &&
        ((src & rgba_rgb_mask) == (m_color1 & rgba_rgb_mask)))) {
-    *m_dstAddress = rgba_blend_merge(src, m_color2, m_opacity);
+    *m_dstAddress = rgba_blender_merge(src, m_color2, m_opacity);
   }
 }
 
@@ -483,7 +484,7 @@ void ReplaceInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
   if ((graya_geta(src) == 0 && graya_geta(m_color1) == 0) ||
       (graya_geta(src) > 0 && graya_geta(m_color1) > 0 &&
        ((src & graya_v_mask) == (m_color1 & graya_v_mask)))) {
-    *m_dstAddress = graya_blend_merge(src, m_color2, m_opacity);
+    *m_dstAddress = graya_blender_merge(src, m_color2, m_opacity);
   }
 }
 
@@ -505,7 +506,7 @@ public:
       if (m_opacity == 255)
         *m_dstAddress = m_color2;
       else {
-        color_t c = rgba_blend_normal(
+        color_t c = rgba_blender_normal(
           m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
 
         *m_dstAddress = m_rgbmap->mapColor(
@@ -586,14 +587,14 @@ template<>
 void JumbleInkProcessing<RgbTraits>::processPixel(int x, int y)
 {
   pickColorFromArea(x, y);
-  *m_dstAddress = rgba_blend_merge(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = rgba_blender_merge(*m_srcAddress, m_color, m_opacity);
 }
 
 template<>
 void JumbleInkProcessing<GrayscaleTraits>::processPixel(int x, int y)
 {
   pickColorFromArea(x, y);
-  *m_dstAddress = graya_blend_merge(*m_srcAddress, m_color, m_opacity);
+  *m_dstAddress = graya_blender_merge(*m_srcAddress, m_color, m_opacity);
 }
 
 template<>
@@ -602,9 +603,9 @@ void JumbleInkProcessing<IndexedTraits>::processPixel(int x, int y)
   pickColorFromArea(x, y);
 
   color_t tc = (m_color != 0 ? m_palette->getEntry(m_color): 0);
-  color_t c = rgba_blend_merge(*m_srcAddress != 0 ?
-                               m_palette->getEntry(*m_srcAddress): 0,
-                               tc, m_opacity);
+  color_t c = rgba_blender_merge(*m_srcAddress != 0 ?
+                                 m_palette->getEntry(*m_srcAddress): 0,
+                                 tc, m_opacity);
 
   if (rgba_geta(c) >= 128)
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
@@ -670,12 +671,12 @@ private:
 
 template<>
 void XorInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba_blend_blackandwhite(*m_srcAddress, m_color, 255);
+  *m_dstAddress = rgba_blender_neg_bw(*m_srcAddress, m_color, 255);
 }
 
 template<>
 void XorInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya_blend_blackandwhite(*m_srcAddress, m_color, 255);
+  *m_dstAddress = graya_blender_neg_bw(*m_srcAddress, m_color, 255);
 }
 
 template<>
@@ -688,7 +689,7 @@ public:
   }
 
   void processPixel(int x, int y) {
-    color_t c = rgba_blend_blackandwhite(m_palette->getEntry(*m_srcAddress), m_color, 255);
+    color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), m_color, 255);
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
                                        rgba_getg(c),
                                        rgba_getb(c));
@@ -771,7 +772,7 @@ void BrushInkProcessing<RgbTraits>::processPixel(int x, int y) {
       return;
   }
 
-  *m_dstAddress = rgba_blend_normal(*m_srcAddress, c, m_opacity);
+  *m_dstAddress = rgba_blender_normal(*m_srcAddress, c, m_opacity);
 }
 
 template<>
@@ -807,7 +808,7 @@ void BrushInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
       return;
   }
 
-  *m_dstAddress = graya_blend_normal(*m_srcAddress, c, m_opacity);
+  *m_dstAddress = graya_blender_normal(*m_srcAddress, c, m_opacity);
 }
 
 template<>

@@ -150,26 +150,23 @@ Layer Chunk (0x2004)
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)
   WORD          Default layer height in pixels (ignored)
-  WORD          DEPRECATED This field is not used anymore.
-                Blend mode (always 0 for layer set)
-                  BLEND_MODE_NORMAL     = 0
-                  BLEND_MODE_DISSOLVE   = 1
-                  BLEND_MODE_MULTIPLY   = 2
-                  BLEND_MODE_SCREEN     = 3
-                  BLEND_MODE_OVERLAY    = 4
-                  BLEND_MODE_HARD_LIGHT = 5
-                  BLEND_MODE_DODGE      = 6
-                  BLEND_MODE_BURN       = 7
-                  BLEND_MODE_DARKEN     = 8
-                  BLEND_MODE_LIGHTEN    = 9
-                  BLEND_MODE_ADDITION   = 10
-                  BLEND_MODE_SUBTRACT   = 11
-                  BLEND_MODE_DIFFERENCE = 12
-                  BLEND_MODE_HUE        = 13
-                  BLEND_MODE_SATURATION = 14
-                  BLEND_MODE_COLOR      = 15
-                  BLEND_MODE_LUMINOSITY = 16
-                  BLEND_MODE_COPY       = 17
+  WORD          Blend mode (always 0 for layer set)
+                  Normal         = 0
+                  Multiply       = 1
+                  Screen         = 2
+                  Overlay        = 3
+                  Darken         = 4
+                  Lighten        = 5
+                  Color Dodge    = 6
+                  Color Burn     = 7
+                  Hard Light     = 8
+                  Soft Light     = 9
+                  Difference     = 10
+                  Exclusion      = 11
+                  Hue            = 12
+                  Saturation     = 13
+                  Color          = 14
+                  Luminosity     = 15
   BYTE[4]       For future (set to zero)
   STRING        Layer name
 

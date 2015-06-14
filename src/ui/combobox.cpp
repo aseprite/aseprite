@@ -562,7 +562,7 @@ void ComboBox::onButtonClick(Event& ev)
 
 void ComboBox::openListBox()
 {
-  if (m_window)
+  if (!isEnabled() || m_window)
     return;
 
   m_window = new Window(Window::WithoutTitleBar);

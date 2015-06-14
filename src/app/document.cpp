@@ -53,7 +53,7 @@ Document::Document(Sprite* sprite)
     // Extra cel
   , m_extraCel(NULL)
   , m_extraImage(NULL)
-  , m_extraCelBlendMode(BLEND_MODE_NORMAL)
+  , m_extraCelBlendMode(BlendMode::NORMAL)
   , m_extraCelType(render::ExtraType::NONE)
   // Mask
   , m_mask(new Mask())

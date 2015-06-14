@@ -10,7 +10,6 @@
 
 #include "render/quantization.h"
 
-#include "doc/blend.h"
 #include "doc/image_impl.h"
 #include "doc/images_collector.h"
 #include "doc/layer.h"

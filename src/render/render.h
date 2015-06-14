@@ -9,6 +9,7 @@
 #pragma once
 
 #include "doc/anidir.h"
+#include "doc/blend_mode.h"
 #include "doc/color.h"
 #include "doc/frame.h"
 #include "doc/pixel_format.h"
@@ -99,7 +100,7 @@ namespace render {
     // layer/frame.
     void setExtraImage(
       ExtraType type,
-      const Cel* cel, const Image* image, int blendMode,
+      const Cel* cel, const Image* image, BlendMode blendMode,
       const Layer* currentLayer,
       frame_t currentFrame);
     void removeExtraImage();
@@ -128,7 +129,7 @@ namespace render {
       const Layer* layer,
       frame_t frame,
       const gfx::Clip& area,
-      int blend_mode = -1);
+      BlendMode blend_mode = BlendMode::UNSPECIFIED);
 
     // Main function used to render the sprite. Draws the given sprite
     // frame in a new image and return it. Note: zoomedRect must have
@@ -147,13 +148,13 @@ namespace render {
 
     void renderImage(Image* dst_image, const Image* src_image,
       const Palette* pal, int x, int y, Zoom zoom,
-      int opacity, int blend_mode);
+      int opacity, BlendMode blend_mode);
 
   private:
     typedef void (*RenderScaledImage)(
       Image* dst, const Image* src, const Palette* pal,
       const gfx::Clip& area,
-      int opacity, int blend_mode, Zoom zoom);
+      int opacity, BlendMode blend_mode, Zoom zoom);
 
     void renderLayer(
       const Layer* layer,
@@ -163,7 +164,7 @@ namespace render {
       RenderScaledImage renderScaledImage,
       bool render_background,
       bool render_transparent,
-      int blend_mode);
+      BlendMode blend_mode);
 
     void renderCel(
       Image* dst_image,
@@ -172,7 +173,7 @@ namespace render {
       const Cel* cel,
       const gfx::Clip& area,
       RenderScaledImage scaled_func,
-      int opacity, int blend_mode, Zoom zoom);
+      int opacity, BlendMode blend_mode, Zoom zoom);
 
     static RenderScaledImage getRenderScaledImageFunc(
       PixelFormat dstFormat,
@@ -184,7 +185,7 @@ namespace render {
     ExtraType m_extraType;
     const Cel* m_extraCel;
     const Image* m_extraImage;
-    int m_extraBlendMode;
+    BlendMode m_extraBlendMode;
 
     BgType m_bgType;
     bool m_bgZoom;
@@ -199,7 +200,7 @@ namespace render {
   };
 
   void composite_image(Image* dst, const Image* src,
-    int x, int y, int opacity, int blend_mode);
+    int x, int y, int opacity, BlendMode blend_mode);
 
 } // namespace render
 

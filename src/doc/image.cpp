@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,7 +11,6 @@
 #include "doc/image.h"
 
 #include "doc/algo.h"
-#include "doc/blend.h"
 #include "doc/brush.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"

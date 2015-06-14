@@ -10,6 +10,8 @@
 
 #include "render/render.h"
 
+#include "doc/blend_internals.h"
+#include "doc/blend_mode.h"
 #include "doc/doc.h"
 #include "doc/handle_anidir.h"
 #include "doc/image_impl.h"
@@ -23,12 +25,12 @@ namespace render {
 
 template<class DstTraits, class SrcTraits>
 class BlenderHelper {
-  BLEND_COLOR m_blend_color;
+  BlendFunc m_blend_func;
   color_t m_mask_color;
 public:
-  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
+  BlenderHelper(const Image* src, const Palette* pal, BlendMode blend_mode)
   {
-    m_blend_color = SrcTraits::get_blender(blend_mode);
+    m_blend_func = SrcTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
   }
   inline void operator()(typename DstTraits::pixel_t& scanline,
@@ -37,7 +39,7 @@ public:
                          int opacity)
   {
     if (src != m_mask_color)
-      scanline = (*m_blend_color)(dst, src, opacity);
+      scanline = (*m_blend_func)(dst, src, opacity);
     else
       scanline = dst;
   }
@@ -45,12 +47,12 @@ public:
 
 template<>
 class BlenderHelper<RgbTraits, GrayscaleTraits> {
-  BLEND_COLOR m_blend_color;
+  BlendFunc m_blend_func;
   color_t m_mask_color;
 public:
-  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
+  BlenderHelper(const Image* src, const Palette* pal, BlendMode blend_mode)
   {
-    m_blend_color = RgbTraits::get_blender(blend_mode);
+    m_blend_func = RgbTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
   }
   inline void operator()(RgbTraits::pixel_t& scanline,
@@ -60,7 +62,7 @@ public:
   {
     if (src != m_mask_color) {
       int v = graya_getv(src);
-      scanline = (*m_blend_color)(dst, rgba(v, v, v, graya_geta(src)), opacity);
+      scanline = (*m_blend_func)(dst, rgba(v, v, v, graya_geta(src)), opacity);
     }
     else
       scanline = dst;
@@ -70,14 +72,14 @@ public:
 template<>
 class BlenderHelper<RgbTraits, IndexedTraits> {
   const Palette* m_pal;
-  int m_blend_mode;
-  BLEND_COLOR m_blend_color;
+  BlendMode m_blend_mode;
+  BlendFunc m_blend_func;
   color_t m_mask_color;
 public:
-  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
+  BlenderHelper(const Image* src, const Palette* pal, BlendMode blend_mode)
   {
     m_blend_mode = blend_mode;
-    m_blend_color = RgbTraits::get_blender(blend_mode);
+    m_blend_func = RgbTraits::get_blender(blend_mode);
     m_mask_color = src->maskColor();
     m_pal = pal;
   }
@@ -86,12 +88,12 @@ public:
                          const IndexedTraits::pixel_t& src,
                          int opacity)
   {
-    if (m_blend_mode == BLEND_MODE_COPY) {
+    if (m_blend_mode == BlendMode::SRC) {
       scanline = m_pal->getEntry(src);
     }
     else {
       if (src != m_mask_color) {
-        scanline = (*m_blend_color)(dst, m_pal->getEntry(src), opacity);
+        scanline = (*m_blend_func)(dst, m_pal->getEntry(src), opacity);
       }
       else
         scanline = dst;
@@ -101,10 +103,10 @@ public:
 
 template<>
 class BlenderHelper<IndexedTraits, IndexedTraits> {
-  int m_blend_mode;
+  BlendMode m_blend_mode;
   color_t m_mask_color;
 public:
-  BlenderHelper(const Image* src, const Palette* pal, int blend_mode)
+  BlenderHelper(const Image* src, const Palette* pal, BlendMode blend_mode)
   {
     m_blend_mode = blend_mode;
     m_mask_color = src->maskColor();
@@ -114,7 +116,7 @@ public:
                          const IndexedTraits::pixel_t& src,
                          int opacity)
   {
-    if (m_blend_mode == BLEND_MODE_COPY) {
+    if (m_blend_mode == BlendMode::SRC) {
       scanline = src;
     }
     else {
@@ -130,7 +132,7 @@ template<class DstTraits, class SrcTraits>
 static void compose_scaled_image_scale_up(
   Image* dst, const Image* src, const Palette* pal,
   gfx::Clip area,
-  int opacity, int blend_mode, Zoom zoom)
+  int opacity, BlendMode blend_mode, Zoom zoom)
 {
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   int px_x, px_y;
@@ -257,7 +259,7 @@ template<class DstTraits, class SrcTraits>
 static void compose_scaled_image_scale_down(
   Image* dst, const Image* src, const Palette* pal,
   gfx::Clip area,
-  int opacity, int blend_mode, Zoom zoom)
+  int opacity, BlendMode blend_mode, Zoom zoom)
 {
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   int unbox_w = zoom.remove(1);
@@ -314,7 +316,7 @@ template<class DstTraits, class SrcTraits>
 static void compose_scaled_image(
   Image* dst, const Image* src, const Palette* pal,
   const gfx::Clip& area,
-  int opacity, int blend_mode, Zoom zoom)
+  int opacity, BlendMode blend_mode, Zoom zoom)
 {
   if (zoom.scale() >= 1.0)
     compose_scaled_image_scale_up<DstTraits, SrcTraits>(dst, src, pal, area, opacity, blend_mode, zoom);
@@ -373,7 +375,7 @@ void Render::setPreviewImage(const Layer* layer, frame_t frame, Image* image)
 
 void Render::setExtraImage(
   ExtraType type,
-  const Cel* cel, const Image* image, int blendMode,
+  const Cel* cel, const Image* image, BlendMode blendMode,
   const Layer* currentLayer,
   frame_t currentFrame)
 {
@@ -438,7 +440,7 @@ void Render::renderLayer(
   const Layer* layer,
   frame_t frame,
   const gfx::Clip& area,
-  int blend_mode)
+  BlendMode blend_mode)
 {
   m_sprite = layer->sprite();
 
@@ -506,7 +508,7 @@ void Render::renderSprite(
   renderLayer(
     m_sprite->folder(), dstImage,
     area, frame, zoom, scaled_func,
-    true, true, -1);
+    true, true, BlendMode::UNSPECIFIED);
 
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
@@ -544,11 +546,11 @@ void Render::renderSprite(
       if (m_globalOpacity > 0) {
         m_globalOpacity = MID(0, m_globalOpacity, 255);
 
-        int blend_mode = -1;
+        BlendMode blend_mode = BlendMode::UNSPECIFIED;
         if (m_onionskin.type() == OnionskinType::MERGE)
-          blend_mode = BLEND_MODE_NORMAL;
+          blend_mode = BlendMode::NORMAL;
         else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
-          blend_mode = (frameOut < frame ? BLEND_MODE_RED_TINT: BLEND_MODE_BLUE_TINT);
+          blend_mode = (frameOut < frame ? BlendMode::RED_TINT: BlendMode::BLUE_TINT);
 
         renderLayer(m_sprite->folder(), dstImage,
           area, frameIn, zoom, scaled_func,
@@ -605,7 +607,7 @@ void Render::renderBackground(Image* image,
 }
 
 void Render::renderImage(Image* dst_image, const Image* src_image,
-  const Palette* pal, int x, int y, Zoom zoom, int opacity, int blend_mode)
+  const Palette* pal, int x, int y, Zoom zoom, int opacity, BlendMode blend_mode)
 {
   RenderScaledImage scaled_func = getRenderScaledImageFunc(
     dst_image->pixelFormat(),
@@ -628,7 +630,7 @@ void Render::renderLayer(
   RenderScaledImage scaled_func,
   bool render_background,
   bool render_transparent,
-  int blend_mode)
+  BlendMode blend_mode)
 {
   // we can't read from this layer
   if (!layer->isVisible())
@@ -681,14 +683,14 @@ void Render::renderLayer(
           int t, output_opacity;
 
           output_opacity = MID(0, cel->opacity(), 255);
-          output_opacity = INT_MULT(output_opacity, m_globalOpacity, t);
+          output_opacity = MUL_UN8(output_opacity, m_globalOpacity, t);
 
           ASSERT(src_image->maskColor() == m_sprite->transparentColor());
 
-          int layer_blend_mode =
-            (blend_mode < 0 ?
-                          static_cast<const LayerImage*>(layer)->getBlendMode():
-                          blend_mode);
+          BlendMode layer_blend_mode =
+            (blend_mode == BlendMode::UNSPECIFIED ?
+             static_cast<const LayerImage*>(layer)->blendMode():
+             blend_mode);
 
           // Draw parts outside the "m_extraCel" area
           if (drawExtra && m_extraType == ExtraType::PATCH) {
@@ -758,7 +760,7 @@ void Render::renderCel(
   const Cel* cel,
   const gfx::Clip& area,
   RenderScaledImage scaled_func,
-  int opacity, int blend_mode, Zoom zoom)
+  int opacity, BlendMode blend_mode, Zoom zoom)
 {
   int cel_x = zoom.apply(cel->x());
   int cel_y = zoom.apply(cel->y());
@@ -820,7 +822,7 @@ Render::RenderScaledImage Render::getRenderScaledImageFunc(
 }
 
 void composite_image(Image* dst, const Image* src,
-  int x, int y, int opacity, int blend_mode)
+  int x, int y, int opacity, BlendMode blend_mode)
 {
   // As the background is not rendered in renderImage(), we don't need
   // to configure the Render instance's BgType.

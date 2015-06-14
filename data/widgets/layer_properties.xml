@@ -6,6 +6,9 @@
     <grid columns="2">
       <label text="Name:" />
       <entry text="" id="name" magnet="true" maxsize="256" minwidth="64" cell_align="horizontal" />
+
+      <label text="Mode:" />
+      <combobox id="mode" />
     </grid>
     <separator horizontal="true" />
     <hbox>

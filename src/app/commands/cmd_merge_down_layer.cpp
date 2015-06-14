@@ -133,7 +133,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
           src_cel->x()-bounds.x,
           src_cel->y()-bounds.y,
           src_cel->opacity(),
-          static_cast<LayerImage*>(src_layer)->getBlendMode());
+          static_cast<LayerImage*>(src_layer)->blendMode());
 
         transaction.execute(new cmd::SetCelPosition(dst_cel,
             bounds.x, bounds.y));

@@ -23,7 +23,6 @@
 #include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
-#include "doc/blend.h"
 #include "ui/message.h"
 #include "ui/system.h"
 

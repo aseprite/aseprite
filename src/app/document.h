@@ -15,6 +15,7 @@
 #include "base/observable.h"
 #include "base/shared_ptr.h"
 #include "base/unique_ptr.h"
+#include "doc/blend_mode.h"
 #include "doc/color.h"
 #include "doc/document.h"
 #include "doc/frame.h"
@@ -127,8 +128,8 @@ namespace app {
     Cel* getExtraCel() const;
     Image* getExtraCelImage() const;
     render::ExtraType getExtraCelType() const { return m_extraCelType; }
-    int getExtraCelBlendMode() const { return m_extraCelBlendMode; }
-    void setExtraCelBlendMode(int mode) { m_extraCelBlendMode = mode; }
+    BlendMode getExtraCelBlendMode() const { return m_extraCelBlendMode; }
+    void setExtraCelBlendMode(BlendMode mode) { m_extraCelBlendMode = mode; }
 
     //////////////////////////////////////////////////////////////////////
     // Mask
@@ -212,7 +213,7 @@ namespace app {
 
     // Image of the extra cel.
     ImageRef m_extraImage;
-    int m_extraCelBlendMode;
+    BlendMode m_extraCelBlendMode;
     render::ExtraType m_extraCelType;
 
     // Current mask.

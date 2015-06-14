@@ -10,7 +10,7 @@ add_library(doc-lib
   algorithm/rotate.cpp
   algorithm/rotsprite.cpp
   algorithm/shrink_bounds.cpp
-  blend.cpp
+  blend_funcs.cpp
   brush.cpp
   cel.cpp
   cel_data.cpp

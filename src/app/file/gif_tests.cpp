@@ -75,10 +75,10 @@ TEST_F(GifFormat, OpaqueIndexed)
     doc->setFilename(fn);
 
     Palette* pal = sprite->palette(frame_t(0));
-    pal->setEntry(0, rgb(255, 255, 255));
-    pal->setEntry(1, rgb(255, 13, 254));
-    pal->setEntry(2, rgb(129, 255, 32));
-    pal->setEntry(3, rgb(0, 0, 255));
+    pal->setEntry(0, rgba(255, 255, 255, 255));
+    pal->setEntry(1, rgba(255, 13, 254, 255));
+    pal->setEntry(2, rgba(129, 255, 32, 255));
+    pal->setEntry(3, rgba(0, 0, 255, 255));
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
     layer->setBackground(true);
@@ -105,10 +105,10 @@ TEST_F(GifFormat, OpaqueIndexed)
     EXPECT_TRUE(layer->isBackground());
 
     Palette* pal = sprite->palette(frame_t(0));
-    EXPECT_EQ(rgb(255, 255, 255), pal->getEntry(0));
-    EXPECT_EQ(rgb(255, 13, 254), pal->getEntry(1));
-    EXPECT_EQ(rgb(129, 255, 32), pal->getEntry(2));
-    EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(3));
+    EXPECT_EQ(rgba(255, 255, 255, 255), pal->getEntry(0));
+    EXPECT_EQ(rgba(255, 13, 254, 255), pal->getEntry(1));
+    EXPECT_EQ(rgba(129, 255, 32, 255), pal->getEntry(2));
+    EXPECT_EQ(rgba(0, 0, 255, 255), pal->getEntry(3));
 
     Image* image = layer->cel(frame_t(0))->image();
     EXPECT_EQ(0, sprite->transparentColor());
@@ -132,10 +132,10 @@ TEST_F(GifFormat, TransparentIndexed)
     doc->setFilename(fn);
 
     Palette* pal = sprite->palette(frame_t(0));
-    pal->setEntry(0, rgb(255, 255, 255));
-    pal->setEntry(1, rgb(255, 13, 254));
-    pal->setEntry(2, rgb(129, 255, 32));
-    pal->setEntry(3, rgb(0, 0, 255));
+    pal->setEntry(0, rgba(255, 255, 255, 255));
+    pal->setEntry(1, rgba(255, 13, 254, 255));
+    pal->setEntry(2, rgba(129, 255, 32, 255));
+    pal->setEntry(3, rgba(0, 0, 255, 255));
 
     LayerImage* layer = dynamic_cast<LayerImage*>(sprite->folder()->getFirstLayer());
     ASSERT_NE((LayerImage*)NULL, layer);
@@ -161,10 +161,10 @@ TEST_F(GifFormat, TransparentIndexed)
     EXPECT_FALSE(layer->isBackground());
 
     Palette* pal = sprite->palette(frame_t(0));
-    EXPECT_EQ(rgb(255, 255, 255), pal->getEntry(0));
-    EXPECT_EQ(rgb(255, 13, 254), pal->getEntry(1));
-    EXPECT_EQ(rgb(129, 255, 32), pal->getEntry(2));
-    EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(3));
+    EXPECT_EQ(rgba(255, 255, 255, 255), pal->getEntry(0));
+    EXPECT_EQ(rgba(255, 13, 254, 255), pal->getEntry(1));
+    EXPECT_EQ(rgba(129, 255, 32, 255), pal->getEntry(2));
+    EXPECT_EQ(rgba(0, 0, 255, 255), pal->getEntry(3));
 
     Image* image = layer->cel(frame_t(0))->image();
     EXPECT_EQ(0, sprite->transparentColor());
@@ -192,9 +192,9 @@ TEST_F(GifFormat, TransparentRgbQuantization)
 
     Image* image = layer->cel(frame_t(0))->image();
     image->putPixel(0, 0, rgba(0, 0, 0, 0));
-    image->putPixel(0, 1, rgb(255, 0, 0));
-    image->putPixel(1, 0, rgb(0, 255, 0));
-    image->putPixel(1, 1, rgb(0, 0, 255));
+    image->putPixel(0, 1, rgba(255, 0, 0, 255));
+    image->putPixel(1, 0, rgba(0, 255, 0, 255));
+    image->putPixel(1, 1, rgba(0, 0, 255, 255));
 
     save_document(&m_ctx, doc);
 
@@ -213,9 +213,9 @@ TEST_F(GifFormat, TransparentRgbQuantization)
     Image* image = layer->cel(frame_t(0))->image();
     EXPECT_EQ(0, sprite->transparentColor());
     EXPECT_EQ(0, image->getPixel(0, 0));
-    EXPECT_EQ(rgb(255, 0, 0), pal->getEntry(image->getPixel(0, 1)));
-    EXPECT_EQ(rgb(0, 255, 0), pal->getEntry(image->getPixel(1, 0)));
-    EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(image->getPixel(1, 1)));
+    EXPECT_EQ(rgba(255, 0, 0, 255), pal->getEntry(image->getPixel(0, 1)));
+    EXPECT_EQ(rgba(0, 255, 0, 255), pal->getEntry(image->getPixel(1, 0)));
+    EXPECT_EQ(rgba(0, 0, 255, 255), pal->getEntry(image->getPixel(1, 1)));
 
     doc->close();
     delete doc;
@@ -237,10 +237,10 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
     EXPECT_NE((LayerImage*)NULL, sprite->backgroundLayer());
 
     Image* image = layer->cel(frame_t(0))->image();
-    image->putPixel(0, 0, rgb(0, 0, 0));
-    image->putPixel(0, 1, rgb(255, 0, 0));
-    image->putPixel(1, 0, rgb(0, 255, 0));
-    image->putPixel(1, 1, rgb(0, 0, 255));
+    image->putPixel(0, 0, rgba(0, 0, 0, 255));
+    image->putPixel(0, 1, rgba(255, 0, 0, 255));
+    image->putPixel(1, 0, rgba(0, 255, 0, 255));
+    image->putPixel(1, 1, rgba(0, 0, 255, 255));
 
     save_document(&m_ctx, doc);
 
@@ -260,10 +260,10 @@ TEST_F(GifFormat, OpaqueRgbQuantization)
     Palette* pal = sprite->palette(frame_t(0));
     Image* image = layer->cel(frame_t(0))->image();
     EXPECT_EQ(0, sprite->transparentColor());
-    EXPECT_EQ(rgb(0, 0, 0), pal->getEntry(image->getPixel(0, 0)));
-    EXPECT_EQ(rgb(255, 0, 0), pal->getEntry(image->getPixel(0, 1)));
-    EXPECT_EQ(rgb(0, 255, 0), pal->getEntry(image->getPixel(1, 0)));
-    EXPECT_EQ(rgb(0, 0, 255), pal->getEntry(image->getPixel(1, 1)));
+    EXPECT_EQ(rgba(0, 0, 0, 255), pal->getEntry(image->getPixel(0, 0)));
+    EXPECT_EQ(rgba(255, 0, 0, 255), pal->getEntry(image->getPixel(0, 1)));
+    EXPECT_EQ(rgba(0, 255, 0, 255), pal->getEntry(image->getPixel(1, 0)));
+    EXPECT_EQ(rgba(0, 0, 255, 255), pal->getEntry(image->getPixel(1, 1)));
 
     doc->close();
     delete doc;

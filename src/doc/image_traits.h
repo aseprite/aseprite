@@ -8,6 +8,7 @@
 #define DOC_IMAGE_TRAITS_H_INCLUDED
 #pragma once
 
+#include "doc/blend_funcs.h"
 #include "doc/pixel_format.h"
 
 namespace doc {
@@ -30,15 +31,12 @@ namespace doc {
     static const pixel_t min_value = 0x00000000l;
     static const pixel_t max_value = 0xffffffffl;
 
-    static inline int getRowStrideBytes(int pixels_per_row)
-    {
+    static inline int getRowStrideBytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
     }
 
-    static inline BLEND_COLOR get_blender(int blend_mode)
-    {
-      ASSERT(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
-      return rgba_blenders[blend_mode];
+    static inline BlendFunc get_blender(BlendMode blend_mode) {
+      return get_rgba_blender(blend_mode);
     }
   };
 
@@ -60,15 +58,12 @@ namespace doc {
     static const pixel_t min_value = 0x0000;
     static const pixel_t max_value = 0xffff;
 
-    static inline int getRowStrideBytes(int pixels_per_row)
-    {
+    static inline int getRowStrideBytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
     }
 
-    static inline BLEND_COLOR get_blender(int blend_mode)
-    {
-      ASSERT(blend_mode >= 0 && blend_mode < BLEND_MODE_MAX);
-      return graya_blenders[blend_mode];
+    static inline BlendFunc get_blender(BlendMode blend_mode) {
+      return get_graya_blender(blend_mode);
     }
   };
 
@@ -90,14 +85,12 @@ namespace doc {
     static const pixel_t min_value = 0x00;
     static const pixel_t max_value = 0xff;
 
-    static inline int getRowStrideBytes(int pixels_per_row)
-    {
+    static inline int getRowStrideBytes(int pixels_per_row) {
       return bytes_per_pixel * pixels_per_row;
     }
 
-    static inline BLEND_COLOR get_blender(int blend_mode)
-    {
-      return indexed_blend_direct;
+    static inline BlendFunc get_blender(BlendMode blend_mode) {
+      return get_indexed_blender(blend_mode);
     }
   };
 
@@ -119,8 +112,7 @@ namespace doc {
     static const pixel_t min_value = 0;
     static const pixel_t max_value = 1;
 
-    static inline int getRowStrideBytes(int pixels_per_row)
-    {
+    static inline int getRowStrideBytes(int pixels_per_row) {
       return ((pixels_per_row+7) / 8);
     }
   };

@@ -187,7 +187,8 @@ void Editor::drawBrushPreview(const gfx::Point& pos)
       cel ? cel->opacity(): 255);
     m_document->setExtraCelType(render::ExtraType::NONE);
     m_document->setExtraCelBlendMode(
-      m_layer ? static_cast<LayerImage*>(m_layer)->getBlendMode(): BLEND_MODE_NORMAL);
+      (m_layer ? static_cast<LayerImage*>(m_layer)->blendMode():
+                 BlendMode::NORMAL));
 
     // In 'indexed' images, if the current color is 0, we have to use
     // a different mask color (different from 0) to draw the extra layer
@@ -202,7 +203,7 @@ void Editor::drawBrushPreview(const gfx::Point& pos)
       render::Render().renderLayer(
         extraImage, m_layer, m_frame,
         gfx::Clip(0, 0, brushBounds),
-        BLEND_MODE_COPY);
+        BlendMode::SRC);
 
       // This extra cel is a patch for the current layer/frame
       m_document->setExtraCelType(render::ExtraType::PATCH);

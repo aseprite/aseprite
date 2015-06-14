@@ -15,7 +15,6 @@
 #include "app/resource_finder.h"
 #include "base/fs.h"
 #include "base/path.h"
-#include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"

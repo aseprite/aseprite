@@ -13,9 +13,12 @@
 #include "ui/ui.h"
 
 #include "app/app.h"
+#include "app/cmd/set_layer_blend_mode.h"
+#include "app/cmd/set_layer_name.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
+#include "app/transaction.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 
@@ -51,18 +54,55 @@ bool LayerPropertiesCommand::onEnabled(Context* context)
 void LayerPropertiesCommand::onExecute(Context* context)
 {
   const ContextReader reader(context);
-  const Layer* layer = reader.layer();
+  const LayerImage* layer = static_cast<const LayerImage*>(reader.layer());
 
   app::gen::LayerProperties window;
+
   window.name()->setText(layer->name().c_str());
   window.name()->setMinSize(gfx::Size(128, 0));
   window.name()->setExpansive(true);
+
+  window.mode()->addItem("Normal");
+  window.mode()->addItem("Multiply");
+  window.mode()->addItem("Screen");
+  window.mode()->addItem("Overlay");
+  window.mode()->addItem("Darken");
+  window.mode()->addItem("Lighten");
+  window.mode()->addItem("Color Dodge");
+  window.mode()->addItem("Color Burn");
+  window.mode()->addItem("Hard Light");
+  window.mode()->addItem("Soft Light");
+  window.mode()->addItem("Difference");
+  window.mode()->addItem("Exclusion");
+  window.mode()->addItem("Hue");
+  window.mode()->addItem("Saturation");
+  window.mode()->addItem("Color");
+  window.mode()->addItem("Luminosity");
+  window.mode()->setSelectedItemIndex((int)layer->blendMode());
+  window.mode()->setEnabled(!layer->isBackground());
+
   window.openWindowInForeground();
 
   if (window.getKiller() == window.ok()) {
-    ContextWriter writer(reader);
-    writer.layer()->setName(window.name()->getText());
-    update_screen_for_document(writer.document());
+    std::string newName = window.name()->getText();
+    BlendMode newBlendMode = (BlendMode)window.mode()->getSelectedItemIndex();
+
+    if (newName != layer->name() ||
+        newBlendMode != layer->blendMode()) {
+      ContextWriter writer(reader);
+      {
+        Transaction transaction(writer.context(), "Set Layer Properties");
+
+        if (newName != layer->name())
+          transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
+
+        if (newBlendMode != layer->blendMode())
+          transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
+
+        transaction.commit();
+      }
+      update_screen_for_document(writer.document());
+    }
   }
 }
 

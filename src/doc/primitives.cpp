@@ -11,7 +11,6 @@
 #include "doc/primitives.h"
 
 #include "doc/algo.h"
-#include "doc/blend.h"
 #include "doc/brush.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"

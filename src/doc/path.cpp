@@ -10,7 +10,6 @@
 #include "config.h"
 #endif
 
-#include "doc/blend.h"
 #include "doc/image.h"
 #include "doc/path.h"
 

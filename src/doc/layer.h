@@ -8,7 +8,7 @@
 #define DOC_LAYER_H_INCLUDED
 #pragma once
 
-#include "doc/blend.h"
+#include "doc/blend_mode.h"
 #include "doc/cel_list.h"
 #include "doc/frame.h"
 #include "doc/layer_list.h"
@@ -116,7 +116,8 @@ namespace doc {
 
     virtual int getMemSize() const override;
 
-    int getBlendMode() const { return BLEND_MODE_NORMAL; }
+    BlendMode blendMode() const { return m_blendmode; }
+    void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
 
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
@@ -137,6 +138,7 @@ namespace doc {
   private:
     void destroyAllCels();
 
+    BlendMode m_blendmode;
     CelList m_cels;   // List of all cels inside this layer used by frames.
   };
 

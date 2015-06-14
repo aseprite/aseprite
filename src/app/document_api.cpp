@@ -59,7 +59,6 @@
 
 #include <set>
 
-
 namespace app {
 
 DocumentApi::DocumentApi(Document* document, Transaction& transaction)

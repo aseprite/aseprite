@@ -95,8 +95,9 @@ void MoveCel::onExecute()
       executeAndAdd(new cmd::UnlinkCel(srcCel));
     }
     else {
-      int blend = (srcLayer->isBackground() ?
-        BLEND_MODE_COPY: BLEND_MODE_NORMAL);
+      BlendMode blend = (srcLayer->isBackground() ?
+                         BlendMode::SRC:
+                         BlendMode::NORMAL);
 
       ImageRef tmp(Image::createCopy(dstImage.get()));
       render::composite_image(tmp.get(), srcImage,

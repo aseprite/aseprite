@@ -785,13 +785,13 @@ void Editor::flashCurrentLayer()
 
     clear_image(flash_image, flash_image->maskColor());
     copy_image(flash_image, src_image, x, y);
-    m_document->setExtraCelBlendMode(BLEND_MODE_BLACKANDWHITE);
+    m_document->setExtraCelBlendMode(BlendMode::NEG_BW);
 
     drawSpriteClipped(gfx::Region(
         gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
     gui_feedback();
 
-    m_document->setExtraCelBlendMode(BLEND_MODE_NORMAL);
+    m_document->setExtraCelBlendMode(BlendMode::NORMAL);
     m_document->destroyExtraCel();
     invalidate();
   }

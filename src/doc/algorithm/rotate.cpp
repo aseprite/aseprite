@@ -12,7 +12,7 @@
 #endif
 
 #include "fixmath/fixmath.h"
-#include "doc/blend.h"
+#include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/primitives.h"
 #include "doc/primitives_fast.h"
@@ -49,11 +49,11 @@ static void image_scale_tpl(Image* dst, const Image* src, int x, int y, int w, i
 }
 
 static color_t rgba_blender(color_t back, color_t front) {
-  return rgba_blenders[BLEND_MODE_NORMAL](back, front, 255);
+  return rgba_blender_normal(back, front, 255);
 }
 
 static color_t grayscale_blender(color_t back, color_t front) {
-  return graya_blenders[BLEND_MODE_NORMAL](back, front, 255);
+  return graya_blender_normal(back, front, 255);
 }
 
 class if_blender {
@@ -182,7 +182,6 @@ protected:
 class RgbDelegate : public GenericDelegate<RgbTraits> {
 public:
   RgbDelegate(color_t mask_color) {
-    m_blender = rgba_blenders[BLEND_MODE_NORMAL];
     m_mask_color = mask_color;
   }
 
@@ -191,20 +190,18 @@ public:
 
     int c = spr->getPixel(spr_x, spr_y);
     if ((rgba_geta(m_mask_color) == 0) || ((c & rgba_rgb_mask) != (m_mask_color & rgba_rgb_mask)))
-      *m_it = m_blender(*m_it, c, 255);
+      *m_it = rgba_blender_normal(*m_it, c, 255);
 
     ++m_it;
   }
 
 private:
-  BLEND_COLOR m_blender;
   color_t m_mask_color;
 };
 
 class GrayscaleDelegate : public GenericDelegate<GrayscaleTraits> {
 public:
   GrayscaleDelegate(color_t mask_color) {
-    m_blender = graya_blenders[BLEND_MODE_NORMAL];
     m_mask_color = mask_color;
   }
 
@@ -213,13 +210,12 @@ public:
 
     int c = spr->getPixel(spr_x, spr_y);
     if ((graya_geta(m_mask_color) == 0) || ((c & graya_v_mask) != (m_mask_color & graya_v_mask)))
-      *m_it = m_blender(*m_it, c, 255);
+      *m_it = graya_blender_normal(*m_it, c, 255);
 
     ++m_it;
   }
 
 private:
-  BLEND_COLOR m_blender;
   color_t m_mask_color;
 };
 

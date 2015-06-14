@@ -12,7 +12,6 @@
 
 #include "base/24bits.h"
 #include "doc/algo.h"
-#include "doc/blend.h"
 #include "doc/color_scales.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"

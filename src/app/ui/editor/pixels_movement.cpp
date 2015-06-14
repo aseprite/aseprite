@@ -74,7 +74,7 @@ PixelsMovement::PixelsMovement(Context* context,
   m_document->prepareExtraCel(m_sprite->bounds(), opacity);
   m_document->setExtraCelType(render::ExtraType::COMPOSITE);
   m_document->setExtraCelBlendMode(
-    static_cast<LayerImage*>(m_layer)->getBlendMode());
+    static_cast<LayerImage*>(m_layer)->blendMode());
 
   redrawExtraImage();
 
@@ -465,7 +465,7 @@ void PixelsMovement::stampImage()
         expand.getDestCanvas(), image,
         -expand.getCel()->x(),
         -expand.getCel()->y(),
-        cel->opacity(), BLEND_MODE_NORMAL);
+        cel->opacity(), BlendMode::NORMAL);
 
       expand.commit();
     }

@@ -10,7 +10,6 @@
 
 #include "doc/layer.h"
 
-#include "doc/blend.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -85,6 +84,7 @@ Cel* Layer::cel(frame_t frame) const
 
 LayerImage::LayerImage(Sprite* sprite)
   : Layer(ObjectType::LayerImage, sprite)
+  , m_blendmode(BlendMode::NORMAL)
 {
 }
 

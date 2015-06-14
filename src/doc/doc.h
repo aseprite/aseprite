@@ -8,7 +8,8 @@
 #define DOC_DOC_H_INCLUDED
 #pragma once
 
-#include "doc/blend.h"
+#include "doc/blend_funcs.h"
+#include "doc/blend_mode.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/color.h"
