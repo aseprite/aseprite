@@ -1,5 +1,5 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2001-2014 by David Capello -->
+<!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
 <window text="Layer Properties" id="layer_properties">
   <vbox>
@@ -9,6 +9,9 @@
 
       <label text="Mode:" />
       <combobox id="mode" />
+
+      <label text="Opacity:" />
+      <slider id="opacity" min="0" max="255" width="128" />
     </grid>
     <separator horizontal="true" />
     <hbox>

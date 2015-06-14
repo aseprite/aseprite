@@ -114,6 +114,7 @@ add_library(app-lib
   cmd/set_frame_tag_name.cpp
   cmd/set_frame_tag_range.cpp
   cmd/set_layer_blend_mode.cpp
+  cmd/set_layer_opacity.cpp
   cmd/set_layer_flags.cpp
   cmd/set_layer_name.cpp
   cmd/set_mask.cpp

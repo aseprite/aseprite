@@ -680,17 +680,24 @@ void Render::renderLayer(
         }
 
         if (src_image) {
-          int t, output_opacity;
+          const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
+          BlendMode layerBlendMode =
+            (blend_mode == BlendMode::UNSPECIFIED ?
+             imgLayer->blendMode():
+             blend_mode);
 
-          output_opacity = MID(0, cel->opacity(), 255);
-          output_opacity = MUL_UN8(output_opacity, m_globalOpacity, t);
+          ASSERT(cel->opacity() >= 0);
+          ASSERT(cel->opacity() <= 255);
+          ASSERT(imgLayer->opacity() >= 0);
+          ASSERT(imgLayer->opacity() <= 255);
+
+          // Multiple three opacities: cel*layer*global
+          int t;
+          int opacity = cel->opacity();
+          opacity = MUL_UN8(opacity, imgLayer->opacity(), t);
+          opacity = MUL_UN8(opacity, m_globalOpacity, t);
 
           ASSERT(src_image->maskColor() == m_sprite->transparentColor());
-
-          BlendMode layer_blend_mode =
-            (blend_mode == BlendMode::UNSPECIFIED ?
-             static_cast<const LayerImage*>(layer)->blendMode():
-             blend_mode);
 
           // Draw parts outside the "m_extraCel" area
           if (drawExtra && m_extraType == ExtraType::PATCH) {
@@ -703,8 +710,7 @@ void Render::renderLayer(
                 image, src_image, pal,
                 cel, gfx::Clip(area.dst.x+rc.x-area.src.x,
                                area.dst.y+rc.y-area.src.y, rc), scaled_func,
-                output_opacity,
-                layer_blend_mode, zoom);
+                opacity, layerBlendMode, zoom);
             }
           }
           // Draw the whole cel
@@ -712,8 +718,7 @@ void Render::renderLayer(
             renderCel(
               image, src_image, pal,
               cel, area, scaled_func,
-              output_opacity,
-              layer_blend_mode, zoom);
+              opacity, layerBlendMode, zoom);
           }
         }
       }

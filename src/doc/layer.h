@@ -119,6 +119,9 @@ namespace doc {
     BlendMode blendMode() const { return m_blendmode; }
     void setBlendMode(BlendMode blendmode) { m_blendmode = blendmode; }
 
+    int opacity() const { return m_opacity; }
+    void setOpacity(int opacity) { m_opacity = opacity; }
+
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
     void moveCel(Cel *cel, frame_t frame);
@@ -139,6 +142,7 @@ namespace doc {
     void destroyAllCels();
 
     BlendMode m_blendmode;
+    int m_opacity;
     CelList m_cels;   // List of all cels inside this layer used by frames.
   };
 

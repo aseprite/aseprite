@@ -15,6 +15,7 @@
 #include "app/app.h"
 #include "app/cmd/set_layer_blend_mode.h"
 #include "app/cmd/set_layer_name.h"
+#include "app/cmd/set_layer_opacity.h"
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/modules/gui.h"
@@ -45,7 +46,8 @@ public:
 
   LayerPropertiesWindow(const LayerImage* layer)
     : m_layer(const_cast<LayerImage*>(layer))
-    , m_oldBlendMode(layer->blendMode()) {
+    , m_oldBlendMode(layer->blendMode())
+    , m_oldOpacity(layer->opacity()) {
     name()->setText(layer->name().c_str());
     name()->setMinSize(gfx::Size(128, 0));
     name()->setExpansive(true);
@@ -67,8 +69,13 @@ public:
     mode()->addItem("Color");
     mode()->addItem("Luminosity");
     mode()->setSelectedItemIndex((int)layer->blendMode());
+    opacity()->setValue(layer->opacity());
+
     mode()->setEnabled(!layer->isBackground());
-    mode()->Change.connect(Bind<void>(&LayerPropertiesWindow::onBlendModeChange, this));
+    opacity()->setEnabled(!layer->isBackground());
+
+    mode()->Change.connect(Bind<void>(&LayerPropertiesWindow::onLayerPropsChange, this));
+    opacity()->Change.connect(Bind<void>(&LayerPropertiesWindow::onLayerPropsChange, this));
 
     remapWindow();
     centerWindow();
@@ -83,26 +90,34 @@ public:
     return (BlendMode)mode()->getSelectedItemIndex();
   }
 
+  int opacityValue() const {
+    return opacity()->getValue();
+  }
+
 protected:
 
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
       case kCloseMessage:
         m_layer->setBlendMode(m_oldBlendMode);
+        m_layer->setOpacity(m_oldOpacity);
         save_window_pos(this, "LayerProperties");
         break;
     }
     return Window::onProcessMessage(msg);
   }
 
-  void onBlendModeChange() {
+  void onLayerPropsChange() {
     m_layer->setBlendMode(blendModeValue());
+    m_layer->setOpacity(opacityValue());
+
     update_screen_for_document(
       static_cast<app::Document*>(m_layer->sprite()->document()));
   }
 
   LayerImage* m_layer;
   BlendMode m_oldBlendMode;
+  int m_oldOpacity;
 };
 
 LayerPropertiesCommand::LayerPropertiesCommand()
@@ -129,9 +144,11 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
   if (window.getKiller() == window.ok()) {
     std::string newName = window.nameValue();
+    int newOpacity = window.opacityValue();
     BlendMode newBlendMode = window.blendModeValue();
 
     if (newName != layer->name() ||
+        newOpacity != layer->opacity() ||
         newBlendMode != layer->blendMode()) {
       ContextWriter writer(reader);
       {
@@ -139,6 +156,9 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
         if (newName != layer->name())
           transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
+
+        if (newOpacity != layer->opacity())
+          transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
 
         if (newBlendMode != layer->blendMode())
           transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));

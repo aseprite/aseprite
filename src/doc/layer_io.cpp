@@ -44,8 +44,13 @@ void write_layer(std::ostream& os, const Layer* layer)
   switch (layer->type()) {
 
     case ObjectType::LayerImage: {
-      CelConstIterator it, begin = static_cast<const LayerImage*>(layer)->getCelBegin();
-      CelConstIterator end = static_cast<const LayerImage*>(layer)->getCelEnd();
+      const LayerImage* imgLayer = static_cast<const LayerImage*>(layer);
+      CelConstIterator it, begin = imgLayer->getCelBegin();
+      CelConstIterator end = imgLayer->getCelEnd();
+
+      // Blend mode & opacity
+      write16(os, (int)imgLayer->blendMode());
+      write8(os, imgLayer->opacity());
 
       // Images
       int images = 0;
@@ -73,7 +78,7 @@ void write_layer(std::ostream& os, const Layer* layer)
       }
 
       // Cels
-      write16(os, static_cast<const LayerImage*>(layer)->getCelsCount());
+      write16(os, imgLayer->getCelsCount());
       for (it=begin; it != end; ++it) {
         const Cel* cel = *it;
         write_cel(os, cel);
@@ -108,8 +113,14 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
   switch (static_cast<ObjectType>(layer_type)) {
 
     case ObjectType::LayerImage: {
+      LayerImage* imgLayer = new LayerImage(subObjects->sprite());
+
       // Create layer
-      layer.reset(new LayerImage(subObjects->sprite()));
+      layer.reset(imgLayer);
+
+      // Blend mode & opacity
+      imgLayer->setBlendMode((BlendMode)read16(is));
+      imgLayer->setOpacity(read8(is));
 
       // Read images
       int images = read16(is);  // Number of images
@@ -132,7 +143,7 @@ Layer* read_layer(std::istream& is, SubObjectsFromSprite* subObjects)
         Cel* cel = read_cel(is, subObjects);
 
         // Add the cel in the layer
-        static_cast<LayerImage*>(layer.get())->addCel(cel);
+        imgLayer->addCel(cel);
       }
       break;
     }
