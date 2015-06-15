@@ -122,6 +122,9 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
       m_selected.reset();
   }
 
+  if (with_animation)
+    resetOldPositions();
+
   TabsListIterator it =
     std::find(m_list.begin(), m_list.end(), tab);
   ASSERT(it != m_list.end() && "Removing a tab that is not part of the Tabs widget");
@@ -134,7 +137,6 @@ void Tabs::removeTab(TabView* tabView, bool with_animation)
       tab->modified = m_delegate->isTabModified(this, tabView);
     tab->view = nullptr;          // The view will be destroyed after Tabs::removeTab() anyway
 
-    resetOldPositions();
     startAnimation(ANI_REMOVING_TAB, ANI_REMOVING_TAB_TICKS);
   }
 
