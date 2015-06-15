@@ -1,58 +1,59 @@
 GIMP Palette
+Name: NES
 #
-  0   0   0	Untitled
-  0   0   0	Untitled
-121 121 121	Untitled
-162 162 162	Untitled
- 48  81 130	Untitled
- 65 146 195	Untitled
- 97 211 227	Untitled
-162 255 243	Untitled
- 48  97  65	Untitled
- 73 162 105	Untitled
-113 227 146	Untitled
-162 255 203	Untitled
- 56 109   0	Untitled
- 73 170  16	Untitled
-113 243  65	Untitled
-162 243 162	Untitled
- 56 105   0	Untitled
- 81 162   0	Untitled
-154 235   0	Untitled
-203 243 130	Untitled
- 73  89   0	Untitled
-138 138   0	Untitled
-235 211  32	Untitled
-255 243 146	Untitled
-121  65   0	Untitled
-195 113   0	Untitled
-255 162   0	Untitled
-255 219 162	Untitled
-162  48   0	Untitled
-227  81   0	Untitled
-255 121  48	Untitled
-255 203 186	Untitled
-178  16  48	Untitled
-219  65  97	Untitled
-255  97 178	Untitled
-255 186 235	Untitled
-154  32 121	Untitled
-219  65 195	Untitled
-243  97 255	Untitled
-227 178 255	Untitled
- 97  16 162	Untitled
-146  65 243	Untitled
-162 113 255	Untitled
-195 178 255	Untitled
- 40   0 186	Untitled
- 65  65 255	Untitled
- 81 130 255	Untitled
-162 186 255	Untitled
- 32   0 178	Untitled
- 65  97 251	Untitled
- 97 162 255	Untitled
-146 211 255	Untitled
-121 121 121	Untitled
-178 178 178	Untitled
-235 235 235	Untitled
-255 255 255	Untitled
+0	0	0	Untitled
+0	0	0	Untitled
+121	121	121	Untitled
+162	162	162	Untitled
+48	81	130	Untitled
+65	146	195	Untitled
+97	211	227	Untitled
+162	255	243	Untitled
+48	97	65	Untitled
+73	162	105	Untitled
+113	227	146	Untitled
+162	255	203	Untitled
+56	109	0	Untitled
+73	170	16	Untitled
+113	243	65	Untitled
+162	243	162	Untitled
+56	105	0	Untitled
+81	162	0	Untitled
+154	235	0	Untitled
+203	243	130	Untitled
+73	89	0	Untitled
+138	138	0	Untitled
+235	211	32	Untitled
+255	243	146	Untitled
+121	65	0	Untitled
+195	113	0	Untitled
+255	162	0	Untitled
+255	219	162	Untitled
+162	48	0	Untitled
+227	81	0	Untitled
+255	121	48	Untitled
+255	203	186	Untitled
+178	16	48	Untitled
+219	65	97	Untitled
+255	97	178	Untitled
+255	186	235	Untitled
+154	32	121	Untitled
+219	65	195	Untitled
+243	97	255	Untitled
+227	178	255	Untitled
+97	16	162	Untitled
+146	65	243	Untitled
+162	113	255	Untitled
+195	178	255	Untitled
+40	0	186	Untitled
+65	65	255	Untitled
+81	130	255	Untitled
+162	186	255	Untitled
+32	0	178	Untitled
+65	97	251	Untitled
+97	162	255	Untitled
+146	211	255	Untitled
+121	121	121	Untitled
+178	178	178	Untitled
+235	235	235	Untitled
+255	255	255	Untitled
