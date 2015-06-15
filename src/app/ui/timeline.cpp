@@ -142,6 +142,11 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   detachDocument();
 
+  if (m_range.enabled()) {
+    m_range.disableRange();
+    invalidate();
+  }
+
   // We always update the editor. In this way the timeline keeps in
   // sync with the active editor.
   m_editor = editor;
