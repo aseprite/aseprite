@@ -341,7 +341,11 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
     const LayerImage* sourceLayer = static_cast<const LayerImage*>(sourceLayer0);
     LayerImage* destLayer = static_cast<LayerImage*>(destLayer0);
 
-    // copy cels
+    // Copy blend mode and opacity
+    destLayer->setBlendMode(sourceLayer->blendMode());
+    destLayer->setOpacity(sourceLayer->opacity());
+
+    // Copy cels
     CelConstIterator it = sourceLayer->getCelBegin();
     CelConstIterator end = sourceLayer->getCelEnd();
 
