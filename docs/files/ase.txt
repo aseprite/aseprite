@@ -146,6 +146,7 @@ Layer Chunk (0x2004)
                   4 = Lock movement
                   8 = Background
                   16 = Prefer linked cels
+                  32 = Has a valid opacity value
   WORD          Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)
@@ -167,7 +168,8 @@ Layer Chunk (0x2004)
                   Saturation     = 13
                   Color          = 14
                   Luminosity     = 15
-  BYTE[4]       For future (set to zero)
+  BYTE          Opacity (valid if "flags" field has bit 32 set)
+  BYTE[3]       For future (set to zero)
   STRING        Layer name
 
 

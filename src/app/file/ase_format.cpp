@@ -36,6 +36,13 @@
 #define ASE_FILE_LINK_CEL               1
 #define ASE_FILE_COMPRESSED_CEL         2
 
+#define ASE_LAYER_FLAG_VISIBLE              1
+#define ASE_LAYER_FLAG_EDITABLE             2
+#define ASE_LAYER_FLAG_LOCK_MOVEMENT        4
+#define ASE_LAYER_FLAG_BACKGROUND           8
+#define ASE_LAYER_FLAG_PREFER_LiNKED_CELS   16
+#define ASE_LAYER_FLAG_HAS_OPACITY          32
+
 namespace app {
 
 using namespace base;
@@ -664,14 +671,19 @@ static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previou
   fgetw(f);                     // default width
   fgetw(f);                     // default height
   int blendmode = fgetw(f);     // blend mode
+  int opacity = fgetc(f);       // opacity
 
-  ase_file_read_padding(f, 4);
+  ase_file_read_padding(f, 3);
   name = ase_file_read_string(f);
 
   // Image layer
   if (layer_type == 0) {
     layer = new LayerImage(sprite);
     static_cast<LayerImage*>(layer)->setBlendMode((BlendMode)blendmode);
+    if (flags & ASE_LAYER_FLAG_HAS_OPACITY) {
+      flags ^= ASE_LAYER_FLAG_HAS_OPACITY;
+      static_cast<LayerImage*>(layer)->setOpacity(opacity);
+    }
   }
   // Layer set
   else if (layer_type == 1) {
@@ -705,7 +717,8 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
   // Flags
-  fputw(static_cast<int>(layer->flags()), f);
+  fputw(static_cast<int>(layer->flags()) |
+        (layer->isImage() ? ASE_LAYER_FLAG_HAS_OPACITY: 0), f);
 
   // Layer type
   fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
@@ -723,9 +736,10 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   fputw(0, f);
   fputw(0, f);
   fputw(layer->isImage() ? (int)static_cast<LayerImage*>(layer)->blendMode(): 0, f);
+  fputc(layer->isImage() ? (int)static_cast<LayerImage*>(layer)->opacity(): 0, f);
 
-  /* padding */
-  ase_file_write_padding(f, 4);
+  // padding
+  ase_file_write_padding(f, 3);
 
   /* layer name */
   ase_file_write_string(f, layer->name());
