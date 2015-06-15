@@ -114,6 +114,10 @@
   </tool>
 
   <document>
+    <section id="site">
+      <option id="frame" type="doc::frame_t" default="doc::frame_t(0)" />
+      <option id="layer" type="doc::LayerIndex" />
+    </section>
     <section id="tiled">
       <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />
     </section>

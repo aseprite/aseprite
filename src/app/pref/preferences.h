@@ -19,6 +19,7 @@
 #include "doc/brush_pattern.h"
 #include "doc/documents_observer.h"
 #include "doc/frame.h"
+#include "doc/layer_index.h"
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
 

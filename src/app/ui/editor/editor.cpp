@@ -181,6 +181,14 @@ Editor::Editor(Document* document, EditorFlags flags)
 
   DocumentPreferences& docPref = Preferences::instance().document(m_document);
 
+  // Restore last site in preferences
+  frame_t preferredFrame = docPref.site.frame();
+  Layer* preferredLayer = m_sprite->indexToLayer(docPref.site.layer());
+  if (preferredFrame >= 0 && preferredFrame <= m_sprite->lastFrame())
+    setFrame(preferredFrame);
+  if (preferredLayer)
+    setLayer(preferredLayer);
+
   m_tiledConn = docPref.tiled.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_gridConn = docPref.grid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
   m_pixelGridConn = docPref.pixelGrid.AfterChange.connect(Bind<void>(&Editor::invalidate, this));
@@ -193,6 +201,13 @@ Editor::Editor(Document* document, EditorFlags flags)
 
 Editor::~Editor()
 {
+  if (m_document && m_sprite) {
+    DocumentPreferences& docPref = Preferences::instance()
+      .document(m_document);
+    docPref.site.frame(frame());
+    docPref.site.layer(m_sprite->layerToIndex(layer()));
+  }
+
   m_observers.notifyDestroyEditor(this);
   m_document->removeObserver(this);
 
