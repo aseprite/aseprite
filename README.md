@@ -58,7 +58,7 @@ You can ask for help in:
   http://ilkke.blogspot.com/ <br />
   http://www.pixeljoint.com/p/9270.htm
 * Contributors <br />
-  http://code.google.com/p/aseprite/people/list
+  http://www.aseprite.org/contributors/
 
 Thanks to all the people who have contributed ideas, patches, bugs
 report, feature requests, donations, and help me developing Aseprite.
