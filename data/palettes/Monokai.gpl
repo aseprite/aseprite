@@ -1,12 +1,16 @@
 GIMP Palette
-Name: Monokai
+#
+# by Wimer Hazenberg
+# http://www.monokai.nl/blog/2006/07/15/textmate-color-theme/
 #
 0	0	0	Blank
-27	29	30	Black
-39	40	32	Darker-Grey
-62	61	50	Dark-Grey
-117	113	94	Grey
-248	248	242	White
+27	29	30	Gray5
+39	40	34	Gray4
+62	61	50	Gray3
+73	72	62	Gray2
+117	113	94	Gray1
+248	248	240	White2
+248	248	242	White1
 249	38	114	Red
 253	151	31	Orange
 230	219	116	Yellow
