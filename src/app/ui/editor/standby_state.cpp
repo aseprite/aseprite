@@ -34,6 +34,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
+#include "base/pi.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/sprite.h"

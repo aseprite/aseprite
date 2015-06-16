@@ -33,6 +33,7 @@
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
 #include "base/bind.h"
+#include "base/pi.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/mask.h"

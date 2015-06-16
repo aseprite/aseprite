@@ -5,12 +5,9 @@
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation.
 
+#include "base/pi.h"
+
 #include <cmath>
-
-
-#ifndef M_PI
-#define M_PI            3.14159265358979323846
-#endif
 
 namespace app {
 namespace tools {
@@ -104,7 +101,7 @@ public:
       // Lines
       if (loop->getIntertwine()->snapByAngle()) {
         double angle = 180.0 * std::atan(static_cast<double>(-dy) /
-                                         static_cast<double>(dx)) / M_PI;
+                                         static_cast<double>(dx)) / PI;
         angle = ABS(angle);
 
         // Snap horizontally
@@ -186,7 +183,7 @@ public:
             ABS(points[1].x-points[0].x)+1,
             ABS(points[1].y-points[0].y)+1,
             180.0 * std::atan2(static_cast<double>(points[0].y-points[1].y),
-                               static_cast<double>(points[1].x-points[0].x)) / M_PI);
+                               static_cast<double>(points[1].x-points[0].x)) / PI);
     text = buf;
   }
 

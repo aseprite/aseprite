@@ -11,6 +11,7 @@
 #include "config.h"
 #endif
 
+#include "base/pi.h"
 #include "fixmath/fixmath.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"

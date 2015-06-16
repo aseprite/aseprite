@@ -25,6 +25,7 @@
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
 #include "base/bind.h"
+#include "base/pi.h"
 #include "base/vector2d.h"
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"

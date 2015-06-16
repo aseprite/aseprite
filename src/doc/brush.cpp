@@ -10,6 +10,7 @@
 
 #include "doc/brush.h"
 
+#include "base/pi.h"
 #include "doc/algo.h"
 #include "doc/algorithm/polygon.h"
 #include "doc/image.h"

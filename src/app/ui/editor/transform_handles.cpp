@@ -13,6 +13,7 @@
 
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/pi.h"
 #include "she/surface.h"
 
 namespace app {
