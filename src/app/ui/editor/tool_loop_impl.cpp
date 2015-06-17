@@ -159,6 +159,17 @@ public:
   filters::TiledMode getTiledMode() override { return m_docPref.tiled.mode(); }
   bool getGridVisible() override { return m_docPref.grid.visible(); }
   bool getSnapToGrid() override { return m_docPref.grid.snap(); }
+  bool getStopAtGrid() override {
+    switch (m_toolPref.floodfill.stopAtGrid()) {
+      case app::gen::StopAtGrid::NEVER:
+        return false;
+      case app::gen::StopAtGrid::IF_VISIBLE:
+        return m_docPref.grid.visible();
+      case app::gen::StopAtGrid::ALWAYS:
+        return true;
+    }
+    return false;
+  }
   gfx::Rect getGridBounds() override { return m_docPref.grid.bounds(); }
   gfx::Point getOffset() override { return m_offset; }
   void setSpeed(const gfx::Point& speed) override { m_speed = speed; }

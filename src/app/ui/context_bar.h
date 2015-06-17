@@ -96,6 +96,7 @@ namespace app {
     class BrushSizeField;
     class ToleranceField;
     class ContiguousField;
+    class StopAtGridField;
     class InkTypeField;
     class InkOpacityField;
     class SprayWidthField;
@@ -115,6 +116,7 @@ namespace app {
     ui::Label* m_toleranceLabel;
     ToleranceField* m_tolerance;
     ContiguousField* m_contiguous;
+    StopAtGridField* m_stopAtGrid;
     InkTypeField* m_inkType;
     ui::Label* m_opacityLabel;
     InkOpacityField* m_inkOpacity;

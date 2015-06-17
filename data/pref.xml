@@ -31,6 +31,11 @@
       <value id="VERTICAL_STRIP" value="2" />
       <value id="MATRIX" value="3" />
     </enum>
+    <enum id="StopAtGrid">
+      <value id="NEVER" value="0" />
+      <value id="IF_VISIBLE" value="1" />
+      <value id="ALWAYS" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -110,6 +115,9 @@
     <section id="spray">
       <option id="width" type="int" default="16" />
       <option id="speed" type="int" default="32" />
+    </section>
+    <section id="floodfill">
+      <option id="stop_at_grid" type="StopAtGrid" default="StopAtGrid::IF_VISIBLE" />
     </section>
   </tool>
 

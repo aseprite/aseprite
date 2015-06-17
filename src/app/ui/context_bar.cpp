@@ -284,7 +284,25 @@ public:
     setup_mini_font(this);
   }
 
-  void setContiguous(bool state) {
+protected:
+  void onClick(Event& ev) override {
+    CheckBox::onClick(ev);
+
+    Tool* tool = App::instance()->activeTool();
+    Preferences::instance().tool(tool).contiguous(isSelected());
+
+    releaseFocus();
+  }
+};
+
+class ContextBar::StopAtGridField : public CheckBox
+{
+public:
+  StopAtGridField() : CheckBox("Stop at Grid") {
+    setup_mini_font(this);
+  }
+
+  void setStopAtGrid(bool state) {
     setSelected(state);
   }
 
@@ -293,7 +311,9 @@ protected:
     CheckBox::onClick(ev);
 
     Tool* tool = App::instance()->activeTool();
-    Preferences::instance().tool(tool).contiguous(isSelected());
+    Preferences::instance().tool(tool).floodfill.stopAtGrid(
+      (isSelected() ? app::gen::StopAtGrid::IF_VISIBLE:
+                      app::gen::StopAtGrid::NEVER));
 
     releaseFocus();
   }
@@ -778,6 +798,7 @@ ContextBar::ContextBar()
   addChild(m_toleranceLabel = new Label("Tolerance:"));
   addChild(m_tolerance = new ToleranceField());
   addChild(m_contiguous = new ContiguousField());
+  addChild(m_stopAtGrid = new StopAtGridField());
 
   addChild(m_inkType = new InkTypeField());
 
@@ -919,6 +940,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   if (toolPref) {
     m_tolerance->setTextf("%d", toolPref->tolerance());
     m_contiguous->setSelected(toolPref->contiguous());
+    m_stopAtGrid->setSelected(
+      toolPref->floodfill.stopAtGrid() == app::gen::StopAtGrid::IF_VISIBLE ? true: false);
 
     m_inkType->setInkType(toolPref->ink());
     m_inkOpacity->setTextf("%d", toolPref->opacity());
@@ -956,6 +979,11 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // tool.
   bool hasInk = hasOpacity;
 
+  // True if the current tool is floodfill
+  bool isFloodfill = tool &&
+    (tool->getPointShape(0)->isFloodFill() ||
+     tool->getPointShape(1)->isFloodFill());
+
   // True if the current tool needs tolerance options
   bool hasTolerance = tool &&
     (tool->getPointShape(0)->isFloodFill() ||
@@ -975,9 +1003,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
      tool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushType->setVisible(hasOpacity);
-  m_brushSize->setVisible(hasOpacity && !hasImageBrush);
-  m_brushAngle->setVisible(hasOpacity && !hasImageBrush);
+  m_brushType->setVisible(hasOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
+  m_brushSize->setVisible(hasOpacity && !isFloodfill && !hasImageBrush);
+  m_brushAngle->setVisible(hasOpacity && !isFloodfill && !hasImageBrush);
   m_brushPatternField->setVisible(hasOpacity && hasImageBrush);
   m_opacityLabel->setVisible(hasOpacity);
   m_inkType->setVisible(hasInk && !hasImageBrush);
@@ -988,6 +1016,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);
+  m_stopAtGrid->setVisible(hasTolerance);
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);
