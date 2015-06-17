@@ -668,7 +668,7 @@ void ColorBar::onGradient()
     return;
 
   Palette newPalette(*get_current_palette());
-  newPalette.makeHorzRamp(index1, index2);
+  newPalette.makeGradient(index1, index2);
 
   setPalette(&newPalette, "Gradient");
 }

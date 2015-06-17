@@ -150,7 +150,7 @@ void Palette::makeBlack()
 }
 
 // Creates a linear ramp in the palette.
-void Palette::makeHorzRamp(int from, int to)
+void Palette::makeGradient(int from, int to)
 {
   int r, g, b;
   int r1, g1, b1;
@@ -179,73 +179,6 @@ void Palette::makeHorzRamp(int from, int to)
     g = g1 + (g2-g1) * (i-from) / n;
     b = b1 + (b2-b1) * (i-from) / n;
     setEntry(i, rgba(r, g, b, 255));
-  }
-}
-
-void Palette::makeVertRamp(int from, int to, int columns)
-{
-  int r, g, b;
-  int r1, g1, b1;
-  int r2, g2, b2;
-  int y, ybeg, yend, n;
-  int offset;
-
-  ASSERT(from >= 0 && from <= 255);
-  ASSERT(to >= 0 && to <= 255);
-  ASSERT(columns >= 1 && columns <= MaxColors);
-
-  /* both indices have to be in the same column */
-  ASSERT((from % columns) == (to % columns));
-
-  if (from > to)
-    std::swap(from, to);
-
-  ybeg = from/columns;
-  yend = to/columns;
-  n = yend - ybeg;
-  if (n < 2)
-    return;
-
-  r1 = rgba_getr(getEntry(from));
-  g1 = rgba_getg(getEntry(from));
-  b1 = rgba_getb(getEntry(from));
-  r2 = rgba_getr(getEntry(to));
-  g2 = rgba_getg(getEntry(to));
-  b2 = rgba_getb(getEntry(to));
-
-  offset = from % columns;
-
-  for (y=ybeg+1; y<yend; ++y) {
-    r = r1 + (r2-r1) * (y-ybeg) / n;
-    g = g1 + (g2-g1) * (y-ybeg) / n;
-    b = b1 + (b2-b1) * (y-ybeg) / n;
-    setEntry(y*columns+offset, rgba(r, g, b, 255));
-  }
-}
-
-// Creates a rectangular ramp in the palette
-void Palette::makeRectRamp(int from, int to, int columns)
-{
-  int x1, y1, x2, y2, y;
-
-  ASSERT(from >= 0 && from <= 255);
-  ASSERT(to >= 0 && to <= 255);
-  ASSERT(columns >= 1 && columns <= MaxColors);
-
-  if (from > to)
-    std::swap(from, to);
-
-  x1 = from % columns;
-  y1 = from / columns;
-  x2 = to % columns;
-  y2 = to / columns;
-
-  makeVertRamp(from, y2*columns+x1, columns);
-  if (x1 < x2) {
-    makeVertRamp(y1*columns+x2, to, columns);
-    if (x2 - x1 >= 2)
-      for (y=y1; y<=y2; ++y)
-        makeHorzRamp(y*columns+x1, y*columns+x2);
   }
 }
 

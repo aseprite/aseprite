@@ -62,9 +62,7 @@ namespace doc {
     bool isBlack() const;
     void makeBlack();
 
-    void makeHorzRamp(int from, int to);
-    void makeVertRamp(int from, int to, int columns);
-    void makeRectRamp(int from, int to, int columns);
+    void makeGradient(int from, int to);
 
     int findExactMatch(int r, int g, int b) const;
     int findBestfit(int r, int g, int b, int mask_index = 0) const;
