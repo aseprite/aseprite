@@ -86,7 +86,7 @@ Tabs::~Tabs()
 void Tabs::addTab(TabView* tabView, bool from_drop, int pos)
 {
   resetOldPositions();
-  if (!from_drop)
+  if (!from_drop || m_list.empty())
     startAnimation(ANI_ADDING_TAB, ANI_ADDING_TAB_TICKS);
   else
     startAnimation(ANI_REORDER_TABS, ANI_REORDER_TABS_TICKS);
@@ -96,9 +96,13 @@ void Tabs::addTab(TabView* tabView, bool from_drop, int pos)
     m_list.push_back(tab);
   else
     m_list.insert(m_list.begin()+pos, tab);
+
   updateTabs();
 
   tab->oldX = (from_drop ? m_dropNewPosX-tab->width/2: tab->x);
+  if (tab->oldX < 0)
+    tab->oldX = 0;
+
   tab->oldWidth = tab->width;
   tab->modified = (m_delegate ? m_delegate->isTabModified(this, tabView): false);
 }
