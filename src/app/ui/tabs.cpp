@@ -311,7 +311,7 @@ bool Tabs::onProcessMessage(Message* msg)
               startDrag();
           }
         }
-        // We are drag a tab...
+        // We are dragging a tab...
         else {
           // Floating tab (to create a new window)
           if (!getBounds().contains(mousePos) &&
@@ -483,6 +483,7 @@ void Tabs::onPaint(PaintEvent& ev)
 
     box = getTabBounds(tab.get());
 
+    // The m_dragTab is drawn after all other regular tabs.
     if ((!m_dragTab) ||
         (tab->view != m_dragTab->view) ||
         (m_dragCopy)) {
@@ -509,7 +510,8 @@ void Tabs::onPaint(PaintEvent& ev)
       (m_removedTab == m_floatingTab));
   }
 
-  // Tab that is being dragged
+  // Tab that is being dragged. It's drawn here so it appears at the
+  // front of all other tabs.
   if (m_dragTab && !m_floatingTab) {
     TabPtr tab(m_dragTab);
     box = getTabBounds(tab.get());
