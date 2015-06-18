@@ -42,6 +42,8 @@ namespace cmd {
   private:
     frame_t m_frame;
     int m_from, m_to;
+    int m_oldNColors;
+    int m_newNColors;
     std::vector<color_t> m_oldColors;
     std::vector<color_t> m_newColors;
   };

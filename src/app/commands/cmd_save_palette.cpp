@@ -66,7 +66,7 @@ void SavePaletteCommand::onExecute(Context* context)
       return;
   }
 
-  if (!save_palette(filename.c_str(), palette))
+  if (!save_palette(filename.c_str(), palette, 16)) // TODO 16 should be configurable
     Alert::show("Error<<Saving palette file||&Close");
 
   if (m_preset == get_default_palette_preset_name()) {

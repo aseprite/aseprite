@@ -86,7 +86,7 @@ static bool copy_from_document(const Site& site);
 static bool first_time = true;
 
 static base::SharedPtr<Palette> clipboard_palette;
-static PalettePicks clipboard_picks(Palette::MaxColors);
+static PalettePicks clipboard_picks;
 static ImageRef clipboard_image;
 static ClipboardRange clipboard_range;
 static gfx::Point clipboard_pos(0, 0);

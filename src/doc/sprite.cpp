@@ -49,15 +49,14 @@ Sprite::Sprite(PixelFormat format, int width, int height, int ncolors)
   m_folder = new LayerFolder(this);
 
   // Generate palette
+  switch (format) {
+    case IMAGE_GRAYSCALE: ncolors = 256; break;
+    case IMAGE_BITMAP: ncolors = 2; break;
+  }
+
   Palette pal(frame_t(0), ncolors);
 
   switch (format) {
-
-    // For colored images
-    case IMAGE_RGB:
-    case IMAGE_INDEXED:
-      pal.resize(ncolors);
-      break;
 
     // For black and white images
     case IMAGE_GRAYSCALE:

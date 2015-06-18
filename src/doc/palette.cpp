@@ -23,7 +23,7 @@ using namespace gfx;
 Palette::Palette(frame_t frame, int ncolors)
   : Object(ObjectType::Palette)
 {
-  ASSERT(ncolors >= 0 && ncolors <= MaxColors);
+  ASSERT(ncolors >= 0);
 
   m_frame = frame;
   m_colors.resize(ncolors);
@@ -58,15 +58,15 @@ Palette::~Palette()
 
 Palette* Palette::createGrayscale()
 {
-  Palette* graypal = new Palette(frame_t(0), MaxColors);
-  for (int c=0; c<MaxColors; c++)
+  Palette* graypal = new Palette(frame_t(0), 256);
+  for (int c=0; c<256; c++)
     graypal->setEntry(c, rgba(c, c, c, 255));
   return graypal;
 }
 
 void Palette::resize(int ncolors)
 {
-  ASSERT(ncolors >= 0 && ncolors <= MaxColors);
+  ASSERT(ncolors >= 0);
 
   int old_size = m_colors.size();
   m_colors.resize(ncolors);
@@ -128,6 +128,7 @@ int Palette::countDiff(const Palette* other, int* from, int* to) const
 
   if (max != min) {
     diff += max - min;
+    if (from && *from < 0) *from = min;
     if (to) *to = max-1;
   }
 

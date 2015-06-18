@@ -62,7 +62,7 @@ NewFileCommand::NewFileCommand()
 void NewFileCommand::onExecute(Context* context)
 {
   PixelFormat format;
-  int w, h, bg, ncolors = doc::Palette::MaxColors;
+  int w, h, bg, ncolors = get_default_palette()->size();
   char buf[1024];
   app::Color bg_table[] = {
     app::Color::fromMask(),
@@ -83,7 +83,6 @@ void NewFileCommand::onExecute(Context* context)
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
   bg = get_config_int("NewSprite", "Background", 1); // Default = Black
-  // ncolors = get_config_int("NewSprite", "Colors", 256);
 
   if (bg == 4) // Convert old default (Background color) to new default (Black)
     bg = 1;
@@ -99,7 +98,6 @@ void NewFileCommand::onExecute(Context* context)
 
   window.width()->setTextf("%d", MAX(1, w));
   window.height()->setTextf("%d", MAX(1, h));
-  // colors->setTextf("%d", MID(2, ncolors, 256));
 
   // Select image-type
   switch (format) {
@@ -127,12 +125,10 @@ void NewFileCommand::onExecute(Context* context)
 
     w = window.width()->getTextInt();
     h = window.height()->getTextInt();
-    // ncolors = colors->getTextInt();
     bg = window.bgBox()->getSelectedIndex();
 
     w = MID(1, w, 65535);
     h = MID(1, h, 65535);
-    ncolors = MID(2, ncolors, 256);
 
     // Select the color
     app::Color color = app::Color::fromMask();
@@ -153,8 +149,7 @@ void NewFileCommand::onExecute(Context* context)
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
       ASSERT(w > 0 && h > 0);
 
-      base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h,
-          (format == IMAGE_INDEXED ? ncolors: 256)));
+      base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(format, w, h, ncolors));
 
       if (sprite->pixelFormat() != IMAGE_GRAYSCALE)
         get_default_palette()->copyColorsTo(sprite->palette(frame_t(0)));

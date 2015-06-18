@@ -26,18 +26,29 @@ SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
 {
   const Palette* curPalette = sprite->palette(frame);
 
+  m_oldNColors = curPalette->size();
+  m_newNColors = newPalette->size();
+
   // Check differences between current sprite palette and the new one
   m_from = m_to = -1;
-  curPalette->countDiff(newPalette, &m_from, &m_to);
+  int diffs = curPalette->countDiff(newPalette, &m_from, &m_to);
+  ASSERT(diffs > 0);
 
   if (m_from >= 0 && m_to >= m_from) {
-    size_t ncolors = m_to-m_from+1;
-    m_oldColors.resize(ncolors);
-    m_newColors.resize(ncolors);
+    int oldColors = MIN(m_to+1, m_oldNColors)-m_from;
+    if (oldColors > 0)
+      m_oldColors.resize(oldColors);
 
-    for (size_t i=0; i<ncolors; ++i) {
-      m_oldColors[i] = curPalette->getEntry(m_from+i);
-      m_newColors[i] = newPalette->getEntry(m_from+i);
+    int newColors = MIN(m_to+1, m_newNColors)-m_from;
+    if (newColors > 0)
+      m_newColors.resize(newColors);
+
+    for (size_t i=0; i<size_t(m_to-m_from+1); ++i) {
+      if (i < m_oldColors.size())
+        m_oldColors[i] = curPalette->getEntry(m_from+i);
+
+      if (i < m_newColors.size())
+        m_newColors[i] = newPalette->getEntry(m_from+i);
     }
   }
 }
@@ -46,6 +57,7 @@ void SetPalette::onExecute()
 {
   Sprite* sprite = this->sprite();
   Palette* palette = sprite->palette(m_frame);
+  palette->resize(m_newNColors);
 
   for (size_t i=0; i<m_newColors.size(); ++i)
     palette->setEntry(m_from+i, m_newColors[i]);
@@ -57,6 +69,7 @@ void SetPalette::onUndo()
 {
   Sprite* sprite = this->sprite();
   Palette* palette = sprite->palette(m_frame);
+  palette->resize(m_oldNColors);
 
   for (size_t i=0; i<m_oldColors.size(); ++i)
     palette->setEntry(m_from+i, m_oldColors[i]);

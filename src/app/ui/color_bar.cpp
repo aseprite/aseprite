@@ -602,7 +602,7 @@ void ColorBar::onReverseColors()
     ++i;
   }
 
-  Remap remap(Palette::MaxColors);
+  Remap remap(get_current_palette()->size());
   i = 0;
   j = n;
   for (bool state : entries) {
@@ -645,7 +645,7 @@ void ColorBar::onSortBy(SortPaletteBy channel)
 
   // Create a bigger new remap for the original palette (with all
   // entries, selected and deselected).
-  Remap remapOrig(Palette::MaxColors);
+  Remap remapOrig(palette.size());
   i = j = 0;
   for (bool state : entries) {
     if (state)

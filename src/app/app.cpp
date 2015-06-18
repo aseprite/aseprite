@@ -189,7 +189,7 @@ void App::initialize(const AppOptions& options)
         // Copy db32.gpl as the default palette file.
         base::UniquePtr<Palette> pal(load_palette(rf.filename().c_str()));
         if (pal)
-          save_palette(palFile.c_str(), pal.get());
+          save_palette(palFile.c_str(), pal.get(), 0);
       }
     }
   }

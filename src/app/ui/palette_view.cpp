@@ -64,7 +64,6 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
   , m_boxsize(boxsize)
   , m_currentEntry(-1)
   , m_rangeAnchor(-1)
-  , m_selectedEntries(Palette::MaxColors)
   , m_isUpdatingColumns(false)
   , m_hot(Hit::NONE)
   , m_copy(false)
@@ -83,7 +82,7 @@ void PaletteView::setColumns(int columns)
 {
   int old_columns = m_columns;
 
-  ASSERT(columns >= 1 && columns <= Palette::MaxColors);
+  ASSERT(columns >= 1 && columns <= currentPalette()->size());
   m_columns = columns;
 
   if (m_columns != old_columns) {
@@ -99,8 +98,8 @@ void PaletteView::deselect()
 {
   bool invalidate = (m_selectedEntries.picks() > 0);
 
-  std::fill(m_selectedEntries.begin(),
-            m_selectedEntries.end(), false);
+  m_selectedEntries.resize(currentPalette()->size());
+  m_selectedEntries.clear();
 
   if (invalidate)
     this->invalidate();
@@ -108,7 +107,8 @@ void PaletteView::deselect()
 
 void PaletteView::selectColor(int index)
 {
-  ASSERT(index >= 0 && index < Palette::MaxColors);
+  if (index < 0 || index >= currentPalette()->size())
+    return;
 
   if (m_currentEntry != index || !m_selectedEntries[index]) {
     m_currentEntry = index;
@@ -184,7 +184,7 @@ int PaletteView::getSelectedEntriesCount() const
 app::Color PaletteView::getColorByPosition(const gfx::Point& pos)
 {
   gfx::Point relPos = pos - getBounds().getOrigin();
-  Palette* palette = get_current_palette();
+  Palette* palette = currentPalette();
   for (int i=0; i<palette->size(); ++i) {
     if (getPaletteEntryBounds(i).contains(relPos))
       return app::Color::fromIndex(i);
@@ -214,11 +214,11 @@ void PaletteView::cutToClipboard()
   if (!m_selectedEntries.picks())
     return;
 
-  clipboard::copy_palette(get_current_palette(), m_selectedEntries);
+  clipboard::copy_palette(currentPalette(), m_selectedEntries);
 
   // Convert selected colors to black and send them to the back of the
   // palette.
-  Palette palette(*get_current_palette());
+  Palette palette(*currentPalette());
   Palette newPalette(palette);
   Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
   for (int i=0; i<palette.size(); ++i) {
@@ -246,7 +246,7 @@ void PaletteView::copyToClipboard()
   if (!m_selectedEntries.picks())
     return;
 
-  clipboard::copy_palette(get_current_palette(), m_selectedEntries);
+  clipboard::copy_palette(currentPalette(), m_selectedEntries);
 
   startMarchingAnts();
   invalidate();
@@ -406,7 +406,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
   ui::Graphics* g = ev.getGraphics();
   gfx::Rect bounds = getClientBounds();
-  Palette* palette = get_current_palette();
+  Palette* palette = currentPalette();
   int fgIndex = -1;
   int bgIndex = -1;
   int transparentIndex = -1;
@@ -419,7 +419,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       transparentIndex = current_editor->sprite()->transparentColor();
   }
 
-  g->fillRect(gfx::rgba(0, 0, 0), bounds);
+  g->fillRect(theme->colors.editorFace(), bounds);
 
   // Draw palette entries
   for (int i=0; i<palette->size(); ++i) {
@@ -429,6 +429,7 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
       rgba_getg(palette->getEntry(i)),
       rgba_getb(palette->getEntry(i)));
 
+    g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
     g->fillRect(color, box);
 
     switch (m_style) {
@@ -528,7 +529,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
       int columns =
         (view->getViewportBounds().w-this->child_spacing*2)
         / (m_boxsize+this->child_spacing);
-      setColumns(MID(1, columns, Palette::MaxColors));
+      setColumns(MID(1, columns, currentPalette()->size()));
     }
     m_isUpdatingColumns = false;
   }
@@ -550,7 +551,7 @@ void PaletteView::onDrawMarchingAnts()
 
 void PaletteView::request_size(int* w, int* h)
 {
-  div_t d = div(Palette::MaxColors, m_columns);
+  div_t d = div(currentPalette()->size(), m_columns);
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
 
@@ -574,7 +575,7 @@ void PaletteView::update_scroll(int color)
 
   scroll = view->getViewScroll();
 
-  d = div(Palette::MaxColors, m_columns);
+  d = div(currentPalette()->size(), m_columns);
   cols = m_columns;
 
   y = (m_boxsize+this->child_spacing) * (color / cols);
@@ -595,7 +596,11 @@ void PaletteView::update_scroll(int color)
 
 void PaletteView::onAppPaletteChange()
 {
-  invalidate();
+  m_selectedEntries.resize(currentPalette()->size());
+
+  View* view = View::getView(this);
+  if (view)
+    view->layout();
 }
 
 gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
@@ -615,7 +620,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   int outlineWidth = theme->dimensions.paletteOutlineWidth();
-  Palette* palette = get_current_palette();
+  Palette* palette = currentPalette();
 
   if (m_state == State::WAITING && m_editable) {
     // First check if the mouse is inside the selection outline.
@@ -623,7 +628,7 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
       if (!m_selectedEntries[i])
         continue;
 
-      const int max = Palette::MaxColors;
+      const int max = palette->size();
       bool top    = (i >= m_columns            && i-m_columns >= 0  ? m_selectedEntries[i-m_columns]: false);
       bool bottom = (i < max-m_columns         && i+m_columns < max ? m_selectedEntries[i+m_columns]: false);
       bool left   = ((i%m_columns)>0           && i-1         >= 0  ? m_selectedEntries[i-1]: false);
@@ -657,15 +662,18 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 
 void PaletteView::dropColors(int beforeIndex)
 {
-  Palette palette(*get_current_palette());
+  Palette palette(*currentPalette());
   Palette newPalette(palette);
   Remap remap(palette.size());
 
   // Copy colors
   if (m_copy) {
     int picks = m_selectedEntries.picks();
+    ASSERT(picks >= 1);
+
     remap = create_remap_to_expand_palette(palette.size(), picks, beforeIndex);
 
+    newPalette.resize(palette.size()+picks);
     for (int i=0; i<palette.size(); ++i)
       newPalette.setEntry(remap[i], palette.getEntry(i));
 
@@ -749,8 +757,9 @@ bool PaletteView::pickedXY(const doc::PalettePicks& entries, int i, int dx, int 
 {
   int x = (i % m_columns) + dx;
   int y = (i / m_columns) + dy;
+  int lastcolor = currentPalette()->size()-1;
 
-  if (x < 0 || x >= m_columns || y < 0 || y > (Palette::MaxColors-1)/m_columns)
+  if (x < 0 || x >= m_columns || y < 0 || y > lastcolor/m_columns)
     return false;
 
   i = x + y*m_columns;
@@ -781,8 +790,12 @@ void PaletteView::setCursor()
     ui::set_mouse_cursor(kArrowCursor);
 }
 
-// static
-int PaletteView::findExactIndex(const app::Color& color)
+doc::Palette* PaletteView::currentPalette() const
+{
+  return get_current_palette();
+}
+
+int PaletteView::findExactIndex(const app::Color& color) const
 {
   switch (color.getType()) {
 
@@ -792,7 +805,7 @@ int PaletteView::findExactIndex(const app::Color& color)
     case Color::RgbType:
     case Color::HsvType:
     case Color::GrayType:
-      return get_current_palette()->findExactMatch(color.getRed(), color.getGreen(), color.getBlue());
+      return currentPalette()->findExactMatch(color.getRed(), color.getGreen(), color.getBlue());
 
     case Color::IndexType:
       return color.getIndex();

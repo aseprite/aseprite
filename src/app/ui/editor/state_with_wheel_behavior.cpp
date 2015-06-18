@@ -13,10 +13,12 @@
 
 #include "app/app.h"
 #include "app/commands/commands.h"
+#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui_context.h"
+#include "doc/palette.h"
 #include "ui/message.h"
 
 namespace app {
@@ -74,8 +76,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       {
         int newIndex = 0;
         if (ColorBar::instance()->getFgColor().getType() == app::Color::IndexType) {
+          int lastIndex = get_current_palette()->size()-1;
+
           newIndex = ColorBar::instance()->getFgColor().getIndex() + dz;
-          newIndex = MID(0, newIndex, 255);
+          newIndex = MID(0, newIndex, lastIndex);
         }
         ColorBar::instance()->setFgColor(app::Color::fromIndex(newIndex));
       }
@@ -85,8 +89,10 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       {
         int newIndex = 0;
         if (ColorBar::instance()->getBgColor().getType() == app::Color::IndexType) {
+          int lastIndex = get_current_palette()->size()-1;
+
           newIndex = ColorBar::instance()->getBgColor().getIndex() + dz;
-          newIndex = MID(0, newIndex, 255);
+          newIndex = MID(0, newIndex, lastIndex);
         }
         ColorBar::instance()->setBgColor(app::Color::fromIndex(newIndex));
       }

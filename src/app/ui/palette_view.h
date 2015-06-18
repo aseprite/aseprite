@@ -126,7 +126,8 @@ namespace app {
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
-    static int findExactIndex(const app::Color& color);
+    doc::Palette* currentPalette() const;
+    int findExactIndex(const app::Color& color) const;
 
     State m_state;
     bool m_editable;

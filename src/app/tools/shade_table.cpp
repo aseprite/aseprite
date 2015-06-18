@@ -19,10 +19,10 @@ namespace tools {
 
 ShadeTable8::ShadeTable8(const app::ColorSwatches& colorSwatches, ShadingMode mode)
 {
-  m_left.resize(Palette::MaxColors);
-  m_right.resize(Palette::MaxColors);
+  m_left.resize(256);           // TODO could we have more than 256 indexes?
+  m_right.resize(256);
 
-  for (size_t i=0; i<Palette::MaxColors; ++i) {
+  for (size_t i=0; i<256; ++i) {
     m_left[i] = i;
     m_right[i] = i;
   }

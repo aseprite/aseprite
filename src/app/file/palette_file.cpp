@@ -74,10 +74,6 @@ Palette* load_palette(const char *filename)
             fop->document->sprite()->palette(frame_t(0))) {
           pal = new Palette(
             *fop->document->sprite()->palette(frame_t(0)));
-
-          // TODO remove this line when support for palettes with less
-          // than 256 colors is added.
-          pal->resize(Palette::MaxColors);
         }
 
         delete fop->document;
@@ -92,7 +88,7 @@ Palette* load_palette(const char *filename)
   return pal;
 }
 
-bool save_palette(const char *filename, const Palette* pal)
+bool save_palette(const char *filename, const Palette* pal, int columns)
 {
   std::string ext = base::string_to_lower(base::get_file_extension(filename));
   bool success = false;
@@ -109,10 +105,13 @@ bool save_palette(const char *filename, const Palette* pal)
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
     if (ff && ff->support(FILE_SUPPORT_SAVE)) {
+      int w = (columns > 0 ? columns: pal->size());
+      int h = (pal->size() / w) + (pal->size() % w > 0 ? 1: 0);
+
       app::Context tmpContext;
       doc::Document* doc = tmpContext.documents().add(
-        16, 16, doc::ColorMode::INDEXED,
-        Palette::MaxColors);
+        w, h, (pal->size() <= 256 ? doc::ColorMode::INDEXED:
+                                    doc::ColorMode::RGB), pal->size());
 
       Sprite* sprite = doc->sprite();
       doc->sprite()->setPalette(pal, false);
@@ -121,9 +120,14 @@ bool save_palette(const char *filename, const Palette* pal)
       Image* image = layer->cel(frame_t(0))->image();
 
       int x, y, c;
-      for (y=c=0; y<16; y++)
-        for (x=0; x<16; x++)
-          image->putPixel(x, y, c++);
+      for (y=c=0; y<h; ++y) {
+        for (x=0; x<w; ++x, ++c) {
+          if (doc->colorMode() == doc::ColorMode::INDEXED)
+            image->putPixel(x, y, c);
+          else
+            image->putPixel(x, y, pal->entry(c));
+        }
+      }
 
       doc->setFilename(filename);
       success = (save_document(&tmpContext, doc) == 0);

@@ -48,7 +48,7 @@ Palette* create_palette_from_rgb(
   PaletteOptimizer optimizer;
 
   if (!palette)
-    palette = new Palette(fromFrame, Palette::MaxColors);
+    palette = new Palette(fromFrame, toFrame - fromFrame + 1);
 
   bool has_background_layer = (sprite->backgroundLayer() != nullptr);
 

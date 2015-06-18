@@ -63,13 +63,7 @@ Palette* load_pal_file(const char *filename)
     std::istringstream lineIn(line);
     lineIn >> r >> g >> b;
     pal->addEntry(rgba(r, g, b, 255));
-    if (pal->size() == Palette::MaxColors)
-      break;
   }
-
-  // TODO remove this when Aseprite supports palettes with less than 256 colors
-  if (pal->size() != Palette::MaxColors)
-      pal->resize(Palette::MaxColors);
 
   return pal.release();
 }

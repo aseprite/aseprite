@@ -223,59 +223,16 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
     if (index >= 0)
       return;
 
-    int lastUsed = -1;
-
     ContextWriter writer(UIContext::instance(), 500);
     Document* document(writer.document());
-    Sprite* sprite = NULL;
-    if (document) {
-      sprite = writer.sprite();
-
-      // Find used entries in all stock images. In this way we can start
-      // looking for duplicated color entries in the palette from the
-      // last used one.
-      if (sprite->pixelFormat() == IMAGE_INDEXED) {
-        lastUsed = sprite->transparentColor();
-
-        std::vector<Image*> images;
-        sprite->getImages(images);
-        for (Image* image : images) {
-          const LockImageBits<IndexedTraits> bits(image);
-          for (LockImageBits<IndexedTraits>::const_iterator it=bits.begin(); it!=bits.end(); ++it) {
-            if (lastUsed < *it)
-              lastUsed = *it;
-          }
-        }
-      }
+    Sprite* sprite = writer.sprite();
+    if (!document || !sprite) {
+      ASSERT(false);
+      return;
     }
 
-    for (int i=lastUsed+1; i<(int)newPalette->size(); ++i) {
-      color_t c = newPalette->getEntry(i);
-      int altI = newPalette->findExactMatch(
-        rgba_getr(c), rgba_getg(c), rgba_getb(c));
-      if (altI < i) {
-        index = i;
-        break;
-      }
-    }
-
-    if (index < 0) {
-      if (newPalette->size() < Palette::MaxColors) {
-        newPalette->addEntry(newColor);
-        index = newPalette->size()-1;
-      }
-
-      if (index < 0) {
-        Alert::show(
-          "Error<<The palette is full."
-          "<<You cannot have more than %d colors.||&OK",
-          Palette::MaxColors);
-        return;
-      }
-    }
-    else {
-      newPalette->setEntry(index, newColor);
-    }
+    newPalette->addEntry(newColor);
+    index = newPalette->size()-1;
 
     if (document) {
       frame_t frame = writer.frame();
@@ -285,7 +242,7 @@ void ColorSelector::onFixWarningClick(ui::Event& ev)
       transaction.commit();
     }
 
-    set_current_palette(newPalette, false);
+    set_current_palette(newPalette, true);
     ui::Manager::getDefault()->invalidate();
 
     m_warningIcon->setVisible(index < 0);

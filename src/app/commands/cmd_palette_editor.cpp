@@ -250,7 +250,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   , m_redrawAll(false)
   , m_implantChange(false)
   , m_selfPalChange(false)
-  , m_fromPalette(0, Palette::MaxColors)
+  , m_fromPalette(0, 0)
 {
   m_colorType.addItem("RGB");
   m_colorType.addItem("HSB");

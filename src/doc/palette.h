@@ -21,8 +21,6 @@ namespace doc {
 
   class Palette : public Object {
   public:
-    enum { MaxColors = 256 };
-
     Palette(frame_t frame, int ncolors);
     Palette(const Palette& palette);
     Palette(const Palette& palette, const Remap& remap);
@@ -44,12 +42,18 @@ namespace doc {
     void setFrame(frame_t frame);
 
     color_t entry(int i) const {
-      ASSERT(i >= 0 && i < size());
-      return m_colors[i];
+      // TODO At this moment we cannot enable this assert because
+      //      there are situations that are not handled quite well yet.
+      //      E.g. A palette with lesser colors is loaded
+      //
+      //ASSERT(i >= 0 && i < size());
+      if (i >= 0 && i < size())
+        return m_colors[i];
+      else
+        return 0;
     }
     color_t getEntry(int i) const {
-      ASSERT(i >= 0 && i < size());
-      return m_colors[i];
+      return entry(i);
     }
     void setEntry(int i, color_t color);
     void addEntry(color_t color);
