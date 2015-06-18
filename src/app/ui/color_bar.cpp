@@ -426,7 +426,8 @@ void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& act
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
     frame_t frame = writer.frame();
-    if (sprite) {
+    if (sprite &&
+        newPalette->countDiff(sprite->palette(frame), nullptr, nullptr)) {
       Transaction transaction(writer.context(), actionText, ModifyDocument);
       transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
       transaction.commit();
@@ -478,8 +479,8 @@ void ColorBar::onPaletteViewPasteColors(
   int to_last = to.lastPick();
 
   // Add extra picks in to range if it's needed to paste more colors.
-    int from_picks = from.picks();
-    int to_picks = to.picks();
+  int from_picks = from.picks();
+  int to_picks = to.picks();
   if (to_picks < from_picks) {
     for (int j=to_last+1; j<to.size() && to_picks<from_picks; ++j) {
       to[j] = true;
@@ -494,12 +495,14 @@ void ColorBar::onPaletteViewPasteColors(
 
   for (auto state : from) {
     if (state) {
-      if (j < newPalette.size()) {
+      if (j < newPalette.size())
         newPalette.setEntry(j, fromPal->getEntry(i));
-        for (++j; j<to.size(); ++j)
-          if (to[j])
-            break;
-      }
+      else
+        newPalette.addEntry(fromPal->getEntry(i));
+
+      for (++j; j<to.size(); ++j)
+        if (to[j])
+          break;
     }
     ++i;
   }
