@@ -30,8 +30,11 @@ namespace doc {
     }
 
     int operator[](int index) const {
-      ASSERT(index >= 0 && index < size());
-      return m_map[index];
+      //ASSERT(index >= 0 && index < size());
+      if (index >= 0 && index < size())
+        return m_map[index];
+      else
+        return index;           // No remap
     }
 
     void merge(const Remap& other);

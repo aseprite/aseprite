@@ -209,22 +209,18 @@ void PaletteView::setBoxSize(int boxsize)
     view->layout();
 }
 
-void PaletteView::cutToClipboard()
+void PaletteView::clearSelection()
 {
   if (!m_selectedEntries.picks())
     return;
 
-  clipboard::copy_palette(currentPalette(), m_selectedEntries);
-
-  // Convert selected colors to black and send them to the back of the
-  // palette.
   Palette palette(*currentPalette());
   Palette newPalette(palette);
+  newPalette.resize(MAX(1, newPalette.size() - m_selectedEntries.picks()));
+
   Remap remap = create_remap_to_move_picks(m_selectedEntries, palette.size());
   for (int i=0; i<palette.size(); ++i) {
-    if (m_selectedEntries[i])
-      newPalette.setEntry(remap[i], rgba(0, 0, 0, 255));
-    else
+    if (!m_selectedEntries[i])
       newPalette.setEntry(remap[i], palette.getEntry(i));
   }
 
@@ -232,13 +228,17 @@ void PaletteView::cutToClipboard()
   m_selectedEntries.clear();
   stopMarchingAnts();
 
-  if (m_delegate) {
-    m_delegate->onPaletteViewRemapColors(remap, &newPalette);
-    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
-  }
+  setNewPalette(&palette, &newPalette, remap);
+}
 
-  set_current_palette(&newPalette, false);
-  getManager()->invalidate();
+void PaletteView::cutToClipboard()
+{
+  if (!m_selectedEntries.picks())
+    return;
+
+  clipboard::copy_palette(currentPalette(), m_selectedEntries);
+
+  clearSelection();
 }
 
 void PaletteView::copyToClipboard()
@@ -719,13 +719,7 @@ void PaletteView::dropColors(int beforeIndex)
     m_currentEntry = remap[m_currentEntry];
   }
 
-  if (m_delegate) {
-    m_delegate->onPaletteViewRemapColors(remap, &newPalette);
-    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
-  }
-
-  set_current_palette(&newPalette, false);
-  getManager()->invalidate();
+  setNewPalette(&palette, &newPalette, remap);
 }
 
 void PaletteView::getEntryBoundsAndClip(int i, const PalettePicks& entries,
@@ -824,6 +818,21 @@ int PaletteView::findExactIndex(const app::Color& color) const
 
   ASSERT(false);
   return -1;
+}
+
+void PaletteView::setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette, const doc::Remap& remap)
+{
+  // No differences
+  if (!newPalette->countDiff(oldPalette, nullptr, nullptr))
+    return;
+
+  if (m_delegate) {
+    m_delegate->onPaletteViewRemapColors(remap, newPalette);
+    m_delegate->onPaletteViewIndexChange(m_currentEntry, ui::kButtonLeft);
+  }
+
+  set_current_palette(newPalette, false);
+  getManager()->invalidate();
 }
 
 } // namespace app

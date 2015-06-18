@@ -733,18 +733,7 @@ bool ColorBar::onPaste(Context* ctx)
 
 bool ColorBar::onClear(Context* ctx)
 {
-  PalettePicks picks;
-  m_paletteView.getSelectedEntries(picks);
-
-  Palette newPalette(*get_current_palette());
-  int i = 0;
-  for (auto state : picks) {
-    if (state)
-      newPalette.setEntry(i, doc::rgba(0, 0, 0, 255));
-    ++i;
-  }
-
-  setPalette(&newPalette, "Clear");
+  m_paletteView.clearSelection();
   return true;
 }
 

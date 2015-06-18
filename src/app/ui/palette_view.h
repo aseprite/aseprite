@@ -68,6 +68,7 @@ namespace app {
     int getBoxSize() const;
     void setBoxSize(int boxsize);
 
+    void clearSelection();
     void cutToClipboard();
     void copyToClipboard();
     void pasteFromClipboard();
@@ -128,6 +129,7 @@ namespace app {
     void setCursor();
     doc::Palette* currentPalette() const;
     int findExactIndex(const app::Color& color) const;
+    void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette, const doc::Remap& remap);
 
     State m_state;
     bool m_editable;

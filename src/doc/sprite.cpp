@@ -462,7 +462,7 @@ void Sprite::getImages(std::vector<Image*>& images) const
 void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
 {
   ASSERT(m_format == IMAGE_INDEXED);
-  ASSERT(remap.size() == 256);
+  //ASSERT(remap.size() == 256);
 
   for (const Cel* cel : uniqueCels()) {
     // Remap this Cel because is inside the specified range

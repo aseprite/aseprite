@@ -26,9 +26,7 @@ Palette::Palette(frame_t frame, int ncolors)
   ASSERT(ncolors >= 0);
 
   m_frame = frame;
-  m_colors.resize(ncolors);
-
-  makeBlack();
+  m_colors.resize(ncolors, doc::rgba(0, 0, 0, 255));
   m_modifications = 0;
 }
 
@@ -69,14 +67,7 @@ void Palette::resize(int ncolors)
   ASSERT(ncolors >= 0);
 
   int old_size = m_colors.size();
-  m_colors.resize(ncolors);
-
-  if ((int)m_colors.size() > old_size) {
-    // Fill new colors with black
-    std::fill(m_colors.begin()+old_size,
-              m_colors.begin()+m_colors.size(),
-              rgba(0, 0, 0, 255));
-  }
+  m_colors.resize(ncolors, doc::rgba(0, 0, 0, 255));
 
   ++m_modifications;
 }
