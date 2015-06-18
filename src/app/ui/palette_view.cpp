@@ -312,6 +312,7 @@ bool PaletteView::onProcessMessage(Message* msg)
       if (m_state == State::SELECTING_COLOR) {
         if (m_hot.part == Hit::COLOR) {
           int idx = m_hot.color;
+          idx = MID(0, idx, currentPalette()->size()-1);
 
           StatusBar::instance()->showColor(0, "",
             app::Color::fromIndex(idx), 255);
@@ -646,8 +647,13 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
   }
 
   // Check if we are inside a color.
-  for (int i=0; i<palette->size(); ++i) {
+  View* view = View::getView(this);
+  gfx::Rect vp = view->getViewportBounds();
+  for (int i=0; ; ++i) {
     gfx::Rect box = getPaletteEntryBounds(i);
+    if (i >= palette->size() && box.y2() > vp.h)
+      break;
+
     box.w += child_spacing;
     box.h += child_spacing;
     if (box.contains(pos)) {
@@ -663,6 +669,11 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 void PaletteView::dropColors(int beforeIndex)
 {
   Palette palette(*currentPalette());
+  if (beforeIndex >= palette.size()) {
+    palette.resize(beforeIndex);
+    m_selectedEntries.resize(palette.size());
+  }
+
   Palette newPalette(palette);
   Remap remap(palette.size());
 
