@@ -1599,15 +1599,28 @@ bool Editor::isPlaying() const
   return (dynamic_cast<PlayState*>(m_state.get()) != nullptr);
 }
 
-void Editor::showAnimationSpeedMultiplierPopup()
+void Editor::showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions)
 {
   double options[] = { 0.25, 0.5, 1.0, 1.5, 2.0, 3.0 };
   Menu menu;
 
   for (double option : options) {
-    MenuItem* item = new MenuItem("x" + base::convert_to<std::string>(option));
+    MenuItem* item = new MenuItem("Speed x" + base::convert_to<std::string>(option));
     item->Click.connect(Bind<void>(&Editor::setAnimationSpeedMultiplier, this, option));
     item->setSelected(m_aniSpeed == option);
+    menu.addChild(item);
+  }
+
+  if (withStopBehaviorOptions) {
+    menu.addChild(new Separator("", JI_HORIZONTAL));
+    MenuItem* item = new MenuItem("Rewind on Stop");
+    item->Click.connect(
+      []() {
+        // Switch the "rewind_on_stop" option
+        Preferences::instance().general.rewindOnStop(
+          !Preferences::instance().general.rewindOnStop());
+      });
+    item->setSelected(Preferences::instance().general.rewindOnStop());
     menu.addChild(item);
   }
 

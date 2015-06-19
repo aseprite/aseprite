@@ -65,6 +65,9 @@ public:
     if (m_preferences.general.autoshowTimeline())
       autotimeline()->setSelected(true);
 
+    if (m_preferences.general.rewindOnStop())
+      rewindOnStop()->setSelected(true);
+
     if (m_preferences.general.expandMenubarOnMouseover())
       expandMenubarOnMouseover()->setSelected(true);
 
@@ -155,6 +158,7 @@ public:
 
   void saveConfig() {
     m_preferences.general.autoshowTimeline(autotimeline()->isSelected());
+    m_preferences.general.rewindOnStop(rewindOnStop()->isSelected());
 
     bool expandOnMouseover = expandMenubarOnMouseover()->isSelected();
     m_preferences.general.expandMenubarOnMouseover(expandOnMouseover);

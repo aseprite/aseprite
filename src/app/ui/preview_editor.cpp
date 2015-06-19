@@ -290,7 +290,7 @@ void PreviewEditorWindow::onPopupSpeed()
   if (!miniEditor || !miniEditor->document())
     return;
 
-  miniEditor->showAnimationSpeedMultiplierPopup();
+  miniEditor->showAnimationSpeedMultiplierPopup(false);
   m_aniSpeed = miniEditor->getAnimationSpeedMultiplier();
 }
 

@@ -14,6 +14,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/loop_tag.h"
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui_context.h"
@@ -64,7 +65,8 @@ void PlayState::onEnterState(Editor* editor)
 EditorState::LeaveAction PlayState::onLeaveState(Editor* editor, EditorState* newState)
 {
   if (!m_toScroll) {
-    m_editor->setFrame(m_refFrame);
+    if (Preferences::instance().general.rewindOnStop())
+      m_editor->setFrame(m_refFrame);
 
     // We don't stop the timer if we are going to the ScrollingState
     // (we keep playing the animation).

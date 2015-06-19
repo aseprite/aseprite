@@ -197,7 +197,7 @@ namespace app {
     bool isPlaying() const;
 
     // Shows a popup menu to change the editor animation speed.
-    void showAnimationSpeedMultiplierPopup();
+    void showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions);
     double getAnimationSpeedMultiplier() const;
     void setAnimationSpeedMultiplier(double speed);
 

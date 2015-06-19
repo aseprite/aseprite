@@ -8,6 +8,7 @@
         <listbox id="section_listbox">
           <listitem text="General" value="section_general" />
           <listitem text="Editor" value="section_editor" />
+          <listitem text="Timeline" value="section_timeline" />
           <listitem text="Grid &amp;&amp; Background" value="section_grid" />
           <listitem text="Undo" value="section_undo" />
           <listitem text="Experimental" value="section_experimental" />
@@ -26,7 +27,6 @@
               <listitem text="400%" value="4" />
             </combobox>
           </hbox>
-          <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
           <hbox>
             <check text="Automatically save recovery data every" id="enable_data_recovery" tooltip="With this option you can recover your documents&#10;if the program finalizes unexpectedly." />
@@ -59,6 +59,13 @@
             <box id="cursor_color_box" /><!-- custom widget -->
           </hbox>
         </vbox>
+
+        <!-- Editor -->
+        <vbox id="section_timeline">
+          <separator text="Timeline" horizontal="true" />
+          <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />
+          <check text="Rewind on Stop" id="rewind_on_stop" tooltip="The 'Stop' button should rewind the animation&#10;where it was started." />
+	</vbox>
 
         <!-- Grid & background -->
         <vbox id="section_grid">
