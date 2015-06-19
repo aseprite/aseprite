@@ -67,6 +67,7 @@
 #include "doc/sprite.h"
 #include "render/render.h"
 #include "scripting/engine.h"
+#include "scripting/engine_delegate.h"
 #include "she/display.h"
 #include "she/error.h"
 #include "she/system.h"
@@ -102,7 +103,6 @@ public:
   InputChain m_inputChain;
   // This is a raw pointer because we want to delete this explicitly.
   app::crash::DataRecovery* m_recovery;
-  scripting::Engine m_scriptingEngine;
 
   Modules(bool verbose)
     : m_loggerModule(verbose)
@@ -129,6 +129,13 @@ public:
 #endif
   }
 
+};
+
+class StdoutEngineDelegate : public scripting::EngineDelegate {
+public:
+  void onConsolePrint(const char* text) override {
+    printf("%s\n", text);
+  }
 };
 
 App* App::m_instance = NULL;
@@ -559,13 +566,10 @@ void App::run()
 
   // Start shell to execute scripts.
   if (m_isShell) {
-    if (m_modules->m_scriptingEngine.supportEval()) {
-      Shell shell;
-      shell.run(m_modules->m_scriptingEngine);
-    }
-    else {
-      std::cerr << "Your version of " PACKAGE " wasn't compiled with shell support.\n";
-    }
+    StdoutEngineDelegate delegate;
+    scripting::Engine engine(&delegate);
+    Shell shell;
+    shell.run(engine);
   }
 
   // Destroy all documents in the UIContext.

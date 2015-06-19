@@ -1,9 +1,8 @@
-// Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Aseprite Scripting Library
+// Copyright (c) 2015 David Capello
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation.
+// This file is released under the terms of the MIT license.
+// Read LICENSE.txt for more information.
 
 #ifndef SCRIPTING_ENGINE_H_INCLUDED
 #define SCRIPTING_ENGINE_H_INCLUDED
@@ -12,13 +11,13 @@
 #include <string>
 
 namespace scripting {
+  class EngineDelegate;
 
   class Engine {
   public:
-    Engine();
+    Engine(EngineDelegate* delegate);
     ~Engine();
 
-    bool supportEval() const;
     void eval(const std::string& script);
 
   private:

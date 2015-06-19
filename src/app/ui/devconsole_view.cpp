@@ -61,9 +61,10 @@ protected:
 
 DevConsoleView::DevConsoleView()
   : Box(JI_VERTICAL)
-  , m_textBox("Welcome Aseprite Console\n(experimental)", JI_LEFT)
+  , m_textBox("Welcome to Aseprite JavaScript Console\n(Experimental)", JI_LEFT)
   , m_label(">")
   , m_entry(new CommmandEntry)
+  , m_engine(this)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
@@ -130,7 +131,13 @@ bool DevConsoleView::onProcessMessage(Message* msg)
 
 void DevConsoleView::onExecuteCommand(const std::string& cmd)
 {
-  m_textBox.setText(m_textBox.getText() + "\n" + cmd);
+  m_engine.eval(cmd);
+}
+
+void DevConsoleView::onConsolePrint(const char* text)
+{
+  if (text)
+    m_textBox.setText(m_textBox.getText() + "\n" + text);
 }
 
 } // namespace app

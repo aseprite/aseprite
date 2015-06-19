@@ -11,6 +11,8 @@
 
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
+#include "scripting/engine.h"
+#include "scripting/engine_delegate.h"
 #include "ui/box.h"
 #include "ui/label.h"
 #include "ui/textbox.h"
@@ -19,7 +21,8 @@
 namespace app {
   class DevConsoleView : public ui::Box
                        , public TabView
-                       , public WorkspaceView {
+                       , public WorkspaceView
+                       , public scripting::EngineDelegate {
   public:
     DevConsoleView();
     ~DevConsoleView();
@@ -36,6 +39,9 @@ namespace app {
     bool onCloseView(Workspace* workspace) override;
     void onTabPopup(Workspace* workspace) override;
 
+    // EngineDelegate impl
+    virtual void onConsolePrint(const char* text) override;
+
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onExecuteCommand(const std::string& cmd);
@@ -48,6 +54,7 @@ namespace app {
     ui::HBox m_bottomBox;
     ui::Label m_label;
     CommmandEntry* m_entry;
+    scripting::Engine m_engine;
   };
 
 } // namespace app

@@ -55,6 +55,3 @@ if(NOT USE_SHARED_PIXMAN)
 endif()
 
 add_subdirectory(simpleini)
-
-# Duktape
-add_library(duktape duktape/duktape.c)

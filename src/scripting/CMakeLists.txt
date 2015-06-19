@@ -1,7 +1,7 @@
-# ASEPRITE
-# Copyright (C) 2001-2013, 2015  David Capello
+# Aseprite Scripting Library
+# Copyright (C) 2015  David Capello
+
+include_directories(${DUKTAPE_DIR})
 
 add_library(scripting-lib
   engine.cpp)
-
-target_link_libraries(scripting-lib duktape)

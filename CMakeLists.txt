@@ -158,9 +158,6 @@ else()
   include_directories(${LIBPNG_DIR})
 endif()
 
-# Include duktape directory
-include_directories(${DUKTAPE_DIR})
-
 # Do not use MMX optimizations in PNG code
 add_definitions(-DPNG_NO_MMX_CODE)
 
