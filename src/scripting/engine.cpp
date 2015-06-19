@@ -7,11 +7,7 @@
 
 #include "scripting/engine.h"
 
-#ifdef HAVE_V8_LIBRARY
-#include "scripting/engine_v8.h"
-#else
-#include "scripting/engine_none.h"
-#endif
+#include "scripting/engine_duktape.h"
 
 namespace scripting {
 

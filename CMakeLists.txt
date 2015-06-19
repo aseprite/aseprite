@@ -111,6 +111,7 @@ set(PIXMAN_DIR          ${CMAKE_SOURCE_DIR}/third_party/pixman)
 set(SIMPLEINI_DIR       ${CMAKE_SOURCE_DIR}/third_party/simpleini)
 set(TINYXML_DIR         ${CMAKE_SOURCE_DIR}/third_party/tinyxml)
 set(ZLIB_DIR            ${CMAKE_SOURCE_DIR}/third_party/zlib)
+set(DUKTAPE_DIR         ${CMAKE_SOURCE_DIR}/third_party/duktape)
 
 # Search in the "cmake" directory for additional CMake modules.
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -156,6 +157,9 @@ if(USE_SHARED_LIBPNG)
 else()
   include_directories(${LIBPNG_DIR})
 endif()
+
+# Include duktape directory
+include_directories(${DUKTAPE_DIR})
 
 # Do not use MMX optimizations in PNG code
 add_definitions(-DPNG_NO_MMX_CODE)
