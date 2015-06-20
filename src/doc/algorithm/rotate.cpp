@@ -40,11 +40,21 @@ static void image_scale_tpl(Image* dst, const Image* src, int x, int y, int w, i
   int src_w = src->width();
   int src_h = src->height();
 
-  for (int v=0; v<h; ++v) {
-    for (int u=0; u<w; ++u) {
-      color_t c = get_pixel_fast<ImageTraits>(src, src_w*u/w, src_h*v/h);
-      put_pixel_fast<ImageTraits>(dst, x+u, y+v,
-        blend(get_pixel_fast<ImageTraits>(dst, x+u, y+v), c));
+  gfx::Clip clip(x, y, 0, 0, w, h);
+  if (!clip.clip(dst->width(), dst->height(), src->width(), src->height()))
+    return;
+
+  typename LockImageBits<ImageTraits> dst_bits(dst, clip.dstBounds());
+  typename LockImageBits<ImageTraits>::iterator dst_it = dst_bits.begin();
+
+  for (int v=0; v<clip.size.h; ++v) {
+    for (int u=0; u<clip.size.w; ++u) {
+      color_t src_color =
+        get_pixel_fast<ImageTraits>(src,
+                                    src_w*(clip.src.x+u)/w,
+                                    src_h*(clip.src.y+v)/h);
+      *dst_it = blend(*dst_it, src_color);
+      ++dst_it;
     }
   }
 }

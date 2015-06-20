@@ -160,8 +160,15 @@ void rotsprite_image(Image* bmp, Image* spr,
   if (!buf2) buf2.reset(new ImageBuffer(1));
   if (!buf3) buf3.reset(new ImageBuffer(1));
 
+  int xmin = MIN(x1, MIN(x2, MIN(x3, x4)));
+  int xmax = MAX(x1, MAX(x2, MAX(x3, x4)));
+  int ymin = MIN(y1, MIN(y2, MIN(y3, y4)));
+  int ymax = MAX(y1, MAX(y2, MAX(y3, y4)));
+  int rot_width = xmax - xmin + 1;
+  int rot_height = ymax - ymin + 1;
+
   int scale = 8;
-  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), bmp->width()*scale, bmp->height()*scale, buf1));
+  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf1));
   base::UniquePtr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf2));
   base::UniquePtr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf3));
 
@@ -181,12 +188,13 @@ void rotsprite_image(Image* bmp, Image* spr,
     spr_copy->copy(tmp_copy, gfx::Clip(tmp_copy->bounds()));
   }
 
-  doc::algorithm::parallelogram(bmp_copy, spr_copy,
-    x1*scale, y1*scale, x2*scale, y2*scale,
-    x3*scale, y3*scale, x4*scale, y4*scale);
+  doc::algorithm::parallelogram(
+    bmp_copy, spr_copy,
+    (x1-xmin)*scale, (y1-ymin)*scale, (x2-xmin)*scale, (y2-ymin)*scale,
+    (x3-xmin)*scale, (y3-ymin)*scale, (x4-xmin)*scale, (y4-ymin)*scale);
 
   doc::algorithm::scale_image(bmp, bmp_copy,
-    0, 0, bmp->width(), bmp->height());
+    xmin, ymin, bmp_copy->width()/scale, bmp_copy->height()/scale);
 }
 
 } // namespace algorithm
