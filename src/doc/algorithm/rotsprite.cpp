@@ -121,8 +121,13 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
 #define D c[3]
 #define P c[4]
 
+  LockImageBits<ImageTraits> dstBits(dst, gfx::Rect(0, 0, src_w*2, src_h*2));
+  auto dstIt = dstBits.begin();
+  auto dstIt2 = dstIt;
+
   color_t c[5];
   for (int y=0; y<src_h; ++y) {
+    dstIt2 += src_w*2;
     for (int x=0; x<src_w; ++x) {
       P = get_pixel_fast<ImageTraits>(src, x, y);
       A = (y > 0 ? get_pixel_fast<ImageTraits>(src, x, y-1): P);
@@ -130,11 +135,17 @@ static void image_scale2x_tpl(Image* dst, const Image* src, int src_w, int src_h
       C = (x > 0 ? get_pixel_fast<ImageTraits>(src, x-1, y): P);
       D = (y < src_h-1 ? get_pixel_fast<ImageTraits>(src, x, y+1): P);
 
-      put_pixel_fast<ImageTraits>(dst, 2*x,   2*y,   (C == A && C != D && A != B ? A: P));
-      put_pixel_fast<ImageTraits>(dst, 2*x+1, 2*y,   (A == B && A != C && B != D ? B: P));
-      put_pixel_fast<ImageTraits>(dst, 2*x,   2*y+1, (D == C && D != B && C != A ? C: P));
-      put_pixel_fast<ImageTraits>(dst, 2*x+1, 2*y+1, (B == D && B != A && D != C ? D: P));
+      *dstIt = (C == A && C != D && A != B ? A: P);
+      ++dstIt;
+      *dstIt = (A == B && A != C && B != D ? B: P);
+      ++dstIt;
+
+      *dstIt2 = (D == C && D != B && C != A ? C: P);
+      ++dstIt2;
+      *dstIt2 = (B == D && B != A && D != C ? D: P);
+      ++dstIt2;
     }
+    dstIt += src_w*2;
   }
 
 #endif
