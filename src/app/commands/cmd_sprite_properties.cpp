@@ -25,6 +25,8 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
+#include "generated_sprite_properties.h"
+
 #include <cstdio>
 
 namespace app {
@@ -56,19 +58,12 @@ bool SpritePropertiesCommand::onEnabled(Context* context)
 
 void SpritePropertiesCommand::onExecute(Context* context)
 {
-  Widget* name, *type, *size, *frames, *ok, *box_transparent;
   std::string imgtype_text;
   char buf[256];
   ColorButton* color_button = NULL;
 
   // Load the window widget
-  base::UniquePtr<Window> window(app::load_widget<Window>("sprite_properties.xml", "sprite_properties"));
-  name = app::find_widget<Widget>(window, "name");
-  type = app::find_widget<Widget>(window, "type");
-  size = app::find_widget<Widget>(window, "size");
-  frames = app::find_widget<Widget>(window, "frames");
-  ok = app::find_widget<Widget>(window, "ok");
-  box_transparent = app::find_widget<Widget>(window, "box_transparent");
+  app::gen::SpriteProperties window;
 
   // Get sprite properties and fill frame fields
   {
@@ -95,41 +90,40 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
 
     // Filename
-    name->setText(document->filename());
+    window.name()->setText(document->filename());
 
     // Color mode
-    type->setText(imgtype_text.c_str());
+    window.type()->setText(imgtype_text.c_str());
 
     // Sprite size (width and height)
-    sprintf(buf, "%dx%d (%s)",
+    window.size()->setTextf(
+      "%dx%d (%s)",
       sprite->width(),
       sprite->height(),
       base::get_pretty_memory_size(sprite->getMemSize()).c_str());
 
-    size->setText(buf);
-
     // How many frames
-    frames->setTextf("%d", (int)sprite->totalFrames());
+    window.frames()->setTextf("%d", (int)sprite->totalFrames());
 
     if (sprite->pixelFormat() == IMAGE_INDEXED) {
       color_button = new ColorButton(app::Color::fromIndex(sprite->transparentColor()),
                                      IMAGE_INDEXED);
 
-      box_transparent->addChild(color_button);
+      window.transparentColorPlaceholder()->addChild(color_button);
     }
     else {
-      box_transparent->addChild(new Label("(only for indexed images)"));
+      window.transparentColorPlaceholder()->addChild(new Label("(only for indexed images)"));
     }
   }
 
-  window->remapWindow();
-  window->centerWindow();
+  window.remapWindow();
+  window.centerWindow();
 
-  load_window_pos(window, "SpriteProperties");
-  window->setVisible(true);
-  window->openWindowInForeground();
+  load_window_pos(&window, "SpriteProperties");
+  window.setVisible(true);
+  window.openWindowInForeground();
 
-  if (window->getKiller() == ok) {
+  if (window.getKiller() == window.ok()) {
     if (color_button) {
       ContextWriter writer(context);
       Sprite* sprite(writer.sprite());
@@ -148,7 +142,7 @@ void SpritePropertiesCommand::onExecute(Context* context)
     }
   }
 
-  save_window_pos(window, "SpriteProperties");
+  save_window_pos(&window, "SpriteProperties");
 }
 
 Command* CommandFactory::createSpritePropertiesCommand()

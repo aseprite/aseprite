@@ -1,5 +1,5 @@
 <!-- ASEPRITE -->
-<!-- Copyright (C) 2001-2013 by David Capello -->
+<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
 <gui>
 <window text="Sprite Properties" id="sprite_properties">
   <vbox>
@@ -17,7 +17,7 @@
       <label text="" id="frames" />
 
       <label text="Transparent Color:" />
-      <hbox id="box_transparent" tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
+      <hbox id="transparent_color_placeholder" tooltip="Palette entry used as&#10;transparent color in each&#10;layer (only for indexed images)." />
     </grid>
     <separator horizontal="true" />
     <hbox>
