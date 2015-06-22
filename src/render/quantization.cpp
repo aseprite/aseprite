@@ -48,7 +48,7 @@ Palette* create_palette_from_rgb(
   PaletteOptimizer optimizer;
 
   if (!palette)
-    palette = new Palette(fromFrame, toFrame - fromFrame + 1);
+    palette = new Palette(fromFrame, 256);
 
   bool has_background_layer = (sprite->backgroundLayer() != nullptr);
 
@@ -465,9 +465,9 @@ void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
   // will not be used later in the color conversion (from RGB to
   // Indexed).
   int first_usable_entry = (has_background_layer ? 0: 1);
-  //int used_colors =
-  m_histogram.createOptimizedPalette(palette, first_usable_entry, palette->size()-1);
-  //palette->resize(first_usable_entry+used_colors);   // TODO
+  int used_colors = m_histogram.createOptimizedPalette(
+    palette, first_usable_entry, palette->size()-1);
+  palette->resize(MAX(1, first_usable_entry+used_colors));
 }
 
 void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
