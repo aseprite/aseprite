@@ -86,11 +86,6 @@ of the following projects created by third-parties:
 * [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 
-Other parts of code by:
-
-* Gary Oberbrunner <br />
-  Code to quantize RGB images with ordered dither method.
-
 ## License
 
 This program is free software; you can redistribute it and/or modify

@@ -19,6 +19,7 @@
 #include "doc/sprite.h"
 #include "gfx/hsv.h"
 #include "gfx/rgb.h"
+#include "render/ordered_dither.h"
 #include "render/render.h"
 
 #include <algorithm>
@@ -30,14 +31,6 @@ namespace render {
 
 using namespace doc;
 using namespace gfx;
-
-// Converts a RGB image to indexed with ordered dithering method.
-static Image* ordered_dithering(
-  const Image* src_image,
-  Image* dst_image,
-  int offsetx, int offsety,
-  const RgbMap* rgbmap,
-  const Palette* palette);
 
 Palette* create_palette_from_rgb(
   const Sprite* sprite,
@@ -85,7 +78,10 @@ Image* convert_pixel_format(
   if (image->pixelFormat() == IMAGE_RGB &&
       pixelFormat == IMAGE_INDEXED &&
       ditheringMethod == DitheringMethod::ORDERED) {
-    return ordered_dithering(image, new_image, 0, 0, rgbmap, palette);
+    BayerMatrix<8> matrix;
+    OrderedDither dither;
+    dither.ditherRgbImageToIndexed(matrix, image, new_image, 0, 0, rgbmap, palette);
+    return new_image;
   }
 
   color_t c;
@@ -298,114 +294,6 @@ Image* convert_pixel_format(
   }
 
   return new_image;
-}
-
-/* Based on Gary Oberbrunner: */
-/*----------------------------------------------------------------------
- * Color image quantizer, from Paul Heckbert's paper in
- * Computer Graphics, vol.16 #3, July 1982 (Siggraph proceedings),
- * pp. 297-304.
- * By Gary Oberbrunner, copyright c. 1988.
- *----------------------------------------------------------------------
- */
-
-/* Bayer-method ordered dither.  The array line[] contains the
- * intensity values for the line being processed.  As you can see, the
- * ordered dither is much simpler than the error dispersion dither.
- * It is also many times faster, but it is not as accurate and
- * produces cross-hatch * patterns on the output.
- */
-
-static int pattern[8][8] = {
-  {  0, 32,  8, 40,  2, 34, 10, 42 }, /* 8x8 Bayer ordered dithering  */
-  { 48, 16, 56, 24, 50, 18, 58, 26 }, /* pattern.  Each input pixel   */
-  { 12, 44,  4, 36, 14, 46,  6, 38 }, /* is scaled to the 0..63 range */
-  { 60, 28, 52, 20, 62, 30, 54, 22 }, /* before looking in this table */
-  {  3, 35, 11, 43,  1, 33,  9, 41 }, /* to determine the action.     */
-  { 51, 19, 59, 27, 49, 17, 57, 25 },
-  { 15, 47,  7, 39, 13, 45,  5, 37 },
-  { 63, 31, 55, 23, 61, 29, 53, 21 }
-};
-
-#define DIST(r1,g1,b1,r2,g2,b2) (3 * ((r1)-(r2)) * ((r1)-(r2)) +        \
-                                 4 * ((g1)-(g2)) * ((g1)-(g2)) +        \
-                                 2 * ((b1)-(b2)) * ((b1)-(b2)))
-
-static Image* ordered_dithering(
-  const Image* src_image,
-  Image* dst_image,
-  int offsetx, int offsety,
-  const RgbMap* rgbmap,
-  const Palette* palette)
-{
-  int oppr, oppg, oppb, oppnrcm;
-  int dither_const;
-  int nr, ng, nb;
-  int r, g, b, a;
-  int nearestcm;
-  int x, y;
-  color_t c;
-
-  const LockImageBits<RgbTraits> src_bits(src_image);
-  LockImageBits<IndexedTraits> dst_bits(dst_image);
-  LockImageBits<RgbTraits>::const_iterator src_it = src_bits.begin();
-  LockImageBits<IndexedTraits>::iterator dst_it = dst_bits.begin();
-
-  for (y=0; y<src_image->height(); ++y) {
-    for (x=0; x<src_image->width(); ++x, ++src_it, ++dst_it) {
-      ASSERT(src_it != src_bits.end());
-      ASSERT(dst_it != dst_bits.end());
-
-      c = *src_it;
-
-      r = rgba_getr(c);
-      g = rgba_getg(c);
-      b = rgba_getb(c);
-      a = rgba_geta(c);
-
-      if (a != 0) {
-        nearestcm = rgbmap->mapColor(r, g, b);
-        /* rgb values for nearest color */
-        nr = rgba_getr(palette->getEntry(nearestcm));
-        ng = rgba_getg(palette->getEntry(nearestcm));
-        nb = rgba_getb(palette->getEntry(nearestcm));
-        /* Color as far from rgb as nrngnb but in the other direction */
-        oppr = MID(0, 2*r - nr, 255);
-        oppg = MID(0, 2*g - ng, 255);
-        oppb = MID(0, 2*b - nb, 255);
-        /* Nearest match for opposite color: */
-        oppnrcm = rgbmap->mapColor(oppr, oppg, oppb);
-        /* If they're not the same, dither between them. */
-        /* Dither constant is measured by where the true
-           color lies between the two nearest approximations.
-           Since the most nearly opposite color is not necessarily
-           on the line from the nearest through the true color,
-           some triangulation error can be introduced.  In the worst
-           case the r-nr distance can actually be less than the nr-oppr
-           distance. */
-        if (oppnrcm != nearestcm) {
-          oppr = rgba_getr(palette->getEntry(oppnrcm));
-          oppg = rgba_getg(palette->getEntry(oppnrcm));
-          oppb = rgba_getb(palette->getEntry(oppnrcm));
-
-          dither_const = DIST(nr, ng, nb, oppr, oppg, oppb);
-          if (dither_const != 0) {
-            dither_const = 64 * DIST(r, g, b, nr, ng, nb) / dither_const;
-            dither_const = MIN(63, dither_const);
-
-            if (pattern[(x+offsetx) & 7][(y+offsety) & 7] < dither_const)
-              nearestcm = oppnrcm;
-          }
-        }
-      }
-      else
-        nearestcm = 0;
-
-      *dst_it = nearestcm;
-    }
-  }
-
-  return dst_image;
 }
 
 //////////////////////////////////////////////////////////////////////
