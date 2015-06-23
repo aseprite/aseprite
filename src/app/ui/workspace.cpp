@@ -146,7 +146,7 @@ void Workspace::updateTabs()
     Widget* child = children.back();
     children.erase(--children.end());
 
-    if (child->getType() == WorkspacePanel::Type())
+    if (child->type() == WorkspacePanel::Type())
       static_cast<WorkspacePanel*>(child)->tabs()->updateTabs();
 
     for (auto subchild : child->getChildren())
@@ -268,7 +268,7 @@ WorkspacePanel* Workspace::getViewPanel(WorkspaceView* view)
 {
   Widget* widget = view->getContentWidget();
   while (widget) {
-    if (widget->getType() == WorkspacePanel::Type())
+    if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
 
     widget = widget->getParent();
@@ -280,7 +280,7 @@ WorkspacePanel* Workspace::getPanelAt(const gfx::Point& pos)
 {
   Widget* widget = getManager()->pick(pos);
   while (widget) {
-    if (widget->getType() == WorkspacePanel::Type())
+    if (widget->type() == WorkspacePanel::Type())
       return static_cast<WorkspacePanel*>(widget);
 
     widget = widget->getParent();
@@ -292,7 +292,7 @@ WorkspaceTabs* Workspace::getTabsAt(const gfx::Point& pos)
 {
   Widget* widget = getManager()->pick(pos);
   while (widget) {
-    if (widget->getType() == Tabs::Type())
+    if (widget->type() == Tabs::Type())
       return static_cast<WorkspaceTabs*>(widget);
 
     widget = widget->getParent();

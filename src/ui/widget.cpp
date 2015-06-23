@@ -65,7 +65,7 @@ Widget::Widget(WidgetType type)
 {
   addWidget(this);
 
-  this->type = type;
+  this->m_type = type;
   this->border_width.l = 0;
   this->border_width.t = 0;
   this->border_width.r = 0;
@@ -91,7 +91,7 @@ Widget::Widget(WidgetType type)
 Widget::~Widget()
 {
   // Break relationship with the manager.
-  if (this->type != kManagerWidget) {
+  if (this->type() != kManagerWidget) {
     Manager* manager = getManager();
     manager->freeWidget(this);
     manager->removeMessagesFor(this);
@@ -300,7 +300,7 @@ bool Widget::isVisible() const
   } while (widget);
 
   // The widget is visible if it's inside a visible manager
-  return (lastWidget ? lastWidget->type == kManagerWidget: false);
+  return (lastWidget ? lastWidget->type() == kManagerWidget: false);
 }
 
 bool Widget::isEnabled() const
@@ -351,7 +351,7 @@ Window* Widget::getRoot()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == kWindowWidget)
+    if (widget->type() == kWindowWidget)
       return dynamic_cast<Window*>(widget);
 
     widget = widget->m_parent;
@@ -365,7 +365,7 @@ Manager* Widget::getManager()
   Widget* widget = this;
 
   while (widget) {
-    if (widget->type == kManagerWidget)
+    if (widget->type() == kManagerWidget)
       return static_cast<Manager*>(widget);
 
     widget = widget->m_parent;
@@ -656,7 +656,7 @@ void Widget::noBorderNoChildSpacing()
 
 void Widget::getRegion(gfx::Region& region)
 {
-  if (this->type == kWindowWidget)
+  if (type() == kWindowWidget)
     getTheme()->getWindowMask(this, region);
   else
     region = getBounds();
@@ -1264,7 +1264,7 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 {
   if (hasCapture()) {
     Widget* pick = getManager()->pick(mouseMsg->position());
-    if (pick && pick != this && pick->getType() == widget_type) {
+    if (pick && pick != this && pick->type() == widget_type) {
       releaseMouse();
 
       MouseMessage* mouseMsg2 = new MouseMessage(

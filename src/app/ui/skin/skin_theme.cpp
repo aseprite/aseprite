@@ -672,7 +672,7 @@ void SkinTheme::initWidget(Widget* widget)
 
   int scale = guiscale();
 
-  switch (widget->type) {
+  switch (widget->type()) {
 
     case kBoxWidget:
       BORDER(0);
@@ -1216,7 +1216,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   if (!widget->getParent()->getParent())
     return;
 
-  bar = (widget->getParent()->getParent()->type == kMenuBarWidget);
+  bar = (widget->getParent()->getParent()->type() == kMenuBarWidget);
 
   // Colors
   if (!widget->isEnabled()) {
@@ -1848,7 +1848,7 @@ gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
   gfx::Color c = widget->getBgColor();
   bool decorative = widget->isDecorative();
 
-  if (!is_transparent(c) || widget->getType() == kWindowWidget)
+  if (!is_transparent(c) || widget->type() == kWindowWidget)
     return c;
   else if (decorative)
     return colors.selected();

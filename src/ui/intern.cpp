@@ -58,7 +58,7 @@ void reinitThemeForAllWidgets()
 
   // Remap the windows
   for (auto widget : *widgets) {
-    if (widget->type == kWindowWidget)
+    if (widget->type() == kWindowWidget)
       static_cast<Window*>(widget)->remapWindow();
   }
 

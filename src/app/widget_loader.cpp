@@ -566,12 +566,12 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     Widget* child = convertXmlElementToWidget(childElem, root, widget, NULL);
     if (child) {
       // Attach the child in the view
-      if (widget->type == kViewWidget) {
+      if (widget->type() == kViewWidget) {
         static_cast<View*>(widget)->attachToView(child);
         break;
       }
       // Add the child in the grid
-      else if (widget->type == kGridWidget) {
+      else if (widget->type() == kGridWidget) {
         const char* cell_hspan = childElem->Attribute("cell_hspan");
         const char* cell_vspan = childElem->Attribute("cell_vspan");
         const char* cell_align = childElem->Attribute("cell_align");
@@ -584,8 +584,8 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
         grid->addChildInCell(child, hspan, vspan, align);
       }
       // Attach the child in the view
-      else if (widget->type == kComboBoxWidget &&
-               child->type == kListItemWidget) {
+      else if (widget->type() == kComboBoxWidget &&
+               child->type() == kListItemWidget) {
         ComboBox* combo = dynamic_cast<ComboBox*>(widget);
         ASSERT(combo != NULL);
 
@@ -598,7 +598,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     childElem = childElem->NextSiblingElement();
   }
 
-  if (widget->type == kViewWidget) {
+  if (widget->type() == kViewWidget) {
     bool maxsize = bool_attr_is_true(elem, "maxsize");
     if (maxsize)
       static_cast<View*>(widget)->makeVisibleAllScrollableArea();

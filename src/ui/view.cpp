@@ -229,9 +229,9 @@ Rect View::getViewportBounds()
 View* View::getView(Widget* widget)
 {
   if ((widget->getParent()) &&
-      (widget->getParent()->type == kViewViewportWidget) &&
+      (widget->getParent()->type() == kViewViewportWidget) &&
       (widget->getParent()->getParent()) &&
-      (widget->getParent()->getParent()->type == kViewWidget))
+      (widget->getParent()->getParent()->type() == kViewWidget))
     return static_cast<View*>(widget->getParent()->getParent());
   else
     return 0;

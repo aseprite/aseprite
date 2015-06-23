@@ -37,9 +37,9 @@ ButtonBase::ButtonBase(const std::string& text,
   setFocusStop(true);
 
   // Initialize theme
-  this->type = m_drawType;      // TODO Fix this nasty trick
+  setType(m_drawType);      // TODO Fix this nasty trick
   initTheme();
-  this->type = type;
+  setType(type);
 }
 
 ButtonBase::~ButtonBase()

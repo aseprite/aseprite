@@ -201,7 +201,7 @@ void PopupWindow::onHitTest(HitTestEvent& ev)
 {
   Widget* picked = getManager()->pick(ev.getPoint());
   if (picked) {
-    WidgetType type = picked->getType();
+    WidgetType type = picked->type();
     if ((type == kWindowWidget && picked == this) ||
         type == kBoxWidget ||
         type == kLabelWidget ||

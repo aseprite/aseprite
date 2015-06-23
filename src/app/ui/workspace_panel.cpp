@@ -108,10 +108,10 @@ void WorkspacePanel::removeView(WorkspaceView* view)
   // Destroy this panel
   if (m_views.empty() && m_panelType == SUB_PANEL) {
     Widget* self = getParent();
-    ASSERT(self->getType() == kBoxWidget);
+    ASSERT(self->type() == kBoxWidget);
 
     Widget* splitter = self->getParent();
-    ASSERT(splitter->getType() == kSplitterWidget);
+    ASSERT(splitter->type() == kSplitterWidget);
 
     Widget* parent = splitter->getParent();
 
@@ -270,13 +270,13 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
   splitter->setExpansive(true);
 
   Widget* parent = getParent();
-  if (parent->getType() == kBoxWidget) {
+  if (parent->type() == kBoxWidget) {
     self = parent;
     parent = self->getParent();
-    ASSERT(parent->getType() == kSplitterWidget);
+    ASSERT(parent->type() == kSplitterWidget);
   }
-  if (parent->getType() == Workspace::Type() ||
-      parent->getType() == kSplitterWidget) {
+  if (parent->type() == Workspace::Type() ||
+      parent->type() == kSplitterWidget) {
     parent->replaceChild(self, splitter);
   }
   else {
@@ -353,7 +353,7 @@ Workspace* WorkspacePanel::getWorkspace()
 {
   Widget* widget = this;
   while (widget) {
-    if (widget->getType() == Workspace::Type())
+    if (widget->type() == Workspace::Type())
       return static_cast<Workspace*>(widget);
 
     widget = widget->getParent();

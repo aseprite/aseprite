@@ -65,7 +65,7 @@ void EyedropperCommand::onLoadParams(const Params& params)
 void EyedropperCommand::onExecute(Context* context)
 {
   Widget* widget = ui::Manager::getDefault()->getMouse();
-  if (!widget || widget->type != editor_type())
+  if (!widget || widget->type() != editor_type())
     return;
 
   Editor* editor = static_cast<Editor*>(widget);

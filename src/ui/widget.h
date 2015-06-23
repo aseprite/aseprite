@@ -44,17 +44,15 @@ namespace ui {
 
   class Widget : public Component {
   public:
-    WidgetType type;              // widget's type
-
     struct {
       int l, t, r, b;
-    } border_width;               /* border separation with the parent */
-    int child_spacing;            /* separation between children */
+    } border_width;               // Border separation with the parent
+    int child_spacing;            // Separation between children
 
-    /* flags */
+    // Flags
     int flags;
 
-    /* widget size limits */
+    // Widget size limits
     int min_w, min_h;
     int max_w, max_h;
 
@@ -73,7 +71,8 @@ namespace ui {
 
     // Main properties.
 
-    WidgetType getType() const { return this->type; }
+    WidgetType type() const { return m_type; }
+    void setType(WidgetType type) { m_type = type; } // TODO remove this function
 
     const std::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
@@ -378,6 +377,7 @@ namespace ui {
     void paint(Graphics* graphics, const gfx::Region& drawRegion);
     bool paintEvent(Graphics* graphics);
 
+    WidgetType m_type;           // Widget's type
     std::string m_id;            // Widget's id
     Theme* m_theme;              // Widget's theme
     int m_align;                 // Widget alignment

@@ -76,7 +76,7 @@ void ZoomCommand::onExecute(Context* context)
 
   // Try to use the editor above the mouse.
   ui::Widget* pick = ui::Manager::getDefault()->pick(mousePos);
-  if (pick && pick->getType() == editor_type())
+  if (pick && pick->type() == editor_type())
     editor = static_cast<Editor*>(pick);
 
   render::Zoom zoom = editor->zoom();

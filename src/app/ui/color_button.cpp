@@ -114,11 +114,11 @@ bool ColorButton::onProcessMessage(Message* msg)
             color = pickedColBut->getColor();
           }
           // Pick a color from the color-bar
-          else if (picked->type == palette_view_type()) {
+          else if (picked->type() == palette_view_type()) {
             color = ((PaletteView*)picked)->getColorByPosition(mousePos);
           }
           // Pick a color from a editor
-          else if (picked->type == editor_type()) {
+          else if (picked->type() == editor_type()) {
             Editor* editor = static_cast<Editor*>(picked);
             Site site = editor->getSite();
             if (site.sprite()) {
