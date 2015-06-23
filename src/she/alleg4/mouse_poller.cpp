@@ -42,6 +42,8 @@ int she_mouse_y;
 int she_mouse_z;
 int she_mouse_b;
 
+bool she_mouse_polling_required;
+
 // Flag to block all the generation of mouse messages from polling.
 bool mouse_left = false;
 
@@ -163,6 +165,47 @@ void osx_mouser_leave_she_callback()
 
 #endif // __APPLE__
 
+void she_mouse_callback(int flags)
+{
+  update_mouse_position();
+  Event ev;
+  ev.setPosition(gfx::Point(she_mouse_x, she_mouse_y));
+
+  // move
+  if (flags & MOUSE_FLAG_MOVE) {
+    ev.setType(Event::MouseMove);
+    queue_event(ev);
+  }
+
+  // buttons
+  if (flags & MOUSE_FLAG_LEFT_DOWN) {
+    generate_mouse_event_for_button(Event::LeftButton, 0, 1);
+  }
+  if (flags & MOUSE_FLAG_LEFT_UP) {
+    generate_mouse_event_for_button(Event::LeftButton, 1, 0);
+  }
+  if (flags & MOUSE_FLAG_RIGHT_DOWN) {
+    generate_mouse_event_for_button(Event::RightButton, 0, 2);
+  }
+  if (flags & MOUSE_FLAG_RIGHT_UP) {
+    generate_mouse_event_for_button(Event::RightButton, 2, 0);
+  }
+  if (flags & MOUSE_FLAG_MIDDLE_DOWN) {
+    generate_mouse_event_for_button(Event::MiddleButton, 0, 4);
+  }
+  if (flags & MOUSE_FLAG_MIDDLE_UP) {
+    generate_mouse_event_for_button(Event::MiddleButton, 4, 0);
+  }
+
+  // mouse wheel
+  if (flags & MOUSE_FLAG_MOVE_Z) {
+    ev.setType(Event::MouseWheel);
+    ev.setWheelDelta(gfx::Point(0, int(she_mouse_z - mouse_z)));
+    queue_event(ev);
+    she_mouse_z = mouse_z;
+  }
+}
+
 }
 
 namespace she {
@@ -177,10 +220,17 @@ void mouse_poller_init()
   osx_mouse_enter_callback = osx_mouser_enter_she_callback;
   osx_mouse_leave_callback = osx_mouser_leave_she_callback;
 #endif
+
+  // optional mouse callback for supported platforms
+  she_mouse_polling_required = (mouse_needs_poll() != 0);
+  if (!she_mouse_polling_required)
+    mouse_callback = she_mouse_callback;
 }
 
 void mouse_poller_generate_events()
 {
+  if (!she_mouse_polling_required)
+    return;
   if (mouse_left)
     return;
 
