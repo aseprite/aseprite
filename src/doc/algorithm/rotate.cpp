@@ -44,7 +44,7 @@ static void image_scale_tpl(Image* dst, const Image* src, int x, int y, int w, i
   if (!clip.clip(dst->width(), dst->height(), src->width(), src->height()))
     return;
 
-  typename LockImageBits<ImageTraits> dst_bits(dst, clip.dstBounds());
+  LockImageBits<ImageTraits> dst_bits(dst, clip.dstBounds());
   typename LockImageBits<ImageTraits>::iterator dst_it = dst_bits.begin();
 
   for (int v=0; v<clip.size.h; ++v) {
