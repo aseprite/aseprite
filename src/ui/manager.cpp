@@ -947,7 +947,7 @@ bool Manager::onProcessMessage(Message* msg)
       }
 
       // Check the focus movement for foreground (non-desktop) windows.
-      if (win->isForeground()) {
+      if (win && win->isForeground()) {
         if (msg->type() == kKeyDownMessage)
           move_focus(this, msg);
         return true;
