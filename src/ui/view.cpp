@@ -58,19 +58,19 @@ void View::makeVisibleAllScrollableArea()
 {
   Size reqSize = m_viewport.calculateNeededSize();
 
-  this->min_w =
-    + this->border_width.l
-    + m_viewport.border_width.l
-    + reqSize.w
-    + m_viewport.border_width.r
-    + this->border_width.r;
+  setMinSize(
+    gfx::Size(
+      + this->border_width.l
+      + m_viewport.border_width.l
+      + reqSize.w
+      + m_viewport.border_width.r
+      + this->border_width.r,
 
-  this->min_h =
-    + this->border_width.t
-    + m_viewport.border_width.t
-    + reqSize.h
-    + m_viewport.border_width.b
-    + this->border_width.b;
+      + this->border_width.t
+      + m_viewport.border_width.t
+      + reqSize.h
+      + m_viewport.border_width.b
+      + this->border_width.b));
 }
 
 void View::hideScrollBars()

@@ -738,8 +738,8 @@ void SkinTheme::initWidget(Widget* widget)
         button->border_width.r = 0;
         button->border_width.b = 0;
         button->child_spacing = 0;
-        button->min_w = 15 * guiscale();
-        button->min_h = 16 * guiscale();
+        button->setMinSize(gfx::Size(15 * guiscale(),
+                                     16 * guiscale()));
 
         static_cast<ButtonBase*>(button)->setIconInterface
           (new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),

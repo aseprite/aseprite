@@ -148,7 +148,8 @@ ColorBar::ColorBar(int align)
 
   Box* buttonsBox = new HBox();
   buttonsBox->addChild(&m_buttons);
-  m_buttons.max_h = 15*ui::guiscale();
+  m_buttons.setMaxSize(gfx::Size(m_buttons.maxSize().w,
+                                 15*ui::guiscale()));
 
   addChild(buttonsBox);
   addChild(splitter);

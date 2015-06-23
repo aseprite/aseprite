@@ -62,6 +62,8 @@ WidgetType register_widget_type()
 
 Widget::Widget(WidgetType type)
   : m_bounds(0, 0, 0, 0)
+  , m_minSize(0, 0)
+  , m_maxSize(INT_MAX, INT_MAX)
 {
   addWidget(this);
 
@@ -72,10 +74,6 @@ Widget::Widget(WidgetType type)
   this->border_width.b = 0;
   this->child_spacing = 0;
   this->flags = 0;
-  this->min_w = 0;
-  this->min_h = 0;
-  this->max_w = INT_MAX;
-  this->max_h = INT_MAX;
   this->m_parent = NULL;
   this->m_theme = CurrentTheme::get();
 
@@ -875,14 +873,12 @@ void Widget::getTextIconInfo(
 
 void Widget::setMinSize(const gfx::Size& sz)
 {
-  min_w = sz.w;
-  min_h = sz.h;
+  m_minSize = sz;
 }
 
 void Widget::setMaxSize(const gfx::Size& sz)
 {
-  max_w = sz.w;
-  max_h = sz.h;
+  m_maxSize = sz;
 }
 
 void Widget::flushRedraw()
@@ -1174,8 +1170,8 @@ Size Widget::getPreferredSize()
     onPreferredSize(ev);
 
     Size sz(ev.getPreferredSize());
-    sz.w = MID(this->min_w, sz.w, this->max_w);
-    sz.h = MID(this->min_h, sz.h, this->max_h);
+    sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
+    sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
     return sz;
   }
 }
@@ -1203,8 +1199,8 @@ Size Widget::getPreferredSize(const Size& fitIn)
     onPreferredSize(ev);
 
     Size sz(ev.getPreferredSize());
-    sz.w = MID(this->min_w, sz.w, this->max_w);
-    sz.h = MID(this->min_h, sz.h, this->max_h);
+    sz.w = MID(m_minSize.w, sz.w, m_maxSize.w);
+    sz.h = MID(m_minSize.h, sz.h, m_maxSize.h);
     return sz;
   }
 }
@@ -1409,7 +1405,7 @@ void Widget::onInvalidateRegion(const Region& region)
 
 void Widget::onPreferredSize(PreferredSizeEvent& ev)
 {
-  ev.setPreferredSize(Size(min_w, min_h));
+  ev.setPreferredSize(m_minSize);
 }
 
 void Widget::onLoadLayout(LoadLayoutEvent& ev)

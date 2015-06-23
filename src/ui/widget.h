@@ -52,10 +52,6 @@ namespace ui {
     // Flags
     int flags;
 
-    // Widget size limits
-    int min_w, min_h;
-    int max_w, max_h;
-
   public:
 
     // ===============================================================
@@ -254,6 +250,8 @@ namespace ui {
     // generating recursive onResize() events.
     void setBoundsQuietly(const gfx::Rect& rc);
 
+    const gfx::Size& minSize() const { return m_minSize; }
+    const gfx::Size& maxSize() const { return m_maxSize; }
     void setMinSize(const gfx::Size& sz);
     void setMaxSize(const gfx::Size& sz);
 
@@ -391,6 +389,9 @@ namespace ui {
     gfx::Size* m_preferredSize;
     bool m_doubleBuffered;
     bool m_transparent;
+
+    // Widget size limits
+    gfx::Size m_minSize, m_maxSize;
   };
 
   WidgetType register_widget_type();
