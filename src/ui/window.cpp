@@ -246,7 +246,7 @@ void Window::openWindowInForeground()
   openWindow();
 
   MessageLoop loop(getManager());
-  while (!(this->flags & HIDDEN))
+  while (!hasFlags(HIDDEN))
     loop.pumpMessages();
 
   m_isForeground = false;

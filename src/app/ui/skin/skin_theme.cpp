@@ -843,7 +843,7 @@ void SkinTheme::initWidget(Widget* widget)
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
           widget->border_width.t += widget->getTextHeight();
 
-          if (!(widget->flags & INITIALIZED)) {
+          if (!widget->hasFlags(INITIALIZED)) {
             Button* button = new WindowCloseButton();
             widget->addChild(button);
           }

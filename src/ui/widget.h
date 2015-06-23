@@ -49,9 +49,6 @@ namespace ui {
     } border_width;               // Border separation with the parent
     int child_spacing;            // Separation between children
 
-    // Flags
-    int flags;
-
   public:
 
     // ===============================================================
@@ -73,12 +70,18 @@ namespace ui {
     const std::string& getId() const { return m_id; }
     void setId(const char* id) { m_id = id; }
 
+    int flags() const { return m_flags; }
+    void setFlags(int flags) { m_flags = flags; }
+    bool hasFlags(int flags) const { return ((m_flags & flags) == flags); }
+    void enableFlags(int flags) { m_flags |= flags; }
+    void disableFlags(int flags) { m_flags &= ~flags; }
+
     int getAlign() const { return m_align; }
     void setAlign(int align) { m_align = align; }
 
     // Text property.
 
-    bool hasText() const { return (flags & HAS_TEXT) == HAS_TEXT; }
+    bool hasText() const { return hasFlags(HAS_TEXT); }
 
     const std::string& getText() const { return m_text; }
     int getTextInt() const;
@@ -377,6 +380,7 @@ namespace ui {
 
     WidgetType m_type;           // Widget's type
     std::string m_id;            // Widget's id
+    int m_flags;                 // Special boolean properties (see flags in ui/base.h)
     Theme* m_theme;              // Widget's theme
     int m_align;                 // Widget alignment
     std::string m_text;          // Widget text

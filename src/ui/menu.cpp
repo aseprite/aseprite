@@ -409,7 +409,7 @@ bool MenuBox::onProcessMessage(Message* msg)
         Widget* picked = menu->pick(mousePos);
         if (picked) {
           if ((picked->type() == kMenuItemWidget) &&
-              !(picked->flags & DISABLED)) {
+              !(picked->hasFlags(DISABLED))) {
             MenuItem* pickedItem = static_cast<MenuItem*>(picked);
 
             // If the picked menu-item is not highlighted...

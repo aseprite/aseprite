@@ -53,7 +53,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   nvis_children = 0;
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
-    if (!(child->flags & HIDDEN))
+    if (!child->hasFlags(HIDDEN))
       nvis_children++;
   }
 
@@ -62,7 +62,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
 
-    if (child->flags & HIDDEN)
+    if (child->hasFlags(HIDDEN))
       continue;
 
     Size reqSize = child->getPreferredSize();
@@ -120,7 +120,7 @@ void Box::onResize(ResizeEvent& ev)
       UI_FOREACH_WIDGET(getChildren(), it) {                            \
         child = *it;                                                    \
                                                                         \
-        if (!(child->flags & HIDDEN)) {                                 \
+        if (!child->hasFlags(HIDDEN)) {                                 \
           if (this->getAlign() & HOMOGENEOUS) {                         \
             if (nvis_children == 1)                                     \
               child_width = width;                                      \
@@ -175,7 +175,7 @@ void Box::onResize(ResizeEvent& ev)
   UI_FOREACH_WIDGET(getChildren(), it) {
     child = *it;
 
-    if (!(child->flags & HIDDEN)) {
+    if (!child->hasFlags(HIDDEN)) {
       nvis_children++;
       if (child->isExpansive())
         nexpand_children++;

@@ -139,7 +139,7 @@ void Grid::onResize(ResizeEvent& ev)
 
       if (cell->child != NULL &&
           cell->parent == NULL &&
-          !(cell->child->flags & HIDDEN)) {
+          !(cell->child->hasFlags(HIDDEN))) {
         x = pos_x;
         y = pos_y;
 
@@ -285,7 +285,7 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
       if (cell->child != NULL) {
         if (cell->parent == NULL) {
           // If the widget isn't hidden then we can request its size
-          if (!(cell->child->flags & HIDDEN)) {
+          if (!(cell->child->hasFlags(HIDDEN))) {
             Size reqSize = cell->child->getPreferredSize();
             cell->w = reqSize.w - (cell->hspan-1) * this->child_spacing;
             cell->h = reqSize.h - (cell->vspan-1) * this->child_spacing;
@@ -297,7 +297,7 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
             cell->w = cell->h = 0;
         }
         else {
-          if (!(cell->child->flags & HIDDEN)) {
+          if (!(cell->child->hasFlags(HIDDEN))) {
             if ((cell->parent->align & align) == align)
               ++expand_count;
           }

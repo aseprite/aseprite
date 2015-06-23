@@ -49,7 +49,7 @@ using namespace gfx;
 static inline void mark_dirty_flag(Widget* widget)
 {
   while (widget) {
-    widget->flags |= DIRTY;
+    widget->enableFlags(DIRTY);
     widget = widget->getParent();
   }
 }
@@ -61,19 +61,19 @@ WidgetType register_widget_type()
 }
 
 Widget::Widget(WidgetType type)
-  : m_bounds(0, 0, 0, 0)
+  : m_type(type)
+  , m_flags(0)
+  , m_bounds(0, 0, 0, 0)
   , m_minSize(0, 0)
   , m_maxSize(INT_MAX, INT_MAX)
 {
   addWidget(this);
 
-  this->m_type = type;
   this->border_width.l = 0;
   this->border_width.t = 0;
   this->border_width.r = 0;
   this->border_width.b = 0;
   this->child_spacing = 0;
-  this->flags = 0;
   this->m_parent = NULL;
   this->m_theme = CurrentTheme::get();
 
@@ -160,7 +160,7 @@ void Widget::setTextf(const char *format, ...)
 void Widget::setTextQuiet(const std::string& text)
 {
   m_text = text;
-  flags |= HAS_TEXT;
+  enableFlags(HAS_TEXT);
 }
 
 she::Font* Widget::getFont() const
@@ -196,16 +196,15 @@ void Widget::setTheme(Theme* theme)
 void Widget::setVisible(bool state)
 {
   if (state) {
-    if (this->flags & HIDDEN) {
-      this->flags &= ~HIDDEN;
+    if (hasFlags(HIDDEN)) {
+      disableFlags(HIDDEN);
       invalidate();
     }
   }
   else {
-    if (!(this->flags & HIDDEN)) {
+    if (!hasFlags(HIDDEN)) {
       getManager()->freeWidget(this); // Free from manager
-
-      this->flags |= HIDDEN;
+      enableFlags(HIDDEN);
     }
   }
 }
@@ -213,18 +212,18 @@ void Widget::setVisible(bool state)
 void Widget::setEnabled(bool state)
 {
   if (state) {
-    if (this->flags & DISABLED) {
-      this->flags &= ~DISABLED;
+    if (hasFlags(DISABLED)) {
+      disableFlags(DISABLED);
       invalidate();
 
       onEnable();
     }
   }
   else {
-    if (!(this->flags & DISABLED)) {
+    if (!hasFlags(DISABLED)) {
       getManager()->freeWidget(this); // Free from the manager
 
-      this->flags |= DISABLED;
+      enableFlags(DISABLED);
       invalidate();
 
       onDisable();
@@ -235,16 +234,16 @@ void Widget::setEnabled(bool state)
 void Widget::setSelected(bool state)
 {
   if (state) {
-    if (!(this->flags & SELECTED)) {
-      this->flags |= SELECTED;
+    if (!hasFlags(SELECTED)) {
+      enableFlags(SELECTED);
       invalidate();
 
       onSelect();
     }
   }
   else {
-    if (this->flags & SELECTED) {
-      this->flags &= ~SELECTED;
+    if (hasFlags(SELECTED)) {
+      disableFlags(SELECTED);
       invalidate();
 
       onDeselect();
@@ -255,33 +254,33 @@ void Widget::setSelected(bool state)
 void Widget::setExpansive(bool state)
 {
   if (state)
-    this->flags |= EXPANSIVE;
+    enableFlags(EXPANSIVE);
   else
-    this->flags &= ~EXPANSIVE;
+    disableFlags(EXPANSIVE);
 }
 
 void Widget::setDecorative(bool state)
 {
   if (state)
-    this->flags |= DECORATIVE;
+    enableFlags(DECORATIVE);
   else
-    this->flags &= ~DECORATIVE;
+    disableFlags(DECORATIVE);
 }
 
 void Widget::setFocusStop(bool state)
 {
   if (state)
-    this->flags |= FOCUS_STOP;
+    enableFlags(FOCUS_STOP);
   else
-    this->flags &= ~FOCUS_STOP;
+    disableFlags(FOCUS_STOP);
 }
 
 void Widget::setFocusMagnet(bool state)
 {
   if (state)
-    this->flags |= FOCUS_MAGNET;
+    enableFlags(FOCUS_MAGNET);
   else
-    this->flags &= ~FOCUS_MAGNET;
+    disableFlags(FOCUS_MAGNET);
 }
 
 bool Widget::isVisible() const
@@ -290,7 +289,7 @@ bool Widget::isVisible() const
   const Widget* lastWidget = nullptr;
 
   do {
-    if (widget->flags & HIDDEN)
+    if (widget->hasFlags(HIDDEN))
       return false;
 
     lastWidget = widget;
@@ -306,7 +305,7 @@ bool Widget::isEnabled() const
   const Widget* widget = this;
 
   do {
-    if (widget->flags & DISABLED)
+    if (widget->hasFlags(DISABLED))
       return false;
 
     widget = widget->m_parent;
@@ -317,27 +316,27 @@ bool Widget::isEnabled() const
 
 bool Widget::isSelected() const
 {
-  return (this->flags & SELECTED) ? true: false;
+  return hasFlags(SELECTED);
 }
 
 bool Widget::isExpansive() const
 {
-  return (this->flags & EXPANSIVE) ? true: false;
+  return hasFlags(EXPANSIVE);
 }
 
 bool Widget::isDecorative() const
 {
-  return (this->flags & DECORATIVE) ? true: false;
+  return hasFlags(DECORATIVE);
 }
 
 bool Widget::isFocusStop() const
 {
-  return (this->flags & FOCUS_STOP) ? true: false;
+  return hasFlags(FOCUS_STOP);
 }
 
 bool Widget::isFocusMagnet() const
 {
-  return (this->flags & FOCUS_MAGNET) ? true: false;
+  return hasFlags(FOCUS_MAGNET);
 }
 
 // ===============================================================
@@ -421,7 +420,7 @@ Widget* Widget::pick(const gfx::Point& pt)
 {
   Widget* inside, *picked = NULL;
 
-  if (!(this->flags & HIDDEN) && // Is visible
+  if (!hasFlags(HIDDEN) &&          // Is visible
       getBounds().contains(pt)) {   // The point is inside the bounds
     picked = this;
 
@@ -706,7 +705,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
         Region reg3;
         child->getRegion(reg3);
 
-        if (child->flags & DECORATIVE) {
+        if (child->hasFlags(DECORATIVE)) {
           reg1 = getBounds();
           reg1.createIntersection(reg1, reg3);
         }
@@ -719,7 +718,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   }
 
   // Intersect with the parent area
-  if (!(this->flags & DECORATIVE)) {
+  if (!hasFlags(DECORATIVE)) {
     Widget* parent = getParent();
 
     while (parent) {
@@ -886,8 +885,8 @@ void Widget::flushRedraw()
   std::queue<Widget*> processing;
   Message* msg;
 
-  if (this->flags & DIRTY) {
-    this->flags ^= DIRTY;
+  if (hasFlags(DIRTY)) {
+    disableFlags(DIRTY);
     processing.push(this);
   }
 
@@ -903,8 +902,8 @@ void Widget::flushRedraw()
 
     UI_FOREACH_WIDGET(widget->getChildren(), it) {
       Widget* child = *it;
-      if (child->flags & DIRTY) {
-        child->flags ^= DIRTY;
+      if (child->hasFlags(DIRTY)) {
+        child->disableFlags(DIRTY);
         processing.push(child);
       }
     }
@@ -991,7 +990,7 @@ bool Widget::paintEvent(Graphics* graphics)
     graphics->fillRect(gfx::rgba(255, 0, 0), getClientBounds());
 #endif
 
-    this->flags |= HIDDEN;
+    enableFlags(HIDDEN);
 
     gfx::Region rgn(getParent()->getBounds());
     rgn.createIntersection(rgn,
@@ -1001,7 +1000,7 @@ bool Widget::paintEvent(Graphics* graphics)
           graphics->getInternalDeltaY())));
     getParent()->paint(graphics, rgn);
 
-    this->flags &= ~HIDDEN;
+    disableFlags(HIDDEN);
   }
 
   PaintEvent ev(this, graphics);
@@ -1275,12 +1274,12 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 
 bool Widget::hasFocus()
 {
-  return (this->flags & HAS_FOCUS) ? true: false;
+  return hasFlags(HAS_FOCUS);
 }
 
 bool Widget::hasMouse()
 {
-  return (this->flags & HAS_MOUSE) ? true: false;
+  return hasFlags(HAS_MOUSE);
 }
 
 bool Widget::hasMouseOver()
@@ -1290,7 +1289,7 @@ bool Widget::hasMouseOver()
 
 bool Widget::hasCapture()
 {
-  return (this->flags & HAS_CAPTURE) ? true: false;
+  return hasFlags(HAS_CAPTURE);
 }
 
 int Widget::getMnemonicChar() const
@@ -1443,8 +1442,8 @@ void Widget::onInitTheme(InitThemeEvent& ev)
   if (m_theme) {
     m_theme->initWidget(this);
 
-    if (!(flags & INITIALIZED))
-      flags |= INITIALIZED;
+    if (!hasFlags(INITIALIZED))
+      enableFlags(INITIALIZED);
   }
 }
 
