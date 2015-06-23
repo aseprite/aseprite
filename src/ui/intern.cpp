@@ -19,13 +19,13 @@ namespace ui {
 
 static std::list<Widget*>* widgets;
 
-int _ji_widgets_init()
+int init_widgets()
 {
   widgets = new std::list<Widget*>;
   return 0;
 }
 
-void _ji_widgets_exit()
+void exit_widgets()
 {
   delete widgets;
 }

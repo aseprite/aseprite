@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -144,13 +144,13 @@ static void update_mouse_cursor()
   dirty_display_flag = true;
 }
 
-int _ji_system_init()
+int init_system()
 {
   mouse_cursor_type = kNoCursor;
   return 0;
 }
 
-void _ji_system_exit()
+void exit_system()
 {
   set_display(NULL);
   update_mouse_overlay(NULL);

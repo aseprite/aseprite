@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -14,17 +14,17 @@
 
 namespace ui {
 
-int _ji_widgets_init();
-void _ji_widgets_exit();
+int init_widgets();
+void exit_widgets();
 
-int _ji_system_init();
-void _ji_system_exit();
+int init_system();
+void exit_system();
 
 GuiSystem::GuiSystem()
 {
   // initialize system
-  _ji_system_init();
-  _ji_widgets_init();
+  init_system();
+  init_widgets();
 }
 
 GuiSystem::~GuiSystem()
@@ -35,8 +35,8 @@ GuiSystem::~GuiSystem()
   CurrentTheme::set(NULL);
 
   // shutdown system
-  _ji_widgets_exit();
-  _ji_system_exit();
+  exit_widgets();
+  exit_system();
 }
 
 } // namespace ui

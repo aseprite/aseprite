@@ -76,9 +76,6 @@ Console::Console(Context* ctx)
   button->setFocusMagnet(true);
   view->setExpansive(true);
 
-  /* force foreground mode */
-  /*     ji_find_widget(window)->in_foreground = true; */
-
   wid_console = window;
   wid_view = view;
   wid_textbox = textbox;
@@ -98,7 +95,7 @@ Console::~Console()
     if (console_locked
         && !want_close_flag
         && wid_console->isVisible()) {
-      /* open in foreground */
+      // Open in foreground
       wid_console->openWindowInForeground();
     }
 
