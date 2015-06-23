@@ -146,8 +146,8 @@ namespace render {
                                  int u, int v,
                                  const doc::RgbMap* rgbmap,
                                  const doc::Palette* palette) {
-      const doc::LockImageBits<RgbTraits> srcBits(srcImage);
-      doc::LockImageBits<IndexedTraits> dstBits(dstImage);
+      const doc::LockImageBits<doc::RgbTraits> srcBits(srcImage);
+      doc::LockImageBits<doc::IndexedTraits> dstBits(dstImage);
       auto srcIt = srcBits.begin();
       auto dstIt = dstBits.begin();
       int w = srcImage->width();
