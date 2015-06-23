@@ -76,7 +76,6 @@ of the following projects created by third-parties:
 * [curl](http://curl.haxx.se/) - [curl license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
 * [gfli](https://github.com/aseprite/aseprite/blob/master/src/app/file/fli/README) - [GPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/GPL.txt)
 * [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
-* [libart](http://www.levien.com/libart/) - [LGPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/LGPL-2.0.txt)
 * [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)
 * [loadpng](http://tjaden.strangesoft.net/loadpng/) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
