@@ -13,8 +13,6 @@
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 
-#include <array>
-
 namespace render {
 
   // Creates a Bayer dither matrix.
@@ -22,7 +20,7 @@ namespace render {
   class BayerMatrix {
     static int D2[4];
 
-    std::array<int, N*N> m_matrix;
+    int m_matrix[N*N];
 
   public:
     int maxValue() const { return N*N; }
@@ -38,8 +36,8 @@ namespace render {
       return m_matrix[(i%N)*N + (j%N)];
     }
 
-    const std::array<int, N*N>& array() const {
-      return m_matrix;
+    int operator[](int i) const {
+      return m_matrix[i];
     }
 
   private:
