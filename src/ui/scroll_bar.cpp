@@ -82,10 +82,10 @@ bool ScrollBar::onProcessMessage(Message* msg)
       x2 = getBounds().x2()-1;
       y2 = getBounds().y2()-1;
 
-      u1 = x1 + this->border_width.l;
-      v1 = y1 + this->border_width.t;
-      u2 = x2 - this->border_width.r;
-      v2 = y2 - this->border_width.b;
+      u1 = x1 + border().left();
+      v1 = y1 + border().top();
+      u2 = x2 - border().right();
+      v2 = y2 - border().bottom();
 
       Point scroll = view->getViewScroll();
 
@@ -189,15 +189,15 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   int pos, len;
   int border_width;
 
-  if (this->getAlign() & HORIZONTAL) {
+  if (getAlign() & HORIZONTAL) {
     bar_size = getBounds().w;
     viewport_size = view->getVisibleSize().w;
-    border_width = this->border_width.t + this->border_width.b;
+    border_width = border().height();
   }
   else {
     bar_size = getBounds().h;
     viewport_size = view->getVisibleSize().h;
-    border_width = this->border_width.l + this->border_width.r;
+    border_width = border().width();
   }
 
   if (m_size <= viewport_size) {

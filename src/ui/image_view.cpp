@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -35,8 +35,8 @@ void ImageView::onPreferredSize(PreferredSizeEvent& ev)
 
   ev.setPreferredSize(
     gfx::Size(
-      border_width.l + box.w + border_width.r,
-      border_width.t + box.h + border_width.b));
+      box.w + border().width(),
+      box.h + border().height()));
 }
 
 void ImageView::onPaint(PaintEvent& ev)

@@ -118,7 +118,7 @@ BrushPopup::BrushPopup(BrushPopupDelegate* delegate)
 {
   setAutoRemap(false);
   setBorder(gfx::Border(0));
-  child_spacing = 0;
+  setChildSpacing(0);
 }
 
 void BrushPopup::setBrush(Brush* brush)

@@ -40,7 +40,7 @@ HexColorEntry::HexColorEntry()
   initTheme();
 
   setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
-  child_spacing = 0;
+  setChildSpacing(0);
 }
 
 void HexColorEntry::setColor(const app::Color& color)

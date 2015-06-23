@@ -156,8 +156,8 @@ void ColorButton::onPreferredSize(PreferredSizeEvent& ev)
   getTextIconInfo(&box);
   box.w = 64*guiscale();
 
-  ev.setPreferredSize(box.w + border_width.l + border_width.r,
-                      box.h + border_width.t + border_width.b);
+  ev.setPreferredSize(box.w + border().width(),
+                      box.h + border().height());
 }
 
 void ColorButton::onPaint(PaintEvent& ev)

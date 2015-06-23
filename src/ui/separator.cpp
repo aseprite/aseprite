@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -48,8 +48,8 @@ void Separator::onPreferredSize(PreferredSizeEvent& ev)
   if (hasText())
     maxSize.w = MAX(maxSize.w, getTextWidth());
 
-  int w = this->border_width.l + maxSize.w + this->border_width.r;
-  int h = this->border_width.t + maxSize.h + this->border_width.b;
+  int w = maxSize.w + border().width();
+  int h = maxSize.h + border().height();
 
   ev.setPreferredSize(Size(w, h));
 }

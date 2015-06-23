@@ -75,7 +75,7 @@ ColorSelector::ColorSelector()
   m_colorType.addItem("Mask");
 
   m_topBox.setBorder(gfx::Border(0));
-  m_topBox.child_spacing = 0;
+  m_topBox.setChildSpacing(0);
 
   m_colorPaletteContainer.attachToView(&m_colorPalette);
 

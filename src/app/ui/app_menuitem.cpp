@@ -91,15 +91,13 @@ void AppMenuItem::onPreferredSize(PreferredSizeEvent& ev)
 
   if (hasText()) {
     size.w =
-      + this->border_width.l
       + getTextWidth()
-      + (inBar() ? this->child_spacing/4: this->child_spacing)
-      + this->border_width.r;
+      + (inBar() ? this->childSpacing()/4: this->childSpacing())
+      + border().width();
 
     size.h =
-      + this->border_width.t
       + getTextHeight()
-      + this->border_width.b;
+      + border().height();
 
     if (m_key && !m_key->accels().empty()) {
       size.w += Graphics::measureUIStringLength(

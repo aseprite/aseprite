@@ -658,17 +658,11 @@ Cursor* SkinTheme::getCursor(CursorType type)
 
 void SkinTheme::initWidget(Widget* widget)
 {
-#define BORDER(n)                       \
-  widget->border_width.l = (n);         \
-  widget->border_width.t = (n);         \
-  widget->border_width.r = (n);         \
-  widget->border_width.b = (n);
+#define BORDER(n)                               \
+  widget->setBorder(gfx::Border(n))
 
-#define BORDER4(L,T,R,B)                \
-  widget->border_width.l = (L);         \
-  widget->border_width.t = (T);         \
-  widget->border_width.r = (R);         \
-  widget->border_width.b = (B);
+#define BORDER4(L,T,R,B)                                \
+  widget->setBorder(gfx::Border((L), (T), (R), (B)))
 
   int scale = guiscale();
 
@@ -676,7 +670,7 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kBoxWidget:
       BORDER(0);
-      widget->child_spacing = 4 * scale;
+      widget->setChildSpacing(4 * scale);
       break;
 
     case kButtonWidget:
@@ -685,12 +679,12 @@ void SkinTheme::initWidget(Widget* widget)
         m_part[PART_BUTTON_NORMAL_N]->height(),
         m_part[PART_BUTTON_NORMAL_E]->width(),
         m_part[PART_BUTTON_NORMAL_S]->height());
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kCheckWidget:
       BORDER(2 * scale);
-      widget->child_spacing = 4 * scale;
+      widget->setChildSpacing(4 * scale);
 
       static_cast<ButtonBase*>(widget)->setIconInterface
         (new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
@@ -710,7 +704,7 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kGridWidget:
       BORDER(0);
-      widget->child_spacing = 4 * scale;
+      widget->setChildSpacing(4 * scale);
       break;
 
     case kLabelWidget:
@@ -719,7 +713,7 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kListBoxWidget:
       BORDER(0);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kListItemWidget:
@@ -733,11 +727,8 @@ void SkinTheme::initWidget(Widget* widget)
 
         Button* button = combobox->getButtonWidget();
 
-        button->border_width.l = 0;
-        button->border_width.t = 0;
-        button->border_width.r = 0;
-        button->border_width.b = 0;
-        button->child_spacing = 0;
+        button->setBorder(gfx::Border(0));
+        button->setChildSpacing(0);
         button->setMinSize(gfx::Size(15 * guiscale(),
                                      16 * guiscale()));
 
@@ -754,22 +745,22 @@ void SkinTheme::initWidget(Widget* widget)
     case kMenuBarWidget:
     case kMenuBoxWidget:
       BORDER(0);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kMenuItemWidget:
       BORDER(2 * scale);
-      widget->child_spacing = 18 * scale;
+      widget->setChildSpacing(18 * scale);
       break;
 
     case kSplitterWidget:
       BORDER(0);
-      widget->child_spacing = 3 * scale;
+      widget->setChildSpacing(3 * scale);
       break;
 
     case kRadioWidget:
       BORDER(2 * scale);
-      widget->child_spacing = 4 * scale;
+      widget->setChildSpacing(4 * scale);
 
       static_cast<ButtonBase*>(widget)->setIconInterface
         (new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
@@ -795,10 +786,14 @@ void SkinTheme::initWidget(Widget* widget)
       }
 
       if (widget->hasText()) {
+        gfx::Border border = widget->border();
+
         if (widget->getAlign() & TOP)
-          widget->border_width.t = widget->getTextHeight();
+          border.top(widget->getTextHeight());
         else if (widget->getAlign() & BOTTOM)
-          widget->border_width.b = widget->getTextHeight();
+          border.bottom(widget->getTextHeight());
+
+        widget->setBorder(border);
       }
       break;
 
@@ -808,13 +803,13 @@ void SkinTheme::initWidget(Widget* widget)
         m_part[PART_SLIDER_EMPTY_N]->height(),
         m_part[PART_SLIDER_EMPTY_E]->width()-1*scale,
         m_part[PART_SLIDER_EMPTY_S]->height()-1*scale);
-      widget->child_spacing = widget->getTextHeight();
+      widget->setChildSpacing(widget->getTextHeight());
       widget->setAlign(CENTER | MIDDLE);
       break;
 
     case kTextBoxWidget:
       BORDER(0);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kViewWidget:
@@ -823,25 +818,27 @@ void SkinTheme::initWidget(Widget* widget)
         m_part[PART_SUNKEN_NORMAL_N]->height(),
         m_part[PART_SUNKEN_NORMAL_E]->width()-1*scale,
         m_part[PART_SUNKEN_NORMAL_S]->height()-1*scale);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
       break;
 
     case kViewScrollbarWidget:
       BORDER(1 * scale);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kViewViewportWidget:
       BORDER(0);
-      widget->child_spacing = 0;
+      widget->setChildSpacing(0);
       break;
 
     case kWindowWidget:
       if (!static_cast<Window*>(widget)->isDesktop()) {
         if (widget->hasText()) {
-          BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
-          widget->border_width.t += widget->getTextHeight();
+          BORDER4(6 * scale,
+                  (4+6) * scale + widget->getTextHeight(),
+                  6 * scale,
+                  6 * scale);
 
           if (!widget->hasFlags(INITIALIZED)) {
             Button* button = new WindowCloseButton();
@@ -855,7 +852,7 @@ void SkinTheme::initWidget(Widget* widget)
       else {
         BORDER(0);
       }
-      widget->child_spacing = 4 * scale; // TODO this hard-coded 4 should be configurable in skin.xml
+      widget->setChildSpacing(4 * scale); // TODO this hard-coded 4 should be configurable in skin.xml
       widget->setBgColor(colors.windowFace());
       break;
 
@@ -1058,7 +1055,7 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     bg);
 
   // Draw the text
-  x = bounds.x + widget->border_width.l;
+  x = bounds.x + widget->border().left();
   y = bounds.y + bounds.h/2 - widget->getTextHeight()/2;
 
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
@@ -1134,7 +1131,7 @@ void SkinTheme::paintLabel(PaintEvent& ev)
   if (!is_transparent(bg))
     g->fillRect(bg, rc);
 
-  rc.shrink(widget->getBorder());
+  rc.shrink(widget->border());
 
   widget->getTextIconInfo(NULL, &text);
   style->paint(g, text, widget->getText().c_str(), Style::State());
@@ -1190,7 +1187,7 @@ void SkinTheme::paintListItem(ui::PaintEvent& ev)
   g->fillRect(bg, bounds);
 
   if (widget->hasText()) {
-    bounds.shrink(widget->getBorder());
+    bounds.shrink(widget->border());
     drawTextString(g, NULL, fg, bg, widget, bounds, 0);
   }
 }
@@ -1261,7 +1258,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 
   Rect pos = bounds;
   if (!bar)
-    pos.offset(widget->child_spacing/2, 0);
+    pos.offset(widget->childSpacing()/2, 0);
   drawTextString(g, NULL, fg, ColorNone, widget, pos, 0);
 
   // For menu-box
@@ -1294,7 +1291,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
         int old_align = appMenuItem->getAlign();
 
         pos = bounds;
-        pos.w -= widget->child_spacing/4;
+        pos.w -= widget->childSpacing()/4;
 
         std::string buf = appMenuItem->getKey()->accels().front().toString();
 
@@ -1370,11 +1367,11 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
     int h = widget->getTextHeight();
     Rect r(
       Point(
-        bounds.x + widget->border_width.l/2 + h/2,
-        bounds.y + widget->border_width.t/2 - h/2),
+        bounds.x + widget->border().left()/2 + h/2,
+        bounds.y + widget->border().top()/2 - h/2),
       Point(
-        bounds.x2() - widget->border_width.r/2 - h,
-        bounds.y2() - widget->border_width.b/2 + h));
+        bounds.x2() - widget->border().right()/2 - h,
+        bounds.y2() - widget->border().bottom()/2 + h));
 
     drawTextString(g, NULL,
       colors.separatorLabel(), BGCOLOR,
@@ -1396,7 +1393,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
   widget->getSliderThemeInfo(&min, &max, &value);
 
-  Rect rc(Rect(bounds).shrink(widget->getBorder()));
+  Rect rc(Rect(bounds).shrink(widget->border()));
   int x;
   if (min != max)
     x = rc.x + rc.w * (value-min) / (max-min);
@@ -1530,7 +1527,7 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
       PART_SUNKEN2_NORMAL_NW, bg);
 
   // Draw the text
-  x = bounds.x + widget->border_width.l;
+  x = bounds.x + widget->border().left();
   y = bounds.y + bounds.h/2 - widget->getTextHeight()/2;
 
   base::utf8_const_iterator utf8_it = base::utf8_const_iterator(textString.begin());
@@ -1740,7 +1737,7 @@ void SkinTheme::paintPopupWindow(PaintEvent& ev)
   if (!is_transparent(BGCOLOR))
     styles.menubox()->paint(g, pos, NULL, Style::State());
 
-  pos.shrink(window->getBorder());
+  pos.shrink(window->border());
 
   g->drawAlignedUIString(window->getText(),
     colors.text(),
@@ -1833,7 +1830,7 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
         m_part[e]->width(),
         m_part[s]->height())));
 
-  rc.shrink(widget->getBorder());
+  rc.shrink(widget->border());
 
   g->drawAlignedUIString(widget->getText(), fg, bg, rc, widget->getAlign());
 }
@@ -1904,7 +1901,7 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
     // Text
     Rect textWrap = textrc.createIntersection(
       // TODO add ui::Widget::getPadding() property
-      // Rect(widget->getClientBounds()).shrink(widget->getBorder()));
+      // Rect(widget->getClientBounds()).shrink(widget->border()));
       widget->getClientBounds()).inflate(0, 1*guiscale());
 
     IntersectClip clip(g, textWrap);

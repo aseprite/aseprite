@@ -49,7 +49,10 @@ public:
     , m_menuitem(menuitem)
     , m_level(level)
     , m_hotAccel(-1) {
-    this->border_width.t = this->border_width.b = 0;
+    gfx::Border border = this->border();
+    border.top(0);
+    border.bottom(0);
+    setBorder(border);
   }
 
   void restoreKeys() {
@@ -113,9 +116,8 @@ private:
 
   void onPreferredSize(PreferredSizeEvent& ev) override {
     gfx::Size size = getTextSize();
-    size.w = this->border_width.l + size.w + this->border_width.r;
-    size.h = this->border_width.t + size.h + this->border_width.b
-      + 4*guiscale();
+    size.w = size.w + border().width();
+    size.h = size.h + border().height() + 4*guiscale();
 
     if (m_key && !m_key->accels().empty()) {
       size_t combos = m_key->accels().size();
@@ -143,7 +145,7 @@ private:
 
     g->fillRect(bg, bounds);
 
-    bounds.shrink(getBorder());
+    bounds.shrink(border());
     g->drawUIString(getText(), fg, bg,
       gfx::Point(
         bounds.x + m_level*16 * guiscale(),

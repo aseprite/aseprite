@@ -346,17 +346,17 @@ void Menu::onPreferredSize(PreferredSizeEvent& ev)
     reqSize = (*it)->getPreferredSize();
 
     if (getParent() && getParent()->type() == kMenuBarWidget) {
-      size.w += reqSize.w + ((it+1 != end) ? this->child_spacing: 0);
+      size.w += reqSize.w + ((it+1 != end) ? childSpacing(): 0);
       size.h = MAX(size.h, reqSize.h);
     }
     else {
       size.w = MAX(size.w, reqSize.w);
-      size.h += reqSize.h + ((it+1 != end) ? this->child_spacing: 0);
+      size.h += reqSize.h + ((it+1 != end) ? childSpacing(): 0);
     }
   }
 
-  size.w += this->border_width.l + this->border_width.r;
-  size.h += this->border_width.t + this->border_width.b;
+  size.w += border().width();
+  size.h += border().height();
 
   ev.setPreferredSize(size);
 }
@@ -679,8 +679,8 @@ void MenuBox::onPreferredSize(PreferredSizeEvent& ev)
   if (Menu* menu = getMenu())
     size = menu->getPreferredSize();
 
-  size.w += this->border_width.l + this->border_width.r;
-  size.h += this->border_width.t + this->border_width.b;
+  size.w += border().width();
+  size.h += border().height();
 
   ev.setPreferredSize(size);
 }
@@ -884,15 +884,13 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 
   if (hasText()) {
     size.w =
-      + this->border_width.l
       + getTextWidth()
-      + (inBar() ? this->child_spacing/4: this->child_spacing)
-      + this->border_width.r;
+      + (inBar() ? childSpacing()/4: childSpacing())
+      + border().width();
 
     size.h =
-      + this->border_width.t
       + getTextHeight()
-      + this->border_width.b;
+      + border().height();
   }
 
   ev.setPreferredSize(size);

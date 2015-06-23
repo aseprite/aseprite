@@ -326,7 +326,7 @@ void StatusBar::onResize(ResizeEvent& ev)
 
   setBoundsQuietly(ev.getBounds());
 
-  Border border = getBorder();
+  Border border = this->border();
   Rect rc = ev.getBounds();
   bool frameControls = (rc.w > 300*ui::guiscale());
 

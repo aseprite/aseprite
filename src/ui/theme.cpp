@@ -102,10 +102,10 @@ void drawTextBox(Graphics* g, Widget* widget,
     scroll = view->getViewScroll();
   }
   else {
-    x1 = widget->getClientBounds().x + widget->border_width.l;
-    y1 = widget->getClientBounds().y + widget->border_width.t;
-    viewport_w = widget->getClientBounds().w - widget->border_width.l - widget->border_width.r;
-    viewport_h = widget->getClientBounds().h - widget->border_width.t - widget->border_width.b;
+    x1 = widget->getClientBounds().x + widget->border().left();
+    y1 = widget->getClientBounds().y + widget->border().top();
+    viewport_w = widget->getClientBounds().w - widget->border().width();
+    viewport_h = widget->getClientBounds().h - widget->border().height();
     scroll.x = scroll.y = 0;
   }
   x2 = x1 + viewport_w;
@@ -224,8 +224,8 @@ void drawTextBox(Graphics* g, Widget* widget,
   if (h)
     *h = (y - y1 + scroll.y);
 
-  if (w) *w += widget->border_width.l + widget->border_width.r;
-  if (h) *h += widget->border_width.t + widget->border_width.b;
+  if (w) *w += widget->border().width();
+  if (h) *h += widget->border().height();
 
   // Fill bottom area
   if (g && y < y2)

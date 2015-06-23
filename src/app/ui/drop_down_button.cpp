@@ -38,7 +38,7 @@ DropDownButton::DropDownButton(const char* text)
   addChild(m_button);
   addChild(m_dropDown);
 
-  child_spacing = 0;
+  setChildSpacing(0);
 
   m_dropDown->setIconInterface
     (new ButtonIconImpl(static_cast<SkinTheme*>(m_dropDown->getTheme()),

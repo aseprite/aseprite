@@ -181,7 +181,7 @@ void Splitter::onResize(ResizeEvent& ev)
 {
 #define LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b)                     \
   {                                                                     \
-    avail = rc.w - this->child_spacing;                                 \
+    avail = rc.w - this->childSpacing();                                \
                                                                         \
     pos.x = rc.x;                                                       \
     pos.y = rc.y;                                                       \
@@ -201,7 +201,7 @@ void Splitter::onResize(ResizeEvent& ev)
     child1->setBounds(pos);                                             \
     gfx::Rect child1Pos = child1->getBounds();                          \
                                                                         \
-    pos.x = child1Pos.x + child1Pos.w + this->child_spacing;            \
+    pos.x = child1Pos.x + child1Pos.w + this->childSpacing();           \
     pos.y = rc.y;                                                       \
     pos.w = avail - child1Pos.w;                                        \
     pos.h = rc.h;                                                       \
@@ -249,7 +249,7 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 #define FINAL_SIZE(w)                                     \
   do {                                                    \
     w *= visibleChildren;                                 \
-    w += this->child_spacing * (visibleChildren-1);       \
+    w += this->childSpacing() * (visibleChildren-1);      \
   } while(0)
 
   int visibleChildren;
@@ -283,8 +283,8 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
       FINAL_SIZE(h);
   }
 
-  w += this->border_width.l + this->border_width.r;
-  h += this->border_width.t + this->border_width.b;
+  w += border().width();
+  h += border().height();
 
   ev.setPreferredSize(Size(w, h));
 }

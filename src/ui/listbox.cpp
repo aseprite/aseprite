@@ -289,7 +289,7 @@ void ListBox::onResize(ResizeEvent& ev)
     cpos.h = child->getPreferredSize().h;
     child->setBounds(cpos);
 
-    cpos.y += child->getBounds().h + this->child_spacing;
+    cpos.y += child->getBounds().h + this->childSpacing();
   }
 }
 
@@ -301,11 +301,11 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
     Size reqSize = static_cast<ListItem*>(*it)->getPreferredSize();
 
     w = MAX(w, reqSize.w);
-    h += reqSize.h + (it+1 != end ? this->child_spacing: 0);
+    h += reqSize.h + (it+1 != end ? this->childSpacing(): 0);
   }
 
-  w += this->border_width.l + this->border_width.r;
-  h += this->border_width.t + this->border_width.b;
+  w += border().width();
+  h += border().height();
 
   ev.setPreferredSize(Size(w, h));
 }

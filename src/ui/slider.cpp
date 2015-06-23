@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -204,8 +204,8 @@ void Slider::onPreferredSize(PreferredSizeEvent& ev)
   int w = MAX(min_w, max_w);
   int h = getTextHeight();
 
-  w += this->border_width.l + this->border_width.r;
-  h += this->border_width.t + this->border_width.b;
+  w += border().width();
+  h += border().height();
 
   ev.setPreferredSize(w, h);
 }

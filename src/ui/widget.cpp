@@ -63,27 +63,20 @@ WidgetType register_widget_type()
 Widget::Widget(WidgetType type)
   : m_type(type)
   , m_flags(0)
+  , m_theme(CurrentTheme::get())
+  , m_align(0)
+  , m_font(nullptr)
+  , m_bgColor(gfx::ColorNone)
   , m_bounds(0, 0, 0, 0)
+  , m_parent(nullptr)
+  , m_preferredSize(nullptr)
+  , m_doubleBuffered(false)
+  , m_transparent(false)
   , m_minSize(0, 0)
   , m_maxSize(INT_MAX, INT_MAX)
+  , m_childSpacing(0)
 {
   addWidget(this);
-
-  this->border_width.l = 0;
-  this->border_width.t = 0;
-  this->border_width.r = 0;
-  this->border_width.b = 0;
-  this->child_spacing = 0;
-  this->m_parent = NULL;
-  this->m_theme = CurrentTheme::get();
-
-  this->m_align = 0;
-  this->m_font = nullptr;
-  this->m_bgColor = gfx::ColorNone;
-
-  m_preferredSize = NULL;
-  m_doubleBuffered = false;
-  m_transparent = false;
 }
 
 Widget::~Widget()
@@ -603,18 +596,18 @@ void Widget::setDecorativeWidgetBounds()
 
 Rect Widget::getChildrenBounds() const
 {
-  return Rect(m_bounds.x+border_width.l,
-              m_bounds.y+border_width.t,
-              m_bounds.w - border_width.l - border_width.r,
-              m_bounds.h - border_width.t - border_width.b);
+  return Rect(m_bounds.x + border().left(),
+              m_bounds.y + border().top(),
+              m_bounds.w - border().width(),
+              m_bounds.h - border().height());
 }
 
 Rect Widget::getClientChildrenBounds() const
 {
-  return Rect(border_width.l,
-              border_width.t,
-              m_bounds.w - border_width.l - border_width.r,
-              m_bounds.h - border_width.t - border_width.b);
+  return Rect(border().left(),
+              border().top(),
+              m_bounds.w - border().width(),
+              m_bounds.h - border().height());
 }
 
 void Widget::setBounds(const Rect& rc)
@@ -629,26 +622,20 @@ void Widget::setBoundsQuietly(const gfx::Rect& rc)
   m_bounds = rc;
 }
 
-Border Widget::getBorder() const
-{
-  return Border(border_width.l, border_width.t, border_width.r, border_width.b);
-}
-
 void Widget::setBorder(const Border& br)
 {
-  border_width.l = br.left();
-  border_width.t = br.top();
-  border_width.r = br.right();
-  border_width.b = br.bottom();
+  m_border = br;
+}
+
+void Widget::setChildSpacing(int childSpacing)
+{
+  m_childSpacing = childSpacing;
 }
 
 void Widget::noBorderNoChildSpacing()
 {
-  border_width.l = 0;
-  border_width.t = 0;
-  border_width.r = 0;
-  border_width.b = 0;
-  child_spacing = 0;
+  m_border = gfx::Border(0, 0, 0, 0);
+  m_childSpacing = 0;
 }
 
 void Widget::getRegion(gfx::Region& region)
@@ -804,29 +791,29 @@ void Widget::getTextIconInfo(
     /* with the icon in the top or bottom */
     else {
       box_w = MAX(icon_w, text_w);
-      box_h = icon_h + (hasText() ? child_spacing: 0) + text_h;
+      box_h = icon_h + (hasText() ? childSpacing(): 0) + text_h;
     }
   }
   /* with the icon in left or right that doesn't care by now */
   else {
-    box_w = icon_w + (hasText() ? child_spacing: 0) + text_w;
+    box_w = icon_w + (hasText() ? childSpacing(): 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
   /* box position */
   if (getAlign() & RIGHT)
-    box_x = bounds.x2() - box_w - border_width.r;
+    box_x = bounds.x2() - box_w - border().right();
   else if (getAlign() & CENTER)
     box_x = (bounds.x+bounds.x2())/2 - box_w/2;
   else
-    box_x = bounds.x + border_width.l;
+    box_x = bounds.x + border().left();
 
   if (getAlign() & BOTTOM)
-    box_y = bounds.y2() - box_h - border_width.b;
+    box_y = bounds.y2() - box_h - border().bottom();
   else if (getAlign() & MIDDLE)
     box_y = (bounds.y+bounds.y2())/2 - box_h/2;
   else
-    box_y = bounds.y + border_width.t;
+    box_y = bounds.y + border().top();
 
   // With text
   if (hasText()) {

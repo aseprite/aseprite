@@ -31,20 +31,18 @@ TEST(Grid, Simple2x1Grid)
   EXPECT_EQ(10, reqSize.h);
 
   // Test child-spacing
-  grid->child_spacing = 2;
+  grid->setChildSpacing(2);
   reqSize = grid->getPreferredSize();
   EXPECT_EQ(22, reqSize.w);
   EXPECT_EQ(10, reqSize.h);
 
   // Test borders
-  grid->border_width.l = 3;
-  grid->border_width.b = 3;
+  grid->setBorder(gfx::Border(3, 0, 0, 3));
   reqSize = grid->getPreferredSize();
   EXPECT_EQ(25, reqSize.w);
   EXPECT_EQ(13, reqSize.h);
 
-  grid->border_width.r = 5;
-  grid->border_width.t = 2;
+  grid->setBorder(gfx::Border(3, 2, 5, 3));
   reqSize = grid->getPreferredSize();
   EXPECT_EQ(30, reqSize.w);
   EXPECT_EQ(15, reqSize.h);
@@ -166,7 +164,7 @@ TEST(Grid, Intrincate3x3Grid)
   grid->addChildInCell(w4, 1, 2, VERTICAL);
 
   // Test request size
-  grid->child_spacing = 2;
+  grid->setChildSpacing(2);
   Size reqSize = grid->getPreferredSize();
   EXPECT_EQ(22, reqSize.w);
   EXPECT_EQ(22, reqSize.h);

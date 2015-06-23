@@ -258,7 +258,7 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_changeMode.addItem("Rel");
 
   m_topBox.setBorder(gfx::Border(0));
-  m_topBox.child_spacing = 0;
+  m_topBox.setChildSpacing(0);
   m_bottomBox.setBorder(gfx::Border(0));
 
   // Top box

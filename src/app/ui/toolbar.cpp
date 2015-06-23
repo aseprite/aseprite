@@ -85,10 +85,7 @@ ToolBar::ToolBar()
 {
   m_instance = this;
 
-  this->border_width.l = 1*guiscale();
-  this->border_width.t = 0;
-  this->border_width.r = 1*guiscale();
-  this->border_width.b = 0;
+  setBorder(gfx::Border(1*guiscale(), 0, 1*guiscale(), 0));
 
   m_hotTool = NULL;
   m_hotIndex = NoneIndex;
@@ -296,8 +293,8 @@ bool ToolBar::onProcessMessage(Message* msg)
 void ToolBar::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size iconsize = getToolIconSize(this);
-  iconsize.w += this->border_width.l + this->border_width.r;
-  iconsize.h += this->border_width.t + this->border_width.b;
+  iconsize.w += border().width();
+  iconsize.h += border().height();
   ev.setPreferredSize(iconsize);
 }
 
@@ -442,7 +439,7 @@ void ToolBar::openPopupWindow(int group_index, ToolGroup* tool_group)
   for (ToolIterator it = toolbox->begin(); it != toolbox->end(); ++it) {
     Tool* tool = *it;
     if (tool->getGroup() == tool_group)
-      w += getBounds().w-this->border_width.l-this->border_width.r-1;
+      w += getBounds().w-border().width()-1;
   }
 
   rc.x -= w;
@@ -469,7 +466,7 @@ Rect ToolBar::getToolGroupBounds(int group_index)
   int groups = toolbox->getGroupsCount();
   Size iconsize = getToolIconSize(this);
   Rect rc(getBounds());
-  rc.shrink(getBorder());
+  rc.shrink(border());
 
   switch (group_index) {
 

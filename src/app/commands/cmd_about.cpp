@@ -80,11 +80,12 @@ void AboutCommand::onExecute(Context* context)
   box1->addChild(grid);
   window->addChild(box1);
 
-  close_button->setBorder(gfx::Border(
-      close_button->border_width.l + 16*guiscale(),
-      close_button->border_width.t,
-      close_button->border_width.r + 16*guiscale(),
-      close_button->border_width.b));
+  close_button->setBorder(
+    gfx::Border(
+      close_button->border().left() + 16*guiscale(),
+      close_button->border().top(),
+      close_button->border().right() + 16*guiscale(),
+      close_button->border().bottom()));
 
   close_button->Click.connect(Bind<void>(&Window::closeWindow, window.get(), close_button));
 

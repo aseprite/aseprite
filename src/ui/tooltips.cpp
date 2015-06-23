@@ -225,11 +225,11 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
   ScreenGraphics g;
   g.setFont(getFont());
   Size resultSize = g.fitString(getText(),
-                                (getClientBounds() - getBorder()).w,
+                                (getClientBounds() - border()).w,
                                 getAlign());
 
-  resultSize.w += this->border_width.l + this->border_width.r;
-  resultSize.h += this->border_width.t + this->border_width.b;
+  resultSize.w += border().width();
+  resultSize.h += border().height();
 
   if (!getChildren().empty()) {
     Size maxSize(0, 0);
@@ -244,7 +244,7 @@ void TipWindow::onPreferredSize(PreferredSizeEvent& ev)
       maxSize.h = MAX(maxSize.h, reqSize.h);
     }
 
-    resultSize.w = MAX(resultSize.w, border_width.l + maxSize.w + border_width.r);
+    resultSize.w = MAX(resultSize.w, maxSize.w + border().width());
     resultSize.h += maxSize.h;
   }
 
@@ -255,10 +255,11 @@ void TipWindow::onInitTheme(InitThemeEvent& ev)
 {
   Window::onInitTheme(ev);
 
-  this->border_width.l = 6 * guiscale();
-  this->border_width.t = 6 * guiscale();
-  this->border_width.r = 6 * guiscale();
-  this->border_width.b = 7 * guiscale();
+  setBorder(
+    gfx::Border(6 * guiscale(),
+                6 * guiscale(),
+                6 * guiscale(),
+                7 * guiscale()));
 
   // Setup the background color.
   setBgColor(gfx::rgba(255, 255, 200));

@@ -46,8 +46,7 @@ HomeView::HomeView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());
-
-  child_spacing = 8 * guiscale();
+  setChildSpacing(8 * guiscale());
 
   newFile()->Click.connect(Bind(&HomeView::onNewFile, this));
   openFile()->Click.connect(Bind(&HomeView::onOpenFile, this));

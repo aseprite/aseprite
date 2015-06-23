@@ -44,12 +44,6 @@ namespace ui {
 
   class Widget : public Component {
   public:
-    struct {
-      int l, t, r, b;
-    } border_width;               // Border separation with the parent
-    int child_spacing;            // Separation between children
-
-  public:
 
     // ===============================================================
     // CTOR & DTOR
@@ -258,8 +252,11 @@ namespace ui {
     void setMinSize(const gfx::Size& sz);
     void setMaxSize(const gfx::Size& sz);
 
-    gfx::Border getBorder() const;
+    const gfx::Border& border() const { return m_border; }
     void setBorder(const gfx::Border& border);
+
+    int childSpacing() const { return m_childSpacing; }
+    void setChildSpacing(int childSpacing);
 
     void noBorderNoChildSpacing();
 
@@ -396,6 +393,9 @@ namespace ui {
 
     // Widget size limits
     gfx::Size m_minSize, m_maxSize;
+
+    gfx::Border m_border;       // Border separation with the parent
+    int m_childSpacing;         // Separation between children
   };
 
   WidgetType register_widget_type();

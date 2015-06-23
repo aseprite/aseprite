@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -64,8 +64,8 @@ void Panel::onPreferredSize(PreferredSizeEvent& ev)
     maxSize.w = MAX(maxSize.w, getTextWidth());
 
   ev.setPreferredSize(
-    this->border_width.l + maxSize.w + this->border_width.r,
-    this->border_width.t + maxSize.h + this->border_width.b);
+    maxSize.w + border().width(),
+    maxSize.h + border().height());
 }
 
 } // namespace ui

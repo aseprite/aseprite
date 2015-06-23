@@ -117,7 +117,7 @@ ColorBar::ColorBar(int align)
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
   setBorder(gfx::Border(2*guiscale(), 0, 0, 0));
-  child_spacing = 2*guiscale();
+  setChildSpacing(2*guiscale());
 
   m_paletteView.setColumns(8);
   m_fgColor.setPreferredSize(0, m_fgColor.getPreferredSize().h);

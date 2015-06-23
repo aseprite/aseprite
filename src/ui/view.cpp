@@ -60,17 +60,13 @@ void View::makeVisibleAllScrollableArea()
 
   setMinSize(
     gfx::Size(
-      + this->border_width.l
-      + m_viewport.border_width.l
       + reqSize.w
-      + m_viewport.border_width.r
-      + this->border_width.r,
+      + m_viewport.border().width()
+      + border().width(),
 
-      + this->border_width.t
-      + m_viewport.border_width.t
       + reqSize.h
-      + m_viewport.border_width.b
-      + this->border_width.b));
+      + m_viewport.border().height()
+      + border().height()));
 }
 
 void View::hideScrollBars()
@@ -93,11 +89,11 @@ Size View::getScrollableSize()
 
 void View::setScrollableSize(const Size& sz)
 {
-#define CHECK(w, h, l, t, r, b)                                 \
+#define CHECK(w, h, width)                                      \
   ((sz.w > (m_viewport.getBounds().w                            \
-            - m_viewport.border_width.l                         \
-            - m_viewport.border_width.r)) &&                    \
-   (VBAR_SIZE < pos.w) && (HBAR_SIZE < pos.h))
+            - m_viewport.border().width())) &&                  \
+   (VBAR_SIZE < pos.w) &&                                       \
+   (HBAR_SIZE < pos.h))
 
   m_scrollbar_h.setSize(sz.w);
   m_scrollbar_v.setSize(sz.h);
@@ -109,13 +105,13 @@ void View::setScrollableSize(const Size& sz)
   if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
 
   if (m_hasBars) {
-    if (CHECK(w, h, l, t, r, b)) {
+    if (CHECK(w, h, width)) {
       pos.h -= HBAR_SIZE;
       addChild(&m_scrollbar_h);
 
-      if (CHECK(h, w, t, l, b, r)) {
+      if (CHECK(h, w, height)) {
         pos.w -= VBAR_SIZE;
-        if (CHECK(w, h, l, t, r, b))
+        if (CHECK(w, h, width))
           addChild(&m_scrollbar_v);
         else {
           pos.w += VBAR_SIZE;
@@ -124,13 +120,13 @@ void View::setScrollableSize(const Size& sz)
         }
       }
     }
-    else if (CHECK(h, w, t, l, b, r)) {
+    else if (CHECK(h, w, height)) {
       pos.w -= VBAR_SIZE;
       addChild(&m_scrollbar_v);
 
-      if (CHECK(w, h, l, t, r, b)) {
+      if (CHECK(w, h, width)) {
         pos.h -= HBAR_SIZE;
-        if (CHECK(h, w, t, l, b, r))
+        if (CHECK(h, w, height))
           addChild(&m_scrollbar_h);
         else {
           pos.w += VBAR_SIZE;
@@ -163,8 +159,8 @@ void View::setScrollableSize(const Size& sz)
 
 Size View::getVisibleSize()
 {
-  return Size(m_viewport.getBounds().w - m_viewport.border_width.l - m_viewport.border_width.r,
-              m_viewport.getBounds().h - m_viewport.border_width.t - m_viewport.border_width.b);
+  return Size(m_viewport.getBounds().w - m_viewport.border().width(),
+              m_viewport.getBounds().h - m_viewport.border().height());
 }
 
 Point View::getViewScroll()
@@ -222,7 +218,7 @@ Viewport* View::getViewport()
 
 Rect View::getViewportBounds()
 {
-  return m_viewport.getBounds() - m_viewport.getBorder();
+  return m_viewport.getBounds() - m_viewport.border();
 }
 
 // static
@@ -265,8 +261,8 @@ void View::onResize(ResizeEvent& ev)
 void View::onPreferredSize(PreferredSizeEvent& ev)
 {
   Size viewSize = m_viewport.getPreferredSize();
-  viewSize.w += this->border_width.l + this->border_width.r;
-  viewSize.h += this->border_width.t + this->border_width.b;
+  viewSize.w += border().width();
+  viewSize.h += border().height();
   ev.setPreferredSize(viewSize);
 }
 

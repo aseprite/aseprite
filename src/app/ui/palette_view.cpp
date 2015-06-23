@@ -71,9 +71,8 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
   setFocusStop(true);
   setDoubleBuffered(true);
 
-  this->border_width.l = this->border_width.r = 1 * guiscale();
-  this->border_width.t = this->border_width.b = 1 * guiscale();
-  this->child_spacing = 1 * guiscale();
+  setBorder(gfx::Border(1 * guiscale()));
+  setChildSpacing(1 * guiscale());
 
   m_conn = App::instance()->PaletteChange.connect(&PaletteView::onAppPaletteChange, this);
 }
@@ -528,8 +527,8 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
     View* view = View::getView(this);
     if (view) {
       int columns =
-        (view->getViewportBounds().w-this->child_spacing*2)
-        / (m_boxsize+this->child_spacing);
+        (view->getViewportBounds().w-this->childSpacing()*2)
+        / (m_boxsize+this->childSpacing());
       setColumns(MID(1, columns, currentPalette()->size()));
     }
     m_isUpdatingColumns = false;
@@ -556,11 +555,8 @@ void PaletteView::request_size(int* w, int* h)
   int cols = m_columns;
   int rows = d.quot + ((d.rem)? 1: 0);
 
-  *w = this->border_width.l + this->border_width.r +
-    + cols*m_boxsize + (cols-1)*this->child_spacing;
-
-  *h = this->border_width.t + this->border_width.b +
-    + rows*m_boxsize + (rows-1)*this->child_spacing;
+  *w = border().width() + cols*m_boxsize + (cols-1)*childSpacing();
+  *h = border().height() + rows*m_boxsize + (rows-1)*childSpacing();
 }
 
 void PaletteView::update_scroll(int color)
@@ -579,8 +575,8 @@ void PaletteView::update_scroll(int color)
   d = div(currentPalette()->size(), m_columns);
   cols = m_columns;
 
-  y = (m_boxsize+this->child_spacing) * (color / cols);
-  x = (m_boxsize+this->child_spacing) * (color % cols);
+  y = (m_boxsize+childSpacing()) * (color / cols);
+  x = (m_boxsize+childSpacing()) * (color % cols);
 
   if (scroll.x > x)
     scroll.x = x;
@@ -612,8 +608,8 @@ gfx::Rect PaletteView::getPaletteEntryBounds(int index) const
   int row = index / cols;
 
   return gfx::Rect(
-    bounds.x + this->border_width.l + col*(m_boxsize+this->child_spacing),
-    bounds.y + this->border_width.t + row*(m_boxsize+this->child_spacing),
+    bounds.x + border().left() + col*(m_boxsize+childSpacing()),
+    bounds.y + border().top() + row*(m_boxsize+childSpacing()),
     m_boxsize, m_boxsize);
 }
 
@@ -654,8 +650,8 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
     if (i >= palette->size() && box.y2() > vp.h)
       break;
 
-    box.w += child_spacing;
-    box.h += child_spacing;
+    box.w += childSpacing();
+    box.h += childSpacing();
     if (box.contains(pos)) {
       Hit hit(Hit::COLOR, i);
       hit.after = (pos.x > box.x+box.w/2);

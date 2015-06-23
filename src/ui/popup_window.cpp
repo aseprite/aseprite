@@ -156,11 +156,11 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
 
   if (hasText())
     resultSize = g.fitString(getText(),
-                             (getClientBounds() - getBorder()).w,
+                             (getClientBounds() - border()).w,
                              getAlign());
 
-  resultSize.w += border_width.l + border_width.r;
-  resultSize.h += border_width.t + border_width.b;
+  resultSize.w += border().width();
+  resultSize.h += border().height();
 
   if (!getChildren().empty()) {
     Size maxSize(0, 0);
@@ -175,7 +175,7 @@ void PopupWindow::onPreferredSize(PreferredSizeEvent& ev)
       maxSize.h = MAX(maxSize.h, reqSize.h);
     }
 
-    resultSize.w = MAX(resultSize.w, border_width.l + maxSize.w + border_width.r);
+    resultSize.w = MAX(resultSize.w, maxSize.w + border().width());
     resultSize.h += maxSize.h;
   }
 
@@ -191,10 +191,7 @@ void PopupWindow::onInitTheme(InitThemeEvent& ev)
 {
   Widget::onInitTheme(ev);
 
-  this->border_width.l = 3 * guiscale();
-  this->border_width.t = 3 * guiscale();
-  this->border_width.r = 3 * guiscale();
-  this->border_width.b = 3 * guiscale();
+  setBorder(gfx::Border(3 * guiscale()));
 }
 
 void PopupWindow::onHitTest(HitTestEvent& ev)

@@ -50,9 +50,8 @@ ColorCurveEditor::ColorCurveEditor(ColorCurve* curve, const gfx::Rect& viewBound
   setFocusStop(true);
   setDoubleBuffered(true);
 
-  border_width.l = border_width.r = 1;
-  border_width.t = border_width.b = 1;
-  child_spacing = 0;
+  setBorder(gfx::Border(1));
+  setChildSpacing(0);
 
   m_status = STATUS_STANDBY;
 
@@ -174,8 +173,8 @@ bool ColorCurveEditor::onProcessMessage(Message* msg)
 
 void ColorCurveEditor::onPreferredSize(PreferredSizeEvent& ev)
 {
-  ev.setPreferredSize(gfx::Size(border_width.l + 1 + border_width.r,
-                                border_width.t + 1 + border_width.b));
+  ev.setPreferredSize(gfx::Size(1 + border().width(),
+                                1 + border().height()));
 }
 
 void ColorCurveEditor::onPaint(ui::PaintEvent& ev)

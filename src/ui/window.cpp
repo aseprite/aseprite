@@ -135,7 +135,7 @@ void Window::onHitTest(HitTestEvent& ev)
   if ((hasText())
       && (((x >= cpos.x) &&
            (x < cpos.x2()) &&
-           (y >= pos.y+this->border_width.b) &&
+           (y >= pos.y+border().bottom()) &&
            (y < cpos.y)))) {
     ht = HitTestCaption;
   }
@@ -449,8 +449,8 @@ void Window::onPreferredSize(PreferredSizeEvent& ev)
     if (hasText())
       maxSize.w = MAX(maxSize.w, getTextWidth());
 
-    ev.setPreferredSize(this->border_width.l + maxSize.w + this->border_width.r,
-                        this->border_width.t + maxSize.h + this->border_width.b);
+    ev.setPreferredSize(maxSize.w + border().width(),
+                        maxSize.h + border().height());
   }
 }
 
@@ -498,10 +498,10 @@ void Window::windowSetPosition(const gfx::Rect& rect)
   onWindowResize();
 }
 
-void Window::limitSize(int *w, int *h)
+void Window::limitSize(int* w, int* h)
 {
-  *w = MAX(*w, this->border_width.l+this->border_width.r);
-  *h = MAX(*h, this->border_width.t+this->border_width.b);
+  *w = MAX(*w, border().width());
+  *h = MAX(*h, border().height());
 }
 
 void Window::moveWindow(const gfx::Rect& rect, bool use_blit)

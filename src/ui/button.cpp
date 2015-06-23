@@ -279,8 +279,8 @@ void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
     m_iconInterface ? m_iconInterface->getWidth(): 0,
     m_iconInterface ? m_iconInterface->getHeight(): 0);
 
-  ev.setPreferredSize(border_width.l + box.w + border_width.r,
-                      border_width.t + box.h + border_width.b);
+  ev.setPreferredSize(box.w + border().width(),
+                      box.h + border().height());
 }
 
 void ButtonBase::onPaint(PaintEvent& ev)

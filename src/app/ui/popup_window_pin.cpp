@@ -32,7 +32,7 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
 {
   // Configure the micro check-box look without borders, only the "pin" icon is shown.
   setup_look(&m_pin, WithoutBordersLook);
-  m_pin.child_spacing = 0;
+  m_pin.setChildSpacing(0);
   m_pin.setBorder(gfx::Border(0));
 
   m_pin.Click.connect(&PopupWindowPin::onPinClick, this);

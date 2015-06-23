@@ -779,7 +779,9 @@ protected:
 ContextBar::ContextBar()
   : Box(HORIZONTAL)
 {
-  border_width.b = 2*guiscale();
+  gfx::Border border = this->border();
+  border.bottom(2*guiscale());
+  setBorder(border);
 
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
   setBgColor(theme->colors.workspace());

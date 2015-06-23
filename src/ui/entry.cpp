@@ -115,13 +115,13 @@ void Entry::setCaretPos(int pos)
   // Forward scroll
   m_scroll--;
   do {
-    x = getBounds().x + this->border_width.l;
+    x = getBounds().x + border().left();
     for (c=++m_scroll; ; c++) {
       int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
       x += getFont()->charWidth(ch);
 
-      if (x >= getBounds().x2()-this->border_width.r)
+      if (x >= getBounds().x2()-border().right())
         break;
     }
   } while (m_caret >= c);
@@ -333,12 +333,12 @@ bool Entry::onProcessMessage(Message* msg)
         else if (mousePos.x >= getBounds().x2()) {
           if (m_scroll < textlen - getAvailableTextLength()) {
             m_scroll++;
-            x = getBounds().x + this->border_width.l;
+            x = getBounds().x + border().left();
             for (c=m_scroll; utf8_begin != utf8_end; ++c) {
               int ch = (c < textlen ? *(utf8_begin+c) : ' ');
 
               x += getFont()->charWidth(ch);
-              if (x > getBounds().x2()-this->border_width.r) {
+              if (x > getBounds().x2()-border().right()) {
                 c--;
                 break;
               }
@@ -418,17 +418,15 @@ bool Entry::onProcessMessage(Message* msg)
 void Entry::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w =
-    + border_width.l
     + getFont()->charWidth('w') * MIN(m_maxsize, 6)
     + 2*guiscale()
-    + border_width.r;
+    + border().width();
 
   w = MIN(w, ui::display_w()/2);
 
   int h =
-    + border_width.t
     + getFont()->height()
-    + border_width.b;
+    + border().height();
 
   ev.setPreferredSize(w, h);
 }
@@ -459,11 +457,11 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
   int textlen = base::utf8_length(getText());
 
   mx = mousemsg->position().x;
-  mx = MID(getBounds().x+this->border_width.l,
+  mx = MID(getBounds().x+border().left(),
            mx,
-           getBounds().x2()-this->border_width.r-1);
+           getBounds().x2()-border().right()-1);
 
-  x = getBounds().x + this->border_width.l;
+  x = getBounds().x + border().left();
 
   base::utf8_const_iterator utf8_it =
     (m_scroll < textlen ?
@@ -472,7 +470,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   for (c=m_scroll; utf8_it != utf8_end; ++c, ++utf8_it) {
     w = getFont()->charWidth(*utf8_it);
-    if (x+w >= getBounds().x2()-this->border_width.r)
+    if (x+w >= getBounds().x2()-border().right())
       break;
     if ((mx >= x) && (mx < x+w)) {
       caret = c;
@@ -483,7 +481,7 @@ int Entry::getCaretFromMouse(MouseMessage* mousemsg)
 
   if (utf8_it == utf8_end) {
     if ((mx >= x) &&
-        (mx <= getBounds().x2()-this->border_width.r-1)) {
+        (mx <= getBounds().x2()-border().right()-1)) {
       caret = c;
     }
   }

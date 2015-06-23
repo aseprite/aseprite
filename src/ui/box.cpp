@@ -45,7 +45,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
     if (getAlign() & HOMOGENEOUS)                       \
       w *= nvis_children;                               \
                                                         \
-    w += child_spacing * (nvis_children-1);             \
+    w += childSpacing() * (nvis_children-1);            \
   }
 
   int w, h, nvis_children;
@@ -84,22 +84,22 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
     }
   }
 
-  w += border_width.l + border_width.r;
-  h += border_width.t + border_width.b;
+  w += border().width();
+  h += border().height();
 
   ev.setPreferredSize(Size(w, h));
 }
 
 void Box::onResize(ResizeEvent& ev)
 {
-#define FIXUP(x, y, w, h, l, t, r, b)                                   \
+#define FIXUP(x, y, w, h, left, top, width, height)                     \
   {                                                                     \
+    int width;                                                          \
     if (nvis_children > 0) {                                            \
       if (getAlign() & HOMOGENEOUS) {                                   \
         width = (getBounds().w                                          \
-                 - this->border_width.l                                 \
-                 - this->border_width.r                                 \
-                 - this->child_spacing * (nvis_children - 1));          \
+                 - this->border().width()                               \
+                 - this->childSpacing() * (nvis_children - 1));         \
         extra = width / nvis_children;                                  \
       }                                                                 \
       else if (nexpand_children > 0) {                                  \
@@ -111,11 +111,9 @@ void Box::onResize(ResizeEvent& ev)
         extra = 0;                                                      \
       }                                                                 \
                                                                         \
-      x = getBounds().x + this->border_width.l;                         \
-      y = getBounds().y + this->border_width.t;                         \
-      h = MAX(1, getBounds().h                                          \
-                 - this->border_width.t                                 \
-                 - this->border_width.b);                               \
+      x = getBounds().x + border().left();                              \
+      y = getBounds().y + border().top();                               \
+      h = MAX(1, getBounds().h - border().height());                    \
                                                                         \
       UI_FOREACH_WIDGET(getChildren(), it) {                            \
         child = *it;                                                    \
@@ -156,7 +154,7 @@ void Box::onResize(ResizeEvent& ev)
                                                                         \
           child->setBounds(cpos);                                       \
                                                                         \
-          x += child_width + this->child_spacing;                       \
+          x += child_width + this->childSpacing();                      \
         }                                                               \
       }                                                                 \
     }                                                                   \
@@ -166,7 +164,6 @@ void Box::onResize(ResizeEvent& ev)
   int nvis_children = 0;
   int nexpand_children = 0;
   int child_width;
-  int width;
   int extra;
   int x, y, w, h;
 
@@ -185,10 +182,10 @@ void Box::onResize(ResizeEvent& ev)
   Size reqSize = getPreferredSize();
 
   if (this->getAlign() & HORIZONTAL) {
-    FIXUP(x, y, w, h, l, t, r, b);
+    FIXUP(x, y, w, h, left, top, width, height);
   }
   else {
-    FIXUP(y, x, h, w, t, l, b, r);
+    FIXUP(y, x, h, w, top, left, height, width);
   }
 }
 

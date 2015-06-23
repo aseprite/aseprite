@@ -533,7 +533,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     widget->setBorder(gfx::Border(strtol(border, NULL, 10)*guiscale()));
 
   if (childspacing)
-    widget->child_spacing = strtol(childspacing, NULL, 10)*guiscale();
+    widget->setChildSpacing(strtol(childspacing, NULL, 10)*guiscale());
 
   gfx::Size reqSize = widget->getPreferredSize();
 

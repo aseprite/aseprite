@@ -60,8 +60,8 @@ void ListItem::onPreferredSize(PreferredSizeEvent& ev)
     maxSize.h = MAX(maxSize.h, reqSize.h);
   }
 
-  w = this->border_width.l + maxSize.w + this->border_width.r;
-  h = this->border_width.t + maxSize.h + this->border_width.b;
+  w = maxSize.w + border().width();
+  h = maxSize.h + border().height();
 
   ev.setPreferredSize(Size(w, h));
 }

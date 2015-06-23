@@ -34,8 +34,8 @@ void Label::onPreferredSize(PreferredSizeEvent& ev)
     sz.h = getTextHeight();
   }
 
-  sz.w += this->border_width.l + this->border_width.r;
-  sz.h += this->border_width.t + this->border_width.b;
+  sz.w += border().width();
+  sz.h += border().height();
 
   ev.setPreferredSize(sz);
 }

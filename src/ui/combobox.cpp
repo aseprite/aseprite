@@ -85,7 +85,7 @@ ComboBox::ComboBox()
   , m_casesensitive(true)
 {
   // TODO this separation should be from the Theme*
-  this->child_spacing = 0;
+  this->setChildSpacing(0);
 
   m_entry->setExpansive(true);
 
@@ -576,10 +576,9 @@ void ComboBox::openListBox()
   int size = getItemCount();
   viewport->setMinSize
     (gfx::Size(
-      m_button->getBounds().x2() - m_entry->getBounds().x - view->border_width.l - view->border_width.r,
-      +viewport->border_width.t
+      m_button->getBounds().x2() - m_entry->getBounds().x - view->border().width(),
       +(2*guiscale()+m_listbox->getTextHeight())*MID(1, size, 16)+
-      +viewport->border_width.b));
+      +viewport->border().height()));
 
   m_window->addChild(view);
   view->attachToView(m_listbox);
