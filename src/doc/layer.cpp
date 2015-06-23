@@ -84,8 +84,8 @@ Cel* Layer::cel(frame_t frame) const
 
 LayerImage::LayerImage(Sprite* sprite)
   : Layer(ObjectType::LayerImage, sprite)
-  , m_opacity(255)
   , m_blendmode(BlendMode::NORMAL)
+  , m_opacity(255)
 {
 }
 
