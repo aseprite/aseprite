@@ -37,8 +37,8 @@ namespace app {
 
 class SaveAsCopyDelegate : public FileSelectorDelegate {
 public:
-  SaveAsCopyDelegate(const app::Document* doc, double scale)
-    : m_doc(doc), m_resizeScale(scale) { }
+  SaveAsCopyDelegate(double scale)
+    : m_resizeScale(scale) { }
 
   bool hasResizeCombobox() override {
     return true;
@@ -53,7 +53,6 @@ public:
   }
 
 private:
-  const app::Document* m_doc;
   double m_resizeScale;
 };
 
@@ -325,7 +324,7 @@ void SaveFileCopyAsCommand::onExecute(Context* context)
 
   // show "Save As" dialog
   DocumentPreferences& docPref = Preferences::instance().document(document);
-  SaveAsCopyDelegate delegate(document, docPref.saveCopy.resizeScale());
+  SaveAsCopyDelegate delegate(docPref.saveCopy.resizeScale());
 
   // Is a default output filename in the preferences?
   if (!docPref.saveCopy.filename().empty()) {
