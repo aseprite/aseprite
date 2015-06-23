@@ -66,9 +66,7 @@ void Palette::resize(int ncolors)
 {
   ASSERT(ncolors >= 0);
 
-  int old_size = m_colors.size();
   m_colors.resize(ncolors, doc::rgba(0, 0, 0, 255));
-
   ++m_modifications;
 }
 
