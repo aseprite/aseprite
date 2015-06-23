@@ -221,10 +221,9 @@ void mouse_poller_init()
 #endif
 
   // optional mouse callback for supported platforms
-  she_mouse_polling_required = mouse_needs_poll();
-  if (!she_mouse_polling_required) {
+  she_mouse_polling_required = (mouse_needs_poll() != 0);
+  if (!she_mouse_polling_required)
     mouse_callback = she_mouse_callback;
-  }
 }
 
 void mouse_poller_generate_events()
