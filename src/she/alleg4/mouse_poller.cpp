@@ -165,7 +165,8 @@ void osx_mouser_leave_she_callback()
 
 #endif // __APPLE__
 
-void she_mouse_callback(int flags) {
+void she_mouse_callback(int flags)
+{
   update_mouse_position();
   Event ev;
   ev.setPosition(gfx::Point(she_mouse_x, she_mouse_y));
