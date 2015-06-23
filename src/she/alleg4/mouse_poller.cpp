@@ -199,7 +199,7 @@ void she_mouse_callback(int flags) {
   // mouse wheel
   if (flags & MOUSE_FLAG_MOVE_Z) {
     ev.setType(Event::MouseWheel);
-    ev.setWheelDelta(gfx::Point(0, she_mouse_z - mouse_z));
+    ev.setWheelDelta(gfx::Point(0, int(she_mouse_z - mouse_z)));
     queue_event(ev);
     she_mouse_z = mouse_z;
   }
