@@ -151,9 +151,9 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   relSlider->setExpansive(true);
   relSlider->setVisible(false);
 
-  m_grid.addChildInCell(label,  1, 1, JI_LEFT | JI_MIDDLE);
-  m_grid.addChildInCell(box, 1, 1, JI_HORIZONTAL | JI_VERTICAL | JI_EXPANSIVE);
-  m_grid.addChildInCell(entry,  1, 1, JI_LEFT | JI_MIDDLE);
+  m_grid.addChildInCell(label,  1, 1, LEFT | MIDDLE);
+  m_grid.addChildInCell(box, 1, 1, HORIZONTAL | VERTICAL | EXPANSIVE);
+  m_grid.addChildInCell(entry,  1, 1, LEFT | MIDDLE);
 }
 
 void ColorSliders::setAbsSliderValue(int sliderIndex, int value)

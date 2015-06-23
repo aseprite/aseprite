@@ -60,8 +60,8 @@ protected:
 };
 
 DevConsoleView::DevConsoleView()
-  : Box(JI_VERTICAL)
-  , m_textBox("Welcome to Aseprite JavaScript Console\n(Experimental)", JI_LEFT)
+  : Box(VERTICAL)
+  , m_textBox("Welcome to Aseprite JavaScript Console\n(Experimental)", LEFT)
   , m_label(">")
   , m_entry(new CommmandEntry)
   , m_engine(this)

@@ -564,7 +564,7 @@ public:
   }
 
   int getIconAlign() override {
-    return JI_CENTER | JI_MIDDLE;
+    return CENTER | MIDDLE;
   }
 
 protected:
@@ -605,9 +605,9 @@ private:
     m_freehandAlgoButton->setTransparent(true);
     m_freehandAlgoButton->setBgColor(gfx::ColorNone);
 
-    m_tooltipManager->addTooltipFor(at(0), "Normal trace", JI_TOP);
-    m_tooltipManager->addTooltipFor(at(1), "Pixel-perfect trace", JI_TOP);
-    m_tooltipManager->addTooltipFor(at(2), "Dots", JI_TOP);
+    m_tooltipManager->addTooltipFor(at(0), "Normal trace", TOP);
+    m_tooltipManager->addTooltipFor(at(1), "Pixel-perfect trace", TOP);
+    m_tooltipManager->addTooltipFor(at(2), "Dots", TOP);
 
     m_popupWindow->addChild(m_freehandAlgoButton);
     m_popupWindow->openWindow();
@@ -694,9 +694,9 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Replace selection", JI_BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Add to selection\n(Shift)", JI_BOTTOM);
-    tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(0), "Replace selection", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Add to selection\n(Shift)", BOTTOM);
+    tooltipManager->addTooltipFor(at(2), "Subtract from selection\n(Shift+Alt)", BOTTOM);
   }
 
   void setSelectionMode(SelectionMode mode) {
@@ -725,8 +725,8 @@ public:
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
-    tooltipManager->addTooltipFor(at(0), "Drop pixels here", JI_BOTTOM);
-    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", JI_BOTTOM);
+    tooltipManager->addTooltipFor(at(0), "Drop pixels here", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Cancel drag and drop", BOTTOM);
   }
 
   Signal1<void, ContextBarObserver::DropAction> DropPixels;
@@ -777,7 +777,7 @@ protected:
 };
 
 ContextBar::ContextBar()
-  : Box(JI_HORIZONTAL)
+  : Box(HORIZONTAL)
 {
   border_width.b = 2*guiscale();
 
@@ -835,20 +835,20 @@ ContextBar::ContextBar()
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
-  tooltipManager->addTooltipFor(m_brushType, "Brush Type", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_brushType, "Brush Type", BOTTOM);
+  tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
+  tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", BOTTOM);
+  tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
+  tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
+  tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
+  tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
+  tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_grabAlpha,
     "When checked the tool picks the color from the active layer, and its alpha\n"
     "component is used to setup the opacity level of all drawing tools.\n\n"
     "When unchecked -the default behavior- the color is picked\n"
-    "from the composition of all sprite layers.", JI_LEFT | JI_TOP);
+    "from the composition of all sprite layers.", LEFT | TOP);
 
   m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);

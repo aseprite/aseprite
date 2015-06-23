@@ -31,7 +31,7 @@ DropDownButton::DropDownButton(const char* text)
   setup_look(m_dropDown, RightButtonLook);
 
   m_button->setExpansive(true);
-  m_button->setAlign(JI_LEFT | JI_MIDDLE);
+  m_button->setAlign(LEFT | MIDDLE);
   m_button->Click.connect(&DropDownButton::onButtonClick, this);
   m_dropDown->Click.connect(&DropDownButton::onDropDownButtonClick, this);
 
@@ -45,7 +45,7 @@ DropDownButton::DropDownButton(const char* text)
                         PART_COMBOBOX_ARROW_DOWN,
                         PART_COMBOBOX_ARROW_DOWN_SELECTED,
                         PART_COMBOBOX_ARROW_DOWN_DISABLED,
-                        JI_CENTER | JI_MIDDLE));
+                        CENTER | MIDDLE));
 }
 
 void DropDownButton::onButtonClick(Event& ev)

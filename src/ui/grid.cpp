@@ -70,17 +70,17 @@ Grid::~Grid()
  * @param align
  * It's a combination of the following values:
  *
- * - JI_HORIZONTAL: The widget'll get excess horizontal space.
- * - JI_VERTICAL: The widget'll get excess vertical space.
+ * - HORIZONTAL: The widget'll get excess horizontal space.
+ * - VERTICAL: The widget'll get excess vertical space.
  *
- * - JI_LEFT: Sets horizontal alignment to the beginning of cell.
- * - JI_CENTER: Sets horizontal alignment to the center of cell.
- * - JI_RIGHT: Sets horizontal alignment to the end of cell.
+ * - LEFT: Sets horizontal alignment to the beginning of cell.
+ * - CENTER: Sets horizontal alignment to the center of cell.
+ * - RIGHT: Sets horizontal alignment to the end of cell.
  * - None: Uses the whole horizontal space of the cell.
  *
- * - JI_TOP: Sets vertical alignment to the beginning of the cell.
- * - JI_MIDDLE: Sets vertical alignment to the center of the cell.
- * - JI_BOTTOM: Sets vertical alignment to the end of the cell.
+ * - TOP: Sets vertical alignment to the beginning of the cell.
+ * - MIDDLE: Sets vertical alignment to the center of the cell.
+ * - BOTTOM: Sets vertical alignment to the end of the cell.
  * - None: Uses the whole vertical space of the cell.
  */
 void Grid::addChildInCell(Widget* child, int hspan, int vspan, int align)
@@ -139,7 +139,7 @@ void Grid::onResize(ResizeEvent& ev)
 
       if (cell->child != NULL &&
           cell->parent == NULL &&
-          !(cell->child->flags & JI_HIDDEN)) {
+          !(cell->child->flags & HIDDEN)) {
         x = pos_x;
         y = pos_y;
 
@@ -148,26 +148,26 @@ void Grid::onResize(ResizeEvent& ev)
 
         reqSize = cell->child->getPreferredSize();
 
-        if (cell->align & JI_LEFT) {
+        if (cell->align & LEFT) {
           w = reqSize.w;
         }
-        else if (cell->align & JI_CENTER) {
+        else if (cell->align & CENTER) {
           x += w/2 - reqSize.w/2;
           w = reqSize.w;
         }
-        else if (cell->align & JI_RIGHT) {
+        else if (cell->align & RIGHT) {
           x += w - reqSize.w;
           w = reqSize.w;
         }
 
-        if (cell->align & JI_TOP) {
+        if (cell->align & TOP) {
           h = reqSize.h;
         }
-        else if (cell->align & JI_MIDDLE) {
+        else if (cell->align & MIDDLE) {
           y += h/2 - reqSize.h/2;
           h = reqSize.h;
         }
-        else if (cell->align & JI_BOTTOM) {
+        else if (cell->align & BOTTOM) {
           y += h - reqSize.h;
           h = reqSize.h;
         }
@@ -247,8 +247,8 @@ void Grid::calculateSize()
   if (m_rowstrip.size() == 0)
     return;
 
-  calculateStripSize(m_colstrip, m_rowstrip, JI_HORIZONTAL);
-  calculateStripSize(m_rowstrip, m_colstrip, JI_VERTICAL);
+  calculateStripSize(m_colstrip, m_rowstrip, HORIZONTAL);
+  calculateStripSize(m_rowstrip, m_colstrip, VERTICAL);
 
   expandStrip(m_colstrip, m_rowstrip, &Grid::incColSize);
   expandStrip(m_rowstrip, m_colstrip, &Grid::incRowSize);
@@ -285,7 +285,7 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
       if (cell->child != NULL) {
         if (cell->parent == NULL) {
           // If the widget isn't hidden then we can request its size
-          if (!(cell->child->flags & JI_HIDDEN)) {
+          if (!(cell->child->flags & HIDDEN)) {
             Size reqSize = cell->child->getPreferredSize();
             cell->w = reqSize.w - (cell->hspan-1) * this->child_spacing;
             cell->h = reqSize.h - (cell->vspan-1) * this->child_spacing;
@@ -297,7 +297,7 @@ void Grid::calculateStripSize(std::vector<Strip>& colstrip,
             cell->w = cell->h = 0;
         }
         else {
-          if (!(cell->child->flags & JI_HIDDEN)) {
+          if (!(cell->child->flags & HIDDEN)) {
             if ((cell->parent->align & align) == align)
               ++expand_count;
           }

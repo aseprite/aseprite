@@ -99,14 +99,14 @@ void CelPropertiesCommand::onExecute(Context* context)
       tooltipManager->addTooltipFor(slider_opacity,
         "The `Background' layer is opaque,\n"
         "its opacity can't be changed.",
-        JI_LEFT);
+        LEFT);
     }
     else if (sprite->pixelFormat() == IMAGE_INDEXED) {
       slider_opacity->setEnabled(false);
       tooltipManager->addTooltipFor(slider_opacity,
         "Cel opacity of Indexed images\n"
         "cannot be changed.",
-        JI_LEFT);
+        LEFT);
     }
   }
   else {

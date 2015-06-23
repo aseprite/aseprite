@@ -114,7 +114,7 @@ void drawTextBox(Graphics* g, Widget* widget,
   chr = 0;
 
   // Without word-wrap
-  if (!(widget->getAlign() & JI_WORDWRAP)) {
+  if (!(widget->getAlign() & WORDWRAP)) {
     width = widget->getClientBounds().w;
   }
   // With word-wrap
@@ -147,7 +147,7 @@ void drawTextBox(Graphics* g, Widget* widget,
     x = x1 - scroll.x;
 
     // Without word-wrap
-    if (!(widget->getAlign() & JI_WORDWRAP)) {
+    if (!(widget->getAlign() & WORDWRAP)) {
       end = std::strchr(beg, '\n');
       if (end) {
         chr = *end;
@@ -197,9 +197,9 @@ void drawTextBox(Graphics* g, Widget* widget,
     if (g) {
       int xout;
 
-      if (widget->getAlign() & JI_CENTER)
+      if (widget->getAlign() & CENTER)
         xout = x + width/2 - len/2;
-      else if (widget->getAlign() & JI_RIGHT)
+      else if (widget->getAlign() & RIGHT)
         xout = x + width - len;
       else                      // Left align
         xout = x;

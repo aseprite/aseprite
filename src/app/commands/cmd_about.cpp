@@ -37,20 +37,20 @@ AboutCommand::AboutCommand()
 void AboutCommand::onExecute(Context* context)
 {
   base::UniquePtr<Window> window(new Window(Window::WithTitleBar, "About " PACKAGE));
-  Box* box1 = new Box(JI_VERTICAL);
+  Box* box1 = new Box(VERTICAL);
   Grid* grid = new Grid(2, false);
   Label* title = new Label(PACKAGE " v" VERSION);
   Label* subtitle = new Label("Animated sprite editor & pixel art tool");
-  Separator* authors_separator1 = new Separator("Authors:", JI_HORIZONTAL | JI_TOP);
-  Separator* authors_separator2 = new Separator("", JI_HORIZONTAL);
+  Separator* authors_separator1 = new Separator("Authors:", HORIZONTAL | TOP);
+  Separator* authors_separator2 = new Separator("", HORIZONTAL);
   Label* author1 = new LinkLabel("http://davidcapello.com/", "David Capello");
   Label* author1_desc = new Label("- Lead developer, graphics & maintainer");
   Label* author2 = new LinkLabel("http://ilkke.blogspot.com/", "Ilija Melentijevic");
   Label* author2_desc = new Label("- Default skin & graphics introduced in v0.8");
   Label* author3 = new LinkLabel(WEBSITE_CONTRIBUTORS, "Contributors");
-  Box* bottom_box1 = new Box(JI_HORIZONTAL);
-  Box* bottom_box2 = new Box(JI_HORIZONTAL);
-  Box* bottom_box3 = new Box(JI_HORIZONTAL);
+  Box* bottom_box1 = new Box(HORIZONTAL);
+  Box* bottom_box2 = new Box(HORIZONTAL);
+  Box* bottom_box3 = new Box(HORIZONTAL);
   Label* copyright = new Label(COPYRIGHT);
   Label* website = new LinkLabel(WEBSITE);
   Button* close_button = new Button("&Close");

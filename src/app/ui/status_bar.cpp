@@ -160,8 +160,8 @@ StatusBar::StatusBar()
 
   // Construct the commands box
   {
-    Box* box1 = new Box(JI_HORIZONTAL);
-    Box* box4 = new Box(JI_HORIZONTAL);
+    Box* box1 = new Box(HORIZONTAL);
+    Box* box4 = new Box(HORIZONTAL);
 
     m_frameLabel = new Label("Frame:");
     m_currentFrame = new GotoFrameEntry();
@@ -192,8 +192,8 @@ StatusBar::StatusBar()
   // Tooltips manager
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
-  tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_slider, "Cel Opacity", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
+  tooltipManager->addTooltipFor(m_slider, "Cel Opacity", BOTTOM);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
     Bind<void>(&StatusBar::onCurrentToolChange, this));

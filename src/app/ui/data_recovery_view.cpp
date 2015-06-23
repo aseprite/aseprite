@@ -133,7 +133,7 @@ private:
 } // anonymous namespace
 
 DataRecoveryView::DataRecoveryView(crash::DataRecovery* dataRecovery)
-  : Box(JI_VERTICAL)
+  : Box(VERTICAL)
   , m_dataRecovery(dataRecovery)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());

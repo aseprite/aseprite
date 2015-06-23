@@ -72,7 +72,7 @@ protected:
         deleteAllItem.Click.connect(&Item::onDeleteAllBrushes, this);
         menu.addChild(&lockItem);
         menu.addChild(&deleteItem);
-        menu.addChild(new Separator("", JI_HORIZONTAL));
+        menu.addChild(new Separator("", HORIZONTAL));
         menu.addChild(&deleteAllItem);
 
         // Here we make the popup window temporaly floating, so it's
@@ -173,7 +173,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
       std::string tooltip;
       tooltip += "Shortcut: ";
       tooltip += key->accels().front().toString();
-      m_tooltipManager->addTooltipFor(item, tooltip, JI_TOP);
+      m_tooltipManager->addTooltipFor(item, tooltip, TOP);
     }
     slot++;
   }

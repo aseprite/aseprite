@@ -30,7 +30,7 @@ using namespace ui;
 using namespace app::skin;
 
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
-  : Box(JI_VERTICAL)
+  : Box(VERTICAL)
   , m_target(0)
 {
 #define ADD(box, widget, hook)                                          \
@@ -49,7 +49,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   CheckBox* index = NULL;
   Button* images = NULL;
 
-  hbox = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  hbox = new Box(HORIZONTAL | HOMOGENEOUS);
 
   this->noBorderNoChildSpacing();
   hbox->noBorderNoChildSpacing();
@@ -96,7 +96,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   set_gfxicon_to_button(images,
                         getTargetNormalIcon(),
                         getTargetSelectedIcon(), -1,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
 
   // Make hierarchy
   ADD(hbox, r, onChannelChange);
@@ -175,7 +175,7 @@ void FilterTargetButtons::onImagesChange(ButtonBase* button)
   set_gfxicon_to_button(button,
                         getTargetNormalIcon(),
                         getTargetSelectedIcon(), -1,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
 
   TargetChange();
 }

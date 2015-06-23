@@ -162,7 +162,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
           labels.push_back(label);
         }
         else if (separator) {
-          labels.push_back(new Separator("", JI_HORIZONTAL));
+          labels.push_back(new Separator("", HORIZONTAL));
         }
         else if (button) {
           char buttonId[256];
@@ -188,9 +188,9 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
         align = 0;
 
         switch (buf[c]) {
-          case '<': label=true; align=JI_LEFT; break;
-          case '=': label=true; align=JI_CENTER; break;
-          case '>': label=true; align=JI_RIGHT; break;
+          case '<': label=true; align=LEFT; break;
+          case '=': label=true; align=CENTER; break;
+          case '>': label=true; align=RIGHT; break;
           case '-': separator=true; break;
           case '|': button=true; break;
         }
@@ -199,10 +199,10 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
     }
   }
 
-  box1 = new Box(JI_VERTICAL);
-  box2 = new Box(JI_VERTICAL);
+  box1 = new Box(VERTICAL);
+  box2 = new Box(VERTICAL);
   grid = new Grid(1, false);
-  box3 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  box3 = new Box(HORIZONTAL | HOMOGENEOUS);
 
   // To identify by the user
   box2->setId("labels");
@@ -229,7 +229,7 @@ void Alert::processString(char* buf, std::vector<Widget*>& labels, std::vector<W
   box1->addChild(box5); // Filler
   box1->addChild(grid); // Buttons
 
-  grid->addChildInCell(box3, 1, 1, JI_CENTER | JI_BOTTOM);
+  grid->addChildInCell(box3, 1, 1, CENTER | BOTTOM);
 
   for (std::vector<Widget*>::iterator it = labels.begin(); it != labels.end(); ++it)
     box2->addChild(*it);

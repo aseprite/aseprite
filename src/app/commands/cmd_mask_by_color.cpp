@@ -96,10 +96,10 @@ void MaskByColorCommand::onExecute(Context* context)
     return;
 
   m_window = new Window(Window::WithTitleBar, "Mask by Color");
-  box1 = new Box(JI_VERTICAL);
-  box2 = new Box(JI_HORIZONTAL);
-  box3 = new Box(JI_HORIZONTAL);
-  box4 = new Box(JI_HORIZONTAL | JI_HOMOGENEOUS);
+  box1 = new Box(VERTICAL);
+  box2 = new Box(HORIZONTAL);
+  box3 = new Box(HORIZONTAL);
+  box4 = new Box(HORIZONTAL | HOMOGENEOUS);
   label_color = new Label("Color:");
   m_buttonColor = new ColorButton
    (get_config_color("MaskColor", "Color",

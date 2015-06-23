@@ -552,7 +552,7 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
   Point arrow = tool ? getToolPositionInGroup(group_index, tool): Point(0, 0);
 
   m_tipWindow = new TipWindow(tooltip.c_str(), gfx::Rect(arrow, toolrc.getSize()));
-  m_tipWindow->setArrowAlign(JI_TOP | JI_RIGHT);
+  m_tipWindow->setArrowAlign(TOP | RIGHT);
   m_tipWindow->remapWindow();
 
   int w = m_tipWindow->getBounds().w;

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -32,7 +32,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
 {
 #define GET_CHILD_SIZE(w, h)                    \
   {                                             \
-    if (getAlign() & JI_HOMOGENEOUS)            \
+    if (getAlign() & HOMOGENEOUS)               \
       w = MAX(w, reqSize.w);                    \
     else                                        \
       w += reqSize.w;                           \
@@ -42,7 +42,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
 
 #define FINAL_SIZE(w)                                   \
   {                                                     \
-    if (getAlign() & JI_HOMOGENEOUS)                    \
+    if (getAlign() & HOMOGENEOUS)                       \
       w *= nvis_children;                               \
                                                         \
     w += child_spacing * (nvis_children-1);             \
@@ -53,7 +53,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   nvis_children = 0;
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
-    if (!(child->flags & JI_HIDDEN))
+    if (!(child->flags & HIDDEN))
       nvis_children++;
   }
 
@@ -62,12 +62,12 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   UI_FOREACH_WIDGET(getChildren(), it) {
     Widget* child = *it;
 
-    if (child->flags & JI_HIDDEN)
+    if (child->flags & HIDDEN)
       continue;
 
     Size reqSize = child->getPreferredSize();
 
-    if (this->getAlign() & JI_HORIZONTAL) {
+    if (this->getAlign() & HORIZONTAL) {
       GET_CHILD_SIZE(w, h);
     }
     else {
@@ -76,7 +76,7 @@ void Box::onPreferredSize(PreferredSizeEvent& ev)
   }
 
   if (nvis_children > 0) {
-    if (this->getAlign() & JI_HORIZONTAL) {
+    if (this->getAlign() & HORIZONTAL) {
       FINAL_SIZE(w);
     }
     else {
@@ -95,7 +95,7 @@ void Box::onResize(ResizeEvent& ev)
 #define FIXUP(x, y, w, h, l, t, r, b)                                   \
   {                                                                     \
     if (nvis_children > 0) {                                            \
-      if (getAlign() & JI_HOMOGENEOUS) {                                \
+      if (getAlign() & HOMOGENEOUS) {                                   \
         width = (getBounds().w                                          \
                  - this->border_width.l                                 \
                  - this->border_width.r                                 \
@@ -120,8 +120,8 @@ void Box::onResize(ResizeEvent& ev)
       UI_FOREACH_WIDGET(getChildren(), it) {                            \
         child = *it;                                                    \
                                                                         \
-        if (!(child->flags & JI_HIDDEN)) {                              \
-          if (this->getAlign() & JI_HOMOGENEOUS) {                      \
+        if (!(child->flags & HIDDEN)) {                                 \
+          if (this->getAlign() & HOMOGENEOUS) {                         \
             if (nvis_children == 1)                                     \
               child_width = width;                                      \
             else                                                        \
@@ -149,7 +149,7 @@ void Box::onResize(ResizeEvent& ev)
           w = MAX(1, child_width);                                      \
                                                                         \
           gfx::Rect cpos;                                               \
-          if (getAlign() & JI_HORIZONTAL)                               \
+          if (getAlign() & HORIZONTAL)                                  \
             cpos = gfx::Rect(x, y, w, h);                               \
           else                                                          \
             cpos = gfx::Rect(y, x, h, w);                               \
@@ -169,13 +169,13 @@ void Box::onResize(ResizeEvent& ev)
   int width;
   int extra;
   int x, y, w, h;
-  
+
   setBoundsQuietly(ev.getBounds());
 
   UI_FOREACH_WIDGET(getChildren(), it) {
     child = *it;
 
-    if (!(child->flags & JI_HIDDEN)) {
+    if (!(child->flags & HIDDEN)) {
       nvis_children++;
       if (child->isExpansive())
         nexpand_children++;
@@ -184,7 +184,7 @@ void Box::onResize(ResizeEvent& ev)
 
   Size reqSize = getPreferredSize();
 
-  if (this->getAlign() & JI_HORIZONTAL) {
+  if (this->getAlign() & HORIZONTAL) {
     FIXUP(x, y, w, h, l, t, r, b);
   }
   else {

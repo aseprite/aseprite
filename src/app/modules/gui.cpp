@@ -331,7 +331,7 @@ CheckBox* check_button_new(const char *text, int b1, int b2, int b3, int b4)
 {
   CheckBox* widget = new CheckBox(text, kButtonWidget);
 
-  widget->setAlign(JI_CENTER | JI_MIDDLE);
+  widget->setAlign(CENTER | MIDDLE);
 
   setup_mini_look(widget);
   setup_bevels(widget, b1, b2, b3, b4);

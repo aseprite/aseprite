@@ -62,7 +62,7 @@ bool Splitter::onProcessMessage(Message* msg)
 
             ++bar;
 
-            if (this->getAlign() & JI_HORIZONTAL) {
+            if (this->getAlign() & HORIZONTAL) {
               x1 = c1->getBounds().x2();
               y1 = getBounds().y;
               x2 = c2->getBounds().x;
@@ -95,7 +95,7 @@ bool Splitter::onProcessMessage(Message* msg)
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
 
-        if (getAlign() & JI_HORIZONTAL) {
+        if (getAlign() & HORIZONTAL) {
           switch (m_type) {
             case ByPercentage:
               m_pos = 100.0 * (mousePos.x - getBounds().x) / getBounds().w;
@@ -141,7 +141,7 @@ bool Splitter::onProcessMessage(Message* msg)
             c1 = *it;
             c2 = *(it+1);
 
-            if (this->getAlign() & JI_HORIZONTAL) {
+            if (this->getAlign() & HORIZONTAL) {
               x1 = c1->getBounds().x2();
               y1 = getBounds().y;
               x2 = c2->getBounds().x;
@@ -163,7 +163,7 @@ bool Splitter::onProcessMessage(Message* msg)
         }
 
         if (change_cursor) {
-          if (getAlign() & JI_HORIZONTAL)
+          if (getAlign() & HORIZONTAL)
             set_mouse_cursor(kSizeWECursor);
           else
             set_mouse_cursor(kSizeNSCursor);
@@ -220,7 +220,7 @@ void Splitter::onResize(ResizeEvent& ev)
   Widget* child2 = panel2();
 
   if (child1 && child2) {
-    if (getAlign() & JI_HORIZONTAL) {
+    if (getAlign() & HORIZONTAL) {
       LAYOUT_TWO_CHILDREN(x, y, w, h, l, t, r, b);
     }
     else {
@@ -270,14 +270,14 @@ void Splitter::onPreferredSize(PreferredSizeEvent& ev)
 
     reqSize = child->getPreferredSize();
 
-    if (this->getAlign() & JI_HORIZONTAL)
+    if (this->getAlign() & HORIZONTAL)
       GET_CHILD_SIZE(w, h);
     else
       GET_CHILD_SIZE(h, w);
   }
 
   if (visibleChildren > 0) {
-    if (this->getAlign() & JI_HORIZONTAL)
+    if (this->getAlign() & HORIZONTAL)
       FINAL_SIZE(w);
     else
       FINAL_SIZE(h);
@@ -331,7 +331,7 @@ Widget* Splitter::panel2() const
 
 void Splitter::limitPos()
 {
-  if (getAlign() & JI_HORIZONTAL) {
+  if (getAlign() & HORIZONTAL) {
     switch (m_type) {
       case ByPercentage:
         m_pos = MID(0, m_pos, 100);

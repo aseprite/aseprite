@@ -561,17 +561,17 @@ void SkinTheme::onRegenerate()
         const char* valign = xmlRule->Attribute("valign");
         const char* wordwrap = xmlRule->Attribute("wordwrap");
         if (halign) {
-          if (strcmp(halign, "left") == 0) align |= JI_LEFT;
-          else if (strcmp(halign, "right") == 0) align |= JI_RIGHT;
-          else if (strcmp(halign, "center") == 0) align |= JI_CENTER;
+          if (strcmp(halign, "left") == 0) align |= LEFT;
+          else if (strcmp(halign, "right") == 0) align |= RIGHT;
+          else if (strcmp(halign, "center") == 0) align |= CENTER;
         }
         if (valign) {
-          if (strcmp(valign, "top") == 0) align |= JI_TOP;
-          else if (strcmp(valign, "bottom") == 0) align |= JI_BOTTOM;
-          else if (strcmp(valign, "middle") == 0) align |= JI_MIDDLE;
+          if (strcmp(valign, "top") == 0) align |= TOP;
+          else if (strcmp(valign, "bottom") == 0) align |= BOTTOM;
+          else if (strcmp(valign, "middle") == 0) align |= MIDDLE;
         }
         if (wordwrap && strcmp(wordwrap, "true") == 0)
-          align |= JI_WORDWRAP;
+          align |= WORDWRAP;
 
         if (ruleName == "background") {
           const char* repeat_id = xmlRule->Attribute("repeat");
@@ -697,7 +697,7 @@ void SkinTheme::initWidget(Widget* widget)
                             PART_CHECK_NORMAL,
                             PART_CHECK_SELECTED,
                             PART_CHECK_DISABLED,
-                            JI_LEFT | JI_MIDDLE));
+                            LEFT | MIDDLE));
       break;
 
     case kEntryWidget:
@@ -746,7 +746,7 @@ void SkinTheme::initWidget(Widget* widget)
                               PART_COMBOBOX_ARROW_DOWN,
                               PART_COMBOBOX_ARROW_DOWN_SELECTED,
                               PART_COMBOBOX_ARROW_DOWN_DISABLED,
-                              JI_CENTER | JI_MIDDLE));
+                              CENTER | MIDDLE));
       }
       break;
 
@@ -776,17 +776,17 @@ void SkinTheme::initWidget(Widget* widget)
                             PART_RADIO_NORMAL,
                             PART_RADIO_SELECTED,
                             PART_RADIO_DISABLED,
-                            JI_LEFT | JI_MIDDLE));
+                            LEFT | MIDDLE));
       break;
 
     case kSeparatorWidget:
       // Frame
-      if ((widget->getAlign() & JI_HORIZONTAL) &&
-          (widget->getAlign() & JI_VERTICAL)) {
+      if ((widget->getAlign() & HORIZONTAL) &&
+          (widget->getAlign() & VERTICAL)) {
         BORDER(4 * scale);
       }
       // Horizontal bar
-      else if (widget->getAlign() & JI_HORIZONTAL) {
+      else if (widget->getAlign() & HORIZONTAL) {
         BORDER4(2 * scale, 4 * scale, 2 * scale, 0);
       }
       // Vertical bar
@@ -795,9 +795,9 @@ void SkinTheme::initWidget(Widget* widget)
       }
 
       if (widget->hasText()) {
-        if (widget->getAlign() & JI_TOP)
+        if (widget->getAlign() & TOP)
           widget->border_width.t = widget->getTextHeight();
-        else if (widget->getAlign() & JI_BOTTOM)
+        else if (widget->getAlign() & BOTTOM)
           widget->border_width.b = widget->getTextHeight();
       }
       break;
@@ -809,7 +809,7 @@ void SkinTheme::initWidget(Widget* widget)
         m_part[PART_SLIDER_EMPTY_E]->width()-1*scale,
         m_part[PART_SLIDER_EMPTY_S]->height()-1*scale);
       widget->child_spacing = widget->getTextHeight();
-      widget->setAlign(JI_CENTER | JI_MIDDLE);
+      widget->setAlign(CENTER | MIDDLE);
       break;
 
     case kTextBoxWidget:
@@ -843,7 +843,7 @@ void SkinTheme::initWidget(Widget* widget)
           BORDER4(6 * scale, (4+6) * scale, 6 * scale, 6 * scale);
           widget->border_width.t += widget->getTextHeight();
 
-          if (!(widget->flags & JI_INITIALIZED)) {
+          if (!(widget->flags & INITIALIZED)) {
             Button* button = new WindowCloseButton();
             widget->addChild(button);
           }
@@ -1255,9 +1255,9 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 
   // Text
   if (bar)
-    widget->setAlign(JI_CENTER | JI_MIDDLE);
+    widget->setAlign(CENTER | MIDDLE);
   else
-    widget->setAlign(JI_LEFT | JI_MIDDLE);
+    widget->setAlign(LEFT | MIDDLE);
 
   Rect pos = bounds;
   if (!bar)
@@ -1298,7 +1298,7 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
 
         std::string buf = appMenuItem->getKey()->accels().front().toString();
 
-        widget->setAlign(JI_RIGHT | JI_MIDDLE);
+        widget->setAlign(RIGHT | MIDDLE);
         drawTextString(g, buf.c_str(), fg, ColorNone, widget, pos, 0);
         widget->setAlign(old_align);
       }
@@ -1359,10 +1359,10 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   // background
   g->fillRect(BGCOLOR, bounds);
 
-  if (widget->getAlign() & JI_HORIZONTAL)
+  if (widget->getAlign() & HORIZONTAL)
     draw_part_as_hline(g, bounds, PART_SEPARATOR_HORZ);
 
-  if (widget->getAlign() & JI_VERTICAL)
+  if (widget->getAlign() & VERTICAL)
     draw_part_as_vline(g, bounds, PART_SEPARATOR_VERT);
 
   // text
@@ -1680,7 +1680,7 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
   bgStyle->paint(g, rc, NULL, Style::State());
 
   // Horizontal bar
-  if (widget->getAlign() & JI_HORIZONTAL) {
+  if (widget->getAlign() & HORIZONTAL) {
     rc.x += pos;
     rc.w = len;
   }
@@ -1784,10 +1784,10 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   int w  = PART_TOOLTIP_W;
 
   switch (widget->getArrowAlign()) {
-    case JI_TOP | JI_LEFT:     nw = PART_TOOLTIP_ARROW_NW; break;
-    case JI_TOP | JI_RIGHT:    ne = PART_TOOLTIP_ARROW_NE; break;
-    case JI_BOTTOM | JI_LEFT:  sw = PART_TOOLTIP_ARROW_SW; break;
-    case JI_BOTTOM | JI_RIGHT: se = PART_TOOLTIP_ARROW_SE; break;
+    case TOP | LEFT:     nw = PART_TOOLTIP_ARROW_NW; break;
+    case TOP | RIGHT:    ne = PART_TOOLTIP_ARROW_NE; break;
+    case BOTTOM | LEFT:  sw = PART_TOOLTIP_ARROW_SW; break;
+    case BOTTOM | RIGHT: se = PART_TOOLTIP_ARROW_SE; break;
   }
 
   draw_bounds_template(g, rc, nw, n, ne, e, se, s, sw, w);
@@ -1799,25 +1799,25 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   target.offset(-absRc.getOrigin());
 
   switch (widget->getArrowAlign()) {
-    case JI_TOP:
+    case TOP:
       arrow = m_part[PART_TOOLTIP_ARROW_N];
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y);
       break;
-    case JI_BOTTOM:
+    case BOTTOM:
       arrow = m_part[PART_TOOLTIP_ARROW_S];
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y+rc.h-arrow->height());
       break;
-    case JI_LEFT:
+    case LEFT:
       arrow = m_part[PART_TOOLTIP_ARROW_W];
       g->drawRgbaSurface(arrow,
                          rc.x,
                          target.y+target.h/2-arrow->height()/2);
       break;
-    case JI_RIGHT:
+    case RIGHT:
       arrow = m_part[PART_TOOLTIP_ARROW_E];
       g->drawRgbaSurface(arrow,
                          rc.x+rc.w-arrow->width(),
@@ -1872,18 +1872,18 @@ void SkinTheme::drawTextString(Graphics* g, const char *t, gfx::Color fg_color, 
 
     // Horizontally text alignment
 
-    if (widget->getAlign() & JI_RIGHT)
+    if (widget->getAlign() & RIGHT)
       textrc.x = rc.x + rc.w - textrc.w - 1;
-    else if (widget->getAlign() & JI_CENTER)
+    else if (widget->getAlign() & CENTER)
       textrc.x = rc.getCenter().x - textrc.w/2;
     else
       textrc.x = rc.x;
 
     // Vertically text alignment
 
-    if (widget->getAlign() & JI_BOTTOM)
+    if (widget->getAlign() & BOTTOM)
       textrc.y = rc.y + rc.h - textrc.h - 1;
-    else if (widget->getAlign() & JI_MIDDLE)
+    else if (widget->getAlign() & MIDDLE)
       textrc.y = rc.getCenter().y - textrc.h/2;
     else
       textrc.y = rc.y;

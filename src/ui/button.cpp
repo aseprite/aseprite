@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -32,7 +32,7 @@ ButtonBase::ButtonBase(const std::string& text,
   , m_iconInterface(NULL)
   , m_handleSelect(true)
 {
-  setAlign(JI_CENTER | JI_MIDDLE);
+  setAlign(CENTER | MIDDLE);
   setText(text);
   setFocusStop(true);
 
@@ -309,7 +309,7 @@ void ButtonBase::generateButtonSelectSignal()
 Button::Button(const std::string& text)
   : ButtonBase(text, kButtonWidget, kButtonWidget, kButtonWidget)
 {
-  setAlign(JI_CENTER | JI_MIDDLE);
+  setAlign(CENTER | MIDDLE);
 }
 
 // ======================================================================
@@ -319,7 +319,7 @@ Button::Button(const std::string& text)
 CheckBox::CheckBox(const std::string& text, WidgetType drawType)
   : ButtonBase(text, kCheckWidget, kCheckWidget, drawType)
 {
-  setAlign(JI_LEFT | JI_MIDDLE);
+  setAlign(LEFT | MIDDLE);
 }
 
 // ======================================================================
@@ -329,7 +329,7 @@ CheckBox::CheckBox(const std::string& text, WidgetType drawType)
 RadioButton::RadioButton(const std::string& text, int radioGroup, WidgetType drawType)
   : ButtonBase(text, kRadioWidget, kRadioWidget, drawType)
 {
-  setAlign(JI_LEFT | JI_MIDDLE);
+  setAlign(LEFT | MIDDLE);
   setRadioGroup(radioGroup);
 }
 

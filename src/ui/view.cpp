@@ -27,8 +27,8 @@ using namespace gfx;
 
 View::View()
   : Widget(kViewWidget)
-  , m_scrollbar_h(JI_HORIZONTAL)
-  , m_scrollbar_v(JI_VERTICAL)
+  , m_scrollbar_h(HORIZONTAL)
+  , m_scrollbar_v(VERTICAL)
 {
   m_hasBars = true;
 

@@ -57,7 +57,7 @@ Entry::Entry(std::size_t maxsize, const char *format, ...)
   }
 
   // TODO support for text alignment and multi-line
-  // widget->align = JI_LEFT | JI_MIDDLE;
+  // widget->align = LEFT | MIDDLE;
   setText(buf);
 
   setFocusStop(true);

@@ -1612,7 +1612,7 @@ void Editor::showAnimationSpeedMultiplierPopup(bool withStopBehaviorOptions)
   }
 
   if (withStopBehaviorOptions) {
-    menu.addChild(new Separator("", JI_HORIZONTAL));
+    menu.addChild(new Separator("", HORIZONTAL));
     MenuItem* item = new MenuItem("Rewind on Stop");
     item->Click.connect(
       []() {

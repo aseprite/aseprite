@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,7 +27,7 @@ PopupWindow::PopupWindow(const std::string& text, ClickBehavior clickBehavior)
   setSizeable(false);
   setMoveable(false);
   setWantFocus(false);
-  setAlign(JI_LEFT | JI_TOP);
+  setAlign(LEFT | TOP);
 
   removeDecorativeWidgets();
 

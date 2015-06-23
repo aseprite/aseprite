@@ -73,7 +73,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
       getScrollBarThemeInfo(&pos, &len);
 
       m_wherepos = pos;
-      m_whereclick = getAlign() & JI_HORIZONTAL ?
+      m_whereclick = getAlign() & HORIZONTAL ?
         mousePos.x:
         mousePos.y;
 
@@ -89,7 +89,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
       Point scroll = view->getViewScroll();
 
-      if (this->getAlign() & JI_HORIZONTAL) {
+      if (this->getAlign() & HORIZONTAL) {
         // in the bar
         if (MOUSE_IN(u1+pos, v1, u1+pos+len-1, v2)) {
           // capture mouse
@@ -144,7 +144,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
         if (bar_size > len) {
           Point scroll = view->getViewScroll();
 
-          if (this->getAlign() & JI_HORIZONTAL) {
+          if (this->getAlign() & HORIZONTAL) {
             pos = (m_wherepos + mousePos.x - m_whereclick);
             pos = MID(0, pos, bar_size - len);
 
@@ -189,7 +189,7 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   int pos, len;
   int border_width;
 
-  if (this->getAlign() & JI_HORIZONTAL) {
+  if (this->getAlign() & HORIZONTAL) {
     bar_size = getBounds().w;
     viewport_size = view->getVisibleSize().w;
     border_width = this->border_width.t + this->border_width.b;

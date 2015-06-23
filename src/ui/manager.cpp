@@ -39,11 +39,11 @@
 namespace ui {
 
 #define ACCEPT_FOCUS(widget)                            \
-  ((((widget)->flags & (JI_FOCUSSTOP |                  \
-        JI_DISABLED |                                   \
-        JI_HIDDEN |                                     \
-        JI_DECORATIVE)) == JI_FOCUSSTOP) &&             \
-    ((widget)->isVisible()))
+  ((((widget)->flags & (FOCUS_STOP |                    \
+                        DISABLED |                      \
+                        HIDDEN |                        \
+                        DECORATIVE)) == FOCUS_STOP) &&  \
+   ((widget)->isVisible()))
 
 static const int NFILTERS = (int)(kFirstRegisteredMessage+1);
 
@@ -540,9 +540,9 @@ void Manager::setFocus(Widget* widget)
 {
   if ((focus_widget != widget)
       && (!(widget)
-          || (!(widget->flags & JI_DISABLED)
-              && !(widget->flags & JI_HIDDEN)
-              && !(widget->flags & JI_DECORATIVE)
+          || (!(widget->flags & DISABLED)
+              && !(widget->flags & HIDDEN)
+              && !(widget->flags & DECORATIVE)
               && someParentIsFocusStop(widget)))) {
     WidgetsList widget_parents;
     Widget* common_parent = NULL;
@@ -570,7 +570,7 @@ void Manager::setFocus(Widget* widget)
         }
 
         if ((*it)->hasFocus()) {
-          (*it)->flags &= ~JI_HASFOCUS;
+          (*it)->flags &= ~HAS_FOCUS;
           msg->addRecipient(*it);
         }
       }
@@ -598,8 +598,8 @@ void Manager::setFocus(Widget* widget)
       for (; it != widget_parents.end(); ++it) {
         Widget* w = *it;
 
-        if (w->flags & JI_FOCUSSTOP) {
-          w->flags |= JI_HASFOCUS;
+        if (w->flags & FOCUS_STOP) {
+          w->flags |= HAS_FOCUS;
 
           msg->addRecipient(w);
         }
@@ -652,7 +652,7 @@ void Manager::setMouse(Widget* widget)
         }
 
         if ((*it)->hasMouse()) {
-          (*it)->flags &= ~JI_HASMOUSE;
+          (*it)->flags &= ~HAS_MOUSE;
           msg->addRecipient(*it);
         }
       }
@@ -679,7 +679,7 @@ void Manager::setMouse(Widget* widget)
         get_mouse_position(), _internal_get_mouse_buttons());
 
       for (; it != widget_parents.end(); ++it) {
-        (*it)->flags |= JI_HASMOUSE;
+        (*it)->flags |= HAS_MOUSE;
         msg->addRecipient(*it);
       }
 
@@ -691,7 +691,7 @@ void Manager::setMouse(Widget* widget)
 
 void Manager::setCapture(Widget* widget)
 {
-  widget->flags |= JI_HASCAPTURE;
+  widget->flags |= HAS_CAPTURE;
   capture_widget = widget;
 
   m_display->captureMouse();
@@ -731,7 +731,7 @@ void Manager::freeMouse()
 void Manager::freeCapture()
 {
   if (capture_widget) {
-    capture_widget->flags &= ~JI_HASCAPTURE;
+    capture_widget->flags &= ~HAS_CAPTURE;
     capture_widget = NULL;
 
     m_display->releaseMouse();
@@ -1124,7 +1124,7 @@ void Manager::pumpQueue()
       // We need to configure the clip region for paint messages
       // before we call Widget::sendMessage().
       if (msg->type() == kPaintMessage) {
-        if (widget->flags & JI_HIDDEN)
+        if (widget->flags & HIDDEN)
           continue;
 
         PaintMessage* paintMsg = static_cast<PaintMessage*>(msg);

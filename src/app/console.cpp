@@ -55,7 +55,7 @@ Console::Console(Context* ctx)
   Window* window = new Window(Window::WithTitleBar, "Errors Console");
   Grid* grid = new Grid(1, false);
   View* view = new View();
-  TextBox* textbox = new TextBox("", JI_WORDWRAP);
+  TextBox* textbox = new TextBox("", WORDWRAP);
   Button* button = new Button("&Cancel");
 
   if (!grid || !textbox || !button)
@@ -68,8 +68,8 @@ Console::Console(Context* ctx)
 
   button->setMinSize(gfx::Size(60, 0));
 
-  grid->addChildInCell(view, 1, 1, JI_HORIZONTAL | JI_VERTICAL);
-  grid->addChildInCell(button, 1, 1, JI_CENTER);
+  grid->addChildInCell(view, 1, 1, HORIZONTAL | VERTICAL);
+  grid->addChildInCell(button, 1, 1, CENTER);
   window->addChild(grid);
 
   view->setVisible(false);

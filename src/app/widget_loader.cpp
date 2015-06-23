@@ -130,7 +130,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
   else if (elem_name == "box") {
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
-    int align = (horizontal ? JI_HORIZONTAL: vertical ? JI_VERTICAL: 0);
+    int align = (horizontal ? HORIZONTAL: vertical ? VERTICAL: 0);
 
     if (!widget)
       widget = new Box(align);
@@ -160,8 +160,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool closewindow = bool_attr_is_true(elem, "closewindow");
     const char *_bevel = elem->Attribute("bevel");
 
-    widget->setAlign((left ? JI_LEFT: (right ? JI_RIGHT: JI_CENTER)) |
-      (top ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    widget->setAlign((left ? LEFT: (right ? RIGHT: CENTER)) |
+      (top ? TOP: (bottom ? BOTTOM: MIDDLE)));
 
     if (_bevel != NULL) {
       char* bevel = base_strdup(_bevel);
@@ -204,10 +204,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool top    = bool_attr_is_true(elem, "top");
     bool bottom = bool_attr_is_true(elem, "bottom");
 
-    widget->setAlign((center ? JI_CENTER:
-        (right ? JI_RIGHT: JI_LEFT)) |
-      (top    ? JI_TOP:
-        (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    widget->setAlign((center ? CENTER:
+        (right ? RIGHT: LEFT)) |
+      (top    ? TOP:
+        (bottom ? BOTTOM: MIDDLE)));
   }
   else if (elem_name == "combobox") {
     if (!widget)
@@ -253,10 +253,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool top    = bool_attr_is_true(elem, "top");
     bool bottom = bool_attr_is_true(elem, "bottom");
 
-    widget->setAlign((center ? JI_CENTER:
-        (right ? JI_RIGHT: JI_LEFT)) |
-      (top    ? JI_TOP:
-        (bottom ? JI_BOTTOM: JI_MIDDLE)));
+    widget->setAlign((center ? CENTER:
+        (right ? RIGHT: LEFT)) |
+      (top    ? TOP:
+        (bottom ? BOTTOM: MIDDLE)));
   }
   else if (elem_name == "link") {
     const char* url = elem->Attribute("url");
@@ -276,8 +276,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool bottom = bool_attr_is_true(elem, "bottom");
 
     widget->setAlign(
-      (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
-      (top    ? JI_TOP: (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      (center ? CENTER: (right ? RIGHT: LEFT)) |
+      (top    ? TOP: (bottom ? BOTTOM: MIDDLE)));
   }
   else if (elem_name == "listbox") {
     if (!widget)
@@ -308,8 +308,8 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
                            Splitter::ByPercentage);
 
     Splitter* splitter = new Splitter(type,
-                                      horizontal ? JI_HORIZONTAL:
-                                      vertical ? JI_VERTICAL: 0);
+                                      horizontal ? HORIZONTAL:
+                                      vertical ? VERTICAL: 0);
     if (position) {
       splitter->setPosition(strtod(position, NULL)
         * (type == Splitter::ByPixel ? guiscale(): 1));
@@ -343,10 +343,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool bottom = bool_attr_is_true(elem, "bottom");
 
     widget->setAlign(
-      (center ? JI_CENTER:
-        (right ? JI_RIGHT: JI_LEFT)) |
-      (top    ? JI_TOP:
-        (bottom ? JI_BOTTOM: JI_MIDDLE)));
+      (center ? CENTER:
+        (right ? RIGHT: LEFT)) |
+      (top    ? TOP:
+        (bottom ? BOTTOM: MIDDLE)));
   }
   else if (elem_name == "separator") {
     bool center      = bool_attr_is_true(elem, "center");
@@ -356,10 +356,10 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
     bool horizontal  = bool_attr_is_true(elem, "horizontal");
     bool vertical    = bool_attr_is_true(elem, "vertical");
     int align =
-      (horizontal ? JI_HORIZONTAL: 0) |
-      (vertical ? JI_VERTICAL: 0) |
-      (center ? JI_CENTER: (right ? JI_RIGHT: JI_LEFT)) |
-      (middle ? JI_MIDDLE: (bottom ? JI_BOTTOM: JI_TOP));
+      (horizontal ? HORIZONTAL: 0) |
+      (vertical ? VERTICAL: 0) |
+      (center ? CENTER: (right ? RIGHT: LEFT)) |
+      (middle ? MIDDLE: (bottom ? BOTTOM: TOP));
 
     if (!widget) {
       const char* text = elem->Attribute("text");
@@ -385,7 +385,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       widget->setText(elem->GetText());
 
     if (wordwrap)
-      widget->setAlign(widget->getAlign() | JI_WORDWRAP);
+      widget->setAlign(widget->getAlign() | WORDWRAP);
   }
   else if (elem_name == "view") {
     if (!widget)
@@ -508,7 +508,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
       m_tooltipManager = new ui::TooltipManager();
       root->addChild(m_tooltipManager);
     }
-    m_tooltipManager->addTooltipFor(widget, tooltip, JI_LEFT);
+    m_tooltipManager->addTooltipFor(widget, tooltip, LEFT);
   }
 
   if (selected)
@@ -521,7 +521,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     widget->setExpansive(true);
 
   if (homogeneous)
-    widget->setAlign(widget->getAlign() | JI_HOMOGENEOUS);
+    widget->setAlign(widget->getAlign() | HOMOGENEOUS);
 
   if (magnet)
     widget->setFocusMagnet(true);
@@ -614,31 +614,31 @@ static int convert_align_value_to_flags(const char *value)
        tok != NULL;
        tok=strtok(NULL, " ")) {
     if (strcmp(tok, "horizontal") == 0) {
-      flags |= JI_HORIZONTAL;
+      flags |= HORIZONTAL;
     }
     else if (strcmp(tok, "vertical") == 0) {
-      flags |= JI_VERTICAL;
+      flags |= VERTICAL;
     }
     else if (strcmp(tok, "left") == 0) {
-      flags |= JI_LEFT;
+      flags |= LEFT;
     }
     else if (strcmp(tok, "center") == 0) {
-      flags |= JI_CENTER;
+      flags |= CENTER;
     }
     else if (strcmp(tok, "right") == 0) {
-      flags |= JI_RIGHT;
+      flags |= RIGHT;
     }
     else if (strcmp(tok, "top") == 0) {
-      flags |= JI_TOP;
+      flags |= TOP;
     }
     else if (strcmp(tok, "middle") == 0) {
-      flags |= JI_MIDDLE;
+      flags |= MIDDLE;
     }
     else if (strcmp(tok, "bottom") == 0) {
-      flags |= JI_BOTTOM;
+      flags |= BOTTOM;
     }
     else if (strcmp(tok, "homogeneous") == 0) {
-      flags |= JI_HOMOGENEOUS;
+      flags |= HOMOGENEOUS;
     }
   }
 

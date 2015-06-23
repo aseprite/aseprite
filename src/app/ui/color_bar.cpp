@@ -140,7 +140,7 @@ ColorBar::ColorBar(int align)
   palViewBox->addChild(&m_remapButton);
 
   ColorSpectrum* spectrum = new ColorSpectrum;
-  Splitter* splitter = new Splitter(Splitter::ByPercentage, JI_VERTICAL);
+  Splitter* splitter = new Splitter(Splitter::ByPercentage, VERTICAL);
   splitter->setPosition(80);
   splitter->setExpansive(true);
   splitter->addChild(palViewBox);
@@ -184,11 +184,11 @@ ColorBar::ColorBar(int align)
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::EDIT), "Edit Color", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", JI_BOTTOM);
-  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", JI_BOTTOM);
-  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", JI_BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::EDIT), "Edit Color", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::SORT), "Sort & Gradients", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::PRESETS), "Presets", BOTTOM);
+  tooltipManager->addTooltipFor(m_buttons.getItem((int)PalButton::OPTIONS), "Options", BOTTOM);
+  tooltipManager->addTooltipFor(&m_remapButton, "Matches old indexes with new indexes", BOTTOM);
 
   onColorButtonChange(getFgColor());
 
@@ -298,12 +298,12 @@ void ColorBar::onPaletteButtonClick()
         des("Descending");
       menu.addChild(&rev);
       menu.addChild(&grd);
-      menu.addChild(new ui::Separator("", JI_HORIZONTAL));
+      menu.addChild(new ui::Separator("", HORIZONTAL));
       menu.addChild(&hue);
       menu.addChild(&sat);
       menu.addChild(&bri);
       menu.addChild(&lum);
-      menu.addChild(new ui::Separator("", JI_HORIZONTAL));
+      menu.addChild(new ui::Separator("", HORIZONTAL));
       menu.addChild(&asc);
       menu.addChild(&des);
 

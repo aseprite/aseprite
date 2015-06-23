@@ -30,7 +30,7 @@ using namespace ui;
 ColorSpectrum::ColorSpectrum()
   : Widget(kGenericWidget)
 {
-  setAlign(JI_HORIZONTAL);
+  setAlign(HORIZONTAL);
 }
 
 ColorSpectrum::~ColorSpectrum()
@@ -43,11 +43,11 @@ app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
   if (rc.isEmpty() || !rc.contains(pos))
     return app::Color::fromMask();
 
-  int vmid = (getAlign() & JI_HORIZONTAL ? rc.h/2 : rc.w/2);
+  int vmid = (getAlign() & HORIZONTAL ? rc.h/2 : rc.w/2);
   vmid = MAX(1, vmid);
 
   int u, v, umax;
-  if (getAlign() & JI_HORIZONTAL) {
+  if (getAlign() & HORIZONTAL) {
     u = pos.x - rc.x;
     v = pos.y - rc.y;
     umax = MAX(1, rc.w-1);
@@ -90,13 +90,13 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
   if (rc.isEmpty())
     return;
 
-  int vmid = (getAlign() & JI_HORIZONTAL ? rc.h/2 : rc.w/2);
+  int vmid = (getAlign() & HORIZONTAL ? rc.h/2 : rc.w/2);
   vmid = MAX(1, vmid);
 
   for (int y=0; y<rc.h; ++y) {
     for (int x=0; x<rc.w; ++x) {
       int u, v, umax;
-      if (getAlign() & JI_HORIZONTAL) {
+      if (getAlign() & HORIZONTAL) {
         u = x;
         v = y;
         umax = MAX(1, rc.w-1);

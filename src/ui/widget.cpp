@@ -49,7 +49,7 @@ using namespace gfx;
 static inline void mark_dirty_flag(Widget* widget)
 {
   while (widget) {
-    widget->flags |= JI_DIRTY;
+    widget->flags |= DIRTY;
     widget = widget->getParent();
   }
 }
@@ -162,7 +162,7 @@ void Widget::setTextf(const char *format, ...)
 void Widget::setTextQuiet(const std::string& text)
 {
   m_text = text;
-  flags |= JI_HASTEXT;
+  flags |= HAS_TEXT;
 }
 
 she::Font* Widget::getFont() const
@@ -198,16 +198,16 @@ void Widget::setTheme(Theme* theme)
 void Widget::setVisible(bool state)
 {
   if (state) {
-    if (this->flags & JI_HIDDEN) {
-      this->flags &= ~JI_HIDDEN;
+    if (this->flags & HIDDEN) {
+      this->flags &= ~HIDDEN;
       invalidate();
     }
   }
   else {
-    if (!(this->flags & JI_HIDDEN)) {
+    if (!(this->flags & HIDDEN)) {
       getManager()->freeWidget(this); // Free from manager
 
-      this->flags |= JI_HIDDEN;
+      this->flags |= HIDDEN;
     }
   }
 }
@@ -215,18 +215,18 @@ void Widget::setVisible(bool state)
 void Widget::setEnabled(bool state)
 {
   if (state) {
-    if (this->flags & JI_DISABLED) {
-      this->flags &= ~JI_DISABLED;
+    if (this->flags & DISABLED) {
+      this->flags &= ~DISABLED;
       invalidate();
 
       onEnable();
     }
   }
   else {
-    if (!(this->flags & JI_DISABLED)) {
+    if (!(this->flags & DISABLED)) {
       getManager()->freeWidget(this); // Free from the manager
 
-      this->flags |= JI_DISABLED;
+      this->flags |= DISABLED;
       invalidate();
 
       onDisable();
@@ -237,16 +237,16 @@ void Widget::setEnabled(bool state)
 void Widget::setSelected(bool state)
 {
   if (state) {
-    if (!(this->flags & JI_SELECTED)) {
-      this->flags |= JI_SELECTED;
+    if (!(this->flags & SELECTED)) {
+      this->flags |= SELECTED;
       invalidate();
 
       onSelect();
     }
   }
   else {
-    if (this->flags & JI_SELECTED) {
-      this->flags &= ~JI_SELECTED;
+    if (this->flags & SELECTED) {
+      this->flags &= ~SELECTED;
       invalidate();
 
       onDeselect();
@@ -257,33 +257,33 @@ void Widget::setSelected(bool state)
 void Widget::setExpansive(bool state)
 {
   if (state)
-    this->flags |= JI_EXPANSIVE;
+    this->flags |= EXPANSIVE;
   else
-    this->flags &= ~JI_EXPANSIVE;
+    this->flags &= ~EXPANSIVE;
 }
 
 void Widget::setDecorative(bool state)
 {
   if (state)
-    this->flags |= JI_DECORATIVE;
+    this->flags |= DECORATIVE;
   else
-    this->flags &= ~JI_DECORATIVE;
+    this->flags &= ~DECORATIVE;
 }
 
 void Widget::setFocusStop(bool state)
 {
   if (state)
-    this->flags |= JI_FOCUSSTOP;
+    this->flags |= FOCUS_STOP;
   else
-    this->flags &= ~JI_FOCUSSTOP;
+    this->flags &= ~FOCUS_STOP;
 }
 
 void Widget::setFocusMagnet(bool state)
 {
   if (state)
-    this->flags |= JI_FOCUSMAGNET;
+    this->flags |= FOCUS_MAGNET;
   else
-    this->flags &= ~JI_FOCUSMAGNET;
+    this->flags &= ~FOCUS_MAGNET;
 }
 
 bool Widget::isVisible() const
@@ -292,7 +292,7 @@ bool Widget::isVisible() const
   const Widget* lastWidget = nullptr;
 
   do {
-    if (widget->flags & JI_HIDDEN)
+    if (widget->flags & HIDDEN)
       return false;
 
     lastWidget = widget;
@@ -308,7 +308,7 @@ bool Widget::isEnabled() const
   const Widget* widget = this;
 
   do {
-    if (widget->flags & JI_DISABLED)
+    if (widget->flags & DISABLED)
       return false;
 
     widget = widget->m_parent;
@@ -319,27 +319,27 @@ bool Widget::isEnabled() const
 
 bool Widget::isSelected() const
 {
-  return (this->flags & JI_SELECTED) ? true: false;
+  return (this->flags & SELECTED) ? true: false;
 }
 
 bool Widget::isExpansive() const
 {
-  return (this->flags & JI_EXPANSIVE) ? true: false;
+  return (this->flags & EXPANSIVE) ? true: false;
 }
 
 bool Widget::isDecorative() const
 {
-  return (this->flags & JI_DECORATIVE) ? true: false;
+  return (this->flags & DECORATIVE) ? true: false;
 }
 
 bool Widget::isFocusStop() const
 {
-  return (this->flags & JI_FOCUSSTOP) ? true: false;
+  return (this->flags & FOCUS_STOP) ? true: false;
 }
 
 bool Widget::isFocusMagnet() const
 {
-  return (this->flags & JI_FOCUSMAGNET) ? true: false;
+  return (this->flags & FOCUS_MAGNET) ? true: false;
 }
 
 // ===============================================================
@@ -423,7 +423,7 @@ Widget* Widget::pick(const gfx::Point& pt)
 {
   Widget* inside, *picked = NULL;
 
-  if (!(this->flags & JI_HIDDEN) && // Is visible
+  if (!(this->flags & HIDDEN) && // Is visible
       getBounds().contains(pt)) {   // The point is inside the bounds
     picked = this;
 
@@ -708,7 +708,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
         Region reg3;
         child->getRegion(reg3);
 
-        if (child->flags & JI_DECORATIVE) {
+        if (child->flags & DECORATIVE) {
           reg1 = getBounds();
           reg1.createIntersection(reg1, reg3);
         }
@@ -721,7 +721,7 @@ void Widget::getDrawableRegion(gfx::Region& region, DrawableRegionFlags flags)
   }
 
   // Intersect with the parent area
-  if (!(this->flags & JI_DECORATIVE)) {
+  if (!(this->flags & DECORATIVE)) {
     Widget* parent = getParent();
 
     while (parent) {
@@ -799,8 +799,8 @@ void Widget::getTextIconInfo(
   }
 
   /* box size */
-  if (icon_align & JI_CENTER) {   /* with the icon in the center */
-    if (icon_align & JI_MIDDLE) { /* with the icon inside the text */
+  if (icon_align & CENTER) {   /* with the icon in the center */
+    if (icon_align & MIDDLE) { /* with the icon inside the text */
       box_w = MAX(icon_w, text_w);
       box_h = MAX(icon_h, text_h);
     }
@@ -817,16 +817,16 @@ void Widget::getTextIconInfo(
   }
 
   /* box position */
-  if (getAlign() & JI_RIGHT)
+  if (getAlign() & RIGHT)
     box_x = bounds.x2() - box_w - border_width.r;
-  else if (getAlign() & JI_CENTER)
+  else if (getAlign() & CENTER)
     box_x = (bounds.x+bounds.x2())/2 - box_w/2;
   else
     box_x = bounds.x + border_width.l;
 
-  if (getAlign() & JI_BOTTOM)
+  if (getAlign() & BOTTOM)
     box_y = bounds.y2() - box_h - border_width.b;
-  else if (getAlign() & JI_MIDDLE)
+  else if (getAlign() & MIDDLE)
     box_y = (bounds.y+bounds.y2())/2 - box_h/2;
   else
     box_y = bounds.y + border_width.t;
@@ -834,11 +834,11 @@ void Widget::getTextIconInfo(
   // With text
   if (hasText()) {
     // Text/icon X position
-    if (icon_align & JI_RIGHT) {
+    if (icon_align & RIGHT) {
       text_x = box_x;
       icon_x = box_x + box_w - icon_w;
     }
-    else if (icon_align & JI_CENTER) {
+    else if (icon_align & CENTER) {
       text_x = box_x + box_w/2 - text_w/2;
       icon_x = box_x + box_w/2 - icon_w/2;
     }
@@ -848,11 +848,11 @@ void Widget::getTextIconInfo(
     }
 
     // Text Y position
-    if (icon_align & JI_BOTTOM) {
+    if (icon_align & BOTTOM) {
       text_y = box_y;
       icon_y = box_y + box_h - icon_h;
     }
-    else if (icon_align & JI_MIDDLE) {
+    else if (icon_align & MIDDLE) {
       text_y = box_y + box_h/2 - text_h/2;
       icon_y = box_y + box_h/2 - icon_h/2;
     }
@@ -890,8 +890,8 @@ void Widget::flushRedraw()
   std::queue<Widget*> processing;
   Message* msg;
 
-  if (this->flags & JI_DIRTY) {
-    this->flags ^= JI_DIRTY;
+  if (this->flags & DIRTY) {
+    this->flags ^= DIRTY;
     processing.push(this);
   }
 
@@ -907,8 +907,8 @@ void Widget::flushRedraw()
 
     UI_FOREACH_WIDGET(widget->getChildren(), it) {
       Widget* child = *it;
-      if (child->flags & JI_DIRTY) {
-        child->flags ^= JI_DIRTY;
+      if (child->flags & DIRTY) {
+        child->flags ^= DIRTY;
         processing.push(child);
       }
     }
@@ -995,7 +995,7 @@ bool Widget::paintEvent(Graphics* graphics)
     graphics->fillRect(gfx::rgba(255, 0, 0), getClientBounds());
 #endif
 
-    this->flags |= JI_HIDDEN;
+    this->flags |= HIDDEN;
 
     gfx::Region rgn(getParent()->getBounds());
     rgn.createIntersection(rgn,
@@ -1005,7 +1005,7 @@ bool Widget::paintEvent(Graphics* graphics)
           graphics->getInternalDeltaY())));
     getParent()->paint(graphics, rgn);
 
-    this->flags &= ~JI_HIDDEN;
+    this->flags &= ~HIDDEN;
   }
 
   PaintEvent ev(this, graphics);
@@ -1279,12 +1279,12 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
 
 bool Widget::hasFocus()
 {
-  return (this->flags & JI_HASFOCUS) ? true: false;
+  return (this->flags & HAS_FOCUS) ? true: false;
 }
 
 bool Widget::hasMouse()
 {
-  return (this->flags & JI_HASMOUSE) ? true: false;
+  return (this->flags & HAS_MOUSE) ? true: false;
 }
 
 bool Widget::hasMouseOver()
@@ -1294,7 +1294,7 @@ bool Widget::hasMouseOver()
 
 bool Widget::hasCapture()
 {
-  return (this->flags & JI_HASCAPTURE) ? true: false;
+  return (this->flags & HAS_CAPTURE) ? true: false;
 }
 
 int Widget::getMnemonicChar() const
@@ -1447,8 +1447,8 @@ void Widget::onInitTheme(InitThemeEvent& ev)
   if (m_theme) {
     m_theme->initWidget(this);
 
-    if (!(flags & JI_INITIALIZED))
-      flags |= JI_INITIALIZED;
+    if (!(flags & INITIALIZED))
+      flags |= INITIALIZED;
   }
 }
 

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -158,7 +158,7 @@ void TextBox::onPreferredSize(PreferredSizeEvent& ev)
 
   drawTextBox(NULL, this, &w, &h, gfx::ColorNone, gfx::ColorNone);
 
-  if (this->getAlign() & JI_WORDWRAP) {
+  if (this->getAlign() & WORDWRAP) {
     View* view = View::getView(this);
     int width, min = w;
 

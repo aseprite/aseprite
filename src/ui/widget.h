@@ -83,7 +83,7 @@ namespace ui {
 
     // Text property.
 
-    bool hasText() const { return (flags & JI_HASTEXT) == JI_HASTEXT; }
+    bool hasText() const { return (flags & HAS_TEXT) == HAS_TEXT; }
 
     const std::string& getText() const { return m_text; }
     int getTextInt() const;

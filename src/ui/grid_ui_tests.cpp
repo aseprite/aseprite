@@ -62,7 +62,7 @@ TEST(Grid, Expand2ndWidget)
   w2->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
-  grid->addChildInCell(w2, 1, 1, JI_HORIZONTAL | JI_TOP);
+  grid->addChildInCell(w2, 1, 1, HORIZONTAL | TOP);
 
   // Test request size
   Size reqSize = grid->getPreferredSize();
@@ -128,9 +128,9 @@ TEST(Grid, SameWidth2x1Grid)
 //  +-------+---+
 //
 //  1.align = 0
-//  2.align = JI_HORIZONTAL
-//  3.align = JI_HORIZONTAL | JI_VERTICAL
-//  4.align = JI_VERTICAL
+//  2.align = HORIZONTAL
+//  3.align = HORIZONTAL | VERTICAL
+//  4.align = VERTICAL
 //
 //
 // When we expand the grid we get the following layout:
@@ -161,9 +161,9 @@ TEST(Grid, Intrincate3x3Grid)
   w4->setMinSize(gfx::Size(10, 10));
 
   grid->addChildInCell(w1, 1, 1, 0);
-  grid->addChildInCell(w2, 2, 1, JI_HORIZONTAL);
-  grid->addChildInCell(w3, 2, 2, JI_HORIZONTAL | JI_VERTICAL);
-  grid->addChildInCell(w4, 1, 2, JI_VERTICAL);
+  grid->addChildInCell(w2, 2, 1, HORIZONTAL);
+  grid->addChildInCell(w3, 2, 2, HORIZONTAL | VERTICAL);
+  grid->addChildInCell(w4, 1, 2, VERTICAL);
 
   // Test request size
   grid->child_spacing = 2;

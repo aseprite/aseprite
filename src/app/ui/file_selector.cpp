@@ -256,22 +256,22 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
                         PART_COMBOBOX_ARROW_LEFT,
                         PART_COMBOBOX_ARROW_LEFT_SELECTED,
                         PART_COMBOBOX_ARROW_LEFT_DISABLED,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
   set_gfxicon_to_button(goForwardButton(),
                         PART_COMBOBOX_ARROW_RIGHT,
                         PART_COMBOBOX_ARROW_RIGHT_SELECTED,
                         PART_COMBOBOX_ARROW_RIGHT_DISABLED,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
   set_gfxicon_to_button(goUpButton(),
                         PART_COMBOBOX_ARROW_UP,
                         PART_COMBOBOX_ARROW_UP_SELECTED,
                         PART_COMBOBOX_ARROW_UP_DISABLED,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
   set_gfxicon_to_button(newFolderButton(),
                         PART_NEWFOLDER,
                         PART_NEWFOLDER_SELECTED,
                         PART_NEWFOLDER,
-                        JI_CENTER | JI_MIDDLE);
+                        CENTER | MIDDLE);
 
   setup_mini_look(goBackButton());
   setup_mini_look(goForwardButton());

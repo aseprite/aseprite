@@ -28,7 +28,7 @@ static inline bool is_hex_digit(char digit)
 }
 
 HexColorEntry::HexColorEntry()
-  : Box(JI_HORIZONTAL)
+  : Box(HORIZONTAL)
   , m_label("#")
   , m_entry(16, "")
 {

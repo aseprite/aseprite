@@ -93,16 +93,16 @@ void IconRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const char* tex
   she::Surface* bmp = m_part->getBitmap(0);
   int x, y;
 
-  if (m_align & JI_RIGHT)
+  if (m_align & ui::RIGHT)
     x = bounds.x2() - bmp->width();
-  else if (m_align & JI_CENTER)
+  else if (m_align & ui::CENTER)
     x = bounds.x + bounds.w/2 - bmp->width()/2;
   else
     x = bounds.x;
 
-  if (m_align & JI_BOTTOM)
+  if (m_align & ui::BOTTOM)
     y = bounds.y2() - bmp->height();
-  else if (m_align & JI_MIDDLE)
+  else if (m_align & ui::MIDDLE)
     y = bounds.y + bounds.h/2 - bmp->height()/2;
   else
     y = bounds.y;

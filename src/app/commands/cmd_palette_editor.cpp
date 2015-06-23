@@ -239,9 +239,9 @@ bool PaletteEditorCommand::onChecked(Context* context)
 PaletteEntryEditor::PaletteEntryEditor()
   : Window(WithTitleBar, "Palette Editor (F4)")
   , m_type(app::Color::MaskType)
-  , m_vbox(JI_VERTICAL)
-  , m_topBox(JI_HORIZONTAL)
-  , m_bottomBox(JI_HORIZONTAL)
+  , m_vbox(VERTICAL)
+  , m_topBox(HORIZONTAL)
+  , m_bottomBox(HORIZONTAL)
   , m_colorType(2)
   , m_changeMode(2)
   , m_entryLabel("")
@@ -263,9 +263,9 @@ PaletteEntryEditor::PaletteEntryEditor()
 
   // Top box
   m_topBox.addChild(&m_colorType);
-  m_topBox.addChild(new Separator("", JI_VERTICAL));
+  m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_changeMode);
-  m_topBox.addChild(new Separator("", JI_VERTICAL));
+  m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
   m_topBox.addChild(&m_entryLabel);
   m_topBox.addChild(new BoxFiller);

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,7 +24,7 @@ ListItem::ListItem(const std::string& text)
   : Widget(kListItemWidget)
 {
   setDoubleBuffered(true);
-  setAlign(JI_LEFT | JI_MIDDLE);
+  setAlign(LEFT | MIDDLE);
   setText(text);
   initTheme();
 }

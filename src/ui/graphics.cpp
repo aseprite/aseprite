@@ -258,11 +258,11 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
 {
   gfx::Point pt(0, rc.y);
 
-  if ((align & (JI_MIDDLE | JI_BOTTOM)) != 0) {
+  if ((align & (MIDDLE | BOTTOM)) != 0) {
     gfx::Size preSize = doUIStringAlgorithm(str, gfx::ColorNone, gfx::ColorNone, rc, 0, false);
-    if (align & JI_MIDDLE)
+    if (align & MIDDLE)
       pt.y = rc.y + rc.h/2 - preSize.h/2;
-    else if (align & JI_BOTTOM)
+    else if (align & BOTTOM)
       pt.y = rc.y + rc.h - preSize.h;
   }
 
@@ -276,7 +276,7 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     pt.x = rc.x;
 
     // Without word-wrap
-    if ((align & JI_WORDWRAP) == 0) {
+    if ((align & WORDWRAP) == 0) {
       end = str.find('\n', beg);
     }
     // With word-wrap
@@ -322,9 +322,9 @@ gfx::Size Graphics::doUIStringAlgorithm(const std::string& str, gfx::Color fg, g
     // Render the text
     if (draw) {
       int xout;
-      if ((align & JI_CENTER) == JI_CENTER)
+      if ((align & CENTER) == CENTER)
         xout = pt.x + rc.w/2 - lineSize.w/2;
-      else if ((align & JI_RIGHT) == JI_RIGHT)
+      else if ((align & RIGHT) == RIGHT)
         xout = pt.x + rc.w - lineSize.w;
       else
         xout = pt.x;

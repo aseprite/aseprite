@@ -207,10 +207,10 @@ void WorkspacePanel::onAnimationStop(int animation)
 void WorkspacePanel::onAnimationFrame()
 {
   if (animation() == ANI_DROPAREA) {
-    adjustTime(m_leftTime, JI_LEFT);
-    adjustTime(m_topTime, JI_TOP);
-    adjustTime(m_rightTime, JI_RIGHT);
-    adjustTime(m_bottomTime, JI_BOTTOM);
+    adjustTime(m_leftTime, LEFT);
+    adjustTime(m_topTime, TOP);
+    adjustTime(m_rightTime, RIGHT);
+    adjustTime(m_bottomTime, BOTTOM);
     layout();
   }
 }
@@ -238,8 +238,8 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
     return DropViewAtResult::NOTHING;
 
   int splitterAlign = 0;
-  if (dropArea & (JI_LEFT | JI_RIGHT)) splitterAlign = JI_HORIZONTAL;
-  else if (dropArea & (JI_TOP | JI_BOTTOM)) splitterAlign = JI_VERTICAL;
+  if (dropArea & (LEFT | RIGHT)) splitterAlign = HORIZONTAL;
+  else if (dropArea & (TOP | BOTTOM)) splitterAlign = VERTICAL;
 
   ASSERT(from);
   DropViewAtResult result;
@@ -290,14 +290,14 @@ DropViewAtResult WorkspacePanel::dropViewAt(const gfx::Point& pos, WorkspacePane
     sideSpace = 50;
 
   switch (dropArea) {
-    case JI_LEFT:
-    case JI_TOP:
+    case LEFT:
+    case TOP:
       splitter->setPosition(sideSpace);
       splitter->addChild(side);
       splitter->addChild(self);
       break;
-    case JI_RIGHT:
-    case JI_BOTTOM:
+    case RIGHT:
+    case BOTTOM:
       splitter->setPosition(100-sideSpace);
       splitter->addChild(self);
       splitter->addChild(side);
@@ -324,16 +324,16 @@ int WorkspacePanel::calculateDropArea(const gfx::Point& pos) const
     int threshold = getDropThreshold();
 
     if (left < threshold && left < right && left < top && left < bottom) {
-      return JI_LEFT;
+      return LEFT;
     }
     else if (top < threshold && top < left && top < right && top < bottom) {
-      return JI_TOP;
+      return TOP;
     }
     else if (right < threshold && right < left && right < top && right < bottom) {
-      return JI_RIGHT;
+      return RIGHT;
     }
     else if (bottom < threshold && bottom < left && bottom < top && bottom < right) {
-      return JI_BOTTOM;
+      return BOTTOM;
     }
   }
 

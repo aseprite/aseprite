@@ -37,7 +37,7 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
 
   m_pin.Click.connect(&PopupWindowPin::onPinClick, this);
 
-  set_gfxicon_to_button(&m_pin, PART_UNPINNED, PART_PINNED, PART_UNPINNED, JI_CENTER | JI_MIDDLE);
+  set_gfxicon_to_button(&m_pin, PART_UNPINNED, PART_PINNED, PART_UNPINNED, CENTER | MIDDLE);
 }
 
 void PopupWindowPin::onPinClick(Event& ev)

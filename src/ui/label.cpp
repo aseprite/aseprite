@@ -19,7 +19,7 @@ namespace ui {
 Label::Label(const std::string& text)
   : Widget(kLabelWidget)
 {
-  setAlign(JI_LEFT | JI_MIDDLE);
+  setAlign(LEFT | MIDDLE);
   setText(text);
   initTheme();
 }

@@ -59,8 +59,8 @@ public:
 
 ColorSelector::ColorSelector()
   : PopupWindowPin("Color Selector", PopupWindow::kCloseOnClickInOtherWindow)
-  , m_vbox(JI_VERTICAL)
-  , m_topBox(JI_HORIZONTAL)
+  , m_vbox(VERTICAL)
+  , m_topBox(HORIZONTAL)
   , m_color(app::Color::fromMask())
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_colorType(5)
@@ -82,11 +82,11 @@ ColorSelector::ColorSelector()
   m_colorPaletteContainer.setExpansive(true);
 
   m_topBox.addChild(&m_colorType);
-  m_topBox.addChild(new Separator("", JI_VERTICAL));
+  m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
   m_topBox.addChild(m_warningIcon);
   {
-    Box* miniVbox = new Box(JI_VERTICAL);
+    Box* miniVbox = new Box(VERTICAL);
     miniVbox->addChild(getPin());
     m_topBox.addChild(new BoxFiller);
     m_topBox.addChild(miniVbox);
@@ -113,7 +113,7 @@ ColorSelector::ColorSelector()
   m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);
 
-  m_tooltips.addTooltipFor(m_warningIcon, "This color isn't in the palette\nPress here to add it.", JI_BOTTOM);
+  m_tooltips.addTooltipFor(m_warningIcon, "This color isn't in the palette\nPress here to add it.", BOTTOM);
 
   initTheme();
 }

@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -27,19 +27,19 @@ namespace ui {
   class VBox : public Box
   {
   public:
-    VBox() : Box(JI_VERTICAL) { }
+    VBox() : Box(VERTICAL) { }
   };
 
   class HBox : public Box
   {
   public:
-    HBox() : Box(JI_HORIZONTAL) { }
+    HBox() : Box(HORIZONTAL) { }
   };
 
   class BoxFiller : public Box
   {
   public:
-    BoxFiller() : Box(JI_HORIZONTAL) {
+    BoxFiller() : Box(HORIZONTAL) {
       this->setExpansive(true);
     }
   };

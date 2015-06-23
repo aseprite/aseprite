@@ -110,35 +110,35 @@ void TooltipManager::onTick()
     int trycount = 0;
     for (; trycount < 4; ++trycount) {
       switch (arrowAlign) {
-        case JI_TOP | JI_LEFT:
+        case TOP | LEFT:
           x = bounds.x + bounds.w;
           y = bounds.y + bounds.h;
           break;
-        case JI_TOP | JI_RIGHT:
+        case TOP | RIGHT:
           x = bounds.x - w;
           y = bounds.y + bounds.h;
           break;
-        case JI_BOTTOM | JI_LEFT:
+        case BOTTOM | LEFT:
           x = bounds.x + bounds.w;
           y = bounds.y - h;
           break;
-        case JI_BOTTOM | JI_RIGHT:
+        case BOTTOM | RIGHT:
           x = bounds.x - w;
           y = bounds.y - h;
           break;
-        case JI_TOP:
+        case TOP:
           x = bounds.x + bounds.w/2 - w/2;
           y = bounds.y + bounds.h;
           break;
-        case JI_BOTTOM:
+        case BOTTOM:
           x = bounds.x + bounds.w/2 - w/2;
           y = bounds.y - h;
           break;
-        case JI_LEFT:
+        case LEFT:
           x = bounds.x + bounds.w;
           y = bounds.y + bounds.h/2 - h/2;
           break;
-        case JI_RIGHT:
+        case RIGHT:
           x = bounds.x - w;
           y = bounds.y + bounds.h/2 - h/2;
           break;
@@ -152,13 +152,13 @@ void TooltipManager::onTick()
           case 0:
           case 2:
             // Switch position
-            if (arrowAlign & (JI_TOP | JI_BOTTOM)) arrowAlign ^= JI_TOP | JI_BOTTOM;
-            if (arrowAlign & (JI_LEFT | JI_RIGHT)) arrowAlign ^= JI_LEFT | JI_RIGHT;
+            if (arrowAlign & (TOP | BOTTOM)) arrowAlign ^= TOP | BOTTOM;
+            if (arrowAlign & (LEFT | RIGHT)) arrowAlign ^= LEFT | RIGHT;
             break;
           case 1:
             // Rotate positions
-            if (arrowAlign & (JI_TOP | JI_LEFT)) arrowAlign ^= JI_TOP | JI_LEFT;
-            if (arrowAlign & (JI_BOTTOM | JI_RIGHT)) arrowAlign ^= JI_BOTTOM | JI_RIGHT;
+            if (arrowAlign & (TOP | LEFT)) arrowAlign ^= TOP | LEFT;
+            if (arrowAlign & (BOTTOM | RIGHT)) arrowAlign ^= BOTTOM | RIGHT;
             break;
         }
       }

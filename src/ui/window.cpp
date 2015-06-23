@@ -51,7 +51,7 @@ Window::Window(Type type, const std::string& text)
   m_isAutoRemap = true;
 
   setVisible(false);
-  setAlign(JI_LEFT | JI_MIDDLE);
+  setAlign(LEFT | MIDDLE);
   if (type == WithTitleBar)
     setText(text);
 
@@ -246,7 +246,7 @@ void Window::openWindowInForeground()
   openWindow();
 
   MessageLoop loop(getManager());
-  while (!(this->flags & JI_HIDDEN))
+  while (!(this->flags & HIDDEN))
     loop.pumpMessages();
 
   m_isForeground = false;
