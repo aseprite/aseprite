@@ -299,12 +299,12 @@ void ColorBar::onPaletteButtonClick()
         des("Descending");
       menu.addChild(&rev);
       menu.addChild(&grd);
-      menu.addChild(new ui::Separator("", HORIZONTAL));
+      menu.addChild(new ui::MenuSeparator);
       menu.addChild(&hue);
       menu.addChild(&sat);
       menu.addChild(&bri);
       menu.addChild(&lum);
-      menu.addChild(new ui::Separator("", HORIZONTAL));
+      menu.addChild(new ui::MenuSeparator);
       menu.addChild(&asc);
       menu.addChild(&des);
 

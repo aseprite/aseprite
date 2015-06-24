@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -11,6 +11,7 @@
 #include "base/signal.h"
 #include "base/unique_ptr.h"
 #include "ui/register_message.h"
+#include "ui/separator.h"
 #include "ui/widget.h"
 
 namespace ui {
@@ -19,8 +20,7 @@ namespace ui {
   class Timer;
   struct MenuBaseData;
 
-  class Menu : public Widget
-  {
+  class Menu : public Widget {
   public:
     Menu();
     ~Menu();
@@ -145,6 +145,12 @@ namespace ui {
 
     friend class Menu;
     friend class MenuBox;
+  };
+
+  class MenuSeparator : public Separator {
+  public:
+    MenuSeparator() : Separator("", HORIZONTAL) {
+    }
   };
 
   extern RegisterMessage kOpenMenuItemMessage;

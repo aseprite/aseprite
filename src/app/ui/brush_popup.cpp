@@ -72,7 +72,7 @@ protected:
         deleteAllItem.Click.connect(&Item::onDeleteAllBrushes, this);
         menu.addChild(&lockItem);
         menu.addChild(&deleteItem);
-        menu.addChild(new Separator("", HORIZONTAL));
+        menu.addChild(new MenuSeparator);
         menu.addChild(&deleteAllItem);
 
         // Here we make the popup window temporaly floating, so it's

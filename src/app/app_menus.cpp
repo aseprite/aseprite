@@ -209,7 +209,7 @@ Widget* AppMenus::convertXmlelemToMenuitem(TiXmlElement* elem)
 {
   // is it a <separator>?
   if (strcmp(elem->Value(), "separator") == 0)
-    return new Separator("", HORIZONTAL);
+    return new MenuSeparator;
 
   const char* command_name = elem->Attribute("command");
   Command* command =
@@ -265,7 +265,7 @@ Widget* AppMenus::createInvalidVersionMenuitem()
   subMenu->addChild(new AppMenuItem(PACKAGE " is using a customized gui.xml (maybe from your HOME directory)."));
   subMenu->addChild(new AppMenuItem("You should update your customized gui.xml file to the new version to get"));
   subMenu->addChild(new AppMenuItem("the latest commands available."));
-  subMenu->addChild(new Separator("", HORIZONTAL));
+  subMenu->addChild(new MenuSeparator);
   subMenu->addChild(new AppMenuItem("You can bypass this validation adding the correct version"));
   subMenu->addChild(new AppMenuItem("number in <gui version=\"" VERSION "\"> element."));
   menuitem->setSubmenu(subMenu);
