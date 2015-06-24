@@ -65,13 +65,15 @@ namespace ui {
     void setId(const char* id) { m_id = id; }
 
     int flags() const { return m_flags; }
-    void setFlags(int flags) { m_flags = flags; }
     bool hasFlags(int flags) const { return ((m_flags & flags) == flags); }
     void enableFlags(int flags) { m_flags |= flags; }
     void disableFlags(int flags) { m_flags &= ~flags; }
 
-    int getAlign() const { return m_align; }
-    void setAlign(int align) { m_align = align; }
+    int getAlign() const { return (m_flags & ALIGN_MASK); }
+    void setAlign(int align) {
+      m_flags = ((m_flags & PROPERTIES_MASK) |
+                 (align & ALIGN_MASK));
+    }
 
     // Text property.
 
@@ -379,7 +381,6 @@ namespace ui {
     std::string m_id;            // Widget's id
     int m_flags;                 // Special boolean properties (see flags in ui/base.h)
     Theme* m_theme;              // Widget's theme
-    int m_align;                 // Widget alignment
     std::string m_text;          // Widget text
     mutable she::Font* m_font;   // Cached font returned by the theme
     gfx::Color m_bgColor;        // Background color
