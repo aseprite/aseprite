@@ -193,11 +193,6 @@ void Editor::drawBrushPreview(const gfx::Point& pos)
       (m_layer ? static_cast<LayerImage*>(m_layer)->blendMode():
                  BlendMode::NORMAL));
 
-    // In 'indexed' images, if the current color is 0, we have to use
-    // a different mask color (different from 0) to draw the extra layer
-    if (brush_color == mask_color)
-      mask_color = (mask_color == 0 ? 1: 0);
-
     Image* extraImage = m_document->getExtraCelImage();
     extraImage->setMaskColor(mask_color);
     clear_image(extraImage, mask_color);
