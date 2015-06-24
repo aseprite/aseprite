@@ -4,8 +4,6 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-/* Based on code from GTK+ 2.1.2 (gtk+/gtk/gtkhbox.c) */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -30,162 +28,124 @@ Box::Box(int align)
 
 void Box::onPreferredSize(PreferredSizeEvent& ev)
 {
-#define GET_CHILD_SIZE(w, h)                    \
-  {                                             \
-    if (getAlign() & HOMOGENEOUS)               \
-      w = MAX(w, reqSize.w);                    \
-    else                                        \
-      w += reqSize.w;                           \
-                                                \
-    h = MAX(h, reqSize.h);                      \
+#define ADD_CHILD_SIZE(w, h) {                      \
+    if (getAlign() & HOMOGENEOUS)                   \
+      prefSize.w = MAX(prefSize.w, childSize.w);    \
+    else                                            \
+      prefSize.w += childSize.w;                    \
+    prefSize.h = MAX(prefSize.h, childSize.h);      \
   }
 
-#define FINAL_SIZE(w)                                   \
-  {                                                     \
-    if (getAlign() & HOMOGENEOUS)                       \
-      w *= nvis_children;                               \
-                                                        \
-    w += childSpacing() * (nvis_children-1);            \
+#define FINAL_ADJUSTMENT(w) {                            \
+    if (getAlign() & HOMOGENEOUS)                        \
+      prefSize.w *= visibleChildren;                     \
+    prefSize.w += childSpacing() * (visibleChildren-1);  \
   }
 
-  int w, h, nvis_children;
-
-  nvis_children = 0;
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
+  int visibleChildren = 0;
+  for (Widget* child : getChildren()) {
     if (!child->hasFlags(HIDDEN))
-      nvis_children++;
+      ++visibleChildren;
   }
 
-  w = h = 0;
-
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    Widget* child = *it;
-
+  Size prefSize(0, 0);
+  for (Widget* child : getChildren()) {
     if (child->hasFlags(HIDDEN))
       continue;
 
-    Size reqSize = child->getPreferredSize();
-
-    if (this->getAlign() & HORIZONTAL) {
-      GET_CHILD_SIZE(w, h);
+    Size childSize = child->getPreferredSize();
+    if (getAlign() & HORIZONTAL) {
+      ADD_CHILD_SIZE(w, h);
     }
     else {
-      GET_CHILD_SIZE(h, w);
+      ADD_CHILD_SIZE(h, w);
     }
   }
 
-  if (nvis_children > 0) {
-    if (this->getAlign() & HORIZONTAL) {
-      FINAL_SIZE(w);
+  if (visibleChildren > 0) {
+    if (getAlign() & HORIZONTAL) {
+      FINAL_ADJUSTMENT(w);
     }
     else {
-      FINAL_SIZE(h);
+      FINAL_ADJUSTMENT(h);
     }
   }
 
-  w += border().width();
-  h += border().height();
+  prefSize.w += border().width();
+  prefSize.h += border().height();
 
-  ev.setPreferredSize(Size(w, h));
+  ev.setPreferredSize(prefSize);
 }
 
 void Box::onResize(ResizeEvent& ev)
 {
-#define FIXUP(x, y, w, h, left, top, width, height)                     \
-  {                                                                     \
-    int width;                                                          \
-    if (nvis_children > 0) {                                            \
+#define LAYOUT_CHILDREN(x, w) {                                         \
+    availExtraSize = availSize.w - prefSize.w;                          \
+    availSize.w -= childSpacing() * (visibleChildren-1);                \
+    if (getAlign() & HOMOGENEOUS)                                       \
+      homogeneousSize = availSize.w / visibleChildren;                  \
+                                                                        \
+    Rect childPos(getChildrenBounds());                                 \
+    int i = 0, j = 0;                                                   \
+    for (Widget* child : getChildren()) {                               \
+      if (child->hasFlags(HIDDEN))                                      \
+        continue;                                                       \
+                                                                        \
+      int size = 0;                                                     \
+                                                                        \
       if (getAlign() & HOMOGENEOUS) {                                   \
-        width = (getBounds().w                                          \
-                 - this->border().width()                               \
-                 - this->childSpacing() * (nvis_children - 1));         \
-        extra = width / nvis_children;                                  \
-      }                                                                 \
-      else if (nexpand_children > 0) {                                  \
-        width = getBounds().w - reqSize.w;                              \
-        extra = width / nexpand_children;                               \
+        if (i < visibleChildren-1)                                      \
+          size = homogeneousSize;                                       \
+        else                                                            \
+          size = availSize.w;                                           \
       }                                                                 \
       else {                                                            \
-        width = 0;                                                      \
-        extra = 0;                                                      \
-      }                                                                 \
+        size = child->getPreferredSize().w;                             \
                                                                         \
-      x = getBounds().x + border().left();                              \
-      y = getBounds().y + border().top();                               \
-      h = MAX(1, getBounds().h - border().height());                    \
-                                                                        \
-      UI_FOREACH_WIDGET(getChildren(), it) {                            \
-        child = *it;                                                    \
-                                                                        \
-        if (!child->hasFlags(HIDDEN)) {                                 \
-          if (this->getAlign() & HOMOGENEOUS) {                         \
-            if (nvis_children == 1)                                     \
-              child_width = width;                                      \
-            else                                                        \
-              child_width = extra;                                      \
-                                                                        \
-            --nvis_children;                                            \
-            width -= extra;                                             \
-          }                                                             \
-          else {                                                        \
-            reqSize = child->getPreferredSize();                        \
-                                                                        \
-            child_width = reqSize.w;                                    \
-                                                                        \
-            if (child->isExpansive()) {                                 \
-              if (nexpand_children == 1)                                \
-                child_width += width;                                   \
-              else                                                      \
-                child_width += extra;                                   \
-                                                                        \
-              --nexpand_children;                                       \
-              width -= extra;                                           \
-            }                                                           \
-          }                                                             \
-                                                                        \
-          w = MAX(1, child_width);                                      \
-                                                                        \
-          gfx::Rect cpos;                                               \
-          if (getAlign() & HORIZONTAL)                                  \
-            cpos = gfx::Rect(x, y, w, h);                               \
-          else                                                          \
-            cpos = gfx::Rect(y, x, h, w);                               \
-                                                                        \
-          child->setBounds(cpos);                                       \
-                                                                        \
-          x += child_width + this->childSpacing();                      \
+        if (child->isExpansive()) {                                     \
+          int extraSize = (availExtraSize / (expansiveChildren-j));     \
+          size += extraSize;                                            \
+          availExtraSize -= extraSize;                                  \
+          if (++j == expansiveChildren)                                 \
+            size += availExtraSize;                                     \
         }                                                               \
       }                                                                 \
+                                                                        \
+      childPos.w = MAX(1, size);                                        \
+      child->setBounds(childPos);                                       \
+      childPos.x += size + childSpacing();                              \
+      availSize.w -= size;                                              \
+      ++i;                                                              \
     }                                                                   \
   }
 
-  Widget* child;
-  int nvis_children = 0;
-  int nexpand_children = 0;
-  int child_width;
-  int extra;
-  int x, y, w, h;
-
   setBoundsQuietly(ev.getBounds());
 
-  UI_FOREACH_WIDGET(getChildren(), it) {
-    child = *it;
-
+  int visibleChildren = 0;
+  int expansiveChildren = 0;
+  for (Widget* child : getChildren()) {
     if (!child->hasFlags(HIDDEN)) {
-      nvis_children++;
+      ++visibleChildren;
       if (child->isExpansive())
-        nexpand_children++;
+        ++expansiveChildren;
     }
   }
 
-  Size reqSize = getPreferredSize();
+  if (visibleChildren > 0) {
+    Size prefSize(getPreferredSize());
+    Size availSize(getChildrenBounds().getSize());
+    int homogeneousSize = 0;
+    int availExtraSize = 0;
 
-  if (this->getAlign() & HORIZONTAL) {
-    FIXUP(x, y, w, h, left, top, width, height);
-  }
-  else {
-    FIXUP(y, x, h, w, top, left, height, width);
+    prefSize.w -= border().width();
+    prefSize.h -= border().height();
+
+    if (getAlign() & HORIZONTAL) {
+      LAYOUT_CHILDREN(x, w);
+    }
+    else {
+      LAYOUT_CHILDREN(y, h);
+    }
   }
 }
 
