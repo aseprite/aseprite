@@ -29,6 +29,7 @@
 #include "base/bind.h"
 #include "base/memory.h"
 #include "doc/algo.h"
+#include "doc/blend_internals.h"
 #include "doc/brush.h"
 #include "doc/cel.h"
 #include "doc/image_impl.h"
@@ -182,9 +183,11 @@ void Editor::drawBrushPreview(const gfx::Point& pos)
     Site site = getSite();
     Cel* cel = site.cel();
 
-    m_document->prepareExtraCel(
-      brushBounds,
-      cel ? cel->opacity(): 255);
+    int t, opacity = 255;
+    if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+    if (m_layer) opacity = MUL_UN8(opacity, static_cast<LayerImage*>(m_layer)->opacity(), t);
+
+    m_document->prepareExtraCel(brushBounds, opacity);
     m_document->setExtraCelType(render::ExtraType::NONE);
     m_document->setExtraCelBlendMode(
       (m_layer ? static_cast<LayerImage*>(m_layer)->blendMode():
