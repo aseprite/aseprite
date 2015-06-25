@@ -72,16 +72,6 @@ PixelsMovement::PixelsMovement(Context* context,
   // and its owner could destroy our new "extra cel".
   ASSERT(!m_document->getExtraCel());
 
-  int t, opacity = static_cast<LayerImage*>(m_layer)->opacity();
-  Cel* cel = m_site.cel();
-  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
-
-  ContextWriter writer(m_reader, 500);
-  m_document->prepareExtraCel(m_sprite->bounds(), opacity);
-  m_document->setExtraCelType(render::ExtraType::PATCH);
-  m_document->setExtraCelBlendMode(
-    static_cast<LayerImage*>(m_layer)->blendMode());
-
   redrawExtraImage();
 
   m_initialMask = new Mask(*m_document->mask());
@@ -440,7 +430,7 @@ Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
   int height = rightBottom.y - leftTop.y;
   base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), width, height));
 
-  drawImage(image, leftTop);
+  drawImage(image, leftTop, false);
 
   origin = leftTop;
 
@@ -469,8 +459,8 @@ void PixelsMovement::stampImage()
 
       expand.getDestCanvas()->copy(
         image, gfx::Clip(
-          -expand.getCel()->x(),
-          -expand.getCel()->y(),
+          cel->x()-expand.getCel()->x(),
+          cel->y()-expand.getCel()->y(),
           image->bounds()));
 
       expand.commit();
@@ -588,11 +578,19 @@ void PixelsMovement::setMaskColor(color_t mask_color)
 
 void PixelsMovement::redrawExtraImage()
 {
-  ASSERT(m_document->getExtraCelImage());
+  int t, opacity = static_cast<LayerImage*>(m_layer)->opacity();
+  Cel* cel = m_site.cel();
+  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+
+  gfx::Rect bounds = m_currentData.transformedBounds();
+  m_document->prepareExtraCel(bounds, opacity);
+  m_document->setExtraCelType(render::ExtraType::PATCH);
+  m_document->setExtraCelBlendMode(
+    static_cast<LayerImage*>(m_layer)->blendMode());
 
   // Draw the transformed pixels in the extra-cel which is the chunk
   // of pixels that the user is moving.
-  drawImage(m_document->getExtraCelImage(), gfx::Point(0, 0));
+  drawImage(m_document->getExtraCelImage(), bounds.getOrigin(), true);
 }
 
 void PixelsMovement::redrawCurrentMask()
@@ -612,7 +610,7 @@ void PixelsMovement::redrawCurrentMask()
   m_currentMask->unfreeze();
 }
 
-void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt)
+void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool renderOriginalLayer)
 {
   ASSERT(dst);
 
@@ -620,12 +618,15 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt)
   m_currentData.transformBox(corners);
 
   dst->setMaskColor(m_sprite->transparentColor());
-  clear_image(dst, dst->maskColor());
 
-  render::Render().renderLayer(
-    dst, m_layer, m_site.frame(),
-    gfx::Clip(0, 0, dst->bounds()),
-    BlendMode::SRC);
+  gfx::Rect bounds = m_currentData.transformedBounds();
+  dst->clear(dst->maskColor());
+
+  if (renderOriginalLayer)
+    render::Render().renderLayer(
+      dst, m_layer, m_site.frame(),
+      gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
+      BlendMode::SRC);
 
   m_originalImage->setMaskColor(m_maskColor);
   drawParallelogram(dst, m_originalImage, corners, pt);

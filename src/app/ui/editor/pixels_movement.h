@@ -96,7 +96,7 @@ namespace app {
     void onRotationAlgorithmChange();
     void redrawExtraImage();
     void redrawCurrentMask();
-    void drawImage(doc::Image* dst, const gfx::Point& pos);
+    void drawImage(doc::Image* dst, const gfx::Point& pos, bool renderOriginalLayer);
     void drawParallelogram(doc::Image* dst, doc::Image* src,
       const gfx::Transformation::Corners& corners,
       const gfx::Point& leftTop);
