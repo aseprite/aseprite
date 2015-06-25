@@ -602,11 +602,12 @@ void PixelsMovement::redrawCurrentMask()
 
   // Transform mask
 
-  m_currentMask->replace(m_sprite->bounds());
+  gfx::Rect bounds = m_currentData.transformedBounds();
+  m_currentMask->replace(bounds);
   m_currentMask->freeze();
   clear_image(m_currentMask->bitmap(), 0);
   drawParallelogram(m_currentMask->bitmap(), m_initialMask->bitmap(),
-    corners, gfx::Point(0, 0));
+                    corners, bounds.getOrigin());
 
   m_currentMask->unfreeze();
 }

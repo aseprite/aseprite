@@ -83,6 +83,8 @@ public:
   // keep the current rotated-corners in the same location.
   void displacePivotTo(const Point& newPivot);
 
+  Rect transformedBounds() const;
+
   // Static helper method to rotate points.
   static PointT<double> rotatePoint(const PointT<double>& point,
     const PointT<double>& pivot, double angle);

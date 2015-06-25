@@ -81,4 +81,18 @@ PointT<double> Transformation::rotatePoint(
       pivot.y + dy*cos + dx*sin);
 }
 
+Rect Transformation::transformedBounds() const
+{
+  // Get transformed corners
+  Corners corners;
+  transformBox(corners);
+
+  // Create a union of all corners
+  Rect bounds;
+  for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
+    bounds = bounds.createUnion(gfx::Rect((int)corners[i].x, (int)corners[i].y, 1, 1));
+
+  return bounds;
+}
+
 }
