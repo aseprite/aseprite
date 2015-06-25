@@ -453,8 +453,14 @@ void PixelsMovement::stampImage()
         TiledMode::NONE, m_transaction,
         ExpandCelCanvas::None);
 
-      // TODO can we reduce this region?
-      gfx::Region modifiedRegion(expand.getDestCanvas()->bounds());
+      // We cannot use cel->bounds() because cel->image() is nullptr
+      gfx::Rect modifiedRect(
+        cel->x(),
+        cel->y(),
+        image->width(),
+        image->height());
+
+      gfx::Region modifiedRegion(modifiedRect);
       expand.validateDestCanvas(modifiedRegion);
 
       expand.getDestCanvas()->copy(
