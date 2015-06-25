@@ -290,7 +290,7 @@ public:
     m_modify_selection = state;
 
     if (state) {
-      m_maxBounds = gfx::Rect(0, 0, 0, 0);
+      m_maxBounds = loop->getMask()->bounds();
 
       m_mask.copyFrom(loop->getMask());
       m_mask.freeze();
