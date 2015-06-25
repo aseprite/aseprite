@@ -417,11 +417,11 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));
     gfx::Point origin = document->mask()->bounds().getOrigin();
-    int opacity = 255;
+
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
         editor->getSite(),
-        tmpImage, origin, opacity,
+        tmpImage, origin,
         "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection

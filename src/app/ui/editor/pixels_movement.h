@@ -50,7 +50,7 @@ namespace app {
     PixelsMovement(Context* context,
       Site site,
       const Image* moveThis,
-      const gfx::Point& initialPos, int opacity,
+      const gfx::Point& initialPos,
       const char* operationName);
     ~PixelsMovement();
 

@@ -30,6 +30,7 @@
 #include "doc/algorithm/flip_image.h"
 #include "doc/algorithm/rotate.h"
 #include "doc/algorithm/rotsprite.h"
+#include "doc/blend_internals.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -48,7 +49,7 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
 
 PixelsMovement::PixelsMovement(Context* context,
   Site site,
-  const Image* moveThis, const gfx::Point& initialPos, int opacity,
+  const Image* moveThis, const gfx::Point& initialPos,
   const char* operationName)
   : m_reader(context)
   , m_site(site)
@@ -71,9 +72,13 @@ PixelsMovement::PixelsMovement(Context* context,
   // and its owner could destroy our new "extra cel".
   ASSERT(!m_document->getExtraCel());
 
+  int t, opacity = static_cast<LayerImage*>(m_layer)->opacity();
+  Cel* cel = m_site.cel();
+  if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
+
   ContextWriter writer(m_reader, 500);
   m_document->prepareExtraCel(m_sprite->bounds(), opacity);
-  m_document->setExtraCelType(render::ExtraType::COMPOSITE);
+  m_document->setExtraCelType(render::ExtraType::PATCH);
   m_document->setExtraCelBlendMode(
     static_cast<LayerImage*>(m_layer)->blendMode());
 
@@ -462,11 +467,11 @@ void PixelsMovement::stampImage()
       gfx::Region modifiedRegion(expand.getDestCanvas()->bounds());
       expand.validateDestCanvas(modifiedRegion);
 
-      render::composite_image(
-        expand.getDestCanvas(), image,
-        -expand.getCel()->x(),
-        -expand.getCel()->y(),
-        cel->opacity(), BlendMode::NORMAL);
+      expand.getDestCanvas()->copy(
+        image, gfx::Clip(
+          -expand.getCel()->x(),
+          -expand.getCel()->y(),
+          image->bounds()));
 
       expand.commit();
     }
@@ -615,6 +620,11 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt)
 
   dst->setMaskColor(m_sprite->transparentColor());
   clear_image(dst, dst->maskColor());
+
+  render::Render().renderLayer(
+    dst, m_layer, m_site.frame(),
+    gfx::Clip(0, 0, dst->bounds()),
+    BlendMode::SRC);
 
   m_originalImage->setMaskColor(m_maskColor);
   drawParallelogram(dst, m_originalImage, corners, pt);

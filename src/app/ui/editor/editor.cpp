@@ -1471,7 +1471,6 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
   }
 
   Sprite* sprite = this->sprite();
-  int opacity = 255;
 
   // Check bounds where the image will be pasted.
   int x = pos.x;
@@ -1493,7 +1492,7 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
-      getSite(), image, gfx::Point(x, y), opacity, "Paste"));
+      getSite(), image, gfx::Point(x, y), "Paste"));
 
   // Select the pasted image so the user can move it and transform it.
   pixelsMovement->maskImage(image);
