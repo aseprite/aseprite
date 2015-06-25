@@ -165,27 +165,30 @@ bool SelectBoxState::onMouseMove(Editor* editor, MouseMessage* msg)
     return StandbyState::onMouseMove(editor, msg);
 }
 
-bool SelectBoxState::onSetCursor(Editor* editor)
+bool SelectBoxState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (hasFlag(RULERS)) {
     if (m_movingRuler >= 0) {
       switch (m_rulers[m_movingRuler].getOrientation()) {
-        case Ruler::Horizontal: ui::set_mouse_cursor(kSizeNSCursor); return true;
-        case Ruler::Vertical: ui::set_mouse_cursor(kSizeWECursor); return true;
+
+        case Ruler::Horizontal:
+          editor->showMouseCursor(kSizeNSCursor);
+          return true;
+
+        case Ruler::Vertical:
+          editor->showMouseCursor(kSizeWECursor);
+          return true;
       }
     }
 
-    int x = ui::get_mouse_position().x;
-    int y = ui::get_mouse_position().y;
-
     for (Rulers::iterator it = m_rulers.begin(), end = m_rulers.end(); it != end; ++it) {
-      if (touchRuler(editor, *it, x, y)) {
+      if (touchRuler(editor, *it, mouseScreenPos.x, mouseScreenPos.y)) {
         switch (it->getOrientation()) {
           case Ruler::Horizontal:
-            ui::set_mouse_cursor(kSizeNSCursor);
+            editor->showMouseCursor(kSizeNSCursor);
             return true;
           case Ruler::Vertical:
-            ui::set_mouse_cursor(kSizeWECursor);
+            editor->showMouseCursor(kSizeWECursor);
             return true;
         }
       }
@@ -193,11 +196,11 @@ bool SelectBoxState::onSetCursor(Editor* editor)
   }
 
   if (!requireBrushPreview()) {
-    ui::set_mouse_cursor(kArrowCursor);
+    editor->showMouseCursor(kArrowCursor);
     return true;
   }
 
-  return StandbyState::onSetCursor(editor);
+  return StandbyState::onSetCursor(editor, mouseScreenPos);
 }
 
 bool SelectBoxState::acceptQuickTool(tools::Tool* tool)

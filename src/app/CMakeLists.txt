@@ -311,7 +311,7 @@ add_library(app-lib
   ui/devconsole_view.cpp
   ui/document_view.cpp
   ui/drop_down_button.cpp
-  ui/editor/cursor.cpp
+  ui/editor/brush_preview.cpp
   ui/editor/drawing_state.cpp
   ui/editor/editor.cpp
   ui/editor/editor_observers.cpp

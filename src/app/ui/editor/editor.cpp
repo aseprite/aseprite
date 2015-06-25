@@ -33,7 +33,6 @@
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/play_state.h"
-#include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/editor/standby_state.h"
 #include "app/ui/main_window.h"
 #include "app/ui/skin/skin_theme.h"
@@ -151,9 +150,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_layer(m_sprite->folder()->getFirstLayer())
   , m_frame(frame_t(0))
   , m_zoom(1, 1)
-  , m_cursorOnScreen(false)
-  , m_cursorScreen(0, 0)
-  , m_cursorEditor(0, 0)
+  , m_brushPreview(this)
   , m_quicktool(NULL)
   , m_selectionMode(tools::SelectionMode::DEFAULT)
   , m_offset_x(0)
@@ -219,7 +216,6 @@ Editor::~Editor()
 void Editor::destroyEditorSharedInternals()
 {
   m_renderBuffer.reset();
-  exitEditorCursor();
 }
 
 bool Editor::isActive() const
@@ -237,7 +233,7 @@ WidgetType editor_type()
 
 void Editor::setStateInternal(const EditorStatePtr& newState)
 {
-  HideShowDrawingCursor hideShow(this);
+  m_brushPreview.hide();
 
   // Fire before change state event, set the state, and fire after
   // change state event.
@@ -269,7 +265,7 @@ void Editor::setStateInternal(const EditorStatePtr& newState)
   m_observers.notifyStateChanged(this);
 
   // Setup the new mouse cursor
-  setCursor();
+  setCursor(ui::get_mouse_position());
 
   updateStatusBar();
 }
@@ -343,13 +339,10 @@ void Editor::setDefaultScroll()
 // Sets the scroll position of the editor
 void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
 {
+  HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Point oldScroll;
   Region region;
-  bool onScreen = m_cursorOnScreen;
-
-  if (onScreen)
-    clearBrushPreview();
 
   if (blit_valid_rgn) {
     getDrawableRegion(region, kCutTopWindows);
@@ -363,9 +356,6 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
     // Move screen with blits
     scrollRegion(region, oldScroll - newScroll);
   }
-
-  if (onScreen)
-    drawBrushPreview(m_cursorScreen);
 }
 
 void Editor::setEditorZoom(Zoom zoom)
@@ -512,6 +502,10 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         tmp, 0, 0, 0, 0, rc.w, rc.h);
 
       g->blit(tmp, 0, 0, dest_x, dest_y, rc.w, rc.h);
+
+      m_brushPreview.invalidateRegion(
+        gfx::Region(
+          gfx::Rect(dest_x, dest_y, rc.w, rc.h)));
     }
   }
 }
@@ -698,17 +692,11 @@ void Editor::drawMaskSafe()
   if (isVisible() &&
       m_document &&
       m_document->getMaskBoundaries()) {
-    bool onScreen = m_cursorOnScreen;
-
     Region region;
     getDrawableRegion(region, kCutTopWindows);
     region.offset(-getBounds().getOrigin());
 
-    if (onScreen)
-      clearBrushPreview();
-    else
-      ui::hide_mouse_cursor();
-
+    HideBrushPreview hide(m_brushPreview);
     GraphicsPtr g = getGraphics(getClientBounds());
 
     for (const gfx::Rect& rc : region) {
@@ -716,12 +704,6 @@ void Editor::drawMaskSafe()
       if (clip)
         drawMask(g.get());
     }
-
-    // Draw the cursor
-    if (onScreen)
-      drawBrushPreview(m_cursorScreen);
-    else
-      ui::show_mouse_cursor();
   }
 }
 
@@ -814,6 +796,8 @@ void Editor::flashCurrentLayer()
 
 gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid_rgn)
 {
+  // // Hide the brush preview
+  // HideBrushPreview hide(editor->brushPreview());
   View* view = View::getView(this);
   gfx::Rect vp = view->getViewportBounds();
   gfx::Point mousePos = msg->position();
@@ -855,6 +839,16 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
     m_oldPos = mousePos;
 
   return mousePos;
+}
+
+void Editor::drawBrushPreview(const gfx::Point& pos)
+{
+  m_brushPreview.show(pos);
+}
+
+void Editor::clearBrushPreview()
+{
+  m_brushPreview.hide();
 }
 
 bool Editor::isCurrentToolAffectedByRightClickMode()
@@ -1010,43 +1004,6 @@ Rect Editor::editorToScreen(const Rect& rc)
     editorToScreen(rc.getPoint2()));
 }
 
-void Editor::showDrawingCursor()
-{
-  ASSERT(m_sprite != NULL);
-
-  if (!m_cursorOnScreen && canDraw()) {
-    ui::hide_mouse_cursor();
-    drawBrushPreview(ui::get_mouse_position());
-    ui::show_mouse_cursor();
-  }
-}
-
-void Editor::hideDrawingCursor()
-{
-  if (m_cursorOnScreen) {
-    ui::hide_mouse_cursor();
-    clearBrushPreview();
-    ui::show_mouse_cursor();
-  }
-}
-
-void Editor::moveDrawingCursor()
-{
-  // Draw cursor
-  if (m_cursorOnScreen) {
-    gfx::Point mousePos = ui::get_mouse_position();
-
-    // Redraw it only when the mouse change to other pixel (not when
-    // the mouse just moves).
-    if (m_cursorScreen != mousePos) {
-      ui::hide_mouse_cursor();
-      clearBrushPreview();
-      drawBrushPreview(mousePos);
-      ui::show_mouse_cursor();
-    }
-  }
-}
-
 void Editor::addObserver(EditorObserver* observer)
 {
   m_observers.addObserver(observer);
@@ -1081,10 +1038,9 @@ Rect Editor::getVisibleSpriteBounds()
 // Changes the scroll to see the given point as the center of the editor.
 void Editor::centerInSpritePoint(const gfx::Point& spritePos)
 {
+  HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-
-  hideDrawingCursor();
 
   gfx::Point scroll(
     m_offset_x - (vp.w/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.x),
@@ -1092,8 +1048,6 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
 
   updateEditor();
   setEditorScroll(scroll, false);
-
-  showDrawingCursor();
   invalidate();
 }
 
@@ -1133,21 +1087,18 @@ void Editor::updateQuicktool()
     //
     // TODO We could add a quick tool observer for this
     if (old_quicktool != new_quicktool) {
-      // Hide the drawing cursor with the current tool brush size before
-      // we change the quicktool. In this way we avoid using the
-      // quicktool brush size to clean the current tool cursor.
+      // Hide the brush preview with the current tool brush size
+      // before we change the quicktool. In this way we avoid using
+      // the quicktool brush size to clean the current tool cursor.
       //
       // TODO Create a new Document concept of multiple extra cels: we
       // need an extra cel for the drawing cursor, other for the moving
       // pixels, etc. In this way we'll not have conflicts between
       // different uses of the same extra cel.
-      if (m_state->requireBrushPreview())
-        hideDrawingCursor();
-
-      m_quicktool = new_quicktool;
-
-      if (m_state->requireBrushPreview())
-        showDrawingCursor();
+      {
+        HideBrushPreview hide(m_brushPreview);
+        m_quicktool = new_quicktool;
+      }
 
       m_state->onQuickToolChange(this);
 
@@ -1226,7 +1177,7 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kMouseLeaveMessage:
-      hideDrawingCursor();
+      m_brushPreview.hide();
       StatusBar::instance()->clearText();
       break;
 
@@ -1240,7 +1191,7 @@ bool Editor::onProcessMessage(Message* msg)
 
           updateQuicktool();
           updateContextBarFromModifiers();
-          setCursor();
+          setCursor(mouseMsg->position());
         }
 
         EditorStatePtr holdState(m_state);
@@ -1258,14 +1209,15 @@ bool Editor::onProcessMessage(Message* msg)
     case kMouseUpMessage:
       if (m_sprite) {
         EditorStatePtr holdState(m_state);
-        bool result = m_state->onMouseUp(this, static_cast<MouseMessage*>(msg));
+        MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
+        bool result = m_state->onMouseUp(this, mouseMsg);
 
         if (!hasCapture()) {
           m_secondaryButton = false;
 
           updateQuicktool();
           updateContextBarFromModifiers();
-          setCursor();
+          setCursor(mouseMsg->position());
         }
 
         if (result)
@@ -1281,7 +1233,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateQuicktool();
           updateContextBarFromModifiers();
-          setCursor();
+          setCursor(ui::get_mouse_position());
         }
 
         if (used)
@@ -1297,7 +1249,7 @@ bool Editor::onProcessMessage(Message* msg)
         if (hasMouse()) {
           updateQuicktool();
           updateContextBarFromModifiers();
-          setCursor();
+          setCursor(ui::get_mouse_position());
         }
 
         if (used)
@@ -1320,7 +1272,7 @@ bool Editor::onProcessMessage(Message* msg)
       break;
 
     case kSetCursorMessage:
-      setCursor();
+      setCursor(static_cast<MouseMessage*>(msg)->position());
       return true;
   }
 
@@ -1361,13 +1313,10 @@ void Editor::onResize(ui::ResizeEvent& ev)
 
 void Editor::onPaint(ui::PaintEvent& ev)
 {
+  HideBrushPreview hide(m_brushPreview);
   Graphics* g = ev.getGraphics();
   gfx::Rect rc = getClientBounds();
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-
-  bool onScreen = m_cursorOnScreen;
-  if (onScreen)
-    clearBrushPreview();
 
   // Editor without sprite
   if (!m_sprite) {
@@ -1390,11 +1339,6 @@ void Editor::onPaint(ui::PaintEvent& ev)
       else {
         m_mask_timer.stop();
       }
-
-      // Draw the cursor again
-      if (onScreen) {
-        drawBrushPreview(ui::get_mouse_position());
-      }
     }
     catch (const LockedDocumentException&) {
       // The sprite is locked to be read, so we can draw an opaque
@@ -1403,6 +1347,12 @@ void Editor::onPaint(ui::PaintEvent& ev)
       defer_invalid_rect(g->getClipBounds().offset(getBounds().getOrigin()));
     }
   }
+}
+
+void Editor::onInvalidateRegion(const gfx::Region& region)
+{
+  Widget::onInvalidateRegion(region);
+  m_brushPreview.invalidateRegion(region);
 }
 
 // When the current tool is changed
@@ -1419,18 +1369,12 @@ void Editor::onCurrentToolChange()
 
 void Editor::onFgColorChange()
 {
-  if (m_cursorOnScreen) {
-    hideDrawingCursor();
-    showDrawingCursor();
-  }
+  m_brushPreview.redraw();
 }
 
 void Editor::onBrushSizeOrAngleChange()
 {
-  if (m_cursorOnScreen) {
-    hideDrawingCursor();
-    showDrawingCursor();
-  }
+  m_brushPreview.redraw();
 }
 
 void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
@@ -1439,16 +1383,14 @@ void Editor::onExposeSpritePixels(doc::DocumentEvent& ev)
     m_state->onExposeSpritePixels(ev.region());
 }
 
-void Editor::setCursor()
+void Editor::setCursor(const gfx::Point& mouseScreenPos)
 {
   bool used = false;
   if (m_sprite)
-    used = m_state->onSetCursor(this);
+    used = m_state->onSetCursor(this, mouseScreenPos);
 
-  if (!used) {
-    hideDrawingCursor();
-    ui::set_mouse_cursor(kArrowCursor);
-  }
+  if (!used)
+    showMouseCursor(kArrowCursor);
 }
 
 bool Editor::canDraw()
@@ -1474,7 +1416,7 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
 {
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-  HideShowDrawingCursor hideShow(this);
+  HideBrushPreview hide(m_brushPreview);
 
   gfx::Point screenPos;
   gfx::Point spritePos;
@@ -1547,7 +1489,7 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
 
   // Clear brush preview, as the extra cel will be replaced with the
   // pasted image.
-  hideDrawingCursor();
+  m_brushPreview.hide();
 
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
@@ -1635,6 +1577,18 @@ double Editor::getAnimationSpeedMultiplier() const
 void Editor::setAnimationSpeedMultiplier(double speed)
 {
   m_aniSpeed = speed;
+}
+
+void Editor::showMouseCursor(CursorType cursorType)
+{
+  m_brushPreview.hide();
+  ui::set_mouse_cursor(cursorType);
+}
+
+void Editor::showBrushPreview(const gfx::Point& screenPos)
+{
+  ui::set_mouse_cursor(kNoCursor);
+  m_brushPreview.show(screenPos);
 }
 
 // static

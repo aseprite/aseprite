@@ -20,7 +20,6 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
-#include "app/ui/editor/scoped_cursor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "ui/message.h"
@@ -65,7 +64,9 @@ DrawingState::~DrawingState()
 
 void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
 {
-  HideShowDrawingCursor hideShow(editor);
+  // It's needed to clear and redraw the brush boundaries after the
+  // first mouse pressed/point shape if drawn.
+  HideBrushPreview hide(editor->brushPreview());
 
   m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
   m_toolLoopManager->pressButton(pointer_from_msg(msg));
@@ -129,16 +130,16 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   m_mouseMoveReceived = true;
 
-  // Hide the drawing cursor
-  HideShowDrawingCursor hideShow(editor);
+  // It's needed to avoid some glitches with brush boundaries.
+  //
+  // TODO we should be able to avoid this if we correctly invalidate
+  // the BrushPreview::m_clippingRegion
+  HideBrushPreview hide(editor->brushPreview());
 
   // Infinite scroll
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, true);
 
-  // Hide the cursor again
-  editor->hideDrawingCursor();
-
-  // notify mouse movement to the tool
+  // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager != NULL);
   m_toolLoopManager
     ->movement(tools::ToolLoopManager::Pointer(mousePos.x, mousePos.y,
@@ -147,15 +148,13 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool DrawingState::onSetCursor(Editor* editor)
+bool DrawingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (m_toolLoop->getInk()->isEyedropper()) {
-    editor->hideDrawingCursor();
-    ui::set_mouse_cursor(kEyedropperCursor);
+    editor->showMouseCursor(kEyedropperCursor);
   }
   else {
-    ui::set_mouse_cursor(kNoCursor);
-    editor->showDrawingCursor();
+    editor->showBrushPreview(mouseScreenPos);
   }
   return true;
 }

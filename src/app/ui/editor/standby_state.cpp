@@ -281,71 +281,62 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
       callEyedropper(editor);
   }
 
-  editor->moveDrawingCursor();
+  editor->showBrushPreview(msg->position());
   editor->updateStatusBar();
   return true;
 }
 
-bool StandbyState::onSetCursor(Editor* editor)
+bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
   if (ink) {
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (ink->isSelection()) {
       // See if the cursor is in some selection handle.
-      if (m_decorator->onSetCursor(editor))
+      if (m_decorator->onSetCursor(editor, mouseScreenPos))
         return true;
 
       // Move pixels
       if (editor->isInsideSelection()) {
         EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
 
-        editor->hideDrawingCursor();
-
         if (customization && customization->isCopySelectionKeyPressed())
-          ui::set_mouse_cursor(kArrowPlusCursor);
+          editor->showMouseCursor(kArrowPlusCursor);
         else
-          ui::set_mouse_cursor(kMoveCursor);
+          editor->showMouseCursor(kMoveCursor);
 
         return true;
       }
     }
     else if (ink->isEyedropper()) {
-      editor->hideDrawingCursor();
-      ui::set_mouse_cursor(kEyedropperCursor);
+      editor->showMouseCursor(kEyedropperCursor);
       return true;
     }
     else if (ink->isZoom()) {
-      editor->hideDrawingCursor();
-      ui::set_mouse_cursor(kMagnifierCursor);
+      editor->showMouseCursor(kMagnifierCursor);
       return true;
     }
     else if (ink->isScrollMovement()) {
-      editor->hideDrawingCursor();
-      ui::set_mouse_cursor(kScrollCursor);
+      editor->showMouseCursor(kScrollCursor);
       return true;
     }
     else if (ink->isCelMovement()) {
-      editor->hideDrawingCursor();
-      ui::set_mouse_cursor(kMoveCursor);
+      editor->showMouseCursor(kMoveCursor);
       return true;
     }
     else if (ink->isSlice()) {
-      ui::set_mouse_cursor(kNoCursor);
-      editor->showDrawingCursor();
+      editor->showBrushPreview(mouseScreenPos);
       return true;
     }
   }
 
   // Draw
   if (editor->canDraw()) {
-    ui::set_mouse_cursor(kNoCursor);
-    editor->showDrawingCursor();
+    editor->showBrushPreview(mouseScreenPos);
   }
   // Forbidden
   else {
-    editor->hideDrawingCursor();
-    ui::set_mouse_cursor(kForbiddenCursor);
+    editor->showMouseCursor(kForbiddenCursor);
   }
 
   return true;
@@ -420,7 +411,7 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
   try {
     // Clear brush preview, as the extra cel will be replaced with the
     // transformed image.
-    editor->hideDrawingCursor();
+    editor->brushPreview().hide();
 
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
@@ -446,11 +437,11 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
 
     // TODO steal the PixelsMovement of the other editor and use it for this one.
     StatusBar::instance()->showTip(1000, "The sprite is locked in other editor");
-    ui::set_mouse_cursor(kForbiddenCursor);
+    editor->showMouseCursor(kForbiddenCursor);
   }
   catch (const std::bad_alloc&) {
     StatusBar::instance()->showTip(1000, "Not enough memory to transform the selection");
-    ui::set_mouse_cursor(kForbiddenCursor);
+    editor->showMouseCursor(kForbiddenCursor);
   }
 }
 
@@ -492,7 +483,7 @@ TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
   return m_transfHandles;
 }
 
-bool StandbyState::Decorator::onSetCursor(Editor* editor)
+bool StandbyState::Decorator::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   if (!editor->isActive() ||
       !editor->document()->isMaskVisible())
@@ -500,8 +491,8 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
 
   const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
   TransformHandles* tr = getTransformHandles(editor);
-  HandleType handle = tr->getHandleAtPoint(editor,
-    ui::get_mouse_position(), transformation);
+  HandleType handle = tr->getHandleAtPoint(
+    editor, mouseScreenPos, transformation);
 
   CursorType newCursor = kArrowCursor;
 
@@ -553,9 +544,7 @@ bool StandbyState::Decorator::onSetCursor(Editor* editor)
     newCursor = rotated_rotate_cursors[(c+angle) % num];
   }
 
-  // Hide the drawing cursor (just in case) and show the new system cursor.
-  editor->hideDrawingCursor();
-  ui::set_mouse_cursor(newCursor);
+  editor->showMouseCursor(newCursor);
   return true;
 }
 

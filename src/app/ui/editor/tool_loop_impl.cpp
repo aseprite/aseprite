@@ -190,9 +190,7 @@ public:
   }
 
   void updateDirtyArea() override {
-    m_editor->hideDrawingCursor();
     m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
-    m_editor->showDrawingCursor();
   }
 
   void updateStatusBar(const char* text) override {

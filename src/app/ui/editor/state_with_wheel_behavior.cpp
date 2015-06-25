@@ -152,10 +152,7 @@ bool StateWithWheelBehavior::onMouseWheel(Editor* editor, MouseMessage* msg)
       }
 
       gfx::Point scroll = view->getViewScroll();
-
-      editor->hideDrawingCursor();
       editor->setEditorScroll(scroll+delta, true);
-      editor->showDrawingCursor();
       break;
     }
 

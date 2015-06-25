@@ -11,6 +11,7 @@
 
 #include "base/disable_copying.h"
 #include "base/shared_ptr.h"
+#include "gfx/point.h"
 
 namespace gfx {
   class Region;
@@ -87,7 +88,7 @@ namespace app {
     // Called each time the mouse changes its position so we can set an
     // appropiated cursor depending on the new coordinates of the mouse
     // pointer.
-    virtual bool onSetCursor(Editor* editor) { return false; }
+    virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) { return false; }
 
     // Called when a key is pressed over the current editor.
     virtual bool onKeyDown(Editor* editor, ui::KeyMessage* msg) { return false; }

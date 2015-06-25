@@ -67,10 +67,9 @@ bool ScrollingState::onMouseMove(Editor* editor, MouseMessage* msg)
   return true;
 }
 
-bool ScrollingState::onSetCursor(Editor* editor)
+bool ScrollingState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
-  editor->hideDrawingCursor();
-  ui::set_mouse_cursor(kScrollCursor);
+  editor->showMouseCursor(kScrollCursor);
   return true;
 }
 

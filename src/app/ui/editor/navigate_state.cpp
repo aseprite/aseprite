@@ -13,6 +13,7 @@
 
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/scrolling_state.h"
+#include "ui/message.h"
 
 namespace app {
 
@@ -46,7 +47,7 @@ bool NavigateState::onMouseUp(Editor* editor, MouseMessage* msg)
 
 bool NavigateState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
-  editor->moveDrawingCursor();
+  editor->showBrushPreview(msg->position());
   editor->updateStatusBar();
   return true;
 }

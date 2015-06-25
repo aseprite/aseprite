@@ -62,7 +62,7 @@ namespace app {
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseUp(Editor* editor, ui::MouseMessage* msg) override;
     virtual bool onMouseMove(Editor* editor, ui::MouseMessage* msg) override;
-    virtual bool onSetCursor(Editor* editor) override;
+    virtual bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos) override;
     virtual bool acceptQuickTool(tools::Tool* tool) override;
     virtual bool requireBrushPreview() override;
     virtual tools::Ink* getStateInk() override;

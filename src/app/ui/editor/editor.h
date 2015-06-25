@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/document.h"
 #include "app/tools/selection_mode.h"
+#include "app/ui/editor/brush_preview.h"
 #include "app/ui/editor/editor_observers.h"
 #include "app/ui/editor/editor_state.h"
 #include "app/ui/editor/editor_states_history.h"
@@ -24,6 +25,7 @@
 #include "gfx/fwd.h"
 #include "render/zoom.h"
 #include "ui/base.h"
+#include "ui/cursor_type.h"
 #include "ui/timer.h"
 #include "ui/widget.h"
 
@@ -59,8 +61,6 @@ namespace app {
   class Editor : public ui::Widget,
                  public doc::DocumentObserver {
   public:
-    typedef void (*PixelDelegate)(ui::Graphics*, const gfx::Point&, gfx::Color);
-
     enum EditorFlags {
       kNoneFlag = 0,
       kShowGrid = 1,
@@ -118,7 +118,6 @@ namespace app {
     const render::Zoom& zoom() const { return m_zoom; }
     int offsetX() const { return m_offset_x; }
     int offsetY() const { return m_offset_y; }
-    bool cursorOnScreen() const { return m_cursorOnScreen; }
 
     void setZoom(render::Zoom zoom) { m_zoom = zoom; }
     void setOffsetX(int x) { m_offset_x = x; }
@@ -141,10 +140,6 @@ namespace app {
     gfx::Point editorToScreen(const gfx::Point& pt);
     gfx::Rect screenToEditor(const gfx::Rect& rc);
     gfx::Rect editorToScreen(const gfx::Rect& rc);
-
-    void showDrawingCursor();
-    void hideDrawingCursor();
-    void moveDrawingCursor();
 
     void addObserver(EditorObserver* observer);
     void removeObserver(EditorObserver* observer);
@@ -201,34 +196,36 @@ namespace app {
     double getAnimationSpeedMultiplier() const;
     void setAnimationSpeedMultiplier(double speed);
 
+    // Functions to be used in EditorState::onSetCursor()
+    void showMouseCursor(ui::CursorType cursorType);
+    void showBrushPreview(const gfx::Point& pos);
+
+    // Gets the brush preview controller.
+    BrushPreview& brushPreview() { return m_brushPreview; }
+
     // Returns the buffer used to render editor viewports.
     // E.g. It can be re-used by PreviewCommand
     static ImageBufferPtr getRenderImageBuffer();
 
     static AppRender& renderEngine() { return m_renderEngine; }
 
-    // in cursor.cpp
-
-    static void initEditorCursor();
-
   protected:
     bool onProcessMessage(ui::Message* msg) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onResize(ui::ResizeEvent& ev) override;
     void onPaint(ui::PaintEvent& ev) override;
+    void onInvalidateRegion(const gfx::Region& region) override;
     void onCurrentToolChange();
     void onFgColorChange();
     void onBrushSizeOrAngleChange();
     void onExposeSpritePixels(doc::DocumentEvent& ev);
 
   private:
-    static void exitEditorCursor();
     void setStateInternal(const EditorStatePtr& newState);
     void updateQuicktool();
     void updateContextBarFromModifiers();
     void drawBrushPreview(const gfx::Point& pos);
     void clearBrushPreview();
-    bool doesBrushPreviewNeedSubpixel();
     bool isCurrentToolAffectedByRightClickMode();
 
     void drawMaskSafe();
@@ -236,14 +233,7 @@ namespace app {
     void drawGrid(ui::Graphics* g, const gfx::Rect& spriteBounds, const gfx::Rect& gridBounds,
       const app::Color& color, int alpha);
 
-    void setCursor();
-
-    void forEachBrushPixel(
-      ui::Graphics* g,
-      const gfx::Point& screenPos,
-      const gfx::Point& spritePos,
-      gfx::Color color,
-      PixelDelegate pixelDelegate);
+    void setCursor(const gfx::Point& mouseScreenPos);
 
     // Draws the specified portion of sprite in the editor.  Warning:
     // You should setup the clip of the screen before calling this
@@ -266,10 +256,8 @@ namespace app {
     frame_t m_frame;          // Active frame in the editor
     render::Zoom m_zoom;          // Zoom in the editor
 
-    // Drawing cursor
-    bool m_cursorOnScreen;
-    gfx::Point m_cursorScreen; // Position in the screen (view)
-    gfx::Point m_cursorEditor; // Position in the editor (model)
+    // Brush preview
+    BrushPreview m_brushPreview;
 
     // Current selected quicktool (this genererally should be NULL if
     // the user is not pressing any keyboard key).

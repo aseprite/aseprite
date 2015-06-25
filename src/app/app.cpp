@@ -175,9 +175,6 @@ void App::initialize(const AppOptions& options)
   // Register well-known image file types.
   FileFormatsManager::instance()->registerAllFormats();
 
-  // init editor cursor
-  Editor::initEditorCursor();
-
   if (isPortable())
     PRINTF("Running in portable mode\n");
 

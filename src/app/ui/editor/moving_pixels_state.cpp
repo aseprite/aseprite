@@ -319,20 +319,19 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
   return StandbyState::onMouseMove(editor, msg);
 }
 
-bool MovingPixelsState::onSetCursor(Editor* editor)
+bool MovingPixelsState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
   // Move selection
   if (m_pixelsMovement->isDragging()) {
-    editor->hideDrawingCursor();
-    ui::set_mouse_cursor(kMoveCursor);
+    editor->showMouseCursor(kMoveCursor);
     return true;
   }
 
   // Use StandbyState implementation
-  return StandbyState::onSetCursor(editor);
+  return StandbyState::onSetCursor(editor, mouseScreenPos);
 }
 
 bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
