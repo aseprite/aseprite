@@ -385,7 +385,7 @@ void Mask::shrink()
   {                                                                     \
     for (u = u_begin; u u_op u_final; u u_add) {                        \
       for (v = v_begin; v v_op v_final; v v_add) {                      \
-        if (m_bitmap->getPixel(U, V))                                   \
+        if (get_pixel_fast<BitmapTraits>(m_bitmap.get(), U, V))         \
           break;                                                        \
       }                                                                 \
       if (v == v_final)                                                 \

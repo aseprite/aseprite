@@ -254,6 +254,7 @@ public:
 class SelectionInk : public Ink {
   bool m_modify_selection;
   Mask m_mask;
+  Rect m_maxBounds;
 
 public:
   SelectionInk() { m_modify_selection = false; }
@@ -274,6 +275,8 @@ public:
           m_mask.subtract(gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1));
           break;
       }
+
+      m_maxBounds |= gfx::Rect(x1-offset.x, y-offset.y, x2-x1+1, 1);
     }
     // TODO show the selection-preview with a XOR color or something like that
     else {
@@ -287,11 +290,17 @@ public:
     m_modify_selection = state;
 
     if (state) {
+      m_maxBounds = gfx::Rect(0, 0, 0, 0);
+
       m_mask.copyFrom(loop->getMask());
       m_mask.freeze();
       m_mask.reserve(loop->sprite()->bounds());
     }
     else {
+      // We can intersect the used bounds in inkHline() calls to
+      // reduce the shrink computation.
+      m_mask.intersect(m_maxBounds);
+
       m_mask.unfreeze();
 
       loop->setMask(&m_mask);
