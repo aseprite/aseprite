@@ -19,6 +19,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
+#include "app/tools/tool.h"
 #include "app/tools/tool_loop.h"
 #include "app/ui/context_bar.h"
 #include "app/ui/editor/editor.h"
@@ -106,6 +107,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get the current tool
   tools::Ink* ink = m_editor->getCurrentEditorInk();
 
+  bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
+
   // Setup the cursor type debrushding of several factors (current tool,
   // foreground color, and layer transparency).
   color_t brush_color = getBrushColor(sprite, layer);
@@ -131,9 +134,11 @@ void BrushPreview::show(const gfx::Point& screenPos)
     generateBoundaries();
 
   // Draw pixel/brush preview
-  if ((m_type & CROSS) && m_editor->getState()->requireBrushPreview()) {
+  if ((m_type & CROSS) &&
+      m_editor->getState()->requireBrushPreview()) {
     Brush* brush = getCurrentBrush();
-    gfx::Rect brushBounds = brush->bounds();
+    gfx::Rect origBrushBounds = (isFloodfill ? gfx::Rect(0, 0, 1, 1): brush->bounds());
+    gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
 
     // Create the extra cel to show the brush preview
@@ -175,7 +180,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
       loop->getController()->prepareController();
       loop->getPointShape()->preparePointShape(loop);
       loop->getPointShape()->transformPoint(
-        loop, -brush->bounds().x, -brush->bounds().y);
+        loop, -origBrushBounds.x, -origBrushBounds.y);
       delete loop;
     }
 
@@ -262,16 +267,21 @@ void BrushPreview::generateBoundaries()
       m_brushGen == brush->gen())
     return;
 
+  bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
   Image* brushImage = brush->image();
-  int w = brushImage->width();
-  int h = brushImage->height();
+  int w = (isFloodfill ? 1: brushImage->width());
+  int h = (isFloodfill ? 1: brushImage->height());
 
   m_brushGen = brush->gen();
   m_brushWidth = w;
   m_brushHeight = h;
 
   ImageRef mask;
-  if (brushImage->pixelFormat() != IMAGE_BITMAP) {
+  if (isFloodfill) {
+    mask.reset(Image::create(IMAGE_BITMAP, w, w));
+    mask->putPixel(0, 0, (color_t)1);
+  }
+  else if (brushImage->pixelFormat() != IMAGE_BITMAP) {
     mask.reset(Image::create(IMAGE_BITMAP, w, h));
 
     LockImageBits<BitmapTraits> bits(mask.get());
