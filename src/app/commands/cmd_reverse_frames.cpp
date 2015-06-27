@@ -38,7 +38,12 @@ ReverseFramesCommand::ReverseFramesCommand()
 
 bool ReverseFramesCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
+  DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+
+  return
+    context->checkFlags(ContextFlags::ActiveDocumentIsWritable) &&
+    range.enabled() &&
+    range.frames() >= 2;         // We need at least 2 frames to reverse
 }
 
 void ReverseFramesCommand::onExecute(Context* context)
