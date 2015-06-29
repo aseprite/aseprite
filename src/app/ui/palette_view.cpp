@@ -80,8 +80,6 @@ PaletteView::PaletteView(bool editable, PaletteViewStyle style, PaletteViewDeleg
 void PaletteView::setColumns(int columns)
 {
   int old_columns = m_columns;
-
-  ASSERT(columns >= 1 && columns <= currentPalette()->size());
   m_columns = columns;
 
   if (m_columns != old_columns) {
@@ -529,7 +527,7 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
       int columns =
         (view->getViewportBounds().w-this->childSpacing()*2)
         / (m_boxsize+this->childSpacing());
-      setColumns(MID(1, columns, currentPalette()->size()));
+      setColumns(MAX(1, columns));
     }
     m_isUpdatingColumns = false;
   }
