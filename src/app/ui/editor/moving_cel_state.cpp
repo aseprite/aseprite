@@ -104,6 +104,13 @@ bool MovingCelState::onMouseUp(Editor* editor, MouseMessage* msg)
 
       transaction.commit();
     }
+
+    // Redraw all editors. We've to notify all views about this
+    // general update because MovingCelState::onMouseMove() redraws
+    // only the current cel in the current editor. And at this point
+    // we might have moved several cels (and we've to update all the
+    // editors).
+    document->notifyGeneralUpdate();
   }
 
   // Restore the mask visibility.
