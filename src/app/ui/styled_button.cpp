@@ -31,8 +31,11 @@ StyledButton::StyledButton(skin::Style* style)
 bool StyledButton::onProcessMessage(Message* msg) {
   switch (msg->type()) {
     case kSetCursorMessage:
-      ui::set_mouse_cursor(kHandCursor);
-      return true;
+      if (isEnabled()) {
+        ui::set_mouse_cursor(kHandCursor);
+        return true;
+      }
+      break;
   }
   return Button::onProcessMessage(msg);
 }
