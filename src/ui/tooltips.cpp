@@ -59,8 +59,8 @@ bool TooltipManager::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kMouseEnterMessage: {
-      UI_FOREACH_WIDGET(msg->recipients(), itWidget) {
-        Tips::iterator it = m_tips.find(*itWidget);
+      for (Widget* widget : msg->recipients()) {
+        Tips::iterator it = m_tips.find(widget);
         if (it != m_tips.end()) {
           m_target.widget = it->first;
           m_target.tipInfo = it->second;

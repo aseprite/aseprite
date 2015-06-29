@@ -557,11 +557,11 @@ void Manager::setFocus(Widget* widget)
 
       Message* msg = new Message(kFocusLeaveMessage);
 
-      UI_FOREACH_WIDGET(focus_parents, it) {
+      for (Widget* parent1 : focus_parents) {
         if (widget) {
-          UI_FOREACH_WIDGET(widget_parents, it2) {
-            if (*it == *it2) {
-              common_parent = *it;
+          for (Widget* parent2 : widget_parents) {
+            if (parent1 == parent2) {
+              common_parent = parent1;
               break;
             }
           }
@@ -569,9 +569,9 @@ void Manager::setFocus(Widget* widget)
             break;
         }
 
-        if ((*it)->hasFocus()) {
-          (*it)->disableFlags(HAS_FOCUS);
-          msg->addRecipient(*it);
+        if (parent1->hasFocus()) {
+          parent1->disableFlags(HAS_FOCUS);
+          msg->addRecipient(parent1);
         }
       }
 
@@ -638,11 +638,11 @@ void Manager::setMouse(Widget* widget)
 
       Message* msg = new Message(kMouseLeaveMessage);
 
-      UI_FOREACH_WIDGET(mouse_parents, it) {
+      for (Widget* parent1 : mouse_parents) {
         if (widget) {
-          UI_FOREACH_WIDGET(widget_parents, it2) {
-            if (*it == *it2) {
-              common_parent = *it;
+          for (Widget* parent2 : widget_parents) {
+            if (parent1 == parent2) {
+              common_parent = parent1;
               break;
             }
           }
@@ -650,9 +650,9 @@ void Manager::setMouse(Widget* widget)
             break;
         }
 
-        if ((*it)->hasMouse()) {
-          (*it)->disableFlags(HAS_MOUSE);
-          msg->addRecipient(*it);
+        if (parent1->hasMouse()) {
+          parent1->disableFlags(HAS_MOUSE);
+          msg->addRecipient(parent1);
         }
       }
 

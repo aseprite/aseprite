@@ -410,14 +410,14 @@ Widget* Widget::getPreviousSibling()
 
 Widget* Widget::pick(const gfx::Point& pt)
 {
-  Widget* inside, *picked = NULL;
+  Widget* inside, *picked = nullptr;
 
   if (!hasFlags(HIDDEN) &&          // Is visible
       getBounds().contains(pt)) {   // The point is inside the bounds
     picked = this;
 
-    UI_FOREACH_WIDGET(m_children, it) {
-      inside = (*it)->pick(pt);
+    for (Widget* child : m_children) {
+      inside = child->pick(pt);
       if (inside) {
         picked = inside;
         break;
