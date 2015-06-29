@@ -745,7 +745,7 @@
         <param name="preset" value="default" />
       </item>
       <separator />
-      <item command="ColorQuantization" text="Create Palette from RGB Image" />
+      <item command="ColorQuantization" text="Create Palette from Current Sprite" />
     </menu>
 
   </menus>
