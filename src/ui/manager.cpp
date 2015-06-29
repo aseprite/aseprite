@@ -724,7 +724,7 @@ void Manager::freeFocus()
 
 void Manager::freeMouse()
 {
-  setMouse(NULL);
+  setMouse(pick(ui::get_mouse_position()));
 }
 
 void Manager::freeCapture()

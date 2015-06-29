@@ -195,8 +195,8 @@ void Widget::setVisible(bool state)
   }
   else {
     if (!hasFlags(HIDDEN)) {
-      getManager()->freeWidget(this); // Free from manager
       enableFlags(HIDDEN);
+      getManager()->freeWidget(this); // Free from manager
     }
   }
 }
