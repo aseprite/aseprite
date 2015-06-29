@@ -34,6 +34,7 @@
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/styled_button.h"
 #include "app/ui_context.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -68,6 +69,21 @@ enum class PalButton {
 
 using namespace app::skin;
 using namespace ui;
+
+class ColorBar::WarningIcon : public StyledButton {
+public:
+  WarningIcon()
+    : StyledButton(skin::SkinTheme::instance()->styles.warningBox()) {
+  }
+
+protected:
+  void onPaint(ui::PaintEvent& ev) override {
+    // if (isEnabled())
+      StyledButton::onPaint(ev);
+    // else
+    //   ev.getGraphics()->fillRect(getBgColor(), getClientBounds());
+  }
+};
 
 //////////////////////////////////////////////////////////////////////
 // ColorBar::ScrollableView class
@@ -107,6 +123,8 @@ ColorBar::ColorBar(int align)
   , m_remapButton("Remap")
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
+  , m_fgWarningIcon(new WarningIcon)
+  , m_bgWarningIcon(new WarningIcon)
   , m_lock(false)
   , m_syncingWithPref(false)
   , m_lastDocument(nullptr)
@@ -153,13 +171,32 @@ ColorBar::ColorBar(int align)
 
   addChild(buttonsBox);
   addChild(splitter);
-  addChild(&m_fgColor);
-  addChild(&m_bgColor);
+
+  HBox* fgBox = new HBox;
+  HBox* bgBox = new HBox;
+  fgBox->noBorderNoChildSpacing();
+  bgBox->noBorderNoChildSpacing();
+  fgBox->addChild(&m_fgColor);
+  fgBox->addChild(m_fgWarningIcon);
+  bgBox->addChild(&m_bgColor);
+  bgBox->addChild(m_bgWarningIcon);
+  addChild(fgBox);
+  addChild(bgBox);
+
+  m_fgColor.setExpansive(true);
+  m_bgColor.setExpansive(true);
 
   m_remapButton.Click.connect(Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
   spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
+  m_fgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
+  m_bgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
+
+  m_tooltips.addTooltipFor(&m_fgColor, "Foreground color", LEFT);
+  m_tooltips.addTooltipFor(&m_bgColor, "Background color", LEFT);
+  m_tooltips.addTooltipFor(m_fgWarningIcon, "Add foreground color to the palette", LEFT);
+  m_tooltips.addTooltipFor(m_bgWarningIcon, "Add background color to the palette", LEFT);
 
   // Set background color reading its value from the configuration.
   setBgColor(Preferences::instance().colorBar.bgColor());
@@ -260,6 +297,9 @@ void ColorBar::onAppPaletteChange()
 {
   fixColorIndex(m_fgColor);
   fixColorIndex(m_bgColor);
+
+  updateWarningIcon(m_fgColor.getColor(), m_fgWarningIcon);
+  updateWarningIcon(m_bgColor.getColor(), m_bgWarningIcon);
 }
 
 void ColorBar::onFocusPaletteView()
@@ -558,6 +598,7 @@ void ColorBar::onFgColorButtonChange(const app::Color& color)
     Preferences::instance().colorBar.fgColor(color);
   }
 
+  updateWarningIcon(color, m_fgWarningIcon);
   onColorButtonChange(color);
 }
 
@@ -573,6 +614,7 @@ void ColorBar::onBgColorButtonChange(const app::Color& color)
     Preferences::instance().colorBar.bgColor(color);
   }
 
+  updateWarningIcon(color, m_bgWarningIcon);
   onColorButtonChange(color);
 }
 
@@ -753,6 +795,68 @@ void ColorBar::onCancel(Context* ctx)
   m_paletteView.deselect();
   m_paletteView.discardClipboardSelection();
   invalidate();
+}
+
+void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon)
+{
+  try {
+    Palette* newPalette = get_current_palette(); // System current pal
+    app::Color appColor = colorButton->getColor();
+    color_t color = doc::rgba(
+      appColor.getRed(),
+      appColor.getGreen(),
+      appColor.getBlue(), 255);
+    int index = newPalette->findExactMatch(
+      appColor.getRed(),
+      appColor.getGreen(),
+      appColor.getBlue());
+
+    // It should be -1, because the user has pressed the warning
+    // button that is available only when the color isn't in the
+    // palette.
+    ASSERT(index < 0);
+    if (index >= 0)
+      return;
+
+    ContextWriter writer(UIContext::instance(), 500);
+    Document* document(writer.document());
+    Sprite* sprite = writer.sprite();
+    if (!document || !sprite) {
+      ASSERT(false);
+      return;
+    }
+
+    newPalette->addEntry(color);
+    index = newPalette->size()-1;
+
+    if (document) {
+      frame_t frame = writer.frame();
+
+      Transaction transaction(writer.context(), "Add palette entry", ModifyDocument);
+      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
+      transaction.commit();
+    }
+
+    set_current_palette(newPalette, true);
+    ui::Manager::getDefault()->invalidate();
+
+    warningIcon->setVisible(false);
+    warningIcon->getParent()->layout();
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
+}
+
+void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIcon)
+{
+  int index = get_current_palette()->findExactMatch(
+    color.getRed(),
+    color.getGreen(),
+    color.getBlue());
+
+  warningIcon->setVisible(index < 0);
+  warningIcon->getParent()->layout();
 }
 
 // static

@@ -637,7 +637,7 @@
 
     <!-- warning_box -->
     <style id="warning_box">
-      <background color="face" />
+      <background color="workspace" />
       <icon part="warning_box" align="center" valign="middle" />
     </style>
     <style id="warning_box:hover">

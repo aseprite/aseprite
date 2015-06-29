@@ -22,6 +22,7 @@
 #include "doc/sort_palette.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/tooltips.h"
 #include "ui/view.h"
 
 namespace app {
@@ -86,6 +87,7 @@ namespace app {
     void onReverseColors();
     void onSortBy(doc::SortPaletteBy channel);
     void onGradient();
+    void onFixWarningClick(ColorButton* colorButton, ui::Button* warningIcon);
     void setAscending(bool ascending);
 
     // PaletteViewDelegate impl
@@ -101,6 +103,7 @@ namespace app {
     void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
     void setPalette(const doc::Palette* newPalette, const std::string& actionText);
     void setTransparentIndex(int index);
+    void updateWarningIcon(const app::Color& color, ui::Button* warningIcon);
     static void fixColorIndex(ColorButton& color);
 
     class ScrollableView : public ui::View {
@@ -110,6 +113,9 @@ namespace app {
       void onPaint(ui::PaintEvent& ev) override;
     };
 
+    class WarningIcon;
+
+    ui::TooltipManager m_tooltips;
     ButtonSet m_buttons;
     base::UniquePtr<PalettePopup> m_palettePopup;
     ScrollableView m_scrollableView;
@@ -117,6 +123,8 @@ namespace app {
     ui::Button m_remapButton;
     ColorButton m_fgColor;
     ColorButton m_bgColor;
+    WarningIcon* m_fgWarningIcon;
+    WarningIcon* m_bgWarningIcon;
     bool m_lock;
     bool m_syncingWithPref;
     base::UniquePtr<doc::Remap> m_remap;

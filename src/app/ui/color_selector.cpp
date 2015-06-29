@@ -26,7 +26,6 @@
 #include "app/ui/palette_view.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/skin/style.h"
-#include "app/ui/styled_button.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
@@ -50,13 +49,6 @@ enum {
   MASK_MODE
 };
 
-class ColorSelector::WarningIcon : public StyledButton {
-public:
-  WarningIcon()
-    : StyledButton(skin::SkinTheme::instance()->styles.warningBox()) {
-  }
-};
-
 ColorSelector::ColorSelector()
   : PopupWindowPin("Color Selector", PopupWindow::kCloseOnClickInOtherWindow)
   , m_vbox(VERTICAL)
@@ -65,7 +57,6 @@ ColorSelector::ColorSelector()
   , m_colorPalette(false, PaletteView::SelectOneColor, this, 7*guiscale())
   , m_colorType(5)
   , m_maskLabel("Transparent Color Selected")
-  , m_warningIcon(new WarningIcon)
   , m_disableHexUpdate(false)
 {
   m_colorType.addItem("Index");
@@ -84,7 +75,6 @@ ColorSelector::ColorSelector()
   m_topBox.addChild(&m_colorType);
   m_topBox.addChild(new Separator("", VERTICAL));
   m_topBox.addChild(&m_hexColorEntry);
-  m_topBox.addChild(m_warningIcon);
   {
     Box* miniVbox = new Box(VERTICAL);
     miniVbox->addChild(getPin());
@@ -100,7 +90,6 @@ ColorSelector::ColorSelector()
   addChild(&m_vbox);
 
   m_colorType.ItemChange.connect(&ColorSelector::onColorTypeClick, this);
-  m_warningIcon->Click.connect(&ColorSelector::onFixWarningClick, this);
 
   m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
@@ -112,8 +101,6 @@ ColorSelector::ColorSelector()
 
   m_onPaletteChangeConn =
     App::instance()->PaletteChange.connect(&ColorSelector::onPaletteChange, this);
-
-  m_tooltips.addTooltipFor(m_warningIcon, "This color isn't in the palette\nPress here to add it.", BOTTOM);
 
   initTheme();
 }
@@ -140,14 +127,6 @@ void ColorSelector::setColor(const app::Color& color, SetColorOptions options)
 
   if (options == ChangeType)
     selectColorType(m_color.getType());
-
-  int index = get_current_palette()->findExactMatch(
-    m_color.getRed(),
-    m_color.getGreen(),
-    m_color.getBlue());
-
-  m_warningIcon->setVisible(index < 0);
-  m_warningIcon->getParent()->layout();
 }
 
 app::Color ColorSelector::getColor() const
@@ -201,56 +180,6 @@ void ColorSelector::onColorTypeClick()
   }
 
   setColorWithSignal(newColor);
-}
-
-void ColorSelector::onFixWarningClick(ui::Event& ev)
-{
-  try {
-    Palette* newPalette = get_current_palette(); // System current pal
-    color_t newColor = doc::rgba(
-      m_color.getRed(),
-      m_color.getGreen(),
-      m_color.getBlue(), 255);
-    int index = newPalette->findExactMatch(
-      m_color.getRed(),
-      m_color.getGreen(),
-      m_color.getBlue());
-
-    // It should be -1, because the user has pressed the warning
-    // button that is available only when the color isn't in the
-    // palette.
-    ASSERT(index < 0);
-    if (index >= 0)
-      return;
-
-    ContextWriter writer(UIContext::instance(), 500);
-    Document* document(writer.document());
-    Sprite* sprite = writer.sprite();
-    if (!document || !sprite) {
-      ASSERT(false);
-      return;
-    }
-
-    newPalette->addEntry(newColor);
-    index = newPalette->size()-1;
-
-    if (document) {
-      frame_t frame = writer.frame();
-
-      Transaction transaction(writer.context(), "Add palette entry", ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette));
-      transaction.commit();
-    }
-
-    set_current_palette(newPalette, true);
-    ui::Manager::getDefault()->invalidate();
-
-    m_warningIcon->setVisible(index < 0);
-    m_warningIcon->getParent()->layout();
-  }
-  catch (base::Exception& e) {
-    Console::showException(e);
-  }
 }
 
 void ColorSelector::onPaletteChange()
