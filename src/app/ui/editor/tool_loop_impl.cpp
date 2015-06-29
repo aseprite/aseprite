@@ -229,7 +229,7 @@ public:
                const app::Color& fgColor,
                const app::Color& bgColor)
     : ToolLoopBase(editor, tool, ink, document,
-                   button,fgColor, bgColor)
+                   button, fgColor, bgColor)
     , m_context(context)
     , m_canceled(false)
     , m_transaction(m_context,
@@ -405,10 +405,13 @@ tools::ToolLoop* create_tool_loop(Editor* editor, Context* context)
   app::Color fg = colorbar->getFgColor();
   app::Color bg = colorbar->getBgColor();
 
+  ASSERT(fg.isValid());
+  ASSERT(bg.isValid());
+
   if (!fg.isValid() || !bg.isValid()) {
     Alert::show(PACKAGE
                 "<<The current selected foreground and/or background color"
-                "<<is out of range. Select valid colors in the color-bar."
+                "<<is out of range. Select a valid color in the color-bar."
                 "||&Close");
     return NULL;
   }

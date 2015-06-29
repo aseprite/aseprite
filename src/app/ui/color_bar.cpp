@@ -198,6 +198,7 @@ ColorBar::ColorBar(int align)
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
+  m_appPalChangeConn = App::instance()->PaletteChange.connect(&ColorBar::onAppPaletteChange, this);
 }
 
 ColorBar::~ColorBar()
@@ -253,6 +254,12 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
     m_lastDocument = site.document();
     destroyRemap();
   }
+}
+
+void ColorBar::onAppPaletteChange()
+{
+  fixColorIndex(m_fgColor);
+  fixColorIndex(m_bgColor);
 }
 
 void ColorBar::onFocusPaletteView()
@@ -746,6 +753,21 @@ void ColorBar::onCancel(Context* ctx)
   m_paletteView.deselect();
   m_paletteView.discardClipboardSelection();
   invalidate();
+}
+
+// static
+void ColorBar::fixColorIndex(ColorButton& colorButton)
+{
+  app::Color color = colorButton.getColor();
+
+  if (color.getType() == Color::IndexType) {
+    int oldIndex = color.getIndex();
+    int newIndex = MID(0, oldIndex, get_current_palette()->size()-1);
+    if (oldIndex != newIndex) {
+      color = Color::fromIndex(newIndex);
+      colorButton.setColor(color);
+    }
+  }
 }
 
 } // namespace app

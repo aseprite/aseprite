@@ -71,6 +71,7 @@ namespace app {
     void onCancel(Context* ctx) override;
 
   protected:
+    void onAppPaletteChange();
     void onFocusPaletteView();
     void onBeforeExecuteCommand(Command* command);
     void onPaletteButtonClick();
@@ -100,6 +101,7 @@ namespace app {
     void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
     void setPalette(const doc::Palette* newPalette, const std::string& actionText);
     void setTransparentIndex(int index);
+    static void fixColorIndex(ColorButton& color);
 
     class ScrollableView : public ui::View {
     public:
@@ -123,6 +125,7 @@ namespace app {
     ScopedConnection m_conn;
     ScopedConnection m_fgConn;
     ScopedConnection m_bgConn;
+    ScopedConnection m_appPalChangeConn;
   };
 
 } // namespace app
