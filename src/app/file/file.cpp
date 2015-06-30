@@ -776,6 +776,25 @@ void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
   *b = rgba_getb(c);
 }
 
+void fop_sequence_set_alpha(FileOp* fop, int index, int a)
+{
+  int c = fop->seq.palette->getEntry(index);
+  int r = rgba_getr(c);
+  int g = rgba_getg(c);
+  int b = rgba_getb(c);
+
+  fop->seq.palette->setEntry(index, rgba(r, g, b, a));
+}
+
+void fop_sequence_get_alpha(FileOp* fop, int index, int* a)
+{
+  ASSERT(index >= 0);
+  if (index >= 0 && index < fop->seq.palette->size())
+    *a = rgba_geta(fop->seq.palette->getEntry(index));
+  else
+    *a = 0;
+}
+
 Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)
 {
   Sprite* sprite;
