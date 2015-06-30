@@ -42,9 +42,9 @@ namespace app {
     Color() : m_type(MaskType) { }
 
     static Color fromMask();
-    static Color fromRgb(int r, int g, int b);
-    static Color fromHsv(int h, int s, int v); // h=[0,360], s=[0,100], v=[0,100]
-    static Color fromGray(int g);
+    static Color fromRgb(int r, int g, int b, int a = 255);
+    static Color fromHsv(int h, int s, int v, int a = 255); // h=[0,360], s=[0,100], v=[0,100]
+    static Color fromGray(int g, int a = 255);
     static Color fromIndex(int index);
 
     static Color fromImage(PixelFormat pixelFormat, color_t c);
@@ -74,6 +74,7 @@ namespace app {
     int getValue() const;
     int getGray() const;
     int getIndex() const;
+    int getAlpha() const;
 
   private:
     Color(Type type) : m_type(type) { }
@@ -84,12 +85,14 @@ namespace app {
     // Color value
     union {
       struct {
-        int r, g, b;
+        int r, g, b, a;
       } rgb;
       struct {
-        int h, s, v;
+        int h, s, v, a;
       } hsv;
-      int gray;
+      struct {
+        int g, a;
+      } gray;
       int index;
     } m_value;
   };

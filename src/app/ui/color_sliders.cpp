@@ -237,6 +237,7 @@ RgbSliders::RgbSliders()
   addSlider(Red,   "R", 0, 255);
   addSlider(Green, "G", 0, 255);
   addSlider(Blue,  "B", 0, 255);
+  addSlider(Alpha, "A", 0, 255);
 }
 
 void RgbSliders::onSetColor(const app::Color& color)
@@ -244,13 +245,15 @@ void RgbSliders::onSetColor(const app::Color& color)
   setAbsSliderValue(0, color.getRed());
   setAbsSliderValue(1, color.getGreen());
   setAbsSliderValue(2, color.getBlue());
+  setAbsSliderValue(3, color.getAlpha());
 }
 
 app::Color RgbSliders::getColorFromSliders()
 {
   return app::Color::fromRgb(getAbsSliderValue(0),
                              getAbsSliderValue(1),
-                             getAbsSliderValue(2));
+                             getAbsSliderValue(2),
+                             getAbsSliderValue(3));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -262,6 +265,7 @@ HsvSliders::HsvSliders()
   addSlider(Hue,        "H", 0, 360);
   addSlider(Saturation, "S", 0, 100);
   addSlider(Value,      "B", 0, 100);
+  addSlider(Alpha,      "A", 0, 255);
 }
 
 void HsvSliders::onSetColor(const app::Color& color)
@@ -269,13 +273,15 @@ void HsvSliders::onSetColor(const app::Color& color)
   setAbsSliderValue(0, color.getHue());
   setAbsSliderValue(1, color.getSaturation());
   setAbsSliderValue(2, color.getValue());
+  setAbsSliderValue(3, color.getAlpha());
 }
 
 app::Color HsvSliders::getColorFromSliders()
 {
   return app::Color::fromHsv(getAbsSliderValue(0),
                              getAbsSliderValue(1),
-                             getAbsSliderValue(2));
+                             getAbsSliderValue(2),
+                             getAbsSliderValue(3));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -284,18 +290,20 @@ app::Color HsvSliders::getColorFromSliders()
 GraySlider::GraySlider()
   : ColorSliders()
 {
-  addSlider(Gray, "V", 0, 255);
+  addSlider(Gray,  "V", 0, 255);
+  addSlider(Alpha, "A", 0, 255);
 }
 
 void GraySlider::onSetColor(const app::Color& color)
 {
   setAbsSliderValue(0, color.getGray());
+  setAbsSliderValue(1, color.getAlpha());
 }
-
 
 app::Color GraySlider::getColorFromSliders()
 {
-  return app::Color::fromGray(getAbsSliderValue(0));
+  return app::Color::fromGray(getAbsSliderValue(0),
+                              getAbsSliderValue(1));
 }
 
 } // namespace app

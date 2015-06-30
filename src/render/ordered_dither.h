@@ -90,7 +90,7 @@ namespace render {
       int b = doc::rgba_getb(color);
       doc::color_t nearest1idx =
         (rgbmap ? rgbmap->mapColor(r, g, b):
-                  palette->findBestfit(r, g, b, m_transparentIndex));
+                  palette->findBestfit(r, g, b, 255, m_transparentIndex));
 
       doc::color_t nearest1rgb = palette->getEntry(nearest1idx);
       int r1 = doc::rgba_getr(nearest1rgb);
@@ -109,7 +109,7 @@ namespace render {
       b2 = MID(0, b2, 255);
       doc::color_t nearest2idx =
         (rgbmap ? rgbmap->mapColor(r2, g2, b2):
-                  palette->findBestfit(r2, g2, b2, m_transparentIndex));
+                  palette->findBestfit(r2, g2, b2, 255, m_transparentIndex));
 
       // If both possible RGB colors use the same index, we cannot
       // make any dither with these two colors.

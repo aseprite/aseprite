@@ -819,7 +819,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   switch (m_brushImage->pixelFormat()) {
     case IMAGE_RGB: {
       c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
-      c = m_palette->findBestfit(rgba_getr(c), rgba_getg(c), rgba_getb(c));
+      c = m_palette->findBestfit(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c), 0);
       break;
     }
     case IMAGE_INDEXED: {
@@ -828,8 +828,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
-      c = graya_getv(c);
-      c = m_palette->findBestfit(c, c, c);
+      c = m_palette->findBestfit(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c), 0);
       break;
     }
     case IMAGE_BITMAP: {

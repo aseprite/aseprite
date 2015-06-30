@@ -77,8 +77,8 @@ namespace doc {
 
     void makeGradient(int from, int to);
 
-    int findExactMatch(int r, int g, int b) const;
-    int findBestfit(int r, int g, int b, int mask_index = 0) const;
+    int findExactMatch(int r, int g, int b, int a) const;
+    int findBestfit(int r, int g, int b, int a, int mask_index) const;
 
   private:
     frame_t m_frame;

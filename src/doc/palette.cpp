@@ -142,9 +142,9 @@ void Palette::makeBlack()
 // Creates a linear ramp in the palette.
 void Palette::makeGradient(int from, int to)
 {
-  int r, g, b;
-  int r1, g1, b1;
-  int r2, g2, b2;
+  int r, g, b, a;
+  int r1, g1, b1, a1;
+  int r2, g2, b2, a2;
   int i, n;
 
   ASSERT(from >= 0 && from <= 255);
@@ -160,22 +160,27 @@ void Palette::makeGradient(int from, int to)
   r1 = rgba_getr(getEntry(from));
   g1 = rgba_getg(getEntry(from));
   b1 = rgba_getb(getEntry(from));
+  a1 = rgba_geta(getEntry(from));
+
   r2 = rgba_getr(getEntry(to));
   g2 = rgba_getg(getEntry(to));
   b2 = rgba_getb(getEntry(to));
+  a2 = rgba_geta(getEntry(to));
 
   for (i=from+1; i<to; ++i) {
     r = r1 + (r2-r1) * (i-from) / n;
     g = g1 + (g2-g1) * (i-from) / n;
     b = b1 + (b2-b1) * (i-from) / n;
-    setEntry(i, rgba(r, g, b, 255));
+    a = a1 + (a2-a1) * (i-from) / n;
+
+    setEntry(i, rgba(r, g, b, a));
   }
 }
 
-int Palette::findExactMatch(int r, int g, int b) const
+int Palette::findExactMatch(int r, int g, int b, int a) const
 {
   for (int i=0; i<(int)m_colors.size(); ++i)
-    if (getEntry(i) == rgba(r, g, b, 255))
+    if (getEntry(i) == rgba(r, g, b, a))
       return i;
 
   return -1;
@@ -198,18 +203,14 @@ static void bestfit_init()
   }
 }
 
-int Palette::findBestfit(int r, int g, int b, int mask_index) const
+int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
 {
-#ifdef __GNUC__
-  register int bestfit asm("%eax");
-#else
-  register int bestfit;
-#endif
-  int i, coldiff, lowest;
+  int i, bestfit, coldiff, lowest;
 
   ASSERT(r >= 0 && r <= 255);
   ASSERT(g >= 0 && g <= 255);
   ASSERT(b >= 0 && b <= 255);
+  ASSERT(a >= 0 && a <= 255);
 
   if (col_diff[1] == 0)
     bestfit_init();

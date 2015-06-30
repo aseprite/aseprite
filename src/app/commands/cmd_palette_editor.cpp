@@ -497,7 +497,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
   int picksCount = entries.picks();
 
   uint32_t src_color;
-  int r, g, b;
+  int r, g, b, a;
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -509,6 +509,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
     r = rgba_getr(src_color);
     g = rgba_getg(src_color);
     b = rgba_getb(src_color);
+    a = rgba_geta(src_color);
 
     switch (m_type) {
 
@@ -518,6 +519,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
           r = color.getRed();
           g = color.getGreen();
           b = color.getBlue();
+          a = color.getAlpha();
         }
         // Modify one channel a set of entries
         else {
@@ -530,6 +532,9 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
               break;
             case ColorSliders::Blue:
               b = color.getBlue();
+              break;
+            case ColorSliders::Alpha:
+              a = color.getAlpha();
               break;
           }
         }
@@ -561,6 +566,9 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
               case ColorSliders::Value:
                 hsv.value(double(color.getValue()) / 100.0);
                 break;
+              case ColorSliders::Alpha:
+                a = color.getAlpha();
+                break;
             }
           }
 
@@ -573,7 +581,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
         break;
     }
 
-    palette->setEntry(c, doc::rgba(r, g, b, 255));
+    palette->setEntry(c, doc::rgba(r, g, b, a));
   }
 }
 
@@ -586,7 +594,7 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
   m_relDeltas[channel] = delta;
 
   uint32_t src_color;
-  int r, g, b;
+  int r, g, b, a;
 
   Palette* palette = get_current_palette();
   for (int c=0; c<palette->size(); c++) {
@@ -598,6 +606,7 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
     r = rgba_getr(src_color);
     g = rgba_getg(src_color);
     b = rgba_getb(src_color);
+    a = rgba_geta(src_color);
 
     switch (m_type) {
 
@@ -605,6 +614,7 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
         r = MID(0, r+m_relDeltas[ColorSliders::Red], 255);
         g = MID(0, g+m_relDeltas[ColorSliders::Green], 255);
         b = MID(0, b+m_relDeltas[ColorSliders::Blue], 255);
+        a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
         break;
 
       case app::Color::HsvType: {
@@ -627,12 +637,13 @@ void PaletteEntryEditor::setRelativePaletteEntryChannel(ColorSliders::Channel ch
         r = rgb.red();
         g = rgb.green();
         b = rgb.blue();
+        a = MID(0, a+m_relDeltas[ColorSliders::Alpha], 255);
         break;
       }
 
     }
 
-    palette->setEntry(c, doc::rgba(r, g, b, 255));
+    palette->setEntry(c, doc::rgba(r, g, b, a));
   }
 }
 

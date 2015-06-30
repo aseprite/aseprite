@@ -44,7 +44,7 @@ void RgbMap::regenerate(const Palette* palette, int mask_index)
           palette->findBestfit(
             scale_5bits_to_8bits(r),
             scale_5bits_to_8bits(g),
-            scale_5bits_to_8bits(b), mask_index);
+            scale_5bits_to_8bits(b), 255, mask_index);
       }
     }
   }

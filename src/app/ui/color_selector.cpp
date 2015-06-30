@@ -159,20 +159,27 @@ void ColorSelector::onColorHexEntryChange(const app::Color& color)
 
 void ColorSelector::onColorTypeClick()
 {
-  app::Color newColor;
+  app::Color newColor = getColor();
 
   switch (m_colorType.selectedItem()) {
     case INDEX_MODE:
-      newColor = app::Color::fromIndex(getColor().getIndex());
+      newColor = app::Color::fromIndex(newColor.getIndex());
       break;
     case RGB_MODE:
-      newColor = app::Color::fromRgb(getColor().getRed(), getColor().getGreen(), getColor().getBlue());
+      newColor = app::Color::fromRgb(newColor.getRed(),
+                                     newColor.getGreen(),
+                                     newColor.getBlue(),
+                                     newColor.getAlpha());
       break;
     case HSB_MODE:
-      newColor = app::Color::fromHsv(getColor().getHue(), getColor().getSaturation(), getColor().getValue());
+      newColor = app::Color::fromHsv(newColor.getHue(),
+                                     newColor.getSaturation(),
+                                     newColor.getValue(),
+                                     newColor.getAlpha());
       break;
     case GRAY_MODE:
-      newColor = app::Color::fromGray(getColor().getGray());
+      newColor = app::Color::fromGray(newColor.getGray(),
+                                      newColor.getAlpha());
       break;
     case MASK_MODE:
       newColor = app::Color::fromMask();
@@ -194,10 +201,11 @@ void ColorSelector::findBestfitIndex(const app::Color& color)
   int r = color.getRed();
   int g = color.getGreen();
   int b = color.getBlue();
+  int a = color.getAlpha();
 
   // Search for the closest color to the RGB values
-  int i = get_current_palette()->findBestfit(r, g, b);
-  if (i >= 0 && i < 256) {
+  int i = get_current_palette()->findBestfit(r, g, b, a, 0);
+  if (i >= 0) {
     m_colorPalette.deselect();
     m_colorPalette.selectColor(i);
   }

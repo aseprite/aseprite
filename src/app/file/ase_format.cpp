@@ -666,9 +666,7 @@ static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t f
     int g = fgetc(f);
     int b = fgetc(f);
     int a = fgetc(f);
-
-    // TODO don't ignore alpha
-    pal->setEntry(c, rgba(r, g, b, 255));
+    pal->setEntry(c, rgba(r, g, b, a));
 
     // Skip name
     if (flags & 1) {

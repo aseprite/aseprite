@@ -14,6 +14,7 @@
 #include "app/color_utils.h"
 #include "app/commands/commands.h"
 #include "app/modules/editors.h"
+#include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/ui/editor/editor.h"
@@ -422,37 +423,44 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   // Draw palette entries
   for (int i=0; i<palette->size(); ++i) {
     gfx::Rect box = getPaletteEntryBounds(i);
-    gfx::Color color = gfx::rgba(
-      rgba_getr(palette->getEntry(i)),
-      rgba_getg(palette->getEntry(i)),
-      rgba_getb(palette->getEntry(i)));
+    doc::color_t palColor = palette->getEntry(i);
+    app::Color appColor = app::Color::fromRgb(
+      rgba_getr(palColor),
+      rgba_getg(palColor),
+      rgba_getb(palColor),
+      rgba_geta(palColor));
+    gfx::Color gfxColor = gfx::rgba(
+      rgba_getr(palColor),
+      rgba_getg(palColor),
+      rgba_getb(palColor),
+      rgba_geta(palColor));
 
     g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
-    g->fillRect(color, box);
+    draw_color(g, box, appColor);
 
     switch (m_style) {
 
       case SelectOneColor:
         if (m_currentEntry == i)
-          g->fillRect(color_utils::blackandwhite_neg(color),
+          g->fillRect(color_utils::blackandwhite_neg(gfxColor),
                       gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
         break;
 
       case FgBgColors:
         if (fgIndex == i) {
-          gfx::Color neg = color_utils::blackandwhite_neg(color);
+          gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
           for (int i=0; i<m_boxsize/2; ++i)
             g->drawHLine(neg, box.x, box.y+i, m_boxsize/2-i);
         }
 
         if (bgIndex == i) {
-          gfx::Color neg = color_utils::blackandwhite_neg(color);
+          gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
           for (int i=0; i<m_boxsize/4; ++i)
             g->drawHLine(neg, box.x+box.w-(i+1), box.y+box.h-m_boxsize/4+i, i+1);
         }
 
         if (transparentIndex == i)
-          g->fillRect(color_utils::blackandwhite_neg(color),
+          g->fillRect(color_utils::blackandwhite_neg(gfxColor),
                       gfx::Rect(box.getCenter(), gfx::Size(1, 1)));
         break;
     }
@@ -804,7 +812,7 @@ int PaletteView::findExactIndex(const app::Color& color) const
     case Color::RgbType:
     case Color::HsvType:
     case Color::GrayType:
-      return currentPalette()->findExactMatch(color.getRed(), color.getGreen(), color.getBlue());
+      return currentPalette()->findExactMatch(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
 
     case Color::IndexType:
       return color.getIndex();

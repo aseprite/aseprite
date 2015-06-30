@@ -492,10 +492,18 @@ void Render::renderSprite(
   switch (m_bgType) {
 
     case BgType::CHECKED:
-      if (bgLayer && bgLayer->isVisible())
+      if (bgLayer && bgLayer->isVisible() && rgba_geta(bg_color) == 255) {
         fill_rect(dstImage, area.dstBounds(), bg_color);
-      else
+      }
+      else {
         renderBackground(dstImage, area, zoom);
+        if (bgLayer && bgLayer->isVisible() && rgba_geta(bg_color) > 0) {
+          blend_rect(dstImage, area.dst.x, area.dst.y,
+                     area.dst.x+area.size.w-1,
+                     area.dst.y+area.size.h-1,
+                     bg_color, 255);
+        }
+      }
       break;
 
     case BgType::TRANSPARENT:
