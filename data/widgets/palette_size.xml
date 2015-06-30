@@ -1,0 +1,18 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+<window text="Palette Size" id="palette_size">
+  <grid columns="3">
+    <label text="Number of colors:" />
+    <entry expansive="true" maxsize="4" id="colors" magnet="true" />
+    <box cell_align="horizontal" />
+
+    <separator horizontal="true" cell_hspan="3" />
+
+    <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="&amp;Cancel" closewindow="true" />
+    </box>
+  </grid>
+</window>
+</gui>

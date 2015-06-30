@@ -725,6 +725,7 @@
       <item command="PaletteEditor" text="&amp;Palette Editor">
         <param name="switch" value="true" />
       </item>
+      <item command="PaletteSize" text="Palette Si&amp;ze" />
       <separator />
       <item command="SetPaletteEntrySize" text="&amp;Small Size">
         <param name="size" value="7" />
