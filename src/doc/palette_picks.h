@@ -44,10 +44,14 @@ namespace doc {
       std::fill(m_items.begin(), m_items.end(), false);
     }
 
+    void all() {
+      std::fill(m_items.begin(), m_items.end(), true);
+    }
+
     // If there is just one selected color (or none), we select them all.
     void pickAllIfNeeded() {
       if (picks() < 2)
-        std::fill(m_items.begin(), m_items.end(), true);
+        all();
     }
 
     int firstPick() const {

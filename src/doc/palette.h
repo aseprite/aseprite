@@ -63,6 +63,14 @@ namespace doc {
 
     int countDiff(const Palette* other, int* from, int* to) const;
 
+    bool operator==(const Palette& other) const {
+      return (countDiff(&other, nullptr, nullptr) == 0);
+    }
+
+    bool operator!=(const Palette& other) const {
+      return !operator==(other);
+    }
+
     // Returns true if the palette is completelly black.
     bool isBlack() const;
     void makeBlack();

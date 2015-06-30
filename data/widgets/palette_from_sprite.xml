@@ -1,0 +1,20 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+<window text="Palette from Sprite" id="palette_from_sprite">
+  <grid columns="3">
+    <radio id="new_palette" text="Create new palette with" group="1" />
+    <entry expansive="true" maxsize="4" id="ncolors" magnet="true" />
+    <label text="colors or less" />
+    <radio id="current_palette" text="Replace current palette" group="1" cell_hspan="3" />
+    <radio id="current_range" text="Replace current range" group="1" cell_hspan="3" />
+
+    <separator horizontal="true" cell_hspan="3" />
+
+    <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
+      <button text="&amp;Cancel" closewindow="true" />
+    </box>
+  </grid>
+</window>
+</gui>

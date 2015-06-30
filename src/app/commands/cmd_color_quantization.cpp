@@ -19,10 +19,13 @@
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
 #include "base/unique_ptr.h"
+#include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "doc/sprite.h"
 #include "render/quantization.h"
 #include "ui/manager.h"
+
+#include "generated_palette_from_sprite.h"
 
 namespace app {
 
@@ -53,33 +56,82 @@ bool ColorQuantizationCommand::onEnabled(Context* context)
 void ColorQuantizationCommand::onExecute(Context* context)
 {
   try {
-    ContextWriter writer(UIContext::instance(), 500);
-    Sprite* sprite = writer.sprite();
-    frame_t frame = writer.frame();
-    if (sprite) {
-      PalettePicks entries;
+    app::gen::PaletteFromSprite window;
+    PalettePicks entries;
+
+    Sprite* sprite;
+    frame_t frame;
+    Palette* curPalette;
+    {
+      ContextReader reader(context);
+      Site site = context->activeSite();
+      sprite = site.sprite();
+      frame = site.frame();
+      curPalette = sprite->palette(frame);
+
+      window.newPalette()->setSelected(true);
+      window.ncolors()->setText("256");
+
       ColorBar::instance()->getPaletteView()->getSelectedEntries(entries);
-
-      entries.pickAllIfNeeded();
-      int n = entries.picks();
-
-      Palette palette(frame, n);
-      render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(), &palette);
-
-      Palette newPalette(*get_current_palette());
-
-      int i = 0, j = 0;
-      for (bool state : entries) {
-        if (state)
-          newPalette.setEntry(i, palette.getEntry(j++));
-        ++i;
+      if (entries.picks() > 1) {
+        window.currentRange()->setTextf(
+          "%s, %d color(s)",
+          window.currentRange()->getText().c_str(),
+          entries.picks());
       }
+      else
+        window.currentRange()->setEnabled(false);
 
+      window.currentPalette()->setTextf(
+        "%s, %d color(s)",
+        window.currentPalette()->getText().c_str(),
+        curPalette->size());
+    }
+
+    window.openWindowInForeground();
+    if (window.getKiller() != window.ok())
+      return;
+
+    bool createPal = false;
+    if (window.newPalette()->isSelected()) {
+      int n = window.ncolors()->getTextInt();
+      n = MAX(1, n);
+      entries = PalettePicks(n);
+      entries.all();
+      createPal = true;
+    }
+    else if (window.currentPalette()->isSelected()) {
+      entries.all();
+    }
+    if (entries.picks() == 0)
+      return;
+
+    Palette tmpPalette(frame, entries.picks());
+    render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(), &tmpPalette);
+
+    base::UniquePtr<Palette> newPalette(
+      new Palette(createPal ? tmpPalette:
+                              *get_current_palette()));
+
+    if (createPal) {
+      entries = PalettePicks(newPalette->size());
+      entries.all();
+    }
+
+    int i = 0, j = 0;
+    for (bool state : entries) {
+      if (state)
+        newPalette->setEntry(i, tmpPalette.getEntry(j++));
+      ++i;
+    }
+
+    if (*curPalette != *newPalette) {
+      ContextWriter writer(UIContext::instance(), 500);
       Transaction transaction(writer.context(), "Color Quantization", ModifyDocument);
-      transaction.execute(new cmd::SetPalette(sprite, frame, &newPalette));
+      transaction.execute(new cmd::SetPalette(sprite, frame, newPalette.get()));
       transaction.commit();
 
-      set_current_palette(&newPalette, false);
+      set_current_palette(newPalette.get(), false);
       ui::Manager::getDefault()->invalidate();
     }
   }
