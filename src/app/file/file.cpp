@@ -756,6 +756,16 @@ void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOp
   fop->seq.format_options = format_options;
 }
 
+void fop_sequence_set_ncolors(FileOp* fop, int ncolors)
+{
+  fop->seq.palette->resize(ncolors);
+}
+
+int fop_sequence_get_ncolors(FileOp* fop)
+{
+  return fop->seq.palette->size();
+}
+
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 {
   fop->seq.palette->setEntry(index, rgba(r, g, b, 255));

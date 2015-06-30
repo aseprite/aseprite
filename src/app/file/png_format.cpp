@@ -188,16 +188,13 @@ bool PngFormat::onLoad(FileOp* fop)
   // Read the palette
   if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
-    int c;
+    fop_sequence_set_ncolors(fop, num_palette);
 
-    for (c = 0; c < num_palette; c++) {
+    for (int c=0; c<num_palette; ++c) {
       fop_sequence_set_color(fop, c,
                              palette[c].red,
                              palette[c].green,
                              palette[c].blue);
-    }
-    for (; c < 256; c++) {
-      fop_sequence_set_color(fop, c, 0, 0, 0);
     }
 
     // Read alpha values for palette entries
@@ -387,21 +384,24 @@ bool PngFormat::onSave(FileOp* fop)
 
   if (image->pixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
+    int pal_size = fop_sequence_get_ncolors(fop);
+    ASSERT(pal_size > 0 && pal_size <= PNG_MAX_PALETTE_LENGTH);
+    pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
 
 #if PNG_MAX_PALETTE_LENGTH != 256
 #error PNG_MAX_PALETTE_LENGTH should be 256
 #endif
 
     // Save the color palette.
-    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
-    for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
+    palette = (png_colorp)png_malloc(png_ptr, pal_size * sizeof(png_color));
+    for (c = 0; c < pal_size; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
       palette[c].red   = r;
       palette[c].green = g;
       palette[c].blue  = b;
     }
 
-    png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+    png_set_PLTE(png_ptr, info_ptr, palette, pal_size);
 
     // If the sprite does not have a (visible) background layer, we
     // put alpha=0 to the transparent color.
@@ -411,7 +411,7 @@ bool PngFormat::onSave(FileOp* fop)
       mask_entry = fop->document->sprite()->transparentColor();
     }
 
-    int num_trans = PNG_MAX_PALETTE_LENGTH;
+    int num_trans = pal_size;
     png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
 
     for (c=0; c<num_trans; ++c) {
