@@ -108,7 +108,7 @@ Then each chunk format is:
 5. Chunk types
 ========================================
 
-Palette chunk (0x0004)
+Old palette chunk (0x0004)
 ----------------------------------------
 
   WORD          Number of packets
@@ -242,6 +242,24 @@ Frame Tags Chunk (0x2018)
     BYTE[3]     RGB values of the tag color
     BYTE        Extra byte (zero)
     STRING      Tag name
+
+
+Palette Chunk (0x2019)
+----------------------------------------
+
+  DWORD         New palette size (total number of entries)
+  DWORD         First color index to change
+  DWORD         Last color index to change
+  BYTE[8]       For future (set to zero)
+  + For each palette entry in [from,to] range (to-from+1 entries)
+    WORD        Entry flags:
+                  1 = Has name
+    BYTE        Red (0-255)
+    BYTE        Green (0-255)
+    BYTE        Blue (0-255)
+    BYTE        Alpha (0-255)
+    + If has name bit in entry flags
+      STRING    Color name
 
 
 Notes

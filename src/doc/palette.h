@@ -46,7 +46,8 @@ namespace doc {
       //      there are situations that are not handled quite well yet.
       //      E.g. A palette with lesser colors is loaded
       //
-      //ASSERT(i >= 0 && i < size());
+      //ASSERT(i < size());
+      ASSERT(i >= 0);
       if (i >= 0 && i < size())
         return m_colors[i];
       else

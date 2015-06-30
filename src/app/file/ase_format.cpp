@@ -31,6 +31,7 @@
 #define ASE_FILE_CHUNK_MASK             0x2016
 #define ASE_FILE_CHUNK_PATH             0x2017
 #define ASE_FILE_CHUNK_FRAME_TAGS       0x2018
+#define ASE_FILE_CHUNK_PALETTE          0x2019
 
 #define ASE_FILE_RAW_CEL                0
 #define ASE_FILE_LINK_CEL               1
@@ -97,9 +98,10 @@ static void ase_file_write_string(FILE* f, const std::string& string);
 static void ase_file_write_start_chunk(FILE* f, ASE_FrameHeader* frame_header, int type, ASE_Chunk* chunk);
 static void ase_file_write_close_chunk(FILE* f, ASE_Chunk* chunk);
 
-static Palette* ase_file_read_color_chunk(FILE* f, Sprite* sprite, frame_t frame);
-static Palette* ase_file_read_color2_chunk(FILE* f, Sprite* sprite, frame_t frame);
-static void ase_file_write_color2_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal);
+static Palette* ase_file_read_color_chunk(FILE* f, Palette* prevPal, frame_t frame);
+static Palette* ase_file_read_color2_chunk(FILE* f, Palette* prevPal, frame_t frame);
+static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t frame);
+static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal, int from, int to);
 static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previous_layer, int* current_level);
 static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, Layer* layer);
 static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame, PixelFormat pixelFormat, FileOp* fop, ASE_Header* header, size_t chunk_end);
@@ -141,7 +143,8 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_LAYERS |
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
-      FILE_SUPPORT_FRAME_TAGS;
+      FILE_SUPPORT_FRAME_TAGS |
+      FILE_SUPPORT_BIG_PALETTES;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -210,19 +213,24 @@ bool AseFormat::onLoad(FileOp* fop)
 
         switch (chunk_type) {
 
-          /* only for 8 bpp images */
           case ASE_FILE_CHUNK_FLI_COLOR:
           case ASE_FILE_CHUNK_FLI_COLOR2: {
-            Palette* prev_pal = sprite->palette(frame);
-            Palette* pal =
-              chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
-              ase_file_read_color_chunk(f, sprite, frame):
-              ase_file_read_color2_chunk(f, sprite, frame);
+            Palette* prevPal = sprite->palette(frame);
+            UniquePtr<Palette> pal(chunk_type == ASE_FILE_CHUNK_FLI_COLOR ?
+                                   ase_file_read_color_chunk(f, prevPal, frame):
+                                   ase_file_read_color2_chunk(f, prevPal, frame));
 
-            if (prev_pal->countDiff(pal, NULL, NULL) > 0)
-              sprite->setPalette(pal, true);
+            if (prevPal->countDiff(pal.get(), NULL, NULL) > 0)
+              sprite->setPalette(pal.get(), true);
+            break;
+          }
 
-            delete pal;
+          case ASE_FILE_CHUNK_PALETTE: {
+            Palette* prevPal = sprite->palette(frame);
+            UniquePtr<Palette> pal(ase_file_read_palette_chunk(f, prevPal, frame));
+
+            if (prevPal->countDiff(pal.get(), NULL, NULL) > 0)
+              sprite->setPalette(pal.get(), true);
             break;
           }
 
@@ -321,10 +329,13 @@ bool AseFormat::onSave(FileOp* fop)
     frame_header.duration = sprite->frameDuration(frame);
 
     // is the first frame or did the palette change?
+    Palette* pal = sprite->palette(frame);
+    int palFrom = 0, palTo = pal->size()-1;
     if ((frame == 0 ||
-         sprite->palette(frame-1)->countDiff(sprite->palette(frame), NULL, NULL) > 0)) {
+         sprite->palette(frame-1)->countDiff(pal, &palFrom, &palTo) > 0)) {
       // Write the color chunk
-      ase_file_write_color2_chunk(f, &frame_header, sprite->palette(frame));
+      ase_file_write_palette_chunk(f, &frame_header,
+                                   pal, palFrom, palTo);
     }
 
     // Write extra chunks in the first frame
@@ -582,10 +593,10 @@ static void ase_file_write_close_chunk(FILE* f, ASE_Chunk* chunk)
   fseek(f, chunk_end, SEEK_SET);
 }
 
-static Palette* ase_file_read_color_chunk(FILE* f, Sprite* sprite, frame_t frame)
+static Palette* ase_file_read_color_chunk(FILE* f, Palette* prevPal, frame_t frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette* pal = new Palette(*sprite->palette(frame));
+  Palette* pal = new Palette(*prevPal);
   pal->setFrame(frame);
 
   packets = fgetw(f);   // Number of packets
@@ -610,10 +621,10 @@ static Palette* ase_file_read_color_chunk(FILE* f, Sprite* sprite, frame_t frame
   return pal;
 }
 
-static Palette* ase_file_read_color2_chunk(FILE* f, Sprite* sprite, frame_t frame)
+static Palette* ase_file_read_color2_chunk(FILE* f, Palette* prevPal, frame_t frame)
 {
   int i, c, r, g, b, packets, skip, size;
-  Palette* pal = new Palette(*sprite->palette(frame));
+  Palette* pal = new Palette(*prevPal);
   pal->setFrame(frame);
 
   packets = fgetw(f);   // Number of packets
@@ -636,23 +647,55 @@ static Palette* ase_file_read_color2_chunk(FILE* f, Sprite* sprite, frame_t fram
   return pal;
 }
 
-/* writes the original color chunk in FLI files for the entire palette "pal" */
-static void ase_file_write_color2_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal)
+static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t frame)
 {
-  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_FLI_COLOR2);
-  int c, color;
+  Palette* pal = new Palette(*prevPal);
+  pal->setFrame(frame);
 
-  fputw(1, f);                  // number of packets
+  int newSize = fgetl(f);
+  int from = fgetl(f);
+  int to = fgetl(f);
+  ase_file_read_padding(f, 8);
 
-  // First packet
-  fputc(0, f);                                   // skip 0 colors
-  fputc(pal->size() == 256 ? 0: pal->size(), f); // number of colors
-  for (c=0; c<pal->size(); c++) {
-    color = pal->getEntry(c);
+  if (newSize > 0)
+    pal->resize(newSize);
 
+  for (int c=from; c<=to; ++c) {
+    int flags = fgetw(f);
+    int r = fgetc(f);
+    int g = fgetc(f);
+    int b = fgetc(f);
+    int a = fgetc(f);
+
+    // TODO don't ignore alpha
+    pal->setEntry(c, rgba(r, g, b, 255));
+
+    // Skip name
+    if (flags & 1) {
+      std::string name = ase_file_read_string(f);
+      // Ignore color entry name
+    }
+  }
+
+  return pal;
+}
+
+static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal, int from, int to)
+{
+  ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_PALETTE);
+
+  fputl(pal->size(), f);
+  fputl(from, f);
+  fputl(to, f);
+  ase_file_write_padding(f, 8);
+
+  for (int c=from; c<=to; ++c) {
+    color_t color = pal->getEntry(c);
+    fputw(0, f);                // Entry flags (without name)
     fputc(rgba_getr(color), f);
     fputc(rgba_getg(color), f);
     fputc(rgba_getb(color), f);
+    fputc(rgba_geta(color), f);
   }
 }
 

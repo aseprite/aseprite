@@ -26,6 +26,7 @@
 #define FILE_SUPPORT_SEQUENCES          0x00000400
 #define FILE_SUPPORT_GET_FORMAT_OPTIONS 0x00000800
 #define FILE_SUPPORT_FRAME_TAGS         0x00001000
+#define FILE_SUPPORT_BIG_PALETTES       0x00002000 // Palettes w/more than 256 colors
 
 namespace app {
 

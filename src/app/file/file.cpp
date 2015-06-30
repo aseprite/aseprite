@@ -322,6 +322,16 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
     }
   }
 
+  // Big palettes
+  if (!fop->format->support(FILE_SUPPORT_BIG_PALETTES)) {
+    for (Palette* pal : fop->document->sprite()->getPalettes()) {
+      if (pal->size() > 256) {
+        warnings += "<<- Palettes with more than 256 colors";
+        break;
+      }
+    }
+  }
+
   // Show the confirmation alert
   if (!warnings.empty()) {
     // Interative
@@ -737,7 +747,13 @@ void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
 
 void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
 {
-  uint32_t c = fop->seq.palette->getEntry(index);
+  uint32_t c;
+
+  ASSERT(index >= 0);
+  if (index >= 0 && index < fop->seq.palette->size())
+    c = fop->seq.palette->getEntry(index);
+  else
+    c = rgba(0, 0, 0, 255);     // Black color
 
   *r = rgba_getr(c);
   *g = rgba_getg(c);
