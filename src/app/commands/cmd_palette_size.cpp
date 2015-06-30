@@ -20,6 +20,8 @@
 
 #include "generated_palette_size.h"
 
+#include <climits>
+
 namespace app {
 
 class PaletteSizeCommand : public Command {
