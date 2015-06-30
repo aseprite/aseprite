@@ -332,6 +332,22 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
     }
   }
 
+  // Palette with alpha
+  if (!fop->format->support(FILE_SUPPORT_PALETTE_WITH_ALPHA)) {
+    bool done = false;
+    for (Palette* pal : fop->document->sprite()->getPalettes()) {
+      for (int c=0; c<pal->size(); ++c) {
+        if (rgba_geta(pal->getEntry(c)) < 255) {
+          warnings += "<<- Palette with alpha channel";
+          done = true;
+          break;
+        }
+      }
+      if (done)
+        break;
+    }
+  }
+
   // Show the confirmation alert
   if (!warnings.empty()) {
     // Interative

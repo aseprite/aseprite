@@ -144,7 +144,8 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
       FILE_SUPPORT_FRAME_TAGS |
-      FILE_SUPPORT_BIG_PALETTES;
+      FILE_SUPPORT_BIG_PALETTES |
+      FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;
