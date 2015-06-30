@@ -60,6 +60,9 @@ void PaletteSizeCommand::onExecute(Context* context)
   window.openWindowInForeground();
   if (window.getKiller() == window.ok()) {
     int ncolors = window.colors()->getTextInt();
+    if (ncolors == palette.size())
+      return;
+
     palette.resize(MID(1, ncolors, INT_MAX));
 
     Transaction transaction(context, "Palette Size", ModifyDocument);
