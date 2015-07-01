@@ -85,7 +85,7 @@ Image* convert_pixel_format(
   }
 
   color_t c;
-  int r, g, b;
+  int r, g, b, a;
 
   switch (image->pixelFormat()) {
 
@@ -226,9 +226,7 @@ Image* convert_pixel_format(
             if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else
-              *dst_it = rgba(rgba_getr(palette->getEntry(c)),
-                             rgba_getg(palette->getEntry(c)),
-                             rgba_getb(palette->getEntry(c)), 255);
+              *dst_it = palette->getEntry(c);
           }
           ASSERT(dst_it == dst_end);
           break;
@@ -249,12 +247,14 @@ Image* convert_pixel_format(
             if (!is_background && c == image->maskColor())
               *dst_it = 0;
             else {
-              r = rgba_getr(palette->getEntry(c));
-              g = rgba_getg(palette->getEntry(c));
-              b = rgba_getb(palette->getEntry(c));
+              c = palette->getEntry(c);
+              r = rgba_getr(c);
+              g = rgba_getg(c);
+              b = rgba_getb(c);
+              a = rgba_geta(c);
 
               g = 255 * Hsv(Rgb(r, g, b)).valueInt() / 100;
-              *dst_it = graya(g, 255);
+              *dst_it = graya(g, a);
             }
           }
           ASSERT(dst_it == dst_end);
