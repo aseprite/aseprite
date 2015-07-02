@@ -14,7 +14,9 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/modules/palettes.h"
 #include "app/ui/color_bar.h"
+#include "doc/palette.h"
 
 namespace app {
 
@@ -75,7 +77,7 @@ void ChangeColorCommand::onExecute(Context* context)
     case IncrementIndex:
       if (color.getType() == app::Color::IndexType) {
         int index = color.getIndex();
-        if (index < 255)        // TODO use sprite palette limit
+        if (index < get_current_palette()->size()-1)
           color = app::Color::fromIndex(index+1);
       }
       else
