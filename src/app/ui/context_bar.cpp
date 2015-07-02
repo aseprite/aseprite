@@ -745,21 +745,51 @@ protected:
   }
 };
 
-class ContextBar::GrabAlphaField : public CheckBox
+class ContextBar::EyedropperField : public HBox
 {
 public:
-  GrabAlphaField() : CheckBox("Grab Alpha") {
-    setup_mini_font(this);
+  EyedropperField() {
+    m_channel.addItem("Color+Alpha");
+    m_channel.addItem("Color");
+    m_channel.addItem("Alpha");
+    m_channel.addItem("RGB+Alpha");
+    m_channel.addItem("RGB");
+    m_channel.addItem("HSB+Alpha");
+    m_channel.addItem("HSB");
+    m_channel.addItem("Gray+Alpha");
+    m_channel.addItem("Gray");
+    m_channel.addItem("Best fit Index");
+
+    m_sample.addItem("All Layers");
+    m_sample.addItem("Current Layer");
+
+    addChild(new Label("Pick:"));
+    addChild(&m_channel);
+    addChild(new Label("Sample:"));
+    addChild(&m_sample);
+
+    m_channel.Change.connect(Bind<void>(&EyedropperField::onChannelChange, this));
+    m_sample.Change.connect(Bind<void>(&EyedropperField::onSampleChange, this));
   }
 
-protected:
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
-
-    Preferences::instance().editor.grabAlpha(isSelected());
-
-    releaseFocus();
+  void updateFromPreferences(app::Preferences::Eyedropper& prefEyedropper) {
+    m_channel.setSelectedItemIndex((int)prefEyedropper.channel());
+    m_sample.setSelectedItemIndex((int)prefEyedropper.sample());
   }
+
+private:
+  void onChannelChange() {
+    Preferences::instance().eyedropper.channel(
+      (app::gen::EyedropperChannel)m_channel.getSelectedItemIndex());
+  }
+
+  void onSampleChange() {
+    Preferences::instance().eyedropper.sample(
+      (app::gen::EyedropperSample)m_sample.getSelectedItemIndex());
+  }
+
+  ComboBox m_channel;
+  ComboBox m_sample;
 };
 
 class ContextBar::AutoSelectLayerField : public CheckBox
@@ -810,7 +840,7 @@ ContextBar::ContextBar()
   addChild(m_inkOpacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
 
-  addChild(m_grabAlpha = new GrabAlphaField());
+  addChild(m_eyedropperField = new EyedropperField());
 
   addChild(m_autoSelectLayer = new AutoSelectLayerField());
 
@@ -850,11 +880,6 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_grabAlpha,
-    "When checked the tool picks the color from the active layer, and its alpha\n"
-    "component is used to setup the opacity level of all drawing tools.\n\n"
-    "When unchecked -the default behavior- the color is picked\n"
-    "from the composition of all sprite layers.", LEFT | TOP);
 
   m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);
@@ -981,7 +1006,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_spraySpeed->setValue(toolPref->spray.speed());
   }
 
-  m_grabAlpha->setSelected(preferences.editor.grabAlpha());
+  m_eyedropperField->updateFromPreferences(preferences.eyedropper);
   m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
 
   // True if we have an image as brush
@@ -1028,7 +1053,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_inkType->setVisible(hasInk && !hasImageBrush);
   m_inkOpacityLabel->setVisible(hasInkWithOpacity && supportOpacity);
   m_inkOpacity->setVisible(hasInkWithOpacity && supportOpacity);
-  m_grabAlpha->setVisible(isEyedropper);
+  m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
   m_freehandBox->setVisible(isFreehand && supportOpacity);
   m_toleranceLabel->setVisible(hasTolerance);

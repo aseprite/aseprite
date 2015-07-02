@@ -12,7 +12,7 @@
 #include "app/app.h"
 #include "app/color.h"
 #include "app/color_picker.h"
-#include "app/commands/command.h"
+#include "app/commands/cmd_eyedropper.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/modules/editors.h"
@@ -32,27 +32,119 @@ namespace app {
 
 using namespace ui;
 
-class EyedropperCommand : public Command {
-  /**
-   * True means "pick background color", false the foreground color.
-   */
-  bool m_background;
-
-public:
-  EyedropperCommand();
-  Command* clone() const override { return new EyedropperCommand(*this); }
-
-protected:
-  void onLoadParams(const Params& params) override;
-  void onExecute(Context* context) override;
-};
-
 EyedropperCommand::EyedropperCommand()
   : Command("Eyedropper",
             "Eyedropper",
             CmdUIOnlyFlag)
 {
   m_background = false;
+}
+
+void EyedropperCommand::pickSample(const doc::Site& site,
+                                   const gfx::Point& pixelPos,
+                                   app::Color& color)
+{
+  // Check if we've to grab alpha channel or the merged color.
+  Preferences& pref = Preferences::instance();
+  bool allLayers =
+    (pref.eyedropper.sample() == app::gen::EyedropperSample::ALL_LAYERS);
+
+  ColorPicker picker;
+  picker.pickColor(site,
+                   pixelPos,
+                   (allLayers ?
+                    ColorPicker::FromComposition:
+                    ColorPicker::FromActiveLayer));
+
+  app::gen::EyedropperChannel channel =
+    pref.eyedropper.channel();
+
+  app::Color picked = picker.color();
+
+  switch (channel) {
+    case app::gen::EyedropperChannel::COLOR_ALPHA:
+      color = picked;
+      break;
+    case app::gen::EyedropperChannel::COLOR:
+      if (picked.getAlpha() > 0)
+        color = app::Color::fromRgb(picked.getRed(),
+                                    picked.getGreen(),
+                                    picked.getBlue(),
+                                    color.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::ALPHA:
+      switch (color.getType()) {
+
+        case app::Color::RgbType:
+        case app::Color::IndexType:
+          color = app::Color::fromRgb(color.getRed(),
+                                      color.getGreen(),
+                                      color.getBlue(),
+                                      picked.getAlpha());
+          break;
+
+        case app::Color::HsvType:
+          color = app::Color::fromHsv(color.getHue(),
+                                      color.getSaturation(),
+                                      color.getValue(),
+                                      picked.getAlpha());
+          break;
+
+        case app::Color::GrayType:
+          color = app::Color::fromGray(color.getGray(),
+                                       picked.getAlpha());
+          break;
+
+      }
+      break;
+    case app::gen::EyedropperChannel::RGBA:
+      if (picked.getType() == app::Color::RgbType)
+        color = picked;
+      else
+        color = app::Color::fromRgb(picked.getRed(),
+                                    picked.getGreen(),
+                                    picked.getBlue(),
+                                    picked.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::RGB:
+      if (picked.getAlpha() > 0)
+        color = app::Color::fromRgb(picked.getRed(),
+                                    picked.getGreen(),
+                                    picked.getBlue(),
+                                    color.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::HSVA:
+      if (picked.getType() == app::Color::HsvType)
+        color = picked;
+      else
+        color = app::Color::fromHsv(picked.getHue(),
+                                    picked.getSaturation(),
+                                    picked.getValue(),
+                                    picked.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::HSV:
+      if (picked.getAlpha() > 0)
+        color = app::Color::fromHsv(picked.getHue(),
+                                    picked.getSaturation(),
+                                    picked.getValue(),
+                                    color.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::GRAYA:
+      if (picked.getType() == app::Color::GrayType)
+        color = picked;
+      else
+        color = app::Color::fromGray(picked.getGray(),
+                                     picked.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::GRAY:
+      if (picked.getAlpha() > 0)
+        color = app::Color::fromGray(picked.getGray(),
+                                     color.getAlpha());
+      break;
+    case app::gen::EyedropperChannel::INDEX:
+      color = app::Color::fromIndex(picked.getIndex());
+      break;
+  }
 }
 
 void EyedropperCommand::onLoadParams(const Params& params)
@@ -82,27 +174,18 @@ void EyedropperCommand::onExecute(Context* context)
   // Pixel position to get
   gfx::Point pixelPos = editor->screenToEditor(ui::get_mouse_position());
 
-  // Check if we've to grab alpha channel or the merged color.
+  // Start with fg/bg color
   Preferences& pref = Preferences::instance();
-  bool grabAlpha = pref.editor.grabAlpha();
+  app::Color color =
+    m_background ? pref.colorBar.bgColor():
+                   pref.colorBar.fgColor();
 
-  ColorPicker picker;
-  picker.pickColor(editor->getSite(),
-    pixelPos,
-    grabAlpha ?
-    ColorPicker::FromActiveLayer:
-    ColorPicker::FromComposition);
-
-  if (grabAlpha) {
-    tools::ToolBox* toolBox = App::instance()->getToolBox();
-    for (auto tool : *toolBox)
-      pref.tool(tool).opacity(picker.alpha());
-  }
+  pickSample(editor->getSite(), pixelPos, color);
 
   if (m_background)
-    pref.colorBar.bgColor(picker.color());
+    pref.colorBar.bgColor(color);
   else
-    pref.colorBar.fgColor(picker.color());
+    pref.colorBar.fgColor(color);
 }
 
 Command* CommandFactory::createEyedropperCommand()

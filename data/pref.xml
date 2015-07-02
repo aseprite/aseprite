@@ -36,6 +36,22 @@
       <value id="IF_VISIBLE" value="1" />
       <value id="ALWAYS" value="2" />
     </enum>
+    <enum id="EyedropperChannel">
+      <value id="COLOR_ALPHA" value="0" />
+      <value id="COLOR" value="1" />
+      <value id="ALPHA" value="2" />
+      <value id="RGBA" value="3" />
+      <value id="RGB" value="4" />
+      <value id="HSVA" value="5" />
+      <value id="HSV" value="6" />
+      <value id="GRAYA" value="7" />
+      <value id="GRAY" value="8" />
+      <value id="INDEX" value="9" />
+    </enum>
+    <enum id="EyedropperSample">
+      <value id="ALL_LAYERS" value="0" />
+      <value id="CURRENT_LAYER" value="1" />
+    </enum>
   </types>
 
   <global>
@@ -59,7 +75,6 @@
       <option id="zoom_from_center_with_keys" type="bool" default="false" />
       <option id="show_scrollbars" type="bool" default="true" migrate="Options.ShowScrollbars" />
       <option id="right_click_mode" type="RightClickMode" default="RightClickMode::PAINT_BGCOLOR" migrate="Options.RightClickMode" />
-      <option id="grab_alpha" type="bool" default="false" migrate="Options.GrabAlpha" />
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
     </section>
@@ -100,6 +115,10 @@
     </section>
     <section id="quantization">
       <option id="with_alpha" type="bool" default="true" />
+    </section>
+    <section id="eyedropper" text="Editor">
+      <option id="channel" type="EyedropperChannel" default="EyedropperChannel::COLOR_ALPHA" />
+      <option id="sample" type="EyedropperSample" default="EyedropperSample::ALL_LAYERS" />
     </section>
   </global>
 

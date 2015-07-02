@@ -312,8 +312,8 @@ bool PaletteView::onProcessMessage(Message* msg)
           int idx = m_hot.color;
           idx = MID(0, idx, currentPalette()->size()-1);
 
-          StatusBar::instance()->showColor(0, "",
-            app::Color::fromIndex(idx), 255);
+          StatusBar::instance()->showColor(
+            0, "", app::Color::fromIndex(idx));
           MouseButtons buttons = mouseMsg->buttons();
 
           if (hasCapture() && ((idx != m_currentEntry) ||
