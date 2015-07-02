@@ -62,33 +62,38 @@ static void rectgrid(ui::Graphics* g, const gfx::Rect& rc, const gfx::Size& tile
   }
 }
 
-static void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
+void draw_color(ui::Graphics* g, const Rect& rc, const app::Color& color)
 {
   if (rc.w < 1 || rc.h < 1)
     return;
 
   app::Color::Type type = color.getType();
+  int alpha = color.getAlpha();
 
-  if (type == app::Color::MaskType) {
-    rectgrid(g, rc, gfx::Size(rc.w/4, rc.h/2));
-    return;
+  if (alpha < 255) {
+    if (rc.w == rc.h)
+      rectgrid(g, rc, gfx::Size(rc.w/2, rc.h/2));
+    else
+      rectgrid(g, rc, gfx::Size(rc.w/4, rc.h/2));
   }
-  else if (type == app::Color::IndexType) {
-    int index = color.getIndex();
 
-    if (index >= 0 && index < get_current_palette()->size()) {
+  if (alpha > 0) {
+    if (type == app::Color::IndexType) {
+      int index = color.getIndex();
+
+      if (index >= 0 && index < get_current_palette()->size()) {
+        g->fillRect(color_utils::color_for_ui(color), rc);
+      }
+      else {
+        g->fillRect(gfx::rgba(0, 0, 0), rc);
+        g->drawLine(gfx::rgba(255, 255, 255),
+                    gfx::Point(rc.x+rc.w-2, rc.y+1),
+                    gfx::Point(rc.x+1, rc.y+rc.h-2));
+      }
+    }
+    else
       g->fillRect(color_utils::color_for_ui(color), rc);
-    }
-    else {
-      g->fillRect(gfx::rgba(0, 0, 0), rc);
-      g->drawLine(gfx::rgba(255, 255, 255),
-        gfx::Point(rc.x+rc.w-2, rc.y+1),
-        gfx::Point(rc.x+1, rc.y+rc.h-2));
-    }
-    return;
   }
-
-  g->fillRect(color_utils::color_for_ui(color), rc);
 }
 
 void draw_color_button(ui::Graphics* g,

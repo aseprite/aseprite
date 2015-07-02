@@ -52,14 +52,16 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
       c = gfx::rgba(
         color.getRed(),
         color.getGreen(),
-        color.getBlue(), 255);
+        color.getBlue(),
+        color.getAlpha());
       break;
 
     case app::Color::GrayType:
       c = gfx::rgba(
         color.getGray(),
         color.getGray(),
-        color.getGray(), 255);
+        color.getGray(),
+        color.getAlpha());
       break;
 
     case app::Color::IndexType: {
@@ -70,7 +72,8 @@ gfx::Color color_utils::color_for_ui(const app::Color& color)
       c = gfx::rgba(
         rgba_getr(_c),
         rgba_getg(_c),
-        rgba_getb(_c), 255);
+        rgba_getb(_c),
+        color.getAlpha());
       break;
     }
 
@@ -116,10 +119,10 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
   else {
     switch (colorTarget.pixelFormat()) {
       case IMAGE_RGB:
-        c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), 255);
+        c = doc::rgba(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         break;
       case IMAGE_GRAYSCALE:
-        c = doc::graya(color.getGray(), 255);
+        c = doc::graya(color.getGray(), color.getAlpha());
         break;
       case IMAGE_INDEXED:
         if (color.getType() == app::Color::IndexType) {
@@ -130,6 +133,7 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
             color.getRed(),
             color.getGreen(),
             color.getBlue(),
+            color.getAlpha(),
             colorTarget.isTransparent() ?
               colorTarget.maskColor(): // Don't return the mask color
               -1);                     // Return any color, we are in a background layer.

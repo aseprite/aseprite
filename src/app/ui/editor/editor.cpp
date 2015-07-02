@@ -916,49 +916,21 @@ tools::Ink* Editor::getCurrentEditorInk()
         break;
     }
   }
-  else {
+  // Only paint tools can have different inks
+  else if (ink->isPaint() && !ink->isEffect()) {
     tools::InkType inkType = Preferences::instance().tool(tool).ink();
     const char* id = NULL;
 
     switch (inkType) {
-      case tools::InkType::DEFAULT:
-        // Do nothing
+      case tools::InkType::REPLACE_PIXEL:
+        id = tools::WellKnownInks::PaintOpaque;
         break;
-      case tools::InkType::SET_ALPHA:
-        id = tools::WellKnownInks::PaintSetAlpha;
+      case tools::InkType::ALPHA_COMPOSITING:
+        id = tools::WellKnownInks::Paint;
         break;
       case tools::InkType::LOCK_ALPHA:
         id = tools::WellKnownInks::PaintLockAlpha;
         break;
-#if 0
-      case tools::InkType::OPAQUE:
-        id = tools::WellKnownInks::PaintOpaque;
-        break;
-      case tools::InkType::MERGE:
-        id = tools::WellKnownInks::Paint;
-        break;
-      case tools::InkType::SHADING:
-        id = tools::WellKnownInks::Shading;
-        break;
-      case tools::InkType::REPLACE:
-        if (!m_secondaryButton)
-          id = tools::WellKnownInks::ReplaceBgWithFg;
-        else
-          id = tools::WellKnownInks::ReplaceFgWithBg;
-        break;
-      case tools::InkType::ERASER:
-        id = tools::WellKnownInks::Eraser;
-        break;
-      case tools::InkType::SELECTION:
-        id = tools::WellKnownInks::Selection;
-        break;
-      case tools::InkType::BLUR:
-        id = tools::WellKnownInks::Blur;
-        break;
-      case tools::InkType::JUMBLE:
-        id = tools::WellKnownInks::Jumble;
-        break;
-#endif
     }
 
     if (id)

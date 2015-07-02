@@ -60,12 +60,13 @@ namespace render {
                                 3, 1 };
 
   class OrderedDither {
-    static int colorDistance(int r1, int g1, int b1,
-                             int r2, int g2, int b2) {
+    static int colorDistance(int r1, int g1, int b1, int a1,
+                             int r2, int g2, int b2, int a2) {
       // The factor for RGB components came from doc::rba_luma()
       return int((r1-r2) * (r1-r2) * 21 + // 2126
                  (g1-g2) * (g1-g2) * 71 + // 7152
-                 (b1-b2) * (b1-b2) *  7); //  722
+                 (b1-b2) * (b1-b2) *  7 + //  722
+                 (a1-a2) * (a1-a2));
     }
 
   public:
@@ -80,7 +81,7 @@ namespace render {
       const doc::RgbMap* rgbmap,
       const doc::Palette* palette) {
       // Alpha=0, output transparent color
-      if (!doc::rgba_geta(color))
+      if (m_transparentIndex >= 0 && !doc::rgba_geta(color))
         return m_transparentIndex;
 
       // Get the nearest color in the palette with the given RGB
@@ -88,14 +89,16 @@ namespace render {
       int r = doc::rgba_getr(color);
       int g = doc::rgba_getg(color);
       int b = doc::rgba_getb(color);
+      int a = doc::rgba_geta(color);
       doc::color_t nearest1idx =
-        (rgbmap ? rgbmap->mapColor(r, g, b):
-                  palette->findBestfit(r, g, b, m_transparentIndex));
+        (rgbmap ? rgbmap->mapColor(r, g, b, a):
+                  palette->findBestfit(r, g, b, a, m_transparentIndex));
 
       doc::color_t nearest1rgb = palette->getEntry(nearest1idx);
       int r1 = doc::rgba_getr(nearest1rgb);
       int g1 = doc::rgba_getg(nearest1rgb);
       int b1 = doc::rgba_getb(nearest1rgb);
+      int a1 = doc::rgba_geta(nearest1rgb);
 
       // Between the original color ('color' parameter) and 'nearest'
       // index, we have an error (r1-r, g1-g, b1-b). Here we try to
@@ -104,12 +107,14 @@ namespace render {
       int r2 = r - (r1-r);
       int g2 = g - (g1-g);
       int b2 = b - (b1-b);
+      int a2 = a - (a1-a);
       r2 = MID(0, r2, 255);
       g2 = MID(0, g2, 255);
       b2 = MID(0, b2, 255);
+      a2 = MID(0, a2, 255);
       doc::color_t nearest2idx =
-        (rgbmap ? rgbmap->mapColor(r2, g2, b2):
-                  palette->findBestfit(r2, g2, b2, m_transparentIndex));
+        (rgbmap ? rgbmap->mapColor(r2, g2, b2, a2):
+                  palette->findBestfit(r2, g2, b2, a2, m_transparentIndex));
 
       // If both possible RGB colors use the same index, we cannot
       // make any dither with these two colors.
@@ -120,12 +125,13 @@ namespace render {
       r2 = doc::rgba_getr(nearest2rgb);
       g2 = doc::rgba_getg(nearest2rgb);
       b2 = doc::rgba_getb(nearest2rgb);
+      a2 = doc::rgba_geta(nearest2rgb);
 
       // Here we calculate the distance between the original 'color'
       // and 'nearest1rgb'. The maximum possible distance is given by
       // the distance between 'nearest1rgb' and 'nearest2rgb'.
-      int d = colorDistance(r1, g1, b1, r, g, b);
-      int D = colorDistance(r1, g1, b1, r2, g2, b2);
+      int d = colorDistance(r1, g1, b1, a1, r, g, b, a);
+      int D = colorDistance(r1, g1, b1, a1, r2, g2, b2, a2);
       if (D == 0)
         return nearest1idx;
 

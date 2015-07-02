@@ -142,9 +142,9 @@ void Palette::makeBlack()
 // Creates a linear ramp in the palette.
 void Palette::makeGradient(int from, int to)
 {
-  int r, g, b;
-  int r1, g1, b1;
-  int r2, g2, b2;
+  int r, g, b, a;
+  int r1, g1, b1, a1;
+  int r2, g2, b2, a2;
   int i, n;
 
   ASSERT(from >= 0 && from <= 255);
@@ -160,22 +160,27 @@ void Palette::makeGradient(int from, int to)
   r1 = rgba_getr(getEntry(from));
   g1 = rgba_getg(getEntry(from));
   b1 = rgba_getb(getEntry(from));
+  a1 = rgba_geta(getEntry(from));
+
   r2 = rgba_getr(getEntry(to));
   g2 = rgba_getg(getEntry(to));
   b2 = rgba_getb(getEntry(to));
+  a2 = rgba_geta(getEntry(to));
 
   for (i=from+1; i<to; ++i) {
     r = r1 + (r2-r1) * (i-from) / n;
     g = g1 + (g2-g1) * (i-from) / n;
     b = b1 + (b2-b1) * (i-from) / n;
-    setEntry(i, rgba(r, g, b, 255));
+    a = a1 + (a2-a1) * (i-from) / n;
+
+    setEntry(i, rgba(r, g, b, a));
   }
 }
 
-int Palette::findExactMatch(int r, int g, int b) const
+int Palette::findExactMatch(int r, int g, int b, int a) const
 {
   for (int i=0; i<(int)m_colors.size(); ++i)
-    if (getEntry(i) == rgba(r, g, b, 255))
+    if (getEntry(i) == rgba(r, g, b, a))
       return i;
 
   return -1;
@@ -184,61 +189,64 @@ int Palette::findExactMatch(int r, int g, int b) const
 //////////////////////////////////////////////////////////////////////
 // Based on Allegro's bestfit_color
 
-static unsigned int col_diff[3*128];
+static std::vector<unsigned int> col_diff;
 
-static void bestfit_init()
+static void initBestfit()
 {
-  int i, k;
+  col_diff.resize(4*128, 0);
 
-  for (i=1; i<64; i++) {
-    k = i * i;
-    col_diff[0  +i] = col_diff[0  +128-i] = k * (59 * 59);
-    col_diff[128+i] = col_diff[128+128-i] = k * (30 * 30);
-    col_diff[256+i] = col_diff[256+128-i] = k * (11 * 11);
+  for (int i=1; i<64; ++i) {
+    int k = i * i;
+    col_diff[0  +i] = col_diff[0  +128-i] = k * 59 * 59;
+    col_diff[128+i] = col_diff[128+128-i] = k * 30 * 30;
+    col_diff[256+i] = col_diff[256+128-i] = k * 11 * 11;
+    col_diff[384+i] = col_diff[384+128-i] = k * 8 * 8;
   }
 }
 
-int Palette::findBestfit(int r, int g, int b, int mask_index) const
+int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
 {
-#ifdef __GNUC__
-  register int bestfit asm("%eax");
-#else
-  register int bestfit;
-#endif
-  int i, coldiff, lowest;
-
   ASSERT(r >= 0 && r <= 255);
   ASSERT(g >= 0 && g <= 255);
   ASSERT(b >= 0 && b <= 255);
+  ASSERT(a >= 0 && a <= 255);
 
-  if (col_diff[1] == 0)
-    bestfit_init();
-
-  bestfit = 0;
-  lowest = std::numeric_limits<int>::max();
+  if (col_diff.empty())
+    initBestfit();
 
   r >>= 3;
   g >>= 3;
   b >>= 3;
+  a >>= 3;
 
-  i = 0;
-  while (i < size()) {
+  // Mask index is like alpha = 0, so we can use it as transparent color.
+  if (a == 0 && mask_index >= 0)
+    return mask_index;
+
+  int bestfit = 0;
+  int lowest = std::numeric_limits<int>::max();
+  int size = MIN(256, m_colors.size());
+
+  for (int i=0; i<size; ++i) {
     color_t rgb = m_colors[i];
 
-    coldiff = (col_diff + 0) [ ((rgba_getg(rgb)>>3) - g) & 0x7F ];
+    int coldiff = col_diff[((rgba_getg(rgb)>>3) - g) & 0x7F];
     if (coldiff < lowest) {
-      coldiff += (col_diff + 128) [ ((rgba_getr(rgb)>>3) - r) & 0x7F ];
+      coldiff += col_diff[128 + (((rgba_getr(rgb)>>3) - r) & 0x7F)];
       if (coldiff < lowest) {
-        coldiff += (col_diff + 256) [ ((rgba_getb(rgb)>>3) - b) & 0x7F ];
-        if (coldiff < lowest && i != mask_index) {
-          bestfit = i;
-          if (coldiff == 0)
-            return bestfit;
-          lowest = coldiff;
+        coldiff += col_diff[256 + (((rgba_getb(rgb)>>3) - b) & 0x7F)];
+        if (coldiff < lowest) {
+          coldiff += col_diff[384 + (((rgba_geta(rgb)>>3) - a) & 0x7F)];
+          if (coldiff < lowest && i != mask_index) {
+            if (coldiff == 0)
+              return i;
+
+            bestfit = i;
+            lowest = coldiff;
+          }
         }
       }
     }
-    i++;
   }
 
   return bestfit;

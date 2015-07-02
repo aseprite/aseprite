@@ -87,22 +87,28 @@ namespace {
 
   struct GetPixelsDelegateIndexed : public GetPixelsDelegate {
     const Palette* pal;
-    int r, g, b, index;
+    int r, g, b, a, index;
 
     GetPixelsDelegateIndexed(const Palette* pal) : pal(pal) { }
 
     void reset(const ConvolutionMatrix* matrix) {
       GetPixelsDelegate::reset(matrix);
-      r = g = b = index = 0;
+      r = g = b = a = index = 0;
     }
 
-    void operator()(GrayscaleTraits::pixel_t color)
+    void operator()(IndexedTraits::pixel_t color)
     {
       if (*matrixData) {
-        r += rgba_getr(pal->getEntry(color)) * (*matrixData);
-        g += rgba_getg(pal->getEntry(color)) * (*matrixData);
-        b += rgba_getb(pal->getEntry(color)) * (*matrixData);
         index += color * (*matrixData);
+        color_t rgba = pal->getEntry(color);
+        if (rgba_geta(rgba) == 0)
+          div -= *matrixData;
+        else {
+          r += rgba_getr(rgba) * (*matrixData);
+          g += rgba_getg(rgba) * (*matrixData);
+          b += rgba_getb(rgba) * (*matrixData);
+          a += rgba_geta(rgba) * (*matrixData);
+        }
       }
       matrixData++;
     }
@@ -297,28 +303,37 @@ void ConvolutionMatrixFilter::applyToIndexed(FilterManager* filterMgr)
       *(dst_address++) = delegate.index;
     }
     else {
+      color = pal->getEntry(color);
+
       if (target & TARGET_RED_CHANNEL) {
         delegate.r = delegate.r / delegate.div + m_matrix->getBias();
         delegate.r = MID(0, delegate.r, 255);
       }
       else
-        delegate.r = rgba_getr(pal->getEntry(color));
+        delegate.r = rgba_getr(color);
 
       if (target & TARGET_GREEN_CHANNEL) {
         delegate.g =  delegate.g / delegate.div + m_matrix->getBias();
         delegate.g = MID(0, delegate.g, 255);
       }
       else
-        delegate.g = rgba_getg(pal->getEntry(color));
+        delegate.g = rgba_getg(color);
 
       if (target & TARGET_BLUE_CHANNEL) {
         delegate.b = delegate.b / delegate.div + m_matrix->getBias();
         delegate.b = MID(0, delegate.b, 255);
       }
       else
-        delegate.b = rgba_getb(pal->getEntry(color));
+        delegate.b = rgba_getb(color);
 
-      *(dst_address++) = rgbmap->mapColor(delegate.r, delegate.g, delegate.b);
+      if (target & TARGET_ALPHA_CHANNEL) {
+        delegate.a = delegate.a / delegate.div + m_matrix->getBias();
+        delegate.a = MID(0, delegate.a, 255);
+      }
+      else
+        delegate.a = rgba_geta(color);
+
+      *(dst_address++) = rgbmap->mapColor(delegate.r, delegate.g, delegate.b, delegate.a);
     }
   }
 }

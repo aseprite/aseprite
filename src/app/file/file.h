@@ -133,8 +133,12 @@ namespace app {
   void fop_post_load(FileOp* fop);
 
   void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOptions>& format_options);
+  void fop_sequence_set_ncolors(FileOp* fop, int ncolors);
+  int fop_sequence_get_ncolors(FileOp* fop);
   void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);
   void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
+  void fop_sequence_set_alpha(FileOp* fop, int index, int a);
+  void fop_sequence_get_alpha(FileOp* fop, int index, int* a);
   Image* fop_sequence_image(FileOp* fi, PixelFormat pixelFormat, int w, int h);
 
   void fop_error(FileOp* fop, const char *error, ...);

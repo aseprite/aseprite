@@ -42,6 +42,7 @@
 #include "ui/int_entry.h"
 #include "ui/label.h"
 #include "ui/listitem.h"
+#include "ui/menu.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
@@ -147,6 +148,7 @@ private:
 
   void closePopup() {
     m_popupWindow.closeWindow(NULL);
+    deselectItems();
   }
 
   void onBrushChange(const BrushRef& brush) {
@@ -319,66 +321,67 @@ protected:
   }
 };
 
-class ContextBar::InkTypeField : public ComboBox
+class ContextBar::InkTypeField : public ButtonSet
 {
 public:
-  InkTypeField() : m_lock(false) {
-    // The same order as in InkType
-    addItem("Default Ink");
-#if 0
-    addItem("Opaque");
-#endif
-    addItem("Set Alpha");
-    addItem("Lock Alpha");
-#if 0
-    addItem("Merge");
-    addItem("Shading");
-    addItem("Replace");
-    addItem("Erase");
-    addItem("Selection");
-    addItem("Blur");
-    addItem("Jumble");
-#endif
+  InkTypeField(ContextBar* owner) : ButtonSet(1)
+                                  , m_owner(owner) {
+    addItem(
+      static_cast<SkinTheme*>(getTheme())->get_part(PART_INK_DEFAULT));
   }
 
   void setInkType(InkType inkType) {
-    int index = 0;
+    int part = PART_INK_DEFAULT;
 
     switch (inkType) {
-      case InkType::DEFAULT: index = 0; break;
-      case InkType::SET_ALPHA: index = 1; break;
-      case InkType::LOCK_ALPHA: index = 2; break;
+      case InkType::REPLACE_PIXEL:     part = PART_INK_DEFAULT; break;
+      case InkType::ALPHA_COMPOSITING: part = PART_INK_COMPOSITE; break;
+      case InkType::LOCK_ALPHA:        part = PART_INK_LOCK_ALPHA; break;
     }
 
-    m_lock = true;
-    setSelectedItemIndex(index);
-    m_lock = false;
+    getItem(0)->setIcon(
+      static_cast<SkinTheme*>(getTheme())->get_part(part));
   }
 
 protected:
-  void onChange() override {
-    ComboBox::onChange();
+  void onItemChange() override {
+    ButtonSet::onItemChange();
 
-    if (m_lock)
-      return;
+    gfx::Rect bounds = getBounds();
 
-    InkType inkType = InkType::DEFAULT;
-
-    switch (getSelectedItemIndex()) {
-      case 0: inkType = InkType::DEFAULT; break;
-      case 1: inkType = InkType::SET_ALPHA; break;
-      case 2: inkType = InkType::LOCK_ALPHA; break;
-    }
+    Menu menu;
+    MenuItem
+      replace("Replace Pixel"),
+      alphacompo("Alpha Compositing"),
+      lockalpha("Lock Alpha");
+    menu.addChild(&replace);
+    menu.addChild(&alphacompo);
+    menu.addChild(&lockalpha);
 
     Tool* tool = App::instance()->activeTool();
+    switch (Preferences::instance().tool(tool).ink()) {
+      case tools::InkType::REPLACE_PIXEL: replace.setSelected(true); break;
+      case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
+      case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
+    }
+
+    replace.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::REPLACE_PIXEL));
+    alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
+    lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+
+    deselectItems();
+  }
+
+  void selectInk(InkType inkType) {
+    Tool* tool = App::instance()->activeTool();
     Preferences::instance().tool(tool).ink(inkType);
+
+    m_owner->updateForCurrentTool();
   }
 
-  void onCloseListBox() override {
-    releaseFocus();
-  }
-
-  bool m_lock;
+  ContextBar* m_owner;
 };
 
 class ContextBar::InkOpacityField : public IntEntry
@@ -742,21 +745,51 @@ protected:
   }
 };
 
-class ContextBar::GrabAlphaField : public CheckBox
+class ContextBar::EyedropperField : public HBox
 {
 public:
-  GrabAlphaField() : CheckBox("Grab Alpha") {
-    setup_mini_font(this);
+  EyedropperField() {
+    m_channel.addItem("Color+Alpha");
+    m_channel.addItem("Color");
+    m_channel.addItem("Alpha");
+    m_channel.addItem("RGB+Alpha");
+    m_channel.addItem("RGB");
+    m_channel.addItem("HSB+Alpha");
+    m_channel.addItem("HSB");
+    m_channel.addItem("Gray+Alpha");
+    m_channel.addItem("Gray");
+    m_channel.addItem("Best fit Index");
+
+    m_sample.addItem("All Layers");
+    m_sample.addItem("Current Layer");
+
+    addChild(new Label("Pick:"));
+    addChild(&m_channel);
+    addChild(new Label("Sample:"));
+    addChild(&m_sample);
+
+    m_channel.Change.connect(Bind<void>(&EyedropperField::onChannelChange, this));
+    m_sample.Change.connect(Bind<void>(&EyedropperField::onSampleChange, this));
   }
 
-protected:
-  void onClick(Event& ev) override {
-    CheckBox::onClick(ev);
-
-    Preferences::instance().editor.grabAlpha(isSelected());
-
-    releaseFocus();
+  void updateFromPreferences(app::Preferences::Eyedropper& prefEyedropper) {
+    m_channel.setSelectedItemIndex((int)prefEyedropper.channel());
+    m_sample.setSelectedItemIndex((int)prefEyedropper.sample());
   }
+
+private:
+  void onChannelChange() {
+    Preferences::instance().eyedropper.channel(
+      (app::gen::EyedropperChannel)m_channel.getSelectedItemIndex());
+  }
+
+  void onSampleChange() {
+    Preferences::instance().eyedropper.sample(
+      (app::gen::EyedropperSample)m_sample.getSelectedItemIndex());
+  }
+
+  ComboBox m_channel;
+  ComboBox m_sample;
 };
 
 class ContextBar::AutoSelectLayerField : public CheckBox
@@ -802,12 +835,12 @@ ContextBar::ContextBar()
   addChild(m_contiguous = new ContiguousField());
   addChild(m_stopAtGrid = new StopAtGridField());
 
-  addChild(m_inkType = new InkTypeField());
+  addChild(m_inkType = new InkTypeField(this));
 
-  addChild(m_opacityLabel = new Label("Opacity:"));
+  addChild(m_inkOpacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
 
-  addChild(m_grabAlpha = new GrabAlphaField());
+  addChild(m_eyedropperField = new EyedropperField());
 
   addChild(m_autoSelectLayer = new AutoSelectLayerField());
 
@@ -832,7 +865,7 @@ ContextBar::ContextBar()
   m_freehandBox->addChild(m_freehandAlgo = new FreehandAlgorithmField());
 
   setup_mini_font(m_toleranceLabel);
-  setup_mini_font(m_opacityLabel);
+  setup_mini_font(m_inkOpacityLabel);
 
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
@@ -840,17 +873,13 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_brushType, "Brush Type", BOTTOM);
   tooltipManager->addTooltipFor(m_brushSize, "Brush Size (in pixels)", BOTTOM);
   tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
-  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (Alpha value in RGBA)", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkType, "Ink", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
-  tooltipManager->addTooltipFor(m_grabAlpha,
-    "When checked the tool picks the color from the active layer, and its alpha\n"
-    "component is used to setup the opacity level of all drawing tools.\n\n"
-    "When unchecked -the default behavior- the color is picked\n"
-    "from the composition of all sprite layers.", LEFT | TOP);
 
   m_brushType->setupTooltips(tooltipManager);
   m_selectionMode->setupTooltips(tooltipManager);
@@ -939,6 +968,25 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_brushPatternField->setBrushPattern(
     preferences.brush.pattern());
 
+  // Tool ink
+  bool isPaint = tool &&
+    (tool->getInk(0)->isPaint() ||
+     tool->getInk(1)->isPaint());
+  bool isEffect = tool &&
+    (tool->getInk(0)->isEffect() ||
+     tool->getInk(1)->isEffect());
+
+  // True if the current tool support opacity slider
+  bool supportOpacity = (isPaint || isEffect);
+
+  // True if it makes sense to change the ink property for the current
+  // tool.
+  bool hasInk = tool &&
+    ((tool->getInk(0)->isPaint() && !tool->getInk(0)->isEffect()) ||
+     (tool->getInk(1)->isPaint() && !tool->getInk(1)->isEffect()));
+
+  bool hasInkWithOpacity = false;
+
   if (toolPref) {
     m_tolerance->setTextf("%d", toolPref->tolerance());
     m_contiguous->setSelected(toolPref->contiguous());
@@ -948,21 +996,18 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_inkType->setInkType(toolPref->ink());
     m_inkOpacity->setTextf("%d", toolPref->opacity());
 
+    hasInkWithOpacity =
+      ((isPaint && toolPref->ink() != tools::InkType::REPLACE_PIXEL) ||
+       (isEffect));
+
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
 
     m_sprayWidth->setValue(toolPref->spray.width());
     m_spraySpeed->setValue(toolPref->spray.speed());
   }
 
-  m_grabAlpha->setSelected(preferences.editor.grabAlpha());
+  m_eyedropperField->updateFromPreferences(preferences.eyedropper);
   m_autoSelectLayer->setSelected(preferences.editor.autoSelectLayer());
-
-  // True if the current tool needs opacity options
-  bool hasOpacity = tool &&
-    (tool->getInk(0)->isPaint() ||
-     tool->getInk(0)->isEffect() ||
-     tool->getInk(1)->isPaint() ||
-     tool->getInk(1)->isEffect());
 
   // True if we have an image as brush
   bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
@@ -976,10 +1021,6 @@ void ContextBar::updateForTool(tools::Tool* tool)
   bool isMove = tool &&
     (tool->getInk(0)->isCelMovement() ||
      tool->getInk(1)->isCelMovement());
-
-  // True if it makes sense to change the ink property for the current
-  // tool.
-  bool hasInk = hasOpacity;
 
   // True if the current tool is floodfill
   bool isFloodfill = tool &&
@@ -1005,16 +1046,16 @@ void ContextBar::updateForTool(tools::Tool* tool)
      tool->getController(1)->isFreehand());
 
   // Show/Hide fields
-  m_brushType->setVisible(hasOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
-  m_brushSize->setVisible(hasOpacity && !isFloodfill && !hasImageBrush);
-  m_brushAngle->setVisible(hasOpacity && !isFloodfill && !hasImageBrush);
-  m_brushPatternField->setVisible(hasOpacity && hasImageBrush);
-  m_opacityLabel->setVisible(hasOpacity);
+  m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
+  m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
+  m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
+  m_brushPatternField->setVisible(supportOpacity && hasImageBrush);
   m_inkType->setVisible(hasInk && !hasImageBrush);
-  m_inkOpacity->setVisible(hasOpacity);
-  m_grabAlpha->setVisible(isEyedropper);
+  m_inkOpacityLabel->setVisible(hasInkWithOpacity && supportOpacity);
+  m_inkOpacity->setVisible(hasInkWithOpacity && supportOpacity);
+  m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
-  m_freehandBox->setVisible(isFreehand && hasOpacity);
+  m_freehandBox->setVisible(isFreehand && supportOpacity);
   m_toleranceLabel->setVisible(hasTolerance);
   m_tolerance->setVisible(hasTolerance);
   m_contiguous->setVisible(hasTolerance);

@@ -28,6 +28,7 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/image.h"
+#include "doc/layer.h"
 #include "doc/mask.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -95,10 +96,12 @@ protected:
         ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
 
         doc::algorithm::fixup_image_transparent_colors(image);
-        doc::algorithm::resize_image(image, new_image.get(),
+        doc::algorithm::resize_image(
+          image, new_image.get(),
           m_resize_method,
           m_sprite->palette(cel->frame()),
-          m_sprite->rgbMap(cel->frame()));
+          m_sprite->rgbMap(cel->frame()),
+          (cel->layer()->isBackground() ? -1: m_sprite->transparentColor()));
 
         api.replaceImage(m_sprite, cel->imageRef(), new_image);
       }
@@ -125,10 +128,12 @@ protected:
         gfx::Rect(
           scale_x(m_document->mask()->bounds().x-1),
           scale_y(m_document->mask()->bounds().y-1), MAX(1, w), MAX(1, h)));
-      algorithm::resize_image(old_bitmap.get(), new_mask->bitmap(),
-          m_resize_method,
-          m_sprite->palette(0), // Ignored
-          m_sprite->rgbMap(0)); // Ignored
+      algorithm::resize_image(
+        old_bitmap.get(), new_mask->bitmap(),
+        m_resize_method,
+        m_sprite->palette(0), // Ignored
+        m_sprite->rgbMap(0),  // Ignored
+        -1);                  // Ignored
 
       // Reshrink
       new_mask->intersect(new_mask->bounds());

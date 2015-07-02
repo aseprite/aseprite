@@ -31,7 +31,8 @@ namespace app {
   public:
     enum Channel { Red, Green, Blue,
                    Hue, Saturation, Value,
-                   Gray };
+                   Gray,
+                   Alpha };
     enum Mode { Absolute, Relative };
 
     ColorSliders();

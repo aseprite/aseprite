@@ -54,7 +54,7 @@ namespace app {
 
     bool setStatusText(int msecs, const char *format, ...);
     void showTip(int msecs, const char *format, ...);
-    void showColor(int msecs, const char* text, const Color& color, int alpha);
+    void showColor(int msecs, const char* text, const Color& color);
     void showTool(int msecs, tools::Tool* tool);
 
   protected:
@@ -87,7 +87,6 @@ namespace app {
 
     // Showing a color
     Color m_color;
-    int m_alpha;
 
     // Box of main commands
     ui::Widget* m_commandsBox;

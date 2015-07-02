@@ -20,34 +20,35 @@
 namespace render {
   using namespace doc;
 
-  template<int RBits, int GBits, int BBits> // Number of bits for each component in the histogram
+  template<int RBits, // Number of bits for each component in the histogram
+           int GBits,
+           int BBits,
+           int ABits>
   class ColorHistogram {
   public:
     // Number of elements in histogram for each RGB component
     enum {
       RElements = 1 << RBits,
       GElements = 1 << GBits,
-      BElements = 1 << BBits
+      BElements = 1 << BBits,
+      AElements = 1 << ABits
     };
 
     ColorHistogram()
-      : m_histogram(RElements*GElements*BElements, 0)
-      , m_useHighPrecision(true)
-    {
+      : m_histogram(RElements*GElements*BElements*AElements, 0)
+      , m_useHighPrecision(true) {
     }
 
     // Returns the number of points in the specified histogram
-    // entry. Each index (i, j, k) is in the range of the
-    // histogram i=[0,RElements), etc.
-    std::size_t at(int i, int j, int k) const
-    {
-      return m_histogram[histogramIndex(i, j, k)];
+    // entry. Each rgba-index is in the range of the histogram, e.g.
+    // r=[0,RElements), g=[0,GElements), etc.
+    std::size_t at(int r, int g, int b, int a) const {
+      return m_histogram[histogramIndex(r, g, b, a)];
     }
 
     // Add the specified "color" in the histogram as many times as the
     // specified value in "count".
-    void addSamples(uint32_t color, std::size_t count = 1)
-    {
+    void addSamples(uint32_t color, std::size_t count = 1) {
       int i = histogramIndex(color);
 
       if (m_histogram[i] < std::numeric_limits<std::size_t>::max()-count) // Avoid overflow
@@ -79,8 +80,7 @@ namespace render {
     // with the more important colors in the histogram. Returns the
     // number of used entries in the palette (maybe the range [from,to]
     // is more than necessary).
-    int createOptimizedPalette(Palette* palette, int from, int to)
-    {
+    int createOptimizedPalette(Palette* palette, int from, int to) {
       // Can we use the high-precision table?
       if (m_useHighPrecision && int(m_highPrecision.size()) <= (to-from+1)) {
         for (int i=0; i<(int)m_highPrecision.size(); ++i)
@@ -105,16 +105,19 @@ namespace render {
     // Converts input color in a index for the histogram. It reduces
     // each 8-bit component to the resolution given in the template
     // parameters.
-    std::size_t histogramIndex(uint32_t color) const
-    {
+    std::size_t histogramIndex(uint32_t color) const {
       return histogramIndex((rgba_getr(color) >> (8 - RBits)),
                             (rgba_getg(color) >> (8 - GBits)),
-                            (rgba_getb(color) >> (8 - BBits)));
+                            (rgba_getb(color) >> (8 - BBits)),
+                            (rgba_geta(color) >> (8 - ABits)));
     }
 
-    std::size_t histogramIndex(int i, int j, int k) const
-    {
-      return i | (j << RBits) | (k << (RBits+GBits));
+    std::size_t histogramIndex(int r, int g, int b, int a) const {
+      return
+        r
+        | (g << RBits)
+        | (b << (RBits+GBits))
+        | (a << (RBits+GBits+BBits));
     }
 
     // 3D histogram (the index in the histogram is calculated through histogramIndex() function).

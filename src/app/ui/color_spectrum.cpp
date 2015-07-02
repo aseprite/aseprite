@@ -135,7 +135,7 @@ bool ColorSpectrum::onProcessMessage(ui::Message* msg)
 
       app::Color color = pickColor(mouseMsg->position());
       if (color != app::Color::fromMask()) {
-        StatusBar::instance()->showColor(0, "", color, 255);
+        StatusBar::instance()->showColor(0, "", color);
         if (hasCapture())
           ColorChange(color, mouseMsg->buttons());
       }

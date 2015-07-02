@@ -144,7 +144,8 @@ class AseFormat : public FileFormat {
       FILE_SUPPORT_FRAMES |
       FILE_SUPPORT_PALETTES |
       FILE_SUPPORT_FRAME_TAGS |
-      FILE_SUPPORT_BIG_PALETTES;
+      FILE_SUPPORT_BIG_PALETTES |
+      FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -666,9 +667,7 @@ static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t f
     int g = fgetc(f);
     int b = fgetc(f);
     int a = fgetc(f);
-
-    // TODO don't ignore alpha
-    pal->setEntry(c, rgba(r, g, b, 255));
+    pal->setEntry(c, rgba(r, g, b, a));
 
     // Skip name
     if (flags & 1) {

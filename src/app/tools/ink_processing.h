@@ -10,6 +10,7 @@
 #include "app/tools/shading_options.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
+#include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
@@ -241,14 +242,22 @@ public:
     m_palette(get_current_palette()),
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
-    m_color(m_palette->getEntry(loop->getPrimaryColor())) {
+    m_color(m_palette->getEntry(loop->getPrimaryColor())),
+    m_maskColor(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
   void processPixel(int x, int y) {
-    color_t c = rgba_blender_normal(m_palette->getEntry(*m_srcAddress), m_color, m_opacity);
+    color_t c = *m_srcAddress;
+    if (c == m_maskColor)
+      c = m_palette->getEntry(c) & rgba_rgb_mask;  // Alpha = 0
+    else
+      c = m_palette->getEntry(c);
+
+    c = rgba_blender_normal(c, m_color, m_opacity);
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
                                        rgba_getg(c),
-                                       rgba_getb(c));
+                                       rgba_getb(c),
+                                       rgba_geta(c));
   }
 
 private:
@@ -256,6 +265,7 @@ private:
   const RgbMap* m_rgbmap;
   int m_opacity;
   color_t m_color;
+  color_t m_maskColor;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -387,24 +397,27 @@ public:
     m_opacity(loop->getOpacity()),
     m_tiledMode(loop->getTiledMode()),
     m_srcImage(loop->getSrcImage()),
-    m_area(get_current_palette()) {
+    m_area(get_current_palette(),
+           loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
   void processPixel(int x, int y) {
     m_area.reset();
     get_neighboring_pixels<IndexedTraits>(m_srcImage, x, y, 3, 3, 1, 1, m_tiledMode, m_area);
 
-    if (m_area.count > 0 && m_area.a/9 >= 128) {
+    if (m_area.count > 0) {
       m_area.r /= m_area.count;
       m_area.g /= m_area.count;
       m_area.b /= m_area.count;
+      m_area.a /= 9;
 
       uint32_t color32 = m_palette->getEntry(*m_srcAddress);
       m_area.r = rgba_getr(color32) + (m_area.r-rgba_getr(color32)) * m_opacity / 255;
       m_area.g = rgba_getg(color32) + (m_area.g-rgba_getg(color32)) * m_opacity / 255;
       m_area.b = rgba_getb(color32) + (m_area.b-rgba_getb(color32)) * m_opacity / 255;
+      m_area.a = rgba_geta(color32) + (m_area.a-rgba_geta(color32)) * m_opacity / 255;
 
-      *m_dstAddress = m_rgbmap->mapColor(m_area.r, m_area.g, m_area.b);
+      *m_dstAddress = m_rgbmap->mapColor(m_area.r, m_area.g, m_area.b, m_area.a);
     }
     else {
       *m_dstAddress = *m_srcAddress;
@@ -415,20 +428,27 @@ private:
   struct GetPixelsDelegate {
     const Palette* pal;
     int count, r, g, b, a;
+    color_t maskColor;
 
-    GetPixelsDelegate(const Palette* pal) : pal(pal) { }
+    GetPixelsDelegate(const Palette* pal,
+                      color_t maskColor)
+      : pal(pal), maskColor(maskColor) { }
 
     void reset() { count = r = g = b = a = 0; }
 
     void operator()(IndexedTraits::pixel_t color)
     {
-      a += (color == 0 ? 0: 255);
+      if (color == maskColor)
+        return;
 
       uint32_t color32 = pal->getEntry(color);
-      r += rgba_getr(color32);
-      g += rgba_getg(color32);
-      b += rgba_getb(color32);
-      count++;
+      if (rgba_geta(color32) > 0) {
+        r += rgba_getr(color32);
+        g += rgba_getg(color32);
+        b += rgba_getb(color32);
+        a += rgba_geta(color32);
+        ++count;
+      }
     }
   };
 
@@ -510,7 +530,7 @@ public:
           m_palette->getEntry(*m_srcAddress), m_color2, m_opacity);
 
         *m_dstAddress = m_rgbmap->mapColor(
-          rgba_getr(c), rgba_getg(c), rgba_getb(c));
+          rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c));
       }
     }
   }
@@ -610,7 +630,8 @@ void JumbleInkProcessing<IndexedTraits>::processPixel(int x, int y)
   if (rgba_geta(c) >= 128)
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
                                        rgba_getg(c),
-                                       rgba_getb(c));
+                                       rgba_getb(c),
+                                       rgba_geta(c));
   else
     *m_dstAddress = 0;
 }
@@ -692,7 +713,8 @@ public:
     color_t c = rgba_blender_neg_bw(m_palette->getEntry(*m_srcAddress), m_color, 255);
     *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
                                        rgba_getg(c),
-                                       rgba_getb(c));
+                                       rgba_getb(c),
+                                       rgba_geta(c));
   }
 
 private:
@@ -819,7 +841,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
   switch (m_brushImage->pixelFormat()) {
     case IMAGE_RGB: {
       c = get_pixel_fast<RgbTraits>(m_brushImage, x, y);
-      c = m_palette->findBestfit(rgba_getr(c), rgba_getg(c), rgba_getb(c));
+      c = m_palette->findBestfit(rgba_getr(c), rgba_getg(c), rgba_getb(c), rgba_geta(c), 0);
       break;
     }
     case IMAGE_INDEXED: {
@@ -828,8 +850,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
     }
     case IMAGE_GRAYSCALE: {
       c = get_pixel_fast<GrayscaleTraits>(m_brushImage, x, y);
-      c = graya_getv(c);
-      c = m_palette->findBestfit(c, c, c);
+      c = m_palette->findBestfit(graya_getv(c), graya_getv(c), graya_getv(c), graya_geta(c), 0);
       break;
     }
     case IMAGE_BITMAP: {

@@ -9,12 +9,14 @@
 #include "config.h"
 #endif
 
+#include "app/app.h"
 #include "app/cmd/set_palette.h"
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
 #include "app/ui_context.h"
@@ -70,6 +72,8 @@ void ColorQuantizationCommand::onExecute(Context* context)
       curPalette = sprite->palette(frame);
 
       window.newPalette()->setSelected(true);
+      window.alphaChannel()->setSelected(
+        App::instance()->preferences().quantization.withAlpha());
       window.ncolors()->setText("256");
 
       ColorBar::instance()->getPaletteView()->getSelectedEntries(entries);
@@ -92,6 +96,9 @@ void ColorQuantizationCommand::onExecute(Context* context)
     if (window.getKiller() != window.ok())
       return;
 
+    bool withAlpha = window.alphaChannel()->isSelected();
+    App::instance()->preferences().quantization.withAlpha(withAlpha);
+
     bool createPal = false;
     if (window.newPalette()->isSelected()) {
       int n = window.ncolors()->getTextInt();
@@ -107,7 +114,8 @@ void ColorQuantizationCommand::onExecute(Context* context)
       return;
 
     Palette tmpPalette(frame, entries.picks());
-    render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(), &tmpPalette);
+    render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(),
+                                    withAlpha, &tmpPalette);
 
     base::UniquePtr<Palette> newPalette(
       new Palette(createPal ? tmpPalette:

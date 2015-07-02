@@ -39,7 +39,8 @@ class PngFormat : public FileFormat {
       FILE_SUPPORT_GRAY |
       FILE_SUPPORT_GRAYA |
       FILE_SUPPORT_INDEXED |
-      FILE_SUPPORT_SEQUENCES;
+      FILE_SUPPORT_SEQUENCES |
+      FILE_SUPPORT_PALETTE_WITH_ALPHA;
   }
 
   bool onLoad(FileOp* fop) override;
@@ -184,39 +185,34 @@ bool PngFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  // Transparent palette entries
-  std::vector<uint8_t> pal_alphas(256, 255);
-  int mask_entry = -1;
-
   // Read the palette
   if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
-    int c;
+    fop_sequence_set_ncolors(fop, num_palette);
 
-    for (c = 0; c < num_palette; c++) {
+    for (int c=0; c<num_palette; ++c) {
       fop_sequence_set_color(fop, c,
                              palette[c].red,
                              palette[c].green,
                              palette[c].blue);
     }
-    for (; c < 256; c++) {
-      fop_sequence_set_color(fop, c, 0, 0, 0);
-    }
 
     // Read alpha values for palette entries
     png_bytep trans = NULL;     // Transparent palette entries
     int num_trans = 0;
+    int mask_entry = -1;
 
     png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
 
     for (int i = 0; i < num_trans; ++i) {
-      pal_alphas[i] = trans[i];
+      fop_sequence_set_alpha(fop, i, trans[i]);
 
-      if (pal_alphas[i] < 128) {
+      if (trans[i] < 255) {
         fop->seq.has_alpha = true; // Is a transparent sprite
-
-        if (mask_entry < 0)
-          mask_entry = i;
+        if (trans[i] == 0) {
+          if (mask_entry < 0)
+            mask_entry = i;
+        }
       }
     }
 
@@ -224,8 +220,6 @@ bool PngFormat::onLoad(FileOp* fop)
     if (mask_entry >= 0)
       fop->document->sprite()->setTransparentColor(mask_entry);
   }
-
-  mask_entry = fop->document->sprite()->transparentColor();
 
   /* Allocate the memory to hold the image using the fields of info_ptr. */
 
@@ -290,18 +284,10 @@ bool PngFormat::onLoad(FileOp* fop)
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
         uint8_t* src_address = row_pointer;
         uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
-        unsigned int x, c;
+        unsigned int x;
 
-        for (x=0; x<width; x++) {
-          c = *(src_address++);
-
-          if (pal_alphas[c] < 128) {
-            *(dst_address++) = mask_entry;
-          }
-          else {
-            *(dst_address++) = c;
-          }
-        }
+        for (x=0; x<width; x++)
+          *(dst_address++) = *(src_address++);
       }
 
       fop_progress(fop,
@@ -398,37 +384,44 @@ bool PngFormat::onSave(FileOp* fop)
 
   if (image->pixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
+    int pal_size = fop_sequence_get_ncolors(fop);
+    ASSERT(pal_size > 0 && pal_size <= PNG_MAX_PALETTE_LENGTH);
+    pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
 
 #if PNG_MAX_PALETTE_LENGTH != 256
 #error PNG_MAX_PALETTE_LENGTH should be 256
 #endif
 
     // Save the color palette.
-    palette = (png_colorp)png_malloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));
-    for (c = 0; c < PNG_MAX_PALETTE_LENGTH; c++) {
+    palette = (png_colorp)png_malloc(png_ptr, pal_size * sizeof(png_color));
+    for (c = 0; c < pal_size; c++) {
       fop_sequence_get_color(fop, c, &r, &g, &b);
       palette[c].red   = r;
       palette[c].green = g;
       palette[c].blue  = b;
     }
 
-    png_set_PLTE(png_ptr, info_ptr, palette, PNG_MAX_PALETTE_LENGTH);
+    png_set_PLTE(png_ptr, info_ptr, palette, pal_size);
 
     // If the sprite does not have a (visible) background layer, we
-    // include the alpha information of palette entries to indicate
-    // which is the transparent color.
+    // put alpha=0 to the transparent color.
+    int mask_entry = -1;
     if (fop->document->sprite()->backgroundLayer() == NULL ||
         !fop->document->sprite()->backgroundLayer()->isVisible()) {
-      int mask_entry = fop->document->sprite()->transparentColor();
-      int num_trans = mask_entry+1;
-      png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
-
-      for (c = 0; c < num_trans; ++c)
-        trans[c] = (c == mask_entry ? 0: 255);
-
-      png_set_tRNS(png_ptr, info_ptr, trans, num_trans, NULL);
-      png_free(png_ptr, trans);
+      mask_entry = fop->document->sprite()->transparentColor();
     }
+
+    int num_trans = pal_size;
+    png_bytep trans = (png_bytep)png_malloc(png_ptr, num_trans);
+
+    for (c=0; c<num_trans; ++c) {
+      int alpha = 255;
+      fop_sequence_get_alpha(fop, c, &alpha);
+      trans[c] = (c == mask_entry ? 0: alpha);
+    }
+
+    png_set_tRNS(png_ptr, info_ptr, trans, num_trans, NULL);
+    png_free(png_ptr, trans);
   }
 
   /* Write the file header information. */

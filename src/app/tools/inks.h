@@ -62,11 +62,7 @@ public:
         case Opaque: m_proc = ink_processing[INK_OPAQUE][depth]; break;
         case SetAlpha: m_proc = ink_processing[INK_SETALPHA][depth]; break;
         case LockAlpha: m_proc = ink_processing[INK_LOCKALPHA][depth]; break;
-        default:
-          m_proc = (loop->getOpacity() == 255 ?
-                    ink_processing[INK_OPAQUE][depth]:
-                    ink_processing[INK_TRANSPARENT][depth]);
-          break;
+        default: m_proc = ink_processing[INK_TRANSPARENT][depth]; break;
       }
     }
   }

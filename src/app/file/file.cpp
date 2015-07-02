@@ -332,6 +332,22 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
     }
   }
 
+  // Palette with alpha
+  if (!fop->format->support(FILE_SUPPORT_PALETTE_WITH_ALPHA)) {
+    bool done = false;
+    for (Palette* pal : fop->document->sprite()->getPalettes()) {
+      for (int c=0; c<pal->size(); ++c) {
+        if (rgba_geta(pal->getEntry(c)) < 255) {
+          warnings += "<<- Palette with alpha channel";
+          done = true;
+          break;
+        }
+      }
+      if (done)
+        break;
+    }
+  }
+
   // Show the confirmation alert
   if (!warnings.empty()) {
     // Interative
@@ -724,7 +740,7 @@ void fop_post_load(FileOp* fop)
         sprite->palette(frame_t(0))->isBlack()) {
       base::SharedPtr<Palette> palette(
         render::create_palette_from_rgb(
-          sprite, frame_t(0), sprite->lastFrame(), nullptr));
+          sprite, frame_t(0), sprite->lastFrame(), true, nullptr));
 
       sprite->resetPalettes();
       sprite->setPalette(palette.get(), false);
@@ -738,6 +754,16 @@ void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOp
 {
   ASSERT(!fop->seq.format_options);
   fop->seq.format_options = format_options;
+}
+
+void fop_sequence_set_ncolors(FileOp* fop, int ncolors)
+{
+  fop->seq.palette->resize(ncolors);
+}
+
+int fop_sequence_get_ncolors(FileOp* fop)
+{
+  return fop->seq.palette->size();
 }
 
 void fop_sequence_set_color(FileOp *fop, int index, int r, int g, int b)
@@ -758,6 +784,25 @@ void fop_sequence_get_color(FileOp *fop, int index, int *r, int *g, int *b)
   *r = rgba_getr(c);
   *g = rgba_getg(c);
   *b = rgba_getb(c);
+}
+
+void fop_sequence_set_alpha(FileOp* fop, int index, int a)
+{
+  int c = fop->seq.palette->getEntry(index);
+  int r = rgba_getr(c);
+  int g = rgba_getg(c);
+  int b = rgba_getb(c);
+
+  fop->seq.palette->setEntry(index, rgba(r, g, b, a));
+}
+
+void fop_sequence_get_alpha(FileOp* fop, int index, int* a)
+{
+  ASSERT(index >= 0);
+  if (index >= 0 && index < fop->seq.palette->size())
+    *a = rgba_geta(fop->seq.palette->getEntry(index));
+  else
+    *a = 0;
 }
 
 Image* fop_sequence_image(FileOp* fop, PixelFormat pixelFormat, int w, int h)

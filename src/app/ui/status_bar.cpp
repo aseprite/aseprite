@@ -286,12 +286,11 @@ void StatusBar::showTip(int msecs, const char *format, ...)
   invalidate();
 }
 
-void StatusBar::showColor(int msecs, const char* text, const app::Color& color, int alpha)
+void StatusBar::showColor(int msecs, const char* text, const app::Color& color)
 {
   if (setStatusText(msecs, text)) {
     m_state = SHOW_COLOR;
     m_color = color;
-    m_alpha = alpha;
   }
 }
 
@@ -382,9 +381,9 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
     // Draw color description
     std::string str = m_color.toHumanReadableString(app_get_current_pixel_format(),
       app::Color::LongHumanReadableString);
-    if (m_alpha < 255) {
+    if (m_color.getAlpha() < 255) {
       char buf[256];
-      sprintf(buf, " \xCE\xB1%d", m_alpha);
+      sprintf(buf, " \xCE\xB1%d", m_color.getAlpha());
       str += buf;
     }
 

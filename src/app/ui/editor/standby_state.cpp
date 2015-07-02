@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/color_picker.h"
 #include "app/commands/commands.h"
+#include "app/commands/cmd_eyedropper.h"
 #include "app/commands/params.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
@@ -363,18 +364,14 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
   }
   // For eye-dropper
   else if (ink->isEyedropper()) {
-    bool grabAlpha = Preferences::instance().editor.grabAlpha();
-    ColorPicker picker;
-    picker.pickColor(editor->getSite(),
-      spritePos,
-      grabAlpha ?
-      ColorPicker::FromActiveLayer:
-      ColorPicker::FromComposition);
+    EyedropperCommand cmd;
+    app::Color color = Preferences::instance().colorBar.fgColor();
+    cmd.pickSample(editor->getSite(), spritePos, color);
 
     char buf[256];
     sprintf(buf, "- Pos %d %d", spritePos.x, spritePos.y);
 
-    StatusBar::instance()->showColor(0, buf, picker.color(), picker.alpha());
+    StatusBar::instance()->showColor(0, buf, color);
   }
   else {
     Mask* mask =

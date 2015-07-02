@@ -106,7 +106,7 @@ namespace app {
     class RotAlgorithmField;
     class FreehandAlgorithmField;
     class BrushPatternField;
-    class GrabAlphaField;
+    class EyedropperField;
     class DropPixelsField;
     class AutoSelectLayerField;
 
@@ -118,9 +118,9 @@ namespace app {
     ContiguousField* m_contiguous;
     StopAtGridField* m_stopAtGrid;
     InkTypeField* m_inkType;
-    ui::Label* m_opacityLabel;
+    ui::Label* m_inkOpacityLabel;
     InkOpacityField* m_inkOpacity;
-    GrabAlphaField* m_grabAlpha;
+    EyedropperField* m_eyedropperField;
     AutoSelectLayerField* m_autoSelectLayer;
     ui::Box* m_freehandBox;
     FreehandAlgorithmField* m_freehandAlgo;
