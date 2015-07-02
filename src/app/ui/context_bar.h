@@ -118,7 +118,7 @@ namespace app {
     ContiguousField* m_contiguous;
     StopAtGridField* m_stopAtGrid;
     InkTypeField* m_inkType;
-    ui::Label* m_opacityLabel;
+    ui::Label* m_inkOpacityLabel;
     InkOpacityField* m_inkOpacity;
     GrabAlphaField* m_grabAlpha;
     AutoSelectLayerField* m_autoSelectLayer;

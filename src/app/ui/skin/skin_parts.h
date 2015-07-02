@@ -176,6 +176,10 @@ namespace app {
       PART_FREEHAND_ALGO_DOTS,
       PART_FREEHAND_ALGO_DOTS_SELECTED,
 
+      PART_INK_DEFAULT,
+      PART_INK_COMPOSITE,
+      PART_INK_LOCK_ALPHA,
+
       PARTS
     };
 

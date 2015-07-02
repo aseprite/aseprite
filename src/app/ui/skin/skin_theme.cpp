@@ -278,6 +278,9 @@ SkinTheme::SkinTheme()
   sheet_mapping["freehand_algo_pixel_perfect_selected"] = PART_FREEHAND_ALGO_PIXEL_PERFECT_SELECTED;
   sheet_mapping["freehand_algo_dots"] = PART_FREEHAND_ALGO_DOTS;
   sheet_mapping["freehand_algo_dots_selected"] = PART_FREEHAND_ALGO_DOTS_SELECTED;
+  sheet_mapping["ink_default"] = PART_INK_DEFAULT;
+  sheet_mapping["ink_composite"] = PART_INK_COMPOSITE;
+  sheet_mapping["ink_lock_alpha"] = PART_INK_LOCK_ALPHA;
 }
 
 SkinTheme::~SkinTheme()
