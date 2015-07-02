@@ -114,7 +114,7 @@ void ColorCurveFilter::applyToIndexed(FilterManager* filterMgr)
   Target target = filterMgr->getTarget();
   const Palette* pal = filterMgr->getIndexedData()->getPalette();
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
-  int x, c, r, g, b;
+  int x, c, r, g, b, a;
 
   for (x=0; x<w; x++) {
     if (filterMgr->skipPixel()) {
@@ -129,15 +129,18 @@ void ColorCurveFilter::applyToIndexed(FilterManager* filterMgr)
       c = m_cmap[c];
     }
     else {
-      r = rgba_getr(pal->getEntry(c));
-      g = rgba_getg(pal->getEntry(c));
-      b = rgba_getb(pal->getEntry(c));
+      c = pal->getEntry(c);
+      r = rgba_getr(c);
+      g = rgba_getg(c);
+      b = rgba_getb(c);
+      a = rgba_geta(c);
 
-      if (target & TARGET_RED_CHANNEL) r = m_cmap[r];
+      if (target & TARGET_RED_CHANNEL  ) r = m_cmap[r];
       if (target & TARGET_GREEN_CHANNEL) g = m_cmap[g];
-      if (target & TARGET_BLUE_CHANNEL) b = m_cmap[b];
+      if (target & TARGET_BLUE_CHANNEL ) b = m_cmap[b];
+      if (target & TARGET_ALPHA_CHANNEL) a = m_cmap[a];
 
-      c = rgbmap->mapColor(r, g, b);
+      c = rgbmap->mapColor(r, g, b, a);
     }
 
     *(dst_address++) = MID(0, c, pal->size()-1);

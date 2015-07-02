@@ -616,8 +616,13 @@ int Color::getIndex() const
 
     case Color::RgbType:
     case Color::HsvType:
-    case Color::GrayType:
-      return get_current_palette()->findBestfit(getRed(), getGreen(), getBlue(), getAlpha(), 0);
+    case Color::GrayType: {
+      int i = get_current_palette()->findExactMatch(getRed(), getGreen(), getBlue(), getAlpha());
+      if (i >= 0)
+        return i;
+      else
+        return get_current_palette()->findBestfit(getRed(), getGreen(), getBlue(), getAlpha(), 0);
+    }
 
     case Color::IndexType:
       return m_value.index;

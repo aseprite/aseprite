@@ -18,7 +18,7 @@
 namespace doc {
 namespace algorithm {
 
-void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palette* pal, const RgbMap* rgbmap)
+void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palette* pal, const RgbMap* rgbmap, color_t maskColor)
 {
   switch (method) {
 
@@ -111,15 +111,23 @@ void resize_image(const Image* src, Image* dst, ResizeMethod method, const Palet
               break;
             }
             case IMAGE_INDEXED: {
-              int r = int((rgba_getr(pal->getEntry(color[0]))*u2 + rgba_getr(pal->getEntry(color[1]))*u1)*v2 +
-                          (rgba_getr(pal->getEntry(color[2]))*u2 + rgba_getr(pal->getEntry(color[3]))*u1)*v1);
-              int g = int((rgba_getg(pal->getEntry(color[0]))*u2 + rgba_getg(pal->getEntry(color[1]))*u1)*v2 +
-                          (rgba_getg(pal->getEntry(color[2]))*u2 + rgba_getg(pal->getEntry(color[3]))*u1)*v1);
-              int b = int((rgba_getb(pal->getEntry(color[0]))*u2 + rgba_getb(pal->getEntry(color[1]))*u1)*v2 +
-                          (rgba_getb(pal->getEntry(color[2]))*u2 + rgba_getb(pal->getEntry(color[3]))*u1)*v1);
-              int a = int(((color[0] == 0 ? 0: 255)*u2 + (color[1] == 0 ? 0: 255)*u1)*v2 +
-                          ((color[2] == 0 ? 0: 255)*u2 + (color[3] == 0 ? 0: 255)*u1)*v1);
-              dst_color = a > 127 ? rgbmap->mapColor(r, g, b): 0;
+              // Convert index to RGBA values
+              for (int i=0; i<4; ++i) {
+                if (color[i] == maskColor)
+                  color[i] = pal->getEntry(color[i]) & rgba_rgb_mask; // Set alpha = 0
+                else
+                  color[i] = pal->getEntry(color[i]);
+              }
+
+              int r = int((rgba_getr(color[0])*u2 + rgba_getr(color[1])*u1)*v2 +
+                          (rgba_getr(color[2])*u2 + rgba_getr(color[3])*u1)*v1);
+              int g = int((rgba_getg(color[0])*u2 + rgba_getg(color[1])*u1)*v2 +
+                          (rgba_getg(color[2])*u2 + rgba_getg(color[3])*u1)*v1);
+              int b = int((rgba_getb(color[0])*u2 + rgba_getb(color[1])*u1)*v2 +
+                          (rgba_getb(color[2])*u2 + rgba_getb(color[3])*u1)*v1);
+              int a = int((rgba_geta(color[0])*u2 + rgba_geta(color[1])*u1)*v2 +
+                          (rgba_geta(color[2])*u2 + rgba_geta(color[3])*u1)*v1);
+              dst_color = rgbmap->mapColor(r, g, b, a);
               break;
             }
           }

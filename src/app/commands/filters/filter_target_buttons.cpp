@@ -61,17 +61,15 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
       case IMAGE_INDEXED:
         r = check_button_new("R", 2, 0, 0, 0);
         g = check_button_new("G", 0, 0, 0, 0);
-        b = check_button_new("B", 0, (imgtype == IMAGE_RGB) ? 0: 2, 0, 0);
+        b = check_button_new("B", 0, 0, 0, 0);
+        a = check_button_new("A", 0, 2, 0, 0);
 
         r->setId("r");
         g->setId("g");
         b->setId("b");
+        a->setId("a");
 
-        if (imgtype == IMAGE_RGB) {
-          a = check_button_new("A", 0, 2, 0, 0);
-          a->setId("a");
-        }
-        else {
+        if (imgtype == IMAGE_INDEXED) {
           index = check_button_new("Index", 0, 0, 0, 0);
           index->setId("i");
         }

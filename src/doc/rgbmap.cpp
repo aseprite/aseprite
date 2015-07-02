@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,7 +15,11 @@
 
 namespace doc {
 
-#define MAPSIZE 32*32*32
+#define RSIZE   32
+#define GSIZE   32
+#define BSIZE   32
+#define ASIZE   8
+#define MAPSIZE (RSIZE*GSIZE*BSIZE*ASIZE)
 
 RgbMap::RgbMap()
   : Object(ObjectType::RgbMap)
@@ -36,26 +40,23 @@ void RgbMap::regenerate(const Palette* palette, int mask_index)
   m_palette = palette;
   m_modifications = palette->getModifications();
 
+  // TODO This is slow for 256 colors 32*32*32*8 findBestfit calls
+
   int i = 0;
-  for (int r=0; r<32; ++r) {
-    for (int g=0; g<32; ++g) {
-      for (int b=0; b<32; ++b) {
-        m_map[i++] =
-          palette->findBestfit(
-            scale_5bits_to_8bits(r),
-            scale_5bits_to_8bits(g),
-            scale_5bits_to_8bits(b), 255, mask_index);
+  for (int r=0; r<RSIZE; ++r) {
+    for (int g=0; g<GSIZE; ++g) {
+      for (int b=0; b<BSIZE; ++b) {
+        for (int a=0; a<ASIZE; ++a) {
+          m_map[i++] =
+            palette->findBestfit(
+              scale_5bits_to_8bits(r),
+              scale_5bits_to_8bits(g),
+              scale_5bits_to_8bits(b),
+              scale_3bits_to_8bits(a), mask_index);
+        }
       }
     }
   }
-}
-
-int RgbMap::mapColor(int r, int g, int b) const
-{
-  ASSERT(r >= 0 && r < 256);
-  ASSERT(g >= 0 && g < 256);
-  ASSERT(b >= 0 && b < 256);
-  return m_map[((r>>3) << 10) + ((g>>3) << 5) + (b>>3)];
 }
 
 } // namespace doc

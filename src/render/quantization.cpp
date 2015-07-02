@@ -137,11 +137,12 @@ Image* convert_pixel_format(
             r = rgba_getr(c);
             g = rgba_getg(c);
             b = rgba_getb(c);
+            a = rgba_geta(c);
 
-            if (rgba_geta(c) == 0)
-              *dst_it = 0;
+            if (a == 0)
+              *dst_it = 0;      // TODO why 0 is mask color and not a param?
             else
-              *dst_it = rgbmap->mapColor(r, g, b);
+              *dst_it = rgbmap->mapColor(r, g, b, a);
           }
           ASSERT(dst_it == dst_end);
           break;
@@ -192,11 +193,13 @@ Image* convert_pixel_format(
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
+            a = graya_geta(c);
+            c = graya_getv(c);
 
-            if (graya_geta(c) == 0)
-              *dst_it = 0;
+            if (a == 0)
+              *dst_it = 0;      // TODO why 0 is mask color and not a param?
             else
-              *dst_it = graya_getv(c);
+              *dst_it = rgbmap->mapColor(c, c, c, a);
           }
           ASSERT(dst_it == dst_end);
           break;
@@ -277,11 +280,12 @@ Image* convert_pixel_format(
             if (!is_background && c == image->maskColor())
               *dst_it = dstMaskColor;
             else {
-              r = rgba_getr(palette->getEntry(c));
-              g = rgba_getg(palette->getEntry(c));
-              b = rgba_getb(palette->getEntry(c));
-
-              *dst_it = rgbmap->mapColor(r, g, b);
+              c = palette->getEntry(c);
+              r = rgba_getr(c);
+              g = rgba_getg(c);
+              b = rgba_getb(c);
+              a = rgba_geta(c);
+              *dst_it = rgbmap->mapColor(r, g, b, a);
             }
           }
           ASSERT(dst_it == dst_end);

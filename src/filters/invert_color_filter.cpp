@@ -92,7 +92,7 @@ void InvertColorFilter::applyToIndexed(FilterManager* filterMgr)
   const RgbMap* rgbmap = filterMgr->getIndexedData()->getRgbMap();
   int w = filterMgr->getWidth();
   Target target = filterMgr->getTarget();
-  int x, c, r, g, b;
+  int x, c, r, g, b, a;
 
   for (x=0; x<w; x++) {
     if (filterMgr->skipPixel()) {
@@ -106,15 +106,18 @@ void InvertColorFilter::applyToIndexed(FilterManager* filterMgr)
     if (target & TARGET_INDEX_CHANNEL)
       c ^= 0xff;
     else {
-      r = rgba_getr(pal->getEntry(c));
-      g = rgba_getg(pal->getEntry(c));
-      b = rgba_getb(pal->getEntry(c));
+      c = pal->getEntry(c);
+      r = rgba_getr(c);
+      g = rgba_getg(c);
+      b = rgba_getb(c);
+      a = rgba_geta(c);
 
       if (target & TARGET_RED_CHANNEL  ) r ^= 0xff;
       if (target & TARGET_GREEN_CHANNEL) g ^= 0xff;
       if (target & TARGET_BLUE_CHANNEL ) b ^= 0xff;
+      if (target & TARGET_ALPHA_CHANNEL) a ^= 0xff;
 
-      c = rgbmap->mapColor(r, g, b);
+      c = rgbmap->mapColor(r, g, b, a);
     }
 
     *(dst_address++) = c;

@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -56,7 +56,7 @@ color_t test_image_scaled_9x9_bilinear[81] =
   0x000000, 0x000000, 0x565656, 0xa9a9a9, 0xffffff, 0xa9a9a9, 0x565656, 0x000000, 0x000000
 };
 
-Image* create_image_from_data(PixelFormat format, color_t* data, int width, int height) 
+Image* create_image_from_data(PixelFormat format, color_t* data, int width, int height)
 {
   Image* new_image = Image::create(format, width, height);
   for (int i = 0; i < width * height; i++) {
@@ -72,7 +72,7 @@ TEST(ResizeImage, NearestNeighborInterp)
   Image* dst_expected = create_image_from_data(IMAGE_RGB, test_image_scaled_9x9_nearest, 9, 9);
 
   Image* dst = Image::create(IMAGE_RGB, 9, 9);
-  algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL);
+  algorithm::resize_image(src, dst, algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR, NULL, NULL, -1);
 
   ASSERT_EQ(0, count_diff_between_images(dst, dst_expected));
 }
