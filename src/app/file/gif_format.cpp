@@ -641,7 +641,7 @@ bool GifFormat::onSave(FileOp* fop)
     for (frame_t frame_num(0); frame_num<sprite->totalFrames(); ++frame_num) {
       clear_image(buffer_image, background_color);
       render.renderSprite(buffer_image, sprite, frame_num);
-      optimizer.feedWithImage(buffer_image);
+      optimizer.feedWithImage(buffer_image, false);
     }
 
     current_palette.makeBlack();
@@ -667,7 +667,7 @@ bool GifFormat::onSave(FileOp* fop)
 
             std::vector<Image*> imgarray(1);
             imgarray[0] = buffer_image;
-            render::create_palette_from_images(imgarray, &current_palette, has_background);
+            render::create_palette_from_images(imgarray, &current_palette, has_background, false);
             rgbmap.regenerate(&current_palette, transparent_index);
           }
           break;

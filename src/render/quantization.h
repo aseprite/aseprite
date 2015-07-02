@@ -26,26 +26,28 @@ namespace doc {
 namespace render {
   using namespace doc;
 
- class PaletteOptimizer {
- public:
-   void feedWithImage(Image* image);
-   void calculate(Palette* palette, bool has_background_layer);
+  class PaletteOptimizer {
+  public:
+    void feedWithImage(Image* image, bool withAlpha);
+    void calculate(Palette* palette, bool hasBackgroundLayer);
 
   private:
-    ColorHistogram<5, 6, 5> m_histogram;
+    ColorHistogram<5, 6, 5, 5> m_histogram;
   };
 
   void create_palette_from_images(
     const std::vector<Image*>& images,
     Palette* palette,
-    bool has_background_layer);
+    bool hasBackgroundLayer,
+    bool withAlpha);
 
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
   Palette* create_palette_from_rgb(
     const Sprite* sprite,
     frame_t fromFrame,
     frame_t toFrame,
-    Palette* newPalette);     // Can be NULL to create a new palette
+    bool withAlpha,
+    Palette* newPalette); // Can be NULL to create a new palette
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.

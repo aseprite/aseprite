@@ -36,6 +36,7 @@ Palette* create_palette_from_rgb(
   const Sprite* sprite,
   frame_t fromFrame,
   frame_t toFrame,
+  bool withAlpha,
   Palette* palette)
 {
   PaletteOptimizer optimizer;
@@ -43,7 +44,7 @@ Palette* create_palette_from_rgb(
   if (!palette)
     palette = new Palette(fromFrame, 256);
 
-  bool has_background_layer = (sprite->backgroundLayer() != nullptr);
+  bool hasBackgroundLayer = (sprite->backgroundLayer() != nullptr);
 
   // Add a flat image with the current sprite's frame rendered
   ImageRef flat_image(Image::create(IMAGE_RGB,
@@ -53,11 +54,11 @@ Palette* create_palette_from_rgb(
   render::Render render;
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
-    optimizer.feedWithImage(flat_image.get());
+    optimizer.feedWithImage(flat_image.get(), withAlpha);
   }
 
   // Generate an optimized palette
-  optimizer.calculate(palette, has_background_layer);
+  optimizer.calculate(palette, hasBackgroundLayer);
 
   return palette;
 }
@@ -304,7 +305,7 @@ Image* convert_pixel_format(
 // Creation of optimized palette for RGB images
 // by David Capello
 
-void PaletteOptimizer::feedWithImage(Image* image)
+void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
 {
   uint32_t color;
 
@@ -318,9 +319,10 @@ void PaletteOptimizer::feedWithImage(Image* image)
 
         for (; it != end; ++it) {
           color = *it;
-
           if (rgba_geta(color) > 0) {
-            color |= rgba(0, 0, 0, 255);
+            if (!withAlpha)
+              color |= rgba(0, 0, 0, 255);
+
             m_histogram.addSamples(color, 1);
           }
         }
@@ -336,8 +338,13 @@ void PaletteOptimizer::feedWithImage(Image* image)
           color = *it;
 
           if (graya_geta(color) > 0) {
-            color = graya_getv(color);
-            m_histogram.addSamples(rgba(color, color, color, 255), 1);
+            if (!withAlpha)
+              color = graya(graya_getv(color), 255);
+
+            m_histogram.addSamples(rgba(graya_getv(color),
+                                        graya_getv(color),
+                                        graya_getv(color),
+                                        graya_geta(color)), 1);
           }
         }
       }
@@ -350,25 +357,27 @@ void PaletteOptimizer::feedWithImage(Image* image)
   }
 }
 
-void PaletteOptimizer::calculate(Palette* palette, bool has_background_layer)
+void PaletteOptimizer::calculate(Palette* palette, bool hasBackgroundLayer)
 {
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
   // will not be used later in the color conversion (from RGB to
   // Indexed).
-  int first_usable_entry = (has_background_layer ? 0: 1);
+  int first_usable_entry = (hasBackgroundLayer ? 0: 1);
   int used_colors = m_histogram.createOptimizedPalette(
     palette, first_usable_entry, palette->size()-1);
   palette->resize(MAX(1, first_usable_entry+used_colors));
 }
 
-void create_palette_from_images(const std::vector<Image*>& images, Palette* palette, bool has_background_layer)
+void create_palette_from_images(const std::vector<Image*>& images, Palette* palette,
+                                bool hasBackgroundLayer,
+                                bool withAlpha)
 {
   PaletteOptimizer optimizer;
   for (int i=0; i<(int)images.size(); ++i)
-    optimizer.feedWithImage(images[i]);
+    optimizer.feedWithImage(images[i], withAlpha);
 
-  optimizer.calculate(palette, has_background_layer);
+  optimizer.calculate(palette, hasBackgroundLayer);
 }
 
 } // namespace render

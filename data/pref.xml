@@ -98,6 +98,9 @@
       <option id="transparent_color" type="app::Color" />
       <option id="rotation_algorithm" type="app::tools::RotationAlgorithm" default="app::tools::RotationAlgorithm::DEFAULT" />
     </section>
+    <section id="quantization">
+      <option id="with_alpha" type="bool" default="true" />
+    </section>
   </global>
 
   <tool>

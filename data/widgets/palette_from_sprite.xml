@@ -9,6 +9,8 @@
     <radio id="current_palette" text="Replace current palette" group="1" cell_hspan="3" />
     <radio id="current_range" text="Replace current range" group="1" cell_hspan="3" />
 
+    <check id="alpha_channel" text="Create entries with alpha component" cell_hspan="3" />
+
     <separator horizontal="true" cell_hspan="3" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="3" cell_align="right">
