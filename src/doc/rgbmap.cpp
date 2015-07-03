@@ -26,6 +26,7 @@ RgbMap::RgbMap()
   , m_map(MAPSIZE)
   , m_palette(NULL)
   , m_modifications(0)
+  , m_maskIndex(0)
 {
 }
 
@@ -39,24 +40,21 @@ void RgbMap::regenerate(const Palette* palette, int mask_index)
 {
   m_palette = palette;
   m_modifications = palette->getModifications();
+  m_maskIndex = mask_index;
 
-  // TODO This is slow for 256 colors 32*32*32*8 findBestfit calls
+  // Mark all entries as invalid (need to be regenerated)
+  for (uint16_t& entry : m_map)
+    entry |= INVALID;
+}
 
-  int i = 0;
-  for (int r=0; r<RSIZE; ++r) {
-    for (int g=0; g<GSIZE; ++g) {
-      for (int b=0; b<BSIZE; ++b) {
-        for (int a=0; a<ASIZE; ++a) {
-          m_map[i++] =
-            palette->findBestfit(
-              scale_5bits_to_8bits(r),
-              scale_5bits_to_8bits(g),
-              scale_5bits_to_8bits(b),
-              scale_3bits_to_8bits(a), mask_index);
-        }
-      }
-    }
-  }
+int RgbMap::generateEntry(int i, int r, int g, int b, int a) const
+{
+  return m_map[i] =
+    m_palette->findBestfit(
+      scale_5bits_to_8bits(r>>3),
+      scale_5bits_to_8bits(g>>3),
+      scale_5bits_to_8bits(b>>3),
+      scale_3bits_to_8bits(a>>5), m_maskIndex);
 }
 
 } // namespace doc
