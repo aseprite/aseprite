@@ -170,8 +170,7 @@ private:
   BrushPopup m_popupWindow;
 };
 
-class ContextBar::BrushSizeField : public IntEntry
-{
+class ContextBar::BrushSizeField : public IntEntry {
 public:
   BrushSizeField() : IntEntry(Brush::kMinBrushSize, Brush::kMaxBrushSize) {
     setSuffix("px");
@@ -911,6 +910,8 @@ void ContextBar::onBrushSizeChange()
 {
   if (m_activeBrush->type() != kImageBrushType)
     discardActiveBrush();
+
+  updateForCurrentTool();
 }
 
 void ContextBar::onBrushAngleChange()
@@ -1012,6 +1013,12 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // True if we have an image as brush
   bool hasImageBrush = (activeBrush()->type() == kImageBrushType);
 
+  // True if the brush type supports angle.
+  bool hasBrushWithAngle =
+    (activeBrush()->size() > 1) &&
+    (activeBrush()->type() == kSquareBrushType ||
+     activeBrush()->type() == kLineBrushType);
+
   // True if the current tool is eyedropper.
   bool isEyedropper = tool &&
     (tool->getInk(0)->isEyedropper() ||
@@ -1048,7 +1055,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   // Show/Hide fields
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
-  m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
+  m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
   m_brushPatternField->setVisible(supportOpacity && hasImageBrush);
   m_inkType->setVisible(hasInk && !hasImageBrush);
   m_inkOpacityLabel->setVisible(hasInkWithOpacity && supportOpacity);
