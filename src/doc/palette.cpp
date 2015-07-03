@@ -189,18 +189,26 @@ int Palette::findExactMatch(int r, int g, int b, int a) const
 //////////////////////////////////////////////////////////////////////
 // Based on Allegro's bestfit_color
 
-static std::vector<unsigned int> col_diff;
+static std::vector<uint32_t> col_diff;
+static uint32_t* col_diff_g;
+static uint32_t* col_diff_r;
+static uint32_t* col_diff_b;
+static uint32_t* col_diff_a;
 
 static void initBestfit()
 {
   col_diff.resize(4*128, 0);
+  col_diff_g = &col_diff[128*0];
+  col_diff_r = &col_diff[128*1];
+  col_diff_b = &col_diff[128*2];
+  col_diff_a = &col_diff[128*3];
 
   for (int i=1; i<64; ++i) {
     int k = i * i;
-    col_diff[0  +i] = col_diff[0  +128-i] = k * 59 * 59;
-    col_diff[128+i] = col_diff[128+128-i] = k * 30 * 30;
-    col_diff[256+i] = col_diff[256+128-i] = k * 11 * 11;
-    col_diff[384+i] = col_diff[384+128-i] = k * 8 * 8;
+    col_diff_g[i] = col_diff_g[128-i] = k * 59 * 59;
+    col_diff_r[i] = col_diff_r[128-i] = k * 30 * 30;
+    col_diff_b[i] = col_diff_b[128-i] = k * 11 * 11;
+    col_diff_a[i] = col_diff_a[128-i] = k * 8 * 8;
   }
 }
 
@@ -230,13 +238,13 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   for (int i=0; i<size; ++i) {
     color_t rgb = m_colors[i];
 
-    int coldiff = col_diff[((rgba_getg(rgb)>>3) - g) & 0x7F];
+    int coldiff = col_diff_g[((rgba_getg(rgb)>>3) - g) & 127];
     if (coldiff < lowest) {
-      coldiff += col_diff[128 + (((rgba_getr(rgb)>>3) - r) & 0x7F)];
+      coldiff += col_diff_r[(((rgba_getr(rgb)>>3) - r) & 127)];
       if (coldiff < lowest) {
-        coldiff += col_diff[256 + (((rgba_getb(rgb)>>3) - b) & 0x7F)];
+        coldiff += col_diff_b[(((rgba_getb(rgb)>>3) - b) & 127)];
         if (coldiff < lowest) {
-          coldiff += col_diff[384 + (((rgba_geta(rgb)>>3) - a) & 0x7F)];
+          coldiff += col_diff_a[(((rgba_geta(rgb)>>3) - a) & 127)];
           if (coldiff < lowest && i != mask_index) {
             if (coldiff == 0)
               return i;
