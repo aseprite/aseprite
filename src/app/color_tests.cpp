@@ -42,7 +42,7 @@ TEST(Color, fromString)
 
 TEST(Color, toString)
 {
-  EXPECT_EQ("rgb{0,0,0}", Color::fromRgb(0, 0, 0).toString());
-  EXPECT_EQ("rgb{32,16,255}", Color::fromRgb(32, 16, 255).toString());
-  EXPECT_EQ("hsv{32,64,99}", Color::fromHsv(32, 64, 99).toString());
+  EXPECT_EQ("rgb{0,0,0,255}", Color::fromRgb(0, 0, 0).toString());
+  EXPECT_EQ("rgb{32,16,255,255}", Color::fromRgb(32, 16, 255).toString());
+  EXPECT_EQ("hsv{32,64,99,255}", Color::fromHsv(32, 64, 99).toString());
 }
