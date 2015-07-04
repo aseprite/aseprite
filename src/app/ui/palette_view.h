@@ -99,16 +99,14 @@ namespace app {
       };
       Part part;
       int color;
-      bool after;
 
-      Hit(Part part, int color = -1) : part(part), color(color), after(false) {
+      Hit(Part part, int color = -1) : part(part), color(color) {
       }
 
       bool operator==(const Hit& hit) const {
         return (
           part == hit.part &&
-          color == hit.color &&
-          after == hit.after);
+          color == hit.color);
       }
       bool operator!=(const Hit& hit) const {
         return !operator==(hit);
@@ -127,9 +125,11 @@ namespace app {
     bool pickedXY(const doc::PalettePicks& entries, int i, int dx, int dy) const;
     void updateCopyFlag(ui::Message* msg);
     void setCursor();
+    void setStatusBar();
     doc::Palette* currentPalette() const;
     int findExactIndex(const app::Color& color) const;
     void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette, const doc::Remap& remap);
+    gfx::Color drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx);
 
     State m_state;
     bool m_editable;

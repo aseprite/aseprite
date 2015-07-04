@@ -23,11 +23,13 @@
 #include "app/ui/skin/style.h"
 #include "app/ui/status_bar.h"
 #include "app/util/clipboard.h"
+#include "base/convert_to.h"
 #include "doc/image.h"
 #include "doc/palette.h"
 #include "doc/remap.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
+#include "she/font.h"
 #include "ui/graphics.h"
 #include "ui/manager.h"
 #include "ui/message.h"
@@ -307,34 +309,33 @@ bool PaletteView::onProcessMessage(Message* msg)
     case kMouseMoveMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
 
-      if (m_state == State::SELECTING_COLOR) {
-        if (m_hot.part == Hit::COLOR) {
-          int idx = m_hot.color;
-          idx = MID(0, idx, currentPalette()->size()-1);
+      setStatusBar();
 
-          StatusBar::instance()->showColor(
-            0, "", app::Color::fromIndex(idx));
-          MouseButtons buttons = mouseMsg->buttons();
+      if (m_state == State::SELECTING_COLOR &&
+          m_hot.part == Hit::COLOR) {
+        int idx = m_hot.color;
+        idx = MID(0, idx, currentPalette()->size()-1);
 
-          if (hasCapture() && ((idx != m_currentEntry) ||
-                               (msg->type() == kMouseDownMessage) ||
-                               ((buttons & kButtonMiddle) == kButtonMiddle))) {
-            if ((buttons & kButtonMiddle) == 0) {
-              if (!msg->ctrlPressed())
-                deselect();
+        MouseButtons buttons = mouseMsg->buttons();
 
-              if (msg->type() == kMouseMoveMessage)
-                selectRange(m_rangeAnchor, idx);
-              else {
-                selectColor(idx);
-                m_selectedEntries[idx] = true;
-              }
+        if (hasCapture() && ((idx != m_currentEntry) ||
+                             (msg->type() == kMouseDownMessage) ||
+                             ((buttons & kButtonMiddle) == kButtonMiddle))) {
+          if ((buttons & kButtonMiddle) == 0) {
+            if (!msg->ctrlPressed())
+              deselect();
+
+            if (msg->type() == kMouseMoveMessage)
+              selectRange(m_rangeAnchor, idx);
+            else {
+              selectColor(idx);
+              m_selectedEntries[idx] = true;
             }
-
-            // Emit signal
-            if (m_delegate)
-              m_delegate->onPaletteViewIndexChange(idx, buttons);
           }
+
+          // Emit signal
+          if (m_delegate)
+            m_delegate->onPaletteViewIndexChange(idx, buttons);
         }
       }
 
@@ -350,7 +351,10 @@ bool PaletteView::onProcessMessage(Message* msg)
 
         if (m_state == State::DRAGGING_OUTLINE &&
             m_hot.part == Hit::COLOR) {
-          dropColors(m_hot.color + (m_hot.after ? 1: 0));
+          int i = m_hot.color;
+          if (!m_copy && i > m_selectedEntries.firstPick())
+            i += m_selectedEntries.picks();
+          dropColors(i);
         }
 
         m_state = State::WAITING;
@@ -409,6 +413,8 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int fgIndex = -1;
   int bgIndex = -1;
   int transparentIndex = -1;
+  bool drag = (m_state == State::DRAGGING_OUTLINE &&
+               m_hot.part == Hit::COLOR);
 
   if (m_style == FgBgColors && m_delegate) {
     fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
@@ -421,22 +427,23 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   g->fillRect(theme->colors.editorFace(), bounds);
 
   // Draw palette entries
-  for (int i=0; i<palette->size(); ++i) {
-    gfx::Rect box = getPaletteEntryBounds(i);
-    doc::color_t palColor = palette->getEntry(i);
-    app::Color appColor = app::Color::fromRgb(
-      rgba_getr(palColor),
-      rgba_getg(palColor),
-      rgba_getb(palColor),
-      rgba_geta(palColor));
-    gfx::Color gfxColor = gfx::rgba(
-      rgba_getr(palColor),
-      rgba_getg(palColor),
-      rgba_getb(palColor),
-      rgba_geta(palColor));
+  int picksCount = m_selectedEntries.picks();
+  int idxOffset = 0;
+  int boxOffset = 0;
+  for (int i=0; i<palette->size()-(drag && !m_copy ? picksCount: 0); ++i) {
+    if (drag) {
+      if (!m_copy) {
+        if (m_selectedEntries[i]) {
+          ++idxOffset;
+        }
+      }
+      if (!boxOffset && m_hot.color == i) {
+        boxOffset += picksCount;
+      }
+    }
 
-    g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
-    draw_color(g, box, appColor);
+    gfx::Rect box = getPaletteEntryBounds(i + boxOffset);
+    gfx::Color gfxColor = drawEntry(g, box, i + idxOffset);
 
     switch (m_style) {
 
@@ -467,25 +474,54 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   }
 
   // Draw selected entries
+
   Style::State state = Style::active();
   if (m_hot.part == Hit::OUTLINE) state += Style::hover();
+
+  PalettePicks dragPicks;
+  int j = 0;
+  if (drag) {
+    dragPicks.resize(m_hot.color+picksCount);
+    std::fill(dragPicks.begin()+m_hot.color, dragPicks.end(), true);
+  }
+  PalettePicks& picks = (drag ? dragPicks: m_selectedEntries);
 
   for (int i=0; i<palette->size(); ++i) {
     if (!m_selectedEntries[i])
       continue;
 
+    int k = (drag ? m_hot.color+j: i);
+
     gfx::Rect box, clipR;
-    getEntryBoundsAndClip(i, m_selectedEntries, box, clipR, outlineWidth);
+    getEntryBoundsAndClip(k, picks, box, clipR, outlineWidth);
 
     IntersectClip clip(g, clipR);
     if (clip) {
-      theme->styles.timelineRangeOutline()->paint(g, box,
-        NULL, state);
+      // Draw color being dragged + label
+      if (drag) {
+        gfx::Rect box2 = getPaletteEntryBounds(k);
+        gfx::Color gfxColor = drawEntry(g, box2, i); // Draw color entry
+
+        gfx::Color neg = color_utils::blackandwhite_neg(gfxColor);
+        she::Font* minifont = theme->getMiniFont();
+        std::string text = base::convert_to<std::string>(k);
+        g->setFont(minifont);
+        g->drawString(text, neg, gfx::ColorNone,
+                      gfx::Point(box2.x + box2.w/2 - minifont->textLength(text)/2,
+                                 box2.y + box2.h/2 - minifont->height()/2));
+      }
+
+      // Draw outlines
+      theme->styles.timelineRangeOutline()->paint(
+        g, box, NULL, state);
     }
+
+    ++j;
   }
 
   // Draw marching ants
-  if ((isMarchingAntsRunning()) &&
+  if ((m_state == State::WAITING) &&
+      (isMarchingAntsRunning()) &&
       (clipboard::get_current_format() == clipboard::ClipboardPaletteEntries)) {
     Palette* clipboardPalette = clipboard::get_palette();
     const PalettePicks& clipboardPicks = clipboard::get_palette_picks();
@@ -505,23 +541,6 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
           g->drawRect(gfx::rgba(0, 0, 0), box);
         }
       }
-    }
-  }
-
-  // Draw drop target
-  if (m_state == State::DRAGGING_OUTLINE) {
-    if (m_hot.part == Hit::COLOR) {
-      gfx::Rect box = getPaletteEntryBounds(m_hot.color);
-      if (m_hot.after)
-        box.x += box.w+guiscale();
-
-      box.x -= 3*guiscale();
-      box.y -= 3*guiscale();
-      box.w = 5*guiscale();
-      box.h += 6*guiscale();
-
-      theme->styles.timelineDropFrameDeco()->paint(g,
-        box, NULL, Style::active());
     }
   }
 }
@@ -660,7 +679,6 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
     box.h += childSpacing();
     if (box.contains(pos)) {
       Hit hit(Hit::COLOR, i);
-      hit.after = (pos.x > box.x+box.w/2);
       return hit;
     }
   }
@@ -684,7 +702,9 @@ void PaletteView::dropColors(int beforeIndex)
     int picks = m_selectedEntries.picks();
     ASSERT(picks >= 1);
 
-    remap = create_remap_to_expand_palette(palette.size(), picks, beforeIndex);
+    remap = create_remap_to_expand_palette(palette.size()+picks,
+                                           picks,
+                                           beforeIndex);
 
     newPalette.resize(palette.size()+picks);
     for (int i=0; i<palette.size(); ++i)
@@ -764,7 +784,7 @@ bool PaletteView::pickedXY(const doc::PalettePicks& entries, int i, int dx, int 
 {
   int x = (i % m_columns) + dx;
   int y = (i / m_columns) + dy;
-  int lastcolor = currentPalette()->size()-1;
+  int lastcolor = entries.size()-1;
 
   if (x < 0 || x >= m_columns || y < 0 || y > lastcolor/m_columns)
     return false;
@@ -780,8 +800,11 @@ void PaletteView::updateCopyFlag(ui::Message* msg)
 {
   bool oldCopy = m_copy;
   m_copy = (msg->ctrlPressed() || msg->altPressed());
-  if (oldCopy != m_copy)
+  if (oldCopy != m_copy) {
     setCursor();
+    setStatusBar();
+    invalidate();
+  }
 }
 
 void PaletteView::setCursor()
@@ -795,6 +818,34 @@ void PaletteView::setCursor()
   }
   else
     ui::set_mouse_cursor(kArrowCursor);
+}
+
+void PaletteView::setStatusBar()
+{
+  switch (m_state) {
+
+    case State::WAITING:
+    case State::SELECTING_COLOR:
+      if (m_hot.part == Hit::COLOR) {
+        int i = MID(0, m_hot.color, currentPalette()->size()-1);
+
+        StatusBar::instance()->showColor(
+          0, "", app::Color::fromIndex(i));
+      }
+      break;
+
+    case State::DRAGGING_OUTLINE:
+      if (m_hot.part == Hit::COLOR) {
+        int i = MAX(0, m_hot.color);
+
+        if (!m_copy && i <= m_selectedEntries.firstPick())
+          i -= m_selectedEntries.picks();
+
+        StatusBar::instance()->setStatusText(
+          0, "%s to %d", (m_copy ? "Copy": "Move"), i);
+      }
+      break;
+  }
 }
 
 doc::Palette* PaletteView::currentPalette() const
@@ -835,6 +886,25 @@ void PaletteView::setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalet
 
   set_current_palette(newPalette, false);
   getManager()->invalidate();
+}
+
+gfx::Color PaletteView::drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx)
+{
+  doc::color_t palColor = currentPalette()->getEntry(palIdx);
+  app::Color appColor = app::Color::fromRgb(
+    rgba_getr(palColor),
+    rgba_getg(palColor),
+    rgba_getb(palColor),
+    rgba_geta(palColor));
+  gfx::Color gfxColor = gfx::rgba(
+    rgba_getr(palColor),
+    rgba_getg(palColor),
+    rgba_getb(palColor),
+    rgba_geta(palColor));
+
+  g->drawRect(gfx::rgba(0, 0, 0), gfx::Rect(box).enlarge(guiscale()));
+  draw_color(g, box, appColor);
+  return gfxColor;
 }
 
 } // namespace app

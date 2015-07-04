@@ -37,7 +37,7 @@ namespace doc {
     reference operator[](int idx) { return m_items[idx]; }
 
     void resize(int n) {
-      m_items.resize(n);
+      m_items.resize(n, false);
     }
 
     void clear() {
