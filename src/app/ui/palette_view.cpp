@@ -832,17 +832,32 @@ void PaletteView::setStatusBar()
         StatusBar::instance()->showColor(
           0, "", app::Color::fromIndex(i));
       }
+      else {
+        StatusBar::instance()->clearText();
+      }
       break;
 
     case State::DRAGGING_OUTLINE:
       if (m_hot.part == Hit::COLOR) {
-        int i = MAX(0, m_hot.color);
+        int picks = m_selectedEntries.picks();
+        int firstPick = m_selectedEntries.firstPick();
 
-        if (!m_copy && i <= m_selectedEntries.firstPick())
-          i -= m_selectedEntries.picks();
+        int destIndex = MAX(0, m_hot.color);
+        if (!m_copy && destIndex <= firstPick)
+          destIndex -= picks;
+
+        int palSize = currentPalette()->size();
+        int newPalSize =
+          (m_copy ? MAX(palSize + picks, destIndex + picks):
+                    MAX(palSize,         destIndex + picks));
 
         StatusBar::instance()->setStatusText(
-          0, "%s to %d", (m_copy ? "Copy": "Move"), i);
+          0, "%s to %d - New Palette Size %d",
+          (m_copy ? "Copy": "Move"),
+          destIndex, newPalSize);
+      }
+      else {
+        StatusBar::instance()->clearText();
       }
       break;
   }
