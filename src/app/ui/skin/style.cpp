@@ -166,7 +166,7 @@ Rules::Rules(const css::Query& query) :
         int(paddingLeft.number()),
         int(paddingTop.number()),
         int(paddingRight.number()),
-        int(paddingBottom.number()*ui::guiscale())));
+        int(paddingBottom.number()))*ui::guiscale());
   }
 }
 
