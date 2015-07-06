@@ -93,6 +93,10 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
+  // Remove the invalidated region in the editor.
+  m_clippingRegion.createSubtraction(m_clippingRegion,
+                                     m_editor->getUpdateRegion());
+
   // Get cursor color
   app::Color app_cursor_color = Preferences::instance().editor.cursorColor();
   gfx::Color ui_cursor_color = color_utils::color_for_ui(app_cursor_color);
@@ -219,16 +223,19 @@ void BrushPreview::hide()
   Sprite* sprite = m_editor->sprite();
   ASSERT(sprite);
 
+  // Get drawable region
   m_editor->getDrawableRegion(m_clippingRegion, ui::Widget::kCutTopWindows);
 
-  gfx::Point pos = m_editorPosition;
+  // Remove the invalidated region in the editor.
+  m_clippingRegion.createSubtraction(m_clippingRegion,
+                                     m_editor->getUpdateRegion());
 
   {
     // Restore pixels
     ui::ScreenGraphics g;
     ui::SetClip clip(&g, gfx::Rect(0, 0, g.width(), g.height()));
 
-    forEachBrushPixel(&g, m_screenPosition, pos, gfx::ColorNone,
+    forEachBrushPixel(&g, m_screenPosition, m_editorPosition, gfx::ColorNone,
                       &BrushPreview::clearPixelDelegate);
   }
 
@@ -317,7 +324,7 @@ void BrushPreview::forEachBrushPixel(
   if (m_type & BRUSH_BOUNDARIES)
     traceBrushBoundaries(g, spritePos, color, pixelDelegate);
 
-  // Depending on the editor zoom, maybe wee need subpixel movement (a
+  // Depending on the editor zoom, maybe we need subpixel movement (a
   // little dot inside the active pixel)
   if (m_editor->zoom().scale() >= 4.0)
     (this->*pixelDelegate)(g, screenPos, color);

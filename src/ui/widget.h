@@ -298,6 +298,12 @@ namespace ui {
     void invalidateRect(const gfx::Rect& rect);
     void invalidateRegion(const gfx::Region& region);
 
+    // Returns the invalid region to being updated with PaintMessages
+    // and onPaint() events.
+    const gfx::Region& getUpdateRegion() const {
+      return m_updateRegion;
+    }
+
     void flushRedraw();
 
     void scrollRegion(const gfx::Region& region, const gfx::Point& delta);
