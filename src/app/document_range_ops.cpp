@@ -63,13 +63,13 @@ static DocumentRange drop_range_op(
         for (LayerIndex i = from.layerBegin(); i <= from.layerEnd(); ++i)
           if (sprite->indexToLayer(i)->isBackground())
             throw std::runtime_error("The background layer cannot be moved");
+      }
 
-        // Before background
-        if (place == kDocumentRangeBefore) {
-          Layer* background = sprite->indexToLayer(to.layerBegin());
-          if (background && background->isBackground())
-            throw std::runtime_error("You cannot move something below the background layer");
-        }
+      // Before background
+      if (place == kDocumentRangeBefore) {
+        Layer* background = sprite->indexToLayer(to.layerBegin());
+        if (background && background->isBackground())
+          throw std::runtime_error("You cannot move or copy something below the background layer");
       }
       break;
   }
