@@ -96,6 +96,7 @@ namespace app {
 
     static std::vector<gfx::Color> m_savedPixels;
     static int m_savedPixelsIterator;
+    static int m_savedPixelsLimit;
 
     gfx::Region m_clippingRegion;
     gfx::Region m_oldClippingRegion;

@@ -41,6 +41,7 @@ using namespace doc;
 
 std::vector<gfx::Color> BrushPreview::m_savedPixels;
 int BrushPreview::m_savedPixelsIterator;
+int BrushPreview::m_savedPixelsLimit;
 
 BrushPreview::BrushPreview(Editor* editor)
   : m_editor(editor)
@@ -328,6 +329,8 @@ void BrushPreview::forEachBrushPixel(
   // little dot inside the active pixel)
   if (m_editor->zoom().scale() >= 4.0)
     (this->*pixelDelegate)(g, screenPos, color);
+
+  m_savedPixelsLimit = m_savedPixelsIterator;
 }
 
 void BrushPreview::traceCrossPixels(
@@ -462,12 +465,14 @@ void BrushPreview::drawPixelDelegate(ui::Graphics* gfx, const gfx::Point& pt, gf
 void BrushPreview::clearPixelDelegate(ui::Graphics* g, const gfx::Point& pt, gfx::Color color)
 {
   if (m_savedPixelsIterator < (int)m_savedPixels.size()) {
-    if (m_clippingRegion.contains(pt))
-      g->putPixel(m_savedPixels[m_savedPixelsIterator++], pt.x, pt.y);
-    else if (!m_oldClippingRegion.isEmpty() &&
-             m_oldClippingRegion.contains(pt))
-      m_savedPixelsIterator++;
+    if (m_oldClippingRegion.contains(pt)) {
+      if (m_clippingRegion.contains(pt))
+        g->putPixel(m_savedPixels[m_savedPixelsIterator], pt.x, pt.y);
+      ++m_savedPixelsIterator;
+    }
   }
+
+  ASSERT(m_savedPixelsIterator <= m_savedPixelsLimit);
 }
 
 } // namespace app
