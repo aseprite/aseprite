@@ -371,7 +371,7 @@ bool PaletteView::onProcessMessage(Message* msg)
 
       if (msg->onlyCtrlPressed()) {
         int z = delta.x - delta.y;
-        setBoxSize(m_boxsize / guiscale() + z);
+        setBoxSize(m_boxsize + z);
       }
       else {
         gfx::Point scroll = view->getViewScroll();
