@@ -44,6 +44,7 @@ namespace app {
     Direction m_direction;
     Units m_units;
     int m_quantity;
+    bool m_wrap;
   };
 
 } // namespace app

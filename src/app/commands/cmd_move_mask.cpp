@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/shift_masked_cel.h"
 #include "app/commands/cmd_move_mask.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
@@ -58,12 +59,34 @@ void MoveMaskCommand::onLoadParams(const Params& params)
 
   int quantity = params.get_as<int>("quantity");
   m_quantity = std::max<int>(1, quantity);
+
+  if (params.has_param("wrap"))
+    m_wrap = params.get_as<bool>("wrap");
+  else
+    m_wrap = false;
 }
 
 bool MoveMaskCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::HasActiveDocument |
-                             ContextFlags::HasVisibleMask);
+  switch (m_target) {
+
+    case Boundaries:
+      return context->checkFlags(ContextFlags::HasActiveDocument |
+                                 ContextFlags::HasVisibleMask);
+
+    case Content:
+      if (m_wrap)
+        return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                                   ContextFlags::HasVisibleMask |
+                                   ContextFlags::HasActiveImage);
+      else
+        return context->checkFlags(ContextFlags::HasActiveDocument |
+                                   ContextFlags::HasVisibleMask |
+                                   ContextFlags::HasActiveImage);
+
+  }
+
+  return false;
 }
 
 void MoveMaskCommand::onExecute(Context* context)
@@ -127,10 +150,21 @@ void MoveMaskCommand::onExecute(Context* context)
       break;
     }
 
-    case Content: {
-      current_editor->startSelectionTransformation(gfx::Point(dx, dy));
+    case Content:
+      if (m_wrap) {
+        ContextWriter writer(context);
+        if (writer.cel()) {
+          // Rotate content
+          Transaction transaction(writer.context(), "Shift Pixels");
+          transaction.execute(new cmd::ShiftMaskedCel(writer.cel(), dx, dy));
+          transaction.commit();
+        }
+        update_screen_for_document(writer.document());
+      }
+      else {
+        current_editor->startSelectionTransformation(gfx::Point(dx, dy));
+      }
       break;
-    }
 
   }
 }

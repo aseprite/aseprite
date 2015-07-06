@@ -9,6 +9,7 @@ add_library(doc-lib
   algorithm/resize_image.cpp
   algorithm/rotate.cpp
   algorithm/rotsprite.cpp
+  algorithm/shift_image.cpp
   algorithm/shrink_bounds.cpp
   blend_funcs.cpp
   brush.cpp

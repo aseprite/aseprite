@@ -114,9 +114,9 @@ add_library(app-lib
   cmd/set_frame_tag_name.cpp
   cmd/set_frame_tag_range.cpp
   cmd/set_layer_blend_mode.cpp
-  cmd/set_layer_opacity.cpp
   cmd/set_layer_flags.cpp
   cmd/set_layer_name.cpp
+  cmd/set_layer_opacity.cpp
   cmd/set_mask.cpp
   cmd/set_mask_position.cpp
   cmd/set_palette.cpp
@@ -124,6 +124,7 @@ add_library(app-lib
   cmd/set_sprite_size.cpp
   cmd/set_total_frames.cpp
   cmd/set_transparent_color.cpp
+  cmd/shift_masked_cel.cpp
   cmd/unlink_cel.cpp
   cmd/with_cel.cpp
   cmd/with_document.cpp

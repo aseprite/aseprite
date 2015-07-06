@@ -481,6 +481,36 @@
         </item>
         <item command="MaskContent" text="Transfor&amp;m" />
         <item command="NewBrush" text="New &amp;Brush" />
+        <menu text="Shift">
+          <item command="MoveMask" text="&amp;Left">
+            <param name="target" value="content" />
+            <param name="direction" value="left" />
+            <param name="units" value="pixel" />
+            <param name="quantity" value="1" />
+            <param name="wrap" value="1" />
+          </item>
+          <item command="MoveMask" text="&amp;Right">
+            <param name="target" value="content" />
+            <param name="direction" value="right" />
+            <param name="units" value="pixel" />
+            <param name="quantity" value="1" />
+            <param name="wrap" value="1" />
+          </item>
+          <item command="MoveMask" text="&amp;Up">
+            <param name="target" value="content" />
+            <param name="direction" value="up" />
+            <param name="units" value="pixel" />
+            <param name="quantity" value="1" />
+            <param name="wrap" value="1" />
+          </item>
+          <item command="MoveMask" text="&amp;Down">
+            <param name="target" value="content" />
+            <param name="direction" value="down" />
+            <param name="units" value="pixel" />
+            <param name="quantity" value="1" />
+            <param name="wrap" value="1" />
+          </item>
+        </menu>
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert" />
