@@ -66,6 +66,9 @@ namespace app {
     static doc::BrushRef createBrushFromPreferences(
       ToolPreferences::Brush* brushPref = nullptr);
 
+    // Signals
+    Signal0<void> BrushChange;
+
   protected:
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     void onToolSetOpacity(const int& newOpacity);

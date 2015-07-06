@@ -1200,6 +1200,7 @@ bool ContextBar::isBrushSlotLocked(int slot) const
 void ContextBar::setActiveBrush(const doc::BrushRef& brush)
 {
   m_activeBrush = brush;
+  BrushChange();
 
   updateForCurrentTool();
 }

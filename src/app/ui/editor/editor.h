@@ -217,7 +217,7 @@ namespace app {
     void onInvalidateRegion(const gfx::Region& region) override;
     void onCurrentToolChange();
     void onFgColorChange();
-    void onBrushSizeOrAngleChange();
+    void onContextBarBrushChange();
     void onExposeSpritePixels(doc::DocumentEvent& ev);
 
   private:
@@ -278,8 +278,7 @@ namespace app {
     // signals).
     ScopedConnection m_currentToolChangeConn;
     ScopedConnection m_fgColorChangeConn;
-    ScopedConnection m_sizeConn;
-    ScopedConnection m_angleConn;
+    ScopedConnection m_contextBarBrushChangeConn;
 
     // Slots listeing document preferences.
     ScopedConnection m_tiledConn;

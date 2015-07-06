@@ -176,6 +176,10 @@ Editor::Editor(Document* document, EditorFlags flags)
     Preferences::instance().colorBar.fgColor.AfterChange.connect(
       Bind<void>(&Editor::onFgColorChange, this));
 
+  m_contextBarBrushChangeConn =
+    App::instance()->getMainWindow()->getContextBar()->BrushChange.connect(
+      Bind<void>(&Editor::onContextBarBrushChange, this));
+
   DocumentPreferences& docPref = Preferences::instance().document(m_document);
 
   // Restore last site in preferences
@@ -1321,12 +1325,6 @@ void Editor::onInvalidateRegion(const gfx::Region& region)
 void Editor::onCurrentToolChange()
 {
   m_state->onCurrentToolChange(this);
-
-  ToolPreferences::Brush& brushPref =
-    Preferences::instance().tool(App::instance()->activeTool()).brush;
-
-  m_sizeConn = brushPref.size.AfterChange.connect(Bind<void>(&Editor::onBrushSizeOrAngleChange, this));
-  m_angleConn = brushPref.angle.AfterChange.connect(Bind<void>(&Editor::onBrushSizeOrAngleChange, this));
 }
 
 void Editor::onFgColorChange()
@@ -1334,7 +1332,7 @@ void Editor::onFgColorChange()
   m_brushPreview.redraw();
 }
 
-void Editor::onBrushSizeOrAngleChange()
+void Editor::onContextBarBrushChange()
 {
   m_brushPreview.redraw();
 }
