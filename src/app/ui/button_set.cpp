@@ -168,13 +168,13 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
     sz.h = 16*guiscale();
   }
   else if (!getText().empty())
-    sz += getTextSize() + 8*guiscale();;
+    sz += getTextSize() + 8*guiscale();
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.row == info.grid_rows-1)
     sz.h += 3*guiscale();
 
-  ev.setPreferredSize(sz*guiscale());
+  ev.setPreferredSize(sz);
 }
 
 ButtonSet::ButtonSet(int columns)
