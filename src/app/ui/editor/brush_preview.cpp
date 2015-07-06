@@ -207,9 +207,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
 // Cleans the brush cursor from the specified editor.
 //
-// The mouse position is got from the last call to drawBrushPreview()
+// The mouse position is got from the last call to showBrushPreview()
 // (m_cursorEditor). So you must to use this routine only if you
-// called drawBrushPreview() before.
+// called showBrushPreview() before.
 void BrushPreview::hide()
 {
   if (!m_onScreen)

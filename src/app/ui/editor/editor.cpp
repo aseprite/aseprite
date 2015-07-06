@@ -841,16 +841,6 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
   return mousePos;
 }
 
-void Editor::drawBrushPreview(const gfx::Point& pos)
-{
-  m_brushPreview.show(pos);
-}
-
-void Editor::clearBrushPreview()
-{
-  m_brushPreview.hide();
-}
-
 bool Editor::isCurrentToolAffectedByRightClickMode()
 {
   tools::Tool* tool = App::instance()->activeTool();
