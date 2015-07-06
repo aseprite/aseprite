@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/app_menus.h"
 #include "app/cmd/remap_colors.h"
+#include "app/cmd/replace_image.h"
 #include "app/cmd/set_palette.h"
 #include "app/cmd/set_transparent_color.h"
 #include "app/color.h"
@@ -40,12 +41,16 @@
 #include "app/util/clipboard.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
+#include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/primitives.h"
 #include "doc/remap.h"
 #include "doc/sort_palette.h"
 #include "doc/sprite.h"
 #include "she/surface.h"
+#include "ui/alert.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -56,6 +61,7 @@
 #include "ui/tooltips.h"
 
 #include <cstring>
+
 
 namespace app {
 
@@ -405,6 +411,16 @@ void ColorBar::onRemapButtonClick()
 {
   ASSERT(m_remap);
 
+  // Check the remap
+  if (!m_remap->isFor8bit() &&
+      Alert::show(
+        "Automatic Remap"
+        "<<The remap operation cannot be perfectly done for more than 256 colors."
+        "<<Do you want to continue anyway?"
+        "||&OK||&Cancel") != 1) {
+    return;
+  }
+
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
@@ -412,7 +428,20 @@ void ColorBar::onRemapButtonClick()
       ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
 
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
-      transaction.execute(new cmd::RemapColors(sprite, *m_remap));
+      if (m_remap->isFor8bit()) {
+        transaction.execute(new cmd::RemapColors(sprite, *m_remap));
+      }
+      // Special remap saving original images in undo history
+      else {
+        for (Cel* cel : sprite->uniqueCels()) {
+          ImageRef celImage = cel->imageRef();
+          ImageRef newImage(Image::createCopy(celImage.get()));
+          doc::remap_image(newImage.get(), *m_remap);
+
+          transaction.execute(new cmd::ReplaceImage(
+                                sprite, celImage, newImage));
+        }
+      }
 
       color_t oldTransparent = sprite->transparentColor();
       color_t newTransparent = (*m_remap)[oldTransparent];

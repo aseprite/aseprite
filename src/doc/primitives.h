@@ -16,6 +16,7 @@ namespace doc {
   class Brush;
   class Image;
   class Palette;
+  class Remap;
 
   color_t get_pixel(const Image* image, int x, int y);
   void put_pixel(Image* image, int x, int y, color_t c);
@@ -38,6 +39,8 @@ namespace doc {
   void fill_ellipse(Image* image, int x1, int y1, int x2, int y2, color_t c);
 
   int count_diff_between_images(const Image* i1, const Image* i2);
+
+  void remap_image(Image* image, const Remap& remap);
 
 } // namespace doc
 

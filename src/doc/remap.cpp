@@ -78,4 +78,16 @@ Remap Remap::invert() const
   return inv;
 }
 
+bool Remap::isFor8bit() const
+{
+  for (int i=0; i<size(); ++i) {
+    // Moving entries between [0,255] range to or from [256,+inf)
+    // range are invalid for 8-bit images.
+    if ((i <  256 && m_map[i] >= 256) ||
+        (i >= 256 && m_map[i] <  256))
+      return false;
+  }
+  return true;
+}
+
 } // namespace doc

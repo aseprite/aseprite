@@ -44,6 +44,9 @@ namespace doc {
       return sizeof(*this) + sizeof(int)*size();
     }
 
+    // Returns true if the remap can be safely used in 8-bit images.
+    bool isFor8bit() const;
+
   private:
     std::vector<int> m_map;
   };

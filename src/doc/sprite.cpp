@@ -468,14 +468,7 @@ void Sprite::remapImages(frame_t frameFrom, frame_t frameTo, const Remap& remap)
     // Remap this Cel because is inside the specified range
     if (cel->frame() >= frameFrom &&
         cel->frame() <= frameTo) {
-      Image* image = cel->image();
-      LockImageBits<IndexedTraits> bits(image);
-      LockImageBits<IndexedTraits>::iterator
-        it = bits.begin(),
-        end = bits.end();
-
-      for (; it != end; ++it)
-        *it = remap[*it];
+      remap_image(cel->image(), remap);
     }
   }
 }

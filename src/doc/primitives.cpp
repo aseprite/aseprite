@@ -14,6 +14,7 @@
 #include "doc/brush.h"
 #include "doc/image_impl.h"
 #include "doc/palette.h"
+#include "doc/remap.h"
 #include "doc/rgbmap.h"
 
 #include <stdexcept>
@@ -326,6 +327,21 @@ int count_diff_between_images(const Image* i1, const Image* i2)
 
   ASSERT(false);
   return -1;
+}
+
+void remap_image(Image* image, const Remap& remap)
+{
+  ASSERT(image->pixelFormat() == IMAGE_INDEXED);
+  if (image->pixelFormat() != IMAGE_INDEXED)
+    return;
+
+  LockImageBits<IndexedTraits> bits(image);
+  LockImageBits<IndexedTraits>::iterator
+    it = bits.begin(),
+    end = bits.end();
+
+  for (; it != end; ++it)
+    *it = remap[*it];
 }
 
 } // namespace doc
