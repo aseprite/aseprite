@@ -56,7 +56,7 @@ void SavePaletteCommand::onExecute(Context* context)
   std::string filename;
 
   if (!m_preset.empty()) {
-    filename = get_preset_palette_filename(m_preset);
+    filename = get_preset_palette_filename(m_preset, ".ase");
   }
   else {
     std::string exts = get_writable_palette_extensions();

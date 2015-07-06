@@ -24,7 +24,6 @@
 #include "app/document_undo.h"
 #include "app/file/file.h"
 #include "app/file/file_formats_manager.h"
-#include "app/file/palette_file.h"
 #include "app/file_system.h"
 #include "app/filename_formatter.h"
 #include "app/find_widget.h"
@@ -178,41 +177,9 @@ void App::initialize(const AppOptions& options)
   if (isPortable())
     PRINTF("Running in portable mode\n");
 
-  // Default palette from command line.
-  std::string palFile = options.paletteFileName();
-  if (palFile.empty()) {
-    // If there is no palette in command line, we use the default one.
-    palFile = get_preset_palette_filename(get_default_palette_preset_name());
-
-    // If the default palette file doesn't exist, we copy db32.gpl as
-    // the default one.
-    if (!base::is_file(palFile)) {
-      ResourceFinder rf;
-      rf.includeDataDir("palettes/db32.gpl");
-      if (rf.findFirst()) {
-        // Copy db32.gpl as the default palette file.
-        base::UniquePtr<Palette> pal(load_palette(rf.filename().c_str()));
-        if (pal)
-          save_palette(palFile.c_str(), pal.get(), 0);
-      }
-    }
-  }
-
-  // Load default palette file.
-  if (!palFile.empty()) {
-    PRINTF("Loading default palette file: %s\n", palFile.c_str());
-
-    base::UniquePtr<Palette> pal(load_palette(palFile.c_str()));
-    if (pal) {
-      set_default_palette(pal.get());
-    }
-    else {
-      PRINTF("Error loading default palette file\n");
-    }
-  }
-
-  // Set system palette to the default one.
-  set_current_palette(NULL, true);
+  // Load or create the default palette, or migrate the default
+  // palette from an old format palette to the new one, etc.
+  load_default_palette(options.paletteFileName());
 
   // Initialize GUI interface
   UIContext* ctx = UIContext::instance();

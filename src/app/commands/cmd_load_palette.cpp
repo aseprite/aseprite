@@ -16,6 +16,7 @@
 #include "app/file/palette_file.h"
 #include "app/file_selector.h"
 #include "app/modules/palettes.h"
+#include "base/fs.h"
 #include "base/unique_ptr.h"
 #include "doc/palette.h"
 #include "ui/alert.h"
@@ -54,7 +55,9 @@ void LoadPaletteCommand::onExecute(Context* context)
   std::string filename;
 
   if (!m_preset.empty()) {
-    filename = get_preset_palette_filename(m_preset);
+    filename = get_preset_palette_filename(m_preset, ".ase");
+    if (!base::is_file(filename))
+      filename = get_preset_palette_filename(m_preset, ".gpl");
   }
   else {
     std::string exts = get_readable_palette_extensions();
