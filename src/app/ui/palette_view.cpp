@@ -433,9 +433,9 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   for (int i=0; i<palette->size()-(drag && !m_copy ? picksCount: 0); ++i) {
     if (drag) {
       if (!m_copy) {
-        if (m_selectedEntries[i]) {
+        while (i+idxOffset < m_selectedEntries.size() &&
+               m_selectedEntries[i+idxOffset])
           ++idxOffset;
-        }
       }
       if (!boxOffset && m_hot.color == i) {
         boxOffset += picksCount;
