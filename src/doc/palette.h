@@ -38,6 +38,9 @@ namespace doc {
 
     int getModifications() const { return m_modifications; }
 
+    // Return true if the palette has alpha != 255 in some entry
+    bool hasAlpha() const;
+
     frame_t frame() const { return m_frame; }
     void setFrame(frame_t frame);
 

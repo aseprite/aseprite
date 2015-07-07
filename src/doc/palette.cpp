@@ -76,6 +76,14 @@ void Palette::addEntry(color_t color)
   setEntry(size()-1, color);
 }
 
+bool Palette::hasAlpha() const
+{
+  for (int i=0; i<(int)m_colors.size(); ++i)
+    if (rgba_geta(getEntry(i)) < 255)
+      return true;
+  return false;
+}
+
 void Palette::setFrame(frame_t frame)
 {
   ASSERT(frame >= 0);
