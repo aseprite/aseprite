@@ -41,7 +41,7 @@
 #define ASE_LAYER_FLAG_EDITABLE             2
 #define ASE_LAYER_FLAG_LOCK_MOVEMENT        4
 #define ASE_LAYER_FLAG_BACKGROUND           8
-#define ASE_LAYER_FLAG_PREFER_LiNKED_CELS   16
+#define ASE_LAYER_FLAG_PREFER_LINKED_CELS   16
 #define ASE_LAYER_FLAG_HAS_OPACITY          32
 
 namespace app {
