@@ -43,7 +43,7 @@ images with zlib.  Color palettes are in FLI color chunks (it could be
 type=11 or type=4). For color depths more than 8bpp, palettes are
 optional. See fli.txt for details.
 
-To read the sprite, just do this:
+To read the sprite:
 * Read the ASE header (section 3)
 * For each frame do (how many frames? the ASE header has that
   information):
@@ -70,7 +70,8 @@ WORD            Color depth (bits per pixel)
                 32 bpp = RGBA
                 16 bpp = Grayscale
                  8 bpp = Indexed
-DWORD           Flags (must be 0)
+DWORD           Flags:
+                  1 = Layer opacity has valid value
 WORD            Speed (milliseconds between frame, like in FLC files)
                 DEPRECATED: You should use the frame duration
                             field from each frame header
@@ -111,6 +112,10 @@ Then each chunk format is:
 Old palette chunk (0x0004)
 ----------------------------------------
 
+Ignore this chunk if you find the new palette chunk (0x2019) Aseprite
+v1.1 saves both chunks 0x0004 and 0x2019 just for backward
+compatibility.
+
   WORD          Number of packets
   + For each packet
     BYTE        Number of palette entries to skip from the last packet (start from 0)
@@ -123,6 +128,8 @@ Old palette chunk (0x0004)
 
 Old palette chunk (0x0011)
 ----------------------------------------
+
+Ignore this chunk if you find the new palette chunk (0x2019)
 
   WORD          Number of packets
   + For each packet
@@ -146,7 +153,6 @@ Layer Chunk (0x2004)
                   4 = Lock movement
                   8 = Background
                   16 = Prefer linked cels
-                  32 = Has a valid opacity value
   WORD          Layer type (0=normal (image) layer, 1=layer set)
   WORD          Layer child level (see NOTE.1)
   WORD          Default layer width in pixels (ignored)

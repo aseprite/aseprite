@@ -21,28 +21,31 @@
 
 #include <stdio.h>
 
-#define ASE_FILE_MAGIC                  0xA5E0
-#define ASE_FILE_FRAME_MAGIC            0xF1FA
+#define ASE_FILE_MAGIC                      0xA5E0
+#define ASE_FILE_FRAME_MAGIC                0xF1FA
 
-#define ASE_FILE_CHUNK_FLI_COLOR2       4
-#define ASE_FILE_CHUNK_FLI_COLOR        11
-#define ASE_FILE_CHUNK_LAYER            0x2004
-#define ASE_FILE_CHUNK_CEL              0x2005
-#define ASE_FILE_CHUNK_MASK             0x2016
-#define ASE_FILE_CHUNK_PATH             0x2017
-#define ASE_FILE_CHUNK_FRAME_TAGS       0x2018
-#define ASE_FILE_CHUNK_PALETTE          0x2019
+#define ASE_FILE_FLAG_LAYER_WITH_OPACITY     1
 
-#define ASE_FILE_RAW_CEL                0
-#define ASE_FILE_LINK_CEL               1
-#define ASE_FILE_COMPRESSED_CEL         2
+#define ASE_FILE_CHUNK_FLI_COLOR2           4
+#define ASE_FILE_CHUNK_FLI_COLOR            11
+#define ASE_FILE_CHUNK_LAYER                0x2004
+#define ASE_FILE_CHUNK_CEL                  0x2005
+#define ASE_FILE_CHUNK_MASK                 0x2016
+#define ASE_FILE_CHUNK_PATH                 0x2017
+#define ASE_FILE_CHUNK_FRAME_TAGS           0x2018
+#define ASE_FILE_CHUNK_PALETTE              0x2019
+
+#define ASE_FILE_RAW_CEL                    0
+#define ASE_FILE_LINK_CEL                   1
+#define ASE_FILE_COMPRESSED_CEL             2
 
 #define ASE_LAYER_FLAG_VISIBLE              1
 #define ASE_LAYER_FLAG_EDITABLE             2
 #define ASE_LAYER_FLAG_LOCK_MOVEMENT        4
 #define ASE_LAYER_FLAG_BACKGROUND           8
 #define ASE_LAYER_FLAG_PREFER_LINKED_CELS   16
-#define ASE_LAYER_FLAG_HAS_OPACITY          32
+
+#define ASE_PALETTE_FLAG_HAS_NAME           1
 
 namespace app {
 
@@ -103,7 +106,7 @@ static Palette* ase_file_read_color2_chunk(FILE* f, Palette* prevPal, frame_t fr
 static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t frame);
 static void ase_file_write_color2_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal);
 static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header, Palette* pal, int from, int to);
-static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previous_layer, int* current_level);
+static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* sprite, Layer** previous_layer, int* current_level);
 static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, Layer* layer);
 static Cel* ase_file_read_cel_chunk(FILE* f, Sprite* sprite, frame_t frame, PixelFormat pixelFormat, FileOp* fop, ASE_Header* header, size_t chunk_end);
 static void ase_file_write_cel_chunk(FILE* f, ASE_FrameHeader* frame_header, Cel* cel, LayerImage* layer, Sprite* sprite);
@@ -188,13 +191,13 @@ bool AseFormat::onLoad(FileOp* fop)
   Layer* last_layer = sprite->folder();
   int current_level = -1;
 
-  /* read frame by frame to end-of-file */
+  // Read frame by frame to end-of-file
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
-    /* start frame position */
+    // Start frame position
     int frame_pos = ftell(f);
     fop_progress(fop, (float)frame_pos / (float)header.size);
 
-    /* read frame header */
+    // Read frame header
     ASE_FrameHeader frame_header;
     ase_file_read_frame_header(f, &frame_header);
 
@@ -243,7 +246,7 @@ bool AseFormat::onLoad(FileOp* fop)
           case ASE_FILE_CHUNK_LAYER: {
             /* fop_error(fop, "Layer chunk\n"); */
 
-            ase_file_read_layer_chunk(f, sprite,
+            ase_file_read_layer_chunk(f, &header, sprite,
                                       &last_layer,
                                       &current_level);
             break;
@@ -285,15 +288,15 @@ bool AseFormat::onLoad(FileOp* fop)
             break;
         }
 
-        /* skip chunk size */
+        // Skip chunk size
         fseek(f, chunk_pos+chunk_size, SEEK_SET);
       }
     }
 
-    /* skip frame size */
+    // Skip frame size
     fseek(f, frame_pos+frame_header.size, SEEK_SET);
 
-    /* just one frame? */
+    // Just one frame?
     if (fop->oneframe)
       break;
 
@@ -439,7 +442,7 @@ static void ase_file_prepare_header(FILE* f, ASE_Header* header, const Sprite* s
   header->depth = (sprite->pixelFormat() == IMAGE_RGB ? 32:
                    sprite->pixelFormat() == IMAGE_GRAYSCALE ? 16:
                    sprite->pixelFormat() == IMAGE_INDEXED ? 8: 0);
-  header->flags = 0;
+  header->flags = ASE_FILE_FLAG_LAYER_WITH_OPACITY;
   header->speed = sprite->frameDuration(frame_t(0));
   header->next = 0;
   header->frit = 0;
@@ -688,7 +691,7 @@ static Palette* ase_file_read_palette_chunk(FILE* f, Palette* prevPal, frame_t f
     pal->setEntry(c, rgba(r, g, b, a));
 
     // Skip name
-    if (flags & 1) {
+    if (flags & ASE_PALETTE_FLAG_HAS_NAME) {
       std::string name = ase_file_read_string(f);
       // Ignore color entry name
     }
@@ -734,7 +737,7 @@ static void ase_file_write_palette_chunk(FILE* f, ASE_FrameHeader* frame_header,
   }
 }
 
-static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previous_layer, int* current_level)
+static Layer* ase_file_read_layer_chunk(FILE* f, ASE_Header* header, Sprite* sprite, Layer** previous_layer, int* current_level)
 {
   std::string name;
   Layer* layer = NULL;
@@ -757,10 +760,12 @@ static Layer* ase_file_read_layer_chunk(FILE* f, Sprite* sprite, Layer** previou
   // Image layer
   if (layer_type == 0) {
     layer = new LayerImage(sprite);
-    static_cast<LayerImage*>(layer)->setBlendMode((BlendMode)blendmode);
-    if (flags & ASE_LAYER_FLAG_HAS_OPACITY) {
-      flags ^= ASE_LAYER_FLAG_HAS_OPACITY;
-      static_cast<LayerImage*>(layer)->setOpacity(opacity);
+
+    // Only transparent layers can have blend mode and opacity
+    if (!(flags & ASE_LAYER_FLAG_BACKGROUND)) {
+      static_cast<LayerImage*>(layer)->setBlendMode((BlendMode)blendmode);
+      if (header->flags & ASE_FILE_FLAG_LAYER_WITH_OPACITY)
+        static_cast<LayerImage*>(layer)->setOpacity(opacity);
     }
   }
   // Layer set
@@ -795,8 +800,7 @@ static void ase_file_write_layer_chunk(FILE* f, ASE_FrameHeader* frame_header, L
   ChunkWriter chunk(f, frame_header, ASE_FILE_CHUNK_LAYER);
 
   // Flags
-  fputw(static_cast<int>(layer->flags()) |
-        (layer->isImage() ? ASE_LAYER_FLAG_HAS_OPACITY: 0), f);
+  fputw(static_cast<int>(layer->flags()), f);
 
   // Layer type
   fputw(layer->isImage() ? 0: (layer->isFolder() ? 1: -1), f);
