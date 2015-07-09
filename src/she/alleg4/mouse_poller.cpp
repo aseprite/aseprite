@@ -51,8 +51,25 @@ DlbClk double_click_level;
 Event::MouseButton double_click_button = Event::NoneButton;
 int double_click_ticks;
 
-inline int display_w() { return (unique_display->width() / unique_display->scale()); }
-inline int display_h() { return (unique_display->height() / unique_display->scale()); }
+inline int display_w()
+{
+  ASSERT(unique_display);
+  int scale = unique_display->scale();
+  ASSERT(scale > 0);
+  if (scale == 0)
+    scale = 1;
+  return (unique_display->width() / scale);
+}
+
+inline int display_h()
+{
+  ASSERT(unique_display);
+  int scale = unique_display->scale();
+  ASSERT(scale > 0);
+  if (scale == 0)
+    scale = 1;
+  return (unique_display->height() / scale);
+}
 
 void update_mouse_position()
 {
@@ -167,6 +184,10 @@ void osx_mouser_leave_she_callback()
 
 void she_mouse_callback(int flags)
 {
+  // Avoid callbacks when the display is destroyed.
+  if (!unique_display || unique_display->scale() < 1)
+    return;
+
   update_mouse_position();
   Event ev;
   ev.setPosition(gfx::Point(she_mouse_x, she_mouse_y));
