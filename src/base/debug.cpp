@@ -15,6 +15,7 @@
 #include "base/convert_to.h"
 #include "base/string.h"
 
+#include <cstdarg>
 #include <cstdlib>
 #include <iostream>
 #include <string>
