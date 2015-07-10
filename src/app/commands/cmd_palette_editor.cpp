@@ -549,6 +549,7 @@ void PaletteEntryEditor::setAbsolutePaletteEntryChannel(ColorSliders::Channel ch
             hsv.hue(color.getHue());
             hsv.saturation(double(color.getSaturation()) / 100.0);
             hsv.value(double(color.getValue()) / 100.0);
+            a = color.getAlpha();
           }
           // Modify one channel a set of entries
           else {
