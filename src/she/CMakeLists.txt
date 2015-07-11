@@ -141,3 +141,4 @@ if(APPLE)
 endif()
 
 add_library(she ${SHE_SOURCES})
+target_link_libraries(she ${PLATFORM_LIBS})
