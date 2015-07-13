@@ -184,7 +184,7 @@ function(find_tests dir dependencies)
 	PROPERTIES LINK_FLAGS -ENTRY:"mainCRTStartup")
     endif()
 
-    target_link_libraries(${testname} gtest ${PLATFORM_LIBS} ${ARGV})
+    target_link_libraries(${testname} gtest ${ARGV} ${PLATFORM_LIBS})
 
     if(extra_definitions)
       set_target_properties(${testname}
