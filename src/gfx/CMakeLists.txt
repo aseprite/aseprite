@@ -1,5 +1,5 @@
 # Aseprite
-# Copyright (C) 2001-2014  David Capello
+# Copyright (C) 2001-2015  David Capello
 
 add_library(gfx-lib
   clip.cpp
@@ -8,3 +8,6 @@ add_library(gfx-lib
   region.cpp
   rgb.cpp
   transformation.cpp)
+
+target_link_libraries(gfx-lib
+  ${PIXMAN_LIBRARY})

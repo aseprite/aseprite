@@ -53,3 +53,10 @@ add_library(doc-lib
   sprites.cpp
   string_io.cpp
   subobjects_io.cpp)
+
+# TODO Remove 'she' as dependency and move conversion_she.cpp/h files
+#      to other library/layer (render-lib? new conversion-lib?)
+target_link_libraries(doc-lib
+  she
+  gfx-lib
+  base-lib)

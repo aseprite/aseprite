@@ -142,24 +142,108 @@ if(NOT USE_SHARED_CURL)
   set(CURL_STATICLIB ON BOOL)
 endif()
 
-if(NOT USE_SHARED_ZLIB)
+# zlib
+if(USE_SHARED_ZLIB)
+  find_package(ZLIB)
+  if(NOT ZLIB_FOUND)
+    message(FATAL_ERROR "zlib not found")
+  endif()
+else()
+  set(ZLIB_LIBRARIES zlib)
+  set(ZLIB_INCLUDE_DIR ${ZLIB_DIR})
   # Zlib generated zconf.h file
   include_directories(${CMAKE_BINARY_DIR}/third_party/zlib)
 endif()
+include_directories(${ZLIB_INCLUDE_DIR})
 
+# libpng
 if(USE_SHARED_LIBPNG)
   find_package(PNG)
   if(NOT PNG_FOUND)
     message(FATAL_ERROR "libpng not found")
   endif()
   add_definitions(${PNG_DEFINITIONS})
-  include_directories(${PNG_INCLUDE_DIR})
 else()
-  include_directories(${LIBPNG_DIR})
+  set(PNG_LIBRARIES libpng)
+  set(PNG_INCLUDE_DIR ${LIBPNG_DIR})
+endif()
+include_directories(${PNG_INCLUDE_DIR})
+add_definitions(-DPNG_NO_MMX_CODE) # Do not use MMX optimizations in PNG code
+
+# tinyxml
+if(USE_SHARED_TINYXML)
+  find_library(TINYXML_LIBRARY NAMES tinyxml)
+  find_path(TINYXML_INCLUDE_DIR NAMES tinyxml.h)
+else()
+  set(TINYXML_LIBRARY tinyxml)
+  set(TINYXML_INCLUDE_DIR ${TINYXML_DIR})
+endif()
+include_directories(${TINYXML_INCLUDE_DIR})
+
+# pixman
+if(USE_SHARED_PIXMAN)
+  find_library(PIXMAN_LIBRARY NAMES pixman pixman-1)
+  find_path(PIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
+else()
+  set(PIXMAN_LIBRARY pixman)
+  set(PIXMAN_INCLUDE_DIR ${PIXMAN_DIR}/pixman)
+  # For pixman-version.h
+  include_directories(${CMAKE_BINARY_DIR})
+endif()
+include_directories(${PIXMAN_INCLUDE_DIR})
+
+if(USE_SHARED_GIFLIB)
+  find_package(GIF REQUIRED)
+  if(NOT GIF_FOUND)
+    message(FATAL_ERROR "giflib not found")
+  endif()
+else()
+  set(GIF_LIBRARIES giflib)
+  set(GIF_INCLUDE_DIR ${GIFLIB_DIR}/lib)
+endif()
+include_directories(${GIF_INCLUDE_DIR})
+
+if(USE_SHARED_JPEGLIB)
+  find_package(JPEG)
+  if(NOT JPEG_FOUND)
+    message(FATAL_ERROR "jpeg not found")
+  endif()
+else()
+  set(JPEG_LIBRARIES jpeg)
+  set(JPEG_INCLUDE_DIR ${LIBJPEG_DIR})
+endif()
+include_directories(${JPEG_INCLUDE_DIR})
+
+if(USE_ALLEG4_BACKEND)
+  if(USE_SHARED_LIBLOADPNG)
+    find_library(LOADPNG_LIBRARY NAMES loadpng)
+    find_path(LOADPNG_INCLUDE_DIR NAMES loadpng.h)
+  else()
+    set(LOADPNG_LIBRARY loadpng)
+    set(LOADPNG_INCLUDE_DIR ${LOADPNG_DIR})
+  endif()
+  include_directories(${LOADPNG_INCLUDE_DIR})
 endif()
 
-# Do not use MMX optimizations in PNG code
-add_definitions(-DPNG_NO_MMX_CODE)
+if(USE_SHARED_CURL)
+  find_library(LIBCURL_LIBRARY NAMES curl)
+  find_path(LIBCURL_INCLUDE_DIR NAMES curl/curl.h)
+else()
+  set(LIBCURL_LIBRARY libcurl)
+  set(LIBCURL_INCLUDE_DIR ${CURL_DIR}/include)
+endif()
+include_directories(${LIBCURL_INCLUDE_DIR})
+
+# mongoose
+if(ENABLE_WEBSERVER)
+  set(MONGOOSE_LIBRARY mongoose)
+  include_directories(${MONGOOSE_DIR})
+  add_definitions(-DENABLE_WEBSERVER)
+endif()
+
+# simpleini
+set(SIMPLEINI_LIBRARY simpleini)
+include_directories(${SIMPLEINI_DIR})
 
 ######################################################################
 # Allegro 4 backend
@@ -190,6 +274,8 @@ if(USE_ALLEG4_BACKEND)
 
     # Static Allegro (the code of Allegro library is embedded).
     add_definitions(-DALLEGRO_STATICLINK)
+
+    set(LIBALLEGRO4_LINK_FLAGS allegro)
   endif()
 endif()
 
@@ -246,33 +332,15 @@ endif()
 # -- Windows --
 
 if(WIN32)
-  if(USE_ALLEG4_BACKEND)
-    find_package(DXGuid)
-
-    if(NOT DXGUID_FOUND)
-      if(MSVC)
-        message(FATAL_ERROR "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.")
-      else()
-        message(FATAL_ERROR "DirectX required for Windows port.")
-      endif()
-    endif()
-
-    include_directories(SYSTEM ${DXGUID_INCLUDE_DIR})
-  else()
-    set(DXGUID_LIBRARIES)
-  endif()
-
   list(APPEND PLATFORM_LIBS
     kernel32 user32 gdi32 comdlg32 ole32 winmm
-    shlwapi psapi wininet comctl32 dbghelp
-    ${DXGUID_LIBRARIES})
+    shlwapi psapi wininet comctl32 dbghelp)
 
   # Windows XP is the minimum supported platform.
   add_definitions(-D_WIN32_WINNT=0x0501 -DWINVER=0x0501)
 
   # We need Unicode support
   add_definitions(-DUNICODE -D_UNICODE)
-
 endif(WIN32)
 
 # -- Mac OS X --

@@ -5,3 +5,7 @@ add_library(loadpng
   loadpng.c
   savepng.c
   regpng.c)
+
+target_link_libraries(loadpng
+  ${PNG_LIBRARIES}
+  ${ZLIB_LIBRARIES})

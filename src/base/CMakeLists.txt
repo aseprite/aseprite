@@ -38,14 +38,6 @@ configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.cmakein
 set(BASE_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}
     CACHE INTERNAL "Extra include directory for base lib")
 
-if(WIN32)
-  set(EXTRA_LIBS dbghelp shlwapi)
-else()
-  set(EXTRA_LIBS)
-endif()
-set(BASE_EXTRA_LIBRARIES ${EXTRA_LIBS}
-    CACHE INTERNAL "Extra libraries needed by base lib")
-
 include_directories(${BASE_INCLUDE_DIR})
 
 set(BASE_SOURCES
@@ -85,6 +77,6 @@ endif()
 
 add_library(base-lib ${BASE_SOURCES})
 
-if(ENABLE_MEMLEAK AND MSVC)
-  target_link_libraries(base-lib dbghelp)
+if(WIN32)
+  target_link_libraries(base-lib dbghelp shlwapi)
 endif()

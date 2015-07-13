@@ -381,3 +381,31 @@ add_library(app-lib
   xml_exception.cpp
   ${data_recovery_files}
   ${generated_files})
+
+target_link_libraries(app-lib
+  base-lib
+  cfg-lib
+  css-lib
+  doc-lib
+  filters-lib
+  fixmath-lib
+  gfx-lib
+  net-lib
+  render-lib
+  scripting-lib
+  she
+  ui-lib
+  undo-lib
+  ${TINYXML_LIBRARY}
+  ${JPEG_LIBRARIES}
+  ${GIF_LIBRARIES}
+  ${PNG_LIBRARIES}
+  ${ZLIB_LIBRARIES})
+
+if(ENABLE_UPDATER)
+  target_link_libraries(app-lib updater-lib)
+endif()
+
+if(ENABLE_WEBSERVER)
+  target_link_libraries(app-lib webserver-lib)
+endif()

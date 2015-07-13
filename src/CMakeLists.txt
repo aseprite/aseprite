@@ -37,123 +37,13 @@ else()
   set(updater_lib)
 endif()
 
-# Aseprite libraries
-#
-# TODO These libraries are in a specific order to avoid linking errors
-#      on Unix-like platforms. We could avoid this specific order if for
-#      each library we specify its dependencies using target_link_libraries()
-#
-set(aseprite_libraries
-  app-lib
-  fixmath-lib
-  cfg-lib
-  css-lib
-  doc-lib
-  render-lib
-  scripting-lib
-  undo-lib
-  filters-lib
-  ui-lib
-  she
-  gfx-lib
-  ${updater_lib}
-  net-lib
-  base-lib)
-
 # Directories where .h files can be found
 include_directories(. .. ../third_party)
 
-######################################################################
-# Allegro 4 backend
-
-if(USE_ALLEG4_BACKEND)
-  if(NOT USE_SHARED_ALLEGRO4)
-    # Use patched version of Allegro 4 (with window resize support).
-    add_subdirectory(allegro)
-    set(libs3rdparty ${libs3rdparty} allegro)
-  endif()
+# Use patched version of Allegro 4 (with window resize support).
+if(USE_ALLEG4_BACKEND AND NOT USE_SHARED_ALLEGRO4)
+  add_subdirectory(allegro)
 endif()
-
-######################################################################
-# Other third party libraries
-
-if(USE_SHARED_JPEGLIB)
-  find_package(JPEG)
-  if(JPEG_FOUND)
-    set(libs3rdparty ${libs3rdparty} ${JPEG_LIBRARIES})
-    include_directories(${JPEG_INCLUDE_DIR})
-  endif(JPEG_FOUND)
-else()
-  set(libs3rdparty ${libs3rdparty} jpeg)
-  include_directories(${LIBJPEG_DIR})
-endif()
-
-if(USE_SHARED_ZLIB)
-  find_package(ZLIB)
-  if(ZLIB_FOUND)
-    set(libs3rdparty ${libs3rdparty} ${ZLIB_LIBRARIES})
-    include_directories(${ZLIB_INCLUDE_DIR})
-  endif(ZLIB_FOUND)
-else()
-  set(libs3rdparty ${libs3rdparty} zlib)
-  include_directories(${ZLIB_DIR})
-endif()
-
-if(USE_SHARED_LIBPNG)
-  set(libs3rdparty ${libs3rdparty} ${PNG_LIBRARIES})
-else()
-  set(libs3rdparty ${libs3rdparty} libpng)
-endif()
-
-if(USE_SHARED_GIFLIB)
-  find_package(GIF REQUIRED)
-  if(GIF_FOUND)
-    set(libs3rdparty ${libs3rdparty} ${GIF_LIBRARIES})
-    include_directories(${GIF_INCLUDE_DIR})
-  endif(GIF_FOUND)
-else()
-  set(libs3rdparty ${libs3rdparty} giflib)
-  include_directories(${GIFLIB_DIR}/lib)
-endif()
-
-if(USE_SHARED_TINYXML)
-  find_library(LIBTINYXML_LIBRARY NAMES tinyxml)
-  find_path(LIBTINYXML_INCLUDE_DIR NAMES tinyxml.h)
-
-  set(libs3rdparty ${libs3rdparty} ${LIBTINYXML_LIBRARY})
-  include_directories(${LIBTINYXML_INCLUDE_DIR})
-else()
-  set(libs3rdparty ${libs3rdparty} tinyxml)
-  include_directories(${TINYXML_DIR})
-endif()
-
-if(USE_ALLEG4_BACKEND)
-  if(USE_SHARED_LIBLOADPNG)
-    find_library(LIBLOADPNG_LIBRARY NAMES loadpng)
-    find_path(LIBLOADPNG_INCLUDE_DIR NAMES loadpng.h)
-
-    set(libs3rdparty ${libs3rdparty} ${LIBLOADPNG_LIBRARY})
-    include_directories(${LIBLOADPNG_INCLUDE_DIR})
-  else()
-    set(libs3rdparty loadpng ${libs3rdparty})
-    include_directories(${LOADPNG_DIR})
-  endif()
-endif()
-
-if(USE_SHARED_PIXMAN)
-  find_library(LIBPIXMAN_LIBRARY NAMES pixman pixman-1)
-  find_path(LIBPIXMAN_INCLUDE_DIR NAMES pixman.h PATH_SUFFIXES pixman-1)
-
-  set(libs3rdparty ${libs3rdparty} ${LIBPIXMAN_LIBRARY})
-  include_directories(${LIBPIXMAN_INCLUDE_DIR})
-else()
-  set(libs3rdparty ${libs3rdparty} pixman)
-  include_directories(${PIXMAN_DIR}/pixman)
-  include_directories(${CMAKE_BINARY_DIR})
-endif()
-
-set(libs3rdparty simpleini ${libs3rdparty})
-include_directories(${SIMPLEINI_DIR})
 
 ######################################################################
 # Add C++11 support only for our code (avoid Allegro)
@@ -163,39 +53,29 @@ if(UNIX)
 endif()
 
 ######################################################################
-# Liburl
+# pthread
 
 if (CMAKE_USE_PTHREADS_INIT)
-  set(sys_libs ${sys_libs} ${CMAKE_THREAD_LIBS_INIT})
+  list(APPEND PLATFORM_LIBS ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
+######################################################################
+# Custom Aseprite website (for testing server-side)
 
 if(NOT "${CUSTOM_WEBSITE_URL}" STREQUAL "")
   add_definitions(-DCUSTOM_WEBSITE_URL="${CUSTOM_WEBSITE_URL}")
 endif()
 
-if(USE_SHARED_CURL)
-  find_library(LIBCURL_LIBRARY NAMES curl)
-  find_path(LIBCURL_INCLUDE_DIR NAMES curl/curl.h)
-
-  set(libs3rdparty ${libs3rdparty} ${LIBCURL_LIBRARY})
-  include_directories(${LIBCURL_INCLUDE_DIR})
-else()
-  set(libs3rdparty ${libs3rdparty} libcurl)
-  include_directories(${CURL_DIR}/include)
-  if(CURL_STATICLIB)
-    add_definitions(-DCURL_STATICLIB)
-  endif()
-endif()
-
-if(ENABLE_WEBSERVER)
-  set(libs3rdparty ${libs3rdparty} mongoose)
-  include_directories(${MONGOOSE_DIR})
-
-  set(aseprite_libraries ${aseprite_libraries} webserver-lib)
-  add_definitions(-DENABLE_WEBSERVER)
-endif()
-
+######################################################################
 # Full-version or trial-mode?
+
+if(NOT USE_SHARED_CURL AND CURL_STATICLIB)
+  add_definitions(-DCURL_STATICLIB)
+endif()
+
+######################################################################
+# Full-version or trial-mode?
+
 if(NOT ENABLE_TRIAL_MODE)
   add_definitions(-DENABLE_SAVE -DENABLE_DATA_RECOVERY)
 else()
@@ -206,8 +86,9 @@ endif()
 # Aseprite Libraries (in preferred order to be built)
 
 add_subdirectory(base)
+
+# Directory where base/config.h file is located
 include_directories(${BASE_INCLUDE_DIR})
-list(APPEND libs3rdparty ${BASE_EXTRA_LIBRARIES})
 
 add_subdirectory(cfg)
 add_subdirectory(css)
@@ -233,20 +114,8 @@ endif()
 
 add_subdirectory(app)
 
-if(V8_FOUND)
-  list(APPEND libs3rdparty ${V8_LIBRARIES})
-endif()
-
 if(USE_SKIA_BACKEND)
-  list(APPEND sys_libs ${PLATFORM_LIBS})
-  list(APPEND libs3rdparty ${SKIA_LIBRARIES})
-endif()
-
-# All libraries for .exe files
-set(all_libs ${aseprite_libraries} ${libs3rdparty} ${sys_libs})
-
-if(USE_ALLEG4_BACKEND AND LIBALLEGRO4_LINK_FLAGS)
-  set(all_libs ${all_libs} ${LIBALLEGRO4_LINK_FLAGS})
+  list(APPEND PLATFORM_LIBS ${SKIA_LIBRARIES})
 endif()
 
 ######################################################################
@@ -279,7 +148,7 @@ add_executable(aseprite WIN32
   main/main.cpp
   ${win32_resources}
   ${x11_resources})
-target_link_libraries(aseprite ${all_libs})
+target_link_libraries(aseprite app-lib ${PLATFORM_LIBS})
 add_dependencies(aseprite copy_data)
 
 install(TARGETS aseprite
@@ -315,10 +184,7 @@ function(find_tests dir dependencies)
 	PROPERTIES LINK_FLAGS -ENTRY:"mainCRTStartup")
     endif()
 
-    target_link_libraries(${testname} gtest ${ARGV})
-    if(USE_ALLEG4_BACKEND AND LIBALLEGRO4_LINK_FLAGS)
-      target_link_libraries(${testname} ${LIBALLEGRO4_LINK_FLAGS})
-    endif()
+    target_link_libraries(${testname} gtest ${PLATFORM_LIBS} ${ARGV})
 
     if(extra_definitions)
       set_target_properties(${testname}
@@ -340,16 +206,16 @@ function(find_tests dir dependencies)
   set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
-find_tests(base base-lib ${sys_libs})
-find_tests(undo undo-lib ${sys_libs})
-find_tests(gfx gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(doc doc-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(render render-lib doc-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(css css-lib gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(ui ui-lib she gfx-lib base-lib ${libs3rdparty} ${sys_libs})
-find_tests(app/file ${all_libs})
-find_tests(app ${all_libs})
-find_tests(. ${all_libs})
+find_tests(base base-lib)
+find_tests(undo undo-lib)
+find_tests(gfx gfx-lib)
+find_tests(doc doc-lib)
+find_tests(render render-lib)
+find_tests(css css-lib)
+find_tests(ui ui-lib)
+find_tests(app/file app-lib)
+find_tests(app app-lib)
+find_tests(. app-lib)
 
 # To run tests
 add_custom_target(run_all_tests DEPENDS ${all_runs})
