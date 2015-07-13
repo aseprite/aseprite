@@ -246,8 +246,11 @@ set(SIMPLEINI_LIBRARY simpleini)
 include_directories(${SIMPLEINI_DIR})
 
 ######################################################################
-# Allegro 4 backend
+# Platform specific stuff
 
+set(PLATFORM_LIBS)
+
+# Allegro 4 backend
 if(USE_ALLEG4_BACKEND)
   if(USE_SHARED_ALLEGRO4)
     # Find the shared Allegro 4 library
@@ -278,11 +281,6 @@ if(USE_ALLEG4_BACKEND)
     set(LIBALLEGRO4_LINK_FLAGS allegro)
   endif()
 endif()
-
-######################################################################
-# Platform specific stuff
-
-set(PLATFORM_LIBS)
 
 # -- Unix --
 
