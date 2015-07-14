@@ -3,7 +3,22 @@
 
 set(SHE_SOURCES)
 
+######################################################################
+# Allegro 4 backend
+
 if(USE_ALLEG4_BACKEND)
+  if(WIN32)
+    find_package(DXGuid)
+    if(NOT DXGUID_FOUND)
+      if(MSVC)
+        message(FATAL_ERROR "DirectX required for Windows port. You might need to add DirectX include and lib directories to your INCLUDE and LIB environment variables.")
+      else()
+        message(FATAL_ERROR "DirectX required for Windows port.")
+      endif()
+    endif()
+    include_directories(SYSTEM ${DXGUID_INCLUDE_DIR})
+  endif()
+
   list(APPEND SHE_SOURCES
     alleg4/clock.cpp
     alleg4/close_button.cpp
@@ -17,6 +32,9 @@ if(USE_ALLEG4_BACKEND)
     endif()
   endif()
 endif()
+
+######################################################################
+# Skia backend
 
 if(USE_SKIA_BACKEND)
   set(SKIA_DIR "" CACHE PATH "Skia source code directory")
@@ -127,6 +145,8 @@ if(USE_SKIA_BACKEND)
   endif()
 endif()
 
+######################################################################
+
 if(WIN32)
   list(APPEND SHE_SOURCES
     win/clipboard.cpp
@@ -141,3 +161,14 @@ if(APPLE)
 endif()
 
 add_library(she ${SHE_SOURCES})
+
+target_link_libraries(she
+  gfx-lib
+  base-lib)
+
+if(USE_ALLEG4_BACKEND)
+  target_link_libraries(she
+    ${LOADPNG_LIBRARY}
+    ${LIBALLEGRO4_LINK_FLAGS}
+    ${DXGUID_LIBRARIES})
+endif()

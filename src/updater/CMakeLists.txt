@@ -12,3 +12,7 @@ elseif(APPLE)
 endif()
 
 add_library(updater-lib ${UPDATER_LIB_SOURCES})
+
+target_link_libraries(updater-lib
+  net-lib
+  ${TINYXML_LIBRARY})

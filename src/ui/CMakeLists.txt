@@ -1,5 +1,5 @@
 # ASEPRITE
-# Copyright (C) 2001-2014  David Capello
+# Copyright (C) 2001-2015  David Capello
 
 add_library(ui-lib
   accelerator.cpp
@@ -50,3 +50,9 @@ add_library(ui-lib
   viewport.cpp
   widget.cpp
   window.cpp)
+
+target_link_libraries(ui-lib
+  she
+  gfx-lib
+  base-lib
+  ${PIXMAN_LIBRARY})
