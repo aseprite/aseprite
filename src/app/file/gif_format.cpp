@@ -683,7 +683,8 @@ bool GifFormat::onSave(FileOp* fop)
         gif_options->dithering(),
         &rgbmap,
         &current_palette,
-        has_background);
+        has_background,
+        current_image->maskColor());
     }
     // If the sprite is Indexed, we can render directly into "current_image".
     else {

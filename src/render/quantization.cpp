@@ -70,10 +70,12 @@ Image* convert_pixel_format(
   DitheringMethod ditheringMethod,
   const RgbMap* rgbmap,
   const Palette* palette,
-  bool is_background)
+  bool is_background,
+  color_t new_mask_color)
 {
   if (!new_image)
     new_image = Image::create(pixelFormat, image->width(), image->height());
+  new_image->setMaskColor(new_mask_color);
 
   // RGB -> Indexed with ordered dithering
   if (image->pixelFormat() == IMAGE_RGB &&
@@ -141,7 +143,7 @@ Image* convert_pixel_format(
             a = rgba_geta(c);
 
             if (a == 0)
-              *dst_it = 0;      // TODO why 0 is mask color and not a param?
+              *dst_it = new_mask_color;
             else
               *dst_it = rgbmap->mapColor(r, g, b, a);
           }
@@ -198,7 +200,7 @@ Image* convert_pixel_format(
             c = graya_getv(c);
 
             if (a == 0)
-              *dst_it = 0;      // TODO why 0 is mask color and not a param?
+              *dst_it = new_mask_color;
             else
               *dst_it = rgbmap->mapColor(c, c, c, a);
           }
@@ -228,7 +230,7 @@ Image* convert_pixel_format(
             c = *src_it;
 
             if (!is_background && c == image->maskColor())
-              *dst_it = 0;
+              *dst_it = rgba(0, 0, 0, 0);
             else
               *dst_it = palette->getEntry(c);
           }
@@ -249,7 +251,7 @@ Image* convert_pixel_format(
             c = *src_it;
 
             if (!is_background && c == image->maskColor())
-              *dst_it = 0;
+              *dst_it = graya(0, 0);
             else {
               c = palette->getEntry(c);
               r = rgba_getr(c);
@@ -272,14 +274,13 @@ Image* convert_pixel_format(
 #ifdef _DEBUG
           LockImageBits<IndexedTraits>::iterator dst_end = dstBits.end();
 #endif
-          color_t dstMaskColor = new_image->maskColor();
 
           for (; src_it != src_end; ++src_it, ++dst_it) {
             ASSERT(dst_it != dst_end);
             c = *src_it;
 
             if (!is_background && c == image->maskColor())
-              *dst_it = dstMaskColor;
+              *dst_it = new_mask_color;
             else {
               c = palette->getEntry(c);
               r = rgba_getr(c);

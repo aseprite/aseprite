@@ -50,13 +50,13 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
 
   for (Cel* cel : sprite->uniqueCels()) {
     ImageRef old_image = cel->imageRef();
-
     ImageRef new_image(
       render::convert_pixel_format
       (old_image.get(), NULL, newFormat, m_dithering,
        sprite->rgbMap(cel->frame()),
        sprite->palette(cel->frame()),
-       cel->layer()->isBackground()));
+       cel->layer()->isBackground(),
+       old_image->maskColor()));
 
     m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));
   }

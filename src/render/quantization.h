@@ -58,7 +58,8 @@ namespace render {
     DitheringMethod ditheringMethod,
     const RgbMap* rgbmap,
     const Palette* palette,
-    bool is_background);
+    bool is_background,
+    color_t new_mask_color);
 
 } // namespace render
 

@@ -277,7 +277,8 @@ void clipboard::paste()
           render::convert_pixel_format(
             clipboard_image.get(), NULL, dstSpr->pixelFormat(),
             DitheringMethod::NONE, dst_rgbmap, clipboard_palette.get(),
-            false));
+            false,
+            0));
       }
 
       // Change to MovingPixelsState
