@@ -41,12 +41,6 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   if (sprite->pixelFormat() == newFormat)
     return;
 
-  // TODO Review this, why we use the palette in frame 0?
-  frame_t frame(0);
-
-  // Use the rgbmap for the specified sprite
-  const RgbMap* rgbmap = sprite->rgbMap(frame);
-
   // Get the list of cels from the background layer (if it
   // exists). This list will be used to check if each image belong to
   // the background layer.
@@ -54,24 +48,17 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   if (sprite->backgroundLayer() != NULL)
     sprite->backgroundLayer()->getCels(bgCels);
 
-  std::vector<Image*> images;
-  sprite->getImages(images);
-  for (auto& old_image : images) {
-    bool is_image_from_background = false;
-    for (CelList::iterator it=bgCels.begin(), end=bgCels.end(); it != end; ++it) {
-      if ((*it)->image()->id() == old_image->id()) {
-        is_image_from_background = true;
-        break;
-      }
-    }
+  for (Cel* cel : sprite->uniqueCels()) {
+    ImageRef old_image = cel->imageRef();
 
-    ImageRef new_image(render::convert_pixel_format
-      (old_image, NULL, newFormat, m_dithering, rgbmap,
-        sprite->palette(frame),
-        is_image_from_background));
+    ImageRef new_image(
+      render::convert_pixel_format
+      (old_image.get(), NULL, newFormat, m_dithering,
+       sprite->rgbMap(cel->frame()),
+       sprite->palette(cel->frame()),
+       cel->layer()->isBackground()));
 
-    m_seq.add(new cmd::ReplaceImage(sprite,
-        sprite->getImageRef(old_image->id()), new_image));
+    m_seq.add(new cmd::ReplaceImage(sprite, old_image, new_image));
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
