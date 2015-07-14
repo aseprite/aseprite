@@ -124,7 +124,7 @@ Remap sort_palette(Palette* palette, SortPaletteBy channel, bool ascending)
     tmp[i].color = palette->getEntry(i);
   }
 
-  std::sort(tmp.begin(), tmp.end(), PalEntryWithIndexPredicate(channel, ascending));
+  std::stable_sort(tmp.begin(), tmp.end(), PalEntryWithIndexPredicate(channel, ascending));
 
   Remap remap(palette->size());
   for (int i=0; i<palette->size(); ++i)
