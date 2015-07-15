@@ -65,8 +65,7 @@ struct GifFrame {
 
 typedef std::vector<GifFrame> GifFrames;
 
-struct GifData
-{
+struct GifData {
   int sprite_w;
   int sprite_h;
   int bgcolor_index;
@@ -169,7 +168,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
   // If the GIF image has a global palette, it has a valid
   // background color (so the GIF is not transparent).
-  if (gif_file->SColorMap != NULL) {
+  if (gif_file->SColorMap) {
     data->bgcolor_index = gif_file->SBackGroundColor;
 
     // Setup the first palette using the global color map.
@@ -343,18 +342,15 @@ bool GifFormat::onPostLoad(FileOp* fop)
   if (!fop->oneframe) {
     int global_mask_index = -1;
 
-    for (GifFrames::iterator
-           frame_it=data->frames.begin(),
-           frame_end=data->frames.end(); frame_it != frame_end; ++frame_it) {
-
+    for (const auto& frame : data->frames) {
       // Convert the indexed image to RGB
-      for (int y=0; y<frame_it->image->height(); ++y) {
-        for (int x=0; x<frame_it->image->width(); ++x) {
-          int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
+      for (int y=0; y<frame.image->height(); ++y) {
+        for (int x=0; x<frame.image->width(); ++x) {
+          int pixel_index = get_pixel_fast<IndexedTraits>(frame.image, x, y);
 
           if (pixel_index >= 0 && pixel_index < 256) {
             // This pixel matches the frame's transparent color
-            if (pixel_index == frame_it->mask_index) {
+            if (pixel_index == frame.mask_index) {
               // If we haven't set a background color yet, this is our new background color.
               if (global_mask_index < 0) {
                 global_mask_index = pixel_index;
@@ -426,42 +422,39 @@ bool GifFormat::onPostLoad(FileOp* fop)
   Palette* current_palette = NULL;
 
   frame_t frame_num(0);
-  for (GifFrames::iterator
-         frame_it=data->frames.begin(),
-         frame_end=data->frames.end(); frame_it != frame_end; ++frame_it, ++frame_num) {
-
+  for (const auto& frame : data->frames) {
     // Set frame duration
-    sprite->setFrameDuration(frame_num, frame_it->duration);
+    sprite->setFrameDuration(frame_num, frame.duration);
 
     // Set frame palette
-    if (frame_it->palette) {
-      sprite->setPalette(frame_it->palette, true);
-      current_palette = frame_it->palette;
+    if (frame.palette) {
+      sprite->setPalette(frame.palette, true);
+      current_palette = frame.palette;
     }
 
     switch (pixelFormat) {
 
       case IMAGE_INDEXED:
-        for (int y = 0; y < frame_it->image->height(); ++y)
-          for (int x = 0; x < frame_it->image->width(); ++x) {
-            int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
-            if (pixel_index != frame_it->mask_index)
+        for (int y = 0; y < frame.image->height(); ++y)
+          for (int x = 0; x < frame.image->width(); ++x) {
+            int pixel_index = get_pixel_fast<IndexedTraits>(frame.image, x, y);
+            if (pixel_index != frame.mask_index)
               put_pixel_fast<IndexedTraits>(current_image,
-                                            frame_it->x + x,
-                                            frame_it->y + y,
+                                            frame.x + x,
+                                            frame.y + y,
                                             pixel_index);
           }
         break;
 
       case IMAGE_RGB:
         // Convert the indexed image to RGB
-        for (int y = 0; y < frame_it->image->height(); ++y)
-          for (int x = 0; x < frame_it->image->width(); ++x) {
-            int pixel_index = get_pixel_fast<IndexedTraits>(frame_it->image, x, y);
-            if (pixel_index != frame_it->mask_index)
+        for (int y = 0; y < frame.image->height(); ++y)
+          for (int x = 0; x < frame.image->width(); ++x) {
+            int pixel_index = get_pixel_fast<IndexedTraits>(frame.image, x, y);
+            if (pixel_index != frame.mask_index)
               put_pixel_fast<RgbTraits>(current_image,
-                                        frame_it->x + x,
-                                        frame_it->y + y,
+                                        frame.x + x,
+                                        frame.y + y,
                                         current_palette->getEntry(pixel_index));
           }
         break;
@@ -492,7 +485,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // current frame (frame_num), so now we have to clear the
     // area occupied by frame_image using the desired disposal
     // method.
-    switch (frame_it->disposal_method) {
+    switch (frame.disposal_method) {
 
       case DISPOSAL_METHOD_NONE:
       case DISPOSAL_METHOD_DO_NOT_DISPOSE:
@@ -501,10 +494,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
       case DISPOSAL_METHOD_RESTORE_BGCOLOR:
         fill_rect(current_image,
-                  frame_it->x,
-                  frame_it->y,
-                  frame_it->x+frame_it->image->width()-1,
-                  frame_it->y+frame_it->image->height()-1,
+                  frame.x,
+                  frame.y,
+                  frame.x+frame.image->width()-1,
+                  frame.y+frame.image->height()-1,
                   bgcolor);
         break;
 
@@ -517,8 +510,10 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // disposal method is not "restore previous" (which means
     // that we have already updated current_image from
     // previous_image).
-    if (frame_it->disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
+    if (frame.disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
       copy_image(previous_image, current_image);
+
+    ++frame_num;
   }
 
   fop->document->sprites().add(sprite);
