@@ -367,7 +367,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
     return true;
 
   PixelFormat pixelFormat = IMAGE_INDEXED;
-  bool askForConversion = false;
+  bool multiBgColors = false;
 
   if (!fop->oneframe) {
     int global_mask_index = -1;
@@ -389,8 +389,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
             else {
               // Drawing the mask color
               if (global_mask_index == pixel_index) {
-                askForConversion = true;
-                goto done;
+                multiBgColors = true;
               }
             }
           }
@@ -400,18 +399,24 @@ bool GifFormat::onPostLoad(FileOp* fop)
 
     // New background color
     data->bgcolor_index = global_mask_index;
-
-  done:;
   }
 
-  if (askForConversion) {
+  if (multiBgColors) {
+    std::string problems;
+    if (multiBgColors)
+      problems += "<<- Multiple background colors";
+
     int result =
       ui::Alert::show("GIF Conversion"
-                      "<<The selected file: %s"
-                      "<<is a transparent GIF image which uses multiple background colors."
-                      "<<" PACKAGE " cannot handle this kind of GIF correctly in Indexed format."
-                      "<<What would you like to do?"
+                      "<<" PACKAGE " cannot handle the selected"
+                      "<<GIF file correctly on Indexed format."
+                      "<<"
+                      "<<Problems:"
+                      "%s"
+                      "<<"
+                      "<<What would you like to do with '%s'?"
                       "||Convert to &RGBA||Keep &Indexed||&Cancel",
+                      problems.c_str(),
                       fop->document->name().c_str());
 
     if (result == 1)
