@@ -165,6 +165,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
   UniquePtr<Palette> current_palette(new Palette(frame_t(0), 256));
   UniquePtr<Palette> previous_palette(new Palette(frame_t(0), 256));
+  Remap remap(256);
 
   // If the GIF image has a global palette, it has a valid
   // background color (so the GIF is not transparent).
@@ -223,15 +224,42 @@ bool GifFormat::onLoad(FileOp* fop)
         if (frame_delay >= 0)
           data->frames[frame_num].duration = frame_delay*10;
 
+        for (int i=0; i<256; ++i)
+          remap.map(i, i);
+
         // Update palette for this frame (the first frame always need a palette).
         if (gif_file->Image.ColorMap) {
           ColorMapObject* colormap = gif_file->Image.ColorMap;
+          bool createPal = false;
+
+          // Here we try to find all colors in the existent color map.
+          // In this way we can remap the local color map to the
+          // global color map (or the previous frame color map).
           for (int i=0; i<colormap->ColorCount; ++i) {
-            current_palette->setEntry(i,
-              rgba(
+            int j =
+              current_palette->findExactMatch(
                 colormap->Colors[i].Red,
                 colormap->Colors[i].Green,
-                colormap->Colors[i].Blue, 255));
+                colormap->Colors[i].Blue, 255);
+            // If some entry is not found in the palette, we have to
+            // replace the whole palette.
+            if (j < 0) {
+              createPal = true;
+              break;
+            }
+            remap.map(i, j);
+          }
+
+          if (createPal) {
+            for (int i=0; i<colormap->ColorCount; ++i) {
+              remap.map(i, i);
+              current_palette->setEntry(
+                i,
+                rgba(
+                  colormap->Colors[i].Red,
+                  colormap->Colors[i].Green,
+                  colormap->Colors[i].Blue, 255));
+            }
           }
         }
 
@@ -270,6 +298,8 @@ bool GifFormat::onLoad(FileOp* fop)
                               );
           }
         }
+
+        remap_image(frame_image.get(), remap);
 
         // Detach the pointer of the frame-image and put it in the list of frames.
         data->frames[frame_num].image = frame_image.release();
