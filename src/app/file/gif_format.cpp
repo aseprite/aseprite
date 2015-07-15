@@ -39,11 +39,11 @@ namespace app {
 
 using namespace base;
 
-enum DisposalMethod {
-  DISPOSAL_METHOD_NONE,
-  DISPOSAL_METHOD_DO_NOT_DISPOSE,
-  DISPOSAL_METHOD_RESTORE_BGCOLOR,
-  DISPOSAL_METHOD_RESTORE_PREVIOUS,
+enum class DisposalMethod {
+  NONE,
+  DO_NOT_DISPOSE,
+  RESTORE_BGCOLOR,
+  RESTORE_PREVIOUS,
 };
 
 struct GifFrame {
@@ -59,7 +59,7 @@ struct GifFrame {
     , mask_index(-1)
     , image(0)
     , palette(0)
-    , disposal_method(DISPOSAL_METHOD_NONE) {
+    , disposal_method(DisposalMethod::NONE) {
   }
 };
 
@@ -189,7 +189,7 @@ bool GifFormat::onLoad(FileOp* fop)
   // Scan the content of the GIF file (read record by record)
   GifRecordType record_type;
   frame_t frame_num(0);
-  DisposalMethod disposal_method = DISPOSAL_METHOD_NONE;
+  DisposalMethod disposal_method = DisposalMethod::NONE;
   int transparent_index = -1;
   int frame_delay = -1;
   do {
@@ -310,7 +310,7 @@ bool GifFormat::onLoad(FileOp* fop)
 
         ++frame_num;
 
-        disposal_method = DISPOSAL_METHOD_NONE;
+        disposal_method = DisposalMethod::NONE;
         transparent_index = -1;
         frame_delay = -1;
         break;
@@ -441,7 +441,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
   }
 
   // The previous image is used to support the special disposal method
-  // of GIF frames DISPOSAL_METHOD_RESTORE_PREVIOUS (number 3 in
+  // of GIF frames DisposalMethod::RESTORE_PREVIOUS (number 3 in
   // Graphics Extension)
   UniquePtr<Image> current_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
   UniquePtr<Image> previous_image(Image::create(pixelFormat, data->sprite_w, data->sprite_h));
@@ -522,12 +522,12 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // method.
     switch (frame.disposal_method) {
 
-      case DISPOSAL_METHOD_NONE:
-      case DISPOSAL_METHOD_DO_NOT_DISPOSE:
+      case DisposalMethod::NONE:
+      case DisposalMethod::DO_NOT_DISPOSE:
         // Do nothing
         break;
 
-      case DISPOSAL_METHOD_RESTORE_BGCOLOR:
+      case DisposalMethod::RESTORE_BGCOLOR:
         fill_rect(current_image,
                   frame.x,
                   frame.y,
@@ -536,7 +536,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
                   bgcolor);
         break;
 
-      case DISPOSAL_METHOD_RESTORE_PREVIOUS:
+      case DisposalMethod::RESTORE_PREVIOUS:
         copy_image(current_image, previous_image);
         break;
     }
@@ -545,7 +545,7 @@ bool GifFormat::onPostLoad(FileOp* fop)
     // disposal method is not "restore previous" (which means
     // that we have already updated current_image from
     // previous_image).
-    if (frame.disposal_method != DISPOSAL_METHOD_RESTORE_PREVIOUS)
+    if (frame.disposal_method != DisposalMethod::RESTORE_PREVIOUS)
       copy_image(previous_image, current_image);
 
     ++frame_num;
@@ -783,11 +783,12 @@ bool GifFormat::onSave(FileOp* fop)
     // frame and maybe the transparency index).
     {
       unsigned char extension_bytes[5];
-      int disposal_method = (sprite->backgroundLayer() ? DISPOSAL_METHOD_DO_NOT_DISPOSE:
-                                                         DISPOSAL_METHOD_RESTORE_BGCOLOR);
+      DisposalMethod disposal_method =
+        (sprite->backgroundLayer() ? DisposalMethod::DO_NOT_DISPOSE:
+                                     DisposalMethod::RESTORE_BGCOLOR);
       int frame_delay = sprite->frameDuration(frame_num) / 10;
 
-      extension_bytes[0] = (((disposal_method & 7) << 2) |
+      extension_bytes[0] = (((int(disposal_method) & 7) << 2) |
                             (transparent_index >= 0 ? 1: 0));
       extension_bytes[1] = (frame_delay & 0xff);
       extension_bytes[2] = (frame_delay >> 8) & 0xff;
