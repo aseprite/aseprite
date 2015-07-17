@@ -658,6 +658,9 @@ bool GifFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 static int next_power_of_two(int color_map_size)
 {
+  if (color_map_size > 256)
+    return 256;
+
   for (int i = 30; i >= 0; --i) {
     if (color_map_size & (1 << i)) {
       color_map_size = (1 << (i + (color_map_size & (1 << (i - 1)) ? 1: 0)));
