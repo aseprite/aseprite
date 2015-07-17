@@ -840,7 +840,7 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
       appColor.getRed(),
       appColor.getGreen(),
       appColor.getBlue(),
-      appColor.getAlpha());
+      appColor.getAlpha(), -1);
 
     // It should be -1, because the user has pressed the warning
     // button that is available only when the color isn't in the
@@ -885,7 +885,7 @@ void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIco
     color.getRed(),
     color.getGreen(),
     color.getBlue(),
-    color.getAlpha());
+    color.getAlpha(), -1);
 
   warningIcon->setVisible(index < 0);
   warningIcon->getParent()->layout();

@@ -185,10 +185,10 @@ void Palette::makeGradient(int from, int to)
   }
 }
 
-int Palette::findExactMatch(int r, int g, int b, int a) const
+int Palette::findExactMatch(int r, int g, int b, int a, int mask_index) const
 {
   for (int i=0; i<(int)m_colors.size(); ++i)
-    if (getEntry(i) == rgba(r, g, b, a))
+    if (getEntry(i) == rgba(r, g, b, a) && i != mask_index)
       return i;
 
   return -1;

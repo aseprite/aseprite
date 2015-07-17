@@ -41,13 +41,6 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   if (sprite->pixelFormat() == newFormat)
     return;
 
-  // Get the list of cels from the background layer (if it
-  // exists). This list will be used to check if each image belong to
-  // the background layer.
-  CelList bgCels;
-  if (sprite->backgroundLayer() != NULL)
-    sprite->backgroundLayer()->getCels(bgCels);
-
   for (Cel* cel : sprite->uniqueCels()) {
     ImageRef old_image = cel->imageRef();
     ImageRef new_image(
@@ -62,6 +55,7 @@ SetPixelFormat::SetPixelFormat(Sprite* sprite,
   }
 
   // Set all cels opacity to 100% if we are converting to indexed.
+  // TODO remove this
   if (newFormat == IMAGE_INDEXED) {
     for (Cel* cel : sprite->uniqueCels()) {
       if (cel->opacity() < 255)

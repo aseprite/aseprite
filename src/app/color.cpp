@@ -617,7 +617,7 @@ int Color::getIndex() const
     case Color::RgbType:
     case Color::HsvType:
     case Color::GrayType: {
-      int i = get_current_palette()->findExactMatch(getRed(), getGreen(), getBlue(), getAlpha());
+      int i = get_current_palette()->findExactMatch(getRed(), getGreen(), getBlue(), getAlpha(), -1);
       if (i >= 0)
         return i;
       else

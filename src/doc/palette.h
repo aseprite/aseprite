@@ -80,7 +80,7 @@ namespace doc {
 
     void makeGradient(int from, int to);
 
-    int findExactMatch(int r, int g, int b, int a) const;
+    int findExactMatch(int r, int g, int b, int a, int mask_index) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
 
   private:
