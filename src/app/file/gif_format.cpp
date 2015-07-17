@@ -656,6 +656,18 @@ bool GifFormat::onLoad(FileOp* fop)
 }
 
 #ifdef ENABLE_SAVE
+static int next_power_of_two(int color_map_size)
+{
+  for (int i = 30; i >= 0; --i) {
+    if (color_map_size & (1 << i)) {
+      color_map_size = (1 << (i + (color_map_size & (1 << (i - 1)) ? 1: 0)));
+      break;
+    }
+  }
+  ASSERT(color_map_size > 0 && color_map_size <= 256);
+  return color_map_size;
+}
+
 bool GifFormat::onSave(FileOp* fop)
 {
 #if GIFLIB_MAJOR >= 5
@@ -686,15 +698,7 @@ bool GifFormat::onSave(FileOp* fop)
   RgbMap rgbmap;
 
   // The color map must be a power of two.
-  int color_map_size = current_palette.size();
-  for (int i = 30; i >= 0; --i) {
-    if (color_map_size & (1 << i)) {
-      color_map_size = (1 << (i + (color_map_size & (1 << (i - 1)) ? 1: 0)));
-      break;
-    }
-  }
-  ASSERT(color_map_size > 0 && color_map_size <= 256);
-
+  int color_map_size = next_power_of_two(current_palette.size());
   ColorMapObject* color_map = NULL;
   int bpp;
 
@@ -704,16 +708,16 @@ bool GifFormat::onSave(FileOp* fop)
     if (color_map == NULL)
       throw std::bad_alloc();
 
-    int i;
-    for (i = 0; i < current_palette.size(); ++i) {
-      color_map->Colors[i].Red   = rgba_getr(current_palette.getEntry(i));
-      color_map->Colors[i].Green = rgba_getg(current_palette.getEntry(i));
-      color_map->Colors[i].Blue  = rgba_getb(current_palette.getEntry(i));
-    }
-    for (; i < color_map_size; ++i) {
-      color_map->Colors[i].Red   = 0;
-      color_map->Colors[i].Green = 0;
-      color_map->Colors[i].Blue  = 0;
+    for (int i = 0; i < color_map_size; ++i) {
+      color_t color;
+      if (i < current_palette.size())
+        color = current_palette.getEntry(i);
+      else
+        color = rgba(0, 0, 0, 255);
+
+      color_map->Colors[i].Red   = rgba_getr(color);
+      color_map->Colors[i].Green = rgba_getg(color);
+      color_map->Colors[i].Blue  = rgba_getb(color);
     }
 
     bpp = color_map->BitsPerPixel;
@@ -884,15 +888,22 @@ bool GifFormat::onSave(FileOp* fop)
     if ((!color_map && frame_num == 0) ||
         (current_palette.countDiff(&previous_palette, NULL, NULL) > 0)) {
       if (!image_color_map) {
-        image_color_map = GifMakeMapObject(current_palette.size(), NULL);
+        color_map_size = next_power_of_two(current_palette.size());
+        image_color_map = GifMakeMapObject(color_map_size, NULL);
         if (image_color_map == NULL)
           throw std::bad_alloc();
       }
 
-      for (int i = 0; i < current_palette.size(); ++i) {
-        image_color_map->Colors[i].Red   = rgba_getr(current_palette.getEntry(i));
-        image_color_map->Colors[i].Green = rgba_getg(current_palette.getEntry(i));
-        image_color_map->Colors[i].Blue  = rgba_getb(current_palette.getEntry(i));
+      for (int i = 0; i < color_map_size; ++i) {
+        color_t color;
+        if (i < current_palette.size())
+          color = current_palette.getEntry(i);
+        else
+          color = rgba(0, 0, 0, 255);
+
+        image_color_map->Colors[i].Red   = rgba_getr(color);
+        image_color_map->Colors[i].Green = rgba_getg(color);
+        image_color_map->Colors[i].Blue  = rgba_getb(color);
       }
 
       current_palette.copyColorsTo(&previous_palette);
