@@ -3,7 +3,7 @@
 <gui>
   <window id="options" text="Preferences">
   <vbox>
-    <hbox>
+    <hbox expansive="true">
       <view maxsize="true">
         <listbox id="section_listbox">
           <listitem text="General" value="section_general" />
@@ -15,7 +15,7 @@
         </listbox>
       </view>
 
-      <panel id="panel">
+      <panel id="panel" expansive="true">
         <vbox id="section_general">
           <separator text="General" horizontal="true" />
           <hbox>
@@ -70,7 +70,7 @@
         <!-- Grid & background -->
         <vbox id="section_grid">
           <combobox id="grid_scope" />
-          <separator text="Grid" horizontal="true" expansive="true" />
+          <separator text="Grid" horizontal="true" />
           <grid columns="3">
             <label text="Grid Color:" />
             <box id="grid_color_placeholder" /><!-- custom widget -->
