@@ -35,12 +35,6 @@ namespace render {
     ColorHistogram<5, 6, 5, 5> m_histogram;
   };
 
-  void create_palette_from_images(
-    const std::vector<Image*>& images,
-    Palette* palette,
-    bool hasBackgroundLayer,
-    bool withAlpha);
-
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
   Palette* create_palette_from_rgb(
     const Sprite* sprite,

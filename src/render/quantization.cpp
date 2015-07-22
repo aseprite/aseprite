@@ -370,15 +370,5 @@ void PaletteOptimizer::calculate(Palette* palette, bool hasBackgroundLayer)
   palette->resize(MAX(1, first_usable_entry+used_colors));
 }
 
-void create_palette_from_images(const std::vector<Image*>& images, Palette* palette,
-                                bool hasBackgroundLayer,
-                                bool withAlpha)
-{
-  PaletteOptimizer optimizer;
-  for (int i=0; i<(int)images.size(); ++i)
-    optimizer.feedWithImage(images[i], withAlpha);
-
-  optimizer.calculate(palette, hasBackgroundLayer);
-}
 
 } // namespace render
