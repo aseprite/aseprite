@@ -21,12 +21,13 @@
 #include "base/bind.h"
 #include "base/path.h"
 #include "ui/graphics.h"
-#include "ui/listitem.h"
 #include "ui/link_label.h"
+#include "ui/listitem.h"
 #include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
 #include "ui/system.h"
+#include "ui/view.h"
 
 namespace app {
 
@@ -100,6 +101,12 @@ void RecentListBox::rebuildList()
     removeChild(getLastChild());
 
   onRebuildList();
+
+  View* view = View::getView(this);
+  if (view)
+    view->layout();
+  else
+    layout();
 }
 
 //////////////////////////////////////////////////////////////////////
