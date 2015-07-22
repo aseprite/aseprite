@@ -15,6 +15,7 @@
 #include "doc/layer.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
+#include "doc/remap.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "gfx/hsv.h"
@@ -44,8 +45,6 @@ Palette* create_palette_from_rgb(
   if (!palette)
     palette = new Palette(fromFrame, 256);
 
-  bool hasBackgroundLayer = (sprite->backgroundLayer() != nullptr);
-
   // Add a flat image with the current sprite's frame rendered
   ImageRef flat_image(Image::create(IMAGE_RGB,
       sprite->width(), sprite->height()));
@@ -58,7 +57,11 @@ Palette* create_palette_from_rgb(
   }
 
   // Generate an optimized palette
-  optimizer.calculate(palette, hasBackgroundLayer);
+  optimizer.calculate(
+    palette,
+    // Transparent color is needed if we have transparent layers
+    (sprite->backgroundLayer() &&
+     sprite->countLayers() == 1 ? -1: sprite->transparentColor()));
 
   return palette;
 }
@@ -358,17 +361,31 @@ void PaletteOptimizer::feedWithImage(Image* image, bool withAlpha)
   }
 }
 
-void PaletteOptimizer::calculate(Palette* palette, bool hasBackgroundLayer)
+void PaletteOptimizer::feedWithRgbaColor(color_t color)
+{
+  m_histogram.addSamples(color, 1);
+}
+
+void PaletteOptimizer::calculate(Palette* palette, int maskIndex)
 {
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
   // will not be used later in the color conversion (from RGB to
   // Indexed).
-  int first_usable_entry = (hasBackgroundLayer ? 0: 1);
-  int used_colors = m_histogram.createOptimizedPalette(
-    palette, first_usable_entry, palette->size()-1);
-  palette->resize(MAX(1, first_usable_entry+used_colors));
-}
+  int usedColors = m_histogram.createOptimizedPalette(palette);
 
+  if (maskIndex >= 0 && maskIndex < usedColors) {
+    palette->resize(usedColors+1);
+
+    Remap remap(palette->size());
+    for (int i=0; i<usedColors; ++i)
+      remap.map(i, i + (i >= maskIndex ? 1: 0));
+
+    palette->applyRemap(remap);
+    palette->setEntry(maskIndex, rgba(0, 0, 0, 255));
+  }
+  else
+    palette->resize(MAX(1, usedColors));
+}
 
 } // namespace render

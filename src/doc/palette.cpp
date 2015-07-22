@@ -268,4 +268,11 @@ int Palette::findBestfit(int r, int g, int b, int a, int mask_index) const
   return bestfit;
 }
 
+void Palette::applyRemap(const Remap& remap)
+{
+  Palette original(*this);
+  for (int i=0; i<size(); ++i)
+    setEntry(remap[i], original.getEntry(i));
+}
+
 } // namespace doc

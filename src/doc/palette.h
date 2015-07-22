@@ -83,6 +83,8 @@ namespace doc {
     int findExactMatch(int r, int g, int b, int a, int mask_index) const;
     int findBestfit(int r, int g, int b, int a, int mask_index) const;
 
+    void applyRemap(const Remap& remap);
+
   private:
     frame_t m_frame;
     std::vector<color_t> m_colors;

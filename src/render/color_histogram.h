@@ -80,11 +80,11 @@ namespace render {
     // with the more important colors in the histogram. Returns the
     // number of used entries in the palette (maybe the range [from,to]
     // is more than necessary).
-    int createOptimizedPalette(Palette* palette, int from, int to) {
+    int createOptimizedPalette(Palette* palette) {
       // Can we use the high-precision table?
-      if (m_useHighPrecision && int(m_highPrecision.size()) <= (to-from+1)) {
+      if (m_useHighPrecision && int(m_highPrecision.size()) <= palette->size()) {
         for (int i=0; i<(int)m_highPrecision.size(); ++i)
-          palette->setEntry(from+i, m_highPrecision[i]);
+          palette->setEntry(i, m_highPrecision[i]);
 
         return m_highPrecision.size();
       }
@@ -92,10 +92,10 @@ namespace render {
       // median-cut) to quantize "optimal" colors.
       else {
         std::vector<uint32_t> result;
-        median_cut(*this, to-from+1, result);
+        median_cut(*this, palette->size(), result);
 
         for (int i=0; i<(int)result.size(); ++i)
-          palette->setEntry(from+i, result[i]);
+          palette->setEntry(i, result[i]);
 
         return result.size();
       }

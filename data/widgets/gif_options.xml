@@ -1,21 +1,11 @@
 <!-- Aseprite -->
-<!-- Copyright (C) 2014 by David Capello -->
+<!-- Copyright (C) 2014, 2015 by David Capello -->
 <gui>
 <window text="GIF Options" id="gif_options">
   <vbox>
-    <vbox id="rgb_options">
-      <separator text="RGBA to Indexed Conversion:" left="true" horizontal="true" />
-      <check text="Enable Dithering" id="dither" />
-
-      <separator text="Optimize Color Palette:" left="true" horizontal="true" />
-      <radio id="quantize_all" text="&amp;One color palette for all frames" group="1" />
-      <radio id="quantize_each" text="&amp;One color palette for each frame" group="1" />
-      <radio id="no_quantize" text="&amp;Don't modify color palette" group="1" />
-    </vbox>
-
     <separator text="General Options:" left="true" horizontal="true" />
-    <check text="Interlaced" id="interlaced" />
-    <check text="Animation Loop" id="loop" />
+    <check text="&amp;Interlaced" id="interlaced" />
+    <check text="Animation &amp;Loop" id="loop" />
 
     <separator horizontal="true" />
 

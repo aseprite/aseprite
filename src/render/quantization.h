@@ -29,7 +29,8 @@ namespace render {
   class PaletteOptimizer {
   public:
     void feedWithImage(Image* image, bool withAlpha);
-    void calculate(Palette* palette, bool hasBackgroundLayer);
+    void feedWithRgbaColor(color_t color);
+    void calculate(Palette* palette, int maskIndex);
 
   private:
     ColorHistogram<5, 6, 5, 5> m_histogram;
