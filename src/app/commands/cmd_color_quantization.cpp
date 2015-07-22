@@ -15,6 +15,7 @@
 #include "app/console.h"
 #include "app/context.h"
 #include "app/context_access.h"
+#include "app/job.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
@@ -39,6 +40,38 @@ public:
 protected:
   bool onEnabled(Context* context) override;
   void onExecute(Context* context) override;
+};
+
+class ColorQuantizationJob : public Job,
+                             public render::PaletteOptimizerDelegate {
+public:
+  ColorQuantizationJob(Sprite* sprite, bool withAlpha, Palette* palette)
+    : Job("Creating Palette")
+    , m_sprite(sprite)
+    , m_withAlpha(withAlpha)
+    , m_palette(palette) {
+  }
+
+private:
+
+  void onJob() override {
+    render::create_palette_from_rgb(m_sprite,
+                                    0, m_sprite->lastFrame(),
+                                    m_withAlpha, m_palette,
+                                    this);
+  }
+
+  bool onPaletteOptimizerContinue() override {
+    return !isCanceled();
+  }
+
+  void onPaletteOptimizerProgress(double progress) override {
+    jobProgress(progress);
+  }
+
+  Sprite* m_sprite;
+  bool m_withAlpha;
+  Palette* m_palette;
 };
 
 ColorQuantizationCommand::ColorQuantizationCommand()
@@ -114,8 +147,11 @@ void ColorQuantizationCommand::onExecute(Context* context)
       return;
 
     Palette tmpPalette(frame, entries.picks());
-    render::create_palette_from_rgb(sprite, 0, sprite->lastFrame(),
-                                    withAlpha, &tmpPalette);
+    ColorQuantizationJob job(sprite, withAlpha, &tmpPalette);
+    job.startJob();
+    job.waitJob();
+    if (job.isCanceled())
+      return;
 
     base::UniquePtr<Palette> newPalette(
       new Palette(createPal ? tmpPalette:

@@ -1047,7 +1047,7 @@ private:
     }
 
     Palette* palette = new Palette(0, 256);
-    optimizer.calculate(palette, m_transparentIndex);
+    optimizer.calculate(palette, m_transparentIndex, nullptr);
     return palette;
   }
 

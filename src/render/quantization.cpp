@@ -38,7 +38,8 @@ Palette* create_palette_from_rgb(
   frame_t fromFrame,
   frame_t toFrame,
   bool withAlpha,
-  Palette* palette)
+  Palette* palette,
+  PaletteOptimizerDelegate* delegate)
 {
   PaletteOptimizer optimizer;
 
@@ -54,6 +55,14 @@ Palette* create_palette_from_rgb(
   for (frame_t frame=fromFrame; frame<=toFrame; ++frame) {
     render.renderSprite(flat_image.get(), sprite, frame);
     optimizer.feedWithImage(flat_image.get(), withAlpha);
+
+    if (delegate) {
+      if (!delegate->onPaletteOptimizerContinue())
+        return nullptr;
+
+      delegate->onPaletteOptimizerProgress(
+        double(frame-fromFrame+1) / double(toFrame-fromFrame+1));
+    }
   }
 
   // Generate an optimized palette
@@ -61,7 +70,8 @@ Palette* create_palette_from_rgb(
     palette,
     // Transparent color is needed if we have transparent layers
     (sprite->backgroundLayer() &&
-     sprite->countLayers() == 1 ? -1: sprite->transparentColor()));
+     sprite->countLayers() == 1 ? -1: sprite->transparentColor()),
+    delegate);
 
   return palette;
 }
@@ -366,7 +376,8 @@ void PaletteOptimizer::feedWithRgbaColor(color_t color)
   m_histogram.addSamples(color, 1);
 }
 
-void PaletteOptimizer::calculate(Palette* palette, int maskIndex)
+void PaletteOptimizer::calculate(Palette* palette, int maskIndex,
+                                 PaletteOptimizerDelegate* delegate)
 {
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it

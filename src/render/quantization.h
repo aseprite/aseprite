@@ -26,11 +26,18 @@ namespace doc {
 namespace render {
   using namespace doc;
 
+  class PaletteOptimizerDelegate {
+  public:
+    virtual ~PaletteOptimizerDelegate() { }
+    virtual void onPaletteOptimizerProgress(double progress) = 0;
+    virtual bool onPaletteOptimizerContinue() = 0;
+  };
+
   class PaletteOptimizer {
   public:
     void feedWithImage(Image* image, bool withAlpha);
     void feedWithRgbaColor(color_t color);
-    void calculate(Palette* palette, int maskIndex);
+    void calculate(Palette* palette, int maskIndex, PaletteOptimizerDelegate* delegate);
 
   private:
     ColorHistogram<5, 6, 5, 5> m_histogram;
@@ -42,7 +49,8 @@ namespace render {
     frame_t fromFrame,
     frame_t toFrame,
     bool withAlpha,
-    Palette* newPalette); // Can be NULL to create a new palette
+    Palette* newPalette, // Can be NULL to create a new palette
+    PaletteOptimizerDelegate* delegate);
 
   // Changes the image pixel format. The dithering method is used only
   // when you want to convert from RGB to Indexed.
