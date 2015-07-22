@@ -37,11 +37,13 @@
   #define posix_lseek  _lseek
 #else
   #include <unistd.h>
-  #define posix_lseek  _lseek
+  #define posix_lseek  lseek
 #endif
 
 #if GIFLIB_MAJOR < 5
 #define GifMakeMapObject MakeMapObject
+#define GifFreeMapObject FreeMapObject
+#define GifBitSize       BitSize
 #endif
 
 namespace app {
@@ -795,16 +797,16 @@ private:
 
     memcpy(extension_bytes, "NETSCAPE2.0", 11);
     if (EGifPutExtensionFirst(m_gifFile, APPLICATION_EXT_FUNC_CODE, 11, extension_bytes) == GIF_ERROR)
-      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)m_frameNum);
 
     extension_bytes[0] = 1;
     extension_bytes[1] = (m_loop & 0xff);
     extension_bytes[2] = (m_loop >> 8) & 0xff;
     if (EGifPutExtensionNext(m_gifFile, APPLICATION_EXT_FUNC_CODE, 3, extension_bytes) == GIF_ERROR)
-      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)m_frameNum);
 
     if (EGifPutExtensionLast(m_gifFile, APPLICATION_EXT_FUNC_CODE, 0, NULL) == GIF_ERROR)
-      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)frame_num);
+      throw Exception("Error writing GIF graphics extension record for frame %d.\n", (int)m_frameNum);
 #endif
   }
 
