@@ -1091,14 +1091,19 @@ void ContextBar::updateForTool(tools::Tool* tool)
     (tool->getController(0)->isFreehand() ||
      tool->getController(1)->isFreehand());
 
+  bool showOpacity =
+    (supportOpacity) &&
+    ((isPaint && (hasInkWithOpacity || hasImageBrush)) ||
+     (isEffect));
+
   // Show/Hide fields
   m_brushType->setVisible(supportOpacity && (!isFloodfill || (isFloodfill && hasImageBrush)));
   m_brushSize->setVisible(supportOpacity && !isFloodfill && !hasImageBrush);
   m_brushAngle->setVisible(supportOpacity && !isFloodfill && !hasImageBrush && hasBrushWithAngle);
   m_brushPatternField->setVisible(supportOpacity && hasImageBrush);
   m_inkType->setVisible(hasInk && !hasImageBrush);
-  m_inkOpacityLabel->setVisible(hasInkWithOpacity && supportOpacity);
-  m_inkOpacity->setVisible(hasInkWithOpacity && supportOpacity);
+  m_inkOpacityLabel->setVisible(showOpacity);
+  m_inkOpacity->setVisible(showOpacity);
   m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
   m_freehandBox->setVisible(isFreehand && supportOpacity);
