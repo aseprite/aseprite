@@ -348,6 +348,10 @@ void ColorBar::onPaletteButtonClick()
         sat("Sort by Saturation"),
         bri("Sort by Brightness"),
         lum("Sort by Luminance"),
+        red("Sort by Red"),
+        grn("Sort by Green"),
+        blu("Sort by Blue"),
+        alp("Sort by Alpha"),
         asc("Ascending"),
         des("Descending");
       menu.addChild(&rev);
@@ -357,6 +361,11 @@ void ColorBar::onPaletteButtonClick()
       menu.addChild(&sat);
       menu.addChild(&bri);
       menu.addChild(&lum);
+      menu.addChild(new ui::MenuSeparator);
+      menu.addChild(&red);
+      menu.addChild(&grn);
+      menu.addChild(&blu);
+      menu.addChild(&alp);
       menu.addChild(new ui::MenuSeparator);
       menu.addChild(&asc);
       menu.addChild(&des);
@@ -370,6 +379,10 @@ void ColorBar::onPaletteButtonClick()
       sat.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::SATURATION));
       bri.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::VALUE));
       lum.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::LUMA));
+      red.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::RED));
+      grn.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::GREEN));
+      blu.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::BLUE));
+      alp.Click.connect(Bind<void>(&ColorBar::onSortBy, this, SortPaletteBy::ALPHA));
       asc.Click.connect(Bind<void>(&ColorBar::setAscending, this, true));
       des.Click.connect(Bind<void>(&ColorBar::setAscending, this, false));
 

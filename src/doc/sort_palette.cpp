@@ -61,6 +61,11 @@ struct PalEntryWithIndexPredicate {
         value2 = rgba_getb(c2);
         break;
 
+      case SortPaletteBy::ALPHA:
+        value1 = rgba_geta(c1);
+        value2 = rgba_geta(c2);
+        break;
+
       case SortPaletteBy::HUE:
       case SortPaletteBy::SATURATION:
       case SortPaletteBy::VALUE: {

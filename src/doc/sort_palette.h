@@ -17,6 +17,7 @@ namespace doc {
     RED,
     GREEN,
     BLUE,
+    ALPHA,
     HUE,
     SATURATION,
     VALUE,
