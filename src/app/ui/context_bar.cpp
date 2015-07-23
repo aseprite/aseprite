@@ -352,10 +352,13 @@ protected:
     MenuItem
       replace("Replace Pixel"),
       alphacompo("Alpha Compositing"),
-      lockalpha("Lock Alpha");
+      lockalpha("Lock Alpha"),
+      alltools("Same in all Tools");
     menu.addChild(&replace);
     menu.addChild(&alphacompo);
     menu.addChild(&lockalpha);
+    menu.addChild(new MenuSeparator);
+    menu.addChild(&alltools);
 
     Tool* tool = App::instance()->activeTool();
     switch (Preferences::instance().tool(tool).ink()) {
@@ -363,10 +366,12 @@ protected:
       case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
       case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
     }
+    alltools.setSelected(Preferences::instance().shared.shareInk());
 
     replace.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::REPLACE_PIXEL));
     alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
     lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
+    alltools.Click.connect(Bind<void>(&InkTypeField::onSameInAllTools, this));
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
 
@@ -374,10 +379,37 @@ protected:
   }
 
   void selectInk(InkType inkType) {
-    Tool* tool = App::instance()->activeTool();
-    Preferences::instance().tool(tool).ink(inkType);
+    Preferences& pref = Preferences::instance();
+
+    if (pref.shared.shareInk()) {
+      for (Tool* tool : *App::instance()->getToolBox())
+        pref.tool(tool).ink(inkType);
+    }
+    else {
+      Tool* tool = App::instance()->activeTool();
+      pref.tool(tool).ink(inkType);
+    }
 
     m_owner->updateForCurrentTool();
+  }
+
+  void onSameInAllTools() {
+    Preferences& pref = Preferences::instance();
+    bool newState = !pref.shared.shareInk();
+    pref.shared.shareInk(newState);
+
+    if (newState) {
+      Tool* activeTool = App::instance()->activeTool();
+      InkType inkType = pref.tool(activeTool).ink();
+      int opacity = pref.tool(activeTool).opacity();
+
+      for (Tool* tool : *App::instance()->getToolBox()) {
+        if (tool != activeTool) {
+          pref.tool(tool).ink(inkType);
+          pref.tool(tool).opacity(opacity);
+        }
+      }
+    }
   }
 
   ContextBar* m_owner;
@@ -398,8 +430,15 @@ protected:
     base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
 
     int newValue = getValue();
-    Tool* tool = App::instance()->activeTool();
-    Preferences::instance().tool(tool).opacity(newValue);
+    Preferences& pref = Preferences::instance();
+    if (pref.shared.shareInk()) {
+      for (Tool* tool : *App::instance()->getToolBox())
+        pref.tool(tool).opacity(newValue);
+    }
+    else {
+      Tool* tool = App::instance()->activeTool();
+      pref.tool(tool).opacity(newValue);
+    }
   }
 };
 
