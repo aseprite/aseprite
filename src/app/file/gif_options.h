@@ -19,25 +19,20 @@ namespace app {
   public:
     GifOptions(
       bool interlaced = false,
-      bool loop = true,
-      DitheringMethod dithering = doc::DitheringMethod::NONE)
+      bool loop = true)
       : m_interlaced(interlaced)
-      , m_loop(loop)
-      , m_dithering(dithering) {
+      , m_loop(loop) {
     }
 
     bool interlaced() const { return m_interlaced; }
     bool loop() const { return m_loop; }
-    doc::DitheringMethod dithering() const { return m_dithering; }
 
     void setInterlaced(bool interlaced) { m_interlaced = interlaced; }
     void setLoop(bool loop) { m_loop = loop; }
-    void setDithering(const doc::DitheringMethod dithering) { m_dithering = dithering; }
 
   private:
     bool m_interlaced;
     bool m_loop;
-    doc::DitheringMethod m_dithering;
   };
 
 } // namespace app
