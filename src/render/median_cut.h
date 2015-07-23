@@ -117,11 +117,19 @@ namespace render {
       if (count == 0)
         return doc::rgba(0, 0, 0, 255);
 
-      // Returns the mean.
-      return doc::rgba((255 * r / (Histogram::RElements-1)) / count,
-                       (255 * g / (Histogram::GElements-1)) / count,
-                       (255 * b / (Histogram::BElements-1)) / count,
-                       (255 * a / (Histogram::AElements-1)) / count);
+      // Calculate the mean. We have to do this before the *255
+      // multiplication to avoid a 32-bit overflow. E.g. Alpha channel
+      // is the most proper to overflow the 32-bit capacity in case
+      // all pixels are opaque.
+      r /= count;
+      g /= count;
+      b /= count;
+      a /= count;
+
+      return doc::rgba((255 * r / (Histogram::RElements-1)),
+                       (255 * g / (Histogram::GElements-1)),
+                       (255 * b / (Histogram::BElements-1)),
+                       (255 * a / (Histogram::AElements-1)));
     }
 
     // The boxes will be sort in the priority_queue by volume.
