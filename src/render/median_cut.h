@@ -265,8 +265,7 @@ namespace render {
   // quantization for frame buffer display,", Computer Graphics,
   // 16(3), pp. 297-307 (1982)
   template<class Histogram>
-  void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<uint32_t>& result)
-  {
+  void median_cut(const Histogram& histogram, std::size_t maxBoxes, std::vector<uint32_t>& result) {
     // We need a priority queue to split bigger boxes first (see Box::operator<).
     std::priority_queue<Box<Histogram> > boxes;
 
@@ -305,7 +304,8 @@ namespace render {
     // to a color for the "result" vector.
     while (!boxes.empty() && result.size() < maxBoxes) {
       const Box<Histogram>& box(boxes.top());
-      result.push_back(box.meanColor(histogram));
+      color_t color = box.meanColor(histogram);
+      result.push_back(color);
       boxes.pop();
     }
   }

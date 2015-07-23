@@ -48,7 +48,7 @@ namespace render {
 
     // Add the specified "color" in the histogram as many times as the
     // specified value in "count".
-    void addSamples(uint32_t color, std::size_t count = 1) {
+    void addSamples(color_t color, std::size_t count = 1) {
       int i = histogramIndex(color);
 
       if (m_histogram[i] < std::numeric_limits<std::size_t>::max()-count) // Avoid overflow
@@ -60,7 +60,7 @@ namespace render {
       // image has more than 256 colors the m_histogram is used
       // instead.
       if (m_useHighPrecision) {
-        std::vector<uint32_t>::iterator it =
+        std::vector<color_t>::iterator it =
           std::find(m_highPrecision.begin(), m_highPrecision.end(), color);
 
         // The color is not in the high-precision table
@@ -91,7 +91,7 @@ namespace render {
       // OK, we have to use the histogram and some algorithm (like
       // median-cut) to quantize "optimal" colors.
       else {
-        std::vector<uint32_t> result;
+        std::vector<color_t> result;
         median_cut(*this, palette->size(), result);
 
         for (int i=0; i<(int)result.size(); ++i)
@@ -105,7 +105,7 @@ namespace render {
     // Converts input color in a index for the histogram. It reduces
     // each 8-bit component to the resolution given in the template
     // parameters.
-    std::size_t histogramIndex(uint32_t color) const {
+    std::size_t histogramIndex(color_t color) const {
       return histogramIndex((rgba_getr(color) >> (8 - RBits)),
                             (rgba_getg(color) >> (8 - GBits)),
                             (rgba_getb(color) >> (8 - BBits)),
@@ -125,7 +125,7 @@ namespace render {
 
     // High precision histogram to create an accurate palette if RGB
     // source images contains less than 256 colors.
-    std::vector<uint32_t> m_highPrecision;
+    std::vector<color_t> m_highPrecision;
 
     // True if we can use m_highPrecision still (it means that the
     // number of different samples is less than 256 colors still).
