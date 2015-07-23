@@ -21,6 +21,7 @@
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "base/unique_ptr.h"
+#include "doc/blend_internals.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -72,7 +73,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   Transaction transaction(writer.context(), "Merge Down Layer", ModifyDocument);
-  Layer* src_layer = writer.layer();
+  LayerImage* src_layer = static_cast<LayerImage*>(writer.layer());
   Layer* dst_layer = src_layer->getPrevious();
 
   for (frame_t frpos = 0; frpos<sprite->totalFrames(); ++frpos) {
@@ -93,6 +94,10 @@ void MergeDownLayerCommand::onExecute(Context* context)
 
     // With source image?
     if (src_image) {
+      int t;
+      int opacity;
+      opacity = MUL_UN8(src_cel->opacity(), src_layer->opacity(), t);
+
       // No destination image
       if (!dst_image) {  // Only a transparent layer can have a null cel
         // Copy this cel to the destination layer...
@@ -103,7 +108,7 @@ void MergeDownLayerCommand::onExecute(Context* context)
         // Creating a copy of the cell
         dst_cel = new Cel(frpos, dst_image);
         dst_cel->setPosition(src_cel->x(), src_cel->y());
-        dst_cel->setOpacity(src_cel->opacity());
+        dst_cel->setOpacity(opacity);
 
         transaction.execute(new cmd::AddCel(dst_layer, dst_cel));
       }
@@ -132,8 +137,8 @@ void MergeDownLayerCommand::onExecute(Context* context)
         render::composite_image(new_image.get(), src_image,
           src_cel->x()-bounds.x,
           src_cel->y()-bounds.y,
-          src_cel->opacity(),
-          static_cast<LayerImage*>(src_layer)->blendMode());
+          opacity,
+          src_layer->blendMode());
 
         transaction.execute(new cmd::SetCelPosition(dst_cel,
             bounds.x, bounds.y));
