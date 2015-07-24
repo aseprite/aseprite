@@ -413,13 +413,13 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));
-    gfx::Point origin = document->mask()->bounds().getOrigin();
 
     PixelsMovementPtr pixelsMovement(
       new PixelsMovement(UIContext::instance(),
-        editor->getSite(),
-        tmpImage, origin,
-        "Transformation"));
+                         editor->getSite(),
+                         tmpImage,
+                         document->mask(),
+                         "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection
     if (customization && customization->isCopySelectionKeyPressed())

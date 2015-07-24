@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,7 +13,7 @@ namespace doc {
 
   namespace algorithm {
 
-    void rotsprite_image(Image* bmp, Image* spr,
+    void rotsprite_image(Image* dst, const Image* src, const Image* mask,
       int x1, int y1, int x2, int y2,
       int x3, int y3, int x4, int y4);
 

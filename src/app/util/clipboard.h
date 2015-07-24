@@ -15,6 +15,7 @@
 
 namespace doc {
   class Image;
+  class Mask;
   class Palette;
   class PalettePicks;
 }
@@ -43,7 +44,7 @@ namespace app {
     void cut(ContextWriter& context);
     void copy(const ContextReader& context);
     void copy_range(const ContextReader& context, const DocumentRange& range);
-    void copy_image(Image* image, Palette* palette, const gfx::Point& point);
+    void copy_image(const Image* image, const Mask* mask, const Palette* palette);
     void copy_palette(const Palette* palette, const PalettePicks& picks);
     void paste();
 

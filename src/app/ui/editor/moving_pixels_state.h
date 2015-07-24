@@ -63,7 +63,7 @@ namespace app {
     // ContextObserver
     void onBeforeCommandExecution(Command* command);
 
-    void setTransparentColor(const app::Color& color);
+    void setTransparentColor(bool opaque, const app::Color& color);
     void dropPixels();
 
     bool isActiveDocument() const;
@@ -78,6 +78,7 @@ namespace app {
     bool m_discarded;
 
     ScopedConnection m_ctxConn;
+    ScopedConnection m_opaqueConn;
     ScopedConnection m_transparentConn;
   };
 

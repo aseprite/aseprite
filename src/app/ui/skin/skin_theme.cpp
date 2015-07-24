@@ -281,6 +281,8 @@ SkinTheme::SkinTheme()
   sheet_mapping["ink_default"] = PART_INK_DEFAULT;
   sheet_mapping["ink_composite"] = PART_INK_COMPOSITE;
   sheet_mapping["ink_lock_alpha"] = PART_INK_LOCK_ALPHA;
+  sheet_mapping["selection_opaque"] = PART_SELECTION_OPAQUE;
+  sheet_mapping["selection_masked"] = PART_SELECTION_MASKED;
 }
 
 SkinTheme::~SkinTheme()

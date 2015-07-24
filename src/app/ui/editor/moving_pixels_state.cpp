@@ -71,7 +71,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   }
 
   // Setup mask color
-  setTransparentColor(Preferences::instance().selection.transparentColor());
+  onTransparentColorChange();
 
   // Hook BeforeCommandExecution signal so we know if the user wants
   // to execute other command, so we can drop pixels.
@@ -79,6 +79,9 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
     context->BeforeCommandExecution.connect(&MovingPixelsState::onBeforeCommandExecution, this);
 
   // Listen to any change to the transparent color from the ContextBar.
+  m_opaqueConn =
+    Preferences::instance().selection.opaque.AfterChange.connect(
+      Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
   m_transparentConn =
     Preferences::instance().selection.transparentColor.AfterChange.connect(
       Bind<void>(&MovingPixelsState::onTransparentColorChange, this));
@@ -371,11 +374,13 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
         // Copy the floating image to the clipboard.
         {
           Document* document = editor->document();
-          gfx::Point origin;
-          base::UniquePtr<Image> floatingImage(m_pixelsMovement->getDraggedImageCopy(origin));
+          base::UniquePtr<Image> floatingImage;
+          base::UniquePtr<Mask> floatingMask;
+          m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
+
           clipboard::copy_image(floatingImage.get(),
-                                document->sprite()->palette(editor->frame()),
-                                origin);
+                                floatingMask.get(),
+                                document->sprite()->palette(editor->frame()));
         }
 
         // In case of "Cut" command.
@@ -489,8 +494,12 @@ void MovingPixelsState::onBeforeLayerChanged(Editor* editor)
 
 void MovingPixelsState::onTransparentColorChange()
 {
-  app::Color color = Preferences::instance().selection.transparentColor();
-  setTransparentColor(color);
+  bool opaque = Preferences::instance().selection.opaque();
+  setTransparentColor(
+    opaque,
+    opaque ?
+      app::Color::fromMask():
+      Preferences::instance().selection.transparentColor());
 }
 
 void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
@@ -514,7 +523,7 @@ void MovingPixelsState::onDropPixels(ContextBarObserver::DropAction action)
   }
 }
 
-void MovingPixelsState::setTransparentColor(const app::Color& color)
+void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color)
 {
   ASSERT(m_pixelsMovement);
 
@@ -522,7 +531,7 @@ void MovingPixelsState::setTransparentColor(const app::Color& color)
   ASSERT(layer);
 
   m_pixelsMovement->setMaskColor(
-    color_utils::color_for_target_mask(color, ColorTarget(layer)));
+    opaque, color_utils::color_for_target_mask(color, ColorTarget(layer)));
 }
 
 void MovingPixelsState::dropPixels()

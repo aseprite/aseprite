@@ -57,7 +57,7 @@ static bool win32_clipboard_contains_bitmap()
  * Changes the Windows clipboard content to the specified image. The
  * palette is optional and only used if the image is IMAGE_INDEXED type.
  */
-static void set_win32_clipboard_bitmap(Image* image, Palette* palette)
+static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Palette* palette)
 {
   HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
   if (!win32_open_clipboard(hwnd))

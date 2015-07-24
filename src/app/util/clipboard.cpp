@@ -35,7 +35,8 @@
 #include "render/quantization.h"
 
 #ifdef _WIN32
-  #define USE_NATIVE_WIN32_CLIPBOARD
+  // TODO Re-enable native clipboard with custom format to save image+mask when possible
+  //#define USE_NATIVE_WIN32_CLIPBOARD
 #endif
 
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
@@ -80,24 +81,21 @@ namespace {
 
 using namespace doc;
 
-static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard);
-static bool copy_from_document(const Site& site);
-
 static bool first_time = true;
-
 static base::SharedPtr<Palette> clipboard_palette;
 static PalettePicks clipboard_picks;
 static ImageRef clipboard_image;
+static base::SharedPtr<Mask> clipboard_mask;
 static ClipboardRange clipboard_range;
-static gfx::Point clipboard_pos(0, 0);
 
 static void on_exit_delete_clipboard()
 {
   clipboard_palette.reset();
   clipboard_image.reset();
+  clipboard_mask.reset();
 }
 
-static void set_clipboard_image(Image* image, Palette* palette, bool set_system_clipboard)
+static void set_clipboard_image(Image* image, Mask* mask, Palette* palette, bool set_system_clipboard)
 {
   if (first_time) {
     first_time = false;
@@ -107,11 +105,12 @@ static void set_clipboard_image(Image* image, Palette* palette, bool set_system_
   clipboard_palette.reset(palette);
   clipboard_picks.clear();
   clipboard_image.reset(image);
+  clipboard_mask.reset(mask);
 
   // copy to the Windows clipboard
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
   if (set_system_clipboard)
-    set_win32_clipboard_bitmap(image, palette);
+    set_win32_clipboard_bitmap(image, mask, palette);
 #endif
 
   clipboard_range.invalidate();
@@ -128,10 +127,12 @@ static bool copy_from_document(const Site& site)
   if (!image)
     return false;
 
-  clipboard_pos = document->mask()->bounds().getOrigin();
-
+  const Mask* mask = document->mask();
   const Palette* pal = document->sprite()->palette(site.frame());
-  set_clipboard_image(image, pal ? new Palette(*pal): NULL, true);
+
+  set_clipboard_image(image,
+                      (mask ? new Mask(*mask): nullptr),
+                      (pal ? new Palette(*pal): nullptr), true);
   return true;
 }
 
@@ -165,7 +166,7 @@ void clipboard::get_document_range_info(Document** document, DocumentRange* rang
 
 void clipboard::clear_content()
 {
-  set_clipboard_image(NULL, NULL, true);
+  set_clipboard_image(nullptr, nullptr, nullptr, true);
 }
 
 void clipboard::cut(ContextWriter& writer)
@@ -207,7 +208,7 @@ void clipboard::copy_range(const ContextReader& reader, const DocumentRange& ran
 
   ContextWriter writer(reader);
 
-  set_clipboard_image(NULL, NULL, true);
+  clear_content();
   clipboard_range.setRange(writer.document(), range);
 
   // TODO Replace this with a signal, because here the timeline
@@ -216,12 +217,12 @@ void clipboard::copy_range(const ContextReader& reader, const DocumentRange& ran
     ->getTimeline()->activateClipboardRange();
 }
 
-void clipboard::copy_image(Image* image, Palette* pal, const gfx::Point& point)
+void clipboard::copy_image(const Image* image, const Mask* mask, const Palette* pal)
 {
-  set_clipboard_image(Image::createCopy(image),
-    pal ? new Palette(*pal): NULL, true);
-
-  clipboard_pos = point;
+  set_clipboard_image(
+    Image::createCopy(image),
+    (mask ? new Mask(*mask): nullptr),
+    (pal ? new Palette(*pal): nullptr), true);
 }
 
 void clipboard::copy_palette(const Palette* palette, const doc::PalettePicks& picks)
@@ -229,7 +230,9 @@ void clipboard::copy_palette(const Palette* palette, const doc::PalettePicks& pi
   if (!picks.picks())
     return;                     // Do nothing case
 
-  set_clipboard_image(nullptr, new Palette(*palette), true);
+  set_clipboard_image(nullptr,
+                      nullptr,
+                      new Palette(*palette), true);
   clipboard_picks = picks;
 }
 
@@ -256,7 +259,8 @@ void clipboard::paste()
       }
 #endif
 
-      if (!clipboard_image)
+      if (!clipboard_image ||
+          !clipboard_mask)
         return;
 
       Palette* dst_palette = dstSpr->palette(editor->frame());
@@ -282,7 +286,8 @@ void clipboard::paste()
       }
 
       // Change to MovingPixelsState
-      editor->pasteImage(src_image.get(), clipboard_pos);
+      editor->pasteImage(src_image.get(),
+                         clipboard_mask.get());
       break;
     }
 

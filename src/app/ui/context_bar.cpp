@@ -477,18 +477,72 @@ protected:
   }
 };
 
-
-class ContextBar::TransparentColorField : public ColorButton
-{
+class ContextBar::TransparentColorField : public HBox {
 public:
-  TransparentColorField() : ColorButton(app::Color::fromMask(), IMAGE_RGB) {
-    Change.connect(Bind<void>(&TransparentColorField::onChange, this));
+  TransparentColorField(ContextBar* owner)
+    : m_icon(1)
+    , m_maskColor(app::Color::fromMask(), IMAGE_RGB)
+    , m_owner(owner) {
+    addChild(&m_icon);
+    addChild(&m_maskColor);
+
+    m_icon.addItem(static_cast<SkinTheme*>(getTheme())->get_part(PART_SELECTION_OPAQUE));
+    gfx::Size sz = m_icon.getItem(0)->getPreferredSize();
+    sz.w += 2*guiscale();
+    m_icon.getItem(0)->setMinSize(sz);
+    setOpaque(Preferences::instance().selection.opaque());
+
+    m_icon.ItemChange.connect(Bind<void>(&TransparentColorField::onPopup, this));
+    m_maskColor.Change.connect(Bind<void>(&TransparentColorField::onChangeColor, this));
   }
 
-protected:
-  void onChange() {
-    Preferences::instance().selection.transparentColor(getColor());
+private:
+
+  void onPopup() {
+    gfx::Rect bounds = getBounds();
+
+    Menu menu;
+    MenuItem
+      opaque("Opaque"),
+      masked("Transparent");
+    menu.addChild(&opaque);
+    menu.addChild(&masked);
+
+    if (Preferences::instance().selection.opaque())
+      opaque.setSelected(true);
+    else
+      masked.setSelected(true);
+
+    opaque.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, true));
+    masked.Click.connect(Bind<void>(&TransparentColorField::setOpaque, this, false));
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
   }
+
+  void onChangeColor() {
+    Preferences::instance().selection.transparentColor(
+      m_maskColor.getColor());
+  }
+
+  void setOpaque(bool opaque) {
+    int part = (opaque ? PART_SELECTION_OPAQUE: PART_SELECTION_MASKED);
+    m_icon.getItem(0)->setIcon(
+      static_cast<SkinTheme*>(getTheme())->get_part(part));
+
+    m_maskColor.setVisible(!opaque);
+    Preferences::instance().selection.opaque(opaque);
+    if (!opaque) {
+      Preferences::instance().selection.transparentColor(
+        m_maskColor.getColor());
+    }
+
+    if (m_owner)
+      m_owner->layout();
+  }
+
+  ButtonSet m_icon;
+  ColorButton m_maskColor;
+  ContextBar* m_owner;
 };
 
 class ContextBar::RotAlgorithmField : public ComboBox
@@ -860,7 +914,7 @@ ContextBar::ContextBar()
   addChild(m_selectionOptionsBox = new HBox());
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
-  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField);
+  m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField(this));
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   addChild(m_brushType = new BrushTypeField(this));

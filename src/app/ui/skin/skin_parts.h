@@ -180,6 +180,9 @@ namespace app {
       PART_INK_COMPOSITE,
       PART_INK_LOCK_ALPHA,
 
+      PART_SELECTION_OPAQUE,
+      PART_SELECTION_MASKED,
+
       PARTS
     };
 

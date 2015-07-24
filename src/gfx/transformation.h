@@ -58,6 +58,14 @@ public:
         return *this;
       }
 
+      gfx::Rect bounds() const {
+        Rect bounds;
+        for (int i=0; i<Corners::NUM_OF_CORNERS; ++i)
+          bounds = bounds.createUnion(gfx::Rect((int)m_corners[i].x,
+                                                (int)m_corners[i].y, 1, 1));
+        return bounds;
+      }
+
     private:
       std::vector<PointT<double> > m_corners;
   };

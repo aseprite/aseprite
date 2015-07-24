@@ -110,6 +110,7 @@
     </section>
     <section id="selection">
       <option id="mode" type="app::tools::SelectionMode" default="app::tools::SelectionMode::DEFAULT" />
+      <option id="opaque" type="bool" default="false" />
       <option id="transparent_color" type="app::Color" />
       <option id="rotation_algorithm" type="app::tools::RotationAlgorithm" default="app::tools::RotationAlgorithm::DEFAULT" />
     </section>

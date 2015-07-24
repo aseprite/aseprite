@@ -178,7 +178,7 @@ namespace app {
     void setZoomAndCenterInMouse(render::Zoom zoom,
       const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
-    void pasteImage(const Image* image, const gfx::Point& pos);
+    void pasteImage(const Image* image, const Mask* mask);
 
     void startSelectionTransformation(const gfx::Point& move);
 

@@ -161,15 +161,15 @@ static void image_scale2x(Image* dst, const Image* src, int src_w, int src_h)
   }
 }
 
-void rotsprite_image(Image* bmp, Image* spr,
+void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
   int x1, int y1, int x2, int y2,
   int x3, int y3, int x4, int y4)
 {
-  static ImageBufferPtr buf1, buf2, buf3; // TODO non-thread safe
+  static ImageBufferPtr buf[3]; // TODO non-thread safe
 
-  if (!buf1) buf1.reset(new ImageBuffer(1));
-  if (!buf2) buf2.reset(new ImageBuffer(1));
-  if (!buf3) buf3.reset(new ImageBuffer(1));
+  for (int i=0; i<3; ++i)
+    if (!buf[i])
+      buf[i].reset(new ImageBuffer(1));
 
   int xmin = MIN(x1, MIN(x2, MIN(x3, x4)));
   int xmax = MAX(x1, MAX(x2, MAX(x3, x4)));
@@ -179,9 +179,10 @@ void rotsprite_image(Image* bmp, Image* spr,
   int rot_height = ymax - ymin + 1;
 
   int scale = 8;
-  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf1));
-  base::UniquePtr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf2));
-  base::UniquePtr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf3));
+  base::UniquePtr<Image> bmp_copy(Image::create(bmp->pixelFormat(), rot_width*scale, rot_height*scale, buf[0]));
+  base::UniquePtr<Image> tmp_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[1]));
+  base::UniquePtr<Image> spr_copy(Image::create(spr->pixelFormat(), spr->width()*scale, spr->height()*scale, buf[2]));
+  base::UniquePtr<Image> msk_copy;
 
   color_t maskColor = spr->maskColor();
 
@@ -189,23 +190,38 @@ void rotsprite_image(Image* bmp, Image* spr,
   tmp_copy->setMaskColor(maskColor);
   spr_copy->setMaskColor(maskColor);
 
-  bmp_copy->clear(bmp->maskColor());
   spr_copy->clear(maskColor);
   spr_copy->copy(spr, gfx::Clip(spr->bounds()));
 
   for (int i=0; i<3; ++i) {
-    clear_image(tmp_copy, maskColor);
+    // clear_image(tmp_copy, maskColor);
     image_scale2x(tmp_copy, spr_copy, spr->width()*(1<<i), spr->height()*(1<<i));
     spr_copy->copy(tmp_copy, gfx::Clip(tmp_copy->bounds()));
   }
 
-  doc::algorithm::parallelogram(
-    bmp_copy, spr_copy,
+  if (mask) {
+    // Same ImageBuffer than tmp_copy
+    msk_copy.reset(Image::create(IMAGE_BITMAP, mask->width()*scale, mask->height()*scale, buf[1]));
+    clear_image(msk_copy, 0);
+    scale_image(msk_copy, mask,
+                0, 0, msk_copy->width(), msk_copy->height(),
+                0, 0, mask->width(), mask->height());
+  }
+
+  clear_image(bmp_copy, maskColor);
+  clear_image(bmp_copy, 0);
+  scale_image(bmp_copy, bmp,
+              0, 0, bmp_copy->width(), bmp_copy->height(),
+              xmin, ymin, rot_width, rot_height);
+
+  parallelogram(
+    bmp_copy, spr_copy, msk_copy.get(),
     (x1-xmin)*scale, (y1-ymin)*scale, (x2-xmin)*scale, (y2-ymin)*scale,
     (x3-xmin)*scale, (y3-ymin)*scale, (x4-xmin)*scale, (y4-ymin)*scale);
 
-  doc::algorithm::scale_image(bmp, bmp_copy,
-    xmin, ymin, bmp_copy->width()/scale, bmp_copy->height()/scale);
+  scale_image(bmp, bmp_copy,
+              xmin, ymin, rot_width, rot_height,
+              0, 0, bmp_copy->width(), bmp_copy->height());
 }
 
 } // namespace algorithm

@@ -47,9 +47,11 @@ static inline const base::Vector2d<double> point2Vector(const gfx::PointT<T>& pt
   return base::Vector2d<double>(pt.x, pt.y);
 }
 
-PixelsMovement::PixelsMovement(Context* context,
+PixelsMovement::PixelsMovement(
+  Context* context,
   Site site,
-  const Image* moveThis, const gfx::Point& initialPos,
+  const Image* moveThis,
+  const Mask* mask,
   const char* operationName)
   : m_reader(context)
   , m_site(site)
@@ -64,22 +66,25 @@ PixelsMovement::PixelsMovement(Context* context,
   , m_originalImage(Image::createCopy(moveThis))
   , m_maskColor(m_sprite->transparentColor())
 {
-  m_initialData = gfx::Transformation(gfx::Rect(initialPos, gfx::Size(moveThis->width(), moveThis->height())));
+  m_initialData = gfx::Transformation(mask->bounds());
   m_currentData = m_initialData;
+
+  m_initialMask = new Mask(*mask);
+  m_currentMask = new Mask(*mask);
+
+  m_rotAlgoConn =
+    Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
+      Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
 
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),
   // and its owner could destroy our new "extra cel".
   ASSERT(!m_document->getExtraCel());
-
   redrawExtraImage();
 
-  m_initialMask = new Mask(*m_document->mask());
-  m_currentMask = new Mask(*m_document->mask());
-
-  m_rotAlgoConn =
-    Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
-      Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
+  redrawCurrentMask();
+  updateDocumentMask();
+  update_screen_for_document(m_document);
 }
 
 PixelsMovement::~PixelsMovement()
@@ -165,16 +170,6 @@ void PixelsMovement::catchImageAgain(const gfx::Point& pos, HandleType handle)
     m_document->generateMaskBoundaries(&emptyMask);
     update_screen_for_document(m_document);
   }
-}
-
-void PixelsMovement::maskImage(const Image* image)
-{
-  m_currentMask->replace(m_currentData.bounds());
-  m_initialMask->copyFrom(m_currentMask);
-
-  updateDocumentMask();
-
-  update_screen_for_document(m_document);
 }
 
 void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
@@ -412,29 +407,35 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   }
 }
 
-Image* PixelsMovement::getDraggedImageCopy(gfx::Point& origin)
+void PixelsMovement::getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
+                                         base::UniquePtr<Mask>& outputMask)
 {
-  gfx::Transformation::Corners corners;
-  m_currentData.transformBox(corners);
+  gfx::Rect bounds = m_currentData.transformedBounds();
+  base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), bounds.w, bounds.h));
 
-  gfx::Point leftTop(corners[0]);
-  gfx::Point rightBottom(corners[0]);
-  for (size_t i=1; i<corners.size(); ++i) {
-    if (leftTop.x > corners[i].x) leftTop.x = (int)corners[i].x;
-    if (leftTop.y > corners[i].y) leftTop.y = (int)corners[i].y;
-    if (rightBottom.x < corners[i].x) rightBottom.x = (int)corners[i].x;
-    if (rightBottom.y < corners[i].y) rightBottom.y = (int)corners[i].y;
+  drawImage(image, bounds.getOrigin(), false);
+
+  // Draw mask without shrinking it, so the mask size is equal to the
+  // "image" render.
+  base::UniquePtr<Mask> mask(new Mask);
+  drawMask(mask, false);
+
+  // Now we can shrink and crop the image.
+  gfx::Rect oldMaskBounds = mask->bounds();
+  mask->shrink();
+  gfx::Rect newMaskBounds = mask->bounds();
+  if (newMaskBounds != oldMaskBounds) {
+    newMaskBounds.x -= oldMaskBounds.x;
+    newMaskBounds.y -= oldMaskBounds.y;
+    image.reset(crop_image(image,
+                           newMaskBounds.x,
+                           newMaskBounds.y,
+                           newMaskBounds.w,
+                           newMaskBounds.h, 0));
   }
 
-  int width = rightBottom.x - leftTop.x;
-  int height = rightBottom.y - leftTop.y;
-  base::UniquePtr<Image> image(Image::create(m_sprite->pixelFormat(), width, height));
-
-  drawImage(image, leftTop, false);
-
-  origin = leftTop;
-
-  return image.release();
+  outputImage.reset(image.release());
+  outputMask.reset(mask.release());
 }
 
 void PixelsMovement::stampImage()
@@ -572,13 +573,13 @@ gfx::Size PixelsMovement::getInitialImageSize() const
   return m_initialData.bounds().getSize();
 }
 
-void PixelsMovement::setMaskColor(color_t mask_color)
+void PixelsMovement::setMaskColor(bool opaque, color_t mask_color)
 {
   ContextWriter writer(m_reader, 5000);
-
+  m_opaque = opaque;
   m_maskColor = mask_color;
-
   redrawExtraImage();
+
   update_screen_for_document(m_document);
 }
 
@@ -601,19 +602,7 @@ void PixelsMovement::redrawExtraImage()
 
 void PixelsMovement::redrawCurrentMask()
 {
-  gfx::Transformation::Corners corners;
-  m_currentData.transformBox(corners);
-
-  // Transform mask
-
-  gfx::Rect bounds = m_currentData.transformedBounds();
-  m_currentMask->replace(bounds);
-  m_currentMask->freeze();
-  clear_image(m_currentMask->bitmap(), 0);
-  drawParallelogram(m_currentMask->bitmap(), m_initialMask->bitmap(),
-                    corners, bounds.getOrigin());
-
-  m_currentMask->unfreeze();
+  drawMask(m_currentMask, true);
 }
 
 void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool renderOriginalLayer)
@@ -622,10 +611,9 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
 
   gfx::Transformation::Corners corners;
   m_currentData.transformBox(corners);
+  gfx::Rect bounds = corners.bounds();
 
   dst->setMaskColor(m_sprite->transparentColor());
-
-  gfx::Rect bounds = m_currentData.transformedBounds();
   dst->clear(dst->maskColor());
 
   if (renderOriginalLayer)
@@ -634,11 +622,38 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
       gfx::Clip(bounds.x-pt.x, bounds.y-pt.y, bounds),
       BlendMode::SRC);
 
-  m_originalImage->setMaskColor(m_maskColor);
-  drawParallelogram(dst, m_originalImage, corners, pt);
+  color_t maskColor = m_maskColor;
+  if (m_opaque) {
+    if (m_originalImage->pixelFormat() == IMAGE_INDEXED)
+      maskColor = -1;
+    else
+      maskColor = 0;
+  }
+  m_originalImage->setMaskColor(maskColor);
+
+  drawParallelogram(dst, m_originalImage, m_initialMask, corners, pt);
 }
 
-void PixelsMovement::drawParallelogram(doc::Image* dst, doc::Image* src,
+void PixelsMovement::drawMask(doc::Mask* mask, bool shrink)
+{
+  gfx::Transformation::Corners corners;
+  m_currentData.transformBox(corners);
+  gfx::Rect bounds = corners.bounds();
+
+  mask->replace(bounds);
+  if (shrink)
+    mask->freeze();
+  clear_image(mask->bitmap(), 0);
+  drawParallelogram(mask->bitmap(),
+                    m_initialMask->bitmap(),
+                    nullptr,
+                    corners, bounds.getOrigin());
+  if (shrink)
+    mask->unfreeze();
+}
+
+void PixelsMovement::drawParallelogram(
+  doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
   const gfx::Transformation::Corners& corners,
   const gfx::Point& leftTop)
 {
@@ -658,7 +673,8 @@ retry:;      // In case that we don't have enough memory for RotSprite
   switch (rotAlgo) {
 
     case tools::RotationAlgorithm::FAST:
-      doc::algorithm::parallelogram(dst, src,
+      doc::algorithm::parallelogram(
+        dst, src, (mask ? mask->bitmap(): nullptr),
         int(corners.leftTop().x-leftTop.x),
         int(corners.leftTop().y-leftTop.y),
         int(corners.rightTop().x-leftTop.x),
@@ -671,7 +687,8 @@ retry:;      // In case that we don't have enough memory for RotSprite
 
     case tools::RotationAlgorithm::ROTSPRITE:
       try {
-        doc::algorithm::rotsprite_image(dst, src,
+        doc::algorithm::rotsprite_image(
+          dst, src, (mask ? mask->bitmap(): nullptr),
           int(corners.leftTop().x-leftTop.x),
           int(corners.leftTop().y-leftTop.y),
           int(corners.rightTop().x-leftTop.x),

@@ -1417,8 +1417,11 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
   }
 }
 
-void Editor::pasteImage(const Image* image, const gfx::Point& pos)
+void Editor::pasteImage(const Image* image, const Mask* mask)
 {
+  ASSERT(image);
+  ASSERT(mask);
+
   // Change to a selection tool: it's necessary for PixelsMovement
   // which will use the extra cel for transformation preview, and is
   // not compatible with the drawing cursor preview which overwrite
@@ -1433,8 +1436,8 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
   Sprite* sprite = this->sprite();
 
   // Check bounds where the image will be pasted.
-  int x = pos.x;
-  int y = pos.y;
+  int x = mask->bounds().x;
+  int y = mask->bounds().y;
   {
     // Then we check if the image will be visible by the user.
     Rect visibleBounds = getVisibleSpriteBounds().shrink(4*ui::guiscale());
@@ -1450,12 +1453,12 @@ void Editor::pasteImage(const Image* image, const gfx::Point& pos)
   // pasted image.
   m_brushPreview.hide();
 
+  Mask mask2(*mask);
+  mask2.setOrigin(x, y);
+
   PixelsMovementPtr pixelsMovement(
     new PixelsMovement(UIContext::instance(),
-      getSite(), image, gfx::Point(x, y), "Paste"));
-
-  // Select the pasted image so the user can move it and transform it.
-  pixelsMovement->maskImage(image);
+                       getSite(), image, &mask2, "Paste"));
 
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }

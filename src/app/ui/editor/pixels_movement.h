@@ -20,6 +20,7 @@
 
 namespace doc {
   class Image;
+  class Mask;
   class Sprite;
 }
 
@@ -45,13 +46,11 @@ namespace app {
       LockAxisMovement = 16
     };
 
-    // The "moveThis" image specifies the chunk of pixels to be moved.
-    // The "x" and "y" parameters specify the initial position of the image.
     PixelsMovement(Context* context,
-      Site site,
-      const Image* moveThis,
-      const gfx::Point& initialPos,
-      const char* operationName);
+                   Site site,
+                   const Image* moveThis,
+                   const Mask* mask,
+                   const char* operationName);
     ~PixelsMovement();
 
     void cutMask();
@@ -59,17 +58,14 @@ namespace app {
     void catchImage(const gfx::Point& pos, HandleType handle);
     void catchImageAgain(const gfx::Point& pos, HandleType handle);
 
-    // Creates a mask for the given image. Useful when the user paste a
-    // image from the clipboard.
-    void maskImage(const Image* image);
-
     // Moves the image to the new position (relative to the start
     // position given in the ctor).
     void moveImage(const gfx::Point& pos, MoveModifier moveModifier);
 
     // Returns a copy of the current image being dragged with the
     // current transformation.
-    Image* getDraggedImageCopy(gfx::Point& origin);
+    void getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
+                             base::UniquePtr<Mask>& outputMask);
 
     // Copies the image being dragged in the current position.
     void stampImage();
@@ -82,7 +78,7 @@ namespace app {
     gfx::Rect getImageBounds();
     gfx::Size getInitialImageSize() const;
 
-    void setMaskColor(color_t mask_color);
+    void setMaskColor(bool opaque, color_t mask_color);
 
     // Flips the image and mask in the given direction in "flipType".
     // Flip Horizontally/Vertically commands are replaced calling this
@@ -97,7 +93,8 @@ namespace app {
     void redrawExtraImage();
     void redrawCurrentMask();
     void drawImage(doc::Image* dst, const gfx::Point& pos, bool renderOriginalLayer);
-    void drawParallelogram(doc::Image* dst, doc::Image* src,
+    void drawMask(doc::Mask* dst, bool shrink);
+    void drawParallelogram(doc::Image* dst, const doc::Image* src, const doc::Mask* mask,
       const gfx::Transformation::Corners& corners,
       const gfx::Point& leftTop);
     void updateDocumentMask();
@@ -118,6 +115,7 @@ namespace app {
     gfx::Transformation m_currentData;
     Mask* m_initialMask;
     Mask* m_currentMask;
+    bool m_opaque;
     color_t m_maskColor;
     ScopedConnection m_rotAlgoConn;
   };

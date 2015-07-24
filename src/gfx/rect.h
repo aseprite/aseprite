@@ -198,6 +198,12 @@ public:
       pt.y >= y && pt.y < y+h;
   }
 
+  bool contains(const T& u, const T& v) const {
+    return
+      u >= x && u < x+w &&
+      v >= y && v < y+h;
+  }
+
   // Returns true if this rectangle entirely contains the rc rectangle.
   bool contains(const RectT& rc) const {
     if (isEmpty() || rc.isEmpty())

@@ -90,7 +90,9 @@ private:
         // Stretch the 'image'
         m_thumbnail.reset(Image::create(image->pixelFormat(), thumb_w, thumb_h));
         clear_image(m_thumbnail, 0);
-        algorithm::scale_image(m_thumbnail, image, 0, 0, thumb_w, thumb_h);
+        algorithm::scale_image(m_thumbnail, image,
+                               0, 0, thumb_w, thumb_h,
+                               0, 0, image->width(), image->height());
       }
 
       // Close file
