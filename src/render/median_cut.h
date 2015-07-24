@@ -312,7 +312,7 @@ namespace render {
     // to a color for the "result" vector.
     while (!boxes.empty() && result.size() < maxBoxes) {
       const Box<Histogram>& box(boxes.top());
-      color_t color = box.meanColor(histogram);
+      doc::color_t color = box.meanColor(histogram);
       result.push_back(color);
       boxes.pop();
     }
