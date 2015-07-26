@@ -7,7 +7,11 @@
 
 // included by clipboard.cpp
 
+#include "base/serialization.h"
 #include "doc/color_scales.h"
+#include "doc/image_io.h"
+#include "doc/mask_io.h"
+#include "doc/palette_io.h"
 #include "she/display.h"
 #include "she/system.h"
 #include "ui/alert.h"
@@ -23,6 +27,10 @@
 namespace {
 
 using namespace doc;
+using namespace base::serialization;
+using namespace base::serialization::little_endian;
+
+static UINT custom_clipboard_format = 0;
 
 static uint32_t get_shift_from_mask(uint32_t mask)
 {
@@ -35,6 +43,9 @@ static uint32_t get_shift_from_mask(uint32_t mask)
 
 bool win32_open_clipboard(HWND hwnd)
 {
+  if (!custom_clipboard_format)
+    custom_clipboard_format = RegisterClipboardFormat(L"Aseprite.Image.1");
+
   for (int i=0; i<5; ++i) {
     if (OpenClipboard(hwnd))
       return true;
@@ -71,6 +82,31 @@ static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Pal
   if (!image) {
     CloseClipboard();
     return;
+  }
+
+  // Set custom clipboard formats
+  {
+    std::stringstream os;
+    write32(os,
+            (image   ? 1: 0) |
+            (mask    ? 2: 0) |
+            (palette ? 4: 0));
+    if (image) doc::write_image(os, image);
+    if (mask) doc::write_mask(os, mask);
+    if (palette) doc::write_palette(os, palette);
+
+    size_t size = (size_t)os.tellp();
+
+    HGLOBAL hmem = GlobalAlloc(GHND, size+4);
+    char* p = (char*)GlobalLock(hmem);
+
+    *((uint32_t*)p) = size;
+    os.seekp(0);
+    os.read(p+4, size);
+
+    GlobalUnlock(hmem);
+    SetClipboardData(custom_clipboard_format, hmem);
+    GlobalFree(hmem);
   }
 
   // information to create the memory necessary for the bitmap
@@ -182,10 +218,11 @@ static void set_win32_clipboard_bitmap(const Image* image, const Mask* mask, Pal
 /**
  * Creates an Image from the current Windows Clipboard content.
  */
-static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
+static void get_win32_clipboard_bitmap(Image*& image, Mask*& mask, Palette*& palette)
 {
-  image = NULL;
-  palette = NULL;
+  image = nullptr;
+  mask = nullptr;
+  palette = nullptr;
 
   if (!win32_clipboard_contains_bitmap())
     return;
@@ -193,6 +230,27 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
   HWND hwnd = static_cast<HWND>(she::instance()->defaultDisplay()->nativeHandle());
   if (!win32_open_clipboard(hwnd))
     return;
+
+  // Prefer the custom format (to avoid losing data)
+  if (IsClipboardFormatAvailable(custom_clipboard_format)) {
+    const char* ptr = (const char*)GetClipboardData(custom_clipboard_format);
+    if (ptr) {
+      size_t size = *((uint32_t*)ptr);
+      if (size > 0) {
+        std::stringstream is;
+        is.write(ptr+4, size);
+
+        int bits = read32(is);
+        if (bits & 1) image   = doc::read_image(is, false);
+        if (bits & 2) mask    = doc::read_mask(is);
+        if (bits & 4) palette = doc::read_palette(is);
+      }
+
+      CloseClipboard();
+      if (image)
+        return;
+    }
+  }
 
   BITMAPINFO* bi = (BITMAPINFO*)GetClipboardData(CF_DIB);
   if (bi) {
@@ -230,8 +288,8 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
               for (int x=0; x<image->width(); ++x) {
                 c = *(src++);
                 *(dst++) = rgba((c & r_mask) >> r_shift,
-                                 (c & g_mask) >> g_shift,
-                                 (c & b_mask) >> b_shift, 255);
+                                (c & g_mask) >> g_shift,
+                                (c & b_mask) >> b_shift, 255);
               }
             }
           }
@@ -245,9 +303,9 @@ static void get_win32_clipboard_bitmap(Image*& image, Palette*& palette)
               for (int x=0; x<image->width(); ++x) {
                 c = *(src++);
                 *(dst++) = rgba((c & 0x00ff0000) >> 16,
-                                 (c & 0x0000ff00) >> 8,
-                                 (c & 0x000000ff) >> 0,
-                                 (c & 0xff000000) >> 24);
+                                (c & 0x0000ff00) >> 8,
+                                (c & 0x000000ff) >> 0,
+                                (c & 0xff000000) >> 24);
               }
             }
           }

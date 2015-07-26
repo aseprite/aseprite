@@ -35,8 +35,7 @@
 #include "render/quantization.h"
 
 #ifdef _WIN32
-  // TODO Re-enable native clipboard with custom format to save image+mask when possible
-  //#define USE_NATIVE_WIN32_CLIPBOARD
+  #define USE_NATIVE_WIN32_CLIPBOARD
 #endif
 
 #ifdef USE_NATIVE_WIN32_CLIPBOARD
@@ -252,16 +251,27 @@ void clipboard::paste()
       // Get the image from the clipboard.
       {
         Image* win32_image = NULL;
+        Mask* win32_mask = NULL;
         Palette* win32_palette = NULL;
-        get_win32_clipboard_bitmap(win32_image, win32_palette);
-        if (win32_image != NULL)
-          set_clipboard_image(win32_image, win32_palette, false);
+        get_win32_clipboard_bitmap(win32_image, win32_mask, win32_palette);
+        if (win32_image)
+          set_clipboard_image(win32_image, win32_mask, win32_palette, false);
       }
 #endif
 
-      if (!clipboard_image ||
-          !clipboard_mask)
+      if (!clipboard_image)
         return;
+
+      if (!clipboard_mask) {
+        gfx::Rect visibleBounds = editor->getVisibleSpriteBounds();
+        gfx::Rect imageBounds = clipboard_image->bounds();
+
+        clipboard_mask.reset(new Mask);
+        clipboard_mask->replace(
+          gfx::Rect(visibleBounds.x + visibleBounds.w/2 - imageBounds.w/2,
+                    visibleBounds.y + visibleBounds.h/2 - imageBounds.h/2,
+                    imageBounds.w, imageBounds.h));
+      }
 
       Palette* dst_palette = dstSpr->palette(editor->frame());
 
