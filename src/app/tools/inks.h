@@ -23,7 +23,7 @@ namespace tools {
 // (or foreground/background colors)
 class PaintInk : public Ink {
 public:
-  enum Type { Merge, WithFg, WithBg, Opaque, SetAlpha, LockAlpha };
+  enum Type { Merge, WithFg, WithBg, Copy, LockAlpha };
 
 private:
   AlgoHLine m_proc;
@@ -59,8 +59,7 @@ public:
       m_proc = ink_processing[INK_BRUSH][depth];
     else {
       switch (m_type) {
-        case Opaque: m_proc = ink_processing[INK_OPAQUE][depth]; break;
-        case SetAlpha: m_proc = ink_processing[INK_SETALPHA][depth]; break;
+        case Copy: m_proc = ink_processing[INK_COPY][depth]; break;
         case LockAlpha: m_proc = ink_processing[INK_LOCKALPHA][depth]; break;
         default: m_proc = ink_processing[INK_TRANSPARENT][depth]; break;
       }
@@ -160,7 +159,7 @@ public:
     switch (m_type) {
 
       case Eraser:
-        m_proc = ink_processing[INK_OPAQUE][MID(0, loop->sprite()->pixelFormat(), 2)];
+        m_proc = ink_processing[INK_COPY][MID(0, loop->sprite()->pixelFormat(), 2)];
 
         // TODO app_get_color_to_clear_layer should receive the context as parameter
         loop->setPrimaryColor(app_get_color_to_clear_layer(loop->getLayer()));

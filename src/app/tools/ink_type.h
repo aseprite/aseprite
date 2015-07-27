@@ -14,8 +14,8 @@ namespace tools {
 
   enum class InkType {
     DEFAULT = 0,
-    REPLACE_PIXEL = 0,
-    ALPHA_COMPOSITING = 1,
+    ALPHA_COMPOSITING = 0,
+    COPY_COLOR = 1,
     LOCK_ALPHA = 2,
   };
 

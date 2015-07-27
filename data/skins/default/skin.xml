@@ -373,7 +373,7 @@
     <part id="canvas_se"                        x="128" y="128" w="16" h="16" />
     <part id="canvas_empty"                     x="96" y="96" w="1" h="1" />
     <part id="ink_default"                      x="144" y="144" w="16" h="16" />
-    <part id="ink_composite"                    x="160" y="144" w="16" h="16" />
+    <part id="ink_copy_color"                   x="160" y="144" w="16" h="16" />
     <part id="ink_lock_alpha"                   x="176" y="144" w="16" h="16" />
     <part id="selection_opaque"                 x="208" y="176" w="16" h="10" />
     <part id="selection_masked"                 x="224" y="176" w="16" h="10" />

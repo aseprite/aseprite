@@ -33,8 +33,7 @@ namespace app {
       extern const char* Paint;
       extern const char* PaintFg;
       extern const char* PaintBg;
-      extern const char* PaintOpaque;
-      extern const char* PaintSetAlpha;
+      extern const char* PaintCopy;
       extern const char* PaintLockAlpha;
       extern const char* Shading;
       extern const char* Eraser;

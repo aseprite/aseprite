@@ -916,11 +916,11 @@ tools::Ink* Editor::getCurrentEditorInk()
     const char* id = NULL;
 
     switch (inkType) {
-      case tools::InkType::REPLACE_PIXEL:
-        id = tools::WellKnownInks::PaintOpaque;
-        break;
       case tools::InkType::ALPHA_COMPOSITING:
         id = tools::WellKnownInks::Paint;
+        break;
+      case tools::InkType::COPY_COLOR:
+        id = tools::WellKnownInks::PaintCopy;
         break;
       case tools::InkType::LOCK_ALPHA:
         id = tools::WellKnownInks::PaintLockAlpha;

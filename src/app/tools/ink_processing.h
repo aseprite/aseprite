@@ -103,13 +103,13 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////
-// Opaque Ink
+// Copy Ink
 //////////////////////////////////////////////////////////////////////
 
 template<typename ImageTraits>
-class OpaqueInkProcessing : public SimpleInkProcessing<OpaqueInkProcessing<ImageTraits>, ImageTraits> {
+class CopyInkProcessing : public SimpleInkProcessing<CopyInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  OpaqueInkProcessing(ToolLoop* loop) {
+  CopyInkProcessing(ToolLoop* loop) {
     m_color = loop->getPrimaryColor();
 
     if (loop->getLayer()->isBackground()) {
@@ -121,51 +121,12 @@ public:
   }
 
   void processPixel(int x, int y) {
-    *SimpleInkProcessing<OpaqueInkProcessing<ImageTraits>, ImageTraits>::m_dstAddress = m_color;
+    *SimpleInkProcessing<CopyInkProcessing<ImageTraits>, ImageTraits>::m_dstAddress = m_color;
   }
 
 private:
   color_t m_color;
 };
-
-//////////////////////////////////////////////////////////////////////
-// SetAlpha Ink
-//////////////////////////////////////////////////////////////////////
-
-template<typename ImageTraits>
-class SetAlphaInkProcessing : public SimpleInkProcessing<SetAlphaInkProcessing<ImageTraits>, ImageTraits> {
-public:
-  SetAlphaInkProcessing(ToolLoop* loop) {
-    m_color = loop->getPrimaryColor();
-    m_opacity = loop->getOpacity();
-  }
-
-  void processPixel(int x, int y) {
-    // Do nothing
-  }
-
-private:
-  color_t m_color;
-  int m_opacity;
-};
-
-template<>
-void SetAlphaInkProcessing<RgbTraits>::processPixel(int x, int y) {
-  *m_dstAddress = rgba(rgba_getr(m_color),
-                       rgba_getg(m_color),
-                       rgba_getb(m_color),
-                       m_opacity);
-}
-
-template<>
-void SetAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
-  *m_dstAddress = graya(graya_getv(m_color), m_opacity);
-}
-
-template<>
-void SetAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
-  *m_dstAddress = m_color;
-}
 
 //////////////////////////////////////////////////////////////////////
 // LockAlpha Ink
@@ -876,8 +837,7 @@ void BrushInkProcessing<IndexedTraits>::processPixel(int x, int y) {
 //////////////////////////////////////////////////////////////////////
 
 enum {
-  INK_OPAQUE,
-  INK_SETALPHA,
+  INK_COPY,
   INK_LOCKALPHA,
   INK_TRANSPARENT,
   INK_BLUR,
@@ -904,8 +864,7 @@ AlgoHLine ink_processing[][3] =
     ink_processing_algo<name<GrayscaleTraits> >, \
     ink_processing_algo<name<IndexedTraits> > }
 
-  DEFINE_INK(OpaqueInkProcessing),
-  DEFINE_INK(SetAlphaInkProcessing),
+  DEFINE_INK(CopyInkProcessing),
   DEFINE_INK(LockAlphaInkProcessing),
   DEFINE_INK(TransparentInkProcessing),
   DEFINE_INK(BlurInkProcessing),

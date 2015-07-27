@@ -333,8 +333,8 @@ public:
     int part = PART_INK_DEFAULT;
 
     switch (inkType) {
-      case InkType::REPLACE_PIXEL:     part = PART_INK_DEFAULT; break;
-      case InkType::ALPHA_COMPOSITING: part = PART_INK_COMPOSITE; break;
+      case InkType::ALPHA_COMPOSITING: part = PART_INK_DEFAULT; break;
+      case InkType::COPY_COLOR:        part = PART_INK_COPY_COLOR; break;
       case InkType::LOCK_ALPHA:        part = PART_INK_LOCK_ALPHA; break;
     }
 
@@ -350,26 +350,26 @@ protected:
 
     Menu menu;
     MenuItem
-      replace("Replace Pixel"),
       alphacompo("Alpha Compositing"),
+      copycolor("Copy Color+Alpha"),
       lockalpha("Lock Alpha"),
       alltools("Same in all Tools");
-    menu.addChild(&replace);
     menu.addChild(&alphacompo);
+    menu.addChild(&copycolor);
     menu.addChild(&lockalpha);
     menu.addChild(new MenuSeparator);
     menu.addChild(&alltools);
 
     Tool* tool = App::instance()->activeTool();
     switch (Preferences::instance().tool(tool).ink()) {
-      case tools::InkType::REPLACE_PIXEL: replace.setSelected(true); break;
       case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
+      case tools::InkType::COPY_COLOR: copycolor.setSelected(true); break;
       case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
     }
     alltools.setSelected(Preferences::instance().shared.shareInk());
 
-    replace.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::REPLACE_PIXEL));
     alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
+    copycolor.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::COPY_COLOR));
     lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
     alltools.Click.connect(Bind<void>(&InkTypeField::onSameInAllTools, this));
 
@@ -1091,7 +1091,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_inkOpacity->setTextf("%d", toolPref->opacity());
 
     hasInkWithOpacity =
-      ((isPaint && toolPref->ink() != tools::InkType::REPLACE_PIXEL) ||
+      ((isPaint && toolPref->ink() != tools::InkType::COPY_COLOR) ||
        (isEffect));
 
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
