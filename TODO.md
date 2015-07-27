@@ -7,7 +7,6 @@
 * does lock alpha work correctly?
 * does onscrollchange notification calls onscrollchange notification?
 * random clicks on toolbar crashes the program
-* click Desktop item in file selector crashes the program
 
 # Tasks
 
@@ -16,7 +15,6 @@
 * Remove Image::getPixelAddress(), it shouldn't be public and almost
   everywhere we should use iterators for images. Also get/put_pixel_fast
   and ImageImpl::address() are dangerous.
-* Warning icon when selecting RGB/HSB color in indexed image.
 * Warning message when we open a file that is already opened
   (show an option to create a second view, or maybe this should
   be forbidden).
@@ -24,14 +22,11 @@
 * Ctrl+Shift selection should copy and snap axis
 * "Duplicate sprite" should copy the "Background" layer as Background.
 * Fix problem applyToTarget() can throw (it's called from other thread)
-* After flatten show the background if it is hidden.
-* Alpha when pasting.
 * Shade drawing mode.
 * Improve status bar indicators (show origin of selection in floating state).
 * Export to sprite sheet: if the file we're using is .ase, select .png by default
   (and then the latest used extension).
 * Fix problem with export sprite sheet when the cel has negative pos
-* Add a warning when exporting RGB sprite to GIF, hinting at the quantize function.
 * MovingPixelsState: Add undo information in each transformation step.
 * Add IntEntry class in src/ui/ with spin-buttons.
 * Add feedback to "Shift+S" shortcut to switch "snap to grid".
@@ -43,7 +38,6 @@
 
 # Refactoring
 
-* Replace get_unique_cels() with CelsRange
 * Make one level of layers (folders should modify only timeline/UI)
 * Convert doc::PixelFormat to a enum class
 * Add doc::Spec with width/height/channels/ColorMode/ncolors
