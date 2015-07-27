@@ -58,9 +58,12 @@
             <label text="Cursor Color:" />
             <box id="cursor_color_box" /><!-- custom widget -->
           </hbox>
+
+          <separator text="Selection" horizontal="true" />
+          <check text="Adjust opaque/transparent mode automatically" id="auto_opaque" tooltip="Depending on the layer (background/transparent),&#10;the pasted selection will be adjusted&#10;automatically (opaque/transparent)" />
         </vbox>
 
-        <!-- Editor -->
+        <!-- Timeline -->
         <vbox id="section_timeline">
           <separator text="Timeline" horizontal="true" />
           <check text="Show timeline automatically" id="autotimeline" tooltip="Show the timeline automatically&#10;when a new frame or layer is added." />

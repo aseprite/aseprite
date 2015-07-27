@@ -84,6 +84,9 @@ public:
     if (m_preferences.editor.zoomFromCenterWithKeys())
       zoomFromCenterWithKeys()->setSelected(true);
 
+    if (m_preferences.selection.autoOpaque())
+      autoOpaque()->setSelected(true);
+
     if (m_preferences.experimental.useNativeCursor())
       nativeCursor()->setSelected(true);
 
@@ -181,6 +184,7 @@ public:
     m_preferences.editor.zoomWithWheel(wheelZoom()->isSelected());
     m_preferences.editor.rightClickMode(static_cast<app::gen::RightClickMode>(rightClickBehavior()->getSelectedItemIndex()));
     m_preferences.editor.cursorColor(m_cursorColor->getColor());
+    m_preferences.selection.autoOpaque(autoOpaque()->isSelected());
 
     m_curPref->grid.color(m_gridColor->getColor());
     m_curPref->grid.opacity(gridOpacity()->getValue());

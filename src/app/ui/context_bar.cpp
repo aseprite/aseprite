@@ -490,10 +490,14 @@ public:
     gfx::Size sz = m_icon.getItem(0)->getPreferredSize();
     sz.w += 2*guiscale();
     m_icon.getItem(0)->setMinSize(sz);
-    setOpaque(Preferences::instance().selection.opaque());
 
     m_icon.ItemChange.connect(Bind<void>(&TransparentColorField::onPopup, this));
     m_maskColor.Change.connect(Bind<void>(&TransparentColorField::onChangeColor, this));
+
+    Preferences::instance().selection.opaque.AfterChange.connect(
+      Bind<void>(&TransparentColorField::onOpaqueChange, this));
+
+    setOpaque(Preferences::instance().selection.opaque());
   }
 
 private:
@@ -525,12 +529,18 @@ private:
   }
 
   void setOpaque(bool opaque) {
+    Preferences::instance().selection.opaque(opaque);
+  }
+
+  // When the preference is changed from outside the context bar
+  void onOpaqueChange() {
+    bool opaque = Preferences::instance().selection.opaque();
+
     int part = (opaque ? PART_SELECTION_OPAQUE: PART_SELECTION_MASKED);
     m_icon.getItem(0)->setIcon(
       static_cast<SkinTheme*>(getTheme())->get_part(part));
 
     m_maskColor.setVisible(!opaque);
-    Preferences::instance().selection.opaque(opaque);
     if (!opaque) {
       Preferences::instance().selection.transparentColor(
         m_maskColor.getColor());

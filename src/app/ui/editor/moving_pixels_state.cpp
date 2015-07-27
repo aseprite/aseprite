@@ -70,7 +70,11 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
     editor->captureMouse();
   }
 
-  // Setup mask color
+  // Setup transparent mode/mask color
+  if (Preferences::instance().selection.autoOpaque()) {
+    Preferences::instance().selection.opaque(
+      editor->layer()->isBackground());
+  }
   onTransparentColorChange();
 
   // Hook BeforeCommandExecution signal so we know if the user wants
