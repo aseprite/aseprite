@@ -16,6 +16,7 @@
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_layer.h"
 #include "app/cmd/remove_layer.h"
+#include "app/cmd/set_layer_flags.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/document.h"
 #include "doc/cel.h"
@@ -79,6 +80,14 @@ void FlattenLayers::onExecute()
       cel = new Cel(frame, cel_image);
       background->addCel(cel);
     }
+  }
+
+  // Show background if it's hidden
+  if (!background->isVisible()) {
+    LayerFlags newFlags = LayerFlags(
+      int(background->flags()) | int(LayerFlags::Visible));
+
+    executeAndAdd(new cmd::SetLayerFlags(background, newFlags));
   }
 
   // Delete old layers.
