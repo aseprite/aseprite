@@ -615,7 +615,9 @@ void Render::renderBackground(Image* image,
 }
 
 void Render::renderImage(Image* dst_image, const Image* src_image,
-  const Palette* pal, int x, int y, Zoom zoom, int opacity, BlendMode blend_mode)
+                         const Palette* pal,
+                         int x, int y,
+                         Zoom zoom, int opacity, BlendMode blend_mode)
 {
   RenderScaledImage scaled_func = getRenderScaledImageFunc(
     dst_image->pixelFormat(),
@@ -835,12 +837,14 @@ Render::RenderScaledImage Render::getRenderScaledImageFunc(
 }
 
 void composite_image(Image* dst, const Image* src,
-  int x, int y, int opacity, BlendMode blend_mode)
+                     const Palette* pal,
+                     int x, int y,
+                     int opacity, BlendMode blend_mode)
 {
   // As the background is not rendered in renderImage(), we don't need
   // to configure the Render instance's BgType.
   Render().renderImage(
-    dst, src, NULL, x, y, Zoom(1, 1),
+    dst, src, pal, x, y, Zoom(1, 1),
     opacity, blend_mode);
 }
 

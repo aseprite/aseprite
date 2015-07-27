@@ -134,7 +134,9 @@ void MergeDownLayerCommand::onExecute(Context* context)
             bounds.w, bounds.h, bgcolor));
 
         // Merge src_image in new_image
-        render::composite_image(new_image.get(), src_image,
+        render::composite_image(
+          new_image.get(), src_image,
+          sprite->palette(src_cel->frame()),
           src_cel->x()-bounds.x,
           src_cel->y()-bounds.y,
           opacity,

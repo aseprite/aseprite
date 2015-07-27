@@ -54,7 +54,6 @@ void CopyCel::onExecute()
   ASSERT(dstSprite);
   ASSERT(m_srcFrame >= 0 && m_srcFrame < srcSprite->totalFrames());
   ASSERT(m_dstFrame >= 0);
-  (void)srcSprite;              // To avoid unused variable warning on Release mode
 
   Cel* srcCel = srcLayer->cel(m_srcFrame);
   Cel* dstCel = dstLayer->cel(m_dstFrame);
@@ -97,8 +96,10 @@ void CopyCel::onExecute()
                          BlendMode::NORMAL);
 
       ImageRef tmp(Image::createCopy(dstImage.get()));
-      render::composite_image(tmp.get(), srcImage,
-                              srcCel->x(), srcCel->y(), 255, blend);
+      render::composite_image(
+        tmp.get(), srcImage,
+        srcSprite->palette(m_srcFrame),
+        srcCel->x(), srcCel->y(), 255, blend);
       executeAndAdd(new cmd::CopyRect(dstImage.get(), tmp.get(), gfx::Clip(tmp->bounds())));
     }
   }

@@ -200,7 +200,9 @@ namespace render {
   };
 
   void composite_image(Image* dst, const Image* src,
-    int x, int y, int opacity, BlendMode blend_mode);
+                       const Palette* pal,
+                       int x, int y,
+                       int opacity, BlendMode blend_mode);
 
 } // namespace render
 
