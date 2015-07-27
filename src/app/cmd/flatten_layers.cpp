@@ -45,15 +45,22 @@ void FlattenLayers::onExecute()
 
   // If there aren't a background layer we must to create the background.
   LayerImage* background = sprite->backgroundLayer();
+  bool created = false;
   if (!background) {
     background = new LayerImage(sprite);
     executeAndAdd(new cmd::AddLayer(sprite->folder(), background, nullptr));
     executeAndAdd(new cmd::ConfigureBackground(background));
+    created = true;
   }
+
+  color_t bgcolor;
+  if (created || !background->isVisible())
+    bgcolor = doc->bgColor(background); // Use color bar background color
+  else
+    bgcolor = sprite->transparentColor();
 
   render::Render render;
   render.setBgType(render::BgType::NONE);
-  color_t bgcolor = doc->bgColor(background);
 
   // Copy all frames to the background.
   for (frame_t frame(0); frame<sprite->totalFrames(); ++frame) {
