@@ -156,7 +156,11 @@ Cel* LayerImage::getLastCel() const
 
 void LayerImage::addCel(Cel* cel)
 {
+  ASSERT(cel);
   ASSERT(cel->data() && "The cel doesn't contain CelData");
+  ASSERT(cel->image());
+  ASSERT(sprite());
+  ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat());
 
   CelIterator it = getCelBegin();
   CelIterator end = getCelEnd();

@@ -134,6 +134,11 @@ static void compose_scaled_image_scale_up(
   gfx::Clip area,
   int opacity, BlendMode blend_mode, Zoom zoom)
 {
+  ASSERT(dst);
+  ASSERT(src);
+  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
+  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   int px_x, px_y;
 
@@ -261,6 +266,11 @@ static void compose_scaled_image_scale_down(
   gfx::Clip area,
   int opacity, BlendMode blend_mode, Zoom zoom)
 {
+  ASSERT(dst);
+  ASSERT(src);
+  ASSERT(DstTraits::pixel_format == dst->pixelFormat());
+  ASSERT(SrcTraits::pixel_format == src->pixelFormat());
+
   BlenderHelper<DstTraits, SrcTraits> blender(src, pal, blend_mode);
   int unbox_w = zoom.remove(1);
   int unbox_h = zoom.remove(1);
