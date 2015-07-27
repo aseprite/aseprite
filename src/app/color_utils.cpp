@@ -111,7 +111,7 @@ doc::color_t color_utils::color_for_layer(const app::Color& color, Layer* layer)
 
 doc::color_t color_utils::color_for_target_mask(const app::Color& color, const ColorTarget& colorTarget)
 {
-  doc::color_t c = -1;
+  int c = -1;
 
   if (color.getType() == app::Color::MaskType) {
     c = colorTarget.maskColor();
@@ -129,35 +129,35 @@ doc::color_t color_utils::color_for_target_mask(const app::Color& color, const C
           c = color.getIndex();
         }
         else {
-          c = get_current_palette()->findBestfit(
-            color.getRed(),
-            color.getGreen(),
-            color.getBlue(),
-            color.getAlpha(),
-            colorTarget.isTransparent() ?
-              colorTarget.maskColor(): // Don't return the mask color
-              -1);                     // Return any color, we are in a background layer.
+          int r = color.getRed();
+          int g = color.getGreen();
+          int b = color.getBlue();
+          int a = color.getAlpha();
+          int mask = (colorTarget.isTransparent() ?
+                      colorTarget.maskColor(): // Don't return the mask color
+                      -1);
+
+          c = get_current_palette()->findExactMatch(r, g, b, a, mask);
+          if (c < 0)
+            c = get_current_palette()->findBestfit(r, g, b, a, mask);
         }
         break;
     }
   }
 
-  return c;
+  return (doc::color_t)c;
 }
 
+// TODO remove this function using a special RGB background layer (24bpp or 32bpp ignoring alpha)
 doc::color_t color_utils::color_for_target(const app::Color& color, const ColorTarget& colorTarget)
 {
   doc::color_t c = color_utils::color_for_target_mask(color, colorTarget);
 
-  switch (colorTarget.pixelFormat()) {
-    case IMAGE_RGB:
-      if (colorTarget.isBackground())
-        c |= doc::rgba(0, 0, 0, 255);
-      break;
-    case IMAGE_GRAYSCALE:
-      if (colorTarget.isBackground())
-        c |= doc::graya(0, 255);
-      break;
+  if (colorTarget.isBackground()) {
+    switch (colorTarget.pixelFormat()) {
+      case IMAGE_RGB: c |= doc::rgba_a_mask; break;
+      case IMAGE_GRAYSCALE: c |= doc::graya_a_mask; break;
+    }
   }
 
   return c;

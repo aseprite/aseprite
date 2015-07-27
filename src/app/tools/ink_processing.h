@@ -111,6 +111,13 @@ class OpaqueInkProcessing : public SimpleInkProcessing<OpaqueInkProcessing<Image
 public:
   OpaqueInkProcessing(ToolLoop* loop) {
     m_color = loop->getPrimaryColor();
+
+    if (loop->getLayer()->isBackground()) {
+      switch (loop->sprite()->pixelFormat()) {
+        case IMAGE_RGB: m_color |= rgba_a_mask; break;
+        case IMAGE_GRAYSCALE: m_color |= graya_a_mask; break;
+      }
+    }
   }
 
   void processPixel(int x, int y) {

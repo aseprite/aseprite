@@ -108,8 +108,8 @@ public:
     , m_pointShape(m_tool->getPointShape(m_button))
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
-    , m_fgColor(color_utils::color_for_layer(fgColor, m_layer))
-    , m_bgColor(color_utils::color_for_layer(bgColor, m_layer))
+    , m_fgColor(color_utils::color_for_target_mask(fgColor, ColorTarget(m_layer)))
+    , m_bgColor(color_utils::color_for_target_mask(bgColor, ColorTarget(m_layer)))
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
     , m_secondaryColor(button == tools::ToolLoop::Left ? m_bgColor: m_fgColor)
   {
