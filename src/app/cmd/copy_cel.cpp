@@ -19,6 +19,7 @@
 #include "app/cmd/set_cel_data.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/document.h"
+#include "app/util/create_cel_copy.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -109,11 +110,12 @@ void CopyCel::onExecute()
       executeAndAdd(new cmd::RemoveCel(dstCel));
 
     if (srcCel) {
-      if (createLink)
+      if (createLink) {
         dstCel = Cel::createLink(srcCel);
+        dstCel->setFrame(m_dstFrame);
+      }
       else
-        dstCel = Cel::createCopy(srcCel);
-      dstCel->setFrame(m_dstFrame);
+        dstCel = create_cel_copy(srcCel, dstSprite, m_dstFrame);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
     }

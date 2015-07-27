@@ -21,6 +21,7 @@
 #include "app/cmd/set_cel_frame.h"
 #include "app/cmd/unlink_cel.h"
 #include "app/document.h"
+#include "app/util/create_cel_copy.h"
 #include "doc/cel.h"
 #include "doc/layer.h"
 #include "doc/primitives.h"
@@ -118,8 +119,7 @@ void MoveCel::onExecute()
       executeAndAdd(new cmd::SetCelFrame(srcCel, m_dstFrame));
     }
     else {
-      dstCel = Cel::createCopy(srcCel);
-      dstCel->setFrame(m_dstFrame);
+      dstCel = create_cel_copy(srcCel, dstSprite, m_dstFrame);
 
       executeAndAdd(new cmd::AddCel(dstLayer, dstCel));
       executeAndAdd(new cmd::ClearCel(srcCel));

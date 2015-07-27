@@ -20,6 +20,7 @@
 #include "app/file/format_options.h"
 #include "app/flatten.h"
 #include "app/pref/preferences.h"
+#include "app/util/create_cel_copy.h"
 #include "base/memory.h"
 #include "base/mutex.h"
 #include "base/scoped_lock.h"
@@ -364,7 +365,9 @@ void Document::copyLayerContent(const Layer* sourceLayer0, Document* destDoc, La
         newCel->setFrame(sourceCel->frame());
       }
       else {
-        newCel.reset(Cel::createCopy(sourceCel));
+        newCel.reset(create_cel_copy(sourceCel,
+                                     destLayer->sprite(),
+                                     sourceCel->frame()));
         linked.insert(std::make_pair(sourceCel->data()->id(), newCel.get()));
       }
 

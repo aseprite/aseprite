@@ -369,6 +369,7 @@ add_library(app-lib
   ui_context.cpp
   util/autocrop.cpp
   util/clipboard.cpp
+  util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
   util/msk_file.cpp
