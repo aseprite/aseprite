@@ -341,14 +341,14 @@ void Editor::setDefaultScroll()
 }
 
 // Sets the scroll position of the editor
-void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
+void Editor::setEditorScroll(const gfx::Point& scroll, bool blitValidRegion)
 {
   HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Point oldScroll;
   Region region;
 
-  if (blit_valid_rgn) {
+  if (blitValidRegion) {
     getDrawableRegion(region, kCutTopWindows);
     oldScroll = view->getViewScroll();
   }
@@ -356,7 +356,7 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blit_valid_rgn)
   view->setViewScroll(scroll);
   Point newScroll = view->getViewScroll();
 
-  if (blit_valid_rgn) {
+  if (blitValidRegion) {
     // Move screen with blits
     scrollRegion(region, oldScroll - newScroll);
   }
@@ -798,7 +798,7 @@ void Editor::flashCurrentLayer()
   }
 }
 
-gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid_rgn)
+gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blitValidRegion)
 {
   // // Hide the brush preview
   // HideBrushPreview hide(editor->brushPreview());
@@ -827,7 +827,7 @@ gfx::Point Editor::autoScroll(MouseMessage* msg, AutoScroll dir, bool blit_valid
     else {
       scroll -= deltaScroll;
     }
-    setEditorScroll(scroll, blit_valid_rgn);
+    setEditorScroll(scroll, blitValidRegion);
 
 #if defined(_WIN32) || defined(__APPLE__)
     mousePos -= delta;
@@ -1408,12 +1408,12 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
     m_offset_y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
   if ((m_zoom != zoom) || (screenPos != view->getViewScroll())) {
-    bool blit_valid_rgn = (m_zoom == zoom);
+    bool blitValidRegion = (m_zoom == zoom);
 
     m_zoom = zoom;
 
     updateEditor();
-    setEditorScroll(scrollPos, blit_valid_rgn);
+    setEditorScroll(scrollPos, blitValidRegion);
   }
 }
 
