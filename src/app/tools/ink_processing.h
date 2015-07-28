@@ -135,9 +135,9 @@ private:
 template<typename ImageTraits>
 class LockAlphaInkProcessing : public DoubleInkProcessing<LockAlphaInkProcessing<ImageTraits>, ImageTraits> {
 public:
-  LockAlphaInkProcessing(ToolLoop* loop) {
-    m_color = loop->getPrimaryColor();
-    m_opacity = loop->getOpacity();
+  LockAlphaInkProcessing(ToolLoop* loop)
+    : m_color(loop->getPrimaryColor())
+    , m_opacity(loop->getOpacity()) {
   }
 
   void processPixel(int x, int y) {
@@ -145,8 +145,8 @@ public:
   }
 
 private:
-  color_t m_color;
-  int m_opacity;
+  const color_t m_color;
+  const int m_opacity;
 };
 
 template<>
@@ -168,9 +168,38 @@ void LockAlphaInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
 }
 
 template<>
-void LockAlphaInkProcessing<IndexedTraits>::processPixel(int x, int y) {
-  *m_dstAddress = m_color;
-}
+class LockAlphaInkProcessing<IndexedTraits> : public DoubleInkProcessing<LockAlphaInkProcessing<IndexedTraits>, IndexedTraits> {
+public:
+  LockAlphaInkProcessing(ToolLoop* loop)
+    : m_palette(get_current_palette())
+    , m_rgbmap(loop->getRgbMap())
+    , m_color(m_palette->getEntry(loop->getPrimaryColor()))
+    , m_opacity(loop->getOpacity())
+    , m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
+  }
+
+  void processPixel(int x, int y) {
+    color_t c = *m_srcAddress;
+    if (c == m_maskIndex)
+      c = m_palette->getEntry(c) & rgba_rgb_mask;  // Alpha = 0
+    else
+      c = m_palette->getEntry(c);
+
+    color_t result = rgba_blender_normal(c, m_color, m_opacity);
+    *m_dstAddress = m_palette->findBestfit(
+      rgba_getr(result),
+      rgba_getg(result),
+      rgba_getb(result),
+      rgba_geta(c), m_maskIndex);
+  }
+
+private:
+  const Palette* m_palette;
+  const RgbMap* m_rgbmap;
+  const color_t m_color;
+  const int m_opacity;
+  const int m_maskIndex;
+};
 
 //////////////////////////////////////////////////////////////////////
 // Transparent Ink
@@ -211,12 +240,12 @@ public:
     m_rgbmap(loop->getRgbMap()),
     m_opacity(loop->getOpacity()),
     m_color(m_palette->getEntry(loop->getPrimaryColor())),
-    m_maskColor(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
+    m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()) {
   }
 
   void processPixel(int x, int y) {
     color_t c = *m_srcAddress;
-    if (c == m_maskColor)
+    if (c == m_maskIndex)
       c = m_palette->getEntry(c) & rgba_rgb_mask;  // Alpha = 0
     else
       c = m_palette->getEntry(c);
@@ -231,9 +260,9 @@ public:
 private:
   const Palette* m_palette;
   const RgbMap* m_rgbmap;
-  int m_opacity;
-  color_t m_color;
-  color_t m_maskColor;
+  const int m_opacity;
+  const color_t m_color;
+  const int m_maskIndex;
 };
 
 //////////////////////////////////////////////////////////////////////
