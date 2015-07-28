@@ -54,9 +54,6 @@ using namespace gfx;
 using namespace ui;
 using namespace doc;
 
-static const char* kStatusBarText = "status_bar_text";
-static const char* kStatusBarFace = "status_bar_face";
-
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
   CustomizedTipWindow(const char* text)
@@ -145,7 +142,7 @@ StatusBar::StatusBar()
   setDoubleBuffered(true);
 
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  setBgColor(theme->getColorById(kStatusBarFace));
+  setBgColor(theme->colors.statusBarFace());
 
   this->setFocusStop(true);
 
@@ -353,7 +350,7 @@ void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
 void StatusBar::onPaint(ui::PaintEvent& ev)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
-  gfx::Color textColor = theme->getColorById(kStatusBarText);
+  gfx::Color textColor = theme->colors.statusBarText();
   Rect rc = getClientBounds();
   Graphics* g = ev.getGraphics();
 
