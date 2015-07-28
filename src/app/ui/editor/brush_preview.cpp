@@ -47,6 +47,7 @@ BrushPreview::BrushPreview(Editor* editor)
   : m_editor(editor)
   , m_type(CROSS)
   , m_onScreen(false)
+  , m_withRealPreview(false)
   , m_screenPosition(0, 0)
   , m_editorPosition(0, 0)
 {
@@ -114,8 +115,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
   bool isFloodfill = m_editor->getCurrentEditorTool()->getPointShape(0)->isFloodFill();
 
-  // Setup the cursor type debrushding of several factors (current tool,
-  // foreground color, and layer transparency).
+  // Setup the cursor type depending on several factors (current tool,
+  // foreground color, layer transparency, brush size, etc.).
+  Brush* brush = getCurrentBrush();
   color_t brush_color = getBrushColor(sprite, layer);
   color_t mask_color = sprite->transparentColor();
 
@@ -123,11 +125,13 @@ void BrushPreview::show(const gfx::Point& screenPos)
     m_type = SELECTION_CROSS;
   }
   else if (
-    // Use cursor bounds for inks that are effects (eraser, blur, etc.)
-    (ink->isEffect()) ||
-    // or when the brush color is transparent and we are not in the background layer
-    (layer && !layer->isBackground() &&
-     brush_color == mask_color)) {
+    (brush->type() == kImageBrushType ||
+     brush->size() > 1.0 / m_editor->zoom().scale()) &&
+    (// Use cursor bounds for inks that are effects (eraser, blur, etc.)
+     (ink->isEffect()) ||
+     // or when the brush color is transparent and we are not in the background layer
+     (layer && !layer->isBackground() &&
+      brush_color == mask_color))) {
     m_type = BRUSH_BOUNDARIES;
   }
   else {
@@ -141,7 +145,6 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // Draw pixel/brush preview
   if ((m_type & CROSS) &&
       m_editor->getState()->requireBrushPreview()) {
-    Brush* brush = getCurrentBrush();
     gfx::Rect origBrushBounds = (isFloodfill ? gfx::Rect(0, 0, 1, 1): brush->bounds());
     gfx::Rect brushBounds = origBrushBounds;
     brushBounds.offset(spritePos);
@@ -191,6 +194,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     document->notifySpritePixelsModified(
       sprite, gfx::Region(m_lastBounds = brushBounds));
+
+    m_withRealPreview = true;
   }
 
   // Save area and draw the cursor
@@ -241,11 +246,12 @@ void BrushPreview::hide()
   }
 
   // Clean pixel/brush preview
-  if ((m_type & CROSS) &&
-      m_editor->getState()->requireBrushPreview()) {
+  if (m_withRealPreview) {
     document->destroyExtraCel();
     document->notifySpritePixelsModified(
       sprite, gfx::Region(m_lastBounds));
+
+    m_withRealPreview = false;
   }
 
   m_onScreen = false;

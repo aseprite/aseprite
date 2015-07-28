@@ -85,6 +85,7 @@ namespace app {
 
     // The brush preview is on the screen.
     bool m_onScreen;
+    bool m_withRealPreview;
     gfx::Point m_screenPosition; // Position in the screen (view)
     gfx::Point m_editorPosition; // Position in the editor (model)
 
