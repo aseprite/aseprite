@@ -497,7 +497,7 @@ public:
     Preferences::instance().selection.opaque.AfterChange.connect(
       Bind<void>(&TransparentColorField::onOpaqueChange, this));
 
-    setOpaque(Preferences::instance().selection.opaque());
+    onOpaqueChange();
   }
 
 private:
