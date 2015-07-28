@@ -75,6 +75,7 @@ namespace app {
     void onAppPaletteChange();
     void onFocusPaletteView();
     void onBeforeExecuteCommand(Command* command);
+    void onAfterExecuteCommand(Command* command);
     void onPaletteButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);
@@ -99,8 +100,8 @@ namespace app {
     app::Color onPaletteViewGetBackgroundIndex() override;
 
   private:
-    void destroyRemap();
-    void applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText);
+    void showRemap();
+    void hideRemap();
     void setPalette(const doc::Palette* newPalette, const std::string& actionText);
     void setTransparentIndex(int index);
     void updateWarningIcon(const app::Color& color, ui::Button* warningIcon);
@@ -127,10 +128,11 @@ namespace app {
     WarningIcon* m_bgWarningIcon;
     bool m_lock;
     bool m_syncingWithPref;
-    base::UniquePtr<doc::Remap> m_remap;
+    base::UniquePtr<doc::Palette> m_oldPalette;
     const doc::Document* m_lastDocument;
     bool m_ascending;
-    ScopedConnection m_conn;
+    ScopedConnection m_beforeCmdConn;
+    ScopedConnection m_afterCmdConn;
     ScopedConnection m_fgConn;
     ScopedConnection m_bgConn;
     ScopedConnection m_appPalChangeConn;

@@ -10,7 +10,9 @@
 
 #include "doc/remap.h"
 
+#include "doc/palette.h"
 #include "doc/palette_picks.h"
+#include "doc/rgbmap.h"
 
 namespace doc {
 
@@ -63,6 +65,52 @@ Remap create_remap_to_expand_palette(int size, int count, int beforeIndex)
   return map;
 }
 
+Remap create_remap_to_change_palette(
+  const Palette* oldPalette, const Palette* newPalette,
+  const int oldMaskIndex)
+{
+  Remap remap(MAX(oldPalette->size(), newPalette->size()));
+  int maskIndex = oldMaskIndex;
+
+  if (maskIndex >= 0) {
+    color_t maskColor = oldPalette->getEntry(maskIndex);
+    int r = rgba_getr(maskColor);
+    int g = rgba_getg(maskColor);
+    int b = rgba_getb(maskColor);
+    int a = rgba_geta(maskColor);
+
+    // Find the new mask color
+    maskIndex = newPalette->findExactMatch(r, g, b, a, -1);
+    if (maskIndex >= 0)
+      remap.map(oldMaskIndex, maskIndex);
+  }
+
+  RgbMap rgbmap;
+  rgbmap.regenerate(newPalette, maskIndex);
+
+  for (int i=0; i<oldPalette->size(); ++i) {
+    if (i == oldMaskIndex)
+      continue;
+
+    const color_t color = oldPalette->getEntry(i);
+    int j = newPalette->findExactMatch(
+      rgba_getr(color),
+      rgba_getg(color),
+      rgba_getb(color),
+      rgba_geta(color), maskIndex);
+
+    if (j < 0)
+      j = newPalette->findBestfit(
+        rgba_getr(color),
+        rgba_getg(color),
+        rgba_getb(color),
+        rgba_geta(color), maskIndex);
+
+    remap.map(i, j);
+  }
+  return remap;
+}
+
 void Remap::merge(const Remap& other)
 {
   for (int i=0; i<size(); ++i) {
@@ -86,6 +134,22 @@ bool Remap::isFor8bit() const
     if ((i <  256 && m_map[i] >= 256) ||
         (i >= 256 && m_map[i] <  256))
       return false;
+  }
+  return true;
+}
+
+bool Remap::isInvertible(const PalettePicks& usedEntries) const
+{
+  PalettePicks picks(size());
+  for (int i=0; i<size(); ++i) {
+    if (!usedEntries[i])
+      continue;
+
+    int j = m_map[i];
+    if (picks[j])
+      return false;
+
+    picks[j] = true;
   }
   return true;
 }

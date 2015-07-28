@@ -12,6 +12,7 @@
 
 namespace doc {
 
+  class Palette;
   class PalettePicks;
 
   class Remap {
@@ -22,6 +23,7 @@ namespace doc {
       return (int)m_map.size();
     }
 
+    // Maps input "fromIndex" value, to "toIndex" output.
     void map(int fromIndex, int toIndex) {
       ASSERT(fromIndex >= 0 && fromIndex < size());
       ASSERT(toIndex >= 0 && toIndex < size());
@@ -47,6 +49,13 @@ namespace doc {
     // Returns true if the remap can be safely used in 8-bit images.
     bool isFor8bit() const;
 
+    // Returns true if the remap can be inverted. Remaps can be
+    // inverted when each input is mapped to one output (e.g. two
+    // inputs are not mapped to the same output). This kind of remaps
+    // are really easy to undone: You can store the inverted remap as
+    // undo data, without saving all images' pixels.
+    bool isInvertible(const PalettePicks& usedEntries) const;
+
   private:
     std::vector<int> m_map;
   };
@@ -56,6 +65,10 @@ namespace doc {
   Remap create_remap_to_move_picks(const PalettePicks& picks, int beforeIndex);
 
   Remap create_remap_to_expand_palette(int size, int count, int beforeIndex);
+
+  Remap create_remap_to_change_palette(
+    const Palette* oldPalette, const Palette* newPalette,
+    const int oldMaskIndex);
 
 } // namespace doc
 

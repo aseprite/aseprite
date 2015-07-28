@@ -44,9 +44,11 @@
 #include "doc/cel.h"
 #include "doc/cels_range.h"
 #include "doc/image.h"
+#include "doc/image_impl.h"
 #include "doc/palette.h"
 #include "doc/primitives.h"
 #include "doc/remap.h"
+#include "doc/rgbmap.h"
 #include "doc/sort_palette.h"
 #include "doc/sprite.h"
 #include "she/surface.h"
@@ -59,6 +61,7 @@
 #include "ui/splitter.h"
 #include "ui/system.h"
 #include "ui/tooltips.h"
+
 
 #include <cstring>
 
@@ -237,7 +240,8 @@ ColorBar::ColorBar(int align)
   onColorButtonChange(getFgColor());
 
   UIContext::instance()->addObserver(this);
-  m_conn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
+  m_beforeCmdConn = UIContext::instance()->BeforeCommandExecution.connect(&ColorBar::onBeforeExecuteCommand, this);
+  m_afterCmdConn = UIContext::instance()->AfterCommandExecution.connect(&ColorBar::onAfterExecuteCommand, this);
   m_fgConn = Preferences::instance().colorBar.fgColor.AfterChange.connect(Bind<void>(&ColorBar::onFgColorChangeFromPreferences, this));
   m_bgConn = Preferences::instance().colorBar.bgColor.AfterChange.connect(Bind<void>(&ColorBar::onBgColorChangeFromPreferences, this));
   m_paletteView.FocusEnter.connect(&ColorBar::onFocusPaletteView, this);
@@ -295,7 +299,7 @@ void ColorBar::onActiveSiteChange(const doc::Site& site)
 {
   if (m_lastDocument != site.document()) {
     m_lastDocument = site.document();
-    destroyRemap();
+    hideRemap();
   }
 }
 
@@ -315,9 +319,16 @@ void ColorBar::onFocusPaletteView()
 
 void ColorBar::onBeforeExecuteCommand(Command* command)
 {
+  if (command->id() == CommandId::SetPalette ||
+      command->id() == CommandId::LoadPalette)
+    showRemap();
+}
+
+void ColorBar::onAfterExecuteCommand(Command* command)
+{
   if (command->id() == CommandId::Undo ||
       command->id() == CommandId::Redo)
-    destroyRemap();
+    invalidate();
 }
 
 // Switches the palette-editor
@@ -422,10 +433,26 @@ void ColorBar::onPaletteButtonClick()
 
 void ColorBar::onRemapButtonClick()
 {
-  ASSERT(m_remap);
+  ASSERT(m_oldPalette);
+
+  // Create remap from m_oldPalette to the current palette
+  Remap remap(1);
+  try {
+    ContextWriter writer(UIContext::instance(), 500);
+    Sprite* sprite = writer.sprite();
+    ASSERT(sprite);
+    if (!sprite)
+      return;
+
+    remap = create_remap_to_change_palette(
+      m_oldPalette, get_current_palette(), sprite->transparentColor());
+  }
+  catch (base::Exception& e) {
+    Console::showException(e);
+  }
 
   // Check the remap
-  if (!m_remap->isFor8bit() &&
+  if (!remap.isFor8bit() &&
       Alert::show(
         "Automatic Remap"
         "<<The remap operation cannot be perfectly done for more than 256 colors."
@@ -441,15 +468,28 @@ void ColorBar::onRemapButtonClick()
       ASSERT(sprite->pixelFormat() == IMAGE_INDEXED);
 
       Transaction transaction(writer.context(), "Remap Colors", ModifyDocument);
-      if (m_remap->isFor8bit()) {
-        transaction.execute(new cmd::RemapColors(sprite, *m_remap));
+      bool remapPixels = true;
+
+      if (remap.isFor8bit()) {
+        PalettePicks usedEntries(256);
+
+        for (const Cel* cel : sprite->uniqueCels()) {
+          for (const auto& i : const LockImageBits<IndexedTraits>(cel->image()))
+            usedEntries[i] = true;
+        }
+
+        if (remap.isInvertible(usedEntries)) {
+          transaction.execute(new cmd::RemapColors(sprite, remap));
+          remapPixels = false;
+        }
       }
+
       // Special remap saving original images in undo history
-      else {
+      if (remapPixels) {
         for (Cel* cel : sprite->uniqueCels()) {
           ImageRef celImage = cel->imageRef();
           ImageRef newImage(Image::createCopy(celImage.get()));
-          doc::remap_image(newImage.get(), *m_remap);
+          doc::remap_image(newImage.get(), remap);
 
           transaction.execute(new cmd::ReplaceImage(
                                 sprite, celImage, newImage));
@@ -457,14 +497,14 @@ void ColorBar::onRemapButtonClick()
       }
 
       color_t oldTransparent = sprite->transparentColor();
-      color_t newTransparent = (*m_remap)[oldTransparent];
+      color_t newTransparent = remap[oldTransparent];
       if (oldTransparent != newTransparent)
         transaction.execute(new cmd::SetTransparentColor(sprite, newTransparent));
 
       transaction.commit();
     }
     update_screen_for_document(writer.document());
-    destroyRemap();
+    hideRemap();
   }
   catch (base::Exception& e) {
     Console::showException(e);
@@ -489,29 +529,13 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
 
 void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPalette)
 {
-  applyRemap(remap, newPalette, "Drag-and-Drop Colors");
-}
-
-void ColorBar::applyRemap(const doc::Remap& remap, const doc::Palette* newPalette, const std::string& actionText)
-{
-  doc::Site site = UIContext::instance()->activeSite();
-  if (site.sprite() &&
-      site.sprite()->pixelFormat() == IMAGE_INDEXED) {
-    if (!m_remap) {
-      m_remap.reset(new doc::Remap(remap));
-      m_remapButton.setVisible(true);
-      layout();
-    }
-    else {
-      m_remap->merge(remap);
-    }
-  }
-
-  setPalette(newPalette, actionText);
+  setPalette(newPalette, "Drag-and-Drop Colors");
 }
 
 void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& actionText)
 {
+  showRemap();
+
   try {
     ContextWriter writer(UIContext::instance(), 500);
     Sprite* sprite = writer.sprite();
@@ -709,7 +733,7 @@ void ColorBar::onReverseColors()
   }
 
   Palette newPalette(*get_current_palette(), remap);
-  applyRemap(remap, &newPalette, "Reverse Colors");
+  setPalette(&newPalette, "Reverse Colors");
 }
 
 void ColorBar::onSortBy(SortPaletteBy channel)
@@ -753,7 +777,7 @@ void ColorBar::onSortBy(SortPaletteBy channel)
   // Create a new palette and apply the remap. This is the final new
   // palette for the sprite.
   Palette newPalette(palette, remapOrig);
-  applyRemap(remapOrig, &newPalette, "Sort Colors");
+  setPalette(&newPalette, "Sort Colors");
 }
 
 void ColorBar::onGradient()
@@ -773,12 +797,25 @@ void ColorBar::setAscending(bool ascending)
   m_ascending = ascending;
 }
 
-void ColorBar::destroyRemap()
+void ColorBar::showRemap()
 {
-  if (!m_remap)
+  doc::Site site = UIContext::instance()->activeSite();
+  if (site.sprite() &&
+      site.sprite()->pixelFormat() == IMAGE_INDEXED) {
+    if (!m_oldPalette) {
+      m_oldPalette.reset(new Palette(*get_current_palette()));
+      m_remapButton.setVisible(true);
+      layout();
+    }
+  }
+}
+
+void ColorBar::hideRemap()
+{
+  if (!m_oldPalette)
     return;
 
-  m_remap.reset();
+  m_oldPalette.reset();
   m_remapButton.setVisible(false);
   layout();
 }

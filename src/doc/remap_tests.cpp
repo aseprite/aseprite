@@ -11,11 +11,12 @@
 #include <gtest/gtest.h>
 
 #include "doc/remap.h"
+#include "doc/palette.h"
 #include "doc/palette_picks.h"
 
 using namespace doc;
 
-TEST(Remap, RemapToMovePicks)
+TEST(Remap, ToMovePicks)
 {
   PalettePicks entries(20);
   std::fill(entries.begin(), entries.end(), false);
@@ -68,9 +69,13 @@ TEST(Remap, RemapToMovePicks)
   EXPECT_EQ(14, map[17]);
   EXPECT_EQ(18, map[18]);
   EXPECT_EQ(19, map[19]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_TRUE(map.isInvertible(all));
 }
 
-TEST(Remap, RemapToExpandPalette)
+TEST(Remap, ToExpandPalette)
 {
   Remap map = create_remap_to_expand_palette(10, 3, 1);
 
@@ -97,6 +102,90 @@ TEST(Remap, RemapToExpandPalette)
   EXPECT_EQ(7, map[7]);
   EXPECT_EQ(8, map[8]);
   EXPECT_EQ(9, map[9]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_TRUE(map.isInvertible(all));
+}
+
+TEST(Remap, BetweenPalettesChangeMask)
+{
+  Palette a(frame_t(0), 4);
+  Palette b(frame_t(0), 4);
+
+  a.setEntry(0, rgba(255, 0, 0, 255));
+  a.setEntry(1, rgba(0, 255, 0, 255));
+  a.setEntry(2, rgba(0, 0, 255, 255));
+  a.setEntry(3, rgba(255, 255, 255, 255));
+
+  b.setEntry(0, rgba(255, 255, 255, 255));
+  b.setEntry(1, rgba(0, 255, 0, 255));
+  b.setEntry(2, rgba(0, 0, 255, 255));
+  b.setEntry(3, rgba(255, 0, 0, 255));
+
+  Remap map = create_remap_to_change_palette(&a, &b, 0);
+
+  EXPECT_EQ(3, map[0]);
+  EXPECT_EQ(1, map[1]);
+  EXPECT_EQ(2, map[2]);
+  EXPECT_EQ(0, map[3]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_TRUE(map.isInvertible(all));
+}
+
+TEST(Remap, BetweenPalettesDontChangeMask)
+{
+  Palette a(frame_t(0), 4);
+  Palette b(frame_t(0), 4);
+
+  a.setEntry(0, rgba(0, 0, 0, 255));
+  a.setEntry(1, rgba(0, 255, 255, 255));
+  a.setEntry(2, rgba(0, 0, 0, 255));
+  a.setEntry(3, rgba(255, 0, 0, 255));
+
+  b.setEntry(0, rgba(255, 0, 0, 255));
+  b.setEntry(1, rgba(0, 255, 255, 255));
+  b.setEntry(2, rgba(0, 0, 0, 255));
+  b.setEntry(3, rgba(0, 0, 0, 255));
+
+  Remap map = create_remap_to_change_palette(&a, &b, 2);
+
+  EXPECT_EQ(3, map[0]);
+  EXPECT_EQ(1, map[1]);
+  EXPECT_EQ(2, map[2]);
+  EXPECT_EQ(0, map[3]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_TRUE(map.isInvertible(all));
+}
+
+TEST(Remap, BetweenPalettesNonInvertible)
+{
+  Palette a(frame_t(0), 4);
+  Palette b(frame_t(0), 3);
+
+  a.setEntry(0, rgba(0, 0, 0, 255));
+  a.setEntry(1, rgba(64, 0, 0, 255));
+  a.setEntry(2, rgba(0, 255, 0, 255));
+  a.setEntry(3, rgba(0, 0, 128, 255));
+
+  b.setEntry(0, rgba(0, 255, 0, 255));
+  b.setEntry(1, rgba(0, 0, 0, 255));
+  b.setEntry(2, rgba(64, 0, 0, 255));
+
+  Remap map = create_remap_to_change_palette(&a, &b, 0);
+
+  EXPECT_EQ(1, map[0]);
+  EXPECT_EQ(2, map[1]);
+  EXPECT_EQ(0, map[2]);
+  EXPECT_EQ(2, map[3]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_FALSE(map.isInvertible(all));
 }
 
 int main(int argc, char** argv)
