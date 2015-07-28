@@ -474,7 +474,7 @@ void ColorBar::onRemapButtonClick()
         PalettePicks usedEntries(256);
 
         for (const Cel* cel : sprite->uniqueCels()) {
-          for (const auto& i : const LockImageBits<IndexedTraits>(cel->image()))
+          for (const auto& i : LockImageBits<IndexedTraits>(cel->image()))
             usedEntries[i] = true;
         }
 
