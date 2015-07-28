@@ -59,9 +59,42 @@ public:
       m_proc = ink_processing[INK_BRUSH][depth];
     else {
       switch (m_type) {
-        case Copy: m_proc = ink_processing[INK_COPY][depth]; break;
-        case LockAlpha: m_proc = ink_processing[INK_LOCKALPHA][depth]; break;
-        default: m_proc = ink_processing[INK_TRANSPARENT][depth]; break;
+        case Merge: {
+          bool opaque = false;
+
+          if (loop->getOpacity() == 255) {
+            color_t color = loop->getPrimaryColor();
+
+            switch (loop->sprite()->pixelFormat()) {
+              case IMAGE_RGB:
+                opaque = (rgba_geta(color) == 255);
+                break;
+              case IMAGE_GRAYSCALE:
+                opaque = (graya_geta(color) == 255);
+                break;
+              case IMAGE_INDEXED:
+                color = get_current_palette()->getEntry(color);
+                opaque = (rgba_geta(color) == 255);
+                break;
+            }
+          }
+
+          // Use a faster ink, direct copy
+          if (opaque)
+            m_proc = ink_processing[INK_COPY][depth];
+          else
+            m_proc = ink_processing[INK_TRANSPARENT][depth];
+          break;
+        }
+        case Copy:
+          m_proc = ink_processing[INK_COPY][depth];
+          break;
+        case LockAlpha:
+          m_proc = ink_processing[INK_LOCKALPHA][depth];
+          break;
+        default:
+          m_proc = ink_processing[INK_TRANSPARENT][depth];
+          break;
       }
     }
   }
