@@ -83,13 +83,16 @@ private:
   base::UniquePtr<ui::Timer> m_timer;
 };
 
-class StatusBar::SnapToGridWindow : public ui::TipWindow {
+// TODO Use a ui::TipWindow with rounded borders, when we add support
+//      to invalidate transparent windows.
+class StatusBar::SnapToGridWindow : public ui::PopupWindow {
 public:
   SnapToGridWindow()
-    : ui::TipWindow("", ui::Manager::getDefault()->getBounds())
+    : ui::PopupWindow("", kDoNothingOnClick)
     , m_button("Disable Snap to Grid") {
+    setBorder(gfx::Border(2 * guiscale()));
+    setBgColor(gfx::rgba(255, 255, 200));
     makeFloating();
-    setCloseOnKeyDown(false);
 
     addChild(&m_button);
     m_button.Click.connect(Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
