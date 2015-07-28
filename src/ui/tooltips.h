@@ -56,11 +56,13 @@ namespace ui {
 
   class TipWindow : public PopupWindow {
   public:
-    TipWindow(const char* text, const gfx::Rect& target);
+    TipWindow(const std::string& text, const gfx::Rect& target);
     ~TipWindow();
 
     int getArrowAlign() const;
     void setArrowAlign(int arrowAlign);
+
+    void setCloseOnKeyDown(bool state);
 
     const gfx::Rect& target() const { return m_target; }
 
@@ -73,6 +75,7 @@ namespace ui {
   private:
     int m_arrowAlign;
     gfx::Rect m_target;
+    bool m_closeOnKeyDown;
   };
 
 } // namespace ui

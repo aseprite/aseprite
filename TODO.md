@@ -29,7 +29,6 @@
 * Fix problem with export sprite sheet when the cel has negative pos
 * MovingPixelsState: Add undo information in each transformation step.
 * Add IntEntry class in src/ui/ with spin-buttons.
-* Add feedback to "Shift+S" shortcut to switch "snap to grid".
 * Add color swatches bar.
 * Sort palette entries.
 * Add "Remap" button to palette editor after a palette entry is modified:

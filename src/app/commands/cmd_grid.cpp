@@ -88,13 +88,10 @@ protected:
 
   void onExecute(Context* ctx) {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
-    docPref.grid.snap(!docPref.grid.snap());
+    bool newValue = !docPref.grid.snap();
+    docPref.grid.snap(newValue);
 
-    char buf[512];
-    sprintf(buf, "Snap to grid: %s",
-      (docPref.grid.snap() ? "On": "Off"));
-
-    StatusBar::instance()->setStatusText(250, buf);
+    StatusBar::instance()->showSnapToGridWarning(newValue);
   }
 };
 

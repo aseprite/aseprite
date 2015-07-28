@@ -98,7 +98,7 @@ void TooltipManager::onTick()
   if (!m_tipWindow) {
     gfx::Rect bounds = m_target.widget->getBounds();
 
-    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text.c_str(), bounds));
+    m_tipWindow.reset(new TipWindow(m_target.tipInfo.text, bounds));
     int x = get_mouse_position().x+12*guiscale();
     int y = get_mouse_position().y+12*guiscale();
 
@@ -181,10 +181,11 @@ void TooltipManager::onTick()
 
 // TipWindow
 
-TipWindow::TipWindow(const char* text, const gfx::Rect& target)
+TipWindow::TipWindow(const std::string& text, const gfx::Rect& target)
   : PopupWindow(text, kCloseOnClickInOtherWindow)
   , m_arrowAlign(0)
   , m_target(target)
+  , m_closeOnKeyDown(true)
 {
   setTransparent(true);
 
@@ -206,12 +207,18 @@ void TipWindow::setArrowAlign(int arrowAlign)
   m_arrowAlign = arrowAlign;
 }
 
+void TipWindow::setCloseOnKeyDown(bool state)
+{
+  m_closeOnKeyDown = state;
+}
+
 bool TipWindow::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
     case kKeyDownMessage:
-      if (static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
+      if (m_closeOnKeyDown &&
+          static_cast<KeyMessage*>(msg)->scancode() < kKeyFirstModifierScancode)
         closeWindow(NULL);
       break;
 

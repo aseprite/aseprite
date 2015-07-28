@@ -56,6 +56,7 @@ namespace app {
     void showTip(int msecs, const char *format, ...);
     void showColor(int msecs, const char* text, const Color& color);
     void showTool(int msecs, tools::Tool* tool);
+    void showSnapToGridWarning(bool state);
 
   protected:
     void onResize(ui::ResizeEvent& ev) override;
@@ -89,7 +90,7 @@ namespace app {
     Color m_color;
 
     // Box of main commands
-    ui::Widget* m_commandsBox;
+    ui::Widget* m_docControls;
     ui::Label* m_frameLabel;
     ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
@@ -99,6 +100,10 @@ namespace app {
     // Tip window
     class CustomizedTipWindow;
     CustomizedTipWindow* m_tipwindow;
+
+    // Snap to grid window
+    class SnapToGridWindow;
+    SnapToGridWindow* m_snapToGridWindow;
   };
 
 } // namespace app

@@ -19,12 +19,14 @@
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/tools/tool.h"
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
+#include "app/ui/skin/skin_style_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
@@ -56,7 +58,7 @@ using namespace doc;
 
 class StatusBar::CustomizedTipWindow : public ui::TipWindow {
 public:
-  CustomizedTipWindow(const char* text)
+  CustomizedTipWindow(const std::string& text)
     : ui::TipWindow(text, gfx::Rect())
   {
   }
@@ -79,6 +81,32 @@ protected:
 
 private:
   base::UniquePtr<ui::Timer> m_timer;
+};
+
+class StatusBar::SnapToGridWindow : public ui::TipWindow {
+public:
+  SnapToGridWindow()
+    : ui::TipWindow("", ui::Manager::getDefault()->getBounds())
+    , m_button("Disable Snap to Grid") {
+    makeFloating();
+    setCloseOnKeyDown(false);
+
+    addChild(&m_button);
+    m_button.Click.connect(Bind<void>(&SnapToGridWindow::onDisableSnapToGrid, this));
+  }
+
+  void setDocument(app::Document* doc) {
+    m_doc = doc;
+  }
+
+private:
+  void onDisableSnapToGrid() {
+    Preferences::instance().document(m_doc).grid.snap(false);
+    closeWindow(nullptr);
+  }
+
+  app::Document* m_doc;
+  ui::Button m_button;
 };
 
 static WidgetType statusbar_type()
@@ -134,8 +162,13 @@ StatusBar* StatusBar::m_instance = NULL;
 
 StatusBar::StatusBar()
   : Widget(statusbar_type())
+  , m_timeout(0)
+  , m_state(SHOW_TEXT)
   , m_color(app::Color::fromMask())
+  , m_docControls(new HBox)
   , m_doc(nullptr)
+  , m_tipwindow(nullptr)
+  , m_snapToGridWindow(nullptr)
 {
   m_instance = this;
 
@@ -146,14 +179,13 @@ StatusBar::StatusBar()
 
   this->setFocusStop(true);
 
-  m_timeout = 0;
-  m_state = SHOW_TEXT;
-  m_tipwindow = NULL;
-
   // The extra pixel in left and right borders are necessary so
   // m_commandsBox and m_movePixelsBox do not overlap the upper-left
   // and upper-right pixels drawn in onPaint() event (see putpixels)
   setBorder(gfx::Border(1*guiscale(), 0, 1*guiscale(), 0));
+
+  m_docControls->setVisible(false);
+  addChild(m_docControls);
 
   // Construct the commands box
   {
@@ -181,9 +213,7 @@ StatusBar::StatusBar()
     box1->addChild(box4);
     box1->addChild(m_slider);
 
-    m_commandsBox = box1;
-    addChild(m_commandsBox);
-    m_commandsBox->setVisible(false);
+    m_docControls->addChild(box1);
   }
 
   // Tooltips manager
@@ -205,7 +235,7 @@ StatusBar::~StatusBar()
   UIContext::instance()->removeObserver(this);
 
   delete m_tipwindow;           // widget
-  delete m_commandsBox;
+  delete m_snapToGridWindow;
 }
 
 void StatusBar::onCurrentToolChange()
@@ -313,6 +343,38 @@ void StatusBar::showTool(int msecs, tools::Tool* tool)
   }
 }
 
+void StatusBar::showSnapToGridWarning(bool state)
+{
+  if (state) {
+    ASSERT(m_doc);
+    if (!m_doc)
+      return;
+
+    if (!m_snapToGridWindow) {
+      m_snapToGridWindow = new SnapToGridWindow;
+    }
+
+    if (!m_snapToGridWindow->isVisible()) {
+      m_snapToGridWindow->openWindow();
+      m_snapToGridWindow->remapWindow();
+
+      Rect rc = getBounds();
+      int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
+
+      m_snapToGridWindow->positionWindow(
+        rc.x+rc.w-toolBarWidth-m_snapToGridWindow->getBounds().w,
+        rc.y-m_snapToGridWindow->getBounds().h);
+    }
+
+    m_snapToGridWindow->setDocument(
+      static_cast<app::Document*>(m_doc));
+  }
+  else {
+    if (m_snapToGridWindow)
+      m_snapToGridWindow->closeWindow(nullptr);
+  }
+}
+
 //////////////////////////////////////////////////////////////////////
 // StatusBar message handler
 
@@ -324,21 +386,20 @@ void StatusBar::onResize(ResizeEvent& ev)
 
   Border border = this->border();
   Rect rc = ev.getBounds();
-  bool frameControls = (rc.w > 300*ui::guiscale());
-
-  if (frameControls) {
+  bool docControls = (rc.w > 300*ui::guiscale());
+  if (docControls) {
     m_slider->setVisible(rc.w > 400*ui::guiscale());
-    int prefWidth = m_commandsBox->getPreferredSize().w;
+    int prefWidth = m_docControls->getPreferredSize().w;
     int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
 
     rc.x += rc.w - prefWidth - border.right() - toolBarWidth;
     rc.w = prefWidth;
 
-    m_commandsBox->setVisible(m_doc != nullptr);
-    m_commandsBox->setBounds(rc);
+    m_docControls->setVisible(m_doc != nullptr);
+    m_docControls->setBounds(rc);
   }
   else
-    m_commandsBox->setVisible(false);
+    m_docControls->setVisible(false);
 }
 
 void StatusBar::onPreferredSize(PreferredSizeEvent& ev)
@@ -463,7 +524,10 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
       ASSERT(m_doc == site.document());
     }
 
-    m_commandsBox->setVisible(true);
+    m_docControls->setVisible(true);
+    showSnapToGridWarning(
+      Preferences::instance().document(
+        static_cast<app::Document*>(m_doc)).grid.snap());
 
     // Current frame
     m_currentFrame->setTextf("%d", site.frame()+1);
@@ -485,8 +549,10 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
   }
   else {
     ASSERT(m_doc == nullptr);
-    m_commandsBox->setVisible(false);
+    m_docControls->setVisible(false);
+    showSnapToGridWarning(false);
   }
+  layout();
 }
 
 void StatusBar::onRemoveDocument(doc::Document* doc)
