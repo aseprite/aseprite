@@ -209,7 +209,6 @@ void rotsprite_image(Image* bmp, const Image* spr, const Image* mask,
   }
 
   clear_image(bmp_copy, maskColor);
-  clear_image(bmp_copy, 0);
   scale_image(bmp_copy, bmp,
               0, 0, bmp_copy->width(), bmp_copy->height(),
               xmin, ymin, rot_width, rot_height);
