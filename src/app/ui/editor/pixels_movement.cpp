@@ -21,6 +21,7 @@
 #include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/snap_to_grid.h"
+#include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/expand_cel_canvas.h"
@@ -66,12 +67,18 @@ PixelsMovement::PixelsMovement(
   , m_originalImage(Image::createCopy(moveThis))
   , m_maskColor(m_sprite->transparentColor())
 {
-  m_initialData = gfx::Transformation(mask->bounds());
-  m_currentData = m_initialData;
+  gfx::Transformation transform(mask->bounds());
+  set_pivot_from_preferences(transform);
+
+  m_initialData = transform;
+  m_currentData = transform;
 
   m_initialMask = new Mask(*mask);
   m_currentMask = new Mask(*mask);
 
+  m_pivotConn =
+    Preferences::instance().selection.pivot.AfterChange.connect(
+      Bind<void>(&PixelsMovement::onPivotChange, this));
   m_rotAlgoConn =
     Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(
       Bind<void>(&PixelsMovement::onRotationAlgorithmChange, this));
@@ -84,7 +91,6 @@ PixelsMovement::PixelsMovement(
 
   redrawCurrentMask();
   updateDocumentMask();
-  update_screen_for_document(m_document);
 }
 
 PixelsMovement::~PixelsMovement()
@@ -708,6 +714,12 @@ retry:;      // In case that we don't have enough memory for RotSprite
       break;
 
   }
+}
+
+void PixelsMovement::onPivotChange()
+{
+  set_pivot_from_preferences(m_currentData);
+  onRotationAlgorithmChange();
 }
 
 void PixelsMovement::onRotationAlgorithmChange()

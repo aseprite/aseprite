@@ -106,6 +106,7 @@ namespace app {
     class SpraySpeedField;
     class SelectionModeField;
     class TransparentColorField;
+    class PivotField;
     class RotAlgorithmField;
     class FreehandAlgorithmField;
     class BrushPatternField;
@@ -135,6 +136,7 @@ namespace app {
     ui::Box* m_selectionOptionsBox;
     SelectionModeField* m_selectionMode;
     TransparentColorField* m_transparentColor;
+    PivotField* m_pivot;
     RotAlgorithmField* m_rotAlgo;
     DropPixelsField* m_dropPixels;
     doc::BrushRef m_activeBrush;

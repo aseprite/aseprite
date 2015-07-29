@@ -13,8 +13,8 @@
 
 #include "app/app.h"
 #include "app/color_picker.h"
-#include "app/commands/commands.h"
 #include "app/commands/cmd_eyedropper.h"
+#include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
@@ -27,6 +27,7 @@
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
+#include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
 #include "app/ui/editor/scrolling_state.h"
 #include "app/ui/editor/tool_loop_impl.h"
@@ -35,6 +36,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
+#include "base/bind.h"
 #include "base/pi.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
@@ -89,6 +91,10 @@ StandbyState::~StandbyState()
 void StandbyState::onEnterState(Editor* editor)
 {
   editor->setDecorator(m_decorator);
+
+  m_pivotConn =
+    Preferences::instance().selection.pivot.AfterChange.connect(
+      Bind<void>(&StandbyState::onPivotChange, this, editor));
 }
 
 void StandbyState::onCurrentToolChange(Editor* editor)
@@ -392,7 +398,9 @@ bool StandbyState::onUpdateStatusBar(Editor* editor)
 
 gfx::Transformation StandbyState::getTransformation(Editor* editor)
 {
-  return editor->document()->getTransformation();
+  gfx::Transformation t = editor->document()->getTransformation();
+  set_pivot_from_preferences(t);
+  return t;
 }
 
 void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point& move)
@@ -456,6 +464,16 @@ void StandbyState::callEyedropper(Editor* editor)
   params.set("target", fg ? "foreground": "background");
 
   UIContext::instance()->executeCommand(eyedropper_cmd, params);
+}
+
+void StandbyState::onPivotChange(Editor* editor)
+{
+  if (editor->isActive() &&
+      editor->editorFlags() & Editor::kShowMask &&
+      editor->document()->isMaskVisible() &&
+      !editor->document()->mask()->isFrozen()) {
+    editor->invalidate();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -36,6 +36,7 @@ namespace app {
     void translate(const gfx::Point& delta);
 
     // EditorState
+    virtual void onEnterState(Editor* editor) override;
     virtual LeaveAction onLeaveState(Editor* editor, EditorState* newState) override;
     virtual void onCurrentToolChange(Editor* editor) override;
     virtual bool onMouseDown(Editor* editor, ui::MouseMessage* msg) override;

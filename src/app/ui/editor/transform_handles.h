@@ -25,9 +25,6 @@ namespace app {
   // and rotation pivot.
   class TransformHandles {
   public:
-    TransformHandles();
-    ~TransformHandles();
-
     // Returns the handle in the given mouse point (pt) when the user
     // has applied the given transformation to the selection.
     HandleType getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform);
@@ -43,6 +40,7 @@ namespace app {
     bool inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle);
     void drawHandle(ui::Graphics* g, int x, int y, fixmath::fixed angle);
     void adjustHandle(int& x, int& y, int handle_w, int handle_h, fixmath::fixed angle);
+    bool visiblePivot(fixmath::fixed angle) const;
   };
 
 } // namespace app

@@ -18,6 +18,7 @@
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
+#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
@@ -125,6 +126,13 @@ void MovingPixelsState::translate(const gfx::Point& delta)
   m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MoveHandle);
   m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
+}
+
+void MovingPixelsState::onEnterState(Editor* editor)
+{
+  StandbyState::onEnterState(editor);
+
+  update_screen_for_document(editor->document());
 }
 
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)

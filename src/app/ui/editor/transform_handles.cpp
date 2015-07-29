@@ -11,6 +11,7 @@
 
 #include "app/ui/editor/transform_handles.h"
 
+#include "app/pref/preferences.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/pi.h"
@@ -51,14 +52,6 @@ static struct HandlesInfo {
   { 2, 2, 224 << 16, { ScaleSEHandle, RotateSEHandle } },
 };
 
-TransformHandles::TransformHandles()
-{
-}
-
-TransformHandles::~TransformHandles()
-{
-}
-
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
@@ -88,7 +81,7 @@ HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& 
   }
 
   // Check if the cursor is in the pivot
-  if (angle != 0 && getPivotHandleBounds(editor, transform, corners).contains(pt))
+  if (visiblePivot(angle) && getPivotHandleBounds(editor, transform, corners).contains(pt))
     return PivotHandle;
 
   return NoHandle;
@@ -111,19 +104,16 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
 #if 0 // Uncomment this if you want to see the bounds in red (only for debugging purposes)
   // -----------------------------------------------
   {
-    int x1, y1, x2, y2;
-    x1 = transform.bounds().x;
-    y1 = transform.bounds().y;
-    x2 = x1 + transform.bounds().w;
-    y2 = y1 + transform.bounds().h;
-    editor->editorToScreen(x1, y1, &x1, &y1);
-    editor->editorToScreen(x2, y2, &x2, &y2);
-    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(x1, y1, x2-x1+1, y2-y1+1));
+    gfx::Point
+      a(transform.bounds().getOrigin()),
+      b(transform.bounds().getPoint2());
+    a = editor->editorToScreen(a);
+    b = editor->editorToScreen(b);
+    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a, b));
 
-    x1 = transform.pivot().x;
-    y1 = transform.pivot().y;
-    editor->editorToScreen(x1, y1, &x1, &y1);
-    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(x1-2, y1-2, 5, 5));
+    a = transform.pivot();
+    a = editor->editorToScreen(a);
+    g.drawRect(gfx::rgba(255, 0, 0), gfx::Rect(a.x-2, a.y-2, 5, 5));
   }
   // -----------------------------------------------
 #endif
@@ -137,7 +127,7 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   }
 
   // Draw the pivot
-  if (angle != 0) {
+  if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
     SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
     she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
@@ -171,7 +161,7 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
   }
 
   // Invalidate area where the pivot is.
-  if (angle != 0) {
+  if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
     she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
 
@@ -262,6 +252,12 @@ void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, 
       // x and y are correct
       break;
   }
+}
+
+bool TransformHandles::visiblePivot(fixmath::fixed angle) const
+{
+  return (Preferences::instance().selection.pivot() != app::gen::PivotMode::HIDDEN ||
+          angle != 0);
 }
 
 } // namespace app

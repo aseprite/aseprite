@@ -283,6 +283,16 @@ SkinTheme::SkinTheme()
   sheet_mapping["ink_lock_alpha"] = PART_INK_LOCK_ALPHA;
   sheet_mapping["selection_opaque"] = PART_SELECTION_OPAQUE;
   sheet_mapping["selection_masked"] = PART_SELECTION_MASKED;
+  sheet_mapping["pivot_hidden"] = PART_PIVOT_HIDDEN;
+  sheet_mapping["pivot_northwest"] = PART_PIVOT_NORTHWEST;
+  sheet_mapping["pivot_north"] = PART_PIVOT_NORTH;
+  sheet_mapping["pivot_northeast"] = PART_PIVOT_NORTHEAST;
+  sheet_mapping["pivot_west"] = PART_PIVOT_WEST;
+  sheet_mapping["pivot_center"] = PART_PIVOT_CENTER;
+  sheet_mapping["pivot_east"] = PART_PIVOT_EAST;
+  sheet_mapping["pivot_southwest"] = PART_PIVOT_SOUTHWEST;
+  sheet_mapping["pivot_south"] = PART_PIVOT_SOUTH;
+  sheet_mapping["pivot_southeast"] = PART_PIVOT_SOUTHEAST;
 }
 
 SkinTheme::~SkinTheme()

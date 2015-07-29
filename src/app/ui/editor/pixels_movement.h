@@ -89,6 +89,7 @@ namespace app {
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
   private:
+    void onPivotChange();
     void onRotationAlgorithmChange();
     void redrawExtraImage();
     void redrawCurrentMask();
@@ -117,6 +118,7 @@ namespace app {
     Mask* m_currentMask;
     bool m_opaque;
     color_t m_maskColor;
+    ScopedConnection m_pivotConn;
     ScopedConnection m_rotAlgoConn;
   };
 

@@ -555,8 +555,77 @@ private:
   ContextBar* m_owner;
 };
 
-class ContextBar::RotAlgorithmField : public ComboBox
-{
+class ContextBar::PivotField : public ButtonSet {
+public:
+  PivotField()
+    : ButtonSet(1) {
+    addItem(static_cast<SkinTheme*>(getTheme())->get_part(PART_PIVOT_HIDDEN));
+
+    ItemChange.connect(Bind<void>(&PivotField::onPopup, this));
+
+    Preferences::instance().selection.pivot.AfterChange.connect(
+      Bind<void>(&PivotField::onPivotChange, this));
+
+    onPivotChange();
+  }
+
+private:
+
+  void onPopup() {
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+
+    gfx::Rect bounds = getBounds();
+
+    Menu menu;
+    CheckBox hidden("Hidden pivot by default");
+    HBox box;
+    ButtonSet buttonset(3);
+    buttonset.addItem(theme->get_part(PART_PIVOT_NORTHWEST));
+    buttonset.addItem(theme->get_part(PART_PIVOT_NORTH));
+    buttonset.addItem(theme->get_part(PART_PIVOT_NORTHEAST));
+    buttonset.addItem(theme->get_part(PART_PIVOT_WEST));
+    buttonset.addItem(theme->get_part(PART_PIVOT_CENTER));
+    buttonset.addItem(theme->get_part(PART_PIVOT_EAST));
+    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTHWEST));
+    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTH));
+    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTHEAST));
+    box.addChild(&buttonset);
+
+    menu.addChild(&hidden);
+    menu.addChild(new MenuSeparator);
+    menu.addChild(&box);
+
+    app::gen::PivotMode mode = Preferences::instance().selection.pivot();
+    if (mode == app::gen::PivotMode::HIDDEN)
+      hidden.setSelected(true);
+    else {
+      buttonset.setSelectedItem(int(mode)-1);
+    }
+
+    hidden.Click.connect(
+      [&hidden](Event&){
+        Preferences::instance().selection.pivot(app::gen::PivotMode::HIDDEN);
+        hidden.closeWindow();
+      });
+
+    buttonset.ItemChange.connect(
+      [&buttonset](){
+        Preferences::instance().selection.pivot(app::gen::PivotMode(buttonset.selectedItem()+1));
+        buttonset.closeWindow();
+      });
+
+    menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
+  }
+
+  void onPivotChange() {
+    int part = PART_PIVOT_HIDDEN + int(Preferences::instance().selection.pivot());
+    getItem(0)->setIcon(
+      static_cast<SkinTheme*>(getTheme())->get_part(part));
+  }
+
+};
+
+class ContextBar::RotAlgorithmField : public ComboBox {
 public:
   RotAlgorithmField() {
     // We use "m_lockChange" variable to avoid setting the rotation
@@ -925,6 +994,7 @@ ContextBar::ContextBar()
   m_selectionOptionsBox->addChild(m_dropPixels = new DropPixelsField());
   m_selectionOptionsBox->addChild(m_selectionMode = new SelectionModeField);
   m_selectionOptionsBox->addChild(m_transparentColor = new TransparentColorField(this));
+  m_selectionOptionsBox->addChild(m_pivot = new PivotField);
   m_selectionOptionsBox->addChild(m_rotAlgo = new RotAlgorithmField());
 
   addChild(m_brushType = new BrushTypeField(this));
@@ -979,6 +1049,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
+  tooltipManager->addTooltipFor(m_pivot, "Rotation Pivot", BOTTOM);
   tooltipManager->addTooltipFor(m_transparentColor, "Transparent Color", BOTTOM);
   tooltipManager->addTooltipFor(m_rotAlgo, "Rotation Algorithm", BOTTOM);
   tooltipManager->addTooltipFor(m_freehandAlgo, "Freehand trace algorithm", BOTTOM);
@@ -1178,6 +1249,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_sprayBox->setVisible(hasSprayOptions);
   m_selectionOptionsBox->setVisible(hasSelectOptions);
   m_selectionMode->setVisible(true);
+  m_pivot->setVisible(true);
   m_dropPixels->setVisible(false);
   m_selectBoxHelp->setVisible(false);
 

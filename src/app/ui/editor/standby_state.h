@@ -12,6 +12,7 @@
 #include "app/ui/editor/editor_decorator.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/state_with_wheel_behavior.h"
+#include "base/connection.h"
 #include "gfx/transformation.h"
 
 namespace app {
@@ -66,8 +67,10 @@ namespace app {
 
   private:
     void transformSelection(Editor* editor, ui::MouseMessage* msg, HandleType handle);
+    void onPivotChange(Editor* editor);
 
     Decorator* m_decorator;
+    ScopedConnection m_pivotConn;
   };
 
 } // namespace app
