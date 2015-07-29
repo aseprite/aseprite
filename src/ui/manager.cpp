@@ -147,6 +147,8 @@ void Manager::setDisplay(she::Display* display)
 {
   m_display = display;
   m_eventQueue = she::instance()->eventQueue();
+
+  onNewDisplayConfiguration();
 }
 
 void Manager::setClipboard(she::Clipboard* clipboard)
@@ -167,6 +169,24 @@ void Manager::run()
 
   while (!getChildren().empty())
     loop.pumpMessages();
+}
+
+void Manager::flipDisplay()
+{
+  OverlayManager* overlays = OverlayManager::instance();
+
+  update_cursor_overlay();
+
+  // Draw overlays.
+  overlays->captureOverlappedAreas();
+  overlays->drawOverlays();
+
+  if (!m_display->flip()) {
+    // In case that the display was resized.
+    onNewDisplayConfiguration();
+  }
+  else
+    overlays->restoreOverlappedAreas();
 }
 
 bool Manager::generateMessages()
@@ -454,6 +474,7 @@ void Manager::dispatchMessages()
       get_mouse_position(), _internal_get_mouse_buttons()));
 
   pumpQueue();
+  flipDisplay();
 }
 
 void Manager::addToGarbage(Widget* widget)
@@ -1020,6 +1041,20 @@ LayoutIO* Manager::onGetLayoutIO()
   return NULL;
 }
 
+void Manager::onNewDisplayConfiguration()
+{
+  if (m_display) {
+    int w = m_display->width() / m_display->scale();
+    int h = m_display->height() / m_display->scale();
+    if ((getBounds().w != w ||
+         getBounds().h != h)) {
+      setBounds(gfx::Rect(0, 0, w, h));
+    }
+  }
+
+  _internal_set_mouse_display(m_display);
+}
+
 void Manager::onPreferredSize(PreferredSizeEvent& ev)
 {
   int w = 0, h = 0;
@@ -1131,8 +1166,6 @@ void Manager::pumpQueue()
         gfx::Rect oldClip = surface->getClipBounds();
 
         if (surface->intersectClipRect(paintMsg->rect())) {
-          dirty_display_flag = true;
-
 #ifdef REPORT_EVENTS
           std::cout << " - clip("
                     << paintMsg->rect().x << ", "

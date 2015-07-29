@@ -16,8 +16,6 @@
 #include "app/ini_file.h"
 #include "app/launcher.h"
 #include "app/load_widget.h"
-#include "app/modules/editors.h"
-#include "app/modules/gui.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/send_crash.h"
@@ -27,6 +25,7 @@
 #include "base/path.h"
 #include "doc/image.h"
 #include "render/render.h"
+#include "she/display.h"
 #include "she/system.h"
 #include "ui/ui.h"
 
@@ -233,8 +232,12 @@ public:
         "||&OK", warnings.c_str());
     }
 
-    if (reset_screen)
-      gui_setup_screen();
+    if (reset_screen) {
+      ui::Manager* manager = ui::Manager::getDefault();
+      she::Display* display = manager->getDisplay();
+      display->setScale(newScreenScale);
+      manager->setDisplay(display);
+    }
   }
 
 private:

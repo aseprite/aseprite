@@ -22,6 +22,7 @@
 #include "app/ui/status_bar.h"
 #include "base/thread.h"
 #include "doc/sprite.h"
+#include "ui/manager.h"
 #include "ui/system.h"
 
 namespace app {
@@ -87,9 +88,7 @@ void UndoCommand::onExecute(Context* context)
       current_editor->drawSpriteClipped(
         gfx::Region(gfx::Rect(0, 0, sprite->width(), sprite->height())));
 
-      ui::dirty_display_flag = true;
-      gui_feedback();
-
+      current_editor->getManager()->flipDisplay();
       base::this_thread::sleep_for(0.01);
     }
   }

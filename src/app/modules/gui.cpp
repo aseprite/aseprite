@@ -75,6 +75,7 @@ class CustomizedGuiManager : public Manager
 protected:
   bool onProcessMessage(Message* msg) override;
   LayoutIO* onGetLayoutIO() override { return this; }
+  void onNewDisplayConfiguration() override;
 
   // LayoutIO implementation
   std::string loadLayout(Widget* widget) override;
@@ -154,8 +155,6 @@ int init_module_gui()
   if (maximized)
     main_display->maximize();
 
-  gui_setup_screen();
-
   // Set graphics options for next time
   save_gui_config();
 
@@ -212,47 +211,6 @@ void update_screen_for_document(const Document* document)
     // Update the tabs (maybe the modified status has been changed).
     app_rebuild_documents_tabs();
   }
-}
-
-void gui_run()
-{
-  manager->run();
-}
-
-void gui_feedback()
-{
-  OverlayManager* overlays = OverlayManager::instance();
-
-  ui::update_cursor_overlay();
-
-  // Avoid updating a non-dirty screen over and over again.
-#if 0                           // TODO It doesn't work yet
-  if (!dirty_display_flag)
-    return;
-#endif
-
-  // Draw overlays.
-  overlays->captureOverlappedAreas();
-  overlays->drawOverlays();
-
-  if (!manager->getDisplay()->flip()) {
-    // In case that the display was resized.
-    gui_setup_screen();
-  }
-  else
-    overlays->restoreOverlappedAreas();
-
-  dirty_display_flag = false;
-}
-
-// Refresh the UI display, font, etc.
-void gui_setup_screen()
-{
-  main_display->setScale(get_screen_scale());
-  ui::set_display(main_display);
-  manager->layout();
-
-  save_gui_config();
 }
 
 void load_window_pos(Widget* window, const char *section)
@@ -397,10 +355,6 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
       }
       break;
 
-    case kQueueProcessingMessage:
-      gui_feedback();
-      break;
-
     case kKeyDownMessage: {
 #ifdef _DEBUG
       // Left Shift+Ctrl+Q generates a crash (useful to test the anticrash feature)
@@ -514,6 +468,12 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
   }
 
   return Manager::onProcessMessage(msg);
+}
+
+void CustomizedGuiManager::onNewDisplayConfiguration()
+{
+  Manager::onNewDisplayConfiguration();
+  save_gui_config();
 }
 
 std::string CustomizedGuiManager::loadLayout(Widget* widget)

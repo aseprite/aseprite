@@ -24,8 +24,6 @@
 
 namespace ui {
 
-bool dirty_display_flag = true;
-
 // Current mouse cursor type.
 
 static CursorType mouse_cursor_type = kNoCursor;
@@ -140,8 +138,6 @@ static void update_mouse_cursor()
     // Hide the overlay if we are using a native cursor.
     update_mouse_overlay(NULL);
   }
-
-  dirty_display_flag = true;
 }
 
 int init_system()
@@ -152,7 +148,7 @@ int init_system()
 
 void exit_system()
 {
-  set_display(NULL);
+  _internal_set_mouse_display(NULL);
   update_mouse_overlay(NULL);
 }
 
@@ -161,27 +157,13 @@ int clock()
   return she::clock_value();
 }
 
-void set_display(she::Display* display)
+void _internal_set_mouse_display(she::Display* display)
 {
   CursorType cursor = get_mouse_cursor();
-
   set_mouse_cursor(kNoCursor);
   mouse_display = display;
-
-  if (display) {
-    Manager* manager = Manager::getDefault();
-    if (manager) {
-      manager->setDisplay(display);
-
-      // Update default-manager size
-      if ((manager->getBounds().w != ui::display_w() ||
-           manager->getBounds().h != ui::display_h())) {
-        manager->setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
-      }
-    }
-
+  if (display)
     set_mouse_cursor(cursor);  // Restore mouse cursor
-  }
 }
 
 int display_w()
@@ -208,7 +190,6 @@ void update_cursor_overlay()
 
     if (newPos != mouse_cursor_overlay->getPosition()) {
       mouse_cursor_overlay->moveOverlay(newPos);
-      dirty_display_flag = true;
     }
   }
 }

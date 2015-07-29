@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -19,11 +19,6 @@ namespace ui {
 
   class Widget;
 
-  // Simple flag to indicate that something in the screen was modified
-  // so a flip to the real screen is needed.
-  extern bool dirty_display_flag;
-
-  void set_display(she::Display* display);
   int display_w();
   int display_h();
 
@@ -44,6 +39,7 @@ namespace ui {
   void hide_mouse_cursor();
   void show_mouse_cursor();
 
+  void _internal_set_mouse_display(she::Display* display);
   void _internal_no_mouse_position();
   void _internal_set_mouse_position(const gfx::Point& newPos);
   void _internal_set_mouse_buttons(MouseButtons buttons);

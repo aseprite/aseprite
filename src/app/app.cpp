@@ -525,7 +525,7 @@ void App::run()
     sendCrash.search();
 
     // Run the GUI main message loop
-    gui_run();
+    ui::Manager::getDefault()->run();
   }
 
   // Start shell to execute scripts.

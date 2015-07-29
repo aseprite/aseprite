@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -39,7 +39,11 @@ namespace ui {
     void setDisplay(she::Display* display);
     void setClipboard(she::Clipboard* clipboard);
 
+    // Executes the main message loop.
     void run();
+
+    // Refreshes the real display with the UI content.
+    void flipDisplay();
 
     // Returns true if there are messages in the queue to be
     // distpatched through jmanager_dispatch_messages().
@@ -90,6 +94,7 @@ namespace ui {
     void onPreferredSize(PreferredSizeEvent& ev) override;
     void onBroadcastMouseMessage(WidgetsList& targets) override;
     virtual LayoutIO* onGetLayoutIO();
+    virtual void onNewDisplayConfiguration();
 
   private:
     void generateSetCursorMessage(const gfx::Point& mousePos);

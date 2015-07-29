@@ -37,10 +37,6 @@ namespace app {
 
   void update_screen_for_document(const Document* document);
 
-  void gui_run();
-  void gui_feedback();
-  void gui_setup_screen();
-
   void load_window_pos(ui::Widget* window, const char *section);
   void save_window_pos(ui::Widget* window, const char *section);
 

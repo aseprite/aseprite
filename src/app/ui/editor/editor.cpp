@@ -790,7 +790,8 @@ void Editor::flashCurrentLayer()
 
     drawSpriteClipped(gfx::Region(
         gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
-    gui_feedback();
+
+    getManager()->flipDisplay();
 
     m_document->setExtraCelBlendMode(BlendMode::NORMAL);
     m_document->destroyExtraCel();
