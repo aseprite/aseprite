@@ -702,6 +702,14 @@ bool MenuItem::onProcessMessage(Message* msg)
       break;
 
     case kMouseLeaveMessage:
+      // Unhighlight this item if its submenu isn't opened
+      if (isHighlighted() &&
+          !m_submenu_menubox &&
+          getParent() &&
+          getParent()->type() == kMenuWidget) {
+        static_cast<Menu*>(getParent())->unhighlightItem();
+      }
+
       // TODO theme specific!!
       invalidate();
 
