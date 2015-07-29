@@ -391,13 +391,10 @@ bool MenuBox::onProcessMessage(Message* msg)
           // menubox), this is the place where we control if...
           if (picked == NULL ||         // If the button was clicked nowhere
               picked == this ||         // If the button was clicked in this menubox
-              // The picked widget isn't menu-related
-              (picked->type() != kMenuBoxWidget &&
-               picked->type() != kMenuBarWidget &&
-               picked->type() != kMenuItemWidget) ||
-              // The picked widget (that is menu-related) isn't from
-              // the same tree of menus
-              (get_base_menubox(picked) != this)) {
+              // The picked widget isn't from the same tree of menus
+              (get_base_menubox(picked) != this ||
+               (this->type() == kMenuBarWidget &&
+                picked->type() == kMenuWidget))) {
 
             // The user click outside all the menu-box/menu-items, close all
             menu->closeAll();
@@ -907,7 +904,7 @@ void MenuItem::onPreferredSize(PreferredSizeEvent& ev)
 // Climbs the hierarchy of menus to get the most-top menubox.
 static MenuBox* get_base_menubox(Widget* widget)
 {
-  while (widget != NULL) {
+  while (widget) {
     ASSERT_VALID_WIDGET(widget);
 
     // We are in a menubox
@@ -925,18 +922,11 @@ static MenuBox* get_base_menubox(Widget* widget)
         widget = menu->getOwnerMenuItem();
       }
     }
-    // We are in a menuitem
     else {
-      ASSERT(widget->type() == kMenuItemWidget);
-      ASSERT(widget->getParent() != NULL);
-      ASSERT(widget->getParent()->type() == kMenuWidget);
-
-      widget = widget->getParent()->getParent();
+      widget = widget->getParent();
     }
   }
-
-  ASSERT(false);
-  return NULL;
+  return nullptr;
 }
 
 static MenuBaseData* get_base(Widget* widget)
