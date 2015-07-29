@@ -53,6 +53,7 @@ using namespace ui;
 
 MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMovementPtr pixelsMovement, HandleType handle)
   : m_editor(editor)
+  , m_observingEditor(false)
   , m_discarded(false)
 {
   // MovingPixelsState needs a selection tool to avoid problems
@@ -97,6 +98,7 @@ MovingPixelsState::MovingPixelsState(Editor* editor, MouseMessage* msg, PixelsMo
   m_editor->getManager()->addMessageFilter(kKeyDownMessage, m_editor);
   m_editor->getManager()->addMessageFilter(kKeyUpMessage, m_editor);
   m_editor->addObserver(this);
+  m_observingEditor = true;
 
   ContextBar* contextBar = App::instance()->getMainWindow()->getContextBar();
   contextBar->updateForMovingPixels();
@@ -111,7 +113,7 @@ MovingPixelsState::~MovingPixelsState()
 
   m_pixelsMovement.reset(NULL);
 
-  m_editor->removeObserver(this);
+  removeAsEditorObserver();
   m_editor->getManager()->removeMessageFilter(kKeyDownMessage, m_editor);
   m_editor->getManager()->removeMessageFilter(kKeyUpMessage, m_editor);
 
@@ -486,6 +488,13 @@ void MovingPixelsState::onBeforeCommandExecution(Command* command)
     dropPixels();
 }
 
+void MovingPixelsState::onDestroyEditor(Editor* editor)
+{
+  // TODO we should call ~MovingPixelsState(), we should delete the
+  //      whole "m_statesHistory" when an editor is deleted.
+  removeAsEditorObserver();
+}
+
 void MovingPixelsState::onBeforeFrameChanged(Editor* editor)
 {
   if (!isActiveDocument())
@@ -568,6 +577,14 @@ bool MovingPixelsState::isActiveEditor() const
 {
   Editor* targetEditor = UIContext::instance()->activeEditor();
   return (targetEditor == m_editor);
+}
+
+void MovingPixelsState::removeAsEditorObserver()
+{
+  if (m_observingEditor) {
+    m_observingEditor = false;
+    m_editor->removeObserver(this);
+  }
 }
 
 } // namespace app

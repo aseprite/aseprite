@@ -50,6 +50,7 @@ namespace app {
     virtual bool requireBrushPreview() override { return false; }
 
     // EditorObserver
+    virtual void onDestroyEditor(Editor* editor) override;
     virtual void onBeforeFrameChanged(Editor* editor) override;
     virtual void onBeforeLayerChanged(Editor* editor) override;
 
@@ -70,9 +71,12 @@ namespace app {
     bool isActiveDocument() const;
     bool isActiveEditor() const;
 
+    void removeAsEditorObserver();
+
     // Helper member to move/translate selection and pixels.
     PixelsMovementPtr m_pixelsMovement;
     Editor* m_editor;
+    bool m_observingEditor;
 
     // True if the image was discarded (e.g. when a "Cut" command was
     // used to remove the dragged image).
