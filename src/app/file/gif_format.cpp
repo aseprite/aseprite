@@ -46,6 +46,9 @@
 #define GifBitSize       BitSize
 #endif
 
+// GifBitSize can return 9 (it's a bug in giflib)
+#define GifBitSizeLimited(v) (MIN(GifBitSize(v), 8))
+
 namespace app {
 
 using namespace base;
@@ -682,7 +685,7 @@ public:
 
     if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
       for (Palette* palette : m_sprite->getPalettes()) {
-        int bpp = GifBitSize(palette->size());
+        int bpp = GifBitSizeLimited(palette->size());
         m_bitsPerPixel = MAX(m_bitsPerPixel, bpp);
       }
     }
@@ -964,7 +967,7 @@ private:
     }
 
     int usedNColors = usedColors.picks();
-    int localColorCount = (1 << GifBitSize(usedNColors));
+    int localColorCount = (1 << GifBitSizeLimited(usedNColors));
 
     Remap remap(256);
     for (int i=0; i<remap.size(); ++i)
@@ -1065,7 +1068,7 @@ private:
 private:
 
   static ColorMapObject* createColorMap(const Palette* palette) {
-    int n = 1 << GifBitSize(palette->size());
+    int n = 1 << GifBitSizeLimited(palette->size());
     ColorMapObject* colormap = GifMakeMapObject(n, nullptr);
 
     for (int i=0; i<n; ++i) {
