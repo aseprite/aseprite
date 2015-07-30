@@ -385,7 +385,6 @@ bool PngFormat::onSave(FileOp* fop)
   if (image->pixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
     int pal_size = fop_sequence_get_ncolors(fop);
-    ASSERT(pal_size > 0 && pal_size <= PNG_MAX_PALETTE_LENGTH);
     pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
 
 #if PNG_MAX_PALETTE_LENGTH != 256
