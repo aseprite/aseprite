@@ -1053,6 +1053,7 @@ void Manager::onNewDisplayConfiguration()
   }
 
   _internal_set_mouse_display(m_display);
+  invalidate();
 }
 
 void Manager::onPreferredSize(PreferredSizeEvent& ev)
