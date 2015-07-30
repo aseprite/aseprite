@@ -204,14 +204,18 @@ public:
       }
     }
 
-    // Add entries to include the transparent color
-    if (m_bgIndex >= m_sprite->palette(0)->size())
-      m_sprite->palette(0)->resize(m_bgIndex+1);
+    if (m_sprite) {
+      // Add entries to include the transparent color
+      if (m_bgIndex >= m_sprite->palette(0)->size())
+        m_sprite->palette(0)->resize(m_bgIndex+1);
 
-    if (m_layer && m_opaque)
-      m_layer->configureAsBackground();
+      if (m_layer && m_opaque)
+        m_layer->configureAsBackground();
 
-    return (m_sprite != nullptr);
+      return true;
+    }
+    else
+      return false;
   }
 
 private:
