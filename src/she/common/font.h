@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/string.h"
+#include "gfx/rect.h"
 #include "she/font.h"
 #include "she/locked_surface.h"
 #include "she/scoped_surface_lock.h"

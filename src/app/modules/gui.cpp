@@ -311,7 +311,7 @@ bool CustomizedGuiManager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
-    case kCloseAppMessage:
+    case kCloseDisplayMessage:
       {
         // Execute the "Exit" command.
         Command* command = CommandsModule::instance()->getCommandByName(CommandId::Exit);

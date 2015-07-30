@@ -33,17 +33,15 @@ public:
   int originalWidth() const override;
   int originalHeight() const override;
 
-  void setScale(int scale) override;
   int scale() const override;
+  void setScale(int scale) override;
 
   // Returns the main surface to draw into this display.
   // You must not dispose this surface.
   NonDisposableSurface* getSurface() override;
 
-  // Flips all graphics in the surface to the real display.  Returns
-  // false if the flip couldn't be done because the display was
-  // resized.
-  bool flip() override;
+  // Flips all graphics in the surface to the real display.
+  void flip() override;
   void maximize() override;
   bool isMaximized() const override;
   void setTitleBar(const std::string& title) override;
@@ -59,7 +57,6 @@ public:
 private:
   SkiaWindow m_window;
   SkiaSurface* m_surface;
-  bool m_recreated;
   bool m_customSurface;
   NativeCursor m_nativeCursor;
 };

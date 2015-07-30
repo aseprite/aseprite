@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,12 +8,12 @@
 #include "config.h"
 #endif
 
-#include "she/alleg4/internals.h"
+#include "she/alleg4/alleg_display.h"
 #include "she/she.h"
 
 #include <allegro.h>
 
-namespace { 
+namespace {
 
 static char old_readed_key[KEY_MAX]; // keyboard status of previous poll
 static unsigned key_repeated[KEY_MAX];
@@ -93,4 +93,3 @@ void key_poller_generate_events()
 }
 
 } // namespace she
-

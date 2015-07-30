@@ -8,7 +8,7 @@
 #include "config.h"
 #endif
 
-#include "she/alleg4/internals.h"
+#include "she/alleg4/alleg_display.h"
 #include "she/clock.h"
 #include "she/display.h"
 #include "she/event.h"

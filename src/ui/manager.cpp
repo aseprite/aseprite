@@ -181,12 +181,9 @@ void Manager::flipDisplay()
   overlays->captureOverlappedAreas();
   overlays->drawOverlays();
 
-  if (!m_display->flip()) {
-    // In case that the display was resized.
-    onNewDisplayConfiguration();
-  }
-  else
-    overlays->restoreOverlappedAreas();
+  m_display->flip();
+
+  overlays->restoreOverlappedAreas();
 }
 
 bool Manager::generateMessages()
@@ -272,7 +269,14 @@ void Manager::generateMessagesFromSheEvents()
     switch (sheEvent.type()) {
 
       case she::Event::CloseDisplay: {
-        Message* msg = new Message(kCloseAppMessage);
+        Message* msg = new Message(kCloseDisplayMessage);
+        msg->broadcastToChildren(this);
+        enqueueMessage(msg);
+        break;
+      }
+
+      case she::Event::ResizeDisplay: {
+        Message* msg = new Message(kResizeDisplayMessage);
         msg->broadcastToChildren(this);
         enqueueMessage(msg);
         break;
@@ -469,10 +473,6 @@ void Manager::handleWindowZOrder()
 
 void Manager::dispatchMessages()
 {
-  // Add the "Queue Processing" message for the manager.
-  enqueueMessage(newMouseMessage(kQueueProcessingMessage, this,
-      get_mouse_position(), _internal_get_mouse_buttons()));
-
   pumpQueue();
   flipDisplay();
 }
@@ -944,6 +944,10 @@ bool Manager::onProcessMessage(Message* msg)
 {
   switch (msg->type()) {
 
+    case kResizeDisplayMessage:
+      onNewDisplayConfiguration();
+      break;
+
     case kKeyDownMessage:
     case kKeyUpMessage: {
       KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
@@ -1054,6 +1058,7 @@ void Manager::onNewDisplayConfiguration()
 
   _internal_set_mouse_display(m_display);
   invalidate();
+  flushRedraw();
 }
 
 void Manager::onPreferredSize(PreferredSizeEvent& ev)
@@ -1122,12 +1127,12 @@ void Manager::pumpQueue()
         static char *msg_name[] = {
           "kOpenMessage",
           "kCloseMessage",
-          "kCloseAppMessage",
+          "kCloseDisplayMessage",
+          "kResizeDisplayMessage",
           "kPaintMessage",
           "kTimerMessage",
           "kDropFilesMessage",
           "kWinMoveMessage",
-          "kQueueProcessingMessage",
 
           "kKeyDownMessage",
           "kKeyUpMessage",

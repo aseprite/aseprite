@@ -792,12 +792,22 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
 
    _enter_gfx_critical();
 
+   /* Copy current content in screen */
+   BITMAP* tmp = create_bitmap_ex(color_depth, w, h);
+   clear_bitmap(tmp);
+   blit(gfx_directx_forefront_bitmap, tmp, 0, 0, 0, 0, w, h);
+
    /* Destroy old screen */
    destroy_bitmap(gfx_directx_forefront_bitmap);
    _destroy_directx_forefront_bitmap_extras();
 
    /* Re-create the screen */
    new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
+
+   /* Restore content in the new screen */
+   clear_bitmap(new_screen);
+   blit(tmp, new_screen, 0, 0, 0, 0, w, h);
+   destroy_bitmap(tmp);
 
    _exit_gfx_critical();
 

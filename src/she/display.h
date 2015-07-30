@@ -34,20 +34,22 @@ namespace she {
     virtual int originalWidth() const = 0;
     virtual int originalHeight() const = 0;
 
-    // Changes the scale (each pixel will be SCALExSCALE in the screen).
+    // Returns the current display scale. Each pixel in the internal
+    // display surface, is represented by SCALExSCALE pixels on the
+    // screen.
+    virtual int scale() const = 0;
+
+    // Changes the scale.
     // The available surface size will be (Display::width() / scale,
     //                                     Display::height() / scale)
     virtual void setScale(int scale) = 0;
-    virtual int scale() const = 0;
 
     // Returns the main surface to draw into this display.
     // You must not dispose this surface.
     virtual NonDisposableSurface* getSurface() = 0;
 
-    // Flips all graphics in the surface to the real display.  Returns
-    // false if the flip couldn't be done because the display was
-    // resized.
-    virtual bool flip() = 0;
+    // Flips all graphics in the surface to the real display.
+    virtual void flip() = 0;
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;

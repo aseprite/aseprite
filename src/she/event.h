@@ -1,5 +1,5 @@
 // SHE library
-// Copyright (C) 2012-2014  David Capello
+// Copyright (C) 2012-2015  David Capello
 //
 // This source file is ditributed under a BSD-like license, please
 // read LICENSE.txt for more information.
@@ -9,6 +9,7 @@
 #pragma once
 
 #include "gfx/point.h"
+#include "gfx/size.h"
 #include "she/keys.h"
 
 #include <string>
@@ -23,6 +24,7 @@ namespace she {
     enum Type {
       None,
       CloseDisplay,
+      ResizeDisplay,
       DropFiles,
       MouseEnter,
       MouseLeave,

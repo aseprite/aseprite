@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -15,13 +15,12 @@ namespace ui {
     // General messages.
     kOpenMessage,     // Windows is open.
     kCloseMessage,    // Windows is closed.
-    kCloseAppMessage, // The user wants to close the entire application.
+    kCloseDisplayMessage, // The user wants to close the entire application.
+    kResizeDisplayMessage,
     kPaintMessage,    // Widget needs be repainted.
     kTimerMessage,    // A timer timeout.
     kDropFilesMessage, // Drop files in the manager.
     kWinMoveMessage,  // Window movement.
-    kQueueProcessingMessage,    // Only sent to manager which indicate
-                                // the last message in the queue.
 
     // Keyboard related messages.
     kKeyDownMessage,         // When a any key is pressed.

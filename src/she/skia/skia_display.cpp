@@ -24,7 +24,6 @@ SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
   m_surface->create(width, height);
   m_window.setScale(scale);
   m_window.setVisible(true);
-  m_recreated = false;
 }
 
 void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
@@ -42,7 +41,6 @@ void SkiaDisplay::resize(const gfx::Size& size)
   m_surface->dispose();
   m_surface = new SkiaSurface;
   m_surface->create(size.w, size.h);
-  m_recreated = true;
 }
 
 void SkiaDisplay::dispose()
@@ -70,14 +68,14 @@ int SkiaDisplay::originalHeight() const
   return m_window.restoredSize().h;
 }
 
-void SkiaDisplay::setScale(int scale)
-{
-  m_window.setScale(scale);
-}
-
 int SkiaDisplay::scale() const
 {
   return m_window.scale();
+}
+
+void SkiaDisplay::setScale(int scale)
+{
+  m_window.setScale(scale);
 }
 
 NonDisposableSurface* SkiaDisplay::getSurface()
@@ -88,15 +86,9 @@ NonDisposableSurface* SkiaDisplay::getSurface()
 // Flips all graphics in the surface to the real display.  Returns
 // false if the flip couldn't be done because the display was
 // resized.
-bool SkiaDisplay::flip()
+void SkiaDisplay::flip()
 {
-  if (m_recreated) {
-    m_recreated = false;
-    return false;
-  }
-
   m_window.updateWindow();
-  return true;
 }
 
 void SkiaDisplay::maximize()
