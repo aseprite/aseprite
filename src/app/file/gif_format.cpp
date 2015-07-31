@@ -214,8 +214,15 @@ public:
         m_sprite->palette(0)->resize(m_bgIndex+1);
 
       // Use the original global color map
-      if (m_gifFile->SColorMap && !m_hasLocalColormaps)
+      if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
+          m_gifFile->SColorMap && !m_hasLocalColormaps) {
         remapToGlobalColormap();
+      }
+      // Avoid huge color palettes
+      else if (m_sprite->pixelFormat() == IMAGE_RGB &&
+               m_sprite->palette(0)->size() > 256) {
+        reduceToAnOptimizedPalette();
+      }
 
       if (m_layer && m_opaque)
         m_layer->configureAsBackground();
@@ -665,6 +672,20 @@ private:
     for (Cel* cel : m_sprite->uniqueCels())
       doc::remap_image(cel->image(), remap);
 
+    m_sprite->setPalette(&newPalette, false);
+  }
+
+  void reduceToAnOptimizedPalette() {
+    render::PaletteOptimizer optimizer;
+    const Palette* palette = m_sprite->palette(0);
+
+    // Feed the palette optimizer with pixels inside frameBounds
+    for (int i=0; i<palette->size(); ++i) {
+      optimizer.feedWithRgbaColor(palette->getEntry(i));
+    }
+
+    Palette newPalette(0, 256);
+    optimizer.calculate(&newPalette, m_bgIndex, nullptr);
     m_sprite->setPalette(&newPalette, false);
   }
 
