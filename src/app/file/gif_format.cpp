@@ -179,7 +179,8 @@ public:
     , m_bgIndex(m_gifFile->SBackGroundColor >= 0 ? m_gifFile->SBackGroundColor: 0)
     , m_localTransparentIndex(-1)
     , m_frameDelay(1)
-    , m_remap(256) {
+    , m_remap(256)
+    , m_hasLocalColormaps(false) {
     // PRINTF("GIF background index = %d\n", (int)m_gifFile->SBackGroundColor);
   }
 
@@ -211,6 +212,10 @@ public:
       // Add entries to include the transparent color
       if (m_bgIndex >= m_sprite->palette(0)->size())
         m_sprite->palette(0)->resize(m_bgIndex+1);
+
+      // Use the original global color map
+      if (m_gifFile->SColorMap && !m_hasLocalColormaps)
+        remapToGlobalColormap();
 
       if (m_layer && m_opaque)
         m_layer->configureAsBackground();
@@ -355,11 +360,31 @@ private:
   }
 
   ColorMapObject* getFrameColormap() {
+    ColorMapObject* global = m_gifFile->SColorMap;
     ColorMapObject* colormap = m_gifFile->Image.ColorMap;
-    if (!colormap)
-      colormap = m_gifFile->SColorMap;
+
+    if (!colormap) {
+      // Doesn't have local map, use the global one
+      colormap = global;
+    }
+    else if (!m_hasLocalColormaps) {
+      if (!global || global->ColorCount != colormap->ColorCount)
+        m_hasLocalColormaps = true;
+      else {
+        for (int i=0; i<colormap->ColorCount; ++i) {
+          if (global->Colors[i].Red   != colormap->Colors[i].Red ||
+              global->Colors[i].Green != colormap->Colors[i].Green ||
+              global->Colors[i].Blue  != colormap->Colors[i].Blue) {
+            m_hasLocalColormaps = true;
+            break;
+          }
+        }
+      }
+    }
+
     if (!colormap)
       throw Exception("There is no color map.");
+
     return colormap;
   }
 
@@ -622,6 +647,27 @@ private:
     m_sprite->setPixelFormat(IMAGE_RGB);
   }
 
+  void remapToGlobalColormap() {
+    ColorMapObject* colormap = m_gifFile->SColorMap;
+    Palette* oldPalette = m_sprite->palette(0);
+    Palette newPalette(0, colormap->ColorCount);
+
+    for (int i=0; i<colormap->ColorCount; ++i) {
+      newPalette.setEntry(
+        i, rgba(colormap->Colors[i].Red,
+                colormap->Colors[i].Green,
+                colormap->Colors[i].Blue, 255));
+    }
+
+    Remap remap = create_remap_to_change_palette(
+      oldPalette, &newPalette, m_bgIndex);
+
+    for (Cel* cel : m_sprite->uniqueCels())
+      doc::remap_image(cel->image(), remap);
+
+    m_sprite->setPalette(&newPalette, false);
+  }
+
   FileOp* m_fop;
   GifFileType* m_gifFile;
   int m_fd;
@@ -638,6 +684,7 @@ private:
   ImageRef m_currentImage;
   ImageRef m_previousImage;
   Remap m_remap;
+  bool m_hasLocalColormaps;     // Indicates that this fila contains local colormaps
 };
 
 bool GifFormat::onLoad(FileOp* fop)
