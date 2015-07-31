@@ -54,7 +54,8 @@ namespace render {
       , m_nextFrames(0)
       , m_opacityBase(0)
       , m_opacityStep(0)
-      , m_loopTag(nullptr) {
+      , m_loopTag(nullptr)
+      , m_layer(nullptr) {
     }
 
     OnionskinType type() const { return m_type; }
@@ -63,6 +64,7 @@ namespace render {
     int opacityBase() const { return m_opacityBase; }
     int opacityStep() const { return m_opacityStep; }
     FrameTag* loopTag() const { return m_loopTag; }
+    Layer* layer() const { return m_layer; }
 
     void type(OnionskinType type) { m_type = type; }
     void prevFrames(int prevFrames) { m_prevFrames = prevFrames; }
@@ -70,6 +72,7 @@ namespace render {
     void opacityBase(int base) { m_opacityBase = base; }
     void opacityStep(int step) { m_opacityStep = step; }
     void loopTag(FrameTag* loopTag) { m_loopTag = loopTag; }
+    void layer(Layer* layer) { m_layer = layer; }
 
   private:
     OnionskinType m_type;
@@ -78,6 +81,7 @@ namespace render {
     int m_opacityBase;
     int m_opacityStep;
     FrameTag* m_loopTag;
+    Layer* m_layer;
   };
 
   class Render {

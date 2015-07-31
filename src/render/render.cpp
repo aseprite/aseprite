@@ -532,6 +532,8 @@ void Render::renderSprite(
   // opacity (<255)
   if (m_onionskin.type() != OnionskinType::NONE) {
     FrameTag* loop = m_onionskin.loopTag();
+    Layer* onionLayer = (m_onionskin.layer() ? m_onionskin.layer():
+                                               m_sprite->folder());
     frame_t frameIn;
 
     for (frame_t frameOut = frame - m_onionskin.prevFrames();
@@ -570,9 +572,9 @@ void Render::renderSprite(
         else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
           blend_mode = (frameOut < frame ? BlendMode::RED_TINT: BlendMode::BLUE_TINT);
 
-        renderLayer(m_sprite->folder(), dstImage,
-          area, frameIn, zoom, scaled_func,
-          true, true, blend_mode);
+        renderLayer(onionLayer, dstImage,
+                    area, frameIn, zoom, scaled_func,
+                    true, true, blend_mode);
       }
     }
   }

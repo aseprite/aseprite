@@ -17,6 +17,7 @@
     <slider min="0" max="255" id="opacity_step" cell_align="horizontal" width="128" />
 
     <check id="loop_tag" text="Loop through tag frames" cell_hspan="2" />
+    <check id="current_layer" text="Current layer only" cell_hspan="2" />
   </grid>
 </vbox>
 </gui>

@@ -53,6 +53,7 @@ ConfigureTimelinePopup::ConfigureTimelinePopup()
   m_box->opacityStep()->Change.connect(Bind<void>(&ConfigureTimelinePopup::onOpacityStep, this));
   m_box->resetOnionskin()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onResetOnionskin, this));
   m_box->loopTag()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onLoopTagChange, this));
+  m_box->currentLayer()->Click.connect(Bind<void>(&ConfigureTimelinePopup::onCurrentLayerChange, this));
 }
 
 app::Document* ConfigureTimelinePopup::doc()
@@ -81,6 +82,7 @@ void ConfigureTimelinePopup::updateWidgetsFromCurrentSettings()
   m_box->opacity()->setValue(docPref.onionskin.opacityBase());
   m_box->opacityStep()->setValue(docPref.onionskin.opacityStep());
   m_box->loopTag()->setSelected(docPref.onionskin.loopTag());
+  m_box->currentLayer()->setSelected(docPref.onionskin.currentLayer());
 
   switch (docPref.onionskin.type()) {
     case app::gen::OnionskinType::MERGE:
@@ -139,6 +141,7 @@ void ConfigureTimelinePopup::onResetOnionskin()
   docPref.onionskin.opacityBase(docPref.onionskin.opacityBase.defaultValue());
   docPref.onionskin.opacityStep(docPref.onionskin.opacityStep.defaultValue());
   docPref.onionskin.loopTag(docPref.onionskin.loopTag.defaultValue());
+  docPref.onionskin.currentLayer(docPref.onionskin.currentLayer.defaultValue());
 
   updateWidgetsFromCurrentSettings();
 }
@@ -146,6 +149,11 @@ void ConfigureTimelinePopup::onResetOnionskin()
 void ConfigureTimelinePopup::onLoopTagChange()
 {
   docPref().onionskin.loopTag(m_box->loopTag()->isSelected());
+}
+
+void ConfigureTimelinePopup::onCurrentLayerChange()
+{
+  docPref().onionskin.currentLayer(m_box->currentLayer()->isSelected());
 }
 
 } // namespace app

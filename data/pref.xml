@@ -199,6 +199,7 @@
       <option id="opacity_step" type="int" default="28" migrate="Onionskin.OpacityStep" />
       <option id="type" type="OnionskinType" default="OnionskinType::MERGE" migrate="Onionskin.Type" />
       <option id="loop_tag" type="bool" default="true" />
+      <option id="current_layer" type="bool" default="false" />
     </section>
     <section id="save_copy">
       <option id="filename" type="std::string" />

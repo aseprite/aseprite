@@ -286,9 +286,19 @@ void Editor::backToPreviousState()
 
 void Editor::setLayer(const Layer* layer)
 {
+  bool changed = (m_layer != layer);
+
   m_observers.notifyBeforeLayerChanged(this);
   m_layer = const_cast<Layer*>(layer);
   m_observers.notifyAfterLayerChanged(this);
+
+  // If the onion skinning depends on the active layer, we've to
+  // redraw the whole editor.
+  if (m_document && changed) {
+    DocumentPreferences& docPref = Preferences::instance().document(m_document);
+    if (docPref.onionskin.currentLayer())
+      invalidate();
+  }
 
   // The active layer has changed.
   if (isActive())
@@ -454,6 +464,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
         opts.nextFrames(docPref.onionskin.nextFrames());
         opts.opacityBase(docPref.onionskin.opacityBase());
         opts.opacityStep(docPref.onionskin.opacityStep());
+        opts.layer(docPref.onionskin.currentLayer() ? m_layer: nullptr);
 
         FrameTag* tag = nullptr;
         if (docPref.onionskin.loopTag())
