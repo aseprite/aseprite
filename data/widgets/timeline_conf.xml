@@ -18,6 +18,10 @@
 
     <check id="loop_tag" text="Loop through tag frames" cell_hspan="2" />
     <check id="current_layer" text="Current layer only" cell_hspan="2" />
+    <hbox cell_hspan="2">
+      <radio group="2" text="Behind sprite" id="behind" tooltip="Only for transparent layers.&#10;Background is not included in this onion skin mode." tooltip_dir="top" />
+      <radio group="2" text="In front of sprite" id="infront" tooltip="For all kind of layers (background and transparents)" />
+    </hbox>
   </grid>
 </vbox>
 </gui>

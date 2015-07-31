@@ -462,7 +462,8 @@ void Render::renderLayer(
     return;
 
   m_globalOpacity = 255;
-  renderLayer(layer, dstImage, area,
+  renderLayer(
+    layer, dstImage, area,
     frame, Zoom(1, 1), scaled_func,
     true, true, blend_mode);
 }
@@ -521,13 +522,39 @@ void Render::renderSprite(
       break;
   }
 
-  // Draw the current frame.
+  // Draw the background layer.
   m_globalOpacity = 255;
   renderLayer(
     m_sprite->folder(), dstImage,
     area, frame, zoom, scaled_func,
-    true, true, BlendMode::UNSPECIFIED);
+    true,
+    false,
+    BlendMode::UNSPECIFIED);
 
+  // Draw onion skin behind the sprite.
+  if (m_onionskin.position() == OnionskinPosition::BEHIND)
+    renderOnionskin(dstImage, area, frame, zoom, scaled_func);
+
+  // Draw the transparent layers.
+  m_globalOpacity = 255;
+  renderLayer(
+    m_sprite->folder(), dstImage,
+    area, frame, zoom, scaled_func,
+    false,
+    true,
+    BlendMode::UNSPECIFIED);
+
+  // Draw onion skin in front of the sprite.
+  if (m_onionskin.position() == OnionskinPosition::INFRONT)
+    renderOnionskin(dstImage, area, frame, zoom, scaled_func);
+}
+
+void Render::renderOnionskin(
+  Image* dstImage,
+  const gfx::Clip& area,
+  frame_t frame, Zoom zoom,
+  RenderScaledImage scaled_func)
+{
   // Onion-skin feature: Draw previous/next frames with different
   // opacity (<255)
   if (m_onionskin.type() != OnionskinType::NONE) {
@@ -563,18 +590,23 @@ void Render::renderSprite(
         m_globalOpacity = m_onionskin.opacityBase() - m_onionskin.opacityStep() * ((frameOut - frame)-1);
       }
 
+      m_globalOpacity = MID(0, m_globalOpacity, 255);
       if (m_globalOpacity > 0) {
-        m_globalOpacity = MID(0, m_globalOpacity, 255);
-
         BlendMode blend_mode = BlendMode::UNSPECIFIED;
         if (m_onionskin.type() == OnionskinType::MERGE)
           blend_mode = BlendMode::NORMAL;
         else if (m_onionskin.type() == OnionskinType::RED_BLUE_TINT)
           blend_mode = (frameOut < frame ? BlendMode::RED_TINT: BlendMode::BLUE_TINT);
 
-        renderLayer(onionLayer, dstImage,
-                    area, frameIn, zoom, scaled_func,
-                    true, true, blend_mode);
+        renderLayer(
+          onionLayer, dstImage,
+          area, frameIn, zoom, scaled_func,
+          // Render background only for "in-front" onion skinning and
+          // when opacity is < 255
+          (m_globalOpacity < 255 &&
+           m_onionskin.position() == OnionskinPosition::INFRONT),
+          true,
+          blend_mode);
       }
     }
   }

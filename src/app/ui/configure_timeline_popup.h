@@ -39,6 +39,7 @@ namespace app {
     void onResetOnionskin();
     void onLoopTagChange();
     void onCurrentLayerChange();
+    void onPositionChange();
 
   private:
     void updateWidgetsFromCurrentSettings();

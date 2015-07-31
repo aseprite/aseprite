@@ -471,6 +471,7 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   const char* id        = elem->Attribute("id");
   const char* text      = elem->Attribute("text");
   const char* tooltip   = elem->Attribute("tooltip");
+  const char* tooltip_dir = elem->Attribute("tooltip_dir");
   bool selected         = bool_attr_is_true(elem, "selected");
   bool disabled         = bool_attr_is_true(elem, "disabled");
   bool expansive        = bool_attr_is_true(elem, "expansive");
@@ -503,12 +504,20 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
   if (text)
     widget->setText(text);
 
-  if (tooltip != NULL && root != NULL) {
+  if (tooltip && root) {
     if (!m_tooltipManager) {
       m_tooltipManager = new ui::TooltipManager();
       root->addChild(m_tooltipManager);
     }
-    m_tooltipManager->addTooltipFor(widget, tooltip, LEFT);
+
+    int dir = LEFT;
+    if (tooltip_dir) {
+      if (strcmp(tooltip_dir, "top") == 0) dir = TOP;
+      else if (strcmp(tooltip_dir, "bottom") == 0) dir = BOTTOM;
+      else if (strcmp(tooltip_dir, "left") == 0) dir = LEFT;
+      else if (strcmp(tooltip_dir, "right") == 0) dir = RIGHT;
+    }
+    m_tooltipManager->addTooltipFor(widget, tooltip, dir);
   }
 
   if (selected)

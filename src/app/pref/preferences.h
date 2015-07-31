@@ -22,6 +22,7 @@
 #include "doc/layer_index.h"
 #include "filters/tiled_mode.h"
 #include "gfx/rect.h"
+#include "render/onionskin_position.h"
 
 #include "generated_pref_types.h"
 

@@ -460,6 +460,7 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
             render::OnionskinType::RED_BLUE_TINT:
             render::OnionskinType::NONE)));
 
+        opts.position(docPref.onionskin.position());
         opts.prevFrames(docPref.onionskin.prevFrames());
         opts.nextFrames(docPref.onionskin.nextFrames());
         opts.opacityBase(docPref.onionskin.opacityBase());
