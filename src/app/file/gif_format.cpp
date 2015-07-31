@@ -1072,7 +1072,7 @@ private:
                          frameBounds.x, frameBounds.y,
                          frameBounds.w, frameBounds.h,
                          m_interlaced ? 1: 0,
-                         colormap) == GIF_ERROR) {
+                         (colormap != m_globalColormap ? colormap: nullptr)) == GIF_ERROR) {
       throw Exception("Error writing GIF frame %d.\n", (int)frameNum);
     }
 
