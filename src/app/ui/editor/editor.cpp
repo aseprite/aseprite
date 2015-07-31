@@ -1387,9 +1387,9 @@ bool Editor::isInsideSelection()
 void Editor::setZoomAndCenterInMouse(Zoom zoom,
   const gfx::Point& mousePos, ZoomBehavior zoomBehavior)
 {
+  HideBrushPreview hide(m_brushPreview);
   View* view = View::getView(this);
   Rect vp = view->getViewportBounds();
-  HideBrushPreview hide(m_brushPreview);
 
   gfx::Point screenPos;
   gfx::Point spritePos;
@@ -1428,6 +1428,8 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
     updateEditor();
     setEditorScroll(scrollPos, blitValidRegion);
   }
+
+  flushRedraw();
 }
 
 void Editor::pasteImage(const Image* image, const Mask* mask)
