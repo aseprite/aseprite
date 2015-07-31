@@ -433,7 +433,7 @@ private:
       }
     }
 
-    if (m_frameNum > 0 && !isLocalColormap)
+    if (m_frameNum > 0 && !isLocalColormap && !needsExtraBgColor)
       return;
 
     UniquePtr<Palette> palette;
@@ -578,7 +578,7 @@ private:
         m_frameDelay            = (extension[3] << 8) | extension[2];
 
         // PRINTF("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
-        //   disposal_method, transparentIndex, frame_delay);
+        //   m_disposalMethod, m_localTransparentIndex, m_frameDelay);
       }
     }
 
