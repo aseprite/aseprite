@@ -669,7 +669,9 @@ private:
     }
 
     Remap remap = create_remap_to_change_palette(
-      oldPalette, &newPalette, m_bgIndex);
+      oldPalette, &newPalette, m_bgIndex,
+      false); // We cannot remap the transparent color, because we
+              // cannot write the header again
 
     for (Cel* cel : m_sprite->uniqueCels())
       doc::remap_image(cel->image(), remap);

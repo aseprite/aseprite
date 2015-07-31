@@ -67,22 +67,30 @@ Remap create_remap_to_expand_palette(int size, int count, int beforeIndex)
 
 Remap create_remap_to_change_palette(
   const Palette* oldPalette, const Palette* newPalette,
-  const int oldMaskIndex)
+  const int oldMaskIndex,
+  const bool remapMaskIndex)
 {
   Remap remap(MAX(oldPalette->size(), newPalette->size()));
   int maskIndex = oldMaskIndex;
 
   if (maskIndex >= 0) {
-    color_t maskColor = oldPalette->getEntry(maskIndex);
-    int r = rgba_getr(maskColor);
-    int g = rgba_getg(maskColor);
-    int b = rgba_getb(maskColor);
-    int a = rgba_geta(maskColor);
+    if (remapMaskIndex &&
+        oldPalette->getEntry(maskIndex) !=
+        newPalette->getEntry(maskIndex)) {
+      color_t maskColor = oldPalette->getEntry(maskIndex);
+      int r = rgba_getr(maskColor);
+      int g = rgba_getg(maskColor);
+      int b = rgba_getb(maskColor);
+      int a = rgba_geta(maskColor);
 
-    // Find the new mask color
-    maskIndex = newPalette->findExactMatch(r, g, b, a, -1);
-    if (maskIndex >= 0)
-      remap.map(oldMaskIndex, maskIndex);
+      // Find the new mask color
+      maskIndex = newPalette->findExactMatch(r, g, b, a, -1);
+      if (maskIndex >= 0)
+        remap.map(oldMaskIndex, maskIndex);
+    }
+    else {
+      remap.map(maskIndex, maskIndex);
+    }
   }
 
   RgbMap rgbmap;

@@ -68,7 +68,8 @@ namespace doc {
 
   Remap create_remap_to_change_palette(
     const Palette* oldPalette, const Palette* newPalette,
-    const int oldMaskIndex);
+    const int oldMaskIndex,
+    const bool remapMaskIndex);
 
 } // namespace doc
 

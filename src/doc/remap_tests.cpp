@@ -123,7 +123,7 @@ TEST(Remap, BetweenPalettesChangeMask)
   b.setEntry(2, rgba(0, 0, 255, 255));
   b.setEntry(3, rgba(255, 0, 0, 255));
 
-  Remap map = create_remap_to_change_palette(&a, &b, 0);
+  Remap map = create_remap_to_change_palette(&a, &b, 0, true);
 
   EXPECT_EQ(3, map[0]);
   EXPECT_EQ(1, map[1]);
@@ -150,7 +150,34 @@ TEST(Remap, BetweenPalettesDontChangeMask)
   b.setEntry(2, rgba(0, 0, 0, 255));
   b.setEntry(3, rgba(0, 0, 0, 255));
 
-  Remap map = create_remap_to_change_palette(&a, &b, 2);
+  Remap map = create_remap_to_change_palette(&a, &b, 2, true);
+
+  EXPECT_EQ(3, map[0]);
+  EXPECT_EQ(1, map[1]);
+  EXPECT_EQ(2, map[2]);
+  EXPECT_EQ(0, map[3]);
+
+  PalettePicks all(map.size());
+  all.all();
+  EXPECT_TRUE(map.isInvertible(all));
+}
+
+TEST(Remap, BetweenPalettesDontChangeMaskForced)
+{
+  Palette a(frame_t(0), 4);
+  Palette b(frame_t(0), 4);
+
+  a.setEntry(0, rgba(0, 0, 0, 255));
+  a.setEntry(1, rgba(0, 255, 255, 255));
+  a.setEntry(2, rgba(0, 0, 0, 255));
+  a.setEntry(3, rgba(255, 0, 0, 255));
+
+  b.setEntry(0, rgba(255, 0, 0, 255));
+  b.setEntry(1, rgba(0, 255, 255, 255));
+  b.setEntry(2, rgba(0, 0, 0, 255));
+  b.setEntry(3, rgba(0, 0, 0, 255));
+
+  Remap map = create_remap_to_change_palette(&a, &b, 2, false);
 
   EXPECT_EQ(3, map[0]);
   EXPECT_EQ(1, map[1]);
@@ -176,7 +203,7 @@ TEST(Remap, BetweenPalettesNonInvertible)
   b.setEntry(1, rgba(0, 0, 0, 255));
   b.setEntry(2, rgba(64, 0, 0, 255));
 
-  Remap map = create_remap_to_change_palette(&a, &b, 0);
+  Remap map = create_remap_to_change_palette(&a, &b, 0, true);
 
   EXPECT_EQ(1, map[0]);
   EXPECT_EQ(2, map[1]);
