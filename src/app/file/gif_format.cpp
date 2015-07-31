@@ -215,7 +215,9 @@ public:
 
       // Use the original global color map
       if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-          m_gifFile->SColorMap && !m_hasLocalColormaps) {
+          m_gifFile->SColorMap &&
+          m_gifFile->SColorMap->ColorCount >= m_sprite->palette(0)->size() &&
+          !m_hasLocalColormaps) {
         remapToGlobalColormap();
       }
       // Avoid huge color palettes
