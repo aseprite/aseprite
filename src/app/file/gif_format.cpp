@@ -374,8 +374,8 @@ private:
       // Doesn't have local map, use the global one
       colormap = global;
     }
-    else if (!m_hasLocalColormaps) {
-      if (!global || global->ColorCount != colormap->ColorCount)
+    else if (global && !m_hasLocalColormaps) {
+      if (global->ColorCount != colormap->ColorCount)
         m_hasLocalColormaps = true;
       else {
         for (int i=0; i<colormap->ColorCount; ++i) {
