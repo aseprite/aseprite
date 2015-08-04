@@ -116,13 +116,9 @@ namespace app {
     void setFrame(frame_t frame);
 
     const render::Zoom& zoom() const { return m_zoom; }
-    int offsetX() const { return m_offset_x; }
-    int offsetY() const { return m_offset_y; }
+    const gfx::Point& padding() const { return m_padding; }
 
     void setZoom(render::Zoom zoom) { m_zoom = zoom; }
-    void setOffsetX(int x) { m_offset_x = x; }
-    void setOffsetY(int y) { m_offset_y = y; }
-
     void setDefaultScroll();
     void setEditorScroll(const gfx::Point& scroll, bool blitValidRegion);
     void setEditorZoom(render::Zoom zoom);
@@ -238,6 +234,8 @@ namespace app {
     // routine.
     void drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& rc, int dx, int dy);
 
+    gfx::Point calcExtraPadding(const render::Zoom& zoom);
+
     // Stack of states. The top element in the stack is the current state (m_state).
     EditorStatesHistory m_statesHistory;
 
@@ -264,9 +262,8 @@ namespace app {
     tools::SelectionMode m_selectionMode;
     bool m_autoSelectLayer;
 
-    // Offset for the sprite
-    int m_offset_x;
-    int m_offset_y;
+    // Extra space around the sprite.
+    gfx::Point m_padding;
 
     // Marching ants stuff
     ui::Timer m_mask_timer;
