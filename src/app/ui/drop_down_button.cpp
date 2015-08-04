@@ -27,6 +27,8 @@ DropDownButton::DropDownButton(const char* text)
   , m_button(new Button(text))
   , m_dropDown(new Button(""))
 {
+  SkinTheme* theme = SkinTheme::instance();
+
   setup_look(m_button, LeftButtonLook);
   setup_look(m_dropDown, RightButtonLook);
 
@@ -41,10 +43,9 @@ DropDownButton::DropDownButton(const char* text)
   setChildSpacing(0);
 
   m_dropDown->setIconInterface
-    (new ButtonIconImpl(static_cast<SkinTheme*>(m_dropDown->getTheme()),
-                        PART_COMBOBOX_ARROW_DOWN,
-                        PART_COMBOBOX_ARROW_DOWN_SELECTED,
-                        PART_COMBOBOX_ARROW_DOWN_DISABLED,
+    (new ButtonIconImpl(theme->parts.comboboxArrowDown(),
+                        theme->parts.comboboxArrowDownSelected(),
+                        theme->parts.comboboxArrowDownDisabled(),
                         CENTER | MIDDLE));
 }
 

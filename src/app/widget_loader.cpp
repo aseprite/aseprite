@@ -432,8 +432,9 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
         int hspan = int_attr(elem, "hspan", 1);
         int vspan = int_attr(elem, "vspan", 1);
 
-        she::Surface* sur = theme->get_part(std::string(icon));
-        buttonset->addItem(sur, hspan, vspan);
+        SkinPartPtr part = theme->getPartById(std::string(icon));
+        if (part)
+          buttonset->addItem(part, hspan, vspan);
       }
     }
   }

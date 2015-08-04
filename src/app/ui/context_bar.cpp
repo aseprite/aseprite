@@ -63,26 +63,26 @@ public:
   BrushTypeField(ContextBar* owner)
     : ButtonSet(1)
     , m_owner(owner)
-    , m_bitmap(BrushPopup::createSurfaceForBrush(BrushRef(nullptr)))
     , m_popupWindow(this) {
-    addItem(m_bitmap);
+    SkinPartPtr part(new SkinPart);
+    part->setBitmap(
+      0, BrushPopup::createSurfaceForBrush(BrushRef(nullptr)));
+
+    addItem(part);
     m_popupWindow.BrushChange.connect(&BrushTypeField::onBrushChange, this);
   }
 
   ~BrushTypeField() {
     closePopup();
-
-    m_bitmap->dispose();
   }
 
   void updateBrush(tools::Tool* tool = nullptr) {
-    if (m_bitmap)
-      m_bitmap->dispose();
+    SkinPartPtr part(new SkinPart);
+    part->setBitmap(
+      0, BrushPopup::createSurfaceForBrush(
+        m_owner->activeBrush(tool)));
 
-    m_bitmap = BrushPopup::createSurfaceForBrush(
-      m_owner->activeBrush(tool));
-
-    getItem(0)->setIcon(m_bitmap);
+    getItem(0)->setIcon(part);
   }
 
   void setupTooltips(TooltipManager* tooltipManager) {
@@ -325,21 +325,21 @@ class ContextBar::InkTypeField : public ButtonSet
 public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
-    addItem(
-      static_cast<SkinTheme*>(getTheme())->get_part(PART_INK_DEFAULT));
+    SkinTheme* theme = SkinTheme::instance();
+    addItem(theme->parts.inkDefault());
   }
 
   void setInkType(InkType inkType) {
-    int part = PART_INK_DEFAULT;
+    SkinTheme* theme = SkinTheme::instance();
+    SkinPartPtr part = theme->parts.inkDefault();
 
     switch (inkType) {
-      case InkType::ALPHA_COMPOSITING: part = PART_INK_DEFAULT; break;
-      case InkType::COPY_COLOR:        part = PART_INK_COPY_COLOR; break;
-      case InkType::LOCK_ALPHA:        part = PART_INK_LOCK_ALPHA; break;
+      case InkType::ALPHA_COMPOSITING: part = theme->parts.inkDefault(); break;
+      case InkType::COPY_COLOR:        part = theme->parts.inkCopyColor(); break;
+      case InkType::LOCK_ALPHA:        part = theme->parts.inkLockAlpha(); break;
     }
 
-    getItem(0)->setIcon(
-      static_cast<SkinTheme*>(getTheme())->get_part(part));
+    getItem(0)->setIcon(part);
   }
 
 protected:
@@ -483,10 +483,12 @@ public:
     : m_icon(1)
     , m_maskColor(app::Color::fromMask(), IMAGE_RGB)
     , m_owner(owner) {
+    SkinTheme* theme = SkinTheme::instance();
+
     addChild(&m_icon);
     addChild(&m_maskColor);
 
-    m_icon.addItem(static_cast<SkinTheme*>(getTheme())->get_part(PART_SELECTION_OPAQUE));
+    m_icon.addItem(theme->parts.selectionOpaque());
     gfx::Size sz = m_icon.getItem(0)->getPreferredSize();
     sz.w += 2*guiscale();
     m_icon.getItem(0)->setMinSize(sz);
@@ -536,9 +538,10 @@ private:
   void onOpaqueChange() {
     bool opaque = Preferences::instance().selection.opaque();
 
-    int part = (opaque ? PART_SELECTION_OPAQUE: PART_SELECTION_MASKED);
-    m_icon.getItem(0)->setIcon(
-      static_cast<SkinTheme*>(getTheme())->get_part(part));
+    SkinTheme* theme = SkinTheme::instance();
+    SkinPartPtr part = (opaque ? theme->parts.selectionOpaque():
+                                 theme->parts.selectionMasked());
+    m_icon.getItem(0)->setIcon(part);
 
     m_maskColor.setVisible(!opaque);
     if (!opaque) {
@@ -559,7 +562,7 @@ class ContextBar::PivotField : public ButtonSet {
 public:
   PivotField()
     : ButtonSet(1) {
-    addItem(static_cast<SkinTheme*>(getTheme())->get_part(PART_PIVOT_HIDDEN));
+    addItem(SkinTheme::instance()->parts.pivotHidden());
 
     ItemChange.connect(Bind<void>(&PivotField::onPopup, this));
 
@@ -580,15 +583,15 @@ private:
     CheckBox hidden("Hidden pivot by default");
     HBox box;
     ButtonSet buttonset(3);
-    buttonset.addItem(theme->get_part(PART_PIVOT_NORTHWEST));
-    buttonset.addItem(theme->get_part(PART_PIVOT_NORTH));
-    buttonset.addItem(theme->get_part(PART_PIVOT_NORTHEAST));
-    buttonset.addItem(theme->get_part(PART_PIVOT_WEST));
-    buttonset.addItem(theme->get_part(PART_PIVOT_CENTER));
-    buttonset.addItem(theme->get_part(PART_PIVOT_EAST));
-    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTHWEST));
-    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTH));
-    buttonset.addItem(theme->get_part(PART_PIVOT_SOUTHEAST));
+    buttonset.addItem(theme->parts.pivotNorthwest());
+    buttonset.addItem(theme->parts.pivotNorth());
+    buttonset.addItem(theme->parts.pivotNortheast());
+    buttonset.addItem(theme->parts.pivotWest());
+    buttonset.addItem(theme->parts.pivotCenter());
+    buttonset.addItem(theme->parts.pivotEast());
+    buttonset.addItem(theme->parts.pivotSouthwest());
+    buttonset.addItem(theme->parts.pivotSouth());
+    buttonset.addItem(theme->parts.pivotSoutheast());
     box.addChild(&buttonset);
 
     menu.addChild(&hidden);
@@ -618,9 +621,22 @@ private:
   }
 
   void onPivotChange() {
-    int part = PART_PIVOT_HIDDEN + int(Preferences::instance().selection.pivot());
-    getItem(0)->setIcon(
-      static_cast<SkinTheme*>(getTheme())->get_part(part));
+    SkinTheme* theme = SkinTheme::instance();
+    SkinPartPtr part;
+    switch (Preferences::instance().selection.pivot()) {
+      case app::gen::PivotMode::HIDDEN:    part = theme->parts.pivotHidden(); break;
+      case app::gen::PivotMode::NORTHWEST: part = theme->parts.pivotNorthwest(); break;
+      case app::gen::PivotMode::NORTH:     part = theme->parts.pivotNorth(); break;
+      case app::gen::PivotMode::NORTHEAST: part = theme->parts.pivotNortheast(); break;
+      case app::gen::PivotMode::WEST:      part = theme->parts.pivotWest(); break;
+      case app::gen::PivotMode::CENTER:    part = theme->parts.pivotCenter(); break;
+      case app::gen::PivotMode::EAST:      part = theme->parts.pivotEast(); break;
+      case app::gen::PivotMode::SOUTHWEST: part = theme->parts.pivotSouthwest(); break;
+      case app::gen::PivotMode::SOUTH:     part = theme->parts.pivotSouth(); break;
+      case app::gen::PivotMode::SOUTHEAST: part = theme->parts.pivotSoutheast(); break;
+    }
+    if (part)
+      getItem(0)->setIcon(part);
   }
 
 };
@@ -693,20 +709,21 @@ public:
   }
 
   void setFreehandAlgorithm(FreehandAlgorithm algo) {
-    int part = PART_FREEHAND_ALGO_DEFAULT;
+    SkinTheme* theme = SkinTheme::instance();
+    SkinPartPtr part = theme->parts.freehandAlgoDefault();
     m_freehandAlgo = algo;
     switch (m_freehandAlgo) {
       case kDefaultFreehandAlgorithm:
-        part = PART_FREEHAND_ALGO_DEFAULT;
+        part = theme->parts.freehandAlgoDefault();
         break;
       case kPixelPerfectFreehandAlgorithm:
-        part = PART_FREEHAND_ALGO_PIXEL_PERFECT;
+        part = theme->parts.freehandAlgoPixelPerfect();
         break;
       case kDotsFreehandAlgorithm:
-        part = PART_FREEHAND_ALGO_DOTS;
+        part = theme->parts.freehandAlgoDots();
         break;
     }
-    m_bitmap = static_cast<SkinTheme*>(getTheme())->get_part(part);
+    m_bitmap = part;
     invalidate();
   }
 
@@ -717,24 +734,20 @@ public:
     // ContextBar.
   }
 
-  int getWidth() override {
-    return m_bitmap->width();
-  }
-
-  int getHeight() override {
-    return m_bitmap->height();
+  gfx::Size getSize() override {
+    return m_bitmap->getSize();
   }
 
   she::Surface* getNormalIcon() override {
-    return m_bitmap;
+    return m_bitmap->getBitmap(0);
   }
 
   she::Surface* getSelectedIcon() override {
-    return m_bitmap;
+    return m_bitmap->getBitmap(0);
   }
 
   she::Surface* getDisabledIcon() override {
-    return m_bitmap;
+    return m_bitmap->getBitmap(0);
   }
 
   int getIconAlign() override {
@@ -771,9 +784,9 @@ private:
     Region rgn(m_popupWindow->getBounds().createUnion(getBounds()));
     m_popupWindow->setHotRegion(rgn);
     m_freehandAlgoButton = new ButtonSet(3);
-    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_DEFAULT));
-    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_PIXEL_PERFECT));
-    m_freehandAlgoButton->addItem(theme->get_part(PART_FREEHAND_ALGO_DOTS));
+    m_freehandAlgoButton->addItem(theme->parts.freehandAlgoDefault());
+    m_freehandAlgoButton->addItem(theme->parts.freehandAlgoPixelPerfect());
+    m_freehandAlgoButton->addItem(theme->parts.freehandAlgoDots());
     m_freehandAlgoButton->setSelectedItem((int)m_freehandAlgo);
     m_freehandAlgoButton->ItemChange.connect(&FreehandAlgorithmField::onFreehandAlgoChange, this);
     m_freehandAlgoButton->setTransparent(true);
@@ -804,7 +817,7 @@ private:
     Preferences::instance().tool(tool).freehandAlgorithm(m_freehandAlgo);
   }
 
-  she::Surface* m_bitmap;
+  SkinPartPtr m_bitmap;
   FreehandAlgorithm m_freehandAlgo;
   PopupWindow* m_popupWindow;
   ButtonSet* m_freehandAlgoButton;
@@ -860,9 +873,9 @@ public:
   SelectionModeField() : ButtonSet(3) {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-    addItem(theme->get_part(PART_SELECTION_REPLACE));
-    addItem(theme->get_part(PART_SELECTION_ADD));
-    addItem(theme->get_part(PART_SELECTION_SUBTRACT));
+    addItem(theme->parts.selectionReplace());
+    addItem(theme->parts.selectionAdd());
+    addItem(theme->parts.selectionSubtract());
 
     setSelectedItem((int)Preferences::instance().selection.mode());
   }
@@ -893,8 +906,8 @@ public:
   DropPixelsField() : ButtonSet(2) {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-    addItem(theme->get_part(PART_DROP_PIXELS_OK));
-    addItem(theme->get_part(PART_DROP_PIXELS_CANCEL));
+    addItem(theme->parts.dropPixelsOk());
+    addItem(theme->parts.dropPixelsCancel());
     setOfferCapture(false);
   }
 

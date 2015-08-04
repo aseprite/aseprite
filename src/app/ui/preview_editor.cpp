@@ -46,9 +46,9 @@ class MiniCenterButton : public SkinButton<CheckBox> {
 public:
   MiniCenterButton()
     : SkinButton<CheckBox>(
-      PART_WINDOW_CENTER_BUTTON_NORMAL,
-      PART_WINDOW_CENTER_BUTTON_HOT,
-      PART_WINDOW_CENTER_BUTTON_SELECTED)
+      SkinTheme::instance()->parts.windowCenterButtonNormal(),
+      SkinTheme::instance()->parts.windowCenterButtonHot(),
+      SkinTheme::instance()->parts.windowCenterButtonSelected())
   {
     setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
@@ -56,13 +56,12 @@ public:
   }
 
 protected:
-  void onSetDecorativeWidgetBounds() override
-  {
+  void onSetDecorativeWidgetBounds() override {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Widget* window = getParent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size iconSize = theme->get_part_size(PART_WINDOW_PLAY_BUTTON_NORMAL);
-    gfx::Size closeSize = theme->get_part_size(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+    gfx::Size iconSize = theme->parts.windowPlayButtonNormal()->getSize();
+    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->getSize();
 
     rect.w = iconSize.w;
     rect.h = iconSize.h;
@@ -91,11 +90,11 @@ protected:
 class MiniPlayButton : public SkinButton<Button> {
 public:
   MiniPlayButton()
-    : SkinButton<Button>(PART_WINDOW_PLAY_BUTTON_NORMAL,
-                         PART_WINDOW_PLAY_BUTTON_HOT,
-                         PART_WINDOW_PLAY_BUTTON_SELECTED)
-    , m_isPlaying(false)
-  {
+    : SkinButton<Button>(SkinPartPtr(nullptr),
+                         SkinPartPtr(nullptr),
+                         SkinPartPtr(nullptr))
+    , m_isPlaying(false) {
+    setupIcons();
     setup_bevels(this, 0, 0, 0, 0);
     setDecorative(true);
   }
@@ -104,29 +103,21 @@ public:
 
   Signal0<void> Popup;
 
-protected:
-  void onClick(Event& ev) override
-  {
+private:
+
+  void onClick(Event& ev) override {
     m_isPlaying = !m_isPlaying;
-    if (m_isPlaying)
-      setParts(PART_WINDOW_STOP_BUTTON_NORMAL,
-               PART_WINDOW_STOP_BUTTON_HOT,
-               PART_WINDOW_STOP_BUTTON_SELECTED);
-    else
-      setParts(PART_WINDOW_PLAY_BUTTON_NORMAL,
-               PART_WINDOW_PLAY_BUTTON_HOT,
-               PART_WINDOW_PLAY_BUTTON_SELECTED);
+    setupIcons();
 
     SkinButton<Button>::onClick(ev);
   }
 
-  void onSetDecorativeWidgetBounds() override
-  {
+  void onSetDecorativeWidgetBounds() override {
     SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     Widget* window = getParent();
     gfx::Rect rect(0, 0, 0, 0);
-    gfx::Size playSize = theme->get_part_size(PART_WINDOW_PLAY_BUTTON_NORMAL);
-    gfx::Size closeSize = theme->get_part_size(PART_WINDOW_CLOSE_BUTTON_NORMAL);
+    gfx::Size playSize = theme->parts.windowPlayButtonNormal()->getSize();
+    gfx::Size closeSize = theme->parts.windowCloseButtonNormal()->getSize();
 
     rect.w = playSize.w;
     rect.h = playSize.h;
@@ -138,8 +129,7 @@ protected:
     setBounds(rect);
   }
 
-  bool onProcessMessage(Message* msg) override
-  {
+  bool onProcessMessage(Message* msg) override {
     switch (msg->type()) {
 
       case kSetCursorMessage:
@@ -164,7 +154,19 @@ protected:
     return SkinButton<Button>::onProcessMessage(msg);
   }
 
-private:
+  void setupIcons() {
+    SkinTheme* theme = SkinTheme::instance();
+
+    if (m_isPlaying)
+      setParts(theme->parts.windowStopButtonNormal(),
+               theme->parts.windowStopButtonHot(),
+               theme->parts.windowStopButtonSelected());
+    else
+      setParts(theme->parts.windowPlayButtonNormal(),
+               theme->parts.windowPlayButtonHot(),
+               theme->parts.windowPlayButtonSelected());
+  }
+
   bool m_isPlaying;
 };
 

@@ -21,7 +21,8 @@
 #include "app/modules/gui.h"
 #include "app/recent_files.h"
 #include "app/ui/file_list.h"
-#include "app/ui/skin/skin_parts.h"
+#include "app/ui/skin/button_icon_impl.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/widget_loader.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
@@ -239,6 +240,7 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
   , m_delegate(delegate)
   , m_navigationLocked(false)
 {
+  SkinTheme* theme = SkinTheme::instance();
   bool withResizeOptions = (delegate && delegate->hasResizeCombobox());
 
   addChild(new ArrowNavigator(this));
@@ -252,26 +254,26 @@ FileSelector::FileSelector(FileSelectorType type, FileSelectorDelegate* delegate
   goUpButton()->setFocusStop(false);
   newFolderButton()->setFocusStop(false);
 
-  set_gfxicon_to_button(goBackButton(),
-                        PART_COMBOBOX_ARROW_LEFT,
-                        PART_COMBOBOX_ARROW_LEFT_SELECTED,
-                        PART_COMBOBOX_ARROW_LEFT_DISABLED,
-                        CENTER | MIDDLE);
-  set_gfxicon_to_button(goForwardButton(),
-                        PART_COMBOBOX_ARROW_RIGHT,
-                        PART_COMBOBOX_ARROW_RIGHT_SELECTED,
-                        PART_COMBOBOX_ARROW_RIGHT_DISABLED,
-                        CENTER | MIDDLE);
-  set_gfxicon_to_button(goUpButton(),
-                        PART_COMBOBOX_ARROW_UP,
-                        PART_COMBOBOX_ARROW_UP_SELECTED,
-                        PART_COMBOBOX_ARROW_UP_DISABLED,
-                        CENTER | MIDDLE);
-  set_gfxicon_to_button(newFolderButton(),
-                        PART_NEWFOLDER,
-                        PART_NEWFOLDER_SELECTED,
-                        PART_NEWFOLDER,
-                        CENTER | MIDDLE);
+  goBackButton()->setIconInterface(
+    new ButtonIconImpl(theme->parts.comboboxArrowLeft(),
+                       theme->parts.comboboxArrowLeftSelected(),
+                       theme->parts.comboboxArrowLeftDisabled(),
+                       CENTER | MIDDLE));
+  goForwardButton()->setIconInterface(
+    new ButtonIconImpl(theme->parts.comboboxArrowRight(),
+                       theme->parts.comboboxArrowRightSelected(),
+                       theme->parts.comboboxArrowRightDisabled(),
+                       CENTER | MIDDLE));
+  goUpButton()->setIconInterface(
+    new ButtonIconImpl(theme->parts.comboboxArrowUp(),
+                       theme->parts.comboboxArrowUpSelected(),
+                       theme->parts.comboboxArrowUpDisabled(),
+                       CENTER | MIDDLE));
+  newFolderButton()->setIconInterface(
+    new ButtonIconImpl(theme->parts.newfolder(),
+                       theme->parts.newfolderSelected(),
+                       theme->parts.newfolder(),
+                       CENTER | MIDDLE));
 
   setup_mini_look(goBackButton());
   setup_mini_look(goForwardButton());

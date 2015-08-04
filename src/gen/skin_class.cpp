@@ -16,6 +16,7 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
 {
   std::vector<std::string> dimensions;
   std::vector<std::string> colors;
+  std::vector<std::string> parts;
   std::vector<std::string> styles;
 
   TiXmlHandle handle(doc);
@@ -36,6 +37,17 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   while (elem) {
     const char* id = elem->Attribute("id");
     colors.push_back(id);
+    elem = elem->NextSiblingElement();
+  }
+
+  elem = handle
+    .FirstChild("skin")
+    .FirstChild("parts")
+    .FirstChild("part").ToElement();
+  while (elem) {
+    const char* id = elem->Attribute("id");
+    if (!strchr(id, ':'))
+      parts.push_back(id);
     elem = elem->NextSiblingElement();
   }
 
@@ -105,6 +117,26 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
   std::cout
     << "    };\n";
 
+  // Parts sub class
+  std::cout
+    << "    class Parts {\n"
+    << "      template<typename> friend class SkinFile;\n"
+    << "    public:\n";
+  for (auto part : parts) {
+    std::string id = convert_xmlid_to_cppid(part, false);
+    std::cout
+      << "      const skin::SkinPartPtr& " << id << "() const { return m_" << id << "; }\n";
+  }
+  std::cout
+    << "    private:\n";
+  for (auto part : parts) {
+    std::string id = convert_xmlid_to_cppid(part, false);
+    std::cout
+      << "      skin::SkinPartPtr m_" << id << ";\n";
+  }
+  std::cout
+    << "    };\n";
+
   // Styles sub class
   std::cout
     << "\n"
@@ -130,37 +162,46 @@ void gen_skin_class(TiXmlDocument* doc, const std::string& inputFn)
     << "\n"
     << "    Dimensions dimensions;\n"
     << "    Colors colors;\n"
+    << "    Parts parts;\n"
     << "    Styles styles;\n"
     << "\n"
     << "  protected:\n"
     << "    void updateInternals() {\n";
   for (auto dimension : dimensions) {
     std::string id = convert_xmlid_to_cppid(dimension, false);
-    std::cout << "      dimensions.m_" << id
-              << " = dimensionById(\"" << dimension << "\");\n";
+    std::cout << "      byId(dimensions.m_" << id
+              << ", \"" << dimension << "\");\n";
   }
   for (auto color : colors) {
     std::string id = convert_xmlid_to_cppid(color, false);
-    std::cout << "      colors.m_" << id
-              << " = colorById(\"" << color << "\");\n";
+    std::cout << "      byId(colors.m_" << id
+              << ", \"" << color << "\");\n";
+  }
+  for (auto part : parts) {
+    std::string id = convert_xmlid_to_cppid(part, false);
+    std::cout << "      byId(parts.m_" << id
+              << ", \"" << part << "\");\n";
   }
   for (auto style : styles) {
     std::string id = convert_xmlid_to_cppid(style, false);
-    std::cout << "      styles.m_" << id
-              << " = styleById(\"" << style << "\");\n";
+    std::cout << "      byId(styles.m_" << id
+              << ", \"" << style << "\");\n";
   }
   std::cout
     << "    }\n"
     << "\n"
     << "  private:\n"
-    << "    int dimensionById(const std::string& id) {\n"
-    << "      return static_cast<T*>(this)->getDimensionById(id);\n"
+    << "    void byId(int& dimension, const std::string& id) {\n"
+    << "      dimension = static_cast<T*>(this)->getDimensionById(id);\n"
     << "    }\n"
-    << "    gfx::Color colorById(const std::string& id) {\n"
-    << "      return static_cast<T*>(this)->getColorById(id);\n"
+    << "    void byId(gfx::Color& color, const std::string& id) {\n"
+    << "      color = static_cast<T*>(this)->getColorById(id);\n"
     << "    }\n"
-    << "    skin::Style* styleById(const std::string& id) {\n"
-    << "      return static_cast<T*>(this)->getStyle(id);\n"
+    << "    void byId(skin::SkinPartPtr& part, const std::string& id) {\n"
+    << "      part = static_cast<T*>(this)->getPartById(id);\n"
+    << "    }\n"
+    << "    void byId(skin::Style*& style, const std::string& id) {\n"
+    << "      style = static_cast<T*>(this)->getStyle(id);\n"
     << "    }\n";
 
   std::cout

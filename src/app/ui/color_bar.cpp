@@ -100,10 +100,10 @@ protected:
 ColorBar::ScrollableView::ScrollableView()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->get_part(PART_EDITOR_SELECTED_W)->width();
-  int t = theme->get_part(PART_EDITOR_SELECTED_N)->height();
-  int r = theme->get_part(PART_EDITOR_SELECTED_E)->width();
-  int b = theme->get_part(PART_EDITOR_SELECTED_S)->height();
+  int l = theme->parts.editorSelected()->getBitmapW()->width();
+  int t = theme->parts.editorSelected()->getBitmapN()->height();
+  int r = theme->parts.editorSelected()->getBitmapE()->width();
+  int b = theme->parts.editorSelected()->getBitmapS()->height();
 
   setBorder(gfx::Border(l, t, r, b));
 }
@@ -112,10 +112,11 @@ void ColorBar::ScrollableView::onPaint(ui::PaintEvent& ev)
 {
   ui::Graphics* g = ev.getGraphics();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  theme->draw_bounds_nw(g,
-    getClientBounds(),
-    hasFocus() ? PART_EDITOR_SELECTED_NW:
-    PART_EDITOR_NORMAL_NW,
+
+  theme->drawRect(
+    g, getClientBounds(),
+    (hasFocus() ? theme->parts.editorSelected().get():
+                  theme->parts.editorNormal().get()),
     gfx::ColorNone);
 }
 
@@ -223,10 +224,10 @@ ColorBar::ColorBar(int align)
   // Change labels foreground color
   m_buttons.ItemChange.connect(Bind<void>(&ColorBar::onPaletteButtonClick, this));
 
-  m_buttons.addItem(theme->get_part(PART_PAL_EDIT));
-  m_buttons.addItem(theme->get_part(PART_PAL_SORT));
-  m_buttons.addItem(theme->get_part(PART_PAL_PRESETS));
-  m_buttons.addItem(theme->get_part(PART_PAL_OPTIONS));
+  m_buttons.addItem(theme->parts.palEdit());
+  m_buttons.addItem(theme->parts.palSort());
+  m_buttons.addItem(theme->parts.palPresets());
+  m_buttons.addItem(theme->parts.palOptions());
 
   // Tooltips
   TooltipManager* tooltipManager = new TooltipManager();

@@ -66,7 +66,7 @@ private:
 static Size getToolIconSize(Widget* widget)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(widget->getTheme());
-  she::Surface* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->getToolIcon("configuration");
   if (icon)
     return Size(icon->width(), icon->height());
   else
@@ -316,24 +316,24 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     ToolGroup* tool_group = *it;
     Tool* tool = m_selectedInGroup[tool_group];
     gfx::Color face;
-    int nw;
+    SkinPartPtr nw;
 
     if (App::instance()->activeTool() == tool || m_hotIndex == c) {
-      nw = PART_TOOLBUTTON_HOT_NW;
+      nw = theme->parts.toolbuttonHot();
       face = hotFace;
     }
     else {
-      nw = c >= 0 && c < groups-1 ? PART_TOOLBUTTON_NORMAL_NW:
-                                    PART_TOOLBUTTON_LAST_NW;
+      nw = c >= 0 && c < groups-1 ? theme->parts.toolbuttonNormal():
+                                    theme->parts.toolbuttonLast();
       face = normalFace;
     }
 
     toolrc = getToolGroupBounds(c);
     toolrc.offset(-getBounds().x, -getBounds().y);
-    theme->draw_bounds_nw(g, toolrc, nw, face);
+    theme->drawRect(g, toolrc, nw.get(), face);
 
     // Draw the tool icon
-    she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
+    she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon,
         toolrc.x+toolrc.w/2-icon->width()/2,
@@ -345,13 +345,13 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   toolrc = getToolGroupBounds(ConfigureToolIndex);
   toolrc.offset(-getBounds().x, -getBounds().y);
   bool isHot = (m_hotIndex == ConfigureToolIndex);
-  theme->draw_bounds_nw(g,
-    toolrc,
-    isHot ? PART_TOOLBUTTON_HOT_NW:
-    PART_TOOLBUTTON_LAST_NW,
-    isHot ? hotFace: normalFace);
+  theme->drawRect(
+    g, toolrc,
+    (isHot ? theme->parts.toolbuttonHot().get():
+             theme->parts.toolbuttonLast().get()),
+    (isHot ? hotFace: normalFace));
 
-  she::Surface* icon = theme->get_toolicon("configuration");
+  she::Surface* icon = theme->getToolIcon("configuration");
   if (icon) {
     g->drawRgbaSurface(icon,
       toolrc.x+toolrc.w/2-icon->width()/2,
@@ -363,13 +363,14 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
   toolrc.offset(-getBounds().x, -getBounds().y);
   isHot = (m_hotIndex == PreviewVisibilityIndex ||
     App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled());
-  theme->draw_bounds_nw(g,
+  theme->drawRect(
+    g,
     toolrc,
-    isHot ? PART_TOOLBUTTON_HOT_NW:
-    PART_TOOLBUTTON_LAST_NW,
-    isHot ? hotFace: normalFace);
+    (isHot ? theme->parts.toolbuttonHot().get():
+             theme->parts.toolbuttonLast().get()),
+    (isHot ? hotFace: normalFace));
 
-  icon = theme->get_toolicon("minieditor");
+  icon = theme->getToolIcon("minieditor");
   if (icon) {
     g->drawRgbaSurface(icon,
       toolrc.x+toolrc.w/2-icon->width()/2,
@@ -726,26 +727,27 @@ void ToolBar::ToolStrip::onPaint(PaintEvent& ev)
     Tool* tool = *it;
     if (tool->getGroup() == m_group) {
       gfx::Color face;
-      int nw;
+      SkinPartPtr nw;
 
       if (App::instance()->activeTool() == tool ||
           m_hotTool == tool) {
-        nw = PART_TOOLBUTTON_HOT_NW;
+        nw = theme->parts.toolbuttonHot();
         face = theme->colors.buttonHotFace();
       }
       else {
-        nw = PART_TOOLBUTTON_LAST_NW;
+        nw = theme->parts.toolbuttonLast();
         face = theme->colors.buttonNormalFace();
       }
 
       toolrc = getToolBounds(index++);
       toolrc.offset(-getBounds().x, -getBounds().y);
-      theme->draw_bounds_nw(g, toolrc, nw, face);
+      theme->drawRect(g, toolrc, nw.get(), face);
 
       // Draw the tool icon
-      she::Surface* icon = theme->get_toolicon(tool->getId().c_str());
+      she::Surface* icon = theme->getToolIcon(tool->getId().c_str());
       if (icon) {
-        g->drawRgbaSurface(icon,
+        g->drawRgbaSurface(
+          icon,
           toolrc.x+toolrc.w/2-icon->width()/2,
           toolrc.y+toolrc.h/2-icon->height()/2);
       }

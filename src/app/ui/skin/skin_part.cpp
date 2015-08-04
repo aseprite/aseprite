@@ -44,5 +44,14 @@ void SkinPart::setBitmap(std::size_t index, she::Surface* bitmap)
   m_bitmaps[index] = bitmap;
 }
 
+gfx::Size SkinPart::getSize() const
+{
+  if (!m_bitmaps.empty())
+    return gfx::Size(m_bitmaps[0]->width(),
+                     m_bitmaps[0]->height());
+  else
+    return gfx::Size(0, 0);
+}
+
 } // namespace skin
 } // namespace app

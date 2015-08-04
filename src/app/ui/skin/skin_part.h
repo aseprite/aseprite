@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/shared_ptr.h"
+#include "gfx/size.h"
 
 #include <vector>
 
@@ -27,8 +28,7 @@ namespace app {
       SkinPart();
       ~SkinPart();
 
-      std::size_t size() const { return m_bitmaps.size(); }
-
+      std::size_t countBitmaps() const { return m_bitmaps.size(); }
       void clear();
 
       // It doesn't destroy the previous bitmap in the given "index".
@@ -37,6 +37,17 @@ namespace app {
       she::Surface* getBitmap(std::size_t index) const {
         return (index < m_bitmaps.size() ? m_bitmaps[index]: NULL);
       }
+
+      she::Surface* getBitmapNW() const { return getBitmap(0); }
+      she::Surface* getBitmapN()  const { return getBitmap(1); }
+      she::Surface* getBitmapNE() const { return getBitmap(2); }
+      she::Surface* getBitmapE()  const { return getBitmap(3); }
+      she::Surface* getBitmapSE() const { return getBitmap(4); }
+      she::Surface* getBitmapS()  const { return getBitmap(5); }
+      she::Surface* getBitmapSW() const { return getBitmap(6); }
+      she::Surface* getBitmapW()  const { return getBitmap(7); }
+
+      gfx::Size getSize() const;
 
     private:
       Bitmaps m_bitmaps;

@@ -65,11 +65,11 @@ AniControls::AniControls()
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
 
-  addItem(theme->get_part(PART_ANI_FIRST));
-  addItem(theme->get_part(PART_ANI_PREVIOUS));
-  addItem(theme->get_part(PART_ANI_PLAY));
-  addItem(theme->get_part(PART_ANI_NEXT));
-  addItem(theme->get_part(PART_ANI_LAST));
+  addItem(theme->parts.aniFirst());
+  addItem(theme->parts.aniPrevious());
+  addItem(theme->parts.aniPlay());
+  addItem(theme->parts.aniNext());
+  addItem(theme->parts.aniLast());
   ItemChange.connect(Bind(&AniControls::onPlayButton, this));
 
   setTriggerOnMouseUp(true);
@@ -81,8 +81,9 @@ void AniControls::updateUsingEditor(Editor* editor)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(this->getTheme());
   getItem(ACTION_PLAY)->setIcon(
-    theme->get_part(
-      (editor && editor->isPlaying()) ? PART_ANI_STOP: PART_ANI_PLAY));
+    (editor && editor->isPlaying() ?
+      theme->parts.aniStop():
+      theme->parts.aniPlay()));
 }
 
 void AniControls::onPlayButton()

@@ -9,6 +9,7 @@
 #define APP_UI_BUTTON_SET_H_INCLUDED
 #pragma once
 
+#include "app/ui/skin/skin_part.h"
 #include "base/signal.h"
 #include "ui/grid.h"
 
@@ -21,21 +22,21 @@ namespace app {
     class Item : public ui::Widget {
     public:
       Item();
-      void setIcon(she::Surface* icon);
-      she::Surface* icon() const { return m_icon; }
+      void setIcon(const skin::SkinPartPtr& icon);
+      skin::SkinPartPtr icon() const { return m_icon; }
       ButtonSet* buttonSet();
     protected:
       void onPaint(ui::PaintEvent& ev) override;
       bool onProcessMessage(ui::Message* msg) override;
       void onPreferredSize(ui::PreferredSizeEvent& ev) override;
     private:
-      she::Surface* m_icon;
+      skin::SkinPartPtr m_icon;
     };
 
     ButtonSet(int columns);
 
     void addItem(const std::string& text, int hspan = 1, int vspan = 1);
-    void addItem(she::Surface* icon, int hspan = 1, int vspan = 1);
+    void addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1);
     void addItem(Item* item, int hspan = 1, int vspan = 1);
     Item* getItem(int index);
 

@@ -39,8 +39,8 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
 {
   SkinTheme* theme = static_cast<SkinTheme*>(ui::CurrentTheme::get());
 
-  if (m_part && m_part->size() > 0) {
-    if (m_part->size() == 1) {
+  if (m_part && m_part->countBitmaps() > 0) {
+    if (m_part->countBitmaps() == 1) {
       if (!gfx::is_transparent(m_color))
         g->fillRect(m_color, bounds);
 
@@ -65,8 +65,8 @@ void BackgroundRule::onPaint(ui::Graphics* g, const gfx::Rect& bounds, const cha
         }
       }
     }
-    else if (m_part->size() == 8) {
-      theme->draw_bounds_nw(g, bounds, m_part, m_color);
+    else if (m_part->countBitmaps() == 8) {
+      theme->drawRect(g, bounds, m_part.get(), m_color);
     }
   }
   else if (!gfx::is_transparent(m_color)) {

@@ -47,11 +47,9 @@ public:
     , m_delegate(delegate)
     , m_brush(brush)
     , m_slot(slot) {
-    setIcon(BrushPopup::createSurfaceForBrush(brush));
-  }
-
-  ~Item() {
-    icon()->dispose();
+    SkinPartPtr icon(new SkinPart);
+    icon->setBitmap(0, BrushPopup::createSurfaceForBrush(brush));
+    setIcon(icon);
   }
 
   const BrushRef& brush() const {

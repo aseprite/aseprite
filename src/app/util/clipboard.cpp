@@ -24,7 +24,6 @@
 #include "app/ui/color_bar.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
-#include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/timeline.h"
 #include "app/ui_context.h"

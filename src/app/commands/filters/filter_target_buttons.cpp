@@ -13,7 +13,8 @@
 
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
-#include "app/ui/skin/skin_parts.h"
+#include "app/ui/skin/button_icon_impl.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "doc/image.h"
 #include "ui/box.h"
@@ -25,9 +26,9 @@
 
 namespace app {
 
+using namespace app::skin;
 using namespace filters;
 using namespace ui;
-using namespace app::skin;
 
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   : Box(VERTICAL)
@@ -91,10 +92,12 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
                withChannels ? 0: 2,
                withChannels ? 0: 2, 2, 2);
   setup_mini_look(images);
-  set_gfxicon_to_button(images,
-                        getTargetNormalIcon(),
-                        getTargetSelectedIcon(), -1,
-                        CENTER | MIDDLE);
+
+  images->setIconInterface(
+    new ButtonIconImpl(getTargetNormalIcon(),
+                       getTargetSelectedIcon(),
+                       SkinPartPtr(nullptr),
+                       CENTER | MIDDLE));
 
   // Make hierarchy
   ADD(hbox, r, onChannelChange);
@@ -170,39 +173,44 @@ void FilterTargetButtons::onImagesChange(ButtonBase* button)
     m_target |= TARGET_ALL_FRAMES;
   }
 
-  set_gfxicon_to_button(button,
-                        getTargetNormalIcon(),
-                        getTargetSelectedIcon(), -1,
-                        CENTER | MIDDLE);
+  button->setIconInterface(
+    new ButtonIconImpl(getTargetNormalIcon(),
+                       getTargetSelectedIcon(),
+                       SkinPartPtr(nullptr),
+                       CENTER | MIDDLE));
 
   TargetChange();
 }
 
-int FilterTargetButtons::getTargetNormalIcon() const
+SkinPartPtr FilterTargetButtons::getTargetNormalIcon() const
 {
+  SkinTheme* theme = SkinTheme::instance();
+
   if (m_target & TARGET_ALL_FRAMES) {
     return (m_target & TARGET_ALL_LAYERS) ?
-      PART_TARGET_FRAMES_LAYERS:
-      PART_TARGET_FRAMES;
+      theme->parts.targetFramesLayers():
+      theme->parts.targetFrames();
   }
   else {
     return (m_target & TARGET_ALL_LAYERS) ?
-      PART_TARGET_LAYERS:
-      PART_TARGET_ONE;
+      theme->parts.targetLayers():
+      theme->parts.targetOne();
   }
 }
 
-int FilterTargetButtons::getTargetSelectedIcon() const
+SkinPartPtr FilterTargetButtons::getTargetSelectedIcon() const
 {
+  SkinTheme* theme = SkinTheme::instance();
+
   if (m_target & TARGET_ALL_FRAMES) {
     return (m_target & TARGET_ALL_LAYERS) ?
-      PART_TARGET_FRAMES_LAYERS_SELECTED:
-      PART_TARGET_FRAMES_SELECTED;
+      theme->parts.targetFramesLayersSelected():
+      theme->parts.targetFramesSelected();
   }
   else {
     return (m_target & TARGET_ALL_LAYERS) ?
-      PART_TARGET_LAYERS_SELECTED:
-      PART_TARGET_ONE_SELECTED;
+      theme->parts.targetLayersSelected():
+      theme->parts.targetOneSelected();
   }
 }
 

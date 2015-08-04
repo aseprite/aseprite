@@ -10,7 +10,6 @@
 #pragma once
 
 #include "app/ui/skin/skin_part.h"
-#include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/style_sheet.h"
 #include "gfx/color.h"
 #include "gfx/fwd.h"
@@ -85,18 +84,17 @@ namespace app {
 
       int get_button_selected_offset() const { return 0; } // TODO Configurable in xml
 
-      she::Surface* get_part(int part_i) const { return m_part[part_i]; }
-      she::Surface* get_part(const std::string& id) const;
-      she::Surface* get_toolicon(const char* tool_id) const;
-      gfx::Size get_part_size(int part_i) const;
+      she::Surface* getToolIcon(const char* toolId) const;
 
       // Helper functions to draw bounds/hlines with sheet parts
-      void draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8]);
-      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, int nw, gfx::Color bg = gfx::ColorNone);
-      void draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, gfx::Color bg = gfx::ColorNone);
-      void draw_bounds_nw2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, int nw1, int nw2, gfx::Color bg1, gfx::Color bg2);
-      void draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part);
-      void draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part);
+      void drawRect(ui::Graphics* g, const gfx::Rect& rc,
+                    she::Surface* nw, she::Surface* n, she::Surface* ne,
+                    she::Surface* e, she::Surface* se, she::Surface* s,
+                    she::Surface* sw, she::Surface* w);
+      void drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg = gfx::ColorNone);
+      void drawRect2(ui::Graphics* g, const gfx::Rect& rc, int x_mid, SkinPart* nw1, SkinPart* nw2, gfx::Color bg1, gfx::Color bg2);
+      void drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
+      void drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart);
       void paintProgressBar(ui::Graphics* g, const gfx::Rect& rc, double progress);
 
       Style* getStyle(const std::string& id) {
@@ -122,13 +120,6 @@ namespace app {
     private:
       void loadSheet();
       void loadFonts();
-      void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
-                                int nw, int n, int ne, int e, int se, int s, int sw, int w);
-      void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart);
-      void draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc,
-        she::Surface* nw, she::Surface* n, she::Surface* ne,
-        she::Surface* e, she::Surface* se, she::Surface* s,
-        she::Surface* sw, she::Surface* w);
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
@@ -143,7 +134,6 @@ namespace app {
 
       std::string m_selected_skin;
       she::Surface* m_sheet;
-      std::vector<she::Surface*> m_part;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, she::Surface*> m_toolicon;
       std::map<std::string, gfx::Color> m_colors_by_id;

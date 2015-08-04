@@ -55,7 +55,7 @@ static struct HandlesInfo {
 HandleType TransformHandles::getHandleAtPoint(Editor* editor, const gfx::Point& pt, const gfx::Transformation& transform)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  she::Surface* gfx = theme->get_part(PART_TRANSFORMATION_HANDLE);
+  she::Surface* gfx = theme->parts.transformationHandle()->getBitmap(0);
   fixmath::fixed angle = fixmath::ftofix(128.0 * transform.angle() / PI);
 
   gfx::Transformation::Corners corners;
@@ -130,7 +130,7 @@ void TransformHandles::drawHandles(Editor* editor, const gfx::Transformation& tr
   if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
     SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-    she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
+    she::Surface* part = theme->parts.pivotHandle()->getBitmap(0);
 
     g.drawRgbaSurface(part, pivotBounds.x, pivotBounds.y);
   }
@@ -151,7 +151,7 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
 
   // Invalidate each corner handle.
   for (size_t c=0; c<HANDLES; ++c) {
-    she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
+    she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
     int u = (screenPoints[handles_info[c].i1].x+screenPoints[handles_info[c].i2].x)/2;
     int v = (screenPoints[handles_info[c].i1].y+screenPoints[handles_info[c].i2].y)/2;
 
@@ -163,11 +163,11 @@ void TransformHandles::invalidateHandles(Editor* editor, const gfx::Transformati
   // Invalidate area where the pivot is.
   if (visiblePivot(angle)) {
     gfx::Rect pivotBounds = getPivotHandleBounds(editor, transform, corners);
-    she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
+    she::Surface* part = theme->parts.pivotHandle()->getBitmap(0);
 
     editor->invalidateRect(
       gfx::Rect(pivotBounds.x, pivotBounds.y,
-        part->width(), part->height()));
+                part->width(), part->height()));
   }
 }
 
@@ -176,17 +176,17 @@ gfx::Rect TransformHandles::getPivotHandleBounds(Editor* editor,
                                                  const gfx::Transformation::Corners& corners)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  she::Surface* part = theme->get_part(PART_PIVOT_HANDLE);
+  gfx::Size partSize = theme->parts.pivotHandle()->getSize();
   gfx::Point screenPivotPos = editor->editorToScreen(transform.pivot());
 
   screenPivotPos.x += editor->zoom().apply(1) / 2;
   screenPivotPos.y += editor->zoom().apply(1) / 2;
 
   return gfx::Rect(
-    screenPivotPos.x-part->width()/2,
-    screenPivotPos.y-part->height()/2,
-    part->width(),
-    part->height());
+    screenPivotPos.x-partSize.w/2,
+    screenPivotPos.y-partSize.h/2,
+    partSize.w,
+    partSize.h);
 }
 
 bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, int gfx_h, fixmath::fixed angle)
@@ -200,7 +200,7 @@ bool TransformHandles::inHandle(const gfx::Point& pt, int x, int y, int gfx_w, i
 void TransformHandles::drawHandle(Graphics* g, int x, int y, fixmath::fixed angle)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(CurrentTheme::get());
-  she::Surface* part = theme->get_part(PART_TRANSFORMATION_HANDLE);
+  she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
 
   adjustHandle(x, y, part->width(), part->height(), angle);
 

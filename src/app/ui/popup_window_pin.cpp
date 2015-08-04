@@ -13,6 +13,7 @@
 
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
+#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "gfx/border.h"
@@ -30,14 +31,18 @@ PopupWindowPin::PopupWindowPin(const std::string& text, ClickBehavior clickBehav
   : PopupWindow(text, clickBehavior)
   , m_pin("")
 {
+  SkinTheme* theme = SkinTheme::instance();
+
   // Configure the micro check-box look without borders, only the "pin" icon is shown.
   setup_look(&m_pin, WithoutBordersLook);
   m_pin.setChildSpacing(0);
   m_pin.setBorder(gfx::Border(0));
-
   m_pin.Click.connect(&PopupWindowPin::onPinClick, this);
-
-  set_gfxicon_to_button(&m_pin, PART_UNPINNED, PART_PINNED, PART_UNPINNED, CENTER | MIDDLE);
+  m_pin.setIconInterface(
+    new ButtonIconImpl(theme->parts.unpinned(),
+                       theme->parts.pinned(),
+                       theme->parts.unpinned(),
+                       CENTER | MIDDLE));
 }
 
 void PopupWindowPin::onPinClick(Event& ev)

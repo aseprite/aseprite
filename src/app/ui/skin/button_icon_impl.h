@@ -9,6 +9,7 @@
 #define APP_UI_SKIN_BUTTON_ICON_IMPL_H_INCLUDED
 #pragma once
 
+#include "app/ui/skin/skin_part.h"
 #include "ui/button.h"
 
 namespace app {
@@ -18,26 +19,23 @@ namespace app {
 
     class ButtonIconImpl : public ui::IButtonIcon {
     public:
-      ButtonIconImpl(SkinTheme* theme,
-                     int normalIcon,
-                     int selectedIcon,
-                     int disabledIcon,
+      ButtonIconImpl(const SkinPartPtr& normalIcon,
+                     const SkinPartPtr& selectedIcon,
+                     const SkinPartPtr& disabledIcon,
                      int iconAlign);
 
       // IButtonIcon implementation
       void destroy();
-      int getWidth();
-      int getHeight();
+      gfx::Size getSize();
       she::Surface* getNormalIcon();
       she::Surface* getSelectedIcon();
       she::Surface* getDisabledIcon();
       int getIconAlign();
 
     public:
-      SkinTheme* m_theme;
-      int m_normalIcon;
-      int m_selectedIcon;
-      int m_disabledIcon;
+      SkinPartPtr m_normalIcon;
+      SkinPartPtr m_selectedIcon;
+      SkinPartPtr m_disabledIcon;
       int m_iconAlign;
     };
 

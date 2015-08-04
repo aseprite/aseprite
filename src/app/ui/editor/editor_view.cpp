@@ -41,10 +41,10 @@ EditorView::EditorView(EditorView::Type type)
   , m_type(type)
 {
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
-  int l = theme->get_part(PART_EDITOR_SELECTED_W)->width();
-  int t = theme->get_part(PART_EDITOR_SELECTED_N)->height();
-  int r = theme->get_part(PART_EDITOR_SELECTED_E)->width();
-  int b = theme->get_part(PART_EDITOR_SELECTED_S)->height();
+  int l = theme->parts.editorSelected()->getBitmapW()->width();
+  int t = theme->parts.editorSelected()->getBitmapN()->height();
+  int r = theme->parts.editorSelected()->getBitmapE()->width();
+  int b = theme->parts.editorSelected()->getBitmapS()->height();
 
   setBorder(gfx::Border(l, t, r, b));
   setBgColor(gfx::rgba(0, 0, 0));
@@ -75,9 +75,11 @@ void EditorView::onPaint(PaintEvent& ev)
 
   }
 
-  theme->draw_bounds_nw(g, getClientBounds(),
-    selected ? PART_EDITOR_SELECTED_NW:
-    PART_EDITOR_NORMAL_NW,
+  theme->drawRect(
+    g, getClientBounds(),
+    (selected ?
+     theme->parts.editorSelected().get():
+     theme->parts.editorNormal().get()),
     getBgColor());
 }
 

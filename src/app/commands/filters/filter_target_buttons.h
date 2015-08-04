@@ -9,6 +9,7 @@
 #define APP_COMMANDS_FILTERS_FILTER_TARGET_BUTTONS_H_INCLUDED
 #pragma once
 
+#include "app/ui/skin/skin_part.h"
 #include "base/signal.h"
 #include "filters/target.h"
 #include "ui/box.h"
@@ -37,8 +38,8 @@ namespace app {
 
   private:
     void selectTargetButton(const char* name, Target specificTarget);
-    int getTargetNormalIcon() const;
-    int getTargetSelectedIcon() const;
+    skin::SkinPartPtr getTargetNormalIcon() const;
+    skin::SkinPartPtr getTargetSelectedIcon() const;
 
     Target m_target;
   };

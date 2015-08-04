@@ -28,7 +28,6 @@
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_menu_bar.h"
 #include "app/ui/main_window.h"
-#include "app/ui/skin/button_icon_impl.h"
 #include "app/ui/skin/skin_property.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
@@ -262,23 +261,6 @@ void setup_bevels(Widget* widget, int b1, int b2, int b3, int b4)
   skinProp->setUpperRight(b2);
   skinProp->setLowerLeft(b3);
   skinProp->setLowerRight(b4);
-}
-
-// Sets the IconInterface pointer interface of the button to show the
-// specified set of icons. Each icon is a part of the SkinTheme.
-void set_gfxicon_to_button(ButtonBase* button,
-                           int normal_part_id,
-                           int selected_part_id,
-                           int disabled_part_id, int icon_align)
-{
-  ButtonIconImpl* buttonIcon =
-    new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
-                       normal_part_id,
-                       selected_part_id,
-                       disabled_part_id,
-                       icon_align);
-
-  button->setIconInterface(buttonIcon);
 }
 
 //////////////////////////////////////////////////////////////////////

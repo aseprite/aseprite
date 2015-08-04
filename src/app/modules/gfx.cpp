@@ -100,7 +100,7 @@ void draw_color_button(ui::Graphics* g,
   const Rect& rc, const app::Color& color,
   bool hot, bool drag)
 {
-  SkinTheme* theme = (SkinTheme*)ui::CurrentTheme::get();
+  SkinTheme* theme = SkinTheme::instance();
   int scale = ui::guiscale();
 
   // Draw background (the color)
@@ -111,25 +111,22 @@ void draw_color_button(ui::Graphics* g,
       rc.h-2*scale), color);
 
   // Draw opaque border
-  {
-    int parts[8] = {
-      PART_COLORBAR_0_NW,
-      PART_COLORBAR_0_N,
-      PART_COLORBAR_1_NE,
-      PART_COLORBAR_1_E,
-      PART_COLORBAR_3_SE,
-      PART_COLORBAR_2_S,
-      PART_COLORBAR_2_SW,
-      PART_COLORBAR_0_W
-    };
-    theme->draw_bounds_array(g, rc, parts);
-  }
+  theme->drawRect(
+    g, rc,
+    theme->parts.colorbar0()->getBitmapNW(),
+    theme->parts.colorbar0()->getBitmapN(),
+    theme->parts.colorbar1()->getBitmapNE(),
+    theme->parts.colorbar1()->getBitmapE(),
+    theme->parts.colorbar3()->getBitmapSE(),
+    theme->parts.colorbar2()->getBitmapS(),
+    theme->parts.colorbar2()->getBitmapSW(),
+    theme->parts.colorbar0()->getBitmapW());
 
   // Draw hot
   if (hot) {
-    theme->draw_bounds_nw(g,
-      gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - 1*scale),
-      PART_COLORBAR_BORDER_HOTFG_NW);
+    theme->drawRect(
+      g, gfx::Rect(rc.x, rc.y, rc.w, rc.h-1 - 1*scale),
+      theme->parts.colorbarBorderHotfg().get());
   }
 }
 

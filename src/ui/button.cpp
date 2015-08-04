@@ -274,10 +274,11 @@ bool ButtonBase::onProcessMessage(Message* msg)
 void ButtonBase::onPreferredSize(PreferredSizeEvent& ev)
 {
   gfx::Rect box;
+  gfx::Size iconSize = (m_iconInterface ? m_iconInterface->getSize(): gfx::Size(0, 0));
   getTextIconInfo(&box, NULL, NULL,
-    m_iconInterface ? m_iconInterface->getIconAlign(): 0,
-    m_iconInterface ? m_iconInterface->getWidth(): 0,
-    m_iconInterface ? m_iconInterface->getHeight(): 0);
+                  m_iconInterface ? m_iconInterface->getIconAlign(): 0,
+                  iconSize.w,
+                  iconSize.h);
 
   ev.setPreferredSize(box.w + border().width(),
                       box.h + border().height());

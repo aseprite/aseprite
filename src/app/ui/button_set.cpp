@@ -48,7 +48,7 @@ ButtonSet::Item::Item()
   setup_mini_font(this);
 }
 
-void ButtonSet::Item::setIcon(she::Surface* icon)
+void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
 {
   m_icon = icon;
   invalidate();
@@ -65,25 +65,25 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   Graphics* g = ev.getGraphics();
   gfx::Rect rc = getClientBounds();
   gfx::Color fg, bg;
-  int nw;
+  SkinPartPtr nw;
 
   if (!gfx::is_transparent(getBgColor()))
     g->fillRect(getBgColor(), g->getClipBounds());
 
   if (isSelected() || hasMouseOver()) {
     if (hasCapture()) {
-      nw = PART_TOOLBUTTON_PUSHED_NW;
+      nw = theme->parts.toolbuttonPushed();
       fg = theme->colors.buttonSelectedText();
       bg = theme->colors.buttonSelectedFace();
     }
     else {
-      nw = PART_TOOLBUTTON_HOT_NW;
+      nw = theme->parts.toolbuttonHot();
       fg = theme->colors.buttonHotText();
       bg = theme->colors.buttonHotFace();
     }
   }
   else {
-    nw = PART_TOOLBUTTON_LAST_NW;
+    nw = theme->parts.toolbuttonLast();
     fg = theme->colors.buttonNormalText();
     bg = theme->colors.buttonNormalFace();
   }
@@ -92,16 +92,17 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   if (info.col < info.grid_cols-1) rc.w+=1*guiscale();
   if (info.row < info.grid_rows-1) rc.h+=3*guiscale();
 
-  theme->draw_bounds_nw(g, rc, nw, bg);
+  theme->drawRect(g, rc, nw.get(), bg);
 
   if (m_icon) {
-    int u = rc.x + rc.w/2 - m_icon->width()/2;
-    int v = rc.y + rc.h/2 - m_icon->height()/2 - 1*guiscale();
+    gfx::Size iconSize = m_icon->getSize();
+    int u = rc.x + rc.w/2 - iconSize.w/2;
+    int v = rc.y + rc.h/2 - iconSize.h/2 - 1*guiscale();
 
     if (isSelected() && hasCapture())
-      g->drawColoredRgbaSurface(m_icon, theme->colors.buttonSelectedText(), u, v);
+      g->drawColoredRgbaSurface(m_icon->getBitmap(0), theme->colors.buttonSelectedText(), u, v);
     else
-      g->drawRgbaSurface(m_icon, u, v);
+      g->drawRgbaSurface(m_icon->getBitmap(0), u, v);
   }
 
   if (!getText().empty()) {
@@ -192,7 +193,7 @@ void ButtonSet::addItem(const std::string& text, int hspan, int vspan)
   addItem(item, hspan, vspan);
 }
 
-void ButtonSet::addItem(she::Surface* icon, int hspan, int vspan)
+void ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan)
 {
   Item* item = new Item();
   item->setIcon(icon);

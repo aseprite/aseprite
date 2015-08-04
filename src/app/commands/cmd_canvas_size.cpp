@@ -220,37 +220,37 @@ private:
     int c = 0;
     for (int v=0; v<3; ++v) {
       for (int u=0; u<3; ++u) {
-        const char* iconId = "canvas_empty";
+        SkinPartPtr icon = theme->parts.canvasEmpty();
 
         if (c == sel) {
-          iconId = "canvas_c";
+          icon = theme->parts.canvasC();
         }
         else if (u+1 < 3 && (u+1)+3*v == sel) {
-          iconId = "canvas_w";
+          icon = theme->parts.canvasW();
         }
         else if (u-1 >= 0 && (u-1)+3*v == sel) {
-          iconId = "canvas_e";
+          icon = theme->parts.canvasE();
         }
         else if (v+1 < 3 && u+3*(v+1) == sel) {
-          iconId = "canvas_n";
+          icon = theme->parts.canvasN();
         }
         else if (v-1 >= 0 && u+3*(v-1) == sel) {
-          iconId = "canvas_s";
+          icon = theme->parts.canvasS();
         }
         else if (u+1 < 3 && v+1 < 3 && (u+1)+3*(v+1) == sel) {
-          iconId = "canvas_nw";
+          icon = theme->parts.canvasNw();
         }
         else if (u-1 >= 0 && v+1 < 3 && (u-1)+3*(v+1) == sel) {
-          iconId = "canvas_ne";
+          icon = theme->parts.canvasNe();
         }
         else if (u+1 < 3 && v-1 >= 0 && (u+1)+3*(v-1) == sel) {
-          iconId = "canvas_sw";
+          icon = theme->parts.canvasSw();
         }
         else if (u-1 >= 0 && v-1 >= 0 && (u-1)+3*(v-1) == sel) {
-          iconId = "canvas_se";
+          icon = theme->parts.canvasSe();
         }
 
-        dir()->getItem(c)->setIcon(theme->get_part(iconId));
+        dir()->getItem(c)->setIcon(icon);
         ++c;
       }
     }

@@ -83,8 +83,9 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
   ui::Graphics* g = ev.getGraphics();
   SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
 
-  theme->draw_bounds_nw(g, getClientBounds(),
-    PART_EDITOR_NORMAL_NW, getBgColor());
+  theme->drawRect(g, getClientBounds(),
+                  theme->parts.editorNormal().get(),
+                  getBgColor());
 
   gfx::Rect rc = getClientBounds().shrink(3*ui::guiscale());
   if (rc.isEmpty())

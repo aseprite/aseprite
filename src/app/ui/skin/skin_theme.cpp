@@ -49,8 +49,6 @@ namespace skin {
 using namespace gfx;
 using namespace ui;
 
-static std::map<std::string, int> sheet_mapping;
-
 const char* SkinTheme::kThemeCloseButtonId = "theme_close_button";
 
 // Controls the "X" button in a window to close it.
@@ -153,146 +151,6 @@ SkinTheme::SkinTheme()
 
   // Initialize all graphics in NULL (these bitmaps are loaded from the skin)
   m_sheet = NULL;
-  m_part.resize(PARTS, NULL);
-
-  sheet_mapping["radio_normal"] = PART_RADIO_NORMAL;
-  sheet_mapping["radio_selected"] = PART_RADIO_SELECTED;
-  sheet_mapping["radio_disabled"] = PART_RADIO_DISABLED;
-  sheet_mapping["check_normal"] = PART_CHECK_NORMAL;
-  sheet_mapping["check_selected"] = PART_CHECK_SELECTED;
-  sheet_mapping["check_disabled"] = PART_CHECK_DISABLED;
-  sheet_mapping["check_focus"] = PART_CHECK_FOCUS_NW;
-  sheet_mapping["radio_focus"] = PART_RADIO_FOCUS_NW;
-  sheet_mapping["button_normal"] = PART_BUTTON_NORMAL_NW;
-  sheet_mapping["button_hot"] = PART_BUTTON_HOT_NW;
-  sheet_mapping["button_focused"] = PART_BUTTON_FOCUSED_NW;
-  sheet_mapping["button_selected"] = PART_BUTTON_SELECTED_NW;
-  sheet_mapping["sunken_normal"] = PART_SUNKEN_NORMAL_NW;
-  sheet_mapping["sunken_focused"] = PART_SUNKEN_FOCUSED_NW;
-  sheet_mapping["sunken2_normal"] = PART_SUNKEN2_NORMAL_NW;
-  sheet_mapping["sunken2_focused"] = PART_SUNKEN2_FOCUSED_NW;
-  sheet_mapping["sunken_mini_normal"] = PART_SUNKEN_MINI_NORMAL_NW;
-  sheet_mapping["sunken_mini_focused"] = PART_SUNKEN_MINI_FOCUSED_NW;
-  sheet_mapping["window_close_button_normal"] = PART_WINDOW_CLOSE_BUTTON_NORMAL;
-  sheet_mapping["window_close_button_hot"] = PART_WINDOW_CLOSE_BUTTON_HOT;
-  sheet_mapping["window_close_button_selected"] = PART_WINDOW_CLOSE_BUTTON_SELECTED;
-  sheet_mapping["window_play_button_normal"] = PART_WINDOW_PLAY_BUTTON_NORMAL;
-  sheet_mapping["window_play_button_hot"] = PART_WINDOW_PLAY_BUTTON_HOT;
-  sheet_mapping["window_play_button_selected"] = PART_WINDOW_PLAY_BUTTON_SELECTED;
-  sheet_mapping["window_stop_button_normal"] = PART_WINDOW_STOP_BUTTON_NORMAL;
-  sheet_mapping["window_stop_button_hot"] = PART_WINDOW_STOP_BUTTON_HOT;
-  sheet_mapping["window_stop_button_selected"] = PART_WINDOW_STOP_BUTTON_SELECTED;
-  sheet_mapping["window_center_button_normal"] = PART_WINDOW_CENTER_BUTTON_NORMAL;
-  sheet_mapping["window_center_button_hot"] = PART_WINDOW_CENTER_BUTTON_HOT;
-  sheet_mapping["window_center_button_selected"] = PART_WINDOW_CENTER_BUTTON_SELECTED;
-  sheet_mapping["slider_full"] = PART_SLIDER_FULL_NW;
-  sheet_mapping["slider_empty"] = PART_SLIDER_EMPTY_NW;
-  sheet_mapping["slider_full_focused"] = PART_SLIDER_FULL_FOCUSED_NW;
-  sheet_mapping["slider_empty_focused"] = PART_SLIDER_EMPTY_FOCUSED_NW;
-  sheet_mapping["mini_slider_full"] = PART_MINI_SLIDER_FULL_NW;
-  sheet_mapping["mini_slider_empty"] = PART_MINI_SLIDER_EMPTY_NW;
-  sheet_mapping["mini_slider_full_focused"] = PART_MINI_SLIDER_FULL_FOCUSED_NW;
-  sheet_mapping["mini_slider_empty_focused"] = PART_MINI_SLIDER_EMPTY_FOCUSED_NW;
-  sheet_mapping["mini_slider_thumb"] = PART_MINI_SLIDER_THUMB;
-  sheet_mapping["mini_slider_thumb_focused"] = PART_MINI_SLIDER_THUMB_FOCUSED;
-  sheet_mapping["separator_horz"] = PART_SEPARATOR_HORZ;
-  sheet_mapping["separator_vert"] = PART_SEPARATOR_VERT;
-  sheet_mapping["combobox_arrow_down"] = PART_COMBOBOX_ARROW_DOWN;
-  sheet_mapping["combobox_arrow_down_selected"] = PART_COMBOBOX_ARROW_DOWN_SELECTED;
-  sheet_mapping["combobox_arrow_down_disabled"] = PART_COMBOBOX_ARROW_DOWN_DISABLED;
-  sheet_mapping["combobox_arrow_up"] = PART_COMBOBOX_ARROW_UP;
-  sheet_mapping["combobox_arrow_up_selected"] = PART_COMBOBOX_ARROW_UP_SELECTED;
-  sheet_mapping["combobox_arrow_up_disabled"] = PART_COMBOBOX_ARROW_UP_DISABLED;
-  sheet_mapping["combobox_arrow_left"] = PART_COMBOBOX_ARROW_LEFT;
-  sheet_mapping["combobox_arrow_left_selected"] = PART_COMBOBOX_ARROW_LEFT_SELECTED;
-  sheet_mapping["combobox_arrow_left_disabled"] = PART_COMBOBOX_ARROW_LEFT_DISABLED;
-  sheet_mapping["combobox_arrow_right"] = PART_COMBOBOX_ARROW_RIGHT;
-  sheet_mapping["combobox_arrow_right_selected"] = PART_COMBOBOX_ARROW_RIGHT_SELECTED;
-  sheet_mapping["combobox_arrow_right_disabled"] = PART_COMBOBOX_ARROW_RIGHT_DISABLED;
-  sheet_mapping["newfolder"] = PART_NEWFOLDER;
-  sheet_mapping["newfolder_selected"] = PART_NEWFOLDER_SELECTED;
-  sheet_mapping["toolbutton_normal"] = PART_TOOLBUTTON_NORMAL_NW;
-  sheet_mapping["toolbutton_hot"] = PART_TOOLBUTTON_HOT_NW;
-  sheet_mapping["toolbutton_last"] = PART_TOOLBUTTON_LAST_NW;
-  sheet_mapping["toolbutton_pushed"] = PART_TOOLBUTTON_PUSHED_NW;
-  sheet_mapping["editor_normal"] = PART_EDITOR_NORMAL_NW;
-  sheet_mapping["editor_selected"] = PART_EDITOR_SELECTED_NW;
-  sheet_mapping["colorbar_0"] = PART_COLORBAR_0_NW;
-  sheet_mapping["colorbar_1"] = PART_COLORBAR_1_NW;
-  sheet_mapping["colorbar_2"] = PART_COLORBAR_2_NW;
-  sheet_mapping["colorbar_3"] = PART_COLORBAR_3_NW;
-  sheet_mapping["colorbar_border_fg"] = PART_COLORBAR_BORDER_FG_NW;
-  sheet_mapping["colorbar_border_bg"] = PART_COLORBAR_BORDER_BG_NW;
-  sheet_mapping["colorbar_border_hotfg"] = PART_COLORBAR_BORDER_HOTFG_NW;
-  sheet_mapping["tooltip"] = PART_TOOLTIP_NW;
-  sheet_mapping["tooltip_arrow"] = PART_TOOLTIP_ARROW_NW;
-  sheet_mapping["ani_first"] = PART_ANI_FIRST;
-  sheet_mapping["ani_previous"] = PART_ANI_PREVIOUS;
-  sheet_mapping["ani_play"] = PART_ANI_PLAY;
-  sheet_mapping["ani_stop"] = PART_ANI_STOP;
-  sheet_mapping["ani_next"] = PART_ANI_NEXT;
-  sheet_mapping["ani_last"] = PART_ANI_LAST;
-  sheet_mapping["pal_edit"] = PART_PAL_EDIT;
-  sheet_mapping["pal_sort"] = PART_PAL_SORT;
-  sheet_mapping["pal_presets"] = PART_PAL_PRESETS;
-  sheet_mapping["pal_options"] = PART_PAL_OPTIONS;
-  sheet_mapping["target_one"] = PART_TARGET_ONE;
-  sheet_mapping["target_one_selected"] = PART_TARGET_ONE_SELECTED;
-  sheet_mapping["target_frames"] = PART_TARGET_FRAMES;
-  sheet_mapping["target_frames_selected"] = PART_TARGET_FRAMES_SELECTED;
-  sheet_mapping["target_layers"] = PART_TARGET_LAYERS;
-  sheet_mapping["target_layers_selected"] = PART_TARGET_LAYERS_SELECTED;
-  sheet_mapping["target_frames_layers"] = PART_TARGET_FRAMES_LAYERS;
-  sheet_mapping["target_frames_layers_selected"] = PART_TARGET_FRAMES_LAYERS_SELECTED;
-  sheet_mapping["scale_arrow_1"] = PART_SCALE_ARROW_1;
-  sheet_mapping["scale_arrow_2"] = PART_SCALE_ARROW_2;
-  sheet_mapping["scale_arrow_3"] = PART_SCALE_ARROW_3;
-  sheet_mapping["rotate_arrow_1"] = PART_ROTATE_ARROW_1;
-  sheet_mapping["rotate_arrow_2"] = PART_ROTATE_ARROW_2;
-  sheet_mapping["rotate_arrow_3"] = PART_ROTATE_ARROW_3;
-  sheet_mapping["selection_replace"] = PART_SELECTION_REPLACE;
-  sheet_mapping["selection_replace_selected"] = PART_SELECTION_REPLACE_SELECTED;
-  sheet_mapping["selection_add"] = PART_SELECTION_ADD;
-  sheet_mapping["selection_add_selected"] = PART_SELECTION_ADD_SELECTED;
-  sheet_mapping["selection_subtract"] = PART_SELECTION_SUBTRACT;
-  sheet_mapping["selection_subtract_selected"] = PART_SELECTION_SUBTRACT_SELECTED;
-  sheet_mapping["unpinned"] = PART_UNPINNED;
-  sheet_mapping["pinned"] = PART_PINNED;
-  sheet_mapping["drop_down_button_left_normal"] = PART_DROP_DOWN_BUTTON_LEFT_NORMAL_NW;
-  sheet_mapping["drop_down_button_left_hot"] = PART_DROP_DOWN_BUTTON_LEFT_HOT_NW;
-  sheet_mapping["drop_down_button_left_focused"] = PART_DROP_DOWN_BUTTON_LEFT_FOCUSED_NW;
-  sheet_mapping["drop_down_button_left_selected"] = PART_DROP_DOWN_BUTTON_LEFT_SELECTED_NW;
-  sheet_mapping["drop_down_button_right_normal"] = PART_DROP_DOWN_BUTTON_RIGHT_NORMAL_NW;
-  sheet_mapping["drop_down_button_right_hot"] = PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW;
-  sheet_mapping["drop_down_button_right_focused"] = PART_DROP_DOWN_BUTTON_RIGHT_FOCUSED_NW;
-  sheet_mapping["drop_down_button_right_selected"] = PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW;
-  sheet_mapping["transformation_handle"] = PART_TRANSFORMATION_HANDLE;
-  sheet_mapping["pivot_handle"] = PART_PIVOT_HANDLE;
-  sheet_mapping["drop_pixels_ok"] = PART_DROP_PIXELS_OK;
-  sheet_mapping["drop_pixels_ok_selected"] = PART_DROP_PIXELS_OK_SELECTED;
-  sheet_mapping["drop_pixels_cancel"] = PART_DROP_PIXELS_CANCEL;
-  sheet_mapping["drop_pixels_cancel_selected"] = PART_DROP_PIXELS_CANCEL_SELECTED;
-  sheet_mapping["freehand_algo_default"] = PART_FREEHAND_ALGO_DEFAULT;
-  sheet_mapping["freehand_algo_default_selected"] = PART_FREEHAND_ALGO_DEFAULT_SELECTED;
-  sheet_mapping["freehand_algo_pixel_perfect"] = PART_FREEHAND_ALGO_PIXEL_PERFECT;
-  sheet_mapping["freehand_algo_pixel_perfect_selected"] = PART_FREEHAND_ALGO_PIXEL_PERFECT_SELECTED;
-  sheet_mapping["freehand_algo_dots"] = PART_FREEHAND_ALGO_DOTS;
-  sheet_mapping["freehand_algo_dots_selected"] = PART_FREEHAND_ALGO_DOTS_SELECTED;
-  sheet_mapping["ink_default"] = PART_INK_DEFAULT;
-  sheet_mapping["ink_copy_color"] = PART_INK_COPY_COLOR;
-  sheet_mapping["ink_lock_alpha"] = PART_INK_LOCK_ALPHA;
-  sheet_mapping["selection_opaque"] = PART_SELECTION_OPAQUE;
-  sheet_mapping["selection_masked"] = PART_SELECTION_MASKED;
-  sheet_mapping["pivot_hidden"] = PART_PIVOT_HIDDEN;
-  sheet_mapping["pivot_northwest"] = PART_PIVOT_NORTHWEST;
-  sheet_mapping["pivot_north"] = PART_PIVOT_NORTH;
-  sheet_mapping["pivot_northeast"] = PART_PIVOT_NORTHEAST;
-  sheet_mapping["pivot_west"] = PART_PIVOT_WEST;
-  sheet_mapping["pivot_center"] = PART_PIVOT_CENTER;
-  sheet_mapping["pivot_east"] = PART_PIVOT_EAST;
-  sheet_mapping["pivot_southwest"] = PART_PIVOT_SOUTHWEST;
-  sheet_mapping["pivot_south"] = PART_PIVOT_SOUTH;
-  sheet_mapping["pivot_southeast"] = PART_PIVOT_SOUTHEAST;
 }
 
 SkinTheme::~SkinTheme()
@@ -309,9 +167,7 @@ SkinTheme::~SkinTheme()
   if (m_sheet)
     m_sheet->dispose();
 
-  m_part.clear();
   m_parts_by_id.clear();
-  sheet_mapping.clear();
 
   // Destroy fonts
   if (m_defaultFont)
@@ -357,22 +213,12 @@ void SkinTheme::loadFonts()
   m_miniFont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
 }
 
-gfx::Size SkinTheme::get_part_size(int part_i) const
-{
-  she::Surface* bmp = get_part(part_i);
-  ASSERT(bmp);
-  return gfx::Size(bmp->width(), bmp->height());
-}
-
 void SkinTheme::onRegenerate()
 {
   loadSheet();
   loadFonts();
 
   scrollbar_size = 12 * guiscale();
-
-  m_part.clear();
-  m_part.resize(PARTS, NULL);
 
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
@@ -529,15 +375,6 @@ void SkinTheme::onRegenerate()
         part->setBitmap(7, sliceSheet(part->getBitmap(7), gfx::Rect(x, y+h1, w1, h2))); // W
       }
 
-      // Prepare the m_part vector (which is used for backward
-      // compatibility for widgets that doesn't use SkinStyle).
-      std::map<std::string, int>::iterator it = sheet_mapping.find(part_id);
-      if (it != sheet_mapping.end()) {
-        int c = it->second;
-        for (size_t i=0; i<part->size(); ++i)
-          m_part[c+i] = part->getBitmap(i);
-      }
-
       xmlPart = xmlPart->NextSiblingElement();
     }
   }
@@ -690,10 +527,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kButtonWidget:
       BORDER4(
-        m_part[PART_BUTTON_NORMAL_W]->width(),
-        m_part[PART_BUTTON_NORMAL_N]->height(),
-        m_part[PART_BUTTON_NORMAL_E]->width(),
-        m_part[PART_BUTTON_NORMAL_S]->height());
+        parts.buttonNormal()->getBitmapW()->width(),
+        parts.buttonNormal()->getBitmapN()->height(),
+        parts.buttonNormal()->getBitmapE()->width(),
+        parts.buttonNormal()->getBitmapS()->height());
       widget->setChildSpacing(0);
       break;
 
@@ -702,19 +539,18 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setChildSpacing(4 * scale);
 
       static_cast<ButtonBase*>(widget)->setIconInterface
-        (new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
-                            PART_CHECK_NORMAL,
-                            PART_CHECK_SELECTED,
-                            PART_CHECK_DISABLED,
+        (new ButtonIconImpl(parts.checkNormal(),
+                            parts.checkSelected(),
+                            parts.checkDisabled(),
                             LEFT | MIDDLE));
       break;
 
     case kEntryWidget:
       BORDER4(
-        m_part[PART_SUNKEN_NORMAL_W]->width(),
-        m_part[PART_SUNKEN_NORMAL_N]->height(),
-        m_part[PART_SUNKEN_NORMAL_E]->width(),
-        m_part[PART_SUNKEN_NORMAL_S]->height());
+        parts.sunkenNormal()->getBitmapW()->width(),
+        parts.sunkenNormal()->getBitmapN()->height(),
+        parts.sunkenNormal()->getBitmapE()->width(),
+        parts.sunkenNormal()->getBitmapS()->height());
       break;
 
     case kGridWidget:
@@ -748,10 +584,9 @@ void SkinTheme::initWidget(Widget* widget)
                                      16 * guiscale()));
 
         static_cast<ButtonBase*>(button)->setIconInterface
-          (new ButtonIconImpl(static_cast<SkinTheme*>(button->getTheme()),
-                              PART_COMBOBOX_ARROW_DOWN,
-                              PART_COMBOBOX_ARROW_DOWN_SELECTED,
-                              PART_COMBOBOX_ARROW_DOWN_DISABLED,
+          (new ButtonIconImpl(parts.comboboxArrowDown(),
+                              parts.comboboxArrowDownSelected(),
+                              parts.comboboxArrowDownDisabled(),
                               CENTER | MIDDLE));
       }
       break;
@@ -778,10 +613,9 @@ void SkinTheme::initWidget(Widget* widget)
       widget->setChildSpacing(4 * scale);
 
       static_cast<ButtonBase*>(widget)->setIconInterface
-        (new ButtonIconImpl(static_cast<SkinTheme*>(widget->getTheme()),
-                            PART_RADIO_NORMAL,
-                            PART_RADIO_SELECTED,
-                            PART_RADIO_DISABLED,
+        (new ButtonIconImpl(parts.radioNormal(),
+                            parts.radioSelected(),
+                            parts.radioDisabled(),
                             LEFT | MIDDLE));
       break;
 
@@ -814,10 +648,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kSliderWidget:
       BORDER4(
-        m_part[PART_SLIDER_EMPTY_W]->width()-1*scale,
-        m_part[PART_SLIDER_EMPTY_N]->height(),
-        m_part[PART_SLIDER_EMPTY_E]->width()-1*scale,
-        m_part[PART_SLIDER_EMPTY_S]->height()-1*scale);
+        parts.sliderEmpty()->getBitmapW()->width()-1*scale,
+        parts.sliderEmpty()->getBitmapN()->height(),
+        parts.sliderEmpty()->getBitmapE()->width()-1*scale,
+        parts.sliderEmpty()->getBitmapS()->height()-1*scale);
       widget->setChildSpacing(widget->getTextHeight());
       widget->setAlign(CENTER | MIDDLE);
       break;
@@ -829,10 +663,10 @@ void SkinTheme::initWidget(Widget* widget)
 
     case kViewWidget:
       BORDER4(
-        m_part[PART_SUNKEN_NORMAL_W]->width()-1*scale,
-        m_part[PART_SUNKEN_NORMAL_N]->height(),
-        m_part[PART_SUNKEN_NORMAL_E]->width()-1*scale,
-        m_part[PART_SUNKEN_NORMAL_S]->height()-1*scale);
+        parts.sunkenNormal()->getBitmapW()->width()-1*scale,
+        parts.sunkenNormal()->getBitmapN()->height(),
+        parts.sunkenNormal()->getBitmapE()->width()-1*scale,
+        parts.sunkenNormal()->getBitmapS()->height()-1*scale);
       widget->setChildSpacing(0);
       widget->setBgColor(colors.windowFace());
       break;
@@ -885,10 +719,7 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 {
   if (widget->getId() == kThemeCloseButtonId) {
     Widget* window = widget->getParent();
-    gfx::Rect rect(0, 0, 0, 0);
-
-    rect.w = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->width();
-    rect.h = m_part[PART_WINDOW_CLOSE_BUTTON_NORMAL]->height();
+    gfx::Rect rect(parts.windowCloseButtonNormal()->getSize());
 
     rect.offset(window->getBounds().x2() - 3*guiscale() - rect.w,
                 window->getBounds().y + 3*guiscale());
@@ -920,12 +751,12 @@ void SkinTheme::paintButton(PaintEvent& ev)
   IButtonIcon* iconInterface = widget->getIconInterface();
   gfx::Rect box, text, icon;
   gfx::Color fg, bg;
-  int part_nw;
+  SkinPartPtr part_nw;
 
   widget->getTextIconInfo(&box, &text, &icon,
     iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getWidth() : 0,
-    iconInterface ? iconInterface->getHeight() : 0);
+    iconInterface ? iconInterface->getSize().w: 0,
+    iconInterface ? iconInterface->getSize().h: 0);
 
   // Tool buttons are smaller
   LookType look = NormalLook;
@@ -937,19 +768,19 @@ void SkinTheme::paintButton(PaintEvent& ev)
   if (widget->isSelected()) {
     fg = colors.buttonSelectedText();
     bg = colors.buttonSelectedFace();
-    part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-               look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_SELECTED_NW:
-               look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_SELECTED_NW:
-                                         PART_BUTTON_SELECTED_NW);
+    part_nw = (look == MiniLook ? parts.toolbuttonNormal():
+               look == LeftButtonLook ? parts.dropDownButtonLeftSelected():
+               look == RightButtonLook ? parts.dropDownButtonRightSelected():
+                                         parts.buttonSelected());
   }
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
     fg = colors.buttonHotText();
     bg = colors.buttonHotFace();
-    part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
-               look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_HOT_NW:
-               look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_HOT_NW:
-                                         PART_BUTTON_HOT_NW);
+    part_nw = (look == MiniLook ? parts.toolbuttonHot():
+               look == LeftButtonLook ? parts.dropDownButtonLeftHot():
+               look == RightButtonLook ? parts.dropDownButtonRightHot():
+                                         parts.buttonHot());
   }
   // Without mouse
   else {
@@ -957,22 +788,23 @@ void SkinTheme::paintButton(PaintEvent& ev)
     bg = colors.buttonNormalFace();
 
     if (widget->hasFocus())
-      part_nw = (look == MiniLook ? PART_TOOLBUTTON_HOT_NW:
-                 look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_FOCUSED_NW:
-                 look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_FOCUSED_NW:
-                                           PART_BUTTON_FOCUSED_NW);
+      part_nw = (look == MiniLook ? parts.toolbuttonHot():
+                 look == LeftButtonLook ? parts.dropDownButtonLeftFocused():
+                 look == RightButtonLook ? parts.dropDownButtonRightFocused():
+                                           parts.buttonFocused());
     else
-      part_nw = (look == MiniLook ? PART_TOOLBUTTON_NORMAL_NW:
-                 look == LeftButtonLook ? PART_DROP_DOWN_BUTTON_LEFT_NORMAL_NW:
-                 look == RightButtonLook ? PART_DROP_DOWN_BUTTON_RIGHT_NORMAL_NW:
-                                           PART_BUTTON_NORMAL_NW);
+      part_nw = (look == MiniLook ? parts.toolbuttonNormal():
+                 look == LeftButtonLook ? parts.dropDownButtonLeftNormal():
+                 look == RightButtonLook ? parts.dropDownButtonRightNormal():
+                                           parts.buttonNormal());
   }
 
   // external background
   g->fillRect(BGCOLOR, g->getClipBounds());
 
   // draw borders
-  draw_bounds_nw(g, widget->getClientBounds(), part_nw, bg);
+  if (part_nw)
+    drawRect(g, widget->getClientBounds(), part_nw.get(), bg);
 
   // text
   drawTextString(g, NULL, fg, ColorNone, widget,
@@ -999,8 +831,8 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 
   widget->getTextIconInfo(&box, &text, &icon,
     iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getWidth() : 0,
-    iconInterface ? iconInterface->getHeight() : 0);
+    iconInterface ? iconInterface->getSize().w: 0,
+    iconInterface ? iconInterface->getSize().h: 0);
 
   // Check box look
   LookType look = NormalLook;
@@ -1028,7 +860,7 @@ void SkinTheme::paintCheckBox(PaintEvent& ev)
 
   // draw focus
   if (look != WithoutBordersLook && widget->hasFocus())
-    draw_bounds_nw(g, bounds, PART_CHECK_FOCUS_NW, gfx::ColorNone);
+    drawRect(g, bounds, parts.checkFocus().get(), gfx::ColorNone);
 }
 
 void SkinTheme::paintGrid(PaintEvent& ev)
@@ -1063,10 +895,10 @@ void SkinTheme::paintEntry(PaintEvent& ev)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
   gfx::Color bg = colors.background();
-  draw_bounds_nw(g, bounds,
+  drawRect(g, bounds,
     (widget->hasFocus() ?
-      (isMiniLook ? PART_SUNKEN_MINI_FOCUSED_NW: PART_SUNKEN_FOCUSED_NW):
-      (isMiniLook ? PART_SUNKEN_MINI_NORMAL_NW : PART_SUNKEN_NORMAL_NW)),
+     (isMiniLook ? parts.sunkenMiniFocused().get(): parts.sunkenFocused().get()):
+     (isMiniLook ? parts.sunkenMiniNormal().get() : parts.sunkenNormal().get())),
     bg);
 
   // Draw the text
@@ -1256,9 +1088,9 @@ void SkinTheme::paintMenuItem(ui::PaintEvent& ev)
   // Draw an indicator for selected items
   if (widget->isSelected()) {
     she::Surface* icon =
-      m_part[widget->isEnabled() ?
-        PART_CHECK_SELECTED:
-        PART_CHECK_DISABLED];
+      (widget->isEnabled() ?
+       parts.checkSelected()->getBitmap(0):
+       parts.checkDisabled()->getBitmap(0));
 
     int x = bounds.x+4*scale-icon->width()/2;
     int y = bounds.y+bounds.h/2-icon->height()/2;
@@ -1336,8 +1168,8 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
   gfx::Rect box, text, icon;
   widget->getTextIconInfo(&box, &text, &icon,
     iconInterface ? iconInterface->getIconAlign(): 0,
-    iconInterface ? iconInterface->getWidth() : 0,
-    iconInterface ? iconInterface->getHeight() : 0);
+    iconInterface ? iconInterface->getSize().w: 0,
+    iconInterface ? iconInterface->getSize().h: 0);
 
   // Background
   g->fillRect(bg, g->getClipBounds());
@@ -1359,7 +1191,7 @@ void SkinTheme::paintRadioButton(PaintEvent& ev)
 
   // Focus
   if (widget->hasFocus())
-    draw_bounds_nw(g, bounds, PART_RADIO_FOCUS_NW, gfx::ColorNone);
+    drawRect(g, bounds, parts.radioFocus().get(), gfx::ColorNone);
 }
 
 void SkinTheme::paintSeparator(ui::PaintEvent& ev)
@@ -1372,10 +1204,10 @@ void SkinTheme::paintSeparator(ui::PaintEvent& ev)
   g->fillRect(BGCOLOR, bounds);
 
   if (widget->getAlign() & HORIZONTAL)
-    draw_part_as_hline(g, bounds, PART_SEPARATOR_HORZ);
+    drawHline(g, bounds, parts.separatorHorz().get());
 
   if (widget->getAlign() & VERTICAL)
-    draw_part_as_vline(g, bounds, PART_SEPARATOR_VERT);
+    drawVline(g, bounds, parts.separatorVert().get());
 
   // text
   if (widget->hasText()) {
@@ -1434,10 +1266,10 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
   // Draw customized background
   if (bgPainter) {
-    int nw = PART_MINI_SLIDER_EMPTY_NW;
+    SkinPartPtr nw = parts.miniSliderEmpty();
     she::Surface* thumb =
-      widget->hasFocus() ? m_part[PART_MINI_SLIDER_THUMB_FOCUSED]:
-                           m_part[PART_MINI_SLIDER_THUMB];
+      (widget->hasFocus() ? parts.miniSliderThumbFocused()->getBitmap(0):
+                            parts.miniSliderThumb()->getBitmap(0));
 
     // Draw background
     g->fillRect(BGCOLOR, rc);
@@ -1452,7 +1284,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
         3 * guiscale(),
         1 * guiscale()));
 
-    draw_bounds_nw(g, rc, nw, gfx::ColorNone);
+    drawRect(g, rc, nw.get(), gfx::ColorNone);
 
     // Draw background (using the customized ISliderBgPainter implementation)
     rc.shrink(Border(1, 1, 1, 2) * guiscale());
@@ -1461,31 +1293,31 @@ void SkinTheme::paintSlider(PaintEvent& ev)
   }
   else {
     // Draw borders
-    int full_part_nw;
-    int empty_part_nw;
+    SkinPartPtr full_part;
+    SkinPartPtr empty_part;
 
     if (isMiniLook) {
-      full_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_FULL_FOCUSED_NW:
-                                              PART_MINI_SLIDER_FULL_NW;
-      empty_part_nw = widget->hasMouseOver() ? PART_MINI_SLIDER_EMPTY_FOCUSED_NW:
-                                               PART_MINI_SLIDER_EMPTY_NW;
+      full_part = widget->hasMouseOver() ? parts.miniSliderFullFocused():
+                                           parts.miniSliderFull();
+      empty_part = widget->hasMouseOver() ? parts.miniSliderEmptyFocused():
+                                            parts.miniSliderEmpty();
     }
     else {
-      full_part_nw = widget->hasFocus() ? PART_SLIDER_FULL_FOCUSED_NW:
-                                          PART_SLIDER_FULL_NW;
-      empty_part_nw = widget->hasFocus() ? PART_SLIDER_EMPTY_FOCUSED_NW:
-                                           PART_SLIDER_EMPTY_NW;
+      full_part = widget->hasFocus() ? parts.sliderFullFocused():
+                                       parts.sliderFull();
+      empty_part = widget->hasFocus() ? parts.sliderEmptyFocused():
+                                        parts.sliderEmpty();
     }
 
     if (value == min)
-      draw_bounds_nw(g, rc, empty_part_nw, colors.sliderEmptyFace());
+      drawRect(g, rc, empty_part.get(), colors.sliderEmptyFace());
     else if (value == max)
-      draw_bounds_nw(g, rc, full_part_nw, colors.sliderFullFace());
+      drawRect(g, rc, full_part.get(), colors.sliderFullFace());
     else
-      draw_bounds_nw2(g, rc, x,
-        full_part_nw, empty_part_nw,
-        colors.sliderFullFace(),
-        colors.sliderEmptyFace());
+      drawRect2(g, rc, x,
+                full_part.get(), empty_part.get(),
+                colors.sliderFullFace(),
+                colors.sliderEmptyFace());
 
     // Draw text
     std::string old_text = widget->getText();
@@ -1536,10 +1368,10 @@ void SkinTheme::paintComboBoxEntry(ui::PaintEvent& ev)
 
   gfx::Color fg, bg = colors.background();
 
-  draw_bounds_nw(g, bounds,
-    widget->hasFocus() ?
-      PART_SUNKEN2_FOCUSED_NW:
-      PART_SUNKEN2_NORMAL_NW, bg);
+  drawRect(g, bounds,
+           (widget->hasFocus() ?
+            parts.sunken2Focused().get():
+            parts.sunken2Normal().get()), bg);
 
   // Draw the text
   x = bounds.x + widget->border().left();
@@ -1599,22 +1431,22 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   Button* widget = static_cast<Button*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   IButtonIcon* iconInterface = widget->getIconInterface();
-  int part_nw;
+  SkinPartPtr part_nw;
   gfx::Color bg;
 
   if (widget->isSelected()) {
     bg = colors.buttonSelectedFace();
-    part_nw = PART_TOOLBUTTON_PUSHED_NW;
+    part_nw = parts.toolbuttonPushed();
   }
   // With mouse
   else if (widget->isEnabled() && widget->hasMouseOver()) {
     bg = colors.buttonHotFace();
-    part_nw = PART_TOOLBUTTON_HOT_NW;
+    part_nw = parts.toolbuttonHot();
   }
   // Without mouse
   else {
     bg = colors.buttonNormalFace();
-    part_nw = PART_TOOLBUTTON_LAST_NW;
+    part_nw = parts.toolbuttonLast();
   }
 
   Rect rc = widget->getClientBounds();
@@ -1623,13 +1455,13 @@ void SkinTheme::paintComboBoxButton(PaintEvent& ev)
   g->fillRect(BGCOLOR, rc);
 
   // draw borders
-  draw_bounds_nw(g, rc, part_nw, bg);
+  drawRect(g, rc, part_nw.get(), bg);
 
   // Paint the icon
   if (iconInterface) {
     // Icon
-    int x = rc.x + rc.w/2 - iconInterface->getWidth()/2;
-    int y = rc.y + rc.h/2 - iconInterface->getHeight()/2;
+    int x = rc.x + rc.w/2 - iconInterface->getSize().w/2;
+    int y = rc.y + rc.h/2 - iconInterface->getSize().h/2;
 
     paintIcon(widget, ev.getGraphics(), iconInterface, x, y);
   }
@@ -1765,16 +1597,16 @@ void SkinTheme::paintWindowButton(ui::PaintEvent& ev)
   ButtonBase* widget = static_cast<ButtonBase*>(ev.getSource());
   Graphics* g = ev.getGraphics();
   Rect rc = widget->getClientBounds();
-  int part;
+  SkinPartPtr part;
 
   if (widget->isSelected())
-    part = PART_WINDOW_CLOSE_BUTTON_SELECTED;
+    part = parts.windowCloseButtonSelected();
   else if (widget->hasMouseOver())
-    part = PART_WINDOW_CLOSE_BUTTON_HOT;
+    part = parts.windowCloseButtonHot();
   else
-    part = PART_WINDOW_CLOSE_BUTTON_NORMAL;
+    part = parts.windowCloseButtonNormal();
 
-  g->drawRgbaSurface(m_part[part], rc.x, rc.y);
+  g->drawRgbaSurface(part->getBitmap(0), rc.x, rc.y);
 }
 
 void SkinTheme::paintTooltip(PaintEvent& ev)
@@ -1785,24 +1617,25 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   Rect rc = widget->getClientBounds();
   gfx::Color fg = colors.tooltipText();
   gfx::Color bg = colors.tooltipFace();
+  SkinPartPtr tooltipPart = parts.tooltip();
 
-  int nw = PART_TOOLTIP_NW;
-  int n  = PART_TOOLTIP_N;
-  int ne = PART_TOOLTIP_NE;
-  int e  = PART_TOOLTIP_E;
-  int se = PART_TOOLTIP_SE;
-  int s  = PART_TOOLTIP_S;
-  int sw = PART_TOOLTIP_SW;
-  int w  = PART_TOOLTIP_W;
+  she::Surface* nw = tooltipPart->getBitmapNW();
+  she::Surface* n  = tooltipPart->getBitmapN();
+  she::Surface* ne = tooltipPart->getBitmapNE();
+  she::Surface* e  = tooltipPart->getBitmapE();
+  she::Surface* se = tooltipPart->getBitmapSE();
+  she::Surface* s  = tooltipPart->getBitmapS();
+  she::Surface* sw = tooltipPart->getBitmapSW();
+  she::Surface* w  = tooltipPart->getBitmapW();
 
   switch (widget->getArrowAlign()) {
-    case TOP | LEFT:     nw = PART_TOOLTIP_ARROW_NW; break;
-    case TOP | RIGHT:    ne = PART_TOOLTIP_ARROW_NE; break;
-    case BOTTOM | LEFT:  sw = PART_TOOLTIP_ARROW_SW; break;
-    case BOTTOM | RIGHT: se = PART_TOOLTIP_ARROW_SE; break;
+    case TOP | LEFT:     nw = parts.tooltipArrow()->getBitmapNW(); break;
+    case TOP | RIGHT:    ne = parts.tooltipArrow()->getBitmapNE(); break;
+    case BOTTOM | LEFT:  sw = parts.tooltipArrow()->getBitmapSW(); break;
+    case BOTTOM | RIGHT: se = parts.tooltipArrow()->getBitmapSE(); break;
   }
 
-  draw_bounds_template(g, rc, nw, n, ne, e, se, s, sw, w);
+  drawRect(g, rc, nw, n, ne, e, se, s, sw, w);
 
   // Draw arrow in sides
   she::Surface* arrow = NULL;
@@ -1812,25 +1645,25 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
 
   switch (widget->getArrowAlign()) {
     case TOP:
-      arrow = m_part[PART_TOOLTIP_ARROW_N];
+      arrow = parts.tooltipArrow()->getBitmapN();
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y);
       break;
     case BOTTOM:
-      arrow = m_part[PART_TOOLTIP_ARROW_S];
+      arrow = parts.tooltipArrow()->getBitmapS();
       g->drawRgbaSurface(arrow,
                          target.x+target.w/2-arrow->width()/2,
                          rc.y+rc.h-arrow->height());
       break;
     case LEFT:
-      arrow = m_part[PART_TOOLTIP_ARROW_W];
+      arrow = parts.tooltipArrow()->getBitmapW();
       g->drawRgbaSurface(arrow,
                          rc.x,
                          target.y+target.h/2-arrow->height()/2);
       break;
     case RIGHT:
-      arrow = m_part[PART_TOOLTIP_ARROW_E];
+      arrow = parts.tooltipArrow()->getBitmapE();
       g->drawRgbaSurface(arrow,
                          rc.x+rc.w-arrow->width(),
                          target.y+target.h/2-arrow->height()/2);
@@ -1838,21 +1671,17 @@ void SkinTheme::paintTooltip(PaintEvent& ev)
   }
 
   // Fill background
-  g->fillRect(bg, Rect(rc).shrink(
+  g->fillRect(
+    bg, Rect(rc).shrink(
       Border(
-        m_part[w]->width(),
-        m_part[n]->height(),
-        m_part[e]->width(),
-        m_part[s]->height())));
+        w->width(),
+        n->height(),
+        e->width(),
+        s->height())));
 
   rc.shrink(widget->border());
 
   g->drawAlignedUIString(widget->getText(), fg, bg, rc, widget->getAlign());
-}
-
-she::Surface* SkinTheme::get_part(const std::string& id) const
-{
-  return get_part_by_id(id)->getBitmap(0);
 }
 
 gfx::Color SkinTheme::getWidgetBgColor(Widget* widget)
@@ -1948,46 +1777,19 @@ void SkinTheme::drawEntryCaret(ui::Graphics* g, Entry* widget, int x, int y)
     g->drawVLine(color, u, y-1, h+2);
 }
 
-she::Surface* SkinTheme::get_toolicon(const char* tool_id) const
+she::Surface* SkinTheme::getToolIcon(const char* toolId) const
 {
-  std::map<std::string, she::Surface*>::const_iterator it = m_toolicon.find(tool_id);
+  std::map<std::string, she::Surface*>::const_iterator it = m_toolicon.find(toolId);
   if (it != m_toolicon.end())
     return it->second;
   else
     return NULL;
 }
 
-void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
-                                     int nw, int n, int ne, int e, int se, int s, int sw, int w)
-{
-  draw_bounds_template(g, rc,
-    m_part[nw],
-    m_part[n],
-    m_part[ne],
-    m_part[e],
-    m_part[se],
-    m_part[s],
-    m_part[sw],
-    m_part[w]);
-}
-
-void SkinTheme::draw_bounds_template(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr& skinPart)
-{
-  draw_bounds_template(g, rc,
-    skinPart->getBitmap(0),
-    skinPart->getBitmap(1),
-    skinPart->getBitmap(2),
-    skinPart->getBitmap(3),
-    skinPart->getBitmap(4),
-    skinPart->getBitmap(5),
-    skinPart->getBitmap(6),
-    skinPart->getBitmap(7));
-}
-
-void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
-  she::Surface* nw, she::Surface* n, she::Surface* ne,
-  she::Surface* e, she::Surface* se, she::Surface* s,
-  she::Surface* sw, she::Surface* w)
+void SkinTheme::drawRect(Graphics* g, const Rect& rc,
+                         she::Surface* nw, she::Surface* n, she::Surface* ne,
+                         she::Surface* e, she::Surface* se, she::Surface* s,
+                         she::Surface* sw, she::Surface* w)
 {
   int x, y;
 
@@ -2045,42 +1847,17 @@ void SkinTheme::draw_bounds_template(Graphics* g, const Rect& rc,
   }
 }
 
-void SkinTheme::draw_bounds_array(ui::Graphics* g, const gfx::Rect& rc, int parts[8])
+void SkinTheme::drawRect(ui::Graphics* g, const gfx::Rect& rc, SkinPart* skinPart, gfx::Color bg)
 {
-  int nw = parts[0];
-  int n  = parts[1];
-  int ne = parts[2];
-  int e  = parts[3];
-  int se = parts[4];
-  int s  = parts[5];
-  int sw = parts[6];
-  int w  = parts[7];
-
-  draw_bounds_template(g, rc,
-    nw, n, ne, e,
-    se, s, sw, w);
-}
-
-void SkinTheme::draw_bounds_nw(Graphics* g, const Rect& rc, int nw, gfx::Color bg)
-{
-  draw_bounds_template(g, rc,
-                       nw+0, nw+1, nw+2, nw+3,
-                       nw+4, nw+5, nw+6, nw+7);
-
-  // Center
-  if (!is_transparent(bg)) {
-    g->fillRect(bg, Rect(rc).shrink(
-        Border(
-          m_part[nw+7]->width(),
-          m_part[nw+1]->height(),
-          m_part[nw+3]->width(),
-          m_part[nw+5]->height())));
-  }
-}
-
-void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinPartPtr skinPart, gfx::Color bg)
-{
-  draw_bounds_template(g, rc, skinPart);
+  drawRect(g, rc,
+    skinPart->getBitmap(0),
+    skinPart->getBitmap(1),
+    skinPart->getBitmap(2),
+    skinPart->getBitmap(3),
+    skinPart->getBitmap(4),
+    skinPart->getBitmap(5),
+    skinPart->getBitmap(6),
+    skinPart->getBitmap(7));
 
   // Center
   if (!is_transparent(bg)) {
@@ -2097,13 +1874,15 @@ void SkinTheme::draw_bounds_nw(ui::Graphics* g, const gfx::Rect& rc, const SkinP
   }
 }
 
-void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1, int nw2, gfx::Color bg1, gfx::Color bg2)
+void SkinTheme::drawRect2(Graphics* g, const Rect& rc, int x_mid,
+                          SkinPart* nw1, SkinPart* nw2,
+                          gfx::Color bg1, gfx::Color bg2)
 {
   Rect rc2(rc.x, rc.y, x_mid-rc.x+1, rc.h);
   {
     IntersectClip clip(g, rc2);
     if (clip)
-      draw_bounds_nw(g, rc, nw1, bg1);
+      drawRect(g, rc, nw1, bg1);
   }
 
   rc2.x += rc2.w;
@@ -2111,42 +1890,42 @@ void SkinTheme::draw_bounds_nw2(Graphics* g, const Rect& rc, int x_mid, int nw1,
 
   IntersectClip clip(g, rc2);
   if (clip)
-    draw_bounds_nw(g, rc, nw2, bg2);
+    drawRect(g, rc, nw2, bg2);
 }
 
-void SkinTheme::draw_part_as_hline(ui::Graphics* g, const gfx::Rect& rc, int part)
+void SkinTheme::drawHline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)
 {
   int x;
 
   for (x = rc.x;
-       x < rc.x2()-m_part[part]->width();
-       x += m_part[part]->width()) {
-    g->drawRgbaSurface(m_part[part], x, rc.y);
+       x < rc.x2()-part->getSize().w;
+       x += part->getSize().w) {
+    g->drawRgbaSurface(part->getBitmap(0), x, rc.y);
   }
 
   if (x < rc.x2()) {
-    Rect rc2(x, rc.y, rc.w-(x-rc.x), m_part[part]->height());
+    Rect rc2(x, rc.y, rc.w-(x-rc.x), part->getSize().h);
     IntersectClip clip(g, rc2);
     if (clip)
-      g->drawRgbaSurface(m_part[part], x, rc.y);
+      g->drawRgbaSurface(part->getBitmap(0), x, rc.y);
   }
 }
 
-void SkinTheme::draw_part_as_vline(ui::Graphics* g, const gfx::Rect& rc, int part)
+void SkinTheme::drawVline(ui::Graphics* g, const gfx::Rect& rc, SkinPart* part)
 {
   int y;
 
   for (y = rc.y;
-       y < rc.y2()-m_part[part]->height();
-       y += m_part[part]->height()) {
-    g->drawRgbaSurface(m_part[part], rc.x, y);
+       y < rc.y2()-part->getSize().h;
+       y += part->getSize().h) {
+    g->drawRgbaSurface(part->getBitmap(0), rc.x, y);
   }
 
   if (y < rc.y2()) {
-    Rect rc2(rc.x, y, m_part[part]->width(), rc.h-(y-rc.y));
+    Rect rc2(rc.x, y, part->getSize().w, rc.h-(y-rc.y));
     IntersectClip clip(g, rc2);
     if (clip)
-      g->drawRgbaSurface(m_part[part], rc.x, y);
+      g->drawRgbaSurface(part->getBitmap(0), rc.x, y);
   }
 }
 

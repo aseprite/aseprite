@@ -9,7 +9,6 @@
 #define APP_UI_SKIN_SKIN_BUTTON_H_INCLUDED
 #pragma once
 
-#include "app/ui/skin/skin_parts.h"
 #include "app/ui/skin/skin_theme.h"
 #include "ui/button.h"
 #include "ui/graphics.h"
@@ -21,9 +20,9 @@ namespace app {
     template<typename Base = ui::Button>
     class SkinButton : public Base {
     public:
-      SkinButton(SkinParts partNormal,
-                 SkinParts partHot,
-                 SkinParts partSelected)
+      SkinButton(const SkinPartPtr& partNormal,
+                 const SkinPartPtr& partHot,
+                 const SkinPartPtr& partSelected)
         : Base("")
         , m_partNormal(partNormal)
         , m_partHot(partHot)
@@ -31,9 +30,9 @@ namespace app {
       {
       }
 
-      void setParts(SkinParts partNormal,
-                    SkinParts partHot,
-                    SkinParts partSelected) {
+      void setParts(const SkinPartPtr& partNormal,
+                    const SkinPartPtr& partHot,
+                    const SkinPartPtr& partSelected) {
         m_partNormal = partNormal;
         m_partHot = partHot;
         m_partSelected = partSelected;
@@ -45,7 +44,7 @@ namespace app {
         gfx::Rect bounds(Base::getClientBounds());
         ui::Graphics* g = ev.getGraphics();
         SkinTheme* theme = static_cast<SkinTheme*>(Base::getTheme());
-        SkinParts part;
+        SkinPartPtr part;
 
         if (Base::isSelected())
           part = m_partSelected;
@@ -54,13 +53,13 @@ namespace app {
         else
           part = m_partNormal;
 
-        g->drawRgbaSurface(theme->get_part(part), bounds.x, bounds.y);
+        g->drawRgbaSurface(part->getBitmap(0), bounds.x, bounds.y);
       }
 
     private:
-      SkinParts m_partNormal;
-      SkinParts m_partHot;
-      SkinParts m_partSelected;
+      SkinPartPtr m_partNormal;
+      SkinPartPtr m_partHot;
+      SkinPartPtr m_partSelected;
     };
 
   } // namespace skin

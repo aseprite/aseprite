@@ -45,11 +45,6 @@ namespace app {
   ui::Widget* setup_look(ui::Widget* widget, skin::LookType lookType);
   void setup_bevels(ui::Widget* widget, int b1, int b2, int b3, int b4);
 
-  void set_gfxicon_to_button(ui::ButtonBase* button,
-                             int normal_part_id,
-                             int selected_part_id,
-                             int disabled_part_id, int icon_align);
-
   ui::CheckBox* check_button_new(const char* text, int b1, int b2, int b3, int b4);
 
   // This function can be used to reinvalidate a specific rectangle if

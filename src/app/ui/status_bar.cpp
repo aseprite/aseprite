@@ -427,7 +427,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   // Color
   if (m_state == SHOW_COLOR) {
     // Draw eyedropper icon
-    she::Surface* icon = theme->get_toolicon("eyedropper");
+    she::Surface* icon = theme->getToolIcon("eyedropper");
     if (icon) {
       g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
       x += icon->width() + 4*guiscale();
@@ -457,7 +457,7 @@ void StatusBar::onPaint(ui::PaintEvent& ev)
   // Show tool
   if (m_state == SHOW_TOOL) {
     // Draw eyedropper icon
-    she::Surface* icon = theme->get_toolicon(m_tool->getId().c_str());
+    she::Surface* icon = theme->getToolIcon(m_tool->getId().c_str());
     if (icon) {
       g->drawRgbaSurface(icon, x, rc.y + rc.h/2 - icon->height()/2);
       x += icon->width() + 4*guiscale();
