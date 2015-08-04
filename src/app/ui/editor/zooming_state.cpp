@@ -14,11 +14,16 @@
 #include "app/app.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/status_bar.h"
-#include "gfx/rect.h"
 #include "doc/sprite.h"
+#include "gfx/rect.h"
+#include "she/display.h"
+#include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/system.h"
+#include "ui/theme.h"
 #include "ui/view.h"
+
+#include <cmath>
 
 namespace app {
 
@@ -65,16 +70,17 @@ bool ZoomingState::onMouseUp(Editor* editor, MouseMessage* msg)
 bool ZoomingState::onMouseMove(Editor* editor, MouseMessage* msg)
 {
   gfx::Point pt = (msg->position() - m_startPos);
-  render::Zoom zoom(1, 1);
-  double scale = m_startZoom.scale() + pt.x / 16.0;
-  if (scale < 1.0)
-    scale = 1.0 / -(scale-2.0);
-  zoom = render::Zoom::fromScale(scale);
+  int threshold = 8 * guiscale() * editor->getManager()->getDisplay()->scale();
 
-  editor->setZoomAndCenterInMouse(
-    zoom, m_startPos, Editor::ZoomBehavior::MOUSE);
+  if (m_moved || std::sqrt(pt.x*pt.x + pt.y*pt.y) > threshold) {
+    m_moved = true;
 
-  m_moved = true;
+    int newScale = m_startZoom.linearScale() + pt.x / threshold;
+    render::Zoom newZoom = render::Zoom::fromLinearScale(newScale);
+
+    editor->setZoomAndCenterInMouse(
+      newZoom, m_startPos, Editor::ZoomBehavior::MOUSE);
+  }
   return true;
 }
 

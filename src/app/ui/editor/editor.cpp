@@ -153,8 +153,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_brushPreview(this)
   , m_quicktool(NULL)
   , m_selectionMode(tools::SelectionMode::DEFAULT)
-  , m_offset_x(0)
-  , m_offset_y(0)
+  , m_padding(0, 0)
   , m_mask_timer(100, this)
   , m_offset_count(0)
   , m_customizationDelegate(NULL)
@@ -346,8 +345,8 @@ void Editor::setDefaultScroll()
 
   setEditorScroll(
     gfx::Point(
-      m_offset_x - vp.w/2 + (m_sprite->width()/2),
-      m_offset_y - vp.h/2 + (m_sprite->height()/2)), false);
+      m_padding.x - vp.w/2 + m_zoom.apply(m_sprite->width())/2,
+      m_padding.y - vp.h/2 + m_zoom.apply(m_sprite->height())/2), false);
 }
 
 // Sets the scroll position of the editor
@@ -390,8 +389,8 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
   gfx::Rect rc = m_sprite->bounds().createIntersection(spriteRectToDraw);
   rc = m_zoom.apply(rc);
 
-  int dest_x = dx + m_offset_x + rc.x;
-  int dest_y = dy + m_offset_y + rc.y;
+  int dest_x = dx + m_padding.x + rc.x;
+  int dest_y = dy + m_padding.y + rc.y;
 
   // Clip from graphics/screen
   const gfx::Rect& clip = g->getClipBounds();
@@ -536,8 +535,8 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
 
   gfx::Rect client = getClientBounds();
   gfx::Rect spriteRect(
-    client.x + m_offset_x,
-    client.y + m_offset_y,
+    client.x + m_padding.x,
+    client.y + m_padding.y,
     m_zoom.apply(m_sprite->width()),
     m_zoom.apply(m_sprite->height()));
   gfx::Rect enclosingRect = spriteRect;
@@ -680,8 +679,8 @@ void Editor::drawMask(Graphics* g)
 
   ASSERT(m_document->getMaskBoundaries());
 
-  int x = m_offset_x;
-  int y = m_offset_y;
+  int x = m_padding.x;
+  int y = m_padding.y;
 
   for (const auto& seg : *m_document->getMaskBoundaries()) {
     CheckedDrawMode checked(g, m_offset_count);
@@ -954,8 +953,8 @@ gfx::Point Editor::screenToEditor(const gfx::Point& pt)
   Point scroll = view->getViewScroll();
 
   return gfx::Point(
-    m_zoom.remove(pt.x - vp.x + scroll.x - m_offset_x),
-    m_zoom.remove(pt.y - vp.y + scroll.y - m_offset_y));
+    m_zoom.remove(pt.x - vp.x + scroll.x - m_padding.x),
+    m_zoom.remove(pt.y - vp.y + scroll.y - m_padding.y));
 }
 
 Point Editor::editorToScreen(const gfx::Point& pt)
@@ -965,8 +964,8 @@ Point Editor::editorToScreen(const gfx::Point& pt)
   Point scroll = view->getViewScroll();
 
   return Point(
-    (vp.x - scroll.x + m_offset_x + m_zoom.apply(pt.x)),
-    (vp.y - scroll.y + m_offset_y + m_zoom.apply(pt.y)));
+    (vp.x - scroll.x + m_padding.x + m_zoom.apply(pt.x)),
+    (vp.y - scroll.y + m_padding.y + m_zoom.apply(pt.y)));
 }
 
 Rect Editor::screenToEditor(const Rect& rc)
@@ -1022,8 +1021,8 @@ void Editor::centerInSpritePoint(const gfx::Point& spritePos)
   Rect vp = view->getViewportBounds();
 
   gfx::Point scroll(
-    m_offset_x - (vp.w/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.x),
-    m_offset_y - (vp.h/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.y));
+    m_padding.x - (vp.w/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.x),
+    m_padding.y - (vp.h/2) + m_zoom.apply(1)/2 + m_zoom.apply(spritePos.y));
 
   updateEditor();
   setEditorScroll(scroll, false);
@@ -1263,13 +1262,9 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
   gfx::Size sz(0, 0);
 
   if (m_sprite) {
-    View* view = View::getView(this);
-    Rect vp = view->getViewportBounds();
-    int offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
-    int offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
-
-    sz.w = m_zoom.apply(m_sprite->width()) + offset_x*2;
-    sz.h = m_zoom.apply(m_sprite->height()) + offset_y*2;
+    gfx::Point padding = calcExtraPadding(m_zoom);
+    sz.w = m_zoom.apply(m_sprite->width()) + padding.x*2;
+    sz.h = m_zoom.apply(m_sprite->height()) + padding.y*2;
   }
   else {
     sz.w = 4;
@@ -1281,13 +1276,7 @@ void Editor::onPreferredSize(PreferredSizeEvent& ev)
 void Editor::onResize(ui::ResizeEvent& ev)
 {
   Widget::onResize(ev);
-
-  View* view = View::getView(this);
-  if (view) {
-    Rect vp = view->getViewportBounds();
-    m_offset_x = std::max<int>(vp.w/2, vp.w - m_sprite->width()/2);
-    m_offset_y = std::max<int>(vp.h/2, vp.h - m_sprite->height()/2);
-  }
+  m_padding = calcExtraPadding(m_zoom);
 }
 
 void Editor::onPaint(ui::PaintEvent& ev)
@@ -1412,13 +1401,20 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
     subpixelPos.x = (0.5 + screenPos.x - screenPos2.x) / m_zoom.scale();
     subpixelPos.y = (0.5 + screenPos.y - screenPos2.y) / m_zoom.scale();
 
+    if (zoom.scale() > m_zoom.scale()) {
+      double t = 1.0 / zoom.scale();
+      if (subpixelPos.x >= 0.5-t && subpixelPos.x <= 0.5+t) subpixelPos.x = 0.5;
+      if (subpixelPos.y >= 0.5-t && subpixelPos.y <= 0.5+t) subpixelPos.y = 0.5;
+    }
+
     ASSERT(subpixelPos.x >= -1.0 && subpixelPos.x <= 1.0);
     ASSERT(subpixelPos.y >= -1.0 && subpixelPos.y <= 1.0);
   }
 
+  gfx::Point padding = calcExtraPadding(zoom);
   gfx::Point scrollPos(
-    m_offset_x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.x)),
-    m_offset_y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
+    padding.x - (screenPos.x-vp.x) + zoom.apply(spritePos.x+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.x)),
+    padding.y - (screenPos.y-vp.y) + zoom.apply(spritePos.y+zoom.remove(1)/2) + int(zoom.apply(subpixelPos.y)));
 
   if ((m_zoom != zoom) || (screenPos != view->getViewScroll())) {
     bool blitValidRegion = (m_zoom == zoom);
@@ -1572,6 +1568,20 @@ void Editor::showBrushPreview(const gfx::Point& screenPos)
 ImageBufferPtr Editor::getRenderImageBuffer()
 {
   return m_renderBuffer;
+}
+
+// static
+gfx::Point Editor::calcExtraPadding(const Zoom& zoom)
+{
+  View* view = View::getView(this);
+  if (view) {
+    Rect vp = view->getViewportBounds();
+    return gfx::Point(
+      std::max<int>(vp.w/2, vp.w - zoom.apply(m_sprite->width())),
+      std::max<int>(vp.h/2, vp.h - zoom.apply(m_sprite->height())));
+  }
+  else
+    return gfx::Point(0, 0);
 }
 
 } // namespace app

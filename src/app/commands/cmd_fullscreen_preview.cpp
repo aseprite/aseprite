@@ -72,8 +72,8 @@ public:
     gfx::Point scroll = view->getViewScroll();
 
     m_oldMousePos = ui::get_mouse_position();
-    m_pos.x = -scroll.x + vp.x + editor->offsetX();
-    m_pos.y = -scroll.y + vp.y + editor->offsetY();
+    m_pos.x = -scroll.x + vp.x + editor->padding().x;
+    m_pos.y = -scroll.y + vp.y + editor->padding().y;
 
     setFocusStop(true);
     captureMouse();

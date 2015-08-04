@@ -1,5 +1,5 @@
 // Aseprite Render Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -44,6 +44,10 @@ namespace render {
     void in();
     void out();
 
+    // Returns an linear zoom scale. This position can be incremented
+    // or decremented to get a new zoom value.
+    int linearScale();
+
     bool operator==(const Zoom& other) const {
       return m_num == other.m_num && m_den == other.m_den;
     }
@@ -53,8 +57,11 @@ namespace render {
     }
 
     static Zoom fromScale(double scale);
+    static Zoom fromLinearScale(int i);
 
   private:
+    static int findClosestLinearScale(double scale);
+
     int m_num;
     int m_den;
   };
