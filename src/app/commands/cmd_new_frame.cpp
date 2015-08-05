@@ -22,6 +22,7 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "doc/cel.h"
 #include "doc/image.h"
@@ -97,17 +98,40 @@ void NewFrameCommand::onExecute(Context* context)
       case Content::NEW_EMPTY_FRAME:
         api.addEmptyFrame(sprite, writer.frame()+1);
         break;
-      case Content::DUPLICATE_CEL:
-        api.copyCel(
-          static_cast<LayerImage*>(writer.layer()), writer.frame(),
-          static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
+      case Content::DUPLICATE_CEL: {
+        // TODO the range of selected frames should be in doc::Site.
+        Timeline* timeline = App::instance()->getMainWindow()->getTimeline();
+        Timeline::Range range = timeline->range();
+        if (range.enabled()) {
+          timeline->prepareToMoveRange();
 
-        // TODO should we use DocumentObserver?
-        if (UIContext::instance() == context) {
-          if (DocumentView* view = UIContext::instance()->activeView())
-            view->getEditor()->setFrame(writer.frame()+1);
+          for (LayerIndex layer = range.layerBegin(); layer <= range.layerEnd(); ++layer) {
+            Layer* layerPtr = writer.sprite()->indexToLayer(layer);
+            if (layerPtr->isImage()) {
+              for (frame_t frame = range.frameEnd(); frame >= range.frameBegin(); --frame) {
+                api.copyCel(
+                  static_cast<LayerImage*>(layerPtr), frame,
+                  static_cast<LayerImage*>(layerPtr), frame+range.frames());
+              }
+            }
+          }
+
+          range.displace(0, range.frames());
+          timeline->moveRange(range);
+        }
+        else {
+          api.copyCel(
+            static_cast<LayerImage*>(writer.layer()), writer.frame(),
+            static_cast<LayerImage*>(writer.layer()), writer.frame()+1);
+
+          // TODO should we use DocumentObserver?
+          if (UIContext::instance() == context) {
+            if (DocumentView* view = UIContext::instance()->activeView())
+              view->getEditor()->setFrame(writer.frame()+1);
+          }
         }
         break;
+      }
     }
 
     transaction.commit();

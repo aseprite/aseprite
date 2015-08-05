@@ -90,6 +90,9 @@ namespace app {
 
     Range range() const { return m_range; }
 
+    void prepareToMoveRange();
+    void moveRange(Range& range);
+
     void activateClipboardRange();
 
     // Drag-and-drop operations. These actions are used by commands
@@ -271,6 +274,12 @@ namespace app {
     bool m_copy;     // True if the drag-and-drop operation is a copy.
 
     AniControls m_aniControls;
+
+    // Temporal data used to move the range.
+    struct MoveRange {
+      int activeRelativeLayer;
+      frame_t activeRelativeFrame;
+    } m_moveRangeData;
   };
 
 } // namespace app

@@ -235,6 +235,29 @@ void Timeline::setFrame(frame_t frame)
     m_editor->setFrame(m_frame);
 }
 
+void Timeline::prepareToMoveRange()
+{
+  ASSERT(m_range.enabled());
+
+  m_moveRangeData.activeRelativeLayer = getLayerIndex(m_layer) - m_range.layerBegin();
+  m_moveRangeData.activeRelativeFrame = m_frame - m_range.frameBegin();
+}
+
+void Timeline::moveRange(Range& range)
+{
+  regenerateLayers();
+
+  if (range.layerBegin() >= LayerIndex(0) &&
+      range.layerBegin() + m_moveRangeData.activeRelativeLayer < int(m_layers.size())) {
+    setLayer(m_layers[range.layerBegin() + m_moveRangeData.activeRelativeLayer]);
+  }
+
+  if (range.frameBegin() >= frame_t(0))
+    setFrame(range.frameBegin() + m_moveRangeData.activeRelativeFrame);
+
+  m_range = range;
+}
+
 void Timeline::activateClipboardRange()
 {
   m_clipboard_timer.start();
@@ -2179,8 +2202,7 @@ void Timeline::dropRange(DropOp op)
       break;
   }
 
-  int activeRelativeLayer = getLayerIndex(m_layer) - m_range.layerBegin();
-  frame_t activeRelativeFrame = m_frame - m_range.frameBegin();
+  prepareToMoveRange();
 
   try {
     if (copy)
@@ -2188,24 +2210,16 @@ void Timeline::dropRange(DropOp op)
     else
       newFromRange = move_range(m_document, m_range, m_dropRange, place);
 
-    regenerateLayers();
+    // If we drop a cel in the same frame (but in another layer),
+    // document views are not updated, so we are forcing the updating of
+    // all views.
+    m_document->notifyGeneralUpdate();
 
-    m_range = newFromRange;
-    if (m_range.layerBegin() >= LayerIndex(0))
-      setLayer(m_layers[m_range.layerBegin() + activeRelativeLayer]);
-    if (m_range.frameBegin() >= frame_t(0))
-      setFrame(m_range.frameBegin() + activeRelativeFrame);
+    moveRange(newFromRange);
   }
   catch (const std::exception& e) {
     ui::Alert::show("Problem<<%s||&OK", e.what());
   }
-
-  // If we drop a cel in the same frame (but in another layer),
-  // document views are not updated, so we are forcing the updating of
-  // all views.
-  m_document->notifyGeneralUpdate();
-
-  invalidate();
 }
 
 void Timeline::updateDropRange(const gfx::Point& pt)
