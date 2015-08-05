@@ -492,6 +492,12 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
 
+    // Default preferences for future sprites
+    DocumentPreferences& defPref(Preferences::instance().document(nullptr));
+    defPref.spriteSheet = docPref.spriteSheet;
+    defPref.spriteSheet.textureFilename("");
+    defPref.spriteSheet.dataFilename("");
+
     askOverwrite = false; // Already asked in the ExportSpriteSheetWindow
   }
 
