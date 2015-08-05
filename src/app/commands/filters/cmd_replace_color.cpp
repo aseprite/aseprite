@@ -147,7 +147,8 @@ void ReplaceColorCommand::onExecute(Context* context)
                       TARGET_GREEN_CHANNEL |
                       TARGET_BLUE_CHANNEL |
                       TARGET_GRAY_CHANNEL |
-                      TARGET_ALPHA_CHANNEL);
+                      TARGET_ALPHA_CHANNEL |
+                      TARGET_INDEX_CHANNEL);
 
   ReplaceColorWindow window(filter, filterMgr);
   if (window.doModal()) {
