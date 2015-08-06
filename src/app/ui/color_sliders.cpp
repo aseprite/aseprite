@@ -20,6 +20,8 @@
 #include "ui/preferred_size_event.h"
 #include "ui/slider.h"
 
+#include <climits>
+
 namespace app {
 
 using namespace app::skin;
