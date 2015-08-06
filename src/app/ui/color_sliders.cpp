@@ -86,6 +86,7 @@ ColorSliders::ColorSliders()
   , m_mode(Absolute)
 {
   addChild(&m_grid);
+  m_grid.setChildSpacing(0);
 }
 
 ColorSliders::~ColorSliders()
@@ -139,6 +140,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
 
   absSlider->setProperty(SkinSliderPropertyPtr(new SkinSliderProperty(new ColorSliderBgPainter(channel))));
   absSlider->setDoubleBuffered(true);
+  get_skin_property(entry)->setLook(MiniLook);
 
   absSlider->Change.connect(Bind<void>(&ColorSliders::onSliderChange, this, m_absSlider.size()-1));
   relSlider->Change.connect(Bind<void>(&ColorSliders::onSliderChange, this, m_relSlider.size()-1));
@@ -150,6 +152,10 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   absSlider->setExpansive(true);
   relSlider->setExpansive(true);
   relSlider->setVisible(false);
+
+  label->setMaxSize(gfx::Size(INT_MAX, 14));
+  box->setMaxSize(gfx::Size(INT_MAX, 14));
+  entry->setMaxSize(gfx::Size(INT_MAX, 14));
 
   m_grid.addChildInCell(label,  1, 1, LEFT | MIDDLE);
   m_grid.addChildInCell(box, 1, 1, HORIZONTAL | VERTICAL | EXPANSIVE);
