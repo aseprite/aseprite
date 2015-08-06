@@ -9,7 +9,6 @@
 #pragma once
 
 #include "she/capabilities.h"
-#include "she/event_queue.h"
 
 #include <stdexcept>
 
@@ -17,6 +16,7 @@ namespace she {
 
   class Clipboard;
   class Display;
+  class EventQueue;
   class Font;
   class Logger;
   class NativeDialogs;
@@ -48,10 +48,6 @@ namespace she {
 
   System* create_system();
   System* instance();
-
-  inline void queue_event(const Event& ev) {
-    instance()->eventQueue()->queueEvent(ev);
-  }
 
 } // namespace she
 

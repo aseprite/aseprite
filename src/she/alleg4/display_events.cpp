@@ -11,7 +11,7 @@
 #include "she/alleg4/alleg_display.h"
 #include "she/display.h"
 #include "she/event.h"
-#include "she/system.h"
+#include "she/event_queue.h"
 
 #include <allegro.h>
 

@@ -14,7 +14,7 @@
 
 #include "she/alleg4/alleg_display.h"
 #include "she/event.h"
-#include "she/system.h"
+#include "she/event_queue.h"
 
 void* get_osx_window()
 {

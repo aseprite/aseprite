@@ -70,22 +70,7 @@ namespace she {
 
 class Alleg4EventQueue : public EventQueue {
 public:
-  Alleg4EventQueue() {
-    clock_init();
-    display_events_init();
-
-#ifdef USE_KEY_POLLER
-    key_poller_init();
-#endif
-
-#ifdef USE_MOUSE_POLLER
-    mouse_poller_init();
-#endif
-  }
-
-  ~Alleg4EventQueue() {
-    clock_exit();
-  }
+  static Alleg4EventQueue g_queue;
 
   void getEvent(Event& event, bool canWait) override {
     (void)canWait;              // Ignore this parameter
@@ -115,6 +100,12 @@ private:
   base::concurrent_queue<Event> m_events;
 };
 
+Alleg4EventQueue g_queue;
+
+EventQueue* EventQueue::instance() {
+  return &g_queue;
+}
+
 class Alleg4System : public CommonSystem {
 public:
   Alleg4System()
@@ -131,16 +122,25 @@ public:
     // Register PNG as a supported bitmap type
     register_bitmap_file_type("png", load_png, save_png);
 
+    // Init event sources
+    clock_init();
+    display_events_init();
+#ifdef USE_KEY_POLLER
+    key_poller_init();
+#endif
+#ifdef USE_MOUSE_POLLER
+    mouse_poller_init();
+#endif
+
     g_instance = this;
-    m_queue.reset(new Alleg4EventQueue);
   }
 
   ~Alleg4System() {
-    m_queue.reset();
-    g_instance = nullptr;
-
+    clock_exit();
     remove_timer();
     allegro_exit();
+
+    g_instance = nullptr;
   }
 
   void dispose() override {
@@ -151,8 +151,8 @@ public:
     return (Capabilities)(kCanResizeDisplayCapability);
   }
 
-  EventQueue* eventQueue() override {
-    return m_queue;
+  EventQueue* eventQueue() override { // TODO remove this function
+    return EventQueue::instance();
   }
 
   Display* defaultDisplay() override {
@@ -188,9 +188,6 @@ public:
     set_color_conversion(old_color_conv);
     return sur;
   }
-
-private:
-  base::UniquePtr<Alleg4EventQueue> m_queue;
 };
 
 System* create_system() {
