@@ -22,11 +22,15 @@
 #include "doc/sort_palette.h"
 #include "ui/box.h"
 #include "ui/button.h"
+#include "ui/splitter.h"
 #include "ui/tooltips.h"
 #include "ui/view.h"
 
 namespace app {
+
   class ColorButton;
+  class ColorSpectrum;
+  class ColorWheel;
   class Command;
   class PaletteIndexChangeEvent;
   class PalettePopup;
@@ -38,6 +42,12 @@ namespace app {
                  , public app::InputChainElement {
     static ColorBar* m_instance;
   public:
+    enum class ColorSelector {
+      NONE,
+      SPECTRUM,
+      WHEEL,
+    };
+
     static ColorBar* instance() { return m_instance; }
 
     ColorBar(int align);
@@ -51,6 +61,9 @@ namespace app {
     void setBgColor(const app::Color& color);
 
     PaletteView* getPaletteView();
+
+    ColorSelector getColorSelector();
+    void setColorSelector(ColorSelector selector);
 
     // Used by the Palette Editor command to change the status of button
     // when the visibility of the dialog changes.
@@ -119,9 +132,15 @@ namespace app {
     ui::TooltipManager m_tooltips;
     ButtonSet m_buttons;
     base::UniquePtr<PalettePopup> m_palettePopup;
+    ui::Splitter m_splitter;
+    ui::VBox m_palettePlaceholder;
+    ui::VBox m_selectorPlaceholder;
     ScrollableView m_scrollableView;
     PaletteView m_paletteView;
     ui::Button m_remapButton;
+    ColorSelector m_selector;
+    ColorSpectrum* m_spectrum;
+    ColorWheel* m_wheel;
     ColorButton m_fgColor;
     ColorButton m_bgColor;
     WarningIcon* m_fgWarningIcon;

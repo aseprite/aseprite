@@ -31,6 +31,7 @@ ColorSpectrum::ColorSpectrum()
   : Widget(kGenericWidget)
 {
   setAlign(HORIZONTAL);
+  setBorder(gfx::Border(3*ui::guiscale()));
 }
 
 ColorSpectrum::~ColorSpectrum()
@@ -39,7 +40,7 @@ ColorSpectrum::~ColorSpectrum()
 
 app::Color ColorSpectrum::pickColor(const gfx::Point& pos) const
 {
-  gfx::Rect rc = getBounds().shrink(3*ui::guiscale());
+  gfx::Rect rc = getChildrenBounds();
   if (rc.isEmpty() || !rc.contains(pos))
     return app::Color::fromMask();
 
@@ -87,7 +88,7 @@ void ColorSpectrum::onPaint(ui::PaintEvent& ev)
                   theme->parts.editorNormal().get(),
                   getBgColor());
 
-  gfx::Rect rc = getClientBounds().shrink(3*ui::guiscale());
+  gfx::Rect rc = getClientChildrenBounds();
   if (rc.isEmpty())
     return;
 
@@ -151,7 +152,7 @@ bool ColorSpectrum::onProcessMessage(ui::Message* msg)
 
     case kSetCursorMessage: {
       MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
-      if (getBounds().shrink(3*ui::guiscale()).contains(mouseMsg->position())) {
+      if (getChildrenBounds().contains(mouseMsg->position())) {
         ui::set_mouse_cursor(kEyedropperCursor);
         return true;
       }

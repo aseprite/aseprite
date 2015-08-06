@@ -30,7 +30,9 @@
 #include "app/pref/preferences.h"
 #include "app/transaction.h"
 #include "app/ui/color_spectrum.h"
+#include "app/ui/color_wheel.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/hex_color_entry.h"
 #include "app/ui/input_chain.h"
 #include "app/ui/palette_popup.h"
 #include "app/ui/skin/skin_theme.h"
@@ -128,9 +130,13 @@ ColorBar* ColorBar::m_instance = NULL;
 ColorBar::ColorBar(int align)
   : Box(align)
   , m_buttons(int(PalButton::MAX))
+  , m_splitter(Splitter::ByPercentage, VERTICAL)
   , m_paletteView(true, PaletteView::FgBgColors, this,
       Preferences::instance().colorBar.boxSize() * guiscale())
   , m_remapButton("Remap")
+  , m_selector(ColorSelector::NONE)
+  , m_spectrum(nullptr)
+  , m_wheel(nullptr)
   , m_fgColor(app::Color::fromRgb(255, 255, 255), IMAGE_RGB)
   , m_bgColor(app::Color::fromRgb(0, 0, 0), IMAGE_RGB)
   , m_fgWarningIcon(new WarningIcon)
@@ -163,24 +169,23 @@ ColorBar::ColorBar(int align)
 
   m_remapButton.setVisible(false);
 
-  Box* palViewBox = new VBox();
-  palViewBox->addChild(&m_scrollableView);
-  palViewBox->addChild(&m_remapButton);
+  m_palettePlaceholder.addChild(&m_scrollableView);
+  m_palettePlaceholder.addChild(&m_remapButton);
+  m_splitter.setPosition(80);
+  m_splitter.setExpansive(true);
+  m_splitter.addChild(&m_palettePlaceholder);
+  m_splitter.addChild(&m_selectorPlaceholder);
 
-  ColorSpectrum* spectrum = new ColorSpectrum;
-  Splitter* splitter = new Splitter(Splitter::ByPercentage, VERTICAL);
-  splitter->setPosition(80);
-  splitter->setExpansive(true);
-  splitter->addChild(palViewBox);
-  splitter->addChild(spectrum);
+  setColorSelector(
+    Preferences::instance().colorBar.selector());
 
   Box* buttonsBox = new HBox();
   buttonsBox->addChild(&m_buttons);
   m_buttons.setMaxSize(gfx::Size(m_buttons.maxSize().w,
-                                 15*ui::guiscale()));
+                                 16*ui::guiscale()));
 
   addChild(buttonsBox);
-  addChild(splitter);
+  addChild(&m_splitter);
 
   HBox* fgBox = new HBox;
   HBox* bgBox = new HBox;
@@ -199,7 +204,6 @@ ColorBar::ColorBar(int align)
   m_remapButton.Click.connect(Bind<void>(&ColorBar::onRemapButtonClick, this));
   m_fgColor.Change.connect(&ColorBar::onFgColorButtonChange, this);
   m_bgColor.Change.connect(&ColorBar::onBgColorButtonChange, this);
-  spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
   m_fgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_fgColor, m_fgWarningIcon));
   m_bgWarningIcon->Click.connect(Bind<void>(&ColorBar::onFixWarningClick, this, &m_bgColor, m_bgWarningIcon));
 
@@ -289,6 +293,49 @@ void ColorBar::setBgColor(const app::Color& color)
 PaletteView* ColorBar::getPaletteView()
 {
   return &m_paletteView;
+}
+
+ColorBar::ColorSelector ColorBar::getColorSelector()
+{
+  return m_selector;
+}
+
+void ColorBar::setColorSelector(ColorSelector selector)
+{
+  if (m_selector == selector)
+    return;
+
+  if (m_spectrum) m_spectrum->setVisible(false);
+  if (m_wheel) m_wheel->setVisible(false);
+
+  m_selector = selector;
+  Preferences::instance().colorBar.selector(m_selector);
+
+  switch (m_selector) {
+
+    case ColorSelector::SPECTRUM:
+      if (!m_spectrum) {
+        m_spectrum = new ColorSpectrum;
+        m_spectrum->setExpansive(true);
+        m_spectrum->ColorChange.connect(&ColorBar::onPickSpectrum, this);
+        m_selectorPlaceholder.addChild(m_spectrum);
+      }
+      m_spectrum->setVisible(true);
+      break;
+
+    case ColorSelector::WHEEL:
+      if (!m_wheel) {
+        m_wheel = new ColorWheel;
+        m_wheel->setExpansive(true);
+        m_wheel->ColorChange.connect(&ColorBar::onPickSpectrum, this);
+        m_selectorPlaceholder.addChild(m_wheel);
+      }
+      m_wheel->setVisible(true);
+      break;
+
+  }
+
+  m_selectorPlaceholder.layout();
 }
 
 void ColorBar::setPaletteEditorButtonState(bool state)
