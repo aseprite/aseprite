@@ -166,7 +166,6 @@ private:
   }
 
   ContextBar* m_owner;
-  she::Surface* m_bitmap;
   BrushPopup m_popupWindow;
 };
 
