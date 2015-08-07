@@ -348,6 +348,7 @@ void DocumentApi::moveCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame)
 {
+  ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   m_transaction.execute(new cmd::MoveCel(
       srcLayer, srcFrame,
       dstLayer, dstFrame));
@@ -357,6 +358,7 @@ void DocumentApi::copyCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame)
 {
+  ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   m_transaction.execute(new cmd::CopyCel(
       srcLayer, srcFrame,
       dstLayer, dstFrame));
@@ -365,6 +367,8 @@ void DocumentApi::copyCel(
 void DocumentApi::swapCel(
   LayerImage* layer, frame_t frame1, frame_t frame2)
 {
+  ASSERT(frame1 != frame2);
+
   Sprite* sprite = layer->sprite();
   ASSERT(sprite != NULL);
   ASSERT(frame1 >= 0 && frame1 < sprite->totalFrames());
