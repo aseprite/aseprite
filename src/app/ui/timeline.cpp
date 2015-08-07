@@ -1009,8 +1009,6 @@ void Timeline::onRemoveFrame(doc::DocumentEvent& ev)
 void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
 {
   m_range.disableRange();
-
-  clearClipboardRange();
   invalidate();
 }
 
@@ -1027,7 +1025,6 @@ void Timeline::onAfterFrameChanged(Editor* editor)
     m_range.disableRange();
 
   showCurrentCel();
-  clearClipboardRange();
   invalidate();
 }
 
@@ -1039,7 +1036,6 @@ void Timeline::onAfterLayerChanged(Editor* editor)
     m_range.disableRange();
 
   showCurrentCel();
-  clearClipboardRange();
   invalidate();
 }
 

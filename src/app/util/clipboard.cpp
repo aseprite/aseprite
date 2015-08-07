@@ -17,6 +17,7 @@
 #include "app/document.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
+#include "app/document_range_ops.h"
 #include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
@@ -312,16 +313,27 @@ void clipboard::paste()
       switch (srcRange.type()) {
 
         case DocumentRange::kCels: {
-          // Do nothing case: pasting in the same document.
-          if (srcDoc == dstDoc)
-            return;             // TODO paste clipboard content in new location
+          // We can use a document range op (copy_range) to copy/paste
+          // cels in the same document.
+          if (srcDoc == dstDoc) {
+            DocumentRange dstRange;
+            LayerIndex dstLayer = srcSpr->layerToIndex(editor->layer());
+            frame_t dstFrame = editor->frame();
+
+            dstRange.startRange(dstLayer, dstFrame,
+                                DocumentRange::kCels);
+            dstRange.endRange(dstLayer + LayerIndex(- srcRange.layers() + 1),
+                              dstFrame + srcRange.frames() - 1);
+
+            copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            return;
+          }
 
           Transaction transaction(UIContext::instance(), "Paste Cels");
           DocumentApi api = dstDoc->getApi(transaction);
 
-          frame_t dstFrameBegin = editor->frame();
-
           // Add extra frames if needed
+          frame_t dstFrameBegin = editor->frame();
           while (dstFrameBegin+srcRange.frames() > dstSpr->totalFrames())
             api.addFrame(dstSpr, dstSpr->totalFrames());
 
