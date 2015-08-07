@@ -314,28 +314,65 @@ void clipboard::paste()
         case DocumentRange::kCels: {
           // Do nothing case: pasting in the same document.
           if (srcDoc == dstDoc)
-            return;
+            return;             // TODO paste clipboard content in new location
 
           Transaction transaction(UIContext::instance(), "Paste Cels");
           DocumentApi api = dstDoc->getApi(transaction);
 
-          frame_t dstFrame = editor->frame();
-          for (frame_t frame = srcRange.frameBegin(); frame <= srcRange.frameEnd(); ++frame) {
-            if (dstFrame == dstSpr->totalFrames())
-              api.addFrame(dstSpr, dstFrame);
+          frame_t dstFrameBegin = editor->frame();
 
-            for (LayerIndex
-                   i = srcRange.layerEnd(),
-                   j = dstSpr->layerToIndex(editor->layer());
-                   i >= srcRange.layerBegin() &&
-                   i >= LayerIndex(0) &&
-                   j >= LayerIndex(0); --i, --j) {
-              Cel* cel = srcLayers[i]->cel(frame);
+          // Add extra frames if needed
+          while (dstFrameBegin+srcRange.frames() > dstSpr->totalFrames())
+            api.addFrame(dstSpr, dstSpr->totalFrames());
 
-              if (cel && cel->image()) {
-                api.copyCel(
-                  static_cast<LayerImage*>(srcLayers[i]), frame,
-                  static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+          for (LayerIndex
+                 i = srcRange.layerEnd(),
+                 j = dstSpr->layerToIndex(editor->layer());
+               i >= srcRange.layerBegin() &&
+                 i >= LayerIndex(0) &&
+                 j >= LayerIndex(0); --i, --j) {
+            // Maps a linked Cel in the original sprite with its
+            // corresponding copy in the new sprite. In this way
+            // we can.
+            std::map<Cel*, Cel*> relatedCels;
+
+            for (frame_t frame = srcRange.frameBegin(),
+                   dstFrame = dstFrameBegin;
+                 frame <= srcRange.frameEnd();
+                 ++frame, ++dstFrame) {
+              Cel* srcCel = srcLayers[i]->cel(frame);
+              Cel* srcLink = nullptr;
+
+              if (srcCel && srcCel->image()) {
+                bool createCopy = true;
+
+                if (dstLayers[j]->isContinuous() &&
+                    srcCel->links()) {
+                  srcLink = srcCel->link();
+                  if (!srcLink)
+                    srcLink = srcCel;
+
+                  if (srcLink) {
+                    Cel* dstRelated = relatedCels[srcLink];
+                    if (dstRelated) {
+                      createCopy = false;
+
+                      // Create a link from dstRelated
+                      api.copyCel(
+                        static_cast<LayerImage*>(dstLayers[j]), dstRelated->frame(),
+                        static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+                    }
+                  }
+                }
+
+                if (createCopy) {
+                  api.copyCel(
+                    static_cast<LayerImage*>(srcLayers[i]), frame,
+                    static_cast<LayerImage*>(dstLayers[j]), dstFrame);
+
+                  if (srcLink)
+                    relatedCels[srcLink] = dstLayers[j]->cel(dstFrame);
+                }
               }
               else {
                 Cel* dstCel = dstLayers[j]->cel(dstFrame);
@@ -344,7 +381,6 @@ void clipboard::paste()
               }
             }
 
-            ++dstFrame;
           }
 
           transaction.commit();
