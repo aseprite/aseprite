@@ -33,9 +33,10 @@ namespace app {
 
       virtual void prepareController() { }
 
-      // Called when the user presses or releases a key.
-      virtual void pressKey(ui::KeyScancode key) { }
-      virtual void releaseKey(ui::KeyScancode key) { }
+      // Called when the user presses or releases a key. Returns true
+      // if the key is used (so a new mouse point is generated).
+      virtual bool pressKey(ui::KeyScancode key) { return false; }
+      virtual bool releaseKey(ui::KeyScancode key) { return false; }
 
       // Called when the user starts drawing and each time a new button is
       // pressed. The controller could be sure that this method is called

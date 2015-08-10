@@ -44,7 +44,10 @@ namespace app {
       // Simple container of mouse events information.
       class Pointer {
       public:
-        enum Button { Left, Middle, Right };
+        enum Button { None, Left, Middle, Right };
+
+        Pointer()
+          : m_x(0), m_y(0), m_button(None) { }
 
         Pointer(int x, int y, Button button)
           : m_x(x), m_y(y), m_button(button) { }
@@ -99,6 +102,7 @@ namespace app {
 
       ToolLoop* m_toolLoop;
       Points m_points;
+      Pointer m_lastPointer;
       gfx::Point m_oldPoint;
       gfx::Region& m_dirtyArea;
     };

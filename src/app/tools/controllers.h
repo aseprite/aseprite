@@ -75,14 +75,14 @@ public:
     return false;
   }
 
-  void pressKey(ui::KeyScancode key) override {
+  bool pressKey(ui::KeyScancode key) override {
     TRACE("pressKey(%d)\n", key);
-    processKey(key, true);
+    return processKey(key, true);
   }
 
-  void releaseKey(ui::KeyScancode key) override {
+  bool releaseKey(ui::KeyScancode key) override {
     TRACE("releaseKey(%d)\n", key);
-    processKey(key, false);
+    return processKey(key, false);
   }
 
   void movement(ToolLoop* loop, Points& points, const Point& point) {
@@ -188,17 +188,18 @@ public:
   }
 
 private:
-  void processKey(ui::KeyScancode key, bool state) {
+  bool processKey(ui::KeyScancode key, bool state) {
     switch (key) {
       case ui::kKeyLShift:
       case ui::kKeyRShift:
         m_squareAspect = state;
-        break;
+        return true;
       case ui::kKeyLControl:
       case ui::kKeyRControl:
         m_fromCenter = state;
-        break;
+        return true;
     }
+    return false;
   }
 
   Point m_first;

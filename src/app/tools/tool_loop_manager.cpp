@@ -76,7 +76,10 @@ void ToolLoopManager::pressKey(ui::KeyScancode key)
   if (isCanceled())
     return;
 
-  m_toolLoop->getController()->pressKey(key);
+  if (m_toolLoop->getController()->pressKey(key)) {
+    if (m_lastPointer.getButton() != Pointer::None)
+      movement(m_lastPointer);
+  }
 }
 
 void ToolLoopManager::releaseKey(ui::KeyScancode key)
@@ -89,11 +92,16 @@ void ToolLoopManager::releaseKey(ui::KeyScancode key)
     return;
   }
 
-  m_toolLoop->getController()->releaseKey(key);
+  if (m_toolLoop->getController()->releaseKey(key)) {
+    if (m_lastPointer.getButton() != Pointer::None)
+      movement(m_lastPointer);
+  }
 }
 
 void ToolLoopManager::pressButton(const Pointer& pointer)
 {
+  m_lastPointer = pointer;
+
   if (isCanceled())
     return;
 
@@ -122,6 +130,8 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
 
 bool ToolLoopManager::releaseButton(const Pointer& pointer)
 {
+  m_lastPointer = pointer;
+
   if (isCanceled())
     return false;
 
@@ -141,6 +151,8 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
 
 void ToolLoopManager::movement(const Pointer& pointer)
 {
+  m_lastPointer = pointer;
+
   if (isCanceled())
     return;
 
