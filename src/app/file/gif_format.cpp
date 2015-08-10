@@ -180,8 +180,14 @@ public:
     , m_localTransparentIndex(-1)
     , m_frameDelay(1)
     , m_remap(256)
-    , m_hasLocalColormaps(false) {
+    , m_hasLocalColormaps(false)
+    , m_firstLocalColormap(nullptr) {
     // PRINTF("GIF background index = %d\n", (int)m_gifFile->SBackGroundColor);
+  }
+
+  ~GifDecoder() {
+    if (m_firstLocalColormap)
+      GifFreeMapObject(m_firstLocalColormap);
   }
 
   Sprite* releaseSprite() {
@@ -213,17 +219,27 @@ public:
       if (m_bgIndex >= m_sprite->palette(0)->size())
         m_sprite->palette(0)->resize(m_bgIndex+1);
 
-      // Use the original global color map
-      if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
-          m_gifFile->SColorMap &&
-          m_gifFile->SColorMap->ColorCount >= m_sprite->palette(0)->size() &&
-          !m_hasLocalColormaps) {
-        remapToGlobalColormap();
-      }
-      // Avoid huge color palettes
-      else if (m_sprite->pixelFormat() == IMAGE_RGB &&
-               m_sprite->palette(0)->size() > 256) {
-        reduceToAnOptimizedPalette();
+      switch (m_sprite->pixelFormat()) {
+
+        case IMAGE_INDEXED: {
+          // Use the original global color map
+          ColorMapObject* global = m_gifFile->SColorMap;
+          if (!global)
+            global = m_firstLocalColormap;
+          if (global &&
+              global->ColorCount >= m_sprite->palette(0)->size() &&
+              !m_hasLocalColormaps) {
+            remapToGlobalColormap(global);
+          }
+          break;
+        }
+
+        case IMAGE_RGB:
+          // Avoid huge color palettes
+          if (m_sprite->palette(0)->size() > 256) {
+            reduceToAnOptimizedPalette();
+          }
+          break;
       }
 
       if (m_layer && m_opaque)
@@ -376,7 +392,14 @@ private:
       // Doesn't have local map, use the global one
       colormap = global;
     }
-    else if (global && !m_hasLocalColormaps) {
+    else if (!m_hasLocalColormaps) {
+      if (!global) {
+        if (!m_firstLocalColormap)
+          m_firstLocalColormap = GifMakeMapObject(colormap->ColorCount,
+                                                  colormap->Colors);
+        global = m_firstLocalColormap;
+      }
+
       if (global->ColorCount != colormap->ColorCount)
         m_hasLocalColormaps = true;
       else {
@@ -656,8 +679,7 @@ private:
     m_sprite->setPixelFormat(IMAGE_RGB);
   }
 
-  void remapToGlobalColormap() {
-    ColorMapObject* colormap = m_gifFile->SColorMap;
+  void remapToGlobalColormap(ColorMapObject* colormap) {
     Palette* oldPalette = m_sprite->palette(0);
     Palette newPalette(0, colormap->ColorCount);
 
@@ -670,8 +692,9 @@ private:
 
     Remap remap = create_remap_to_change_palette(
       oldPalette, &newPalette, m_bgIndex,
-      false); // We cannot remap the transparent color, because we
-              // cannot write the header again
+      m_opaque); // We cannot remap the transparent color if the
+                 // sprite isn't opaque, because we
+                 // cannot write the header again
 
     for (Cel* cel : m_sprite->uniqueCels())
       doc::remap_image(cel->image(), remap);
@@ -710,6 +733,11 @@ private:
   ImageRef m_previousImage;
   Remap m_remap;
   bool m_hasLocalColormaps;     // Indicates that this fila contains local colormaps
+
+  // This is a copy of the first local color map. It's used to see if
+  // all local colormaps are the same, so we can use it as a global
+  // colormap.
+  ColorMapObject* m_firstLocalColormap;
 };
 
 bool GifFormat::onLoad(FileOp* fop)
