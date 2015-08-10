@@ -641,6 +641,7 @@
         <item command="ShowGrid" text="Show &amp;Grid" />
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
+        <item command="SelectionAsGrid" text="Select&amp;ion as Grid" />
         <separator />
         <item command="SetLoopSection" text="Set &amp;Loop Section" />
         <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />

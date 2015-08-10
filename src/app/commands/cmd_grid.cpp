@@ -12,6 +12,7 @@
 #include "app/app.h"
 #include "app/commands/command.h"
 #include "app/context.h"
+#include "app/context_access.h"
 #include "app/document.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
@@ -19,6 +20,8 @@
 #include "app/pref/preferences.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
+#include "doc/document.h"
+#include "doc/mask.h"
 #include "ui/window.h"
 
 namespace app {
@@ -37,12 +40,12 @@ public:
   Command* clone() const override { return new ShowGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* ctx) {
+  bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.grid.visible();
   }
 
-  void onExecute(Context* ctx) {
+  void onExecute(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.grid.visible(!docPref.grid.visible());
   }
@@ -59,12 +62,12 @@ public:
   Command* clone() const override { return new ShowPixelGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* ctx) {
+  bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.pixelGrid.visible();
   }
 
-  void onExecute(Context* ctx) {
+  void onExecute(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     docPref.pixelGrid.visible(!docPref.pixelGrid.visible());
   }
@@ -81,17 +84,44 @@ public:
   Command* clone() const override { return new SnapToGridCommand(*this); }
 
 protected:
-  bool onChecked(Context* ctx) {
+  bool onChecked(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     return docPref.grid.snap();
   }
 
-  void onExecute(Context* ctx) {
+  void onExecute(Context* ctx) override {
     DocumentPreferences& docPref = Preferences::instance().document(ctx->activeDocument());
     bool newValue = !docPref.grid.snap();
     docPref.grid.snap(newValue);
 
     StatusBar::instance()->showSnapToGridWarning(newValue);
+  }
+};
+
+class SelectionAsGridCommand : public Command {
+public:
+  SelectionAsGridCommand()
+    : Command("SelectionAsGrid",
+              "Selection as Grid",
+              CmdUIOnlyFlag) {
+  }
+
+  Command* clone() const override { return new SelectionAsGridCommand(*this); }
+
+protected:
+  bool onEnabled(Context* ctx) override {
+    return (ctx->activeDocument() &&
+            ctx->activeDocument()->isMaskVisible());
+  }
+
+  void onExecute(Context* ctx) override {
+    const ContextReader reader(ctx);
+    const Document* document = reader.document();
+    const Mask* mask(document->mask());
+    DocumentPreferences& docPref =
+      Preferences::instance().document(ctx->activeDocument());
+
+    docPref.grid.bounds(mask->bounds());
   }
 };
 
@@ -101,8 +131,8 @@ public:
   Command* clone() const override { return new GridSettingsCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 GridSettingsCommand::GridSettingsCommand()
@@ -166,6 +196,11 @@ Command* CommandFactory::createSnapToGridCommand()
 Command* CommandFactory::createGridSettingsCommand()
 {
   return new GridSettingsCommand;
+}
+
+Command* CommandFactory::createSelectionAsGridCommand()
+{
+  return new SelectionAsGridCommand;
 }
 
 } // namespace app
