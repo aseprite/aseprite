@@ -642,6 +642,20 @@
         <item command="SnapToGrid" text="&amp;Snap to Grid" />
         <item command="GridSettings" text="Gri&amp;d Settings" />
         <item command="SelectionAsGrid" text="Select&amp;ion as Grid" />
+	<menu text="Tiled &amp;Mode">
+          <item command="TiledMode" text="&amp;None">
+            <param name="axis" value="none" />
+	  </item>
+          <item command="TiledMode" text="Tiled in &amp;Both Axis">
+            <param name="axis" value="both" />
+	  </item>
+          <item command="TiledMode" text="Tiled in &amp;X Axis">
+            <param name="axis" value="x" />
+	  </item>
+          <item command="TiledMode" text="Tiled in &amp;Y Axis">
+            <param name="axis" value="y" />
+	  </item>
+	</menu>
         <separator />
         <item command="SetLoopSection" text="Set &amp;Loop Section" />
         <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />

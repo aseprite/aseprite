@@ -228,6 +228,7 @@ add_library(app-lib
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
+  commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
   commands/cmd_toggle_preview.cpp
   commands/cmd_undo.cpp
