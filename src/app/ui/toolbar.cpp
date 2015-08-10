@@ -143,15 +143,6 @@ bool ToolBar::onProcessMessage(Message* msg)
         }
       }
 
-      toolrc = getToolGroupBounds(ConfigureToolIndex);
-      if (mouseMsg->position().y >= toolrc.y &&
-          mouseMsg->position().y < toolrc.y+toolrc.h) {
-        Command* conf_tools_cmd =
-          CommandsModule::instance()->getCommandByName(CommandId::ConfigureTools);
-
-        UIContext::instance()->executeCommand(conf_tools_cmd);
-      }
-
       toolrc = getToolGroupBounds(PreviewVisibilityIndex);
       if (mouseMsg->position().y >= toolrc.y &&
           mouseMsg->position().y < toolrc.y+toolrc.h) {
@@ -189,12 +180,6 @@ bool ToolBar::onProcessMessage(Message* msg)
           }
           break;
         }
-      }
-
-      toolrc = getToolGroupBounds(ConfigureToolIndex);
-      if (mouseMsg->position().y >= toolrc.y &&
-          mouseMsg->position().y < toolrc.y+toolrc.h) {
-        new_hot_index = ConfigureToolIndex;
       }
 
       toolrc = getToolGroupBounds(PreviewVisibilityIndex);
@@ -341,27 +326,10 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
     }
   }
 
-  // Draw button to show tool configuration
-  toolrc = getToolGroupBounds(ConfigureToolIndex);
-  toolrc.offset(-getBounds().x, -getBounds().y);
-  bool isHot = (m_hotIndex == ConfigureToolIndex);
-  theme->drawRect(
-    g, toolrc,
-    (isHot ? theme->parts.toolbuttonHot().get():
-             theme->parts.toolbuttonLast().get()),
-    (isHot ? hotFace: normalFace));
-
-  she::Surface* icon = theme->getToolIcon("configuration");
-  if (icon) {
-    g->drawRgbaSurface(icon,
-      toolrc.x+toolrc.w/2-icon->width()/2,
-      toolrc.y+toolrc.h/2-icon->height()/2);
-  }
-
   // Draw button to show/hide preview
   toolrc = getToolGroupBounds(PreviewVisibilityIndex);
   toolrc.offset(-getBounds().x, -getBounds().y);
-  isHot = (m_hotIndex == PreviewVisibilityIndex ||
+  bool isHot = (m_hotIndex == PreviewVisibilityIndex ||
     App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled());
   theme->drawRect(
     g,
@@ -370,7 +338,7 @@ void ToolBar::onPaint(ui::PaintEvent& ev)
              theme->parts.toolbuttonLast().get()),
     (isHot ? hotFace: normalFace));
 
-  icon = theme->getToolIcon("minieditor");
+  she::Surface* icon = theme->getToolIcon("minieditor");
   if (icon) {
     g->drawRgbaSurface(icon,
       toolrc.x+toolrc.w/2-icon->width()/2,
@@ -471,11 +439,6 @@ Rect ToolBar::getToolGroupBounds(int group_index)
 
   switch (group_index) {
 
-    case ConfigureToolIndex:
-      rc.y += groups*(iconsize.h-1*guiscale())+ 8*guiscale();
-      rc.h = iconsize.h+2*guiscale();
-      break;
-
     case PreviewVisibilityIndex:
       rc.y += rc.h - iconsize.h - 2*guiscale();
       rc.h = iconsize.h+2*guiscale();
@@ -533,9 +496,6 @@ void ToolBar::openTipWindow(int group_index, Tool* tool)
       tooltip += "\n\nShortcut: ";
       tooltip += key->accels().front().toString();
     }
-  }
-  else if (group_index == ConfigureToolIndex) {
-    tooltip = "Configure Tool";
   }
   else if (group_index == PreviewVisibilityIndex) {
     if (App::instance()->getMainWindow()->getPreviewEditor()->isPreviewEnabled())

@@ -35,8 +35,7 @@ namespace app {
     static ToolBar* instance() { return m_instance; }
 
     static const int NoneIndex = -1;
-    static const int ConfigureToolIndex = -2;
-    static const int PreviewVisibilityIndex = -3;
+    static const int PreviewVisibilityIndex = -2;
 
     ToolBar();
     ~ToolBar();

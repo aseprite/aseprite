@@ -51,7 +51,6 @@
       <key command="ConvolutionMatrix" shortcut="F9" />
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
-      <key command="ConfigureTools" shortcut="C" />
       <key command="Options" shortcut="Ctrl+K" mac="Cmd+," />
       <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" /> <!-- TODO remove this shortcut in v1.1 -->
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
@@ -521,7 +520,6 @@
           <item command="Despeckle" text="&amp;Despeckle (median filter)" />
         </menu>
         <separator />
-        <item command="ConfigureTools" text="Tool&amp;s..." />
         <item command="KeyboardShortcuts" text="&amp;Keyboard Shortcuts..." />
         <item command="Options" text="Pre&amp;ferences..." />
       </menu>
