@@ -19,13 +19,22 @@
         <vbox id="section_general">
           <separator text="General" horizontal="true" />
           <hbox>
-            <label text="Screen Scaling:" />
-            <combobox id="screen_scale">
-              <listitem text="100%" value="1" />
-              <listitem text="200%" value="2" />
-              <listitem text="300%" value="3" />
-              <listitem text="400%" value="4" />
-            </combobox>
+            <grid columns="2">
+              <label text="Screen Scaling:" />
+              <combobox id="screen_scale">
+                <listitem text="100%" value="1" />
+                <listitem text="200%" value="2" />
+                <listitem text="300%" value="3" />
+                <listitem text="400%" value="4" />
+              </combobox>
+              <label text="UI Elements Scaling:" />
+              <combobox id="ui_scale">
+                <listitem text="100%" value="1" />
+                <listitem text="200%" value="2" />
+                <listitem text="300%" value="3" />
+                <listitem text="400%" value="4" />
+              </combobox>
+            </grid>
           </hbox>
           <check text="Expand menu bar items on mouseover" id="expand_menubar_on_mouseover" tooltip="Check this option to get&#10;this old menus behavior." />
           <hbox>
@@ -128,15 +137,6 @@
         <!-- Experimental -->
         <vbox id="section_experimental">
           <separator text="User Interface" horizontal="true" />
-          <hbox>
-            <label text="UI Elements Scaling:" />
-            <combobox id="ui_scale">
-              <listitem text="100%" value="1" />
-              <listitem text="200%" value="2" />
-              <listitem text="300%" value="3" />
-              <listitem text="400%" value="4" />
-            </combobox>
-          </hbox>
           <check id="native_cursor" text="Use native mouse cursor" />
           <check id="native_file_dialog" text="Use native file dialog" />
           <check id="flash_layer" text="Flash layer when it is selected" />
