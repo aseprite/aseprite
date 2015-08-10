@@ -185,7 +185,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     if (loop) {
       loop->getInk()->prepareInk(loop);
       loop->getIntertwine()->prepareIntertwine();
-      loop->getController()->prepareController();
+      loop->getController()->prepareController(ui::kKeyNoneModifier);
       loop->getPointShape()->preparePointShape(loop);
       loop->getPointShape()->transformPoint(
         loop, -origBrushBounds.x, -origBrushBounds.y);

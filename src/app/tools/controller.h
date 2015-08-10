@@ -31,7 +31,7 @@ namespace app {
       virtual bool isFreehand() { return false; }
       virtual bool isOnePoint() { return false; }
 
-      virtual void prepareController() { }
+      virtual void prepareController(ui::KeyModifiers modifiers) { }
 
       // Called when the user presses or releases a key. Returns true
       // if the key is used (so a new mouse point is generated).

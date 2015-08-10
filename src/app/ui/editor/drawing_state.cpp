@@ -68,7 +68,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
   // first mouse pressed/point shape if drawn.
   HideBrushPreview hide(editor->brushPreview());
 
-  m_toolLoopManager->prepareLoop(pointer_from_msg(msg));
+  m_toolLoopManager->prepareLoop(pointer_from_msg(msg), msg->keyModifiers());
   m_toolLoopManager->pressButton(pointer_from_msg(msg));
 
   editor->captureMouse();

@@ -46,7 +46,8 @@ bool ToolLoopManager::isCanceled() const
  return m_toolLoop->isCanceled();
 }
 
-void ToolLoopManager::prepareLoop(const Pointer& pointer)
+void ToolLoopManager::prepareLoop(const Pointer& pointer,
+                                  ui::KeyModifiers modifiers)
 {
   // Start with no points at all
   m_points.clear();
@@ -54,7 +55,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer)
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
   m_toolLoop->getIntertwine()->prepareIntertwine();
-  m_toolLoop->getController()->prepareController();
+  m_toolLoop->getController()->prepareController(modifiers);
   m_toolLoop->getPointShape()->preparePointShape(m_toolLoop);
 
   // Prepare preview image (the destination image will be our preview

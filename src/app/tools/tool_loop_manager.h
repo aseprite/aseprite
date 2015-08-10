@@ -69,7 +69,8 @@ namespace app {
 
       // Should be called when the user start a tool-trace (pressing the
       // left or right button for first time in the editor).
-      void prepareLoop(const Pointer& pointer);
+      void prepareLoop(const Pointer& pointer,
+                       ui::KeyModifiers modifiers);
 
       // Called when the loop is over.
       void releaseLoop(const Pointer& pointer);

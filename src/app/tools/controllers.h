@@ -59,9 +59,9 @@ public:
 // Controls clicks for tools like line
 class TwoPointsController : public Controller {
 public:
-  void prepareController() override {
-    m_squareAspect = false;
-    m_fromCenter = false;
+  void prepareController(ui::KeyModifiers modifiers) override {
+    m_squareAspect = (modifiers & ui::kKeyShiftModifier) ? true: false;
+    m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
   }
 
   void pressButton(Points& points, const Point& point) override {
