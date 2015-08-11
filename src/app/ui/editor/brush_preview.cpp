@@ -119,7 +119,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
   // foreground color, layer transparency, brush size, etc.).
   Brush* brush = getCurrentBrush();
   color_t brush_color = getBrushColor(sprite, layer);
-  color_t mask_color = sprite->transparentColor();
+  color_t mask_index = sprite->transparentColor();
 
   if (ink->isSelection() || ink->isSlice()) {
     m_type = SELECTION_CROSS;
@@ -131,7 +131,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
      (ink->isEffect()) ||
      // or when the brush color is transparent and we are not in the background layer
      (layer && !layer->isBackground() &&
-      brush_color == mask_color))) {
+      ((sprite->pixelFormat() == IMAGE_INDEXED && brush_color == mask_index) ||
+       (sprite->pixelFormat() == IMAGE_RGB && rgba_geta(brush_color) == 0) ||
+       (sprite->pixelFormat() == IMAGE_GRAYSCALE && graya_geta(brush_color) == 0))))) {
     m_type = BRUSH_BOUNDARIES;
   }
   else {
@@ -164,8 +166,9 @@ void BrushPreview::show(const gfx::Point& screenPos)
                BlendMode::NORMAL));
 
     Image* extraImage = document->getExtraCelImage();
-    extraImage->setMaskColor(mask_color);
-    clear_image(extraImage, mask_color);
+    extraImage->setMaskColor(mask_index);
+    clear_image(extraImage,
+                (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
 
     if (layer) {
       render::Render().renderLayer(
