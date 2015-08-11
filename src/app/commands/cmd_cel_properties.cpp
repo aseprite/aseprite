@@ -66,9 +66,6 @@ void CelPropertiesCommand::onExecute(Context* context)
   Widget* button_ok = app::find_widget<Widget>(window, "ok");
   ui::TooltipManager* tooltipManager = window->findFirstChildByType<ui::TooltipManager>();
 
-  // Mini look for the opacity slider
-  setup_mini_look(slider_opacity);
-
   // If the layer isn't writable
   if (!layer->isEditable()) {
     button_ok->setText("Locked");
