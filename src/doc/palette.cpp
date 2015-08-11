@@ -155,8 +155,8 @@ void Palette::makeGradient(int from, int to)
   int r2, g2, b2, a2;
   int i, n;
 
-  ASSERT(from >= 0 && from <= 255);
-  ASSERT(to >= 0 && to <= 255);
+  ASSERT(from >= 0 && from < size());
+  ASSERT(to >= 0 && to < size());
 
   if (from > to)
     std::swap(from, to);
