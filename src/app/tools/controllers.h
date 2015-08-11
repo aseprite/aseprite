@@ -62,10 +62,11 @@ public:
   void prepareController(ui::KeyModifiers modifiers) override {
     m_squareAspect = (modifiers & ui::kKeyShiftModifier) ? true: false;
     m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
+    m_movingOrigin = false;
   }
 
   void pressButton(Points& points, const Point& point) override {
-    m_first = point;
+    m_first = m_last = point;
 
     points.push_back(point);
     points.push_back(point);
@@ -90,6 +91,16 @@ public:
     if (points.size() < 2)
       return;
 
+    if (m_movingOrigin) {
+      Point delta = (point - m_last);
+      for (auto& p : points)
+        p += delta;
+      m_first += delta;
+      m_last = point;
+      return;
+    }
+
+    m_last = point;
     points[1] = point;
 
     if (m_squareAspect) {
@@ -198,13 +209,17 @@ private:
       case ui::kKeyRControl:
         m_fromCenter = state;
         return true;
+      case ui::kKeySpace:
+        m_movingOrigin = state;
+        return true;
     }
     return false;
   }
 
-  Point m_first;
+  Point m_first, m_last;
   bool m_squareAspect;
   bool m_fromCenter;
+  bool m_movingOrigin;
 };
 
 // Controls clicks for tools like polygon
