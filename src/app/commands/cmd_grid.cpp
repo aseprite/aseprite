@@ -122,6 +122,8 @@ protected:
       Preferences::instance().document(ctx->activeDocument());
 
     docPref.grid.bounds(mask->bounds());
+    if (!docPref.grid.visible())
+      docPref.grid.visible(true);
   }
 };
 
