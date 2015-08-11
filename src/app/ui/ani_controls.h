@@ -28,7 +28,10 @@ namespace app {
     void onRightClick(Item* item) override;
 
   private:
-    void onPlayButton();
+    void onClickButton();
+
+    const char* getCommandId(int index) const;
+    std::string getTooltipFor(int index) const;
   };
 
 } // namespace app

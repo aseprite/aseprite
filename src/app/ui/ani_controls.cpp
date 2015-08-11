@@ -10,6 +10,7 @@
 #endif
 
 #include "app/app.h"
+#include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
@@ -58,6 +59,7 @@ enum AniAction {
   ACTION_PLAY,
   ACTION_NEXT,
   ACTION_LAST,
+  ACTIONS
 };
 
 AniControls::AniControls()
@@ -70,11 +72,16 @@ AniControls::AniControls()
   addItem(theme->parts.aniPlay());
   addItem(theme->parts.aniNext());
   addItem(theme->parts.aniLast());
-  ItemChange.connect(Bind(&AniControls::onPlayButton, this));
+  ItemChange.connect(Bind(&AniControls::onClickButton, this));
 
   setTriggerOnMouseUp(true);
   setTransparent(true);
   setBgColor(theme->colors.workspace());
+
+  TooltipManager* tooltips = new TooltipManager;
+  addChild(tooltips);
+  for (int i=0; i<ACTIONS; ++i)
+    tooltips->addTooltipFor(getItem(i), getTooltipFor(i), BOTTOM);
 }
 
 void AniControls::updateUsingEditor(Editor* editor)
@@ -86,19 +93,12 @@ void AniControls::updateUsingEditor(Editor* editor)
       theme->parts.aniPlay()));
 }
 
-void AniControls::onPlayButton()
+void AniControls::onClickButton()
 {
   int item = selectedItem();
   deselectItems();
 
-  Command* cmd = nullptr;
-  switch (item) {
-    case ACTION_FIRST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoFirstFrame); break;
-    case ACTION_PREV: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoPreviousFrame); break;
-    case ACTION_PLAY: cmd = CommandsModule::instance()->getCommandByName(CommandId::PlayAnimation); break;
-    case ACTION_NEXT: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoNextFrame); break;
-    case ACTION_LAST: cmd = CommandsModule::instance()->getCommandByName(CommandId::GotoLastFrame); break;
-  }
+  Command* cmd = CommandsModule::instance()->getCommandByName(getCommandId(item));
   if (cmd) {
     UIContext::instance()->executeCommand(cmd);
     updateUsingEditor(current_editor);
@@ -111,6 +111,37 @@ void AniControls::onRightClick(Item* item)
 
   if (item == getItem(ACTION_PLAY) && current_editor)
     current_editor->showAnimationSpeedMultiplierPopup(true);
+}
+
+const char* AniControls::getCommandId(int index) const
+{
+  switch (index) {
+    case ACTION_FIRST: return CommandId::GotoFirstFrame;
+    case ACTION_PREV: return CommandId::GotoPreviousFrame;
+    case ACTION_PLAY: return CommandId::PlayAnimation;
+    case ACTION_NEXT: return CommandId::GotoNextFrame;
+    case ACTION_LAST: return CommandId::GotoLastFrame;
+  }
+  ASSERT(false);
+  return nullptr;
+}
+
+std::string AniControls::getTooltipFor(int index) const
+{
+  std::string tooltip;
+
+  Command* cmd = CommandsModule::instance()->getCommandByName(getCommandId(index));
+  if (cmd) {
+    tooltip = cmd->friendlyName();
+
+    Key* key = KeyboardShortcuts::instance()->command(cmd->id().c_str());
+    if (key && !key->accels().empty()) {
+      tooltip += "\n\nShortcut: ";
+      tooltip += key->accels().front().toString();
+    }
+  }
+
+  return tooltip;
 }
 
 } // namespace app
