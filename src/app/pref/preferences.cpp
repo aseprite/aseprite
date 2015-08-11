@@ -13,6 +13,7 @@
 #include "app/ini_file.h"
 #include "app/pref/preferences.h"
 #include "app/resource_finder.h"
+#include "app/tools/ink.h"
 #include "app/tools/tool.h"
 
 namespace app {
@@ -78,6 +79,13 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
   else {
     std::string section = std::string("tool.") + tool->getId();
     ToolPreferences* toolPref = new ToolPreferences(section);
+
+    // Default size for eraser, blur, etc.
+    if (tool->getInk(0)->isEraser() ||
+        tool->getInk(0)->isEffect()) {
+      toolPref->brush.size.setDefaultValue(8);
+    }
+
     m_tools[tool->getId()] = toolPref;
     toolPref->load();
     return *toolPref;

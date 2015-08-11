@@ -45,6 +45,9 @@ namespace app {
     const char* section() const { return m_section->name(); }
     const char* id() const { return m_id; }
     const T& defaultValue() const { return m_default; }
+    void setDefaultValue(const T& defValue) {
+      m_default = defValue;
+    }
 
     bool isDirty() const { return m_dirty; }
     void forceDirtyFlag() { m_dirty = true; }
