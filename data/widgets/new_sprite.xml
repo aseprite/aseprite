@@ -13,11 +13,11 @@
       </grid>
 
       <separator text="Color Mode:" left="true" horizontal="true" />
-      <box vertical="true" homogeneous="true" childspacing="0">
-        <radio id="indexed_mode" text="&amp;Indexed color" group="1" tooltip="Using a palette of 256 colors&#10;(8 bits per pixel)" />
-        <radio id="rgb_mode" text="&amp;RGB color" group="1" tooltip="RGBA color mode&#10;(32 bits per pixel)" />
-        <radio id="grayscale_mode" text="&amp;Grayscale" group="1" tooltip="Value and Alpha&#10;(16 bits per pixel)" />
-      </box>
+      <hbox>
+        <radio id="rgb_mode" text="&amp;RGBA" group="1" tooltip="Each pixel has Red, Green, Blue, and Alpha components&#10;(32 bits per pixel)" />
+        <radio id="grayscale_mode" text="&amp;Grayscale" group="1" tooltip="Each pixel has a Gray value and Alpha&#10;(16 bits per pixel)" />
+        <radio id="indexed_mode" text="&amp;Indexed" group="1" tooltip="Each pixel is a reference to the palette&#10;(8 bits per pixel)" />
+      </hbox>
 
       <separator text="Background:" left="true" horizontal="true" />
       <view maxsize="true" expansive="true">

@@ -75,7 +75,7 @@ void NewFileCommand::onExecute(Context* context)
   app::gen::NewSprite window;
 
   // Default values: Indexed, 320x240, Background color
-  format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_INDEXED));
+  format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_RGB));
   // Invalid format in config file.
   if (format != IMAGE_RGB && format != IMAGE_INDEXED && format != IMAGE_GRAYSCALE) {
     format = IMAGE_INDEXED;
