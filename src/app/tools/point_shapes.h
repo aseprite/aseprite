@@ -106,18 +106,23 @@ private:
     // Limit the flood-fill to the current tile if the grid is visible.
     if (loop->getStopAtGrid()) {
       gfx::Rect grid = loop->getGridBounds();
-      div_t d, dx, dy;
+      if (!grid.isEmpty()) {
+        div_t d, dx, dy;
 
-      dx = div(grid.x+loop->getOffset().x, grid.w);
-      dy = div(grid.y+loop->getOffset().y, grid.h);
+        dx = div(grid.x+loop->getOffset().x, grid.w);
+        dy = div(grid.y+loop->getOffset().y, grid.h);
 
-      d = div(x-dx.rem, grid.w);
-      x = dx.rem + d.quot*grid.w;
+        if (dx.rem > 0) dx.rem -= grid.w;
+        if (dy.rem > 0) dy.rem -= grid.h;
 
-      d = div(y-dy.rem, grid.h);
-      y = dy.rem + d.quot*grid.h;
+        d = div(x-dx.rem, grid.w);
+        x = dx.rem + d.quot*grid.w;
 
-      bounds = bounds.createIntersection(gfx::Rect(x, y, grid.w, grid.h));
+        d = div(y-dy.rem, grid.h);
+        y = dy.rem + d.quot*grid.h;
+
+        bounds = bounds.createIntersection(gfx::Rect(x, y, grid.w, grid.h));
+      }
     }
 
     return bounds;
