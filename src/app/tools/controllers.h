@@ -305,10 +305,14 @@ public:
 };
 
 class FourPointsController : public Controller {
-  int m_clickCounter;
 public:
-  void pressButton(Points& points, const Point& point)
-  {
+  void prepareController(ui::KeyModifiers modifiers) override {
+    m_movingOrigin = false;
+  }
+
+  void pressButton(Points& points, const Point& point) override {
+    m_last = point;
+
     if (points.size() == 0) {
       points.resize(4, point);
       m_clickCounter = 0;
@@ -316,13 +320,31 @@ public:
     else
       m_clickCounter++;
   }
-  bool releaseButton(Points& points, const Point& point)
-  {
+
+  bool releaseButton(Points& points, const Point& point) override {
     m_clickCounter++;
     return m_clickCounter < 4;
   }
-  void movement(ToolLoop* loop, Points& points, const Point& point)
-  {
+
+  bool pressKey(ui::KeyScancode key) override {
+    return processKey(key, true);
+  }
+
+  bool releaseKey(ui::KeyScancode key) override {
+    return processKey(key, false);
+  }
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) override {
+    if (m_movingOrigin) {
+      Point delta = (point - m_last);
+      for (auto& p : points)
+        p += delta;
+      m_last = point;
+      return;
+    }
+
+    m_last = point;
+
     switch (m_clickCounter) {
       case 0:
         for (size_t i=1; i<points.size(); ++i)
@@ -338,12 +360,12 @@ public:
         break;
     }
   }
-  void getPointsToInterwine(const Points& input, Points& output)
-  {
+
+  void getPointsToInterwine(const Points& input, Points& output) override {
     output = input;
   }
-  void getStatusBarText(const Points& points, std::string& text)
-  {
+
+  void getStatusBarText(const Points& points, std::string& text) override {
     ASSERT(points.size() >= 4);
     if (points.size() < 4)
       return;
@@ -357,6 +379,20 @@ public:
 
     text = buf;
   }
+
+private:
+  bool processKey(ui::KeyScancode key, bool state) {
+    switch (key) {
+      case ui::kKeySpace:
+        m_movingOrigin = state;
+        return true;
+    }
+    return false;
+  }
+
+  int m_clickCounter;
+  bool m_movingOrigin;
+  Point m_last;
 };
 
 } // namespace tools
