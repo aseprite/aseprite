@@ -14,66 +14,16 @@ namespace tools {
 
 using namespace gfx;
 
-// Controls clicks for tools like pencil
-class FreehandController : public Controller {
-public:
-  bool isFreehand() { return true; }
-
-  void pressButton(Points& points, const Point& point)
-  {
-    points.push_back(point);
-  }
-  bool releaseButton(Points& points, const Point& point)
-  {
-    return false;
-  }
-  void movement(ToolLoop* loop, Points& points, const Point& point)
-  {
-    points.push_back(point);
-  }
-  void getPointsToInterwine(const Points& input, Points& output)
-  {
-    if (input.size() == 1) {
-      output.push_back(input[0]);
-    }
-    else if (input.size() >= 2) {
-      output.push_back(input[input.size()-2]);
-      output.push_back(input[input.size()-1]);
-    }
-  }
-  void getStatusBarText(const Points& points, std::string& text)
-  {
-    ASSERT(!points.empty());
-    if (points.empty())
-      return;
-
-    char buf[1024];
-    sprintf(buf, "Start %3d %3d End %3d %3d",
-            points[0].x, points[0].y,
-            points[points.size()-1].x,
-            points[points.size()-1].y);
-    text = buf;
-  }
-};
-
-// Controls clicks for tools like line
-class TwoPointsController : public Controller {
+// Shared logic between controllers that can move/displace all points
+// using the space bar.
+class MoveOriginCapability : public Controller {
 public:
   void prepareController(ui::KeyModifiers modifiers) override {
-    m_squareAspect = (modifiers & ui::kKeyShiftModifier) ? true: false;
-    m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
     m_movingOrigin = false;
   }
 
   void pressButton(Points& points, const Point& point) override {
-    m_first = m_last = point;
-
-    points.push_back(point);
-    points.push_back(point);
-  }
-
-  bool releaseButton(Points& points, const Point& point) override {
-    return false;
+    m_last = point;
   }
 
   bool pressKey(ui::KeyScancode key) override {
@@ -86,21 +36,132 @@ public:
     return processKey(key, false);
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) {
-    ASSERT(points.size() >= 2);
-    if (points.size() < 2)
-      return;
+protected:
+  bool isMovingOrigin(Points& points, const Point& point) {
+    bool used = false;
 
     if (m_movingOrigin) {
       Point delta = (point - m_last);
       for (auto& p : points)
         p += delta;
-      m_first += delta;
-      m_last = point;
-      return;
+
+      onMoveOrigin(delta);
+      used = true;
     }
 
     m_last = point;
+    return used;
+  }
+
+  virtual void onMoveOrigin(const Point& delta) {
+    // Do nothing
+  }
+
+private:
+  bool processKey(ui::KeyScancode key, bool state) {
+    if (key == ui::kKeySpace) {
+      m_movingOrigin = state;
+      return true;
+    }
+    return false;
+  }
+
+  // Flag used to know if the space bar is pressed, i.e., we have
+  // displace all points.
+  bool m_movingOrigin;
+
+  // Last known mouse position used to calculate delta values (dx, dy)
+  // with the new mouse position to displace all points.
+  Point m_last;
+};
+
+// Controls clicks for tools like pencil
+class FreehandController : public Controller {
+public:
+  bool isFreehand() { return true; }
+
+  void pressButton(Points& points, const Point& point) override {
+    points.push_back(point);
+  }
+
+  bool releaseButton(Points& points, const Point& point) override {
+    return false;
+  }
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) override {
+    points.push_back(point);
+  }
+
+  void getPointsToInterwine(const Points& input, Points& output) override {
+    if (input.size() == 1) {
+      output.push_back(input[0]);
+    }
+    else if (input.size() >= 2) {
+      output.push_back(input[input.size()-2]);
+      output.push_back(input[input.size()-1]);
+    }
+  }
+
+  void getStatusBarText(const Points& points, std::string& text) override {
+    ASSERT(!points.empty());
+    if (points.empty())
+      return;
+
+    char buf[1024];
+    sprintf(buf, "Start %3d %3d End %3d %3d",
+            points[0].x, points[0].y,
+            points[points.size()-1].x,
+            points[points.size()-1].y);
+    text = buf;
+  }
+
+};
+
+// Controls clicks for tools like line
+class TwoPointsController : public MoveOriginCapability {
+public:
+  void prepareController(ui::KeyModifiers modifiers) override {
+    MoveOriginCapability::prepareController(modifiers);
+
+    m_squareAspect = (modifiers & ui::kKeyShiftModifier) ? true: false;
+    m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
+  }
+
+  void pressButton(Points& points, const Point& point) override {
+    MoveOriginCapability::pressButton(points, point);
+
+    m_first = point;
+
+    points.push_back(point);
+    points.push_back(point);
+  }
+
+  bool releaseButton(Points& points, const Point& point) override {
+    return false;
+  }
+
+  bool pressKey(ui::KeyScancode key) override {
+    if (MoveOriginCapability::pressKey(key))
+      return true;
+
+    return processKey(key, true);
+  }
+
+  bool releaseKey(ui::KeyScancode key) override {
+    if (MoveOriginCapability::releaseKey(key))
+      return true;
+
+    return processKey(key, false);
+  }
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) override {
+    ASSERT(points.size() >= 2);
+    if (points.size() < 2)
+      return;
+
+    if (MoveOriginCapability::isMovingOrigin(points, point))
+      return;
+
     points[1] = point;
 
     if (m_squareAspect) {
@@ -199,6 +260,10 @@ public:
   }
 
 private:
+  void onMoveOrigin(const Point& delta) override {
+    m_first += delta;
+  }
+
   bool processKey(ui::KeyScancode key, bool state) {
     switch (key) {
       case ui::kKeyLShift:
@@ -209,29 +274,27 @@ private:
       case ui::kKeyRControl:
         m_fromCenter = state;
         return true;
-      case ui::kKeySpace:
-        m_movingOrigin = state;
-        return true;
     }
     return false;
   }
 
-  Point m_first, m_last;
+  Point m_first;
   bool m_squareAspect;
   bool m_fromCenter;
-  bool m_movingOrigin;
 };
 
 // Controls clicks for tools like polygon
-class PointByPointController : public Controller {
+class PointByPointController : public MoveOriginCapability {
 public:
-  void pressButton(Points& points, const Point& point)
-  {
+
+  void pressButton(Points& points, const Point& point) override {
+    MoveOriginCapability::pressButton(points, point);
+
     points.push_back(point);
     points.push_back(point);
   }
-  bool releaseButton(Points& points, const Point& point)
-  {
+
+  bool releaseButton(Points& points, const Point& point) override {
     ASSERT(!points.empty());
     if (points.empty())
       return false;
@@ -242,20 +305,23 @@ public:
     else
       return true;              // Continue adding points
   }
-  void movement(ToolLoop* loop, Points& points, const Point& point)
-  {
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) override {
     ASSERT(!points.empty());
     if (points.empty())
       return;
 
+    if (MoveOriginCapability::isMovingOrigin(points, point))
+      return;
+
     points[points.size()-1] = point;
   }
-  void getPointsToInterwine(const Points& input, Points& output)
-  {
+
+  void getPointsToInterwine(const Points& input, Points& output) override {
     output = input;
   }
-  void getStatusBarText(const Points& points, std::string& text)
-  {
+
+  void getStatusBarText(const Points& points, std::string& text) override {
     ASSERT(!points.empty());
     if (points.empty())
       return;
@@ -267,6 +333,7 @@ public:
             points[points.size()-1].y);
     text = buf;
   }
+
 };
 
 class OnePointController : public Controller {
@@ -275,25 +342,24 @@ public:
   bool canSnapToGrid() { return false; }
   bool isOnePoint() { return true; }
 
-  void pressButton(Points& points, const Point& point)
-  {
+  void pressButton(Points& points, const Point& point) override {
     if (points.size() == 0)
       points.push_back(point);
   }
-  bool releaseButton(Points& points, const Point& point)
-  {
+
+  bool releaseButton(Points& points, const Point& point) override {
     return false;
   }
-  void movement(ToolLoop* loop, Points& points, const Point& point)
-  {
+
+  void movement(ToolLoop* loop, Points& points, const Point& point) override {
     // Do nothing
   }
-  void getPointsToInterwine(const Points& input, Points& output)
-  {
+
+  void getPointsToInterwine(const Points& input, Points& output) override {
     output = input;
   }
-  void getStatusBarText(const Points& points, std::string& text)
-  {
+
+  void getStatusBarText(const Points& points, std::string& text) override {
     ASSERT(!points.empty());
     if (points.empty())
       return;
@@ -302,16 +368,14 @@ public:
     sprintf(buf, "Pos %3d %3d", points[0].x, points[0].y);
     text = buf;
   }
+
 };
 
-class FourPointsController : public Controller {
+class FourPointsController : public MoveOriginCapability {
 public:
-  void prepareController(ui::KeyModifiers modifiers) override {
-    m_movingOrigin = false;
-  }
 
   void pressButton(Points& points, const Point& point) override {
-    m_last = point;
+    MoveOriginCapability::pressButton(points, point);
 
     if (points.size() == 0) {
       points.resize(4, point);
@@ -326,24 +390,9 @@ public:
     return m_clickCounter < 4;
   }
 
-  bool pressKey(ui::KeyScancode key) override {
-    return processKey(key, true);
-  }
-
-  bool releaseKey(ui::KeyScancode key) override {
-    return processKey(key, false);
-  }
-
   void movement(ToolLoop* loop, Points& points, const Point& point) override {
-    if (m_movingOrigin) {
-      Point delta = (point - m_last);
-      for (auto& p : points)
-        p += delta;
-      m_last = point;
+    if (MoveOriginCapability::isMovingOrigin(points, point))
       return;
-    }
-
-    m_last = point;
 
     switch (m_clickCounter) {
       case 0:
@@ -381,18 +430,7 @@ public:
   }
 
 private:
-  bool processKey(ui::KeyScancode key, bool state) {
-    switch (key) {
-      case ui::kKeySpace:
-        m_movingOrigin = state;
-        return true;
-    }
-    return false;
-  }
-
   int m_clickCounter;
-  bool m_movingOrigin;
-  Point m_last;
 };
 
 } // namespace tools
