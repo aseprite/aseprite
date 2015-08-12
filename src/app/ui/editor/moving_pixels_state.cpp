@@ -551,8 +551,13 @@ void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color
   Layer* layer = m_editor->layer();
   ASSERT(layer);
 
-  m_pixelsMovement->setMaskColor(
-    opaque, color_utils::color_for_target_mask(color, ColorTarget(layer)));
+  try {
+    m_pixelsMovement->setMaskColor(
+      opaque, color_utils::color_for_target_mask(color, ColorTarget(layer)));
+  }
+  catch (const LockedDocumentException& ex) {
+    Console::showException(ex);
+  }
 }
 
 void MovingPixelsState::dropPixels()
