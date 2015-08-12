@@ -141,6 +141,12 @@
       <option id="share_ink" type="bool" default="false" />
       <option id="ink" type="app::tools::InkType" default="app::tools::InkType::DEFAULT" />
     </section>
+    <section id="new_file">
+      <option id="width" type="int" default="32" />
+      <option id="height" type="int" default="32" />
+      <option id="color_mode" type="doc::PixelFormat" default="doc::IMAGE_RGB" />
+      <option id="background_color" type="int" default="0" />
+    </section>
   </global>
 
   <tool>

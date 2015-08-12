@@ -16,10 +16,10 @@
 #include "app/console.h"
 #include "app/document.h"
 #include "app/find_widget.h"
-#include "app/ini_file.h"
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
+#include "app/pref/preferences.h"
 #include "app/ui/button_set.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
@@ -62,8 +62,8 @@ NewFileCommand::NewFileCommand()
  */
 void NewFileCommand::onExecute(Context* context)
 {
-  PixelFormat format;
-  int w, h, bg, ncolors = get_default_palette()->size();
+  Preferences& pref = Preferences::instance();
+  int ncolors = get_default_palette()->size();
   char buf[1024];
   app::Color bg_table[] = {
     app::Color::fromMask(),
@@ -75,16 +75,16 @@ void NewFileCommand::onExecute(Context* context)
   app::gen::NewSprite window;
 
   // Default values: Indexed, 320x240, Background color
-  format = static_cast<PixelFormat>(get_config_int("NewSprite", "Type", IMAGE_RGB));
+  PixelFormat format = pref.newFile.colorMode();
   // Invalid format in config file.
-  if (format != IMAGE_RGB && format != IMAGE_INDEXED && format != IMAGE_GRAYSCALE) {
+  if (format != IMAGE_RGB &&
+      format != IMAGE_INDEXED &&
+      format != IMAGE_GRAYSCALE) {
     format = IMAGE_INDEXED;
   }
-  w = get_config_int("NewSprite", "Width", 320);
-  h = get_config_int("NewSprite", "Height", 240);
-  bg = get_config_int("NewSprite", "Background", 0); // Default = Transparent
-  if (bg == 4) // Convert old default (Background color) to new default (Black)
-    bg = 1;
+  int w = pref.newFile.width();
+  int h = pref.newFile.height();
+  int bg = pref.newFile.backgroundColor();
   bg = MID(0, bg, 2);
 
   // If the clipboard contains an image, we can show the size of the
@@ -134,10 +134,10 @@ void NewFileCommand::onExecute(Context* context)
 
     if (ok) {
       // Save the configuration
-      set_config_int("NewSprite", "Type", format);
-      set_config_int("NewSprite", "Width", w);
-      set_config_int("NewSprite", "Height", h);
-      set_config_int("NewSprite", "Background", bg);
+      pref.newFile.width(w);
+      pref.newFile.height(h);
+      pref.newFile.colorMode(format);
+      pref.newFile.backgroundColor(bg);
 
       // Create the new sprite
       ASSERT(format == IMAGE_RGB || format == IMAGE_GRAYSCALE || format == IMAGE_INDEXED);
