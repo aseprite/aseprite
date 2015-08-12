@@ -727,7 +727,7 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 
 int SkinTheme::getScrollbarSize()
 {
-  return 12 * guiscale();
+  return dimensions.scrollbarSize();
 }
 
 void SkinTheme::paintDesktop(PaintEvent& ev)

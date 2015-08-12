@@ -4,6 +4,7 @@
       url="http://ilkke.blogspot.com/">
 
   <dimensions>
+    <dim id="scrollbar_size" value="12" />
     <dim id="tabs_width" value="80" />
     <dim id="tabs_height" value="17" />
     <dim id="tabs_bottom_height" value="5" />
