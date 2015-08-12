@@ -8,88 +8,65 @@
 #include "config.h"
 #endif
 
-#include "she/alleg4/alleg_display.h"
 #include "she/she.h"
 
 #include <allegro.h>
 
+namespace she {
+
 namespace {
 
-static char old_readed_key[KEY_MAX]; // keyboard status of previous poll
-static unsigned key_repeated[KEY_MAX];
+int key_repeated[KEY_MAX];
+
+int she_keyboard_ucallback(int unicode_char, int* scancode)
+{
+  int c = ((*scancode) & 0x7f);
+  Event ev;
+
+  ev.setType(Event::KeyDown);
+  ev.setScancode(static_cast<KeyScancode>(c));
+  if (unicode_char)
+    ev.setUnicodeChar(unicode_char);
+  else
+    ev.setUnicodeChar(::scancode_to_ascii(c));
+  ev.setRepeat(key_repeated[c]++);
+  queue_event(ev);
+
+  return unicode_char;
+}
+
+void she_keyboard_lowlevel_callback(int scancode)
+{
+  // Bit 0x80 indicates that it is a key release.
+  if (!(scancode & 0x80))
+    return;
+
+  scancode ^= 0x80;
+  key_repeated[scancode] = 0;
+
+  Event ev;
+  ev.setType(Event::KeyUp);
+  ev.setScancode(static_cast<KeyScancode>(scancode));
+  ev.setUnicodeChar(::scancode_to_ascii(scancode));
+  ev.setRepeat(0);
+  queue_event(ev);
+}
 
 }
 
-namespace she {
-
 void key_poller_init()
 {
-  // Reset keyboard
-  for (int c=0; c<KEY_MAX; c++) {
-    old_readed_key[c] = 0;
+  for (int c=0; c<KEY_MAX; c++)
     key_repeated[c] = 0;
-  }
+
+  keyboard_ucallback = she_keyboard_ucallback;
+  keyboard_lowlevel_callback = she_keyboard_lowlevel_callback;
 }
 
 void key_poller_generate_events()
 {
-  Event ev;
-
-  // Poll keyboard
-  poll_keyboard();
-
-  // Generate kKeyDownMessage messages.
-  int c;
-  while (keypressed()) {
-    int scancode;
-    int unicode_char = ureadkey(&scancode);
-    int repeat = 0;
-    {
-      c = scancode;
-      if (c >= 0 && c < KEY_MAX) {
-        old_readed_key[c] = key[c];
-        repeat = key_repeated[c]++;
-      }
-    }
-
-    ev.setType(Event::KeyDown);
-    ev.setScancode(static_cast<KeyScancode>(scancode));
-    if (unicode_char != 0)
-      ev.setUnicodeChar(unicode_char);
-    else
-      ev.setUnicodeChar(::scancode_to_ascii(scancode));
-    ev.setRepeat(repeat);
-    queue_event(ev);
-  }
-
-  for (int c=0; c<KEY_MAX; c++) {
-    if (old_readed_key[c] != key[c]) {
-      KeyScancode scancode = static_cast<KeyScancode>(c);
-
-      // Generate kKeyUpMessage messages (old key state is activated,
-      // the new one is deactivated).
-      if (old_readed_key[c]) {
-        ev.setType(Event::KeyUp);
-        ev.setScancode(scancode);
-        ev.setUnicodeChar(::scancode_to_ascii(scancode));
-        ev.setRepeat(0);
-        queue_event(ev);
-
-        old_readed_key[c] = key[c];
-        key_repeated[c] = 0;
-      }
-      // Generate kKeyDownMessage messages for modifiers
-      else if (c >= kKeyFirstModifierScancode || c == kKeyCommand) {
-        ev.setType(Event::KeyDown);
-        ev.setScancode(scancode);
-        ev.setUnicodeChar(::scancode_to_ascii(scancode));
-        ev.setRepeat(key_repeated[c]++);
-        queue_event(ev);
-
-        old_readed_key[c] = key[c];
-      }
-    }
-  }
+  // Just ignore the whole keyboard buffer (we use callbacks).
+  clear_keybuf();
 }
 
 } // namespace she
