@@ -158,12 +158,19 @@ void NewFileCommand::onExecute(Context* context)
           layerImage->configureAsBackground();
 
           Image* image = layerImage->cel(frame_t(0))->image();
+
+          // TODO Replace this adding a new parameter to color utils
+          Palette oldPal = *get_current_palette();
+          set_current_palette(get_default_palette(), false);
+
           doc::clear_image(image,
             color_utils::color_for_target(color,
               ColorTarget(
                 ColorTarget::BackgroundLayer,
                 sprite->pixelFormat(),
                 sprite->transparentColor())));
+
+          set_current_palette(&oldPal, false);
         }
       }
 
