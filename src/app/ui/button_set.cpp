@@ -46,6 +46,8 @@ ButtonSet::Item::Item()
   , m_icon(NULL)
 {
   setup_mini_font(this);
+  setAlign(CENTER | MIDDLE);
+  setFocusStop(true);
 }
 
 void ButtonSet::Item::setIcon(const SkinPartPtr& icon)
@@ -66,6 +68,18 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   gfx::Rect rc = getClientBounds();
   gfx::Color fg, bg;
   SkinPartPtr nw;
+  gfx::Rect boxRc, textRc, iconRc;
+  gfx::Size iconSize;
+  if (m_icon)
+    iconSize = m_icon->getSize();
+
+  getTextIconInfo(
+    &boxRc, &textRc, &iconRc,
+    CENTER | (hasText() ? BOTTOM: MIDDLE),
+    iconSize.w, iconSize.h);
+
+  textRc.y -= 1*guiscale();
+  iconRc.y -= 1*guiscale();
 
   if (!gfx::is_transparent(getBgColor()))
     g->fillRect(getBgColor(), g->getClipBounds());
@@ -77,47 +91,67 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
       bg = theme->colors.buttonSelectedFace();
     }
     else {
-      nw = theme->parts.toolbuttonHot();
+      nw = (hasFocus() ? theme->parts.toolbuttonHotFocused():
+                         theme->parts.toolbuttonHot());
       fg = theme->colors.buttonHotText();
       bg = theme->colors.buttonHotFace();
     }
   }
   else {
-    nw = theme->parts.toolbuttonLast();
+    nw = (hasFocus() ? theme->parts.toolbuttonFocused():
+                       theme->parts.toolbuttonLast());
     fg = theme->colors.buttonNormalText();
     bg = theme->colors.buttonNormalFace();
   }
 
   Grid::Info info = buttonSet()->getChildInfo(this);
-  if (info.col < info.grid_cols-1) rc.w+=1*guiscale();
-  if (info.row < info.grid_rows-1) rc.h+=3*guiscale();
+  if (info.col < info.grid_cols-1) rc.w += 1*guiscale();
+  if (info.row < info.grid_rows-1) rc.h += 3*guiscale();
 
   theme->drawRect(g, rc, nw.get(), bg);
 
   if (m_icon) {
-    gfx::Size iconSize = m_icon->getSize();
-    int u = rc.x + rc.w/2 - iconSize.w/2;
-    int v = rc.y + rc.h/2 - iconSize.h/2 - 1*guiscale();
-
     if (isSelected() && hasCapture())
-      g->drawColoredRgbaSurface(m_icon->getBitmap(0), theme->colors.buttonSelectedText(), u, v);
+      g->drawColoredRgbaSurface(m_icon->getBitmap(0), theme->colors.buttonSelectedText(),
+                                iconRc.x, iconRc.y);
     else
-      g->drawRgbaSurface(m_icon->getBitmap(0), u, v);
+      g->drawRgbaSurface(m_icon->getBitmap(0), iconRc.x, iconRc.y);
   }
 
-  if (!getText().empty()) {
-    gfx::Size sz(getTextSize());
-    gfx::Point pt(rc.x + rc.w/2 - sz.w/2,
-                  rc.y + rc.h/2 - sz.h/2 - 1*guiscale());
-
+  if (hasText()) {
     g->setFont(getFont());
-    g->drawString(getText(), fg, gfx::ColorNone, pt);
+    g->drawUIString(getText(), fg, gfx::ColorNone, textRc.getOrigin(),
+                    false);
   }
 }
 
 bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 {
   switch (msg->type()) {
+
+    case kFocusEnterMessage:
+    case kFocusLeaveMessage:
+      if (isEnabled()) {
+        // TODO theme specific stuff
+        invalidate();
+      }
+      break;
+
+    case ui::kKeyDownMessage:
+      if (isEnabled() && hasText()) {
+        KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
+        bool mnemonicPressed =
+          (msg->altPressed() &&
+           getMnemonicChar() &&
+           getMnemonicChar() == tolower(keymsg->unicodeChar()));
+
+        if (mnemonicPressed ||
+            (hasFocus() && keymsg->scancode() == kKeySpace)) {
+          buttonSet()->setSelectedItem(this);
+          buttonSet()->onItemChange();
+        }
+      }
+      break;
 
     case ui::kMouseDownMessage:
       captureMouse();
@@ -162,14 +196,22 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
 void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
 {
-  gfx::Size sz;
-
+  gfx::Size iconSize;
   if (m_icon) {
-    sz.w = 16*guiscale();
-    sz.h = 16*guiscale();
+    iconSize = m_icon->getSize();
+    iconSize.w = MAX(iconSize.w, 16*guiscale());
+    iconSize.h = MAX(iconSize.h, 16*guiscale());
   }
-  else if (!getText().empty())
-    sz += getTextSize() + 8*guiscale();
+
+  gfx::Rect boxRc;
+  getTextIconInfo(
+    &boxRc, NULL, NULL,
+    CENTER | (hasText() ? BOTTOM: MIDDLE),
+    iconSize.w, iconSize.h);
+
+  gfx::Size sz = boxRc.getSize();
+  if (hasText())
+    sz += 8*guiscale();
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.row == info.grid_rows-1)
@@ -202,7 +244,7 @@ void ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan)
 
 void ButtonSet::addItem(Item* item, int hspan, int vspan)
 {
-  addChildInCell(item, hspan, vspan, CENTER | MIDDLE);
+  addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
 }
 
 ButtonSet::Item* ButtonSet::getItem(int index)
@@ -238,8 +280,10 @@ void ButtonSet::setSelectedItem(Item* item)
   if (sel)
     sel->setSelected(false);
 
-  if (item)
+  if (item) {
     item->setSelected(true);
+    item->requestFocus();
+  }
 }
 
 void ButtonSet::deselectItems()

@@ -425,17 +425,24 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
       throw std::runtime_error("<item> without parent");
 
     if (ButtonSet* buttonset = dynamic_cast<ButtonSet*>(parent)) {
-      SkinTheme* theme = static_cast<SkinTheme*>(parent->getTheme());
-
       const char* icon = elem->Attribute("icon");
-      if (icon) {
-        int hspan = int_attr(elem, "hspan", 1);
-        int vspan = int_attr(elem, "vspan", 1);
+      const char* text = elem->Attribute("text");
+      int hspan = int_attr(elem, "hspan", 1);
+      int vspan = int_attr(elem, "vspan", 1);
 
-        SkinPartPtr part = theme->getPartById(std::string(icon));
+      ButtonSet::Item* item = new ButtonSet::Item();
+
+      if (icon) {
+        SkinPartPtr part = SkinTheme::instance()->getPartById(std::string(icon));
         if (part)
-          buttonset->addItem(part, hspan, vspan);
+          item->setIcon(part);
       }
+
+      if (text)
+        item->setText(text);
+
+      buttonset->addItem(item, hspan, vspan);
+      fillWidgetWithXmlElementAttributes(elem, root, item);
     }
   }
   else if (elem_name == "image") {
@@ -462,7 +469,7 @@ Widget* WidgetLoader::convertXmlElementToWidget(const TiXmlElement* elem, Widget
 
   // Was the widget created?
   if (widget)
-    fillWidgetWithXmlElementAttributes(elem, root, widget);
+    fillWidgetWithXmlElementAttributesWithChildren(elem, root, widget);
 
   return widget;
 }
@@ -566,6 +573,11 @@ void WidgetLoader::fillWidgetWithXmlElementAttributes(const TiXmlElement* elem, 
     SkinStylePropertyPtr prop(new SkinStyleProperty(style));
     widget->setProperty(prop);
   }
+}
+
+void WidgetLoader::fillWidgetWithXmlElementAttributesWithChildren(const TiXmlElement* elem, ui::Widget* root, ui::Widget* widget)
+{
+  fillWidgetWithXmlElementAttributes(elem, root, widget);
 
   if (!root)
     root = widget;

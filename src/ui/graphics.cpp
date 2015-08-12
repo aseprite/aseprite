@@ -184,7 +184,8 @@ void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, 
   dst->drawString(m_font, fg, bg, m_dx+pt.x, m_dy+pt.y, str);
 }
 
-void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
+void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
+                            bool drawUnderscore)
 {
   she::ScopedSurfaceLock dst(m_surface);
   base::utf8_const_iterator it(str.begin()), end(str.end());
@@ -206,7 +207,7 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
     ++it;
   }
 
-  if (underscored_w > 0) {
+  if (drawUnderscore && underscored_w > 0) {
     y += m_font->height();
     dst->fillRect(fg,
       gfx::Rect(underscored_x, y, underscored_w, guiscale()));

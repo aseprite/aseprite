@@ -81,7 +81,7 @@ namespace ui {
 
     void drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y);
     void drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
-    void drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt);
+    void drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt, bool drawUnderscore = true);
     void drawAlignedUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align);
 
     gfx::Size measureChar(int chr);

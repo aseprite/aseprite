@@ -781,25 +781,25 @@ void Widget::getTextIconInfo(
     text_w = text_h = 0;
   }
 
-  /* box size */
-  if (icon_align & CENTER) {   /* with the icon in the center */
-    if (icon_align & MIDDLE) { /* with the icon inside the text */
+  // Box size
+  if (icon_align & CENTER) {   // With the icon in the center
+    if (icon_align & MIDDLE) { // With the icon inside the text
       box_w = MAX(icon_w, text_w);
       box_h = MAX(icon_h, text_h);
     }
-    /* with the icon in the top or bottom */
+    // With the icon in the top or bottom
     else {
       box_w = MAX(icon_w, text_w);
       box_h = icon_h + (hasText() ? childSpacing(): 0) + text_h;
     }
   }
-  /* with the icon in left or right that doesn't care by now */
+  // With the icon in left or right that doesn't care by now
   else {
     box_w = icon_w + (hasText() ? childSpacing(): 0) + text_w;
     box_h = MAX(icon_h, text_h);
   }
 
-  /* box position */
+  // Box position
   if (getAlign() & RIGHT)
     box_x = bounds.x2() - box_w - border().right();
   else if (getAlign() & CENTER)

@@ -20,6 +20,7 @@
 #include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
+#include "app/ui/button_set.h"
 #include "app/ui/workspace.h"
 #include "app/ui_context.h"
 #include "app/util/clipboard.h"
@@ -66,9 +67,8 @@ void NewFileCommand::onExecute(Context* context)
   char buf[1024];
   app::Color bg_table[] = {
     app::Color::fromMask(),
-    app::Color::fromRgb(0, 0, 0),
     app::Color::fromRgb(255, 255, 255),
-    app::Color::fromRgb(255, 0, 255)
+    app::Color::fromRgb(0, 0, 0),
   };
 
   // Load the window widget
@@ -82,11 +82,10 @@ void NewFileCommand::onExecute(Context* context)
   }
   w = get_config_int("NewSprite", "Width", 320);
   h = get_config_int("NewSprite", "Height", 240);
-  bg = get_config_int("NewSprite", "Background", 1); // Default = Black
-
+  bg = get_config_int("NewSprite", "Background", 0); // Default = Transparent
   if (bg == 4) // Convert old default (Background color) to new default (Black)
     bg = 1;
-  bg = MID(0, bg, 3);
+  bg = MID(0, bg, 2);
 
   // If the clipboard contains an image, we can show the size of the
   // clipboard as default image size.
@@ -100,14 +99,10 @@ void NewFileCommand::onExecute(Context* context)
   window.height()->setTextf("%d", MAX(1, h));
 
   // Select image-type
-  switch (format) {
-    case IMAGE_RGB:       window.rgbMode()->setSelected(true); break;
-    case IMAGE_GRAYSCALE: window.grayscaleMode()->setSelected(true); break;
-    case IMAGE_INDEXED:   window.indexedMode()->setSelected(true); break;
-  }
+  window.colorMode()->setSelectedItem(format);
 
   // Select background color
-  window.bgBox()->selectIndex(bg);
+  window.bgColor()->setSelectedItem(bg);
 
   // Open the window
   window.openWindowInForeground();
@@ -116,19 +111,18 @@ void NewFileCommand::onExecute(Context* context)
     bool ok = false;
 
     // Get the options
-    if (window.rgbMode()->isSelected())
-      format = IMAGE_RGB;
-    else if (window.grayscaleMode()->isSelected())
-      format = IMAGE_GRAYSCALE;
-    else if (window.indexedMode()->isSelected())
-      format = IMAGE_INDEXED;
-
+    format = (doc::PixelFormat)window.colorMode()->selectedItem();
     w = window.width()->getTextInt();
     h = window.height()->getTextInt();
-    bg = window.bgBox()->getSelectedIndex();
+    bg = window.bgColor()->selectedItem();
 
+    static_assert(IMAGE_RGB == 0, "RGB pixel format should be 0");
+    static_assert(IMAGE_INDEXED == 2, "Indexed pixel format should be 2");
+
+    format = MID(IMAGE_RGB, format, IMAGE_INDEXED);
     w = MID(1, w, 65535);
     h = MID(1, h, 65535);
+    bg = MID(0, bg, 2);
 
     // Select the color
     app::Color color = app::Color::fromMask();
