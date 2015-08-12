@@ -39,10 +39,6 @@ namespace app {
 
 using namespace doc;
 
-std::vector<gfx::Color> BrushPreview::m_savedPixels;
-int BrushPreview::m_savedPixelsIterator;
-int BrushPreview::m_savedPixelsLimit;
-
 BrushPreview::BrushPreview(Editor* editor)
   : m_editor(editor)
   , m_type(CROSS)

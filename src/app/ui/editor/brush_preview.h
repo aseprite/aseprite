@@ -95,9 +95,9 @@ namespace app {
     int m_brushWidth;
     int m_brushHeight;
 
-    static std::vector<gfx::Color> m_savedPixels;
-    static int m_savedPixelsIterator;
-    static int m_savedPixelsLimit;
+    std::vector<gfx::Color> m_savedPixels;
+    int m_savedPixelsIterator;
+    int m_savedPixelsLimit;
 
     gfx::Region m_clippingRegion;
     gfx::Region m_oldClippingRegion;
