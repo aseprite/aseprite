@@ -106,7 +106,12 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
 
   Grid::Info info = buttonSet()->getChildInfo(this);
   if (info.col < info.grid_cols-1) rc.w += 1*guiscale();
-  if (info.row < info.grid_rows-1) rc.h += 3*guiscale();
+  if (info.row < info.grid_rows-1) {
+    if (nw == theme->parts.toolbuttonHotFocused())
+      rc.h += 2*guiscale();
+    else
+      rc.h += 3*guiscale();
+  }
 
   theme->drawRect(g, rc, nw.get(), bg);
 
