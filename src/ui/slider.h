@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -13,8 +13,7 @@
 
 namespace ui {
 
-  class Slider : public Widget
-  {
+  class Slider : public Widget {
   public:
     Slider(int min, int max, int value);
 
@@ -24,6 +23,9 @@ namespace ui {
 
     void setRange(int min, int max);
     void setValue(int value);
+
+    bool isReadOnly() const { return m_readOnly; }
+    void setReadOnly(bool readOnly) { m_readOnly = readOnly; }
 
     void getSliderThemeInfo(int* min, int* max, int* value);
 
@@ -47,6 +49,7 @@ namespace ui {
     int m_min;
     int m_max;
     int m_value;
+    bool m_readOnly;
   };
 
 } // namespace ui

@@ -28,11 +28,11 @@ static bool slider_press_left;
 
 Slider::Slider(int min, int max, int value)
   : Widget(kSliderWidget)
+  , m_min(min)
+  , m_max(max)
+  , m_value(MID(min, value, max))
+  , m_readOnly(false)
 {
-  m_min = min;
-  m_max = max;
-  m_value = MID(min, value, max);
-
   this->setFocusStop(true);
   initTheme();
 }
@@ -76,7 +76,7 @@ bool Slider::onProcessMessage(Message* msg)
       break;
 
     case kMouseDownMessage:
-      if (!isEnabled())
+      if (!isEnabled() || isReadOnly())
         return true;
 
       setSelected(true);
@@ -142,7 +142,7 @@ bool Slider::onProcessMessage(Message* msg)
       break;
 
     case kKeyDownMessage:
-      if (hasFocus()) {
+      if (hasFocus() && !isReadOnly()) {
         int min = m_min;
         int max = m_max;
         int value = m_value;
@@ -168,7 +168,7 @@ bool Slider::onProcessMessage(Message* msg)
       break;
 
     case kMouseWheelMessage:
-      if (isEnabled()) {
+      if (isEnabled() && !isReadOnly()) {
         int value = m_value
           + static_cast<MouseMessage*>(msg)->wheelDelta().x
           - static_cast<MouseMessage*>(msg)->wheelDelta().y;

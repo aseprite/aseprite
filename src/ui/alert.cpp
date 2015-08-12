@@ -60,6 +60,7 @@ void Alert::addProgress()
 {
   ASSERT(!m_progress);
   m_progress = new Slider(0, 100, 0);
+  m_progress->setReadOnly(true);
   m_progressPlaceholder->addChild(m_progress);
   m_progressPlaceholder->setVisible(true);
 }
