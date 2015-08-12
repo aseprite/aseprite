@@ -122,7 +122,7 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
 
-    void prepareExtraCel(const gfx::Rect& bounds, int opacity);
+    void prepareExtraCel(const gfx::Rect& bounds, frame_t frame, int opacity);
     void setExtraCelType(render::ExtraType type);
     void destroyExtraCel();
     Cel* getExtraCel() const;

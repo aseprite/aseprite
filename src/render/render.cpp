@@ -692,6 +692,7 @@ void Render::renderLayer(
 
   gfx::Rect extraArea;
   bool drawExtra = (m_extraCel &&
+                    m_extraCel->frame() == frame &&
                     m_extraImage &&
                     layer == m_currentLayer &&
                     frame == m_currentFrame &&

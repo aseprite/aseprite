@@ -242,7 +242,7 @@ void Document::destroyExtraCel()
   m_extraCelType = render::ExtraType::NONE;
 }
 
-void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
+void Document::prepareExtraCel(const gfx::Rect& bounds, frame_t frame, int opacity)
 {
   ASSERT(sprite() != NULL);
 
@@ -259,6 +259,7 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, int opacity)
 
   m_extraCel->setPosition(bounds.getOrigin());
   m_extraCel->setOpacity(opacity);
+  m_extraCel->setFrame(frame);
 }
 
 void Document::setExtraCelType(render::ExtraType type)

@@ -790,7 +790,7 @@ void Editor::flashCurrentLayer()
   if (src_image) {
     m_renderEngine.removePreviewImage();
 
-    m_document->prepareExtraCel(m_sprite->bounds(), 255);
+    m_document->prepareExtraCel(m_sprite->bounds(), m_frame, 255);
     m_document->setExtraCelType(render::ExtraType::COMPOSITE);
 
     Image* flash_image = m_document->getExtraCelImage();

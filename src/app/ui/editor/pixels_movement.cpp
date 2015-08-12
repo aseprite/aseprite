@@ -596,7 +596,7 @@ void PixelsMovement::redrawExtraImage()
   if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
 
   gfx::Rect bounds = m_currentData.transformedBounds();
-  m_document->prepareExtraCel(bounds, opacity);
+  m_document->prepareExtraCel(bounds, m_site.frame(), opacity);
   m_document->setExtraCelType(render::ExtraType::PATCH);
   m_document->setExtraCelBlendMode(
     static_cast<LayerImage*>(m_layer)->blendMode());

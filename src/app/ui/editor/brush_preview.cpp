@@ -155,7 +155,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
     if (layer) opacity = MUL_UN8(opacity, static_cast<LayerImage*>(layer)->opacity(), t);
 
-    document->prepareExtraCel(brushBounds, opacity);
+    document->prepareExtraCel(brushBounds, m_editor->frame(), opacity);
     document->setExtraCelType(render::ExtraType::NONE);
     document->setExtraCelBlendMode(
       (layer ? static_cast<LayerImage*>(layer)->blendMode():
