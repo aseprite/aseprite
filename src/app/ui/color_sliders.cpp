@@ -11,14 +11,15 @@
 
 #include "app/color_utils.h"
 #include "app/ui/color_sliders.h"
-#include "base/bind.h"
 #include "app/ui/skin/skin_slider_property.h"
+#include "base/bind.h"
 #include "ui/box.h"
 #include "ui/entry.h"
 #include "ui/graphics.h"
 #include "ui/label.h"
 #include "ui/preferred_size_event.h"
 #include "ui/slider.h"
+#include "ui/theme.h"
 
 #include <climits>
 
@@ -155,9 +156,10 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   relSlider->setExpansive(true);
   relSlider->setVisible(false);
 
-  label->setMaxSize(gfx::Size(INT_MAX, 14));
-  box->setMaxSize(gfx::Size(INT_MAX, 14));
-  entry->setMaxSize(gfx::Size(INT_MAX, 14));
+  gfx::Size sz(INT_MAX, 14*guiscale());
+  label->setMaxSize(sz);
+  box->setMaxSize(sz);
+  entry->setMaxSize(sz);
 
   m_grid.addChildInCell(label,  1, 1, LEFT | MIDDLE);
   m_grid.addChildInCell(box, 1, 1, HORIZONTAL | VERTICAL | EXPANSIVE);
