@@ -28,8 +28,6 @@ static Theme* current_theme = NULL;
 Theme::Theme()
   : m_guiscale(1)
 {
-  this->name = "Theme";
-  this->scrollbar_size = 0;
 }
 
 Theme::~Theme()

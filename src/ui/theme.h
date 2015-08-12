@@ -27,9 +27,6 @@ namespace ui {
 
   class Theme {
   public:
-    const char* name;
-    int scrollbar_size;
-
     Theme();
     virtual ~Theme();
 
@@ -45,6 +42,7 @@ namespace ui {
     virtual void initWidget(Widget* widget) = 0;
     virtual void getWindowMask(Widget* widget, gfx::Region& region) = 0;
     virtual void setDecorativeWidgetBounds(Widget* widget) = 0;
+    virtual int getScrollbarSize() = 0;
 
     virtual void paintDesktop(PaintEvent& ev) = 0;
     virtual void paintBox(PaintEvent& ev) = 0;

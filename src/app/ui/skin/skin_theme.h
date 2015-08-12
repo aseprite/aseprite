@@ -54,6 +54,7 @@ namespace app {
       void initWidget(ui::Widget* widget) override;
       void getWindowMask(ui::Widget* widget, gfx::Region& region) override;
       void setDecorativeWidgetBounds(ui::Widget* widget) override;
+      int getScrollbarSize() override;
 
       void paintDesktop(ui::PaintEvent& ev) override;
       void paintBox(ui::PaintEvent& ev) override;

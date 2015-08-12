@@ -25,7 +25,7 @@ int ScrollBar::m_whereclick = 0;
 
 ScrollBar::ScrollBar(int align)
   : Widget(kViewScrollbarWidget)
-  , m_barWidth(getTheme()->scrollbar_size)
+  , m_barWidth(getTheme()->getScrollbarSize())
   , m_pos(0)
   , m_size(0)
 {
@@ -206,7 +206,7 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
   }
   else {
     len = bar_size * viewport_size / m_size;
-    len = MID(getTheme()->scrollbar_size*2-border_width, len, bar_size);
+    len = MID(getTheme()->getScrollbarSize()*2-border_width, len, bar_size);
     pos = (bar_size-len) * m_pos / (m_size-viewport_size);
     pos = MID(0, pos, bar_size-len);
   }

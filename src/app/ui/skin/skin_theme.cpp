@@ -144,7 +144,6 @@ SkinTheme* SkinTheme::instance()
 SkinTheme::SkinTheme()
   : m_cursors(ui::kCursorTypes, NULL)
 {
-  this->name = "Skin Theme";
   m_selected_skin = get_config_string("Skin", "Selected", "default");
   m_defaultFont = nullptr;
   m_miniFont = nullptr;
@@ -217,8 +216,6 @@ void SkinTheme::onRegenerate()
 {
   loadSheet();
   loadFonts();
-
-  scrollbar_size = 12 * guiscale();
 
   // Load the skin XML
   std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
@@ -726,6 +723,11 @@ void SkinTheme::setDecorativeWidgetBounds(Widget* widget)
 
     widget->setBounds(rect);
   }
+}
+
+int SkinTheme::getScrollbarSize()
+{
+  return 12 * guiscale();
 }
 
 void SkinTheme::paintDesktop(PaintEvent& ev)
