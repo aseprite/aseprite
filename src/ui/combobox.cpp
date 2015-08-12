@@ -191,6 +191,7 @@ void ComboBox::removeAllItems()
     delete *it;
 
   m_items.clear();
+  m_selected = -1;
 }
 
 int ComboBox::getItemCount() const
