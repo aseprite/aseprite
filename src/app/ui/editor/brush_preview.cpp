@@ -155,7 +155,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
     if (layer) opacity = MUL_UN8(opacity, static_cast<LayerImage*>(layer)->opacity(), t);
 
-    document->prepareExtraCel(brushBounds, m_editor->frame(), opacity);
+    document->prepareExtraCel(brushBounds, site.frame(), opacity);
     document->setExtraCelType(render::ExtraType::NONE);
     document->setExtraCelBlendMode(
       (layer ? static_cast<LayerImage*>(layer)->blendMode():
@@ -168,7 +168,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
 
     if (layer) {
       render::Render().renderLayer(
-        extraImage, layer, m_editor->frame(),
+        extraImage, layer, site.frame(),
         gfx::Clip(0, 0, brushBounds),
         BlendMode::SRC);
 
@@ -192,7 +192,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
 
     document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds = brushBounds));
+      sprite, gfx::Region(m_lastBounds = brushBounds), site.frame());
 
     m_withRealPreview = true;
   }
@@ -246,9 +246,11 @@ void BrushPreview::hide()
 
   // Clean pixel/brush preview
   if (m_withRealPreview) {
+    frame_t frame = document->getExtraCel()->frame();
+
     document->destroyExtraCel();
     document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds));
+      sprite, gfx::Region(m_lastBounds), frame);
 
     m_withRealPreview = false;
   }

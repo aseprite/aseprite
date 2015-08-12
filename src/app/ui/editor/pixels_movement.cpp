@@ -409,7 +409,8 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
   // If "fullBounds" is empty is because the cel was not moved
   if (!fullBounds.isEmpty()) {
     // Notify the modified region.
-    m_document->notifySpritePixelsModified(m_sprite, gfx::Region(fullBounds));
+    m_document->notifySpritePixelsModified(m_sprite, gfx::Region(fullBounds),
+                                           m_site.frame());
   }
 }
 

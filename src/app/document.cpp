@@ -114,11 +114,12 @@ void Document::notifyGeneralUpdate()
   notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onGeneralUpdate, ev);
 }
 
-void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region)
+void Document::notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame)
 {
   doc::DocumentEvent ev(this);
   ev.sprite(sprite);
   ev.region(region);
+  ev.frame(frame);
   notifyObservers<doc::DocumentEvent&>(&doc::DocumentObserver::onSpritePixelsModified, ev);
 }
 

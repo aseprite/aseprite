@@ -192,7 +192,8 @@ public:
   void updateDirtyArea() override {
     // TODO find a way to avoid calling hide/show brush preview here
     HideBrushPreview hide(m_editor->brushPreview());
-    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea);
+    m_document->notifySpritePixelsModified(m_sprite, m_dirtyArea,
+                                           m_frame);
   }
 
   void updateStatusBar(const char* text) override {

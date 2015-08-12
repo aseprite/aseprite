@@ -373,7 +373,8 @@ void DocumentView::onGeneralUpdate(doc::DocumentEvent& ev)
 
 void DocumentView::onSpritePixelsModified(doc::DocumentEvent& ev)
 {
-  if (m_editor->isVisible())
+  if (m_editor->isVisible() &&
+      m_editor->frame() == ev.frame())
     m_editor->drawSpriteClipped(ev.region());
 }
 

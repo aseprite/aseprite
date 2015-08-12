@@ -79,7 +79,7 @@ namespace app {
     // Notifications
 
     void notifyGeneralUpdate();
-    void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region);
+    void notifySpritePixelsModified(Sprite* sprite, const gfx::Region& region, frame_t frame);
     void notifyExposeSpritePixels(Sprite* sprite, const gfx::Region& region);
     void notifyLayerMergedDown(Layer* srcLayer, Layer* targetLayer);
     void notifyCelMoved(Layer* fromLayer, frame_t fromFrame, Layer* toLayer, frame_t toFrame);
