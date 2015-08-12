@@ -13,6 +13,7 @@
 #include "app/color.h"
 #include "app/color_picker.h"
 #include "app/color_utils.h"
+#include "app/modules/editors.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/ui/color_bar.h"
@@ -21,6 +22,8 @@
 #include "app/ui/editor/editor.h"
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
+#include "app/ui_context.h"
+#include "doc/layer.h"
 #include "doc/site.h"
 #include "doc/sprite.h"
 #include "ui/preferred_size_event.h"
@@ -44,14 +47,19 @@ ColorButton::ColorButton(const app::Color& color, PixelFormat pixelFormat)
   , m_color(color)
   , m_pixelFormat(pixelFormat)
   , m_window(NULL)
+  , m_dependOnLayer(false)
 {
   this->setFocusStop(true);
 
   setup_mini_font(this);
+
+  UIContext::instance()->addObserver(this);
 }
 
 ColorButton::~ColorButton()
 {
+  UIContext::instance()->removeObserver(this);
+
   delete m_window;       // widget, window
 }
 
@@ -174,14 +182,31 @@ void ColorButton::onPaint(PaintEvent& ev)
   app::Color color;
 
   // When the button is pushed, show the negative
+  m_dependOnLayer = false;
   if (isSelected()) {
     color = app::Color::fromRgb(255-m_color.getRed(),
                                 255-m_color.getGreen(),
                                 255-m_color.getBlue());
   }
   // When the button is not pressed, show the real color
-  else
+  else {
     color = m_color;
+
+    // Show transparent color in indexed sprites as mask color when we
+    // are in a transparent layer.
+    if (color.getType() == app::Color::IndexType &&
+        current_editor &&
+        current_editor->sprite() &&
+        current_editor->sprite()->pixelFormat() == IMAGE_INDEXED) {
+      m_dependOnLayer = true;
+
+      if (current_editor->sprite()->transparentColor() == color.getIndex() &&
+          current_editor->layer() &&
+          !current_editor->layer()->isBackground()) {
+        color = app::Color::fromMask();
+      }
+    }
+  }
 
   draw_color_button(g, rc,
     color, hasMouseOver(), false);
@@ -194,7 +219,8 @@ void ColorButton::onPaint(PaintEvent& ev)
 
   gfx::Color textcolor = gfx::rgba(255, 255, 255);
   if (color.isValid())
-    textcolor = color_utils::blackandwhite_neg(gfx::rgba(color.getRed(), color.getGreen(), color.getBlue()));
+    textcolor = color_utils::blackandwhite_neg(
+      gfx::rgba(color.getRed(), color.getGreen(), color.getBlue()));
 
   gfx::Rect text;
   getTextIconInfo(NULL, &text);
@@ -255,6 +281,12 @@ void ColorButton::closeSelectorDialog()
 void ColorButton::onWindowColorChange(const app::Color& color)
 {
   setColor(color);
+}
+
+void ColorButton::onActiveSiteChange(const Site& site)
+{
+  if (m_dependOnLayer)
+    invalidate();
 }
 
 } // namespace app

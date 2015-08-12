@@ -11,13 +11,15 @@
 
 #include "app/color.h"
 #include "base/signal.h"
+#include "doc/context_observer.h"
 #include "doc/pixel_format.h"
 #include "ui/button.h"
 
 namespace app {
   class ColorSelector;
 
-  class ColorButton : public ui::ButtonBase {
+  class ColorButton : public ui::ButtonBase
+                    , public doc::ContextObserver {
   public:
     ColorButton(const app::Color& color, PixelFormat pixelFormat);
     ~ColorButton();
@@ -42,10 +44,12 @@ namespace app {
     void openSelectorDialog();
     void closeSelectorDialog();
     void onWindowColorChange(const app::Color& color);
+    void onActiveSiteChange(const Site& site) override;
 
     app::Color m_color;
     PixelFormat m_pixelFormat;
     ColorSelector* m_window;
+    bool m_dependOnLayer;
   };
 
 } // namespace app
