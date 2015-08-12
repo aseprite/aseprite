@@ -25,6 +25,7 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/ini_file.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -980,11 +981,23 @@ void ColorBar::onFixWarningClick(ColorButton* colorButton, ui::Button* warningIc
 
 void ColorBar::updateWarningIcon(const app::Color& color, ui::Button* warningIcon)
 {
-  int index = get_current_palette()->findExactMatch(
-    color.getRed(),
-    color.getGreen(),
-    color.getBlue(),
-    color.getAlpha(), -1);
+  int index = -1;
+
+  if (color.getType() == app::Color::MaskType) {
+    if (current_editor &&
+        current_editor->sprite()) {
+      index = current_editor->sprite()->transparentColor();
+    }
+    else
+      index = 0;
+  }
+  else {
+    index = get_current_palette()->findExactMatch(
+      color.getRed(),
+      color.getGreen(),
+      color.getBlue(),
+      color.getAlpha(), -1);
+  }
 
   warningIcon->setVisible(index < 0);
   warningIcon->getParent()->layout();
