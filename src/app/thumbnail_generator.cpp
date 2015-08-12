@@ -70,7 +70,7 @@ private:
 
         // Render first frame of the sprite in 'image'
         base::UniquePtr<Image> image(Image::create(
-            sprite->pixelFormat(), sprite->width(), sprite->height()));
+            IMAGE_RGB, sprite->width(), sprite->height()));
 
         AppRender render;
         render.setupBackground(NULL, image->pixelFormat());
