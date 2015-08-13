@@ -88,9 +88,7 @@ PixelsMovement::PixelsMovement(
   // and its owner could destroy our new "extra cel".
   ASSERT(!m_document->getExtraCel());
   redrawExtraImage();
-
   redrawCurrentMask();
-  updateDocumentMask();
 }
 
 PixelsMovement::~PixelsMovement()
