@@ -46,7 +46,7 @@ void CopyFrame::onExecute()
     if (layer->isImage())  {
       executeAndAdd(new cmd::CopyCel(
           static_cast<LayerImage*>(layer), fromFrame,
-          static_cast<LayerImage*>(layer), m_newFrame));
+          static_cast<LayerImage*>(layer), m_newFrame, layer->isContinuous()));
     }
   }
 }

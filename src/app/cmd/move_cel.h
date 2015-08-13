@@ -26,7 +26,7 @@ namespace cmd {
   public:
     MoveCel(
       LayerImage* srcLayer, frame_t srcFrame,
-      LayerImage* dstLayer, frame_t dstFrame);
+      LayerImage* dstLayer, frame_t dstFrame, bool continuous);
 
   protected:
     void onExecute() override;
@@ -35,6 +35,7 @@ namespace cmd {
   private:
     WithLayer m_srcLayer, m_dstLayer;
     frame_t m_srcFrame, m_dstFrame;
+    bool m_continuous;
   };
 
 } // namespace cmd

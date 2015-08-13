@@ -748,6 +748,7 @@
       <separator />
       <item command="ClearCel" text="&amp;Clear" />
       <item command="UnlinkCel" text="&amp;Unlink" />
+      <item command="LinkCels" text="&amp;Link Cels" />
     </menu>
 
     <menu id="cel_movement_popup">

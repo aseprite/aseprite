@@ -351,7 +351,7 @@ void DocumentApi::moveCel(
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   m_transaction.execute(new cmd::MoveCel(
       srcLayer, srcFrame,
-      dstLayer, dstFrame));
+      dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
 void DocumentApi::copyCel(
@@ -361,7 +361,7 @@ void DocumentApi::copyCel(
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
   m_transaction.execute(new cmd::CopyCel(
       srcLayer, srcFrame,
-      dstLayer, dstFrame));
+      dstLayer, dstFrame, dstLayer->isContinuous()));
 }
 
 void DocumentApi::swapCel(

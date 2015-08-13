@@ -35,11 +35,12 @@ using namespace doc;
 
 MoveCel::MoveCel(
   LayerImage* srcLayer, frame_t srcFrame,
-  LayerImage* dstLayer, frame_t dstFrame)
+  LayerImage* dstLayer, frame_t dstFrame, bool continuous)
   : m_srcLayer(srcLayer)
   , m_dstLayer(dstLayer)
   , m_srcFrame(srcFrame)
   , m_dstFrame(dstFrame)
+  , m_continuous(continuous)
 {
 }
 
@@ -80,7 +81,7 @@ void MoveCel::onExecute()
     dstImage = dstCel->imageRef();
 
   bool createLink =
-    (srcLayer == dstLayer && dstLayer->isContinuous());
+    (srcLayer == dstLayer && m_continuous);
 
   // For background layer
   if (dstLayer->isBackground()) {
