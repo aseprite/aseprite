@@ -101,14 +101,16 @@ PixelsMovement::~PixelsMovement()
 void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
 {
   // Flip the image.
-  doc::algorithm::flip_image(m_originalImage,
-                                gfx::Rect(gfx::Point(0, 0),
-                                          gfx::Size(m_originalImage->width(),
-                                                    m_originalImage->height())),
-                                flipType);
+  doc::algorithm::flip_image(
+    m_originalImage,
+    gfx::Rect(gfx::Point(0, 0),
+              gfx::Size(m_originalImage->width(),
+                        m_originalImage->height())),
+    flipType);
 
   // Flip the mask.
-  doc::algorithm::flip_image(m_initialMask->bitmap(),
+  doc::algorithm::flip_image(
+    m_initialMask->bitmap(),
     gfx::Rect(gfx::Point(0, 0), m_initialMask->bounds().getSize()),
     flipType);
 
@@ -119,9 +121,8 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
     // mask.
     redrawExtraImage();
     redrawCurrentMask();
+    updateDocumentMask();
 
-    m_document->setMask(m_currentMask);
-    m_document->generateMaskBoundaries(m_currentMask);
     update_screen_for_document(m_document);
   }
 }
