@@ -266,6 +266,9 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 
 bool DocumentView::onCloseView(Workspace* workspace)
 {
+  if (m_editor->isMovingPixels())
+    m_editor->cancelMovingPixels();
+
   // If there is another view for this document, just close the view.
   for (auto view : *workspace) {
     DocumentView* docView = dynamic_cast<DocumentView*>(view);
@@ -456,20 +459,21 @@ void DocumentView::onNewInputPriority(InputChainElement* element)
 
 bool DocumentView::onCanCut(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::ActiveLayerIsVisible |
-                         ContextFlags::ActiveLayerIsEditable |
-                         ContextFlags::HasVisibleMask |
-                         ContextFlags::HasActiveImage);
+  return onCanCopy(ctx);
 }
 
 bool DocumentView::onCanCopy(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::ActiveLayerIsVisible |
-                         ContextFlags::ActiveLayerIsEditable |
-                         ContextFlags::HasVisibleMask |
-                         ContextFlags::HasActiveImage);
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                      ContextFlags::ActiveLayerIsVisible |
+                      ContextFlags::ActiveLayerIsEditable |
+                      ContextFlags::HasVisibleMask |
+                      ContextFlags::HasActiveImage))
+    return true;
+  else if (m_editor->isMovingPixels())
+    return true;
+  else
+    return false;
 }
 
 bool DocumentView::onCanPaste(Context* ctx)
@@ -484,10 +488,17 @@ bool DocumentView::onCanPaste(Context* ctx)
 
 bool DocumentView::onCanClear(Context* ctx)
 {
-  return ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                         ContextFlags::ActiveLayerIsVisible |
-                         ContextFlags::ActiveLayerIsEditable |
-                         ContextFlags::ActiveLayerIsImage);
+  if (ctx->checkFlags(ContextFlags::ActiveDocumentIsWritable |
+                      ContextFlags::ActiveLayerIsVisible |
+                      ContextFlags::ActiveLayerIsEditable |
+                      ContextFlags::ActiveLayerIsImage)) {
+    return true;
+  }
+  else if (m_editor->isMovingPixels()) {
+    return true;
+  }
+  else
+    return false;
 }
 
 bool DocumentView::onCut(Context* ctx)

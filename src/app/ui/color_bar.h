@@ -31,7 +31,7 @@ namespace app {
   class ColorButton;
   class ColorSpectrum;
   class ColorWheel;
-  class Command;
+  class CommandExecutionEvent;
   class PaletteIndexChangeEvent;
   class PalettePopup;
   class PalettesLoader;
@@ -87,8 +87,8 @@ namespace app {
   protected:
     void onAppPaletteChange();
     void onFocusPaletteView();
-    void onBeforeExecuteCommand(Command* command);
-    void onAfterExecuteCommand(Command* command);
+    void onBeforeExecuteCommand(CommandExecutionEvent& ev);
+    void onAfterExecuteCommand(CommandExecutionEvent& ev);
     void onPaletteButtonClick();
     void onRemapButtonClick();
     void onPaletteIndexChange(PaletteIndexChangeEvent& ev);

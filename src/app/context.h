@@ -28,6 +28,26 @@ namespace app {
     : base::Exception("Cannot execute the command because its pre-conditions are false.") { }
   };
 
+  class CommandExecutionEvent {
+  public:
+    CommandExecutionEvent(Command* command)
+      : m_command(command), m_canceled(false) {
+    }
+
+    Command* command() const { return m_command; }
+
+    // True if the command was canceled or simulated by an
+    // observer/signal slot.
+    bool isCanceled() const { return m_canceled; }
+    void cancel() {
+      m_canceled = true;
+    }
+
+  private:
+    Command* m_command;
+    bool m_canceled;
+  };
+
   class Context : public doc::Context {
   public:
     Context();
@@ -47,8 +67,8 @@ namespace app {
     void executeCommand(const char* commandName);
     virtual void executeCommand(Command* command, const Params& params = Params());
 
-    Signal1<void, Command*> BeforeCommandExecution;
-    Signal1<void, Command*> AfterCommandExecution;
+    Signal1<void, CommandExecutionEvent&> BeforeCommandExecution;
+    Signal1<void, CommandExecutionEvent&> AfterCommandExecution;
 
   protected:
     virtual void onCreateDocument(doc::CreateDocumentArgs* args) override;

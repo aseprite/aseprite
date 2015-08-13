@@ -22,7 +22,7 @@ namespace doc {
 }
 
 namespace app {
-  class Command;
+  class CommandExecutionEvent;
   class Editor;
 
   class MovingPixelsState
@@ -63,7 +63,7 @@ namespace app {
     void onTransparentColorChange();
 
     // ContextObserver
-    void onBeforeCommandExecution(Command* command);
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
     void setTransparentColor(bool opaque, const app::Color& color);
     void dropPixels();

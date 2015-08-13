@@ -148,7 +148,7 @@ void PlayState::onPlaybackTick()
 }
 
 // Before executing any command, we stop the animation
-void PlayState::onBeforeCommandExecution(Command* command)
+void PlayState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
   // This check just in case we stay connected to context signals when
   // the editor is already deleted.
@@ -167,9 +167,9 @@ void PlayState::onBeforeCommandExecution(Command* command)
   //
   // There are other commands that just doesn't stop the animation
   // (zoom, scroll, etc.)
-  if (command->id() == CommandId::PlayAnimation ||
-      command->id() == CommandId::Zoom ||
-      command->id() == CommandId::Scroll) {
+  if (ev.command()->id() == CommandId::PlayAnimation ||
+      ev.command()->id() == CommandId::Zoom ||
+      ev.command()->id() == CommandId::Scroll) {
     return;
   }
 

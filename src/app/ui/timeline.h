@@ -45,7 +45,7 @@ namespace app {
 
   using namespace doc;
 
-  class Command;
+  class CommandExecutionEvent;
   class ConfigureTimelinePopup;
   class Context;
   class Document;
@@ -113,7 +113,7 @@ namespace app {
     void onSelectionChanged(doc::DocumentEvent& ev) override;
 
     // app::Context slots.
-    void onAfterCommandExecution(Command* command);
+    void onAfterCommandExecution(CommandExecutionEvent& ev);
 
     // DocumentsObserver impl.
     void onRemoveDocument(doc::Document* document) override;

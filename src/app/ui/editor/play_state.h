@@ -16,7 +16,7 @@
 
 namespace app {
 
-  class Command;
+  class CommandExecutionEvent;
 
   class PlayState : public StateWithWheelBehavior {
   public:
@@ -34,7 +34,7 @@ namespace app {
     void onPlaybackTick();
 
     // ContextObserver
-    void onBeforeCommandExecution(Command* command);
+    void onBeforeCommandExecution(CommandExecutionEvent& ev);
 
     double getNextFrameTime();
 

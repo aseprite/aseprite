@@ -366,17 +366,17 @@ void ColorBar::onFocusPaletteView()
   App::instance()->inputChain().prioritize(this);
 }
 
-void ColorBar::onBeforeExecuteCommand(Command* command)
+void ColorBar::onBeforeExecuteCommand(CommandExecutionEvent& ev)
 {
-  if (command->id() == CommandId::SetPalette ||
-      command->id() == CommandId::LoadPalette)
+  if (ev.command()->id() == CommandId::SetPalette ||
+      ev.command()->id() == CommandId::LoadPalette)
     showRemap();
 }
 
-void ColorBar::onAfterExecuteCommand(Command* command)
+void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
 {
-  if (command->id() == CommandId::Undo ||
-      command->id() == CommandId::Redo)
+  if (ev.command()->id() == CommandId::Undo ||
+      ev.command()->id() == CommandId::Redo)
     invalidate();
 }
 

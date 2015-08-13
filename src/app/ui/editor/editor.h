@@ -90,6 +90,9 @@ namespace app {
     // Returns the current state.
     EditorStatePtr getState() { return m_state; }
 
+    bool isMovingPixels() const;
+    void cancelMovingPixels();
+
     // Changes the state of the editor.
     void setState(const EditorStatePtr& newState);
 

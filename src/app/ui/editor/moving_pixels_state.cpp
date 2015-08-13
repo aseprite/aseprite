@@ -139,6 +139,8 @@ void MovingPixelsState::onEnterState(Editor* editor)
 
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
 {
+  PRINTF("MovingPixels: leave state\n");
+
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
 
@@ -371,56 +373,6 @@ bool MovingPixelsState::onKeyDown(Editor* editor, KeyMessage* msg)
 
     return true;
   }
-  else {
-    Command* command = NULL;
-    Params params;
-    if (KeyboardShortcuts::instance()
-          ->getCommandFromKeyMessage(msg, &command, &params)) {
-      // We accept zoom commands.
-      if (command->id() == CommandId::Zoom) {
-        UIContext::instance()->executeCommand(command, params);
-        return true;
-      }
-      // Intercept the "Cut" or "Copy" command to handle them locally
-      // with the current m_pixelsMovement data.
-      else if (command->id() == CommandId::Cut ||
-               command->id() == CommandId::Copy) {
-        // Copy the floating image to the clipboard.
-        {
-          Document* document = editor->document();
-          base::UniquePtr<Image> floatingImage;
-          base::UniquePtr<Mask> floatingMask;
-          m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
-
-          clipboard::copy_image(floatingImage.get(),
-                                floatingMask.get(),
-                                document->sprite()->palette(editor->frame()));
-        }
-
-        // In case of "Cut" command.
-        if (command->id() == CommandId::Cut) {
-          // Discard the dragged image.
-          m_pixelsMovement->discardImage();
-          m_discarded = true;
-
-          // Quit from MovingPixelsState, back to standby.
-          editor->backToPreviousState();
-        }
-
-        // Return true because we've used the keyboard shortcut.
-        return true;
-      }
-      // Flip Horizontally/Vertically commands are handled manually to
-      // avoid dropping the floating region of pixels.
-      else if (command->id() == CommandId::Flip) {
-        if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
-          flipCommand->loadParams(params);
-          m_pixelsMovement->flipImage(flipCommand->getFlipType());
-          return true;
-        }
-      }
-    }
-  }
 
   // Use StandbyState implementation
   return StandbyState::onKeyDown(editor, msg);
@@ -468,20 +420,68 @@ bool MovingPixelsState::acceptQuickTool(tools::Tool* tool)
 }
 
 // Before executing any command, we drop the pixels (go back to standby).
-void MovingPixelsState::onBeforeCommandExecution(Command* command)
+void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
+  Command* command = ev.command();
+
+  PRINTF("MovingPixelsState::onBeforeCommandExecution %s\n", command->id().c_str());
+
   // If the command is for other editor, we don't drop pixels.
   if (!isActiveEditor())
     return;
 
   // We don't need to drop the pixels if a MoveMaskCommand of Content is executed.
-  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(command)) {
-    if (moveMaskCmd->getTarget() == MoveMaskCommand::Content)
+  if (MoveMaskCommand* moveMaskCmd = dynamic_cast<MoveMaskCommand*>(ev.command())) {
+    if (moveMaskCmd->getTarget() == MoveMaskCommand::Content) {
+      // Do not drop pixels
       return;
+    }
   }
   else if ((command->id() == CommandId::Zoom) ||
            (command->id() == CommandId::Scroll)) {
+    // Do not drop pixels
     return;
+  }
+  // Intercept the "Cut" or "Copy" command to handle them locally
+  // with the current m_pixelsMovement data.
+  else if (command->id() == CommandId::Cut ||
+           command->id() == CommandId::Copy ||
+           command->id() == CommandId::Clear) {
+    // Copy the floating image to the clipboard on Cut/Copy.
+    if (command->id() != CommandId::Clear) {
+      Document* document = m_editor->document();
+      base::UniquePtr<Image> floatingImage;
+      base::UniquePtr<Mask> floatingMask;
+      m_pixelsMovement->getDraggedImageCopy(floatingImage, floatingMask);
+
+      clipboard::copy_image(floatingImage.get(),
+                            floatingMask.get(),
+                            document->sprite()->palette(m_editor->frame()));
+    }
+
+    // Clear floating pixels on Cut/Clear.
+    if (command->id() != CommandId::Copy) {
+      // Discard the dragged image.
+      m_pixelsMovement->discardImage();
+      m_discarded = true;
+
+      // Quit from MovingPixelsState, back to standby.
+      m_editor->backToPreviousState();
+    }
+
+    // Cancel the command, we've simulated it.
+    ev.cancel();
+    return;
+  }
+  // Flip Horizontally/Vertically commands are handled manually to
+  // avoid dropping the floating region of pixels.
+  else if (command->id() == CommandId::Flip) {
+    if (FlipCommand* flipCommand = dynamic_cast<FlipCommand*>(command)) {
+      m_pixelsMovement->flipImage(flipCommand->getFlipType());
+
+      ev.cancel();
+      return;
+    }
   }
 
   if (m_pixelsMovement)
@@ -562,6 +562,8 @@ void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color
 
 void MovingPixelsState::dropPixels()
 {
+  PRINTF("MovingPixels: drop pixels\n");
+
   // Just change to default state (StandbyState generally). We'll
   // receive an onLeaveState() event after this call.
   m_editor->backToPreviousState();

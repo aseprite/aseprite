@@ -1596,4 +1596,15 @@ gfx::Point Editor::calcExtraPadding(const Zoom& zoom)
     return gfx::Point(0, 0);
 }
 
+bool Editor::isMovingPixels() const
+{
+  return (dynamic_cast<MovingPixelsState*>(m_state.get()) != nullptr);
+}
+
+void Editor::cancelMovingPixels()
+{
+  ASSERT(isMovingPixels());
+  backToPreviousState();
+}
+
 } // namespace app

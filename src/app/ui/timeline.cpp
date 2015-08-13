@@ -120,7 +120,8 @@ Timeline::Timeline()
   , m_offset_count(0)
   , m_scroll(false)
 {
-  m_ctxConn = m_context->AfterCommandExecution.connect(&Timeline::onAfterCommandExecution, this);
+  m_ctxConn = m_context->AfterCommandExecution.connect(
+    &Timeline::onAfterCommandExecution, this);
   m_context->documents().addObserver(this);
 
   setDoubleBuffered(true);
@@ -924,7 +925,7 @@ paintNoDoc:;
       skinTheme()->styles.timelinePadding());
 }
 
-void Timeline::onAfterCommandExecution(Command* command)
+void Timeline::onAfterCommandExecution(CommandExecutionEvent& ev)
 {
   if (!m_document)
     return;

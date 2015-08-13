@@ -9,6 +9,10 @@
 #define APP_CONTEXT_FLAGS_H_INCLUDED
 #pragma once
 
+namespace doc {
+  class Site;
+}
+
 namespace app {
 
   class Context;
@@ -37,6 +41,8 @@ namespace app {
     void update(Context* context);
 
   private:
+    void updateFlagsFromSite(const doc::Site& site);
+
     uint32_t m_flags;
   };
 
