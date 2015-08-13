@@ -65,29 +65,31 @@ namespace app {
   // the lock cannot be obtained.
   class DocumentReader : public DocumentAccess {
   public:
-    DocumentReader()
-    {
+    DocumentReader() {
     }
 
     explicit DocumentReader(Document* document, int timeout)
-      : DocumentAccess(document)
-    {
+      : DocumentAccess(document) {
       if (m_document && !m_document->lock(Document::ReadLock, timeout))
         throw LockedDocumentException();
     }
 
     explicit DocumentReader(const DocumentReader& copy, int timeout)
-      : DocumentAccess(copy)
-    {
+      : DocumentAccess(copy) {
       if (m_document && !m_document->lock(Document::ReadLock, timeout))
         throw LockedDocumentException();
     }
 
-    ~DocumentReader()
-    {
-      // unlock the document
-      if (m_document)
+    ~DocumentReader() {
+      unlock();
+    }
+
+  protected:
+    void unlock() {
+      if (m_document) {
         m_document->unlock();
+        m_document = nullptr;
+      }
     }
 
   private:
@@ -104,15 +106,13 @@ namespace app {
   public:
     DocumentWriter()
       : m_from_reader(false)
-      , m_locked(false)
-    {
+      , m_locked(false) {
     }
 
     explicit DocumentWriter(Document* document, int timeout)
       : DocumentAccess(document)
       , m_from_reader(false)
-      , m_locked(false)
-    {
+      , m_locked(false) {
       if (m_document) {
         if (!m_document->lock(Document::WriteLock, timeout))
           throw LockedDocumentException();
@@ -126,8 +126,7 @@ namespace app {
     explicit DocumentWriter(const DocumentReader& document, int timeout)
       : DocumentAccess(document)
       , m_from_reader(true)
-      , m_locked(false)
-    {
+      , m_locked(false) {
       if (m_document) {
         if (!m_document->lockToWrite(timeout))
           throw LockedDocumentException();
@@ -136,20 +135,19 @@ namespace app {
       }
     }
 
-    ~DocumentWriter()
-    {
-      unlockWriter();
+    ~DocumentWriter() {
+      unlock();
     }
 
   protected:
-
-    void unlockWriter()
-    {
+    void unlock() {
       if (m_document && m_locked) {
         if (m_from_reader)
           m_document->unlockToRead();
         else
           m_document->unlock();
+
+        m_document = nullptr;
         m_locked = false;
       }
     }
@@ -168,19 +166,18 @@ namespace app {
   class DocumentDestroyer : public DocumentWriter {
   public:
     explicit DocumentDestroyer(Context* context, Document* document, int timeout)
-      : DocumentWriter(document, timeout)
-    {
+      : DocumentWriter(document, timeout) {
     }
 
-    void destroyDocument()
-    {
+    void destroyDocument() {
       ASSERT(m_document != NULL);
 
       m_document->close();
-      unlockWriter();
+      Document* doc = m_document;
+      unlock();
 
-      delete m_document;
-      m_document = NULL;
+      delete doc;
+      m_document = nullptr;
     }
 
   };
