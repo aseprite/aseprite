@@ -928,6 +928,18 @@ tools::Ink* Editor::getCurrentEditorInk()
     const char* id = NULL;
 
     switch (inkType) {
+
+      case tools::InkType::SIMPLE: {
+        id = tools::WellKnownInks::Paint;
+
+        ColorBar* colorbar = ColorBar::instance();
+        app::Color color = (m_secondaryButton ? colorbar->getBgColor():
+                                                colorbar->getFgColor());
+        if (color.getAlpha() == 0)
+          id = tools::WellKnownInks::PaintCopy;
+        break;
+      }
+
       case tools::InkType::ALPHA_COMPOSITING:
         id = tools::WellKnownInks::Paint;
         break;

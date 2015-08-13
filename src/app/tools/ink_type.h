@@ -14,10 +14,16 @@ namespace tools {
 
   enum class InkType {
     DEFAULT = 0,
-    ALPHA_COMPOSITING = 0,
-    COPY_COLOR = 1,
-    LOCK_ALPHA = 2,
+    SIMPLE = 0,
+    ALPHA_COMPOSITING = 1,
+    COPY_COLOR = 2,
+    LOCK_ALPHA = 3,
   };
+
+  inline bool inkHasOpacity(InkType inkType) {
+    return (inkType == InkType::ALPHA_COMPOSITING ||
+            inkType == InkType::LOCK_ALPHA);
+  }
 
 } // namespace tools
 } // namespace app

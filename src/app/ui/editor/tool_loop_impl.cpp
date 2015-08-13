@@ -134,6 +134,10 @@ public:
           break;
       }
     }
+
+    // Ignore opacity for these inks
+    if (!tools::inkHasOpacity(m_toolPref.ink()))
+      m_opacity = 255;
   }
 
   // IToolLoop interface

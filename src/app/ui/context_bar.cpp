@@ -325,15 +325,16 @@ public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
     SkinTheme* theme = SkinTheme::instance();
-    addItem(theme->parts.inkDefault());
+    addItem(theme->parts.inkSimple());
   }
 
   void setInkType(InkType inkType) {
     SkinTheme* theme = SkinTheme::instance();
-    SkinPartPtr part = theme->parts.inkDefault();
+    SkinPartPtr part = theme->parts.inkSimple();
 
     switch (inkType) {
-      case InkType::ALPHA_COMPOSITING: part = theme->parts.inkDefault(); break;
+      case InkType::SIMPLE:            part = theme->parts.inkSimple(); break;
+      case InkType::ALPHA_COMPOSITING: part = theme->parts.inkAlphaCompositing(); break;
       case InkType::COPY_COLOR:        part = theme->parts.inkCopyColor(); break;
       case InkType::LOCK_ALPHA:        part = theme->parts.inkLockAlpha(); break;
     }
@@ -349,10 +350,12 @@ protected:
 
     Menu menu;
     MenuItem
+      simple("Simple Ink"),
       alphacompo("Alpha Compositing"),
       copycolor("Copy Color+Alpha"),
       lockalpha("Lock Alpha"),
       alltools("Same in all Tools");
+    menu.addChild(&simple);
     menu.addChild(&alphacompo);
     menu.addChild(&copycolor);
     menu.addChild(&lockalpha);
@@ -361,12 +364,14 @@ protected:
 
     Tool* tool = App::instance()->activeTool();
     switch (Preferences::instance().tool(tool).ink()) {
+      case tools::InkType::SIMPLE: simple.setSelected(true); break;
       case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
       case tools::InkType::COPY_COLOR: copycolor.setSelected(true); break;
       case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
     }
     alltools.setSelected(Preferences::instance().shared.shareInk());
 
+    simple.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::SIMPLE));
     alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
     copycolor.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::COPY_COLOR));
     lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
@@ -1184,7 +1189,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
     m_inkOpacity->setTextf("%d", toolPref->opacity());
 
     hasInkWithOpacity =
-      ((isPaint && toolPref->ink() != tools::InkType::COPY_COLOR) ||
+      ((isPaint && tools::inkHasOpacity(toolPref->ink())) ||
        (isEffect));
 
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
