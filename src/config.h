@@ -35,6 +35,12 @@
 #define COPYRIGHT               "Copyright (C) 2001-2015 David Capello"
 
 #define PRINTF                  verbose_printf
+#define LOG                     PRINTF
+#ifdef _DEBUG
+#define DLOG                    PRINTF
+#else
+#define DLOG(...)
+#endif
 
 // verbose_printf is defined in src/app/log.cpp and used through PRINTF macro
 void verbose_printf(const char* format, ...);
