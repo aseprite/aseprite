@@ -31,7 +31,8 @@ namespace app {
     void setActiveView(DocumentView* documentView);
     void setActiveDocument(Document* document);
 
-    DocumentView* getFirstDocumentView(Document* document) const;
+    DocumentView* getFirstDocumentView(doc::Document* document) const;
+    DocumentViews getAllDocumentViews(doc::Document* document) const;
 
     // Returns the current editor. It can be null.
     Editor* activeEditor();

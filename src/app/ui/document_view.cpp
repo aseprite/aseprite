@@ -267,7 +267,7 @@ void DocumentView::onClonedFrom(WorkspaceView* from)
 bool DocumentView::onCloseView(Workspace* workspace)
 {
   if (m_editor->isMovingPixels())
-    m_editor->cancelMovingPixels();
+    m_editor->dropMovingPixels();
 
   // If there is another view for this document, just close the view.
   for (auto view : *workspace) {

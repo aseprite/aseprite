@@ -21,6 +21,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/pick_ink.h"
 #include "app/tools/tool.h"
+#include "app/ui/document_view.h"
 #include "app/ui/editor/drawing_state.h"
 #include "app/ui/editor/editor.h"
 #include "app/ui/editor/editor_customization_delegate.h"
@@ -423,13 +424,21 @@ void StandbyState::startSelectionTransformation(Editor* editor,
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)
 {
+  Document* document = editor->document();
+
+  for (auto docView : UIContext::instance()->getAllDocumentViews(document)) {
+    if (docView->getEditor()->isMovingPixels()) {
+      // TODO Transfer moving pixels state to this editor
+      docView->getEditor()->dropMovingPixels();
+    }
+  }
+
   try {
     // Clear brush preview, as the extra cel will be replaced with the
     // transformed image.
     editor->brushPreview().hide();
 
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    Document* document = editor->document();
     base::UniquePtr<Image> tmpImage(new_image_from_mask(editor->getSite()));
 
     PixelsMovementPtr pixelsMovement(

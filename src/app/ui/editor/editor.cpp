@@ -1604,7 +1604,7 @@ bool Editor::isMovingPixels() const
   return (dynamic_cast<MovingPixelsState*>(m_state.get()) != nullptr);
 }
 
-void Editor::cancelMovingPixels()
+void Editor::dropMovingPixels()
 {
   ASSERT(isMovingPixels());
   backToPreviousState();

@@ -70,7 +70,8 @@ protected:
   void onExecute(Context* context) override {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
 
-    std::vector<DocumentView*> docViews;
+    // Collect all document views
+    DocumentViews docViews;
     for (auto view : *workspace) {
       DocumentView* docView = dynamic_cast<DocumentView*>(view);
       if (docView)

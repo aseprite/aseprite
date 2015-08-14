@@ -134,7 +134,7 @@ void UIContext::setActiveDocument(Document* document)
     notifyActiveSiteChanged();
 }
 
-DocumentView* UIContext::getFirstDocumentView(Document* document) const
+DocumentView* UIContext::getFirstDocumentView(doc::Document* document) const
 {
   MainWindow* mainWindow = App::instance()->getMainWindow();
   if (!mainWindow) // Main window can be null if we are in --batch mode
@@ -151,6 +151,22 @@ DocumentView* UIContext::getFirstDocumentView(Document* document) const
   }
 
   return nullptr;
+}
+
+DocumentViews UIContext::getAllDocumentViews(doc::Document* document) const
+{
+  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  DocumentViews docViews;
+
+  for (WorkspaceView* view : *workspace) {
+    if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
+      if (docView->getDocument() == document) {
+        docViews.push_back(docView);
+      }
+    }
+  }
+
+  return docViews;
 }
 
 Editor* UIContext::activeEditor()
@@ -188,18 +204,8 @@ void UIContext::onRemoveDocument(doc::Document* doc)
   // We don't destroy views in batch mode.
   if (isUIAvailable()) {
     Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
-    DocumentViews docViews;
 
-    // Collect all views related to the document.
-    for (WorkspaceView* view : *workspace) {
-      if (DocumentView* docView = dynamic_cast<DocumentView*>(view)) {
-        if (docView->getDocument() == doc) {
-          docViews.push_back(docView);
-        }
-      }
-    }
-
-    for (DocumentView* docView : docViews) {
+    for (DocumentView* docView : getAllDocumentViews(doc)) {
       workspace->removeView(docView);
       delete docView;
     }
