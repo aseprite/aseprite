@@ -11,6 +11,7 @@
 #include "gfx/transformation.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "fixmath/fixmath.h"
 
 #include <cmath>
 
@@ -72,13 +73,18 @@ PointT<double> Transformation::rotatePoint(
     const PointT<double>& pivot,
     double angle)
 {
-  double cos = std::cos(-angle);
-  double sin = std::sin(-angle);
-  double dx = (point.x-pivot.x);
-  double dy = (point.y-pivot.y);
+  using namespace fixmath;
+
+  fixed fixangle = ftofix(-angle);
+  fixangle = fixmul(fixangle, radtofix_r);
+
+  fixed cos = fixcos(fixangle);
+  fixed sin = fixsin(fixangle);
+  fixed dx = fixsub(ftofix(point.x), ftofix(pivot.x));
+  fixed dy = fixsub(ftofix(point.y), ftofix(pivot.y));
   return PointT<double>(
-      pivot.x + dx*cos - dy*sin,
-      pivot.y + dy*cos + dx*sin);
+    fixtof(fixadd(ftofix(pivot.x), fixsub(fixmul(dx, cos), fixmul(dy, sin)))),
+    fixtof(fixadd(ftofix(pivot.y), fixadd(fixmul(dy, cos), fixmul(dx, sin)))));
 }
 
 Rect Transformation::transformedBounds() const

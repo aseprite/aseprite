@@ -396,7 +396,7 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         if ((moveModifier & AngleSnapMovement) == AngleSnapMovement) {
           // TODO make this configurable
           static const double keyAngles[] = {
-            0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, -180.0,
+            0.0, 26.565, 45.0, 63.435, 90.0, 116.565, 135.0, 153.435, 180.0,
             180.0, -153.435, -135.0, -116, -90.0, -63.435, -45.0, -26.565
           };
 
