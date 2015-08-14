@@ -89,6 +89,34 @@ PixelsMovement::PixelsMovement(
   ASSERT(!m_document->getExtraCel());
   redrawExtraImage();
   redrawCurrentMask();
+
+  // If the mask isn't in the document (e.g. it's from Paste command),
+  // we've to replace the document mask and generate its boundaries.
+  //
+  // This is really tricky. PixelsMovement is used in two situations:
+  // 1) When the current selection is transformed, and
+  // 2) when the user pastes the clipboard content.
+  //
+  // In the first case, the current document selection is used. And a
+  // cutMask() command could be called after PixelsMovement ctor. We
+  // need the following stack of Cmd instances in the Transaction:
+  // - cmd::ClearMask: clears the old mask)
+  // - cmd::SetMask (m_setMaskCmd): replaces the old mask with a new mask
+  // The new mask in m_setMaskCmd is replaced each time the mask is modified.
+  //
+  // In the second case, the mask isn't in the document, is a new mask
+  // used to paste the pixels, so we've to replace the document mask.
+  // The Transaction contains just a:
+  // - cmd::SetMask
+  //
+  // The main point here is that cmd::SetMask must be the last item in
+  // the Transaction using the mask (because we use cmd::SetMask::setNewMask()).
+  //
+  // TODO Simplify this code in some way or make explicit both usages
+  if (mask != m_document->mask()) {
+    updateDocumentMask();
+    update_screen_for_document(m_document);
+  }
 }
 
 PixelsMovement::~PixelsMovement()
