@@ -26,7 +26,6 @@ namespace ui {
   class Button;
   class Entry;
   class Label;
-  class Slider;
   class Window;
 }
 
@@ -70,7 +69,6 @@ namespace app {
     void onRemoveDocument(doc::Document* doc) override;
 
     // DocumentObserver impl
-    void onCelOpacityChanged(doc::DocumentEvent& ev) override;
     void onPixelFormatChanged(DocumentEvent& ev) override;
 
   private:
@@ -92,7 +90,6 @@ namespace app {
     // Box of main commands
     ui::Widget* m_docControls;
     ui::Label* m_frameLabel;
-    ui::Slider* m_slider;             // Opacity slider
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
     doc::Document* m_doc;      // Document used to show the cel slider

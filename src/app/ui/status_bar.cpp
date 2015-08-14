@@ -34,7 +34,6 @@
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
-#include "doc/cel.h"
 #include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -199,13 +198,9 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
-    m_slider = new Slider(0, 255, 255);
 
     setup_mini_look(m_currentFrame);
     setup_mini_look(m_newFrame);
-    setup_mini_look(m_slider);
-
-    m_slider->Change.connect(Bind<void>(&StatusBar::onCelOpacitySliderChange, this));
 
     box1->setBorder(gfx::Border(2, 1, 2, 2)*guiscale());
 
@@ -214,7 +209,6 @@ StatusBar::StatusBar()
 
     box1->addChild(m_frameLabel);
     box1->addChild(box4);
-    box1->addChild(m_slider);
 
     m_docControls->addChild(box1);
   }
@@ -223,7 +217,6 @@ StatusBar::StatusBar()
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
-  tooltipManager->addTooltipFor(m_slider, "Cel Opacity", BOTTOM);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
     Bind<void>(&StatusBar::onCurrentToolChange, this));
@@ -383,15 +376,12 @@ void StatusBar::showSnapToGridWarning(bool state)
 
 void StatusBar::onResize(ResizeEvent& ev)
 {
-  m_slider->setMinSize(gfx::Size(ui::display_w()/5, 0));
-
   setBoundsQuietly(ev.getBounds());
 
   Border border = this->border();
   Rect rc = ev.getBounds();
   bool docControls = (rc.w > 300*ui::guiscale());
   if (docControls) {
-    m_slider->setVisible(rc.w > 400*ui::guiscale());
     int prefWidth = m_docControls->getPreferredSize().w;
     int toolBarWidth = ToolBar::instance()->getPreferredSize().w;
 
@@ -485,32 +475,6 @@ bool StatusBar::CustomizedTipWindow::onProcessMessage(Message* msg)
   return ui::TipWindow::onProcessMessage(msg);
 }
 
-void StatusBar::onCelOpacitySliderChange()
-{
-  try {
-    ContextWriter writer(UIContext::instance(), 500);
-
-    DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
-    if (range.enabled()) {
-      for (Cel* cel : get_unique_cels(writer.sprite(), range))
-        cel->setOpacity(m_slider->getValue());
-    }
-    else {
-      Cel* cel = writer.cel();
-      if (cel) {
-        // Update the opacity
-        cel->setOpacity(m_slider->getValue());
-      }
-    }
-
-    // Update the editors
-    update_screen_for_document(writer.document());
-  }
-  catch (LockedDocumentException&) {
-    // do nothing
-  }
-}
-
 void StatusBar::onActiveSiteChange(const doc::Site& site)
 {
   if (m_doc && site.document() != m_doc) {
@@ -534,21 +498,6 @@ void StatusBar::onActiveSiteChange(const doc::Site& site)
 
     // Current frame
     m_currentFrame->setTextf("%d", site.frame()+1);
-
-    // Cel opacity
-    const Cel* cel;
-    if (site.sprite()->supportAlpha() &&
-        site.layer() &&
-        site.layer()->isImage() &&
-        !site.layer()->isBackground() &&
-        (cel = site.layer()->cel(site.frame()))) {
-      m_slider->setValue(MID(0, cel->opacity(), 255));
-      m_slider->setEnabled(true);
-    }
-    else {
-      m_slider->setValue(255);
-      m_slider->setEnabled(false);
-    }
   }
   else {
     ASSERT(m_doc == nullptr);
@@ -564,19 +513,6 @@ void StatusBar::onRemoveDocument(doc::Document* doc)
       m_doc == doc) {
     m_doc->removeObserver(this);
     m_doc = nullptr;
-  }
-}
-
-void StatusBar::onCelOpacityChanged(doc::DocumentEvent& ev)
-{
-  ASSERT(m_doc);
-  ASSERT(m_doc == const_cast<doc::Document*>(ev.document()));
-  ASSERT(ev.cel());
-
-  if (m_doc &&
-      m_doc == const_cast<doc::Document*>(ev.document()) &&
-      ev.cel()) {
-    m_slider->setValue(MID(0, ev.cel()->opacity(), 255));
   }
 }
 
