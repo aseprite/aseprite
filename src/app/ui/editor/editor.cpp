@@ -1419,9 +1419,6 @@ void Editor::setZoomAndCenterInMouse(Zoom zoom,
       if (subpixelPos.x >= 0.5-t && subpixelPos.x <= 0.5+t) subpixelPos.x = 0.5;
       if (subpixelPos.y >= 0.5-t && subpixelPos.y <= 0.5+t) subpixelPos.y = 0.5;
     }
-
-    ASSERT(subpixelPos.x >= -1.0 && subpixelPos.x <= 1.0);
-    ASSERT(subpixelPos.y >= -1.0 && subpixelPos.y <= 1.0);
   }
 
   gfx::Point padding = calcExtraPadding(zoom);

@@ -22,11 +22,18 @@ namespace render {
 
     double scale() const { return static_cast<double>(m_num) / static_cast<double>(m_den); }
 
-    int apply(int x) const { return x * m_num / m_den; }
-    int remove(int x) const { return x * m_den / m_num; }
+    template<typename T>
+    T apply(T x) const {
+      return x * m_num / m_den;
+    }
 
-    double apply(double x) const { return x * m_num / m_den; }
-    double remove(double x) const { return x * m_den / m_num; }
+    template<typename T>
+    T remove(T x) const {
+      if (x < 0)
+        return (x * m_den / m_num) - 1;
+      else
+        return (x * m_den / m_num);
+    }
 
     gfx::Rect apply(const gfx::Rect& r) const {
       return gfx::Rect(
