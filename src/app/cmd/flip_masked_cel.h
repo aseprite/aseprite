@@ -9,32 +9,21 @@
 #define APP_CMD_FLIP_MASKED_CEL_H_INCLUDED
 #pragma once
 
-#include "app/cmd.h"
-#include "app/cmd/with_cel.h"
+#include "app/cmd_sequence.h"
 #include "doc/algorithm/flip_type.h"
 #include "doc/color.h"
+
+namespace doc {
+  class Cel;
+}
 
 namespace app {
 namespace cmd {
   using namespace doc;
 
-  class FlipMaskedCel : public Cmd
-                      , public WithCel {
+  class FlipMaskedCel : public CmdSequence {
   public:
     FlipMaskedCel(Cel* cel, doc::algorithm::FlipType flipType);
-
-  protected:
-    void onExecute() override;
-    void onUndo() override;
-    size_t onMemSize() const override {
-      return sizeof(*this);
-    }
-
-  private:
-    void swap();
-
-    doc::algorithm::FlipType m_flipType;
-    color_t m_bgcolor;
   };
 
 } // namespace cmd
