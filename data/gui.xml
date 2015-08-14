@@ -456,16 +456,16 @@
         <item command="Paste" text="&amp;Paste" />
         <item command="Clear" text="C&amp;lear" />
         <separator />
-        <menu text="&amp;Rotate">
-          <item command="Rotate" text="180">
+        <menu text="R&amp;otate">
+          <item command="Rotate" text="&amp;180">
             <param name="target" value="mask" />
             <param name="angle" value="180" />
           </item>
-          <item command="Rotate" text="90 CW">
+          <item command="Rotate" text="&amp;90 CW">
             <param name="target" value="mask" />
             <param name="angle" value="90" />
           </item>
-          <item command="Rotate" text="90 CCW">
+          <item command="Rotate" text="90 &amp;CCW">
             <param name="target" value="mask" />
             <param name="angle" value="-90" />
           </item>
