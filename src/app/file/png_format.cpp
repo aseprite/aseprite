@@ -185,6 +185,9 @@ bool PngFormat::onLoad(FileOp* fop)
     return false;
   }
 
+  // Transparent color
+  png_color_16p png_trans_color = NULL;
+
   // Read the palette
   if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
@@ -202,7 +205,7 @@ bool PngFormat::onLoad(FileOp* fop)
     int num_trans = 0;
     int mask_entry = -1;
 
-    png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL);
+    png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr);
 
     for (int i = 0; i < num_trans; ++i) {
       fop_sequence_set_alpha(fop, i, trans[i]);
@@ -216,21 +219,21 @@ bool PngFormat::onLoad(FileOp* fop)
       }
     }
 
-    // Set the transparent color to the first transparent entry found
     if (mask_entry >= 0)
       fop->document->sprite()->setTransparentColor(mask_entry);
   }
+  else {
+    png_get_tRNS(png_ptr, info_ptr, nullptr, nullptr, &png_trans_color);
+  }
 
-  /* Allocate the memory to hold the image using the fields of info_ptr. */
-
-   /* The easiest way to read the image: */
+  // Allocate the memory to hold the image using the fields of info_ptr.
   row_pointer = (png_bytep)png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
   for (pass = 0; pass < number_passes; pass++) {
     for (y = 0; y < height; y++) {
-      /* read the line */
+      // Read the line
       png_read_row(png_ptr, row_pointer, (png_byte*)NULL);
 
-      /* RGB_ALPHA */
+      // RGB_ALPHA
       if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB_ALPHA) {
         uint8_t* src_address = row_pointer;
         uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
@@ -244,20 +247,33 @@ bool PngFormat::onLoad(FileOp* fop)
           *(dst_address++) = rgba(r, g, b, a);
         }
       }
-      /* RGB */
+      // RGB
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_RGB) {
         uint8_t* src_address = row_pointer;
         uint32_t* dst_address = (uint32_t*)image->getPixelAddress(0, y);
-        unsigned int x, r, g, b;
+        unsigned int x, r, g, b, a;
 
         for (x=0; x<width; x++) {
           r = *(src_address++);
           g = *(src_address++);
           b = *(src_address++);
-          *(dst_address++) = rgba(r, g, b, 255);
+
+          // Transparent color
+          if (png_trans_color &&
+              r == png_trans_color->red &&
+              g == png_trans_color->green &&
+              b == png_trans_color->blue) {
+            a = 0;
+            if (!fop->seq.has_alpha)
+              fop->seq.has_alpha = true;
+          }
+          else
+            a = 255;
+
+          *(dst_address++) = rgba(r, g, b, a);
         }
       }
-      /* GRAY_ALPHA */
+      // GRAY_ALPHA
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA) {
         uint8_t* src_address = row_pointer;
         uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
@@ -269,18 +285,29 @@ bool PngFormat::onLoad(FileOp* fop)
           *(dst_address++) = graya(k, a);
         }
       }
-      /* GRAY */
+      // GRAY
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY) {
         uint8_t* src_address = row_pointer;
         uint16_t* dst_address = (uint16_t*)image->getPixelAddress(0, y);
-        unsigned int x, k;
+        unsigned int x, k, a;
 
         for (x=0; x<width; x++) {
           k = *(src_address++);
-          *(dst_address++) = graya(k, 255);
+
+          // Transparent color
+          if (png_trans_color &&
+              k == png_trans_color->gray) {
+            a = 0;
+            if (!fop->seq.has_alpha)
+              fop->seq.has_alpha = true;
+          }
+          else
+            a = 255;
+
+          *(dst_address++) = graya(k, a);
         }
       }
-      /* PALETTE */
+      // PALETTE
       else if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE) {
         uint8_t* src_address = row_pointer;
         uint8_t* dst_address = (uint8_t*)image->getPixelAddress(0, y);
@@ -300,7 +327,7 @@ bool PngFormat::onLoad(FileOp* fop)
   }
   png_free(png_ptr, row_pointer);
 
-  /* clean up after the read, and free any memory allocated */
+  // Clean up after the read, and free any memory allocated
   png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
   return true;
 }
