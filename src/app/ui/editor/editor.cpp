@@ -372,7 +372,7 @@ void Editor::setEditorScroll(const gfx::Point& scroll, bool blitValidRegion)
   }
 }
 
-void Editor::setEditorZoom(Zoom zoom)
+void Editor::setEditorZoom(const render::Zoom& zoom)
 {
   setZoomAndCenterInMouse(
     zoom, ui::get_mouse_position(),
@@ -1386,7 +1386,7 @@ bool Editor::isInsideSelection()
      m_document->mask()->containsPoint(spritePos.x, spritePos.y);
 }
 
-void Editor::setZoomAndCenterInMouse(Zoom zoom,
+void Editor::setZoomAndCenterInMouse(const Zoom& zoom,
   const gfx::Point& mousePos, ZoomBehavior zoomBehavior)
 {
   HideBrushPreview hide(m_brushPreview);

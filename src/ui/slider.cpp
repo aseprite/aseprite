@@ -26,12 +26,13 @@ static int slider_press_x;
 static int slider_press_value;
 static bool slider_press_left;
 
-Slider::Slider(int min, int max, int value)
+Slider::Slider(int min, int max, int value, SliderDelegate* delegate)
   : Widget(kSliderWidget)
   , m_min(min)
   , m_max(max)
   , m_value(MID(min, value, max))
   , m_readOnly(false)
+  , m_delegate(delegate)
 {
   this->setFocusStop(true);
   initTheme();
@@ -58,11 +59,31 @@ void Slider::setValue(int value)
   // It DOES NOT emit CHANGE signal! to avoid recursive calls.
 }
 
-void Slider::getSliderThemeInfo(int* min, int* max, int* value)
+void Slider::getSliderThemeInfo(int* min, int* max, int* value) const
 {
   if (min) *min = m_min;
   if (max) *max = m_max;
   if (value) *value = m_value;
+}
+
+std::string Slider::convertValueToText(int value) const
+{
+  if (m_delegate)
+    return m_delegate->onGetTextFromValue(value);
+  else {
+    char buf[128];
+    std::sprintf(buf, "%d", value);
+    return buf;
+  }
+}
+
+int Slider::convertTextToValue(const std::string& text) const
+{
+  if (m_delegate)
+    return m_delegate->onGetValueFromText(text);
+  else {
+    return std::strtol(text.c_str(), NULL, 10);
+  }
 }
 
 bool Slider::onProcessMessage(Message* msg)
@@ -194,12 +215,8 @@ not_used:;
 
 void Slider::onPreferredSize(PreferredSizeEvent& ev)
 {
-  char buf[256];
-  std::sprintf(buf, "%d", m_min);
-  int min_w = getFont()->textLength(buf);
-
-  std::sprintf(buf, "%d", m_max);
-  int max_w = getFont()->textLength(buf);
+  int min_w = getFont()->textLength(convertValueToText(m_min));
+  int max_w = getFont()->textLength(convertValueToText(m_max));
 
   int w = MAX(min_w, max_w);
   int h = getTextHeight();

@@ -74,6 +74,9 @@ public:
 
   void onScrollChanged(Editor* editor) override {
     updatePreviewEditor(this);
+
+    if (isActive())
+      StatusBar::instance()->updateFromEditor(this);
   }
 
   void onAfterFrameChanged(Editor* editor) override {

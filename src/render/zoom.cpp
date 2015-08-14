@@ -54,7 +54,7 @@ void Zoom::out()
   }
 }
 
-int Zoom::linearScale()
+int Zoom::linearScale() const
 {
   for (int i=0; i<scales_size; ++i) {
     // Exact match
@@ -82,16 +82,24 @@ Zoom Zoom::fromLinearScale(int i)
 // static
 int Zoom::findClosestLinearScale(double scale)
 {
-  for (int i=0; i<scales_size-1; ++i) {
-    double min = double(scales[i  ][0]) / double(scales[i  ][1]) - 0.5;
-    double max = double(scales[i+1][0]) / double(scales[i+1][1]) - 0.5;
-    if (scale >= min && scale <= max)
+  for (int i=1; i<scales_size-1; ++i) {
+    double min = double(scales[i-1][0]) / double(scales[i-1][1]);
+    double mid = double(scales[i  ][0]) / double(scales[i  ][1]);
+    double max = double(scales[i+1][0]) / double(scales[i+1][1]);
+
+    if (scale >= (min+mid)/2.0 &&
+        scale <= (mid+max)/2.0)
       return i;
   }
   if (scale < 1.0)
     return 0;
   else
     return scales_size-1;
+}
+
+int Zoom::linearValues()
+{
+  return scales_size;
 }
 
 } // namespace render

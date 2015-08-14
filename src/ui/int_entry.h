@@ -9,16 +9,16 @@
 #pragma once
 
 #include "ui/entry.h"
+#include "ui/slider.h"
 
 namespace ui {
 
   class CloseEvent;
   class PopupWindow;
-  class Slider;
 
   class IntEntry : public Entry {
   public:
-    IntEntry(int min, int max);
+    IntEntry(int min, int max, SliderDelegate* sliderDelegate = nullptr);
     ~IntEntry();
 
     int getValue() const;
@@ -26,6 +26,7 @@ namespace ui {
 
   protected:
     bool onProcessMessage(Message* msg) override;
+    void onPreferredSize(PreferredSizeEvent& ev) override;
     void onEntryChange() override;
 
     // New events
@@ -36,11 +37,12 @@ namespace ui {
     void closePopup();
     void onChangeSlider();
     void onPopupClose(CloseEvent& ev);
+    void removeSlider();
 
     int m_min;
     int m_max;
+    Slider m_slider;
     PopupWindow* m_popupWindow;
-    Slider* m_slider;
     bool m_changeFromSlider;
   };
 

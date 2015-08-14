@@ -375,6 +375,7 @@ add_library(app-lib
   ui/workspace.cpp
   ui/workspace_panel.cpp
   ui/workspace_tabs.cpp
+  ui/zoom_entry.cpp
   ui_context.cpp
   util/autocrop.cpp
   util/clipboard.cpp

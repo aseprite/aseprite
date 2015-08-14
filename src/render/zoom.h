@@ -53,7 +53,7 @@ namespace render {
 
     // Returns an linear zoom scale. This position can be incremented
     // or decremented to get a new zoom value.
-    int linearScale();
+    int linearScale() const;
 
     bool operator==(const Zoom& other) const {
       return m_num == other.m_num && m_den == other.m_den;
@@ -65,6 +65,7 @@ namespace render {
 
     static Zoom fromScale(double scale);
     static Zoom fromLinearScale(int i);
+    static int linearValues();
 
   private:
     static int findClosestLinearScale(double scale);

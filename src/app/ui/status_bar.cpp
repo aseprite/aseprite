@@ -31,6 +31,7 @@
 #include "app/ui/status_bar.h"
 #include "app/ui/timeline.h"
 #include "app/ui/toolbar.h"
+#include "app/ui/zoom_entry.h"
 #include "app/ui_context.h"
 #include "app/util/range_utils.h"
 #include "base/bind.h"
@@ -198,6 +199,8 @@ StatusBar::StatusBar()
     m_currentFrame = new GotoFrameEntry();
     m_newFrame = new Button("+");
     m_newFrame->Click.connect(Bind<void>(&StatusBar::newFrame, this));
+    m_zoomEntry = new ZoomEntry;
+    m_zoomEntry->ZoomChange.connect(&StatusBar::onChangeZoom, this);
 
     setup_mini_look(m_currentFrame);
     setup_mini_look(m_newFrame);
@@ -209,6 +212,7 @@ StatusBar::StatusBar()
 
     box1->addChild(m_frameLabel);
     box1->addChild(box4);
+    box1->addChild(m_zoomEntry);
 
     m_docControls->addChild(box1);
   }
@@ -217,6 +221,7 @@ StatusBar::StatusBar()
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
   tooltipManager->addTooltipFor(m_currentFrame, "Current Frame", BOTTOM);
+  tooltipManager->addTooltipFor(m_zoomEntry, "Zoom Level", BOTTOM);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
     Bind<void>(&StatusBar::onCurrentToolChange, this));
@@ -248,6 +253,12 @@ void StatusBar::onCurrentToolChange()
 void StatusBar::clearText()
 {
   setStatusText(1, "");
+}
+
+void StatusBar::updateFromEditor(Editor* editor)
+{
+  if (editor)
+    m_zoomEntry->setZoom(editor->zoom());
 }
 
 bool StatusBar::setStatusText(int msecs, const char *format, ...)
@@ -525,6 +536,12 @@ void StatusBar::newFrame()
 {
   Command* cmd = CommandsModule::instance()->getCommandByName(CommandId::NewFrame);
   UIContext::instance()->executeCommand(cmd);
+}
+
+void StatusBar::onChangeZoom(const render::Zoom& zoom)
+{
+  if (current_editor)
+    current_editor->setEditorZoom(zoom);
 }
 
 } // namespace app

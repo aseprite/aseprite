@@ -121,10 +121,10 @@ namespace app {
     const render::Zoom& zoom() const { return m_zoom; }
     const gfx::Point& padding() const { return m_padding; }
 
-    void setZoom(render::Zoom zoom) { m_zoom = zoom; }
+    void setZoom(const render::Zoom& zoom) { m_zoom = zoom; }
     void setDefaultScroll();
     void setEditorScroll(const gfx::Point& scroll, bool blitValidRegion);
-    void setEditorZoom(render::Zoom zoom);
+    void setEditorZoom(const render::Zoom& zoom);
 
     // Updates the Editor's view.
     void updateEditor();
@@ -174,7 +174,7 @@ namespace app {
     // Returns true if the cursor is inside the active mask/selection.
     bool isInsideSelection();
 
-    void setZoomAndCenterInMouse(render::Zoom zoom,
+    void setZoomAndCenterInMouse(const render::Zoom& zoom,
       const gfx::Point& mousePos, ZoomBehavior zoomBehavior);
 
     void pasteImage(const Image* image, const Mask* mask);

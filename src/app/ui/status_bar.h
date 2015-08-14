@@ -29,10 +29,14 @@ namespace ui {
   class Window;
 }
 
+namespace render {
+  class Zoom;
+}
+
 namespace app {
   class ButtonSet;
   class Editor;
-  class StatusBar;
+  class ZoomEntry;
 
   namespace tools {
     class Tool;
@@ -57,6 +61,9 @@ namespace app {
     void showTool(int msecs, tools::Tool* tool);
     void showSnapToGridWarning(bool state);
 
+    // Used by AppEditor to update the zoom level in the status bar.
+    void updateFromEditor(Editor* editor);
+
   protected:
     void onResize(ui::ResizeEvent& ev) override;
     void onPreferredSize(ui::PreferredSizeEvent& ev) override;
@@ -75,6 +82,7 @@ namespace app {
     void onCurrentToolChange();
     void onCelOpacitySliderChange();
     void newFrame();
+    void onChangeZoom(const render::Zoom& zoom);
 
     enum State { SHOW_TEXT, SHOW_COLOR, SHOW_TOOL };
 
@@ -92,6 +100,7 @@ namespace app {
     ui::Label* m_frameLabel;
     ui::Entry* m_currentFrame;        // Current frame and go to frame entry
     ui::Button* m_newFrame;           // Button to create a new frame
+    ZoomEntry* m_zoomEntry;
     doc::Document* m_doc;      // Document used to show the cel slider
 
     // Tip window

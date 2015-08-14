@@ -978,13 +978,16 @@ bool Widget::paintEvent(Graphics* graphics)
 
     enableFlags(HIDDEN);
 
-    gfx::Region rgn(getParent()->getBounds());
-    rgn.createIntersection(rgn,
-      gfx::Region(
-        graphics->getClipBounds().offset(
-          graphics->getInternalDeltaX(),
-          graphics->getInternalDeltaY())));
-    getParent()->paint(graphics, rgn);
+    if (getParent()) {
+      gfx::Region rgn(getParent()->getBounds());
+      rgn.createIntersection(
+        rgn,
+        gfx::Region(
+          graphics->getClipBounds().offset(
+            graphics->getInternalDeltaX(),
+            graphics->getInternalDeltaY())));
+      getParent()->paint(graphics, rgn);
+    }
 
     disableFlags(HIDDEN);
   }

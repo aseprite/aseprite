@@ -1323,12 +1323,7 @@ void SkinTheme::paintSlider(PaintEvent& ev)
 
     // Draw text
     std::string old_text = widget->getText();
-
-    {
-      char buf[128];
-      sprintf(buf, "%d", value);
-      widget->setTextQuiet(buf);
-    }
+    widget->setTextQuiet(widget->convertValueToText(value));
 
     {
       IntersectClip clip(g, Rect(rc.x, rc.y, x-rc.x, rc.h));

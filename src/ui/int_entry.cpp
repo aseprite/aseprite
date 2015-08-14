@@ -13,9 +13,11 @@
 #include "base/scoped_value.h"
 #include "gfx/rect.h"
 #include "gfx/region.h"
+#include "she/font.h"
 #include "ui/manager.h"
 #include "ui/message.h"
 #include "ui/popup_window.h"
+#include "ui/preferred_size_event.h"
 #include "ui/slider.h"
 #include "ui/system.h"
 #include "ui/theme.h"
@@ -26,14 +28,17 @@ namespace ui {
 
 using namespace gfx;
 
-IntEntry::IntEntry(int min, int max)
+IntEntry::IntEntry(int min, int max, SliderDelegate* sliderDelegate)
   : Entry(int(std::ceil(std::log10((double)max)))+1, "")
   , m_min(min)
   , m_max(max)
+  , m_slider(m_min, m_max, m_min, sliderDelegate)
   , m_popupWindow(NULL)
-  , m_slider(NULL)
   , m_changeFromSlider(false)
 {
+  m_slider.setFocusStop(false); // In this way the IntEntry doesn't lost the focus
+  m_slider.setTransparent(true);
+  m_slider.Change.connect(&IntEntry::onChangeSlider, this);
 }
 
 IntEntry::~IntEntry()
@@ -43,7 +48,7 @@ IntEntry::~IntEntry()
 
 int IntEntry::getValue() const
 {
-  int value = getTextInt();
+  int value = m_slider.convertTextToValue(getText());
   return MID(m_min, value, m_max);
 }
 
@@ -51,10 +56,10 @@ void IntEntry::setValue(int value)
 {
   value = MID(m_min, value, m_max);
 
-  setTextf("%d", value);
+  setText(m_slider.convertValueToText(value));
 
-  if (m_slider && !m_changeFromSlider)
-    m_slider->setValue(value);
+  if (m_popupWindow && !m_changeFromSlider)
+    m_slider.setValue(value);
 
   onValueChange();
 }
@@ -81,13 +86,13 @@ bool IntEntry::onProcessMessage(Message* msg)
       if (hasCapture()) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         Widget* pick = getManager()->pick(mouseMsg->position());
-        if (pick == m_slider) {
+        if (pick == &m_slider) {
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
             mouseMsg->buttons(),
             mouseMsg->position());
-          m_slider->sendMessage(&mouseMsg2);
+          m_slider.sendMessage(&mouseMsg2);
         }
       }
       break;
@@ -121,6 +126,20 @@ bool IntEntry::onProcessMessage(Message* msg)
   return Entry::onProcessMessage(msg);
 }
 
+void IntEntry::onPreferredSize(PreferredSizeEvent& ev)
+{
+  int min_w = getFont()->textLength(m_slider.convertValueToText(m_min));
+  int max_w = getFont()->textLength(m_slider.convertValueToText(m_max));
+
+  int w = MAX(min_w, max_w) + getFont()->charWidth('%');
+  int h = getTextHeight();
+
+  w += border().width();
+  h += border().height();
+
+  ev.setPreferredSize(w, h);
+}
+
 void IntEntry::onEntryChange()
 {
   Entry::onEntryChange();
@@ -134,9 +153,17 @@ void IntEntry::onValueChange()
 
 void IntEntry::openPopup()
 {
+  m_slider.setValue(getValue());
+
   Rect rc = getBounds();
-  rc.y += rc.h;
-  rc.h += 2*guiscale();
+  int sliderH = m_slider.getPreferredSize().h;
+
+  if (rc.y+rc.h+sliderH < ui::display_h())
+    rc.y += rc.h;
+  else
+    rc.y -= sliderH;
+
+  rc.h = sliderH;
   rc.w = 128*guiscale();
   if (rc.x+rc.w > ui::display_w())
     rc.x = rc.x - rc.w + getBounds().w;
@@ -152,36 +179,42 @@ void IntEntry::openPopup()
   rgn.createUnion(rgn, Region(getBounds()));
   m_popupWindow->setHotRegion(rgn);
 
-  m_slider = new Slider(m_min, m_max, getValue());
-  m_slider->setFocusStop(false); // In this way the IntEntry doesn't lost the focus
-  m_slider->setTransparent(true);
-  m_slider->Change.connect(&IntEntry::onChangeSlider, this);
-  m_popupWindow->addChild(m_slider);
-
+  m_popupWindow->addChild(&m_slider);
   m_popupWindow->openWindow();
 }
 
 void IntEntry::closePopup()
 {
   if (m_popupWindow) {
+    removeSlider();
+
     m_popupWindow->closeWindow(NULL);
     delete m_popupWindow;
     m_popupWindow = NULL;
-    m_slider = NULL;
   }
 }
 
 void IntEntry::onChangeSlider()
 {
   base::ScopedValue<bool> lockFlag(m_changeFromSlider, true, false);
-  setValue(m_slider->getValue());
+  setValue(m_slider.getValue());
   selectAllText();
 }
 
 void IntEntry::onPopupClose(CloseEvent& ev)
 {
+  removeSlider();
+
   deselectText();
   releaseFocus();
+}
+
+void IntEntry::removeSlider()
+{
+  if (m_popupWindow &&
+      m_slider.getParent() == m_popupWindow) {
+    m_popupWindow->removeChild(&m_slider);
+  }
 }
 
 } // namespace ui
