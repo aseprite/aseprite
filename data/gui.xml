@@ -350,6 +350,7 @@
       </key>
 
       <key command="NewBrush" shortcut="Ctrl+B" mac="Cmd+B" />
+      <key command="NewSpriteFromSelection" shortcut="Ctrl+Alt+N" mac="Cmd+Alt+N" />
     </commands>
 
     <!-- Keyboard shortcuts to select tools -->
@@ -479,8 +480,7 @@
           <param name="orientation" value="vertical" />
         </item>
         <item command="MaskContent" text="Transfor&amp;m" />
-        <item command="NewBrush" text="New &amp;Brush" />
-        <menu text="Shift">
+        <menu text="&amp;Shift">
           <item command="MoveMask" text="&amp;Left">
             <param name="target" value="content" />
             <param name="direction" value="left" />
@@ -510,6 +510,9 @@
             <param name="wrap" value="1" />
           </item>
         </menu>
+        <separator />
+        <item command="NewBrush" text="New &amp;Brush" />
+        <item command="NewSpriteFromSelection" text="&amp;New Sprite from Selection" />
         <separator />
         <item command="ReplaceColor" text="R&amp;eplace Color..." />
         <item command="InvertColor" text="&amp;Invert" />
