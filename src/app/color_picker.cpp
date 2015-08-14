@@ -11,6 +11,9 @@
 
 #include "app/color_picker.h"
 
+#include "app/document.h"
+#include "app/pref/preferences.h"
+#include "app/util/wrap_value.h"
 #include "doc/cel.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -28,19 +31,34 @@ ColorPicker::ColorPicker()
 }
 
 void ColorPicker::pickColor(const doc::Site& site,
-  const gfx::Point& pos, Mode mode)
+  const gfx::Point& _pos, Mode mode)
 {
+  const doc::Sprite* sprite = site.sprite();
+  gfx::Point pos = _pos;
+
   m_alpha = 255;
   m_color = app::Color::fromMask();
+
+  // Check tiled mode
+  if (sprite && site.document()) {
+    const app::Document* doc = static_cast<const app::Document*>(site.document());
+    DocumentPreferences& docPref = Preferences::instance().document(doc);
+
+    if (int(docPref.tiled.mode()) & int(filters::TiledMode::X_AXIS))
+      pos.x = wrap_value(pos.x, site.sprite()->width());
+
+    if (int(docPref.tiled.mode()) & int(filters::TiledMode::Y_AXIS))
+      pos.y = wrap_value(pos.y, site.sprite()->height());
+  }
 
   // Get the color from the image
   if (mode == FromComposition) { // Pick from the composed image
     m_color = app::Color::fromImage(
-      site.sprite()->pixelFormat(),
-      render::get_sprite_pixel(site.sprite(), pos.x, pos.y, site.frame()));
+      sprite->pixelFormat(),
+      render::get_sprite_pixel(sprite, pos.x, pos.y, site.frame()));
 
     doc::CelList cels;
-    site.sprite()->pickCels(pos.x, pos.y, site.frame(), 128, cels);
+    sprite->pickCels(pos.x, pos.y, site.frame(), 128, cels);
     if (!cels.empty())
       m_layer = cels.front()->layer();
   }

@@ -13,6 +13,7 @@
 
 #include "app/tools/ink.h"
 #include "app/tools/tool_loop.h"
+#include "app/util/wrap_value.h"
 #include "doc/image.h"
 
 namespace app {
@@ -29,10 +30,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
   // Tiled in Y axis
   if (int(tiledMode) & int(TiledMode::Y_AXIS)) {
     size = loop->getDstImage()->height();      // size = image height
-    if (y < 0)
-      y = size - (-(y+1) % size) - 1;
-    else
-      y = y % size;
+    y = wrap_value(y, size);
   }
   else if (y < 0 || y >= loop->getDstImage()->height())
       return;
@@ -48,10 +46,7 @@ void PointShape::doInkHline(int x1, int y, int x2, ToolLoop* loop)
       loop->getInk()->inkHline(0, y, size-1, loop);
     else {
       x = x1;
-      if (x < 0)
-        x = size - (-(x+1) % size) - 1;
-      else
-        x = x % size;
+      x = wrap_value(x, size);
 
       if (x+w-1 <= size-1)
         loop->getInk()->inkHline(x, y, x+w-1, loop);
