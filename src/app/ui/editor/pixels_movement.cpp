@@ -76,8 +76,11 @@ PixelsMovement::PixelsMovement(
   m_initialMask = new Mask(*mask);
   m_currentMask = new Mask(*mask);
 
-  m_pivotConn =
-    Preferences::instance().selection.pivot.AfterChange.connect(
+  m_pivotVisConn =
+    Preferences::instance().selection.pivotVisibility.AfterChange.connect(
+      Bind<void>(&PixelsMovement::onPivotChange, this));
+  m_pivotPosConn =
+    Preferences::instance().selection.pivotPosition.AfterChange.connect(
       Bind<void>(&PixelsMovement::onPivotChange, this));
   m_rotAlgoConn =
     Preferences::instance().selection.rotationAlgorithm.AfterChange.connect(

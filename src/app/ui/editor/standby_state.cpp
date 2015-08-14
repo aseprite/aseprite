@@ -94,8 +94,11 @@ void StandbyState::onEnterState(Editor* editor)
 {
   editor->setDecorator(m_decorator);
 
-  m_pivotConn =
-    Preferences::instance().selection.pivot.AfterChange.connect(
+  m_pivotVisConn =
+    Preferences::instance().selection.pivotVisibility.AfterChange.connect(
+      Bind<void>(&StandbyState::onPivotChange, this, editor));
+  m_pivotPosConn =
+    Preferences::instance().selection.pivotPosition.AfterChange.connect(
       Bind<void>(&StandbyState::onPivotChange, this, editor));
 }
 

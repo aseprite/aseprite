@@ -122,7 +122,8 @@ namespace app {
     Mask* m_currentMask;
     bool m_opaque;
     color_t m_maskColor;
-    ScopedConnection m_pivotConn;
+    ScopedConnection m_pivotVisConn;
+    ScopedConnection m_pivotPosConn;
     ScopedConnection m_rotAlgoConn;
   };
 

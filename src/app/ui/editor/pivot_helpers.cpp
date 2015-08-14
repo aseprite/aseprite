@@ -26,30 +26,30 @@ void set_pivot_from_preferences(gfx::Transformation& t)
   gfx::PointT<double> se(corners[gfx::Transformation::Corners::RIGHT_BOTTOM]);
   gfx::PointT<double> pivotPos((nw + se) / 2);
 
-  app::gen::PivotMode pivotMode = Preferences::instance().selection.pivot();
-  switch (pivotMode) {
-    case app::gen::PivotMode::NORTHWEST:
+  app::gen::PivotPosition pivot = Preferences::instance().selection.pivotPosition();
+  switch (pivot) {
+    case app::gen::PivotPosition::NORTHWEST:
       pivotPos = nw;
       break;
-    case app::gen::PivotMode::NORTH:
+    case app::gen::PivotPosition::NORTH:
       pivotPos = (nw + ne) / 2.0;
       break;
-    case app::gen::PivotMode::NORTHEAST:
+    case app::gen::PivotPosition::NORTHEAST:
       pivotPos = ne;
       break;
-    case app::gen::PivotMode::WEST:
+    case app::gen::PivotPosition::WEST:
       pivotPos = (nw + sw) / 2.0;
       break;
-    case app::gen::PivotMode::EAST:
+    case app::gen::PivotPosition::EAST:
       pivotPos = (ne + se) / 2.0;
       break;
-    case app::gen::PivotMode::SOUTHWEST:
+    case app::gen::PivotPosition::SOUTHWEST:
       pivotPos = sw;
       break;
-    case app::gen::PivotMode::SOUTH:
+    case app::gen::PivotPosition::SOUTH:
       pivotPos = (sw + se) / 2.0;
       break;
-    case app::gen::PivotMode::SOUTHEAST:
+    case app::gen::PivotPosition::SOUTHEAST:
       pivotPos = se;
       break;
   }

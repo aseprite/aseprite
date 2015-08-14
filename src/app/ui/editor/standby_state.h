@@ -70,7 +70,8 @@ namespace app {
     void onPivotChange(Editor* editor);
 
     Decorator* m_decorator;
-    ScopedConnection m_pivotConn;
+    ScopedConnection m_pivotVisConn;
+    ScopedConnection m_pivotPosConn;
   };
 
 } // namespace app

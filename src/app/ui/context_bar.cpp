@@ -566,11 +566,11 @@ class ContextBar::PivotField : public ButtonSet {
 public:
   PivotField()
     : ButtonSet(1) {
-    addItem(SkinTheme::instance()->parts.pivotHidden());
+    addItem(SkinTheme::instance()->parts.pivotCenter());
 
     ItemChange.connect(Bind<void>(&PivotField::onPopup, this));
 
-    Preferences::instance().selection.pivot.AfterChange.connect(
+    Preferences::instance().selection.pivotPosition.AfterChange.connect(
       Bind<void>(&PivotField::onPivotChange, this));
 
     onPivotChange();
@@ -584,7 +584,7 @@ private:
     gfx::Rect bounds = getBounds();
 
     Menu menu;
-    CheckBox hidden("Hidden pivot by default");
+    CheckBox visible("Display pivot by default");
     HBox box;
     ButtonSet buttonset(3);
     buttonset.addItem(theme->parts.pivotNorthwest());
@@ -598,27 +598,25 @@ private:
     buttonset.addItem(theme->parts.pivotSoutheast());
     box.addChild(&buttonset);
 
-    menu.addChild(&hidden);
+    menu.addChild(&visible);
     menu.addChild(new MenuSeparator);
     menu.addChild(&box);
 
-    app::gen::PivotMode mode = Preferences::instance().selection.pivot();
-    if (mode == app::gen::PivotMode::HIDDEN)
-      hidden.setSelected(true);
-    else {
-      buttonset.setSelectedItem(int(mode)-1);
-    }
+    bool isVisible = Preferences::instance().selection.pivotVisibility();
+    app::gen::PivotPosition pos = Preferences::instance().selection.pivotPosition();
+    visible.setSelected(isVisible);
+    buttonset.setSelectedItem(int(pos));
 
-    hidden.Click.connect(
-      [&hidden](Event&){
-        Preferences::instance().selection.pivot(app::gen::PivotMode::HIDDEN);
-        hidden.closeWindow();
+    visible.Click.connect(
+      [&visible](Event&){
+        Preferences::instance().selection.pivotVisibility(
+          visible.isSelected());
       });
 
     buttonset.ItemChange.connect(
       [&buttonset](){
-        Preferences::instance().selection.pivot(app::gen::PivotMode(buttonset.selectedItem()+1));
-        buttonset.closeWindow();
+        Preferences::instance().selection.pivotPosition(
+          app::gen::PivotPosition(buttonset.selectedItem()));
       });
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
@@ -627,17 +625,16 @@ private:
   void onPivotChange() {
     SkinTheme* theme = SkinTheme::instance();
     SkinPartPtr part;
-    switch (Preferences::instance().selection.pivot()) {
-      case app::gen::PivotMode::HIDDEN:    part = theme->parts.pivotHidden(); break;
-      case app::gen::PivotMode::NORTHWEST: part = theme->parts.pivotNorthwest(); break;
-      case app::gen::PivotMode::NORTH:     part = theme->parts.pivotNorth(); break;
-      case app::gen::PivotMode::NORTHEAST: part = theme->parts.pivotNortheast(); break;
-      case app::gen::PivotMode::WEST:      part = theme->parts.pivotWest(); break;
-      case app::gen::PivotMode::CENTER:    part = theme->parts.pivotCenter(); break;
-      case app::gen::PivotMode::EAST:      part = theme->parts.pivotEast(); break;
-      case app::gen::PivotMode::SOUTHWEST: part = theme->parts.pivotSouthwest(); break;
-      case app::gen::PivotMode::SOUTH:     part = theme->parts.pivotSouth(); break;
-      case app::gen::PivotMode::SOUTHEAST: part = theme->parts.pivotSoutheast(); break;
+    switch (Preferences::instance().selection.pivotPosition()) {
+      case app::gen::PivotPosition::NORTHWEST: part = theme->parts.pivotNorthwest(); break;
+      case app::gen::PivotPosition::NORTH:     part = theme->parts.pivotNorth(); break;
+      case app::gen::PivotPosition::NORTHEAST: part = theme->parts.pivotNortheast(); break;
+      case app::gen::PivotPosition::WEST:      part = theme->parts.pivotWest(); break;
+      case app::gen::PivotPosition::CENTER:    part = theme->parts.pivotCenter(); break;
+      case app::gen::PivotPosition::EAST:      part = theme->parts.pivotEast(); break;
+      case app::gen::PivotPosition::SOUTHWEST: part = theme->parts.pivotSouthwest(); break;
+      case app::gen::PivotPosition::SOUTH:     part = theme->parts.pivotSouth(); break;
+      case app::gen::PivotPosition::SOUTHEAST: part = theme->parts.pivotSoutheast(); break;
     }
     if (part)
       getItem(0)->setIcon(part);

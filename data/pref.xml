@@ -52,17 +52,16 @@
       <value id="ALL_LAYERS" value="0" />
       <value id="CURRENT_LAYER" value="1" />
     </enum>
-    <enum id="PivotMode">
-      <value id="HIDDEN" value="0" />
-      <value id="NORTHWEST" value="1" />
-      <value id="NORTH" value="2" />
-      <value id="NORTHEAST" value="3" />
-      <value id="WEST" value="4" />
-      <value id="CENTER" value="5" />
-      <value id="EAST" value="6" />
-      <value id="SOUTHWEST" value="7" />
-      <value id="SOUTH" value="8" />
-      <value id="SOUTHEAST" value="9" />
+    <enum id="PivotPosition">
+      <value id="NORTHWEST" value="0" />
+      <value id="NORTH" value="1" />
+      <value id="NORTHEAST" value="2" />
+      <value id="WEST" value="3" />
+      <value id="CENTER" value="4" />
+      <value id="EAST" value="5" />
+      <value id="SOUTHWEST" value="6" />
+      <value id="SOUTH" value="7" />
+      <value id="SOUTHEAST" value="8" />
     </enum>
   </types>
 
@@ -124,7 +123,8 @@
     </section>
     <section id="selection">
       <option id="mode" type="app::tools::SelectionMode" default="app::tools::SelectionMode::DEFAULT" />
-      <option id="pivot" type="PivotMode" default="PivotMode::HIDDEN" />
+      <option id="pivot_visibility" type="bool" default="false" />
+      <option id="pivot_position" type="PivotPosition" default="PivotPosition::CENTER" />
       <option id="opaque" type="bool" default="false" />
       <option id="auto_opaque" type="bool" default="true" />
       <option id="transparent_color" type="app::Color" />

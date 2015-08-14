@@ -256,8 +256,7 @@ void TransformHandles::adjustHandle(int& x, int& y, int handle_w, int handle_h, 
 
 bool TransformHandles::visiblePivot(fixmath::fixed angle) const
 {
-  return (Preferences::instance().selection.pivot() != app::gen::PivotMode::HIDDEN ||
-          angle != 0);
+  return (Preferences::instance().selection.pivotVisibility() || angle != 0);
 }
 
 } // namespace app
