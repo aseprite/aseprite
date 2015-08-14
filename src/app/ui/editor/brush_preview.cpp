@@ -192,7 +192,8 @@ void BrushPreview::show(const gfx::Point& screenPos)
     }
 
     document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds = brushBounds), site.frame());
+      sprite, gfx::Region(m_lastBounds = brushBounds),
+      m_lastFrame = site.frame());
 
     m_withRealPreview = true;
   }
@@ -246,11 +247,9 @@ void BrushPreview::hide()
 
   // Clean pixel/brush preview
   if (m_withRealPreview) {
-    frame_t frame = document->getExtraCel()->frame();
-
     document->destroyExtraCel();
     document->notifySpritePixelsModified(
-      sprite, gfx::Region(m_lastBounds), frame);
+      sprite, gfx::Region(m_lastBounds), m_lastFrame);
 
     m_withRealPreview = false;
   }

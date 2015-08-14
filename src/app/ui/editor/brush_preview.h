@@ -11,6 +11,7 @@
 
 #include "base/shared_ptr.h"
 #include "doc/color.h"
+#include "doc/frame.h"
 #include "doc/mask_boundaries.h"
 #include "gfx/color.h"
 #include "gfx/point.h"
@@ -102,7 +103,10 @@ namespace app {
     gfx::Region m_clippingRegion;
     gfx::Region m_oldClippingRegion;
 
+    // Information stored in show() and used in hide() to clear the
+    // brush preview in the exact same place.
     gfx::Rect m_lastBounds;
+    doc::frame_t m_lastFrame;
   };
 
   class HideBrushPreview {
