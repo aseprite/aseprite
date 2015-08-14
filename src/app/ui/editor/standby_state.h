@@ -39,7 +39,7 @@ namespace app {
 
     virtual gfx::Transformation getTransformation(Editor* editor);
 
-    void startSelectionTransformation(Editor* editor, const gfx::Point& move);
+    void startSelectionTransformation(Editor* editor, const gfx::Point& move, double angle);
 
   protected:
     // Returns true and changes to ScrollingState when "msg" says "the

@@ -50,6 +50,7 @@
 #include "she/system.h"
 #include "ui/ui.h"
 
+#include <cmath>
 #include <cstdio>
 
 namespace app {
@@ -1486,13 +1487,15 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   setState(EditorStatePtr(new MovingPixelsState(this, NULL, pixelsMovement, NoHandle)));
 }
 
-void Editor::startSelectionTransformation(const gfx::Point& move)
+void Editor::startSelectionTransformation(const gfx::Point& move, double angle)
 {
   if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(m_state.get())) {
     movingPixels->translate(move);
+    if (std::fabs(angle) > 1e-5)
+      movingPixels->rotate(angle);
   }
   else if (StandbyState* standby = dynamic_cast<StandbyState*>(m_state.get())) {
-    standby->startSelectionTransformation(this, move);
+    standby->startSelectionTransformation(this, move, angle);
   }
 }
 

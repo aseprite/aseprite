@@ -10,17 +10,21 @@
 #endif
 
 #include "app/app.h"
-#include "app/commands/command.h"
+#include "app/commands/cmd_rotate.h"
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
 #include "app/job.h"
+#include "app/modules/editors.h"
 #include "app/modules/gui.h"
+#include "app/tools/tool_box.h"
 #include "app/transaction.h"
 #include "app/ui/color_bar.h"
+#include "app/ui/editor/editor.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
+#include "app/ui/toolbar.h"
 #include "app/util/range_utils.h"
 #include "base/convert_to.h"
 #include "doc/cel.h"
@@ -32,24 +36,7 @@
 
 namespace app {
 
-class RotateCommand : public Command {
-public:
-  RotateCommand();
-  Command* clone() const override { return new RotateCommand(*this); }
-
-protected:
-  void onLoadParams(const Params& params) override;
-  bool onEnabled(Context* context) override;
-  void onExecute(Context* context) override;
-  std::string onGetFriendlyName() const override;
-
-private:
-  bool m_flipMask;
-  int m_angle;
-};
-
-class RotateJob : public Job
-{
+class RotateJob : public Job {
   ContextWriter m_writer;
   Document* m_document;
   Sprite* m_sprite;
@@ -198,8 +185,8 @@ bool RotateCommand::onEnabled(Context* context)
 
 void RotateCommand::onExecute(Context* context)
 {
-  ContextReader reader(context);
   {
+    Site site = context->activeSite();
     CelList cels;
     bool rotateSprite = false;
 
@@ -207,13 +194,26 @@ void RotateCommand::onExecute(Context* context)
     if (m_flipMask) {
       DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
       if (range.enabled())
-        cels = get_unique_cels(reader.sprite(), range);
-      else if (reader.cel())
-        cels.push_back(reader.cel());
+        cels = get_unique_cels(site.sprite(), range);
+      else if (site.cel()) {
+        // If we want to rotate the visible mask for the current cel,
+        // we can go to MovingPixelsState.
+        if (static_cast<app::Document*>(site.document())->isMaskVisible()) {
+          // Select marquee tool
+          if (tools::Tool* tool = App::instance()->getToolBox()
+              ->getToolById(tools::WellKnownTools::RectangularMarquee)) {
+            ToolBar::instance()->selectTool(tool);
+            current_editor->startSelectionTransformation(gfx::Point(0, 0), m_angle);
+            return;
+          }
+        }
+
+        cels.push_back(site.cel());
+      }
     }
     // Flip the whole sprite
-    else if (reader.sprite()) {
-      for (Cel* cel : reader.sprite()->uniqueCels())
+    else if (site.sprite()) {
+      for (Cel* cel : site.sprite()->uniqueCels())
         cels.push_back(cel);
 
       rotateSprite = true;
@@ -222,12 +222,15 @@ void RotateCommand::onExecute(Context* context)
     if (cels.empty())           // Nothing to do
       return;
 
-    RotateJob job(reader, m_angle, cels, rotateSprite);
-    job.startJob();
-    job.waitJob();
+    ContextReader reader(context);
+    {
+      RotateJob job(reader, m_angle, cels, rotateSprite);
+      job.startJob();
+      job.waitJob();
+    }
+    reader.document()->generateMaskBoundaries();
+    update_screen_for_document(reader.document());
   }
-  reader.document()->generateMaskBoundaries();
-  update_screen_for_document(reader.document());
 }
 
 std::string RotateCommand::onGetFriendlyName() const

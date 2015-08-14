@@ -15,6 +15,7 @@
 #include "app/color_utils.h"
 #include "app/commands/cmd_flip.h"
 #include "app/commands/cmd_move_mask.h"
+#include "app/commands/cmd_rotate.h"
 #include "app/commands/command.h"
 #include "app/commands/commands.h"
 #include "app/console.h"
@@ -128,6 +129,11 @@ void MovingPixelsState::translate(const gfx::Point& delta)
   m_pixelsMovement->catchImageAgain(gfx::Point(0, 0), MoveHandle);
   m_pixelsMovement->moveImage(delta, PixelsMovement::NormalMovement);
   m_pixelsMovement->dropImageTemporarily();
+}
+
+void MovingPixelsState::rotate(double angle)
+{
+  m_pixelsMovement->rotate(angle);
 }
 
 void MovingPixelsState::onEnterState(Editor* editor)
@@ -481,6 +487,17 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 
       ev.cancel();
       return;
+    }
+  }
+  // Rotate is quite simple, we can add the angle to the current transformation.
+  else if (command->id() == CommandId::Rotate) {
+    if (RotateCommand* rotate = dynamic_cast<RotateCommand*>(command)) {
+      if (rotate->flipMask()) {
+        m_pixelsMovement->rotate(rotate->angle());
+
+        ev.cancel();
+        return;
+      }
     }
   }
 

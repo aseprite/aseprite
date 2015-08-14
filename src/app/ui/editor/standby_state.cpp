@@ -48,6 +48,8 @@
 #include "ui/system.h"
 #include "ui/view.h"
 
+#include <cmath>
+
 namespace app {
 
 using namespace ui;
@@ -403,12 +405,17 @@ gfx::Transformation StandbyState::getTransformation(Editor* editor)
   return t;
 }
 
-void StandbyState::startSelectionTransformation(Editor* editor, const gfx::Point& move)
+void StandbyState::startSelectionTransformation(Editor* editor,
+                                                const gfx::Point& move,
+                                                double angle)
 {
   transformSelection(editor, NULL, NoHandle);
 
-  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get()))
+  if (MovingPixelsState* movingPixels = dynamic_cast<MovingPixelsState*>(editor->getState().get())) {
     movingPixels->translate(move);
+    if (std::fabs(angle) > 1e-5)
+      movingPixels->rotate(angle);
+  }
 }
 
 void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleType handle)

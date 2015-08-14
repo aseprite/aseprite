@@ -179,7 +179,7 @@ namespace app {
 
     void pasteImage(const Image* image, const Mask* mask);
 
-    void startSelectionTransformation(const gfx::Point& move);
+    void startSelectionTransformation(const gfx::Point& move, double angle);
 
     // Used by EditorView to notify changes in the view's scroll
     // position.

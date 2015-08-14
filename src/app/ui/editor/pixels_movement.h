@@ -86,6 +86,10 @@ namespace app {
     // current selection instead of dropping and flipping it).
     void flipImage(doc::algorithm::FlipType flipType);
 
+    // Rotates the image and the mask the given angle. It's used to
+    // simulate RotateCommand when we're inside MovingPixelsState.
+    void rotate(double angle);
+
     const gfx::Transformation& getTransformation() const { return m_currentData; }
 
   private:

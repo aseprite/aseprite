@@ -162,7 +162,7 @@ void MoveMaskCommand::onExecute(Context* context)
         update_screen_for_document(writer.document());
       }
       else {
-        current_editor->startSelectionTransformation(gfx::Point(dx, dy));
+        current_editor->startSelectionTransformation(gfx::Point(dx, dy), 0.0);
       }
       break;
 

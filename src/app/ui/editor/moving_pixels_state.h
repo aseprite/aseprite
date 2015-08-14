@@ -34,6 +34,7 @@ namespace app {
     virtual ~MovingPixelsState();
 
     void translate(const gfx::Point& delta);
+    void rotate(double angle);
 
     // EditorState
     virtual void onEnterState(Editor* editor) override;

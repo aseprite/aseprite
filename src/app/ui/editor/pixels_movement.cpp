@@ -127,6 +127,20 @@ void PixelsMovement::flipImage(doc::algorithm::FlipType flipType)
   }
 }
 
+void PixelsMovement::rotate(double angle)
+{
+  ContextWriter writer(m_reader, 1000);
+  m_currentData.angle(m_currentData.angle() + PI * -angle / 180.0);
+
+  m_document->setTransformation(m_currentData);
+
+  redrawExtraImage();
+  redrawCurrentMask();
+  updateDocumentMask();
+
+  update_screen_for_document(m_document);
+}
+
 void PixelsMovement::cutMask()
 {
   {
