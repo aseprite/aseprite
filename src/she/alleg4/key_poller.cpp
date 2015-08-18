@@ -25,7 +25,7 @@ int she_keyboard_ucallback(int unicode_char, int* scancode)
 
   ev.setType(Event::KeyDown);
   ev.setScancode(static_cast<KeyScancode>(c));
-  if (unicode_char)
+  if (unicode_char > 0)
     ev.setUnicodeChar(unicode_char);
   else
     ev.setUnicodeChar(::scancode_to_ascii(c));
@@ -38,8 +38,19 @@ int she_keyboard_ucallback(int unicode_char, int* scancode)
 void she_keyboard_lowlevel_callback(int scancode)
 {
   // Bit 0x80 indicates that it is a key release.
-  if (!(scancode & 0x80))
+  if (!(scancode & 0x80)) {
+    // Generate KeyDown events for modifiers. Needed for Allegro 4 on
+    // Mac OS X and Linux as modifiers don't generate
+    // keyboard_ucallback() calls.
+    if (scancode == KEY_CAPSLOCK ||
+        scancode == KEY_LSHIFT ||
+        scancode == KEY_LCONTROL ||
+        scancode == KEY_ALT ||
+        scancode == KEY_COMMAND) {
+      she_keyboard_ucallback(-1, &scancode);
+    }
     return;
+  }
 
   scancode ^= 0x80;
   key_repeated[scancode] = 0;
