@@ -696,8 +696,8 @@ void Render::renderLayer(
                     m_extraImage &&
                     layer == m_currentLayer &&
                     frame == m_currentFrame &&
-                    (layer->isBackground() && render_background ||
-                     !layer->isBackground() && render_transparent));
+                    ((layer->isBackground() && render_background) ||
+                     (!layer->isBackground() && render_transparent)));
   if (drawExtra) {
     extraArea = gfx::Rect(
       m_extraCel->x(),
