@@ -20,6 +20,7 @@
 #include "doc/document.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
+#include "doc/image_buffer.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "gfx/transformation.h"
@@ -213,6 +214,7 @@ namespace app {
 
     // Image of the extra cel.
     ImageRef m_extraImage;
+    ImageBufferPtr m_extraImageBuffer;
     BlendMode m_extraCelBlendMode;
     render::ExtraType m_extraCelType;
 

@@ -52,8 +52,9 @@ Document::Document(Sprite* sprite)
     // Information about the file format used to load/save this document
   , m_format_options(NULL)
     // Extra cel
-  , m_extraCel(NULL)
-  , m_extraImage(NULL)
+  , m_extraCel(nullptr)
+  , m_extraImage(nullptr)
+  , m_extraImageBuffer(nullptr)
   , m_extraCelBlendMode(BlendMode::NORMAL)
   , m_extraCelType(render::ExtraType::NONE)
   // Mask
@@ -238,8 +239,9 @@ void Document::destroyExtraCel()
 {
   delete m_extraCel;
 
-  m_extraCel = NULL;
-  m_extraImage.reset(NULL);
+  m_extraCel = nullptr;
+  m_extraImage.reset(nullptr);
+  m_extraImageBuffer.reset(nullptr);
   m_extraCelType = render::ExtraType::NONE;
 }
 
@@ -251,7 +253,9 @@ void Document::prepareExtraCel(const gfx::Rect& bounds, frame_t frame, int opaci
       m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
       m_extraImage->width() != bounds.w ||
       m_extraImage->height() != bounds.h) {
-    Image* newImage = Image::create(sprite()->pixelFormat(), bounds.w, bounds.h);
+    if (!m_extraImageBuffer)
+      m_extraImageBuffer.reset(new ImageBuffer(1));
+    Image* newImage = Image::create(sprite()->pixelFormat(), bounds.w, bounds.h, m_extraImageBuffer);
     m_extraImage.reset(newImage);
   }
 
