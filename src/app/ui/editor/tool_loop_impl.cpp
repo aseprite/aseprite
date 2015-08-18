@@ -262,6 +262,8 @@ public:
             ExpandCelCanvas::UseModifiedRegionAsUndoInfo:
             ExpandCelCanvas::None)))
   {
+    ASSERT(m_context->activeDocument() == m_editor->document());
+
     // Settings
     switch (tool->getFill(m_button)) {
       case tools::FillNone:
