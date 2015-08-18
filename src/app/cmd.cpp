@@ -11,6 +11,8 @@
 
 #include "app/cmd.h"
 
+#include <typeinfo>
+
 namespace app {
 
 Cmd::Cmd()
