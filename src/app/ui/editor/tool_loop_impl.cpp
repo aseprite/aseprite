@@ -351,19 +351,19 @@ public:
   const Image* getSrcImage() override { return m_expandCelCanvas.getSourceCanvas(); }
   Image* getDstImage() override { return m_expandCelCanvas.getDestCanvas(); }
   void validateSrcImage(const gfx::Region& rgn) override {
-    return m_expandCelCanvas.validateSourceCanvas(rgn);
+    m_expandCelCanvas.validateSourceCanvas(rgn);
   }
   void validateDstImage(const gfx::Region& rgn) override {
-    return m_expandCelCanvas.validateDestCanvas(rgn);
+    m_expandCelCanvas.validateDestCanvas(rgn);
   }
   void invalidateDstImage() override {
-    return m_expandCelCanvas.invalidateDestCanvas();
+    m_expandCelCanvas.invalidateDestCanvas();
   }
   void invalidateDstImage(const gfx::Region& rgn) override {
-    return m_expandCelCanvas.invalidateDestCanvas(rgn);
+    m_expandCelCanvas.invalidateDestCanvas(rgn);
   }
   void copyValidDstToSrcImage(const gfx::Region& rgn) override {
-    return m_expandCelCanvas.copyValidDestToSourceCanvas(rgn);
+    m_expandCelCanvas.copyValidDestToSourceCanvas(rgn);
   }
 
   bool useMask() override { return m_useMask; }
