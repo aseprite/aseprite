@@ -1067,7 +1067,6 @@ private:
     }
 
     int usedNColors = usedColors.picks();
-    int localColorCount = (1 << GifBitSizeLimited(usedNColors));
 
     Remap remap(256);
     for (int i=0; i<remap.size(); ++i)
