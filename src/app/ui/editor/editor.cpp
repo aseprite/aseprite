@@ -313,7 +313,10 @@ void Editor::setFrame(frame_t frame)
     return;
 
   m_observers.notifyBeforeFrameChanged(this);
-  m_frame = frame;
+  {
+    HideBrushPreview hide(m_brushPreview);
+    m_frame = frame;
+  }
   m_observers.notifyAfterFrameChanged(this);
 
   // The active frame has changed.
