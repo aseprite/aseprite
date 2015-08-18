@@ -30,6 +30,10 @@
 
 namespace {
 
+// We cannot have two ExpandCelCanvas instances at the same time
+// (because we share ImageBuffers between them).
+static app::ExpandCelCanvas* singleton = nullptr;
+
 static doc::ImageBufferPtr src_buffer;
 static doc::ImageBufferPtr dst_buffer;
 
@@ -68,6 +72,9 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
   , m_committed(false)
   , m_transaction(transaction)
 {
+  ASSERT(!singleton);
+  singleton = this;
+
   create_buffers();
 
   if (m_layer->isImage()) {
@@ -116,6 +123,9 @@ ExpandCelCanvas::ExpandCelCanvas(Site site,
 
 ExpandCelCanvas::~ExpandCelCanvas()
 {
+  ASSERT(singleton == this);
+  singleton = nullptr;
+
   try {
     if (!m_committed && !m_closed)
       rollback();
