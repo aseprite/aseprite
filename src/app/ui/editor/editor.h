@@ -269,8 +269,8 @@ namespace app {
     gfx::Point m_padding;
 
     // Marching ants stuff
-    ui::Timer m_mask_timer;
-    int m_offset_count;
+    ui::Timer m_antsTimer;
+    int m_antsOffset;
 
     // This slot is used to disconnect the Editor from CurrentToolChange
     // signal (because the editor can be destroyed and the application

@@ -155,8 +155,8 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_quicktool(NULL)
   , m_selectionMode(tools::SelectionMode::DEFAULT)
   , m_padding(0, 0)
-  , m_mask_timer(100, this)
-  , m_offset_count(0)
+  , m_antsTimer(100, this)
+  , m_antsOffset(0)
   , m_customizationDelegate(NULL)
   , m_docView(NULL)
   , m_flags(flags)
@@ -214,7 +214,7 @@ Editor::~Editor()
 
   setCustomizationDelegate(NULL);
 
-  m_mask_timer.stop();
+  m_antsTimer.stop();
 }
 
 void Editor::destroyEditorSharedInternals()
@@ -684,7 +684,7 @@ void Editor::drawMask(Graphics* g)
   int y = m_padding.y;
 
   for (const auto& seg : *m_document->getMaskBoundaries()) {
-    CheckedDrawMode checked(g, m_offset_count);
+    CheckedDrawMode checked(g, m_antsOffset);
     gfx::Rect bounds = m_zoom.apply(seg.bounds());
 
     if (!seg.open()) {
@@ -1146,18 +1146,18 @@ bool Editor::onProcessMessage(Message* msg)
   switch (msg->type()) {
 
     case kTimerMessage:
-      if (static_cast<TimerMessage*>(msg)->timer() == &m_mask_timer) {
+      if (static_cast<TimerMessage*>(msg)->timer() == &m_antsTimer) {
         if (isVisible() && m_sprite) {
           drawMaskSafe();
 
           // Set offset to make selection-movement effect
-          if (m_offset_count < 7)
-            m_offset_count++;
+          if (m_antsOffset < 7)
+            m_antsOffset++;
           else
-            m_offset_count = 0;
+            m_antsOffset = 0;
         }
-        else if (m_mask_timer.isRunning()) {
-          m_mask_timer.stop();
+        else if (m_antsTimer.isRunning()) {
+          m_antsTimer.stop();
         }
       }
       break;
@@ -1315,10 +1315,10 @@ void Editor::onPaint(ui::PaintEvent& ev)
       // Draw the mask boundaries
       if (m_document->getMaskBoundaries()) {
         drawMask(g);
-        m_mask_timer.start();
+        m_antsTimer.start();
       }
       else {
-        m_mask_timer.stop();
+        m_antsTimer.stop();
       }
     }
     catch (const LockedDocumentException&) {
