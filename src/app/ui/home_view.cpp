@@ -172,8 +172,17 @@ void HomeView::onNewUpdate(const std::string& url, const std::string& version)
 void HomeView::onRecoverSprites()
 {
 #ifdef ENABLE_DATA_RECOVERY
-  if (!m_dataRecoveryView)
+  if (!m_dataRecoveryView) {
     m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
+
+    // Hide the "Recovery Lost Sprite" button when the
+    // DataRecoveryView is empty.
+    m_dataRecoveryView->Empty.connect(
+      [this]{
+        recoverSpritesPlaceholder()->setVisible(false);
+        layout();
+      });
+  }
 
   if (!m_dataRecoveryView->getParent())
     App::instance()->getMainWindow()->getWorkspace()->addView(m_dataRecoveryView);

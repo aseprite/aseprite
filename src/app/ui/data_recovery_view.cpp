@@ -173,6 +173,9 @@ void DataRecoveryView::fillList()
       m_listBox.addChild(item);
     }
   }
+
+  if (m_listBox.getItemsCount() == 0)
+    Empty();
 }
 
 std::string DataRecoveryView::getTabText()
