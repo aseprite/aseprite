@@ -218,6 +218,7 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Call the eyedropper command
   if (clickedInk->isEyedropper()) {
+    editor->captureMouse();
     callEyedropper(editor);
     return true;
   }
@@ -290,8 +291,10 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
   // We control eyedropper tool from here. TODO move this to another place
   if (msg->left() || msg->right()) {
     tools::Ink* clickedInk = editor->getCurrentEditorInk();
-    if (clickedInk->isEyedropper())
+    if (clickedInk->isEyedropper() &&
+        editor->hasCapture()) {
       callEyedropper(editor);
+    }
   }
 
   editor->showBrushPreview(msg->position());
