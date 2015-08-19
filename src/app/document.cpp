@@ -241,7 +241,6 @@ void Document::destroyExtraCel()
 
   m_extraCel = nullptr;
   m_extraImage.reset(nullptr);
-  m_extraImageBuffer.reset(nullptr);
   m_extraCelType = render::ExtraType::NONE;
 }
 
