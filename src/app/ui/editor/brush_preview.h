@@ -9,6 +9,7 @@
 #define APP_UI_EDITOR_BRUSH_PREVIEW_H_INCLUDED
 #pragma once
 
+#include "app/extra_cel.h"
 #include "base/shared_ptr.h"
 #include "doc/color.h"
 #include "doc/frame.h"
@@ -106,6 +107,8 @@ namespace app {
     // brush preview in the exact same place.
     gfx::Rect m_lastBounds;
     doc::frame_t m_lastFrame;
+
+    ExtraCelRef m_extraCel;
   };
 
   class HideBrushPreview {

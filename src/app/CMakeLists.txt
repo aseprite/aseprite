@@ -258,6 +258,7 @@ add_library(app-lib
   document_range.cpp
   document_range_ops.cpp
   document_undo.cpp
+  extra_cel.cpp
   file/ase_format.cpp
   file/bmp_format.cpp
   file/file.cpp

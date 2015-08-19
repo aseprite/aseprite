@@ -10,6 +10,7 @@
 #pragma once
 
 #include "app/context_access.h"
+#include "app/extra_cel.h"
 #include "app/transaction.h"
 #include "app/ui/editor/handle_type.h"
 #include "base/connection.h"
@@ -125,6 +126,7 @@ namespace app {
     ScopedConnection m_pivotVisConn;
     ScopedConnection m_pivotPosConn;
     ScopedConnection m_rotAlgoConn;
+    ExtraCelRef m_extraCel;
   };
 
   inline PixelsMovement::MoveModifier& operator|=(PixelsMovement::MoveModifier& a,

@@ -66,7 +66,7 @@ public:
     editor->getManager()->freeMouse();
 
     // Clear extras (e.g. pen preview)
-    m_doc->destroyExtraCel();
+    m_doc->setExtraCel(ExtraCelRef(nullptr));
 
     gfx::Rect vp = view->getViewportBounds();
     gfx::Point scroll = view->getViewScroll();

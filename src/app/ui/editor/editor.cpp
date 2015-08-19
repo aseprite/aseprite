@@ -479,14 +479,13 @@ void Editor::drawOneSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& sprite
       }
     }
 
-    if (m_document->getExtraCelType() != render::ExtraType::NONE) {
-      ASSERT(m_document->getExtraCel());
-
+    ExtraCelRef extraCel = m_document->extraCel();
+    if (extraCel && extraCel->type() != render::ExtraType::NONE) {
       m_renderEngine.setExtraImage(
-        m_document->getExtraCelType(),
-        m_document->getExtraCel(),
-        m_document->getExtraCelImage(),
-        m_document->getExtraCelBlendMode(),
+        extraCel->type(),
+        extraCel->cel(),
+        extraCel->image(),
+        extraCel->blendMode(),
         m_layer, m_frame);
     }
 
@@ -794,22 +793,24 @@ void Editor::flashCurrentLayer()
   if (src_image) {
     m_renderEngine.removePreviewImage();
 
-    m_document->prepareExtraCel(m_sprite->bounds(), m_frame, 255);
-    m_document->setExtraCelType(render::ExtraType::COMPOSITE);
+    ExtraCelRef extraCel(new ExtraCel);
+    extraCel->create(m_sprite, m_sprite->bounds(), m_frame, 255);
+    extraCel->setType(render::ExtraType::COMPOSITE);
+    extraCel->setBlendMode(BlendMode::NEG_BW);
 
-    Image* flash_image = m_document->getExtraCelImage();
-
+    Image* flash_image = extraCel->image();
     clear_image(flash_image, flash_image->maskColor());
     copy_image(flash_image, src_image, x, y);
-    m_document->setExtraCelBlendMode(BlendMode::NEG_BW);
 
-    drawSpriteClipped(gfx::Region(
-        gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
+    {
+      ExtraCelRef oldExtraCel = m_document->extraCel();
+      m_document->setExtraCel(extraCel);
+      drawSpriteClipped(gfx::Region(
+                          gfx::Rect(0, 0, m_sprite->width(), m_sprite->height())));
+      getManager()->flipDisplay();
+      m_document->setExtraCel(oldExtraCel);
+    }
 
-    getManager()->flipDisplay();
-
-    m_document->setExtraCelBlendMode(BlendMode::NORMAL);
-    m_document->destroyExtraCel();
     invalidate();
   }
 }

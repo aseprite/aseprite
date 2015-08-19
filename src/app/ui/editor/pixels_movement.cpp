@@ -89,7 +89,7 @@ PixelsMovement::PixelsMovement(
   // The extra cel must be null, because if it's not null, it means
   // that someone else is using it (e.g. the editor brush preview),
   // and its owner could destroy our new "extra cel".
-  ASSERT(!m_document->getExtraCel());
+  ASSERT(!m_document->extraCel());
   redrawExtraImage();
   redrawCurrentMask();
 
@@ -491,8 +491,8 @@ void PixelsMovement::getDraggedImageCopy(base::UniquePtr<Image>& outputImage,
 
 void PixelsMovement::stampImage()
 {
-  const Cel* cel = m_document->getExtraCel();
-  const Image* image = m_document->getExtraCelImage();
+  const Cel* cel = m_extraCel->cel();
+  const Image* image = m_extraCel->image();
 
   ASSERT(cel && image);
 
@@ -583,7 +583,7 @@ void PixelsMovement::dropImage()
   // Destroy the extra cel (this cel will be used by the drawing
   // cursor surely).
   ContextWriter writer(m_reader, 1000);
-  m_document->destroyExtraCel();
+  m_document->setExtraCel(ExtraCelRef(nullptr));
 }
 
 void PixelsMovement::discardImage(bool commit)
@@ -599,7 +599,7 @@ void PixelsMovement::discardImage(bool commit)
   // Destroy the extra cel and regenerate the mask boundaries (we've
   // just deselect the mask).
   ContextWriter writer(m_reader, 1000);
-  m_document->destroyExtraCel();
+  m_document->setExtraCel(ExtraCelRef(nullptr));
   m_document->generateMaskBoundaries();
 }
 
@@ -610,8 +610,8 @@ bool PixelsMovement::isDragging() const
 
 gfx::Rect PixelsMovement::getImageBounds()
 {
-  const Cel* cel = m_document->getExtraCel();
-  const Image* image = m_document->getExtraCelImage();
+  const Cel* cel = m_extraCel->cel();
+  const Image* image = m_extraCel->image();
 
   ASSERT(cel != NULL);
   ASSERT(image != NULL);
@@ -641,14 +641,16 @@ void PixelsMovement::redrawExtraImage()
   if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
 
   gfx::Rect bounds = m_currentData.transformedBounds();
-  m_document->prepareExtraCel(bounds, m_site.frame(), opacity);
-  m_document->setExtraCelType(render::ExtraType::PATCH);
-  m_document->setExtraCelBlendMode(
-    static_cast<LayerImage*>(m_layer)->blendMode());
+
+  m_extraCel.reset(new ExtraCel);
+  m_extraCel->create(m_document->sprite(), bounds, m_site.frame(), opacity);
+  m_extraCel->setType(render::ExtraType::PATCH);
+  m_extraCel->setBlendMode(static_cast<LayerImage*>(m_layer)->blendMode());
+  m_document->setExtraCel(m_extraCel);
 
   // Draw the transformed pixels in the extra-cel which is the chunk
   // of pixels that the user is moving.
-  drawImage(m_document->getExtraCelImage(), bounds.getOrigin(), true);
+  drawImage(m_extraCel->image(), bounds.getOrigin(), true);
 }
 
 void PixelsMovement::redrawCurrentMask()

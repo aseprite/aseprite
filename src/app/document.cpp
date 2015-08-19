@@ -51,12 +51,6 @@ Document::Document(Sprite* sprite)
   , m_read_locks(0)
     // Information about the file format used to load/save this document
   , m_format_options(NULL)
-    // Extra cel
-  , m_extraCel(nullptr)
-  , m_extraImage(nullptr)
-  , m_extraImageBuffer(nullptr)
-  , m_extraCelBlendMode(BlendMode::NORMAL)
-  , m_extraCelType(render::ExtraType::NONE)
   // Mask
   , m_mask(new Mask())
   , m_maskVisible(true)
@@ -75,8 +69,6 @@ Document::~Document()
   // which could result in serious problems for observers expecting a
   // fully created app::Document.
   ASSERT(context() == NULL);
-
-  destroyExtraCel();
 }
 
 DocumentApi Document::getApi(Transaction& transaction)
@@ -230,55 +222,6 @@ void Document::generateMaskBoundaries(const Mask* mask)
 
   // TODO move this to the exact place where selection is modified.
   notifySelectionChanged();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
-
-void Document::destroyExtraCel()
-{
-  delete m_extraCel;
-
-  m_extraCel = nullptr;
-  m_extraImage.reset(nullptr);
-  m_extraCelType = render::ExtraType::NONE;
-}
-
-void Document::prepareExtraCel(const gfx::Rect& bounds, frame_t frame, int opacity)
-{
-  ASSERT(sprite() != NULL);
-
-  if (!m_extraImage ||
-      m_extraImage->pixelFormat() != sprite()->pixelFormat() ||
-      m_extraImage->width() != bounds.w ||
-      m_extraImage->height() != bounds.h) {
-    if (!m_extraImageBuffer)
-      m_extraImageBuffer.reset(new ImageBuffer(1));
-    Image* newImage = Image::create(sprite()->pixelFormat(), bounds.w, bounds.h, m_extraImageBuffer);
-    m_extraImage.reset(newImage);
-  }
-
-  if (!m_extraCel)
-    m_extraCel = new Cel(frame_t(0), ImageRef(NULL)); // Ignored fields for this cel (frame, and image index)
-
-  m_extraCel->setPosition(bounds.getOrigin());
-  m_extraCel->setOpacity(opacity);
-  m_extraCel->setFrame(frame);
-}
-
-void Document::setExtraCelType(render::ExtraType type)
-{
-  m_extraCelType = type;
-}
-
-Cel* Document::getExtraCel() const
-{
-  return m_extraCel;
-}
-
-Image* Document::getExtraCelImage() const
-{
-  return m_extraImage.get();
 }
 
 //////////////////////////////////////////////////////////////////////

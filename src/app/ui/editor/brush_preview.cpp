@@ -155,13 +155,17 @@ void BrushPreview::show(const gfx::Point& screenPos)
     if (cel) opacity = MUL_UN8(opacity, cel->opacity(), t);
     if (layer) opacity = MUL_UN8(opacity, static_cast<LayerImage*>(layer)->opacity(), t);
 
-    document->prepareExtraCel(brushBounds, site.frame(), opacity);
-    document->setExtraCelType(render::ExtraType::NONE);
-    document->setExtraCelBlendMode(
+    if (!m_extraCel)
+      m_extraCel.reset(new ExtraCel);
+    m_extraCel->create(document->sprite(), brushBounds, site.frame(), opacity);
+    m_extraCel->setType(render::ExtraType::NONE);
+    m_extraCel->setBlendMode(
       (layer ? static_cast<LayerImage*>(layer)->blendMode():
                BlendMode::NORMAL));
 
-    Image* extraImage = document->getExtraCelImage();
+    document->setExtraCel(m_extraCel);
+
+    Image* extraImage = m_extraCel->image();
     extraImage->setMaskColor(mask_index);
     clear_image(extraImage,
                 (extraImage->pixelFormat() == IMAGE_INDEXED ? mask_index: 0));
@@ -173,7 +177,7 @@ void BrushPreview::show(const gfx::Point& screenPos)
         BlendMode::SRC);
 
       // This extra cel is a patch for the current layer/frame
-      document->setExtraCelType(render::ExtraType::PATCH);
+      m_extraCel->setType(render::ExtraType::PATCH);
     }
 
     tools::ToolLoop* loop = create_tool_loop_preview(
@@ -247,7 +251,7 @@ void BrushPreview::hide()
 
   // Clean pixel/brush preview
   if (m_withRealPreview) {
-    document->destroyExtraCel();
+    document->setExtraCel(ExtraCelRef(nullptr));
     document->notifySpritePixelsModified(
       sprite, gfx::Region(m_lastBounds), m_lastFrame);
 

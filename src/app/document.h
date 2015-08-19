@@ -9,6 +9,7 @@
 #define APP_DOCUMENT_H_INCLUDED
 #pragma once
 
+#include "app/extra_cel.h"
 #include "app/file/format_options.h"
 #include "base/disable_copying.h"
 #include "base/mutex.h"
@@ -19,12 +20,9 @@
 #include "doc/color.h"
 #include "doc/document.h"
 #include "doc/frame.h"
-#include "doc/image_ref.h"
-#include "doc/image_buffer.h"
 #include "doc/pixel_format.h"
 #include "gfx/rect.h"
 #include "gfx/transformation.h"
-#include "render/extra_type.h"
 
 #include <string>
 
@@ -123,14 +121,8 @@ namespace app {
     //////////////////////////////////////////////////////////////////////
     // Extra Cel (it is used to draw pen preview, pixels in movement, etc.)
 
-    void prepareExtraCel(const gfx::Rect& bounds, frame_t frame, int opacity);
-    void setExtraCelType(render::ExtraType type);
-    void destroyExtraCel();
-    Cel* getExtraCel() const;
-    Image* getExtraCelImage() const;
-    render::ExtraType getExtraCelType() const { return m_extraCelType; }
-    BlendMode getExtraCelBlendMode() const { return m_extraCelBlendMode; }
-    void setExtraCelBlendMode(BlendMode mode) { m_extraCelBlendMode = mode; }
+    ExtraCelRef extraCel() const { return m_extraCel; }
+    void setExtraCel(const ExtraCelRef& extraCel) { m_extraCel = extraCel; }
 
     //////////////////////////////////////////////////////////////////////
     // Mask
@@ -210,13 +202,7 @@ namespace app {
     base::SharedPtr<FormatOptions> m_format_options;
 
     // Extra cel used to draw extra stuff (e.g. editor's pen preview, pixels in movement, etc.)
-    Cel* m_extraCel;
-
-    // Image of the extra cel.
-    ImageRef m_extraImage;
-    ImageBufferPtr m_extraImageBuffer;
-    BlendMode m_extraCelBlendMode;
-    render::ExtraType m_extraCelType;
+    ExtraCelRef m_extraCel;
 
     // Current mask.
     base::UniquePtr<Mask> m_mask;

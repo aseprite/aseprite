@@ -105,7 +105,7 @@ void SetPixelFormat::setFormat(PixelFormat format)
 
   // Regenerate extras
   static_cast<app::Document*>(sprite->document())
-    ->destroyExtraCel();
+    ->setExtraCel(ExtraCelRef(nullptr));
 
   // Generate notification
   DocumentEvent ev(sprite->document());

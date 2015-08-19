@@ -122,7 +122,7 @@ void UndoCommand::onExecute(Context* context)
   }
 
   document->generateMaskBoundaries();
-  document->destroyExtraCel(); // Regenerate extras
+  document->setExtraCel(ExtraCelRef(nullptr));
 
   update_screen_for_document(document);
   set_current_palette(writer.palette(), false);
