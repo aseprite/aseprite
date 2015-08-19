@@ -305,7 +305,12 @@ namespace app {
     double m_aniSpeed;
 
     static doc::ImageBufferPtr m_renderBuffer;
-    AppRender m_renderEngine;
+
+    // The render engine must be shared between all editors so when a
+    // DrawingState is being used in one editor, other editors for the
+    // same document can show the same preview image/stroke being drawn
+    // (search for Render::setPreviewImage()).
+    static AppRender m_renderEngine;
   };
 
   ui::WidgetType editor_type();
