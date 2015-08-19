@@ -180,19 +180,20 @@ void BrushPreview::show(const gfx::Point& screenPos)
       m_extraCel->setType(render::ExtraType::PATCH);
     }
 
-    tools::ToolLoop* loop = create_tool_loop_preview(
-      m_editor, UIContext::instance(), extraImage,
-      -gfx::Point(brushBounds.x,
-                  brushBounds.y));
-
-    if (loop) {
-      loop->getInk()->prepareInk(loop);
-      loop->getIntertwine()->prepareIntertwine();
-      loop->getController()->prepareController(ui::kKeyNoneModifier);
-      loop->getPointShape()->preparePointShape(loop);
-      loop->getPointShape()->transformPoint(
-        loop, -origBrushBounds.x, -origBrushBounds.y);
-      delete loop;
+    {
+      base::UniquePtr<tools::ToolLoop> loop(
+        create_tool_loop_preview(
+          m_editor, extraImage,
+          -gfx::Point(brushBounds.x,
+                      brushBounds.y)));
+      if (loop) {
+        loop->getInk()->prepareInk(loop);
+        loop->getIntertwine()->prepareIntertwine();
+        loop->getController()->prepareController(ui::kKeyNoneModifier);
+        loop->getPointShape()->preparePointShape(loop);
+        loop->getPointShape()->transformPoint(
+          loop, -origBrushBounds.x, -origBrushBounds.y);
+      }
     }
 
     document->notifySpritePixelsModified(

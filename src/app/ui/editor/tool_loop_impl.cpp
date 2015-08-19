@@ -456,7 +456,6 @@ class PreviewToolLoopImpl : public ToolLoopBase {
 public:
   PreviewToolLoopImpl(
     Editor* editor,
-    Context* context,
     tools::Tool* tool,
     tools::Ink* ink,
     Document* document,
@@ -506,7 +505,7 @@ public:
 };
 
 tools::ToolLoop* create_tool_loop_preview(
-  Editor* editor, Context* context, Image* image,
+  Editor* editor, Image* image,
   const gfx::Point& offset)
 {
   tools::Tool* current_tool = editor->getCurrentEditorTool();
@@ -531,7 +530,7 @@ tools::ToolLoop* create_tool_loop_preview(
   // Create the new tool loop
   try {
     return new PreviewToolLoopImpl(
-      editor, context,
+      editor,
       current_tool,
       current_ink,
       editor->document(),

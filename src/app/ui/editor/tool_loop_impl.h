@@ -28,7 +28,7 @@ namespace app {
     Editor* editor, Context* context);
 
   tools::ToolLoop* create_tool_loop_preview(
-    Editor* editor, Context* context, doc::Image* image,
+    Editor* editor, doc::Image* image,
     const gfx::Point& offset);
 
 } // namespace app
