@@ -316,16 +316,23 @@ void clipboard::paste()
           // We can use a document range op (copy_range) to copy/paste
           // cels in the same document.
           if (srcDoc == dstDoc) {
-            DocumentRange dstRange;
+            Timeline* timeline = App::instance()->getMainWindow()->getTimeline();
+            DocumentRange dstRange = timeline->range();
             LayerIndex dstLayer = srcSpr->layerToIndex(editor->layer());
             frame_t dstFrame = editor->frame();
 
-            dstRange.startRange(dstLayer, dstFrame,
-                                DocumentRange::kCels);
-            dstRange.endRange(dstLayer + LayerIndex(- srcRange.layers() + 1),
-                              dstFrame + srcRange.frames() - 1);
+            if (dstRange.enabled()) {
+              dstLayer = dstRange.layerEnd();
+              dstFrame = dstRange.frameBegin();
+            }
 
-            copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            LayerIndex dstLayer2(int(dstLayer)-srcRange.layers()+1);
+            dstRange.startRange(dstLayer, dstFrame, DocumentRange::kCels);
+            dstRange.endRange(dstLayer2, dstFrame+srcRange.frames()-1);
+
+            // This is the app::copy_range (not clipboard::copy_range()).
+            app::copy_range(srcDoc, srcRange, dstRange, kDocumentRangeBefore);
+            editor->invalidate();
             return;
           }
 

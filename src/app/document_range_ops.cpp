@@ -141,6 +141,10 @@ static DocumentRange drop_range_op(
                  dstLayerIdx = dstLayerBegin; srcLayerIdx != srcLayerEnd; ) {
             for (frame_t srcFrame = srcFrameBegin,
                    dstFrame = dstFrameBegin; srcFrame != srcFrameEnd; ) {
+              if (dstLayerIdx < 0 || dstLayerIdx >= int(layers.size()) ||
+                  srcLayerIdx < 0 || srcLayerIdx >= int(layers.size()))
+                break;
+
               LayerImage* srcLayer = static_cast<LayerImage*>(layers[srcLayerIdx]);
               LayerImage* dstLayer = static_cast<LayerImage*>(layers[dstLayerIdx]);
 
