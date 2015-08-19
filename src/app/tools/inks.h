@@ -30,7 +30,9 @@ private:
   Type m_type;
 
 public:
-  PaintInk(Type type) : m_type(type) { }
+  PaintInk(Type type) : m_type(type), m_proc(nullptr) { }
+
+  Ink* clone() override { return new PaintInk(*this); }
 
   bool isPaint() const { return true; }
 
@@ -101,8 +103,10 @@ public:
 
   void inkHline(int x1, int y, int x2, ToolLoop* loop)
   {
+    ASSERT(m_proc);
     (*m_proc)(x1, y, x2, loop);
   }
+
 };
 
 
@@ -112,6 +116,8 @@ private:
 
 public:
   ShadingInk() { }
+
+  Ink* clone() override { return new ShadingInk(*this); }
 
   bool isPaint() const { return true; }
 
@@ -124,11 +130,13 @@ public:
   {
     (*m_proc)(x1, y, x2, loop);
   }
+
 };
 
 
 class ScrollInk : public Ink {
 public:
+  Ink* clone() override { return new ScrollInk(*this); }
 
   bool isScrollMovement() const { return true; }
 
@@ -147,6 +155,8 @@ public:
 
 class ZoomInk : public Ink {
 public:
+  Ink* clone() override { return new ZoomInk(*this); }
+
   bool isZoom() const { return true; }
   void prepareInk(ToolLoop* loop) { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
@@ -155,6 +165,8 @@ public:
 
 class MoveInk : public Ink {
 public:
+  Ink* clone() override { return new MoveInk(*this); }
+
   bool isCelMovement() const { return true; }
   void prepareInk(ToolLoop* loop) { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
@@ -163,6 +175,8 @@ public:
 
 class SliceInk : public Ink {
 public:
+  Ink* clone() override { return new SliceInk(*this); }
+
   bool isSlice() const { return true; }
   void prepareInk(ToolLoop* loop) { }
   void inkHline(int x1, int y, int x2, ToolLoop* loop) {
@@ -182,6 +196,8 @@ private:
 
 public:
   EraserInk(Type type) : m_type(type) { }
+
+  Ink* clone() override { return new EraserInk(*this); }
 
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
@@ -226,6 +242,8 @@ class BlurInk : public Ink {
   AlgoHLine m_proc;
 
 public:
+  Ink* clone() override { return new BlurInk(*this); }
+
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
   bool needsSpecialSourceArea() const { return true; }
@@ -254,6 +272,8 @@ class JumbleInk : public Ink {
   AlgoHLine m_proc;
 
 public:
+  Ink* clone() override { return new JumbleInk(*this); }
+
   bool isPaint() const { return true; }
   bool isEffect() const { return true; }
   bool needsSpecialSourceArea() const { return true; }
@@ -286,6 +306,8 @@ class SelectionInk : public Ink {
 
 public:
   SelectionInk() { m_modify_selection = false; }
+
+  Ink* clone() override { return new SelectionInk(*this); }
 
   bool isSelection() const { return true; }
 

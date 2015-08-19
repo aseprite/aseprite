@@ -18,6 +18,11 @@ PickInk::PickInk(Target target) : m_target(target)
 {
 }
 
+Ink* PickInk::clone()
+{
+  return new PickInk(*this);
+}
+
 bool PickInk::isEyedropper() const
 {
   return true;

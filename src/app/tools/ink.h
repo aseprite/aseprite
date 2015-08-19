@@ -29,6 +29,12 @@ namespace app {
     public:
       virtual ~Ink() { }
 
+      // Creates a copy of the ink to avoid sharing state between
+      // different ToolLoop implementations. (e.g. PaintInk::m_proc is
+      // set in PaintInk::prepareInk() member function, so we cannot
+      // share the same PaintInk instance.)
+      virtual Ink* clone() = 0;
+
       // Returns true if this ink modifies the selection/mask
       virtual bool isSelection() const { return false; }
 

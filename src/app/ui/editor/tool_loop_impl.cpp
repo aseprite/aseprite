@@ -71,7 +71,7 @@ protected:
   gfx::Point m_offset;
   gfx::Point m_speed;
   tools::ToolLoop::Button m_button;
-  tools::Ink* m_ink;
+  base::UniquePtr<tools::Ink> m_ink;
   tools::Controller* m_controller;
   tools::PointShape* m_pointShape;
   tools::Intertwine* m_intertwine;
@@ -103,7 +103,7 @@ public:
     , m_tolerance(m_toolPref.tolerance())
     , m_contiguous(m_toolPref.contiguous())
     , m_button(button)
-    , m_ink(ink)
+    , m_ink(ink->clone())
     , m_controller(m_tool->getController(m_button))
     , m_pointShape(m_tool->getPointShape(m_button))
     , m_intertwine(m_tool->getIntertwine(m_button))

@@ -20,6 +20,7 @@ namespace app {
 
     public:
       PickInk(Target target);
+      Ink* clone() override;
 
       Target target() const { return m_target; }
 
