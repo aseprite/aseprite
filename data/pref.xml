@@ -9,6 +9,7 @@
       <value id="PAINT_BGCOLOR" value="0" />
       <value id="PICK_FGCOLOR" value="1" />
       <value id="ERASE" value="2" />
+      <value id="SCROLL" value="3" />
     </enum>
     <enum id="OnionskinType">
       <value id="MERGE" value="0" />

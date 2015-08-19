@@ -890,6 +890,9 @@ tools::Tool* Editor::getCurrentEditorTool()
       case app::gen::RightClickMode::ERASE:
         tool = toolbox->getToolById(tools::WellKnownTools::Eraser);
         break;
+      case app::gen::RightClickMode::SCROLL:
+        tool = toolbox->getToolById(tools::WellKnownTools::Hand);
+        break;
     }
   }
 
@@ -924,6 +927,9 @@ tools::Ink* Editor::getCurrentEditorInk()
         break;
       case app::gen::RightClickMode::ERASE:
         ink = toolbox->getInkById(tools::WellKnownInks::Eraser);
+        break;
+      case app::gen::RightClickMode::SCROLL:
+        ink = toolbox->getInkById(tools::WellKnownInks::Scroll);
         break;
     }
   }

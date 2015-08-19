@@ -45,6 +45,7 @@ const char* WellKnownTools::RectangularMarquee = "rectangular_marquee";
 const char* WellKnownTools::Pencil = "pencil";
 const char* WellKnownTools::Eraser = "eraser";
 const char* WellKnownTools::Eyedropper = "eyedropper";
+const char* WellKnownTools::Hand = "hand";
 
 const char* WellKnownInks::Selection = "selection";
 const char* WellKnownInks::Paint = "paint";

@@ -26,6 +26,7 @@ namespace app {
       extern const char* Pencil;
       extern const char* Eraser;
       extern const char* Eyedropper;
+      extern const char* Hand;
     };
 
     namespace WellKnownInks {

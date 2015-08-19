@@ -119,6 +119,7 @@ public:
     rightClickBehavior()->addItem("Paint with background color");
     rightClickBehavior()->addItem("Pick foreground color");
     rightClickBehavior()->addItem("Erase");
+    rightClickBehavior()->addItem("Scroll");
     rightClickBehavior()->setSelectedItemIndex((int)m_preferences.editor.rightClickMode());
 
     // Zoom with Scroll Wheel
