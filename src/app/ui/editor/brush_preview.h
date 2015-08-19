@@ -49,7 +49,6 @@ namespace app {
     const gfx::Point& screenPosition() const { return m_screenPosition; }
 
     void show(const gfx::Point& screenPos);
-    void move(const gfx::Point& screenPos);
     void hide();
     void redraw();
 
