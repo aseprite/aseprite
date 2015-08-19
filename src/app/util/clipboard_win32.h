@@ -335,18 +335,18 @@ static void get_win32_clipboard_bitmap(Image*& image, Mask*& mask, Palette*& pal
 
         // 16 BPP
         case 16: {
-          // TODO I am not sure if this really works
           uint8_t* src = (((uint8_t*)bi)+bi->bmiHeader.biSize);
-          uint8_t b1, b2, r, g, b;
+          uint8_t r, g, b;
+          uint16_t word;
           int padding = (4-((image->width()*2)&3))&3;
 
           for (int y=image->height()-1; y>=0; --y) {
             for (int x=0; x<image->width(); ++x) {
-              b1 = *(src++);
-              b2 = *(src++);
-              b = scale_5bits_to_8bits((b1 & 0xf800) >> 11);
-              g = scale_6bits_to_8bits((b2 & 0x07e0) >> 5);
-              r = scale_5bits_to_8bits(b2 & 0x001f);
+              word = *(src++);
+              word |= ((*(src++)) << 8);
+              b = scale_5bits_to_8bits((word & 0x001f) >> 0);
+              g = scale_6bits_to_8bits((word & 0x07e0) >> 5);
+              r = scale_5bits_to_8bits((word & 0xf800) >> 11);
               put_pixel_fast<RgbTraits>(image, x, y, rgba(r, g, b, 255));
             }
             src += padding;
