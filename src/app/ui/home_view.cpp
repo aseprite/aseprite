@@ -175,7 +175,7 @@ void HomeView::onRecoverSprites()
   if (!m_dataRecoveryView) {
     m_dataRecoveryView = new DataRecoveryView(m_dataRecovery);
 
-    // Hide the "Recovery Lost Sprite" button when the
+    // Hide the "Recover Lost Sprites" button when the
     // DataRecoveryView is empty.
     m_dataRecoveryView->Empty.connect(
       [this]{
