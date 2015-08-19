@@ -1464,12 +1464,22 @@ void Editor::pasteImage(const Image* image, const Mask* mask)
   int x = mask->bounds().x;
   int y = mask->bounds().y;
   {
-    // Then we check if the image will be visible by the user.
-    Rect visibleBounds = getVisibleSpriteBounds().shrink(4*ui::guiscale());
-    x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
-    y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
+    Rect visibleBounds = getVisibleSpriteBounds();
 
-    // We limit the image inside the sprite's bounds.
+    // If the pasted image original location center point isn't
+    // visible, we center the image in the editor's visible bounds.
+    if (!visibleBounds.contains(mask->bounds().getCenter())) {
+      x = visibleBounds.x + visibleBounds.w/2 - image->width()/2;
+      y = visibleBounds.y + visibleBounds.h/2 - image->height()/2;
+    }
+    // In other case, if the center is visible, we put the pasted
+    // image in its original location.
+    else {
+      x = MID(visibleBounds.x-image->width(), x, visibleBounds.x+visibleBounds.w-1);
+      y = MID(visibleBounds.y-image->height(), y, visibleBounds.y+visibleBounds.h-1);
+    }
+
+    // Also we always limit the image inside the sprite's bounds.
     x = MID(0, x, sprite->width() - image->width());
     y = MID(0, y, sprite->height() - image->height());
   }
