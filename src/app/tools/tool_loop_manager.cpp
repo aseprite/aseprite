@@ -18,7 +18,6 @@
 #include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
 #include "app/tools/tool_loop.h"
-#include "app/ui/editor/editor.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
@@ -57,19 +56,6 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer,
   m_toolLoop->getIntertwine()->prepareIntertwine();
   m_toolLoop->getController()->prepareController(modifiers);
   m_toolLoop->getPointShape()->preparePointShape(m_toolLoop);
-
-  // Prepare preview image (the destination image will be our preview
-  // in the tool-loop time, so we can see what we are drawing)
-  Editor::renderEngine().setPreviewImage(
-    m_toolLoop->getLayer(),
-    m_toolLoop->getFrame(),
-    m_toolLoop->getDstImage());
-}
-
-void ToolLoopManager::releaseLoop(const Pointer& pointer)
-{
-  // No more preview image
-  Editor::renderEngine().removePreviewImage();
 }
 
 void ToolLoopManager::pressKey(ui::KeyScancode key)

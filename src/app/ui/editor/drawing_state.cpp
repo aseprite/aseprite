@@ -59,7 +59,7 @@ DrawingState::DrawingState(tools::ToolLoop* toolLoop)
 
 DrawingState::~DrawingState()
 {
-  destroyLoop();
+  destroyLoop(nullptr);
 }
 
 void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
@@ -70,6 +70,13 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
 
   m_toolLoopManager->prepareLoop(pointer_from_msg(msg), msg->keyModifiers());
   m_toolLoopManager->pressButton(pointer_from_msg(msg));
+
+  // Prepare preview image (the destination image will be our preview
+  // in the tool-loop time, so we can see what we are drawing)
+  editor->renderEngine().setPreviewImage(
+    m_toolLoop->getLayer(),
+    m_toolLoop->getFrame(),
+    m_toolLoop->getDstImage());
 
   editor->captureMouse();
 }
@@ -84,8 +91,7 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
-    m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
-    destroyLoop();
+    destroyLoop(editor);
 
     // Change to standby state
     editor->backToPreviousState();
@@ -112,8 +118,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
       return true;
   }
 
-  m_toolLoopManager->releaseLoop(pointer_from_msg(msg));
-  destroyLoop();
+  destroyLoop(editor);
 
   // Back to standby state.
   editor->backToPreviousState();
@@ -196,15 +201,18 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
     m_toolLoop->validateDstImage(rgn);
 }
 
-void DrawingState::destroyLoop()
+void DrawingState::destroyLoop(Editor* editor)
 {
+  if (editor)
+    editor->renderEngine().removePreviewImage();
+
   if (m_toolLoop)
     m_toolLoop->dispose();
 
   delete m_toolLoopManager;
   delete m_toolLoop;
-  m_toolLoopManager = NULL;
-  m_toolLoop = NULL;
+  m_toolLoopManager = nullptr;
+  m_toolLoop = nullptr;
 
   app_rebuild_documents_tabs();
 }

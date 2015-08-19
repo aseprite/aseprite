@@ -206,7 +206,7 @@ namespace app {
     // E.g. It can be re-used by PreviewCommand
     static ImageBufferPtr getRenderImageBuffer();
 
-    static AppRender& renderEngine() { return m_renderEngine; }
+    AppRender& renderEngine() { return m_renderEngine; }
 
   protected:
     bool onProcessMessage(ui::Message* msg) override;
@@ -305,7 +305,7 @@ namespace app {
     double m_aniSpeed;
 
     static doc::ImageBufferPtr m_renderBuffer;
-    static AppRender m_renderEngine;
+    AppRender m_renderEngine;
   };
 
   ui::WidgetType editor_type();

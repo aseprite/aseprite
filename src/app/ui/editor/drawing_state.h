@@ -37,7 +37,7 @@ namespace app {
     void initToolLoop(Editor* editor, ui::MouseMessage* msg);
 
   private:
-    void destroyLoop();
+    void destroyLoop(Editor* editor);
 
     // The tool-loop.
     tools::ToolLoop* m_toolLoop;

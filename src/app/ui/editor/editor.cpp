@@ -139,9 +139,6 @@ private:
 // static
 doc::ImageBufferPtr Editor::m_renderBuffer;
 
-// static
-AppRender Editor::m_renderEngine;
-
 Editor::Editor(Document* document, EditorFlags flags)
   : Widget(editor_type())
   , m_state(new StandbyState())

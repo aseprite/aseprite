@@ -37,7 +37,6 @@ namespace app {
     //    is called.
     // 5. When the user release the mouse:
     //    - ToolLoopManager::releaseButton
-    //    - ToolLoopManager::releaseLoop
     class ToolLoopManager {
     public:
 
@@ -71,9 +70,6 @@ namespace app {
       // left or right button for first time in the editor).
       void prepareLoop(const Pointer& pointer,
                        ui::KeyModifiers modifiers);
-
-      // Called when the loop is over.
-      void releaseLoop(const Pointer& pointer);
 
       void pressKey(ui::KeyScancode key);
       void releaseKey(ui::KeyScancode key);
