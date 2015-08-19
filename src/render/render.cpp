@@ -721,7 +721,7 @@ void Render::renderLayer(
         break;
 
       const Cel* cel = layer->cel(frame);
-      if (cel != NULL) {
+      if (cel) {
         Palette* pal = m_sprite->palette(frame);
         Image* src_image;
 
@@ -730,6 +730,8 @@ void Render::renderLayer(
             (m_selectedLayer == layer) &&
             (m_selectedFrame == frame)) {
           src_image = m_previewImage;
+
+          ASSERT(src_image->pixelFormat() == cel->image()->pixelFormat());
         }
         // If not, we use the original cel-image from the images' stock
         else {
