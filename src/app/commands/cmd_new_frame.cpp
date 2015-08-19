@@ -91,7 +91,7 @@ void NewFrameCommand::onExecute(Context* context)
   Document* document(writer.document());
   Sprite* sprite(writer.sprite());
   {
-    Transaction transaction(writer.context(), "New Frame");
+    Transaction transaction(writer.context(), friendlyName());
     DocumentApi api = document->getApi(transaction);
 
     switch (m_content) {
