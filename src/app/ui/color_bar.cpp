@@ -451,8 +451,15 @@ void ColorBar::onPaletteButtonClick()
     }
 
     case PalButton::PRESETS: {
-      if (!m_palettePopup)
-        m_palettePopup.reset(new PalettePopup());
+      if (!m_palettePopup) {
+        try {
+          m_palettePopup.reset(new PalettePopup());
+        }
+        catch (const std::exception& ex) {
+          Console::showException(ex);
+          return;
+        }
+      }
 
       if (!m_palettePopup->isVisible()) {
         gfx::Rect bounds = m_buttons.getItem(item)->getBounds();
