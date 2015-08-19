@@ -358,10 +358,20 @@ void DocumentApi::copyCel(
   LayerImage* srcLayer, frame_t srcFrame,
   LayerImage* dstLayer, frame_t dstFrame)
 {
+  copyCel(
+    srcLayer, srcFrame,
+    dstLayer, dstFrame, dstLayer->isContinuous());
+}
+
+void DocumentApi::copyCel(
+  LayerImage* srcLayer, frame_t srcFrame,
+  LayerImage* dstLayer, frame_t dstFrame, bool continuous)
+{
   ASSERT(srcLayer != dstLayer || srcFrame != dstFrame);
-  m_transaction.execute(new cmd::CopyCel(
+  m_transaction.execute(
+    new cmd::CopyCel(
       srcLayer, srcFrame,
-      dstLayer, dstFrame, dstLayer->isContinuous()));
+      dstLayer, dstFrame, continuous));
 }
 
 void DocumentApi::swapCel(

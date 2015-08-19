@@ -70,6 +70,12 @@
       <key command="NewFrame" shortcut="Alt+M">
         <param name="content" value="cel" />
       </key>
+      <key command="NewFrame" shortcut="Alt+D">
+        <param name="content" value="celblock" />
+      </key>
+      <key command="NewFrame" shortcut="Alt+Shift+D">
+        <param name="content" value="cel" />
+      </key>
       <key command="RemoveFrame" shortcut="Alt+C" />
       <key command="FrameProperties" shortcut="P">
         <param name="frame" value="current" />
@@ -598,7 +604,10 @@
         <item command="NewFrame" text="New &amp;Empty Frame">
           <param name="content" value="empty" />
         </item>
-        <item command="NewFrame" text="Copy &amp;Cel in Next Frame">
+        <item command="NewFrame" text="&amp;Duplicate Cel(s)">
+          <param name="content" value="celblock" />
+        </item>
+        <item command="NewFrame" text="Duplicate &amp;Linked Cel(s)">
           <param name="content" value="cel" />
         </item>
         <item command="RemoveFrame" text="&amp;Remove Frame" />
@@ -752,6 +761,13 @@
       <item command="ClearCel" text="&amp;Clear" />
       <item command="UnlinkCel" text="&amp;Unlink" />
       <item command="LinkCels" text="&amp;Link Cels" />
+      <separator />
+      <item command="NewFrame" text="&amp;Duplicate Cel(s)">
+        <param name="content" value="celblock" />
+      </item>
+      <item command="NewFrame" text="Duplicate L&amp;inked Cel(s)">
+        <param name="content" value="cel" />
+      </item>
     </menu>
 
     <menu id="cel_movement_popup">

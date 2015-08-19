@@ -39,7 +39,8 @@ public:
   enum class Content {
     DUPLICATE_FRAME,
     NEW_EMPTY_FRAME,
-    DUPLICATE_CEL
+    DUPLICATE_CELS,
+    DUPLICATE_CELS_BLOCK,
    };
 
   NewFrameCommand();
@@ -73,7 +74,9 @@ void NewFrameCommand::onLoadParams(const Params& params)
   else if (content == "empty")
     m_content = Content::NEW_EMPTY_FRAME;
   else if (content == "cel")
-    m_content = Content::DUPLICATE_CEL;
+    m_content = Content::DUPLICATE_CELS;
+  else if (content == "celblock")
+    m_content = Content::DUPLICATE_CELS_BLOCK;
 }
 
 bool NewFrameCommand::onEnabled(Context* context)
@@ -92,26 +95,64 @@ void NewFrameCommand::onExecute(Context* context)
     DocumentApi api = document->getApi(transaction);
 
     switch (m_content) {
+
       case Content::DUPLICATE_FRAME:
         api.addFrame(sprite, writer.frame()+1);
         break;
+
       case Content::NEW_EMPTY_FRAME:
         api.addEmptyFrame(sprite, writer.frame()+1);
         break;
-      case Content::DUPLICATE_CEL: {
+
+      case Content::DUPLICATE_CELS:
+      case Content::DUPLICATE_CELS_BLOCK: {
         // TODO the range of selected frames should be in doc::Site.
         Timeline* timeline = App::instance()->getMainWindow()->getTimeline();
         Timeline::Range range = timeline->range();
         if (range.enabled()) {
+          std::map<CelData*, Cel*> relatedCels;
           timeline->prepareToMoveRange();
 
-          for (LayerIndex layer = range.layerBegin(); layer <= range.layerEnd(); ++layer) {
+          LayerIndex layerBegin = range.layerBegin();
+          LayerIndex layerEnd = range.layerEnd();
+
+          if (range.type() == DocumentRange::kFrames) {
+            layerBegin = writer.sprite()->firstLayer();
+            layerEnd = writer.sprite()->lastLayer();
+          }
+
+          for (LayerIndex layer = layerBegin; layer <= layerEnd; ++layer) {
             Layer* layerPtr = writer.sprite()->indexToLayer(layer);
             if (layerPtr->isImage()) {
               for (frame_t frame = range.frameEnd(); frame >= range.frameBegin(); --frame) {
+                frame_t srcFrame = frame;
+                frame_t dstFrame = frame+range.frames();
+                bool continuous;
+                CelData* srcCelData = nullptr;
+
+                if (m_content == Content::DUPLICATE_CELS_BLOCK) {
+                  continuous = false;
+
+                  Cel* srcCel = static_cast<LayerImage*>(layerPtr)->cel(srcFrame);
+                  if (srcCel) {
+                    srcCelData = srcCel->data();
+
+                    auto it = relatedCels.find(srcCelData);
+                    if (it != relatedCels.end()) {
+                      srcFrame = it->second->frame();
+                      continuous = true;
+                    }
+                  }
+                }
+                else
+                  continuous = layerPtr->isContinuous();
+
                 api.copyCel(
-                  static_cast<LayerImage*>(layerPtr), frame,
-                  static_cast<LayerImage*>(layerPtr), frame+range.frames());
+                  static_cast<LayerImage*>(layerPtr), srcFrame,
+                  static_cast<LayerImage*>(layerPtr), dstFrame, continuous);
+
+                if (srcCelData && !relatedCels[srcCelData])
+                  relatedCels[srcCelData] = layerPtr->cel(dstFrame);
               }
             }
           }
@@ -157,8 +198,11 @@ std::string NewFrameCommand::onGetFriendlyName() const
     case Content::NEW_EMPTY_FRAME:
       text = "New Empty Frame";
       break;
-    case Content::DUPLICATE_CEL:
-      text = "Copy Cel into Next Frame";
+    case Content::DUPLICATE_CELS:
+      text = "Duplicate Linked Cels";
+      break;
+    case Content::DUPLICATE_CELS_BLOCK:
+      text = "Duplicate Cels";
       break;
   }
 

@@ -73,6 +73,9 @@ namespace app {
     void copyCel(
       LayerImage* srcLayer, frame_t srcFrame,
       LayerImage* dstLayer, frame_t dstFrame);
+    void copyCel(
+      LayerImage* srcLayer, frame_t srcFrame,
+      LayerImage* dstLayer, frame_t dstFrame, bool continuous);
     void swapCel(
       LayerImage* layer, frame_t frame1, frame_t frame2);
 
