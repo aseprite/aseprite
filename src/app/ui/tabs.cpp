@@ -376,7 +376,7 @@ bool Tabs::onProcessMessage(Message* msg)
             invalidate();
           }
         }
-        else if (mouseMsg->left() && m_selected != m_hot) {
+        else if (mouseMsg->left()) {
           selectTabInternal(m_hot);
         }
 
@@ -548,9 +548,11 @@ void Tabs::onPreferredSize(PreferredSizeEvent& ev)
 
 void Tabs::selectTabInternal(TabPtr& tab)
 {
-  m_selected = tab;
-  makeTabVisible(tab.get());
-  invalidate();
+  if (m_selected != tab) {
+    m_selected = tab;
+    makeTabVisible(tab.get());
+    invalidate();
+  }
 
   if (m_delegate)
     m_delegate->onSelectTab(this, tab->view);
