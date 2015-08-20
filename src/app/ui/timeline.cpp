@@ -679,7 +679,7 @@ bool Timeline::onProcessMessage(Message* msg)
 
         // Restore the cursor.
         m_state = STATE_STANDBY;
-        setCursor(msg, hitTest(msg, mouseMsg->position()));
+        setCursor(msg, hitTest(msg, mouseMsg->position() - getBounds().getOrigin()));
 
         releaseMouse();
         updateStatusBar(msg);
