@@ -44,7 +44,7 @@ namespace render {
   };
 
   // Creates a new palette suitable to quantize the given RGB sprite to Indexed color.
-  Palette* create_palette_from_rgb(
+  Palette* create_palette_from_sprite(
     const Sprite* sprite,
     frame_t fromFrame,
     frame_t toFrame,

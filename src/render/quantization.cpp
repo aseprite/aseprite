@@ -33,7 +33,7 @@ namespace render {
 using namespace doc;
 using namespace gfx;
 
-Palette* create_palette_from_rgb(
+Palette* create_palette_from_sprite(
   const Sprite* sprite,
   frame_t fromFrame,
   frame_t toFrame,

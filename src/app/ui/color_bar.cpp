@@ -369,7 +369,8 @@ void ColorBar::onFocusPaletteView()
 void ColorBar::onBeforeExecuteCommand(CommandExecutionEvent& ev)
 {
   if (ev.command()->id() == CommandId::SetPalette ||
-      ev.command()->id() == CommandId::LoadPalette)
+      ev.command()->id() == CommandId::LoadPalette ||
+      ev.command()->id() == CommandId::ColorQuantization)
     showRemap();
 }
 

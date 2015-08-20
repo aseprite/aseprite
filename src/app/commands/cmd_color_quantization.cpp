@@ -55,10 +55,9 @@ public:
 private:
 
   void onJob() override {
-    render::create_palette_from_rgb(m_sprite,
-                                    0, m_sprite->lastFrame(),
-                                    m_withAlpha, m_palette,
-                                    this);
+    render::create_palette_from_sprite(
+      m_sprite, 0, m_sprite->lastFrame(),
+      m_withAlpha, m_palette, this);
   }
 
   bool onPaletteOptimizerContinue() override {
@@ -83,9 +82,7 @@ ColorQuantizationCommand::ColorQuantizationCommand()
 
 bool ColorQuantizationCommand::onEnabled(Context* context)
 {
-  ContextWriter writer(context);
-  Sprite* sprite(writer.sprite());
-  return (sprite && sprite->pixelFormat() == IMAGE_RGB);
+  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable);
 }
 
 void ColorQuantizationCommand::onExecute(Context* context)

@@ -739,7 +739,7 @@ void fop_post_load(FileOp* fop)
         sprite->getPalettes().size() <= 1 &&
         sprite->palette(frame_t(0))->isBlack()) {
       base::SharedPtr<Palette> palette(
-        render::create_palette_from_rgb(
+        render::create_palette_from_sprite(
           sprite, frame_t(0), sprite->lastFrame(), true,
           nullptr, nullptr));
 
