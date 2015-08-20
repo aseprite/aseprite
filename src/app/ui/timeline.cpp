@@ -393,6 +393,25 @@ bool Timeline::onProcessMessage(Message* msg)
         }
         case PART_RANGE_OUTLINE:
           m_state = STATE_MOVING_RANGE;
+
+          // If we select the outline of a cels range, we have to
+          // recalculate the dragged cel (m_clk) using a special
+          // hitTestCel() and limiting the clicked cel inside the
+          // range bounds.
+          if (m_range.type() == Range::kCels) {
+            gfx::Point pt = mouseMsg->position();
+            m_clk = hitTestCel(mouseMsg->position() - getBounds().getOrigin());
+
+            if (m_clk.layer < m_range.layerBegin())
+              m_clk.layer = m_range.layerBegin();
+            else if (m_clk.layer > m_range.layerEnd())
+              m_clk.layer = m_range.layerEnd();
+
+            if (m_clk.frame < m_range.frameBegin())
+              m_clk.frame = m_range.frameBegin();
+            else if (m_clk.frame > m_range.frameEnd())
+              m_clk.frame = m_range.frameEnd();
+          }
           break;
       }
 
@@ -1883,6 +1902,35 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
   return hit;
 }
 
+Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
+{
+  Hit hit(
+    PART_NOTHING,
+    LayerIndex::NoLayer,
+    frame_t(-1));
+
+  if (!m_document)
+    return hit;
+
+  int top = topHeight();
+
+  hit.layer = lastLayer() - LayerIndex(
+    (mousePos.y
+     - top
+     - HDRSIZE
+     + m_scroll_y) / LAYSIZE);
+
+  hit.frame = frame_t((mousePos.x
+                       - m_separator_x
+                       - m_separator_w
+                       + m_scroll_x) / FRMSIZE);
+
+  hit.layer = MID(firstLayer(), hit.layer, lastLayer());
+  hit.frame = MAX(firstFrame(), hit.frame);
+
+  return hit;
+}
+
 void Timeline::setHot(const Hit& hit)
 {
   // If the part, layer or frame change.
@@ -2233,13 +2281,11 @@ void Timeline::updateDropRange(const gfx::Point& pt)
     case Range::kCels: {
       frame_t dx = m_hot.frame - m_clk.frame;
       LayerIndex dy = m_hot.layer - m_clk.layer;
-      LayerIndex layerIdx;
-      frame_t frame;
 
-      layerIdx = dy+m_range.layerBegin();
+      LayerIndex layerIdx = dy+m_range.layerBegin();
       layerIdx = MID(firstLayer(), layerIdx, LayerIndex(m_layers.size() - m_range.layers()));
 
-      frame = dx+m_range.frameBegin();
+      frame_t frame = dx+m_range.frameBegin();
       frame = MAX(firstFrame(), frame);
 
       m_dropRange.startRange(layerIdx, frame, m_range.type());

@@ -210,6 +210,7 @@ namespace app {
     void regenerateLayers();
     void updateByMousePos(ui::Message* msg, const gfx::Point& mousePos);
     Hit hitTest(ui::Message* msg, const gfx::Point& mousePos);
+    Hit hitTestCel(const gfx::Point& mousePos);
     void setHot(const Hit& hit);
     void showCel(LayerIndex layer, frame_t frame);
     void showCurrentCel();
