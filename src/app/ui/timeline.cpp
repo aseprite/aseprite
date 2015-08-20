@@ -1769,10 +1769,7 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
   Hit hit(
     PART_NOTHING,
     LayerIndex::NoLayer,
-    frame_t((mousePos.x
-        - m_separator_x
-        - m_separator_w
-        + m_scroll_x) / FRMSIZE));
+    frame_t(-1));
 
   if (!m_document)
     return hit;
