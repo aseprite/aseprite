@@ -335,18 +335,24 @@ static void get_win32_clipboard_bitmap(Image*& image, Mask*& mask, Palette*& pal
 
         // 16 BPP
         case 16: {
-          uint8_t* src = (((uint8_t*)bi)+bi->bmiHeader.biSize);
-          uint8_t r, g, b;
+          uint16_t* src = (uint16_t*)(((uint8_t*)bi)+bi->bmiHeader.biSize+sizeof(RGBQUAD)*3);
           uint16_t word;
-          int padding = (4-((image->width()*2)&3))&3;
+          uint8_t r, g, b;
+          int padding = ((4-((image->width()*2)&3))&3)/2;
+
+          uint32_t r_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[0]);
+          uint32_t g_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[1]);
+          uint32_t b_mask = (uint32_t)*((uint32_t*)&bi->bmiColors[2]);
+          uint32_t r_shift = get_shift_from_mask(r_mask);
+          uint32_t g_shift = get_shift_from_mask(g_mask);
+          uint32_t b_shift = get_shift_from_mask(b_mask);
 
           for (int y=image->height()-1; y>=0; --y) {
             for (int x=0; x<image->width(); ++x) {
               word = *(src++);
-              word |= ((*(src++)) << 8);
-              b = scale_5bits_to_8bits((word & 0x001f) >> 0);
-              g = scale_6bits_to_8bits((word & 0x07e0) >> 5);
-              r = scale_5bits_to_8bits((word & 0xf800) >> 11);
+              r = scale_5bits_to_8bits((word & r_mask) >> r_shift);
+              g = scale_6bits_to_8bits((word & g_mask) >> g_shift);
+              b = scale_5bits_to_8bits((word & b_mask) >> b_shift);
               put_pixel_fast<RgbTraits>(image, x, y, rgba(r, g, b, 255));
             }
             src += padding;
