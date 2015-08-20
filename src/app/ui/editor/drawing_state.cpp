@@ -68,15 +68,15 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
   // first mouse pressed/point shape if drawn.
   HideBrushPreview hide(editor->brushPreview());
 
-  m_toolLoopManager->prepareLoop(pointer_from_msg(msg), msg->keyModifiers());
-  m_toolLoopManager->pressButton(pointer_from_msg(msg));
-
   // Prepare preview image (the destination image will be our preview
   // in the tool-loop time, so we can see what we are drawing)
   editor->renderEngine().setPreviewImage(
     m_toolLoop->getLayer(),
     m_toolLoop->getFrame(),
     m_toolLoop->getDstImage());
+
+  m_toolLoopManager->prepareLoop(pointer_from_msg(msg), msg->keyModifiers());
+  m_toolLoopManager->pressButton(pointer_from_msg(msg));
 
   editor->captureMouse();
 }
