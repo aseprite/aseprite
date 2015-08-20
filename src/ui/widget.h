@@ -184,7 +184,7 @@ namespace ui {
     Widget* getNextSibling();
     Widget* getPreviousSibling();
 
-    Widget* pick(const gfx::Point& pt);
+    Widget* pick(const gfx::Point& pt, bool checkParentsVisibility = true);
     bool hasChild(Widget* child);
     bool hasAncestor(Widget* ancestor);
     Widget* findChild(const char* id);

@@ -408,16 +408,18 @@ Widget* Widget::getPreviousSibling()
   return *(++it);
 }
 
-Widget* Widget::pick(const gfx::Point& pt)
+Widget* Widget::pick(const gfx::Point& pt, bool checkParentsVisibility)
 {
   Widget* inside, *picked = nullptr;
 
-  if (!hasFlags(HIDDEN) &&          // Is visible
-      getBounds().contains(pt)) {   // The point is inside the bounds
+  // isVisible() checks visibility of widget's parent.
+  if (((checkParentsVisibility && isVisible()) ||
+       (!checkParentsVisibility && !hasFlags(HIDDEN))) &&
+      (getBounds().contains(pt))) {
     picked = this;
 
     for (Widget* child : m_children) {
-      inside = child->pick(pt);
+      inside = child->pick(pt, false);
       if (inside) {
         picked = inside;
         break;
