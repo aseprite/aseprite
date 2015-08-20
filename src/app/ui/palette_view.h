@@ -21,16 +21,21 @@
 
 namespace doc {
   class Palette;
-  class Remap;
 }
 
 namespace app {
+
+  enum class PaletteViewModification {
+    CLEAR,
+    DRAGANDDROP,
+    RESIZE,
+  };
 
   class PaletteViewDelegate {
   public:
     virtual ~PaletteViewDelegate() { }
     virtual void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) { }
-    virtual void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) { }
+    virtual void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) { }
     virtual void onPaletteViewChangeSize(int boxsize) { }
     virtual void onPaletteViewPasteColors(
       const doc::Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) { }
@@ -89,13 +94,15 @@ namespace app {
       WAITING,
       SELECTING_COLOR,
       DRAGGING_OUTLINE,
+      RESIZING_PALETTE,
     };
 
     struct Hit {
       enum Part {
         NONE,
         COLOR,
-        OUTLINE
+        OUTLINE,
+        RESIZE_HANDLE
       };
       Part part;
       int color;
@@ -128,7 +135,8 @@ namespace app {
     void setStatusBar();
     doc::Palette* currentPalette() const;
     int findExactIndex(const app::Color& color) const;
-    void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette, const doc::Remap& remap);
+    void setNewPalette(doc::Palette* oldPalette, doc::Palette* newPalette,
+                       PaletteViewModification mod);
     gfx::Color drawEntry(ui::Graphics* g, const gfx::Rect& box, int palIdx);
 
     State m_state;

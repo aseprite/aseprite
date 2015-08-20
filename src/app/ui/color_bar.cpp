@@ -584,9 +584,16 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
   m_lock = false;
 }
 
-void ColorBar::onPaletteViewRemapColors(const Remap& remap, const Palette* newPalette)
+void ColorBar::onPaletteViewModification(const Palette* newPalette,
+                                         PaletteViewModification mod)
 {
-  setPalette(newPalette, "Drag-and-Drop Colors");
+  const char* text = "Palette Change";
+  switch (mod) {
+    case PaletteViewModification::CLEAR: text = "Clear Colors"; break;
+    case PaletteViewModification::DRAGANDDROP: text = "Drag-and-Drop Colors"; break;
+    case PaletteViewModification::RESIZE: text = "Resize Palette"; break;
+  }
+  setPalette(newPalette, text);
 }
 
 void ColorBar::setPalette(const doc::Palette* newPalette, const std::string& actionText)

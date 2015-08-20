@@ -106,7 +106,7 @@ namespace app {
 
     // PaletteViewDelegate impl
     void onPaletteViewIndexChange(int index, ui::MouseButtons buttons) override;
-    void onPaletteViewRemapColors(const doc::Remap& remap, const doc::Palette* newPalette) override;
+    void onPaletteViewModification(const doc::Palette* newPalette, PaletteViewModification mod) override;
     void onPaletteViewChangeSize(int boxsize) override;
     void onPaletteViewPasteColors(const Palette* fromPal, const doc::PalettePicks& from, const doc::PalettePicks& to) override;
     app::Color onPaletteViewGetForegroundIndex() override;
