@@ -86,6 +86,32 @@ private:
 
 typedef base::SharedPtr<SampleBounds> SampleBoundsPtr;
 
+int DocumentExporter::Item::frames() const
+{
+  if (frameTag) {
+    int result = frameTag->toFrame() - frameTag->fromFrame() + 1;
+    return MID(1, result, doc->sprite()->totalFrames());
+  }
+  else
+    return doc->sprite()->totalFrames();
+}
+
+int DocumentExporter::Item::fromFrame() const
+{
+  if (frameTag)
+    return MID(0, frameTag->fromFrame(), doc->sprite()->lastFrame());
+  else
+    return 0;
+}
+
+int DocumentExporter::Item::toFrame() const
+{
+  if (frameTag)
+    return MID(0, frameTag->toFrame(), doc->sprite()->lastFrame());
+  else
+    return doc->sprite()->lastFrame();
+}
+
 class DocumentExporter::Sample {
 public:
   Sample(Document* document, Sprite* sprite, Layer* layer,
@@ -336,24 +362,29 @@ void DocumentExporter::captureSamples(Samples& samples)
     Document* doc = item.doc;
     Sprite* sprite = doc->sprite();
     Layer* layer = item.layer;
-    bool hasFrames = (doc->sprite()->totalFrames() > frame_t(1));
-    bool hasLayer = (layer != NULL);
+    FrameTag* frameTag = item.frameTag;
+    int frames = item.frames();
+    bool hasFrames = (frames > 1);
+    bool hasLayer = (layer != nullptr);
+    bool hasFrameTag = (frameTag && !item.temporalTag);
 
     std::string format = m_filenameFormat;
     if (format.empty()) {
-      if (hasFrames && hasLayer)
-        format = "{title} ({layer}) {frame}.{extension}";
-      else if (hasFrames)
-        format = "{title} {frame}.{extension}";
-      else if (hasLayer)
-        format = "{title} ({layer}).{extension}";
+      if (hasFrames || hasLayer | hasFrameTag) {
+        format = "{title}";
+        if (hasLayer   ) format += " ({layer})";
+        if (hasFrameTag) format += " #{tag}";
+        if (hasFrames  ) format += " {frame}";
+        format += ".{extension}";
+      }
       else
         format = "{name}";
     }
 
-    for (frame_t frame=frame_t(0);
-         frame<sprite->totalFrames(); ++frame) {
-      FrameTag* innerTag = sprite->frameTags().innerTag(frame);
+    frame_t frameFirst = item.fromFrame();
+    frame_t frameLast = item.toFrame();
+    for (frame_t frame=frameFirst; frame<=frameLast; ++frame) {
+      FrameTag* innerTag = (frameTag ? frameTag: sprite->frameTags().innerTag(frame));
       FrameTag* outerTag = sprite->frameTags().outerTag(frame);
       FilenameInfo fnInfo;
       fnInfo
@@ -361,7 +392,7 @@ void DocumentExporter::captureSamples(Samples& samples)
         .layerName(layer ? layer->name(): "")
         .innerTagName(innerTag ? innerTag->name(): "")
         .outerTagName(outerTag ? outerTag->name(): "")
-        .frame((sprite->totalFrames() > frame_t(1)) ? frame: frame_t(-1));
+        .frame((frames > 1) ? frame-frameFirst: frame_t(-1));
 
       std::string filename = filename_formatter(format, fnInfo);
 
@@ -389,7 +420,9 @@ void DocumentExporter::captureSamples(Samples& samples)
             break;
           }
         }
-        ASSERT(done);
+        // "done" variable can be false here, e.g. when we export a
+        // frame tag and the first linked cel is outside the tag range.
+        ASSERT(done || (!done && frameTag));
       }
 
       if (!done && (m_ignoreEmptyCels || m_trimCels)) {

@@ -227,6 +227,8 @@
       <option id="shape_padding" type="int" default="0" />
       <option id="inner_padding" type="int" default="0" />
       <option id="open_generated" type="bool" default="false" />
+      <option id="layer" type="std::string" />
+      <option id="frame_tag" type="std::string" />
     </section>
     <section id="import_sprite_sheet">
       <option id="bounds" type="gfx::Rect" default="gfx::Rect(0, 0, 16, 16)" />

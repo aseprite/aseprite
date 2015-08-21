@@ -31,6 +31,12 @@
     <hbox id="best_fit_filler" />
     <check cell_hspan="3" id="best_fit" text="Best fit for texture" />
 
+    <label text="Layers:" />
+    <combobox id="layers" text="" cell_hspan="3" />
+
+    <label text="Frames:" />
+    <combobox id="frames" text="" cell_hspan="3" />
+
     <label text="Save As:" />
     <button id="image_filename" cell_hspan="3" />
 

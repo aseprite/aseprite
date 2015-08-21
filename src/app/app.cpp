@@ -227,6 +227,7 @@ void App::initialize(const AppOptions& options)
     std::string importLayer;
     std::string importLayerSaveAs;
     std::string filenameFormat;
+    std::string frameTagName;
 
     for (const auto& value : options.values()) {
       const AppOptions::Option* opt = value.option();
@@ -280,6 +281,10 @@ void App::initialize(const AppOptions& options)
         else if (opt == &options.layer()) {
           importLayer = value.value();
           importLayerSaveAs = value.value();
+        }
+        // --frame-tag <tag-name>
+        else if (opt == &options.frameTag()) {
+          frameTagName = value.value();
         }
         // --ignore-empty
         else if (opt == &options.ignoreEmpty()) {
@@ -450,6 +455,10 @@ void App::initialize(const AppOptions& options)
             getRecentFiles()->addRecentFile(filename.c_str());
 
           if (m_exporter != NULL) {
+            FrameTag* frameTag = nullptr;
+            if (!frameTagName.empty())
+              frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+
             if (!importLayer.empty()) {
               std::vector<Layer*> layers;
               doc->sprite()->getLayersList(layers);
@@ -462,16 +471,16 @@ void App::initialize(const AppOptions& options)
                 }
               }
               if (foundLayer)
-                m_exporter->addDocument(doc, foundLayer);
+                m_exporter->addDocument(doc, foundLayer, frameTag);
             }
             else if (splitLayers) {
               std::vector<Layer*> layers;
               doc->sprite()->getLayersList(layers);
               for (auto layer : layers)
-                m_exporter->addDocument(doc, layer);
+                m_exporter->addDocument(doc, layer, frameTag);
             }
             else
-              m_exporter->addDocument(doc);
+              m_exporter->addDocument(doc, nullptr, frameTag);
           }
         }
 

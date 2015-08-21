@@ -18,6 +18,7 @@
 #include <vector>
 
 namespace doc {
+  class FrameTag;
   class Image;
   class Layer;
 }
@@ -60,8 +61,11 @@ namespace app {
     void setTrimCels(bool trim) { m_trimCels = trim; }
     void setFilenameFormat(const std::string& format) { m_filenameFormat = format; }
 
-    void addDocument(Document* document, doc::Layer* layer = NULL) {
-      m_documents.push_back(Item(document, layer));
+    void addDocument(Document* document,
+                     doc::Layer* layer = nullptr,
+                     doc::FrameTag* tag = nullptr,
+                     bool temporalTag = false) {
+      m_documents.push_back(Item(document, layer, tag, temporalTag));
     }
 
     Document* exportSheet();
@@ -83,9 +87,20 @@ namespace app {
     public:
       Document* doc;
       doc::Layer* layer;
-      Item(Document* doc, doc::Layer* layer)
-        : doc(doc), layer(layer) {
+      doc::FrameTag* frameTag;
+      bool temporalTag;
+
+      Item(Document* doc,
+           doc::Layer* layer,
+           doc::FrameTag* frameTag,
+           bool temporalTag)
+        : doc(doc), layer(layer), frameTag(frameTag)
+        , temporalTag(temporalTag) {
       }
+
+      int frames() const;
+      int fromFrame() const;
+      int toFrame() const;
     };
     typedef std::vector<Item> Items;
 

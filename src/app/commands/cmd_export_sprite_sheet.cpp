@@ -17,12 +17,18 @@
 #include "app/document_exporter.h"
 #include "app/file/file.h"
 #include "app/file_selector.h"
+#include "app/modules/editors.h"
 #include "app/pref/preferences.h"
+#include "app/ui/editor/editor.h"
+#include "app/ui/main_window.h"
 #include "app/ui/status_bar.h"
+#include "app/ui/timeline.h"
 #include "base/bind.h"
 #include "base/convert_to.h"
 #include "base/fs.h"
 #include "base/path.h"
+#include "doc/frame_tag.h"
+#include "doc/layer.h"
 
 #include "generated_export_sprite_sheet.h"
 
@@ -34,6 +40,11 @@ namespace app {
 using namespace ui;
 
 namespace {
+
+  static const char* kAllLayers = "";
+  static const char* kAllFrames = "";
+  static const char* kSelectedLayers = "**selected-layers**";
+  static const char* kSelectedFrames = "**selected-frames**";
 
   struct Fit {
     int width;
@@ -49,8 +60,7 @@ namespace {
 
   // Calculate best size for the given sprite
   // TODO this function was programmed in ten minutes, please optimize it
-  Fit best_fit(Sprite* sprite, int borderPadding, int shapePadding, int innerPadding) {
-    int nframes = sprite->totalFrames();
+  Fit best_fit(Sprite* sprite, int nframes, int borderPadding, int shapePadding, int innerPadding) {
     int framew = sprite->width()+2*innerPadding;
     int frameh = sprite->height()+2*innerPadding;
     Fit result(framew*nframes, frameh, nframes, std::numeric_limits<int>::max());
@@ -101,9 +111,8 @@ namespace {
     return result;
   }
 
-  Fit calculate_sheet_size(Sprite* sprite, int columns, int borderPadding, int shapePadding, int innerPadding) {
-    int nframes = sprite->totalFrames();
-
+  Fit calculate_sheet_size(Sprite* sprite, int nframes, int columns,
+                           int borderPadding, int shapePadding, int innerPadding) {
     columns = MID(1, columns, nframes);
     int rows = ((nframes/columns) + ((nframes%columns) > 0 ? 1: 0));
 
@@ -136,10 +145,118 @@ namespace {
     return true;
   }
 
+  class SelectedFrameTag {
+  public:
+    static frame_t From() {
+      // TODO the range of selected frames should be in doc::Site.
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (range.enabled()) {
+        return range.frameBegin();
+      }
+      else if (current_editor) {
+        return current_editor->frame();
+      }
+      else
+        return 0;
+    }
+
+    static frame_t To() {
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (range.enabled()) {
+        return range.frameEnd();
+      }
+      else if (current_editor) {
+        return current_editor->frame();
+      }
+      else
+        return 0;
+    }
+
+    SelectedFrameTag() : m_frameTag(nullptr) {
+    }
+
+    ~SelectedFrameTag() {
+      if (m_frameTag) {
+        m_frameTag->owner()->remove(m_frameTag);
+        delete m_frameTag;
+      }
+    }
+
+    FrameTag* create(Sprite* sprite) {
+      m_frameTag = new FrameTag(From(), To());
+      sprite->frameTags().add(m_frameTag);
+      return m_frameTag;
+    }
+
+  private:
+    FrameTag* m_frameTag;
+  };
+
+  class SelectedLayers {
+  public:
+    ~SelectedLayers() {
+      for (auto item : m_restore)
+        item.first->setVisible(item.second);
+    }
+
+    void showSelectedLayers(Sprite* sprite) {
+      // TODO the range of selected frames should be in doc::Site.
+      DocumentRange range = App::instance()->getMainWindow()->getTimeline()->range();
+      if (!range.enabled()) {
+        if (current_editor) {
+          ASSERT(current_editor->sprite() == sprite);
+          range.startRange(sprite->layerToIndex(current_editor->layer()),
+                           current_editor->frame(), DocumentRange::kCels);
+          range.endRange(sprite->layerToIndex(current_editor->layer()),
+                         current_editor->frame());
+        }
+        else
+          return;
+      }
+
+      std::vector<Layer*> layers;
+      sprite->getLayersList(layers);
+      for (int i=0; i<int(layers.size()); ++i) {
+        Layer* layer = layers[i];
+        bool selected = range.inRange(LayerIndex(i));
+
+        if (selected != layer->isVisible()) {
+          m_restore.push_back(std::make_pair(layer, layer->isVisible()));
+          layer->setVisible(selected);
+        }
+      }
+    }
+
+  private:
+    std::vector<std::pair<Layer*, bool> > m_restore;
+  };
+
 }
 
 class ExportSpriteSheetWindow : public app::gen::ExportSpriteSheet {
 public:
+  class LayerItem : public ListItem {
+  public:
+    LayerItem(Layer* layer)
+      : ListItem("Layer: " + layer->name())
+      , m_layer(layer) {
+    }
+    Layer* layer() const { return m_layer; }
+  private:
+    Layer* m_layer;
+  };
+
+  class TagItem : public ListItem {
+  public:
+    TagItem(FrameTag* tag)
+      : ListItem("Tag: " + tag->name())
+      , m_tag(tag) {
+    }
+    FrameTag* tag() const { return m_tag; }
+  private:
+    FrameTag* m_tag;
+  };
+
   ExportSpriteSheetWindow(Document* doc, Sprite* sprite,
     DocumentPreferences& docPref)
     : m_sprite(sprite)
@@ -159,6 +276,30 @@ public:
     sheetType()->addItem("Matrix");
     if (m_docPref.spriteSheet.type() != app::gen::SpriteSheetType::NONE)
       sheetType()->setSelectedItemIndex((int)m_docPref.spriteSheet.type()-1);
+
+    layers()->addItem("Visible layers");
+    int i = layers()->addItem("Selected layers");
+    if (m_docPref.spriteSheet.layer() == kSelectedLayers)
+      layers()->setSelectedItemIndex(i);
+    {
+      std::vector<Layer*> layersList;
+      m_sprite->getLayersList(layersList);
+      for (Layer* layer : layersList) {
+        i = layers()->addItem(new LayerItem(layer));
+        if (m_docPref.spriteSheet.layer() == layer->name())
+          layers()->setSelectedItemIndex(i);
+      }
+    }
+
+    frames()->addItem("All frames");
+    i = frames()->addItem("Selected frames");
+    if (m_docPref.spriteSheet.frameTag() == kSelectedFrames)
+      frames()->setSelectedItemIndex(i);
+    for (FrameTag* tag : m_sprite->frameTags()) {
+      i = frames()->addItem(new TagItem(tag));
+      if (m_docPref.spriteSheet.frameTag() == tag->name())
+        frames()->setSelectedItemIndex(i);
+    }
 
     openGenerated()->setSelected(m_docPref.spriteSheet.openGenerated());
 
@@ -225,6 +366,7 @@ public:
     dataEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
     dataFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));
     paddingEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingEnabledChange, this));
+    frames()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onFramesChange, this));
 
     onSheetTypeChange();
     onFileNamesChange();
@@ -294,6 +436,24 @@ public:
 
   bool openGeneratedValue() {
     return openGenerated()->isSelected();
+  }
+
+  std::string layerValue() {
+    if (LayerItem* item = dynamic_cast<LayerItem*>(layers()->getSelectedItem()))
+      return item->layer()->name();
+    else if (layers()->getSelectedItemIndex() == 1)
+      return kSelectedLayers;
+    else
+      return kAllLayers;
+  }
+
+  std::string frameTagValue() {
+    if (TagItem* item = dynamic_cast<TagItem*>(frames()->getSelectedItem()))
+      return item->tag()->name();
+    else if (frames()->getSelectedItemIndex() == 1)
+      return kSelectedFrames;
+    else
+      return kAllFrames;
   }
 
 protected:
@@ -387,6 +547,10 @@ protected:
     updateSizeFields();
   }
 
+  void onFramesChange() {
+    updateSizeFields();
+  }
+
 private:
 
   void resize() {
@@ -396,15 +560,25 @@ private:
   }
 
   void updateSizeFields() {
-    Fit fit;
+    int nframes = m_sprite->totalFrames();
+    std::string tagName = frameTagValue();
+    if (tagName == kSelectedFrames) {
+      nframes = SelectedFrameTag::To() - SelectedFrameTag::From() + 1;
+    }
+    else {
+      FrameTag* frameTag = m_sprite->frameTags().getByName(tagName);
+      if (frameTag)
+        nframes = frameTag->toFrame() - frameTag->fromFrame() + 1;
+    }
 
+    Fit fit;
     if (bestFit()->isSelected()) {
-      fit = best_fit(m_sprite,
-        borderPaddingValue(), shapePaddingValue(), innerPaddingValue());
+      fit = best_fit(m_sprite, nframes,
+                     borderPaddingValue(), shapePaddingValue(), innerPaddingValue());
     }
     else {
       fit = calculate_sheet_size(
-        m_sprite, columnsValue(),
+        m_sprite, nframes, columnsValue(),
         borderPaddingValue(),
         shapePaddingValue(),
         innerPaddingValue());
@@ -491,6 +665,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
     docPref.spriteSheet.shapePadding(window.shapePaddingValue());
     docPref.spriteSheet.innerPadding(window.innerPaddingValue());
     docPref.spriteSheet.openGenerated(window.openGeneratedValue());
+    docPref.spriteSheet.layer(window.layerValue());
+    docPref.spriteSheet.frameTag(window.frameTagValue());
 
     // Default preferences for future sprites
     DocumentPreferences& defPref(Preferences::instance().document(nullptr));
@@ -508,6 +684,8 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   bool bestFit = docPref.spriteSheet.bestFit();
   std::string filename = docPref.spriteSheet.textureFilename();
   std::string dataFilename = docPref.spriteSheet.dataFilename();
+  std::string layerName = docPref.spriteSheet.layer();
+  std::string frameTagName = docPref.spriteSheet.frameTag();
   int borderPadding = docPref.spriteSheet.borderPadding();
   int shapePadding = docPref.spriteSheet.shapePadding();
   int innerPadding = docPref.spriteSheet.innerPadding();
@@ -521,20 +699,55 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       return;                   // Do not overwrite
   }
 
+  // If the user want to export selected frames, we can create a
+  // temporal frame tag for that.
+  FrameTag* frameTag;
+  bool isTemporalTag = false;
+  SelectedFrameTag selectedFrameTag;
+  if (frameTagName == kSelectedFrames) {
+    frameTag = selectedFrameTag.create(sprite);
+    isTemporalTag = true;
+  }
+  else if (frameTagName != kAllFrames)
+    frameTag = sprite->frameTags().getByName(frameTagName);
+  else
+    frameTag = nullptr;
+
+  // If the user choose to render selected layers only, we can
+  // temporaly make them visible and hide the other ones.
+  Layer* layer = nullptr;
+  SelectedLayers layersVisibility;
+  if (layerName == kSelectedLayers) {
+    layersVisibility.showSelectedLayers(sprite);
+  }
+  else {
+    // TODO add a getLayerByName
+    std::vector<Layer*> layers;
+    sprite->getLayersList(layers);
+    for (Layer* l : layers) {
+      if (l->name() == layerName) {
+        layer = l;
+        break;
+      }
+    }
+  }
+
+  int nframes = (frameTag ? frameTag->toFrame() - frameTag->fromFrame() + 1:
+                            sprite->totalFrames());
+
   if (bestFit) {
-    Fit fit = best_fit(sprite, borderPadding, shapePadding, innerPadding);
+    Fit fit = best_fit(sprite, nframes, borderPadding, shapePadding, innerPadding);
     columns = fit.columns;
     width = fit.width;
     height = fit.height;
   }
 
-  frame_t nframes = sprite->totalFrames();
   int sheet_w = 0;
   int sheet_h = 0;
 
   switch (type) {
     case app::gen::SpriteSheetType::HORIZONTAL_STRIP:
-      columns = nframes;
+      columns = sprite->totalFrames();
       break;
     case app::gen::SpriteSheetType::VERTICAL_STRIP:
       columns = 1;
@@ -545,7 +758,10 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
       break;
   }
 
-  Fit fit = calculate_sheet_size(sprite, columns,
+  Fit fit = calculate_sheet_size(
+    sprite,
+    nframes,
+    columns,
     borderPadding, shapePadding, innerPadding);
   columns = fit.columns;
   if (sheet_w == 0) sheet_w = fit.width;
@@ -561,7 +777,7 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   exporter.setBorderPadding(borderPadding);
   exporter.setShapePadding(shapePadding);
   exporter.setInnerPadding(innerPadding);
-  exporter.addDocument(document);
+  exporter.addDocument(document, layer, frameTag, isTemporalTag);
 
   base::UniquePtr<Document> newDocument(exporter.exportSheet());
   if (!newDocument)
