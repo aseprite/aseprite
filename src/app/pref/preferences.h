@@ -55,6 +55,11 @@ namespace app {
     ToolPreferences& tool(tools::Tool* tool);
     DocumentPreferences& document(const app::Document* doc);
 
+    // Remove one document explicitly (this can be used if the
+    // document used in Preferences::document() function wasn't member
+    // of UIContext.
+    void removeDocument(doc::Document* doc);
+
   protected:
     void onRemoveDocument(doc::Document* doc) override;
 

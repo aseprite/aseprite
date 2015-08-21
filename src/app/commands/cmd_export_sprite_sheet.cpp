@@ -787,6 +787,15 @@ void ExportSpriteSheetCommand::onExecute(Context* context)
   if (statusbar)
     statusbar->showTip(1000, "Sprite Sheet Generated");
 
+  // Copy background and grid preferences
+  {
+    DocumentPreferences& newDocPref(Preferences::instance().document(newDocument));
+    newDocPref.bg = docPref.bg;
+    newDocPref.grid = docPref.grid;
+    newDocPref.pixelGrid = docPref.pixelGrid;
+    Preferences::instance().removeDocument(newDocument);
+  }
+
   if (docPref.spriteSheet.openGenerated()) {
     newDocument->setContext(context);
     newDocument.release();
