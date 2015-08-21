@@ -379,6 +379,15 @@ void ColorBar::onAfterExecuteCommand(CommandExecutionEvent& ev)
   if (ev.command()->id() == CommandId::Undo ||
       ev.command()->id() == CommandId::Redo)
     invalidate();
+
+  // If the sprite isn't Indexed anymore (e.g. because we've just
+  // undone a "RGB -> Indexed" conversion), we hide the "Remap"
+  // button.
+  doc::Site site = UIContext::instance()->activeSite();
+  if (site.sprite() &&
+      site.sprite()->pixelFormat() != IMAGE_INDEXED) {
+    hideRemap();
+  }
 }
 
 // Switches the palette-editor
