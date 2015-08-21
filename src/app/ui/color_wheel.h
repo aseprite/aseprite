@@ -19,6 +19,18 @@ namespace app {
 
   class ColorWheel : public ui::Widget {
   public:
+    enum class Harmony {
+      NONE,
+      COMPLEMENTARY,
+      MONOCHROMATIC,
+      ANALOGOUS,
+      SPLIT,
+      TRIADIC,
+      TETRADIC,
+      SQUARE,
+      LAST = SQUARE
+    };
+
     ColorWheel();
     ~ColorWheel();
 
@@ -27,6 +39,8 @@ namespace app {
 
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
+
+    void setHarmony(Harmony harmony);
 
     // Signals
     Signal2<void, const app::Color&, ui::MouseButtons> ColorChange;
@@ -37,13 +51,25 @@ namespace app {
     void onPaint(ui::PaintEvent& ev) override;
     bool onProcessMessage(ui::Message* msg) override;
     void onOptions();
+    int getHarmonies() const;
+    app::Color getColorInHarmony(int i) const;
 
     gfx::Rect m_clientBounds;
     gfx::Rect m_wheelBounds;
     int m_wheelRadius;
     bool m_discrete;
+    Harmony m_harmony;
     ui::ButtonBase m_options;
     app::Color m_mainColor;
+
+    // Internal flag used to know if after pickColor() we selected an
+    // harmony.
+    mutable bool m_harmonyPicked;
+
+    // Internal flag used to lock the modification of m_mainColor.
+    // When the user picks a color harmony, we don't want to change
+    // the main color.
+    bool m_lockColor;
   };
 
 } // namespace app
