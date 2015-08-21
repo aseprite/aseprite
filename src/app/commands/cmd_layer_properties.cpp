@@ -75,9 +75,9 @@ public:
     mode()->addItem("Color");
     mode()->addItem("Luminosity");
 
-    name()->EntryChange.connect(Bind<void>(&LayerPropertiesWindow::onShowChange, this));
-    mode()->Change.connect(Bind<void>(&LayerPropertiesWindow::onShowChange, this));
-    opacity()->Change.connect(Bind<void>(&LayerPropertiesWindow::onShowChange, this));
+    name()->EntryChange.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
+    mode()->Change.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
+    opacity()->Change.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     m_timer.Tick.connect(Bind<void>(&LayerPropertiesWindow::onCommitChange, this));
 
     remapWindow();
@@ -94,9 +94,6 @@ public:
   void setLayer(LayerImage* layer) {
     // Save uncommited changes
     if (m_layer) {
-      if (m_timer.isRunning())
-        onCommitChange();
-
       document()->removeObserver(this);
       m_layer = nullptr;
     }
@@ -104,28 +101,10 @@ public:
     m_timer.stop();
     m_layer = const_cast<LayerImage*>(layer);
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
-
-    if (m_layer) {
+    if (m_layer)
       document()->addObserver(this);
 
-      m_oldName = layer->name();
-      m_oldBlendMode = layer->blendMode();
-      m_oldOpacity = layer->opacity();
-
-      name()->setText(layer->name().c_str());
-      name()->setEnabled(true);
-      mode()->setSelectedItemIndex((int)layer->blendMode());
-      mode()->setEnabled(!layer->isBackground());
-      opacity()->setValue(layer->opacity());
-      opacity()->setEnabled(!layer->isBackground());
-    }
-    else {
-      name()->setText("No Layer");
-      name()->setEnabled(false);
-      mode()->setEnabled(false);
-      opacity()->setEnabled(false);
-    }
+    updateFromLayer();
   }
 
 private:
@@ -166,16 +145,11 @@ private:
     return Window::onProcessMessage(msg);
   }
 
-  void onShowChange() {
+  void onStartTimer() {
     if (m_selfUpdate)
       return;
 
-    m_layer->setName(nameValue());
-    m_layer->setBlendMode(blendModeValue());
-    m_layer->setOpacity(opacityValue());
     m_timer.start();
-
-    update_screen_for_document(document());
   }
 
   void onCommitChange() {
@@ -187,24 +161,20 @@ private:
     int newOpacity = opacityValue();
     BlendMode newBlendMode = blendModeValue();
 
-    m_layer->setName(m_oldName);
-    m_layer->setOpacity(m_oldOpacity);
-    m_layer->setBlendMode(m_oldBlendMode);
-
-    if (newName != m_oldName ||
-        newOpacity != m_oldOpacity ||
-        newBlendMode != m_oldBlendMode) {
+    if (newName != m_layer->name() ||
+        newOpacity != m_layer->opacity() ||
+        newBlendMode != m_layer->blendMode()) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
 
-        if (newName != m_oldName)
+        if (newName != m_layer->name())
           transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
 
-        if (newOpacity != m_oldOpacity)
+        if (newOpacity != m_layer->opacity())
           transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
 
-        if (newBlendMode != m_oldBlendMode)
+        if (newBlendMode != m_layer->blendMode())
           transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
 
         transaction.commit();
@@ -227,31 +197,46 @@ private:
 
   // DocumentObserver impl
   void onLayerNameChange(DocumentEvent& ev) override {
-    updateFromLayer(ev.layer());
+    if (m_layer == ev.layer())
+      updateFromLayer();
   }
 
   void onLayerOpacityChange(DocumentEvent& ev) override {
-    updateFromLayer(ev.layer());
+    if (m_layer == ev.layer())
+      updateFromLayer();
   }
 
   void onLayerBlendModeChange(DocumentEvent& ev) override {
-    updateFromLayer(ev.layer());
+    if (m_layer == ev.layer())
+      updateFromLayer();
   }
 
-  void updateFromLayer(Layer* layer) {
+  void updateFromLayer() {
     if (m_selfUpdate)
       return;
 
-    // Cancel current editions (just in case)
-    m_timer.stop();
-    setLayer(dynamic_cast<LayerImage*>(layer));
+    m_timer.stop(); // Cancel current editions (just in case)
+
+    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+
+    if (m_layer) {
+      name()->setText(m_layer->name().c_str());
+      name()->setEnabled(true);
+      mode()->setSelectedItemIndex((int)m_layer->blendMode());
+      mode()->setEnabled(!m_layer->isBackground());
+      opacity()->setValue(m_layer->opacity());
+      opacity()->setEnabled(!m_layer->isBackground());
+    }
+    else {
+      name()->setText("No Layer");
+      name()->setEnabled(false);
+      mode()->setEnabled(false);
+      opacity()->setEnabled(false);
+    }
   }
 
   Timer m_timer;
   LayerImage* m_layer;
-  std::string m_oldName;
-  BlendMode m_oldBlendMode;
-  int m_oldOpacity;
   bool m_selfUpdate;
 };
 
