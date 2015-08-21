@@ -73,9 +73,9 @@ void NewSpriteFromSelectionCommand::onExecute(Context* context)
   palette->copyColorsTo(dstSprite->palette(frame_t(0)));
 
   LayerImage* dstLayer = static_cast<LayerImage*>(dstSprite->folder()->getFirstLayer());
-  dstLayer->setFlags(site.layer()->flags()); // Copy all flags
   if (site.layer()->isBackground())
     dstLayer->configureAsBackground(); // Configure layer name as background
+  dstLayer->setFlags(site.layer()->flags()); // Copy all flags
   copy_image(dstLayer->cel(frame_t(0))->image(), image.get());
 
   base::UniquePtr<Document> dstDoc(new Document(dstSprite));
