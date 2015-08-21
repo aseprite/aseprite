@@ -15,15 +15,19 @@
 #include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
+#include "app/document_range.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui/main_window.h"
+#include "app/ui/timeline.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/mem_utils.h"
 #include "base/scoped_value.h"
 #include "doc/cel.h"
+#include "doc/cels_range.h"
 #include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
@@ -45,9 +49,10 @@ class CelPropertiesWindow : public app::gen::CelProperties
 public:
   CelPropertiesWindow()
     : m_timer(250, this)
+    , m_document(nullptr)
     , m_cel(nullptr)
     , m_selfUpdate(false) {
-    opacity()->Change.connect(Bind<void>(&CelPropertiesWindow::onShowChange, this));
+    opacity()->Change.connect(Bind<void>(&CelPropertiesWindow::onStartTimer, this));
     m_timer.Tick.connect(Bind<void>(&CelPropertiesWindow::onCommitChange, this));
 
     remapWindow();
@@ -61,46 +66,52 @@ public:
     UIContext::instance()->removeObserver(this);
   }
 
-  void setCel(Cel* cel) {
-    // Save uncommited changes
-    if (m_cel) {
-      if (m_timer.isRunning())
-        onCommitChange();
-
-      document()->removeObserver(this);
+  void setCel(Document* doc, Cel* cel) {
+    if (m_document) {
+      m_document->removeObserver(this);
+      m_document = nullptr;
       m_cel = nullptr;
     }
 
     m_timer.stop();
-    m_cel = const_cast<Cel*>(cel);
+    m_document = doc;
+    m_cel = cel;
+    m_range = App::instance()->getMainWindow()->getTimeline()->range();
 
-    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+    if (m_document)
+      m_document->addObserver(this);
 
-    if (m_cel) {
-      document()->addObserver(this);
-
-      m_oldOpacity = cel->opacity();
-
-      opacity()->setValue(cel->opacity());
-      opacity()->setEnabled(!cel->layer()->isBackground());
-    }
-    else {
-      opacity()->setEnabled(false);
-    }
+    updateFromCel();
   }
 
 private:
 
-  app::Document* document() {
-    ASSERT(m_cel);
-    if (m_cel)
-      return static_cast<app::Document*>(m_cel->document());
-    else
-      return nullptr;
-  }
-
   int opacityValue() const {
     return opacity()->getValue();
+  }
+
+  int countCels() const {
+    if (!m_document)
+      return 0;
+    else if (m_cel &&
+             (!m_range.enabled() ||
+              (m_range.frames() == 1 &&
+               m_range.layers() == 1))) {
+      return 1;
+    }
+    else if (m_range.enabled()) {
+      int count = 0;
+      for (Cel* cel : m_document->sprite()->uniqueCels()) {
+        if (!cel->layer()->isBackground() &&
+            m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
+                            cel->frame())) {
+          ++count;
+        }
+      }
+      return count;
+    }
+    else
+      return 0;
   }
 
   bool onProcessMessage(ui::Message* msg) override {
@@ -108,7 +119,7 @@ private:
 
       case kCloseMessage:
         // Save changes before we close the window
-        setCel(nullptr);
+        setCel(nullptr, nullptr);
         save_window_pos(this, "CelProperties");
 
         deferDelete();
@@ -119,14 +130,11 @@ private:
     return Window::onProcessMessage(msg);
   }
 
-  void onShowChange() {
+  void onStartTimer() {
     if (m_selfUpdate)
       return;
 
-    m_cel->setOpacity(opacityValue());
     m_timer.start();
-
-    update_screen_for_document(document());
   }
 
   void onCommitChange() {
@@ -135,16 +143,27 @@ private:
     m_timer.stop();
 
     int newOpacity = opacityValue();
+    int count = countCels();
 
-    m_cel->setOpacity(m_oldOpacity);
-
-    if (newOpacity != m_oldOpacity) {
+    if ((count > 1) ||
+        (count == 1 && newOpacity != m_cel->opacity())) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Cel Opacity Change");
 
-        if (newOpacity != m_oldOpacity)
-          transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
+        if (count == 1) {
+          if (newOpacity != m_cel->opacity())
+            transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
+        }
+        else {
+          for (Cel* cel : m_document->sprite()->uniqueCels()) {
+            if (!cel->layer()->isBackground() &&
+                m_range.inRange(cel->sprite()->layerToIndex(cel->layer()),
+                                cel->frame())) {
+              transaction.execute(new cmd::SetCelOpacity(cel, newOpacity));
+            }
+          }
+        }
 
         transaction.commit();
       }
@@ -152,35 +171,54 @@ private:
         Console::showException(e);
       }
 
-      update_screen_for_document(document());
+      update_screen_for_document(m_document);
     }
   }
 
   // ContextObserver impl
   void onActiveSiteChange(const Site& site) override {
     if (isVisible())
-      setCel(const_cast<Cel*>(site.cel()));
-    else if (m_cel)
-      setCel(nullptr);
+      setCel(static_cast<app::Document*>(const_cast<doc::Document*>(site.document())),
+             const_cast<Cel*>(site.cel()));
+    else if (m_document)
+      setCel(nullptr, nullptr);
   }
 
   // DocumentObserver impl
   void onCelOpacityChange(DocumentEvent& ev) override {
-    updateFromCel(ev.cel());
+    if (m_cel == ev.cel())
+      updateFromCel();
   }
 
-  void updateFromCel(Cel* cel) {
+  void updateFromCel() {
     if (m_selfUpdate)
       return;
 
-    // Cancel current editions (just in case)
-    m_timer.stop();
-    setCel(cel);
+    m_timer.stop(); // Cancel current editions (just in case)
+
+    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+
+    int count = countCels();
+
+    if (count > 0) {
+      if (m_cel) {
+        opacity()->setValue(m_cel->opacity());
+        opacity()->setEnabled(
+          (count > 1) ||
+          (count == 1 && !m_cel->layer()->isBackground()));
+      }
+      else                  // Enable slider to change the whole range
+        opacity()->setEnabled(true);
+    }
+    else {
+      opacity()->setEnabled(false);
+    }
   }
 
   Timer m_timer;
+  Document* m_document;
   Cel* m_cel;
-  int m_oldOpacity;
+  DocumentRange m_range;
   bool m_selfUpdate;
 };
 
@@ -210,12 +248,11 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 void CelPropertiesCommand::onExecute(Context* context)
 {
   ContextReader reader(context);
-  Cel* cel = reader.cel();
 
   if (!g_window)
     g_window = new CelPropertiesWindow;
 
-  g_window->setCel(cel);
+  g_window->setCel(reader.document(), reader.cel());
   g_window->openWindow();
 
   // Focus layer name
