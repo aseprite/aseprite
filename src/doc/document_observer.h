@@ -40,6 +40,9 @@ namespace doc {
     virtual void onSpriteSizeChanged(DocumentEvent& ev) { }
     virtual void onSpriteTransparentColorChanged(DocumentEvent& ev) { }
 
+    virtual void onLayerNameChange(DocumentEvent& ev) { }
+    virtual void onLayerOpacityChange(DocumentEvent& ev) { }
+    virtual void onLayerBlendModeChange(DocumentEvent& ev) { }
     virtual void onLayerRestacked(DocumentEvent& ev) { }
     virtual void onLayerMergedDown(DocumentEvent& ev) { }
 

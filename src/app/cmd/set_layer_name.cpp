@@ -11,7 +11,10 @@
 
 #include "app/cmd/set_layer_name.h"
 
+#include "doc/document.h"
+#include "doc/document_event.h"
 #include "doc/layer.h"
+#include "doc/sprite.h"
 
 namespace app {
 namespace cmd {
@@ -33,6 +36,16 @@ void SetLayerName::onUndo()
 {
   layer()->setName(m_oldName);
   layer()->incrementVersion();
+}
+
+void SetLayerName::onFireNotifications()
+{
+  Layer* layer = this->layer();
+  doc::Document* doc = layer->sprite()->document();
+  DocumentEvent ev(doc);
+  ev.sprite(layer->sprite());
+  ev.layer(layer);
+  doc->notifyObservers<DocumentEvent&>(&DocumentObserver::onLayerNameChange, ev);
 }
 
 } // namespace cmd

@@ -13,12 +13,6 @@
       <label text="Opacity:" />
       <slider id="opacity" min="0" max="255" width="128" />
     </grid>
-    <separator horizontal="true" />
-    <hbox>
-      <boxfiller />
-      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-      <button text="&amp;Cancel" closewindow="true" id="cancel" width="60" />
-    </hbox>
   </vbox>
 </window>
 </gui>

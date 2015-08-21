@@ -1032,6 +1032,11 @@ void Timeline::onSelectionChanged(doc::DocumentEvent& ev)
   invalidate();
 }
 
+void Timeline::onLayerNameChange(doc::DocumentEvent& ev)
+{
+  invalidate();
+}
+
 void Timeline::onStateChanged(Editor* editor)
 {
   m_aniControls.updateUsingEditor(editor);
