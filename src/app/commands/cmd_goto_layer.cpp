@@ -55,23 +55,20 @@ GotoPreviousLayerCommand::GotoPreviousLayerCommand()
 
 bool GotoPreviousLayerCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return (current_editor != nullptr &&
+          current_editor->document());
 }
 
 void GotoPreviousLayerCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  const Sprite* sprite = reader.sprite();
-  Site site = *reader.site();
+  Site site = current_editor->getSite();
 
   if (site.layerIndex() > 0)
     site.layerIndex(site.layerIndex().previous());
   else
-    site.layerIndex(LayerIndex(sprite->countLayers()-1));
+    site.layerIndex(LayerIndex(site.sprite()->countLayers()-1));
 
   // Flash the current layer
-  ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->setLayer(site.layer());
   current_editor->flashCurrentLayer();
 
@@ -97,23 +94,20 @@ GotoNextLayerCommand::GotoNextLayerCommand()
 
 bool GotoNextLayerCommand::onEnabled(Context* context)
 {
-  return context->checkFlags(ContextFlags::ActiveDocumentIsWritable |
-                             ContextFlags::HasActiveSprite);
+  return (current_editor != nullptr &&
+          current_editor->document());
 }
 
 void GotoNextLayerCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  const Sprite* sprite = reader.sprite();
-  Site site = *reader.site();
+  Site site = current_editor->getSite();
 
-  if (site.layerIndex() < sprite->countLayers()-1)
+  if (site.layerIndex() < site.sprite()->countLayers()-1)
     site.layerIndex(site.layerIndex().next());
   else
     site.layerIndex(LayerIndex(0));
 
   // Flash the current layer
-  ASSERT(current_editor != NULL && "Current editor cannot be null when we have a current sprite");
   current_editor->setLayer(site.layer());
   current_editor->flashCurrentLayer();
 
