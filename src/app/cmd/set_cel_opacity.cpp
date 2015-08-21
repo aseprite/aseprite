@@ -45,7 +45,7 @@ void SetCelOpacity::onFireNotifications()
   DocumentEvent ev(cel->document());
   ev.sprite(cel->sprite());
   ev.cel(cel);
-  cel->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelOpacityChanged, ev);
+  cel->document()->notifyObservers<DocumentEvent&>(&DocumentObserver::onCelOpacityChange, ev);
 }
 
 } // namespace cmd

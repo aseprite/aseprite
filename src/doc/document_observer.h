@@ -50,7 +50,7 @@ namespace doc {
     virtual void onCelCopied(DocumentEvent& ev) { }
     virtual void onCelFrameChanged(DocumentEvent& ev) { }
     virtual void onCelPositionChanged(DocumentEvent& ev) { }
-    virtual void onCelOpacityChanged(DocumentEvent& ev) { }
+    virtual void onCelOpacityChange(DocumentEvent& ev) { }
 
     virtual void onFrameDurationChanged(DocumentEvent& ev) { }
 

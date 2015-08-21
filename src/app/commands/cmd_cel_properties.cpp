@@ -10,15 +10,21 @@
 #endif
 
 #include "app/app.h"
+#include "app/cmd/set_cel_opacity.h"
 #include "app/commands/command.h"
+#include "app/console.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/find_widget.h"
 #include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
+#include "app/ui_context.h"
+#include "base/bind.h"
 #include "base/mem_utils.h"
+#include "base/scoped_value.h"
 #include "doc/cel.h"
+#include "doc/document_event.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/sprite.h"
@@ -30,10 +36,152 @@ namespace app {
 
 using namespace ui;
 
-class CelPropertiesWindow : public app::gen::CelProperties {
+class CelPropertiesWindow;
+static CelPropertiesWindow* g_window = nullptr;
+
+class CelPropertiesWindow : public app::gen::CelProperties
+                          , public doc::ContextObserver
+                          , public doc::DocumentObserver {
 public:
-  CelPropertiesWindow() {
+  CelPropertiesWindow()
+    : m_timer(250, this)
+    , m_cel(nullptr)
+    , m_selfUpdate(false) {
+    opacity()->Change.connect(Bind<void>(&CelPropertiesWindow::onShowChange, this));
+    m_timer.Tick.connect(Bind<void>(&CelPropertiesWindow::onCommitChange, this));
+
+    remapWindow();
+    centerWindow();
+    load_window_pos(this, "CelProperties");
+
+    UIContext::instance()->addObserver(this);
   }
+
+  ~CelPropertiesWindow() {
+    UIContext::instance()->removeObserver(this);
+  }
+
+  void setCel(Cel* cel) {
+    // Save uncommited changes
+    if (m_cel) {
+      if (m_timer.isRunning())
+        onCommitChange();
+
+      document()->removeObserver(this);
+      m_cel = nullptr;
+    }
+
+    m_timer.stop();
+    m_cel = const_cast<Cel*>(cel);
+
+    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+
+    if (m_cel) {
+      document()->addObserver(this);
+
+      m_oldOpacity = cel->opacity();
+
+      opacity()->setValue(cel->opacity());
+      opacity()->setEnabled(!cel->layer()->isBackground());
+    }
+    else {
+      opacity()->setEnabled(false);
+    }
+  }
+
+private:
+
+  app::Document* document() {
+    ASSERT(m_cel);
+    if (m_cel)
+      return static_cast<app::Document*>(m_cel->document());
+    else
+      return nullptr;
+  }
+
+  int opacityValue() const {
+    return opacity()->getValue();
+  }
+
+  bool onProcessMessage(ui::Message* msg) override {
+    switch (msg->type()) {
+
+      case kCloseMessage:
+        // Save changes before we close the window
+        setCel(nullptr);
+        save_window_pos(this, "CelProperties");
+
+        deferDelete();
+        g_window = nullptr;
+        break;
+
+    }
+    return Window::onProcessMessage(msg);
+  }
+
+  void onShowChange() {
+    if (m_selfUpdate)
+      return;
+
+    m_cel->setOpacity(opacityValue());
+    m_timer.start();
+
+    update_screen_for_document(document());
+  }
+
+  void onCommitChange() {
+    base::ScopedValue<bool> switchSelf(m_selfUpdate, true, false);
+
+    m_timer.stop();
+
+    int newOpacity = opacityValue();
+
+    if (newOpacity != m_oldOpacity) {
+      try {
+        ContextWriter writer(UIContext::instance());
+        Transaction transaction(writer.context(), "Cel Opacity Change");
+
+        if (newOpacity != m_oldOpacity) {
+          m_cel->setOpacity(m_oldOpacity);
+          transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
+        }
+
+        transaction.commit();
+      }
+      catch (const std::exception& e) {
+        Console::showException(e);
+      }
+
+      update_screen_for_document(document());
+    }
+  }
+
+  // ContextObserver impl
+  void onActiveSiteChange(const Site& site) override {
+    if (isVisible())
+      setCel(const_cast<Cel*>(site.cel()));
+    else if (m_cel)
+      setCel(nullptr);
+  }
+
+  // DocumentObserver impl
+  void onCelOpacityChange(DocumentEvent& ev) override {
+    updateFromCel(ev.cel());
+  }
+
+  void updateFromCel(Cel* cel) {
+    if (m_selfUpdate)
+      return;
+
+    // Cancel current editions (just in case)
+    m_timer.stop();
+    setCel(cel);
+  }
+
+  Timer m_timer;
+  Cel* m_cel;
+  int m_oldOpacity;
+  bool m_selfUpdate;
 };
 
 class CelPropertiesCommand : public Command {
@@ -42,8 +190,8 @@ public:
   Command* clone() const override { return new CelPropertiesCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 CelPropertiesCommand::CelPropertiesCommand()
@@ -61,84 +209,17 @@ bool CelPropertiesCommand::onEnabled(Context* context)
 
 void CelPropertiesCommand::onExecute(Context* context)
 {
-  const ContextReader reader(context);
-  const Sprite* sprite = reader.sprite();
-  const Layer* layer = reader.layer();
-  const Cel* cel = reader.cel(); // Get current cel (can be NULL)
+  ContextReader reader(context);
+  Cel* cel = reader.cel();
 
-  CelPropertiesWindow window;
-  ui::TooltipManager* tooltipManager = window.findFirstChildByType<ui::TooltipManager>();
+  if (!g_window)
+    g_window = new CelPropertiesWindow;
 
-  // If the layer isn't writable
-  if (!layer->isEditable()) {
-    window.ok()->setText("Locked");
-    window.ok()->setEnabled(false);
-  }
+  g_window->setCel(cel);
+  g_window->openWindow();
 
-  window.frame()->setTextf("%d/%d",
-                           (int)reader.frame()+1,
-                           (int)sprite->totalFrames());
-
-  if (cel != NULL) {
-    // Position
-    window.pos()->setTextf("%d, %d", cel->x(), cel->y());
-
-    // Dimension (and memory size)
-    Image* image = cel->image();
-    int memsize = image->getRowStrideSize() * image->height();
-
-    window.size()->setTextf("%dx%d (%s)",
-      image->width(),
-      image->height(),
-      base::get_pretty_memory_size(memsize).c_str());
-
-    // Opacity
-    window.opacity()->setValue(cel->opacity());
-    if (layer->isBackground()) {
-      window.opacity()->setEnabled(false);
-      tooltipManager->addTooltipFor(window.opacity(),
-        "The `Background' layer is opaque,\n"
-        "its opacity can't be changed.",
-        LEFT);
-    }
-    else if (sprite->pixelFormat() == IMAGE_INDEXED) {
-      window.opacity()->setEnabled(false);
-      tooltipManager->addTooltipFor(window.opacity(),
-        "Cel opacity of Indexed images\n"
-        "cannot be changed.",
-        LEFT);
-    }
-  }
-  else {
-    window.pos()->setText("None");
-    window.size()->setText("Empty (0 bytes)");
-    window.opacity()->setValue(0);
-    window.opacity()->setEnabled(false);
-  }
-
-  window.openWindowInForeground();
-
-  if (window.getKiller() == window.ok()) {
-    ContextWriter writer(reader);
-    Document* document_writer = writer.document();
-    Sprite* sprite_writer = writer.sprite();
-    Cel* cel_writer = writer.cel();
-
-    int newOpacity = window.opacity()->getValue();
-
-    // The opacity was changed?
-    if (cel_writer != NULL &&
-        cel_writer->opacity() != newOpacity) {
-      {
-        Transaction transaction(writer.context(), "Cel Opacity Change", ModifyDocument);
-        document_writer->getApi(transaction)
-          .setCelOpacity(sprite_writer, cel_writer, newOpacity);
-        transaction.commit();
-      }
-
-      update_screen_for_document(document_writer);
-    }
-  }
+  // Focus layer name
+  g_window->opacity()->requestFocus();
 }
 
 Command* CommandFactory::createCelPropertiesCommand()
