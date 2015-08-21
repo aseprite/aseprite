@@ -187,25 +187,27 @@ private:
     int newOpacity = opacityValue();
     BlendMode newBlendMode = blendModeValue();
 
-    m_layer->setName(m_oldName);
-    m_layer->setBlendMode(m_oldBlendMode);
-    m_layer->setOpacity(m_oldOpacity);
-
-    if (newName != m_layer->name() ||
-        newOpacity != m_layer->opacity() ||
-        newBlendMode != m_layer->blendMode()) {
+    if (newName != m_oldName ||
+        newOpacity != m_oldOpacity ||
+        newBlendMode != m_oldBlendMode) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Set Layer Properties");
 
-        if (newName != m_layer->name())
+        if (newName != m_oldName) {
+          m_layer->setName(m_oldName);
           transaction.execute(new cmd::SetLayerName(writer.layer(), newName));
+        }
 
-        if (newOpacity != m_layer->opacity())
+        if (newOpacity != m_oldOpacity) {
+          m_layer->setOpacity(m_oldOpacity);
           transaction.execute(new cmd::SetLayerOpacity(static_cast<LayerImage*>(writer.layer()), newOpacity));
+        }
 
-        if (newBlendMode != m_layer->blendMode())
+        if (newBlendMode != m_oldBlendMode) {
+          m_layer->setBlendMode(m_oldBlendMode);
           transaction.execute(new cmd::SetLayerBlendMode(static_cast<LayerImage*>(writer.layer()), newBlendMode));
+        }
 
         transaction.commit();
       }
