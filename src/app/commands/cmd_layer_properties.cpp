@@ -132,6 +132,18 @@ private:
   bool onProcessMessage(ui::Message* msg) override {
     switch (msg->type()) {
 
+      case kKeyDownMessage:
+        if (name()->hasFocus() ||
+            opacity()->hasFocus() ||
+            mode()->hasFocus()) {
+          if (static_cast<KeyMessage*>(msg)->scancode() == kKeyEnter) {
+            onCommitChange();
+            closeWindow(this);
+            return true;
+          }
+        }
+        break;
+
       case kCloseMessage:
         // Save changes before we close the window
         setLayer(nullptr);
