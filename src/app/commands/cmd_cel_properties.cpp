@@ -136,15 +136,15 @@ private:
 
     int newOpacity = opacityValue();
 
+    m_cel->setOpacity(m_oldOpacity);
+
     if (newOpacity != m_oldOpacity) {
       try {
         ContextWriter writer(UIContext::instance());
         Transaction transaction(writer.context(), "Cel Opacity Change");
 
-        if (newOpacity != m_oldOpacity) {
-          m_cel->setOpacity(m_oldOpacity);
+        if (newOpacity != m_oldOpacity)
           transaction.execute(new cmd::SetCelOpacity(writer.cel(), newOpacity));
-        }
 
         transaction.commit();
       }
