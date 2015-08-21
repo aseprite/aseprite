@@ -280,6 +280,9 @@ void LayerPropertiesCommand::onExecute(Context* context)
 
   g_window->setLayer(layer);
   g_window->openWindow();
+
+  // Focus layer name
+  g_window->name()->requestFocus();
 }
 
 Command* CommandFactory::createLayerPropertiesCommand()
