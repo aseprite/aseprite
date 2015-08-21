@@ -19,10 +19,24 @@ namespace app {
 
   class LockedDocumentException : public base::Exception {
   public:
-    LockedDocumentException() throw()
-    : base::Exception("Cannot read or write the active document.\n"
-                      "It is locked by a background task.\n"
-                      "Try again later.") { }
+    LockedDocumentException(const char* msg) throw()
+    : base::Exception(msg) { }
+  };
+
+  class CannotReadDocumentException : public LockedDocumentException {
+  public:
+    CannotReadDocumentException() throw()
+    : LockedDocumentException("Cannot read the sprite.\n"
+                              "It is being modified by another command.\n"
+                              "Try again.") { }
+  };
+
+  class CannotWriteDocumentException : public LockedDocumentException {
+  public:
+    CannotWriteDocumentException() throw()
+    : LockedDocumentException("Cannot modify the sprite.\n"
+                              "It is being used by another command.\n"
+                              "Try again.") { }
   };
 
   // This class acts like a wrapper for the given document.  It's
@@ -71,13 +85,13 @@ namespace app {
     explicit DocumentReader(Document* document, int timeout)
       : DocumentAccess(document) {
       if (m_document && !m_document->lock(Document::ReadLock, timeout))
-        throw LockedDocumentException();
+        throw CannotReadDocumentException();
     }
 
     explicit DocumentReader(const DocumentReader& copy, int timeout)
       : DocumentAccess(copy) {
       if (m_document && !m_document->lock(Document::ReadLock, timeout))
-        throw LockedDocumentException();
+        throw CannotReadDocumentException();
     }
 
     ~DocumentReader() {
@@ -115,7 +129,7 @@ namespace app {
       , m_locked(false) {
       if (m_document) {
         if (!m_document->lock(Document::WriteLock, timeout))
-          throw LockedDocumentException();
+          throw CannotWriteDocumentException();
 
         m_locked = true;
       }
@@ -129,7 +143,7 @@ namespace app {
       , m_locked(false) {
       if (m_document) {
         if (!m_document->lockToWrite(timeout))
-          throw LockedDocumentException();
+          throw CannotWriteDocumentException();
 
         m_locked = true;
       }
