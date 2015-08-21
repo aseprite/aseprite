@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -22,7 +22,8 @@ struct same_name {
   const string& name;
   same_name(const string& name) : name(name) { }
   bool operator()(const ProgramOptions::Option* a) {
-    return a->name() == name;
+    return (a->name() == name ||
+            a->alias() == name);
   }
 };
 
@@ -192,7 +193,7 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
          it=po.options().begin(), end=po.options().end(); it != end; ++it) {
     const base::ProgramOptions::Option* option = *it;
     std::size_t optionWidth =
-      6+option->name().size()+1+
+      6+MAX(option->name().size(), option->alias().size())+1+
       (option->doesRequireValue() ? option->getValueName().size()+1: 0);
 
     if (maxOptionWidth < optionWidth)
@@ -212,6 +213,18 @@ std::ostream& operator<<(std::ostream& os, const base::ProgramOptions& po)
     os << "--" << option->name();
     if (option->doesRequireValue())
       os << " " << option->getValueName();
+
+    // Show alias
+    if (!option->alias().empty()) {
+      os << " or\n"
+         << std::setw(6) << ' '
+         << "--" << option->alias();
+      if (option->doesRequireValue())
+        os << " " << option->getValueName();
+
+      optionWidth = 6+option->alias().size()+1+
+        (option->doesRequireValue() ? option->getValueName().size()+1: 0);
+    }
 
     if (!option->description().empty()) {
       bool multilines = (option->description().find('\n') != std::string::npos);

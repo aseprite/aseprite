@@ -1,5 +1,5 @@
 // Aseprite Base Library
-// Copyright (c) 2001-2013 David Capello
+// Copyright (c) 2001-2013, 2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -43,11 +43,13 @@ namespace base {
       }
       // Getters
       const std::string& name() const { return m_name; }
+      const std::string& alias() const { return m_alias; }
       const std::string& description() const { return m_description; }
       const std::string& getValueName() const { return m_valueName; }
       char mnemonic() const { return m_mnemonic; }
       bool doesRequireValue() const { return !m_valueName.empty(); }
       // Setters
+      Option& alias(const std::string& alias) { m_alias = alias; return *this; }
       Option& description(const std::string& desc) { m_description = desc; return *this; }
       Option& mnemonic(char mnemonic) { m_mnemonic = mnemonic; return *this; }
       Option& requiresValue(const std::string& valueName) {
@@ -56,6 +58,7 @@ namespace base {
       }
     private:
       std::string m_name;        // Name of the option (e.g. "help" for "--help")
+      std::string m_alias;
       std::string m_description; // Description of the option (this can be used when the help is printed).
       std::string m_valueName;   // Empty if this option doesn't require a value, or the name of the expected value.
       char m_mnemonic;           // One character that can be used in the command line to use this option.
