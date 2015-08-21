@@ -254,6 +254,8 @@ bool Entry::onProcessMessage(Message* msg)
           case kKeyDel:
             if (msg->shiftPressed())
               cmd = EntryCmd::Cut;
+            else if (msg->ctrlPressed())
+              cmd = EntryCmd::DeleteForwardToEndOfLine;
             else
               cmd = EntryCmd::DeleteForward;
             break;
@@ -266,7 +268,10 @@ bool Entry::onProcessMessage(Message* msg)
             break;
 
           case kKeyBackspace:
-            cmd = EntryCmd::DeleteBackward;
+            if (msg->ctrlPressed())
+              cmd = EntryCmd::DeleteBackwardWord;
+            else
+              cmd = EntryCmd::DeleteBackward;
             break;
 
           default:
@@ -655,6 +660,18 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
       }
 
       m_select = -1;
+      break;
+
+    case EntryCmd::DeleteBackwardWord:
+      m_select = m_caret;
+      backwardWord();
+      if (m_caret < m_select)
+        text.erase(m_caret, m_select-m_caret);
+      m_select = -1;
+      break;
+
+    case EntryCmd::DeleteForwardToEndOfLine:
+      text.erase(m_caret);
       break;
 
     case EntryCmd::SelectAll:

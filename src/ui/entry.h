@@ -16,8 +16,7 @@ namespace ui {
 
   class MouseMessage;
 
-  class Entry : public Widget
-  {
+  class Entry : public Widget {
   public:
     Entry(std::size_t maxsize, const char *format, ...);
     ~Entry();
@@ -67,6 +66,8 @@ namespace ui {
       EndOfLine,
       DeleteForward,
       DeleteBackward,
+      DeleteBackwardWord,
+      DeleteForwardToEndOfLine,
       Cut,
       Copy,
       Paste,
