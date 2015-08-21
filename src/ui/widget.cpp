@@ -1119,6 +1119,31 @@ GraphicsPtr Widget::getGraphics(const gfx::Rect& clip)
 bool Widget::sendMessage(Message* msg)
 {
   ASSERT(msg != NULL);
+
+  // Filter out-of-sync messages
+  switch (msg->type()) {
+
+    case kFocusEnterMessage:
+      if (!hasFocus())
+        return false;
+      break;
+
+    case kFocusLeaveMessage:
+      if (hasFocus())
+        return false;
+      break;
+
+    case kMouseEnterMessage:
+      if (!hasMouse())
+        return false;
+      break;
+
+    case kMouseLeaveMessage:
+      if (hasMouse())
+        return false;
+      break;
+  }
+
   return onProcessMessage(msg);
 }
 
