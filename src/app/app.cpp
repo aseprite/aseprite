@@ -276,8 +276,8 @@ void App::initialize(const AppOptions& options)
           splitLayers = true;
           splitLayersSaveAs = true;
         }
-        // --import-layer <layer-name>
-        else if (opt == &options.importLayer()) {
+        // --layer <layer-name>
+        else if (opt == &options.layer()) {
           importLayer = value.value();
           importLayerSaveAs = value.value();
         }
