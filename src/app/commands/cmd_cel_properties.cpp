@@ -24,9 +24,17 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
+#include "generated_cel_properties.h"
+
 namespace app {
 
 using namespace ui;
+
+class CelPropertiesWindow : public app::gen::CelProperties {
+public:
+  CelPropertiesWindow() {
+  }
+};
 
 class CelPropertiesCommand : public Command {
 public:
@@ -58,70 +66,65 @@ void CelPropertiesCommand::onExecute(Context* context)
   const Layer* layer = reader.layer();
   const Cel* cel = reader.cel(); // Get current cel (can be NULL)
 
-  base::UniquePtr<Window> window(app::load_widget<Window>("cel_properties.xml", "cel_properties"));
-  Widget* label_frame = app::find_widget<Widget>(window, "frame");
-  Widget* label_pos = app::find_widget<Widget>(window, "pos");
-  Widget* label_size = app::find_widget<Widget>(window, "size");
-  Slider* slider_opacity = app::find_widget<Slider>(window, "opacity");
-  Widget* button_ok = app::find_widget<Widget>(window, "ok");
-  ui::TooltipManager* tooltipManager = window->findFirstChildByType<ui::TooltipManager>();
+  CelPropertiesWindow window;
+  ui::TooltipManager* tooltipManager = window.findFirstChildByType<ui::TooltipManager>();
 
   // If the layer isn't writable
   if (!layer->isEditable()) {
-    button_ok->setText("Locked");
-    button_ok->setEnabled(false);
+    window.ok()->setText("Locked");
+    window.ok()->setEnabled(false);
   }
 
-  label_frame->setTextf("%d/%d",
-                        (int)reader.frame()+1,
-                        (int)sprite->totalFrames());
+  window.frame()->setTextf("%d/%d",
+                           (int)reader.frame()+1,
+                           (int)sprite->totalFrames());
 
   if (cel != NULL) {
     // Position
-    label_pos->setTextf("%d, %d", cel->x(), cel->y());
+    window.pos()->setTextf("%d, %d", cel->x(), cel->y());
 
     // Dimension (and memory size)
     Image* image = cel->image();
     int memsize = image->getRowStrideSize() * image->height();
 
-    label_size->setTextf("%dx%d (%s)",
+    window.size()->setTextf("%dx%d (%s)",
       image->width(),
       image->height(),
       base::get_pretty_memory_size(memsize).c_str());
 
     // Opacity
-    slider_opacity->setValue(cel->opacity());
+    window.opacity()->setValue(cel->opacity());
     if (layer->isBackground()) {
-      slider_opacity->setEnabled(false);
-      tooltipManager->addTooltipFor(slider_opacity,
+      window.opacity()->setEnabled(false);
+      tooltipManager->addTooltipFor(window.opacity(),
         "The `Background' layer is opaque,\n"
         "its opacity can't be changed.",
         LEFT);
     }
     else if (sprite->pixelFormat() == IMAGE_INDEXED) {
-      slider_opacity->setEnabled(false);
-      tooltipManager->addTooltipFor(slider_opacity,
+      window.opacity()->setEnabled(false);
+      tooltipManager->addTooltipFor(window.opacity(),
         "Cel opacity of Indexed images\n"
         "cannot be changed.",
         LEFT);
     }
   }
   else {
-    label_pos->setText("None");
-    label_size->setText("Empty (0 bytes)");
-    slider_opacity->setValue(0);
-    slider_opacity->setEnabled(false);
+    window.pos()->setText("None");
+    window.size()->setText("Empty (0 bytes)");
+    window.opacity()->setValue(0);
+    window.opacity()->setEnabled(false);
   }
 
-  window->openWindowInForeground();
+  window.openWindowInForeground();
 
-  if (window->getKiller() == button_ok) {
+  if (window.getKiller() == window.ok()) {
     ContextWriter writer(reader);
     Document* document_writer = writer.document();
     Sprite* sprite_writer = writer.sprite();
     Cel* cel_writer = writer.cel();
 
-    int newOpacity = slider_opacity->getValue();
+    int newOpacity = window.opacity()->getValue();
 
     // The opacity was changed?
     if (cel_writer != NULL &&
