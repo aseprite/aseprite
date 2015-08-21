@@ -18,6 +18,7 @@
 #include "app/ui/status_bar.h"
 #include "base/bind.h"
 #include "base/pi.h"
+#include "she/surface.h"
 #include "ui/graphics.h"
 #include "ui/menu.h"
 #include "ui/message.h"
@@ -62,7 +63,7 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
   int v = (pos.y - (m_wheelBounds.y+m_wheelBounds.h/2));
   double d = std::sqrt(u*u + v*v);
 
-  if (d < m_wheelRadius) {
+  if (d < m_wheelRadius+2*guiscale()) {
     double a = std::atan2(-v, u);
 
     int hue = (int(180.0 * a / PI)
@@ -76,10 +77,14 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
     }
     hue %= 360;                 // To leave hue in [0,360) range
 
-    int sat = int(120.0 * d / m_wheelRadius);
+    int sat;
     if (m_discrete) {
+      sat = int(120.0 * d / m_wheelRadius);
       sat /= 20;
       sat *= 20;
+    }
+    else {
+      sat = int(100.0 * d / m_wheelRadius);
     }
 
     return app::Color::fromHsv(
@@ -90,6 +95,12 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
   else {
     return app::Color::fromMask();
   }
+}
+
+void ColorWheel::selectColor(const app::Color& color)
+{
+  m_mainColor = color;
+  invalidate();
 }
 
 void ColorWheel::setDiscrete(bool state)
@@ -152,6 +163,20 @@ void ColorWheel::onPaint(ui::PaintEvent& ev)
 
       g->putPixel(color, x, y);
     }
+  }
+
+  if (m_mainColor.getAlpha() > 0) {
+    int hue = m_mainColor.getHue()-30;
+    int sat = m_mainColor.getSaturation();
+    gfx::Point pos =
+      m_wheelBounds.getCenter() +
+      gfx::Point(int(+std::cos(PI*hue/180)*double(m_wheelRadius)*sat/100.0),
+                 int(-std::sin(PI*hue/180)*double(m_wheelRadius)*sat/100.0));
+
+    she::Surface* icon = theme->parts.colorWheelIndicator()->getBitmap(0);
+    g->drawRgbaSurface(icon,
+                       pos.x-icon->width()/2,
+                       pos.y-icon->height()/2);
   }
 }
 

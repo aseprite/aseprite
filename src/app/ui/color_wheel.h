@@ -23,6 +23,7 @@ namespace app {
     ~ColorWheel();
 
     app::Color pickColor(const gfx::Point& pos) const;
+    void selectColor(const app::Color& color);
 
     bool isDiscrete() const { return m_discrete; }
     void setDiscrete(bool state);
@@ -42,6 +43,7 @@ namespace app {
     int m_wheelRadius;
     bool m_discrete;
     ui::ButtonBase m_options;
+    app::Color m_mainColor;
   };
 
 } // namespace app

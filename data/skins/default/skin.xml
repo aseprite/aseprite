@@ -397,6 +397,7 @@
     <part id="icon_black"                       x="48" y="256" w="16" h="16" />
     <part id="icon_white"                       x="64" y="256" w="16" h="16" />
     <part id="icon_transparent"                 x="80" y="256" w="16" h="16" />
+    <part id="color_wheel_indicator"            x="48" y="192" w="4" h="4" />
   </parts>
 
   <stylesheet>
