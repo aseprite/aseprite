@@ -15,6 +15,7 @@
 #include "app/cmd/configure_background.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/replace_image.h"
+#include "app/cmd/set_cel_opacity.h"
 #include "app/cmd/set_cel_position.h"
 #include "app/document.h"
 #include "doc/cel.h"
@@ -67,6 +68,10 @@ void BackgroundFromLayer::onExecute()
 
     // now we have to copy the new image (bg_image) to the cel...
     executeAndAdd(new cmd::SetCelPosition(cel, 0, 0));
+
+    // change opacity to 255
+    if (cel->opacity() < 255)
+      executeAndAdd(new cmd::SetCelOpacity(cel, 255));
 
     // same size of cel-image and bg-image
     if (bg_image->width() == cel_image->width() &&

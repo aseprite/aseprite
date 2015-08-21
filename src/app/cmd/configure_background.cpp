@@ -14,6 +14,7 @@
 #include "app/cmd/move_layer.h"
 #include "app/cmd/set_layer_flags.h"
 #include "app/cmd/set_layer_name.h"
+#include "app/cmd/set_layer_opacity.h"
 
 namespace app {
 namespace cmd {
@@ -26,6 +27,12 @@ ConfigureBackground::ConfigureBackground(Layer* layer)
 
   add(new cmd::SetLayerFlags(layer, newFlags));
   add(new cmd::SetLayerName(layer, "Background"));
+
+  if (layer->isImage() &&
+      static_cast<LayerImage*>(layer)->opacity() < 255) {
+    add(new cmd::SetLayerOpacity(static_cast<LayerImage*>(layer), 255));
+  }
+
   add(new cmd::MoveLayer(layer, nullptr));
 }
 
