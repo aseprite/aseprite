@@ -107,7 +107,7 @@ void NewLayerCommand::onExecute(Context* context)
   {
     Transaction transaction(writer.context(), "New Layer");
     DocumentApi api = document->getApi(transaction);
-    layer = api.newLayer(sprite);
+    layer = api.newLayer(sprite, name);
 
     // If "top" parameter is false, create the layer above the active
     // one.
@@ -116,7 +116,6 @@ void NewLayerCommand::onExecute(Context* context)
 
     transaction.commit();
   }
-  layer->setName(name);
   update_screen_for_document(document);
 
   StatusBar::instance()->invalidate();

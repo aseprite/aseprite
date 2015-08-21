@@ -392,9 +392,10 @@ void DocumentApi::swapCel(
   if (cel2) setCelFramePosition(cel2, frame1);
 }
 
-LayerImage* DocumentApi::newLayer(Sprite* sprite)
+LayerImage* DocumentApi::newLayer(Sprite* sprite, const std::string& name)
 {
   LayerImage* layer = new LayerImage(sprite);
+  layer->setName(name);
 
   addLayer(sprite->folder(), layer,
            sprite->folder()->getLastLayer());
