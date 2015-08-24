@@ -21,6 +21,7 @@
 #include "she/scoped_surface_lock.h"
 #include "she/surface.h"
 #include "she/system.h"
+#include "ui/manager.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -34,6 +35,14 @@ Graphics::Graphics(she::Surface* surface, int dx, int dy)
 
 Graphics::~Graphics()
 {
+  // If we were drawing in the screen surface, we mark these regions
+  // as dirty for the final flip.
+  if (m_surface == she::instance()->defaultDisplay()->getSurface()) {
+    gfx::Region& dirty = Manager::getDirtyRegion();
+    Manager::getDirtyRegion().createUnion(
+      Manager::getDirtyRegion(),
+      gfx::Region(m_dirtyBounds));
+  }
 }
 
 int Graphics::width() const
@@ -84,40 +93,56 @@ gfx::Color Graphics::getPixel(int x, int y)
 
 void Graphics::putPixel(gfx::Color color, int x, int y)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, 1, 1));
+
   she::ScopedSurfaceLock dst(m_surface);
   dst->putPixel(color, m_dx+x, m_dy+y);
 }
 
 void Graphics::drawHLine(gfx::Color color, int x, int y, int w)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, w, 1));
+
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawHLine(color, m_dx+x, m_dy+y, w);
 }
 
 void Graphics::drawVLine(gfx::Color color, int x, int y, int h)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, 1, h));
+
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawVLine(color, m_dx+x, m_dy+y, h);
 }
 
-void Graphics::drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b)
+void Graphics::drawLine(gfx::Color color, const gfx::Point& _a, const gfx::Point& _b)
 {
+  gfx::Point a(m_dx+_a.x, m_dy+_a.y);
+  gfx::Point b(m_dx+_b.x, m_dy+_b.y);
+  dirty(gfx::Rect(a, b));
+
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawLine(color,
-    gfx::Point(m_dx+a.x, m_dy+a.y),
-    gfx::Point(m_dx+b.x, m_dy+b.y));
+  dst->drawLine(color, a, b);
 }
 
-void Graphics::drawRect(gfx::Color color, const gfx::Rect& rc)
+void Graphics::drawRect(gfx::Color color, const gfx::Rect& rcOrig)
 {
+  gfx::Rect rc(rcOrig);
+  rc.offset(m_dx, m_dy);
+  dirty(rc);
+
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawRect(color, gfx::Rect(rc).offset(m_dx, m_dy));
+  dst->drawRect(color, rc);
 }
 
-void Graphics::fillRect(gfx::Color color, const gfx::Rect& rc)
+void Graphics::fillRect(gfx::Color color, const gfx::Rect& rcOrig)
 {
+  gfx::Rect rc(rcOrig);
+  rc.offset(m_dx, m_dy);
+  dirty(rc);
+
   she::ScopedSurfaceLock dst(m_surface);
-  dst->fillRect(color, gfx::Rect(rc).offset(m_dx, m_dy));
+  dst->fillRect(color, rc);
 }
 
 void Graphics::fillRegion(gfx::Color color, const gfx::Region& rgn)
@@ -140,6 +165,8 @@ void Graphics::fillAreaBetweenRects(gfx::Color color,
 
 void Graphics::drawSurface(she::Surface* surface, int x, int y)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
+
   she::ScopedSurfaceLock src(surface);
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawSurface(src, m_dx+x, m_dy+y);
@@ -147,6 +174,8 @@ void Graphics::drawSurface(she::Surface* surface, int x, int y)
 
 void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
+
   she::ScopedSurfaceLock src(surface);
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawRgbaSurface(src, m_dx+x, m_dy+y);
@@ -154,6 +183,8 @@ void Graphics::drawRgbaSurface(she::Surface* surface, int x, int y)
 
 void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, int x, int y)
 {
+  dirty(gfx::Rect(m_dx+x, m_dy+y, surface->width(), surface->height()));
+
   she::ScopedSurfaceLock src(surface);
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawColoredRgbaSurface(src, color, gfx::ColorNone,
@@ -162,6 +193,8 @@ void Graphics::drawColoredRgbaSurface(she::Surface* surface, gfx::Color color, i
 
 void Graphics::blit(she::Surface* srcSurface, int srcx, int srcy, int dstx, int dsty, int w, int h)
 {
+  dirty(gfx::Rect(m_dx+dstx, m_dy+dsty, w, h));
+
   she::ScopedSurfaceLock src(srcSurface);
   she::ScopedSurfaceLock dst(m_surface);
   src->blitTo(dst, srcx, srcy, m_dx+dstx, m_dy+dsty, w, h);
@@ -174,14 +207,19 @@ void Graphics::setFont(she::Font* font)
 
 void Graphics::drawChar(int chr, gfx::Color fg, gfx::Color bg, int x, int y)
 {
+  dirty(gfx::Rect(gfx::Point(m_dx+x, m_dy+y), measureChar(chr)));
+
   she::ScopedSurfaceLock dst(m_surface);
   dst->drawChar(m_font, fg, bg, m_dx+x, m_dy+y, chr);
 }
 
-void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt)
+void Graphics::drawString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& ptOrig)
 {
+  gfx::Point pt(m_dx+ptOrig.x, m_dy+ptOrig.y);
+  dirty(gfx::Rect(pt.x, pt.y, m_font->textLength(str), m_font->height()));
+
   she::ScopedSurfaceLock dst(m_surface);
-  dst->drawString(m_font, fg, bg, m_dx+pt.x, m_dy+pt.y, str);
+  dst->drawString(m_font, fg, bg, pt.x, pt.y, str);
 }
 
 void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Point& pt,
@@ -207,11 +245,14 @@ void Graphics::drawUIString(const std::string& str, gfx::Color fg, gfx::Color bg
     ++it;
   }
 
+  y += m_font->height();
   if (drawUnderscore && underscored_w > 0) {
-    y += m_font->height();
     dst->fillRect(fg,
       gfx::Rect(underscored_x, y, underscored_w, guiscale()));
+    y += guiscale();
   }
+
+  dirty(gfx::Rect(pt, gfx::Point(x, y)));
 }
 
 void Graphics::drawAlignedUIString(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align)

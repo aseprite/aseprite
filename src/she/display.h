@@ -49,7 +49,7 @@ namespace she {
     virtual NonDisposableSurface* getSurface() = 0;
 
     // Flips all graphics in the surface to the real display.
-    virtual void flip() = 0;
+    virtual void flip(const gfx::Rect& bounds) = 0;
 
     virtual void maximize() = 0;
     virtual bool isMaximized() const = 0;

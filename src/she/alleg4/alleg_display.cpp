@@ -469,19 +469,23 @@ NonDisposableSurface* Alleg4Display::getSurface()
   return static_cast<NonDisposableSurface*>(m_surface);
 }
 
-void Alleg4Display::flip()
+void Alleg4Display::flip(const gfx::Rect& bounds)
 {
   if (is_display_resize_awaiting())
     return;
 
   BITMAP* bmp = reinterpret_cast<BITMAP*>(m_surface->nativeHandle());
   if (m_scale == 1) {
-    blit(bmp, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    blit(bmp, screen,
+         bounds.x, bounds.y,
+         bounds.x, bounds.y,
+         bounds.w, bounds.h);
   }
   else {
     stretch_blit(bmp, screen,
-                 0, 0, bmp->w, bmp->h,
-                 0, 0, SCREEN_W, SCREEN_H);
+                 bounds.x, bounds.y, bounds.w, bounds.h,
+                 bounds.x*m_scale, bounds.y*m_scale,
+                 bounds.w*m_scale, bounds.h*m_scale);
   }
 }
 

@@ -61,6 +61,7 @@ typedef std::list<Message*> Messages;
 typedef std::list<Filter*> Filters;
 
 Manager* Manager::m_defaultManager = NULL;
+gfx::Region Manager::m_dirtyRegion;
 
 static WidgetsList new_windows; // Windows that we should show
 static WidgetsList mouse_widgets_list; // List of widgets to send mouse events
@@ -105,6 +106,8 @@ Manager::Manager()
 
   setBounds(gfx::Rect(0, 0, ui::display_w(), ui::display_h()));
   setVisible(true);
+
+  m_dirtyRegion = getBounds();
 
   // Default manager is the first one (and is always visible).
   if (!m_defaultManager)
@@ -181,7 +184,17 @@ void Manager::flipDisplay()
   overlays->captureOverlappedAreas();
   overlays->drawOverlays();
 
-  m_display->flip();
+  // Flip dirty region.
+  {
+    m_dirtyRegion.createIntersection(
+      m_dirtyRegion,
+      gfx::Region(gfx::Rect(0, 0, ui::display_w(), ui::display_h())));
+
+    for (auto& rc : m_dirtyRegion)
+      m_display->flip(rc);
+
+    m_dirtyRegion.clear();
+  }
 
   overlays->restoreOverlappedAreas();
 }

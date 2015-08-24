@@ -8,6 +8,7 @@
 #define UI_MANAGER_H_INCLUDED
 #pragma once
 
+#include "gfx/region.h"
 #include "ui/message_type.h"
 #include "ui/mouse_buttons.h"
 #include "ui/widget.h"
@@ -28,6 +29,10 @@ namespace ui {
   public:
     static Manager* getDefault() {
       return m_defaultManager;
+    }
+
+    static gfx::Region& getDirtyRegion() {
+      return m_dirtyRegion;
     }
 
     Manager();
@@ -116,6 +121,7 @@ namespace ui {
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;
+    static gfx::Region m_dirtyRegion;
 
     WidgetsList m_garbage;
     she::Display* m_display;

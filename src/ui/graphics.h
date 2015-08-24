@@ -92,11 +92,16 @@ namespace ui {
   private:
     gfx::Size doUIStringAlgorithm(const std::string& str, gfx::Color fg, gfx::Color bg, const gfx::Rect& rc, int align, bool draw);
 
+    void dirty(const gfx::Rect& bounds) {
+      m_dirtyBounds |= bounds;
+    }
+
     she::Surface* m_surface;
     int m_dx;
     int m_dy;
     gfx::Rect m_clipBounds;
     she::Font* m_font;
+    gfx::Rect m_dirtyBounds;
   };
 
   // Class to draw directly in the screen.

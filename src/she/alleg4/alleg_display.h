@@ -28,7 +28,7 @@ namespace she {
     void setScale(int scale) override;
     void recreateSurface();
     NonDisposableSurface* getSurface() override;
-    void flip() override;
+    void flip(const gfx::Rect& bounds) override;
     void maximize() override;
     bool isMaximized() const override;
     void setTitleBar(const std::string& title) override;

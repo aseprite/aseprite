@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -62,6 +62,12 @@ void Overlay::drawOverlay(she::LockedSurface* screen)
 
   she::ScopedSurfaceLock lockedSurface(m_surface);
   screen->drawRgbaSurface(lockedSurface, m_pos.x, m_pos.y);
+
+  Manager::getDirtyRegion().createUnion(
+    Manager::getDirtyRegion(),
+    gfx::Region(gfx::Rect(m_pos.x, m_pos.y,
+                          m_surface->width(),
+                          m_surface->height())));
 }
 
 void Overlay::moveOverlay(const gfx::Point& newPos)
@@ -93,6 +99,12 @@ void Overlay::restoreOverlappedArea(she::LockedSurface* screen)
   she::ScopedSurfaceLock lock(m_overlap);
   lock->blitTo(screen, 0, 0, m_pos.x, m_pos.y,
                m_overlap->width(), m_overlap->height());
+
+  Manager::getDirtyRegion().createUnion(
+    Manager::getDirtyRegion(),
+    gfx::Region(gfx::Rect(m_pos.x, m_pos.y,
+                          m_overlap->width(),
+                          m_overlap->height())));
 }
 
 }
