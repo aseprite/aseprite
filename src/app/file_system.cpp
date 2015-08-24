@@ -461,9 +461,17 @@ const FileItemList& FileItem::getChildren()
           if (!child) {
             child = new FileItem(this);
 
+            bool is_folder;
+            if (entry->d_type == DT_LNK) {
+              is_folder = base::is_directory(fullfn);
+            }
+            else {
+              is_folder = (entry->d_type == DT_DIR);
+            }
+
             child->filename = fullfn;
             child->displayname = fn;
-            child->is_folder = (entry->d_type == DT_DIR);
+            child->is_folder = is_folder;
 
             put_fileitem(child);
           }
@@ -898,7 +906,7 @@ static void put_fileitem(FileItem* fileitem)
 #else
 
 //////////////////////////////////////////////////////////////////////
-// Allegro for_each_file: Portable
+// POSIX functions
 //////////////////////////////////////////////////////////////////////
 
 static FileItem* get_fileitem_by_path(const std::string& path, bool create_if_not)
