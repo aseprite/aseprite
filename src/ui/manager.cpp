@@ -875,6 +875,11 @@ bool Manager::isFocusMovementKey(Message* msg)
   return false;
 }
 
+void Manager::dirtyRect(const gfx::Rect& bounds)
+{
+  m_dirtyRegion.createUnion(m_dirtyRegion, gfx::Region(bounds));
+}
+
 /* configures the window for begin the loop */
 void Manager::_openWindow(Window* window)
 {

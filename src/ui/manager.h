@@ -31,10 +31,6 @@ namespace ui {
       return m_defaultManager;
     }
 
-    static gfx::Region& getDirtyRegion() {
-      return m_dirtyRegion;
-    }
-
     Manager();
     ~Manager();
 
@@ -88,6 +84,8 @@ namespace ui {
     LayoutIO* getLayoutIO();
 
     bool isFocusMovementKey(Message* msg);
+
+    void dirtyRect(const gfx::Rect& bounds);
 
     void _openWindow(Window* window);
     void _closeWindow(Window* window, bool redraw_background);

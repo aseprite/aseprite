@@ -35,8 +35,12 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
 
   // Blit directly screen to screen.
   if (nrects == 1) {
-    Rect rc = region[0];
+    gfx::Rect rc = region[0];
     lock->scrollTo(rc, dx, dy);
+
+    rc.offset(dx, dy);
+    Manager::getDefault()->dirtyRect(rc);
+
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {
@@ -56,11 +60,12 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
     }
 
     for (c=0, it=begin; it != end; ++it, ++c) {
-      const Rect& rc = *it;
+      gfx::Rect rc((*it).x+dx, (*it).y+dy, (*it).w, (*it).h);
       sur = images[c];
       {
         she::ScopedSurfaceLock surlock(sur);
-        surlock->blitTo(lock, 0, 0, rc.x+dx, rc.y+dy, rc.w, rc.h);
+        surlock->blitTo(lock, 0, 0, rc.x, rc.y, rc.w, rc.h);
+        manager->dirtyRect(rc);
       }
       sur->dispose();
     }

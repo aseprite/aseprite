@@ -37,12 +37,8 @@ Graphics::~Graphics()
 {
   // If we were drawing in the screen surface, we mark these regions
   // as dirty for the final flip.
-  if (m_surface == she::instance()->defaultDisplay()->getSurface()) {
-    gfx::Region& dirty = Manager::getDirtyRegion();
-    Manager::getDirtyRegion().createUnion(
-      Manager::getDirtyRegion(),
-      gfx::Region(m_dirtyBounds));
-  }
+  if (m_surface == she::instance()->defaultDisplay()->getSurface())
+    Manager::getDefault()->dirtyRect(m_dirtyBounds);
 }
 
 int Graphics::width() const
