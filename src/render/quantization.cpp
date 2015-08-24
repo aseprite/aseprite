@@ -379,13 +379,23 @@ void PaletteOptimizer::feedWithRgbaColor(color_t color)
 void PaletteOptimizer::calculate(Palette* palette, int maskIndex,
                                  PaletteOptimizerDelegate* delegate)
 {
+  bool addMask;
+
+  if ((palette->size() > 1) &&
+      (maskIndex >= 0 && maskIndex < palette->size())) {
+    palette->resize(palette->size()-1);
+    addMask = true;
+  }
+  else
+    addMask = false;
+
   // If the sprite has a background layer, the first entry can be
   // used, in other case the 0 indexed will be the mask color, so it
   // will not be used later in the color conversion (from RGB to
   // Indexed).
   int usedColors = m_histogram.createOptimizedPalette(palette);
 
-  if (maskIndex >= 0 && maskIndex < usedColors) {
+  if (addMask) {
     palette->resize(usedColors+1);
 
     Remap remap(palette->size());
