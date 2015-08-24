@@ -364,6 +364,17 @@ bool ComboBox::onProcessMessage(Message* msg)
       }
       break;
 
+    case kFocusEnterMessage:
+      // Here we focus the entry field only if the combobox is
+      // editable and receives the focus in a direct way (e.g. when
+      // the window was just opened and the combobox is the first
+      // child or has the "focus magnet" flag enabled.)
+      if ((isEditable()) &&
+          (getManager()->getFocus() == this)) {
+        m_entry->requestFocus();
+      }
+      break;
+
   }
 
   return Widget::onProcessMessage(msg);
