@@ -364,11 +364,6 @@ bool ComboBox::onProcessMessage(Message* msg)
       }
       break;
 
-    case kFocusEnterMessage:
-      if (isEditable())
-        m_entry->requestFocus();
-      break;
-
   }
 
   return Widget::onProcessMessage(msg);
