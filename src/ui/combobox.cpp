@@ -63,7 +63,7 @@ public:
 
 protected:
   bool onProcessMessage(Message* msg) override;
-  void onChangeSelectedItem() override;
+  void onChange() override;
 
 private:
   bool isValidItem(int index) const {
@@ -552,9 +552,9 @@ bool ComboBoxListBox::onProcessMessage(Message* msg)
   return ListBox::onProcessMessage(msg);
 }
 
-void ComboBoxListBox::onChangeSelectedItem()
+void ComboBoxListBox::onChange()
 {
-  ListBox::onChangeSelectedItem();
+  ListBox::onChange();
 
   int index = getSelectedIndex();
   if (isValidItem(index))

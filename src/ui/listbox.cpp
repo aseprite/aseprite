@@ -82,7 +82,7 @@ void ListBox::selectChild(Widget* item)
     }
   }
 
-  onChangeSelectedItem();
+  onChange();
 }
 
 void ListBox::selectIndex(int index)
@@ -310,9 +310,9 @@ void ListBox::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(Size(w, h));
 }
 
-void ListBox::onChangeSelectedItem()
+void ListBox::onChange()
 {
-  ChangeSelectedItem();
+  Change();
 }
 
 void ListBox::onDoubleClickItem()

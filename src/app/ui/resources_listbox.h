@@ -27,7 +27,7 @@ namespace app {
 
   protected:
     virtual bool onProcessMessage(ui::Message* msg) override;
-    virtual void onChangeSelectedItem() override;
+    virtual void onChange() override;
     virtual void onResourceChange(Resource* resource) = 0;
 
     // abstract

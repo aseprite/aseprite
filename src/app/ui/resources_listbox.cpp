@@ -160,7 +160,7 @@ bool ResourcesListBox::onProcessMessage(ui::Message* msg)
   return ListBox::onProcessMessage(msg);
 }
 
-void ResourcesListBox::onChangeSelectedItem()
+void ResourcesListBox::onChange()
 {
   Resource* resource = selectedResource();
   if (resource)

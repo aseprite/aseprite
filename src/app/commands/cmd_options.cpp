@@ -49,7 +49,7 @@ public:
     , m_cursorColor(new ColorButton(m_preferences.editor.cursorColor(), IMAGE_RGB))
     , m_curSection(curSection)
   {
-    sectionListbox()->ChangeSelectedItem.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
+    sectionListbox()->Change.connect(Bind<void>(&OptionsWindow::onChangeSection, this));
     cursorColorBox()->addChild(m_cursorColor);
 
     // Grid color
