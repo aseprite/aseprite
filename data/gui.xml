@@ -203,11 +203,18 @@
       <key command="Zoom" shortcut="4"><param name="percentage" value="800" /></key>
       <key command="Zoom" shortcut="5"><param name="percentage" value="1600" /></key>
       <key command="Zoom" shortcut="6"><param name="percentage" value="3200" /></key>
-      <key command="Zoom" shortcut="Ctrl+Plus Pad" mac="Cmd+Plus Pad">
+      <key command="Zoom" shortcut="Ctrl++" mac="Cmd++">
         <param name="action" value="in" />
       </key>
-      <key command="Zoom" shortcut="Ctrl+Minus Pad" mac="Cmd+Minus Pad">
+      <key command="Zoom" shortcut="Ctrl+-" mac="Cmd+-">
         <param name="action" value="out" />
+      </key>
+      <!-- For English keyboard -->
+      <key command="Zoom" shortcut="Ctrl+=">
+        <param name="action" value="in" />
+      </key>
+      <key command="Zoom" shortcut="Ctrl+Shift+=">
+        <param name="action" value="in" />
       </key>
 
       <!-- Scroll with arrows -->
