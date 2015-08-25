@@ -2,34 +2,39 @@
 <!-- Copyright (C) 2001-2015 by David Capello -->
 <gui>
   <window id="keyboard_shortcuts" text="Keyboard Shortcuts">
-    <hbox>
-      <vbox>
-        <view expansive="true" width="80">
-          <listbox id="section" expansive="true" />
-        </view>
-        <separator horizontal="true" />
-        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
-        <button text="&amp;Cancel" closewindow="true" />
-        <separator horizontal="true" />
-        <button text="&amp;Import" id="import_button" />
-        <button text="&amp;Export" id="export_button" />
-        <separator horizontal="true" />
-        <button text="&amp;Reset" id="reset_button" />
-      </vbox>
-      <vbox expansive="true">
-        <view id="menus_view" expansive="true">
-          <listbox id="menus" />
-        </view>
-        <view id="commands_view" expansive="true">
-          <listbox id="commands" />
-        </view>
-        <view id="tools_view" expansive="true">
-          <listbox id="tools" />
-        </view>
-        <view id="actions_view" expansive="true">
-          <listbox id="actions" />
-        </view>
-      </vbox>
-    </hbox>
+    <vbox>
+      <hbox expansive="true">
+        <vbox>
+          <view width="80" expansive="true">
+            <listbox id="section" expansive="true" />
+          </view>
+          <separator horizontal="true" />
+          <button text="&amp;Import" id="import_button" />
+          <button text="&amp;Export" id="export_button" />
+          <button text="&amp;Reset" id="reset_button" />
+        </vbox>
+        <vbox expansive="true">
+          <view id="menus_view" expansive="true">
+            <listbox id="menus" />
+          </view>
+          <view id="commands_view" expansive="true">
+            <listbox id="commands" />
+          </view>
+          <view id="tools_view" expansive="true">
+            <listbox id="tools" />
+          </view>
+          <view id="actions_view" expansive="true">
+            <listbox id="actions" />
+          </view>
+        </vbox>
+      </hbox>
+      <hbox>
+        <boxfiller />
+        <hbox homogeneous="true">
+          <button text="&amp;OK" closewindow="true" id="ok" magnet="true" width="60" />
+          <button text="&amp;Cancel" closewindow="true" />
+        </hbox>
+      </hbox>
+    </vbox>
   </window>
 </gui>
