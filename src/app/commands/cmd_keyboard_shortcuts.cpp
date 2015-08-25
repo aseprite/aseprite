@@ -283,10 +283,10 @@ public:
   KeyboardShortcutsWindow() {
     setAutoRemap(false);
 
-    section()->addItem("Menus");
-    section()->addItem("Commands");
-    section()->addItem("Tools");
-    section()->addItem("Action Modifiers");
+    section()->addChild(new ListItem("Menus"));
+    section()->addChild(new ListItem("Commands"));
+    section()->addChild(new ListItem("Tools"));
+    section()->addChild(new ListItem("Action Modifiers"));
 
     section()->Change.connect(Bind<void>(&KeyboardShortcutsWindow::onSectionChange, this));
     importButton()->Click.connect(Bind<void>(&KeyboardShortcutsWindow::onImport, this));
@@ -365,11 +365,12 @@ private:
     this->tools()->sortItems();
     this->actions()->sortItems();
 
+    section()->selectIndex(0);
     onSectionChange();
   }
 
   void onSectionChange() {
-    int section = this->section()->getSelectedItemIndex();
+    int section = this->section()->getSelectedIndex();
 
     menusView()->setVisible(section == 0);
     commandsView()->setVisible(section == 1);
