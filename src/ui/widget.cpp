@@ -341,7 +341,7 @@ Window* Widget::getRoot()
 
   while (widget) {
     if (widget->type() == kWindowWidget)
-      return dynamic_cast<Window*>(widget);
+      return static_cast<Window*>(widget);
 
     widget = widget->m_parent;
   }
