@@ -96,36 +96,8 @@ public:
       ->getCurrentQuicktool(currentTool);
   }
 
-  bool isCopySelectionKeyPressed() override {
-    return isKeyActionPressed(KeyAction::CopySelection);
-  }
-
-  bool isSnapToGridKeyPressed() override {
-    return isKeyActionPressed(KeyAction::SnapToGrid);
-  }
-
-  bool isAngleSnapKeyPressed() override {
-    return isKeyActionPressed(KeyAction::AngleSnap);
-  }
-
-  bool isMaintainAspectRatioKeyPressed() override {
-    return isKeyActionPressed(KeyAction::MaintainAspectRatio);
-  }
-
-  bool isLockAxisKeyPressed() override {
-    return isKeyActionPressed(KeyAction::LockAxis);
-  }
-
-  bool isAddSelectionPressed() override {
-    return isKeyActionPressed(KeyAction::AddSelection);
-  }
-
-  bool isSubtractSelectionPressed() override {
-    return isKeyActionPressed(KeyAction::SubtractSelection);
-  }
-
-  bool isAutoSelectLayerPressed() override {
-    return isKeyActionPressed(KeyAction::AutoSelectLayer);
+  KeyAction getPressedKeyAction(KeyContext context) {
+    return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 
 protected:
@@ -171,13 +143,6 @@ private:
 
   void updatePreviewEditor(Editor* editor) {
     App::instance()->getMainWindow()->getPreviewEditor()->updateUsingEditor(editor);
-  }
-
-  bool isKeyActionPressed(KeyAction action) {
-    if (Key* key = KeyboardShortcuts::instance()->action(action))
-      return key->isPressed();
-    else
-      return false;
   }
 
 };

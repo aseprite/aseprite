@@ -315,8 +315,8 @@ bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
       // Move pixels
       if (editor->isInsideSelection()) {
         EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-
-        if (customization && customization->isCopySelectionKeyPressed())
+        if ((customization) &&
+            int(customization->getPressedKeyAction(KeyContext::MovingPixels) & KeyAction::CopySelection))
           editor->showMouseCursor(kArrowPlusCursor);
         else
           editor->showMouseCursor(kMoveCursor);
@@ -452,7 +452,8 @@ void StandbyState::transformSelection(Editor* editor, MouseMessage* msg, HandleT
                          "Transformation"));
 
     // If the Ctrl key is pressed start dragging a copy of the selection
-    if (customization && customization->isCopySelectionKeyPressed())
+    if ((customization) &&
+        int(customization->getPressedKeyAction(KeyContext::MovingPixels) & KeyAction::CopySelection))
       pixelsMovement->copyMask();
     else
       pixelsMovement->cutMask();

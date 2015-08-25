@@ -26,7 +26,14 @@ namespace ui {
     std::string toString() const;
 
     bool isPressed(KeyModifiers modifiers, KeyScancode scancode, int unicodeChar) const;
+
+    // Returns true if the key is pressed and only its modifiers are
+    // pressed.
     bool isPressed() const;
+
+    // Returns true if the key is pressed and the accelerator
+    // modifiers are pressed (other modifiers are allowed).
+    bool isLooselyPressed() const;
 
     bool operator==(const Accelerator& other) const;
     bool operator!=(const Accelerator& other) const {

@@ -27,8 +27,17 @@
 
 namespace ui {
 
-//////////////////////////////////////////////////////////////////////
-// Accelerator
+static KeyModifiers get_pressed_modifiers_from_she()
+{
+  KeyModifiers mods = kKeyNoneModifier;
+  if (she::is_key_pressed(kKeyLShift)  ) mods = KeyModifiers(int(mods) | int(kKeyShiftModifier));
+  if (she::is_key_pressed(kKeyRShift)  ) mods = KeyModifiers(int(mods) | int(kKeyShiftModifier));
+  if (she::is_key_pressed(kKeyLControl)) mods = KeyModifiers(int(mods) | int(kKeyCtrlModifier));
+  if (she::is_key_pressed(kKeyRControl)) mods = KeyModifiers(int(mods) | int(kKeyCtrlModifier));
+  if (she::is_key_pressed(kKeyAlt)     ) mods = KeyModifiers(int(mods) | int(kKeyAltModifier));
+  if (she::is_key_pressed(kKeyCommand) ) mods = KeyModifiers(int(mods) | int(kKeyCmdModifier));
+  return mods;
+}
 
 Accelerator::Accelerator()
   : m_modifiers(kKeyNoneModifier)
@@ -434,17 +443,18 @@ bool Accelerator::isPressed(KeyModifiers modifiers, KeyScancode scancode, int un
 
 bool Accelerator::isPressed() const
 {
-  KeyModifiers modifiers = kKeyNoneModifier;
-
-  if (she::is_key_pressed(kKeyLShift)  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
-  if (she::is_key_pressed(kKeyRShift)  ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyShiftModifier);
-  if (she::is_key_pressed(kKeyLControl)) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
-  if (she::is_key_pressed(kKeyRControl)) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCtrlModifier);
-  if (she::is_key_pressed(kKeyAlt)     ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyAltModifier);
-  if (she::is_key_pressed(kKeyCommand) ) modifiers = (KeyModifiers)((int)modifiers | (int)kKeyCmdModifier);
+  KeyModifiers modifiers = get_pressed_modifiers_from_she();
 
   return ((m_scancode == 0 || she::is_key_pressed(m_scancode)) &&
           (m_modifiers == modifiers));
+}
+
+bool Accelerator::isLooselyPressed() const
+{
+  KeyModifiers modifiers = get_pressed_modifiers_from_she();
+
+  return ((m_scancode == 0 || she::is_key_pressed(m_scancode)) &&
+          (int(m_modifiers & modifiers) == m_modifiers));
 }
 
 //////////////////////////////////////////////////////////////////////

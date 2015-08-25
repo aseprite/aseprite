@@ -215,6 +215,15 @@ bool Key::isPressed() const
   return false;
 }
 
+bool Key::isLooselyPressed() const
+{
+  for (const Accelerator& accel : this->accels()) {
+    if (accel.isLooselyPressed())
+      return true;
+  }
+  return false;
+}
+
 bool Key::hasAccel(const ui::Accelerator& accel) const
 {
   return accels().has(accel);
@@ -675,6 +684,21 @@ tools::Tool* KeyboardShortcuts::getCurrentQuicktool(tools::Tool* currentTool)
   }
 
   return NULL;
+}
+
+KeyAction KeyboardShortcuts::getCurrentActionModifiers(KeyContext context)
+{
+  KeyAction flags = KeyAction::None;
+
+  for (Key* key : m_keys) {
+    if (key->type() == KeyType::Action &&
+        key->keycontext() == context &&
+        key->isLooselyPressed()) {
+      flags = static_cast<KeyAction>(int(flags) | int(key->action()));
+    }
+  }
+
+  return flags;
 }
 
 } // namespace app

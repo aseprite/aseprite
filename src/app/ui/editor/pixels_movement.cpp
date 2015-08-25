@@ -252,6 +252,17 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
       y2 += dy;
       updateBounds = true;
 
+      if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
+        if (ABS(dx) < ABS(dy)) {
+          x1 -= dx;
+          x2 -= dx;
+        }
+        else {
+          y1 -= dy;
+          y2 -= dy;
+        }
+      }
+
       if ((moveModifier & SnapToGridMovement) == SnapToGridMovement) {
         // Snap the x1,y1 point to the grid.
         gfx::Rect gridBounds = App::instance()
@@ -267,16 +278,6 @@ void PixelsMovement::moveImage(const gfx::Point& pos, MoveModifier moveModifier)
         y1 += gridOffset.y;
         x2 += gridOffset.x;
         y2 += gridOffset.y;
-      }
-      else if ((moveModifier & LockAxisMovement) == LockAxisMovement) {
-        if (ABS(dx) < ABS(dy)) {
-          x1 -= dx;
-          x2 -= dx;
-        }
-        else {
-          y1 -= dy;
-          y2 -= dy;
-        }
       }
       break;
 

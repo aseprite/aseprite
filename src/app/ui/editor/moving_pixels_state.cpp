@@ -263,7 +263,8 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
                                       msg->right())) {
     // In case that the user is pressing the copy-selection keyboard shortcut.
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
-    if (customization && customization->isCopySelectionKeyPressed()) {
+    if ((customization) &&
+        int(customization->getPressedKeyAction(KeyContext::MovingPixels) & KeyAction::CopySelection)) {
       // Stamp the pixels to create the copy.
       m_pixelsMovement->stampImage();
     }
@@ -315,17 +316,18 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
 
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
+    KeyAction action = editor->getCustomizationDelegate()->getPressedKeyAction(KeyContext::MovingPixels);
 
-    if (editor->getCustomizationDelegate()->isSnapToGridKeyPressed())
+    if (int(action & KeyAction::SnapToGrid))
       moveModifier |= PixelsMovement::SnapToGridMovement;
 
-    if (editor->getCustomizationDelegate()->isAngleSnapKeyPressed())
+    if (int(action & KeyAction::AngleSnap))
       moveModifier |= PixelsMovement::AngleSnapMovement;
 
-    if (editor->getCustomizationDelegate()->isMaintainAspectRatioKeyPressed())
+    if (int(action & KeyAction::MaintainAspectRatio))
       moveModifier |= PixelsMovement::MaintainAspectRatioMovement;
 
-    if (editor->getCustomizationDelegate()->isLockAxisKeyPressed())
+    if (int(action & KeyAction::LockAxis))
       moveModifier |= PixelsMovement::LockAxisMovement;
 
     // Invalidate handles

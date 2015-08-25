@@ -50,19 +50,24 @@ namespace app {
     Action,
   };
 
+  // TODO This should be called "KeyActionModifier" or something similar
   enum class KeyAction {
-    None,
-    CopySelection,
-    SnapToGrid,
-    AngleSnap,
-    MaintainAspectRatio,
-    LockAxis,
-    AddSelection,
-    SubtractSelection,
-    AutoSelectLayer,
-    LeftMouseButton,
-    RightMouseButton
+    None                = 0x00000000,
+    CopySelection       = 0x00000001,
+    SnapToGrid          = 0x00000002,
+    AngleSnap           = 0x00000004,
+    MaintainAspectRatio = 0x00000008,
+    LockAxis            = 0x00000010,
+    AddSelection        = 0x00000020,
+    SubtractSelection   = 0x00000040,
+    AutoSelectLayer     = 0x00000080,
+    LeftMouseButton     = 0x00000100,
+    RightMouseButton    = 0x00000200,
   };
+
+  inline KeyAction operator&(KeyAction a, KeyAction b) {
+    return KeyAction(int(a) & int(b));
+  }
 
   class Key {
   public:
@@ -81,6 +86,7 @@ namespace app {
     void add(const ui::Accelerator& accel, KeySource source);
     bool isPressed(ui::Message* msg) const;
     bool isPressed() const;
+    bool isLooselyPressed() const;
 
     bool hasAccel(const ui::Accelerator& accel) const;
     void disableAccel(const ui::Accelerator& accel);
@@ -147,6 +153,7 @@ namespace app {
     KeyContext getCurrentKeyContext();
     bool getCommandFromKeyMessage(ui::Message* msg, Command** command, Params* params);
     tools::Tool* getCurrentQuicktool(tools::Tool* currentTool);
+    KeyAction getCurrentActionModifiers(KeyContext context);
 
   private:
     KeyboardShortcuts();

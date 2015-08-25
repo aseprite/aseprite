@@ -1068,11 +1068,9 @@ void Editor::updateQuicktool()
 
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
-    if (current_tool->getInk(0)->isSelection()) {
-      if (m_customizationDelegate->isAddSelectionPressed() ||
-          m_customizationDelegate->isSubtractSelectionPressed())
-        return;
-    }
+    if (current_tool->getInk(0)->isSelection() &&
+        int(m_customizationDelegate->getPressedKeyAction(KeyContext::Selection)) != 0)
+      return;
 
     tools::Tool* old_quicktool = m_quicktool;
     tools::Tool* new_quicktool = m_customizationDelegate->getQuickTool(current_tool);
@@ -1123,9 +1121,13 @@ void Editor::updateContextBarFromModifiers()
 
   tools::SelectionMode mode = Preferences::instance().selection.mode();
 
-  if (m_customizationDelegate && m_customizationDelegate->isAddSelectionPressed())
+  KeyAction action = KeyAction::None;
+  if (m_customizationDelegate)
+    action = m_customizationDelegate->getPressedKeyAction(KeyContext::Selection);
+
+  if (int(action & KeyAction::AddSelection))
     mode = tools::SelectionMode::ADD;
-  else if (m_customizationDelegate && m_customizationDelegate->isSubtractSelectionPressed())
+  if (int(action & KeyAction::SubtractSelection))
     mode = tools::SelectionMode::SUBTRACT;
   else if (m_secondaryButton)
     mode = tools::SelectionMode::SUBTRACT;
@@ -1139,7 +1141,8 @@ void Editor::updateContextBarFromModifiers()
 
   bool autoSelectLayer = Preferences::instance().editor.autoSelectLayer();
 
-  if (m_customizationDelegate && m_customizationDelegate->isAutoSelectLayerPressed())
+  if ((m_customizationDelegate) &&
+      int(m_customizationDelegate->getPressedKeyAction(KeyContext::MoveTool) & KeyAction::AutoSelectLayer))
     autoSelectLayer = true;
 
   if (m_autoSelectLayer != autoSelectLayer) {
