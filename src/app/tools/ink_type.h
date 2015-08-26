@@ -18,6 +18,7 @@ namespace tools {
     ALPHA_COMPOSITING = 1,
     COPY_COLOR = 2,
     LOCK_ALPHA = 3,
+    SHADING = 4,
   };
 
   inline bool inkHasOpacity(InkType inkType) {

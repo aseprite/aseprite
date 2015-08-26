@@ -6,12 +6,11 @@
 // published by the Free Software Foundation.
 
 #include "app/modules/palettes.h"
-#include "app/tools/shade_table.h"
-#include "app/tools/shading_options.h"
 #include "doc/blend_funcs.h"
 #include "doc/image_impl.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
+#include "doc/remap.h"
 #include "doc/rgbmap.h"
 #include "doc/sprite.h"
 #include "filters/neighboring_pixels.h"
@@ -648,24 +647,129 @@ public:
 };
 
 template<>
-class ShadingInkProcessing<IndexedTraits> : public DoubleInkProcessing<ShadingInkProcessing<IndexedTraits>, IndexedTraits> {
+class ShadingInkProcessing<RgbTraits> : public DoubleInkProcessing<ShadingInkProcessing<RgbTraits>, RgbTraits> {
 public:
   ShadingInkProcessing(ToolLoop* loop) :
     m_palette(get_current_palette()),
-    m_shadeTable(loop->getShadingOptions()->getShadeTable()),
+    m_rgbmap(loop->getRgbMap()),
+    m_remap(loop->getShadingRemap()),
     m_left(loop->getMouseButton() == ToolLoop::Left) {
   }
 
   void processPixel(int x, int y) {
-    if (m_left)
-      *m_dstAddress = m_shadeTable->left(*m_srcAddress);
-    else
-      *m_dstAddress = m_shadeTable->right(*m_srcAddress);
+    color_t src = *m_srcAddress;
+    int i = m_rgbmap->mapColor(rgba_getr(src),
+                               rgba_getg(src),
+                               rgba_getb(src),
+                               rgba_geta(src));
+
+    // The color must be an exact match
+    if (src != m_palette->getEntry(i)) {
+      *m_dstAddress = src;
+      return;
+    }
+
+    if (m_remap) {
+      i = (*m_remap)[i];
+    }
+    else {
+      if (m_left) {
+        --i;
+        if (i < 0)
+          i = m_palette->size()-1;
+      }
+      else {
+        ++i;
+        if (i >= m_palette->size())
+          i = 0;
+      }
+    }
+
+    *m_dstAddress = m_palette->getEntry(i);
   }
 
 private:
   const Palette* m_palette;
-  tools::ShadeTable8* m_shadeTable;
+  const RgbMap* m_rgbmap;
+  const Remap* m_remap;
+  bool m_left;
+};
+
+template<>
+class ShadingInkProcessing<GrayscaleTraits> : public DoubleInkProcessing<ShadingInkProcessing<GrayscaleTraits>, GrayscaleTraits> {
+public:
+  ShadingInkProcessing(ToolLoop* loop) :
+    m_palette(get_current_palette()),
+    m_rgbmap(loop->getRgbMap()),
+    m_remap(loop->getShadingRemap()),
+    m_left(loop->getMouseButton() == ToolLoop::Left) {
+  }
+
+  void processPixel(int x, int y) {
+    color_t src = *m_srcAddress;
+    int i = graya_getv(src);
+
+    if (m_remap) {
+      i = (*m_remap)[i];
+    }
+    else {
+      if (m_left) {
+        --i;
+        if (i < 0)
+          i = 255;
+      }
+      else {
+        ++i;
+        if (i > 255)
+          i = 0;
+      }
+    }
+
+    *m_dstAddress = graya(i, graya_geta(src));
+  }
+
+private:
+  const Palette* m_palette;
+  const RgbMap* m_rgbmap;
+  const Remap* m_remap;
+  bool m_left;
+};
+
+template<>
+class ShadingInkProcessing<IndexedTraits> : public DoubleInkProcessing<ShadingInkProcessing<IndexedTraits>, IndexedTraits> {
+public:
+  ShadingInkProcessing(ToolLoop* loop) :
+    m_palette(get_current_palette()),
+    m_remap(loop->getShadingRemap()),
+    m_left(loop->getMouseButton() == ToolLoop::Left) {
+  }
+
+  void processPixel(int x, int y) {
+    color_t src = *m_srcAddress;
+    int i = src;
+
+    if (m_remap) {
+      i = (*m_remap)[i];
+    }
+    else {
+      if (m_left) {
+        --i;
+        if (i < 0)
+          i = m_palette->size()-1;
+      }
+      else {
+        ++i;
+        if (i >= m_palette->size())
+          i = 0;
+      }
+    }
+
+    *m_dstAddress = i;
+  }
+
+private:
+  const Palette* m_palette;
+  const Remap* m_remap;
   bool m_left;
 };
 

@@ -960,6 +960,9 @@ tools::Ink* Editor::getCurrentEditorInk()
       case tools::InkType::LOCK_ALPHA:
         id = tools::WellKnownInks::PaintLockAlpha;
         break;
+      case tools::InkType::SHADING:
+        id = tools::WellKnownInks::Shading;
+        break;
     }
 
     if (id)

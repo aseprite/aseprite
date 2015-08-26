@@ -140,7 +140,6 @@ add_library(app-lib
   cmd_transaction.cpp
   color.cpp
   color_picker.cpp
-  color_swatches.cpp
   color_utils.cpp
   commands/cmd_about.cpp
   commands/cmd_advanced_mode.cpp
@@ -303,7 +302,6 @@ add_library(app-lib
   tools/intertwine.cpp
   tools/pick_ink.cpp
   tools/point_shape.cpp
-  tools/shade_table.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   transaction.cpp

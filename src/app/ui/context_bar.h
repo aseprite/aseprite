@@ -20,6 +20,10 @@
 
 #include <vector>
 
+namespace doc {
+  class Remap;
+}
+
 namespace ui {
   class Box;
   class Button;
@@ -66,6 +70,8 @@ namespace app {
     static doc::BrushRef createBrushFromPreferences(
       ToolPreferences::Brush* brushPref = nullptr);
 
+    doc::Remap* createShadesRemap(bool left);
+
     // Signals
     Signal0<void> BrushChange;
 
@@ -102,6 +108,7 @@ namespace app {
     class StopAtGridField;
     class InkTypeField;
     class InkOpacityField;
+    class InkShadesField;
     class SprayWidthField;
     class SpraySpeedField;
     class SelectionModeField;
@@ -124,6 +131,7 @@ namespace app {
     InkTypeField* m_inkType;
     ui::Label* m_inkOpacityLabel;
     InkOpacityField* m_inkOpacity;
+    InkShadesField* m_inkShades;
     EyedropperField* m_eyedropperField;
     AutoSelectLayerField* m_autoSelectLayer;
     ui::Box* m_freehandBox;

@@ -20,13 +20,12 @@
 #include "app/context_access.h"
 #include "app/document_undo.h"
 #include "app/modules/gui.h"
+#include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
 #include "app/tools/controller.h"
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
-#include "app/tools/shade_table.h"
-#include "app/tools/shading_options.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
@@ -42,6 +41,9 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/mask.h"
+#include "doc/palette.h"
+#include "doc/palette_picks.h"
+#include "doc/remap.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
@@ -52,8 +54,7 @@ using namespace ui;
 //////////////////////////////////////////////////////////////////////
 // Common properties between drawing/preview ToolLoop impl
 
-class ToolLoopBase : public tools::ToolLoop,
-                     public tools::ShadingOptions {
+class ToolLoopBase : public tools::ToolLoop {
 
 protected:
   Editor* m_editor;
@@ -76,6 +77,7 @@ protected:
   tools::PointShape* m_pointShape;
   tools::Intertwine* m_intertwine;
   tools::TracePolicy m_tracePolicy;
+  base::UniquePtr<doc::Remap> m_shadingRemap;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
   doc::color_t m_primaryColor;
@@ -140,6 +142,12 @@ public:
         m_brush->type() != kImageBrushType) {
       m_opacity = 255;
     }
+
+    if (m_toolPref.ink() == tools::InkType::SHADING) {
+      m_shadingRemap.reset(
+        App::instance()->getMainWindow()->getContextBar()->createShadesRemap(
+          button == tools::ToolLoop::Left));
+    }
   }
 
   // IToolLoop interface
@@ -185,7 +193,7 @@ public:
   tools::PointShape* getPointShape() override { return m_pointShape; }
   tools::Intertwine* getIntertwine() override { return m_intertwine; }
   tools::TracePolicy getTracePolicy() override { return m_tracePolicy; }
-  tools::ShadingOptions* getShadingOptions() override { return this; }
+  doc::Remap* getShadingRemap() override { return m_shadingRemap; }
 
   gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
     return m_editor->screenToEditor(screenPoint);
@@ -204,11 +212,6 @@ public:
 
   void updateStatusBar(const char* text) override {
     StatusBar::instance()->setStatusText(0, text);
-  }
-
-  // ShadingOptions implementation
-  tools::ShadeTable8* getShadeTable() override {
-    return nullptr;
   }
 };
 

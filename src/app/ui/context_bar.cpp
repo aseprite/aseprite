@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/commands/commands.h"
+#include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"
@@ -27,6 +28,7 @@
 #include "app/ui/button_set.h"
 #include "app/ui/color_button.h"
 #include "app/ui/skin/skin_theme.h"
+#include "app/ui/skin/style.h"
 #include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/scoped_value.h"
@@ -35,6 +37,7 @@
 #include "doc/conversion_she.h"
 #include "doc/image.h"
 #include "doc/palette.h"
+#include "doc/remap.h"
 #include "she/surface.h"
 #include "she/system.h"
 #include "ui/button.h"
@@ -43,6 +46,8 @@
 #include "ui/label.h"
 #include "ui/listitem.h"
 #include "ui/menu.h"
+#include "ui/message.h"
+#include "ui/paint_event.h"
 #include "ui/popup_window.h"
 #include "ui/preferred_size_event.h"
 #include "ui/theme.h"
@@ -99,7 +104,7 @@ protected:
       closePopup();
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) {
+  void onPreferredSize(PreferredSizeEvent& ev) override {
     ev.setPreferredSize(Size(16, 18)*guiscale());
   }
 
@@ -319,8 +324,7 @@ protected:
   }
 };
 
-class ContextBar::InkTypeField : public ButtonSet
-{
+class ContextBar::InkTypeField : public ButtonSet {
 public:
   InkTypeField(ContextBar* owner) : ButtonSet(1)
                                   , m_owner(owner) {
@@ -337,6 +341,7 @@ public:
       case InkType::ALPHA_COMPOSITING: part = theme->parts.inkAlphaCompositing(); break;
       case InkType::COPY_COLOR:        part = theme->parts.inkCopyColor(); break;
       case InkType::LOCK_ALPHA:        part = theme->parts.inkLockAlpha(); break;
+      case InkType::SHADING:           part = theme->parts.inkShading(); break;
     }
 
     getItem(0)->setIcon(part);
@@ -354,11 +359,13 @@ protected:
       alphacompo("Alpha Compositing"),
       copycolor("Copy Color+Alpha"),
       lockalpha("Lock Alpha"),
+      shading("Shading"),
       alltools("Same in all Tools");
     menu.addChild(&simple);
     menu.addChild(&alphacompo);
     menu.addChild(&copycolor);
     menu.addChild(&lockalpha);
+    menu.addChild(&shading);
     menu.addChild(new MenuSeparator);
     menu.addChild(&alltools);
 
@@ -368,6 +375,7 @@ protected:
       case tools::InkType::ALPHA_COMPOSITING: alphacompo.setSelected(true); break;
       case tools::InkType::COPY_COLOR: copycolor.setSelected(true); break;
       case tools::InkType::LOCK_ALPHA: lockalpha.setSelected(true); break;
+      case tools::InkType::SHADING: shading.setSelected(true); break;
     }
     alltools.setSelected(Preferences::instance().shared.shareInk());
 
@@ -375,6 +383,7 @@ protected:
     alphacompo.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::ALPHA_COMPOSITING));
     copycolor.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::COPY_COLOR));
     lockalpha.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::LOCK_ALPHA));
+    shading.Click.connect(Bind<void>(&InkTypeField::selectInk, this, InkType::SHADING));
     alltools.Click.connect(Bind<void>(&InkTypeField::onSameInAllTools, this));
 
     menu.showPopup(gfx::Point(bounds.x, bounds.y+bounds.h));
@@ -417,6 +426,104 @@ protected:
   }
 
   ContextBar* m_owner;
+};
+
+class ContextBar::InkShadesField : public Widget {
+public:
+  InkShadesField() : Widget(kGenericWidget) {
+    setText("Select shading colors in palette");
+  }
+
+  doc::Remap* createShadesRemap(bool left) {
+    base::UniquePtr<doc::Remap> remap;
+
+    if (m_colors.size() > 0) {
+      remap.reset(new doc::Remap(get_current_palette()->size()));
+
+      for (int i=0; i<remap->size(); ++i)
+        remap->map(i, i);
+
+      if (left) {
+        for (int i=1; i<int(m_colors.size()); ++i)
+          remap->map(m_colors[i].getIndex(), m_colors[i-1].getIndex());
+      }
+      else {
+        for (int i=0; i<int(m_colors.size())-1; ++i)
+          remap->map(m_colors[i].getIndex(), m_colors[i+1].getIndex());
+      }
+    }
+
+    return remap.release();
+  }
+
+private:
+
+  void onChangeColorBarSelection() {
+    if (!isVisible())
+      return;
+
+    doc::PalettePicks picks;
+    ColorBar::instance()->getPaletteView()->getSelectedEntries(picks);
+
+    m_colors.resize(picks.picks());
+
+    int i = 0, j = 0;
+    for (bool pick : picks) {
+      if (pick)
+        m_colors[j++] = app::Color::fromIndex(i);
+      ++i;
+    }
+
+    getParent()->layout();
+  }
+
+  bool onProcessMessage(ui::Message* msg) {
+    if (msg->type() == kOpenMessage) {
+      ColorBar::instance()->ChangeSelection.connect(
+        Bind<void>(&InkShadesField::onChangeColorBarSelection, this));
+    }
+    return Widget::onProcessMessage(msg);
+  }
+
+  void onPreferredSize(PreferredSizeEvent& ev) override {
+    if (m_colors.size() < 2)
+      ev.setPreferredSize(Size(16+getTextWidth(), 18)*guiscale());
+    else
+      ev.setPreferredSize(Size(6+12*m_colors.size(), 18)*guiscale());
+  }
+
+  void onPaint(PaintEvent& ev) override {
+    SkinTheme* theme = SkinTheme::instance();
+    Graphics* g = ev.getGraphics();
+    gfx::Rect bounds = getClientBounds();
+
+    skin::Style::State state;
+    if (hasMouseOver()) state += Style::hover();
+
+    g->fillRect(theme->colors.workspace(), bounds);
+    theme->styles.view()->paint(g, bounds, nullptr, state);
+
+    bounds.shrink(3*guiscale());
+
+    gfx::Rect box(bounds.x, bounds.y, 12*guiscale(), bounds.h);
+
+    if (m_colors.size() >= 2) {
+      for (int i=0; i<int(m_colors.size()); ++i) {
+        if (i == int(m_colors.size())-1)
+          box.w = bounds.x+bounds.w-box.x;
+
+        draw_color(g, box, m_colors[i]);
+        box.x += box.w;
+      }
+    }
+    else {
+      g->fillRect(theme->colors.editorFace(), bounds);
+      g->drawAlignedUIString(getText(), theme->colors.face(), gfx::ColorNone, bounds,
+                             ui::CENTER | ui::MIDDLE);
+    }
+  }
+
+  std::vector<app::Color> m_colors;
 };
 
 class ContextBar::InkOpacityField : public IntEntry
@@ -765,7 +872,7 @@ protected:
       closePopup();
   }
 
-  void onPreferredSize(PreferredSizeEvent& ev) {
+  void onPreferredSize(PreferredSizeEvent& ev) override {
     ev.setPreferredSize(Size(16, 18)*guiscale());
   }
 
@@ -1022,9 +1129,9 @@ ContextBar::ContextBar()
   addChild(m_stopAtGrid = new StopAtGridField());
 
   addChild(m_inkType = new InkTypeField(this));
-
   addChild(m_inkOpacityLabel = new Label("Opacity:"));
   addChild(m_inkOpacity = new InkOpacityField());
+  addChild(m_inkShades = new InkShadesField());
 
   addChild(m_eyedropperField = new EyedropperField());
 
@@ -1061,6 +1168,7 @@ ContextBar::ContextBar()
   tooltipManager->addTooltipFor(m_brushAngle, "Brush Angle (in degrees)", BOTTOM);
   tooltipManager->addTooltipFor(m_inkType, "Ink", BOTTOM);
   tooltipManager->addTooltipFor(m_inkOpacity, "Opacity (paint intensity)", BOTTOM);
+  tooltipManager->addTooltipFor(m_inkShades, "Shades", BOTTOM);
   tooltipManager->addTooltipFor(m_sprayWidth, "Spray Width", BOTTOM);
   tooltipManager->addTooltipFor(m_spraySpeed, "Spray Speed", BOTTOM);
   tooltipManager->addTooltipFor(m_pivot, "Rotation Pivot", BOTTOM);
@@ -1175,6 +1283,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
      (tool->getInk(1)->isPaint() && !tool->getInk(1)->isEffect()));
 
   bool hasInkWithOpacity = false;
+  bool hasInkShades = false;
 
   if (toolPref) {
     m_tolerance->setTextf("%d", toolPref->tolerance());
@@ -1188,6 +1297,9 @@ void ContextBar::updateForTool(tools::Tool* tool)
     hasInkWithOpacity =
       ((isPaint && tools::inkHasOpacity(toolPref->ink())) ||
        (isEffect));
+
+    hasInkShades =
+      (isPaint && toolPref->ink() == InkType::SHADING);
 
     m_freehandAlgo->setFreehandAlgorithm(toolPref->freehandAlgorithm());
 
@@ -1253,6 +1365,7 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_inkType->setVisible(hasInk && !hasImageBrush);
   m_inkOpacityLabel->setVisible(showOpacity);
   m_inkOpacity->setVisible(showOpacity);
+  m_inkShades->setVisible(hasInkShades);
   m_eyedropperField->setVisible(isEyedropper);
   m_autoSelectLayer->setVisible(isMove);
   m_freehandBox->setVisible(isFreehand && supportOpacity);
@@ -1432,6 +1545,11 @@ doc::BrushRef ContextBar::createBrushFromPreferences(ToolPreferences::Brush* bru
       brushPref->size(),
       brushPref->angle()));
   return brush;
+}
+
+doc::Remap* ContextBar::createShadesRemap(bool left)
+{
+  return m_inkShades->createShadesRemap(left);
 }
 
 } // namespace app

@@ -84,6 +84,8 @@ namespace app {
     bool onClear(Context* ctx) override;
     void onCancel(Context* ctx) override;
 
+    Signal0<void> ChangeSelection;
+
   protected:
     void onAppPaletteChange();
     void onFocusPaletteView();

@@ -21,10 +21,11 @@ namespace gfx {
 }
 
 namespace doc {
+  class Brush;
   class Image;
   class Layer;
   class Mask;
-  class Brush;
+  class Remap;
   class RgbMap;
   class Sprite;
 }
@@ -42,7 +43,6 @@ namespace app {
     class Ink;
     class Intertwine;
     class PointShape;
-    class ShadingOptions;
     class Tool;
 
     using namespace doc;
@@ -203,7 +203,7 @@ namespace app {
       virtual Intertwine* getIntertwine() = 0;
       virtual TracePolicy getTracePolicy() = 0;
 
-      virtual ShadingOptions* getShadingOptions() = 0;
+      virtual const doc::Remap* getShadingRemap() = 0;
 
       // Used by the tool when the user cancels the operation pressing the
       // other mouse button.

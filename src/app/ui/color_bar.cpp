@@ -592,6 +592,7 @@ void ColorBar::onPaletteViewIndexChange(int index, ui::MouseButtons buttons)
   else if ((buttons & kButtonMiddle) == kButtonMiddle)
     setTransparentIndex(index);
 
+  ChangeSelection();
   m_lock = false;
 }
 

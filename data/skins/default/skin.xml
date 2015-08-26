@@ -380,6 +380,7 @@
     <part id="ink_alpha_compositing"            x="160" y="144" w="16" h="16" />
     <part id="ink_copy_color"                   x="144" y="160" w="16" h="16" />
     <part id="ink_lock_alpha"                   x="160" y="160" w="16" h="16" />
+    <part id="ink_shading"                      x="144" y="176" w="16" h="16" />
     <part id="selection_opaque"                 x="208" y="176" w="16" h="10" />
     <part id="selection_masked"                 x="224" y="176" w="16" h="10" />
     <part id="pivot_northwest"                  x="208" y="192" w="7" h="7" />
