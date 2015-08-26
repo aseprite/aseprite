@@ -296,6 +296,7 @@ add_library(app-lib
   res/palettes_loader_delegate.cpp
   res/resources_loader.cpp
   resource_finder.cpp
+  scripting/app_scripting.cpp
   send_crash.cpp
   shell.cpp
   snap_to_grid.cpp
