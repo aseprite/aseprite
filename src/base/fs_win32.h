@@ -101,6 +101,15 @@ void remove_directory(const std::string& path)
     throw Win32Exception("Error removing directory");
 }
 
+std::string get_current_path()
+{
+  TCHAR buffer[MAX_PATH+1];
+  if (::GetCurrentDirectory(sizeof(buffer)/sizeof(TCHAR), buffer))
+    return to_utf8(buffer);
+  else
+    return "";
+}
+
 std::string get_app_path()
 {
   TCHAR buffer[MAX_PATH+1];
@@ -127,6 +136,17 @@ std::string get_user_docs_folder()
     return to_utf8(buffer);
   else
     return "";
+}
+
+std::string get_canonical_path(const std::string& path)
+{
+  TCHAR buffer[MAX_PATH+1];
+  GetFullPathName(
+    from_utf8(path).c_str(),
+    sizeof(buffer)/sizeof(TCHAR),
+    buffer,
+    nullptr);
+  return to_utf8(buffer);
 }
 
 std::vector<std::string> list_files(const std::string& path)

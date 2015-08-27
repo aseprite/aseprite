@@ -32,9 +32,14 @@ namespace base {
   void make_all_directories(const std::string& path);
   void remove_directory(const std::string& path);
 
+  std::string get_current_path();
   std::string get_app_path();
   std::string get_temp_path();
   std::string get_user_docs_folder();
+
+  // If the given filename is a relative path, it converts the
+  // filename to an absolute one.
+  std::string get_canonical_path(const std::string& path);
 
   std::vector<std::string> list_files(const std::string& path);
 

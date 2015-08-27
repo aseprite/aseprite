@@ -44,7 +44,7 @@ RecentFiles::RecentFiles()
 
     const char* filename = get_config_string("RecentFiles", buf, NULL);
     if (filename && *filename && base::is_file(filename)) {
-      std::string fn = base::fix_path_separators(filename);
+      std::string fn = normalizePath(filename);
       m_files.addItem(fn, compare_path(fn));
     }
   }
@@ -54,7 +54,7 @@ RecentFiles::RecentFiles()
 
     const char* path = get_config_string("RecentPaths", buf, NULL);
     if (path && *path) {
-      std::string p = base::fix_path_separators(path);
+      std::string p = normalizePath(path);
       m_paths.addItem(p, compare_path(p));
     }
   }
@@ -81,7 +81,7 @@ RecentFiles::~RecentFiles()
 
 void RecentFiles::addRecentFile(const char* filename)
 {
-  std::string fn = base::fix_path_separators(filename);
+  std::string fn = normalizePath(filename);
   m_files.addItem(fn, compare_path(fn));
 
   std::string path = base::get_file_path(fn);
@@ -92,13 +92,20 @@ void RecentFiles::addRecentFile(const char* filename)
 
 void RecentFiles::removeRecentFile(const char* filename)
 {
-  std::string fn = base::fix_path_separators(filename);
+  std::string fn = normalizePath(filename);
   m_files.removeItem(fn, compare_path(fn));
 
   std::string path = base::get_file_path(filename);
   m_paths.removeItem(path, compare_path(path));
 
   Changed();
+}
+
+std::string RecentFiles::normalizePath(std::string fn)
+{
+  fn = base::get_canonical_path(fn);
+  fn = base::fix_path_separators(fn);
+  return fn;
 }
 
 } // namespace app

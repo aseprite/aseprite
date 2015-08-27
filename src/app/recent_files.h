@@ -39,6 +39,8 @@ namespace app {
     Signal0<void> Changed;
 
   private:
+    std::string normalizePath(std::string fn);
+
     List m_files;
     List m_paths;
   };

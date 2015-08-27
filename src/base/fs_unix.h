@@ -108,6 +108,13 @@ void remove_directory(const std::string& path)
   }
 }
 
+std::string get_current_path()
+{
+  std::vector<char> path(MAXPATHLEN);
+  getcwd(&path[0], path.size());
+  return std::string(&path[0]);
+}
+
 std::string get_app_path()
 {
   std::vector<char> path(MAXPATHLEN);
@@ -143,6 +150,13 @@ std::string get_user_docs_folder()
     return tmpdir;
   else
     return "/";
+}
+
+std::string get_canonical_path(const std::string& path)
+{
+  char buffer[PATH_MAX];
+  realpath(path.c_str(), buffer);
+  return buffer;
 }
 
 std::vector<std::string> list_files(const std::string& path)
