@@ -431,7 +431,7 @@ protected:
 class ContextBar::InkShadesField : public Widget {
 public:
   InkShadesField() : Widget(kGenericWidget) {
-    setText("Select shading colors in palette");
+    setText("Select colors in the palette");
   }
 
   doc::Remap* createShadesRemap(bool left) {
