@@ -46,6 +46,7 @@ namespace scripting {
     int requireInt(index_t i);
     unsigned int requireUInt(index_t i);
     const char* requireString(index_t i);
+    void* requireObject(index_t i, const char* className);
 
     void pushUndefined();
     void pushNull();
@@ -56,6 +57,7 @@ namespace scripting {
     void pushUInt(unsigned int val);
     void pushString(const char* str);
     void pushThis(void* ptr);
+    void pushObject(void* ptr, const char* className);
 
   private:
     ContextHandle m_handle;
@@ -88,6 +90,8 @@ namespace scripting {
                        Function ctorFunc, int ctorNargs,
                        const FunctionEntry* methods,
                        const PropertyEntry* props);
+    void registerGlobal(const char* id,
+                        Function getter, Function setter);
 
   private:
     Context m_ctx;

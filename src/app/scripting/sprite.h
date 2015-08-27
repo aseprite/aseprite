@@ -107,6 +107,26 @@ scripting::result_t Sprite_get_height(scripting::ContextHandle handle)
   return 1;
 }
 
+scripting::result_t activeSprite_getter(scripting::ContextHandle handle)
+{
+  scripting::Context ctx(handle);
+  app::Document* doc = UIContext::instance()->activeDocument();
+  if (doc)
+    ctx.pushObject(doc, "Sprite");
+  else
+    ctx.pushNull();
+  return 1;
+}
+
+scripting::result_t activeSprite_setter(scripting::ContextHandle handle)
+{
+  scripting::Context ctx(handle);
+  Document* doc = (Document*)ctx.requireObject(0, "Sprite");
+  if (doc)
+    UIContext::instance()->setActiveDocument(doc);
+  return 0;
+}
+
 const scripting::FunctionEntry Sprite_methods[] = {
   { "putPixel", Sprite_putPixel, 3 },
   { "getPixel", Sprite_getPixel, 2 },

@@ -127,6 +127,15 @@ const char* Context::requireString(index_t i)
   return duk_require_string(m_handle, i);
 }
 
+void* Context::requireObject(index_t i, const char* className)
+{
+  duk_get_prop_string(m_handle, i, "\xFF" "\xFF" "ptr");
+  void* result = (void*)duk_to_pointer(m_handle, -1);
+  // TODO check pointer type
+  duk_pop(m_handle);
+  return result;
+}
+
 void Context::pushUndefined()
 {
   duk_push_undefined(m_handle);
@@ -172,6 +181,18 @@ void Context::pushThis(void* ptr)
   duk_push_this(m_handle);
   duk_push_pointer(m_handle, ptr);
   duk_put_prop_string(m_handle, -2, "\xFF" "\xFF" "ptr");
+}
+
+void Context::pushObject(void* ptr, const char* className)
+{
+  duk_push_object(m_handle);
+  duk_push_pointer(m_handle, ptr);
+  duk_put_prop_string(m_handle, -2, "\xFF" "\xFF" "ptr");
+
+  duk_get_global_string(m_handle, className);
+  duk_get_prop_string(m_handle, -1, "prototype");
+  duk_set_prototype(m_handle, -3);
+  duk_pop(m_handle);
 }
 
 void* Context::getThis()
@@ -299,6 +320,32 @@ void Engine::registerClass(const char* id,
   duk_put_prop_string(handle, -2, "prototype");
 
   duk_put_global_string(handle, id);
+}
+
+void Engine::registerGlobal(const char* id,
+                            Function getter, Function setter)
+{
+  ContextHandle handle = m_ctx.handle();
+
+  duk_push_global_object(handle);
+  duk_push_string(handle, id);
+
+  duk_idx_t objidx = -2;
+  duk_uint_t flags = 0;
+
+  if (getter) {
+    flags |= DUK_DEFPROP_HAVE_GETTER;
+    duk_push_c_function(handle, getter, 0);
+    --objidx;
+  }
+
+  if (setter) {
+    flags |= DUK_DEFPROP_HAVE_SETTER;
+    duk_push_c_function(handle, setter, 1);
+    --objidx;
+  }
+
+  duk_def_prop(handle, objidx, flags);
 }
 
 } // namespace scripting

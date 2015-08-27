@@ -34,6 +34,7 @@ AppScripting::AppScripting(scripting::EngineDelegate* delegate)
   registerFunction("rgbaB", rgbaB, 1);
   registerFunction("rgbaA", rgbaA, 1);
   registerClass("Sprite", Sprite_ctor, 3, Sprite_methods, Sprite_props);
+  registerGlobal("activeSprite", activeSprite_getter, activeSprite_setter);
 }
 
 }
