@@ -38,6 +38,7 @@
 #include "app/pref/preferences.h"
 #include "app/recent_files.h"
 #include "app/resource_finder.h"
+#include "app/scripting/app_scripting.h"
 #include "app/send_crash.h"
 #include "app/shell.h"
 #include "app/tools/tool_box.h"
@@ -65,7 +66,6 @@
 #include "doc/site.h"
 #include "doc/sprite.h"
 #include "render/render.h"
-#include "scripting/engine.h"
 #include "scripting/engine_delegate.h"
 #include "she/display.h"
 #include "she/error.h"
@@ -436,6 +436,14 @@ void App::initialize(const AppOptions& options)
             ctx->executeCommand(command);
           }
         }
+        // --script <filename>
+        else if (opt == &options.script()) {
+          std::string script = value.value();
+
+          StdoutEngineDelegate delegate;
+          AppScripting engine(&delegate);
+          engine.evalFile(script);
+        }
       }
       // File names aren't associated to any option
       else {
@@ -540,7 +548,7 @@ void App::run()
   // Start shell to execute scripts.
   if (m_isShell) {
     StdoutEngineDelegate delegate;
-    scripting::Engine engine(&delegate);
+    AppScripting engine(&delegate);
     Shell shell;
     shell.run(engine);
   }

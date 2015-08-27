@@ -54,6 +54,7 @@ public:
   const Option& trim() const { return m_trim; }
   const Option& crop() const { return m_crop; }
   const Option& filenameFormat() const { return m_filenameFormat; }
+  const Option& script() const { return m_script; }
 
   bool hasExporterParams() const;
 
@@ -89,6 +90,7 @@ private:
   Option& m_trim;
   Option& m_crop;
   Option& m_filenameFormat;
+  Option& m_script;
 
   Option& m_verbose;
   Option& m_help;

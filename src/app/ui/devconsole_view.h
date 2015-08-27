@@ -9,9 +9,9 @@
 #define APP_UI_DEVCONSOLE_VIEW_H_INCLUDED
 #pragma once
 
+#include "app/scripting/app_scripting.h"
 #include "app/ui/tabs.h"
 #include "app/ui/workspace_view.h"
-#include "scripting/engine.h"
 #include "scripting/engine_delegate.h"
 #include "ui/box.h"
 #include "ui/label.h"
@@ -54,7 +54,7 @@ namespace app {
     ui::HBox m_bottomBox;
     ui::Label m_label;
     CommmandEntry* m_entry;
-    scripting::Engine m_engine;
+    AppScripting m_engine;
   };
 
 } // namespace app
