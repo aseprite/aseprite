@@ -39,10 +39,13 @@ namespace app {
     gfx::Point viewToClient(const gfx::Point& viewPt);
     gfx::Point screenToView(const gfx::Point& screenPt);
     gfx::Point clientToView(const gfx::Point& clientPt);
+    void addPoint(const gfx::Point& viewPoint);
+    void removePoint(gfx::Point* viewPoint);
 
     ColorCurve* m_curve;
     int m_status;
     gfx::Rect m_viewBounds;
+    gfx::Point* m_hotPoint;
     gfx::Point* m_editPoint;
   };
 

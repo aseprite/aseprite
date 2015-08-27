@@ -1,0 +1,22 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2001-2013, 2015 by David Capello -->
+<gui>
+<window text="Point Properties" id="color_curve_point">
+  <vbox>
+    <hbox expansive="true">
+      <grid columns="2">
+        <label text="X:" />
+        <entry maxsize="32" id="x" magnet="true" />
+
+        <label text="Y:" />
+        <entry maxsize="32" id="y" />
+      </grid>
+    </hbox>
+    <hbox homogeneous="true">
+      <button text="&amp;OK" closewindow="true" id="ok" magnet="true" />
+      <button text="&amp;Cancel" closewindow="true" />
+      <button text="&amp;Delete" closewindow="true" id="delete_button" />
+    </hbox>
+  </vbox>
+</window>
+</gui>
