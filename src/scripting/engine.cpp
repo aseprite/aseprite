@@ -205,8 +205,8 @@ void* Context::getThis()
 }
 
 Engine::Engine(EngineDelegate* delegate)
-  : m_delegate(delegate)
-  , m_ctx(duk_create_heap_default())
+  : m_ctx(duk_create_heap_default())
+  , m_delegate(delegate)
 {
 }
 
