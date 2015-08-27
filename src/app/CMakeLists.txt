@@ -218,6 +218,7 @@ add_library(app-lib
   commands/cmd_reselect_mask.cpp
   commands/cmd_reverse_frames.cpp
   commands/cmd_rotate.cpp
+  commands/cmd_run_script.cpp
   commands/cmd_save_file.cpp
   commands/cmd_save_mask.cpp
   commands/cmd_save_palette.cpp

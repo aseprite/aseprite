@@ -221,7 +221,10 @@ void Engine::eval(const std::string& jsCode)
     ContextHandle handle = m_ctx.handle();
 
     duk_eval_string(handle, jsCode.c_str());
-    m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+
+    if (!duk_is_null_or_undefined(handle, -1))
+      m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+
     duk_pop(handle);
   }
   catch (const std::exception& ex) {
@@ -258,7 +261,10 @@ void Engine::evalFile(const std::string& file)
 
     duk_push_string(handle, duk_to_string(handle, -1));
     duk_eval_raw(handle, nullptr, 0, DUK_COMPILE_EVAL);
-    m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+
+    if (!duk_is_null_or_undefined(handle, -1))
+      m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
+
     duk_pop(handle);
 
   fail:
