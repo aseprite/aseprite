@@ -30,11 +30,12 @@ int split_filename(const char* filename, std::string& left, std::string& right, 
   if (!right.empty())
     right.insert(right.begin(), '.');
 
-  // Remove all trailing numbers in the "left" side, and pass they to "buf".
+  // Remove all trailing numbers in the "left" side, and pass they to "result_str".
   std::string result_str;
   width = 0;
   for (;;) {
-    // Get the last utf-8 character
+    // Get the last UTF-8 character (as we don't have a
+    // reverse_iterator, we iterate from the beginning)
     int chr = 0;
     base::utf8_const_iterator begin(left.begin()), end(left.end());
     base::utf8_const_iterator it(begin), prev(begin);
@@ -45,7 +46,7 @@ int split_filename(const char* filename, std::string& left, std::string& right, 
       result_str.insert(result_str.begin(), chr);
       width++;
 
-      left.erase(std::distance(begin, prev));
+      left.erase(prev - begin);
     }
     else
       break;
