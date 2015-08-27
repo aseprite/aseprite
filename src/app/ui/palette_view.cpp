@@ -357,7 +357,8 @@ bool PaletteView::onProcessMessage(Message* msg)
         switch (m_state) {
 
           case State::DRAGGING_OUTLINE:
-            if (m_hot.part == Hit::COLOR) {
+            if (m_hot.part == Hit::COLOR ||
+                m_hot.part == Hit::POSSIBLE_COLOR) {
               int i = m_hot.color;
               if (!m_copy && i > m_selectedEntries.firstPick())
                 i += m_selectedEntries.picks();
@@ -366,7 +367,8 @@ bool PaletteView::onProcessMessage(Message* msg)
             break;
 
           case State::RESIZING_PALETTE:
-            if (m_hot.part == Hit::COLOR) {
+            if (m_hot.part == Hit::COLOR ||
+                m_hot.part == Hit::POSSIBLE_COLOR) {
               int newPalSize = MAX(1, m_hot.color);
               Palette newPalette(*currentPalette());
               newPalette.resize(newPalSize);
@@ -432,8 +434,10 @@ void PaletteView::onPaint(ui::PaintEvent& ev)
   int fgIndex = -1;
   int bgIndex = -1;
   int transparentIndex = -1;
-  bool dragging = (m_state == State::DRAGGING_OUTLINE && m_hot.part == Hit::COLOR);
-  bool resizing = (m_state == State::RESIZING_PALETTE && m_hot.part == Hit::COLOR);
+  bool hotColor = (m_hot.part == Hit::COLOR ||
+                   m_hot.part == Hit::POSSIBLE_COLOR);
+  bool dragging = (m_state == State::DRAGGING_OUTLINE && hotColor);
+  bool resizing = (m_state == State::RESIZING_PALETTE && hotColor);
 
   if (m_style == FgBgColors && m_delegate) {
     fgIndex = findExactIndex(m_delegate->onPaletteViewGetForegroundIndex());
@@ -597,24 +601,24 @@ void PaletteView::onResize(ui::ResizeEvent& ev)
 
 void PaletteView::onPreferredSize(ui::PreferredSizeEvent& ev)
 {
+  div_t d = div(currentPalette()->size(), m_columns);
+  int cols = m_columns;
+  int rows = d.quot + ((d.rem)? 1: 0);
+
+  if (m_editable) {
+    ++rows;
+  }
+
   gfx::Size sz;
-  request_size(&sz.w, &sz.h);
+  sz.w = border().width() + cols*m_boxsize + (cols-1)*childSpacing();
+  sz.h = border().height() + rows*m_boxsize + (rows-1)*childSpacing();
+
   ev.setPreferredSize(sz);
 }
 
 void PaletteView::onDrawMarchingAnts()
 {
   invalidate();
-}
-
-void PaletteView::request_size(int* w, int* h)
-{
-  div_t d = div(currentPalette()->size(), m_columns);
-  int cols = m_columns;
-  int rows = d.quot + ((d.rem)? 1: 0);
-
-  *w = border().width() + cols*m_boxsize + (cols-1)*childSpacing();
-  *h = border().height() + rows*m_boxsize + (rows-1)*childSpacing();
 }
 
 void PaletteView::update_scroll(int color)
@@ -715,13 +719,19 @@ PaletteView::Hit PaletteView::hitTest(const gfx::Point& pos)
 
     box.w += childSpacing();
     box.h += childSpacing();
-    if (box.contains(pos)) {
-      Hit hit(Hit::COLOR, i);
-      return hit;
-    }
+    if (box.contains(pos))
+      return Hit(Hit::COLOR, i);
   }
 
-  return Hit(Hit::NONE);
+  gfx::Rect box = getPaletteEntryBounds(0);
+  box.w = (m_boxsize+childSpacing());
+  box.h = (m_boxsize+childSpacing());
+
+  int colsLimit = m_columns;
+  if (m_state == State::DRAGGING_OUTLINE)
+    --colsLimit;
+  int i = MID(0, (pos.x-vp.x)/box.w, colsLimit) + MAX(0, pos.y/box.h)*m_columns;
+  return Hit(Hit::POSSIBLE_COLOR, i);
 }
 
 void PaletteView::dropColors(int beforeIndex)
@@ -908,6 +918,7 @@ void PaletteView::setStatusBar()
 
     case State::RESIZING_PALETTE:
       if (m_hot.part == Hit::COLOR ||
+          m_hot.part == Hit::POSSIBLE_COLOR ||
           m_hot.part == Hit::RESIZE_HANDLE) {
         int newPalSize = MAX(1, m_hot.color);
         StatusBar::instance()->setStatusText(

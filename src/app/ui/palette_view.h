@@ -102,7 +102,8 @@ namespace app {
         NONE,
         COLOR,
         OUTLINE,
-        RESIZE_HANDLE
+        RESIZE_HANDLE,
+        POSSIBLE_COLOR,
       };
       Part part;
       int color;
@@ -120,7 +121,6 @@ namespace app {
       }
     };
 
-    void request_size(int* w, int* h);
     void update_scroll(int color);
     void onAppPaletteChange();
     gfx::Rect getPaletteEntryBounds(int index) const;
