@@ -239,22 +239,25 @@ void Engine::evalFile(const std::string& file)
   try {
     ContextHandle handle = m_ctx.handle();
 
-    FILE* f = base::open_file_raw(file, "rb");
+    base::FileHandle fhandle(base::open_file(file, "rb"));
+    FILE* f = fhandle.get();
     if (!f)
-      goto fail;
+      return;
 
     if (fseek(f, 0, SEEK_END) < 0)
-      goto fail;
-    std::size_t sz = ftell(f);
+      return;
+
+    int sz = ftell(f);
     if (sz < 0)
-      goto fail;
+      return;
+
     if (fseek(f, 0, SEEK_SET) < 0)
-      goto fail;
+      return;
 
     char* buf = (char*)duk_push_fixed_buffer(handle, sz);
     ASSERT(buf != nullptr);
     if (fread(buf, 1, sz, f) != sz)
-      goto fail;
+      return;
 
     fclose(f);
     f = nullptr;
@@ -266,10 +269,6 @@ void Engine::evalFile(const std::string& file)
       m_delegate->onConsolePrint(duk_safe_to_string(handle, -1));
 
     duk_pop(handle);
-
-  fail:
-    if (f)
-      fclose(f);
   }
   catch (const std::exception& ex) {
     std::string err = "Error: ";
