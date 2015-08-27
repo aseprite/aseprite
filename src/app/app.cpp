@@ -441,47 +441,47 @@ void App::initialize(const AppOptions& options)
       else {
         const std::string& filename = value.value();
 
-        // Load the sprite
-        Document* doc = load_document(ctx, filename.c_str());
-        if (!doc) {
-          if (!isGui())
-            console.printf("Error loading file \"%s\"\n", filename.c_str());
-        }
-        else {
-          // Add the given file in the argument as a "recent file" only
-          // if we are running in GUI mode. If the program is executed
-          // in batch mode this is not desirable.
-          if (isGui())
-            getRecentFiles()->addRecentFile(filename.c_str());
+        app::Document* oldDoc = ctx->activeDocument();
 
-          if (m_exporter != NULL) {
-            FrameTag* frameTag = nullptr;
-            if (!frameTagName.empty())
-              frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+        Command* openCommand = CommandsModule::instance()->getCommandByName(CommandId::OpenFile);
+        Params params;
+        params.set("filename", filename.c_str());
+        ctx->executeCommand(openCommand, params);
 
-            if (!importLayer.empty()) {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
+        app::Document* doc = ctx->activeDocument();
 
-              Layer* foundLayer = NULL;
-              for (Layer* layer : layers) {
-                if (layer->name() == importLayer) {
-                  foundLayer = layer;
-                  break;
-                }
+        // If the active document is equal to the previous one, it
+        // means that we couldn't open this specific document.
+        if (doc == oldDoc)
+          doc = nullptr;
+
+        if (doc && m_exporter) {
+          FrameTag* frameTag = nullptr;
+          if (!frameTagName.empty())
+            frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+
+          if (!importLayer.empty()) {
+            std::vector<Layer*> layers;
+            doc->sprite()->getLayersList(layers);
+
+            Layer* foundLayer = NULL;
+            for (Layer* layer : layers) {
+              if (layer->name() == importLayer) {
+                foundLayer = layer;
+                break;
               }
-              if (foundLayer)
-                m_exporter->addDocument(doc, foundLayer, frameTag);
             }
-            else if (splitLayers) {
-              std::vector<Layer*> layers;
-              doc->sprite()->getLayersList(layers);
-              for (auto layer : layers)
-                m_exporter->addDocument(doc, layer, frameTag);
-            }
-            else
-              m_exporter->addDocument(doc, nullptr, frameTag);
+            if (foundLayer)
+              m_exporter->addDocument(doc, foundLayer, frameTag);
           }
+          else if (splitLayers) {
+            std::vector<Layer*> layers;
+            doc->sprite()->getLayersList(layers);
+            for (auto layer : layers)
+              m_exporter->addDocument(doc, layer, frameTag);
+          }
+          else
+            m_exporter->addDocument(doc, nullptr, frameTag);
         }
 
         if (!importLayer.empty())

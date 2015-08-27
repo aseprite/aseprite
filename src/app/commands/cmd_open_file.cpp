@@ -142,7 +142,9 @@ void OpenFileCommand::onExecute(Context* context)
 
         Document* document = fop->document;
         if (document) {
-          App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
+          if (context->isUIAvailable())
+            App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
+
           document->setContext(context);
         }
         else if (!fop_is_stop(fop))
@@ -152,7 +154,8 @@ void OpenFileCommand::onExecute(Context* context)
       // The file was not found or was loaded loaded with errors,
       // so we can remove it from the recent-file list
       if (unrecent) {
-        App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
+        if (context->isUIAvailable())
+          App::instance()->getRecentFiles()->removeRecentFile(m_filename.c_str());
       }
     }
     else {
