@@ -535,11 +535,11 @@
           <separator />
           <item command="Despeckle" text="&amp;Despeckle (median filter)" />
         </menu>
-        <menu text="Scripts">
+        <!--menu text="Scripts">
           <item command="RunScript" text="Transparency from White Background">
             <param name="filename" value="white_to_alpha.js" />
           </item>
-        </menu>
+        </menu-->
         <separator />
         <item command="KeyboardShortcuts" text="&amp;Keyboard Shortcuts..." />
         <item command="Options" text="Pre&amp;ferences..." />
