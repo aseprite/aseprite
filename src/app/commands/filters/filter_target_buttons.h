@@ -34,7 +34,7 @@ namespace app {
     Signal0<void> TargetChange;
 
   protected:
-    void onItemChange() override;
+    void onItemChange(Item* item) override;
     void onChannelChange(ui::ButtonBase* button);
     void onImagesChange(ui::ButtonBase* button);
 

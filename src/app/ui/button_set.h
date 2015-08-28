@@ -49,11 +49,11 @@ namespace app {
     void setTriggerOnMouseUp(bool state);
     void setMultipleSelection(bool state);
 
-    Signal0<void> ItemChange;
+    Signal1<void, Item*> ItemChange;
     Signal1<void, Item*> RightClick;
 
   protected:
-    virtual void onItemChange();
+    virtual void onItemChange(Item* item);
     virtual void onRightClick(Item* item);
 
   private:

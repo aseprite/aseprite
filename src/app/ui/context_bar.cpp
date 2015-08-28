@@ -95,8 +95,8 @@ public:
   }
 
 protected:
-  void onItemChange() override {
-    ButtonSet::onItemChange();
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
 
     if (!m_popupWindow.isVisible())
       openPopup();
@@ -348,8 +348,8 @@ public:
   }
 
 protected:
-  void onItemChange() override {
-    ButtonSet::onItemChange();
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
 
     gfx::Rect bounds = getBounds();
 
@@ -691,8 +691,6 @@ public:
     : ButtonSet(1) {
     addItem(SkinTheme::instance()->parts.pivotCenter());
 
-    ItemChange.connect(Bind<void>(&PivotField::onPopup, this));
-
     Preferences::instance().selection.pivotPosition.AfterChange.connect(
       Bind<void>(&PivotField::onPivotChange, this));
 
@@ -701,9 +699,10 @@ public:
 
 private:
 
-  void onPopup() {
-    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
 
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
     gfx::Rect bounds = getBounds();
 
     Menu menu;
@@ -737,7 +736,7 @@ private:
       });
 
     buttonset.ItemChange.connect(
-      [&buttonset](){
+      [&buttonset](ButtonSet::Item* item){
         Preferences::instance().selection.pivotPosition(
           app::gen::PivotPosition(buttonset.selectedItem()));
       });
@@ -1016,8 +1015,8 @@ public:
   }
 
 protected:
-  void onItemChange() override {
-    ButtonSet::onItemChange();
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
 
     Preferences::instance().selection.mode(
       (tools::SelectionMode)selectedItem());
@@ -1043,8 +1042,8 @@ public:
   Signal1<void, ContextBarObserver::DropAction> DropPixels;
 
 protected:
-  void onItemChange() override {
-    ButtonSet::onItemChange();
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
 
     switch (selectedItem()) {
       case 0: DropPixels(ContextBarObserver::DropPixels); break;

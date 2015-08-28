@@ -277,8 +277,8 @@ PaletteEntryEditor::PaletteEntryEditor()
   m_vbox.addChild(&m_bottomBox);
   addChild(&m_vbox);
 
-  m_colorType.ItemChange.connect(&PaletteEntryEditor::onColorTypeClick, this);
-  m_changeMode.ItemChange.connect(&PaletteEntryEditor::onChangeModeClick, this);
+  m_colorType.ItemChange.connect(Bind<void>(&PaletteEntryEditor::onColorTypeClick, this));
+  m_changeMode.ItemChange.connect(Bind<void>(&PaletteEntryEditor::onChangeModeClick, this));
 
   m_rgbSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&PaletteEntryEditor::onColorSlidersChange, this);

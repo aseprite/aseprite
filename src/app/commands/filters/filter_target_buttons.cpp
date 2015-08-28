@@ -132,10 +132,25 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
   }
 }
 
-void FilterTargetButtons::onItemChange()
+void FilterTargetButtons::onItemChange(Item* item)
 {
-  ButtonSet::onItemChange();
+  ButtonSet::onItemChange(item);
   Target flags = (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
+
+  if (m_index && item && item->isSelected()) {
+    if (item == m_index) {
+      m_red->setSelected(false);
+      m_green->setSelected(false);
+      m_blue->setSelected(false);
+      m_alpha->setSelected(false);
+    }
+    else if (item == m_red ||
+             item == m_green ||
+             item == m_blue ||
+             item == m_alpha) {
+      m_index->setSelected(false);
+    }
+  }
 
   if (m_red && m_red->isSelected()) flags |= TARGET_RED_CHANNEL;
   if (m_green && m_green->isSelected()) flags |= TARGET_GREEN_CHANNEL;

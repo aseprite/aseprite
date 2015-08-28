@@ -155,7 +155,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
         if (mnemonicPressed ||
             (hasFocus() && keymsg->scancode() == kKeySpace)) {
           buttonSet()->setSelectedItem(this);
-          buttonSet()->onItemChange();
+          buttonSet()->onItemChange(this);
         }
       }
       break;
@@ -167,7 +167,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
       if (static_cast<MouseMessage*>(msg)->left() &&
           !buttonSet()->m_triggerOnMouseUp) {
-        buttonSet()->onItemChange();
+        buttonSet()->onItemChange(this);
       }
       break;
 
@@ -178,7 +178,7 @@ bool ButtonSet::Item::onProcessMessage(ui::Message* msg)
 
         if (static_cast<MouseMessage*>(msg)->left()) {
           if (buttonSet()->m_triggerOnMouseUp)
-            buttonSet()->onItemChange();
+            buttonSet()->onItemChange(this);
         }
         else if (static_cast<MouseMessage*>(msg)->right()) {
           buttonSet()->onRightClick(this);
@@ -321,9 +321,9 @@ void ButtonSet::setMultipleSelection(bool state)
   m_multipleSelection = state;
 }
 
-void ButtonSet::onItemChange()
+void ButtonSet::onItemChange(Item* item)
 {
-  ItemChange();
+  ItemChange(item);
 }
 
 void ButtonSet::onRightClick(Item* item)

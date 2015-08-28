@@ -17,6 +17,7 @@
 #include "app/ui/button_set.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/skin/skin_theme.h"
+#include "base/bind.h"
 #include "base/convert_to.h"
 #include "doc/brush.h"
 #include "doc/conversion_she.h"
@@ -179,7 +180,7 @@ void BrushPopup::regenerate(const gfx::Rect& box, const Brushes& brushes)
   while (((slot-1) % columns) > 0)
     m_buttons->addItem(new Item(this, m_delegate, BrushRef(nullptr), slot++));
 
-  m_buttons->ItemChange.connect(&BrushPopup::onButtonChange, this);
+  m_buttons->ItemChange.connect(Bind<void>(&BrushPopup::onButtonChange, this));
   m_buttons->setTransparent(true);
   m_buttons->setBgColor(gfx::ColorNone);
   addChild(m_buttons.get());

@@ -89,7 +89,7 @@ ColorSelector::ColorSelector()
   m_vbox.addChild(&m_maskLabel);
   addChild(&m_vbox);
 
-  m_colorType.ItemChange.connect(&ColorSelector::onColorTypeClick, this);
+  m_colorType.ItemChange.connect(Bind<void>(&ColorSelector::onColorTypeClick, this));
 
   m_rgbSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
   m_hsvSliders.ColorChange.connect(&ColorSelector::onColorSlidersChange, this);
