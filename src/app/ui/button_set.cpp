@@ -78,7 +78,11 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     CENTER | (hasText() ? BOTTOM: MIDDLE),
     iconSize.w, iconSize.h);
 
-  if (m_icon) {
+  Grid::Info info = buttonSet()->getChildInfo(this);
+  bool isLastCol = (info.col+info.hspan >= info.grid_cols);
+  bool isLastRow = (info.row+info.vspan >= info.grid_rows);
+
+  if (m_icon || isLastRow) {
     textRc.y -= 1*guiscale();
     iconRc.y -= 1*guiscale();
   }
@@ -106,9 +110,10 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     bg = theme->colors.buttonNormalFace();
   }
 
-  Grid::Info info = buttonSet()->getChildInfo(this);
-  if (info.col+info.hspan < info.grid_cols) rc.w += 1*guiscale();
-  if (info.row+info.vspan < info.grid_rows) {
+  if (!isLastCol)
+    rc.w += 1*guiscale();
+
+  if (!isLastRow) {
     if (nw == theme->parts.toolbuttonHotFocused())
       rc.h += 2*guiscale();
     else
@@ -206,8 +211,8 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
   gfx::Size iconSize;
   if (m_icon) {
     iconSize = m_icon->getSize();
-    iconSize.w = MAX(iconSize.w+4*guiscale(), 16*guiscale());
-    iconSize.h = MAX(iconSize.h+4*guiscale(), 16*guiscale());
+    iconSize.w = MAX(iconSize.w, 16*guiscale());
+    iconSize.h = MAX(iconSize.h, 16*guiscale());
   }
 
   gfx::Rect boxRc;
