@@ -429,27 +429,30 @@ protected:
 };
 
 class ContextBar::InkShadesField : public Widget {
+  typedef std::vector<app::Color> Colors;
 public:
+
   InkShadesField() : Widget(kGenericWidget) {
     setText("Select colors in the palette");
   }
 
   doc::Remap* createShadesRemap(bool left) {
     base::UniquePtr<doc::Remap> remap;
+    Colors colors = getColors();
 
-    if (m_colors.size() > 0) {
+    if (colors.size() > 0) {
       remap.reset(new doc::Remap(get_current_palette()->size()));
 
       for (int i=0; i<remap->size(); ++i)
         remap->map(i, i);
 
       if (left) {
-        for (int i=1; i<int(m_colors.size()); ++i)
-          remap->map(m_colors[i].getIndex(), m_colors[i-1].getIndex());
+        for (int i=1; i<int(colors.size()); ++i)
+          remap->map(colors[i].getIndex(), colors[i-1].getIndex());
       }
       else {
-        for (int i=0; i<int(m_colors.size())-1; ++i)
-          remap->map(m_colors[i].getIndex(), m_colors[i+1].getIndex());
+        for (int i=0; i<int(colors.size())-1; ++i)
+          remap->map(colors[i].getIndex(), colors[i+1].getIndex());
       }
     }
 
@@ -457,6 +460,16 @@ public:
   }
 
 private:
+
+  Colors getColors() const {
+    Colors colors;
+    for (const auto& color : m_colors) {
+      if (color.getIndex() >= 0 &&
+          color.getIndex() < get_current_palette()->size())
+        colors.push_back(color);
+    }
+    return colors;
+  }
 
   void onChangeColorBarSelection() {
     if (!isVisible())
@@ -486,10 +499,12 @@ private:
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) override {
-    if (m_colors.size() < 2)
+    int size = getColors().size();
+
+    if (size < 2)
       ev.setPreferredSize(Size(16+getTextWidth(), 18)*guiscale());
     else
-      ev.setPreferredSize(Size(6+12*m_colors.size(), 18)*guiscale());
+      ev.setPreferredSize(Size(6+12*size, 18)*guiscale());
   }
 
   void onPaint(PaintEvent& ev) override {
@@ -506,13 +521,14 @@ private:
     bounds.shrink(3*guiscale());
 
     gfx::Rect box(bounds.x, bounds.y, 12*guiscale(), bounds.h);
+    Colors colors = getColors();
 
-    if (m_colors.size() >= 2) {
-      for (int i=0; i<int(m_colors.size()); ++i) {
-        if (i == int(m_colors.size())-1)
+    if (colors.size() >= 2) {
+      for (int i=0; i<int(colors.size()); ++i) {
+        if (i == int(colors.size())-1)
           box.w = bounds.x+bounds.w-box.x;
 
-        draw_color(g, box, m_colors[i]);
+        draw_color(g, box, colors[i]);
         box.x += box.w;
       }
     }
