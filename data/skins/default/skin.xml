@@ -274,13 +274,9 @@
     <part id="pal_options"                      x="168" y="200" w="5" h="5" />
     <part id="pal_resize"                       x="176" y="200" w="5" h="5" />
     <part id="target_one"                       x="144" y="224" w="32" h="16" />
-    <part id="target_one_selected"              x="144" y="240" w="32" h="16" />
     <part id="target_frames"                    x="176" y="224" w="32" h="16" />
-    <part id="target_frames_selected"           x="176" y="240" w="32" h="16" />
     <part id="target_layers"                    x="208" y="224" w="32" h="16" />
-    <part id="target_layers_selected"           x="208" y="240" w="32" h="16" />
     <part id="target_frames_layers"             x="240" y="224" w="32" h="16" />
-    <part id="target_frames_layers_selected"    x="240" y="240" w="32" h="16" />
     <part id="brush_circle"                     x="144" y="144" w="7" h="8" />
     <part id="brush_circle_selected"            x="144" y="152" w="7" h="8" />
     <part id="brush_square"                     x="160" y="144" w="7" h="8" />

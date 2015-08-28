@@ -78,8 +78,10 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
     CENTER | (hasText() ? BOTTOM: MIDDLE),
     iconSize.w, iconSize.h);
 
-  textRc.y -= 1*guiscale();
-  iconRc.y -= 1*guiscale();
+  if (m_icon) {
+    textRc.y -= 1*guiscale();
+    iconRc.y -= 1*guiscale();
+  }
 
   if (!gfx::is_transparent(getBgColor()))
     g->fillRect(getBgColor(), g->getClipBounds());
@@ -105,8 +107,8 @@ void ButtonSet::Item::onPaint(ui::PaintEvent& ev)
   }
 
   Grid::Info info = buttonSet()->getChildInfo(this);
-  if (info.col < info.grid_cols-1) rc.w += 1*guiscale();
-  if (info.row < info.grid_rows-1) {
+  if (info.col+info.hspan < info.grid_cols) rc.w += 1*guiscale();
+  if (info.row+info.vspan < info.grid_rows) {
     if (nw == theme->parts.toolbuttonHotFocused())
       rc.h += 2*guiscale();
     else
@@ -204,8 +206,8 @@ void ButtonSet::Item::onPreferredSize(ui::PreferredSizeEvent& ev)
   gfx::Size iconSize;
   if (m_icon) {
     iconSize = m_icon->getSize();
-    iconSize.w = MAX(iconSize.w, 16*guiscale());
-    iconSize.h = MAX(iconSize.h, 16*guiscale());
+    iconSize.w = MAX(iconSize.w+4*guiscale(), 16*guiscale());
+    iconSize.h = MAX(iconSize.h+4*guiscale(), 16*guiscale());
   }
 
   gfx::Rect boxRc;
@@ -229,27 +231,31 @@ ButtonSet::ButtonSet(int columns)
   : Grid(columns, false)
   , m_offerCapture(true)
   , m_triggerOnMouseUp(false)
+  , m_multipleSelection(false)
 {
   noBorderNoChildSpacing();
 }
 
-void ButtonSet::addItem(const std::string& text, int hspan, int vspan)
+ButtonSet::Item* ButtonSet::addItem(const std::string& text, int hspan, int vspan)
 {
   Item* item = new Item();
   item->setText(text);
   addItem(item, hspan, vspan);
+  return item;
 }
 
-void ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan)
+ButtonSet::Item* ButtonSet::addItem(const skin::SkinPartPtr& icon, int hspan, int vspan)
 {
   Item* item = new Item();
   item->setIcon(icon);
   addItem(item, hspan, vspan);
+  return item;
 }
 
-void ButtonSet::addItem(Item* item, int hspan, int vspan)
+ButtonSet::Item* ButtonSet::addItem(Item* item, int hspan, int vspan)
 {
   addChildInCell(item, hspan, vspan, HORIZONTAL | VERTICAL);
+  return item;
 }
 
 ButtonSet::Item* ButtonSet::getItem(int index)
@@ -278,15 +284,17 @@ void ButtonSet::setSelectedItem(int index)
 
 void ButtonSet::setSelectedItem(Item* item)
 {
-  if (item && item->isSelected())
-    return;
+  if (!m_multipleSelection) {
+    if (item && item->isSelected())
+      return;
 
-  Item* sel = findSelectedItem();
-  if (sel)
-    sel->setSelected(false);
+    Item* sel = findSelectedItem();
+    if (sel)
+      sel->setSelected(false);
+  }
 
   if (item) {
-    item->setSelected(true);
+    item->setSelected(!item->isSelected());
     item->requestFocus();
   }
 }
@@ -306,6 +314,11 @@ void ButtonSet::setOfferCapture(bool state)
 void ButtonSet::setTriggerOnMouseUp(bool state)
 {
   m_triggerOnMouseUp = state;
+}
+
+void ButtonSet::setMultipleSelection(bool state)
+{
+  m_multipleSelection = state;
 }
 
 void ButtonSet::onItemChange()

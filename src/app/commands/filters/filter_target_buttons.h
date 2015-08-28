@@ -9,10 +9,10 @@
 #define APP_COMMANDS_FILTERS_FILTER_TARGET_BUTTONS_H_INCLUDED
 #pragma once
 
+#include "app/ui/button_set.h"
 #include "app/ui/skin/skin_part.h"
 #include "base/signal.h"
 #include "filters/target.h"
-#include "ui/box.h"
 
 namespace ui {
   class ButtonBase;
@@ -21,7 +21,7 @@ namespace ui {
 namespace app {
   using namespace filters;
 
-  class FilterTargetButtons : public ui::Box {
+  class FilterTargetButtons : public ButtonSet {
   public:
     // Creates a new button to handle "targets" to apply some filter in
     // the a sprite.
@@ -33,15 +33,22 @@ namespace app {
     Signal0<void> TargetChange;
 
   protected:
+    void onItemChange() override;
     void onChannelChange(ui::ButtonBase* button);
     void onImagesChange(ui::ButtonBase* button);
 
   private:
-    void selectTargetButton(const char* name, Target specificTarget);
-    skin::SkinPartPtr getTargetNormalIcon() const;
-    skin::SkinPartPtr getTargetSelectedIcon() const;
+    void selectTargetButton(Item* item, Target specificTarget);
+    skin::SkinPartPtr getCelsIcon() const;
 
     Target m_target;
+    Item* m_red;
+    Item* m_green;
+    Item* m_blue;
+    Item* m_alpha;
+    Item* m_gray;
+    Item* m_index;
+    Item* m_cels;
   };
 
 } // namespace app

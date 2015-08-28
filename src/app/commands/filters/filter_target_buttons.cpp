@@ -31,158 +31,104 @@ using namespace filters;
 using namespace ui;
 
 FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
-  : Box(VERTICAL)
+  : ButtonSet(4)
   , m_target(0)
+  , m_red(nullptr)
+  , m_green(nullptr)
+  , m_blue(nullptr)
+  , m_alpha(nullptr)
+  , m_gray(nullptr)
+  , m_index(nullptr)
+  , m_cels(nullptr)
 {
-#define ADD(box, widget, hook)                                          \
-  if (widget) {                                                         \
-    widget->setBorder(gfx::Border(2 * guiscale()));                    \
-    box->addChild(widget);                                              \
-    widget->Click.connect(Bind<void>(&FilterTargetButtons::hook, this, widget)); \
-  }
-
-  Box* hbox;
-  CheckBox* r = NULL;
-  CheckBox* g = NULL;
-  CheckBox* b = NULL;
-  CheckBox* k = NULL;
-  CheckBox* a = NULL;
-  CheckBox* index = NULL;
-  Button* images = NULL;
-
-  hbox = new Box(HORIZONTAL | HOMOGENEOUS);
-
-  this->noBorderNoChildSpacing();
-  hbox->noBorderNoChildSpacing();
+  setMultipleSelection(true);
 
   if (withChannels) {
     switch (imgtype) {
 
       case IMAGE_RGB:
       case IMAGE_INDEXED:
-        r = check_button_new("R", 2, 0, 0, 0);
-        g = check_button_new("G", 0, 0, 0, 0);
-        b = check_button_new("B", 0, 0, 0, 0);
-        a = check_button_new("A", 0, 2, 0, 0);
-
-        r->setId("r");
-        g->setId("g");
-        b->setId("b");
-        a->setId("a");
+        m_red   = addItem("R");
+        m_green = addItem("G");
+        m_blue  = addItem("B");
+        m_alpha = addItem("A");
 
         if (imgtype == IMAGE_INDEXED) {
-          index = check_button_new("Index", 0, 0, 0, 0);
-          index->setId("i");
+          m_index = addItem("Index", 4, 1);
         }
         break;
 
       case IMAGE_GRAYSCALE:
-        k = check_button_new("K", 2, 0, 0, 0);
-        a = check_button_new("A", 0, 2, 0, 0);
-
-        k->setId("k");
-        a->setId("a");
+        m_gray = addItem("K", 2, 1);
+        m_alpha = addItem("A", 2, 1);
         break;
     }
   }
 
-  // Create the button to select "image" target
-  images = new Button("");
-  setup_bevels(images,
-               withChannels ? 0: 2,
-               withChannels ? 0: 2, 2, 2);
-  setup_mini_look(images);
-
-  images->setIconInterface(
-    new ButtonIconImpl(getTargetNormalIcon(),
-                       getTargetSelectedIcon(),
-                       SkinPartPtr(nullptr),
-                       CENTER | MIDDLE));
-
-  // Make hierarchy
-  ADD(hbox, r, onChannelChange);
-  ADD(hbox, g, onChannelChange);
-  ADD(hbox, b, onChannelChange);
-  ADD(hbox, k, onChannelChange);
-  ADD(hbox, a, onChannelChange);
-
-  if (withChannels)
-    addChild(hbox);
-  else
-    delete hbox;
-
-  ADD(this, index, onChannelChange);
-  ADD(this, images, onImagesChange);
+  // Create the button to select which cels will be modified by the
+  // filter.
+  m_cels = addItem(getCelsIcon(), 4, 1);
 }
 
 void FilterTargetButtons::setTarget(int target)
 {
   m_target = target;
 
-  selectTargetButton("r", TARGET_RED_CHANNEL);
-  selectTargetButton("g", TARGET_GREEN_CHANNEL);
-  selectTargetButton("b", TARGET_BLUE_CHANNEL);
-  selectTargetButton("a", TARGET_ALPHA_CHANNEL);
-  selectTargetButton("k", TARGET_GRAY_CHANNEL);
-  selectTargetButton("i", TARGET_INDEX_CHANNEL);
+  selectTargetButton(m_red,   TARGET_RED_CHANNEL);
+  selectTargetButton(m_green, TARGET_GREEN_CHANNEL);
+  selectTargetButton(m_blue,  TARGET_BLUE_CHANNEL);
+  selectTargetButton(m_alpha, TARGET_ALPHA_CHANNEL);
+  selectTargetButton(m_gray,  TARGET_GRAY_CHANNEL);
+  selectTargetButton(m_index, TARGET_INDEX_CHANNEL);
+
+  m_cels->setIcon(getCelsIcon());
 }
 
-void FilterTargetButtons::selectTargetButton(const char* name, int specificTarget)
+void FilterTargetButtons::selectTargetButton(Item* item, Target specificTarget)
 {
-  Widget* wgt = findChild(name);
-  if (wgt != NULL) {
-    wgt->setSelected((m_target & specificTarget) == specificTarget);
-  }
+  if (item)
+    item->setSelected((m_target & specificTarget) == specificTarget);
 }
 
-void FilterTargetButtons::onChannelChange(ButtonBase* button)
+void FilterTargetButtons::onItemChange()
 {
-  int flag = 0;
+  ButtonSet::onItemChange();
+  Target flags = 0;
 
-  switch (button->getId()[0]) {
-    case 'r': flag = TARGET_RED_CHANNEL; break;
-    case 'g': flag = TARGET_GREEN_CHANNEL; break;
-    case 'b': flag = TARGET_BLUE_CHANNEL; break;
-    case 'k': flag = TARGET_GRAY_CHANNEL; break;
-    case 'a': flag = TARGET_ALPHA_CHANNEL; break;
-    case 'i': flag = TARGET_INDEX_CHANNEL; break;
-    default:
-      return;
+  if (m_red && m_red->isSelected()) flags |= TARGET_RED_CHANNEL;
+  if (m_green && m_green->isSelected()) flags |= TARGET_GREEN_CHANNEL;
+  if (m_blue && m_blue->isSelected()) flags |= TARGET_BLUE_CHANNEL;
+  if (m_gray && m_gray->isSelected()) flags |= TARGET_GRAY_CHANNEL;
+  if (m_index && m_index->isSelected()) flags |= TARGET_INDEX_CHANNEL;
+  if (m_alpha && m_alpha->isSelected()) flags |= TARGET_ALPHA_CHANNEL;
+
+  if (m_cels->isSelected()) {
+    m_cels->setSelected(false);
+
+    // Rotate cels target
+    flags |= (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
+    if (flags & TARGET_ALL_FRAMES) {
+      flags &= ~TARGET_ALL_FRAMES;
+
+      if (flags & TARGET_ALL_LAYERS)
+        flags &= ~TARGET_ALL_LAYERS;
+      else
+        flags |= TARGET_ALL_LAYERS;
+    }
+    else {
+      flags |= TARGET_ALL_FRAMES;
+    }
   }
 
-  if (button->isSelected())
-    m_target |= flag;
-  else
-    m_target &= ~flag;
+  if (m_target != flags) {
+    m_target = flags;
+    m_cels->setIcon(getCelsIcon());
 
-  TargetChange();
+    TargetChange();
+  }
 }
 
-void FilterTargetButtons::onImagesChange(ButtonBase* button)
-{
-  // Rotate target
-  if (m_target & TARGET_ALL_FRAMES) {
-    m_target &= ~TARGET_ALL_FRAMES;
-
-    if (m_target & TARGET_ALL_LAYERS)
-      m_target &= ~TARGET_ALL_LAYERS;
-    else
-      m_target |= TARGET_ALL_LAYERS;
-  }
-  else {
-    m_target |= TARGET_ALL_FRAMES;
-  }
-
-  button->setIconInterface(
-    new ButtonIconImpl(getTargetNormalIcon(),
-                       getTargetSelectedIcon(),
-                       SkinPartPtr(nullptr),
-                       CENTER | MIDDLE));
-
-  TargetChange();
-}
-
-SkinPartPtr FilterTargetButtons::getTargetNormalIcon() const
+SkinPartPtr FilterTargetButtons::getCelsIcon() const
 {
   SkinTheme* theme = SkinTheme::instance();
 
@@ -195,22 +141,6 @@ SkinPartPtr FilterTargetButtons::getTargetNormalIcon() const
     return (m_target & TARGET_ALL_LAYERS) ?
       theme->parts.targetLayers():
       theme->parts.targetOne();
-  }
-}
-
-SkinPartPtr FilterTargetButtons::getTargetSelectedIcon() const
-{
-  SkinTheme* theme = SkinTheme::instance();
-
-  if (m_target & TARGET_ALL_FRAMES) {
-    return (m_target & TARGET_ALL_LAYERS) ?
-      theme->parts.targetFramesLayersSelected():
-      theme->parts.targetFramesSelected();
-  }
-  else {
-    return (m_target & TARGET_ALL_LAYERS) ?
-      theme->parts.targetLayersSelected():
-      theme->parts.targetOneSelected();
   }
 }
 

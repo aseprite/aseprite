@@ -35,9 +35,9 @@ namespace app {
 
     ButtonSet(int columns);
 
-    void addItem(const std::string& text, int hspan = 1, int vspan = 1);
-    void addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1);
-    void addItem(Item* item, int hspan = 1, int vspan = 1);
+    Item* addItem(const std::string& text, int hspan = 1, int vspan = 1);
+    Item* addItem(const skin::SkinPartPtr& icon, int hspan = 1, int vspan = 1);
+    Item* addItem(Item* item, int hspan = 1, int vspan = 1);
     Item* getItem(int index);
 
     int selectedItem() const;
@@ -47,6 +47,7 @@ namespace app {
 
     void setOfferCapture(bool state);
     void setTriggerOnMouseUp(bool state);
+    void setMultipleSelection(bool state);
 
     Signal0<void> ItemChange;
     Signal1<void, Item*> RightClick;
@@ -60,6 +61,7 @@ namespace app {
 
     bool m_offerCapture;
     bool m_triggerOnMouseUp;
+    bool m_multipleSelection;
   };
 
 } // namespace app
