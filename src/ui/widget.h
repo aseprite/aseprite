@@ -49,7 +49,7 @@ namespace ui {
     // CTOR & DTOR
     // ===============================================================
 
-    Widget(WidgetType type);
+    Widget(WidgetType type = kGenericWidget);
     virtual ~Widget();
 
     // Safe way to delete a widget when it is not in the manager message
