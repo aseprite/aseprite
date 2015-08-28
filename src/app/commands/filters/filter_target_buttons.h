@@ -13,6 +13,7 @@
 #include "app/ui/skin/skin_part.h"
 #include "base/signal.h"
 #include "filters/target.h"
+#include "ui/tooltips.h"
 
 namespace ui {
   class ButtonBase;
@@ -39,6 +40,8 @@ namespace app {
 
   private:
     void selectTargetButton(Item* item, Target specificTarget);
+    void updateFromTarget();
+    void updateComponentTooltip(Item* item, const char* channelName, int align);
     skin::SkinPartPtr getCelsIcon() const;
 
     Target m_target;
@@ -49,6 +52,7 @@ namespace app {
     Item* m_gray;
     Item* m_index;
     Item* m_cels;
+    ui::TooltipManager m_tooltips;
   };
 
 } // namespace app

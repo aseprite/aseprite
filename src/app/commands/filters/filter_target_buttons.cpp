@@ -42,6 +42,7 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
   , m_cels(nullptr)
 {
   setMultipleSelection(true);
+  addChild(&m_tooltips);
 
   if (withChannels) {
     switch (imgtype) {
@@ -53,9 +54,8 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
         m_blue  = addItem("B");
         m_alpha = addItem("A");
 
-        if (imgtype == IMAGE_INDEXED) {
+        if (imgtype == IMAGE_INDEXED)
           m_index = addItem("Index", 4, 1);
-        }
         break;
 
       case IMAGE_GRAYSCALE:
@@ -81,13 +81,54 @@ void FilterTargetButtons::setTarget(int target)
   selectTargetButton(m_gray,  TARGET_GRAY_CHANNEL);
   selectTargetButton(m_index, TARGET_INDEX_CHANNEL);
 
-  m_cels->setIcon(getCelsIcon());
+  updateFromTarget();
 }
 
 void FilterTargetButtons::selectTargetButton(Item* item, Target specificTarget)
 {
   if (item)
     item->setSelected((m_target & specificTarget) == specificTarget);
+}
+
+void FilterTargetButtons::updateFromTarget()
+{
+  m_cels->setIcon(getCelsIcon());
+
+  updateComponentTooltip(m_red, "Red", BOTTOM);
+  updateComponentTooltip(m_green, "Green", BOTTOM);
+  updateComponentTooltip(m_blue, "Blue", BOTTOM);
+  updateComponentTooltip(m_gray, "Gray", BOTTOM);
+  updateComponentTooltip(m_alpha, "Alpha", BOTTOM);
+  updateComponentTooltip(m_index, "Index", LEFT);
+
+  const char* celsTooltip = "";
+  switch (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS)) {
+    case 0:
+      celsTooltip = "Apply to the active frame/layer (the active cel)";
+      break;
+    case TARGET_ALL_FRAMES:
+      celsTooltip = "Apply to all frames in the active layer";
+      break;
+    case TARGET_ALL_LAYERS:
+      celsTooltip = "Apply to all layers in the active frame";
+      break;
+    case TARGET_ALL_FRAMES | TARGET_ALL_LAYERS:
+      celsTooltip = "Apply to all cels in the sprite";
+      break;
+  }
+
+  m_tooltips.addTooltipFor(m_cels, celsTooltip, LEFT);
+}
+
+void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channelName, int align)
+{
+  if (item) {
+    char buf[256];
+    std::sprintf(buf, "%s %s Component",
+                 (item->isSelected() ? "Modify": "Ignore"),
+                 channelName);
+    m_tooltips.addTooltipFor(item, buf, align);
+  }
 }
 
 void FilterTargetButtons::onItemChange()
@@ -122,8 +163,7 @@ void FilterTargetButtons::onItemChange()
 
   if (m_target != flags) {
     m_target = flags;
-    m_cels->setIcon(getCelsIcon());
-
+    updateFromTarget();
     TargetChange();
   }
 }
