@@ -33,7 +33,7 @@ LoggerModule::LoggerModule(bool verbose)
 
 LoggerModule::~LoggerModule()
 {
-  PRINTF("Logger module: shutting down (this is the last line)\n");
+  LOG("Logger module: shutting down (this is the last line)\n");
 
   if (log_fileptr) {
     fclose(log_fileptr);
@@ -45,7 +45,7 @@ LoggerModule::~LoggerModule()
 
 } // namespace app
 
-void verbose_printf(const char* format, ...)
+void verbose_log(const char* format, ...)
 {
   if (app::logger_instance && !app::logger_instance->isVerbose())
     return;

@@ -42,7 +42,7 @@ LegacyModules::LegacyModules(int requirements)
 {
   for (int c=0; c<modules; c++)
     if ((module[c].reqs & requirements) == module[c].reqs) {
-      PRINTF("Installing module: %s\n", module[c].name);
+      LOG("Installing module: %s\n", module[c].name);
 
       if ((*module[c].init)() < 0)
         throw base::Exception("Error initializing module: %s",
@@ -56,7 +56,7 @@ LegacyModules::~LegacyModules()
 {
   for (int c=modules-1; c>=0; c--)
     if (module[c].installed) {
-      PRINTF("Unstalling module: %s\n", module[c].name);
+      LOG("Unstalling module: %s\n", module[c].name);
       (*module[c].exit)();
       module[c].installed = false;
     }

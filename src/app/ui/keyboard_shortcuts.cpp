@@ -335,7 +335,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
           xmlParam = xmlParam->NextSiblingElement();
         }
 
-        PRINTF(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
+        LOG(" - Shortcut for command `%s' <%s>\n", command_name, command_key);
 
         // add the keyboard shortcut to the command
         Key* key = this->command(command_name, params, keycontext);
@@ -375,7 +375,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-        PRINTF(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
+        LOG(" - Shortcut for tool `%s': <%s>\n", tool_id, tool_key);
 
         Key* key = this->tool(tool);
         if (key) {
@@ -404,7 +404,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     if (tool_id && tool_key) {
       tools::Tool* tool = App::instance()->getToolBox()->getToolById(tool_id);
       if (tool) {
-        PRINTF(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
+        LOG(" - Shortcut for quicktool `%s': <%s>\n", tool_id, tool_key);
 
         Key* key = this->quicktool(tool);
         if (key) {
@@ -431,7 +431,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
     bool removed = bool_attr_is_true(xmlKey, "removed");
 
     if (tool_action && tool_key) {
-      PRINTF(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
+      LOG(" - Shortcut for sprite editor `%s': <%s>\n", tool_action, tool_key);
 
       KeyAction action = base::convert_to<KeyAction, std::string>(tool_action);
 

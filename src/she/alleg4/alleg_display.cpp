@@ -121,7 +121,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
           ReleaseCapture();
       }
 
-      //PRINTF("GetCapture=%p hwnd=%p\n", GetCapture(), hwnd);
+      //LOG("GetCapture=%p hwnd=%p\n", GetCapture(), hwnd);
 
       Event ev;
       ev.setPosition(gfx::Point(
@@ -227,7 +227,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         (msg == WM_MOUSEWHEEL ? -z: 0));
       ev.setWheelDelta(delta);
 
-      //PRINTF("WHEEL: %d %d\n", delta.x, delta.y);
+      //LOG("WHEEL: %d %d\n", delta.x, delta.y);
 
       queue_event(ev);
       break;
@@ -273,7 +273,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         (msg == WM_VSCROLL ? (z-50): 0));
       ev.setWheelDelta(delta);
 
-      //PRINTF("SCROLL: %d %d\n", delta.x, delta.y);
+      //LOG("SCROLL: %d %d\n", delta.x, delta.y);
 
       SetScrollPos(hwnd, bar, 50, FALSE);
 
@@ -307,7 +307,7 @@ static LRESULT CALLBACK wndproc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
       ::MapWindowPoints(hwnd, NULL, (POINT*)&rc, 2);
       gfx::Rect area(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
 
-      //PRINTF("NCHITTEST: %d %d - %d %d %d %d - %s\n", pt.x, pt.y, area.x, area.y, area.w, area.h, area.contains(pt) ? "true": "false");
+      //LOG("NCHITTEST: %d %d - %d %d %d %d - %s\n", pt.x, pt.y, area.x, area.y, area.w, area.h, area.contains(pt) ? "true": "false");
 
       // We ignore scrollbars so if the mouse is above them, we return
       // as it's in the window client or resize area. (Remember that

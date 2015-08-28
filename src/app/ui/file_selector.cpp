@@ -366,7 +366,7 @@ std::string FileSelector::show(
   if (!start_folder)
     start_folder = fs->getFileItemFromPath(start_folder_path);
 
-  PRINTF("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
+  LOG("start_folder_path = %s (%p)\n", start_folder_path.c_str(), start_folder);
 
   setMinSize(gfx::Size(ui::display_w()*9/10, ui::display_h()*9/10));
   remapWindow();

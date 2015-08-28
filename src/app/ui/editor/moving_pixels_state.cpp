@@ -145,7 +145,7 @@ void MovingPixelsState::onEnterState(Editor* editor)
 
 EditorState::LeaveAction MovingPixelsState::onLeaveState(Editor* editor, EditorState* newState)
 {
-  PRINTF("MovingPixels: leave state\n");
+  LOG("MovingPixels: leave state\n");
 
   ASSERT(m_pixelsMovement);
   ASSERT(editor == m_editor);
@@ -432,7 +432,7 @@ void MovingPixelsState::onBeforeCommandExecution(CommandExecutionEvent& ev)
 {
   Command* command = ev.command();
 
-  PRINTF("MovingPixelsState::onBeforeCommandExecution %s\n", command->id().c_str());
+  LOG("MovingPixelsState::onBeforeCommandExecution %s\n", command->id().c_str());
 
   // If the command is for other editor, we don't drop pixels.
   if (!isActiveEditor())
@@ -581,7 +581,7 @@ void MovingPixelsState::setTransparentColor(bool opaque, const app::Color& color
 
 void MovingPixelsState::dropPixels()
 {
-  PRINTF("MovingPixels: drop pixels\n");
+  LOG("MovingPixels: drop pixels\n");
 
   // Just change to default state (StandbyState generally). We'll
   // receive an onLeaveState() event after this call.

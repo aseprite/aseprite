@@ -197,7 +197,7 @@ void ResourcesListBox::onTick()
     if (m_resourcesLoader->isDone()) {
       stop();
 
-      PRINTF("Done\n");
+      LOG("Done\n");
     }
     return;
   }

@@ -237,7 +237,7 @@ void SkinTheme::onRegenerate()
       std::string id = xmlDim->Attribute("id");
       uint32_t value = strtol(xmlDim->Attribute("value"), NULL, 10);
 
-      PRINTF("Loading dimension '%s'...\n", id.c_str());
+      LOG("Loading dimension '%s'...\n", id.c_str());
 
       m_dimensions_by_id[id] = value;
       xmlDim = xmlDim->NextSiblingElement();
@@ -258,7 +258,7 @@ void SkinTheme::onRegenerate()
         (value & 0xff00) >> 8,
         (value & 0xff));
 
-      PRINTF("Loading color '%s'...\n", id.c_str());
+      LOG("Loading color '%s'...\n", id.c_str());
 
       m_colors_by_id[id] = color;
       xmlColor = xmlColor->NextSiblingElement();
@@ -281,7 +281,7 @@ void SkinTheme::onRegenerate()
       int focusy = strtol(xmlCursor->Attribute("focusy"), NULL, 10);
       int c;
 
-      PRINTF("Loading cursor '%s'...\n", id.c_str());
+      LOG("Loading cursor '%s'...\n", id.c_str());
 
       for (c=0; c<kCursorTypes; ++c) {
         if (id != cursor_names[c])
@@ -320,7 +320,7 @@ void SkinTheme::onRegenerate()
       int w = strtol(xmlIcon->Attribute("w"), NULL, 10);
       int h = strtol(xmlIcon->Attribute("h"), NULL, 10);
 
-      PRINTF("Loading tool icon '%s'...\n", tool_id);
+      LOG("Loading tool icon '%s'...\n", tool_id);
 
       // Crop the tool-icon from the sheet
       m_toolicon[tool_id] = sliceSheet(
@@ -344,7 +344,7 @@ void SkinTheme::onRegenerate()
       int w = xmlPart->Attribute("w") ? strtol(xmlPart->Attribute("w"), NULL, 10): 0;
       int h = xmlPart->Attribute("h") ? strtol(xmlPart->Attribute("h"), NULL, 10): 0;
 
-      PRINTF("Loading part '%s'...\n", part_id);
+      LOG("Loading part '%s'...\n", part_id);
 
       SkinPartPtr part = m_parts_by_id[part_id];
       if (!part)
@@ -397,7 +397,7 @@ void SkinTheme::onRegenerate()
       while (xmlRule) {
         const std::string ruleName = xmlRule->Value();
 
-        PRINTF("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
+        LOG("- Rule '%s' for '%s'\n", ruleName.c_str(), style_id);
 
         // TODO This code design to read styles could be improved.
 

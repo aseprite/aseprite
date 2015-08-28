@@ -160,7 +160,7 @@ public:
   }
 
   Display* createDisplay(int width, int height, int scale) override {
-    //PRINTF("Creating display %dx%d (scale = %d)\n", width, height, scale);
+    //LOG("Creating display %dx%d (scale = %d)\n", width, height, scale);
     return new Alleg4Display(width, height, scale);
   }
 

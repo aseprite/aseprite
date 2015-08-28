@@ -90,7 +90,7 @@ static void output_message(j_common_ptr cinfo)
   (*cinfo->err->format_message)(cinfo, buffer);
 
   // Put in the log file if.
-  PRINTF("JPEG library: \"%s\"\n", buffer);
+  LOG("JPEG library: \"%s\"\n", buffer);
 
   // Leave the message for the application.
   fop_error(((struct error_mgr *)cinfo->err)->fop, "%s\n", buffer);

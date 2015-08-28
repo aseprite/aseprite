@@ -139,7 +139,7 @@ FileOp* fop_to_load_document(Context* context, const char* filename, int flags)
   // Get the extension of the filename (in lower case)
   std::string extension = base::string_to_lower(base::get_file_extension(filename));
 
-  PRINTF("Loading file \"%s\" (%s)\n", filename, extension.c_str());
+  LOG("Loading file \"%s\" (%s)\n", filename, extension.c_str());
 
   // Does file exist?
   if (!base::is_file(filename)) {
@@ -240,7 +240,7 @@ FileOp* fop_to_save_document(const Context* context, const Document* document,
   // Get the extension of the filename (in lower case)
   std::string extension = base::string_to_lower(base::get_file_extension(filename));
 
-  PRINTF("Saving document \"%s\" (%s)\n", filename, extension.c_str());
+  LOG("Saving document \"%s\" (%s)\n", filename, extension.c_str());
 
   // Get the format through the extension of the filename
   fop->format = FileFormatsManager::instance()

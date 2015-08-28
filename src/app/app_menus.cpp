@@ -71,7 +71,7 @@ void AppMenus::reload()
   ////////////////////////////////////////
   // Load menus
 
-  PRINTF(" - Loading menus from \"%s\"...\n", path);
+  LOG(" - Loading menus from \"%s\"...\n", path);
 
   m_rootMenu.reset(loadMenuById(handle, "main_menu"));
 
@@ -79,7 +79,7 @@ void AppMenus::reload()
   if (GuiXml::instance()->version() != VERSION)
     m_rootMenu->insertChild(0, createInvalidVersionMenuitem());
 
-  PRINTF("Main menu loaded.\n");
+  LOG("Main menu loaded.\n");
 
   m_tabPopupMenu.reset(loadMenuById(handle, "tab_popup"));
   m_documentTabPopupMenu.reset(loadMenuById(handle, "document_tab_popup"));
@@ -93,7 +93,7 @@ void AppMenus::reload()
   ////////////////////////////////////////
   // Load keyboard shortcuts for commands
 
-  PRINTF(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
+  LOG(" - Loading commands keyboard shortcuts from \"%s\"...\n", path);
 
   TiXmlElement* xmlKey = handle
     .FirstChild("gui")
@@ -165,7 +165,7 @@ Menu* AppMenus::loadMenuById(TiXmlHandle& handle, const char* id)
 {
   ASSERT(id != NULL);
 
-  //PRINTF("loadMenuById(%s)\n", id);
+  //LOG("loadMenuById(%s)\n", id);
 
   // <gui><menus><menu>
   TiXmlElement* xmlMenu = handle
@@ -188,7 +188,7 @@ Menu* AppMenus::convertXmlelemToMenu(TiXmlElement* elem)
 {
   Menu* menu = new Menu();
 
-  //PRINTF("convertXmlelemToMenu(%s, %s, %s)\n", elem->Value(), elem->Attribute("id"), elem->Attribute("text"));
+  //LOG("convertXmlelemToMenu(%s, %s, %s)\n", elem->Value(), elem->Attribute("id"), elem->Attribute("text"));
 
   TiXmlElement* child = elem->FirstChildElement();
   while (child) {

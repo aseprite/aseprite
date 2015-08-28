@@ -67,7 +67,7 @@ public:
     if (file) {
       SI_Error err = m_ini.LoadFile(file.get());
       if (err != SI_OK)
-        PRINTF("Error '%d' loading configuration from '%s'.", err, m_filename.c_str());
+        LOG("Error '%d' loading configuration from '%s'.", err, m_filename.c_str());
     }
   }
 
@@ -76,7 +76,7 @@ public:
     if (file) {
       SI_Error err = m_ini.SaveFile(file.get());
       if (err != SI_OK)
-        PRINTF("Error '%d' saving configuration into '%s'.", err, m_filename.c_str());
+        LOG("Error '%d' saving configuration into '%s'.", err, m_filename.c_str());
     }
   }
 

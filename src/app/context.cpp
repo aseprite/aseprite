@@ -53,7 +53,7 @@ void Context::executeCommand(Command* command, const Params& params)
 
   ASSERT(command != NULL);
 
-  PRINTF("Context: Executing command '%s'...\n", command->id().c_str());
+  LOG("Context: Executing command '%s'...\n", command->id().c_str());
   try {
     m_flags.update(this);
 
@@ -63,14 +63,14 @@ void Context::executeCommand(Command* command, const Params& params)
     BeforeCommandExecution(ev);
 
     if (ev.isCanceled()) {
-      PRINTF("Context: '%s' was canceled/simulated.\n", command->id().c_str());
+      LOG("Context: '%s' was canceled/simulated.\n", command->id().c_str());
     }
     else if (command->isEnabled(this)) {
       command->execute(this);
-      PRINTF("Context: '%s' executed successfully\n", command->id().c_str());
+      LOG("Context: '%s' executed successfully\n", command->id().c_str());
     }
     else {
-      PRINTF("Context: '%s' is disabled\n", command->id().c_str());
+      LOG("Context: '%s' is disabled\n", command->id().c_str());
     }
 
     AfterCommandExecution(ev);
@@ -80,21 +80,21 @@ void Context::executeCommand(Command* command, const Params& params)
       app_rebuild_documents_tabs();
   }
   catch (base::Exception& e) {
-    PRINTF("Context: Exception caught executing '%s' command\n%s\n",
-           command->id().c_str(), e.what());
+    LOG("Context: Exception caught executing '%s' command\n%s\n",
+        command->id().c_str(), e.what());
 
     Console::showException(e);
   }
   catch (std::exception& e) {
-    PRINTF("Context: std::exception caught executing '%s' command\n%s\n",
-           command->id().c_str(), e.what());
+    LOG("Context: std::exception caught executing '%s' command\n%s\n",
+        command->id().c_str(), e.what());
 
     console.printf("An error ocurred executing the command.\n\nDetails:\n%s", e.what());
   }
 #ifndef DEBUGMODE
   catch (...) {
-    PRINTF("Context: Unknown exception executing '%s' command\n",
-           command->id().c_str());
+    LOG("Context: Unknown exception executing '%s' command\n",
+        command->id().c_str());
 
     console.printf("An unknown error ocurred executing the command.\n"
                    "Please save your work, close the program, try it\n"

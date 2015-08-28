@@ -81,7 +81,7 @@ const char* WellKnownPointShapes::Spray = "spray";
 
 ToolBox::ToolBox()
 {
-  PRINTF("Toolbox module: installing\n");
+  LOG("Toolbox module: installing\n");
 
   m_inks[WellKnownInks::Selection]       = new SelectionInk();
   m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Merge);
@@ -123,7 +123,7 @@ ToolBox::ToolBox()
 
   loadTools();
 
-  PRINTF("Toolbox module: installed\n");
+  LOG("Toolbox module: installed\n");
 }
 
 struct deleter {
@@ -136,7 +136,7 @@ struct deleter {
 
 ToolBox::~ToolBox()
 {
-  PRINTF("Toolbox module: uninstalling\n");
+  LOG("Toolbox module: uninstalling\n");
 
   std::for_each(m_tools.begin(), m_tools.end(), deleter());
   std::for_each(m_groups.begin(), m_groups.end(), deleter());
@@ -145,7 +145,7 @@ ToolBox::~ToolBox()
   std::for_each(m_controllers.begin(), m_controllers.end(), deleter());
   std::for_each(m_inks.begin(), m_inks.end(), deleter());
 
-  PRINTF("Toolbox module: uninstalled\n");
+  LOG("Toolbox module: uninstalled\n");
 }
 
 Tool* ToolBox::getToolById(const std::string& id)
@@ -155,7 +155,7 @@ Tool* ToolBox::getToolById(const std::string& id)
     if (tool->getId() == id)
       return tool;
   }
-  // PRINTF("Error get_tool_by_name() with '%s'\n", name.c_str());
+  // LOG("Error get_tool_by_name() with '%s'\n", name.c_str());
   // ASSERT(false);
   return NULL;
 }
@@ -177,7 +177,7 @@ PointShape* ToolBox::getPointShapeById(const std::string& id)
 
 void ToolBox::loadTools()
 {
-  PRINTF("Loading Aseprite tools\n");
+  LOG("Loading Aseprite tools\n");
 
   XmlDocumentRef doc(GuiXml::instance()->doc());
   TiXmlHandle handle(doc.get());
@@ -188,7 +188,7 @@ void ToolBox::loadTools()
     const char* group_id = xmlGroup->Attribute("id");
     const char* group_text = xmlGroup->Attribute("text");
 
-    PRINTF(" - New group '%s'\n", group_id);
+    LOG(" - New group '%s'\n", group_id);
 
     if (!group_id || !group_text)
       throw base::Exception("The configuration file has a <group> without 'id' or 'text' attributes.");
@@ -207,7 +207,7 @@ void ToolBox::loadTools()
       Tool* tool = new Tool(tool_group, tool_id, tool_text, tool_tips,
         default_brush_size ? strtol(default_brush_size, NULL, 10): 1);
 
-      PRINTF(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
+      LOG(" - New tool '%s' in group '%s' found\n", tool_id, group_id);
 
       loadToolProperties(xmlTool, tool, 0, "left");
       loadToolProperties(xmlTool, tool, 1, "right");

@@ -53,18 +53,18 @@ bool ResourceFinder::findFirst()
 {
   while (next()) {
     if (m_log)
-      PRINTF("Loading resource from \"%s\"...\n", filename().c_str());
+      LOG("Loading resource from \"%s\"...\n", filename().c_str());
 
     if (base::is_file(filename())) {
       if (m_log)
-        PRINTF("- OK\n");
+        LOG("- OK\n");
 
       return true;
     }
   }
 
   if (m_log)
-    PRINTF("- Resource not found.\n");
+    LOG("- Resource not found.\n");
 
   return false;
 }
@@ -136,7 +136,7 @@ void ResourceFinder::includeHomeDir(const char* filename)
     addPath(buf);
   }
   else {
-    PRINTF("You don't have set $HOME variable\n");
+    LOG("You don't have set $HOME variable\n");
     addPath(filename);
   }
 

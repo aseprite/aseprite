@@ -166,12 +166,12 @@ FileSystemModule::FileSystemModule()
   // the 'rootitem' FileItem)
   getRootFileItem();
 
-  PRINTF("File system module installed\n");
+  LOG("File system module installed\n");
 }
 
 FileSystemModule::~FileSystemModule()
 {
-  PRINTF("File system module: uninstalling\n");
+  LOG("File system module: uninstalling\n");
   ASSERT(m_instance == this);
 
   for (FileItemMap::iterator
@@ -198,7 +198,7 @@ FileSystemModule::~FileSystemModule()
   delete fileitems_map;
   delete thumbnail_map;
 
-  PRINTF("File system module: uninstalled\n");
+  LOG("File system module: uninstalled\n");
   m_instance = NULL;
 }
 
@@ -222,7 +222,7 @@ IFileItem* FileSystemModule::getRootFileItem()
   fileitem = new FileItem(NULL);
   rootitem = fileitem;
 
-  //PRINTF("FS: Creating root fileitem %p\n", rootitem);
+  //LOG("FS: Creating root fileitem %p\n", rootitem);
 
 #ifdef _WIN32
   {
@@ -261,7 +261,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
 {
   IFileItem* fileitem = NULL;
 
-  //PRINTF("FS: get_fileitem_from_path(%s)\n", path.c_str());
+  //LOG("FS: get_fileitem_from_path(%s)\n", path.c_str());
 
 #ifdef _WIN32
   {
@@ -271,7 +271,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
 
     if (path.empty()) {
       fileitem = getRootFileItem();
-      //PRINTF("FS: > %p (root)\n", fileitem);
+      //LOG("FS: > %p (root)\n", fileitem);
       return fileitem;
     }
 
@@ -279,7 +279,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
           (NULL, NULL,
            const_cast<LPWSTR>(base::from_utf8(path).c_str()),
            &cbEaten, &fullpidl, &attrib) != S_OK) {
-      //PRINTF("FS: > (null)\n");
+      //LOG("FS: > (null)\n");
       return NULL;
     }
 
@@ -293,7 +293,7 @@ IFileItem* FileSystemModule::getFileItemFromPath(const std::string& path)
   }
 #endif
 
-  //PRINTF("FS: get_fileitem_from_path(%s) -> %p\n", path.c_str(), fileitem);
+  //LOG("FS: get_fileitem_from_path(%s) -> %p\n", path.c_str(), fileitem);
 
   return fileitem;
 }
@@ -375,7 +375,7 @@ const FileItemList& FileItem::getChildren()
       child->removed = true;
     }
 
-    //PRINTF("FS: Loading files for %p (%s)\n", fileitem, fileitem->displayname);
+    //LOG("FS: Loading files for %p (%s)\n", fileitem, fileitem->displayname);
 #ifdef _WIN32
     {
       IShellFolder* pFolder = NULL;
@@ -548,7 +548,7 @@ void FileItem::setThumbnail(she::Surface* thumbnail)
 
 FileItem::FileItem(FileItem* parent)
 {
-  //PRINTF("FS: Creating %p fileitem with parent %p\n", this, parent);
+  //LOG("FS: Creating %p fileitem with parent %p\n", this, parent);
 
   this->keyname = NOTINITIALIZED;
   this->filename = NOTINITIALIZED;
@@ -565,7 +565,7 @@ FileItem::FileItem(FileItem* parent)
 
 FileItem::~FileItem()
 {
-  PRINTF("FS: Destroying FileItem() with parent %p\n", parent);
+  LOG("FS: Destroying FileItem() with parent %p\n", parent);
 
 #ifdef _WIN32
   if (this->fullpidl && this->fullpidl != this->pidl) {
@@ -813,7 +813,7 @@ static std::string get_key_for_pidl(LPITEMIDLIST pidl)
   int len;
 
   // Go pidl by pidl from the fullpidl to the root (desktop)
-  //PRINTF("FS: ***\n");
+  //LOG("FS: ***\n");
   pidl = clone_pidl(pidl);
   while (pidl->mkid.cb > 0) {
     if (shl_idesktop->GetDisplayNameOf(pidl,
@@ -822,7 +822,7 @@ static std::string get_key_for_pidl(LPITEMIDLIST pidl)
       if (StrRetToBuf(&strret, pidl, pszName, MAX_PATH) != S_OK)
         pszName[0] = 0;
 
-      //PRINTF("FS: + %s\n", pszName);
+      //LOG("FS: + %s\n", pszName);
 
       len = wcslen(pszName);
       if (len > 0) {
@@ -844,7 +844,7 @@ static std::string get_key_for_pidl(LPITEMIDLIST pidl)
   }
   free_pidl(pidl);
 
-  //PRINTF("FS: =%s\n***\n", key);
+  //LOG("FS: =%s\n***\n", key);
   return base::to_utf8(key);
 #endif
 }
@@ -877,7 +877,7 @@ static FileItem* get_fileitem_by_fullpidl(LPITEMIDLIST fullpidl, bool create_if_
   update_by_pidl(fileitem, attrib);
   put_fileitem(fileitem);
 
-  //PRINTF("FS: fileitem %p created %s with parent %p\n", fileitem, fileitem->keyname.c_str(), fileitem->parent);
+  //LOG("FS: fileitem %p created %s with parent %p\n", fileitem, fileitem->keyname.c_str(), fileitem->parent);
 
   return fileitem;
 }

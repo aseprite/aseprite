@@ -182,7 +182,7 @@ public:
     , m_remap(256)
     , m_hasLocalColormaps(false)
     , m_firstLocalColormap(nullptr) {
-    // PRINTF("GIF background index = %d\n", (int)m_gifFile->SBackGroundColor);
+    // LOG("GIF background index = %d\n", (int)m_gifFile->SBackGroundColor);
   }
 
   ~GifDecoder() {
@@ -300,7 +300,7 @@ private:
     UniquePtr<Image> frameImage(
       readFrameIndexedImage(frameBounds));
 
-    // PRINTF("Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
+    // LOG("Frame[%d] transparent index = %d\n", (int)m_frameNum, m_localTransparentIndex);
 
     if (m_frameNum == 0) {
       if (m_localTransparentIndex >= 0)
@@ -602,7 +602,7 @@ private:
         m_localTransparentIndex = (extension[1] & 1) ? extension[4]: -1;
         m_frameDelay            = (extension[3] << 8) | extension[2];
 
-        // PRINTF("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
+        // LOG("Disposal method: %d\nTransparent index: %d\nFrame delay: %d\n",
         //   m_disposalMethod, m_localTransparentIndex, m_frameDelay);
       }
     }
@@ -984,7 +984,7 @@ private:
         }
       }
 
-      // PRINTF("frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
+      // LOG("frameBounds=%d %d %d %d  prev=%d %d %d %d  next=%d %d %d %d\n",
       //        frameBounds.x, frameBounds.y, frameBounds.w, frameBounds.h,
       //        prev.x, prev.y, prev.w, prev.h,
       //        next.x, next.y, next.w, next.h);

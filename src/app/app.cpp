@@ -175,7 +175,7 @@ void App::initialize(const AppOptions& options)
   FileFormatsManager::instance()->registerAllFormats();
 
   if (isPortable())
-    PRINTF("Running in portable mode\n");
+    LOG("Running in portable mode\n");
 
   // Load or create the default palette, or migrate the default
   // palette from an old format palette to the new one, etc.
@@ -184,7 +184,7 @@ void App::initialize(const AppOptions& options)
   // Initialize GUI interface
   UIContext* ctx = UIContext::instance();
   if (isGui()) {
-    PRINTF("GUI mode\n");
+    LOG("GUI mode\n");
 
     // Setup the GUI cursor and redraw screen
 
@@ -213,7 +213,7 @@ void App::initialize(const AppOptions& options)
   }
 
   // Procress options
-  PRINTF("Processing options...\n");
+  LOG("Processing options...\n");
 
   bool ignoreEmpty = false;
   bool trim = false;
@@ -506,7 +506,7 @@ void App::initialize(const AppOptions& options)
 
   // Export
   if (m_exporter) {
-    PRINTF("Exporting sheet...\n");
+    LOG("Exporting sheet...\n");
 
     if (ignoreEmpty)
       m_exporter->setIgnoreEmptyCels(true);
@@ -517,7 +517,7 @@ void App::initialize(const AppOptions& options)
     base::UniquePtr<Document> spriteSheet(m_exporter->exportSheet());
     m_exporter.reset(NULL);
 
-    PRINTF("Export sprite sheet: Done\n");
+    LOG("Export sprite sheet: Done\n");
   }
 }
 
@@ -590,7 +590,7 @@ App::~App()
     ASSERT(m_instance == this);
 
     // Remove Aseprite handlers
-    PRINTF("ASE: Uninstalling\n");
+    LOG("ASE: Uninstalling\n");
 
     // Delete file formats.
     FileFormatsManager::destroyInstance();

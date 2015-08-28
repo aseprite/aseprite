@@ -320,7 +320,7 @@ namespace she {
             (msg == WM_MOUSEWHEEL ? -z: 0));
           ev.setWheelDelta(delta);
 
-          //PRINTF("WHEEL: %d %d\n", delta.x, delta.y);
+          //LOG("WHEEL: %d %d\n", delta.x, delta.y);
 
           queueEvent(ev);
           break;
@@ -366,7 +366,7 @@ namespace she {
             (msg == WM_VSCROLL ? (z-50): 0));
           ev.setWheelDelta(delta);
 
-          //PRINTF("SCROLL: %d %d\n", delta.x, delta.y);
+          //LOG("SCROLL: %d %d\n", delta.x, delta.y);
 
           SetScrollPos(m_hwnd, bar, 50, FALSE);
 

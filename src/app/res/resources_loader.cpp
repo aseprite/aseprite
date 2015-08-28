@@ -28,14 +28,14 @@ ResourcesLoader::ResourcesLoader(ResourcesLoaderDelegate* delegate)
   , m_cancel(false)
   , m_thread(Bind<void>(&ResourcesLoader::threadLoadResources, this))
 {
-  PRINTF("ResourcesLoader::ResourcesLoader()\n");
+  LOG("ResourcesLoader::ResourcesLoader()\n");
 }
 
 ResourcesLoader::~ResourcesLoader()
 {
   m_thread.join();
 
-  PRINTF("ResourcesLoader::~ResourcesLoader()\n");
+  LOG("ResourcesLoader::~ResourcesLoader()\n");
 }
 
 void ResourcesLoader::cancel()
@@ -56,12 +56,12 @@ bool ResourcesLoader::next(base::UniquePtr<Resource>& resource)
 
 void ResourcesLoader::threadLoadResources()
 {
-  PRINTF("threadLoadResources()\n");
+  LOG("threadLoadResources()\n");
 
   base::ScopedValue<bool> scoped(m_done, false, true);
 
   std::string path = m_delegate->resourcesLocation();
-  PRINTF("Loading resources from %s...\n", path.c_str());
+  LOG("Loading resources from %s...\n", path.c_str());
   if (path.empty())
     return;
 

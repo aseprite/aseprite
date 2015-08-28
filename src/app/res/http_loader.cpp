@@ -48,7 +48,7 @@ void HttpLoader::threadHttpRequest()
   try {
     base::ScopedValue<bool> scoped(m_done, false, true);
 
-    PRINTF("Sending http request to %s...\n", m_url.c_str());
+    LOG("Sending http request to %s...\n", m_url.c_str());
 
     std::string dir = base::join_path(base::get_temp_path(), PACKAGE);
     base::make_all_directories(dir);
@@ -68,13 +68,13 @@ void HttpLoader::threadHttpRequest()
     if (response.status() == 200)
       m_filename = fn;
 
-    PRINTF("Response: %d\n", response.status());
+    LOG("Response: %d\n", response.status());
   }
   catch (const std::exception& e) {
-    PRINTF("Unexpected exception sending http request: '%s'\n", e.what());
+    LOG("Unexpected exception sending http request: '%s'\n", e.what());
   }
   catch (...) {
-    PRINTF("Unexpected unknown exception sending http request\n");
+    LOG("Unexpected unknown exception sending http request\n");
   }
 }
 
