@@ -16,8 +16,8 @@ using namespace ui;
 TEST(Grid, Simple2x1Grid)
 {
   Grid* grid = new Grid(2, false);
-  Widget* w1 = new Widget(kGenericWidget);
-  Widget* w2 = new Widget(kGenericWidget);
+  Widget* w1 = new Widget;
+  Widget* w2 = new Widget;
 
   w1->setMinSize(gfx::Size(10, 10));
   w2->setMinSize(gfx::Size(10, 10));
@@ -53,8 +53,8 @@ TEST(Grid, Simple2x1Grid)
 TEST(Grid, Expand2ndWidget)
 {
   Grid* grid = new Grid(2, false);
-  Widget* w1 = new Widget(kGenericWidget);
-  Widget* w2 = new Widget(kGenericWidget);
+  Widget* w1 = new Widget;
+  Widget* w2 = new Widget;
 
   w1->setMinSize(gfx::Size(20, 20));
   w2->setMinSize(gfx::Size(10, 10));
@@ -86,8 +86,8 @@ TEST(Grid, Expand2ndWidget)
 TEST(Grid, SameWidth2x1Grid)
 {
   Grid* grid = new Grid(2, true);
-  Widget* w1 = new Widget(kGenericWidget);
-  Widget* w2 = new Widget(kGenericWidget);
+  Widget* w1 = new Widget;
+  Widget* w2 = new Widget;
 
   w1->setMinSize(gfx::Size(20, 20));
   w2->setMinSize(gfx::Size(10, 10));
@@ -148,10 +148,10 @@ TEST(Grid, SameWidth2x1Grid)
 TEST(Grid, Intrincate3x3Grid)
 {
   Grid* grid = new Grid(3, false);
-  Widget* w1 = new Widget(kGenericWidget);
-  Widget* w2 = new Widget(kGenericWidget);
-  Widget* w3 = new Widget(kGenericWidget);
-  Widget* w4 = new Widget(kGenericWidget);
+  Widget* w1 = new Widget;
+  Widget* w2 = new Widget;
+  Widget* w3 = new Widget;
+  Widget* w4 = new Widget;
 
   w1->setMinSize(gfx::Size(10, 10));
   w2->setMinSize(gfx::Size(10, 10));
@@ -191,4 +191,39 @@ TEST(Grid, Intrincate3x3Grid)
   EXPECT_EQ(88, w4->getBounds().h);
 
   delete grid;
+}
+
+TEST(Grid, FourColumns)
+{
+  Grid grid(4, false);
+  grid.noBorderNoChildSpacing();
+
+  Widget a;
+  Widget b;
+  Widget c;
+  Widget d;
+  Widget e;
+  a.setMinSize(gfx::Size(10, 10));
+  b.setMinSize(gfx::Size(10, 10));
+  c.setMinSize(gfx::Size(10, 10));
+  d.setMinSize(gfx::Size(10, 10));
+  e.setMinSize(gfx::Size(10, 10));
+
+  grid.addChildInCell(&a, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&b, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&c, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&d, 1, 1, HORIZONTAL | VERTICAL);
+  grid.addChildInCell(&e, 4, 1, HORIZONTAL | VERTICAL);
+
+  // Test request size
+  grid.setChildSpacing(0);
+  EXPECT_EQ(gfx::Size(40, 20), grid.getPreferredSize());
+
+  // Test layout
+  grid.setBounds(gfx::Rect(0, 0, 40, 20));
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), a.getBounds());
+  EXPECT_EQ(gfx::Rect(10, 0, 10, 10), b.getBounds());
+  EXPECT_EQ(gfx::Rect(20, 0, 10, 10), c.getBounds());
+  EXPECT_EQ(gfx::Rect(30, 0, 10, 10), d.getBounds());
+  EXPECT_EQ(gfx::Rect(0, 10, 40, 10), e.getBounds());
 }
