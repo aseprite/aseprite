@@ -72,7 +72,8 @@ FilterTargetButtons::FilterTargetButtons(int imgtype, bool withChannels)
 
 void FilterTargetButtons::setTarget(int target)
 {
-  m_target = target;
+  m_target &= (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS);
+  m_target |= (target & ~(TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
 
   selectTargetButton(m_red,   TARGET_RED_CHANNEL);
   selectTargetButton(m_green, TARGET_GREEN_CHANNEL);
@@ -134,7 +135,7 @@ void FilterTargetButtons::updateComponentTooltip(Item* item, const char* channel
 void FilterTargetButtons::onItemChange()
 {
   ButtonSet::onItemChange();
-  Target flags = 0;
+  Target flags = (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
 
   if (m_red && m_red->isSelected()) flags |= TARGET_RED_CHANNEL;
   if (m_green && m_green->isSelected()) flags |= TARGET_GREEN_CHANNEL;
@@ -147,7 +148,6 @@ void FilterTargetButtons::onItemChange()
     m_cels->setSelected(false);
 
     // Rotate cels target
-    flags |= (m_target & (TARGET_ALL_FRAMES | TARGET_ALL_LAYERS));
     if (flags & TARGET_ALL_FRAMES) {
       flags &= ~TARGET_ALL_FRAMES;
 
