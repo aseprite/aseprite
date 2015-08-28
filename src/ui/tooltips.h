@@ -11,6 +11,7 @@
 #include "base/unique_ptr.h"
 #include "ui/base.h"
 #include "ui/popup_window.h"
+#include "ui/timer.h"
 #include "ui/window.h"
 
 #include <map>

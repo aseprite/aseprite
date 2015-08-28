@@ -8,13 +8,18 @@
 #include "config.h"
 #endif
 
+#include "ui/tooltips.h"
+
 #include "base/unique_ptr.h"
 #include "gfx/size.h"
 #include "ui/graphics.h"
 #include "ui/intern.h"
+#include "ui/manager.h"
+#include "ui/message.h"
 #include "ui/paint_event.h"
 #include "ui/preferred_size_event.h"
-#include "ui/ui.h"
+#include "ui/system.h"
+#include "ui/theme.h"
 
 #include <string>
 
