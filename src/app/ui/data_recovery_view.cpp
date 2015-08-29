@@ -19,6 +19,7 @@
 #include "app/ui/skin/skin_theme.h"
 #include "app/ui/workspace.h"
 #include "base/bind.h"
+#include "base/path.h"
 #include "ui/alert.h"
 #include "ui/button.h"
 #include "ui/entry.h"
@@ -159,7 +160,15 @@ void DataRecoveryView::fillList()
     child->deferDelete();
   }
 
-  for (auto& session : m_dataRecovery->sessions()) {
+  auto sessions = m_dataRecovery->sessions();
+  // Sort sessions to show the most recent one first
+  std::sort(sessions.begin(), sessions.end(),
+    [](const crash::SessionPtr& s1, const crash::SessionPtr& s2) {
+      return base::get_file_name(s1->path()) > base::get_file_name(s2->path());
+    }
+  );
+
+  for (auto& session : sessions) {
     if (session->isEmpty())
       continue;
 
