@@ -21,8 +21,9 @@
 #endif
 
 // General information
-#define PACKAGE                 "Aseprite"
-#define VERSION "1.1.0-dev"
+#define PACKAGE "Aseprite"
+#define VERSION "1.1.1-dev"
+
 #ifdef CUSTOM_WEBSITE_URL
 #define WEBSITE                 CUSTOM_WEBSITE_URL // To test web server
 #else
