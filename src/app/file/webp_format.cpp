@@ -16,12 +16,11 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
-#include "app/find_widget.h"
 #include "app/ini_file.h"
-#include "app/load_widget.h"
 #include "base/file_handle.h"
 #include "doc/doc.h"
-#include "ui/ui.h"
+
+#include "generated_webp_options.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -38,10 +37,10 @@ namespace app {
 using namespace base;
 
 class WebPFormat : public FileFormat {
-  // Data for WEBP files
+  // Data for WEBP files TODO make this better OOP like GIF_OPTIONS
   class WebPOptions : public FormatOptions {
   public:
-    WebPOptions(): lossless(0), quality(75), method(6), image_hint(WEBP_HINT_DEFAULT), image_preset(WEBP_PRESET_DEFAULT) {};
+    WebPOptions(): lossless(1), quality(75), method(6), image_hint(WEBP_HINT_DEFAULT), image_preset(WEBP_PRESET_DEFAULT) {};
     int lossless;           // Lossless encoding (0=lossy(default), 1=lossless).
     float quality;          // between 0 (smallest file) and 100 (biggest)
     int method;             // quality/speed trade-off (0=fast, 9=slower-better)
@@ -134,7 +133,6 @@ bool WebPFormat::onLoad(FileOp* fop)
   }
 
   fop->seq.has_alpha = config.input.has_alpha;
-  //TODO write imagefeatures
 
   auto image = fop_sequence_image(fop, IMAGE_RGB, config.input.width, config.input.height);
 
@@ -172,6 +170,11 @@ bool WebPFormat::onLoad(FileOp* fop)
     if (fop_is_stop(fop))
       break;
   }
+
+  base::SharedPtr<WebPOptions> webPOptions = base::SharedPtr<WebPOptions>(new WebPOptions());
+  fop->seq.format_options = webPOptions;
+  webPOptions->lossless = std::min(config.input.format - 1, 1);
+
   WebPIDelete(idec);
   WebPFreeDecBuffer(&config.output);
   return true;
@@ -342,28 +345,35 @@ base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
     return webp_options;
 
   try {
+    // Configuration parameters
+    webp_options->quality = get_config_int("WEBP", "Quality", webp_options->quality);
+    webp_options->method = get_config_int("WEBP", "Compression", webp_options->method);
+    webp_options->image_hint = static_cast<WebPImageHint>(get_config_int("WEBP", "ImageHint", webp_options->image_hint));
+    webp_options->image_preset = static_cast<WebPPreset>(get_config_int("WEBP", "ImagePreset", webp_options->image_preset));
 
-    // Load the window to ask to the user the JPEG options he wants.
-    UniquePtr<ui::Window> window(app::load_widget<ui::Window>("webp_options.xml", "webp_options"));
-    ui::RadioButton* button_lossless = app::find_widget<ui::RadioButton>(window, "lossless");
-    ui::Slider* slider_compression = app::find_widget<ui::Slider>(window, "compression");
-    ui::Slider* slider_quality = app::find_widget<ui::Slider>(window, "quality");
-    ui::Widget* ok = app::find_widget<ui::Widget>(window, "ok");
-    ui::ComboBox* list_hint = app::find_widget<ui::ComboBox>(window, "image_hint");
-    ui::ComboBox* list_preset = app::find_widget<ui::ComboBox>(window, "image_preset");
+    // Load the window to ask to the user the WebP options he wants.
 
-    button_lossless->setSelected(true);
-    slider_compression->setValue(6);
-    slider_quality->setValue(75);
+    app::gen::WebpOptions win;
+    win.lossless()->setSelected(webp_options->lossless);
+    win.lossy()->setSelected(!webp_options->lossless);
+    win.quality()->setValue(webp_options->quality);
+    win.compression()->setValue(webp_options->method);
+    win.imageHint()->setSelectedItemIndex(webp_options->image_hint);
+    win.imagePreset()->setSelectedItemIndex(webp_options->image_preset);
 
-    window->openWindowInForeground();
+    win.openWindowInForeground();
 
-    if (window->getKiller() == ok) {
-      webp_options->quality = slider_quality->getValue();
-      webp_options->method = slider_compression->getValue();
-      webp_options->lossless = button_lossless->isSelected();
-      webp_options->image_hint = static_cast<WebPImageHint>(FromString<int>(list_hint->getValue()));
-      webp_options->image_preset = static_cast<WebPPreset>(FromString<int>(list_preset->getValue()));
+    if (win.getKiller() == win.ok()) {
+      webp_options->quality = win.quality()->getValue();
+      webp_options->method = win.compression()->getValue();
+      webp_options->lossless = win.lossless()->isSelected();
+      webp_options->image_hint = static_cast<WebPImageHint>(FromString<int>(win.imageHint()->getValue()));
+      webp_options->image_preset = static_cast<WebPPreset>(FromString<int>(win.imagePreset()->getValue()));
+
+      set_config_int("WEBP", "Quality", webp_options->quality);
+      set_config_int("WEBP", "Compression", webp_options->method);
+      set_config_int("WEBP", "ImageHint", webp_options->image_hint);
+      set_config_int("WEBP", "ImagePreset", webp_options->image_preset);
     }
     else {
       webp_options.reset(NULL);
