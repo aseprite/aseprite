@@ -1,5 +1,5 @@
 // Aseprite
-// Copyright (C) 2001-2015  David Capello
+// Copyright (C) 2015 Gabriel Rauter
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -93,7 +93,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   FILE* fp = handle.get();
 
   long len;
-	uint8_t* buf = NULL;
+  uint8_t* buf = NULL;
 
   if (fseek(fp, 0, SEEK_END) != 0) {
     fop_error(fop, "Error while getting WebP file size for %s\n", fop->filename.c_str());
