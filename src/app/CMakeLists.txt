@@ -274,6 +274,7 @@ add_library(app-lib
   file/png_format.cpp
   file/split_filename.cpp
   file/tga_format.cpp
+  file/webp_format.cpp
   file_selector.cpp
   file_system.cpp
   filename_formatter.cpp
@@ -412,6 +413,7 @@ target_link_libraries(app-lib
   ${JPEG_LIBRARIES}
   ${GIF_LIBRARIES}
   ${PNG_LIBRARIES}
+  ${WEBP_LIBRARIES}
   ${ZLIB_LIBRARIES})
 
 if(ENABLE_UPDATER)
