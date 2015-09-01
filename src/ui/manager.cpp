@@ -176,6 +176,9 @@ void Manager::run()
 
 void Manager::flipDisplay()
 {
+  if (!m_display)
+    return;
+
   OverlayManager* overlays = OverlayManager::instance();
 
   update_cursor_overlay();

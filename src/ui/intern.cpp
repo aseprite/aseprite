@@ -16,16 +16,16 @@
 #include <list>
 
 namespace ui {
+namespace details {
 
 static std::list<Widget*>* widgets;
 
-int init_widgets()
+void initWidgets()
 {
   widgets = new std::list<Widget*>;
-  return 0;
 }
 
-void exit_widgets()
+void exitWidgets()
 {
   delete widgets;
 }
@@ -66,4 +66,5 @@ void reinitThemeForAllWidgets()
   Manager::getDefault()->invalidate();
 }
 
+} // namespace details
 } // namespace ui

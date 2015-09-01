@@ -156,7 +156,7 @@ void App::initialize(const AppOptions& options)
   m_isGui = options.startUI();
   m_isShell = options.startShell();
   if (m_isGui)
-    m_guiSystem.reset(new ui::GuiSystem);
+    m_uiSystem.reset(new ui::UISystem);
 
   // Initializes the application loading the modules, setting the
   // graphics mode, loading the configuration and resources, etc.

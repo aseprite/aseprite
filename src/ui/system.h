@@ -19,6 +19,12 @@ namespace ui {
 
   class Widget;
 
+  class UISystem {
+  public:
+    UISystem();
+    ~UISystem();
+  };
+
   int display_w();
   int display_h();
 

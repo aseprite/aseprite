@@ -23,11 +23,18 @@ namespace ui {
 
   // intern.cpp
 
-  void addWidget(Widget* widget);
-  void removeWidget(Widget* widget);
+  namespace details {
 
-  void resetFontAllWidgets();
-  void reinitThemeForAllWidgets();
+    void initWidgets();
+    void exitWidgets();
+
+    void addWidget(Widget* widget);
+    void removeWidget(Widget* widget);
+
+    void resetFontAllWidgets();
+    void reinitThemeForAllWidgets();
+
+  } // namespace details
 
   // theme.cpp
 

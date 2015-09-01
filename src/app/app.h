@@ -22,7 +22,7 @@ namespace doc {
 }
 
 namespace ui {
-  class GuiSystem;
+  class UISystem;
 }
 
 namespace app {
@@ -86,7 +86,7 @@ namespace app {
 
     static App* m_instance;
 
-    base::UniquePtr<ui::GuiSystem> m_guiSystem;
+    base::UniquePtr<ui::UISystem> m_uiSystem;
     CoreModules* m_coreModules;
     Modules* m_modules;
     LegacyModules* m_legacy;

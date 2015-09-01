@@ -62,12 +62,6 @@ namespace ui {
     ALIGN_MASK       = 0xffff0000,
   };
 
-  class GuiSystem {
-  public:
-    GuiSystem();
-    ~GuiSystem();
-  };
-
 } // namespace ui
 
 #endif  // UI_BASE_H_INCLUDED

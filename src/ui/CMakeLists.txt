@@ -45,7 +45,6 @@ add_library(ui-lib
   theme.cpp
   timer.cpp
   tooltips.cpp
-  ui.cpp
   view.cpp
   viewport.cpp
   widget.cpp

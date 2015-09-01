@@ -16,6 +16,7 @@
 #include "she/surface.h"
 #include "ui/cursor.h"
 #include "ui/intern.h"
+#include "ui/intern.h"
 #include "ui/manager.h"
 #include "ui/overlay.h"
 #include "ui/overlay_manager.h"
@@ -33,7 +34,7 @@ static Overlay* mouse_cursor_overlay = NULL;
 static bool use_native_mouse_cursor = false;
 static bool native_cursor_set = false; // If we displayed a native cursor
 
-/* Mouse information (button and position).  */
+// Mouse information (button and position).
 
 static volatile MouseButtons m_buttons;
 static gfx::Point m_mouse_pos;
@@ -140,14 +141,22 @@ static void update_mouse_cursor()
   }
 }
 
-int init_system()
+UISystem::UISystem()
 {
   mouse_cursor_type = kNoCursor;
-  return 0;
+
+  details::initWidgets();
 }
 
-void exit_system()
+UISystem::~UISystem()
 {
+  OverlayManager::destroyInstance();
+
+  // finish theme
+  CurrentTheme::set(NULL);
+
+  details::exitWidgets();
+
   _internal_set_mouse_display(NULL);
   update_mouse_overlay(NULL);
 }

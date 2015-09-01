@@ -75,7 +75,7 @@ Widget::Widget(WidgetType type)
   , m_maxSize(INT_MAX, INT_MAX)
   , m_childSpacing(0)
 {
-  addWidget(this);
+  details::addWidget(this);
 }
 
 Widget::~Widget()
@@ -101,7 +101,7 @@ Widget::~Widget()
   delete m_preferredSize;
 
   // Low level free
-  removeWidget(this);
+  details::removeWidget(this);
 }
 
 void Widget::deferDelete()
