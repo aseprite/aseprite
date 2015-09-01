@@ -39,8 +39,11 @@ TEST(SplitFilename, InvalidEraseInLeftPart_Issue784)
   std::string left, right;
   int width;
 
-  EXPECT_EQ(1, split_filename("by \xe3\x81\xa1\xe3\x81\x83\xe3\x81\xbe\\0001.png", left, right, width));
-  EXPECT_EQ("by \xe3\x81\xa1\xe3\x81\x83\xe3\x81\xbe\\", left);
+  std::string sep;
+  sep.push_back(base::path_separator);
+
+  EXPECT_EQ(1, split_filename("by \xE3\x81\xA1\xE3\x81\x83\xE3\x81\xBE\\0001.png", left, right, width));
+  EXPECT_EQ("by \xE3\x81\xA1\xE3\x81\x83\xE3\x81\xBE"+sep, left);
   EXPECT_EQ(".png", right);
   EXPECT_EQ(4, width);
 }
