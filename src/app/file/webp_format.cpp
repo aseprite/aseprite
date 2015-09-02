@@ -18,6 +18,7 @@
 #include "app/file/format_options.h"
 #include "app/ini_file.h"
 #include "base/file_handle.h"
+#include "base/convert_to.h"
 #include "doc/doc.h"
 
 #include "generated_webp_options.h"
@@ -223,25 +224,6 @@ static int FileWriter(const uint8_t* data, size_t data_size, const WebPPicture* 
   return data_size ? (fwrite(data, data_size, 1, ((writerData*)pic->custom_ptr)->fp) == 1) : 1;
 }
 
-
-//Helper functions instead of std::stoi because of missing c++11 on mac os x
-template<typename T>
-static inline std::string ToString(const T& v)
-{
-    std::ostringstream ss;
-    ss << v;
-    return ss.str();
-}
-
-template<typename T>
-static inline T FromString(const std::string& str)
-{
-    std::istringstream ss(str);
-    T ret;
-    ss >> ret;
-    return ret;
-}
-
 bool WebPFormat::onSave(FileOp* fop)
 {
   FileHandle handle(open_file_with_exception(fop->filename, "wb"));
@@ -355,8 +337,8 @@ base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
       webp_options->quality = win.quality()->getValue();
       webp_options->method = win.compression()->getValue();
       webp_options->lossless = win.lossless()->isSelected();
-      webp_options->image_hint = static_cast<WebPImageHint>(FromString<int>(win.imageHint()->getValue()));
-      webp_options->image_preset = static_cast<WebPPreset>(FromString<int>(win.imagePreset()->getValue()));
+      webp_options->image_hint = static_cast<WebPImageHint>(base::convert_to<int>(win.imageHint()->getValue()));
+      webp_options->image_preset = static_cast<WebPPreset>(base::convert_to<int>(win.imagePreset()->getValue()));
 
       set_config_int("WEBP", "Quality", webp_options->quality);
       set_config_int("WEBP", "Compression", webp_options->method);
