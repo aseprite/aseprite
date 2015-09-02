@@ -16,7 +16,6 @@
         <listitem text="Picture" value="1" />
         <listitem text="Photo" value="2" />
         <listitem text="Graph" value="3" />
-        <listitem text="Last" value="4" />
       </combobox>
     </hbox>
     <separator horizontal="true" />

@@ -16,6 +16,7 @@
 #include "app/file/file.h"
 #include "app/file/file_format.h"
 #include "app/file/format_options.h"
+#include "app/file/webp_options.h"
 #include "app/ini_file.h"
 #include "base/file_handle.h"
 #include "base/convert_to.h"
@@ -38,16 +39,6 @@ namespace app {
 using namespace base;
 
 class WebPFormat : public FileFormat {
-  // Data for WEBP files TODO make this better OOP like GIF_OPTIONS
-  class WebPOptions : public FormatOptions {
-  public:
-    WebPOptions(): lossless(1), quality(75), method(6), image_hint(WEBP_HINT_DEFAULT), image_preset(WEBP_PRESET_DEFAULT) {};
-    int lossless;           // Lossless encoding (0=lossy(default), 1=lossless).
-    float quality;          // between 0 (smallest file) and 100 (biggest)
-    int method;             // quality/speed trade-off (0=fast, 9=slower-better)
-    WebPImageHint image_hint;  // Hint for image type (lossless only for now).
-    WebPPreset image_preset;  // Image Preset for lossy webp.
-  };
 
   const char* onGetName() const { return "webp"; }
   const char* onGetExtensions() const { return "webp"; }
@@ -125,7 +116,7 @@ bool WebPFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  fop->seq.has_alpha = config.input.has_alpha;
+  fop->seq.has_alpha = (config.input.has_alpha != 0);
 
   Image* image = fop_sequence_image(fop, IMAGE_RGB, config.input.width, config.input.height);
 
@@ -163,7 +154,7 @@ bool WebPFormat::onLoad(FileOp* fop)
 
   base::SharedPtr<WebPOptions> webPOptions = base::SharedPtr<WebPOptions>(new WebPOptions());
   fop->seq.format_options = webPOptions;
-  webPOptions->lossless = std::min(config.input.format - 1, 1);
+  webPOptions->setLossless(std::min(config.input.format - 1, 1));
 
   WebPIDelete(idec);
   WebPFreeDecBuffer(&config.output);
@@ -245,14 +236,14 @@ bool WebPFormat::onSave(FileOp* fop)
 
   WebPConfig config;
 
-  if (webp_options->lossless) {
-    if (!(WebPConfigInit(&config) && WebPConfigLosslessPreset(&config, webp_options->method))) {
+  if (webp_options->lossless()) {
+    if (!(WebPConfigInit(&config) && WebPConfigLosslessPreset(&config, webp_options->getMethod()))) {
      fop_error(fop, "Error for WebP Config Version for file %s\n", fop->filename.c_str());
      return false;
     }
-    config.image_hint = webp_options->image_hint;
+    config.image_hint = webp_options->getImageHint();
   } else {
-    if (!WebPConfigPreset(&config, webp_options->image_preset, webp_options->quality)) {
+    if (!WebPConfigPreset(&config, webp_options->getImagePreset(), static_cast<float>(webp_options->getQuality()))) {
      fop_error(fop, "Error for WebP Config Version for file %s\n", fop->filename.c_str());
      return false;
     }
@@ -271,7 +262,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
   pic.width = image->width();
   pic.height = image->height();
-  if (webp_options->lossless) {
+  if (webp_options->lossless()) {
     pic.use_argb = true;
   }
 
@@ -317,34 +308,34 @@ base::SharedPtr<FormatOptions> WebPFormat::onGetFormatOptions(FileOp* fop)
 
   try {
     // Configuration parameters
-    webp_options->quality = get_config_int("WEBP", "Quality", webp_options->quality);
-    webp_options->method = get_config_int("WEBP", "Compression", webp_options->method);
-    webp_options->image_hint = static_cast<WebPImageHint>(get_config_int("WEBP", "ImageHint", webp_options->image_hint));
-    webp_options->image_preset = static_cast<WebPPreset>(get_config_int("WEBP", "ImagePreset", webp_options->image_preset));
+    webp_options->setQuality(get_config_int("WEBP", "Quality", webp_options->getQuality()));
+    webp_options->setMethod(get_config_int("WEBP", "Compression", webp_options->getMethod()));
+    webp_options->setImageHint(get_config_int("WEBP", "ImageHint", webp_options->getImageHint()));
+    webp_options->setImagePreset(get_config_int("WEBP", "ImagePreset", webp_options->getImagePreset()));
 
     // Load the window to ask to the user the WebP options he wants.
 
     app::gen::WebpOptions win;
-    win.lossless()->setSelected(webp_options->lossless);
-    win.lossy()->setSelected(!webp_options->lossless);
-    win.quality()->setValue(webp_options->quality);
-    win.compression()->setValue(webp_options->method);
-    win.imageHint()->setSelectedItemIndex(webp_options->image_hint);
-    win.imagePreset()->setSelectedItemIndex(webp_options->image_preset);
+    win.lossless()->setSelected(webp_options->lossless());
+    win.lossy()->setSelected(!webp_options->lossless());
+    win.quality()->setValue(static_cast<int>(webp_options->getQuality()));
+    win.compression()->setValue(webp_options->getMethod());
+    win.imageHint()->setSelectedItemIndex(webp_options->getImageHint());
+    win.imagePreset()->setSelectedItemIndex(webp_options->getImagePreset());
 
     win.openWindowInForeground();
 
     if (win.getKiller() == win.ok()) {
-      webp_options->quality = win.quality()->getValue();
-      webp_options->method = win.compression()->getValue();
-      webp_options->lossless = win.lossless()->isSelected();
-      webp_options->image_hint = static_cast<WebPImageHint>(base::convert_to<int>(win.imageHint()->getValue()));
-      webp_options->image_preset = static_cast<WebPPreset>(base::convert_to<int>(win.imagePreset()->getValue()));
+      webp_options->setQuality(win.quality()->getValue());
+      webp_options->setMethod(win.compression()->getValue());
+      webp_options->setLossless(win.lossless()->isSelected());
+      webp_options->setImageHint(base::convert_to<int>(win.imageHint()->getValue()));
+      webp_options->setImagePreset(base::convert_to<int>(win.imagePreset()->getValue()));
 
-      set_config_int("WEBP", "Quality", webp_options->quality);
-      set_config_int("WEBP", "Compression", webp_options->method);
-      set_config_int("WEBP", "ImageHint", webp_options->image_hint);
-      set_config_int("WEBP", "ImagePreset", webp_options->image_preset);
+      set_config_int("WEBP", "Quality", webp_options->getQuality());
+      set_config_int("WEBP", "Compression", webp_options->getMethod());
+      set_config_int("WEBP", "ImageHint", webp_options->getImageHint());
+      set_config_int("WEBP", "ImagePreset", webp_options->getImagePreset());
     }
     else {
       webp_options.reset(NULL);
