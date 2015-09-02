@@ -91,15 +91,12 @@ bool WebPFormat::onLoad(FileOp* fop)
   FileHandle handle(open_file_with_exception(fop->filename, "rb"));
   FILE* fp = handle.get();
 
-  long len;
-  uint8_t* buf = NULL;
-
   if (fseek(fp, 0, SEEK_END) != 0) {
     fop_error(fop, "Error while getting WebP file size for %s\n", fop->filename.c_str());
     return false;
   }
 
-  len = ftell(fp);
+  long len = ftell(fp);
   rewind(fp);
 
   if (len < 4) {
@@ -107,28 +104,22 @@ bool WebPFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  buf = (uint8_t*) malloc(len);
-  if (!buf) {
-    fop_error(fop, "Error while allocating memory for %s\n", fop->filename.c_str());
-    return false;
-  }
+  std::vector<uint8_t> buf(len);
+  auto* data = &buf.front();
 
-  if (!fread(buf, len, 1, fp)) {
+  if (!fread(data, sizeof(uint8_t), len, fp)) {
     fop_error(fop, "Error while writing to %s to memory\n", fop->filename.c_str());
-    free(buf);
     return false;
   }
 
   WebPDecoderConfig config;
   if (!WebPInitDecoderConfig(&config)) {
     fop_error(fop, "LibWebP version mismatch %s\n", fop->filename.c_str());
-    free(buf);
     return false;
   }
 
-  if (WebPGetFeatures(buf, len, &config.input) != VP8_STATUS_OK) {
+  if (WebPGetFeatures(data, len, &config.input) != VP8_STATUS_OK) {
     fop_error(fop, "Bad bitstream in %s\n", fop->filename.c_str());
-    free(buf);
     return false;
   }
 
@@ -145,13 +136,11 @@ bool WebPFormat::onLoad(FileOp* fop)
   WebPIDecoder* idec = WebPIDecode(NULL, 0, &config);
   if (idec == NULL) {
     fop_error(fop, "Error creating WebP decoder for %s\n", fop->filename.c_str());
-    free(buf);
     return false;
   }
 
   auto bytes_remaining = len;
   auto bytes_read = std::max(4l, len/100l);
-  auto data = buf;
 
   while (bytes_remaining > 0) {
     VP8StatusCode status = WebPIAppend(idec, data, bytes_read);
@@ -164,7 +153,6 @@ bool WebPFormat::onLoad(FileOp* fop)
       fop_error(fop, "Error during decoding %s : %s\n", fop->filename.c_str(), WebPDecodingErrorMap.find(status)->second.c_str());
       WebPIDelete(idec);
       WebPFreeDecBuffer(&config.output);
-      free(buf);
       return false;
     }
     if (fop_is_stop(fop))
