@@ -74,18 +74,19 @@ FileFormat* CreateWebPFormat()
   return new WebPFormat;
 }
 
-const std::pair<VP8StatusCode, std::string> dec_error_map_data[] = {
-    std::make_pair(VP8_STATUS_OK, ""),
-    std::make_pair(VP8_STATUS_OUT_OF_MEMORY, "out of memory"),
-    std::make_pair(VP8_STATUS_INVALID_PARAM, "invalid parameters"),
-    std::make_pair(VP8_STATUS_BITSTREAM_ERROR, "bitstream error"),
-    std::make_pair(VP8_STATUS_UNSUPPORTED_FEATURE, "unsupported feature"),
-    std::make_pair(VP8_STATUS_SUSPENDED, "suspended"),
-    std::make_pair(VP8_STATUS_USER_ABORT, "user aborted"),
-    std::make_pair(VP8_STATUS_NOT_ENOUGH_DATA, "not enough data")
-};
-
-const std::map<VP8StatusCode, std::string> WebPDecodingErrorMap(dec_error_map_data, dec_error_map_data + sizeof dec_error_map_data / sizeof dec_error_map_data[0]);
+const char* getDecoderErrorMessage(VP8StatusCode statusCode) {
+  switch (statusCode) {
+  case VP8_STATUS_OK: return ""; break;
+  case VP8_STATUS_OUT_OF_MEMORY: return "out of memory"; break;
+  case VP8_STATUS_INVALID_PARAM: return "invalid parameters"; break;
+  case VP8_STATUS_BITSTREAM_ERROR: return "bitstream error"; break;
+  case VP8_STATUS_UNSUPPORTED_FEATURE: return "unsupported feature"; break;
+  case VP8_STATUS_SUSPENDED: return "suspended"; break;
+  case VP8_STATUS_USER_ABORT: return "user aborted"; break;
+  case VP8_STATUS_NOT_ENOUGH_DATA: return "not enough data"; break;
+  default: return "unknown error"; break;
+  }
+}
 
 bool WebPFormat::onLoad(FileOp* fop)
 {
@@ -151,7 +152,7 @@ bool WebPFormat::onLoad(FileOp* fop)
       if (bytes_remaining < bytes_read) bytes_read = bytes_remaining;
       fop_progress(fop, 1.0f - ((float)std::max(bytes_remaining, 0l)/(float)len));
     } else {
-      fop_error(fop, "Error during decoding %s : %s\n", fop->filename.c_str(), WebPDecodingErrorMap.find(status)->second.c_str());
+      fop_error(fop, "Error during decoding %s : %s\n", fop->filename.c_str(), getDecoderErrorMessage(status));
       WebPIDelete(idec);
       WebPFreeDecBuffer(&config.output);
       return false;
@@ -175,23 +176,23 @@ struct writerData {
   FileOp* fop;
 };
 
-const std::pair<WebPEncodingError, std::string> enc_error_map_data[] = {
-    std::make_pair(VP8_ENC_OK, ""),
-    std::make_pair(VP8_ENC_ERROR_OUT_OF_MEMORY, "memory error allocating objects"),
-    std::make_pair(VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY, "memory error while flushing bits"),
-    std::make_pair(VP8_ENC_ERROR_NULL_PARAMETER, "a pointer parameter is NULL"),
-    std::make_pair(VP8_ENC_ERROR_INVALID_CONFIGURATION, "configuration is invalid"),
-    std::make_pair(VP8_ENC_ERROR_BAD_DIMENSION, "picture has invalid width/height"),
-    std::make_pair(VP8_ENC_ERROR_PARTITION0_OVERFLOW, "partition is bigger than 512k"),
-    std::make_pair(VP8_ENC_ERROR_PARTITION_OVERFLOW, "partition is bigger than 16M"),
-    std::make_pair(VP8_ENC_ERROR_BAD_WRITE, "error while flushing bytes"),
-    std::make_pair(VP8_ENC_ERROR_FILE_TOO_BIG, "file is bigger than 4G"),
-    std::make_pair(VP8_ENC_ERROR_OUT_OF_MEMORY, "memory error allocating objects"),
-    std::make_pair(VP8_ENC_ERROR_USER_ABORT, "abort request by user"),
-    std::make_pair(VP8_ENC_ERROR_LAST, "list terminator. always last.")
-};
-
-const std::map<WebPEncodingError, std::string> WebPEncodingErrorMap(enc_error_map_data, enc_error_map_data + sizeof enc_error_map_data / sizeof enc_error_map_data[0]);
+const char* getEncoderErrorMessage(WebPEncodingError errorCode) {
+  switch (errorCode) {
+  case VP8_ENC_OK: return ""; break;
+  case VP8_ENC_ERROR_OUT_OF_MEMORY: return "memory error allocating objects"; break;
+  case VP8_ENC_ERROR_BITSTREAM_OUT_OF_MEMORY: return "memory error while flushing bits"; break;
+  case VP8_ENC_ERROR_NULL_PARAMETER: return "a pointer parameter is NULL"; break;
+  case VP8_ENC_ERROR_INVALID_CONFIGURATION: return "configuration is invalid"; break;
+  case VP8_ENC_ERROR_BAD_DIMENSION: return "picture has invalid width/height"; break;
+  case VP8_ENC_ERROR_PARTITION0_OVERFLOW: return "partition is bigger than 512k"; break;
+  case VP8_ENC_ERROR_PARTITION_OVERFLOW: return "partition is bigger than 16M"; break;
+  case VP8_ENC_ERROR_BAD_WRITE: return "error while flushing bytes"; break;
+  case VP8_ENC_ERROR_FILE_TOO_BIG: return "file is bigger than 4G"; break;
+  case VP8_ENC_ERROR_USER_ABORT: return "abort request by user"; break;
+  case VP8_ENC_ERROR_LAST: return "abort request by user"; break;
+  default: return ""; break;
+  }
+}
 
 #if WEBP_ENCODER_ABI_VERSION < 0x0203
 #define MAX_LEVEL 9
@@ -290,7 +291,7 @@ bool WebPFormat::onSave(FileOp* fop)
   pic.progress_hook = ProgressReport;
 
   if (!WebPEncode(&config, &pic)) {
-    fop_error(fop, "Error for LibWebP while Encoding %s: %s\n", fop->filename.c_str(), WebPEncodingErrorMap.find(pic.error_code)->second.c_str());
+    fop_error(fop, "Error for LibWebP while Encoding %s: %s\n", fop->filename.c_str(), getEncoderErrorMessage(pic.error_code));
     WebPPictureFree(&pic);
     return false;
   }
