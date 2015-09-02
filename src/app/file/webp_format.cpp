@@ -107,7 +107,7 @@ bool WebPFormat::onLoad(FileOp* fop)
   }
 
   std::vector<uint8_t> buf(len);
-  auto* data = &buf.front();
+  uint8_t* data = &buf.front();
 
   if (!fread(data, sizeof(uint8_t), len, fp)) {
     fop_error(fop, "Error while writing to %s to memory\n", fop->filename.c_str());
@@ -127,7 +127,7 @@ bool WebPFormat::onLoad(FileOp* fop)
 
   fop->seq.has_alpha = config.input.has_alpha;
 
-  auto image = fop_sequence_image(fop, IMAGE_RGB, config.input.width, config.input.height);
+  Image* image = fop_sequence_image(fop, IMAGE_RGB, config.input.width, config.input.height);
 
   config.output.colorspace = MODE_RGBA;
   config.output.u.RGBA.rgba = (uint8_t*)image->getPixelAddress(0, 0);
@@ -141,8 +141,8 @@ bool WebPFormat::onLoad(FileOp* fop)
     return false;
   }
 
-  auto bytes_remaining = len;
-  auto bytes_read = std::max(4l, len/100l);
+  long bytes_remaining = len;
+  long bytes_read = std::max(4l, len/100l);
 
   while (bytes_remaining > 0) {
     VP8StatusCode status = WebPIAppend(idec, data, bytes_read);
@@ -232,7 +232,7 @@ bool WebPFormat::onSave(FileOp* fop)
 
   struct writerData wd = {fp, fop};
 
-  auto image = fop->seq.image.get();
+  Image* image = fop->seq.image.get();
   if (image->width() > WEBP_MAX_DIMENSION || image->height() > WEBP_MAX_DIMENSION) {
    fop_error(
      fop, "Error: WebP can only have a maximum width and height of %i but your %s has a size of %i x %i\n",
