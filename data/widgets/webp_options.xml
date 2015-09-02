@@ -1,0 +1,47 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by Gabriel Rauter -->
+<gui>
+<window text="WebP Options" id="webp_options">
+  <vbox>
+    <label text="Save as:" />
+    <radio group="1" text="Lossless WebP" id="lossless" tooltip="Save in simple WebP lossless format." />
+    <hbox>
+      <label width="55" text="Compression:" />
+      <slider min="0" max="9" id="compression" cell_align="horizontal" width="128" />
+    </hbox>
+    <hbox>
+      <label width="55" text="Image Hint:" />
+      <combobox width="128" id="image_hint">
+        <listitem text="Default" value="0" />
+        <listitem text="Picture" value="1" />
+        <listitem text="Photo" value="2" />
+        <listitem text="Graph" value="3" />
+      </combobox>
+    </hbox>
+    <separator horizontal="true" />
+    <radio group="1" text="Lossy WebP" id="lossy" tooltip="Save in simple WebP lossy format." />
+    <hbox>
+      <label width="55" text="Quality:" />
+      <slider min="0" max="100" id="quality" cell_align="horizontal" width="128" />
+    </hbox>
+    <hbox>
+      <label width="55" text="Image Preset:" />
+      <combobox width="128" id="image_preset">
+        <listitem text="Default" value="0" />
+        <listitem text="Picture" value="1" />
+        <listitem text="Photo" value="2" />
+        <listitem text="Drawing" value="3" />
+        <listitem text="Icon" value="4" />
+        <listitem text="Text" value="5" />
+      </combobox>
+    </hbox>
+    <hbox>
+      <boxfiller />
+      <hbox homogeneous="true">
+        <button text="&amp;OK" closewindow="true" id="ok" magnet="true" minwidth="60" />
+        <button text="&amp;Cancel" closewindow="true" />
+      </hbox>
+    </hbox>
+  </vbox>
+</window>
+</gui>

@@ -29,6 +29,7 @@ extern FileFormat* CreateJpegFormat();
 extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateTgaFormat();
+extern FileFormat* CreateWebPFormat();
 
 static FileFormatsManager* singleton = NULL;
 
@@ -67,6 +68,7 @@ void FileFormatsManager::registerAllFormats()
   registerFormat(CreatePcxFormat());
   registerFormat(CreatePngFormat());
   registerFormat(CreateTgaFormat());
+  registerFormat(CreateWebPFormat());
 }
 
 void FileFormatsManager::registerFormat(FileFormat* fileFormat)
