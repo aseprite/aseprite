@@ -10,7 +10,7 @@ platforms:
 
 # Get the source code
 
-At the moment the only way to compile Aseprite is clonning the Git
+At the moment the only way to compile Aseprite is cloning the Git
 repository located here:
 
 https://github.com/aseprite/aseprite
