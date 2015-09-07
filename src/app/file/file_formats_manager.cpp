@@ -29,7 +29,10 @@ extern FileFormat* CreateJpegFormat();
 extern FileFormat* CreatePcxFormat();
 extern FileFormat* CreatePngFormat();
 extern FileFormat* CreateTgaFormat();
+
+#ifdef ASEPRITE_WITH_WEBP_SUPPORT
 extern FileFormat* CreateWebPFormat();
+#endif
 
 static FileFormatsManager* singleton = NULL;
 
@@ -68,7 +71,10 @@ void FileFormatsManager::registerAllFormats()
   registerFormat(CreatePcxFormat());
   registerFormat(CreatePngFormat());
   registerFormat(CreateTgaFormat());
+
+#ifdef ASEPRITE_WITH_WEBP_SUPPORT
   registerFormat(CreateWebPFormat());
+#endif
 }
 
 void FileFormatsManager::registerFormat(FileFormat* fileFormat)

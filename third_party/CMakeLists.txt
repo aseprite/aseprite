@@ -20,8 +20,10 @@ if(NOT USE_SHARED_LIBPNG)
   add_subdirectory(libpng)
 endif()
 
-if(NOT USE_SHARED_LIBWEBP)
-  add_subdirectory(libwebp-cmake)
+if(WITH_WEBP_SUPPORT)
+  if(NOT USE_SHARED_LIBWEBP)
+    add_subdirectory(libwebp-cmake)
+  endif()
 endif()
 
 if(NOT USE_SHARED_GIFLIB)

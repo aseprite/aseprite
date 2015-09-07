@@ -56,6 +56,10 @@ list(APPEND generated_files ${output_fn})
 # Directory where generated files by "gen" utility will stay.
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if(WITH_WEBP_SUPPORT)
+  add_definitions(-DASEPRITE_WITH_WEBP_SUPPORT)
+endif()
+
 ######################################################################
 # app-lib target
 
@@ -68,6 +72,20 @@ if(NOT ENABLE_TRIAL_MODE)
     crash/session.cpp
     crash/write_document.cpp
     ui/data_recovery_view.cpp)
+endif()
+
+set(file_formats
+  file/ase_format.cpp
+  file/bmp_format.cpp
+  file/fli_format.cpp
+  file/gif_format.cpp
+  file/ico_format.cpp
+  file/jpeg_format.cpp
+  file/pcx_format.cpp
+  file/png_format.cpp
+  file/tga_format.cpp)
+if(WITH_WEBP_SUPPORT)
+  list(APPEND file_formats file/webp_format.cpp)
 endif()
 
 add_library(app-lib
@@ -259,22 +277,13 @@ add_library(app-lib
   document_range_ops.cpp
   document_undo.cpp
   extra_cel.cpp
-  file/ase_format.cpp
-  file/bmp_format.cpp
   file/file.cpp
   file/file_format.cpp
   file/file_formats_manager.cpp
   file/fli/fli.cpp
-  file/fli_format.cpp
-  file/gif_format.cpp
-  file/ico_format.cpp
-  file/jpeg_format.cpp
   file/palette_file.cpp
-  file/pcx_format.cpp
-  file/png_format.cpp
   file/split_filename.cpp
-  file/tga_format.cpp
-  file/webp_format.cpp
+  ${file_formats}
   file_selector.cpp
   file_system.cpp
   filename_formatter.cpp
