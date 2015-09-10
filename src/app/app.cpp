@@ -706,10 +706,10 @@ void app_refresh_screen()
 // document is modified).
 void app_rebuild_documents_tabs()
 {
-  if (App::instance()->isGui())
+  if (App::instance()->isGui()) {
     App::instance()->getMainWindow()->getWorkspace()->updateTabs();
-
-  App::instance()->updateDisplayTitleBar();
+    App::instance()->updateDisplayTitleBar();
+  }
 }
 
 PixelFormat app_get_current_pixel_format()
