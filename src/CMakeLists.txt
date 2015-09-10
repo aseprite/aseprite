@@ -91,6 +91,7 @@ add_subdirectory(base)
 include_directories(${BASE_INCLUDE_DIR})
 
 add_subdirectory(cfg)
+add_subdirectory(flic)
 add_subdirectory(css)
 add_subdirectory(doc)
 add_subdirectory(render)

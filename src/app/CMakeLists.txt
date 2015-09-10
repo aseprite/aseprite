@@ -280,7 +280,6 @@ add_library(app-lib
   file/file.cpp
   file/file_format.cpp
   file/file_formats_manager.cpp
-  file/fli/fli.cpp
   file/palette_file.cpp
   file/split_filename.cpp
   ${file_formats}
@@ -411,6 +410,7 @@ target_link_libraries(app-lib
   doc-lib
   filters-lib
   fixmath-lib
+  flic-lib
   gfx-lib
   net-lib
   render-lib

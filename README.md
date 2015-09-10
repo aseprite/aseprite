@@ -73,7 +73,6 @@ of the following projects created by third-parties:
 * [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
 * [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
 * [curl](http://curl.haxx.se/) - [curl license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
-* [gfli](https://github.com/aseprite/aseprite/blob/master/src/app/file/fli/README) - [GPL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/GPL.txt)
 * [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
 * [libjpeg](http://www.ijg.org/) - [libjpeg license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libjpeg-LICENSE.txt)
 * [libpng](http://www.libpng.org/pub/png/) - [libpng license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/libpng-LICENSE.txt)

@@ -16,6 +16,7 @@ because they don't depend on any other component.
   * [allegro](allegro/): Modified version of [Allegro](http://alleg.sourceforge.net/) library, used for keyboard/mouse input, and drawing 2D graphics on screen.
   * [base](base/): Core/basic stuff, multithreading, utf8, sha1, file system, memory, etc.
   * [css](css/): Pseudo-style sheet library.
+  * [flic](flic/): Library to load/save FLI/FLC files
   * [gfx](gfx/): Abstract graphics structures like point, size, rectangle, region, color, etc.
   * [scripting](scripting/): JavaScript engine ([V8](https://code.google.com/p/v8/)).
   * [undo](undo/): Generic library to manage a history of undoable commands.
