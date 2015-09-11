@@ -439,6 +439,11 @@ void _handle_key_press(int keycode, int scancode)
 {
    ASSERT(keyboard_driver);
 
+   if (scancode < 0 || scancode >= KEY_MAX) {
+      TRACE(PREFIX_I "Scancode out of range %d pressed\n", scancode);
+      return;
+   }
+
    if ((keyboard_driver->poll) || (!keyboard_polled)) {
       /* process immediately */
       if (scancode > 0) {
@@ -497,12 +502,8 @@ void _handle_key_release(int scancode)
       repeat_scan = -1;
    }
 
-   /* This is quite common if we press the numpad dot/delete. In debug
-      mode this asserts crashes the whole program. */
-   /* ASSERT(scancode < KEY_MAX); */
-
-   if (scancode >= KEY_MAX) {
-      TRACE(PREFIX_I "Scancode out of range %d\n", scancode);
+   if (scancode < 0 || scancode >= KEY_MAX) {
+      TRACE(PREFIX_I "Scancode out of range %d released\n", scancode);
       return;
    }
 
