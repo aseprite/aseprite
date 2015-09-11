@@ -129,7 +129,8 @@ bool MovingCelState::onMouseMove(Editor* editor, MouseMessage* msg)
   gfx::Point newCursorPos = editor->screenToEditor(msg->position());
   gfx::Point delta = newCursorPos - m_mouseStart;
 
-  if (int(editor->getCustomizationDelegate()->getPressedKeyAction(KeyContext::MovingPixels) & KeyAction::LockAxis)) {
+  if (int(editor->getCustomizationDelegate()
+          ->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::LockAxis)) {
     if (ABS(delta.x) < ABS(delta.y)) {
       delta.x = 0;
     }

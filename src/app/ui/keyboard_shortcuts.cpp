@@ -135,25 +135,25 @@ Key::Key(KeyAction action)
       m_keycontext = KeyContext::Any;
       break;
     case KeyAction::CopySelection:
-      m_keycontext = KeyContext::MovingPixels;
+      m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::SnapToGrid:
-      m_keycontext = KeyContext::MovingPixels;
+      m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::AngleSnap:
-      m_keycontext = KeyContext::MovingPixels;
+      m_keycontext = KeyContext::RotatingSelection;
       break;
     case KeyAction::MaintainAspectRatio:
-      m_keycontext = KeyContext::MovingPixels;
+      m_keycontext = KeyContext::ScalingSelection;
       break;
     case KeyAction::LockAxis:
-      m_keycontext = KeyContext::MovingPixels;
+      m_keycontext = KeyContext::TranslatingSelection;
       break;
     case KeyAction::AddSelection:
-      m_keycontext = KeyContext::Selection;
+      m_keycontext = KeyContext::SelectionTool;
       break;
     case KeyAction::SubtractSelection:
-      m_keycontext = KeyContext::Selection;
+      m_keycontext = KeyContext::SelectionTool;
       break;
     case KeyAction::AutoSelectLayer:
       m_keycontext = KeyContext::MoveTool;
@@ -316,7 +316,7 @@ void KeyboardShortcuts::importFile(TiXmlElement* rootElement, KeySource source)
         const char* keycontextstr = xmlKey->Attribute("context");
         if (keycontextstr) {
           if (strcmp(keycontextstr, "Selection") == 0)
-            keycontext = KeyContext::Selection;
+            keycontext = KeyContext::SelectionTool;
           else if (strcmp(keycontextstr, "Normal") == 0)
             keycontext = KeyContext::Normal;
         }
@@ -518,11 +518,17 @@ void KeyboardShortcuts::exportAccel(TiXmlElement& parent, Key* key, const ui::Ac
         case KeyContext::Normal:
           keycontextStr = "Normal";
           break;
-        case KeyContext::Selection:
+        case KeyContext::SelectionTool:
           keycontextStr = "Selection";
           break;
-        case KeyContext::MovingPixels:
-          keycontextStr = "MovingPixels";
+        case KeyContext::TranslatingSelection:
+          keycontextStr = "TranslatingSelection";
+          break;
+        case KeyContext::ScalingSelection:
+          keycontextStr = "ScalingSelection";
+          break;
+        case KeyContext::RotatingSelection:
+          keycontextStr = "RotatingSelection";
           break;
         case KeyContext::MoveTool:
           keycontextStr = "MoveTool";
@@ -646,7 +652,7 @@ KeyContext KeyboardShortcuts::getCurrentKeyContext()
   if (doc &&
       doc->isMaskVisible() &&
       App::instance()->activeTool()->getInk(0)->isSelection())
-    return KeyContext::Selection;
+    return KeyContext::SelectionTool;
   else
     return KeyContext::Normal;
 }

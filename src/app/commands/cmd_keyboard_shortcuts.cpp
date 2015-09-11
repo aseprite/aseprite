@@ -327,14 +327,20 @@ private:
     for (Key* key : *app::KeyboardShortcuts::instance()) {
       std::string text = key->triggerString();
       switch (key->keycontext()) {
-        case KeyContext::Selection:
-          text = "Selection context: " + text;
+        case KeyContext::SelectionTool:
+          text = "Selection Tool: " + text;
           break;
-        case KeyContext::MovingPixels:
-          text = "Moving pixels context: " + text;
+        case KeyContext::TranslatingSelection:
+          text = "Translating Selection: " + text;
+          break;
+        case KeyContext::ScalingSelection:
+          text = "Scaling Selection: " + text;
+          break;
+        case KeyContext::RotatingSelection:
+          text = "Rotating Selection: " + text;
           break;
         case KeyContext::MoveTool:
-          text = "Move tool: " + text;
+          text = "Move Tool: " + text;
           break;
       }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);

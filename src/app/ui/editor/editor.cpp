@@ -1072,7 +1072,7 @@ void Editor::updateQuicktool()
     // Don't change quicktools if we are in a selection tool and using
     // the selection modifiers.
     if (current_tool->getInk(0)->isSelection() &&
-        int(m_customizationDelegate->getPressedKeyAction(KeyContext::Selection)) != 0)
+        int(m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool)) != 0)
       return;
 
     tools::Tool* old_quicktool = m_quicktool;
@@ -1126,7 +1126,7 @@ void Editor::updateContextBarFromModifiers()
 
   KeyAction action = KeyAction::None;
   if (m_customizationDelegate)
-    action = m_customizationDelegate->getPressedKeyAction(KeyContext::Selection);
+    action = m_customizationDelegate->getPressedKeyAction(KeyContext::SelectionTool);
 
   if (int(action & KeyAction::AddSelection))
     mode = tools::SelectionMode::ADD;

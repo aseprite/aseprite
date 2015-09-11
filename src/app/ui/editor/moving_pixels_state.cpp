@@ -264,7 +264,7 @@ bool MovingPixelsState::onMouseDown(Editor* editor, MouseMessage* msg)
     // In case that the user is pressing the copy-selection keyboard shortcut.
     EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
     if ((customization) &&
-        int(customization->getPressedKeyAction(KeyContext::MovingPixels) & KeyAction::CopySelection)) {
+        int(customization->getPressedKeyAction(KeyContext::TranslatingSelection) & KeyAction::CopySelection)) {
       // Stamp the pixels to create the copy.
       m_pixelsMovement->stampImage();
     }
@@ -315,8 +315,36 @@ bool MovingPixelsState::onMouseMove(Editor* editor, MouseMessage* msg)
     gfx::Point spritePos = editor->screenToEditor(mousePos);
 
     // Get the customization for the pixels movement (snap to grid, angle snap, etc.).
+    KeyContext keyContext = KeyContext::Normal;
+    switch (m_pixelsMovement->handle()) {
+      case MoveHandle:
+        keyContext = KeyContext::TranslatingSelection;
+        break;
+      case ScaleNWHandle:
+      case ScaleNHandle:
+      case ScaleNEHandle:
+      case ScaleWHandle:
+      case ScaleEHandle:
+      case ScaleSWHandle:
+      case ScaleSHandle:
+      case ScaleSEHandle:
+        keyContext = KeyContext::ScalingSelection;
+        break;
+      case RotateNWHandle:
+      case RotateNHandle:
+      case RotateNEHandle:
+      case RotateWHandle:
+      case RotateEHandle:
+      case RotateSWHandle:
+      case RotateSHandle:
+      case RotateSEHandle:
+        keyContext = KeyContext::RotatingSelection;
+        break;
+    }
+
     PixelsMovement::MoveModifier moveModifier = PixelsMovement::NormalMovement;
-    KeyAction action = editor->getCustomizationDelegate()->getPressedKeyAction(KeyContext::MovingPixels);
+    KeyAction action = editor->getCustomizationDelegate()
+      ->getPressedKeyAction(keyContext);
 
     if (int(action & KeyAction::SnapToGrid))
       moveModifier |= PixelsMovement::SnapToGridMovement;

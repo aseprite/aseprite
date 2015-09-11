@@ -54,6 +54,8 @@ namespace app {
                    const char* operationName);
     ~PixelsMovement();
 
+    HandleType handle() const { return m_handle; }
+
     void cutMask();
     void copyMask();
     void catchImage(const gfx::Point& pos, HandleType handle);

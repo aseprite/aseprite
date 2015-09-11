@@ -33,8 +33,10 @@ namespace app {
   enum class KeyContext {
     Any,
     Normal,
-    Selection,
-    MovingPixels,
+    SelectionTool,
+    TranslatingSelection,
+    ScalingSelection,
+    RotatingSelection,
     MoveTool,
   };
 
