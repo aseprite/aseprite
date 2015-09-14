@@ -12,6 +12,7 @@
 #include "app/util/new_image_from_mask.h"
 
 #include "app/document.h"
+#include "base/unique_ptr.h"
 #include "doc/image_impl.h"
 #include "doc/mask.h"
 #include "doc/site.h"
@@ -32,14 +33,13 @@ doc::Image* new_image_from_mask(const doc::Site& site, const doc::Mask* srcMask)
   const Image* srcMaskBitmap = srcMask->bitmap();
   const gfx::Rect& srcBounds = srcMask->bounds();
   int x, y, u, v, getx, gety;
-  Image *dst;
   const Image *src = site.image(&x, &y);
 
   ASSERT(srcSprite);
   ASSERT(srcMask);
   ASSERT(srcMaskBitmap);
 
-  dst = Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h);
+  base::UniquePtr<Image> dst(Image::create(srcSprite->pixelFormat(), srcBounds.w, srcBounds.h));
   if (!dst)
     return nullptr;
 
@@ -61,14 +61,14 @@ doc::Image* new_image_from_mask(const doc::Site& site, const doc::Mask* srcMask)
           gety = v+srcBounds.y-y;
 
           if ((getx >= 0) && (getx < src->width()) &&
-            (gety >= 0) && (gety < src->height()))
+              (gety >= 0) && (gety < src->height()))
             dst->putPixel(u, v, src->getPixel(getx, gety));
         }
       }
     }
   }
 
-  return dst;
+  return dst.release();
 }
 
 } // namespace app
