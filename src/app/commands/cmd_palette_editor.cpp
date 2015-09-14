@@ -84,6 +84,7 @@ private:
   void setNewPalette(Palette* palette, const char* operationName);
   void updateCurrentSpritePalette(const char* operationName);
   void updateColorBar();
+  void updateWidgetsFromSelectedEntries();
   void onPalChange();
   void resetRelativeInfo();
   void getPicks(PalettePicks& picks);
@@ -469,9 +470,11 @@ void PaletteEntryEditor::onChangeModeClick()
     case REL_MODE:
       m_rgbSliders.setMode(ColorSliders::Relative);
       m_hsvSliders.setMode(ColorSliders::Relative);
-      resetRelativeInfo();
       break;
   }
+
+  // Update sliders, entries, etc.
+  updateWidgetsFromSelectedEntries();
 }
 
 void PaletteEntryEditor::setPaletteEntry(const app::Color& color)
@@ -723,19 +726,23 @@ void PaletteEntryEditor::updateColorBar()
   ColorBar::instance()->invalidate();
 }
 
+void PaletteEntryEditor::updateWidgetsFromSelectedEntries()
+{
+  PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
+  int index = palette_editor->getSelectedEntry();
+  if (index >= 0)
+    setColor(app::Color::fromIndex(index));
+
+  resetRelativeInfo();
+
+  // Redraw the window
+  invalidate();
+}
+
 void PaletteEntryEditor::onPalChange()
 {
-  if (!m_selfPalChange) {
-    PaletteView* palette_editor = ColorBar::instance()->getPaletteView();
-    int index = palette_editor->getSelectedEntry();
-    if (index >= 0)
-      setColor(app::Color::fromIndex(index));
-
-    resetRelativeInfo();
-
-    // Redraw the window
-    invalidate();
-  }
+  if (!m_selfPalChange)
+    updateWidgetsFromSelectedEntries();
 }
 
 void PaletteEntryEditor::resetRelativeInfo()
