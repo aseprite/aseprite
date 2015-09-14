@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,15 +8,15 @@
 #define DOC_CEL_LIST_H_INCLUDED
 #pragma once
 
-#include <list>
+#include <vector>
 
 namespace doc {
 
   class Cel;
 
-  typedef std::list<Cel*> CelList;
-  typedef std::list<Cel*>::iterator CelIterator;
-  typedef std::list<Cel*>::const_iterator CelConstIterator;
+  typedef std::vector<Cel*> CelList;
+  typedef CelList::iterator CelIterator;
+  typedef CelList::const_iterator CelConstIterator;
 
 } // namespace doc
 

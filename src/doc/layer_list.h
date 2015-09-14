@@ -1,5 +1,5 @@
 // Aseprite Document Library
-// Copyright (c) 2001-2014 David Capello
+// Copyright (c) 2001-2015 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -8,15 +8,15 @@
 #define DOC_LAYER_LIST_H_INCLUDED
 #pragma once
 
-#include <list>
+#include <vector>
 
 namespace doc {
 
   class Layer;
 
-  typedef std::list<Layer*> LayerList;
-  typedef std::list<Layer*>::iterator LayerIterator;
-  typedef std::list<Layer*>::const_iterator LayerConstIterator;
+  typedef std::vector<Layer*> LayerList;
+  typedef LayerList::iterator LayerIterator;
+  typedef LayerList::const_iterator LayerConstIterator;
 
 } // namespace doc
 

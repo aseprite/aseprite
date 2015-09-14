@@ -316,7 +316,7 @@ void LayerFolder::stackLayer(Layer* layer, Layer* after)
     m_layers.insert(after_it, layer);
   }
   else
-    m_layers.push_front(layer);
+    m_layers.insert(m_layers.begin(), layer);
 }
 
 void LayerFolder::displaceFrames(frame_t fromThis, frame_t delta)
