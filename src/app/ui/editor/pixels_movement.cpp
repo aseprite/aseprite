@@ -677,7 +677,13 @@ void PixelsMovement::drawImage(doc::Image* dst, const gfx::Point& pt, bool rende
       BlendMode::SRC);
 
   color_t maskColor = m_maskColor;
-  if (m_opaque) {
+
+  // In case that Opaque option is enabled, or if we are drawing the
+  // image for the clipboard (renderOriginalLayer is false), we use a
+  // dummy mask color to call drawParallelogram(). In this way all
+  // pixels will be opaqued (all colors are copied)
+  if (m_opaque ||
+      !renderOriginalLayer) {
     if (m_originalImage->pixelFormat() == IMAGE_INDEXED)
       maskColor = -1;
     else
