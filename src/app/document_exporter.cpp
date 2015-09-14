@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <fstream>
 #include <iostream>
+#include <list>
 
 using namespace doc;
 
