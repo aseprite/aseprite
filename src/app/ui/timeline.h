@@ -138,6 +138,8 @@ namespace app {
     void onCancel(Context* ctx) override;
 
   private:
+    struct DrawCelData;
+
     struct Hit {
       int part;
       LayerIndex layer;
@@ -193,9 +195,10 @@ namespace app {
     void drawHeader(ui::Graphics* g);
     void drawHeaderFrame(ui::Graphics* g, frame_t frame);
     void drawLayer(ui::Graphics* g, LayerIndex layerIdx);
-    void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel);
+    void drawCel(ui::Graphics* g, LayerIndex layerIdx, frame_t frame, Cel* cel, DrawCelData* data);
     void drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-      Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover);
+                               Cel* cel, frame_t frame, bool is_active, bool is_hover,
+                               DrawCelData* data);
     void drawFrameTags(ui::Graphics* g);
     void drawRangeOutline(ui::Graphics* g);
     void drawPaddings(ui::Graphics* g);

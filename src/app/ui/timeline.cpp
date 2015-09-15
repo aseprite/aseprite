@@ -105,6 +105,17 @@ enum {
   PART_FRAME_TAG,
 };
 
+struct Timeline::DrawCelData {
+  CelIterator begin;
+  CelIterator end;
+  CelIterator it;
+  CelIterator prevIt;           // Previous Cel to "it"
+  CelIterator nextIt;           // Next Cel to "it"
+  CelIterator activeIt;         // Active Cel iterator
+  CelIterator firstLink;        // First link to the active cel
+  CelIterator lastLink;         // Last link to the active cel
+};
+
 Timeline::Timeline()
   : Widget(kGenericWidget)
   , m_context(UIContext::instance())
@@ -890,6 +901,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
     }
 
     // Draw each visible layer.
+    DrawCelData data;
     for (layer=last_layer; layer>=first_layer; --layer) {
       {
         IntersectClip clip(g, getLayerHeadersBounds());
@@ -897,27 +909,73 @@ void Timeline::onPaint(ui::PaintEvent& ev)
           drawLayer(g, layer);
       }
 
-      // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
-      CelIterator it, end;
-      Layer* layerPtr = m_layers[layer];
-      if (layerPtr->isImage()) {
-        it = static_cast<LayerImage*>(layerPtr)->getCelBegin();
-        end = static_cast<LayerImage*>(layerPtr)->getCelEnd();
-        for (; it != end && (*it)->frame() < first_frame; ++it)
-          ;
-      }
-
       IntersectClip clip(g, getCelsBounds());
       if (!clip)
         continue;
 
+      // Get the first CelIterator to be drawn (it is the first cel with cel->frame >= first_frame)
+      LayerImage* layerPtr = static_cast<LayerImage*>(m_layers[layer]);
+      data.begin = layerPtr->getCelBegin();
+      data.end = layerPtr->getCelEnd();
+      data.it = layerPtr->findFirstCelIteratorAfter(first_frame);
+      if (data.it != data.begin)
+        --data.it;
+
+      data.prevIt = data.end;
+      data.nextIt = (data.it != data.end ? data.it+1: data.end);
+
+      // Calculate link range for the active cel
+      data.firstLink = data.end;
+      data.lastLink = data.end;
+
+      if (layerPtr == m_layer) {
+        data.activeIt = layerPtr->findCelIterator(m_frame);
+        if (data.activeIt != data.end) {
+          data.firstLink = data.activeIt;
+          data.lastLink = data.activeIt;
+
+          ObjectId imageId = (*data.activeIt)->image()->id();
+
+          auto it2 = data.activeIt;
+          if (it2 != data.begin) {
+            do {
+              --it2;
+              if ((*it2)->image()->id() == imageId) {
+                data.firstLink = it2;
+                if ((*data.firstLink)->frame() < first_frame)
+                  break;
+              }
+            } while (it2 != data.begin);
+          }
+
+          it2 = data.activeIt;
+          while (it2 != data.end) {
+            if ((*it2)->image()->id() == imageId) {
+              data.lastLink = it2;
+              if ((*data.lastLink)->frame() > last_frame)
+                break;
+            }
+            ++it2;
+          }
+        }
+      }
+      else
+        data.activeIt = data.end;
+
       // Draw every visible cel for each layer.
       for (frame=first_frame; frame<=last_frame; ++frame) {
-        Cel* cel = (layerPtr->isImage() && it != end && (*it)->frame() == frame ? *it: NULL);
-        drawCel(g, layer, frame, cel);
+        Cel* cel =
+          (data.it != data.end &&
+           (*data.it)->frame() == frame ? *data.it: nullptr);
 
-        if (cel)
-          ++it;               // Go to next cel
+        drawCel(g, layer, frame, cel, &data);
+
+        if (cel) {
+          data.prevIt = data.it;
+          data.it = data.nextIt; // Point to next cel
+          if (data.nextIt != data.end)
+            ++data.nextIt;
+        }
       }
     }
 
@@ -1303,10 +1361,10 @@ void Timeline::drawLayer(ui::Graphics* g, LayerIndex layerIdx)
   }
 }
 
-void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel)
+void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Cel* cel, DrawCelData* data)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
-  Layer* layer = m_layers[layerIndex];
+  LayerImage* layer = static_cast<LayerImage*>(m_layers[layerIndex]);
   Image* image = (cel ? cel->image(): NULL);
   bool is_hover = (m_hot.part == PART_CEL &&
     m_hot.layer == layerIndex &&
@@ -1330,8 +1388,13 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
     style = styles.timelineEmptyFrame();
   }
   else {
-    Cel* left = (layer->isImage() ? layer->cel(frame-1): NULL);
-    Cel* right = (layer->isImage() ? layer->cel(frame+1): NULL);
+    // Calculate which cel is next to this one (in previous and next
+    // frame).
+    Cel* left = (data->prevIt != data->end ? *data->prevIt: nullptr);
+    Cel* right = (data->nextIt != data->end ? *data->nextIt: nullptr);
+    if (left && left->frame() != frame-1) left = nullptr;
+    if (right && right->frame() != frame+1) right = nullptr;
+
     ObjectId leftImg = (left ? left->image()->id(): 0);
     ObjectId rightImg = (right ? right->image()->id(): 0);
     fromLeft = (leftImg == cel->image()->id());
@@ -1349,44 +1412,22 @@ void Timeline::drawCel(ui::Graphics* g, LayerIndex layerIndex, frame_t frame, Ce
   drawPart(g, bounds, NULL, style, is_active, is_hover);
 
   // Draw decorators to link the activeCel with its links.
-  if (layer == m_layer) {
-    Cel* activeCel = m_layer->cel(m_frame);
-    if (activeCel)
-      drawCelLinkDecorators(g, bounds, cel, activeCel, frame, is_active, is_hover);
-  }
+  if (data->activeIt != data->end)
+    drawCelLinkDecorators(g, bounds, cel, frame, is_active, is_hover, data);
 }
 
 void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
-  Cel* cel, Cel* activeCel, frame_t frame, bool is_active, bool is_hover)
+                                     Cel* cel, frame_t frame, bool is_active, bool is_hover,
+                                     DrawCelData* data)
 {
   SkinTheme::Styles& styles = skinTheme()->styles;
-  ObjectId imageId = activeCel->image()->id();
+  ObjectId imageId = (*data->activeIt)->image()->id();
 
-  // Link in some cel at the left side
-  bool left = false;
-  for (frame_t fr=frame-1; fr>=0; --fr) {
-    Cel* c = m_layer->cel(fr);
-    if (c && c->image()->id() == imageId) {
-      left = true;
-      break;
-    }
-  }
+  // Links at the left or right side
+  bool left = (data->firstLink != data->end ? frame > (*data->firstLink)->frame(): false);
+  bool right = (data->lastLink != data->end ? frame < (*data->lastLink)->frame(): false);
 
-  // Link in some cel at the right side
-  bool right = false;
-  for (frame_t fr=frame+1; fr<m_sprite->totalFrames(); ++fr) {
-    Cel* c = m_layer->cel(fr);
-    if (c && c->image()->id() == imageId) {
-      right = true;
-      break;
-    }
-  }
-
-  if (!cel || cel->image()->id() != imageId) {
-    if (left && right)
-      drawPart(g, bounds, NULL, styles.timelineBothLinks(), is_active, is_hover);
-  }
-  else {
+  if (cel && cel->image()->id() == imageId) {
     if (left) {
       Cel* prevCel = m_layer->cel(cel->frame()-1);
       if (!prevCel || prevCel->image()->id() != imageId)
@@ -1397,6 +1438,10 @@ void Timeline::drawCelLinkDecorators(ui::Graphics* g, const gfx::Rect& bounds,
       if (!nextCel || nextCel->image()->id() != imageId)
         drawPart(g, bounds, NULL, styles.timelineRightLink(), is_active, is_hover);
     }
+  }
+  else {
+    if (left && right)
+      drawPart(g, bounds, NULL, styles.timelineBothLinks(), is_active, is_hover);
   }
 }
 
