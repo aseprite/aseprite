@@ -125,16 +125,11 @@ void LayerImage::destroyAllCels()
 
 Cel* LayerImage::cel(frame_t frame) const
 {
-  CelConstIterator it = getCelBegin();
-  CelConstIterator end = getCelEnd();
-
-  for (; it != end; ++it) {
-    Cel* cel = *it;
-    if (cel->frame() == frame)
-      return cel;
-  }
-
-  return NULL;
+  CelConstIterator it = findCelIterator(frame);
+  if (it != getCelEnd())
+    return *it;
+  else
+    return nullptr;
 }
 
 void LayerImage::getCels(CelList& cels) const
@@ -154,6 +149,46 @@ Cel* LayerImage::getLastCel() const
     return NULL;
 }
 
+CelConstIterator LayerImage::findCelIterator(frame_t frame) const
+{
+  CelIterator it = const_cast<LayerImage*>(this)->findCelIterator(frame);
+  return CelConstIterator(it);
+}
+
+CelIterator LayerImage::findCelIterator(frame_t frame)
+{
+  auto first = getCelBegin();
+  auto end = getCelEnd();
+
+  // Here we use a binary search to find the first cel equal to "frame" (or after frame)
+  first = std::lower_bound(
+    first, end, nullptr,
+    [frame](Cel* cel, Cel*) -> bool {
+      return cel->frame() < frame;
+    });
+
+  // We return the iterator only if it's an exact match
+  if (first != end && (*first)->frame() == frame)
+    return first;
+  else
+    return end;
+}
+
+CelIterator LayerImage::findFirstCelIteratorAfter(frame_t firstAfterFrame)
+{
+  auto first = getCelBegin();
+  auto end = getCelEnd();
+
+  // Here we use a binary search to find the first cel after the given frame
+  first = std::lower_bound(
+    first, end, nullptr,
+    [firstAfterFrame](Cel* cel, Cel*) -> bool {
+      return cel->frame() <= firstAfterFrame;
+    });
+
+  return first;
+}
+
 void LayerImage::addCel(Cel* cel)
 {
   ASSERT(cel);
@@ -162,14 +197,7 @@ void LayerImage::addCel(Cel* cel)
   ASSERT(sprite());
   ASSERT(cel->image()->pixelFormat() == sprite()->pixelFormat());
 
-  CelIterator it = getCelBegin();
-  CelIterator end = getCelEnd();
-
-  for (; it != end; ++it) {
-    if ((*it)->frame() > cel->frame())
-      break;
-  }
-
+  CelIterator it = findFirstCelIteratorAfter(cel->frame());
   m_cels.insert(it, cel);
 
   cel->setParentLayer(this);
@@ -183,8 +211,8 @@ void LayerImage::addCel(Cel* cel)
  */
 void LayerImage::removeCel(Cel* cel)
 {
-  CelIterator it = std::find(m_cels.begin(), m_cels.end(), cel);
-
+  ASSERT(cel);
+  CelIterator it = findCelIterator(cel->frame());
   ASSERT(it != m_cels.end());
 
   m_cels.erase(it);

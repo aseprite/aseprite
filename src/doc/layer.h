@@ -125,10 +125,15 @@ namespace doc {
     void addCel(Cel *cel);
     void removeCel(Cel *cel);
     void moveCel(Cel *cel, frame_t frame);
+
     Cel* cel(frame_t frame) const override;
     void getCels(CelList& cels) const override;
     void displaceFrames(frame_t fromThis, frame_t delta) override;
+
     Cel* getLastCel() const;
+    CelConstIterator findCelIterator(frame_t frame) const;
+    CelIterator findCelIterator(frame_t frame);
+    CelIterator findFirstCelIteratorAfter(frame_t firstAfterFrame);
 
     void configureAsBackground();
 
