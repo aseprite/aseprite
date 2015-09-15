@@ -29,8 +29,8 @@ namespace app {
 
     // Called only in QUICKBOX mode, when the user released the mouse
     // button.
-    virtual void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) { }
-    virtual void onQuickboxCancel() { }
+    virtual void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButtons buttons) { }
+    virtual void onQuickboxCancel(Editor* editor) { }
 
     // Help text to be shown in the ContextBar
     virtual std::string onGetContextBarHelp() { return ""; }

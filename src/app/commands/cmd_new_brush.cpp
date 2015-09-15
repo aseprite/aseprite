@@ -43,15 +43,15 @@ protected:
   void onExecute(Context* context) override;
 
   // SelectBoxDelegate impl
-  void onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons) override;
-  void onQuickboxCancel() override;
+  void onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButtons buttons) override;
+  void onQuickboxCancel(Editor* editor) override;
 
   std::string onGetContextBarHelp() override {
     return "Select brush bounds | Right-click to cut";
   }
 
 private:
-  void createBrush(const Mask* mask);
+  void createBrush(const Site& site, const Mask* mask);
   void selectPencilTool();
 };
 
@@ -92,7 +92,8 @@ void NewBrushCommand::onExecute(Context* context)
   }
   // Create a brush from the active selection
   else {
-    createBrush(context->activeDocument()->mask());
+    createBrush(context->activeSite(),
+                context->activeDocument()->mask());
     selectPencilTool();
 
     // Deselect mask
@@ -102,11 +103,11 @@ void NewBrushCommand::onExecute(Context* context)
   }
 }
 
-void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons buttons)
+void NewBrushCommand::onQuickboxEnd(Editor* editor, const gfx::Rect& rect, ui::MouseButtons buttons)
 {
   Mask mask;
   mask.replace(rect);
-  createBrush(&mask);
+  createBrush(editor->getSite(), &mask);
   selectPencilTool();
 
   // If the right-button was used, we clear the selected area.
@@ -128,18 +129,17 @@ void NewBrushCommand::onQuickboxEnd(const gfx::Rect& rect, ui::MouseButtons butt
   App::instance()->getMainWindow()->getContextBar()
     ->updateForCurrentTool();
 
-  current_editor->backToPreviousState();
+  editor->backToPreviousState();
 }
 
-void NewBrushCommand::onQuickboxCancel()
+void NewBrushCommand::onQuickboxCancel(Editor* editor)
 {
-  current_editor->backToPreviousState();
+  editor->backToPreviousState();
 }
 
-void NewBrushCommand::createBrush(const Mask* mask)
+void NewBrushCommand::createBrush(const Site& site, const Mask* mask)
 {
-  doc::ImageRef image(new_image_from_mask(
-                        UIContext::instance()->activeSite(), mask));
+  doc::ImageRef image(new_image_from_mask(site, mask));
   if (!image)
     return;
 
