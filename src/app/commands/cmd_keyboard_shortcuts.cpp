@@ -342,6 +342,9 @@ private:
         case KeyContext::MoveTool:
           text = "Move Tool: " + text;
           break;
+        case KeyContext::FreehandTool:
+          text = "Freehand Tools: " + text;
+          break;
       }
       KeyItem* keyItem = new KeyItem(text, key, NULL, 0);
 

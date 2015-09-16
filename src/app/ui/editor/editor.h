@@ -168,6 +168,9 @@ namespace app {
 
     bool isSecondaryButton() const { return m_secondaryButton; }
 
+    gfx::Point lastDrawingPosition() const { return m_lastDrawingPosition; }
+    void setLastDrawingPosition(const gfx::Point& pos);
+
     // Returns true if we are able to draw in the current doc/sprite/layer/cel.
     bool canDraw();
 
@@ -257,6 +260,10 @@ namespace app {
 
     // Brush preview
     BrushPreview m_brushPreview;
+
+    // Position used to draw straight lines using freehand tools + Shift key
+    // (EditorCustomizationDelegate::isStraightLineFromLastPoint() modifier)
+    gfx::Point m_lastDrawingPosition;
 
     // Current selected quicktool (this genererally should be NULL if
     // the user is not pressing any keyboard key).

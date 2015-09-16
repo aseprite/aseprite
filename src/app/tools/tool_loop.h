@@ -212,9 +212,6 @@ namespace app {
       // Returns true if the loop was canceled by the user
       virtual bool isCanceled() = 0;
 
-      // Converts a coordinate in the screen to the sprite.
-      virtual gfx::Point screenToSprite(const gfx::Point& screenPoint) = 0;
-
       // This region is modified by the ToolLoopManager so then you know
       // what must be updated in updateDirtyArea().
       virtual gfx::Region& getDirtyArea() = 0;
@@ -223,7 +220,6 @@ namespace app {
       virtual void updateDirtyArea() = 0;
 
       virtual void updateStatusBar(const char* text) = 0;
-
     };
 
   } // namespace tools
