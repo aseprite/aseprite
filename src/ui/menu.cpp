@@ -1125,7 +1125,15 @@ void Menu::closeAll()
   }
 
   MenuBox* base_menubox = get_base_menubox(menu->getParent());
+  ASSERT(base_menubox);
+  if (!base_menubox)
+    return;
+
   MenuBaseData* base = base_menubox->getBase();
+  ASSERT(base);
+  if (!base)
+    return;
+
   base->close_all = true;
   base->was_clicked = false;
   if (base->is_filtering) {
