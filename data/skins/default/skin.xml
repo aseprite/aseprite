@@ -5,6 +5,7 @@
 
   <dimensions>
     <dim id="scrollbar_size" value="12" />
+    <dim id="mini_scrollbar_size" value="6" />
     <dim id="tabs_width" value="80" />
     <dim id="tabs_height" value="17" />
     <dim id="tabs_bottom_height" value="5" />

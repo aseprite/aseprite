@@ -133,8 +133,11 @@ void EditorView::setupScrollbars()
     hideScrollBars();
   }
   else {
-    getHorizontalBar()->setBarWidth(kEditorViewScrollbarWidth*guiscale());
-    getVerticalBar()->setBarWidth(kEditorViewScrollbarWidth*guiscale());
+    SkinTheme* theme = static_cast<SkinTheme*>(getTheme());
+    int barsize = theme->dimensions.miniScrollbarSize();
+
+    getHorizontalBar()->setBarWidth(barsize);
+    getVerticalBar()->setBarWidth(barsize);
 
     setup_mini_look(getHorizontalBar());
     setup_mini_look(getVerticalBar());

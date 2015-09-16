@@ -211,10 +211,12 @@ bool PreviewEditorWindow::onProcessMessage(ui::Message* msg)
 
     case kOpenMessage:
       {
+        SkinTheme* theme = SkinTheme::instance();
+
         // Default bounds
         int width = ui::display_w()/4;
         int height = ui::display_h()/4;
-        int extra = 2*kEditorViewScrollbarWidth*guiscale();
+        int extra = 2*theme->dimensions.miniScrollbarSize();
         setBounds(
           gfx::Rect(
             ui::display_w() - width - ToolBar::instance()->getBounds().w - extra,
