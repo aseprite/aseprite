@@ -83,6 +83,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
   bool movement = false;
 
   if (m_toolLoop->getController()->isFreehand() &&
+      m_toolLoop->getInk()->isPaint() &&
       (editor->getCustomizationDelegate()
          ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
       m_lastPoint.x >= 0) {
