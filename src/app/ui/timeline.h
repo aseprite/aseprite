@@ -84,9 +84,6 @@ namespace app {
     Layer* getLayer() { return m_layer; }
     frame_t getFrame() { return m_frame; }
 
-    void setLayer(Layer* layer);
-    void setFrame(frame_t frame);
-
     State getState() const { return m_state; }
     bool isMovingCel() const;
 
@@ -185,6 +182,8 @@ namespace app {
       int xpos, ypos;
     };
 
+    void setLayer(Layer* layer);
+    void setFrame(frame_t frame);
     bool allLayersVisible();
     bool allLayersInvisible();
     bool allLayersLocked();
@@ -287,6 +286,7 @@ namespace app {
 
     bool m_scroll;   // True if the drag-and-drop operation is a scroll operation.
     bool m_copy;     // True if the drag-and-drop operation is a copy.
+    bool m_fromTimeline;
 
     AniControls m_aniControls;
 

@@ -41,6 +41,7 @@
 #include "app/util/clipboard.h"
 #include "base/convert_to.h"
 #include "base/memory.h"
+#include "base/scoped_value.h"
 #include "doc/doc.h"
 #include "doc/document_event.h"
 #include "doc/frame_tag.h"
@@ -131,6 +132,7 @@ Timeline::Timeline()
   , m_clipboard_timer(100, this)
   , m_offset_count(0)
   , m_scroll(false)
+  , m_fromTimeline(false)
 {
   m_ctxConn = m_context->AfterCommandExecution.connect(
     &Timeline::onAfterCommandExecution, this);
@@ -360,6 +362,7 @@ bool Timeline::onProcessMessage(Message* msg)
           break;
         }
         case PART_LAYER_TEXT: {
+          base::ScopedValue<bool> lock(m_fromTimeline, true, false);
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectLayer = (mouseMsg->left() || !isLayerActive(m_clk.layer));
 
@@ -387,6 +390,7 @@ bool Timeline::onProcessMessage(Message* msg)
         case PART_LAYER_CONTINUOUS_ICON:
           break;
         case PART_CEL: {
+          base::ScopedValue<bool> lock(m_fromTimeline, true, false);
           LayerIndex old_layer = getLayerIndex(m_layer);
           bool selectCel = (mouseMsg->left()
             || !isLayerActive(m_clk.layer)
@@ -1113,6 +1117,9 @@ void Timeline::onStateChanged(Editor* editor)
 
 void Timeline::onAfterFrameChanged(Editor* editor)
 {
+  if (m_fromTimeline)
+    return;
+
   setFrame(editor->frame());
 
   if (!hasCapture())
@@ -1124,6 +1131,9 @@ void Timeline::onAfterFrameChanged(Editor* editor)
 
 void Timeline::onAfterLayerChanged(Editor* editor)
 {
+  if (m_fromTimeline)
+    return;
+
   setLayer(editor->layer());
 
   if (!hasCapture())
