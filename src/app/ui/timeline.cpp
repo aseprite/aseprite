@@ -2177,23 +2177,21 @@ void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
   gfx::Point scroll = getViewScroll();
   int x1, y1, x2, y2;
-  int left = m_viewportArea.x;
-  int top = m_viewportArea.y;
 
-  x1 = left + FRMSIZE*frame - scroll.x;
-  y1 = top + LAYSIZE*(lastLayer() - layer) - scroll.y;
+  x1 = m_viewportArea.x + FRMSIZE*frame - scroll.x;
+  y1 = m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
-  if (x1 < left) {
-    scroll.x -= left - (x1);
+  if (x1 < m_viewportArea.x) {
+    scroll.x -= m_viewportArea.x - x1;
   }
   else if (x2 > m_viewportArea.x2()-1) {
     scroll.x += (x2) - (m_viewportArea.x2()-1);
   }
 
-  if (y1 < top) {
-    scroll.y -= top - (y1);
+  if (y1 < m_viewportArea.y) {
+    scroll.y -= m_viewportArea.y - (y1);
   }
   else if (y2 > m_viewportArea.y2()-1) {
     scroll.y += (y2) - (m_viewportArea.y2()-1);
