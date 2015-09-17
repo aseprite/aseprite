@@ -26,8 +26,8 @@ public:
   enum Type { Merge, WithFg, WithBg, Copy, LockAlpha };
 
 private:
-  AlgoHLine m_proc;
   Type m_type;
+  AlgoHLine m_proc;
 
 public:
   PaintInk(Type type) : m_type(type), m_proc(nullptr) { }
