@@ -1506,19 +1506,29 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
   if (skinPropery)
     isMiniLook = (skinPropery->getLook() == MiniLook);
 
-  skin::Style* bgStyle = (isMiniLook ?
-    styles.miniScrollbar():
-    styles.scrollbar());
+  skin::Style* bgStyle;
+  skin::Style* thumbStyle;
 
-  skin::Style* thumbStyle = (isMiniLook ?
-    styles.miniScrollbarThumb():
-    styles.scrollbarThumb());
+  if (widget->isTransparent()) {
+    bgStyle = styles.transparentScrollbar();
+    thumbStyle = styles.transparentScrollbarThumb();
+  }
+  else if (isMiniLook) {
+    bgStyle = styles.miniScrollbar();
+    thumbStyle = styles.miniScrollbarThumb();
+  }
+  else {
+    bgStyle = styles.scrollbar();
+    thumbStyle = styles.scrollbarThumb();
+  }
 
   widget->getScrollBarThemeInfo(&pos, &len);
 
-  gfx::Rect rc = widget->getClientBounds();
+  Style::State state;
+  if (widget->hasMouse()) state += Style::hover();
 
-  bgStyle->paint(g, rc, NULL, Style::State());
+  gfx::Rect rc = widget->getClientBounds();
+  bgStyle->paint(g, rc, NULL, state);
 
   // Horizontal bar
   if (widget->getAlign() & HORIZONTAL) {
@@ -1531,7 +1541,7 @@ void SkinTheme::paintViewScrollbar(PaintEvent& ev)
     rc.h = len;
   }
 
-  thumbStyle->paint(g, rc, NULL, Style::State());
+  thumbStyle->paint(g, rc, NULL, state);
 }
 
 void SkinTheme::paintViewViewport(PaintEvent& ev)

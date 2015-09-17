@@ -13,6 +13,7 @@
 #include "ui/message.h"
 #include "ui/preferred_size_event.h"
 #include "ui/resize_event.h"
+#include "ui/scroll_helper.h"
 #include "ui/system.h"
 #include "ui/theme.h"
 #include "ui/view.h"
@@ -27,8 +28,8 @@ using namespace gfx;
 
 View::View()
   : Widget(kViewWidget)
-  , m_scrollbar_h(HORIZONTAL)
-  , m_scrollbar_v(VERTICAL)
+  , m_scrollbar_h(HORIZONTAL, this)
+  , m_scrollbar_v(VERTICAL, this)
 {
   m_hasBars = true;
 
@@ -89,81 +90,35 @@ Size View::getScrollableSize()
 
 void View::setScrollableSize(const Size& sz)
 {
-#define CHECK(w, h, width)                                      \
-  ((sz.w > (m_viewport.getBounds().w                            \
-            - m_viewport.border().width())) &&                  \
-   (VBAR_SIZE < pos.w) &&                                       \
-   (HBAR_SIZE < pos.h))
-
-  m_scrollbar_h.setSize(sz.w);
-  m_scrollbar_v.setSize(sz.h);
-
-  gfx::Rect pos = getChildrenBounds();
-
-  // Setup scroll-bars
-  if (m_scrollbar_h.getParent()) removeChild(&m_scrollbar_h);
-  if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
+  gfx::Rect viewportArea = getChildrenBounds();
 
   if (m_hasBars) {
-    if (CHECK(w, h, width)) {
-      pos.h -= HBAR_SIZE;
-      addChild(&m_scrollbar_h);
-
-      if (CHECK(h, w, height)) {
-        pos.w -= VBAR_SIZE;
-        if (CHECK(w, h, width))
-          addChild(&m_scrollbar_v);
-        else {
-          pos.w += VBAR_SIZE;
-          pos.h += HBAR_SIZE;
-          removeChild(&m_scrollbar_h);
-        }
-      }
-    }
-    else if (CHECK(h, w, height)) {
-      pos.w -= VBAR_SIZE;
-      addChild(&m_scrollbar_v);
-
-      if (CHECK(w, h, width)) {
-        pos.h -= HBAR_SIZE;
-        if (CHECK(h, w, height))
-          addChild(&m_scrollbar_h);
-        else {
-          pos.w += VBAR_SIZE;
-          pos.h += HBAR_SIZE;
-          removeChild(&m_scrollbar_v);
-        }
-      }
-    }
-
-    if (hasChild(&m_scrollbar_h)) {
-      m_scrollbar_h.setBounds(gfx::Rect(pos.x, pos.y2(), pos.w, HBAR_SIZE));
-      m_scrollbar_h.setVisible(true);
-    }
-    else
-      m_scrollbar_h.setVisible(false);
-
-    if (hasChild(&m_scrollbar_v)) {
-      m_scrollbar_v.setBounds(gfx::Rect(pos.x2(), pos.y, VBAR_SIZE, pos.h));
-      m_scrollbar_v.setVisible(true);
-    }
-    else
-      m_scrollbar_v.setVisible(false);
+    setup_scrollbars(sz,
+                     viewportArea,
+                     *this,
+                     m_scrollbar_h,
+                     m_scrollbar_v);
+  }
+  else {
+    if (m_scrollbar_h.getParent()) removeChild(&m_scrollbar_h);
+    if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
+    m_scrollbar_h.setVisible(false);
+    m_scrollbar_v.setVisible(false);
   }
 
   // Setup viewport
   invalidate();
-  m_viewport.setBounds(pos);
+  m_viewport.setBounds(viewportArea);
   setViewScroll(getViewScroll()); // Setup the same scroll-point
 }
 
-Size View::getVisibleSize()
+Size View::getVisibleSize() const
 {
   return Size(m_viewport.getBounds().w - m_viewport.border().width(),
               m_viewport.getBounds().h - m_viewport.border().height());
 }
 
-Point View::getViewScroll()
+Point View::getViewScroll() const
 {
   return Point(m_scrollbar_h.getPos(),
                m_scrollbar_v.getPos());

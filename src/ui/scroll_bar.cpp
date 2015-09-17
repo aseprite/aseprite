@@ -12,7 +12,6 @@
 #include "ui/message.h"
 #include "ui/scroll_bar.h"
 #include "ui/theme.h"
-#include "ui/view.h"
 
 namespace ui {
 
@@ -23,8 +22,9 @@ using namespace gfx;
 int ScrollBar::m_wherepos = 0;
 int ScrollBar::m_whereclick = 0;
 
-ScrollBar::ScrollBar(int align)
+ScrollBar::ScrollBar(int align, ScrollableViewDelegate* delegate)
   : Widget(kViewScrollbarWidget)
+  , m_delegate(delegate)
   , m_barWidth(getTheme()->getScrollbarSize())
   , m_pos(0)
   , m_size(0)
@@ -64,7 +64,6 @@ bool ScrollBar::onProcessMessage(Message* msg)
 
     case kMouseDownMessage: {
       gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-      View* view = static_cast<View*>(getParent());
       int x1, y1, x2, y2;
       int u1, v1, u2, v2;
       bool ret = false;
@@ -87,7 +86,7 @@ bool ScrollBar::onProcessMessage(Message* msg)
       u2 = x2 - border().right();
       v2 = y2 - border().bottom();
 
-      Point scroll = view->getViewScroll();
+      Point scroll = m_delegate->getViewScroll();
 
       if (this->getAlign() & HORIZONTAL) {
         // in the bar
@@ -96,12 +95,12 @@ bool ScrollBar::onProcessMessage(Message* msg)
         }
         // left
         else if (MOUSE_IN(x1, y1, u1+pos-1, y2)) {
-          scroll.x -= view->getViewport()->getBounds().w/2;
+          scroll.x -= m_delegate->getVisibleSize().w/2;
           ret = true;
         }
         // right
         else if (MOUSE_IN(u1+pos+len, y1, x2, y2)) {
-          scroll.x += view->getViewport()->getBounds().w/2;
+          scroll.x += m_delegate->getVisibleSize().w/2;
           ret = true;
         }
       }
@@ -112,18 +111,18 @@ bool ScrollBar::onProcessMessage(Message* msg)
         }
         // left
         else if (MOUSE_IN(x1, y1, x2, v1+pos-1)) {
-          scroll.y -= view->getViewport()->getBounds().h/2;
+          scroll.y -= m_delegate->getVisibleSize().h/2;
           ret = true;
         }
         // right
         else if (MOUSE_IN(x1, v1+pos+len, x2, y2)) {
-          scroll.y += view->getViewport()->getBounds().h/2;
+          scroll.y += m_delegate->getVisibleSize().h/2;
           ret = true;
         }
       }
 
       if (ret) {
-        view->setViewScroll(scroll);
+        m_delegate->setViewScroll(scroll);
         return ret;
       }
 
@@ -136,29 +135,29 @@ bool ScrollBar::onProcessMessage(Message* msg)
     case kMouseMoveMessage:
       if (hasCapture()) {
         gfx::Point mousePos = static_cast<MouseMessage*>(msg)->position();
-        View* view = static_cast<View*>(getParent());
         int pos, len, bar_size, viewport_size;
 
         getScrollBarInfo(&pos, &len, &bar_size, &viewport_size);
 
         if (bar_size > len) {
-          Point scroll = view->getViewScroll();
+          Point scroll = m_delegate->getViewScroll();
 
-          if (this->getAlign() & HORIZONTAL) {
+          if (getAlign() & HORIZONTAL) {
             pos = (m_wherepos + mousePos.x - m_whereclick);
             pos = MID(0, pos, bar_size - len);
 
             scroll.x = (m_size - viewport_size) * pos / (bar_size - len);
-            view->setViewScroll(scroll);
           }
           else {
             pos = (m_wherepos + mousePos.y - m_whereclick);
             pos = MID(0, pos, bar_size - len);
 
             scroll.y = (m_size - viewport_size) * pos / (bar_size - len);
-            view->setViewScroll(scroll);
           }
+
+          m_delegate->setViewScroll(scroll);
         }
+        return true;
       }
       break;
 
@@ -184,19 +183,18 @@ void ScrollBar::onPaint(PaintEvent& ev)
 
 void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_viewport_size)
 {
-  View* view = static_cast<View*>(getParent());
   int bar_size, viewport_size;
   int pos, len;
   int border_width;
 
   if (getAlign() & HORIZONTAL) {
     bar_size = getBounds().w;
-    viewport_size = view->getVisibleSize().w;
+    viewport_size = m_delegate->getVisibleSize().w;
     border_width = border().height();
   }
   else {
     bar_size = getBounds().h;
-    viewport_size = view->getVisibleSize().h;
+    viewport_size = m_delegate->getVisibleSize().h;
     border_width = border().width();
   }
 
@@ -204,11 +202,14 @@ void ScrollBar::getScrollBarInfo(int *_pos, int *_len, int *_bar_size, int *_vie
     len = bar_size;
     pos = 0;
   }
-  else {
+  else if (m_size > 0) {
     len = bar_size * viewport_size / m_size;
     len = MID(getTheme()->getScrollbarSize()*2-border_width, len, bar_size);
     pos = (bar_size-len) * m_pos / (m_size-viewport_size);
     pos = MID(0, pos, bar_size-len);
+  }
+  else {
+    len = pos = 0;
   }
 
   if (_pos) *_pos = pos;

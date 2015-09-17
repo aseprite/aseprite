@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -12,9 +12,17 @@
 
 namespace ui {
 
+  class ScrollableViewDelegate {
+  public:
+    virtual ~ScrollableViewDelegate() { }
+    virtual gfx::Size getVisibleSize() const = 0;
+    virtual gfx::Point getViewScroll() const = 0;
+    virtual void setViewScroll(const gfx::Point& pt) = 0;
+  };
+
   class ScrollBar : public Widget {
   public:
-    ScrollBar(int align);
+    ScrollBar(int align, ScrollableViewDelegate* delegate);
 
     int getBarWidth() const { return m_barWidth; }
     void setBarWidth(int barWidth) { m_barWidth = barWidth; }
@@ -36,6 +44,7 @@ namespace ui {
   private:
     void getScrollBarInfo(int* _pos, int* _len, int* _bar_size, int* _viewport_size);
 
+    ScrollableViewDelegate* m_delegate;
     int m_barWidth;
     int m_pos;
     int m_size;

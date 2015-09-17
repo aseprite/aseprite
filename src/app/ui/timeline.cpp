@@ -47,6 +47,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "she/font.h"
+#include "ui/scroll_helper.h"
 #include "ui/ui.h"
 
 #include <cstdio>
@@ -118,12 +119,12 @@ struct Timeline::DrawCelData {
 
 Timeline::Timeline()
   : Widget(kGenericWidget)
+  , m_hbar(HORIZONTAL, this)
+  , m_vbar(VERTICAL, this)
   , m_context(UIContext::instance())
   , m_editor(NULL)
   , m_document(NULL)
   , m_sprite(NULL)
-  , m_scroll_x(0)
-  , m_scroll_y(0)
   , m_separator_x(100 * guiscale())
   , m_separator_w(1)
   , m_confPopup(NULL)
@@ -137,6 +138,16 @@ Timeline::Timeline()
 
   setDoubleBuffered(true);
   addChild(&m_aniControls);
+  addChild(&m_hbar);
+  addChild(&m_vbar);
+
+  int barsize = skinTheme()->dimensions.miniScrollbarSize();
+  m_hbar.setBarWidth(barsize);
+  m_vbar.setBarWidth(barsize);
+  m_hbar.setBgColor(gfx::rgba(0, 0, 0, 128));
+  m_vbar.setBgColor(gfx::rgba(0, 0, 0, 128));
+  m_hbar.setTransparent(true);
+  m_vbar.setTransparent(true);
 }
 
 Timeline::~Timeline()
@@ -192,9 +203,7 @@ void Timeline::updateUsingEditor(Editor* editor)
 
   setFocusStop(true);
   regenerateLayers();
-  setScroll(
-    m_scroll_x,
-    m_scroll_y);
+  setViewScroll(getViewScroll());
   showCurrentCel();
 }
 
@@ -454,9 +463,10 @@ bool Timeline::onProcessMessage(Message* msg)
 
           case STATE_SCROLLING: {
             gfx::Point absMousePos = static_cast<MouseMessage*>(msg)->position();
-            setScroll(
-              m_scroll_x - (absMousePos.x - m_oldPos.x),
-              m_scroll_y - (absMousePos.y - m_oldPos.y));
+            setViewScroll(
+              getViewScroll() - gfx::Point(
+                (absMousePos.x - m_oldPos.x),
+                (absMousePos.y - m_oldPos.y)));
 
             m_oldPos = absMousePos;
             return true;
@@ -827,8 +837,7 @@ bool Timeline::onProcessMessage(Message* msg)
           dy *= 3;
         }
 
-        setScroll(m_scroll_x+dx,
-                  m_scroll_y+dy);
+        setViewScroll(getViewScroll() + gfx::Point(dx, dy));
       }
       break;
 
@@ -859,6 +868,8 @@ void Timeline::onResize(ui::ResizeEvent& ev)
     gfx::Rect(rc.x, rc.y, MIN(sz.w, m_separator_x),
       getFont()->height() +
       skinTheme()->dimensions.timelineTagsAreaHeight()));
+
+  updateScrollBars();
 }
 
 void Timeline::onPaint(ui::PaintEvent& ev)
@@ -1170,7 +1181,7 @@ void Timeline::setCursor(ui::Message* msg, const Hit& hit)
 void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, LayerIndex* last_layer)
 {
   int hpx = (getClientBounds().h - HDRSIZE - topHeight());
-  LayerIndex i = lastLayer() - LayerIndex((m_scroll_y+hpx) / LAYSIZE);
+  LayerIndex i = lastLayer() - LayerIndex((getViewScroll().y+hpx) / LAYSIZE);
   i = MID(firstLayer(), i, lastLayer());
 
   LayerIndex j = i + LayerIndex(hpx / LAYSIZE + 1);
@@ -1185,7 +1196,7 @@ void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, Layer
 
 void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame)
 {
-  *first_frame = frame_t((m_separator_w + m_scroll_x) / FRMSIZE);
+  *first_frame = frame_t((m_separator_w + getViewScroll().x) / FRMSIZE);
   *last_frame = *first_frame
     + frame_t((getClientBounds().w - m_separator_w) / FRMSIZE);
 }
@@ -1649,7 +1660,7 @@ gfx::Rect Timeline::getCelsBounds() const
   rc.x += m_separator_x;
   rc.w -= m_separator_x;
   rc.y += HDRSIZE + topHeight();
-  rc.h -= HDRSIZE - topHeight();
+  rc.h -= HDRSIZE + topHeight();
   return rc;
 }
 
@@ -1691,7 +1702,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
 
     case PART_HEADER_FRAME:
       return gfx::Rect(
-        bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*MAX(firstFrame(), hit.frame) - m_scroll_x,
+        bounds.x + m_separator_x + m_separator_w - 1
+        + FRMSIZE*MAX(firstFrame(), hit.frame) - getViewScroll().x,
         bounds.y + y, FRMSIZE, HDRSIZE);
 
     case PART_HEADER_FRAME_TAGS:
@@ -1703,7 +1715,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           m_separator_x, LAYSIZE);
       }
       break;
@@ -1711,7 +1723,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_EYE_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1719,7 +1731,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_PADLOCK_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1727,7 +1739,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_LAYER_CONTINUOUS_ICON:
       if (validLayer(hit.layer)) {
         return gfx::Rect(bounds.x + 2*FRMSIZE,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1736,7 +1748,7 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
       if (validLayer(hit.layer)) {
         int x = FRMSIZE*3;
         return gfx::Rect(bounds.x + x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           m_separator_x - x, LAYSIZE);
       }
       break;
@@ -1744,8 +1756,8 @@ gfx::Rect Timeline::getPartBounds(const Hit& hit) const
     case PART_CEL:
       if (validLayer(hit.layer) && hit.frame >= frame_t(0)) {
         return gfx::Rect(
-          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - m_scroll_x,
-          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - m_scroll_y,
+          bounds.x + m_separator_x + m_separator_w - 1 + FRMSIZE*hit.frame - getViewScroll().x,
+          bounds.y + y + HDRSIZE + LAYSIZE*(lastLayer()-hit.layer) - getViewScroll().y,
           FRMSIZE, LAYSIZE);
       }
       break;
@@ -1823,6 +1835,18 @@ void Timeline::regenerateLayers()
 
   for (size_t c=0; c<nlayers; c++)
     m_layers[c] = m_sprite->indexToLayer(LayerIndex(c));
+
+  updateScrollBars();
+}
+
+void Timeline::updateScrollBars()
+{
+  gfx::Rect rc = getBounds();
+  m_viewportArea = getCelsBounds().offset(rc.getOrigin());
+  ui::setup_scrollbars(getScrollableSize(),
+                       m_viewportArea, *this,
+                       m_hbar,
+                       m_vbar);
 }
 
 void Timeline::updateByMousePos(ui::Message* msg, const gfx::Point& mousePos)
@@ -1847,18 +1871,19 @@ Timeline::Hit Timeline::hitTest(ui::Message* msg, const gfx::Point& mousePos)
     hit.part = PART_SEPARATOR;
   }
   else {
+    gfx::Point scroll = getViewScroll();
     int top = topHeight();
 
     hit.layer = lastLayer() - LayerIndex(
       (mousePos.y
         - top
         - HDRSIZE
-        + m_scroll_y) / LAYSIZE);
+        + scroll.y) / LAYSIZE);
 
     hit.frame = frame_t((mousePos.x
         - m_separator_x
         - m_separator_w
-        + m_scroll_x) / FRMSIZE);
+        + scroll.x) / FRMSIZE);
 
     if (hasCapture()) {
       hit.layer = MID(firstLayer(), hit.layer, lastLayer());
@@ -1962,18 +1987,19 @@ Timeline::Hit Timeline::hitTestCel(const gfx::Point& mousePos)
   if (!m_document)
     return hit;
 
+  gfx::Point scroll = getViewScroll();
   int top = topHeight();
 
   hit.layer = lastLayer() - LayerIndex(
     (mousePos.y
      - top
      - HDRSIZE
-     + m_scroll_y) / LAYSIZE);
+     + scroll.y) / LAYSIZE);
 
   hit.frame = frame_t((mousePos.x
                        - m_separator_x
                        - m_separator_w
-                       + m_scroll_x) / FRMSIZE);
+                       + scroll.x) / FRMSIZE);
 
   hit.layer = MID(firstLayer(), hit.layer, lastLayer());
   hit.frame = MAX(firstFrame(), hit.frame);
@@ -2138,36 +2164,31 @@ void Timeline::updateStatusBar(ui::Message* msg)
 
 void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
-  int scroll_x, scroll_y;
+  gfx::Point scroll = getViewScroll();
   int x1, y1, x2, y2;
-  int left = getBounds().x + m_separator_x + m_separator_w;
-  int top = getBounds().y + topHeight() + HDRSIZE;
+  int left = m_viewportArea.x;
+  int top = m_viewportArea.y;
 
-  x1 = left + FRMSIZE*frame - m_scroll_x;
-  y1 = top + LAYSIZE*(lastLayer() - layer) - m_scroll_y;
+  x1 = left + FRMSIZE*frame - scroll.x;
+  y1 = top + LAYSIZE*(lastLayer() - layer) - scroll.y;
   x2 = x1 + FRMSIZE - 1;
   y2 = y1 + LAYSIZE - 1;
 
-  scroll_x = m_scroll_x;
-  scroll_y = m_scroll_y;
-
   if (x1 < left) {
-    scroll_x -= left - (x1);
+    scroll.x -= left - (x1);
   }
-  else if (x2 > getBounds().x2()-1) {
-    scroll_x += (x2) - (getBounds().x2()-1);
+  else if (x2 > m_viewportArea.x2()-1) {
+    scroll.x += (x2) - (m_viewportArea.x2()-1);
   }
 
   if (y1 < top) {
-    scroll_y -= top - (y1);
+    scroll.y -= top - (y1);
   }
-  else if (y2 > getBounds().y2()-1) {
-    scroll_y += (y2) - (getBounds().y2()-1);
+  else if (y2 > m_viewportArea.y2()-1) {
+    scroll.y += (y2) - (m_viewportArea.y2()-1);
   }
 
-  if (scroll_x != m_scroll_x ||
-      scroll_y != m_scroll_y)
-    setScroll(scroll_x, scroll_y);
+  setViewScroll(scroll);
 }
 
 void Timeline::showCurrentCel()
@@ -2183,17 +2204,29 @@ void Timeline::cleanClk()
   m_clk = Hit(PART_NOTHING);
 }
 
-void Timeline::setScroll(int x, int y)
+gfx::Size Timeline::getScrollableSize() const
 {
-  int max_scroll_x = m_sprite->totalFrames() * FRMSIZE - getBounds().w/2;
-  int max_scroll_y = m_layers.size() * LAYSIZE - getBounds().h/2;
-  max_scroll_x = MAX(0, max_scroll_x);
-  max_scroll_y = MAX(0, max_scroll_y);
+  if (m_sprite) {
+    return gfx::Size(
+      m_sprite->totalFrames() * FRMSIZE + getBounds().w/2,
+      m_layers.size() * LAYSIZE + getBounds().h/2);
+  }
+  else
+    return gfx::Size(0, 0);
+}
 
-  m_scroll_x = MID(0, x, max_scroll_x);
-  m_scroll_y = MID(0, y, max_scroll_y);
-
-  invalidate();
+gfx::Point Timeline::getMaxScrollablePos() const
+{
+  if (m_sprite) {
+    gfx::Size size = getScrollableSize();
+    int max_scroll_x = size.w - getBounds().w/2;
+    int max_scroll_y = size.h - getBounds().h/2;
+    max_scroll_x = MAX(0, max_scroll_x);
+    max_scroll_y = MAX(0, max_scroll_y);
+    return gfx::Point(max_scroll_x, max_scroll_y);
+  }
+  else
+    return gfx::Point(0, 0);
 }
 
 bool Timeline::allLayersVisible()
@@ -2312,6 +2345,32 @@ void Timeline::dropRange(DropOp op)
   catch (const std::exception& e) {
     ui::Alert::show("Problem<<%s||&OK", e.what());
   }
+}
+
+gfx::Size Timeline::getVisibleSize() const
+{
+  return getCelsBounds().getSize();
+}
+
+gfx::Point Timeline::getViewScroll() const
+{
+  return gfx::Point(m_hbar.getPos(), m_vbar.getPos());
+}
+
+void Timeline::setViewScroll(const gfx::Point& pt)
+{
+  const gfx::Point oldScroll = getViewScroll();
+  const gfx::Point maxPos = getMaxScrollablePos();
+  gfx::Point newScroll = pt;
+  newScroll.x = MID(0, newScroll.x, maxPos.x);
+  newScroll.y = MID(0, newScroll.y, maxPos.y);
+
+  if (newScroll == oldScroll)
+    return;
+
+  m_hbar.setPos(newScroll.x);
+  m_vbar.setPos(newScroll.y);
+  invalidate();
 }
 
 void Timeline::updateDropRange(const gfx::Point& pt)
