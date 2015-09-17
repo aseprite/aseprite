@@ -1196,9 +1196,10 @@ void Timeline::getDrawableLayers(ui::Graphics* g, LayerIndex* first_layer, Layer
 
 void Timeline::getDrawableFrames(ui::Graphics* g, frame_t* first_frame, frame_t* last_frame)
 {
-  *first_frame = frame_t((m_separator_w + getViewScroll().x) / FRMSIZE);
-  *last_frame = *first_frame
-    + frame_t((getClientBounds().w - m_separator_w) / FRMSIZE);
+  int availW = (getClientBounds().w - m_separator_x);
+
+  *first_frame = frame_t(getViewScroll().x / FRMSIZE);
+  *last_frame = *first_frame + frame_t(availW / FRMSIZE) + ((availW % FRMSIZE) > 0 ? 1: 0);
 }
 
 void Timeline::drawPart(ui::Graphics* g, const gfx::Rect& bounds,
