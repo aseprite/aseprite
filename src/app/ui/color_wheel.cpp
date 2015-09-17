@@ -123,8 +123,6 @@ app::Color ColorWheel::pickColor(const gfx::Point& pos) const
 
     for (int i=0; i<n; ++i) {
       app::Color color = getColorInHarmony(i);
-      int hue = color.getHue()-30;
-      int sat = color.getSaturation();
 
       if (gfx::Rect(rc.x+rc.w-(n-i)*boxsize,
                     rc.y+rc.h-boxsize,
