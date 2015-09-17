@@ -152,6 +152,7 @@ Editor::Editor(Document* document, EditorFlags flags)
   , m_frame(frame_t(0))
   , m_zoom(1, 1)
   , m_brushPreview(this)
+  , m_lastDrawingPosition(-1, -1)
   , m_quicktool(NULL)
   , m_selectionMode(tools::SelectionMode::DEFAULT)
   , m_padding(0, 0)
@@ -1382,6 +1383,11 @@ void Editor::setCursor(const gfx::Point& mouseScreenPos)
 
   if (!used)
     showMouseCursor(kArrowCursor);
+}
+
+void Editor::setLastDrawingPosition(const gfx::Point& pos)
+{
+  m_lastDrawingPosition = pos;
 }
 
 bool Editor::canDraw()

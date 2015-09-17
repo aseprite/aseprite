@@ -101,7 +101,7 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   }
 
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
+  Point spritePoint = pointer.point();
   m_toolLoop->setSpeed(Point(0, 0));
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
@@ -122,7 +122,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   if (isCanceled())
     return false;
 
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
+  Point spritePoint = pointer.point();
   snapToGrid(spritePoint);
 
   bool res = m_toolLoop->getController()->releaseButton(m_points, spritePoint);
@@ -144,7 +144,7 @@ void ToolLoopManager::movement(const Pointer& pointer)
     return;
 
   // Convert the screen point to a sprite point
-  Point spritePoint = m_toolLoop->screenToSprite(Point(pointer.x(), pointer.y()));
+  Point spritePoint = pointer.point();
   // Calculate the speed (new sprite point - old sprite point)
   m_toolLoop->setSpeed(spritePoint - m_oldPoint);
   m_oldPoint = spritePoint;

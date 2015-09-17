@@ -20,6 +20,7 @@
 #include "app/tools/tool_loop.h"
 #include "app/tools/tool_loop_manager.h"
 #include "app/ui/editor/editor.h"
+#include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui_context.h"
 #include "ui/message.h"
@@ -44,10 +45,11 @@ static tools::ToolLoopManager::Pointer::Button button_from_msg(MouseMessage* msg
                       tools::ToolLoopManager::Pointer::Left));
 }
 
-static tools::ToolLoopManager::Pointer pointer_from_msg(MouseMessage* msg)
+static tools::ToolLoopManager::Pointer pointer_from_msg(Editor* editor, MouseMessage* msg)
 {
   return
-    tools::ToolLoopManager::Pointer(msg->position().x, msg->position().y, button_from_msg(msg));
+    tools::ToolLoopManager::Pointer(editor->screenToEditor(msg->position()),
+                                    button_from_msg(msg));
 }
 
 DrawingState::DrawingState(tools::ToolLoop* toolLoop)
@@ -75,9 +77,34 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
     m_toolLoop->getFrame(),
     m_toolLoop->getDstImage());
 
-  m_toolLoopManager->prepareLoop(pointer_from_msg(msg), msg->keyModifiers());
-  m_toolLoopManager->pressButton(pointer_from_msg(msg));
+  m_lastPoint = editor->lastDrawingPosition();
 
+  tools::ToolLoopManager::Pointer pointer;
+  bool movement = false;
+
+  if (m_toolLoop->getController()->isFreehand() &&
+      m_toolLoop->getInk()->isPaint() &&
+      (editor->getCustomizationDelegate()
+         ->getPressedKeyAction(KeyContext::FreehandTool) & KeyAction::StraightLineFromLastPoint) == KeyAction::StraightLineFromLastPoint &&
+      m_lastPoint.x >= 0) {
+    pointer = tools::ToolLoopManager::Pointer(m_lastPoint, button_from_msg(msg));
+    movement = true;
+  }
+  else {
+    pointer = pointer_from_msg(editor, msg);
+  }
+
+  m_toolLoopManager->prepareLoop(pointer, msg->keyModifiers());
+  m_toolLoopManager->pressButton(pointer);
+
+  // This first movement is done when the user pressed Shift+click in
+  // a freehand tool to draw a straight line.
+  if (movement) {
+    pointer = pointer_from_msg(editor, msg);
+    m_toolLoopManager->movement(pointer);
+  }
+
+  editor->setLastDrawingPosition(pointer.point());
   editor->captureMouse();
 }
 
@@ -87,7 +114,7 @@ bool DrawingState::onMouseDown(Editor* editor, MouseMessage* msg)
   ASSERT(m_toolLoopManager != NULL);
 
   // Notify the mouse button down to the tool loop manager.
-  m_toolLoopManager->pressButton(pointer_from_msg(msg));
+  m_toolLoopManager->pressButton(pointer_from_msg(editor, msg));
 
   // Cancel drawing loop
   if (m_toolLoopManager->isCanceled()) {
@@ -114,7 +141,7 @@ bool DrawingState::onMouseUp(Editor* editor, MouseMessage* msg)
     // Notify the release of the mouse button to the tool loop
     // manager. This is the correct way to say "the user finishes the
     // drawing trace correctly".
-    if (m_toolLoopManager->releaseButton(pointer_from_msg(msg)))
+    if (m_toolLoopManager->releaseButton(pointer_from_msg(editor, msg)))
       return true;
   }
 
@@ -143,12 +170,15 @@ bool DrawingState::onMouseMove(Editor* editor, MouseMessage* msg)
 
   // Infinite scroll
   gfx::Point mousePos = editor->autoScroll(msg, AutoScroll::MouseDir, true);
+  tools::ToolLoopManager::Pointer pointer(editor->screenToEditor(mousePos),
+                                          button_from_msg(msg));
 
   // Notify mouse movement to the tool
   ASSERT(m_toolLoopManager != NULL);
-  m_toolLoopManager
-    ->movement(tools::ToolLoopManager::Pointer(mousePos.x, mousePos.y,
-                                               button_from_msg(msg)));
+  m_toolLoopManager->movement(pointer);
+
+  // Save the last point.
+  editor->setLastDrawingPosition(pointer.point());
 
   return true;
 }
@@ -203,8 +233,14 @@ void DrawingState::onExposeSpritePixels(const gfx::Region& rgn)
 
 void DrawingState::destroyLoop(Editor* editor)
 {
-  if (editor)
+  if (editor) {
+    if (m_toolLoopManager &&
+        m_toolLoopManager->isCanceled()) {
+      editor->setLastDrawingPosition(m_lastPoint);
+    }
+
     editor->renderEngine().removePreviewImage();
+  }
 
   if (m_toolLoop)
     m_toolLoop->dispose();

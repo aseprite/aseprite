@@ -46,17 +46,16 @@ namespace app {
         enum Button { None, Left, Middle, Right };
 
         Pointer()
-          : m_x(0), m_y(0), m_button(None) { }
+          : m_point(0, 0), m_button(None) { }
 
-        Pointer(int x, int y, Button button)
-          : m_x(x), m_y(y), m_button(button) { }
+        Pointer(const gfx::Point& point, Button button)
+          : m_point(point), m_button(button) { }
 
-        int x() const { return m_x; }
-        int y() const { return m_y; }
+        const gfx::Point& point() const { return m_point; }
         Button getButton() const { return m_button; }
 
       private:
-        int m_x, m_y;
+        gfx::Point m_point;
         Button m_button;
       };
 

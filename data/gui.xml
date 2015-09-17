@@ -437,6 +437,9 @@
 
       <!-- Modifiers for move tool -->
       <key action="AutoSelectLayer" shortcut="Ctrl" mac="Cmd" />
+
+      <!-- Modifiers for freehand tool controller  -->
+      <key action="StraightLineFromLastPoint" shortcut="Shift" />
     </actions>
 
   </keyboard>

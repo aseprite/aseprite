@@ -49,6 +49,11 @@ namespace app {
     // cancel selection tool (deselect) when the user click (press and
     // release the mouse button in the same location).
     bool m_mouseMoveReceived;
+
+    // Stores the last drawing position before we start this
+    // DrawingState. It's used to restore the last drawing position in
+    // case this stroke is canceled.
+    gfx::Point m_lastPoint;
   };
 
 } // namespace app

@@ -38,6 +38,7 @@ namespace app {
     ScalingSelection,
     RotatingSelection,
     MoveTool,
+    FreehandTool,
   };
 
   enum class KeySource {
@@ -54,17 +55,18 @@ namespace app {
 
   // TODO This should be called "KeyActionModifier" or something similar
   enum class KeyAction {
-    None                = 0x00000000,
-    CopySelection       = 0x00000001,
-    SnapToGrid          = 0x00000002,
-    AngleSnap           = 0x00000004,
-    MaintainAspectRatio = 0x00000008,
-    LockAxis            = 0x00000010,
-    AddSelection        = 0x00000020,
-    SubtractSelection   = 0x00000040,
-    AutoSelectLayer     = 0x00000080,
-    LeftMouseButton     = 0x00000100,
-    RightMouseButton    = 0x00000200,
+    None                      = 0x00000000,
+    CopySelection             = 0x00000001,
+    SnapToGrid                = 0x00000002,
+    AngleSnap                 = 0x00000004,
+    MaintainAspectRatio       = 0x00000008,
+    LockAxis                  = 0x00000010,
+    AddSelection              = 0x00000020,
+    SubtractSelection         = 0x00000040,
+    AutoSelectLayer           = 0x00000080,
+    LeftMouseButton           = 0x00000100,
+    RightMouseButton          = 0x00000200,
+    StraightLineFromLastPoint = 0x00000400
   };
 
   inline KeyAction operator&(KeyAction a, KeyAction b) {

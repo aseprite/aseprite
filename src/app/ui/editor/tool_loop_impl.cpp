@@ -195,10 +195,6 @@ public:
   tools::TracePolicy getTracePolicy() override { return m_tracePolicy; }
   doc::Remap* getShadingRemap() override { return m_shadingRemap; }
 
-  gfx::Point screenToSprite(const gfx::Point& screenPoint) override {
-    return m_editor->screenToEditor(screenPoint);
-  }
-
   gfx::Region& getDirtyArea() override {
     return m_dirtyArea;
   }
@@ -213,6 +209,7 @@ public:
   void updateStatusBar(const char* text) override {
     StatusBar::instance()->setStatusText(0, text);
   }
+
 };
 
 //////////////////////////////////////////////////////////////////////
