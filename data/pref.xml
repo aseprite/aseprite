@@ -90,6 +90,11 @@
       <option id="auto_select_layer" type="bool" default="false" migrate="Options.AutoSelectLayer" />
       <option id="cursor_color" type="app::Color" default="app::Color::fromMask()" migrate="Tools.CursorColor" />
     </section>
+    <section id="theme" text="Theme">
+      <option id="selected" type="std::string" default="&quot;default&quot;" migrate="Skin.Selected" />
+      <option id="font" type="std::string" migrate="Options.UserFont" />
+      <option id="mini_font" type="std::string" migrate="Options.UserMiniFont" />
+    </section>
     <section id="experimental" text="Experimental">
       <option id="ui_scale" type="int" default="1" />
       <option id="use_native_cursor" type="bool" default="false" migrate="Options.NativeCursor" />

@@ -9,8 +9,8 @@
 #include "config.h"
 #endif
 
-#include "app/ini_file.h"
 #include "app/modules/gui.h"
+#include "app/pref/preferences.h"
 #include "app/resource_finder.h"
 #include "app/ui/app_menuitem.h"
 #include "app/ui/keyboard_shortcuts.h"
@@ -144,7 +144,7 @@ SkinTheme* SkinTheme::instance()
 SkinTheme::SkinTheme()
   : m_cursors(ui::kCursorTypes, NULL)
 {
-  m_selected_skin = get_config_string("Skin", "Selected", "default");
+  m_selected_skin = Preferences::instance().theme.selected();
   m_defaultFont = nullptr;
   m_miniFont = nullptr;
 
@@ -208,8 +208,10 @@ void SkinTheme::loadFonts()
   if (m_defaultFont) m_defaultFont->dispose();
   if (m_miniFont) m_miniFont->dispose();
 
-  m_defaultFont = loadFont("UserFont", "skins/" + m_selected_skin + "/font.png");
-  m_miniFont = loadFont("UserMiniFont", "skins/" + m_selected_skin + "/minifont.png");
+  Preferences& pref = Preferences::instance();
+
+  m_defaultFont = loadFont(pref.theme.font(), "skins/" + m_selected_skin + "/font.png");
+  m_miniFont = loadFont(pref.theme.miniFont(), "skins/" + m_selected_skin + "/minifont.png");
 }
 
 void SkinTheme::onRegenerate()
@@ -1973,16 +1975,13 @@ void SkinTheme::paintIcon(Widget* widget, Graphics* g, IButtonIcon* iconInterfac
     g->drawRgbaSurface(icon_bmp, x, y);
 }
 
-she::Font* SkinTheme::loadFont(const char* userFont, const std::string& path)
+she::Font* SkinTheme::loadFont(const std::string& userFont, const std::string& themeFont)
 {
-  ResourceFinder rf;
-
   // Directories to find the font
-  const char* user_font = get_config_string("Options", userFont, "");
-  if (user_font && *user_font)
-    rf.addPath(user_font);
-
-  rf.includeDataDir(path.c_str());
+  ResourceFinder rf;
+  if (!userFont.empty())
+    rf.addPath(userFont.c_str());
+  rf.includeDataDir(themeFont.c_str());
 
   // Try to load the font
   while (rf.next()) {
