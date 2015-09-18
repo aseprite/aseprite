@@ -119,8 +119,10 @@ namespace app {
       void onRegenerate() override;
 
     private:
-      void loadSheet();
-      void loadFonts();
+      void loadAll(const std::string& skinId);
+      void loadSheet(const std::string& skinId);
+      void loadFonts(const std::string& skinId);
+      void loadXml(const std::string& skinId);
 
       she::Surface* sliceSheet(she::Surface* sur, const gfx::Rect& bounds);
       gfx::Color getWidgetBgColor(ui::Widget* widget);
@@ -133,7 +135,6 @@ namespace app {
 
       she::Font* loadFont(const std::string& userFont, const std::string& themeFont);
 
-      std::string m_selected_skin;
       she::Surface* m_sheet;
       std::map<std::string, SkinPartPtr> m_parts_by_id;
       std::map<std::string, she::Surface*> m_toolicon;

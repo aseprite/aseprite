@@ -144,7 +144,6 @@ SkinTheme* SkinTheme::instance()
 SkinTheme::SkinTheme()
   : m_cursors(ui::kCursorTypes, NULL)
 {
-  m_selected_skin = Preferences::instance().theme.selected();
   m_defaultFont = nullptr;
   m_miniFont = nullptr;
 
@@ -176,9 +175,29 @@ SkinTheme::~SkinTheme()
     m_miniFont->dispose();
 }
 
-void SkinTheme::loadSheet()
+void SkinTheme::onRegenerate()
 {
-  TRACE("SkinTheme::loadSheet()\n");
+  Preferences& pref = Preferences::instance();
+
+  // First we load the skin from default theme, which is more proper
+  // to have every single needed skin part/color/dimension.
+  loadAll(pref.theme.selected.defaultValue());
+
+  // Then we load the selected theme to redefine default theme parts.
+  if (pref.theme.selected.defaultValue() != pref.theme.selected())
+    loadAll(pref.theme.selected());
+}
+
+void SkinTheme::loadAll(const std::string& skinId)
+{
+  loadSheet(skinId);
+  loadFonts(skinId);
+  loadXml(skinId);
+}
+
+void SkinTheme::loadSheet(const std::string& skinId)
+{
+  TRACE("SkinTheme::loadSheet(%s)\n", skinId.c_str());
 
   if (m_sheet) {
     m_sheet->dispose();
@@ -186,7 +205,7 @@ void SkinTheme::loadSheet()
   }
 
   // Load the skin sheet
-  std::string sheet_filename("skins/" + m_selected_skin + "/sheet.png");
+  std::string sheet_filename("skins/" + skinId + "/sheet.png");
 
   ResourceFinder rf;
   rf.includeDataDir(sheet_filename.c_str());
@@ -201,26 +220,25 @@ void SkinTheme::loadSheet()
   }
 }
 
-void SkinTheme::loadFonts()
+void SkinTheme::loadFonts(const std::string& skinId)
 {
-  TRACE("SkinTheme::loadFonts()\n");
+  TRACE("SkinTheme::loadFonts(%s)\n", skinId.c_str());
 
   if (m_defaultFont) m_defaultFont->dispose();
   if (m_miniFont) m_miniFont->dispose();
 
   Preferences& pref = Preferences::instance();
 
-  m_defaultFont = loadFont(pref.theme.font(), "skins/" + m_selected_skin + "/font.png");
-  m_miniFont = loadFont(pref.theme.miniFont(), "skins/" + m_selected_skin + "/minifont.png");
+  m_defaultFont = loadFont(pref.theme.font(), "skins/" + skinId + "/font.png");
+  m_miniFont = loadFont(pref.theme.miniFont(), "skins/" + skinId + "/minifont.png");
 }
 
-void SkinTheme::onRegenerate()
+void SkinTheme::loadXml(const std::string& skinId)
 {
-  loadSheet();
-  loadFonts();
+  TRACE("SkinTheme::loadXml(%s)\n", skinId.c_str());
 
   // Load the skin XML
-  std::string xml_filename = "skins/" + m_selected_skin + "/skin.xml";
+  std::string xml_filename = "skins/" + skinId + "/skin.xml";
   ResourceFinder rf;
   rf.includeDataDir(xml_filename.c_str());
   if (!rf.findFirst())
