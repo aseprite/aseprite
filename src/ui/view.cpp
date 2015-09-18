@@ -104,6 +104,8 @@ void View::setScrollableSize(const Size& sz)
     if (m_scrollbar_v.getParent()) removeChild(&m_scrollbar_v);
     m_scrollbar_h.setVisible(false);
     m_scrollbar_v.setVisible(false);
+    m_scrollbar_h.setSize(sz.w);
+    m_scrollbar_v.setSize(sz.h);
   }
 
   // Setup viewport
