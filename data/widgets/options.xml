@@ -11,6 +11,7 @@
           <listitem text="Timeline" value="section_timeline" />
           <listitem text="Grid &amp;&amp; Background" value="section_grid" />
           <listitem text="Undo" value="section_undo" />
+          <listitem text="Theme" value="section_theme" />
           <listitem text="Experimental" value="section_experimental" />
         </listbox>
       </view>
@@ -132,6 +133,18 @@
             <check id="undo_goto_modified" text="Go to modified frame/layer" tooltip="When it's enabled each time you undo/redo&#10;the current frame &amp; layer will be modified&#10;to focus the undid/redid change." />
             <check id="undo_allow_nonlinear_history" text="Allow non-linear history" />
           </vbox>
+        </vbox>
+
+        <!-- Theme -->
+        <vbox id="section_theme">
+          <separator text="Available Themes" horizontal="true" />
+          <view expansive="true" maxsize="true">
+            <listbox id="theme_list" />
+	  </view>
+          <hbox>
+	    <button id="select_theme" text="&amp;Select" width="60" />
+	    <boxfiller />
+          </hbox>
         </vbox>
 
         <!-- Experimental -->
