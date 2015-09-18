@@ -72,7 +72,8 @@ inline gfx::Color from_allegro(int color_depth, int color)
   return gfx::rgba(
     getr_depth(color_depth, color),
     getg_depth(color_depth, color),
-    getb_depth(color_depth, color));
+    getb_depth(color_depth, color),
+    geta_depth(color_depth, color));
 }
 
 Alleg4Surface::Alleg4Surface(BITMAP* bmp, DestroyFlag destroy)
