@@ -156,6 +156,7 @@ public:
 
     // Theme buttons
     selectTheme()->Click.connect(Bind<void>(&OptionsWindow::onSelectTheme, this));
+    openThemeFolder()->Click.connect(Bind<void>(&OptionsWindow::onOpenThemeFolder, this));
 
     onChangeGridScope();
     sectionListbox()->selectIndex(m_curSection);
@@ -333,9 +334,7 @@ private:
     if (themeList()->getItemsCount() > 0)
       return;
 
-    ResourceFinder rf;
-    rf.includeDataDir("skins");
-    std::string path = rf.defaultFilename();
+    std::string path = themeFolder();
     for (auto& fn : base::list_files(path)) {
       if (!base::is_directory(base::join_path(path, fn)))
         continue;
@@ -363,6 +362,20 @@ private:
                       "<<You must restart the program to see the selected theme"
                       "||&OK");
     }
+  }
+
+  void onOpenThemeFolder() {
+    ui::Alert::show(PACKAGE
+                    "<<%s"
+                    "||&OK", themeFolder().c_str());
+
+    launcher::open_folder(themeFolder());
+  }
+
+  static std::string themeFolder() {
+    ResourceFinder rf;
+    rf.includeDataDir("skins");
+    return rf.defaultFilename();
   }
 
   Preferences& m_preferences;

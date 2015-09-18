@@ -144,6 +144,7 @@
           <hbox>
 	    <button id="select_theme" text="&amp;Select" width="60" />
 	    <boxfiller />
+	    <button id="open_theme_folder" text="Open &amp;Folder" width="100" />
           </hbox>
         </vbox>
 
