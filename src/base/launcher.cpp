@@ -11,6 +11,7 @@
 #include "base/exception.h"
 #include "base/fs.h"
 #include "base/launcher.h"
+#include "base/path.h"
 #include "base/string.h"
 
 #include <cstdlib>
@@ -90,8 +91,10 @@ bool open_file(const std::string& file)
   return (ret == 0);
 }
 
-bool open_folder(const std::string& file)
+bool open_folder(const std::string& _file)
 {
+  std::string file = base::fix_path_separators(_file);
+
 #ifdef _WIN32
 
   int ret;
