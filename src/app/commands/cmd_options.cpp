@@ -365,10 +365,6 @@ private:
   }
 
   void onOpenThemeFolder() {
-    ui::Alert::show(PACKAGE
-                    "<<%s"
-                    "||&OK", themeFolder().c_str());
-
     launcher::open_folder(themeFolder());
   }
 
