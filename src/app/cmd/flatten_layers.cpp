@@ -12,6 +12,7 @@
 #include "app/cmd/flatten_layers.h"
 
 #include "app/cmd/add_layer.h"
+#include "app/cmd/set_layer_name.h"
 #include "app/cmd/configure_background.h"
 #include "app/cmd/copy_rect.h"
 #include "app/cmd/remove_layer.h"
@@ -43,21 +44,24 @@ void FlattenLayers::onExecute()
       sprite->width(),
       sprite->height()));
 
-  // If there aren't a background layer we must to create the background.
-  LayerImage* background = sprite->backgroundLayer();
-  bool created = false;
-  if (!background) {
-    background = new LayerImage(sprite);
-    executeAndAdd(new cmd::AddLayer(sprite->folder(), background, nullptr));
-    executeAndAdd(new cmd::ConfigureBackground(background));
-    created = true;
+  LayerImage* flatLayer;  // The layer onto which everything will be flattened.
+  color_t     bgcolor;    // The background color to use for flatLayer.
+  
+  flatLayer = sprite->backgroundLayer();
+  if (flatLayer && flatLayer->isVisible())
+  {
+    // There exists a visible background layer, so we will flatten onto that.
+    bgcolor = doc->bgColor(flatLayer);
   }
-
-  color_t bgcolor;
-  if (created || !background->isVisible())
-    bgcolor = doc->bgColor(background); // Use color bar background color
   else
+  {
+    // Create a new transparent layer to flatten everything onto.
+    flatLayer = new LayerImage(sprite);
+    ASSERT(flatLayer->isVisible());
+    executeAndAdd(new cmd::AddLayer(sprite->folder(), flatLayer, nullptr));
+    executeAndAdd(new cmd::SetLayerName(flatLayer, "Flattened"));
     bgcolor = sprite->transparentColor();
+  }
 
   render::Render render;
   render.setBgType(render::BgType::NONE);
@@ -71,7 +75,7 @@ void FlattenLayers::onExecute()
     // TODO Keep cel links when possible
 
     ImageRef cel_image;
-    Cel* cel = background->cel(frame);
+    Cel* cel = flatLayer->cel(frame);
     if (cel) {
       if (cel->links())
         executeAndAdd(new cmd::UnlinkCel(cel));
@@ -85,22 +89,14 @@ void FlattenLayers::onExecute()
     else {
       cel_image.reset(Image::createCopy(image.get()));
       cel = new Cel(frame, cel_image);
-      background->addCel(cel);
+      flatLayer->addCel(cel);
     }
-  }
-
-  // Show background if it's hidden
-  if (!background->isVisible()) {
-    LayerFlags newFlags = LayerFlags(
-      int(background->flags()) | int(LayerFlags::Visible));
-
-    executeAndAdd(new cmd::SetLayerFlags(background, newFlags));
   }
 
   // Delete old layers.
   LayerList layers = sprite->folder()->getLayersList();
   for (Layer* layer : layers)
-    if (layer != background)
+    if (layer != flatLayer)
       executeAndAdd(new cmd::RemoveLayer(layer));
 }
 
