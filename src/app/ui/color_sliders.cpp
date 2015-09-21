@@ -12,6 +12,7 @@
 #include "app/color_utils.h"
 #include "app/ui/color_sliders.h"
 #include "app/ui/skin/skin_slider_property.h"
+#include "app/ui/skin/skin_theme.h"
 #include "base/bind.h"
 #include "ui/box.h"
 #include "ui/entry.h"
@@ -156,7 +157,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
   relSlider->setExpansive(true);
   relSlider->setVisible(false);
 
-  gfx::Size sz(INT_MAX, 14*guiscale());
+  gfx::Size sz(INT_MAX, SkinTheme::instance()->dimensions.colorSliderHeight());
   label->setMaxSize(sz);
   box->setMaxSize(sz);
   entry->setMaxSize(sz);

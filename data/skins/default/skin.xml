@@ -17,6 +17,7 @@
     <dim id="timeline_tags_area_height" value="4" />
     <dim id="timeline_outline_width" value="2" />
     <dim id="palette_outline_width" value="3" />
+    <dim id="color_slider_height" value="14" />
   </dimensions>
 
   <colors>
