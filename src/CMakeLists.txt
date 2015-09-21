@@ -178,6 +178,7 @@ function(find_tests dir dependencies)
     get_filename_component(testname ${testsourcefile} NAME_WE)
 
     add_executable(${testname} ${testsourcefile})
+    add_test(NAME ${testname} COMMAND ${testname})
 
     if(MSVC)
       # Fix problem compiling gen from a Visual Studio solution
@@ -191,20 +192,7 @@ function(find_tests dir dependencies)
       set_target_properties(${testname}
 	PROPERTIES COMPILE_FLAGS ${extra_definitions})
     endif()
-
-    add_custom_target(run_${testname}
-      COMMAND ${testname}
-      DEPENDS ${testname})
-
-    set(local_runs ${local_runs} run_${testname})
-
-    string(REGEX MATCH "_ui_tests" test_requires_ui ${testname})
-    if (NOT test_requires_ui STREQUAL "_ui_tests")
-      set(local_non_ui_runs ${local_non_ui_runs} run_${testname})
-    endif()
   endforeach()
-  set(all_runs ${all_runs} ${local_runs} PARENT_SCOPE)
-  set(non_ui_runs ${non_ui_runs} ${local_non_ui_runs} PARENT_SCOPE)
 endfunction()
 
 find_tests(base base-lib)
@@ -217,7 +205,3 @@ find_tests(ui ui-lib)
 find_tests(app/file app-lib)
 find_tests(app app-lib)
 find_tests(. app-lib)
-
-# To run tests
-add_custom_target(run_all_tests DEPENDS ${all_runs})
-add_custom_target(run_non_ui_tests DEPENDS ${non_ui_runs})

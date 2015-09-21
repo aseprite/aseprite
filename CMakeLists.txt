@@ -5,6 +5,7 @@
 
 # CMake setup
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+enable_testing()
 
 if(COMMAND cmake_policy)
   # CMP0003: Libraries linked via full path no longer produce linker search paths.

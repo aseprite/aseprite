@@ -23,4 +23,4 @@ before_script:
 
 script:
   - "make"
-  - "make -k run_non_ui_tests"
+  - "ctest --output-on-failure"
