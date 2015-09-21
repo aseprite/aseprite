@@ -46,15 +46,13 @@ void FlattenLayers::onExecute()
 
   LayerImage* flatLayer;  // The layer onto which everything will be flattened.
   color_t     bgcolor;    // The background color to use for flatLayer.
-  
+
   flatLayer = sprite->backgroundLayer();
-  if (flatLayer && flatLayer->isVisible())
-  {
+  if (flatLayer && flatLayer->isVisible()) {
     // There exists a visible background layer, so we will flatten onto that.
     bgcolor = doc->bgColor(flatLayer);
   }
-  else
-  {
+  else {
     // Create a new transparent layer to flatten everything onto.
     flatLayer = new LayerImage(sprite);
     ASSERT(flatLayer->isVisible());
