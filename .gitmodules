@@ -16,3 +16,6 @@
 [submodule "src/flic"]
 	path = src/flic
 	url = https://github.com/aseprite/flic.git
+[submodule "third_party/freetype2"]
+	path = third_party/freetype2
+	url = https://github.com/aseprite/freetype2.git
