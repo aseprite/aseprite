@@ -37,18 +37,6 @@ namespace app {
     virtual void onExecute(Context* context) override;
 
   private:
-    void onLockRatioClick();
-    void onWidthPxChange();
-    void onHeightPxChange();
-    void onWidthPercChange();
-    void onHeightPercChange();
-
-    ui::CheckBox* m_lockRatio;
-    ui::Entry* m_widthPx;
-    ui::Entry* m_heightPx;
-    ui::Entry* m_widthPerc;
-    ui::Entry* m_heightPerc;
-
     bool m_useUI;
     int m_width;
     int m_height;

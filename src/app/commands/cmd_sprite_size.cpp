@@ -12,6 +12,7 @@
 #include "app/commands/cmd_sprite_size.h"
 #include "app/commands/command.h"
 #include "app/commands/params.h"
+#include "app/context.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/find_widget.h"
@@ -21,7 +22,6 @@
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
 #include "app/transaction.h"
-#include "app/ui_context.h"
 #include "base/bind.h"
 #include "base/unique_ptr.h"
 #include "doc/algorithm/resize_image.h"
@@ -33,6 +33,8 @@
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "ui/ui.h"
+
+#include "sprite_size.xml.h"
 
 #define PERC_FORMAT     "%.1f"
 
@@ -155,6 +157,88 @@ protected:
 
 };
 
+class SpriteSizeWindow : public app::gen::SpriteSize {
+public:
+  SpriteSizeWindow(Context* ctx, int new_width, int new_height) : m_ctx(ctx) {
+    lockRatio()->Click.connect(Bind<void>(&SpriteSizeWindow::onLockRatioClick, this));
+    widthPx()->Change.connect(Bind<void>(&SpriteSizeWindow::onWidthPxChange, this));
+    heightPx()->Change.connect(Bind<void>(&SpriteSizeWindow::onHeightPxChange, this));
+    widthPerc()->Change.connect(Bind<void>(&SpriteSizeWindow::onWidthPercChange, this));
+    heightPerc()->Change.connect(Bind<void>(&SpriteSizeWindow::onHeightPercChange, this));
+
+    widthPx()->setTextf("%d", new_width);
+    heightPx()->setTextf("%d", new_height);
+
+    method()->addItem("Nearest-neighbor");
+    method()->addItem("Bilinear");
+    method()->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
+                                                  doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
+  }
+
+private:
+
+  void onLockRatioClick() {
+    const ContextReader reader(m_ctx);
+    onWidthPxChange();
+  }
+
+  void onWidthPxChange() {
+    const ContextReader reader(m_ctx);
+    const Sprite* sprite(reader.sprite());
+    int width = widthPx()->getTextInt();
+    double perc = 100.0 * width / sprite->width();
+
+    widthPerc()->setTextf(PERC_FORMAT, perc);
+
+    if (lockRatio()->isSelected()) {
+      heightPerc()->setTextf(PERC_FORMAT, perc);
+      heightPx()->setTextf("%d", sprite->height() * width / sprite->width());
+    }
+  }
+
+  void onHeightPxChange() {
+    const ContextReader reader(m_ctx);
+    const Sprite* sprite(reader.sprite());
+    int height = heightPx()->getTextInt();
+    double perc = 100.0 * height / sprite->height();
+
+    heightPerc()->setTextf(PERC_FORMAT, perc);
+
+    if (lockRatio()->isSelected()) {
+      widthPerc()->setTextf(PERC_FORMAT, perc);
+      widthPx()->setTextf("%d", sprite->width() * height / sprite->height());
+    }
+  }
+
+  void onWidthPercChange() {
+    const ContextReader reader(m_ctx);
+    const Sprite* sprite(reader.sprite());
+    double width = widthPerc()->getTextDouble();
+
+    widthPx()->setTextf("%d", (int)(sprite->width() * width / 100));
+
+    if (lockRatio()->isSelected()) {
+      heightPx()->setTextf("%d", (int)(sprite->height() * width / 100));
+      heightPerc()->setText(widthPerc()->getText());
+    }
+  }
+
+  void onHeightPercChange() {
+    const ContextReader reader(m_ctx);
+    const Sprite* sprite(reader.sprite());
+    double height = heightPerc()->getTextDouble();
+
+    heightPx()->setTextf("%d", (int)(sprite->height() * height / 100));
+
+    if (lockRatio()->isSelected()) {
+      widthPx()->setTextf("%d", (int)(sprite->width() * height / 100));
+      widthPerc()->setText(heightPerc()->getText());
+    }
+  }
+
+  Context* m_ctx;
+};
+
 SpriteSizeCommand::SpriteSizeCommand()
   : Command("SpriteSize",
             "Sprite Size",
@@ -218,44 +302,21 @@ void SpriteSizeCommand::onExecute(Context* context)
   ResizeMethod resize_method = m_resizeMethod;
 
   if (m_useUI && context->isUIAvailable()) {
-    // load the window widget
-    base::UniquePtr<Window> window(app::load_widget<Window>("sprite_size.xml", "sprite_size"));
-    m_widthPx = app::find_widget<Entry>(window, "width_px");
-    m_heightPx = app::find_widget<Entry>(window, "height_px");
-    m_widthPerc = app::find_widget<Entry>(window, "width_perc");
-    m_heightPerc = app::find_widget<Entry>(window, "height_perc");
-    m_lockRatio = app::find_widget<CheckBox>(window, "lock_ratio");
-    ComboBox* method = app::find_widget<ComboBox>(window, "method");
-    Widget* ok = app::find_widget<Widget>(window, "ok");
+    SpriteSizeWindow window(context, new_width, new_height);
+    window.remapWindow();
+    window.centerWindow();
 
-    m_widthPx->setTextf("%d", new_width);
-    m_heightPx->setTextf("%d", new_height);
+    load_window_pos(&window, "SpriteSize");
+    window.setVisible(true);
+    window.openWindowInForeground();
+    save_window_pos(&window, "SpriteSize");
 
-    m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
-    m_widthPx->Change.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
-    m_heightPx->Change.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
-    m_widthPerc->Change.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
-    m_heightPerc->Change.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
-
-    method->addItem("Nearest-neighbor");
-    method->addItem("Bilinear");
-    method->setSelectedItemIndex(get_config_int("SpriteSize", "Method",
-        doc::algorithm::RESIZE_METHOD_NEAREST_NEIGHBOR));
-
-    window->remapWindow();
-    window->centerWindow();
-
-    load_window_pos(window, "SpriteSize");
-    window->setVisible(true);
-    window->openWindowInForeground();
-    save_window_pos(window, "SpriteSize");
-
-    if (window->getKiller() != ok)
+    if (window.getKiller() != window.ok())
       return;
 
-    new_width = m_widthPx->getTextInt();
-    new_height = m_heightPx->getTextInt();
-    resize_method = (ResizeMethod)method->getSelectedItemIndex();
+    new_width = window.widthPx()->getTextInt();
+    new_height = window.heightPx()->getTextInt();
+    resize_method = (ResizeMethod)window.method()->getSelectedItemIndex();
 
     set_config_int("SpriteSize", "Method", resize_method);
   }
@@ -267,71 +328,6 @@ void SpriteSizeCommand::onExecute(Context* context)
   }
 
   update_screen_for_document(reader.document());
-}
-
-void SpriteSizeCommand::onLockRatioClick()
-{
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
-
-  onWidthPxChange();
-}
-
-void SpriteSizeCommand::onWidthPxChange()
-{
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(reader.sprite());
-  int width = m_widthPx->getTextInt();
-  double perc = 100.0 * width / sprite->width();
-
-  m_widthPerc->setTextf(PERC_FORMAT, perc);
-
-  if (m_lockRatio->isSelected()) {
-    m_heightPerc->setTextf(PERC_FORMAT, perc);
-    m_heightPx->setTextf("%d", sprite->height() * width / sprite->width());
-  }
-}
-
-void SpriteSizeCommand::onHeightPxChange()
-{
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(reader.sprite());
-  int height = m_heightPx->getTextInt();
-  double perc = 100.0 * height / sprite->height();
-
-  m_heightPerc->setTextf(PERC_FORMAT, perc);
-
-  if (m_lockRatio->isSelected()) {
-    m_widthPerc->setTextf(PERC_FORMAT, perc);
-    m_widthPx->setTextf("%d", sprite->width() * height / sprite->height());
-  }
-}
-
-void SpriteSizeCommand::onWidthPercChange()
-{
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(reader.sprite());
-  double width = m_widthPerc->getTextDouble();
-
-  m_widthPx->setTextf("%d", (int)(sprite->width() * width / 100));
-
-  if (m_lockRatio->isSelected()) {
-    m_heightPx->setTextf("%d", (int)(sprite->height() * width / 100));
-    m_heightPerc->setText(m_widthPerc->getText());
-  }
-}
-
-void SpriteSizeCommand::onHeightPercChange()
-{
-  const ContextReader reader(UIContext::instance()); // TODO use the context in sprite size command
-  const Sprite* sprite(reader.sprite());
-  double height = m_heightPerc->getTextDouble();
-
-  m_heightPx->setTextf("%d", (int)(sprite->height() * height / 100));
-
-  if (m_lockRatio->isSelected()) {
-    m_widthPx->setTextf("%d", (int)(sprite->width() * height / 100));
-    m_widthPerc->setText(m_heightPerc->getText());
-  }
 }
 
 Command* CommandFactory::createSpriteSizeCommand()
