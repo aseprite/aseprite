@@ -434,6 +434,14 @@ private:
     // Get the list of used palette entries
     PalettePicks usedEntries(ncolors);
     if (isLocalColormap) {
+      // With this we avoid discarding the transparent index when a
+      // frame indicates that it uses a specific index as transparent
+      // but the image is completely opaque anyway.
+      if (m_localTransparentIndex >= 0 &&
+          m_localTransparentIndex < ncolors) {
+        usedEntries[m_localTransparentIndex] = true;
+      }
+
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
         if (i >= 0 && i < ncolors)
           usedEntries[i] = true;
@@ -1021,6 +1029,18 @@ private:
     // Convert the frameBounds area of m_currentImage (RGB) to frameImage (Indexed)
     // bool needsTransparent = false;
     PalettePicks usedColors(framePalette->size());
+
+    // If the sprite needs a transparent color we mark it as used so
+    // the palette includes a spot for it. It doesn't matter if the
+    // image doesn't use the transparent index, if the sprite isn't
+    // opaque we need the transparent index anyway.
+    if (m_transparentIndex >= 0) {
+      int i = m_transparentIndex;
+      if (i >= usedColors.size())
+        usedColors.resize(i+1);
+      usedColors[i] = true;
+    }
+
     {
       LockImageBits<RgbTraits> bits(m_currentImage, frameBounds);
       auto it = bits.begin();
