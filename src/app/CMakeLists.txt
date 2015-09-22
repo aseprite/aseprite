@@ -5,7 +5,7 @@
 file(GLOB widget_files ${CMAKE_SOURCE_DIR}/data/widgets/*.xml)
 foreach(widget_file ${widget_files})
   get_filename_component(widget_name ${widget_file} NAME_WE)
-  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_${widget_name}.h)
+  set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/${widget_name}.xml.h)
 
   add_custom_command(
     OUTPUT ${output_fn}
@@ -21,7 +21,7 @@ endforeach()
 # Generate preference types from data/pref.xml
 set(pref_xml ${CMAKE_SOURCE_DIR}/data/pref.xml)
 
-set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.h)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
   COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-h > ${output_fn}.tmp
@@ -31,7 +31,7 @@ add_custom_command(
   DEPENDS gen)
 list(APPEND generated_files ${output_fn})
 
-set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_pref_types.cpp)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/pref.xml.cpp)
 add_custom_command(
   OUTPUT ${output_fn}
   COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${pref_xml} --pref-cpp > ${output_fn}.tmp
@@ -43,7 +43,7 @@ list(APPEND generated_files ${output_fn})
 
 # Generate generated_skin.h from data/skins/default/skin.xml
 set(skin_xml ${CMAKE_SOURCE_DIR}/data/skins/default/skin.xml)
-set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/generated_skin.h)
+set(output_fn ${CMAKE_CURRENT_BINARY_DIR}/skin.xml.h)
 add_custom_command(
   OUTPUT ${output_fn}
   COMMAND ${CMAKE_BINARY_DIR}/bin/gen --input ${skin_xml} --skin > ${output_fn}.tmp

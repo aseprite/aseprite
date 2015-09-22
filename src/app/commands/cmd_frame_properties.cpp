@@ -23,7 +23,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_frame_properties.h"
+#include "frame_properties.xml.h"
 
 namespace app {
 

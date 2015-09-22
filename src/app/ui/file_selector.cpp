@@ -32,7 +32,7 @@
 #include "base/unique_ptr.h"
 #include "ui/ui.h"
 
-#include "generated_new_folder_window.h"
+#include "new_folder_window.xml.h"
 
 #include <algorithm>
 #include <cctype>

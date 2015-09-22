@@ -14,7 +14,7 @@
 #include "app/ui/workspace_view.h"
 #include "ui/box.h"
 
-#include "generated_home_view.h"
+#include "home_view.xml.h"
 
 namespace ui {
   class View;

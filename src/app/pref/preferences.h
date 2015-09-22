@@ -25,7 +25,7 @@
 #include "gfx/rect.h"
 #include "render/onionskin_position.h"
 
-#include "generated_pref_types.h"
+#include "pref.xml.h"
 
 #include <map>
 #include <string>

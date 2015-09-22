@@ -29,7 +29,7 @@
 #include "ui/preferred_size_event.h"
 #include "ui/resize_event.h"
 
-#include "generated_keyboard_shortcuts.h"
+#include "keyboard_shortcuts.xml.h"
 
 #define KEYBOARD_FILENAME_EXTENSION "aseprite-keys"
 

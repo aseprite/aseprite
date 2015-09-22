@@ -12,7 +12,7 @@
 #include "app/ui/keyboard_shortcuts.h"
 #include "ui/accelerator.h"
 
-#include "generated_select_accelerator.h"
+#include "select_accelerator.xml.h"
 
 namespace app {
 

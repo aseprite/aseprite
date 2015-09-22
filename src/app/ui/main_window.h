@@ -12,7 +12,7 @@
 #include "app/ui/tabs.h"
 #include "ui/window.h"
 
-#include "generated_main_window.h"
+#include "main_window.xml.h"
 
 namespace ui {
   class Splitter;

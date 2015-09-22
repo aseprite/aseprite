@@ -28,7 +28,7 @@
 #include "render/quantization.h"
 #include "ui/manager.h"
 
-#include "generated_palette_from_sprite.h"
+#include "palette_from_sprite.xml.h"
 
 namespace app {
 

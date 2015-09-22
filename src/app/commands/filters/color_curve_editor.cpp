@@ -26,7 +26,7 @@
 #include "ui/widget.h"
 #include "ui/window.h"
 
-#include "generated_color_curve_point.h"
+#include "color_curve_point.xml.h"
 
 #include <cmath>
 #include <cstdio>

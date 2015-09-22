@@ -29,7 +29,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_canvas_size.h"
+#include "canvas_size.xml.h"
 
 namespace app {
 

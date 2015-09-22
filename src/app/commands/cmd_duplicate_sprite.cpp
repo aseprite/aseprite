@@ -21,7 +21,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_duplicate_sprite.h"
+#include "duplicate_sprite.xml.h"
 
 #include <cstdio>
 

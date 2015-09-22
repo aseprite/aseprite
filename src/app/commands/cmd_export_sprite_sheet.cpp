@@ -30,7 +30,7 @@
 #include "doc/frame_tag.h"
 #include "doc/layer.h"
 
-#include "generated_export_sprite_sheet.h"
+#include "export_sprite_sheet.xml.h"
 
 #include <limits>
 #include <sstream>

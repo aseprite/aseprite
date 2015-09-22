@@ -31,7 +31,7 @@
 #include "ui/slider.h"
 #include "ui/theme.h"
 
-#include "generated_timeline_conf.h"
+#include "timeline_conf.xml.h"
 
 namespace app {
 

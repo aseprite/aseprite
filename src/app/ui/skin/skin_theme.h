@@ -16,7 +16,7 @@
 #include "ui/manager.h"
 #include "ui/theme.h"
 
-#include "generated_skin.h"
+#include "skin.xml.h"
 
 #include <map>
 #include <string>

@@ -18,7 +18,7 @@
 #include "doc/palette.h"
 #include "doc/sprite.h"
 
-#include "generated_palette_size.h"
+#include "palette_size.xml.h"
 
 #include <climits>
 

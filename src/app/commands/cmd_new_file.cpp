@@ -33,7 +33,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_new_sprite.h"
+#include "new_sprite.xml.h"
 
 using namespace ui;
 

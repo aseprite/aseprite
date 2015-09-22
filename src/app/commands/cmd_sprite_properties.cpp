@@ -25,7 +25,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_sprite_properties.h"
+#include "sprite_properties.xml.h"
 
 #include <cstdio>
 

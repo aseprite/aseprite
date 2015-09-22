@@ -28,7 +28,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_layer_properties.h"
+#include "layer_properties.xml.h"
 
 namespace app {
 

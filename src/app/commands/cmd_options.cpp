@@ -30,7 +30,7 @@
 #include "she/system.h"
 #include "ui/ui.h"
 
-#include "generated_options.h"
+#include "options.xml.h"
 
 namespace app {
 

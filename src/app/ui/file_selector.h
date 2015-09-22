@@ -13,7 +13,7 @@
 #include "base/unique_ptr.h"
 #include "ui/window.h"
 
-#include "generated_file_selector.h"
+#include "file_selector.xml.h"
 
 #include <string>
 

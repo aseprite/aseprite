@@ -24,7 +24,7 @@
 #include "ui/theme.h"
 #include "ui/view.h"
 
-#include "generated_palette_popup.h"
+#include "palette_popup.xml.h"
 
 namespace app {
 

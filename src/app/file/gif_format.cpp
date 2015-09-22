@@ -28,7 +28,7 @@
 #include "ui/alert.h"
 #include "ui/button.h"
 
-#include "generated_gif_options.h"
+#include "gif_options.xml.h"
 
 #include <gif_lib.h>
 

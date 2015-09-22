@@ -19,7 +19,7 @@
 #include "doc/image.h"
 #include "doc/layer.h"
 
-#include "generated_layer_properties.h"
+#include "layer_properties.xml.h"
 
 namespace app {
 

@@ -34,7 +34,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_cel_properties.h"
+#include "cel_properties.xml.h"
 
 namespace app {
 

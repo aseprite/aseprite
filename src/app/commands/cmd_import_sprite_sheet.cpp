@@ -37,7 +37,7 @@
 #include "doc/sprite.h"
 #include "ui/ui.h"
 
-#include "generated_import_sprite_sheet.h"
+#include "import_sprite_sheet.xml.h"
 
 namespace app {
 

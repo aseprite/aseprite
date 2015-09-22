@@ -17,7 +17,7 @@
 #include "base/fs.h"
 #include "base/launcher.h"
 
-#include "generated_send_crash.h"
+#include "send_crash.xml.h"
 
 namespace app {
 

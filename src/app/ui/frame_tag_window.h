@@ -13,7 +13,7 @@
 #include "doc/anidir.h"
 #include "doc/frame.h"
 
-#include "generated_frame_tag_properties.h"
+#include "frame_tag_properties.xml.h"
 
 namespace doc {
   class FrameTag;
