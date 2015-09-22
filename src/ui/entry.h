@@ -42,7 +42,7 @@ namespace ui {
                            int* selbeg, int* selend);
 
     // Signals
-    Signal0<void> EntryChange;
+    Signal0<void> Change;
 
   protected:
     // Events
@@ -52,7 +52,7 @@ namespace ui {
     void onSetText() override;
 
     // New Events
-    virtual void onEntryChange();
+    virtual void onChange();
 
   private:
     enum class EntryCmd {

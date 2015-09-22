@@ -148,7 +148,7 @@ void ColorSliders::addSlider(Channel channel, const char* labelText, int min, in
 
   absSlider->Change.connect(Bind<void>(&ColorSliders::onSliderChange, this, m_absSlider.size()-1));
   relSlider->Change.connect(Bind<void>(&ColorSliders::onSliderChange, this, m_relSlider.size()-1));
-  entry->EntryChange.connect(Bind<void>(&ColorSliders::onEntryChange, this, m_entry.size()-1));
+  entry->Change.connect(Bind<void>(&ColorSliders::onEntryChange, this, m_entry.size()-1));
 
   HBox* box = new HBox();
   box->addChild(absSlider);

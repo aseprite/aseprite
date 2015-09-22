@@ -54,8 +54,8 @@ public:
     m_widthEntry->setTextf("%d", m_filter.getWidth());
     m_heightEntry->setTextf("%d", m_filter.getHeight());
 
-    m_widthEntry->EntryChange.connect(&DespeckleWindow::onSizeChange, this);
-    m_heightEntry->EntryChange.connect(&DespeckleWindow::onSizeChange, this);
+    m_widthEntry->Change.connect(&DespeckleWindow::onSizeChange, this);
+    m_heightEntry->Change.connect(&DespeckleWindow::onSizeChange, this);
   }
 
 private:

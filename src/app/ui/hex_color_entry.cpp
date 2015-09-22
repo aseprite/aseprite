@@ -35,7 +35,7 @@ HexColorEntry::HexColorEntry()
   addChild(&m_label);
   addChild(&m_entry);
 
-  m_entry.EntryChange.connect(&HexColorEntry::onEntryChange, this);
+  m_entry.Change.connect(&HexColorEntry::onEntryChange, this);
 
   initTheme();
 

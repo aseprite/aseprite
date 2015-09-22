@@ -75,7 +75,7 @@ public:
     mode()->addItem("Color");
     mode()->addItem("Luminosity");
 
-    name()->EntryChange.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
+    name()->Change.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     mode()->Change.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     opacity()->Change.connect(Bind<void>(&LayerPropertiesWindow::onStartTimer, this));
     m_timer.Tick.connect(Bind<void>(&LayerPropertiesWindow::onCommitChange, this));

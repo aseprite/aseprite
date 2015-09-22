@@ -232,10 +232,10 @@ void SpriteSizeCommand::onExecute(Context* context)
     m_heightPx->setTextf("%d", new_height);
 
     m_lockRatio->Click.connect(Bind<void>(&SpriteSizeCommand::onLockRatioClick, this));
-    m_widthPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
-    m_heightPx->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
-    m_widthPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
-    m_heightPerc->EntryChange.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
+    m_widthPx->Change.connect(Bind<void>(&SpriteSizeCommand::onWidthPxChange, this));
+    m_heightPx->Change.connect(Bind<void>(&SpriteSizeCommand::onHeightPxChange, this));
+    m_widthPerc->Change.connect(Bind<void>(&SpriteSizeCommand::onWidthPercChange, this));
+    m_heightPerc->Change.connect(Bind<void>(&SpriteSizeCommand::onHeightPercChange, this));
 
     method->addItem("Nearest-neighbor");
     method->addItem("Bilinear");

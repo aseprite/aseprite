@@ -355,13 +355,13 @@ public:
 
     exportButton()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onExport, this));
     sheetType()->Change.connect(&ExportSpriteSheetWindow::onSheetTypeChange, this);
-    columns()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
+    columns()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onColumnsChange, this));
     fitWidth()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
     fitHeight()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onSizeChange, this));
     bestFit()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onBestFit, this));
-    borderPadding()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
-    shapePadding()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
-    innerPadding()->EntryChange.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    borderPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    shapePadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
+    innerPadding()->Change.connect(Bind<void>(&ExportSpriteSheetWindow::onPaddingChange, this));
     imageFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onImageFilename, this));
     dataEnabled()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataEnabledChange, this));
     dataFilename()->Click.connect(Bind<void>(&ExportSpriteSheetWindow::onDataFilename, this));

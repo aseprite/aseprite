@@ -140,9 +140,9 @@ void IntEntry::onPreferredSize(PreferredSizeEvent& ev)
   ev.setPreferredSize(w, h);
 }
 
-void IntEntry::onEntryChange()
+void IntEntry::onChange()
 {
-  Entry::onEntryChange();
+  Entry::onChange();
   onValueChange();
 }
 

@@ -449,9 +449,9 @@ void Entry::onSetText()
     m_caret = (int)getTextLength();
 }
 
-void Entry::onEntryChange()
+void Entry::onChange()
 {
-  EntryChange();
+  Change();
 }
 
 int Entry::getCaretFromMouse(MouseMessage* mousemsg)
@@ -682,7 +682,7 @@ void Entry::executeCmd(EntryCmd cmd, int unicodeChar, bool shift_pressed)
   std::string newText = base::to_utf8(text);
   if (newText != getText()) {
     setText(newText.c_str());
-    onEntryChange();
+    onChange();
   }
 
   setCaretPos(m_caret);

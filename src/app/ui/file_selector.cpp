@@ -101,7 +101,7 @@ public:
   CustomFileNameEntry()
     : m_fileList(nullptr) {
     setEditable(true);
-    getEntryWidget()->EntryChange.connect(&CustomFileNameEntry::onEntryChange, this);
+    getEntryWidget()->Change.connect(&CustomFileNameEntry::onEntryChange, this);
   }
 
   void setAssociatedFileList(FileList* fileList) {

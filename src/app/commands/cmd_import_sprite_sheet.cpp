@@ -54,10 +54,10 @@ public:
     , m_docPref(nullptr) {
     import()->setEnabled(false);
 
-    x()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    y()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    width()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
-    height()->EntryChange.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    x()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    y()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    width()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
+    height()->Change.connect(Bind<void>(&ImportSpriteSheetWindow::onEntriesChange, this));
     selectFile()->Click.connect(Bind<void>(&ImportSpriteSheetWindow::onSelectFile, this));
 
     remapWindow();
