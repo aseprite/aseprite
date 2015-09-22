@@ -14,8 +14,6 @@
 #include "app/commands/params.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "app/ui/main_window.h"
 #include "app/ui/timeline.h"
 #include "app/transaction.h"

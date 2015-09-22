@@ -16,8 +16,6 @@
 #include "app/context_access.h"
 #include "app/document_api.h"
 #include "app/document_range.h"
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "app/modules/gui.h"
 #include "app/transaction.h"
 #include "app/ui/main_window.h"

@@ -11,8 +11,6 @@
 
 #include "app/commands/filters/color_curve_editor.h"
 
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "filters/color_curve.h"
 #include "ui/alert.h"
 #include "ui/entry.h"

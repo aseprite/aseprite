@@ -12,8 +12,6 @@
 #include "app/commands/command.h"
 #include "app/context_access.h"
 #include "app/document_api.h"
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/gui.h"
 #include "app/ui/button_set.h"

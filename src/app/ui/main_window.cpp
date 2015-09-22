@@ -15,7 +15,6 @@
 #include "app/app_menus.h"
 #include "app/commands/commands.h"
 #include "app/ini_file.h"
-#include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/pref/preferences.h"
 #include "app/ui/color_bar.h"

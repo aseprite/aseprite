@@ -15,8 +15,6 @@
 #include "app/commands/command.h"
 #include "app/console.h"
 #include "app/document.h"
-#include "app/find_widget.h"
-#include "app/load_widget.h"
 #include "app/modules/editors.h"
 #include "app/modules/palettes.h"
 #include "app/pref/preferences.h"

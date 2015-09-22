@@ -11,9 +11,7 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
-#include "app/find_widget.h"
 #include "app/ini_file.h"
-#include "app/load_widget.h"
 #include "app/ui/keyboard_shortcuts.h"
 #include "app/ui/main_window.h"
 #include "ui/ui.h"
