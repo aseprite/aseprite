@@ -22,7 +22,7 @@
 #include "base/convert_to.h"
 #include "doc/doc.h"
 
-#include "generated_webp_options.h"
+#include "webp_options.xml.h"
 
 #include <cstdio>
 #include <cstdlib>
