@@ -60,4 +60,8 @@ if(NOT USE_SHARED_PIXMAN)
   add_subdirectory(pixman-cmake)
 endif()
 
+if(NOT USE_SHARED_FREETYPE)
+  add_subdirectory(freetype2)
+endif()
+
 add_subdirectory(simpleini)
