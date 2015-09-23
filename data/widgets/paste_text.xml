@@ -12,6 +12,9 @@
     <label text="Font Size:" />
     <entry id="font_size" maxsize="4" text="32" cell_align="horizontal" />
 
+    <label text="Color:" />
+    <colorpicker id="font_color" cell_align="horizontal" />
+
     <separator horizontal="true" cell_hspan="2" />
 
     <box horizontal="true" homogeneous="true" cell_hspan="2" cell_align="right">

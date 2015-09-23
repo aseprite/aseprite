@@ -19,6 +19,7 @@
 #include "base/path.h"
 #include "base/string.h"
 #include "doc/blend_funcs.h"
+#include "doc/blend_internals.h"
 #include "doc/color.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
@@ -88,7 +89,8 @@ bool PasteTextCommand::onEnabled(Context* ctx)
 
 class PasteTextWindow : public app::gen::PasteText {
 public:
-  PasteTextWindow(const std::string& face, int size)
+  PasteTextWindow(const std::string& face, int size,
+                  const app::Color& color)
     : m_face(face) {
     ok()->setEnabled(!m_face.empty());
     if (!m_face.empty())
@@ -96,6 +98,7 @@ public:
 
     fontSize()->setTextf("%d", size);
     fontFace()->Click.connect(Bind<void>(&PasteTextWindow::onSelectFont, this));
+    fontColor()->setColor(color);
   }
 
   std::string faceValue() const {
@@ -136,7 +139,8 @@ void PasteTextCommand::onExecute(Context* ctx)
 {
   Preferences& pref = Preferences::instance();
   PasteTextWindow window(pref.textTool.fontFace(),
-                         pref.textTool.fontSize());
+                         pref.textTool.fontSize(),
+                         pref.colorBar.fgColor());
 
   window.userText()->setText(last_text_used);
 
@@ -163,6 +167,11 @@ void PasteTextCommand::onExecute(Context* ctx)
   FT_Error err = FT_Open_Face(ft, &args, 0, &face);
   if (!err) {
     std::string text = window.userText()->getText();
+    app::Color appColor = window.fontColor()->getColor();
+    doc::color_t color = doc::rgba(appColor.getRed(),
+                                   appColor.getGreen(),
+                                   appColor.getBlue(),
+                                   appColor.getAlpha());
 
     // Set font size
     FT_Set_Pixel_Sizes(face, size, size);
@@ -186,16 +195,21 @@ void PasteTextCommand::onExecute(Context* ctx)
 
       for_each_glyph(
         face, begin, end,
-        [&bounds, &image](int x, FT_GlyphSlot glyph) {
-          int yimg = - bounds.y - glyph->bitmap_top;
+        [&bounds, &image, color](int x, FT_GlyphSlot glyph) {
+          int t, yimg = - bounds.y - glyph->bitmap_top;
           for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++yimg) {
             const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
             int ximg = x - bounds.x + glyph->bitmap_left;
             for (int u=0; u<(int)glyph->bitmap.width; ++u, ++p, ++ximg) {
               int alpha = *p;
-              doc::put_pixel(image, ximg, yimg,
-                             doc::rgba_blender_normal(doc::get_pixel(image, ximg, yimg),
-                                                      doc::rgba(255, 255, 255, *p), 255));
+              doc::put_pixel(
+                image, ximg, yimg,
+                doc::rgba_blender_normal(
+                  doc::get_pixel(image, ximg, yimg),
+                  doc::rgba(doc::rgba_getr(color),
+                            doc::rgba_getg(color),
+                            doc::rgba_getb(color),
+                            MUL_UN8(doc::rgba_geta(color), *p, t)), 255));
             }
           }
         });
