@@ -51,6 +51,7 @@
       <key command="ConvolutionMatrix" shortcut="F9" />
       <key command="ColorCurve" shortcut="Ctrl+M" mac="Cmd+M" />
       <key command="ColorCurve" shortcut="F10" />
+      <key command="PasteText" shortcut="T" />
       <key command="Options" shortcut="Ctrl+K" mac="Cmd+," />
       <key command="Options" shortcut="Ctrl+Shift+O" mac="Cmd+Shift+O" /> <!-- TODO remove this shortcut in v1.1 -->
       <key command="KeyboardShortcuts" shortcut="Ctrl+Alt+Shift+K" mac="Cmd+Alt+Shift+K" />
@@ -538,6 +539,7 @@
           <separator />
           <item command="Despeckle" text="&amp;Despeckle (median filter)" />
         </menu>
+        <item command="PasteText" text="Insert Text" />
         <!--menu text="Scripts">
           <item command="RunScript" text="Transparency from White Background">
             <param name="filename" value="white_to_alpha.js" />

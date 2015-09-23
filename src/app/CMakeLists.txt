@@ -226,6 +226,7 @@ add_library(app-lib
   commands/cmd_palette_editor.cpp
   commands/cmd_palette_size.cpp
   commands/cmd_paste.cpp
+  commands/cmd_paste_text.cpp
   commands/cmd_play_animation.cpp
   commands/cmd_refresh.cpp
   commands/cmd_remove_frame.cpp
