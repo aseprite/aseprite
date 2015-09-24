@@ -59,4 +59,5 @@ add_library(doc-lib
 target_link_libraries(doc-lib
   she
   gfx-lib
+  fixmath-lib
   base-lib)

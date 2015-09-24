@@ -10,4 +10,5 @@ add_library(gfx-lib
   transformation.cpp)
 
 target_link_libraries(gfx-lib
+  fixmath-lib
   ${PIXMAN_LIBRARY})
