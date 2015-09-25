@@ -474,7 +474,8 @@ private:
     // Check if we need an extra color equal to the bg color in a
     // transparent frameImage.
     bool needsExtraBgColor = false;
-    if (!m_opaque && m_sprite->pixelFormat() == IMAGE_INDEXED) {
+    if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
+        !m_opaque && m_bgIndex != m_localTransparentIndex) {
       for (const auto& i : LockImageBits<IndexedTraits>(frameImage)) {
         if (i == m_bgIndex &&
             i != m_localTransparentIndex) {
