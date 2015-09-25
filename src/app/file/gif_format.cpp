@@ -155,6 +155,13 @@ static void process_disposal_method(const Image* previous,
   }
 }
 
+static inline doc::color_t colormap2rgba(ColorMapObject* colormap, int i) {
+  return doc::rgba(
+    colormap->Colors[i].Red,
+    colormap->Colors[i].Green,
+    colormap->Colors[i].Blue, 255);
+}
+
 // Decodes a GIF file trying to keep the image in Indexed format. If
 // it's not possible to handle it as Indexed (e.g. it contains more
 // than 256 colors), the file will be automatically converted to RGB.
@@ -511,6 +518,7 @@ private:
         continue;
 
       int j = -1;
+
       if (m_frameNum > 0) {
         j = oldPalette.findExactMatch(
           colormap->Colors[i].Red,
@@ -521,11 +529,7 @@ private:
 
       if (j < 0) {
         j = base++;
-        palette->setEntry(
-          j, rgba(
-            colormap->Colors[i].Red,
-            colormap->Colors[i].Green,
-            colormap->Colors[i].Blue, 255));
+        palette->setEntry(j, colormap2rgba(colormap, i));
       }
       m_remap.map(i, j);
     }
@@ -691,10 +695,7 @@ private:
     Palette newPalette(0, colormap->ColorCount);
 
     for (int i=0; i<colormap->ColorCount; ++i) {
-      newPalette.setEntry(
-        i, rgba(colormap->Colors[i].Red,
-                colormap->Colors[i].Green,
-                colormap->Colors[i].Blue, 255));
+      newPalette.setEntry(i, colormap2rgba(colormap, i));;
     }
 
     Remap remap = create_remap_to_change_palette(
