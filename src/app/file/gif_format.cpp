@@ -673,6 +673,8 @@ private:
 
     m_currentImage.reset(Image::create(IMAGE_INDEXED, w, h));
     m_previousImage.reset(Image::create(IMAGE_INDEXED, w, h));
+    m_currentImage->setMaskColor(m_bgIndex);
+    m_previousImage->setMaskColor(m_bgIndex);
     clear_image(m_currentImage.get(), m_bgIndex);
     clear_image(m_previousImage.get(), m_bgIndex);
 
