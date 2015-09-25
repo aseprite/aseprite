@@ -485,11 +485,7 @@ private:
       }
     }
 
-    if (m_frameNum > 0 && !isLocalColormap && !needsExtraBgColor)
-      return;
-
     UniquePtr<Palette> palette;
-
     if (m_frameNum == 0)
       palette.reset(new Palette(m_frameNum, usedNColors + (needsExtraBgColor ? 1: 0)));
     else {
