@@ -403,7 +403,9 @@ void PaletteOptimizer::calculate(Palette* palette, int maskIndex,
       remap.map(i, i + (i >= maskIndex ? 1: 0));
 
     palette->applyRemap(remap);
-    palette->setEntry(maskIndex, rgba(0, 0, 0, 255));
+
+    if (maskIndex < palette->size())
+      palette->setEntry(maskIndex, rgba(0, 0, 0, 255));
   }
   else
     palette->resize(MAX(1, usedColors));
