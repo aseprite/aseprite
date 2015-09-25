@@ -189,7 +189,10 @@ public:
     , m_remap(256)
     , m_hasLocalColormaps(false)
     , m_firstLocalColormap(nullptr) {
-    DLOG("[GifDecoder] GIF background index = %d\n", (int)m_gifFile->SBackGroundColor);
+    DLOG("[GifDecoder] GIF background index=%d\n", (int)m_gifFile->SBackGroundColor);
+    DLOG("[GifDecoder] GIF global colormap=%d, ncolors=%d\n",
+         (m_gifFile->SColorMap ? 1: 0),
+         (m_gifFile->SColorMap ? m_gifFile->SColorMap->ColorCount: 0));
   }
 
   ~GifDecoder() {
@@ -322,6 +325,9 @@ private:
     // Convert the sprite to RGB if we have more than 256 colors
     if ((m_sprite->pixelFormat() == IMAGE_INDEXED) &&
         (m_sprite->palette(m_frameNum)->size() > 256)) {
+      DLOG("[GifDecoder] Converting to RGB because we have %d colors\n",
+           m_sprite->palette(m_frameNum)->size());
+
       convertIndexedSpriteToRgb();
     }
 
@@ -438,7 +444,10 @@ private:
     int ncolors = colormap->ColorCount;
     bool isLocalColormap = (m_gifFile->Image.ColorMap ? true: false);
 
-    // Get the list of used palette entries
+    DLOG("[GifDecoder] Local colormap=%d, ncolors=%d\n", isLocalColormap, ncolors);
+
+    // We'll calculate the list of used colormap indexes in this
+    // frameImage.
     PalettePicks usedEntries(ncolors);
     if (isLocalColormap) {
       // With this we avoid discarding the transparent index when a
@@ -454,10 +463,12 @@ private:
           usedEntries[i] = true;
       }
     }
-    // Used all entries if the colormap is global
-    else
+    // Mark all entries as used if the colormap is global.
+    else {
       usedEntries.all();
+    }
 
+    // Number of colors (indexes) used in the frame image.
     int usedNColors = usedEntries.picks();
 
     // Check if we need an extra color equal to the bg color in a
@@ -486,6 +497,8 @@ private:
     }
     resetRemap(MAX(ncolors, palette->size()));
 
+    // Number of colors in the colormap that are part of the current
+    // sprite palette.
     int found = 0;
     if (m_frameNum > 0) {
       for (int i=0; i<ncolors; ++i) {
@@ -504,12 +517,32 @@ private:
       }
     }
 
+    // All needed colors in the colormap are present in the current
+    // palette.
     if (found == usedNColors)
       return;
 
-    Palette oldPalette(*palette);
+    // In other case, we need to add the missing colors...
+
+    // First index that acts like a base for new colors in palette.
     int base = (m_frameNum == 0 ? 0: palette->size());
-    int missing = usedNColors - found;
+
+    // Number of colors in the image that aren't in the palette.
+    int missing = (usedNColors - found);
+
+    DLOG("[GifDecoder] Bg index=%d,\n"
+         "  Local transparent index=%d,\n"
+         "  Need extra index to show bg color=%d,\n  "
+         "  Found colors in palette=%d,\n"
+         "  Used colors in local pixels=%d,\n"
+         "  Base for new colors in palette=%d,\n"
+         "  Colors in the image missing in the palette=%d,\n"
+         "  New palette size=%d\n",
+         m_bgIndex, m_localTransparentIndex, needsExtraBgColor,
+         found, usedNColors, base, missing,
+         base + missing + (needsExtraBgColor ? 1: 0));
+
+    Palette oldPalette(*palette);
     palette->resize(base + missing + (needsExtraBgColor ? 1: 0));
     resetRemap(MAX(ncolors, palette->size()));
 
