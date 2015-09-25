@@ -535,9 +535,10 @@ private:
     }
 
     if (needsExtraBgColor) {
+      int i = m_bgIndex;
       int j = base++;
-      palette->setEntry(j, palette->getEntry(m_bgIndex));
-      m_remap.map(m_bgIndex, j);
+      palette->setEntry(j, colormap2rgba(colormap, i));
+      m_remap.map(i, j);
     }
 
     ASSERT(base == palette->size());
