@@ -65,7 +65,7 @@ report, feature requests, donations, and help me developing Aseprite.
 
 ## Credits
 
-Aseprite uses the following list of third-parties libraries:
+Aseprite uses the following third-party libraries:
 
 * [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
 * [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/FTL.txt)
