@@ -211,6 +211,8 @@ int geta_depth(int color_depth, int c)
    if (color_depth == 32)
       return geta32(c);
 
+   /* dacap: This should return 255, anyway as the Debian port uses
+      the official Allegro library, we cannot depend on this function. */
    return 0;
 }
 

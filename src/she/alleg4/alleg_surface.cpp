@@ -73,7 +73,8 @@ inline gfx::Color from_allegro(int color_depth, int color)
     getr_depth(color_depth, color),
     getg_depth(color_depth, color),
     getb_depth(color_depth, color),
-    geta_depth(color_depth, color));
+    // This condition is here because geta_depth() returns 0 if color depth != 32
+    (color_depth == 32 ? geta32(color): 255));
 }
 
 Alleg4Surface::Alleg4Surface(BITMAP* bmp, DestroyFlag destroy)
