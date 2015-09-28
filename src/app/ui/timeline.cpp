@@ -2176,23 +2176,34 @@ void Timeline::updateStatusBar(ui::Message* msg)
 void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
   gfx::Point scroll = getViewScroll();
+
+  gfx::Rect viewport = m_viewportArea;
+
+  // Add the horizontal bar space to the viewport area if the viewport
+  // is not big enough to show one cel.
+  if (m_hbar.isVisible() && viewport.h < LAYSIZE)
+    viewport.h += m_vbar.getBarWidth();
+
   gfx::Rect celBounds(
-    m_viewportArea.x + FRMSIZE*frame - scroll.x,
-    m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
+    viewport.x + FRMSIZE*frame - scroll.x,
+    viewport.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
     FRMSIZE, LAYSIZE);
 
-  if (celBounds.x < m_viewportArea.x) {
-    scroll.x -= m_viewportArea.x - celBounds.x;
+  // Here we use <= instead of < to avoid jumping between this
+  // condition and the "else if" one when we are playing the
+  // animation.
+  if (celBounds.x <= viewport.x) {
+    scroll.x -= viewport.x - celBounds.x;
   }
-  else if (celBounds.x2() > m_viewportArea.x2()) {
-    scroll.x += celBounds.x2() - m_viewportArea.x2();
+  else if (celBounds.x2() > viewport.x2()) {
+    scroll.x += celBounds.x2() - viewport.x2();
   }
 
-  if (celBounds.y < m_viewportArea.y) {
-    scroll.y -= m_viewportArea.y - celBounds.y;
+  if (celBounds.y <= viewport.y) {
+    scroll.y -= viewport.y - celBounds.y;
   }
-  else if (celBounds.y2() > m_viewportArea.y2()) {
-    scroll.y += celBounds.y2() - m_viewportArea.y2();
+  else if (celBounds.y2() > viewport.y2()) {
+    scroll.y += celBounds.y2() - viewport.y2();
   }
 
   setViewScroll(scroll);
