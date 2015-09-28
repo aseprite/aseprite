@@ -2176,25 +2176,23 @@ void Timeline::updateStatusBar(ui::Message* msg)
 void Timeline::showCel(LayerIndex layer, frame_t frame)
 {
   gfx::Point scroll = getViewScroll();
-  int x1, y1, x2, y2;
+  gfx::Rect celBounds(
+    m_viewportArea.x + FRMSIZE*frame - scroll.x,
+    m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y,
+    FRMSIZE, LAYSIZE);
 
-  x1 = m_viewportArea.x + FRMSIZE*frame - scroll.x;
-  y1 = m_viewportArea.y + LAYSIZE*(lastLayer() - layer) - scroll.y;
-  x2 = x1 + FRMSIZE - 1;
-  y2 = y1 + LAYSIZE - 1;
-
-  if (x1 < m_viewportArea.x) {
-    scroll.x -= m_viewportArea.x - x1;
+  if (celBounds.x < m_viewportArea.x) {
+    scroll.x -= m_viewportArea.x - celBounds.x;
   }
-  else if (x2 > m_viewportArea.x2()-1) {
-    scroll.x += (x2) - (m_viewportArea.x2()-1);
+  else if (celBounds.x2() > m_viewportArea.x2()) {
+    scroll.x += celBounds.x2() - m_viewportArea.x2();
   }
 
-  if (y1 < m_viewportArea.y) {
-    scroll.y -= m_viewportArea.y - (y1);
+  if (celBounds.y < m_viewportArea.y) {
+    scroll.y -= m_viewportArea.y - celBounds.y;
   }
-  else if (y2 > m_viewportArea.y2()-1) {
-    scroll.y += (y2) - (m_viewportArea.y2()-1);
+  else if (celBounds.y2() > m_viewportArea.y2()) {
+    scroll.y += celBounds.y2() - m_viewportArea.y2();
   }
 
   setViewScroll(scroll);
