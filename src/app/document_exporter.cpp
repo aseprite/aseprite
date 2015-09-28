@@ -255,6 +255,8 @@ public:
   void layoutSamples(Samples& samples, int borderPadding, int shapePadding, int& width, int& height) override {
     gfx::PackingRects pr;
 
+    // TODO Add support for shape paddings
+
     for (auto& sample : samples) {
       if (sample.isDuplicated())
         continue;
@@ -502,12 +504,29 @@ Document* DocumentExporter::createEmptyTexture(const Samples& samples)
         palette = it->sprite()->palette(frame_t(0));
     }
 
-    fullTextureBounds |=
-      gfx::Rect(it->inTextureBounds()).inflate(m_borderPadding);
+    gfx::Rect sampleBounds = it->inTextureBounds();
+
+    // If the user specified a fixed sprite sheet size, we add the
+    // border padding in the sample size to do an union between
+    // fullTextureBounds and sample's inTextureBounds (generally, it
+    // shouldn't make fullTextureBounds bigger).
+    if (m_textureWidth > 0) sampleBounds.w += m_borderPadding;
+    if (m_textureHeight > 0) sampleBounds.h += m_borderPadding;
+
+    fullTextureBounds |= sampleBounds;
   }
 
-  base::UniquePtr<Sprite> sprite(Sprite::createBasicSprite(
-      pixelFormat, fullTextureBounds.w, fullTextureBounds.h, maxColors));
+  // If the user didn't specified the sprite sheet size, the border is
+  // added right here (the left/top border padding should be added by
+  // the DocumentExporter::LayoutSamples() impl).
+  if (m_textureWidth == 0) fullTextureBounds.w += m_borderPadding;
+  if (m_textureHeight == 0) fullTextureBounds.h += m_borderPadding;
+
+  base::UniquePtr<Sprite> sprite(
+    Sprite::createBasicSprite(
+      pixelFormat,
+      fullTextureBounds.x+fullTextureBounds.w,
+      fullTextureBounds.y+fullTextureBounds.h, maxColors));
 
   if (palette != NULL)
     sprite->setPalette(palette, false);
