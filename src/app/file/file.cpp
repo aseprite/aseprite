@@ -495,33 +495,29 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
       fop->format->support(FILE_SUPPORT_LOAD)) {
     // Load a sequence
     if (fop->is_sequence()) {
-      Image* old_image;
-      bool loadres;
-
       // Default palette
       fop->seq.palette->makeBlack();
-
-      // TODO set_palette for each frame???
-#define SEQUENCE_IMAGE()                                                \
-      do {                                                              \
-        fop->seq.last_cel->data()->setImage(fop->seq.image);            \
-        fop->seq.layer->addCel(fop->seq.last_cel);                      \
-                                                                        \
-        if (fop->document->sprite()->palette(frame)                     \
-              ->countDiff(fop->seq.palette, NULL, NULL) > 0) {          \
-          fop->seq.palette->setFrame(frame);                            \
-          fop->document->sprite()->setPalette(fop->seq.palette, true);  \
-        }                                                               \
-                                                                        \
-        old_image = fop->seq.image.get();                               \
-        fop->seq.image.reset(NULL);                                     \
-        fop->seq.last_cel = NULL;                                       \
-      } while (0)
 
       // Load the sequence
       frame_t frames(fop->seq.filename_list.size());
       frame_t frame(0);
-      old_image = nullptr;
+      Image* old_image = nullptr;
+
+      // TODO set_palette for each frame???
+      auto add_image = [&]() {
+        fop->seq.last_cel->data()->setImage(fop->seq.image);
+        fop->seq.layer->addCel(fop->seq.last_cel);
+
+        if (fop->document->sprite()->palette(frame)
+            ->countDiff(fop->seq.palette, NULL, NULL) > 0) {
+          fop->seq.palette->setFrame(frame);
+          fop->document->sprite()->setPalette(fop->seq.palette, true);
+        }
+
+        old_image = fop->seq.image.get();
+        fop->seq.image.reset(NULL);
+        fop->seq.last_cel = NULL;
+      };
 
       fop->seq.has_alpha = false;
       fop->seq.progress_offset = 0.0f;
@@ -533,7 +529,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
         fop->filename = it->c_str();
 
         // Call the "load" procedure to read the first bitmap.
-        loadres = fop->format->load(fop);
+        bool loadres = fop->format->load(fop);
         if (!loadres) {
           fop_error(fop, "Error loading frame %d from file \"%s\"\n",
                     frame+1, fop->filename.c_str());
@@ -552,7 +548,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
           // Read ok
           else {
             // Add the keyframe
-            SEQUENCE_IMAGE();
+            add_image();
           }
         }
         // For other frames
@@ -567,7 +563,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
           // Compare the old frame with the new one
 #if USE_LINK // TODO this should be configurable through a check-box
           if (count_diff_between_images(old_image, fop->seq.image)) {
-            SEQUENCE_IMAGE();
+            add_image();
           }
           // We don't need this image
           else {
@@ -581,7 +577,7 @@ void fop_operate(FileOp *fop, IFileOpProgress* progress)
             fop->seq.last_cel = NULL;
           }
 #else
-          SEQUENCE_IMAGE();
+          add_image();
 #endif
         }
 
