@@ -65,9 +65,10 @@ void display_generate_events()
 
 #ifdef ALLEGRO4_WITH_RESIZE_PATCH
   if (resized) {
-    resized = false;
+    if (acknowledge_resize() < 0)
+      return;
 
-    acknowledge_resize();
+    resized = false;
 
     Alleg4Display* display = unique_display;
     if (display) {

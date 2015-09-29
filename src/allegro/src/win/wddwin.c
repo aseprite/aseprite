@@ -779,7 +779,8 @@ static void gfx_directx_win_exit(struct BITMAP *bmp)
 static BITMAP *gfx_directx_acknowledge_resize(void)
 {
    HWND allegro_wnd = win_get_window();
-   int color_depth = bitmap_color_depth(screen);
+   int color_depth = (screen ? bitmap_color_depth(screen):
+                               desktop_color_depth());
    int w, h;
    RECT rc;
    BITMAP *new_screen;
@@ -790,12 +791,17 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
    if (w % 4)
       w -= (w % 4);
 
+   /* Copy current content in screen */
+   BITMAP* tmp = NULL;
+   if (screen)
+      tmp = create_bitmap_ex(color_depth, w, h);
+
    _enter_gfx_critical();
 
-   /* Copy current content in screen */
-   BITMAP* tmp = create_bitmap_ex(color_depth, w, h);
-   clear_bitmap(tmp);
-   blit(gfx_directx_forefront_bitmap, tmp, 0, 0, 0, 0, w, h);
+   if (tmp) {
+      clear_bitmap(tmp);
+      blit(gfx_directx_forefront_bitmap, tmp, 0, 0, 0, 0, w, h);
+   }
 
    /* Destroy old screen */
    destroy_bitmap(gfx_directx_forefront_bitmap);
@@ -803,11 +809,20 @@ static BITMAP *gfx_directx_acknowledge_resize(void)
 
    /* Re-create the screen */
    new_screen = _create_directx_forefront_bitmap(w, h, color_depth);
+   if (!new_screen) {
+      if (tmp)
+         destroy_bitmap(tmp);
+
+      _exit_gfx_critical();
+      return NULL;
+   }
 
    /* Restore content in the new screen */
    clear_bitmap(new_screen);
-   blit(tmp, new_screen, 0, 0, 0, 0, w, h);
-   destroy_bitmap(tmp);
+   if (tmp) {
+     blit(tmp, new_screen, 0, 0, 0, 0, w, h);
+     destroy_bitmap(tmp);
+   }
 
    _exit_gfx_critical();
 

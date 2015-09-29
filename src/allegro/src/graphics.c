@@ -621,21 +621,20 @@ int acknowledge_resize(void)
    TRACE(PREFIX_I "acknowledge_resize init.\n");
 
    if (gfx_driver->acknowledge_resize) {
-      BITMAP *new_screen;
-
       /* Hide the mouse from current "screen" */
-      if (_mouse_installed)
+      if (screen && _mouse_installed)
          show_mouse(NULL);
 
-      new_screen = gfx_driver->acknowledge_resize();
-      if (!new_screen) {
+      /* We've to change the global "screen" variable (even to NULL if
+         the resize fails) because gfx_driver->acknowledge_resize()
+         destroys the old screen pointer/video surfaces.  */
+      screen = gfx_driver->acknowledge_resize();
+      if (!screen) {
          TRACE(PREFIX_I "acknowledge_resize failed.\n");
          return -1;
       }
 
       TRACE(PREFIX_I "acknowledge_resize succeeded.\n");
-
-      screen = new_screen;
 
       if (_al_linker_mouse)
         _al_linker_mouse->set_mouse_etc();
