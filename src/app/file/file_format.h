@@ -33,7 +33,7 @@ namespace app {
 
   class FormatOptions;
   class FileFormat;
-  struct FileOp;
+  class FileOp;
 
   // A file format supported by ASE. It is the base class to extend if
   // you want to add support to load and/or save a new kind of

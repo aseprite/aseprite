@@ -9,6 +9,7 @@
 #define APP_FILE_FILE_H_INCLUDED
 #pragma once
 
+#include "base/mutex.h"
 #include "base/shared_ptr.h"
 #include "doc/frame.h"
 #include "doc/image_ref.h"
@@ -22,10 +23,6 @@
 #define FILE_LOAD_SEQUENCE_ASK          0x00000002
 #define FILE_LOAD_SEQUENCE_YES          0x00000004
 #define FILE_LOAD_ONE_FRAME             0x00000008
-
-namespace base {
-  class mutex;
-}
 
 namespace doc {
   class Document;
@@ -62,24 +59,84 @@ namespace app {
   };
 
   // Structure to load & save files.
-  struct FileOp {
-    FileOpType type;              // Operation type: 0=load, 1=save.
-    FileFormat* format;
-    void* format_data;            // Custom data for the FileFormat::onLoad/onSave operations.
-    Context* context;
-    Document* document;           // Loaded document, or document to be saved.
-    std::string filename;         // File-name to load/save.
+  class FileOp {
+  public:
+    static FileOp* createLoadDocumentOperation(Context* context, const char* filename, int flags);
+    static FileOp* createSaveDocumentOperation(const Context* context, const Document* document, const char* filename, const char* fn_format);
+
+    ~FileOp();
+
+    bool isSequence() const { return !m_seq.filename_list.empty(); }
+    bool isOneFrame() const { return m_oneframe; }
+
+    const std::string& filename() const { return m_filename; }
+    Context* context() const { return m_context; }
+    Document* document() const { return m_document; }
+    Document* releaseDocument() {
+      Document* doc = m_document;
+      m_document = nullptr;
+      return doc;
+    }
+
+    void createDocument(Sprite* spr);
+    void operate(IFileOpProgress* progress = nullptr);
+
+    void done();
+    void stop();
+    bool isDone() const;
+    bool isStop() const;
+
+    // Does extra post-load processing which may require user intervention.
+    void postLoad();
+
+    // Helpers for file decoder/encoder (FileFormat) with
+    // FILE_SUPPORT_SEQUENCES flag.
+    base::SharedPtr<FormatOptions> sequenceGetFormatOptions() const;
+    void sequenceSetFormatOptions(const base::SharedPtr<FormatOptions>& formatOptions);
+    void sequenceSetNColors(int ncolors);
+    int sequenceGetNColors() const;
+    void sequenceSetColor(int index, int r, int g, int b);
+    void sequenceGetColor(int index, int* r, int* g, int* b) const;
+    void sequenceSetAlpha(int index, int a);
+    void sequenceGetAlpha(int index, int* a) const;
+    Image* sequenceImage(PixelFormat pixelFormat, int w, int h);
+    const Image* sequenceImage() const { return m_seq.image.get(); }
+    bool sequenceGetHasAlpha() const {
+      return m_seq.has_alpha;
+    }
+    void sequenceSetHasAlpha(bool hasAlpha) {
+      m_seq.has_alpha = hasAlpha;
+    }
+
+    const std::string& error() const { return m_error; }
+    void setError(const char *error, ...);
+    bool hasError() const { return !m_error.empty(); }
+
+    double progress() const;
+    void setProgress(double progress);
+
+  private:
+    FileOp();                   // Undefined
+    FileOp(FileOpType type, Context* context);
+
+    FileOpType m_type;          // Operation type: 0=load, 1=save.
+    FileFormat* m_format;
+    Context* m_context;
+    // TODO this should be a shared pointer (and we should remove
+    //      releaseDocument() member function)
+    Document* m_document;       // Loaded document, or document to be saved.
+    std::string m_filename;     // File-name to load/save.
 
     // Shared fields between threads.
-    base::mutex* mutex;           // Mutex to access to the next two fields.
-    double progress;              // Progress (1.0 is ready).
-    IFileOpProgress* progressInterface;
-    std::string error;            // Error string.
-    bool done;                    // True if the operation finished.
-    bool stop;                    // Force the break of the operation.
-    bool oneframe;                // Load just one frame (in formats
-                                  // that support animation like
-                                  // GIF/FLI/ASE).
+    mutable base::mutex m_mutex; // Mutex to access to the next two fields.
+    double m_progress;          // Progress (1.0 is ready).
+    IFileOpProgress* m_progressInterface;
+    std::string m_error;        // Error string.
+    bool m_done;                // True if the operation finished.
+    bool m_stop;                // Force the break of the operation.
+    bool m_oneframe;            // Load just one frame (in formats
+                                // that support animation like
+                                // GIF/FLI/ASE).
 
     // Data for sequences.
     struct {
@@ -95,19 +152,9 @@ namespace app {
       LayerImage* layer;
       Cel* last_cel;
       base::SharedPtr<FormatOptions> format_options;
-    } seq;
+    } m_seq;
 
-    ~FileOp();
-
-    bool has_error() const {
-      return !this->error.empty();
-    }
-
-    bool is_sequence() const {
-      return !this->seq.filename_list.empty();
-    }
-
-    void createDocument(Sprite* spr);
+    void prepareForSequence();
   };
 
   // Available extensions for each load/save operation.
@@ -119,34 +166,6 @@ namespace app {
 
   app::Document* load_document(Context* context, const char* filename);
   int save_document(Context* context, doc::Document* document);
-
-  // Low-level routines to load/save documents.
-
-  FileOp* fop_to_load_document(Context* context, const char* filename, int flags);
-  FileOp* fop_to_save_document(const Context* context, const Document* document, const char* filename, const char* fn_format);
-  void fop_operate(FileOp* fop, IFileOpProgress* progress);
-  void fop_done(FileOp* fop);
-  void fop_stop(FileOp* fop);
-  void fop_free(FileOp* fop);
-
-  // Does extra post-load processing which may require user intervention.
-  void fop_post_load(FileOp* fop);
-
-  void fop_sequence_set_format_options(FileOp* fop, const base::SharedPtr<FormatOptions>& format_options);
-  void fop_sequence_set_ncolors(FileOp* fop, int ncolors);
-  int fop_sequence_get_ncolors(FileOp* fop);
-  void fop_sequence_set_color(FileOp* fop, int index, int r, int g, int b);
-  void fop_sequence_get_color(FileOp* fop, int index, int *r, int *g, int *b);
-  void fop_sequence_set_alpha(FileOp* fop, int index, int a);
-  void fop_sequence_get_alpha(FileOp* fop, int index, int* a);
-  Image* fop_sequence_image(FileOp* fi, PixelFormat pixelFormat, int w, int h);
-
-  void fop_error(FileOp* fop, const char *error, ...);
-  void fop_progress(FileOp* fop, double progress);
-
-  double fop_get_progress(FileOp* fop);
-  bool fop_is_done(FileOp* fop);
-  bool fop_is_stop(FileOp* fop);
 
 } // namespace app
 

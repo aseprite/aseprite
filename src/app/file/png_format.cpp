@@ -56,7 +56,7 @@ FileFormat* CreatePngFormat()
 
 static void report_png_error(png_structp png_ptr, png_const_charp error)
 {
-  fop_error((FileOp*)png_get_error_ptr(png_ptr), "libpng: %s\n", error);
+  ((FileOp*)png_get_error_ptr(png_ptr))->setError("libpng: %s\n", error);
 }
 
 bool PngFormat::onLoad(FileOp* fop)
@@ -72,7 +72,7 @@ bool PngFormat::onLoad(FileOp* fop)
   png_bytep row_pointer;
   PixelFormat pixelFormat;
 
-  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
@@ -84,14 +84,14 @@ bool PngFormat::onLoad(FileOp* fop)
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)fop,
                                    report_png_error, report_png_error);
   if (png_ptr == NULL) {
-    fop_error(fop, "png_create_read_struct\n");
+    fop->setError("png_create_read_struct\n");
     return false;
   }
 
   /* Allocate/initialize the memory for image information. */
   info_ptr = png_create_info_struct(png_ptr);
   if (info_ptr == NULL) {
-    fop_error(fop, "png_create_info_struct\n");
+    fop->setError("png_create_info_struct\n");
     png_destroy_read_struct(&png_ptr, NULL, NULL);
     return false;
   }
@@ -100,7 +100,7 @@ bool PngFormat::onLoad(FileOp* fop)
    * the normal method of doing things with libpng).
    */
   if (setjmp(png_jmpbuf(png_ptr))) {
-    fop_error(fop, "Error reading PNG file\n");
+    fop->setError("Error reading PNG file\n");
     /* Free all of the memory associated with the png_ptr and info_ptr */
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     /* If we get here, we had a problem reading the file */
@@ -155,13 +155,13 @@ bool PngFormat::onLoad(FileOp* fop)
   switch (png_get_color_type(png_ptr, info_ptr)) {
 
     case PNG_COLOR_TYPE_RGB_ALPHA:
-      fop->seq.has_alpha = true;
+      fop->sequenceSetHasAlpha(true);
     case PNG_COLOR_TYPE_RGB:
       pixelFormat = IMAGE_RGB;
       break;
 
     case PNG_COLOR_TYPE_GRAY_ALPHA:
-      fop->seq.has_alpha = true;
+      fop->sequenceSetHasAlpha(true);
     case PNG_COLOR_TYPE_GRAY:
       pixelFormat = IMAGE_GRAYSCALE;
       break;
@@ -171,16 +171,16 @@ bool PngFormat::onLoad(FileOp* fop)
       break;
 
     default:
-      fop_error(fop, "Color type not supported\n)");
+      fop->setError("Color type not supported\n)");
       png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
       return false;
   }
 
   int imageWidth = png_get_image_width(png_ptr, info_ptr);
   int imageHeight = png_get_image_height(png_ptr, info_ptr);
-  Image* image = fop_sequence_image(fop, pixelFormat, imageWidth, imageHeight);
+  Image* image = fop->sequenceImage(pixelFormat, imageWidth, imageHeight);
   if (!image) {
-    fop_error(fop, "file_sequence_image %dx%d\n", imageWidth, imageHeight);
+    fop->setError("file_sequence_image %dx%d\n", imageWidth, imageHeight);
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     return false;
   }
@@ -191,13 +191,13 @@ bool PngFormat::onLoad(FileOp* fop)
   // Read the palette
   if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_PALETTE &&
       png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette)) {
-    fop_sequence_set_ncolors(fop, num_palette);
+    fop->sequenceSetNColors(num_palette);
 
     for (int c=0; c<num_palette; ++c) {
-      fop_sequence_set_color(fop, c,
-                             palette[c].red,
-                             palette[c].green,
-                             palette[c].blue);
+      fop->sequenceSetColor(c,
+                            palette[c].red,
+                            palette[c].green,
+                            palette[c].blue);
     }
 
     // Read alpha values for palette entries
@@ -208,10 +208,10 @@ bool PngFormat::onLoad(FileOp* fop)
     png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, nullptr);
 
     for (int i = 0; i < num_trans; ++i) {
-      fop_sequence_set_alpha(fop, i, trans[i]);
+      fop->sequenceSetAlpha(i, trans[i]);
 
       if (trans[i] < 255) {
-        fop->seq.has_alpha = true; // Is a transparent sprite
+        fop->sequenceSetHasAlpha(true); // Is a transparent sprite
         if (trans[i] == 0) {
           if (mask_entry < 0)
             mask_entry = i;
@@ -220,7 +220,7 @@ bool PngFormat::onLoad(FileOp* fop)
     }
 
     if (mask_entry >= 0)
-      fop->document->sprite()->setTransparentColor(mask_entry);
+      fop->document()->sprite()->setTransparentColor(mask_entry);
   }
   else {
     png_get_tRNS(png_ptr, info_ptr, nullptr, nullptr, &png_trans_color);
@@ -264,8 +264,8 @@ bool PngFormat::onLoad(FileOp* fop)
               g == png_trans_color->green &&
               b == png_trans_color->blue) {
             a = 0;
-            if (!fop->seq.has_alpha)
-              fop->seq.has_alpha = true;
+            if (!fop->sequenceGetHasAlpha())
+              fop->sequenceSetHasAlpha(true);
           }
           else
             a = 255;
@@ -298,8 +298,8 @@ bool PngFormat::onLoad(FileOp* fop)
           if (png_trans_color &&
               k == png_trans_color->gray) {
             a = 0;
-            if (!fop->seq.has_alpha)
-              fop->seq.has_alpha = true;
+            if (!fop->sequenceGetHasAlpha())
+              fop->sequenceSetHasAlpha(true);
           }
           else
             a = 255;
@@ -317,11 +317,11 @@ bool PngFormat::onLoad(FileOp* fop)
           *(dst_address++) = *(src_address++);
       }
 
-      fop_progress(fop,
-                   (double)((double)pass + (double)(y+1) / (double)(height))
-                   / (double)number_passes);
+      fop->setProgress(
+        (double)((double)pass + (double)(y+1) / (double)(height))
+        / (double)number_passes);
 
-      if (fop_is_stop(fop))
+      if (fop->isStop())
         break;
     }
   }
@@ -335,7 +335,7 @@ bool PngFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool PngFormat::onSave(FileOp* fop)
 {
-  Image* image = fop->seq.image.get();
+  const Image* image = fop->sequenceImage();
   png_uint_32 width, height, y;
   png_structp png_ptr;
   png_infop info_ptr;
@@ -345,7 +345,7 @@ bool PngFormat::onSave(FileOp* fop)
   int pass, number_passes;
 
   /* open the file */
-  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
   FILE* fp = handle.get();
 
   /* Create and initialize the png_struct with the desired error handler
@@ -392,12 +392,12 @@ bool PngFormat::onSave(FileOp* fop)
 
   switch (image->pixelFormat()) {
     case IMAGE_RGB:
-      color_type = fop->document->sprite()->needAlpha() ?
+      color_type = fop->document()->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_RGB_ALPHA:
         PNG_COLOR_TYPE_RGB;
       break;
     case IMAGE_GRAYSCALE:
-      color_type = fop->document->sprite()->needAlpha() ?
+      color_type = fop->document()->sprite()->needAlpha() ?
         PNG_COLOR_TYPE_GRAY_ALPHA:
         PNG_COLOR_TYPE_GRAY;
       break;
@@ -411,7 +411,7 @@ bool PngFormat::onSave(FileOp* fop)
 
   if (image->pixelFormat() == IMAGE_INDEXED) {
     int c, r, g, b;
-    int pal_size = fop_sequence_get_ncolors(fop);
+    int pal_size = fop->sequenceGetNColors();
     pal_size = MID(1, pal_size, PNG_MAX_PALETTE_LENGTH);
 
 #if PNG_MAX_PALETTE_LENGTH != 256
@@ -421,7 +421,7 @@ bool PngFormat::onSave(FileOp* fop)
     // Save the color palette.
     palette = (png_colorp)png_malloc(png_ptr, pal_size * sizeof(png_color));
     for (c = 0; c < pal_size; c++) {
-      fop_sequence_get_color(fop, c, &r, &g, &b);
+      fop->sequenceGetColor(c, &r, &g, &b);
       palette[c].red   = r;
       palette[c].green = g;
       palette[c].blue  = b;
@@ -432,9 +432,9 @@ bool PngFormat::onSave(FileOp* fop)
     // If the sprite does not have a (visible) background layer, we
     // put alpha=0 to the transparent color.
     int mask_entry = -1;
-    if (fop->document->sprite()->backgroundLayer() == NULL ||
-        !fop->document->sprite()->backgroundLayer()->isVisible()) {
-      mask_entry = fop->document->sprite()->transparentColor();
+    if (fop->document()->sprite()->backgroundLayer() == NULL ||
+        !fop->document()->sprite()->backgroundLayer()->isVisible()) {
+      mask_entry = fop->document()->sprite()->transparentColor();
     }
 
     int num_trans = pal_size;
@@ -442,7 +442,7 @@ bool PngFormat::onSave(FileOp* fop)
 
     for (c=0; c<num_trans; ++c) {
       int alpha = 255;
-      fop_sequence_get_alpha(fop, c, &alpha);
+      fop->sequenceGetAlpha(c, &alpha);
       trans[c] = (c == mask_entry ? 0: alpha);
     }
 
@@ -530,9 +530,9 @@ bool PngFormat::onSave(FileOp* fop)
       /* write the line */
       png_write_rows(png_ptr, &row_pointer, 1);
 
-      fop_progress(fop,
-                   (double)((double)pass + (double)(y+1) / (double)(height))
-                   / (double)number_passes);
+      fop->setProgress(
+        (double)((double)pass + (double)(y+1) / (double)(height))
+        / (double)number_passes);
     }
   }
 

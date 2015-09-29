@@ -212,15 +212,15 @@ public:
       readRecord(recType);
 
       // Just one frame?
-      if (m_fop->oneframe && m_frameNum > 0)
+      if (m_fop->isOneFrame() && m_frameNum > 0)
         break;
 
-      if (fop_is_stop(m_fop))
+      if (m_fop->isStop())
         break;
 
       if (m_filesize > 0) {
         int pos = posix_lseek(m_fd, 0, SEEK_CUR);
-        fop_progress(m_fop, double(pos) / double(m_filesize));
+        m_fop->setProgress(double(pos) / double(m_filesize));
       }
     }
 
@@ -785,12 +785,12 @@ bool GifFormat::onLoad(FileOp* fop)
 {
   // The filesize is used only to report some progress when we decode
   // the GIF file.
-  int filesize = base::file_size(fop->filename);
+  int filesize = base::file_size(fop->filename());
 
 #if GIFLIB_MAJOR >= 5
   int errCode = 0;
 #endif
-  int fd = open_file_descriptor_with_exception(fop->filename, "rb");
+  int fd = open_file_descriptor_with_exception(fop->filename(), "rb");
   GifFilePtr gif_file(DGifOpenFileHandle(fd
 #if GIFLIB_MAJOR >= 5
                                          , &errCode
@@ -798,7 +798,7 @@ bool GifFormat::onLoad(FileOp* fop)
                                          ), &DGifCloseFile);
 
   if (!gif_file) {
-    fop_error(fop, "Error loading GIF header.\n");
+    fop->setError("Error loading GIF header.\n");
     return false;
   }
 
@@ -818,7 +818,7 @@ public:
   GifEncoder(FileOp* fop, GifFileType* gifFile)
     : m_fop(fop)
     , m_gifFile(gifFile)
-    , m_sprite(fop->document->sprite())
+    , m_sprite(fop->document()->sprite())
     , m_spriteBounds(m_sprite->bounds())
     , m_hasBackground(m_sprite->backgroundLayer() ? true: false)
     , m_bitsPerPixel(1)
@@ -849,7 +849,7 @@ public:
     else
       m_clearColor = rgba(0, 0, 0, 0);
 
-    base::SharedPtr<GifOptions> gifOptions = fop->seq.format_options;
+    const base::SharedPtr<GifOptions> gifOptions = fop->sequenceGetFormatOptions();
     m_interlaced = gifOptions->interlaced();
     m_loop = (gifOptions->loop() ? 0: -1);
 
@@ -905,7 +905,7 @@ public:
                               frameBounds,
                               m_clearColor);
 
-      fop_progress(m_fop, double(frameNum+1) / double(nframes));
+      m_fop->setProgress(double(frameNum+1) / double(nframes));
     }
     return true;
   }
@@ -1240,7 +1240,7 @@ private:
 
   FileOp* m_fop;
   GifFileType* m_gifFile;
-  Sprite* m_sprite;
+  const Sprite* m_sprite;
   gfx::Rect m_spriteBounds;
   bool m_hasBackground;
   int m_bgIndex;
@@ -1262,7 +1262,7 @@ bool GifFormat::onSave(FileOp* fop)
 #if GIFLIB_MAJOR >= 5
   int errCode = 0;
 #endif
-  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename, "wb")
+  GifFilePtr gif_file(EGifOpenFileHandle(open_file_descriptor_with_exception(fop->filename(), "wb")
 #if GIFLIB_MAJOR >= 5
                                          , &errCode
 #endif
@@ -1280,14 +1280,15 @@ bool GifFormat::onSave(FileOp* fop)
 base::SharedPtr<FormatOptions> GifFormat::onGetFormatOptions(FileOp* fop)
 {
   base::SharedPtr<GifOptions> gif_options;
-  if (fop->document->getFormatOptions())
-    gif_options = base::SharedPtr<GifOptions>(fop->document->getFormatOptions());
+  if (fop->document()->getFormatOptions())
+    gif_options = base::SharedPtr<GifOptions>(fop->document()->getFormatOptions());
 
   if (!gif_options)
     gif_options.reset(new GifOptions);
 
   // Non-interactive mode
-  if (!fop->context || !fop->context->isUIAvailable())
+  if (!fop->context() ||
+      !fop->context()->isUIAvailable())
     return gif_options;
 
   try {

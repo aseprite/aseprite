@@ -80,7 +80,7 @@ struct BITMAPINFOHEADER {
 
 bool IcoFormat::onLoad(FileOp* fop)
 {
-  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
 
   // Read the icon header
@@ -90,12 +90,12 @@ bool IcoFormat::onLoad(FileOp* fop)
   header.entries  = fgetw(f);                   // Number of icons
 
   if (header.type != 1) {
-    fop_error(fop, "Invalid ICO file type.\n");
+    fop->setError("Invalid ICO file type.\n");
     return false;
   }
 
   if (header.entries < 1) {
-    fop_error(fop, "This ICO files does not contain images.\n");
+    fop->setError("This ICO files does not contain images.\n");
     return false;
   }
 
@@ -227,13 +227,13 @@ bool IcoFormat::onLoad(FileOp* fop)
 #ifdef ENABLE_SAVE
 bool IcoFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->sprite();
+  const Sprite* sprite = fop->document()->sprite();
   int bpp, bw, bitsw;
   int size, offset, i;
   int c, x, y, b, m, v;
   frame_t n, num = sprite->totalFrames();
 
-  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   offset = 6 + num*16;  // ICONDIR + ICONDIRENTRYs

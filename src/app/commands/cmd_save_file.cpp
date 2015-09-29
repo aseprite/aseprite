@@ -68,7 +68,7 @@ public:
     startJob();
 
     if (isCanceled()) {
-      fop_stop(m_fop);
+      m_fop->stop();
     }
 
     waitJob();
@@ -79,12 +79,12 @@ private:
   // Thread to do the hard work: save the file to the disk.
   virtual void onJob() override {
     try {
-      fop_operate(m_fop, this);
+      m_fop->operate(this);
     }
     catch (const std::exception& e) {
-      fop_error(m_fop, "Error saving file:\n%s", e.what());
+      m_fop->setError("Error saving file:\n%s", e.what());
     }
-    fop_done(m_fop);
+    m_fop->done();
   }
 
   virtual void ackFileOpProgress(double progress) override {
@@ -98,24 +98,26 @@ static void save_document_in_background(const Context* context,
                                         const Document* document, bool mark_as_saved,
                                         const std::string& fn_format)
 {
-  base::UniquePtr<FileOp> fop(fop_to_save_document(context,
-      document, document->filename().c_str(), fn_format.c_str()));
+  base::UniquePtr<FileOp> fop(
+    FileOp::createSaveDocumentOperation(
+      context, document,
+      document->filename().c_str(), fn_format.c_str()));
   if (!fop)
     return;
 
   SaveFileJob job(fop);
   job.showProgressWindow();
 
-  if (fop->has_error()) {
+  if (fop->hasError()) {
     Console console;
-    console.printf(fop->error.c_str());
+    console.printf(fop->error().c_str());
 
     // We don't know if the file was saved correctly or not. So mark
     // it as it should be saved again.
     const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
   // If the job was cancelled, mark the document as modified.
-  else if (fop_is_stop(fop)) {
+  else if (fop->isStop()) {
     const_cast<Document*>(document)->impossibleToBackToSavedState();
   }
   else if (context->isUIAvailable()) {

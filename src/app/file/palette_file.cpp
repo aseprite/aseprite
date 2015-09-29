@@ -62,22 +62,25 @@ Palette* load_palette(const char *filename)
   else {
     FileFormat* ff = FileFormatsManager::instance()->getFileFormatByExtension(ext.c_str());
     if (ff && ff->support(FILE_SUPPORT_LOAD)) {
-      FileOp* fop = fop_to_load_document(NULL, filename,
-        FILE_LOAD_SEQUENCE_NONE |
-        FILE_LOAD_ONE_FRAME);
-      if (fop && !fop->has_error()) {
-        fop_operate(fop, NULL);
-        fop_post_load(fop);
+      base::UniquePtr<FileOp> fop(
+        FileOp::createLoadDocumentOperation(
+          nullptr, filename,
+          FILE_LOAD_SEQUENCE_NONE |
+          FILE_LOAD_ONE_FRAME));
 
-        if (fop->document &&
-            fop->document->sprite() &&
-            fop->document->sprite()->palette(frame_t(0))) {
+      if (fop && !fop->hasError()) {
+        fop->operate(nullptr);
+        fop->postLoad();
+
+        if (fop->document() &&
+            fop->document()->sprite() &&
+            fop->document()->sprite()->palette(frame_t(0))) {
           pal = new Palette(
-            *fop->document->sprite()->palette(frame_t(0)));
+            *fop->document()->sprite()->palette(frame_t(0)));
         }
 
-        delete fop->document;
-        fop_done(fop);
+        delete fop->releaseDocument();
+        fop->done();
       }
     }
   }

@@ -42,29 +42,29 @@ public:
   }
 
   ~Worker() {
-    fop_stop(m_fop);
+    m_fop->stop();
     m_thread.join();
-
-    fop_free(m_fop);
   }
 
   IFileItem* getFileItem() { return m_fileitem; }
-  bool isDone() const { return fop_is_done(m_fop); }
-  double getProgress() const { return fop_get_progress(m_fop); }
+  bool isDone() const { return m_fop->isDone(); }
+  double getProgress() const { return m_fop->progress(); }
 
 private:
   void loadBgThread() {
     try {
-      fop_operate(m_fop, NULL);
+      m_fop->operate(nullptr);
 
       // Post load
-      fop_post_load(m_fop);
+      m_fop->postLoad();
 
       // Convert the loaded document into the she::Surface.
-      const Sprite* sprite = (m_fop->document && m_fop->document->sprite()) ?
-        m_fop->document->sprite(): NULL;
+      const Sprite* sprite =
+        (m_fop->document() &&
+         m_fop->document()->sprite() ?
+         m_fop->document()->sprite(): nullptr);
 
-      if (!fop_is_stop(m_fop) && sprite) {
+      if (!m_fop->isStop() && sprite) {
         // The palette to convert the Image
         m_palette.reset(new Palette(*sprite->palette(frame_t(0))));
 
@@ -96,7 +96,7 @@ private:
       }
 
       // Close file
-      delete m_fop->document;
+      delete m_fop->releaseDocument();
 
       // Set the thumbnail of the file-item.
       if (m_thumbnail) {
@@ -111,12 +111,12 @@ private:
       }
     }
     catch (const std::exception& e) {
-      fop_error(m_fop, "Error loading file:\n%s", e.what());
+      m_fop->setError("Error loading file:\n%s", e.what());
     }
-    fop_done(m_fop);
+    m_fop->done();
   }
 
-  FileOp* m_fop;
+  base::UniquePtr<FileOp> m_fop;
   IFileItem* m_fileitem;
   base::UniquePtr<Image> m_thumbnail;
   base::UniquePtr<Palette> m_palette;
@@ -185,27 +185,26 @@ void ThumbnailGenerator::addWorkerToGenerateThumbnail(IFileItem* fileitem)
       getWorkerStatus(fileitem, progress) != WithoutWorker)
     return;
 
-  FileOp* fop = fop_to_load_document(NULL,
-    fileitem->getFileName().c_str(),
-    FILE_LOAD_SEQUENCE_NONE |
-    FILE_LOAD_ONE_FRAME);
-
+  base::UniquePtr<FileOp> fop(
+    FileOp::createLoadDocumentOperation(
+      nullptr,
+      fileitem->getFileName().c_str(),
+      FILE_LOAD_SEQUENCE_NONE |
+      FILE_LOAD_ONE_FRAME));
   if (!fop)
     return;
 
-  if (fop->has_error()) {
-    fop_free(fop);
+  if (fop->hasError())
+    return;
+
+  Worker* worker = new Worker(fop.release(), fileitem);
+  try {
+    base::scoped_lock hold(m_workersAccess);
+    m_workers.push_back(worker);
   }
-  else {
-    Worker* worker = new Worker(fop, fileitem);
-    try {
-      base::scoped_lock hold(m_workersAccess);
-      m_workers.push_back(worker);
-    }
-    catch (...) {
-      delete worker;
-      throw;
-    }
+  catch (...) {
+    delete worker;
+    throw;
   }
 }
 
@@ -224,10 +223,8 @@ void ThumbnailGenerator::stopAllWorkersBackground()
     m_workers.clear();
   }
 
-  for (WorkerList::iterator
-         it=workersCopy.begin(), end=workersCopy.end(); it!=end; ++it) {
+  for (auto it=workersCopy.begin(), end=workersCopy.end(); it!=end; ++it)
     delete *it;
-  }
 }
 
 } // namespace app

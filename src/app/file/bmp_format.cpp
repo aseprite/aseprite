@@ -182,7 +182,7 @@ static int read_os2_bminfoheader(FILE *f, BITMAPINFOHEADER *infoheader)
 /* read_bmicolors:
  *  Loads the color palette for 1,4,8 bit formats.
  */
-static void read_bmicolors(FileOp *fop, int bytes, FILE *f, bool win_flag)
+static void read_bmicolors(FileOp* fop, int bytes, FILE *f, bool win_flag)
 {
   int i, j, r, g, b;
 
@@ -191,7 +191,7 @@ static void read_bmicolors(FileOp *fop, int bytes, FILE *f, bool win_flag)
     g = fgetc(f);
     r = fgetc(f);
 
-    fop_sequence_set_color(fop, j, r, g, b);
+    fop->sequenceSetColor(j, r, g, b);
 
     j++;
     i += 3;
@@ -362,8 +362,8 @@ static void read_image(FILE *f, Image *image, const BITMAPINFOHEADER *infoheader
       case 32: read_32bit_line(infoheader->biWidth, f, image, line); break;
     }
 
-    fop_progress(fop, (float)(i+1) / (float)(height));
-    if (fop_is_stop(fop))
+    fop->setProgress((float)(i+1) / (float)(height));
+    if (fop->isStop())
       break;
   }
 }
@@ -602,7 +602,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   PixelFormat pixelFormat;
   int format;
 
-  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
 
   if (read_bmfileheader(f, &fileheader) != 0)
@@ -649,7 +649,7 @@ bool BmpFormat::onLoad(FileOp *fop)
   else
     rmask = gmask = bmask = 0;
 
-  Image* image = fop_sequence_image(fop, pixelFormat,
+  Image* image = fop->sequenceImage(pixelFormat,
                                     infoheader.biWidth,
                                     ABS((int)infoheader.biHeight));
   if (!image) {
@@ -677,23 +677,23 @@ bool BmpFormat::onLoad(FileOp *fop)
 
     case BI_BITFIELDS:
       if (read_bitfields_image(f, image, &infoheader, rmask, gmask, bmask) < 0) {
-        fop_error(fop, "Unsupported bitfields in the BMP file.\n");
+        fop->setError("Unsupported bitfields in the BMP file.\n");
         return false;
       }
       break;
 
     default:
-      fop_error(fop, "Unsupported BMP compression.\n");
+      fop->setError("Unsupported BMP compression.\n");
       return false;
   }
 
   if (ferror(f)) {
-    fop_error(fop, "Error reading file.\n");
+    fop->setError("Error reading file.\n");
     return false;
   }
 
   // Setup the file-data.
-  if (!fop->seq.format_options) {
+  if (!fop->sequenceGetFormatOptions()) {
     base::SharedPtr<BmpOptions> bmp_options(new BmpOptions());
 
     bmp_options->format = format;
@@ -703,7 +703,7 @@ bool BmpFormat::onLoad(FileOp *fop)
     bmp_options->green_mask = gmask;
     bmp_options->blue_mask = bmask;
 
-    fop_sequence_set_format_options(fop, bmp_options);
+    fop->sequenceSetFormatOptions(bmp_options);
   }
 
   return true;
@@ -712,7 +712,7 @@ bool BmpFormat::onLoad(FileOp *fop)
 #ifdef ENABLE_SAVE
 bool BmpFormat::onSave(FileOp *fop)
 {
-  Image* image = fop->seq.image.get();
+  const Image* image = fop->sequenceImage();
   int bfSize;
   int biSizeImage;
   int bpp = (image->pixelFormat() == IMAGE_RGB) ? 24 : 8;
@@ -730,7 +730,7 @@ bool BmpFormat::onSave(FileOp *fop)
     bfSize = 54 + biSizeImage;       /* header + image data */
   }
 
-  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
   FILE* f = handle.get();
 
   /* file_header */
@@ -761,7 +761,7 @@ bool BmpFormat::onSave(FileOp *fop)
 
     /* palette */
     for (i=0; i<256; i++) {
-      fop_sequence_get_color(fop, i, &r, &g, &b);
+      fop->sequenceGetColor(i, &r, &g, &b);
       fputc(b, f);
       fputc(g, f);
       fputc(r, f);
@@ -793,11 +793,11 @@ bool BmpFormat::onSave(FileOp *fop)
     for (j=0; j<filler; j++)
       fputc(0, f);
 
-    fop_progress(fop, (float)(image->height()-i) / (float)image->height());
+    fop->setProgress((float)(image->height()-i) / (float)image->height());
   }
 
   if (ferror(f)) {
-    fop_error(fop, "Error writing file.\n");
+    fop->setError("Error writing file.\n");
     return false;
   }
   else {

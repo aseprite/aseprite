@@ -60,7 +60,7 @@ public:
     startJob();
 
     if (isCanceled())
-      fop_stop(m_fop);
+      m_fop->stop();
 
     waitJob();
   }
@@ -69,18 +69,16 @@ private:
   // Thread to do the hard work: load the file from the disk.
   virtual void onJob() override {
     try {
-      fop_operate(m_fop, this);
+      m_fop->operate(this);
     }
     catch (const std::exception& e) {
-      fop_error(m_fop, "Error loading file:\n%s", e.what());
+      m_fop->setError("Error loading file:\n%s", e.what());
     }
 
-    if (fop_is_stop(m_fop) && m_fop->document) {
-      delete m_fop->document;
-      m_fop->document = NULL;
-    }
+    if (m_fop->isStop() && m_fop->document())
+      delete m_fop->releaseDocument();
 
-    fop_done(m_fop);
+    m_fop->done();
   }
 
   virtual void ackFileOpProgress(double progress) override {
@@ -121,12 +119,14 @@ void OpenFileCommand::onExecute(Context* context)
   }
 
   if (!m_filename.empty()) {
-    base::UniquePtr<FileOp> fop(fop_to_load_document(context, m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
+    base::UniquePtr<FileOp> fop(
+      FileOp::createLoadDocumentOperation(
+        context, m_filename.c_str(), FILE_LOAD_SEQUENCE_ASK));
     bool unrecent = false;
 
     if (fop) {
-      if (fop->has_error()) {
-        console.printf(fop->error.c_str());
+      if (fop->hasError()) {
+        console.printf(fop->error().c_str());
         unrecent = true;
       }
       else {
@@ -134,20 +134,20 @@ void OpenFileCommand::onExecute(Context* context)
         task.showProgressWindow();
 
         // Post-load processing, it is called from the GUI because may require user intervention.
-        fop_post_load(fop);
+        fop->postLoad();
 
         // Show any error
-        if (fop->has_error())
-          console.printf(fop->error.c_str());
+        if (fop->hasError())
+          console.printf(fop->error().c_str());
 
-        Document* document = fop->document;
+        Document* document = fop->document();
         if (document) {
           if (context->isUIAvailable())
-            App::instance()->getRecentFiles()->addRecentFile(fop->filename.c_str());
+            App::instance()->getRecentFiles()->addRecentFile(fop->filename().c_str());
 
           document->setContext(context);
         }
-        else if (!fop_is_stop(fop))
+        else if (!fop->isStop())
           unrecent = true;
       }
 

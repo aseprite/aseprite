@@ -92,7 +92,7 @@ static void output_message(j_common_ptr cinfo)
   LOG("JPEG library: \"%s\"\n", buffer);
 
   // Leave the message for the application.
-  fop_error(((struct error_mgr *)cinfo->err)->fop, "%s\n", buffer);
+  ((struct error_mgr *)cinfo->err)->fop->setError("%s\n", buffer);
 }
 
 bool JpegFormat::onLoad(FileOp* fop)
@@ -104,7 +104,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   JDIMENSION buffer_height;
   int c;
 
-  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* file = handle.get();
 
   // Initialize the JPEG decompression object with error handling.
@@ -137,11 +137,11 @@ bool JpegFormat::onLoad(FileOp* fop)
   jpeg_start_decompress(&cinfo);
 
   // Create the image.
-  Image* image = fop_sequence_image(fop,
-                                    (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
-                                                                        IMAGE_GRAYSCALE),
-                                    cinfo.output_width,
-                                    cinfo.output_height);
+  Image* image = fop->sequenceImage(
+    (cinfo.out_color_space == JCS_RGB ? IMAGE_RGB:
+                                        IMAGE_GRAYSCALE),
+    cinfo.output_width,
+    cinfo.output_height);
   if (!image) {
     jpeg_destroy_decompress(&cinfo);
     return false;
@@ -170,7 +170,7 @@ bool JpegFormat::onLoad(FileOp* fop)
   // Generate a grayscale palette if is necessary.
   if (image->pixelFormat() == IMAGE_GRAYSCALE)
     for (c=0; c<256; c++)
-      fop_sequence_set_color(fop, c, c, c, c);
+      fop->sequenceSetColor(c, c, c, c);
 
   // Read each scan line.
   while (cinfo.output_scanline < cinfo.output_height) {
@@ -213,8 +213,8 @@ bool JpegFormat::onLoad(FileOp* fop)
       }
     }
 
-    fop_progress(fop, (float)(cinfo.output_scanline+1) / (float)(cinfo.output_height));
-    if (fop_is_stop(fop))
+    fop->setProgress((float)(cinfo.output_scanline+1) / (float)(cinfo.output_height));
+    if (fop->isStop())
       break;
   }
 
@@ -234,14 +234,15 @@ bool JpegFormat::onSave(FileOp* fop)
 {
   struct jpeg_compress_struct cinfo;
   struct error_mgr jerr;
-  Image* image = fop->seq.image.get();
+  const Image* image = fop->sequenceImage();
   JSAMPARRAY buffer;
   JDIMENSION buffer_height;
-  base::SharedPtr<JpegOptions> jpeg_options = fop->seq.format_options;
+  const base::SharedPtr<JpegOptions> jpeg_options =
+    fop->sequenceGetFormatOptions();
   int c;
 
   // Open the file for write in it.
-  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
   FILE* file = handle.get();
 
   // Allocate and initialize JPEG compression object.
@@ -277,7 +278,7 @@ bool JpegFormat::onSave(FileOp* fop)
   buffer_height = 1;
   buffer = (JSAMPARRAY)base_malloc(sizeof(JSAMPROW) * buffer_height);
   if (!buffer) {
-    fop_error(fop, "Not enough memory for the buffer.\n");
+    fop->setError("Not enough memory for the buffer.\n");
     jpeg_destroy_compress(&cinfo);
     return false;
   }
@@ -286,7 +287,7 @@ bool JpegFormat::onSave(FileOp* fop)
     buffer[c] = (JSAMPROW)base_malloc(sizeof(JSAMPLE) *
                                       cinfo.image_width * cinfo.num_components);
     if (!buffer[c]) {
-      fop_error(fop, "Not enough memory for buffer scanlines.\n");
+      fop->setError("Not enough memory for buffer scanlines.\n");
       for (c--; c>=0; c--)
         base_free(buffer[c]);
       base_free(buffer);
@@ -328,7 +329,7 @@ bool JpegFormat::onSave(FileOp* fop)
     }
     jpeg_write_scanlines(&cinfo, buffer, buffer_height);
 
-    fop_progress(fop, (float)(cinfo.next_scanline+1) / (float)(cinfo.image_height));
+    fop->setProgress((float)(cinfo.next_scanline+1) / (float)(cinfo.image_height));
   }
 
   // Destroy all data.
@@ -351,14 +352,15 @@ bool JpegFormat::onSave(FileOp* fop)
 base::SharedPtr<FormatOptions> JpegFormat::onGetFormatOptions(FileOp* fop)
 {
   base::SharedPtr<JpegOptions> jpeg_options;
-  if (fop->document->getFormatOptions())
-    jpeg_options = base::SharedPtr<JpegOptions>(fop->document->getFormatOptions());
+  if (fop->document()->getFormatOptions())
+    jpeg_options = base::SharedPtr<JpegOptions>(fop->document()->getFormatOptions());
 
   if (!jpeg_options)
     jpeg_options.reset(new JpegOptions);
 
   // Non-interactive mode
-  if (!fop->context || !fop->context->isUIAvailable())
+  if (!fop->context() ||
+      !fop->context()->isUIAvailable())
     return jpeg_options;
 
   try {

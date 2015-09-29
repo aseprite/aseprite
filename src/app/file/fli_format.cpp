@@ -51,14 +51,14 @@ FileFormat* CreateFliFormat()
 bool FliFormat::onLoad(FileOp* fop)
 {
   // Open the file to read in binary mode
-  FileHandle handle(open_file_with_exception(fop->filename, "rb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "rb"));
   FILE* f = handle.get();
   flic::StdioFileInterface finterface(f);
   flic::Decoder decoder(&finterface);
 
   flic::Header header;
   if (!decoder.readHeader(header)) {
-    fop_error(fop, "The file doesn't have a FLIC header\n");
+    fop->setError("The file doesn't have a FLIC header\n");
     return false;
   }
 
@@ -92,7 +92,7 @@ bool FliFormat::onLoad(FileOp* fop)
        ++frame_in) {
     // Read the frame
     if (!decoder.readFrame(fliFrame)) {
-      fop_error(fop, "Error reading frame %d\n", frame_in);
+      fop->setError("Error reading frame %d\n", frame_in);
       continue;
     }
 
@@ -138,12 +138,12 @@ bool FliFormat::onLoad(FileOp* fop)
     }
 
     if (header.frames > 0)
-      fop_progress(fop, (float)(frame_in+1) / (float)(header.frames));
+      fop->setProgress((float)(frame_in+1) / (float)(header.frames));
 
-    if (fop_is_stop(fop))
+    if (fop->isStop())
       break;
 
-    if (fop->oneframe)
+    if (fop->isOneFrame())
       break;
   }
 
@@ -156,7 +156,7 @@ bool FliFormat::onLoad(FileOp* fop)
 
 #ifdef ENABLE_SAVE
 
-static int get_time_precision(Sprite *sprite)
+static int get_time_precision(const Sprite *sprite)
 {
   // Check if all frames have the same duration
   bool constantFrameRate = true;
@@ -180,10 +180,10 @@ static int get_time_precision(Sprite *sprite)
 
 bool FliFormat::onSave(FileOp* fop)
 {
-  Sprite* sprite = fop->document->sprite();
+  const Sprite* sprite = fop->document()->sprite();
 
   // Open the file to write in binary mode
-  FileHandle handle(open_file_with_exception(fop->filename, "wb"));
+  FileHandle handle(open_file_with_exception(fop->filename(), "wb"));
   FILE* f = handle.get();
   flic::StdioFileInterface finterface(f);
   flic::Encoder encoder(&finterface);
@@ -233,12 +233,12 @@ bool FliFormat::onSave(FileOp* fop)
     }
 
     // Update progress
-    fop_progress(fop, (float)(frame_it+1) / (float)(sprite->totalFrames()+1));
+    fop->setProgress((float)(frame_it+1) / (float)(sprite->totalFrames()+1));
   }
 
   return true;
 }
 
-#endif
+#endif  // ENABLE_SAVE
 
 } // namespace app
