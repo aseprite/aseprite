@@ -170,6 +170,17 @@ struct WriterData {
   FileOp* fop;
 };
 
+class ScopedWebPPicture {
+public:
+  ScopedWebPPicture(WebPPicture& pic) : m_pic(pic) {
+  }
+  ~ScopedWebPPicture() {
+    WebPPictureFree(&m_pic);
+  }
+private:
+  WebPPicture& m_pic;
+};
+
 const char* getEncoderErrorMessage(WebPEncodingError errorCode) {
   switch (errorCode) {
   case VP8_ENC_OK: return ""; break;
@@ -280,9 +291,10 @@ bool WebPFormat::onSave(FileOp* fop)
     return false;
   }
 
+  ScopedWebPPicture scopedPic(pic); // Calls WebPPictureFree automatically
+
   if (!WebPPictureImportRGBA(&pic, (uint8_t*)image->getPixelAddress(0, 0), image->width() * sizeof(uint32_t))) {
     fop->setError("Error converting RGBA data into a WebP picture\n");
-    WebPPictureFree(&pic);
     return false;
   }
 
@@ -293,11 +305,9 @@ bool WebPFormat::onSave(FileOp* fop)
   if (!WebPEncode(&config, &pic)) {
     fop->setError("Error encoding image into WebP: %s\n",
                   getEncoderErrorMessage(pic.error_code));
-    WebPPictureFree(&pic);
     return false;
   }
 
-  WebPPictureFree(&pic);
   return true;
 }
 
