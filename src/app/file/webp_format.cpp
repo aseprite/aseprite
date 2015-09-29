@@ -154,9 +154,11 @@ bool WebPFormat::onLoad(FileOp* fop)
       break;
   }
 
-  base::SharedPtr<WebPOptions> webPOptions(new WebPOptions());
-  fop->sequenceSetFormatOptions(webPOptions);
-  webPOptions->setLossless(std::min(config.input.format - 1, 1));
+  if (!fop->sequenceGetFormatOptions()) {
+    base::SharedPtr<WebPOptions> webPOptions(new WebPOptions());
+    webPOptions->setLossless(std::min(config.input.format - 1, 1));
+    fop->sequenceSetFormatOptions(webPOptions);
+  }
 
   WebPIDelete(idec);
   WebPFreeDecBuffer(&config.output);
