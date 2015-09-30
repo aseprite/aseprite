@@ -23,7 +23,7 @@ namespace tools {
 // (or foreground/background colors)
 class PaintInk : public Ink {
 public:
-  enum Type { Merge, WithFg, WithBg, Copy, LockAlpha };
+  enum Type { Simple, WithFg, WithBg, Copy, LockAlpha };
 
 private:
   Type m_type;
@@ -40,7 +40,7 @@ public:
   {
     switch (m_type) {
 
-      case Merge:
+      case Simple:
         // Do nothing, use the default colors
         break;
 
@@ -61,7 +61,7 @@ public:
       m_proc = ink_processing[INK_BRUSH][depth];
     else {
       switch (m_type) {
-        case Merge: {
+        case Simple: {
           bool opaque = false;
 
           if (loop->getOpacity() == 255) {

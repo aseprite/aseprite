@@ -84,7 +84,7 @@ ToolBox::ToolBox()
   LOG("Toolbox module: installing\n");
 
   m_inks[WellKnownInks::Selection]       = new SelectionInk();
-  m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Merge);
+  m_inks[WellKnownInks::Paint]           = new PaintInk(PaintInk::Simple);
   m_inks[WellKnownInks::PaintFg]         = new PaintInk(PaintInk::WithFg);
   m_inks[WellKnownInks::PaintBg]         = new PaintInk(PaintInk::WithBg);
   m_inks[WellKnownInks::PaintCopy]       = new PaintInk(PaintInk::Copy);
