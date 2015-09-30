@@ -12,17 +12,17 @@
 **Aseprite** is an open source program to create animated sprites.
 Its main features are:
 
-* Sprites are composed by **layers** &amp; **frames** (as separated concepts).
-* Supported color modes: **RGBA**, **Indexed** (palettes up to 256
+* Sprites are composed by [**layers** &amp; **frames**](www.aseprite.org/docs/timeline/) (as separated concepts).
+* Supported [color modes](http://www.aseprite.org/docs/color/): **RGBA**, **Indexed** (palettes up to 256
   colors), and Grayscale.
-* Load/save sequence of **PNG** files and **GIF** animations (also
+* Load/save sequence of **PNG** files and **GIF** animations (and
   FLC, FLI, JPG, BMP, PCX, TGA).
 * Export/import animations to/from **Sprite Sheets**.
 * **Tiled** drawing mode, useful to draw **patterns** and textures.
 * **Undo/Redo** for every operation.
-* Mini-editor with **real-time animation preview**.
-* **Multiple editors** support.
-* Pixel art specific tools like filled **Contour** &amp; **Polygon**.
+* Real-time **animation preview**.
+* [**Multiple editors**](http://www.aseprite.org/docs/workspace/#Drag-and-drop-tabs) support.
+* Pixel-art specific tools like filled **Contour**, **Polygon**, [**Shading**](http://www.aseprite.org/docs/shading/) mode, etc.
 * **Onion skinning**
 
 ## Issues
@@ -65,11 +65,21 @@ report, feature requests, donations, and help me developing Aseprite.
 
 ## Credits
 
-Aseprite uses the following third-party libraries:
+Aseprite includes color palettes created by:
+
+* [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm) palettes, [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).
+* [Arne Niklas Jansson](http://androidarts.com/) palettes, [16 colors](http://androidarts.com/palette/16pal.htm), [32 colors](http://wayofthepixel.net/index.php?topic=15824.msg144494).
+
+It tries to replicate some pixel-art algorithms:
+
+* [RotSprite](http://forums.sonicretro.org/index.php?showtopic=8848&st=15&p=159754&#entry159754) by Xenowhirl.
+* [Pixel perfect drawing algorithm](http://deepnight.net/pixel-perfect-drawing/) by [Sébastien Bénard](https://twitter.com/deepnightfr) and [Carduus](https://twitter.com/CarduusHimself/status/420554200737935361).
+
+And it uses the following third-party libraries:
 
 * [Allegro 4](http://alleg.sourceforge.net/) - [allegro4 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/allegro4-LICENSE.txt)
 * [FreeType](http://www.freetype.org/) - [FTL license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/FTL.txt)
-* [Google Test](http://code.google.com/p/googletest/) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
+* [Google Test](https://github.com/google/googletest) - [gtest license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/gtest-LICENSE.txt)
 * [XFree86](http://www.x.org/) - [XFree86 license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/XFree86-LICENSE.txt)
 * [curl](http://curl.haxx.se/) - [curl license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/curl-LICENSE.txt)
 * [giflib](http://sourceforge.net/projects/giflib/) - [giflib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/giflib-LICENSE.txt)
@@ -82,11 +92,6 @@ Aseprite uses the following third-party libraries:
 * [simpleini](https://github.com/aseprite/simpleini/) - [MIT license](https://github.com/aseprite/simpleini/blob/aseprite/LICENCE.txt)
 * [tinyxml](http://www.sourceforge.net/projects/tinyxml) - [zlib license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
 * [zlib](http://www.gzip.org/zlib/) - [ZLIB license](https://github.com/aseprite/aseprite/tree/master/docs/licenses/ZLIB.txt)
-
-Also it includes color palettes created by:
-
-* [Richard "DawnBringer" Fhager](http://pixeljoint.com/p/23821.htm) palettes, [16 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=12795),  [32 colors](http://pixeljoint.com/forum/forum_posts.asp?TID=16247).
-* [Arne Niklas Jansson](http://androidarts.com/) palettes, [16 colors](http://androidarts.com/palette/16pal.htm), [32 colors](http://wayofthepixel.net/index.php?topic=15824.msg144494).
 
 ## License
 
