@@ -94,6 +94,7 @@ protected:
         int w = scale_x(image->width());
         int h = scale_y(image->height());
         ImageRef new_image(Image::create(image->pixelFormat(), MAX(1, w), MAX(1, h)));
+        new_image->setMaskColor(image->maskColor());
 
         doc::algorithm::fixup_image_transparent_colors(image);
         doc::algorithm::resize_image(

@@ -489,6 +489,10 @@ Cel* DocumentApi::addCel(LayerImage* layer, frame_t frameNumber, const ImageRef&
 
 void DocumentApi::replaceImage(Sprite* sprite, const ImageRef& oldImage, const ImageRef& newImage)
 {
+  ASSERT(oldImage);
+  ASSERT(newImage);
+  ASSERT(oldImage->maskColor() == newImage->maskColor());
+
   m_transaction.execute(new cmd::ReplaceImage(
       sprite, oldImage, newImage));
 }
