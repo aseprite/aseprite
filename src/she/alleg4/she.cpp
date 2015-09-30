@@ -148,7 +148,7 @@ public:
   }
 
   Capabilities capabilities() const override {
-    return (Capabilities)(kCanResizeDisplayCapability);
+    return (Capabilities)(Capabilities::CanResizeDisplay);
   }
 
   EventQueue* eventQueue() override { // TODO remove this function

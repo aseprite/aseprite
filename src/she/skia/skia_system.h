@@ -46,9 +46,9 @@ public:
 
   Capabilities capabilities() const override {
     return Capabilities(
-      int(kMultipleDisplaysCapability) |
-      int(kCanResizeDisplayCapability) |
-      int(kDisplayScaleCapability));
+      int(Capabilities::MultipleDisplays) |
+      int(Capabilities::CanResizeDisplay) |
+      int(Capabilities::DisplayScale));
   }
 
   EventQueue* eventQueue() override {
