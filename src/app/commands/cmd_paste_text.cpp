@@ -209,7 +209,7 @@ void PasteTextCommand::onExecute(Context* ctx)
                   doc::rgba(doc::rgba_getr(color),
                             doc::rgba_getg(color),
                             doc::rgba_getb(color),
-                            MUL_UN8(doc::rgba_geta(color), *p, t)), 255));
+                            MUL_UN8(doc::rgba_geta(color), alpha, t)), 255));
             }
           }
         });
