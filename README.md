@@ -12,7 +12,7 @@
 **Aseprite** is an open source program to create animated sprites.
 Its main features are:
 
-* Sprites are composed by [**layers** &amp; **frames**](www.aseprite.org/docs/timeline/) (as separated concepts).
+* Sprites are composed by [**layers** &amp; **frames**](http://www.aseprite.org/docs/timeline/) (as separated concepts).
 * Supported [color modes](http://www.aseprite.org/docs/color/): **RGBA**, **Indexed** (palettes up to 256
   colors), and Grayscale.
 * Load/save sequence of **PNG** files and **GIF** animations (and
