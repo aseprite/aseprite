@@ -139,7 +139,8 @@ public:
 
     // Ignore opacity for these inks
     if (!tools::inkHasOpacity(m_toolPref.ink()) &&
-        m_brush->type() != kImageBrushType) {
+        m_brush->type() != kImageBrushType &&
+        !m_ink->isEffect()) {
       m_opacity = 255;
     }
 
