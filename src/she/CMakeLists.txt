@@ -177,3 +177,8 @@ if(USE_ALLEG4_BACKEND)
     ${LIBALLEGRO4_LINK_FLAGS}
     ${DXGUID_LIBRARIES})
 endif()
+
+if(USE_SKIA_BACKEND)
+  target_link_libraries(she
+    ${SKIA_LIBRARIES})
+endif()

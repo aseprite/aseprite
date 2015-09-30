@@ -115,10 +115,6 @@ endif()
 
 add_subdirectory(app)
 
-if(USE_SKIA_BACKEND)
-  list(APPEND PLATFORM_LIBS ${SKIA_LIBRARIES})
-endif()
-
 ######################################################################
 # Copy data/ directory target
 
