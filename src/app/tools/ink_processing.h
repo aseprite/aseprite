@@ -265,6 +265,72 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////
+// Merge Ink
+//////////////////////////////////////////////////////////////////////
+
+template<typename ImageTraits>
+class MergeInkProcessing : public DoubleInkProcessing<MergeInkProcessing<ImageTraits>, ImageTraits> {
+public:
+  MergeInkProcessing(ToolLoop* loop) {
+    m_color = loop->getPrimaryColor();
+    m_opacity = loop->getOpacity();
+  }
+
+  void processPixel(int x, int y) {
+    // Do nothing
+  }
+
+private:
+  color_t m_color;
+  int m_opacity;
+};
+
+template<>
+void MergeInkProcessing<RgbTraits>::processPixel(int x, int y) {
+  *m_dstAddress = rgba_blender_merge(*m_srcAddress, m_color, m_opacity);
+}
+
+template<>
+void MergeInkProcessing<GrayscaleTraits>::processPixel(int x, int y) {
+  *m_dstAddress = graya_blender_merge(*m_srcAddress, m_color, m_opacity);
+}
+
+template<>
+class MergeInkProcessing<IndexedTraits> : public DoubleInkProcessing<MergeInkProcessing<IndexedTraits>, IndexedTraits> {
+public:
+  MergeInkProcessing(ToolLoop* loop) :
+    m_palette(get_current_palette()),
+    m_rgbmap(loop->getRgbMap()),
+    m_opacity(loop->getOpacity()),
+    m_maskIndex(loop->getLayer()->isBackground() ? -1: loop->sprite()->transparentColor()),
+    m_color(loop->getPrimaryColor() == m_maskIndex ?
+            (m_palette->getEntry(loop->getPrimaryColor()) & rgba_rgb_mask):
+            (m_palette->getEntry(loop->getPrimaryColor()))) {
+  }
+
+  void processPixel(int x, int y) {
+    color_t c = *m_srcAddress;
+    if (c == m_maskIndex)
+      c = m_palette->getEntry(c) & rgba_rgb_mask;  // Alpha = 0
+    else
+      c = m_palette->getEntry(c);
+
+    c = rgba_blender_merge(c, m_color, m_opacity);
+    *m_dstAddress = m_rgbmap->mapColor(rgba_getr(c),
+                                       rgba_getg(c),
+                                       rgba_getb(c),
+                                       rgba_geta(c));
+  }
+
+private:
+  const Palette* m_palette;
+  const RgbMap* m_rgbmap;
+  const int m_opacity;
+  const int m_maskIndex;
+  const color_t m_color;
+};
+
+//////////////////////////////////////////////////////////////////////
 // Blur Ink
 //////////////////////////////////////////////////////////////////////
 
@@ -973,6 +1039,7 @@ enum {
   INK_COPY,
   INK_LOCKALPHA,
   INK_TRANSPARENT,
+  INK_MERGE,
   INK_BLUR,
   INK_REPLACE,
   INK_JUMBLE,
@@ -1000,6 +1067,7 @@ AlgoHLine ink_processing[][3] =
   DEFINE_INK(CopyInkProcessing),
   DEFINE_INK(LockAlphaInkProcessing),
   DEFINE_INK(TransparentInkProcessing),
+  DEFINE_INK(MergeInkProcessing),
   DEFINE_INK(BlurInkProcessing),
   DEFINE_INK(ReplaceInkProcessing),
   DEFINE_INK(JumbleInkProcessing),
