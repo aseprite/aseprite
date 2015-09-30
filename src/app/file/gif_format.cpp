@@ -666,7 +666,7 @@ private:
     }
     int ncolors = (colormap ? colormap->ColorCount: 1);
     int w = m_spriteBounds.w;
-    int h = m_spriteBounds.h;;
+    int h = m_spriteBounds.h;
 
     m_sprite.reset(new Sprite(IMAGE_INDEXED, w, h, ncolors));
     m_sprite->setTransparentColor(m_bgIndex);
@@ -822,8 +822,8 @@ public:
     , m_spriteBounds(m_sprite->bounds())
     , m_hasBackground(m_sprite->backgroundLayer() ? true: false)
     , m_bitsPerPixel(1)
-    , m_globalColormap(nullptr) {
-
+    , m_globalColormap(nullptr)
+    , m_quantizeColormaps(false) {
     if (m_sprite->pixelFormat() == IMAGE_INDEXED) {
       for (Palette* palette : m_sprite->getPalettes()) {
         int bpp = GifBitSizeLimited(palette->size());
@@ -836,11 +836,32 @@ public:
 
     if (m_sprite->pixelFormat() == IMAGE_INDEXED &&
         m_sprite->getPalettes().size() == 1) {
-      m_globalColormap = createColorMap(m_sprite->palette(0));
-      m_bgIndex = m_sprite->transparentColor();
+      // If some layer has opacity < 255 or a different blend mode, we
+      // need to create color palettes.
+      std::vector<Layer*> layers;
+      m_sprite->getLayersList(layers);
+      for (const Layer* layer : layers) {
+        if (layer->isVisible() && layer->isImage()) {
+          const LayerImage* imageLayer = static_cast<const LayerImage*>(layer);
+          if (imageLayer->opacity() < 255 ||
+              imageLayer->blendMode() != BlendMode::NORMAL) {
+            m_quantizeColormaps = true;
+            break;
+          }
+        }
+      }
+
+      if (!m_quantizeColormaps) {
+        m_globalColormap = createColorMap(m_sprite->palette(0));
+        m_bgIndex = m_sprite->transparentColor();
+      }
+      else
+        m_bgIndex = 0;
     }
-    else
+    else {
       m_bgIndex = 0;
+      m_quantizeColormaps = true;
+    }
 
     m_transparentIndex = (m_hasBackground ? -1: m_bgIndex);
 
@@ -1039,7 +1060,7 @@ private:
     RgbMap* rgbmap = m_sprite->rgbMap(frameNum);
 
     // Create optimized palette for RGB/Grayscale images
-    if (m_sprite->pixelFormat() != IMAGE_INDEXED) {
+    if (m_quantizeColormaps) {
       framePaletteRef.reset(createOptimizedPalette(frameBounds));
       framePalette = framePaletteRef.get();
 
@@ -1248,6 +1269,7 @@ private:
   int m_transparentIndex;
   int m_bitsPerPixel;
   ColorMapObject* m_globalColormap;
+  bool m_quantizeColormaps;
   bool m_interlaced;
   int m_loop;
   ImageBufferPtr m_frameImageBuf;
