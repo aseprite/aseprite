@@ -86,9 +86,9 @@ NonDisposableSurface* SkiaDisplay::getSurface()
 // Flips all graphics in the surface to the real display.  Returns
 // false if the flip couldn't be done because the display was
 // resized.
-void SkiaDisplay::flip()
+void SkiaDisplay::flip(const gfx::Rect& bounds)
 {
-  m_window.updateWindow();
+  m_window.updateWindow(bounds);
 }
 
 void SkiaDisplay::maximize()

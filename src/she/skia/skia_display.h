@@ -41,7 +41,7 @@ public:
   NonDisposableSurface* getSurface() override;
 
   // Flips all graphics in the surface to the real display.
-  void flip() override;
+  void flip(const gfx::Rect& bounds) override;
   void maximize() override;
   bool isMaximized() const override;
   void setTitleBar(const std::string& title) override;

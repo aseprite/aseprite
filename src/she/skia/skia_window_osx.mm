@@ -113,7 +113,7 @@ void SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
 {
 }
 
-void SkiaWindow::updateWindow()
+void SkiaWindow::updateWindow(const gfx::Rect& bounds)
 {
 }
 

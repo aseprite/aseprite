@@ -149,8 +149,9 @@ namespace she {
       m_hcursor = hcursor;
     }
 
-    void updateWindow() {
-      InvalidateRect(m_hwnd, NULL, FALSE);
+    void updateWindow(const gfx::Rect& bounds) {
+      RECT rc = { bounds.x, bounds.y, bounds.x+bounds.w, bounds.y+bounds.h };
+      InvalidateRect(m_hwnd, &rc, FALSE);
       UpdateWindow(m_hwnd);
     }
 
