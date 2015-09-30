@@ -32,6 +32,7 @@ SetPalette::SetPalette(Sprite* sprite, frame_t frame, const Palette* newPalette)
   // Check differences between current sprite palette and the new one
   m_from = m_to = -1;
   int diffs = curPalette->countDiff(newPalette, &m_from, &m_to);
+  (void)diffs;
   ASSERT(diffs > 0);
 
   if (m_from >= 0 && m_to >= m_from) {
