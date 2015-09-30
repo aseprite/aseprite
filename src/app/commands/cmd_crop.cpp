@@ -88,8 +88,8 @@ public:
   Command* clone() const override { return new AutocropSpriteCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 AutocropSpriteCommand::AutocropSpriteCommand()

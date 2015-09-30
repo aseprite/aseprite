@@ -44,9 +44,9 @@ class BmpFormat : public FileFormat {
     uint32_t blue_mask;         // Mask for blue channel.
   };
 
-  const char* onGetName() const { return "bmp"; }
-  const char* onGetExtensions() const { return "bmp"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "bmp"; }
+  const char* onGetExtensions() const override { return "bmp"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

@@ -490,7 +490,7 @@ private:
     getParent()->layout();
   }
 
-  bool onProcessMessage(ui::Message* msg) {
+  bool onProcessMessage(ui::Message* msg) override {
     if (msg->type() == kOpenMessage) {
       ColorBar::instance()->ChangeSelection.connect(
         Bind<void>(&InkShadesField::onChangeColorBarSelection, this));

@@ -23,9 +23,9 @@ namespace app {
 using namespace base;
 
 class PcxFormat : public FileFormat {
-  const char* onGetName() const { return "pcx"; }
-  const char* onGetExtensions() const { return "pcx"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "pcx"; }
+  const char* onGetExtensions() const override { return "pcx"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

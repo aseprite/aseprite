@@ -149,8 +149,8 @@ public:
   Command* clone() const override { return new ConvolutionMatrixCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 ConvolutionMatrixCommand::ConvolutionMatrixCommand()

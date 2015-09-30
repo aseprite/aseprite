@@ -62,9 +62,9 @@ enum class DisposalMethod {
 
 class GifFormat : public FileFormat {
 
-  const char* onGetName() const { return "gif"; }
-  const char* onGetExtensions() const { return "gif"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "gif"; }
+  const char* onGetExtensions() const override { return "gif"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |
@@ -78,7 +78,7 @@ class GifFormat : public FileFormat {
       FILE_SUPPORT_GET_FORMAT_OPTIONS;
   }
 
-  bool onLoad(FileOp* fop);
+  bool onLoad(FileOp* fop) override;
 #ifdef ENABLE_SAVE
   bool onSave(FileOp* fop) override;
 #endif

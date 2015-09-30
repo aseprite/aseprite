@@ -24,7 +24,7 @@ public:
   Command* clone() const override { return new AboutCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 AboutCommand::AboutCommand()

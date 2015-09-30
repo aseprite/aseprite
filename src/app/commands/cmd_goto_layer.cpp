@@ -42,8 +42,8 @@ public:
   Command* clone() const override { return new GotoPreviousLayerCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 GotoPreviousLayerCommand::GotoPreviousLayerCommand()
@@ -81,8 +81,8 @@ public:
   Command* clone() const override { return new GotoNextLayerCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 GotoNextLayerCommand::GotoNextLayerCommand()

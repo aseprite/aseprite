@@ -390,7 +390,7 @@ public:
   Command* clone() const override { return new OptionsCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 OptionsCommand::OptionsCommand()

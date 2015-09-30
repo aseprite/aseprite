@@ -220,7 +220,7 @@ namespace app {
     void onCurrentToolChange();
     void onFgColorChange();
     void onContextBarBrushChange();
-    void onExposeSpritePixels(doc::DocumentEvent& ev);
+    void onExposeSpritePixels(doc::DocumentEvent& ev) override;
 
   private:
     void setStateInternal(const EditorStatePtr& newState);

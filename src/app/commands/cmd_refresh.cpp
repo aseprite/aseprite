@@ -29,7 +29,7 @@ public:
   Command* clone() const override { return new RefreshCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 RefreshCommand::RefreshCommand()

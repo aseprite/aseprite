@@ -34,10 +34,9 @@ public:
 
   Ink* clone() override { return new PaintInk(*this); }
 
-  bool isPaint() const { return true; }
+  bool isPaint() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     switch (m_type) {
 
       case Simple:
@@ -101,8 +100,7 @@ public:
     }
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     ASSERT(m_proc);
     (*m_proc)(x1, y, x2, loop);
   }
@@ -119,15 +117,13 @@ public:
 
   Ink* clone() override { return new ShadingInk(*this); }
 
-  bool isPaint() const { return true; }
+  bool isPaint() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     m_proc = ink_processing[INK_SHADING][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     (*m_proc)(x1, y, x2, loop);
   }
 
@@ -138,15 +134,13 @@ class ScrollInk : public Ink {
 public:
   Ink* clone() override { return new ScrollInk(*this); }
 
-  bool isScrollMovement() const { return true; }
+  bool isScrollMovement() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     // Do nothing
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     // Do nothing
   }
 
@@ -157,9 +151,9 @@ class ZoomInk : public Ink {
 public:
   Ink* clone() override { return new ZoomInk(*this); }
 
-  bool isZoom() const { return true; }
-  void prepareInk(ToolLoop* loop) { }
-  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
+  bool isZoom() const override { return true; }
+  void prepareInk(ToolLoop* loop) override { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
 };
 
 
@@ -167,9 +161,9 @@ class MoveInk : public Ink {
 public:
   Ink* clone() override { return new MoveInk(*this); }
 
-  bool isCelMovement() const { return true; }
-  void prepareInk(ToolLoop* loop) { }
-  void inkHline(int x1, int y, int x2, ToolLoop* loop) { }
+  bool isCelMovement() const override { return true; }
+  void prepareInk(ToolLoop* loop) override { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override { }
 };
 
 
@@ -177,9 +171,9 @@ class SliceInk : public Ink {
 public:
   Ink* clone() override { return new SliceInk(*this); }
 
-  bool isSlice() const { return true; }
-  void prepareInk(ToolLoop* loop) { }
-  void inkHline(int x1, int y, int x2, ToolLoop* loop) {
+  bool isSlice() const override { return true; }
+  void prepareInk(ToolLoop* loop) override { }
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     // TODO show the selection-preview with a XOR color or something like that
     draw_hline(loop->getDstImage(), x1, y, x2, loop->getPrimaryColor());
   }
@@ -199,12 +193,11 @@ public:
 
   Ink* clone() override { return new EraserInk(*this); }
 
-  bool isPaint() const { return true; }
-  bool isEffect() const { return true; }
-  bool isEraser() const { return true; }
+  bool isPaint() const override { return true; }
+  bool isEffect() const override { return true; }
+  bool isEraser() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     switch (m_type) {
 
       case Eraser: {
@@ -251,8 +244,7 @@ public:
     }
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     (*m_proc)(x1, y, x2, loop);
   }
 };
@@ -264,21 +256,19 @@ class BlurInk : public Ink {
 public:
   Ink* clone() override { return new BlurInk(*this); }
 
-  bool isPaint() const { return true; }
-  bool isEffect() const { return true; }
-  bool needsSpecialSourceArea() const { return true; }
+  bool isPaint() const override { return true; }
+  bool isEffect() const override { return true; }
+  bool needsSpecialSourceArea() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     m_proc = ink_processing[INK_BLUR][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     (*m_proc)(x1, y, x2, loop);
   }
 
-  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const {
+  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const override {
     // We need one pixel more for each side, to use a 3x3 convolution matrix.
     for (const auto& rc : dirtyArea) {
       sourceArea.createUnion(sourceArea,
@@ -294,21 +284,19 @@ class JumbleInk : public Ink {
 public:
   Ink* clone() override { return new JumbleInk(*this); }
 
-  bool isPaint() const { return true; }
-  bool isEffect() const { return true; }
-  bool needsSpecialSourceArea() const { return true; }
+  bool isPaint() const override { return true; }
+  bool isEffect() const override { return true; }
+  bool needsSpecialSourceArea() const override { return true; }
 
-  void prepareInk(ToolLoop* loop)
-  {
+  void prepareInk(ToolLoop* loop) override {
     m_proc = ink_processing[INK_JUMBLE][MID(0, loop->sprite()->pixelFormat(), 2)];
   }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     (*m_proc)(x1, y, x2, loop);
   }
 
-  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const {
+  void createSpecialSourceArea(const gfx::Region& dirtyArea, gfx::Region& sourceArea) const override {
     // We need one pixel more for each side.
     for (const auto& rc : dirtyArea) {
       sourceArea.createUnion(sourceArea,
@@ -329,10 +317,9 @@ public:
 
   Ink* clone() override { return new SelectionInk(*this); }
 
-  bool isSelection() const { return true; }
+  bool isSelection() const override { return true; }
 
-  void inkHline(int x1, int y, int x2, ToolLoop* loop)
-  {
+  void inkHline(int x1, int y, int x2, ToolLoop* loop) override {
     if (m_modify_selection) {
       Point offset = loop->getOffset();
 
@@ -355,8 +342,7 @@ public:
     }
   }
 
-  void setFinalStep(ToolLoop* loop, bool state)
-  {
+  void setFinalStep(ToolLoop* loop, bool state) override {
     m_modify_selection = state;
 
     if (state) {

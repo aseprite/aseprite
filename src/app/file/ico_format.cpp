@@ -25,9 +25,9 @@ namespace app {
 using namespace base;
 
 class IcoFormat : public FileFormat {
-  const char* onGetName() const { return "ico"; }
-  const char* onGetExtensions() const { return "ico"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "ico"; }
+  const char* onGetExtensions() const override { return "ico"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

@@ -31,14 +31,12 @@ public:
   Command* clone() const override { return new ShowOnionSkinCommand(*this); }
 
 protected:
-  bool onChecked(Context* context)
-  {
+  bool onChecked(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     return docPref.onionskin.active();
   }
 
-  void onExecute(Context* context)
-  {
+  void onExecute(Context* context) override {
     DocumentPreferences& docPref = Preferences::instance().document(context->activeDocument());
     docPref.onionskin.active(!docPref.onionskin.active());
   }

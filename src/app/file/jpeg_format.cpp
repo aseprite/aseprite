@@ -41,9 +41,9 @@ class JpegFormat : public FileFormat {
     float quality;              // 1.0 maximum quality.
   };
 
-  const char* onGetName() const { return "jpeg"; }
-  const char* onGetExtensions() const { return "jpeg,jpg"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "jpeg"; }
+  const char* onGetExtensions() const override { return "jpeg,jpg"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

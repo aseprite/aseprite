@@ -254,7 +254,7 @@ public:
   Command* clone() const override { return new SaveFileCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 SaveFileCommand::SaveFileCommand()
@@ -292,7 +292,7 @@ public:
   Command* clone() const override { return new SaveFileAsCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 SaveFileAsCommand::SaveFileAsCommand()
@@ -311,7 +311,7 @@ public:
   Command* clone() const override { return new SaveFileCopyAsCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 SaveFileCopyAsCommand::SaveFileCopyAsCommand()

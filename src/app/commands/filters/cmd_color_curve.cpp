@@ -81,8 +81,8 @@ public:
   Command* clone() const override { return new ColorCurveCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 ColorCurveCommand::ColorCurveCommand()

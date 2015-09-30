@@ -24,7 +24,7 @@ public:
   Command* clone() const override { return new ExitCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 ExitCommand::ExitCommand()

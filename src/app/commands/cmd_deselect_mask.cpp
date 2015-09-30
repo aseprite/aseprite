@@ -25,8 +25,8 @@ public:
   Command* clone() const override { return new DeselectMaskCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 DeselectMaskCommand::DeselectMaskCommand()

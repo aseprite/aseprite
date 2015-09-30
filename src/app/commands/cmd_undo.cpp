@@ -35,8 +35,8 @@ public:
   Command* clone() const override { return new UndoCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 
 private:
   Type m_type;

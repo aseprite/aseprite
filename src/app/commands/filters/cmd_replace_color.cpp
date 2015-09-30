@@ -116,8 +116,8 @@ public:
   Command* clone() const override { return new ReplaceColorCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 ReplaceColorCommand::ReplaceColorCommand()

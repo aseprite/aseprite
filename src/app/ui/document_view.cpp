@@ -96,7 +96,7 @@ public:
       ->getCurrentQuicktool(currentTool);
   }
 
-  KeyAction getPressedKeyAction(KeyContext context) {
+  KeyAction getPressedKeyAction(KeyContext context) override {
     return KeyboardShortcuts::instance()->getCurrentActionModifiers(context);
   }
 

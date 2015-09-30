@@ -26,9 +26,9 @@ namespace app {
 using namespace base;
 
 class FliFormat : public FileFormat {
-  const char* onGetName() const { return "flc"; }
-  const char* onGetExtensions() const { return "flc,fli"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "flc"; }
+  const char* onGetExtensions() const  override{ return "flc,fli"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

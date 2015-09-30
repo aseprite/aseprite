@@ -103,7 +103,7 @@ public:
     , m_g(g) {
   }
 
-  Editor* getEditor() {
+  Editor* getEditor() override {
     return m_editor;
   }
 

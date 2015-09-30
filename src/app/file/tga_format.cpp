@@ -24,9 +24,9 @@ namespace app {
 using namespace base;
 
 class TgaFormat : public FileFormat {
-  const char* onGetName() const { return "tga"; }
-  const char* onGetExtensions() const { return "tga"; }
-  int onGetFlags() const {
+  const char* onGetName() const override { return "tga"; }
+  const char* onGetExtensions() const override { return "tga"; }
+  int onGetFlags() const override {
     return
       FILE_SUPPORT_LOAD |
       FILE_SUPPORT_SAVE |

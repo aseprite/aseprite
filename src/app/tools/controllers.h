@@ -78,7 +78,7 @@ private:
 // Controls clicks for tools like pencil
 class FreehandController : public Controller {
 public:
-  bool isFreehand() { return true; }
+  bool isFreehand() override { return true; }
 
   void pressButton(Points& points, const Point& point) override {
     points.push_back(point);
@@ -234,7 +234,7 @@ public:
     }
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) {
+  void getPointsToInterwine(const Points& input, Points& output) override {
     ASSERT(input.size() >= 2);
     if (input.size() < 2)
       return;
@@ -243,7 +243,7 @@ public:
     output.push_back(input[1]);
   }
 
-  void getStatusBarText(const Points& points, std::string& text) {
+  void getStatusBarText(const Points& points, std::string& text) override {
     ASSERT(points.size() >= 2);
     if (points.size() < 2)
       return;
@@ -339,8 +339,8 @@ public:
 class OnePointController : public Controller {
 public:
   // Do not apply grid to "one point tools" (e.g. magic wand, flood fill, etc.)
-  bool canSnapToGrid() { return false; }
-  bool isOnePoint() { return true; }
+  bool canSnapToGrid() override { return false; }
+  bool isOnePoint() override { return true; }
 
   void pressButton(Points& points, const Point& point) override {
     if (points.size() == 0)

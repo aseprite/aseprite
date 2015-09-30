@@ -58,7 +58,7 @@ public:
   Signal0<void> Regenerate;
 
 protected:
-  void onPreferredSize(PreferredSizeEvent& ev) {
+  void onPreferredSize(PreferredSizeEvent& ev) override {
     gfx::Size sz = m_deleteButton.getPreferredSize();
     sz.h += 4*guiscale();
     ev.setPreferredSize(sz);

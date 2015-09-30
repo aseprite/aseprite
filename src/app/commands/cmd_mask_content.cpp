@@ -34,8 +34,8 @@ public:
   Command* clone() const override { return new MaskContentCommand(*this); }
 
 protected:
-  bool onEnabled(Context* context);
-  void onExecute(Context* context);
+  bool onEnabled(Context* context) override;
+  void onExecute(Context* context) override;
 };
 
 MaskContentCommand::MaskContentCommand()

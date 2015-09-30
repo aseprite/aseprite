@@ -24,7 +24,7 @@ namespace cmd {
     void onExecute() override;
     void onUndo() override;
     void onFireNotifications() override;
-    size_t onMemSize() const {
+    size_t onMemSize() const override {
       return sizeof(*this);
     }
 

@@ -43,7 +43,7 @@ public:
   Command* clone() const override { return new NewFileCommand(*this); }
 
 protected:
-  void onExecute(Context* context);
+  void onExecute(Context* context) override;
 };
 
 static int _sprite_counter = 0;
