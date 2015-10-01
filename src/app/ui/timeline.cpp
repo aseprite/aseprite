@@ -932,10 +932,7 @@ void Timeline::onPaint(ui::PaintEvent& ev)
       LayerImage* layerPtr = static_cast<LayerImage*>(m_layers[layer]);
       data.begin = layerPtr->getCelBegin();
       data.end = layerPtr->getCelEnd();
-      data.it = layerPtr->findFirstCelIteratorAfter(first_frame);
-      if (data.it != data.begin)
-        --data.it;
-
+      data.it = layerPtr->findFirstCelIteratorAfter(first_frame-1);
       data.prevIt = data.end;
       data.nextIt = (data.it != data.end ? data.it+1: data.end);
 
