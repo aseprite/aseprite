@@ -103,6 +103,7 @@ static int get_screen_scale()
 // Initializes GUI.
 int init_module_gui()
 {
+  std::string lastError = "Unknown error";
   int w, h;
   bool maximized;
   int scale = get_screen_scale();
@@ -112,8 +113,8 @@ int init_module_gui()
     if (w > 0 && h > 0)
       main_display = she::instance()->createDisplay(w, h, scale);
   }
-  catch (const she::DisplayCreationException&) {
-    // Do nothing, the display wasn't created.
+  catch (const she::DisplayCreationException& e) {
+    lastError = e.what();
   }
 
   if (!main_display) {
@@ -128,14 +129,14 @@ int init_module_gui()
         Preferences::instance().general.screenScale(scale);
         break;
       }
-      catch (const she::DisplayCreationException&) {
-        // Ignore
+      catch (const she::DisplayCreationException& e) {
+        lastError = e.what();
       }
     }
   }
 
   if (!main_display) {
-    she::error_message("Unable to create a user-interface display.\n");
+    she::error_message(("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
     return -1;
   }
 

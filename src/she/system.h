@@ -22,7 +22,7 @@ namespace she {
   class NativeDialogs;
   class Surface;
 
-  class DisplayCreationException : std::runtime_error {
+  class DisplayCreationException : public std::runtime_error {
   public:
     DisplayCreationException(const char* msg) throw()
       : std::runtime_error(msg) { }
