@@ -31,7 +31,9 @@ namespace she {
   template<typename T>
   class WinWindow {
   public:
-    WinWindow() {
+    WinWindow()
+      : m_clientSize(1, 1)
+      , m_restoredSize(0, 0) {
       registerClass();
       m_hwnd = createHwnd(this);
       m_hcursor = NULL;
@@ -50,6 +52,7 @@ namespace she {
 
     void setScale(int scale) {
       m_scale = scale;
+      static_cast<T*>(this)->resizeImpl(m_clientSize);
     }
 
     void setVisible(bool visible) {
@@ -189,14 +192,13 @@ namespace she {
         }
 
         case WM_SIZE: {
-          switch (wparam) {
-            case SIZE_MAXIMIZED:
-            case SIZE_RESTORED:
-              m_clientSize.w = GET_X_LPARAM(lparam);
-              m_clientSize.h = GET_Y_LPARAM(lparam);
+          int w = GET_X_LPARAM(lparam);
+          int h = GET_Y_LPARAM(lparam);
 
-              static_cast<T*>(this)->resizeImpl(m_clientSize);
-              break;
+          if (w > 0 && h > 0) {
+            m_clientSize.w = w;
+            m_clientSize.h = h;
+            static_cast<T*>(this)->resizeImpl(m_clientSize);
           }
 
           WINDOWPLACEMENT pl;

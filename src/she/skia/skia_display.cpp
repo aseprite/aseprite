@@ -10,6 +10,8 @@
 
 #include "she/skia/skia_display.h"
 
+#include "she/event.h"
+#include "she/event_queue.h"
 #include "she/skia/skia_surface.h"
 #include "she/system.h"
 
@@ -35,12 +37,18 @@ void SkiaDisplay::setSkiaSurface(SkiaSurface* surface)
 
 void SkiaDisplay::resize(const gfx::Size& size)
 {
+  Event ev;
+  ev.setType(Event::ResizeDisplay);
+  ev.setDisplay(this);
+  she::queue_event(ev);
+
   if (m_customSurface)
     return;
 
   m_surface->dispose();
   m_surface = new SkiaSurface;
-  m_surface->create(size.w, size.h);
+  m_surface->create(size.w / m_window.scale(),
+                    size.h / m_window.scale());
 }
 
 void SkiaDisplay::dispose()
