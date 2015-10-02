@@ -294,24 +294,10 @@ public:
   }
 
   void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
-    if (m_surface) {
-      // m_canvas->flush();
-
-      SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
-      std::vector<uint32_t> pixels(width * height * 4);
-      m_canvas->readPixels(info, (void*)&pixels[0], 4*width, srcx, srcy);
-      ((SkiaSurface*)dest)->m_canvas->writePixels(info, (void*)&pixels[0], 4*width, dstx, dsty);
-    }
-    else {
-      SkPaint paint;
-      paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-
-      SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(srcx, srcy, width, height));
-      SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(dstx, dsty, width, height));
-      ((SkiaSurface*)dest)->m_canvas->drawBitmapRect(
-        m_bitmap, srcRect, dstRect, &paint,
-        SkCanvas::kStrict_SrcRectConstraint);
-    }
+    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    std::vector<uint32_t> pixels(width * height * 4);
+    m_canvas->readPixels(info, (void*)&pixels[0], 4*width, srcx, srcy);
+    ((SkiaSurface*)dest)->m_canvas->writePixels(info, (void*)&pixels[0], 4*width, dstx, dsty);
   }
 
   void scrollTo(const gfx::Rect& rc, int dx, int dy) override {
