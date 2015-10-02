@@ -19,6 +19,7 @@
 #include "ui/widget.h"
 
 #include <cstdio>
+#include <cstdlib>
 
 namespace ui {
 
