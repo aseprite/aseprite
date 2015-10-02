@@ -122,7 +122,7 @@ void SkiaWindow::paintHDC(HDC hdc)
 bool SkiaWindow::attachGL()
 {
   if (!m_glCtx) {
-    GLContextWGL* wglCtx = SkNEW_ARGS(GLContextWGL, (handle(), kGLES_GrGLStandard));
+    GLContextWGL* wglCtx = new GLContextWGL(handle(), kGLES_GrGLStandard);
     m_stencilBits = wglCtx->getStencilBits();
     m_sampleCount = wglCtx->getSampleCount();
 

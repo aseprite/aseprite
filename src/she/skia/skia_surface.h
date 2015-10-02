@@ -136,7 +136,8 @@ public:
     SkCanvas canvas(result);
     SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, width(), height()));
     SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(0, 0, result.width(), result.height()));
-    canvas.drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
+    canvas.drawBitmapRect(m_bitmap, srcRect, dstRect, &paint,
+                          SkCanvas::kStrict_SrcRectConstraint);
 
     swapBitmap(result);
   }
@@ -307,7 +308,9 @@ public:
 
       SkRect srcRect = SkRect::Make(SkIRect::MakeXYWH(srcx, srcy, width, height));
       SkRect dstRect = SkRect::Make(SkIRect::MakeXYWH(dstx, dsty, width, height));
-      ((SkiaSurface*)dest)->m_canvas->drawBitmapRectToRect(m_bitmap, &srcRect, dstRect, &paint);
+      ((SkiaSurface*)dest)->m_canvas->drawBitmapRect(
+        m_bitmap, srcRect, dstRect, &paint,
+        SkCanvas::kStrict_SrcRectConstraint);
     }
   }
 
@@ -363,8 +366,9 @@ public:
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-    m_canvas->drawBitmapRectToRect(
-      ((SkiaSurface*)src)->m_bitmap, &srcRect, dstRect, &paint);
+    m_canvas->drawBitmapRect(
+      ((SkiaSurface*)src)->m_bitmap, srcRect, dstRect, &paint,
+      SkCanvas::kStrict_SrcRectConstraint);
   }
 
   void drawRgbaSurface(const LockedSurface* src, int dstx, int dsty) override {
@@ -381,8 +385,9 @@ public:
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
-    m_canvas->drawBitmapRectToRect(
-      ((SkiaSurface*)src)->m_bitmap, &srcRect, dstRect, &paint);
+    m_canvas->drawBitmapRect(
+      ((SkiaSurface*)src)->m_bitmap, srcRect, dstRect, &paint,
+      SkCanvas::kStrict_SrcRectConstraint);
   }
 
   void drawColoredRgbaSurface(const LockedSurface* src, gfx::Color fg, gfx::Color bg, const gfx::Clip& clipbase) override {
@@ -407,9 +412,10 @@ public:
       SkColorFilter::CreateModeFilter(to_skia(fg), SkXfermode::kSrcIn_Mode));
     paint.setColorFilter(colorFilter);
 
-    m_canvas->drawBitmapRectToRect(
+    m_canvas->drawBitmapRect(
       ((SkiaSurface*)src)->m_bitmap,
-      &srcRect, dstRect, &paint);
+      srcRect, dstRect, &paint,
+      SkCanvas::kStrict_SrcRectConstraint);
   }
 
   void drawChar(Font* font, gfx::Color fg, gfx::Color bg, int x, int y, int chr) override {

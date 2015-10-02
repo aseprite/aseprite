@@ -48,14 +48,15 @@ public:
 
     wglMakeCurrent(hdc, m_glrc);
 
-    fGL.reset(GrGLCreateNativeInterface());
-    if (!fGL) {
+    const GrGLInterface* gl = GrGLCreateNativeInterface();
+    init(gl);
+    if (!gl) {
       ReleaseDC(m_hwnd, hdc);
       destroy();
       return;
     }
 
-    if (!fGL->validate()) {
+    if (!gl->validate()) {
       ReleaseDC(m_hwnd, hdc);
       destroy();
       return;
@@ -68,16 +69,20 @@ public:
     destroy();
   }
 
-  void makeCurrent() const override {
+  void onPlatformMakeCurrent() const override {
     HDC hdc = GetDC(m_hwnd);
     wglMakeCurrent(hdc, m_glrc);
     ReleaseDC(m_hwnd, hdc);
   }
 
-  void swapBuffers() const override {
+  void onPlatformSwapBuffers() const override {
     HDC hdc = GetDC(m_hwnd);
     SwapBuffers(hdc);
     ReleaseDC(m_hwnd, hdc);
+  }
+
+  GrGLFuncPtr onPlatformGetProcAddress(const char* name) const override {
+    return reinterpret_cast<GrGLFuncPtr>(wglGetProcAddress(name));
   }
 
   int getStencilBits() {
@@ -95,7 +100,7 @@ public:
 
 private:
   void destroy() {
-    fGL.reset(nullptr);
+    teardown();
 
     if (m_glrc) {
       wglMakeCurrent(nullptr, nullptr);

@@ -82,7 +82,7 @@ public:
 
   Surface* loadSurface(const char* filename) override {
     base::FileHandle fp(base::open_file_with_exception(filename, "rb"));
-    SkAutoTDelete<SkStreamAsset> stream(SkNEW_ARGS(SkFILEStream, (fp.get(), SkFILEStream::kCallerRetains_Ownership)));
+    SkAutoTDelete<SkStreamAsset> stream(new SkFILEStream(fp.get(), SkFILEStream::kCallerRetains_Ownership));
 
     SkAutoTDelete<SkImageDecoder> decoder(SkImageDecoder::Factory(stream));
     if (decoder) {
