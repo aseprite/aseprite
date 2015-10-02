@@ -17,7 +17,7 @@
 
 namespace she {
 
-SkiaDisplay::SkiaDisplay(EventQueue* queue, int width, int height, int scale)
+SkiaDisplay::SkiaDisplay(int width, int height, int scale)
   : m_window(instance()->eventQueue(), this)
   , m_surface(new SkiaSurface)
   , m_customSurface(false)

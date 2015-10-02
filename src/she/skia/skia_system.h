@@ -28,6 +28,8 @@
 
 namespace she {
 
+EventQueueImpl g_queue;
+
 class SkiaSystem : public CommonSystem {
 public:
   SkiaSystem()
@@ -52,7 +54,7 @@ public:
   }
 
   EventQueue* eventQueue() override {
-    return &m_queue;
+    return &g_queue;
   }
 
   Display* defaultDisplay() override {
@@ -60,7 +62,7 @@ public:
   }
 
   Display* createDisplay(int width, int height, int scale) override {
-    SkiaDisplay* display = new SkiaDisplay(&m_queue, width, height, scale);
+    SkiaDisplay* display = new SkiaDisplay(width, height, scale);
     if (!m_defaultDisplay)
       m_defaultDisplay = display;
     return display;
@@ -107,8 +109,11 @@ public:
 
 private:
   SkiaDisplay* m_defaultDisplay;
-  EventQueueImpl m_queue;
 };
+
+EventQueue* EventQueue::instance() {
+  return &g_queue;
+}
 
 } // namespace she
 
