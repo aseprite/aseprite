@@ -150,7 +150,10 @@ namespace she {
     }
 
     void updateWindow(const gfx::Rect& bounds) {
-      RECT rc = { bounds.x, bounds.y, bounds.x+bounds.w, bounds.y+bounds.h };
+      RECT rc = { bounds.x*m_scale,
+                  bounds.y*m_scale,
+                  bounds.x*m_scale+bounds.w*m_scale,
+                  bounds.y*m_scale+bounds.h*m_scale };
       InvalidateRect(m_hwnd, &rc, FALSE);
       UpdateWindow(m_hwnd);
     }
