@@ -161,7 +161,7 @@ public:
   }
 
   void clear() override {
-    // TODO
+    m_canvas->clear(0);
   }
 
   uint8_t* getData(int x, int y) const override {
