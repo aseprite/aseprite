@@ -114,7 +114,7 @@ public:
     return !m_clip.isEmpty();
   }
 
-  void setDrawMode(DrawMode mode, int param) {
+  void setDrawMode(DrawMode mode, int param) override {
     // TODO
   }
 
