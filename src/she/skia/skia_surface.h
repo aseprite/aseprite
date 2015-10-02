@@ -27,8 +27,8 @@ inline SkColor to_skia(gfx::Color c) {
   return SkPremultiplyARGBInline(gfx::geta(c), gfx::getr(c), gfx::getg(c), gfx::getb(c));
 }
 
-inline SkRect to_skia(const gfx::Rect& rc) {
-  return SkRect::Make(SkIRect::MakeXYWH(rc.x, rc.y, rc.w, rc.h));
+inline SkIRect to_skia(const gfx::Rect& rc) {
+  return SkIRect::MakeXYWH(rc.x, rc.y, rc.w, rc.h);
 }
 
 class SkiaSurface : public NonDisposableSurface
@@ -105,12 +105,12 @@ public:
 
   void setClipBounds(const gfx::Rect& rc) override {
     m_clip = rc;
-    m_canvas->clipRect(to_skia(m_clip), SkRegion::kReplace_Op);
+    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), SkRegion::kReplace_Op);
   }
 
   bool intersectClipRect(const gfx::Rect& rc) override {
     m_clip &= rc;
-    m_canvas->clipRect(to_skia(m_clip), SkRegion::kReplace_Op);
+    m_canvas->clipRect(SkRect::Make(to_skia(m_clip)), SkRegion::kReplace_Op);
     return !m_clip.isEmpty();
   }
 
@@ -282,7 +282,7 @@ public:
     SkPaint paint;
     paint.setColor(to_skia(color));
     paint.setStyle(SkPaint::kStroke_Style);
-    m_canvas->drawRect(to_skia(rc), paint);
+    m_canvas->drawIRect(to_skia(gfx::Rect(rc.x, rc.y, rc.w-1, rc.h-1)), paint);
   }
 
   void fillRect(gfx::Color color, const gfx::Rect& rc) override {
@@ -290,7 +290,7 @@ public:
     paint.setColor(to_skia(color));
     paint.setStyle(SkPaint::kFill_Style);
     paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    m_canvas->drawRect(to_skia(rc), paint);
+    m_canvas->drawIRect(to_skia(rc), paint);
   }
 
   void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
