@@ -40,9 +40,12 @@ public:
 
   SkiaSurface(SkSurface* surface)
     : m_surface(surface)
-    , m_canvas(m_surface->getCanvas())
+    , m_canvas(nullptr)
     , m_clip(0, 0, width(), height())
   {
+    ASSERT(m_surface);
+    if (m_surface)
+      m_canvas = m_surface->getCanvas();
   }
 
   ~SkiaSurface() {

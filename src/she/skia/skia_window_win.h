@@ -52,9 +52,11 @@ private:
   SkAutoTUnref<const GrGLInterface> m_grInterface;
   SkAutoTUnref<GrContext> m_grCtx;
   SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
+  SkAutoTDelete<SkSurface> m_skSurfaceDirect;
   SkAutoTDelete<SkSurface> m_skSurface;
   int m_sampleCount;
   int m_stencilBits;
+  gfx::Size m_lastSize;
 #endif // SK_SUPPORT_GPU
 
   DISABLE_COPYING(SkiaWindow);
