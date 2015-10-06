@@ -24,18 +24,26 @@ public:
   gfx::Size clientSize;
   gfx::Size restoredSize;
 
+  Impl() {
+    closing = false;
+    scale = 1;
+    window = [OSXWindow new];
+    [window setCloseDelegate:this];
+  }
+
   void notifyClose() override {
     closing = true;
   }
 };
 
 SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display)
-  : m_impl(new SkiaWindow::Impl)
+  : m_impl(nullptr)
 {
-  m_impl->closing = false;
-  m_impl->scale = 1;
-  m_impl->window = [OSXWindow new];
-  [m_impl->window setCloseDelegate:m_impl];
+  dispatch_sync(
+    dispatch_get_main_queue(),
+    ^{
+      m_impl = new SkiaWindow::Impl;
+    });
 }
 
 SkiaWindow::~SkiaWindow()
