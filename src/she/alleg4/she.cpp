@@ -155,6 +155,14 @@ public:
     return EventQueue::instance();
   }
 
+  bool gpuAcceleration() const override {
+    return true;
+  }
+
+  void setGpuAcceleration(bool state) override {
+    // Do nothing
+  }
+
   Display* defaultDisplay() override {
     return unique_display;
   }

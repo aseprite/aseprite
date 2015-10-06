@@ -33,7 +33,8 @@ EventQueueImpl g_queue;
 class SkiaSystem : public CommonSystem {
 public:
   SkiaSystem()
-    : m_defaultDisplay(nullptr) {
+    : m_defaultDisplay(nullptr)
+    , m_gpuAcceleration(false) {
   }
 
   ~SkiaSystem() {
@@ -50,11 +51,20 @@ public:
     return Capabilities(
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
-      int(Capabilities::DisplayScale));
+      int(Capabilities::DisplayScale) |
+      int(Capabilities::GpuAccelerationSwitch));
   }
 
   EventQueue* eventQueue() override {
     return &g_queue;
+  }
+
+  bool gpuAcceleration() const override {
+    return m_gpuAcceleration;
+  }
+
+  void setGpuAcceleration(bool state) override {
+    m_gpuAcceleration = state;
   }
 
   Display* defaultDisplay() override {
@@ -109,6 +119,7 @@ public:
 
 private:
   SkiaDisplay* m_defaultDisplay;
+  bool m_gpuAcceleration;
 };
 
 EventQueue* EventQueue::instance() {

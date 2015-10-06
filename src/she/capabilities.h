@@ -14,6 +14,7 @@ namespace she {
     MultipleDisplays = 1,
     CanResizeDisplay = 2,
     DisplayScale = 4,
+    GpuAccelerationSwitch = 8,
   };
 
 } // namespace she

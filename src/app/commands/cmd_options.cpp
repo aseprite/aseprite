@@ -116,6 +116,14 @@ public:
       uiScale()->findItemIndexByValue(
         base::convert_to<std::string>(m_preferences.experimental.uiScale())));
 
+    if ((int(she::instance()->capabilities()) &
+         int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
+      gpuAcceleration()->setSelected(m_preferences.general.gpuAcceleration());
+    }
+    else {
+      gpuAcceleration()->setVisible(false);
+    }
+
     // Right-click
     rightClickBehavior()->addItem("Paint with background color");
     rightClickBehavior()->addItem("Pick foreground color");
@@ -230,6 +238,12 @@ public:
       warnings += "<<- UI Elements Scale";
     }
 
+    bool newGpuAccel = gpuAcceleration()->isSelected();
+    if (newGpuAccel != m_preferences.general.gpuAcceleration()) {
+      m_preferences.general.gpuAcceleration(newGpuAccel);
+      reset_screen = true;
+    }
+
     m_preferences.save();
 
     if (!warnings.empty()) {
@@ -242,6 +256,7 @@ public:
       ui::Manager* manager = ui::Manager::getDefault();
       she::Display* display = manager->getDisplay();
       display->setScale(newScreenScale);
+      she::instance()->setGpuAcceleration(newGpuAccel);
       manager->setDisplay(display);
     }
   }

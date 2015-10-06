@@ -12,6 +12,7 @@
 
 #include "she/event_queue.h"
 #include "she/skia/skia_display.h"
+#include "she/system.h"
 
 #if SK_SUPPORT_GPU
 
@@ -229,14 +230,17 @@ void SkiaWindow::createRenderTarget(const gfx::Size& size)
 
 void SkiaWindow::resizeImpl(const gfx::Size& size)
 {
+  bool gpu = instance()->gpuAcceleration();
+  (void)gpu;
+
 #if SK_SUPPORT_GPU
 #if SK_ANGLE
-  if (attachANGLE()) {
+  if (gpu && attachANGLE()) {
     m_backend = Backend::ANGLE;
   }
   else
 #endif // SK_ANGLE
-  if (attachGL()) {
+  if (gpu && attachGL()) {
     m_backend = Backend::GL;
   }
   else

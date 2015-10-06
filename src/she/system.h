@@ -36,6 +36,8 @@ namespace she {
     virtual Logger* logger() = 0;
     virtual NativeDialogs* nativeDialogs() = 0;
     virtual EventQueue* eventQueue() = 0;
+    virtual bool gpuAcceleration() const = 0;
+    virtual void setGpuAcceleration(bool state) = 0;
     virtual Display* defaultDisplay() = 0;
     virtual Display* createDisplay(int width, int height, int scale) = 0;
     virtual Surface* createSurface(int width, int height) = 0;
