@@ -14,6 +14,8 @@
 
 #include <stdio.h>
 
+#include "gfx/size.h"
+
 class CloseDelegate {
 public:
   virtual ~CloseDelegate() { }
@@ -23,11 +25,15 @@ public:
 @interface OSXWindow : NSWindow
 {
   CloseDelegate* closeDelegate;
+  gfx::Size clientSize;
+  gfx::Size restoredSize;
 }
 - (OSXWindow*)init;
 - (void)dealloc;
 - (CloseDelegate*)closeDelegate;
 - (void)setCloseDelegate:(CloseDelegate*)aDelegate;
+- (gfx::Size)clientSize;
+- (gfx::Size)restoredSize;
 @end
 
 #endif

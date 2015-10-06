@@ -78,6 +78,8 @@
   closeDelegate = nullptr;
 
   NSRect rect = NSMakeRect(0, 0, 640, 480);
+  clientSize.w = restoredSize.w = rect.size.width;
+  clientSize.h = restoredSize.h = rect.size.height;
 
   OSXWindowDelegate* windowDelegate = [[OSXWindowDelegate new] autorelease];
   [windowDelegate setEventQueue:she::instance()->eventQueue()];
@@ -111,6 +113,16 @@
 - (void)setCloseDelegate:(CloseDelegate*)aDelegate
 {
   closeDelegate = aDelegate;
+}
+
+- (gfx::Size)clientSize
+{
+  return clientSize;
+}
+
+- (gfx::Size)restoredSize
+{
+  return restoredSize;
 }
 
 @end

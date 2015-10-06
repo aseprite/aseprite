@@ -21,8 +21,6 @@ public:
   bool closing;
   int scale;
   OSXWindow* window;
-  gfx::Size clientSize;
-  gfx::Size restoredSize;
 
   Impl() {
     closing = false;
@@ -87,12 +85,12 @@ bool SkiaWindow::isMaximized() const
 
 gfx::Size SkiaWindow::clientSize() const
 {
-  return m_impl->clientSize;
+  return m_impl->window.clientSize;
 }
 
 gfx::Size SkiaWindow::restoredSize() const
 {
-  return m_impl->restoredSize;
+  return m_impl->window.restoredSize;
 }
 
 void SkiaWindow::setTitle(const std::string& title)
