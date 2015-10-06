@@ -255,8 +255,8 @@ public:
     if (reset_screen) {
       ui::Manager* manager = ui::Manager::getDefault();
       she::Display* display = manager->getDisplay();
-      display->setScale(newScreenScale);
       she::instance()->setGpuAcceleration(newGpuAccel);
+      display->setScale(newScreenScale);
       manager->setDisplay(display);
     }
   }
