@@ -127,7 +127,7 @@ void SkiaWindow::updateWindow(const gfx::Rect& bounds)
 
 void* SkiaWindow::handle()
 {
-  return nullptr;
+  return (void*)m_impl->window;
 }
 
 } // namespace she
