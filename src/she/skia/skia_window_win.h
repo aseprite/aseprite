@@ -9,11 +9,13 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "base/unique_ptr.h"
 #include "she/skia/skia_surface.h"
 #include "she/win/window.h"
 
 #if SK_SUPPORT_GPU
-  #include "gl/SkGLContext.h"
+  #include "she/gl/gl_context_wgl.h"
+  #include "she/skia/gl_context_skia.h"
 #endif
 
 namespace she {
@@ -48,8 +50,7 @@ private:
   SkiaDisplay* m_display;
   Backend m_backend;
 #if SK_SUPPORT_GPU
-  SkAutoTUnref<SkGLContext> m_glCtx;
-  SkAutoTUnref<const GrGLInterface> m_grInterface;
+  base::UniquePtr<GLContextSkia<GLContextWGL> > m_glCtx;
   SkAutoTUnref<GrContext> m_grCtx;
   SkAutoTUnref<GrRenderTarget> m_grRenderTarget;
   SkAutoTDelete<SkSurface> m_skSurfaceDirect;

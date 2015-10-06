@@ -14,6 +14,14 @@
 #include "she/osx/window.h"
 #include "gfx/size.h"
 
+#if SK_SUPPORT_GPU
+
+  #include "GrContext.h"
+  #include "she/gl/gl_context_cgl.h"
+  #include "she/skia/gl_context_skia.h"
+
+#endif
+
 namespace she {
 
 class SkiaWindow::Impl : public CloseDelegate {
@@ -21,8 +29,9 @@ public:
   bool closing;
   int scale;
   OSXWindow* window;
+  GLContextSkia<GLContextCGL> gl;
 
-  Impl() {
+  Impl() : gl(nullptr) {
     closing = false;
     scale = 1;
     window = [OSXWindow new];

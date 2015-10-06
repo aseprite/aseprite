@@ -17,7 +17,7 @@
 #if SK_SUPPORT_GPU
 
   #include "GrContext.h"
-  #include "she/skia/gl_context_wgl.h"
+  #include "she/gl/gl_context_wgl.h"
 
 #endif
 
@@ -105,7 +105,7 @@ void SkiaWindow::paintImpl(HDC hdc)
       }
 
       // Flush GL context
-      m_grInterface->fFunctions.fFlush();
+      m_glCtx->gl()->fFunctions.fFlush();
       break;
 
 #endif // SK_SUPPORT_GPU
@@ -145,26 +145,23 @@ void SkiaWindow::paintHDC(HDC hdc)
 bool SkiaWindow::attachGL()
 {
   if (!m_glCtx) {
-    GLContextWGL* wglCtx = new GLContextWGL(handle(), kGLES_GrGLStandard);
-    m_stencilBits = wglCtx->getStencilBits();
-    m_sampleCount = wglCtx->getSampleCount();
+    try {
+      auto wglCtx = new GLContextSkia<GLContextWGL>(handle());
+      m_stencilBits = wglCtx->getStencilBits();
+      m_sampleCount = wglCtx->getSampleCount();
 
-    m_glCtx.reset(wglCtx);
-    ASSERT(m_glCtx->isValid());
-    if (!m_glCtx->isValid()) {
-      detachGL();
-      return false;
+      m_glCtx.reset(wglCtx);
+      m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
+                                      (GrBackendContext)m_glCtx->gl()));
     }
-
-    m_grInterface.reset(SkRef(m_glCtx->gl()));
-    m_grInterface.reset(GrGLInterfaceRemoveNVPR(m_grInterface));
-    m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend, (GrBackendContext)m_grInterface.get()));
+    catch (const std::exception& ex) {
+      LOG("Cannot create GL context: %s\n", ex.what());
+      detachGL();
+    }
   }
 
-  if (m_glCtx) {
-    m_glCtx->makeCurrent();
+  if (m_glCtx)
     return true;
-  }
   else
     return false;
 }
@@ -184,14 +181,11 @@ void SkiaWindow::detachGL()
   m_skSurface.reset(nullptr);
   m_grRenderTarget.reset(nullptr);
   m_grCtx.reset(nullptr);
-  m_grInterface.reset(nullptr);
   m_glCtx.reset(nullptr);
 }
 
 void SkiaWindow::createRenderTarget(const gfx::Size& size)
 {
-  auto gl = &m_grInterface->fFunctions;
-
   int scale = m_display->scale();
   m_lastSize = size;
 

@@ -1,21 +1,33 @@
 // SHE library
-// Copyright (C) 2012-2015  David Capello
+// Copyright (C) 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include <windows.h>
+#ifndef SHE_GL_CONTEXT_WGL_INCLUDED
+#define SHE_GL_CONTEXT_WGL_INCLUDED
+#pragma once
 
-#include "GL/gl.h"
-#include "gl/SkGLContext.h"
+#include "she/gl/gl_context.h"
+
+#include <windows.h>
 
 namespace she {
 
-class GLContextWGL : public SkGLContext {
+class GLContextWGL : public GLContext {
 public:
-  GLContextWGL(HWND hwnd, GrGLStandard forcedGpuAPI)
+  typedef HWND NativeHandle;
+
+  GLContextWGL(HWND hwnd)
     : m_hwnd(hwnd)
     , m_glrc(nullptr) {
+  }
+
+  ~GLContextWGL() {
+    destroyGLContext();
+  }
+
+  bool createGLContext() override {
     HDC hdc = GetDC(m_hwnd);
 
     PIXELFORMATDESCRIPTOR pfd = {
@@ -43,49 +55,23 @@ public:
     m_glrc = wglCreateContext(hdc);
     if (!m_glrc) {
       ReleaseDC(m_hwnd, hdc);
-      return;
+      return false;
     }
 
     wglMakeCurrent(hdc, m_glrc);
+    ReleaseDC(m_hwnd, hdc);
+    return true;
+  }
 
-    const GrGLInterface* gl = GrGLCreateNativeInterface();
-    init(gl);
-    if (!gl) {
-      ReleaseDC(m_hwnd, hdc);
-      destroy();
-      return;
+  void destroyGLContext() override {
+    if (m_glrc) {
+      wglMakeCurrent(nullptr, nullptr);
+      wglDeleteContext(m_glrc);
+      m_glrc = nullptr;
     }
-
-    if (!gl->validate()) {
-      ReleaseDC(m_hwnd, hdc);
-      destroy();
-      return;
-    }
-
-    ReleaseDC(m_hwnd, hdc);
   }
 
-  ~GLContextWGL() {
-    destroy();
-  }
-
-  void onPlatformMakeCurrent() const override {
-    HDC hdc = GetDC(m_hwnd);
-    wglMakeCurrent(hdc, m_glrc);
-    ReleaseDC(m_hwnd, hdc);
-  }
-
-  void onPlatformSwapBuffers() const override {
-    HDC hdc = GetDC(m_hwnd);
-    SwapBuffers(hdc);
-    ReleaseDC(m_hwnd, hdc);
-  }
-
-  GrGLFuncPtr onPlatformGetProcAddress(const char* name) const override {
-    return reinterpret_cast<GrGLFuncPtr>(wglGetProcAddress(name));
-  }
-
-  int getStencilBits() {
+  int getStencilBits() override {
     HDC hdc = GetDC(m_hwnd);
     int pixelFormat = GetPixelFormat(hdc);
     PIXELFORMATDESCRIPTOR pfd;
@@ -94,23 +80,15 @@ public:
     return pfd.cStencilBits;
   }
 
-  int getSampleCount() {
-    return 0;                   // TODO
+  int getSampleCount() override {
+    return 0;
   }
 
 private:
-  void destroy() {
-    teardown();
-
-    if (m_glrc) {
-      wglMakeCurrent(nullptr, nullptr);
-      wglDeleteContext(m_glrc);
-      m_glrc = nullptr;
-    }
-  }
-
   HWND m_hwnd;
   HGLRC m_glrc;
 };
 
 } // namespace she
+
+#endif
