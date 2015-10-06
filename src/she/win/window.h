@@ -428,6 +428,10 @@ namespace she {
           return 0;
         }
 
+        case WM_MENUCHAR:
+          // Avoid playing a sound when Alt+key is pressed and it's not in a native menu
+          return MAKELONG(0, MNC_CLOSE);
+
         case WM_DROPFILES: {
           HDROP hdrop = (HDROP)(wparam);
           Event::Files files;
