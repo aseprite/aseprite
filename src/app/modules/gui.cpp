@@ -100,14 +100,15 @@ static int get_screen_scale()
   return scale;
 }
 
-// Initializes GUI.
-int init_module_gui()
+static bool create_main_display(bool gpuAccel,
+                                bool& maximized,
+                                std::string& lastError)
 {
-  std::string lastError = "Unknown error";
   int w, h;
-  bool maximized;
   int scale = get_screen_scale();
   load_gui_config(w, h, maximized);
+
+  she::instance()->setGpuAcceleration(gpuAccel);
 
   try {
     if (w > 0 && h > 0)
@@ -135,8 +136,32 @@ int init_module_gui()
     }
   }
 
+  return (main_display != nullptr);
+}
+
+// Initializes GUI.
+int init_module_gui()
+{
+  bool maximized = false;
+  std::string lastError = "Unknown error";
+  bool gpuAccel = Preferences::instance().general.gpuAcceleration();
+
+  if (!create_main_display(gpuAccel, maximized, lastError)) {
+    // If we've created the display with hardware acceleration,
+    // now we try to do it without hardware acceleration.
+    if (gpuAccel &&
+        (int(she::instance()->capabilities()) &
+         int(she::Capabilities::GpuAccelerationSwitch)) == int(she::Capabilities::GpuAccelerationSwitch)) {
+      if (create_main_display(false, maximized, lastError)) {
+        // Disable hardware acceleration
+        Preferences::instance().general.gpuAcceleration(false);
+      }
+    }
+  }
+
   if (!main_display) {
-    she::error_message(("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
+    she::error_message(
+      ("Unable to create a user-interface display.\nDetails: "+lastError+"\n").c_str());
     return -1;
   }
 
