@@ -14,6 +14,12 @@ endif()
 # Compiler-specific flags
 
 if(MSVC)
+  # As Skia is compiled with /GL flag (whole program optimization),
+  # the linker prefer a /LTCG parameter to improve link times.
+  if(USE_SKIA_BACKEND)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LTCG")
+  endif()
+
   # Do not link with libcmt.lib (to avoid duplicated symbols with msvcrtd.lib)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /NODEFAULTLIB:LIBCMT")
