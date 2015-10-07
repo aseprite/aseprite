@@ -16,8 +16,8 @@
 
 @interface OSXWindowDelegate : NSObject
 {
-  she::EventQueue* queue;
-  OSXWindow* window;
+  she::EventQueue* m_queue;
+  OSXWindow* m_window;
 }
 - (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window;
 - (BOOL)windowShouldClose:(id)sender;
@@ -32,16 +32,16 @@
 
 @implementation OSXWindowDelegate
 
-- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)aWindow
+- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window
 {
-  window = aWindow;
-  queue = she::instance()->eventQueue();
+  m_window = window;
+  m_queue = she::instance()->eventQueue();
   return self;
 }
 
 - (BOOL)windowShouldClose:(id)sender
 {
-  [window closeDelegate]->notifyClose();
+  [m_window closeDelegate]->notifyClose();
   return YES;
 }
 
