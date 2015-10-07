@@ -19,12 +19,11 @@
   she::EventQueue* queue;
   OSXWindow* window;
 }
+- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window;
 - (BOOL)windowShouldClose:(id)sender;
 - (void)windowWillClose:(NSNotification *)notification;
 - (void)windowDidResize:(NSNotification*)notification;
 - (void)windowDidMiniaturize:(NSNotification*)notification;
-- (void)setEventQueue:(she::EventQueue*)aQueue;
-- (void)setOSXWindow:(OSXWindow*)aWindow;
 @end
 
 @interface OSXView : NSView
@@ -32,6 +31,13 @@
 @end
 
 @implementation OSXWindowDelegate
+
+- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)aWindow
+{
+  window = aWindow;
+  queue = she::instance()->eventQueue();
+  return self;
+}
 
 - (BOOL)windowShouldClose:(id)sender
 {
@@ -49,16 +55,6 @@
 
 - (void)windowDidMiniaturize:(NSNotification*)notification
 {
-}
-
-- (void)setEventQueue:(she::EventQueue*)aQueue
-{
-  queue = aQueue;
-}
-
-- (void)setOSXWindow:(OSXWindow*)aWindow
-{
-  window = aWindow;
 }
 
 @end
@@ -81,10 +77,6 @@
   clientSize.w = restoredSize.w = rect.size.width;
   clientSize.h = restoredSize.h = rect.size.height;
 
-  OSXWindowDelegate* windowDelegate = [[OSXWindowDelegate new] autorelease];
-  [windowDelegate setEventQueue:she::instance()->eventQueue()];
-  [windowDelegate setOSXWindow:self];
-
   OSXView* view = [[[OSXView alloc] initWithFrame:rect] autorelease];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
@@ -94,7 +86,7 @@
                      backing:NSBackingStoreBuffered
                        defer:NO];
 
-  [self setDelegate:windowDelegate];
+  [self setDelegate:[[OSXWindowDelegate alloc] initWithWindow:self]];
   [self setContentView:view];
   [self center];
   return self;
