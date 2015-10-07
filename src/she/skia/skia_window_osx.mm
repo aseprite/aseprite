@@ -29,9 +29,15 @@ public:
   bool closing;
   int scale;
   OSXWindow* window;
+#if SK_SUPPORT_GPU
   GLContextSkia<GLContextCGL> gl;
+#endif
 
-  Impl() : gl(nullptr) {
+  Impl()
+#if SK_SUPPORT_GPU
+    : gl(nullptr)
+#endif
+  {
     closing = false;
     scale = 1;
     window = [OSXWindow new];
