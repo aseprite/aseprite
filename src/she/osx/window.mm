@@ -12,6 +12,7 @@
 
 #include "she/event.h"
 #include "she/event_queue.h"
+#include "she/osx/view.h"
 #include "she/system.h"
 
 @interface OSXWindowDelegate : NSObject
@@ -24,10 +25,6 @@
 - (void)windowWillClose:(NSNotification *)notification;
 - (void)windowDidResize:(NSNotification*)notification;
 - (void)windowDidMiniaturize:(NSNotification*)notification;
-@end
-
-@interface OSXView : NSView
-- (void)mouseDragged:(NSEvent*)theEvent;
 @end
 
 @implementation OSXWindowDelegate
@@ -54,14 +51,6 @@
 }
 
 - (void)windowDidMiniaturize:(NSNotification*)notification
-{
-}
-
-@end
-
-@implementation OSXView
-
-- (void)mouseDragged:(NSEvent*)theEvent
 {
 }
 
