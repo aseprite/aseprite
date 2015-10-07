@@ -94,11 +94,17 @@ bool SkiaWindow::isMaximized() const
 
 gfx::Size SkiaWindow::clientSize() const
 {
+  if (m_impl->closing)
+    return gfx::Size(0, 0);
+
   return m_impl->window.clientSize;
 }
 
 gfx::Size SkiaWindow::restoredSize() const
 {
+  if (m_impl->closing)
+    return gfx::Size(0, 0);
+
   return m_impl->window.restoredSize;
 }
 
