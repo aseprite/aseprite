@@ -16,22 +16,20 @@
 
 #include "gfx/size.h"
 
-class CloseDelegate {
+class OSXWindowImpl {
 public:
-  virtual ~CloseDelegate() { }
-  virtual void notifyClose() = 0;
+  virtual ~OSXWindowImpl() { }
+  virtual void onClose() = 0;
 };
 
 @interface OSXWindow : NSWindow
 {
-  CloseDelegate* closeDelegate;
-  gfx::Size clientSize;
-  gfx::Size restoredSize;
+  OSXWindowImpl* m_impl;
+  gfx::Size m_clientSize;
+  gfx::Size m_restoredSize;
 }
-- (OSXWindow*)init;
-- (void)dealloc;
-- (CloseDelegate*)closeDelegate;
-- (void)setCloseDelegate:(CloseDelegate*)aDelegate;
+- (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl;
+- (OSXWindowImpl*)impl;
 - (gfx::Size)clientSize;
 - (gfx::Size)restoredSize;
 @end

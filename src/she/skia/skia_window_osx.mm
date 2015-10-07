@@ -10,6 +10,7 @@
 
 #include "she/skia/skia_window_osx.h"
 
+#include "she/event.h"
 #include "she/event_queue.h"
 #include "she/osx/window.h"
 #include "gfx/size.h"
@@ -24,7 +25,7 @@
 
 namespace she {
 
-class SkiaWindow::Impl : public CloseDelegate {
+class SkiaWindow::Impl : public OSXWindowImpl {
 public:
   bool closing;
   int scale;
@@ -40,11 +41,12 @@ public:
   {
     closing = false;
     scale = 1;
-    window = [OSXWindow new];
-    [window setCloseDelegate:this];
+    window = [[OSXWindow alloc] initWithImpl:this];
   }
 
-  void notifyClose() override {
+  // OSXWindowImpl impl
+
+  void onClose() override {
     closing = true;
   }
 };

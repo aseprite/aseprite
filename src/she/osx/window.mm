@@ -13,60 +13,19 @@
 #include "she/event.h"
 #include "she/event_queue.h"
 #include "she/osx/view.h"
-#include "she/system.h"
-
-@interface OSXWindowDelegate : NSObject
-{
-  she::EventQueue* m_queue;
-  OSXWindow* m_window;
-}
-- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window;
-- (BOOL)windowShouldClose:(id)sender;
-- (void)windowWillClose:(NSNotification *)notification;
-- (void)windowDidResize:(NSNotification*)notification;
-- (void)windowDidMiniaturize:(NSNotification*)notification;
-@end
-
-@implementation OSXWindowDelegate
-
-- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window
-{
-  m_window = window;
-  m_queue = she::instance()->eventQueue();
-  return self;
-}
-
-- (BOOL)windowShouldClose:(id)sender
-{
-  [m_window closeDelegate]->notifyClose();
-  return YES;
-}
-
-- (void)windowWillClose:(NSNotification*)notification
-{
-}
-
-- (void)windowDidResize:(NSNotification*)notification
-{
-}
-
-- (void)windowDidMiniaturize:(NSNotification*)notification
-{
-}
-
-@end
+#include "she/osx/window_delegate.h"
 
 @implementation OSXWindow
 
-- (OSXWindow*)init
+- (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl
 {
-  closeDelegate = nullptr;
+  m_impl = impl;
 
   NSRect rect = NSMakeRect(0, 0, 640, 480);
-  clientSize.w = restoredSize.w = rect.size.width;
-  clientSize.h = restoredSize.h = rect.size.height;
+  m_clientSize.w = m_restoredSize.w = rect.size.width;
+  m_clientSize.h = m_restoredSize.h = rect.size.height;
 
-  OSXView* view = [[[OSXView alloc] initWithFrame:rect] autorelease];
+  OSXView* view = [[OSXView alloc] initWithFrame:rect];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
   [super initWithContentRect:rect
@@ -81,29 +40,19 @@
   return self;
 }
 
-- (void)dealloc
+- (OSXWindowImpl*)impl
 {
-  [super dealloc];
-}
-
-- (CloseDelegate*)closeDelegate
-{
-  return closeDelegate;
-}
-
-- (void)setCloseDelegate:(CloseDelegate*)aDelegate
-{
-  closeDelegate = aDelegate;
+  return m_impl;
 }
 
 - (gfx::Size)clientSize
 {
-  return clientSize;
+  return m_clientSize;
 }
 
 - (gfx::Size)restoredSize
 {
-  return restoredSize;
+  return m_restoredSize;
 }
 
 @end
