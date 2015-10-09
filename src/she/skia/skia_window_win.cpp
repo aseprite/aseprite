@@ -246,8 +246,10 @@ void SkiaWindow::resizeImpl(const gfx::Size& size)
     m_backend = Backend::NONE;
   }
 
+#if SK_SUPPORT_GPU
   if (m_glCtx)
     createRenderTarget(size);
+#endif
 
   m_display->resize(size);
 }
