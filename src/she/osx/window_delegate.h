@@ -4,22 +4,19 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-@interface OSXWindowDelegate : NSObject
-{
+class OSXWindowImpl;
+
+@interface OSXWindowDelegate : NSObject {
+@private
   OSXWindowImpl* m_impl;
 }
-- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window;
-- (BOOL)windowShouldClose:(id)sender;
-- (void)windowWillClose:(NSNotification *)notification;
-- (void)windowDidResize:(NSNotification*)notification;
-- (void)windowDidMiniaturize:(NSNotification*)notification;
 @end
 
 @implementation OSXWindowDelegate
 
-- (OSXWindowDelegate*)initWithWindow:(OSXWindow*)window
+- (OSXWindowDelegate*)initWithWindowImpl:(OSXWindowImpl*)impl
 {
-  m_impl = [window impl];
+  m_impl = impl;
   return self;
 }
 

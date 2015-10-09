@@ -60,6 +60,9 @@ if(USE_SKIA_BACKEND)
   elseif(APPLE)
     add_definitions(-DSK_BUILD_FOR_MAC)
     add_definitions(-Wno-ignored-attributes -Wno-unused-result)
+
+    # Use Automatic Reference Counting
+    add_definitions(-fobjc-arc)
   endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -144,6 +147,7 @@ if(USE_SKIA_BACKEND)
       osx/app.mm
       osx/app_delegate.mm
       osx/event_queue.mm
+      osx/view.mm
       osx/window.mm
       skia/skia_window_osx.mm)
   endif()

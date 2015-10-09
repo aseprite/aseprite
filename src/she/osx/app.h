@@ -22,13 +22,9 @@ namespace she {
     ~OSXApp();
 
     int run(int argc, char* argv[]);
-    void joinUserThread();
-
-    void stopUIEventLoop();
 
   private:
     static OSXApp* g_instance;
-    base::thread* m_userThread;
   };
 
 } // namespace she

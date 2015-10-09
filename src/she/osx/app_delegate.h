@@ -13,10 +13,9 @@
 #include <AppKit/AppKit.h>
 
 @interface OSXAppDelegate : NSObject
-- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication;
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender;
-- (void)applicationWillTerminate:(NSNotification*)aNotification;
-- (void)quit:(id)sender;
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)app;
+- (void)applicationWillTerminate:(NSNotification*)notification;
 @end
 
 #endif

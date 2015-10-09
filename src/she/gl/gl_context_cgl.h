@@ -19,8 +19,10 @@ class GLContextCGL : public GLContext {
 public:
   typedef void* NativeHandle;
 
-  GLContextCGL(void*)
-    : m_glctx(nullptr) {
+  GLContextCGL(NativeHandle window)
+    : m_glctx(nullptr)
+    , m_stencilBits(0)
+    , m_sampleCount(0) {
   }
 
   ~GLContextCGL() {
@@ -29,21 +31,23 @@ public:
 
   bool createGLContext() override {
     CGLPixelFormatAttribute attributes[] = {
-#if MAC_OS_X_VERSION_10_7
       kCGLPFAOpenGLProfile,
       (CGLPixelFormatAttribute)kCGLOGLPVersion_3_2_Core,
-#endif
+      kCGLPFAAccelerated,
       kCGLPFADoubleBuffer,
       (CGLPixelFormatAttribute)0
     };
-    CGLPixelFormatObj pixFormat;
+    CGLPixelFormatObj format;
     GLint npix;
-    CGLChoosePixelFormat(attributes, &pixFormat, &npix);
-    if (!pixFormat)
+    CGLChoosePixelFormat(attributes, &format, &npix);
+    if (!format)
       return false;
 
-    CGLCreateContext(pixFormat, nullptr, &m_glctx);
-    CGLReleasePixelFormat(pixFormat);
+    CGLDescribePixelFormat(format, 0, kCGLPFASamples, &m_sampleCount);
+    CGLDescribePixelFormat(format, 0, kCGLPFAStencilSize, &m_stencilBits);
+
+    CGLCreateContext(format, nullptr, &m_glctx);
+    CGLReleasePixelFormat(format);
     if (!m_glctx)
       return false;
 
@@ -59,15 +63,21 @@ public:
   }
 
   int getStencilBits() override {
-    return 0;
+    return m_stencilBits;
   }
 
   int getSampleCount() override {
-    return 0;
+    return m_sampleCount;
+  }
+
+  CGLContextObj cglContext() {
+    return m_glctx;
   }
 
 private:
   CGLContextObj m_glctx;
+  int m_stencilBits;
+  int m_sampleCount;
 };
 
 } // namespace she

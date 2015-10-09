@@ -17,7 +17,8 @@
 #include "she/skia/skia_system.h"
 
 #if __APPLE__
-#include "she/osx/app.h"
+  #include "she/osx/app.h"
+  #include <CoreServices/CoreServices.h>
 #endif
 
 namespace she {
@@ -55,8 +56,10 @@ int clock_value()
   // TODO
 #if _WIN32
   return (int)GetTickCount();
+#elif defined(__APPLE__)
+  return TickCount();
 #else
-  return 0; // clock_var;
+  return 0;
 #endif
 }
 

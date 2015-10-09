@@ -20,7 +20,6 @@
 #ifdef _WIN32
   #include "she/win/event_queue.h"
 #elif __APPLE__
-  #include "she/osx/app.h"
   #include "she/osx/event_queue.h"
 #else
   #error There is no EventQueue implementation for your platform
@@ -38,9 +37,6 @@ public:
   }
 
   ~SkiaSystem() {
-#if __APPLE__
-    OSXApp::instance()->stopUIEventLoop();
-#endif
   }
 
   void dispose() override {

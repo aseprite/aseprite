@@ -41,6 +41,8 @@ public:
   void* handle();
 
 private:
+  void destroyImpl();
+
   class Impl;
   Impl* m_impl;
 

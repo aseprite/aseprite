@@ -14,22 +14,32 @@
 
 #include <stdio.h>
 
+#include "gfx/rect.h"
 #include "gfx/size.h"
 
 class OSXWindowImpl {
 public:
   virtual ~OSXWindowImpl() { }
   virtual void onClose() = 0;
+  virtual void onResize(const gfx::Size& size) = 0;
+  virtual void onDrawRect(const gfx::Rect& rect) = 0;
+  virtual void onWindowChanged() = 0;
 };
 
-@interface OSXWindow : NSWindow
-{
+@class OSXWindowDelegate;
+
+@interface OSXWindow : NSWindow {
+@private
   OSXWindowImpl* m_impl;
+  OSXWindowDelegate* m_delegate;
+  int m_scale;
   gfx::Size m_clientSize;
   gfx::Size m_restoredSize;
 }
 - (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl;
 - (OSXWindowImpl*)impl;
+- (int)scale;
+- (void)setScale:(int)scale;
 - (gfx::Size)clientSize;
 - (gfx::Size)restoredSize;
 @end
