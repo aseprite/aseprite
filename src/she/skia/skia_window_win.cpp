@@ -146,11 +146,11 @@ bool SkiaWindow::attachGL()
 {
   if (!m_glCtx) {
     try {
-      auto wglCtx = new GLContextSkia<GLContextWGL>(handle());
-      m_stencilBits = wglCtx->getStencilBits();
-      m_sampleCount = wglCtx->getSampleCount();
+      auto ctx = new GLContextSkia<GLContextWGL>(handle());
+      m_stencilBits = ctx->getStencilBits();
+      m_sampleCount = ctx->getSampleCount();
 
-      m_glCtx.reset(wglCtx);
+      m_glCtx.reset(ctx);
       m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
                                       (GrBackendContext)m_glCtx->gl()));
     }
