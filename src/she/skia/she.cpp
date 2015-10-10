@@ -19,6 +19,7 @@
 #if __APPLE__
   #include "she/osx/app.h"
   #include <CoreServices/CoreServices.h>
+  #include <mach/mach_time.h>
 #endif
 
 namespace she {
@@ -53,13 +54,15 @@ void clear_keyboard_buffer()
 
 int clock_value()
 {
-  // TODO
 #if _WIN32
   return (int)GetTickCount();
 #elif defined(__APPLE__)
-  return TickCount();
+  static mach_timebase_info_data_t timebase = { 0, 0 };
+  if (timebase.denom == 0)
+    (void)mach_timebase_info(&timebase);
+  return int(float(mach_absolute_time()) * float(timebase.numer) / float(timebase.denom) / 1.0e6f);
 #else
-  return 0;
+  return 0; // TODO
 #endif
 }
 
