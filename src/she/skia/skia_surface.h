@@ -24,7 +24,7 @@
 namespace she {
 
 inline SkColor to_skia(gfx::Color c) {
-  return SkPremultiplyARGBInline(gfx::geta(c), gfx::getr(c), gfx::getg(c), gfx::getb(c));
+  return SkColorSetARGBInline(gfx::geta(c), gfx::getr(c), gfx::getg(c), gfx::getb(c));
 }
 
 inline SkIRect to_skia(const gfx::Rect& rc) {
