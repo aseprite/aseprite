@@ -931,13 +931,13 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
   }
 
   // Free all widgets of special states.
-  if (capture_widget != NULL && capture_widget->getRoot() == window)
+  if (capture_widget && capture_widget->getRoot() == window)
     freeCapture();
 
-  if (mouse_widget != NULL && mouse_widget->getRoot() == window)
+  if (mouse_widget && mouse_widget->getRoot() == window)
     freeMouse();
 
-  if (focus_widget != NULL && focus_widget->getRoot() == window)
+  if (focus_widget && focus_widget->getRoot() == window)
     freeFocus();
 
   // Hide window.
@@ -959,6 +959,12 @@ void Manager::_closeWindow(Window* window, bool redraw_background)
     std::find(new_windows.begin(), new_windows.end(), window);
   if (it != new_windows.end())
     new_windows.erase(it);
+
+  // Update mouse widget (as it can be a widget below the
+  // recently closed window).
+  Widget* widget = pick(ui::get_mouse_position());
+  if (widget)
+    setMouse(widget);
 }
 
 bool Manager::onProcessMessage(Message* msg)

@@ -180,6 +180,8 @@ void Tabs::updateTabs()
     x += tabWidth;
     ++i;
   }
+
+  calculateHot();
   invalidate();
 }
 
