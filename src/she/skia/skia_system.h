@@ -98,8 +98,7 @@ public:
         kN32_SkColorType, SkImageDecoder::kDecodePixels_Mode);
 
       if (res == SkImageDecoder::kSuccess) {
-        // TODO Check why this line crashes on OS X
-        //bm.pixelRef()->setURI(filename);
+        bm.pixelRef()->setURI(filename);
 
         SkiaSurface* sur = new SkiaSurface();
         sur->swapBitmap(bm);
