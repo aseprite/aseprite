@@ -34,8 +34,6 @@ public:
   OSXWindowImpl* m_impl;
   OSXWindowDelegate* m_delegate;
   int m_scale;
-  gfx::Size m_clientSize;
-  gfx::Size m_restoredSize;
 }
 - (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl;
 - (OSXWindowImpl*)impl;

@@ -23,9 +23,6 @@
   m_scale = 1;
 
   NSRect rect = NSMakeRect(0, 0, 640, 480);
-  m_clientSize.w = m_restoredSize.w = rect.size.width;
-  m_clientSize.h = m_restoredSize.h = rect.size.height;
-
   self = [self initWithContentRect:rect
                          styleMask:(NSTitledWindowMask | NSClosableWindowMask |
                                     NSMiniaturizableWindowMask | NSResizableWindowMask)
@@ -68,12 +65,13 @@
 
 - (gfx::Size)clientSize
 {
-  return m_clientSize;
+  return gfx::Size([[self contentView] frame].size.width,
+                   [[self contentView] frame].size.height);
 }
 
 - (gfx::Size)restoredSize
 {
-  return m_restoredSize;
+  return [self clientSize];
 }
 
 @end
