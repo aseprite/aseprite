@@ -118,7 +118,41 @@ public:
   }
 
   void setDrawMode(DrawMode mode, int param) override {
-    // TODO
+    switch (mode) {
+      case DrawMode::Solid:
+        m_paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+        m_paint.setShader(nullptr);
+        break;
+      case DrawMode::Xor:
+        m_paint.setXfermodeMode(SkXfermode::kXor_Mode);
+        m_paint.setShader(nullptr);
+        break;
+      case DrawMode::Checked: {
+        m_paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
+        {
+          SkBitmap bitmap;
+          bitmap.tryAllocPixels(SkImageInfo::MakeN32Premul(8, 8));
+          {
+            bitmap.lockPixels();
+            SkPMColor bg = SkPreMultiplyARGB(255, 0, 0, 0);
+            SkPMColor fg = SkPreMultiplyARGB(255, 255, 255, 255);
+            int offset = 7 - (param & 7);
+            for (int y=0; y<8; y++)
+              for (int x=0; x<8; x++)
+                *bitmap.getAddr32(x, y) = (((x+y+offset)&7) < 4 ? fg: bg);
+            bitmap.unlockPixels();
+          }
+
+          SkAutoTUnref<SkShader> shader(
+            SkShader::CreateBitmapShader(
+              bitmap,
+              SkShader::kRepeat_TileMode,
+              SkShader::kRepeat_TileMode, nullptr));
+          m_paint.setShader(shader);
+        }
+        break;
+      }
+    }
   }
 
   LockedSurface* lock() override {
@@ -252,48 +286,41 @@ public:
   }
 
   void putPixel(gfx::Color color, int x, int y) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
-    m_canvas->drawPoint(SkIntToScalar(x), SkIntToScalar(y), paint);
+    m_paint.setColor(to_skia(color));
+    m_canvas->drawPoint(SkIntToScalar(x), SkIntToScalar(y), m_paint);
   }
 
   void drawHLine(gfx::Color color, int x, int y, int w) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
+    m_paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x+w), SkIntToScalar(y), paint);
+      SkIntToScalar(x+w), SkIntToScalar(y), m_paint);
   }
 
   void drawVLine(gfx::Color color, int x, int y, int h) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
+    m_paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(x), SkIntToScalar(y),
-      SkIntToScalar(x), SkIntToScalar(y+h), paint);
+      SkIntToScalar(x), SkIntToScalar(y+h), m_paint);
   }
 
   void drawLine(gfx::Color color, const gfx::Point& a, const gfx::Point& b) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
+    m_paint.setColor(to_skia(color));
     m_canvas->drawLine(
       SkIntToScalar(a.x), SkIntToScalar(a.y),
-      SkIntToScalar(b.x), SkIntToScalar(b.y), paint);
+      SkIntToScalar(b.x), SkIntToScalar(b.y), m_paint);
   }
 
   void drawRect(gfx::Color color, const gfx::Rect& rc) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
-    paint.setStyle(SkPaint::kStroke_Style);
-    m_canvas->drawIRect(to_skia(gfx::Rect(rc.x, rc.y, rc.w-1, rc.h-1)), paint);
+    m_paint.setColor(to_skia(color));
+    m_paint.setStyle(SkPaint::kStroke_Style);
+    m_canvas->drawIRect(to_skia(gfx::Rect(rc.x, rc.y, rc.w-1, rc.h-1)), m_paint);
   }
 
   void fillRect(gfx::Color color, const gfx::Rect& rc) override {
-    SkPaint paint;
-    paint.setColor(to_skia(color));
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
-    m_canvas->drawIRect(to_skia(rc), paint);
+    m_paint.setColor(to_skia(color));
+    m_paint.setStyle(SkPaint::kFill_Style);
+    m_canvas->drawIRect(to_skia(rc), m_paint);
   }
 
   void blitTo(LockedSurface* dest, int srcx, int srcy, int dstx, int dsty, int width, int height) const override {
@@ -449,6 +476,7 @@ private:
   SkBitmap m_bitmap;
   SkSurface* m_surface;
   SkCanvas* m_canvas;
+  SkPaint m_paint;
   gfx::Rect m_clip;
 };
 
