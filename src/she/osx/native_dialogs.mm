@@ -4,10 +4,7 @@
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
 
-#include <CoreFoundation/CoreFoundation.h>
-#include <Foundation/Foundation.h>
-#include <AppKit/AppKit.h>
-
+#include <Cocoa/Cocoa.h>
 #include <vector>
 
 #include "she/display.h"

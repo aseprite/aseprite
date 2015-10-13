@@ -8,9 +8,7 @@
 #define SHE_OSX_VIEW_H_INCLUDED
 #pragma once
 
-#include <AppKit/AppKit.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <Foundation/Foundation.h>
+#include <Cocoa/Cocoa.h>
 
 @interface OSXView : NSView {
 @private

@@ -8,11 +8,7 @@
 #define SHE_OSX_WINDOW_H_INCLUDED
 #pragma once
 
-#include <AppKit/AppKit.h>
-#include <CoreFoundation/CoreFoundation.h>
-#include <Foundation/Foundation.h>
-
-#include <stdio.h>
+#include <Cocoa/Cocoa.h>
 
 #include "gfx/rect.h"
 #include "gfx/size.h"

@@ -8,9 +8,7 @@
 #define SHE_OSX_APP_DELEGATE_H_INCLUDED
 #pragma once
 
-#include <CoreFoundation/CoreFoundation.h>
-#include <Foundation/Foundation.h>
-#include <AppKit/AppKit.h>
+#include <Cocoa/Cocoa.h>
 
 @interface OSXAppDelegate : NSObject
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender;

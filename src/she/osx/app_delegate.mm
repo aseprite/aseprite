@@ -8,9 +8,7 @@
 #include "config.h"
 #endif
 
-#include <CoreFoundation/CoreFoundation.h>
-#include <Foundation/Foundation.h>
-#include <AppKit/AppKit.h>
+#include <Cocoa/Cocoa.h>
 
 #include "she/osx/app_delegate.h"
 
