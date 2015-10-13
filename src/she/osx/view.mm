@@ -246,7 +246,9 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 
 - (void)keyDown:(NSEvent*)event
 {
+#if 0 // Avoid beeps TODO comment this when the OS X menus are ready
   [super keyDown:event];
+#endif
 
   Event ev;
   ev.setType(Event::KeyDown);
@@ -263,7 +265,9 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 
 - (void)keyUp:(NSEvent*)event
 {
+#if 0
   [super keyUp:event];
+#endif
 
   Event ev;
   ev.setType(Event::KeyUp);
