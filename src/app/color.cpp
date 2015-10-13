@@ -125,7 +125,7 @@ Color Color::fromString(const std::string& str)
         str.find("hsv{") == 0 ||
         str.find("gray{") == 0) {
       int c = 0, table[4] = { 0, 0, 0, 255 };
-      std::string::size_type i = 4, j;
+      std::string::size_type i = str.find_first_of('{')+1, j;
 
       while ((j = str.find_first_of(",}", i)) != std::string::npos) {
         std::string element = str.substr(i, j - i);
