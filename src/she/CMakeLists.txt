@@ -148,6 +148,7 @@ if(USE_SKIA_BACKEND)
       osx/app_delegate.mm
       osx/event_queue.mm
       osx/view.mm
+      osx/vk.mm
       osx/window.mm
       skia/skia_window_osx.mm)
   endif()

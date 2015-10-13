@@ -16,8 +16,31 @@ namespace she {
 
 static NSWindow* g_window = nil;
 
+#ifndef _WIN32
+static bool pressedkeys[kKeyScancodes];
+bool is_key_pressed(KeyScancode scancode)
+{
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    return pressedkeys[scancode];
+  else
+    return false;
+}
+#endif
+
 void OSXEventQueue::getEvent(Event& ev, bool canWait)
 {
+#ifndef _WIN32
+  switch (ev.type()) {
+    case Event::KeyDown:
+    case Event::KeyUp: {
+      KeyScancode scancode = ev.scancode();
+      if (scancode >= 0 && scancode < kKeyScancodes)
+        pressedkeys[scancode] = (ev.type() == Event::KeyDown);
+      break;
+    }
+  }
+#endif
+
   ev.setType(Event::None);
 
 retry:;

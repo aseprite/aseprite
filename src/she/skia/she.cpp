@@ -41,13 +41,6 @@ void error_message(const char* msg)
   // TODO
 }
 
-#ifndef _WIN32
-bool is_key_pressed(KeyScancode scancode)
-{
-  return false; // Do nothing
-}
-#endif
-
 void clear_keyboard_buffer()
 {
   // Do nothing

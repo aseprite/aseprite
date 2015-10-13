@@ -12,6 +12,11 @@
 
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "she/keys.h"
+
+namespace she {
+  KeyScancode cocoavk_to_scancode(UInt16 vk);
+}
 
 class OSXWindowImpl {
 public:
