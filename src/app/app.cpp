@@ -58,6 +58,7 @@
 #include "base/split_string.h"
 #include "base/unique_ptr.h"
 #include "doc/document_observer.h"
+#include "doc/frame_tag.h"
 #include "doc/image.h"
 #include "doc/layer.h"
 #include "doc/palette.h"
@@ -222,6 +223,8 @@ void App::initialize(const AppOptions& options)
     Console console;
     bool splitLayers = false;
     bool splitLayersSaveAs = false;
+    bool listLayers = false;
+    bool listTags = false;
     std::string importLayer;
     std::string importLayerSaveAs;
     std::string filenameFormat;
@@ -442,6 +445,14 @@ void App::initialize(const AppOptions& options)
           AppScripting engine(&delegate);
           engine.evalFile(script);
         }
+        // --list-layers
+        else if (opt == &options.listLayers()) {
+          listLayers = true;
+        }
+        // --list-tags
+        else if (opt == &options.listTags()) {
+          listTags = true;
+        }
       }
       // File names aren't associated to any option
       else {
@@ -461,33 +472,49 @@ void App::initialize(const AppOptions& options)
         if (doc == oldDoc)
           doc = nullptr;
 
-        if (doc && m_exporter) {
-          FrameTag* frameTag = nullptr;
-          if (!frameTagName.empty())
-            frameTag = doc->sprite()->frameTags().getByName(frameTagName);
-
-          if (!importLayer.empty()) {
+        // List layers and/or tags
+        if (doc) {
+          if (listLayers) {
+            listLayers = false;
             std::vector<Layer*> layers;
             doc->sprite()->getLayersList(layers);
+            for (Layer* layer : layers)
+              std::cout << layer->name() << "\n";
+          }
+          if (listTags) {
+            listTags = false;
+            for (FrameTag* tag : doc->sprite()->frameTags())
+              std::cout << tag->name() << "\n";
+          }
 
-            Layer* foundLayer = NULL;
-            for (Layer* layer : layers) {
-              if (layer->name() == importLayer) {
-                foundLayer = layer;
-                break;
+          if (m_exporter) {
+            FrameTag* frameTag = nullptr;
+            if (!frameTagName.empty())
+              frameTag = doc->sprite()->frameTags().getByName(frameTagName);
+
+            if (!importLayer.empty()) {
+              std::vector<Layer*> layers;
+              doc->sprite()->getLayersList(layers);
+
+              Layer* foundLayer = NULL;
+              for (Layer* layer : layers) {
+                if (layer->name() == importLayer) {
+                  foundLayer = layer;
+                  break;
+                }
               }
+              if (foundLayer)
+                m_exporter->addDocument(doc, foundLayer, frameTag);
             }
-            if (foundLayer)
-              m_exporter->addDocument(doc, foundLayer, frameTag);
+            else if (splitLayers) {
+              std::vector<Layer*> layers;
+              doc->sprite()->getLayersList(layers);
+              for (auto layer : layers)
+                m_exporter->addDocument(doc, layer, frameTag);
+            }
+            else
+              m_exporter->addDocument(doc, nullptr, frameTag);
           }
-          else if (splitLayers) {
-            std::vector<Layer*> layers;
-            doc->sprite()->getLayersList(layers);
-            for (auto layer : layers)
-              m_exporter->addDocument(doc, layer, frameTag);
-          }
-          else
-            m_exporter->addDocument(doc, nullptr, frameTag);
         }
 
         if (!importLayer.empty())
@@ -495,6 +522,10 @@ void App::initialize(const AppOptions& options)
 
         if (splitLayers)
           splitLayers = false;
+        if (listLayers)
+          listLayers = false;
+        if (listTags)
+          listTags = false;
       }
     }
 
