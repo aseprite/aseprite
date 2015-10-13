@@ -283,24 +283,6 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   [super flagsChanged:event];
 }
 
-- (void)mouseDown:(NSEvent*)event
-{
-  Event ev;
-  ev.setType(Event::MouseDown);
-  ev.setPosition(get_local_mouse_pos(self, event));
-  ev.setButton(Event::LeftButton);
-  queue_event(ev);
-}
-
-- (void)mouseUp:(NSEvent*)event
-{
-  Event ev;
-  ev.setType(Event::MouseUp);
-  ev.setPosition(get_local_mouse_pos(self, event));
-  ev.setButton(Event::LeftButton);
-  queue_event(ev);
-}
-
 - (void)mouseEntered:(NSEvent*)event
 {
   Event ev;
@@ -325,7 +307,70 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   queue_event(ev);
 }
 
+- (void)mouseDown:(NSEvent*)event
+{
+  [self handleMouseDown:event];
+}
+
+- (void)mouseUp:(NSEvent*)event
+{
+  [self handleMouseUp:event];
+}
+
 - (void)mouseDragged:(NSEvent*)event
+{
+  [self handleMouseDragged:event];
+}
+
+- (void)rightMouseDown:(NSEvent*)event
+{
+  [self handleMouseDown:event];
+}
+
+- (void)rightMouseUp:(NSEvent*)event
+{
+  [self handleMouseUp:event];
+}
+
+- (void)rightMouseDragged:(NSEvent*)event
+{
+  [self handleMouseDragged:event];
+}
+
+- (void)otherMouseDown:(NSEvent*)event
+{
+  [self handleMouseDown:event];
+}
+
+- (void)otherMouseUp:(NSEvent*)event
+{
+  [self handleMouseUp:event];
+}
+
+- (void)otherMouseDragged:(NSEvent*)event
+{
+  [self handleMouseDragged:event];
+}
+
+- (void)handleMouseDown:(NSEvent*)event
+{
+  Event ev;
+  ev.setType(Event::MouseDown);
+  ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setButton(get_mouse_buttons(event));
+  queue_event(ev);
+}
+
+- (void)handleMouseUp:(NSEvent*)event
+{
+  Event ev;
+  ev.setType(Event::MouseUp);
+  ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setButton(get_mouse_buttons(event));
+  queue_event(ev);
+}
+
+- (void)handleMouseDragged:(NSEvent*)event
 {
   Event ev;
   ev.setType(Event::MouseMove);
