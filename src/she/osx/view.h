@@ -17,10 +17,14 @@
   NSTrackingArea* m_trackingArea;
 }
 - (id)initWithFrame:(NSRect)frameRect;
+- (BOOL)acceptsFirstResponder;
 - (void)viewDidHide;
 - (void)viewDidUnhide;
 - (void)viewDidMoveToWindow;
 - (void)drawRect:(NSRect)dirtyRect;
+- (void)keyDown:(NSEvent*)event;
+- (void)keyUp:(NSEvent*)event;
+- (void)flagsChanged:(NSEvent*)event;
 - (void)mouseDown:(NSEvent*)event;
 - (void)mouseUp:(NSEvent*)event;
 - (void)mouseEntered:(NSEvent*)event;
