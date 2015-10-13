@@ -37,6 +37,7 @@ System* instance()
 
 void error_message(const char* msg)
 {
+  fputs(msg, stderr);
   // TODO
 }
 
