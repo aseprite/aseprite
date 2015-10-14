@@ -14,6 +14,7 @@
 #include "she/clock.h"
 #include "she/display.h"
 #include "she/surface.h"
+#include "she/system.h"
 #include "ui/cursor.h"
 #include "ui/intern.h"
 #include "ui/intern.h"
@@ -27,19 +28,11 @@ namespace ui {
 
 // Current mouse cursor type.
 
-static CursorType mouse_cursor_type = kNoCursor;
+static CursorType mouse_cursor_type = kOutsideDisplay;
 static Cursor* mouse_cursor = NULL;
 static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
 static bool use_native_mouse_cursor = false;
-#ifdef USE_ALLEG4_BACKEND
-  // The native cursor is hidden by default in the Allegro backend
-  static bool native_cursor_set = false; // TODO remove this when we remove the Allegro backend
-#else
-  // The native cursor should be visible by default in
-  // other "she" library backends.
-  static bool native_cursor_set = true;
-#endif
 
 // Mouse information (button and position).
 
@@ -78,11 +71,11 @@ static void update_mouse_cursor()
 {
   // Use native cursor when it's possible/available/configured to do so.
 
-  bool native_cursor_available = false;
-  if (use_native_mouse_cursor || mouse_cursor_type == kOutsideDisplay) {
-    she::NativeCursor nativeCursor = she::kNoCursor;
+  she::NativeCursor nativeCursor = she::kNoCursor;
+  Cursor* cursor = nullptr;
 
-    native_cursor_available = true;
+  if (use_native_mouse_cursor ||
+      mouse_cursor_type == kOutsideDisplay) {
     switch (mouse_cursor_type) {
       case ui::kOutsideDisplay:
         nativeCursor = she::kArrowCursor;
@@ -112,45 +105,34 @@ static void update_mouse_cursor()
       case ui::kSizeSWCursor: nativeCursor = she::kSizeSWCursor; break;
       case ui::kSizeWCursor: nativeCursor = she::kSizeWCursor; break;
       case ui::kSizeNWCursor: nativeCursor = she::kSizeNWCursor; break;
-      default:
-        native_cursor_available = false;
-        break;
-    }
-
-    if (native_cursor_available) {
-      native_cursor_available =
-        mouse_display->setNativeMouseCursor(nativeCursor);
-      native_cursor_set = (nativeCursor != she::kNoCursor);
     }
   }
 
-  // Hide native cursor if it is visible but the current cursor type
-  // is not supported natively.
+  // Set native cursor
+  if (mouse_display) {
+    bool ok = mouse_display->setNativeMouseCursor(nativeCursor);
 
-  if (!native_cursor_available && native_cursor_set) {
-    mouse_display->setNativeMouseCursor(she::kNoCursor);
-    native_cursor_set = false;
+    // It looks like the specific native cursor is not supported,
+    // so we can should use the internal overlay (even when we
+    // have use_native_mouse_cursor flag enabled).
+    if (!ok)
+      nativeCursor = she::kNoCursor;
   }
 
   // Use a software cursor with the overlay.
+  if (nativeCursor == she::kNoCursor &&
+      mouse_cursor_type != ui::kOutsideDisplay &&
+      CurrentTheme::get()) {
+    cursor = CurrentTheme::get()->getCursor(mouse_cursor_type);
+  }
 
-  if (!native_cursor_set) {
-    if (mouse_cursor_type == ui::kNoCursor) {
-      update_mouse_overlay(NULL);
-    }
-    else {
-      update_mouse_overlay(CurrentTheme::get()->getCursor(mouse_cursor_type));
-    }
-  }
-  else {
-    // Hide the overlay if we are using a native cursor.
-    update_mouse_overlay(NULL);
-  }
+  // Set internal overlay
+  update_mouse_overlay(cursor);
 }
 
 UISystem::UISystem()
 {
-  mouse_cursor_type = kNoCursor;
+  mouse_cursor_type = kOutsideDisplay;
 
   details::initWidgets();
 }
