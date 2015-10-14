@@ -1051,17 +1051,14 @@ void Widget::scrollRegion(const Region& region, const Point& delta)
   Region reg2 = region;
   reg2.offset(delta);
   reg2.createIntersection(reg2, region);
-  reg2.offset(-delta);
-
-  // Move screen pixels
-  ui::move_region(getManager(), reg2, delta.x, delta.y);
-
-  reg2.offset(delta);
 
   m_updateRegion.createUnion(m_updateRegion, region);
   m_updateRegion.createSubtraction(m_updateRegion, reg2);
-
   mark_dirty_flag(this);
+
+  // Move screen pixels
+  reg2.offset(-delta);
+  ui::move_region(getManager(), reg2, delta.x, delta.y);
 
   // Generate the kPaintMessage messages for the widget's m_updateRegion
   flushRedraw();
