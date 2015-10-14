@@ -113,10 +113,10 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   ev.setScancode(cocoavk_to_scancode(event.keyCode));
   ev.setRepeat(event.ARepeat ? 1: 0);
 
-  if (event.characters &&
-      event.characters.length >= 1) {
-    ev.setUnicodeChar([event.characters characterAtIndex:0]);
-  }
+  // TODO we should use event.characters
+  NSString* chars = event.charactersIgnoringModifiers;
+  if (chars && chars.length >= 1)
+    ev.setUnicodeChar([chars characterAtIndex:0]);
 
   queue_event(ev);
 }
