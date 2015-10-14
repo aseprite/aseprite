@@ -47,8 +47,12 @@ public:
     return Capabilities(
       int(Capabilities::MultipleDisplays) |
       int(Capabilities::CanResizeDisplay) |
-      int(Capabilities::DisplayScale) |
-      int(Capabilities::GpuAccelerationSwitch));
+      int(Capabilities::DisplayScale)
+#ifdef _WIN32
+      // GPU acceleration is available on Windows at this moment
+      | int(Capabilities::GpuAccelerationSwitch)
+#endif
+      );
   }
 
   EventQueue* eventQueue() override {

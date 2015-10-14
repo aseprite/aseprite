@@ -123,6 +123,9 @@ public:
     bool gpu = she::instance()->gpuAcceleration();
     (void)gpu;
 
+    // Disable GPU acceleration because it isn't ready yet.
+    gpu = false;
+
 #if SK_SUPPORT_GPU
     if (gpu && attachGL()) {
       m_backend = Backend::GL;
