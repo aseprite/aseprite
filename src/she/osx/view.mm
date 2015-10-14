@@ -20,6 +20,9 @@ using namespace she;
 
 namespace {
 
+// Internal array of pressed keys used in is_key_pressed()
+bool pressed_keys[kKeyScancodes];
+
 inline gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
 {
   NSPoint point = [view convertPoint:[event locationInWindow]
@@ -44,7 +47,31 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   return Event::MouseButton::NoneButton;
 }
 
+inline KeyModifiers get_modifiers_from_nsevent(NSEvent* event)
+{
+  int modifiers = kKeyNoneModifier;
+  NSEventModifierFlags nsFlags = event.modifierFlags;
+  if (nsFlags & NSShiftKeyMask) modifiers |= kKeyShiftModifier;
+  if (nsFlags & NSControlKeyMask) modifiers |= kKeyCtrlModifier;
+  if (nsFlags & NSAlternateKeyMask) modifiers |= kKeyAltModifier;
+  if (nsFlags & NSCommandKeyMask) modifiers |= kKeyCmdModifier;
+  if (she::is_key_pressed(kKeySpace)) modifiers |= kKeySpaceModifier;
+  return (KeyModifiers)modifiers;
+}
+
 } // anonymous namespace
+
+namespace she {
+
+bool is_key_pressed(KeyScancode scancode)
+{
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    return pressed_keys[scancode];
+  else
+    return false;
+}
+
+} // namespace she
 
 @implementation OSXView
 
@@ -108,9 +135,14 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   [super keyDown:event];
 #endif
 
+  KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    pressed_keys[scancode] = true;
+
   Event ev;
   ev.setType(Event::KeyDown);
-  ev.setScancode(cocoavk_to_scancode(event.keyCode));
+  ev.setScancode(scancode);
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
 
   // TODO we should use event.characters
@@ -127,15 +159,20 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   [super keyUp:event];
 #endif
 
+  KeyScancode scancode = cocoavk_to_scancode(event.keyCode);
+  if (scancode >= 0 && scancode < kKeyScancodes)
+    pressed_keys[scancode] = false;
+
   Event ev;
   ev.setType(Event::KeyUp);
-  ev.setScancode(cocoavk_to_scancode(event.keyCode));
+  ev.setScancode(scancode);
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   ev.setRepeat(event.ARepeat ? 1: 0);
 
-  if (event.characters &&
-      event.characters.length >= 1) {
-    ev.setUnicodeChar([event.characters characterAtIndex:0]);
-  }
+  // TODO we should use event.characters
+  NSString* chars = event.charactersIgnoringModifiers;
+  if (chars && chars.length >= 1)
+    ev.setUnicodeChar([chars characterAtIndex:0]);
 
   queue_event(ev);
 }
@@ -158,6 +195,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
     kKeyCommand
   };
 
+  KeyModifiers modifiers = get_modifiers_from_nsevent(event);
   int newFlags = event.modifierFlags;
 
   for (int i=0; i<sizeof(flags)/sizeof(flags[0]); ++i) {
@@ -166,7 +204,11 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
       ev.setType(
         ((newFlags & flags[i]) != 0 ? Event::KeyDown:
                                       Event::KeyUp));
+
+      pressed_keys[scancodes[i]] = ((newFlags & flags[i]) != 0);
+
       ev.setScancode(scancodes[i]);
+      ev.setModifiers(modifiers);
       ev.setRepeat(0);
       queue_event(ev);
     }
@@ -182,6 +224,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   Event ev;
   ev.setType(Event::MouseEnter);
   ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -190,6 +233,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   Event ev;
   ev.setType(Event::MouseMove);
   ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -205,6 +249,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   Event ev;
   ev.setType(Event::MouseLeave);
   ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -259,6 +304,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   ev.setType(Event::MouseDown);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -268,6 +314,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   ev.setType(Event::MouseUp);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -277,6 +324,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   ev.setType(Event::MouseMove);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
   queue_event(ev);
 }
 
@@ -303,6 +351,7 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   ev.setType(Event::MouseWheel);
   ev.setPosition(get_local_mouse_pos(self, event));
   ev.setButton(get_mouse_buttons(event));
+  ev.setModifiers(get_modifiers_from_nsevent(event));
 
   int scale = 1;
   if (self.window)
