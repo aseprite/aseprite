@@ -37,7 +37,7 @@ public:
   void captureMouse();
   void releaseMouse();
   void setMousePosition(const gfx::Point& position);
-  void setNativeMouseCursor(NativeCursor cursor);
+  bool setNativeMouseCursor(NativeCursor cursor);
   void updateWindow(const gfx::Rect& bounds);
   void* handle();
 

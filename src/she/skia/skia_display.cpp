@@ -122,8 +122,7 @@ NativeCursor SkiaDisplay::nativeMouseCursor()
 bool SkiaDisplay::setNativeMouseCursor(NativeCursor cursor)
 {
   m_nativeCursor = cursor;
-  m_window.setNativeMouseCursor(cursor);
-  return true;
+  return m_window.setNativeMouseCursor(cursor);
 }
 
 void SkiaDisplay::setMousePosition(const gfx::Point& position)

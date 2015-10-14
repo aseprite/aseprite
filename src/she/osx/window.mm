@@ -104,7 +104,7 @@ using namespace she;
    CFRelease(event);
 }
 
-- (void)setNativeMouseCursor:(NativeCursor)cursor
+- (BOOL)setNativeMouseCursor:(NativeCursor)cursor
 {
   NSCursor* nsCursor = nil;
 
@@ -154,6 +154,7 @@ using namespace she;
   }
 
   [self.contentView setCursor:nsCursor];
+  return (nsCursor != nil ? YES: NO);
 }
 
 @end

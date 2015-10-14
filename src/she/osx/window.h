@@ -47,7 +47,7 @@ public:
 - (gfx::Size)clientSize;
 - (gfx::Size)restoredSize;
 - (void)setMousePosition:(const gfx::Point&)position;
-- (void)setNativeMouseCursor:(she::NativeCursor)cursor;
+- (BOOL)setNativeMouseCursor:(she::NativeCursor)cursor;
 @end
 
 #endif

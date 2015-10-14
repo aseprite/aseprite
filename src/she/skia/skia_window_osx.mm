@@ -94,8 +94,8 @@ public:
     [m_window setMousePosition:position];
   }
 
-  void setNativeMouseCursor(NativeCursor cursor) {
-    [m_window setNativeMouseCursor:cursor];
+  bool setNativeMouseCursor(NativeCursor cursor) {
+    return ([m_window setNativeMouseCursor:cursor] ? true: false);
   }
 
   void updateWindow(const gfx::Rect& bounds) {
@@ -378,10 +378,12 @@ void SkiaWindow::setMousePosition(const gfx::Point& position)
     m_impl->setMousePosition(position);
 }
 
-void SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
+bool SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
 {
   if (m_impl)
-    m_impl->setNativeMouseCursor(cursor);
+    return m_impl->setNativeMouseCursor(cursor);
+  else
+    return false;
 }
 
 void SkiaWindow::updateWindow(const gfx::Rect& bounds)

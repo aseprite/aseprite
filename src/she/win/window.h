@@ -100,7 +100,7 @@ namespace she {
       SetCursorPos(pos.x, pos.y);
     }
 
-    void setNativeMouseCursor(NativeCursor cursor) {
+    bool setNativeMouseCursor(NativeCursor cursor) {
       HCURSOR hcursor = NULL;
 
       switch (cursor) {
@@ -150,6 +150,7 @@ namespace she {
 
       SetCursor(hcursor);
       m_hcursor = hcursor;
+      return (m_hcursor ? true: false);
     }
 
     void updateWindow(const gfx::Rect& bounds) {
