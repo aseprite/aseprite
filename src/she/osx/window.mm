@@ -74,4 +74,23 @@
   return [self clientSize];
 }
 
+- (void)setMousePosition:(const gfx::Point&)position
+{
+   NSView* view = self.contentView;
+   NSPoint pt = NSMakePoint(
+     position.x*m_scale,
+     view.frame.size.height - position.y*m_scale);
+
+   pt = [view convertPoint:pt toView:view];
+   pt = [view convertPoint:pt toView:nil];
+   pt = [self convertBaseToScreen:pt];
+   pt.y = [[self screen] frame].size.height - pt.y;
+
+   CGPoint pos = CGPointMake(pt.x, pt.y);
+   CGEventRef event = CGEventCreateMouseEvent(
+     NULL, kCGEventMouseMoved, pos, kCGMouseButtonLeft);
+   CGEventPost(kCGHIDEventTap, event);
+   CFRelease(event);
+}
+
 @end

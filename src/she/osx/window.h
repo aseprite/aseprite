@@ -10,6 +10,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "she/keys.h"
@@ -41,6 +42,7 @@ public:
 - (void)setScale:(int)scale;
 - (gfx::Size)clientSize;
 - (gfx::Size)restoredSize;
+- (void)setMousePosition:(const gfx::Point&)position;
 @end
 
 #endif

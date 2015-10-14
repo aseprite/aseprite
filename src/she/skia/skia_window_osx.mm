@@ -83,6 +83,10 @@ public:
     [m_window setTitle:[NSString stringWithUTF8String:title.c_str()]];
   }
 
+  void setMousePosition(const gfx::Point& position) {
+    [m_window setMousePosition:position];
+  }
+
   void updateWindow(const gfx::Rect& bounds) {
     [[m_window contentView] setNeedsDisplay:YES];
   }
@@ -338,6 +342,8 @@ void SkiaWindow::releaseMouse()
 
 void SkiaWindow::setMousePosition(const gfx::Point& position)
 {
+  if (m_impl)
+    m_impl->setMousePosition(position);
 }
 
 void SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
