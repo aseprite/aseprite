@@ -15,6 +15,8 @@
 #include "she/osx/view.h"
 #include "she/osx/window_delegate.h"
 
+using namespace she;
+
 @implementation OSXWindow
 
 - (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl
@@ -94,6 +96,58 @@
      NULL, kCGEventMouseMoved, pos, kCGMouseButtonLeft);
    CGEventPost(kCGHIDEventTap, event);
    CFRelease(event);
+}
+
+- (void)setNativeMouseCursor:(NativeCursor)cursor
+{
+  NSCursor* nsCursor = nil;
+
+  switch (cursor) {
+    case kArrowCursor:
+    case kWaitCursor:
+    case kHelpCursor:
+    case kSizeNECursor:
+    case kSizeNWCursor:
+    case kSizeSECursor:
+    case kSizeSWCursor:
+      nsCursor = [NSCursor arrowCursor];
+      break;
+    case kIBeamCursor:
+      nsCursor = [NSCursor IBeamCursor];
+      break;
+    case kLinkCursor:
+      nsCursor = [NSCursor pointingHandCursor];
+      break;
+    case kForbiddenCursor:
+      nsCursor = [NSCursor operationNotAllowedCursor];
+      break;
+    case kMoveCursor:
+      nsCursor = [NSCursor openHandCursor];
+      break;
+    case kSizeNSCursor:
+      nsCursor = [NSCursor resizeUpDownCursor];
+      break;
+    case kSizeWECursor:
+      nsCursor = [NSCursor resizeLeftRightCursor];
+      break;
+    case kSizeNCursor:
+      nsCursor = [NSCursor resizeUpCursor];
+      break;
+    case kSizeECursor:
+      nsCursor = [NSCursor resizeRightCursor];
+      break;
+    case kSizeSCursor:
+      nsCursor = [NSCursor resizeDownCursor];
+      break;
+    case kSizeWCursor:
+      nsCursor = [NSCursor resizeLeftCursor];
+      break;
+    default:
+      nsCursor = nil;
+      break;
+  }
+
+  [self.contentView setCursor:nsCursor];
 }
 
 @end

@@ -13,6 +13,8 @@
 @interface OSXView : NSView {
 @private
   NSTrackingArea* m_trackingArea;
+  NSCursor* m_nsCursor;
+  bool m_visibleMouse;
 }
 - (id)initWithFrame:(NSRect)frameRect;
 - (BOOL)acceptsFirstResponder;
@@ -39,9 +41,12 @@
 - (void)handleMouseUp:(NSEvent*)event;
 - (void)handleMouseDragged:(NSEvent*)event;
 - (void)scrollWheel:(NSEvent*)event;
+- (void)cursorUpdate:(NSEvent*)event;
+- (void)setCursor:(NSCursor*)cursor;
 - (void)setFrameSize:(NSSize)newSize;
 - (void)createMouseTrackingArea;
 - (void)destroyMouseTrackingArea;
+- (void)updateCurrentCursor;
 @end
 
 #endif

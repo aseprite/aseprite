@@ -91,6 +91,10 @@ public:
     [m_window setMousePosition:position];
   }
 
+  void setNativeMouseCursor(NativeCursor cursor) {
+    [m_window setNativeMouseCursor:cursor];
+  }
+
   void updateWindow(const gfx::Rect& bounds) {
     int scale = this->scale();
     NSView* view = m_window.contentView;
@@ -361,6 +365,8 @@ void SkiaWindow::setMousePosition(const gfx::Point& position)
 
 void SkiaWindow::setNativeMouseCursor(NativeCursor cursor)
 {
+  if (m_impl)
+    m_impl->setNativeMouseCursor(cursor);
 }
 
 void SkiaWindow::updateWindow(const gfx::Rect& bounds)

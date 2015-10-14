@@ -14,6 +14,7 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "she/keys.h"
+#include "she/native_cursor.h"
 
 namespace she {
   KeyScancode cocoavk_to_scancode(UInt16 vk);
@@ -46,6 +47,7 @@ public:
 - (gfx::Size)clientSize;
 - (gfx::Size)restoredSize;
 - (void)setMousePosition:(const gfx::Point&)position;
+- (void)setNativeMouseCursor:(she::NativeCursor)cursor;
 @end
 
 #endif

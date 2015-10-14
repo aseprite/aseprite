@@ -50,6 +50,9 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 
 - (id)initWithFrame:(NSRect)frameRect
 {
+  m_nsCursor = [NSCursor arrowCursor];
+  m_visibleMouse = true;
+
   self = [super initWithFrame:frameRect];
   if (self != nil) {
     [self createMouseTrackingArea];
@@ -174,6 +177,8 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 
 - (void)mouseEntered:(NSEvent*)event
 {
+  [self updateCurrentCursor];
+
   Event ev;
   ev.setType(Event::MouseEnter);
   ev.setPosition(get_local_mouse_pos(self, event));
@@ -190,6 +195,13 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 
 - (void)mouseExited:(NSEvent*)event
 {
+  // Restore arrow cursor
+  if (!m_visibleMouse) {
+    m_visibleMouse = true;
+    [NSCursor unhide];
+  }
+  [[NSCursor arrowCursor] set];
+
   Event ev;
   ev.setType(Event::MouseLeave);
   ev.setPosition(get_local_mouse_pos(self, event));
@@ -309,6 +321,17 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
   queue_event(ev);
 }
 
+- (void)cursorUpdate:(NSEvent*)event
+{
+  [self updateCurrentCursor];
+}
+
+- (void)setCursor:(NSCursor*)cursor
+{
+  m_nsCursor = cursor;
+  [self updateCurrentCursor];
+}
+
 - (void)createMouseTrackingArea
 {
   // Create a tracking area to receive mouseMoved events
@@ -328,6 +351,21 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
 {
   [self removeTrackingArea:m_trackingArea];
   m_trackingArea = nil;
+}
+
+- (void)updateCurrentCursor
+{
+  if (m_nsCursor) {
+    if (!m_visibleMouse) {
+      m_visibleMouse = true;
+      [NSCursor unhide];
+    }
+    [m_nsCursor set];
+  }
+  else if (m_visibleMouse) {
+    m_visibleMouse = false;
+    [NSCursor hide];
+  }
 }
 
 @end
