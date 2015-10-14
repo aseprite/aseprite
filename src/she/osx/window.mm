@@ -38,8 +38,14 @@ using namespace she;
 
   m_delegate = [[OSXWindowDelegate alloc] initWithWindowImpl:impl];
 
+  // The NSView width and height will be a multiple of 4. In this way
+  // all scaled pixels should be exactly the same
+  // for Screen Scaling > 1 and <= 4)
+  self.contentResizeIncrements = NSMakeSize(4, 4);
+
   OSXView* view = [[OSXView alloc] initWithFrame:rect];
   [view setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
+
   [self setDelegate:m_delegate];
   [self setContentView:view];
   [self center];
