@@ -92,7 +92,14 @@ public:
   }
 
   void updateWindow(const gfx::Rect& bounds) {
-    [[m_window contentView] setNeedsDisplay:YES];
+    int scale = this->scale();
+    NSView* view = m_window.contentView;
+    [view setNeedsDisplayInRect:
+            NSMakeRect(bounds.x*scale,
+                       view.frame.size.height - (bounds.y+bounds.h)*scale,
+                       bounds.w*scale,
+                       bounds.h*scale)];
+    [view displayIfNeeded];
   }
 
   void* handle() {
