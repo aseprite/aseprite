@@ -268,8 +268,6 @@ public:
     SkColor c = 0;
 
     if (m_surface) {
-      // m_canvas->flush();
-
       SkImageInfo dstInfo = SkImageInfo::MakeN32Premul(1, 1);
       uint32_t dstPixels;
       if (m_canvas->readPixels(dstInfo, &dstPixels, 4, x, y))
