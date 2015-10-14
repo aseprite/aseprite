@@ -367,7 +367,8 @@ void Manager::generateMessagesFromSheEvents()
       }
 
       case she::Event::MouseWheel: {
-        handleMouseWheel(sheEvent.position(), m_mouseButtons, sheEvent.wheelDelta());
+        handleMouseWheel(sheEvent.position(), m_mouseButtons,
+                         sheEvent.wheelDelta(), sheEvent.preciseWheel());
         break;
       }
     }
@@ -434,12 +435,13 @@ void Manager::handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mo
   }
 }
 
-void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, const gfx::Point& wheelDelta)
+void Manager::handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons,
+                               const gfx::Point& wheelDelta, bool preciseWheel)
 {
   enqueueMessage(newMouseMessage(
       kMouseWheelMessage,
       (capture_widget ? capture_widget: mouse_widget),
-      mousePos, mouseButtons, wheelDelta));
+      mousePos, mouseButtons, wheelDelta, preciseWheel));
 }
 
 // Handles Z order: Send the window to top (only when you click in a
@@ -1336,11 +1338,14 @@ Widget* Manager::findMagneticWidget(Widget* widget)
 }
 
 // static
-Message* Manager::newMouseMessage(MessageType type,
+Message* Manager::newMouseMessage(
+  MessageType type,
   Widget* widget, const gfx::Point& mousePos,
-  MouseButtons buttons, const gfx::Point& wheelDelta)
+  MouseButtons buttons,
+  const gfx::Point& wheelDelta, bool preciseWheel)
 {
-  Message* msg = new MouseMessage(type, buttons, mousePos, wheelDelta);
+  Message* msg = new MouseMessage(type, buttons, mousePos,
+                                  wheelDelta, preciseWheel);
 
   if (widget != NULL)
     msg->addRecipient(widget);

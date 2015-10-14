@@ -106,16 +106,19 @@ namespace ui {
     void handleMouseDown(const gfx::Point& mousePos, MouseButtons mouseButtons);
     void handleMouseUp(const gfx::Point& mousePos, MouseButtons mouseButtons);
     void handleMouseDoubleClick(const gfx::Point& mousePos, MouseButtons mouseButtons);
-    void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons, const gfx::Point& wheelDelta);
+    void handleMouseWheel(const gfx::Point& mousePos, MouseButtons mouseButtons,
+                          const gfx::Point& wheelDelta, bool preciseWheel);
     void handleWindowZOrder();
 
     void pumpQueue();
     static void removeWidgetFromRecipients(Widget* widget, Message* msg);
     static bool someParentIsFocusStop(Widget* widget);
     static Widget* findMagneticWidget(Widget* widget);
-    static Message* newMouseMessage(MessageType type,
+    static Message* newMouseMessage(
+      MessageType type,
       Widget* widget, const gfx::Point& mousePos,
-      MouseButtons buttons, const gfx::Point& wheelDelta = gfx::Point(0, 0));
+      MouseButtons buttons, const gfx::Point& wheelDelta = gfx::Point(0, 0),
+      bool preciseWheel = false);
     void broadcastKeyMsg(Message* msg);
 
     static Manager* m_defaultManager;

@@ -25,7 +25,6 @@ inline gfx::Point get_local_mouse_pos(NSView* view, NSEvent* event)
   NSPoint point = [view convertPoint:[event locationInWindow]
                             fromView:nil];
   int scale = 1;
-
   if ([view window])
     scale = [(OSXWindow*)[view window] scale];
 
@@ -284,6 +283,30 @@ inline Event::MouseButton get_mouse_buttons(NSEvent* event)
       impl->onResize(gfx::Size(newSize.width,
                                newSize.height));
   }
+}
+
+- (void)scrollWheel:(NSEvent*)event
+{
+  Event ev;
+  ev.setType(Event::MouseWheel);
+  ev.setPosition(get_local_mouse_pos(self, event));
+  ev.setButton(get_mouse_buttons(event));
+
+  int scale = 1;
+  if (self.window)
+    scale = [(OSXWindow*)self.window scale];
+
+  if (event.hasPreciseScrollingDeltas) {
+    ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX / scale,
+                                -event.scrollingDeltaY / scale));
+    ev.setPreciseWheel(true);
+  }
+  else {
+    ev.setWheelDelta(gfx::Point(-event.scrollingDeltaX,
+                                -event.scrollingDeltaY));
+  }
+
+  queue_event(ev);
 }
 
 - (void)createMouseTrackingArea

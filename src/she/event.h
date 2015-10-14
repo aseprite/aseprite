@@ -46,7 +46,14 @@ namespace she {
 
     typedef std::vector<std::string> Files;
 
-    Event() : m_type(None) { }
+    Event() : m_type(None),
+              m_display(nullptr),
+              m_scancode(kKeyNil),
+              m_unicodeChar(0),
+              m_repeat(0),
+              m_preciseWheel(false),
+              m_button(NoneButton) {
+    }
 
     Type type() const { return m_type; }
     Display* display() const { return m_display; }
@@ -56,6 +63,7 @@ namespace she {
     int repeat() const { return m_repeat; }
     gfx::Point position() const { return m_position; }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
+    bool preciseWheel() const { return m_preciseWheel; }
     MouseButton button() const { return m_button; }
 
     void setType(Type type) { m_type = type; }
@@ -67,6 +75,7 @@ namespace she {
     void setRepeat(int repeat) { m_repeat = repeat; }
     void setPosition(const gfx::Point& pos) { m_position = pos; }
     void setWheelDelta(const gfx::Point& delta) { m_wheelDelta = delta; }
+    void setPreciseWheel(bool precise) { m_preciseWheel = precise; }
     void setButton(MouseButton button) { m_button = button; }
 
   private:
@@ -78,6 +87,7 @@ namespace she {
     int m_repeat; // repeat=0 means the first time the key is pressed
     gfx::Point m_position;
     gfx::Point m_wheelDelta;
+    bool m_preciseWheel;
     MouseButton m_button;
   };
 

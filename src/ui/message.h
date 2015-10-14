@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -99,12 +99,14 @@ namespace ui {
   {
   public:
     MouseMessage(MessageType type, MouseButtons buttons,
-      const gfx::Point& pos,
-      const gfx::Point& wheelDelta = gfx::Point(0, 0))
+                 const gfx::Point& pos,
+                 const gfx::Point& wheelDelta = gfx::Point(0, 0),
+                 bool preciseWheel = false)
       : Message(type),
         m_buttons(buttons),
         m_pos(pos),
-        m_wheelDelta(wheelDelta) {
+        m_wheelDelta(wheelDelta),
+        m_preciseWheel(preciseWheel) {
     }
 
     MouseButtons buttons() const { return m_buttons; }
@@ -112,6 +114,7 @@ namespace ui {
     bool right() const { return (m_buttons & kButtonRight) == kButtonRight; }
     bool middle() const { return (m_buttons & kButtonMiddle) == kButtonMiddle; }
     gfx::Point wheelDelta() const { return m_wheelDelta; }
+    bool preciseWheel() const { return m_preciseWheel; }
 
     const gfx::Point& position() const { return m_pos; }
 
@@ -119,6 +122,7 @@ namespace ui {
     MouseButtons m_buttons;     // Pressed buttons
     gfx::Point m_pos;           // Mouse position
     gfx::Point m_wheelDelta;    // Wheel axis variation
+    bool m_preciseWheel;
   };
 
   class TimerMessage : public Message

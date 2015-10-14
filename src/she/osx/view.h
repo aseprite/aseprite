@@ -38,6 +38,7 @@
 - (void)handleMouseDown:(NSEvent*)event;
 - (void)handleMouseUp:(NSEvent*)event;
 - (void)handleMouseDragged:(NSEvent*)event;
+- (void)scrollWheel:(NSEvent*)event;
 - (void)setFrameSize:(NSSize)newSize;
 - (void)createMouseTrackingArea;
 - (void)destroyMouseTrackingArea;
