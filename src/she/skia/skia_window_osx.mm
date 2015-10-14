@@ -37,7 +37,10 @@ public:
        int width, int height, int scale)
     : m_display(display)
     , m_backend(Backend::NONE)
-    , m_nsGL(nil) {
+#if SK_SUPPORT_GPU
+    , m_nsGL(nil)
+#endif
+  {
     m_closing = false;
     m_window = [[OSXWindow alloc] initWithImpl:this
                                          width:width
@@ -166,24 +169,33 @@ public:
   }
 
   void onWindowChanged() override {
+#ifdef SK_SUPPORT_GPU
     if (m_nsGL)
       [m_nsGL setView:[m_window contentView]];
+#endif
   }
 
 private:
 #if SK_SUPPORT_GPU
   bool attachGL() {
     if (!m_glCtx) {
-      auto ctx = new GLContextSkia<GLContextCGL>(nullptr);
+      try {
+        auto ctx = new GLContextSkia<GLContextCGL>(nullptr);
 
-      m_glCtx.reset(ctx);
-      m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
-                                      (GrBackendContext)m_glCtx->gl()));
+        m_glCtx.reset(ctx);
+        m_grCtx.reset(GrContext::Create(kOpenGL_GrBackend,
+                                        (GrBackendContext)m_glCtx->gl()));
 
-      m_nsGL = [[NSOpenGLContext alloc]
-                initWithCGLContextObj:m_glCtx->cglContext()];
+        m_nsGL = [[NSOpenGLContext alloc]
+                   initWithCGLContextObj:m_glCtx->cglContext()];
 
-      [m_nsGL setView:[m_window contentView]];
+        [m_nsGL setView:m_window.contentView];
+      }
+      catch (const std::exception& ex) {
+        LOG("Cannot create GL context: %s\n", ex.what());
+        detachGL();
+        return false;
+      }
     }
     return true;
   }
