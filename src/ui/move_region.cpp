@@ -40,7 +40,6 @@ void move_region(Manager* manager, const Region& region, int dx, int dy)
 
     rc.offset(dx, dy);
     Manager::getDefault()->dirtyRect(rc);
-
   }
   // Blit saving areas and copy them.
   else if (nrects > 1) {
