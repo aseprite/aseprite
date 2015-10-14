@@ -482,9 +482,10 @@ bool MenuBox::onProcessMessage(Message* msg)
         get_base(this)->was_clicked = false;
 
         // Check for ALT+some underlined letter
-        if (((this->type() == kMenuBoxWidget) && (msg->keyModifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
-                                                  msg->keyModifiers() == kKeyAltModifier)) ||
-            ((this->type() == kMenuBarWidget) && (msg->keyModifiers() == kKeyAltModifier))) {
+        if (((this->type() == kMenuBoxWidget) && (msg->modifiers() == kKeyNoneModifier || // <-- Inside menu-boxes we can use letters without Alt modifier pressed
+                                                  msg->modifiers() == kKeyAltModifier)) ||
+            ((this->type() == kMenuBarWidget) && (msg->modifiers() == kKeyAltModifier))) {
+          // TODO use scancode instead of unicodeChar
           selected = check_for_letter(menu,
             static_cast<KeyMessage*>(msg)->unicodeChar());
 

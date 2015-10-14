@@ -42,7 +42,7 @@ protected:
       case kKeyDownMessage:
         if (hasFocus() && !isReadOnly()) {
           KeyMessage* keymsg = static_cast<KeyMessage*>(msg);
-          KeyModifiers modifiers = keymsg->keyModifiers();
+          KeyModifiers modifiers = keymsg->modifiers();
 
           if (keymsg->scancode() == kKeySpace)
             modifiers = (KeyModifiers)(modifiers & ~kKeySpaceModifier);

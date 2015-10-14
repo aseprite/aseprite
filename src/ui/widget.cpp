@@ -1256,6 +1256,7 @@ void Widget::offerCapture(ui::MouseMessage* mouseMsg, int widget_type)
       MouseMessage* mouseMsg2 = new MouseMessage(
         kMouseDownMessage,
         mouseMsg->buttons(),
+        mouseMsg->modifiers(),
         mouseMsg->position());
       mouseMsg2->addRecipient(pick);
       getManager()->enqueueMessage(mouseMsg2);
@@ -1338,9 +1339,10 @@ bool Widget::onProcessMessage(Message* msg)
       if (kMouseDownMessage) {
         MouseMessage* mouseMsg = static_cast<MouseMessage*>(msg);
         MouseMessage mouseMsg2(kMouseDownMessage,
-          mouseMsg->buttons(),
-          mouseMsg->position(),
-          mouseMsg->wheelDelta());
+                               mouseMsg->buttons(),
+                               mouseMsg->modifiers(),
+                               mouseMsg->position(),
+                               mouseMsg->wheelDelta());
 
         sendMessage(&mouseMsg2);
       }

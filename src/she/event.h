@@ -49,6 +49,7 @@ namespace she {
     Event() : m_type(None),
               m_display(nullptr),
               m_scancode(kKeyNil),
+              m_modifiers(kKeyUninitializedModifier),
               m_unicodeChar(0),
               m_repeat(0),
               m_preciseWheel(false),
@@ -59,6 +60,7 @@ namespace she {
     Display* display() const { return m_display; }
     const Files& files() const { return m_files; }
     KeyScancode scancode() const { return m_scancode; }
+    KeyModifiers modifiers() const { return m_modifiers; }
     int unicodeChar() const { return m_unicodeChar; }
     int repeat() const { return m_repeat; }
     gfx::Point position() const { return m_position; }
@@ -71,6 +73,7 @@ namespace she {
     void setFiles(const Files& files) { m_files = files; }
 
     void setScancode(KeyScancode scancode) { m_scancode = scancode; }
+    void setModifiers(KeyModifiers modifiers) { m_modifiers = modifiers; }
     void setUnicodeChar(int unicodeChar) { m_unicodeChar = unicodeChar; }
     void setRepeat(int repeat) { m_repeat = repeat; }
     void setPosition(const gfx::Point& pos) { m_position = pos; }
@@ -83,6 +86,7 @@ namespace she {
     Display* m_display;
     Files m_files;
     KeyScancode m_scancode;
+    KeyModifiers m_modifiers;
     int m_unicodeChar;
     int m_repeat; // repeat=0 means the first time the key is pressed
     gfx::Point m_position;

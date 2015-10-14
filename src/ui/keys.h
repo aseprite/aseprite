@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2014  David Capello
+// Copyright (C) 2001-2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,6 +21,7 @@ namespace ui {
   using she::kKeyAltModifier;
   using she::kKeyCmdModifier;
   using she::kKeySpaceModifier;
+  using she::kKeyUninitializedModifier;
 
   using she::kKeyNil;
   using she::kKeyA;

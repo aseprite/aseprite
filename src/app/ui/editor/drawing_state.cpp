@@ -94,7 +94,7 @@ void DrawingState::initToolLoop(Editor* editor, MouseMessage* msg)
     pointer = pointer_from_msg(editor, msg);
   }
 
-  m_toolLoopManager->prepareLoop(pointer, msg->keyModifiers());
+  m_toolLoopManager->prepareLoop(pointer, msg->modifiers());
   m_toolLoopManager->pressButton(pointer);
 
   // This first movement is done when the user pressed Shift+click in

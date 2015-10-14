@@ -115,6 +115,7 @@ protected:
             MouseMessage mouseMsg(
               (msg->type() == kKeyDownMessage ? kMouseDownMessage: kMouseUpMessage),
               (lmb->isPressed(msg) ? kButtonLeft: kButtonRight),
+              msg->modifiers(),
               ui::get_mouse_position());
 
             sendMessage(&mouseMsg);

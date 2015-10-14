@@ -295,7 +295,7 @@ bool Entry::onProcessMessage(Message* msg)
             else if (keymsg->unicodeChar() >= 32) {
               // Ctrl and Alt must be unpressed to insert a character
               // in the text-field.
-              if ((msg->keyModifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
+              if ((msg->modifiers() & (kKeyCtrlModifier | kKeyAltModifier)) == 0) {
                 cmd = EntryCmd::InsertChar;
               }
             }

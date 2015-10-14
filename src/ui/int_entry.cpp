@@ -90,8 +90,9 @@ bool IntEntry::onProcessMessage(Message* msg)
           releaseMouse();
 
           MouseMessage mouseMsg2(kMouseDownMessage,
-            mouseMsg->buttons(),
-            mouseMsg->position());
+                                 mouseMsg->buttons(),
+                                 mouseMsg->modifiers(),
+                                 mouseMsg->position());
           m_slider.sendMessage(&mouseMsg2);
         }
       }

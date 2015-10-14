@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -18,16 +18,23 @@
 
 namespace ui {
 
-Message::Message(MessageType type)
+Message::Message(MessageType type, KeyModifiers modifiers)
   : m_type(type)
   , m_used(false)
-  , m_modifiers((KeyModifiers)
-     ((she::is_key_pressed(kKeyLShift) || she::is_key_pressed(kKeyRShift) ? kKeyShiftModifier: 0) |
-      (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
-      (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
-      (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
-      (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0)))
 {
+  if (modifiers == kKeyUninitializedModifier) {
+    // Get modifiers from the deprecated API
+    // TODO remove this
+    m_modifiers = (KeyModifiers)
+      ((she::is_key_pressed(kKeyLShift) || she::is_key_pressed(kKeyRShift) ? kKeyShiftModifier: 0) |
+       (she::is_key_pressed(kKeyLControl) || she::is_key_pressed(kKeyRControl) ? kKeyCtrlModifier: 0) |
+       (she::is_key_pressed(kKeyAlt) ? kKeyAltModifier: 0) |
+       (she::is_key_pressed(kKeyCommand) ? kKeyCmdModifier: 0) |
+       (she::is_key_pressed(kKeySpace) ? kKeySpaceModifier: 0));
+  }
+  else {
+    m_modifiers = modifiers;
+  }
 }
 
 Message::~Message()
@@ -68,8 +75,11 @@ void Message::broadcastToChildren(Widget* widget)
   addRecipient(widget);
 }
 
-KeyMessage::KeyMessage(MessageType type, KeyScancode scancode, int unicodeChar, int repeat)
-  : Message(type)
+KeyMessage::KeyMessage(MessageType type,
+                       KeyScancode scancode,
+                       KeyModifiers modifiers,
+                       int unicodeChar, int repeat)
+  : Message(type, modifiers)
   , m_scancode(scancode)
   , m_unicodeChar(unicodeChar)
   , m_repeat(repeat)

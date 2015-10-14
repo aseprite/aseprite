@@ -222,6 +222,7 @@ bool ToolBar::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->buttons(),
+            mouseMsg->modifiers(),
             mouseMsg->position());
           mouseMsg2->addRecipient(strip);
           getManager()->enqueueMessage(mouseMsg2);
@@ -640,6 +641,7 @@ bool ToolBar::ToolStrip::onProcessMessage(Message* msg)
           MouseMessage* mouseMsg2 = new MouseMessage(
             kMouseDownMessage,
             mouseMsg->buttons(),
+            mouseMsg->modifiers(),
             mouseMsg->position());
           mouseMsg2->addRecipient(bar);
           getManager()->enqueueMessage(mouseMsg2);

@@ -198,7 +198,7 @@ bool Key::isPressed(Message* msg) const
   ASSERT(dynamic_cast<KeyMessage*>(msg) != NULL);
 
   for (const Accelerator& accel : accels()) {
-    if (accel.isPressed(msg->keyModifiers(),
+    if (accel.isPressed(msg->modifiers(),
           static_cast<KeyMessage*>(msg)->scancode(),
           static_cast<KeyMessage*>(msg)->unicodeChar()) &&
         (m_keycontext == KeyContext::Any ||
