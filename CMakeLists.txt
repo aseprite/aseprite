@@ -283,6 +283,8 @@ set(PLATFORM_LIBS)
 
 # Allegro 4 backend
 if(USE_ALLEG4_BACKEND)
+  add_definitions(-DUSE_ALLEG4_BACKEND)
+
   if(USE_SHARED_ALLEGRO4)
     # Find the shared Allegro 4 library
     find_library(LIBALLEGRO4_LIBRARY alleg)
@@ -311,6 +313,11 @@ if(USE_ALLEG4_BACKEND)
 
     set(LIBALLEGRO4_LINK_FLAGS allegro)
   endif()
+endif()
+
+# Skia backend
+if(USE_SKIA_BACKEND)
+  add_definitions(-DUSE_SKIA_BACKEND)
 endif()
 
 # -- Unix --
