@@ -32,7 +32,14 @@ static Cursor* mouse_cursor = NULL;
 static she::Display* mouse_display = NULL;
 static Overlay* mouse_cursor_overlay = NULL;
 static bool use_native_mouse_cursor = false;
-static bool native_cursor_set = false; // If we displayed a native cursor
+#ifdef USE_ALLEG4_BACKEND
+  // The native cursor is hidden by default in the Allegro backend
+  static bool native_cursor_set = false; // TODO remove this when we remove the Allegro backend
+#else
+  // The native cursor should be visible by default in
+  // other "she" library backends.
+  static bool native_cursor_set = true;
+#endif
 
 // Mouse information (button and position).
 
