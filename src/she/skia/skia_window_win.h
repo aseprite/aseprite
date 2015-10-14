@@ -27,7 +27,8 @@ class SkiaWindow : public WinWindow<SkiaWindow> {
 public:
   enum class Backend { NONE, GL, ANGLE };
 
-  SkiaWindow(EventQueue* queue, SkiaDisplay* display);
+  SkiaWindow(EventQueue* queue, SkiaDisplay* display,
+             int width, int height, int scale);
   ~SkiaWindow();
 
   void queueEventImpl(Event& ev);

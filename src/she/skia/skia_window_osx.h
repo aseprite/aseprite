@@ -22,7 +22,8 @@ class SkiaWindow {
 public:
   enum class Backend { NONE, GL };
 
-  SkiaWindow(EventQueue* queue, SkiaDisplay* display);
+  SkiaWindow(EventQueue* queue, SkiaDisplay* display,
+             int width, int height, int scale);
   ~SkiaWindow();
 
   int scale() const;

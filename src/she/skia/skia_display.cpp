@@ -18,7 +18,7 @@
 namespace she {
 
 SkiaDisplay::SkiaDisplay(int width, int height, int scale)
-  : m_window(instance()->eventQueue(), this)
+  : m_window(instance()->eventQueue(), this, width, height, scale)
   , m_surface(new SkiaSurface)
   , m_customSurface(false)
   , m_nativeCursor(kArrowCursor)

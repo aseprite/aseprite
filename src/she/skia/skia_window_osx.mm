@@ -33,12 +33,16 @@ namespace she {
 
 class SkiaWindow::Impl : public OSXWindowImpl {
 public:
-  Impl(EventQueue* queue, SkiaDisplay* display)
+  Impl(EventQueue* queue, SkiaDisplay* display,
+       int width, int height, int scale)
     : m_display(display)
     , m_backend(Backend::NONE)
     , m_nsGL(nil) {
     m_closing = false;
-    m_window = [[OSXWindow alloc] initWithImpl:this];
+    m_window = [[OSXWindow alloc] initWithImpl:this
+                                         width:width
+                                        height:height
+                                         scale:scale];
   }
 
   ~Impl() {
@@ -261,8 +265,10 @@ private:
 #endif
 };
 
-SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display)
-  : m_impl(new Impl(queue, display))
+SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
+                       int width, int height, int scale)
+  : m_impl(new Impl(queue, display,
+                    width, height, scale))
 {
 }
 

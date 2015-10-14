@@ -23,8 +23,10 @@
 
 namespace she {
 
-SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display)
-  : m_queue(queue)
+SkiaWindow::SkiaWindow(EventQueue* queue, SkiaDisplay* display,
+                       int width, int height, int scale)
+  : WinWindow<SkiaWindow>(width, height, scale)
+  , m_queue(queue)
   , m_display(display)
   , m_backend(Backend::NONE)
 #if SK_SUPPORT_GPU

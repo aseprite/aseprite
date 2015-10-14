@@ -36,7 +36,10 @@ public:
   OSXWindowDelegate* m_delegate;
   int m_scale;
 }
-- (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl;
+- (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl
+                     width:(int)width
+                    height:(int)height
+                     scale:(int)scale;
 - (OSXWindowImpl*)impl;
 - (int)scale;
 - (void)setScale:(int)scale;

@@ -18,11 +18,14 @@
 @implementation OSXWindow
 
 - (OSXWindow*)initWithImpl:(OSXWindowImpl*)impl
+                     width:(int)width
+                    height:(int)height
+                     scale:(int)scale
 {
   m_impl = impl;
-  m_scale = 1;
+  m_scale = scale;
 
-  NSRect rect = NSMakeRect(0, 0, 640, 480);
+  NSRect rect = NSMakeRect(0, 0, width, height);
   self = [self initWithContentRect:rect
                          styleMask:(NSTitledWindowMask | NSClosableWindowMask |
                                     NSMiniaturizableWindowMask | NSResizableWindowMask)
