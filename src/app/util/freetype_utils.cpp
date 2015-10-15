@@ -19,6 +19,8 @@
 #include "doc/image.h"
 #include "doc/primitives.h"
 
+#include <stdexcept>
+
 #include "freetype/ftglyph.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
