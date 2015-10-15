@@ -145,7 +145,7 @@ FontPopup::FontPopup()
 #endif
 
   if (!m_fontsDir.empty()) {
-    auto& files = base::list_files(m_fontsDir);
+    auto files = base::list_files(m_fontsDir);
     std::sort(files.begin(), files.end());
     for (auto& file : files) {
       if (base::string_to_lower(base::get_file_extension(file)) == "ttf")
