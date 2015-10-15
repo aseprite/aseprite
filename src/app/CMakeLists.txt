@@ -353,6 +353,7 @@ add_library(app-lib
   ui/editor/zooming_state.cpp
   ui/file_list.cpp
   ui/file_selector.cpp
+  ui/font_popup.cpp
   ui/frame_tag_window.cpp
   ui/hex_color_entry.cpp
   ui/home_view.cpp
@@ -393,6 +394,7 @@ add_library(app-lib
   util/create_cel_copy.cpp
   util/expand_cel_canvas.cpp
   util/filetoks.cpp
+  util/freetype_utils.cpp
   util/msk_file.cpp
   util/new_image_from_mask.cpp
   util/pic_file.cpp

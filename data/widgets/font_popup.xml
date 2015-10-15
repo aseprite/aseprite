@@ -1,0 +1,12 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+  <vbox id="font_popup">
+    <label text="Available Fonts:" />
+    <view id="view" expansive="true" />
+    <hbox>
+      <boxfiller />
+      <button id="load_font" text="Load" width="80" />
+    </hbox>
+  </vbox>
+</gui>

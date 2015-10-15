@@ -11,59 +11,25 @@
 
 #include "app/app.h"
 #include "app/commands/command.h"
+#include "app/console.h"
 #include "app/context.h"
 #include "app/file_selector.h"
 #include "app/pref/preferences.h"
+#include "app/ui/drop_down_button.h"
+#include "app/ui/font_popup.h"
 #include "app/util/clipboard.h"
+#include "app/util/freetype_utils.h"
 #include "base/bind.h"
 #include "base/path.h"
 #include "base/string.h"
-#include "doc/blend_funcs.h"
-#include "doc/blend_internals.h"
-#include "doc/color.h"
+#include "base/unique_ptr.h"
 #include "doc/image.h"
-#include "doc/primitives.h"
-
-#include "freetype/ftglyph.h"
-#include "ft2build.h"
-#include FT_FREETYPE_H
 
 #include "paste_text.xml.h"
 
 namespace app {
 
 static std::string last_text_used;
-
-template<typename Iterator, typename Func>
-static void for_each_glyph(FT_Face face, Iterator first, Iterator end, Func callback)
-{
-  bool use_kerning = (FT_HAS_KERNING(face) ? true: false);
-
-  // Calculate size
-  FT_UInt prev_glyph = 0;
-  int x = 0;
-  for (; first != end; ++first) {
-    FT_UInt glyph_index = FT_Get_Char_Index(face, *first);
-
-    if (use_kerning && prev_glyph && glyph_index) {
-      FT_Vector kerning;
-      FT_Get_Kerning(face, prev_glyph, glyph_index,
-                     FT_KERNING_DEFAULT, &kerning);
-      x += kerning.x >> 6;
-    }
-
-    FT_Error err = FT_Load_Glyph(
-      face, glyph_index,
-      FT_LOAD_RENDER | FT_LOAD_NO_BITMAP);
-
-    if (!err) {
-      callback(x, face->glyph);
-      x += face->glyph->advance.x >> 6;
-    }
-
-    prev_glyph = glyph_index;
-  }
-}
 
 class PasteTextCommand : public Command {
 public:
@@ -97,7 +63,8 @@ public:
       updateFontFaceButton();
 
     fontSize()->setTextf("%d", size);
-    fontFace()->Click.connect(Bind<void>(&PasteTextWindow::onSelectFont, this));
+    fontFace()->Click.connect(Bind<void>(&PasteTextWindow::onSelectFontFile, this));
+    fontFace()->DropDownClick.connect(Bind<void>(&PasteTextWindow::onSelectSystemFont, this));
     fontColor()->setColor(color);
   }
 
@@ -113,11 +80,12 @@ public:
 
 private:
   void updateFontFaceButton() {
-    fontFace()->setTextf("Select Font: %s",
-                         base::get_file_name(m_face).c_str());
+    fontFace()->mainButton()
+      ->setTextf("Select Font: %s",
+                 base::get_file_title(m_face).c_str());
   }
 
-  void onSelectFont() {
+  void onSelectFontFile() {
     std::string face = show_file_selector(
       "Select a TrueType Font",
       m_face,
@@ -126,13 +94,41 @@ private:
       nullptr);
 
     if (!face.empty()) {
-      m_face = face;
-      ok()->setEnabled(true);
-      updateFontFaceButton();
+      setFontFace(face);
+    }
+  }
+
+  void setFontFace(const std::string& face) {
+    m_face = face;
+    ok()->setEnabled(true);
+    updateFontFaceButton();
+  }
+
+  void onSelectSystemFont() {
+    if (!m_fontPopup) {
+      try {
+        m_fontPopup.reset(new FontPopup());
+        m_fontPopup->Load.connect(&PasteTextWindow::setFontFace, this);
+      }
+      catch (const std::exception& ex) {
+        Console::showException(ex);
+        return;
+      }
+    }
+
+    if (!m_fontPopup->isVisible()) {
+      gfx::Rect bounds = fontFace()->getBounds();
+      m_fontPopup->showPopup(
+        gfx::Rect(bounds.x, bounds.y+bounds.h,
+                  ui::display_w()/2, ui::display_h()/2));
+    }
+    else {
+      m_fontPopup->closeWindow(NULL);
     }
   }
 
   std::string m_face;
+  base::UniquePtr<FontPopup> m_fontPopup;
 };
 
 void PasteTextCommand::onExecute(Context* ctx)
@@ -155,17 +151,7 @@ void PasteTextCommand::onExecute(Context* ctx)
   pref.textTool.fontFace(faceName);
   pref.textTool.fontSize(size);
 
-  FT_Library ft;
-  FT_Init_FreeType(&ft);
-
-  FT_Open_Args args;
-  memset(&args, 0, sizeof(args));
-  args.flags = FT_OPEN_PATHNAME;
-  args.pathname = (FT_String*)faceName.c_str();
-
-  FT_Face face;
-  FT_Error err = FT_Open_Face(ft, &args, 0, &face);
-  if (!err) {
+  try {
     std::string text = window.userText()->getText();
     app::Color appColor = window.fontColor()->getColor();
     doc::color_t color = doc::rgba(appColor.getRed(),
@@ -173,65 +159,17 @@ void PasteTextCommand::onExecute(Context* ctx)
                                    appColor.getBlue(),
                                    appColor.getAlpha());
 
-    // Set font size
-    FT_Set_Pixel_Sizes(face, size, size);
-
-    // Calculate text size
-    base::utf8_iterator begin(text.begin()), end(text.end());
-    gfx::Rect bounds(0, 0, 0, 0);
-    for_each_glyph(
-      face, begin, end,
-      [&bounds](int x, FT_GlyphSlot glyph) {
-        bounds |= gfx::Rect(x + glyph->bitmap_left,
-                            -glyph->bitmap_top,
-                            (int)glyph->bitmap.width,
-                            (int)glyph->bitmap.rows);
-      });
-
-    // Render the image and copy it to the clipboard
-    if (!bounds.isEmpty()) {
-      doc::Image* image = doc::Image::create(IMAGE_RGB, bounds.w, bounds.h);
-      doc::clear_image(image, 0);
-
-      for_each_glyph(
-        face, begin, end,
-        [&bounds, &image, color](int x, FT_GlyphSlot glyph) {
-          int t, yimg = - bounds.y - glyph->bitmap_top;
-          for (int v=0; v<(int)glyph->bitmap.rows; ++v, ++yimg) {
-            const uint8_t* p = glyph->bitmap.buffer + v*glyph->bitmap.pitch;
-            int ximg = x - bounds.x + glyph->bitmap_left;
-            for (int u=0; u<(int)glyph->bitmap.width; ++u, ++p, ++ximg) {
-              int alpha = *p;
-              doc::put_pixel(
-                image, ximg, yimg,
-                doc::rgba_blender_normal(
-                  doc::get_pixel(image, ximg, yimg),
-                  doc::rgba(doc::rgba_getr(color),
-                            doc::rgba_getg(color),
-                            doc::rgba_getb(color),
-                            MUL_UN8(doc::rgba_geta(color), alpha, t)), 255));
-            }
-          }
-        });
-
+    doc::Image* image = render_text(faceName, size, text, color);
+    if (image) {
       clipboard::copy_image(image, nullptr, nullptr);
       clipboard::paste();
     }
-    else {
-      ui::Alert::show(PACKAGE
-                      "<<There is no text"
-                      "||&OK");
-    }
-
-    FT_Done_Face(face);
   }
-  else {
+  catch (const std::exception& ex) {
     ui::Alert::show(PACKAGE
-                    "<<Error loading font face"
-                    "||&OK");
+                    "<<%s"
+                    "||&OK", ex.what());
   }
-
-  FT_Done_FreeType(ft);
 }
 
 Command* CommandFactory::createPasteTextCommand()

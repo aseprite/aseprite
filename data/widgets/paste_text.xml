@@ -7,7 +7,7 @@
     <entry expansive="true" maxsize="256" id="user_text" magnet="true" cell_align="horizontal" />
 
     <label text="Font:" />
-    <button minwidth="60" id="font_face" text="Select Font" cell_align="horizontal" />
+    <dropdownbutton minwidth="60" id="font_face" text="Select Font" cell_align="horizontal" />
 
     <label text="Font Size:" />
     <entry id="font_size" maxsize="4" text="32" cell_align="horizontal" />
