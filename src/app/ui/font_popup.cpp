@@ -142,6 +142,10 @@ FontPopup::FontPopup()
       m_fontsDir = base::to_utf8(&buf[0]);
     }
   }
+#elif __APPLE__
+  {
+    m_fontsDir = "/Library/Fonts";
+  }
 #endif
 
   if (!m_fontsDir.empty()) {
