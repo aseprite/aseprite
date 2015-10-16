@@ -148,6 +148,7 @@ void PasteTextCommand::onExecute(Context* ctx)
 
   std::string faceName = window.faceValue();
   int size = window.sizeValue();
+  size = MID(1, size, 999);
   pref.textTool.fontFace(faceName);
   pref.textTool.fontSize(size);
 
