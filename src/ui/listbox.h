@@ -27,6 +27,7 @@ namespace ui {
 
     std::size_t getItemsCount() const;
 
+    void makeChildVisible(Widget* item);
     void centerScroll();
     void sortItems();
 

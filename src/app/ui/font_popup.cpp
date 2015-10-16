@@ -89,7 +89,8 @@ private:
   }
 
   void onSelect() override {
-    if (!getParent())
+    ListBox* listbox = static_cast<ListBox*>(getParent());
+    if (!listbox)
       return;
 
     app::skin::SkinTheme* theme = app::skin::SkinTheme::instance();
@@ -105,8 +106,9 @@ private:
                     gfx::getb(color),
                     gfx::geta(color))));
 
-      getParent()->layout();
-      invalidate();
+      View* view = View::getView(listbox);
+      view->updateView();
+      listbox->makeChildVisible(this);
     }
     catch (const std::exception& ex) {
       Console::showException(ex);

@@ -64,22 +64,8 @@ void ListBox::selectChild(Widget* item)
   }
 
   if (item) {
-    View* view = View::getView(this);
-
     item->setSelected(true);
-
-    if (view) {
-      gfx::Rect vp = view->getViewportBounds();
-      gfx::Point scroll = view->getViewScroll();
-
-      if (item->getBounds().y < vp.y)
-        scroll.y = item->getBounds().y - getBounds().y;
-      else if (item->getBounds().y > vp.y + vp.h - item->getBounds().h)
-        scroll.y = (item->getBounds().y - getBounds().y
-                    - vp.h + item->getBounds().h);
-
-      view->setViewScroll(scroll);
-    }
+    makeChildVisible(item);
   }
 
   onChange();
@@ -99,6 +85,24 @@ void ListBox::selectIndex(int index)
 std::size_t ListBox::getItemsCount() const
 {
   return getChildren().size();
+}
+
+void ListBox::makeChildVisible(Widget* child)
+{
+  View* view = View::getView(this);
+  if (!view)
+    return;
+
+  gfx::Point scroll = view->getViewScroll();
+  gfx::Rect vp = view->getViewportBounds();
+
+  if (child->getBounds().y < vp.y)
+    scroll.y = child->getBounds().y - getBounds().y;
+  else if (child->getBounds().y > vp.y + vp.h - child->getBounds().h)
+    scroll.y = (child->getBounds().y - getBounds().y
+                - vp.h + child->getBounds().h);
+
+  view->setViewScroll(scroll);
 }
 
 // Setup the scroll to center the selected item in the viewport
