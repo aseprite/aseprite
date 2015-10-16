@@ -29,10 +29,6 @@ namespace app {
 
     void showPopup(const gfx::Rect& bounds);
 
-    const std::string& fontsDir() const {
-      return m_fontsDir;
-    }
-
     Signal1<void, const std::string&> Load;
 
   protected:
@@ -42,7 +38,6 @@ namespace app {
   private:
     gen::FontPopup* m_popup;
     ui::ListBox m_listBox;
-    std::string m_fontsDir;
   };
 
 } // namespace app

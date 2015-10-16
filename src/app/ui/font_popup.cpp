@@ -45,9 +45,13 @@ using namespace ui;
 
 class FontItem : public ListItem {
 public:
-  FontItem(std::string& fontsDir, const std::string& fn)
-    : ListItem(fn)
-    , m_fontsDir(fontsDir) {
+  FontItem(const std::string& fn)
+    : ListItem(base::get_file_title(fn))
+    , m_filename(fn) {
+  }
+
+  const std::string& filename() const {
+    return m_filename;
   }
 
 private:
@@ -88,17 +92,13 @@ private:
     if (!getParent())
       return;
 
-    ASSERT(getParent());
-    ASSERT(getParent()->type() == kListBoxWidget);
-
-    std::string filename = base::join_path(m_fontsDir, getText());
     app::skin::SkinTheme* theme = app::skin::SkinTheme::instance();
     gfx::Color color = theme->colors.text();
 
     try {
       m_image.reset(
         render_text(
-          filename, 16,
+          m_filename, 16,
           getText(),
           doc::rgba(gfx::getr(color),
                     gfx::getg(color),
@@ -114,8 +114,8 @@ private:
   }
 
 private:
-  std::string& m_fontsDir;
   base::UniquePtr<doc::Image> m_image;
+  std::string m_filename;
 };
 
 FontPopup::FontPopup()
@@ -133,28 +133,44 @@ FontPopup::FontPopup()
 
   m_popup->view()->attachToView(&m_listBox);
 
+  std::vector<std::string> fontDirs;
 #if _WIN32
   {
     std::vector<wchar_t> buf(MAX_PATH);
     HRESULT hr = SHGetFolderPath(NULL, CSIDL_FONTS, NULL,
                                  SHGFP_TYPE_DEFAULT, &buf[0]);
     if (hr == S_OK) {
-      m_fontsDir = base::to_utf8(&buf[0]);
+      fontDirs.push_back(base::to_utf8(&buf[0]));
     }
   }
 #elif __APPLE__
   {
-    m_fontsDir = "/Library/Fonts";
+    fontDirs.push_back("/System/Library/Fonts/");
+    fontDirs.push_back("/Library/Fonts");
+    fontDirs.push_back("~/Library/Fonts");
   }
 #endif
 
-  if (!m_fontsDir.empty()) {
-    auto files = base::list_files(m_fontsDir);
-    std::sort(files.begin(), files.end());
-    for (auto& file : files) {
-      if (base::string_to_lower(base::get_file_extension(file)) == "ttf")
-        m_listBox.addChild(new FontItem(m_fontsDir, file));
-    }
+  // Create a list of fullpaths to every font found in all font
+  // directories (fontDirs)
+  std::vector<std::string> files;
+  for (const auto& fontDir : fontDirs) {
+    auto fontDirFiles = base::list_files(fontDir);
+    for (const auto& file : fontDirFiles)
+      files.push_back(base::join_path(fontDir, file));
+  }
+
+  // Sort all files by "file title"
+  std::sort(
+    files.begin(), files.end(),
+    [](const std::string& a, const std::string& b){
+      return base::utf8_icmp(base::get_file_title(a), base::get_file_title(b)) < 0;
+    });
+
+  // Create one FontItem for each font
+  for (auto& file : files) {
+    if (base::string_to_lower(base::get_file_extension(file)) == "ttf")
+      m_listBox.addChild(new FontItem(file));
   }
 
   if (m_listBox.getChildren().empty())
@@ -181,12 +197,11 @@ void FontPopup::onChangeFont()
 
 void FontPopup::onLoadFont()
 {
-  Widget* child = m_listBox.getSelectedChild();
+  FontItem* child = dynamic_cast<FontItem*>(m_listBox.getSelectedChild());
   if (!child)
     return;
 
-  std::string filename = base::join_path(m_fontsDir,
-                                         child->getText());
+  std::string filename = child->filename();
   if (base::is_file(filename))
     Load(filename);             // Fire Load signal
 
