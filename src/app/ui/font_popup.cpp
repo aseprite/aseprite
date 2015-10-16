@@ -47,7 +47,8 @@ class FontItem : public ListItem {
 public:
   FontItem(const std::string& fn)
     : ListItem(base::get_file_title(fn))
-    , m_filename(fn) {
+    , m_filename(fn)
+    , m_loaded(false) {
   }
 
   const std::string& filename() const {
@@ -56,11 +57,9 @@ public:
 
 private:
   void onPaint(PaintEvent& ev) override {
-    if (!m_image) {
-      ListItem::onPaint(ev);
-    }
-    else {
-      app::skin::SkinTheme* theme = app::skin::SkinTheme::instance();
+    ListItem::onPaint(ev);
+
+    if (m_image) {
       Graphics* g = ev.getGraphics();
       she::Surface* sur = she::instance()->createRgbaSurface(m_image->width(),
                                                              m_image->height());
@@ -69,23 +68,19 @@ private:
         m_image.get(), nullptr, sur,
         0, 0, 0, 0, m_image->width(), m_image->height());
 
-      gfx::Color bg;
-      if (isSelected())
-        bg = theme->colors.listitemSelectedFace();
-      else
-        bg = theme->colors.listitemNormalFace();
-
-      g->fillRect(bg, getClientBounds());
-      g->drawRgbaSurface(sur, 0, 0);
+      g->drawRgbaSurface(sur, getTextWidth()+4, 0);
+      sur->dispose();
     }
   }
 
   void onPreferredSize(PreferredSizeEvent& ev) override {
-    if (m_image)
-      ev.setPreferredSize(m_image->width(),
-                          m_image->height());
-    else
-      ListItem::onPreferredSize(ev);
+    ListItem::onPreferredSize(ev);
+    if (m_image) {
+      gfx::Size sz = ev.getPreferredSize();
+      ev.setPreferredSize(
+        sz.w + 4 + m_image->width(),
+        MAX(sz.h, m_image->height()));
+    }
   }
 
   void onSelect() override {
@@ -97,10 +92,11 @@ private:
     gfx::Color color = theme->colors.text();
 
     try {
+      m_loaded = true;
       m_image.reset(
         render_text(
           m_filename, 16,
-          getText(),
+          "ABCDEabcde",             // TODO custom text
           doc::rgba(gfx::getr(color),
                     gfx::getg(color),
                     gfx::getb(color),
@@ -111,13 +107,14 @@ private:
       listbox->makeChildVisible(this);
     }
     catch (const std::exception& ex) {
-      Console::showException(ex);
+      // Ignore errors
     }
   }
 
 private:
   base::UniquePtr<doc::Image> m_image;
   std::string m_filename;
+  bool m_loaded;
 };
 
 FontPopup::FontPopup()
