@@ -193,9 +193,9 @@ protected:
       case kKeyDownMessage: {
         KeyMessage* keyMsg = static_cast<KeyMessage*>(msg);
         KeyScancode scancode = keyMsg->scancode();
-        int unicode = keyMsg->unicodeChar();
 
 #ifdef __APPLE__
+        int unicode = keyMsg->unicodeChar();
         bool up = (msg->cmdPressed() && scancode == kKeyUp);
         bool enter = (msg->cmdPressed() && scancode == kKeyDown);
         bool back = (msg->cmdPressed() && msg->shiftPressed() && unicode == '[');
