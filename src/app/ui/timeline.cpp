@@ -423,7 +423,6 @@ bool Timeline::onProcessMessage(Message* msg)
           // hitTestCel() and limiting the clicked cel inside the
           // range bounds.
           if (m_range.type() == Range::kCels) {
-            gfx::Point pt = mouseMsg->position();
             m_clk = hitTestCel(mouseMsg->position() - getBounds().getOrigin());
 
             if (m_clk.layer < m_range.layerBegin())
