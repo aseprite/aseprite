@@ -97,11 +97,6 @@ bool PopupWindow::onProcessMessage(Message* msg)
           closeWindow(NULL);
         }
 
-        // If we are filtering messages we don't propagate key-events
-        // to other widgets. As we're a popup window and we're
-        // filtering messages, the user shouldn't be able to start
-        // other actions pressing keyboard shortcuts.
-        return false;
       }
       break;
 
