@@ -610,8 +610,9 @@ static void osx_sys_set_window_title(AL_CONST char *title)
 
    NSString *ns_title = [NSString stringWithUTF8String: tmp];
 
-   if (osx_window)
-      [osx_window setTitle: ns_title];
+   if (osx_window) {
+      [osx_window performSelectorOnMainThread:@selector(setTitle:) withObject:ns_title waitUntilDone: NO];
+   }
 }
 
 
