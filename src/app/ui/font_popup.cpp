@@ -39,6 +39,8 @@
 #include <windows.h>
 #endif
 
+#include <queue>
+
 namespace app {
 
 using namespace ui;
@@ -135,31 +137,45 @@ FontPopup::FontPopup()
 
   m_popup->view()->attachToView(&m_listBox);
 
-  std::vector<std::string> fontDirs;
+  std::queue<std::string> fontDirs;
 #if _WIN32
   {
     std::vector<wchar_t> buf(MAX_PATH);
     HRESULT hr = SHGetFolderPath(NULL, CSIDL_FONTS, NULL,
                                  SHGFP_TYPE_DEFAULT, &buf[0]);
     if (hr == S_OK) {
-      fontDirs.push_back(base::to_utf8(&buf[0]));
+      fontDirs.push(base::to_utf8(&buf[0]));
     }
   }
 #elif __APPLE__
   {
-    fontDirs.push_back("/System/Library/Fonts/");
-    fontDirs.push_back("/Library/Fonts");
-    fontDirs.push_back("~/Library/Fonts");
+    fontDirs.push("/System/Library/Fonts/");
+    fontDirs.push("/Library/Fonts");
+    fontDirs.push("~/Library/Fonts");
+  }
+#else  // Unix-like
+  {
+    fontDirs.push("/usr/share/fonts");
+    fontDirs.push("/usr/local/share/fonts");
+    fontDirs.push("~/.fonts");
   }
 #endif
 
   // Create a list of fullpaths to every font found in all font
   // directories (fontDirs)
   std::vector<std::string> files;
-  for (const auto& fontDir : fontDirs) {
+  while (!fontDirs.empty()) {
+    std::string fontDir = fontDirs.front();
+    fontDirs.pop();
+
     auto fontDirFiles = base::list_files(fontDir);
-    for (const auto& file : fontDirFiles)
-      files.push_back(base::join_path(fontDir, file));
+    for (const auto& file : fontDirFiles) {
+      std::string fullpath = base::join_path(fontDir, file);
+      if (base::is_directory(fullpath))
+        fontDirs.push(fullpath); // Add subdirectory
+      else
+        files.push_back(fullpath);
+    }
   }
 
   // Sort all files by "file title"
