@@ -109,6 +109,7 @@ private:
       try {
         m_fontPopup.reset(new FontPopup());
         m_fontPopup->Load.connect(&PasteTextWindow::setFontFace, this);
+        m_fontPopup->Close.connect(Bind<void>(&PasteTextWindow::onCloseFontPopup, this));
       }
       catch (const std::exception& ex) {
         Console::showException(ex);
@@ -125,6 +126,10 @@ private:
     else {
       m_fontPopup->closeWindow(NULL);
     }
+  }
+
+  void onCloseFontPopup() {
+    fontFace()->dropDown()->requestFocus();
   }
 
   std::string m_face;

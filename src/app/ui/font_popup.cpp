@@ -118,7 +118,9 @@ private:
 };
 
 FontPopup::FontPopup()
-  : PopupWindow("Fonts", kCloseOnClickInOtherWindow)
+  : PopupWindow("Fonts",
+                kCloseOnClickInOtherWindow,
+                kDoNothingOnEnter)
   , m_popup(new gen::FontPopup())
 {
   setAutoRemap(false);
@@ -127,6 +129,7 @@ FontPopup::FontPopup()
   addChild(m_popup);
 
   m_popup->loadFont()->Click.connect(Bind<void>(&FontPopup::onLoadFont, this));
+  m_listBox.setFocusMagnet(true);
   m_listBox.Change.connect(Bind<void>(&FontPopup::onChangeFont, this));
   m_listBox.DoubleClickItem.connect(Bind<void>(&FontPopup::onLoadFont, this));
 

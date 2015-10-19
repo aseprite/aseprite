@@ -1,5 +1,5 @@
 // Aseprite UI Library
-// Copyright (C) 2001-2013  David Capello
+// Copyright (C) 2001-2013, 2015  David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -21,7 +21,14 @@ namespace ui {
       kCloseOnClickOutsideHotRegion
     };
 
-    PopupWindow(const std::string& text, ClickBehavior clickBehavior);
+    enum EnterBehavior {
+      kDoNothingOnEnter,
+      kCloseOnEnter,
+    };
+
+    PopupWindow(const std::string& text,
+                ClickBehavior clickBehavior,
+                EnterBehavior enterBehavior = kCloseOnEnter);
     ~PopupWindow();
 
     void setHotRegion(const gfx::Region& region);
@@ -41,6 +48,7 @@ namespace ui {
     void stopFilteringMessages();
 
     ClickBehavior m_clickBehavior;
+    EnterBehavior m_enterBehavior;
     gfx::Region m_hotRegion;
     bool m_filtering;
   };
