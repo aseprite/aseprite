@@ -384,46 +384,62 @@ void osx_update_dirty_lines(void)
 
       qd_view_port = [qd_view qdPort];
       if (qd_view_port) {
-         qd_view_pitch = GetPixRowBytes(GetPortPixMap(qd_view_port));
-         qd_view_addr = GetPixBaseAddr(GetPortPixMap(qd_view_port)) +
-            ((int)([osx_window frame].size.height) - gfx_quartz_window.h) * qd_view_pitch;
+         Rect qd_view_bounds;
+         int qd_view_width;
+         int qd_view_height;
 
-         if (colorconv_blitter || (osx_setup_colorconv_blitter() == 0)) {
-            SetEmptyRgn(update_region);
+         GetPortBounds(qd_view_port, &qd_view_bounds);
+         qd_view_width = (qd_view_bounds.right - qd_view_bounds.left);
+         qd_view_height = (qd_view_bounds.bottom - qd_view_bounds.top);
 
-            rect.left = 0;
-            rect.right = gfx_quartz_window.w;
+         ASSERT(qd_view_width > 0);
+         ASSERT(qd_view_height > 0);
 
-            while (rect.top < gfx_quartz_window.h) {
-               while ((!dirty_lines[rect.top]) && (rect.top < gfx_quartz_window.h))
-                  rect.top++;
-               if (rect.top >= gfx_quartz_window.h)
-                  break;
-               rect.bottom = rect.top;
-               while ((dirty_lines[rect.bottom]) && (rect.bottom < gfx_quartz_window.h)) {
-                  dirty_lines[rect.bottom] = 0;
-                  rect.bottom++;
+         if (qd_view_width > 0 && qd_view_height > 0) {
+            int titlebar_height =
+               ((int)([osx_window frame].size.height) - gfx_quartz_window.h);
+
+            qd_view_pitch = GetPixRowBytes(GetPortPixMap(qd_view_port));
+            qd_view_addr = GetPixBaseAddr(GetPortPixMap(qd_view_port)) +
+               titlebar_height * qd_view_pitch;
+
+            if (colorconv_blitter || (osx_setup_colorconv_blitter() == 0)) {
+               SetEmptyRgn(update_region);
+
+               rect.left = 0;
+               rect.right = qd_view_width;
+
+               while (rect.top < qd_view_height) {
+                  while ((!dirty_lines[rect.top]) && (rect.top < qd_view_height))
+                     rect.top++;
+                  if (rect.top >= qd_view_height)
+                     break;
+                  rect.bottom = rect.top;
+                  while ((dirty_lines[rect.bottom]) && (rect.bottom < qd_view_height)) {
+                     dirty_lines[rect.bottom] = 0;
+                     rect.bottom++;
+                  }
+                  /* fill in source graphics rectangle description */
+                  src_gfx_rect.width  = rect.right - rect.left;
+                  src_gfx_rect.height = rect.bottom - rect.top;
+                  src_gfx_rect.pitch  = pseudo_screen_pitch;
+                  src_gfx_rect.data   = pseudo_screen_addr +
+                     (rect.top * pseudo_screen_pitch) +
+                     (rect.left * BYTES_PER_PIXEL(pseudo_screen_depth));
+
+                  /* fill in destination graphics rectangle description */
+                  dest_gfx_rect.pitch = qd_view_pitch;
+                  dest_gfx_rect.data  = qd_view_addr +
+                     (rect.top * qd_view_pitch) +
+                     (rect.left * BYTES_PER_PIXEL(desktop_depth));
+
+                  /* function doing the hard work */
+                  colorconv_blitter(&src_gfx_rect, &dest_gfx_rect);
+
+                  RectRgn(temp_region, &rect);
+                  UnionRgn(temp_region, update_region, update_region);
+                  rect.top = rect.bottom;
                }
-               /* fill in source graphics rectangle description */
-               src_gfx_rect.width  = rect.right - rect.left;
-               src_gfx_rect.height = rect.bottom - rect.top;
-               src_gfx_rect.pitch  = pseudo_screen_pitch;
-               src_gfx_rect.data   = pseudo_screen_addr +
-                  (rect.top * pseudo_screen_pitch) +
-                  (rect.left * BYTES_PER_PIXEL(pseudo_screen_depth));
-
-               /* fill in destination graphics rectangle description */
-               dest_gfx_rect.pitch = qd_view_pitch;
-               dest_gfx_rect.data  = qd_view_addr +
-                  (rect.top * qd_view_pitch) +
-                  (rect.left * BYTES_PER_PIXEL(desktop_depth));
-
-               /* function doing the hard work */
-               colorconv_blitter(&src_gfx_rect, &dest_gfx_rect);
-
-               RectRgn(temp_region, &rect);
-               UnionRgn(temp_region, update_region, update_region);
-               rect.top = rect.bottom;
             }
          }
          QDFlushPortBuffer(qd_view_port, update_region);
