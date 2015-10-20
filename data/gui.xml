@@ -468,6 +468,7 @@
       <menu text="&amp;Edit">
         <item command="Undo" text="&amp;Undo" />
         <item command="Redo" text="&amp;Redo" />
+        <item command="UndoHistory" text="Undo Histor&amp;y" />
         <separator />
         <item command="Cut" text="Cu&amp;t" />
         <item command="Copy" text="&amp;Copy" />
