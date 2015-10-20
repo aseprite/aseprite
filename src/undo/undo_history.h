@@ -27,12 +27,15 @@ namespace undo {
     bool canRedo() const;
     void undo();
     void redo();
-
     void clearRedo();
 
+    // This can be used to jump to a specific UndoState in the whole
+    // history.
+    void moveTo(const UndoState* new_state);
+
   private:
-    UndoState* findCommonParent(UndoState* a, UndoState* b);
-    void moveTo(UndoState* new_state);
+    const UndoState* findCommonParent(const UndoState* a,
+                                      const UndoState* b);
 
     UndoState* m_first;
     UndoState* m_last;

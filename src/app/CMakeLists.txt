@@ -252,6 +252,7 @@ add_library(app-lib
   commands/cmd_timeline.cpp
   commands/cmd_toggle_preview.cpp
   commands/cmd_undo.cpp
+  commands/cmd_undo_history.cpp
   commands/cmd_unlink_cel.cpp
   commands/cmd_zoom.cpp
   commands/command.cpp

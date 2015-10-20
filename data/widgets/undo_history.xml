@@ -1,0 +1,9 @@
+<!-- ASEPRITE -->
+<!-- Copyright (C) 2015 by David Capello -->
+<gui>
+  <window id="undo_history" text="Undo History">
+    <view id="view" expansive="true" width="80" height="100">
+      <listbox id="actions" />
+    </view>
+  </window>
+</gui>

@@ -98,10 +98,11 @@ void UndoHistory::add(UndoCommand* cmd)
   }
 }
 
-UndoState* UndoHistory::findCommonParent(UndoState* a, UndoState* b)
+const UndoState* UndoHistory::findCommonParent(const UndoState* a,
+                                               const UndoState* b)
 {
-  UndoState* pA = a;
-  UndoState* pB = b;
+  const UndoState* pA = a;
+  const UndoState* pB = b;
 
   if (pA == nullptr || pB == nullptr)
     return nullptr;
@@ -119,9 +120,9 @@ UndoState* UndoHistory::findCommonParent(UndoState* a, UndoState* b)
   return pA;
 }
 
-void UndoHistory::moveTo(UndoState* new_state)
+void UndoHistory::moveTo(const UndoState* new_state)
 {
-  UndoState* common = findCommonParent(m_cur, new_state);
+  const UndoState* common = findCommonParent(m_cur, new_state);
 
   if (m_cur) {
     while (m_cur != common) {
@@ -131,8 +132,8 @@ void UndoHistory::moveTo(UndoState* new_state)
   }
 
   if (new_state) {
-    std::stack<UndoState*> redo_parents;
-    UndoState* p = new_state;
+    std::stack<const UndoState*> redo_parents;
+    const UndoState* p = new_state;
     while (p != common) {
       redo_parents.push(p);
       p = p->m_parent;
@@ -146,7 +147,7 @@ void UndoHistory::moveTo(UndoState* new_state)
     }
   }
 
-  m_cur = new_state;
+  m_cur = const_cast<UndoState*>(new_state);
 }
 
 } // namespace undo

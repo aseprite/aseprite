@@ -14,6 +14,7 @@
 #include "app/app.h"
 #include "app/cmd.h"
 #include "app/cmd_transaction.h"
+#include "app/document_undo_observer.h"
 #include "app/pref/preferences.h"
 #include "doc/context.h"
 #include "undo/undo_history.h"
@@ -43,10 +44,11 @@ void DocumentUndo::add(CmdTransaction* cmd)
   // A linear undo history is the default behavior
   if (!App::instance() ||
       !App::instance()->preferences().undo.allowNonlinearHistory()) {
-    m_undoHistory.clearRedo();
+    clearRedo();
   }
 
   m_undoHistory.add(cmd);
+  notifyObservers(&DocumentUndoObserver::onAddUndoState, this);
 }
 
 bool DocumentUndo::canUndo() const
@@ -61,17 +63,20 @@ bool DocumentUndo::canRedo() const
 
 void DocumentUndo::undo()
 {
-  return m_undoHistory.undo();
+  m_undoHistory.undo();
+  notifyObservers(&DocumentUndoObserver::onAfterUndo, this);
 }
 
 void DocumentUndo::redo()
 {
-  return m_undoHistory.redo();
+  m_undoHistory.redo();
+  notifyObservers(&DocumentUndoObserver::onAfterRedo, this);
 }
 
 void DocumentUndo::clearRedo()
 {
-  return m_undoHistory.clearRedo();
+  m_undoHistory.clearRedo();
+  notifyObservers(&DocumentUndoObserver::onClearRedo, this);
 }
 
 bool DocumentUndo::isSavedState() const
@@ -135,6 +140,11 @@ Cmd* DocumentUndo::lastExecutedCmd() const
     return static_cast<Cmd*>(state->cmd());
   else
     return NULL;
+}
+
+void DocumentUndo::moveToState(const undo::UndoState* state)
+{
+  m_undoHistory.moveTo(state);
 }
 
 const undo::UndoState* DocumentUndo::nextUndo() const

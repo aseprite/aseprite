@@ -10,6 +10,7 @@
 #pragma once
 
 #include "base/disable_copying.h"
+#include "base/observable.h"
 #include "base/unique_ptr.h"
 #include "doc/sprite_position.h"
 #include "undo/undo_history.h"
@@ -25,8 +26,9 @@ namespace app {
 
   class Cmd;
   class CmdTransaction;
+  class DocumentUndoObserver;
 
-  class DocumentUndo {
+  class DocumentUndo : public base::Observable<DocumentUndoObserver> {
   public:
     DocumentUndo();
 
@@ -54,6 +56,11 @@ namespace app {
     Cmd* lastExecutedCmd() const;
 
     int* savedCounter() { return &m_savedCounter; }
+
+    const undo::UndoState* firstState() const { return m_undoHistory.firstState(); }
+    const undo::UndoState* currentState() const { return m_undoHistory.currentState(); }
+
+    void moveToState(const undo::UndoState* state);
 
   private:
     const undo::UndoState* nextUndo() const;
