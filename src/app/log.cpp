@@ -63,8 +63,16 @@ void verbose_log(const char* format, ...)
   if (app::log_fileptr) {
     va_list ap;
     va_start(ap, format);
+
     vfprintf(app::log_fileptr, format, ap);
     fflush(app::log_fileptr);
+
+#ifdef _DEBUG
+    vfprintf(stdout, format, ap);
+    fflush(stdout);
+#endif
+
     va_end(ap);
   }
+
 }
