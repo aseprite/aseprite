@@ -11,15 +11,13 @@ namespace tools {
 class IntertwineNone : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points) override
-  {
-    for (size_t c=0; c<points.size(); ++c)
-      doPointshapePoint(points[c].x, points[c].y, loop);
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
+    for (size_t c=0; c<stroke.size(); ++c)
+      doPointshapePoint(stroke[c].x, stroke[c].y, loop);
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
-  {
-    joinPoints(loop, points);
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
+    joinStroke(loop, stroke);
   }
 };
 
@@ -27,20 +25,20 @@ class IntertwineAsLines : public Intertwine {
 public:
   bool snapByAngle() override { return true; }
 
-  void joinPoints(ToolLoop* loop, const Points& points) override
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() == 0)
+    if (stroke.size() == 0)
       return;
 
-    if (points.size() == 1) {
-      doPointshapePoint(points[0].x, points[0].y, loop);
+    if (stroke.size() == 1) {
+      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
     }
-    else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); ++c) {
-        int x1 = points[c].x;
-        int y1 = points[c].y;
-        int x2 = points[c+1].x;
-        int y2 = points[c+1].y;
+    else if (stroke.size() >= 2) {
+      for (int c=0; c+1<stroke.size(); ++c) {
+        int x1 = stroke[c].x;
+        int y1 = stroke[c].y;
+        int x2 = stroke[c+1].x;
+        int y2 = stroke[c+1].y;
 
         algo_line(x1, y1, x2, y2, loop, (AlgoPixel)doPointshapePoint);
       }
@@ -48,44 +46,44 @@ public:
 
     // Closed shape (polygon outline)
     if (loop->getFilled()) {
-      algo_line(points[0].x, points[0].y,
-                points[points.size()-1].x,
-                points[points.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
+      algo_line(stroke[0].x, stroke[0].y,
+                stroke[stroke.size()-1].x,
+                stroke[stroke.size()-1].y, loop, (AlgoPixel)doPointshapePoint);
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() < 3) {
-      joinPoints(loop, points);
+    if (stroke.size() < 3) {
+      joinStroke(loop, stroke);
       return;
     }
 
     // Contour
-    joinPoints(loop, points);
+    joinStroke(loop, stroke);
 
     // Fill content
-    doc::algorithm::polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+    doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 
 class IntertwineAsRectangles : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points) override
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() == 0)
+    if (stroke.size() == 0)
       return;
 
-    if (points.size() == 1) {
-      doPointshapePoint(points[0].x, points[0].y, loop);
+    if (stroke.size() == 1) {
+      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
     }
-    else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); ++c) {
-        int x1 = points[c].x;
-        int y1 = points[c].y;
-        int x2 = points[c+1].x;
-        int y2 = points[c+1].y;
+    else if (stroke.size() >= 2) {
+      for (size_t c=0; c+1<stroke.size(); ++c) {
+        int x1 = stroke[c].x;
+        int y1 = stroke[c].y;
+        int x2 = stroke[c+1].x;
+        int y2 = stroke[c+1].y;
         int y;
 
         if (x1 > x2) std::swap(x1, x2);
@@ -102,18 +100,18 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() < 2) {
-      joinPoints(loop, points);
+    if (stroke.size() < 2) {
+      joinStroke(loop, stroke);
       return;
     }
 
-    for (size_t c=0; c+1<points.size(); ++c) {
-      int x1 = points[c].x;
-      int y1 = points[c].y;
-      int x2 = points[c+1].x;
-      int y2 = points[c+1].y;
+    for (size_t c=0; c+1<stroke.size(); ++c) {
+      int x1 = stroke[c].x;
+      int y1 = stroke[c].y;
+      int x2 = stroke[c+1].x;
+      int y2 = stroke[c+1].y;
       int y;
 
       if (x1 > x2) std::swap(x1, x2);
@@ -128,20 +126,20 @@ public:
 class IntertwineAsEllipses : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points) override
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() == 0)
+    if (stroke.size() == 0)
       return;
 
-    if (points.size() == 1) {
-      doPointshapePoint(points[0].x, points[0].y, loop);
+    if (stroke.size() == 1) {
+      doPointshapePoint(stroke[0].x, stroke[0].y, loop);
     }
-    else if (points.size() >= 2) {
-      for (size_t c=0; c+1<points.size(); ++c) {
-        int x1 = points[c].x;
-        int y1 = points[c].y;
-        int x2 = points[c+1].x;
-        int y2 = points[c+1].y;
+    else if (stroke.size() >= 2) {
+      for (size_t c=0; c+1<stroke.size(); ++c) {
+        int x1 = stroke[c].x;
+        int y1 = stroke[c].y;
+        int x2 = stroke[c+1].x;
+        int y2 = stroke[c+1].y;
 
         if (x1 > x2) std::swap(x1, x2);
         if (y1 > y2) std::swap(y1, y2);
@@ -151,18 +149,18 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() < 2) {
-      joinPoints(loop, points);
+    if (stroke.size() < 2) {
+      joinStroke(loop, stroke);
       return;
     }
 
-    for (size_t c=0; c+1<points.size(); ++c) {
-      int x1 = points[c].x;
-      int y1 = points[c].y;
-      int x2 = points[c+1].x;
-      int y2 = points[c+1].y;
+    for (size_t c=0; c+1<stroke.size(); ++c) {
+      int x1 = stroke[c].x;
+      int y1 = stroke[c].y;
+      int x2 = stroke[c+1].x;
+      int y2 = stroke[c+1].y;
 
       if (x1 > x2) std::swap(x1, x2);
       if (y1 > y2) std::swap(y1, y2);
@@ -175,79 +173,79 @@ public:
 class IntertwineAsBezier : public Intertwine {
 public:
 
-  void joinPoints(ToolLoop* loop, const Points& points) override
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() == 0)
+    if (stroke.size() == 0)
       return;
 
-    for (size_t c=0; c<points.size(); c += 4) {
-      if (points.size()-c == 1) {
-        doPointshapePoint(points[c].x, points[c].y, loop);
+    for (size_t c=0; c<stroke.size(); c += 4) {
+      if (stroke.size()-c == 1) {
+        doPointshapePoint(stroke[c].x, stroke[c].y, loop);
       }
-      else if (points.size()-c == 2) {
-        algo_line(points[c].x, points[c].y,
-                  points[c+1].x, points[c+1].y, loop, (AlgoPixel)doPointshapePoint);
+      else if (stroke.size()-c == 2) {
+        algo_line(stroke[c].x, stroke[c].y,
+                  stroke[c+1].x, stroke[c+1].y, loop, (AlgoPixel)doPointshapePoint);
       }
-      else if (points.size()-c == 3) {
-        algo_spline(points[c  ].x, points[c  ].y,
-                    points[c+1].x, points[c+1].y,
-                    points[c+1].x, points[c+1].y,
-                    points[c+2].x, points[c+2].y, loop, (AlgoLine)doPointshapeLine);
+      else if (stroke.size()-c == 3) {
+        algo_spline(stroke[c  ].x, stroke[c  ].y,
+                    stroke[c+1].x, stroke[c+1].y,
+                    stroke[c+1].x, stroke[c+1].y,
+                    stroke[c+2].x, stroke[c+2].y, loop, (AlgoLine)doPointshapeLine);
       }
       else {
-        algo_spline(points[c  ].x, points[c  ].y,
-                    points[c+1].x, points[c+1].y,
-                    points[c+2].x, points[c+2].y,
-                    points[c+3].x, points[c+3].y, loop, (AlgoLine)doPointshapeLine);
+        algo_spline(stroke[c  ].x, stroke[c  ].y,
+                    stroke[c+1].x, stroke[c+1].y,
+                    stroke[c+2].x, stroke[c+2].y,
+                    stroke[c+3].x, stroke[c+3].y, loop, (AlgoLine)doPointshapeLine);
       }
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    joinPoints(loop, points);
+    joinStroke(loop, stroke);
   }
 };
 
 class IntertwineAsPixelPerfect : public Intertwine {
   struct PPData {
-    Points& pts;
+    Stroke& pts;
     ToolLoop* loop;
-    PPData(Points& pts, ToolLoop* loop) : pts(pts), loop(loop) { }
+    PPData(Stroke& pts, ToolLoop* loop) : pts(pts), loop(loop) { }
   };
 
   static void pixelPerfectLine(int x, int y, PPData* data)
   {
     gfx::Point newPoint(x, y);
 
-    if (data->pts.empty()
-      || data->pts[data->pts.size()-1] != newPoint) {
-      data->pts.push_back(newPoint);
+    if (data->pts.empty() ||
+        data->pts.lastPoint() != newPoint) {
+      data->pts.addPoint(newPoint);
     }
   }
 
-  Points m_pts;
+  Stroke m_pts;
 
 public:
   void prepareIntertwine() override {
-    m_pts.clear();
+    m_pts.reset();
   }
 
-  void joinPoints(ToolLoop* loop, const Points& points) override {
-    if (points.size() == 0)
+  void joinStroke(ToolLoop* loop, const Stroke& stroke) override {
+    if (stroke.size() == 0)
       return;
-    else if (m_pts.empty() && points.size() == 1) {
-      m_pts = points;
+    else if (m_pts.empty() && stroke.size() == 1) {
+      m_pts = stroke;
     }
     else {
       PPData data(m_pts, loop);
 
-      for (size_t c=0; c+1<points.size(); ++c) {
+      for (size_t c=0; c+1<stroke.size(); ++c) {
         algo_line(
-          points[c].x,
-          points[c].y,
-          points[c+1].x,
-          points[c+1].y,
+          stroke[c].x,
+          stroke[c].y,
+          stroke[c+1].x,
+          stroke[c+1].y,
           (void*)&data,
           (AlgoPixel)&IntertwineAsPixelPerfect::pixelPerfectLine);
       }
@@ -268,18 +266,18 @@ public:
     }
   }
 
-  void fillPoints(ToolLoop* loop, const Points& points) override
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
   {
-    if (points.size() < 3) {
-      joinPoints(loop, points);
+    if (stroke.size() < 3) {
+      joinStroke(loop, stroke);
       return;
     }
 
     // Contour
-    joinPoints(loop, points);
+    joinStroke(loop, stroke);
 
     // Fill content
-    doc::algorithm::polygon(points.size(), (const int*)&points[0], loop, (AlgoHLine)doPointshapeHline);
+    doc::algorithm::polygon(stroke.size(), (const int*)&stroke[0], loop, (AlgoHLine)doPointshapeHline);
   }
 };
 

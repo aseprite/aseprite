@@ -43,6 +43,7 @@ namespace app {
     class Ink;
     class Intertwine;
     class PointShape;
+    class Symmetry;
     class Tool;
 
     using namespace doc;
@@ -202,6 +203,7 @@ namespace app {
       virtual PointShape* getPointShape() = 0;
       virtual Intertwine* getIntertwine() = 0;
       virtual TracePolicy getTracePolicy() = 0;
+      virtual Symmetry* getSymmetry() = 0;
 
       virtual const doc::Remap* getShadingRemap() = 0;
 

@@ -26,6 +26,7 @@
 #include "app/tools/freehand_algorithm.h"
 #include "app/tools/ink.h"
 #include "app/tools/point_shape.h"
+#include "app/tools/symmetries.h"
 #include "app/tools/tool.h"
 #include "app/tools/tool_box.h"
 #include "app/tools/tool_loop.h"
@@ -77,6 +78,7 @@ protected:
   tools::PointShape* m_pointShape;
   tools::Intertwine* m_intertwine;
   tools::TracePolicy m_tracePolicy;
+  base::UniquePtr<tools::Symmetry> m_symmetry;
   base::UniquePtr<doc::Remap> m_shadingRemap;
   doc::color_t m_fgColor;
   doc::color_t m_bgColor;
@@ -110,6 +112,7 @@ public:
     , m_pointShape(m_tool->getPointShape(m_button))
     , m_intertwine(m_tool->getIntertwine(m_button))
     , m_tracePolicy(m_tool->getTracePolicy(m_button))
+    , m_symmetry(nullptr)
     , m_fgColor(color_utils::color_for_target_mask(fgColor, ColorTarget(m_layer)))
     , m_bgColor(color_utils::color_for_target_mask(bgColor, ColorTarget(m_layer)))
     , m_primaryColor(button == tools::ToolLoop::Left ? m_fgColor: m_bgColor)
@@ -135,6 +138,28 @@ public:
           m_tracePolicy = tools::TracePolicy::Accumulate;
           break;
       }
+    }
+
+    // Symmetry mode
+    switch (m_docPref.symmetry.mode()) {
+
+      case app::gen::SymmetryMode::NONE:
+        ASSERT(m_symmetry == nullptr);
+        break;
+
+      case app::gen::SymmetryMode::HORIZONTAL:
+        if (m_docPref.symmetry.xAxis() == 0)
+          m_docPref.symmetry.xAxis(m_sprite->width()/2);
+
+        m_symmetry.reset(new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()));
+        break;
+
+      case app::gen::SymmetryMode::VERTICAL:
+        if (m_docPref.symmetry.yAxis() == 0)
+          m_docPref.symmetry.yAxis(m_sprite->height()/2);
+
+        m_symmetry.reset(new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis()));
+        break;
     }
 
     // Ignore opacity for these inks
@@ -194,6 +219,7 @@ public:
   tools::PointShape* getPointShape() override { return m_pointShape; }
   tools::Intertwine* getIntertwine() override { return m_intertwine; }
   tools::TracePolicy getTracePolicy() override { return m_tracePolicy; }
+  tools::Symmetry* getSymmetry() override { return m_symmetry.get(); }
   doc::Remap* getShadingRemap() override { return m_shadingRemap; }
 
   gfx::Region& getDirtyArea() override {

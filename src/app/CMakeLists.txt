@@ -248,6 +248,7 @@ add_library(app-lib
   commands/cmd_sprite_properties.cpp
   commands/cmd_sprite_size.cpp
   commands/cmd_switch_colors.cpp
+  commands/cmd_symmetry_mode.cpp
   commands/cmd_tiled_mode.cpp
   commands/cmd_timeline.cpp
   commands/cmd_toggle_preview.cpp
@@ -315,6 +316,8 @@ add_library(app-lib
   tools/intertwine.cpp
   tools/pick_ink.cpp
   tools/point_shape.cpp
+  tools/stroke.cpp
+  tools/symmetries.cpp
   tools/tool_box.cpp
   tools/tool_loop_manager.cpp
   transaction.cpp

@@ -9,6 +9,7 @@
 #define APP_TOOLS_TOOL_LOOP_MANAGER_H_INCLUDED
 #pragma once
 
+#include "app/tools/stroke.h"
 #include "gfx/point.h"
 #include "gfx/region.h"
 #include "ui/keys.h"
@@ -86,18 +87,13 @@ namespace app {
       void movement(const Pointer& pointer);
 
     private:
-      typedef std::vector<gfx::Point> Points;
-
       void doLoopStep(bool last_step);
       void snapToGrid(gfx::Point& point);
 
-      void calculateDirtyArea(const Points& points);
-      void calculateMinMax(const Points& points,
-        gfx::Point& minpt,
-        gfx::Point& maxpt);
+      void calculateDirtyArea(const gfx::Rect& strokeBounds);
 
       ToolLoop* m_toolLoop;
-      Points m_points;
+      Stroke m_stroke;
       Pointer m_lastPointer;
       gfx::Point m_oldPoint;
       gfx::Region& m_dirtyArea;
@@ -106,4 +102,4 @@ namespace app {
   } // namespace tools
 } // namespace app
 
-#endif  // TOOLS_TOOL_H_INCLUDED
+#endif

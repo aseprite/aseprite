@@ -22,7 +22,7 @@ public:
     m_movingOrigin = false;
   }
 
-  void pressButton(Points& points, const Point& point) override {
+  void pressButton(Stroke& stroke, const Point& point) override {
     m_last = point;
   }
 
@@ -37,13 +37,12 @@ public:
   }
 
 protected:
-  bool isMovingOrigin(Points& points, const Point& point) {
+  bool isMovingOrigin(Stroke& stroke, const Point& point) {
     bool used = false;
 
     if (m_movingOrigin) {
       Point delta = (point - m_last);
-      for (auto& p : points)
-        p += delta;
+      stroke.offset(delta);
 
       onMoveOrigin(delta);
       used = true;
@@ -80,38 +79,39 @@ class FreehandController : public Controller {
 public:
   bool isFreehand() override { return true; }
 
-  void pressButton(Points& points, const Point& point) override {
-    points.push_back(point);
+  void pressButton(Stroke& stroke, const Point& point) override {
+    stroke.addPoint(point);
   }
 
-  bool releaseButton(Points& points, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Point& point) override {
     return false;
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) override {
-    points.push_back(point);
+  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    stroke.addPoint(point);
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) override {
+  void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
     if (input.size() == 1) {
-      output.push_back(input[0]);
+      output.addPoint(input[0]);
     }
     else if (input.size() >= 2) {
-      output.push_back(input[input.size()-2]);
-      output.push_back(input[input.size()-1]);
+      output.addPoint(input[input.size()-2]);
+      output.addPoint(input[input.size()-1]);
     }
   }
 
-  void getStatusBarText(const Points& points, std::string& text) override {
-    ASSERT(!points.empty());
-    if (points.empty())
+  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+    ASSERT(!stroke.empty());
+    if (stroke.empty())
       return;
 
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
-            points[0].x, points[0].y,
-            points[points.size()-1].x,
-            points[points.size()-1].y);
+            stroke.firstPoint().x,
+            stroke.firstPoint().y,
+            stroke.lastPoint().x,
+            stroke.lastPoint().y);
     text = buf;
   }
 
@@ -127,16 +127,16 @@ public:
     m_fromCenter = (modifiers & ui::kKeyCtrlModifier) ? true: false;
   }
 
-  void pressButton(Points& points, const Point& point) override {
-    MoveOriginCapability::pressButton(points, point);
+  void pressButton(Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(stroke, point);
 
     m_first = point;
 
-    points.push_back(point);
-    points.push_back(point);
+    stroke.addPoint(point);
+    stroke.addPoint(point);
   }
 
-  bool releaseButton(Points& points, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Point& point) override {
     return false;
   }
 
@@ -154,19 +154,19 @@ public:
     return processKey(key, false);
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) override {
-    ASSERT(points.size() >= 2);
-    if (points.size() < 2)
+  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    ASSERT(stroke.size() >= 2);
+    if (stroke.size() < 2)
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(points, point))
+    if (MoveOriginCapability::isMovingOrigin(stroke, point))
       return;
 
-    points[1] = point;
+    stroke[1] = point;
 
     if (m_squareAspect) {
-      int dx = points[1].x - m_first.x;
-      int dy = points[1].y - m_first.y;
+      int dx = stroke[1].x - m_first.x;
+      int dy = stroke[1].y - m_first.y;
       int minsize = MIN(ABS(dx), ABS(dy));
       int maxsize = MAX(ABS(dx), ABS(dy));
 
@@ -178,84 +178,84 @@ public:
 
         // Snap horizontally
         if (angle < 18.0) {
-          points[1].y = m_first.y;
+          stroke[1].y = m_first.y;
         }
         // Snap at 26.565
         else if (angle < 36.0) {
-          points[1].x = m_first.x + SGN(dx)*maxsize;
-          points[1].y = m_first.y + SGN(dy)*maxsize/2;
+          stroke[1].x = m_first.x + SGN(dx)*maxsize;
+          stroke[1].y = m_first.y + SGN(dy)*maxsize/2;
         }
         // Snap at 45
         else if (angle < 54.0) {
-          points[1].x = m_first.x + SGN(dx)*minsize;
-          points[1].y = m_first.y + SGN(dy)*minsize;
+          stroke[1].x = m_first.x + SGN(dx)*minsize;
+          stroke[1].y = m_first.y + SGN(dy)*minsize;
         }
         // Snap at 63.435
         else if (angle < 72.0) {
-          points[1].x = m_first.x + SGN(dx)*maxsize/2;
-          points[1].y = m_first.y + SGN(dy)*maxsize;
+          stroke[1].x = m_first.x + SGN(dx)*maxsize/2;
+          stroke[1].y = m_first.y + SGN(dy)*maxsize;
         }
         // Snap vertically
         else {
-          points[1].x = m_first.x;
+          stroke[1].x = m_first.x;
         }
       }
       // Rectangles and ellipses
       else {
-        points[1].x = m_first.x + SGN(dx)*minsize;
-        points[1].y = m_first.y + SGN(dy)*minsize;
+        stroke[1].x = m_first.x + SGN(dx)*minsize;
+        stroke[1].y = m_first.y + SGN(dy)*minsize;
       }
     }
 
-    points[0] = m_first;
+    stroke[0] = m_first;
 
     if (m_fromCenter) {
-      int rx = points[1].x - m_first.x;
-      int ry = points[1].y - m_first.y;
-      points[0].x = m_first.x - rx;
-      points[0].y = m_first.y - ry;
-      points[1].x = m_first.x + rx;
-      points[1].y = m_first.y + ry;
+      int rx = stroke[1].x - m_first.x;
+      int ry = stroke[1].y - m_first.y;
+      stroke[0].x = m_first.x - rx;
+      stroke[0].y = m_first.y - ry;
+      stroke[1].x = m_first.x + rx;
+      stroke[1].y = m_first.y + ry;
     }
 
     // Adjust points for selection like tools (so we can select tiles)
     if (loop->getController()->canSnapToGrid() &&
         loop->getSnapToGrid() &&
         loop->getInk()->isSelection()) {
-      if (points[0].x < points[1].x)
-        points[1].x--;
-      else if (points[0].x > points[1].x)
-        points[0].x--;
+      if (stroke[0].x < stroke[1].x)
+        stroke[1].x--;
+      else if (stroke[0].x > stroke[1].x)
+        stroke[0].x--;
 
-      if (points[0].y < points[1].y)
-        points[1].y--;
-      else if (points[0].y > points[1].y)
-        points[0].y--;
+      if (stroke[0].y < stroke[1].y)
+        stroke[1].y--;
+      else if (stroke[0].y > stroke[1].y)
+        stroke[0].y--;
     }
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) override {
+  void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
     ASSERT(input.size() >= 2);
     if (input.size() < 2)
       return;
 
-    output.push_back(input[0]);
-    output.push_back(input[1]);
+    output.addPoint(input[0]);
+    output.addPoint(input[1]);
   }
 
-  void getStatusBarText(const Points& points, std::string& text) override {
-    ASSERT(points.size() >= 2);
-    if (points.size() < 2)
+  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+    ASSERT(stroke.size() >= 2);
+    if (stroke.size() < 2)
       return;
 
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (Size %3d %3d) Angle %.1f",
-            points[0].x, points[0].y,
-            points[1].x, points[1].y,
-            ABS(points[1].x-points[0].x)+1,
-            ABS(points[1].y-points[0].y)+1,
-            180.0 * std::atan2(static_cast<double>(points[0].y-points[1].y),
-                               static_cast<double>(points[1].x-points[0].x)) / PI);
+            stroke[0].x, stroke[0].y,
+            stroke[1].x, stroke[1].y,
+            ABS(stroke[1].x-stroke[0].x)+1,
+            ABS(stroke[1].y-stroke[0].y)+1,
+            180.0 * std::atan2(static_cast<double>(stroke[0].y-stroke[1].y),
+                               static_cast<double>(stroke[1].x-stroke[0].x)) / PI);
     text = buf;
   }
 
@@ -287,50 +287,51 @@ private:
 class PointByPointController : public MoveOriginCapability {
 public:
 
-  void pressButton(Points& points, const Point& point) override {
-    MoveOriginCapability::pressButton(points, point);
+  void pressButton(Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(stroke, point);
 
-    points.push_back(point);
-    points.push_back(point);
+    stroke.addPoint(point);
+    stroke.addPoint(point);
   }
 
-  bool releaseButton(Points& points, const Point& point) override {
-    ASSERT(!points.empty());
-    if (points.empty())
+  bool releaseButton(Stroke& stroke, const Point& point) override {
+    ASSERT(!stroke.empty());
+    if (stroke.empty())
       return false;
 
-    if (points[points.size()-2] == point &&
-        points[points.size()-1] == point)
+    if (stroke[stroke.size()-2] == point &&
+        stroke[stroke.size()-1] == point)
       return false;             // Click in the same point (no-drag), we are done
     else
       return true;              // Continue adding points
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) override {
-    ASSERT(!points.empty());
-    if (points.empty())
+  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    ASSERT(!stroke.empty());
+    if (stroke.empty())
       return;
 
-    if (MoveOriginCapability::isMovingOrigin(points, point))
+    if (MoveOriginCapability::isMovingOrigin(stroke, point))
       return;
 
-    points[points.size()-1] = point;
+    stroke[stroke.size()-1] = point;
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) override {
+  void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
     output = input;
   }
 
-  void getStatusBarText(const Points& points, std::string& text) override {
-    ASSERT(!points.empty());
-    if (points.empty())
+  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+    ASSERT(!stroke.empty());
+    if (stroke.empty())
       return;
 
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d",
-            points[0].x, points[0].y,
-            points[points.size()-1].x,
-            points[points.size()-1].y);
+            stroke.firstPoint().x,
+            stroke.firstPoint().y,
+            stroke.lastPoint().x,
+            stroke.lastPoint().y);
     text = buf;
   }
 
@@ -342,30 +343,30 @@ public:
   bool canSnapToGrid() override { return false; }
   bool isOnePoint() override { return true; }
 
-  void pressButton(Points& points, const Point& point) override {
-    if (points.size() == 0)
-      points.push_back(point);
+  void pressButton(Stroke& stroke, const Point& point) override {
+    if (stroke.size() == 0)
+      stroke.addPoint(point);
   }
 
-  bool releaseButton(Points& points, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Point& point) override {
     return false;
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) override {
+  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
     // Do nothing
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) override {
+  void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
     output = input;
   }
 
-  void getStatusBarText(const Points& points, std::string& text) override {
-    ASSERT(!points.empty());
-    if (points.empty())
+  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+    ASSERT(!stroke.empty());
+    if (stroke.empty())
       return;
 
     char buf[1024];
-    sprintf(buf, "Pos %3d %3d", points[0].x, points[0].y);
+    sprintf(buf, "Pos %3d %3d", stroke[0].x, stroke[0].y);
     text = buf;
   }
 
@@ -374,57 +375,57 @@ public:
 class FourPointsController : public MoveOriginCapability {
 public:
 
-  void pressButton(Points& points, const Point& point) override {
-    MoveOriginCapability::pressButton(points, point);
+  void pressButton(Stroke& stroke, const Point& point) override {
+    MoveOriginCapability::pressButton(stroke, point);
 
-    if (points.size() == 0) {
-      points.resize(4, point);
+    if (stroke.size() == 0) {
+      stroke.reset(4, point);
       m_clickCounter = 0;
     }
     else
       m_clickCounter++;
   }
 
-  bool releaseButton(Points& points, const Point& point) override {
+  bool releaseButton(Stroke& stroke, const Point& point) override {
     m_clickCounter++;
     return m_clickCounter < 4;
   }
 
-  void movement(ToolLoop* loop, Points& points, const Point& point) override {
-    if (MoveOriginCapability::isMovingOrigin(points, point))
+  void movement(ToolLoop* loop, Stroke& stroke, const Point& point) override {
+    if (MoveOriginCapability::isMovingOrigin(stroke, point))
       return;
 
     switch (m_clickCounter) {
       case 0:
-        for (size_t i=1; i<points.size(); ++i)
-          points[i] = point;
+        for (size_t i=1; i<stroke.size(); ++i)
+          stroke[i] = point;
         break;
       case 1:
       case 2:
-        points[1] = point;
-        points[2] = point;
+        stroke[1] = point;
+        stroke[2] = point;
         break;
       case 3:
-        points[2] = point;
+        stroke[2] = point;
         break;
     }
   }
 
-  void getPointsToInterwine(const Points& input, Points& output) override {
+  void getStrokeToInterwine(const Stroke& input, Stroke& output) override {
     output = input;
   }
 
-  void getStatusBarText(const Points& points, std::string& text) override {
-    ASSERT(points.size() >= 4);
-    if (points.size() < 4)
+  void getStatusBarText(const Stroke& stroke, std::string& text) override {
+    ASSERT(stroke.size() >= 4);
+    if (stroke.size() < 4)
       return;
 
     char buf[1024];
     sprintf(buf, "Start %3d %3d End %3d %3d (%3d %3d - %3d %3d)",
-            points[0].x, points[0].y,
-            points[3].x, points[3].y,
-            points[1].x, points[1].y,
-            points[2].x, points[2].y);
+            stroke[0].x, stroke[0].y,
+            stroke[3].x, stroke[3].y,
+            stroke[1].x, stroke[1].y,
+            stroke[2].x, stroke[2].y);
 
     text = buf;
   }

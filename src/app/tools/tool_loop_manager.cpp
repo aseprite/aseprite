@@ -17,11 +17,14 @@
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
+#include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
 #include "doc/image.h"
 #include "doc/primitives.h"
 #include "doc/sprite.h"
 #include "gfx/region.h"
+
+#include <climits>
 
 namespace app {
 namespace tools {
@@ -49,7 +52,7 @@ void ToolLoopManager::prepareLoop(const Pointer& pointer,
                                   ui::KeyModifiers modifiers)
 {
   // Start with no points at all
-  m_points.clear();
+  m_stroke.reset();
 
   // Prepare the ink
   m_toolLoop->getInk()->prepareInk(m_toolLoop);
@@ -106,10 +109,10 @@ void ToolLoopManager::pressButton(const Pointer& pointer)
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
 
-  m_toolLoop->getController()->pressButton(m_points, spritePoint);
+  m_toolLoop->getController()->pressButton(m_stroke, spritePoint);
 
   std::string statusText;
-  m_toolLoop->getController()->getStatusBarText(m_points, statusText);
+  m_toolLoop->getController()->getStatusBarText(m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
   doLoopStep(false);
@@ -125,7 +128,7 @@ bool ToolLoopManager::releaseButton(const Pointer& pointer)
   Point spritePoint = pointer.point();
   snapToGrid(spritePoint);
 
-  bool res = m_toolLoop->getController()->releaseButton(m_points, spritePoint);
+  bool res = m_toolLoop->getController()->releaseButton(m_stroke, spritePoint);
 
   if (!res && (m_toolLoop->getInk()->isSelection() || m_toolLoop->getFilled())) {
     m_toolLoop->getInk()->setFinalStep(m_toolLoop, true);
@@ -150,10 +153,10 @@ void ToolLoopManager::movement(const Pointer& pointer)
   m_oldPoint = spritePoint;
   snapToGrid(spritePoint);
 
-  m_toolLoop->getController()->movement(m_toolLoop, m_points, spritePoint);
+  m_toolLoop->getController()->movement(m_toolLoop, m_stroke, spritePoint);
 
   std::string statusText;
-  m_toolLoop->getController()->getStatusBarText(m_points, statusText);
+  m_toolLoop->getController()->getStatusBarText(m_stroke, statusText);
   m_toolLoop->updateStatusBar(statusText.c_str());
 
   doLoopStep(false);
@@ -161,18 +164,28 @@ void ToolLoopManager::movement(const Pointer& pointer)
 
 void ToolLoopManager::doLoopStep(bool last_step)
 {
-  Points points_to_interwine;
+  // Original set of points to interwine (original user stroke).
+  Stroke main_stroke;
   if (!last_step)
-    m_toolLoop->getController()->getPointsToInterwine(m_points, points_to_interwine);
+    m_toolLoop->getController()->getStrokeToInterwine(m_stroke, main_stroke);
   else
-    points_to_interwine = m_points;
+    main_stroke = m_stroke;
+  main_stroke.offset(m_toolLoop->getOffset());
 
-  Point offset(m_toolLoop->getOffset());
-  for (size_t i=0; i<points_to_interwine.size(); ++i)
-    points_to_interwine[i] += offset;
+  // Apply symmetry
+  Symmetry* symmetry = m_toolLoop->getSymmetry();
+  Strokes strokes;
+  if (symmetry)
+    symmetry->generateStrokes(main_stroke, strokes);
+  else
+    strokes.push_back(main_stroke);
 
   // Calculate the area to be updated in all document observers.
-  calculateDirtyArea(points_to_interwine);
+  gfx::Rect strokeBounds;
+  for (const Stroke& stroke : strokes)
+    strokeBounds |= stroke.bounds();
+
+  calculateDirtyArea(strokeBounds);
 
   // Validate source image area.
   if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
@@ -201,10 +214,12 @@ void ToolLoopManager::doLoopStep(bool last_step)
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Get the modified area in the sprite with this intertwined set of points
-  if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
-    m_toolLoop->getIntertwine()->joinPoints(m_toolLoop, points_to_interwine);
-  else
-    m_toolLoop->getIntertwine()->fillPoints(m_toolLoop, points_to_interwine);
+  for (const Stroke& stroke : strokes) {
+    if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
+      m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, stroke);
+    else
+      m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, stroke);
+  }
 
   if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
     // Copy destination to source (yes, destination to source). In
@@ -226,7 +241,7 @@ void ToolLoopManager::snapToGrid(Point& point)
   point = snap_to_grid(m_toolLoop->getGridBounds(), point);
 }
 
-void ToolLoopManager::calculateDirtyArea(const Points& points)
+void ToolLoopManager::calculateDirtyArea(const gfx::Rect& strokeBounds)
 {
   // Save the current dirty area if it's needed
   Region prevDirtyArea;
@@ -236,14 +251,19 @@ void ToolLoopManager::calculateDirtyArea(const Points& points)
   // Start with a fresh dirty area
   m_dirtyArea.clear();
 
-  if (points.size() > 0) {
-    Point minpt, maxpt;
-    calculateMinMax(points, minpt, maxpt);
-
+  if (!strokeBounds.isEmpty()) {
     // Expand the dirty-area with the pen width
     Rect r1, r2;
-    m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, minpt.x, minpt.y, r1);
-    m_toolLoop->getPointShape()->getModifiedArea(m_toolLoop, maxpt.x, maxpt.y, r2);
+
+    m_toolLoop->getPointShape()->getModifiedArea(
+      m_toolLoop,
+      strokeBounds.x,
+      strokeBounds.y, r1);
+
+    m_toolLoop->getPointShape()->getModifiedArea(
+      m_toolLoop,
+      strokeBounds.x+strokeBounds.w-1,
+      strokeBounds.y+strokeBounds.h-1, r2);
 
     m_dirtyArea.createUnion(m_dirtyArea, Region(r1.createUnion(r2)));
   }
@@ -297,23 +317,6 @@ void ToolLoopManager::calculateDirtyArea(const Points& points)
       else
         break;
     }
-  }
-}
-
-void ToolLoopManager::calculateMinMax(const Points& points, Point& minpt, Point& maxpt)
-{
-  ASSERT(points.size() > 0);
-
-  minpt.x = points[0].x;
-  minpt.y = points[0].y;
-  maxpt.x = points[0].x;
-  maxpt.y = points[0].y;
-
-  for (size_t c=1; c<points.size(); ++c) {
-    minpt.x = MIN(minpt.x, points[c].x);
-    minpt.y = MIN(minpt.y, points[c].y);
-    maxpt.x = MAX(maxpt.x, points[c].x);
-    maxpt.y = MAX(maxpt.y, points[c].y);
   }
 }
 

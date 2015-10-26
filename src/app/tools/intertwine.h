@@ -15,6 +15,7 @@
 
 namespace app {
   namespace tools {
+    class Stroke;
     class ToolLoop;
 
     // Converts a sequence of points in several call to
@@ -28,8 +29,8 @@ namespace app {
       virtual ~Intertwine() { }
       virtual bool snapByAngle() { return false; }
       virtual void prepareIntertwine() { }
-      virtual void joinPoints(ToolLoop* loop, const Points& points) = 0;
-      virtual void fillPoints(ToolLoop* loop, const Points& points) = 0;
+      virtual void joinStroke(ToolLoop* loop, const Stroke& stroke) = 0;
+      virtual void fillStroke(ToolLoop* loop, const Stroke& stroke) = 0;
 
     protected:
       static void doPointshapePoint(int x, int y, ToolLoop* loop);

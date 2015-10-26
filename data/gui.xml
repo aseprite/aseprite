@@ -684,6 +684,7 @@
             <param name="axis" value="y" />
 	  </item>
 	</menu>
+	<item command="SymmetryMode" text="S&amp;ymmetry Options" />
         <separator />
         <item command="SetLoopSection" text="Set &amp;Loop Section" />
         <item command="ShowOnionSkin" text="Show &amp;Onion Skin" />

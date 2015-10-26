@@ -63,14 +63,21 @@ bool UIContext::isUIAvailable() const
 DocumentView* UIContext::activeView() const
 {
   if (!isUIAvailable())
-    return NULL;
+    return nullptr;
 
-  Workspace* workspace = App::instance()->getMainWindow()->getWorkspace();
+  MainWindow* mainWindow = App::instance()->getMainWindow();
+  if (!mainWindow)
+    return nullptr;
+
+  Workspace* workspace = mainWindow->getWorkspace();
+  if (!workspace)
+    return nullptr;
+
   WorkspaceView* view = workspace->activeView();
   if (DocumentView* docView = dynamic_cast<DocumentView*>(view))
     return docView;
   else
-    return NULL;
+    return nullptr;
 }
 
 void UIContext::setActiveView(DocumentView* docView)

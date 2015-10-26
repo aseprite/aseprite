@@ -13,6 +13,7 @@
 
 #include "app/app.h"
 #include "app/commands/commands.h"
+#include "app/document.h"
 #include "app/modules/gfx.h"
 #include "app/modules/gui.h"
 #include "app/modules/palettes.h"
@@ -1116,6 +1117,49 @@ protected:
   }
 };
 
+class ContextBar::SymmetryField : public ButtonSet {
+public:
+  SymmetryField() : ButtonSet(3) {
+    SkinTheme* theme = SkinTheme::instance();
+    addItem(theme->parts.noSymmetry());
+    addItem(theme->parts.horizontalSymmetry());
+    addItem(theme->parts.verticalSymmetry());
+  }
+
+  void setupTooltips(TooltipManager* tooltipManager) {
+    tooltipManager->addTooltipFor(at(0), "Without Symmetry", BOTTOM);
+    tooltipManager->addTooltipFor(at(1), "Horizontal Symmetry", BOTTOM);
+    tooltipManager->addTooltipFor(at(2), "Vertical Symmetry", BOTTOM);
+  }
+
+  void updateWithCurrentDocument() {
+    Document* doc = UIContext::instance()->activeDocument();
+    if (!doc)
+      return;
+
+    DocumentPreferences& docPref = Preferences::instance().document(doc);
+
+    setSelectedItem((int)docPref.symmetry.mode());
+  }
+
+private:
+  void onItemChange(Item* item) override {
+    ButtonSet::onItemChange(item);
+
+    Document* doc = UIContext::instance()->activeDocument();
+    if (!doc)
+      return;
+
+    DocumentPreferences& docPref =
+      Preferences::instance().document(doc);
+
+    docPref.symmetry.mode((app::gen::SymmetryMode)selectedItem());
+
+    // Redraw symmetry rules
+    doc->notifyGeneralUpdate();
+  }
+};
+
 ContextBar::ContextBar()
   : Box(HORIZONTAL)
 {
@@ -1175,6 +1219,9 @@ ContextBar::ContextBar()
   setup_mini_font(m_toleranceLabel);
   setup_mini_font(m_inkOpacityLabel);
 
+  addChild(m_symmetry = new SymmetryField());
+  m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
+
   TooltipManager* tooltipManager = new TooltipManager();
   addChild(tooltipManager);
 
@@ -1195,9 +1242,13 @@ ContextBar::ContextBar()
   m_selectionMode->setupTooltips(tooltipManager);
   m_dropPixels->setupTooltips(tooltipManager);
   m_freehandAlgo->setupTooltips(tooltipManager);
+  m_symmetry->setupTooltips(tooltipManager);
 
   Preferences::instance().toolBox.activeTool.AfterChange.connect(
     Bind<void>(&ContextBar::onCurrentToolChange, this));
+
+  Preferences::instance().symmetryMode.enabled.AfterChange.connect(
+    Bind<void>(&ContextBar::onSymmetryModeChange, this));
 
   m_dropPixels->DropPixels.connect(&ContextBar::onDropPixels, this);
 
@@ -1238,6 +1289,11 @@ void ContextBar::onCurrentToolChange()
   else {
     updateForCurrentTool();
   }
+}
+
+void ContextBar::onSymmetryModeChange()
+{
+  updateForCurrentTool();
 }
 
 void ContextBar::onDropPixels(ContextBarObserver::DropAction action)
@@ -1394,6 +1450,8 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_pivot->setVisible(true);
   m_dropPixels->setVisible(false);
   m_selectBoxHelp->setVisible(false);
+  m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
+  m_symmetry->updateWithCurrentDocument();
 
   layout();
 }

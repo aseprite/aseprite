@@ -632,6 +632,37 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
     }
   }
 
+  // Symmetry mode
+  {
+    switch (docPref.symmetry.mode()) {
+      case app::gen::SymmetryMode::NONE:
+        // Do nothing
+        break;
+      case app::gen::SymmetryMode::HORIZONTAL: {
+        int x = docPref.symmetry.xAxis();
+        if (x > 0) {
+          gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
+          g->drawVLine(color,
+                       enclosingRect.x + m_zoom.apply(x),
+                       enclosingRect.y,
+                       enclosingRect.h);
+        }
+        break;
+      }
+      case app::gen::SymmetryMode::VERTICAL: {
+        int y = docPref.symmetry.yAxis();
+        if (y > 0) {
+          gfx::Color color = color_utils::color_for_ui(docPref.grid.color());
+          g->drawHLine(color,
+                       enclosingRect.x,
+                       enclosingRect.y + m_zoom.apply(y),
+                       enclosingRect.w);
+        }
+        break;
+      }
+    }
+  }
+
   if (m_flags & kShowOutside) {
     // Draw the borders that enclose the sprite.
     enclosingRect.enlarge(1);

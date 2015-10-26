@@ -83,6 +83,7 @@ namespace app {
     void onBrushSizeChange();
     void onBrushAngleChange();
     void onCurrentToolChange();
+    void onSymmetryModeChange();
     void onDropPixels(ContextBarObserver::DropAction action);
 
     struct BrushSlot {
@@ -120,6 +121,7 @@ namespace app {
     class EyedropperField;
     class DropPixelsField;
     class AutoSelectLayerField;
+    class SymmetryField;
 
     BrushTypeField* m_brushType;
     BrushAngleField* m_brushAngle;
@@ -150,6 +152,7 @@ namespace app {
     doc::BrushRef m_activeBrush;
     BrushSlots m_brushes;
     ui::Label* m_selectBoxHelp;
+    SymmetryField* m_symmetry;
     ScopedConnection m_sizeConn;
     ScopedConnection m_angleConn;
     ScopedConnection m_opacityConn;

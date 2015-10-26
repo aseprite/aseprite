@@ -16,6 +16,7 @@
 #include "app/tools/ink.h"
 #include "app/tools/intertwine.h"
 #include "app/tools/point_shape.h"
+#include "app/tools/stroke.h"
 #include "app/tools/tool_group.h"
 #include "app/tools/tool_loop.h"
 #include "base/bind.h"

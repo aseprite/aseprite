@@ -64,6 +64,11 @@
       <value id="SOUTH" value="7" />
       <value id="SOUTHEAST" value="8" />
     </enum>
+    <enum id="SymmetryMode">
+      <value id="NONE" value="0" />
+      <value id="HORIZONTAL" value="1" />
+      <value id="VERTICAL" value="2" />
+    </enum>
   </types>
 
   <global>
@@ -159,6 +164,9 @@
       <option id="font_face" type="std::string" />
       <option id="font_size" type="int" default="12" />
     </section>
+    <section id="symmetry_mode">
+      <option id="enabled" type="bool" default="false" />
+    </section>
   </global>
 
   <tool>
@@ -190,6 +198,11 @@
     </section>
     <section id="tiled">
       <option id="mode" type="filters::TiledMode" default="filters::TiledMode::NONE" migrate="Tools.Tiled" />
+    </section>
+    <section id="symmetry">
+      <option id="mode" type="SymmetryMode" default="SymmetryMode::NONE" />
+      <option id="x_axis" type="int" default="0" />
+      <option id="y_axis" type="int" default="0" />
     </section>
     <section id="grid">
       <option id="snap" type="bool" default="false" migrate="Grid.SnapTo" />
