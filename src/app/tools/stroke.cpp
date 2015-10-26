@@ -44,7 +44,7 @@ gfx::Rect Stroke::bounds() const
     minpt(m_points[0]),
     maxpt(m_points[0]);
 
-  for (size_t c=1; c<m_points.size(); ++c) {
+  for (std::size_t c=1; c<m_points.size(); ++c) {
     int x = m_points[c].x;
     int y = m_points[c].y;
     if (minpt.x > x) minpt.x = x;
