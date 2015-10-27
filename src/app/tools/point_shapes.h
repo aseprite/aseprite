@@ -131,7 +131,7 @@ private:
 
 class SprayPointShape : public PointShape {
   BrushPointShape m_subPointShape;
-  float pixel_remainder = 0;
+  float point_remainder = 0;
 
 public:
 
@@ -145,21 +145,22 @@ public:
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
 
-    // The number of pixels to spray is proportional to the area of the brush,
-    // and we calculate it as a float to handle very low spray rates properly.
-    float pixels_to_spray = (spray_width * spray_width / 4.0f) * spray_speed / 100.0f;
+    // The number of points to spray is proportional to the spraying area, and
+    // we calculate it as a float to handle very low spray rates properly.
+    float points_to_spray = (spray_width * spray_width / 4.0f) * spray_speed / 100.0f;
 
-    // We add the fractional pixels from last time before computing the total
-    // number of pixels to paint this time.
-    pixels_to_spray += pixel_remainder;
-    int integral_pixels = (int)pixels_to_spray;
+    // We add the fractional points from last time to get
+    // the total number of points to paint this time.
+    points_to_spray += point_remainder;
+    int integral_points = (int)points_to_spray;
 
-    // Save any leftover fraction of a pixel for next time.
-    pixel_remainder = pixels_to_spray - integral_pixels;
+    // Save any leftover fraction of a point for next time.
+    point_remainder = points_to_spray - integral_points;
+    ASSERT(point_remainder >= 0 && point_remainder < 1.0f);
 
     fixmath::fixed angle, radius;
 
-    for (int c=0; c<integral_pixels; c++) {
+    for (int c=0; c<integral_points; c++) {
 
 #if RAND_MAX <= 0xffff
       // In Windows, rand() has a RAND_MAX too small
