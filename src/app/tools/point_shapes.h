@@ -131,6 +131,7 @@ private:
 
 class SprayPointShape : public PointShape {
   BrushPointShape m_subPointShape;
+  float pixel_remainder = 0;
 
 public:
 
@@ -143,31 +144,36 @@ public:
   void transformPoint(ToolLoop* loop, int x, int y) override {
     int spray_width = loop->getSprayWidth();
     int spray_speed = loop->getSpraySpeed();
-    int c, u, v, times = (spray_width*spray_width/4) * spray_speed / 100;
 
-    // In Windows, rand() has a RAND_MAX too small
+    // The number of pixels to spray is proportional to the area of the brush,
+    // and we calculate it as a float to handle very low spray rates properly.
+    float pixels_to_spray = (spray_width * spray_width / 4.0f) * spray_speed / 100.0f;
+
+    // We add the fractional pixels from last time before computing the total
+    // number of pixels to paint this time.
+    pixels_to_spray += pixel_remainder;
+    int integral_pixels = (int)pixels_to_spray;
+
+    // Save any leftover fraction of a pixel for next time.
+    pixel_remainder = pixels_to_spray - integral_pixels;
+
+    fixmath::fixed angle, radius;
+
+    for (int c=0; c<integral_pixels; c++) {
+
 #if RAND_MAX <= 0xffff
-    fixmath::fixed angle, radius;
-
-    for (c=0; c<times; c++) {
-      angle = fixmath::itofix(rand() * 256 / RAND_MAX);
-      radius = fixmath::itofix(rand() * (spray_width*10) / RAND_MAX) / 10;
-      u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
-
-      m_subPointShape.transformPoint(loop, x+u, y+v);
-    }
+      // In Windows, rand() has a RAND_MAX too small
+      angle = fixmath::itofix(rand() * 255 / RAND_MAX);
+      radius = fixmath::itofix(rand() * spray_width / RAND_MAX);
 #else
-    fixmath::fixed angle, radius;
-
-    for (c=0; c<times; c++) {
       angle = rand();
       radius = rand() % fixmath::itofix(spray_width);
-      u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
-      v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
+#endif
+
+      int u = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixcos(angle)));
+      int v = fixmath::fixtoi(fixmath::fixmul(radius, fixmath::fixsin(angle)));
       m_subPointShape.transformPoint(loop, x+u, y+v);
     }
-#endif
   }
 
   void getModifiedArea(ToolLoop* loop, int x, int y, Rect& area) override {
