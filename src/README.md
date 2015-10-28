@@ -18,7 +18,7 @@ because they don't depend on any other component.
   * [css](css/): Pseudo-style sheet library.
   * [fixmath](fixmath/): Fixed point operations (original code from Allegro code by Shawn Hargreaves).
   * [flic](flic/): Library to load/save FLI/FLC files.
-  * [scripting](scripting/): JavaScript engine ([V8](https://code.google.com/p/v8/)).
+  * [scripting](scripting/): JavaScript engine.
   * [undo](undo/): Generic library to manage a history of undoable commands.
 
 ## Level 1
