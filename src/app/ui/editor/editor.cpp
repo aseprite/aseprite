@@ -633,7 +633,7 @@ void Editor::drawSpriteUnclippedRect(ui::Graphics* g, const gfx::Rect& _rc)
   }
 
   // Symmetry mode
-  {
+  if (Preferences::instance().symmetryMode.enabled()) {
     switch (docPref.symmetry.mode()) {
       case app::gen::SymmetryMode::NONE:
         // Do nothing

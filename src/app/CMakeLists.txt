@@ -344,6 +344,7 @@ add_library(app-lib
   ui/editor/editor_view.cpp
   ui/editor/moving_cel_state.cpp
   ui/editor/moving_pixels_state.cpp
+  ui/editor/moving_symmetry_state.cpp
   ui/editor/navigate_state.cpp
   ui/editor/pivot_helpers.cpp
   ui/editor/pixels_movement.cpp

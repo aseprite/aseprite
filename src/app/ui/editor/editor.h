@@ -68,8 +68,13 @@ namespace app {
       kShowOnionskin = 4,
       kShowOutside = 8,
       kShowDecorators = 16,
-      kDefaultEditorFlags = (kShowGrid | kShowMask |
-        kShowOnionskin | kShowOutside | kShowDecorators),
+      kShowSymmetryLine = 2,
+      kDefaultEditorFlags = (kShowGrid |
+                             kShowMask |
+                             kShowOnionskin |
+                             kShowOutside |
+                             kShowDecorators |
+                             kShowSymmetryLine)
     };
 
     enum class ZoomBehavior {

@@ -15,6 +15,7 @@
 #include "app/resource_finder.h"
 #include "app/tools/ink.h"
 #include "app/tools/tool.h"
+#include "doc/sprite.h"
 
 namespace app {
 
@@ -92,23 +93,27 @@ ToolPreferences& Preferences::tool(tools::Tool* tool)
   }
 }
 
-DocumentPreferences& Preferences::document(const app::Document* document)
+DocumentPreferences& Preferences::document(const app::Document* doc)
 {
-  auto it = m_docs.find(document);
+  auto it = m_docs.find(doc);
   if (it != m_docs.end()) {
     return *it->second;
   }
   else {
     DocumentPreferences* docPref;
-    if (document) {
+    if (doc) {
       docPref = new DocumentPreferences("");
       *docPref = this->document(nullptr);
+
+      // Default values for symmetry
+      docPref->symmetry.xAxis.setDefaultValue(doc->sprite()->width()/2);
+      docPref->symmetry.yAxis.setDefaultValue(doc->sprite()->height()/2);
     }
     else
       docPref = new DocumentPreferences("");
 
-    m_docs[document] = docPref;
-    serializeDocPref(document, docPref, false);
+    m_docs[doc] = docPref;
+    serializeDocPref(doc, docPref, false);
     return *docPref;
   }
 }
@@ -151,18 +156,21 @@ void Preferences::serializeDocPref(const app::Document* doc, app::DocumentPrefer
   bool specific_file = false;
 
   if (doc) {
-    if (!doc->isAssociatedToFile())
+    if (doc->isAssociatedToFile()) {
+      push_config_state();
+      set_config_file(docConfigFileName(doc).c_str());
+      specific_file = true;
+    }
+    else if (save)
       return;
-
-    push_config_state();
-    set_config_file(docConfigFileName(doc).c_str());
-    specific_file = true;
   }
 
   if (save)
     docPref->save();
-  else
+  else {
+    // Load default preferences, or preferences from .ini file.
     docPref->load();
+  }
 
   if (specific_file) {
     flush_config_file();

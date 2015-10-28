@@ -141,25 +141,21 @@ public:
     }
 
     // Symmetry mode
-    switch (m_docPref.symmetry.mode()) {
+    if (Preferences::instance().symmetryMode.enabled()) {
+      switch (m_docPref.symmetry.mode()) {
 
-      case app::gen::SymmetryMode::NONE:
-        ASSERT(m_symmetry == nullptr);
-        break;
+        case app::gen::SymmetryMode::NONE:
+          ASSERT(m_symmetry == nullptr);
+          break;
 
-      case app::gen::SymmetryMode::HORIZONTAL:
-        if (m_docPref.symmetry.xAxis() == 0)
-          m_docPref.symmetry.xAxis(m_sprite->width()/2);
+        case app::gen::SymmetryMode::HORIZONTAL:
+          m_symmetry.reset(new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()));
+          break;
 
-        m_symmetry.reset(new app::tools::HorizontalSymmetry(m_docPref.symmetry.xAxis()));
-        break;
-
-      case app::gen::SymmetryMode::VERTICAL:
-        if (m_docPref.symmetry.yAxis() == 0)
-          m_docPref.symmetry.yAxis(m_sprite->height()/2);
-
-        m_symmetry.reset(new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis()));
-        break;
+        case app::gen::SymmetryMode::VERTICAL:
+          m_symmetry.reset(new app::tools::VerticalSymmetry(m_docPref.symmetry.yAxis()));
+          break;
+      }
     }
 
     // Ignore opacity for these inks

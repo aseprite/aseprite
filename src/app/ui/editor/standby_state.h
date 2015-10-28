@@ -16,6 +16,10 @@
 #include "gfx/transformation.h"
 
 namespace app {
+  namespace tools {
+    class Ink;
+  }
+
   class TransformHandles;
 
   class StandbyState : public StateWithWheelBehavior {
@@ -54,12 +58,14 @@ namespace app {
       virtual ~Decorator();
 
       TransformHandles* getTransformHandles(Editor* editor);
+      bool getSymmetryHandles(Editor* editor, gfx::Rect& box1, gfx::Rect& box2);
 
-      bool onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos);
+      bool onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos);
 
       // EditorDecorator overrides
       void preRenderDecorator(EditorPreRender* render) override;
       void postRenderDecorator(EditorPostRender* render) override;
+
     private:
       TransformHandles* m_transfHandles;
       StandbyState* m_standbyState;

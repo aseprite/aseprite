@@ -27,6 +27,7 @@
 #include "app/ui/editor/editor_customization_delegate.h"
 #include "app/ui/editor/handle_type.h"
 #include "app/ui/editor/moving_cel_state.h"
+#include "app/ui/editor/moving_symmetry_state.h"
 #include "app/ui/editor/moving_pixels_state.h"
 #include "app/ui/editor/pivot_helpers.h"
 #include "app/ui/editor/pixels_movement.h"
@@ -34,6 +35,7 @@
 #include "app/ui/editor/tool_loop_impl.h"
 #include "app/ui/editor/transform_handles.h"
 #include "app/ui/editor/zooming_state.h"
+#include "app/ui/skin/skin_theme.h"
 #include "app/ui/status_bar.h"
 #include "app/ui_context.h"
 #include "app/util/new_image_from_mask.h"
@@ -44,6 +46,7 @@
 #include "doc/sprite.h"
 #include "fixmath/fixmath.h"
 #include "gfx/rect.h"
+#include "she/surface.h"
 #include "ui/alert.h"
 #include "ui/message.h"
 #include "ui/system.h"
@@ -225,7 +228,9 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
 
   if (clickedInk->isSelection()) {
     // Transform selected pixels
-    if (editor->isActive() && document->isMaskVisible() && m_decorator->getTransformHandles(editor)) {
+    if (editor->isActive() &&
+        document->isMaskVisible() &&
+        m_decorator->getTransformHandles(editor)) {
       TransformHandles* transfHandles = m_decorator->getTransformHandles(editor);
 
       // Get the handle covered by the mouse.
@@ -262,6 +267,22 @@ bool StandbyState::onMouseDown(Editor* editor, MouseMessage* msg)
       transformSelection(editor, msg, MoveHandle);
       return true;
     }
+  }
+
+  // Move symmetry
+  gfx::Rect box1, box2;
+  if (m_decorator->getSymmetryHandles(editor, box1, box2) &&
+      (box1.contains(msg->position()) ||
+       box2.contains(msg->position()))) {
+    auto& symmetry = Preferences::instance().document(editor->document()).symmetry;
+    auto mode = symmetry.mode();
+    bool horz = (mode == app::gen::SymmetryMode::HORIZONTAL);
+    auto& axis = (horz ? symmetry.xAxis:
+                         symmetry.yAxis);
+    editor->setState(
+      EditorStatePtr(new MovingSymmetryState(editor, msg,
+                                             mode, axis)));
+    return true;
   }
 
   // Start the Tool-Loop
@@ -305,13 +326,14 @@ bool StandbyState::onMouseMove(Editor* editor, MouseMessage* msg)
 bool StandbyState::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
 {
   tools::Ink* ink = editor->getCurrentEditorInk();
+
+  // See if the cursor is in some selection handle.
+  if (m_decorator->onSetCursor(ink, editor, mouseScreenPos))
+    return true;
+
   if (ink) {
     // If the current tool change selection (e.g. rectangular marquee, etc.)
     if (ink->isSelection()) {
-      // See if the cursor is in some selection handle.
-      if (m_decorator->onSetCursor(editor, mouseScreenPos))
-        return true;
-
       // Move pixels
       if (editor->isInsideSelection()) {
         EditorCustomizationDelegate* customization = editor->getCustomizationDelegate();
@@ -521,69 +543,87 @@ TransformHandles* StandbyState::Decorator::getTransformHandles(Editor* editor)
   return m_transfHandles;
 }
 
-bool StandbyState::Decorator::onSetCursor(Editor* editor, const gfx::Point& mouseScreenPos)
+bool StandbyState::Decorator::onSetCursor(tools::Ink* ink, Editor* editor, const gfx::Point& mouseScreenPos)
 {
-  if (!editor->isActive() ||
-      !editor->document()->isMaskVisible())
+  if (!editor->isActive())
     return false;
 
-  const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
-  TransformHandles* tr = getTransformHandles(editor);
-  HandleType handle = tr->getHandleAtPoint(
-    editor, mouseScreenPos, transformation);
+  if (ink && ink->isSelection() && editor->document()->isMaskVisible()) {
+    const gfx::Transformation transformation(m_standbyState->getTransformation(editor));
+    TransformHandles* tr = getTransformHandles(editor);
+    HandleType handle = tr->getHandleAtPoint(
+      editor, mouseScreenPos, transformation);
 
-  CursorType newCursor = kArrowCursor;
+    CursorType newCursor = kArrowCursor;
 
-  switch (handle) {
-    case ScaleNWHandle:         newCursor = kSizeNWCursor; break;
-    case ScaleNHandle:          newCursor = kSizeNCursor; break;
-    case ScaleNEHandle:         newCursor = kSizeNECursor; break;
-    case ScaleWHandle:          newCursor = kSizeWCursor; break;
-    case ScaleEHandle:          newCursor = kSizeECursor; break;
-    case ScaleSWHandle:         newCursor = kSizeSWCursor; break;
-    case ScaleSHandle:          newCursor = kSizeSCursor; break;
-    case ScaleSEHandle:         newCursor = kSizeSECursor; break;
-    case RotateNWHandle:        newCursor = kRotateNWCursor; break;
-    case RotateNHandle:         newCursor = kRotateNCursor; break;
-    case RotateNEHandle:        newCursor = kRotateNECursor; break;
-    case RotateWHandle:         newCursor = kRotateWCursor; break;
-    case RotateEHandle:         newCursor = kRotateECursor; break;
-    case RotateSWHandle:        newCursor = kRotateSWCursor; break;
-    case RotateSHandle:         newCursor = kRotateSCursor; break;
-    case RotateSEHandle:        newCursor = kRotateSECursor; break;
-    case PivotHandle:           newCursor = kHandCursor; break;
-    default:
-      return false;
+    switch (handle) {
+      case ScaleNWHandle:         newCursor = kSizeNWCursor; break;
+      case ScaleNHandle:          newCursor = kSizeNCursor; break;
+      case ScaleNEHandle:         newCursor = kSizeNECursor; break;
+      case ScaleWHandle:          newCursor = kSizeWCursor; break;
+      case ScaleEHandle:          newCursor = kSizeECursor; break;
+      case ScaleSWHandle:         newCursor = kSizeSWCursor; break;
+      case ScaleSHandle:          newCursor = kSizeSCursor; break;
+      case ScaleSEHandle:         newCursor = kSizeSECursor; break;
+      case RotateNWHandle:        newCursor = kRotateNWCursor; break;
+      case RotateNHandle:         newCursor = kRotateNCursor; break;
+      case RotateNEHandle:        newCursor = kRotateNECursor; break;
+      case RotateWHandle:         newCursor = kRotateWCursor; break;
+      case RotateEHandle:         newCursor = kRotateECursor; break;
+      case RotateSWHandle:        newCursor = kRotateSWCursor; break;
+      case RotateSHandle:         newCursor = kRotateSCursor; break;
+      case RotateSEHandle:        newCursor = kRotateSECursor; break;
+      case PivotHandle:           newCursor = kHandCursor; break;
+      default:
+        return false;
+    }
+
+    // Adjust the cursor depending the current transformation angle.
+    fixmath::fixed angle = fixmath::ftofix(128.0 * transformation.angle() / PI);
+    angle = fixmath::fixadd(angle, fixmath::itofix(16));
+    angle &= (255<<16);
+    angle >>= 16;
+    angle /= 32;
+
+    if (newCursor >= kSizeNCursor && newCursor <= kSizeNWCursor) {
+      size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
+      size_t c;
+      for (c=num-1; c>0; --c)
+        if (rotated_size_cursors[c] == newCursor)
+          break;
+
+      newCursor = rotated_size_cursors[(c+angle) % num];
+    }
+    else if (newCursor >= kRotateNCursor && newCursor <= kRotateNWCursor) {
+      size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
+      size_t c;
+      for (c=num-1; c>0; --c)
+        if (rotated_rotate_cursors[c] == newCursor)
+          break;
+
+      newCursor = rotated_rotate_cursors[(c+angle) % num];
+    }
+
+    editor->showMouseCursor(newCursor);
+    return true;
   }
 
-  // Adjust the cursor depending the current transformation angle.
-  fixmath::fixed angle = fixmath::ftofix(128.0 * transformation.angle() / PI);
-  angle = fixmath::fixadd(angle, fixmath::itofix(16));
-  angle &= (255<<16);
-  angle >>= 16;
-  angle /= 32;
-
-  if (newCursor >= kSizeNCursor && newCursor <= kSizeNWCursor) {
-    size_t num = sizeof(rotated_size_cursors) / sizeof(rotated_size_cursors[0]);
-    size_t c;
-    for (c=num-1; c>0; --c)
-      if (rotated_size_cursors[c] == newCursor)
+  gfx::Rect box1, box2;
+  if (getSymmetryHandles(editor, box1, box2) &&
+      (box1.contains(mouseScreenPos) ||
+       box2.contains(mouseScreenPos))) {
+    switch (Preferences::instance().document(editor->document()).symmetry.mode()) {
+      case app::gen::SymmetryMode::HORIZONTAL:
+        editor->showMouseCursor(kSizeWECursor);
         break;
-
-    newCursor = rotated_size_cursors[(c+angle) % num];
-  }
-  else if (newCursor >= kRotateNCursor && newCursor <= kRotateNWCursor) {
-    size_t num = sizeof(rotated_rotate_cursors) / sizeof(rotated_rotate_cursors[0]);
-    size_t c;
-    for (c=num-1; c>0; --c)
-      if (rotated_rotate_cursors[c] == newCursor)
+      case app::gen::SymmetryMode::VERTICAL:
+        editor->showMouseCursor(kSizeNSCursor);
         break;
-
-    newCursor = rotated_rotate_cursors[(c+angle) % num];
+    }
+    return true;
   }
 
-  editor->showMouseCursor(newCursor);
-  return true;
+  return false;
 }
 
 void StandbyState::Decorator::preRenderDecorator(EditorPreRender* render)
@@ -607,6 +647,59 @@ void StandbyState::Decorator::postRenderDecorator(EditorPostRender* render)
       getTransformHandles(editor)->drawHandles(editor,
         m_standbyState->getTransformation(editor));
   }
+
+  // Draw transformation handles (if the mask is visible and isn't frozen).
+  gfx::Rect box1, box2;
+  if (StandbyState::Decorator::getSymmetryHandles(editor, box1, box2)) {
+    skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
+    she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
+    ScreenGraphics g;
+    g.drawRgbaSurface(part, box1.x, box1.y);
+    g.drawRgbaSurface(part, box2.x, box2.y);
+  }
+}
+
+bool StandbyState::Decorator::getSymmetryHandles(Editor* editor, gfx::Rect& box1, gfx::Rect& box2)
+{
+  // Draw transformation handles (if the mask is visible and isn't frozen).
+  if (editor->isActive() &&
+      editor->editorFlags() & Editor::kShowSymmetryLine &&
+      Preferences::instance().symmetryMode.enabled()) {
+    const auto& symmetry = Preferences::instance().document(editor->document()).symmetry;
+    auto mode = symmetry.mode();
+    if (mode != app::gen::SymmetryMode::NONE) {
+      bool horz = (mode == app::gen::SymmetryMode::HORIZONTAL);
+      int pos = (horz ? symmetry.xAxis():
+                        symmetry.yAxis());
+      gfx::Rect spriteBounds = editor->sprite()->bounds();
+      skin::SkinTheme* theme = static_cast<skin::SkinTheme*>(CurrentTheme::get());
+      she::Surface* part = theme->parts.transformationHandle()->getBitmap(0);
+      gfx::Point pt1, pt2;
+      if (horz) {
+        pt1 = gfx::Point(spriteBounds.x+pos, spriteBounds.y);
+        pt1 = editor->editorToScreen(pt1);
+        pt2 = gfx::Point(spriteBounds.x+pos, spriteBounds.y+spriteBounds.h);
+        pt2 = editor->editorToScreen(pt2);
+        pt1.y -= part->height();
+        pt1.x -= part->width()/2;
+        pt2.x -= part->width()/2;
+      }
+      else {
+        pt1 = gfx::Point(spriteBounds.x, spriteBounds.y+pos);
+        pt1 = editor->editorToScreen(pt1);
+        pt2 = gfx::Point(spriteBounds.x+spriteBounds.w, spriteBounds.y+pos);
+        pt2 = editor->editorToScreen(pt2);
+        pt1.x -= part->width();
+        pt1.y -= part->height()/2;
+        pt2.y -= part->height()/2;
+      }
+
+      box1 = gfx::Rect(pt1.x, pt1.y, part->width(), part->height());
+      box2 = gfx::Rect(pt2.x, pt2.y, part->width(), part->height());
+      return true;
+    }
+  }
+  return false;
 }
 
 } // namespace app
