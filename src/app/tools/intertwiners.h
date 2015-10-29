@@ -208,19 +208,11 @@ public:
 };
 
 class IntertwineAsPixelPerfect : public Intertwine {
-  struct PPData {
-    Stroke& pts;
-    ToolLoop* loop;
-    PPData(Stroke& pts, ToolLoop* loop) : pts(pts), loop(loop) { }
-  };
-
-  static void pixelPerfectLine(int x, int y, PPData* data)
-  {
+  static void pixelPerfectLine(int x, int y, Stroke* stroke) {
     gfx::Point newPoint(x, y);
-
-    if (data->pts.empty() ||
-        data->pts.lastPoint() != newPoint) {
-      data->pts.addPoint(newPoint);
+    if (stroke->empty() ||
+        stroke->lastPoint() != newPoint) {
+      stroke->addPoint(newPoint);
     }
   }
 
@@ -238,15 +230,13 @@ public:
       m_pts = stroke;
     }
     else {
-      PPData data(m_pts, loop);
-
       for (int c=0; c+1<stroke.size(); ++c) {
         algo_line(
           stroke[c].x,
           stroke[c].y,
           stroke[c+1].x,
           stroke[c+1].y,
-          (void*)&data,
+          (void*)&m_pts,
           (AlgoPixel)&IntertwineAsPixelPerfect::pixelPerfectLine);
       }
     }
