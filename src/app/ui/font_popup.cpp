@@ -108,7 +108,7 @@ private:
       view->updateView();
       listbox->makeChildVisible(this);
     }
-    catch (const std::exception& ex) {
+    catch (const std::exception&) {
       // Ignore errors
     }
   }
