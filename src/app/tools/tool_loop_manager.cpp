@@ -173,7 +173,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   main_stroke.offset(m_toolLoop->getOffset());
 
-  // Apply symmetry
+  // Calculate the area to be updated in all document observers.
   Symmetry* symmetry = m_toolLoop->getSymmetry();
   Strokes strokes;
   if (symmetry)
@@ -181,7 +181,6 @@ void ToolLoopManager::doLoopStep(bool last_step)
   else
     strokes.push_back(main_stroke);
 
-  // Calculate the area to be updated in all document observers.
   calculateDirtyArea(strokes);
 
   // Validate source image area.
@@ -210,13 +209,11 @@ void ToolLoopManager::doLoopStep(bool last_step)
 
   m_toolLoop->validateDstImage(m_dirtyArea);
 
-  // Get the modified area in the sprite with this intertwined set of points
-  for (Stroke& stroke : strokes) {
-    if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
-      m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, stroke);
-    else
-      m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, stroke);
-  }
+  // Join or fill user points
+  if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
+    m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, main_stroke);
+  else
+    m_toolLoop->getIntertwine()->fillStroke(m_toolLoop, main_stroke);
 
   if (m_toolLoop->getTracePolicy() == TracePolicy::Overlap) {
     // Copy destination to source (yes, destination to source). In

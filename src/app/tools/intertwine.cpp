@@ -12,6 +12,8 @@
 #include "app/tools/intertwine.h"
 
 #include "app/tools/point_shape.h"
+#include "app/tools/stroke.h"
+#include "app/tools/symmetry.h"
 #include "app/tools/tool_loop.h"
 #include "doc/algo.h"
 
@@ -23,7 +25,20 @@ using namespace doc;
 
 void Intertwine::doPointshapePoint(int x, int y, ToolLoop* loop)
 {
-  loop->getPointShape()->transformPoint(loop, x, y);
+  Symmetry* symmetry = loop->getSymmetry();
+  if (symmetry) {
+    Stroke main_stroke;
+    main_stroke.addPoint(gfx::Point(x, y));
+
+    Strokes strokes;
+    symmetry->generateStrokes(main_stroke, strokes);
+    for (const auto& stroke : strokes)
+      loop->getPointShape()->transformPoint(
+        loop, stroke[0].x, stroke[0].y);
+  }
+  else {
+    loop->getPointShape()->transformPoint(loop, x, y);
+  }
 }
 
 void Intertwine::doPointshapeHline(int x1, int y, int x2, ToolLoop* loop)
