@@ -21,7 +21,7 @@ Its main features are:
 * **Tiled** drawing mode, useful to draw **patterns** and textures.
 * **Undo/Redo** for every operation.
 * Real-time **animation preview**.
-* [**Multiple editors**](http://www.aseprite.org/docs/workspace/#Drag-and-drop-tabs) support.
+* [**Multiple editors**](http://www.aseprite.org/docs/workspace/#drag-and-drop-tabs) support.
 * Pixel-art specific tools like filled **Contour**, **Polygon**, [**Shading**](http://www.aseprite.org/docs/shading/) mode, etc.
 * **Onion skinning**
 
