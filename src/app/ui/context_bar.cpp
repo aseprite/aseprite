@@ -1308,6 +1308,14 @@ void ContextBar::updateForCurrentTool()
 
 void ContextBar::updateForTool(tools::Tool* tool)
 {
+  // TODO Improve the design of the visibility of ContextBar
+  // items. Actually this manual show/hide logic is a mess. There
+  // should be a IContextBarUser interface, with a method to ask who
+  // needs which items to be visible. E.g. different tools elements
+  // (inks, controllers, etc.) and sprite editor states are the main
+  // target to implement this new IContextBarUser and ask for
+  // ContextBar elements.
+
   base::ScopedValue<bool> lockFlag(g_updatingFromCode, true, g_updatingFromCode);
 
   ToolPreferences* toolPref = nullptr;
@@ -1450,7 +1458,10 @@ void ContextBar::updateForTool(tools::Tool* tool)
   m_pivot->setVisible(true);
   m_dropPixels->setVisible(false);
   m_selectBoxHelp->setVisible(false);
-  m_symmetry->setVisible(Preferences::instance().symmetryMode.enabled());
+
+  m_symmetry->setVisible(
+    Preferences::instance().symmetryMode.enabled() &&
+    (isPaint || isEffect || hasSelectOptions));
   m_symmetry->updateWithCurrentDocument();
 
   layout();
