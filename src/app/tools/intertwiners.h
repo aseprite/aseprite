@@ -256,8 +256,7 @@ public:
     }
   }
 
-  void fillStroke(ToolLoop* loop, const Stroke& stroke) override
-  {
+  void fillStroke(ToolLoop* loop, const Stroke& stroke) override {
     if (stroke.size() < 3) {
       joinStroke(loop, stroke);
       return;
