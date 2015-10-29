@@ -90,7 +90,7 @@ namespace app {
       void doLoopStep(bool last_step);
       void snapToGrid(gfx::Point& point);
 
-      void calculateDirtyArea(const gfx::Rect& strokeBounds);
+      void calculateDirtyArea(const Strokes& strokes);
 
       ToolLoop* m_toolLoop;
       Stroke m_stroke;

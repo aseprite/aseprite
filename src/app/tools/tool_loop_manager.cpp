@@ -170,6 +170,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
     m_toolLoop->getController()->getStrokeToInterwine(m_stroke, main_stroke);
   else
     main_stroke = m_stroke;
+
   main_stroke.offset(m_toolLoop->getOffset());
 
   // Apply symmetry
@@ -181,11 +182,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
     strokes.push_back(main_stroke);
 
   // Calculate the area to be updated in all document observers.
-  gfx::Rect strokeBounds;
-  for (const Stroke& stroke : strokes)
-    strokeBounds |= stroke.bounds();
-
-  calculateDirtyArea(strokeBounds);
+  calculateDirtyArea(strokes);
 
   // Validate source image area.
   if (m_toolLoop->getInk()->needsSpecialSourceArea()) {
@@ -214,7 +211,7 @@ void ToolLoopManager::doLoopStep(bool last_step)
   m_toolLoop->validateDstImage(m_dirtyArea);
 
   // Get the modified area in the sprite with this intertwined set of points
-  for (const Stroke& stroke : strokes) {
+  for (Stroke& stroke : strokes) {
     if (!m_toolLoop->getFilled() || (!last_step && !m_toolLoop->getPreviewFilled()))
       m_toolLoop->getIntertwine()->joinStroke(m_toolLoop, stroke);
     else
@@ -241,7 +238,7 @@ void ToolLoopManager::snapToGrid(Point& point)
   point = snap_to_grid(m_toolLoop->getGridBounds(), point);
 }
 
-void ToolLoopManager::calculateDirtyArea(const gfx::Rect& strokeBounds)
+void ToolLoopManager::calculateDirtyArea(const Strokes& strokes)
 {
   // Save the current dirty area if it's needed
   Region prevDirtyArea;
@@ -251,7 +248,11 @@ void ToolLoopManager::calculateDirtyArea(const gfx::Rect& strokeBounds)
   // Start with a fresh dirty area
   m_dirtyArea.clear();
 
-  if (!strokeBounds.isEmpty()) {
+  for (auto& stroke : strokes) {
+    gfx::Rect strokeBounds = stroke.bounds();
+    if (strokeBounds.isEmpty())
+      continue;
+
     // Expand the dirty-area with the pen width
     Rect r1, r2;
 

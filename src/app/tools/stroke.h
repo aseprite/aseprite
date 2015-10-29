@@ -60,6 +60,8 @@ namespace app {
       Points m_points;
     };
 
+    typedef std::vector<Stroke> Strokes;
+
   } // namespace tools
 } // namespace app
 

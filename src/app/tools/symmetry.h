@@ -16,8 +16,6 @@
 namespace app {
   namespace tools {
 
-    typedef std::vector<Stroke> Strokes;
-
     // This class controls user input.
     class Symmetry {
     public:
